@@ -1,6 +1,6 @@
 go 1.18
 
 use (
-	./go
+	./agent
 	./protobuf
 )
