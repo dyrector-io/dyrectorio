@@ -1,7 +1,7 @@
 
 ## compile docs
-.PHONY: docs 
-docs: 
+.PHONY: docs
+docs:
 	protoc -I. --doc_out=./docs --doc_opt=markdown,docs.md  proto/*.proto
 
 
