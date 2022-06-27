@@ -1,0 +1,728 @@
+/**
+ * CRUX Protobuf definitions
+ *
+ */
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+package crux;
+option go_package = "gitlab.com/dyrector_io/dyrector.io/protobuf/go/crux";
+
+/**
+ *
+ * Services
+ *
+ */
+service CruxProduct {
+  // CRUD
+  rpc GetProducts(AccessRequest) returns (ProductListResponse);
+  rpc CreateProduct(CreateProductRequest) returns (CreateEntityResponse);
+  rpc UpdateProduct(UpdateProductRequest) returns (UpdateEntityResponse);
+  rpc DeleteProduct(IdRequest) returns (Empty);
+  rpc GetProductDetails(IdRequest) returns (ProductDetailsReponse);
+}
+
+service CruxRegistry {
+  // CRUD
+  rpc GetRegistries(AccessRequest) returns (RegistryListResponse);
+  rpc CreateRegistry(CreateRegistryRequest) returns (CreateEntityResponse);
+  rpc UpdateRegistry(UpdateRegistryRequest) returns (UpdateEntityResponse);
+  rpc DeleteRegistry(IdRequest) returns (Empty);
+  rpc GetRegistryDetails(IdRequest) returns (RegistryDetailsResponse);
+}
+
+service CruxNode {
+  // CRUD
+  rpc GetNodes(AccessRequest) returns (NodeListResponse);
+  rpc CreateNode(CreateNodeRequest) returns (CreateEntityResponse);
+  rpc UpdateNode(UpdateNodeRequest) returns (Empty);
+  rpc DeleteNode(IdRequest) returns (Empty);
+  rpc GetNodeDetails(IdRequest) returns (NodeDetailsResponse);
+  rpc GenerateScript(IdRequest) returns (NodeInstallResponse);
+  rpc GetScript(ServiceIdRequest) returns (NodeScriptResponse);
+  rpc DiscardScript(IdRequest) returns (Empty);
+  rpc RevokeToken(IdRequest) returns (Empty);
+
+  rpc SubscribeNodeEventChannel(ServiceIdRequest)
+      returns (stream NodeEventMessage);
+  rpc WatchContainerStatus(WatchContainerStatusRequest)
+      returns (stream ContainerStatusListMessage);
+}
+
+service CruxProductVersion {
+  rpc GetVersionsByProductId(IdRequest) returns (VersionListResponse);
+  rpc CreateVersion(CreateVersionRequest) returns (CreateEntityResponse);
+  rpc UpdateVersion(UpdateVersionRequest) returns (UpdateEntityResponse);
+  rpc DeleteVersion(IdRequest) returns (Empty);
+  rpc GetVersionDetails(IdRequest) returns (VersionDetailsResponse);
+  rpc IncreaseVersion(IncreaseVersionRequest) returns (CreateEntityResponse);
+}
+
+service CruxImage {
+  rpc GetImagesByVersionId(IdRequest) returns (ImageListResponse);
+  rpc AddImagesToVersion(AddImagesToVersionRequest) returns (ImageListResponse);
+  rpc OrderImages(OrderVersionImagesRequest) returns (Empty);
+  rpc PatchImage(PatchImageRequest) returns (Empty);
+  rpc DeleteImage(IdRequest) returns (Empty);
+  rpc GetImageDetails(IdRequest) returns (ImageResponse);
+}
+
+service CruxDeployment {
+  rpc GetDeploymentsByVersionId(IdRequest) returns (DeploymentListResponse);
+  rpc CreateDeployment(CreateDeploymentRequest) returns (CreateEntityResponse);
+  rpc UpdateDeployment(UpdateDeploymentRequest) returns (UpdateEntityResponse);
+  rpc PatchDeployment(PatchDeploymentRequest) returns (UpdateEntityResponse);
+  rpc DeleteDeployment(IdRequest) returns (Empty);
+  rpc GetDeploymentDetails(IdRequest) returns (DeploymentDetailsResponse);
+  rpc GetDeploymentEvents(IdRequest) returns (DeploymentEventListResponse);
+
+  rpc StartDeployment(IdRequest) returns (stream DeploymentProgressMessage);
+
+  rpc SubscribeToDeploymentEditEvents(ServiceIdRequest)
+      returns (stream DeploymentEditEventMessage);
+}
+
+service CruxTeam {
+  rpc CreateTeam(CreateTeamRequest) returns (CreateEntityResponse);
+  rpc GetActiveTeamByUser(AccessRequest) returns (TeamDetailsResponse);
+  rpc UpdateActiveTeam(UpdateActiveTeamRequest) returns (Empty);
+  rpc DeleteActiveTeam(AccessRequest) returns (Empty);
+
+  rpc InviteUserToTheActiveTeam(UserInviteRequest)
+      returns (CreateEntityResponse);
+  rpc DeleteUserFromTheActiveTeam(IdRequest) returns (Empty);
+  rpc AcceptTeamInvite(IdRequest) returns (Empty);
+  rpc SelectTeam(IdRequest) returns (Empty);
+
+  rpc GetUserMeta(AccessRequest) returns (UserMetaResponse);
+}
+
+service CruxAudit {
+  rpc GetAuditLog(AccessRequest) returns (AuditLogListResponse);
+}
+
+service CruxHealth { rpc getHealth(Empty) returns (Empty); }
+
+/**
+ *
+ * Common messages
+ *
+ */
+message Empty {}
+
+message ServiceIdRequest { string id = 1; }
+
+message IdRequest {
+  string id = 1;
+  string accessedBy = 2;
+}
+
+message AuditResponse {
+  string createdBy = 100;
+  google.protobuf.Timestamp createdAt = 101;
+  optional string updatedBy = 102;
+  optional google.protobuf.Timestamp updatedAt = 103;
+}
+
+message CreateEntityResponse {
+  string id = 1;
+
+  google.protobuf.Timestamp createdAt = 100;
+}
+
+message UpdateEntityResponse { google.protobuf.Timestamp updatedAt = 100; }
+
+/*
+ *
+ * Custom messages, please use comment if you add a new entity
+ *
+ */
+
+// AUDIT
+message AuditLogResponse {
+  google.protobuf.Timestamp createdAt = 100;
+  string userId = 101;
+  string identityName = 102;
+  string serviceCall = 103;
+  optional string data = 104;
+}
+
+message AuditLogListResponse { repeated AuditLogResponse data = 1000; }
+
+// TEAM
+message CreateTeamRequest {
+  string accessedBy = 2;
+
+  string name = 100;
+}
+
+message UpdateActiveTeamRequest {
+  string accessedBy = 2;
+
+  string name = 100;
+}
+
+message UserInviteRequest {
+  string accessedBy = 2;
+
+  string email = 100;
+}
+
+message AccessRequest { string accessedBy = 2; }
+
+message UserMetaResponse {
+  ActiveTeamUser user = 100;
+
+  repeated TeamResponse teams = 1000;
+  repeated TeamResponse invitations = 1001;
+}
+
+message ActiveTeamUser {
+  string activeTeamId = 100;
+  UserRole role = 101;
+  UserStatus status = 102;
+}
+
+message TeamResponse {
+  string id = 1;
+
+  string name = 100;
+}
+
+message TeamDetailsResponse {
+  string id = 1;
+
+  string name = 100;
+
+  repeated UserResponse users = 1000;
+}
+
+enum UserRole {
+  UNKNOWN_USER_ROLE = 0;
+  USER = 1;
+  OWNER = 2;
+}
+
+enum UserStatus {
+  UNKNOWN_USER_STATUS = 0;
+  PENDING = 1;
+  VERIFIED = 2;
+}
+
+message UserResponse {
+  string id = 1;
+
+  string name = 100;
+  string email = 101;
+  UserRole role = 102;
+  UserStatus status = 103;
+}
+
+// PRODUCT
+enum ProductType {
+  UNKNOWN_PRODUCT_TYPE = 0;
+  SIMPLE = 1;
+  COMPLEX = 2;
+}
+
+enum VersionType {
+  UNKNOWN_VERSION_TYPE = 0;
+  INCREMENTAL = 1;
+  ROLLING = 2;
+}
+
+message ProductDetailsReponse {
+  string id = 1;
+  AuditResponse audit = 2;
+
+  string name = 100;
+  optional string description = 101;
+  ProductType type = 102;
+
+  repeated VersionResponse versions = 1000;
+}
+
+message ProductReponse {
+  string id = 1;
+  AuditResponse audit = 2;
+
+  string name = 100;
+  optional string description = 101;
+  ProductType type = 102;
+}
+
+message ProductListResponse { repeated ProductReponse data = 1000; }
+
+message CreateProductRequest {
+  string accessedBy = 2;
+
+  string name = 100;
+  optional string description = 101;
+  ProductType type = 102;
+}
+
+message UpdateProductRequest {
+  string id = 1;
+  string accessedBy = 2;
+
+  string name = 100;
+  optional string description = 101;
+  optional string changelog = 102;
+}
+
+// REGISTRY
+
+message RegistryResponse {
+  string id = 1;
+  AuditResponse audit = 2;
+
+  string name = 100;
+  optional string description = 101;
+  optional string icon = 102;
+  string url = 103;
+}
+
+message RegistryListResponse { repeated RegistryResponse data = 1000; }
+
+message CreateRegistryRequest {
+  string accessedBy = 2;
+
+  string name = 100;
+  optional string description = 101;
+  optional string icon = 102;
+  string url = 103;
+  optional string user = 104;
+  optional string token = 105;
+  RegistryType type = 106;
+}
+
+message UpdateRegistryRequest {
+  string id = 1;
+  string accessedBy = 2;
+
+  string name = 100;
+  optional string description = 101;
+  optional string icon = 102;
+  string url = 103;
+  optional string user = 104;
+  optional string token = 105;
+  RegistryType type = 106;
+}
+
+message RegistryDetailsResponse {
+  string id = 1;
+  AuditResponse audit = 2;
+
+  string name = 100;
+  optional string description = 101;
+  optional string icon = 102;
+  string url = 103;
+  optional string user = 104;
+  optional string token = 105;
+  RegistryType type = 106;
+}
+
+enum RegistryType {
+  UNKNOWN_REGISTRY_TYPE = 0;
+  V2 = 1;
+  HUB = 2;
+}
+
+// VERSION
+
+message CreateVersionRequest {
+  string accessedBy = 2;
+
+  string productId = 100;
+  string name = 101;
+  optional string changelog = 102;
+  bool default = 103;
+  VersionType type = 104;
+}
+
+message UpdateVersionRequest {
+  string id = 1;
+  string accessedBy = 2;
+
+  string name = 100;
+  optional string changelog = 101;
+  bool default = 102;
+}
+
+message VersionResponse {
+  string id = 1;
+  AuditResponse audit = 2;
+
+  string name = 100;
+  string changelog = 101;
+  bool default = 102;
+  VersionType type = 103;
+  bool increasable = 104;
+}
+
+message VersionListResponse { repeated VersionResponse data = 1000; }
+
+message VersionDetailsResponse {
+  string id = 1;
+  AuditResponse audit = 2;
+
+  string name = 100;
+  string changelog = 101;
+  bool default = 102;
+  VersionType type = 103;
+  bool mutable = 104;
+  bool increasable = 105;
+
+  repeated ImageResponse images = 1000;
+  repeated DeploymentResponse deployments = 1001;
+}
+
+message IncreaseVersionRequest {
+  string id = 1;
+  string accessedBy = 2;
+
+  string name = 100;
+  optional string changelog = 101;
+}
+
+// IMAGE
+
+message ExplicitContainerConfig {
+  message Port {
+    int32 internal = 1; // internal that is bound by the container
+    int32 external = 2; // external is docker only
+  }
+  /* container ports */
+  repeated Port ports = 1;
+  /* volume mounts in a piped format */
+  repeated string mounts = 2;
+  enum NetworkMode {
+    UNKNOWN_NETWORK_MODE = 0;
+    NONE = 1;
+    HOST = 2;
+  }
+  /* could be enum, i'm not sure if it is in use */
+  optional NetworkMode networkMode = 4;
+
+  message Expose {
+    bool public = 1; // if expose is needed
+    bool tls = 2;    // if tls is needed
+  }
+  /* exposure configuration*/
+  optional Expose expose = 5;
+  optional uint64 user = 6;
+}
+
+message ContainerConfig {
+  ExplicitContainerConfig config = 100;
+
+  repeated UniqueKeyValue capabilities = 1000;
+  repeated UniqueKeyValue environment = 1001;
+}
+
+message ImageResponse {
+  string id = 1;
+
+  string name = 100;
+  string tag = 101;
+  uint32 order = 102;
+  string registryId = 103;
+  ContainerConfig config = 104;
+}
+
+message ImageListResponse { repeated ImageResponse data = 100; }
+
+message OrderVersionImagesRequest {
+  string accessedBy = 2;
+
+  string versionId = 100;
+  repeated string imageIds = 101;
+}
+
+message AddImagesToVersionRequest {
+  string accessedBy = 2;
+
+  string versionId = 100;
+  string registryId = 101;
+  repeated string imageIds = 102;
+}
+
+message UniqueKeyValue {
+  string id = 100;
+  string key = 101;
+  string value = 102;
+}
+
+message KeyValueList { repeated UniqueKeyValue data = 1000; }
+
+message PatchContainerConfig {
+  optional KeyValueList capabilities = 100;
+  optional KeyValueList environment = 101;
+  optional ExplicitContainerConfig config = 103;
+}
+
+message PatchImageRequest {
+  string id = 1;
+  string accessedBy = 2;
+
+  optional string name = 100;
+  optional string tag = 101;
+  optional PatchContainerConfig config = 102;
+}
+
+// NODE
+
+message NodeResponse {
+  string id = 1;
+  AuditResponse audit = 2;
+
+  string name = 100;
+  optional string description = 101;
+  optional string icon = 102;
+  optional string address = 103;
+  NodeConnectionStatus status = 104;
+  optional google.protobuf.Timestamp connectedAt = 105;
+}
+
+message NodeDetailsResponse {
+  string id = 1;
+  AuditResponse audit = 2;
+
+  string name = 100;
+  optional string description = 101;
+  optional string icon = 102;
+  optional string address = 103;
+  NodeConnectionStatus status = 104;
+  bool hasToken = 105;
+  optional google.protobuf.Timestamp connectedAt = 106;
+  optional NodeInstallResponse install = 107;
+  optional NodeScriptResponse script = 108;
+}
+
+message NodeListResponse { repeated NodeResponse data = 1000; }
+
+message CreateNodeRequest {
+  string accessedBy = 2;
+
+  string name = 100;
+  optional string description = 101;
+  optional string icon = 102;
+}
+
+message UpdateNodeRequest {
+  string id = 1;
+  string accessedBy = 2;
+
+  string name = 100;
+  optional string description = 101;
+  optional string icon = 102;
+}
+
+message NodeInstallResponse {
+  string command = 100;
+  google.protobuf.Timestamp expireAt = 101;
+}
+
+message NodeScriptResponse { string content = 100; }
+
+/*
+Lifecycle:
+When a node connection is alive, the status is CONNECTED.
+If it's disconnects, the status will be UNREACHABLE.
+When a node created it is UNREACHEABLE until the user completes
+the install process.
+*/
+enum NodeConnectionStatus {
+  UNKNOWN_CONNECTION_STATUS = 0;
+  // Node was not yet connected or became unreachable
+  UNREACHABLE = 1;
+  // Node is running and connected
+  CONNECTED = 2;
+}
+
+message NodeEventMessage {
+  string id = 1;
+  NodeConnectionStatus status = 100;
+  optional string address = 101;
+}
+
+message WatchContainerStatusRequest {
+  string accessedBy = 2;
+
+  string nodeId = 100;
+  optional string prefix = 101;
+}
+
+message ContainerPort {
+  int32 internal = 1;
+  int32 external = 2;
+}
+
+message ContainerStatusItem {
+  string containerId = 100;
+  string name = 101;
+  string command = 103;
+  google.protobuf.Timestamp createdAt = 104;
+  ContainerStatus status = 105;
+
+  repeated ContainerPort ports = 1000;
+}
+
+message ContainerStatusListMessage {
+  optional string prefix = 100;
+  repeated ContainerStatusItem data = 1000;
+}
+
+// DEPLOYMENT
+
+enum DeploymentStatus {
+  UNKNOWN_DEPLOYMENT_STATUS = 0;
+  PREPARING = 1;
+  IN_PROGRESS = 2;
+  SUCCESSFUL = 3;
+  FAILED = 4;
+  OBSOLATE = 5;
+  DOWNGRADED = 6;
+}
+
+message InstanceDeploymentItem {
+  string instanceId = 100;
+  ContainerStatus status = 101;
+}
+
+message DeploymentStatusMessage {
+  oneof data {
+    InstanceDeploymentItem instance = 200;
+    DeploymentStatus deploymentStatus = 201;
+  }
+
+  repeated string log = 1000;
+}
+
+message DeploymentProgressMessage {
+  string id = 1;
+
+  optional DeploymentStatus status = 100;
+  optional InstanceDeploymentItem instance = 101;
+
+  repeated string log = 1000;
+}
+
+message InstancesCreatedEventList { repeated InstanceResponse data = 1000; }
+
+message DeploymentEditEventMessage {
+  oneof data {
+    InstancesCreatedEventList instancesCreated = 200;
+    string imageIdDeleted = 201;
+  }
+}
+
+message CreateDeploymentRequest {
+  string accessedBy = 2;
+
+  string versionId = 100;
+  string nodeId = 101;
+}
+
+message UpdateDeploymentRequest {
+  string id = 1;
+  string accessedBy = 2;
+
+  string name = 100;
+  optional string descripion = 101;
+  string prefix = 102;
+}
+
+message PatchDeploymentRequest {
+  string id = 1;
+  string accessedBy = 2;
+
+  optional KeyValueList environment = 100;
+  optional PatchInstanceRequest instance = 1001;
+}
+
+message InstanceResponse {
+  string id = 1;
+  AuditResponse audit = 2;
+
+  ImageResponse image = 100;
+  optional ContainerStatus status = 101;
+  optional ContainerConfig config = 102;
+}
+
+message PatchInstanceRequest {
+  string id = 1;
+  string accessedBy = 2;
+
+  optional KeyValueList environment = 100;
+  optional KeyValueList capabilities = 101;
+  optional ExplicitContainerConfig config = 102;
+}
+
+message DeploymentListResponse { repeated DeploymentResponse data = 1000; }
+
+message DeploymentResponse {
+  string id = 1;
+  AuditResponse audit = 2;
+
+  string name = 100;
+  string prefix = 101;
+  string nodeId = 102;
+  string nodeName = 103;
+  DeploymentStatus status = 104;
+}
+
+message DeploymentDetailsResponse {
+  string id = 1;
+  AuditResponse audit = 2;
+
+  string productVersionId = 100;
+  string nodeId = 101;
+  string name = 102;
+  optional string description = 103;
+  string prefix = 104;
+  repeated UniqueKeyValue environment = 105;
+  DeploymentStatus status = 106;
+
+  repeated InstanceResponse instances = 1000;
+}
+
+enum DeploymentEventType {
+  UNKNOWN_DEPLOYMENT_EVENT_TYPE = 0;
+  DEPLOYMENT_LOG = 1;
+  DEPLOYMENT_STATUS = 2;
+  CONTAINER_STATUS = 3;
+}
+
+message DeploymentEventContainerStatus {
+  string instanceId = 1;
+  ContainerStatus status = 2;
+}
+
+message DeploymentEventLog { repeated string log = 1000; }
+
+message DeploymentEventResponse {
+  DeploymentEventType type = 100;
+  google.protobuf.Timestamp createdAt = 101;
+  oneof details {
+    DeploymentEventLog log = 200;
+    DeploymentStatus deploymentStatus = 201;
+    DeploymentEventContainerStatus containerStatus = 202;
+  }
+}
+
+message DeploymentEventListResponse {
+  repeated DeploymentEventResponse data = 1000;
+}
+
+enum ContainerStatus {
+  UNKNOWN_CONTAINER_STATUS = 0;
+  CREATED = 1;
+  RESTARTING = 2;
+  RUNNING = 3;
+  REMOVING = 4;
+  PAUSED = 5;
+  EXITED = 6;
+  DEAD = 7;
+}

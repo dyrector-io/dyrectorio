@@ -1,0 +1,16 @@
+{
+  "oops": "Opps, something went wrong.",
+  "connectionLost": "Connection lost.",
+  "invalid": "There are some errors. Please fix them.",
+  "fetchFailed": "Failed to fetch {{type}}",
+  "deletionFailed": "Failed to delete {{type}}",
+  "insecure": "Insecure connection. Some browser features are not available.",
+
+  "missingParameter": "Missing parameter",
+  "invalidArgument": "Invalid argument",
+  "notFound": "Not found",
+  "alreadyExists": "Already exists",
+  "unauthorized": "Unauthenticated",
+  "forbidden": "Forbidden",
+  "internalError": "Something went wrong. Please try again later."
+}

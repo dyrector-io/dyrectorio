@@ -1,0 +1,6 @@
+KRATOS_URL=http://sunilium.dyrector.io/kratos
+CORE_URL=https://sunilum.dyrector.io
+AUTH_URL=http://localhost:9000
+AUTH_API_KEY=test123
+RECAPTCHA_SITE_KEY=6LegQwgcAAAAALTmC7QtxpvdwK4VZhpGHn8TdQ7s
+RECAPTCHA_SECRET_KEY=6LegQwgcAAAAAFmy5mlhtJs7orIr5t-gzJJJk1_g

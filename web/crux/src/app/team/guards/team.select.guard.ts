@@ -1,0 +1,24 @@
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
+import { PrismaService } from 'src/config/prisma.service'
+import { IdRequest } from 'src/proto/proto/crux'
+
+@Injectable()
+export class TeamSelectGuard implements CanActivate {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.getArgByIndex<IdRequest>(0)
+
+    const team = await this.prisma.usersOnTeams.findUnique({
+      rejectOnNotFound: false,
+      where: {
+        userId_teamId: {
+          userId: request.accessedBy,
+          teamId: request.id,
+        },
+      },
+    })
+
+    return !!team
+  }
+}

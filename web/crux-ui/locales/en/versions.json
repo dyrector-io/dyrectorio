@@ -1,0 +1,24 @@
+{
+    "new": "New version",
+    "default": "Default",
+    "changelog": "Changelog",
+    "incremental": "Incremental",
+    "rolling": "Rolling",
+    
+    "deleteDescription": "If you proceed, you will lose all your data related to {{name}}, all configurations, all verison history, all deployments. This action is not revocable.",
+
+    "deployments": "Deployments",
+    "images": "Images",
+    "increase": "Increase",
+    "increaseName": "Increase {{name}}",
+
+    "showAll": "Show all",
+    "changelogName": "Changelog: {{name}}",
+
+    "reorderImages": "Reorder images",
+    "saveOrder": "Save image order",
+    "addDeployment": "Add deployment",
+    "addImage": "Add image",
+
+    "deploymentName": "Deployment name"
+}

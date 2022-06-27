@@ -1,0 +1,93 @@
+version: v0.8.2-alpha.1
+
+serve:
+  public:
+    base_url: ${KRATOS_URL}
+
+  admin:
+    base_url: http://172.17.0.1:9434
+
+selfservice:
+  default_browser_return_url: ${AUTH_URL}
+  allowed_return_urls:
+    - ${AUTH_URL}
+
+  methods:
+    password:
+      enabled: true
+    oidc:
+      enabled: false
+
+  flows:
+    error:
+      ui_url: ${AUTH_URL}/error
+
+    settings:
+      ui_url: ${AUTH_URL}/settings
+      privileged_session_max_age: 5m
+
+    recovery:
+      enabled: true
+      ui_url: ${AUTH_URL}/recovery
+      after:
+        default_browser_return_url: ${AUTH_URL}/settings
+
+    verification:
+      enabled: true
+      ui_url: ${AUTH_URL}/verify
+      after:
+        default_browser_return_url: ${AUTH_URL}/settings
+
+    logout:
+      after:
+        default_browser_return_url: ${AUTH_URL}/login
+
+    login:
+      ui_url: ${AUTH_URL}/login
+      lifespan: 10m
+      after:
+        password:
+          default_browser_return_url: ${AUTH_URL}
+          hooks:
+            - hook: require_verified_address
+
+    registration:
+      lifespan: 10m
+      ui_url: ${AUTH_URL}/registration
+      before:
+        hooks:
+          - hook: web_hook
+            config:
+              url: ${AUTH_URL}/api/admin/hooks/registration
+              method: 'POST'
+              body: file:///etc/config/kratos/hooks/empty.jsonnet
+              auth:
+                type: api_key
+                config:
+                  name: Authorization
+                  value: ${AUTH_API_KEY}
+                  in: header
+      after:
+        password:
+          hooks:
+            - hook: session
+
+hashers:
+  argon2:
+    parallelism: 1
+    memory: 128MB
+    iterations: 2
+    salt_length: 16
+    key_length: 16
+
+identity:
+  default_schema_id: default
+  schemas:
+    - id: default
+      url: file:///etc/config/kratos/identity.schema.json
+
+courier:
+  smtp:
+    from_name: dyrector.io
+    from_address: noreply@dyrector.io
+  template_override_path: /etc/config/kratos/templates

@@ -1,0 +1,20 @@
+{
+  "add": "Add product",
+  "new": "New product",
+  "tips": "A description about what products are good for.",
+
+  "name": "Name",
+  "description": "Description",
+  "altPicture": "Picture of {{name}}",
+
+  "simple": "Simple",
+  "complex": "Complex",
+
+  "addDetailsItem": "Add version",
+
+  "deleteDescription": "If you proceed, you will lose all your data related to {{name}}, all configurations, all verison history, all deployments. This action is not revocable.",
+
+  "errors": {
+    "alreadyExists": "Product name taken."
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "extends": [
+    "next/core-web-vitals", 
+    "prettier"
+  ],
+  "overrides": [
+    {
+      "files": "src/pages/api/**/*.ts",
+      "rules": {
+        "react-hooks/rules-of-hooks": "off"
+      }
+    }
+  ]
+}

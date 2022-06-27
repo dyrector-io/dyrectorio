@@ -1,0 +1,21 @@
+version: '3.5'
+
+services:
+  postgres:
+    container_name: crux-postgres-db
+    image: postgres:14.2-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-crux}
+      PGDATA: /data/postgres
+    ports:
+      - 5432:5432
+    restart: unless-stopped
+    networks:
+      - crux-intranet
+
+networks:
+  crux-intranet:
+    name: crux-intranet
+    external: true

@@ -1,0 +1,12 @@
+version: '3.7'
+services:
+  dagent-go:
+    image: registry.gitlab.com/dyrector_io/dyrector.io/go/dagent:latest
+    container_name: dagent-go
+    ports:
+      - 9923:8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /srv/dagent:/srv/dagent
+    env_file:
+      - ./.env

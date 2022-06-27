@@ -1,0 +1,149 @@
+image: node:17.1-alpine
+
+stages:
+  - dependencies
+  - lint
+  - test
+  - build
+  - build_docker
+  - deploy
+
+cache: &npm_cache
+  key: $CI_COMMIT_REF_SLUG-$CI_PROJECT_DIR-npm
+  paths:
+    - .npm/
+  policy: pull
+
+before_script:
+  - npm ci --arch=x64 --platform=linuxmusl --cache .npm --prefer-offline
+  - npm run disable-telemetry
+
+.docker_auth: &docker_auth
+  before_script:
+    - mkdir -p $HOME/.docker
+    - echo $DOCKER_AUTH_CONFIG > $HOME/.docker/config.json
+    - apk add --no-cache docker-compose
+
+.set_latest_env: &set_latest_env
+  - export CRUX_UI_VERSION=$CI_ENVIRONMENT_NAME
+  - export TIME_ZONE=$LATEST_TIME_ZONE
+  - export CRUX_ADDRESS=$LATEST_CRUX_ADDRESS
+  - export KRATOS_URL=$LATEST_KRATOS_URL
+
+.set_stable_build_env: &set_stable_build_env
+  - export CRUX_UI_VERSION=$CI_ENVIRONMENT_NAME
+  - export TIME_ZONE=$STABLE_TIME_ZONE
+
+install_deps:
+  stage: dependencies
+  cache:
+    <<: *npm_cache
+    policy: push
+  before_script: []
+  script:
+    - npm ci --arch=x64 --platform=linuxmusl
+  only:
+    changes:
+      - package-lock.json
+
+linter:
+  stage: lint
+  allow_failure: false
+  dependencies:
+    - install_deps
+  script:
+    - npm run lint
+    - npm run prettier
+
+unit_tests:
+  stage: test
+  dependencies:
+    - linter
+  allow_failure: false
+  script:
+    - echo 'TBD UNIT TESTS'
+  #  - npm run test
+
+e2e_tests:
+  stage: test
+  dependencies:
+    - linter
+  allow_failure: false
+  script:
+    - echo 'TBD E2E TESTS'
+
+build_app:
+  stage: build
+  allow_failure: false
+  dependencies:
+    - unit_tests
+    - e2e_tests
+  script:
+    - npm run build
+    - npm prune --production
+  artifacts:
+    paths:
+      - ./node_modules
+      - ./.next
+    expire_in: 20 minutes
+
+build_image:
+  stage: build_docker
+  image: docker:latest
+  services:
+    - docker:dind
+  dependencies:
+    - build_app
+  only:
+    - develop
+  allow_failure: false
+  cache: []
+  <<: *docker_auth
+  script:
+    - *set_latest_env
+    - docker-compose build
+    - docker-compose push
+  environment:
+    name: latest
+
+build_stable_image:
+  stage: build_docker
+  image: docker:latest
+  services:
+    - docker:dind
+  dependencies:
+    - build_app
+  only:
+    - main
+  allow_failure: false
+  cache: []
+  <<: *docker_auth
+  script:
+    - *set_stable_build_env
+    - docker-compose build
+    - docker-compose push
+  environment:
+    name: stable
+
+'Deploy latest to mogyoro':
+  image: docker:latest
+  stage: deploy
+  services:
+    - docker:dind
+  dependencies:
+    - build_image
+  only:
+    - develop
+  when: manual
+  allow_failure: false
+  tags:
+    - crux-latest
+  cache: []
+  <<: *docker_auth
+  script:
+    - *set_latest_env
+    - docker-compose pull
+    - docker-compose down
+    - docker-compose up -d
+  environment:
+    name: latest

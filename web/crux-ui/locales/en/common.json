@@ -1,0 +1,109 @@
+{
+  "logout": "Log out",
+  "email": "e-mail",
+
+  "filters": "Filters",
+  "search": "Search",
+  "id": "#",
+  "name": "Name",
+  "description": "Description",
+  "icon": "Icon",
+  "updatedAt": "Update at",
+  "createdAt": "Created at",
+  "date": "Date",
+  "type": "Type",
+  "status": "Status",
+  "loading": "Loading...",
+  "yourTeams": "Your teams",
+
+  "editName": "Edit {{name}}",
+  "add": "Add",
+  "edit": "Edit",
+  "save": "Save",
+  "close": "Close",
+  "continue": "Continue",
+  "discard": "Discard",
+  "create": "Create",
+  "cancel": "Cancel",
+  "goBack": "Go back",
+  "back": "Back",
+  "copy": "Copy",
+  "copied": "Copied.",
+  "delete": "Delete",
+  "showAll": "Show all",
+  "inspect": "Inspect",
+  "deploy": "Deploy",
+
+  "confirm": "Confirm",
+  "confirmDelete": "Are you sure you want to delete {{name}}?",
+
+  "home": "Home",
+  "products": "Products",
+  "config": "Config",
+  "registries": "Registries",
+  "nodes": "Nodes",
+  "settings": "Settings",
+  "team": "Team",
+  "audit": "Audit Log",
+  "profile": "Profile",
+  "roleOwner": "Owner",
+  "roleUser": "User",
+
+  "product": "Product",
+  "version": "Version",
+  "deployment": "Deployment",
+  "node": "Node",
+  "registry": "Registry",
+
+  "prefix": "Prefix",
+
+  "minutesSeconds": "{{minutes}} min {{seconds}} s",
+  "seconds": "{{seconds}}s",
+  "secondsAgo": "{{seconds}} seconds ago",
+  "minutesAgo": "{{minutes}} minutes ago",
+  "hoursAgo": "{{hours}} hours ago",
+  "daysAgo": "{{days}} daysAgo",
+
+  "key": "Key",
+  "value": "Value",
+  "keyMustUnique": "Keys must be unique",
+
+  "badges": {
+    "dog": "Dog icon",
+    "kangaroo": "Kangaroo icon",
+    "lion": "Lion icon",
+    "monkey": "Monkey icon",
+    "penguin": "Penguin icon",
+    "shark": "Shark icon"
+  },
+
+  "nodeStatuses": {
+    "connecting": "Connecting",
+    "running": "Running",
+    "unreachable": "Unreachable"
+  },
+
+  "deploymentStatuses": {
+    "successful": "Successful",
+    "failed": "Failed",
+    "obsolate": "Obsolate",
+    "unknown": "Unknown"
+  },
+
+  "containerStatuses": {
+    "created": "Created",
+    "restating": "Restatring",
+    "running": "Running",
+    "removing": "Removing",
+    "paused": "Paused",
+    "exited": "Exited",
+    "dead": "Dead"
+  },
+
+  "dyoWhiteLogo": "dyrector.io's white logo",
+  "dyoLogo": "dyrector.io's logo",
+  "heart": "Heart",
+  "userAvatar": "User's avatar",
+  "teamAvatar": "Team's avatar",
+  "rightArrowIcon": "Right arrow icon"
+}

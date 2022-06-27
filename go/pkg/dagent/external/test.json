@@ -1,0 +1,19 @@
+{
+  "RequestID": "12345",
+  "registry": "reg.dyrector.io",
+  "imageName": "library/nginx-labeled:latest",
+  "tag": "latest",
+  "containerConfig": {
+    "name": "nginx-test",
+    "ports": [{ "internal": 80, "external": 8090 }],
+    "mounts": ["data|/usr/share/nginx/html"],
+    "configContainer": {
+      "image": "reg.dyrector.io/library/nginx-labelled:latest",
+      "volume": "data",
+      "path": "/data/**"
+    }
+  },
+  "instanceConfig": {
+    "prefix": "std"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "registries": "Registries",
+  "tips": "A description about what registries are good for.",
+  "add": "Add registry",
+  "new": "New registry",
+  "user": "User",
+  "token": "Token or password",
+  "url": "Url",
+  "v2": "Registry v2",
+  "hub": "Docker hub",
+
+  "deleteDescription": "If you proceed, you will lose all your data related to {{name}}. This action is not revocable."
+}

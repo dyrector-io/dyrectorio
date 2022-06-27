@@ -1,0 +1,24 @@
+{
+  "add": "Add node",
+  "new": "New node",
+  "tips": "A description about what nodes are good for.",
+
+  "revoke": "Revoke token",
+  "confirmRevoke": "Are you sure you want to revoke the token?",
+
+  "setup": "Setup",
+  "installScript": "Install script",
+  "scriptExpiresIn": "The script expires in:",
+  "address": "Address",
+  "aboutScript": "Requirements",
+  "status": "Status",
+  "setupExplanation": "A host running Docker compatible container daemon",
+  "saveYourNode": "Please save your node to begin the setup process.",
+  "connection": "Connection",
+  "connectionExplanation": "If the setup was successful, you will see your node appear here.",
+  "command": "Command",
+  "script": "Script",
+  "uptime": "Uptime",
+
+  "deleteDescription": "If you proceed, you will lose all your data related to {{name}}. This action is not revocable."
+}

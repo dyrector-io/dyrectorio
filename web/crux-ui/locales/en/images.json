@@ -1,0 +1,15 @@
+{
+    "add": "Add image",
+    "registry": "Registry",
+    "imageName": "Image name",
+    "tag": "Tag",
+    "config": "Config",
+    "json": "JSON",
+    "filterMinChars": "Minimum filter length is {{length}} character",
+    "availableTags": "Available tags",
+    "environment": "Environment",
+    "capabilities": "Capabilities",
+    "selectTag": "You must select a tag",
+
+    "deleteDescription": "If you proceed, you will lose all your data related to {{name}}, in this version. This action is not revocable."
+}

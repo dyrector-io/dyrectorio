@@ -1,0 +1,138 @@
+/**
+ * Container agent interface messages and service definitions
+ * Logs, statuses, deployments
+ *
+ */
+syntax = "proto3";
+
+package agent;
+option go_package = "gitlab.com/dyrector_io/dyrector.io/protobuf/go/agent";
+
+import "proto/crux.proto";
+
+/**
+ * Service handling deployment of containers and fetching statuses
+ */
+service Agent {
+  /**
+   * Subscribe with pre-assigned AgentID, waiting for incoming
+   * deploy requests and prefix status requests.
+   * In both cases, separate, shorter-living channels are opened.
+   * For deployment status reports, closed when ended.
+   * For prefix status reports, should be closed by the server.
+   */
+  rpc Connect(AgentInfo) returns (stream AgentCommand);
+  rpc DeploymentStatus(stream crux.DeploymentStatusMessage) returns (Empty);
+  rpc ContainerStatus(stream crux.ContainerStatusListMessage) returns (Empty);
+}
+
+message Empty {}
+
+/**
+ *
+ *
+ */
+message AgentInfo { string id = 1; }
+
+message AgentCommand {
+  oneof command {
+    VersionDeployRequest deploy = 1;
+    ContainerStatusRequest containerStatus = 2;
+  }
+}
+
+/**
+ * This is more of a placeholder, we could include more, or return this
+ * instantly after validation success.
+ */
+message DeployResponse { bool started = 1; }
+
+message VersionDeployRequest {
+  string id = 1;
+  string versionName = 2;
+  string releaseNotes = 3;
+
+  repeated DeployRequest requests = 4;
+}
+
+/**
+ * Deploys a single container
+ *
+ */
+message DeployRequest {
+
+  string id = 1;
+
+  message InstanceConfig {
+    /*
+    containerPreName, mapped into host folder structure,
+    used as namespace id
+    */
+    string prefix = 1;
+    optional string mountPath = 2; // mount path of instance (docker only)
+    message Environment { repeated string env = 1; }
+    optional Environment environment = 3; // environment variable map (piped)
+    optional string repositoryPrefix = 4; // registry repo prefix
+  }
+  /* InstanceConfig is set for multiple containers */
+  InstanceConfig instanceConfig = 2;
+
+  message ContainerConfig {
+    /* Container name - must have, used by everthing */
+    string name = 1;
+    /* Container prefix */
+    optional string prefix = 2;
+    message Port {
+      int32 internal = 1; // internal that is bound by the container
+      int32 external = 3; // external is docker only
+    }
+    /* container ports */
+    repeated Port ports = 3;
+    /* volume mounts in a piped format */
+    repeated string mounts = 4;
+    /* environment variables in a piped format  */
+    repeated string environments = 5;
+    /* could be enum, i'm not sure if it is in use */
+    optional string networkMode = 6;
+    enum RuntimeConfigType {
+      /* appconfig will be parsed into environment variables */
+      DOTNET_APPCONFIG = 0;
+    }
+    // runtime config type if given, magic can happen
+    optional RuntimeConfigType runtimeConfigType = 7;
+    message Expose {
+      bool public = 1; // if expose is needed
+      bool tls = 2;    // if tls is needed
+    }
+    /* exposure configuration*/
+    optional Expose expose = 8;
+
+    message ConfigContainer {
+      string image = 1;
+      string volume = 2;
+      string path = 3;
+      bool keepFiles = 4;
+    }
+    /* Config container is started before the container and contents are copied
+     * to the volume set */
+    optional ConfigContainer configContainer = 9;
+    /* userId that is used to run the container, number */
+    int64 user = 10;
+  }
+
+  /* Runtime info and requirements of a container */
+  ContainerConfig containerConfig = 3;
+  optional string runtimeConfig = 4;
+  optional string registry = 5;
+  string imageName = 6;
+  string tag = 7;
+  message RegistryAuth {
+    string name = 1;
+    string url = 2;
+    string user = 3;
+    string password = 4;
+  }
+  optional RegistryAuth registryAuth = 8;
+}
+
+message ContainerStatusRequest { optional string prefix = 1; }

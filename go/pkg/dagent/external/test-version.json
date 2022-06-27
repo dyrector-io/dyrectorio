@@ -1,0 +1,22 @@
+{
+  "releaseNotes": "Version 1.2.4: \n- new feature 1\n- new feature 2\n- fixes\n- cleanup\n- migration",
+  "version": "1.2.4-dev",
+  "deployImageRequest": [
+    {
+      "ContainerConfig": "ewogICAgICAgICJjb250YWluZXIiOiAibmdpbngtMSIsCiAgICAgICAgInBvcnQiOiBbCiAgICAgICAgICB7CiAgICAgICAgICAgICJleHBvc2VkUG9ydCI6IDgwLAogICAgICAgICAgICAicG9ydEJpbmRpbmciOiA5MDIwCiAgICAgICAgICB9CiAgICAgICAgXQogICAgICB9",
+      "ImageId": "a7944a44-4780-40ff-ae6b-78de88e4ced2",
+      "ImageName": "nginx",
+      "InstanceConfig": "ewogICAgICAgICJjb250YWluZXJQcmVOYW1lIjogInZlcnNpb24tdGVzdCIKICAgICAgfQ==",
+      "RequestId": "90e359f6-b4d1-4165-b0ab-8de247106c25",
+      "Tag": "latest"
+    },
+    {
+      "ContainerConfig": "ewogICAgICAgICJjb250YWluZXIiOiAibmdpbngtMiIsCiAgICAgICAgInBvcnQiOiBbCiAgICAgICAgICB7CiAgICAgICAgICAgICJleHBvc2VkUG9ydCI6IDgwLAogICAgICAgICAgICAicG9ydEJpbmRpbmciOiA5MDMwCiAgICAgICAgICB9CiAgICAgICAgXQogICAgICB9",
+      "ImageId": "a7944a44-4780-40ff-ae6b-78de88e4ced3",
+      "ImageName": "nginx",
+      "InstanceConfig": "ewogICAgICAgICJjb250YWluZXJQcmVOYW1lIjogInZlcnNpb24tdGVzdCIKICAgICAgfQ==",
+      "RequestId": "90e359f6-b4d1-4165-b0ab-8de247106c26",
+      "Tag": "latest"
+    }
+  ]
+}

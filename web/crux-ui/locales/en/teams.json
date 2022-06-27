@@ -1,0 +1,16 @@
+{
+    "invite": "Invite",
+    "send": "Send",
+    "role": "Role",
+    "inviteMember": "Invite team member to {{name}}",
+    "tips": "Users in your team will be able to access everything.",
+
+    "accept": "Accept",
+    "createTeam": "Create new team",
+    "youHaveBeenInvited": "You have been invited to team {{name}}",
+    "acceptSuccess": "You have successfully accepted the invitation to team {{name}}",
+    
+    "errors": {
+        "preconditionFailed": "Invitation link expired"
+    }
+}

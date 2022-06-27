@@ -1,0 +1,11 @@
+{
+    "serviceStatus": "Service status",
+    "auth": "Authentication Service",
+    "api": "Api",
+
+    "serviceStatuses": {
+        "unavailable": "Unavailable",
+        "disrupted": "Disrupted",
+        "operational": "Operational"
+    }
+}

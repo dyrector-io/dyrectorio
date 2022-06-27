@@ -1,0 +1,1695 @@
+basePath: /v1
+definitions:
+  blkiodev.ThrottleDevice:
+    properties:
+      path:
+        type: string
+      rate:
+        type: integer
+    type: object
+  blkiodev.WeightDevice:
+    properties:
+      path:
+        type: string
+      weight:
+        type: integer
+    type: object
+  container.Config:
+    properties:
+      argsEscaped:
+        description: True if command is already escaped (meaning treat as a command
+          line) (Windows specific).
+        type: boolean
+      attachStderr:
+        description: Attach the standard error
+        type: boolean
+      attachStdin:
+        description: Attach the standard input, makes possible user interaction
+        type: boolean
+      attachStdout:
+        description: Attach the standard output
+        type: boolean
+      cmd:
+        description: Command to run when starting the container
+        items:
+          type: string
+        type: array
+      domainname:
+        description: Domainname
+        type: string
+      entrypoint:
+        description: Entrypoint to run when starting the container
+        items:
+          type: string
+        type: array
+      env:
+        description: List of environment variable to set in the container
+        items:
+          type: string
+        type: array
+      exposedPorts:
+        $ref: '#/definitions/nat.PortSet'
+        description: List of exposed ports
+      healthcheck:
+        $ref: '#/definitions/container.HealthConfig'
+        description: Healthcheck describes how to check the container is healthy
+      hostname:
+        description: Hostname
+        type: string
+      image:
+        description: Name of the image as it was passed by the operator (e.g. could
+          be symbolic)
+        type: string
+      labels:
+        additionalProperties:
+          type: string
+        description: List of labels set to this container
+        type: object
+      macAddress:
+        description: Mac Address of the container
+        type: string
+      networkDisabled:
+        description: Is network disabled
+        type: boolean
+      onBuild:
+        description: ONBUILD metadata that were defined on the image Dockerfile
+        items:
+          type: string
+        type: array
+      openStdin:
+        description: Open stdin
+        type: boolean
+      shell:
+        description: Shell for shell-form of RUN, CMD, ENTRYPOINT
+        items:
+          type: string
+        type: array
+      stdinOnce:
+        description: If true, close stdin after the 1 attached client disconnects.
+        type: boolean
+      stopSignal:
+        description: Signal to stop a container
+        type: string
+      stopTimeout:
+        description: Timeout (in seconds) to stop a container
+        type: integer
+      tty:
+        description: Attach standard streams to a tty, including stdin if it is not
+          closed.
+        type: boolean
+      user:
+        description: User that will run the command(s) inside the container, also
+          support user:group
+        type: string
+      volumes:
+        additionalProperties:
+          type: object
+        description: List of volumes (mounts) used for the container
+        type: object
+      workingDir:
+        description: Current directory (PWD) in the command will be launched
+        type: string
+    type: object
+  container.DeviceMapping:
+    properties:
+      cgroupPermissions:
+        type: string
+      pathInContainer:
+        type: string
+      pathOnHost:
+        type: string
+    type: object
+  container.DeviceRequest:
+    properties:
+      capabilities:
+        description: An OR list of AND lists of device capabilities (e.g. "gpu")
+        items:
+          items:
+            type: string
+          type: array
+        type: array
+      count:
+        description: Number of devices to request (-1 = All)
+        type: integer
+      deviceIDs:
+        description: List of device IDs as recognizable by the device driver
+        items:
+          type: string
+        type: array
+      driver:
+        description: Name of device driver
+        type: string
+      options:
+        additionalProperties:
+          type: string
+        description: Options to pass onto the device driver
+        type: object
+    type: object
+  container.HealthConfig:
+    properties:
+      interval:
+        description: Zero means to inherit. Durations are expressed as integer nanoseconds.
+        type: integer
+      retries:
+        description: |-
+          Retries is the number of consecutive failures needed to consider a container as unhealthy.
+          Zero means inherit.
+        type: integer
+      startPeriod:
+        description: The start period for the container to initialize before the retries
+          starts to count down.
+        type: integer
+      test:
+        description: |-
+          Test is the test to perform to check that the container is healthy.
+          An empty slice means to inherit the default.
+          The options are:
+          {} : inherit healthcheck
+          {"NONE"} : disable healthcheck
+          {"CMD", args...} : exec arguments directly
+          {"CMD-SHELL", command} : run command with system's default shell
+        items:
+          type: string
+        type: array
+      timeout:
+        description: Timeout is the time to wait before considering the check to have
+          hung.
+        type: integer
+    type: object
+  container.HostConfig:
+    properties:
+      CpuCount:
+        description: Applicable to Windows
+        type: integer
+      CpuPercent:
+        description: CPU percent
+        type: integer
+      CpuPeriod:
+        description: CPU CFS (Completely Fair Scheduler) period
+        type: integer
+      CpuQuota:
+        description: CPU CFS (Completely Fair Scheduler) quota
+        type: integer
+      CpuRealtimePeriod:
+        description: CPU real-time period
+        type: integer
+      CpuRealtimeRuntime:
+        description: CPU real-time runtime
+        type: integer
+      CpuShares:
+        description: Applicable to all platforms
+        type: integer
+      Dns:
+        description: List of DNS server to lookup
+        items:
+          type: string
+        type: array
+      DnsOptions:
+        description: List of DNSOption to look for
+        items:
+          type: string
+        type: array
+      DnsSearch:
+        description: List of DNSSearch to look for
+        items:
+          type: string
+        type: array
+      NanoCpus:
+        description: CPU quota in units of 10<sup>-9</sup> CPUs.
+        type: integer
+      autoRemove:
+        description: Automatically remove container when it exits
+        type: boolean
+      binds:
+        description: Applicable to all platforms
+        items:
+          type: string
+        type: array
+      blkioDeviceReadBps:
+        items:
+          $ref: '#/definitions/blkiodev.ThrottleDevice'
+        type: array
+      blkioDeviceReadIOps:
+        items:
+          $ref: '#/definitions/blkiodev.ThrottleDevice'
+        type: array
+      blkioDeviceWriteBps:
+        items:
+          $ref: '#/definitions/blkiodev.ThrottleDevice'
+        type: array
+      blkioDeviceWriteIOps:
+        items:
+          $ref: '#/definitions/blkiodev.ThrottleDevice'
+        type: array
+      blkioWeight:
+        description: Block IO weight (relative weight vs. other containers)
+        type: integer
+      blkioWeightDevice:
+        items:
+          $ref: '#/definitions/blkiodev.WeightDevice'
+        type: array
+      capAdd:
+        description: Applicable to UNIX platforms
+        items:
+          type: string
+        type: array
+      capDrop:
+        description: List of kernel capabilities to remove from the container
+        items:
+          type: string
+        type: array
+      cgroup:
+        description: Cgroup to use for the container
+        type: string
+      cgroupParent:
+        description: Applicable to UNIX platforms
+        type: string
+      cgroupnsMode:
+        description: Cgroup namespace mode to use for the container
+        type: string
+      consoleSize:
+        description: Applicable to Windows
+        items:
+          type: integer
+        type: array
+      containerIDFile:
+        description: File (path) where the containerId is written
+        type: string
+      cpusetCpus:
+        description: CpusetCpus 0-2, 0,1
+        type: string
+      cpusetMems:
+        description: CpusetMems 0-2, 0,1
+        type: string
+      deviceCgroupRules:
+        description: List of rule to be added to the device cgroup
+        items:
+          type: string
+        type: array
+      deviceRequests:
+        description: List of device requests for device drivers
+        items:
+          $ref: '#/definitions/container.DeviceRequest'
+        type: array
+      devices:
+        description: List of devices to map inside the container
+        items:
+          $ref: '#/definitions/container.DeviceMapping'
+        type: array
+      extraHosts:
+        description: List of extra hosts
+        items:
+          type: string
+        type: array
+      groupAdd:
+        description: List of additional groups that the container process will run
+          as
+        items:
+          type: string
+        type: array
+      init:
+        description: Run a custom init inside the container, if null, use the daemon's
+          configured settings
+        type: boolean
+      iomaximumBandwidth:
+        description: Maximum IO in bytes per second for the container system drive
+        type: integer
+      iomaximumIOps:
+        description: Maximum IOps for the container system drive
+        type: integer
+      ipcMode:
+        description: IPC namespace to use for the container
+        type: string
+      isolation:
+        description: Isolation technology of the container (e.g. default, hyperv)
+        type: string
+      kernelMemory:
+        description: 'Kernel memory limit (in bytes), Deprecated: kernel 5.4 deprecated
+          kmem.limit_in_bytes'
+        type: integer
+      kernelMemoryTCP:
+        description: Hard limit for kernel TCP buffer memory (in bytes)
+        type: integer
+      links:
+        description: List of links (in the name:alias form)
+        items:
+          type: string
+        type: array
+      logConfig:
+        $ref: '#/definitions/container.LogConfig'
+        description: Configuration of the logs for this container
+      maskedPaths:
+        description: MaskedPaths is the list of paths to be masked inside the container
+          (this overrides the default set of paths)
+        items:
+          type: string
+        type: array
+      memory:
+        description: Memory limit (in bytes)
+        type: integer
+      memoryReservation:
+        description: Memory soft limit (in bytes)
+        type: integer
+      memorySwap:
+        description: Total memory usage (memory + swap); set `-1` to enable unlimited
+          swap
+        type: integer
+      memorySwappiness:
+        description: Tuning container memory swappiness behaviour
+        type: integer
+      mounts:
+        description: Mounts specs used by the container
+        items:
+          $ref: '#/definitions/mount.Mount'
+        type: array
+      networkMode:
+        description: Network mode to use for the container
+        type: string
+      oomKillDisable:
+        description: Whether to disable OOM Killer or not
+        type: boolean
+      oomScoreAdj:
+        description: Container preference for OOM-killing
+        type: integer
+      pidMode:
+        description: PID namespace to use for the container
+        type: string
+      pidsLimit:
+        description: Setting PIDs limit for a container; Set `0` or `-1` for unlimited,
+          or `null` to not change.
+        type: integer
+      portBindings:
+        $ref: '#/definitions/nat.PortMap'
+        description: Port mapping between the exposed port (container) and the host
+      privileged:
+        description: Is the container in privileged mode
+        type: boolean
+      publishAllPorts:
+        description: Should docker publish all exposed port for the container
+        type: boolean
+      readonlyPaths:
+        description: ReadonlyPaths is the list of paths to be set as read-only inside
+          the container (this overrides the default set of paths)
+        items:
+          type: string
+        type: array
+      readonlyRootfs:
+        description: Is the container root filesystem in read-only
+        type: boolean
+      restartPolicy:
+        $ref: '#/definitions/container.RestartPolicy'
+        description: Restart policy to be used for the container
+      runtime:
+        description: Runtime to use with this container
+        type: string
+      securityOpt:
+        description: List of string values to customize labels for MLS systems, such
+          as SELinux.
+        items:
+          type: string
+        type: array
+      shmSize:
+        description: Total shm memory usage
+        type: integer
+      storageOpt:
+        additionalProperties:
+          type: string
+        description: Storage driver options per container.
+        type: object
+      sysctls:
+        additionalProperties:
+          type: string
+        description: List of Namespaced sysctls used for the container
+        type: object
+      tmpfs:
+        additionalProperties:
+          type: string
+        description: List of tmpfs (mounts) used for the container
+        type: object
+      ulimits:
+        description: List of ulimits to be set in the container
+        items:
+          $ref: '#/definitions/units.Ulimit'
+        type: array
+      usernsMode:
+        description: The user namespace to use for the container
+        type: string
+      utsmode:
+        description: UTS namespace to use for the container
+        type: string
+      volumeDriver:
+        description: Name of the volume driver used to mount volumes
+        type: string
+      volumesFrom:
+        description: List of volumes to take from other container
+        items:
+          type: string
+        type: array
+    type: object
+  container.LogConfig:
+    properties:
+      config:
+        additionalProperties:
+          type: string
+        type: object
+      type:
+        type: string
+    type: object
+  container.RestartPolicy:
+    properties:
+      maximumRetryCount:
+        type: integer
+      name:
+        type: string
+    type: object
+  model.ContainerStatusResponse:
+    properties:
+      repository:
+        type: string
+      state:
+        type: string
+      status:
+        type: string
+      tag:
+        type: string
+    required:
+    - repository
+    - state
+    - status
+    - tag
+    type: object
+  model.Error:
+    properties:
+      description:
+        type: string
+      error:
+        type: string
+      value:
+        type: string
+    type: object
+  model.ErrorResponse:
+    properties:
+      errors:
+        items:
+          $ref: '#/definitions/model.Error'
+        type: array
+    type: object
+  model.TraefikDeployRequest:
+    properties:
+      TLS:
+        description: 'if services exposed with certs, default: false'
+        type: boolean
+      acmeMail:
+        description: the email address for expiry notifications, sent by acme
+        type: string
+      logLevel:
+        description: LogLevel defaults to INFO
+        type: string
+    type: object
+  model.TraefikDeployResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  model.UpdateWebhook:
+    properties:
+      token:
+        type: string
+    required:
+    - token
+    type: object
+  mount.BindOptions:
+    properties:
+      nonRecursive:
+        type: boolean
+      propagation:
+        type: string
+    type: object
+  mount.Driver:
+    properties:
+      name:
+        type: string
+      options:
+        additionalProperties:
+          type: string
+        type: object
+    type: object
+  mount.Mount:
+    properties:
+      bindOptions:
+        $ref: '#/definitions/mount.BindOptions'
+      consistency:
+        type: string
+      readOnly:
+        type: boolean
+      source:
+        description: |-
+          Source specifies the name of the mount. Depending on mount type, this
+          may be a volume name or a host path, or even ignored.
+          Source is not supported for tmpfs (must be an empty value)
+        type: string
+      target:
+        type: string
+      tmpfsOptions:
+        $ref: '#/definitions/mount.TmpfsOptions'
+      type:
+        type: string
+      volumeOptions:
+        $ref: '#/definitions/mount.VolumeOptions'
+    type: object
+  mount.TmpfsOptions:
+    properties:
+      mode:
+        description: Mode of the tmpfs upon creation
+        type: integer
+      sizeBytes:
+        description: |-
+          Size sets the size of the tmpfs, in bytes.
+
+          This will be converted to an operating system specific value
+          depending on the host. For example, on linux, it will be converted to
+          use a 'k', 'm' or 'g' syntax. BSD, though not widely supported with
+          docker, uses a straight byte value.
+
+          Percentages are not supported.
+        type: integer
+    type: object
+  mount.VolumeOptions:
+    properties:
+      driverConfig:
+        $ref: '#/definitions/mount.Driver'
+      labels:
+        additionalProperties:
+          type: string
+        type: object
+      noCopy:
+        type: boolean
+    type: object
+  nat.PortBinding:
+    properties:
+      HostIp:
+        description: HostIP is the host IP Address
+        type: string
+      hostPort:
+        description: HostPort is the host port number
+        type: string
+    type: object
+  nat.PortMap:
+    additionalProperties:
+      items:
+        $ref: '#/definitions/nat.PortBinding'
+      type: array
+    type: object
+  nat.PortSet:
+    additionalProperties:
+      type: object
+    type: object
+  network.Address:
+    properties:
+      addr:
+        type: string
+      prefixLen:
+        type: integer
+    type: object
+  network.EndpointIPAMConfig:
+    properties:
+      ipv4Address:
+        type: string
+      ipv6Address:
+        type: string
+      linkLocalIPs:
+        items:
+          type: string
+        type: array
+    type: object
+  network.EndpointSettings:
+    properties:
+      aliases:
+        items:
+          type: string
+        type: array
+      driverOpts:
+        additionalProperties:
+          type: string
+        type: object
+      endpointID:
+        type: string
+      gateway:
+        type: string
+      globalIPv6Address:
+        type: string
+      globalIPv6PrefixLen:
+        type: integer
+      ipaddress:
+        type: string
+      ipamconfig:
+        $ref: '#/definitions/network.EndpointIPAMConfig'
+        description: Configurations
+      ipprefixLen:
+        type: integer
+      ipv6Gateway:
+        type: string
+      links:
+        items:
+          type: string
+        type: array
+      macAddress:
+        type: string
+      networkID:
+        description: Operational data
+        type: string
+    type: object
+  types.Container:
+    properties:
+      Id:
+        type: string
+      command:
+        type: string
+      created:
+        type: integer
+      hostConfig:
+        properties:
+          networkMode:
+            type: string
+        type: object
+      image:
+        type: string
+      imageID:
+        type: string
+      labels:
+        additionalProperties:
+          type: string
+        type: object
+      mounts:
+        items:
+          $ref: '#/definitions/types.MountPoint'
+        type: array
+      names:
+        items:
+          type: string
+        type: array
+      networkSettings:
+        $ref: '#/definitions/types.SummaryNetworkSettings'
+      ports:
+        items:
+          $ref: '#/definitions/types.Port'
+        type: array
+      sizeRootFs:
+        type: integer
+      sizeRw:
+        type: integer
+      state:
+        type: string
+      status:
+        type: string
+    type: object
+  types.ContainerJSON:
+    properties:
+      Id:
+        type: string
+      appArmorProfile:
+        type: string
+      args:
+        items:
+          type: string
+        type: array
+      config:
+        $ref: '#/definitions/container.Config'
+      created:
+        type: string
+      driver:
+        type: string
+      execIDs:
+        items:
+          type: string
+        type: array
+      graphDriver:
+        $ref: '#/definitions/types.GraphDriverData'
+      hostConfig:
+        $ref: '#/definitions/container.HostConfig'
+      hostnamePath:
+        type: string
+      hostsPath:
+        type: string
+      image:
+        type: string
+      logPath:
+        type: string
+      mountLabel:
+        type: string
+      mounts:
+        items:
+          $ref: '#/definitions/types.MountPoint'
+        type: array
+      name:
+        type: string
+      networkSettings:
+        $ref: '#/definitions/types.NetworkSettings'
+      node:
+        $ref: '#/definitions/types.ContainerNode'
+        description: Node is only propagated by Docker Swarm standalone API
+      path:
+        type: string
+      platform:
+        type: string
+      processLabel:
+        type: string
+      resolvConfPath:
+        type: string
+      restartCount:
+        type: integer
+      sizeRootFs:
+        type: integer
+      sizeRw:
+        type: integer
+      state:
+        $ref: '#/definitions/types.ContainerState'
+    type: object
+  types.ContainerNode:
+    properties:
+      IP:
+        type: string
+      addr:
+        type: string
+      cpus:
+        type: integer
+      id:
+        type: string
+      labels:
+        additionalProperties:
+          type: string
+        type: object
+      memory:
+        type: integer
+      name:
+        type: string
+    type: object
+  types.ContainerState:
+    properties:
+      dead:
+        type: boolean
+      error:
+        type: string
+      exitCode:
+        type: integer
+      finishedAt:
+        type: string
+      health:
+        $ref: '#/definitions/types.Health'
+      oomkilled:
+        type: boolean
+      paused:
+        type: boolean
+      pid:
+        type: integer
+      restarting:
+        type: boolean
+      running:
+        type: boolean
+      startedAt:
+        type: string
+      status:
+        description: String representation of the container state. Can be one of "created",
+          "running", "paused", "restarting", "removing", "exited", or "dead"
+        type: string
+    type: object
+  types.GraphDriverData:
+    properties:
+      Data:
+        additionalProperties:
+          type: string
+        description: |-
+          data
+          Required: true
+        type: object
+      Name:
+        description: |-
+          name
+          Required: true
+        type: string
+    type: object
+  types.Health:
+    properties:
+      failingStreak:
+        description: FailingStreak is the number of consecutive failures
+        type: integer
+      log:
+        description: Log contains the last few results (oldest first)
+        items:
+          $ref: '#/definitions/types.HealthcheckResult'
+        type: array
+      status:
+        description: Status is one of Starting, Healthy or Unhealthy
+        type: string
+    type: object
+  types.HealthcheckResult:
+    properties:
+      end:
+        description: End is the time this check ended
+        type: string
+      exitCode:
+        description: 'ExitCode meanings: 0=healthy, 1=unhealthy, 2=reserved (considered
+          unhealthy), else=error running probe'
+        type: integer
+      output:
+        description: Output from last check
+        type: string
+      start:
+        description: Start is the time this check started
+        type: string
+    type: object
+  types.MountPoint:
+    properties:
+      destination:
+        type: string
+      driver:
+        type: string
+      mode:
+        type: string
+      name:
+        type: string
+      propagation:
+        type: string
+      rw:
+        type: boolean
+      source:
+        type: string
+      type:
+        type: string
+    type: object
+  types.NetworkSettings:
+    properties:
+      bridge:
+        description: Bridge is the Bridge name the network uses(e.g. `docker0`)
+        type: string
+      endpointID:
+        description: EndpointID uniquely represents a service endpoint in a Sandbox
+        type: string
+      gateway:
+        description: Gateway holds the gateway address for the network
+        type: string
+      globalIPv6Address:
+        description: GlobalIPv6Address holds network's global IPv6 address
+        type: string
+      globalIPv6PrefixLen:
+        description: GlobalIPv6PrefixLen represents mask length of network's global
+          IPv6 address
+        type: integer
+      hairpinMode:
+        description: HairpinMode specifies if hairpin NAT should be enabled on the
+          virtual interface
+        type: boolean
+      ipaddress:
+        description: IPAddress holds the IPv4 address for the network
+        type: string
+      ipprefixLen:
+        description: IPPrefixLen represents mask length of network's IPv4 address
+        type: integer
+      ipv6Gateway:
+        description: IPv6Gateway holds gateway address specific for IPv6
+        type: string
+      linkLocalIPv6Address:
+        description: LinkLocalIPv6Address is an IPv6 unicast address using the link-local
+          prefix
+        type: string
+      linkLocalIPv6PrefixLen:
+        description: LinkLocalIPv6PrefixLen is the prefix length of an IPv6 unicast
+          address
+        type: integer
+      macAddress:
+        description: MacAddress holds the MAC address for the network
+        type: string
+      networks:
+        additionalProperties:
+          $ref: '#/definitions/network.EndpointSettings'
+        type: object
+      ports:
+        $ref: '#/definitions/nat.PortMap'
+        description: Ports is a collection of PortBinding indexed by Port
+      sandboxID:
+        description: SandboxID uniquely represents a container's network stack
+        type: string
+      sandboxKey:
+        description: SandboxKey identifies the sandbox
+        type: string
+      secondaryIPAddresses:
+        items:
+          $ref: '#/definitions/network.Address'
+        type: array
+      secondaryIPv6Addresses:
+        items:
+          $ref: '#/definitions/network.Address'
+        type: array
+    type: object
+  types.Port:
+    properties:
+      IP:
+        description: Host IP address that the container's port is mapped to
+        type: string
+      PrivatePort:
+        description: |-
+          Port on the container
+          Required: true
+        type: integer
+      PublicPort:
+        description: Port exposed on the host
+        type: integer
+      Type:
+        description: |-
+          type
+          Required: true
+        type: string
+    type: object
+  types.SummaryNetworkSettings:
+    properties:
+      networks:
+        additionalProperties:
+          $ref: '#/definitions/network.EndpointSettings'
+        type: object
+    type: object
+  units.Ulimit:
+    properties:
+      hard:
+        type: integer
+      name:
+        type: string
+      soft:
+        type: integer
+    type: object
+  util.RegistryAuth:
+    properties:
+      name:
+        type: string
+      password:
+        type: string
+      url:
+        type: string
+      user:
+        type: string
+    required:
+    - name
+    - password
+    - url
+    - user
+    type: object
+  utils.ReleaseContainer:
+    properties:
+      image:
+        type: string
+      successful:
+        type: boolean
+      tag:
+        type: string
+    type: object
+  utils.ReleaseDoc:
+    properties:
+      containers:
+        items:
+          $ref: '#/definitions/utils.ReleaseContainer'
+        type: array
+      date:
+        type: string
+      releaseNotes:
+        type: string
+      version:
+        type: string
+    type: object
+  v1.ConfigContainer:
+    properties:
+      image:
+        type: string
+      keepFiles:
+        type: boolean
+      path:
+        type: string
+      volume:
+        type: string
+    required:
+    - image
+    - path
+    - volume
+    type: object
+  v1.ContainerConfig:
+    properties:
+      args:
+        description: args are added to the command
+        items:
+          type: string
+        type: array
+      command:
+        description: |-
+          the initial command of a container have mixed terms
+          docker --> k8s: entrypoint => command, cmd => args
+          we use the k8s term here
+          command is the active process of the container
+        items:
+          type: string
+        type: array
+      configContainer:
+        $ref: '#/definitions/v1.ConfigContainer'
+        description: config container is spawned as an initcontainer copying files
+          to a shared volume
+      container:
+        description: name of the container used for service, configmap names, various
+          component names
+        type: string
+      containerPreName:
+        description: ContainerPreName identifies namespace to be used
+        type: string
+      customHeaders:
+        description: custom header configuration
+        items:
+          type: string
+        type: array
+      deploymentStrategy:
+        description: |-
+          k8s-only-section
+          Deployments strategy, on deployment how to restart underlying pods
+          Values: Recreate (all-at-once), Rolling(one-by-one only if succeeds)
+        type: string
+      environment:
+        description: environment variables list
+        items:
+          type: string
+        type: array
+      expose:
+        description: create an ingress object or not
+        type: boolean
+      exposeTls:
+        description: use nginx tls configuration
+        type: boolean
+      extraLBAnnotations:
+        additionalProperties:
+          type: string
+        description: |-
+          ExtraLBAnnotations
+          lots of cloud provider specific configs can be put into annotations
+          they vary enough to have it exposed like this
+        type: object
+      healthCheck:
+        $ref: '#/definitions/v1.HealthCheckConfig'
+        description: health check configuration
+      importContainer:
+        $ref: '#/definitions/v1.ImportContainer'
+        description: import container uses rclone to copy over files before container
+          startup
+      ingressHost:
+        description: ingress hostname, env value used by default, can be overridden
+          here
+        type: string
+      ingressName:
+        description: ingress prefix before hostname, `containerName.containerPrefix.<ingress
+          root>` by default, this replaces both before root
+        type: string
+      ingressUploadLimit:
+        description: |-
+          Set endpoint upload limit, default value is: 1m
+          for docker hosts, this is needs to be bytes: 1000000 ~1m
+        type: string
+      logConfig:
+        $ref: '#/definitions/v1.LogConfig'
+        description: dagent only
+      mount:
+        description: mount list, if a name starts with @ it can be used by multiple
+          components eg @data|/target/mount/path
+        items:
+          type: string
+        type: array
+      networkMode:
+        description: bridge(container, defeault) host, none or network name
+        type: string
+      port:
+        description: portbinding list contains external/interal ports
+        items:
+          $ref: '#/definitions/v1.PortBinding'
+        type: array
+      portRanges:
+        description: Port ranges to be exposed ! no native range support in k8s
+        items:
+          $ref: '#/definitions/v1.PortRangeBinding'
+        type: array
+      proxyHeaders:
+        description: add proxy and cors headers
+        type: boolean
+      resourceConfig:
+        $ref: '#/definitions/v1.ResourceConfig'
+        description: resource management
+      restartPolicy:
+        type: string
+      runtimeConfigType:
+        description: the type of the runtime text provided eg. dotnet-appsettings
+        type: string
+      shared:
+        description: if put together with another instances consume their shared configs
+          eg. -common config map, generated from here
+        type: boolean
+      useLoadBalancer:
+        description: |-
+          Expose service using external IP
+          also sets the externalTrafficPolcy to "local"
+        type: boolean
+      user:
+        description: container user id
+        type: integer
+      volumes:
+        description: volumes
+        items:
+          $ref: '#/definitions/v1.Volume'
+        type: array
+    required:
+    - container
+    type: object
+  v1.DeployImageRequest:
+    properties:
+      ContainerConfig:
+        $ref: '#/definitions/v1.ContainerConfig'
+      ImageName:
+        type: string
+      InstanceConfig:
+        $ref: '#/definitions/v1.InstanceConfig'
+      Issuer:
+        type: string
+      Registry:
+        type: string
+      RegistryAuth:
+        $ref: '#/definitions/util.RegistryAuth'
+      RequestId:
+        type: string
+      RuntimeConfig:
+        items:
+          type: integer
+        type: array
+      Tag:
+        type: string
+    required:
+    - ContainerConfig
+    - ImageName
+    - InstanceConfig
+    - RequestId
+    - Tag
+    type: object
+  v1.DeployImageResponse:
+    properties:
+      error:
+        type: string
+      imageName:
+        type: string
+      logs:
+        items:
+          type: string
+        type: array
+      requestId:
+        type: string
+      started:
+        type: boolean
+      tag:
+        type: string
+    type: object
+  v1.DeployVersionRequest:
+    properties:
+      deployImageRequest:
+        items:
+          $ref: '#/definitions/v1.DeployImageRequest'
+        type: array
+      releaseNotes:
+        type: string
+      version:
+        type: string
+    required:
+    - version
+    type: object
+  v1.HealthCheckConfig:
+    properties:
+      Port:
+        type: integer
+      livenessProbe:
+        $ref: '#/definitions/v1.Probe'
+      readinessProbe:
+        $ref: '#/definitions/v1.Probe'
+      startupProbe:
+        $ref: '#/definitions/v1.Probe'
+    type: object
+  v1.ImportContainer:
+    properties:
+      command:
+        description: for azureblob storage use `sync :azuresync:<container>/<product-guid>/<version-guid>/<component>/<volume>`
+        type: string
+      environments:
+        additionalProperties:
+          type: string
+        description: |-
+          environment used to pass down secrets to the container
+          for Azure refer to rclone docs: https://rclone.org/azureblob/
+          one way to go either RCLONE_AZUREBLOB_ACCOUNT with RCLONE_AZUREBLOB_KEY
+          or using RCLONE_AZUREBLOB_SAS_URL list, read privileges needed
+        type: object
+      volume:
+        description: target volume name, volume name that is present on the deployment
+        type: string
+    required:
+    - command
+    - environments
+    - volume
+    type: object
+  v1.InstanceConfig:
+    properties:
+      containerPreName:
+        description: prefix of the container, identifies namespace
+        type: string
+      environment:
+        description: 'variables for instance; configmaps: name-common, name must be
+          defined'
+        items:
+          type: string
+        type: array
+      mountPath:
+        description: not-in-use
+        type: string
+      name:
+        description: name of the instance eg. configmaps
+        type: string
+      registry:
+        description: not-in-use/unimplemented; registry is taken from containerConfig
+        type: string
+      repositoryPreName:
+        description: not-in-use/unimplemented; git repository prefix
+        type: string
+      sharedEnvironment:
+        description: namespace global envs
+        items:
+          type: string
+        type: array
+      useSharedEnvs:
+        description: use preexisting namespaced envs
+        type: boolean
+    required:
+    - containerPreName
+    type: object
+  v1.LogConfig:
+    properties:
+      logDriver:
+        description: https://docs.docker.com/config/containers/logging/configure/#supported-logging-drivers
+        type: string
+      logOpts:
+        additionalProperties:
+          type: string
+        type: object
+    required:
+    - logDriver
+    type: object
+  v1.PortBinding:
+    properties:
+      exposedPort:
+        type: integer
+      portBinding:
+        type: integer
+    required:
+    - exposedPort
+    - portBinding
+    type: object
+  v1.PortRange:
+    properties:
+      from:
+        type: integer
+      to:
+        type: integer
+    required:
+    - from
+    - to
+    type: object
+  v1.PortRangeBinding:
+    properties:
+      external:
+        $ref: '#/definitions/v1.PortRange'
+      internal:
+        $ref: '#/definitions/v1.PortRange'
+    required:
+    - external
+    - internal
+    type: object
+  v1.Probe:
+    properties:
+      path:
+        type: string
+    type: object
+  v1.ResourceConfig:
+    properties:
+      limits:
+        $ref: '#/definitions/v1.Resources'
+      requests:
+        $ref: '#/definitions/v1.Resources'
+    type: object
+  v1.Resources:
+    properties:
+      cpu:
+        type: string
+      memory:
+        type: string
+    type: object
+  v1.Volume:
+    properties:
+      class:
+        description: |-
+          kubernetes only
+          storage classes depend on the cloud providers
+          `kubectl get storageclasses.storage.k8s.io`
+          usable values could be returned to the UI letting the user change
+        type: string
+      name:
+        description: name of the volume, the prefix will be the pod using it
+        type: string
+      path:
+        description: mount path of the given deployment
+        type: string
+      size:
+        description: |-
+          required size, not guaranteed that the provisioned size will match
+          some PVCs support dynamic expansion/shrink, others not
+        type: string
+      type:
+        description: |-
+          type of the volume: RO,RW,RWX,mem,tmp
+          RO: readonly
+          RW: readwrite once normal (default)
+          RWX: readwrite many, shared volume within the instance
+          mem: use inmemory tmpfs
+          tmp: use tmpfs, with disk
+        type: string
+    required:
+    - path
+    type: object
+info:
+  contact: {}
+  description: 'DAgent server API docs. Scope: container management on remote nodes.'
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: DAgent API Swagger
+  version: "2.0"
+paths:
+  /containers:
+    get:
+      consumes:
+      - '*/*'
+      description: All the running containers, like a 'docker ps -a'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/types.Container'
+            type: array
+      summary: Get list of running containers.
+      tags:
+      - runtime
+  /containers/{containerPreName}/{containerName}:
+    delete:
+      consumes:
+      - '*/*'
+      description: Delete running container by name with status and state
+      parameters:
+      - description: containerName
+        in: query
+        name: containerName
+        required: true
+        type: string
+      - description: containerPreName
+        in: query
+        name: containerPreName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+      summary: Delete running container by name
+      tags:
+      - runtime
+  /containers/{containerPreName}/{containerName}/inspect:
+    get:
+      consumes:
+      - '*/*'
+      description: Inspect an existing container by name
+      parameters:
+      - description: containerName
+        in: path
+        name: containerName
+        required: true
+        type: string
+      - description: containerPreName
+        in: path
+        name: containerPreName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.ContainerJSON'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      summary: Inspect the container by name
+      tags:
+      - runtime
+  /containers/{containerPreName}/{containerName}/logs:
+    get:
+      consumes:
+      - '*/*'
+      description: Get the logs of an existing container by name
+      parameters:
+      - description: containerName
+        in: path
+        name: containerName
+        required: true
+        type: string
+      - description: containerPreName
+        in: path
+        name: containerPreName
+        required: true
+        type: string
+      - default: 0
+        description: paginationSkip
+        in: query
+        name: skip
+        type: integer
+      - default: 100
+        description: paginationTake
+        in: query
+        name: take
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              items:
+                type: string
+              type: array
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      summary: Get the logs of the container by name
+      tags:
+      - runtime
+  /containers/{containerPreName}/{containerName}/status:
+    get:
+      consumes:
+      - '*/*'
+      description: 'Get running container by name with status and state, old url:
+        /Status/GetStatus'
+      parameters:
+      - description: containerName
+        in: path
+        name: containerName
+        required: true
+        type: string
+      - description: containerPreName
+        in: path
+        name: containerPreName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.ContainerStatusResponse'
+      summary: Get running containers by name
+      tags:
+      - runtime
+  /deploy:
+    post:
+      consumes:
+      - '*/*'
+      description: Deployment with all configuration.
+      parameters:
+      - description: Deploy a container
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/v1.DeployImageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.DeployImageResponse'
+      summary: Deploy an image from a Registry.
+      tags:
+      - deploy
+  /deploy/batch:
+    post:
+      consumes:
+      - '*/*'
+      description: Deployment with all configuration, if one of the deployment fail,
+        the response still OK
+      parameters:
+      - description: Batch deployment
+        in: body
+        name: req
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/v1.DeployImageRequest'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/v1.DeployImageResponse'
+            type: array
+      summary: Deploy an Image Batch
+      tags:
+      - deploy
+      - batch
+  /deploy/traefik:
+    delete:
+      description: Delete container with name traefik
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.TraefikDeployResponse'
+      summary: Stops/removes running traefik container
+      tags:
+      - deploy
+      - traefik
+    post:
+      consumes:
+      - application/json
+      description: Deploy with a dagent compatible configuration
+      parameters:
+      - description: Body
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/model.TraefikDeployRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.TraefikDeployResponse'
+      summary: Deploy a traefik instance, fails if there is one already running
+      tags:
+      - deploy
+      - traefik
+  /deploy/version:
+    post:
+      consumes:
+      - application/json
+      description: Deployment with all configuration and version, if one of the deployment
+        fail, the response still OK
+      parameters:
+      - description: Batch deploy with version data
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/v1.DeployVersionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/v1.DeployImageResponse'
+            type: array
+      summary: Deploy a Complete Product with Version Info
+      tags:
+      - deploy
+      - batch
+  /update:
+    post:
+      consumes:
+      - '*/*'
+      description: Incoming webhook triggers a one-shot check for updates in the configured
+        remote registry
+      parameters:
+      - description: Webhook auth data
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/model.UpdateWebhook'
+      responses:
+        "200":
+          description: ""
+      summary: Updates running agent
+      tags:
+      - monitoring
+  /versions/{instance}:
+    get:
+      description: Deployed versions are present in the filesystem as yml files per
+        instance, this queries for an instance's versions
+      parameters:
+      - description: Instance or prefix name
+        in: path
+        name: instance
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/utils.ReleaseDoc'
+            type: array
+      summary: Get deployed versions
+      tags:
+      - monitoring
+schemes:
+- http
+swagger: "2.0"

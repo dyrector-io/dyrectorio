@@ -1,0 +1,23 @@
+{
+  "logBuild": false,
+  "locales": ["en"],
+  "defaultLocale": "en",
+  "pages": {
+    "*": ["common", "head", "errors"],
+    "/404": ["404"],
+    "/500": ["500"],
+    "/products": ["products"],
+    "/products/[productId]": ["products", "versions", "images"],
+    "/products/[productId]/versions/[versionId]": [ "versions", "images"],
+    "/products/[productId]/versions/[versionId]/deployments/[deploymentId]": ["images", "deployments"],
+    "/products/[productId]/versions/[versionId]/deployments/[deploymentId]/deploy": ["deployments"],
+    "/nodes": ["nodes"],
+    "/nodes/[nodeId]": ["nodes"],
+    "/registries": ["registries"],
+    "/registries/[registryId]": ["registries"],
+    "/teams/active": ["teams"],
+    "/teams/audit-log": ["audit"],
+    "/teams/create": ["teams"],
+    "/teams/[teamId]/invite": ["teams"]
+  }
+}

@@ -1,0 +1,268 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["interactiveTransactions"]
+  binaryTargets   = ["native", "darwin-arm64"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Team {
+  id        String    @id @default(uuid()) @db.Uuid
+  name      String    @unique
+  createdAt DateTime  @default(now()) @db.Timestamptz(6)
+  createdBy String    @db.Uuid
+  updatedAt DateTime? @default(now()) @db.Timestamptz(6)
+  updatedBy String?   @db.Uuid
+
+  registries  Registry[]
+  products    Product[]
+  nodes       Node[]
+  users       UsersOnTeams[]
+  invitations UserInvitation[]
+  auditLog    AuditLog[]
+}
+
+model UserInvitation {
+  userId    String   @db.Uuid
+  email     String
+  teamId    String   @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@id([userId, teamId])
+  @@unique([userId, teamId, email])
+}
+
+model UsersOnTeams {
+  userId String  @db.Uuid
+  active Boolean @default(false)
+  owner  Boolean @default(false)
+  teamId String  @db.Uuid
+  team   Team    @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@id([userId, teamId])
+}
+
+model Node {
+  id             String    @id @default(uuid()) @db.Uuid
+  createdAt      DateTime  @default(now()) @db.Timestamptz(6)
+  createdBy      String    @db.Uuid
+  updatedAt      DateTime? @default(now()) @db.Timestamptz(6)
+  updatedBy      String?   @db.Uuid
+  name           String
+  description    String?
+  icon           String?
+  token          String?
+  address        String?
+  connectedAt    DateTime? @db.Timestamptz(6)
+  disconnectedAt DateTime? @db.Timestamptz(6)
+  team           Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId         String    @db.Uuid
+
+  deployments Deployment[]
+
+  @@unique([name, teamId])
+}
+
+model Registry {
+  id          String           @id @default(uuid()) @db.Uuid
+  createdAt   DateTime         @default(now()) @db.Timestamptz(6)
+  createdBy   String           @db.Uuid
+  updatedAt   DateTime?        @default(now()) @db.Timestamptz(6)
+  updatedBy   String?          @db.Uuid
+  name        String
+  description String?
+  icon        String?
+  url         String
+  user        String?
+  token       String?
+  type        RegistryTypeEnum
+
+  images Image[]
+  team   Team    @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId String  @db.Uuid
+
+  @@unique([name, teamId])
+}
+
+model Product {
+  id          String          @id @default(uuid()) @db.Uuid
+  createdAt   DateTime        @default(now()) @db.Timestamptz(6)
+  createdBy   String          @db.Uuid
+  updatedAt   DateTime?       @default(now()) @db.Timestamptz(6)
+  updatedBy   String?         @db.Uuid
+  name        String
+  description String?
+  type        ProductTypeEnum @default(simple)
+
+  versions Version[]
+  team     Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId   String    @db.Uuid
+
+  @@unique([name, teamId])
+}
+
+model Version {
+  id        String          @id @default(uuid()) @db.Uuid
+  createdAt DateTime        @default(now()) @db.Timestamptz(6)
+  createdBy String          @db.Uuid
+  updatedAt DateTime?       @default(now()) @db.Timestamptz(6)
+  updatedBy String?         @db.Uuid
+  name      String
+  changelog String?
+  default   Boolean         @default(false)
+  type      VersionTypeEnum @default(incremental)
+  productId String          @db.Uuid
+
+
+  product     Product                   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  images      Image[]
+  deployments Deployment[]
+  parent      VersionsOnParentVersion?  @relation("child")
+  children    VersionsOnParentVersion[] @relation("parent")
+  @@unique([productId, name])
+}
+
+model VersionsOnParentVersion {
+  versionId       String @unique @db.Uuid
+  parentVersionId String @unique @db.Uuid
+
+  child  Version @relation(name: "child", fields: [versionId], references: [id], onDelete: Cascade)
+  parent Version @relation(name: "parent", fields: [parentVersionId], references: [id])
+
+  @@id([versionId, parentVersionId])
+}
+
+model Image {
+  id         String           @id @default(uuid()) @db.Uuid
+  name       String
+  tag        String?
+  order      Int
+  versionId  String           @db.Uuid
+  registryId String           @db.Uuid
+  config     ContainerConfig?
+  instances  Instance[]
+
+  registry Registry @relation(fields: [registryId], references: [id], onDelete: Cascade)
+  version  Version  @relation(fields: [versionId], references: [id], onDelete: Cascade)
+
+  @@unique([versionId, order])
+}
+
+model ContainerConfig {
+  id           String @id @default(uuid()) @db.Uuid
+  capabilities Json?
+  config       Json?
+  environment  Json?
+
+  image   Image  @relation(fields: [imageId], references: [id], onDelete: Cascade)
+  imageId String @unique @db.Uuid
+}
+
+model Deployment {
+  id          String               @id @default(uuid()) @db.Uuid
+  createdAt   DateTime             @default(now()) @db.Timestamptz(6)
+  createdBy   String               @db.Uuid
+  updatedAt   DateTime?            @default(now()) @db.Timestamptz(6)
+  updatedBy   String?              @db.Uuid
+  name        String
+  description String?
+  prefix      String?
+  status      DeploymentStatusEnum
+  environment Json?
+  versionId   String               @db.Uuid
+  nodeId      String               @db.Uuid
+
+  version Version @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  node    Node    @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+
+  instances Instance[]
+  events    DeploymentEvent[]
+  @@unique([versionId, name])
+}
+
+model Instance {
+  id           String               @id @default(uuid()) @db.Uuid
+  updatedAt    DateTime             @default(now()) @db.Timestamptz(6)
+  status       ContainerStatusEnum?
+  deploymentId String               @db.Uuid
+  imageId      String               @db.Uuid
+
+  deployment Deployment               @relation(fields: [deploymentId], references: [id], onDelete: Cascade)
+  image      Image                    @relation(fields: [imageId], references: [id], onDelete: Cascade)
+  config     InstanceContainerConfig?
+}
+
+model InstanceContainerConfig {
+  id           String @id @default(uuid()) @db.Uuid
+  capabilities Json?
+  config       Json?
+  environment  Json?
+  instanceId   String @unique @db.Uuid
+
+  instance Instance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+}
+
+model DeploymentEvent {
+  id           String                  @id @default(uuid()) @db.Uuid
+  createdAt    DateTime                @default(now()) @db.Timestamptz(6)
+  type         DeploymentEventTypeEnum
+  value        Json
+  deploymentId String                  @db.Uuid
+
+  deployment Deployment @relation(fields: [deploymentId], references: [id])
+}
+
+model AuditLog {
+  id          String   @id @default(uuid()) @db.Uuid
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  userId      String   @db.Uuid
+  teamId      String   @db.Uuid
+  serviceCall String
+  data        Json?
+
+  team Team @relation(fields: [teamId], references: [id])
+}
+
+enum ProductTypeEnum {
+  simple
+  complex
+}
+
+enum VersionTypeEnum {
+  incremental
+  rolling
+}
+
+enum ContainerStatusEnum {
+  created
+  restating
+  running
+  removing
+  paused
+  exited
+  dead
+}
+
+enum DeploymentStatusEnum {
+  preparing
+  inProgress
+  successful
+  failed
+  obsolate
+  downgraded
+}
+
+enum DeploymentEventTypeEnum {
+  log
+  deploymentStatus
+  containerStatus
+}
+
+enum RegistryTypeEnum {
+  v2
+  hub
+}

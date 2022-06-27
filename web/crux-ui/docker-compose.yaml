@@ -1,0 +1,27 @@
+version: '3.3'
+
+services:
+  crux-ui:
+    container_name: crux-ui
+    image: registry.gitlab.com/dyrector_io/app/crux-ui/crux-ui:${CRUX_UI_VERSION}
+    build:
+      context: .
+      args:
+        - TIME_ZONE=Europe/Budapest
+    environment:
+      - KRATOS_URL=$KRATOS_URL
+      - CRUX_ADDRESS=$CRUX_ADDRESS
+      - LOG_LEVEL=$LOG_LEVEL
+    restart: unless-stopped
+    volumes:
+      - crux-ui-certs:/usr/app/certs
+    networks:
+      - crux-intranet
+
+volumes:
+  crux-ui-certs:
+
+networks:
+  crux-intranet:
+    name: crux-intranet
+    external: true

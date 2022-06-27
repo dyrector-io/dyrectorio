@@ -1,0 +1,23 @@
+version: "3.3"
+
+services:
+  crux-nginx:
+    container_name: crux-nginx
+    depends_on:
+      - kratos
+      - dyo-auth
+    build:
+      context: ./nginx
+    image: registry.gitlab.com/dyrector_io/app/dyo-auth/nginx:${AUTH_VERSION}
+    build: ./nginx
+    platform: linux/amd64
+    ports:
+      - ${NGINX_PORT}:8000
+    environment:
+      SERVER_NAME: $SERVER_NAME
+      NGINX_PORT: 8000
+      AUTH_ADDRESS: dyo-auth:3000
+      KRATOS_ADDRESS: kratos:4433
+      CRUX_UI_ADDRESS: $CRUX_UI_ADDRESS
+    networks:
+      - crux-intranet

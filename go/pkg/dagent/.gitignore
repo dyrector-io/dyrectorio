@@ -1,0 +1,17 @@
+# Project end file and VSCode
+.env
+.vscode
+__debug_bin
+
+# golangci-lint report
+code-quality-report.json
+
+# macOS specific file
+**/.DS_Store
+
+
+dev/coverage.html
+dev/profile.cov
+vendor
+dagent-bin
+srv

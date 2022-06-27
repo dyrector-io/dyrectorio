@@ -1,0 +1,31 @@
+version: "3.3"
+
+services:
+  mailslurper:
+    container_name: crux-mailslurper
+    image: oryd/mailslurper:latest-smtps
+    ports:
+      - 4436:4436
+      - 4437:4437
+    networks:
+      - crux-intranet
+
+  crux-nginx:
+    container_name: crux-nginx
+    depends_on:
+      - kratos
+      - dyo-auth
+    build:
+      context: ./nginx
+    build: ./nginx
+    platform: linux/amd64
+    ports:
+      - 8000:8000
+    environment:
+      SERVER_NAME: $SERVER_NAME
+      NGINX_PORT: $NGINX_PORT
+      AUTH_ADDRESS: $AUTH_ADDRESS
+      KRATOS_ADDRESS: kratos:4433
+      CRUX_UI_ADDRESS: $CRUX_UI_ADDRESS
+    networks:
+      - crux-intranet
