@@ -1,1 +1,28 @@
 name: web-crux-ui
+on: 
+  push:
+    paths:
+      - web/crux-ui/**
+      - .github/workflows/web-crux-ui.yml
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    container:
+      image: node:16
+    defaults:
+      run:
+        working-directory: web/crux-ui
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: npm ci --arch=x64 --platform=linuxmusl
+
+    - name: Build
+      run: npm run build

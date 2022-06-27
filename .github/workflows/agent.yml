@@ -1,1 +1,28 @@
 name: agent
+on: 
+  push:
+    paths:
+      - agent/**
+      - .github/workflows/agent.yml
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    container:
+      image: golang:alpine3.16
+    defaults:
+      run:
+        working-directory: agent
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Build crane
+      run: go build cmd/crane/crane.go 
+
+    - name: Build dagent
+      run: go build cmd/dagent/dagent.go 
