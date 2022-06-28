@@ -10,10 +10,34 @@ permissions:
   pull-requests: read
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16
+    defaults:
+      run:
+        working-directory: agent
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Run golangci lint
+      run: make lint
+  security:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16
+    defaults:
+      run:
+        working-directory: agent
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Run gosec
+      run: make security
   check:
     runs-on: ubuntu-latest
     container:
-      image: golang:alpine3.16
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16
     defaults:
       run:
         working-directory: agent
