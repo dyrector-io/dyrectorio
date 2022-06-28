@@ -12,7 +12,7 @@ import { Translate } from 'next-translate'
 import { NextRouter } from 'next/router'
 import toast from 'react-hot-toast'
 import { DyoErrorDto, DyoFetchError } from './models'
-import { Timestamp } from './models/google/protobuf/timestamp'
+import { Timestamp } from './models/grpc/google/protobuf/timestamp'
 import { ROUTE_404, ROUTE_500, ROUTE_AUTH, ROUTE_INDEX } from './routes'
 
 // date
