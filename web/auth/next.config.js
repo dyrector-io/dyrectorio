@@ -1,6 +1,6 @@
 const nextTranslate = require('next-translate')
 
 module.exports = {
-    ...nextTranslate(),
-    basePath: '/auth',
+  ...nextTranslate(),
+  basePath: '/auth',
 }

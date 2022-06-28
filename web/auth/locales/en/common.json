@@ -1,20 +1,20 @@
 {
-    "logIn": "Log in",
-    "logOut": "Log out",
-    "email": "e-mail",
-    "name": "name",
-    "password": "password",
-    "confirmPass": "confirm password",
-    "send": "Send",
-    "resend": "Resend",
+  "logIn": "Log in",
+  "logOut": "Log out",
+  "email": "e-mail",
+  "name": "name",
+  "password": "password",
+  "confirmPass": "confirm password",
+  "send": "Send",
+  "resend": "Resend",
 
-    "goBack": "Go back",
-    "back": "Back",
-    "copy": "Copy",
-    "copied": "Copied.",
-    "delete": "delete",
+  "goBack": "Go back",
+  "back": "Back",
+  "copy": "Copy",
+  "copied": "Copied.",
+  "delete": "delete",
 
-    "home": "Home",
-    "settings": "Settings",
-    "admin": "Administration"
+  "home": "Home",
+  "settings": "Settings",
+  "admin": "Administration"
 }

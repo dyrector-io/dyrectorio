@@ -1,7 +1,7 @@
 {
-    "signUp": "Sign up",
-    "createAcc": "Create account",
-    "signUpGoogle": "Sign up with Google",
-    "signUpGithub": "Sign up with Github",
-    "alreadyUser": "Already a user?"
+  "signUp": "Sign up",
+  "createAcc": "Create account",
+  "signUpGoogle": "Sign up with Google",
+  "signUpGithub": "Sign up with Github",
+  "alreadyUser": "Already a user?"
 }

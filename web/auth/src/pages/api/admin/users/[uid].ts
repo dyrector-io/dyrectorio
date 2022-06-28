@@ -1,9 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { useAuthorizeAdminMiddleware } from '@server/auth-middleware'
-import {
-  forbiddenError,
-  useErrorMiddleware,
-} from '@server/error-middleware'
+import { forbiddenError, useErrorMiddleware } from '@server/error-middleware'
 import kratos from '@server/kratos'
 import { useMiddlewares } from '@server/middlewares'
 
