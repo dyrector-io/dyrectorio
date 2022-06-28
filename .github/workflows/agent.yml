@@ -17,7 +17,7 @@ jobs:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16
       credentials:
         username: ${{ github.actor }}
-        password: ${{ secrets.CR_PAT }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     defaults:
       run:
         working-directory: agent
@@ -32,7 +32,7 @@ jobs:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16
       credentials:
         username: ${{ github.actor }}
-        password: ${{ secrets.CR_PAT }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     defaults:
       run:
         working-directory: agent
@@ -47,7 +47,7 @@ jobs:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16
       credentials:
         username: ${{ github.actor }}
-        password: ${{ secrets.CR_PAT }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     defaults:
       run:
         working-directory: agent
