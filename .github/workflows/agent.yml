@@ -15,6 +15,9 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.CR_PAT }}
     defaults:
       run:
         working-directory: agent
@@ -27,6 +30,9 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.CR_PAT }}
     defaults:
       run:
         working-directory: agent
@@ -39,6 +45,9 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.CR_PAT }}
     defaults:
       run:
         working-directory: agent
