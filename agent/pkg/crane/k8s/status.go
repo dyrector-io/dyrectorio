@@ -4,11 +4,12 @@ import (
 	"context"
 	"fmt"
 
-	"gitlab.com/dyrector_io/dyrector.io/go/internal/util"
-	v1 "gitlab.com/dyrector_io/dyrector.io/go/pkg/api/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/dyrector-io/dyrectorio/agent/internal/util"
+	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 )
 
 // DeploymentStatus get collective status of relevant k8s objects

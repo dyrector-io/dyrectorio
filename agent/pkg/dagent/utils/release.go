@@ -10,9 +10,10 @@ import (
 	"strings"
 	"time"
 
-	v1 "gitlab.com/dyrector_io/dyrector.io/go/pkg/api/v1"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/dagent/config"
 	"gopkg.in/yaml.v3"
+
+	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
 )
 
 type ReleaseDoc struct {

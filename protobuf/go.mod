@@ -1,4 +1,4 @@
-module gitlab.com/dyrector_io/dyrector.io/protobuf
+module github.com/dyrector-io/dyrectorio/protobuf
 
 go 1.18
 
@@ -15,4 +15,4 @@ require (
 	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013 // indirect
 )
 
-replace gitlab.com/dyrector_io/dyrector.io/protobuf => ./
+replace github.com/dyrector-io/dyrectorio/protobuf => ./

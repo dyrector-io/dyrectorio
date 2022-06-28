@@ -17,7 +17,6 @@ services:
       - dyo-auth
     build:
       context: ./nginx
-    build: ./nginx
     platform: linux/amd64
     ports:
       - 8000:8000

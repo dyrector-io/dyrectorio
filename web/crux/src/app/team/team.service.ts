@@ -22,7 +22,7 @@ import {
   UserMetaResponse,
   UserRole,
   UserStatus,
-} from 'src/proto/proto/crux'
+} from 'src/grpc/protobuf/proto/crux'
 import { EmailService } from '../email.service'
 import { KratosService } from '../kratos.service'
 import { TeamMapper } from './team.mapper'

@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, PipeTransform } from '@nestjs/common'
 import { PrismaService } from 'src/config/prisma.service'
 import { checkVersionMutability } from 'src/domain/version'
 import { AlreadyExistsException, InvalidArgumentException } from 'src/exception/errors'
-import { OrderVersionImagesRequest } from 'src/proto/proto/crux'
+import { OrderVersionImagesRequest } from 'src/grpc/protobuf/proto/crux'
 
 @Injectable()
 export class OrderImagesValidationPipe implements PipeTransform {

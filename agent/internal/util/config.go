@@ -5,8 +5,9 @@ import (
 	"os"
 
 	"github.com/ilyakaznacheev/cleanenv"
-	craneConfig "gitlab.com/dyrector_io/dyrector.io/go/pkg/crane/config"
-	dagentConfig "gitlab.com/dyrector_io/dyrector.io/go/pkg/dagent/config"
+
+	craneConfig "github.com/dyrector-io/dyrectorio/agent/pkg/crane/config"
+	dagentConfig "github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
 )
 
 func ReadConfig[T craneConfig.Configuration | dagentConfig.Configuration](cfg *T) {

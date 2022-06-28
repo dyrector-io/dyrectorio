@@ -13,7 +13,7 @@ import {
   UpdateVersionRequest,
   VersionDetailsResponse,
   VersionListResponse,
-} from 'src/proto/proto/crux'
+} from 'src/grpc/protobuf/proto/crux'
 import { VersionMapper } from './version.mapper'
 
 @Injectable()

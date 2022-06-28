@@ -11,12 +11,13 @@ import (
 	"time"
 
 	"github.com/form3tech-oss/jwt-go"
-	"gitlab.com/dyrector_io/dyrector.io/go/internal/config"
-	"gitlab.com/dyrector_io/dyrector.io/go/internal/dogger"
-	"gitlab.com/dyrector_io/dyrector.io/go/internal/mapper"
-	v1 "gitlab.com/dyrector_io/dyrector.io/go/pkg/api/v1"
-	"gitlab.com/dyrector_io/dyrector.io/protobuf/go/agent"
-	"gitlab.com/dyrector_io/dyrector.io/protobuf/go/crux"
+
+	"github.com/dyrector-io/dyrectorio/agent/internal/config"
+	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
+	"github.com/dyrector-io/dyrectorio/agent/internal/mapper"
+	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
+	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
+	"github.com/dyrector-io/dyrectorio/protobuf/go/crux"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"

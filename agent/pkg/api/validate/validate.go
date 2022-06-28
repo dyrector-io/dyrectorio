@@ -7,7 +7,8 @@ import (
 	"github.com/gin-gonic/gin/binding"
 
 	"github.com/go-playground/validator/v10"
-	v1 "gitlab.com/dyrector_io/dyrector.io/go/pkg/api/v1"
+
+	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 )
 
 // RouterWithValidators that loads validators after creating routes

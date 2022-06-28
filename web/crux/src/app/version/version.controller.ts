@@ -2,7 +2,7 @@ import { Body, Controller, UseGuards, UseInterceptors } from '@nestjs/common'
 import { AuditLoggerInterceptor } from 'src/interceptors/audit-logger.interceptor'
 import { GrpcContextLogger } from 'src/interceptors/grpc-context-logger.interceptor'
 import { PrismaErrorInterceptor } from 'src/interceptors/prisma-error-interceptor'
-import { Empty } from 'src/proto/proto/agent'
+import { Empty } from 'src/grpc/protobuf/proto/agent'
 import {
   CreateEntityResponse,
   CreateVersionRequest,
@@ -14,7 +14,7 @@ import {
   UpdateVersionRequest,
   VersionDetailsResponse,
   VersionListResponse,
-} from 'src/proto/proto/crux'
+} from 'src/grpc/protobuf/proto/crux'
 import { VersionCreateTeamAccessGuard } from './guards/version.create.team-access.guard'
 import { VersionTeamAccessGuard } from './guards/version.team-access.guard'
 import { VersionCreateValidationPipe } from './pipes/version.create.pipe'

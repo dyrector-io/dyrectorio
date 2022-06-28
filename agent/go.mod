@@ -1,4 +1,4 @@
-module gitlab.com/dyrector_io/dyrector.io/go
+module github.com/dyrector-io/dyrectorio/agent
 
 go 1.18
 
@@ -9,9 +9,9 @@ require (
 	github.com/docker/docker v20.10.10+incompatible
 	github.com/docker/go-connections v0.4.0
 	github.com/gin-gonic/gin v1.7.4
-	github.com/go-openapi/jsonreference v0.19.6 // indirect
-	github.com/go-openapi/spec v0.20.4 // indirect
-	github.com/go-openapi/swag v0.19.15 // indirect
+	github.com/go-openapi/jsonreference v0.20.0 // indirect
+	github.com/go-openapi/spec v0.20.6 // indirect
+	github.com/go-openapi/swag v0.21.1 // indirect
 	github.com/go-playground/validator/v10 v10.9.0
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/joho/godotenv v1.4.0 // indirect
@@ -26,20 +26,20 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2
 	github.com/swaggo/gin-swagger v1.3.2
-	github.com/swaggo/swag v1.7.8
+	github.com/swaggo/swag v1.8.3
 	golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4 // indirect
-	golang.org/x/net v0.0.0-20220121210141-e204ce36a2ba
-	golang.org/x/sys v0.0.0-20220513210249-45d2b4557a2a // indirect
-	golang.org/x/tools v0.1.10 // indirect
+	golang.org/x/net v0.0.0-20220624214902-1bab6f366d9e
+	golang.org/x/sys v0.0.0-20220627191245-f75cf1eec38b // indirect
+	golang.org/x/tools v0.1.11 // indirect
 	google.golang.org/grpc v1.43.0
 )
 
 require (
 	github.com/AlekSi/pointer v1.2.0
+	github.com/dyrector-io/dyrectorio/protobuf v0.0.0-00010101000000-000000000000
 	github.com/form3tech-oss/jwt-go v3.2.3+incompatible
 	github.com/hashicorp/go-version v1.3.0
 	github.com/ilyakaznacheev/cleanenv v1.3.0
-	gitlab.com/dyrector_io/dyrector.io/protobuf v0.0.0-00010101000000-000000000000
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -59,8 +59,6 @@ require (
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
-	github.com/PuerkitoBio/purell v1.1.1 // indirect
-	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/docker/distribution v2.7.1+incompatible // indirect
 	github.com/docker/go-units v0.4.0 // indirect
@@ -117,6 +115,6 @@ require (
 	sigs.k8s.io/yaml v1.2.0 // indirect
 )
 
-replace gitlab.com/dyrector_io/dyrector.io/go => ./
+replace github.com/dyrector-io/dyrectorio/agent => ./
 
-replace gitlab.com/dyrector_io/dyrector.io/protobuf => ../protobuf
+replace github.com/dyrector-io/dyrectorio/protobuf => ../protobuf

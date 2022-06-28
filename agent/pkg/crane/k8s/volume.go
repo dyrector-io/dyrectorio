@@ -4,7 +4,7 @@ import (
 	"log"
 	"strings"
 
-	v1 "gitlab.com/dyrector_io/dyrector.io/go/pkg/api/v1"
+	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 )
 
 // Map the short notation ["volume|/internal/mount/path"]

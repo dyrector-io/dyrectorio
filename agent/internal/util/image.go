@@ -3,7 +3,7 @@ package util
 import (
 	"strings"
 
-	"gitlab.com/dyrector_io/dyrector.io/protobuf/go/agent"
+	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 )
 
 type ImageURI struct {

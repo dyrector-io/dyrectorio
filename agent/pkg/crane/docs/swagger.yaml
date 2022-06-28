@@ -30,7 +30,7 @@ definitions:
         description: Attach the standard output
         type: boolean
       cmd:
-        description: Command to run when starting the container
+        description: Applicable to UNIX platforms
         items:
           type: string
         type: array
@@ -38,7 +38,7 @@ definitions:
         description: Domainname
         type: string
       entrypoint:
-        description: Entrypoint to run when starting the container
+        description: Applicable to UNIX platforms
         items:
           type: string
         type: array
@@ -80,7 +80,7 @@ definitions:
         description: Open stdin
         type: boolean
       shell:
-        description: Shell for shell-form of RUN, CMD, ENTRYPOINT
+        description: Applicable to UNIX platforms
         items:
           type: string
         type: array
@@ -156,8 +156,7 @@ definitions:
           Zero means inherit.
         type: integer
       startPeriod:
-        description: The start period for the container to initialize before the retries
-          starts to count down.
+        description: Zero means to inherit. Durations are expressed as integer nanoseconds.
         type: integer
       test:
         description: |-
@@ -172,8 +171,7 @@ definitions:
           type: string
         type: array
       timeout:
-        description: Timeout is the time to wait before considering the check to have
-          hung.
+        description: Zero means to inherit. Durations are expressed as integer nanoseconds.
         type: integer
     type: object
   container.HostConfig:
@@ -254,7 +252,7 @@ definitions:
           type: string
         type: array
       capDrop:
-        description: List of kernel capabilities to remove from the container
+        description: Applicable to UNIX platforms
         items:
           type: string
         type: array
@@ -481,12 +479,12 @@ definitions:
     - server
     - user
     type: object
-  gitlab.com_dyrector_io_co_pkg_api_v1.Probe:
+  github.com_dyrector-io_dyrectorio_agent_pkg_api_v1.Probe:
     properties:
       path:
         type: string
     type: object
-  gitlab.com_dyrector_io_co_pkg_api_v1.Volume:
+  github.com_dyrector-io_dyrectorio_agent_pkg_api_v1.Volume:
     properties:
       class:
         description: |-
@@ -1906,7 +1904,7 @@ definitions:
       volumes:
         description: volumes
         items:
-          $ref: '#/definitions/gitlab.com_dyrector_io_co_pkg_api_v1.Volume'
+          $ref: '#/definitions/github.com_dyrector-io_dyrectorio_agent_pkg_api_v1.Volume'
         type: array
     required:
     - container
@@ -3069,11 +3067,11 @@ definitions:
       Port:
         type: integer
       livenessProbe:
-        $ref: '#/definitions/gitlab.com_dyrector_io_co_pkg_api_v1.Probe'
+        $ref: '#/definitions/github.com_dyrector-io_dyrectorio_agent_pkg_api_v1.Probe'
       readinessProbe:
-        $ref: '#/definitions/gitlab.com_dyrector_io_co_pkg_api_v1.Probe'
+        $ref: '#/definitions/github.com_dyrector-io_dyrectorio_agent_pkg_api_v1.Probe'
       startupProbe:
-        $ref: '#/definitions/gitlab.com_dyrector_io_co_pkg_api_v1.Probe'
+        $ref: '#/definitions/github.com_dyrector-io_dyrectorio_agent_pkg_api_v1.Probe'
     type: object
   v1.HostAlias:
     properties:
@@ -4661,8 +4659,12 @@ definitions:
   v1.PortBinding:
     properties:
       exposedPort:
+        maximum: 65535
+        minimum: 0
         type: integer
       portBinding:
+        maximum: 65535
+        minimum: 0
         type: integer
     required:
     - exposedPort
@@ -4671,8 +4673,11 @@ definitions:
   v1.PortRange:
     properties:
       from:
+        maximum: 65535
+        minimum: 0
         type: integer
       to:
+        maximum: 65535
         type: integer
     required:
     - from

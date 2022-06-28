@@ -13,7 +13,7 @@ import {
 import { JsonArray } from 'prisma'
 import { containerNameFromImageName, deploymentStatusToDb } from 'src/domain/deployment'
 import { toTimestamp } from 'src/domain/utils'
-import { DeployRequest_ContainerConfig, DeployRequest_InstanceConfig } from 'src/proto/proto/agent'
+import { DeployRequest_ContainerConfig, DeployRequest_InstanceConfig } from 'src/grpc/protobuf/proto/agent'
 import {
   AuditResponse,
   ContainerStatus,
@@ -29,7 +29,7 @@ import {
   deploymentStatusFromJSON,
   ExplicitContainerConfig,
   InstanceResponse,
-} from 'src/proto/proto/crux'
+} from 'src/grpc/protobuf/proto/crux'
 import {
   ContainerConfigData,
   ExplicitContainerConfigData,

@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"log"
 
-	"gitlab.com/dyrector_io/dyrector.io/go/internal/config"
-	"gitlab.com/dyrector_io/dyrector.io/go/internal/sigmalr"
-	"gitlab.com/dyrector_io/dyrector.io/protobuf/go/agent"
-	"gitlab.com/dyrector_io/dyrector.io/protobuf/go/crux"
+	"github.com/dyrector-io/dyrectorio/agent/internal/config"
+	"github.com/dyrector-io/dyrectorio/agent/internal/sigmalr"
+	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
+	"github.com/dyrector-io/dyrectorio/protobuf/go/crux"
 )
 
 type DeploymentLogger struct {

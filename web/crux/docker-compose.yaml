@@ -18,7 +18,7 @@ services:
     container_name: crux-migrate
     depends_on:
       - crux-postgres
-    image: registry.gitlab.com/dyrector_io/app/crux/crux:${CRUX_VERSION}
+    image: ghcr.io/dyrector-io/dyrectorio/crux/crux:${CRUX_VERSION}
     build:
       context: ./
       args:
@@ -35,7 +35,7 @@ services:
     depends_on:
       crux-migrate:
         condition: service_completed_successfully
-    image: registry.gitlab.com/dyrector_io/app/crux/crux:${CRUX_VERSION}
+    image: ghcr.io/dyrector-io/dyrectorio/crux/crux:${CRUX_VERSION}
     ports:
       - 5000:5000
       - 5001:5001

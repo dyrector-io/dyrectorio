@@ -2,7 +2,7 @@ import { ProductTypeEnum } from '.prisma/client'
 import { Injectable, PipeTransform } from '@nestjs/common'
 import { PrismaService } from 'src/config/prisma.service'
 import { PreconditionFailedException } from 'src/exception/errors'
-import { CreateVersionRequest } from 'src/proto/proto/crux'
+import { CreateVersionRequest } from 'src/grpc/protobuf/proto/crux'
 
 @Injectable()
 export class VersionCreateValidationPipe implements PipeTransform {

@@ -3,7 +3,7 @@ version: '3.3'
 services:
   crux-ui:
     container_name: crux-ui
-    image: registry.gitlab.com/dyrector_io/app/crux-ui/crux-ui:${CRUX_UI_VERSION}
+    image: ghcr.io/dyrector-io/dyrectorio/crux-ui/crux-ui:${CRUX_UI_VERSION}
     build:
       context: .
       args:

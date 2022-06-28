@@ -33,7 +33,7 @@ import {
   ServiceIdRequest,
   UpdateDeploymentRequest,
   UpdateEntityResponse,
-} from '@app/models/proto/crux'
+} from '@app/models/grpc/protobuf/proto/crux'
 import { timestampToUTC } from '@app/utils'
 import { WsMessage } from '@app/websockets/common'
 import { Identity } from '@ory/kratos-client'

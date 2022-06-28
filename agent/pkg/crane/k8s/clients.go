@@ -4,12 +4,13 @@ import (
 	"log"
 	"path/filepath"
 
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/crane/config"
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
+
+	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/config"
 )
 
 func GetClientSet() (*kubernetes.Clientset, error) {

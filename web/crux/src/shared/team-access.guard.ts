@@ -2,7 +2,7 @@ import { CanActivate, ExecutionContext, Injectable, SetMetadata } from '@nestjs/
 import { Reflector } from '@nestjs/core'
 import { PrismaService } from 'src/config/prisma.service'
 import { InvalidArgumentException } from 'src/exception/errors'
-import { IdRequest } from 'src/proto/proto/crux'
+import { IdRequest } from 'src/grpc/protobuf/proto/crux'
 
 const DISABLE_TEAM_ACCESS_CHECK = 'disable-team-access-check'
 

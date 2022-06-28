@@ -5,9 +5,10 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/dagent/config"
-	model "gitlab.com/dyrector_io/dyrector.io/go/pkg/dagent/model"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/dagent/utils"
+
+	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
+	model "github.com/dyrector-io/dyrectorio/agent/pkg/dagent/model"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/utils"
 )
 
 // UpdateRunningDAgent godoc

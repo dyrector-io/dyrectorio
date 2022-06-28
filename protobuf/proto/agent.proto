@@ -6,7 +6,7 @@
 syntax = "proto3";
 
 package agent;
-option go_package = "gitlab.com/dyrector_io/dyrector.io/protobuf/go/agent;agent";
+option go_package = "github.com/dyrector-io/dyrectorio/protobuf/go/agent";
 
 import "protobuf/proto/crux.proto";
 

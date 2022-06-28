@@ -7,7 +7,7 @@ syntax = "proto3";
 import "google/protobuf/timestamp.proto";
 
 package crux;
-option go_package = "gitlab.com/dyrector_io/dyrector.io/protobuf/go/crux;crux";
+option go_package = "github.com/dyrector-io/dyrectorio/protobuf/go/crux";
 
 /**
  *

@@ -6,10 +6,10 @@ import (
 	"log"
 	"strings"
 
-	"gitlab.com/dyrector_io/dyrector.io/go/internal/dogger"
-	"gitlab.com/dyrector_io/dyrector.io/go/internal/util"
-	v1 "gitlab.com/dyrector_io/dyrector.io/go/pkg/api/v1"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/crane/config"
+	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
+	"github.com/dyrector-io/dyrectorio/agent/internal/util"
+	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/config"
 )
 
 type deployFacade struct {

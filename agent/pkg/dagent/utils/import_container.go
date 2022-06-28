@@ -10,11 +10,12 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
-	"gitlab.com/dyrector_io/dyrector.io/go/internal/dogger"
-	"gitlab.com/dyrector_io/dyrector.io/go/internal/util"
-	v1 "gitlab.com/dyrector_io/dyrector.io/go/pkg/api/v1"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/dagent/config"
-	"gitlab.com/dyrector_io/dyrector.io/protobuf/go/crux"
+
+	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
+	"github.com/dyrector-io/dyrectorio/agent/internal/util"
+	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
+	"github.com/dyrector-io/dyrectorio/protobuf/go/crux"
 )
 
 func checkIfTargetVolumeIsThere(mountList []mount.Mount, importContainer *v1.ImportContainer) (int, error) {

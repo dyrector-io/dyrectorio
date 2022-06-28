@@ -9,7 +9,7 @@ import {
   NodeInstallResponse,
   NodeResponse,
   NodeScriptResponse,
-} from 'src/proto/proto/crux'
+} from 'src/grpc/protobuf/proto/crux'
 import { AgentService } from '../agent/agent.service'
 
 @Injectable()

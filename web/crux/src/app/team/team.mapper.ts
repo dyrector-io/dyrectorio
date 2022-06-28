@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { Team, UserInvitation, UsersOnTeams } from '@prisma/client'
-import { TeamDetailsResponse, UserResponse, UserRole, UserStatus } from 'src/proto/proto/crux'
+import { TeamDetailsResponse, UserResponse, UserRole, UserStatus } from 'src/grpc/protobuf/proto/crux'
 import { IdentityTraits, nameOfIdentity } from 'src/shared/model'
 
 @Injectable()

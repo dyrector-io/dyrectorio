@@ -10,7 +10,7 @@ import {
   PatchInstanceMessage,
   WS_TYPE_PATCH_INSTANCE,
 } from '@app/models'
-import { UniqueKeyValue } from '@app/models/proto/crux'
+import { UniqueKeyValue } from '@app/models/grpc/protobuf/proto/crux'
 import { containerConfigSchema, getValidationError } from '@app/validation'
 import { WebSocketEndpoint } from '@app/websockets/client'
 import useTranslation from 'next-translate/useTranslation'

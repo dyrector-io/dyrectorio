@@ -14,7 +14,7 @@ import {
   RegistryListResponse,
   UpdateEntityResponse,
   UpdateRegistryRequest,
-} from 'src/proto/proto/crux'
+} from 'src/grpc/protobuf/proto/crux'
 import { RegistryAuthValidationGuard } from './guards/registry.auth.validation.guard'
 import { RegistryTeamAccessGuard } from './guards/registry.team-access.guart'
 import { RegistryService } from './registry.service'

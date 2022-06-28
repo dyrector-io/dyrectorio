@@ -5,8 +5,9 @@ import (
 
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/crane/controller"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/crane/docs"
+
+	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/controller"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/docs"
 
 	"github.com/gin-gonic/gin"
 )

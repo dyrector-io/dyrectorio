@@ -5,7 +5,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/dagent/utils"
+
+	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/utils"
 )
 
 type VersionQuery struct {

@@ -9,7 +9,7 @@ import {
   RegistryListResponse,
   UpdateEntityResponse,
   UpdateRegistryRequest,
-} from 'src/proto/proto/crux'
+} from 'src/grpc/protobuf/proto/crux'
 import { TeamRepository } from '../team/team.repository'
 import { RegistryMapper } from './registry.mapper'
 

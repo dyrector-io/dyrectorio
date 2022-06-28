@@ -4,11 +4,12 @@ import (
 	"context"
 	"log"
 
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/crane/config"
 	_ "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/client-go/kubernetes/typed/core/v1"
+
+	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/config"
 
 	corev1 "k8s.io/client-go/applyconfigurations/core/v1"
 )

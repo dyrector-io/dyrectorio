@@ -12,7 +12,7 @@ import {
   ImageResponse,
   OrderVersionImagesRequest,
   PatchImageRequest,
-} from 'src/proto/proto/crux'
+} from 'src/grpc/protobuf/proto/crux'
 import { ImageAddToVersionTeamAccessGuard } from './guards/image.add-to-version.team-access.guard'
 import { ImageOrderImagesTeamAccessGuard } from './guards/image.order-images.team-access.guard'
 import { ImageTeamAccessGuard } from './guards/image.team-access.guard'

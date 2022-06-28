@@ -7,8 +7,8 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/dagent/controller"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/dagent/docs"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/controller"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/docs"
 )
 
 // all the routes, with 100 routes still be

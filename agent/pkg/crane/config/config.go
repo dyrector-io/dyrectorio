@@ -3,7 +3,7 @@ package config
 import (
 	"time"
 
-	"gitlab.com/dyrector_io/dyrector.io/go/internal/config"
+	"github.com/dyrector-io/dyrectorio/agent/internal/config"
 )
 
 // Add Crane-specific configuration options

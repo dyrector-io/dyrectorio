@@ -8,12 +8,13 @@ import (
 	"errors"
 	"log"
 
-	"gitlab.com/dyrector_io/dyrector.io/go/internal/util"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/crane/config"
 	v1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	applymetav1 "k8s.io/client-go/applyconfigurations/meta/v1"
 	netv1 "k8s.io/client-go/applyconfigurations/networking/v1"
+
+	"github.com/dyrector-io/dyrectorio/agent/internal/util"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/config"
 
 	networking "k8s.io/client-go/kubernetes/typed/networking/v1"
 )

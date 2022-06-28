@@ -11,10 +11,11 @@ import (
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
-	"gitlab.com/dyrector_io/dyrector.io/go/internal/dogger"
-	"gitlab.com/dyrector_io/dyrector.io/go/internal/util"
-	v1 "gitlab.com/dyrector_io/dyrector.io/go/pkg/api/v1"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/dagent/config"
+
+	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
+	"github.com/dyrector-io/dyrectorio/agent/internal/util"
+	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
 )
 
 type ContainerBuilder interface {

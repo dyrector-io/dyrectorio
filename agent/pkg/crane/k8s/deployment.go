@@ -9,17 +9,18 @@ import (
 	"fmt"
 	"log"
 
-	"gitlab.com/dyrector_io/dyrector.io/go/internal/util"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/crane/config"
 	coreV1 "k8s.io/api/core/v1"
 	resource "k8s.io/apimachinery/pkg/api/resource"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
+	"github.com/dyrector-io/dyrectorio/agent/internal/util"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/config"
+
 	typedv1 "k8s.io/client-go/kubernetes/typed/apps/v1"
 
-	v1 "gitlab.com/dyrector_io/dyrector.io/go/pkg/api/v1"
+	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 
 	appsv1 "k8s.io/client-go/applyconfigurations/apps/v1"
 

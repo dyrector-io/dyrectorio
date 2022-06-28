@@ -16,7 +16,7 @@ services:
 
   kratos-migrate:
     container_name: crux-kratos-migrate
-    image: registry.gitlab.com/dyrector_io/app/dyo-auth/kratos:${AUTH_VERSION}
+    image: ghcr.io/dyrector-io/dyrectorio/kratos:${AUTH_VERSION}
     depends_on:
       - kratos-postgres
     environment:
@@ -30,14 +30,12 @@ services:
 
   kratos:
     container_name: crux-kratos
-    image: registry.gitlab.com/dyrector_io/app/dyo-auth/kratos:${AUTH_VERSION}
+    image: ghcr.io/dyrector-io/dyrectorio/kratos:${AUTH_VERSION}
     build: 
       context: ./config
     depends_on: 
       kratos-migrate:
         condition: service_completed_successfully
-    build:
-      context: ./config
     platform: linux/amd64
     ports:
       - 9433:4433 # public

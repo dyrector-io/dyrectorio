@@ -25,7 +25,7 @@ import {
   userRoleToJSON,
   UserStatus as ProtoUserStatus,
   userStatusToJSON,
-} from '@app/models/proto/crux'
+} from '@app/models/grpc/protobuf/proto/crux'
 import { Identity } from '@ory/kratos-client'
 import { protomisify } from '@server/crux/grpc-connection'
 import { DyoApiError } from '@server/error-middleware'

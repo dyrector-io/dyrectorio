@@ -5,9 +5,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/dagent/config"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/dagent/controller"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/dagent/utils"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/controller"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/utils"
 )
 
 func InitUpdater(r *gin.Engine, httpPort int) {

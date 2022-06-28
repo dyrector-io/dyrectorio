@@ -10,7 +10,7 @@ import {
   CruxProductVersionClient,
   CruxRegistryClient,
   CruxTeamClient,
-} from '@app/models/proto/crux'
+} from '@app/models/grpc/protobuf/proto/crux'
 import { WsConnection } from '@app/websockets/server'
 import { credentials } from '@grpc/grpc-js'
 import { Identity } from '@ory/kratos-client'

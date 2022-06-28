@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable, SetMetadata } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { PrismaService } from 'src/config/prisma.service'
-import { AccessRequest } from 'src/proto/proto/crux'
+import { AccessRequest } from 'src/grpc/protobuf/proto/crux'
 
 const TEAM_ROLE = 'team-role'
 

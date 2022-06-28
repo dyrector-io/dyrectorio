@@ -7,7 +7,7 @@ import {
   RegistryType,
   registryTypeFromJSON,
   registryTypeToJSON,
-} from 'src/proto/proto/crux'
+} from 'src/grpc/protobuf/proto/crux'
 
 @Injectable()
 export class RegistryMapper {

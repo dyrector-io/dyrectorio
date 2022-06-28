@@ -20,7 +20,7 @@ import {
   ImageResponse,
   OrderVersionImagesRequest,
   PatchImageRequest,
-} from '@app/models/proto/crux'
+} from '@app/models/grpc/protobuf/proto/crux'
 import { Identity } from '@ory/kratos-client'
 import { protomisify } from '@server/crux/grpc-connection'
 

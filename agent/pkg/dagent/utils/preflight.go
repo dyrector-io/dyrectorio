@@ -5,7 +5,8 @@ import (
 	"log"
 
 	"github.com/hashicorp/go-version"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/dagent/config"
+
+	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
 )
 
 func PreflightChecks() {

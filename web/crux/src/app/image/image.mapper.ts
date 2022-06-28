@@ -10,7 +10,7 @@ import {
   explicitContainerConfig_NetworkModeToJSON,
   ExplicitContainerConfig_Port,
   ImageResponse,
-} from 'src/proto/proto/crux'
+} from 'src/grpc/protobuf/proto/crux'
 import {
   ExplicitContainerConfigData,
   ExplicitContainerConfigPort,

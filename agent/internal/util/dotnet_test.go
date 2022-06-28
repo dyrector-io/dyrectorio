@@ -14,8 +14,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/dyrector-io/dyrectorio/agent/internal/util"
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/dyrector_io/dyrector.io/go/internal/util"
 )
 
 func TestMapAppsettingsToEnv_nil(t *testing.T) {

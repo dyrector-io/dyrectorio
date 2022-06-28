@@ -7,15 +7,16 @@ import (
 
 	healthcheck "github.com/RaMin0/gin-health-check"
 	"github.com/gin-gonic/gin"
-	"gitlab.com/dyrector_io/dyrector.io/go/internal/grpc"
-	"gitlab.com/dyrector_io/dyrector.io/go/internal/sigmalr"
-	"gitlab.com/dyrector_io/dyrector.io/go/internal/util"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/api/validate"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/crane/config"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/crane/crux"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/crane/k8s"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/crane/route"
 	"k8s.io/apimachinery/pkg/api/resource"
+
+	"github.com/dyrector-io/dyrectorio/agent/internal/grpc"
+	"github.com/dyrector-io/dyrectorio/agent/internal/sigmalr"
+	"github.com/dyrector-io/dyrectorio/agent/internal/util"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/api/validate"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/config"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/crux"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/k8s"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/route"
 )
 
 // checks before start

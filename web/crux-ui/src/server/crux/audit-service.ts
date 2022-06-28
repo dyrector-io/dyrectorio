@@ -1,5 +1,5 @@
 import { AuditLog } from '@app/models'
-import { AccessRequest, AuditLogListResponse, CruxAuditClient } from '@app/models/proto/crux'
+import { AccessRequest, AuditLogListResponse, CruxAuditClient } from '@app/models/grpc/protobuf/proto/crux'
 import { timestampToUTC } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
 import { protomisify } from './grpc-connection'

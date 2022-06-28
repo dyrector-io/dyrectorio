@@ -14,7 +14,7 @@ import {
   ProductListResponse,
   UpdateEntityResponse,
   UpdateProductRequest,
-} from 'src/proto/proto/crux'
+} from 'src/grpc/protobuf/proto/crux'
 import { ProductTeamAccessGuard } from './guards/product.team-access.guard'
 import { ProductUpdateValidationPipe } from './pipes/product.update.pipe'
 import { ProductService } from './product.service'

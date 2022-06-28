@@ -9,10 +9,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"gitlab.com/dyrector_io/dyrector.io/go/internal/dogger"
-	v1 "gitlab.com/dyrector_io/dyrector.io/go/pkg/api/v1"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/dagent/config"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/dagent/utils"
+	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
+	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/utils"
 )
 
 // DeployVersion godoc

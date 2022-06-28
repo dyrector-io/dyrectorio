@@ -4,7 +4,7 @@ import { join } from 'path'
 import { cwd } from 'process'
 import { Subject } from 'rxjs'
 import { PreconditionFailedException } from 'src/exception/errors'
-import { NodeEventMessage } from 'src/proto/proto/crux'
+import { NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
 import { GrpcNodeConnection } from 'src/shared/grpc-node-connection'
 import { Agent } from './agent'
 
@@ -39,7 +39,7 @@ export class AgentInstaller {
       name: name.toLowerCase().replace(/\s/g, ''),
       token: this.token,
       insecure: process.env.GRPC_AGENT_INSTALL_SCRIPT_INSECURE === 'true',
-      image: 'registry.gitlab.com/dyrector_io/dyrector.io/go/dagent:stable',
+      image: 'registry.github.com/dyrector-io/dyrectorio/agent/dagent:stable',
     })
   }
 

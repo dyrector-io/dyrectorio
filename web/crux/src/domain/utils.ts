@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import { PrismaService } from 'src/config/prisma.service'
-import { Timestamp } from 'src/proto/google/protobuf/timestamp'
+import { Timestamp } from 'src/grpc/google/protobuf/timestamp'
 
 export type PrismaTransactionClient = Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use'>
 

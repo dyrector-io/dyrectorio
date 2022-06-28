@@ -8,8 +8,7 @@ services:
       - dyo-auth
     build:
       context: ./nginx
-    image: registry.gitlab.com/dyrector_io/app/dyo-auth/nginx:${AUTH_VERSION}
-    build: ./nginx
+    image: ghcr.io/dyrector-io/dyrectorio/nginx:${AUTH_VERSION}
     platform: linux/amd64
     ports:
       - ${NGINX_PORT}:8000

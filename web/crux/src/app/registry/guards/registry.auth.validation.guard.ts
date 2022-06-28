@@ -2,7 +2,7 @@ import { HttpService } from '@nestjs/axios'
 import { CanActivate, ExecutionContext, HttpStatus, Injectable, Logger } from '@nestjs/common'
 import { catchError, map, Observable, of } from 'rxjs'
 import { InvalidArgumentException, UnauthenticatedException } from 'src/exception/errors'
-import { CreateRegistryRequest, RegistryType } from 'src/proto/proto/crux'
+import { CreateRegistryRequest, RegistryType } from 'src/grpc/protobuf/proto/crux'
 import { parsers } from 'www-authenticate'
 
 @Injectable()

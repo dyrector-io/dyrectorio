@@ -8,7 +8,7 @@ import {
   VersionType,
   versionTypeFromJSON,
   versionTypeToJSON,
-} from 'src/proto/proto/crux'
+} from 'src/grpc/protobuf/proto/crux'
 import { DeployMapper, DeploymentWithNode } from '../deploy/deploy.mapper'
 import { ImageMapper, ImageWithConfig } from '../image/image.mapper'
 

@@ -426,7 +426,7 @@
                     "type": "boolean"
                 },
                 "cmd": {
-                    "description": "Command to run when starting the container",
+                    "description": "Applicable to UNIX platforms",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -437,7 +437,7 @@
                     "type": "string"
                 },
                 "entrypoint": {
-                    "description": "Entrypoint to run when starting the container",
+                    "description": "Applicable to UNIX platforms",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -493,7 +493,7 @@
                     "type": "boolean"
                 },
                 "shell": {
-                    "description": "Shell for shell-form of RUN, CMD, ENTRYPOINT",
+                    "description": "Applicable to UNIX platforms",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -595,7 +595,7 @@
                     "type": "integer"
                 },
                 "startPeriod": {
-                    "description": "The start period for the container to initialize before the retries starts to count down.",
+                    "description": "Zero means to inherit. Durations are expressed as integer nanoseconds.",
                     "type": "integer"
                 },
                 "test": {
@@ -606,7 +606,7 @@
                     }
                 },
                 "timeout": {
-                    "description": "Timeout is the time to wait before considering the check to have hung.",
+                    "description": "Zero means to inherit. Durations are expressed as integer nanoseconds.",
                     "type": "integer"
                 }
             }
@@ -720,7 +720,7 @@
                     }
                 },
                 "capDrop": {
-                    "description": "List of kernel capabilities to remove from the container",
+                    "description": "Applicable to UNIX platforms",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -1024,7 +1024,7 @@
                 }
             }
         },
-        "gitlab.com_dyrector_io_co_pkg_api_v1.Probe": {
+        "github.com_dyrector-io_dyrectorio_agent_pkg_api_v1.Probe": {
             "type": "object",
             "properties": {
                 "path": {
@@ -1032,7 +1032,7 @@
                 }
             }
         },
-        "gitlab.com_dyrector_io_co_pkg_api_v1.Volume": {
+        "github.com_dyrector-io_dyrectorio_agent_pkg_api_v1.Volume": {
             "type": "object",
             "required": [
                 "path"
@@ -2393,7 +2393,7 @@
                     "description": "volumes",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/gitlab.com_dyrector_io_co_pkg_api_v1.Volume"
+                        "$ref": "#/definitions/github.com_dyrector-io_dyrectorio_agent_pkg_api_v1.Volume"
                     }
                 }
             }
@@ -3236,13 +3236,13 @@
                     "type": "integer"
                 },
                 "livenessProbe": {
-                    "$ref": "#/definitions/gitlab.com_dyrector_io_co_pkg_api_v1.Probe"
+                    "$ref": "#/definitions/github.com_dyrector-io_dyrectorio_agent_pkg_api_v1.Probe"
                 },
                 "readinessProbe": {
-                    "$ref": "#/definitions/gitlab.com_dyrector_io_co_pkg_api_v1.Probe"
+                    "$ref": "#/definitions/github.com_dyrector-io_dyrectorio_agent_pkg_api_v1.Probe"
                 },
                 "startupProbe": {
-                    "$ref": "#/definitions/gitlab.com_dyrector_io_co_pkg_api_v1.Probe"
+                    "$ref": "#/definitions/github.com_dyrector-io_dyrectorio_agent_pkg_api_v1.Probe"
                 }
             }
         },
@@ -4269,10 +4269,14 @@
             ],
             "properties": {
                 "exposedPort": {
-                    "type": "integer"
+                    "type": "integer",
+                    "maximum": 65535,
+                    "minimum": 0
                 },
                 "portBinding": {
-                    "type": "integer"
+                    "type": "integer",
+                    "maximum": 65535,
+                    "minimum": 0
                 }
             }
         },
@@ -4284,10 +4288,13 @@
             ],
             "properties": {
                 "from": {
-                    "type": "integer"
+                    "type": "integer",
+                    "maximum": 65535,
+                    "minimum": 0
                 },
                 "to": {
-                    "type": "integer"
+                    "type": "integer",
+                    "maximum": 65535
                 }
             }
         },

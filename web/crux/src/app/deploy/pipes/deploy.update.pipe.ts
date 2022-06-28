@@ -1,7 +1,7 @@
 import { Injectable, PipeTransform } from '@nestjs/common'
 import { PrismaService } from 'src/config/prisma.service'
 import { checkDeploymentMutability } from 'src/domain/deployment'
-import { UpdateDeploymentRequest } from 'src/proto/proto/crux'
+import { UpdateDeploymentRequest } from 'src/grpc/protobuf/proto/crux'
 
 @Injectable()
 export class DeployUpdateValidationPipe implements PipeTransform {

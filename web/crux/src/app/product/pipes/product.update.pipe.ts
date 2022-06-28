@@ -1,7 +1,7 @@
 import { Injectable, PipeTransform, PreconditionFailedException } from '@nestjs/common'
 import { TeamRepository } from 'src/app/team/team.repository'
 import { PrismaService } from 'src/config/prisma.service'
-import { UpdateProductRequest } from 'src/proto/proto/crux'
+import { UpdateProductRequest } from 'src/grpc/protobuf/proto/crux'
 
 @Injectable()
 export class ProductUpdateValidationPipe implements PipeTransform {

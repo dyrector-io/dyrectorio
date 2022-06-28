@@ -3,9 +3,9 @@ package crux
 import (
 	"log"
 
-	"gitlab.com/dyrector_io/dyrector.io/go/internal/mapper"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/crane/k8s"
-	"gitlab.com/dyrector_io/dyrector.io/protobuf/go/crux"
+	"github.com/dyrector-io/dyrectorio/agent/internal/mapper"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/k8s"
+	"github.com/dyrector-io/dyrectorio/protobuf/go/crux"
 )
 
 func GetDeployments(namespace string) []*crux.ContainerStatusItem {

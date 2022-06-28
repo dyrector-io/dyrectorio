@@ -17,7 +17,7 @@ import {
   ServiceIdRequest,
   UpdateNodeRequest,
   WatchContainerStatusRequest,
-} from 'src/proto/proto/crux'
+} from 'src/grpc/protobuf/proto/crux'
 import { AgentService } from '../agent/agent.service'
 import { TeamRepository } from '../team/team.repository'
 import { NodeMapper } from './node.mapper'

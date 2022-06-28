@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"log"
 
-	"gitlab.com/dyrector_io/dyrector.io/go/internal/util"
-	v1 "gitlab.com/dyrector_io/dyrector.io/go/pkg/api/v1"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/crane/config"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	corev1 "k8s.io/client-go/applyconfigurations/core/v1"
 	typedv1 "k8s.io/client-go/kubernetes/typed/core/v1"
+
+	"github.com/dyrector-io/dyrectorio/agent/internal/util"
+	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/config"
 )
 
 // facade object for configmap management

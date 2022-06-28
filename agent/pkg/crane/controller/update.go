@@ -5,7 +5,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/crane/model"
+
+	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/model"
 )
 
 type UpdateWebhook struct {

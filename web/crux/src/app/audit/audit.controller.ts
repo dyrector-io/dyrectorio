@@ -7,7 +7,7 @@ import {
   AuditLogListResponse,
   CruxAuditController,
   CruxAuditControllerMethods,
-} from 'src/proto/proto/crux'
+} from 'src/grpc/protobuf/proto/crux'
 import { AuditService } from './audit.service'
 
 @Controller()

@@ -6,7 +6,7 @@ import {
 } from '.prisma/client'
 import { Logger, PreconditionFailedException } from '@nestjs/common'
 import { Observable, Subject } from 'rxjs'
-import { AgentCommand, VersionDeployRequest } from 'src/proto/proto/agent'
+import { AgentCommand, VersionDeployRequest } from 'src/grpc/protobuf/proto/agent'
 import {
   ContainerStatus,
   containerStatusToJSON,
@@ -14,7 +14,7 @@ import {
   DeploymentStatus,
   DeploymentStatusMessage,
   deploymentStatusToJSON,
-} from 'src/proto/proto/crux'
+} from 'src/grpc/protobuf/proto/crux'
 
 export class Deployment {
   private statusChannel = new Subject<DeploymentProgressMessage>()

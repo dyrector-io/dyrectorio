@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"log"
 
-	v1 "gitlab.com/dyrector_io/dyrector.io/go/pkg/api/v1"
+	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 )
 
 type Port struct {

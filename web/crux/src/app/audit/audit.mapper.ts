@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { AuditLog } from '@prisma/client'
 import { toTimestamp } from 'src/domain/utils'
-import { AuditLogResponse } from 'src/proto/proto/crux'
+import { AuditLogResponse } from 'src/grpc/protobuf/proto/crux'
 import { nameOfIdentity } from 'src/shared/model'
 
 @Injectable()

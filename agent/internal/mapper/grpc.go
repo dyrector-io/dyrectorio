@@ -3,13 +3,14 @@ package mapper
 import (
 	"time"
 
-	"gitlab.com/dyrector_io/dyrector.io/go/internal/config"
-	"gitlab.com/dyrector_io/dyrector.io/go/internal/dogger"
-	"gitlab.com/dyrector_io/dyrector.io/go/internal/util"
-	v1 "gitlab.com/dyrector_io/dyrector.io/go/pkg/api/v1"
-	"gitlab.com/dyrector_io/dyrector.io/protobuf/go/agent"
-	"gitlab.com/dyrector_io/dyrector.io/protobuf/go/crux"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"github.com/dyrector-io/dyrectorio/agent/internal/config"
+	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
+	"github.com/dyrector-io/dyrectorio/agent/internal/util"
+	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
+	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
+	"github.com/dyrector-io/dyrectorio/protobuf/go/crux"
 
 	dockerTypes "github.com/docker/docker/api/types"
 	appsv1 "k8s.io/api/apps/v1"

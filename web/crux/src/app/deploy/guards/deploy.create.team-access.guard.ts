@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/config/prisma.service'
-import { CreateDeploymentRequest } from 'src/proto/proto/crux'
+import { CreateDeploymentRequest } from 'src/grpc/protobuf/proto/crux'
 
 @Injectable()
 export class DeployCreateTeamAccessGuard implements CanActivate {

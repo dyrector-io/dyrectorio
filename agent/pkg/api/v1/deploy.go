@@ -10,9 +10,10 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/pkg/errors"
-	"gitlab.com/dyrector_io/dyrector.io/go/internal/config"
-	"gitlab.com/dyrector_io/dyrector.io/go/internal/util"
 	"k8s.io/apimachinery/pkg/api/resource"
+
+	"github.com/dyrector-io/dyrectorio/agent/internal/config"
+	"github.com/dyrector-io/dyrectorio/agent/internal/util"
 )
 
 type Namespace struct {

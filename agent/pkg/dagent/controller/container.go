@@ -9,10 +9,10 @@ import (
 	_ "github.com/docker/docker/api/types"
 	"github.com/gin-gonic/gin"
 
-	v1 "gitlab.com/dyrector_io/dyrector.io/go/pkg/api/v1"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/dagent/config"
-	model "gitlab.com/dyrector_io/dyrector.io/go/pkg/dagent/model"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/dagent/utils"
+	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
+	model "github.com/dyrector-io/dyrectorio/agent/pkg/dagent/model"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/utils"
 )
 
 // GetContainers godoc

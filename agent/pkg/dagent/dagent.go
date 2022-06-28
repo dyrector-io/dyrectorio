@@ -8,15 +8,16 @@ import (
 
 	healthcheck "github.com/RaMin0/gin-health-check"
 	"github.com/gin-gonic/gin"
-	"gitlab.com/dyrector_io/dyrector.io/go/internal/grpc"
-	"gitlab.com/dyrector_io/dyrector.io/go/internal/sigmalr"
-	"gitlab.com/dyrector_io/dyrector.io/go/internal/util"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/api/validate"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/dagent/config"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/dagent/model"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/dagent/routes"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/dagent/update"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/dagent/utils"
+
+	"github.com/dyrector-io/dyrectorio/agent/internal/grpc"
+	"github.com/dyrector-io/dyrectorio/agent/internal/sigmalr"
+	"github.com/dyrector-io/dyrectorio/agent/internal/util"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/api/validate"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/model"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/routes"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/update"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/utils"
 )
 
 // @title DAgent API Swagger

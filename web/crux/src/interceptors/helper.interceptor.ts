@@ -1,6 +1,6 @@
 import { Handler, ServerSurfaceCall } from '@grpc/grpc-js/build/src/server-call'
 import { ExecutionContext, Injectable } from '@nestjs/common'
-import { AccessRequest } from 'src/proto/proto/crux'
+import { AccessRequest } from 'src/grpc/protobuf/proto/crux'
 
 type GrpcCallLog = {
   userId: string

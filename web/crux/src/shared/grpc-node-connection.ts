@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt'
 import { Observable, Subject } from 'rxjs'
 import { AgentToken } from 'src/domain/agent'
 import { InvalidArgumentException } from 'src/exception/errors'
-import { NodeConnectionStatus } from 'src/proto/proto/crux'
+import { NodeConnectionStatus } from 'src/grpc/protobuf/proto/crux'
 
 export class GrpcNodeConnection {
   public static META_NODE_TOKEN = 'dyo-node-token'

@@ -7,7 +7,7 @@ import {
   ProductType as GrpcProductType,
   productTypeFromJSON,
   productTypeToJSON,
-} from 'src/proto/proto/crux'
+} from 'src/grpc/protobuf/proto/crux'
 import { VersionMapper, VersionWithChildren } from '../version/version.mapper'
 
 @Injectable()

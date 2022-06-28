@@ -2,7 +2,7 @@ import { Injectable, PipeTransform } from '@nestjs/common'
 import { AgentService } from 'src/app/agent/agent.service'
 import { PrismaService } from 'src/config/prisma.service'
 import { AlreadyExistsException } from 'src/exception/errors'
-import { IdRequest } from 'src/proto/proto/crux'
+import { IdRequest } from 'src/grpc/protobuf/proto/crux'
 
 @Injectable()
 export class NodeGenerateScriptValidationPipe implements PipeTransform {

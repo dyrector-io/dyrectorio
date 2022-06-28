@@ -6,6 +6,10 @@ image_version ?= latest
 
 .PHONY: docs swaggen test all debug-grpc bbdp compile-dagent compile-crane build-both test-crane test-dagent
 
+GOSEC=v2.12.0
+GOLANGCI=v1.46.2
+GOSWAG=v1.8.3
+
 
 gow-crane: ##
 	cd cmd/crane && \
@@ -27,6 +31,11 @@ compile-dagent: ##
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-extldflags '-static'" -o ../../build/out/dagent; \
 	cd -
 
+install-go-tools: ##
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@${GOLANGCI} && \
+	go install github.com/swaggo/swag/cmd/swag@${GOSWAG} && \
+	go install github.com/securego/gosec/v2/cmd/gosec@${GOSEC}
+
 
 compile-both: compile-crane compile-dagent
 
@@ -39,12 +48,12 @@ lint: # golangci for linting
 
 build-dagent: ##
 	cd build && \
-	docker build --build-arg CO_BIN_NAME=dagent -t registry.gitlab.com/dyrector_io/dyrector.io/go/dagent:$(image_version) -t registry.gitlab.com/dyrector_io/dyrector.io/go/dagent:$(git_short_hash) . && \
+	docker build --build-arg CO_BIN_NAME=dagent -t registry.github.com/dyrector-io/dyrectorio/agent/dagent:$(image_version) -t registry.github.com/dyrector-io/dyrectorio/agent/dagent:$(git_short_hash) . && \
 	cd -
 
 build-crane: ##
 	cd build && \
-	docker build --build-arg CO_BIN_NAME=crane -t registry.gitlab.com/dyrector_io/dyrector.io/go/crane:$(image_version) -t registry.gitlab.com/dyrector_io/dyrector.io/go/crane:$(git_short_hash) . && \
+	docker build --build-arg CO_BIN_NAME=crane -t registry.github.com/dyrector-io/dyrectorio/agent/crane:$(image_version) -t registry.github.com/dyrector-io/dyrectorio/agent/crane:$(git_short_hash) . && \
 	cd -
 
 build-both: build-dagent build-crane
@@ -60,14 +69,14 @@ swagger-crane: # generate openapi docs for crane
 	cd pkg/crane && swag init -g crane.go --parseDependency --parseInternal --parseVendor && \
 	cd -
 
-swaggen: swagger-crane swagger-dagent
+swaggen: | swagger-crane swagger-dagent
 
 push-crane: ##
-	docker push registry.gitlab.com/dyrector_io/dyrector.io/go/crane:$(image_version) && \
-	docker push registry.gitlab.com/dyrector_io/dyrector.io/go/crane:$(git_short_hash)
+	docker push registry.github.com/dyrector-io/dyrectorio/agent/crane:$(image_version) && \
+	docker push registry.github.com/dyrector-io/dyrectorio/agent/crane:$(git_short_hash)
 push-dagent: ##
-	docker push registry.gitlab.com/dyrector_io/dyrector.io/go/dagent:$(image_version) && \
-	docker push registry.gitlab.com/dyrector_io/dyrector.io/go/dagent:$(git_short_hash)
+	docker push registry.github.com/dyrector-io/dyrectorio/agent/dagent:$(image_version) && \
+	docker push registry.github.com/dyrector-io/dyrectorio/agent/dagent:$(git_short_hash)
 
 push-both: push-crane push-dagent
 

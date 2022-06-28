@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { IdRequest } from 'src/proto/proto/crux'
+import { IdRequest } from 'src/grpc/protobuf/proto/crux'
 import { TeamAccessGuard } from 'src/shared/team-access.guard'
 
 @Injectable()

@@ -8,14 +8,14 @@ import { AgentInstaller } from 'src/domain/agent-installer'
 import { DeploymentProgressEvent } from 'src/domain/deployment'
 import { collectChildVersionIds, collectParentVersionIds } from 'src/domain/utils'
 import { AlreadyExistsException, NotFoundException, UnauthenticatedException } from 'src/exception/errors'
-import { AgentCommand, AgentInfo } from 'src/proto/proto/agent'
+import { AgentCommand, AgentInfo } from 'src/grpc/protobuf/proto/agent'
 import {
   ContainerStatusListMessage,
   DeploymentStatusMessage,
   Empty,
   NodeConnectionStatus,
   NodeEventMessage,
-} from 'src/proto/proto/crux'
+} from 'src/grpc/protobuf/proto/crux'
 import { GrpcNodeConnection } from 'src/shared/grpc-node-connection'
 
 @Injectable()

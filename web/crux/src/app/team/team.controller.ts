@@ -16,7 +16,7 @@ import {
   UpdateActiveTeamRequest,
   UserInviteRequest,
   UserMetaResponse,
-} from 'src/proto/proto/crux'
+} from 'src/grpc/protobuf/proto/crux'
 import { TeamRoleGuard, TeamRoleRequired } from './guards/team.role.guard'
 import { TeamSelectGuard } from './guards/team.select.guard'
 import { TeamService } from './team.service'

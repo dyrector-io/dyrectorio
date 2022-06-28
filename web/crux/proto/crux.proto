@@ -7,7 +7,7 @@ syntax = "proto3";
 import "google/protobuf/timestamp.proto";
 
 package crux;
-option go_package = "gitlab.com/dyrector_io/dyrector.io/protobuf/go/crux";
+option go_package = "github.com/dyrector-io/dyrectorio/protobuf/go/crux";
 
 /**
  *
@@ -529,8 +529,8 @@ message NodeScriptResponse { string content = 100; }
 /*
 Lifecycle:
 When a node connection is alive, the status is CONNECTED.
-If it's disconnects, the status will be UNREACHABLE.
-When a node created it is UNREACHEABLE until the user completes
+If it disconnects, the status will be UNREACHABLE.
+When a node created, it is UNREACHEABLE until the user completes
 the install process.
 */
 enum NodeConnectionStatus {

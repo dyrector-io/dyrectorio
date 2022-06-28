@@ -1,9 +1,9 @@
 package main
 
 import (
-	"gitlab.com/dyrector_io/dyrector.io/go/internal/util"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/crane"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/crane/config"
+	"github.com/dyrector-io/dyrectorio/agent/internal/util"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/crane"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/config"
 )
 
 func main() {

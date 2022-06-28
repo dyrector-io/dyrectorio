@@ -1,5 +1,5 @@
 import { Logger } from '@app/logger'
-import { CruxHealthClient, Empty } from '@app/models/proto/crux'
+import { CruxHealthClient, Empty } from '@app/models/grpc/protobuf/proto/crux'
 import { protomisify } from '@server/crux/grpc-connection'
 
 class DyoHealthService {

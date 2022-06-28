@@ -4,7 +4,7 @@ import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import { AuditLoggerInterceptor } from 'src/interceptors/audit-logger.interceptor'
 import { GrpcContextLogger } from 'src/interceptors/grpc-context-logger.interceptor'
 import { PrismaErrorInterceptor } from 'src/interceptors/prisma-error-interceptor'
-import { Empty } from 'src/proto/proto/agent'
+import { Empty } from 'src/grpc/protobuf/proto/agent'
 import {
   CreateDeploymentRequest,
   CreateEntityResponse,
@@ -20,7 +20,7 @@ import {
   ServiceIdRequest,
   UpdateDeploymentRequest,
   UpdateEntityResponse,
-} from 'src/proto/proto/crux'
+} from 'src/grpc/protobuf/proto/crux'
 import { DisableTeamAccessCheck } from 'src/shared/team-access.guard'
 import { DeployService } from './deploy.service'
 import { DeployCreateTeamAccessGuard } from './guards/deploy.create.team-access.guard'

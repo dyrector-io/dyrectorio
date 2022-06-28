@@ -3,7 +3,7 @@
 # crane
 
 ```go
-import "gitlab.com/dyrector_io/dyrector.io/go/pkg/crane"
+import "github.com/dyrector-io/dyrectorio/agent/pkg/crane"
 ```
 
 ## Index
@@ -48,7 +48,7 @@ func (g *GrpcConnection) SetConn(conn *grpc.ClientConn)
 # controller
 
 ```go
-import "gitlab.com/dyrector_io/dyrector.io/go/pkg/crane/controller"
+import "github.com/dyrector-io/dyrectorio/agent/pkg/crane/controller"
 ```
 
 ## Index
@@ -189,7 +189,7 @@ type UpdateWebhook struct {
 # k8s
 
 ```go
-import "gitlab.com/dyrector_io/dyrector.io/go/pkg/crane/k8s"
+import "github.com/dyrector-io/dyrectorio/agent/pkg/crane/k8s"
 ```
 
 ## Index
@@ -290,7 +290,7 @@ func GetNamespaces() ([]Namespace, error)
 # model
 
 ```go
-import "gitlab.com/dyrector_io/dyrector.io/go/pkg/crane/model"
+import "github.com/dyrector-io/dyrectorio/agent/pkg/crane/model"
 ```
 
 ## Index
@@ -365,7 +365,7 @@ type Namespace struct {
 # route
 
 ```go
-import "gitlab.com/dyrector_io/dyrector.io/go/pkg/crane/route"
+import "github.com/dyrector-io/dyrectorio/agent/pkg/crane/route"
 ```
 
 ## Index
@@ -396,7 +396,7 @@ func SetupUpdate(r *gin.Engine) *gin.Engine
 # util
 
 ```go
-import "gitlab.com/dyrector_io/dyrector.io/go/pkg/crane/util"
+import "github.com/dyrector-io/dyrectorio/agent/pkg/crane/util"
 ```
 
 Package util contains deployment types\, middlewares\, constants\, signalr implementation

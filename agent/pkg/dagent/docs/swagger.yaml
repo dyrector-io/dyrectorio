@@ -30,7 +30,7 @@ definitions:
         description: Attach the standard output
         type: boolean
       cmd:
-        description: Command to run when starting the container
+        description: Applicable to UNIX platforms
         items:
           type: string
         type: array
@@ -38,7 +38,7 @@ definitions:
         description: Domainname
         type: string
       entrypoint:
-        description: Entrypoint to run when starting the container
+        description: Applicable to UNIX platforms
         items:
           type: string
         type: array
@@ -80,7 +80,7 @@ definitions:
         description: Open stdin
         type: boolean
       shell:
-        description: Shell for shell-form of RUN, CMD, ENTRYPOINT
+        description: Applicable to UNIX platforms
         items:
           type: string
         type: array
@@ -156,8 +156,7 @@ definitions:
           Zero means inherit.
         type: integer
       startPeriod:
-        description: The start period for the container to initialize before the retries
-          starts to count down.
+        description: Zero means to inherit. Durations are expressed as integer nanoseconds.
         type: integer
       test:
         description: |-
@@ -172,8 +171,7 @@ definitions:
           type: string
         type: array
       timeout:
-        description: Timeout is the time to wait before considering the check to have
-          hung.
+        description: Zero means to inherit. Durations are expressed as integer nanoseconds.
         type: integer
     type: object
   container.HostConfig:
@@ -254,7 +252,7 @@ definitions:
           type: string
         type: array
       capDrop:
-        description: List of kernel capabilities to remove from the container
+        description: Applicable to UNIX platforms
         items:
           type: string
         type: array
@@ -1300,8 +1298,12 @@ definitions:
   v1.PortBinding:
     properties:
       exposedPort:
+        maximum: 65535
+        minimum: 0
         type: integer
       portBinding:
+        maximum: 65535
+        minimum: 0
         type: integer
     required:
     - exposedPort
@@ -1310,8 +1312,11 @@ definitions:
   v1.PortRange:
     properties:
       from:
+        maximum: 65535
+        minimum: 0
         type: integer
       to:
+        maximum: 65535
         type: integer
     required:
     - from

@@ -9,12 +9,13 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"gitlab.com/dyrector_io/dyrector.io/go/internal/dogger"
-	"gitlab.com/dyrector_io/dyrector.io/go/internal/util"
-	v1 "gitlab.com/dyrector_io/dyrector.io/go/pkg/api/v1"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/crane/config"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/crane/k8s"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/crane/model"
+
+	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
+	"github.com/dyrector-io/dyrectorio/agent/internal/util"
+	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/config"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/k8s"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/model"
 )
 
 // DeployImage godoc

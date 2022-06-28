@@ -10,7 +10,7 @@ import {
   previousDeployPrefix,
 } from 'src/domain/deployment'
 import { InternalException } from 'src/exception/errors'
-import { DeployRequest } from 'src/proto/proto/agent'
+import { DeployRequest } from 'src/grpc/protobuf/proto/agent'
 import {
   CreateDeploymentRequest,
   CreateEntityResponse,
@@ -25,7 +25,7 @@ import {
   ServiceIdRequest,
   UpdateDeploymentRequest,
   UpdateEntityResponse,
-} from 'src/proto/proto/crux'
+} from 'src/grpc/protobuf/proto/crux'
 import { ContainerConfigData } from 'src/shared/model'
 import { AgentService } from '../agent/agent.service'
 import { ImageWithConfig } from '../image/image.mapper'

@@ -6,10 +6,11 @@ import (
 
 	_ "github.com/docker/docker/api/types"
 	"github.com/gin-gonic/gin"
-	apiv1 "gitlab.com/dyrector_io/dyrector.io/go/pkg/api/v1"
 
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/crane/k8s"
-	_ "gitlab.com/dyrector_io/dyrector.io/go/pkg/crane/model"
+	apiv1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
+
+	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/k8s"
+	_ "github.com/dyrector-io/dyrectorio/agent/pkg/crane/model"
 
 	_ "k8s.io/api/apps/v1"
 	_ "k8s.io/api/core/v1"

@@ -11,7 +11,7 @@ import {
   ProductListResponse,
   UpdateEntityResponse,
   UpdateProductRequest,
-} from 'src/proto/proto/crux'
+} from 'src/grpc/protobuf/proto/crux'
 import { TeamRepository } from '../team/team.repository'
 import { ProductMapper } from './product.mapper'
 

@@ -3,7 +3,7 @@ version: "3.3"
 services:
   dyo-auth:
     container_name: crux-auth-ui
-    image: registry.gitlab.com/dyrector_io/app/dyo-auth/auth-ui:${AUTH_VERSION}
+    image: ghcr.io/dyrector-io/dyrectorio/auth-ui:${AUTH_VERSION}
     build:
       context: ./
       args:

@@ -14,11 +14,11 @@ import (
 	"testing"
 	"time"
 
+	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/routes"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
-	v1 "gitlab.com/dyrector_io/dyrector.io/go/pkg/api/v1"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/dagent/routes"
-	"gitlab.com/dyrector_io/dyrector.io/go/pkg/dagent/utils"
 )
 
 var nginxImageName string = "nginx"

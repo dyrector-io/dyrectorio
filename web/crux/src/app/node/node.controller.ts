@@ -21,7 +21,7 @@ import {
   ServiceIdRequest,
   UpdateNodeRequest,
   WatchContainerStatusRequest,
-} from 'src/proto/proto/crux'
+} from 'src/grpc/protobuf/proto/crux'
 import { DisableTeamAccessCheck } from 'src/shared/team-access.guard'
 import { NodeTeamAccessGuard } from './guards/node.team-access.guard'
 import { NodeService } from './node.service'

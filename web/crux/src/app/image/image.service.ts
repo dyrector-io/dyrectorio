@@ -11,7 +11,7 @@ import {
   ImageResponse,
   OrderVersionImagesRequest,
   PatchImageRequest,
-} from 'src/proto/proto/crux'
+} from 'src/grpc/protobuf/proto/crux'
 import { ContainerConfigData } from 'src/shared/model'
 import { ImageMapper, ImageWithConfig } from './image.mapper'
 
