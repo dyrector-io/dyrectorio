@@ -2,7 +2,12 @@ import useTranslation from 'next-translate/useTranslation'
 import Link from 'next/link'
 import { MouseEventHandler } from 'react'
 import useSWR from 'swr'
-import { API_AUTH_ME, ROUTE_ADMIN, ROUTE_INDEX, ROUTE_SETTINGS } from '@app/const'
+import {
+  API_AUTH_ME,
+  ROUTE_ADMIN,
+  ROUTE_INDEX,
+  ROUTE_SETTINGS,
+} from '@app/const'
 import { UserDto } from '@server/models'
 import { configuredFetcher } from '@app/utils'
 import { DyoButton } from './dyo-button'

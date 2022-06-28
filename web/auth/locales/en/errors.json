@@ -1,11 +1,11 @@
 {
-	"oops": "Opps, something went wrong.",
-	"fetchFailed": "Failed to fetch {{type}}",
-	"deletionFailed": "Failed to delete {{type}}",
+  "oops": "Opps, something went wrong.",
+  "fetchFailed": "Failed to fetch {{type}}",
+  "deletionFailed": "Failed to delete {{type}}",
 
-	"CONFIRM_PASS_MISMATCH": "Passwords must match",
-	
-	"MISSING_PARAMETER": "Required",
-	"INVALID_PARAMETER": "Invalid {name}",
-	"INTERNAL_SERVER_ERROR": "Something went wrong. Please try again later."
+  "CONFIRM_PASS_MISMATCH": "Passwords must match",
+
+  "MISSING_PARAMETER": "Required",
+  "INVALID_PARAMETER": "Invalid {name}",
+  "INTERNAL_SERVER_ERROR": "Something went wrong. Please try again later."
 }

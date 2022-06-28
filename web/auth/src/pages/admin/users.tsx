@@ -19,11 +19,7 @@ import {
 import InplaceConfirmation from '@app/components/inplace-confirmation'
 import { Layout } from '@app/components/layout'
 import { API_ADMIN_USERS, ROUTE_SETTINGS } from '@app/const'
-import {
-  DyoFetchError,
-  InviteUserDto,
-  UserInvitiedDto,
-} from '@server/models'
+import { DyoFetchError, InviteUserDto, UserInvitiedDto } from '@server/models'
 import { fetcher, usernameToString, userVerified } from '@app/utils'
 import { DyoButton } from '@app/components/dyo-button'
 

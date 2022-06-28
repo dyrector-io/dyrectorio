@@ -8,11 +8,7 @@ import { FormCard } from '@app/components/form/form-card'
 import { FormHeader } from '@app/components/form/form-header'
 import { LabeledInput } from '@app/components/form/labeled-input'
 import { Layout } from '@app/components/layout'
-import {
-  API_SETTINGS_EDIT_PROFILE,
-  ATTRIB_CSRF,
-  ROUTE_LOGIN,
-} from '@app/const'
+import { API_SETTINGS_EDIT_PROFILE, ATTRIB_CSRF, ROUTE_LOGIN } from '@app/const'
 import kratos from '@server/kratos'
 import { EditProfileDto } from '@server/models'
 import {
