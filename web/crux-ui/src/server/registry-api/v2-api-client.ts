@@ -35,32 +35,32 @@ class RegistryV2ApiClient implements RegistryApiClient {
   }
 
   async catalog(text: string, take: number): Promise<string[]> {
-    const res = await this._fetch('/_catalog')
+    const res = await this._fetchPaginatedEndpoint('/_catalog')
     if (!res.ok) {
       const errorMessage = `Catalog request failed with status: ${res.status} ${res.statusText}`
       throw res.status === 401 ? unauthorizedError(errorMessage) : internalError(errorMessage)
     }
 
-    const dto = await res.json()
-    const repositories = dto.repositories as string[]
+    const json = (await res.json()) as { repositories: string }[]
+    const repositories = json.flatMap(it => it.repositories) as string[]
     return repositories.filter(it => it.includes(text)).slice(0, take)
   }
 
   async tags(image: string): Promise<RegistryImageTags> {
-    const res = await this._fetch(`/${image}/tags/list`)
+    const res = await this._fetchPaginatedEndpoint(`/${image}/tags/list`)
     if (!res.ok) {
       const errorMessage = `Tags request failed with status: ${res.status} ${res.statusText}`
       throw res.status === 401 ? unauthorizedError(errorMessage) : internalError(errorMessage)
     }
 
-    const json = (await res.json()) as RegistryImageTags
+    const json = (await res.json()) as RegistryImageTags[]
     return {
-      ...json,
       name: image,
+      tags: json.flatMap(it => it.tags),
     }
   }
 
-  private async _fetch(endpoint: string, init?: RequestInit) {
+  private async _fetch(endpoint: string, init?: RequestInit): Promise<Response> {
     const initializer = init ?? {}
     const fullUrl = `https://${this.url}/v2${endpoint}`
 
@@ -71,6 +71,38 @@ class RegistryV2ApiClient implements RegistryApiClient {
         ...(initializer.headers ?? {}),
       },
     })
+  }
+
+  private async _fetchPaginatedEndpoint(endpoint: string, init?: RequestInit): Promise<Response> {
+    let bodies = []
+
+    const generateResponse = (res: Response) => {
+      res.json = async () => bodies
+      return res
+    }
+
+    let next = endpoint
+    let res: Response = null
+    while (next) {
+      res = await this._fetch(next, init)
+      if (!res.ok) {
+        return res
+      }
+
+      const body = await res.json()
+      bodies.push(body)
+
+      next = res.headers.get('link')
+      if (!next || next.length < 1) {
+        return generateResponse(res)
+      }
+
+      next = next.slice(4, next.indexOf('>;'))
+
+      console.log('fetch', next)
+    }
+
+    return generateResponse(res)
   }
 }
 

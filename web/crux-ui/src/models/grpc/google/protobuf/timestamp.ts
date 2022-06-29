@@ -1,6 +1,6 @@
 /* eslint-disable */
 import Long from "long";
-import * as _m0 from "protobufjs/minimal";
+import _m0 from "protobufjs/minimal";
 
 export const protobufPackage = "google.protobuf";
 
@@ -113,9 +113,7 @@ export interface Timestamp {
   nanos: number;
 }
 
-function createBaseTimestamp(): Timestamp {
-  return { seconds: 0, nanos: 0 };
-}
+const baseTimestamp: object = { seconds: 0, nanos: 0 };
 
 export const Timestamp = {
   encode(
@@ -134,7 +132,7 @@ export const Timestamp = {
   decode(input: _m0.Reader | Uint8Array, length?: number): Timestamp {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseTimestamp();
+    const message = { ...baseTimestamp } as Timestamp;
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -153,10 +151,16 @@ export const Timestamp = {
   },
 
   fromJSON(object: any): Timestamp {
-    return {
-      seconds: isSet(object.seconds) ? Number(object.seconds) : 0,
-      nanos: isSet(object.nanos) ? Number(object.nanos) : 0,
-    };
+    const message = { ...baseTimestamp } as Timestamp;
+    message.seconds =
+      object.seconds !== undefined && object.seconds !== null
+        ? Number(object.seconds)
+        : 0;
+    message.nanos =
+      object.nanos !== undefined && object.nanos !== null
+        ? Number(object.nanos)
+        : 0;
+    return message;
   },
 
   toJSON(message: Timestamp): unknown {
@@ -170,7 +174,7 @@ export const Timestamp = {
   fromPartial<I extends Exact<DeepPartial<Timestamp>, I>>(
     object: I
   ): Timestamp {
-    const message = createBaseTimestamp();
+    const message = { ...baseTimestamp } as Timestamp;
     message.seconds = object.seconds ?? 0;
     message.nanos = object.nanos ?? 0;
     return message;
@@ -225,8 +229,4 @@ function longToNumber(long: Long): number {
 if (_m0.util.Long !== Long) {
   _m0.util.Long = Long as any;
   _m0.configure();
-}
-
-function isSet(value: any): boolean {
-  return value !== null && value !== undefined;
 }
