@@ -21,6 +21,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
+    - name: Load go mod
+      run: go mod tidy
     - name: Run golangci lint
       run: make lint
   security:
@@ -33,6 +35,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
+    - name: Load go mod
+      run: go mod tidy
     - name: Run gosec
       run: make security
   check:
@@ -45,9 +49,9 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
-
+      
     - name: Build crane
       run: go build cmd/crane/crane.go 
-
+      
     - name: Build dagent
       run: go build cmd/dagent/dagent.go 
