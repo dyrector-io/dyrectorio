@@ -1,0 +1,109 @@
+version: "3.3"
+services:
+  crux-postgres:
+    container_name: crux-postgres
+    image: postgres:14.2-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-crux}
+      POSTGRES_PASSWORD: ${CRUX_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-crux}
+      PGDATA: /data/postgres
+    ports:
+      - 5432:5432
+    restart: unless-stopped
+    networks:
+      - crux-intranet
+
+  kratos-postgres:
+    container_name: crux-kratos-postgres
+    image: postgres:13.3-alpine3.14
+    environment:
+      - POSTGRES_PASSWORD=${KRATOS_POSTGRES_PASSWORD}
+      - POSTGRES_USER=kratos
+      - POSTGRES_DB=kratos
+    restart: unless-stopped
+    volumes:
+      - kratos-db:/var/lib/postgresql/data
+    networks:
+      - crux-intranet
+
+  kratos-migrate:
+    container_name: crux-kratos-migrate
+    image: ghcr.io/dyrector-io/dyrectorio/kratos:${DYO_VERSION}
+    depends_on:
+      - kratos-postgres
+    environment:
+      - SQA_OPT_OUT=true
+      - DSN=postgres://kratos:${KRATOS_POSTGRES_PASSWORD}@kratos-postgres:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4
+    command: -c /etc/config/kratos/kratos.yaml migrate sql -e --yes
+    volumes:
+      - kratos-config:/etc/config/kratos
+    networks:
+      - crux-intranet
+
+  kratos:
+    container_name: crux-kratos
+    image: ghcr.io/dyrector-io/dyrectorio/kratos:${DYO_VERSION}
+    build:
+      context: ./auth/config
+    depends_on:
+      kratos-migrate:
+        condition: service_completed_successfully
+    platform: linux/amd64
+    ports:
+      - 9433:4433 # public
+      # WARNING: Do NOT expose the admin port in production!
+      - 9434:4434 # admin
+    environment:
+      - KRATOS_ADMIN_URL=${KRATOS_ADMIN_URL:-http://172.17.0.1:4434}
+      - KRATOS_URL=${KRATOS_URL:-http://172.17.0.1:8000/kratos}
+      - AUTH_URL=${AUTH_URL:-http://172.17.0.1:8000/auth}
+      - DEV=${KRATOS_DEV:-false}
+      - SQA_OPT_OUT=true
+      - DSN=postgres://kratos:${KRATOS_POSTGRES_PASSWORD}@kratos-postgres:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4
+      - LOG_LEVEL=${KRATOS_LOG_LEVEL}
+      - LOG_LEAK_SENSITIVE_VALUES=${KRATOS_LOG_LEAK_SENSITIVE_VALUES}
+      - SECRETS_COOKIE=${COOKIE_SECRET}
+      - COURIER_SMTP_CONNECTION_URI=smtps://${SMTP_USER}:${SMTP_PASSWORD}@${SMTP_URL}
+    restart: unless-stopped
+    command: serve -c /etc/config/kratos/kratos.yaml --watch-courier
+    volumes:
+      - kratos-config:/etc/config/kratos
+    networks:
+      - crux-intranet
+
+  mailslurper:
+    container_name: crux-mailslurper
+    image: oryd/mailslurper:latest-smtps
+    ports:
+      - 4436:4436
+      - 4437:4437
+    networks:
+      - crux-intranet
+
+  crux-nginx:
+    container_name: crux-nginx
+    image: ghcr.io/dyrector-io/dyrectorio/nginx:${DYO_VERSION}
+    depends_on:
+      - kratos
+    build:
+      context: ./auth/nginx
+    platform: linux/amd64
+    ports:
+      - 8000:8000
+    environment:
+      SERVER_NAME: ${SERVER_NAME:-172.17.0.1}
+      NGINX_PORT: ${NGINX_PORT:-8000}
+      AUTH_ADDRESS: ${AUTH_ADDRESS:-172.17.0.1:9000}
+      KRATOS_ADDRESS: kratos:4433
+      CRUX_UI_ADDRESS: ${CRUX_UI_ADDRESS:-172.17.0.1:3000}
+    networks:
+      - crux-intranet
+
+volumes:
+  kratos-db:
+  kratos-config:
+
+networks:
+  crux-intranet:
+    name: crux-intranet

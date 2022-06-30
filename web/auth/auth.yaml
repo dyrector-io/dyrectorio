@@ -13,7 +13,6 @@ services:
     environment:
       - KRATOS_URL=$KRATOS_URL
       - AUTH_URL=$AUTH_URL
-      - AUTH_API_KEY=$AUTH_API_KEY
       - CRUX_UI_URL=$CRUX_UI_URL
       - RECAPTCHA_SECRET_KEY=$RECAPTCHA_SECRET_KEY
     restart: unless-stopped
