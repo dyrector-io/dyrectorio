@@ -97,6 +97,7 @@ class RegistryV2ApiClient implements RegistryApiClient {
         return generateResponse(res)
       }
 
+      // slice of: </v2/_catalog?last=<image_name>&n=100>;
       next = next.slice(4, next.indexOf('>;'))
     }
 
