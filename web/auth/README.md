@@ -103,7 +103,7 @@ comment out the port forwarding "`9434:4434`" line in `kratos.yaml`
 sh create_default_user.sh <your_custom_email@email.com>
 ```
 
-## Apple silicon dependencies
+## MacOS dependencies
 
 You have to add `127.0.0.1 host.docker.internal` line in the `/etc/hosts` file,
 and you have to change the `172.17.0.1` IP addresses in `.env` file to
