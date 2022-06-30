@@ -21,10 +21,14 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
-    - name: Load go mod
-      run: go mod tidy
-    - name: Run golangci lint
-      run: make lint
+    - name: golangci-lint
+      uses: golangci/golangci-lint-action@v3
+      with:
+        # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
+        version: v1.46
+        Optional: working directory, useful for monorepos
+        working-directory: agent
+
   security:
     runs-on: ubuntu-latest
     container:
