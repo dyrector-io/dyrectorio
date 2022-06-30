@@ -5,7 +5,7 @@ serve:
     base_url: ${KRATOS_URL}
 
   admin:
-    base_url: http://172.17.0.1:9434
+    base_url: ${KRATOS_ADMIN_URL}
 
 selfservice:
   default_browser_return_url: ${AUTH_URL}
@@ -54,19 +54,6 @@ selfservice:
     registration:
       lifespan: 10m
       ui_url: ${AUTH_URL}/registration
-      before:
-        hooks:
-          - hook: web_hook
-            config:
-              url: ${AUTH_URL}/api/admin/hooks/registration
-              method: 'POST'
-              body: file:///etc/config/kratos/hooks/empty.jsonnet
-              auth:
-                type: api_key
-                config:
-                  name: Authorization
-                  value: ${AUTH_API_KEY}
-                  in: header
       after:
         password:
           hooks:

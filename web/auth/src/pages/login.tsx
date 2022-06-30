@@ -3,6 +3,7 @@ import {
   ATTRIB_CSRF,
   ROUTE_INDEX,
   ROUTE_RECOVERY,
+  ROUTE_REGISTER,
   ROUTE_VERIFICATION,
 } from '@app/const'
 import {
@@ -146,6 +147,14 @@ const LoginPage = (props: SelfServiceLoginFlow) => {
           sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
         />
       </FormCard>
+
+      <div className="flex justify-center mt-8">
+        <p className="font-light-gray mr-2">{t('dontHaveAnAccount')}</p>
+
+        <Link href={ROUTE_REGISTER}>
+          <a className="font-bold underline">{t('common:signUp')}</a>
+        </Link>
+      </div>
     </SingleFormLayout>
   )
 }

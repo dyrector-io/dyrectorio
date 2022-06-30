@@ -46,7 +46,6 @@ services:
       - SERVE_ADMIN_BASE_URL=${SERVE_ADMIN_BASE_URL}
       - KRATOS_URL=$KRATOS_URL
       - AUTH_URL=$AUTH_URL
-      - AUTH_API_KEY=$AUTH_API_KEY
       - DEV=${KRATOS_DEV}
       - SQA_OPT_OUT=true
       - DSN=postgres://kratos:${POSTGRES_PASSWORD}@kratos-postgres:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4

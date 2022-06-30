@@ -98,8 +98,6 @@ class RegistryV2ApiClient implements RegistryApiClient {
       }
 
       next = next.slice(4, next.indexOf('>;'))
-
-      console.log('fetch', next)
     }
 
     return generateResponse(res)

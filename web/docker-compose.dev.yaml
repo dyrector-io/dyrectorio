@@ -44,22 +44,21 @@ services:
   kratos:
     container_name: crux-kratos
     image: ghcr.io/dyrector-io/dyrectorio/kratos:${DYO_VERSION}
-    build: 
+    build:
       context: ./auth/config
-    depends_on: 
+    depends_on:
       kratos-migrate:
         condition: service_completed_successfully
     platform: linux/amd64
     ports:
       - 9433:4433 # public
       # To generate a new user, you have to expose the admin port
-      # Comment out the next line for this 
-      - 9434:4434
+      # Comment out the next line for this
+      # - 9434:4434
     environment:
-      - SERVE_ADMIN_BASE_URL=${SERVE_ADMIN_BASE_URL:-http://kratos:4434}
+      - KRATOS_ADMIN_URL=${KRATOS_ADMIN_URL:-http://kratos:4434}
       - KRATOS_URL=${KRATOS_URL:-http://172.17.0.1:8000/kratos}
       - AUTH_URL=${AUTH_URL:-http://172.17.0.1:8000/auth}
-      - AUTH_API_KEY=$AUTH_API_KEY
       - DEV=${KRATOS_DEV:-false}
       - SQA_OPT_OUT=true
       - DSN=postgres://kratos:${KRATOS_POSTGRES_PASSWORD}@kratos-postgres:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4
@@ -88,7 +87,6 @@ services:
     image: ghcr.io/dyrector-io/dyrectorio/nginx:${DYO_VERSION}
     depends_on:
       - kratos
-      - dyo-auth
     build:
       context: ./auth/nginx
     platform: linux/amd64
