@@ -1,5 +1,5 @@
 
-git_short_hash=$(or $(shell git rev-parse --short HEAD),${CI_COMMIT_SHORT_SHA})
+git_short_hash=$(or $(shell git rev-parse --short HEAD),${GITHUB_SHA::7})
 
 # default tag is latest for building
 image_version ?= latest
@@ -47,12 +47,12 @@ lint: # golangci for linting
 	golangci-lint run  ./...
 build-dagent: ##
 	cd build && \
-	docker build --build-arg CO_BIN_NAME=dagent -t registry.github.com/dyrector-io/dyrectorio/agent/dagent:$(image_version) -t registry.github.com/dyrector-io/dyrectorio/agent/dagent:$(git_short_hash) . && \
+	docker build --build-arg CO_BIN_NAME=dagent -t ghcr.io/dyrector-io/dyrectorio/agent/dagent:$(image_version) -t ghcr.io/dyrector-io/dyrectorio/agent/dagent:$(git_short_hash) . && \
 	cd -
 
 build-crane: ##
 	cd build && \
-	docker build --build-arg CO_BIN_NAME=crane -t registry.github.com/dyrector-io/dyrectorio/agent/crane:$(image_version) -t registry.github.com/dyrector-io/dyrectorio/agent/crane:$(git_short_hash) . && \
+	docker build --build-arg CO_BIN_NAME=crane -t ghcr.io/dyrector-io/dyrectorio/agent/crane:$(image_version) -t ghcr.io/dyrector-io/dyrectorio/agent/crane:$(git_short_hash) . && \
 	cd -
 
 build-both: build-dagent build-crane
@@ -71,11 +71,11 @@ swagger-crane: # generate openapi docs for crane
 swaggen: | swagger-crane swagger-dagent
 
 push-crane: ##
-	docker push registry.github.com/dyrector-io/dyrectorio/agent/crane:$(image_version) && \
-	docker push registry.github.com/dyrector-io/dyrectorio/agent/crane:$(git_short_hash)
+	docker push ghcr.io/dyrector-io/dyrectorio/agent/crane:$(image_version) && \
+	docker push ghcr.io/dyrector-io/dyrectorio/agent/crane:$(git_short_hash)
 push-dagent: ##
-	docker push registry.github.com/dyrector-io/dyrectorio/agent/dagent:$(image_version) && \
-	docker push registry.github.com/dyrector-io/dyrectorio/agent/dagent:$(git_short_hash)
+	docker push ghcr.io/dyrector-io/dyrectorio/agent/dagent:$(image_version) && \
+	docker push ghcr.io/dyrector-io/dyrectorio/agent/dagent:$(git_short_hash)
 
 push-both: push-crane push-dagent
 
