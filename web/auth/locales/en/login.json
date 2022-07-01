@@ -2,5 +2,6 @@
   "forgotPassword": "Forgot your password?",
   "dontHaveAccount": "Don't have an account?",
   "signUp": "Sign up.",
-  "refresh": "Your login session is too old. Please log in again."
+  "refresh": "Your login session is too old. Please log in again.",
+  "dontHaveAnAccount": "Don't have an account yet?"
 }

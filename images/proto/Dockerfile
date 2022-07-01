@@ -14,7 +14,7 @@ RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" "$GOPATH/cache" && chmod -R 777 "$GOPAT
 
 RUN apk add nodejs npm alpine-sdk go protoc protobuf-dev rsync docker git
 
-RUN npm i -g ts-proto @grpc/grpc-js
+RUN npm i -g ts-proto@1.96.0 @grpc/grpc-js
 
 ENV GOSEC v2.12.0
 ENV GOLANGCI v1.46.2

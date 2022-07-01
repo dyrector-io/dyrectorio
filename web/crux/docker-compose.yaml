@@ -5,6 +5,9 @@ services:
     image: postgres:14.2-alpine
     container_name: crux-postgres
     environment:
+      - REGISTRY=${REGISTRY}
+      - IMAGE_NAME=${IMAGE_NAME}
+      - CRUX_VERSION=${CRUX_VERSION}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_USER=crux
       - POSTGRES_DB=crux
@@ -18,7 +21,7 @@ services:
     container_name: crux-migrate
     depends_on:
       - crux-postgres
-    image: ghcr.io/dyrector-io/dyrectorio/crux/crux:${CRUX_VERSION}
+    image: ${REGISTRY}/${IMAGE_NAME}:${CRUX_VERSION}
     build:
       context: ./
       args:
@@ -35,7 +38,7 @@ services:
     depends_on:
       crux-migrate:
         condition: service_completed_successfully
-    image: ghcr.io/dyrector-io/dyrectorio/crux/crux:${CRUX_VERSION}
+    image: ${REGISTRY}/${IMAGE_NAME}:${CRUX_VERSION}
     ports:
       - 5000:5000
       - 5001:5001

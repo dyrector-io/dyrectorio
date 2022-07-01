@@ -1,28 +1,110 @@
 name: web-crux
-on: 
+on:
   push:
     paths:
       - web/crux/**
       - .github/workflows/web-crux.yml
+
+env:
+  # Environments
+  REGISTRY: ghcr.io
+  IMAGE_NAME: dyrector-io/dyrectorio/web-crux
+  WORKING_DIRECTORY: web/crux
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+  CRUX_DOMAIN: DNS:localhost
+  CRUX_DOMAIN_ALTS: IP:192.168.1.30
+  KRATOS_URL: http://192.168.1.30:8000/kratos
+  CRUX_UI_URL: http://172.17.0.1:8000
+  TIME_ZONE: Europe/Budapest
+  # Default GitHub variables
+  CRUX_VERSION: ${{ github.sha }}
+  # Secrets
+  POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+  POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+  POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+  SENDGRID_KEY: ${{ secrets.SENDGRID_KEY }}
+  FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
+  FROM_NAME: ${{ secrets.FROM_NAME }}
 
 permissions:
   contents: read
   pull-requests: read
 
 jobs:
-  check:
-    runs-on: ubuntu-latest
-    container:
-      image: node:16
+  # job: Linting and testing the code
+  prerequirements:
+    runs-on: ubuntu-20.04
     defaults:
       run:
-        working-directory: web/crux
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+    container:
+      image: node:17.1-alpine
+    steps:
+    - name: Checkout the repository
+      uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: npm ci --arch=x64 --platform=linuxmusl --cache .npm --prefer-offline
+
+    - name: Linting the code
+      run: npm run lint
+
+    - name: Testing the code
+      run: echo 'Hello World!'
+
+    - name: Generate prisma & build the application
+      run: |
+        npx prisma generate
+        npm run build --if-present
+        npm prune --production
+
+    - name: Upload /dist artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: crux-web-dist
+        path: ${{ env.WORKING_DIRECTORY }}/dist
+        retention-days: 1
+
+  # job: Build image
+  build_image:
+    #if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-20.04
+    needs: prerequirements
+    container: docker:latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
     steps:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Install dependencies
-      run: npm ci --arch=x64 --platform=linuxmusl
+    - name: Download /dist artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: crux-web-dist
+        path: ${{ env.WORKING_DIRECTORY }}/dist
 
-    - name: Build
-      run: npm run build
+    - name: Log in to registry
+      run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+    - name: Docker build with hash tag
+      if: github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/main'
+      run: |
+        docker-compose build
+        docker-compose push crux
+
+    - name: Docker build with latest tag
+      if: github.ref == 'refs/heads/develop'
+      env:
+        CRUX_VERSION: latest
+      run: |
+        docker-compose build
+        docker-compose push crux
+
+    - name: Docker build with stable tag
+      if: github.ref == 'refs/heads/main'
+      env:
+        CRUX_VERSION: stable
+      run: |
+        docker-compose build
+        docker-compose push crux
