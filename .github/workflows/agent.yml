@@ -25,10 +25,10 @@ jobs:
         if [ $GITHUB_REF_TYPE == "branch" ]; then
           case $GITHUB_REF in
             "main")
-            echo "agent_tag=stable"
+            echo "agent_tag=stable" >> $GITHUB_ENV
             ;;
             "develop")
-            echo "agent_tag=latest"
+            echo "agent_tag=latest" >> $GITHUB_ENV
             ;;
           esac
         fi
@@ -117,7 +117,7 @@ jobs:
       - name: Docker build with stable tag
         if: github.ref == 'refs/heads/main'
         run: make image_version=stable bbpb
-        
+
   sign_image:
     runs-on: ubuntu-20.04
     container:
