@@ -26,9 +26,9 @@ jobs:
     - name: pwd
       run: pwd && ls -lah
     - name: Build-check crane
-      run: GOFLAGS="-buildvcs=false" go build ./...
+      run: GOFLAGS="-buildvcs=auto" go build ./...
     - name: Run golangci-lint
-      run: GOFLAGS="-buildvcs=false" make lint
+      run: GOFLAGS="-buildvcs=auto" make lint
   security:
     runs-on: ubuntu-latest
     container:
