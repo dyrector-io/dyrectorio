@@ -61,6 +61,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      # fixes: fatal: unsafe repository 
+      - name: Adding workspace
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
       - name: Load go mod
         run: go mod tidy
 

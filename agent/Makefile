@@ -1,5 +1,5 @@
 
-git_short_hash=$(or $(shell git rev-parse --short HEAD),${GITHUB_SHA::7})
+git_short_hash=$(or $(shell git rev-parse --short HEAD),$(shell ${GITHUB_SHA::7}))
 
 # default tag is latest for building
 image_version ?= latest
