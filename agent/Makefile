@@ -44,7 +44,7 @@ security: # running gosec for static code analysis for bugs and leaks
 	gosec ./...
 
 lint: # golangci for linting 
-	golangci-lint run  ./...
+	golangci-lint run  ./... --timeout=3m
 build-dagent: ##
 	cd build && \
 	docker build --build-arg CO_BIN_NAME=dagent -t ghcr.io/dyrector-io/dyrectorio/agent/dagent:$(image_version) -t ghcr.io/dyrector-io/dyrectorio/agent/dagent:$(git_short_hash) . && \
