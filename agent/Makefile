@@ -107,18 +107,15 @@ k3s-test: # make sure to have k3s set and configured
 	KUBECONFIG=$(PWD)/k3s.yaml go test -tags=integration -race ./pkg/crane/...
 
 test-unit: # dependency: valid & working k8s configuration
-	go test -tags=unit -race ./...
+	go test -tags=unit -race ./...  -coverprofile=./coverage.cov ./... -covermode=atomic
 
 test-unit-with-cov: # dependency: valid & working k8s configuration
-	go test -tags=unit -race -coverpkg=./pkg/... -coverprofile=./coverage.cov ./...
+	go test -tags=unit -race -coverpkg=./pkg/... -coverprofile=./coverage.cov ./... -covermode=atomic
 
 test-dagent-docker:
 	go test -tags=integration -race ./pkg/dagent/...
 
-test: test-crane test-dagent
-
-coverage: #
-	go test -tags=unit -v -coverpkg=./pkg/... -coverprofile=./coverage.cov ./...
+coverage:
 	go tool cover -func ./coverage.cov
 
 # ==== what is below is still under refactor ====
