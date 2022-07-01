@@ -10,6 +10,11 @@ permissions:
   pull-requests: read
   packages: read
 
+
+env:
+  # Environments
+  GOFLAGS: "-buildvcs=false"
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -26,9 +31,9 @@ jobs:
     - name: pwd
       run: pwd && ls -lah
     - name: Build-check crane
-      run: GOFLAGS="-buildvcs=auto" go build ./...
+      run: go build ./...
     - name: Run golangci-lint
-      run: GOFLAGS="-buildvcs=auto" make lint
+      run: make lint
   security:
     runs-on: ubuntu-latest
     container:
