@@ -110,7 +110,7 @@ test-unit: # dependency: valid & working k8s configuration
 	go test -tags=unit -race ./...  -coverprofile=./coverage.cov ./... -covermode=atomic
 
 test-unit-with-cov: # dependency: valid & working k8s configuration
-	go test -tags=unit -race -coverpkg=./pkg/... -coverprofile=./coverage.cov ./... -covermode=atomic
+	go test -tags=unit -race -coverpkg=./... -coverprofile=./coverage.cov ./... -covermode=atomic
 
 test-dagent-docker:
 	go test -tags=integration -race ./pkg/dagent/...
