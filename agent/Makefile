@@ -107,9 +107,9 @@ k3s-test: # make sure to have k3s set and configured
 	KUBECONFIG=$(PWD)/k3s.yaml go test -tags=integration -race ./pkg/crane/...
 
 test-unit: # dependency: valid & working k8s configuration
-	go test -tags=unit -race ./...  -coverprofile=./coverage.cov ./... -covermode=atomic
+	go test -tags=unit -race ./... 
 
-test-unit-with-cov: # dependency: valid & working k8s configuration
+test-unit-with-coverage: # dependency: valid & working k8s configuration
 	go test -tags=unit -race -coverpkg=./... -coverprofile=./coverage.cov ./... -covermode=atomic
 
 test-dagent-docker:
