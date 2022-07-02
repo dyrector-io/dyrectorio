@@ -158,29 +158,29 @@ Configuration will prioritize Environmental Variables, .env file, and defaults i
 
 Configuration will take place before starting up the application, and store the configuration options in a global variable, which can be accessed during runtime. Both crane and DAgent have their own configuration package to add their own defaults and/or add their own custom variables. When the variables are used to achieve similar functions, can be found in both projects, and have the same defaults; then it can be found in a "common" config package. Please see the common README.md for more.
 
-| Environmental Variable | Description                                                                                                   | default value                               |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
-| AGENT_CONTAINER_NAME   | name of the container                                                                                         | dagent-go                                   |
-| DAGENT_IMAGE           | Fully qualified image name with registry incl. without protocol                                               | ghcr.io/dyrector-io/dyrectorio/agent/dagent |
-| DAGENT_NAME            | DAgent container name, it is needed for the update                                                            | dagent                                      |
-| DAGENT_TAG             | DAgent image tag versions `latest` or else                                                                    | latest                                      |
-| DATA_MOUNT_PATH        | This should match the mount path that is the root of configurations and containers                            | /srv/dagent                                 |
-| DEFAULT_TAG            | default tag to use with container images in deployment                                                        | latest                                      |
-| HOST_DOCKER_SOCK       | Path of `docker.sock` or other local/remote address where we can communicate with docker                      | /var/run/docker.sock                        |
-| HOST_MOUNT_PATH        | Host mount path default                                                                                       | /srv/dagent                                 |
-| INTERNAL_MOUNT_PATH    | Containers mount path default                                                                                 | /srv/dagent                                 |
-| LOG_DEFAULT_SKIP       | Loglines to skip                                                                                              | 0                                           |
-| LOG_DEFAULT_TAKE       | Loglines to take                                                                                              | 100                                         |
-| MIN_DOCKER_VERSION     | Minimum required docker version, it's exposed to help debugging and also help podman users                    | 20.10                                       |
-| TRAEFIK_ACME_MAIL      | E-mail address to use for dynamic certificate requests                                                        | *none*                                      |
-| TRAEFIK_ENABLED        | *self explanatory*                                                                                            | false                                       |
-| TRAEFIK_LOG_LEVEL      | Loglevel for Traefik                                                                                          | *none*                                      |
-| TRAEFIK_TLS            | Whether to enable traefik TLS or not                                                                          | false                                       |
-| UPDATER_CONTAINER_NAME | Container name for the updater container, useful if multiple instances are running                            | dagent-updater                              |
-| UPDATE_HOST_TIMEZONE   | Whether to mount localtime into the update container                                                          | true                                        |
-| UPDATE_METHOD          | Values: `off`, `webhook`, `poll`                                                                              | off                                         |
-| UPDATE_POLL_INTERVAL   | Agent polling frequency, should be defined in time.Duration parseable format (eg. 10s, 20m, 1h20m, 4395s etc) | 600s                                        |
-| WEBHOOK_TOKEN          | Token used by the webhook to trigger the update                                                               | *none*                                      |
+| Environmental Variable | Description                                                                                                   | default value                         |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| AGENT_CONTAINER_NAME   | name of the container                                                                                         | dagent-go                             |
+| DAGENT_IMAGE           | Fully qualified image name with registry incl. without protocol                                               | ghcr.io/dyrector-io/dyrectorio/dagent |
+| DAGENT_NAME            | DAgent container name, it is needed for the update                                                            | dagent                                |
+| DAGENT_TAG             | DAgent image tag versions `latest` or else                                                                    | latest                                |
+| DATA_MOUNT_PATH        | This should match the mount path that is the root of configurations and containers                            | /srv/dagent                           |
+| DEFAULT_TAG            | default tag to use with container images in deployment                                                        | latest                                |
+| HOST_DOCKER_SOCK       | Path of `docker.sock` or other local/remote address where we can communicate with docker                      | /var/run/docker.sock                  |
+| HOST_MOUNT_PATH        | Host mount path default                                                                                       | /srv/dagent                           |
+| INTERNAL_MOUNT_PATH    | Containers mount path default                                                                                 | /srv/dagent                           |
+| LOG_DEFAULT_SKIP       | Loglines to skip                                                                                              | 0                                     |
+| LOG_DEFAULT_TAKE       | Loglines to take                                                                                              | 100                                   |
+| MIN_DOCKER_VERSION     | Minimum required docker version, it's exposed to help debugging and also help podman users                    | 20.10                                 |
+| TRAEFIK_ACME_MAIL      | E-mail address to use for dynamic certificate requests                                                        | *none*                                |
+| TRAEFIK_ENABLED        | *self explanatory*                                                                                            | false                                 |
+| TRAEFIK_LOG_LEVEL      | Loglevel for Traefik                                                                                          | *none*                                |
+| TRAEFIK_TLS            | Whether to enable traefik TLS or not                                                                          | false                                 |
+| UPDATER_CONTAINER_NAME | Container name for the updater container, useful if multiple instances are running                            | dagent-updater                        |
+| UPDATE_HOST_TIMEZONE   | Whether to mount localtime into the update container                                                          | true                                  |
+| UPDATE_METHOD          | Values: `off`, `webhook`, `poll`                                                                              | off                                   |
+| UPDATE_POLL_INTERVAL   | Agent polling frequency, should be defined in time.Duration parseable format (eg. 10s, 20m, 1h20m, 4395s etc) | 600s                                  |
+| WEBHOOK_TOKEN          | Token used by the webhook to trigger the update                                                               | *none*                                |
 
 Example docker run command
 
@@ -200,7 +200,7 @@ docker run \
   -v /var/run/docker.sock:/var/run/docker.sock  \
   --restart unless-stopped \
   -d  \
-  ghcr.io/dyrector-io/dyrectorio/agent/dagent:latest
+  ghcr.io/dyrector-io/dyrectorio/dagent:latest
 ```
 
 ### Update

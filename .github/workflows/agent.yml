@@ -20,7 +20,7 @@ jobs:
   select_version:
     runs-on: ubuntu-latest
     steps:
-    - name: magic
+    - name: prepare
       run: |
         if [ $GITHUB_REF_TYPE == "branch" ]; then
           case $GITHUB_REF in
@@ -120,9 +120,13 @@ jobs:
 
   sign_image:
     runs-on: ubuntu-20.04
+
+    if: github.ref == 'refs/heads/develop' ||  github.ref == 'refs/heads/main'
+
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16
     needs: build
+    
     environment: Workflow - Protected
     steps:
     - name: Write signing key to disk
@@ -137,12 +141,12 @@ jobs:
 
     - name: Sign container image dagent
       run: | 
-        cosign sign --key cosign.key ghcr.io/dyrector-io/dyrectorio/agent/dagent:${GITHUB_SHA::7}
+        cosign sign --key cosign.key ghcr.io/dyrector-io/dyrectorio/dagent:${GITHUB_SHA::7}
       env:
         COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
     - name: Sign container image crane
       run: |
-        cosign sign --key cosign.key ghcr.io/dyrector-io/dyrectorio/agent/crane:${GITHUB_SHA::7}
+        cosign sign --key cosign.key ghcr.io/dyrector-io/dyrectorio/crane:${GITHUB_SHA::7}
       env:
         COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
    
