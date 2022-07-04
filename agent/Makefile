@@ -1,5 +1,5 @@
 
-git_short_hash=$(or $(shell git rev-parse --short HEAD),${CI_COMMIT_SHORT_SHA})
+git_short_hash=$(shell git rev-parse --short HEAD:../agent)
 
 # default tag is latest for building
 image_version ?= latest
@@ -44,16 +44,15 @@ security: # running gosec for static code analysis for bugs and leaks
 	gosec ./...
 
 lint: # golangci for linting 
-	golangci-lint run ./...
-
+	golangci-lint run  ./... --timeout=3m
 build-dagent: ##
 	cd build && \
-	docker build --build-arg CO_BIN_NAME=dagent -t registry.github.com/dyrector-io/dyrectorio/agent/dagent:$(image_version) -t registry.github.com/dyrector-io/dyrectorio/agent/dagent:$(git_short_hash) . && \
+	docker build --build-arg CO_BIN_NAME=dagent -t ghcr.io/dyrector-io/dyrectorio/dagent:$(image_version) -t ghcr.io/dyrector-io/dyrectorio/dagent:$(git_short_hash) . && \
 	cd -
 
 build-crane: ##
 	cd build && \
-	docker build --build-arg CO_BIN_NAME=crane -t registry.github.com/dyrector-io/dyrectorio/agent/crane:$(image_version) -t registry.github.com/dyrector-io/dyrectorio/agent/crane:$(git_short_hash) . && \
+	docker build --build-arg CO_BIN_NAME=crane -t ghcr.io/dyrector-io/dyrectorio/crane:$(image_version) -t ghcr.io/dyrector-io/dyrectorio/crane:$(git_short_hash) . && \
 	cd -
 
 build-both: build-dagent build-crane
@@ -72,11 +71,11 @@ swagger-crane: # generate openapi docs for crane
 swaggen: | swagger-crane swagger-dagent
 
 push-crane: ##
-	docker push registry.github.com/dyrector-io/dyrectorio/agent/crane:$(image_version) && \
-	docker push registry.github.com/dyrector-io/dyrectorio/agent/crane:$(git_short_hash)
+	docker push ghcr.io/dyrector-io/dyrectorio/crane:$(image_version) && \
+	docker push ghcr.io/dyrector-io/dyrectorio/crane:$(git_short_hash)
 push-dagent: ##
-	docker push registry.github.com/dyrector-io/dyrectorio/agent/dagent:$(image_version) && \
-	docker push registry.github.com/dyrector-io/dyrectorio/agent/dagent:$(git_short_hash)
+	docker push ghcr.io/dyrector-io/dyrectorio/dagent:$(image_version) && \
+	docker push ghcr.io/dyrector-io/dyrectorio/dagent:$(git_short_hash)
 
 push-both: push-crane push-dagent
 
@@ -108,18 +107,15 @@ k3s-test: # make sure to have k3s set and configured
 	KUBECONFIG=$(PWD)/k3s.yaml go test -tags=integration -race ./pkg/crane/...
 
 test-unit: # dependency: valid & working k8s configuration
-	go test -tags=unit -race ./...
+	go test -tags=unit -race ./... 
 
-test-unit-with-cov: # dependency: valid & working k8s configuration
-	go test -tags=unit -race -coverpkg=./pkg/... -coverprofile=./coverage.cov ./...
+test-unit-with-coverage: # dependency: valid & working k8s configuration
+	go test -tags=unit -race -coverpkg=./... -coverprofile=./coverage.cov -covermode=atomic ./...
 
 test-dagent-docker:
 	go test -tags=integration -race ./pkg/dagent/...
 
-test: test-crane test-dagent
-
-coverage: #
-	go test -tags=unit -v -coverpkg=./pkg/... -coverprofile=./coverage.cov ./...
+coverage:
 	go tool cover -func ./coverage.cov
 
 # ==== what is below is still under refactor ====

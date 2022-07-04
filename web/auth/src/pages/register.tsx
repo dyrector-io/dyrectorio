@@ -1,6 +1,7 @@
 import {
   API_AUTH_REGISTER,
   ATTRIB_CSRF,
+  ROUTE_LOGIN,
   ROUTE_SETTINGS,
   ROUTE_VERIFICATION,
 } from '@app/const'
@@ -111,27 +112,6 @@ const RegisterPage = (props: SelfServiceRegistrationFlow) => {
         submitLabel={t('createAcc')}
         onSubmit={formik.handleSubmit}
         submitWidth="w-96"
-        afterForm={
-          <>
-            <div className="flex justify-center mt-8">
-              <DyoButton secondary className="w-96" onClick={signUpWithGoogle}>
-                <div className="flex justify-center items-center">
-                  <DyoImage src="/google-icon.svg" width={32} height={32} />
-                  <div className="ml-2">{t('signUpGoogle')}</div>
-                </div>
-              </DyoButton>
-            </div>
-
-            <div className="flex justify-center mt-8">
-              <DyoButton secondary className="w-96" onClick={signUpWithGithub}>
-                <div className="flex justify-center items-center">
-                  <DyoImage src="/github-icon.svg" width={32} height={32} />
-                  <div className="ml-2">{t('signUpGithub')}</div>
-                </div>
-              </DyoButton>
-            </div>
-          </>
-        }
       >
         <FormHeader>{t('signUp')}</FormHeader>
 
@@ -188,7 +168,7 @@ const RegisterPage = (props: SelfServiceRegistrationFlow) => {
       <div className="flex justify-center mt-8">
         <p className="font-light-gray mr-2">{t('alreadyUser')}</p>
 
-        <Link href="/auth/login">
+        <Link href={ROUTE_LOGIN}>
           <a className="font-bold underline">{t('common:logIn')}</a>
         </Link>
       </div>

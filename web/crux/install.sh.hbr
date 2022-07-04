@@ -14,7 +14,7 @@ docker run \ --restart unless-stopped \ -e GRPC_TOKEN='{{token}}' \ -e HOSTNAME=
 {{#if insecure}}
   -e GRPC_INSECURE='true' \
 {{/if}}
--e DAGENT_IMAGE='ghcr.io/dyrector-io/dyrectorio/agent/dagent' \ -e DAGENT_TAG='stable' \ -e DAGENT_NAME='{{name}}' \ -v
+-e DAGENT_IMAGE='ghcr.io/dyrector-io/dyrectorio/dagent' \ -e DAGENT_TAG='stable' \ -e DAGENT_NAME='{{name}}' \ -v
 /var/run/docker.sock:/var/run/docker.sock \ --name 'dagent' \
 {{! -e UPDATE_REGISTRY_USER='' \ }}
 {{! -e UPDATE_REGISTRY_PASSWORD='' \ }}

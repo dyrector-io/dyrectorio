@@ -37,16 +37,3 @@ export const useAuthorizeAdminMiddleware = async (
     throw forbiddenError()
   }
 }
-
-export const useAuthorizeApiMiddleware = async (
-  req: NextApiRequest,
-  res: NextApiResponse,
-  next: () => Promise<void>,
-) => {
-  const authorization = req.headers.authorization
-  if (authorization !== process.env.AUTH_API_KEY) {
-    throw unauthorizedError()
-  }
-
-  await next()
-}
