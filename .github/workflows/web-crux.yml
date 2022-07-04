@@ -18,6 +18,7 @@ env:
   TIME_ZONE: Europe/Budapest
   # Default GitHub variables
   CRUX_VERSION: ${{ github.sha }}
+  CRUX_IMAGE_TAG: ${{ github.ref_name }}
   # Secrets
   POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
   POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
@@ -29,6 +30,7 @@ env:
 permissions:
   contents: read
   pull-requests: read
+  packages: read
 
 jobs:
   # job: Linting and testing the code
@@ -39,6 +41,8 @@ jobs:
         working-directory: ${{ env.WORKING_DIRECTORY }}
     container:
       image: node:17.1-alpine
+    outputs:
+      tag: ${{ steps.settag.outputs.tag }}
     steps:
     - name: Checkout the repository
       uses: actions/checkout@v3
@@ -48,9 +52,6 @@ jobs:
 
     - name: Linting the code
       run: npm run lint
-
-    - name: Testing the code
-      run: echo 'Hello World!'
 
     - name: Generate prisma & build the application
       run: |
@@ -65,12 +66,29 @@ jobs:
         path: ${{ env.WORKING_DIRECTORY }}/dist
         retention-days: 1
 
+    - name: Setting a buildtag
+      id: settag
+      run: |
+        if [ $GITHUB_REF_TYPE == "branch" ]; then
+          case ${{ github.ref_name }} in
+            "main")
+              echo "::set-output name=tag::stable"
+              ;;
+            "develop")
+              echo "::set-output name=tag::latest"
+              ;;
+            *)
+              echo "::set-output name=tag::${{ github.sha }}"
+              ;;
+          esac
+        fi
+
   # job: Build image
   build_image:
-    #if: github.ref == 'refs/heads/develop'
     runs-on: ubuntu-20.04
     needs: prerequirements
     container: docker:latest
+    if: github.ref_name == 'develop' || github.ref_name == 'main'
     defaults:
       run:
         working-directory: ${{ env.WORKING_DIRECTORY }}
@@ -84,27 +102,41 @@ jobs:
         name: crux-web-dist
         path: ${{ env.WORKING_DIRECTORY }}/dist
 
-    - name: Log in to registry
-      run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+    - name: Login to GHCR
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GHCR_PAT }}
 
-    - name: Docker build with hash tag
-      if: github.ref != 'refs/heads/develop' && github.ref != 'refs/heads/main'
+    - name: Docker build and push
       run: |
+        echo building tag: ${{ needs.prerequirements.outputs.tag }}
         docker-compose build
         docker-compose push crux
-
-    - name: Docker build with latest tag
-      if: github.ref == 'refs/heads/develop'
       env:
-        CRUX_VERSION: latest
-      run: |
-        docker-compose build
-        docker-compose push crux
+        CRUX_IMAGE_TAG: ${{ needs.prerequirements.outputs.tag }}
 
-    - name: Docker build with stable tag
-      if: github.ref == 'refs/heads/main'
-      env:
-        CRUX_VERSION: stable
+  sign_image:
+    runs-on: ubuntu-20.04
+    container:
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16
+    needs: [build_image,prerequirements]
+    environment: Workflow - Protected
+    steps:
+    - name: Write signing key to disk
+      run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
+
+    - name: Login to GHCR
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GHCR_PAT }}
+
+    - name: Sign container image
       run: |
-        docker-compose build
-        docker-compose push crux
+        echo signing image tag: ${{ needs.prerequirements.outputs.tag }}
+        cosign sign --key cosign.key ghcr.io/dyrector-io/dyrectorio/web-crux:${{ needs.prerequirements.outputs.tag }}
+      env:
+        COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"

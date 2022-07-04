@@ -21,7 +21,7 @@ services:
     container_name: crux-migrate
     depends_on:
       - crux-postgres
-    image: ${REGISTRY}/${IMAGE_NAME}:${CRUX_VERSION}
+    image: ${REGISTRY}/${IMAGE_NAME}:${CRUX_IMAGE_TAG}
     build:
       context: ./
       args:
@@ -38,7 +38,7 @@ services:
     depends_on:
       crux-migrate:
         condition: service_completed_successfully
-    image: ${REGISTRY}/${IMAGE_NAME}:${CRUX_VERSION}
+    image: ${REGISTRY}/${IMAGE_NAME}:${CRUX_IMAGE_TAG}
     ports:
       - 5000:5000
       - 5001:5001
