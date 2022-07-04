@@ -39,7 +39,7 @@ export class AgentInstaller {
       name: name.toLowerCase().replace(/\s/g, ''),
       token: this.token,
       insecure: process.env.GRPC_AGENT_INSTALL_SCRIPT_INSECURE === 'true',
-      image: 'ghcr.io/dyrector-io/dyrectorio/dagent:stable',
+      image: 'ghcr.io/dyrector-io/dyrectorio/agent/dagent:stable',
     })
   }
 
