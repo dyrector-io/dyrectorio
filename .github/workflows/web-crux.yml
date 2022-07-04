@@ -69,17 +69,19 @@ jobs:
     - name: Setting a buildtag
       id: settag
       run: |
-        case ${{ github.ref_name }} in
-          "main")
-            echo "::set-output name=tag::stable"
-            ;;
-          "develop")
-            echo "::set-output name=tag::latest"
-            ;;
-          *)
-            echo "::set-output name=tag::${{ github.sha }}"
-            ;;
-        esac
+        if [ $GITHUB_REF_TYPE == "branch" ]; then
+          case ${{ github.ref_name }} in
+            "main")
+              echo "::set-output name=tag::stable"
+              ;;
+            "develop")
+              echo "::set-output name=tag::latest"
+              ;;
+            *)
+              echo "::set-output name=tag::${{ github.sha }}"
+              ;;
+          esac
+        fi
 
   # job: Build image
   build_image:
