@@ -1,7 +1,7 @@
 version: "3.7"
 services:
   dagent-go:
-    image: registry.github.com/dyrector-io/dyrectorio/agent/dagent:latest
+    image: ghcr.io/dyrector-io/dyrectorio/dagent:latest
     container_name: dagent-go
     ports:
       - 9923:8080
