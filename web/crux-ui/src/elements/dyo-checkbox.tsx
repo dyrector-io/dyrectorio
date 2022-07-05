@@ -1,5 +1,6 @@
 import { FormikSetFieldValue } from '@app/utils'
 import clsx from 'clsx'
+import Image from 'next/image'
 
 interface DyoCheckboxProps {
   className?: string
@@ -27,7 +28,7 @@ const DyoCheckbox = (props: DyoCheckboxProps) => {
       )}
       onClick={() => handleCheckedChange(!checked)}
     >
-      {!checked ? null : <img src="/check-white.svg" />}
+      {!checked ? null : <Image src="/check-white.svg" alt="check" layout="fixed" width={20} height={20} />}
 
       <input type="checkbox" checked={checked} onChange={() => handleCheckedChange(!checked)} className="hidden" />
     </div>

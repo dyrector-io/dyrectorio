@@ -1,36 +1,34 @@
+import { isServerSide } from '@app/utils'
 import { WebSocketClient, WebSocketClientOptions, WebSocketEndpoint } from '@app/websockets/client'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 let client: WebSocketClient
 
 export const useWebSocket = (route: string, options?: WebSocketClientOptions): WebSocketEndpoint => {
-  if (typeof window !== 'undefined' && !client) {
+  if (!isServerSide() && !client) {
     client = new WebSocketClient()
   }
 
-  const [readyState, setReadyState] = useState<number>()
-  const [endpoint, _] = useState(new WebSocketEndpoint(route))
+  const [readyState, setReadyState] = useState<number>(null)
+  const endpointRef = useRef(new WebSocketEndpoint(route))
+  const endpoint = endpointRef.current
+
+  const destructCallback = useRef<VoidFunction>(() => {
+    setReadyState(undefined)
+    endpoint.close()
+  })
 
   endpoint.setup(setReadyState, options)
 
-  const destruct = () => {
-    setReadyState(undefined)
-    endpoint.close()
-  }
+  useEffect(() => destructCallback.current, [])
 
   useEffect(() => {
     if (!readyState) {
-      setReadyState(WebSocket.CLOSED)
-    }
+      client.register(endpointRef.current)
+    } else if (readyState === WebSocket.CLOSED) {
+      destructCallback.current()
 
-    return destruct
-  }, [])
-
-  useEffect(() => {
-    if (readyState === WebSocket.CLOSED) {
-      destruct()
-
-      client.register(route, endpoint)
+      client.register(endpointRef.current)
     }
   }, [readyState])
 

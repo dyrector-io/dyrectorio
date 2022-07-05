@@ -1,25 +1,25 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 export const useTimer = (
   initialTimeout?: number,
   onExpire?: VoidFunction,
 ): [number, (timeout?: number) => void, VoidFunction] => {
   const [remaining, setRemaining] = useState(initialTimeout ?? -1)
-  const [timer, setTimer] = useState(null)
+  const expireCallback = useRef<VoidFunction>(null)
+  const timer = useRef<NodeJS.Timeout>(null)
 
-  const step = () => setTimeout(() => setRemaining(remaining - 1), 1000)
+  expireCallback.current = onExpire
 
   useEffect(() => {
     if (remaining > 0) {
-      setTimer(step())
+      timer.current = setTimeout(() => setRemaining(remaining - 1), 1000)
     } else {
-      setTimer(null)
+      timer.current = null
       if (timer !== null) {
-        setTimer(null)
-        onExpire?.call(null)
+        expireCallback.current?.call(null)
       }
     }
   }, [remaining])
 
-  return [remaining, (timeout: number) => setRemaining(timeout), () => clearTimeout(timer)]
+  return [remaining, (timeout: number) => setRemaining(timeout), () => clearTimeout(timer.current)]
 }

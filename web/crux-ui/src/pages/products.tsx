@@ -50,7 +50,6 @@ const ProductsPage = (props: ProductsPageProps) => {
     filters: [
       textFilterFor<Product>(it => [it.name, it.description, it.type, utcDateToLocale(it.updatedAt)]),
       productTypeFilter,
-      ,
     ],
   })
 
