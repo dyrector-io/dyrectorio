@@ -5,9 +5,25 @@
   "new": "New registry",
   "user": "User",
   "token": "Token or password",
+  "pat": "Personal access token",
+  "accessToken": "Access token",
   "url": "Url",
-  "v2": "Registry v2",
-  "hub": "Docker hub",
+  "hubTips": "Disclaimer: You can use only public Docker HUB images.",
+  "orgOrUser": "Organization name or username",
+  "organization": "Organization name",
+  "group": "Group name",
+  "public": "Public",
+  "private": "Private",
+  "selfManaged": "Self-managed Gitlab",
+  "saas": "SaaS",
+  "apiUrl": "Gitlab api url",
+
+  "type": {
+    "v2": "V2 Registry",
+    "hub": "Docker HUB",
+    "gitlab": "Gitlab Registry",
+    "github": "GitHub Registry"
+  },
 
   "deleteDescription": "If you proceed, you will lose all your data related to {{name}}. This action is not revocable."
 }

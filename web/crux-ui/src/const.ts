@@ -7,7 +7,13 @@ export const IMAGE_FILTER_TAKE = 6 // number of images
 export const WS_RECONNECT_TIMEOUT = 5_000 // millis
 
 export const REGISTRY_HUB_URL = 'hub.docker.com'
-export const REGISTRY_HUB_PREFIX = 'library'
+export const REGISTRY_GITHUB_URL = 'ghcr.io'
+
+export const REGISTRY_GITLAB_URLS = {
+  apiUrl: 'gitlab.com',
+  registryUrl: 'registry.gitlab.com',
+}
+
 export const REGISTRY_HUB_CACHE_EXPIRATION = 60 // minutes
 
 export const WS_DATA_CRUX = 'crux'

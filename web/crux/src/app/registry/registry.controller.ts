@@ -15,7 +15,7 @@ import {
   UpdateEntityResponse,
   UpdateRegistryRequest,
 } from 'src/grpc/protobuf/proto/crux'
-import { RegistryAuthValidationGuard } from './guards/registry.auth.validation.guard'
+import { RegistryAccessValidationGuard } from './guards/registry.auth.validation.guard'
 import { RegistryTeamAccessGuard } from './guards/registry.team-access.guart'
 import { RegistryService } from './registry.service'
 
@@ -30,7 +30,7 @@ export class RegistryController implements CruxRegistryController {
     return await this.service.getRegistries(request)
   }
 
-  @UseGuards(RegistryAuthValidationGuard)
+  @UseGuards(RegistryAccessValidationGuard)
   async createRegistry(request: CreateRegistryRequest): Promise<CreateEntityResponse> {
     return await this.service.createRegistry(request)
   }
@@ -39,7 +39,7 @@ export class RegistryController implements CruxRegistryController {
     await this.service.deleteRegistry(request)
   }
 
-  @UseGuards(RegistryAuthValidationGuard)
+  @UseGuards(RegistryAccessValidationGuard)
   @AuditLogLevel('no-data')
   async updateRegistry(request: UpdateRegistryRequest): Promise<UpdateEntityResponse> {
     return this.service.updateRegistry(request)

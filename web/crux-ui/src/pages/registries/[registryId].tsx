@@ -5,7 +5,7 @@ import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
 import { defaultApiErrorHandler } from '@app/errors'
-import { RegistryDetails } from '@app/models'
+import { RegistryDetails, registryDetailsToRegistry } from '@app/models'
 import { registryApiUrl, registryUrl, ROUTE_REGISTRIES } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
@@ -76,7 +76,7 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
       </PageHeading>
 
       {!editing ? (
-        <RegistryCard registry={registry} />
+        <RegistryCard registry={registryDetailsToRegistry(registry)} />
       ) : (
         <EditRegistryCard
           className="p-8"

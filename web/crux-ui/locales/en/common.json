@@ -14,6 +14,7 @@
   "type": "Type",
   "status": "Status",
   "loading": "Loading...",
+  "noNameFound": "No {{name}} found",
   "yourTeams": "Your teams",
 
   "editName": "Edit {{name}}",
@@ -42,6 +43,7 @@
   "config": "Config",
   "registries": "Registries",
   "nodes": "Nodes",
+  "images": "Images",
   "settings": "Settings",
   "team": "Team",
   "audit": "Audit Log",

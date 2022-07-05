@@ -3,12 +3,10 @@ import { useWebSocket } from '@app/hooks/use-websocket'
 import {
   AddImagesMessage,
   ContainerImage,
-  FetchImageTagsMessage,
-  FindImageResult,
   ImagesWereReorderedMessage,
   OrderImagesMessage,
   ProductDetails,
-  Registry,
+  RegistryImages,
   VersionDetails,
   WS_TYPE_ADD_IMAGES,
   WS_TYPE_DYO_ERROR,
@@ -22,7 +20,7 @@ import { deploymentUrl, versionWsUrl, WS_REGISTRIES } from '@app/routes'
 import { parseStringUnionType } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
-import React, { useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 import AddDeploymentCard from './deployments/add-deployment-card'
 import SelectImagesCard from './images/select-images-card'
@@ -96,17 +94,15 @@ const VersionSections = (props: VersionSectionsProps) => {
     setImages(newImages)
   })
 
-  const onImagesSelected = (registry: Registry, images: FindImageResult[]) => {
+  const onImagesSelected = (registryImages: RegistryImages[]) => {
     setAddSectionState('none')
 
-    registriesSock.send(WS_TYPE_REGISTRY_FETCH_IMAGE_TAGS, {
-      registryId: registry.id,
-      images: images.map(it => it.name),
-    } as FetchImageTagsMessage)
+    registryImages.forEach(it => {
+      registriesSock.send(WS_TYPE_REGISTRY_FETCH_IMAGE_TAGS, it)
+    })
 
     versionSock.send(WS_TYPE_ADD_IMAGES, {
-      registryId: registry.id,
-      images: images.map(it => it.name),
+      registryImages,
     } as AddImagesMessage)
   }
 
