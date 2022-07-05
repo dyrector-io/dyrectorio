@@ -285,16 +285,41 @@ message RegistryResponse {
 
 message RegistryListResponse { repeated RegistryResponse data = 1000; }
 
+message HubRegistryDetails { string urlPrefix = 100; }
+
+message V2RegistryDetails {
+  string url = 100;
+  optional string user = 101;
+  optional string token = 102;
+}
+
+message GitlabRegistryDetails {
+  string user = 100;
+  string token = 101;
+  string urlPrefix = 102;
+  optional string url = 103;
+  optional string apiUrl = 104;
+}
+
+message GithubRegistryDetails {
+  string user = 100;
+  string token = 101;
+  string urlPrefix = 102;
+}
+
 message CreateRegistryRequest {
   string accessedBy = 2;
 
   string name = 100;
   optional string description = 101;
   optional string icon = 102;
-  string url = 103;
-  optional string user = 104;
-  optional string token = 105;
-  RegistryType type = 106;
+
+  oneof details {
+    HubRegistryDetails hub = 200;
+    V2RegistryDetails v2 = 201;
+    GitlabRegistryDetails gitlab = 202;
+    GithubRegistryDetails github = 203;
+  }
 }
 
 message UpdateRegistryRequest {
@@ -304,10 +329,13 @@ message UpdateRegistryRequest {
   string name = 100;
   optional string description = 101;
   optional string icon = 102;
-  string url = 103;
-  optional string user = 104;
-  optional string token = 105;
-  RegistryType type = 106;
+
+  oneof details {
+    HubRegistryDetails hub = 200;
+    V2RegistryDetails v2 = 201;
+    GitlabRegistryDetails gitlab = 202;
+    GithubRegistryDetails github = 203;
+  }
 }
 
 message RegistryDetailsResponse {
@@ -317,10 +345,13 @@ message RegistryDetailsResponse {
   string name = 100;
   optional string description = 101;
   optional string icon = 102;
-  string url = 103;
-  optional string user = 104;
-  optional string token = 105;
-  RegistryType type = 106;
+
+  oneof details {
+    HubRegistryDetails hub = 200;
+    V2RegistryDetails v2 = 201;
+    GitlabRegistryDetails gitlab = 202;
+    GithubRegistryDetails github = 203;
+  }
 }
 
 enum RegistryType {
@@ -440,12 +471,16 @@ message OrderVersionImagesRequest {
   repeated string imageIds = 101;
 }
 
+message RegistryImages {
+  string registryId = 100;
+  repeated string imageNames = 101;
+}
+
 message AddImagesToVersionRequest {
   string accessedBy = 2;
 
   string versionId = 100;
-  string registryId = 101;
-  repeated string imageIds = 102;
+  repeated RegistryImages images = 101;
 }
 
 message UniqueKeyValue {

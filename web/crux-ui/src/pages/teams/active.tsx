@@ -11,7 +11,7 @@ import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { roleToText, Team, User, userCanEditTeam } from '@app/models'
-import { API_TEAMS_ACTIVE, ROUTE_INDEX, ROUTE_REGISTRIES, teamsActiveUserApiUrl } from '@app/routes'
+import { API_TEAMS_ACTIVE, ROUTE_INDEX, ROUTE_TEAMS_ACTIVE, teamsActiveUserApiUrl } from '@app/routes'
 import { redirectTo, withContextAuthorization } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
 import { cruxFromContext } from '@server/crux/crux'
@@ -21,7 +21,7 @@ import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
-import React, { useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 
 interface ActiveTeamPageProps {
   me: Identity
@@ -90,7 +90,7 @@ const ActiveTeamPage = (props: ActiveTeamPageProps) => {
 
   const selfLink: BreadcrumbLink = {
     name: t('common:team'),
-    url: ROUTE_REGISTRIES,
+    url: ROUTE_TEAMS_ACTIVE,
   }
 
   const listHeaders = [...['common:name', 'common:email', 'role', 'common:status'].map(it => t(it)), '']

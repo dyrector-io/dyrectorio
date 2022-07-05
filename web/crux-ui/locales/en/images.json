@@ -1,6 +1,5 @@
 {
     "add": "Add image",
-    "registry": "Registry",
     "imageName": "Image name",
     "tag": "Tag",
     "config": "Config",

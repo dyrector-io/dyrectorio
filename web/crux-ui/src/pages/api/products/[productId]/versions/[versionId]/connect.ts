@@ -53,7 +53,7 @@ const onAddImages = async (endpoint: WsEndpoint, connection: WsConnection, messa
 
   const req = message.payload
 
-  const images = await cruxFromConnection(connection).images.addImagesToVersion(versionId, req.registryId, req.images)
+  const images = await cruxFromConnection(connection).images.addImagesToVersion(versionId, req.registryImages)
 
   endpoint.sendAll(WS_TYPE_IMAGES_ADDED, {
     images,

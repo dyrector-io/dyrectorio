@@ -5,6 +5,7 @@ import {
   ExplicitContainerConfig,
   ExplicitContainerNetworkMode,
   PatchContainerImage,
+  RegistryImages,
 } from '@app/models'
 import {
   AddImagesToVersionRequest,
@@ -57,11 +58,15 @@ class DyoImageService {
     }
   }
 
-  async addImagesToVersion(versionId: string, registryId: string, imageIds: string[]): Promise<ContainerImage[]> {
+  async addImagesToVersion(versionId: string, registryImages: RegistryImages[]): Promise<ContainerImage[]> {
     const req: AddImagesToVersionRequest = {
       versionId,
-      registryId,
-      imageIds,
+      images: registryImages.map(it => {
+        return {
+          registryId: it.registryId,
+          imageNames: it.images,
+        }
+      }),
       accessedBy: this.identity.id,
     }
 

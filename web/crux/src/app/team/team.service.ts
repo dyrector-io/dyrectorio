@@ -27,6 +27,7 @@ import { EmailService } from '../email.service'
 import { KratosService } from '../kratos.service'
 import { TeamMapper } from './team.mapper'
 import { TeamRepository } from './team.repository'
+import { REGISTRY_HUB_URL } from 'src/shared/const'
 
 const VALIDITY_DAY = 1
 const EPOCH_TIME = 24 * 60 * 60 * 1000 // 1 day in millis
@@ -137,10 +138,11 @@ export class TeamService {
         // Seed every team with the Docker Hub Registry
         registries: {
           create: {
-            name: 'Docker Hub Registry',
+            name: 'Docker Hub Library',
             description: 'List of Docker library images',
             icon: null,
-            url: 'hub.docker.com',
+            url: REGISTRY_HUB_URL,
+            urlPrefix: 'library',
             createdBy: request.accessedBy,
             type: RegistryTypeEnum.hub,
           },

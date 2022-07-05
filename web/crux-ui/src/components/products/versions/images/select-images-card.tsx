@@ -7,6 +7,7 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { DyoList } from '@app/elements/dyo-list'
+import LoadingIndicator from '@app/elements/loading-indicator'
 import { defaultWsErrorHandler } from '@app/errors'
 import { useThrottleing } from '@app/hooks/use-throttleing'
 import { useWebSocket } from '@app/hooks/use-websocket'
@@ -15,19 +16,21 @@ import {
   FindImageResult,
   FindImageResultMessage,
   Registry,
+  RegistryImages,
   WS_TYPE_DYO_ERROR,
   WS_TYPE_FIND_IMAGE,
   WS_TYPE_FIND_IMAGE_RESULT,
 } from '@app/models'
 import { API_REGISTRIES, WS_REGISTRIES } from '@app/routes'
 import { fetcher } from '@app/utils'
+import { DyoApiError } from '@server/error-middleware'
 import useTranslation from 'next-translate/useTranslation'
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import useSWR from 'swr'
 
 interface SelectImagesCardProps {
   className?: string
-  onImagesSelected: (registry: Registry, images: FindImageResult[]) => void
+  onImagesSelected: (images: RegistryImages[]) => void
   onDiscard: VoidFunction
 }
 
@@ -35,9 +38,10 @@ const SelectImagesCard = (props: SelectImagesCardProps) => {
   const { t } = useTranslation('images')
 
   const { data: registries, error: fetchRegistriesError } = useSWR<Registry[]>(API_REGISTRIES, fetcher)
+  const [searching, setSearching] = useState(false)
   const [registry, setRegistry] = useState<Registry>(null)
-  const [selected, setSelected] = useState<FindImageResult[]>([])
-  const [images, setImages] = useState<FindImageResult[]>([])
+  const [selected, setSelected] = useState<SelectableImage[]>([])
+  const [images, setImages] = useState<SelectableImage[]>([])
   const [filter, setFilter] = useState('')
   const throttleFilter = useThrottleing(IMAGE_WS_REQUEST_DELAY)
 
@@ -47,17 +51,30 @@ const SelectImagesCard = (props: SelectImagesCardProps) => {
 
   sock.on(WS_TYPE_FIND_IMAGE_RESULT, (message: FindImageResultMessage) => {
     if (message.registryId === registry?.id && filter.length >= IMAGE_FILTER_MIN_LENGTH) {
-      setImages(message.images)
+      setSearching(false)
+      setImages(
+        message.images.map(it => {
+          return {
+            registryId: message.registryId,
+            image: it,
+          }
+        }),
+      )
     }
   })
 
-  sock.on(WS_TYPE_DYO_ERROR, defaultWsErrorHandler(t))
+  const handleWsError = defaultWsErrorHandler(t)
+  sock.on(WS_TYPE_DYO_ERROR, (message: DyoApiError) => {
+    setSearching(false)
+    handleWsError(message)
+  })
 
   useEffect(() => setRegistry(registriesFound ? registries[0] : null), [registries, registriesFound])
 
   const findImage = (registry: Registry, filter?: string) => {
     if (!registry || filter.length < IMAGE_FILTER_MIN_LENGTH) {
       setImages([])
+      setSearching(false)
       return
     }
 
@@ -68,6 +85,7 @@ const SelectImagesCard = (props: SelectImagesCardProps) => {
       } as FindImageMessage)
     }
 
+    setSearching(true)
     throttleFilter(send)
   }
 
@@ -81,23 +99,39 @@ const SelectImagesCard = (props: SelectImagesCardProps) => {
     findImage(registry, filter)
   }
 
-  const onImageCheckedChange = (image: FindImageResult, checked: boolean) => {
+  const onImageCheckedChange = (target: SelectableImage, checked: boolean) => {
     if (checked) {
-      if (!selected.find(it => it.name === image.name)) {
-        setSelected([...selected, image])
+      if (!selected.find(it => it.image.name === target.image.name)) {
+        setSelected([...selected, target])
       }
     } else {
-      setSelected(selected.filter(it => it.name !== image.name))
+      setSelected(selected.filter(it => it.image.name !== target.image.name))
     }
   }
 
   const onAdd = () => {
-    const images = selected
+    const registryToImages: Map<string, RegistryImages> = new Map()
+    selected.forEach(it => {
+      let registryImage = registryToImages.get(it.registryId)
+      if (!registryImage) {
+        registryImage = {
+          registryId: it.registryId,
+          images: [],
+        }
+        registryToImages.set(it.registryId, registryImage)
+      }
+
+      registryImage.images.push(it.image.name)
+    })
+
     setSelected([])
-    props.onImagesSelected(registry, images)
+    props.onImagesSelected(Array.from(registryToImages.values()))
   }
 
-  const filterResult = [...selected, ...images.filter(image => !selected.find(it => it.name === image.name))]
+  const filterResult = [
+    ...selected,
+    ...images.filter(selectable => !selected.find(it => it.image.name === selectable.image.name)),
+  ]
 
   return (
     <>
@@ -129,7 +163,7 @@ const SelectImagesCard = (props: SelectImagesCardProps) => {
         ) : (
           <div className="flex flex-col">
             <div className="flex flex-wrap mt-4">
-              <DyoLabel className="ml-8 mr-2 my-auto">{t('registry')}</DyoLabel>
+              <DyoLabel className="ml-8 mr-2 my-auto">{t('common:registry')}</DyoLabel>
 
               <DyoChips
                 choices={registries}
@@ -153,20 +187,26 @@ const SelectImagesCard = (props: SelectImagesCardProps) => {
               }
             />
 
-            {filterResult.length < 1 ? null : (
+            {filterResult.length < 1 ? (
+              filter.length < 1 ? null : searching ? (
+                <LoadingIndicator className="mt-4" />
+              ) : (
+                <DyoLabel className="mt-4">{t('common:noNameFound', { name: t('common:images') })}</DyoLabel>
+              )
+            ) : (
               <DyoList
                 className="mt-4"
                 data={filterResult}
                 headers={['imageName'].map(it => t(it))}
-                itemBuilder={image => {
-                  const checked = !!selected.find(it => it.name === image.name)
-                  const onCheckedChange = checked => onImageCheckedChange(image, checked)
+                itemBuilder={selectable => {
+                  const checked = !!selected.find(it => it.image.name === selectable.image.name)
+                  const onCheckedChange = checked => onImageCheckedChange(selectable, checked)
 
                   /* eslint-disable react/jsx-key */
                   return [
                     <div className="flex flex-row p-auto">
                       <DyoCheckbox className="my-auto mr-2" checked={!!checked} onCheckedChange={onCheckedChange} />
-                      <DyoLabel onClick={() => onCheckedChange(!checked)}>{image.name}</DyoLabel>
+                      <DyoLabel onClick={() => onCheckedChange(!checked)}>{selectable.image.name}</DyoLabel>
                     </div>,
                   ]
                   /* eslint-enable react/jsx-key */
@@ -181,3 +221,8 @@ const SelectImagesCard = (props: SelectImagesCardProps) => {
 }
 
 export default SelectImagesCard
+
+type SelectableImage = {
+  registryId: string
+  image: FindImageResult
+}

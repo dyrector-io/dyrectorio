@@ -46,12 +46,9 @@ export class RegistryService {
         name: req.name,
         description: req.description,
         icon: req.icon ?? null,
-        url: req.url,
-        user: req.user,
-        token: req.token,
         teamId: team.teamId,
         createdBy: req.accessedBy,
-        type: this.mapper.typeToDb(req.type),
+        ...this.mapper.detailsToDb(req),
       },
     })
 
@@ -67,12 +64,9 @@ export class RegistryService {
         name: req.name,
         description: req.description,
         icon: req.icon ?? null,
-        url: req.url,
-        user: req.user,
-        token: req.token,
         updatedBy: req.accessedBy,
         updatedAt: new Date(),
-        type: this.mapper.typeToDb(req.type),
+        ...this.mapper.detailsToDb(req),
       },
     })
 

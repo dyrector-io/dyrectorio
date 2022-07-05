@@ -1,5 +1,6 @@
 import { Identity } from '@ory/kratos-client'
 import { DyoApiError } from '@server/error-middleware'
+import { REGISTRY_GITHUB_URL, REGISTRY_GITLAB_URLS, REGISTRY_HUB_URL } from './const'
 
 export const PRODUCT_TYPE_VALUES = ['simple', 'complex'] as const
 export type ProductType = typeof PRODUCT_TYPE_VALUES[number]
@@ -252,26 +253,45 @@ export type Registry = {
   url: string
 }
 
-export const REGISTRY_TYPE_VALUES = ['v2', 'hub'] as const
+export const REGISTRY_TYPE_VALUES = ['v2', 'hub', 'gitlab', 'github'] as const
 export type RegistryType = typeof REGISTRY_TYPE_VALUES[number]
 
-export type RegistryDetails = Registry & {
-  type: RegistryType
-  user?: string
-  token?: string
-  updatedAt: string
+export type HubRegistryDetails = {
+  type: 'hub'
+  urlPrefix: string
 }
 
-export type UpdateRegistry = {
-  icon?: string
-  name: string
-  description?: string
-  type: RegistryType
+export type V2RegistryDetails = {
+  type: 'v2'
   url: string
+  _private: boolean
   user?: string
   token?: string
 }
 
+export type GitlabRegistryDetails = {
+  type: 'gitlab'
+  urlPrefix: string
+  user: string
+  token: string
+  selfManaged: boolean
+  url?: string
+  apiUrl?: string
+}
+
+export type GithubRegistryDetails = {
+  type: 'github'
+  urlPrefix: string
+  user: string
+  token: string
+}
+
+export type RegistryDetails = Omit<Registry, 'url'> &
+  (HubRegistryDetails | V2RegistryDetails | GitlabRegistryDetails | GithubRegistryDetails) & {
+    updatedAt: string
+  }
+
+export type UpdateRegistry = RegistryDetails
 export type CreateRegistry = UpdateRegistry
 
 export type AuditLog = {
@@ -354,10 +374,7 @@ export type FindImageResultMessage = {
 }
 
 export const WS_TYPE_REGISTRY_FETCH_IMAGE_TAGS = 'fetch-image-tags'
-export type FetchImageTagsMessage = {
-  registryId: string
-  images: string[]
-}
+export type FetchImageTagsMessage = RegistryImages
 
 export type RegistryImageTags = {
   name: string
@@ -372,10 +389,14 @@ export type RegistryImageTagsMessage = {
 
 // ws - images
 
-export const WS_TYPE_ADD_IMAGES = 'add-images'
-export type AddImagesMessage = {
+export type RegistryImages = {
   registryId: string
   images: string[]
+}
+
+export const WS_TYPE_ADD_IMAGES = 'add-images'
+export type AddImagesMessage = {
+  registryImages: RegistryImages[]
 }
 
 export const WS_TYPE_DELETE_IMAGE = 'delete-image'
@@ -580,4 +601,24 @@ export const beautifyAuditLogEvent = (event: string): string => {
 
   parts = parts[1].split('/')
   return parts.length < 2 ? parts[1] : `${parts[0]}: ${parts[1]}`
+}
+
+export const registryUrlOf = (it: RegistryDetails) => {
+  switch (it.type) {
+    case 'hub':
+      return REGISTRY_HUB_URL
+    case 'v2':
+      return it.url
+    case 'gitlab':
+      return it.selfManaged ? it.url : REGISTRY_GITLAB_URLS.registryUrl
+    case 'github':
+      return REGISTRY_GITHUB_URL
+  }
+}
+
+export const registryDetailsToRegistry = (it: RegistryDetails): Registry => {
+  return {
+    ...it,
+    url: registryUrlOf(it),
+  }
 }

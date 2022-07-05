@@ -55,7 +55,7 @@ services:
       # WARNING: Do NOT expose the admin port in production!
       - 9434:4434 # admin
     environment:
-      - KRATOS_ADMIN_URL=${KRATOS_ADMIN_URL:-http://172.17.0.1:4434}
+      - KRATOS_ADMIN_URL=${KRATOS_ADMIN_URL:-http://172.17.0.1:9434}
       - KRATOS_URL=${KRATOS_URL:-http://172.17.0.1:8000/kratos}
       - AUTH_URL=${AUTH_URL:-http://172.17.0.1:8000/auth}
       - DEV=${KRATOS_DEV:-false}
