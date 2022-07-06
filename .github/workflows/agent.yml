@@ -139,11 +139,11 @@ jobs:
 
     - name: Sign container image dagent
       run: | 
-        cosign sign --key cosign.key ghcr.io/dyrector-io/dyrectorio/dagent:${{ needs.test.outputs.tag }}
+        cosign sign --key cosign.key ghcr.io/dyrector-io/dyrectorio/agent/dagent:${{ needs.test.outputs.tag }}
       env:
         COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
     - name: Sign container image crane
       run: |
-        cosign sign --key cosign.key ghcr.io/dyrector-io/dyrectorio/crane:${{ needs.test.outputs.tag }}
+        cosign sign --key cosign.key ghcr.io/dyrector-io/dyrectorio/agent/crane:${{ needs.test.outputs.tag }}
       env:
         COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"

@@ -8,12 +8,29 @@ on:
 permissions:
   contents: read
   pull-requests: read
+  packages: read
+
+env:
+  # Environments
+  REGISTRY: ghcr.io
+  IMAGE_NAME: dyrector-io/dyrectorio/web/crux-ui
+  WORKING_DIRECTORY: web/crux-ui
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+  LOG_LEVEL: 
+  KRATOS_URL: http://192.168.1.30:8000/kratos
+  CRUX_ADDRESS: http://172.17.0.1:8000
+  TIME_ZONE: Europe/Budapest
+  # Default GitHub variables
+  CRUX_UI_VERSION: ${{ github.sha }}
+  CRUX_UI_IMAGE_TAG: ${{ github.ref_name }}
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     container:
-      image: node:16
+      image: node:17.1-alpine
+    outputs:
+      tag: ${{ steps.settag.outputs.tag }}
     defaults:
       run:
         working-directory: web/crux-ui
@@ -22,7 +39,96 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Install dependencies
-      run: npm ci --arch=x64 --platform=linuxmusl
+      run: |
+        npm ci --arch=x64 --platform=linuxmusl --cache .npm --prefer-offline
+        npm run disable-telemetry
 
-    - name: Build
-      run: npm run build
+    - name: Lint and Build
+      run: |
+        npm run lint
+        npm run build
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: crux-ui-web-dist
+        path: |
+          ${{ env.WORKING_DIRECTORY }}/.next
+          ${{ env.WORKING_DIRECTORY }}/node_modules
+          ${{ env.WORKING_DIRECTORY }}/package*.json
+          ${{ env.WORKING_DIRECTORY }}/public
+        retention-days: 1
+
+    - name: Setting a buildtag
+      id: settag
+      run: |
+        if [ $GITHUB_REF_TYPE == "branch" ]; then
+          case ${{ github.ref_name }} in
+            "main")
+              echo "::set-output name=tag::stable"
+              ;;
+            "develop")
+              echo "::set-output name=tag::latest"
+              ;;
+            *)
+              echo "::set-output name=tag::${{ github.sha }}"
+              ;;
+          esac
+        fi
+
+  # job: Build image
+  build_image:
+    runs-on: ubuntu-20.04
+    needs: check
+    container: docker:latest
+    if: github.ref_name == 'develop' || github.ref_name == 'main'
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Download /dist artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: crux-ui-web-dist
+        path: |
+          ${{ env.WORKING_DIRECTORY }}
+
+    - name: Login to GHCR
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GHCR_PAT }}
+
+    - name: Docker build and push
+      run: |
+        docker-compose build
+        docker-compose push crux-ui
+      env:
+        CRUX_IMAGE_TAG: ${{ needs.check.outputs.tag }}
+
+  sign_image:
+    runs-on: ubuntu-20.04
+    container:
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16
+    needs: [build_image,check]
+    environment: Workflow - Protected
+    steps:
+    - name: Write signing key to disk
+      run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
+
+    - name: Login to GHCR
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GHCR_PAT }}
+
+    - name: Sign container image
+      run: |
+        cosign sign --key cosign.key ghcr.io/dyrector-io/dyrectorio/web/crux-ui:${{ needs.check.outputs.tag }}
+      env:
+        COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
