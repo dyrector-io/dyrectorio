@@ -8,7 +8,7 @@ on:
 env:
   # Environments
   REGISTRY: ghcr.io
-  IMAGE_NAME: dyrector-io/dyrectorio/web-crux
+  IMAGE_NAME: dyrector-io/dyrectorio/web/crux
   WORKING_DIRECTORY: web/crux
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
   CRUX_DOMAIN: DNS:localhost
@@ -111,7 +111,6 @@ jobs:
 
     - name: Docker build and push
       run: |
-        echo building tag: ${{ needs.prerequirements.outputs.tag }}
         docker-compose build
         docker-compose push crux
       env:
@@ -136,7 +135,6 @@ jobs:
 
     - name: Sign container image
       run: |
-        echo signing image tag: ${{ needs.prerequirements.outputs.tag }}
-        cosign sign --key cosign.key ghcr.io/dyrector-io/dyrectorio/web-crux:${{ needs.prerequirements.outputs.tag }}
+        cosign sign --key cosign.key ghcr.io/dyrector-io/dyrectorio/web/crux:${{ needs.prerequirements.outputs.tag }}
       env:
         COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
