@@ -341,3 +341,5 @@ export const writeToClipboard = async (t: Translate, content: string) => {
     toast(t('errors:insecure'))
   }
 }
+
+export const isServerSide = () => typeof window === 'undefined'

@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useEffect, useState } from 'react'
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react'
 
 export type FilterFunction<Item, Filter> = (items: Item[], filter: Filter) => Item[]
 
@@ -16,30 +16,36 @@ export type FilterConfig<Item, Filter> = {
 }
 
 export const useFilters = <Item, Filter>(options: UseFiltersOptions<Item, Filter>): FilterConfig<Item, Filter> => {
-  const [items, setItems] = options.data ? [options.data, () => {}] : useState(options.initialData)
+  const filters = useRef(options.filters)
+
+  const [items, setItems] = useState(options.data ?? options.initialData)
   const [filter, setFilter] = useState<Filter>(options.initialFilter)
   const [filtered, setFiltered] = useState(items)
 
   useEffect(() => {
     let newData = [...items]
-    options.filters.forEach(it => {
+    filters.current.forEach(it => {
       newData = it(newData, filter)
     })
 
     setFiltered(newData)
-  }, [items, filter])
+  }, [items, filter, filters])
 
   return {
     items,
     filtered,
     filter,
-    setItems,
+    setItems: !options.data ? setItems : setItemsError,
     setFilter: it =>
       setFilter({
         ...filter,
         ...it,
       }),
   }
+}
+
+const setItemsError = () => {
+  throw new Error('Can not set filter items, when data was explicitly provided.')
 }
 
 export type TextFilter = {

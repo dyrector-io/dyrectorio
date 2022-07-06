@@ -14,7 +14,7 @@ export const useOverflowDetection = <T extends HTMLElement>(): [boolean, Mutable
       !!element && (element.offsetHeight < element.scrollHeight || element.offsetWidth < element.scrollWidth)
 
     setOverflow(elementOverflows)
-  })
+  }, [setOverflow])
 
   useEffect(() => {
     if (state === 'clear') {
@@ -23,7 +23,7 @@ export const useOverflowDetection = <T extends HTMLElement>(): [boolean, Mutable
     } else if (state === 'overflow' && !overflow) {
       setState('clear')
     }
-  }, [overflow])
+  }, [overflow, state])
 
   return [result, ref]
 }

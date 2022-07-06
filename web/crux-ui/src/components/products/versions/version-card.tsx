@@ -79,7 +79,7 @@ const VersionCard = (props: VersionCardProps) => {
 
         <p
           ref={overflowRef}
-          className={clsx('text-md text-bright mt-2 max-h-44', overflow ? 'line-clamp-6 mb-6' : 'mb-8')}
+          className={clsx('text-md text-bright line-clamp-6 mt-2 max-h-44', overflow ? 'mb-6' : 'mb-8')}
         >
           {version.changelog}
         </p>
