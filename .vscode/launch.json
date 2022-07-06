@@ -1,0 +1,26 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Start web/crux debug session",
+            "args": [
+                "${workspaceFolder}/web/crux/src/main.ts"
+            ],
+            "runtimeArgs": [
+                "--nolazy",
+                "-r",
+                "ts-node/register",
+                "-r",
+                "tsconfig-paths/register"
+            ],
+            "sourceMaps": true,
+            "envFile": "${workspaceFolder}/web/crux/.env",
+            "cwd": "${workspaceRoot}/web/crux",
+            "console": "integratedTerminal",
+            "protocol": "inspector"
+        },
+
+    ]
+  }

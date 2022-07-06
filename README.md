@@ -9,8 +9,7 @@
 
 dyrector.io is an **open-source** internal delivery platform that helps developers to deliver applications to more places efficiently by simplifying software releases and operations in any environment.
 
-⚠️ Disclaimer
-> dyrectorio platform is under development, please treat as such. Expect bugs here and there. Early adopters welcome.
+> ⚠️ Disclaimer: dyrectorio platform is under development, please treat as such. Expect bugs here and there. Early adopters welcome.
 
 ## Key features
 
