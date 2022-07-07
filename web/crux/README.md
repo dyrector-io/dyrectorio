@@ -34,7 +34,6 @@ To stop the datbase container you have to use the following command:
 ## Project structure
 
  - `certs/` - Generated certificates, created for testing and local development purpose
- - `docs/` - Documentation releated assets
  - `prisma/`
     - `/migrations` - Your migration history is the story of the changes to your data model, and is represented by a this folder with a sub-folder and migration.sql file for each migration.
     - `/seed` - This folder contains all data to seed your database using Prisma Client and Prisma's integrated seeding functionality. Seeding allows you to consistently re-create the same data in your database.
@@ -44,7 +43,7 @@ To stop the datbase container you have to use the following command:
  - `/src` -
     - `/app` - NestJS core application, each model has it's own folder with service, controller and repository serivces.
     - `/config` - Config related files
-    - `/domain` - Domain releated files?
+    - `/domain` - Internal logic of the application
     - `/exception` - Errors and Exceptions
     - `/proto` - Generated proto typescript from .proto files
     - `/shared` - NestJS shared resources

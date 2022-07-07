@@ -8,8 +8,6 @@ ENV PATH /go/bin:$PATH
 ENV GOLANGCI_LINT_CACHE $GOPATH/cache
 ENV GOCACHE $GOPATH/cache
 
-
-
 RUN mkdir -p "$GOPATH/{src,bin,cache}" && chmod -R 777 "$GOPATH"
 
 RUN apk add nodejs npm alpine-sdk go protoc protobuf-dev rsync docker git cosign
