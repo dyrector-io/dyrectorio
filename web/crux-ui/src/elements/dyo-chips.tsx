@@ -1,12 +1,11 @@
 import assert from 'assert'
 import clsx from 'clsx'
-import Image from 'next/image'
 import { useState } from 'react'
 
 interface DyoChipsProps<T> {
   key?: React.Key
   multiple?: boolean
-  choices: T[]
+  choices: readonly T[]
   initialSelection?: T[]
   converter?: (choice: T) => string
   onChoicesChange: (choices: T[]) => void
@@ -48,22 +47,16 @@ const DyoChips = <T,>(props: DyoChipsProps<T>) => {
         return (
           <button
             key={`${key}-${index}`}
+            type="button"
             className={clsx(
-              'rounded-full border-2 px-2 py-1 m-1',
+              'rounded-md border-2 px-2 py-1 m-1',
               selected
-                ? 'text-dyo-turquoise border-dyo-turquoise bg-dyo-turquoise bg-opacity-10'
+                ? 'text-white font-medium border-dyo-turquoise bg-dyo-turquoise bg-opacity-30'
                 : 'text-light-eased border-light-eased',
             )}
             onClick={() => onToggle(it)}
           >
-            {!selected ? (
-              text
-            ) : (
-              <>
-                <Image src="/check.svg" width={16} height={16} />
-                {text}
-              </>
-            )}
+            {text}
           </button>
         )
       })}

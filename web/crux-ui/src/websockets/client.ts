@@ -17,7 +17,7 @@ export class WebSocketEndpoint {
   private callbacks: Map<string, Array<WsMessageCallback<object>>> = new Map()
   private sendables: Array<WsMessage<object>> = []
 
-  constructor(private url: string) {}
+  constructor(readonly url: string) {}
 
   readyStateChanged: (readyState: number) => void
   options?: WebSocketClientOptions
@@ -128,7 +128,7 @@ export class WebSocketRoute {
 }
 
 export class WebSocketClient {
-  private logger = new Logger(WebSocketClient.name)
+  private logger = new Logger('WebSocketClient') // need to be explicit string because of production build uglification
   private socket?: WebSocket
   private connectionAttempt?: Promise<boolean>
   private lastAttempt = 0
@@ -136,7 +136,9 @@ export class WebSocketClient {
   private unsubscribe?: VoidFunction
   private routes: Map<string, WebSocketRoute> = new Map()
 
-  async register(url: string, endpoint: WebSocketEndpoint): Promise<boolean> {
+  async register(endpoint: WebSocketEndpoint): Promise<boolean> {
+    const url = endpoint.url
+
     let route = this.routes.get(url)
     if (!route) {
       route = new WebSocketRoute(url)

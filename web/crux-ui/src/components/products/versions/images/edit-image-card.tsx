@@ -108,7 +108,9 @@ const EditImageCard = (props: EditImageCardProps) => {
             {t('json')}
           </DyoButton>
 
-          {disabled ? null : <DyoImgButton className="ml-6" onClick={() => onDelete()} src="/trash-can.svg" />}
+          {disabled ? null : (
+            <DyoImgButton className="ml-6" onClick={() => onDelete()} src="/trash-can.svg" alt={t('delete')} />
+          )}
         </div>
 
         {selection === 'tag' ? (

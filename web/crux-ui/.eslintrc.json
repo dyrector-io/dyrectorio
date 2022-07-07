@@ -5,7 +5,7 @@
   ],
   "overrides": [
     {
-      "files": "src/pages/api/**/*.ts",
+      "files": ["src/pages/api/**/*.ts", "src/server/**/*"],
       "rules": {
         "react-hooks/rules-of-hooks": "off"
       }

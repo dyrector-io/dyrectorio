@@ -7,8 +7,11 @@ export type RegistryV2ApiClientOptions = {
   password?: string
 }
 
+export const registryCredentialsToBasicAuth = (options: RegistryV2ApiClientOptions) =>
+  `Basic ${Buffer.from(`${options.username}:${options.password}`).toString('base64')}`
+
 class RegistryV2ApiClient implements RegistryApiClient {
-  private headers: object
+  private headers: HeadersInit
 
   constructor(private url: string, options?: RegistryV2ApiClientOptions) {
     if (options?.username) {
@@ -17,7 +20,7 @@ class RegistryV2ApiClient implements RegistryApiClient {
       }
 
       this.headers = {
-        Authorization: `Basic ${Buffer.from(`${options.username}:${options.password}`).toString('base64')}`,
+        Authorization: registryCredentialsToBasicAuth(options),
       }
     } else {
       this.headers = {}
@@ -35,7 +38,7 @@ class RegistryV2ApiClient implements RegistryApiClient {
   }
 
   async catalog(text: string, take: number): Promise<string[]> {
-    const res = await this._fetchPaginatedEndpoint('/_catalog')
+    const res = await RegistryV2ApiClient.fetchPaginatedEndpoint(it => this._fetch(it), '/_catalog')
     if (!res.ok) {
       const errorMessage = `Catalog request failed with status: ${res.status} ${res.statusText}`
       throw res.status === 401 ? unauthorizedError(errorMessage) : internalError(errorMessage)
@@ -47,7 +50,7 @@ class RegistryV2ApiClient implements RegistryApiClient {
   }
 
   async tags(image: string): Promise<RegistryImageTags> {
-    const res = await this._fetchPaginatedEndpoint(`/${image}/tags/list`)
+    const res = await RegistryV2ApiClient.fetchPaginatedEndpoint(it => this._fetch(it), `/${image}/tags/list`)
     if (!res.ok) {
       const errorMessage = `Tags request failed with status: ${res.status} ${res.statusText}`
       throw res.status === 401 ? unauthorizedError(errorMessage) : internalError(errorMessage)
@@ -73,7 +76,10 @@ class RegistryV2ApiClient implements RegistryApiClient {
     })
   }
 
-  private async _fetchPaginatedEndpoint(endpoint: string, init?: RequestInit): Promise<Response> {
+  public static async fetchPaginatedEndpoint(
+    fetcher: (endpoint: string) => Promise<Response>,
+    endpoint: string,
+  ): Promise<Response> {
     let bodies = []
 
     const generateResponse = (res: Response) => {
@@ -84,7 +90,7 @@ class RegistryV2ApiClient implements RegistryApiClient {
     let next = endpoint
     let res: Response = null
     while (next) {
-      res = await this._fetch(next, init)
+      res = await fetcher(next)
       if (!res.ok) {
         return res
       }

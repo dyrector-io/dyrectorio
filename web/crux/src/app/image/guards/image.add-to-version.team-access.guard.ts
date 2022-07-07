@@ -9,20 +9,24 @@ export class ImageAddToVersionTeamAccessGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.getArgByIndex<AddImagesToVersionRequest>(0)
 
-    const version = await this.prisma.version.count({
+    const registries = await this.prisma.registry.count({
       where: {
-        id: request.versionId,
-        product: {
-          team: {
-            users: {
-              some: {
-                userId: request.accessedBy,
-                active: true,
-              },
+        id: {
+          in: request.images.map(it => it.registryId),
+        },
+        team: {
+          users: {
+            some: {
+              userId: request.accessedBy,
+              active: true,
             },
-            registries: {
-              some: {
-                id: request.registryId,
+          },
+          products: {
+            some: {
+              versions: {
+                some: {
+                  id: request.versionId,
+                },
               },
             },
           },
@@ -30,6 +34,6 @@ export class ImageAddToVersionTeamAccessGuard implements CanActivate {
       },
     })
 
-    return version > 0
+    return registries === request.images.length
   }
 }

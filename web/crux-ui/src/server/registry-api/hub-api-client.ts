@@ -12,6 +12,8 @@ export class HubApiCache {
 
   private entries: Map<string, CacheEntry> = new Map()
 
+  public clients = 1
+
   get(url: string) {
     const now = new Date().getTime()
 

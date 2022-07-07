@@ -66,32 +66,34 @@ export class ImageService {
         },
       })
 
-      const lastOrder = (lastImageOrder?.order ?? 0) + 1
+      const lastOrder = lastImageOrder?.order ?? 0
+      let order = lastOrder + 1
 
       // we need the generated uuids, so we can't use createMany
-      const images = request.imageIds.map(async (it, index) => {
-        const order = lastOrder + index
-        const image = await prisma.image.create({
-          include: {
-            config: true,
-          },
-          data: {
-            registryId: request.registryId,
-            versionId: request.versionId,
-            name: it,
-            order,
-            config: {
-              create: {
-                environment: [],
-                capabilities: [],
-                config: {},
+      const images = request.images.flatMap(registyImages =>
+        registyImages.imageNames.map(async it => {
+          const image = await prisma.image.create({
+            include: {
+              config: true,
+            },
+            data: {
+              registryId: registyImages.registryId,
+              versionId: request.versionId,
+              name: it,
+              order: order++,
+              config: {
+                create: {
+                  environment: [],
+                  capabilities: [],
+                  config: {},
+                },
               },
             },
-          },
-        })
+          })
 
-        return image
-      })
+          return image
+        }),
+      )
 
       return await Promise.all(images)
     })

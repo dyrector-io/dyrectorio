@@ -80,6 +80,8 @@ model Registry {
   user        String?
   token       String?
   type        RegistryTypeEnum
+  urlPrefix   String?
+  apiUrl      String?
 
   images Image[]
   team   Team    @relation(fields: [teamId], references: [id], onDelete: Cascade)
@@ -265,4 +267,6 @@ enum DeploymentEventTypeEnum {
 enum RegistryTypeEnum {
   v2
   hub
+  gitlab
+  github
 }

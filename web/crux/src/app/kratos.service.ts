@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { Configuration, Identity, Session, V0alpha2Api } from '@ory/kratos-client'
 
-const kratos = new V0alpha2Api(new Configuration({ basePath: process.env.KRATOS_URL }))
+const kratos = new V0alpha2Api(new Configuration({ basePath: process.env.KRATOS_ADMIN_URL }))
 const EMAIL = 'email'
 
 @Injectable()

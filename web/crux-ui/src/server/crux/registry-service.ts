@@ -1,5 +1,4 @@
-import { REGISTRY_HUB_URL } from '@app/const'
-import { CreateRegistry, Registry, RegistryDetails, RegistryType, UpdateRegistry } from '@app/models'
+import { CreateRegistry, Registry, RegistryDetails, UpdateRegistry } from '@app/models'
 import {
   AccessRequest,
   CreateEntityResponse,
@@ -9,9 +8,6 @@ import {
   IdRequest,
   RegistryDetailsResponse,
   RegistryListResponse,
-  RegistryType as ProtoRegistryType,
-  registryTypeFromJSON,
-  registryTypeToJSON,
   UpdateEntityResponse,
   UpdateRegistryRequest,
 } from '@app/models/grpc/protobuf/proto/crux'
@@ -45,12 +41,7 @@ class DyoRegistryService {
   }
 
   async create(dto: CreateRegistry): Promise<RegistryDetails> {
-    const req: CreateRegistryRequest = {
-      ...dto,
-      type: this.typeToProto(dto.type),
-      url: dto.type === 'hub' ? REGISTRY_HUB_URL : dto.url,
-      accessedBy: this.identity.id,
-    }
+    const req: CreateRegistryRequest = this.createDtoToProto(dto)
 
     const res = await protomisify<CreateRegistryRequest, CreateEntityResponse>(this.client, this.client.createRegistry)(
       CreateRegistryRequest,
@@ -59,7 +50,6 @@ class DyoRegistryService {
 
     return {
       ...dto,
-      url: dto.type === 'hub' ? REGISTRY_HUB_URL : dto.url,
       id: res.id,
       updatedAt: timestampToUTC(res.createdAt),
     }
@@ -67,11 +57,8 @@ class DyoRegistryService {
 
   async update(id: string, dto: UpdateRegistry): Promise<string> {
     const req: UpdateRegistryRequest = {
-      ...dto,
-      type: this.typeToProto(dto.type),
-      url: dto.type === 'hub' ? REGISTRY_HUB_URL : dto.url,
+      ...this.createDtoToProto(dto),
       id,
-      accessedBy: this.identity.id,
     }
 
     this.connections.invalidate(id)
@@ -106,18 +93,74 @@ class DyoRegistryService {
     )
 
     return {
-      ...res,
-      type: this.typeToDto(res.type),
+      id: res.id,
+      name: res.name,
+      description: res.description,
+      icon: res.icon ?? null,
       updatedAt: timestampToUTC(res.audit.updatedAt ?? res.audit.createdAt),
+      ...(res.hub
+        ? {
+            type: 'hub',
+            ...res.hub,
+          }
+        : res.v2
+        ? {
+            type: 'v2',
+            ...res.v2,
+            _private: !!res.v2.user,
+          }
+        : res.gitlab
+        ? {
+            type: 'gitlab',
+            ...res.gitlab,
+            selfManaged: !!res.gitlab.apiUrl,
+          }
+        : {
+            type: 'github',
+            ...res.github,
+          }),
     }
   }
 
-  private typeToDto(type: ProtoRegistryType): RegistryType {
-    return registryTypeToJSON(type).toLocaleLowerCase() as RegistryType
-  }
-
-  private typeToProto(type: RegistryType): ProtoRegistryType {
-    return registryTypeFromJSON(type.toUpperCase())
+  private createDtoToProto(dto: CreateRegistry): CreateRegistryRequest {
+    return {
+      name: dto.name,
+      description: dto.description,
+      icon: dto.icon,
+      accessedBy: this.identity.id,
+      hub:
+        dto.type !== 'hub'
+          ? null
+          : {
+              urlPrefix: dto.urlPrefix,
+            },
+      v2:
+        dto.type !== 'v2'
+          ? null
+          : {
+              url: dto.url,
+              user: dto.user,
+              token: dto.token,
+            },
+      gitlab:
+        dto.type !== 'gitlab'
+          ? null
+          : {
+              user: dto.user,
+              token: dto.token,
+              urlPrefix: dto.urlPrefix,
+              url: dto.selfManaged ? dto.url : null,
+              apiUrl: dto.selfManaged ? dto.apiUrl : null,
+            },
+      github:
+        dto.type !== 'github'
+          ? null
+          : {
+              user: dto.user,
+              token: dto.token,
+              urlPrefix: dto.urlPrefix,
+            },
+    }
   }
 }
 
