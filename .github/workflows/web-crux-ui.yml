@@ -41,12 +41,13 @@ jobs:
     - name: Install dependencies
       run: |
         npm ci --arch=x64 --platform=linuxmusl --cache .npm --prefer-offline
-        npm run disable-telemetry
 
     - name: Lint and Build
       run: |
         npm run lint
         npm run build
+      env:
+        NEXT_TELEMETRY_DISABLED: 1
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
@@ -54,7 +55,6 @@ jobs:
         name: crux-ui-web-dist
         path: |
           ${{ env.WORKING_DIRECTORY }}/.next
-          ${{ env.WORKING_DIRECTORY }}/node_modules
           ${{ env.WORKING_DIRECTORY }}/package*.json
           ${{ env.WORKING_DIRECTORY }}/public
         retention-days: 1
@@ -86,10 +86,8 @@ jobs:
       run:
         working-directory: ${{ env.WORKING_DIRECTORY }}
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
 
-    - name: Download /dist artifact
+    - name: Download artifact
       uses: actions/download-artifact@v3
       with:
         name: crux-ui-web-dist
@@ -108,7 +106,7 @@ jobs:
         docker-compose build
         docker-compose push crux-ui
       env:
-        CRUX_IMAGE_TAG: ${{ needs.check.outputs.tag }}
+        CRUX_UI_IMAGE_TAG: ${{ needs.check.outputs.tag }}
 
   sign_image:
     runs-on: ubuntu-20.04
