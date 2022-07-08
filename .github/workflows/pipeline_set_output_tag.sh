@@ -1,7 +1,10 @@
 #!/bin/sh
 
-if [ $GITHUB_REF_TYPE == "branch" ]; then
-  case ${{ github.ref_name }} in
+github_ref_type=$1
+github_ref_name=$2
+
+if [ $github_ref_type == "branch" ]; then
+  case $github_ref_name in
     "main") echo "::set-output name=tag::stable"
     ;;
     "develop") echo "::set-output name=tag::latest"
