@@ -28,24 +28,23 @@
 - Seed the database with mock data: `npx prisma db seed`
 - Start your local server: `npm start`
 
-To stop the datbase container you have to use the following command: 
+To stop the datbase container you have to use the following command:
 `npm run database:down`
 
 ## Project structure
 
  - `certs/` - Generated certificates, created for testing and local development purpose
- - `docs/` - Documentation releated assets
  - `prisma/`
-    - `/migrations` - Your migration history is the story of the changes to your data model, and is represented by a this folder with a sub-folder and migration.sql file for each migration. 
+    - `/migrations` - Your migration history is the story of the changes to your data model, and is represented by a this folder with a sub-folder and migration.sql file for each migration.
     - `/seed` - This folder contains all data to seed your database using Prisma Client and Prisma's integrated seeding functionality. Seeding allows you to consistently re-create the same data in your database.
  - `/proto` - gRPC proto files for communicate against the `dagent` and `crux-ui`
  - `/scripts` - every development related script
- - `/containerization ` - 
- - `/src` - 
-    - `/app` - NestJS core application, each model has it's own folder with service, controller and repository serivces. 
-    - `/config` - Config related files 
-    - `/domain` - Domain releated files? 
-    - `/exception` - Errors and Exceptions 
+ - `/containerization ` -
+ - `/src` -
+    - `/app` - NestJS core application, each model has it's own folder with service, controller and repository serivces.
+    - `/config` - Config related files
+    - `/domain` - Internal logic of the application
+    - `/exception` - Errors and Exceptions
     - `/proto` - Generated proto typescript from .proto files
     - `/shared` - NestJS shared resources
 
@@ -55,10 +54,6 @@ To stop the datbase container you have to use the following command:
 
 We are using NestJs Framework for the CRUX backend. NestJS is a progressive Node.js framework for building efficient,
 reliable and scalable server-side applications.
-
-To understand a request/response life cycle in the framework study the following diagram:
-
-![NestJS request/response life cycle](/docs/nestjs-request-response.jpeg)
 
 ### Prisma
 
@@ -103,19 +98,19 @@ NestJS assumes this file is present, no insecure communication is allowed.
 
 Example usage:
 ```
-./cert_gen.sh app.dyrector.io 
+./cert_gen.sh app.dyrector.io
 ```
 This means agents can connect using that address.
 
 > Disclaimer
-> 
+>
 > Not working under MacOS Monetery 12.2 (Chip: M1 Pro) with LibreSSL 2.8.3 & Homebrew - OpenSSL 1.1
 
-## Maintainers 
+## Maintainers
 - Mate Vago
 - Nandor Magyar
 - Levente Orban
 
-## Disclaimer 
+## Disclaimer
 
-If anything missing from the document, please request the Maintainers to add it. 
+If anything missing from the document, please request the Maintainers to add it.
