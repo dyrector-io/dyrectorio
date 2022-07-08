@@ -45,7 +45,7 @@ services:
     container_name: crux-kratos
     image: ghcr.io/dyrector-io/dyrectorio/kratos:${DYO_VERSION}
     build:
-      context: ./auth/config
+      context: ./kratos
     depends_on:
       kratos-migrate:
         condition: service_completed_successfully
@@ -87,7 +87,7 @@ services:
     depends_on:
       - kratos
     build:
-      context: ./auth/nginx
+      context: ./nginx
     platform: linux/amd64
     ports:
       - 8000:8000

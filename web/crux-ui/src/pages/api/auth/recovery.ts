@@ -2,6 +2,7 @@ import { RecoverEmail } from '@app/models'
 import { validateCaptcha } from '@server/captcha'
 import { useErrorMiddleware } from '@server/error-middleware'
 import kratos, { cookieOf } from '@server/kratos'
+import { useKratosErrorMiddleware } from '@server/kratos-error-middleware'
 import { withMiddlewares } from '@server/middlewares'
 import { NextApiRequest, NextApiResponse } from 'next'
 
@@ -28,6 +29,6 @@ export default withMiddlewares(
   {
     onPost,
   },
-  [useErrorMiddleware],
+  [useErrorMiddleware, useKratosErrorMiddleware],
   false,
 )

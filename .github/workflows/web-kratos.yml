@@ -10,6 +10,23 @@ permissions:
   pull-requests: read
 
 jobs:
+  prerequirements:
+    runs-on: ubuntu-20.04
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+    container:
+      image: docker:latest
+    outputs:
+      tag: ${{ steps.settag.outputs.tag }}
+    steps:
+    - name: Checkout the repository
+      uses: actions/checkout@v3
+
+    - name: Setting a buildtag
+      id: settag
+      run: ../pipeline_set_output_tag.sh
+
   Build:
     runs-on: ubuntu-latest
     container: docker:latest
