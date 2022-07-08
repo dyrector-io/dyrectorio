@@ -1,6 +1,7 @@
 #!/bin/sh
 
-if [ "$GITHUB_REF_TYPE" = "branch" ]; then
+echo $GITHUB_REF_TYPE
+if [ $GITHUB_REF_TYPE == "branch" ]; then
   case ${{ github.ref_name }} in
     "main") echo "::set-output name=tag::stable"
     ;;
