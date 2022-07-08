@@ -118,3 +118,31 @@ export const DetailsPageMenu = (props: DetailsPageMenuProps) => {
     </>
   )
 }
+
+interface SaveDiscardPageMenuProps {
+  className?: string
+  saveRef: React.MutableRefObject<() => Promise<any>>
+  onSave?: VoidFunction
+  onDiscard: VoidFunction
+}
+
+export const SaveDiscardPageMenu = (props: SaveDiscardPageMenuProps) => {
+  const { t } = useTranslation('common')
+
+  const onSave = () => {
+    props.saveRef.current()
+    props.onSave?.call(null)
+  }
+
+  return (
+    <div className={props.className ?? 'ml-auto'}>
+      <DyoButton className="px-6 mr-2" secondary onClick={props.onDiscard}>
+        {t('discard')}
+      </DyoButton>
+
+      <DyoButton className="px-6 ml-2" onClick={onSave}>
+        {t('save')}
+      </DyoButton>
+    </div>
+  )
+}

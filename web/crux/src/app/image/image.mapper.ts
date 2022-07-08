@@ -55,7 +55,7 @@ export class ImageMapper {
 
   explicitConfigNetworkModeToDb(networkMode?: ExplicitContainerConfig_NetworkMode): ExplicitContainerNetworkMode {
     return !networkMode
-      ? "none"
+      ? 'none'
       : (explicitContainerConfig_NetworkModeToJSON(networkMode).toLocaleLowerCase() as ExplicitContainerNetworkMode)
   }
 

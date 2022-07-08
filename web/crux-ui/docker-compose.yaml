@@ -8,10 +8,12 @@ services:
       context: .
       args:
         - TIME_ZONE=Europe/Budapest
+        - NEXT_PUBLIC_RECAPTCHA_SITE_KEY=$NEXT_PUBLIC_RECAPTCHA_SITE_KEY
     environment:
       - KRATOS_URL=$KRATOS_URL
       - CRUX_ADDRESS=$CRUX_ADDRESS
       - LOG_LEVEL=$LOG_LEVEL
+      - RECAPTCHA_SECRET_KEY=$RECAPTCHA_SECRET_KEY
     restart: unless-stopped
     volumes:
       - crux-ui-certs:/usr/app/certs

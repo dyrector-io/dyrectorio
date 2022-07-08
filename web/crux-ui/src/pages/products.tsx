@@ -16,7 +16,7 @@ import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
-import React, { useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 
 type ProductFilter = TextFilter & {
   types: ProductType[]
@@ -69,44 +69,42 @@ const ProductsPage = (props: ProductsPageProps) => {
   const onNavigateToDetails = (id: string) => router.push(productUrl(id))
 
   return (
-    <>
-      <Layout>
-        <PageHeading pageLink={pageLink}>
-          <ListPageMenu creating={creating} setCreating={setCreating} submitRef={submitRef} />
-        </PageHeading>
+    <Layout>
+      <PageHeading pageLink={pageLink}>
+        <ListPageMenu creating={creating} setCreating={setCreating} submitRef={submitRef} />
+      </PageHeading>
 
-        {!creating ? null : (
-          <EditProductCard className="mb-8 px-8 py-6" submitRef={submitRef} onProductEdited={onCreated} />
-        )}
+      {!creating ? null : (
+        <EditProductCard className="mb-8 px-8 py-6" submitRef={submitRef} onProductEdited={onCreated} />
+      )}
 
-        <Filters setTextFilter={it => filters.setFilter({ text: it })}>
-          <DyoLabel className="ml-8 mr-2">{t('common:type')}</DyoLabel>
+      <Filters setTextFilter={it => filters.setFilter({ text: it })}>
+        <DyoLabel className="ml-8 mr-2">{t('common:type')}</DyoLabel>
 
-          <DyoChips
-            multiple
-            choices={initalTypeFilter}
-            initialSelection={initalTypeFilter}
-            converter={it => t(it)}
-            onChoicesChange={types =>
-              filters.setFilter({
-                types,
-              })
-            }
+        <DyoChips
+          multiple
+          choices={initalTypeFilter}
+          initialSelection={initalTypeFilter}
+          converter={it => t(it)}
+          onChoicesChange={types =>
+            filters.setFilter({
+              types,
+            })
+          }
+        />
+      </Filters>
+
+      <DyoWrap>
+        {filters.filtered.map((it, index) => (
+          <ProductCard
+            className="max-h-72 p-8"
+            key={`product-${index}`}
+            product={it}
+            onClick={() => onNavigateToDetails(it.id)}
           />
-        </Filters>
-
-        <DyoWrap>
-          {filters.filtered.map((it, index) => (
-            <ProductCard
-              className="max-h-72 p-8"
-              key={`product-${index}`}
-              product={it}
-              onClick={() => onNavigateToDetails(it.id)}
-            />
-          ))}
-        </DyoWrap>
-      </Layout>
-    </>
+        ))}
+      </DyoWrap>
+    </Layout>
   )
 }
 export default ProductsPage
