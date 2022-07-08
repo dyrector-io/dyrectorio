@@ -65,7 +65,7 @@ jobs:
     - name: Setting a buildtag
       id: settag
       working-directory: .github/workflows
-      run: ./pipeline_set_output_tag.sh $GITHUB_REF_TYPE ${{ github.ref_name }}
+      run: ./pipeline_set_output_tag.sh $GITHUB_REF_TYPE ${{ github.ref_name }} ${{ github.sha }}
 
   # job: Build image
   build_image:
