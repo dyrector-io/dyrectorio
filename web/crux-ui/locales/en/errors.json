@@ -12,5 +12,8 @@
   "alreadyExists": "Already exists",
   "unauthorized": "Unauthenticated",
   "forbidden": "Forbidden",
-  "internalError": "Something went wrong. Please try again later."
+  "internalError": "Something went wrong. Please try again later.",
+
+  "invalidCredentials": "Invalid credentials",
+  "confirmPassMismatch": "Passwords must match"
 }

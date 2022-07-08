@@ -68,20 +68,8 @@ jobs:
 
     - name: Setting a buildtag
       id: settag
-      run: |
-        if [ $GITHUB_REF_TYPE == "branch" ]; then
-          case ${{ github.ref_name }} in
-            "main")
-              echo "::set-output name=tag::stable"
-              ;;
-            "develop")
-              echo "::set-output name=tag::latest"
-              ;;
-            *)
-              echo "::set-output name=tag::${{ github.sha }}"
-              ;;
-          esac
-        fi
+      working-directory: .github/workflows
+      run: ./pipeline_set_output_tag.sh $GITHUB_REF_TYPE ${{ github.ref_name }} ${{ github.sha }}
 
   # job: Build image
   build_image:

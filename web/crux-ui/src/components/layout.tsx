@@ -1,5 +1,5 @@
 import { UserMeta } from '@app/models'
-import { API_WHOAMI, ROUTE_AUTH } from '@app/routes'
+import { API_WHOAMI, ROUTE_LOGIN } from '@app/routes'
 import { configuredFetcher } from '@app/utils'
 import { useRouter } from 'next/dist/client/router'
 import React from 'react'
@@ -24,7 +24,7 @@ export const Layout = (props: LayoutProps) => {
 
   const router = useRouter()
   if (error) {
-    router.replace(ROUTE_AUTH)
+    router.replace(ROUTE_LOGIN)
   }
 
   return (

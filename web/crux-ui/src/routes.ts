@@ -4,9 +4,17 @@ import { appendUrlParams } from './utils'
 export const ROUTE_INDEX = '/'
 export const ROUTE_500 = '/500'
 export const ROUTE_404 = '/404'
-export const ROUTE_AUTH = '/auth'
 export const ROUTE_PROFILE = '/auth/settings'
+export const ROUTE_LOGIN = '/auth/login'
 export const ROUTE_LOGOUT = '/auth/logout'
+export const ROUTE_REGISTER = '/auth/register'
+
+export const ROUTE_INVITE = '/auth/invite'
+export const ROUTE_SETTINGS = '/auth/settings'
+export const ROUTE_SETTINGS_EDIT_PROFILE = '/auth/settings/edit-profile'
+export const ROUTE_SETTINGS_CHANGE_PASSWORD = '/auth/settings/change-password'
+export const ROUTE_RECOVERY = '/auth/recovery'
+export const ROUTE_VERIFICATION = '/auth/verify'
 
 export const ROUTE_TEAMS = '/teams'
 export const ROUTE_TEAMS_ACTIVE = '/teams/active'
@@ -17,6 +25,16 @@ export const ROUTE_PRODUCTS = '/products'
 
 export const ROUTE_NODES = '/nodes'
 export const ROUTE_REGISTRIES = '/registries'
+
+export const API_AUTH_REGISTER = '/api/auth/register'
+export const API_AUTH_LOGIN = '/api/auth/login'
+export const API_AUTH_LOGOUT = '/api/auth/logout'
+
+export const API_SETTINGS = '/api/auth/settings'
+export const API_SETTINGS_EDIT_PROFILE = '/api/auth/settings/edit-profile'
+export const API_SETTINGS_CHANGE_PASSWORD = '/api/auth/settings/change-password'
+export const API_RECOVERY = '/api/auth/recovery'
+export const API_VERIFICATION = '/api/auth/verify'
 
 export const API_STATUS = '/api/status'
 

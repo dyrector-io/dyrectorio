@@ -1,0 +1,36 @@
+upstream kratos_upstream {
+  server ${KRATOS_ADDRESS};
+}
+
+upstream curx_ui_upstream {
+  server ${CRUX_UI_ADDRESS};
+}
+
+server {
+  listen ${NGINX_PORT};
+  listen [::]:${NGINX_PORT};
+  server_name www.${SERVER_NAME} ${SERVER_NAME};
+
+  server_tokens off;
+
+  gzip on;
+  gzip_proxied any;
+  gzip_comp_level 4;
+  gzip_types text/css application/javascript image/svg+xml;
+
+  proxy_http_version 1.1;
+  proxy_set_header Upgrade $http_upgrade;
+  proxy_set_header Connection 'upgrade';
+  proxy_set_header Host $host;
+  proxy_cache_bypass $http_upgrade;
+
+  location /kratos {
+    rewrite ^/kratos(.*)$ /$1 break;
+
+    proxy_pass http://kratos_upstream/;
+  }
+
+  location / {
+    proxy_pass http://curx_ui_upstream;
+  }
+}

@@ -1,3 +1,4 @@
+import { UiContainer, UiNodeInputAttributes } from '@ory/kratos-client'
 import { isDyoApiError } from '@server/error-middleware'
 import { IncomingMessageWithSession, obtainKratosSession, userVerified } from '@server/kratos'
 import { FormikErrors } from 'formik'
@@ -13,7 +14,7 @@ import { NextRouter } from 'next/router'
 import toast from 'react-hot-toast'
 import { DyoErrorDto, DyoFetchError } from './models'
 import { Timestamp } from './models/grpc/google/protobuf/timestamp'
-import { ROUTE_404, ROUTE_500, ROUTE_AUTH, ROUTE_INDEX } from './routes'
+import { ROUTE_404, ROUTE_500, ROUTE_INDEX, ROUTE_LOGIN, ROUTE_VERIFICATION } from './routes'
 
 // date
 export const dateToUtcTime = (date: Date): number => {
@@ -86,6 +87,25 @@ export const fold = <T, R>(items: T[], initialValue: R, combine: (previous: R, c
 }
 
 export const distinct = <T>(items: T[]): T[] => Array.from(new Set(items))
+
+// auth related
+export const findAttributes = (ui: UiContainer, name: string): UiNodeInputAttributes => {
+  const node = ui.nodes.find(it => (it.attributes as UiNodeInputAttributes).name === name)
+  return node.attributes as UiNodeInputAttributes
+}
+
+export const findMessage = (ui: UiContainer, name: string): string => {
+  const node = ui.nodes.find(it => (it.attributes as UiNodeInputAttributes).name === name)
+  if (!node) {
+    return null
+  }
+
+  const errors = node.messages.filter(it => it.type === 'error')
+  const infos = node.messages.filter(it => it.type === 'info')
+
+  const text = errors.length > 0 ? errors[0] : infos.length > 0 ? infos[0] : null
+  return text?.text
+}
 
 // errors
 export const isDyoError = (instance: any) => 'error' in instance && 'description' in instance
@@ -282,7 +302,7 @@ export type CruxGetServerSideProps<T> = (context: NextPageContext) => Promise<Ge
 const dyoApiErrorStatusToRedirectUrl = (status: number): string => {
   switch (status) {
     case 401:
-      return ROUTE_AUTH
+      return ROUTE_LOGIN
     case 404:
       return ROUTE_404
     case 403:
@@ -298,8 +318,10 @@ export const withContextAuthorization =
     const req = context.req as IncomingMessageWithSession
 
     const session = await obtainKratosSession(req)
-    if (!session || !userVerified(session.identity)) {
-      return redirectTo(ROUTE_AUTH)
+    if (!session) {
+      return redirectTo(ROUTE_LOGIN)
+    } else if (!userVerified(session.identity)) {
+      return redirectTo(ROUTE_VERIFICATION)
     }
 
     req.session = session

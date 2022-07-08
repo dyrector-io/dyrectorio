@@ -19,3 +19,8 @@ export const REGISTRY_HUB_CACHE_EXPIRATION = 60 // minutes
 export const WS_DATA_CRUX = 'crux'
 
 export const SERVICE_STATUS_CHECK_INTERVAL = 5000 // sec in millis
+
+export const INVITE_LINK_EXPIRATION = '12h'
+export const ATTRIB_CSRF = 'csrf_token'
+export const HEADER_SET_COOKIE = 'set-cookie'
+export const AUTH_RESEND_DELAY = 30 // seconds
