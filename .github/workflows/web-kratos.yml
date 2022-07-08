@@ -1,4 +1,4 @@
-name: web-auth
+name: web-kratos
 on: 
   push:
     paths:
