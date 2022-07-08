@@ -23,12 +23,15 @@ jobs:
     - name: Setting a buildtag
       id: settag
       working-directory: .github/workflows
-      run: ./pipeline_set_output_tag.sh $GITHUB_REF_TYPE ${{ github.ref_name }} ${{ github.sha }}
+      run: |
+        echo $GITHUB_REF_TYPE 
+        echo ${{ github.ref_name }}
+        echo ${{ github.sha }}
+        ./pipeline_set_output_tag.sh $GITHUB_REF_TYPE ${{ github.ref_name }} ${{ github.sha }}
 
   build_image:
     runs-on: ubuntu-20.04
     container: docker:latest
-    if: github.ref_name == 'develop' || github.ref_name == 'main'
     defaults:
       run:
         working-directory: web/kratos
