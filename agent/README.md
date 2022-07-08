@@ -1,9 +1,6 @@
-# dyrector.io CO components
+# dyrector.io agent components
 
-Container Orchestrators, CO2, dagent and crane.
-
-Components were developed individually, but common code, structs and functions
-made it rational to move them into a single repository.
+Components were developed individually, but common code, structs and functions made it rational to move them into a single repository.
 It is frequent that changes have to be synced between the two.
 
 ## Guidelines
@@ -38,28 +35,4 @@ Everything that is done frequently should be possible using the makefile, if not
 | REGISTRY                | Default registry address                                                                                  | index.docker.io                        |
 | REGISTRY_PASSWORD       | Password of the remote registry where DAgent is located                                                   | *none*                                 |
 | REGISTRY_USERNAME       | User of the remote registry where DAgent is located                                                       | *none*                                 |
-### Drafting a new release
-
-Install the generator
-```
-go get -u github.com/git-chglog/git-chglog/cmd/git-chglog
-```
-
-v1.2.3 is the new version tag below:
-
-Usage
-```
-git-chglog --next-tag ..v1.2.3 > CHANGELOG.md
-```
-
-```
-git tag -a v1.2.3
-git push --tags
-```
-
-In order to draft a new release:
-- create a new release tag on develop
-- generate changelogs
-
-See [CHANGELOG.md](CHANGELOG.md)
 
