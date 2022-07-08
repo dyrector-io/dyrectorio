@@ -68,7 +68,8 @@ jobs:
 
     - name: Setting a buildtag
       id: settag
-      run: ../pipeline_set_output_tag.sh
+      working-directory: .github/workflows
+      run: ./pipeline_set_output_tag.sh
 
   # job: Build image
   build_image:
