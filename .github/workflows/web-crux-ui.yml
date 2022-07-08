@@ -16,7 +16,7 @@ env:
   IMAGE_NAME: dyrector-io/dyrectorio/web/crux-ui
   WORKING_DIRECTORY: web/crux-ui
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
-  LOG_LEVEL: 
+  LOG_LEVEL: info
   KRATOS_URL: http://192.168.1.30:8000/kratos
   CRUX_ADDRESS: http://172.17.0.1:8000
   TIME_ZONE: Europe/Budapest
@@ -33,7 +33,7 @@ jobs:
       tag: ${{ steps.settag.outputs.tag }}
     defaults:
       run:
-        working-directory: web/crux-ui
+        working-directory: ${{ env.WORKING_DIRECTORY }}
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -48,6 +48,7 @@ jobs:
         npm run build
       env:
         NEXT_TELEMETRY_DISABLED: 1
+        NODE_ENV: production
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
@@ -56,6 +57,8 @@ jobs:
         path: |
           ${{ env.WORKING_DIRECTORY }}/.next
           ${{ env.WORKING_DIRECTORY }}/package*.json
+          ${{ env.WORKING_DIRECTORY }}/docker-compose.yaml
+          ${{ env.WORKING_DIRECTORY }}/Dockerfile
           ${{ env.WORKING_DIRECTORY }}/public
         retention-days: 1
 
