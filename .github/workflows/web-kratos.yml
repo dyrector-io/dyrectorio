@@ -45,6 +45,7 @@ jobs:
 
     - name: Docker build and push
       run: |
+        echo ghcr.io/dyrector-io/dyrectorio/web/kratos:$IMAGE_TAG
         docker build . -t ghcr.io/dyrector-io/dyrectorio/web/kratos:$IMAGE_TAG
         docker push ghcr.io/dyrector-io/dyrectorio/web/kratos:$IMAGE_TAG
       env:
