@@ -3,6 +3,7 @@ import clsx from 'clsx'
 import { useState } from 'react'
 
 interface DyoChipsProps<T> {
+  className?: string
   key?: React.Key
   multiple?: boolean
   choices: readonly T[]
@@ -39,7 +40,7 @@ const DyoChips = <T,>(props: DyoChipsProps<T>) => {
   const key = props.key ?? 'dyo-chips'
 
   return (
-    <>
+    <div className={props.className}>
       {choices.map((it, index) => {
         const selected = selection.includes(it)
 
@@ -60,7 +61,7 @@ const DyoChips = <T,>(props: DyoChipsProps<T>) => {
           </button>
         )
       })}
-    </>
+    </div>
   )
 }
 

@@ -6,7 +6,6 @@ import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
 import { ListPageMenu } from '@app/components/shared/page-menu'
 import DyoChips from '@app/elements/dyo-chips'
-import { DyoLabel } from '@app/elements/dyo-label'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import { Product, ProductType } from '@app/models'
@@ -24,9 +23,6 @@ type ProductFilter = TextFilter & {
 
 const productTypeFilter = (items: Product[], filter: ProductFilter) => {
   const types = filter.types ?? []
-  if (types.length < 1) {
-    return items
-  }
 
   return items.filter(it => filter.types.includes(it.type))
 }
@@ -79,10 +75,9 @@ const ProductsPage = (props: ProductsPageProps) => {
       )}
 
       <Filters setTextFilter={it => filters.setFilter({ text: it })}>
-        <DyoLabel className="ml-8 mr-2">{t('common:type')}</DyoLabel>
-
         <DyoChips
           multiple
+          className="pl-8"
           choices={initalTypeFilter}
           initialSelection={initalTypeFilter}
           converter={it => t(it)}
@@ -94,16 +89,18 @@ const ProductsPage = (props: ProductsPageProps) => {
         />
       </Filters>
 
-      <DyoWrap>
-        {filters.filtered.map((it, index) => (
-          <ProductCard
-            className="max-h-72 p-8"
-            key={`product-${index}`}
-            product={it}
-            onClick={() => onNavigateToDetails(it.id)}
-          />
-        ))}
-      </DyoWrap>
+      {filters.filtered ? (
+        <DyoWrap>
+          {filters.filtered.map((it, index) => (
+            <ProductCard
+              className="max-h-72 p-8"
+              key={`product-${index}`}
+              product={it}
+              onClick={() => onNavigateToDetails(it.id)}
+            />
+          ))}
+        </DyoWrap>
+      ) : null}
     </Layout>
   )
 }
