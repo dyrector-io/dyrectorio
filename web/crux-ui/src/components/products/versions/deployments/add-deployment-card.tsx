@@ -94,7 +94,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
             <DyoChips
               choices={nodes}
               converter={(it: DyoNode) => it.name}
-              onChoicesChange={it => formik.setFieldValue('nodeId', it[0].id)}
+              onSelectChange={it => formik.setFieldValue('nodeId', it[0].id)}
             />
           </div>
         </div>

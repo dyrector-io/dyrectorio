@@ -8,7 +8,7 @@ interface DyoBadgeProps {
 const DyoBadge = (props: DyoBadgeProps) => {
   const { icon } = props
 
-  const { t } = useTranslation('badge')
+  const { t } = useTranslation('badges')
 
   return <Image src={`/badges/${icon}.svg`} alt={t(`${icon}`)} width={24} height={24} />
 }

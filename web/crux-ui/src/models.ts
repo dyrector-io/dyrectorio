@@ -2,7 +2,7 @@ import { Identity } from '@ory/kratos-client'
 import { DyoApiError } from '@server/error-middleware'
 import { REGISTRY_GITHUB_URL, REGISTRY_GITLAB_URLS, REGISTRY_HUB_URL } from './const'
 
-export const PRODUCT_TYPE_VALUES = ['simple', 'complex'] as const
+export const PRODUCT_TYPE_VALUES = ['simple', 'complex', 'all'] as const
 export type ProductType = typeof PRODUCT_TYPE_VALUES[number]
 
 export const VERSION_TYPE_VALUES = ['incremental', 'rolling'] as const

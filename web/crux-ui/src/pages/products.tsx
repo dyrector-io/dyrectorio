@@ -8,7 +8,7 @@ import { ListPageMenu } from '@app/components/shared/page-menu'
 import DyoChips from '@app/elements/dyo-chips'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
-import { Product, ProductType } from '@app/models'
+import { Product, ProductType, PRODUCT_TYPE_VALUES } from '@app/models'
 import { productUrl, ROUTE_PRODUCTS } from '@app/routes'
 import { utcDateToLocale, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
@@ -18,13 +18,15 @@ import { useRouter } from 'next/dist/client/router'
 import { useRef, useState } from 'react'
 
 type ProductFilter = TextFilter & {
-  types: ProductType[]
+  type: ProductType
 }
 
 const productTypeFilter = (items: Product[], filter: ProductFilter) => {
-  const types = filter.types ?? []
-
-  return items.filter(it => filter.types.includes(it.type))
+  if (filter.type === 'all') {
+    return items
+  } else {
+    return items.filter(it => filter.type.includes(it.type))
+  }
 }
 
 interface ProductsPageProps {
@@ -36,12 +38,12 @@ const ProductsPage = (props: ProductsPageProps) => {
 
   const router = useRouter()
 
-  const initalTypeFilter = ['simple', 'complex'] as ProductType[]
+  const initalTypeFilter = 'all' as ProductType
   const filters = useFilters<Product, ProductFilter>({
     initialData: props.products,
     initialFilter: {
       text: '',
-      types: initalTypeFilter,
+      type: initalTypeFilter,
     },
     filters: [
       textFilterFor<Product>(it => [it.name, it.description, it.type, utcDateToLocale(it.updatedAt)]),
@@ -76,31 +78,28 @@ const ProductsPage = (props: ProductsPageProps) => {
 
       <Filters setTextFilter={it => filters.setFilter({ text: it })}>
         <DyoChips
-          multiple
           className="pl-8"
-          choices={initalTypeFilter}
+          choices={PRODUCT_TYPE_VALUES}
           initialSelection={initalTypeFilter}
           converter={it => t(it)}
-          onChoicesChange={types =>
+          onSelectChange={type => {
             filters.setFilter({
-              types,
+              type,
             })
-          }
+          }}
         />
       </Filters>
 
-      {filters.filtered ? (
-        <DyoWrap>
-          {filters.filtered.map((it, index) => (
-            <ProductCard
-              className="max-h-72 p-8"
-              key={`product-${index}`}
-              product={it}
-              onClick={() => onNavigateToDetails(it.id)}
-            />
-          ))}
-        </DyoWrap>
-      ) : null}
+      <DyoWrap>
+        {filters.filtered.map((it, index) => (
+          <ProductCard
+            className="max-h-72 p-8"
+            key={`product-${index}`}
+            product={it}
+            onClick={() => onNavigateToDetails(it.id)}
+          />
+        ))}
+      </DyoWrap>
     </Layout>
   )
 }
