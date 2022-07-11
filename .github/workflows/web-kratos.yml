@@ -32,6 +32,7 @@ jobs:
   build_image:
     runs-on: ubuntu-20.04
     container: docker:latest
+    needs: prerequirements
     defaults:
       run:
         working-directory: web/kratos
