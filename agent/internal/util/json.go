@@ -6,10 +6,9 @@ import (
 
 func RemoveJSONComment(strIn []byte) []byte {
 	str := string(strIn)
-	re1 := regexp.MustCompile(`(?im)^\s+//.*$`)
+	// edgecase that isn't handled: double quote in the comment
+	re1 := regexp.MustCompile(`//\s*?[^"\\S]*?\s*?(\n|\r|\r\n|\n\r)`)
 	str = re1.ReplaceAllString(str, "")
-	re2 := regexp.MustCompile(`(?im)//[^"\[\]]+$`)
-	str = re2.ReplaceAllString(str, "")
 
 	return []byte(str)
 }

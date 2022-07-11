@@ -33,8 +33,3 @@ type CommonConfiguration struct {
 	RegistryPassword  string        `yaml:"registryPassword"     env:"REGISTRY_PASSWORD"    env-default:""`
 	RegistryUsername  string        `yaml:"registryUsername"     env:"REGISTRY_USERNAME"    env-default:""`
 }
-
-// func SetCommonEnvVars() {
-// 	if
-// 	err := os.Setenv("DEFAULT_LIMITS_CPU", )
-// }

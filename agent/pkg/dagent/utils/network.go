@@ -16,12 +16,3 @@ func GetNetworks() ([]types.NetworkResource, error) {
 	}
 	return cli.NetworkList(ctx, types.NetworkListOptions{})
 }
-
-// func GetNetwork(name string) ([]types.NetworkResource, error) {
-// 	ctx := context.Background()
-// 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// }

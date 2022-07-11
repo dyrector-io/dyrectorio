@@ -19,15 +19,16 @@ import (
 	"time"
 
 	"github.com/AlekSi/pointer"
+	"github.com/gin-gonic/gin"
+	"github.com/lithammer/shortuuid/v4"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/dyrector-io/dyrectorio/agent/internal/util"
 	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/api/validate"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/config"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/k8s"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/route"
-	"github.com/gin-gonic/gin"
-	"github.com/lithammer/shortuuid/v4"
-	"github.com/stretchr/testify/assert"
 )
 
 type DeployRoutes string

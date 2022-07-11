@@ -290,9 +290,9 @@ func DeployImage(ctx context.Context,
 	containerName := getContainerName(deployImageRequest)
 
 	image, _ := util.ImageURIFromString(
-		JoinV("/",
+		util.JoinV("/",
 			*deployImageRequest.Registry,
-			JoinV(":", deployImageRequest.ImageName, deployImageRequest.Tag)))
+			util.JoinV(":", deployImageRequest.ImageName, deployImageRequest.Tag)))
 
 	logDeployInfo(dog, deployImageRequest, image, containerName)
 	labels, _ := GetImageLabels(image.String())
@@ -400,9 +400,9 @@ func getContainerName(deployImageRequest *v1.DeployImageRequest) string {
 
 	if deployImageRequest.ContainerConfig.Container != "" {
 		if deployImageRequest.InstanceConfig.MountPath != "" {
-			containerName = JoinV("-", deployImageRequest.InstanceConfig.MountPath, deployImageRequest.ContainerConfig.Container)
+			containerName = util.JoinV("-", deployImageRequest.InstanceConfig.MountPath, deployImageRequest.ContainerConfig.Container)
 		} else if deployImageRequest.InstanceConfig.ContainerPreName != "" {
-			containerName = JoinV("-", deployImageRequest.InstanceConfig.ContainerPreName, deployImageRequest.ContainerConfig.Container)
+			containerName = util.JoinV("-", deployImageRequest.InstanceConfig.ContainerPreName, deployImageRequest.ContainerConfig.Container)
 		} else {
 			containerName = deployImageRequest.ContainerConfig.Container
 		}
