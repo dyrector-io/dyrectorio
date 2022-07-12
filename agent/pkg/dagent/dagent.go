@@ -11,7 +11,6 @@ import (
 
 	"github.com/dyrector-io/dyrectorio/agent/internal/grpc"
 	"github.com/dyrector-io/dyrectorio/agent/internal/sigmalr"
-	"github.com/dyrector-io/dyrectorio/agent/internal/util"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/api/validate"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/model"
@@ -51,7 +50,7 @@ func Serve() {
 		log.Println("http port: ", httpPort)
 		r = gin.Default()
 		sigmalr.SetupHub(r)
-		r.Use(util.RequestLogger())
+		// r.Use(util.RequestLogger())
 		// example:
 		// curl -iL -XGET -H "X-Health-Check: 1" http://localhost:8080
 		r.Use(healthcheck.Default())

@@ -249,3 +249,52 @@ func DeleteContainer(c *gin.Context) {
 		})
 	}
 }
+
+// UploadFile godoc
+// @Summary Upload file into a running container as `docker cp` does
+// @Description File upload as docker cp, files may be lost if copying happens into ephemeral path
+// @Tags runtime
+// @Accept */*
+// @Produce json
+// @Param containerName path string true "Name of the container"
+// @Param containerPreName path string true "Container prefix"
+// @Param meta formData v1.UploadFileData  true "File metadata (destination, uid, gid)"
+// @Param file formData file true "file"
+// @Success 204
+// @Failure 400 {object} model.ErrorResponse
+// @Failure 404 {object} model.ErrorResponse
+// @Router /containers/{containerPreName}/{containerName}/upload [post]
+func UploadFile(c *gin.Context) {
+	query := v1.DeploymentQuery{}
+
+	if err := c.ShouldBindUri(&query); err != nil {
+		log.Printf("UploadFile bind error in query %s : %s", c.Request.RequestURI, err.Error())
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	meta := v1.UploadFileData{}
+
+	if err := c.ShouldBind(&meta); err != nil {
+		log.Printf("UploadFile bind error in form data %s : %s", c.Request.RequestURI, err.Error())
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	file, err := c.FormFile("file")
+	if err != nil {
+		log.Printf("UploadFile formFile error: %s", err.Error())
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	log.Println(file.Filename)
+	err = utils.CopyToContainer(c, util.JoinV("-", query.ContainerPreName, query.ContainerName), meta, file)
+	if err != nil {
+		log.Printf("UploadFile formFile copy error: %s", err.Error())
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}

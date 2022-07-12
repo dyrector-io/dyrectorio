@@ -5,8 +5,7 @@ go 1.18
 require (
 	github.com/Microsoft/go-winio v0.5.0 // indirect
 	github.com/RaMin0/gin-health-check v0.0.0-20180807004848-a677317b3f01
-	github.com/containerd/containerd v1.5.7 // indirect
-	github.com/docker/docker v20.10.10+incompatible
+	github.com/docker/docker v20.10.17+incompatible
 	github.com/docker/go-connections v0.4.0
 	github.com/gin-gonic/gin v1.7.4
 	github.com/go-openapi/jsonreference v0.20.0 // indirect
@@ -53,7 +52,9 @@ require (
 	github.com/Azure/go-autorest/logger v0.2.1 // indirect
 	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
 	github.com/BurntSushi/toml v1.1.0 // indirect
+	github.com/moby/term v0.0.0-20200312100748-672ec06f55cd // indirect
 	github.com/onsi/ginkgo v1.16.4 // indirect
+	gotest.tools/v3 v3.0.3 // indirect
 	olympos.io/encoding/edn v0.0.0-20201019073823-d3554ca0b0a3 // indirect
 )
 

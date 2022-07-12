@@ -19,8 +19,43 @@
             "envFile": "${workspaceFolder}/web/crux/.env",
             "cwd": "${workspaceRoot}/web/crux",
             "console": "integratedTerminal",
-            "protocol": "inspector"
+        },
+        {
+            "name": "Launch dagent",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/agent/cmd/dagent",
+            "cwd": "${workspaceFolder}/agent/cmd/dagent"
+        },
+
+         {
+            "name": "Launch crane",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/agent/cmd/crane"
+        },
+    
+    
+        {
+            "name": "Debug dagent",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/agent/cmd/dagent",
+            "cwd": "${workspaceFolder}/agent/cmd/dagent"
+        },
+
+        {
+            "name": "Debug crane",
+            "type": "go",
+            "request": "launch",
+            "buildFlags": "",
+            "mode": "debug",
+            "program": "${workspaceFolder}/agent/cmd/crane",
+            "cwd": "${workspaceFolder}/agent/cmd/crane"
         },
 
     ]
-  }
+}

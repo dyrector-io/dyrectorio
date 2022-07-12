@@ -1542,6 +1542,57 @@ paths:
       summary: Get running containers by name
       tags:
       - runtime
+  /containers/{containerPreName}/{containerName}/upload:
+    post:
+      consumes:
+      - '*/*'
+      description: File upload as docker cp, files may be lost if copying happens
+        into ephemeral path
+      parameters:
+      - description: Name of the container
+        in: path
+        name: containerName
+        required: true
+        type: string
+      - description: Container prefix
+        in: path
+        name: containerPreName
+        required: true
+        type: string
+      - description: Path for file in the container, absolute, without trailing slash
+        in: formData
+        name: filePath
+        required: true
+        type: string
+      - description: GID for the file to be created
+        in: formData
+        name: gid
+        type: integer
+      - description: UID for the file to be created
+        in: formData
+        name: uid
+        type: integer
+      - description: file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: ""
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      summary: Upload file into a running container as `docker cp` does
+      tags:
+      - runtime
   /deploy:
     post:
       consumes:

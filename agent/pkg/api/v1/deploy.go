@@ -348,6 +348,15 @@ type PortBinding struct {
 	PortBinding uint16 `json:"portBinding" binding:"required,gte=0,lte=65535"`
 }
 
+type UploadFileData struct {
+	// Path for file in the container, absolute, without trailing slash
+	FilePath string `form:"filePath" binding:"required"`
+	// UID for the file to be created
+	UID int `form:"uid"`
+	// GID for the file to be created
+	GID int `form:"gid"`
+}
+
 const bracketsWarning = "Make sure to use brackets for arrays like eg.  \"environment\": [\"ASPNETCORE_ENVIRONMENT|Staging\"]"
 
 // custom struct marshal JSON interface implementation with base64 encoding
