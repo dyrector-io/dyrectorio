@@ -168,7 +168,8 @@ func buildContainer(p *deploymentParams) *corev1.ContainerApplyConfiguration {
 		WithLivenessProbe(livenessProbe).
 		WithReadinessProbe(readinessProbe).
 		WithStartupProbe(startupProbe).
-		WithResources(getResourceManagement(p.containerConfig.ResourceConfig))
+		WithResources(getResourceManagement(p.containerConfig.ResourceConfig)).
+		WithTTY(p.containerConfig.TTY)
 
 	if p.containerConfig.User != nil {
 		container.WithSecurityContext(

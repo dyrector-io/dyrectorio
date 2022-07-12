@@ -60,6 +60,7 @@ type dockerContainerBuilder struct {
 	entrypoint      []string
 	importContainer *v1.ImportContainer
 	cmd             []string
+	tty             bool
 	user            *int64
 	dogger          *dogger.DeploymentLogger
 }
@@ -153,6 +154,11 @@ func (dc *dockerContainerBuilder) WithCmd(cmd []string) *dockerContainerBuilder 
 	return dc
 }
 
+func (dc *dockerContainerBuilder) WithTTY(tty bool) *dockerContainerBuilder {
+	dc.tty = tty
+	return dc
+}
+
 func (dc *dockerContainerBuilder) WithoutConflict() *dockerContainerBuilder {
 	if err := DeleteContainer(dc.containerName); err != nil {
 		log.Printf("builder could not stop/remove container (%s) to avoid conflicts: %s", dc.containerName, err.Error())
@@ -202,15 +208,17 @@ func (dc *dockerContainerBuilder) Create(ctx context.Context) *dockerContainerBu
 		PortBindings: portListNat,
 		AutoRemove:   dc.remove,
 	}
+
 	containerConfig := &container.Config{
 		Image:        dc.imageWithTag,
-		Tty:          false,
+		Tty:          dc.tty,
 		Env:          dc.envList,
 		Labels:       dc.labels,
 		ExposedPorts: exposedPortSet,
 		Entrypoint:   dc.entrypoint,
 		Cmd:          dc.cmd,
 	}
+
 	if dc.user != nil {
 		containerConfig.User = fmt.Sprint(*dc.user)
 	}

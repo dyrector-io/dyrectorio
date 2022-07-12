@@ -173,6 +173,8 @@ type ContainerConfig struct {
 	Command []string `json:"command"`
 	// args are added to the command
 	Args []string `json:"args"`
+	// if we need to spawn a pseudo-terminal
+	TTY bool `json:"tty"`
 
 	// dagent only
 	LogConfig     *LogConfig        `json:"logConfig"`
