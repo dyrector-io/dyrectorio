@@ -202,6 +202,7 @@ func CopyToContainer(ctx context.Context, name string, meta v1.UploadFileData, f
 	if err != nil {
 		return err
 	}
+	defer f.Close()
 
 	err = WriteContainerFile(ctx, cli, name, fileHeader.Filename, meta, fileHeader.Size, f)
 	if err != nil {
