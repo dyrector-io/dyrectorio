@@ -1,4 +1,4 @@
-version: v0.8.2-alpha.1
+version: v0.10.1
 
 serve:
   public:
@@ -8,9 +8,9 @@ serve:
     base_url: ${KRATOS_ADMIN_URL}
 
 selfservice:
-  default_browser_return_url: ${AUTH_URL}
+  default_browser_return_url: ${CRUX_UI_URL}
   allowed_return_urls:
-    - ${AUTH_URL}
+    - ${CRUX_UI_URL}
 
   methods:
     password:
@@ -20,40 +20,40 @@ selfservice:
 
   flows:
     error:
-      ui_url: ${AUTH_URL}/error
+      ui_url: ${CRUX_UI_URL}/auth/error
 
     settings:
-      ui_url: ${AUTH_URL}/settings
+      ui_url: ${CRUX_UI_URL}/auth/settings
       privileged_session_max_age: 5m
 
     recovery:
       enabled: true
-      ui_url: ${AUTH_URL}/recovery
+      ui_url: ${CRUX_UI_URL}/auth/recovery
       after:
-        default_browser_return_url: ${AUTH_URL}/settings
+        default_browser_return_url: ${CRUX_UI_URL}/auth/settings
 
     verification:
       enabled: true
-      ui_url: ${AUTH_URL}/verify
+      ui_url: ${CRUX_UI_URL}/auth/verify
       after:
-        default_browser_return_url: ${AUTH_URL}/settings
+        default_browser_return_url: ${CRUX_UI_URL}/auth/settings
 
     logout:
       after:
-        default_browser_return_url: ${AUTH_URL}/login
+        default_browser_return_url: ${CRUX_UI_URL}/auth/login
 
     login:
-      ui_url: ${AUTH_URL}/login
+      ui_url: ${CRUX_UI_URL}/auth/login
       lifespan: 10m
       after:
         password:
-          default_browser_return_url: ${AUTH_URL}
+          default_browser_return_url: ${CRUX_UI_URL}
           hooks:
             - hook: require_verified_address
 
     registration:
       lifespan: 10m
-      ui_url: ${AUTH_URL}/registration
+      ui_url: ${CRUX_UI_URL}/auth/registration
       after:
         password:
           hooks:
