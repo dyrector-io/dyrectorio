@@ -1,5 +1,6 @@
 build/out
 .env
+*.env
 __debug_bin
 k3s.yml
 k3s.yaml

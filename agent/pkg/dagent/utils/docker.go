@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"archive/tar"
+	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/binary"
@@ -9,8 +11,10 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"mime/multipart"
 	"os"
 	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -186,6 +190,56 @@ func ReadDockerLogsFromReadCloser(logs io.ReadCloser, skip, take int) []string {
 	}
 
 	return output[take:skip]
+}
+
+func CopyToContainer(ctx context.Context, name string, meta v1.UploadFileData, fileHeader *multipart.FileHeader) error {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		panic(err)
+	}
+
+	f, err := fileHeader.Open()
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	err = WriteContainerFile(ctx, cli, name, fileHeader.Filename, meta, fileHeader.Size, f)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func WriteContainerFile(ctx context.Context, cli *client.Client,
+	container, filename string, meta v1.UploadFileData, fileSize int64, data io.Reader) error {
+	var buf bytes.Buffer
+	tarWriter := tar.NewWriter(&buf)
+
+	tarHeader := &tar.Header{
+		Name:    filename,
+		Mode:    0644,
+		Size:    fileSize,
+		Uid:     meta.UID,
+		Gid:     meta.GID,
+		ModTime: time.Now(),
+	}
+	if err := tarWriter.WriteHeader(tarHeader); err != nil {
+		return err
+	}
+	if _, err := io.Copy(tarWriter, data); err != nil {
+		return err
+	}
+	if err := tarWriter.Close(); err != nil {
+		return err
+	}
+
+	log.Printf("Writing %d bytes to %s", tarHeader.Size, filepath.Join(meta.FilePath, filename))
+	reader := bytes.NewReader(buf.Bytes())
+
+	err := cli.CopyToContainer(ctx, container, meta.FilePath, reader, types.CopyToContainerOptions{})
+	return err
 }
 
 func InspectContainer(name string) types.ContainerJSON {

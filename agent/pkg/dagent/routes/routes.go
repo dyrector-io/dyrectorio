@@ -24,6 +24,7 @@ func SetupRouter(r *gin.Engine) *gin.Engine {
 	v1.GET("/containers/:preName/:name/logs", controller.GetContainerLogs)
 	v1.GET("/containers/:preName/:name/inspect", controller.InspectContainer)
 	v1.GET("/containers/:preName/:name/status", controller.GetContainerStatus)
+	v1.POST("/containers/:preName/:name/upload", controller.UploadFile)
 	v1.DELETE("/containers/:preName/:name", controller.DeleteContainer)
 
 	v1.POST("/deploy", controller.DeployImage)

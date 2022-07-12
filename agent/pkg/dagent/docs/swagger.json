@@ -238,6 +238,80 @@
                 }
             }
         },
+        "/containers/{containerPreName}/{containerName}/upload": {
+            "post": {
+                "description": "File upload as docker cp, files may be lost if copying happens into ephemeral path",
+                "consumes": [
+                    "*/*"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "runtime"
+                ],
+                "summary": "Upload file into a running container as `docker cp` does",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the container",
+                        "name": "containerName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Container prefix",
+                        "name": "containerPreName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Path for file in the container, absolute, without trailing slash",
+                        "name": "filePath",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "GID for the file to be created",
+                        "name": "gid",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "UID for the file to be created",
+                        "name": "uid",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "file",
+                        "description": "file",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/model.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/deploy": {
             "post": {
                 "description": "Deployment with all configuration.",
