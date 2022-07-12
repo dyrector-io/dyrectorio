@@ -14,7 +14,7 @@ import (
 func GetTraefikLabels(instanceConfig *v1.InstanceConfig, containerConfig *v1.ContainerConfig) map[string]string {
 	labels := map[string]string{}
 	if containerConfig.Expose {
-		serviceName := JoinV("-", instanceConfig.ContainerPreName, containerConfig.Container)
+		serviceName := util.JoinV("-", instanceConfig.ContainerPreName, containerConfig.Container)
 		labels["traefik.enable"] = "true"
 
 		labels["traefik.http.services."+serviceName+".loadbalancer.server.port"] = fmt.Sprint(containerConfig.Ports[0].ExposedPort)

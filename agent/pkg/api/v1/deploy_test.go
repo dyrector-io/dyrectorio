@@ -9,8 +9,9 @@ import (
 	"fmt"
 	"testing"
 
-	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 	"github.com/stretchr/testify/assert"
+
+	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 )
 
 func TestInstanceConfigMarshalEmpty(t *testing.T) {

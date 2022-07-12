@@ -11,9 +11,10 @@ import (
 	"testing"
 
 	"github.com/docker/docker/api/types"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/utils"
-	"github.com/stretchr/testify/assert"
 )
 
 // if the `a` map is empty

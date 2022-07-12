@@ -7,8 +7,9 @@ import (
 	"log"
 	"testing"
 
-	"github.com/dyrector-io/dyrectorio/agent/internal/util"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/dyrector-io/dyrectorio/agent/internal/util"
 )
 
 func TestNameEmpty(t *testing.T) {

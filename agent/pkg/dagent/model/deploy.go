@@ -1,8 +1,6 @@
 package model
 
 import (
-	"regexp"
-
 	_ "github.com/go-playground/validator/v10"
 )
 
@@ -54,14 +52,4 @@ type PortRangeBinding struct {
 type PortRange struct {
 	From uint16 `json:"from" binding:"required,gte=0,lte=65535"`
 	To   uint16 `json:"to" binding:"required,gtefield=From,lte=65535"`
-}
-
-func RemoveJSONComment(strIn []byte) []byte {
-	str := string(strIn)
-	re1 := regexp.MustCompile(`(?im)^\s+//.*$`)
-	str = re1.ReplaceAllString(str, "")
-	re2 := regexp.MustCompile(`(?im)//[^"\[\]]+$`)
-	str = re2.ReplaceAllString(str, "")
-
-	return []byte(str)
 }

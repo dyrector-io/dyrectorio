@@ -14,8 +14,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/dyrector-io/dyrectorio/agent/internal/util"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/dyrector-io/dyrectorio/agent/internal/util"
 )
 
 func TestMapAppsettingsToEnv_nil(t *testing.T) {
@@ -107,6 +108,7 @@ func TestMapAppsettingsToEnv_ThreeDepth(t *testing.T) {
 	assert.EqualValues(t, fmt.Sprint(expected), fmt.Sprint(result))
 	assert.Nil(t, err)
 }
+
 func TestMapAppsettingsToEnv_ArrayValues(t *testing.T) {
 	in := `
 	{

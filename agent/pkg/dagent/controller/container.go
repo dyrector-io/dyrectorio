@@ -9,6 +9,7 @@ import (
 	_ "github.com/docker/docker/api/types"
 	"github.com/gin-gonic/gin"
 
+	"github.com/dyrector-io/dyrectorio/agent/internal/util"
 	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
 	model "github.com/dyrector-io/dyrectorio/agent/pkg/dagent/model"
@@ -55,7 +56,7 @@ func GetContainerStatus(c *gin.Context) {
 		return
 	}
 
-	containerName := utils.JoinV("-", query.ContainerPreName, query.ContainerName)
+	containerName := util.JoinV("-", query.ContainerPreName, query.ContainerName)
 	containers := utils.GetContainer(containerName)
 
 	if len(containers) > 0 {
@@ -115,7 +116,7 @@ func GetContainerLogs(c *gin.Context) {
 		return
 	}
 
-	containerName := utils.JoinV("-", query.ContainerPreName, query.ContainerName)
+	containerName := util.JoinV("-", query.ContainerPreName, query.ContainerName)
 	containers := utils.GetContainer(containerName)
 
 	if len(containers) < 1 {
@@ -167,7 +168,7 @@ func InspectContainer(c *gin.Context) {
 		return
 	}
 
-	containerName := utils.JoinV("-", query.ContainerPreName, query.ContainerName)
+	containerName := util.JoinV("-", query.ContainerPreName, query.ContainerName)
 	containers := utils.GetContainer(containerName)
 
 	if len(containers) < 1 {
@@ -206,7 +207,7 @@ func DeleteContainer(c *gin.Context) {
 		return
 	}
 
-	containerName := utils.JoinV("-", query.ContainerPreName, query.ContainerName)
+	containerName := util.JoinV("-", query.ContainerPreName, query.ContainerName)
 	containers := utils.GetContainer(containerName)
 
 	if len(containers) == 1 {
