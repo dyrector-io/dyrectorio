@@ -49,7 +49,7 @@ jobs:
       env:
         NEXT_TELEMETRY_DISABLED: 1
         NODE_ENV: production
-        NEXT_PUBLIC_RECAPTCHA_SITE_KEY: ${{ secrets.NEXT_PUBLIC_RECAPTCHA_SITE_KEY }}
+        NEXT_PUBLIC_RECAPTCHA_SITE_KEY: 6LeSBegfAAAAAGMnFacsTivlw4PdF2LBMi8g5tZ-
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
