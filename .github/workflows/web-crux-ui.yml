@@ -31,6 +31,7 @@ jobs:
       image: node:17.1-alpine
     outputs:
       tag: ${{ steps.settag.outputs.tag }}
+      version: ${{ steps.settag.outputs.version }}
     defaults:
       run:
         working-directory: ${{ env.WORKING_DIRECTORY }}
@@ -51,18 +52,6 @@ jobs:
         NODE_ENV: production
         NEXT_PUBLIC_RECAPTCHA_SITE_KEY: 6LeSBegfAAAAAGMnFacsTivlw4PdF2LBMi8g5tZ-
 
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: crux-ui-web-dist
-        path: |
-          ${{ env.WORKING_DIRECTORY }}/.next
-          ${{ env.WORKING_DIRECTORY }}/package*.json
-          ${{ env.WORKING_DIRECTORY }}/docker-compose.yaml
-          ${{ env.WORKING_DIRECTORY }}/Dockerfile
-          ${{ env.WORKING_DIRECTORY }}/public
-        retention-days: 1
-
     - name: Setting a buildtag
       id: settag
       working-directory: .github/workflows
@@ -73,18 +62,17 @@ jobs:
     runs-on: ubuntu-20.04
     needs: check
     container: docker:latest
-    if: github.ref_name == 'develop' || github.ref_name == 'main'
+    if: github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag'
     defaults:
       run:
         working-directory: ${{ env.WORKING_DIRECTORY }}
     steps:
 
-    - name: Download artifact
-      uses: actions/download-artifact@v3
-      with:
-        name: crux-ui-web-dist
-        path: |
-          ${{ env.WORKING_DIRECTORY }}
+    # if tag isn't the version setted in package.json will make the job fail
+    - name: Check tag version correctly
+      if: github.ref_type == 'tag'
+      working-directory: .github/workflows
+      run: ./check_version.sh ${{ needs.check.outputs.version }} ..\..\${{ env.WORKING_DIRECTORY }}
 
     - name: Login to GHCR
       uses: docker/login-action@v2
@@ -93,12 +81,22 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GHCR_PAT }}
 
-    - name: Docker build and push
+    - name: Docker build 
       run: |
-        docker-compose build
-        docker-compose push crux-ui
+        docker build . -t ${REGISTRY}/${IMAGE_NAME}:${{ needs.check.outputs.tag }}
       env:
+        NEXT_PUBLIC_RECAPTCHA_SITE_KEY: 6LeSBegfAAAAAGMnFacsTivlw4PdF2LBMi8g5tZ-
         CRUX_UI_IMAGE_TAG: ${{ needs.check.outputs.tag }}
+        CRUX_VERSION: ${{ needs.check.outputs.version }}
+
+    - name: Docker tag
+      run: |
+        docker tag ${REGISTRY}/${IMAGE_NAME}:${{ needs.check.outputs.tag }} ${REGISTRY}/${IMAGE_NAME}:${{ needs.check.outputs.version }}
+      if: github.ref_type == 'tag'
+
+    - name: Docker push
+      run: |
+        docker image push -a ${REGISTRY}/${IMAGE_NAME}
 
   sign_image:
     runs-on: ubuntu-20.04
@@ -119,6 +117,13 @@ jobs:
 
     - name: Sign container image
       run: |
-        cosign sign --key cosign.key ghcr.io/dyrector-io/dyrectorio/web/crux-ui:${{ needs.check.outputs.tag }}
+        cosign sign --key cosign.key ${REGISTRY}/${IMAGE_NAME}:${{ needs.check.outputs.tag }}
+      env:
+        COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
+
+    - name: Sign container image
+      if: github.ref_type == 'tag'
+      run: |
+        cosign sign --key cosign.key ${REGISTRY}/${IMAGE_NAME}:${{ needs.check.outputs.version }}
       env:
         COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"

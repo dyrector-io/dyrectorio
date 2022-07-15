@@ -13,6 +13,9 @@ generate_cert() {
     fi
 }
 
+# ln -sf /usr/share/zoneinfo/${TIME_ZONE} /etc/localtime
+# echo "${TIME_ZONE}" > /etc/timezone
+
 if [ "$1" = serve ]
 then
     if [ -n "$CRUX_DOMAIN" ]
