@@ -53,6 +53,7 @@ jobs:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16
     outputs:
       tag: ${{ steps.settag.outputs.tag }}
+      version: ${{ steps.settag.outputs.version }}
     defaults:
       run:
         working-directory: agent
@@ -102,6 +103,8 @@ jobs:
 
       - name: Compile
         run: make compile-both
+        env:
+          VERSION: ${{ needs.test.outputs.version }}
 
       - name: Docker build with a fitting tag
         run: make image_version=${{ needs.test.outputs.tag }} bbpb

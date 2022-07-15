@@ -43,6 +43,7 @@ jobs:
       image: node:17.1-alpine
     outputs:
       tag: ${{ steps.settag.outputs.tag }}
+      version: ${{ steps.settag.outputs.version }}
     steps:
     - name: Checkout the repository
       uses: actions/checkout@v3
@@ -59,13 +60,6 @@ jobs:
         npm run build --if-present
         npm prune --production
 
-    - name: Upload /dist artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: crux-web-dist
-        path: ${{ env.WORKING_DIRECTORY }}/dist
-        retention-days: 1
-
     - name: Setting a buildtag
       id: settag
       working-directory: .github/workflows
@@ -76,7 +70,7 @@ jobs:
     runs-on: ubuntu-20.04
     needs: prerequirements
     container: docker:latest
-    if: github.ref_name == 'develop' || github.ref_name == 'main'
+    if: github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag'
     defaults:
       run:
         working-directory: ${{ env.WORKING_DIRECTORY }}
@@ -84,11 +78,11 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Download /dist artifact
-      uses: actions/download-artifact@v3
-      with:
-        name: crux-web-dist
-        path: ${{ env.WORKING_DIRECTORY }}/dist
+      # if tag isn't the version setted in package.json will make the job fail
+    - name: Check tag version correctness
+      if: github.ref_type == 'tag'
+      working-directory: .github/workflows
+      run: ./check_version.sh ${{ needs.prerequirements.outputs.version }} ../../${{ env.WORKING_DIRECTORY }}
 
     - name: Login to GHCR
       uses: docker/login-action@v2
@@ -97,12 +91,21 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GHCR_PAT }}
 
-    - name: Docker build and push
+    - name: Docker build 
       run: |
-        docker-compose build
-        docker-compose push crux
+        docker build . -t ${REGISTRY}/${IMAGE_NAME}:${{ needs.prerequirements.outputs.tag }}
       env:
-        CRUX_IMAGE_TAG: ${{ needs.prerequirements.outputs.tag }}
+        CRUX_UI_IMAGE_TAG: ${{ needs.prerequirements.outputs.tag }}
+        CRUX_VERSION: ${{ needs.prerequirements.outputs.version }}
+
+    - name: Docker tag
+      run: |
+        docker tag ${REGISTRY}/${IMAGE_NAME}:${{ needs.prerequirements.outputs.tag }} ${REGISTRY}/${IMAGE_NAME}:${{ needs.prerequirements.outputs.version }}
+      if: github.ref_type == 'tag'
+
+    - name: Docker push
+      run: |
+        docker image push -a ${REGISTRY}/${IMAGE_NAME}
 
   sign_image:
     runs-on: ubuntu-20.04
@@ -123,6 +126,13 @@ jobs:
 
     - name: Sign container image
       run: |
-        cosign sign --key cosign.key ghcr.io/dyrector-io/dyrectorio/web/crux:${{ needs.prerequirements.outputs.tag }}
+        cosign sign --key cosign.key ${REGISTRY}/${IMAGE_NAME}:${{ needs.check.outputs.tag }}
+      env:
+        COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
+
+    - name: Sign container image
+      if: github.ref_type == 'tag'
+      run: |
+        cosign sign --key cosign.key ${REGISTRY}/${IMAGE_NAME}:${{ needs.check.outputs.version }}
       env:
         COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
