@@ -17,8 +17,11 @@ import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import { useRef, useState } from 'react'
 
+export const PRODUCT_TYPE_FILTER_VALUES = ['simple', 'complex', 'all'] as const
+export type ProductTypeFilter = typeof PRODUCT_TYPE_FILTER_VALUES[number]
+
 type ProductFilter = TextFilter & {
-  type: ProductType
+  type: ProductTypeFilter
 }
 
 const productTypeFilter = (items: Product[], filter: ProductFilter) => {
@@ -38,7 +41,7 @@ const ProductsPage = (props: ProductsPageProps) => {
 
   const router = useRouter()
 
-  const initalTypeFilter = 'all' as ProductType
+  const initalTypeFilter = 'all' as ProductTypeFilter
   const filters = useFilters<Product, ProductFilter>({
     initialData: props.products,
     initialFilter: {
@@ -79,7 +82,7 @@ const ProductsPage = (props: ProductsPageProps) => {
       <Filters setTextFilter={it => filters.setFilter({ text: it })}>
         <DyoChips
           className="pl-8"
-          choices={PRODUCT_TYPE_VALUES}
+          choices={PRODUCT_TYPE_FILTER_VALUES}
           initialSelection={initalTypeFilter}
           converter={it => t(it)}
           onSelectionChange={type => {
