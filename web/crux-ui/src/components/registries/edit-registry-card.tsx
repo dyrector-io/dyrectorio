@@ -146,9 +146,9 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
 
               <DyoChips
                 choices={REGISTRY_TYPE_VALUES}
-                initialSelection={[formik.values.type]}
+                initialSelection={formik.values.type}
                 converter={(it: RegistryType) => t(`type.${it}`)}
-                onChoicesChange={it => formik.setFieldValue('type', it[0], false)}
+                onSelectionChange={it => formik.setFieldValue('type', it, false)}
               />
             </div>
 

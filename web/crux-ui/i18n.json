@@ -3,7 +3,7 @@
   "locales": ["en"],
   "defaultLocale": "en",
   "pages": {
-    "*": ["common", "head", "errors"],
+    "*": ["common", "head", "errors", "badges"],
     "/404": ["404"],
     "/500": ["500"],
     "/auth/login": ["login"],

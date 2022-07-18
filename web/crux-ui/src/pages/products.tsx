@@ -6,10 +6,9 @@ import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
 import { ListPageMenu } from '@app/components/shared/page-menu'
 import DyoChips from '@app/elements/dyo-chips'
-import { DyoLabel } from '@app/elements/dyo-label'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
-import { Product, ProductType } from '@app/models'
+import { Product, ProductType, PRODUCT_TYPE_VALUES } from '@app/models'
 import { productUrl, ROUTE_PRODUCTS } from '@app/routes'
 import { utcDateToLocale, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
@@ -18,17 +17,19 @@ import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import { useRef, useState } from 'react'
 
+export const PRODUCT_TYPE_FILTER_VALUES = ['simple', 'complex', 'all'] as const
+export type ProductTypeFilter = typeof PRODUCT_TYPE_FILTER_VALUES[number]
+
 type ProductFilter = TextFilter & {
-  types: ProductType[]
+  type: ProductTypeFilter
 }
 
 const productTypeFilter = (items: Product[], filter: ProductFilter) => {
-  const types = filter.types ?? []
-  if (types.length < 1) {
+  if (filter.type === 'all') {
     return items
+  } else {
+    return items.filter(it => filter.type.includes(it.type))
   }
-
-  return items.filter(it => filter.types.includes(it.type))
 }
 
 interface ProductsPageProps {
@@ -40,12 +41,12 @@ const ProductsPage = (props: ProductsPageProps) => {
 
   const router = useRouter()
 
-  const initalTypeFilter = ['simple', 'complex'] as ProductType[]
+  const initalTypeFilter = 'all' as ProductTypeFilter
   const filters = useFilters<Product, ProductFilter>({
     initialData: props.products,
     initialFilter: {
       text: '',
-      types: initalTypeFilter,
+      type: initalTypeFilter,
     },
     filters: [
       textFilterFor<Product>(it => [it.name, it.description, it.type, utcDateToLocale(it.updatedAt)]),
@@ -79,18 +80,16 @@ const ProductsPage = (props: ProductsPageProps) => {
       )}
 
       <Filters setTextFilter={it => filters.setFilter({ text: it })}>
-        <DyoLabel className="ml-8 mr-2">{t('common:type')}</DyoLabel>
-
         <DyoChips
-          multiple
-          choices={initalTypeFilter}
+          className="pl-8"
+          choices={PRODUCT_TYPE_FILTER_VALUES}
           initialSelection={initalTypeFilter}
           converter={it => t(it)}
-          onChoicesChange={types =>
+          onSelectionChange={type => {
             filters.setFilter({
-              types,
+              type,
             })
-          }
+          }}
         />
       </Filters>
 
