@@ -148,7 +148,7 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
                 choices={REGISTRY_TYPE_VALUES}
                 initialSelection={formik.values.type}
                 converter={(it: RegistryType) => t(`type.${it}`)}
-                onSelectChange={it => formik.setFieldValue('type', it[0], false)}
+                onSelectionChange={it => formik.setFieldValue('type', it, false)}
               />
             </div>
 

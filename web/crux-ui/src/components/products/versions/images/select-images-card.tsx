@@ -169,7 +169,7 @@ const SelectImagesCard = (props: SelectImagesCardProps) => {
                 choices={registries}
                 initialSelection={registries[0]}
                 converter={(it: Registry) => it.name}
-                onSelectChange={it => onRegistrySelectionChange(it[0])}
+                onSelectionChange={it => onRegistrySelectionChange(it)}
               />
             </div>
 

@@ -8,11 +8,11 @@ interface DyoChipsProps<T> {
   choices: readonly T[]
   initialSelection?: T
   converter?: (choice: T) => string
-  onSelectChange: (choices: T) => void
+  onSelectionChange: (choices: T) => void
 }
 
 const DyoChips = <T,>(props: DyoChipsProps<T>) => {
-  const { choices, converter, onSelectChange } = props
+  const { choices, converter, onSelectionChange } = props
 
   assert(
     converter || choices.length < 1 || typeof choices[0] === 'string',
@@ -23,7 +23,7 @@ const DyoChips = <T,>(props: DyoChipsProps<T>) => {
 
   const onToggle = item => {
       setSelection(item)
-      onSelectChange(item)
+      onSelectionChange(item)
   }
 
   const key = props.key ?? 'dyo-chips'

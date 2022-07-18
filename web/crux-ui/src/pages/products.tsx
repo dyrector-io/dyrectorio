@@ -82,7 +82,7 @@ const ProductsPage = (props: ProductsPageProps) => {
           choices={PRODUCT_TYPE_VALUES}
           initialSelection={initalTypeFilter}
           converter={it => t(it)}
-          onSelectChange={type => {
+          onSelectionChange={type => {
             filters.setFilter({
               type,
             })
