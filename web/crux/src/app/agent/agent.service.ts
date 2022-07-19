@@ -228,7 +228,7 @@ export class AgentService {
           })
         }
 
-        agent = installer.complete(connection, eventChannel)
+        agent = installer.complete(connection, eventChannel, request?.version)
         this.installers.delete(node.id)
 
         await this.prisma.node.update({
@@ -246,7 +246,9 @@ export class AgentService {
           })
         }
 
-        agent = new Agent(connection, eventChannel as Subject<NodeEventMessage>)
+        console.log('agent connecting')
+        console.log(request)
+        agent = new Agent(connection, eventChannel as Subject<NodeEventMessage>, request?.version)
 
         await prisma.node.update({
           where: { id: node.id },

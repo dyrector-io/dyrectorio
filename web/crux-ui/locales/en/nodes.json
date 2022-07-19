@@ -19,6 +19,8 @@
   "command": "Command",
   "script": "Script",
   "uptime": "Uptime",
+  "version": "Version",
+  "versionUnknown": "Unkown version",
 
   "deleteDescription": "If you proceed, you will lose all your data related to {{name}}. This action is not revocable."
 }
