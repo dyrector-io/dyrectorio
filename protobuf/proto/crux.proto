@@ -518,7 +518,7 @@ message NodeResponse {
   optional string address = 103;
   NodeConnectionStatus status = 104;
   optional google.protobuf.Timestamp connectedAt = 105;
-  optional string version = 106;
+  optional string version = 120;
 }
 
 message NodeDetailsResponse {
@@ -534,7 +534,7 @@ message NodeDetailsResponse {
   optional google.protobuf.Timestamp connectedAt = 106;
   optional NodeInstallResponse install = 107;
   optional NodeScriptResponse script = 108;
-  optional string version = 109;
+  optional string version = 120;
 }
 
 message NodeListResponse { repeated NodeResponse data = 1000; }

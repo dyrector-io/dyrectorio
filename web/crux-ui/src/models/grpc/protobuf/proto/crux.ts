@@ -4845,7 +4845,7 @@ export const NodeResponse = {
       Timestamp.encode(message.connectedAt, writer.uint32(842).fork()).ldelim()
     }
     if (message.version !== undefined) {
-      writer.uint32(850).string(message.version)
+      writer.uint32(962).string(message.version)
     }
     return writer
   },
@@ -4881,7 +4881,7 @@ export const NodeResponse = {
         case 105:
           message.connectedAt = Timestamp.decode(reader, reader.uint32())
           break
-        case 106:
+        case 120:
           message.version = reader.string()
           break
         default:
@@ -4988,7 +4988,7 @@ export const NodeDetailsResponse = {
       NodeScriptResponse.encode(message.script, writer.uint32(866).fork()).ldelim()
     }
     if (message.version !== undefined) {
-      writer.uint32(874).string(message.version)
+      writer.uint32(962).string(message.version)
     }
     return writer
   },
@@ -5033,7 +5033,7 @@ export const NodeDetailsResponse = {
         case 108:
           message.script = NodeScriptResponse.decode(reader, reader.uint32())
           break
-        case 109:
+        case 120:
           message.version = reader.string()
           break
         default:
