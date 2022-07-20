@@ -9,7 +9,7 @@
 
 dyrector.io is an **open-source** internal delivery platform that helps developers to deliver applications to more places efficiently by simplifying software releases and operations in any environment.
 
-> ⚠️ Disclaimer: dyrectorio platform is under development, please treat as such. Expect bugs here and there. Early adopters welcome.
+> ⚠️ Disclaimer: dyrector.io platform is under development, please treat as such. Expect bugs here and there. Early adopters welcome.
 
 ## Key features
 
@@ -31,11 +31,11 @@ dyrector.io is an **open-source** internal delivery platform that helps develope
 - Install Docker and Docker Compose to your machine
 
 ### Development (Local)
-The easiest way to get started with the dyrectorio platform is by our premade [docker-compose](./web/docker-compose.dev.yaml) file.
+The easiest way to get started with the dyrector.io platform is by our premade [docker-compose](./web/docker-compose.dev.yaml) file.
 
 1. First you have to create `.env` from `.env.example` files in your local environment, in the following folders: `/web`, `/web/auth`, `/web/crux`, `/web/crux-ui`
 
-2. To run the dyrectorio platform dependencies:
+2. To run the dyrector.io platform dependencies:
 ```
 docker-compose -f web/docker-compose.dev.yaml up --build
 ```
@@ -73,9 +73,9 @@ We are planning to support a hosted version in the near future.
 
 ## Community
 
-Also, follow dyrectorio on GitHub Discussions, our [Blog](https://blog.dyrector.io), and on [Twitter](https://twitter.com/dyrectorio). You can chat with the team and other members on [Discord](https://discord.gg/pZWbd4fxga).
+Also, follow dyrector.io on GitHub Discussions, our [Blog](https://blog.dyrector.io), and on [Twitter](https://twitter.com/dyrectorio). You can chat with the team and other members on [Discord](https://discord.gg/pZWbd4fxga).
 
-dyrectorio is Open Source - This repository, and most of our other open source projects, are licensed under the Apache 2.0.
+dyrector.io is Open Source - This repository, and most of our other open source projects, are licensed under the Apache 2.0.
 
 Join our Discord and connect with other members to share and learn together.
 Send a pull request to any of our open source repositories on Github. Check our contribution guide and our developers guide for more details about how to contribute. We're looking forward to your contribution!
