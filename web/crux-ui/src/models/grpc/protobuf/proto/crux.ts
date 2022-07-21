@@ -1,19 +1,19 @@
 /* eslint-disable */
+import Long from 'long'
 import {
-  CallOptions,
+  makeGenericClientConstructor,
   ChannelCredentials,
   ChannelOptions,
-  Client,
-  ClientReadableStream,
-  ClientUnaryCall,
-  handleServerStreamingCall,
-  handleUnaryCall,
-  makeGenericClientConstructor,
-  Metadata,
-  ServiceError,
   UntypedServiceImplementation,
+  handleUnaryCall,
+  Client,
+  ClientUnaryCall,
+  Metadata,
+  CallOptions,
+  handleServerStreamingCall,
+  ClientReadableStream,
+  ServiceError,
 } from '@grpc/grpc-js'
-import Long from 'long'
 import _m0 from 'protobufjs/minimal'
 import { Timestamp } from '../../google/protobuf/timestamp'
 
@@ -4845,7 +4845,7 @@ export const NodeResponse = {
       Timestamp.encode(message.connectedAt, writer.uint32(842).fork()).ldelim()
     }
     if (message.version !== undefined) {
-      writer.uint32(962).string(message.version)
+      writer.uint32(850).string(message.version)
     }
     return writer
   },
@@ -4881,7 +4881,7 @@ export const NodeResponse = {
         case 105:
           message.connectedAt = Timestamp.decode(reader, reader.uint32())
           break
-        case 120:
+        case 106:
           message.version = reader.string()
           break
         default:
@@ -4988,7 +4988,7 @@ export const NodeDetailsResponse = {
       NodeScriptResponse.encode(message.script, writer.uint32(866).fork()).ldelim()
     }
     if (message.version !== undefined) {
-      writer.uint32(962).string(message.version)
+      writer.uint32(874).string(message.version)
     }
     return writer
   },
@@ -5033,7 +5033,7 @@ export const NodeDetailsResponse = {
         case 108:
           message.script = NodeScriptResponse.decode(reader, reader.uint32())
           break
-        case 120:
+        case 109:
           message.version = reader.string()
           break
         default:

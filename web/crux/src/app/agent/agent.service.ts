@@ -245,9 +245,6 @@ export class AgentService {
             message: 'Invalid token',
           })
         }
-
-        console.log('agent connecting')
-        console.log(request)
         agent = new Agent(connection, eventChannel as Subject<NodeEventMessage>, request?.version)
 
         await prisma.node.update({

@@ -1,8 +1,8 @@
 /* eslint-disable */
-import { util, configure } from "protobufjs/minimal";
-import * as Long from "long";
+import { util, configure } from 'protobufjs/minimal'
+import * as Long from 'long'
 
-export const protobufPackage = "google.protobuf";
+export const protobufPackage = 'google.protobuf'
 
 /**
  * A Timestamp represents a point in time independent of any time zone or local
@@ -103,46 +103,39 @@ export interface Timestamp {
    * 1970-01-01T00:00:00Z. Must be from 0001-01-01T00:00:00Z to
    * 9999-12-31T23:59:59Z inclusive.
    */
-  seconds: number;
+  seconds: number
   /**
    * Non-negative fractions of a second at nanosecond resolution. Negative
    * second values with fractions must still have non-negative nanos values
    * that count forward in time. Must be from 0 to 999,999,999
    * inclusive.
    */
-  nanos: number;
+  nanos: number
 }
 
-export const GOOGLE_PROTOBUF_PACKAGE_NAME = "google.protobuf";
+export const GOOGLE_PROTOBUF_PACKAGE_NAME = 'google.protobuf'
 
-const baseTimestamp: object = { seconds: 0, nanos: 0 };
+const baseTimestamp: object = { seconds: 0, nanos: 0 }
 
 export const Timestamp = {
   fromJSON(object: any): Timestamp {
-    const message = { ...baseTimestamp } as Timestamp;
-    message.seconds =
-      object.seconds !== undefined && object.seconds !== null
-        ? Number(object.seconds)
-        : 0;
-    message.nanos =
-      object.nanos !== undefined && object.nanos !== null
-        ? Number(object.nanos)
-        : 0;
-    return message;
+    const message = { ...baseTimestamp } as Timestamp
+    message.seconds = object.seconds !== undefined && object.seconds !== null ? Number(object.seconds) : 0
+    message.nanos = object.nanos !== undefined && object.nanos !== null ? Number(object.nanos) : 0
+    return message
   },
 
   toJSON(message: Timestamp): unknown {
-    const obj: any = {};
-    message.seconds !== undefined &&
-      (obj.seconds = Math.round(message.seconds));
-    message.nanos !== undefined && (obj.nanos = Math.round(message.nanos));
-    return obj;
+    const obj: any = {}
+    message.seconds !== undefined && (obj.seconds = Math.round(message.seconds))
+    message.nanos !== undefined && (obj.nanos = Math.round(message.nanos))
+    return obj
   },
-};
+}
 
 // If you get a compile-error about 'Constructor<Long> and ... have no overlap',
 // add '--ts_proto_opt=esModuleInterop=true' as a flag when calling 'protoc'.
 if (util.Long !== Long) {
-  util.Long = Long as any;
-  configure();
+  util.Long = Long as any
+  configure()
 }

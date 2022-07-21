@@ -9,14 +9,14 @@ export interface DyoNodeVersionTextProps {
 const DyoNodeVersionText = (props: DyoNodeVersionTextProps) => {
   const { t } = useTranslation('nodes')
 
-  const versionSplit = props.version.split(' ')
-  const visible = versionSplit[0]
-  const tooltip = versionSplit[1]
+  const versionSplit = props?.version?.split(' ')
+  const visibleVersion = versionSplit && versionSplit[0]
+  const tooltip = versionSplit && versionSplit[1]
 
   return (
     <>
       <DyoTooltip message={tooltip}>
-        <span className={props.className}>{visible || t('versionUnknown')}</span>
+        <span className={props.className}>{(props.version && visibleVersion) || t('versionUnknown')}</span>
       </DyoTooltip>
     </>
   )
