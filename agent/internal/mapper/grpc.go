@@ -55,7 +55,7 @@ func MapDeployImage(req *agent.DeployRequest, appConfig *config.CommonConfigurat
 		}
 	}
 
-	v1.SetDeploymentDefaults(res, &res.ContainerConfig, appConfig)
+	v1.SetDeploymentDefaults(res, appConfig)
 
 	if req.RuntimeConfig != nil {
 		res.RuntimeConfig = v1.Base64JSONBytes(*req.RuntimeConfig)

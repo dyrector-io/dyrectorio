@@ -164,9 +164,8 @@ func executeDeployImageRequest(
 		dog.Write(fmt.Sprintf("Deployment took: %.2f seconds", time.Since(t1).Seconds()))
 	}(t1)
 
-	containerConfig := v1.ContainerConfig{}
-	v1.SetDeploymentDefaults(deployImageRequest, &containerConfig, &config.Cfg.CommonConfiguration)
-	dog.Write(fmt.Sprintf("Restart policy: %v \n", string(containerConfig.RestartPolicy)))
+	v1.SetDeploymentDefaults(deployImageRequest, &config.Cfg.CommonConfiguration)
+	dog.Write(fmt.Sprintf("Restart policy: %v \n", string(deployImageRequest.ContainerConfig.RestartPolicy)))
 
 	if err := utils.DeployImage(ctx, dog, deployImageRequest, versionData); err != nil {
 		dog.Write("Deployment failed " + err.Error())

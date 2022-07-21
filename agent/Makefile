@@ -2,13 +2,13 @@ PACKAGE := github.com/dyrector-io/dyrectorio/agent
 CONTAINER_URL := ghcr.io/dyrector-io/dyrectorio/agent/
 VCS_VERSION="$(shell git describe --exact-match --tags 2> /dev/null || git rev-parse --short HEAD)"
 AGENT_HASH="$(shell git rev-parse --short HEAD:../agent)"
-BUILD_TIMESTAMP="$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")" # UTC timestamps for builds
+BUILD_TIMESTAMP="$(shell date -u +"%Y-%m-%dT%H:%M:%SZ" | tr -d "[:blank:]")" # UTC timestamps for builds
 
 agent_version=$(or $(VCS_VERSION),$(AGENT_HASH))
 
-LDFLAGS := -ldflags "-X '${PACKAGE}/internal/version.Version=${VCS_VERSION}' \
-  -X '${PACKAGE}/internal/version.CommitHash=${AGENT_HASH}' \
-  -X '${PACKAGE}/internal/version.BuildTimestamp=${BUILD_TIMESTAMP}' \
+LDFLAGS := -ldflags "-X '${PACKAGE}/internal/version.Version=${VCS_VERSION}'\
+  -X '${PACKAGE}/internal/version.BuildTimestamp=${BUILD_TIMESTAMP}'\
+  -X '${PACKAGE}/internal/version.CommitHash=${AGENT_HASH}'\
   -extldflags '-static'"
 
 # default tag is latest for building
