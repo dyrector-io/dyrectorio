@@ -37,7 +37,7 @@ The easiest way to get started with the dyrectorio platform is by our premade [d
 
 2. To run the dyrectorio platform dependencies:
 ```
-docker-compose -f web/docker-compose.dev.yaml build && up
+docker-compose -f web/docker-compose.dev.yaml up --build
 ```
 
 3. Now as all the infrastructure is ready, you need to install all the node.js dependencies in the specific projects' folder. To install all ( `web/auth/`, `web/crux/`, `web/crux-ui/` ) dependencies run `npm install`.
