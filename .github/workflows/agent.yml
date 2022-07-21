@@ -1,5 +1,5 @@
 name: agent
-on: 
+on:
   push:
     paths:
       - agent/**
@@ -126,7 +126,7 @@ jobs:
         password: ${{ secrets.GHCR_PAT }}
 
     - name: Sign container image dagent
-      run: | 
+      run: |
         cosign sign --key cosign.key ghcr.io/dyrector-io/dyrectorio/agent/dagent:${{ needs.test.outputs.tag }}
       env:
         COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"

@@ -13,16 +13,18 @@ dyrector.io is an **open-source** internal delivery platform that helps develope
 
 ## Key features
 
-- Fine-grained RBAC
-- Environment management
 - Kubernetes and Docker support
-- Configuration management
-- Changelog and release notes generations
-- Container Registry integrations
-- ChatOps solutions
-- Workflow supporting
+- Multi-instance deployment
+- Instant test environments from any branches
+- Environment management
+- Secret and configuration management
+- Auto-generated changelogs and release notes
+- Workflow support
 - Scheduled releases
-- Workflow supporting
+- Audit log
+- Container Registry integrations
+- Fine-grained RBAC
+- ChatOps & notification solutions
 
 ## Quick Start
 
@@ -33,14 +35,14 @@ dyrector.io is an **open-source** internal delivery platform that helps develope
 ### Development (Local)
 The easiest way to get started with the dyrector.io platform is by our premade [docker-compose](./web/docker-compose.dev.yaml) file.
 
-1. First you have to create `.env` from `.env.example` files in your local environment, in the following folders: `/web`, `/web/auth`, `/web/crux`, `/web/crux-ui`
+1. First you have to create `.env` from `.env.example` files in your local environment, in the following folders: `/web`, `/web/crux`, `/web/crux-ui`
 
 2. To run the dyrector.io platform dependencies:
 ```
 docker-compose -f web/docker-compose.dev.yaml up --build
 ```
 
-3. Now as all the infrastructure is ready, you need to install all the node.js dependencies in the specific projects' folder. To install all ( `web/auth/`, `web/crux/`, `web/crux-ui/` ) dependencies run `npm install`.
+3. Now as all the infrastructure is ready, you need to install all the node.js dependencies in the specific projects' folder. To install all (  `web/crux/`, `web/crux-ui/` ) dependencies run `npm install`.
 
 4. In `crux/` folder you have to migrate the database and generate the Prisma client
 ```

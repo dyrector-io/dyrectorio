@@ -1,5 +1,5 @@
 name: web-crux-ui
-on: 
+on:
   push:
     paths:
       - web/crux-ui/**
