@@ -460,25 +460,6 @@ definitions:
       name:
         type: string
     type: object
-  controller.RegistryAuthRequest:
-    properties:
-      name:
-        type: string
-      namespace:
-        type: string
-      password:
-        type: string
-      server:
-        type: string
-      user:
-        type: string
-    required:
-    - name
-    - namespace
-    - password
-    - server
-    - user
-    type: object
   github.com_dyrector-io_dyrectorio_agent_pkg_api_v1.Probe:
     properties:
       path:
@@ -1892,6 +1873,9 @@ definitions:
       shared:
         description: if put together with another instances consume their shared configs
           eg. -common config map, generated from here
+        type: boolean
+      tty:
+        description: if we need to spawn a pseudo-terminal
         type: boolean
       useLoadBalancer:
         description: |-
@@ -5778,26 +5762,6 @@ paths:
       summary: Get list of available namespaces.
       tags:
       - k8s
-  /registry:
-    post:
-      consumes:
-      - '*/*'
-      description: Deployment with all configuration.
-      parameters:
-      - description: body data
-        in: body
-        name: req
-        required: true
-        schema:
-          $ref: '#/definitions/controller.RegistryAuthRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: ""
-      summary: Deploy an image from a Registry.
-      tags:
-      - deploy
   /update:
     post:
       consumes:
@@ -5812,6 +5776,22 @@ paths:
       summary: Updates running agent
       tags:
       - monitoring
+  /version:
+    get:
+      consumes:
+      - '*/*'
+      description: Version is formatted as "<agent-version>-<commit-hash> "(<build-date>)",
+        also available on the /version path
+      produces:
+      - application/text
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get version string of the agent container
+      tags:
+      - info
 schemes:
 - http
 swagger: "2.0"

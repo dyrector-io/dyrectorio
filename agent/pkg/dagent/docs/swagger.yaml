@@ -1141,6 +1141,9 @@ definitions:
         description: if put together with another instances consume their shared configs
           eg. -common config map, generated from here
         type: boolean
+      tty:
+        description: if we need to spawn a pseudo-terminal
+        type: boolean
       useLoadBalancer:
         description: |-
           Expose service using external IP
@@ -1724,6 +1727,22 @@ paths:
       summary: Updates running agent
       tags:
       - monitoring
+  /version:
+    get:
+      consumes:
+      - '*/*'
+      description: Version is formatted as "<agent-version>-<commit-hash> "(<build-date>)",
+        also available on the /version path
+      produces:
+      - application/text
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get version string of the agent container
+      tags:
+      - info
   /versions/{instance}:
     get:
       description: Deployed versions are present in the filesystem as yml files per

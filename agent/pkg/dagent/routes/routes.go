@@ -39,6 +39,7 @@ func SetupRouter(r *gin.Engine) *gin.Engine {
 	v1.GET("/versions/:instance", controller.GetVersion)
 
 	r.GET("/version", version.VersionForGin)
+	v1.GET("version", version.VersionForGin)
 
 	v1.GET("/swagger", swaggerRedirect)
 	r.GET("swagger", swaggerRedirect)

@@ -336,37 +336,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/registry": {
-            "post": {
-                "description": "Deployment with all configuration.",
-                "consumes": [
-                    "*/*"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "deploy"
-                ],
-                "summary": "Deploy an image from a Registry.",
-                "parameters": [
-                    {
-                        "description": "body data",
-                        "name": "req",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/controller.RegistryAuthRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": ""
-                    }
-                }
-            }
-        },
         "/update": {
             "post": {
                 "description": "Incoming webhook triggers a one-shot check for updates in the configured remote registry",
@@ -383,6 +352,29 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": ""
+                    }
+                }
+            }
+        },
+        "/version": {
+            "get": {
+                "description": "Version is formatted as \"\u003cagent-version\u003e-\u003ccommit-hash\u003e \"(\u003cbuild-date\u003e)\", also available on the /version path",
+                "consumes": [
+                    "*/*"
+                ],
+                "produces": [
+                    "application/text"
+                ],
+                "tags": [
+                    "info"
+                ],
+                "summary": "Get version string of the agent container",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 }
             }
@@ -998,33 +990,6 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "name": {
-                    "type": "string"
-                }
-            }
-        },
-        "controller.RegistryAuthRequest": {
-            "type": "object",
-            "required": [
-                "name",
-                "namespace",
-                "password",
-                "server",
-                "user"
-            ],
-            "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "namespace": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "server": {
-                    "type": "string"
-                },
-                "user": {
                     "type": "string"
                 }
             }
@@ -2384,6 +2349,10 @@ const docTemplate = `{
                 },
                 "shared": {
                     "description": "if put together with another instances consume their shared configs eg. -common config map, generated from here",
+                    "type": "boolean"
+                },
+                "tty": {
+                    "description": "if we need to spawn a pseudo-terminal",
                     "type": "boolean"
                 },
                 "useLoadBalancer": {

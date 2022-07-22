@@ -512,6 +512,29 @@ const docTemplate = `{
                 }
             }
         },
+        "/version": {
+            "get": {
+                "description": "Version is formatted as \"\u003cagent-version\u003e-\u003ccommit-hash\u003e \"(\u003cbuild-date\u003e)\", also available on the /version path",
+                "consumes": [
+                    "*/*"
+                ],
+                "produces": [
+                    "application/text"
+                ],
+                "tags": [
+                    "info"
+                ],
+                "summary": "Get version string of the agent container",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/versions/{instance}": {
             "get": {
                 "description": "Deployed versions are present in the filesystem as yml files per instance, this queries for an instance's versions",
@@ -2095,6 +2118,10 @@ const docTemplate = `{
                 },
                 "shared": {
                     "description": "if put together with another instances consume their shared configs eg. -common config map, generated from here",
+                    "type": "boolean"
+                },
+                "tty": {
+                    "description": "if we need to spawn a pseudo-terminal",
                     "type": "boolean"
                 },
                 "useLoadBalancer": {
