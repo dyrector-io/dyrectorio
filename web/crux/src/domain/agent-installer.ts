@@ -43,10 +43,10 @@ export class AgentInstaller {
     })
   }
 
-  complete(connection: GrpcNodeConnection, eventChannel: Subject<NodeEventMessage>): Agent {
+  complete(connection: GrpcNodeConnection, eventChannel: Subject<NodeEventMessage>, version?: string): Agent {
     this.verify()
 
-    return new Agent(connection, eventChannel)
+    return new Agent(connection, eventChannel, version)
   }
 }
 

@@ -218,6 +218,7 @@ export type DyoNode = {
   address?: string
   status: NodeStatus
   connectedAt?: string
+  version?: string
 }
 
 export type DyoNodeInstall = {

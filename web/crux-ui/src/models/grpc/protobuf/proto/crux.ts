@@ -1,19 +1,19 @@
 /* eslint-disable */
+import Long from 'long'
 import {
-  CallOptions,
+  makeGenericClientConstructor,
   ChannelCredentials,
   ChannelOptions,
-  Client,
-  ClientReadableStream,
-  ClientUnaryCall,
-  handleServerStreamingCall,
-  handleUnaryCall,
-  makeGenericClientConstructor,
-  Metadata,
-  ServiceError,
   UntypedServiceImplementation,
+  handleUnaryCall,
+  Client,
+  ClientUnaryCall,
+  Metadata,
+  CallOptions,
+  handleServerStreamingCall,
+  ClientReadableStream,
+  ServiceError,
 } from '@grpc/grpc-js'
-import Long from 'long'
 import _m0 from 'protobufjs/minimal'
 import { Timestamp } from '../../google/protobuf/timestamp'
 
@@ -817,6 +817,7 @@ export interface NodeResponse {
   address?: string | undefined
   status: NodeConnectionStatus
   connectedAt?: Timestamp | undefined
+  version?: string | undefined
 }
 
 export interface NodeDetailsResponse {
@@ -831,6 +832,7 @@ export interface NodeDetailsResponse {
   connectedAt?: Timestamp | undefined
   install?: NodeInstallResponse | undefined
   script?: NodeScriptResponse | undefined
+  version?: string | undefined
 }
 
 export interface NodeListResponse {
@@ -4842,6 +4844,9 @@ export const NodeResponse = {
     if (message.connectedAt !== undefined) {
       Timestamp.encode(message.connectedAt, writer.uint32(842).fork()).ldelim()
     }
+    if (message.version !== undefined) {
+      writer.uint32(850).string(message.version)
+    }
     return writer
   },
 
@@ -4876,6 +4881,9 @@ export const NodeResponse = {
         case 105:
           message.connectedAt = Timestamp.decode(reader, reader.uint32())
           break
+        case 106:
+          message.version = reader.string()
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -4900,6 +4908,7 @@ export const NodeResponse = {
       object.connectedAt !== undefined && object.connectedAt !== null
         ? fromJsonTimestamp(object.connectedAt)
         : undefined
+    message.version = object.version !== undefined && object.version !== null ? String(object.version) : undefined
     return message
   },
 
@@ -4913,6 +4922,7 @@ export const NodeResponse = {
     message.address !== undefined && (obj.address = message.address)
     message.status !== undefined && (obj.status = nodeConnectionStatusToJSON(message.status))
     message.connectedAt !== undefined && (obj.connectedAt = fromTimestamp(message.connectedAt).toISOString())
+    message.version !== undefined && (obj.version = message.version)
     return obj
   },
 
@@ -4930,6 +4940,7 @@ export const NodeResponse = {
       object.connectedAt !== undefined && object.connectedAt !== null
         ? Timestamp.fromPartial(object.connectedAt)
         : undefined
+    message.version = object.version ?? undefined
     return message
   },
 }
@@ -4976,6 +4987,9 @@ export const NodeDetailsResponse = {
     if (message.script !== undefined) {
       NodeScriptResponse.encode(message.script, writer.uint32(866).fork()).ldelim()
     }
+    if (message.version !== undefined) {
+      writer.uint32(874).string(message.version)
+    }
     return writer
   },
 
@@ -5019,6 +5033,9 @@ export const NodeDetailsResponse = {
         case 108:
           message.script = NodeScriptResponse.decode(reader, reader.uint32())
           break
+        case 109:
+          message.version = reader.string()
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -5048,6 +5065,7 @@ export const NodeDetailsResponse = {
       object.install !== undefined && object.install !== null ? NodeInstallResponse.fromJSON(object.install) : undefined
     message.script =
       object.script !== undefined && object.script !== null ? NodeScriptResponse.fromJSON(object.script) : undefined
+    message.version = object.version !== undefined && object.version !== null ? String(object.version) : undefined
     return message
   },
 
@@ -5066,6 +5084,7 @@ export const NodeDetailsResponse = {
       (obj.install = message.install ? NodeInstallResponse.toJSON(message.install) : undefined)
     message.script !== undefined &&
       (obj.script = message.script ? NodeScriptResponse.toJSON(message.script) : undefined)
+    message.version !== undefined && (obj.version = message.version)
     return obj
   },
 
@@ -5090,6 +5109,7 @@ export const NodeDetailsResponse = {
         : undefined
     message.script =
       object.script !== undefined && object.script !== null ? NodeScriptResponse.fromPartial(object.script) : undefined
+    message.version = object.version ?? undefined
     return message
   },
 }
