@@ -61,8 +61,13 @@ jobs:
       uses: actions/checkout@v3
     - name: Load go mod
       run: go mod tidy
+    
+    # fixes: fatal: unsafe repository
+    - name: Adding workspace
+      run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
     - name: Run unit tests
-      run: make test
+      run: pwd && ls -lah && id && make test-unit
     # if we go public this is free from codecov.io
     # todo: replace & fix unit test coverage above
     # - uses: codecov/codecov-action@v3

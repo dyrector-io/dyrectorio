@@ -15,10 +15,7 @@ RUN apk add nodejs npm alpine-sdk go protoc protobuf-dev rsync docker git cosign
 RUN npm i -g \
     ts-proto@1.96.0 \
     @grpc/grpc-js \
-    prettier \
-    husky \
-    @commitlint/cli \
-    @commitlint/config-conventional
+    prettier 
 
 ENV GOSEC v2.12.0
 ENV GOLANGCI v1.46.2
