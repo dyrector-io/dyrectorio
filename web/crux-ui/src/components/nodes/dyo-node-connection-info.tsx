@@ -3,6 +3,7 @@ import { DyoLabel } from '@app/elements/dyo-label'
 import RemainingTimeLabel from '@app/elements/remaining-time-label'
 import { DyoNode } from '@app/models'
 import useTranslation from 'next-translate/useTranslation'
+import DyoNodeVersionText from './dyo-node-version-text'
 import NodeStatusIndicator from './node-status-indicator'
 
 interface DyoNodeConnectionInfoProps {
@@ -28,6 +29,11 @@ const DyoNodeConnectionInfo = (props: DyoNodeConnectionInfoProps) => {
         <DyoLabel>{t('address')}</DyoLabel>
 
         <span className="text-light-eased">{node.address}</span>
+
+        <>
+          <DyoLabel> {t('version')}</DyoLabel>
+          <DyoNodeVersionText className="text-light-eased" version={node.version} />
+        </>
 
         <DyoLabel>{t('status')}</DyoLabel>
 

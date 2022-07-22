@@ -20,11 +20,11 @@ export class NodeMapper {
     const agent = this.agentService.getById(node.id)
 
     const status = agent?.getConnectionStatus() ?? NodeConnectionStatus.UNREACHABLE
-
     return {
       ...node,
       audit: AuditResponse.fromJSON(node),
       address: agent?.address,
+      version: agent?.version,
       status,
       connectedAt: node.connectedAt ? toTimestamp(node.connectedAt) : null,
     }

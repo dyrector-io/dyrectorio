@@ -806,6 +806,7 @@ export interface NodeResponse {
   address?: string | undefined
   status: NodeConnectionStatus
   connectedAt?: Timestamp | undefined
+  version?: string | undefined
 }
 
 export interface NodeDetailsResponse {
@@ -820,6 +821,7 @@ export interface NodeDetailsResponse {
   connectedAt?: Timestamp | undefined
   install?: NodeInstallResponse | undefined
   script?: NodeScriptResponse | undefined
+  version?: string | undefined
 }
 
 export interface NodeListResponse {
@@ -2284,6 +2286,7 @@ export const NodeResponse = {
       object.connectedAt !== undefined && object.connectedAt !== null
         ? fromJsonTimestamp(object.connectedAt)
         : undefined
+    message.version = object.version !== undefined && object.version !== null ? String(object.version) : undefined
     return message
   },
 
@@ -2297,6 +2300,7 @@ export const NodeResponse = {
     message.address !== undefined && (obj.address = message.address)
     message.status !== undefined && (obj.status = nodeConnectionStatusToJSON(message.status))
     message.connectedAt !== undefined && (obj.connectedAt = fromTimestamp(message.connectedAt).toISOString())
+    message.version !== undefined && (obj.version = message.version)
     return obj
   },
 }
@@ -2330,6 +2334,7 @@ export const NodeDetailsResponse = {
       object.install !== undefined && object.install !== null ? NodeInstallResponse.fromJSON(object.install) : undefined
     message.script =
       object.script !== undefined && object.script !== null ? NodeScriptResponse.fromJSON(object.script) : undefined
+    message.version = object.version !== undefined && object.version !== null ? String(object.version) : undefined
     return message
   },
 
@@ -2348,6 +2353,7 @@ export const NodeDetailsResponse = {
       (obj.install = message.install ? NodeInstallResponse.toJSON(message.install) : undefined)
     message.script !== undefined &&
       (obj.script = message.script ? NodeScriptResponse.toJSON(message.script) : undefined)
+    message.version !== undefined && (obj.version = message.version)
     return obj
   },
 }

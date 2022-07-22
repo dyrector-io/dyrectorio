@@ -47,7 +47,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
       } as DyoNodeDetails),
   )
 
-  const [revokeModalConifg, confirmTokenRevoke] = useConfirmation()
+  const [revokeModalConfig, confirmTokenRevoke] = useConfirmation()
 
   const socket = useWebSocket(WS_NODES)
   socket.on(WS_TYPE_NODE_STATUS, (message: NodeStatusMessage) => {
@@ -212,7 +212,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
       </DyoCard>
 
       <DyoConfirmationModal
-        config={revokeModalConifg}
+        config={revokeModalConfig}
         title={t('confirmRevoke')}
         confirmText={t('revoke')}
         className="w-1/4"

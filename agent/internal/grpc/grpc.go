@@ -15,6 +15,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/agent/internal/config"
 	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
 	"github.com/dyrector-io/dyrectorio/agent/internal/mapper"
+	"github.com/dyrector-io/dyrectorio/agent/internal/version"
 	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/crux"
@@ -190,7 +191,7 @@ func grpcLoop(
 			client := agent.NewAgentClient(GrpcConn.Conn)
 			GrpcConn.SetClient(client)
 			stream, err = GrpcConn.Client.Connect(
-				ctx, &agent.AgentInfo{Id: nodeID},
+				ctx, &agent.AgentInfo{Id: nodeID, Version: version.BuildVersion()},
 				grpc.WaitForReady(true),
 			)
 			if err != nil {
