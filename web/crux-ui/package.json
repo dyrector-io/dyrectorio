@@ -31,6 +31,7 @@
     "@ory/kratos-client": "^0.10.1",
     "@tailwindcss/line-clamp": "^0.2.2",
     "@types/ws": "^8.2.0",
+    "@typescript-eslint/eslint-plugin": "^5.30.7",
     "axios": "^0.27.2",
     "clsx": "^1.1.1",
     "formik": "^2.2.9",

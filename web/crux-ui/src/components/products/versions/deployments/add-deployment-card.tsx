@@ -46,7 +46,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
       const res = await sendForm('POST', versionDeploymentsApiUrl(productId, versionId), body)
 
       if (res.ok) {
-        let result = (await res.json()) as DeploymentCreated
+        const result = (await res.json()) as DeploymentCreated
         props.onAdd(result.id)
       } else if (res.status === 409) {
         // There is already a deployment for the selected node

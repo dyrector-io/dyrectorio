@@ -71,7 +71,7 @@ const KeyValueInput = (props: KeyValueInputProps) => {
 
   const elements = stateToElements(state)
 
-  const renderItem = (entry: KeyValueElement, index: number, newLine?: boolean) => {
+  const renderItem = (entry: KeyValueElement, index: number) => {
     const { key, value, message } = entry
 
     return (

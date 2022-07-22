@@ -41,7 +41,6 @@ const NodesPage = (props: NodesPageProps) => {
 
   const socket = useWebSocket(WS_NODES, {
     onError: err => {
-      console.error('ws', 'node', err)
       toast(t('errors:connectionLost'))
     },
   })

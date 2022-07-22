@@ -92,7 +92,7 @@ class HubApiClient implements RegistryApiClient {
     })
   }
 
-  private async fetchPaginatedEndpoint(endpoint: string, init?: RequestInit) {
+  private async fetchPaginatedEndpoint(endpoint: string) {
     const result = []
 
     let next = () => this._fetch(`${endpoint}`)

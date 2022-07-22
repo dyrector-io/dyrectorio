@@ -44,6 +44,7 @@ const EditImageJson = (props: EditImageJsonProps) => {
 
   const onParseError = useCallback(
     (err: Error) => {
+      // TODO @m8 why is this arrow function is empty?
       throttle(() => {})
 
       props.onParseError(err)

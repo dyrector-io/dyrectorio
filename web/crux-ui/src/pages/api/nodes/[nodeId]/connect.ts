@@ -27,7 +27,7 @@ const onAuthorize = async (endpoint: WsEndpoint, req: NextApiRequest): Promise<b
   }
 }
 
-const onConnect = (endpoint: WsEndpoint, connection: WsConnection) => {
+const onConnect = (endpoint: WsEndpoint) => {
   const nodeId = endpoint.query.nodeId as string
 
   const watchers = watcherServices.get(nodeId)

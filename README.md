@@ -44,6 +44,8 @@ docker-compose -f web/docker-compose.dev.yaml up --build
 
 3. Now as all the infrastructure is ready, you need to install all the node.js dependencies in the specific projects' folder. To install all (  `web/crux/`, `web/crux-ui/` ) dependencies run `npm install`.
 
+_on Apple Silicon run `npm install --target_arch=x64`_
+
 4. In `crux/` folder you have to migrate the database and generate the Prisma client
 ```
 npx prisma generate
