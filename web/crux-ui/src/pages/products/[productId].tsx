@@ -160,7 +160,7 @@ const getPageServerSideProps = async (context: NextPageContext) => {
 
   const product = await cruxFromContext(context).products.getById(productId)
 
-  let props: ProductDetailsPageProps = {
+  const props: ProductDetailsPageProps = {
     product,
     simpleProductVersionDetails: null,
   }

@@ -22,6 +22,8 @@ export const getKratosServiceStatus = async (): Promise<ServiceStatus> => {
     if (res.status === 200) {
       return 'disrupted'
     }
+    // TODO
+    // eslint-disable-next-line
   } catch {}
 
   return 'unavailable'

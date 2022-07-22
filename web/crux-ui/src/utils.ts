@@ -176,7 +176,7 @@ export const configuredFetcher = (init?: RequestInit) => {
 export const fetcher = configuredFetcher()
 
 // forms
-export const paginationParams = (req: NextApiRequest, defaultTake: number = 100): [number, number] => {
+export const paginationParams = (req: NextApiRequest, defaultTake: 100): [number, number] => {
   const skip = (req.query['skip'] ?? 0) as number
   const take = (req.query['take'] ?? defaultTake) as number
   return [skip, take]
@@ -255,7 +255,7 @@ export type CruxUrlParams = {
 
 export const appendUrlParams = <T extends CruxUrlParams>(url: string, params: T): string => {
   let result = url
-  let paramMap: Map<string, any> = new Map()
+  const paramMap: Map<string, any> = new Map()
   const anchor = params?.anchor
 
   if (params) {
@@ -330,9 +330,6 @@ export const withContextAuthorization =
       const props = await getServerSideProps(context as any as NextPageContext)
       return props
     } catch (err) {
-      console.error('Error while accessing', req.url)
-      console.error(err)
-
       if (isDyoApiError(err)) {
         if (err.status === 404 && err.property === 'team') {
           return redirectTo(ROUTE_INDEX)

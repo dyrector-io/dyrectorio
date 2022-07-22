@@ -108,6 +108,8 @@ export const parseGrpcError = (error: ServiceError): CruxGrpcError => {
     const json = JSON.parse(error.details)
     message = json.message
     details = json.details
+    // TODO
+    // eslint-disable-next-line
   } catch {}
 
   return {
@@ -179,7 +181,6 @@ export const useErrorMiddleware = async (
         description: error.description,
       })
     } else {
-      console.error('Internal Server Error: ', e)
       res.statusCode = 500
 
       if (process.env.NODE_ENV !== 'production') {

@@ -70,6 +70,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
       }
     },
     onError: e => {
+      // eslint-disable-next-line
       console.error('ws', 'edit-deployment', e)
       toast(t('errors:connectionLost'))
     },

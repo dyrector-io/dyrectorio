@@ -163,7 +163,7 @@ export class WebSocketClient {
   async remove(url: string, endpoint: WebSocketEndpoint) {
     this.logger.debug('Disconnecting:', url)
 
-    let route = this.routes.get(url)
+    const route = this.routes.get(url)
     if (route) {
       const endpoints = route.endpoints.filter(it => it !== endpoint)
       if (endpoints.length > 0) {
@@ -267,6 +267,7 @@ export class WebSocketClient {
     }
 
     this.lastAttempt = Date.now()
+    // eslint-disable-next-line
     this.connectionAttempt = new Promise<boolean>(async resolve => {
       this.token = null
 

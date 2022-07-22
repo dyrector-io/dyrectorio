@@ -303,12 +303,9 @@ export class WebSocketServer {
       return
     }
 
-    let stringData: string
-    let message: WsMessage<object>
-    try {
-      stringData = data.toString()
-      message = JSON.parse(stringData)
-    } catch {}
+    const stringData: string = data.toString()
+    const message: WsMessage<object> = JSON.parse(stringData)
+
 
     if (!message || !message.type) {
       this.logger.warn('Illformed message from:', connection.address)
