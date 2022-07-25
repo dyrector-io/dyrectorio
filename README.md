@@ -37,28 +37,39 @@ The easiest way to get started with the dyrector.io platform is by our premade [
 
 1. First you have to create `.env` from `.env.example` files in your local environment, in the following folders: `/web`, `/web/crux`, `/web/crux-ui`
 
-2. To run the dyrector.io platform dependencies:
+On *Windows* and *Mac* use `host.docker.internal` in the `.env` files for URLs.
+
+2. Build the dyrector.io platform dependencies, this step is only required once: 
+```
+docker-compose -f web/docker-compose.dev.yaml build
+```
+
+3. To run the dyrector.io platform dependencies:
 ```
 docker-compose -f web/docker-compose.dev.yaml up --build
 ```
 
-3. Now as all the infrastructure is ready, you need to install all the node.js dependencies in the specific projects' folder. To install all (  `web/crux/`, `web/crux-ui/` ) dependencies run `npm install`.
+If you are having problems starting `crux-kratos-migrate` change the line endings of `web/kratos/entrypoint.sh` from CRLF to LF. These problems include `ERROR: Encountered errors while bringing up the project.` while running `docker-compose up` or `': No such file or directory` in the container log.
+
+4. Now as all the infrastructure is ready, you need to install all the node.js dependencies in the specific projects' folder. To install all (  `web/crux/`, `web/crux-ui/` ) dependencies run `npm install`.
 
 _on Apple Silicon run `npm install --target_arch=x64`_
 
-4. In `crux/` folder you have to migrate the database and generate the Prisma client
+5. In `crux/` folder you have to migrate the database and generate the Prisma client
 ```
 npx prisma generate
 npx prisma migrate deploy
 ```
 
-5. To start services run `npm start` in the followind folders `/web/auth`, `/web/crux`, `/web/crux-ui`
+6. Create a reCaptcha v3 key pair and set `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` and `RECAPTCHA_SECRET_KEY` in `/web/crux-ui/.env`. Make sure to use `localhost` or `host.internal` as the domain.
 
-6. Open the platform in `172.17.0.1:8000` and register
+7. To start services run `npm start` in the followind folders `/web/crux` and `/web/crux-ui`
 
-7. In local our auth service is using a mock, so you can confirm your email in `http://localhost:4436/`
+8. Open the platform in `host.docker.internal:8000` and register
 
-8. Now you can log in and use the platform
+9. In local our auth service is using a mock, so you can confirm your email in `http://localhost:4436/`
+
+10. Now you can log in and use the platform
 
 ### Hosted version (SaaS)
 
