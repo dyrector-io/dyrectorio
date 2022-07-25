@@ -13,7 +13,7 @@ const Page404 = () => {
   const goBack = () => router.back()
 
   return (<>
-    <PageHead pageTranslation={t} />
+    <PageHead title={t('title')} />
     <div className="flex flex-row min-h-screen bg-dark">
       <div className="flex flex-col items-center w-full my-auto">
         <div>

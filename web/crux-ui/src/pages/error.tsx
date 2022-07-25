@@ -24,7 +24,7 @@ const ErrorPage = (props: SelfServiceError) => {
 
   return (
     <>
-      <PageHead pageTranslation={t} />
+      <PageHead title={t('title')} />
       <DyoContainer className="text-center my-20">
         <h2 className="text-4xl font-extrabold text-blue">{t('oops')}</h2>
 

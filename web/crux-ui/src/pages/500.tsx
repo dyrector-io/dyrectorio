@@ -23,7 +23,7 @@ const Page500 = () => {
   }
 
   return (<>
-    <PageHead pageTranslation={t} />
+    <PageHead title={t('title')} />
     <SingleFormLayout>
       <DyoHeading element="h2" className="self-center text-2xl text-white font-extrabold mt-auto">
         {t('serviceStatus')}
