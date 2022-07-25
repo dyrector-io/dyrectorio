@@ -1,4 +1,4 @@
-import { Layout } from '@app/components/layout'
+import { Layout, PageHead } from '@app/components/layout'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { ListPageMenu, ListPageMenuTexts } from '@app/components/shared/page-menu'
@@ -108,6 +108,7 @@ const ActiveTeamPage = (props: ActiveTeamPageProps) => {
 
   return (
     <Layout>
+      <PageHead title={t('title')} />
       <PageHeading pageLink={selfLink}>
         {!canEdit ? null : (
           <>

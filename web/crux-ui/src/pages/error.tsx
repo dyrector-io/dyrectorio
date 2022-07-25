@@ -1,3 +1,4 @@
+import { PageHead } from '@app/components/layout'
 import { DyoButton } from '@app/elements/dyo-button'
 import { DyoContainer } from '@app/elements/dyo-container'
 import { ROUTE_INDEX } from '@app/routes'
@@ -23,6 +24,7 @@ const ErrorPage = (props: SelfServiceError) => {
 
   return (
     <>
+      <PageHead title={t('title')} />
       <DyoContainer className="text-center my-20">
         <h2 className="text-4xl font-extrabold text-blue">{t('oops')}</h2>
 

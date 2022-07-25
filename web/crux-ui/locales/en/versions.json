@@ -1,4 +1,6 @@
 {
+    "title-product-version": "{{name}} product {{version}}",
+
     "new": "New version",
     "default": "Default",
     "changelog": "Changelog",

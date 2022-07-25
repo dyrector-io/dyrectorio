@@ -1,4 +1,4 @@
-import { Layout } from '@app/components/layout'
+import { Layout, PageHead } from '@app/components/layout'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DyoButton } from '@app/elements/dyo-button'
@@ -29,7 +29,8 @@ const SettingsPage = (props: Identity) => {
     url: ROUTE_SETTINGS,
   }
 
-  return (
+  return (<>
+    <PageHead title={t('title')} />
     <Layout>
       <PageHeading pageLink={pageLink}>
         <div className="ml-auto">
@@ -63,7 +64,7 @@ const SettingsPage = (props: Identity) => {
         </div>
       </DyoCard>
     </Layout>
-  )
+  </>)
 }
 
 export default SettingsPage

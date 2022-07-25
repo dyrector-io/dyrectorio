@@ -1,4 +1,4 @@
-import { SingleFormLayout } from '@app/components/layout'
+import { PageHead, SingleFormLayout } from '@app/components/layout'
 import { DyoButton } from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoLabel } from '@app/elements/dyo-label'
@@ -45,7 +45,8 @@ const AcceptInvitationPage = (props: AcceptInvitationPageProps) => {
   }
 
   const errorMessage = apiError ? errorTranslator(apiError.error, apiError.status, apiError)?.toast : null
-  return (
+  return (<>
+    <PageHead title={t('title-invite')} />
     <SingleFormLayout>
       <DyoCard className="p-8 m-auto">
         {errorMessage ? (
@@ -81,7 +82,7 @@ const AcceptInvitationPage = (props: AcceptInvitationPageProps) => {
         )}
       </DyoCard>
     </SingleFormLayout>
-  )
+  </>)
 }
 
 export default AcceptInvitationPage

@@ -1,4 +1,7 @@
 {
+  "title": "Nodes",
+  "title-node": "{{name}} node",
+
   "add": "Add node",
   "new": "New node",
   "tips": "A description about what nodes are good for.",

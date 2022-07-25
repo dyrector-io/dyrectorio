@@ -1,4 +1,4 @@
-import { Layout } from '@app/components/layout'
+import { Layout, PageHead } from '@app/components/layout'
 import DeploymentDetailsSection from '@app/components/products/versions/deployments/deployment-details-section'
 import EditDeploymentCard from '@app/components/products/versions/deployments/edit-deployment-card'
 import EditDeploymentInstances from '@app/components/products/versions/deployments/edit-deployment-instances'
@@ -131,6 +131,11 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
 
   return (
     <Layout>
+      <PageHead title={t('title', {
+        product: product.name,
+        version: version.name,
+        node: deployment.node.name
+      })} />
       <PageHeading pageLink={pageLink} subLinks={sublinks}>
         {saving ? <LoadingIndicator className="flex ml-4 my-auto" /> : null}
 
