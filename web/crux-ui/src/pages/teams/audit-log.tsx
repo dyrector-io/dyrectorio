@@ -1,4 +1,4 @@
-import { Layout } from '@app/components/layout'
+import { Layout, PageHead } from '@app/components/layout'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DyoCard } from '@app/elements/dyo-card'
@@ -41,6 +41,7 @@ const AuditLogPage = (props: AuditLogPageProps) => {
 
   return (
     <Layout>
+      <PageHead title={t('title')} />
       <PageHeading pageLink={selfLink} />
 
       <DyoCard className="relative">

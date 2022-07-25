@@ -1,4 +1,4 @@
-import { Layout } from '@app/components/layout'
+import { Layout, PageHead } from '@app/components/layout'
 import EditProductCard from '@app/components/products/edit-product-card'
 import ProductDetailsCard from '@app/components/products/product-details-card'
 import ProductVersionsSection from '@app/components/products/product-versions-section'
@@ -101,6 +101,7 @@ const ProductDetailsPage = (props: ProductDetailsPageProps) => {
 
   return (
     <Layout>
+      <PageHead title={t('title-product', { name:product.name })} />
       <PageHeading pageLink={pageLink} subLinks={sublinks}>
         {saving ? <LoadingIndicator className="flex ml-4 my-auto" /> : null}
 

@@ -1,4 +1,7 @@
 {
+  "title": "Products",
+  "title-product": "{{name}} product",
+
   "add": "Add product",
   "new": "New product",
   "tips": "A description about what products are good for.",

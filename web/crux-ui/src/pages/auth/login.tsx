@@ -1,4 +1,4 @@
-import { SingleFormLayout } from '@app/components/layout'
+import { PageHead, SingleFormLayout } from '@app/components/layout'
 import { ATTRIB_CSRF } from '@app/const'
 import { DyoButton } from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
@@ -69,7 +69,8 @@ const LoginPage = (props: SelfServiceLoginFlow) => {
     },
   })
 
-  return (
+  return (<>
+    <PageHead title={t('title')} />
     <SingleFormLayout>
       <DyoSingleFormLogo />
 
@@ -132,7 +133,7 @@ const LoginPage = (props: SelfServiceLoginFlow) => {
         </Link>
       </div>
     </SingleFormLayout>
-  )
+  </>)
 }
 
 export default LoginPage

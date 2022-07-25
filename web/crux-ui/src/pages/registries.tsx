@@ -1,4 +1,4 @@
-import { Layout } from '@app/components/layout'
+import { Layout, PageHead } from '@app/components/layout'
 import EditRegistryCard from '@app/components/registries/edit-registry-card'
 import RegistryCard from '@app/components/registries/registry-card'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
@@ -49,6 +49,7 @@ const RegistriesPage = (props: RegistriesPageProps) => {
 
   return (
     <Layout>
+      <PageHead title={t('title')} />
       <PageHeading pageLink={selfLink}>
         <ListPageMenu creating={creating} setCreating={setCreating} submitRef={submitRef} />
       </PageHeading>

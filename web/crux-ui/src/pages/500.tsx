@@ -1,5 +1,5 @@
 import ServiceStatusCard from '@app/components/health/service-status-card'
-import { SingleFormLayout } from '@app/components/layout'
+import { PageHead, SingleFormLayout } from '@app/components/layout'
 import { DyoButton } from '@app/elements/dyo-button'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoServiceStatus } from '@app/models'
@@ -22,7 +22,8 @@ const Page500 = () => {
     console.error(error)
   }
 
-  return (
+  return (<>
+    <PageHead pageTranslation={t} />
     <SingleFormLayout>
       <DyoHeading element="h2" className="self-center text-2xl text-white font-extrabold mt-auto">
         {t('serviceStatus')}
@@ -38,7 +39,7 @@ const Page500 = () => {
         {t('common:goBack')}
       </DyoButton>
     </SingleFormLayout>
-  )
+  </>)
 }
 
 export default Page500

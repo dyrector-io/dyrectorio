@@ -1,4 +1,4 @@
-import { Layout } from '@app/components/layout'
+import { Layout, PageHead } from '@app/components/layout'
 import EditVersionCard from '@app/components/products/versions/edit-version-card'
 import VersionDetailsCard from '@app/components/products/versions/version-details-card'
 import VersionSections from '@app/components/products/versions/version-sections'
@@ -70,6 +70,7 @@ const VersionDetailsPage = (props: VersionDetailsPageProps) => {
 
   return (
     <Layout>
+      <PageHead title={t('title-product-version', { name:product.name, version:version.name })} />
       <PageHeading pageLink={pageLink} subLinks={sublinks}>
         {saving ? <LoadingIndicator className="flex ml-4 my-auto" /> : null}
 
