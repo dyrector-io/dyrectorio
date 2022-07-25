@@ -46,7 +46,7 @@ docker-compose -f web/docker-compose.dev.yaml build
 
 3. To run the dyrector.io platform dependencies:
 ```
-docker-compose -f web/docker-compose.dev.yaml up --build
+docker-compose -f web/docker-compose.dev.yaml up
 ```
 
 If you are having problems starting `crux-kratos-migrate` change the line endings of `web/kratos/entrypoint.sh` from CRLF to LF. These problems include `ERROR: Encountered errors while bringing up the project.` while running `docker-compose up` or `': No such file or directory` in the container log.
