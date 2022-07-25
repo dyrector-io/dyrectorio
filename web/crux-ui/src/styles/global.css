@@ -3,3 +3,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.grecaptcha-badge {
+    bottom: 4.25rem !important;
+}
