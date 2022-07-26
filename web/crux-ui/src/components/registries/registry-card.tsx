@@ -8,7 +8,6 @@ import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import React from 'react'
 import Image from 'next/image'
-import useTranslation from 'next-translate/useTranslation'
 
 interface RegistryCardProps extends Omit<DyoCardProps, 'children'> {
   registry: Registry
