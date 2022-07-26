@@ -547,7 +547,7 @@ func checkDockerError(err error) {
 	}
 }
 
-func CheckContainer(requestID, containerName string) (string, error) {
+func CheckContainer(_, containerName string) (string, error) {
 	containers := GetContainer(containerName)
 
 	var container types.Container

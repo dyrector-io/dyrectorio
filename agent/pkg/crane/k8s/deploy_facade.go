@@ -184,7 +184,7 @@ func (d *deployFacade) Deploy() error {
 				customHeaders: d.params.ContainerConfig.CustomHeaders,
 			},
 		); err != nil {
-			log.Println("Error with deployment: " + err.Error())
+			log.Println("Error with ingress: " + err.Error())
 		}
 	}
 

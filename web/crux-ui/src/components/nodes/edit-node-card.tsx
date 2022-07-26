@@ -15,6 +15,7 @@ import {
   DyoNodeDetails,
   DyoNodeInstall,
   NodeStatusMessage,
+  NODE_TYPE_VALUES,
   UpdateDyoNode,
   WS_TYPE_NODE_STATUS,
 } from '@app/models'
@@ -43,6 +44,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
       ({
         name: '',
         description: '',
+        type: 'docker',
         status: 'unreachable',
       } as DyoNodeDetails),
   )
@@ -172,6 +174,14 @@ const EditNodeCard = (props: EditNodeCardProps) => {
 
               <DyoIconPicker name="icon" value={formik.values.icon} setFieldValue={formik.setFieldValue} />
             </div>
+
+            <select id="type" name="type" value={formik.values.type} onChange={formik.handleChange} disabled={editing}>
+              {NODE_TYPE_VALUES.map((nodeType, index) => (
+                <option key={'node-type-' + index} value={nodeType}>
+                  {nodeType}
+                </option>
+              ))}
+            </select>
 
             <DyoTextArea
               className={clsx(inputClassName, 'h-48')}

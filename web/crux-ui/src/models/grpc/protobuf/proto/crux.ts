@@ -271,6 +271,44 @@ export function nodeConnectionStatusToJSON(object: NodeConnectionStatus): string
   }
 }
 
+export enum NodeType {
+  UNKNOWN_NODE_TYPE = 0,
+  DOCKER_NODE = 1,
+  K8S_NODE = 2,
+  UNRECOGNIZED = -1,
+}
+
+export function nodeTypeFromJSON(object: any): NodeType {
+  switch (object) {
+    case 0:
+    case 'UNKNOWN_NODE_TYPE':
+      return NodeType.UNKNOWN_NODE_TYPE
+    case 1:
+    case 'DOCKER_NODE':
+      return NodeType.DOCKER_NODE
+    case 2:
+    case 'K8S_NODE':
+      return NodeType.K8S_NODE
+    case -1:
+    case 'UNRECOGNIZED':
+    default:
+      return NodeType.UNRECOGNIZED
+  }
+}
+
+export function nodeTypeToJSON(object: NodeType): string {
+  switch (object) {
+    case NodeType.UNKNOWN_NODE_TYPE:
+      return 'UNKNOWN_NODE_TYPE'
+    case NodeType.DOCKER_NODE:
+      return 'DOCKER_NODE'
+    case NodeType.K8S_NODE:
+      return 'K8S_NODE'
+    default:
+      return 'UNKNOWN'
+  }
+}
+
 export enum DeploymentStatus {
   UNKNOWN_DEPLOYMENT_STATUS = 0,
   PREPARING = 1,
@@ -832,6 +870,7 @@ export interface NodeResponse {
   status: NodeConnectionStatus
   connectedAt?: Timestamp | undefined
   version?: string | undefined
+  type: NodeType
 }
 
 export interface NodeDetailsResponse {
@@ -847,6 +886,7 @@ export interface NodeDetailsResponse {
   install?: NodeInstallResponse | undefined
   script?: NodeScriptResponse | undefined
   version?: string | undefined
+  type: NodeType
 }
 
 export interface NodeListResponse {
@@ -858,6 +898,7 @@ export interface CreateNodeRequest {
   name: string
   description?: string | undefined
   icon?: string | undefined
+  type: NodeType
 }
 
 export interface UpdateNodeRequest {
@@ -866,6 +907,7 @@ export interface UpdateNodeRequest {
   name: string
   description?: string | undefined
   icon?: string | undefined
+  type?: NodeType | undefined
 }
 
 export interface NodeInstallResponse {
@@ -4854,7 +4896,7 @@ export const PatchImageRequest = {
   },
 }
 
-const baseNodeResponse: object = { id: '', name: '', status: 0 }
+const baseNodeResponse: object = { id: '', name: '', status: 0, type: 0 }
 
 export const NodeResponse = {
   encode(message: NodeResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -4884,6 +4926,9 @@ export const NodeResponse = {
     }
     if (message.version !== undefined) {
       writer.uint32(850).string(message.version)
+    }
+    if (message.type !== 0) {
+      writer.uint32(856).int32(message.type)
     }
     return writer
   },
@@ -4922,6 +4967,9 @@ export const NodeResponse = {
         case 106:
           message.version = reader.string()
           break
+        case 107:
+          message.type = reader.int32() as any
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -4947,6 +4995,7 @@ export const NodeResponse = {
         ? fromJsonTimestamp(object.connectedAt)
         : undefined
     message.version = object.version !== undefined && object.version !== null ? String(object.version) : undefined
+    message.type = object.type !== undefined && object.type !== null ? nodeTypeFromJSON(object.type) : 0
     return message
   },
 
@@ -4961,6 +5010,7 @@ export const NodeResponse = {
     message.status !== undefined && (obj.status = nodeConnectionStatusToJSON(message.status))
     message.connectedAt !== undefined && (obj.connectedAt = fromTimestamp(message.connectedAt).toISOString())
     message.version !== undefined && (obj.version = message.version)
+    message.type !== undefined && (obj.type = nodeTypeToJSON(message.type))
     return obj
   },
 
@@ -4979,6 +5029,7 @@ export const NodeResponse = {
         ? Timestamp.fromPartial(object.connectedAt)
         : undefined
     message.version = object.version ?? undefined
+    message.type = object.type ?? 0
     return message
   },
 }
@@ -4988,6 +5039,7 @@ const baseNodeDetailsResponse: object = {
   name: '',
   status: 0,
   hasToken: false,
+  type: 0,
 }
 
 export const NodeDetailsResponse = {
@@ -5027,6 +5079,9 @@ export const NodeDetailsResponse = {
     }
     if (message.version !== undefined) {
       writer.uint32(874).string(message.version)
+    }
+    if (message.type !== 0) {
+      writer.uint32(880).int32(message.type)
     }
     return writer
   },
@@ -5074,6 +5129,9 @@ export const NodeDetailsResponse = {
         case 109:
           message.version = reader.string()
           break
+        case 110:
+          message.type = reader.int32() as any
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -5104,6 +5162,7 @@ export const NodeDetailsResponse = {
     message.script =
       object.script !== undefined && object.script !== null ? NodeScriptResponse.fromJSON(object.script) : undefined
     message.version = object.version !== undefined && object.version !== null ? String(object.version) : undefined
+    message.type = object.type !== undefined && object.type !== null ? nodeTypeFromJSON(object.type) : 0
     return message
   },
 
@@ -5123,6 +5182,7 @@ export const NodeDetailsResponse = {
     message.script !== undefined &&
       (obj.script = message.script ? NodeScriptResponse.toJSON(message.script) : undefined)
     message.version !== undefined && (obj.version = message.version)
+    message.type !== undefined && (obj.type = nodeTypeToJSON(message.type))
     return obj
   },
 
@@ -5148,6 +5208,7 @@ export const NodeDetailsResponse = {
     message.script =
       object.script !== undefined && object.script !== null ? NodeScriptResponse.fromPartial(object.script) : undefined
     message.version = object.version ?? undefined
+    message.type = object.type ?? 0
     return message
   },
 }
@@ -5204,7 +5265,7 @@ export const NodeListResponse = {
   },
 }
 
-const baseCreateNodeRequest: object = { accessedBy: '', name: '' }
+const baseCreateNodeRequest: object = { accessedBy: '', name: '', type: 0 }
 
 export const CreateNodeRequest = {
   encode(message: CreateNodeRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -5219,6 +5280,9 @@ export const CreateNodeRequest = {
     }
     if (message.icon !== undefined) {
       writer.uint32(818).string(message.icon)
+    }
+    if (message.type !== 0) {
+      writer.uint32(824).int32(message.type)
     }
     return writer
   },
@@ -5242,6 +5306,9 @@ export const CreateNodeRequest = {
         case 102:
           message.icon = reader.string()
           break
+        case 103:
+          message.type = reader.int32() as any
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -5257,6 +5324,7 @@ export const CreateNodeRequest = {
     message.description =
       object.description !== undefined && object.description !== null ? String(object.description) : undefined
     message.icon = object.icon !== undefined && object.icon !== null ? String(object.icon) : undefined
+    message.type = object.type !== undefined && object.type !== null ? nodeTypeFromJSON(object.type) : 0
     return message
   },
 
@@ -5266,6 +5334,7 @@ export const CreateNodeRequest = {
     message.name !== undefined && (obj.name = message.name)
     message.description !== undefined && (obj.description = message.description)
     message.icon !== undefined && (obj.icon = message.icon)
+    message.type !== undefined && (obj.type = nodeTypeToJSON(message.type))
     return obj
   },
 
@@ -5275,6 +5344,7 @@ export const CreateNodeRequest = {
     message.name = object.name ?? ''
     message.description = object.description ?? undefined
     message.icon = object.icon ?? undefined
+    message.type = object.type ?? 0
     return message
   },
 }
@@ -5297,6 +5367,9 @@ export const UpdateNodeRequest = {
     }
     if (message.icon !== undefined) {
       writer.uint32(818).string(message.icon)
+    }
+    if (message.type !== undefined) {
+      writer.uint32(824).int32(message.type)
     }
     return writer
   },
@@ -5323,6 +5396,9 @@ export const UpdateNodeRequest = {
         case 102:
           message.icon = reader.string()
           break
+        case 103:
+          message.type = reader.int32() as any
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -5339,6 +5415,7 @@ export const UpdateNodeRequest = {
     message.description =
       object.description !== undefined && object.description !== null ? String(object.description) : undefined
     message.icon = object.icon !== undefined && object.icon !== null ? String(object.icon) : undefined
+    message.type = object.type !== undefined && object.type !== null ? nodeTypeFromJSON(object.type) : undefined
     return message
   },
 
@@ -5349,6 +5426,7 @@ export const UpdateNodeRequest = {
     message.name !== undefined && (obj.name = message.name)
     message.description !== undefined && (obj.description = message.description)
     message.icon !== undefined && (obj.icon = message.icon)
+    message.type !== undefined && (obj.type = message.type !== undefined ? nodeTypeToJSON(message.type) : undefined)
     return obj
   },
 
@@ -5359,6 +5437,7 @@ export const UpdateNodeRequest = {
     message.name = object.name ?? ''
     message.description = object.description ?? undefined
     message.icon = object.icon ?? undefined
+    message.type = object.type ?? undefined
     return message
   },
 }

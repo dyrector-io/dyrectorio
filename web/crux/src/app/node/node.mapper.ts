@@ -9,6 +9,7 @@ import {
   NodeInstallResponse,
   NodeResponse,
   NodeScriptResponse,
+  NodeType,
 } from 'src/grpc/protobuf/proto/crux'
 import { AgentService } from '../agent/agent.service'
 
@@ -27,6 +28,7 @@ export class NodeMapper {
       version: agent?.version,
       status,
       connectedAt: node.connectedAt ? toTimestamp(node.connectedAt) : null,
+      type: node.type === 'dagent' ? NodeType.DOCKER_NODE : NodeType.K8S_NODE,
     }
   }
 

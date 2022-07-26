@@ -54,7 +54,7 @@ func (d *DeployImageRequest) Strings(appConfig *config.CommonConfiguration) []st
 	}
 	return []string{
 		// TODO: env
-		fmt.Sprintf("Deployment target: k8s ~ %v\n", appConfig.IngressRootDomain),
+		fmt.Sprintf("Deployment target: %v\n", appConfig.IngressRootDomain),
 		fmt.Sprintf("Image: %v\n", util.JoinV(":", d.ImageName, d.Tag)),
 		fmt.Sprintf("Registry: %v\n", registry),
 		fmt.Sprintf("Container name: %v\n", util.JoinV("-", d.InstanceConfig.ContainerPreName, d.ContainerConfig.Container)),

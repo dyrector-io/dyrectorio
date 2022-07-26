@@ -54,8 +54,10 @@ func (ing *ingress) deployIngress(options *DeployIngressOptions) error {
 	var ingressRoot string
 	if options.ingressHost != "" {
 		ingressRoot = options.ingressHost
-	} else {
+	} else if ing.appConfig.IngressRootDomain != "" {
 		ingressRoot = ing.appConfig.IngressRootDomain
+	} else {
+		return fmt.Errorf("no ingress domain provided in deploy request or configuration")
 	}
 
 	var ingressPath string

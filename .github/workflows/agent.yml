@@ -67,7 +67,7 @@ jobs:
       run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
     - name: Run unit tests with coverage
-      run: pwd && ls -lah && id && make test-unit-with-coverage
+      run: make test-unit-with-coverage
 
     - name: Upload coverage reports to Codecov with GitHub Action
       uses: codecov/codecov-action@v3

@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
+import { NodeTypeEnum } from '@prisma/client'
 import { Observable } from 'rxjs'
 import { PrismaService } from 'src/services/prisma.service'
 import { PreconditionFailedException } from 'src/exception/errors'
@@ -14,6 +15,7 @@ import {
   NodeInstallResponse,
   NodeListResponse,
   NodeScriptResponse,
+  NodeType,
   ServiceIdRequest,
   UpdateNodeRequest,
   WatchContainerStatusRequest,
@@ -65,6 +67,8 @@ export class NodeService {
   async createNode(req: CreateNodeRequest): Promise<CreateEntityResponse> {
     const team = await this.teamRepository.getActiveTeamByUserId(req.accessedBy)
 
+    const nodeType = req.type == NodeType.DOCKER_NODE ? NodeTypeEnum.dagent : NodeTypeEnum.crane
+
     const node = await this.prisma.node.create({
       data: {
         name: req.name,
@@ -72,6 +76,7 @@ export class NodeService {
         icon: req.icon ?? null,
         teamId: team.teamId,
         createdBy: req.accessedBy,
+        type: nodeType,
       },
     })
 
@@ -104,7 +109,13 @@ export class NodeService {
   }
 
   async generateScript(request: IdRequest): Promise<NodeInstallResponse> {
-    const installer = await this.agentService.install(request.id)
+    const node = await this.prisma.node.findUnique({
+      where: {
+        id: request.id,
+      },
+    })
+
+    const installer = await this.agentService.install(request.id, node.type)
 
     return this.mapper.installerToGrpc(installer)
   }

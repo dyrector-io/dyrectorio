@@ -50,10 +50,11 @@ const NodesPage = (props: NodesPageProps) => {
       id: message.nodeId,
       name: '',
       description: '',
+      type: 'docker',
       address: message.address,
       status: message.status,
       createdAt: new Date().toUTCString(),
-    }
+    } as DyoNode
 
     const nodes = upsertById(filters.items, newNode, {
       onUpdate: old => {

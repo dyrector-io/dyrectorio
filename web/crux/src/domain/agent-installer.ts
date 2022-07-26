@@ -8,11 +8,14 @@ import { NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
 import { GrpcNodeConnection } from 'src/shared/grpc-node-connection'
 import { Agent } from './agent'
 
-const SCRIPT_TEMPLATE = readFileSync(join(cwd(), 'install.sh.hbr'), 'utf8')
-const compileScript = Handlebars.compile(SCRIPT_TEMPLATE)
+const agent_file_tmpl = 'install-{{nodeType}}.sh.hbr'
 
 export class AgentInstaller {
-  constructor(readonly nodeId: string, readonly token: string, readonly expireAt: number) {}
+  scriptCompiler: ScriptCompiler
+
+  constructor(readonly nodeId: string, readonly token: string, readonly expireAt: number, readonly nodeType: string) {
+    this.loadScriptAndCompiler(nodeType)
+  }
 
   get expired(): boolean {
     const now = new Date().getTime()
@@ -35,18 +38,29 @@ export class AgentInstaller {
   getScript(name: string): string {
     this.verify()
 
-    return compileScript({
+    return this.scriptCompiler.compile({
       name: name.toLowerCase().replace(/\s/g, ''),
       token: this.token,
       insecure: process.env.GRPC_AGENT_INSTALL_SCRIPT_INSECURE === 'true',
-      image: 'ghcr.io/dyrector-io/dyrectorio/agent/dagent:stable',
     })
   }
 
   complete(connection: GrpcNodeConnection, eventChannel: Subject<NodeEventMessage>, version?: string): Agent {
     this.verify()
-
     return new Agent(connection, eventChannel, version)
+  }
+
+  loadScriptAndCompiler(nodeType: string): void {
+    if (['dagent', 'crane'].includes(nodeType)) {
+      const agentFilename = Handlebars.compile(agent_file_tmpl)({ nodeType })
+      const scriptFile = readFileSync(join(cwd(), agentFilename), 'utf8')
+      this.scriptCompiler = {
+        compile: Handlebars.compile(scriptFile),
+        file: scriptFile,
+      }
+    } else {
+      console.error('Error: invalid agent type requested to be loaded.')
+    }
   }
 }
 
@@ -58,4 +72,9 @@ export type InstallScriptConfig = {
   update?: boolean
   traefik?: boolean
   hostname?: string
+}
+
+export type ScriptCompiler = {
+  file: Buffer | string
+  compile: Handlebars.TemplateDelegate
 }

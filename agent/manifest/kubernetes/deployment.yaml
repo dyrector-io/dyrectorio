@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dyrectorio-k8s-agent
+  namespace: dyrectorio
+  labels:
+    app: dyrectorio-k8s-agent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dyrectorio-k8s-agent
+  template:
+    metadata:
+      labels:
+        app: dyrectorio-k8s-agent
+    spec:
+      containers:
+        - name: crane
+          image: ghcr.io/dyrector-io/dyrectorio/agent/crane:rc-install
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: 64m
+              memory: 128Mi
+            limits:
+              cpu: 1000m
+              memory: 512Mi
+          envFrom:
+            - configMapRef:
+                name: crane-config

@@ -40,28 +40,28 @@ mkdir -p $ROOT_FOLDER
 docker pull {{image}}
 
 docker run \
---restart unless-stopped \
--e GRPC_TOKEN='{{token}}' \
--e HOSTNAME="$HOSTNAME || $HOST || '{{name}}'" \
-{{#if traefik}}
-  -e TRAEFIK= '' \
-{{/if}}
--e DATA_MOUNT_PATH=$ROOT_FOLDER \
--e UPDATE_METHOD='off' \
--e UPDATE_POLL_INTERVAL='600s' \
-{{#if insecure}}
-  -e GRPC_INSECURE='true' \
-{{/if}}
--e DAGENT_IMAGE='ghcr.io/dyrector-io/dyrectorio/agent/dagent' \
--e DAGENT_TAG='stable' \
--e DAGENT_NAME='{{name}}' \
--v /var/run/docker.sock:/var/run/docker.sock \
---name 'dagent' \
-{{! -e UPDATE_REGISTRY_USER='' \ }}
-{{! -e UPDATE_REGISTRY_PASSWORD='' \ }}
-{{! -e UPDATER_CONTAINER_NAME ='' \ }}
-{{! -e UPDATE_HOST_TIMEZONE='' \ }}
-{{! -e HOST_DOCKER_SOCK='' \ }}
-{{! -e WEBHOOK_TOKEN='' \ }}
-{{! -e DISCORD_WEBHOOK_URL='' \ }}
--v $ROOT_FOLDER/:$ROOT_FOLDER -d {{image}}
+  --restart unless-stopped \
+  -e GRPC_TOKEN='{{token}}' \
+  -e HOSTNAME="$HOSTNAME || $HOST || '{{name}}'" \
+  {{#if traefik}}
+    -e TRAEFIK= '' \
+  {{/if}}
+  -e DATA_MOUNT_PATH=$ROOT_FOLDER \
+  -e UPDATE_METHOD='off' \
+  -e UPDATE_POLL_INTERVAL='600s' \
+  {{#if insecure}}
+    -e GRPC_INSECURE='true' \
+  {{/if}}
+  -e DAGENT_IMAGE='ghcr.io/dyrector-io/dyrectorio/agent/dagent' \
+  -e DAGENT_TAG='stable' \
+  -e DAGENT_NAME='{{name}}' \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  --name 'dagent' \
+  {{! -e UPDATE_REGISTRY_USER='' \ }}
+  {{! -e UPDATE_REGISTRY_PASSWORD='' \ }}
+  {{! -e UPDATER_CONTAINER_NAME ='' \ }}
+  {{! -e UPDATE_HOST_TIMEZONE='' \ }}
+  {{! -e HOST_DOCKER_SOCK='' \ }}
+  {{! -e WEBHOOK_TOKEN='' \ }}
+  {{! -e DISCORD_WEBHOOK_URL='' \ }}
+  -v $ROOT_FOLDER/:$ROOT_FOLDER -d ghcr.io/dyrector-io/dyrectorio/agent/dagent:rc-install

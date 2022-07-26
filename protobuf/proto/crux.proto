@@ -523,6 +523,7 @@ message NodeResponse {
   NodeConnectionStatus status = 104;
   optional google.protobuf.Timestamp connectedAt = 105;
   optional string version = 106;
+  NodeType type = 107;
 }
 
 message NodeDetailsResponse {
@@ -539,6 +540,7 @@ message NodeDetailsResponse {
   optional NodeInstallResponse install = 107;
   optional NodeScriptResponse script = 108;
   optional string version = 109;
+  NodeType type = 110;
 }
 
 message NodeListResponse { repeated NodeResponse data = 1000; }
@@ -549,6 +551,7 @@ message CreateNodeRequest {
   string name = 100;
   optional string description = 101;
   optional string icon = 102;
+  NodeType type = 103;
 }
 
 message UpdateNodeRequest {
@@ -558,6 +561,7 @@ message UpdateNodeRequest {
   string name = 100;
   optional string description = 101;
   optional string icon = 102;
+  optional NodeType type = 103;
 }
 
 message NodeInstallResponse {
@@ -580,6 +584,12 @@ enum NodeConnectionStatus {
   UNREACHABLE = 1;
   // Node is running and connected
   CONNECTED = 2;
+}
+
+enum NodeType {
+  UNKNOWN_NODE_TYPE = 0;
+  DOCKER_NODE = 1;
+  K8S_NODE = 2;
 }
 
 message NodeEventMessage {
