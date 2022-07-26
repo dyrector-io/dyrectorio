@@ -1,9 +1,6 @@
-import { Body, Controller, UseGuards, UseInterceptors } from '@nestjs/common'
+import { Body, Controller, UseGuards } from '@nestjs/common'
 import { concatAll, from, Observable } from 'rxjs'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
-import { AuditLoggerInterceptor } from 'src/interceptors/audit-logger.interceptor'
-import { GrpcContextLogger } from 'src/interceptors/grpc-context-logger.interceptor'
-import { PrismaErrorInterceptor } from 'src/interceptors/prisma-error-interceptor'
 import { Empty } from 'src/grpc/protobuf/proto/agent'
 import {
   CreateDeploymentRequest,
@@ -35,7 +32,6 @@ import { DeployUpdateValidationPipe } from './pipes/deploy.update.pipe'
 @Controller()
 @CruxDeploymentControllerMethods()
 @UseGuards(DeployTeamAccessGuard)
-@UseInterceptors(PrismaErrorInterceptor, GrpcContextLogger, AuditLoggerInterceptor)
 export class DeployController implements CruxDeploymentController {
   constructor(private service: DeployService) {}
 

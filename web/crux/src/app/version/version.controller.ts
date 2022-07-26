@@ -1,7 +1,4 @@
-import { Body, Controller, UseGuards, UseInterceptors } from '@nestjs/common'
-import { AuditLoggerInterceptor } from 'src/interceptors/audit-logger.interceptor'
-import { GrpcContextLogger } from 'src/interceptors/grpc-context-logger.interceptor'
-import { PrismaErrorInterceptor } from 'src/interceptors/prisma-error-interceptor'
+import { Body, Controller, UseGuards } from '@nestjs/common'
 import { Empty } from 'src/grpc/protobuf/proto/agent'
 import {
   CreateEntityResponse,
@@ -25,7 +22,6 @@ import { VersionService } from './version.service'
 @Controller()
 @CruxProductVersionControllerMethods()
 @UseGuards(VersionTeamAccessGuard)
-@UseInterceptors(PrismaErrorInterceptor, GrpcContextLogger, AuditLoggerInterceptor)
 export class VersionController implements CruxProductVersionController {
   constructor(private service: VersionService) {}
 

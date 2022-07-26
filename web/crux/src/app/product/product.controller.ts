@@ -1,7 +1,4 @@
-import { Body, Controller, UseGuards, UseInterceptors } from '@nestjs/common'
-import { AuditLoggerInterceptor } from 'src/interceptors/audit-logger.interceptor'
-import { GrpcContextLogger } from 'src/interceptors/grpc-context-logger.interceptor'
-import { PrismaErrorInterceptor } from 'src/interceptors/prisma-error-interceptor'
+import { Body, Controller, UseGuards } from '@nestjs/common'
 import {
   AccessRequest,
   CreateEntityResponse,
@@ -22,7 +19,6 @@ import { ProductService } from './product.service'
 @Controller()
 @CruxProductControllerMethods()
 @UseGuards(ProductTeamAccessGuard)
-@UseInterceptors(PrismaErrorInterceptor, GrpcContextLogger, AuditLoggerInterceptor)
 export class ProductController implements CruxProductController {
   constructor(private service: ProductService) {}
   async getProducts(request: AccessRequest): Promise<ProductListResponse> {
