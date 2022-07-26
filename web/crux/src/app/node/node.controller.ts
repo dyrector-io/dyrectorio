@@ -1,9 +1,6 @@
-import { Body, Controller, UseGuards, UseInterceptors } from '@nestjs/common'
+import { Body, Controller, UseGuards } from '@nestjs/common'
 import { concatAll, from, Observable } from 'rxjs'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
-import { AuditLoggerInterceptor } from 'src/interceptors/audit-logger.interceptor'
-import { GrpcContextLogger } from 'src/interceptors/grpc-context-logger.interceptor'
-import { PrismaErrorInterceptor } from 'src/interceptors/prisma-error-interceptor'
 import {
   AccessRequest,
   ContainerStatusListMessage,
@@ -31,7 +28,6 @@ import { NodeGetScriptValidationPipe } from './pipes/node.get-script.pipe'
 @Controller()
 @CruxNodeControllerMethods()
 @UseGuards(NodeTeamAccessGuard)
-@UseInterceptors(PrismaErrorInterceptor, GrpcContextLogger, AuditLoggerInterceptor)
 export class NodeController implements CruxNodeController {
   constructor(private service: NodeService) {}
 

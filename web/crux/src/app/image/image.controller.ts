@@ -1,7 +1,4 @@
-import { Body, Controller, UseGuards, UseInterceptors } from '@nestjs/common'
-import { AuditLoggerInterceptor } from 'src/interceptors/audit-logger.interceptor'
-import { GrpcContextLogger } from 'src/interceptors/grpc-context-logger.interceptor'
-import { PrismaErrorInterceptor } from 'src/interceptors/prisma-error-interceptor'
+import { Body, Controller, UseGuards } from '@nestjs/common'
 import {
   AddImagesToVersionRequest,
   CruxImageController,
@@ -25,7 +22,6 @@ import { ImagePatchValidationPipe } from './pipes/image.patch.pipe'
 @Controller()
 @CruxImageControllerMethods()
 @UseGuards(ImageTeamAccessGuard)
-@UseInterceptors(PrismaErrorInterceptor, GrpcContextLogger, AuditLoggerInterceptor)
 export class ImageController implements CruxImageController {
   constructor(private service: ImageService) {}
 
