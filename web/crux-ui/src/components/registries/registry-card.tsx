@@ -18,7 +18,6 @@ const RegistryCard = (props: RegistryCardProps) => {
   const { t } = useTranslation("registries");
 
   const { registry, onClick } = props
-  const { t } = useTranslation("registries")
 
   const getDefaultImage = () => {
     return <Image src="/default_registry.svg" width={17} height={21} alt={t("altDefaultRegistryPicture")}/>
