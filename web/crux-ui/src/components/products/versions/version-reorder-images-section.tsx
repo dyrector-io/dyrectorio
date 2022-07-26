@@ -1,13 +1,13 @@
 import DragAndDropList from '@app/components/shared/drag-and-drop-list'
 import { DyoCard } from '@app/elements/dyo-card'
-import { ContainerImage, ProductDetails } from '@app/models'
+import { ProductDetails, VersionImage } from '@app/models'
 import { useState } from 'react'
 
 interface VersionReorderImagesSectionProps {
   product: ProductDetails
-  images: ContainerImage[]
+  images: VersionImage[]
   saveRef: React.MutableRefObject<VoidFunction>
-  onSave: (images: ContainerImage[]) => void
+  onSave: (images: VersionImage[]) => void
 }
 
 const VersionReorderImagesSection = (props: VersionReorderImagesSectionProps) => {

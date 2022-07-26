@@ -122,6 +122,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
   const onDeploy = () => {
     const error = getValidationError(deploymentSchema, deployment)
     if (error) {
+      console.error(error)
       toast.error(t('errors:invalid'))
       return
     }
@@ -131,11 +132,13 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
 
   return (
     <Layout>
-      <PageHead title={t('title', {
-        product: product.name,
-        version: version.name,
-        node: deployment.node.name
-      })} />
+      <PageHead
+        title={t('title', {
+          product: product.name,
+          version: version.name,
+          node: deployment.node.name,
+        })}
+      />
       <PageHeading pageLink={pageLink} subLinks={sublinks}>
         {saving ? <LoadingIndicator className="flex ml-4 my-auto" /> : null}
 

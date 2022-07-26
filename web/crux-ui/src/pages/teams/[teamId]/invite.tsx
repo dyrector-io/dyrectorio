@@ -45,44 +45,46 @@ const AcceptInvitationPage = (props: AcceptInvitationPageProps) => {
   }
 
   const errorMessage = apiError ? errorTranslator(apiError.error, apiError.status, apiError)?.toast : null
-  return (<>
-    <PageHead title={t('title-invite')} />
-    <SingleFormLayout>
-      <DyoCard className="p-8 m-auto">
-        {errorMessage ? (
-          <DyoLabel>{errorMessage}</DyoLabel>
-        ) : (
-          <div className="flex flex-col">
-            <Image
-              className=" mx-auto mb-8"
-              src="/dyrector_io_logo_white.svg"
-              alt={t('common:dyoWhiteLogo')}
-              width={200}
-              height={80}
-            />
+  return (
+    <>
+      <PageHead title={t('title-invite')} />
+      <SingleFormLayout>
+        <DyoCard className="p-8 m-auto">
+          {errorMessage ? (
+            <DyoLabel>{errorMessage}</DyoLabel>
+          ) : (
+            <div className="flex flex-col">
+              <Image
+                className=" mx-auto mb-8"
+                src="/dyrector_io_logo_white.svg"
+                alt={t('common:dyoWhiteLogo')}
+                width={200}
+                height={80}
+              />
 
-            {accepted ? (
-              <>
-                <DyoLabel>{t('acceptSuccess', { name: team.name })}</DyoLabel>
+              {accepted ? (
+                <>
+                  <DyoLabel>{t('acceptSuccess', { name: team.name })}</DyoLabel>
 
-                <DyoButton className="mx-auto px-4 mt-16" onClick={onContinue}>
-                  {t('common:continue')}
-                </DyoButton>
-              </>
-            ) : (
-              <>
-                <DyoLabel>{t('youHaveBeenInvited', { name: team.name })}</DyoLabel>
+                  <DyoButton className="mx-auto px-4 mt-16" onClick={onContinue}>
+                    {t('common:continue')}
+                  </DyoButton>
+                </>
+              ) : (
+                <>
+                  <DyoLabel>{t('youHaveBeenInvited', { name: team.name })}</DyoLabel>
 
-                <DyoButton className="mx-auto px-4 mt-16" onClick={onAccept}>
-                  {t('accept')}
-                </DyoButton>
-              </>
-            )}
-          </div>
-        )}
-      </DyoCard>
-    </SingleFormLayout>
-  </>)
+                  <DyoButton className="mx-auto px-4 mt-16" onClick={onAccept}>
+                    {t('accept')}
+                  </DyoButton>
+                </>
+              )}
+            </div>
+          )}
+        </DyoCard>
+      </SingleFormLayout>
+    </>
+  )
 }
 
 export default AcceptInvitationPage

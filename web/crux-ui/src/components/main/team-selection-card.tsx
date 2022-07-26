@@ -47,7 +47,7 @@ const TeamSelectionCard = (props: TeamSelectionCardProps) => {
         itemClassName={'flex text-bright pl-10 py-4'}
         headers={[t('yourTeams')]}
         data={meta.teams}
-        itemBuilder={(it) => {
+        itemBuilder={it => {
           const currentTeam = meta.activeTeamId === it.id
 
           /* eslint-disable react/jsx-key */

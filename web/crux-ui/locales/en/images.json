@@ -1,6 +1,7 @@
 {
     "add": "Add image",
     "imageName": "Image name",
+    "containerName": "Container name",
     "tag": "Tag",
     "config": "Config",
     "json": "JSON",

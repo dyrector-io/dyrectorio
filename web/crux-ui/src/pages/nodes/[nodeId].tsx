@@ -56,7 +56,7 @@ const NodeDetails = (props: NodeDetailsProps) => {
 
   return (
     <Layout>
-      <PageHead title={t('title-node',{ name:node.name })} />
+      <PageHead title={t('title-node', { name: node.name })} />
       <PageHeading
         pageLink={pageLink}
         subLinks={[

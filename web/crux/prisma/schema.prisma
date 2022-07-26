@@ -156,9 +156,10 @@ model Image {
 
 model ContainerConfig {
   id           String @id @default(uuid()) @db.Uuid
-  capabilities Json?
-  config       Json?
-  environment  Json?
+  name         String
+  environment  Json
+  capabilities Json
+  config       Json
 
   image   Image  @relation(fields: [imageId], references: [id], onDelete: Cascade)
   imageId String @unique @db.Uuid

@@ -11,7 +11,7 @@ import {
   Node,
 } from '@prisma/client'
 import { JsonArray } from 'prisma'
-import { containerNameFromImageName, deploymentStatusToDb } from 'src/domain/deployment'
+import { deploymentStatusToDb } from 'src/domain/deployment'
 import { toTimestamp } from 'src/domain/utils'
 import { DeployRequest_ContainerConfig, DeployRequest_InstanceConfig } from 'src/grpc/protobuf/proto/agent'
 import {
@@ -35,7 +35,6 @@ import {
   ExplicitContainerConfigData,
   ExplicitContainerConfigPort,
   ExplicitContainerNetworkMode,
-  InstanceContainerConfigData,
   UniqueKeyValue,
 } from 'src/shared/model'
 import { ImageMapper, ImageWithConfig } from '../image/image.mapper'
@@ -66,7 +65,10 @@ export class DeployMapper {
   }
 
   instanceToGrpc(instance: InstanceDetails): InstanceResponse {
-    const config: DeploymentContainerConfig = instance.config ?? instance.image.config
+    const config: DeploymentContainerConfig = {
+      ...(instance.config ?? instance.image.config),
+      name: instance.image.config.name,
+    }
 
     return {
       ...instance,
@@ -132,16 +134,13 @@ export class DeployMapper {
     const imageConfig = (instance.image.config ?? {}) as ContainerConfigData
     const instaceConfig = (instance.config ?? {}) as ContainerConfigData
 
-    const config: InstanceContainerConfigData = {
-      ...this.mergeConfigs(imageConfig, instaceConfig),
-      id: instance.id,
-    }
+    const config: ContainerConfigData = this.mergeConfigs(imageConfig, instaceConfig)
 
     return {
       ...config.config,
+      name: config.name,
       prefix,
       environments: this.jsonToPipedFormat(config.environment ?? []),
-      name: containerNameFromImageName(instance.image.name),
       user: config.config.user ?? 0,
     }
   }
@@ -201,6 +200,7 @@ export class DeployMapper {
     const caps = this.overrideKeyValues(imageConfig?.capabilities, instanceConfig?.capabilities)
 
     return {
+      name: imageConfig.name,
       environment: envs,
       capabilities: caps,
       config: {

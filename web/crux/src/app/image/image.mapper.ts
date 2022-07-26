@@ -29,6 +29,7 @@ export class ImageMapper {
 
   configToGrpc(config: ContainerConfig): ProtoContainerConfig {
     return {
+      name: config.name,
       capabilities: config.capabilities as UniqueKeyValue[],
       environment: config.environment as UniqueKeyValue[],
       config: this.explicitConfigToGrpc(config.config as JsonObject),

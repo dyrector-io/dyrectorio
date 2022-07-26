@@ -752,6 +752,7 @@ export interface ExplicitContainerConfig_Expose {
 
 export interface ContainerConfig {
   config: ExplicitContainerConfig | undefined
+  name: string
   capabilities: UniqueKeyValue[]
   environment: UniqueKeyValue[]
 }
@@ -800,12 +801,12 @@ export interface PatchContainerConfig {
   capabilities?: KeyValueList | undefined
   environment?: KeyValueList | undefined
   config?: ExplicitContainerConfig | undefined
+  name?: string | undefined
 }
 
 export interface PatchImageRequest {
   id: string
   accessedBy: string
-  name?: string | undefined
   tag?: string | undefined
   config?: PatchContainerConfig | undefined
 }
@@ -944,12 +945,18 @@ export interface PatchDeploymentRequest {
   instance?: PatchInstanceRequest | undefined
 }
 
+export interface InstanceContainerConfig {
+  config: ExplicitContainerConfig | undefined
+  capabilities: UniqueKeyValue[]
+  environment: UniqueKeyValue[]
+}
+
 export interface InstanceResponse {
   id: string
   audit: AuditResponse | undefined
   image: ImageResponse | undefined
   status?: ContainerStatus | undefined
-  config?: ContainerConfig | undefined
+  config?: InstanceContainerConfig | undefined
 }
 
 export interface PatchInstanceRequest {
@@ -2021,7 +2028,7 @@ export const ExplicitContainerConfig_Expose = {
   },
 }
 
-const baseContainerConfig: object = {}
+const baseContainerConfig: object = { name: '' }
 
 export const ContainerConfig = {
   fromJSON(object: any): ContainerConfig {
@@ -2030,6 +2037,7 @@ export const ContainerConfig = {
       object.config !== undefined && object.config !== null
         ? ExplicitContainerConfig.fromJSON(object.config)
         : undefined
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
     message.capabilities = (object.capabilities ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
     message.environment = (object.environment ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
     return message
@@ -2039,6 +2047,7 @@ export const ContainerConfig = {
     const obj: any = {}
     message.config !== undefined &&
       (obj.config = message.config ? ExplicitContainerConfig.toJSON(message.config) : undefined)
+    message.name !== undefined && (obj.name = message.name)
     if (message.capabilities) {
       obj.capabilities = message.capabilities.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
     } else {
@@ -2241,6 +2250,7 @@ export const PatchContainerConfig = {
       object.config !== undefined && object.config !== null
         ? ExplicitContainerConfig.fromJSON(object.config)
         : undefined
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : undefined
     return message
   },
 
@@ -2252,6 +2262,7 @@ export const PatchContainerConfig = {
       (obj.environment = message.environment ? KeyValueList.toJSON(message.environment) : undefined)
     message.config !== undefined &&
       (obj.config = message.config ? ExplicitContainerConfig.toJSON(message.config) : undefined)
+    message.name !== undefined && (obj.name = message.name)
     return obj
   },
 }
@@ -2263,7 +2274,6 @@ export const PatchImageRequest = {
     const message = { ...basePatchImageRequest } as PatchImageRequest
     message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
     message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : undefined
     message.tag = object.tag !== undefined && object.tag !== null ? String(object.tag) : undefined
     message.config =
       object.config !== undefined && object.config !== null ? PatchContainerConfig.fromJSON(object.config) : undefined
@@ -2274,7 +2284,6 @@ export const PatchImageRequest = {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
-    message.name !== undefined && (obj.name = message.name)
     message.tag !== undefined && (obj.tag = message.tag)
     message.config !== undefined &&
       (obj.config = message.config ? PatchContainerConfig.toJSON(message.config) : undefined)
@@ -2822,6 +2831,40 @@ export const PatchDeploymentRequest = {
   },
 }
 
+const baseInstanceContainerConfig: object = {}
+
+export const InstanceContainerConfig = {
+  fromJSON(object: any): InstanceContainerConfig {
+    const message = {
+      ...baseInstanceContainerConfig,
+    } as InstanceContainerConfig
+    message.config =
+      object.config !== undefined && object.config !== null
+        ? ExplicitContainerConfig.fromJSON(object.config)
+        : undefined
+    message.capabilities = (object.capabilities ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
+    message.environment = (object.environment ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
+    return message
+  },
+
+  toJSON(message: InstanceContainerConfig): unknown {
+    const obj: any = {}
+    message.config !== undefined &&
+      (obj.config = message.config ? ExplicitContainerConfig.toJSON(message.config) : undefined)
+    if (message.capabilities) {
+      obj.capabilities = message.capabilities.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
+    } else {
+      obj.capabilities = []
+    }
+    if (message.environment) {
+      obj.environment = message.environment.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
+    } else {
+      obj.environment = []
+    }
+    return obj
+  },
+}
+
 const baseInstanceResponse: object = { id: '' }
 
 export const InstanceResponse = {
@@ -2835,7 +2878,9 @@ export const InstanceResponse = {
     message.status =
       object.status !== undefined && object.status !== null ? containerStatusFromJSON(object.status) : undefined
     message.config =
-      object.config !== undefined && object.config !== null ? ContainerConfig.fromJSON(object.config) : undefined
+      object.config !== undefined && object.config !== null
+        ? InstanceContainerConfig.fromJSON(object.config)
+        : undefined
     return message
   },
 
@@ -2846,7 +2891,8 @@ export const InstanceResponse = {
     message.image !== undefined && (obj.image = message.image ? ImageResponse.toJSON(message.image) : undefined)
     message.status !== undefined &&
       (obj.status = message.status !== undefined ? containerStatusToJSON(message.status) : undefined)
-    message.config !== undefined && (obj.config = message.config ? ContainerConfig.toJSON(message.config) : undefined)
+    message.config !== undefined &&
+      (obj.config = message.config ? InstanceContainerConfig.toJSON(message.config) : undefined)
     return obj
   },
 }

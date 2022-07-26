@@ -63,6 +63,8 @@
 
   "product": "Product",
   "version": "Version",
+  "image": "Image",
+  "container": "Container",
   "deployment": "Deployment",
   "node": "Node",
   "registry": "Registry",

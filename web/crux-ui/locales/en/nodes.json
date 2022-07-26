@@ -4,7 +4,7 @@
 
   "add": "Add node",
   "new": "New node",
-  "tips": "A description about what nodes are good for.",
+  "tips": "Nodes are the environments where you plan to run your applications.",
 
   "revoke": "Revoke token",
   "confirmRevoke": "Are you sure you want to revoke the token?",
