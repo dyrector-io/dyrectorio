@@ -10,13 +10,11 @@ import { RegistryModule } from './app/registry/registry.module'
 import { TeamModule } from './app/team/team.module'
 import { VersionModule } from './app/version/version.module'
 import { ShutdownService } from './application.shutdown.service'
-import { ConfigModule } from './config/config.module'
 import { InterceptorGrpcHelperProvider } from './interceptors/helper.interceptor'
 
 @Module({
   imports: [
     ProductModule,
-    ConfigModule,
     RegistryModule,
     NodeModule,
     VersionModule,
