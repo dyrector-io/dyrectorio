@@ -6,8 +6,8 @@ import DyoTag from '@app/elements/dyo-tag'
 import { Registry } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import React from 'react'
 import Image from 'next/image'
+import React from 'react'
 
 interface RegistryCardProps extends Omit<DyoCardProps, 'children'> {
   registry: Registry
@@ -15,12 +15,12 @@ interface RegistryCardProps extends Omit<DyoCardProps, 'children'> {
 }
 
 const RegistryCard = (props: RegistryCardProps) => {
-  const { t } = useTranslation("registries");
+  const { t } = useTranslation('registries')
 
   const { registry, onClick } = props
 
   const getDefaultImage = () => {
-    return <Image src="/default_registry.svg" width={17} height={21} alt={t("altDefaultRegistryPicture")}/>
+    return <Image src="/default_registry.svg" width={17} height={21} alt={t('altDefaultRegistryPicture')} />
   }
 
   return (
@@ -42,7 +42,7 @@ const RegistryCard = (props: RegistryCardProps) => {
 
         <div className="flex flex-row flex-grow mt-4 justify-end">
           <DyoTag color="bg-dyo-turquoise" textColor="text-dyo-turquoise">
-              {t(`type.${registry.type}`)}
+            {t(`type.${registry.type}`)}
           </DyoTag>
         </div>
       </DyoCard>

@@ -101,7 +101,7 @@ const ProductDetailsPage = (props: ProductDetailsPageProps) => {
 
   return (
     <Layout>
-      <PageHead title={t('title-product', { name:product.name })} />
+      <PageHead title={t('title-product', { name: product.name })} />
       <PageHeading pageLink={pageLink} subLinks={sublinks}>
         {saving ? <LoadingIndicator className="flex ml-4 my-auto" /> : null}
 

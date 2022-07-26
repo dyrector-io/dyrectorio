@@ -70,7 +70,7 @@ const VersionDetailsPage = (props: VersionDetailsPageProps) => {
 
   return (
     <Layout>
-      <PageHead title={t('title-product-version', { name:product.name, version:version.name })} />
+      <PageHead title={t('title-product-version', { name: product.name, version: version.name })} />
       <PageHeading pageLink={pageLink} subLinks={sublinks}>
         {saving ? <LoadingIndicator className="flex ml-4 my-auto" /> : null}
 

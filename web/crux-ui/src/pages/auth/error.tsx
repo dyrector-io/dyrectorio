@@ -18,18 +18,20 @@ const ErrorPage = (props: SelfServiceError) => {
 
   const error = props.error && 'message' in props.error ? (props.error as Error) : null
 
-  return (<>
-    <PageHead title={t('title')} />
-    <div className="text-center my-20">
-      <h2 className="text-4xl font-extrabold text-blue">{t('oops')}</h2>
+  return (
+    <>
+      <PageHead title={t('title')} />
+      <div className="text-center my-20">
+        <h2 className="text-4xl font-extrabold text-blue">{t('oops')}</h2>
 
-      <div className="my-4 text-center text-purple-lightText font-semibold">{error?.message}</div>
+        <div className="my-4 text-center text-purple-lightText font-semibold">{error?.message}</div>
 
-      <DyoButton onClick={() => router.back()}>{t('common:goBack')}</DyoButton>
+        <DyoButton onClick={() => router.back()}>{t('common:goBack')}</DyoButton>
 
-      <div className="mt-16"></div>
-    </div>
-  </>)
+        <div className="mt-16"></div>
+      </div>
+    </>
+  )
 }
 
 export default ErrorPage

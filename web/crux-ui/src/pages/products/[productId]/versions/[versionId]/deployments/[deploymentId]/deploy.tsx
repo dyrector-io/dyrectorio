@@ -119,11 +119,13 @@ const DeployPage = (props: DeployPageProps) => {
 
   return (
     <Layout>
-      <PageHead title={t('title', {
-        product: product.name,
-        version: version.name,
-        node: deployment.node.name
-      })} />
+      <PageHead
+        title={t('title', {
+          product: product.name,
+          version: version.name,
+          node: deployment.node.name,
+        })}
+      />
       <PageHeading pageLink={pageLink} subLinks={sublinks}>
         <DyoButton className="px-6 ml-auto" onClick={onInspect}>
           {t('common:inspect')}

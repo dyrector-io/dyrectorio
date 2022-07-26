@@ -16,7 +16,7 @@ export interface LayoutProps {
 }
 
 export interface PageHeadProps {
-  title: string;
+  title: string
 }
 
 export const Layout = (props: LayoutProps) => {
@@ -95,7 +95,7 @@ export const PageHead = (props: React.PropsWithChildren<PageHeadProps>) => {
   return (
     <>
       <Head>
-        <title>{t('title-param',{param:props.title})}</title>
+        <title>{t('title-param', { param: props.title })}</title>
         {props.children}
       </Head>
     </>

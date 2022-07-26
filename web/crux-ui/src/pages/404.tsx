@@ -12,26 +12,28 @@ const Page404 = () => {
 
   const goBack = () => router.back()
 
-  return (<>
-    <PageHead title={t('title')} />
-    <div className="flex flex-row min-h-screen bg-dark">
-      <div className="flex flex-col items-center w-full my-auto">
-        <div>
-          <Image src="/404.svg" alt={t('notFound')} width={500} height={346.833} />
+  return (
+    <>
+      <PageHead title={t('title')} />
+      <div className="flex flex-row min-h-screen bg-dark">
+        <div className="flex flex-col items-center w-full my-auto">
+          <div>
+            <Image src="/404.svg" alt={t('notFound')} width={500} height={346.833} />
+          </div>
+
+          <DyoHeading element="h2" className="text-4xl text-white font-extrabold mt-16">
+            {t('oops')}
+          </DyoHeading>
+
+          <p className="text-center text-light font-semibold my-6">{t('nothingYet')}</p>
+
+          <DyoButton secondary outlined onClick={goBack}>
+            {t('common:goBack')}
+          </DyoButton>
         </div>
-
-        <DyoHeading element="h2" className="text-4xl text-white font-extrabold mt-16">
-          {t('oops')}
-        </DyoHeading>
-
-        <p className="text-center text-light font-semibold my-6">{t('nothingYet')}</p>
-
-        <DyoButton secondary outlined onClick={goBack}>
-          {t('common:goBack')}
-        </DyoButton>
       </div>
-    </div>
-  </>)
+    </>
+  )
 }
 
 export default Page404

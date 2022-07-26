@@ -28,13 +28,9 @@ const EditDeploymentInstances = (props: EditDeploymentInstancesProps) => {
 
   const mutable = deploymentIsMutable(deployment.status)
 
-  const [instances, setInstances] = useState(deployment.instances ?? [])
+  const [instances, setInstances] = useState<Instance[]>(deployment.instances ?? [])
 
   const sock = useWebSocket(deploymentWsUrl(deployment.product.id, deployment.versionId, deployment.id))
-
-  sock.on(WS_TYPE_INSTANCE, (message: InstanceMessage) => {
-    setInstances([...instances, message])
-  })
 
   sock.on(WS_TYPE_INSTANCE_UPDATED, (message: InstanceUpdatedMessage) => {
     const index = instances.findIndex(it => it.id === message.instanceId)
@@ -46,10 +42,10 @@ const EditDeploymentInstances = (props: EditDeploymentInstancesProps) => {
     }
 
     const oldOne = instances[index]
-    const image = mergeInstancePatch(oldOne, message)
+    const instance = mergeInstancePatch(oldOne, message)
 
     const newInstances = [...instances]
-    newInstances[index] = image
+    newInstances[index] = instance
 
     setInstances(newInstances)
   })
@@ -65,7 +61,7 @@ const EditDeploymentInstances = (props: EditDeploymentInstancesProps) => {
   return (
     <DyoWrap>
       {instances.map(it => {
-        return <EditInstanceCard disabled={!mutable} key={it.id} instance={it} deploymentSock={sock} />
+        return <EditInstanceCard key={it.id} disabled={!mutable} instance={it} deploymentSock={sock} />
       })}
     </DyoWrap>
   )
@@ -73,14 +69,9 @@ const EditDeploymentInstances = (props: EditDeploymentInstancesProps) => {
 
 export default EditDeploymentInstances
 
-export const mergeInstancePatch = (oldOne: Instance, newOne: InstanceUpdatedMessage) => {
+const mergeInstancePatch = (instance: Instance, message: InstanceUpdatedMessage): Instance => {
   return {
-    ...oldOne,
-    ...newOne,
-    config: {
-      environment: newOne.environment ?? oldOne.config?.environment,
-      capabilities: newOne.capabilities ?? oldOne.config?.capabilities,
-      config: newOne.config ?? oldOne.config?.config,
-    },
+    ...instance,
+    overridenConfig: message,
   }
 }

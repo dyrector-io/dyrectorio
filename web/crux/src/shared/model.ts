@@ -29,14 +29,13 @@ export type ExplicitContainerConfigExpose = {
 }
 
 export type ContainerConfigData = {
+  name: string
   capabilities: UniqueKeyValue[]
   environment: UniqueKeyValue[]
   config: ExplicitContainerConfigData
 }
 
-export type InstanceContainerConfigData = ContainerConfigData & {
-  id: string
-}
+export type InstanceContainerConfigData = Omit<ContainerConfigData, 'name'>
 
 export type IdentityTraits = {
   email: string

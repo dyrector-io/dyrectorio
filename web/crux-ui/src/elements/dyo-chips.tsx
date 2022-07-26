@@ -22,8 +22,8 @@ const DyoChips = <T,>(props: DyoChipsProps<T>) => {
   const [selection, setSelection] = useState<T>(props.initialSelection ?? null)
 
   const onToggle = item => {
-      setSelection(item)
-      onSelectionChange(item)
+    setSelection(item)
+    onSelectionChange(item)
   }
 
   const key = props.key ?? 'dyo-chips'

@@ -54,7 +54,7 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
 
   return (
     <Layout>
-      <PageHead title={t('title-registry', { name:registry.name })} />
+      <PageHead title={t('title-registry', { name: registry.name })} />
       <PageHeading
         pageLink={pageLink}
         subLinks={[

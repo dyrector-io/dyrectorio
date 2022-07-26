@@ -450,6 +450,7 @@ message ExplicitContainerConfig {
 
 message ContainerConfig {
   ExplicitContainerConfig config = 100;
+  string name = 101;
 
   repeated UniqueKeyValue capabilities = 1000;
   repeated UniqueKeyValue environment = 1001;
@@ -498,13 +499,13 @@ message PatchContainerConfig {
   optional KeyValueList capabilities = 100;
   optional KeyValueList environment = 101;
   optional ExplicitContainerConfig config = 103;
+  optional string name = 104;
 }
 
 message PatchImageRequest {
   string id = 1;
   string accessedBy = 2;
 
-  optional string name = 100;
   optional string tag = 101;
   optional PatchContainerConfig config = 102;
 }
@@ -682,13 +683,20 @@ message PatchDeploymentRequest {
   optional PatchInstanceRequest instance = 1001;
 }
 
+message InstanceContainerConfig {
+  ExplicitContainerConfig config = 100;
+
+  repeated UniqueKeyValue capabilities = 1000;
+  repeated UniqueKeyValue environment = 1001;
+}
+
 message InstanceResponse {
   string id = 1;
   AuditResponse audit = 2;
 
   ImageResponse image = 100;
   optional ContainerStatus status = 101;
-  optional ContainerConfig config = 102;
+  optional InstanceContainerConfig config = 102;
 }
 
 message PatchInstanceRequest {

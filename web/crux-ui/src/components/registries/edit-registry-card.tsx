@@ -109,7 +109,7 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
           {editing ? t('common:editName', { name: registry.name }) : t('new')}
         </DyoHeading>
 
-        <DyoLabel className="text-light">{t('tips')}</DyoLabel>
+        <DyoLabel className="text-light">{t('tips.common')}</DyoLabel>
 
         <form className="grid grid-cols-2 gap-8" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
           <div className="flex flex-col">
@@ -190,7 +190,7 @@ const HubRegistryFields = (props: EditRegistryTypeProps<HubRegistryDetails>) => 
 
   return (
     <>
-      <DyoLabel className="text-light mt-2">{t('hubTips')}</DyoLabel>
+      <DyoLabel className="text-light mt-2">{t('tips.hub')}</DyoLabel>
 
       <DyoInput
         className="max-w-lg"
@@ -213,6 +213,8 @@ const V2RegistryFields = (props: EditRegistryTypeProps<V2RegistryDetails>) => {
 
   return (
     <>
+      <DyoLabel className="text-light mt-2">{t('tips.v2')}</DyoLabel>
+
       <DyoInput
         className="max-w-lg"
         grow
@@ -271,6 +273,8 @@ const GitlabRegistryFields = (props: EditRegistryTypeProps<GitlabRegistryDetails
 
   return (
     <>
+      <DyoLabel className="text-light mt-2">{t('tips.gitlab')}</DyoLabel>
+
       <DyoInput
         className="max-w-lg"
         grow
@@ -351,6 +355,8 @@ const GithubRegistryFields = (props: EditRegistryTypeProps<GithubRegistryDetails
 
   return (
     <>
+      <DyoLabel className="text-light mt-2">{t('tips.github')}</DyoLabel>
+
       <DyoInput
         className="max-w-lg"
         grow

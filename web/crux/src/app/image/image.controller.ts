@@ -21,6 +21,7 @@ import { ImageAddToVersionValidationPipe } from './pipes/image.add-to-version.pi
 import { DeleteImageValidationPipe } from './pipes/image.delete.pipe'
 import { OrderImagesValidationPipe } from './pipes/image.order.pipe'
 import { ImagePatchValidationPipe } from './pipes/image.patch.pipe'
+import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 
 @Controller()
 @CruxImageControllerMethods()
@@ -45,6 +46,7 @@ export class ImageController implements CruxImageController {
     return await this.service.orderImages(request)
   }
 
+  @AuditLogLevel('no-data')
   async patchImage(@Body(ImagePatchValidationPipe) request: PatchImageRequest): Promise<Empty> {
     return await this.service.patchImage(request)
   }

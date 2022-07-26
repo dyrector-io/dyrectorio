@@ -1,12 +1,11 @@
 import { DyoButton } from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
-import { DyoHeading } from '@app/elements/dyo-heading'
-import { DyoMessage } from '@app/elements/dyo-message'
 import {
   ContainerConfig,
   ExplicitContainerConfigPort,
   ExplicitContainerNetworkMode,
   Instance,
+  InstanceContainerConfig,
   PatchInstanceMessage,
   WS_TYPE_PATCH_INSTANCE,
 } from '@app/models'
@@ -14,8 +13,9 @@ import { UniqueKeyValue } from '@app/models/grpc/protobuf/proto/crux'
 import { containerConfigSchema, getValidationError } from '@app/validation'
 import { WebSocketEndpoint } from '@app/websockets/client'
 import useTranslation from 'next-translate/useTranslation'
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import EditImageConfig from '../../images/edit-image-config'
+import EditImageHeading from '../../images/edit-image-heading'
 import EditImageJson from '../../images/edit-image-json'
 
 export type EditInstanceCardSelection = 'config' | 'json'
@@ -32,15 +32,15 @@ const EditInstanceCard = (props: EditInstanceCardProps) => {
   const { disabled, instance, deploymentSock: sock } = props
 
   const [selection, setSelection] = useState<EditInstanceCardSelection>('config')
-  const [mergedConfig, setMergedConfig] = useState(mergeConfigs(instance.image.config, instance.config))
+  const [mergedConfig, setMergedConfig] = useState(mergeConfigs(instance.image.config, instance.overridenConfig))
   const [parseError, setParseError] = useState<string>(null)
 
   useEffect(
-    () => setMergedConfig(mergeConfigs(instance.image.config, instance.config)),
-    [instance.image.config, instance.config],
+    () => setMergedConfig(mergeConfigs(instance.image.config, instance.overridenConfig)),
+    [instance.image.config, instance.overridenConfig],
   )
 
-  const onPatch = (id: string, config: ContainerConfig) => {
+  const onPatch = (id: string, config: Partial<InstanceContainerConfig>) => {
     setParseError(null)
 
     sock.send(WS_TYPE_PATCH_INSTANCE, {
@@ -49,23 +49,19 @@ const EditInstanceCard = (props: EditInstanceCardProps) => {
     } as PatchInstanceMessage)
   }
 
-  const onParseError = (err: Error) => {
-    setParseError(err.message)
-  }
+  const onParseError = (err: Error) => setParseError(err.message)
 
   const errorMessage = parseError ?? getValidationError(containerConfigSchema, mergedConfig)?.message
 
   return (
     <DyoCard className="flex flex-col flex-grow px-6 pb-6 pt-4">
       <div className="flex flex-row items-center">
-        <div>
-          <DyoHeading element="h4" className="text-lg text-bright">
-            {instance.image.name}
-            {instance.image.tag ? ` : ${instance.image.tag}` : null}
-          </DyoHeading>
-
-          {errorMessage ? <DyoMessage message={errorMessage} messageType="error" /> : null}
-        </div>
+        <EditImageHeading
+          imageName={instance.image.name}
+          imageTag={instance.image.tag}
+          containerName={instance.image.config.name}
+          errorMessage={errorMessage}
+        />
 
         <DyoButton
           text
@@ -91,13 +87,18 @@ const EditInstanceCard = (props: EditInstanceCardProps) => {
       </div>
 
       {selection === 'config' ? (
-        <EditImageConfig disabled={disabled} id={instance.id} config={mergedConfig} onPatch={onPatch} />
+        <EditImageConfig
+          disabled={disabled}
+          disabledContainerNameEditing
+          config={mergedConfig}
+          onPatch={it => onPatch(instance.id, it)}
+        />
       ) : (
         <EditImageJson
           disabled={disabled}
-          id={instance.id}
+          disabledContainerNameEditing
           config={mergedConfig}
-          onPatch={onPatch}
+          onPatch={it => onPatch(instance.id, it)}
           onParseError={onParseError}
         />
       )}
@@ -123,18 +124,24 @@ const overridePorts = (
 const overrideNetworkMode = (weak: ExplicitContainerNetworkMode, strong: ExplicitContainerNetworkMode) =>
   strong ?? weak ?? 'none'
 
-const mergeConfigs = (imageConfig: ContainerConfig, instanceConfig: ContainerConfig): ContainerConfig => {
-  const envs = overrideKeyValues(imageConfig?.environment, instanceConfig?.environment)
-  const caps = overrideKeyValues(imageConfig?.capabilities, instanceConfig?.capabilities)
+const mergeConfigs = (
+  imageConfig: ContainerConfig,
+  overriddenConfig: Partial<InstanceContainerConfig>,
+): ContainerConfig => {
+  const instanceConfig = overriddenConfig ?? {}
+
+  const envs = overrideKeyValues(imageConfig.environment, instanceConfig.environment)
+  const caps = overrideKeyValues(imageConfig.capabilities, instanceConfig.capabilities)
 
   return {
+    name: imageConfig.name,
     environment: envs,
     capabilities: caps,
     config: {
-      ...imageConfig?.config,
-      ...instanceConfig?.config,
-      networkMode: overrideNetworkMode(imageConfig?.config?.networkMode, instanceConfig?.config?.networkMode),
-      ports: overridePorts(imageConfig?.config?.ports, instanceConfig?.config?.ports),
+      ...imageConfig.config,
+      ...(instanceConfig.config ?? {}),
+      networkMode: overrideNetworkMode(imageConfig?.config?.networkMode, instanceConfig.config?.networkMode),
+      ports: overridePorts(imageConfig?.config?.ports, instanceConfig.config?.ports),
     },
   }
 }

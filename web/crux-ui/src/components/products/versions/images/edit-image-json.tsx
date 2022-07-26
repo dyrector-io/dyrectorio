@@ -5,15 +5,15 @@ import { CompleteContainerConfig, ContainerConfig, UniqueKeyValue } from '@app/m
 import { fold } from '@app/utils'
 import { completeContainerConfigSchema } from '@app/validation'
 import clsx from 'clsx'
-import React, { useCallback, useEffect, useReducer } from 'react'
+import { useCallback, useEffect, useReducer } from 'react'
 import { v4 as uuid } from 'uuid'
 
 interface EditImageJsonProps {
   disabled?: boolean
   className?: string
-  id: string
   config: ContainerConfig
-  onPatch: (id: string, config: ContainerConfig) => void
+  disabledContainerNameEditing?: boolean
+  onPatch: (config: Partial<ContainerConfig>) => void
   onParseError?: (err: Error) => void
 }
 
@@ -24,11 +24,12 @@ const EditImageJson = (props: EditImageJsonProps) => {
 
   const onChange = useCallback(
     (newConfig: CompleteContainerConfig) => {
-      const { id, config } = props
+      const { config } = props
 
       throttle(() => {
-        props.onPatch(id, {
+        props.onPatch({
           config: newConfig,
+          name: newConfig.name,
           environment: mergeKeyValuesWithJson(config?.environment ?? [], newConfig?.environment),
           capabilities: mergeKeyValuesWithJson(config?.capabilities ?? [], newConfig?.capabilities),
         })
@@ -60,6 +61,10 @@ const EditImageJson = (props: EditImageJsonProps) => {
       }),
     [props.config],
   )
+
+  if (props.disabledContainerNameEditing) {
+    delete state.name
+  }
 
   return (
     <JsonEditor
@@ -115,6 +120,7 @@ const imageConfigToCompleteContainerConfig = (
 
   const config: CompleteContainerConfig = {
     ...(imageConfig.config ?? currentConfig ?? DEFAULT_CONFIG),
+    name: imageConfig.name ?? currentConfig.name,
     environment: currentConfig?.environment ?? {},
     capabilities: currentConfig?.capabilities ?? {},
   }

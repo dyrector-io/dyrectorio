@@ -137,6 +137,7 @@ export const explicitContainerConfigSchema = yup.object().shape({
 })
 
 export const completeContainerConfigSchema = explicitContainerConfigSchema.shape({
+  name: yup.string().required(),
   environment: stringStringMapRule.default({}),
   capabilities: stringStringMapRule.default({}),
 })
@@ -163,11 +164,17 @@ export const patchContainerConfigSchema = yup.object().shape({
   config: explicitContainerConfigSchema.nullable(),
 })
 
+export const imageSchema = yup.object().shape({
+  environment: uniqueKeyValuesSchema,
+  config: containerConfigSchema,
+})
+
 export const deploymentSchema = yup.object().shape({
   environment: uniqueKeyValuesSchema,
   instances: yup.array(
     yup.object().shape({
-      config: containerConfigSchema,
+      image: imageSchema,
+      config: explicitContainerConfigSchema.nullable(),
     }),
   ),
 })
