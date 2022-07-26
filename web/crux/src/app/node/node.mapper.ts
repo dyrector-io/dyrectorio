@@ -52,7 +52,7 @@ export class NodeMapper {
 
   scriptToGrpc(node: Node, installer: AgentInstaller): NodeScriptResponse {
     return {
-      content: installer.getScript(node.name),
+      content: installer.getScript(node.name, node.type),
     }
   }
 }

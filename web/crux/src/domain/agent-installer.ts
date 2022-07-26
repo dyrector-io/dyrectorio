@@ -1,3 +1,4 @@
+import { NodeTypeEnum } from '@prisma/client'
 import { readFileSync } from 'fs'
 import Handlebars from 'handlebars'
 import { join } from 'path'
@@ -35,14 +36,22 @@ export class AgentInstaller {
     return `curl -sL ${process.env.CRUX_UI_URL}/api/nodes/${this.nodeId}/script | sh -`
   }
 
-  getScript(name: string): string {
+  getScript(name: string, type: NodeTypeEnum): string {
     this.verify()
 
-    return this.scriptCompiler.compile({
+    let installScriptParams = {
       name: name.toLowerCase().replace(/\s/g, ''),
       token: this.token,
       insecure: process.env.GRPC_AGENT_INSTALL_SCRIPT_INSECURE === 'true',
-    })
+    }
+
+    if (type === 'crane') {
+      installScriptParams = Object.assign(installScriptParams, {
+        localManifests: process.env.K8S_LOCAL_MANIFEST === 'true',
+      })
+    }
+
+    return this.scriptCompiler.compile(installScriptParams)
   }
 
   complete(connection: GrpcNodeConnection, eventChannel: Subject<NodeEventMessage>, version?: string): Agent {

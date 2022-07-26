@@ -127,13 +127,14 @@ export class NodeService {
       },
       select: {
         name: true,
+        type: true,
       },
     })
 
     const installer = this.agentService.getInstallerByNodeId(request.id)
 
     return {
-      content: installer.getScript(node.name),
+      content: installer.getScript(node.name, node.type),
     }
   }
 
