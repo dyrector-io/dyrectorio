@@ -76,3 +76,7 @@ If you think dyrectorio could use a new feature, please open an issue on our Git
 ### Improving Documentation
 
 Submitting documentation updates, enhancements, designs, or bug fixes. Spelling or grammar fixes will be very much appreciated.
+
+### Commit signatures
+
+Submitting pull requests require all commits to be signed with a GPG signature. Refer to the [GitHub documentation](https://docs.github.com/en/authentication/managing-commit-signature-verification) to setup GPG signing.

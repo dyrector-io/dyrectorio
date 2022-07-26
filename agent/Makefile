@@ -2,7 +2,9 @@ PACKAGE := github.com/dyrector-io/dyrectorio/agent
 CONTAINER_URL := ghcr.io/dyrector-io/dyrectorio/agent/
 VCS_VERSION="$(shell git describe --exact-match --tags 2> /dev/null || git rev-parse --short HEAD)"
 AGENT_HASH="$(shell git rev-parse --short HEAD:../agent)"
-BUILD_TIMESTAMP="$(shell date -u +"%Y-%m-%dT%H:%M:%SZ" | tr -d "[:blank:]")" # UTC timestamps for builds
+
+# UTC timestamps for builds
+BUILD_TIMESTAMP="$(shell date -u +"%Y-%m-%dT%H:%M:%SZ" | tr -d "[:blank:]")"
 
 agent_version=$(or $(VCS_VERSION),$(AGENT_HASH))
 

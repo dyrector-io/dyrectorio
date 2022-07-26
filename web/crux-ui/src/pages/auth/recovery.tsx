@@ -1,4 +1,4 @@
-import { SingleFormLayout } from '@app/components/layout'
+import { PageHead, SingleFormLayout } from '@app/components/layout'
 import { ATTRIB_CSRF, AUTH_RESEND_DELAY } from '@app/const'
 import { DyoButton } from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
@@ -78,7 +78,8 @@ const RecoveryPage = (props: SelfServiceRecoveryFlow) => {
 
   const submitDisabled = countdown > 0
 
-  return (
+  return (<>
+    <PageHead title={t('title')} />
     <SingleFormLayout>
       <DyoCard className="text-bright p-8 m-auto">
         <form className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
@@ -112,7 +113,7 @@ const RecoveryPage = (props: SelfServiceRecoveryFlow) => {
         </form>
       </DyoCard>
     </SingleFormLayout>
-  )
+  </>)
 }
 
 export default RecoveryPage

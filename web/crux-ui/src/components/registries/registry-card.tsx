@@ -7,6 +7,8 @@ import { Registry } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import React from 'react'
+import Image from 'next/image'
+import useTranslation from 'next-translate/useTranslation'
 
 interface RegistryCardProps extends Omit<DyoCardProps, 'children'> {
   registry: Registry
@@ -17,14 +19,19 @@ const RegistryCard = (props: RegistryCardProps) => {
   const { t } = useTranslation("registries");
 
   const { registry, onClick } = props
+  const { t } = useTranslation("registries")
+
+  const getDefaultImage = () => {
+    return <Image src="/default_registry.svg" width={17} height={21} alt={t("altDefaultRegistryPicture")}/>
+  }
 
   return (
     <>
       <DyoCard className={clsx(props.className ?? 'p-6', 'flex flex-col')}>
         <div className={clsx(onClick ? 'cursor-pointer' : null, 'flex flex-row flex-grow')} onClick={onClick}>
-          {!registry.icon ? null : <DyoBadge icon={registry.icon} />}
+          {!registry.icon ? getDefaultImage() : <DyoBadge icon={registry.icon} />}
 
-          <DyoHeading className="text-xl text-bright font-semibold ml-4 my-auto mr-auto" element="h3">
+          <DyoHeading className="text-xl text-bright font-semibold ml-2 my-auto mr-auto" element="h3">
             {registry.name}
           </DyoHeading>
         </div>

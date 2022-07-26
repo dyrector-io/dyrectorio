@@ -1,4 +1,7 @@
 {
+  "title": "Registries",
+  "title-registry": "{{name}} registry",
+
   "registries": "Registries",
   "tips": "A description about what registries are good for.",
   "add": "Add registry",
@@ -25,5 +28,7 @@
     "github": "GitHub Registry"
   },
 
-  "deleteDescription": "If you proceed, you will lose all your data related to {{name}}. This action is not revocable."
+  "deleteDescription": "If you proceed, you will lose all your data related to {{name}}. This action is not revocable.",
+
+  "altDefaultRegistryPicture": "Picture of registry"
 }

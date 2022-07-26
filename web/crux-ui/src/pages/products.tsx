@@ -1,4 +1,4 @@
-import { Layout } from '@app/components/layout'
+import { Layout, PageHead } from '@app/components/layout'
 import EditProductCard from '@app/components/products/edit-product-card'
 import ProductCard from '@app/components/products/product-card'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
@@ -71,6 +71,7 @@ const ProductsPage = (props: ProductsPageProps) => {
 
   return (
     <Layout>
+      <PageHead title={t('title')} />
       <PageHeading pageLink={pageLink}>
         <ListPageMenu creating={creating} setCreating={setCreating} submitRef={submitRef} />
       </PageHeading>
