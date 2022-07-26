@@ -252,6 +252,7 @@ export type Registry = {
   name: string
   description?: string
   url: string
+  type: RegistryType
 }
 
 export const REGISTRY_TYPE_VALUES = ['v2', 'hub', 'gitlab', 'github'] as const
