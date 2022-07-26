@@ -2,8 +2,10 @@ import DyoBadge from '@app/elements/dyo-badge'
 import { DyoCard, DyoCardProps } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
+import DyoTag from '@app/elements/dyo-tag'
 import { Registry } from '@app/models'
 import clsx from 'clsx'
+import useTranslation from 'next-translate/useTranslation'
 import React from 'react'
 
 interface RegistryCardProps extends Omit<DyoCardProps, 'children'> {
@@ -12,6 +14,8 @@ interface RegistryCardProps extends Omit<DyoCardProps, 'children'> {
 }
 
 const RegistryCard = (props: RegistryCardProps) => {
+  const { t } = useTranslation("registries");
+
   const { registry, onClick } = props
 
   return (
@@ -30,6 +34,12 @@ const RegistryCard = (props: RegistryCardProps) => {
         </div>
 
         <p className="text-light line-clamp-4">{registry.description}</p>
+
+        <div className="flex flex-row flex-grow mt-4 justify-end">
+          <DyoTag color="bg-dyo-turquoise" textColor="text-dyo-turquoise">
+              {t(`type.${registry.type}`)}
+          </DyoTag>
+        </div>
       </DyoCard>
     </>
   )

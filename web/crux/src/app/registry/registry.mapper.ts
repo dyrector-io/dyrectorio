@@ -18,6 +18,7 @@ export class RegistryMapper {
   toGrpc(registry: Registry): RegistryResponse {
     return {
       ...registry,
+      type: this.typeToGrpc(registry.type),
       audit: AuditResponse.fromJSON(registry),
     }
   }

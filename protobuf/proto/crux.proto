@@ -281,6 +281,7 @@ message RegistryResponse {
   optional string description = 101;
   optional string icon = 102;
   string url = 103;
+  RegistryType type = 104;
 }
 
 message RegistryListResponse { repeated RegistryResponse data = 1000; }
@@ -358,6 +359,8 @@ enum RegistryType {
   UNKNOWN_REGISTRY_TYPE = 0;
   V2 = 1;
   HUB = 2;
+  GITLAB = 3;
+  GITHUB = 4;
 }
 
 // VERSION

@@ -178,6 +178,8 @@ export enum RegistryType {
   UNKNOWN_REGISTRY_TYPE = 0,
   V2 = 1,
   HUB = 2,
+  GITLAB = 3,
+  GITHUB = 4,
   UNRECOGNIZED = -1,
 }
 
@@ -192,6 +194,12 @@ export function registryTypeFromJSON(object: any): RegistryType {
     case 2:
     case 'HUB':
       return RegistryType.HUB
+    case 3:
+    case 'GITLAB':
+      return RegistryType.GITLAB
+    case 4:
+    case 'GITHUB':
+      return RegistryType.GITHUB
     case -1:
     case 'UNRECOGNIZED':
     default:
@@ -207,6 +215,10 @@ export function registryTypeToJSON(object: RegistryType): string {
       return 'V2'
     case RegistryType.HUB:
       return 'HUB'
+    case RegistryType.GITLAB:
+      return 'GITLAB'
+    case RegistryType.GITHUB:
+      return 'GITHUB'
     default:
       return 'UNKNOWN'
   }
@@ -568,6 +580,7 @@ export interface RegistryResponse {
   description?: string | undefined
   icon?: string | undefined
   url: string
+  type: RegistryType
 }
 
 export interface RegistryListResponse {
@@ -2452,7 +2465,7 @@ export const UpdateProductRequest = {
   },
 }
 
-const baseRegistryResponse: object = { id: '', name: '', url: '' }
+const baseRegistryResponse: object = { id: '', name: '', url: '', type: 0 }
 
 export const RegistryResponse = {
   encode(message: RegistryResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -2473,6 +2486,9 @@ export const RegistryResponse = {
     }
     if (message.url !== '') {
       writer.uint32(826).string(message.url)
+    }
+    if (message.type !== 0) {
+      writer.uint32(832).int32(message.type)
     }
     return writer
   },
@@ -2502,6 +2518,9 @@ export const RegistryResponse = {
         case 103:
           message.url = reader.string()
           break
+        case 104:
+          message.type = reader.int32() as any
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -2520,6 +2539,7 @@ export const RegistryResponse = {
       object.description !== undefined && object.description !== null ? String(object.description) : undefined
     message.icon = object.icon !== undefined && object.icon !== null ? String(object.icon) : undefined
     message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
+    message.type = object.type !== undefined && object.type !== null ? registryTypeFromJSON(object.type) : 0
     return message
   },
 
@@ -2531,6 +2551,7 @@ export const RegistryResponse = {
     message.description !== undefined && (obj.description = message.description)
     message.icon !== undefined && (obj.icon = message.icon)
     message.url !== undefined && (obj.url = message.url)
+    message.type !== undefined && (obj.type = registryTypeToJSON(message.type))
     return obj
   },
 
@@ -2543,6 +2564,7 @@ export const RegistryResponse = {
     message.description = object.description ?? undefined
     message.icon = object.icon ?? undefined
     message.url = object.url ?? ''
+    message.type = object.type ?? 0
     return message
   },
 }
