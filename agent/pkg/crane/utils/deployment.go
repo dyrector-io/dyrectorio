@@ -32,17 +32,19 @@ func DeployImage(c context.Context, dog *dogger.DeploymentLogger,
 			ContainerConfig: deployImageRequest.ContainerConfig,
 			RuntimeConfig:   &runtimeConfigStr,
 			Issuer:          deployImageRequest.Issuer,
-		})
+		},
+		cfg,
+	)
 
-	if err := deployFacade.CheckPreConditions(cfg); err != nil {
+	if err := deployFacade.CheckPreConditions(); err != nil {
 		handleContextDeploymentError(dog, err)
 	}
 
-	if err := deployFacade.PreDeploy(cfg); err != nil {
+	if err := deployFacade.PreDeploy(); err != nil {
 		handleContextDeploymentError(dog, err)
 	}
 
-	if err := deployFacade.Deploy(cfg); err != nil {
+	if err := deployFacade.Deploy(); err != nil {
 		handleContextDeploymentError(dog, err)
 	}
 

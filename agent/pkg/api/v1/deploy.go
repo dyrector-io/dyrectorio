@@ -479,7 +479,7 @@ func (e *ErrRestartPolicyUnmarshalInvalid) Error() string {
 	return "restart policy invalid value provided"
 }
 
-// PolicyToString static mapping enum type into the docker supported string values
+// policyToString static mapping enum type into the docker supported string values
 var policyToString = map[RestartPolicyName]string{ //nolint:gochecknoglobals
 	EmptyRestartPolicy:                "unless-stopped",
 	RestartUnlessStoppedRestartPolicy: "unless-stopped",
@@ -488,7 +488,7 @@ var policyToString = map[RestartPolicyName]string{ //nolint:gochecknoglobals
 	OnFailureRestartPolicy:            "on-failure",
 }
 
-// PolicyToID static mapping string values eg. from JSON into enums
+// policyToID static mapping string values eg. from JSON into enums
 var policyToID = map[string]RestartPolicyName{ //nolint:gochecknoglobals
 	"":               RestartUnlessStoppedRestartPolicy,
 	"unless-stopped": RestartUnlessStoppedRestartPolicy,

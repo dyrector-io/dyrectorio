@@ -63,8 +63,7 @@ func TestMain(m *testing.M) {
 
 	// following is executed after every tests are run in this file
 
-	var tempConfig config.Configuration
-	err := k8s.DeleteNamespace(TestNamespace, &tempConfig)
+	err := k8s.DeleteNamespace(TestNamespace, &config.Configuration{})
 	if err != nil {
 		log.Println("(cleanup) failed to delete namespace: ", err)
 	}

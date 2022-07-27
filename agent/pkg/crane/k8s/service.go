@@ -33,10 +33,11 @@ type service struct {
 	ctx        context.Context
 	status     string
 	portsBound []int32
+	appConfig  *config.Configuration
 }
 
-func newService(ctx context.Context) *service {
-	return &service{status: "", ctx: ctx}
+func newService(ctx context.Context, cfg *config.Configuration) *service {
+	return &service{status: "", ctx: ctx, appConfig: cfg}
 }
 
 type ServiceParams struct {
@@ -49,8 +50,8 @@ type ServiceParams struct {
 	LBAnnotations map[string]string
 }
 
-func (s *service) deployService(params *ServiceParams, cfg *config.Configuration) error {
-	client, err := getServiceClient(params.namespace, cfg)
+func (s *service) deployService(params *ServiceParams) error {
+	client, err := getServiceClient(params.namespace, s.appConfig)
 	if err != nil {
 		return err
 	}
@@ -80,8 +81,8 @@ func (s *service) deployService(params *ServiceParams, cfg *config.Configuration
 	}
 
 	res, err := client.Apply(context.TODO(), svc, metav1.ApplyOptions{
-		FieldManager: cfg.FieldManagerName,
-		Force:        cfg.ForceOnConflicts,
+		FieldManager: s.appConfig.FieldManagerName,
+		Force:        s.appConfig.ForceOnConflicts,
 	})
 
 	if err != nil {
@@ -90,7 +91,7 @@ func (s *service) deployService(params *ServiceParams, cfg *config.Configuration
 		log.Printf("Service deployed: %s", res.Name)
 	}
 
-	if cfg.CraneGenTCPIngressMap != "" {
+	if s.appConfig.CraneGenTCPIngressMap != "" {
 		genIngressMapFile(ports, params.namespace, params.name)
 	}
 
@@ -101,8 +102,8 @@ func (s *service) deployService(params *ServiceParams, cfg *config.Configuration
 	return nil
 }
 
-func (s *service) deleteServices(namespace, name string, cfg *config.Configuration) error {
-	client, err := getServiceClient(namespace, cfg)
+func (s *service) deleteServices(namespace, name string) error {
+	client, err := getServiceClient(namespace, s.appConfig)
 	if err != nil {
 		return err
 	}

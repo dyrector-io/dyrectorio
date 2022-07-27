@@ -29,7 +29,7 @@ func GetVersion(c *gin.Context) {
 		return
 	}
 
-	cfg := utils.GetConfigFromGin(c)
+	cfg := utils.GetConfigFromGinContext(c)
 
 	versions := utils.GetVersions(query.Instance, cfg)
 	c.JSON(http.StatusOK, versions)

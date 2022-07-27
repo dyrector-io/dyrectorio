@@ -16,7 +16,8 @@ import (
 
 // namespace wrapper for the facade
 type namespace struct {
-	name string
+	name      string
+	appConfig *config.Configuration
 }
 
 // namespace entity
@@ -24,13 +25,13 @@ type Namespace struct {
 	Name string `json:"name" binding:"required"`
 }
 
-func newNamespace(name string) *namespace {
-	ns := namespace{name: name}
+func newNamespace(name string, cfg *config.Configuration) *namespace {
+	ns := namespace{name: name, appConfig: cfg}
 	return &ns
 }
 
-func (n *namespace) deployNamespace(cfg *config.Configuration) error {
-	client, err := getNamespaceClient(cfg)
+func (n *namespace) deployNamespace() error {
+	client, err := getNamespaceClient(n.appConfig)
 	if err != nil {
 		return err
 	}
@@ -43,8 +44,8 @@ func (n *namespace) deployNamespace(cfg *config.Configuration) error {
 	_, err = client.Apply(context.TODO(),
 		corev1.Namespace(n.name),
 		metav1.ApplyOptions{
-			FieldManager: cfg.FieldManagerName,
-			Force:        cfg.ForceOnConflicts,
+			FieldManager: n.appConfig.FieldManagerName,
+			Force:        n.appConfig.ForceOnConflicts,
 		})
 
 	if err != nil {

@@ -30,8 +30,7 @@ var reqID string = "test-12345"
 func createGin() *gin.Engine {
 	g := gin.Default()
 
-	var cfg config.Configuration
-	g.Use(util.ConfigMiddleware(&cfg))
+	g.Use(util.ConfigMiddleware(&config.Configuration{}))
 
 	return g
 }

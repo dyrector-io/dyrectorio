@@ -66,10 +66,12 @@ func (g *GinMappable) HandleFunc(pattern string, handler func(writer http.Respon
 func Log(requestID *string, messages ...string) {
 	serv, err := GetSignalrInstance()
 	if err != nil {
-		panic(err)
+		log.Println("Unable to send Log: ", err.Error())
+		return
 	}
 
 	if serv == nil {
+		log.Println("Unable to send Log, server nil!")
 		return
 	}
 

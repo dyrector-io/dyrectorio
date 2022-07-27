@@ -7,6 +7,6 @@ import (
 	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/config"
 )
 
-func GetConfigFromGin(c *gin.Context) *config.Configuration {
+func GetConfigFromGinContext(c *gin.Context) *config.Configuration {
 	return util.ConfigMiddlewareGet(c).(*config.Configuration)
 }

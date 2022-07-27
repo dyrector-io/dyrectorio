@@ -36,9 +36,6 @@ import (
 
 const DockerClientTimeoutSeconds = 30
 
-var val time.Duration = (time.Duration(DockerClientTimeoutSeconds) * time.Second) //nolint:gochecknoglobals
-var containerTimeout *time.Duration = &val                                        //nolint:gochecknoglobals
-
 type DockerVersion struct {
 	ServerVersion string
 	ClientVersion string
@@ -598,7 +595,8 @@ func stopContainer(containerName string) error {
 		panic(err)
 	}
 
-	if err := cli.ContainerStop(ctx, containerName, containerTimeout); err != nil {
+	timeoutValue := (time.Duration(DockerClientTimeoutSeconds) * time.Second)
+	if err := cli.ContainerStop(ctx, containerName, &timeoutValue); err != nil {
 		return err
 	}
 

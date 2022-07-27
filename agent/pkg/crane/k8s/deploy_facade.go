@@ -23,6 +23,7 @@ type deployFacade struct {
 	configmap  *configmap
 	ingress    *ingress
 	pvc        *pvc
+	appConfig  *config.Configuration
 }
 
 type DeployFacade interface {
@@ -42,23 +43,24 @@ type DeployFacadeParams struct {
 	Issuer          string
 }
 
-func NewDeployFacade(params *DeployFacadeParams) *deployFacade {
+func NewDeployFacade(params *DeployFacadeParams, cfg *config.Configuration) *deployFacade {
 	return &deployFacade{
 		ctx:        params.Ctx,
 		params:     params,
 		image:      params.Image,
-		namespace:  newNamespace(params.InstanceConfig.ContainerPreName),
-		deployment: newDeployment(params.Ctx),
-		configmap:  newConfigmap(params.Ctx),
-		service:    newService(params.Ctx),
-		ingress:    newIngress(params.Ctx),
+		namespace:  newNamespace(params.InstanceConfig.ContainerPreName, cfg),
+		deployment: newDeployment(params.Ctx, cfg),
+		configmap:  newConfigmap(params.Ctx, cfg),
+		service:    newService(params.Ctx, cfg),
+		ingress:    newIngress(params.Ctx, cfg),
+		appConfig:  cfg,
 
-		pvc: newPvc(),
+		pvc: newPvc(cfg),
 	}
 }
 
-func (d *deployFacade) CheckPreConditions(cfg *config.Configuration) error {
-	if err := d.namespace.deployNamespace(cfg); err != nil {
+func (d *deployFacade) CheckPreConditions() error {
+	if err := d.namespace.deployNamespace(); err != nil {
 		return err
 	}
 
@@ -71,9 +73,9 @@ func (d *deployFacade) CheckPreConditions(cfg *config.Configuration) error {
 }
 
 // TODO docs
-func (d *deployFacade) PreDeploy(cfg *config.Configuration) error {
+func (d *deployFacade) PreDeploy() error {
 	if d.params.InstanceConfig.UseSharedEnvs {
-		if err := d.configmap.loadSharedConfig(d.namespace.name, cfg); err != nil {
+		if err := d.configmap.loadSharedConfig(d.namespace.name); err != nil {
 			return err
 		}
 	} else {
@@ -82,7 +84,6 @@ func (d *deployFacade) PreDeploy(cfg *config.Configuration) error {
 				d.namespace.name,
 				d.params.InstanceConfig.ContainerPreName+"-shared",
 				strArrToStrMap(d.params.InstanceConfig.SharedEnvironment),
-				cfg,
 			); err != nil {
 				log.Println("Namespace global config map error: " + err.Error())
 				return err
@@ -95,7 +96,6 @@ func (d *deployFacade) PreDeploy(cfg *config.Configuration) error {
 			d.namespace.name,
 			d.params.InstanceConfig.Name+"-common",
 			strArrToStrMap(d.params.InstanceConfig.Environment),
-			cfg,
 		); err != nil {
 			log.Println("Common config map error: " + err.Error())
 			return err
@@ -107,7 +107,6 @@ func (d *deployFacade) PreDeploy(cfg *config.Configuration) error {
 			d.namespace.name,
 			d.params.ContainerConfig.Container,
 			strArrToStrMap(d.params.ContainerConfig.Environment),
-			cfg,
 		); err != nil {
 			log.Println("Container config map error: " + err.Error())
 			return err
@@ -118,8 +117,7 @@ func (d *deployFacade) PreDeploy(cfg *config.Configuration) error {
 		d.params.ContainerConfig.RuntimeConfigType,
 		d.namespace.name,
 		d.params.ContainerConfig.Container,
-		d.params.RuntimeConfig,
-		cfg); err != nil {
+		d.params.RuntimeConfig); err != nil {
 		log.Println("Container configMap-runtime error: ", err.Error())
 		return err
 	}
@@ -129,7 +127,6 @@ func (d *deployFacade) PreDeploy(cfg *config.Configuration) error {
 		d.params.ContainerConfig.Container,
 		d.params.ContainerConfig.Mounts,
 		d.params.ContainerConfig.Volumes,
-		cfg,
 	); err != nil {
 		log.Println("PVC deployment failed: " + err.Error())
 		return err
@@ -138,7 +135,7 @@ func (d *deployFacade) PreDeploy(cfg *config.Configuration) error {
 	return nil
 }
 
-func (d *deployFacade) Deploy(cfg *config.Configuration) error {
+func (d *deployFacade) Deploy() error {
 	var portList []v1.PortBinding
 	if d.params.ContainerConfig.Ports != nil {
 		portList = append(portList, d.params.ContainerConfig.Ports...)
@@ -153,7 +150,6 @@ func (d *deployFacade) Deploy(cfg *config.Configuration) error {
 			useLB:         d.params.ContainerConfig.UseLoadBalancer,
 			LBAnnotations: d.params.ContainerConfig.ExtraLBAnnotations,
 		},
-		cfg,
 	); err != nil {
 		log.Println("Error with service: " + err.Error())
 		return err
@@ -169,7 +165,7 @@ func (d *deployFacade) Deploy(cfg *config.Configuration) error {
 		command:         d.params.ContainerConfig.Command,
 		args:            d.params.ContainerConfig.Args,
 		issuer:          d.params.Issuer,
-	}, cfg); err != nil {
+	}); err != nil {
 		log.Println("Error with deployment: " + err.Error())
 		return err
 	}
@@ -187,7 +183,6 @@ func (d *deployFacade) Deploy(cfg *config.Configuration) error {
 				proxyHeaders:  d.params.ContainerConfig.ProxyHeaders,
 				customHeaders: d.params.ContainerConfig.CustomHeaders,
 			},
-			cfg,
 		); err != nil {
 			log.Println("Error with deployment: " + err.Error())
 		}
@@ -233,17 +228,19 @@ func Deploy(c context.Context, dog *dogger.DeploymentLogger, deployImageRequest 
 			InstanceConfig:  deployImageRequest.InstanceConfig,
 			ContainerConfig: deployImageRequest.ContainerConfig,
 			Issuer:          deployImageRequest.Issuer,
-		})
+		},
+		cfg,
+	)
 
-	if err := deployFacade.CheckPreConditions(cfg); err != nil {
+	if err := deployFacade.CheckPreConditions(); err != nil {
 		return err
 	}
 
-	if err := deployFacade.PreDeploy(cfg); err != nil {
+	if err := deployFacade.PreDeploy(); err != nil {
 		return err
 	}
 
-	if err := deployFacade.Deploy(cfg); err != nil {
+	if err := deployFacade.Deploy(); err != nil {
 		return err
 	}
 

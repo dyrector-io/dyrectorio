@@ -26,7 +26,7 @@ import (
 // @Success 200 {object} []k8s.Namespace
 // @Router /namespaces [get]
 func GetNamespaces(c *gin.Context) {
-	cfg := utils.GetConfigFromGin(c)
+	cfg := utils.GetConfigFromGinContext(c)
 	namespaces, err := k8s.GetNamespaces(cfg)
 
 	if err != nil {
@@ -46,7 +46,7 @@ func GetNamespaces(c *gin.Context) {
 // @Router /deployments [get]
 func GetDeployments(c *gin.Context) {
 	// todo(nandi): this is not smort to-be-done
-	cfg := utils.GetConfigFromGin(c)
+	cfg := utils.GetConfigFromGinContext(c)
 	deployments, err := k8s.GetDeployments("default", cfg)
 
 	if err != nil {
@@ -68,7 +68,7 @@ func GetDeployments(c *gin.Context) {
 // @Success 200 {object} v1.ContainerStatusResponse
 // @Router /containers/{containerPreName}/{containerName}/status [get]
 func GetDeploymentStatus(c *gin.Context) {
-	cfg := utils.GetConfigFromGin(c)
+	cfg := utils.GetConfigFromGinContext(c)
 	query := &apiv1.DeploymentQuery{}
 
 	if err := c.BindUri(&query); err != nil {
@@ -147,7 +147,7 @@ func DescribeDeployment(c *gin.Context) {
 // @Success 200
 // @Router /containers/{containerPreName}/{containerName} [delete]
 func DeleteDeployment(c *gin.Context) {
-	cfg := utils.GetConfigFromGin(c)
+	cfg := utils.GetConfigFromGinContext(c)
 	query := &apiv1.DeleteDeploymentQuery{}
 
 	if err := c.BindUri(&query); err != nil {
@@ -155,11 +155,11 @@ func DeleteDeployment(c *gin.Context) {
 		return
 	}
 
-	del := k8s.NewDeleteFacade(c, query.ContainerPreName, query.ContainerName)
+	del := k8s.NewDeleteFacade(c, query.ContainerPreName, query.ContainerName, cfg)
 
 	// delete deployment is necessary while others are optional
 	// deployments contain containers
-	err := del.DeleteDeployment(cfg)
+	err := del.DeleteDeployment()
 	if errors.IsNotFound(err) {
 		c.JSON(http.StatusNotFound, apiv1.DeleteDeploymentResponse{Error: err.Error()})
 		return
@@ -169,17 +169,17 @@ func DeleteDeployment(c *gin.Context) {
 	}
 
 	// optional deletes, each deploy request overwrites/redeploys them anyway
-	err = del.DeleteServices(cfg)
+	err = del.DeleteServices()
 	if !errors.IsNotFound(err) && err != nil {
 		log.Println("Delete service error: " + err.Error())
 	}
 
-	err = del.DeleteConfigMaps(cfg)
+	err = del.DeleteConfigMaps()
 	if !errors.IsNotFound(err) && err != nil {
 		log.Println("Delete configmaps error: " + err.Error())
 	}
 
-	err = del.DeleteIngresses(cfg)
+	err = del.DeleteIngresses()
 	if !errors.IsNotFound(err) && err != nil {
 		log.Println("Delete ingress error: " + err.Error())
 	}

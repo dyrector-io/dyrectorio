@@ -20,7 +20,7 @@ import (
 // @Success 200 {object} model.TraefikDeployResponse
 // @Router /deploy/traefik [post]
 func DeployTraefik(c *gin.Context) {
-	cfg := utils.GetConfigFromGin(c)
+	cfg := utils.GetConfigFromGinContext(c)
 
 	deployRequest := model.TraefikDeployRequest{}
 	dog := dogger.NewDeploymentLogger(nil, nil, c, &cfg.CommonConfiguration)
@@ -50,7 +50,7 @@ func DeployTraefik(c *gin.Context) {
 // @Success 200 {object} model.TraefikDeployResponse
 // @Router /deploy/traefik [delete]
 func DeleteTraefik(c *gin.Context) {
-	cfg := utils.GetConfigFromGin(c)
+	cfg := utils.GetConfigFromGinContext(c)
 
 	dog := dogger.NewDeploymentLogger(nil, nil, c, &cfg.CommonConfiguration)
 	err := utils.DeleteContainer("traefik")

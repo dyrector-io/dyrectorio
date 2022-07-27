@@ -21,8 +21,9 @@ import (
 
 // facade object for ingress management
 type ingress struct {
-	ctx    context.Context
-	status string
+	ctx       context.Context
+	status    string
+	appConfig *config.Configuration
 }
 
 type DeployIngressOptions struct {
@@ -32,16 +33,16 @@ type DeployIngressOptions struct {
 	customHeaders                                                   []string
 }
 
-func newIngress(ctx context.Context) *ingress {
-	return &ingress{ctx: ctx, status: ""}
+func newIngress(ctx context.Context, cfg *config.Configuration) *ingress {
+	return &ingress{ctx: ctx, status: "", appConfig: cfg}
 }
 
-func (i *ingress) deployIngress(options *DeployIngressOptions, cfg *config.Configuration) error {
+func (i *ingress) deployIngress(options *DeployIngressOptions) error {
 	if options == nil {
 		return errors.New("ingress deployment is nil")
 	}
 
-	client, err := getIngressClient(options.namespace, cfg)
+	client, err := getIngressClient(options.namespace, i.appConfig)
 	if err != nil {
 		log.Println("Error with ingress client: ", err.Error())
 	}
@@ -54,7 +55,7 @@ func (i *ingress) deployIngress(options *DeployIngressOptions, cfg *config.Confi
 	if options.ingressHost != "" {
 		ingressRoot = options.ingressHost
 	} else {
-		ingressRoot = cfg.IngressRootDomain
+		ingressRoot = i.appConfig.IngressRootDomain
 	}
 
 	var ingressPath string
@@ -97,8 +98,8 @@ func (i *ingress) deployIngress(options *DeployIngressOptions, cfg *config.Confi
 		Spec: spec}
 
 	ingress, err := client.Apply(context.TODO(), applyConfig, metav1.ApplyOptions{
-		FieldManager: cfg.FieldManagerName,
-		Force:        cfg.ForceOnConflicts,
+		FieldManager: i.appConfig.FieldManagerName,
+		Force:        i.appConfig.ForceOnConflicts,
 	})
 
 	if err != nil {
@@ -108,8 +109,8 @@ func (i *ingress) deployIngress(options *DeployIngressOptions, cfg *config.Confi
 	return err
 }
 
-func (i *ingress) deleteIngress(namespace, name string, cfg *config.Configuration) error {
-	client, err := getIngressClient(namespace, cfg)
+func (i *ingress) deleteIngress(namespace, name string) error {
+	client, err := getIngressClient(namespace, i.appConfig)
 	if err != nil {
 		panic(err)
 	}

@@ -28,7 +28,7 @@ import (
 // @Success 200 {object} v1.DeployImageResponse
 // @Router /deploy [post]
 func DeployImage(c *gin.Context) {
-	cfg := utils.GetConfigFromGin(c)
+	cfg := utils.GetConfigFromGinContext(c)
 
 	deployImageRequest := &v1.DeployImageRequest{}
 
@@ -64,18 +64,20 @@ func DeployImage(c *gin.Context) {
 			ContainerConfig: deployImageRequest.ContainerConfig,
 			RuntimeConfig:   &runtimeConfigStr,
 			Issuer:          deployImageRequest.Issuer,
-		})
-	if err := deployFacade.CheckPreConditions(cfg); err != nil {
+		},
+		cfg,
+	)
+	if err := deployFacade.CheckPreConditions(); err != nil {
 		handleDeploymentError(c, dog, deployImageRequest, err)
 		return
 	}
 
-	if err := deployFacade.PreDeploy(cfg); err != nil {
+	if err := deployFacade.PreDeploy(); err != nil {
 		handleDeploymentError(c, dog, deployImageRequest, err)
 		return
 	}
 
-	if err := deployFacade.Deploy(cfg); err != nil {
+	if err := deployFacade.Deploy(); err != nil {
 		handleDeploymentError(c, dog, deployImageRequest, err)
 		return
 	}
@@ -146,7 +148,7 @@ func handleDeploymentError(c *gin.Context, dog *dogger.DeploymentLogger, deploym
 func BatchDeployImage(c *gin.Context) {
 	batchDeployImageRequest := v1.BatchDeployImageRequest{}
 
-	cfg := utils.GetConfigFromGin(c)
+	cfg := utils.GetConfigFromGinContext(c)
 
 	if err := c.ShouldBindJSON(&batchDeployImageRequest); err != nil {
 		log.Println("could not bind the request", err.Error())
@@ -176,8 +178,10 @@ func BatchDeployImage(c *gin.Context) {
 				InstanceConfig:  batchDeployImageRequest[i].InstanceConfig,
 				ContainerConfig: batchDeployImageRequest[i].ContainerConfig,
 				RuntimeConfig:   &runtimeConfigStr,
-			})
-		if err := deployFacade.CheckPreConditions(cfg); err != nil {
+			},
+			cfg,
+		)
+		if err := deployFacade.CheckPreConditions(); err != nil {
 			log.Println("Error in pre-conditions: " + err.Error())
 			dog.Write(err.Error())
 			batchDeployImageResponse = append(batchDeployImageResponse, v1.DeployImageResponse{
@@ -189,7 +193,7 @@ func BatchDeployImage(c *gin.Context) {
 			return
 		}
 
-		if err := deployFacade.PreDeploy(cfg); err != nil {
+		if err := deployFacade.PreDeploy(); err != nil {
 			log.Println("Error in pre-deploy: " + err.Error())
 			dog.Write(err.Error())
 			batchDeployImageResponse = append(batchDeployImageResponse, v1.DeployImageResponse{
@@ -201,7 +205,7 @@ func BatchDeployImage(c *gin.Context) {
 			return
 		}
 
-		if err := deployFacade.Deploy(cfg); err != nil {
+		if err := deployFacade.Deploy(); err != nil {
 			log.Println("Error in deploy: " + err.Error())
 			dog.Write(err.Error())
 			batchDeployImageResponse = append(batchDeployImageResponse, v1.DeployImageResponse{
@@ -235,7 +239,7 @@ func BatchDeployImage(c *gin.Context) {
 func DeployVersion(c *gin.Context) {
 	deployVersionRequest := v1.DeployVersionRequest{}
 
-	cfg := utils.GetConfigFromGin(c)
+	cfg := utils.GetConfigFromGinContext(c)
 
 	if err := c.ShouldBindJSON(&deployVersionRequest); err != nil {
 		log.Println("could not bind the request", err.Error())
@@ -272,10 +276,12 @@ func DeployVersion(c *gin.Context) {
 				InstanceConfig:  deployVersionRequest.DeployImages[i].InstanceConfig,
 				ContainerConfig: deployVersionRequest.DeployImages[i].ContainerConfig,
 				RuntimeConfig:   &runtimeConfigStr,
-			})
+			},
+			cfg,
+		)
 
 		// todo(nandi): review bad requests, their presence is not justified, request might be correct `filozofiai kerdes`
-		if err := deployFacade.CheckPreConditions(cfg); err != nil {
+		if err := deployFacade.CheckPreConditions(); err != nil {
 			log.Println("Error in pre-conditions: " + err.Error())
 			dog.Write(err.Error())
 			deployVersionResponse = append(deployVersionResponse, v1.DeployImageResponse{
@@ -287,7 +293,7 @@ func DeployVersion(c *gin.Context) {
 			return
 		}
 
-		if err := deployFacade.PreDeploy(cfg); err != nil {
+		if err := deployFacade.PreDeploy(); err != nil {
 			log.Println("Error in pre-deploy: " + err.Error())
 			dog.Write(err.Error())
 			deployVersionResponse = append(deployVersionResponse, v1.DeployImageResponse{
@@ -299,7 +305,7 @@ func DeployVersion(c *gin.Context) {
 			return
 		}
 
-		if err := deployFacade.Deploy(cfg); err != nil {
+		if err := deployFacade.Deploy(); err != nil {
 			log.Println("Error in deploy: " + err.Error())
 			dog.Write(err.Error())
 			deployVersionResponse = append(deployVersionResponse, v1.DeployImageResponse{

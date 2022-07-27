@@ -36,7 +36,7 @@ func DeployVersion(c *gin.Context) {
 		return
 	}
 
-	cfg := utils.GetConfigFromGin(c)
+	cfg := utils.GetConfigFromGinContext(c)
 
 	errored := false
 	// Iterate throw the given DeployImageRequests
@@ -96,7 +96,7 @@ func BatchDeployImage(c *gin.Context) {
 		return
 	}
 
-	cfg := utils.GetConfigFromGin(c)
+	cfg := utils.GetConfigFromGinContext(c)
 
 	// Iterate throw the given DeployImageRequests
 	for i := range batchDeployImageRequest {
@@ -138,7 +138,7 @@ func BatchDeployImage(c *gin.Context) {
 func DeployImage(c *gin.Context) {
 	deployImageRequest := v1.DeployImageRequest{}
 
-	cfg := utils.GetConfigFromGin(c)
+	cfg := utils.GetConfigFromGinContext(c)
 
 	dog := dogger.NewDeploymentLogger(nil, nil, c, &cfg.CommonConfiguration)
 	if err := c.ShouldBindJSON(&deployImageRequest); err != nil {

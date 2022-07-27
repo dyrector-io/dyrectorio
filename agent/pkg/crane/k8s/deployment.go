@@ -34,12 +34,13 @@ const CraneUpdatedAnnotation = "crane.dyrector.io/restartedAt"
 
 // facade object for deployment management
 type deployment struct {
-	ctx    context.Context
-	status string
+	ctx       context.Context
+	status    string
+	appConfig *config.Configuration
 }
 
-func newDeployment(ctx context.Context) *deployment {
-	return &deployment{status: "", ctx: ctx}
+func newDeployment(ctx context.Context, cfg *config.Configuration) *deployment {
+	return &deployment{status: "", ctx: ctx, appConfig: cfg}
 }
 
 type deploymentParams struct {
@@ -54,8 +55,8 @@ type deploymentParams struct {
 	issuer          string
 }
 
-func (d *deployment) deployDeployment(p *deploymentParams, cfg *config.Configuration) error {
-	client := getDeploymentsClient(p.namespace, cfg)
+func (d *deployment) deployDeployment(p *deploymentParams) error {
+	client := getDeploymentsClient(p.namespace, d.appConfig)
 
 	name := p.containerConfig.Container
 	deployment := appsv1.Deployment(name, p.namespace).
@@ -69,16 +70,16 @@ func (d *deployment) deployDeployment(p *deploymentParams, cfg *config.Configura
 					"app": name,
 				}).WithAnnotations(map[string]string{
 					CraneUpdatedAnnotation: time.Now().Format(time.RFC3339),
-					cfg.KeyIssuer:          p.issuer,
+					d.appConfig.KeyIssuer:  p.issuer,
 				}).WithSpec(
-					corev1.PodSpec().WithContainers(buildContainer(p, cfg)).
-						WithInitContainers(getInitContainers(p.containerConfig, cfg)...).
-						WithVolumes(getVolumesFromMap(p.volumes, cfg)...),
+					corev1.PodSpec().WithContainers(buildContainer(p, d.appConfig)).
+						WithInitContainers(getInitContainers(p.containerConfig, d.appConfig)...).
+						WithVolumes(getVolumesFromMap(p.volumes, d.appConfig)...),
 				)),
 		)
 	result, err := client.Apply(d.ctx, deployment, metaV1.ApplyOptions{
-		FieldManager: cfg.FieldManagerName,
-		Force:        cfg.ForceOnConflicts,
+		FieldManager: d.appConfig.FieldManagerName,
+		Force:        d.appConfig.ForceOnConflicts,
 	})
 
 	if err != nil {
@@ -91,15 +92,15 @@ func (d *deployment) deployDeployment(p *deploymentParams, cfg *config.Configura
 	return nil
 }
 
-func (d *deployment) deleteDeployment(namespace, name string, cfg *config.Configuration) error {
-	client := getDeploymentsClient(namespace, cfg)
+func (d *deployment) deleteDeployment(namespace, name string) error {
+	client := getDeploymentsClient(namespace, d.appConfig)
 
 	return client.Delete(d.ctx, name, metaV1.DeleteOptions{})
 }
 
 //nolint:unused
-func (d *deployment) restart(namespace, name string, cfg *config.Configuration) error {
-	client := getDeploymentsClient(namespace, cfg)
+func (d *deployment) restart(namespace, name string) error {
+	client := getDeploymentsClient(namespace, d.appConfig)
 
 	datePatch := map[string]interface{}{
 		"spec": map[string]interface{}{

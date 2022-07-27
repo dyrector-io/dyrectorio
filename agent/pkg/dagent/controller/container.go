@@ -118,7 +118,7 @@ func GetContainerLogs(c *gin.Context) {
 	containerName := util.JoinV("-", query.ContainerPreName, query.ContainerName)
 	containers := utils.GetContainer(containerName)
 
-	cfg := utils.GetConfigFromGin(c)
+	cfg := utils.GetConfigFromGinContext(c)
 
 	if len(containers) < 1 {
 		c.JSON(http.StatusNotFound, model.ErrorResponse{

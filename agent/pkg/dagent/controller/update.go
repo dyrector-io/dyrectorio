@@ -21,7 +21,7 @@ import (
 func UpdateRunningDAgent(c *gin.Context) {
 	var webhook model.UpdateWebhook
 
-	cfg := utils.GetConfigFromGin(c)
+	cfg := utils.GetConfigFromGinContext(c)
 
 	if err := c.ShouldBind(&webhook); err != nil {
 		log.Println("Could not bind the request: ", err.Error())
