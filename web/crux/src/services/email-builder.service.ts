@@ -14,7 +14,7 @@ type InviteTemaple = {
 @Injectable()
 export class EmailBuilder {
 
-    buildInviteEmail(email: string, teamName: string, teamId?: string, kratosRecoveryLink?: string): EmailItem {
+    buildInviteEmail(email: string, teamName: string, teamId?: string, kratosRecoveryLink?: string): EmailItem | null {
 
         if (!teamId && !kratosRecoveryLink) {
             return null
