@@ -1,4 +1,4 @@
-import { EmailBuilder } from './../../services/email-builder.service';
+import { EmailBuilder } from './../../services/email-builder.service'
 import { ServerUnaryCall } from '@grpc/grpc-js'
 import { Injectable, Logger } from '@nestjs/common'
 import { RegistryTypeEnum } from '@prisma/client'
@@ -44,7 +44,7 @@ export class TeamService {
     private emailService: EmailService,
     private mapper: TeamMapper,
     private auditHelper: InterceptorGrpcHelperProvider,
-    private emailBuilder: EmailBuilder
+    private emailBuilder: EmailBuilder,
   ) {}
 
   async getUserMeta(request: AccessRequest): Promise<UserMetaResponse> {
@@ -238,7 +238,7 @@ export class TeamService {
     const emailItem = this.emailBuilder.buildInviteEmail(request.email, team.name, teamId, recoveryLink)
 
     if (!emailItem) {
-      throw new MailServiceException({ message: "Email item is null!"})
+      throw new MailServiceException({ message: 'Email item is null!' })
     }
 
     // Send email

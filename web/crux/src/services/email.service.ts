@@ -1,15 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common'
 import * as SendGrid from '@sendgrid/mail'
-import { disassembleKratosRecoveryUrl } from 'src/domain/utils'
 
 const SENDGRID_KEY = process.env.SENDGRID_KEY
-const HOST = process.env.CRUX_UI_URL
 
-export type EmailItem =  {
-  sender: { email: string, name: string} ;
-  recipient: string;
-  subject: string,
-  text: string,
+export type EmailItem = {
+  sender: { email: string; name: string }
+  recipient: string
+  subject: string
+  text: string
   html: string
 }
 
@@ -22,9 +20,8 @@ export class EmailService {
   }
 
   async sendEmailAsync(item: EmailItem): Promise<boolean> {
-
     if (!item) {
-      return false;
+      return false
     }
 
     const email: SendGrid.MailDataRequired = {
@@ -32,16 +29,15 @@ export class EmailService {
       to: item.recipient,
       subject: item.subject,
       text: item.text,
-      html: item.html
+      html: item.html,
     }
 
     try {
-      await SendGrid.send(email);
-      return true;
-    } 
-    catch (ex) {
-      this.logger.error(ex);
-      return false;
+      await SendGrid.send(email)
+      return true
+    } catch (ex) {
+      this.logger.error(ex)
+      return false
     }
   }
 }
