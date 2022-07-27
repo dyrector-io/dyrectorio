@@ -119,7 +119,10 @@ func fetchCertificatesFromURL(url string) (*x509.CertPool, error) {
 	return pool, nil
 }
 
-func Init(grpcContext context.Context, connParams *GrpcConnectionParams, appConfig *config.CommonConfiguration, workerFuncs WorkerFunctions) {
+func Init(grpcContext context.Context,
+	connParams *GrpcConnectionParams,
+	appConfig *config.CommonConfiguration,
+	workerFuncs WorkerFunctions) {
 	log.Println("Spinning up gRPC Agent client...")
 	if grpcConn == nil {
 		grpcConn = &GrpcConnection{}
@@ -321,8 +324,8 @@ func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStatus
 	}
 }
 
-func WithGRPCConfig(parentContext context.Context, config any) context.Context {
-	return context.WithValue(parentContext, contextConfigKey, config)
+func WithGRPCConfig(parentContext context.Context, cfg any) context.Context {
+	return context.WithValue(parentContext, contextConfigKey, cfg)
 }
 
 func GetConfigFromContext(ctx context.Context) any {
