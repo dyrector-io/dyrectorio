@@ -50,7 +50,11 @@ type WorkerFunctions struct {
 	Watch  WatchFunc
 }
 
-const contextConfigKey = "GRPCCfg"
+type contextKey int
+
+const (
+	contextConfigKey contextKey = iota
+)
 
 func GrpcTokenToConnectionParams(grpcToken string, insecureGrpc bool) (*GrpcConnectionParams, error) {
 	claims := jwt.StandardClaims{}
@@ -317,12 +321,12 @@ func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStatus
 	}
 }
 
-func WithGRPCConfig(parentContext context.Context, config any) (context.Context) {
-	return context.WithValue(parentContext, contextConfigKey, config);
+func WithGRPCConfig(parentContext context.Context, config any) context.Context {
+	return context.WithValue(parentContext, contextConfigKey, config)
 }
 
 func GetConfigFromContext(ctx context.Context) any {
-	return ctx.Value(contextConfigKey);
+	return ctx.Value(contextConfigKey)
 }
 
 // TODO(m8): streamline the log appearince with crane
