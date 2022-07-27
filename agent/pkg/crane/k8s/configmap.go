@@ -25,8 +25,8 @@ func newConfigmap(ctx context.Context) *configmap {
 	return &configmap{ctx: ctx, status: "", avail: []string{}}
 }
 
-func (cm *configmap) loadSharedConfig(namespace string) error {
-	client, err := getConfigMapClient(namespace)
+func (cm *configmap) loadSharedConfig(namespace string, config *config.Configuration) error {
+	client, err := getConfigMapClient(namespace, config)
 	if err != nil {
 		return err
 	}
@@ -44,8 +44,8 @@ func (cm *configmap) loadSharedConfig(namespace string) error {
 
 // deployConfigMapData creates the config map object and adds it to the avail list
 // that is used by the deployment later on
-func (cm *configmap) deployConfigMapData(namespace, name string, envList map[string]string) error {
-	client, err := getConfigMapClient(namespace)
+func (cm *configmap) deployConfigMapData(namespace, name string, envList map[string]string, config *config.Configuration) error {
+	client, err := getConfigMapClient(namespace, config)
 	if err != nil {
 		return err
 	}
@@ -53,7 +53,7 @@ func (cm *configmap) deployConfigMapData(namespace, name string, envList map[str
 	result, err := client.Apply(context.TODO(),
 		corev1.ConfigMap(name, namespace).
 			WithData(envList),
-		metaV1.ApplyOptions{FieldManager: config.Cfg.FieldManagerName, Force: config.Cfg.ForceOnConflicts},
+		metaV1.ApplyOptions{FieldManager: config.FieldManagerName, Force: config.ForceOnConflicts},
 	)
 
 	if err != nil {
@@ -69,13 +69,13 @@ func (cm *configmap) deployConfigMapData(namespace, name string, envList map[str
 	return nil
 }
 
-func (cm *configmap) deployConfigMapRuntime(runtimeType v1.RuntimeConfigType, namespace, containerName string, data *string) error {
+func (cm *configmap) deployConfigMapRuntime(runtimeType v1.RuntimeConfigType, namespace, containerName string, data *string, config *config.Configuration) error {
 	if runtimeType == v1.DotnetAppSettingsJSON {
 		envList, err := util.MapAppsettingsToEnv(data)
 		if err != nil {
 			return err
 		}
-		err = cm.deployConfigMapData(namespace, fmt.Sprintf("%v-%v", containerName, runtimeType), envList)
+		err = cm.deployConfigMapData(namespace, fmt.Sprintf("%v-%v", containerName, runtimeType), envList, config)
 
 		if err != nil {
 			return err
@@ -86,8 +86,8 @@ func (cm *configmap) deployConfigMapRuntime(runtimeType v1.RuntimeConfigType, na
 }
 
 // delete related configmaps. note: configmaps being in use are unaffected by this
-func (cm *configmap) deleteConfigMaps(namespace, name string) error {
-	client, err := getConfigMapClient(namespace)
+func (cm *configmap) deleteConfigMaps(namespace, name string, config *config.Configuration) error {
+	client, err := getConfigMapClient(namespace, config)
 	if err != nil {
 		return err
 	}
@@ -95,8 +95,8 @@ func (cm *configmap) deleteConfigMaps(namespace, name string) error {
 	return client.Delete(cm.ctx, name, metaV1.DeleteOptions{})
 }
 
-func getConfigMapClient(namespace string) (typedv1.ConfigMapInterface, error) {
-	clientSet, err := GetClientSet()
+func getConfigMapClient(namespace string, config *config.Configuration) (typedv1.ConfigMapInterface, error) {
+	clientSet, err := GetClientSet(config)
 	if err != nil {
 		return nil, err
 	}

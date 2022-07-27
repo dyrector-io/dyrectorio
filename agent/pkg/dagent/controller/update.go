@@ -6,7 +6,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
 	model "github.com/dyrector-io/dyrectorio/agent/pkg/dagent/model"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/utils"
 )
@@ -22,6 +21,8 @@ import (
 func UpdateRunningDAgent(c *gin.Context) {
 	var webhook model.UpdateWebhook
 
+	config := utils.GetConfigFromGin(c)
+
 	if err := c.ShouldBind(&webhook); err != nil {
 		log.Println("Could not bind the request: ", err.Error())
 		c.AbortWithStatusJSON(http.StatusBadRequest, model.ErrorResponse{Errors: []model.Error{{
@@ -32,8 +33,8 @@ func UpdateRunningDAgent(c *gin.Context) {
 		return
 	}
 
-	if webhook.Token != nil && *webhook.Token == config.Cfg.WebhookToken {
-		if err := utils.ExecWatchtowerOneShot(); err != nil {
+	if webhook.Token != nil && *webhook.Token == config.WebhookToken {
+		if err := utils.ExecWatchtowerOneShot(config); err != nil {
 			log.Println("Update error: " + err.Error())
 			c.JSON(http.StatusInternalServerError,
 				model.ErrorResponse{Errors: []model.Error{{

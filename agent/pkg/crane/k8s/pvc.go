@@ -26,8 +26,8 @@ func newPvc() *pvc {
 	return &pvc{status: "", avail: map[string]v1.Volume{}, requested: map[string]v1.Volume{}}
 }
 
-func (p *pvc) deployPVC(namespace, name string, mountList []string, volumes []v1.Volume) error {
-	client, err := getPVCClient(namespace)
+func (p *pvc) deployPVC(namespace, name string, mountList []string, volumes []v1.Volume, config *config.Configuration) error {
+	client, err := getPVCClient(namespace, config)
 	if err != nil {
 		return err
 	}
@@ -42,21 +42,24 @@ func (p *pvc) deployPVC(namespace, name string, mountList []string, volumes []v1
 		case string(v1.ReadOnlyVolumeType):
 			if err := p.applyVolume(client, namespace,
 				name, &volume,
-				coreV1.ReadOnlyMany); err != nil {
+				coreV1.ReadOnlyMany,
+				config); err != nil {
 				return err
 			}
 
 		case string(v1.ReadWriteOnceVolumeType), "":
 			if err := p.applyVolume(client, namespace,
 				name, &volume,
-				coreV1.ReadWriteOnce); err != nil {
+				coreV1.ReadWriteOnce,
+				config); err != nil {
 				return err
 			}
 
 		case string(v1.ReadWriteManyVolumeType):
 			if err := p.applyVolume(client, namespace,
 				name, &volume,
-				coreV1.ReadWriteMany); err != nil {
+				coreV1.ReadWriteMany,
+				config); err != nil {
 				return err
 			}
 
@@ -82,13 +85,14 @@ func (p *pvc) deployPVC(namespace, name string, mountList []string, volumes []v1
 }
 
 func (p *pvc) applyVolume(client typedv1.PersistentVolumeClaimInterface,
-	namespace, name string, volume *v1.Volume, volumeType coreV1.PersistentVolumeAccessMode) error {
+	namespace, name string, volume *v1.Volume, volumeType coreV1.PersistentVolumeAccessMode,
+	config *config.Configuration) error {
 	fullVolumeName := util.JoinV("-", name, volume.Name)
 
 	var size resource.Quantity
 
 	if volume.Size == "" {
-		sizeFromEnv := resource.MustParse(config.Cfg.DefaultVolumeSize)
+		sizeFromEnv := resource.MustParse(config.DefaultVolumeSize)
 		size = sizeFromEnv
 	} else {
 		size = resource.MustParse(volume.Size)
@@ -107,8 +111,8 @@ func (p *pvc) applyVolume(client typedv1.PersistentVolumeClaimInterface,
 		WithSpec(claimSpec)
 
 	result, err := client.Apply(context.TODO(), claim, metaV1.ApplyOptions{
-		FieldManager: config.Cfg.FieldManagerName,
-		Force:        config.Cfg.ForceOnConflicts,
+		FieldManager: config.FieldManagerName,
+		Force:        config.ForceOnConflicts,
 	})
 
 	if err != nil {
@@ -128,8 +132,8 @@ func (p *pvc) applyVolume(client typedv1.PersistentVolumeClaimInterface,
 	return nil
 }
 
-func getPVCClient(namespace string) (typedv1.PersistentVolumeClaimInterface, error) {
-	clientSet, err := GetClientSet()
+func getPVCClient(namespace string, config *config.Configuration) (typedv1.PersistentVolumeClaimInterface, error) {
+	clientSet, err := GetClientSet(config)
 	if err != nil {
 		return nil, err
 	}

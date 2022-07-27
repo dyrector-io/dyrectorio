@@ -480,7 +480,7 @@ func (e *ErrRestartPolicyUnmarshalInvalid) Error() string {
 }
 
 // PolicyToString static mapping enum type into the docker supported string values
-var PolicyToString = map[RestartPolicyName]string{
+var policyToString = map[RestartPolicyName]string{
 	EmptyRestartPolicy:                "unless-stopped",
 	RestartUnlessStoppedRestartPolicy: "unless-stopped",
 	NoRestartPolicy:                   "no",
@@ -489,7 +489,7 @@ var PolicyToString = map[RestartPolicyName]string{
 }
 
 // PolicyToID static mapping string values eg. from JSON into enums
-var PolicyToID = map[string]RestartPolicyName{
+var policyToID = map[string]RestartPolicyName{
 	"":               RestartUnlessStoppedRestartPolicy,
 	"unless-stopped": RestartUnlessStoppedRestartPolicy,
 	"no":             NoRestartPolicy,
@@ -499,7 +499,7 @@ var PolicyToID = map[string]RestartPolicyName{
 
 // custom enum marshal JSON interface implementation
 func (policy RestartPolicyName) MarshalJSON() ([]byte, error) {
-	str, ok := PolicyToString[policy]
+	str, ok := policyToString[policy]
 	if !ok {
 		return nil, &ErrRestartPolicyUnmarshalInvalid{}
 	}
@@ -514,8 +514,8 @@ func (policy *RestartPolicyName) UnmarshalJSON(b []byte) error {
 		return err
 	}
 
-	if _, ok := PolicyToID[j]; ok {
-		*policy = PolicyToID[j]
+	if _, ok := policyToID[j]; ok {
+		*policy = policyToID[j]
 	} else {
 		*policy = RestartPolicyName("")
 		err = &ErrRestartPolicyUnmarshalInvalid{}

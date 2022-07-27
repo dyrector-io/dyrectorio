@@ -10,29 +10,29 @@ import (
 	"github.com/philippseith/signalr"
 )
 
-var SignalrServ signalr.Server = nil
-
 const KeepAliveIntervalSeconds = 5
+
+var signalrServerInstance signalr.Server = nil
 
 // GetSignalrInstance if not yet initialized spawn a signaler server & hub
 func GetSignalrInstance() (signalr.Server, error) {
 	log.Println("Get signalr instance")
-	if SignalrServ == nil {
+	if signalrServerInstance == nil {
 		log.Println("Spawning signalr instance")
 
 		var err error
 
-		SignalrServ, err = signalr.NewServer(context.Background(),
+		signalrServerInstance, err = signalr.NewServer(context.Background(),
 			signalr.UseHub(&signalr.Hub{}),
 			signalr.KeepAliveInterval(KeepAliveIntervalSeconds*time.Second))
 		if err != nil {
 			return nil, err
 		}
 
-		return SignalrServ, nil
+		return signalrServerInstance, nil
 	} else {
 		log.Println("Signalr: returning existing instance")
-		return SignalrServ, nil
+		return signalrServerInstance, nil
 	}
 }
 
@@ -63,10 +63,19 @@ func (g *GinMappable) HandleFunc(pattern string, handler func(writer http.Respon
 }
 
 func Log(requestID *string, messages ...string) {
-	if requestID != nil && SignalrServ != nil {
+	serv, err := GetSignalrInstance()
+	if err != nil {
+		panic(err)
+	}
+
+	if serv == nil {
+		return
+	}
+
+	if requestID != nil && serv != nil {
 		for i := range messages {
 			log.Printf("RemoteLog: %s: %s", *requestID, messages[i])
-			SignalrServ.HubClients().All().Send("AddToConsole", *requestID, messages[i])
+			serv.HubClients().All().Send("AddToConsole", *requestID, messages[i])
 		}
 	} else {
 		log.Println("RemoteLog: missing id: ", messages[0])

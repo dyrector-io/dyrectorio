@@ -36,12 +36,12 @@ func newIngress(ctx context.Context) *ingress {
 	return &ingress{ctx: ctx, status: ""}
 }
 
-func (i *ingress) deployIngress(options *DeployIngressOptions) error {
+func (i *ingress) deployIngress(options *DeployIngressOptions, config *config.Configuration) error {
 	if options == nil {
 		return errors.New("ingress deployment is nil")
 	}
 
-	client, err := getIngressClient(options.namespace)
+	client, err := getIngressClient(options.namespace, config)
 	if err != nil {
 		log.Println("Error with ingress client: ", err.Error())
 	}
@@ -54,7 +54,7 @@ func (i *ingress) deployIngress(options *DeployIngressOptions) error {
 	if options.ingressHost != "" {
 		ingressRoot = options.ingressHost
 	} else {
-		ingressRoot = config.Cfg.IngressRootDomain
+		ingressRoot = config.IngressRootDomain
 	}
 
 	var ingressPath string
@@ -97,8 +97,8 @@ func (i *ingress) deployIngress(options *DeployIngressOptions) error {
 		Spec: spec}
 
 	ingress, err := client.Apply(context.TODO(), applyConfig, metav1.ApplyOptions{
-		FieldManager: config.Cfg.FieldManagerName,
-		Force:        config.Cfg.ForceOnConflicts,
+		FieldManager: config.FieldManagerName,
+		Force:        config.ForceOnConflicts,
 	})
 
 	if err != nil {
@@ -108,8 +108,8 @@ func (i *ingress) deployIngress(options *DeployIngressOptions) error {
 	return err
 }
 
-func (i *ingress) deleteIngress(namespace, name string) error {
-	client, err := getIngressClient(namespace)
+func (i *ingress) deleteIngress(namespace, name string, config *config.Configuration) error {
+	client, err := getIngressClient(namespace, config)
 	if err != nil {
 		panic(err)
 	}
@@ -166,8 +166,8 @@ func getAnnotations(tlsIsWanted, proxyHeaders bool,
 	return annotations
 }
 
-func getIngressClient(namespace string) (networking.IngressInterface, error) {
-	clientset, err := GetClientSet()
+func getIngressClient(namespace string, config *config.Configuration) (networking.IngressInterface, error) {
+	clientset, err := GetClientSet(config)
 
 	if err != nil {
 		return nil, err

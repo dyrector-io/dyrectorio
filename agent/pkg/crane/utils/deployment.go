@@ -11,12 +11,12 @@ import (
 	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/k8s"
 )
 
-func DeployImage(c context.Context, dog *dogger.DeploymentLogger, deployImageRequest *v1.DeployImageRequest) (err error) {
+func DeployImage(c context.Context, dog *dogger.DeploymentLogger, deployImageRequest *v1.DeployImageRequest, config *config.Configuration) (err error) {
 	dog.SetRequestID(deployImageRequest.RequestID)
 
-	dog.Write(deployImageRequest.Strings(&config.Cfg.CommonConfiguration)...)
+	dog.Write(deployImageRequest.Strings(&config.CommonConfiguration)...)
 	dog.Write(deployImageRequest.InstanceConfig.Strings()...)
-	dog.Write(deployImageRequest.ContainerConfig.Strings(&config.Cfg.CommonConfiguration)...)
+	dog.Write(deployImageRequest.ContainerConfig.Strings(&config.CommonConfiguration)...)
 	runtimeConfigStr := string(deployImageRequest.RuntimeConfig)
 
 	deployFacade := k8s.NewDeployFacade(
@@ -33,15 +33,15 @@ func DeployImage(c context.Context, dog *dogger.DeploymentLogger, deployImageReq
 			Issuer:          deployImageRequest.Issuer,
 		})
 
-	if err := deployFacade.CheckPreConditions(); err != nil {
+	if err := deployFacade.CheckPreConditions(config); err != nil {
 		handleContextDeploymentError(dog, err)
 	}
 
-	if err := deployFacade.PreDeploy(); err != nil {
+	if err := deployFacade.PreDeploy(config); err != nil {
 		handleContextDeploymentError(dog, err)
 	}
 
-	if err := deployFacade.Deploy(); err != nil {
+	if err := deployFacade.Deploy(config); err != nil {
 		handleContextDeploymentError(dog, err)
 	}
 

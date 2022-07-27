@@ -13,7 +13,6 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/utils"
 )
 
@@ -262,33 +261,25 @@ func TestDockerFilterByNameFilterOneMatch(t *testing.T) {
 }
 
 func TestRegistryAuthUpdateBase64Empty(t *testing.T) {
-	config.Cfg.RegistryUsername = ""
-	config.Cfg.RegistryPassword = ""
-	val := utils.RegistryAuthBase64(config.Cfg.RegistryUsername, config.Cfg.RegistryPassword)
+	val := utils.RegistryAuthBase64("", "")
 
 	assert.Equal(t, "", val)
 }
 
 func TestRegistryAuthUpdateBase64WithoutUser(t *testing.T) {
-	config.Cfg.RegistryUsername = ""
-	config.Cfg.RegistryPassword = "test1234"
-	val := utils.RegistryAuthBase64(config.Cfg.RegistryUsername, config.Cfg.RegistryPassword)
+	val := utils.RegistryAuthBase64("", "test1234")
 
 	assert.Equal(t, "", val)
 }
 
 func TestRegistryAuthUpdateBase64WithoutPass(t *testing.T) {
-	config.Cfg.RegistryUsername = "test"
-	config.Cfg.RegistryPassword = ""
-	val := utils.RegistryAuthBase64(config.Cfg.RegistryUsername, config.Cfg.RegistryPassword)
+	val := utils.RegistryAuthBase64("test", "")
 
 	assert.Equal(t, "", val)
 }
 
 func TestRegistryAuthUpdateBase64Correct(t *testing.T) {
-	config.Cfg.RegistryUsername = "test"
-	config.Cfg.RegistryPassword = "test1234"
-	val := utils.RegistryAuthBase64(config.Cfg.RegistryUsername, config.Cfg.RegistryPassword)
+	val := utils.RegistryAuthBase64("test", "test1234")
 
 	assert.Equal(t, "eyJ1c2VybmFtZSI6InRlc3QiLCJwYXNzd29yZCI6InRlc3QxMjM0In0=", val)
 }

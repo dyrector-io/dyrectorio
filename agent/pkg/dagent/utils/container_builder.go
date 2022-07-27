@@ -63,10 +63,11 @@ type dockerContainerBuilder struct {
 	tty             bool
 	user            *int64
 	dogger          *dogger.DeploymentLogger
+	config          *config.Configuration
 }
 
-func NewDockerBuilder(cli *client.Client) *dockerContainerBuilder {
-	b := dockerContainerBuilder{}
+func NewDockerBuilder(cli *client.Client, cfg *config.Configuration) *dockerContainerBuilder {
+	b := dockerContainerBuilder{config: cfg}
 	return b.WithClient(cli)
 }
 
@@ -177,7 +178,7 @@ func (dc *dockerContainerBuilder) WithDogger(dog *dogger.DeploymentLogger) *dock
 }
 
 // todo: container builders create method could be eliminated mostly
-//		setting invidual params at their function to their final locaction
+//		setting invidual params at their function to their final location
 //		managing hostConfig/containerConfig on the builder
 //		only create is done here
 func (dc *dockerContainerBuilder) Create(ctx context.Context) *dockerContainerBuilder {
@@ -189,7 +190,7 @@ func (dc *dockerContainerBuilder) Create(ctx context.Context) *dockerContainerBu
 
 	dog := dc.dogger
 	if dog == nil {
-		dog = dogger.NewDeploymentLogger(nil, nil, ctx, &config.Cfg.CommonConfiguration)
+		dog = dogger.NewDeploymentLogger(nil, nil, ctx, &dc.config.CommonConfiguration)
 	}
 
 	var containerCreated types.Container
@@ -276,7 +277,7 @@ func (dc *dockerContainerBuilder) Create(ctx context.Context) *dockerContainerBu
 
 func (dc *dockerContainerBuilder) Start() (bool, error) {
 	if dc.importContainer != nil {
-		err := spawnInitContainer(dc.client, dc.ctx, dc.containerName, dc.mountList, dc.importContainer, dc.dogger)
+		err := spawnInitContainer(dc.client, dc.ctx, dc.containerName, dc.mountList, dc.importContainer, dc.dogger, dc.config)
 		if err != nil {
 			panic(err)
 		}

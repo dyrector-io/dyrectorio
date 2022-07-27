@@ -11,7 +11,6 @@ import (
 
 	"github.com/dyrector-io/dyrectorio/agent/internal/util"
 	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
-	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
 	model "github.com/dyrector-io/dyrectorio/agent/pkg/dagent/model"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/utils"
 )
@@ -119,6 +118,8 @@ func GetContainerLogs(c *gin.Context) {
 	containerName := util.JoinV("-", query.ContainerPreName, query.ContainerName)
 	containers := utils.GetContainer(containerName)
 
+	config := utils.GetConfigFromGin(c)
+
 	if len(containers) < 1 {
 		c.JSON(http.StatusNotFound, model.ErrorResponse{
 			Errors: []model.Error{
@@ -134,12 +135,12 @@ func GetContainerLogs(c *gin.Context) {
 
 	skip, err := strconv.ParseUint(c.Query("skip"), 10, 64) //nolint:gomnd
 	if err != nil {
-		skip = config.Cfg.LogDefaultSkip
+		skip = config.LogDefaultSkip
 	}
 
 	take, err := strconv.ParseUint(c.Query("take"), 10, 64) //nolint:gomnd
 	if err != nil {
-		take = config.Cfg.LogDefaultTake
+		take = config.LogDefaultTake
 	}
 
 	logs := utils.GetContainerLogs(containerName, uint(skip), uint(take))

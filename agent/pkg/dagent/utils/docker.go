@@ -36,7 +36,7 @@ import (
 const DockerClientTimeoutSeconds = 30
 
 var val time.Duration = (time.Duration(DockerClientTimeoutSeconds) * time.Second)
-var ContainerTimeout *time.Duration = &val
+var containerTimeout *time.Duration = &val
 
 type DockerVersion struct {
 	ServerVersion string
@@ -340,7 +340,9 @@ func logDeployInfo(dog *dogger.DeploymentLogger, deployImageRequest *v1.DeployIm
 
 func DeployImage(ctx context.Context,
 	dog *dogger.DeploymentLogger,
-	deployImageRequest *v1.DeployImageRequest, versionData *v1.VersionData) error {
+	deployImageRequest *v1.DeployImageRequest,
+	versionData *v1.VersionData,
+	config *config.Configuration) error {
 	containerName := getContainerName(deployImageRequest)
 
 	image, _ := util.ImageURIFromString(
@@ -362,7 +364,8 @@ func DeployImage(ctx context.Context,
 		// volumes are mapped into the legacy format, until further support of different types is needed
 		append(deployImageRequest.ContainerConfig.Mounts, volumesToMounts(deployImageRequest.ContainerConfig.Volumes)...),
 		deployImageRequest.InstanceConfig.ContainerPreName,
-		deployImageRequest.ContainerConfig.Container)
+		deployImageRequest.ContainerConfig.Container,
+		config)
 	// dotnet specific magic
 	if containsConfig(mountList) {
 		var err error
@@ -371,6 +374,7 @@ func DeployImage(ctx context.Context,
 			deployImageRequest.ContainerConfig.Container,
 			deployImageRequest.InstanceConfig.ContainerPreName,
 			string(deployImageRequest.RuntimeConfig),
+			config,
 		)
 		if err != nil {
 			dog.Write("could not create config file\n", err.Error())
@@ -395,7 +399,7 @@ func DeployImage(ctx context.Context,
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	checkDockerError(err)
 
-	builder := NewDockerBuilder(cli)
+	builder := NewDockerBuilder(cli, config)
 
 	builder.WithImage(image.String()).
 		WithName(containerName).
@@ -406,7 +410,7 @@ func DeployImage(ctx context.Context,
 		WithRegistryAuth(deployImageRequest.RegistryAuth).
 		WithRestartPolicy(deployImageRequest.ContainerConfig.RestartPolicy).
 		WithEnv(envList).
-		WithLabels(GetTraefikLabels(&deployImageRequest.InstanceConfig, &deployImageRequest.ContainerConfig)).
+		WithLabels(GetTraefikLabels(&deployImageRequest.InstanceConfig, &deployImageRequest.ContainerConfig, config)).
 		WithLogConfig(deployImageRequest.ContainerConfig.LogConfig).
 		WithUser(deployImageRequest.ContainerConfig.User).
 		WithEntrypoint(deployImageRequest.ContainerConfig.Command).
@@ -430,7 +434,7 @@ func DeployImage(ctx context.Context,
 	dog.WriteContainerStatus(state, "Started container: "+containerName)
 
 	if versionData != nil {
-		DraftRelease(deployImageRequest.InstanceConfig.ContainerPreName, *versionData, v1.DeployVersionResponse{})
+		DraftRelease(deployImageRequest.InstanceConfig.ContainerPreName, *versionData, v1.DeployVersionResponse{}, config)
 	}
 
 	return err
@@ -490,7 +494,7 @@ func checkContainerState(dog *dogger.DeploymentLogger, containerName, state stri
 	return nil
 }
 
-func mountStrToDocker(mountIn []string, containerPreName, containerName string) []mount.Mount {
+func mountStrToDocker(mountIn []string, containerPreName, containerName string, config *config.Configuration) []mount.Mount {
 	// bind mounts created this way
 	// volumes are also an option - not a bad one, host mount is not really
 	var mountList []mount.Mount
@@ -500,8 +504,8 @@ func mountStrToDocker(mountIn []string, containerPreName, containerName string) 
 		if strings.ContainsRune(mountStr, '|') {
 			mountSplit := strings.Split(mountStr, "|")
 			if len(mountSplit[0]) > 0 && len(mountSplit[1]) > 0 {
-				containerPath := path.Join(config.Cfg.InternalMountPath, containerPreName, containerName, mountSplit[0])
-				hostPath := path.Join(config.Cfg.HostMountPath, containerPreName, containerName, mountSplit[0])
+				containerPath := path.Join(config.InternalMountPath, containerPreName, containerName, mountSplit[0])
+				hostPath := path.Join(config.HostMountPath, containerPreName, containerName, mountSplit[0])
 				_, err := os.Stat(containerPath)
 				if os.IsNotExist(err) {
 					if err := os.MkdirAll(containerPath, os.ModePerm); err != nil {
@@ -518,9 +522,10 @@ func mountStrToDocker(mountIn []string, containerPreName, containerName string) 
 	return mountList
 }
 
-func createRuntimeConfigFileOnHost(mounts []mount.Mount, containerName, containerPreName, runtimeConfig string) ([]mount.Mount, error) {
+func createRuntimeConfigFileOnHost(mounts []mount.Mount, containerName, containerPreName,
+	runtimeConfig string, config *config.Configuration) ([]mount.Mount, error) {
 	if len(runtimeConfig) > 0 {
-		configDir := path.Join(config.Cfg.InternalMountPath, containerPreName, containerName, "config")
+		configDir := path.Join(config.InternalMountPath, containerPreName, containerName, "config")
 		_, err := os.Stat(configDir)
 		if os.IsNotExist(err) {
 			log.Println("creating diretory: ", configDir)
@@ -592,7 +597,7 @@ func stopContainer(containerName string) error {
 		panic(err)
 	}
 
-	if err := cli.ContainerStop(ctx, containerName, ContainerTimeout); err != nil {
+	if err := cli.ContainerStop(ctx, containerName, containerTimeout); err != nil {
 		return err
 	}
 

@@ -17,6 +17,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/dyrector-io/dyrectorio/agent/internal/util"
 	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/routes"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/utils"
@@ -204,13 +205,13 @@ func TestBatchDeploy(t *testing.T) {
 	router.ServeHTTP(w, req)
 
 	defer func() {
-		if err := utils.DeleteContainer(utils.JoinV("-", prefix, ContainerName001)); err != nil {
+		if err := utils.DeleteContainer(util.JoinV("-", prefix, ContainerName001)); err != nil {
 			t.Error(err)
 		}
-		if err := utils.DeleteContainer(utils.JoinV("-", prefix, ContainerName002)); err != nil {
+		if err := utils.DeleteContainer(util.JoinV("-", prefix, ContainerName002)); err != nil {
 			t.Error(err)
 		}
-		if err := utils.DeleteContainer(utils.JoinV("-", prefix, ContainerName003)); err != nil {
+		if err := utils.DeleteContainer(util.JoinV("-", prefix, ContainerName003)); err != nil {
 			t.Error(err)
 		}
 	}()
