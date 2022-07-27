@@ -242,7 +242,7 @@ export class TeamService {
     }
 
     // Send email
-    const mailSent = await this.emailService.sendEmailAsync(emailItem)
+    const mailSent = await this.emailService.sendEmail(emailItem)
 
     // Result
     if (!mailSent) {

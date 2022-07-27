@@ -1,8 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common'
 import * as SendGrid from '@sendgrid/mail'
 
-const SENDGRID_KEY = process.env.SENDGRID_KEY
-
 export type EmailItem = {
   sender: { email: string; name: string }
   recipient: string
@@ -11,6 +9,7 @@ export type EmailItem = {
   html: string
 }
 
+const SENDGRID_KEY = process.env.SENDGRID_KEY
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name)
@@ -19,7 +18,7 @@ export class EmailService {
     SendGrid.setApiKey(SENDGRID_KEY)
   }
 
-  async sendEmailAsync(item: EmailItem): Promise<boolean> {
+  async sendEmail(item: EmailItem): Promise<boolean> {
     if (!item) {
       return false
     }

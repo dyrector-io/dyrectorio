@@ -2,14 +2,14 @@ import { Injectable } from '@nestjs/common'
 import { disassembleKratosRecoveryUrl } from 'src/domain/utils'
 import { EmailItem } from './email.service'
 
-const HOST = process.env.CRUX_UI_URL
-const sender = { email: process.env.FROM_EMAIL, name: process.env.FROM_NAME }
-
 type InviteTemaple = {
   subject: string
   text: string
   html: string
 }
+
+const HOST = process.env.CRUX_UI_URL
+const sender = { email: process.env.FROM_EMAIL, name: process.env.FROM_NAME }
 
 @Injectable()
 export class EmailBuilder {
