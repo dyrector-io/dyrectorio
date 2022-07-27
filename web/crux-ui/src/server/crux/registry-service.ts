@@ -8,6 +8,8 @@ import {
   IdRequest,
   RegistryDetailsResponse,
   RegistryListResponse,
+  RegistryType as ProtoRegistryType,
+  registryTypeToJSON,
   UpdateEntityResponse,
   UpdateRegistryRequest,
 } from '@app/models/grpc/protobuf/proto/crux'
@@ -15,6 +17,7 @@ import { timestampToUTC } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
 import { protomisify } from '@server/crux/grpc-connection'
 import { RegistryConnections } from '@server/registry-api/registry-connections'
+import { RegistryType } from './../../models'
 
 class DyoRegistryService {
   constructor(
@@ -36,6 +39,7 @@ class DyoRegistryService {
     return res.data.map(it => {
       return {
         ...it,
+        type: this.registryTypeProtoToDto(it.type),
       }
     })
   }
@@ -120,6 +124,10 @@ class DyoRegistryService {
             ...res.github,
           }),
     }
+  }
+
+  private registryTypeProtoToDto(type: ProtoRegistryType): RegistryType {
+    return registryTypeToJSON(type).toLocaleLowerCase() as RegistryType
   }
 
   private createDtoToProto(dto: CreateRegistry): CreateRegistryRequest {

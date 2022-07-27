@@ -281,6 +281,7 @@ message RegistryResponse {
   optional string description = 101;
   optional string icon = 102;
   string url = 103;
+  RegistryType type = 104;
 }
 
 message RegistryListResponse { repeated RegistryResponse data = 1000; }
@@ -358,6 +359,8 @@ enum RegistryType {
   UNKNOWN_REGISTRY_TYPE = 0;
   V2 = 1;
   HUB = 2;
+  GITLAB = 3;
+  GITHUB = 4;
 }
 
 // VERSION
@@ -447,6 +450,7 @@ message ExplicitContainerConfig {
 
 message ContainerConfig {
   ExplicitContainerConfig config = 100;
+  string name = 101;
 
   repeated UniqueKeyValue capabilities = 1000;
   repeated UniqueKeyValue environment = 1001;
@@ -495,13 +499,13 @@ message PatchContainerConfig {
   optional KeyValueList capabilities = 100;
   optional KeyValueList environment = 101;
   optional ExplicitContainerConfig config = 103;
+  optional string name = 104;
 }
 
 message PatchImageRequest {
   string id = 1;
   string accessedBy = 2;
 
-  optional string name = 100;
   optional string tag = 101;
   optional PatchContainerConfig config = 102;
 }
@@ -518,6 +522,7 @@ message NodeResponse {
   optional string address = 103;
   NodeConnectionStatus status = 104;
   optional google.protobuf.Timestamp connectedAt = 105;
+  optional string version = 106;
 }
 
 message NodeDetailsResponse {
@@ -533,6 +538,7 @@ message NodeDetailsResponse {
   optional google.protobuf.Timestamp connectedAt = 106;
   optional NodeInstallResponse install = 107;
   optional NodeScriptResponse script = 108;
+  optional string version = 109;
 }
 
 message NodeListResponse { repeated NodeResponse data = 1000; }
@@ -677,13 +683,20 @@ message PatchDeploymentRequest {
   optional PatchInstanceRequest instance = 1001;
 }
 
+message InstanceContainerConfig {
+  ExplicitContainerConfig config = 100;
+
+  repeated UniqueKeyValue capabilities = 1000;
+  repeated UniqueKeyValue environment = 1001;
+}
+
 message InstanceResponse {
   string id = 1;
   AuditResponse audit = 2;
 
   ImageResponse image = 100;
   optional ContainerStatus status = 101;
-  optional ContainerConfig config = 102;
+  optional InstanceContainerConfig config = 102;
 }
 
 message PatchInstanceRequest {

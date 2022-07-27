@@ -1,4 +1,4 @@
-import { Layout } from '@app/components/layout'
+import { Layout, PageHead } from '@app/components/layout'
 import DyoNodeCard from '@app/components/nodes/dyo-node-card'
 import EditNodeCard from '@app/components/nodes/edit-node-card'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
@@ -56,6 +56,7 @@ const NodeDetails = (props: NodeDetailsProps) => {
 
   return (
     <Layout>
+      <PageHead title={t('title-node', { name: node.name })} />
       <PageHeading
         pageLink={pageLink}
         subLinks={[

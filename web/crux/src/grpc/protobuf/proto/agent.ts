@@ -18,6 +18,7 @@ export interface Empty {}
 /**  */
 export interface AgentInfo {
   id: string
+  version: string
 }
 
 export interface AgentCommand {
@@ -177,18 +178,20 @@ export const Empty = {
   },
 }
 
-const baseAgentInfo: object = { id: '' }
+const baseAgentInfo: object = { id: '', version: '' }
 
 export const AgentInfo = {
   fromJSON(object: any): AgentInfo {
     const message = { ...baseAgentInfo } as AgentInfo
     message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.version = object.version !== undefined && object.version !== null ? String(object.version) : ''
     return message
   },
 
   toJSON(message: AgentInfo): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
+    message.version !== undefined && (obj.version = message.version)
     return obj
   },
 }

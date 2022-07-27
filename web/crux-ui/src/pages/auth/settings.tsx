@@ -1,4 +1,4 @@
-import { Layout } from '@app/components/layout'
+import { Layout, PageHead } from '@app/components/layout'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DyoButton } from '@app/elements/dyo-button'
@@ -30,39 +30,42 @@ const SettingsPage = (props: Identity) => {
   }
 
   return (
-    <Layout>
-      <PageHeading pageLink={pageLink}>
-        <div className="ml-auto">
-          <Link href={ROUTE_SETTINGS_EDIT_PROFILE} passHref>
-            <DyoButton>{t('editProfile')}</DyoButton>
-          </Link>
+    <>
+      <PageHead title={t('title')} />
+      <Layout>
+        <PageHeading pageLink={pageLink}>
+          <div className="ml-auto">
+            <Link href={ROUTE_SETTINGS_EDIT_PROFILE} passHref>
+              <DyoButton>{t('editProfile')}</DyoButton>
+            </Link>
 
-          <Link href={ROUTE_SETTINGS_CHANGE_PASSWORD} passHref>
-            <DyoButton>{t('changePass')}</DyoButton>
-          </Link>
-        </div>
-      </PageHeading>
-
-      <DyoCard className="text-bright px-8 py-6">
-        <DyoHeading element="h2" className="text-2xl">
-          {t('profile')}
-        </DyoHeading>
-
-        <div className="flex flex-row">
-          <div className="flex flex-col items-right">
-            <DyoLabel className={labelClass}>{t('common:email')}</DyoLabel>
-            <DyoLabel className={labelClass}>{t('firstName')}</DyoLabel>
-            <DyoLabel className={labelClass}>{t('lastName')}</DyoLabel>
+            <Link href={ROUTE_SETTINGS_CHANGE_PASSWORD} passHref>
+              <DyoButton>{t('changePass')}</DyoButton>
+            </Link>
           </div>
+        </PageHeading>
 
-          <div className="flex flex-col">
-            <p className={valueClass}>{props.traits.email}</p>
-            <p className={valueClass}>{props.traits.name?.first}</p>
-            <p className={valueClass}>{props.traits.name?.last}</p>
+        <DyoCard className="text-bright px-8 py-6">
+          <DyoHeading element="h2" className="text-2xl">
+            {t('profile')}
+          </DyoHeading>
+
+          <div className="flex flex-row">
+            <div className="flex flex-col items-right">
+              <DyoLabel className={labelClass}>{t('common:email')}</DyoLabel>
+              <DyoLabel className={labelClass}>{t('firstName')}</DyoLabel>
+              <DyoLabel className={labelClass}>{t('lastName')}</DyoLabel>
+            </div>
+
+            <div className="flex flex-col">
+              <p className={valueClass}>{props.traits.email}</p>
+              <p className={valueClass}>{props.traits.name?.first}</p>
+              <p className={valueClass}>{props.traits.name?.last}</p>
+            </div>
           </div>
-        </div>
-      </DyoCard>
-    </Layout>
+        </DyoCard>
+      </Layout>
+    </>
   )
 }
 

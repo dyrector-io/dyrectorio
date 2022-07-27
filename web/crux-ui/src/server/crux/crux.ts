@@ -121,7 +121,6 @@ if (!global._cruxClients) {
   } catch (error) {
     if (process.env.NEXT_PHASE !== 'phase-production-build') {
       const msg = 'could not load public cert file'
-      console.error(msg, error)
       throw Error(msg)
     }
   }

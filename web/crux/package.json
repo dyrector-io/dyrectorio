@@ -1,10 +1,18 @@
 {
-  "name": "crux-api",
+  "name": "crux",
   "version": "0.1.0",
-  "description": "Make release management easier. Using dyrector.io #DevOps platform you can manage and deploy your software in to cloud infrastructures.",
+  "description": "Open-source delivery platform that helps developers to deliver applications efficiently by simplifying software releases and operations in any environment.",
   "author": "dyrector.io",
   "private": true,
-  "license": "LINCESED",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dyrector-io/dyrectorio.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dyrector-io/dyrectorio/issues"
+  },
+  "homepage": "https://github.com/dyrector-io/dyrectorio#readme",
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",

@@ -1,5 +1,5 @@
 name: web-kratos
-on: 
+on:
   push:
     paths:
       - web/kratos/**
@@ -28,7 +28,7 @@ jobs:
       id: settag
       working-directory: .github/workflows
       run: |
-        echo $GITHUB_REF_TYPE 
+        echo $GITHUB_REF_TYPE
         echo ${{ github.ref_name }}
         echo ${{ github.sha }}
         ./pipeline_set_output_tag.sh $GITHUB_REF_TYPE ${{ github.ref_name }} ${{ github.sha }}
@@ -46,7 +46,7 @@ jobs:
         docker push ghcr.io/dyrector-io/dyrectorio/web/kratos:$IMAGE_TAG
       env:
         IMAGE_TAG: ${{ steps.settag.outputs.tag }}
-  
+
   sign_image:
     runs-on: ubuntu-20.04
     container:

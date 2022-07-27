@@ -94,34 +94,6 @@ func TestEnvPipeSeparatedToStringMap_Collision(t *testing.T) {
 	assert.True(t, reflect.DeepEqual(out, map[string]string{"NAME": "value2"}))
 }
 
-func TestRemoveJSONComment(t *testing.T) {
-	in := `{
-        "Name": "File",
-        "Args": {
-          "path": "logs/",
-          "outputTemplate": "===> {Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level}] {Message}{NewLine}{Exception}",
-          "retainedFileCountLimit": 10,
-          //"fileSizeLimitBytes": 300,
-          "rollingInterval": "Day",
-          "rollOnFileSizeLimit": false
-        }
-      }`
-	out := utils.RemoveJSONComment([]byte(in))
-
-	expected := `{
-        "Name": "File",
-        "Args": {
-          "path": "logs/",
-          "outputTemplate": "===> {Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level}] {Message}{NewLine}{Exception}",
-		  "retainedFileCountLimit": 10,
-		  "rollingInterval": "Day",
-          "rollOnFileSizeLimit": false
-        }
-      }`
-
-	assert.JSONEq(t, string(out), expected)
-}
-
 func convertLogLine(line string) []byte {
 	length := make([]byte, 4)
 	binary.BigEndian.PutUint32(length, uint32(len(line)))

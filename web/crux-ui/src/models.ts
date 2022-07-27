@@ -33,38 +33,36 @@ export type ExplicitContainerConfigExpose = {
 export type ExplicitContainerConfig = {
   ports: ExplicitContainerConfigPort[]
   mounts: string[]
-  networkMode?: ExplicitContainerNetworkMode
+  networkMode: ExplicitContainerNetworkMode
   expose?: ExplicitContainerConfigExpose
   user?: number
 }
 
 export type CompleteContainerConfig = ExplicitContainerConfig & {
+  name: string
   environment?: Record<string, string>
   capabilities?: Record<string, string>
 }
 
 export type ContainerConfig = {
-  capabilities?: Capabilities
-  environment?: Environment
-  config?: ExplicitContainerConfig
+  name: string
+  capabilities: Capabilities
+  environment: Environment
+  config: ExplicitContainerConfig
 }
 
-export type AddContainerImageToVersion = {
+export type VersionImage = {
+  id: string
   name: string
   tag: string
   registryId: string
   order: number
+  config: ContainerConfig
 }
 
-export type ContainerImage = AddContainerImageToVersion & {
-  id: string
-  config?: ContainerConfig
-}
-
-export type PatchContainerImage = {
-  name?: string
+export type PatchVersionImage = {
   tag?: string
-  config?: ContainerConfig
+  config?: Partial<ContainerConfig>
 }
 
 export type ContainerStatus = 'created' | 'restarting' | 'running' | 'removing' | 'paused' | 'exited' | 'dead'
@@ -76,11 +74,13 @@ export type Container = {
   status: ContainerStatus
 }
 
+export type InstanceContainerConfig = Omit<ContainerConfig, 'name'>
+
 export type Instance = {
   id: string
-  image: ContainerImage
+  image: VersionImage
   status?: ContainerStatus
-  config?: ContainerConfig
+  overridenConfig?: Partial<InstanceContainerConfig>
 }
 
 export type DeploymentStatus = 'preparing' | 'inProgress' | 'successful' | 'failed' | 'obsolate'
@@ -137,7 +137,7 @@ export type DeploymentCreated = {
 
 export type PatchInstance = {
   instanceId: string
-  config: ContainerConfig
+  config: Partial<ContainerConfig>
 }
 
 export type PatchDeployment = {
@@ -177,7 +177,7 @@ export type CreateVersion = UpdateVersion & {
 
 export type VersionDetails = Version & {
   mutable: boolean
-  images: ContainerImage[]
+  images: VersionImage[]
   deployments: Deployment[]
 }
 
@@ -218,6 +218,7 @@ export type DyoNode = {
   address?: string
   status: NodeStatus
   connectedAt?: string
+  version?: string
 }
 
 export type DyoNodeInstall = {
@@ -251,6 +252,7 @@ export type Registry = {
   name: string
   description?: string
   url: string
+  type: RegistryType
 }
 
 export const REGISTRY_TYPE_VALUES = ['v2', 'hub', 'gitlab', 'github'] as const
@@ -411,11 +413,11 @@ export type ImageDeletedMessage = {
 
 export const WS_TYPE_IMAGES_ADDED = 'images-added'
 export type ImagesAddedMessage = {
-  images: ContainerImage[]
+  images: VersionImage[]
 }
 
 export const WS_TYPE_PATCH_IMAGE = 'patch-image'
-export type PatchImageMessage = PatchContainerImage & {
+export type PatchImageMessage = PatchVersionImage & {
   id: string
 }
 
@@ -434,7 +436,7 @@ export type GetImageMessage = {
 }
 
 export const WS_TYPE_IMAGE = 'image'
-export type ImageMessage = ContainerImage
+export type ImageMessage = VersionImage
 
 // ws - deployment
 
@@ -445,12 +447,12 @@ export const WS_TYPE_DEPLOYMENT_ENV_UPDATED = 'deployment-env-updated'
 export type DeploymentEnvUpdatedMessage = Environment
 
 export const WS_TYPE_PATCH_INSTANCE = 'patch-instance'
-export type PatchInstanceMessage = ContainerConfig & {
+export type PatchInstanceMessage = Partial<InstanceContainerConfig> & {
   instanceId: string
 }
 
 export const WS_TYPE_INSTANCE_UPDATED = 'instance-updated'
-export type InstanceUpdatedMessage = ContainerConfig & {
+export type InstanceUpdatedMessage = InstanceContainerConfig & {
   instanceId: string
 }
 

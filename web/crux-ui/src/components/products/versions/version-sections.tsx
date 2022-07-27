@@ -2,12 +2,12 @@ import { defaultWsErrorHandler } from '@app/errors'
 import { useWebSocket } from '@app/hooks/use-websocket'
 import {
   AddImagesMessage,
-  ContainerImage,
   ImagesWereReorderedMessage,
   OrderImagesMessage,
   ProductDetails,
   RegistryImages,
   VersionDetails,
+  VersionImage,
   WS_TYPE_ADD_IMAGES,
   WS_TYPE_DYO_ERROR,
   WS_TYPE_IMAGES_WERE_REORDERED,
@@ -109,7 +109,7 @@ const VersionSections = (props: VersionSectionsProps) => {
   const onAddDeployment = async (deploymentId: string) =>
     router.push(deploymentUrl(props.product.id, props.version.id, deploymentId))
 
-  const onReorderImages = (images: ContainerImage[]) => {
+  const onReorderImages = (images: VersionImage[]) => {
     const ids = images.map(it => it.id)
     versionSock.send(WS_TYPE_ORDER_IMAGES, ids as OrderImagesMessage)
 

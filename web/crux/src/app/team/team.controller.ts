@@ -1,9 +1,6 @@
 import { Metadata, ServerUnaryCall } from '@grpc/grpc-js'
-import { Controller, UseGuards, UseInterceptors } from '@nestjs/common'
+import { Controller, UseGuards } from '@nestjs/common'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
-import { AuditLoggerInterceptor } from 'src/interceptors/audit-logger.interceptor'
-import { GrpcContextLogger } from 'src/interceptors/grpc-context-logger.interceptor'
-import { PrismaErrorInterceptor } from 'src/interceptors/prisma-error-interceptor'
 import {
   AccessRequest,
   CreateEntityResponse,
@@ -23,7 +20,6 @@ import { TeamService } from './team.service'
 
 @Controller()
 @CruxTeamControllerMethods()
-@UseInterceptors(PrismaErrorInterceptor, GrpcContextLogger, AuditLoggerInterceptor)
 @UseGuards(TeamRoleGuard)
 export class TeamController implements CruxTeamController {
   constructor(private service: TeamService) {}

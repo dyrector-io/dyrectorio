@@ -78,7 +78,7 @@ async function bootstrap() {
       keepalive: { keepaliveTimeoutMs: HOUR_IN_MS },
       ...apiOptions,
     },
-  })
+  }, { inheritAppConfig: true })
 
   const logger: Logger = new Logger('NestBoostrap')
   await app.startAllMicroservices()

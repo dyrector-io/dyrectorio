@@ -32,7 +32,10 @@ message Empty {}
  *
  *
  */
-message AgentInfo { string id = 1; }
+message AgentInfo {
+  string id = 1;
+  string version = 2;
+}
 
 message AgentCommand {
   oneof command {

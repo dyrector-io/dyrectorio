@@ -1,11 +1,11 @@
 import { Logger } from '@app/logger'
 import {
   ContainerConfig,
-  ContainerImage,
   ExplicitContainerConfig,
   ExplicitContainerNetworkMode,
-  PatchContainerImage,
+  PatchVersionImage,
   RegistryImages,
+  VersionImage,
 } from '@app/models'
 import {
   AddImagesToVersionRequest,
@@ -30,7 +30,7 @@ class DyoImageService {
 
   constructor(private client: CruxImageClient, private identity: Identity) {}
 
-  async getAllByVersionId(verisonId: string): Promise<ContainerImage[]> {
+  async getAllByVersionId(verisonId: string): Promise<VersionImage[]> {
     const req: IdRequest = {
       id: verisonId,
       accessedBy: this.identity.id,
@@ -44,7 +44,7 @@ class DyoImageService {
     return images.data.map(it => imageToDto(it))
   }
 
-  async getById(id: string): Promise<ContainerImage> {
+  async getById(id: string): Promise<VersionImage> {
     const req: IdRequest = {
       id,
       accessedBy: this.identity.id,
@@ -52,13 +52,10 @@ class DyoImageService {
 
     const image = await protomisify<IdRequest, ImageResponse>(this.client, this.client.getImageDetails)(IdRequest, req)
 
-    return {
-      ...image,
-      config: containerConfigToDto(image.config),
-    }
+    return imageToDto(image)
   }
 
-  async addImagesToVersion(versionId: string, registryImages: RegistryImages[]): Promise<ContainerImage[]> {
+  async addImagesToVersion(versionId: string, registryImages: RegistryImages[]): Promise<VersionImage[]> {
     const req: AddImagesToVersionRequest = {
       versionId,
       images: registryImages.map(it => {
@@ -75,12 +72,7 @@ class DyoImageService {
       this.client.addImagesToVersion,
     )(AddImagesToVersionRequest, req)
 
-    return res.data.map(it => {
-      return {
-        ...it,
-        config: containerConfigToDto(it.config),
-      }
-    })
+    return res.data.map(it => imageToDto(it))
   }
 
   async orderImages(versionId: string, imageIds: string[]) {
@@ -96,7 +88,7 @@ class DyoImageService {
     )
   }
 
-  async patchImage(id: string, image: PatchContainerImage) {
+  async patchImage(id: string, image: PatchVersionImage) {
     const req = {
       ...image,
       accessedBy: this.identity.id,
@@ -105,6 +97,7 @@ class DyoImageService {
         ? null
         : {
             config: explicitContainerConfigToProto(image.config?.config),
+            name: image.config?.name,
             capabilities: !image.config?.capabilities
               ? undefined
               : {
@@ -156,8 +149,8 @@ export const explicitContainerConfigToProto = (config?: ExplicitContainerConfig)
     : {
         user: config?.user ?? undefined,
         expose: config?.expose ?? undefined,
-        mounts: config?.mounts ?? undefined,
-        ports: config?.ports ?? undefined,
+        mounts: config?.mounts ?? [],
+        ports: config?.ports ?? [],
         networkMode: networkModeToProto(config.networkMode),
       }
 }
@@ -171,7 +164,7 @@ export const containerConfigToDto = (config?: ProtoContainerConfig): ContainerCo
       }
 }
 
-export const imageToDto = (image: ImageResponse): ContainerImage => {
+export const imageToDto = (image: ImageResponse): VersionImage => {
   return {
     ...image,
     config: containerConfigToDto(image.config),

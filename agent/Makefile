@@ -1,118 +1,155 @@
+PACKAGE := github.com/dyrector-io/dyrectorio/agent
+CONTAINER_URL := ghcr.io/dyrector-io/dyrectorio/agent/
+VCS_VERSION="$(shell git describe --exact-match --tags 2> /dev/null || git rev-parse --short HEAD)"
+AGENT_HASH="$(shell git rev-parse --short HEAD:../agent)"
 
-git_short_hash=$(shell git rev-parse --short HEAD:../agent)
+# UTC timestamps for builds
+BUILD_TIMESTAMP="$(shell date -u +"%Y-%m-%dT%H:%M:%SZ" | tr -d "[:blank:]")"
+
+agent_version=$(or $(VCS_VERSION),$(AGENT_HASH))
+
+LDFLAGS := -ldflags "-X '${PACKAGE}/internal/version.Version=${VCS_VERSION}'\
+  -X '${PACKAGE}/internal/version.BuildTimestamp=${BUILD_TIMESTAMP}'\
+  -X '${PACKAGE}/internal/version.CommitHash=${AGENT_HASH}'\
+  -extldflags '-static'"
 
 # default tag is latest for building
 image_version ?= latest
-
-.PHONY: docs swaggen test all debug-grpc bbdp compile-dagent compile-crane build-both test-crane test-dagent
 
 GOSEC=v2.12.0
 GOLANGCI=v1.46.2
 GOSWAG=v1.8.3
 
-
+.PHONY: gow-crane
 gow-crane: ##
 	cd cmd/crane && \
 	gow run . ; \
 	cd -
 
+.PHONY: gow-dagent
 gow-dagent: ##
 	cd cmd/dagent && \
 	gow run . ; \
 	cd -
 
+.PHONY: compile-crane
 compile-crane: ##
 	cd cmd/crane && \
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-extldflags '-static'" -o ../../build/out/crane; \
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build ${LDFLAGS} -o ../../build/out/crane; \
 	cd -
 
+.PHONY: compile-dagent
 compile-dagent: ##
 	cd cmd/dagent && \
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-extldflags '-static'" -o ../../build/out/dagent; \
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build ${LDFLAGS} -o ../../build/out/dagent; \
 	cd -
 
+.PHONY: install-go-tools
 install-go-tools: ##
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@${GOLANGCI} && \
 	go install github.com/swaggo/swag/cmd/swag@${GOSWAG} && \
 	go install github.com/securego/gosec/v2/cmd/gosec@${GOSEC}
 
-
+.PHONY: compile-both
 compile-both: compile-crane compile-dagent
 
-
+.PHONY: security
 security: # running gosec for static code analysis for bugs and leaks
 	gosec ./...
 
+.PHONY: lint
 lint: # golangci for linting 
 	golangci-lint run  ./... --timeout=3m
+
+.PHONY: build-dagent
 build-dagent: ##
 	cd build && \
-	docker build --build-arg CO_BIN_NAME=dagent -t ghcr.io/dyrector-io/dyrectorio/agent/dagent:$(image_version) -t ghcr.io/dyrector-io/dyrectorio/agent/dagent:$(git_short_hash) . && \
+	docker build --build-arg CO_BIN_NAME=dagent -t ${CONTAINER_URL}dagent:$(image_version) -t ${CONTAINER_URL}dagent:$(agent_version) . && \
 	cd -
 
+.PHONY: build-crane
 build-crane: ##
 	cd build && \
-	docker build --build-arg CO_BIN_NAME=crane -t ghcr.io/dyrector-io/dyrectorio/agent/crane:$(image_version) -t ghcr.io/dyrector-io/dyrectorio/agent/crane:$(git_short_hash) . && \
+	docker build --build-arg CO_BIN_NAME=crane -t ${CONTAINER_URL}crane:$(image_version) -t ${CONTAINER_URL}crane:$(agent_version) . && \
 	cd -
 
+.PHONY: build-both
 build-both: build-dagent build-crane
 
-# build push both
+
+.PHONY: bbpb # build push both
 bbpb: build-both push-both
 
+.PHONY: swagger-dagent
 swagger-dagent: # generate openapi docs for agent
 	cd pkg/dagent && swag init -g dagent.go --parseDependency --parseInternal --parseVendor && \
 	cd -
 
+.PHONY: swagger-crane
 swagger-crane: # generate openapi docs for crane
 	cd pkg/crane && swag init -g crane.go --parseDependency --parseInternal --parseVendor && \
 	cd -
 
+.PHONY: swaggen
 swaggen: | swagger-crane swagger-dagent
 
+.PHONY: push-crane
 push-crane: ##
-	docker push ghcr.io/dyrector-io/dyrectorio/agent/crane:$(image_version)
-push-dagent: ##
-	docker push ghcr.io/dyrector-io/dyrectorio/agent/dagent:$(image_version)
+	docker push ${CONTAINER_URL}crane:$(image_version)
 
+.PHONY: push-dagent
+push-dagent: ##
+	docker push ${CONTAINER_URL}dagent:$(image_version)
+
+.PHONY: push-both
 push-both: push-crane push-dagent
 
 
-# todo: put these into use
+.PHONY: k3d-start # todo: put these into use
 k3d-start: #start k3d
 	if [ -z "$(shell which k3d)" ]; then \
         echo "k3d is required for integration test, install it and add to PATH!"; \
     fi
 	k3d cluster create crane-cluster
 
+.PHONY: k3d-config
 k3d-config: # config k3d
 	k3d kubeconfig get crane-cluster > k3s.yaml
 
+.PHONY: k3d-test
 k3d-test: # make sure to have k3s set and configured
 	KUBECONFIG=$(PWD)/k3s.yaml go test -tags=integration -race ./pkg/crane/...
 
+.PHONY: k3s-start
 k3s-start: # start k3s with docker
 	docker run --name k3s -d -p 6443:6443 -p 8081:8081 registry.gitlab.com/gitlab-org/cluster-integration/test-utils/k3s-gitlab-ci/releases/v1.22.2-k3s2:latest
-	
+
+.PHONY: k3s-config
 k3s-config:
 	curl -sf localhost:8081 > k3s.yaml && \
 	sed -i 's/k3s:6443/localhost:6443/g' ./k3s.yaml 
 
+.PHONY: k3s-clean
 k3s-clean: #
 	docker stop k3s && docker rm k3s; rm -r ./k3s.yaml
 
+.PHONY: k3s-test
 k3s-test: # make sure to have k3s set and configured
 	KUBECONFIG=$(PWD)/k3s.yaml go test -tags=integration -race ./pkg/crane/...
 
+.PHONY: test-unit
 test-unit: # dependency: valid & working k8s configuration
 	go test -tags=unit -race ./... 
 
+.PHONY: test-unit-with-coverage
 test-unit-with-coverage: # dependency: valid & working k8s configuration
 	go test -tags=unit -race -coverpkg=./... -coverprofile=./coverage.cov -covermode=atomic ./...
 
+.PHONY: test-dagent-docker
 test-dagent-docker:
 	go test -tags=integration -race ./pkg/dagent/...
 
+.PHONY: coverage
 coverage:
 	go tool cover -func ./coverage.cov
 

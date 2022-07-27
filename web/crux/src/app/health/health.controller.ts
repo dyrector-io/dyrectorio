@@ -1,11 +1,11 @@
-import { Controller, UseInterceptors } from '@nestjs/common'
-import { GrpcContextLogger } from 'src/interceptors/grpc-context-logger.interceptor'
+import { Controller } from '@nestjs/common'
+import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import { CruxHealthController, CruxHealthControllerMethods, Empty } from 'src/grpc/protobuf/proto/crux'
 
 @Controller()
 @CruxHealthControllerMethods()
-@UseInterceptors(GrpcContextLogger)
 export class HealthController implements CruxHealthController {
+  @AuditLogLevel('disabled')
   getHealth(): Empty {
     return Empty
   }

@@ -46,7 +46,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
       const res = await sendForm('POST', versionDeploymentsApiUrl(productId, versionId), body)
 
       if (res.ok) {
-        let result = (await res.json()) as DeploymentCreated
+        const result = (await res.json()) as DeploymentCreated
         props.onAdd(result.id)
       } else if (res.status === 409) {
         // There is already a deployment for the selected node
@@ -94,7 +94,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
             <DyoChips
               choices={nodes}
               converter={(it: DyoNode) => it.name}
-              onChoicesChange={it => formik.setFieldValue('nodeId', it[0].id)}
+              onSelectionChange={it => formik.setFieldValue('nodeId', it.id)}
             />
           </div>
         </div>

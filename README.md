@@ -9,20 +9,22 @@
 
 dyrector.io is an **open-source** internal delivery platform that helps developers to deliver applications to more places efficiently by simplifying software releases and operations in any environment.
 
-> ⚠️ Disclaimer: dyrectorio platform is under development, please treat as such. Expect bugs here and there. Early adopters welcome.
+> ⚠️ Disclaimer: dyrector.io platform is under development, please treat as such. Expect bugs here and there. Early adopters welcome.
 
 ## Key features
 
-- Fine-grained RBAC
-- Environment management
 - Kubernetes and Docker support
-- Configuration management
-- Changelog and release notes generations
-- Container Registry integrations
-- ChatOps solutions
-- Workflow supporting
+- Multi-instance deployment
+- Instant test environments from any branches
+- Environment management
+- Secret and configuration management
+- Auto-generated changelogs and release notes
+- Workflow support
 - Scheduled releases
-- Workflow supporting
+- Audit log
+- Container Registry integrations
+- Fine-grained RBAC
+- ChatOps & notification solutions
 
 ## Quick Start
 
@@ -31,30 +33,43 @@ dyrector.io is an **open-source** internal delivery platform that helps develope
 - Install Docker and Docker Compose to your machine
 
 ### Development (Local)
-The easiest way to get started with the dyrectorio platform is by our premade [docker-compose](./web/docker-compose.dev.yaml) file.
+The easiest way to get started with the dyrector.io platform is by our premade [docker-compose](./web/docker-compose.dev.yaml) file.
 
-1. First you have to create `.env` from `.env.example` files in your local environment, in the following folders: `/web`, `/web/auth`, `/web/crux`, `/web/crux-ui`
+1. First you have to create `.env` from `.env.example` files in your local environment, in the following folders: `/web`, `/web/crux`, `/web/crux-ui`
 
-2. To run the dyrectorio platform dependencies:
+On *Windows* and *Mac* use `host.docker.internal` in the `.env` files for URLs.
+
+2. Build the dyrector.io platform dependencies, this step is only required once: 
 ```
-docker-compose -f web/docker-compose.dev.yaml build && up
+docker-compose -f web/docker-compose.dev.yaml build
 ```
 
-3. Now as all the infrastructure is ready, you need to install all the node.js dependencies in the specific projects' folder. To install all ( `web/auth/`, `web/crux/`, `web/crux-ui/` ) dependencies run `npm install`.
+3. To run the dyrector.io platform dependencies:
+```
+docker-compose -f web/docker-compose.dev.yaml up
+```
 
-4. In `crux/` folder you have to migrate the database and generate the Prisma client
+If you are having problems starting `crux-kratos-migrate` change the line endings of `web/kratos/entrypoint.sh` from CRLF to LF. These problems include `ERROR: Encountered errors while bringing up the project.` while running `docker-compose up` or `': No such file or directory` in the container log.
+
+4. Now as all the infrastructure is ready, you need to install all the node.js dependencies in the specific projects' folder. To install all (  `web/crux/`, `web/crux-ui/` ) dependencies run `npm install`.
+
+_on Apple Silicon run `npm install --target_arch=x64`_
+
+5. In `crux/` folder you have to migrate the database and generate the Prisma client
 ```
 npx prisma generate
 npx prisma migrate deploy
 ```
 
-5. To start services run `npm start` in the followind folders `/web/auth`, `/web/crux`, `/web/crux-ui`
+6. Create a reCaptcha v3 key pair and set `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` and `RECAPTCHA_SECRET_KEY` in `/web/crux-ui/.env`. Make sure to use `localhost` or `host.internal` as the domain.
 
-6. Open the platform in `172.17.0.1:8000` and register
+7. To start services run `npm start` in the followind folders `/web/crux` and `/web/crux-ui`
 
-7. In local our auth service is using a mock, so you can confirm your email in `http://localhost:4436/`
+8. Open the platform in `host.docker.internal:8000` and register
 
-8. Now you can log in and use the platform
+9. In local our auth service is using a mock, so you can confirm your email in `http://localhost:4436/`
+
+10. Now you can log in and use the platform
 
 ### Hosted version (SaaS)
 
@@ -73,9 +88,9 @@ We are planning to support a hosted version in the near future.
 
 ## Community
 
-Also, follow dyrectorio on GitHub Discussions, our [Blog](https://blog.dyrector.io), and on [Twitter](https://twitter.com/dyrectorio). You can chat with the team and other members on [Discord](https://discord.gg/pZWbd4fxga).
+Also, follow dyrector.io on GitHub Discussions, our [Blog](https://blog.dyrector.io), and on [Twitter](https://twitter.com/dyrectorio). You can chat with the team and other members on [Discord](https://discord.gg/pZWbd4fxga).
 
-dyrectorio is Open Source - This repository, and most of our other open source projects, are licensed under the Apache 2.0.
+dyrector.io is Open Source - This repository, and most of our other open source projects, are licensed under the Apache 2.0.
 
 Join our Discord and connect with other members to share and learn together.
 Send a pull request to any of our open source repositories on Github. Check our contribution guide and our developers guide for more details about how to contribute. We're looking forward to your contribution!

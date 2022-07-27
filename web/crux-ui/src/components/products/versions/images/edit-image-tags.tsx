@@ -4,7 +4,7 @@ import { DyoMessage } from '@app/elements/dyo-message'
 import DyoRadioButton from '@app/elements/dyo-radio-button'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useTranslation from 'next-translate/useTranslation'
-import React from 'react'
+import React, { useEffect } from 'react'
 
 interface EditImageTagsProps {
   disabled?: boolean
@@ -20,11 +20,13 @@ const EditImageTags = (props: EditImageTagsProps) => {
 
   const filters = useFilters<string, TextFilter>({
     filters: [textFilterFor<string>(it => [it])],
-    data: tags,
+    initialData: tags,
     initialFilter: {
       text: '',
     },
   })
+
+  useEffect(() => filters.setItems(tags), [filters, tags])
 
   return (
     <div className="flex flex-col">

@@ -167,9 +167,9 @@ const SelectImagesCard = (props: SelectImagesCardProps) => {
 
               <DyoChips
                 choices={registries}
-                initialSelection={[registries[0]]}
+                initialSelection={registries[0]}
                 converter={(it: Registry) => it.name}
-                onChoicesChange={it => onRegistrySelectionChange(it[0])}
+                onSelectionChange={it => onRegistrySelectionChange(it)}
               />
             </div>
 

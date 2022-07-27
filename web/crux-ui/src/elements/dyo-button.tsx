@@ -2,6 +2,7 @@ import clsx from 'clsx'
 import React from 'react'
 
 export interface DyoButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'ref'> {
+  heightClassName?: string
   secondary?: boolean
   outlined?: boolean
   underlined?: boolean
@@ -24,6 +25,7 @@ export class DyoButton extends React.Component<DyoButtonProps> {
       text,
       thin,
       className,
+      heightClassName,
       color: colorClassName,
       textColor: textColorClassName,
       ...forwaredProps
@@ -54,7 +56,16 @@ export class DyoButton extends React.Component<DyoButtonProps> {
     return (
       <button
         {...forwaredProps}
-        className={clsx(className ?? 'mx-2 px-10', ring, border, color, textColor, font, rounded, 'h-10')}
+        className={clsx(
+          className ?? 'mx-2 px-10',
+          ring,
+          border,
+          color,
+          textColor,
+          font,
+          rounded,
+          heightClassName ?? 'h-10',
+        )}
       >
         {this.props.children}
       </button>

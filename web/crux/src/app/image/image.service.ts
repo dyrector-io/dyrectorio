@@ -3,6 +3,7 @@ import { JsonArray } from 'prisma'
 import { Subject } from 'rxjs'
 import { PrismaService } from 'src/config/prisma.service'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
+import { containerNameFromImageName } from 'src/domain/deployment'
 import {
   AddImagesToVersionRequest,
   Empty,
@@ -83,6 +84,7 @@ export class ImageService {
               order: order++,
               config: {
                 create: {
+                  name: containerNameFromImageName(it),
                   environment: [],
                   capabilities: [],
                   config: {},
@@ -130,6 +132,7 @@ export class ImageService {
       const envs = request.config.environment
 
       config = {
+        name: request.config.name ?? undefined,
         capabilities: caps ? caps.data ?? [] : (undefined as JsonArray),
         environment: envs ? envs.data ?? [] : (undefined as JsonArray),
         config: this.mapper.explicitConfigToDb(request.config?.config),
@@ -141,7 +144,6 @@ export class ImageService {
         config: true,
       },
       data: {
-        name: request.name,
         tag: request.tag,
         config: {
           update: config,

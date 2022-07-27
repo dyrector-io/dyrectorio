@@ -1,4 +1,4 @@
-import { Layout } from '@app/components/layout'
+import { Layout, PageHead } from '@app/components/layout'
 import DeploymentContainerStatusList from '@app/components/products/versions/deployments/deployment-container-status-list'
 import DeploymentDetailsCard from '@app/components/products/versions/deployments/deployment-details-card'
 import DeploymentEventsTerminal from '@app/components/products/versions/deployments/deployment-events-terminal'
@@ -119,6 +119,13 @@ const DeployPage = (props: DeployPageProps) => {
 
   return (
     <Layout>
+      <PageHead
+        title={t('title', {
+          product: product.name,
+          version: version.name,
+          node: deployment.node.name,
+        })}
+      />
       <PageHeading pageLink={pageLink} subLinks={sublinks}>
         <DyoButton className="px-6 ml-auto" onClick={onInspect}>
           {t('common:inspect')}

@@ -178,6 +178,8 @@ export enum RegistryType {
   UNKNOWN_REGISTRY_TYPE = 0,
   V2 = 1,
   HUB = 2,
+  GITLAB = 3,
+  GITHUB = 4,
   UNRECOGNIZED = -1,
 }
 
@@ -192,6 +194,12 @@ export function registryTypeFromJSON(object: any): RegistryType {
     case 2:
     case 'HUB':
       return RegistryType.HUB
+    case 3:
+    case 'GITLAB':
+      return RegistryType.GITLAB
+    case 4:
+    case 'GITHUB':
+      return RegistryType.GITHUB
     case -1:
     case 'UNRECOGNIZED':
     default:
@@ -207,6 +215,10 @@ export function registryTypeToJSON(object: RegistryType): string {
       return 'V2'
     case RegistryType.HUB:
       return 'HUB'
+    case RegistryType.GITLAB:
+      return 'GITLAB'
+    case RegistryType.GITHUB:
+      return 'GITHUB'
     default:
       return 'UNKNOWN'
   }
@@ -568,6 +580,7 @@ export interface RegistryResponse {
   description?: string | undefined
   icon?: string | undefined
   url: string
+  type: RegistryType
 }
 
 export interface RegistryListResponse {
@@ -750,6 +763,7 @@ export interface ExplicitContainerConfig_Expose {
 
 export interface ContainerConfig {
   config: ExplicitContainerConfig | undefined
+  name: string
   capabilities: UniqueKeyValue[]
   environment: UniqueKeyValue[]
 }
@@ -798,12 +812,12 @@ export interface PatchContainerConfig {
   capabilities?: KeyValueList | undefined
   environment?: KeyValueList | undefined
   config?: ExplicitContainerConfig | undefined
+  name?: string | undefined
 }
 
 export interface PatchImageRequest {
   id: string
   accessedBy: string
-  name?: string | undefined
   tag?: string | undefined
   config?: PatchContainerConfig | undefined
 }
@@ -817,6 +831,7 @@ export interface NodeResponse {
   address?: string | undefined
   status: NodeConnectionStatus
   connectedAt?: Timestamp | undefined
+  version?: string | undefined
 }
 
 export interface NodeDetailsResponse {
@@ -831,6 +846,7 @@ export interface NodeDetailsResponse {
   connectedAt?: Timestamp | undefined
   install?: NodeInstallResponse | undefined
   script?: NodeScriptResponse | undefined
+  version?: string | undefined
 }
 
 export interface NodeListResponse {
@@ -940,12 +956,18 @@ export interface PatchDeploymentRequest {
   instance?: PatchInstanceRequest | undefined
 }
 
+export interface InstanceContainerConfig {
+  config: ExplicitContainerConfig | undefined
+  capabilities: UniqueKeyValue[]
+  environment: UniqueKeyValue[]
+}
+
 export interface InstanceResponse {
   id: string
   audit: AuditResponse | undefined
   image: ImageResponse | undefined
   status?: ContainerStatus | undefined
-  config?: ContainerConfig | undefined
+  config?: InstanceContainerConfig | undefined
 }
 
 export interface PatchInstanceRequest {
@@ -2450,7 +2472,7 @@ export const UpdateProductRequest = {
   },
 }
 
-const baseRegistryResponse: object = { id: '', name: '', url: '' }
+const baseRegistryResponse: object = { id: '', name: '', url: '', type: 0 }
 
 export const RegistryResponse = {
   encode(message: RegistryResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -2471,6 +2493,9 @@ export const RegistryResponse = {
     }
     if (message.url !== '') {
       writer.uint32(826).string(message.url)
+    }
+    if (message.type !== 0) {
+      writer.uint32(832).int32(message.type)
     }
     return writer
   },
@@ -2500,6 +2525,9 @@ export const RegistryResponse = {
         case 103:
           message.url = reader.string()
           break
+        case 104:
+          message.type = reader.int32() as any
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -2518,6 +2546,7 @@ export const RegistryResponse = {
       object.description !== undefined && object.description !== null ? String(object.description) : undefined
     message.icon = object.icon !== undefined && object.icon !== null ? String(object.icon) : undefined
     message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
+    message.type = object.type !== undefined && object.type !== null ? registryTypeFromJSON(object.type) : 0
     return message
   },
 
@@ -2529,6 +2558,7 @@ export const RegistryResponse = {
     message.description !== undefined && (obj.description = message.description)
     message.icon !== undefined && (obj.icon = message.icon)
     message.url !== undefined && (obj.url = message.url)
+    message.type !== undefined && (obj.type = registryTypeToJSON(message.type))
     return obj
   },
 
@@ -2541,6 +2571,7 @@ export const RegistryResponse = {
     message.description = object.description ?? undefined
     message.icon = object.icon ?? undefined
     message.url = object.url ?? ''
+    message.type = object.type ?? 0
     return message
   },
 }
@@ -4072,12 +4103,15 @@ export const ExplicitContainerConfig_Expose = {
   },
 }
 
-const baseContainerConfig: object = {}
+const baseContainerConfig: object = { name: '' }
 
 export const ContainerConfig = {
   encode(message: ContainerConfig, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.config !== undefined) {
       ExplicitContainerConfig.encode(message.config, writer.uint32(802).fork()).ldelim()
+    }
+    if (message.name !== '') {
+      writer.uint32(810).string(message.name)
     }
     for (const v of message.capabilities) {
       UniqueKeyValue.encode(v!, writer.uint32(8002).fork()).ldelim()
@@ -4100,6 +4134,9 @@ export const ContainerConfig = {
         case 100:
           message.config = ExplicitContainerConfig.decode(reader, reader.uint32())
           break
+        case 101:
+          message.name = reader.string()
+          break
         case 1000:
           message.capabilities.push(UniqueKeyValue.decode(reader, reader.uint32()))
           break
@@ -4120,6 +4157,7 @@ export const ContainerConfig = {
       object.config !== undefined && object.config !== null
         ? ExplicitContainerConfig.fromJSON(object.config)
         : undefined
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
     message.capabilities = (object.capabilities ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
     message.environment = (object.environment ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
     return message
@@ -4129,6 +4167,7 @@ export const ContainerConfig = {
     const obj: any = {}
     message.config !== undefined &&
       (obj.config = message.config ? ExplicitContainerConfig.toJSON(message.config) : undefined)
+    message.name !== undefined && (obj.name = message.name)
     if (message.capabilities) {
       obj.capabilities = message.capabilities.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
     } else {
@@ -4148,6 +4187,7 @@ export const ContainerConfig = {
       object.config !== undefined && object.config !== null
         ? ExplicitContainerConfig.fromPartial(object.config)
         : undefined
+    message.name = object.name ?? ''
     message.capabilities = object.capabilities?.map(e => UniqueKeyValue.fromPartial(e)) || []
     message.environment = object.environment?.map(e => UniqueKeyValue.fromPartial(e)) || []
     return message
@@ -4653,6 +4693,9 @@ export const PatchContainerConfig = {
     if (message.config !== undefined) {
       ExplicitContainerConfig.encode(message.config, writer.uint32(826).fork()).ldelim()
     }
+    if (message.name !== undefined) {
+      writer.uint32(834).string(message.name)
+    }
     return writer
   },
 
@@ -4671,6 +4714,9 @@ export const PatchContainerConfig = {
           break
         case 103:
           message.config = ExplicitContainerConfig.decode(reader, reader.uint32())
+          break
+        case 104:
+          message.name = reader.string()
           break
         default:
           reader.skipType(tag & 7)
@@ -4694,6 +4740,7 @@ export const PatchContainerConfig = {
       object.config !== undefined && object.config !== null
         ? ExplicitContainerConfig.fromJSON(object.config)
         : undefined
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : undefined
     return message
   },
 
@@ -4705,6 +4752,7 @@ export const PatchContainerConfig = {
       (obj.environment = message.environment ? KeyValueList.toJSON(message.environment) : undefined)
     message.config !== undefined &&
       (obj.config = message.config ? ExplicitContainerConfig.toJSON(message.config) : undefined)
+    message.name !== undefined && (obj.name = message.name)
     return obj
   },
 
@@ -4722,6 +4770,7 @@ export const PatchContainerConfig = {
       object.config !== undefined && object.config !== null
         ? ExplicitContainerConfig.fromPartial(object.config)
         : undefined
+    message.name = object.name ?? undefined
     return message
   },
 }
@@ -4735,9 +4784,6 @@ export const PatchImageRequest = {
     }
     if (message.accessedBy !== '') {
       writer.uint32(18).string(message.accessedBy)
-    }
-    if (message.name !== undefined) {
-      writer.uint32(802).string(message.name)
     }
     if (message.tag !== undefined) {
       writer.uint32(810).string(message.tag)
@@ -4761,9 +4807,6 @@ export const PatchImageRequest = {
         case 2:
           message.accessedBy = reader.string()
           break
-        case 100:
-          message.name = reader.string()
-          break
         case 101:
           message.tag = reader.string()
           break
@@ -4782,7 +4825,6 @@ export const PatchImageRequest = {
     const message = { ...basePatchImageRequest } as PatchImageRequest
     message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
     message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : undefined
     message.tag = object.tag !== undefined && object.tag !== null ? String(object.tag) : undefined
     message.config =
       object.config !== undefined && object.config !== null ? PatchContainerConfig.fromJSON(object.config) : undefined
@@ -4793,7 +4835,6 @@ export const PatchImageRequest = {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
-    message.name !== undefined && (obj.name = message.name)
     message.tag !== undefined && (obj.tag = message.tag)
     message.config !== undefined &&
       (obj.config = message.config ? PatchContainerConfig.toJSON(message.config) : undefined)
@@ -4804,7 +4845,6 @@ export const PatchImageRequest = {
     const message = { ...basePatchImageRequest } as PatchImageRequest
     message.id = object.id ?? ''
     message.accessedBy = object.accessedBy ?? ''
-    message.name = object.name ?? undefined
     message.tag = object.tag ?? undefined
     message.config =
       object.config !== undefined && object.config !== null
@@ -4842,6 +4882,9 @@ export const NodeResponse = {
     if (message.connectedAt !== undefined) {
       Timestamp.encode(message.connectedAt, writer.uint32(842).fork()).ldelim()
     }
+    if (message.version !== undefined) {
+      writer.uint32(850).string(message.version)
+    }
     return writer
   },
 
@@ -4876,6 +4919,9 @@ export const NodeResponse = {
         case 105:
           message.connectedAt = Timestamp.decode(reader, reader.uint32())
           break
+        case 106:
+          message.version = reader.string()
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -4900,6 +4946,7 @@ export const NodeResponse = {
       object.connectedAt !== undefined && object.connectedAt !== null
         ? fromJsonTimestamp(object.connectedAt)
         : undefined
+    message.version = object.version !== undefined && object.version !== null ? String(object.version) : undefined
     return message
   },
 
@@ -4913,6 +4960,7 @@ export const NodeResponse = {
     message.address !== undefined && (obj.address = message.address)
     message.status !== undefined && (obj.status = nodeConnectionStatusToJSON(message.status))
     message.connectedAt !== undefined && (obj.connectedAt = fromTimestamp(message.connectedAt).toISOString())
+    message.version !== undefined && (obj.version = message.version)
     return obj
   },
 
@@ -4930,6 +4978,7 @@ export const NodeResponse = {
       object.connectedAt !== undefined && object.connectedAt !== null
         ? Timestamp.fromPartial(object.connectedAt)
         : undefined
+    message.version = object.version ?? undefined
     return message
   },
 }
@@ -4976,6 +5025,9 @@ export const NodeDetailsResponse = {
     if (message.script !== undefined) {
       NodeScriptResponse.encode(message.script, writer.uint32(866).fork()).ldelim()
     }
+    if (message.version !== undefined) {
+      writer.uint32(874).string(message.version)
+    }
     return writer
   },
 
@@ -5019,6 +5071,9 @@ export const NodeDetailsResponse = {
         case 108:
           message.script = NodeScriptResponse.decode(reader, reader.uint32())
           break
+        case 109:
+          message.version = reader.string()
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -5048,6 +5103,7 @@ export const NodeDetailsResponse = {
       object.install !== undefined && object.install !== null ? NodeInstallResponse.fromJSON(object.install) : undefined
     message.script =
       object.script !== undefined && object.script !== null ? NodeScriptResponse.fromJSON(object.script) : undefined
+    message.version = object.version !== undefined && object.version !== null ? String(object.version) : undefined
     return message
   },
 
@@ -5066,6 +5122,7 @@ export const NodeDetailsResponse = {
       (obj.install = message.install ? NodeInstallResponse.toJSON(message.install) : undefined)
     message.script !== undefined &&
       (obj.script = message.script ? NodeScriptResponse.toJSON(message.script) : undefined)
+    message.version !== undefined && (obj.version = message.version)
     return obj
   },
 
@@ -5090,6 +5147,7 @@ export const NodeDetailsResponse = {
         : undefined
     message.script =
       object.script !== undefined && object.script !== null ? NodeScriptResponse.fromPartial(object.script) : undefined
+    message.version = object.version ?? undefined
     return message
   },
 }
@@ -6401,6 +6459,94 @@ export const PatchDeploymentRequest = {
   },
 }
 
+const baseInstanceContainerConfig: object = {}
+
+export const InstanceContainerConfig = {
+  encode(message: InstanceContainerConfig, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.config !== undefined) {
+      ExplicitContainerConfig.encode(message.config, writer.uint32(802).fork()).ldelim()
+    }
+    for (const v of message.capabilities) {
+      UniqueKeyValue.encode(v!, writer.uint32(8002).fork()).ldelim()
+    }
+    for (const v of message.environment) {
+      UniqueKeyValue.encode(v!, writer.uint32(8010).fork()).ldelim()
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): InstanceContainerConfig {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = {
+      ...baseInstanceContainerConfig,
+    } as InstanceContainerConfig
+    message.capabilities = []
+    message.environment = []
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 100:
+          message.config = ExplicitContainerConfig.decode(reader, reader.uint32())
+          break
+        case 1000:
+          message.capabilities.push(UniqueKeyValue.decode(reader, reader.uint32()))
+          break
+        case 1001:
+          message.environment.push(UniqueKeyValue.decode(reader, reader.uint32()))
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): InstanceContainerConfig {
+    const message = {
+      ...baseInstanceContainerConfig,
+    } as InstanceContainerConfig
+    message.config =
+      object.config !== undefined && object.config !== null
+        ? ExplicitContainerConfig.fromJSON(object.config)
+        : undefined
+    message.capabilities = (object.capabilities ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
+    message.environment = (object.environment ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
+    return message
+  },
+
+  toJSON(message: InstanceContainerConfig): unknown {
+    const obj: any = {}
+    message.config !== undefined &&
+      (obj.config = message.config ? ExplicitContainerConfig.toJSON(message.config) : undefined)
+    if (message.capabilities) {
+      obj.capabilities = message.capabilities.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
+    } else {
+      obj.capabilities = []
+    }
+    if (message.environment) {
+      obj.environment = message.environment.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
+    } else {
+      obj.environment = []
+    }
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<InstanceContainerConfig>, I>>(object: I): InstanceContainerConfig {
+    const message = {
+      ...baseInstanceContainerConfig,
+    } as InstanceContainerConfig
+    message.config =
+      object.config !== undefined && object.config !== null
+        ? ExplicitContainerConfig.fromPartial(object.config)
+        : undefined
+    message.capabilities = object.capabilities?.map(e => UniqueKeyValue.fromPartial(e)) || []
+    message.environment = object.environment?.map(e => UniqueKeyValue.fromPartial(e)) || []
+    return message
+  },
+}
+
 const baseInstanceResponse: object = { id: '' }
 
 export const InstanceResponse = {
@@ -6418,7 +6564,7 @@ export const InstanceResponse = {
       writer.uint32(808).int32(message.status)
     }
     if (message.config !== undefined) {
-      ContainerConfig.encode(message.config, writer.uint32(818).fork()).ldelim()
+      InstanceContainerConfig.encode(message.config, writer.uint32(818).fork()).ldelim()
     }
     return writer
   },
@@ -6443,7 +6589,7 @@ export const InstanceResponse = {
           message.status = reader.int32() as any
           break
         case 102:
-          message.config = ContainerConfig.decode(reader, reader.uint32())
+          message.config = InstanceContainerConfig.decode(reader, reader.uint32())
           break
         default:
           reader.skipType(tag & 7)
@@ -6463,7 +6609,9 @@ export const InstanceResponse = {
     message.status =
       object.status !== undefined && object.status !== null ? containerStatusFromJSON(object.status) : undefined
     message.config =
-      object.config !== undefined && object.config !== null ? ContainerConfig.fromJSON(object.config) : undefined
+      object.config !== undefined && object.config !== null
+        ? InstanceContainerConfig.fromJSON(object.config)
+        : undefined
     return message
   },
 
@@ -6474,7 +6622,8 @@ export const InstanceResponse = {
     message.image !== undefined && (obj.image = message.image ? ImageResponse.toJSON(message.image) : undefined)
     message.status !== undefined &&
       (obj.status = message.status !== undefined ? containerStatusToJSON(message.status) : undefined)
-    message.config !== undefined && (obj.config = message.config ? ContainerConfig.toJSON(message.config) : undefined)
+    message.config !== undefined &&
+      (obj.config = message.config ? InstanceContainerConfig.toJSON(message.config) : undefined)
     return obj
   },
 
@@ -6487,7 +6636,9 @@ export const InstanceResponse = {
       object.image !== undefined && object.image !== null ? ImageResponse.fromPartial(object.image) : undefined
     message.status = object.status ?? undefined
     message.config =
-      object.config !== undefined && object.config !== null ? ContainerConfig.fromPartial(object.config) : undefined
+      object.config !== undefined && object.config !== null
+        ? InstanceContainerConfig.fromPartial(object.config)
+        : undefined
     return message
   },
 }

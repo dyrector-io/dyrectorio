@@ -1,7 +1,10 @@
 {
+  "title": "Nodes",
+  "title-node": "{{name}} node",
+
   "add": "Add node",
   "new": "New node",
-  "tips": "A description about what nodes are good for.",
+  "tips": "Nodes are the environments where you plan to run your applications.",
 
   "revoke": "Revoke token",
   "confirmRevoke": "Are you sure you want to revoke the token?",
@@ -19,6 +22,8 @@
   "command": "Command",
   "script": "Script",
   "uptime": "Uptime",
+  "version": "Version",
+  "versionUnknown": "Unkown version",
 
   "deleteDescription": "If you proceed, you will lose all your data related to {{name}}. This action is not revocable."
 }

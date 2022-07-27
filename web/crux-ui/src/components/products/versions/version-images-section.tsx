@@ -1,17 +1,17 @@
 import DyoWrap from '@app/elements/dyo-wrap'
 import { useWebSocket } from '@app/hooks/use-websocket'
 import {
-  ContainerImage,
   DeleteImageMessage,
   FetchImageTagsMessage,
   GetImageMessage,
   ImageMessage,
   ImagesAddedMessage,
   ImageUpdateMessage,
-  PatchContainerImage,
   PatchImageMessage,
+  PatchVersionImage,
   RegistryImageTags,
   RegistryImageTagsMessage,
+  VersionImage,
   WS_TYPE_GET_IMAGE,
   WS_TYPE_IMAGE,
   WS_TYPE_IMAGES_ADDED,
@@ -23,7 +23,7 @@ import {
 } from '@app/models'
 import { versionWsUrl, WS_REGISTRIES } from '@app/routes'
 import { fold } from '@app/utils'
-import React, { useState } from 'react'
+import { useState } from 'react'
 import EditImageCard from './images/edit-image-card'
 
 type ImageTagsMap = { [key: string]: RegistryImageTags }
@@ -33,7 +33,7 @@ interface VersionImagesSectionProps {
   disabled?: boolean
   productId: string
   versionId: string
-  images: ContainerImage[]
+  images: VersionImage[]
 }
 
 const VersionImagesSection = (props: VersionImagesSectionProps) => {
@@ -105,7 +105,7 @@ const VersionImagesSection = (props: VersionImagesSectionProps) => {
     setImages(images.filter(it => it.id !== message.imageId))
   })
 
-  const onTagSelected = (image: ContainerImage, tag: string) => {
+  const onTagSelected = (image: VersionImage, tag: string) => {
     const index = images.indexOf(image)
     const newImages = [...images]
     newImages[index] = {
@@ -145,14 +145,15 @@ const VersionImagesSection = (props: VersionImagesSectionProps) => {
 
 export default VersionImagesSection
 
-export const mergeImagePatch = (oldImage: ContainerImage, newImage: PatchContainerImage): ContainerImage => {
+export const mergeImagePatch = (oldImage: VersionImage, newImage: PatchVersionImage): VersionImage => {
   return {
     ...oldImage,
     ...newImage,
     config: {
-      environment: newImage.config?.environment ?? oldImage.config?.environment,
-      capabilities: newImage.config?.capabilities ?? oldImage.config?.capabilities,
-      config: newImage.config?.config ?? oldImage.config?.config,
+      name: newImage.config?.name ?? oldImage.config.name,
+      environment: newImage.config?.environment ?? oldImage.config.environment,
+      capabilities: newImage.config?.capabilities ?? oldImage.config.capabilities,
+      config: newImage.config?.config ?? oldImage.config.config,
     },
   }
 }

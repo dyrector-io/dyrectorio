@@ -8,6 +8,7 @@ import {
   DeploymentStatus,
   ImageDeletedMessage,
   Instance,
+  InstanceContainerConfig,
   InstancesAddedMessage,
   PatchDeployment,
   UpdateDeployment,
@@ -28,6 +29,7 @@ import {
   deploymentStatusToJSON,
   Empty,
   IdRequest,
+  InstanceContainerConfig as ProtoInstanceContainerConfig,
   InstanceResponse,
   PatchDeploymentRequest,
   ServiceIdRequest,
@@ -38,7 +40,7 @@ import { timestampToUTC } from '@app/utils'
 import { WsMessage } from '@app/websockets/common'
 import { Identity } from '@ory/kratos-client'
 import { GrpcConnection, protomisify, ProtoSubscriptionOptions } from './grpc-connection'
-import { containerConfigToDto, explicitContainerConfigToProto, imageToDto } from './image-service'
+import { explicitContainerConfigToDto, explicitContainerConfigToProto, imageToDto } from './image-service'
 import { containerStatusToDto } from './node-service'
 
 class DyoDeploymentService {
@@ -280,11 +282,20 @@ export const deploymentEventTypeToDto = (type: ProtoDeploymentEventType): Deploy
   }
 }
 
+export const instanceContainerConfigToDto = (config: ProtoInstanceContainerConfig): InstanceContainerConfig => {
+  return !config
+    ? null
+    : {
+        ...config,
+        config: explicitContainerConfigToDto(config.config),
+      }
+}
+
 export const instanceToDto = (res: InstanceResponse): Instance => {
   return {
     ...res,
     image: imageToDto(res.image),
     status: !res.status ? null : containerStatusToDto(res.status),
-    config: containerConfigToDto(res.config),
+    overridenConfig: instanceContainerConfigToDto(res.config),
   } as Instance
 }

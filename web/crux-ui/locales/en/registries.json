@@ -1,6 +1,8 @@
 {
+  "title": "Registries",
+  "title-registry": "{{name}} registry",
+
   "registries": "Registries",
-  "tips": "A description about what registries are good for.",
   "add": "Add registry",
   "new": "New registry",
   "user": "User",
@@ -8,7 +10,6 @@
   "pat": "Personal access token",
   "accessToken": "Access token",
   "url": "Url",
-  "hubTips": "Disclaimer: You can use only public Docker HUB images.",
   "orgOrUser": "Organization name or username",
   "organization": "Organization name",
   "group": "Group name",
@@ -18,6 +19,14 @@
   "saas": "SaaS",
   "apiUrl": "Gitlab api url",
 
+  "tips": {
+    "common": "Registries contain the images you can select to create new Products.",
+    "v2": "Here you can add Docker API V2 compatible registries.",
+    "hub": "Here you're able to add public Docker Hub registries.",
+    "gitlab": "Add your GitLab Registry.",
+    "github": "Add your GitHub Registry."
+  },
+
   "type": {
     "v2": "V2 Registry",
     "hub": "Docker HUB",
@@ -25,5 +34,7 @@
     "github": "GitHub Registry"
   },
 
-  "deleteDescription": "If you proceed, you will lose all your data related to {{name}}. This action is not revocable."
+  "deleteDescription": "If you proceed, you will lose all your data related to {{name}}. This action is not revocable.",
+
+  "altDefaultRegistryPicture": "Picture of registry"
 }

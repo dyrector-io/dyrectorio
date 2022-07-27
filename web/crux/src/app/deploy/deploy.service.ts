@@ -26,7 +26,7 @@ import {
   UpdateDeploymentRequest,
   UpdateEntityResponse,
 } from 'src/grpc/protobuf/proto/crux'
-import { ContainerConfigData } from 'src/shared/model'
+import { InstanceContainerConfigData } from 'src/shared/model'
 import { AgentService } from '../agent/agent.service'
 import { ImageWithConfig } from '../image/image.mapper'
 import { ImageService } from '../image/image.service'
@@ -206,7 +206,7 @@ export class DeployService {
 
   async patchDeployment(request: PatchDeploymentRequest): Promise<UpdateEntityResponse> {
     const reqInstance = request.instance
-    let instanceConfigPatchSet: ContainerConfigData = null
+    let instanceConfigPatchSet: InstanceContainerConfigData = null
 
     if (reqInstance) {
       const caps = request.instance.capabilities

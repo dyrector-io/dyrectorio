@@ -6,6 +6,7 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
+	"github.com/dyrector-io/dyrectorio/agent/internal/version"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/controller"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/docs"
 
@@ -40,6 +41,8 @@ func SetupRouterV1(r *gin.Engine) *gin.Engine {
 	api.POST("/deploy/batch", controller.BatchDeployImage)
 	api.POST("/deploy/version", controller.DeployVersion)
 
+	r.GET("/version", version.VersionForGin)
+	api.GET("version", version.VersionForGin)
 	api.GET("/swagger", swaggerRedirect)
 	r.GET("swagger", swaggerRedirect)
 

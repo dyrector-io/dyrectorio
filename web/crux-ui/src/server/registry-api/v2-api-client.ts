@@ -80,8 +80,9 @@ class RegistryV2ApiClient implements RegistryApiClient {
     fetcher: (endpoint: string) => Promise<Response>,
     endpoint: string,
   ): Promise<Response> {
-    let bodies = []
+    const bodies = []
 
+    // TODO @m8 could you tell me what is this function doing?
     const generateResponse = (res: Response) => {
       res.json = async () => bodies
       return res

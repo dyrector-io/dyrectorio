@@ -7,6 +7,7 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
+	"github.com/dyrector-io/dyrectorio/agent/internal/version"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/controller"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/docs"
 )
@@ -36,6 +37,9 @@ func SetupRouter(r *gin.Engine) *gin.Engine {
 	v1.DELETE("/deploy/traefik", controller.DeleteTraefik)
 
 	v1.GET("/versions/:instance", controller.GetVersion)
+
+	r.GET("/version", version.VersionForGin)
+	v1.GET("version", version.VersionForGin)
 
 	v1.GET("/swagger", swaggerRedirect)
 	r.GET("swagger", swaggerRedirect)

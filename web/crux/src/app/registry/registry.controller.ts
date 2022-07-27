@@ -1,8 +1,5 @@
-import { Controller, UseGuards, UseInterceptors } from '@nestjs/common'
+import { Controller, UseGuards } from '@nestjs/common'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
-import { AuditLoggerInterceptor } from 'src/interceptors/audit-logger.interceptor'
-import { GrpcContextLogger } from 'src/interceptors/grpc-context-logger.interceptor'
-import { PrismaErrorInterceptor } from 'src/interceptors/prisma-error-interceptor'
 import {
   AccessRequest,
   CreateEntityResponse,
@@ -22,7 +19,6 @@ import { RegistryService } from './registry.service'
 @Controller()
 @CruxRegistryControllerMethods()
 @UseGuards(RegistryTeamAccessGuard)
-@UseInterceptors(PrismaErrorInterceptor, GrpcContextLogger, AuditLoggerInterceptor)
 export class RegistryController implements CruxRegistryController {
   constructor(private service: RegistryService) {}
 

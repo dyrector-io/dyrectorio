@@ -178,7 +178,7 @@ type ContainerConfig struct {
 
 	// dagent only
 	LogConfig     *LogConfig        `json:"logConfig"`
-	RestartPolicy RestartPolicyName `json:"restartPolicy,omitempty"`
+	RestartPolicy RestartPolicyName `json:"restartPolicy"`
 	// bridge(container, defeault) host, none or network name
 	NetworkMode string `json:"networkMode"`
 
@@ -526,7 +526,6 @@ func (policy *RestartPolicyName) UnmarshalJSON(b []byte) error {
 // setting known defaults from constants
 func SetDeploymentDefaults(
 	deployImageRequest *DeployImageRequest,
-	containerConfig *ContainerConfig,
 	appConfig *config.CommonConfiguration) {
 	if deployImageRequest.Registry == nil || *deployImageRequest.Registry == "" {
 		deployImageRequest.Registry = func() *string {
@@ -539,7 +538,7 @@ func SetDeploymentDefaults(
 		deployImageRequest.Tag = appConfig.DefaultTag
 	}
 
-	if containerConfig.RestartPolicy == "" {
-		containerConfig.RestartPolicy = RestartUnlessStoppedRestartPolicy
+	if deployImageRequest.ContainerConfig.RestartPolicy == "" {
+		deployImageRequest.ContainerConfig.RestartPolicy = RestartUnlessStoppedRestartPolicy
 	}
 }
