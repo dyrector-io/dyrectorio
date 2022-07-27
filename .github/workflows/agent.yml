@@ -85,7 +85,7 @@ jobs:
     needs: [test]
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16
-    if: github.ref_name == 'develop' || github.ref_name == 'main'
+    if: github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag'
     defaults:
       run:
         working-directory: agent
@@ -117,7 +117,7 @@ jobs:
 
   sign_image:
     runs-on: ubuntu-20.04
-    if: github.ref == 'refs/heads/develop' ||  github.ref == 'refs/heads/main'
+    if: github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag'
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16
     needs: [build,test]

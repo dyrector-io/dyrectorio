@@ -78,7 +78,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-      # if tag isn't the version setted in package.json will make the job fail
+      # if tag isn't the version set in package.json, job will fail
     - name: Check tag version correctness
       if: github.ref_type == 'tag'
       working-directory: .github/workflows
