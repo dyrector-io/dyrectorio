@@ -35,12 +35,12 @@ func DeployVersion(c *gin.Context) {
 		return
 	}
 
-	config := utils.GetConfigFromGin(c)
+	cfg := utils.GetConfigFromGin(c)
 
 	errored := false
 	// Iterate throw the given DeployImageRequests
 	for i := range batchDeployRequest.DeployImages {
-		dog := dogger.NewDeploymentLogger(nil, nil, c, &config.CommonConfiguration)
+		dog := dogger.NewDeploymentLogger(nil, nil, c, &cfg.CommonConfiguration)
 		dog.SetRequestID(batchDeployRequest.DeployImages[i].RequestID)
 
 		var versionData *v1.VersionData
@@ -48,7 +48,7 @@ func DeployVersion(c *gin.Context) {
 			versionData = &v1.VersionData{Version: batchDeployRequest.Version, ReleaseNotes: batchDeployRequest.ReleaseNotes}
 		}
 
-		if err := executeDeployImageRequest(c, dog, &batchDeployRequest.DeployImages[i], versionData, config); err != nil {
+		if err := executeDeployImageRequest(c, dog, &batchDeployRequest.DeployImages[i], versionData, cfg); err != nil {
 			dog.Write(err.Error())
 
 			batchDeployResponse = append(batchDeployResponse, v1.DeployImageResponse{
@@ -95,13 +95,13 @@ func BatchDeployImage(c *gin.Context) {
 		return
 	}
 
-	config := utils.GetConfigFromGin(c)
+	cfg := utils.GetConfigFromGin(c)
 
 	// Iterate throw the given DeployImageRequests
 	for i := range batchDeployImageRequest {
-		dog := dogger.NewDeploymentLogger(nil, nil, c, &config.CommonConfiguration)
+		dog := dogger.NewDeploymentLogger(nil, nil, c, &cfg.CommonConfiguration)
 		dog.SetRequestID(batchDeployImageRequest[i].RequestID)
-		if err := executeDeployImageRequest(c, dog, &batchDeployImageRequest[i], nil, config); err != nil {
+		if err := executeDeployImageRequest(c, dog, &batchDeployImageRequest[i], nil, cfg); err != nil {
 			dog.Write(err.Error())
 
 			batchDeployImageResponse = append(batchDeployImageResponse, v1.DeployImageResponse{
@@ -137,9 +137,9 @@ func BatchDeployImage(c *gin.Context) {
 func DeployImage(c *gin.Context) {
 	deployImageRequest := v1.DeployImageRequest{}
 
-	config := utils.GetConfigFromGin(c)
+	cfg := utils.GetConfigFromGin(c)
 
-	dog := dogger.NewDeploymentLogger(nil, nil, c, &config.CommonConfiguration)
+	dog := dogger.NewDeploymentLogger(nil, nil, c, &cfg.CommonConfiguration)
 	if err := c.ShouldBindJSON(&deployImageRequest); err != nil {
 		log.Println("could not bind the request", err.Error())
 		if deployImageRequest.RequestID != "" {
@@ -151,7 +151,7 @@ func DeployImage(c *gin.Context) {
 	}
 	dog.SetRequestID(deployImageRequest.RequestID)
 
-	if err := executeDeployImageRequest(c, dog, &deployImageRequest, nil, config); err != nil {
+	if err := executeDeployImageRequest(c, dog, &deployImageRequest, nil, cfg); err != nil {
 		dog.Write(err.Error())
 		// TECHDEBT: Using dyrectorio defined Error{} response
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error: ": err.Error()})
@@ -166,16 +166,16 @@ func executeDeployImageRequest(
 	dog *dogger.DeploymentLogger,
 	deployImageRequest *v1.DeployImageRequest,
 	versionData *v1.VersionData,
-	config *config.Configuration) error {
+	cfg *config.Configuration) error {
 	t1 := time.Now()
 	defer func(t1 time.Time) {
 		dog.Write(fmt.Sprintf("Deployment took: %.2f seconds", time.Since(t1).Seconds()))
 	}(t1)
 
-	v1.SetDeploymentDefaults(deployImageRequest, &config.CommonConfiguration)
+	v1.SetDeploymentDefaults(deployImageRequest, &cfg.CommonConfiguration)
 	dog.Write(fmt.Sprintf("Restart policy: %v \n", string(deployImageRequest.ContainerConfig.RestartPolicy)))
 
-	if err := utils.DeployImage(ctx, dog, deployImageRequest, versionData, config); err != nil {
+	if err := utils.DeployImage(ctx, dog, deployImageRequest, versionData, cfg); err != nil {
 		dog.Write("Deployment failed " + err.Error())
 		return err
 	} else {

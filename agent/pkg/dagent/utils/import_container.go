@@ -31,7 +31,7 @@ func checkIfTargetVolumeIsThere(mountList []mount.Mount, importContainer *v1.Imp
 // before application container starts, loads import container
 func spawnInitContainer(
 	cli *client.Client, ctx context.Context, name string, mountList []mount.Mount,
-	importContainer *v1.ImportContainer, dog *dogger.DeploymentLogger, config *config.Configuration) error {
+	importContainer *v1.ImportContainer, dog *dogger.DeploymentLogger, cfg *config.Configuration) error {
 	dog.WriteDeploymentStatus(crux.DeploymentStatus_IN_PROGRESS, "Spawning importer container to load assets")
 	targetVolumeIndex, err := checkIfTargetVolumeIsThere(mountList, importContainer)
 
@@ -39,13 +39,13 @@ func spawnInitContainer(
 		return err
 	}
 
-	builder := NewDockerBuilder(cli, config)
+	builder := NewDockerBuilder(cli, cfg)
 
 	importContainerName := util.JoinV("-", name, "import")
 	targetVolume := mount.Mount{Type: mount.TypeBind, Source: mountList[targetVolumeIndex].Source, Target: "/data/output"}
 
 	builder.
-		WithImage(config.ImportContainerImage).
+		WithImage(cfg.ImportContainerImage).
 		WithCmd(strings.Split(importContainer.Command, " ")).
 		WithName(importContainerName).
 		WithEnv(EnvMapToSlice(importContainer.Environments)).

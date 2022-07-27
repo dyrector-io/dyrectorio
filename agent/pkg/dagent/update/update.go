@@ -10,19 +10,19 @@ import (
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/utils"
 )
 
-func InitUpdater(r *gin.Engine, httpPort int, config *config.Configuration) {
-	switch config.UpdateMethod {
+func InitUpdater(r *gin.Engine, httpPort int, cfg *config.Configuration) {
+	switch cfg.UpdateMethod {
 	case "webhook":
 		if httpPort == 0 {
 			log.Fatal("cannot use webhook without a http port in use")
 		}
 		log.Println("Update mode: webhook")
-		log.Println("Remote DAgent image: " + config.DagentImage + ":" + config.DagentTag)
+		log.Println("Remote DAgent image: " + cfg.DagentImage + ":" + cfg.DagentTag)
 		SetupUpdate(r)
 	case "poll":
 		log.Println("Update mode: polling")
-		log.Println("Remote DAgent image: " + config.DagentImage + ":" + config.DagentTag)
-		if err := utils.ExecWatchtowerPoll(config); err != nil {
+		log.Println("Remote DAgent image: " + cfg.DagentImage + ":" + cfg.DagentTag)
+		if err := utils.ExecWatchtowerPoll(cfg); err != nil {
 			log.Println("Error starting watchtower: " + err.Error())
 		}
 	case "off":

@@ -118,7 +118,7 @@ func GetContainerLogs(c *gin.Context) {
 	containerName := util.JoinV("-", query.ContainerPreName, query.ContainerName)
 	containers := utils.GetContainer(containerName)
 
-	config := utils.GetConfigFromGin(c)
+	cfg := utils.GetConfigFromGin(c)
 
 	if len(containers) < 1 {
 		c.JSON(http.StatusNotFound, model.ErrorResponse{
@@ -135,12 +135,12 @@ func GetContainerLogs(c *gin.Context) {
 
 	skip, err := strconv.ParseUint(c.Query("skip"), 10, 64) //nolint:gomnd
 	if err != nil {
-		skip = config.LogDefaultSkip
+		skip = cfg.LogDefaultSkip
 	}
 
 	take, err := strconv.ParseUint(c.Query("take"), 10, 64) //nolint:gomnd
 	if err != nil {
-		take = config.LogDefaultTake
+		take = cfg.LogDefaultTake
 	}
 
 	logs := utils.GetContainerLogs(containerName, uint(skip), uint(take))

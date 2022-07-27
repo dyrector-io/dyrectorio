@@ -36,12 +36,12 @@ func newIngress(ctx context.Context) *ingress {
 	return &ingress{ctx: ctx, status: ""}
 }
 
-func (i *ingress) deployIngress(options *DeployIngressOptions, config *config.Configuration) error {
+func (i *ingress) deployIngress(options *DeployIngressOptions, cfg *config.Configuration) error {
 	if options == nil {
 		return errors.New("ingress deployment is nil")
 	}
 
-	client, err := getIngressClient(options.namespace, config)
+	client, err := getIngressClient(options.namespace, cfg)
 	if err != nil {
 		log.Println("Error with ingress client: ", err.Error())
 	}
@@ -54,7 +54,7 @@ func (i *ingress) deployIngress(options *DeployIngressOptions, config *config.Co
 	if options.ingressHost != "" {
 		ingressRoot = options.ingressHost
 	} else {
-		ingressRoot = config.IngressRootDomain
+		ingressRoot = cfg.IngressRootDomain
 	}
 
 	var ingressPath string
@@ -97,8 +97,8 @@ func (i *ingress) deployIngress(options *DeployIngressOptions, config *config.Co
 		Spec: spec}
 
 	ingress, err := client.Apply(context.TODO(), applyConfig, metav1.ApplyOptions{
-		FieldManager: config.FieldManagerName,
-		Force:        config.ForceOnConflicts,
+		FieldManager: cfg.FieldManagerName,
+		Force:        cfg.ForceOnConflicts,
 	})
 
 	if err != nil {
@@ -108,8 +108,8 @@ func (i *ingress) deployIngress(options *DeployIngressOptions, config *config.Co
 	return err
 }
 
-func (i *ingress) deleteIngress(namespace, name string, config *config.Configuration) error {
-	client, err := getIngressClient(namespace, config)
+func (i *ingress) deleteIngress(namespace, name string, cfg *config.Configuration) error {
+	client, err := getIngressClient(namespace, cfg)
 	if err != nil {
 		panic(err)
 	}
@@ -166,8 +166,8 @@ func getAnnotations(tlsIsWanted, proxyHeaders bool,
 	return annotations
 }
 
-func getIngressClient(namespace string, config *config.Configuration) (networking.IngressInterface, error) {
-	clientset, err := GetClientSet(config)
+func getIngressClient(namespace string, cfg *config.Configuration) (networking.IngressInterface, error) {
+	clientset, err := GetClientSet(cfg)
 
 	if err != nil {
 		return nil, err

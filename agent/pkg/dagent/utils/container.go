@@ -17,27 +17,27 @@ import (
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
 )
 
-func ExecWatchtowerOneShot(config *config.Configuration) error {
-	b := initDagentUpdaterBuilder(config)
+func ExecWatchtowerOneShot(cfg *config.Configuration) error {
+	b := initDagentUpdaterBuilder(cfg)
 
-	_, err := b.WithCmd([]string{"--run-once", config.AgentContainerName}).
+	_, err := b.WithCmd([]string{"--run-once", cfg.AgentContainerName}).
 		Create(context.TODO()).
 		Start()
 
 	return err
 }
 
-func ExecWatchtowerPoll(config *config.Configuration) error {
+func ExecWatchtowerPoll(cfg *config.Configuration) error {
 	// TODO(nandi): do we need this updater? IIRC dagent can update itself
-	container := GetContainer(config.UpdaterContainerName)
+	container := GetContainer(cfg.UpdaterContainerName)
 	var err error
 
 	if len(container) < 1 {
-		b := initDagentUpdaterBuilder(config)
+		b := initDagentUpdaterBuilder(cfg)
 		_, err = b.WithCmd([]string{
 			"--interval",
-			fmt.Sprintf("%d", int(config.UpdatePollInterval.Seconds())),
-			config.AgentContainerName,
+			fmt.Sprintf("%d", int(cfg.UpdatePollInterval.Seconds())),
+			cfg.AgentContainerName,
 		}).
 			Create(context.TODO()).
 			Start()
@@ -46,26 +46,26 @@ func ExecWatchtowerPoll(config *config.Configuration) error {
 	return err
 }
 
-func initDagentUpdaterBuilder(config *config.Configuration) *dockerContainerBuilder {
+func initDagentUpdaterBuilder(cfg *config.Configuration) *dockerContainerBuilder {
 	return new(dockerContainerBuilder).WithImage("index.docker.io/containrrr/watchtower:latest").
 		WithAutoRemove(true).
-		WithName(config.UpdaterContainerName).
-		WithMountPoints(getUpdaterMounts(config)).
+		WithName(cfg.UpdaterContainerName).
+		WithMountPoints(getUpdaterMounts(cfg)).
 		WithEnv([]string{
-			fmt.Sprintf("REPO_USER=%s", config.RegistryUsername),
-			fmt.Sprintf("REPO_PASS=%s", config.RegistryPassword),
+			fmt.Sprintf("REPO_USER=%s", cfg.RegistryUsername),
+			fmt.Sprintf("REPO_PASS=%s", cfg.RegistryPassword),
 			"WATCHTOWER_LIFECYCLE_HOOKS=true",
 		})
 }
 
-func getUpdaterMounts(config *config.Configuration) []mount.Mount {
+func getUpdaterMounts(cfg *config.Configuration) []mount.Mount {
 	mounts := []mount.Mount{}
 
 	mounts = append(mounts, mount.Mount{
-		Type: mount.TypeBind, Source: config.HostDockerSockPath, Target: "/var/run/docker.sock",
+		Type: mount.TypeBind, Source: cfg.HostDockerSockPath, Target: "/var/run/docker.sock",
 	})
 
-	if config.UpdateHostTimezone {
+	if cfg.UpdateHostTimezone {
 		mounts = append(mounts, mount.Mount{
 			Type:     mount.TypeBind,
 			Source:   "/etc/localtime",
@@ -76,29 +76,29 @@ func getUpdaterMounts(config *config.Configuration) []mount.Mount {
 	return mounts
 }
 
-func ExecTraefik(ctx context.Context, traefikDeployReq model.TraefikDeployRequest, config *config.Configuration) error {
+func ExecTraefik(ctx context.Context, traefikDeployReq model.TraefikDeployRequest, cfg *config.Configuration) error {
 	mounts := []mount.Mount{}
 
 	// dagent/traefik/config
 	mounts = append(mounts, mount.Mount{
 		Type:   mount.TypeBind,
-		Source: config.HostDockerSockPath,
+		Source: cfg.HostDockerSockPath,
 		Target: "/var/run/docker.sock",
 	}, mount.Mount{
 		Type:   mount.TypeBind,
-		Source: filepath.Join(config.DataMountPath, "traefik", "config"),
+		Source: filepath.Join(cfg.DataMountPath, "traefik", "config"),
 		Target: path.Join("/etc", "traefik"),
 	})
 
 	if traefikDeployReq.TLS {
 		mounts = append(mounts, mount.Mount{
 			Type:   mount.TypeBind,
-			Source: filepath.Join(config.DataMountPath, "traefik", "letsencrypt"),
+			Source: filepath.Join(cfg.DataMountPath, "traefik", "letsencrypt"),
 			Target: "/letsencrypt",
 		})
 	}
 
-	internalPath := config.InternalMountPath
+	internalPath := cfg.InternalMountPath
 
 	// ensure directories exist
 	configDir := filepath.Join(internalPath, "traefik", "config")

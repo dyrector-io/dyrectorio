@@ -21,7 +21,7 @@ import (
 func UpdateRunningDAgent(c *gin.Context) {
 	var webhook model.UpdateWebhook
 
-	config := utils.GetConfigFromGin(c)
+	cfg := utils.GetConfigFromGin(c)
 
 	if err := c.ShouldBind(&webhook); err != nil {
 		log.Println("Could not bind the request: ", err.Error())
@@ -33,8 +33,8 @@ func UpdateRunningDAgent(c *gin.Context) {
 		return
 	}
 
-	if webhook.Token != nil && *webhook.Token == config.WebhookToken {
-		if err := utils.ExecWatchtowerOneShot(config); err != nil {
+	if webhook.Token != nil && *webhook.Token == cfg.WebhookToken {
+		if err := utils.ExecWatchtowerOneShot(cfg); err != nil {
 			log.Println("Update error: " + err.Error())
 			c.JSON(http.StatusInternalServerError,
 				model.ErrorResponse{Errors: []model.Error{{

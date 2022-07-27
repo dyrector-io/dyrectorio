@@ -11,7 +11,7 @@ import (
 
 // generating container labels for traefik
 // if Expose is provided we bind 80 and the given ingressName + ingressHost
-func GetTraefikLabels(instanceConfig *v1.InstanceConfig, containerConfig *v1.ContainerConfig, config *config.Configuration) map[string]string {
+func GetTraefikLabels(instanceConfig *v1.InstanceConfig, containerConfig *v1.ContainerConfig, cfg *config.Configuration) map[string]string {
 	labels := map[string]string{}
 	if containerConfig.Expose {
 		serviceName := util.JoinV("-", instanceConfig.ContainerPreName, containerConfig.Container)
@@ -19,7 +19,7 @@ func GetTraefikLabels(instanceConfig *v1.InstanceConfig, containerConfig *v1.Con
 
 		labels["traefik.http.services."+serviceName+".loadbalancer.server.port"] = fmt.Sprint(containerConfig.Ports[0].ExposedPort)
 		labels["traefik.http.routers."+serviceName+".rule"] =
-			"Host(`" + GetServiceName(instanceConfig, containerConfig, config) + "`)"
+			"Host(`" + GetServiceName(instanceConfig, containerConfig, cfg) + "`)"
 		if containerConfig.ExposeTLS {
 			labels["traefik.http.routers."+serviceName+".entrypoints"] = "websecure"
 			labels["traefik.http.routers."+serviceName+".tls.certresolver"] = "le"
@@ -34,7 +34,7 @@ func GetTraefikLabels(instanceConfig *v1.InstanceConfig, containerConfig *v1.Con
 }
 
 // serviceName container-name.container-pre-name.ingress.host is default
-func GetServiceName(instanceConfig *v1.InstanceConfig, containerConfig *v1.ContainerConfig, config *config.Configuration) string {
+func GetServiceName(instanceConfig *v1.InstanceConfig, containerConfig *v1.ContainerConfig, cfg *config.Configuration) string {
 	domain := []string{}
 
 	name := util.Fallback(containerConfig.IngressName, containerConfig.Container)
@@ -47,7 +47,7 @@ func GetServiceName(instanceConfig *v1.InstanceConfig, containerConfig *v1.Conta
 	}
 
 	// containerConfig.IngressRoot > env INGRESS_HOST
-	ingressHost := util.Fallback(containerConfig.IngressHost, config.IngressRootDomain)
+	ingressHost := util.Fallback(containerConfig.IngressHost, cfg.IngressRootDomain)
 	domain = append(domain, ingressHost)
 
 	return util.JoinV(".", domain...)

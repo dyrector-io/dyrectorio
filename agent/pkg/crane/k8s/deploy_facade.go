@@ -56,8 +56,8 @@ func NewDeployFacade(params *DeployFacadeParams) *deployFacade {
 	}
 }
 
-func (d *deployFacade) CheckPreConditions(config *config.Configuration) error {
-	if err := d.namespace.deployNamespace(config); err != nil {
+func (d *deployFacade) CheckPreConditions(cfg *config.Configuration) error {
+	if err := d.namespace.deployNamespace(cfg); err != nil {
 		return err
 	}
 
@@ -70,9 +70,9 @@ func (d *deployFacade) CheckPreConditions(config *config.Configuration) error {
 }
 
 // TODO docs
-func (d *deployFacade) PreDeploy(config *config.Configuration) error {
+func (d *deployFacade) PreDeploy(cfg *config.Configuration) error {
 	if d.params.InstanceConfig.UseSharedEnvs {
-		if err := d.configmap.loadSharedConfig(d.namespace.name, config); err != nil {
+		if err := d.configmap.loadSharedConfig(d.namespace.name, cfg); err != nil {
 			return err
 		}
 	} else {
@@ -81,7 +81,7 @@ func (d *deployFacade) PreDeploy(config *config.Configuration) error {
 				d.namespace.name,
 				d.params.InstanceConfig.ContainerPreName+"-shared",
 				strArrToStrMap(d.params.InstanceConfig.SharedEnvironment),
-				config,
+				cfg,
 			); err != nil {
 				log.Println("Namespace global config map error: " + err.Error())
 				return err
@@ -94,7 +94,7 @@ func (d *deployFacade) PreDeploy(config *config.Configuration) error {
 			d.namespace.name,
 			d.params.InstanceConfig.Name+"-common",
 			strArrToStrMap(d.params.InstanceConfig.Environment),
-			config,
+			cfg,
 		); err != nil {
 			log.Println("Common config map error: " + err.Error())
 			return err
@@ -106,7 +106,7 @@ func (d *deployFacade) PreDeploy(config *config.Configuration) error {
 			d.namespace.name,
 			d.params.ContainerConfig.Container,
 			strArrToStrMap(d.params.ContainerConfig.Environment),
-			config,
+			cfg,
 		); err != nil {
 			log.Println("Container config map error: " + err.Error())
 			return err
@@ -118,7 +118,7 @@ func (d *deployFacade) PreDeploy(config *config.Configuration) error {
 		d.namespace.name,
 		d.params.ContainerConfig.Container,
 		d.params.RuntimeConfig,
-		config); err != nil {
+		cfg); err != nil {
 		log.Println("Container configMap-runtime error: ", err.Error())
 		return err
 	}
@@ -128,7 +128,7 @@ func (d *deployFacade) PreDeploy(config *config.Configuration) error {
 		d.params.ContainerConfig.Container,
 		d.params.ContainerConfig.Mounts,
 		d.params.ContainerConfig.Volumes,
-		config,
+		cfg,
 	); err != nil {
 		log.Println("PVC deployment failed: " + err.Error())
 		return err
@@ -137,7 +137,7 @@ func (d *deployFacade) PreDeploy(config *config.Configuration) error {
 	return nil
 }
 
-func (d *deployFacade) Deploy(config *config.Configuration) error {
+func (d *deployFacade) Deploy(cfg *config.Configuration) error {
 	var portList []v1.PortBinding
 	if d.params.ContainerConfig.Ports != nil {
 		portList = append(portList, d.params.ContainerConfig.Ports...)
@@ -152,7 +152,7 @@ func (d *deployFacade) Deploy(config *config.Configuration) error {
 			useLB:         d.params.ContainerConfig.UseLoadBalancer,
 			LBAnnotations: d.params.ContainerConfig.ExtraLBAnnotations,
 		},
-		config,
+		cfg,
 	); err != nil {
 		log.Println("Error with service: " + err.Error())
 		return err
@@ -168,7 +168,7 @@ func (d *deployFacade) Deploy(config *config.Configuration) error {
 		command:         d.params.ContainerConfig.Command,
 		args:            d.params.ContainerConfig.Args,
 		issuer:          d.params.Issuer,
-	}, config); err != nil {
+	}, cfg); err != nil {
 		log.Println("Error with deployment: " + err.Error())
 		return err
 	}
@@ -186,7 +186,7 @@ func (d *deployFacade) Deploy(config *config.Configuration) error {
 				proxyHeaders:  d.params.ContainerConfig.ProxyHeaders,
 				customHeaders: d.params.ContainerConfig.CustomHeaders,
 			},
-			config,
+			cfg,
 		); err != nil {
 			log.Println("Error with deployment: " + err.Error())
 		}
@@ -214,10 +214,11 @@ func strArrToStrMap(str []string) map[string]string {
 	return mapped
 }
 
-func Deploy(c context.Context, dog *dogger.DeploymentLogger, deployImageRequest *v1.DeployImageRequest, versionData *v1.VersionData, config *config.Configuration) error {
-	dog.Write(deployImageRequest.Strings(&config.CommonConfiguration)...)
+func Deploy(c context.Context, dog *dogger.DeploymentLogger, deployImageRequest *v1.DeployImageRequest,
+	versionData *v1.VersionData, cfg *config.Configuration) error {
+	dog.Write(deployImageRequest.Strings(&cfg.CommonConfiguration)...)
 	dog.Write(deployImageRequest.InstanceConfig.Strings()...)
-	dog.Write(deployImageRequest.ContainerConfig.Strings(&config.CommonConfiguration)...)
+	dog.Write(deployImageRequest.ContainerConfig.Strings(&cfg.CommonConfiguration)...)
 
 	deployFacade := NewDeployFacade(
 		&DeployFacadeParams{
@@ -232,15 +233,15 @@ func Deploy(c context.Context, dog *dogger.DeploymentLogger, deployImageRequest 
 			Issuer:          deployImageRequest.Issuer,
 		})
 
-	if err := deployFacade.CheckPreConditions(config); err != nil {
+	if err := deployFacade.CheckPreConditions(cfg); err != nil {
 		return err
 	}
 
-	if err := deployFacade.PreDeploy(config); err != nil {
+	if err := deployFacade.PreDeploy(cfg); err != nil {
 		return err
 	}
 
-	if err := deployFacade.Deploy(config); err != nil {
+	if err := deployFacade.Deploy(cfg); err != nil {
 		return err
 	}
 

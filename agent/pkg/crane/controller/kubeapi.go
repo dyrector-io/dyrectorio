@@ -26,8 +26,8 @@ import (
 // @Success 200 {object} []k8s.Namespace
 // @Router /namespaces [get]
 func GetNamespaces(c *gin.Context) {
-	config := utils.GetConfigFromGin(c)
-	namespaces, err := k8s.GetNamespaces(config)
+	cfg := utils.GetConfigFromGin(c)
+	namespaces, err := k8s.GetNamespaces(cfg)
 
 	if err != nil {
 		log.Println(err)
@@ -46,8 +46,8 @@ func GetNamespaces(c *gin.Context) {
 // @Router /deployments [get]
 func GetDeployments(c *gin.Context) {
 	// todo(nandi): this is not smort to-be-done
-	config := utils.GetConfigFromGin(c)
-	deployments, err := k8s.GetDeployments("default", config)
+	cfg := utils.GetConfigFromGin(c)
+	deployments, err := k8s.GetDeployments("default", cfg)
 
 	if err != nil {
 		log.Println(err)
@@ -68,7 +68,7 @@ func GetDeployments(c *gin.Context) {
 // @Success 200 {object} v1.ContainerStatusResponse
 // @Router /containers/{containerPreName}/{containerName}/status [get]
 func GetDeploymentStatus(c *gin.Context) {
-	config := utils.GetConfigFromGin(c)
+	cfg := utils.GetConfigFromGin(c)
 	query := &apiv1.DeploymentQuery{}
 
 	if err := c.BindUri(&query); err != nil {
@@ -76,7 +76,7 @@ func GetDeploymentStatus(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	resp, err := k8s.DeploymentStatus(query.ContainerPreName, query.ContainerName, config)
+	resp, err := k8s.DeploymentStatus(query.ContainerPreName, query.ContainerName, cfg)
 
 	if err != nil {
 		log.Println("Status error: ", err.Error())
@@ -147,7 +147,7 @@ func DescribeDeployment(c *gin.Context) {
 // @Success 200
 // @Router /containers/{containerPreName}/{containerName} [delete]
 func DeleteDeployment(c *gin.Context) {
-	config := utils.GetConfigFromGin(c)
+	cfg := utils.GetConfigFromGin(c)
 	query := &apiv1.DeleteDeploymentQuery{}
 
 	if err := c.BindUri(&query); err != nil {
@@ -159,7 +159,7 @@ func DeleteDeployment(c *gin.Context) {
 
 	// delete deployment is necessary while others are optional
 	// deployments contain containers
-	err := del.DeleteDeployment(config)
+	err := del.DeleteDeployment(cfg)
 	if errors.IsNotFound(err) {
 		c.JSON(http.StatusNotFound, apiv1.DeleteDeploymentResponse{Error: err.Error()})
 		return
@@ -169,17 +169,17 @@ func DeleteDeployment(c *gin.Context) {
 	}
 
 	// optional deletes, each deploy request overwrites/redeploys them anyway
-	err = del.DeleteServices(config)
+	err = del.DeleteServices(cfg)
 	if !errors.IsNotFound(err) && err != nil {
 		log.Println("Delete service error: " + err.Error())
 	}
 
-	err = del.DeleteConfigMaps(config)
+	err = del.DeleteConfigMaps(cfg)
 	if !errors.IsNotFound(err) && err != nil {
 		log.Println("Delete configmaps error: " + err.Error())
 	}
 
-	err = del.DeleteIngresses(config)
+	err = del.DeleteIngresses(cfg)
 	if !errors.IsNotFound(err) && err != nil {
 		log.Println("Delete ingress error: " + err.Error())
 	}

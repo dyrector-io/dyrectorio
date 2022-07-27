@@ -28,13 +28,13 @@ import (
 // @Success 200 {object} v1.DeployImageResponse
 // @Router /deploy [post]
 func DeployImage(c *gin.Context) {
-	config := utils.GetConfigFromGin(c)
+	cfg := utils.GetConfigFromGin(c)
 
 	deployImageRequest := &v1.DeployImageRequest{}
 
 	t1 := time.Now()
 
-	dog := dogger.NewDeploymentLogger(nil, nil, c.Request.Context(), &config.CommonConfiguration)
+	dog := dogger.NewDeploymentLogger(nil, nil, c.Request.Context(), &cfg.CommonConfiguration)
 	if err := c.ShouldBindJSON(deployImageRequest); err != nil {
 		handleDeployBindingError(c, deployImageRequest, dog, err)
 		return
@@ -47,9 +47,9 @@ func DeployImage(c *gin.Context) {
 		dog.Write(duration)
 	}(t1)
 
-	dog.Write(deployImageRequest.Strings(&config.CommonConfiguration)...)
+	dog.Write(deployImageRequest.Strings(&cfg.CommonConfiguration)...)
 	dog.Write(deployImageRequest.InstanceConfig.Strings()...)
-	dog.Write(deployImageRequest.ContainerConfig.Strings(&config.CommonConfiguration)...)
+	dog.Write(deployImageRequest.ContainerConfig.Strings(&cfg.CommonConfiguration)...)
 	runtimeConfigStr := string(deployImageRequest.RuntimeConfig)
 
 	deployFacade := k8s.NewDeployFacade(
@@ -65,17 +65,17 @@ func DeployImage(c *gin.Context) {
 			RuntimeConfig:   &runtimeConfigStr,
 			Issuer:          deployImageRequest.Issuer,
 		})
-	if err := deployFacade.CheckPreConditions(config); err != nil {
+	if err := deployFacade.CheckPreConditions(cfg); err != nil {
 		handleDeploymentError(c, dog, deployImageRequest, err)
 		return
 	}
 
-	if err := deployFacade.PreDeploy(config); err != nil {
+	if err := deployFacade.PreDeploy(cfg); err != nil {
 		handleDeploymentError(c, dog, deployImageRequest, err)
 		return
 	}
 
-	if err := deployFacade.Deploy(config); err != nil {
+	if err := deployFacade.Deploy(cfg); err != nil {
 		handleDeploymentError(c, dog, deployImageRequest, err)
 		return
 	}
@@ -146,7 +146,7 @@ func handleDeploymentError(c *gin.Context, dog *dogger.DeploymentLogger, deploym
 func BatchDeployImage(c *gin.Context) {
 	batchDeployImageRequest := v1.BatchDeployImageRequest{}
 
-	config := utils.GetConfigFromGin(c)
+	cfg := utils.GetConfigFromGin(c)
 
 	if err := c.ShouldBindJSON(&batchDeployImageRequest); err != nil {
 		log.Println("could not bind the request", err.Error())
@@ -161,9 +161,9 @@ func BatchDeployImage(c *gin.Context) {
 	for i := range batchDeployImageRequest {
 		runtimeConfigStr := string(batchDeployImageRequest[i].RuntimeConfig)
 
-		dog := dogger.NewDeploymentLogger(nil, nil, c.Request.Context(), &config.CommonConfiguration)
+		dog := dogger.NewDeploymentLogger(nil, nil, c.Request.Context(), &cfg.CommonConfiguration)
 		dog.SetRequestID(batchDeployImageRequest[i].RequestID)
-		dog.Write(batchDeployImageRequest[i].Strings(&config.CommonConfiguration)...)
+		dog.Write(batchDeployImageRequest[i].Strings(&cfg.CommonConfiguration)...)
 
 		deployFacade := k8s.NewDeployFacade(
 			&k8s.DeployFacadeParams{
@@ -177,7 +177,7 @@ func BatchDeployImage(c *gin.Context) {
 				ContainerConfig: batchDeployImageRequest[i].ContainerConfig,
 				RuntimeConfig:   &runtimeConfigStr,
 			})
-		if err := deployFacade.CheckPreConditions(config); err != nil {
+		if err := deployFacade.CheckPreConditions(cfg); err != nil {
 			log.Println("Error in pre-conditions: " + err.Error())
 			dog.Write(err.Error())
 			batchDeployImageResponse = append(batchDeployImageResponse, v1.DeployImageResponse{
@@ -189,7 +189,7 @@ func BatchDeployImage(c *gin.Context) {
 			return
 		}
 
-		if err := deployFacade.PreDeploy(config); err != nil {
+		if err := deployFacade.PreDeploy(cfg); err != nil {
 			log.Println("Error in pre-deploy: " + err.Error())
 			dog.Write(err.Error())
 			batchDeployImageResponse = append(batchDeployImageResponse, v1.DeployImageResponse{
@@ -201,7 +201,7 @@ func BatchDeployImage(c *gin.Context) {
 			return
 		}
 
-		if err := deployFacade.Deploy(config); err != nil {
+		if err := deployFacade.Deploy(cfg); err != nil {
 			log.Println("Error in deploy: " + err.Error())
 			dog.Write(err.Error())
 			batchDeployImageResponse = append(batchDeployImageResponse, v1.DeployImageResponse{
@@ -235,7 +235,7 @@ func BatchDeployImage(c *gin.Context) {
 func DeployVersion(c *gin.Context) {
 	deployVersionRequest := v1.DeployVersionRequest{}
 
-	config := utils.GetConfigFromGin(c)
+	cfg := utils.GetConfigFromGin(c)
 
 	if err := c.ShouldBindJSON(&deployVersionRequest); err != nil {
 		log.Println("could not bind the request", err.Error())
@@ -254,8 +254,8 @@ func DeployVersion(c *gin.Context) {
 			&deployVersionRequest.DeployImages[i].RequestID,
 			nil,
 			c.Request.Context(),
-			&config.CommonConfiguration)
-		dog.Write(deployVersionRequest.DeployImages[i].Strings(&config.CommonConfiguration)...)
+			&cfg.CommonConfiguration)
+		dog.Write(deployVersionRequest.DeployImages[i].Strings(&cfg.CommonConfiguration)...)
 
 		versionEnv := "ReleaseVersion|" + deployVersionRequest.Version
 		deployVersionRequest.DeployImages[i].ContainerConfig.Environment =
@@ -275,7 +275,7 @@ func DeployVersion(c *gin.Context) {
 			})
 
 		// todo(nandi): review bad requests, their presence is not justified, request might be correct `filozofiai kerdes`
-		if err := deployFacade.CheckPreConditions(config); err != nil {
+		if err := deployFacade.CheckPreConditions(cfg); err != nil {
 			log.Println("Error in pre-conditions: " + err.Error())
 			dog.Write(err.Error())
 			deployVersionResponse = append(deployVersionResponse, v1.DeployImageResponse{
@@ -287,7 +287,7 @@ func DeployVersion(c *gin.Context) {
 			return
 		}
 
-		if err := deployFacade.PreDeploy(config); err != nil {
+		if err := deployFacade.PreDeploy(cfg); err != nil {
 			log.Println("Error in pre-deploy: " + err.Error())
 			dog.Write(err.Error())
 			deployVersionResponse = append(deployVersionResponse, v1.DeployImageResponse{
@@ -299,7 +299,7 @@ func DeployVersion(c *gin.Context) {
 			return
 		}
 
-		if err := deployFacade.Deploy(config); err != nil {
+		if err := deployFacade.Deploy(cfg); err != nil {
 			log.Println("Error in deploy: " + err.Error())
 			dog.Write(err.Error())
 			deployVersionResponse = append(deployVersionResponse, v1.DeployImageResponse{

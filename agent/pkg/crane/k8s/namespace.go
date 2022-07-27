@@ -29,8 +29,8 @@ func newNamespace(name string) *namespace {
 	return &ns
 }
 
-func (n *namespace) deployNamespace(config *config.Configuration) error {
-	client, err := getNamespaceClient(config)
+func (n *namespace) deployNamespace(cfg *config.Configuration) error {
+	client, err := getNamespaceClient(cfg)
 	if err != nil {
 		return err
 	}
@@ -43,8 +43,8 @@ func (n *namespace) deployNamespace(config *config.Configuration) error {
 	_, err = client.Apply(context.TODO(),
 		corev1.Namespace(n.name),
 		metav1.ApplyOptions{
-			FieldManager: config.FieldManagerName,
-			Force:        config.ForceOnConflicts,
+			FieldManager: cfg.FieldManagerName,
+			Force:        cfg.ForceOnConflicts,
 		})
 
 	if err != nil {
@@ -63,8 +63,8 @@ func extractName(in *apiv1.NamespaceList) []Namespace {
 	return out
 }
 
-func GetNamespaces(config *config.Configuration) ([]Namespace, error) {
-	client, err := getNamespaceClient(config)
+func GetNamespaces(cfg *config.Configuration) ([]Namespace, error) {
+	client, err := getNamespaceClient(cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -77,8 +77,8 @@ func GetNamespaces(config *config.Configuration) ([]Namespace, error) {
 	return list, err
 }
 
-func DeleteNamespace(name string, config *config.Configuration) error {
-	client, err := getNamespaceClient(config)
+func DeleteNamespace(name string, cfg *config.Configuration) error {
+	client, err := getNamespaceClient(cfg)
 	if err != nil {
 		return err
 	}
@@ -92,8 +92,8 @@ func DeleteNamespace(name string, config *config.Configuration) error {
 	return err
 }
 
-func getNamespaceClient(config *config.Configuration) (v1.NamespaceInterface, error) {
-	clientset, err := GetClientSet(config)
+func getNamespaceClient(cfg *config.Configuration) (v1.NamespaceInterface, error) {
+	clientset, err := GetClientSet(cfg)
 
 	if err != nil {
 		return nil, err

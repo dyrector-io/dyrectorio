@@ -49,8 +49,8 @@ type ServiceParams struct {
 	LBAnnotations map[string]string
 }
 
-func (s *service) deployService(params *ServiceParams, config *config.Configuration) error {
-	client, err := getServiceClient(params.namespace, config)
+func (s *service) deployService(params *ServiceParams, cfg *config.Configuration) error {
+	client, err := getServiceClient(params.namespace, cfg)
 	if err != nil {
 		return err
 	}
@@ -80,8 +80,8 @@ func (s *service) deployService(params *ServiceParams, config *config.Configurat
 	}
 
 	res, err := client.Apply(context.TODO(), svc, metav1.ApplyOptions{
-		FieldManager: config.FieldManagerName,
-		Force:        config.ForceOnConflicts,
+		FieldManager: cfg.FieldManagerName,
+		Force:        cfg.ForceOnConflicts,
 	})
 
 	if err != nil {
@@ -90,7 +90,7 @@ func (s *service) deployService(params *ServiceParams, config *config.Configurat
 		log.Printf("Service deployed: %s", res.Name)
 	}
 
-	if config.CraneGenTCPIngressMap != "" {
+	if cfg.CraneGenTCPIngressMap != "" {
 		genIngressMapFile(ports, params.namespace, params.name)
 	}
 
@@ -101,8 +101,8 @@ func (s *service) deployService(params *ServiceParams, config *config.Configurat
 	return nil
 }
 
-func (s *service) deleteServices(namespace, name string, config *config.Configuration) error {
-	client, err := getServiceClient(namespace, config)
+func (s *service) deleteServices(namespace, name string, cfg *config.Configuration) error {
+	client, err := getServiceClient(namespace, cfg)
 	if err != nil {
 		return err
 	}
@@ -139,8 +139,8 @@ func getServicePorts(portBindings []v1.PortBinding, portRanges []v1.PortRangeBin
 	return ports
 }
 
-func getServiceClient(namespace string, config *config.Configuration) (typedcorev1.ServiceInterface, error) {
-	clientset, err := GetClientSet(config)
+func getServiceClient(namespace string, cfg *config.Configuration) (typedcorev1.ServiceInterface, error) {
+	clientset, err := GetClientSet(cfg)
 
 	if err != nil {
 		return nil, err

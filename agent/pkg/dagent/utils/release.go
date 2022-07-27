@@ -32,8 +32,8 @@ type ReleaseContainer struct {
 // DraftRelease writes release information to disk
 // Into the instance folder @release directory, file with a release name
 // yml extension the file containing release data
-func DraftRelease(instance string, versionData v1.VersionData, deployResponse v1.DeployVersionResponse, config *config.Configuration) {
-	releaseDirPath := path.Join(config.InternalMountPath, instance, "@release")
+func DraftRelease(instance string, versionData v1.VersionData, deployResponse v1.DeployVersionResponse, cfg *config.Configuration) {
+	releaseDirPath := path.Join(cfg.InternalMountPath, instance, "@release")
 	if err := os.MkdirAll(releaseDirPath, os.ModePerm); err != nil {
 		panic(err)
 	}
@@ -76,8 +76,8 @@ func DraftRelease(instance string, versionData v1.VersionData, deployResponse v1
 	}
 }
 
-func GetVersions(instance string, config *config.Configuration) []ReleaseDoc {
-	releaseDirPath := path.Join(config.InternalMountPath, instance, "@release")
+func GetVersions(instance string, cfg *config.Configuration) []ReleaseDoc {
+	releaseDirPath := path.Join(cfg.InternalMountPath, instance, "@release")
 	if err := os.MkdirAll(filepath.Clean(releaseDirPath), os.ModePerm); err != nil {
 		panic(err)
 	}

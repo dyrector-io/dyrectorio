@@ -34,22 +34,22 @@ func NewDeleteFacade(ctx context.Context, namespace, name string) *deleteFacade 
 	}
 }
 
-func (d *deleteFacade) DeleteNamespace(namespace string, config *config.Configuration) error {
-	return DeleteNamespace(namespace, config)
+func (d *deleteFacade) DeleteNamespace(namespace string, cfg *config.Configuration) error {
+	return DeleteNamespace(namespace, cfg)
 }
 
-func (d *deleteFacade) DeleteDeployment(config *config.Configuration) error {
-	return d.deployment.deleteDeployment(d.namespace.name, d.name, config)
+func (d *deleteFacade) DeleteDeployment(cfg *config.Configuration) error {
+	return d.deployment.deleteDeployment(d.namespace.name, d.name, cfg)
 }
 
-func (d *deleteFacade) DeleteConfigMaps(config *config.Configuration) error {
-	return d.configmap.deleteConfigMaps(d.namespace.name, d.name, config)
+func (d *deleteFacade) DeleteConfigMaps(cfg *config.Configuration) error {
+	return d.configmap.deleteConfigMaps(d.namespace.name, d.name, cfg)
 }
 
-func (d *deleteFacade) DeleteServices(config *config.Configuration) error {
-	return d.service.deleteServices(d.namespace.name, d.name, config)
+func (d *deleteFacade) DeleteServices(cfg *config.Configuration) error {
+	return d.service.deleteServices(d.namespace.name, d.name, cfg)
 }
 
-func (d *deleteFacade) DeleteIngresses(config *config.Configuration) error {
-	return d.ingress.deleteIngress(d.namespace.name, d.name, config)
+func (d *deleteFacade) DeleteIngresses(cfg *config.Configuration) error {
+	return d.ingress.deleteIngress(d.namespace.name, d.name, cfg)
 }

@@ -14,7 +14,7 @@ import (
 )
 
 // DeploymentStatus get collective status of relevant k8s objects
-func DeploymentStatus(namespace, name string, config *config.Configuration) (*v1.ContainerStatusResponse, error) {
+func DeploymentStatus(namespace, name string, cfg *config.Configuration) (*v1.ContainerStatusResponse, error) {
 	// what is up
 	// ingress - svc - deployment - pod
 
@@ -25,7 +25,7 @@ func DeploymentStatus(namespace, name string, config *config.Configuration) (*v1
 		Status:     "status",
 	}
 
-	client := getDeploymentsClient(namespace, config)
+	client := getDeploymentsClient(namespace, cfg)
 
 	deployment, err := client.Get(context.TODO(), name, metav1.GetOptions{})
 
@@ -50,7 +50,7 @@ func DeploymentStatus(namespace, name string, config *config.Configuration) (*v1
 
 	statusResp.State = getReplicasStr(deployment)
 
-	podClient, err := getPodClient(namespace, config)
+	podClient, err := getPodClient(namespace, cfg)
 	if err != nil {
 		return nil, err
 	}

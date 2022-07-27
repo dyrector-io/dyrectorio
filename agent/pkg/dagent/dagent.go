@@ -23,8 +23,6 @@ import (
 	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 )
 
-var cfg config.Configuration
-
 // @title DAgent API Swagger
 // @version 2.0
 // @description DAgent server API docs. Scope: container management on remote nodes.

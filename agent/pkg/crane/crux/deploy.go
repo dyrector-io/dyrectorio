@@ -9,8 +9,8 @@ import (
 	"github.com/dyrector-io/dyrectorio/protobuf/go/crux"
 )
 
-func GetDeployments(namespace string, config *config.Configuration) []*crux.ContainerStatusItem {
-	list, err := k8s.GetDeployments(namespace, config)
+func GetDeployments(namespace string, cfg *config.Configuration) []*crux.ContainerStatusItem {
+	list, err := k8s.GetDeployments(namespace, cfg)
 
 	if err != nil {
 		log.Println(err)
