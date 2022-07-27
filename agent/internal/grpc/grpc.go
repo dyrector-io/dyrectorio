@@ -78,7 +78,8 @@ func (g *GrpcConnection) SetConn(conn *grpc.ClientConn) {
 	g.Conn = conn
 }
 
-var GrpcConn *GrpcConnection
+// Singleton instance
+var grpcConn *GrpcConnection //nolint:gochecknoglobals
 
 func fetchCertificatesFromURL(url string) (*x509.CertPool, error) {
 	log.Println("Retrieving certificate")
@@ -114,14 +115,14 @@ func fetchCertificatesFromURL(url string) (*x509.CertPool, error) {
 
 func Init(connParams *GrpcConnectionParams, appConfig *config.CommonConfiguration, workerFuncs WorkerFunctions) {
 	log.Println("Spinning up gRPC Agent client...")
-	if GrpcConn == nil {
-		GrpcConn = &GrpcConnection{}
+	if grpcConn == nil {
+		grpcConn = &GrpcConnection{}
 	}
 
 	ctx, cancel := context.WithCancel(context.TODO())
 	ctx = metadata.AppendToOutgoingContext(ctx, "dyo-node-token", connParams.token)
 
-	if GrpcConn.Conn == nil {
+	if grpcConn.Conn == nil {
 		var creds credentials.TransportCredentials
 		if connParams.insecure {
 			creds = insecure.NewCredentials()
@@ -169,7 +170,7 @@ func Init(connParams *GrpcConnectionParams, appConfig *config.CommonConfiguratio
 		if err != nil {
 			log.Println("gRPC connection error: " + err.Error())
 		}
-		GrpcConn.Conn = conn
+		grpcConn.Conn = conn
 	}
 
 	// if binding multiple ports, eg http, we have to run stuff in go func
@@ -185,19 +186,19 @@ func grpcLoop(
 	var stream agent.Agent_ConnectClient
 	var err error
 	defer cancel()
-	defer GrpcConn.Conn.Close()
+	defer grpcConn.Conn.Close()
 	for {
-		if GrpcConn.Client == nil {
-			client := agent.NewAgentClient(GrpcConn.Conn)
-			GrpcConn.SetClient(client)
-			stream, err = GrpcConn.Client.Connect(
+		if grpcConn.Client == nil {
+			client := agent.NewAgentClient(grpcConn.Conn)
+			grpcConn.SetClient(client)
+			stream, err = grpcConn.Client.Connect(
 				ctx, &agent.AgentInfo{Id: nodeID, Version: version.BuildVersion()},
 				grpc.WaitForReady(true),
 			)
 			if err != nil {
 				log.Println(err)
 				time.Sleep(time.Second)
-				GrpcConn.Client = nil
+				grpcConn.Client = nil
 				continue
 			} else {
 				log.Println("Stream connection is up")
@@ -208,12 +209,12 @@ func grpcLoop(
 		err = stream.RecvMsg(command)
 		if err == io.EOF {
 			log.Print("End of receiving")
-			GrpcConn.Client = nil
+			grpcConn.Client = nil
 			continue
 		}
 		if err != nil {
 			log.Println(status.Errorf(codes.Unknown, "Cannot receive stream: %v", err))
-			GrpcConn.Client = nil
+			grpcConn.Client = nil
 			time.Sleep(appConfig.DefaultTimeout)
 			// TODO replace the line above with an error status code check and terminate dagent accordingly
 			continue
@@ -239,7 +240,7 @@ func executeVersionDeployRequest(
 	log.Println("Deployment -", req.Id, "Opening status channel.")
 
 	deployCtx := metadata.AppendToOutgoingContext(ctx, "dyo-deployment-id", req.Id)
-	statusStream, err := GrpcConn.Client.DeploymentStatus(deployCtx, grpc.WaitForReady(true))
+	statusStream, err := grpcConn.Client.DeploymentStatus(deployCtx, grpc.WaitForReady(true))
 
 	if err != nil {
 		log.Println("Deployment -", req.Id, "Status connect error: ", err.Error())
@@ -291,7 +292,7 @@ func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStatus
 	log.Printf("Opening container status channel for prefix: %s", filterPrefix)
 
 	streamCtx := metadata.AppendToOutgoingContext(ctx, "dyo-filter-prefix", filterPrefix)
-	stream, err := GrpcConn.Client.ContainerStatus(streamCtx, grpc.WaitForReady(true))
+	stream, err := grpcConn.Client.ContainerStatus(streamCtx, grpc.WaitForReady(true))
 	if err != nil {
 		log.Printf("Failed to open container status channel: %s", err.Error())
 		return

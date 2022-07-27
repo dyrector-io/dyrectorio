@@ -35,8 +35,8 @@ import (
 
 const DockerClientTimeoutSeconds = 30
 
-var val time.Duration = (time.Duration(DockerClientTimeoutSeconds) * time.Second)
-var containerTimeout *time.Duration = &val
+var val time.Duration = (time.Duration(DockerClientTimeoutSeconds) * time.Second) //nolint:gochecknoglobals
+var containerTimeout *time.Duration = &val                                        //nolint:gochecknoglobals
 
 type DockerVersion struct {
 	ServerVersion string
