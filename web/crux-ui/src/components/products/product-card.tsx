@@ -22,32 +22,39 @@ const ProductCard = (props: ProductCardProps) => {
   return (
     <>
       <DyoCard className={clsx(props.className ?? 'p-6', 'flex flex-col flex-grow')}>
-        <div className="flex flex-row">
-          <Image
-            className={clsx(onClick ? 'cursor-pointer' : null)}
-            src="/product_default.svg"
-            alt={t('altPicture', { name: product.name })}
-            width={100}
-            height={100}
-            onClick={onClick}
-          />
+        <div className="flex flex-col overflow-hidden">
 
-          <div className="flex flex-col flex-grow">
-            <DyoHeading element="h5" className="text-lg text-bright ml-4" onClick={onClick}>
-              {product.name}
-            </DyoHeading>
+          <div className="flex flex-row">
 
-            <div className="flex flex-row justify-end">
-              <span className="text-bright font-bold">{`${t('common:updatedAt')}:`}</span>
+            <Image
+              className={clsx(onClick ? 'cursor-pointer' : null)}
+              src="/product_default.svg"
+              alt={t('altPicture', { name: product.name })}
+              width={100}
+              height={100}
+              onClick={onClick}
+            />
 
-              <span className="text-bright ml-2">{utcDateToLocale(product.updatedAt)}</span>
+            <div className="flex flex-col flex-grow">
+              <DyoHeading element="h5" className="text-lg text-bright ml-4" onClick={onClick}>
+                {product.name}
+              </DyoHeading>
+
+              <div className="flex flex-row justify-start">
+                <span className="text-bright font-bold ml-4">{`${t('common:updatedAt')}:`}</span>
+
+                <span className="text-bright ml-2">{utcDateToLocale(product.updatedAt)}</span>
+              </div>
+
+              <DyoTag className="ml-auto">{t(product.type).toUpperCase()}</DyoTag>
             </div>
 
-            <DyoTag className="ml-auto">{t(product.type).toUpperCase()}</DyoTag>
           </div>
+
+          <p className="text-md text-bright mt-4 overflow-y-auto">{product.description}</p>
+
         </div>
 
-        <p className="text-md text-bright mt-4">{product.description}</p>
       </DyoCard>
     </>
   )
