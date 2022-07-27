@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
+	"github.com/dyrector-io/dyrectorio/agent/internal/grpc"
 	"github.com/dyrector-io/dyrectorio/agent/internal/mapper"
 	"github.com/dyrector-io/dyrectorio/agent/internal/util"
 	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
@@ -91,7 +92,7 @@ func GetContainersByName(name string) []types.Container {
 	return containers
 }
 
-func GetContainersByNameCrux(name string) []*crux.ContainerStatusItem {
+func GetContainersByNameCrux(ctx context.Context, name string) []*crux.ContainerStatusItem {
 	containers := GetContainersByName(name)
 
 	return mapper.MapContainerStatus(&containers)
@@ -341,9 +342,9 @@ func logDeployInfo(dog *dogger.DeploymentLogger, deployImageRequest *v1.DeployIm
 func DeployImage(ctx context.Context,
 	dog *dogger.DeploymentLogger,
 	deployImageRequest *v1.DeployImageRequest,
-	versionData *v1.VersionData,
-	cfg *config.Configuration) error {
+	versionData *v1.VersionData) error {
 	containerName := getContainerName(deployImageRequest)
+	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
 
 	image, _ := util.ImageURIFromString(
 		util.JoinV("/",

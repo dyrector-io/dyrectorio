@@ -10,17 +10,14 @@ import (
 	"github.com/gin-gonic/gin"
 	"k8s.io/apimachinery/pkg/api/resource"
 
-	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
 	"github.com/dyrector-io/dyrectorio/agent/internal/grpc"
 	"github.com/dyrector-io/dyrectorio/agent/internal/sigmalr"
 	"github.com/dyrector-io/dyrectorio/agent/internal/util"
-	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/api/validate"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/config"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/crux"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/k8s"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/route"
-	protoCrux "github.com/dyrector-io/dyrectorio/protobuf/go/crux"
 )
 
 // checks before start
@@ -99,23 +96,16 @@ func Serve(cfg *config.Configuration) {
 		}
 
 		log.Println("Running gRPC in blocking mode: ", blocking)
+		grpcContext := grpc.WithGRPCConfig(context.TODO(), cfg)
 		if blocking {
-			grpc.Init(grpcParams, &cfg.CommonConfiguration, grpc.WorkerFunctions{
-				Deploy: func(ctx context.Context, dogger *dogger.DeploymentLogger, dir *v1.DeployImageRequest, vd *v1.VersionData) error {
-					return k8s.Deploy(ctx, dogger, dir, vd, cfg)
-				},
-				Watch: func(s string) []*protoCrux.ContainerStatusItem {
-					return crux.GetDeployments(s, cfg)
-				},
+			grpc.Init(grpcContext, grpcParams, &cfg.CommonConfiguration, grpc.WorkerFunctions{
+				Deploy: k8s.Deploy,
+				Watch:  crux.GetDeployments,
 			})
 		} else {
-			go grpc.Init(grpcParams, &cfg.CommonConfiguration, grpc.WorkerFunctions{
-				Deploy: func(ctx context.Context, dogger *dogger.DeploymentLogger, dir *v1.DeployImageRequest, vd *v1.VersionData) error {
-					return k8s.Deploy(ctx, dogger, dir, vd, cfg)
-				},
-				Watch: func(s string) []*protoCrux.ContainerStatusItem {
-					return crux.GetDeployments(s, cfg)
-				},
+			go grpc.Init(grpcContext, grpcParams, &cfg.CommonConfiguration, grpc.WorkerFunctions{
+				Deploy: k8s.Deploy,
+				Watch:  crux.GetDeployments,
 			})
 		}
 	} else {

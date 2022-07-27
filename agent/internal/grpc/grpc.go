@@ -43,12 +43,14 @@ type GrpcConnectionParams struct {
 }
 
 type DeployFunc func(context.Context, *dogger.DeploymentLogger, *v1.DeployImageRequest, *v1.VersionData) error
-type WatchFunc func(string) []*crux.ContainerStatusItem
+type WatchFunc func(context.Context, string) []*crux.ContainerStatusItem
 
 type WorkerFunctions struct {
 	Deploy DeployFunc
 	Watch  WatchFunc
 }
+
+const contextConfigKey = "GRPCCfg"
 
 func GrpcTokenToConnectionParams(grpcToken string, insecureGrpc bool) (*GrpcConnectionParams, error) {
 	claims := jwt.StandardClaims{}
@@ -113,13 +115,13 @@ func fetchCertificatesFromURL(url string) (*x509.CertPool, error) {
 	return pool, nil
 }
 
-func Init(connParams *GrpcConnectionParams, appConfig *config.CommonConfiguration, workerFuncs WorkerFunctions) {
+func Init(grpcContext context.Context, connParams *GrpcConnectionParams, appConfig *config.CommonConfiguration, workerFuncs WorkerFunctions) {
 	log.Println("Spinning up gRPC Agent client...")
 	if grpcConn == nil {
 		grpcConn = &GrpcConnection{}
 	}
 
-	ctx, cancel := context.WithCancel(context.TODO())
+	ctx, cancel := context.WithCancel(grpcContext)
 	ctx = metadata.AppendToOutgoingContext(ctx, "dyo-node-token", connParams.token)
 
 	if grpcConn.Conn == nil {
@@ -299,7 +301,7 @@ func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStatus
 	}
 
 	for {
-		containers := listFn(filterPrefix)
+		containers := listFn(ctx, filterPrefix)
 
 		err = stream.Send(&crux.ContainerStatusListMessage{
 			Prefix: req.Prefix,
@@ -313,6 +315,14 @@ func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStatus
 
 		time.Sleep(time.Second)
 	}
+}
+
+func WithGRPCConfig(parentContext context.Context, config any) (context.Context) {
+	return context.WithValue(parentContext, contextConfigKey, config);
+}
+
+func GetConfigFromContext(ctx context.Context) any {
+	return ctx.Value(contextConfigKey);
 }
 
 // TODO(m8): streamline the log appearince with crane

@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
+	"github.com/dyrector-io/dyrectorio/agent/internal/grpc"
 	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/utils"
@@ -175,7 +176,8 @@ func executeDeployImageRequest(
 	v1.SetDeploymentDefaults(deployImageRequest, &cfg.CommonConfiguration)
 	dog.Write(fmt.Sprintf("Restart policy: %v \n", string(deployImageRequest.ContainerConfig.RestartPolicy)))
 
-	if err := utils.DeployImage(ctx, dog, deployImageRequest, versionData, cfg); err != nil {
+	deployCtx := grpc.WithGRPCConfig(ctx, cfg)
+	if err := utils.DeployImage(deployCtx, dog, deployImageRequest, versionData); err != nil {
 		dog.Write("Deployment failed " + err.Error())
 		return err
 	} else {

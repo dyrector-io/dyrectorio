@@ -19,6 +19,7 @@ import (
 
 	"github.com/dyrector-io/dyrectorio/agent/internal/util"
 	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/routes"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/utils"
 )
@@ -26,8 +27,17 @@ import (
 var nginxImageName string = "nginx"
 var reqID string = "test-12345"
 
-func TestContainerList(t *testing.T) {
+func createGin() *gin.Engine {
 	g := gin.Default()
+
+	var cfg config.Configuration
+	g.Use(util.ConfigMiddleware(&cfg))
+
+	return g
+}
+
+func TestContainerList(t *testing.T) {
+	g := createGin()
 	router := routes.SetupRouter(g)
 
 	dockerRunning := false
@@ -64,7 +74,7 @@ func TestContainerList(t *testing.T) {
 
 // this test does nothing special with labels
 func TestLabelDeploy(t *testing.T) {
-	g := gin.Default()
+	g := createGin()
 	router := routes.SetupRouter(g)
 
 	w := httptest.NewRecorder()
@@ -103,7 +113,7 @@ func TestLabelDeploy(t *testing.T) {
 }
 
 func TestBasicDeploy(t *testing.T) {
-	g := gin.Default()
+	g := createGin()
 	router := routes.SetupRouter(g)
 
 	w := httptest.NewRecorder()
@@ -150,7 +160,7 @@ func TestBasicDeploy(t *testing.T) {
 }
 
 func TestBatchDeploy(t *testing.T) {
-	g := gin.Default()
+	g := createGin()
 	router := routes.SetupRouter(g)
 
 	const ContainerName001 = "container-name-001"

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
+	"github.com/dyrector-io/dyrectorio/agent/internal/grpc"
 	"github.com/dyrector-io/dyrectorio/agent/internal/util"
 	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/config"
@@ -215,7 +216,8 @@ func strArrToStrMap(str []string) map[string]string {
 }
 
 func Deploy(c context.Context, dog *dogger.DeploymentLogger, deployImageRequest *v1.DeployImageRequest,
-	versionData *v1.VersionData, cfg *config.Configuration) error {
+	versionData *v1.VersionData) error {
+	cfg := grpc.GetConfigFromContext(c).(*config.Configuration)
 	dog.Write(deployImageRequest.Strings(&cfg.CommonConfiguration)...)
 	dog.Write(deployImageRequest.InstanceConfig.Strings()...)
 	dog.Write(deployImageRequest.ContainerConfig.Strings(&cfg.CommonConfiguration)...)

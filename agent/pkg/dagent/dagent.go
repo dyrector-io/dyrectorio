@@ -9,7 +9,6 @@ import (
 	healthcheck "github.com/RaMin0/gin-health-check"
 	"github.com/gin-gonic/gin"
 
-	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
 	"github.com/dyrector-io/dyrectorio/agent/internal/grpc"
 	"github.com/dyrector-io/dyrectorio/agent/internal/sigmalr"
 	"github.com/dyrector-io/dyrectorio/agent/internal/util"
@@ -19,8 +18,6 @@ import (
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/routes"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/update"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/utils"
-
-	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 )
 
 // @title DAgent API Swagger
@@ -69,19 +66,16 @@ func Serve(cfg *config.Configuration) {
 			panic(err)
 		}
 		log.Println("Running gRPC in blocking mode: ", blocking)
+		grpcContext := grpc.WithGRPCConfig(context.TODO(), cfg)
 		if blocking {
-			grpc.Init(grpcParams, &cfg.CommonConfiguration, grpc.WorkerFunctions{
-				Deploy: func(ctx context.Context, dogger *dogger.DeploymentLogger, dir *v1.DeployImageRequest, vd *v1.VersionData) error {
-					return utils.DeployImage(ctx, dogger, dir, vd, cfg)
-				},
-				Watch: utils.GetContainersByNameCrux,
+			grpc.Init(grpcContext, grpcParams, &cfg.CommonConfiguration, grpc.WorkerFunctions{
+				Deploy: utils.DeployImage,
+				Watch:  utils.GetContainersByNameCrux,
 			})
 		} else {
-			go grpc.Init(grpcParams, &cfg.CommonConfiguration, grpc.WorkerFunctions{
-				Deploy: func(ctx context.Context, dogger *dogger.DeploymentLogger, dir *v1.DeployImageRequest, vd *v1.VersionData) error {
-					return utils.DeployImage(ctx, dogger, dir, vd, cfg)
-				},
-				Watch: utils.GetContainersByNameCrux,
+			go grpc.Init(grpcContext, grpcParams, &cfg.CommonConfiguration, grpc.WorkerFunctions{
+				Deploy: utils.DeployImage,
+				Watch:  utils.GetContainersByNameCrux,
 			})
 		}
 	} else {
