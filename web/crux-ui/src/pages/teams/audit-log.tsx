@@ -12,7 +12,7 @@ import { cruxFromContext } from '@server/crux/crux'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 
 interface AuditLogPageProps {
   auditLog: AuditLog[]
@@ -24,6 +24,8 @@ const AuditLogPage = (props: AuditLogPageProps) => {
   const { auditLog } = props
 
   const [showInfo, setShowInfo] = useState<AuditLog>(null)
+
+  const parsedJSONInfo = useMemo(() => showInfo?JSON.parse(showInfo.info):null, [showInfo]);
 
   const onShowInfoClick = (logEntry: AuditLog) => setShowInfo(logEntry)
 
@@ -78,7 +80,7 @@ const AuditLogPage = (props: AuditLogPageProps) => {
           <JsonEditor
             className="text-bright mt-8 overflow-y-auto h-full !pointer-events-auto"
             disabled
-            value={JSON.parse(showInfo.info)}
+            value={parsedJSONInfo}
           />
         </DyoModal>
       )}
