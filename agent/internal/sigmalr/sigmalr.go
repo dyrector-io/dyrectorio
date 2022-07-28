@@ -57,7 +57,7 @@ func (g *GinMappable) Handle(pattern string, handler http.Handler) {
 // HandleFunc registers the handler function for the given pattern.
 func (g *GinMappable) HandleFunc(pattern string, handler func(writer http.ResponseWriter, req *http.Request)) {
 	if handler == nil {
-		log.Panic("got nil handler in HandleFunc!")
+		log.Panic("Got nil handler in HandleFunc!")
 	}
 
 	g.Any(pattern, func(c *gin.Context) {

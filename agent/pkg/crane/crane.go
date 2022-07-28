@@ -52,7 +52,7 @@ func Serve(cfg *config.Configuration) {
 	grpcInsecure := cfg.GrpcInsecure
 
 	if httpPort == 0 && grpcToken == "" {
-		log.Panic("no http port nor grpc address was provided")
+		log.Panic("No http port nor grpc address was provided")
 	}
 
 	if cfg.Debug {
