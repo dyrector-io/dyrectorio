@@ -160,7 +160,7 @@ func Init(grpcContext context.Context,
 		conn, err := grpc.Dial(connParams.address, opts...)
 
 		if err != nil {
-			log.Panic("Failed to dial gRPC: ", err.Error())
+			log.Panic("failed to dial gRPC: ", err.Error())
 		}
 
 		for {

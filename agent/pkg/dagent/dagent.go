@@ -36,7 +36,7 @@ func Serve(cfg *config.Configuration) {
 	grpcInsecure := cfg.GrpcInsecure
 
 	if httpPort == 0 && grpcToken == "" {
-		log.Panic("No http port nor grpc address was provided")
+		log.Panic("no http port nor grpc address was provided")
 	}
 
 	if cfg.Debug {
@@ -95,7 +95,7 @@ func Serve(cfg *config.Configuration) {
 		err := utils.ExecTraefik(context.TODO(), params, cfg)
 		if err != nil {
 			// we wanted to start traefik, but something is not ok, thus panic!
-			log.Panic("Failed to start Traefik: ", err)
+			log.Panic("failed to start Traefik: ", err)
 		}
 	}
 

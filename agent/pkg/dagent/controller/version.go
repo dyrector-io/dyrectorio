@@ -33,7 +33,7 @@ func GetVersion(c *gin.Context) {
 
 	if versions, versionsError := utils.GetVersions(query.Instance, cfg); versionsError != nil {
 		log.Printf("Failed to get versions: %v", versionsError)
-		c.Status(500)
+		c.Status(http.StatusInternalServerError)
 	} else {
 		c.JSON(http.StatusOK, versions)
 	}
