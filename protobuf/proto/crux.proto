@@ -39,7 +39,7 @@ service CruxNode {
   rpc UpdateNode(UpdateNodeRequest) returns (Empty);
   rpc DeleteNode(IdRequest) returns (Empty);
   rpc GetNodeDetails(IdRequest) returns (NodeDetailsResponse);
-  rpc GenerateScript(IdRequest) returns (NodeInstallResponse);
+  rpc GenerateScript(GenerateScriptRequest) returns (NodeInstallResponse);
   rpc GetScript(ServiceIdRequest) returns (NodeScriptResponse);
   rpc DiscardScript(IdRequest) returns (Empty);
   rpc RevokeToken(IdRequest) returns (Empty);
@@ -562,6 +562,12 @@ message UpdateNodeRequest {
   optional string description = 101;
   optional string icon = 102;
   optional NodeType type = 103;
+}
+
+message GenerateScriptRequest {
+  string id = 1;
+  string accessedBy = 2;
+  NodeType type = 100;
 }
 
 message NodeInstallResponse {

@@ -1,5 +1,6 @@
 import { Identity } from '@ory/kratos-client'
 import { DyoApiError } from '@server/error-middleware'
+import { NextApiRequest } from 'next'
 import { REGISTRY_GITHUB_URL, REGISTRY_GITLAB_URLS, REGISTRY_HUB_URL } from './const'
 
 export const PRODUCT_TYPE_VALUES = ['simple', 'complex'] as const
@@ -603,6 +604,14 @@ export type UserTraits = {
   email: string
   name?: UserName
 }
+
+type Override<T1, T2> = Omit<T1, keyof T2> & T2
+
+export type GenerateScriptRequestBody = {
+  type: UiNodeType
+}
+
+export type CruxUiGenerateScriptRequest = Override<NextApiRequest, { body: GenerateScriptRequestBody }>
 
 export const roleToText = (role: UserRole) => {
   switch (role) {

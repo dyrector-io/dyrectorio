@@ -899,6 +899,12 @@ export interface UpdateNodeRequest {
   type?: NodeType | undefined
 }
 
+export interface GenerateScriptRequest {
+  id: string
+  accessedBy: string
+  type: NodeType
+}
+
 export interface NodeInstallResponse {
   command: string
   expireAt: Timestamp | undefined
@@ -2501,6 +2507,26 @@ export const UpdateNodeRequest = {
   },
 }
 
+const baseGenerateScriptRequest: object = { id: '', accessedBy: '', type: 0 }
+
+export const GenerateScriptRequest = {
+  fromJSON(object: any): GenerateScriptRequest {
+    const message = { ...baseGenerateScriptRequest } as GenerateScriptRequest
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.type = object.type !== undefined && object.type !== null ? nodeTypeFromJSON(object.type) : 0
+    return message
+  },
+
+  toJSON(message: GenerateScriptRequest): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
+    message.type !== undefined && (obj.type = nodeTypeToJSON(message.type))
+    return obj
+  },
+}
+
 const baseNodeInstallResponse: object = { command: '' }
 
 export const NodeInstallResponse = {
@@ -3348,7 +3374,7 @@ export interface CruxNodeClient {
 
   getNodeDetails(request: IdRequest, metadata: Metadata, ...rest: any): Observable<NodeDetailsResponse>
 
-  generateScript(request: IdRequest, metadata: Metadata, ...rest: any): Observable<NodeInstallResponse>
+  generateScript(request: GenerateScriptRequest, metadata: Metadata, ...rest: any): Observable<NodeInstallResponse>
 
   getScript(request: ServiceIdRequest, metadata: Metadata, ...rest: any): Observable<NodeScriptResponse>
 
@@ -3391,7 +3417,7 @@ export interface CruxNodeController {
   ): Promise<NodeDetailsResponse> | Observable<NodeDetailsResponse> | NodeDetailsResponse
 
   generateScript(
-    request: IdRequest,
+    request: GenerateScriptRequest,
     metadata: Metadata,
     ...rest: any
   ): Promise<NodeInstallResponse> | Observable<NodeInstallResponse> | NodeInstallResponse

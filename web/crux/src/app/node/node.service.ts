@@ -9,6 +9,7 @@ import {
   CreateEntityResponse,
   CreateNodeRequest,
   Empty,
+  GenerateScriptRequest,
   IdRequest,
   NodeDetailsResponse,
   NodeEventMessage,
@@ -108,14 +109,20 @@ export class NodeService {
     return Empty
   }
 
-  async generateScript(request: IdRequest): Promise<NodeInstallResponse> {
-    const node = await this.prisma.node.findUnique({
+  async generateScript(req: GenerateScriptRequest): Promise<NodeInstallResponse> {
+    const nodeType = req.type === NodeType.DOCKER_NODE ? NodeTypeEnum.dagent : NodeTypeEnum.crane
+    await this.prisma.node.update({
       where: {
-        id: request.id,
+        id: req.id,
+      },
+      data: {
+        type: nodeType,
+        updatedBy: req.accessedBy,
+        updatedAt: new Date(),
       },
     })
 
-    const installer = await this.agentService.install(request.id, node.type)
+    const installer = await this.agentService.install(req.id, nodeType)
 
     return this.mapper.installerToGrpc(installer)
   }

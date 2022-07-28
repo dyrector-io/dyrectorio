@@ -9,6 +9,7 @@ import {
   CruxNodeController,
   CruxNodeControllerMethods,
   Empty,
+  GenerateScriptRequest,
   IdRequest,
   NodeDetailsResponse,
   NodeEventMessage,
@@ -53,7 +54,9 @@ export class NodeController implements CruxNodeController {
 
   // todo:  fix errors related to this - interceptor halts
   @AuditLogLevel('disabled')
-  async generateScript(@Body(NodeGenerateScriptValidationPipe) request: IdRequest): Promise<NodeInstallResponse> {
+  async generateScript(
+    @Body(NodeGenerateScriptValidationPipe) request: GenerateScriptRequest,
+  ): Promise<NodeInstallResponse> {
     return await this.service.generateScript(request)
   }
 

@@ -15,7 +15,7 @@ import {
   DyoNodeDetails,
   DyoNodeInstall,
   NodeStatusMessage,
-  NODE_TYPE_VALUES,
+  UiNodeType,
   UpdateDyoNode,
   WS_TYPE_NODE_STATUS,
 } from '@app/models'
@@ -101,6 +101,13 @@ const EditNodeCard = (props: EditNodeCardProps) => {
       props.onNodeEdited(newNode)
     })
 
+  const onNodeTypeChanged = (type: UiNodeType): void => {
+    setNode({
+      ...node,
+      type,
+    })
+  }
+
   const editing = !!node.id
 
   const handleApiError = defaultApiErrorHandler(t)
@@ -175,14 +182,6 @@ const EditNodeCard = (props: EditNodeCardProps) => {
               <DyoIconPicker name="icon" value={formik.values.icon} setFieldValue={formik.setFieldValue} />
             </div>
 
-            <select id="type" name="type" value={formik.values.type} onChange={formik.handleChange} disabled={editing}>
-              {NODE_TYPE_VALUES.map((nodeType, index) => (
-                <option key={'node-type-' + index} value={nodeType}>
-                  {nodeType}
-                </option>
-              ))}
-            </select>
-
             <DyoTextArea
               className={clsx(inputClassName, 'h-48')}
               name="description"
@@ -200,13 +199,29 @@ const EditNodeCard = (props: EditNodeCardProps) => {
             {t('setup')}
           </DyoHeading>
 
-          <div className="text-bright">
-            <DyoHeading element="h5" className="text-md">
-              {t('aboutScript')}
+          <div className="text-bright mb-4">
+            <DyoHeading element="h4" className="text-md">
+              {t('explanationHeader')}
             </DyoHeading>
 
-            <p className="text-light-eased max-w-lg ml-4">{t('setupExplanation')}</p>
+            <p className="text-light-eased max-w-lg ml-4">{t('explanation')}</p>
           </div>
+
+          {node.install ? (
+            <>
+              <div className="text-bright mb-4">
+                <DyoHeading element="h5" className="text-md">
+                  {t('requirementsHeader')}
+                </DyoHeading>
+
+                {(t('requirements-' + node.type, null, { returnObjects: true }) as string[]).map((reqItem, index) => (
+                  <p className="text-light-eased max-w-lg ml-4" key={'req-' + index}>
+                    - {reqItem}
+                  </p>
+                ))}
+              </div>
+            </>
+          ) : null}
 
           {!editing ? (
             <div className="text-bright font-bold mt-4">{t('saveYourNode')}</div>
@@ -218,7 +233,11 @@ const EditNodeCard = (props: EditNodeCardProps) => {
               </DyoButton>
             </>
           ) : (
-            <DyoNodeSetup node={node} onNodeInstallChanged={onNodeInstallChanged} />
+            <DyoNodeSetup
+              node={node}
+              onNodeTypeChanged={onNodeTypeChanged}
+              onNodeInstallChanged={onNodeInstallChanged}
+            />
           )}
         </div>
       </DyoCard>

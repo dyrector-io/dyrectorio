@@ -10,6 +10,7 @@ import {
   DyoNodeScript,
   NodeStatus,
   NodeStatusMessage,
+  UiNodeType,
   UpdateDyoNode,
 } from '@app/models'
 import {
@@ -21,6 +22,7 @@ import {
   CreateNodeRequest,
   CruxNodeClient,
   Empty,
+  GenerateScriptRequest,
   IdRequest,
   NodeConnectionStatus,
   NodeDetailsResponse,
@@ -129,14 +131,15 @@ class DyoNodeService {
     }
   }
 
-  async generateScript(id: string): Promise<DyoNodeInstall> {
-    const req: IdRequest = {
+  async generateScript(id: string, nodeType: UiNodeType): Promise<DyoNodeInstall> {
+    const req: GenerateScriptRequest = {
       id,
       accessedBy: this.identity.id,
+      type: nodeType === 'docker' ? NodeType.DOCKER_NODE : NodeType.K8S_NODE,
     }
 
     const res = await protomisify<ServiceIdRequest, NodeInstallResponse>(this.client, this.client.generateScript)(
-      IdRequest,
+      GenerateScriptRequest,
       req,
     )
 

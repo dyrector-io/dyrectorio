@@ -37,14 +37,14 @@ else
 fi
 
 mkdir -p $ROOT_FOLDER
-docker pull {{image}}
+docker pull ghcr.io/dyrector-io/dyrectorio/agent/dagent:rc-install
 
 docker run \
   --restart unless-stopped \
   -e GRPC_TOKEN='{{token}}' \
   -e HOSTNAME="$HOSTNAME || $HOST || '{{name}}'" \
   {{#if traefik}}
-    -e TRAEFIK= '' \
+    -e TRAEFIK= 'true' \
   {{/if}}
   -e DATA_MOUNT_PATH=$ROOT_FOLDER \
   -e UPDATE_METHOD='off' \
@@ -64,4 +64,4 @@ docker run \
   {{! -e HOST_DOCKER_SOCK='' \ }}
   {{! -e WEBHOOK_TOKEN='' \ }}
   {{! -e DISCORD_WEBHOOK_URL='' \ }}
-  -v $ROOT_FOLDER/:$ROOT_FOLDER -d ghcr.io/dyrector-io/dyrectorio/agent/dagent:rc-install
+  -v $ROOT_FOLDER/:/srv/dagent -d ghcr.io/dyrector-io/dyrectorio/agent/dagent:rc-install
