@@ -7,7 +7,7 @@ import { TeamRepository } from './team.repository'
 import { TeamService } from './team.service'
 import { EmailService } from 'src/services/email.service'
 import { KratosService } from 'src/services/kratos.service'
-import { EmailBuilder } from 'src/builders/email-builder'
+import { EmailBuilder } from 'src/builders/email.builder'
 
 @Module({
   imports: [],

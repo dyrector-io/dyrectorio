@@ -16,7 +16,7 @@ const from = { email: process.env.FROM_EMAIL, name: process.env.FROM_NAME }
 export class EmailBuilder {
   buildInviteEmail(email: string, teamName: string, teamId?: string, kratosRecoveryLink?: string): MailDataRequired {
     if (!teamId && !kratosRecoveryLink) {
-       throw new EmailBuilderException()
+      throw new EmailBuilderException()
     }
 
     const inviteTemplate = this.getInviteTemplate(teamName, teamId, kratosRecoveryLink)
@@ -38,9 +38,9 @@ export class EmailBuilder {
     let button = 'Accept'
 
     if (kratosRecoveryLink) {
-        link = disassembleKratosRecoveryUrl(HOST, kratosRecoveryLink);
-        mode = 'to accept and create a dyrector.io account,'
-        button = 'Create account'
+      link = disassembleKratosRecoveryUrl(HOST, kratosRecoveryLink)
+      mode = 'to accept and create a dyrector.io account,'
+      button = 'Create account'
     }
 
     const InviteTemplate: InviteTemaple = {
