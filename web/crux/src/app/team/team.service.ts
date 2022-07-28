@@ -1,4 +1,4 @@
-import { EmailBuilder } from '../../builders/email-builder.service'
+import { EmailBuilder } from '../../builders/email-builder'
 import { ServerUnaryCall } from '@grpc/grpc-js'
 import { Injectable, Logger } from '@nestjs/common'
 import { RegistryTypeEnum } from '@prisma/client'
