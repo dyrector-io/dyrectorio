@@ -60,7 +60,6 @@ func GrpcTokenToConnectionParams(grpcToken string, insecureGrpc bool) (*GrpcConn
 	if token == nil {
 		log.Println("Can not parse the gRPC token")
 		if err != nil {
-			log.Println(err.Error())
 			return nil, err
 		}
 		log.Println("gRPC skipped")
@@ -161,7 +160,7 @@ func Init(grpcContext context.Context,
 		conn, err := grpc.Dial(connParams.address, opts...)
 
 		if err != nil {
-			panic(err.Error())
+			log.Panic("Failed to dial gRPC: ", err.Error())
 		}
 
 		for {

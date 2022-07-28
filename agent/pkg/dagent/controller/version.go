@@ -31,6 +31,10 @@ func GetVersion(c *gin.Context) {
 
 	cfg := utils.GetConfigFromGinContext(c)
 
-	versions := utils.GetVersions(query.Instance, cfg)
-	c.JSON(http.StatusOK, versions)
+	if versions, versionsError := utils.GetVersions(query.Instance, cfg); versionsError != nil {
+		log.Printf("Failed to get versions: %v", versionsError)
+		c.Status(500)
+	} else {
+		c.JSON(http.StatusOK, versions)
+	}
 }
