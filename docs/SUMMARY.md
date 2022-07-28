@@ -9,10 +9,10 @@
 
 ## Get started
 
-* [dyrector.io within your workflows](get-started/dyrector.io-within-your-workflows/README.md)
-  * [Use cases](get-started/dyrector.io-within-your-workflows/use-cases.md)
-  * [Components](get-started/dyrector.io-within-your-workflows/components.md)
-  * [Roles in dyrector.io’s workflow](get-started/dyrector.io-within-your-workflows/roles-in-dyrector.ios-workflow.md)
+* [dyrector.io within your workflows](../get-started/dyrector.io-within-your-workflows/README.md)
+  * [Use cases](../get-started/dyrector.io-within-your-workflows/use-cases.md)
+  * [Components](../get-started/dyrector.io-within-your-workflows/components.md)
+  * [Roles in dyrector.io’s workflow](../get-started/dyrector.io-within-your-workflows/roles-in-dyrector.ios-workflow.md)
 
 ## Features
 

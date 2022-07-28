@@ -20,6 +20,8 @@ There’s a free package besides the paid tiers.
 
 **Yes.** You can configure and host your own dyrector.io on your own environments, completely free of charge.
 
+**You can find dyrector.io's GitHub repository** [**here**](https://github.com/dyrector-io/dyrectorio/)**. Feel free to contribute!**
+
 ### Is dyrector.io only for organizations?
 
 dyrector.io is for anyone who works with containerized applications. That means organizations who lack the resources to set their own standardized processes, and independent developers who would like to scale their operations by simplifying repeatable tasks of release management.

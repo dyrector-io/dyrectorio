@@ -2,7 +2,7 @@
 
 Join our community to discuss DevOps, Kubernetes or anything on our public [Discord](https://discord.com/invite/hMyT9cbYFD).
 
-Contribute to our project on GitHub.
+**You can find dyrector.io's GitHub repository** [**here**](https://github.com/dyrector-io/dyrectorio/)**. Feel free to contribute!**
 
 Check our [blog](https://blog.dyrector.io/) to read posts written by our team of DevOps specialists to improve your processes.
 
