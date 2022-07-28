@@ -13,7 +13,7 @@ import (
 const KeepAliveIntervalSeconds = 5
 
 // Singleton, accessed only in GetSignalrInstance
-var signalrServerInstance signalr.Server = nil //nolint:gochecknoglobals
+var signalrServerInstance signalr.Server = nil
 
 // GetSignalrInstance if not yet initialized spawn a signaler server & hub
 func GetSignalrInstance() (signalr.Server, error) {

@@ -85,7 +85,7 @@ func (g *GrpcConnection) SetConn(conn *grpc.ClientConn) {
 }
 
 // Singleton instance
-var grpcConn *GrpcConnection //nolint:gochecknoglobals
+var grpcConn *GrpcConnection
 
 func fetchCertificatesFromURL(url string) (*x509.CertPool, error) {
 	log.Println("Retrieving certificate")

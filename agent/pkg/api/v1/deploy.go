@@ -306,7 +306,7 @@ type Volume struct {
 	Class string `json:"class"`
 }
 
-var ValidSize validator.Func = func(fl validator.FieldLevel) bool { //nolint:gochecknoglobals
+var ValidSize validator.Func = func(fl validator.FieldLevel) bool {
 	size := fl.Field().String()
 	_, err := resource.ParseQuantity(size)
 	return err == nil
@@ -480,7 +480,7 @@ func (e *ErrRestartPolicyUnmarshalInvalid) Error() string {
 }
 
 // policyToString static mapping enum type into the docker supported string values
-var policyToString = map[RestartPolicyName]string{ //nolint:gochecknoglobals
+var policyToString = map[RestartPolicyName]string{
 	EmptyRestartPolicy:                "unless-stopped",
 	RestartUnlessStoppedRestartPolicy: "unless-stopped",
 	NoRestartPolicy:                   "no",
@@ -489,7 +489,7 @@ var policyToString = map[RestartPolicyName]string{ //nolint:gochecknoglobals
 }
 
 // policyToID static mapping string values eg. from JSON into enums
-var policyToID = map[string]RestartPolicyName{ //nolint:gochecknoglobals
+var policyToID = map[string]RestartPolicyName{
 	"":               RestartUnlessStoppedRestartPolicy,
 	"unless-stopped": RestartUnlessStoppedRestartPolicy,
 	"no":             NoRestartPolicy,

@@ -102,7 +102,6 @@ linters:
     - unused
     - varcheck
     - whitespace
-    - gochecknoglobals
 
   # don't enable:
   # - asciicheck

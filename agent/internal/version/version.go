@@ -8,9 +8,9 @@ import (
 )
 
 var (
-	Version        = "dev" //nolint:gochecknoglobals
-	CommitHash     = "n/a" //nolint:gochecknoglobals
-	BuildTimestamp = "n/a" //nolint:gochecknoglobals
+	Version        = "dev"
+	CommitHash     = "n/a"
+	BuildTimestamp = "n/a"
 )
 
 func BuildVersion() string {
