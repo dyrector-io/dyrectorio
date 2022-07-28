@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { JsonArray } from 'prisma'
 import { Subject } from 'rxjs'
-import { PrismaService } from 'src/config/prisma.service'
+import { PrismaService } from 'src/services/prisma.service'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import { containerNameFromImageName } from 'src/domain/deployment'
 import {

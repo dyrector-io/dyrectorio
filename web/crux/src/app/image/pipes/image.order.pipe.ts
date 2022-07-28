@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, PipeTransform } from '@nestjs/common'
-import { PrismaService } from 'src/config/prisma.service'
+import { PrismaService } from 'src/services/prisma.service'
 import { checkVersionMutability } from 'src/domain/version'
 import { AlreadyExistsException, InvalidArgumentException } from 'src/exception/errors'
 import { OrderVersionImagesRequest } from 'src/grpc/protobuf/proto/crux'

@@ -16,7 +16,7 @@ import { InterceptorGrpcHelperProvider } from './interceptors/helper.interceptor
 import { PrismaErrorInterceptor } from './interceptors/prisma-error-interceptor'
 import { GrpcContextLogger } from './interceptors/grpc-context-logger.interceptor';
 import { AuditLoggerInterceptor } from './interceptors/audit-logger.interceptor';
-import { PrismaService } from './config/prisma.service'
+import { PrismaService } from './services/prisma.service'
 
 @Module({
   imports: [
