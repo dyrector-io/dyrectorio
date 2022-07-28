@@ -1,4 +1,4 @@
-import { EmailBuilder } from './../../services/email-builder.service'
+import { EmailBuilder } from '../../builders/email-builder.service'
 import { ServerUnaryCall } from '@grpc/grpc-js'
 import { Injectable, Logger } from '@nestjs/common'
 import { RegistryTypeEnum } from '@prisma/client'
@@ -236,10 +236,6 @@ export class TeamService {
     const teamId = hasSession ? team.id : null
     const recoveryLink = !hasSession ? await this.kratos.createRecoveryLink(user) : null
     const emailItem = this.emailBuilder.buildInviteEmail(request.email, team.name, teamId, recoveryLink)
-
-    if (!emailItem) {
-      throw new MailServiceException({ message: 'Email item is null!' })
-    }
 
     // Send email
     const mailSent = await this.emailService.sendEmail(emailItem)

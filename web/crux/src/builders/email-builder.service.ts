@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
+import { MailDataRequired } from '@sendgrid/mail'
 import { disassembleKratosRecoveryUrl } from 'src/domain/utils'
-import { EmailItem } from './email.service'
+import { EmailBuilderException } from 'src/exception/errors'
 
 type InviteTemaple = {
   subject: string
@@ -9,20 +10,20 @@ type InviteTemaple = {
 }
 
 const HOST = process.env.CRUX_UI_URL
-const sender = { email: process.env.FROM_EMAIL, name: process.env.FROM_NAME }
+const from = { email: process.env.FROM_EMAIL, name: process.env.FROM_NAME }
 
 @Injectable()
 export class EmailBuilder {
-  buildInviteEmail(email: string, teamName: string, teamId?: string, kratosRecoveryLink?: string): EmailItem | null {
+  buildInviteEmail(email: string, teamName: string, teamId?: string, kratosRecoveryLink?: string): MailDataRequired {
     if (!teamId && !kratosRecoveryLink) {
-      return null
+       throw new EmailBuilderException()
     }
 
     const inviteTemplate = this.getInviteTemplate(teamName, teamId, kratosRecoveryLink)
 
-    const emailItem: EmailItem = {
-      sender: sender,
-      recipient: email,
+    const emailItem: MailDataRequired = {
+      from: from,
+      to: email,
       subject: inviteTemplate.subject,
       text: inviteTemplate.text,
       html: inviteTemplate.html,
@@ -32,9 +33,15 @@ export class EmailBuilder {
   }
 
   private getInviteTemplate(teamName: string, teamId?: string, kratosRecoveryLink?: string): InviteTemaple {
-    const link = teamId ? `${HOST}/teams/${teamId}/invite` : disassembleKratosRecoveryUrl(HOST, kratosRecoveryLink)
-    const mode = teamId ? 'to accept' : 'to accept and create a dyrector.io account,'
-    const button = teamId ? 'Accept' : 'Create account'
+    let link = `${HOST}/teams/${teamId}/invite`
+    let mode = 'to accept'
+    let button = 'Accept'
+
+    if (kratosRecoveryLink) {
+        link = disassembleKratosRecoveryUrl(HOST, kratosRecoveryLink);
+        mode = 'to accept and create a dyrector.io account,'
+        button = 'Create account'
+    }
 
     const InviteTemplate: InviteTemaple = {
       subject: "You're invited to a Team in dyrector.io",
