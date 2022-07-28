@@ -6,7 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
-	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
 	model "github.com/dyrector-io/dyrectorio/agent/pkg/dagent/model"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/utils"
 )
@@ -21,8 +20,10 @@ import (
 // @Success 200 {object} model.TraefikDeployResponse
 // @Router /deploy/traefik [post]
 func DeployTraefik(c *gin.Context) {
+	cfg := utils.GetConfigFromGinContext(c)
+
 	deployRequest := model.TraefikDeployRequest{}
-	dog := dogger.NewDeploymentLogger(nil, nil, c, &config.Cfg.CommonConfiguration)
+	dog := dogger.NewDeploymentLogger(nil, nil, c, &cfg.CommonConfiguration)
 
 	if err := c.BindJSON(&deployRequest); err != nil {
 		dog.Write("error starting traefik: " + err.Error())
@@ -30,7 +31,7 @@ func DeployTraefik(c *gin.Context) {
 		return
 	}
 
-	err := utils.ExecTraefik(c, deployRequest)
+	err := utils.ExecTraefik(c, deployRequest, cfg)
 
 	if err != nil {
 		c.JSON(http.StatusOK, model.TraefikDeployResponse{Error: err.Error()})
@@ -49,7 +50,9 @@ func DeployTraefik(c *gin.Context) {
 // @Success 200 {object} model.TraefikDeployResponse
 // @Router /deploy/traefik [delete]
 func DeleteTraefik(c *gin.Context) {
-	dog := dogger.NewDeploymentLogger(nil, nil, c, &config.Cfg.CommonConfiguration)
+	cfg := utils.GetConfigFromGinContext(c)
+
+	dog := dogger.NewDeploymentLogger(nil, nil, c, &cfg.CommonConfiguration)
 	err := utils.DeleteContainer("traefik")
 
 	if err != nil {

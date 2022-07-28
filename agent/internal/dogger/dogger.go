@@ -60,7 +60,7 @@ func (dog *DeploymentLogger) Write(messages ...string) {
 		}
 	}
 
-	if sigmalr.SignalrServ != nil && dog.requestID != "" {
+	if dog.requestID != "" {
 		sigmalr.Log(&dog.requestID, messages...)
 	}
 }
@@ -92,9 +92,7 @@ func (dog *DeploymentLogger) WriteContainerStatus(containerState string, message
 		dog.logs = append(dog.logs, messages...)
 	}
 
-	if sigmalr.SignalrServ != nil {
-		sigmalr.Log(&dog.requestID, messages...)
-	}
+	sigmalr.Log(&dog.requestID, messages...)
 
 	if dog.stream != nil {
 		instance := &crux.DeploymentStatusMessage_Instance{
@@ -114,7 +112,7 @@ func (dog *DeploymentLogger) WriteContainerStatus(containerState string, message
 		}
 	}
 
-	if sigmalr.SignalrServ != nil && dog.requestID != "" {
+	if dog.requestID != "" {
 		sigmalr.Log(&dog.requestID, messages...)
 	}
 }

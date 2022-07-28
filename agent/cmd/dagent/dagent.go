@@ -7,6 +7,7 @@ import (
 )
 
 func main() {
-	util.ReadConfig(&config.Cfg)
-	dagent.Serve()
+	var cfg config.Configuration
+	util.ReadConfig(&cfg)
+	dagent.Serve(&cfg)
 }

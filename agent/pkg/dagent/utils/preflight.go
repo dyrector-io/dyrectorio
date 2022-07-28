@@ -9,7 +9,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
 )
 
-func PreflightChecks() {
+func PreflightChecks(cfg *config.Configuration) {
 	_, err := ListContainers()
 	if err != nil {
 		log.Fatal(err.Error())
@@ -27,11 +27,11 @@ func PreflightChecks() {
 	if err != nil {
 		log.Println("Invalid version string from server ", err.Error())
 	}
-	constraints, _ := version.NewConstraint(fmt.Sprintf(">=%s", config.Cfg.MinDockerServerVersion))
+	constraints, _ := version.NewConstraint(fmt.Sprintf(">=%s", cfg.MinDockerServerVersion))
 	if err != nil {
 		log.Println("Error with version constraint ", err.Error())
 	}
 	if !constraints.Check(serVer) {
-		log.Printf("WARNING: server is behind the supported version %s < %s", serVer, config.Cfg.MinDockerServerVersion)
+		log.Printf("WARNING: server is behind the supported version %s < %s", serVer, cfg.MinDockerServerVersion)
 	}
 }

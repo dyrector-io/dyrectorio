@@ -11,12 +11,13 @@ import (
 	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/k8s"
 )
 
-func DeployImage(c context.Context, dog *dogger.DeploymentLogger, deployImageRequest *v1.DeployImageRequest) (err error) {
+func DeployImage(c context.Context, dog *dogger.DeploymentLogger,
+	deployImageRequest *v1.DeployImageRequest, cfg *config.Configuration) (err error) {
 	dog.SetRequestID(deployImageRequest.RequestID)
 
-	dog.Write(deployImageRequest.Strings(&config.Cfg.CommonConfiguration)...)
+	dog.Write(deployImageRequest.Strings(&cfg.CommonConfiguration)...)
 	dog.Write(deployImageRequest.InstanceConfig.Strings()...)
-	dog.Write(deployImageRequest.ContainerConfig.Strings(&config.Cfg.CommonConfiguration)...)
+	dog.Write(deployImageRequest.ContainerConfig.Strings(&cfg.CommonConfiguration)...)
 	runtimeConfigStr := string(deployImageRequest.RuntimeConfig)
 
 	deployFacade := k8s.NewDeployFacade(
@@ -31,7 +32,9 @@ func DeployImage(c context.Context, dog *dogger.DeploymentLogger, deployImageReq
 			ContainerConfig: deployImageRequest.ContainerConfig,
 			RuntimeConfig:   &runtimeConfigStr,
 			Issuer:          deployImageRequest.Issuer,
-		})
+		},
+		cfg,
+	)
 
 	if err := deployFacade.CheckPreConditions(); err != nil {
 		handleContextDeploymentError(dog, err)

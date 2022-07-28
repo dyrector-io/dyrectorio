@@ -18,6 +18,3 @@ type Configuration struct {
 	KubeConfig            string        `yaml:"kubeConfig"            env:"KUBECONFIG"                env-default:""`
 	TestTimeoutDuration   time.Duration `yaml:"testTimeout"           env:"TEST_TIMEOUT"              env-default:"15s"`
 }
-
-// Cfg is the global configuration for crane
-var Cfg Configuration

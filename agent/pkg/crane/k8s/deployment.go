@@ -34,12 +34,13 @@ const CraneUpdatedAnnotation = "crane.dyrector.io/restartedAt"
 
 // facade object for deployment management
 type deployment struct {
-	ctx    context.Context
-	status string
+	ctx       context.Context
+	status    string
+	appConfig *config.Configuration
 }
 
-func newDeployment(ctx context.Context) *deployment {
-	return &deployment{status: "", ctx: ctx}
+func newDeployment(ctx context.Context, cfg *config.Configuration) *deployment {
+	return &deployment{status: "", ctx: ctx, appConfig: cfg}
 }
 
 type deploymentParams struct {
@@ -55,7 +56,7 @@ type deploymentParams struct {
 }
 
 func (d *deployment) deployDeployment(p *deploymentParams) error {
-	client := getDeploymentsClient(p.namespace)
+	client := getDeploymentsClient(p.namespace, d.appConfig)
 
 	name := p.containerConfig.Container
 	deployment := appsv1.Deployment(name, p.namespace).
@@ -69,16 +70,16 @@ func (d *deployment) deployDeployment(p *deploymentParams) error {
 					"app": name,
 				}).WithAnnotations(map[string]string{
 					CraneUpdatedAnnotation: time.Now().Format(time.RFC3339),
-					config.Cfg.KeyIssuer:   p.issuer,
+					d.appConfig.KeyIssuer:  p.issuer,
 				}).WithSpec(
-					corev1.PodSpec().WithContainers(buildContainer(p)).
-						WithInitContainers(getInitContainers(p.containerConfig)...).
-						WithVolumes(getVolumesFromMap(p.volumes)...),
+					corev1.PodSpec().WithContainers(buildContainer(p, d.appConfig)).
+						WithInitContainers(getInitContainers(p.containerConfig, d.appConfig)...).
+						WithVolumes(getVolumesFromMap(p.volumes, d.appConfig)...),
 				)),
 		)
 	result, err := client.Apply(d.ctx, deployment, metaV1.ApplyOptions{
-		FieldManager: config.Cfg.FieldManagerName,
-		Force:        config.Cfg.ForceOnConflicts,
+		FieldManager: d.appConfig.FieldManagerName,
+		Force:        d.appConfig.ForceOnConflicts,
 	})
 
 	if err != nil {
@@ -92,14 +93,14 @@ func (d *deployment) deployDeployment(p *deploymentParams) error {
 }
 
 func (d *deployment) deleteDeployment(namespace, name string) error {
-	client := getDeploymentsClient(namespace)
+	client := getDeploymentsClient(namespace, d.appConfig)
 
 	return client.Delete(d.ctx, name, metaV1.DeleteOptions{})
 }
 
 //nolint:unused
 func (d *deployment) restart(namespace, name string) error {
-	client := getDeploymentsClient(namespace)
+	client := getDeploymentsClient(namespace, d.appConfig)
 
 	datePatch := map[string]interface{}{
 		"spec": map[string]interface{}{
@@ -128,7 +129,7 @@ func (d *deployment) restart(namespace, name string) error {
 }
 
 // builds the container using the builder interface, with healthchecks, volumes, configs, ports...
-func buildContainer(p *deploymentParams) *corev1.ContainerApplyConfiguration {
+func buildContainer(p *deploymentParams, cfg *config.Configuration) *corev1.ContainerApplyConfiguration {
 	healthCheckConfig := p.containerConfig.HealthCheckConfig
 	var healthCheckDelay int32 = 30
 	var healthCheckThreshold int32 = 1
@@ -168,7 +169,7 @@ func buildContainer(p *deploymentParams) *corev1.ContainerApplyConfiguration {
 		WithLivenessProbe(livenessProbe).
 		WithReadinessProbe(readinessProbe).
 		WithStartupProbe(startupProbe).
-		WithResources(getResourceManagement(p.containerConfig.ResourceConfig)).
+		WithResources(getResourceManagement(p.containerConfig.ResourceConfig, cfg)).
 		WithTTY(p.containerConfig.TTY)
 
 	if p.containerConfig.User != nil {
@@ -188,7 +189,7 @@ func buildContainer(p *deploymentParams) *corev1.ContainerApplyConfiguration {
 	return container
 }
 
-func getResourceManagement(resourceConfig v1.ResourceConfig) *corev1.ResourceRequirementsApplyConfiguration {
+func getResourceManagement(resourceConfig v1.ResourceConfig, cfg *config.Configuration) *corev1.ResourceRequirementsApplyConfiguration {
 	var ResourceLimitsCPU, ResourceLimitsMemory, ResourceRequestsCPU, ResourceRequestsMemory resource.Quantity
 	var err error
 
@@ -199,7 +200,7 @@ func getResourceManagement(resourceConfig v1.ResourceConfig) *corev1.ResourceReq
 			log.Panic(err)
 		}
 	} else {
-		if ResourceLimitsCPU, err = resource.ParseQuantity(config.Cfg.DefaultLimitsCPU); err != nil {
+		if ResourceLimitsCPU, err = resource.ParseQuantity(cfg.DefaultLimitsCPU); err != nil {
 			log.Panic(err)
 		}
 	}
@@ -210,7 +211,7 @@ func getResourceManagement(resourceConfig v1.ResourceConfig) *corev1.ResourceReq
 			log.Panic(err)
 		}
 	} else {
-		if ResourceLimitsMemory, err = resource.ParseQuantity(config.Cfg.DefaultLimitsMemory); err != nil {
+		if ResourceLimitsMemory, err = resource.ParseQuantity(cfg.DefaultLimitsMemory); err != nil {
 			log.Panic(err)
 		}
 	}
@@ -221,7 +222,7 @@ func getResourceManagement(resourceConfig v1.ResourceConfig) *corev1.ResourceReq
 			log.Panic(err)
 		}
 	} else {
-		if ResourceRequestsCPU, err = resource.ParseQuantity(config.Cfg.DefaultRequestsCPU); err != nil {
+		if ResourceRequestsCPU, err = resource.ParseQuantity(cfg.DefaultRequestsCPU); err != nil {
 			log.Panic(err)
 		}
 	}
@@ -232,7 +233,7 @@ func getResourceManagement(resourceConfig v1.ResourceConfig) *corev1.ResourceReq
 			log.Panic(err)
 		}
 	} else {
-		if ResourceRequestsMemory, err = resource.ParseQuantity(config.Cfg.DefaultLimitsMemory); err != nil {
+		if ResourceRequestsMemory, err = resource.ParseQuantity(cfg.DefaultLimitsMemory); err != nil {
 			log.Panic(err)
 		}
 	}
@@ -249,7 +250,7 @@ func getResourceManagement(resourceConfig v1.ResourceConfig) *corev1.ResourceReq
 	)
 }
 
-func getInitContainers(containerConfig *v1.ContainerConfig) []*corev1.ContainerApplyConfiguration {
+func getInitContainers(containerConfig *v1.ContainerConfig, cfg *config.Configuration) []*corev1.ContainerApplyConfiguration {
 	// this is only the config container / could be general / wait for it / other init purposes
 	initContainers := []*corev1.ContainerApplyConfiguration{}
 
@@ -279,7 +280,7 @@ func getInitContainers(containerConfig *v1.ContainerConfig) []*corev1.ContainerA
 			initContainers = append(initContainers,
 				corev1.Container().
 					WithName("import").
-					WithImage(config.Cfg.ImportContainerImage).
+					WithImage(cfg.ImportContainerImage).
 					WithImagePullPolicy(coreV1.PullAlways).
 					WithEnv(getEnvs(containerConfig.ImportContainer.Environments)...).
 					WithArgs(
@@ -339,8 +340,8 @@ func getContainerPorts(portList []v1.PortBinding) []*corev1.ContainerPortApplyCo
 	return ports
 }
 
-func getDeploymentsClient(namespace string) typedv1.DeploymentInterface {
-	client, err := GetClientSet()
+func getDeploymentsClient(namespace string, cfg *config.Configuration) typedv1.DeploymentInterface {
+	client, err := GetClientSet(cfg)
 	if err != nil {
 		panic(err)
 	}
@@ -348,7 +349,7 @@ func getDeploymentsClient(namespace string) typedv1.DeploymentInterface {
 	return client.AppsV1().Deployments(namespace)
 }
 
-func getVolumesFromMap(volumes map[string]v1.Volume) []*corev1.VolumeApplyConfiguration {
+func getVolumesFromMap(volumes map[string]v1.Volume, cfg *config.Configuration) []*corev1.VolumeApplyConfiguration {
 	volumeList := []*corev1.VolumeApplyConfiguration{}
 
 	for name, volume := range volumes {
@@ -358,11 +359,11 @@ func getVolumesFromMap(volumes map[string]v1.Volume) []*corev1.VolumeApplyConfig
 		if volume.Size != "" {
 			tmpStorageSize, err = resource.ParseQuantity(volume.Size)
 			if err != nil {
-				log.Println("Warning: input volume size is invalid using defaults: ", config.Cfg.DefaultVolumeSize)
-				tmpStorageSize = resource.MustParse(config.Cfg.DefaultVolumeSize)
+				log.Println("Warning: input volume size is invalid using defaults: ", cfg.DefaultVolumeSize)
+				tmpStorageSize = resource.MustParse(cfg.DefaultVolumeSize)
 			}
 		} else {
-			tmpStorageSize = resource.MustParse(config.Cfg.DefaultVolumeSize)
+			tmpStorageSize = resource.MustParse(cfg.DefaultVolumeSize)
 		}
 		if volume.Type == string(v1.EmptyDirVolumeType) {
 			volumeList = append(volumeList,
@@ -404,8 +405,8 @@ func getVolumeMountsFromMap(mounts map[string]v1.Volume) []*corev1.VolumeMountAp
 	return volumes
 }
 
-func GetDeployments(namespace string) (*kappsv1.DeploymentList, error) {
-	clientset, err := GetClientSet()
+func GetDeployments(namespace string, cfg *config.Configuration) (*kappsv1.DeploymentList, error) {
+	clientset, err := GetClientSet(cfg)
 
 	if err != nil {
 		return nil, err
@@ -421,8 +422,8 @@ func GetDeployments(namespace string) (*kappsv1.DeploymentList, error) {
 }
 
 //nolint
-func getReplicaSetClient(namespace string) typedv1.ReplicaSetInterface {
-	client, err := GetClientSet()
+func getReplicaSetClient(namespace string, cfg *config.Configuration) typedv1.ReplicaSetInterface {
+	client, err := GetClientSet(cfg)
 	if err != nil {
 		panic(err)
 	}

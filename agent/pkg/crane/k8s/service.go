@@ -33,10 +33,11 @@ type service struct {
 	ctx        context.Context
 	status     string
 	portsBound []int32
+	appConfig  *config.Configuration
 }
 
-func newService(ctx context.Context) *service {
-	return &service{status: "", ctx: ctx}
+func newService(ctx context.Context, cfg *config.Configuration) *service {
+	return &service{status: "", ctx: ctx, appConfig: cfg}
 }
 
 type ServiceParams struct {
@@ -50,7 +51,7 @@ type ServiceParams struct {
 }
 
 func (s *service) deployService(params *ServiceParams) error {
-	client, err := getServiceClient(params.namespace)
+	client, err := getServiceClient(params.namespace, s.appConfig)
 	if err != nil {
 		return err
 	}
@@ -80,8 +81,8 @@ func (s *service) deployService(params *ServiceParams) error {
 	}
 
 	res, err := client.Apply(context.TODO(), svc, metav1.ApplyOptions{
-		FieldManager: config.Cfg.FieldManagerName,
-		Force:        config.Cfg.ForceOnConflicts,
+		FieldManager: s.appConfig.FieldManagerName,
+		Force:        s.appConfig.ForceOnConflicts,
 	})
 
 	if err != nil {
@@ -90,7 +91,7 @@ func (s *service) deployService(params *ServiceParams) error {
 		log.Printf("Service deployed: %s", res.Name)
 	}
 
-	if config.Cfg.CraneGenTCPIngressMap != "" {
+	if s.appConfig.CraneGenTCPIngressMap != "" {
 		genIngressMapFile(ports, params.namespace, params.name)
 	}
 
@@ -102,7 +103,7 @@ func (s *service) deployService(params *ServiceParams) error {
 }
 
 func (s *service) deleteServices(namespace, name string) error {
-	client, err := getServiceClient(namespace)
+	client, err := getServiceClient(namespace, s.appConfig)
 	if err != nil {
 		return err
 	}
@@ -139,8 +140,8 @@ func getServicePorts(portBindings []v1.PortBinding, portRanges []v1.PortRangeBin
 	return ports
 }
 
-func getServiceClient(namespace string) (typedcorev1.ServiceInterface, error) {
-	clientset, err := GetClientSet()
+func getServiceClient(namespace string, cfg *config.Configuration) (typedcorev1.ServiceInterface, error) {
+	clientset, err := GetClientSet(cfg)
 
 	if err != nil {
 		return nil, err

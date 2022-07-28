@@ -7,6 +7,7 @@ import (
 )
 
 func main() {
-	util.ReadConfig(&config.Cfg)
-	crane.Serve()
+	var cfg config.Configuration
+	util.ReadConfig(&cfg)
+	crane.Serve(&cfg)
 }
