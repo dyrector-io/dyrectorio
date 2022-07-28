@@ -37,12 +37,12 @@ func newIngress(ctx context.Context, cfg *config.Configuration) *ingress {
 	return &ingress{ctx: ctx, status: "", appConfig: cfg}
 }
 
-func (i *ingress) deployIngress(options *DeployIngressOptions) error {
+func (ing *ingress) deployIngress(options *DeployIngressOptions) error {
 	if options == nil {
 		return errors.New("ingress deployment is nil")
 	}
 
-	client, err := getIngressClient(options.namespace, i.appConfig)
+	client, err := getIngressClient(options.namespace, ing.appConfig)
 	if err != nil {
 		log.Println("Error with ingress client: ", err.Error())
 	}
@@ -55,7 +55,7 @@ func (i *ingress) deployIngress(options *DeployIngressOptions) error {
 	if options.ingressHost != "" {
 		ingressRoot = options.ingressHost
 	} else {
-		ingressRoot = i.appConfig.IngressRootDomain
+		ingressRoot = ing.appConfig.IngressRootDomain
 	}
 
 	var ingressPath string
@@ -98,8 +98,8 @@ func (i *ingress) deployIngress(options *DeployIngressOptions) error {
 		Spec: spec}
 
 	ingress, err := client.Apply(context.TODO(), applyConfig, metav1.ApplyOptions{
-		FieldManager: i.appConfig.FieldManagerName,
-		Force:        i.appConfig.ForceOnConflicts,
+		FieldManager: ing.appConfig.FieldManagerName,
+		Force:        ing.appConfig.ForceOnConflicts,
 	})
 
 	if err != nil {
@@ -109,13 +109,13 @@ func (i *ingress) deployIngress(options *DeployIngressOptions) error {
 	return err
 }
 
-func (i *ingress) deleteIngress(namespace, name string) error {
-	client, err := getIngressClient(namespace, i.appConfig)
+func (ing *ingress) deleteIngress(namespace, name string) error {
+	client, err := getIngressClient(namespace, ing.appConfig)
 	if err != nil {
 		panic(err)
 	}
 
-	return client.Delete(i.ctx, name, metav1.DeleteOptions{})
+	return client.Delete(ing.ctx, name, metav1.DeleteOptions{})
 }
 
 func getTLSConfig(ingressPath, containerName string, enabled bool) *netv1.IngressTLSApplyConfiguration {

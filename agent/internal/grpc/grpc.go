@@ -52,9 +52,7 @@ type WorkerFunctions struct {
 
 type contextKey int
 
-const (
-	contextConfigKey contextKey = iota
-)
+const contextConfigKey contextKey = 0
 
 func GrpcTokenToConnectionParams(grpcToken string, insecureGrpc bool) (*GrpcConnectionParams, error) {
 	claims := jwt.StandardClaims{}
