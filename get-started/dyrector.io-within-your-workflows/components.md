@@ -33,6 +33,8 @@ Registry is the place where you can store your images. You can use any Docker Re
 
 Products are the applications you’ll manage in dyrector.io. There are two types of Products.
 
+![The differences between types of Products in dyrector.io.](<../../docs/.gitbook/assets/product types.png>)
+
 * **Simple:** these Products have only one version and cannot be rolled back. These are mostly useful for testing purposes, because simple Products come without versions.
 * **Complex:** complex Products have two types of versions: Rolling and Incremental.
   * **Rolling:** rolling versions are similar to simple Products except they’re perfect for continuous delivery. They’re always mutable but contrary to incremental Products they aren’t hierarchic and lack a version number.

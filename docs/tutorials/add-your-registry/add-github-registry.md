@@ -13,7 +13,7 @@
 **Step 4:** In the corresponding fields, enter:
 
 * your GitHub username,
-* Personal access token generated in GitHub with the steps documented here. Select the repo and read:packages scopes.
+* Personal access token generated in GitHub with the steps documented [**here**](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token). Select the _repo_ and _read:packages_ scopes.
 * And your Organization’s GitHub name.
 
 **Step 5:** Click ‘Save’ button on the top right.

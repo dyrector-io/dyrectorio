@@ -8,7 +8,9 @@ dyrector.io is an open-source deployment platform that helps software teams mana
 This documentation is in the works along with our product’s development. In case you’ve got feedback regarding the docs, please reach out to us at [hello@dyrector.io](mailto:hello@dyrector.io). **Contributions are always welcome.**
 {% endhint %}
 
-## Concept
+**If you want to cut to the chase, go to** [**Tutorials**](broken-reference) **to see how you can execute deployments with dyrector.io.**
+
+### Concept
 
 **Life isn’t about release management.** Why should teams focus so much of their precious time and effort on it when things can be simpler?
 

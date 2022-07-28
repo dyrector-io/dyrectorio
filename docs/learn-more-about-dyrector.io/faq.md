@@ -6,7 +6,7 @@ dyrector.io is a release management platform for developer teams to manage and a
 
 ### Is dyrector.io Kubernetes specified?
 
-No. It can be configured with any environment. Read how you can set up Nodes.
+No. It can be configured with any environment. Read how you can [**set up Nodes**](../tutorials/register-your-node.md).
 
 ### Is dyrector.io a CI/CD tool?
 
@@ -30,6 +30,6 @@ dyrector.io is for anyone who works with containerized applications. That means 
 
 Don’t hesitate, reach out to us at [hello@dyrector.io](mailto:hello@dyrector.io). Also drop us a mail to the same address if you find a bug or any other anomaly you experience. We’ll respond within 24 hours.
 
-My question isn’t answered here. Where can I reach you?
+### My question isn’t answered here. Where can I reach you?
 
 Send us an e-mail to [hello@dyrector.io](mailto:hello@dyrector.io).

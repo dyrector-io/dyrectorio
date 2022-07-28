@@ -3,10 +3,16 @@
 There are four roles involved in dyrector.io’s workflow. These are Developers, Release Managers, SysAdmins / DevOps Engineers and Stakeholders. Based on their responsibilities, they interact differently with dyrector.io.
 
 {% hint style="info" %}
-In the flowchart below you can see how dyrector.io fits into Software Development Lifecycle (SDLC). Your Developer teammate commits to a Registry, which your Release Manager teammate gets notified about. The Release Manager or any stakeholder can set up a testing environment self-service to validate the new version’s functionality. After successful testing, the Release Manager or any stakeholder can trigger the deployment of the new version.
+In the flowchart below you can see how dyrector.io fits into Software Development Lifecycle (SDLC).
+
+* Your Developer teammate commits to a Registry, which your Release Manager teammate gets notified about.
+* The Release Manager or any stakeholder can set up a testing environment self-service to validate the new version’s functionality.
+* After successful testing, the Release Manager or any stakeholder can trigger the deployment of the new version.
 
 In case of an emergency, specialist or non-specialist stakeholders can intervene on an abstract level via dyrector.io to avoid downtime for a temporary fix.
 {% endhint %}
+
+![Flowchart of how each stakeholder and component in the SDLC interacts with dyrector.io.](<../../docs/.gitbook/assets/dyrector.io @ decks.png>)
 
 ### Developers / Engineers
 

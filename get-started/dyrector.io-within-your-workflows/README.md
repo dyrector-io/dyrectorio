@@ -1,5 +1,7 @@
 # dyrector.io within your workflows
 
+This section's goal is to introduce dyrector.io's capabilities and how organizations can make the most out of using it. **If you're reading the docs to find out how to execute deployments on the platform, head to the** [**Tutorials**](broken-reference)**.**
+
 The purpose of using dyrector.io is to reduce time and budget spent on release management. To achieve this, dyrector.io helps you with the following features.
 
 ### Features

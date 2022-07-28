@@ -16,7 +16,7 @@
 
 ## Features
 
-* [Multi-instance deployments](features/multi-instance-deployments.md)
+* [Multi-Instance Deployments](features/multi-instance-deployments.md)
 * [Configuration management](features/configuration-management.md)
 * [Monitoring](features/monitoring.md)
 * [Audit log](features/audit-log.md)
@@ -40,5 +40,8 @@
 
 ## Learn more about dyrector.io
 
+* [Roadmap](learn-more-about-dyrector.io/roadmap/README.md)
+  * [Features in progress](learn-more-about-dyrector.io/roadmap/features-in-progress.md)
+  * [Integrations in progress](learn-more-about-dyrector.io/roadmap/integrations-in-progress.md)
 * [FAQ](learn-more-about-dyrector.io/faq.md)
 * [Community](learn-more-about-dyrector.io/community.md)

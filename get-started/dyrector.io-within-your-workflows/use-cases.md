@@ -1,14 +1,22 @@
 # Use cases
 
-### TODO: Vakár.mennyi
+### V0.1.0
 
 #### Multi-Instance Deployments
 
 Microservice architectures are challenging to manage, especially when your team has to distribute them through multiple Nodes. Deployments become repetitive, time-consuming, and due to human presence, risky.
 
-By using dyrector.io, you can simplify the whole process. Assemble your images from private or public Docker Registries in an instant, then trigger the deployments to Nodes – on-prem or Kubernetes environments.
+By using dyrector.io, you can simplify the whole process. Assemble your images from private or public Registries in an instant, then trigger the deployments to Nodes – on-prem or cloud environments.
 
-Bundled configurations enable your team to assign templatized configurations through the whole process. This significantly reduces the risk of adding incorrect configurations.
+The most common use case of Multi-Instance Deployments is when your team directly distributes the applications they create. The flowchart below illustrates how the process takes place.
+
+![dyrector.io enables teams to manage and execute Multi-Instance Deployments at a high efficiency.](../../docs/.gitbook/assets/dyrector-io-multi-instance-deployments-no-resale.png)
+
+We've seen less frequently but at significant levels that when a company outsources the development of an application to your team, they'd still like to manage deployments because they handle billing and other administrative processes. In the flowchart below you can see how this process differs from direct distribution.
+
+![dyrector.io enables your clients to manage and execute Multi-Instance Deployments as a way of redistributing your application.](../../docs/.gitbook/assets/dyrector-io-multi-instance-deployments-outsourcing.png)
+
+> **In progress:** Bundled configurations enable your team to assign templatized configurations through the whole process. This significantly reduces the risk of adding incorrect configurations.
 
 #### Docker & Kubernetes utilization without specialists
 
@@ -18,9 +26,9 @@ No worries if you’d rather have your specialists handling these processes, how
 
 #### Instant test environments
 
-Imagine you’re a project manager and one of the developers on your team lets you know that a new function is ready for testing. Instead of contacting a SysAdmin or a DevOps engineer, you’re able to set up testing or staging environments in an instant by creating a new Node, described in the Register your first Node tutorial.
+Imagine you’re a project manager and one of the developers on your team lets you know that a new function is ready for testing. Instead of contacting a SysAdmin or a DevOps engineer, you’re able to set up testing or staging environments in an instant by creating a new Node, described in the [**Register your Node**](../../docs/tutorials/register-your-node.md) tutorial.
 
-If you’re running dyrector.io on-premises, the process is even more simple. All you have to do is deploy the application you’d like to test to the Node where dyrector.io runs using the steps of Create the Product tutorial.
+If you’re running dyrector.io on-premises, the process is even more simple. All you have to do is deploy the application you’d like to test to the Node where dyrector.io runs using the steps of [**Create the Product**](../../docs/tutorials/create-your-product/) tutorial.
 
 **And more, including**
 

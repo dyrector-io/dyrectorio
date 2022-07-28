@@ -19,7 +19,7 @@ You can add Registries available from both self-managed or SaaS GitLab.
 **Step 4:** In the corresponding fields, enter:
 
 * your GitLab username,
-* your password or access token generated in GitLab with the steps documented here. Select the read\_api and read\_registry scopes.
+* your password or access token generated in GitLab with the steps documented [**here**](https://gitlab.com/-/profile/personal\_access\_tokens). Select the _read\_api_ and _read\_registry_ scopes.
 * And your Organization’s GitHub name.
 
 **Step 5:** Switch toggle to SaaS. If you select GitLab Registry type, SaaS should be selected by default.
@@ -41,10 +41,10 @@ Tip: You can write a description, so others on your team can understand what’s
 **Step 4:** In the corresponding fields, enter:
 
 * your GitLab username,
-* your password or access token generated in GitLab with the steps documented here. Select the read\_api and read\_registry scopes.
+* your password or access token generated in GitLab with the steps documented [**here**](https://gitlab.com/-/profile/personal\_access\_tokens). Select the _read\_api_ and _read\_registry_ scopes.
 * And your Organization’s GitHub name.
 
-**Step 5:** Switch toggle to Self-managed GitLab.&#x20;
+**Step 5:** Switch toggle to Self-managed GitLab.
 
 **Step 6:** Enter GitLab Registry’s URL and the GitLab API URL without the https prefixes.
 
