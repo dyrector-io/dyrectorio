@@ -1,0 +1,9 @@
+{
+    "root": "./docs",
+    "title:": "dyrectorio User facing documentation",
+    "description": "TBD",
+    "structure": {
+        "readme": "README.md",
+        "summary": "SUMMARY.md"
+    }
+}
