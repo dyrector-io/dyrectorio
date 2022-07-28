@@ -25,7 +25,7 @@ const AuditLogPage = (props: AuditLogPageProps) => {
 
   const [showInfo, setShowInfo] = useState<AuditLog>(null)
 
-  const parsedJSONInfo = useMemo(() => showInfo?JSON.parse(showInfo.info):null, [showInfo]);
+  const parsedJSONInfo = useMemo(() => (showInfo ? JSON.parse(showInfo.info) : null), [showInfo])
 
   const onShowInfoClick = (logEntry: AuditLog) => setShowInfo(logEntry)
 
