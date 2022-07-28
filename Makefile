@@ -10,11 +10,6 @@ GID := $(shell id -g)
 PWD := $(shell pwd)
 REMOTE=github.com/dyrector-io/dyrectorio/protobuf/go
 
-## Install dependencies
-.PHONY: install-tools
-install-tools: 
-	npm install prettier
-
 ## Compile the all grpc files
 .PNONY: protogen
 protogen:| proto-agent proto-crux proto-crux-ui
