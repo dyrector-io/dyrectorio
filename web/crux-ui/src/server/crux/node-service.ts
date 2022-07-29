@@ -30,7 +30,7 @@ import {
   NodeInstallResponse,
   NodeListResponse,
   NodeScriptResponse,
-  NodeType,
+  NodeType as ProtoNodeType,
   ServiceIdRequest,
   UpdateNodeRequest,
   WatchContainerStatusRequest,
@@ -60,7 +60,7 @@ class DyoNodeService {
         ...it,
         connectedAt: timestampToUTC(it.connectedAt),
         status: this.statusToDto(it.status),
-        type: it.type == NodeType.DOCKER ? 'docker' : 'k8s',
+        type: nodeTypeGrpcToUi(it.type),
       }
     })
   }
@@ -130,7 +130,7 @@ class DyoNodeService {
     }
   }
 
-  async generateScript(id: string, nodeType: NodeType): Promise<DyoNodeInstall> {
+  async generateScript(id: string, nodeType: ProtoNodeType): Promise<DyoNodeInstall> {
     const req: GenerateScriptRequest = {
       id,
       accessedBy: this.identity.id,

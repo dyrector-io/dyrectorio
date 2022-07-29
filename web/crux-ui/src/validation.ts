@@ -84,6 +84,10 @@ export const nodeSchema = yup.object().shape({
   type: yup.mixed<NodeType>().oneOf([...NODE_TYPE_VALUES]),
 })
 
+export const nodeType = yup.object().shape({
+  type: yup.mixed<NodeType>().oneOf([...NODE_TYPE_VALUES]),
+})
+
 export const increaseVersionSchema = yup.object().shape({
   name: nameRule,
   changelog: descriptionRule,

@@ -14,8 +14,8 @@
   "scriptExpiresIn": "The script expires in:",
   "address": "Address",
   "status": "Status",
-  "explanationHeader": "What does this script do?",
-  "explanation": "The following 'Generate scipt' button will create a one-liner and script that will install our agent to the target host with the selected technology.",
+  "setupExplanationHeader": "What does this script do?",
+  "setupExplanation": "The following 'Generate scipt' button will create a one-liner and script that will install our agent to the target host with the selected technology.",
   "requirementsHeader": "Requirements",
   "requirements": {
     "k8s": ["A kubernetes cluster", "kubectl authenticated, active context selected", "Ability to run these commands"],

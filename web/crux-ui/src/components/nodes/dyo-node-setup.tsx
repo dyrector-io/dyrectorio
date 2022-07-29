@@ -7,7 +7,7 @@ import { DyoTextArea } from '@app/elements/dyo-text-area'
 import RemainingTimeLabel from '@app/elements/remaining-time-label'
 import { defaultApiErrorHandler } from '@app/errors'
 import { useTimer } from '@app/hooks/use-timer'
-import { DyoNodeDetails, DyoNodeInstall, GenerateScriptRequestBody, NodeType, NODE_TYPE_VALUES } from '@app/models'
+import { DyoNodeDetails, DyoNodeInstall, NodeType, NODE_TYPE_VALUES } from '@app/models'
 import { nodeSetupApiUrl } from '@app/routes'
 import { sendForm, writeToClipboard } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
@@ -33,7 +33,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
   const handleApiError = defaultApiErrorHandler(t)
 
   const onGenerateInstallScript = async () => {
-    const body: GenerateScriptRequestBody = {
+    const body = {
       type: props.node.type,
     }
 

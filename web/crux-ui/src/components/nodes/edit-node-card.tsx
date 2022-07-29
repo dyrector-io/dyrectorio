@@ -201,10 +201,10 @@ const EditNodeCard = (props: EditNodeCardProps) => {
 
           <div className="text-bright mb-4">
             <DyoHeading element="h4" className="text-md">
-              {t('explanationHeader')}
+              {t('setupExplanationHeader')}
             </DyoHeading>
 
-            <p className="text-light-eased max-w-lg ml-4">{t('explanation')}</p>
+            <p className="text-light-eased max-w-lg ml-4">{t('setupExplanation')}</p>
           </div>
 
           {node.install ? (
@@ -214,11 +214,13 @@ const EditNodeCard = (props: EditNodeCardProps) => {
                   {t('requirementsHeader')}
                 </DyoHeading>
 
-                {(t('requirements.' + node.type, null, { returnObjects: true }) as string[]).map((reqItem, index) => (
-                  <p className="text-light-eased max-w-lg ml-4" key={'req-' + index}>
-                    - {reqItem}
-                  </p>
-                ))}
+                {(t('requirements.' + node.type, null, { returnObjects: true }) as string[]).map(
+                  (requirement, index) => (
+                    <p className="text-light-eased max-w-lg ml-4" key={'req-' + index}>
+                      - {requirement}
+                    </p>
+                  ),
+                )}
               </div>
             </>
           ) : null}
