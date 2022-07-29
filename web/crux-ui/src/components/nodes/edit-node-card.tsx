@@ -201,10 +201,10 @@ const EditNodeCard = (props: EditNodeCardProps) => {
 
           <div className="text-bright mb-4">
             <DyoHeading element="h4" className="text-md">
-              {t('setupExplanationHeader')}
+              {t('whatScriptDoesHeader')}
             </DyoHeading>
 
-            <p className="text-light-eased max-w-lg ml-4">{t('setupExplanation')}</p>
+            <p className="text-light-eased max-w-lg ml-4">{t('scriptExplanation')}</p>
           </div>
 
           {node.install ? (

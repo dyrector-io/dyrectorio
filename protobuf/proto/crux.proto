@@ -591,7 +591,7 @@ enum NodeConnectionStatus {
 }
 
 enum NodeType {
-  UNKNOWN = 0;
+  UNKNOWN_NODE_TYPE = 0;
   DOCKER = 1;
   K8S = 2;
 }

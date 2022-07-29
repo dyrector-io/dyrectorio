@@ -261,7 +261,7 @@ export function nodeConnectionStatusToJSON(object: NodeConnectionStatus): string
 }
 
 export enum NodeType {
-  UNKNOWN = 0,
+  UNKNOWN_NODE_TYPE = 0,
   DOCKER = 1,
   K8S = 2,
   UNRECOGNIZED = -1,
@@ -270,8 +270,8 @@ export enum NodeType {
 export function nodeTypeFromJSON(object: any): NodeType {
   switch (object) {
     case 0:
-    case 'UNKNOWN':
-      return NodeType.UNKNOWN
+    case 'UNKNOWN_NODE_TYPE':
+      return NodeType.UNKNOWN_NODE_TYPE
     case 1:
     case 'DOCKER':
       return NodeType.DOCKER
@@ -287,8 +287,8 @@ export function nodeTypeFromJSON(object: any): NodeType {
 
 export function nodeTypeToJSON(object: NodeType): string {
   switch (object) {
-    case NodeType.UNKNOWN:
-      return 'UNKNOWN'
+    case NodeType.UNKNOWN_NODE_TYPE:
+      return 'UNKNOWN_NODE_TYPE'
     case NodeType.DOCKER:
       return 'DOCKER'
     case NodeType.K8S:

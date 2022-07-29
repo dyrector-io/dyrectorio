@@ -72,14 +72,14 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
       {!node.install ? (
         <div className="mb-4">
           <DyoHeading element="h4" className="text-lg text-bright mb-2">
-            {t('nodeTypeSelectHeader')}
+            {t('technology')}
           </DyoHeading>
 
           <DyoChips
             className="mb-2 ml-2"
             choices={NODE_TYPE_VALUES}
             initialSelection={node.type}
-            converter={(it: NodeType) => t(`nodeType-${it}`)}
+            converter={(it: NodeType) => t(`technologies.${it}`)}
             onSelectionChange={it => onNodeTypeChanged(it)}
           />
 

@@ -14,8 +14,8 @@
   "scriptExpiresIn": "The script expires in:",
   "address": "Address",
   "status": "Status",
-  "setupExplanationHeader": "What does this script do?",
-  "setupExplanation": "The following 'Generate scipt' button will create a one-liner and script that will install our agent to the target host with the selected technology.",
+  "whatScriptDoesHeader": "What does this script do?",
+  "scriptExplanation": "The following 'Generate scipt' button will create a one-liner and script that will install our agent to the target host with the selected technology.",
   "requirementsHeader": "Requirements",
   "requirements": {
     "k8s": ["A kubernetes cluster", "kubectl authenticated, active context selected", "Ability to run these commands"],
@@ -29,10 +29,10 @@
   "uptime": "Uptime",
   "version": "Version",
   "versionUnknown": "Unkown version",
-  "nodeTypeSelectHeader": "Technology",
-
-  "nodeType-docker": "Docker Host",
-  "nodeType-k8s": "Kubernetes Cluster",
-
+  "technology": "Technology",
+  "technologies": {
+    "docker": "Docker Host",
+    "k8s": "Kubernetes Cluster"
+  },
   "deleteDescription": "If you proceed, you will lose all your data related to {{name}}. This action is not revocable."
 }
