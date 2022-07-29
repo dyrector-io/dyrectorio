@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: crane
-          image: ghcr.io/dyrector-io/dyrectorio/agent/crane:rc-install
+          image: ghcr.io/dyrector-io/dyrectorio/agent/crane:latest
           imagePullPolicy: Always
           resources:
             requests:

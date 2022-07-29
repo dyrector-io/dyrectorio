@@ -1,4 +1,3 @@
-import { NodeType as GrpcNodeType } from '@app/models/grpc/protobuf/proto/crux'
 import { Identity } from '@ory/kratos-client'
 import { DyoApiError } from '@server/error-middleware'
 import { REGISTRY_GITHUB_URL, REGISTRY_GITLAB_URLS, REGISTRY_HUB_URL } from './const'
@@ -611,13 +610,6 @@ export const roleToText = (role: UserRole) => {
     case 'user':
       return 'common:roleUser'
   }
-}
-
-export const nodeTypeUiToGrpc = (type: NodeType): GrpcNodeType => {
-  return type === NODE_TYPE_VALUES[0] ? GrpcNodeType.DOCKER : GrpcNodeType.K8S
-}
-export const nodeTypeGrpcToUi = (type: GrpcNodeType): NodeType => {
-  return type === GrpcNodeType.DOCKER ? NODE_TYPE_VALUES[0] : NODE_TYPE_VALUES[1]
 }
 
 export const selectedTeamOf = (meta: UserMeta): UserMetaTeam => {

@@ -1,6 +1,7 @@
-import { NodeType, nodeTypeUiToGrpc } from '@app/models'
+import { NodeType } from '@app/models'
 import { nodeType } from '@app/validation'
 import crux from '@server/crux/crux'
+import { nodeTypeUiToGrpc } from '@server/crux/node-service'
 import { withMiddlewares } from '@server/middlewares'
 import { useValidationMiddleware } from '@server/validation-middleware'
 import { NextApiRequest, NextApiResponse } from 'next'

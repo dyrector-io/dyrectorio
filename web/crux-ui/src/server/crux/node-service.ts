@@ -10,7 +10,8 @@ import {
   DyoNodeScript,
   NodeStatus,
   NodeStatusMessage,
-  nodeTypeGrpcToUi,
+  NodeType,
+  NODE_TYPE_VALUES,
   UpdateDyoNode,
 } from '@app/models'
 import {
@@ -30,6 +31,7 @@ import {
   NodeInstallResponse,
   NodeListResponse,
   NodeScriptResponse,
+  NodeType as GrpcNodeType,
   NodeType as ProtoNodeType,
   ServiceIdRequest,
   UpdateNodeRequest,
@@ -239,3 +241,10 @@ export default DyoNodeService
 
 export const containerStatusToDto = (status: ProtoContainerStatus): ContainerStatus =>
   containerStatusToJSON(status).toLocaleLowerCase() as ContainerStatus
+
+export const nodeTypeUiToGrpc = (type: NodeType): GrpcNodeType => {
+  return type === NODE_TYPE_VALUES[0] ? GrpcNodeType.DOCKER : GrpcNodeType.K8S
+}
+export const nodeTypeGrpcToUi = (type: GrpcNodeType): NodeType => {
+  return type === GrpcNodeType.DOCKER ? NODE_TYPE_VALUES[0] : NODE_TYPE_VALUES[1]
+}

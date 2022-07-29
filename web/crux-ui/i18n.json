@@ -15,7 +15,7 @@
     "/auth/verify": ["verify"],
     "/products": ["products"],
     "/products/[productId]": ["products", "versions", "images"],
-    "/products/[productId]/versions/[versionId]": [ "versions", "images"],
+    "/products/[productId]/versions/[versionId]": ["versions", "images"],
     "/products/[productId]/versions/[versionId]/deployments/[deploymentId]": ["images", "deployments"],
     "/products/[productId]/versions/[versionId]/deployments/[deploymentId]/deploy": ["deployments"],
     "/nodes": ["nodes"],
