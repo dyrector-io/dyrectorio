@@ -18,7 +18,7 @@ In the flowchart below you can see how dyrector.io fits into Software Developmen
 In case of an emergency, specialist or non-specialist stakeholders can intervene on an abstract level via dyrector.io to avoid downtime for a temporary fix.
 {% endhint %}
 
-![Flowchart of how each stakeholder and component in the SDLC interacts with dyrector.io.](<../../docs/.gitbook/assets/dyrector.io @ decks.png>)
+![Flowchart of how each stakeholder and component in the SDLC interacts with dyrector.io.](../../docs/.gitbook/assets/dyrector-io-workflow-roles-dark.png)
 
 ### Developers / Engineers
 

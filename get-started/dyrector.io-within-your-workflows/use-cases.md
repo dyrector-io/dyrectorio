@@ -10,11 +10,11 @@ By using dyrector.io, you can simplify the whole process. Assemble your images f
 
 The most common use case of Multi-Instance Deployments is when your team directly distributes the applications they create. The flowchart below illustrates how the process takes place.
 
-![dyrector.io enables teams to manage and execute Multi-Instance Deployments at a high efficiency.](../../docs/.gitbook/assets/dyrector-io-multi-instance-deployments-no-resale.png)
+![dyrector.io enables teams to manage and execute Multi-Instance Deployments at a high efficiency.](../../docs/.gitbook/assets/dyrector-io-multi-instance-deployments-dark.png)
 
 We've seen less frequently but at significant levels that when a company outsources the development of an application to your team, they'd still like to manage deployments because they handle billing and other administrative processes. In the flowchart below you can see how this process differs from direct distribution.
 
-![dyrector.io enables your clients to manage and execute Multi-Instance Deployments as a way of redistributing your application.](../../docs/.gitbook/assets/dyrector-io-multi-instance-deployments-outsourcing.png)
+![dyrector.io enables your clients to manage and execute Multi-Instance Deployments as a way of redistributing your application.](../../docs/.gitbook/assets/dyrector-io-multi-instance-deployments-outsourcing-dark.png)
 
 > **In progress:** Bundled configurations enable your team to assign templatized configurations through the whole process. This significantly reduces the risk of adding incorrect configurations.
 

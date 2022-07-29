@@ -6,7 +6,7 @@ You can use dyrector.io in a cloud-hosted or a self-hosted way.
 
 #### Cloud-hosted
 
-![By using free and paid packages, you're getting access to dyrector.io hosted by us on the cloud.](../.gitbook/assets/dyrector-io-cloud-hosted-architecture.png)
+![By using free and paid packages, you're getting access to dyrector.io hosted by us on the cloud.](../.gitbook/assets/dyrector-io-cloud-hosted-architecture-dark.png)
 
 By using cloud-hosted dyrector.io, you’re able to register dyrector.io’s agent to your Nodes. When adding a Node, you can select whether you’d like to use Docker API or Kubernetes API on it.
 
@@ -16,7 +16,7 @@ This is how dyrector.io will operate if you decide to use our free or paid packa
 
 #### Self-hosted
 
-![](../.gitbook/assets/dyrector-io-self-hosted-architecture.png)
+![](../.gitbook/assets/dyrector-io-self-hosted-architecture-dark.png)
 
 Similar to the cloud-hosted way, you can use self-hosted dyrector.io with Docker or Kubernetes. Only difference is it’s up to you where dyrector.io will run.
 
