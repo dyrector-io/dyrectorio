@@ -219,6 +219,7 @@ export type DyoNode = {
   status: NodeStatus
   connectedAt?: string
   version?: string
+  type: NodeType
 }
 
 export type DyoNodeInstall = {
@@ -237,6 +238,9 @@ export type CreateDyoNode = {
   name: string
   description?: string
 }
+
+export const NODE_TYPE_VALUES = ['docker', 'k8s'] as const
+export type NodeType = typeof NODE_TYPE_VALUES[number]
 
 export type UpdateDyoNode = CreateDyoNode & {
   address: string

@@ -271,6 +271,44 @@ export function nodeConnectionStatusToJSON(object: NodeConnectionStatus): string
   }
 }
 
+export enum NodeType {
+  UNKNOWN_NODE_TYPE = 0,
+  DOCKER = 1,
+  K8S = 2,
+  UNRECOGNIZED = -1,
+}
+
+export function nodeTypeFromJSON(object: any): NodeType {
+  switch (object) {
+    case 0:
+    case 'UNKNOWN_NODE_TYPE':
+      return NodeType.UNKNOWN_NODE_TYPE
+    case 1:
+    case 'DOCKER':
+      return NodeType.DOCKER
+    case 2:
+    case 'K8S':
+      return NodeType.K8S
+    case -1:
+    case 'UNRECOGNIZED':
+    default:
+      return NodeType.UNRECOGNIZED
+  }
+}
+
+export function nodeTypeToJSON(object: NodeType): string {
+  switch (object) {
+    case NodeType.UNKNOWN_NODE_TYPE:
+      return 'UNKNOWN_NODE_TYPE'
+    case NodeType.DOCKER:
+      return 'DOCKER'
+    case NodeType.K8S:
+      return 'K8S'
+    default:
+      return 'UNKNOWN'
+  }
+}
+
 export enum DeploymentStatus {
   UNKNOWN_DEPLOYMENT_STATUS = 0,
   PREPARING = 1,
@@ -832,6 +870,7 @@ export interface NodeResponse {
   status: NodeConnectionStatus
   connectedAt?: Timestamp | undefined
   version?: string | undefined
+  type: NodeType
 }
 
 export interface NodeDetailsResponse {
@@ -847,6 +886,7 @@ export interface NodeDetailsResponse {
   install?: NodeInstallResponse | undefined
   script?: NodeScriptResponse | undefined
   version?: string | undefined
+  type: NodeType
 }
 
 export interface NodeListResponse {
@@ -866,6 +906,12 @@ export interface UpdateNodeRequest {
   name: string
   description?: string | undefined
   icon?: string | undefined
+}
+
+export interface GenerateScriptRequest {
+  id: string
+  accessedBy: string
+  type: NodeType
 }
 
 export interface NodeInstallResponse {
@@ -4854,7 +4900,7 @@ export const PatchImageRequest = {
   },
 }
 
-const baseNodeResponse: object = { id: '', name: '', status: 0 }
+const baseNodeResponse: object = { id: '', name: '', status: 0, type: 0 }
 
 export const NodeResponse = {
   encode(message: NodeResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -4884,6 +4930,9 @@ export const NodeResponse = {
     }
     if (message.version !== undefined) {
       writer.uint32(850).string(message.version)
+    }
+    if (message.type !== 0) {
+      writer.uint32(856).int32(message.type)
     }
     return writer
   },
@@ -4922,6 +4971,9 @@ export const NodeResponse = {
         case 106:
           message.version = reader.string()
           break
+        case 107:
+          message.type = reader.int32() as any
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -4947,6 +4999,7 @@ export const NodeResponse = {
         ? fromJsonTimestamp(object.connectedAt)
         : undefined
     message.version = object.version !== undefined && object.version !== null ? String(object.version) : undefined
+    message.type = object.type !== undefined && object.type !== null ? nodeTypeFromJSON(object.type) : 0
     return message
   },
 
@@ -4961,6 +5014,7 @@ export const NodeResponse = {
     message.status !== undefined && (obj.status = nodeConnectionStatusToJSON(message.status))
     message.connectedAt !== undefined && (obj.connectedAt = fromTimestamp(message.connectedAt).toISOString())
     message.version !== undefined && (obj.version = message.version)
+    message.type !== undefined && (obj.type = nodeTypeToJSON(message.type))
     return obj
   },
 
@@ -4979,6 +5033,7 @@ export const NodeResponse = {
         ? Timestamp.fromPartial(object.connectedAt)
         : undefined
     message.version = object.version ?? undefined
+    message.type = object.type ?? 0
     return message
   },
 }
@@ -4988,6 +5043,7 @@ const baseNodeDetailsResponse: object = {
   name: '',
   status: 0,
   hasToken: false,
+  type: 0,
 }
 
 export const NodeDetailsResponse = {
@@ -5027,6 +5083,9 @@ export const NodeDetailsResponse = {
     }
     if (message.version !== undefined) {
       writer.uint32(874).string(message.version)
+    }
+    if (message.type !== 0) {
+      writer.uint32(880).int32(message.type)
     }
     return writer
   },
@@ -5074,6 +5133,9 @@ export const NodeDetailsResponse = {
         case 109:
           message.version = reader.string()
           break
+        case 110:
+          message.type = reader.int32() as any
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -5104,6 +5166,7 @@ export const NodeDetailsResponse = {
     message.script =
       object.script !== undefined && object.script !== null ? NodeScriptResponse.fromJSON(object.script) : undefined
     message.version = object.version !== undefined && object.version !== null ? String(object.version) : undefined
+    message.type = object.type !== undefined && object.type !== null ? nodeTypeFromJSON(object.type) : 0
     return message
   },
 
@@ -5123,6 +5186,7 @@ export const NodeDetailsResponse = {
     message.script !== undefined &&
       (obj.script = message.script ? NodeScriptResponse.toJSON(message.script) : undefined)
     message.version !== undefined && (obj.version = message.version)
+    message.type !== undefined && (obj.type = nodeTypeToJSON(message.type))
     return obj
   },
 
@@ -5148,6 +5212,7 @@ export const NodeDetailsResponse = {
     message.script =
       object.script !== undefined && object.script !== null ? NodeScriptResponse.fromPartial(object.script) : undefined
     message.version = object.version ?? undefined
+    message.type = object.type ?? 0
     return message
   },
 }
@@ -5359,6 +5424,71 @@ export const UpdateNodeRequest = {
     message.name = object.name ?? ''
     message.description = object.description ?? undefined
     message.icon = object.icon ?? undefined
+    return message
+  },
+}
+
+const baseGenerateScriptRequest: object = { id: '', accessedBy: '', type: 0 }
+
+export const GenerateScriptRequest = {
+  encode(message: GenerateScriptRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== '') {
+      writer.uint32(10).string(message.id)
+    }
+    if (message.accessedBy !== '') {
+      writer.uint32(18).string(message.accessedBy)
+    }
+    if (message.type !== 0) {
+      writer.uint32(800).int32(message.type)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): GenerateScriptRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = { ...baseGenerateScriptRequest } as GenerateScriptRequest
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.id = reader.string()
+          break
+        case 2:
+          message.accessedBy = reader.string()
+          break
+        case 100:
+          message.type = reader.int32() as any
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): GenerateScriptRequest {
+    const message = { ...baseGenerateScriptRequest } as GenerateScriptRequest
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.type = object.type !== undefined && object.type !== null ? nodeTypeFromJSON(object.type) : 0
+    return message
+  },
+
+  toJSON(message: GenerateScriptRequest): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
+    message.type !== undefined && (obj.type = nodeTypeToJSON(message.type))
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<GenerateScriptRequest>, I>>(object: I): GenerateScriptRequest {
+    const message = { ...baseGenerateScriptRequest } as GenerateScriptRequest
+    message.id = object.id ?? ''
+    message.accessedBy = object.accessedBy ?? ''
+    message.type = object.type ?? 0
     return message
   },
 }
@@ -7677,8 +7807,8 @@ export const CruxNodeService = {
     path: '/crux.CruxNode/GenerateScript',
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: IdRequest) => Buffer.from(IdRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => IdRequest.decode(value),
+    requestSerialize: (value: GenerateScriptRequest) => Buffer.from(GenerateScriptRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => GenerateScriptRequest.decode(value),
     responseSerialize: (value: NodeInstallResponse) => Buffer.from(NodeInstallResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer) => NodeInstallResponse.decode(value),
   },
@@ -7738,7 +7868,7 @@ export interface CruxNodeServer extends UntypedServiceImplementation {
   updateNode: handleUnaryCall<UpdateNodeRequest, Empty>
   deleteNode: handleUnaryCall<IdRequest, Empty>
   getNodeDetails: handleUnaryCall<IdRequest, NodeDetailsResponse>
-  generateScript: handleUnaryCall<IdRequest, NodeInstallResponse>
+  generateScript: handleUnaryCall<GenerateScriptRequest, NodeInstallResponse>
   getScript: handleUnaryCall<ServiceIdRequest, NodeScriptResponse>
   discardScript: handleUnaryCall<IdRequest, Empty>
   revokeToken: handleUnaryCall<IdRequest, Empty>
@@ -7821,16 +7951,16 @@ export interface CruxNodeClient extends Client {
     callback: (error: ServiceError | null, response: NodeDetailsResponse) => void,
   ): ClientUnaryCall
   generateScript(
-    request: IdRequest,
+    request: GenerateScriptRequest,
     callback: (error: ServiceError | null, response: NodeInstallResponse) => void,
   ): ClientUnaryCall
   generateScript(
-    request: IdRequest,
+    request: GenerateScriptRequest,
     metadata: Metadata,
     callback: (error: ServiceError | null, response: NodeInstallResponse) => void,
   ): ClientUnaryCall
   generateScript(
-    request: IdRequest,
+    request: GenerateScriptRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: NodeInstallResponse) => void,

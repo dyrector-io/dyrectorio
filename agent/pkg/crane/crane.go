@@ -23,10 +23,6 @@ import (
 // checks before start
 // all the runtime dependencies to be checked
 func preflightChecks(cfg *config.Configuration) {
-	if cfg.IngressRootDomain == "" {
-		log.Panicf("Env %v is not set, it is needed to expose any service.", "INGRESS_ROOT_DOMAIN")
-	}
-
 	size := cfg.DefaultVolumeSize
 	if size != "" {
 		_, err := resource.ParseQuantity(size)

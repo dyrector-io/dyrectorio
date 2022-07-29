@@ -260,6 +260,44 @@ export function nodeConnectionStatusToJSON(object: NodeConnectionStatus): string
   }
 }
 
+export enum NodeType {
+  UNKNOWN_NODE_TYPE = 0,
+  DOCKER = 1,
+  K8S = 2,
+  UNRECOGNIZED = -1,
+}
+
+export function nodeTypeFromJSON(object: any): NodeType {
+  switch (object) {
+    case 0:
+    case 'UNKNOWN_NODE_TYPE':
+      return NodeType.UNKNOWN_NODE_TYPE
+    case 1:
+    case 'DOCKER':
+      return NodeType.DOCKER
+    case 2:
+    case 'K8S':
+      return NodeType.K8S
+    case -1:
+    case 'UNRECOGNIZED':
+    default:
+      return NodeType.UNRECOGNIZED
+  }
+}
+
+export function nodeTypeToJSON(object: NodeType): string {
+  switch (object) {
+    case NodeType.UNKNOWN_NODE_TYPE:
+      return 'UNKNOWN_NODE_TYPE'
+    case NodeType.DOCKER:
+      return 'DOCKER'
+    case NodeType.K8S:
+      return 'K8S'
+    default:
+      return 'UNKNOWN'
+  }
+}
+
 export enum DeploymentStatus {
   UNKNOWN_DEPLOYMENT_STATUS = 0,
   PREPARING = 1,
@@ -821,6 +859,7 @@ export interface NodeResponse {
   status: NodeConnectionStatus
   connectedAt?: Timestamp | undefined
   version?: string | undefined
+  type: NodeType
 }
 
 export interface NodeDetailsResponse {
@@ -836,6 +875,7 @@ export interface NodeDetailsResponse {
   install?: NodeInstallResponse | undefined
   script?: NodeScriptResponse | undefined
   version?: string | undefined
+  type: NodeType
 }
 
 export interface NodeListResponse {
@@ -855,6 +895,12 @@ export interface UpdateNodeRequest {
   name: string
   description?: string | undefined
   icon?: string | undefined
+}
+
+export interface GenerateScriptRequest {
+  id: string
+  accessedBy: string
+  type: NodeType
 }
 
 export interface NodeInstallResponse {
@@ -2291,7 +2337,7 @@ export const PatchImageRequest = {
   },
 }
 
-const baseNodeResponse: object = { id: '', name: '', status: 0 }
+const baseNodeResponse: object = { id: '', name: '', status: 0, type: 0 }
 
 export const NodeResponse = {
   fromJSON(object: any): NodeResponse {
@@ -2311,6 +2357,7 @@ export const NodeResponse = {
         ? fromJsonTimestamp(object.connectedAt)
         : undefined
     message.version = object.version !== undefined && object.version !== null ? String(object.version) : undefined
+    message.type = object.type !== undefined && object.type !== null ? nodeTypeFromJSON(object.type) : 0
     return message
   },
 
@@ -2325,6 +2372,7 @@ export const NodeResponse = {
     message.status !== undefined && (obj.status = nodeConnectionStatusToJSON(message.status))
     message.connectedAt !== undefined && (obj.connectedAt = fromTimestamp(message.connectedAt).toISOString())
     message.version !== undefined && (obj.version = message.version)
+    message.type !== undefined && (obj.type = nodeTypeToJSON(message.type))
     return obj
   },
 }
@@ -2334,6 +2382,7 @@ const baseNodeDetailsResponse: object = {
   name: '',
   status: 0,
   hasToken: false,
+  type: 0,
 }
 
 export const NodeDetailsResponse = {
@@ -2359,6 +2408,7 @@ export const NodeDetailsResponse = {
     message.script =
       object.script !== undefined && object.script !== null ? NodeScriptResponse.fromJSON(object.script) : undefined
     message.version = object.version !== undefined && object.version !== null ? String(object.version) : undefined
+    message.type = object.type !== undefined && object.type !== null ? nodeTypeFromJSON(object.type) : 0
     return message
   },
 
@@ -2378,6 +2428,7 @@ export const NodeDetailsResponse = {
     message.script !== undefined &&
       (obj.script = message.script ? NodeScriptResponse.toJSON(message.script) : undefined)
     message.version !== undefined && (obj.version = message.version)
+    message.type !== undefined && (obj.type = nodeTypeToJSON(message.type))
     return obj
   },
 }
@@ -2446,6 +2497,26 @@ export const UpdateNodeRequest = {
     message.name !== undefined && (obj.name = message.name)
     message.description !== undefined && (obj.description = message.description)
     message.icon !== undefined && (obj.icon = message.icon)
+    return obj
+  },
+}
+
+const baseGenerateScriptRequest: object = { id: '', accessedBy: '', type: 0 }
+
+export const GenerateScriptRequest = {
+  fromJSON(object: any): GenerateScriptRequest {
+    const message = { ...baseGenerateScriptRequest } as GenerateScriptRequest
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.type = object.type !== undefined && object.type !== null ? nodeTypeFromJSON(object.type) : 0
+    return message
+  },
+
+  toJSON(message: GenerateScriptRequest): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
+    message.type !== undefined && (obj.type = nodeTypeToJSON(message.type))
     return obj
   },
 }
@@ -3297,7 +3368,7 @@ export interface CruxNodeClient {
 
   getNodeDetails(request: IdRequest, metadata: Metadata, ...rest: any): Observable<NodeDetailsResponse>
 
-  generateScript(request: IdRequest, metadata: Metadata, ...rest: any): Observable<NodeInstallResponse>
+  generateScript(request: GenerateScriptRequest, metadata: Metadata, ...rest: any): Observable<NodeInstallResponse>
 
   getScript(request: ServiceIdRequest, metadata: Metadata, ...rest: any): Observable<NodeScriptResponse>
 
@@ -3340,7 +3411,7 @@ export interface CruxNodeController {
   ): Promise<NodeDetailsResponse> | Observable<NodeDetailsResponse> | NodeDetailsResponse
 
   generateScript(
-    request: IdRequest,
+    request: GenerateScriptRequest,
     metadata: Metadata,
     ...rest: any
   ): Promise<NodeInstallResponse> | Observable<NodeInstallResponse> | NodeInstallResponse

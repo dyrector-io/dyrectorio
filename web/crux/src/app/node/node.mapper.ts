@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { Node } from '@prisma/client'
+import { Node, NodeTypeEnum } from '@prisma/client'
 import { AgentInstaller } from 'src/domain/agent-installer'
 import { toTimestamp } from 'src/domain/utils'
 import {
@@ -9,6 +9,7 @@ import {
   NodeInstallResponse,
   NodeResponse,
   NodeScriptResponse,
+  NodeType,
 } from 'src/grpc/protobuf/proto/crux'
 import { AgentService } from '../agent/agent.service'
 
@@ -27,6 +28,7 @@ export class NodeMapper {
       version: agent?.version,
       status,
       connectedAt: node.connectedAt ? toTimestamp(node.connectedAt) : null,
+      type: node.type === NodeTypeEnum.docker ? NodeType.DOCKER : NodeType.K8S,
     }
   }
 
@@ -39,6 +41,10 @@ export class NodeMapper {
       install: installer ? this.installerToGrpc(installer) : null,
       script: installer ? this.scriptToGrpc(node, installer) : null,
     }
+  }
+
+  nodeTypeGrpcToPrisma(type: NodeType): NodeTypeEnum {
+    return type === NodeType.DOCKER ? NodeTypeEnum.docker : NodeTypeEnum.k8s
   }
 
   installerToGrpc(installer: AgentInstaller): NodeInstallResponse {

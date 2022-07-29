@@ -21,7 +21,8 @@ RUN npm ci prisma
 COPY ./prisma ./prisma
 RUN npx prisma generate
 
-COPY ./install.sh.hbr ./install.sh.hbr
+COPY ./install-dagent.sh.hbr ./install-dagent.sh.hbr
+COPY ./install-crane.sh.hbr ./install-crane.sh.hbr
 COPY ./proto ./proto
 COPY ./dist ./dist
 
