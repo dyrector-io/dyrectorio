@@ -279,7 +279,8 @@ func (dc *dockerContainerBuilder) Start() (bool, error) {
 	if dc.importContainer != nil {
 		err := spawnInitContainer(dc.client, dc.ctx, dc.containerName, dc.mountList, dc.importContainer, dc.dogger, dc.config)
 		if err != nil {
-			panic(err)
+			log.Printf("Failed to spawn init container: %v", err)
+			return false, err
 		}
 	}
 

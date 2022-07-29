@@ -36,7 +36,7 @@ func Serve(cfg *config.Configuration) {
 	grpcInsecure := cfg.GrpcInsecure
 
 	if httpPort == 0 && grpcToken == "" {
-		panic("no http port nor grpc address was provided")
+		log.Panic("no http port nor grpc address was provided")
 	}
 
 	if cfg.Debug {
@@ -63,8 +63,9 @@ func Serve(cfg *config.Configuration) {
 	if grpcToken != "" {
 		grpcParams, err := grpc.GrpcTokenToConnectionParams(grpcToken, grpcInsecure)
 		if err != nil {
-			panic(err)
+			log.Panic("gRPC token error: ", err)
 		}
+
 		log.Println("Running gRPC in blocking mode: ", blocking)
 		grpcContext := grpc.WithGRPCConfig(context.TODO(), cfg)
 		if blocking {
@@ -94,7 +95,7 @@ func Serve(cfg *config.Configuration) {
 		err := utils.ExecTraefik(context.TODO(), params, cfg)
 		if err != nil {
 			// we wanted to start traefik, but something is not ok, thus panic!
-			panic(err)
+			log.Panic("failed to start Traefik: ", err)
 		}
 	}
 

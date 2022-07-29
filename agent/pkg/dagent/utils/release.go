@@ -35,7 +35,8 @@ type ReleaseContainer struct {
 func DraftRelease(instance string, versionData v1.VersionData, deployResponse v1.DeployVersionResponse, cfg *config.Configuration) {
 	releaseDirPath := path.Join(cfg.InternalMountPath, instance, "@release")
 	if err := os.MkdirAll(releaseDirPath, os.ModePerm); err != nil {
-		panic(err)
+		log.Printf("Failed to create release folder: %v", err)
+		return
 	}
 	release := ReleaseDoc{
 		ReleaseNotes: versionData.ReleaseNotes,
@@ -48,6 +49,7 @@ func DraftRelease(instance string, versionData v1.VersionData, deployResponse v1
 
 	if err != nil {
 		log.Println(fmt.Sprintln("Version drafting error ", err))
+		return
 	}
 
 	filePath := path.Join(releaseDirPath, fmt.Sprintf("%v.yml", versionData.Version))
@@ -55,7 +57,6 @@ func DraftRelease(instance string, versionData v1.VersionData, deployResponse v1
 	if _, err = os.Stat(filePath); err == nil {
 		// path exists -> making a backup
 		log.Println("Already existing release file, backing it up")
-		path.Join(releaseDirPath, fmt.Sprintf("%v.yml", versionData.Version))
 
 		if errr := os.Rename(
 			filePath,
@@ -76,10 +77,10 @@ func DraftRelease(instance string, versionData v1.VersionData, deployResponse v1
 	}
 }
 
-func GetVersions(instance string, cfg *config.Configuration) []ReleaseDoc {
+func GetVersions(instance string, cfg *config.Configuration) ([]ReleaseDoc, error) {
 	releaseDirPath := path.Join(cfg.InternalMountPath, instance, "@release")
 	if err := os.MkdirAll(filepath.Clean(releaseDirPath), os.ModePerm); err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	releases := []ReleaseDoc{}
@@ -87,7 +88,7 @@ func GetVersions(instance string, cfg *config.Configuration) []ReleaseDoc {
 	files, err := os.ReadDir(releaseDirPath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return releases
+			return releases, nil
 		} else {
 			log.Fatal(err)
 		}
@@ -113,7 +114,7 @@ func GetVersions(instance string, cfg *config.Configuration) []ReleaseDoc {
 		}
 	}
 
-	return releases
+	return releases, nil
 }
 
 func mapDeployResponseToRelease(deployResponse v1.DeployVersionResponse) []ReleaseContainer {

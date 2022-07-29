@@ -43,10 +43,12 @@ type GinMappable struct {
 
 func (g *GinMappable) Handle(pattern string, handler http.Handler) {
 	if pattern == "" {
-		panic("http: invalid pattern empty string")
+		log.Println("http: invalid pattern empty string")
+		return
 	}
 	if handler == nil {
-		panic("http: nil handler")
+		log.Println("http: nil handler")
+		return
 	}
 
 	g.HandleFunc(pattern, handler.ServeHTTP)
@@ -55,7 +57,7 @@ func (g *GinMappable) Handle(pattern string, handler http.Handler) {
 // HandleFunc registers the handler function for the given pattern.
 func (g *GinMappable) HandleFunc(pattern string, handler func(writer http.ResponseWriter, req *http.Request)) {
 	if handler == nil {
-		panic("http: nil handler is not ok")
+		log.Panic("got nil handler in HandleFunc!")
 	}
 
 	g.Any(pattern, func(c *gin.Context) {
@@ -88,7 +90,7 @@ func Log(requestID *string, messages ...string) {
 func SetupHub(r *gin.Engine) *gin.Engine {
 	serv, err := GetSignalrInstance()
 	if err != nil {
-		panic(err)
+		log.Panic("failed to setup SignalR hub: ", err)
 	}
 	routerGroup := r.Group("hubs")
 	serv.MapHTTP(&GinMappable{RouterGroup: routerGroup}, "/console")

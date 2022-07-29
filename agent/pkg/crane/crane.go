@@ -52,7 +52,7 @@ func Serve(cfg *config.Configuration) {
 	grpcInsecure := cfg.GrpcInsecure
 
 	if httpPort == 0 && grpcToken == "" {
-		panic("no http port nor grpc address was provided")
+		log.Panic("no http port nor grpc address was provided")
 	}
 
 	if cfg.Debug {
@@ -60,9 +60,6 @@ func Serve(cfg *config.Configuration) {
 		log.Println("DebugMode set.")
 	} else {
 		gin.SetMode(gin.ReleaseMode)
-	}
-	if httpPort == 0 && grpcToken == "" {
-		panic("No http port nor grpc token was provided!")
 	}
 
 	var r *gin.Engine
@@ -90,9 +87,8 @@ func Serve(cfg *config.Configuration) {
 	blocking := httpPort == 0
 	if grpcToken != "" {
 		grpcParams, err := grpc.GrpcTokenToConnectionParams(grpcToken, grpcInsecure)
-
 		if err != nil {
-			panic(err)
+			log.Panic("gRPC token error: ", err)
 		}
 
 		log.Println("Running gRPC in blocking mode: ", blocking)

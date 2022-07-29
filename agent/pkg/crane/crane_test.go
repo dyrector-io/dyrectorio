@@ -136,7 +136,11 @@ func TestDeployFieldConflictSad(t *testing.T) {
 
 	t.Run("basic happy deployment for conflicts", func(t *testing.T) {
 		var config config.Configuration
-		util.ReadConfig(&config)
+		err := util.ReadConfig(&config)
+		if err != nil {
+			t.Fatal("Failed to load config: ", err.Error())
+			return
+		}
 
 		config.FieldManagerName = "crane-test-conflict"
 		config.ForceOnConflicts = false
