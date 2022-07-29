@@ -2461,5 +2461,11 @@ var SwaggerInfo = &swag.Spec{
 }
 
 func init() {
+    defer func() {
+        if err := recover(); err != nil {
+            _ = err
+            // Ignore error, occurs during testing due to double init
+        }
+    } ()
 	swag.Register(SwaggerInfo.InstanceName(), SwaggerInfo)
 }
