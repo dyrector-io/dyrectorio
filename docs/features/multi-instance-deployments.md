@@ -6,5 +6,4 @@ With dyrector.io, you can trigger multi-instance deployments by assembling your 
 
 #### Use cases
 
-* **Set up Nodes:** once you set up your Nodes, you can trigger deployments to them in an instant.
 * **In progress – Bundled configurations:** without specifying the same configurations again and again, you can specify bundled variables in an instant. Learn more about them under the Configuration management tab of Features.

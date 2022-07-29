@@ -2,7 +2,7 @@
 
 Products are the applications you're going to manage in dyrector.io.
 
-![The differences between each Product type in dyrector.io.](<../../.gitbook/assets/product types.png>)
+![The differences between each Product type in dyrector.io.](<../../.gitbook/assets/product types\_dark.png>)
 
 ### **Simple Product**
 

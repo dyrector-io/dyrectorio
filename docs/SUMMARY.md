@@ -20,7 +20,6 @@
 * [Configuration management](features/configuration-management.md)
 * [Monitoring](features/monitoring.md)
 * [Audit log](features/audit-log.md)
-* [In progress...](features/in-progress....md)
 
 ## Tutorials
 
