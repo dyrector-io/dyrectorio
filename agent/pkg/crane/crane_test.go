@@ -138,7 +138,7 @@ func TestDeployFieldConflictSad(t *testing.T) {
 		var config config.Configuration
 		err := util.ReadConfig(&config)
 		if err != nil {
-			log.Println("Failed to load config: ", err.Error())
+			t.Fatal("Failed to load config: ", err.Error())
 			return
 		}
 
