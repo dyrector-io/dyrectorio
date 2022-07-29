@@ -6,9 +6,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/dyrector-io/dyrectorio/agent/internal/util"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/dyrector-io/dyrectorio/agent/internal/util"
 )
 
 type TestConfig struct {
