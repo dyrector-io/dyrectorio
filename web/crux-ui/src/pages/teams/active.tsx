@@ -140,7 +140,7 @@ const ActiveTeamPage = (props: ActiveTeamPageProps) => {
               <div className="font-semibold ml-14 py-1 h-8">{it.name}</div>,
               <div>{it.email}</div>,
               <div>{t(roleToText(it.role))}</div>,
-              <UserStatusTag className="my-auto" status={it.status} />,
+              <UserStatusTag className="my-auto w-fit" status={it.status} />,
               inviting || !canEdit || it.role === 'owner' ? null : (
                 <Image
                   className="cursor-pointer mr-16"

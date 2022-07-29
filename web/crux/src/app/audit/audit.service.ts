@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common'
-import { PrismaService } from 'src/config/prisma.service'
+import { PrismaService } from 'src/services/prisma.service'
 import { AccessRequest, AuditLogListResponse } from 'src/grpc/protobuf/proto/crux'
-import { KratosService } from '../kratos.service'
 import { AuditMapper } from './audit.mapper'
+import { KratosService } from 'src/services/kratos.service'
 
 @Injectable()
 export class AuditService {

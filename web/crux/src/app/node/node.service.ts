@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Observable } from 'rxjs'
-import { PrismaService } from 'src/config/prisma.service'
+import { PrismaService } from 'src/services/prisma.service'
 import { PreconditionFailedException } from 'src/exception/errors'
 import {
   AccessRequest,

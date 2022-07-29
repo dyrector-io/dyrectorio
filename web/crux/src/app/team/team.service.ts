@@ -1,7 +1,8 @@
+import { EmailBuilder } from '../../builders/email.builder'
 import { ServerUnaryCall } from '@grpc/grpc-js'
 import { Injectable, Logger } from '@nestjs/common'
 import { RegistryTypeEnum } from '@prisma/client'
-import { PrismaService } from 'src/config/prisma.service'
+import { PrismaService } from 'src/services/prisma.service'
 import {
   AlreadyExistsException,
   MailServiceException,
@@ -23,11 +24,11 @@ import {
   UserRole,
   UserStatus,
 } from 'src/grpc/protobuf/proto/crux'
-import { EmailService } from '../email.service'
-import { KratosService } from '../kratos.service'
 import { TeamMapper } from './team.mapper'
 import { TeamRepository } from './team.repository'
 import { REGISTRY_HUB_URL } from 'src/shared/const'
+import { KratosService } from 'src/services/kratos.service'
+import { EmailService } from 'src/services/email.service'
 
 const VALIDITY_DAY = 1
 const EPOCH_TIME = 24 * 60 * 60 * 1000 // 1 day in millis
@@ -43,6 +44,7 @@ export class TeamService {
     private emailService: EmailService,
     private mapper: TeamMapper,
     private auditHelper: InterceptorGrpcHelperProvider,
+    private emailBuilder: EmailBuilder,
   ) {}
 
   async getUserMeta(request: AccessRequest): Promise<UserMetaResponse> {
@@ -225,22 +227,20 @@ export class TeamService {
         })
       }
 
-      // Check if the user was ever loged in
+      // Check if the user was ever logged in
       const sessions = await this.kratos.getSessionsById(user.id)
       hasSession = sessions.length > 0
     }
 
-    let mailSent = false
-    if (hasSession) {
-      // Send e-mail to active User
-      mailSent = await this.emailService.sendInviteEmailToExistingUser(request.email, team.id, team.name)
-    } else {
-      const recoveryLink = await this.kratos.createRecoveryLink(user)
+    // Build emailItem
+    const teamId = hasSession ? team.id : null
+    const recoveryLink = !hasSession ? await this.kratos.createRecoveryLink(user) : null
+    const emailItem = this.emailBuilder.buildInviteEmail(request.email, team.name, teamId, recoveryLink)
 
-      // Send e-mail to inactive User
-      mailSent = await this.emailService.sendInviteEmail(request.email, team.name, recoveryLink)
-    }
+    // Send email
+    const mailSent = await this.emailService.sendEmail(emailItem)
 
+    // Result
     if (!mailSent) {
       throw new MailServiceException()
     }

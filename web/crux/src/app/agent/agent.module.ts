@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common'
 import { JwtModule } from '@nestjs/jwt'
-import { PrismaService } from 'src/config/prisma.service'
+import { PrismaService } from 'src/services/prisma.service'
 import { InterceptorGrpcHelperProvider } from 'src/interceptors/helper.interceptor'
 import { TeamRepository } from '../team/team.repository'
 import { AgentController } from './agent.controller'

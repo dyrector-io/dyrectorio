@@ -1,6 +1,6 @@
 import { Injectable, PipeTransform } from '@nestjs/common'
 import { AgentService } from 'src/app/agent/agent.service'
-import { PrismaService } from 'src/config/prisma.service'
+import { PrismaService } from 'src/services/prisma.service'
 import { AlreadyExistsException } from 'src/exception/errors'
 import { IdRequest } from 'src/grpc/protobuf/proto/crux'
 
