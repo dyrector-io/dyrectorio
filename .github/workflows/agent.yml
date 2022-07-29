@@ -68,11 +68,6 @@ jobs:
 
     - name: Run unit tests
       run: pwd && ls -lah && id && make test-unit
-    # if we go public this is free from codecov.io
-    # todo: replace & fix unit test coverage above
-    # - uses: codecov/codecov-action@v3
-    #   with:
-    #     files: ./coverage.cov
 
     - name: Setting a buildtag
       id: settag
