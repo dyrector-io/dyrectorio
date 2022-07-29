@@ -39,7 +39,7 @@ func TestConfigMiddlewarePointer(t *testing.T) {
 	})
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequestWithContext(context.Background(), "GET", "/test", nil)
+	req, _ := http.NewRequestWithContext(context.Background(), "GET", "/test", http.NoBody)
 	g.ServeHTTP(w, req)
 }
 
@@ -62,7 +62,7 @@ func TestConfigMiddlewareNil(t *testing.T) {
 	})
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequestWithContext(context.Background(), "GET", "/test", nil)
+	req, _ := http.NewRequestWithContext(context.Background(), "GET", "/test", http.NoBody)
 	g.ServeHTTP(w, req)
 }
 
@@ -92,6 +92,6 @@ func TestConfigModification(t *testing.T) {
 	cfg.testField = 52
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequestWithContext(context.Background(), "GET", "/test", nil)
+	req, _ := http.NewRequestWithContext(context.Background(), "GET", "/test", http.NoBody)
 	g.ServeHTTP(w, req)
 }

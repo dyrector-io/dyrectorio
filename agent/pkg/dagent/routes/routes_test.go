@@ -240,7 +240,7 @@ func TestVersionEndpoint(t *testing.T) {
 
 	w := httptest.NewRecorder()
 
-	req, _ := http.NewRequestWithContext(context.Background(), "GET", "/version", nil)
+	req, _ := http.NewRequestWithContext(context.Background(), "GET", "/version", http.NoBody)
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, 200, w.Code)
