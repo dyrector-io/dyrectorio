@@ -68,8 +68,6 @@ export class NodeService {
   async createNode(req: CreateNodeRequest): Promise<CreateEntityResponse> {
     const team = await this.teamRepository.getActiveTeamByUserId(req.accessedBy)
 
-    const nodeType = req.type == NodeType.DOCKER_NODE ? NodeTypeEnum.dagent : NodeTypeEnum.crane
-
     const node = await this.prisma.node.create({
       data: {
         name: req.name,
@@ -77,7 +75,6 @@ export class NodeService {
         icon: req.icon ?? null,
         teamId: team.teamId,
         createdBy: req.accessedBy,
-        type: nodeType,
       },
     })
 
@@ -110,7 +107,8 @@ export class NodeService {
   }
 
   async generateScript(req: GenerateScriptRequest): Promise<NodeInstallResponse> {
-    const nodeType = req.type === NodeType.DOCKER_NODE ? NodeTypeEnum.dagent : NodeTypeEnum.crane
+    const nodeType = this.mapper.nodeTypeGrpcToPrisma(req.type)
+
     await this.prisma.node.update({
       where: {
         id: req.id,
@@ -141,7 +139,7 @@ export class NodeService {
     const installer = this.agentService.getInstallerByNodeId(request.id)
 
     return {
-      content: installer.getScript(node.name, node.type),
+      content: installer.getScript(node.name),
     }
   }
 

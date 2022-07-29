@@ -15,7 +15,7 @@ import {
   DyoNodeDetails,
   DyoNodeInstall,
   NodeStatusMessage,
-  UiNodeType,
+  NodeType,
   UpdateDyoNode,
   WS_TYPE_NODE_STATUS,
 } from '@app/models'
@@ -101,7 +101,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
       props.onNodeEdited(newNode)
     })
 
-  const onNodeTypeChanged = (type: UiNodeType): void => {
+  const onNodeTypeChanged = (type: NodeType): void => {
     setNode({
       ...node,
       type,
@@ -214,7 +214,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
                   {t('requirementsHeader')}
                 </DyoHeading>
 
-                {(t('requirements-' + node.type, null, { returnObjects: true }) as string[]).map((reqItem, index) => (
+                {(t('requirements.' + node.type, null, { returnObjects: true }) as string[]).map((reqItem, index) => (
                   <p className="text-light-eased max-w-lg ml-4" key={'req-' + index}>
                     - {reqItem}
                   </p>

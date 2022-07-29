@@ -7,9 +7,9 @@ import { DyoTextArea } from '@app/elements/dyo-text-area'
 import RemainingTimeLabel from '@app/elements/remaining-time-label'
 import { defaultApiErrorHandler } from '@app/errors'
 import { useTimer } from '@app/hooks/use-timer'
-import { DyoNodeDetails, DyoNodeInstall, GenerateScriptRequestBody, NODE_TYPE_VALUES, UiNodeType } from '@app/models'
+import { DyoNodeDetails, DyoNodeInstall, GenerateScriptRequestBody, NodeType, NODE_TYPE_VALUES } from '@app/models'
 import { nodeSetupApiUrl } from '@app/routes'
-import { writeToClipboard } from '@app/utils'
+import { sendForm, writeToClipboard } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import React from 'react'
 import DyoNodeConnectionInfo from './dyo-node-connection-info'
@@ -17,7 +17,7 @@ import DyoNodeConnectionInfo from './dyo-node-connection-info'
 interface DyoNodeSetupProps {
   node: DyoNodeDetails
   onNodeInstallChanged: (install: DyoNodeInstall) => void
-  onNodeTypeChanged: (type: UiNodeType) => void
+  onNodeTypeChanged: (type: NodeType) => void
 }
 
 const DyoNodeSetup = (props: DyoNodeSetupProps) => {
@@ -37,13 +37,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
       type: props.node.type,
     }
 
-    const res = await fetch(nodeSetupApiUrl(node.id), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    })
+    const res = await sendForm('POST', nodeSetupApiUrl(node.id), body)
 
     if (!res.ok) {
       await handleApiError(res)
@@ -85,12 +79,12 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
             className="mb-2 ml-2"
             choices={NODE_TYPE_VALUES}
             initialSelection={node.type}
-            converter={(it: UiNodeType) => t(`nodeType-${it}`)}
+            converter={(it: NodeType) => t(`nodeType-${it}`)}
             onSelectionChange={it => onNodeTypeChanged(it)}
           />
 
           <DyoButton className="px-4 py-2 mt-4 mr-auto" onClick={onGenerateInstallScript}>
-            {t('installScript')}
+            {t('generateScript')}
           </DyoButton>
         </div>
       ) : (

@@ -10,7 +10,7 @@ import {
   DyoNodeScript,
   NodeStatus,
   NodeStatusMessage,
-  UiNodeType,
+  nodeTypeGrpcToUi,
   UpdateDyoNode,
 } from '@app/models'
 import {
@@ -60,7 +60,7 @@ class DyoNodeService {
         ...it,
         connectedAt: timestampToUTC(it.connectedAt),
         status: this.statusToDto(it.status),
-        type: it.type == NodeType.DOCKER_NODE ? 'docker' : 'k8s',
+        type: it.type == NodeType.DOCKER ? 'docker' : 'k8s',
       }
     })
   }
@@ -69,7 +69,6 @@ class DyoNodeService {
     const req: CreateNodeRequest = {
       ...dto,
       accessedBy: this.identity.id,
-      type: dto.type == 'docker' ? NodeType.DOCKER_NODE : NodeType.K8S_NODE,
     }
 
     const res = await protomisify<CreateNodeRequest, CreateEntityResponse>(this.client, this.client.createNode)(
@@ -82,6 +81,7 @@ class DyoNodeService {
       id: res.id,
       connectedAt: timestampToUTC(res.createdAt),
       status: 'unreachable',
+      type: 'docker',
     }
   }
 
@@ -90,7 +90,6 @@ class DyoNodeService {
       ...dto,
       id,
       accessedBy: this.identity.id,
-      type: dto.type == 'docker' ? NodeType.DOCKER_NODE : NodeType.K8S_NODE,
     }
 
     await protomisify<UpdateNodeRequest, Empty>(this.client, this.client.updateNode)(UpdateNodeRequest, req)
@@ -120,7 +119,7 @@ class DyoNodeService {
       ...res,
       connectedAt: timestampToUTC(res.connectedAt),
       status: this.statusToDto(res.status),
-      type: res.type === NodeType.DOCKER_NODE ? 'docker' : 'k8s',
+      type: nodeTypeGrpcToUi(res.type),
       install: !res.install
         ? null
         : {
@@ -131,11 +130,11 @@ class DyoNodeService {
     }
   }
 
-  async generateScript(id: string, nodeType: UiNodeType): Promise<DyoNodeInstall> {
+  async generateScript(id: string, nodeType: NodeType): Promise<DyoNodeInstall> {
     const req: GenerateScriptRequest = {
       id,
       accessedBy: this.identity.id,
-      type: nodeType === 'docker' ? NodeType.DOCKER_NODE : NodeType.K8S_NODE,
+      type: nodeType,
     }
 
     const res = await protomisify<ServiceIdRequest, NodeInstallResponse>(this.client, this.client.generateScript)(

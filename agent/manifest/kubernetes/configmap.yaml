@@ -1,5 +1,5 @@
 # For manual installation this file and options are a good start
-# Check component specific config options for more
+# Check component-specific config options for more
 # apiVersion: v1
 # kind: ConfigMap
 # metadata:

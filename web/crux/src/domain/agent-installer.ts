@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common'
 import { NodeTypeEnum } from '@prisma/client'
 import { readFileSync } from 'fs'
 import Handlebars from 'handlebars'
@@ -9,12 +10,19 @@ import { NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
 import { GrpcNodeConnection } from 'src/shared/grpc-node-connection'
 import { Agent } from './agent'
 
-const agent_file_tmpl = 'install-{{nodeType}}.sh.hbr'
+const agentFileTemplate = 'install-{{nodeType}}.sh.hbr'
 
 export class AgentInstaller {
+  private readonly logger = new Logger(AgentInstaller.name)
+
   scriptCompiler: ScriptCompiler
 
-  constructor(readonly nodeId: string, readonly token: string, readonly expireAt: number, readonly nodeType: string) {
+  constructor(
+    readonly nodeId: string,
+    readonly token: string,
+    readonly expireAt: number,
+    readonly nodeType: NodeTypeEnum,
+  ) {
     this.loadScriptAndCompiler(nodeType)
   }
 
@@ -36,7 +44,7 @@ export class AgentInstaller {
     return `curl -sL ${process.env.CRUX_UI_URL}/api/nodes/${this.nodeId}/script | sh -`
   }
 
-  getScript(name: string, type: NodeTypeEnum): string {
+  getScript(name: string): string {
     this.verify()
 
     let installScriptParams = {
@@ -45,7 +53,7 @@ export class AgentInstaller {
       insecure: process.env.GRPC_AGENT_INSTALL_SCRIPT_INSECURE === 'true',
     }
 
-    if (type === 'crane') {
+    if (this.nodeType === NodeTypeEnum.k8s) {
       installScriptParams = Object.assign(installScriptParams, {
         localManifests: process.env.K8S_LOCAL_MANIFEST === 'true',
       })
@@ -59,16 +67,12 @@ export class AgentInstaller {
     return new Agent(connection, eventChannel, version)
   }
 
-  loadScriptAndCompiler(nodeType: string): void {
-    if (['dagent', 'crane'].includes(nodeType)) {
-      const agentFilename = Handlebars.compile(agent_file_tmpl)({ nodeType })
-      const scriptFile = readFileSync(join(cwd(), agentFilename), 'utf8')
-      this.scriptCompiler = {
-        compile: Handlebars.compile(scriptFile),
-        file: scriptFile,
-      }
-    } else {
-      console.error('Error: invalid agent type requested to be loaded.')
+  loadScriptAndCompiler(nodeType: NodeTypeEnum): void {
+    const agentFilename = Handlebars.compile(agentFileTemplate)({ nodeType })
+    const scriptFile = readFileSync(join(cwd(), agentFilename), 'utf8')
+    this.scriptCompiler = {
+      compile: Handlebars.compile(scriptFile),
+      file: scriptFile,
     }
   }
 }

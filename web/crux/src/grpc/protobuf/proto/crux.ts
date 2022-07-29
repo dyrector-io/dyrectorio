@@ -261,23 +261,23 @@ export function nodeConnectionStatusToJSON(object: NodeConnectionStatus): string
 }
 
 export enum NodeType {
-  UNKNOWN_NODE_TYPE = 0,
-  DOCKER_NODE = 1,
-  K8S_NODE = 2,
+  UNKNOWN = 0,
+  DOCKER = 1,
+  K8S = 2,
   UNRECOGNIZED = -1,
 }
 
 export function nodeTypeFromJSON(object: any): NodeType {
   switch (object) {
     case 0:
-    case 'UNKNOWN_NODE_TYPE':
-      return NodeType.UNKNOWN_NODE_TYPE
+    case 'UNKNOWN':
+      return NodeType.UNKNOWN
     case 1:
-    case 'DOCKER_NODE':
-      return NodeType.DOCKER_NODE
+    case 'DOCKER':
+      return NodeType.DOCKER
     case 2:
-    case 'K8S_NODE':
-      return NodeType.K8S_NODE
+    case 'K8S':
+      return NodeType.K8S
     case -1:
     case 'UNRECOGNIZED':
     default:
@@ -287,12 +287,12 @@ export function nodeTypeFromJSON(object: any): NodeType {
 
 export function nodeTypeToJSON(object: NodeType): string {
   switch (object) {
-    case NodeType.UNKNOWN_NODE_TYPE:
-      return 'UNKNOWN_NODE_TYPE'
-    case NodeType.DOCKER_NODE:
-      return 'DOCKER_NODE'
-    case NodeType.K8S_NODE:
-      return 'K8S_NODE'
+    case NodeType.UNKNOWN:
+      return 'UNKNOWN'
+    case NodeType.DOCKER:
+      return 'DOCKER'
+    case NodeType.K8S:
+      return 'K8S'
     default:
       return 'UNKNOWN'
   }
@@ -887,7 +887,6 @@ export interface CreateNodeRequest {
   name: string
   description?: string | undefined
   icon?: string | undefined
-  type: NodeType
 }
 
 export interface UpdateNodeRequest {
@@ -896,7 +895,6 @@ export interface UpdateNodeRequest {
   name: string
   description?: string | undefined
   icon?: string | undefined
-  type?: NodeType | undefined
 }
 
 export interface GenerateScriptRequest {
@@ -2455,7 +2453,7 @@ export const NodeListResponse = {
   },
 }
 
-const baseCreateNodeRequest: object = { accessedBy: '', name: '', type: 0 }
+const baseCreateNodeRequest: object = { accessedBy: '', name: '' }
 
 export const CreateNodeRequest = {
   fromJSON(object: any): CreateNodeRequest {
@@ -2465,7 +2463,6 @@ export const CreateNodeRequest = {
     message.description =
       object.description !== undefined && object.description !== null ? String(object.description) : undefined
     message.icon = object.icon !== undefined && object.icon !== null ? String(object.icon) : undefined
-    message.type = object.type !== undefined && object.type !== null ? nodeTypeFromJSON(object.type) : 0
     return message
   },
 
@@ -2475,7 +2472,6 @@ export const CreateNodeRequest = {
     message.name !== undefined && (obj.name = message.name)
     message.description !== undefined && (obj.description = message.description)
     message.icon !== undefined && (obj.icon = message.icon)
-    message.type !== undefined && (obj.type = nodeTypeToJSON(message.type))
     return obj
   },
 }
@@ -2491,7 +2487,6 @@ export const UpdateNodeRequest = {
     message.description =
       object.description !== undefined && object.description !== null ? String(object.description) : undefined
     message.icon = object.icon !== undefined && object.icon !== null ? String(object.icon) : undefined
-    message.type = object.type !== undefined && object.type !== null ? nodeTypeFromJSON(object.type) : undefined
     return message
   },
 
@@ -2502,7 +2497,6 @@ export const UpdateNodeRequest = {
     message.name !== undefined && (obj.name = message.name)
     message.description !== undefined && (obj.description = message.description)
     message.icon !== undefined && (obj.icon = message.icon)
-    message.type !== undefined && (obj.type = message.type !== undefined ? nodeTypeToJSON(message.type) : undefined)
     return obj
   },
 }

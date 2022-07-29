@@ -3,12 +3,12 @@ import { DYO_ICONS } from './elements/dyo-icon-picker'
 import {
   ExplicitContainerNetworkMode,
   EXPLICIT_CONTAINER_NETWORK_MODE_VALUES,
+  NodeType,
   NODE_TYPE_VALUES,
   ProductType,
   PRODUCT_TYPE_VALUES,
   RegistryType,
   REGISTRY_TYPE_VALUES,
-  UiNodeType,
   VersionType,
   VERSION_TYPE_VALUES,
 } from './models'
@@ -81,7 +81,7 @@ export const nodeSchema = yup.object().shape({
   name: nameRule,
   description: descriptionRule,
   icon: iconRule,
-  type: yup.mixed<UiNodeType>().oneOf([...NODE_TYPE_VALUES]),
+  type: yup.mixed<NodeType>().oneOf([...NODE_TYPE_VALUES]),
 })
 
 export const increaseVersionSchema = yup.object().shape({

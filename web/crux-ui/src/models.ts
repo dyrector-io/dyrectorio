@@ -1,3 +1,4 @@
+import { NodeType as GrpcNodeType } from '@app/models/grpc/protobuf/proto/crux'
 import { Identity } from '@ory/kratos-client'
 import { DyoApiError } from '@server/error-middleware'
 import { NextApiRequest } from 'next'
@@ -220,7 +221,7 @@ export type DyoNode = {
   status: NodeStatus
   connectedAt?: string
   version?: string
-  type: UiNodeType
+  type: NodeType
 }
 
 export type DyoNodeInstall = {
@@ -238,11 +239,10 @@ export type CreateDyoNode = {
   icon?: string
   name: string
   description?: string
-  type: UiNodeType
 }
 
 export const NODE_TYPE_VALUES = ['docker', 'k8s'] as const
-export type UiNodeType = typeof NODE_TYPE_VALUES[number]
+export type NodeType = typeof NODE_TYPE_VALUES[number]
 
 export type UpdateDyoNode = CreateDyoNode & {
   address: string
@@ -608,7 +608,7 @@ export type UserTraits = {
 type Override<T1, T2> = Omit<T1, keyof T2> & T2
 
 export type GenerateScriptRequestBody = {
-  type: UiNodeType
+  type: NodeType
 }
 
 export type CruxUiGenerateScriptRequest = Override<NextApiRequest, { body: GenerateScriptRequestBody }>
@@ -620,6 +620,13 @@ export const roleToText = (role: UserRole) => {
     case 'user':
       return 'common:roleUser'
   }
+}
+
+export const nodeTypeUiToGrpc = (type: NodeType): GrpcNodeType => {
+  return type === NODE_TYPE_VALUES[0] ? GrpcNodeType.DOCKER : GrpcNodeType.K8S
+}
+export const nodeTypeGrpcToUi = (type: GrpcNodeType): NodeType => {
+  return type === GrpcNodeType.DOCKER ? NODE_TYPE_VALUES[0] : NODE_TYPE_VALUES[1]
 }
 
 export const selectedTeamOf = (meta: UserMeta): UserMetaTeam => {

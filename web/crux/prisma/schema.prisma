@@ -53,7 +53,7 @@ model Node {
   updatedAt      DateTime?     @default(now()) @db.Timestamptz(6)
   updatedBy      String?       @db.Uuid
   name           String
-  type           NodeTypeEnum? @default(dagent)
+  type           NodeTypeEnum? @default(docker)
   description    String?
   icon           String?
   token          String?
@@ -275,6 +275,6 @@ enum RegistryTypeEnum {
 }
 
 enum NodeTypeEnum {
-  dagent
-  crane
+  docker
+  k8s
 }
