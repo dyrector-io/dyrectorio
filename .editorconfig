@@ -1,0 +1,42 @@
+# https://editorconfig.org
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.xml]
+indent_size = 2
+
+# Go
+# https://golang.org/cmd/gofmt/
+[{go.mod,*.go}]
+indent_style = tab
+max_line_length = 120
+
+[*.{yml,yaml}]
+indent_size = 2
+
+# Shell
+# https://google.github.io/styleguide/shell.xml#Indentation
+[*.{bash,sh,zsh}]
+indent_size = 2
+indent_style = space
+
+
+# Alongside EditorConfig ESLint and Prettier are also in use
+[*.{ts,tsx}]
+indent_size = 2
+indent_style = space
+
+[*.{md,mdx}]
+trim_trailing_whitespace = false
+
+# GNU make
+# https://www.gnu.org/software/make/manual/html_node/Recipe-Syntax.html
+[Makefile]
+indent_style = tab
