@@ -24,7 +24,7 @@ When `TYPE` can be:
 - `doc/` - documentation only changes
 - `cicd/` - changes related to CI/CD system
 - `refactor/` - code change that neither fixes a bug nor adds a feature
-- `chore/` - change that only affects formatting, style or repo structure, version bumps, does not affect functionality 
+- `chore/` - change that only affects formatting, style or repo structure, version bumps, does not affect functionality
 
 All PRs must include a commit message with the changes described.
 

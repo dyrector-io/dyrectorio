@@ -1,15 +1,8 @@
-# DAgent
+# dagent
 
 Implement the .NET Mandy in Go
 
-## Development
-
-### Strategies
-
-- Conventional Commits: [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
-- Semantic Versioning: [semver.org](https://semver.org)
-- Branching policy: Gitflow Workflow
-  [nvie.com/posts/a-successful-git-branching-model/](https://nvie.com/posts/a-successful-git-branching-model/)
+## Development
 
 ### Start
 
@@ -41,6 +34,7 @@ swag init --parseDependency --parseInternal --parseVendor
 
 Swagger is available on a running instance at eg. http://localhost:8080/swagger/index.html#
 Note the index.html is important to refer explicitly.
+
 ### Debug
 
 Needed for debugging:
@@ -70,54 +64,6 @@ paru -S golangci-lint
 golangci-lint run
 ```
 
-### Config protorepo fetching
-
-Opt-out google's tracking.
-```
-go env -w GOPRIVATE=gitlab.com/dyrector_io
-```
-
-alongside with forced ssh for gitlab
-```
-git config --global url."git@gitlab.com:".insteadOf "https://gitlab.com/"
-```
-
-### Changelog
-
-Install the generator
-
-```
-go get -u github.com/git-chglog/git-chglog/cmd/git-chglog
-```
-
-Usage
-
-```
-git tag -a v1.x.x
-git push --tags
-```
-
-```
-git-chglog -o CHANGELOG.md
-```
-
-In order to draft a new release, this is a manual process,
-enter the demanded version for both commands.
-
-To generate changelog:
-```
-make version
-```
-
-To create create git tags too:
-```
-make tag
-```
-
-Make sure to run git push --tags
-
-See [CHANGELOG.md](CHANGELOG.md)
-
 ### Test
 
 Execution of tests of the package with verbose output
@@ -140,10 +86,6 @@ Calculate coverage
 DATA_MOUNT_PATH=/srv/dagent
 GIN_MODE=release
 ```
-
-### Updating the protorepo dependency
-
-`go get gitlab.com/dyrector_io/protorepo@<commit_hash>`
 
 ## Deployment
 
@@ -192,8 +134,8 @@ docker run \
   -e DATA_MOUNT_PATH=/home/nandor/.dagent \
   -e UPDATE_REGISTRY_USER='registry' \
   -e UPDATE_REGISTRY_PASSWORD='password' \
-  -e WEBHOOK_TOKEN=a3c16fab-bbfe-48ea-83dd-adb58791bf78 \
-  -e DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/875312337773535272/Mf-4BDlxEAKUTWIa6k2Gv3xiidufmNSNyrhmU1WYVmXKNccVzCybm8lu8u1u8VPbwCqR" \
+  -e WEBHOOK_TOKEN=UUID-TOKEN \
+  -e DISCORD_WEBHOOK_URL="your_webhook_url" \
   -e HOSTNAME=$(HOST) \
   -e UPDATE_METHOD=poll \
   -v /home/nandor/.dagent:/srv/dagent \
@@ -209,7 +151,7 @@ Webhook example with cURL
 
 ```sh
 curl -X POST localhost:8080/update -H "Content-Type: application/json" \
--d '{"token": "a3c16fab-bbfe-48ea-83dd-adb58791bf78"}'
+-d '{"token": "UUID-TOKEN"}'
 ```
 
 ### TLS
