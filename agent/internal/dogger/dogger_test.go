@@ -62,7 +62,7 @@ func assertDoggerMessage(t *testing.T, ts *AgentTestStream, messages []string) {
 	}
 }
 
-func TestDoggerSingle(t *testing.T) {
+func TestDoggerSingleStatusMessage(t *testing.T) {
 	cfg := &config.CommonConfiguration{}
 	deploymentId := "abcd"
 
@@ -76,7 +76,7 @@ func TestDoggerSingle(t *testing.T) {
 	assertDoggerMessage(t, ts, []string{"hello"})
 }
 
-func TestDoggerMuliple(t *testing.T) {
+func TestDoggerMulipleStatusMessages(t *testing.T) {
 	cfg := &config.CommonConfiguration{}
 	deploymentId := "abcd"
 
