@@ -78,7 +78,7 @@ func TestLabelDeploy(t *testing.T) {
 
 	w := httptest.NewRecorder()
 
-	imageName := "library/nginx"
+	imageName := "nginx"
 
 	body, _ := json.Marshal(v1.DeployImageRequest{
 		RequestID: reqID,
@@ -232,4 +232,16 @@ func TestBatchDeploy(t *testing.T) {
 		t.Error(err)
 	}
 	assert.Nil(t, err)
+}
+
+func TestVersionEndpoint(t *testing.T) {
+	g := createGin()
+	router := routes.SetupRouter(g)
+
+	w := httptest.NewRecorder()
+
+	req, _ := http.NewRequestWithContext(context.Background(), "GET", "/version", http.NoBody)
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, 200, w.Code)
 }
