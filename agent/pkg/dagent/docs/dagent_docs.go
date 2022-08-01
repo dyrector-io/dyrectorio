@@ -4,7 +4,7 @@ package docs
 
 import "github.com/swaggo/swag"
 
-const docTemplate = `{
+const docTemplateDagent = `{
     "schemes": {{ marshal .Schemes }},
     "swagger": "2.0",
     "info": {
@@ -2448,18 +2448,18 @@ const docTemplate = `{
     }
 }`
 
-// SwaggerInfo holds exported Swagger Info so clients can modify it
-var SwaggerInfo = &swag.Spec{
+// SwaggerInfoDagent holds exported Swagger Info so clients can modify it
+var SwaggerInfoDagent = &swag.Spec{
 	Version:          "2.0",
 	Host:             "",
 	BasePath:         "/v1",
 	Schemes:          []string{"http"},
 	Title:            "DAgent API Swagger",
 	Description:      "DAgent server API docs. Scope: container management on remote nodes.",
-	InfoInstanceName: "swagger",
-	SwaggerTemplate:  docTemplate,
+	InfoInstanceName: "Dagent",
+	SwaggerTemplate:  docTemplateDagent,
 }
 
 func init() {
-	swag.Register(SwaggerInfo.InstanceName(), SwaggerInfo)
+	swag.Register(SwaggerInfoDagent.InstanceName(), SwaggerInfoDagent)
 }

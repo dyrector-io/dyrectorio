@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
-import { DeploymentEventTypeEnum, DeploymentStatusEnum } from '@prisma/client'
+import { DeploymentEventTypeEnum, DeploymentStatusEnum, NodeTypeEnum } from '@prisma/client'
 import { concatAll, finalize, from, map, Observable, Subject, takeUntil } from 'rxjs'
 import { PrismaService } from 'src/services/prisma.service'
 import { Agent, AgentToken } from 'src/domain/agent'
@@ -81,7 +81,7 @@ export class AgentService {
     channel.next(event)
   }
 
-  async install(nodeId: string): Promise<AgentInstaller> {
+  async install(nodeId: string, nodeType: NodeTypeEnum): Promise<AgentInstaller> {
     let installer = this.getInstallerByNodeId(nodeId)
     if (!installer) {
       const now = new Date().getTime()
@@ -92,7 +92,7 @@ export class AgentService {
         sub: nodeId,
       }
 
-      installer = new AgentInstaller(nodeId, this.jwtService.sign(token), now + AgentService.SCRIPT_EXPIRATION)
+      installer = new AgentInstaller(nodeId, this.jwtService.sign(token), now + AgentService.SCRIPT_EXPIRATION, nodeType)
       this.installers.set(nodeId, installer)
     }
 

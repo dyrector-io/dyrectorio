@@ -492,7 +492,7 @@ type CruxNodeClient interface {
 	UpdateNode(ctx context.Context, in *UpdateNodeRequest, opts ...grpc.CallOption) (*Empty, error)
 	DeleteNode(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error)
 	GetNodeDetails(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*NodeDetailsResponse, error)
-	GenerateScript(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*NodeInstallResponse, error)
+	GenerateScript(ctx context.Context, in *GenerateScriptRequest, opts ...grpc.CallOption) (*NodeInstallResponse, error)
 	GetScript(ctx context.Context, in *ServiceIdRequest, opts ...grpc.CallOption) (*NodeScriptResponse, error)
 	DiscardScript(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error)
 	RevokeToken(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error)
@@ -553,7 +553,7 @@ func (c *cruxNodeClient) GetNodeDetails(ctx context.Context, in *IdRequest, opts
 	return out, nil
 }
 
-func (c *cruxNodeClient) GenerateScript(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*NodeInstallResponse, error) {
+func (c *cruxNodeClient) GenerateScript(ctx context.Context, in *GenerateScriptRequest, opts ...grpc.CallOption) (*NodeInstallResponse, error) {
 	out := new(NodeInstallResponse)
 	err := c.cc.Invoke(ctx, "/crux.CruxNode/GenerateScript", in, out, opts...)
 	if err != nil {
@@ -663,7 +663,7 @@ type CruxNodeServer interface {
 	UpdateNode(context.Context, *UpdateNodeRequest) (*Empty, error)
 	DeleteNode(context.Context, *IdRequest) (*Empty, error)
 	GetNodeDetails(context.Context, *IdRequest) (*NodeDetailsResponse, error)
-	GenerateScript(context.Context, *IdRequest) (*NodeInstallResponse, error)
+	GenerateScript(context.Context, *GenerateScriptRequest) (*NodeInstallResponse, error)
 	GetScript(context.Context, *ServiceIdRequest) (*NodeScriptResponse, error)
 	DiscardScript(context.Context, *IdRequest) (*Empty, error)
 	RevokeToken(context.Context, *IdRequest) (*Empty, error)
@@ -691,7 +691,7 @@ func (UnimplementedCruxNodeServer) DeleteNode(context.Context, *IdRequest) (*Emp
 func (UnimplementedCruxNodeServer) GetNodeDetails(context.Context, *IdRequest) (*NodeDetailsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNodeDetails not implemented")
 }
-func (UnimplementedCruxNodeServer) GenerateScript(context.Context, *IdRequest) (*NodeInstallResponse, error) {
+func (UnimplementedCruxNodeServer) GenerateScript(context.Context, *GenerateScriptRequest) (*NodeInstallResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GenerateScript not implemented")
 }
 func (UnimplementedCruxNodeServer) GetScript(context.Context, *ServiceIdRequest) (*NodeScriptResponse, error) {
@@ -813,7 +813,7 @@ func _CruxNode_GetNodeDetails_Handler(srv interface{}, ctx context.Context, dec 
 }
 
 func _CruxNode_GenerateScript_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(IdRequest)
+	in := new(GenerateScriptRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -825,7 +825,7 @@ func _CruxNode_GenerateScript_Handler(srv interface{}, ctx context.Context, dec 
 		FullMethod: "/crux.CruxNode/GenerateScript",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CruxNodeServer).GenerateScript(ctx, req.(*IdRequest))
+		return srv.(CruxNodeServer).GenerateScript(ctx, req.(*GenerateScriptRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

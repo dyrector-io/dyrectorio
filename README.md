@@ -4,6 +4,7 @@
 
 [![License](https://img.shields.io/badge/licence-Apache%202.0-brightgreen.svg?style=flat)](LICENSE)
 [![Discord Budget](https://img.shields.io/discord/797082431902449694)](https://discord.gg/pZWbd4fxga)
+[![codecov](https://img.shields.io/codecov/c/github/dyrector-io/dyrectorio/develop?logo=Go&token=F5TZTAJTKX)](https://codecov.io/gh/dyrector-io/dyrectorio)
 
 ## Overview
 

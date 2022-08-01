@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
+import { NodeTypeEnum } from '@prisma/client'
 import { Observable } from 'rxjs'
 import { PrismaService } from 'src/services/prisma.service'
 import { PreconditionFailedException } from 'src/exception/errors'
@@ -8,12 +9,14 @@ import {
   CreateEntityResponse,
   CreateNodeRequest,
   Empty,
+  GenerateScriptRequest,
   IdRequest,
   NodeDetailsResponse,
   NodeEventMessage,
   NodeInstallResponse,
   NodeListResponse,
   NodeScriptResponse,
+  NodeType,
   ServiceIdRequest,
   UpdateNodeRequest,
   WatchContainerStatusRequest,
@@ -103,8 +106,21 @@ export class NodeService {
     return Empty
   }
 
-  async generateScript(request: IdRequest): Promise<NodeInstallResponse> {
-    const installer = await this.agentService.install(request.id)
+  async generateScript(req: GenerateScriptRequest): Promise<NodeInstallResponse> {
+    const nodeType = this.mapper.nodeTypeGrpcToPrisma(req.type)
+
+    await this.prisma.node.update({
+      where: {
+        id: req.id,
+      },
+      data: {
+        type: nodeType,
+        updatedBy: req.accessedBy,
+        updatedAt: new Date(),
+      },
+    })
+
+    const installer = await this.agentService.install(req.id, nodeType)
 
     return this.mapper.installerToGrpc(installer)
   }
@@ -116,6 +132,7 @@ export class NodeService {
       },
       select: {
         name: true,
+        type: true,
       },
     })
 

@@ -15,6 +15,7 @@ import {
   DyoNodeDetails,
   DyoNodeInstall,
   NodeStatusMessage,
+  NodeType,
   UpdateDyoNode,
   WS_TYPE_NODE_STATUS,
 } from '@app/models'
@@ -43,6 +44,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
       ({
         name: '',
         description: '',
+        type: 'docker',
         status: 'unreachable',
       } as DyoNodeDetails),
   )
@@ -98,6 +100,13 @@ const EditNodeCard = (props: EditNodeCardProps) => {
       setNode(newNode)
       props.onNodeEdited(newNode)
     })
+
+  const onNodeTypeChanged = (type: NodeType): void => {
+    setNode({
+      ...node,
+      type,
+    })
+  }
 
   const editing = !!node.id
 
@@ -190,13 +199,31 @@ const EditNodeCard = (props: EditNodeCardProps) => {
             {t('setup')}
           </DyoHeading>
 
-          <div className="text-bright">
-            <DyoHeading element="h5" className="text-md">
-              {t('aboutScript')}
+          <div className="text-bright mb-4">
+            <DyoHeading element="h4" className="text-md">
+              {t('whatScriptDoesHeader')}
             </DyoHeading>
 
-            <p className="text-light-eased max-w-lg ml-4">{t('setupExplanation')}</p>
+            <p className="text-light-eased max-w-lg ml-4">{t('scriptExplanation')}</p>
           </div>
+
+          {node.install ? (
+            <>
+              <div className="text-bright mb-4">
+                <DyoHeading element="h5" className="text-md">
+                  {t('requirementsHeader')}
+                </DyoHeading>
+
+                {(t('requirements.' + node.type, null, { returnObjects: true }) as string[]).map(
+                  (requirement, index) => (
+                    <p className="text-light-eased max-w-lg ml-4" key={'req-' + index}>
+                      - {requirement}
+                    </p>
+                  ),
+                )}
+              </div>
+            </>
+          ) : null}
 
           {!editing ? (
             <div className="text-bright font-bold mt-4">{t('saveYourNode')}</div>
@@ -208,7 +235,11 @@ const EditNodeCard = (props: EditNodeCardProps) => {
               </DyoButton>
             </>
           ) : (
-            <DyoNodeSetup node={node} onNodeInstallChanged={onNodeInstallChanged} />
+            <DyoNodeSetup
+              node={node}
+              onNodeTypeChanged={onNodeTypeChanged}
+              onNodeInstallChanged={onNodeInstallChanged}
+            />
           )}
         </div>
       </DyoCard>
