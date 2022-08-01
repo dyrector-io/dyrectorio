@@ -101,6 +101,29 @@ Send a pull request to any of our open source repositories on Github. Check our 
 ## Contributing
 The project can only accept contributions which are licensed under the [Apache License 2.0](LICENSE). For further information please see our [Contribution Guidelines](CONTRIBUTING.md).
 
+## Changelog
+
+Install the generator
+```
+go get -u github.com/git-chglog/git-chglog/cmd/git-chglog
+```
+
+Usage
+```
+git-chglog -o CHANGELOG.md
+```
+
+```
+git tag -a v1.x.x
+git push --tags
+```
+
+In order to draft a new release: 
+- create a new release tag on develop
+- generate changelogs
+
+See [CHANGELOG.md](CHANGELOG.md) 
+
 ## Feedback
 
 We’d love to hear your thoughts on this project. Feel free to drop us a note!
