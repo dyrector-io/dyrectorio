@@ -110,11 +110,11 @@ go get -u github.com/git-chglog/git-chglog/cmd/git-chglog
 
 Usage
 ```
-git-chglog -o CHANGELOG.md
+git-chglog --next-tag vx.y.z -o CHANGELOG.md
 ```
 
 ```
-git tag -a v1.x.x
+git tag -a vx.y.z
 git push --tags
 ```
 
