@@ -33,9 +33,10 @@
 * [Create your Product](tutorials/create-your-product/README.md)
   * [Create a Simple Product](tutorials/create-your-product/create-a-simple-product.md)
   * [Create a Complex Product](tutorials/create-your-product/create-a-complex-product/README.md)
-    * [Create a Rolling Product](tutorials/create-your-product/create-a-complex-product/create-a-rolling-product.md)
+    * [Create a Rolling Version](tutorials/create-your-product/create-a-complex-product/create-a-rolling-product.md)
     * [Create an Incremental Product](tutorials/create-your-product/create-a-complex-product/create-an-incremental-product.md)
     * [Add a version to your Complex Product](tutorials/create-your-product/create-a-complex-product/add-a-version-to-your-complex-product.md)
+* [Deploy your Product](tutorials/deploy-your-product.md)
 
 ## Learn more about dyrector.io
 

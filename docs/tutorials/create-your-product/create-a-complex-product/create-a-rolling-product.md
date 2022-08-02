@@ -1,6 +1,6 @@
-# Create a Rolling Product
+# Create a Rolling Version
 
-Rolling Products are similar to Simple Products except they’re perfect for continuous delivery. They’re always mutable but contrary to incremental Products they aren’t hierarchic and lack a version number.
+Rolling Versions are similar to Simple Products except they’re perfect for continuous delivery. They’re always mutable but contrary to incremental Products they aren’t hierarchic and lack a version number.
 
 **Step 1:** After picking Rolling on the switch, click ‘Save’. You’ll be directed to the Product tab. Select the product again.
 
