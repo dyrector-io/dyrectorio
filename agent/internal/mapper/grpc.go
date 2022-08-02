@@ -1,6 +1,7 @@
 package mapper
 
 import (
+	"strings"
 	"time"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -131,13 +132,26 @@ func MapContainerStatus(in *[]dockerTypes.Container) []*crux.ContainerStatusItem
 			name = it.Names[0]
 		}
 
+		imageName := strings.Split(it.Image, ":")
+
+		var imageTag string
+
+		if len(imageName) > 0 {
+			imageTag = imageName[1]
+		} else {
+			imageTag = "latest"
+		}
+
 		list = append(list, &crux.ContainerStatusItem{
 			ContainerId: it.ID,
 			Name:        name,
 			Command:     it.Command,
 			CreatedAt:   timestamppb.New(time.UnixMilli(it.Created * int64(time.Microsecond)).UTC()),
 			Status:      dogger.MapContainerState(it.State),
+			State:       it.Status,
 			Ports:       MapContainerPorts(&it.Ports),
+			ImageName:   imageName[0],
+			ImageTag:    imageTag,
 		})
 	}
 

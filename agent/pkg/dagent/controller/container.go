@@ -289,7 +289,6 @@ func UploadFile(c *gin.Context) {
 		return
 	}
 
-	log.Println(file.Filename)
 	err = utils.CopyToContainer(c, util.JoinV("-", query.ContainerPreName, query.ContainerName), meta, file)
 	if err != nil {
 		log.Printf("UploadFile formFile copy error: %s", err.Error())

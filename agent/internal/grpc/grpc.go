@@ -44,10 +44,12 @@ type GrpcConnectionParams struct {
 
 type DeployFunc func(context.Context, *dogger.DeploymentLogger, *v1.DeployImageRequest, *v1.VersionData) error
 type WatchFunc func(context.Context, string) []*crux.ContainerStatusItem
+type DeleteFunc func(context.Context, string, string) error
 
 type WorkerFunctions struct {
 	Deploy DeployFunc
 	Watch  WatchFunc
+	Delete DeleteFunc
 }
 
 type contextKey int
@@ -230,6 +232,8 @@ func grpcLoop(
 			go executeVersionDeployRequest(ctx, command.GetDeploy(), workerFuncs.Deploy, appConfig)
 		} else if command.GetContainerStatus() != nil {
 			go executeWatchContainerStatus(ctx, command.GetContainerStatus(), workerFuncs.Watch)
+		} else if command.GetContainerDelete() != nil {
+			go executeDeleteContainer(ctx, command.GetContainerDelete(), workerFuncs.Delete)
 		} else {
 			log.Println("Unknown agent command")
 		}
@@ -268,7 +272,12 @@ func executeVersionDeployRequest(
 		imageReq := mapper.MapDeployImage(req.Requests[i], appConfig)
 		dog.SetRequestID(imageReq.RequestID)
 
-		if err = deploy(ctx, dog, imageReq, &v1.VersionData{Version: req.VersionName, ReleaseNotes: req.ReleaseNotes}); err != nil {
+		var versionData *v1.VersionData = nil
+		if len(req.VersionName) > 0 {
+			versionData = &v1.VersionData{Version: req.VersionName, ReleaseNotes: req.ReleaseNotes}
+		}
+
+		if err = deploy(ctx, dog, imageReq, versionData); err != nil {
 			failed = true
 			dog.Write(err.Error())
 		}
@@ -317,8 +326,19 @@ func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStatus
 			return
 		}
 
+		if req.OneShot != nil && *req.OneShot {
+			stream.CloseSend()
+			return
+		}
+
 		time.Sleep(time.Second)
 	}
+}
+
+func executeDeleteContainer(ctx context.Context, req *agent.ContainerDeleteRequest, deleteFn DeleteFunc) {
+	log.Printf("Deleteing container: %s-%s", req.PreName, req.Name)
+
+	deleteFn(ctx, req.PreName, req.Name)
 }
 
 func WithGRPCConfig(parentContext context.Context, cfg any) context.Context {

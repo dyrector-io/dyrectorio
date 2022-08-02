@@ -702,3 +702,14 @@ func GetImageLabels(fullyQualifiedImageName string) (map[string]string, error) {
 		return nil, errors.New("no labels")
 	}
 }
+
+func DeleteContainerByName(ctx context.Context, preName, name string) error {
+	containerName := util.JoinV("-", preName, name)
+	containers := GetContainer(containerName)
+
+	if len(containers) == 1 {
+		return DeleteContainer(containerName)
+	}
+
+	return errors.New("No or more containers found for " + containerName)
+}
