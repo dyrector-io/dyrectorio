@@ -1,10 +1,13 @@
 import { Layout, PageHead } from '@app/components/layout'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
+import Filters from '@app/components/shared/filters'
 import JsonEditor from '@app/components/shared/json-editor-dynamic-module'
 import PageHeading from '@app/components/shared/page-heading'
 import { DyoCard } from '@app/elements/dyo-card'
+import { DyoDatePicker } from '@app/elements/dyo-date-picker'
 import { DyoList } from '@app/elements/dyo-list'
 import DyoModal from '@app/elements/dyo-modal'
+import { DateRangeFilter, dateRangeFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import { AuditLog, beautifyAuditLogEvent } from '@app/models'
 import { ROUTE_TEAMS_AUDIT } from '@app/routes'
 import { utcDateToLocale, withContextAuthorization } from '@app/utils'
@@ -18,10 +21,34 @@ interface AuditLogPageProps {
   auditLog: AuditLog[]
 }
 
+type AuditLogFilter = TextFilter & DateRangeFilter
+
 const AuditLogPage = (props: AuditLogPageProps) => {
   const { t } = useTranslation('audit')
 
   const { auditLog } = props
+
+  const [startDate, setStartDate] = useState<Date>(null)
+  const [endDate, setEndDate] = useState<Date>(null)
+
+  const onChange = dates => {
+    const [start, end] = dates
+    setStartDate(start)
+    setEndDate(end)
+    filters.setFilter({ dateRange: [start, end] })
+  }
+
+  const filters = useFilters<AuditLog, AuditLogFilter>({
+    initialData: auditLog,
+    initialFilter: {
+      text: '',
+      dateRange: [null, null],
+    },
+    filters: [
+      textFilterFor<AuditLog>(it => [it.identityName, utcDateToLocale(it.date), it.event, it.info]),
+      dateRangeFilterFor<AuditLog>(it => [utcDateToLocale(it.date)]),
+    ],
+  })
 
   const [showInfo, setShowInfo] = useState<AuditLog>(null)
 
@@ -47,13 +74,26 @@ const AuditLogPage = (props: AuditLogPageProps) => {
       <PageHead title={t('title')} />
       <PageHeading pageLink={selfLink} />
 
-      <DyoCard className="relative">
+      <Filters setTextFilter={it => filters.setFilter({ text: it })}>
+        <DyoDatePicker
+          selectsRange
+          startDate={startDate}
+          endDate={endDate}
+          onChange={onChange}
+          shouldCloseOnSelect={false}
+          maxDate={new Date()}
+          isClearable
+          className="ml-8 w-1/3"
+        />
+      </Filters>
+
+      <DyoCard className="relative mt-4">
         <DyoList
           className=""
           noSeparator
           headerClassName={headerClassNames}
           headers={listHeaders}
-          data={auditLog}
+          data={filters.filtered}
           itemBuilder={it => {
             /* eslint-disable react/jsx-key */
             return [
