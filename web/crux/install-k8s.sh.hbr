@@ -4,7 +4,7 @@ set -e
 {{#if localManifests }}
 kubectl apply -f ./agent/manifest/kubernetes/namespace.yaml
 {{else}}
-kubectl apply -f https://raw.githubusercontent.com/dyrector-io/dyrectorio/feat/k8s-agent-install/agent/manifest/kubernetes/rolebinding.yaml
+kubectl apply -f https://raw.githubusercontent.com/dyrector-io/dyrectorio/main/agent/manifest/kubernetes/namespace.yaml
 {{/if }}
 
 cat <<EOF | kubectl apply -f -
@@ -15,7 +15,6 @@ metadata:
   namespace: dyrectorio
 data:
   CRANE_IN_CLUSTER: "true"
-  INGRESS_ROOT_DOMAIN: "test.test.te"
   GRPC_TOKEN: "{{token}}"
   HOSTNAME: "{{name}}"
 EOF
@@ -24,6 +23,6 @@ EOF
 kubectl apply -f ./agent/manifest/kubernetes/rolebinding.yaml
 kubectl apply -f ./agent/manifest/kubernetes/deployment.yaml
 {{else}}
-https://raw.githubusercontent.com/dyrector-io/dyrectorio/feat/k8s-agent-install/agent/manifest/kubernetes/rolebinding.yaml
-https://raw.githubusercontent.com/dyrector-io/dyrectorio/feat/k8s-agent-install/agent/manifest/kubernetes/depyloyment.yaml
+kubectl apply -f https://raw.githubusercontent.com/dyrector-io/dyrectorio/main/agent/manifest/kubernetes/rolebinding.yaml
+kubectl apply -f https://raw.githubusercontent.com/dyrector-io/dyrectorio/main/agent/manifest/kubernetes/deployment.yaml
 {{/if }}
