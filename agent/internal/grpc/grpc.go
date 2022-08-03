@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"crypto/x509"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -234,6 +235,8 @@ func grpcLoop(
 			go executeWatchContainerStatus(ctx, command.GetContainerStatus(), workerFuncs.Watch)
 		} else if command.GetContainerDelete() != nil {
 			go executeDeleteContainer(ctx, command.GetContainerDelete(), workerFuncs.Delete)
+		} else if command.GetDeployCore() != nil {
+			go executeVersionDeployCoreRequest(ctx, command.GetDeployCore(), workerFuncs.Deploy, appConfig)
 		} else {
 			log.Println("Unknown agent command")
 		}
@@ -328,6 +331,7 @@ func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStatus
 
 		if req.OneShot != nil && *req.OneShot {
 			stream.CloseSend()
+			log.Printf("Closed container status channel for prefix: %s", filterPrefix)
 			return
 		}
 
@@ -339,6 +343,57 @@ func executeDeleteContainer(ctx context.Context, req *agent.ContainerDeleteReque
 	log.Printf("Deleteing container: %s-%s", req.PreName, req.Name)
 
 	deleteFn(ctx, req.PreName, req.Name)
+}
+
+func executeVersionDeployCoreRequest(
+	ctx context.Context, req *agent.DeployRequestCore,
+	deploy DeployFunc, appConfig *config.CommonConfiguration) {
+	if req.RequestId == "" {
+		log.Println("Empty request")
+		return
+	}
+	log.Println("Deployment -", req.RequestId, "Opening status channel.")
+
+	deployCtx := metadata.AppendToOutgoingContext(ctx, "dyo-deployment-id", req.RequestId)
+	statusStream, err := grpcConn.Client.DeploymentStatus(deployCtx, grpc.WaitForReady(true))
+
+	if err != nil {
+		log.Println("Deployment -", &req.RequestId, "Status connect error: ", err.Error())
+		return
+	}
+
+	dog := dogger.NewDeploymentLogger(&req.RequestId, statusStream, ctx, appConfig)
+	dog.SetRequestID(req.RequestId)
+
+	deployImageRequest := v1.DeployImageRequest{}
+	if err := json.Unmarshal([]byte(req.Json), &deployImageRequest); err != nil {
+		log.Printf("Failed to parse deploy request JSON! %v", err)
+
+		errorText := fmt.Sprintf("JSON parse error: %v", err)
+		dog.WriteDeploymentStatus(crux.DeploymentStatus_FAILED, errorText)
+		return
+	}
+
+	dog.WriteDeploymentStatus(crux.DeploymentStatus_IN_PROGRESS, "Started.")
+
+	t1 := time.Now()
+
+	deployStatus := crux.DeploymentStatus_SUCCESSFUL
+	if err = deploy(ctx, dog, &deployImageRequest, nil); err != nil {
+		deployStatus = crux.DeploymentStatus_FAILED
+		dog.Write("Deployment failed " + err.Error())
+	} else {
+		dog.Write(fmt.Sprintf("Deployment took: %.2f seconds", time.Since(t1).Seconds()))
+		dog.Write("Deployment succeeded.")
+	}
+
+	dog.WriteDeploymentStatus(deployStatus)
+
+	err = statusStream.CloseSend()
+	if err != nil {
+		log.Println(deployImageRequest.RequestID, "Stream close err: ", err.Error())
+		return
+	}
 }
 
 func WithGRPCConfig(parentContext context.Context, cfg any) context.Context {

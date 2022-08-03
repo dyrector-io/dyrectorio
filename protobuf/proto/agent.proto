@@ -42,6 +42,7 @@ message AgentCommand {
     VersionDeployRequest deploy = 1;
     ContainerStatusRequest containerStatus = 2;
     ContainerDeleteRequest containerDelete = 3;
+    DeployRequestCore deployCore = 4;
   }
 }
 
@@ -145,6 +146,11 @@ message ContainerStatusRequest {
 }
 
 message ContainerDeleteRequest {
-    string preName = 1;
-    string name = 2;
+  string preName = 1;
+  string name = 2;
+}
+
+message DeployRequestCore {
+  string requestId = 1; // for early dogger logging
+  string json = 2;
 }

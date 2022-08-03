@@ -620,6 +620,7 @@ message ContainerStatusItem {
   string command = 103;
   google.protobuf.Timestamp createdAt = 104;
   ContainerStatus status = 105;
+  string state = 106;
 
   repeated ContainerPort ports = 1000;
 }
