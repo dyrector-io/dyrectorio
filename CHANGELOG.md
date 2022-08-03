@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+<a name="v0.1.1"></a>
+## [v0.1.1](https://github.com/dyrector-io/dyrectorio/compare/v0.1.0...v0.1.1) (2022-08-03)
+
+### Chore
+
+* clean README.mds & generate changelog ([#57](https://github.com/dyrector-io/dyrectorio/issues/57))
+
+### Fix
+
+* rename the install script files ([#63](https://github.com/dyrector-io/dyrectorio/issues/63))
+* change the manifest paths ([#60](https://github.com/dyrector-io/dyrectorio/issues/60))
+
+
 <a name="v0.1.0"></a>
 ## v0.1.0 (2022-08-01)
 
@@ -10,7 +23,6 @@
 
 ### Chore
 
-* clean the readmes and generate changelog manually
 * contributing update, editorconfig and gitattributes
 
 ### Ci
@@ -99,6 +111,7 @@
 
 ### Merge Requests
 
+* Merge pull request [#56](https://github.com/dyrector-io/dyrectorio/issues/56) from dyrector-io/chore/editorconfig-gitattributes
 * Merge pull request [#42](https://github.com/dyrector-io/dyrectorio/issues/42) from dyrector-io/fix/ts-config-eslint
 * Merge pull request [#39](https://github.com/dyrector-io/dyrectorio/issues/39) from dyrector-io/fix/agent-version-space
 * Merge pull request [#38](https://github.com/dyrector-io/dyrectorio/issues/38) from dyrector-io/dependabot/npm_and_yarn/web/crux/terser-5.14.2
