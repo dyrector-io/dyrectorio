@@ -5,6 +5,7 @@ import PageHeading from '@app/components/shared/page-heading'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoList } from '@app/elements/dyo-list'
 import DyoModal from '@app/elements/dyo-modal'
+import { usePagination } from '@app/hooks/use-paginatios'
 import { AuditLog, beautifyAuditLogEvent } from '@app/models'
 import { ROUTE_TEAMS_AUDIT } from '@app/routes'
 import { utcDateToLocale, withContextAuthorization } from '@app/utils'
@@ -34,6 +35,11 @@ const AuditLogPage = (props: AuditLogPageProps) => {
     url: ROUTE_TEAMS_AUDIT,
   }
 
+  const pagination = usePagination<AuditLog>({
+    initialData: auditLog,
+    initialPagination: {pageSize: 10, currentPage: 1}
+  })
+
   const listHeaders = ['common:name', 'common:date', 'event', 'info'].map(it => t(it))
   const defaultHeaderClass = 'uppercase text-bright text-sm font-bold bg-medium-eased pl-2 py-3 h-11'
   const headerClassNames = [
@@ -53,7 +59,7 @@ const AuditLogPage = (props: AuditLogPageProps) => {
           noSeparator
           headerClassName={headerClassNames}
           headers={listHeaders}
-          data={auditLog}
+          data={pagination.displayed}
           itemBuilder={it => {
             /* eslint-disable react/jsx-key */
             return [
