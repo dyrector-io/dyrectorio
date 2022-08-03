@@ -41,6 +41,8 @@ message AgentCommand {
   oneof command {
     VersionDeployRequest deploy = 1;
     ContainerStatusRequest containerStatus = 2;
+    ContainerDeleteRequest containerDelete = 3;
+    DeployRequestCore deployCore = 4;
   }
 }
 
@@ -138,4 +140,17 @@ message DeployRequest {
   optional RegistryAuth registryAuth = 8;
 }
 
-message ContainerStatusRequest { optional string prefix = 1; }
+message ContainerStatusRequest { 
+  optional string prefix = 1; 
+  optional bool oneShot = 2;
+}
+
+message ContainerDeleteRequest {
+  string preName = 1;
+  string name = 2;
+}
+
+message DeployRequestCore {
+  string requestId = 1; // for early dogger logging
+  string json = 2;
+}

@@ -621,6 +621,8 @@ message ContainerStatusItem {
   google.protobuf.Timestamp createdAt = 104;
   ContainerStatus status = 105;
   string state = 106;
+  string imageName = 107;
+  string imageTag = 108;
 
   repeated ContainerPort ports = 1000;
 }

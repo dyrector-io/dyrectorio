@@ -946,6 +946,9 @@ export interface ContainerStatusItem {
   command: string
   createdAt: Timestamp | undefined
   status: ContainerStatus
+  state: string
+  imageName: string
+  imageTag: string
   ports: ContainerPort[]
 }
 
@@ -5796,6 +5799,9 @@ const baseContainerStatusItem: object = {
   name: '',
   command: '',
   status: 0,
+  state: '',
+  imageName: '',
+  imageTag: '',
 }
 
 export const ContainerStatusItem = {
@@ -5814,6 +5820,15 @@ export const ContainerStatusItem = {
     }
     if (message.status !== 0) {
       writer.uint32(840).int32(message.status)
+    }
+    if (message.state !== '') {
+      writer.uint32(850).string(message.state)
+    }
+    if (message.imageName !== '') {
+      writer.uint32(858).string(message.imageName)
+    }
+    if (message.imageTag !== '') {
+      writer.uint32(866).string(message.imageTag)
     }
     for (const v of message.ports) {
       ContainerPort.encode(v!, writer.uint32(8002).fork()).ldelim()
@@ -5844,6 +5859,15 @@ export const ContainerStatusItem = {
         case 105:
           message.status = reader.int32() as any
           break
+        case 106:
+          message.state = reader.string()
+          break
+        case 107:
+          message.imageName = reader.string()
+          break
+        case 108:
+          message.imageTag = reader.string()
+          break
         case 1000:
           message.ports.push(ContainerPort.decode(reader, reader.uint32()))
           break
@@ -5864,6 +5888,9 @@ export const ContainerStatusItem = {
     message.createdAt =
       object.createdAt !== undefined && object.createdAt !== null ? fromJsonTimestamp(object.createdAt) : undefined
     message.status = object.status !== undefined && object.status !== null ? containerStatusFromJSON(object.status) : 0
+    message.state = object.state !== undefined && object.state !== null ? String(object.state) : ''
+    message.imageName = object.imageName !== undefined && object.imageName !== null ? String(object.imageName) : ''
+    message.imageTag = object.imageTag !== undefined && object.imageTag !== null ? String(object.imageTag) : ''
     message.ports = (object.ports ?? []).map((e: any) => ContainerPort.fromJSON(e))
     return message
   },
@@ -5875,6 +5902,9 @@ export const ContainerStatusItem = {
     message.command !== undefined && (obj.command = message.command)
     message.createdAt !== undefined && (obj.createdAt = fromTimestamp(message.createdAt).toISOString())
     message.status !== undefined && (obj.status = containerStatusToJSON(message.status))
+    message.state !== undefined && (obj.state = message.state)
+    message.imageName !== undefined && (obj.imageName = message.imageName)
+    message.imageTag !== undefined && (obj.imageTag = message.imageTag)
     if (message.ports) {
       obj.ports = message.ports.map(e => (e ? ContainerPort.toJSON(e) : undefined))
     } else {
@@ -5891,6 +5921,9 @@ export const ContainerStatusItem = {
     message.createdAt =
       object.createdAt !== undefined && object.createdAt !== null ? Timestamp.fromPartial(object.createdAt) : undefined
     message.status = object.status ?? 0
+    message.state = object.state ?? ''
+    message.imageName = object.imageName ?? ''
+    message.imageTag = object.imageTag ?? ''
     message.ports = object.ports?.map(e => ContainerPort.fromPartial(e)) || []
     return message
   },
