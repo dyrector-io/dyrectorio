@@ -1,12 +1,16 @@
+import { Status } from '@grpc/grpc-js/build/src/constants'
 import { HttpService } from '@nestjs/axios'
 import { CanActivate, ExecutionContext, HttpStatus, Injectable, Logger } from '@nestjs/common'
 import { AxiosError } from 'axios'
-import { catchError, map, mergeMap, Observable, of } from 'rxjs'
+import { JWT } from 'google-auth-library'
+import { GetAccessTokenResponse } from 'google-auth-library/build/src/auth/oauth2client'
+import { catchError, from, map, mergeMap, Observable, of, switchMap, tap } from 'rxjs'
 import { InvalidArgumentException, NotFoundException, UnauthenticatedException } from 'src/exception/errors'
 import {
   CreateRegistryRequest,
   GithubRegistryDetails,
   GitlabRegistryDetails,
+  GoogleRegistryDetails,
   HubRegistryDetails,
   V2RegistryDetails,
 } from 'src/grpc/protobuf/proto/crux'
@@ -36,8 +40,10 @@ export class RegistryAccessValidationGuard implements CanActivate {
       return this.validateGitlab(req.gitlab)
     } else if (req.github) {
       return this.validateGithub(req.github)
+    } else if (req.google) {
+      return this.validateGoogle(req.google)
     } else {
-      of(false)
+      return of(false)
     }
   }
 
@@ -218,6 +224,73 @@ export class RegistryAccessValidationGuard implements CanActivate {
           })
         }),
       )
+  }
+
+  private validateGoogle(req: GoogleRegistryDetails): Observable<boolean> {
+    const withCredentials = !!req.user
+    const client = withCredentials
+      ? new JWT({
+          email: req.user,
+          key: req.token,
+          scopes: ['https://www.googleapis.com/auth/cloud-platform'],
+        })
+      : null
+
+    const validator = (accessTokenResponse: GetAccessTokenResponse) =>
+      this.httpService
+        .get(`https://gcr.io/v2/${req.url}/tags/list`, {
+          withCredentials,
+          auth: {
+            username: 'oauth2accesstoken',
+            password: accessTokenResponse?.token,
+          },
+        })
+        .pipe(
+          map(res => res.status === HttpStatus.OK),
+          catchError((error: AxiosError) => {
+            this.logger.warn(error)
+
+            if (!withCredentials || !error.response || error.response.status !== HttpStatus.UNAUTHORIZED) {
+              throw new InvalidArgumentException({
+                message: 'Failed to fetch google registry',
+                property: 'url',
+                value: req.url,
+              })
+            }
+
+            const authenticate = new parsers.WWW_Authenticate(error.response.headers['www-authenticate'])
+            const registryServiceTokenUrl = `${authenticate.parms.realm}?service=${authenticate.parms.service}`
+
+            return this.httpService
+              .get(registryServiceTokenUrl.toString(), {
+                withCredentials,
+                auth: {
+                  username: 'oauth2accesstoken',
+                  password: accessTokenResponse?.token,
+                },
+              })
+              .pipe(
+                map(res => res.status === HttpStatus.OK),
+                catchError(() => {
+                  throw new UnauthenticatedException({
+                    message: 'Failed to authenticate with the google registry',
+                  })
+                }),
+              )
+          }),
+        )
+
+    return withCredentials
+      ? from(client.getAccessToken()).pipe(
+          catchError(error => {
+            error.error
+            throw new UnauthenticatedException({
+              message: 'Failed to authenticate with the google registry',
+            })
+          }),
+          switchMap(token => validator(token)),
+        )
+      : validator(null)
   }
 }
 
