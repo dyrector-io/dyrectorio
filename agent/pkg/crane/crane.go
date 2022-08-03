@@ -93,11 +93,13 @@ func Serve(cfg *config.Configuration) {
 			grpc.Init(grpcContext, grpcParams, &cfg.CommonConfiguration, grpc.WorkerFunctions{
 				Deploy: k8s.Deploy,
 				Watch:  crux.GetDeployments,
+				Delete: k8s.Delete,
 			})
 		} else {
 			go grpc.Init(grpcContext, grpcParams, &cfg.CommonConfiguration, grpc.WorkerFunctions{
 				Deploy: k8s.Deploy,
 				Watch:  crux.GetDeployments,
+				Delete: k8s.Delete,
 			})
 		}
 	} else {
