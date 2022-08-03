@@ -1,4 +1,5 @@
 {
+  "localeCode": "en-GB",
   "logIn": "Log in",
   "logOut": "Log out",
   "signUp": "Sign up",
@@ -120,5 +121,22 @@
   "heart": "Heart",
   "userAvatar": "User's avatar",
   "teamAvatar": "Team's avatar",
-  "rightArrowIcon": "Right arrow icon"
+  "rightArrowIcon": "Right arrow icon",
+
+  "daysOfTheWeekShort": ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
+
+  "months": [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+  ]
 }

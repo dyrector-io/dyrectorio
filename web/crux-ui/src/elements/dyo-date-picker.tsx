@@ -1,28 +1,46 @@
-import en from 'date-fns/locale/en-GB'
 import useTranslation from 'next-translate/useTranslation'
 import React, { ForwardedRef, forwardRef } from 'react'
-import DatePicker, { ReactDatePickerProps, registerLocale } from 'react-datepicker'
+import DatePicker, { ReactDatePickerProps } from 'react-datepicker'
 import { DyoInput } from './dyo-input'
 
-export const DyoDatePicker = forwardRef((props: ReactDatePickerProps, ref: ForwardedRef<DatePicker>) => {
-  registerLocale('en', en)
+export const DyoDatePicker = forwardRef(
+  (props: ReactDatePickerProps<never, boolean>, ref: ForwardedRef<DatePicker>) => {
+    const { t } = useTranslation('common')
 
-  const { t } = useTranslation('common')
+    const days = t('daysOfTheWeekShort', null, { returnObjects: true }) as string[]
 
-  return (
-    <div className={props.className}>
-      <DatePicker
-        locale="en"
-        closeOnScroll
-        dateFormat={t('dateFormat')}
-        showPopperArrow={false}
-        ref={ref}
-        customInput={<DyoInput grow className="w-full" />}
-        {...props}
-        className=""
-      />
-    </div>
-  )
-})
+    const months = t('months', null, { returnObjects: true }) as string[]
 
-DyoDatePicker.displayName = "DyoDatePicker"
+    const locale = {
+      localize: {
+        day: (n: string | number) => days[n],
+        month: (n: string | number) => months[n],
+      },
+      formatLong: {
+        date: () => t('dateFormat'),
+      },
+      options: {
+        weekStartsOn: 1 /* Monday */,
+        firstWeekContainsDate: 4,
+      },
+    } as Locale
+
+    const { className, ...rest } = props
+
+    return (
+      <div className={className}>
+        <DatePicker
+          locale={locale}
+          closeOnScroll
+          dateFormat={t('dateFormat')}
+          showPopperArrow={false}
+          ref={ref}
+          customInput={<DyoInput grow className="w-full" />}
+          {...rest}
+        />
+      </div>
+    )
+  },
+)
+
+DyoDatePicker.displayName = 'DyoDatePicker'

@@ -79,12 +79,14 @@ export const dateRangeFilterFor =
       return items
     }
 
-    const from = filter.dateRange[0] === null ? new Date(-8640000000000000) : filter.dateRange[0] // Min Date
-    const to = filter.dateRange[1] === null ? new Date(8640000000000000) : filter.dateRange[1] // Max Date
-    if (filter.dateRange[1] !== null) to.setMilliseconds(to.getMilliseconds() + 86399999) // Set to end of the day
-
     return items.filter(it => {
       const properties = propertiesOf(it)
-      return properties.filter(i => new Date(i) >= from && new Date(i) <= to).length > 0
+      return (
+        properties.filter(
+          i =>
+            (filter.dateRange[0] === null || new Date(i) >= filter.dateRange[0]) &&
+            (filter.dateRange[1] === null || new Date(i) <= filter.dateRange[1]),
+        ).length > 0
+      )
     })
   }

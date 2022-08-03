@@ -34,6 +34,8 @@ const AuditLogPage = (props: AuditLogPageProps) => {
   const onChange = dates => {
     const [start, end] = dates
     setStartDate(start)
+
+    if (end !== null) end.setHours(23, 59, 59, 999)
     setEndDate(end)
     filters.setFilter({ dateRange: [start, end] })
   }
