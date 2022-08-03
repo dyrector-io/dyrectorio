@@ -24,3 +24,5 @@ export const DyoDatePicker = forwardRef((props: ReactDatePickerProps, ref: Forwa
     </div>
   )
 })
+
+DyoDatePicker.displayName = "DyoDatePicker"
