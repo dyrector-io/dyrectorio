@@ -359,8 +359,6 @@ type UploadFileData struct {
 	GID int `form:"gid"`
 }
 
-const bracketsWarning = "Make sure to use brackets for arrays like eg.  \"environment\": [\"ASPNETCORE_ENVIRONMENT|Staging\"]"
-
 // custom struct unmarshal JSON interface implementation
 func (jsonConfig *Base64JSONBytes) UnmarshalJSON(b []byte) error {
 	inStr := string(b)

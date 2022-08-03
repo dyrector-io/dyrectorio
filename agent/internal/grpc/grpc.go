@@ -330,8 +330,11 @@ func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStatus
 		}
 
 		if req.OneShot != nil && *req.OneShot {
-			stream.CloseSend()
-			log.Printf("Closed container status channel for prefix: %s", filterPrefix)
+			if err := stream.CloseSend(); err == nil {
+				log.Printf("Closed container status channel for prefix: %s", filterPrefix)
+			} else {
+				log.Printf("Failed to close container status channel for prefix: %s %v", filterPrefix, err)
+			}
 			return
 		}
 
@@ -340,9 +343,12 @@ func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStatus
 }
 
 func executeDeleteContainer(ctx context.Context, req *agent.ContainerDeleteRequest, deleteFn DeleteFunc) {
-	log.Printf("Deleteing container: %s-%s", req.PreName, req.Name)
+	log.Printf("Deleting container: %s-%s", req.PreName, req.Name)
 
-	deleteFn(ctx, req.PreName, req.Name)
+	err := deleteFn(ctx, req.PreName, req.Name)
+	if err != nil {
+		log.Printf("Failed to delete container: %v", err)
+	}
 }
 
 func executeVersionDeployCoreRequest(
@@ -366,7 +372,7 @@ func executeVersionDeployCoreRequest(
 	dog.SetRequestID(req.RequestId)
 
 	deployImageRequest := v1.DeployImageRequest{}
-	if err := json.Unmarshal([]byte(req.Json), &deployImageRequest); err != nil {
+	if err = json.Unmarshal([]byte(req.Json), &deployImageRequest); err != nil {
 		log.Printf("Failed to parse deploy request JSON! %v", err)
 
 		errorText := fmt.Sprintf("JSON parse error: %v", err)
