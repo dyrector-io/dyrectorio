@@ -1,6 +1,6 @@
 # Table of contents
 
-* [dyrector.io docs](README.md)
+* [dyrector.io documentation](README.md)
 
 ## Basics
 
@@ -12,7 +12,7 @@
 * [Overview](get-started/overview.md)
 * [Use cases](get-started/use-cases.md)
 * [Components](get-started/components.md)
-* [dyrector.io's functionality](get-started/dyrector.ios-functionality.md)
+* [Core functionality](get-started/core-functionality.md)
 
 ## Features
 
@@ -38,10 +38,10 @@
     * [Add a version to your Complex Product](tutorials/create-your-product/create-a-complex-product/add-a-version-to-your-complex-product.md)
 * [Deploy your Product](tutorials/deploy-your-product.md)
 
-## Learn more about dyrector.io
+## Learn more
 
-* [Roadmap](learn-more-about-dyrector.io/roadmap/README.md)
-  * [Features in progress](learn-more-about-dyrector.io/roadmap/features-in-progress.md)
-  * [Integrations in progress](learn-more-about-dyrector.io/roadmap/integrations-in-progress.md)
-* [FAQ](learn-more-about-dyrector.io/faq.md)
-* [Community](learn-more-about-dyrector.io/community.md)
+* [Roadmap](learn-more/roadmap/README.md)
+  * [Features in progress](learn-more/roadmap/features-in-progress.md)
+  * [Integrations in progress](learn-more/roadmap/integrations-in-progress.md)
+* [FAQ](learn-more/faq.md)
+* [Community](learn-more/community.md)

@@ -8,8 +8,8 @@ Check out the [**Components**](../get-started/components.md) section for a basic
 
 Find out how you can use dyrector.io under the [**Tutorials**](broken-reference) section where you can see through how you can use each function step-by-step.
 
-Read the [**Features**](broken-reference) section to find out about use cases and best practices of dyrector.io’s features. If you're curious about upcoming features and integrations, check [**Roadmap**](../learn-more-about-dyrector.io/roadmap/).
+Read the [**Features**](broken-reference) section to find out about use cases and best practices of dyrector.io’s features. If you're curious about upcoming features and integrations, check [**Roadmap**](../learn-more/roadmap/).
 
 {% hint style="success" %}
-If you have any questions about dyrector.io, check the [**FAQ**](../learn-more-about-dyrector.io/faq.md) section. Join our community at the channels included in the [**Community**](../learn-more-about-dyrector.io/community.md) section.
+If you have any questions about dyrector.io, check the [**FAQ**](../learn-more/faq.md) section. Join our community at the channels included in the [**Community**](../learn-more/community.md) section.
 {% endhint %}

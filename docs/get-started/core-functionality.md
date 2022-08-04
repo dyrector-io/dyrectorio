@@ -1,4 +1,4 @@
-# dyrector.io's functionality
+# Core functionality
 
 This section's goal is to introduce dyrector.io's capabilities and how organizations can make the most out of using it. **If you're reading the docs to find out how to execute deployments on the platform, head to the** [**Tutorials**](broken-reference)**.**
 
@@ -13,7 +13,7 @@ The purpose of using dyrector.io is to reduce time and budget spent on release m
 * **Monitoring –** Get notified if a deployment is successful or any failure occurred. Gain better understanding on how your infrastructure and applications perform.
 * **Audit log –** We’re creating activity logs so you can follow up on what actions were executed by your team. This can be useful when teams hold retrospective meetings.
 
-#### [Features in progress](../learn-more-about-dyrector.io/roadmap/features-in-progress.md)
+#### [Features in progress](../learn-more/roadmap/features-in-progress.md)
 
 * **Changelogs –** You're able to create changelogs at ease based on commit messages with the help of Conventional Commits, so your team understands the purpose of new versions. This simplifies communication between departments who work on the product and outsiders, for example decision-makers. The generated changelogs can be sent out via e-mail or any chatbot integration.
 * **Secret management –** Store and manage sensitive data with our Vault integration powered by Hashi Corp.
