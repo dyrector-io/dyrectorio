@@ -236,8 +236,8 @@ func grpcLoop(
 			go executeWatchContainerStatus(ctx, command.GetContainerStatus(), workerFuncs.Watch)
 		} else if command.GetContainerDelete() != nil {
 			go executeDeleteContainer(ctx, command.GetContainerDelete(), workerFuncs.Delete)
-		} else if command.GetDeployCore() != nil {
-			go executeVersionDeployCoreRequest(ctx, command.GetDeployCore(), workerFuncs.Deploy, appConfig)
+		} else if command.GetDeployLegacy() != nil {
+			go executeVersionDeployLegacyRequest(ctx, command.GetDeployLegacy(), workerFuncs.Deploy, appConfig)
 		} else {
 			log.Println("Unknown agent command")
 		}
@@ -276,7 +276,7 @@ func executeVersionDeployRequest(
 		imageReq := mapper.MapDeployImage(req.Requests[i], appConfig)
 		dog.SetRequestID(imageReq.RequestID)
 
-		var versionData *v1.VersionData = nil
+		var versionData *v1.VersionData
 		if len(req.VersionName) > 0 {
 			versionData = &v1.VersionData{Version: req.VersionName, ReleaseNotes: req.ReleaseNotes}
 		}
@@ -352,8 +352,8 @@ func executeDeleteContainer(ctx context.Context, req *agent.ContainerDeleteReque
 	}
 }
 
-func executeVersionDeployCoreRequest(
-	ctx context.Context, req *agent.DeployRequestCore,
+func executeVersionDeployLegacyRequest(
+	ctx context.Context, req *agent.DeployRequestLegacy,
 	deploy DeployFunc, appConfig *config.CommonConfiguration) {
 	if req.RequestId == "" {
 		log.Println("Empty request")

@@ -25,7 +25,7 @@ export interface AgentCommand {
   deploy: VersionDeployRequest | undefined
   containerStatus: ContainerStatusRequest | undefined
   containerDelete: ContainerDeleteRequest | undefined
-  deployCore: DeployRequestCore | undefined
+  deployLegacy: DeployRequestLegacy | undefined
 }
 
 /**
@@ -170,7 +170,7 @@ export interface ContainerDeleteRequest {
   name: string
 }
 
-export interface DeployRequestCore {
+export interface DeployRequestLegacy {
   /** for early dogger logging */
   requestId: string
   json: string
@@ -225,9 +225,9 @@ export const AgentCommand = {
       object.containerDelete !== undefined && object.containerDelete !== null
         ? ContainerDeleteRequest.fromJSON(object.containerDelete)
         : undefined
-    message.deployCore =
-      object.deployCore !== undefined && object.deployCore !== null
-        ? DeployRequestCore.fromJSON(object.deployCore)
+    message.deployLegacy =
+      object.deployLegacy !== undefined && object.deployLegacy !== null
+        ? DeployRequestLegacy.fromJSON(object.deployLegacy)
         : undefined
     return message
   },
@@ -244,8 +244,8 @@ export const AgentCommand = {
       (obj.containerDelete = message.containerDelete
         ? ContainerDeleteRequest.toJSON(message.containerDelete)
         : undefined)
-    message.deployCore !== undefined &&
-      (obj.deployCore = message.deployCore ? DeployRequestCore.toJSON(message.deployCore) : undefined)
+    message.deployLegacy !== undefined &&
+      (obj.deployLegacy = message.deployLegacy ? DeployRequestLegacy.toJSON(message.deployLegacy) : undefined)
     return obj
   },
 }
@@ -612,17 +612,17 @@ export const ContainerDeleteRequest = {
   },
 }
 
-const baseDeployRequestCore: object = { requestId: '', json: '' }
+const baseDeployRequestLegacy: object = { requestId: '', json: '' }
 
-export const DeployRequestCore = {
-  fromJSON(object: any): DeployRequestCore {
-    const message = { ...baseDeployRequestCore } as DeployRequestCore
+export const DeployRequestLegacy = {
+  fromJSON(object: any): DeployRequestLegacy {
+    const message = { ...baseDeployRequestLegacy } as DeployRequestLegacy
     message.requestId = object.requestId !== undefined && object.requestId !== null ? String(object.requestId) : ''
     message.json = object.json !== undefined && object.json !== null ? String(object.json) : ''
     return message
   },
 
-  toJSON(message: DeployRequestCore): unknown {
+  toJSON(message: DeployRequestLegacy): unknown {
     const obj: any = {}
     message.requestId !== undefined && (obj.requestId = message.requestId)
     message.json !== undefined && (obj.json = message.json)
