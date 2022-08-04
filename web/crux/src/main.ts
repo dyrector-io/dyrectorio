@@ -70,15 +70,18 @@ async function bootstrap() {
   })
 
   // api
-  app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.GRPC,
-    options: {
-      package: ['crux'],
-      protoPath: [join(__dirname, '../proto/crux.proto')],
-      keepalive: { keepaliveTimeoutMs: HOUR_IN_MS },
-      ...apiOptions,
+  app.connectMicroservice<MicroserviceOptions>(
+    {
+      transport: Transport.GRPC,
+      options: {
+        package: ['crux'],
+        protoPath: [join(__dirname, '../proto/crux.proto')],
+        keepalive: { keepaliveTimeoutMs: HOUR_IN_MS },
+        ...apiOptions,
+      },
     },
-  }, { inheritAppConfig: true })
+    { inheritAppConfig: true },
+  )
 
   const logger: Logger = new Logger('NestBoostrap')
   await app.startAllMicroservices()

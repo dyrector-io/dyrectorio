@@ -9,15 +9,15 @@
   "token": "Token or password",
   "pat": "Personal access token",
   "accessToken": "Access token",
-  "url": "Url",
+  "url": "URL",
   "orgOrUser": "Organization name or username",
   "organization": "Organization name",
   "group": "Group name",
   "public": "Public",
   "private": "Private",
-  "selfManaged": "Self-managed Gitlab",
+  "selfManaged": "Self-managed GitLab",
   "saas": "SaaS",
-  "apiUrl": "Gitlab api url",
+  "apiUrl": "GitLab api URL",
 
   "tips": {
     "common": "Registries contain the images you can select to create new Products.",
@@ -29,8 +29,8 @@
 
   "type": {
     "v2": "V2 Registry",
-    "hub": "Docker HUB",
-    "gitlab": "Gitlab Registry",
+    "hub": "Docker Hub",
+    "gitlab": "GitLab Registry",
     "github": "GitHub Registry"
   },
 
