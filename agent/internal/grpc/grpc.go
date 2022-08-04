@@ -219,6 +219,7 @@ func grpcLoop(
 		if err == io.EOF {
 			log.Print("End of receiving")
 			grpcConn.Client = nil
+			time.Sleep(appConfig.DefaultTimeout)
 			continue
 		}
 		if err != nil {
@@ -385,12 +386,12 @@ func executeVersionDeployCoreRequest(
 	t1 := time.Now()
 
 	deployStatus := crux.DeploymentStatus_SUCCESSFUL
-	if err = deploy(ctx, dog, &deployImageRequest, nil); err != nil {
-		deployStatus = crux.DeploymentStatus_FAILED
-		dog.Write("Deployment failed " + err.Error())
-	} else {
+	if err = deploy(ctx, dog, &deployImageRequest, nil); err == nil {
 		dog.Write(fmt.Sprintf("Deployment took: %.2f seconds", time.Since(t1).Seconds()))
 		dog.Write("Deployment succeeded.")
+	} else {
+		deployStatus = crux.DeploymentStatus_FAILED
+		dog.Write("Deployment failed " + err.Error())
 	}
 
 	dog.WriteDeploymentStatus(deployStatus)
