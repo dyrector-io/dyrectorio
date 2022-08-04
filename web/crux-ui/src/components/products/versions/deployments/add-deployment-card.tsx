@@ -11,7 +11,6 @@ import { createDeploymentSchema } from '@app/validation'
 import { DyoApiError } from '@server/error-middleware'
 import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
-import React from 'react'
 import useSWR from 'swr'
 
 interface AddDeploymentCardProps {

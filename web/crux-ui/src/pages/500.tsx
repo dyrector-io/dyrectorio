@@ -7,7 +7,6 @@ import { API_STATUS } from '@app/routes'
 import { fetcher } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
-import React from 'react'
 import useSWR from 'swr'
 
 const Page500 = () => {

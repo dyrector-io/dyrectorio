@@ -52,7 +52,7 @@ export const createProductSchema = updateProductSchema.concat(
 )
 
 const registryCredentialRole = yup.string().when(['type', '_private'], {
-  is: (type, _private) => ['gitlab', 'github'].includes(type) || (type === 'v2' && _private),
+  is: (type, _private) => ['gitlab', 'github'].includes(type) || ((type === 'v2' || type === 'google') && _private),
   then: yup.string().required(),
 })
 
@@ -66,7 +66,7 @@ export const registrySchema = yup.object().shape({
     then: yup.string().required(),
   }),
   url: yup.string().when(['type', 'selfManaged'], {
-    is: (type, selfManaged) => type === 'v2' || (type === 'gitlab' && selfManaged),
+    is: (type, selfManaged) => type === 'v2' || type === 'google' || (type === 'gitlab' && selfManaged),
     then: yup.string().required(),
   }),
   apiUrl: yup.string().when(['type', 'selfManaged'], {

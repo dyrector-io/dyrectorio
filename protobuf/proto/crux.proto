@@ -308,6 +308,12 @@ message GithubRegistryDetails {
   string urlPrefix = 102;
 }
 
+message GoogleRegistryDetails {
+  string url = 100;
+  optional string user = 101;
+  optional string token = 102;
+}
+
 message CreateRegistryRequest {
   string accessedBy = 2;
 
@@ -320,6 +326,7 @@ message CreateRegistryRequest {
     V2RegistryDetails v2 = 201;
     GitlabRegistryDetails gitlab = 202;
     GithubRegistryDetails github = 203;
+    GoogleRegistryDetails google = 204;
   }
 }
 
@@ -336,6 +343,7 @@ message UpdateRegistryRequest {
     V2RegistryDetails v2 = 201;
     GitlabRegistryDetails gitlab = 202;
     GithubRegistryDetails github = 203;
+    GoogleRegistryDetails google = 204;
   }
 }
 
@@ -352,6 +360,7 @@ message RegistryDetailsResponse {
     V2RegistryDetails v2 = 201;
     GitlabRegistryDetails gitlab = 202;
     GithubRegistryDetails github = 203;
+    GoogleRegistryDetails google = 204;
   }
 }
 
@@ -361,6 +370,7 @@ enum RegistryType {
   HUB = 2;
   GITLAB = 3;
   GITHUB = 4;
+  GOOGLE = 5;
 }
 
 // VERSION

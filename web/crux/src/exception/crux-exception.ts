@@ -18,7 +18,7 @@ export class BaseGrpcException extends RpcException {
       code: status,
       message: JSON.stringify({
         message,
-        details: props ? props : undefined,
+        details: props ?? undefined,
       }),
     }
   }

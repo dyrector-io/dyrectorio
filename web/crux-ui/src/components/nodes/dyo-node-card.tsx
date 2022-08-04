@@ -4,7 +4,6 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { DyoNode } from '@app/models'
 import clsx from 'clsx'
-import React from 'react'
 import NodeStatusIndicator from './node-status-indicator'
 
 interface DyoNodeCardProps extends Omit<DyoCardProps, 'children'> {

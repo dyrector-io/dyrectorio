@@ -180,6 +180,7 @@ export enum RegistryType {
   HUB = 2,
   GITLAB = 3,
   GITHUB = 4,
+  GOOGLE = 5,
   UNRECOGNIZED = -1,
 }
 
@@ -200,6 +201,9 @@ export function registryTypeFromJSON(object: any): RegistryType {
     case 4:
     case 'GITHUB':
       return RegistryType.GITHUB
+    case 5:
+    case 'GOOGLE':
+      return RegistryType.GOOGLE
     case -1:
     case 'UNRECOGNIZED':
     default:
@@ -219,6 +223,8 @@ export function registryTypeToJSON(object: RegistryType): string {
       return 'GITLAB'
     case RegistryType.GITHUB:
       return 'GITHUB'
+    case RegistryType.GOOGLE:
+      return 'GOOGLE'
     default:
       return 'UNKNOWN'
   }
@@ -649,6 +655,12 @@ export interface GithubRegistryDetails {
   urlPrefix: string
 }
 
+export interface GoogleRegistryDetails {
+  url: string
+  user?: string | undefined
+  token?: string | undefined
+}
+
 export interface CreateRegistryRequest {
   accessedBy: string
   name: string
@@ -658,6 +670,7 @@ export interface CreateRegistryRequest {
   v2: V2RegistryDetails | undefined
   gitlab: GitlabRegistryDetails | undefined
   github: GithubRegistryDetails | undefined
+  google: GoogleRegistryDetails | undefined
 }
 
 export interface UpdateRegistryRequest {
@@ -670,6 +683,7 @@ export interface UpdateRegistryRequest {
   v2: V2RegistryDetails | undefined
   gitlab: GitlabRegistryDetails | undefined
   github: GithubRegistryDetails | undefined
+  google: GoogleRegistryDetails | undefined
 }
 
 export interface RegistryDetailsResponse {
@@ -682,6 +696,7 @@ export interface RegistryDetailsResponse {
   v2: V2RegistryDetails | undefined
   gitlab: GitlabRegistryDetails | undefined
   github: GithubRegistryDetails | undefined
+  google: GoogleRegistryDetails | undefined
 }
 
 export interface CreateVersionRequest {
@@ -2942,6 +2957,71 @@ export const GithubRegistryDetails = {
   },
 }
 
+const baseGoogleRegistryDetails: object = { url: '' }
+
+export const GoogleRegistryDetails = {
+  encode(message: GoogleRegistryDetails, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.url !== '') {
+      writer.uint32(802).string(message.url)
+    }
+    if (message.user !== undefined) {
+      writer.uint32(810).string(message.user)
+    }
+    if (message.token !== undefined) {
+      writer.uint32(818).string(message.token)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): GoogleRegistryDetails {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = { ...baseGoogleRegistryDetails } as GoogleRegistryDetails
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 100:
+          message.url = reader.string()
+          break
+        case 101:
+          message.user = reader.string()
+          break
+        case 102:
+          message.token = reader.string()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): GoogleRegistryDetails {
+    const message = { ...baseGoogleRegistryDetails } as GoogleRegistryDetails
+    message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
+    message.user = object.user !== undefined && object.user !== null ? String(object.user) : undefined
+    message.token = object.token !== undefined && object.token !== null ? String(object.token) : undefined
+    return message
+  },
+
+  toJSON(message: GoogleRegistryDetails): unknown {
+    const obj: any = {}
+    message.url !== undefined && (obj.url = message.url)
+    message.user !== undefined && (obj.user = message.user)
+    message.token !== undefined && (obj.token = message.token)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<GoogleRegistryDetails>, I>>(object: I): GoogleRegistryDetails {
+    const message = { ...baseGoogleRegistryDetails } as GoogleRegistryDetails
+    message.url = object.url ?? ''
+    message.user = object.user ?? undefined
+    message.token = object.token ?? undefined
+    return message
+  },
+}
+
 const baseCreateRegistryRequest: object = { accessedBy: '', name: '' }
 
 export const CreateRegistryRequest = {
@@ -2969,6 +3049,9 @@ export const CreateRegistryRequest = {
     }
     if (message.github !== undefined) {
       GithubRegistryDetails.encode(message.github, writer.uint32(1626).fork()).ldelim()
+    }
+    if (message.google !== undefined) {
+      GoogleRegistryDetails.encode(message.google, writer.uint32(1634).fork()).ldelim()
     }
     return writer
   },
@@ -3004,6 +3087,9 @@ export const CreateRegistryRequest = {
         case 203:
           message.github = GithubRegistryDetails.decode(reader, reader.uint32())
           break
+        case 204:
+          message.google = GoogleRegistryDetails.decode(reader, reader.uint32())
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -3025,6 +3111,8 @@ export const CreateRegistryRequest = {
       object.gitlab !== undefined && object.gitlab !== null ? GitlabRegistryDetails.fromJSON(object.gitlab) : undefined
     message.github =
       object.github !== undefined && object.github !== null ? GithubRegistryDetails.fromJSON(object.github) : undefined
+    message.google =
+      object.google !== undefined && object.google !== null ? GoogleRegistryDetails.fromJSON(object.google) : undefined
     return message
   },
 
@@ -3040,6 +3128,8 @@ export const CreateRegistryRequest = {
       (obj.gitlab = message.gitlab ? GitlabRegistryDetails.toJSON(message.gitlab) : undefined)
     message.github !== undefined &&
       (obj.github = message.github ? GithubRegistryDetails.toJSON(message.github) : undefined)
+    message.google !== undefined &&
+      (obj.google = message.google ? GoogleRegistryDetails.toJSON(message.google) : undefined)
     return obj
   },
 
@@ -3059,6 +3149,10 @@ export const CreateRegistryRequest = {
     message.github =
       object.github !== undefined && object.github !== null
         ? GithubRegistryDetails.fromPartial(object.github)
+        : undefined
+    message.google =
+      object.google !== undefined && object.google !== null
+        ? GoogleRegistryDetails.fromPartial(object.google)
         : undefined
     return message
   },
@@ -3094,6 +3188,9 @@ export const UpdateRegistryRequest = {
     }
     if (message.github !== undefined) {
       GithubRegistryDetails.encode(message.github, writer.uint32(1626).fork()).ldelim()
+    }
+    if (message.google !== undefined) {
+      GoogleRegistryDetails.encode(message.google, writer.uint32(1634).fork()).ldelim()
     }
     return writer
   },
@@ -3132,6 +3229,9 @@ export const UpdateRegistryRequest = {
         case 203:
           message.github = GithubRegistryDetails.decode(reader, reader.uint32())
           break
+        case 204:
+          message.google = GoogleRegistryDetails.decode(reader, reader.uint32())
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -3154,6 +3254,8 @@ export const UpdateRegistryRequest = {
       object.gitlab !== undefined && object.gitlab !== null ? GitlabRegistryDetails.fromJSON(object.gitlab) : undefined
     message.github =
       object.github !== undefined && object.github !== null ? GithubRegistryDetails.fromJSON(object.github) : undefined
+    message.google =
+      object.google !== undefined && object.google !== null ? GoogleRegistryDetails.fromJSON(object.google) : undefined
     return message
   },
 
@@ -3170,6 +3272,8 @@ export const UpdateRegistryRequest = {
       (obj.gitlab = message.gitlab ? GitlabRegistryDetails.toJSON(message.gitlab) : undefined)
     message.github !== undefined &&
       (obj.github = message.github ? GithubRegistryDetails.toJSON(message.github) : undefined)
+    message.google !== undefined &&
+      (obj.google = message.google ? GoogleRegistryDetails.toJSON(message.google) : undefined)
     return obj
   },
 
@@ -3190,6 +3294,10 @@ export const UpdateRegistryRequest = {
     message.github =
       object.github !== undefined && object.github !== null
         ? GithubRegistryDetails.fromPartial(object.github)
+        : undefined
+    message.google =
+      object.google !== undefined && object.google !== null
+        ? GoogleRegistryDetails.fromPartial(object.google)
         : undefined
     return message
   },
@@ -3225,6 +3333,9 @@ export const RegistryDetailsResponse = {
     }
     if (message.github !== undefined) {
       GithubRegistryDetails.encode(message.github, writer.uint32(1626).fork()).ldelim()
+    }
+    if (message.google !== undefined) {
+      GoogleRegistryDetails.encode(message.google, writer.uint32(1634).fork()).ldelim()
     }
     return writer
   },
@@ -3265,6 +3376,9 @@ export const RegistryDetailsResponse = {
         case 203:
           message.github = GithubRegistryDetails.decode(reader, reader.uint32())
           break
+        case 204:
+          message.google = GoogleRegistryDetails.decode(reader, reader.uint32())
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -3290,6 +3404,8 @@ export const RegistryDetailsResponse = {
       object.gitlab !== undefined && object.gitlab !== null ? GitlabRegistryDetails.fromJSON(object.gitlab) : undefined
     message.github =
       object.github !== undefined && object.github !== null ? GithubRegistryDetails.fromJSON(object.github) : undefined
+    message.google =
+      object.google !== undefined && object.google !== null ? GoogleRegistryDetails.fromJSON(object.google) : undefined
     return message
   },
 
@@ -3306,6 +3422,8 @@ export const RegistryDetailsResponse = {
       (obj.gitlab = message.gitlab ? GitlabRegistryDetails.toJSON(message.gitlab) : undefined)
     message.github !== undefined &&
       (obj.github = message.github ? GithubRegistryDetails.toJSON(message.github) : undefined)
+    message.google !== undefined &&
+      (obj.google = message.google ? GoogleRegistryDetails.toJSON(message.google) : undefined)
     return obj
   },
 
@@ -3329,6 +3447,10 @@ export const RegistryDetailsResponse = {
     message.github =
       object.github !== undefined && object.github !== null
         ? GithubRegistryDetails.fromPartial(object.github)
+        : undefined
+    message.google =
+      object.google !== undefined && object.google !== null
+        ? GoogleRegistryDetails.fromPartial(object.google)
         : undefined
     return message
   },

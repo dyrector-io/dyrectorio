@@ -3,7 +3,7 @@ import { DyoInput } from '@app/elements/dyo-input'
 import { UniqueKeyValue } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import React, { useEffect, useReducer } from 'react'
+import { useEffect, useReducer } from 'react'
 import { v4 as uuid } from 'uuid'
 
 interface KeyValueInputProps {

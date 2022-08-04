@@ -3,6 +3,7 @@ import { Identity } from '@ory/kratos-client'
 import { Crux } from '@server/crux/crux'
 import { GithubRegistryClient } from './github-api-client'
 import { GitlabRegistryClient } from './gitlab-api-client'
+import { GoogleRegistryClient } from './google-api-client'
 import HubApiClient, { HubApiCache } from './hub-api-client'
 import { RegistryApiClient } from './registry-api-client'
 import RegistryV2ApiClient from './v2-api-client'
@@ -72,7 +73,8 @@ export class RegistryConnections {
             username: registry.user,
             password: registry.token,
           })
-        : new GitlabRegistryClient(
+        : registry.type === 'gitlab'
+        ? new GitlabRegistryClient(
             registry.urlPrefix,
             {
               username: registry.user,
@@ -84,6 +86,15 @@ export class RegistryConnections {
                   registryUrl: registry.url,
                 }
               : REGISTRY_GITLAB_URLS,
+          )
+        : new GoogleRegistryClient(
+            registry.url,
+            registry._private
+              ? {
+                  username: registry.user,
+                  password: registry.token,
+                }
+              : null,
           )
 
     this.clients.set(registry.id, client)

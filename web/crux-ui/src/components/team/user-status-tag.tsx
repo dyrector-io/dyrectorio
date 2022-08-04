@@ -1,6 +1,5 @@
 import DyoTag from '@app/elements/dyo-tag'
 import { UserStatus } from '@app/models'
-import React from 'react'
 
 interface UserStatusTagProps {
   className?: string

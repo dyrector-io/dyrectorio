@@ -16,7 +16,7 @@ import { cruxFromContext } from '@server/crux/crux'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
-import React, { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 interface AuditLogPageProps {
   auditLog: AuditLog[]
