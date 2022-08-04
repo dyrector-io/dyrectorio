@@ -48,11 +48,11 @@ const setItemsError = () => {
   throw new Error('Can not set filter items, when data was explicitly provided.')
 }
 
+export type PropertyValuesOf<Item> = (item: Item) => string[]
+
 export type TextFilter = {
   text: string
 }
-
-export type PropertyValuesOf<Item> = (item: Item) => string[]
 
 export const textFilterFor =
   <Item>(propertiesOf: PropertyValuesOf<Item>): FilterFunction<Item, TextFilter> =>
@@ -65,5 +65,28 @@ export const textFilterFor =
     return items.filter(it => {
       const properties = propertiesOf(it)
       return properties.filter(it => !!it && it.toLowerCase().includes(text)).length > 0
+    })
+  }
+
+export type DateRangeFilter = {
+  dateRange: [Date, Date]
+}
+
+export const dateRangeFilterFor =
+  <Item>(propertiesOf: PropertyValuesOf<Item>): FilterFunction<Item, DateRangeFilter> =>
+  (items: Item[], filter: DateRangeFilter) => {
+    if (filter.dateRange[0] === null && filter.dateRange[1] === null) {
+      return items
+    }
+
+    return items.filter(it => {
+      const properties = propertiesOf(it)
+      return (
+        properties.filter(
+          i =>
+            (filter.dateRange[0] === null || new Date(i) >= filter.dateRange[0]) &&
+            (filter.dateRange[1] === null || new Date(i) <= filter.dateRange[1]),
+        ).length > 0
+      )
     })
   }
