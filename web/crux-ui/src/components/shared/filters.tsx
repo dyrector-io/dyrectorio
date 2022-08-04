@@ -21,7 +21,7 @@ const Filters = (props: FiltersProps) => {
       </DyoHeading>
 
       <div className="flex items-center mt-4">
-        <DyoInput className="w-2/3" placeholder={t('common:search')} onChange={e => setFilter(e.target.value)} />
+        <DyoInput className="w-2/3" placeholder={t('common:search')} onChange={e => setFilter(e.target.value)} grow />
 
         {children}
       </div>
