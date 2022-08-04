@@ -1,6 +1,5 @@
 import DyoTag from '@app/elements/dyo-tag'
 import { ContainerStatus } from '@app/models'
-import React from 'react'
 
 interface ContainerStatusTagProps {
   className?: string

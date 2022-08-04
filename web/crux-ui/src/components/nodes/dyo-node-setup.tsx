@@ -11,7 +11,6 @@ import { DyoNodeDetails, DyoNodeInstall, NodeType, NODE_TYPE_VALUES } from '@app
 import { nodeSetupApiUrl } from '@app/routes'
 import { sendForm, writeToClipboard } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
-import React from 'react'
 import DyoNodeConnectionInfo from './dyo-node-connection-info'
 
 interface DyoNodeSetupProps {

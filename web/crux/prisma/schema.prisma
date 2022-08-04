@@ -272,6 +272,7 @@ enum RegistryTypeEnum {
   hub
   gitlab
   github
+  google
 }
 
 enum NodeTypeEnum {

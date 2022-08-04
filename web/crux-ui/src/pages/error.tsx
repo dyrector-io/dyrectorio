@@ -8,7 +8,6 @@ import kratos from '@server/kratos'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
-import React from 'react'
 
 interface Error {
   message?: string

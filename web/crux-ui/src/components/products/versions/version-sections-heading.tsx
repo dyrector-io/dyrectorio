@@ -1,6 +1,5 @@
 import { DyoButton } from '@app/elements/dyo-button'
 import useTranslation from 'next-translate/useTranslation'
-import React from 'react'
 import { VersionAddSectionState, VersionSectionsState } from './version-sections'
 
 interface VersionSectionsHeadingProps {

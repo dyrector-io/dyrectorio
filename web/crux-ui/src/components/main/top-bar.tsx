@@ -5,7 +5,7 @@ import { roleToText, selectedTeamOf, UserMeta } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
-import React, { useState } from 'react'
+import { useState } from 'react'
 import TeamSelectionCard from './team-selection-card'
 
 interface TopbarProps {

@@ -18,20 +18,24 @@
   "selfManaged": "Self-managed Gitlab",
   "saas": "SaaS",
   "apiUrl": "Gitlab api url",
+  "keyFile": "Key file",
+  "privateKey": "Private key",
 
   "tips": {
     "common": "Registries contain the images you can select to create new Products.",
     "v2": "Here you can add Docker API V2 compatible registries.",
     "hub": "Here you're able to add public Docker Hub registries.",
     "gitlab": "Add your GitLab Registry.",
-    "github": "Add your GitHub Registry."
+    "github": "Add your GitHub Registry.",
+    "google": "Add your Google Registry."
   },
 
   "type": {
     "v2": "V2 Registry",
     "hub": "Docker HUB",
     "gitlab": "Gitlab Registry",
-    "github": "GitHub Registry"
+    "github": "GitHub Registry",
+    "google": "Google Registry"
   },
 
   "deleteDescription": "If you proceed, you will lose all your data related to {{name}}. This action is not revocable.",

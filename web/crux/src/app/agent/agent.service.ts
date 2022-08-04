@@ -92,7 +92,12 @@ export class AgentService {
         sub: nodeId,
       }
 
-      installer = new AgentInstaller(nodeId, this.jwtService.sign(token), now + AgentService.SCRIPT_EXPIRATION, nodeType)
+      installer = new AgentInstaller(
+        nodeId,
+        this.jwtService.sign(token),
+        now + AgentService.SCRIPT_EXPIRATION,
+        nodeType,
+      )
       this.installers.set(nodeId, installer)
     }
 

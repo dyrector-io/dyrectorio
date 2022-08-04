@@ -1,6 +1,5 @@
 import DyoTag from '@app/elements/dyo-tag'
 import { DeploymentStatus } from '@app/models'
-import React from 'react'
 
 interface DeploymentStatusTagProps {
   className?: string

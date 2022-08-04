@@ -4,7 +4,6 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
-import React from 'react'
 
 const Page404 = () => {
   const { t } = useTranslation('404')

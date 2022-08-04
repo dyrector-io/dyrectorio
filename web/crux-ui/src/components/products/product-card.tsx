@@ -6,7 +6,6 @@ import { utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
-import React from 'react'
 
 interface ProductCardProps {
   className?: string
@@ -23,9 +22,7 @@ const ProductCard = (props: ProductCardProps) => {
     <>
       <DyoCard className={clsx(props.className ?? 'p-6', 'flex flex-col flex-grow')}>
         <div className="flex flex-col overflow-hidden">
-
           <div className="flex flex-row">
-
             <Image
               className={clsx(onClick ? 'cursor-pointer' : null)}
               src="/product_default.svg"
@@ -48,13 +45,10 @@ const ProductCard = (props: ProductCardProps) => {
 
               <DyoTag className="ml-auto">{t(product.type).toUpperCase()}</DyoTag>
             </div>
-
           </div>
 
           <p className="text-md text-bright mt-4 overflow-y-auto">{product.description}</p>
-
         </div>
-
       </DyoCard>
     </>
   )

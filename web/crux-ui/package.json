@@ -35,6 +35,7 @@
     "axios": "^0.27.2",
     "clsx": "^1.1.1",
     "formik": "^2.2.9",
+    "google-auth-library": "^8.1.1",
     "google-protobuf": "^3.15.8",
     "next": "^12.1.4",
     "next-translate": "^1.0.7",

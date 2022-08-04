@@ -21,7 +21,7 @@ import { EmailBuilder } from 'src/builders/email.builder'
     KratosService,
     TeamMapper,
     InterceptorGrpcHelperProvider,
-    EmailBuilder
+    EmailBuilder,
   ],
 })
 export class TeamModule {}
