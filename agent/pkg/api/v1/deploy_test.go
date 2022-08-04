@@ -22,10 +22,7 @@ func TestInstanceConfigMarshalEmpty(t *testing.T) {
 		t.Error("Instance config marshal test error:" + err.Error())
 	}
 
-	// base64 content, empty object
-	// {"mountPath":"","containerPreName":"","registry":"","repositoryPreName":""}
-	//nolint
-	assert.Equal(t, []byte(`"eyJjb250YWluZXJQcmVOYW1lIjoiIiwibW91bnRQYXRoIjoiIiwibmFtZSI6IiIsInJlZ2lzdHJ5IjoiIiwicmVwb3NpdG9yeVByZU5hbWUiOiIiLCJ1c2VTaGFyZWRFbnZzIjpmYWxzZX0="`), res)
+	assert.Equal(t, []byte(`{"containerPreName":"","mountPath":"","name":"","registry":"","repositoryPreName":"","useSharedEnvs":false}`), res)
 	assert.Nil(t, err)
 }
 
@@ -38,9 +35,7 @@ func TestInstanceConfigMarshalValid(t *testing.T) {
 		t.Error("instance config marshal test error: " + err.Error())
 	}
 
-	//nolint
-	assert.Equal(t, []byte(`"eyJjb250YWluZXJQcmVOYW1lIjoicHJlLW5hbWUiLCJtb3VudFBhdGgiOiIiLCJuYW1lIjoiIiwicmVnaXN0cnkiOiIiLCJyZXBvc2l0b3J5UHJlTmFtZSI6IiIsInVzZVNoYXJlZEVudnMiOmZhbHNlfQ=="`),
-		res)
+	assert.Equal(t, []byte(`{"containerPreName":"pre-name","mountPath":"","name":"","registry":"","repositoryPreName":"","useSharedEnvs":false}`), res)
 	assert.Nil(t, err)
 }
 
@@ -48,8 +43,7 @@ func TestInstanceConfigUnmarshalValid(t *testing.T) {
 	var res v1.InstanceConfig
 
 	inStr := `{"containerPreName":"pre-name"}`
-	encoded := base64.StdEncoding.EncodeToString([]byte(inStr))
-	err := json.Unmarshal([]byte(fmt.Sprintf("%q", encoded)), &res)
+	err := json.Unmarshal([]byte(inStr), &res)
 
 	if err != nil {
 		t.Error("Instance config test unmarshal error: " + err.Error())
@@ -66,31 +60,16 @@ func TestInstanceConfigBadBrackets(t *testing.T) {
 			"containerPreName":"pre-name",
 			"environment": "THIS|BAD_EXAMPLE"
 		}`
-	encoded := base64.StdEncoding.EncodeToString([]byte(inStr))
-	err := json.Unmarshal([]byte(fmt.Sprintf("%q", encoded)), &res)
+	err := json.Unmarshal([]byte(inStr), &res)
 
 	assert.IsType(t, &json.UnmarshalTypeError{}, err)
-}
-
-func TestInstanceConfigInvalidBase64(t *testing.T) {
-	var res v1.InstanceConfig
-
-	inStr := `{
-			"containerPreName":"pre-name"
-		}`
-	encoded := base64.StdEncoding.EncodeToString([]byte(inStr))
-	encoded += "ezyx"
-	err := json.Unmarshal([]byte(fmt.Sprintf("%q", encoded)), &res)
-
-	assert.IsType(t, base64.CorruptInputError(0), err)
 }
 
 func TestContainerConfigUnmarshalValid(t *testing.T) {
 	var res v1.ContainerConfig
 
 	inStr := `{"container":"nginx"}`
-	encoded := base64.StdEncoding.EncodeToString([]byte(inStr))
-	err := json.Unmarshal([]byte(fmt.Sprintf("%q", encoded)), &res)
+	err := json.Unmarshal([]byte(inStr), &res)
 
 	if err != nil {
 		t.Error("Container config test unmarshal error: " + err.Error())
@@ -98,16 +77,6 @@ func TestContainerConfigUnmarshalValid(t *testing.T) {
 
 	assert.Equal(t, "nginx", res.Container)
 	assert.Nil(t, err)
-}
-
-func TestRuntimeConfigUnmarshalValid(t *testing.T) {
-	var res v1.Base64JSONBytes
-
-	inStr := `"eyJjb250YWluZXIiOiJuZ2lueCJ9"`
-	err := json.Unmarshal([]byte(inStr), &res)
-
-	assert.Nil(t, err)
-	assert.Equal(t, `{"container":"nginx"}`, string(res))
 }
 
 func TestRestartPolicyMarshalEmptyLoadDefault(t *testing.T) {
@@ -141,10 +110,10 @@ func TestRestartPolicyUnmarshalEmpty(t *testing.T) {
 }
 
 func TestRestartPolicyUnmarshalProvidedUnlessStopped(t *testing.T) {
-	strIn := base64.StdEncoding.EncodeToString([]byte(`{"restartPolicy": "unless-stopped"}`))
+	strIn := `{"restartPolicy": "unless-stopped"}`
 
 	var res v1.ContainerConfig
-	bytes := []byte((fmt.Sprintf("%q", strIn)))
+	bytes := []byte(strIn)
 	err := json.Unmarshal(bytes, &res)
 
 	if err != nil {
@@ -156,12 +125,12 @@ func TestRestartPolicyUnmarshalProvidedUnlessStopped(t *testing.T) {
 }
 
 func TestRestartPolicyUnmarshalProvidedInvalid(t *testing.T) {
-	strIn := base64.StdEncoding.EncodeToString([]byte(`{
+	strIn := `{
 		"restartPolicy": "uzenetleventenek"
-	}`))
+	}`
 
 	var res v1.ContainerConfig
-	err := json.Unmarshal([]byte(fmt.Sprintf("%q", strIn)), &res)
+	err := json.Unmarshal([]byte(strIn), &res)
 
 	assert.Equal(t, v1.RestartPolicyName(""), res.RestartPolicy)
 	assert.IsType(t, &v1.ErrRestartPolicyUnmarshalInvalid{}, err)
@@ -181,12 +150,12 @@ func TestRestartPolicyUnmarshalNumberError(t *testing.T) {
 }
 
 func TestRestartPolicyUnmarshalProvidedNotProvided(t *testing.T) {
-	strIn := base64.StdEncoding.EncodeToString([]byte(`{
+	strIn := `{
 		"containerPreName": "anything"
-	}`))
+	}`
 
 	var res v1.ContainerConfig
-	err := json.Unmarshal([]byte(fmt.Sprintf("%q", strIn)), &res)
+	err := json.Unmarshal([]byte(strIn), &res)
 	if err != nil {
 		t.Error(err)
 	}
