@@ -17,7 +17,7 @@
     "prebuild": "rimraf dist",
     "build": "nest build",
     "build:proto": "find proto -name '*.proto' -exec protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_opt=nestJs=true --ts_proto_opt=addNestjsRestParameter=true --ts_proto_opt=outputJsonMethods=true --ts_proto_opt=addGrpcMetadata=true --ts_proto_out=./src/proto/ {} \\;",
-    "format": "prettier --write \"src/**/*.ts\"",
+    "format": "prettier --write \"src/**/*.ts\" \"prisma/seeds/**/*.ts\"",
     "start": "nest start --debug --watch",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
