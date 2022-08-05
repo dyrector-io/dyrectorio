@@ -1,7 +1,7 @@
 //go:build unit
 // +build unit
 
-package container_builder_test
+package containerbuilder_test
 
 import (
 	"testing"

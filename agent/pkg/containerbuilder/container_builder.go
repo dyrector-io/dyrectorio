@@ -1,4 +1,4 @@
-package container_builder
+package containerbuilder
 
 import (
 	"context"
@@ -196,7 +196,7 @@ func (dc *DockerContainerBuilder) WithPostStartHooks(hooks []LifecycleFunc) *Doc
 	return dc
 }
 
-func (dc *DockerContainerBuilder) GetContainerId() string {
+func (dc *DockerContainerBuilder) GetContainerID() string {
 	return dc.containerID
 }
 
@@ -214,7 +214,7 @@ func (dc *DockerContainerBuilder) Create(ctx context.Context) *DockerContainerBu
 	var containerCreated types.Container
 
 	// todo: fetch remote sha hash of image if not matching -> pull
-	if err = pullImage(dc.logger, dc.imageWithTag, dc.registryAuth); err != nil {
+	if err = pullImage(*dc.logger, dc.imageWithTag, dc.registryAuth); err != nil {
 		if err != nil && err.Error() != "EOF" {
 			logWrite(dc, fmt.Sprintf("Image pull error: %s", err.Error()))
 		}
@@ -261,12 +261,7 @@ func (dc *DockerContainerBuilder) Create(ctx context.Context) *DockerContainerBu
 		containerConfig.Hostname = dc.containerName
 	}
 
-	for _, hook := range dc.hooksPreCreate {
-		err := hook(dc.ctx, dc.client, dc.containerName, nil, dc.mountList, dc.logger)
-		if err != nil {
-			logWrite(dc, fmt.Sprintln("Container pre-create hook error: ", err))
-		}
-	}
+	execHooks(dc, dc.hooksPreCreate)
 
 	containerCreateResp, err := cli.ContainerCreate(ctx, containerConfig, hostConfig, nil, nil, name)
 
@@ -278,12 +273,7 @@ func (dc *DockerContainerBuilder) Create(ctx context.Context) *DockerContainerBu
 		Filters: filters.NewArgs(filters.KeyValuePair{Key: "id", Value: containerCreateResp.ID}),
 	})
 
-	for _, hook := range dc.hooksPostCreate {
-		err := hook(dc.ctx, dc.client, dc.containerName, &containerCreateResp.ID, dc.mountList, dc.logger)
-		if err != nil {
-			logWrite(dc, fmt.Sprintln("Container post-create hook error: ", err))
-		}
-	}
+	execHooks(dc, dc.hooksPostCreate)
 
 	if err != nil {
 		logWrite(dc, fmt.Sprintf("Container list failed: %s", err.Error()))
@@ -300,21 +290,11 @@ func (dc *DockerContainerBuilder) Create(ctx context.Context) *DockerContainerBu
 }
 
 func (dc *DockerContainerBuilder) Start() (bool, error) {
-	for _, hook := range dc.hooksPreStart {
-		err := hook(dc.ctx, dc.client, dc.containerName, &dc.containerID, dc.mountList, dc.logger)
-		if err != nil {
-			logWrite(dc, fmt.Sprintln("Container pre-start hook error: ", err))
-		}
-	}
+	execHooks(dc, dc.hooksPreStart)
 
 	err := dc.client.ContainerStart(dc.ctx, dc.containerID, types.ContainerStartOptions{})
 
-	for _, hook := range dc.hooksPostStart {
-		err := hook(dc.ctx, dc.client, dc.containerName, &dc.containerID, dc.mountList, dc.logger)
-		if err != nil {
-			logWrite(dc, fmt.Sprintln("Container post-start hook error: ", err))
-		}
-	}
+	execHooks(dc, dc.hooksPostStart)
 
 	if err != nil {
 		log.Println(err)
@@ -322,6 +302,15 @@ func (dc *DockerContainerBuilder) Start() (bool, error) {
 	} else {
 		log.Printf("Started container: %s", dc.containerID)
 		return true, nil
+	}
+}
+
+func execHooks(dc *DockerContainerBuilder, hooks []LifecycleFunc) {
+	for _, hook := range hooks {
+		err := hook(dc.ctx, dc.client, dc.containerName, &dc.containerID, dc.mountList, dc.logger)
+		if err != nil {
+			logWrite(dc, fmt.Sprintln("Container post-start hook error: ", err))
+		}
 	}
 }
 
@@ -371,6 +360,9 @@ func getPortSet(natPortBindings map[nat.Port][]nat.PortBinding) nat.PortSet {
 
 func logWrite(dc *DockerContainerBuilder, message string) {
 	if dc.logger != nil {
-		(*dc.logger).WriteString(message)
+		_, err := (*dc.logger).WriteString(message)
+		if err != nil {
+			fmt.Printf("Failed to write log: %s", err.Error())
+		}
 	}
 }

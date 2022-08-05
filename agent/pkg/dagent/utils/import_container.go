@@ -40,12 +40,12 @@ func spawnInitContainer(
 		return err
 	}
 
-	builder := builder.NewDockerBuilder(cli)
+	build := builder.NewDockerBuilder(cli)
 
 	importContainerName := util.JoinV("-", name, "import")
 	targetVolume := mount.Mount{Type: mount.TypeBind, Source: mountList[targetVolumeIndex].Source, Target: "/data/output"}
 
-	builder.
+	build.
 		WithImage(cfg.ImportContainerImage).
 		WithCmd(strings.Split(importContainer.Command, " ")).
 		WithName(importContainerName).
@@ -55,7 +55,7 @@ func spawnInitContainer(
 		WithLogger(dog).
 		Create(ctx)
 
-	_, err = builder.Start()
+	_, err = build.Start()
 
 	if err != nil {
 		return err
@@ -63,7 +63,7 @@ func spawnInitContainer(
 
 	dog.WriteDeploymentStatus(crux.DeploymentStatus_IN_PROGRESS, "Waiting for import container to finish")
 
-	containerID := builder.GetContainerId()
+	containerID := build.GetContainerID()
 	cli.ContainerWait(ctx, containerID, container.WaitConditionNextExit)
 	cont, err := cli.ContainerInspect(ctx, containerID)
 

@@ -342,9 +342,9 @@ func DeployImage(ctx context.Context,
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	checkDockerError(err)
 
-	b := builder.NewDockerBuilder(cli)
+	build := builder.NewDockerBuilder(cli)
 
-	b.WithImage(image.String()).
+	build.WithImage(image.String()).
 		WithName(containerName).
 		WithMountPoints(mountList).
 		WithPortBindings(deployImageRequest.ContainerConfig.Ports).
@@ -360,22 +360,11 @@ func DeployImage(ctx context.Context,
 		WithCmd(deployImageRequest.ContainerConfig.Args).
 		WithLogger(dog)
 
-	if deployImageRequest.ContainerConfig.ImportContainer != nil {
-		b.WithPreStartHooks([]builder.LifecycleFunc{
-			func(ctx context.Context, client *client.Client, containerName string, containerId *string, mountList []mount.Mount, logger *io.StringWriter) error {
-				err := spawnInitContainer(client, ctx, containerName, mountList, deployImageRequest.ContainerConfig.ImportContainer, dog, cfg)
-				if err != nil {
-					log.Printf("Failed to spawn init container: %v", err)
-					return err
-				}
-				return nil
-			},
-		})
-	}
+	WithImportContainer(build, deployImageRequest.ContainerConfig.ImportContainer, dog, cfg)
 
-	b.Create(ctx)
+	build.Create(ctx)
 
-	_, err = b.Start()
+	_, err = build.Start()
 
 	if err != nil {
 		dog.Write(err.Error())
@@ -390,6 +379,27 @@ func DeployImage(ctx context.Context,
 	}
 
 	return err
+}
+
+func WithImportContainer(dc *builder.DockerContainerBuilder, importConfig *v1.ImportContainer,
+	dog *dogger.DeploymentLogger, cfg *config.Configuration) {
+	if importConfig != nil {
+		dc.WithPreStartHooks([]builder.LifecycleFunc{
+			func(ctx context.Context,
+				client *client.Client,
+				containerName string,
+				containerId *string,
+				mountList []mount.Mount,
+				logger *io.StringWriter) error {
+				initErro := spawnInitContainer(client, ctx, containerName, mountList, importConfig, dog, cfg)
+				if initErro != nil {
+					log.Printf("Failed to spawn init container: %v", initErro)
+					return initErro
+				}
+				return nil
+			},
+		})
+	}
 }
 
 func volumesToMounts(volumes []v1.Volume) []string {

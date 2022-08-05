@@ -156,7 +156,7 @@ func ExecTraefik(ctx context.Context, traefikDeployReq model.TraefikDeployReques
 		_ = removeContainer("traefik")
 	}
 
-	builder := new(builder.DockerContainerBuilder).WithImage("index.docker.io/library/traefik:v2.6").
+	build := new(builder.DockerContainerBuilder).WithImage("index.docker.io/library/traefik:v2.6").
 		WithAutoRemove(true).
 		WithName("traefik").
 		WithMountPoints(mounts).
@@ -167,7 +167,7 @@ func ExecTraefik(ctx context.Context, traefikDeployReq model.TraefikDeployReques
 		WithCmd([]string{"--add-host", "host.docker.internal:172.17.0.1"}).
 		Create(ctx)
 
-	_, err = builder.Start()
+	_, err = build.Start()
 
 	return err
 }

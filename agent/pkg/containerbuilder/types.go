@@ -1,4 +1,4 @@
-package container_builder
+package containerbuilder
 
 import (
 	"context"

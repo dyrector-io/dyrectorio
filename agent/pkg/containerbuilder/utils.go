@@ -1,4 +1,4 @@
-package container_builder
+package containerbuilder
 
 import (
 	"context"
@@ -33,21 +33,27 @@ func registryAuthBase64(user, password string) string {
 }
 
 // force pulls the given image name
-func pullImage(logger *io.StringWriter, fullyQualifiedImageName, authCreds string) error {
+func pullImage(logger io.StringWriter, fullyQualifiedImageName, authCreds string) error {
 	ctx := context.Background()
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 
 	if err != nil {
 		if logger != nil && client.IsErrConnectionFailed(err) {
-			(*logger).WriteString("Could not connect to docker socket/host.")
+			_, err = logger.WriteString("Could not connect to docker socket/host.")
+			if err != nil {
+				fmt.Printf("Failed to write log: %s", err.Error())
+			}
 		}
 
 		return err
 	}
 
 	if logger != nil {
-		(*logger).WriteString("Pulling image: " + fullyQualifiedImageName)
+		_, err = logger.WriteString("Pulling image: " + fullyQualifiedImageName)
+		if err != nil {
+			fmt.Printf("Failed to write log: %s", err.Error())
+		}
 	}
 
 	reader, err := cli.ImagePull(ctx, fullyQualifiedImageName, types.ImagePullOptions{RegistryAuth: authCreds})
@@ -69,14 +75,18 @@ func pullImage(logger *io.StringWriter, fullyQualifiedImageName, authCreds strin
 		}
 
 		if logger != nil {
+			var logErr error
 			if pullResult.ProgressDetail.Current != 0 && pullResult.ProgressDetail.Total != 0 {
-				(*logger).WriteString(
+				_, logErr = logger.WriteString(
 					fmt.Sprintf("Image: %s %s  %0.2f%%",
 						pullResult.ID,
 						pullResult.Status,
 						float64(pullResult.ProgressDetail.Current)/float64(pullResult.ProgressDetail.Total)*100)) //nolint:gomnd
 			} else {
-				(*logger).WriteString(fmt.Sprintf("Image: %s %s", pullResult.ID, pullResult.Status))
+				_, logErr = logger.WriteString(fmt.Sprintf("Image: %s %s", pullResult.ID, pullResult.Status))
+			}
+			if logErr != nil {
+				fmt.Printf("Failed to write log: %s", logErr.Error())
 			}
 		}
 		time.Sleep(time.Second)

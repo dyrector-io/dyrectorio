@@ -16,8 +16,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"github.com/dyrector-io/dyrectorio/agent/internal/util"
-	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/config"
 	builder "github.com/dyrector-io/dyrectorio/agent/pkg/containerbuilder"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/config"
 
 	typedv1 "k8s.io/client-go/kubernetes/typed/apps/v1"
 

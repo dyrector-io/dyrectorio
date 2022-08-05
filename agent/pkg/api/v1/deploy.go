@@ -24,15 +24,15 @@ type Namespace struct {
 }
 
 type DeployImageRequest struct {
-	RequestID       string             		`json:"RequestId" binding:"required"`
-	RegistryAuth    *builder.RegistryAuth	`json:"RegistryAuth,omitempty"`
-	InstanceConfig  InstanceConfig     		`json:"InstanceConfig" binding:"required"`
-	ContainerConfig ContainerConfig    		`json:"ContainerConfig" binding:"required"`
-	RuntimeConfig   Base64JSONBytes    		`json:"RuntimeConfig,omitempty"`
-	Registry        *string            		`json:"Registry,omitempty"`
-	ImageName       string             		`json:"ImageName" binding:"required"`
-	Tag             string             		`json:"Tag" binding:"required"`
-	Issuer          string             		`json:"Issuer"`
+	RequestID       string                `json:"RequestId" binding:"required"`
+	RegistryAuth    *builder.RegistryAuth `json:"RegistryAuth,omitempty"`
+	InstanceConfig  InstanceConfig        `json:"InstanceConfig" binding:"required"`
+	ContainerConfig ContainerConfig       `json:"ContainerConfig" binding:"required"`
+	RuntimeConfig   Base64JSONBytes       `json:"RuntimeConfig,omitempty"`
+	Registry        *string               `json:"Registry,omitempty"`
+	ImageName       string                `json:"ImageName" binding:"required"`
+	Tag             string                `json:"Tag" binding:"required"`
+	Issuer          string                `json:"Issuer"`
 }
 
 type BatchDeployImageRequest []DeployImageRequest
@@ -180,7 +180,7 @@ type ContainerConfig struct {
 	TTY bool `json:"tty"`
 
 	// dagent only
-	LogConfig     *container.LogConfig        `json:"logConfig"`
+	LogConfig     *container.LogConfig      `json:"logConfig"`
 	RestartPolicy builder.RestartPolicyName `json:"restartPolicy"`
 	// bridge(container, defeault) host, none or network name
 	NetworkMode string `json:"networkMode"`

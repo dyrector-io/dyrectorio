@@ -3,8 +3,8 @@ package util
 import (
 	"strings"
 
-	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 	builder "github.com/dyrector-io/dyrectorio/agent/pkg/containerbuilder"
+	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 )
 
 type ImageURI struct {
