@@ -25,6 +25,10 @@ COPY --from=BUILDER /app/prisma ./prisma
 COPY ./crux-docker-entrypoint.sh ./cert-gen.sh ./install.sh.hbr ./
 COPY ./proto ./proto
 
+RUN mkdir certs && \
+    chown node:node certs && \
+    chmod +x cert-gen.sh
+
 USER node
 
 # Start
