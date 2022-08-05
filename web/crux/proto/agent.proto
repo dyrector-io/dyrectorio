@@ -146,7 +146,7 @@ message ContainerStatusRequest {
 }
 
 message ContainerDeleteRequest {
-  string preName = 1;
+  string prefix = 1;
   string name = 2;
 }
 
