@@ -1,4 +1,4 @@
-import { TeamRepository } from './app/team/team.repository';
+import { TeamRepository } from './app/team/team.repository'
 import { Module } from '@nestjs/common'
 import { APP_INTERCEPTOR } from '@nestjs/core'
 import { AgentModule } from './app/agent/agent.module'
@@ -14,8 +14,8 @@ import { VersionModule } from './app/version/version.module'
 import { ShutdownService } from './application.shutdown.service'
 import { InterceptorGrpcHelperProvider } from './interceptors/helper.interceptor'
 import { PrismaErrorInterceptor } from './interceptors/prisma-error-interceptor'
-import { GrpcContextLogger } from './interceptors/grpc-context-logger.interceptor';
-import { AuditLoggerInterceptor } from './interceptors/audit-logger.interceptor';
+import { GrpcContextLogger } from './interceptors/grpc-context-logger.interceptor'
+import { AuditLoggerInterceptor } from './interceptors/audit-logger.interceptor'
 import { PrismaService } from './services/prisma.service'
 
 @Module({
@@ -47,8 +47,8 @@ import { PrismaService } from './services/prisma.service'
     },
     {
       provide: APP_INTERCEPTOR,
-      useClass: AuditLoggerInterceptor
-    }
+      useClass: AuditLoggerInterceptor,
+    },
   ],
 })
 export class AppModule {}

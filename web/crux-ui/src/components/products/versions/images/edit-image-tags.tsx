@@ -4,7 +4,7 @@ import { DyoMessage } from '@app/elements/dyo-message'
 import DyoRadioButton from '@app/elements/dyo-radio-button'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useTranslation from 'next-translate/useTranslation'
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 
 interface EditImageTagsProps {
   disabled?: boolean

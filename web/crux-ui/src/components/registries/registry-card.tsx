@@ -7,7 +7,6 @@ import { Registry } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
-import React from 'react'
 
 interface RegistryCardProps extends Omit<DyoCardProps, 'children'> {
   registry: Registry

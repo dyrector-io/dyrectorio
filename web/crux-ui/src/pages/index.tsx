@@ -2,7 +2,6 @@ import { ROUTE_PRODUCTS, ROUTE_TEAMS_CREATE, teamsInviteUrl } from '@app/routes'
 import { redirectTo, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
-import React from 'react'
 
 const Index = () => {
   return <></>

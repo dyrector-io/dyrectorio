@@ -25,7 +25,7 @@ import { nodeSchema } from '@app/validation'
 import clsx from 'clsx'
 import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
-import React, { MutableRefObject, useState } from 'react'
+import { MutableRefObject, useState } from 'react'
 import DyoNodeConnectionInfo from './dyo-node-connection-info'
 import DyoNodeSetup from './dyo-node-setup'
 

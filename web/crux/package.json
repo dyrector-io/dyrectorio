@@ -61,6 +61,7 @@
     "class-transformer": "^0.4.0",
     "class-validator": "^0.13.1",
     "dotenv": "^10.0.0",
+    "google-auth-library": "^8.1.1",
     "google-protobuf": "^3.18.1",
     "handlebars": "^4.7.7",
     "pg": "^8.7.1",

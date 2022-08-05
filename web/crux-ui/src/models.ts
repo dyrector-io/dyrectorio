@@ -259,7 +259,7 @@ export type Registry = {
   type: RegistryType
 }
 
-export const REGISTRY_TYPE_VALUES = ['v2', 'hub', 'gitlab', 'github'] as const
+export const REGISTRY_TYPE_VALUES = ['v2', 'hub', 'gitlab', 'github', 'google'] as const
 export type RegistryType = typeof REGISTRY_TYPE_VALUES[number]
 
 export type HubRegistryDetails = {
@@ -292,8 +292,16 @@ export type GithubRegistryDetails = {
   token: string
 }
 
+export type GoogleRegistryDetails = {
+  type: 'google'
+  url: string
+  _private: boolean
+  user?: string
+  token?: string
+}
+
 export type RegistryDetails = Omit<Registry, 'url'> &
-  (HubRegistryDetails | V2RegistryDetails | GitlabRegistryDetails | GithubRegistryDetails) & {
+  (HubRegistryDetails | V2RegistryDetails | GitlabRegistryDetails | GithubRegistryDetails | GoogleRegistryDetails) & {
     updatedAt: string
   }
 
