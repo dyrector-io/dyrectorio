@@ -14,6 +14,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
 	"github.com/dyrector-io/dyrectorio/agent/internal/util"
 	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
+	builder "github.com/dyrector-io/dyrectorio/agent/pkg/containerbuilder"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/crux"
 )
@@ -39,7 +40,7 @@ func spawnInitContainer(
 		return err
 	}
 
-	builder := NewDockerBuilder(cli, cfg)
+	builder := builder.NewDockerBuilder(cli)
 
 	importContainerName := util.JoinV("-", name, "import")
 	targetVolume := mount.Mount{Type: mount.TypeBind, Source: mountList[targetVolumeIndex].Source, Target: "/data/output"}
@@ -51,7 +52,7 @@ func spawnInitContainer(
 		WithEnv(EnvMapToSlice(importContainer.Environments)).
 		WithMountPoints([]mount.Mount{targetVolume}).
 		WithoutConflict().
-		WithDogger(dog).
+		WithLogger(dog).
 		Create(ctx)
 
 	_, err = builder.Start()
@@ -62,15 +63,16 @@ func spawnInitContainer(
 
 	dog.WriteDeploymentStatus(crux.DeploymentStatus_IN_PROGRESS, "Waiting for import container to finish")
 
-	cli.ContainerWait(ctx, builder.containerID, container.WaitConditionNextExit)
-	cont, err := cli.ContainerInspect(ctx, builder.containerID)
+	containerID := builder.GetContainerId()
+	cli.ContainerWait(ctx, containerID, container.WaitConditionNextExit)
+	cont, err := cli.ContainerInspect(ctx, containerID)
 
 	if err != nil {
 		return err
 	}
 
 	if cont.State.ExitCode == 0 {
-		err = DeleteContainer(builder.containerID)
+		err = DeleteContainer(containerID)
 		if err != nil {
 			log.Println("warning: failed to delete import container after completion")
 		}

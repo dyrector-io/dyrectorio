@@ -12,8 +12,11 @@ import (
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 
+	"github.com/docker/docker/api/types/container"
+
 	"github.com/dyrector-io/dyrectorio/agent/internal/config"
 	"github.com/dyrector-io/dyrectorio/agent/internal/util"
+	builder "github.com/dyrector-io/dyrectorio/agent/pkg/containerbuilder"
 )
 
 type Namespace struct {
@@ -21,15 +24,15 @@ type Namespace struct {
 }
 
 type DeployImageRequest struct {
-	RequestID       string             `json:"RequestId" binding:"required"`
-	RegistryAuth    *util.RegistryAuth `json:"RegistryAuth,omitempty"`
-	InstanceConfig  InstanceConfig     `json:"InstanceConfig" binding:"required"`
-	ContainerConfig ContainerConfig    `json:"ContainerConfig" binding:"required"`
-	RuntimeConfig   Base64JSONBytes    `json:"RuntimeConfig,omitempty"`
-	Registry        *string            `json:"Registry,omitempty"`
-	ImageName       string             `json:"ImageName" binding:"required"`
-	Tag             string             `json:"Tag" binding:"required"`
-	Issuer          string             `json:"Issuer"`
+	RequestID       string             		`json:"RequestId" binding:"required"`
+	RegistryAuth    *builder.RegistryAuth	`json:"RegistryAuth,omitempty"`
+	InstanceConfig  InstanceConfig     		`json:"InstanceConfig" binding:"required"`
+	ContainerConfig ContainerConfig    		`json:"ContainerConfig" binding:"required"`
+	RuntimeConfig   Base64JSONBytes    		`json:"RuntimeConfig,omitempty"`
+	Registry        *string            		`json:"Registry,omitempty"`
+	ImageName       string             		`json:"ImageName" binding:"required"`
+	Tag             string             		`json:"Tag" binding:"required"`
+	Issuer          string             		`json:"Issuer"`
 }
 
 type BatchDeployImageRequest []DeployImageRequest
@@ -136,9 +139,9 @@ type ContainerConfig struct {
 	// name of the container used for service, configmap names, various component names
 	Container string `json:"container" binding:"required"`
 	// portbinding list contains external/interal ports
-	Ports []PortBinding `json:"port" binding:"dive"`
+	Ports []builder.PortBinding `json:"port" binding:"dive"`
 	// Port ranges to be exposed ! no native range support in k8s
-	PortRanges []PortRangeBinding `json:"portRanges" binding:"dive"`
+	PortRanges []builder.PortRangeBinding `json:"portRanges" binding:"dive"`
 	// mount list, if a name starts with @ it can be used by multiple components eg @data|/target/mount/path
 	Mounts []string `json:"mount"`
 	// volumes
@@ -177,8 +180,8 @@ type ContainerConfig struct {
 	TTY bool `json:"tty"`
 
 	// dagent only
-	LogConfig     *LogConfig        `json:"logConfig"`
-	RestartPolicy RestartPolicyName `json:"restartPolicy"`
+	LogConfig     *container.LogConfig        `json:"logConfig"`
+	RestartPolicy builder.RestartPolicyName `json:"restartPolicy"`
 	// bridge(container, defeault) host, none or network name
 	NetworkMode string `json:"networkMode"`
 
@@ -236,13 +239,6 @@ func (c *ContainerConfig) Strings(appConfig *config.CommonConfiguration) []strin
 	}
 
 	return str
-}
-
-// LogConfig is container level defined log-configuration `override`
-type LogConfig struct {
-	// https://docs.docker.com/config/containers/logging/configure/#supported-logging-drivers
-	LogDriver string            `json:"logDriver" binding:"required"`
-	LogOpts   map[string]string `json:"logOpts"`
 }
 
 // Import container builds on rclone container https://rclone.org/
@@ -322,16 +318,6 @@ const (
 	EmptyDirVolumeType      VolumeType = "tmp"
 )
 
-type PortRange struct {
-	From uint16 `json:"from" binding:"required,gte=0,lte=65535"`
-	To   uint16 `json:"to" binding:"required,gtefield=From,lte=65535"`
-}
-
-type PortRangeBinding struct {
-	Internal PortRange `json:"internal" binding:"required"`
-	External PortRange `json:"external" binding:"required"`
-}
-
 type IngressConfig struct {
 	// name override, default set ingress route can be overwritten, default used otherwise
 	BaseDomain string `json:"baseDomain"`
@@ -343,11 +329,6 @@ type ConfigContainer struct {
 	Volume    string `json:"volume" binding:"required"`
 	Path      string `json:"path" binding:"required"`
 	KeepFiles bool   `json:"keepFiles"`
-}
-
-type PortBinding struct {
-	ExposedPort uint16 `json:"exposedPort" binding:"required,gte=0,lte=65535"`
-	PortBinding uint16 `json:"portBinding" binding:"required,gte=0,lte=65535"`
 }
 
 type UploadFileData struct {
@@ -395,67 +376,6 @@ func (vt *VolumeType) UnmarshalJSON(b []byte) error {
 	return errors.New("Invalid volume type")
 }
 
-type RestartPolicyName string
-
-const (
-	EmptyRestartPolicy                RestartPolicyName = ""
-	AlwaysRestartPolicy               RestartPolicyName = "always"
-	RestartUnlessStoppedRestartPolicy RestartPolicyName = "unless-stopped"
-	NoRestartPolicy                   RestartPolicyName = "no"
-	OnFailureRestartPolicy            RestartPolicyName = "on-failure"
-)
-
-// RestartPolicyUnmarshalInvalidError represents custom error regarding restart policy
-type ErrRestartPolicyUnmarshalInvalid struct{}
-
-func (e *ErrRestartPolicyUnmarshalInvalid) Error() string {
-	return "restart policy invalid value provided"
-}
-
-// policyToString static mapping enum type into the docker supported string values
-var policyToString = map[RestartPolicyName]string{
-	EmptyRestartPolicy:                "unless-stopped",
-	RestartUnlessStoppedRestartPolicy: "unless-stopped",
-	NoRestartPolicy:                   "no",
-	AlwaysRestartPolicy:               "always",
-	OnFailureRestartPolicy:            "on-failure",
-}
-
-// policyToID static mapping string values eg. from JSON into enums
-var policyToID = map[string]RestartPolicyName{
-	"":               RestartUnlessStoppedRestartPolicy,
-	"unless-stopped": RestartUnlessStoppedRestartPolicy,
-	"no":             NoRestartPolicy,
-	"always":         AlwaysRestartPolicy,
-	"on-failure":     OnFailureRestartPolicy,
-}
-
-// custom enum marshal JSON interface implementation
-func (policy RestartPolicyName) MarshalJSON() ([]byte, error) {
-	str, ok := policyToString[policy]
-	if !ok {
-		return nil, &ErrRestartPolicyUnmarshalInvalid{}
-	}
-	return []byte(fmt.Sprintf(`%q`, str)), nil
-}
-
-// custom enum unmarshal JSON interface implementation
-func (policy *RestartPolicyName) UnmarshalJSON(b []byte) error {
-	var j string
-	err := json.Unmarshal(b, &j)
-	if err != nil {
-		return err
-	}
-
-	if _, ok := policyToID[j]; ok {
-		*policy = policyToID[j]
-	} else {
-		*policy = RestartPolicyName("")
-		err = &ErrRestartPolicyUnmarshalInvalid{}
-	}
-	return err
-}
-
 // setting known defaults from constants
 func SetDeploymentDefaults(
 	deployImageRequest *DeployImageRequest,
@@ -472,6 +392,6 @@ func SetDeploymentDefaults(
 	}
 
 	if deployImageRequest.ContainerConfig.RestartPolicy == "" {
-		deployImageRequest.ContainerConfig.RestartPolicy = RestartUnlessStoppedRestartPolicy
+		deployImageRequest.ContainerConfig.RestartPolicy = builder.RestartUnlessStoppedRestartPolicy
 	}
 }

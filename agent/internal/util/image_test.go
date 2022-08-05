@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/dyrector-io/dyrectorio/agent/internal/util"
+	builder "github.com/dyrector-io/dyrectorio/agent/pkg/containerbuilder"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 )
 
@@ -87,7 +88,7 @@ func TestImageToStringWithoutTag(t *testing.T) {
 }
 
 func TestRegistryUrl(t *testing.T) {
-	auth := &util.RegistryAuth{
+	auth := &builder.RegistryAuth{
 		URL: "test",
 	}
 
@@ -97,7 +98,7 @@ func TestRegistryUrl(t *testing.T) {
 
 func TestRegistryUrlPriority(t *testing.T) {
 	registry := "other"
-	auth := &util.RegistryAuth{
+	auth := &builder.RegistryAuth{
 		URL: "test",
 	}
 

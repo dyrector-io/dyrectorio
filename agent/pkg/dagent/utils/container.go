@@ -11,7 +11,7 @@ import (
 
 	"github.com/docker/docker/api/types/mount"
 
-	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
+	builder "github.com/dyrector-io/dyrectorio/agent/pkg/containerbuilder"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/model"
 
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
@@ -46,8 +46,8 @@ func ExecWatchtowerPoll(cfg *config.Configuration) error {
 	return err
 }
 
-func initDagentUpdaterBuilder(cfg *config.Configuration) *dockerContainerBuilder {
-	return new(dockerContainerBuilder).WithImage("index.docker.io/containrrr/watchtower:latest").
+func initDagentUpdaterBuilder(cfg *config.Configuration) *builder.DockerContainerBuilder {
+	return new(builder.DockerContainerBuilder).WithImage("index.docker.io/containrrr/watchtower:latest").
 		WithAutoRemove(true).
 		WithName(cfg.UpdaterContainerName).
 		WithMountPoints(getUpdaterMounts(cfg)).
@@ -142,11 +142,11 @@ func ExecTraefik(ctx context.Context, traefikDeployReq model.TraefikDeployReques
 	}
 
 	// ports
-	ports := []v1.PortBinding{
+	ports := []builder.PortBinding{
 		{PortBinding: 80, ExposedPort: 80}}
 
 	if traefikDeployReq.TLS {
-		ports = append(ports, v1.PortBinding{PortBinding: 443, ExposedPort: 443})
+		ports = append(ports, builder.PortBinding{PortBinding: 443, ExposedPort: 443})
 	}
 
 	container := GetContainer("traefik")
@@ -156,12 +156,12 @@ func ExecTraefik(ctx context.Context, traefikDeployReq model.TraefikDeployReques
 		_ = removeContainer("traefik")
 	}
 
-	builder := new(dockerContainerBuilder).WithImage("index.docker.io/library/traefik:v2.6").
+	builder := new(builder.DockerContainerBuilder).WithImage("index.docker.io/library/traefik:v2.6").
 		WithAutoRemove(true).
 		WithName("traefik").
 		WithMountPoints(mounts).
 		WithPortBindings(ports).
-		WithRestartPolicy(v1.AlwaysRestartPolicy).
+		WithRestartPolicy(builder.AlwaysRestartPolicy).
 		WithAutoRemove(false).
 		WithNetworkMode("traefik").
 		WithCmd([]string{"--add-host", "host.docker.internal:172.17.0.1"}).

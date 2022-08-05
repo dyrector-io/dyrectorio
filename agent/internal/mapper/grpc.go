@@ -8,8 +8,8 @@ import (
 
 	"github.com/dyrector-io/dyrectorio/agent/internal/config"
 	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
-	"github.com/dyrector-io/dyrectorio/agent/internal/util"
 	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
+	builder "github.com/dyrector-io/dyrectorio/agent/pkg/containerbuilder"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/crux"
 
@@ -48,7 +48,7 @@ func MapDeployImage(req *agent.DeployRequest, appConfig *config.CommonConfigurat
 	}
 
 	if req.RegistryAuth != nil {
-		res.RegistryAuth = &util.RegistryAuth{
+		res.RegistryAuth = &builder.RegistryAuth{
 			Name:     req.RegistryAuth.Name,
 			URL:      req.RegistryAuth.Url,
 			User:     req.RegistryAuth.User,
@@ -99,11 +99,11 @@ func MapContainerConfig(in *agent.DeployRequest_ContainerConfig) v1.ContainerCon
 	return containerConfig
 }
 
-func MapPorts(in []*agent.DeployRequest_ContainerConfig_Port) []v1.PortBinding {
-	ports := []v1.PortBinding{}
+func MapPorts(in []*agent.DeployRequest_ContainerConfig_Port) []builder.PortBinding {
+	ports := []builder.PortBinding{}
 
 	for i := range in {
-		ports = append(ports, v1.PortBinding{
+		ports = append(ports, builder.PortBinding{
 			ExposedPort: uint16(in[i].Internal),
 			PortBinding: uint16(in[i].External),
 		})

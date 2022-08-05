@@ -10,6 +10,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/agent/internal/grpc"
 	"github.com/dyrector-io/dyrectorio/agent/internal/util"
 	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
+	builder "github.com/dyrector-io/dyrectorio/agent/pkg/containerbuilder"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/config"
 )
 
@@ -136,7 +137,7 @@ func (d *deployFacade) PreDeploy() error {
 }
 
 func (d *deployFacade) Deploy() error {
-	var portList []v1.PortBinding
+	var portList []builder.PortBinding
 	if d.params.ContainerConfig.Ports != nil {
 		portList = append(portList, d.params.ContainerConfig.Ports...)
 	}
