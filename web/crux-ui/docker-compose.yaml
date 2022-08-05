@@ -15,7 +15,7 @@ services:
       - RECAPTCHA_SECRET_KEY=$RECAPTCHA_SECRET_KEY
     restart: unless-stopped
     volumes:
-      - crux-ui-certs:/usr/certs
+      - crux-ui-certs:/app/certs
     networks:
       - crux-intranet
 

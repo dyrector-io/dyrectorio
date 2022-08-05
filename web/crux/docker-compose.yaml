@@ -52,7 +52,7 @@ services:
       - KRATOS_URL=$KRATOS_URL
       - CRUX_UI_URL=$CRUX_UI_URL
     volumes:
-      - crux-certs:/usr/certs
+      - crux-certs:/app/certs
     restart: unless-stopped
     command: serve
     networks:
