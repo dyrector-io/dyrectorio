@@ -1,6 +1,7 @@
 {
     "title-product-version": "{{name}} product {{version}}",
 
+    "tips": "TODO: Version tips",
     "new": "New version",
     "default": "Default",
     "changelog": "Changelog",
