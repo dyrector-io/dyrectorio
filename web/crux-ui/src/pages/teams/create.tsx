@@ -6,7 +6,6 @@ import { redirectTo, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import { useRouter } from 'next/router'
-import React from 'react'
 
 const CreateTeamPage = () => {
   const router = useRouter()

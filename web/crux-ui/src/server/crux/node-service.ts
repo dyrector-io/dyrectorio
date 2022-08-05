@@ -10,6 +10,8 @@ import {
   DyoNodeScript,
   NodeStatus,
   NodeStatusMessage,
+  NodeType,
+  NODE_TYPE_VALUES,
   UpdateDyoNode,
 } from '@app/models'
 import {
@@ -21,6 +23,7 @@ import {
   CreateNodeRequest,
   CruxNodeClient,
   Empty,
+  GenerateScriptRequest,
   IdRequest,
   NodeConnectionStatus,
   NodeDetailsResponse,
@@ -28,6 +31,8 @@ import {
   NodeInstallResponse,
   NodeListResponse,
   NodeScriptResponse,
+  NodeType as GrpcNodeType,
+  NodeType as ProtoNodeType,
   ServiceIdRequest,
   UpdateNodeRequest,
   WatchContainerStatusRequest,
@@ -57,6 +62,7 @@ class DyoNodeService {
         ...it,
         connectedAt: timestampToUTC(it.connectedAt),
         status: this.statusToDto(it.status),
+        type: nodeTypeGrpcToUi(it.type),
       }
     })
   }
@@ -77,6 +83,7 @@ class DyoNodeService {
       id: res.id,
       connectedAt: timestampToUTC(res.createdAt),
       status: 'unreachable',
+      type: 'docker',
     }
   }
 
@@ -114,6 +121,7 @@ class DyoNodeService {
       ...res,
       connectedAt: timestampToUTC(res.connectedAt),
       status: this.statusToDto(res.status),
+      type: nodeTypeGrpcToUi(res.type),
       install: !res.install
         ? null
         : {
@@ -124,14 +132,15 @@ class DyoNodeService {
     }
   }
 
-  async generateScript(id: string): Promise<DyoNodeInstall> {
-    const req: IdRequest = {
+  async generateScript(id: string, nodeType: ProtoNodeType): Promise<DyoNodeInstall> {
+    const req: GenerateScriptRequest = {
       id,
       accessedBy: this.identity.id,
+      type: nodeType,
     }
 
     const res = await protomisify<ServiceIdRequest, NodeInstallResponse>(this.client, this.client.generateScript)(
-      IdRequest,
+      GenerateScriptRequest,
       req,
     )
 
@@ -232,3 +241,10 @@ export default DyoNodeService
 
 export const containerStatusToDto = (status: ProtoContainerStatus): ContainerStatus =>
   containerStatusToJSON(status).toLocaleLowerCase() as ContainerStatus
+
+export const nodeTypeUiToGrpc = (type: NodeType): GrpcNodeType => {
+  return type === NODE_TYPE_VALUES[0] ? GrpcNodeType.DOCKER : GrpcNodeType.K8S
+}
+export const nodeTypeGrpcToUi = (type: GrpcNodeType): NodeType => {
+  return type === GrpcNodeType.DOCKER ? NODE_TYPE_VALUES[0] : NODE_TYPE_VALUES[1]
+}

@@ -66,13 +66,11 @@ jobs:
     - name: Adding workspace
       run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
-    - name: Run unit tests
-      run: pwd && ls -lah && id && make test-unit
-    # if we go public this is free from codecov.io
-    # todo: replace & fix unit test coverage above
-    # - uses: codecov/codecov-action@v3
-    #   with:
-    #     files: ./coverage.cov
+    - name: Run unit tests with coverage
+      run: make test-unit-with-coverage
+
+    - name: Upload coverage reports to Codecov with GitHub Action
+      uses: codecov/codecov-action@v3
 
     - name: Setting a buildtag
       id: settag

@@ -16,17 +16,18 @@ import (
 
 // facade object for configmap management
 type configmap struct {
-	ctx    context.Context
-	status string
-	avail  []string
+	ctx       context.Context
+	status    string
+	avail     []string
+	appConfig *config.Configuration
 }
 
-func newConfigmap(ctx context.Context) *configmap {
-	return &configmap{ctx: ctx, status: "", avail: []string{}}
+func newConfigmap(ctx context.Context, cfg *config.Configuration) *configmap {
+	return &configmap{ctx: ctx, status: "", avail: []string{}, appConfig: cfg}
 }
 
 func (cm *configmap) loadSharedConfig(namespace string) error {
-	client, err := getConfigMapClient(namespace)
+	client, err := getConfigMapClient(namespace, cm.appConfig)
 	if err != nil {
 		return err
 	}
@@ -45,7 +46,7 @@ func (cm *configmap) loadSharedConfig(namespace string) error {
 // deployConfigMapData creates the config map object and adds it to the avail list
 // that is used by the deployment later on
 func (cm *configmap) deployConfigMapData(namespace, name string, envList map[string]string) error {
-	client, err := getConfigMapClient(namespace)
+	client, err := getConfigMapClient(namespace, cm.appConfig)
 	if err != nil {
 		return err
 	}
@@ -53,7 +54,7 @@ func (cm *configmap) deployConfigMapData(namespace, name string, envList map[str
 	result, err := client.Apply(context.TODO(),
 		corev1.ConfigMap(name, namespace).
 			WithData(envList),
-		metaV1.ApplyOptions{FieldManager: config.Cfg.FieldManagerName, Force: config.Cfg.ForceOnConflicts},
+		metaV1.ApplyOptions{FieldManager: cm.appConfig.FieldManagerName, Force: cm.appConfig.ForceOnConflicts},
 	)
 
 	if err != nil {
@@ -87,7 +88,7 @@ func (cm *configmap) deployConfigMapRuntime(runtimeType v1.RuntimeConfigType, na
 
 // delete related configmaps. note: configmaps being in use are unaffected by this
 func (cm *configmap) deleteConfigMaps(namespace, name string) error {
-	client, err := getConfigMapClient(namespace)
+	client, err := getConfigMapClient(namespace, cm.appConfig)
 	if err != nil {
 		return err
 	}
@@ -95,8 +96,8 @@ func (cm *configmap) deleteConfigMaps(namespace, name string) error {
 	return client.Delete(cm.ctx, name, metaV1.DeleteOptions{})
 }
 
-func getConfigMapClient(namespace string) (typedv1.ConfigMapInterface, error) {
-	clientSet, err := GetClientSet()
+func getConfigMapClient(namespace string, cfg *config.Configuration) (typedv1.ConfigMapInterface, error) {
+	clientSet, err := GetClientSet(cfg)
 	if err != nil {
 		return nil, err
 	}

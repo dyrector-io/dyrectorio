@@ -31,6 +31,3 @@ type Configuration struct {
 	UpdatePollInterval   time.Duration `yaml:"updatePollInterval"   env:"UPDATE_POLL_INTERVAL"   env-default:"600s"`
 	WebhookToken         string        `yaml:"webhookToken"         env:"WEBHOOK_TOKEN"          env-default:""`
 }
-
-// Cfg is the global configuration for dagent
-var Cfg Configuration

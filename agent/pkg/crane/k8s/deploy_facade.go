@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
+	"github.com/dyrector-io/dyrectorio/agent/internal/grpc"
 	"github.com/dyrector-io/dyrectorio/agent/internal/util"
 	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/config"
@@ -22,6 +23,7 @@ type deployFacade struct {
 	configmap  *configmap
 	ingress    *ingress
 	pvc        *pvc
+	appConfig  *config.Configuration
 }
 
 type DeployFacade interface {
@@ -41,18 +43,19 @@ type DeployFacadeParams struct {
 	Issuer          string
 }
 
-func NewDeployFacade(params *DeployFacadeParams) *deployFacade {
+func NewDeployFacade(params *DeployFacadeParams, cfg *config.Configuration) *deployFacade {
 	return &deployFacade{
 		ctx:        params.Ctx,
 		params:     params,
 		image:      params.Image,
-		namespace:  newNamespace(params.InstanceConfig.ContainerPreName),
-		deployment: newDeployment(params.Ctx),
-		configmap:  newConfigmap(params.Ctx),
-		service:    newService(params.Ctx),
-		ingress:    newIngress(params.Ctx),
+		namespace:  newNamespace(params.InstanceConfig.ContainerPreName, cfg),
+		deployment: newDeployment(params.Ctx, cfg),
+		configmap:  newConfigmap(params.Ctx, cfg),
+		service:    newService(params.Ctx, cfg),
+		ingress:    newIngress(params.Ctx, cfg),
+		appConfig:  cfg,
 
-		pvc: newPvc(),
+		pvc: newPvc(cfg),
 	}
 }
 
@@ -181,7 +184,7 @@ func (d *deployFacade) Deploy() error {
 				customHeaders: d.params.ContainerConfig.CustomHeaders,
 			},
 		); err != nil {
-			log.Println("Error with deployment: " + err.Error())
+			log.Println("Error with ingress: " + err.Error())
 		}
 	}
 
@@ -207,10 +210,12 @@ func strArrToStrMap(str []string) map[string]string {
 	return mapped
 }
 
-func Deploy(c context.Context, dog *dogger.DeploymentLogger, deployImageRequest *v1.DeployImageRequest, versionData *v1.VersionData) error {
-	dog.Write(deployImageRequest.Strings(&config.Cfg.CommonConfiguration)...)
+func Deploy(c context.Context, dog *dogger.DeploymentLogger, deployImageRequest *v1.DeployImageRequest,
+	versionData *v1.VersionData) error {
+	cfg := grpc.GetConfigFromContext(c).(*config.Configuration)
+	dog.Write(deployImageRequest.Strings(&cfg.CommonConfiguration)...)
 	dog.Write(deployImageRequest.InstanceConfig.Strings()...)
-	dog.Write(deployImageRequest.ContainerConfig.Strings(&config.Cfg.CommonConfiguration)...)
+	dog.Write(deployImageRequest.ContainerConfig.Strings(&cfg.CommonConfiguration)...)
 
 	deployFacade := NewDeployFacade(
 		&DeployFacadeParams{
@@ -223,7 +228,9 @@ func Deploy(c context.Context, dog *dogger.DeploymentLogger, deployImageRequest 
 			InstanceConfig:  deployImageRequest.InstanceConfig,
 			ContainerConfig: deployImageRequest.ContainerConfig,
 			Issuer:          deployImageRequest.Issuer,
-		})
+		},
+		cfg,
+	)
 
 	if err := deployFacade.CheckPreConditions(); err != nil {
 		return err

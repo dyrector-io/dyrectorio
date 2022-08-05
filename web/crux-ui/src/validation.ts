@@ -3,6 +3,8 @@ import { DYO_ICONS } from './elements/dyo-icon-picker'
 import {
   ExplicitContainerNetworkMode,
   EXPLICIT_CONTAINER_NETWORK_MODE_VALUES,
+  NodeType,
+  NODE_TYPE_VALUES,
   ProductType,
   PRODUCT_TYPE_VALUES,
   RegistryType,
@@ -50,7 +52,7 @@ export const createProductSchema = updateProductSchema.concat(
 )
 
 const registryCredentialRole = yup.string().when(['type', '_private'], {
-  is: (type, _private) => ['gitlab', 'github'].includes(type) || (type === 'v2' && _private),
+  is: (type, _private) => ['gitlab', 'github'].includes(type) || ((type === 'v2' || type === 'google') && _private),
   then: yup.string().required(),
 })
 
@@ -64,7 +66,7 @@ export const registrySchema = yup.object().shape({
     then: yup.string().required(),
   }),
   url: yup.string().when(['type', 'selfManaged'], {
-    is: (type, selfManaged) => type === 'v2' || (type === 'gitlab' && selfManaged),
+    is: (type, selfManaged) => type === 'v2' || type === 'google' || (type === 'gitlab' && selfManaged),
     then: yup.string().required(),
   }),
   apiUrl: yup.string().when(['type', 'selfManaged'], {
@@ -79,6 +81,11 @@ export const nodeSchema = yup.object().shape({
   name: nameRule,
   description: descriptionRule,
   icon: iconRule,
+  type: yup.mixed<NodeType>().oneOf([...NODE_TYPE_VALUES]),
+})
+
+export const nodeType = yup.object().shape({
+  type: yup.mixed<NodeType>().oneOf([...NODE_TYPE_VALUES]),
 })
 
 export const increaseVersionSchema = yup.object().shape({

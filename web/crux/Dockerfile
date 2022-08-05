@@ -21,7 +21,8 @@ RUN npm ci prisma
 COPY ./prisma ./prisma
 RUN npx prisma generate
 
-COPY ./install.sh.hbr ./install.sh.hbr
+COPY ./install-docker.sh.hbr ./install-docker.sh.hbr
+COPY ./install-k8s.sh.hbr ./install-k8s.sh.hbr
 COPY ./proto ./proto
 COPY ./dist ./dist
 

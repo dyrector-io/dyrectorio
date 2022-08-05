@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common'
-import { PrismaService } from 'src/config/prisma.service'
+import { PrismaService } from 'src/services/prisma.service'
 import { InterceptorGrpcHelperProvider } from 'src/interceptors/helper.interceptor'
 import { DeployModule } from '../deploy/deploy.module'
 import { ImageModule } from '../image/image.module'

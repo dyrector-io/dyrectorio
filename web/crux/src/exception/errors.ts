@@ -123,3 +123,13 @@ export class MailServiceException extends InternalException {
     super(options)
   }
 }
+
+export class EmailBuilderException extends InternalException {
+  constructor(
+    options: InternalExceptionOptions = {
+      message: 'Failed to create email item',
+    },
+  ) {
+    super(options)
+  }
+}

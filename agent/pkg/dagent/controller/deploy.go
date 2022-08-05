@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
+	"github.com/dyrector-io/dyrectorio/agent/internal/grpc"
 	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/utils"
@@ -35,10 +36,12 @@ func DeployVersion(c *gin.Context) {
 		return
 	}
 
+	cfg := utils.GetConfigFromGinContext(c)
+
 	errored := false
 	// Iterate throw the given DeployImageRequests
 	for i := range batchDeployRequest.DeployImages {
-		dog := dogger.NewDeploymentLogger(nil, nil, c, &config.Cfg.CommonConfiguration)
+		dog := dogger.NewDeploymentLogger(nil, nil, c, &cfg.CommonConfiguration)
 		dog.SetRequestID(batchDeployRequest.DeployImages[i].RequestID)
 
 		var versionData *v1.VersionData
@@ -46,7 +49,7 @@ func DeployVersion(c *gin.Context) {
 			versionData = &v1.VersionData{Version: batchDeployRequest.Version, ReleaseNotes: batchDeployRequest.ReleaseNotes}
 		}
 
-		if err := executeDeployImageRequest(c, dog, &batchDeployRequest.DeployImages[i], versionData); err != nil {
+		if err := executeDeployImageRequest(c, dog, &batchDeployRequest.DeployImages[i], versionData, cfg); err != nil {
 			dog.Write(err.Error())
 
 			batchDeployResponse = append(batchDeployResponse, v1.DeployImageResponse{
@@ -93,11 +96,13 @@ func BatchDeployImage(c *gin.Context) {
 		return
 	}
 
+	cfg := utils.GetConfigFromGinContext(c)
+
 	// Iterate throw the given DeployImageRequests
 	for i := range batchDeployImageRequest {
-		dog := dogger.NewDeploymentLogger(nil, nil, c, &config.Cfg.CommonConfiguration)
+		dog := dogger.NewDeploymentLogger(nil, nil, c, &cfg.CommonConfiguration)
 		dog.SetRequestID(batchDeployImageRequest[i].RequestID)
-		if err := executeDeployImageRequest(c, dog, &batchDeployImageRequest[i], nil); err != nil {
+		if err := executeDeployImageRequest(c, dog, &batchDeployImageRequest[i], nil, cfg); err != nil {
 			dog.Write(err.Error())
 
 			batchDeployImageResponse = append(batchDeployImageResponse, v1.DeployImageResponse{
@@ -133,7 +138,9 @@ func BatchDeployImage(c *gin.Context) {
 func DeployImage(c *gin.Context) {
 	deployImageRequest := v1.DeployImageRequest{}
 
-	dog := dogger.NewDeploymentLogger(nil, nil, c, &config.Cfg.CommonConfiguration)
+	cfg := utils.GetConfigFromGinContext(c)
+
+	dog := dogger.NewDeploymentLogger(nil, nil, c, &cfg.CommonConfiguration)
 	if err := c.ShouldBindJSON(&deployImageRequest); err != nil {
 		log.Println("could not bind the request", err.Error())
 		if deployImageRequest.RequestID != "" {
@@ -145,7 +152,7 @@ func DeployImage(c *gin.Context) {
 	}
 	dog.SetRequestID(deployImageRequest.RequestID)
 
-	if err := executeDeployImageRequest(c, dog, &deployImageRequest, nil); err != nil {
+	if err := executeDeployImageRequest(c, dog, &deployImageRequest, nil, cfg); err != nil {
 		dog.Write(err.Error())
 		// TECHDEBT: Using dyrectorio defined Error{} response
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error: ": err.Error()})
@@ -158,16 +165,19 @@ func DeployImage(c *gin.Context) {
 func executeDeployImageRequest(
 	ctx context.Context,
 	dog *dogger.DeploymentLogger,
-	deployImageRequest *v1.DeployImageRequest, versionData *v1.VersionData) error {
+	deployImageRequest *v1.DeployImageRequest,
+	versionData *v1.VersionData,
+	cfg *config.Configuration) error {
 	t1 := time.Now()
 	defer func(t1 time.Time) {
 		dog.Write(fmt.Sprintf("Deployment took: %.2f seconds", time.Since(t1).Seconds()))
 	}(t1)
 
-	v1.SetDeploymentDefaults(deployImageRequest, &config.Cfg.CommonConfiguration)
+	v1.SetDeploymentDefaults(deployImageRequest, &cfg.CommonConfiguration)
 	dog.Write(fmt.Sprintf("Restart policy: %v \n", string(deployImageRequest.ContainerConfig.RestartPolicy)))
 
-	if err := utils.DeployImage(ctx, dog, deployImageRequest, versionData); err != nil {
+	deployCtx := grpc.WithGRPCConfig(ctx, cfg)
+	if err := utils.DeployImage(deployCtx, dog, deployImageRequest, versionData); err != nil {
 		dog.Write("Deployment failed " + err.Error())
 		return err
 	} else {

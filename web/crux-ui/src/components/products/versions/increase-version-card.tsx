@@ -11,7 +11,7 @@ import { sendForm } from '@app/utils'
 import { increaseVersionSchema } from '@app/validation'
 import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
-import React, { MutableRefObject } from 'react'
+import { MutableRefObject } from 'react'
 
 interface IncreaseVersionCardProps {
   className?: string

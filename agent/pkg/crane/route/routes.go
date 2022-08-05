@@ -46,8 +46,8 @@ func SetupRouterV1(r *gin.Engine) *gin.Engine {
 	api.GET("/swagger", swaggerRedirect)
 	r.GET("swagger", swaggerRedirect)
 
-	docs.SwaggerInfo.BasePath = "/v1"
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	docs.SwaggerInfoCrane.BasePath = "/v1"
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, ginSwagger.InstanceName("Crane")))
 
 	return r
 }

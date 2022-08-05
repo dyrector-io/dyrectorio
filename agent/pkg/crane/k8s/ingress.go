@@ -21,8 +21,9 @@ import (
 
 // facade object for ingress management
 type ingress struct {
-	ctx    context.Context
-	status string
+	ctx       context.Context
+	status    string
+	appConfig *config.Configuration
 }
 
 type DeployIngressOptions struct {
@@ -32,16 +33,16 @@ type DeployIngressOptions struct {
 	customHeaders                                                   []string
 }
 
-func newIngress(ctx context.Context) *ingress {
-	return &ingress{ctx: ctx, status: ""}
+func newIngress(ctx context.Context, cfg *config.Configuration) *ingress {
+	return &ingress{ctx: ctx, status: "", appConfig: cfg}
 }
 
-func (i *ingress) deployIngress(options *DeployIngressOptions) error {
+func (ing *ingress) deployIngress(options *DeployIngressOptions) error {
 	if options == nil {
 		return errors.New("ingress deployment is nil")
 	}
 
-	client, err := getIngressClient(options.namespace)
+	client, err := getIngressClient(options.namespace, ing.appConfig)
 	if err != nil {
 		log.Println("Error with ingress client: ", err.Error())
 	}
@@ -53,8 +54,10 @@ func (i *ingress) deployIngress(options *DeployIngressOptions) error {
 	var ingressRoot string
 	if options.ingressHost != "" {
 		ingressRoot = options.ingressHost
+	} else if ing.appConfig.IngressRootDomain != "" {
+		ingressRoot = ing.appConfig.IngressRootDomain
 	} else {
-		ingressRoot = config.Cfg.IngressRootDomain
+		return fmt.Errorf("no ingress domain provided in deploy request or configuration")
 	}
 
 	var ingressPath string
@@ -97,8 +100,8 @@ func (i *ingress) deployIngress(options *DeployIngressOptions) error {
 		Spec: spec}
 
 	ingress, err := client.Apply(context.TODO(), applyConfig, metav1.ApplyOptions{
-		FieldManager: config.Cfg.FieldManagerName,
-		Force:        config.Cfg.ForceOnConflicts,
+		FieldManager: ing.appConfig.FieldManagerName,
+		Force:        ing.appConfig.ForceOnConflicts,
 	})
 
 	if err != nil {
@@ -108,13 +111,13 @@ func (i *ingress) deployIngress(options *DeployIngressOptions) error {
 	return err
 }
 
-func (i *ingress) deleteIngress(namespace, name string) error {
-	client, err := getIngressClient(namespace)
+func (ing *ingress) deleteIngress(namespace, name string) error {
+	client, err := getIngressClient(namespace, ing.appConfig)
 	if err != nil {
 		panic(err)
 	}
 
-	return client.Delete(i.ctx, name, metav1.DeleteOptions{})
+	return client.Delete(ing.ctx, name, metav1.DeleteOptions{})
 }
 
 func getTLSConfig(ingressPath, containerName string, enabled bool) *netv1.IngressTLSApplyConfiguration {
@@ -166,8 +169,8 @@ func getAnnotations(tlsIsWanted, proxyHeaders bool,
 	return annotations
 }
 
-func getIngressClient(namespace string) (networking.IngressInterface, error) {
-	clientset, err := GetClientSet()
+func getIngressClient(namespace string, cfg *config.Configuration) (networking.IngressInterface, error) {
+	clientset, err := GetClientSet(cfg)
 
 	if err != nil {
 		return nil, err

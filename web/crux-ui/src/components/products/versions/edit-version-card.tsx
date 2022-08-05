@@ -12,7 +12,7 @@ import { formikFieldValueConverter, sendForm } from '@app/utils'
 import { createVersionSchema, updateVersionSchema } from '@app/validation'
 import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
-import React, { MutableRefObject, useState } from 'react'
+import { MutableRefObject, useState } from 'react'
 
 interface EditVersionCardProps {
   className?: string

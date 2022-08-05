@@ -1,0 +1,28 @@
+#!/bin/sh
+set -e
+
+{{#if localManifests }}
+kubectl apply -f ./agent/manifest/kubernetes/namespace.yaml
+{{else}}
+kubectl apply -f https://raw.githubusercontent.com/dyrector-io/dyrectorio/main/agent/manifest/kubernetes/namespace.yaml
+{{/if }}
+
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: crane-config
+  namespace: dyrectorio
+data:
+  CRANE_IN_CLUSTER: "true"
+  GRPC_TOKEN: "{{token}}"
+  HOSTNAME: "{{name}}"
+EOF
+
+{{#if localManifests }}
+kubectl apply -f ./agent/manifest/kubernetes/rolebinding.yaml
+kubectl apply -f ./agent/manifest/kubernetes/deployment.yaml
+{{else}}
+kubectl apply -f https://raw.githubusercontent.com/dyrector-io/dyrectorio/main/agent/manifest/kubernetes/rolebinding.yaml
+kubectl apply -f https://raw.githubusercontent.com/dyrector-io/dyrectorio/main/agent/manifest/kubernetes/deployment.yaml
+{{/if }}

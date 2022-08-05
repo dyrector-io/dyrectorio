@@ -4,6 +4,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import "./dyo-date-picker.css";
+
 .grecaptcha-badge {
     bottom: 4.25rem !important;
 }

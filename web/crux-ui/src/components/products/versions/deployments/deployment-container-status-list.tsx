@@ -13,7 +13,7 @@ import {
 import { nodeWsUrl } from '@app/routes'
 import { timeAgo, utcNow } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
-import React, { useState } from 'react'
+import { useState } from 'react'
 
 interface DeploymentContainerStatusListProps {
   deployment: DeploymentRoot

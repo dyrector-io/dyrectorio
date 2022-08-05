@@ -2,6 +2,8 @@ package k8s
 
 import (
 	"context"
+
+	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/config"
 )
 
 type deleteFacade struct {
@@ -13,27 +15,29 @@ type deleteFacade struct {
 	configmap  *configmap
 	ingress    *ingress
 	pvc        *pvc
+	appConfig  *config.Configuration
 }
 
 type DeleteFacade interface {
 	Delete(namespace, name string) error
 }
 
-func NewDeleteFacade(ctx context.Context, namespace, name string) *deleteFacade {
+func NewDeleteFacade(ctx context.Context, namespace, name string, cfg *config.Configuration) *deleteFacade {
 	return &deleteFacade{
 		ctx:        ctx,
 		name:       name,
-		namespace:  newNamespace(namespace),
-		deployment: newDeployment(ctx),
-		configmap:  newConfigmap(ctx),
-		service:    newService(ctx),
-		ingress:    newIngress(ctx),
-		pvc:        newPvc(),
+		namespace:  newNamespace(namespace, cfg),
+		deployment: newDeployment(ctx, cfg),
+		configmap:  newConfigmap(ctx, cfg),
+		service:    newService(ctx, cfg),
+		ingress:    newIngress(ctx, cfg),
+		pvc:        newPvc(cfg),
+		appConfig:  cfg,
 	}
 }
 
 func (d *deleteFacade) DeleteNamespace(namespace string) error {
-	return DeleteNamespace(namespace)
+	return DeleteNamespace(namespace, d.appConfig)
 }
 
 func (d *deleteFacade) DeleteDeployment() error {

@@ -1,7 +1,7 @@
 import { Version } from '.prisma/client'
 import { Injectable } from '@nestjs/common'
 import { DeploymentStatusEnum } from '@prisma/client'
-import { PrismaService } from 'src/config/prisma.service'
+import { PrismaService } from 'src/services/prisma.service'
 import { containerNameFromImageName } from 'src/domain/deployment'
 import { AlreadyExistsException } from 'src/exception/errors'
 import {

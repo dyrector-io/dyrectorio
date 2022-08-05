@@ -180,6 +180,7 @@ export enum RegistryType {
   HUB = 2,
   GITLAB = 3,
   GITHUB = 4,
+  GOOGLE = 5,
   UNRECOGNIZED = -1,
 }
 
@@ -200,6 +201,9 @@ export function registryTypeFromJSON(object: any): RegistryType {
     case 4:
     case 'GITHUB':
       return RegistryType.GITHUB
+    case 5:
+    case 'GOOGLE':
+      return RegistryType.GOOGLE
     case -1:
     case 'UNRECOGNIZED':
     default:
@@ -219,6 +223,8 @@ export function registryTypeToJSON(object: RegistryType): string {
       return 'GITLAB'
     case RegistryType.GITHUB:
       return 'GITHUB'
+    case RegistryType.GOOGLE:
+      return 'GOOGLE'
     default:
       return 'UNKNOWN'
   }
@@ -266,6 +272,44 @@ export function nodeConnectionStatusToJSON(object: NodeConnectionStatus): string
       return 'UNREACHABLE'
     case NodeConnectionStatus.CONNECTED:
       return 'CONNECTED'
+    default:
+      return 'UNKNOWN'
+  }
+}
+
+export enum NodeType {
+  UNKNOWN_NODE_TYPE = 0,
+  DOCKER = 1,
+  K8S = 2,
+  UNRECOGNIZED = -1,
+}
+
+export function nodeTypeFromJSON(object: any): NodeType {
+  switch (object) {
+    case 0:
+    case 'UNKNOWN_NODE_TYPE':
+      return NodeType.UNKNOWN_NODE_TYPE
+    case 1:
+    case 'DOCKER':
+      return NodeType.DOCKER
+    case 2:
+    case 'K8S':
+      return NodeType.K8S
+    case -1:
+    case 'UNRECOGNIZED':
+    default:
+      return NodeType.UNRECOGNIZED
+  }
+}
+
+export function nodeTypeToJSON(object: NodeType): string {
+  switch (object) {
+    case NodeType.UNKNOWN_NODE_TYPE:
+      return 'UNKNOWN_NODE_TYPE'
+    case NodeType.DOCKER:
+      return 'DOCKER'
+    case NodeType.K8S:
+      return 'K8S'
     default:
       return 'UNKNOWN'
   }
@@ -611,6 +655,12 @@ export interface GithubRegistryDetails {
   urlPrefix: string
 }
 
+export interface GoogleRegistryDetails {
+  url: string
+  user?: string | undefined
+  token?: string | undefined
+}
+
 export interface CreateRegistryRequest {
   accessedBy: string
   name: string
@@ -620,6 +670,7 @@ export interface CreateRegistryRequest {
   v2: V2RegistryDetails | undefined
   gitlab: GitlabRegistryDetails | undefined
   github: GithubRegistryDetails | undefined
+  google: GoogleRegistryDetails | undefined
 }
 
 export interface UpdateRegistryRequest {
@@ -632,6 +683,7 @@ export interface UpdateRegistryRequest {
   v2: V2RegistryDetails | undefined
   gitlab: GitlabRegistryDetails | undefined
   github: GithubRegistryDetails | undefined
+  google: GoogleRegistryDetails | undefined
 }
 
 export interface RegistryDetailsResponse {
@@ -644,6 +696,7 @@ export interface RegistryDetailsResponse {
   v2: V2RegistryDetails | undefined
   gitlab: GitlabRegistryDetails | undefined
   github: GithubRegistryDetails | undefined
+  google: GoogleRegistryDetails | undefined
 }
 
 export interface CreateVersionRequest {
@@ -832,6 +885,7 @@ export interface NodeResponse {
   status: NodeConnectionStatus
   connectedAt?: Timestamp | undefined
   version?: string | undefined
+  type: NodeType
 }
 
 export interface NodeDetailsResponse {
@@ -847,6 +901,7 @@ export interface NodeDetailsResponse {
   install?: NodeInstallResponse | undefined
   script?: NodeScriptResponse | undefined
   version?: string | undefined
+  type: NodeType
 }
 
 export interface NodeListResponse {
@@ -866,6 +921,12 @@ export interface UpdateNodeRequest {
   name: string
   description?: string | undefined
   icon?: string | undefined
+}
+
+export interface GenerateScriptRequest {
+  id: string
+  accessedBy: string
+  type: NodeType
 }
 
 export interface NodeInstallResponse {
@@ -2896,6 +2957,71 @@ export const GithubRegistryDetails = {
   },
 }
 
+const baseGoogleRegistryDetails: object = { url: '' }
+
+export const GoogleRegistryDetails = {
+  encode(message: GoogleRegistryDetails, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.url !== '') {
+      writer.uint32(802).string(message.url)
+    }
+    if (message.user !== undefined) {
+      writer.uint32(810).string(message.user)
+    }
+    if (message.token !== undefined) {
+      writer.uint32(818).string(message.token)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): GoogleRegistryDetails {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = { ...baseGoogleRegistryDetails } as GoogleRegistryDetails
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 100:
+          message.url = reader.string()
+          break
+        case 101:
+          message.user = reader.string()
+          break
+        case 102:
+          message.token = reader.string()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): GoogleRegistryDetails {
+    const message = { ...baseGoogleRegistryDetails } as GoogleRegistryDetails
+    message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
+    message.user = object.user !== undefined && object.user !== null ? String(object.user) : undefined
+    message.token = object.token !== undefined && object.token !== null ? String(object.token) : undefined
+    return message
+  },
+
+  toJSON(message: GoogleRegistryDetails): unknown {
+    const obj: any = {}
+    message.url !== undefined && (obj.url = message.url)
+    message.user !== undefined && (obj.user = message.user)
+    message.token !== undefined && (obj.token = message.token)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<GoogleRegistryDetails>, I>>(object: I): GoogleRegistryDetails {
+    const message = { ...baseGoogleRegistryDetails } as GoogleRegistryDetails
+    message.url = object.url ?? ''
+    message.user = object.user ?? undefined
+    message.token = object.token ?? undefined
+    return message
+  },
+}
+
 const baseCreateRegistryRequest: object = { accessedBy: '', name: '' }
 
 export const CreateRegistryRequest = {
@@ -2923,6 +3049,9 @@ export const CreateRegistryRequest = {
     }
     if (message.github !== undefined) {
       GithubRegistryDetails.encode(message.github, writer.uint32(1626).fork()).ldelim()
+    }
+    if (message.google !== undefined) {
+      GoogleRegistryDetails.encode(message.google, writer.uint32(1634).fork()).ldelim()
     }
     return writer
   },
@@ -2958,6 +3087,9 @@ export const CreateRegistryRequest = {
         case 203:
           message.github = GithubRegistryDetails.decode(reader, reader.uint32())
           break
+        case 204:
+          message.google = GoogleRegistryDetails.decode(reader, reader.uint32())
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -2979,6 +3111,8 @@ export const CreateRegistryRequest = {
       object.gitlab !== undefined && object.gitlab !== null ? GitlabRegistryDetails.fromJSON(object.gitlab) : undefined
     message.github =
       object.github !== undefined && object.github !== null ? GithubRegistryDetails.fromJSON(object.github) : undefined
+    message.google =
+      object.google !== undefined && object.google !== null ? GoogleRegistryDetails.fromJSON(object.google) : undefined
     return message
   },
 
@@ -2994,6 +3128,8 @@ export const CreateRegistryRequest = {
       (obj.gitlab = message.gitlab ? GitlabRegistryDetails.toJSON(message.gitlab) : undefined)
     message.github !== undefined &&
       (obj.github = message.github ? GithubRegistryDetails.toJSON(message.github) : undefined)
+    message.google !== undefined &&
+      (obj.google = message.google ? GoogleRegistryDetails.toJSON(message.google) : undefined)
     return obj
   },
 
@@ -3013,6 +3149,10 @@ export const CreateRegistryRequest = {
     message.github =
       object.github !== undefined && object.github !== null
         ? GithubRegistryDetails.fromPartial(object.github)
+        : undefined
+    message.google =
+      object.google !== undefined && object.google !== null
+        ? GoogleRegistryDetails.fromPartial(object.google)
         : undefined
     return message
   },
@@ -3048,6 +3188,9 @@ export const UpdateRegistryRequest = {
     }
     if (message.github !== undefined) {
       GithubRegistryDetails.encode(message.github, writer.uint32(1626).fork()).ldelim()
+    }
+    if (message.google !== undefined) {
+      GoogleRegistryDetails.encode(message.google, writer.uint32(1634).fork()).ldelim()
     }
     return writer
   },
@@ -3086,6 +3229,9 @@ export const UpdateRegistryRequest = {
         case 203:
           message.github = GithubRegistryDetails.decode(reader, reader.uint32())
           break
+        case 204:
+          message.google = GoogleRegistryDetails.decode(reader, reader.uint32())
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -3108,6 +3254,8 @@ export const UpdateRegistryRequest = {
       object.gitlab !== undefined && object.gitlab !== null ? GitlabRegistryDetails.fromJSON(object.gitlab) : undefined
     message.github =
       object.github !== undefined && object.github !== null ? GithubRegistryDetails.fromJSON(object.github) : undefined
+    message.google =
+      object.google !== undefined && object.google !== null ? GoogleRegistryDetails.fromJSON(object.google) : undefined
     return message
   },
 
@@ -3124,6 +3272,8 @@ export const UpdateRegistryRequest = {
       (obj.gitlab = message.gitlab ? GitlabRegistryDetails.toJSON(message.gitlab) : undefined)
     message.github !== undefined &&
       (obj.github = message.github ? GithubRegistryDetails.toJSON(message.github) : undefined)
+    message.google !== undefined &&
+      (obj.google = message.google ? GoogleRegistryDetails.toJSON(message.google) : undefined)
     return obj
   },
 
@@ -3144,6 +3294,10 @@ export const UpdateRegistryRequest = {
     message.github =
       object.github !== undefined && object.github !== null
         ? GithubRegistryDetails.fromPartial(object.github)
+        : undefined
+    message.google =
+      object.google !== undefined && object.google !== null
+        ? GoogleRegistryDetails.fromPartial(object.google)
         : undefined
     return message
   },
@@ -3179,6 +3333,9 @@ export const RegistryDetailsResponse = {
     }
     if (message.github !== undefined) {
       GithubRegistryDetails.encode(message.github, writer.uint32(1626).fork()).ldelim()
+    }
+    if (message.google !== undefined) {
+      GoogleRegistryDetails.encode(message.google, writer.uint32(1634).fork()).ldelim()
     }
     return writer
   },
@@ -3219,6 +3376,9 @@ export const RegistryDetailsResponse = {
         case 203:
           message.github = GithubRegistryDetails.decode(reader, reader.uint32())
           break
+        case 204:
+          message.google = GoogleRegistryDetails.decode(reader, reader.uint32())
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -3244,6 +3404,8 @@ export const RegistryDetailsResponse = {
       object.gitlab !== undefined && object.gitlab !== null ? GitlabRegistryDetails.fromJSON(object.gitlab) : undefined
     message.github =
       object.github !== undefined && object.github !== null ? GithubRegistryDetails.fromJSON(object.github) : undefined
+    message.google =
+      object.google !== undefined && object.google !== null ? GoogleRegistryDetails.fromJSON(object.google) : undefined
     return message
   },
 
@@ -3260,6 +3422,8 @@ export const RegistryDetailsResponse = {
       (obj.gitlab = message.gitlab ? GitlabRegistryDetails.toJSON(message.gitlab) : undefined)
     message.github !== undefined &&
       (obj.github = message.github ? GithubRegistryDetails.toJSON(message.github) : undefined)
+    message.google !== undefined &&
+      (obj.google = message.google ? GoogleRegistryDetails.toJSON(message.google) : undefined)
     return obj
   },
 
@@ -3283,6 +3447,10 @@ export const RegistryDetailsResponse = {
     message.github =
       object.github !== undefined && object.github !== null
         ? GithubRegistryDetails.fromPartial(object.github)
+        : undefined
+    message.google =
+      object.google !== undefined && object.google !== null
+        ? GoogleRegistryDetails.fromPartial(object.google)
         : undefined
     return message
   },
@@ -4854,7 +5022,7 @@ export const PatchImageRequest = {
   },
 }
 
-const baseNodeResponse: object = { id: '', name: '', status: 0 }
+const baseNodeResponse: object = { id: '', name: '', status: 0, type: 0 }
 
 export const NodeResponse = {
   encode(message: NodeResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -4884,6 +5052,9 @@ export const NodeResponse = {
     }
     if (message.version !== undefined) {
       writer.uint32(850).string(message.version)
+    }
+    if (message.type !== 0) {
+      writer.uint32(856).int32(message.type)
     }
     return writer
   },
@@ -4922,6 +5093,9 @@ export const NodeResponse = {
         case 106:
           message.version = reader.string()
           break
+        case 107:
+          message.type = reader.int32() as any
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -4947,6 +5121,7 @@ export const NodeResponse = {
         ? fromJsonTimestamp(object.connectedAt)
         : undefined
     message.version = object.version !== undefined && object.version !== null ? String(object.version) : undefined
+    message.type = object.type !== undefined && object.type !== null ? nodeTypeFromJSON(object.type) : 0
     return message
   },
 
@@ -4961,6 +5136,7 @@ export const NodeResponse = {
     message.status !== undefined && (obj.status = nodeConnectionStatusToJSON(message.status))
     message.connectedAt !== undefined && (obj.connectedAt = fromTimestamp(message.connectedAt).toISOString())
     message.version !== undefined && (obj.version = message.version)
+    message.type !== undefined && (obj.type = nodeTypeToJSON(message.type))
     return obj
   },
 
@@ -4979,6 +5155,7 @@ export const NodeResponse = {
         ? Timestamp.fromPartial(object.connectedAt)
         : undefined
     message.version = object.version ?? undefined
+    message.type = object.type ?? 0
     return message
   },
 }
@@ -4988,6 +5165,7 @@ const baseNodeDetailsResponse: object = {
   name: '',
   status: 0,
   hasToken: false,
+  type: 0,
 }
 
 export const NodeDetailsResponse = {
@@ -5027,6 +5205,9 @@ export const NodeDetailsResponse = {
     }
     if (message.version !== undefined) {
       writer.uint32(874).string(message.version)
+    }
+    if (message.type !== 0) {
+      writer.uint32(880).int32(message.type)
     }
     return writer
   },
@@ -5074,6 +5255,9 @@ export const NodeDetailsResponse = {
         case 109:
           message.version = reader.string()
           break
+        case 110:
+          message.type = reader.int32() as any
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -5104,6 +5288,7 @@ export const NodeDetailsResponse = {
     message.script =
       object.script !== undefined && object.script !== null ? NodeScriptResponse.fromJSON(object.script) : undefined
     message.version = object.version !== undefined && object.version !== null ? String(object.version) : undefined
+    message.type = object.type !== undefined && object.type !== null ? nodeTypeFromJSON(object.type) : 0
     return message
   },
 
@@ -5123,6 +5308,7 @@ export const NodeDetailsResponse = {
     message.script !== undefined &&
       (obj.script = message.script ? NodeScriptResponse.toJSON(message.script) : undefined)
     message.version !== undefined && (obj.version = message.version)
+    message.type !== undefined && (obj.type = nodeTypeToJSON(message.type))
     return obj
   },
 
@@ -5148,6 +5334,7 @@ export const NodeDetailsResponse = {
     message.script =
       object.script !== undefined && object.script !== null ? NodeScriptResponse.fromPartial(object.script) : undefined
     message.version = object.version ?? undefined
+    message.type = object.type ?? 0
     return message
   },
 }
@@ -5359,6 +5546,71 @@ export const UpdateNodeRequest = {
     message.name = object.name ?? ''
     message.description = object.description ?? undefined
     message.icon = object.icon ?? undefined
+    return message
+  },
+}
+
+const baseGenerateScriptRequest: object = { id: '', accessedBy: '', type: 0 }
+
+export const GenerateScriptRequest = {
+  encode(message: GenerateScriptRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== '') {
+      writer.uint32(10).string(message.id)
+    }
+    if (message.accessedBy !== '') {
+      writer.uint32(18).string(message.accessedBy)
+    }
+    if (message.type !== 0) {
+      writer.uint32(800).int32(message.type)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): GenerateScriptRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = { ...baseGenerateScriptRequest } as GenerateScriptRequest
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.id = reader.string()
+          break
+        case 2:
+          message.accessedBy = reader.string()
+          break
+        case 100:
+          message.type = reader.int32() as any
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): GenerateScriptRequest {
+    const message = { ...baseGenerateScriptRequest } as GenerateScriptRequest
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.type = object.type !== undefined && object.type !== null ? nodeTypeFromJSON(object.type) : 0
+    return message
+  },
+
+  toJSON(message: GenerateScriptRequest): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
+    message.type !== undefined && (obj.type = nodeTypeToJSON(message.type))
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<GenerateScriptRequest>, I>>(object: I): GenerateScriptRequest {
+    const message = { ...baseGenerateScriptRequest } as GenerateScriptRequest
+    message.id = object.id ?? ''
+    message.accessedBy = object.accessedBy ?? ''
+    message.type = object.type ?? 0
     return message
   },
 }
@@ -7677,8 +7929,8 @@ export const CruxNodeService = {
     path: '/crux.CruxNode/GenerateScript',
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: IdRequest) => Buffer.from(IdRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => IdRequest.decode(value),
+    requestSerialize: (value: GenerateScriptRequest) => Buffer.from(GenerateScriptRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => GenerateScriptRequest.decode(value),
     responseSerialize: (value: NodeInstallResponse) => Buffer.from(NodeInstallResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer) => NodeInstallResponse.decode(value),
   },
@@ -7738,7 +7990,7 @@ export interface CruxNodeServer extends UntypedServiceImplementation {
   updateNode: handleUnaryCall<UpdateNodeRequest, Empty>
   deleteNode: handleUnaryCall<IdRequest, Empty>
   getNodeDetails: handleUnaryCall<IdRequest, NodeDetailsResponse>
-  generateScript: handleUnaryCall<IdRequest, NodeInstallResponse>
+  generateScript: handleUnaryCall<GenerateScriptRequest, NodeInstallResponse>
   getScript: handleUnaryCall<ServiceIdRequest, NodeScriptResponse>
   discardScript: handleUnaryCall<IdRequest, Empty>
   revokeToken: handleUnaryCall<IdRequest, Empty>
@@ -7821,16 +8073,16 @@ export interface CruxNodeClient extends Client {
     callback: (error: ServiceError | null, response: NodeDetailsResponse) => void,
   ): ClientUnaryCall
   generateScript(
-    request: IdRequest,
+    request: GenerateScriptRequest,
     callback: (error: ServiceError | null, response: NodeInstallResponse) => void,
   ): ClientUnaryCall
   generateScript(
-    request: IdRequest,
+    request: GenerateScriptRequest,
     metadata: Metadata,
     callback: (error: ServiceError | null, response: NodeInstallResponse) => void,
   ): ClientUnaryCall
   generateScript(
-    request: IdRequest,
+    request: GenerateScriptRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: NodeInstallResponse) => void,
