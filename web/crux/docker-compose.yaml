@@ -24,10 +24,9 @@ services:
     image: ${REGISTRY}/${IMAGE_NAME}:${CRUX_IMAGE_TAG}
     build:
       context: ./
-      args:
-        - TIME_ZONE=Europe/Budapest
     platform: linux/amd64
     environment:
+      - TZ=Europe/Budapest
       - DATABASE_URL=postgresql://crux:${POSTGRES_PASSWORD}@crux-postgres:5432/crux?schema=public
     command: migrate
     networks:
@@ -43,6 +42,7 @@ services:
       - 5000:5000
       - 5001:5001
     environment:
+      - TZ=Europe/Budapest
       - DATABASE_URL=postgresql://crux:${POSTGRES_PASSWORD}@crux-postgres:5432/crux?schema=public
       - CRUX_DOMAIN=$CRUX_DOMAIN
       - CRUX_DOMAIN_ALTS=$CRUX_DOMAIN_ALTS
@@ -52,7 +52,7 @@ services:
       - KRATOS_URL=$KRATOS_URL
       - CRUX_UI_URL=$CRUX_UI_URL
     volumes:
-      - crux-certs:/usr/app/certs
+      - crux-certs:/app/certs
     restart: unless-stopped
     command: serve
     networks:

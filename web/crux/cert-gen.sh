@@ -1,48 +1,43 @@
 #!/bin/sh 
 
-CERT_PREFIX="$1"
-DOMAIN="$2"
+CERT_DIR="/app/certs"
 
-# domain is obligatory
-if [ -z "$DOMAIN" ]; then
-  echo "Usage: $(basename $0) <prefix> <domain> <alternative-domains or IPs...>"
-  echo "alternative domain format DNS:example.com or IP:1.2.3.4"
-  echo "Example: $(basename $0) api localhost IP:127.0.0.1"
-  exit 11
-fi
+generate_cert() {
+    CERT_PREFIX=$1
 
-# no cert directory -> no fun
-cd ./certs || exit 1
-rm $CERT_PREFIX-*.key $CERT_PREFIX-*.crt
+    # generate certificate
+    echo "Obtaining new certificates..."
+    openssl req -newkey rsa:4096 -nodes -x509 -sha256 -days 1825 -keyout $CERT_DIR/$CERT_PREFIX-private.key -out $CERT_DIR/$CERT_PREFIX-public.crt -subj "/C=HU/ST=Csongrad/L=Szeged/CN=selfsigned.dyrector.io/emailAddress=hello@dyrector.io/"
+}
 
-# dyrector.io basic informations
-SUBJ=$(echo -n "
-C=HU
-ST=Csongrad
-L=Szeged
-CN=$DOMAIN
-emailAddress=hello@dyrector.io
-" | tr "\n" "/")
+expiry_check_cert() {
+    CERT_PREFIX=$1
 
-# variable containing SAN tags
-# DNS: or IP: is valid, the first tag is a domain
-SANS=""
+    # check certificate and its expiry, so the user will have an idea about it:
+    # if it's less than 30 days we throw a warning,
+    # if it's expired we bail
+    echo "Checking the expiry of certificates..."
+    openssl x509 -noout -enddate -in $CERT_DIR/$CERT_PREFIX-public.crt -checkend "0"
+    if [[ $? -ne 0 ]]; then
+        echo "ERROR: Certificate is expired."
+        exit 1
+    fi
 
-shift
-for ARG in "${@}"; do
-    SAN="$ARG"
-    SANS="$SANS $SAN"
+    openssl x509 -noout -enddate -in $CERT_DIR/$CERT_PREFIX-public.crt -checkend "2592000"
+    if [[ $? -ne 0 ]]; then
+        echo "WARNING: Certificate will expire within the next 30 days."
+    fi
+}
+
+check_cert() {
+    CERT_PREFIX=$1
+
+    # check if the certificates are existing
+    test -f $CERT_DIR/$CERT_PREFIX-public.crt && test -f $CERT_DIR/$CERT_PREFIX-private.key
+}
+
+for prefix in "api" "agent"; do
+    # if certs exists we check on them, otherwise we make self-signed one
+    check_cert $prefix && expiry_check_cert $prefix || generate_cert $prefix
 done
 
-# the separator is a comma in the SAN list
-SANS=$(echo $SANS | sed 's/\ /,\ /g')
-
-
-echo "SANS: $SANS"
-echo "SUBJ: $SUBJ"
-echo "PRFX: $CERT_PREFIX"
-
-openssl genrsa -out $CERT_PREFIX-private.key 4096
-openssl req -new -x509 -sha256 -days 1825 -key $CERT_PREFIX-private.key -out $CERT_PREFIX-public.crt -subj "$SUBJ" -addext "subjectAltName = $SANS"
-
-cd ../

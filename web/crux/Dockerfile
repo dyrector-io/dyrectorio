@@ -1,35 +1,34 @@
-FROM node:17.1-alpine
+FROM node:17.1-alpine AS BUILDER
 
-ARG TIME_ZONE
+ENV NODE_ENV production
+WORKDIR /app
 
-# Add build dependencies and set timezone
-RUN apk --update add --no-cache --virtual .build-deps tzdata \
-   && cp /usr/share/zoneinfo/${TIME_ZONE} /etc/localtime \
-   && echo "${TIME_ZONE}" > /etc/timezone \
-   && apk del --no-network .build-deps \
-   && apk add openssl
-
-# Create Directory for the Container
-WORKDIR /usr/app
-
-COPY ./crux-docker-entrypoint.sh ./
-COPY ./cert-gen.sh ./
-
-COPY ./package*.json ./
-RUN npm ci prisma
-
+COPY ./package.json ./package-lock.json ./tsconfig.build.json ./tsconfig.json ./
 COPY ./prisma ./prisma
-RUN npx prisma generate
+COPY ./src ./src
 
-COPY ./install-docker.sh.hbr ./install-docker.sh.hbr
-COPY ./install-k8s.sh.hbr ./install-k8s.sh.hbr
+RUN npm ci && npm run prismagen 
+RUN npm run build
+
+FROM node:17.1-alpine AS RUNNER
+ENV NODE_ENV production
+ENV TZ Europe/Budapest
+
+RUN apk --update add tzdata openssl
+
+WORKDIR /app
+
+COPY --from=BUILDER /app/dist ./dist
+COPY --from=BUILDER /app/package.json ./
+COPY --from=BUILDER /app/node_modules ./node_modules
+COPY --from=BUILDER /app/prisma ./prisma
+COPY ./crux-docker-entrypoint.sh ./cert-gen.sh ./install-docker.sh.hbr ./install-k8s.sh.hbr ./
 COPY ./proto ./proto
-COPY ./dist ./dist
 
-RUN mkdir certs \
-    && chown node:node -R ./node_modules/prisma ./node_modules/.prisma ./certs && chmod 700 -R ./certs
-# Run container as non-root (unprivileged) user
-# The node user is provided in the Node.js Alpine base image
+RUN mkdir certs && \
+    chown node:node certs && \
+    chmod +x cert-gen.sh
+
 USER node
 
 # Start
