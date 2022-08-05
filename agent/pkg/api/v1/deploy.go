@@ -54,7 +54,7 @@ func (d *DeployImageRequest) Strings(appConfig *config.CommonConfiguration) []st
 	}
 	return []string{
 		// TODO: env
-		fmt.Sprintf("Deployment target: k8s ~ %v\n", appConfig.IngressRootDomain),
+		fmt.Sprintf("Deployment target: %v\n", appConfig.IngressRootDomain),
 		fmt.Sprintf("Image: %v\n", util.JoinV(":", d.ImageName, d.Tag)),
 		fmt.Sprintf("Registry: %v\n", registry),
 		fmt.Sprintf("Container name: %v\n", util.JoinV("-", d.InstanceConfig.ContainerPreName, d.ContainerConfig.Container)),
@@ -479,8 +479,8 @@ func (e *ErrRestartPolicyUnmarshalInvalid) Error() string {
 	return "restart policy invalid value provided"
 }
 
-// PolicyToString static mapping enum type into the docker supported string values
-var PolicyToString = map[RestartPolicyName]string{
+// policyToString static mapping enum type into the docker supported string values
+var policyToString = map[RestartPolicyName]string{
 	EmptyRestartPolicy:                "unless-stopped",
 	RestartUnlessStoppedRestartPolicy: "unless-stopped",
 	NoRestartPolicy:                   "no",
@@ -488,8 +488,8 @@ var PolicyToString = map[RestartPolicyName]string{
 	OnFailureRestartPolicy:            "on-failure",
 }
 
-// PolicyToID static mapping string values eg. from JSON into enums
-var PolicyToID = map[string]RestartPolicyName{
+// policyToID static mapping string values eg. from JSON into enums
+var policyToID = map[string]RestartPolicyName{
 	"":               RestartUnlessStoppedRestartPolicy,
 	"unless-stopped": RestartUnlessStoppedRestartPolicy,
 	"no":             NoRestartPolicy,
@@ -499,7 +499,7 @@ var PolicyToID = map[string]RestartPolicyName{
 
 // custom enum marshal JSON interface implementation
 func (policy RestartPolicyName) MarshalJSON() ([]byte, error) {
-	str, ok := PolicyToString[policy]
+	str, ok := policyToString[policy]
 	if !ok {
 		return nil, &ErrRestartPolicyUnmarshalInvalid{}
 	}
@@ -514,8 +514,8 @@ func (policy *RestartPolicyName) UnmarshalJSON(b []byte) error {
 		return err
 	}
 
-	if _, ok := PolicyToID[j]; ok {
-		*policy = PolicyToID[j]
+	if _, ok := policyToID[j]; ok {
+		*policy = policyToID[j]
 	} else {
 		*policy = RestartPolicyName("")
 		err = &ErrRestartPolicyUnmarshalInvalid{}

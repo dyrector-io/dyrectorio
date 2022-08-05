@@ -4,7 +4,7 @@ package docs
 
 import "github.com/swaggo/swag"
 
-const docTemplate = `{
+const docTemplateCrane = `{
     "schemes": {{ marshal .Schemes }},
     "swagger": "2.0",
     "info": {
@@ -4927,18 +4927,18 @@ const docTemplate = `{
     }
 }`
 
-// SwaggerInfo holds exported Swagger Info so clients can modify it
-var SwaggerInfo = &swag.Spec{
+// SwaggerInfoCrane holds exported Swagger Info so clients can modify it
+var SwaggerInfoCrane = &swag.Spec{
 	Version:          "2.0",
 	Host:             "",
 	BasePath:         "/v1",
 	Schemes:          []string{"http"},
 	Title:            "crane API Swagger",
 	Description:      "crane server API docs. Scope: container management on remote nodes.",
-	InfoInstanceName: "swagger",
-	SwaggerTemplate:  docTemplate,
+	InfoInstanceName: "Crane",
+	SwaggerTemplate:  docTemplateCrane,
 }
 
 func init() {
-	swag.Register(SwaggerInfo.InstanceName(), SwaggerInfo)
+	swag.Register(SwaggerInfoCrane.InstanceName(), SwaggerInfoCrane)
 }

@@ -9,7 +9,7 @@ import { utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
-import React, { useState } from 'react'
+import { useState } from 'react'
 
 interface ProductDetailsCardProps {
   className?: string

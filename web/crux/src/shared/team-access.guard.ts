@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable, SetMetadata } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
-import { PrismaService } from 'src/config/prisma.service'
+import { PrismaService } from 'src/services/prisma.service'
 import { InvalidArgumentException } from 'src/exception/errors'
 import { IdRequest } from 'src/grpc/protobuf/proto/crux'
 

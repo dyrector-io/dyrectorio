@@ -1,5 +1,5 @@
 import { Injectable, PipeTransform } from '@nestjs/common'
-import { PrismaService } from 'src/config/prisma.service'
+import { PrismaService } from 'src/services/prisma.service'
 import { checkVersionMutability } from 'src/domain/version'
 import { IdRequest } from 'src/grpc/protobuf/proto/crux'
 

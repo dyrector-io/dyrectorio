@@ -11,6 +11,7 @@ import (
 
 	"github.com/dyrector-io/dyrectorio/agent/internal/grpc"
 	"github.com/dyrector-io/dyrectorio/agent/internal/sigmalr"
+	"github.com/dyrector-io/dyrectorio/agent/internal/util"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/api/validate"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/model"
@@ -26,19 +27,19 @@ import (
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 // @BasePath /v1
 // @schemes http
-func Serve() {
-	utils.PreflightChecks()
+func Serve(cfg *config.Configuration) {
+	utils.PreflightChecks(cfg)
 	log.Println("Starting dyrector.io DAgent service")
 
-	httpPort := config.Cfg.HTTPPort
-	grpcToken := config.Cfg.GrpcToken
-	grpcInsecure := config.Cfg.GrpcInsecure
+	httpPort := cfg.HTTPPort
+	grpcToken := cfg.GrpcToken
+	grpcInsecure := cfg.GrpcInsecure
 
 	if httpPort == 0 && grpcToken == "" {
-		panic("no http port nor grpc address was provided")
+		log.Panic("no http port nor grpc address was provided")
 	}
 
-	if config.Cfg.Debug {
+	if cfg.Debug {
 		gin.SetMode(gin.DebugMode)
 		log.Println("DebugMode set.")
 	} else {
@@ -54,6 +55,7 @@ func Serve() {
 		// example:
 		// curl -iL -XGET -H "X-Health-Check: 1" http://localhost:8080
 		r.Use(healthcheck.Default())
+		r.Use(util.ConfigMiddleware(cfg))
 		validate.RouterWithValidators(r, routes.SetupRouter)
 	}
 
@@ -61,16 +63,18 @@ func Serve() {
 	if grpcToken != "" {
 		grpcParams, err := grpc.GrpcTokenToConnectionParams(grpcToken, grpcInsecure)
 		if err != nil {
-			panic(err)
+			log.Panic("gRPC token error: ", err)
 		}
+
 		log.Println("Running gRPC in blocking mode: ", blocking)
+		grpcContext := grpc.WithGRPCConfig(context.TODO(), cfg)
 		if blocking {
-			grpc.Init(grpcParams, &config.Cfg.CommonConfiguration, grpc.WorkerFunctions{
+			grpc.Init(grpcContext, grpcParams, &cfg.CommonConfiguration, grpc.WorkerFunctions{
 				Deploy: utils.DeployImage,
 				Watch:  utils.GetContainersByNameCrux,
 			})
 		} else {
-			go grpc.Init(grpcParams, &config.Cfg.CommonConfiguration, grpc.WorkerFunctions{
+			go grpc.Init(grpcContext, grpcParams, &cfg.CommonConfiguration, grpc.WorkerFunctions{
 				Deploy: utils.DeployImage,
 				Watch:  utils.GetContainersByNameCrux,
 			})
@@ -79,19 +83,19 @@ func Serve() {
 		log.Println("No gRPC configuration was provided")
 	}
 
-	update.InitUpdater(r, httpPort)
+	update.InitUpdater(r, httpPort, cfg)
 
-	if config.Cfg.TraefikEnabled {
+	if cfg.TraefikEnabled {
 		params := model.TraefikDeployRequest{
-			LogLevel: config.Cfg.TraefikLogLevel,
-			TLS:      config.Cfg.TraefikTLS,
-			AcmeMail: config.Cfg.TraefikAcmeMail,
+			LogLevel: cfg.TraefikLogLevel,
+			TLS:      cfg.TraefikTLS,
+			AcmeMail: cfg.TraefikAcmeMail,
 		}
 
-		err := utils.ExecTraefik(context.TODO(), params)
+		err := utils.ExecTraefik(context.TODO(), params, cfg)
 		if err != nil {
 			// we wanted to start traefik, but something is not ok, thus panic!
-			panic(err)
+			log.Panic("failed to start Traefik: ", err)
 		}
 	}
 
@@ -99,7 +103,7 @@ func Serve() {
 		srv := &http.Server{
 			Addr:              fmt.Sprintf(":%d", httpPort),
 			Handler:           r,
-			ReadHeaderTimeout: config.Cfg.ReadHeaderTimeout,
+			ReadHeaderTimeout: cfg.ReadHeaderTimeout,
 		}
 
 		if err := srv.ListenAndServe(); err != nil {

@@ -28,6 +28,13 @@ func GetVersion(c *gin.Context) {
 		log.Println("version request binding error: ", err.Error())
 		return
 	}
-	versions := utils.GetVersions(query.Instance)
-	c.JSON(http.StatusOK, versions)
+
+	cfg := utils.GetConfigFromGinContext(c)
+
+	if versions, versionsError := utils.GetVersions(query.Instance, cfg); versionsError != nil {
+		log.Printf("Failed to get versions: %v", versionsError)
+		c.Status(http.StatusInternalServerError)
+	} else {
+		c.JSON(http.StatusOK, versions)
+	}
 }

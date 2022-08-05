@@ -60,6 +60,14 @@ export class RegistryMapper {
               token: registry.token,
               urlPrefix: registry.urlPrefix,
             },
+      google:
+        registry.type !== RegistryTypeEnum.google
+          ? null
+          : {
+              url: registry.url,
+              user: registry.user,
+              token: registry.token,
+            },
     }
   }
 
@@ -104,6 +112,15 @@ export class RegistryMapper {
         type: RegistryTypeEnum.github,
         ...request.github,
         url: 'ghcr.io',
+        apiUrl: null,
+      }
+    } else if (request.google) {
+      return {
+        type: RegistryTypeEnum.google,
+        ...request.google,
+        user: request.google.user ?? null,
+        token: request.google.token ?? null,
+        urlPrefix: null,
         apiUrl: null,
       }
     } else {

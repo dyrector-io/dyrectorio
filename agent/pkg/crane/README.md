@@ -2,39 +2,13 @@
 
 Implement the current interface for k8s deployments
 
-## Development
-
-### Strategies
-
-- Conventional Commits: [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
-- Semantic Versioning: [semver.org](https://semver.org)
-- Branching policy: Gitflow Workflow
-  [nvie.com/posts/a-successful-git-branching-model/](https://nvie.com/posts/a-successful-git-branching-model/)
+## Development
 
 ### Requirement
 
 ##### Software
 
 - go version: 1.17
-
-##### Edit gitconfig
-
-Add url to `~/.gitconfig` file: 
-
-```
-[url "git@gitlab.com:"]
-insteadOf = https://gitlab.com/
-```
-##### Crux
-
-`crux` is our dyrectorio backend service, if you would like to use `crane` you have to start the Crux as well. If you are in the local environment and don't want to start up the whole application just, delete or comment out the GRPC ports settings in the `.env` file.
-
-##### Authenticate to Kubernetes Cluster
-
-For local development, you have to log in to some Kubernetes Cluster, for this purpose, we are using IBM Cloud Cluster nowadays (recommended). Please request credentials for IBM Cloud and after it, install the IBM Cloud CLI tool: 
-
-  - `ibmcloud login` - login to IBM Cloud
-  - `ibm ks cluster config -c ${cluster_id}` - add token to your local 
 
 ### Start
 
@@ -94,29 +68,6 @@ Run installed tool with like so
 ```
 golangci-lint run
 ```
-
-### Changelog
-
-Install the generator
-```
-go get -u github.com/git-chglog/git-chglog/cmd/git-chglog
-```
-
-Usage
-```
-git-chglog -o CHANGELOG.md
-```
-
-```
-git tag -a v1.x.x
-git push --tags
-```
-
-In order to draft a new release: 
-- create a new release tag on develop
-- generate changelogs
-
-See [CHANGELOG.md](CHANGELOG.md) 
 
 ### Test
 

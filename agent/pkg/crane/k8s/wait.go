@@ -10,11 +10,13 @@ import (
 	v1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
+
+	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/config"
 )
 
 // utility method ensuring deployment is running
-func WaitForRunningDeployment(namespace, name string, expectedReplicaCount int32, timeout time.Duration) error {
-	client := getDeploymentsClient(namespace)
+func WaitForRunningDeployment(namespace, name string, expectedReplicaCount int32, timeout time.Duration, cfg *config.Configuration) error {
+	client := getDeploymentsClient(namespace, cfg)
 	nameSelector := fields.OneTermEqualSelector("metadata.name", name)
 	options := metav1.ListOptions{FieldSelector: nameSelector.String(), Watch: true, TypeMeta: metav1.TypeMeta{}}
 

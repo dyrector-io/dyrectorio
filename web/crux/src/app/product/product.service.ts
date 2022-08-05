@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { ProductTypeEnum, VersionTypeEnum } from '@prisma/client'
-import { PrismaService } from 'src/config/prisma.service'
+import { PrismaService } from 'src/services/prisma.service'
 import {
   AccessRequest,
   CreateEntityResponse,

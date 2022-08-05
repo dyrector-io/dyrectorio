@@ -82,12 +82,12 @@ bbpb: build-both push-both
 
 .PHONY: swagger-dagent
 swagger-dagent: # generate openapi docs for agent
-	cd pkg/dagent && swag init -g dagent.go --parseDependency --parseInternal --parseVendor && \
+	cd pkg/dagent && swag init --instanceName Dagent -g dagent.go --parseDependency --parseInternal --parseVendor && \
 	cd -
 
 .PHONY: swagger-crane
 swagger-crane: # generate openapi docs for crane
-	cd pkg/crane && swag init -g crane.go --parseDependency --parseInternal --parseVendor && \
+	cd pkg/crane && swag init --instanceName Crane -g crane.go --parseDependency --parseInternal --parseVendor && \
 	cd -
 
 .PHONY: swaggen

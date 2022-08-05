@@ -119,9 +119,16 @@ class DyoRegistryService {
             ...res.gitlab,
             selfManaged: !!res.gitlab.apiUrl,
           }
-        : {
+        : res.github
+        ? {
             type: 'github',
             ...res.github,
+          }
+        : {
+            type: 'google',
+            ...res.google,
+            token: res.google.token,
+            _private: !!res.google.user,
           }),
     }
   }
@@ -167,6 +174,14 @@ class DyoRegistryService {
               user: dto.user,
               token: dto.token,
               urlPrefix: dto.urlPrefix,
+            },
+      google:
+        dto.type !== 'google'
+          ? null
+          : {
+              url: dto.url,
+              user: dto.user,
+              token: dto.token ?? Buffer.from(dto.token).toString('base64'),
             },
     }
   }

@@ -4,6 +4,7 @@
 
 [![License](https://img.shields.io/badge/licence-Apache%202.0-brightgreen.svg?style=flat)](LICENSE)
 [![Discord Budget](https://img.shields.io/discord/797082431902449694)](https://discord.gg/pZWbd4fxga)
+[![codecov](https://img.shields.io/codecov/c/github/dyrector-io/dyrectorio/develop?logo=Go&token=F5TZTAJTKX)](https://codecov.io/gh/dyrector-io/dyrectorio)
 
 ## Overview
 
@@ -99,6 +100,29 @@ Send a pull request to any of our open source repositories on Github. Check our 
 
 ## Contributing
 The project can only accept contributions which are licensed under the [Apache License 2.0](LICENSE). For further information please see our [Contribution Guidelines](CONTRIBUTING.md).
+
+## Changelog
+
+Install the generator
+```
+go get -u github.com/git-chglog/git-chglog/cmd/git-chglog
+```
+
+Usage
+```
+git-chglog --next-tag vx.y.z -o CHANGELOG.md
+```
+
+```
+git tag -a vx.y.z
+git push --tags
+```
+
+In order to draft a new release: 
+- create a new release tag on develop
+- generate changelogs
+
+See [CHANGELOG.md](CHANGELOG.md) 
 
 ## Feedback
 

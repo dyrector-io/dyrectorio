@@ -16,7 +16,7 @@ const DyoChips = <T,>(props: DyoChipsProps<T>) => {
 
   assert(
     converter || choices.length < 1 || typeof choices[0] === 'string',
-    'When choices are not string, you must define an converter.',
+    'When choices are not string, you must define a converter.',
   )
 
   const [selection, setSelection] = useState<T>(props.initialSelection ?? null)

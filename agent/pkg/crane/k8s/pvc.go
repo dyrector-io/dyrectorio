@@ -20,14 +20,15 @@ type pvc struct {
 	status    string
 	requested map[string]v1.Volume
 	avail     map[string]v1.Volume
+	appConfig *config.Configuration
 }
 
-func newPvc() *pvc {
-	return &pvc{status: "", avail: map[string]v1.Volume{}, requested: map[string]v1.Volume{}}
+func newPvc(cfg *config.Configuration) *pvc {
+	return &pvc{status: "", avail: map[string]v1.Volume{}, requested: map[string]v1.Volume{}, appConfig: cfg}
 }
 
 func (p *pvc) deployPVC(namespace, name string, mountList []string, volumes []v1.Volume) error {
-	client, err := getPVCClient(namespace)
+	client, err := getPVCClient(namespace, p.appConfig)
 	if err != nil {
 		return err
 	}
@@ -88,7 +89,7 @@ func (p *pvc) applyVolume(client typedv1.PersistentVolumeClaimInterface,
 	var size resource.Quantity
 
 	if volume.Size == "" {
-		sizeFromEnv := resource.MustParse(config.Cfg.DefaultVolumeSize)
+		sizeFromEnv := resource.MustParse(p.appConfig.DefaultVolumeSize)
 		size = sizeFromEnv
 	} else {
 		size = resource.MustParse(volume.Size)
@@ -107,8 +108,8 @@ func (p *pvc) applyVolume(client typedv1.PersistentVolumeClaimInterface,
 		WithSpec(claimSpec)
 
 	result, err := client.Apply(context.TODO(), claim, metaV1.ApplyOptions{
-		FieldManager: config.Cfg.FieldManagerName,
-		Force:        config.Cfg.ForceOnConflicts,
+		FieldManager: p.appConfig.FieldManagerName,
+		Force:        p.appConfig.ForceOnConflicts,
 	})
 
 	if err != nil {
@@ -128,8 +129,8 @@ func (p *pvc) applyVolume(client typedv1.PersistentVolumeClaimInterface,
 	return nil
 }
 
-func getPVCClient(namespace string) (typedv1.PersistentVolumeClaimInterface, error) {
-	clientSet, err := GetClientSet()
+func getPVCClient(namespace string, cfg *config.Configuration) (typedv1.PersistentVolumeClaimInterface, error) {
+	clientSet, err := GetClientSet(cfg)
 	if err != nil {
 		return nil, err
 	}

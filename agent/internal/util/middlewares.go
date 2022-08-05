@@ -9,6 +9,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const configMiddlewareField = "Cfg"
+
 func RequestLogger() gin.HandlerFunc {
 	log.Println("Applying request logger middleware")
 	return func(c *gin.Context) {
@@ -22,4 +24,16 @@ func RequestLogger() gin.HandlerFunc {
 		}
 		c.Next()
 	}
+}
+
+func ConfigMiddleware(cfg interface{}) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Set(configMiddlewareField, cfg)
+
+		c.Next()
+	}
+}
+
+func ConfigMiddlewareGet(c *gin.Context) interface{} {
+	return c.MustGet(configMiddlewareField)
 }

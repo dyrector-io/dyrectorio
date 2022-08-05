@@ -17,7 +17,7 @@ protogen:| proto-agent proto-crux proto-crux-ui
 ## Generate agent grpc files
 .PHONY: proto-agent
 proto-agent:
-	docker run --rm -u  ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16 ash -c "\
+	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v "${PWD}":/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16 ash -c "\
 		mkdir -p protobuf/go && \
 		protoc -I. \
 			--go_out protobuf/go \
@@ -29,7 +29,7 @@ proto-agent:
 # Generate API grpc files
 .PHONY: proto-crux
 proto-crux:
-	docker run --rm -u  ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16 ash -c "\
+	MSYS_NO_PATHCONV=1 docker run -u ${UID}:${GID} -v "${PWD}":/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16 ash -c "\
 		mkdir -p ./web/crux/src/grpc && \
 		protoc -I. \
 			--experimental_allow_proto3_optional \
@@ -41,13 +41,13 @@ proto-crux:
 			--ts_proto_out=./web/crux/src/grpc \
 			protobuf/proto/*.proto && \
 		cp -r protobuf/proto web/crux/" && \
-		cd ./web/crux && \
-		npx prettier -w "./src/grpc/**/*.ts"
+	cd ./web/crux && \
+	npx prettier -w "./src/grpc/**/*.ts"
 
 # Generate UI grpc files, note the single file
 .PHONY:  proto-crux-ui
 proto-crux-ui:
-	docker run --rm -u  ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16 ash -c "\
+	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v "${PWD}":/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16 ash -c "\
 		mkdir -p ./web/crux-ui/src/models/grpc && \
 		protoc -I. \
 			--experimental_allow_proto3_optional \

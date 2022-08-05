@@ -27,4 +27,4 @@ export const registries = [
     teamId: constants.TEAM_ID,
     type: 'v2',
   },
-] as Registry[]
+] as Omit<Registry, "id">[]

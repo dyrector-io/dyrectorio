@@ -22,7 +22,7 @@ COPY --from=BUILDER /app/dist ./dist
 COPY --from=BUILDER /app/package.json ./
 COPY --from=BUILDER /app/node_modules ./node_modules
 COPY --from=BUILDER /app/prisma ./prisma
-COPY ./crux-docker-entrypoint.sh ./cert-gen.sh ./install.sh.hbr ./
+COPY ./crux-docker-entrypoint.sh ./cert-gen.sh ./install-docker.sh.hbr ./install-k8s.sh.hbr ./
 COPY ./proto ./proto
 
 RUN mkdir certs && \

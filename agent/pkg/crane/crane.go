@@ -1,6 +1,7 @@
 package crane
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -21,12 +22,8 @@ import (
 
 // checks before start
 // all the runtime dependencies to be checked
-func preflightChecks() {
-	if config.Cfg.IngressRootDomain == "" {
-		log.Panicf("Env %v is not set, it is needed to expose any service.", "INGRESS_ROOT_DOMAIN")
-	}
-
-	size := config.Cfg.DefaultVolumeSize
+func preflightChecks(cfg *config.Configuration) {
+	size := cfg.DefaultVolumeSize
 	if size != "" {
 		_, err := resource.ParseQuantity(size)
 		if err != nil {
@@ -42,26 +39,23 @@ func preflightChecks() {
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 // @BasePath /v1
 // @schemes http
-func Serve() {
-	preflightChecks()
+func Serve(cfg *config.Configuration) {
+	preflightChecks(cfg)
 	log.Println("Starting dyrector.io crane service.")
 
-	httpPort := config.Cfg.HTTPPort
-	grpcToken := config.Cfg.GrpcToken
-	grpcInsecure := config.Cfg.GrpcInsecure
+	httpPort := cfg.HTTPPort
+	grpcToken := cfg.GrpcToken
+	grpcInsecure := cfg.GrpcInsecure
 
 	if httpPort == 0 && grpcToken == "" {
-		panic("no http port nor grpc address was provided")
+		log.Panic("no http port nor grpc address was provided")
 	}
 
-	if config.Cfg.Debug {
+	if cfg.Debug {
 		gin.SetMode(gin.DebugMode)
 		log.Println("DebugMode set.")
 	} else {
 		gin.SetMode(gin.ReleaseMode)
-	}
-	if httpPort == 0 && grpcToken == "" {
-		panic("No http port nor grpc token was provided!")
 	}
 
 	var r *gin.Engine
@@ -76,6 +70,7 @@ func Serve() {
 		// example:
 		// curl -iL -XGET -H "X-Health-Check: 1" http://localhost:8080
 		r.Use(healthcheck.Default())
+		r.Use(util.ConfigMiddleware(cfg))
 	}
 
 	// TODO: add update methods
@@ -88,16 +83,22 @@ func Serve() {
 	blocking := httpPort == 0
 	if grpcToken != "" {
 		grpcParams, err := grpc.GrpcTokenToConnectionParams(grpcToken, grpcInsecure)
-
 		if err != nil {
-			panic(err)
+			log.Panic("gRPC token error: ", err)
 		}
 
 		log.Println("Running gRPC in blocking mode: ", blocking)
+		grpcContext := grpc.WithGRPCConfig(context.TODO(), cfg)
 		if blocking {
-			grpc.Init(grpcParams, &config.Cfg.CommonConfiguration, grpc.WorkerFunctions{Deploy: k8s.Deploy, Watch: crux.GetDeployments})
+			grpc.Init(grpcContext, grpcParams, &cfg.CommonConfiguration, grpc.WorkerFunctions{
+				Deploy: k8s.Deploy,
+				Watch:  crux.GetDeployments,
+			})
 		} else {
-			go grpc.Init(grpcParams, &config.Cfg.CommonConfiguration, grpc.WorkerFunctions{Deploy: k8s.Deploy, Watch: crux.GetDeployments})
+			go grpc.Init(grpcContext, grpcParams, &cfg.CommonConfiguration, grpc.WorkerFunctions{
+				Deploy: k8s.Deploy,
+				Watch:  crux.GetDeployments,
+			})
 		}
 	} else {
 		log.Println("No gRPC configuration was provided")
@@ -107,7 +108,7 @@ func Serve() {
 		srv := &http.Server{
 			Addr:              fmt.Sprintf(":%d", httpPort),
 			Handler:           r,
-			ReadHeaderTimeout: config.Cfg.ReadHeaderTimeout,
+			ReadHeaderTimeout: cfg.ReadHeaderTimeout,
 		}
 
 		if err := srv.ListenAndServe(); err != nil {

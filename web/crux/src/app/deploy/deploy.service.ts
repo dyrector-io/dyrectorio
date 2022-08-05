@@ -2,7 +2,7 @@ import { Injectable, Logger, PreconditionFailedException } from '@nestjs/common'
 import { DeploymentStatusEnum } from '@prisma/client'
 import { JsonArray } from 'prisma'
 import { concatAll, filter, from, map, merge, Observable, Subject } from 'rxjs'
-import { PrismaService } from 'src/config/prisma.service'
+import { PrismaService } from 'src/services/prisma.service'
 import {
   defaultDeploymentName,
   Deployment,

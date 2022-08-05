@@ -20,7 +20,7 @@ import { distinct } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import Image from 'next/image'
-import React, { useState } from 'react'
+import { useState } from 'react'
 import DeploymentStatusIndicator from './deployments/deployment-status-indicator'
 
 interface VersionDeploymentsSectionProps {

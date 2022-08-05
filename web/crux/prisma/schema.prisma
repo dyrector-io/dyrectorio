@@ -47,20 +47,21 @@ model UsersOnTeams {
 }
 
 model Node {
-  id             String    @id @default(uuid()) @db.Uuid
-  createdAt      DateTime  @default(now()) @db.Timestamptz(6)
-  createdBy      String    @db.Uuid
-  updatedAt      DateTime? @default(now()) @db.Timestamptz(6)
-  updatedBy      String?   @db.Uuid
+  id             String        @id @default(uuid()) @db.Uuid
+  createdAt      DateTime      @default(now()) @db.Timestamptz(6)
+  createdBy      String        @db.Uuid
+  updatedAt      DateTime?     @default(now()) @db.Timestamptz(6)
+  updatedBy      String?       @db.Uuid
   name           String
+  type           NodeTypeEnum? @default(docker)
   description    String?
   icon           String?
   token          String?
   address        String?
-  connectedAt    DateTime? @db.Timestamptz(6)
-  disconnectedAt DateTime? @db.Timestamptz(6)
-  team           Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  teamId         String    @db.Uuid
+  connectedAt    DateTime?     @db.Timestamptz(6)
+  disconnectedAt DateTime?     @db.Timestamptz(6)
+  team           Team          @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId         String        @db.Uuid
 
   deployments Deployment[]
 
@@ -119,12 +120,12 @@ model Version {
   type      VersionTypeEnum @default(incremental)
   productId String          @db.Uuid
 
-
   product     Product                   @relation(fields: [productId], references: [id], onDelete: Cascade)
   images      Image[]
   deployments Deployment[]
   parent      VersionsOnParentVersion?  @relation("child")
   children    VersionsOnParentVersion[] @relation("parent")
+
   @@unique([productId, name])
 }
 
@@ -184,6 +185,7 @@ model Deployment {
 
   instances Instance[]
   events    DeploymentEvent[]
+
   @@unique([versionId, name])
 }
 
@@ -270,4 +272,10 @@ enum RegistryTypeEnum {
   hub
   gitlab
   github
+  google
+}
+
+enum NodeTypeEnum {
+  docker
+  k8s
 }

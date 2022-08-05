@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { Prisma, PrismaClient } from '@prisma/client'
 import { versions } from './data/versions'
 import { products } from './data/products'
 import { teams } from './data/teams'
@@ -75,7 +75,10 @@ async function main() {
   await Promise.all(
     deployments.map(async it => {
       await prisma.deployment.create({
-        data: it,
+        data: {
+            ...it,
+            environment: it.environment as Prisma.InputJsonArray
+        },
       })
     }),
   )
@@ -84,7 +87,10 @@ async function main() {
   await Promise.all(
     deploymentEvents.map(async it => {
       await prisma.deploymentEvent.create({
-        data: it,
+        data: {
+          ...it,
+          value: it.value as Prisma.InputJsonValue
+        },
       })
     }),
   )
@@ -93,7 +99,12 @@ async function main() {
   await Promise.all(
     containerConfigs.map(async it => {
       await prisma.containerConfig.create({
-        data: it,
+        data: {
+          ...it,
+          environment: it.environment as Prisma.InputJsonArray,
+          capabilities: it.capabilities as Prisma.InputJsonArray,
+          config: it.config as Prisma.InputJsonValue
+        },
       })
     }),
   )

@@ -13,29 +13,29 @@ import (
 	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/config"
 )
 
-func GetClientSet() (*kubernetes.Clientset, error) {
-	if config.Cfg.CraneInCluster {
-		return inClusterAuth()
+func GetClientSet(cfg *config.Configuration) (*kubernetes.Clientset, error) {
+	if cfg.CraneInCluster {
+		return inClusterAuth(cfg)
 	} else {
-		return outClusterAuth()
+		return outClusterAuth(cfg)
 	}
 }
 
-func inClusterAuth() (*kubernetes.Clientset, error) {
+func inClusterAuth(cfg *config.Configuration) (*kubernetes.Clientset, error) {
 	clusterConfig, err := rest.InClusterConfig()
 	if err != nil {
 		log.Println(err.Error())
 		return nil, err
 	}
-	clusterConfig.Timeout = config.Cfg.DefaultKubeTimeout
+	clusterConfig.Timeout = cfg.DefaultKubeTimeout
 	clientset, err := kubernetes.NewForConfig(clusterConfig)
 	return clientset, err
 }
 
-func outClusterAuth() (*kubernetes.Clientset, error) {
+func outClusterAuth(cfg *config.Configuration) (*kubernetes.Clientset, error) {
 	var kubeconfig *string
 
-	if configPathFromEnv := config.Cfg.KubeConfig; configPathFromEnv != "" {
+	if configPathFromEnv := cfg.KubeConfig; configPathFromEnv != "" {
 		kubeconfig = &configPathFromEnv
 	} else if home := homedir.HomeDir(); home != "" {
 		cfgPath := filepath.Join(home, ".kube", "config")
@@ -46,7 +46,7 @@ func outClusterAuth() (*kubernetes.Clientset, error) {
 	if err != nil {
 		log.Panicln("Could not load config file: " + err.Error())
 	}
-	configFromFlags.Timeout = config.Cfg.DefaultKubeTimeout
+	configFromFlags.Timeout = cfg.DefaultKubeTimeout
 
 	// create the clientset
 	clientset, err := kubernetes.NewForConfig(configFromFlags)

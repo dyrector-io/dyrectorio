@@ -39,7 +39,7 @@ service CruxNode {
   rpc UpdateNode(UpdateNodeRequest) returns (Empty);
   rpc DeleteNode(IdRequest) returns (Empty);
   rpc GetNodeDetails(IdRequest) returns (NodeDetailsResponse);
-  rpc GenerateScript(IdRequest) returns (NodeInstallResponse);
+  rpc GenerateScript(GenerateScriptRequest) returns (NodeInstallResponse);
   rpc GetScript(ServiceIdRequest) returns (NodeScriptResponse);
   rpc DiscardScript(IdRequest) returns (Empty);
   rpc RevokeToken(IdRequest) returns (Empty);
@@ -308,6 +308,12 @@ message GithubRegistryDetails {
   string urlPrefix = 102;
 }
 
+message GoogleRegistryDetails {
+  string url = 100;
+  optional string user = 101;
+  optional string token = 102;
+}
+
 message CreateRegistryRequest {
   string accessedBy = 2;
 
@@ -320,6 +326,7 @@ message CreateRegistryRequest {
     V2RegistryDetails v2 = 201;
     GitlabRegistryDetails gitlab = 202;
     GithubRegistryDetails github = 203;
+    GoogleRegistryDetails google = 204;
   }
 }
 
@@ -336,6 +343,7 @@ message UpdateRegistryRequest {
     V2RegistryDetails v2 = 201;
     GitlabRegistryDetails gitlab = 202;
     GithubRegistryDetails github = 203;
+    GoogleRegistryDetails google = 204;
   }
 }
 
@@ -352,6 +360,7 @@ message RegistryDetailsResponse {
     V2RegistryDetails v2 = 201;
     GitlabRegistryDetails gitlab = 202;
     GithubRegistryDetails github = 203;
+    GoogleRegistryDetails google = 204;
   }
 }
 
@@ -361,6 +370,7 @@ enum RegistryType {
   HUB = 2;
   GITLAB = 3;
   GITHUB = 4;
+  GOOGLE = 5;
 }
 
 // VERSION
@@ -523,6 +533,7 @@ message NodeResponse {
   NodeConnectionStatus status = 104;
   optional google.protobuf.Timestamp connectedAt = 105;
   optional string version = 106;
+  NodeType type = 107;
 }
 
 message NodeDetailsResponse {
@@ -539,6 +550,7 @@ message NodeDetailsResponse {
   optional NodeInstallResponse install = 107;
   optional NodeScriptResponse script = 108;
   optional string version = 109;
+  NodeType type = 110;
 }
 
 message NodeListResponse { repeated NodeResponse data = 1000; }
@@ -558,6 +570,12 @@ message UpdateNodeRequest {
   string name = 100;
   optional string description = 101;
   optional string icon = 102;
+}
+
+message GenerateScriptRequest {
+  string id = 1;
+  string accessedBy = 2;
+  NodeType type = 100;
 }
 
 message NodeInstallResponse {
@@ -580,6 +598,12 @@ enum NodeConnectionStatus {
   UNREACHABLE = 1;
   // Node is running and connected
   CONNECTED = 2;
+}
+
+enum NodeType {
+  UNKNOWN_NODE_TYPE = 0;
+  DOCKER = 1;
+  K8S = 2;
 }
 
 message NodeEventMessage {

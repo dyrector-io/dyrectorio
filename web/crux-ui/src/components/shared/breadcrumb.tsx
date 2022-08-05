@@ -3,7 +3,6 @@ import { DyoLabel } from '@app/elements/dyo-label'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
 import Link from 'next/link'
-import React from 'react'
 
 export type BreadcrumbLink = {
   name: string

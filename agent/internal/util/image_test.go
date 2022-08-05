@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/dyrector-io/dyrectorio/agent/internal/util"
+	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 )
 
 func TestNameEmpty(t *testing.T) {
@@ -30,6 +31,15 @@ func TestNameShort(t *testing.T) {
 	assert.Equal(t, res.Name, image)
 	assert.Equal(t, res.Tag, tag)
 	assert.Nil(t, err)
+}
+
+func TestNameNoTag(t *testing.T) {
+	imageName := "nginx"
+	res, err := util.ImageURIFromString(imageName)
+
+	assert.Nil(t, res)
+	testErr := &util.InvalidImageURIError{Image: imageName}
+	assert.Equal(t, err.Error(), testErr.Error())
 }
 
 func TestNameFullyQualified(t *testing.T) {
@@ -74,4 +84,66 @@ func TestImageToStringWithoutTag(t *testing.T) {
 
 	assert.Equal(t, "docker.io/library/alpine:latest", image.String())
 	assert.Equal(t, "docker.io/library/alpine", image.StringNoTag())
+}
+
+func TestRegistryUrl(t *testing.T) {
+	auth := &util.RegistryAuth{
+		URL: "test",
+	}
+
+	url := util.GetRegistryURL(nil, auth)
+	assert.Equal(t, url, "test")
+}
+
+func TestRegistryUrlPriority(t *testing.T) {
+	registry := "other"
+	auth := &util.RegistryAuth{
+		URL: "test",
+	}
+
+	url := util.GetRegistryURL(&registry, auth)
+	assert.Equal(t, url, "test")
+}
+
+func TestRegistryUrlRegistry(t *testing.T) {
+	registry := "other"
+
+	url := util.GetRegistryURL(&registry, nil)
+	assert.Equal(t, url, "other")
+}
+
+func TestRegistryUrlEmpty(t *testing.T) {
+	url := util.GetRegistryURL(nil, nil)
+	assert.Equal(t, url, "")
+}
+
+func TestProtoRegistryUrl(t *testing.T) {
+	auth := &agent.DeployRequest_RegistryAuth{
+		Url: "test",
+	}
+
+	url := util.GetRegistryURLProto(nil, auth)
+	assert.Equal(t, url, "test")
+}
+
+func TestProtoRegistryUrlPriority(t *testing.T) {
+	registry := "other"
+	auth := &agent.DeployRequest_RegistryAuth{
+		Url: "test",
+	}
+
+	url := util.GetRegistryURLProto(&registry, auth)
+	assert.Equal(t, url, "test")
+}
+
+func TestProtoRegistryUrlRegistry(t *testing.T) {
+	registry := "other"
+
+	url := util.GetRegistryURLProto(&registry, nil)
+	assert.Equal(t, url, "other")
+}
+
+func TestProtoRegistryUrlEmpty(t *testing.T) {
+	url := util.GetRegistryURLProto(nil, nil)
+	assert.Equal(t, url, "")
 }

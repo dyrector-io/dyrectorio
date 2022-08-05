@@ -1,3 +1,5 @@
+import { Logger } from '@nestjs/common'
+import { NodeTypeEnum } from '@prisma/client'
 import { readFileSync } from 'fs'
 import Handlebars from 'handlebars'
 import { join } from 'path'
@@ -8,11 +10,21 @@ import { NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
 import { GrpcNodeConnection } from 'src/shared/grpc-node-connection'
 import { Agent } from './agent'
 
-const SCRIPT_TEMPLATE = readFileSync(join(cwd(), 'install.sh.hbr'), 'utf8')
-const compileScript = Handlebars.compile(SCRIPT_TEMPLATE)
+const agentFileTemplate = 'install-{{nodeType}}.sh.hbr'
 
 export class AgentInstaller {
-  constructor(readonly nodeId: string, readonly token: string, readonly expireAt: number) {}
+  private readonly logger = new Logger(AgentInstaller.name)
+
+  scriptCompiler: ScriptCompiler
+
+  constructor(
+    readonly nodeId: string,
+    readonly token: string,
+    readonly expireAt: number,
+    readonly nodeType: NodeTypeEnum,
+  ) {
+    this.loadScriptAndCompiler(nodeType)
+  }
 
   get expired(): boolean {
     const now = new Date().getTime()
@@ -35,18 +47,33 @@ export class AgentInstaller {
   getScript(name: string): string {
     this.verify()
 
-    return compileScript({
+    let installScriptParams = {
       name: name.toLowerCase().replace(/\s/g, ''),
       token: this.token,
       insecure: process.env.GRPC_AGENT_INSTALL_SCRIPT_INSECURE === 'true',
-      image: 'ghcr.io/dyrector-io/dyrectorio/agent/dagent:stable',
-    })
+    }
+
+    if (this.nodeType === NodeTypeEnum.k8s) {
+      installScriptParams = Object.assign(installScriptParams, {
+        localManifests: process.env.K8S_LOCAL_MANIFEST === 'true',
+      })
+    }
+
+    return this.scriptCompiler.compile(installScriptParams)
   }
 
   complete(connection: GrpcNodeConnection, eventChannel: Subject<NodeEventMessage>, version?: string): Agent {
     this.verify()
-
     return new Agent(connection, eventChannel, version)
+  }
+
+  loadScriptAndCompiler(nodeType: NodeTypeEnum): void {
+    const agentFilename = Handlebars.compile(agentFileTemplate)({ nodeType })
+    const scriptFile = readFileSync(join(cwd(), agentFilename), 'utf8')
+    this.scriptCompiler = {
+      compile: Handlebars.compile(scriptFile),
+      file: scriptFile,
+    }
   }
 }
 
@@ -58,4 +85,9 @@ export type InstallScriptConfig = {
   update?: boolean
   traefik?: boolean
   hostname?: string
+}
+
+export type ScriptCompiler = {
+  file: Buffer | string
+  compile: Handlebars.TemplateDelegate
 }

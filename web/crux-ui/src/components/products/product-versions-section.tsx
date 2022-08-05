@@ -2,7 +2,6 @@ import DyoWrap from '@app/elements/dyo-wrap'
 import { Version } from '@app/models'
 import { versionUrl } from '@app/routes'
 import { useRouter } from 'next/router'
-import React from 'react'
 import VersionCard from './versions/version-card'
 
 interface ProductVersionsSectionProps {

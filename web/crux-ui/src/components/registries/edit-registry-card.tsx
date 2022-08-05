@@ -1,6 +1,7 @@
 import { DyoButton } from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoChips from '@app/elements/dyo-chips'
+import { DyoFileUploadInput } from '@app/elements/dyo-file-upload'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIconPicker from '@app/elements/dyo-icon-picker'
 import { DyoInput } from '@app/elements/dyo-input'
@@ -12,13 +13,13 @@ import {
   CreateRegistry,
   GithubRegistryDetails,
   GitlabRegistryDetails,
+  GoogleRegistryDetails,
   HubRegistryDetails,
   Registry,
   RegistryDetails,
   registryDetailsToRegistry,
   RegistryType,
   REGISTRY_TYPE_VALUES,
-  UpdateProduct,
   UpdateRegistry,
   V2RegistryDetails,
 } from '@app/models'
@@ -73,7 +74,7 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
 
       const res = await (!editing
         ? sendForm('POST', API_REGISTRIES, body as CreateRegistry)
-        : sendForm('PUT', registryApiUrl(registry.id), body as UpdateProduct))
+        : sendForm('PUT', registryApiUrl(registry.id), body as UpdateRegistry))
 
       if (res.ok) {
         let result: RegistryDetails
@@ -160,6 +161,8 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
               <GitlabRegistryFields formik={formik as FormikProps<GitlabRegistryDetails>} />
             ) : registryType === 'github' ? (
               <GithubRegistryFields formik={formik as FormikProps<GithubRegistryDetails>} />
+            ) : registryType === 'google' ? (
+              <GoogleRegistryFields formik={formik as FormikProps<GoogleRegistryDetails>} />
             ) : (
               <div className="bg-red-500">Unknown registry type: ${registryType}</div>
             )}
@@ -388,6 +391,83 @@ const GithubRegistryFields = (props: EditRegistryTypeProps<GithubRegistryDetails
         value={formik.values.urlPrefix}
         message={formik.errors.urlPrefix}
       />
+    </>
+  )
+}
+
+const GoogleRegistryFields = (props: EditRegistryTypeProps<GoogleRegistryDetails>) => {
+  const { formik } = props
+
+  const { t } = useTranslation('registries')
+
+  const uploadHandler = keyFile => {
+    const fileReader = new FileReader()
+    fileReader.readAsText(keyFile, 'UTF-8')
+    fileReader.onload = event => {
+      const json = JSON.parse(event.target.result.toString())
+      formik.setFieldValue('user', json.client_email ? json.client_email : '')
+      formik.setFieldValue('token', json.private_key ? json.private_key : '')
+    }
+  }
+
+  return (
+    <>
+      <DyoLabel className="text-light mt-2">{t('tips.google')}</DyoLabel>
+
+      <DyoInput
+        className="max-w-lg"
+        grow
+        name="url"
+        type="text"
+        label={t('organization')}
+        onChange={formik.handleChange}
+        value={formik.values.url}
+        message={formik.errors.url}
+      />
+
+      <div className="mr-auto">
+        <DyoToggle
+          className="text-bright mt-8"
+          name="_private"
+          nameChecked={t('private')}
+          nameUnchecked={t('public')}
+          checked={formik.values._private}
+          setFieldValue={formik.setFieldValue}
+        />
+      </div>
+
+      {!formik.values._private ? null : (
+        <>
+          <DyoFileUploadInput
+            name="uploadFile"
+            accept="application/JSON"
+            multiple={false}
+            label={t('keyFile')}
+            handleFile={event => uploadHandler(event)}
+          />
+
+          <DyoInput
+            className="max-w-lg"
+            grow
+            name="user"
+            type="text"
+            label={t('user')}
+            onChange={formik.handleChange}
+            value={formik.values.user}
+            message={formik.errors.user}
+          />
+
+          <DyoTextArea
+            className="max-w-lg"
+            grow
+            name="token"
+            label={t('privateKey')}
+            onChange={formik.handleChange}
+            value={formik.values.token}
+            message={formik.errors.token}
+          />
+        </>
+      )}
     </>
   )
 }
