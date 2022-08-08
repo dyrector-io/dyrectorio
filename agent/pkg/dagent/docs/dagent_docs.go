@@ -121,13 +121,13 @@ const docTemplateDagent = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/model.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/model.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     }
                 }
@@ -192,13 +192,13 @@ const docTemplateDagent = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/model.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/model.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     }
                 }
@@ -237,7 +237,7 @@ const docTemplateDagent = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.ContainerStatusResponse"
+                            "$ref": "#/definitions/v1.ContainerStatusResponse"
                         }
                     }
                 }
@@ -305,13 +305,13 @@ const docTemplateDagent = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/model.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/model.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     }
                 }
@@ -1182,51 +1182,78 @@ const docTemplateDagent = `{
                 }
             }
         },
-        "model.ContainerStatusResponse": {
+        "containerbuilder.PortBinding": {
             "type": "object",
             "required": [
-                "repository",
-                "state",
-                "status",
-                "tag"
+                "exposedPort",
+                "portBinding"
             ],
             "properties": {
-                "repository": {
-                    "type": "string"
+                "exposedPort": {
+                    "type": "integer",
+                    "maximum": 65535,
+                    "minimum": 0
                 },
-                "state": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string"
-                },
-                "tag": {
-                    "type": "string"
+                "portBinding": {
+                    "type": "integer",
+                    "maximum": 65535,
+                    "minimum": 0
                 }
             }
         },
-        "model.Error": {
+        "containerbuilder.PortRange": {
             "type": "object",
+            "required": [
+                "from",
+                "to"
+            ],
             "properties": {
-                "description": {
-                    "type": "string"
+                "from": {
+                    "type": "integer",
+                    "maximum": 65535,
+                    "minimum": 0
                 },
-                "error": {
-                    "type": "string"
-                },
-                "value": {
-                    "type": "string"
+                "to": {
+                    "type": "integer",
+                    "maximum": 65535
                 }
             }
         },
-        "model.ErrorResponse": {
+        "containerbuilder.PortRangeBinding": {
             "type": "object",
+            "required": [
+                "external",
+                "internal"
+            ],
             "properties": {
-                "errors": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.Error"
-                    }
+                "external": {
+                    "$ref": "#/definitions/containerbuilder.PortRange"
+                },
+                "internal": {
+                    "$ref": "#/definitions/containerbuilder.PortRange"
+                }
+            }
+        },
+        "containerbuilder.RegistryAuth": {
+            "type": "object",
+            "required": [
+                "name",
+                "password",
+                "url",
+                "user"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                },
+                "user": {
+                    "type": "string"
                 }
             }
         },
@@ -1908,29 +1935,6 @@ const docTemplateDagent = `{
                 }
             }
         },
-        "util.RegistryAuth": {
-            "type": "object",
-            "required": [
-                "name",
-                "password",
-                "url",
-                "user"
-            ],
-            "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "url": {
-                    "type": "string"
-                },
-                "user": {
-                    "type": "string"
-                }
-            }
-        },
         "utils.ReleaseContainer": {
             "type": "object",
             "properties": {
@@ -2074,7 +2078,7 @@ const docTemplateDagent = `{
                 },
                 "logConfig": {
                     "description": "dagent only",
-                    "$ref": "#/definitions/v1.LogConfig"
+                    "$ref": "#/definitions/container.LogConfig"
                 },
                 "mount": {
                     "description": "mount list, if a name starts with @ it can be used by multiple components eg @data|/target/mount/path",
@@ -2091,14 +2095,14 @@ const docTemplateDagent = `{
                     "description": "portbinding list contains external/interal ports",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/v1.PortBinding"
+                        "$ref": "#/definitions/containerbuilder.PortBinding"
                     }
                 },
                 "portRanges": {
                     "description": "Port ranges to be exposed ! no native range support in k8s",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/v1.PortRangeBinding"
+                        "$ref": "#/definitions/containerbuilder.PortRangeBinding"
                     }
                 },
                 "proxyHeaders": {
@@ -2141,6 +2145,29 @@ const docTemplateDagent = `{
                 }
             }
         },
+        "v1.ContainerStatusResponse": {
+            "type": "object",
+            "required": [
+                "repository",
+                "state",
+                "status",
+                "tag"
+            ],
+            "properties": {
+                "repository": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "tag": {
+                    "type": "string"
+                }
+            }
+        },
         "v1.DeployImageRequest": {
             "type": "object",
             "required": [
@@ -2167,7 +2194,7 @@ const docTemplateDagent = `{
                     "type": "string"
                 },
                 "RegistryAuth": {
-                    "$ref": "#/definitions/util.RegistryAuth"
+                    "$ref": "#/definitions/containerbuilder.RegistryAuth"
                 },
                 "RequestId": {
                     "type": "string"
@@ -2226,6 +2253,31 @@ const docTemplateDagent = `{
                 },
                 "version": {
                     "type": "string"
+                }
+            }
+        },
+        "v1.Error": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/v1.Error"
+                    }
                 }
             }
         },
@@ -2314,76 +2366,6 @@ const docTemplateDagent = `{
                 "useSharedEnvs": {
                     "description": "use preexisting namespaced envs",
                     "type": "boolean"
-                }
-            }
-        },
-        "v1.LogConfig": {
-            "type": "object",
-            "required": [
-                "logDriver"
-            ],
-            "properties": {
-                "logDriver": {
-                    "description": "https://docs.docker.com/config/containers/logging/configure/#supported-logging-drivers",
-                    "type": "string"
-                },
-                "logOpts": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "v1.PortBinding": {
-            "type": "object",
-            "required": [
-                "exposedPort",
-                "portBinding"
-            ],
-            "properties": {
-                "exposedPort": {
-                    "type": "integer",
-                    "maximum": 65535,
-                    "minimum": 0
-                },
-                "portBinding": {
-                    "type": "integer",
-                    "maximum": 65535,
-                    "minimum": 0
-                }
-            }
-        },
-        "v1.PortRange": {
-            "type": "object",
-            "required": [
-                "from",
-                "to"
-            ],
-            "properties": {
-                "from": {
-                    "type": "integer",
-                    "maximum": 65535,
-                    "minimum": 0
-                },
-                "to": {
-                    "type": "integer",
-                    "maximum": 65535
-                }
-            }
-        },
-        "v1.PortRangeBinding": {
-            "type": "object",
-            "required": [
-                "external",
-                "internal"
-            ],
-            "properties": {
-                "external": {
-                    "$ref": "#/definitions/v1.PortRange"
-                },
-                "internal": {
-                    "$ref": "#/definitions/v1.PortRange"
                 }
             }
         },

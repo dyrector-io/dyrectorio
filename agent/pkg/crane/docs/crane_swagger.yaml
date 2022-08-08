@@ -460,6 +460,59 @@ definitions:
       name:
         type: string
     type: object
+  containerbuilder.PortBinding:
+    properties:
+      exposedPort:
+        maximum: 65535
+        minimum: 0
+        type: integer
+      portBinding:
+        maximum: 65535
+        minimum: 0
+        type: integer
+    required:
+    - exposedPort
+    - portBinding
+    type: object
+  containerbuilder.PortRange:
+    properties:
+      from:
+        maximum: 65535
+        minimum: 0
+        type: integer
+      to:
+        maximum: 65535
+        type: integer
+    required:
+    - from
+    - to
+    type: object
+  containerbuilder.PortRangeBinding:
+    properties:
+      external:
+        $ref: '#/definitions/containerbuilder.PortRange'
+      internal:
+        $ref: '#/definitions/containerbuilder.PortRange'
+    required:
+    - external
+    - internal
+    type: object
+  containerbuilder.RegistryAuth:
+    properties:
+      name:
+        type: string
+      password:
+        type: string
+      url:
+        type: string
+      user:
+        type: string
+    required:
+    - name
+    - password
+    - url
+    - user
+    type: object
   github.com_dyrector-io_dyrectorio_agent_pkg_api_v1.Probe:
     properties:
       path:
@@ -783,22 +836,6 @@ definitions:
         description: |-
           VsphereVolume represents a vSphere volume attached and mounted on kubelets host machine
           +optional
-    type: object
-  model.Error:
-    properties:
-      description:
-        type: string
-      error:
-        type: string
-      value:
-        type: string
-    type: object
-  model.ErrorResponse:
-    properties:
-      errors:
-        items:
-          $ref: '#/definitions/model.Error'
-        type: array
     type: object
   mount.BindOptions:
     properties:
@@ -1192,22 +1229,6 @@ definitions:
         type: string
       soft:
         type: integer
-    type: object
-  util.RegistryAuth:
-    properties:
-      name:
-        type: string
-      password:
-        type: string
-      url:
-        type: string
-      user:
-        type: string
-    required:
-    - name
-    - password
-    - url
-    - user
     type: object
   v1.AWSElasticBlockStoreVolumeSource:
     properties:
@@ -1838,7 +1859,7 @@ definitions:
           for docker hosts, this is needs to be bytes: 1000000 ~1m
         type: string
       logConfig:
-        $ref: '#/definitions/v1.LogConfig'
+        $ref: '#/definitions/container.LogConfig'
         description: dagent only
       mount:
         description: mount list, if a name starts with @ it can be used by multiple
@@ -1852,12 +1873,12 @@ definitions:
       port:
         description: portbinding list contains external/interal ports
         items:
-          $ref: '#/definitions/v1.PortBinding'
+          $ref: '#/definitions/containerbuilder.PortBinding'
         type: array
       portRanges:
         description: Port ranges to be exposed ! no native range support in k8s
         items:
-          $ref: '#/definitions/v1.PortRangeBinding'
+          $ref: '#/definitions/containerbuilder.PortRangeBinding'
         type: array
       proxyHeaders:
         description: add proxy and cors headers
@@ -1957,7 +1978,7 @@ definitions:
       Registry:
         type: string
       RegistryAuth:
-        $ref: '#/definitions/util.RegistryAuth'
+        $ref: '#/definitions/containerbuilder.RegistryAuth'
       RequestId:
         type: string
       RuntimeConfig:
@@ -2814,6 +2835,22 @@ definitions:
 
           Required, must not be nil.
     type: object
+  v1.Error:
+    properties:
+      description:
+        type: string
+      error:
+        type: string
+      value:
+        type: string
+    type: object
+  v1.ErrorResponse:
+    properties:
+      errors:
+        items:
+          $ref: '#/definitions/v1.Error'
+        type: array
+    type: object
   v1.ExecAction:
     properties:
       command:
@@ -3324,18 +3361,6 @@ definitions:
           TODO: Add other useful fields. apiVersion, kind, uid?
           +optional
         type: string
-    type: object
-  v1.LogConfig:
-    properties:
-      logDriver:
-        description: https://docs.docker.com/config/containers/logging/configure/#supported-logging-drivers
-        type: string
-      logOpts:
-        additionalProperties:
-          type: string
-        type: object
-    required:
-    - logDriver
     type: object
   v1.ManagedFieldsEntry:
     properties:
@@ -4640,43 +4665,6 @@ definitions:
           +optional
         type: string
     type: object
-  v1.PortBinding:
-    properties:
-      exposedPort:
-        maximum: 65535
-        minimum: 0
-        type: integer
-      portBinding:
-        maximum: 65535
-        minimum: 0
-        type: integer
-    required:
-    - exposedPort
-    - portBinding
-    type: object
-  v1.PortRange:
-    properties:
-      from:
-        maximum: 65535
-        minimum: 0
-        type: integer
-      to:
-        maximum: 65535
-        type: integer
-    required:
-    - from
-    - to
-    type: object
-  v1.PortRangeBinding:
-    properties:
-      external:
-        $ref: '#/definitions/v1.PortRange'
-      internal:
-        $ref: '#/definitions/v1.PortRange'
-    required:
-    - external
-    - internal
-    type: object
   v1.PortworxVolumeSource:
     properties:
       fsType:
@@ -5602,11 +5590,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/model.ErrorResponse'
+            $ref: '#/definitions/v1.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/model.ErrorResponse'
+            $ref: '#/definitions/v1.ErrorResponse'
       summary: Inspect the container by name
       tags:
       - runtime
@@ -5650,11 +5638,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/model.ErrorResponse'
+            $ref: '#/definitions/v1.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/model.ErrorResponse'
+            $ref: '#/definitions/v1.ErrorResponse'
       summary: Get the logs of the container by name
       tags:
       - runtime
