@@ -261,7 +261,9 @@ func (dc *DockerContainerBuilder) Create(ctx context.Context) *DockerContainerBu
 		containerConfig.Hostname = dc.containerName
 	}
 
-	execHooks(dc, dc.hooksPreCreate)
+	if hookError := execHooks(dc, dc.hooksPreCreate); hookError != nil {
+		logWrite(dc, fmt.Sprintln("Container pre-create hook error: ", hookError))
+	}
 
 	containerCreateResp, err := cli.ContainerCreate(ctx, containerConfig, hostConfig, nil, nil, name)
 
@@ -273,7 +275,9 @@ func (dc *DockerContainerBuilder) Create(ctx context.Context) *DockerContainerBu
 		Filters: filters.NewArgs(filters.KeyValuePair{Key: "id", Value: containerCreateResp.ID}),
 	})
 
-	execHooks(dc, dc.hooksPostCreate)
+	if hookError := execHooks(dc, dc.hooksPostCreate); hookError != nil {
+		logWrite(dc, fmt.Sprintln("Container post-create hook error: ", err))
+	}
 
 	if err != nil {
 		logWrite(dc, fmt.Sprintf("Container list failed: %s", err.Error()))
@@ -290,11 +294,15 @@ func (dc *DockerContainerBuilder) Create(ctx context.Context) *DockerContainerBu
 }
 
 func (dc *DockerContainerBuilder) Start() (bool, error) {
-	execHooks(dc, dc.hooksPreStart)
+	if hookError := execHooks(dc, dc.hooksPreStart); hookError != nil {
+		logWrite(dc, fmt.Sprintln("Container pre-start hook error: ", hookError))
+	}
 
 	err := dc.client.ContainerStart(dc.ctx, dc.containerID, types.ContainerStartOptions{})
 
-	execHooks(dc, dc.hooksPostStart)
+	if hookError := execHooks(dc, dc.hooksPostStart); hookError != nil {
+		logWrite(dc, fmt.Sprintln("Container post-start hook error: ", hookError))
+	}
 
 	if err != nil {
 		log.Println(err)
@@ -305,13 +313,13 @@ func (dc *DockerContainerBuilder) Start() (bool, error) {
 	}
 }
 
-func execHooks(dc *DockerContainerBuilder, hooks []LifecycleFunc) {
+func execHooks(dc *DockerContainerBuilder, hooks []LifecycleFunc) error {
 	for _, hook := range hooks {
-		err := hook(dc.ctx, dc.client, dc.containerName, &dc.containerID, dc.mountList, dc.logger)
-		if err != nil {
-			logWrite(dc, fmt.Sprintln("Container post-start hook error: ", err))
+		if err := hook(dc.ctx, dc.client, dc.containerName, &dc.containerID, dc.mountList, dc.logger); err != nil {
+			return err
 		}
 	}
+	return nil
 }
 
 func portListToNatBinding(portRanges []PortRangeBinding, portList []PortBinding) map[nat.Port][]nat.PortBinding {
