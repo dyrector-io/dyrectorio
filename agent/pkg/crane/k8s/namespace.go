@@ -41,7 +41,7 @@ func (n *namespace) deployNamespace() error {
 		n.name = "default"
 	}
 
-	_, err = client.Apply(context.TODO(),
+	_, err = client.Apply(context.Background(),
 		corev1.Namespace(n.name),
 		metav1.ApplyOptions{
 			FieldManager: n.appConfig.FieldManagerName,
@@ -69,7 +69,7 @@ func GetNamespaces(cfg *config.Configuration) ([]Namespace, error) {
 	if err != nil {
 		return nil, err
 	}
-	rawList, err := client.List(context.TODO(), metav1.ListOptions{})
+	rawList, err := client.List(context.Background(), metav1.ListOptions{})
 
 	list := extractName(rawList)
 	if err != nil {
@@ -85,7 +85,7 @@ func DeleteNamespace(name string, cfg *config.Configuration) error {
 	}
 
 	err = client.Delete(
-		context.TODO(),
+		context.Background(),
 		name,
 		metav1.DeleteOptions{},
 	)

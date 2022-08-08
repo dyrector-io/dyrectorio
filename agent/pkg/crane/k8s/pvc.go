@@ -107,7 +107,7 @@ func (p *pvc) applyVolume(client typedv1.PersistentVolumeClaimInterface,
 	claim := corev1.PersistentVolumeClaim(fullVolumeName, namespace).
 		WithSpec(claimSpec)
 
-	result, err := client.Apply(context.TODO(), claim, metaV1.ApplyOptions{
+	result, err := client.Apply(context.Background(), claim, metaV1.ApplyOptions{
 		FieldManager: p.appConfig.FieldManagerName,
 		Force:        p.appConfig.ForceOnConflicts,
 	})

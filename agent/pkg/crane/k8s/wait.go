@@ -21,7 +21,7 @@ func WaitForRunningDeployment(namespace, name string, expectedReplicaCount int32
 	options := metav1.ListOptions{FieldSelector: nameSelector.String(), Watch: true, TypeMeta: metav1.TypeMeta{}}
 
 	waitTimeOut := time.After(timeout)
-	ctx, cancel := context.WithTimeout(context.TODO(), timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
 	w, err := client.Watch(ctx, options)
