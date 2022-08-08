@@ -4,8 +4,9 @@ import (
 	"log"
 	"net/http"
 
-	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 	"github.com/gin-gonic/gin"
+
+	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 )
 
 type UpdateWebhook struct {
