@@ -29,6 +29,7 @@
   * [Add Docker Hub Registry](tutorials/add-your-registry/add-docker-hub-registry.md)
   * [Add GitHub Registry](tutorials/add-your-registry/add-github-registry.md)
   * [Add GitLab Registry](tutorials/add-your-registry/add-gitlab-registry.md)
+  * [Add Google Registry](tutorials/add-your-registry/add-google-registry.md)
 * [Register your Node](tutorials/register-your-node.md)
 * [Create your Product](tutorials/create-your-product/README.md)
   * [Create a Simple Product](tutorials/create-your-product/create-a-simple-product.md)
