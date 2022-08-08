@@ -71,7 +71,7 @@ export class Logger {
     }
 
     if (args && args.length > 0) {
-      console.error(`ERROR [${this.tag}]`, ...args)
+      console.error(`${Logger.now()} ERROR [${this.tag}]`, ...args)
     }
   }
 

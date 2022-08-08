@@ -344,9 +344,9 @@ func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStatus
 }
 
 func executeDeleteContainer(ctx context.Context, req *agent.ContainerDeleteRequest, deleteFn DeleteFunc) {
-	log.Printf("Deleting container: %s-%s", req.PreName, req.Name)
+	log.Printf("Deleting container: %s-%s", req.Prefix, req.Name)
 
-	err := deleteFn(ctx, req.PreName, req.Name)
+	err := deleteFn(ctx, req.Prefix, req.Name)
 	if err != nil {
 		log.Printf("Failed to delete container: %v", err)
 	}

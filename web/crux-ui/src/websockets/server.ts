@@ -24,7 +24,7 @@ export type WsEndpointOptions = {
 }
 
 export class WsConnection {
-  endpoints: Array<WsEndpoint> = []
+  endpoints: Set<WsEndpoint> = new Set()
   data: Map<string, any> = new Map()
 
   constructor(
@@ -92,7 +92,6 @@ export class WsEndpoint {
   private connections: Array<WsConnection> = []
 
   constructor(
-    private logger: Logger,
     public readonly route: string,
     public readonly query: { [key: string]: string | string[] },
     public readonly interests: Array<string>,
@@ -129,22 +128,20 @@ export class WsEndpoint {
 
   onConnect(connection: WsConnection, req: IncomingMessage) {
     this.connections.push(connection)
-    connection.endpoints.push(this)
+    connection.endpoints.add(this)
 
     this.options?.onConnect?.call(null, this, connection, req)
   }
 
   onDisconnect(connection: WsConnection) {
     this.connections = this.connections.filter(it => it !== connection)
-    connection.endpoints = connection.endpoints.filter(it => it !== this)
+    connection.endpoints.delete(this)
 
     this.options?.onDisconnect?.call(null, this, connection)
   }
 
   onMessage(connection: WsConnection, message: WsMessage<object>) {
-    if (!this.connections.includes(connection)) {
-      // TODO: send endpoint url hash in messages, so we can route by them, before filtering on interest
-      this.logger.warn('Unauthorized message', message?.type, 'from', connection.address)
+    if (!connection.endpoints.has(this)) {
       return
     }
 

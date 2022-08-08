@@ -166,7 +166,7 @@ export interface ContainerStatusRequest {
 }
 
 export interface ContainerDeleteRequest {
-  preName: string
+  prefix: string
   name: string
 }
 
@@ -594,19 +594,19 @@ export const ContainerStatusRequest = {
   },
 }
 
-const baseContainerDeleteRequest: object = { preName: '', name: '' }
+const baseContainerDeleteRequest: object = { prefix: '', name: '' }
 
 export const ContainerDeleteRequest = {
   fromJSON(object: any): ContainerDeleteRequest {
     const message = { ...baseContainerDeleteRequest } as ContainerDeleteRequest
-    message.preName = object.preName !== undefined && object.preName !== null ? String(object.preName) : ''
+    message.prefix = object.prefix !== undefined && object.prefix !== null ? String(object.prefix) : ''
     message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
     return message
   },
 
   toJSON(message: ContainerDeleteRequest): unknown {
     const obj: any = {}
-    message.preName !== undefined && (obj.preName = message.preName)
+    message.prefix !== undefined && (obj.prefix = message.prefix)
     message.name !== undefined && (obj.name = message.name)
     return obj
   },
