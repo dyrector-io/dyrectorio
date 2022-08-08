@@ -16,7 +16,7 @@ Rolling Versions are similar to Simple Products except they’re perfect for con
 
 ![](../../../.gitbook/assets/rolling\_02.jpg)
 
-**Step 6:** Click 'Add images'.
+**Step 6:** Click 'Add image'.
 
 ![](../../../.gitbook/assets/rolling\_03.jpg)
 
