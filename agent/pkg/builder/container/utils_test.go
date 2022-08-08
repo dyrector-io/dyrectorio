@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	builder "github.com/dyrector-io/dyrectorio/agent/pkg/builders/container"
+	builder "github.com/dyrector-io/dyrectorio/agent/pkg/builder/container"
 )
 
 func TestRegistryAuthUpdateBase64Empty(t *testing.T) {

@@ -19,7 +19,7 @@ import (
 
 	"github.com/dyrector-io/dyrectorio/agent/internal/util"
 	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
-	builder "github.com/dyrector-io/dyrectorio/agent/pkg/builders/container"
+	builder "github.com/dyrector-io/dyrectorio/agent/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/routes"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/utils"

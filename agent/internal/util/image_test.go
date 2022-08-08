@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/dyrector-io/dyrectorio/agent/internal/util"
-	builder "github.com/dyrector-io/dyrectorio/agent/pkg/builders/container"
+	builder "github.com/dyrector-io/dyrectorio/agent/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 )
 

@@ -282,12 +282,12 @@ func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 		logWrite(dc, fmt.Sprintln("Container pre-create hook error: ", hookError))
 	}
 
-	containerCreateResp, err := dc.client.ContainerCreate(ctx, containerConfig, hostConfig, nil, nil, name)
+	containerCreateResp, err := dc.client.ContainerCreate(dc.ctx, containerConfig, hostConfig, nil, nil, name)
 
 	if err != nil {
 		logWrite(dc, fmt.Sprintln("Container create failed: ", err))
 	}
-	containers, err := dc.client.ContainerList(ctx, types.ContainerListOptions{
+	containers, err := dc.client.ContainerList(dc.ctx, types.ContainerListOptions{
 		All:     true,
 		Filters: filters.NewArgs(filters.KeyValuePair{Key: "id", Value: containerCreateResp.ID}),
 	})

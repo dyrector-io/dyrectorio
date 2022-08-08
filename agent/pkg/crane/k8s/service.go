@@ -10,7 +10,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
-	builder "github.com/dyrector-io/dyrectorio/agent/pkg/builders/container"
+	builder "github.com/dyrector-io/dyrectorio/agent/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/config"
 
 	typedcorev1 "k8s.io/client-go/kubernetes/typed/core/v1"

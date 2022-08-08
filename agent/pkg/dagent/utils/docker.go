@@ -22,7 +22,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/agent/internal/mapper"
 	"github.com/dyrector-io/dyrectorio/agent/internal/util"
 	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
-	builder "github.com/dyrector-io/dyrectorio/agent/pkg/containerbuilder"
+	containerbuilder "github.com/dyrector-io/dyrectorio/agent/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/caps"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/crux"
@@ -32,6 +32,8 @@ import (
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
 )
+
+const dockerClientTimeoutSeconds = 30
 
 type DockerVersion struct {
 	ServerVersion string
@@ -339,12 +341,10 @@ func DeployImage(ctx context.Context,
 	if deployImageRequest.ContainerConfig.Expose {
 		networkMode = "traefik"
 	}
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	checkDockerError(err)
 
-	build := builder.NewDockerBuilder(cli)
+	builder := containerbuilder.NewDockerBuilder(ctx)
 
-	build.WithImage(image.String()).
+	builder.WithImage(image.String()).
 		WithName(containerName).
 		WithMountPoints(mountList).
 		WithPortBindings(deployImageRequest.ContainerConfig.Ports).
@@ -358,13 +358,13 @@ func DeployImage(ctx context.Context,
 		WithUser(deployImageRequest.ContainerConfig.User).
 		WithEntrypoint(deployImageRequest.ContainerConfig.Command).
 		WithCmd(deployImageRequest.ContainerConfig.Args).
-		WithLogger(dog)
+		WithLogWriter(dog)
 
-	WithImportContainer(build, deployImageRequest.ContainerConfig.ImportContainer, dog, cfg)
+	WithImportContainer(builder, deployImageRequest.ContainerConfig.ImportContainer, dog, cfg)
 
-	build.Create(ctx)
+	builder.Create()
 
-	_, err = build.Start()
+	_, err := builder.Start()
 
 	if err != nil {
 		dog.Write(err.Error())
@@ -381,7 +381,7 @@ func DeployImage(ctx context.Context,
 	return err
 }
 
-func WithImportContainer(dc *builder.DockerContainerBuilder, importConfig *v1.ImportContainer,
+func WithImportContainer(dc *containerbuilder.DockerContainerBuilder, importConfig *v1.ImportContainer,
 	dog *dogger.DeploymentLogger, cfg *config.Configuration) {
 	if importConfig != nil {
 		dc.WithPreStartHooks(func(ctx context.Context,
@@ -556,7 +556,7 @@ func stopContainer(containerName string) error {
 		panic(err)
 	}
 
-	timeoutValue := (time.Duration(builder.DockerClientTimeoutSeconds) * time.Second)
+	timeoutValue := (time.Duration(dockerClientTimeoutSeconds) * time.Second)
 	if err := cli.ContainerStop(ctx, containerName, &timeoutValue); err != nil {
 		return err
 	}

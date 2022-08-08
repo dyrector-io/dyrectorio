@@ -14,7 +14,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
 	"github.com/dyrector-io/dyrectorio/agent/internal/util"
 	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
-	builder "github.com/dyrector-io/dyrectorio/agent/pkg/containerbuilder"
+	containerbuilder "github.com/dyrector-io/dyrectorio/agent/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/crux"
 )
@@ -40,22 +40,23 @@ func spawnInitContainer(
 		return err
 	}
 
-	build := builder.NewDockerBuilder(cli)
+	builder := containerbuilder.NewDockerBuilder(ctx)
 
 	importContainerName := util.JoinV("-", name, "import")
 	targetVolume := mount.Mount{Type: mount.TypeBind, Source: mountList[targetVolumeIndex].Source, Target: "/data/output"}
 
-	build.
+	builder.
+		WithClient(cli).
 		WithImage(cfg.ImportContainerImage).
 		WithCmd(strings.Split(importContainer.Command, " ")).
 		WithName(importContainerName).
 		WithEnv(EnvMapToSlice(importContainer.Environments)).
 		WithMountPoints([]mount.Mount{targetVolume}).
 		WithoutConflict().
-		WithLogger(dog).
-		Create(ctx)
+		WithLogWriter(dog).
+		Create()
 
-	_, err = build.Start()
+	_, err = builder.Start()
 
 	if err != nil {
 		return err
@@ -63,7 +64,7 @@ func spawnInitContainer(
 
 	dog.WriteDeploymentStatus(crux.DeploymentStatus_IN_PROGRESS, "Waiting for import container to finish")
 
-	containerID := build.GetContainerID()
+	containerID := builder.GetContainerID()
 	cli.ContainerWait(ctx, containerID, container.WaitConditionNextExit)
 	cont, err := cli.ContainerInspect(ctx, containerID)
 
