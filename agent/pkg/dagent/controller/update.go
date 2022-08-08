@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 	model "github.com/dyrector-io/dyrectorio/agent/pkg/dagent/model"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/utils"
 )
@@ -25,8 +26,8 @@ func UpdateRunningDAgent(c *gin.Context) {
 
 	if err := c.ShouldBind(&webhook); err != nil {
 		log.Println("Could not bind the request: ", err.Error())
-		c.AbortWithStatusJSON(http.StatusBadRequest, model.ErrorResponse{Errors: []model.Error{{
-			Error:       model.UpdateError,
+		c.AbortWithStatusJSON(http.StatusBadRequest, v1.ErrorResponse{Errors: []v1.Error{{
+			Error:       v1.UpdateError,
 			Value:       err.Error(),
 			Description: "Error when trying to update via webhook.",
 		}}})
@@ -37,8 +38,8 @@ func UpdateRunningDAgent(c *gin.Context) {
 		if err := utils.ExecWatchtowerOneShot(cfg); err != nil {
 			log.Println("Update error: " + err.Error())
 			c.JSON(http.StatusInternalServerError,
-				model.ErrorResponse{Errors: []model.Error{{
-					Error:       model.UpdateError,
+				v1.ErrorResponse{Errors: []v1.Error{{
+					Error:       v1.UpdateError,
 					Value:       err.Error(),
 					Description: "Error when trying to updated via webhook.",
 				},
@@ -47,8 +48,8 @@ func UpdateRunningDAgent(c *gin.Context) {
 		}
 	} else {
 		c.JSON(http.StatusUnauthorized,
-			model.ErrorResponse{Errors: []model.Error{{
-				Error:       model.UpdateError,
+			v1.ErrorResponse{Errors: []v1.Error{{
+				Error:       v1.UpdateError,
 				Value:       "Missing or invalid token",
 				Description: "",
 			},

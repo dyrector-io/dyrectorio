@@ -4,9 +4,8 @@ import (
 	"log"
 	"net/http"
 
+	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 	"github.com/gin-gonic/gin"
-
-	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/model"
 )
 
 type UpdateWebhook struct {
@@ -26,8 +25,8 @@ func UpdateRunningCrane(c *gin.Context) {
 
 	if err := c.ShouldBind(&webhook); err != nil {
 		log.Println("Could not bind the request: ", err.Error())
-		c.AbortWithStatusJSON(http.StatusBadRequest, model.ErrorResponse{Errors: []model.Error{{
-			Error:       model.UpdateError,
+		c.AbortWithStatusJSON(http.StatusBadRequest, v1.ErrorResponse{Errors: []v1.Error{{
+			Error:       v1.UpdateError,
 			Value:       err.Error(),
 			Description: "Error when trying to update via webhook.",
 		}}})
