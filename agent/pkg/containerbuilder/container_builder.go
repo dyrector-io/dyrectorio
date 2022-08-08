@@ -34,10 +34,10 @@ type ContainerBuilder interface {
 	WithUser(uid string) ContainerBuilder
 	WithLogger(logger io.StringWriter) ContainerBuilder
 	WithoutConflict() ContainerBuilder
-	WithPreCreateHooks(hooks []LifecycleFunc) ContainerBuilder
-	WithPostCreateHooks(hooks []LifecycleFunc) ContainerBuilder
-	WithPreStartHooks(hooks []LifecycleFunc) ContainerBuilder
-	WithPostStartHooks(hooks []LifecycleFunc) ContainerBuilder
+	WithPreCreateHooks(hooks ...LifecycleFunc) ContainerBuilder
+	WithPostCreateHooks(hooks ...LifecycleFunc) ContainerBuilder
+	WithPreStartHooks(hooks ...LifecycleFunc) ContainerBuilder
+	WithPostStartHooks(hooks ...LifecycleFunc) ContainerBuilder
 	GetContainerId() string
 	Create(context context.Context) ContainerBuilder
 	Start() (bool, error)
@@ -176,22 +176,22 @@ func (dc *DockerContainerBuilder) WithLogger(logger io.StringWriter) *DockerCont
 	return dc
 }
 
-func (dc *DockerContainerBuilder) WithPreCreateHooks(hooks []LifecycleFunc) *DockerContainerBuilder {
+func (dc *DockerContainerBuilder) WithPreCreateHooks(hooks ...LifecycleFunc) *DockerContainerBuilder {
 	dc.hooksPreCreate = hooks
 	return dc
 }
 
-func (dc *DockerContainerBuilder) WithPostCreateHooks(hooks []LifecycleFunc) *DockerContainerBuilder {
+func (dc *DockerContainerBuilder) WithPostCreateHooks(hooks ...LifecycleFunc) *DockerContainerBuilder {
 	dc.hooksPostCreate = hooks
 	return dc
 }
 
-func (dc *DockerContainerBuilder) WithPreStartHooks(hooks []LifecycleFunc) *DockerContainerBuilder {
+func (dc *DockerContainerBuilder) WithPreStartHooks(hooks ...LifecycleFunc) *DockerContainerBuilder {
 	dc.hooksPreStart = hooks
 	return dc
 }
 
-func (dc *DockerContainerBuilder) WithPostStartHooks(hooks []LifecycleFunc) *DockerContainerBuilder {
+func (dc *DockerContainerBuilder) WithPostStartHooks(hooks ...LifecycleFunc) *DockerContainerBuilder {
 	dc.hooksPostStart = hooks
 	return dc
 }

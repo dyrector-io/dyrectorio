@@ -384,20 +384,17 @@ func DeployImage(ctx context.Context,
 func WithImportContainer(dc *builder.DockerContainerBuilder, importConfig *v1.ImportContainer,
 	dog *dogger.DeploymentLogger, cfg *config.Configuration) {
 	if importConfig != nil {
-		dc.WithPreStartHooks([]builder.LifecycleFunc{
-			func(ctx context.Context,
-				client *client.Client,
-				containerName string,
-				containerId *string,
-				mountList []mount.Mount,
-				logger *io.StringWriter) error {
-				initErro := spawnInitContainer(client, ctx, containerName, mountList, importConfig, dog, cfg)
-				if initErro != nil {
-					log.Printf("Failed to spawn init container: %v", initErro)
-					return initErro
-				}
-				return nil
-			},
+		dc.WithPreStartHooks(func(ctx context.Context,
+			client *client.Client,
+			containerName string,
+			containerId *string,
+			mountList []mount.Mount,
+			logger *io.StringWriter) error {
+			if initError := spawnInitContainer(client, ctx, containerName, mountList, importConfig, dog, cfg); initError != nil {
+				log.Printf("Failed to spawn init container: %v", initError)
+				return initError
+			}
+			return nil
 		})
 	}
 }
