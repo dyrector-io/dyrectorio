@@ -41,7 +41,7 @@ const websocketEndpoint = (
         let endpoint = server.getEndpoint(route)
         if (!endpoint) {
           const interests = typeof messageTypes === 'string' ? [messageTypes] : messageTypes
-          endpoint = new WsEndpoint(logger, route, query, interests, options)
+          endpoint = new WsEndpoint(route, query, interests, options)
           server.registerEndpoint(endpoint)
           options?.onReady?.call(this, endpoint)
         }

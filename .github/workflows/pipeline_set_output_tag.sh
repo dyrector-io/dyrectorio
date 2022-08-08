@@ -4,13 +4,22 @@ github_ref_type=$1
 github_ref_name=$2
 github_sha=$3
 
+DOCKERIMAGETAG="$github_sha"
+VERSION="v0.0.0"
+
 if [ $github_ref_type == "branch" ]; then
   case $github_ref_name in
-    "main") echo "::set-output name=tag::stable"
+    "main") DOCKERIMAGETAG="stable"
     ;;
-    "develop") echo "::set-output name=tag::latest"
-    ;;
-    *)  echo "::set-output name=tag::$github_sha"
+    "develop")  DOCKERIMAGETAG="latest"
     ;;
   esac
 fi
+
+if [ $github_ref_type == "tag" ]; then
+  DOCKERIMAGETAG=$github_ref_name
+  VERSION=$github_ref_name
+fi
+
+echo "::set-output name=tag::$DOCKERIMAGETAG"
+echo "::set-output name=version::$VERSION"

@@ -1,29 +1,39 @@
-FROM node:17.1.0-alpine
+# stage 1, dep install
+FROM node:17.1.0-alpine AS DEPS
+WORKDIR /app
 
-ARG TIME_ZONE
+RUN apk add --no-cache libc6-compat nasm autoconf automake bash libltdl libtool gcc make g++ zlib-dev
+COPY package.json package-lock.json ./
+RUN npm ci
 
-# Add build dependencies and set timezone
-RUN apk --update add --no-cache --virtual .build-deps tzdata # && \
-RUN cp /usr/share/zoneinfo/${TIME_ZONE} /etc/localtime # && \
-RUN echo "${TIME_ZONE}" > /etc/timezone # && \
-RUN apk del --no-network .build-deps
-
-# Create Directory for the Container
-WORKDIR /usr/app
-
-COPY package*.json ./
-COPY .next .next
-COPY public public
+# stage 2, build app
+FROM node:17.1.0-alpine AS BUILDER
+WORKDIR /app
 
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
 
-RUN mkdir -p ./.next/cache/images && \
-   chown -R node:node ./.next/cache/images && \
-   npm ci
+COPY --from=DEPS /app/node_modules ./node_modules
+COPY . .
+RUN npm run build
+
+# stage 3, run the app
+FROM node:17.1.0-alpine AS RUNNER
+WORKDIR /app
+
+ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED 1
+ENV TZ Europe/Budapest
+RUN apk --update add tzdata
+
+COPY --from=BUILDER --chown=node:node /app/public ./public
+COPY --from=BUILDER /app/package.json ./package.json
+COPY --from=BUILDER --chown=node:node /app/.next ./.next
+COPY --from=BUILDER /app/node_modules ./node_modules
 
 USER node
 
 EXPOSE 3000
+ENV PORT 3000
 
 ENTRYPOINT [ "npm", "run", "prod"]

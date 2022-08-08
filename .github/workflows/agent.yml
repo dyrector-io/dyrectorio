@@ -53,6 +53,7 @@ jobs:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16
     outputs:
       tag: ${{ steps.settag.outputs.tag }}
+      version: ${{ steps.settag.outputs.version }}
     defaults:
       run:
         working-directory: agent
@@ -82,7 +83,7 @@ jobs:
     needs: [test]
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16
-    if: github.ref_name == 'develop' || github.ref_name == 'main'
+    if: github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag'
     defaults:
       run:
         working-directory: agent
@@ -105,6 +106,8 @@ jobs:
 
       - name: Compile
         run: make compile-both
+        env:
+          VERSION: ${{ needs.test.outputs.version }}
 
       - name: Docker build with a fitting tag
         run: make image_version=${{ needs.test.outputs.tag }} bbpb
@@ -112,7 +115,7 @@ jobs:
 
   sign_image:
     runs-on: ubuntu-20.04
-    if: github.ref == 'refs/heads/develop' ||  github.ref == 'refs/heads/main'
+    if: github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag'
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16
     needs: [build,test]

@@ -33,7 +33,8 @@
     "database:up": "docker-compose -f docker-compose.database.yaml up -d",
     "database:down": "docker-compose -f docker-compose.database.yaml down",
     "test:crux": "npm run docker:up && npx prisma migrate deploy && jest -i && npm docker:down",
-    "compodoc": "npx compodoc -p tsconfig.doc.json --theme stripe"
+    "prismagen": "prisma generate",
+    "compodoc": "compodoc -p tsconfig.doc.json --theme stripe"
   },
   "prisma": {
     "seed": "ts-node prisma/seeds/seeder.ts",
@@ -43,6 +44,7 @@
     "@grpc/grpc-js": "^1.3.7",
     "@grpc/proto-loader": "^0.6.5",
     "@nestjs/axios": "^0.0.8",
+    "@nestjs/cli": "^8.2.6",
     "@nestjs/common": "^8.4.7",
     "@nestjs/config": "^2.1.0",
     "@nestjs/core": "^8.4.7",
@@ -65,6 +67,7 @@
     "google-protobuf": "^3.18.1",
     "handlebars": "^4.7.7",
     "pg": "^8.7.1",
+    "prisma": "3.12.0",
     "prom-client": "^14.0.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
@@ -73,7 +76,6 @@
     "yup": "^0.32.11"
   },
   "devDependencies": {
-    "@nestjs/cli": "^8.2.6",
     "@nestjs/schematics": "^8.0.11",
     "@nestjs/testing": "^8.4.6",
     "@types/express": "^4.17.13",
@@ -83,6 +85,7 @@
     "@types/uuid": "^8.3.1",
     "@typescript-eslint/eslint-plugin": "^4.28.2",
     "@typescript-eslint/parser": "^4.28.2",
+    "compodoc": "^0.0.41",
     "eslint": "^7.30.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.4.0",
