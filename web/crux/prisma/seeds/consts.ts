@@ -7,3 +7,9 @@ export const constants = {
   DEPLYOMENT_ID: `59B57B9F-328B-4C9B-BA87-8838FF4F2798`,
   USER_ID: `0171F417-1A5A-401E-BE24-4E9970F682E9`,
 }
+
+export const DemoConstants = {
+  VERSION_ID: `b310719a-e01e-47af-8331-75783722defa`,
+  PRODUCT_ID: `619e82f6-db07-48d2-817f-aa29189aa01d`,
+  REGISTRY_ID: `77fd96a9-f727-4a2d-a934-f68b2e6be6e0`,
+}
