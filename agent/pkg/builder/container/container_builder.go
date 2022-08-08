@@ -228,8 +228,6 @@ func (dc *DockerContainerBuilder) GetContainerID() string {
 //		managing hostConfig/containerConfig on the builder
 //		only create is done here
 func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
-	var containerCreated types.Container
-
 	// todo: fetch remote sha hash of image if not matching -> pull
 	if err := pullImage(*dc.logger, dc.imageWithTag, dc.registryAuth); err != nil {
 		if err != nil && err.Error() != "EOF" {
@@ -303,8 +301,7 @@ func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 	if len(containers) != 1 {
 		logWrite(dc, "Container was not created.")
 	} else {
-		containerCreated = containers[0]
-		dc.containerID = containerCreated.ID
+		dc.containerID = containers[0].ID
 	}
 
 	return dc
