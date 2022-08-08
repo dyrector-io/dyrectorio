@@ -1,14 +1,14 @@
 //go:build unit
 // +build unit
 
-package containerbuilder_test
+package container_test
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
-	builder "github.com/dyrector-io/dyrectorio/agent/pkg/containerbuilder"
+	builder "github.com/dyrector-io/dyrectorio/agent/pkg/builders/container"
 )
 
 func TestRegistryAuthUpdateBase64Empty(t *testing.T) {

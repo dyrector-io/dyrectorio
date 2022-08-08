@@ -1,4 +1,6 @@
-package containerbuilder
+// Package containerbuilder implements a fluent interface for creating and starting
+// docker containers.
+package container
 
 import (
 	"context"
@@ -14,6 +16,9 @@ import (
 	"github.com/docker/go-connections/nat"
 )
 
+// A ContainerBuilder handles the process of creating and starting containers,
+// it can be configured using 'With...' methods.
+// A ContainerBuilder can be created using the NewDockerBuilder method.
 type ContainerBuilder interface {
 	WithClient(client *client.Client) ContainerBuilder
 	WithImage(imageName string) ContainerBuilder
@@ -32,14 +37,14 @@ type ContainerBuilder interface {
 	WithEntrypoint(cmd []string) ContainerBuilder
 	WithCmd(cmd []string) ContainerBuilder
 	WithUser(uid string) ContainerBuilder
-	WithLogger(logger io.StringWriter) ContainerBuilder
+	WithLogWriter(logger io.StringWriter) ContainerBuilder
 	WithoutConflict() ContainerBuilder
 	WithPreCreateHooks(hooks ...LifecycleFunc) ContainerBuilder
 	WithPostCreateHooks(hooks ...LifecycleFunc) ContainerBuilder
 	WithPreStartHooks(hooks ...LifecycleFunc) ContainerBuilder
 	WithPostStartHooks(hooks ...LifecycleFunc) ContainerBuilder
 	GetContainerId() string
-	Create(context context.Context) ContainerBuilder
+	Create() ContainerBuilder
 	Start() (bool, error)
 }
 
@@ -70,8 +75,18 @@ type DockerContainerBuilder struct {
 	hooksPostStart  []LifecycleFunc
 }
 
-func NewDockerBuilder(cli *client.Client) *DockerContainerBuilder {
-	b := DockerContainerBuilder{}
+// A shorthand function for creating a new DockerContainerBuilder and calling WithClient.
+// Creates a default Docker client which can be overwritten using 'WithClient'.
+func NewDockerBuilder(ctx context.Context) *DockerContainerBuilder {
+	b := DockerContainerBuilder{
+		ctx: ctx,
+	}
+
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		panic(err)
+	}
+
 	return b.WithClient(cli)
 }
 
@@ -80,6 +95,7 @@ func (dc *DockerContainerBuilder) WithClient(cli *client.Client) *DockerContaine
 	return dc
 }
 
+// Sets the name of the target container.
 func (dc *DockerContainerBuilder) WithName(name string) *DockerContainerBuilder {
 	dc.containerName = name
 	return dc
@@ -105,6 +121,7 @@ func (dc *DockerContainerBuilder) WithLabels(labels map[string]string) *DockerCo
 	return dc
 }
 
+// Sets the log config of the container.
 func (dc *DockerContainerBuilder) WithLogConfig(logConfig *container.LogConfig) *DockerContainerBuilder {
 	if logConfig != nil {
 		dc.logConfig = logConfig
@@ -159,8 +176,9 @@ func (dc *DockerContainerBuilder) WithTTY(tty bool) *DockerContainerBuilder {
 	return dc
 }
 
+// Deletes the container with the given name if already exists.
 func (dc *DockerContainerBuilder) WithoutConflict() *DockerContainerBuilder {
-	if err := DeleteContainer(dc.containerName); err != nil {
+	if err := deleteContainer(dc.containerName); err != nil {
 		log.Printf("builder could not stop/remove container (%s) to avoid conflicts: %s", dc.containerName, err.Error())
 	}
 	return dc
@@ -171,26 +189,31 @@ func (dc *DockerContainerBuilder) WithUser(user *int64) *DockerContainerBuilder 
 	return dc
 }
 
-func (dc *DockerContainerBuilder) WithLogger(logger io.StringWriter) *DockerContainerBuilder {
+// Set the logger which logs messages releated to the builder (and not the container).
+func (dc *DockerContainerBuilder) WithLogWriter(logger io.StringWriter) *DockerContainerBuilder {
 	dc.logger = &logger
 	return dc
 }
 
+// Sets an array of hooks which runs before the container is created. ContainerID is nil in these hooks.
 func (dc *DockerContainerBuilder) WithPreCreateHooks(hooks ...LifecycleFunc) *DockerContainerBuilder {
 	dc.hooksPreCreate = hooks
 	return dc
 }
 
+// Sets an array of hooks which runs after the container is created.
 func (dc *DockerContainerBuilder) WithPostCreateHooks(hooks ...LifecycleFunc) *DockerContainerBuilder {
 	dc.hooksPostCreate = hooks
 	return dc
 }
 
+// Sets an array of hooks which runs before the container is started.
 func (dc *DockerContainerBuilder) WithPreStartHooks(hooks ...LifecycleFunc) *DockerContainerBuilder {
 	dc.hooksPreStart = hooks
 	return dc
 }
 
+// Sets an array of hooks which runs after the container is started.
 func (dc *DockerContainerBuilder) WithPostStartHooks(hooks ...LifecycleFunc) *DockerContainerBuilder {
 	dc.hooksPostStart = hooks
 	return dc
@@ -204,17 +227,11 @@ func (dc *DockerContainerBuilder) GetContainerID() string {
 //		setting invidual params at their function to their final location
 //		managing hostConfig/containerConfig on the builder
 //		only create is done here
-func (dc *DockerContainerBuilder) Create(ctx context.Context) *DockerContainerBuilder {
-	dc.ctx = ctx
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		panic(err)
-	}
-
+func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 	var containerCreated types.Container
 
 	// todo: fetch remote sha hash of image if not matching -> pull
-	if err = pullImage(*dc.logger, dc.imageWithTag, dc.registryAuth); err != nil {
+	if err := pullImage(*dc.logger, dc.imageWithTag, dc.registryAuth); err != nil {
 		if err != nil && err.Error() != "EOF" {
 			logWrite(dc, fmt.Sprintf("Image pull error: %s", err.Error()))
 		}
@@ -265,12 +282,12 @@ func (dc *DockerContainerBuilder) Create(ctx context.Context) *DockerContainerBu
 		logWrite(dc, fmt.Sprintln("Container pre-create hook error: ", hookError))
 	}
 
-	containerCreateResp, err := cli.ContainerCreate(ctx, containerConfig, hostConfig, nil, nil, name)
+	containerCreateResp, err := dc.client.ContainerCreate(ctx, containerConfig, hostConfig, nil, nil, name)
 
 	if err != nil {
 		logWrite(dc, fmt.Sprintln("Container create failed: ", err))
 	}
-	containers, err := cli.ContainerList(ctx, types.ContainerListOptions{
+	containers, err := dc.client.ContainerList(ctx, types.ContainerListOptions{
 		All:     true,
 		Filters: filters.NewArgs(filters.KeyValuePair{Key: "id", Value: containerCreateResp.ID}),
 	})

@@ -9,7 +9,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/agent/internal/config"
 	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
 	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
-	builder "github.com/dyrector-io/dyrectorio/agent/pkg/containerbuilder"
+	builder "github.com/dyrector-io/dyrectorio/agent/pkg/builders/container"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/crux"
 

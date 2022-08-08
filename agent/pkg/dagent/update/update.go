@@ -1,6 +1,7 @@
 package update
 
 import (
+	"context"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -22,7 +23,7 @@ func InitUpdater(r *gin.Engine, httpPort int, cfg *config.Configuration) {
 	case "poll":
 		log.Println("Update mode: polling")
 		log.Println("Remote DAgent image: " + cfg.DagentImage + ":" + cfg.DagentTag)
-		if err := utils.ExecWatchtowerPoll(cfg); err != nil {
+		if err := utils.ExecWatchtowerPoll(context.Background(), cfg); err != nil {
 			log.Println("Error starting watchtower: " + err.Error())
 		}
 	case "off":

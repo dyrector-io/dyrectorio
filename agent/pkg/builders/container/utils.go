@@ -1,4 +1,4 @@
-package containerbuilder
+package container
 
 import (
 	"context"
@@ -13,7 +13,7 @@ import (
 	"github.com/docker/docker/client"
 )
 
-const DockerClientTimeoutSeconds = 30
+const dockerClientTimeoutSeconds = 30
 
 func registryAuthBase64(user, password string) string {
 	if user == "" || password == "" {
@@ -95,7 +95,7 @@ func pullImage(logger io.StringWriter, fullyQualifiedImageName, authCreds string
 	return err
 }
 
-func DeleteContainer(containerName string) error {
+func deleteContainer(containerName string) error {
 	if err := stopContainer(containerName); err != nil {
 		return err
 	}
@@ -115,7 +115,7 @@ func stopContainer(containerName string) error {
 		panic(err)
 	}
 
-	timeoutValue := (time.Duration(DockerClientTimeoutSeconds) * time.Second)
+	timeoutValue := (time.Duration(dockerClientTimeoutSeconds) * time.Second)
 	if err := cli.ContainerStop(ctx, containerName, &timeoutValue); err != nil {
 		return err
 	}

@@ -16,7 +16,7 @@ import (
 
 	"github.com/dyrector-io/dyrectorio/agent/internal/config"
 	"github.com/dyrector-io/dyrectorio/agent/internal/util"
-	builder "github.com/dyrector-io/dyrectorio/agent/pkg/containerbuilder"
+	builder "github.com/dyrector-io/dyrectorio/agent/pkg/builders/container"
 )
 
 type Namespace struct {

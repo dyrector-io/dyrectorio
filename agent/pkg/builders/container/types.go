@@ -1,4 +1,4 @@
-package containerbuilder
+package container
 
 import (
 	"context"
@@ -10,28 +10,30 @@ import (
 	"github.com/docker/docker/client"
 )
 
+// The PortBinding struct defines port bindings of a container.
+// ExposedPort is the port in the container, while PortBinding is the port
+// on the host.
 type PortBinding struct {
 	ExposedPort uint16 `json:"exposedPort" binding:"required,gte=0,lte=65535"`
 	PortBinding uint16 `json:"portBinding" binding:"required,gte=0,lte=65535"`
 }
 
+// PortRange defines a range of ports from 0 to 65535.
 type PortRange struct {
 	From uint16 `json:"from" binding:"required,gte=0,lte=65535"`
 	To   uint16 `json:"to" binding:"required,gtefield=From,lte=65535"`
 }
 
+// PortRangeBinding defines port range bindings of a container.
+// Internal is the port in the container, while External is the port
+// on the host.
 type PortRangeBinding struct {
 	Internal PortRange `json:"internal" binding:"required"`
 	External PortRange `json:"external" binding:"required"`
 }
 
-// LogConfig is container level defined log-configuration `override`
-type LogConfig struct {
-	// https://docs.docker.com/config/containers/logging/configure/#supported-logging-drivers
-	LogDriver string            `json:"logDriver" binding:"required"`
-	LogOpts   map[string]string `json:"logOpts"`
-}
-
+// RegistryAuth defines an image registry and the authentication information
+// associated with it.
 type RegistryAuth struct {
 	Name     string `json:"name" binding:"required"`
 	URL      string `json:"url" binding:"required"`
@@ -39,6 +41,7 @@ type RegistryAuth struct {
 	Password string `json:"password" binding:"required"`
 }
 
+// RestartPolicyName defines the restart policy used by a container.
 type RestartPolicyName string
 
 const (
@@ -111,4 +114,7 @@ type ImagePullResponse struct {
 	Progress string `json:"progress"`
 }
 
-type LifecycleFunc func(context.Context, *client.Client, string, *string, []mount.Mount, *io.StringWriter) error
+// Hook function  which can be used to add custom logic before and after events of the lifecycle of a container.
+// 'containerId' can be nil depending on the hook.
+type LifecycleFunc func(ctx context.Context, client *client.Client, containerName string,
+	containerId *string, mountList []mount.Mount, logger *io.StringWriter) error

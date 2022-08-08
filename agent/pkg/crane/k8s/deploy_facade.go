@@ -10,7 +10,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/agent/internal/grpc"
 	"github.com/dyrector-io/dyrectorio/agent/internal/util"
 	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
-	builder "github.com/dyrector-io/dyrectorio/agent/pkg/containerbuilder"
+	builder "github.com/dyrector-io/dyrectorio/agent/pkg/builders/container"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/config"
 )
 

@@ -67,7 +67,7 @@ func Serve(cfg *config.Configuration) {
 		}
 
 		log.Println("Running gRPC in blocking mode: ", blocking)
-		grpcContext := grpc.WithGRPCConfig(context.TODO(), cfg)
+		grpcContext := grpc.WithGRPCConfig(context.Background(), cfg)
 		if blocking {
 			grpc.Init(grpcContext, grpcParams, &cfg.CommonConfiguration, grpc.WorkerFunctions{
 				Deploy: utils.DeployImage,
@@ -94,7 +94,7 @@ func Serve(cfg *config.Configuration) {
 			AcmeMail: cfg.TraefikAcmeMail,
 		}
 
-		err := utils.ExecTraefik(context.TODO(), params, cfg)
+		err := utils.ExecTraefik(context.Background(), params, cfg)
 		if err != nil {
 			// we wanted to start traefik, but something is not ok, thus panic!
 			log.Panic("failed to start Traefik: ", err)

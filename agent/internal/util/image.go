@@ -3,7 +3,7 @@ package util
 import (
 	"strings"
 
-	builder "github.com/dyrector-io/dyrectorio/agent/pkg/containerbuilder"
+	builder "github.com/dyrector-io/dyrectorio/agent/pkg/builders/container"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 )
 

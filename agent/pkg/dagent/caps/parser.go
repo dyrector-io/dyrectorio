@@ -5,7 +5,7 @@ import (
 	"log"
 
 	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
-	builder "github.com/dyrector-io/dyrectorio/agent/pkg/containerbuilder"
+	builder "github.com/dyrector-io/dyrectorio/agent/pkg/builders/container"
 )
 
 type Port struct {
