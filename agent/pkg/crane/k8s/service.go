@@ -80,7 +80,7 @@ func (s *service) deployService(params *ServiceParams) error {
 		svc.WithAnnotations(params.LBAnnotations)
 	}
 
-	res, err := client.Apply(context.Background(), svc, metav1.ApplyOptions{
+	res, err := client.Apply(s.ctx, svc, metav1.ApplyOptions{
 		FieldManager: s.appConfig.FieldManagerName,
 		Force:        s.appConfig.ForceOnConflicts,
 	})

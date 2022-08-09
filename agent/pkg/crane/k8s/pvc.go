@@ -17,14 +17,15 @@ import (
 
 // facade object for pvc management
 type pvc struct {
+	ctx       context.Context
 	status    string
 	requested map[string]v1.Volume
 	avail     map[string]v1.Volume
 	appConfig *config.Configuration
 }
 
-func newPvc(cfg *config.Configuration) *pvc {
-	return &pvc{status: "", avail: map[string]v1.Volume{}, requested: map[string]v1.Volume{}, appConfig: cfg}
+func newPvc(ctx context.Context, cfg *config.Configuration) *pvc {
+	return &pvc{ctx: ctx, status: "", avail: map[string]v1.Volume{}, requested: map[string]v1.Volume{}, appConfig: cfg}
 }
 
 func (p *pvc) deployPVC(namespace, name string, mountList []string, volumes []v1.Volume) error {
@@ -107,7 +108,7 @@ func (p *pvc) applyVolume(client typedv1.PersistentVolumeClaimInterface,
 	claim := corev1.PersistentVolumeClaim(fullVolumeName, namespace).
 		WithSpec(claimSpec)
 
-	result, err := client.Apply(context.Background(), claim, metaV1.ApplyOptions{
+	result, err := client.Apply(p.ctx, claim, metaV1.ApplyOptions{
 		FieldManager: p.appConfig.FieldManagerName,
 		Force:        p.appConfig.ForceOnConflicts,
 	})

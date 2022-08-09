@@ -49,14 +49,14 @@ func NewDeployFacade(params *DeployFacadeParams, cfg *config.Configuration) *dep
 		ctx:        params.Ctx,
 		params:     params,
 		image:      params.Image,
-		namespace:  newNamespace(params.InstanceConfig.ContainerPreName, cfg),
+		namespace:  newNamespace(params.Ctx, params.InstanceConfig.ContainerPreName, cfg),
 		deployment: newDeployment(params.Ctx, cfg),
 		configmap:  newConfigmap(params.Ctx, cfg),
 		service:    newService(params.Ctx, cfg),
 		ingress:    newIngress(params.Ctx, cfg),
 		appConfig:  cfg,
 
-		pvc: newPvc(cfg),
+		pvc: newPvc(params.Ctx, cfg),
 	}
 }
 

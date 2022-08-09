@@ -63,7 +63,7 @@ func TestMain(m *testing.M) {
 
 	// following is executed after every tests are run in this file
 
-	err := k8s.DeleteNamespace(TestNamespace, &config.Configuration{})
+	err := k8s.DeleteNamespace(context.Background(), TestNamespace, &config.Configuration{})
 	if err != nil {
 		log.Println("(cleanup) failed to delete namespace: ", err)
 	}
@@ -252,7 +252,7 @@ func TestDeploymentPVCExtensionFailSad(t *testing.T) {
 		assert.Equal(t, http.StatusOK, rec.Code)
 	})
 
-	k8s.WaitForRunningDeployment(TestNamespace, containerName, 1, config.TestTimeoutDuration, &config)
+	k8s.WaitForRunningDeployment(context.Background(), TestNamespace, containerName, 1, config.TestTimeoutDuration, &config)
 
 	// modify pvc size
 	deployRequest.ContainerConfig.Volumes[0].Size = "256M"
@@ -305,7 +305,7 @@ func TestDeploymentRestartAllTheTimeHappy(t *testing.T) {
 		log.Println(rec.Body)
 	})
 
-	k8s.WaitForRunningDeployment(TestNamespace, containerName, 1, config.TestTimeoutDuration, &config)
+	k8s.WaitForRunningDeployment(context.Background(), TestNamespace, containerName, 1, config.TestTimeoutDuration, &config)
 
 	body, err = json.Marshal(deployRequest)
 	if err != nil {
@@ -426,7 +426,7 @@ func TestDeployAndGetStatus(t *testing.T) {
 		assert.Equal(t, http.StatusOK, rec.Code)
 	})
 
-	err = k8s.WaitForRunningDeployment(TestNamespace, containerName, 1, config.TestTimeoutDuration, &config)
+	err = k8s.WaitForRunningDeployment(context.Background(), TestNamespace, containerName, 1, config.TestTimeoutDuration, &config)
 
 	if err != nil {
 		t.Fatal(err)
@@ -485,7 +485,7 @@ func TestWaitDeploymentHappy(t *testing.T) {
 	log.Println("body:", rec.Body)
 
 	t.Run("wait for deployment to be running", func(t *testing.T) {
-		err = k8s.WaitForRunningDeployment(TestNamespace, containerName, 1, config.TestTimeoutDuration, &config)
+		err = k8s.WaitForRunningDeployment(context.Background(), TestNamespace, containerName, 1, config.TestTimeoutDuration, &config)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -524,7 +524,7 @@ func TestTimeoutIfConditionFailsSad(t *testing.T) {
 	})
 
 	t1 := time.Now()
-	err = k8s.WaitForRunningDeployment(TestNamespace, containerName, 2, config.TestTimeoutDuration, &config)
+	err = k8s.WaitForRunningDeployment(context.Background(), TestNamespace, containerName, 2, config.TestTimeoutDuration, &config)
 
 	assert.NotNil(t, err, "Error has to occur if condition is not fulfilled")
 	assert.True(t, t1.Before(time.Now().Add(config.TestTimeoutDuration)))
