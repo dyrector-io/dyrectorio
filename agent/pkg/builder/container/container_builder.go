@@ -81,7 +81,7 @@ type DockerContainerBuilder struct {
 func NewDockerBuilder(ctx context.Context) *DockerContainerBuilder {
 	var logger io.StringWriter = &defaultLogger{}
 	b := DockerContainerBuilder{
-		ctx: ctx,
+		ctx:    ctx,
 		logger: &logger,
 	}
 
