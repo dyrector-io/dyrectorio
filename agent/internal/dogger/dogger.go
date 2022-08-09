@@ -101,7 +101,7 @@ func (dog *DeploymentLogger) WriteContainerStatus(containerState string, message
 		instance := &crux.DeploymentStatusMessage_Instance{
 			Instance: &crux.InstanceDeploymentItem{
 				InstanceId: dog.requestID,
-				State:     MapContainerState(containerState),
+				State:      MapContainerState(containerState),
 			},
 		}
 
