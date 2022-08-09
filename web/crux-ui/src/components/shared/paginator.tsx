@@ -1,6 +1,6 @@
 import { DyoButton } from '@app/elements/dyo-button'
 import { DyoInput } from '@app/elements/dyo-input'
-import { pageSizes, PaginationConfig } from '@app/hooks/use-paginatios'
+import { pageSizes, PaginationConfig } from '@app/hooks/use-pagination'
 import useTranslation from 'next-translate/useTranslation'
 import React from 'react'
 
@@ -58,7 +58,7 @@ const Paginator = <Item,>(props: PaginatorProps<Item>) => {
   }
 
   return (
-    <div className={'flex justify-between my-2 items-center'}>
+    <div className="flex justify-between my-2 items-center">
       <div>
         <a className="text-light-eased mx-4">{t('itemsPerPage')}</a>
         <select
