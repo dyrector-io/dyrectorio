@@ -10,7 +10,7 @@ export type DyoListProps<T> = {
   headerClassName?: string | string[]
   itemClassName?: string | string[]
   footerClassName?: string | string[]
-  headers: string[]
+  headers?: string[]
   footer?: React.ReactNode
   data: T[]
   noSeparator?: boolean
@@ -33,35 +33,36 @@ export const DyoList = <T,>(props: DyoListProps<T>) => {
     ? (props.data as any as string[][])
     : props.data.map((it, index) => props.itemBuilder(it, index))
 
-  const headers: string[] = props.headers as string[]
-
-  const headerClassNames: string[] =
-    typeof props.headerClassName === 'string'
-      ? (headers.map(() => props.headerClassName as string) as string[])
-      : props.headerClassName ?? headers.map(() => null)
+  const headerClassNames: string[] = props.headers
+    ? typeof props.headerClassName === 'string'
+      ? (data[0].map(() => props.headerClassName as string) as string[])
+      : props.headerClassName ?? props.headers.map(() => null)
+    : undefined
 
   const itemClassNames: string[] =
     typeof props.itemClassName === 'string'
-      ? (headers.map(() => props.itemClassName as string) as string[])
-      : props.itemClassName ?? headers.map(() => null)
+      ? (data[0].map(() => props.itemClassName as string) as string[])
+      : props.itemClassName ?? data[0].map(() => null)
 
   return (
     <>
-      <div key={props.key} className={clsx('table w-full', props.className)}>
-        <div className="table-header-group">
-          <div className="table-row">
-            {headers.map((header, index) => (
-              <div key={`${props.key}-col-${index}`} className="table-cell text-left align-middle">
-                <div
-                  key={`${props.key}-header-${index}`}
-                  className={headerClassNames[index] ?? 'text-bright font-bold h-8 mb-4 ml-2 mr-auto'}
-                >
-                  {header}
+      <div key={props.key} className={clsx('table w-full rounded-lg overflow-auto', props.className)}>
+        {props.headers ? (
+          <div className="table-header-group">
+            <div className="table-row">
+              {props.headers.map((header, index) => (
+                <div key={`${props.key}-col-${index}`} className="table-cell text-left align-middle">
+                  <div
+                    key={`${props.key}-header-${index}`}
+                    className={headerClassNames[index] ?? 'text-bright font-bold h-8 mb-4 ml-2 mr-auto'}
+                  >
+                    {header}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        ) : null}
         <div className="table-row-group">
           {data.map((line, rowIndex) => (
             <div className="table-row" key={`${props.key}-${rowIndex}`}>
