@@ -64,7 +64,7 @@ func spawnInitContainer(
 
 	dog.WriteDeploymentStatus(crux.DeploymentStatus_IN_PROGRESS, "Waiting for import container to finish")
 
-	containerID := builder.GetContainerID()
+	containerID := *builder.GetContainerID()
 	cli.ContainerWait(ctx, containerID, container.WaitConditionNextExit)
 	cont, err := cli.ContainerInspect(ctx, containerID)
 

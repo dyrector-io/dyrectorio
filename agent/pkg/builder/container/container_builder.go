@@ -1,4 +1,4 @@
-// Package containerbuilder implements a fluent interface for creating and starting
+// Package container implements a fluent interface for creating and starting
 // docker containers.
 package container
 
@@ -39,11 +39,12 @@ type ContainerBuilder interface {
 	WithUser(uid string) ContainerBuilder
 	WithLogWriter(logger io.StringWriter) ContainerBuilder
 	WithoutConflict() ContainerBuilder
+	WithForcePullImage() ContainerBuilder
 	WithPreCreateHooks(hooks ...LifecycleFunc) ContainerBuilder
 	WithPostCreateHooks(hooks ...LifecycleFunc) ContainerBuilder
 	WithPreStartHooks(hooks ...LifecycleFunc) ContainerBuilder
 	WithPostStartHooks(hooks ...LifecycleFunc) ContainerBuilder
-	GetContainerId() string
+	GetContainerId() *string
 	Create() ContainerBuilder
 	Start() (bool, error)
 }
@@ -51,7 +52,7 @@ type ContainerBuilder interface {
 type DockerContainerBuilder struct {
 	ctx             context.Context
 	client          *client.Client
-	containerID     string
+	containerID     *string
 	containerName   string
 	imageWithTag    string
 	envList         []string
@@ -68,6 +69,7 @@ type DockerContainerBuilder struct {
 	cmd             []string
 	tty             bool
 	user            *int64
+	forcePull       bool
 	logger          *io.StringWriter
 	hooksPreCreate  []LifecycleFunc
 	hooksPostCreate []LifecycleFunc
@@ -77,9 +79,12 @@ type DockerContainerBuilder struct {
 
 // A shorthand function for creating a new DockerContainerBuilder and calling WithClient.
 // Creates a default Docker client which can be overwritten using 'WithClient'.
+// Creates a default logger which logs using the 'fmt' package.
 func NewDockerBuilder(ctx context.Context) *DockerContainerBuilder {
+	var logger io.StringWriter = &defaultLogger{}
 	b := DockerContainerBuilder{
-		ctx: ctx,
+		ctx:    ctx,
+		logger: &logger,
 	}
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
@@ -90,6 +95,7 @@ func NewDockerBuilder(ctx context.Context) *DockerContainerBuilder {
 	return b.WithClient(cli)
 }
 
+// Sets the Docker client of the ContainerBuilder. By default NewDockerBuilder creates a client.
 func (dc *DockerContainerBuilder) WithClient(cli *client.Client) *DockerContainerBuilder {
 	dc.client = cli
 	return dc
@@ -101,21 +107,25 @@ func (dc *DockerContainerBuilder) WithName(name string) *DockerContainerBuilder 
 	return dc
 }
 
+// Sets the port bindings of a container. Expose internal container ports to the host.
 func (dc *DockerContainerBuilder) WithPortBindings(portList []PortBinding) *DockerContainerBuilder {
 	dc.portList = portList
 	return dc
 }
 
+// Sets port ranges of a container.
 func (dc *DockerContainerBuilder) WithPortRanges(portRanges []PortRangeBinding) *DockerContainerBuilder {
 	dc.portRanges = portRanges
 	return dc
 }
 
+// Sets the environment variables of a container. Values are in a "KEY=VALUE" format.
 func (dc *DockerContainerBuilder) WithEnv(envList []string) *DockerContainerBuilder {
 	dc.envList = envList
 	return dc
 }
 
+// Sets the labels of a container.
 func (dc *DockerContainerBuilder) WithLabels(labels map[string]string) *DockerContainerBuilder {
 	dc.labels = labels
 	return dc
@@ -129,21 +139,25 @@ func (dc *DockerContainerBuilder) WithLogConfig(logConfig *container.LogConfig) 
 	return dc
 }
 
+// Sets the image of a container in a "image:tag" format where image can be a fully qualified name.
 func (dc *DockerContainerBuilder) WithImage(imageWithTag string) *DockerContainerBuilder {
 	dc.imageWithTag = imageWithTag
 	return dc
 }
 
+// Sets mount points of a container.
 func (dc *DockerContainerBuilder) WithMountPoints(mountList []mount.Mount) *DockerContainerBuilder {
 	dc.mountList = mountList
 	return dc
 }
 
+// Sets the network mode of a container.
 func (dc *DockerContainerBuilder) WithNetworkMode(networkMode string) *DockerContainerBuilder {
 	dc.networkMode = networkMode
 	return dc
 }
 
+// Sets the registry and authentication for the given image.
 func (dc *DockerContainerBuilder) WithRegistryAuth(auth *RegistryAuth) *DockerContainerBuilder {
 	if auth != nil {
 		dc.registryAuth = registryAuthBase64(auth.User, auth.Password)
@@ -151,26 +165,31 @@ func (dc *DockerContainerBuilder) WithRegistryAuth(auth *RegistryAuth) *DockerCo
 	return dc
 }
 
+// Sets the restart policy of the container.
 func (dc *DockerContainerBuilder) WithRestartPolicy(policy RestartPolicyName) *DockerContainerBuilder {
 	dc.restartPolicy = policy
 	return dc
 }
 
+// Sets if the container should be removed after it exists.
 func (dc *DockerContainerBuilder) WithAutoRemove(remove bool) *DockerContainerBuilder {
 	dc.remove = remove
 	return dc
 }
 
+// Sets the entrypoint of a container.
 func (dc *DockerContainerBuilder) WithEntrypoint(entrypoint []string) *DockerContainerBuilder {
 	dc.entrypoint = entrypoint
 	return dc
 }
 
+// Sets the CMD of a container.
 func (dc *DockerContainerBuilder) WithCmd(cmd []string) *DockerContainerBuilder {
 	dc.cmd = cmd
 	return dc
 }
 
+// Sets if standard streams should be attached to a tty.
 func (dc *DockerContainerBuilder) WithTTY(tty bool) *DockerContainerBuilder {
 	dc.tty = tty
 	return dc
@@ -184,14 +203,21 @@ func (dc *DockerContainerBuilder) WithoutConflict() *DockerContainerBuilder {
 	return dc
 }
 
+// Sets the UID.
 func (dc *DockerContainerBuilder) WithUser(user *int64) *DockerContainerBuilder {
 	dc.user = user
 	return dc
 }
 
-// Set the logger which logs messages releated to the builder (and not the container).
+// Sets the logger which logs messages releated to the builder (and not the container).
 func (dc *DockerContainerBuilder) WithLogWriter(logger io.StringWriter) *DockerContainerBuilder {
 	dc.logger = &logger
+	return dc
+}
+
+// Sets the builder to force pull the image before creating the container.
+func (dc *DockerContainerBuilder) WithForcePullImage() *DockerContainerBuilder {
+	dc.forcePull = true
 	return dc
 }
 
@@ -219,19 +245,17 @@ func (dc *DockerContainerBuilder) WithPostStartHooks(hooks ...LifecycleFunc) *Do
 	return dc
 }
 
-func (dc *DockerContainerBuilder) GetContainerID() string {
+func (dc *DockerContainerBuilder) GetContainerID() *string {
 	return dc.containerID
 }
 
-// todo: container builders create method could be eliminated mostly
-//		setting invidual params at their function to their final location
-//		managing hostConfig/containerConfig on the builder
-//		only create is done here
+// Creates the container using the configuration given by 'With...' functions.
 func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
-	// todo: fetch remote sha hash of image if not matching -> pull
-	if err := pullImage(dc.ctx, *dc.logger, dc.imageWithTag, dc.registryAuth); err != nil {
-		if err != nil && err.Error() != "EOF" {
-			logWrite(dc, fmt.Sprintf("Image pull error: %s", err.Error()))
+	if dc.forcePull {
+		if err := pullImage(*dc.logger, dc.imageWithTag, dc.registryAuth); err != nil {
+			if err != nil && err.Error() != "EOF" {
+				logWrite(dc, fmt.Sprintf("Image pull error: %s", err.Error()))
+			}
 		}
 	}
 
@@ -301,35 +325,37 @@ func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 	if len(containers) != 1 {
 		logWrite(dc, "Container was not created.")
 	} else {
-		dc.containerID = containers[0].ID
+		dc.containerID = &containers[0].ID
 	}
 
 	return dc
 }
 
+// Starts the container using the configuration given by 'With...' functions.
+// Returns true if successful, false and an error if not.
 func (dc *DockerContainerBuilder) Start() (bool, error) {
 	if hookError := execHooks(dc, dc.hooksPreStart); hookError != nil {
 		logWrite(dc, fmt.Sprintln("Container pre-start hook error: ", hookError))
 	}
 
-	err := dc.client.ContainerStart(dc.ctx, dc.containerID, types.ContainerStartOptions{})
+	err := dc.client.ContainerStart(dc.ctx, *dc.containerID, types.ContainerStartOptions{})
 
 	if hookError := execHooks(dc, dc.hooksPostStart); hookError != nil {
 		logWrite(dc, fmt.Sprintln("Container post-start hook error: ", hookError))
 	}
 
 	if err != nil {
-		log.Println(err)
+		logWrite(dc, err.Error())
 		return false, err
 	} else {
-		log.Printf("Started container: %s", dc.containerID)
+		logWrite(dc, fmt.Sprintf("Started container: %s", *dc.containerID))
 		return true, nil
 	}
 }
 
 func execHooks(dc *DockerContainerBuilder, hooks []LifecycleFunc) error {
 	for _, hook := range hooks {
-		if err := hook(dc.ctx, dc.client, dc.containerName, &dc.containerID, dc.mountList, dc.logger); err != nil {
+		if err := hook(dc.ctx, dc.client, dc.containerName, dc.containerID, dc.mountList, dc.logger); err != nil {
 			return err
 		}
 	}
@@ -381,6 +407,7 @@ func getPortSet(natPortBindings map[nat.Port][]nat.PortBinding) nat.PortSet {
 }
 
 func logWrite(dc *DockerContainerBuilder, message string) {
+	fmt.Println(message)
 	if dc.logger != nil {
 		_, err := (*dc.logger).WriteString(message)
 		if err != nil {
