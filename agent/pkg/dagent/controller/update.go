@@ -35,7 +35,7 @@ func UpdateRunningDAgent(c *gin.Context) {
 	}
 
 	if webhook.Token != nil && *webhook.Token == cfg.WebhookToken {
-		if err := utils.ExecWatchtowerOneShot(cfg); err != nil {
+		if err := utils.ExecWatchtowerOneShot(c, cfg); err != nil {
 			log.Println("Update error: " + err.Error())
 			c.JSON(http.StatusInternalServerError,
 				v1.ErrorResponse{Errors: []v1.Error{{

@@ -259,27 +259,3 @@ func TestDockerFilterByNameFilterOneMatch(t *testing.T) {
 
 	assert.ElementsMatch(t, outputContainers, expectedContainers)
 }
-
-func TestRegistryAuthUpdateBase64Empty(t *testing.T) {
-	val := utils.RegistryAuthBase64("", "")
-
-	assert.Equal(t, "", val)
-}
-
-func TestRegistryAuthUpdateBase64WithoutUser(t *testing.T) {
-	val := utils.RegistryAuthBase64("", "test1234")
-
-	assert.Equal(t, "", val)
-}
-
-func TestRegistryAuthUpdateBase64WithoutPass(t *testing.T) {
-	val := utils.RegistryAuthBase64("test", "")
-
-	assert.Equal(t, "", val)
-}
-
-func TestRegistryAuthUpdateBase64Correct(t *testing.T) {
-	val := utils.RegistryAuthBase64("test", "test1234")
-
-	assert.Equal(t, "eyJ1c2VybmFtZSI6InRlc3QiLCJwYXNzd29yZCI6InRlc3QxMjM0In0=", val)
-}

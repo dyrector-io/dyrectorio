@@ -16,6 +16,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"github.com/dyrector-io/dyrectorio/agent/internal/util"
+	builder "github.com/dyrector-io/dyrectorio/agent/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/config"
 
 	typedv1 "k8s.io/client-go/kubernetes/typed/apps/v1"
@@ -49,7 +50,7 @@ type deploymentParams struct {
 	containerConfig *v1.ContainerConfig
 	configMapsEnv   []string
 	volumes         map[string]v1.Volume
-	portList        []v1.PortBinding
+	portList        []builder.PortBinding
 	command         []string
 	args            []string
 	issuer          string
@@ -327,7 +328,7 @@ func getProbes(path string, port uint16) *corev1.HTTPGetActionApplyConfiguration
 		WithPort(intstr.FromInt(int(port))) // exposed port
 }
 
-func getContainerPorts(portList []v1.PortBinding) []*corev1.ContainerPortApplyConfiguration {
+func getContainerPorts(portList []builder.PortBinding) []*corev1.ContainerPortApplyConfiguration {
 	ports := []*corev1.ContainerPortApplyConfiguration{}
 
 	for i := range portList {
