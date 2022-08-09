@@ -4,9 +4,7 @@ import (
 	"archive/tar"
 	"bytes"
 	"context"
-	"encoding/base64"
 	"encoding/binary"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -24,6 +22,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/agent/internal/mapper"
 	"github.com/dyrector-io/dyrectorio/agent/internal/util"
 	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
+	containerbuilder "github.com/dyrector-io/dyrectorio/agent/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/caps"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/crux"
@@ -34,7 +33,7 @@ import (
 	"github.com/docker/docker/client"
 )
 
-const DockerClientTimeoutSeconds = 30
+const dockerClientTimeoutSeconds = 30
 
 type DockerVersion struct {
 	ServerVersion string
@@ -254,58 +253,6 @@ func InspectContainer(name string) types.ContainerJSON {
 	return inspection
 }
 
-// ImagePullResponse is not explicit
-type ImagePullResponse struct {
-	ID             string `json:"id"`
-	Status         string `json:"status"`
-	ProgressDetail struct {
-		Current int64 `json:"current"`
-		Total   int64 `json:"total"`
-	} `json:"progressDetail"`
-	Progress string `json:"progress"`
-}
-
-// force pulls the given image name
-func PullImage(dog *dogger.DeploymentLogger, fullyQualifiedImageName, authCreds string) error {
-	ctx := context.Background()
-
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	checkDockerError(err)
-
-	dog.Write("Pulling image: " + fullyQualifiedImageName)
-	reader, err := cli.ImagePull(ctx, fullyQualifiedImageName, types.ImagePullOptions{RegistryAuth: authCreds})
-	if err != nil {
-		return err
-	}
-	defer reader.Close()
-
-	d := json.NewDecoder(reader)
-
-	for {
-		pullResult := ImagePullResponse{}
-		err = d.Decode(&pullResult)
-		if err == io.EOF {
-			break
-		} else if err != nil {
-			log.Println("decode error: " + err.Error())
-			break
-		}
-
-		if pullResult.ProgressDetail.Current != 0 && pullResult.ProgressDetail.Total != 0 {
-			dog.Write(
-				fmt.Sprintf("Image: %s %s  %0.2f%%",
-					pullResult.ID,
-					pullResult.Status,
-					float64(pullResult.ProgressDetail.Current)/float64(pullResult.ProgressDetail.Total)*100)) //nolint:gomnd
-		} else {
-			dog.Write(fmt.Sprintf("Image: %s %s", pullResult.ID, pullResult.Status))
-		}
-		time.Sleep(time.Second)
-	}
-
-	return err
-}
-
 func logDeployInfo(dog *dogger.DeploymentLogger, deployImageRequest *v1.DeployImageRequest, image *util.ImageURI, containerName string) {
 	reqID := deployImageRequest.RequestID
 
@@ -394,10 +341,8 @@ func DeployImage(ctx context.Context,
 	if deployImageRequest.ContainerConfig.Expose {
 		networkMode = "traefik"
 	}
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	checkDockerError(err)
 
-	builder := NewDockerBuilder(cli, cfg)
+	builder := containerbuilder.NewDockerBuilder(ctx)
 
 	builder.WithImage(image.String()).
 		WithName(containerName).
@@ -413,15 +358,13 @@ func DeployImage(ctx context.Context,
 		WithUser(deployImageRequest.ContainerConfig.User).
 		WithEntrypoint(deployImageRequest.ContainerConfig.Command).
 		WithCmd(deployImageRequest.ContainerConfig.Args).
-		WithDogger(dog)
+		WithLogWriter(dog)
 
-	if deployImageRequest.ContainerConfig.ImportContainer != nil {
-		builder.WithImportContainer(*deployImageRequest.ContainerConfig.ImportContainer)
-	}
+	WithImportContainer(builder, deployImageRequest.ContainerConfig.ImportContainer, dog, cfg)
 
-	builder.Create(ctx)
+	builder.Create()
 
-	_, err = builder.Start()
+	_, err := builder.Start()
 
 	if err != nil {
 		dog.Write(err.Error())
@@ -436,6 +379,24 @@ func DeployImage(ctx context.Context,
 	}
 
 	return err
+}
+
+func WithImportContainer(dc *containerbuilder.DockerContainerBuilder, importConfig *v1.ImportContainer,
+	dog *dogger.DeploymentLogger, cfg *config.Configuration) {
+	if importConfig != nil {
+		dc.WithPreStartHooks(func(ctx context.Context,
+			client *client.Client,
+			containerName string,
+			containerId *string,
+			mountList []mount.Mount,
+			logger *io.StringWriter) error {
+			if initError := spawnInitContainer(client, ctx, containerName, mountList, importConfig, dog, cfg); initError != nil {
+				log.Printf("Failed to spawn init container: %v", initError)
+				return initError
+			}
+			return nil
+		})
+	}
 }
 
 func volumesToMounts(volumes []v1.Volume) []string {
@@ -595,7 +556,7 @@ func stopContainer(containerName string) error {
 		panic(err)
 	}
 
-	timeoutValue := (time.Duration(DockerClientTimeoutSeconds) * time.Second)
+	timeoutValue := (time.Duration(dockerClientTimeoutSeconds) * time.Second)
 	if err := cli.ContainerStop(ctx, containerName, &timeoutValue); err != nil {
 		return err
 	}
@@ -670,23 +631,6 @@ func EnvPipeSeparatedToStringMap(envIn *[]string) map[string]string {
 	return envList
 }
 
-func RegistryAuthBase64(user, password string) string {
-	if user == "" || password == "" {
-		return ""
-	}
-
-	authConfig := types.AuthConfig{
-		Username: user,
-		Password: password,
-	}
-	encodedJSON, err := json.Marshal(authConfig)
-	if err != nil {
-		log.Println(err)
-		return ""
-	}
-	return base64.URLEncoding.EncodeToString(encodedJSON)
-}
-
 func GetImageLabels(fullyQualifiedImageName string) (map[string]string, error) {
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
@@ -701,4 +645,15 @@ func GetImageLabels(fullyQualifiedImageName string) (map[string]string, error) {
 	} else {
 		return nil, errors.New("no labels")
 	}
+}
+
+func DeleteContainerByName(ctx context.Context, preName, name string) error {
+	containerName := util.JoinV("-", preName, name)
+	containers := GetContainer(containerName)
+
+	if len(containers) == 1 {
+		return DeleteContainer(containerName)
+	}
+
+	return errors.New("No or more containers found for " + containerName)
 }

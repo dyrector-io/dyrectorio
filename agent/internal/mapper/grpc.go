@@ -1,14 +1,15 @@
 package mapper
 
 import (
+	"strings"
 	"time"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/dyrector-io/dyrectorio/agent/internal/config"
 	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
-	"github.com/dyrector-io/dyrectorio/agent/internal/util"
 	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
+	builder "github.com/dyrector-io/dyrectorio/agent/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/crux"
 
@@ -47,7 +48,7 @@ func MapDeployImage(req *agent.DeployRequest, appConfig *config.CommonConfigurat
 	}
 
 	if req.RegistryAuth != nil {
-		res.RegistryAuth = &util.RegistryAuth{
+		res.RegistryAuth = &builder.RegistryAuth{
 			Name:     req.RegistryAuth.Name,
 			URL:      req.RegistryAuth.Url,
 			User:     req.RegistryAuth.User,
@@ -98,11 +99,11 @@ func MapContainerConfig(in *agent.DeployRequest_ContainerConfig) v1.ContainerCon
 	return containerConfig
 }
 
-func MapPorts(in []*agent.DeployRequest_ContainerConfig_Port) []v1.PortBinding {
-	ports := []v1.PortBinding{}
+func MapPorts(in []*agent.DeployRequest_ContainerConfig_Port) []builder.PortBinding {
+	ports := []builder.PortBinding{}
 
 	for i := range in {
-		ports = append(ports, v1.PortBinding{
+		ports = append(ports, builder.PortBinding{
 			ExposedPort: uint16(in[i].Internal),
 			PortBinding: uint16(in[i].External),
 		})
@@ -131,13 +132,26 @@ func MapContainerStatus(in *[]dockerTypes.Container) []*crux.ContainerStatusItem
 			name = it.Names[0]
 		}
 
+		imageName := strings.Split(it.Image, ":")
+
+		var imageTag string
+
+		if len(imageName) > 0 {
+			imageTag = imageName[1]
+		} else {
+			imageTag = "latest"
+		}
+
 		list = append(list, &crux.ContainerStatusItem{
 			ContainerId: it.ID,
 			Name:        name,
 			Command:     it.Command,
 			CreatedAt:   timestamppb.New(time.UnixMilli(it.Created * int64(time.Microsecond)).UTC()),
 			Status:      dogger.MapContainerState(it.State),
+			State:       it.Status,
 			Ports:       MapContainerPorts(&it.Ports),
+			ImageName:   imageName[0],
+			ImageTag:    imageTag,
 		})
 	}
 

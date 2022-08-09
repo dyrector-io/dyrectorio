@@ -3,6 +3,7 @@ package dogger
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 
 	"github.com/dyrector-io/dyrectorio/agent/internal/config"
@@ -18,6 +19,8 @@ type DeploymentLogger struct {
 	logs         []string
 	ctx          context.Context
 	appConfig    *config.CommonConfiguration
+
+	io.StringWriter
 }
 
 func NewDeploymentLogger(deploymentID *string,
@@ -119,6 +122,12 @@ func (dog *DeploymentLogger) WriteContainerStatus(containerState string, message
 
 func (dog *DeploymentLogger) GetLogs() []string {
 	return dog.logs
+}
+
+func (dog *DeploymentLogger) WriteString(s string) (int, error) {
+	dog.Write(s)
+
+	return len(s), nil
 }
 
 func MapContainerState(state string) crux.ContainerStatus {

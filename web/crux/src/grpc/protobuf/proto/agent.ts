@@ -24,6 +24,8 @@ export interface AgentInfo {
 export interface AgentCommand {
   deploy: VersionDeployRequest | undefined
   containerStatus: ContainerStatusRequest | undefined
+  containerDelete: ContainerDeleteRequest | undefined
+  deployLegacy: DeployRequestLegacy | undefined
 }
 
 /**
@@ -160,6 +162,18 @@ export interface DeployRequest_RegistryAuth {
 
 export interface ContainerStatusRequest {
   prefix?: string | undefined
+  oneShot?: boolean | undefined
+}
+
+export interface ContainerDeleteRequest {
+  prefix: string
+  name: string
+}
+
+export interface DeployRequestLegacy {
+  /** for early dogger logging */
+  requestId: string
+  json: string
 }
 
 export const AGENT_PACKAGE_NAME = 'agent'
@@ -207,6 +221,14 @@ export const AgentCommand = {
       object.containerStatus !== undefined && object.containerStatus !== null
         ? ContainerStatusRequest.fromJSON(object.containerStatus)
         : undefined
+    message.containerDelete =
+      object.containerDelete !== undefined && object.containerDelete !== null
+        ? ContainerDeleteRequest.fromJSON(object.containerDelete)
+        : undefined
+    message.deployLegacy =
+      object.deployLegacy !== undefined && object.deployLegacy !== null
+        ? DeployRequestLegacy.fromJSON(object.deployLegacy)
+        : undefined
     return message
   },
 
@@ -218,6 +240,12 @@ export const AgentCommand = {
       (obj.containerStatus = message.containerStatus
         ? ContainerStatusRequest.toJSON(message.containerStatus)
         : undefined)
+    message.containerDelete !== undefined &&
+      (obj.containerDelete = message.containerDelete
+        ? ContainerDeleteRequest.toJSON(message.containerDelete)
+        : undefined)
+    message.deployLegacy !== undefined &&
+      (obj.deployLegacy = message.deployLegacy ? DeployRequestLegacy.toJSON(message.deployLegacy) : undefined)
     return obj
   },
 }
@@ -554,12 +582,50 @@ export const ContainerStatusRequest = {
   fromJSON(object: any): ContainerStatusRequest {
     const message = { ...baseContainerStatusRequest } as ContainerStatusRequest
     message.prefix = object.prefix !== undefined && object.prefix !== null ? String(object.prefix) : undefined
+    message.oneShot = object.oneShot !== undefined && object.oneShot !== null ? Boolean(object.oneShot) : undefined
     return message
   },
 
   toJSON(message: ContainerStatusRequest): unknown {
     const obj: any = {}
     message.prefix !== undefined && (obj.prefix = message.prefix)
+    message.oneShot !== undefined && (obj.oneShot = message.oneShot)
+    return obj
+  },
+}
+
+const baseContainerDeleteRequest: object = { prefix: '', name: '' }
+
+export const ContainerDeleteRequest = {
+  fromJSON(object: any): ContainerDeleteRequest {
+    const message = { ...baseContainerDeleteRequest } as ContainerDeleteRequest
+    message.prefix = object.prefix !== undefined && object.prefix !== null ? String(object.prefix) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    return message
+  },
+
+  toJSON(message: ContainerDeleteRequest): unknown {
+    const obj: any = {}
+    message.prefix !== undefined && (obj.prefix = message.prefix)
+    message.name !== undefined && (obj.name = message.name)
+    return obj
+  },
+}
+
+const baseDeployRequestLegacy: object = { requestId: '', json: '' }
+
+export const DeployRequestLegacy = {
+  fromJSON(object: any): DeployRequestLegacy {
+    const message = { ...baseDeployRequestLegacy } as DeployRequestLegacy
+    message.requestId = object.requestId !== undefined && object.requestId !== null ? String(object.requestId) : ''
+    message.json = object.json !== undefined && object.json !== null ? String(object.json) : ''
+    return message
+  },
+
+  toJSON(message: DeployRequestLegacy): unknown {
+    const obj: any = {}
+    message.requestId !== undefined && (obj.requestId = message.requestId)
+    message.json !== undefined && (obj.json = message.json)
     return obj
   },
 }
