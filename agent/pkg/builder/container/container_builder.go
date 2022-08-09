@@ -43,7 +43,7 @@ type ContainerBuilder interface {
 	WithPostCreateHooks(hooks ...LifecycleFunc) ContainerBuilder
 	WithPreStartHooks(hooks ...LifecycleFunc) ContainerBuilder
 	WithPostStartHooks(hooks ...LifecycleFunc) ContainerBuilder
-	GetContainerId() string
+	GetContainerId() *string
 	Create() ContainerBuilder
 	Start() (bool, error)
 }
@@ -51,7 +51,7 @@ type ContainerBuilder interface {
 type DockerContainerBuilder struct {
 	ctx             context.Context
 	client          *client.Client
-	containerID     string
+	containerID     *string
 	containerName   string
 	imageWithTag    string
 	envList         []string
@@ -77,9 +77,12 @@ type DockerContainerBuilder struct {
 
 // A shorthand function for creating a new DockerContainerBuilder and calling WithClient.
 // Creates a default Docker client which can be overwritten using 'WithClient'.
+// Creates a default logger which logs using the 'fmt' package.
 func NewDockerBuilder(ctx context.Context) *DockerContainerBuilder {
+	var logger io.StringWriter = &defaultLogger{}
 	b := DockerContainerBuilder{
 		ctx: ctx,
+		logger: &logger,
 	}
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
@@ -234,7 +237,7 @@ func (dc *DockerContainerBuilder) WithPostStartHooks(hooks ...LifecycleFunc) *Do
 	return dc
 }
 
-func (dc *DockerContainerBuilder) GetContainerID() string {
+func (dc *DockerContainerBuilder) GetContainerID() *string {
 	return dc.containerID
 }
 
@@ -313,7 +316,7 @@ func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 	if len(containers) != 1 {
 		logWrite(dc, "Container was not created.")
 	} else {
-		dc.containerID = containers[0].ID
+		dc.containerID = &containers[0].ID
 	}
 
 	return dc
@@ -326,7 +329,7 @@ func (dc *DockerContainerBuilder) Start() (bool, error) {
 		logWrite(dc, fmt.Sprintln("Container pre-start hook error: ", hookError))
 	}
 
-	err := dc.client.ContainerStart(dc.ctx, dc.containerID, types.ContainerStartOptions{})
+	err := dc.client.ContainerStart(dc.ctx, *dc.containerID, types.ContainerStartOptions{})
 
 	if hookError := execHooks(dc, dc.hooksPostStart); hookError != nil {
 		logWrite(dc, fmt.Sprintln("Container post-start hook error: ", hookError))
@@ -336,14 +339,14 @@ func (dc *DockerContainerBuilder) Start() (bool, error) {
 		log.Println(err)
 		return false, err
 	} else {
-		log.Printf("Started container: %s", dc.containerID)
+		log.Printf("Started container: %s", *dc.containerID)
 		return true, nil
 	}
 }
 
 func execHooks(dc *DockerContainerBuilder, hooks []LifecycleFunc) error {
 	for _, hook := range hooks {
-		if err := hook(dc.ctx, dc.client, dc.containerName, &dc.containerID, dc.mountList, dc.logger); err != nil {
+		if err := hook(dc.ctx, dc.client, dc.containerName, dc.containerID, dc.mountList, dc.logger); err != nil {
 			return err
 		}
 	}
@@ -395,6 +398,7 @@ func getPortSet(natPortBindings map[nat.Port][]nat.PortBinding) nat.PortSet {
 }
 
 func logWrite(dc *DockerContainerBuilder, message string) {
+	fmt.Println(message)
 	if dc.logger != nil {
 		_, err := (*dc.logger).WriteString(message)
 		if err != nil {

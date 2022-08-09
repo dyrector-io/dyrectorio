@@ -137,3 +137,12 @@ func removeContainer(containerName string) error {
 
 	return nil
 }
+
+type defaultLogger struct {
+	io.StringWriter
+}
+
+func (logger *defaultLogger) WriteString(s string) (int, error) {
+	fmt.Println(s)
+	return len(s), nil
+}
