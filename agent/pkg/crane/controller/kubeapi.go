@@ -11,7 +11,6 @@ import (
 	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/utils"
 
 	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/k8s"
-	_ "github.com/dyrector-io/dyrectorio/agent/pkg/crane/model"
 
 	_ "k8s.io/api/apps/v1"
 	_ "k8s.io/api/core/v1"
@@ -97,8 +96,8 @@ func GetDeploymentStatus(c *gin.Context) {
 // @Param skip query int false "paginationSkip" default(0)
 // @Param take query int false "paginationTake" default(100)
 // @Success 200 {array} []string
-// @Failure 400 {object} model.ErrorResponse
-// @Failure 404 {object} model.ErrorResponse
+// @Failure 400 {object} v1.ErrorResponse
+// @Failure 404 {object} v1.ErrorResponse
 // @Router /containers/{containerPreName}/{containerName}/logs [get]
 func GetDeploymentLogs(c *gin.Context) {
 	query := &apiv1.DeploymentQuery{}
@@ -121,8 +120,8 @@ func GetDeploymentLogs(c *gin.Context) {
 // @Param containerName path string true "containerName"
 // @Param containerPreName path string true "containerPreName"
 // @Success 200 {object} types.ContainerJSON
-// @Failure 400 {object} model.ErrorResponse
-// @Failure 404 {object} model.ErrorResponse
+// @Failure 400 {object} v1.ErrorResponse
+// @Failure 404 {object} v1.ErrorResponse
 // @Router /containers/{containerPreName}/{containerName}/inspect [get]
 func DescribeDeployment(c *gin.Context) {
 	query := &apiv1.DeploymentQuery{}
