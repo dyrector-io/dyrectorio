@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import {
   ContainerConfig,
-  ContainerStatusEnum,
+  ContainerStatusEnum as ContainerStateEnum,
   Deployment,
   DeploymentEvent,
   DeploymentEventTypeEnum,
@@ -16,9 +16,9 @@ import { toTimestamp } from 'src/domain/utils'
 import { DeployRequest_ContainerConfig, DeployRequest_InstanceConfig } from 'src/grpc/protobuf/proto/agent'
 import {
   AuditResponse,
-  ContainerStatus,
-  containerStatusFromJSON,
-  containerStatusToJSON,
+  ContainerState,
+  containerStateFromJSON,
+  containerStateToJSON,
   DeploymentDetailsResponse,
   DeploymentEventContainerStatus,
   DeploymentEventLog,
@@ -74,7 +74,7 @@ export class DeployMapper {
       ...instance,
       audit: AuditResponse.fromJSON(instance),
       image: this.imageMapper.toGrpc(instance.image),
-      status: this.containerStatusToGrpc(instance.status),
+      state: this.containerStateToGrpc(instance.status),
       config: {
         capabilities: (instance.config?.capabilities as UniqueKeyValue[]) ?? [],
         environment: (instance.config?.environment as UniqueKeyValue[]) ?? [],
@@ -166,12 +166,12 @@ export class DeployMapper {
     return deploymentStatusToDb(status)
   }
 
-  containerStatusToGrpc(status?: ContainerStatusEnum): ContainerStatus {
-    return status ? containerStatusFromJSON(status.toUpperCase()) : null
+  containerStateToGrpc(state?: ContainerStateEnum): ContainerState {
+    return state ? containerStateFromJSON(state.toUpperCase()) : null
   }
 
-  containerStatusToDb(status?: ContainerStatus): ContainerStatusEnum {
-    return status ? (containerStatusToJSON(status).toLowerCase() as ContainerStatusEnum) : null
+  containerStateToDb(state?: ContainerState): ContainerStateEnum {
+    return state ? (containerStateToJSON(state).toLowerCase() as ContainerStateEnum) : null
   }
 
   private jsonToPipedFormat(environment: UniqueKeyValue[]): string[] {

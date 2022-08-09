@@ -147,8 +147,8 @@ func MapContainerStatus(in *[]dockerTypes.Container) []*crux.ContainerStatusItem
 			Name:        name,
 			Command:     it.Command,
 			CreatedAt:   timestamppb.New(time.UnixMilli(it.Created * int64(time.Microsecond)).UTC()),
-			Status:      dogger.MapContainerState(it.State),
-			State:       it.Status,
+			State:       dogger.MapContainerState(it.State),
+			Status:      it.Status,
 			Ports:       MapContainerPorts(&it.Ports),
 			ImageName:   imageName[0],
 			ImageTag:    imageTag,
@@ -178,8 +178,8 @@ func MapKubeDeploymentListToCruxStatusItems(deployments *appsv1.DeploymentList) 
 
 	for i := range deployments.Items {
 		statusItems = append(statusItems, &crux.ContainerStatusItem{
-			Name:   deployments.Items[i].Name,
-			Status: MapKubeStatusToCruxContainerStatus(deployments.Items[i].Status),
+			Name:  deployments.Items[i].Name,
+			State: MapKubeStatusToCruxContainerState(deployments.Items[i].Status),
 			CreatedAt: timestamppb.New(
 				time.UnixMilli(deployments.Items[i].GetCreationTimestamp().Unix() * int64(time.Microsecond)).UTC(),
 			),
@@ -190,12 +190,12 @@ func MapKubeDeploymentListToCruxStatusItems(deployments *appsv1.DeploymentList) 
 }
 
 // do better mapping this is quick something
-func MapKubeStatusToCruxContainerStatus(status appsv1.DeploymentStatus) crux.ContainerStatus {
+func MapKubeStatusToCruxContainerState(status appsv1.DeploymentStatus) crux.ContainerState {
 	switch status.ReadyReplicas {
 	case 1:
-		return crux.ContainerStatus_RUNNING
+		return crux.ContainerState_RUNNING
 	case 0:
-		return crux.ContainerStatus_DEAD
+		return crux.ContainerState_DEAD
 	}
-	return crux.ContainerStatus_UNKNOWN_CONTAINER_STATUS
+	return crux.ContainerState_UNKNOWN_CONTAINER_STATUS
 }

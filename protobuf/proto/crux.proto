@@ -629,8 +629,8 @@ message ContainerStatusItem {
   string name = 101;
   string command = 103;
   google.protobuf.Timestamp createdAt = 104;
-  ContainerStatus status = 105; // The 'State' of the container (Created, Running, etc)
-  string state = 106; // The 'Status' of the container ("Created 1min ago", "Exited with code 123", etc)
+  ContainerState state = 105; // The 'State' of the container (Created, Running, etc)
+  string status = 106; // The 'Status' of the container ("Created 1min ago", "Exited with code 123", etc)
   string imageName = 107;
   string imageTag = 108;
 
@@ -656,7 +656,7 @@ enum DeploymentStatus {
 
 message InstanceDeploymentItem {
   string instanceId = 100;
-  ContainerStatus status = 101;
+  ContainerState state = 101;
 }
 
 message DeploymentStatusMessage {
@@ -722,7 +722,7 @@ message InstanceResponse {
   AuditResponse audit = 2;
 
   ImageResponse image = 100;
-  optional ContainerStatus status = 101;
+  optional ContainerState state = 101;
   optional InstanceContainerConfig config = 102;
 }
 
@@ -772,7 +772,7 @@ enum DeploymentEventType {
 
 message DeploymentEventContainerStatus {
   string instanceId = 1;
-  ContainerStatus status = 2;
+  ContainerState state = 2;
 }
 
 message DeploymentEventLog { repeated string log = 1000; }
@@ -791,7 +791,7 @@ message DeploymentEventListResponse {
   repeated DeploymentEventResponse data = 1000;
 }
 
-enum ContainerStatus {
+enum ContainerState {
   UNKNOWN_CONTAINER_STATUS = 0;
   CREATED = 1;
   RESTARTING = 2;

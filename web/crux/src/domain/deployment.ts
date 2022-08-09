@@ -8,8 +8,8 @@ import { Logger, PreconditionFailedException } from '@nestjs/common'
 import { Observable, Subject } from 'rxjs'
 import { AgentCommand, VersionDeployRequest } from 'src/grpc/protobuf/proto/agent'
 import {
-  ContainerStatus,
-  containerStatusToJSON,
+  ContainerState,
+  containerStateToJSON,
   DeploymentProgressMessage,
   DeploymentStatus,
   DeploymentStatusMessage,
@@ -60,7 +60,7 @@ export class Deployment {
         type: DeploymentEventTypeEnum.containerStatus,
         value: {
           instanceId: progress.instance.instanceId,
-          status: containerStatusToDb(progress.instance.status),
+          status: containerStateToDb(progress.instance.state),
         },
       })
     }
@@ -135,8 +135,8 @@ export const deploymentStatusToDb = (status: DeploymentStatus): DeploymentStatus
   return deploymentStatusToJSON(status).toLowerCase() as DeploymentStatusEnum
 }
 
-export const containerStatusToDb = (status: ContainerStatus): ContainerStatusEnum => {
-  return containerStatusToJSON(status).toLowerCase() as ContainerStatusEnum
+export const containerStateToDb = (state: ContainerState): ContainerStatusEnum => {
+  return containerStateToJSON(state).toLowerCase() as ContainerStatusEnum
 }
 
 export const containerNameFromImageName = (imageName: string): string => {
