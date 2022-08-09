@@ -1,48 +1,46 @@
 import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 
-export type UsePaginationOptions<Item> = {
-  initialPagination?: Pagination
-} & ({ initialData?: Item[]; data?: never } | { initialData?: never; data?: Item[] })
+export const pageSizes = [5, 10, 20, 50, 100, 250] as const
 
-export type PaginationConfig<Item, Pagination> = {
-  items: Item[]
-  displayed: Item[]
-  setItems: Dispatch<SetStateAction<Item[]>>
-  setPagination: (pagination: Partial<Pagination>) => void
-}
-
-export type Pagination = {
-  pageSize: number
+export type PageDataType = {
+  pageSize: typeof pageSizes[number]
   currentPage: number
 }
 
-export const usePagination = <Item>(
-  options: UsePaginationOptions<Item>,
-): PaginationConfig<Item, Pagination> => {
-  const [items, setItems] = useState<Item[]>(options.data ?? options.initialData)
-  const [pagination, setPagination] = useState<Pagination>(options.initialPagination)
+export type UsePaginationOptions<Item> = {
+  initialPagination?: PageDataType
+  initialData?: Item[]
+}
+
+export type PaginationConfig<Item> = {
+  items: Item[]
+  displayed: Item[]
+  pageData: PageDataType
+  setItems: Dispatch<SetStateAction<Item[]>>
+  setPageData: (pagination: Partial<PageDataType>) => void
+}
+
+export const usePagination = <Item>(options: UsePaginationOptions<Item>): PaginationConfig<Item> => {
+  const [items, setItems] = useState<Item[]>(options.initialData)
+  const [pageData, setPageData] = useState<PageDataType>(options.initialPagination)
   const [displayed, setDisplayed] = useState<Item[]>(items)
-  // const []
 
   useEffect(() => {
-    let start = pagination.currentPage * pagination.pageSize
-    let newData = items.slice(start, start + pagination.pageSize)
+    const start = pageData.currentPage * pageData.pageSize
+    const newData = items.slice(start, start + pageData.pageSize)
 
     setDisplayed(newData)
-  }, [items, pagination])
+  }, [items, pageData])
 
   return {
     items,
     displayed,
-    setItems: !options.data ? setItems : setItemsError,
-    setPagination: it =>
-      setPagination({
-        ...pagination,
+    pageData,
+    setItems: setItems,
+    setPageData: it =>
+      setPageData({
+        ...pageData,
         ...it,
       }),
   }
-}
-
-const setItemsError = () => {
-  throw new Error('This is a Pagination Error')
 }

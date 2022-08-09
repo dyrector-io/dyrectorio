@@ -139,5 +139,8 @@
     "December"
   ],
 
-  "upload": "Upload"
+  "upload": "Upload",
+
+  "itemsPerPage": "Items per page",
+  "showingItems": "Showing {{pageFrom}} to {{pageTo}} of {{total}} entries"
 }
