@@ -39,6 +39,7 @@ type ContainerBuilder interface {
 	WithUser(uid string) ContainerBuilder
 	WithLogWriter(logger io.StringWriter) ContainerBuilder
 	WithoutConflict() ContainerBuilder
+	WithForcePullImage() ContainerBuilder
 	WithPreCreateHooks(hooks ...LifecycleFunc) ContainerBuilder
 	WithPostCreateHooks(hooks ...LifecycleFunc) ContainerBuilder
 	WithPreStartHooks(hooks ...LifecycleFunc) ContainerBuilder
@@ -68,6 +69,7 @@ type DockerContainerBuilder struct {
 	cmd             []string
 	tty             bool
 	user            *int64
+	forcePull       bool
 	logger          *io.StringWriter
 	hooksPreCreate  []LifecycleFunc
 	hooksPostCreate []LifecycleFunc
@@ -207,9 +209,15 @@ func (dc *DockerContainerBuilder) WithUser(user *int64) *DockerContainerBuilder 
 	return dc
 }
 
-// Set the logger which logs messages releated to the builder (and not the container).
+// Sets the logger which logs messages releated to the builder (and not the container).
 func (dc *DockerContainerBuilder) WithLogWriter(logger io.StringWriter) *DockerContainerBuilder {
 	dc.logger = &logger
+	return dc
+}
+
+// Sets the builder to force pull the image before creating the container.
+func (dc *DockerContainerBuilder) WithForcePullImage() *DockerContainerBuilder {
+	dc.forcePull = true
 	return dc
 }
 
@@ -243,10 +251,11 @@ func (dc *DockerContainerBuilder) GetContainerID() *string {
 
 // Creates the container using the configuration given by 'With...' functions.
 func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
-	// todo: fetch remote sha hash of image if not matching -> pull
-	if err := pullImage(*dc.logger, dc.imageWithTag, dc.registryAuth); err != nil {
-		if err != nil && err.Error() != "EOF" {
-			logWrite(dc, fmt.Sprintf("Image pull error: %s", err.Error()))
+	if dc.forcePull {
+		if err := pullImage(*dc.logger, dc.imageWithTag, dc.registryAuth); err != nil {
+			if err != nil && err.Error() != "EOF" {
+				logWrite(dc, fmt.Sprintf("Image pull error: %s", err.Error()))
+			}
 		}
 	}
 
@@ -336,10 +345,10 @@ func (dc *DockerContainerBuilder) Start() (bool, error) {
 	}
 
 	if err != nil {
-		log.Println(err)
+		logWrite(dc, err.Error())
 		return false, err
 	} else {
-		log.Printf("Started container: %s", *dc.containerID)
+		logWrite(dc, fmt.Sprintf("Started container: %s", *dc.containerID))
 		return true, nil
 	}
 }

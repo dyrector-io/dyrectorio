@@ -1,5 +1,5 @@
-//go:build unit
-// +build unit
+//go:build integration
+// +build integration
 
 package container_test
 
@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"testing"
-	"time"
 
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
@@ -57,7 +56,6 @@ func hookCallback(callback func()) containerbuilder.LifecycleFunc {
 
 func TestNameWithBuilder(t *testing.T) {
 	builder := containerbuilder.NewDockerBuilder(context.Background()).
-		WithName("test01").
 		WithImage("nginx:latest")
 
 	defer builderCleanup(builder)
@@ -132,7 +130,6 @@ func TestLogger(t *testing.T) {
 	}
 
 	builder := containerbuilder.NewDockerBuilder(context.Background()).
-		WithName("test03").
 		WithImage("nginx:latest").
 		WithLogWriter(logger)
 
@@ -147,42 +144,33 @@ func TestLogger(t *testing.T) {
 }
 
 func TestHooks(t *testing.T) {
-	var preCreate, postCreate, preStart, postStart *time.Time = nil, nil, nil, nil
-	start := time.Now()
+	order := []string{}
 
 	builder := containerbuilder.NewDockerBuilder(context.Background()).
-		WithName("test03").
 		WithImage("nginx:latest").
 		WithPreCreateHooks(hookCallback(func() {
-			now := time.Now()
-			preCreate = &now
+			order = append(order, "pre-create")
 		})).
 		WithPostCreateHooks(hookCallback(func() {
-			now := time.Now()
-			postCreate = &now
+			order = append(order, "post-create")
 		})).
 		WithPreStartHooks(hookCallback(func() {
-			now := time.Now()
-			preStart = &now
+			order = append(order, "pre-start")
 		})).
 		WithPostStartHooks(hookCallback(func() {
-			now := time.Now()
-			postStart = &now
+			order = append(order, "post-start")
 		}))
 
 	defer builderCleanup(builder)
 
-	builder.Create()
-
-	time.Sleep(time.Millisecond)
-
-	success, err := builder.Start()
+	success, err := builder.Create().Start()
 
 	assert.Nil(t, err)
 	assert.True(t, success)
 
-	assert.True(t, preCreate.After(start))
-	assert.True(t, postCreate.After(*preCreate))
-	assert.True(t, preStart.After(*postCreate))
-	assert.True(t, postStart.After(*preStart))
+	assert.Equal(t, 4, len(order))
+	assert.Equal(t, "pre-create", order[0])
+	assert.Equal(t, "post-create", order[1])
+	assert.Equal(t, "pre-start", order[2])
+	assert.Equal(t, "post-start", order[3])
 }
