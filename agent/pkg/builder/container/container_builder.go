@@ -1,4 +1,4 @@
-// Package containerbuilder implements a fluent interface for creating and starting
+// Package container implements a fluent interface for creating and starting
 // docker containers.
 package container
 
@@ -139,7 +139,7 @@ func (dc *DockerContainerBuilder) WithLogConfig(logConfig *container.LogConfig) 
 	return dc
 }
 
-// Sets the image of a container in a "image:tag" format.
+// Sets the image of a container in a "image:tag" format where image can be a fully qualified name.
 func (dc *DockerContainerBuilder) WithImage(imageWithTag string) *DockerContainerBuilder {
 	dc.imageWithTag = imageWithTag
 	return dc
