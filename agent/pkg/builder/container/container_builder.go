@@ -4,6 +4,7 @@ package container
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -336,6 +337,11 @@ func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 func (dc *DockerContainerBuilder) Start() (bool, error) {
 	if hookError := execHooks(dc, dc.hooksPreStart); hookError != nil {
 		logWrite(dc, fmt.Sprintln("Container pre-start hook error: ", hookError))
+	}
+
+	if dc.containerID == nil {
+		logWrite(dc, "Unable to start non-existent container")
+		return false, errors.New("container does not exist")
 	}
 
 	err := dc.client.ContainerStart(dc.ctx, *dc.containerID, types.ContainerStartOptions{})
