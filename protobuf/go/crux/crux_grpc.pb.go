@@ -2320,6 +2320,272 @@ var CruxTeam_ServiceDesc = grpc.ServiceDesc{
 	Metadata: "protobuf/proto/crux.proto",
 }
 
+// CruxNotificationClient is the client API for CruxNotification service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type CruxNotificationClient interface {
+	CreateNotification(ctx context.Context, in *CreateNotificationRequest, opts ...grpc.CallOption) (*CreateNotificationResponse, error)
+	UpdateNotification(ctx context.Context, in *UpdateNotificationRequest, opts ...grpc.CallOption) (*UpdateEntityResponse, error)
+	DeleteNotification(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error)
+	GetNotificationList(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*NotificationListResponse, error)
+	GetNotificationDetail(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*NotificationDetailsResponse, error)
+	TestNotification(ctx context.Context, in *TestNotificationRequest, opts ...grpc.CallOption) (*TestNotificationResponse, error)
+}
+
+type cruxNotificationClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewCruxNotificationClient(cc grpc.ClientConnInterface) CruxNotificationClient {
+	return &cruxNotificationClient{cc}
+}
+
+func (c *cruxNotificationClient) CreateNotification(ctx context.Context, in *CreateNotificationRequest, opts ...grpc.CallOption) (*CreateNotificationResponse, error) {
+	out := new(CreateNotificationResponse)
+	err := c.cc.Invoke(ctx, "/crux.CruxNotification/CreateNotification", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cruxNotificationClient) UpdateNotification(ctx context.Context, in *UpdateNotificationRequest, opts ...grpc.CallOption) (*UpdateEntityResponse, error) {
+	out := new(UpdateEntityResponse)
+	err := c.cc.Invoke(ctx, "/crux.CruxNotification/UpdateNotification", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cruxNotificationClient) DeleteNotification(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/crux.CruxNotification/DeleteNotification", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cruxNotificationClient) GetNotificationList(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*NotificationListResponse, error) {
+	out := new(NotificationListResponse)
+	err := c.cc.Invoke(ctx, "/crux.CruxNotification/GetNotificationList", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cruxNotificationClient) GetNotificationDetail(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*NotificationDetailsResponse, error) {
+	out := new(NotificationDetailsResponse)
+	err := c.cc.Invoke(ctx, "/crux.CruxNotification/GetNotificationDetail", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cruxNotificationClient) TestNotification(ctx context.Context, in *TestNotificationRequest, opts ...grpc.CallOption) (*TestNotificationResponse, error) {
+	out := new(TestNotificationResponse)
+	err := c.cc.Invoke(ctx, "/crux.CruxNotification/TestNotification", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// CruxNotificationServer is the server API for CruxNotification service.
+// All implementations must embed UnimplementedCruxNotificationServer
+// for forward compatibility
+type CruxNotificationServer interface {
+	CreateNotification(context.Context, *CreateNotificationRequest) (*CreateNotificationResponse, error)
+	UpdateNotification(context.Context, *UpdateNotificationRequest) (*UpdateEntityResponse, error)
+	DeleteNotification(context.Context, *IdRequest) (*Empty, error)
+	GetNotificationList(context.Context, *AccessRequest) (*NotificationListResponse, error)
+	GetNotificationDetail(context.Context, *IdRequest) (*NotificationDetailsResponse, error)
+	TestNotification(context.Context, *TestNotificationRequest) (*TestNotificationResponse, error)
+	mustEmbedUnimplementedCruxNotificationServer()
+}
+
+// UnimplementedCruxNotificationServer must be embedded to have forward compatible implementations.
+type UnimplementedCruxNotificationServer struct {
+}
+
+func (UnimplementedCruxNotificationServer) CreateNotification(context.Context, *CreateNotificationRequest) (*CreateNotificationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateNotification not implemented")
+}
+func (UnimplementedCruxNotificationServer) UpdateNotification(context.Context, *UpdateNotificationRequest) (*UpdateEntityResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateNotification not implemented")
+}
+func (UnimplementedCruxNotificationServer) DeleteNotification(context.Context, *IdRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteNotification not implemented")
+}
+func (UnimplementedCruxNotificationServer) GetNotificationList(context.Context, *AccessRequest) (*NotificationListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetNotificationList not implemented")
+}
+func (UnimplementedCruxNotificationServer) GetNotificationDetail(context.Context, *IdRequest) (*NotificationDetailsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetNotificationDetail not implemented")
+}
+func (UnimplementedCruxNotificationServer) TestNotification(context.Context, *TestNotificationRequest) (*TestNotificationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TestNotification not implemented")
+}
+func (UnimplementedCruxNotificationServer) mustEmbedUnimplementedCruxNotificationServer() {}
+
+// UnsafeCruxNotificationServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to CruxNotificationServer will
+// result in compilation errors.
+type UnsafeCruxNotificationServer interface {
+	mustEmbedUnimplementedCruxNotificationServer()
+}
+
+func RegisterCruxNotificationServer(s grpc.ServiceRegistrar, srv CruxNotificationServer) {
+	s.RegisterService(&CruxNotification_ServiceDesc, srv)
+}
+
+func _CruxNotification_CreateNotification_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateNotificationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CruxNotificationServer).CreateNotification(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crux.CruxNotification/CreateNotification",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CruxNotificationServer).CreateNotification(ctx, req.(*CreateNotificationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CruxNotification_UpdateNotification_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateNotificationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CruxNotificationServer).UpdateNotification(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crux.CruxNotification/UpdateNotification",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CruxNotificationServer).UpdateNotification(ctx, req.(*UpdateNotificationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CruxNotification_DeleteNotification_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CruxNotificationServer).DeleteNotification(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crux.CruxNotification/DeleteNotification",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CruxNotificationServer).DeleteNotification(ctx, req.(*IdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CruxNotification_GetNotificationList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AccessRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CruxNotificationServer).GetNotificationList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crux.CruxNotification/GetNotificationList",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CruxNotificationServer).GetNotificationList(ctx, req.(*AccessRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CruxNotification_GetNotificationDetail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CruxNotificationServer).GetNotificationDetail(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crux.CruxNotification/GetNotificationDetail",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CruxNotificationServer).GetNotificationDetail(ctx, req.(*IdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CruxNotification_TestNotification_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TestNotificationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CruxNotificationServer).TestNotification(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crux.CruxNotification/TestNotification",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CruxNotificationServer).TestNotification(ctx, req.(*TestNotificationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// CruxNotification_ServiceDesc is the grpc.ServiceDesc for CruxNotification service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var CruxNotification_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "crux.CruxNotification",
+	HandlerType: (*CruxNotificationServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "CreateNotification",
+			Handler:    _CruxNotification_CreateNotification_Handler,
+		},
+		{
+			MethodName: "UpdateNotification",
+			Handler:    _CruxNotification_UpdateNotification_Handler,
+		},
+		{
+			MethodName: "DeleteNotification",
+			Handler:    _CruxNotification_DeleteNotification_Handler,
+		},
+		{
+			MethodName: "GetNotificationList",
+			Handler:    _CruxNotification_GetNotificationList_Handler,
+		},
+		{
+			MethodName: "GetNotificationDetail",
+			Handler:    _CruxNotification_GetNotificationDetail_Handler,
+		},
+		{
+			MethodName: "TestNotification",
+			Handler:    _CruxNotification_TestNotification_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "protobuf/proto/crux.proto",
+}
+
 // CruxAuditClient is the client API for CruxAudit service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.

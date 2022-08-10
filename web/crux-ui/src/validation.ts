@@ -5,6 +5,8 @@ import {
   EXPLICIT_CONTAINER_NETWORK_MODE_VALUES,
   NodeType,
   NODE_TYPE_VALUES,
+  NotificationType,
+  NOTIFICATION_TYPE_VALUES,
   ProductType,
   PRODUCT_TYPE_VALUES,
   RegistryType,
@@ -196,4 +198,10 @@ export const selectTeamSchema = yup.object().shape({
 
 export const createTeamSchema = yup.object().shape({
   name: yup.string().min(3).max(128),
+})
+
+export const notificationSchema = yup.object().shape({
+  name: yup.string().required(),
+  type: yup.mixed<NotificationType>().oneOf([...NOTIFICATION_TYPE_VALUES]).required(),
+  url: yup.string().required()
 })

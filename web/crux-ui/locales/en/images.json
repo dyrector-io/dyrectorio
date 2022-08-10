@@ -9,7 +9,5 @@
     "availableTags": "Available tags",
     "environment": "Environment",
     "capabilities": "Capabilities",
-    "selectTag": "You must select a tag",
-
-    "deleteDescription": "If you proceed, you will lose all your data related to {{name}}, in this version. This action is not revocable."
+    "selectTag": "You must select a tag"
 }

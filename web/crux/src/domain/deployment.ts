@@ -22,7 +22,7 @@ export class Deployment {
 
   readonly id: string
 
-  constructor(private readonly request: VersionDeployRequest) {
+  constructor(private readonly request: VersionDeployRequest, public notification: DeploymentNotification) {
     this.id = request.id
   }
 
@@ -166,3 +166,9 @@ export const MUTABLE_DEPLOYMENT_STATUSES = [
   DeploymentStatusEnum.preparing,
   DeploymentStatusEnum.failed,
 ] as DeploymentStatusEnum[]
+
+export type DeploymentNotification = {
+  deploymentName: string
+  versionName: string
+  accessedBy: string
+}

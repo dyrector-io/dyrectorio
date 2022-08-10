@@ -489,6 +489,50 @@ export function containerStatusToJSON(object: ContainerStatus): string {
   }
 }
 
+export enum NotificationType {
+  UNKNOWN_NOTIFICATION_TYPE = 0,
+  DISCORD = 1,
+  SLACK = 2,
+  TEAMS = 3,
+  UNRECOGNIZED = -1,
+}
+
+export function notificationTypeFromJSON(object: any): NotificationType {
+  switch (object) {
+    case 0:
+    case 'UNKNOWN_NOTIFICATION_TYPE':
+      return NotificationType.UNKNOWN_NOTIFICATION_TYPE
+    case 1:
+    case 'DISCORD':
+      return NotificationType.DISCORD
+    case 2:
+    case 'SLACK':
+      return NotificationType.SLACK
+    case 3:
+    case 'TEAMS':
+      return NotificationType.TEAMS
+    case -1:
+    case 'UNRECOGNIZED':
+    default:
+      return NotificationType.UNRECOGNIZED
+  }
+}
+
+export function notificationTypeToJSON(object: NotificationType): string {
+  switch (object) {
+    case NotificationType.UNKNOWN_NOTIFICATION_TYPE:
+      return 'UNKNOWN_NOTIFICATION_TYPE'
+    case NotificationType.DISCORD:
+      return 'DISCORD'
+    case NotificationType.SLACK:
+      return 'SLACK'
+    case NotificationType.TEAMS:
+      return 'TEAMS'
+    default:
+      return 'UNKNOWN'
+  }
+}
+
 /** Common messages */
 export interface Empty {}
 
@@ -960,7 +1004,9 @@ export interface ContainerStatusItem {
   name: string
   command: string
   createdAt: Timestamp | undefined
+  /** The 'State' of the container (Created, Running, etc) */
   status: ContainerStatus
+  /** The 'Status' of the container ("Created 1min ago", "Exited with code 123", etc) */
   state: string
   imageName: string
   imageTag: string
@@ -1088,6 +1134,58 @@ export interface DeploymentEventResponse {
 
 export interface DeploymentEventListResponse {
   data: DeploymentEventResponse[]
+}
+
+export interface CreateNotificationRequest {
+  accessedBy: string
+  name: string
+  url: string
+  type: NotificationType
+  active: boolean
+}
+
+export interface CreateNotificationResponse {
+  id: string
+  createdBy: string
+}
+
+export interface UpdateNotificationRequest {
+  id: string
+  accessedBy: string
+  name: string
+  url: string
+  type: NotificationType
+  active: boolean
+}
+
+export interface NotificationDetailsResponse {
+  id: string
+  audit: AuditResponse | undefined
+  name: string
+  url: string
+  type: NotificationType
+  active: boolean
+}
+
+export interface NotificationResponse {
+  id: string
+  audit: AuditResponse | undefined
+  name: string
+  url: string
+  type: NotificationType
+}
+
+export interface NotificationListResponse {
+  data: NotificationResponse[]
+}
+
+export interface TestNotificationRequest {
+  accessedBy: string
+  url: string
+}
+
+export interface TestNotificationResponse {
+  ok: boolean
 }
 
 const baseEmpty: object = {}
@@ -7632,6 +7730,632 @@ export const DeploymentEventListResponse = {
   },
 }
 
+const baseCreateNotificationRequest: object = {
+  accessedBy: '',
+  name: '',
+  url: '',
+  type: 0,
+  active: false,
+}
+
+export const CreateNotificationRequest = {
+  encode(message: CreateNotificationRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.accessedBy !== '') {
+      writer.uint32(18).string(message.accessedBy)
+    }
+    if (message.name !== '') {
+      writer.uint32(802).string(message.name)
+    }
+    if (message.url !== '') {
+      writer.uint32(810).string(message.url)
+    }
+    if (message.type !== 0) {
+      writer.uint32(816).int32(message.type)
+    }
+    if (message.active === true) {
+      writer.uint32(824).bool(message.active)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): CreateNotificationRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = {
+      ...baseCreateNotificationRequest,
+    } as CreateNotificationRequest
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 2:
+          message.accessedBy = reader.string()
+          break
+        case 100:
+          message.name = reader.string()
+          break
+        case 101:
+          message.url = reader.string()
+          break
+        case 102:
+          message.type = reader.int32() as any
+          break
+        case 103:
+          message.active = reader.bool()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): CreateNotificationRequest {
+    const message = {
+      ...baseCreateNotificationRequest,
+    } as CreateNotificationRequest
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
+    message.type = object.type !== undefined && object.type !== null ? notificationTypeFromJSON(object.type) : 0
+    message.active = object.active !== undefined && object.active !== null ? Boolean(object.active) : false
+    return message
+  },
+
+  toJSON(message: CreateNotificationRequest): unknown {
+    const obj: any = {}
+    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
+    message.name !== undefined && (obj.name = message.name)
+    message.url !== undefined && (obj.url = message.url)
+    message.type !== undefined && (obj.type = notificationTypeToJSON(message.type))
+    message.active !== undefined && (obj.active = message.active)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<CreateNotificationRequest>, I>>(object: I): CreateNotificationRequest {
+    const message = {
+      ...baseCreateNotificationRequest,
+    } as CreateNotificationRequest
+    message.accessedBy = object.accessedBy ?? ''
+    message.name = object.name ?? ''
+    message.url = object.url ?? ''
+    message.type = object.type ?? 0
+    message.active = object.active ?? false
+    return message
+  },
+}
+
+const baseCreateNotificationResponse: object = { id: '', createdBy: '' }
+
+export const CreateNotificationResponse = {
+  encode(message: CreateNotificationResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== '') {
+      writer.uint32(10).string(message.id)
+    }
+    if (message.createdBy !== '') {
+      writer.uint32(18).string(message.createdBy)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): CreateNotificationResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = {
+      ...baseCreateNotificationResponse,
+    } as CreateNotificationResponse
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.id = reader.string()
+          break
+        case 2:
+          message.createdBy = reader.string()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): CreateNotificationResponse {
+    const message = {
+      ...baseCreateNotificationResponse,
+    } as CreateNotificationResponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.createdBy = object.createdBy !== undefined && object.createdBy !== null ? String(object.createdBy) : ''
+    return message
+  },
+
+  toJSON(message: CreateNotificationResponse): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.createdBy !== undefined && (obj.createdBy = message.createdBy)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<CreateNotificationResponse>, I>>(object: I): CreateNotificationResponse {
+    const message = {
+      ...baseCreateNotificationResponse,
+    } as CreateNotificationResponse
+    message.id = object.id ?? ''
+    message.createdBy = object.createdBy ?? ''
+    return message
+  },
+}
+
+const baseUpdateNotificationRequest: object = {
+  id: '',
+  accessedBy: '',
+  name: '',
+  url: '',
+  type: 0,
+  active: false,
+}
+
+export const UpdateNotificationRequest = {
+  encode(message: UpdateNotificationRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== '') {
+      writer.uint32(10).string(message.id)
+    }
+    if (message.accessedBy !== '') {
+      writer.uint32(18).string(message.accessedBy)
+    }
+    if (message.name !== '') {
+      writer.uint32(802).string(message.name)
+    }
+    if (message.url !== '') {
+      writer.uint32(810).string(message.url)
+    }
+    if (message.type !== 0) {
+      writer.uint32(816).int32(message.type)
+    }
+    if (message.active === true) {
+      writer.uint32(824).bool(message.active)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): UpdateNotificationRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = {
+      ...baseUpdateNotificationRequest,
+    } as UpdateNotificationRequest
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.id = reader.string()
+          break
+        case 2:
+          message.accessedBy = reader.string()
+          break
+        case 100:
+          message.name = reader.string()
+          break
+        case 101:
+          message.url = reader.string()
+          break
+        case 102:
+          message.type = reader.int32() as any
+          break
+        case 103:
+          message.active = reader.bool()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): UpdateNotificationRequest {
+    const message = {
+      ...baseUpdateNotificationRequest,
+    } as UpdateNotificationRequest
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
+    message.type = object.type !== undefined && object.type !== null ? notificationTypeFromJSON(object.type) : 0
+    message.active = object.active !== undefined && object.active !== null ? Boolean(object.active) : false
+    return message
+  },
+
+  toJSON(message: UpdateNotificationRequest): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
+    message.name !== undefined && (obj.name = message.name)
+    message.url !== undefined && (obj.url = message.url)
+    message.type !== undefined && (obj.type = notificationTypeToJSON(message.type))
+    message.active !== undefined && (obj.active = message.active)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<UpdateNotificationRequest>, I>>(object: I): UpdateNotificationRequest {
+    const message = {
+      ...baseUpdateNotificationRequest,
+    } as UpdateNotificationRequest
+    message.id = object.id ?? ''
+    message.accessedBy = object.accessedBy ?? ''
+    message.name = object.name ?? ''
+    message.url = object.url ?? ''
+    message.type = object.type ?? 0
+    message.active = object.active ?? false
+    return message
+  },
+}
+
+const baseNotificationDetailsResponse: object = {
+  id: '',
+  name: '',
+  url: '',
+  type: 0,
+  active: false,
+}
+
+export const NotificationDetailsResponse = {
+  encode(message: NotificationDetailsResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== '') {
+      writer.uint32(10).string(message.id)
+    }
+    if (message.audit !== undefined) {
+      AuditResponse.encode(message.audit, writer.uint32(18).fork()).ldelim()
+    }
+    if (message.name !== '') {
+      writer.uint32(802).string(message.name)
+    }
+    if (message.url !== '') {
+      writer.uint32(810).string(message.url)
+    }
+    if (message.type !== 0) {
+      writer.uint32(816).int32(message.type)
+    }
+    if (message.active === true) {
+      writer.uint32(824).bool(message.active)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): NotificationDetailsResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = {
+      ...baseNotificationDetailsResponse,
+    } as NotificationDetailsResponse
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.id = reader.string()
+          break
+        case 2:
+          message.audit = AuditResponse.decode(reader, reader.uint32())
+          break
+        case 100:
+          message.name = reader.string()
+          break
+        case 101:
+          message.url = reader.string()
+          break
+        case 102:
+          message.type = reader.int32() as any
+          break
+        case 103:
+          message.active = reader.bool()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): NotificationDetailsResponse {
+    const message = {
+      ...baseNotificationDetailsResponse,
+    } as NotificationDetailsResponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.audit =
+      object.audit !== undefined && object.audit !== null ? AuditResponse.fromJSON(object.audit) : undefined
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
+    message.type = object.type !== undefined && object.type !== null ? notificationTypeFromJSON(object.type) : 0
+    message.active = object.active !== undefined && object.active !== null ? Boolean(object.active) : false
+    return message
+  },
+
+  toJSON(message: NotificationDetailsResponse): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.audit !== undefined && (obj.audit = message.audit ? AuditResponse.toJSON(message.audit) : undefined)
+    message.name !== undefined && (obj.name = message.name)
+    message.url !== undefined && (obj.url = message.url)
+    message.type !== undefined && (obj.type = notificationTypeToJSON(message.type))
+    message.active !== undefined && (obj.active = message.active)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<NotificationDetailsResponse>, I>>(object: I): NotificationDetailsResponse {
+    const message = {
+      ...baseNotificationDetailsResponse,
+    } as NotificationDetailsResponse
+    message.id = object.id ?? ''
+    message.audit =
+      object.audit !== undefined && object.audit !== null ? AuditResponse.fromPartial(object.audit) : undefined
+    message.name = object.name ?? ''
+    message.url = object.url ?? ''
+    message.type = object.type ?? 0
+    message.active = object.active ?? false
+    return message
+  },
+}
+
+const baseNotificationResponse: object = { id: '', name: '', url: '', type: 0 }
+
+export const NotificationResponse = {
+  encode(message: NotificationResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== '') {
+      writer.uint32(10).string(message.id)
+    }
+    if (message.audit !== undefined) {
+      AuditResponse.encode(message.audit, writer.uint32(18).fork()).ldelim()
+    }
+    if (message.name !== '') {
+      writer.uint32(802).string(message.name)
+    }
+    if (message.url !== '') {
+      writer.uint32(810).string(message.url)
+    }
+    if (message.type !== 0) {
+      writer.uint32(824).int32(message.type)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): NotificationResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = { ...baseNotificationResponse } as NotificationResponse
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.id = reader.string()
+          break
+        case 2:
+          message.audit = AuditResponse.decode(reader, reader.uint32())
+          break
+        case 100:
+          message.name = reader.string()
+          break
+        case 101:
+          message.url = reader.string()
+          break
+        case 103:
+          message.type = reader.int32() as any
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): NotificationResponse {
+    const message = { ...baseNotificationResponse } as NotificationResponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.audit =
+      object.audit !== undefined && object.audit !== null ? AuditResponse.fromJSON(object.audit) : undefined
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
+    message.type = object.type !== undefined && object.type !== null ? notificationTypeFromJSON(object.type) : 0
+    return message
+  },
+
+  toJSON(message: NotificationResponse): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.audit !== undefined && (obj.audit = message.audit ? AuditResponse.toJSON(message.audit) : undefined)
+    message.name !== undefined && (obj.name = message.name)
+    message.url !== undefined && (obj.url = message.url)
+    message.type !== undefined && (obj.type = notificationTypeToJSON(message.type))
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<NotificationResponse>, I>>(object: I): NotificationResponse {
+    const message = { ...baseNotificationResponse } as NotificationResponse
+    message.id = object.id ?? ''
+    message.audit =
+      object.audit !== undefined && object.audit !== null ? AuditResponse.fromPartial(object.audit) : undefined
+    message.name = object.name ?? ''
+    message.url = object.url ?? ''
+    message.type = object.type ?? 0
+    return message
+  },
+}
+
+const baseNotificationListResponse: object = {}
+
+export const NotificationListResponse = {
+  encode(message: NotificationListResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    for (const v of message.data) {
+      NotificationResponse.encode(v!, writer.uint32(8002).fork()).ldelim()
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): NotificationListResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = {
+      ...baseNotificationListResponse,
+    } as NotificationListResponse
+    message.data = []
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1000:
+          message.data.push(NotificationResponse.decode(reader, reader.uint32()))
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): NotificationListResponse {
+    const message = {
+      ...baseNotificationListResponse,
+    } as NotificationListResponse
+    message.data = (object.data ?? []).map((e: any) => NotificationResponse.fromJSON(e))
+    return message
+  },
+
+  toJSON(message: NotificationListResponse): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? NotificationResponse.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<NotificationListResponse>, I>>(object: I): NotificationListResponse {
+    const message = {
+      ...baseNotificationListResponse,
+    } as NotificationListResponse
+    message.data = object.data?.map(e => NotificationResponse.fromPartial(e)) || []
+    return message
+  },
+}
+
+const baseTestNotificationRequest: object = { accessedBy: '', url: '' }
+
+export const TestNotificationRequest = {
+  encode(message: TestNotificationRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.accessedBy !== '') {
+      writer.uint32(18).string(message.accessedBy)
+    }
+    if (message.url !== '') {
+      writer.uint32(802).string(message.url)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): TestNotificationRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = {
+      ...baseTestNotificationRequest,
+    } as TestNotificationRequest
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 2:
+          message.accessedBy = reader.string()
+          break
+        case 100:
+          message.url = reader.string()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): TestNotificationRequest {
+    const message = {
+      ...baseTestNotificationRequest,
+    } as TestNotificationRequest
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
+    return message
+  },
+
+  toJSON(message: TestNotificationRequest): unknown {
+    const obj: any = {}
+    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
+    message.url !== undefined && (obj.url = message.url)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<TestNotificationRequest>, I>>(object: I): TestNotificationRequest {
+    const message = {
+      ...baseTestNotificationRequest,
+    } as TestNotificationRequest
+    message.accessedBy = object.accessedBy ?? ''
+    message.url = object.url ?? ''
+    return message
+  },
+}
+
+const baseTestNotificationResponse: object = { ok: false }
+
+export const TestNotificationResponse = {
+  encode(message: TestNotificationResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.ok === true) {
+      writer.uint32(800).bool(message.ok)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): TestNotificationResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = {
+      ...baseTestNotificationResponse,
+    } as TestNotificationResponse
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 100:
+          message.ok = reader.bool()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): TestNotificationResponse {
+    const message = {
+      ...baseTestNotificationResponse,
+    } as TestNotificationResponse
+    message.ok = object.ok !== undefined && object.ok !== null ? Boolean(object.ok) : false
+    return message
+  },
+
+  toJSON(message: TestNotificationResponse): unknown {
+    const obj: any = {}
+    message.ok !== undefined && (obj.ok = message.ok)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<TestNotificationResponse>, I>>(object: I): TestNotificationResponse {
+    const message = {
+      ...baseTestNotificationResponse,
+    } as TestNotificationResponse
+    message.ok = object.ok ?? false
+    return message
+  },
+}
+
 /** Services */
 export const CruxProductService = {
   /** CRUD */
@@ -8970,6 +9694,179 @@ export interface CruxTeamClient extends Client {
 export const CruxTeamClient = makeGenericClientConstructor(CruxTeamService, 'crux.CruxTeam') as unknown as {
   new (address: string, credentials: ChannelCredentials, options?: Partial<ChannelOptions>): CruxTeamClient
   service: typeof CruxTeamService
+}
+
+export const CruxNotificationService = {
+  createNotification: {
+    path: '/crux.CruxNotification/CreateNotification',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: CreateNotificationRequest) =>
+      Buffer.from(CreateNotificationRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => CreateNotificationRequest.decode(value),
+    responseSerialize: (value: CreateNotificationResponse) =>
+      Buffer.from(CreateNotificationResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => CreateNotificationResponse.decode(value),
+  },
+  updateNotification: {
+    path: '/crux.CruxNotification/UpdateNotification',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: UpdateNotificationRequest) =>
+      Buffer.from(UpdateNotificationRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => UpdateNotificationRequest.decode(value),
+    responseSerialize: (value: UpdateEntityResponse) => Buffer.from(UpdateEntityResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => UpdateEntityResponse.decode(value),
+  },
+  deleteNotification: {
+    path: '/crux.CruxNotification/DeleteNotification',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: IdRequest) => Buffer.from(IdRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => IdRequest.decode(value),
+    responseSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => Empty.decode(value),
+  },
+  getNotificationList: {
+    path: '/crux.CruxNotification/GetNotificationList',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: AccessRequest) => Buffer.from(AccessRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => AccessRequest.decode(value),
+    responseSerialize: (value: NotificationListResponse) =>
+      Buffer.from(NotificationListResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => NotificationListResponse.decode(value),
+  },
+  getNotificationDetail: {
+    path: '/crux.CruxNotification/GetNotificationDetail',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: IdRequest) => Buffer.from(IdRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => IdRequest.decode(value),
+    responseSerialize: (value: NotificationDetailsResponse) =>
+      Buffer.from(NotificationDetailsResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => NotificationDetailsResponse.decode(value),
+  },
+  testNotification: {
+    path: '/crux.CruxNotification/TestNotification',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: TestNotificationRequest) => Buffer.from(TestNotificationRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => TestNotificationRequest.decode(value),
+    responseSerialize: (value: TestNotificationResponse) =>
+      Buffer.from(TestNotificationResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => TestNotificationResponse.decode(value),
+  },
+} as const
+
+export interface CruxNotificationServer extends UntypedServiceImplementation {
+  createNotification: handleUnaryCall<CreateNotificationRequest, CreateNotificationResponse>
+  updateNotification: handleUnaryCall<UpdateNotificationRequest, UpdateEntityResponse>
+  deleteNotification: handleUnaryCall<IdRequest, Empty>
+  getNotificationList: handleUnaryCall<AccessRequest, NotificationListResponse>
+  getNotificationDetail: handleUnaryCall<IdRequest, NotificationDetailsResponse>
+  testNotification: handleUnaryCall<TestNotificationRequest, TestNotificationResponse>
+}
+
+export interface CruxNotificationClient extends Client {
+  createNotification(
+    request: CreateNotificationRequest,
+    callback: (error: ServiceError | null, response: CreateNotificationResponse) => void,
+  ): ClientUnaryCall
+  createNotification(
+    request: CreateNotificationRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: CreateNotificationResponse) => void,
+  ): ClientUnaryCall
+  createNotification(
+    request: CreateNotificationRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: CreateNotificationResponse) => void,
+  ): ClientUnaryCall
+  updateNotification(
+    request: UpdateNotificationRequest,
+    callback: (error: ServiceError | null, response: UpdateEntityResponse) => void,
+  ): ClientUnaryCall
+  updateNotification(
+    request: UpdateNotificationRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: UpdateEntityResponse) => void,
+  ): ClientUnaryCall
+  updateNotification(
+    request: UpdateNotificationRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: UpdateEntityResponse) => void,
+  ): ClientUnaryCall
+  deleteNotification(
+    request: IdRequest,
+    callback: (error: ServiceError | null, response: Empty) => void,
+  ): ClientUnaryCall
+  deleteNotification(
+    request: IdRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: Empty) => void,
+  ): ClientUnaryCall
+  deleteNotification(
+    request: IdRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: Empty) => void,
+  ): ClientUnaryCall
+  getNotificationList(
+    request: AccessRequest,
+    callback: (error: ServiceError | null, response: NotificationListResponse) => void,
+  ): ClientUnaryCall
+  getNotificationList(
+    request: AccessRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: NotificationListResponse) => void,
+  ): ClientUnaryCall
+  getNotificationList(
+    request: AccessRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: NotificationListResponse) => void,
+  ): ClientUnaryCall
+  getNotificationDetail(
+    request: IdRequest,
+    callback: (error: ServiceError | null, response: NotificationDetailsResponse) => void,
+  ): ClientUnaryCall
+  getNotificationDetail(
+    request: IdRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: NotificationDetailsResponse) => void,
+  ): ClientUnaryCall
+  getNotificationDetail(
+    request: IdRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: NotificationDetailsResponse) => void,
+  ): ClientUnaryCall
+  testNotification(
+    request: TestNotificationRequest,
+    callback: (error: ServiceError | null, response: TestNotificationResponse) => void,
+  ): ClientUnaryCall
+  testNotification(
+    request: TestNotificationRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: TestNotificationResponse) => void,
+  ): ClientUnaryCall
+  testNotification(
+    request: TestNotificationRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: TestNotificationResponse) => void,
+  ): ClientUnaryCall
+}
+
+export const CruxNotificationClient = makeGenericClientConstructor(
+  CruxNotificationService,
+  'crux.CruxNotification',
+) as unknown as {
+  new (address: string, credentials: ChannelCredentials, options?: Partial<ChannelOptions>): CruxNotificationClient
+  service: typeof CruxNotificationService
 }
 
 export const CruxAuditService = {

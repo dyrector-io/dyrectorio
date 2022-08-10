@@ -27,6 +27,7 @@
   "icon": "Icon",
   "updatedAt": "Update at",
   "createdAt": "Created at",
+  "createdBy" : "Created by {{name}}",
   "date": "Date",
   "type": "Type",
   "status": "Status",
@@ -54,6 +55,7 @@
   "config": "Config",
   "registries": "Registries",
   "nodes": "Nodes",
+  "notifications": "Notifications",
   "images": "Images",
   "team": "Team",
   "audit": "Audit Log",
@@ -68,6 +70,7 @@
   "deployment": "Deployment",
   "node": "Node",
   "registry": "Registry",
+  "notification": "Notification",
 
   "prefix": "Prefix",
 
@@ -139,5 +142,7 @@
     "December"
   ],
 
-  "upload": "Upload"
+  "upload": "Upload",
+
+  "defaultDeleteDescription": "If you proceed, you will lose all your data related to {{name}}. This action is not revocable."
 }

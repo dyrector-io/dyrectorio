@@ -611,6 +611,27 @@ export type UserTraits = {
   name?: UserName
 }
 
+export const NOTIFICATION_TYPE_VALUES = ['discord', 'slack', 'teams'] as const
+export type NotificationType = typeof NOTIFICATION_TYPE_VALUES[number]
+
+export type CreateNotification = {
+  name: string
+  url: string
+  type: NotificationType
+  active: boolean
+}
+
+export type UpdateNotification = CreateNotification & {
+  id: string
+}
+
+export type NotificationDetails = CreateNotification & {
+  id: string
+  createdBy: string
+}
+
+export type NotificationItem = Omit<NotificationDetails, 'active'>
+
 export const roleToText = (role: UserRole) => {
   switch (role) {
     case 'owner':

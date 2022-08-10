@@ -51,3 +51,17 @@ export const nameOfIdentity = (identity: Identity) => {
   const traits = identity?.traits as IdentityTraits
   return `${traits?.name?.first ?? ''} ${traits?.name?.last ?? ''}`.trim()
 }
+
+export const nameOrEmailOfIdentity = (identity: Identity) => {
+  if (!identity) {
+    return ''
+  }
+
+  const traits = identity?.traits as IdentityTraits
+
+  if (traits.name) {
+    return nameOfIdentity(identity)
+  }
+
+  return traits.email
+}

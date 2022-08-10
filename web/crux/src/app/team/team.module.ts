@@ -8,9 +8,11 @@ import { TeamService } from './team.service'
 import { EmailService } from 'src/services/email.service'
 import { KratosService } from 'src/services/kratos.service'
 import { EmailBuilder } from 'src/builders/email.builder'
+import { HttpModule } from '@nestjs/axios'
+import { DomainNotificationService } from 'src/services/domain.notification.service'
 
 @Module({
-  imports: [],
+  imports: [HttpModule],
   exports: [TeamRepository],
   controllers: [TeamController],
   providers: [
@@ -22,6 +24,7 @@ import { EmailBuilder } from 'src/builders/email.builder'
     TeamMapper,
     InterceptorGrpcHelperProvider,
     EmailBuilder,
+    DomainNotificationService,
   ],
 })
 export class TeamModule {}

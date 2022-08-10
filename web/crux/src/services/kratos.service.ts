@@ -40,4 +40,10 @@ export class KratosService {
 
     return res.data.recovery_link
   }
+
+  async getIdentityById(id: string): Promise<Identity> {
+    const res = await kratos.adminGetIdentity(id)
+
+    return res.data
+  }
 }

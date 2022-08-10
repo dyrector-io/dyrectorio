@@ -1,7 +1,6 @@
 {
     "title": "{{product}} product {{version}} {{node}} deployment",
     "log": "Log",
-    "deleteDescription": "If you proceed, you will lose all your data related to {{name}}. This action is not revocable.",
     "environmentConfig": "Environment config",
     "created": "Created"
 }

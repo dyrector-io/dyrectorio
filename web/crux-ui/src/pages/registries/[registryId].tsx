@@ -70,7 +70,7 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
           setEditing={setEditing}
           submitRef={submitRef}
           deleteModalTitle={t('common:confirmDelete', { name: registry.name })}
-          deleteModalDescription={t('deleteDescription', {
+          deleteModalDescription={t('common:defaultDeleteDescription', {
             name: registry.name,
           })}
         />

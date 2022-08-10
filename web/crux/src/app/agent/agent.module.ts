@@ -5,9 +5,13 @@ import { InterceptorGrpcHelperProvider } from 'src/interceptors/helper.intercept
 import { TeamRepository } from '../team/team.repository'
 import { AgentController } from './agent.controller'
 import { AgentService } from './agent.service'
+import { HttpModule } from '@nestjs/axios'
+import { KratosService } from 'src/services/kratos.service'
+import { DomainNotificationService } from 'src/services/domain.notification.service'
 
 @Module({
   imports: [
+    HttpModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET,
       signOptions: {
@@ -20,6 +24,13 @@ import { AgentService } from './agent.service'
   ],
   exports: [AgentService],
   controllers: [AgentController],
-  providers: [AgentService, PrismaService, InterceptorGrpcHelperProvider, TeamRepository],
+  providers: [
+    AgentService,
+    PrismaService,
+    InterceptorGrpcHelperProvider,
+    TeamRepository,
+    DomainNotificationService,
+    KratosService,
+  ],
 })
 export class AgentModule {}

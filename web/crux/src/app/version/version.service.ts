@@ -16,10 +16,15 @@ import {
   VersionListResponse,
 } from 'src/grpc/protobuf/proto/crux'
 import { VersionMapper } from './version.mapper'
+import { DomainNotificationService } from 'src/services/domain.notification.service'
 
 @Injectable()
 export class VersionService {
-  constructor(private prisma: PrismaService, private mapper: VersionMapper) {}
+  constructor(
+    private prisma: PrismaService,
+    private mapper: VersionMapper,
+    private notificationService: DomainNotificationService,
+  ) {}
 
   async getVersionsByProductId(req: IdRequest): Promise<VersionListResponse> {
     const versions = await this.prisma.version.findMany({
@@ -139,6 +144,20 @@ export class VersionService {
         }
       }
     })
+
+    const product = await this.prisma.product.findFirst({
+      where: {
+        id: req.productId,
+      },
+    })
+
+    if (product) {
+      await this.notificationService.sendNotification({
+        identityId: req.accessedBy,
+        messageType: 'version',
+        args: [version.name, product.name],
+      })
+    }
 
     return CreateEntityResponse.fromJSON(version)
   }
