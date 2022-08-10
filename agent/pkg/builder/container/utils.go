@@ -56,10 +56,10 @@ func imageExists(ctx context.Context, logger io.StringWriter, fullyQualifiedImag
 		return false, err
 	}
 
-	filters := filters.NewArgs()
-	filters.Add("reference", fullyQualifiedImageName)
+	filter := filters.NewArgs()
+	filter.Add("reference", fullyQualifiedImageName)
 
-	images, err := cli.ImageList(ctx, types.ImageListOptions{Filters: filters})
+	images, err := cli.ImageList(ctx, types.ImageListOptions{Filters: filter})
 	if err != nil {
 		if logger != nil {
 			_, err = logger.WriteString("Failed to list images")

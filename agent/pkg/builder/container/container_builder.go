@@ -253,7 +253,7 @@ func (dc *DockerContainerBuilder) GetContainerID() *string {
 // Creates the container using the configuration given by 'With...' functions.
 func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 	if pullRequired, err := needToPullImage(dc); pullRequired {
-		if err := pullImage(*dc.logger, dc.imageWithTag, dc.registryAuth); err != nil {
+		if err = pullImage(*dc.logger, dc.imageWithTag, dc.registryAuth); err != nil {
 			if err != nil && err.Error() != "EOF" {
 				logWrite(dc, fmt.Sprintf("Image pull error: %s", err.Error()))
 			}
