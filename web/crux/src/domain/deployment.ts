@@ -1,5 +1,5 @@
 import {
-  ContainerStatusEnum,
+  ContainerStateEnum,
   Deployment as DbDeployment,
   DeploymentEventTypeEnum,
   DeploymentStatusEnum,
@@ -60,7 +60,7 @@ export class Deployment {
         type: DeploymentEventTypeEnum.containerStatus,
         value: {
           instanceId: progress.instance.instanceId,
-          status: containerStateToDb(progress.instance.state),
+          state: containerStateToDb(progress.instance.state),
         },
       })
     }
@@ -93,7 +93,7 @@ export class Deployment {
 
 export type DeploymentProgressContainerEvent = {
   instanceId: string
-  status: ContainerStatusEnum
+  state: ContainerStateEnum
 }
 
 export type DeploymentProgressEvent = {
@@ -135,8 +135,8 @@ export const deploymentStatusToDb = (status: DeploymentStatus): DeploymentStatus
   return deploymentStatusToJSON(status).toLowerCase() as DeploymentStatusEnum
 }
 
-export const containerStateToDb = (state: ContainerState): ContainerStatusEnum => {
-  return containerStateToJSON(state).toLowerCase() as ContainerStatusEnum
+export const containerStateToDb = (state: ContainerState): ContainerStateEnum => {
+  return containerStateToJSON(state).toLowerCase() as ContainerStateEnum
 }
 
 export const containerNameFromImageName = (imageName: string): string => {

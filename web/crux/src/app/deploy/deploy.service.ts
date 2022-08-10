@@ -388,7 +388,7 @@ export class DeployService {
             data: {
               deploymentId: deployment.id,
               imageId: it.id,
-              status: null,
+              state: null,
             },
           }),
         ),

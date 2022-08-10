@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import {
   ContainerConfig,
-  ContainerStatusEnum as ContainerStateEnum,
+  ContainerStateEnum,
   Deployment,
   DeploymentEvent,
   DeploymentEventTypeEnum,
@@ -74,7 +74,7 @@ export class DeployMapper {
       ...instance,
       audit: AuditResponse.fromJSON(instance),
       image: this.imageMapper.toGrpc(instance.image),
-      state: this.containerStateToGrpc(instance.status),
+      state: this.containerStateToGrpc(instance.state),
       config: {
         capabilities: (instance.config?.capabilities as UniqueKeyValue[]) ?? [],
         environment: (instance.config?.environment as UniqueKeyValue[]) ?? [],
