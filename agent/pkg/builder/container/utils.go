@@ -71,8 +71,6 @@ func imageExists(ctx context.Context, logger io.StringWriter, fullyQualifiedImag
 		return false, err
 	}
 
-	fmt.Println(images)
-
 	if count := len(images); count == 1 {
 		return true, nil
 	} else if count > 1 {
