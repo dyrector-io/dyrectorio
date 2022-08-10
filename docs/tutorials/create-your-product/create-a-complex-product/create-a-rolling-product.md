@@ -31,7 +31,7 @@ Rolling Versions are similar to Simple Products except they’re perfect for con
 **Step 10:** Pick the ‘Tag’, which is a version of the image you selected in the previous step.
 
 {% hint style="warning" %}
-Now you can define environment configurations to the selected image. For further adjustments, click on the JSON tab where you can define other variables. Copy and paste it to another image when necessary.
+Now you can define environment configurations to the selected image. For further adjustments, click on the JSON tab where you can define other variables. Copy and paste it to another image when necessary. Learn more about Configuration management [**here**](../../../features/configuration-management.md).
 {% endhint %}
 
 ![](../../../.gitbook/assets/rolling\_05.jpg)

@@ -19,7 +19,7 @@ Incremental Products are hierarchical. They can have a child version and once a 
 **Step 8:** Pick the ‘Tag’, which is a version of the image you selected in the previous step.
 
 {% hint style="warning" %}
-Now you can define environment configurations to the selected image. For further adjustments, click on the JSON tab where you can define other variables. Copy and paste it to another image when necessary.
+Now you can define environment configurations to the selected image. For further adjustments, click on the JSON tab where you can define other variables. Copy and paste it to another image when necessary. Learn more about Configuration management [**here**](../../../features/configuration-management.md).
 {% endhint %}
 
 **Step 9:** Click ‘Add Image’ to add another image. Repeat until you have all the desired images included in your product.

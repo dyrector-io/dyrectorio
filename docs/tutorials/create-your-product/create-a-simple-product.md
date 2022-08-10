@@ -33,7 +33,7 @@ Simple Products have only one version and cannot be rolled back. These are mostl
 **Step 9:** Pick the ‘Tag’, which is a version of the image you selected in the previous step. Now the image is added to your product.
 
 {% hint style="warning" %}
-Now you can define environment configurations to the selected image. For further adjustments, click on the JSON tab where you can define other variables. Copy and paste it to another image when necessary.
+Now you can define environment configurations to the selected image. For further adjustments, click on the JSON tab where you can define other variables. Copy and paste it to another image when necessary. Learn more about Configuration management [**here**](../../features/configuration-management.md).
 {% endhint %}
 
 ![](../../.gitbook/assets/simple\_05.jpg)
