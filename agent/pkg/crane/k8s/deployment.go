@@ -406,7 +406,7 @@ func getVolumeMountsFromMap(mounts map[string]v1.Volume) []*corev1.VolumeMountAp
 	return volumes
 }
 
-func GetDeployments(namespace string, cfg *config.Configuration) (*kappsv1.DeploymentList, error) {
+func GetDeployments(ctx context.Context, namespace string, cfg *config.Configuration) (*kappsv1.DeploymentList, error) {
 	clientset, err := GetClientSet(cfg)
 
 	if err != nil {
@@ -415,7 +415,7 @@ func GetDeployments(namespace string, cfg *config.Configuration) (*kappsv1.Deplo
 
 	deploymentsClient := clientset.AppsV1().Deployments(util.Fallback(namespace, coreV1.NamespaceDefault))
 
-	list, err := deploymentsClient.List(context.TODO(), metaV1.ListOptions{})
+	list, err := deploymentsClient.List(ctx, metaV1.ListOptions{})
 	if err != nil {
 		panic(err)
 	}

@@ -198,7 +198,7 @@ func (dc *DockerContainerBuilder) WithTTY(tty bool) *DockerContainerBuilder {
 
 // Deletes the container with the given name if already exists.
 func (dc *DockerContainerBuilder) WithoutConflict() *DockerContainerBuilder {
-	if err := deleteContainer(dc.containerName); err != nil {
+	if err := deleteContainer(dc.ctx, dc.containerName); err != nil {
 		log.Printf("builder could not stop/remove container (%s) to avoid conflicts: %s", dc.containerName, err.Error())
 	}
 	return dc
@@ -253,7 +253,7 @@ func (dc *DockerContainerBuilder) GetContainerID() *string {
 // Creates the container using the configuration given by 'With...' functions.
 func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 	if dc.forcePull {
-		if err := pullImage(*dc.logger, dc.imageWithTag, dc.registryAuth); err != nil {
+		if err := pullImage(dc.ctx, *dc.logger, dc.imageWithTag, dc.registryAuth); err != nil {
 			if err != nil && err.Error() != "EOF" {
 				logWrite(dc, fmt.Sprintf("Image pull error: %s", err.Error()))
 			}

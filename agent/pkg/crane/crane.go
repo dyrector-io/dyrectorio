@@ -88,7 +88,7 @@ func Serve(cfg *config.Configuration) {
 		}
 
 		log.Println("Running gRPC in blocking mode: ", blocking)
-		grpcContext := grpc.WithGRPCConfig(context.TODO(), cfg)
+		grpcContext := grpc.WithGRPCConfig(context.Background(), cfg)
 		if blocking {
 			grpc.Init(grpcContext, grpcParams, &cfg.CommonConfiguration, grpc.WorkerFunctions{
 				Deploy: k8s.Deploy,

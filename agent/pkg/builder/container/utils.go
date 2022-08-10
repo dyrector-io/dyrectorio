@@ -33,9 +33,7 @@ func registryAuthBase64(user, password string) string {
 }
 
 // force pulls the given image name
-func pullImage(logger io.StringWriter, fullyQualifiedImageName, authCreds string) error {
-	ctx := context.Background()
-
+func pullImage(ctx context.Context, logger io.StringWriter, fullyQualifiedImageName, authCreds string) error {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 
 	if err != nil {
@@ -95,21 +93,19 @@ func pullImage(logger io.StringWriter, fullyQualifiedImageName, authCreds string
 	return err
 }
 
-func deleteContainer(containerName string) error {
-	if err := stopContainer(containerName); err != nil {
+func deleteContainer(ctx context.Context, containerName string) error {
+	if err := stopContainer(ctx, containerName); err != nil {
 		return err
 	}
 
-	if err := removeContainer(containerName); err != nil {
+	if err := removeContainer(ctx, containerName); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func stopContainer(containerName string) error {
-	ctx := context.Background()
-
+func stopContainer(ctx context.Context, containerName string) error {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		panic(err)
@@ -123,9 +119,7 @@ func stopContainer(containerName string) error {
 	return nil
 }
 
-func removeContainer(containerName string) error {
-	ctx := context.Background()
-
+func removeContainer(ctx context.Context, containerName string) error {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		panic(err)

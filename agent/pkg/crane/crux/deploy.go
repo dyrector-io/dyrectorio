@@ -13,7 +13,7 @@ import (
 
 func GetDeployments(ctx context.Context, namespace string) []*crux.ContainerStatusItem {
 	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
-	list, err := k8s.GetDeployments(namespace, cfg)
+	list, err := k8s.GetDeployments(ctx, namespace, cfg)
 
 	if err != nil {
 		log.Println(err)

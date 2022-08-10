@@ -46,7 +46,7 @@ func GetNamespaces(c *gin.Context) {
 func GetDeployments(c *gin.Context) {
 	// todo(nandi): this is not smort to-be-done
 	cfg := utils.GetConfigFromGinContext(c)
-	deployments, err := k8s.GetDeployments("default", cfg)
+	deployments, err := k8s.GetDeployments(c, "default", cfg)
 
 	if err != nil {
 		log.Println(err)
@@ -75,7 +75,7 @@ func GetDeploymentStatus(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	resp, err := k8s.DeploymentStatus(query.ContainerPreName, query.ContainerName, cfg)
+	resp, err := k8s.DeploymentStatus(c, query.ContainerPreName, query.ContainerName, cfg)
 
 	if err != nil {
 		log.Println("Status error: ", err.Error())
