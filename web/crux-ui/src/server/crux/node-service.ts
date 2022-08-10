@@ -2,7 +2,7 @@ import { Logger } from '@app/logger'
 import {
   Container,
   ContainerListMessage,
-  ContainerStatus,
+  ContainerState,
   CreateDyoNode,
   DyoNode,
   DyoNodeDetails,
@@ -16,9 +16,9 @@ import {
 } from '@app/models'
 import {
   AccessRequest,
-  ContainerStatus as ProtoContainerStatus,
+  ContainerState as ProtoContainerState,
   ContainerStatusListMessage,
-  containerStatusToJSON,
+  containerStateToJSON,
   CreateEntityResponse,
   CreateNodeRequest,
   CruxNodeClient,
@@ -216,7 +216,7 @@ class DyoNodeService {
           id: it.containerId,
           name: it.name,
           date: timestampToUTC(it.createdAt),
-          status: containerStatusToDto(it.status),
+          state: containerStateToDto(it.state),
         } as Container
       }) as ContainerListMessage
     }
@@ -239,8 +239,8 @@ class DyoNodeService {
 
 export default DyoNodeService
 
-export const containerStatusToDto = (status: ProtoContainerStatus): ContainerStatus =>
-  containerStatusToJSON(status).toLocaleLowerCase() as ContainerStatus
+export const containerStateToDto = (state: ProtoContainerState): ContainerState =>
+containerStateToJSON(state).toLocaleLowerCase() as ContainerState
 
 export const nodeTypeUiToGrpc = (type: NodeType): GrpcNodeType => {
   return type === NODE_TYPE_VALUES[0] ? GrpcNodeType.DOCKER : GrpcNodeType.K8S
