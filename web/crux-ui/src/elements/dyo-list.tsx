@@ -65,18 +65,18 @@ export const DyoList = <T,>(props: DyoListProps<T>) => {
           </div>
         ) : null}
         <div className="table-row-group">
-          {data.map((line, rowIndex) => (
+          {data.map((row, rowIndex) => (
             <div className="table-row" key={`${props.key}-${rowIndex}`}>
-              {line.map((_, column) => (
+              {row.map((_, colIndex) => (
                 <div
-                  key={`${props.key}-${column}-${rowIndex}`}
+                  key={`${props.key}-${colIndex}-${rowIndex}`}
                   className={clsx(
                     'table-cell align-middle',
                     !props.noSeparator ? 'border-t-2 border-light-grey' : null,
-                    itemClassNames[column] ?? 'h-12 min-h-min text-light-eased p-2',
+                    itemClassNames[colIndex] ?? 'h-12 min-h-min text-light-eased p-2',
                   )}
                 >
-                  {line[column]}
+                  {row[colIndex]}
                 </div>
               ))}
             </div>

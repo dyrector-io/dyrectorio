@@ -74,7 +74,7 @@ const AuditLogPage = (props: AuditLogPageProps) => {
     initialPagination: { pageSize: 10, currentPage: 0 },
   })
 
-  const listHeaders = ['avatar', 'common:name', 'common:date', 'event', 'info'].map(it => t(it))
+  const listHeaders = ['', ...['common:name', 'common:date', 'event', 'info'].map(it => t(it))]
   const defaultHeaderClass = 'uppercase text-bright text-sm font-bold bg-medium-eased pl-2 py-3 h-11'
   const headerClassNames = [
     defaultHeaderClass,
