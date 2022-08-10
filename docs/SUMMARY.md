@@ -41,6 +41,7 @@
 
 ## Learn more
 
+* [Changelog](learn-more/changelog.md)
 * [Roadmap](learn-more/roadmap/README.md)
   * [Features in progress](learn-more/roadmap/features-in-progress.md)
   * [Integrations in progress](learn-more/roadmap/integrations-in-progress.md)
