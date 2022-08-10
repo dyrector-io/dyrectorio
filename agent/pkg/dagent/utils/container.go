@@ -28,7 +28,7 @@ func ExecWatchtowerOneShot(ctx context.Context, cfg *config.Configuration) error
 }
 
 func ExecWatchtowerPoll(ctx context.Context, cfg *config.Configuration) error {
-	// TODO(nandi): do we need this updater? IIRC dagent can update itself
+	// TODO(nandor-magyar): do we need this updater? IIRC dagent can update itself
 	container := GetContainer(cfg.UpdaterContainerName)
 	var err error
 
@@ -156,7 +156,9 @@ func ExecTraefik(ctx context.Context, traefikDeployReq model.TraefikDeployReques
 		_ = removeContainer("traefik")
 	}
 
-	builder := containerbuilder.NewDockerBuilder(ctx).WithImage("index.docker.io/library/traefik:v2.6").
+	CreateNetwork("traefik", "bridge")
+
+	builder := containerbuilder.NewDockerBuilder(ctx).WithImage("index.docker.io/library/traefik:latest").
 		WithAutoRemove(true).
 		WithName("traefik").
 		WithMountPoints(mounts).
@@ -165,6 +167,7 @@ func ExecTraefik(ctx context.Context, traefikDeployReq model.TraefikDeployReques
 		WithAutoRemove(false).
 		WithNetworkMode("traefik").
 		WithCmd([]string{"--add-host", "host.docker.internal:172.17.0.1"}).
+		WithForcePullImage().
 		Create()
 
 	_, err = builder.Start()

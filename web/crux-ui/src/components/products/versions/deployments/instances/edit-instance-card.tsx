@@ -124,7 +124,7 @@ const overridePorts = (
 const overrideNetworkMode = (weak: ExplicitContainerNetworkMode, strong: ExplicitContainerNetworkMode) =>
   strong ?? weak ?? 'none'
 
-const mergeConfigs = (
+export const mergeConfigs = (
   imageConfig: ContainerConfig,
   overriddenConfig: Partial<InstanceContainerConfig>,
 ): ContainerConfig => {

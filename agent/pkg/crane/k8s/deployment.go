@@ -194,7 +194,7 @@ func getResourceManagement(resourceConfig v1.ResourceConfig, cfg *config.Configu
 	var ResourceLimitsCPU, ResourceLimitsMemory, ResourceRequestsCPU, ResourceRequestsMemory resource.Quantity
 	var err error
 
-	// TODO(nandi): panic on invalid userinput!?!??!?!?!??!?!!?!??!?!?!
+	// TODO(nandor-magyar): panic on invalid userinput!?!??!?!?!??!?!!?!??!?!?!
 	// Resource Limits CPU
 	if resourceConfig.Limits.CPU != "" {
 		if ResourceLimitsCPU, err = resource.ParseQuantity(resourceConfig.Limits.CPU); err != nil {
@@ -234,7 +234,7 @@ func getResourceManagement(resourceConfig v1.ResourceConfig, cfg *config.Configu
 			log.Panic(err)
 		}
 	} else {
-		if ResourceRequestsMemory, err = resource.ParseQuantity(cfg.DefaultLimitsMemory); err != nil {
+		if ResourceRequestsMemory, err = resource.ParseQuantity(cfg.DefaultRequestMemory); err != nil {
 			log.Panic(err)
 		}
 	}

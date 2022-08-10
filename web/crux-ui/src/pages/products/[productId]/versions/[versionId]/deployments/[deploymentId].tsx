@@ -2,6 +2,7 @@ import { Layout, PageHead } from '@app/components/layout'
 import DeploymentDetailsSection from '@app/components/products/versions/deployments/deployment-details-section'
 import EditDeploymentCard from '@app/components/products/versions/deployments/edit-deployment-card'
 import EditDeploymentInstances from '@app/components/products/versions/deployments/edit-deployment-instances'
+import { mergeConfigs } from '@app/components/products/versions/deployments/instances/edit-instance-card'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
@@ -29,13 +30,14 @@ import {
   versionUrl,
 } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
-import { deploymentSchema, getValidationError } from '@app/validation'
+import { containerConfigSchema, deploymentSchema, getValidationError } from '@app/validation'
 import { Crux, cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import { useRef, useState } from 'react'
 import toast from 'react-hot-toast'
+import { ValidationError } from 'yup'
 
 interface DeploymentDetailsPageProps {
   deployment: DeploymentRoot
@@ -120,12 +122,16 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
   const onOpenLog = () => router.push(deploymentDeployUrl(product.id, version.id, deployment.id))
 
   const onDeploy = () => {
-    const error = getValidationError(deploymentSchema, deployment)
-    if (error) {
-      console.error(error)
-      toast.error(t('errors:invalid'))
-      return
-    }
+    deployment.instances.map(instances => {
+      const mergedConfig = mergeConfigs(instances.image.config, instances.overridenConfig)
+      const error = getValidationError(containerConfigSchema, mergedConfig)
+
+      if (error) {
+        console.error(error)
+        toast.error(t('errors:invalid'))
+        return
+      }
+    })
 
     onOpenLog()
   }

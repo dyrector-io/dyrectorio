@@ -26,6 +26,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/caps"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/crux"
+	"golang.org/x/exp/maps"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
@@ -340,9 +341,15 @@ func DeployImage(ctx context.Context,
 
 	if deployImageRequest.ContainerConfig.Expose {
 		networkMode = "traefik"
+
+		// add traefik related labels to the container
+		maps.Copy(labels, GetTraefikLabels(&deployImageRequest.InstanceConfig, &deployImageRequest.ContainerConfig, cfg))
 	}
 
 	builder := containerbuilder.NewDockerBuilder(ctx)
+
+	// add container prefix as a label to the container
+	maps.Copy(labels, SetOrganizationLabel("container.prefix", deployImageRequest.InstanceConfig.ContainerPreName))
 
 	builder.WithImage(image.String()).
 		WithName(containerName).
@@ -353,7 +360,7 @@ func DeployImage(ctx context.Context,
 		WithRegistryAuth(deployImageRequest.RegistryAuth).
 		WithRestartPolicy(deployImageRequest.ContainerConfig.RestartPolicy).
 		WithEnv(envList).
-		WithLabels(GetTraefikLabels(&deployImageRequest.InstanceConfig, &deployImageRequest.ContainerConfig, cfg)).
+		WithLabels(labels).
 		WithLogConfig(deployImageRequest.ContainerConfig.LogConfig).
 		WithUser(deployImageRequest.ContainerConfig.User).
 		WithEntrypoint(deployImageRequest.ContainerConfig.Command).
@@ -464,7 +471,7 @@ func mountStrToDocker(mountIn []string, containerPreName, containerName string, 
 			mountSplit := strings.Split(mountStr, "|")
 			if len(mountSplit[0]) > 0 && len(mountSplit[1]) > 0 {
 				containerPath := path.Join(cfg.InternalMountPath, containerPreName, containerName, mountSplit[0])
-				hostPath := path.Join(cfg.HostMountPath, containerPreName, containerName, mountSplit[0])
+				hostPath := path.Join(cfg.DataMountPath, containerPreName, containerName, mountSplit[0])
 				_, err := os.Stat(containerPath)
 				if os.IsNotExist(err) {
 					if err := os.MkdirAll(containerPath, os.ModePerm); err != nil {
@@ -614,7 +621,7 @@ func MergeStringMapUnique(src, dest map[string]string) map[string]string {
 	return dest
 }
 
-// todo(nandi): refactor this into unmarshalling
+// TODO(nandor-magyar): refactor this into unmarshalling
 // `[]"VARIABLE|value"` pair mapped into a string keyed map, collision is ignored, the latter value is used
 func EnvPipeSeparatedToStringMap(envIn *[]string) map[string]string {
 	envList := make(map[string]string)
@@ -643,7 +650,7 @@ func GetImageLabels(fullyQualifiedImageName string) (map[string]string, error) {
 	if res.Config != nil && res.Config.Labels != nil {
 		return res.Config.Labels, err
 	} else {
-		return nil, errors.New("no labels")
+		return map[string]string{}, errors.New("no labels")
 	}
 }
 
@@ -656,4 +663,43 @@ func DeleteContainerByName(ctx context.Context, preName, name string) error {
 	}
 
 	return errors.New("No or more containers found for " + containerName)
+}
+
+func CreateNetwork(name, driver string) error {
+	ctx := context.Background()
+
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		panic(err)
+	}
+
+	// create a filter to check existing networks with the given param
+	nameFilter := filters.NewArgs()
+	nameFilter.Add("name", name)
+	networkListOption := types.NetworkListOptions{
+		Filters: nameFilter,
+	}
+
+	networks, err := cli.NetworkList(ctx, networkListOption)
+	if err != nil {
+		panic(err)
+	}
+
+	if len(networks) > 0 {
+		log.Printf("Provided network name: %s is exists. Skip to create new network.", name)
+		return nil
+	}
+
+	networkCreateOptions := types.NetworkCreate{
+		CheckDuplicate: true,
+		Driver:         driver,
+	}
+
+	_, err = cli.NetworkCreate(ctx, name, networkCreateOptions)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
