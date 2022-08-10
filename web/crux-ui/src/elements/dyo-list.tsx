@@ -35,14 +35,15 @@ export const DyoList = <T,>(props: DyoListProps<T>) => {
 
   const headerClassNames: string[] = props.headers
     ? typeof props.headerClassName === 'string'
-      ? (data[0].map(() => props.headerClassName as string) as string[])
+      ? props.headers.map(() => props.headerClassName as string)
       : props.headerClassName ?? props.headers.map(() => null)
-    : undefined
+    : []
 
-  const itemClassNames: string[] =
-    typeof props.itemClassName === 'string'
-      ? (data[0].map(() => props.itemClassName as string) as string[])
+  const itemClassNames: string[] = data[0]
+    ? typeof props.itemClassName === 'string'
+      ? data[0].map(() => props.itemClassName as string)
       : props.itemClassName ?? data[0].map(() => null)
+    : []
 
   return (
     <>
