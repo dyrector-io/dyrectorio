@@ -4,12 +4,14 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
 	"time"
 
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 )
 
@@ -32,10 +34,8 @@ func registryAuthBase64(user, password string) string {
 	return base64.URLEncoding.EncodeToString(encodedJSON)
 }
 
-// force pulls the given image name
-func pullImage(ctx context.Context, logger io.StringWriter, fullyQualifiedImageName, authCreds string) error {
+func createCli(logger io.StringWriter) (*client.Client, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-
 	if err != nil {
 		if logger != nil && client.IsErrConnectionFailed(err) {
 			_, err = logger.WriteString("Could not connect to docker socket/host.")
@@ -44,6 +44,50 @@ func pullImage(ctx context.Context, logger io.StringWriter, fullyQualifiedImageN
 			}
 		}
 
+		return nil, err
+	}
+
+	return cli, nil
+}
+
+func imageExists(ctx context.Context, logger io.StringWriter, fullyQualifiedImageName string) (bool, error) {
+	cli, err := createCli(logger)
+	if cli == nil {
+		return false, err
+	}
+
+	filters := filters.NewArgs()
+	filters.Add("reference", fullyQualifiedImageName)
+
+	images, err := cli.ImageList(ctx, types.ImageListOptions{Filters: filters})
+	if err != nil {
+		if logger != nil {
+			_, err = logger.WriteString("Failed to list images")
+			if err != nil {
+				fmt.Printf("Failed to write log: %s", err.Error())
+			}
+		}
+
+		return false, err
+	}
+
+	fmt.Println(images)
+
+	if count := len(images); count == 1 {
+		return true, nil
+	} else if count > 1 {
+		return false, errors.New("unexpected image count")
+	}
+
+	return false, nil
+}
+
+// force pulls the given image name
+func pullImage(logger io.StringWriter, fullyQualifiedImageName, authCreds string) error {
+	ctx := context.Background()
+
+	cli, err := createCli(logger)
+	if cli == nil {
 		return err
 	}
 
