@@ -246,9 +246,8 @@ func getResourceManagement(resourceConfig v1.ResourceConfig,
 			return nil, fmt.Errorf("failed to parse memory requests '%s': %w", resourceConfig.Requests.Memory, err)
 		}
 	} else {
-		if ResourceRequestsMemory, err = resource.ParseQuantity(cfg.DefaultLimitsMemory); err != nil {
-			// TODO: cfg.DefaultRequestsMemory?
-			return nil, fmt.Errorf("failed to parse default memory requests '%s': %w", cfg.DefaultLimitsMemory, err)
+		if ResourceRequestsMemory, err = resource.ParseQuantity(cfg.DefaultRequestMemory); err != nil {
+			return nil, fmt.Errorf("failed to parse default memory requests '%s': %w", cfg.DefaultRequestMemory, err)
 		}
 	}
 
