@@ -1,5 +1,5 @@
-//go:build integration
-// +build integration
+//go:build unit
+// +build unit
 
 package k8s_test
 
