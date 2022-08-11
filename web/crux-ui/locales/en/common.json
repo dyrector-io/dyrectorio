@@ -103,7 +103,8 @@
     "successful": "Successful",
     "failed": "Failed",
     "obsolate": "Obsolate",
-    "unknown": "Unknown"
+    "unknown": "Unknown",
+    "preparing": "Preparing"
   },
 
   "containerStatuses": {
