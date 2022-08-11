@@ -122,16 +122,22 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
   const onOpenLog = () => router.push(deploymentDeployUrl(product.id, version.id, deployment.id))
 
   const onDeploy = () => {
-    deployment.instances.map(instances => {
-      const mergedConfig = mergeConfigs(instances.image.config, instances.overridenConfig)
-      const error = getValidationError(containerConfigSchema, mergedConfig)
+    let error: ValidationError
+
+    for (const instance of deployment.instances) {
+      const mergedConfig = mergeConfigs(instance.image.config, instance.overriddenConfig)
+      error = getValidationError(containerConfigSchema, mergedConfig)
 
       if (error) {
-        console.error(error)
-        toast.error(t('errors:invalid'))
-        return
+        break
       }
-    })
+    }
+
+    if (error) {
+      console.error(error)
+      toast.error(t('errors:invalid'))
+      return
+    }
 
     onOpenLog()
   }

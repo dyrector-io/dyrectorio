@@ -82,7 +82,7 @@ export type Instance = {
   id: string
   image: VersionImage
   status?: ContainerStatus
-  overridenConfig?: Partial<InstanceContainerConfig>
+  overriddenConfig?: Partial<InstanceContainerConfig>
 }
 
 export type DeploymentStatus = 'preparing' | 'inProgress' | 'successful' | 'failed' | 'obsolate'

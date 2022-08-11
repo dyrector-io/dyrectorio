@@ -156,13 +156,11 @@ func ExecTraefik(ctx context.Context, traefikDeployReq model.TraefikDeployReques
 		_ = removeContainer("traefik")
 	}
 
-	err = CreateNetwork("traefik", "bridge")
-	if err != nil {
+	if err = CreateNetwork(ctx, "traefik", "bridge"); err != nil {
 		log.Println("create traefik network error: " + err.Error())
-		return err
 	}
 
-	builder := containerbuilder.NewDockerBuilder(ctx).WithImage("index.docker.io/library/traefik:latest").
+	builder := containerbuilder.NewDockerBuilder(ctx).WithImage("index.docker.io/library/traefik:v2.8.0").
 		WithAutoRemove(true).
 		WithName("traefik").
 		WithMountPoints(mounts).

@@ -29,12 +29,12 @@ const EditInstanceCard = (props: EditInstanceCardProps) => {
   const { disabled, instance, deploymentSock: sock } = props
 
   const [selection, setSelection] = useState<EditInstanceCardSelection>('config')
-  const [mergedConfig, setMergedConfig] = useState(mergeConfigs(instance.image.config, instance.overridenConfig))
+  const [mergedConfig, setMergedConfig] = useState(mergeConfigs(instance.image.config, instance.overriddenConfig))
   const [parseError, setParseError] = useState<string>(null)
 
   useEffect(
-    () => setMergedConfig(mergeConfigs(instance.image.config, instance.overridenConfig)),
-    [instance.image.config, instance.overridenConfig],
+    () => setMergedConfig(mergeConfigs(instance.image.config, instance.overriddenConfig)),
+    [instance.image.config, instance.overriddenConfig],
   )
 
   const onPatch = (id: string, config: Partial<InstanceContainerConfig>) => {

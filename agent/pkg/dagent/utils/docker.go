@@ -285,8 +285,6 @@ func logDeployInfo(dog *dogger.DeploymentLogger, deployImageRequest *v1.DeployIm
 	}
 }
 
-//nolint
-// TODO(polaroi8d): DeployImage function is too long for golangci-lint (105 > 100)
 func DeployImage(ctx context.Context,
 	dog *dogger.DeploymentLogger,
 	deployImageRequest *v1.DeployImageRequest,
@@ -300,9 +298,6 @@ func DeployImage(ctx context.Context,
 			util.JoinV(":", deployImageRequest.ImageName, deployImageRequest.Tag)))
 
 	logDeployInfo(dog, deployImageRequest, image, containerName)
-	labels, _ := GetImageLabels(image.String())
-
-	caps.ParseLabelsIntoContainerConfig(labels, &deployImageRequest.ContainerConfig)
 
 	envList := MergeStringMapToUniqueSlice(
 		EnvPipeSeparatedToStringMap(&deployImageRequest.InstanceConfig.Environment),
@@ -340,23 +335,19 @@ func DeployImage(ctx context.Context,
 
 	dog.WriteContainerStatus(state)
 
-	networkMode := deployImageRequest.ContainerConfig.NetworkMode
-
+	var networkMode string
 	if deployImageRequest.ContainerConfig.Expose {
 		networkMode = "traefik"
-
-		// add traefik related labels to the container
-		maps.Copy(labels, GetTraefikLabels(&deployImageRequest.InstanceConfig, &deployImageRequest.ContainerConfig, cfg))
+	} else {
+		networkMode = deployImageRequest.ContainerConfig.NetworkMode
 	}
 
 	builder := containerbuilder.NewDockerBuilder(ctx)
 
-	// add container prefix as a label to the container
-	organizationLabels, err := SetOrganizationLabel("container.prefix", deployImageRequest.InstanceConfig.ContainerPreName)
+	labels, err := setImageLabels(image.String(), deployImageRequest, cfg)
 	if err != nil {
-		return fmt.Errorf("setting organization prefix: %s", err.Error())
+		return fmt.Errorf("error building lables: %w", err)
 	}
-	maps.Copy(labels, organizationLabels)
 
 	builder.WithImage(image.String()).
 		WithName(containerName).
@@ -657,7 +648,7 @@ func GetImageLabels(fullyQualifiedImageName string) (map[string]string, error) {
 	if res.Config != nil && res.Config.Labels != nil {
 		return res.Config.Labels, err
 	} else {
-		return map[string]string{}, errors.New("no labels")
+		return map[string]string{}, nil
 	}
 }
 
@@ -672,24 +663,46 @@ func DeleteContainerByName(ctx context.Context, preName, name string) error {
 	return errors.New("No or more containers found for " + containerName)
 }
 
-func CreateNetwork(name, driver string) error {
-	ctx := context.Background()
+func setImageLabels(image string, deployImageRequest *v1.DeployImageRequest, cfg *config.Configuration) (map[string]string, error) {
+	// parse image labels
+	labels, err := GetImageLabels(image)
+	if err != nil {
+		return nil, fmt.Errorf("error get image labels: %w", err)
+	}
 
+	caps.ParseLabelsIntoContainerConfig(labels, &deployImageRequest.ContainerConfig)
+
+	// add traefik related labels to the container if expose true
+	if deployImageRequest.ContainerConfig.Expose {
+		maps.Copy(labels, GetTraefikLabels(&deployImageRequest.InstanceConfig, &deployImageRequest.ContainerConfig, cfg))
+	}
+
+	// set organization labels to the container
+	organizationLabels, err := SetOrganizationLabel("container.prefix", deployImageRequest.InstanceConfig.ContainerPreName)
+	if err != nil {
+		return nil, fmt.Errorf("setting organization prefix: %s", err.Error())
+	}
+	maps.Copy(labels, organizationLabels)
+
+	return labels, nil
+}
+
+func CreateNetwork(ctx context.Context, name, driver string) error {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		panic(err)
 	}
 
-	// create a filter to check existing networks with the given param
-	nameFilter := filters.NewArgs()
-	nameFilter.Add("name", name)
+	filter := filters.NewArgs()
+	filter.Add("name", name)
+
 	networkListOption := types.NetworkListOptions{
-		Filters: nameFilter,
+		Filters: filter,
 	}
 
 	networks, err := cli.NetworkList(ctx, networkListOption)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("error list existing networks: %w", err)
 	}
 
 	if len(networks) > 0 {

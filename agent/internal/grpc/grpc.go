@@ -147,7 +147,7 @@ func Init(grpcContext context.Context,
 		}
 
 		// TODO: Missing error or panic when the server don't have a secure connection.
-		// the application silently die. Added by @polaroi8d 2020/05/25
+		// the application silently dies. Added by @polaroi8d 2020/05/25
 		opts := []grpc.DialOption{
 			grpc.WithTransportCredentials(creds),
 			grpc.WithBlock(),

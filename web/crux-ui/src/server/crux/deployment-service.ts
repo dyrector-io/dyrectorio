@@ -296,6 +296,6 @@ export const instanceToDto = (res: InstanceResponse): Instance => {
     ...res,
     image: imageToDto(res.image),
     status: !res.status ? null : containerStatusToDto(res.status),
-    overridenConfig: instanceContainerConfigToDto(res.config),
+    overriddenConfig: instanceContainerConfigToDto(res.config),
   } as Instance
 }

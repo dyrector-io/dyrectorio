@@ -179,7 +179,7 @@ export const deploymentSchema = yup.object().shape({
   instances: yup.array(
     yup.object().shape({
       image: imageSchema,
-      overridenConfig: explicitContainerConfigSchema.nullable(),
+      overriddenConfig: explicitContainerConfigSchema.nullable(),
     }),
   ),
 })
