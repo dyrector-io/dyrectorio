@@ -39,6 +39,7 @@ require (
 	github.com/form3tech-oss/jwt-go v3.2.3+incompatible
 	github.com/hashicorp/go-version v1.3.0
 	github.com/ilyakaznacheev/cleanenv v1.3.0
+	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e
 	google.golang.org/protobuf v1.28.1
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -56,7 +57,6 @@ require (
 	github.com/moby/term v0.0.0-20200312100748-672ec06f55cd // indirect
 	github.com/onsi/ginkgo v1.16.4 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.2 // indirect
-	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e // indirect
 	gotest.tools/v3 v3.0.3 // indirect
 	olympos.io/encoding/edn v0.0.0-20201019073823-d3554ca0b0a3 // indirect
 )

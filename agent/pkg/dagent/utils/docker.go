@@ -17,6 +17,8 @@ import (
 	"strings"
 	"time"
 
+	"golang.org/x/exp/maps"
+
 	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
 	"github.com/dyrector-io/dyrectorio/agent/internal/grpc"
 	"github.com/dyrector-io/dyrectorio/agent/internal/mapper"
@@ -26,7 +28,6 @@ import (
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/caps"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/crux"
-	"golang.org/x/exp/maps"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
@@ -284,6 +285,8 @@ func logDeployInfo(dog *dogger.DeploymentLogger, deployImageRequest *v1.DeployIm
 	}
 }
 
+//nolint
+// TODO(polaroi8d): DeployImage function is too long for golangci-lint (105 > 100)
 func DeployImage(ctx context.Context,
 	dog *dogger.DeploymentLogger,
 	deployImageRequest *v1.DeployImageRequest,
@@ -349,7 +352,11 @@ func DeployImage(ctx context.Context,
 	builder := containerbuilder.NewDockerBuilder(ctx)
 
 	// add container prefix as a label to the container
-	maps.Copy(labels, SetOrganizationLabel("container.prefix", deployImageRequest.InstanceConfig.ContainerPreName))
+	organizationLabels, err := SetOrganizationLabel("container.prefix", deployImageRequest.InstanceConfig.ContainerPreName)
+	if err != nil {
+		return fmt.Errorf("setting organization prefix: %s", err.Error())
+	}
+	maps.Copy(labels, organizationLabels)
 
 	builder.WithImage(image.String()).
 		WithName(containerName).
@@ -371,7 +378,7 @@ func DeployImage(ctx context.Context,
 
 	builder.Create()
 
-	_, err := builder.Start()
+	_, err = builder.Start()
 
 	if err != nil {
 		dog.Write(err.Error())

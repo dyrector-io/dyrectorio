@@ -1,17 +1,19 @@
 package utils
 
-import "log"
+import (
+	"errors"
+)
 
 // generating dyrector.io specific labels for containers
 // org.dyrectorio is our official label prefix
-func SetOrganizationLabel(key string, value string) map[string]string {
+func SetOrganizationLabel(key, value string) (map[string]string, error) {
 	if key == "" || value == "" {
-		log.Panic("Missing key or value to build an organization label.")
+		return nil, errors.New("missing key or value to build an organization label")
 	}
 
 	labels := map[string]string{}
 
 	labels["org.dyrectorio."+key] = value
 
-	return labels
+	return labels, nil
 }

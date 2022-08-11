@@ -18,7 +18,7 @@ func TestGetOrganizationLabels(t *testing.T) {
 	expected := map[string]string{}
 	expected["org.dyrectorio.key"] = "value"
 
-	actual := utils.SetOrganizationLabel(key, value)
+	actual, _ := utils.SetOrganizationLabel(key, value)
 
 	assert.EqualValues(t, expected, actual)
 }
