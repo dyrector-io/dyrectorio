@@ -3,6 +3,7 @@ package k8s
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"strings"
 	"time"
 
@@ -59,6 +60,11 @@ type deploymentParams struct {
 func (d *deployment) deployDeployment(p *deploymentParams) error {
 	client := getDeploymentsClient(p.namespace, d.appConfig)
 
+	containerConfig, err := buildContainer(p, d.appConfig)
+	if err != nil {
+		return err
+	}
+
 	name := p.containerConfig.Container
 	deployment := appsv1.Deployment(name, p.namespace).
 		WithSpec(
@@ -73,7 +79,7 @@ func (d *deployment) deployDeployment(p *deploymentParams) error {
 					CraneUpdatedAnnotation: time.Now().Format(time.RFC3339),
 					d.appConfig.KeyIssuer:  p.issuer,
 				}).WithSpec(
-					corev1.PodSpec().WithContainers(buildContainer(p, d.appConfig)).
+					corev1.PodSpec().WithContainers(containerConfig).
 						WithInitContainers(getInitContainers(p.containerConfig, d.appConfig)...).
 						WithVolumes(getVolumesFromMap(p.volumes, d.appConfig)...),
 				)),
@@ -85,7 +91,7 @@ func (d *deployment) deployDeployment(p *deploymentParams) error {
 
 	if err != nil {
 		log.Println("Deployment error: " + err.Error())
-		return err
+		return errors.New("deployment error: " + err.Error())
 	}
 
 	log.Println("Deployment succeeded: " + result.Name)
@@ -130,7 +136,8 @@ func (d *deployment) restart(namespace, name string) error {
 }
 
 // builds the container using the builder interface, with healthchecks, volumes, configs, ports...
-func buildContainer(p *deploymentParams, cfg *config.Configuration) *corev1.ContainerApplyConfiguration {
+func buildContainer(p *deploymentParams,
+	cfg *config.Configuration) (*corev1.ContainerApplyConfiguration, error) {
 	healthCheckConfig := p.containerConfig.HealthCheckConfig
 	var healthCheckDelay int32 = 30
 	var healthCheckThreshold int32 = 1
@@ -138,6 +145,11 @@ func buildContainer(p *deploymentParams, cfg *config.Configuration) *corev1.Cont
 	var livenessProbe *corev1.ProbeApplyConfiguration
 	var readinessProbe *corev1.ProbeApplyConfiguration
 	var startupProbe *corev1.ProbeApplyConfiguration
+
+	resources, err := getResourceManagement(p.containerConfig.ResourceConfig, cfg)
+	if err != nil {
+		return nil, err
+	}
 
 	// Check all Probes to represented in the deploymentParams or not
 	if healthCheckConfig.LivenessProbe != nil {
@@ -170,7 +182,7 @@ func buildContainer(p *deploymentParams, cfg *config.Configuration) *corev1.Cont
 		WithLivenessProbe(livenessProbe).
 		WithReadinessProbe(readinessProbe).
 		WithStartupProbe(startupProbe).
-		WithResources(getResourceManagement(p.containerConfig.ResourceConfig, cfg)).
+		WithResources(resources).
 		WithTTY(p.containerConfig.TTY)
 
 	if p.containerConfig.User != nil {
@@ -187,55 +199,56 @@ func buildContainer(p *deploymentParams, cfg *config.Configuration) *corev1.Cont
 		container.WithArgs(p.containerConfig.Args...)
 	}
 
-	return container
+	return container, nil
 }
 
-func getResourceManagement(resourceConfig v1.ResourceConfig, cfg *config.Configuration) *corev1.ResourceRequirementsApplyConfiguration {
+func getResourceManagement(resourceConfig v1.ResourceConfig,
+	cfg *config.Configuration) (*corev1.ResourceRequirementsApplyConfiguration, error) {
 	var ResourceLimitsCPU, ResourceLimitsMemory, ResourceRequestsCPU, ResourceRequestsMemory resource.Quantity
 	var err error
 
-	// TODO(nandi): panic on invalid userinput!?!??!?!?!??!?!!?!??!?!?!
 	// Resource Limits CPU
 	if resourceConfig.Limits.CPU != "" {
 		if ResourceLimitsCPU, err = resource.ParseQuantity(resourceConfig.Limits.CPU); err != nil {
-			log.Panic(err)
+			return nil, fmt.Errorf("failed to parse CPU limits '%s': %w", resourceConfig.Limits.CPU, err)
 		}
 	} else {
 		if ResourceLimitsCPU, err = resource.ParseQuantity(cfg.DefaultLimitsCPU); err != nil {
-			log.Panic(err)
+			return nil, fmt.Errorf("failed to parse default CPU limits '%s': %w", cfg.DefaultLimitsCPU, err)
 		}
 	}
 
 	// Resource Limits Memory
 	if resourceConfig.Limits.Memory != "" {
 		if ResourceLimitsMemory, err = resource.ParseQuantity(resourceConfig.Limits.Memory); err != nil {
-			log.Panic(err)
+			return nil, fmt.Errorf("failed to parse memory limits '%s': %w", resourceConfig.Limits.Memory, err)
 		}
 	} else {
 		if ResourceLimitsMemory, err = resource.ParseQuantity(cfg.DefaultLimitsMemory); err != nil {
-			log.Panic(err)
+			return nil, fmt.Errorf("failed to parse default memory limits '%s': %w", cfg.DefaultLimitsMemory, err)
 		}
 	}
 
 	// Resource Requests CPU
 	if resourceConfig.Requests.CPU != "" {
 		if ResourceRequestsCPU, err = resource.ParseQuantity(resourceConfig.Requests.CPU); err != nil {
-			log.Panic(err)
+			return nil, fmt.Errorf("failed to parse CPU requests '%s': %w", resourceConfig.Requests.CPU, err)
 		}
 	} else {
 		if ResourceRequestsCPU, err = resource.ParseQuantity(cfg.DefaultRequestsCPU); err != nil {
-			log.Panic(err)
+			return nil, fmt.Errorf("failed to parse default CPU requests '%s': %w", cfg.DefaultRequestsCPU, err)
 		}
 	}
 
 	// Resource Requests Memory
 	if resourceConfig.Requests.Memory != "" {
 		if ResourceRequestsMemory, err = resource.ParseQuantity(resourceConfig.Requests.Memory); err != nil {
-			log.Panic(err)
+			return nil, fmt.Errorf("failed to parse memory requests '%s': %w", resourceConfig.Requests.Memory, err)
 		}
 	} else {
 		if ResourceRequestsMemory, err = resource.ParseQuantity(cfg.DefaultLimitsMemory); err != nil {
-			log.Panic(err)
+			// TODO: cfg.DefaultRequestsMemory?
+			return nil, fmt.Errorf("failed to parse default memory requests '%s': %w", cfg.DefaultLimitsMemory, err)
 		}
 	}
 
@@ -248,7 +261,7 @@ func getResourceManagement(resourceConfig v1.ResourceConfig, cfg *config.Configu
 			coreV1.ResourceCPU:    ResourceRequestsCPU,
 			coreV1.ResourceMemory: ResourceRequestsMemory,
 		},
-	)
+	), nil
 }
 
 func getInitContainers(containerConfig *v1.ContainerConfig, cfg *config.Configuration) []*corev1.ContainerApplyConfiguration {
