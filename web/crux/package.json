@@ -17,7 +17,7 @@
     "prebuild": "rimraf dist",
     "build": "nest build",
     "build:proto": "find proto -name '*.proto' -exec protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_opt=nestJs=true --ts_proto_opt=addNestjsRestParameter=true --ts_proto_opt=outputJsonMethods=true --ts_proto_opt=addGrpcMetadata=true --ts_proto_out=./src/proto/ {} \\;",
-    "format": "prettier --write \"src/**/*.ts\"",
+    "format": "prettier --write \"src/**/*.ts\" \"prisma/seeds/**/*.ts\"",
     "start": "nest start --debug --watch",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
@@ -34,7 +34,8 @@
     "database:down": "docker-compose -f docker-compose.database.yaml down",
     "test:crux": "npm run docker:up && npx prisma migrate deploy && jest -i && npm docker:down",
     "prismagen": "prisma generate",
-    "compodoc": "compodoc -p tsconfig.doc.json --theme stripe"
+    "compodoc": "compodoc -p tsconfig.doc.json --theme stripe",
+    "demo-seed": "npx ts-node prisma/seeds/demo-seeder.ts"
   },
   "prisma": {
     "seed": "ts-node prisma/seeds/seeder.ts",

@@ -76,8 +76,8 @@ async function main() {
     deployments.map(async it => {
       await prisma.deployment.create({
         data: {
-            ...it,
-            environment: it.environment as Prisma.InputJsonArray
+          ...it,
+          environment: it.environment as Prisma.InputJsonArray,
         },
       })
     }),
@@ -89,7 +89,7 @@ async function main() {
       await prisma.deploymentEvent.create({
         data: {
           ...it,
-          value: it.value as Prisma.InputJsonValue
+          value: it.value as Prisma.InputJsonValue,
         },
       })
     }),
@@ -103,7 +103,7 @@ async function main() {
           ...it,
           environment: it.environment as Prisma.InputJsonArray,
           capabilities: it.capabilities as Prisma.InputJsonArray,
-          config: it.config as Prisma.InputJsonValue
+          config: it.config as Prisma.InputJsonValue,
         },
       })
     }),
