@@ -39,7 +39,7 @@ model UserInvitation {
 model UsersOnTeams {
   userId String  @db.Uuid
   active Boolean @default(false)
-  owner  Boolean @default(false)
+  role  UserRoleEnum
   teamId String  @db.Uuid
   team   Team    @relation(fields: [teamId], references: [id], onDelete: Cascade)
 
@@ -218,7 +218,7 @@ model DeploymentEvent {
   value        Json
   deploymentId String                  @db.Uuid
 
-  deployment Deployment @relation(fields: [deploymentId], references: [id])
+  deployment Deployment @relation(fields: [deploymentId], references: [id], onDelete: Cascade)
 }
 
 model AuditLog {
@@ -229,7 +229,13 @@ model AuditLog {
   serviceCall String
   data        Json?
 
-  team Team @relation(fields: [teamId], references: [id])
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+}
+
+enum UserRoleEnum {
+  owner
+  admin
+  user
 }
 
 enum ProductTypeEnum {

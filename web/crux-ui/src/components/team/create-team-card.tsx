@@ -4,7 +4,7 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { defaultApiErrorHandler } from '@app/errors'
-import { CreateTeam, Team } from '@app/models'
+import { CreateTeam, ActiveTeamDetails } from '@app/models'
 import { API_TEAMS } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { createTeamSchema } from '@app/validation'
@@ -13,7 +13,7 @@ import useTranslation from 'next-translate/useTranslation'
 
 interface CreateTeamCardProps {
   className?: string
-  onTeamCreated: (team: Team) => void
+  onTeamCreated: (team: ActiveTeamDetails) => void
 }
 
 const CreateTeamCard = (props: CreateTeamCardProps) => {
@@ -33,7 +33,7 @@ const CreateTeamCard = (props: CreateTeamCardProps) => {
 
       if (res.ok) {
         const json = await res.json()
-        const team = json as Team
+        const team = json as ActiveTeamDetails
 
         props.onTeamCreated(team)
       } else {

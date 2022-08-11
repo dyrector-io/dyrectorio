@@ -499,11 +499,9 @@ export const WS_TYPE_DEPLOYMENT_FINISHED = 'deployment-finished'
 
 // user
 
-export type Team = UserMetaTeam & {
-  users: User[]
-}
 
-export type UserRole = 'owner' | 'user'
+export const USER_ROLE_VALUES = ['owner', 'admin', 'user'] as const
+export type UserRole = typeof USER_ROLE_VALUES[number]
 
 export type UserStatus = 'pending' | 'verified'
 
@@ -541,12 +539,41 @@ export type UserMetaTeam = {
   name: string
 }
 
+// team
 export type SelectTeam = {
   id: string
 }
 
 export type CreateTeam = {
   name: string
+}
+export type UpdateTeam = CreateTeam
+
+export type TeamStatistics = {
+  users: number
+  products: number
+  nodes: number
+  versions: number
+  deployments: number
+}
+export const DEFAULT_TEAM_STATISTICS: TeamStatistics = {
+  users: 1,
+  products: 0,
+  nodes: 0,
+  versions: 0,
+  deployments: 0,
+}
+
+export type Team = UserMetaTeam & {
+  statistics: TeamStatistics
+}
+
+export type TeamDetails = Team & {
+  users: User[]
+}
+
+export type ActiveTeamDetails = UserMetaTeam & {
+  users: User[]
 }
 
 // auth
@@ -614,9 +641,11 @@ export type UserTraits = {
 export const roleToText = (role: UserRole) => {
   switch (role) {
     case 'owner':
-      return 'common:roleOwner'
-    case 'user':
-      return 'common:roleUser'
+      return 'common:role.owner'
+    case 'admin':
+      return 'common:role.admin'
+    default:
+      return 'common:role.user'
   }
 }
 
@@ -625,14 +654,8 @@ export const selectedTeamOf = (meta: UserMeta): UserMetaTeam => {
   return team
 }
 
-export const userCanEditTeam = (identity: Identity, team: Team): boolean => {
-  const user = team.users.find(it => it.id === identity.id)
-  if (!user) {
-    return false
-  }
-
-  return user.role === 'owner'
-}
+export const userIsAdmin = (user: User): boolean => user.role === 'owner' || user.role === 'admin'
+export const userIsOwner = (user: User): boolean => user.role === 'owner'
 
 export const nameOfIdentity = (identity: Identity): string => {
   const traits = identity.traits as IdentityTraits

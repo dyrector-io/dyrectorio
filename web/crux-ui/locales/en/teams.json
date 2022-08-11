@@ -1,6 +1,6 @@
 {
-    "title": "Teams",
-    "title-invite": "Team invitation",
+    "teamsName": "Teams - {{name}}",
+    "teamsNameInvite": "Teams - {{name}} - Invitation",
 
     "invite": "Invite",
     "send": "Send",
@@ -13,6 +13,11 @@
     "youHaveBeenInvited": "You have been invited to team {{name}}",
     "acceptSuccess": "You have successfully accepted the invitation to team {{name}}",
     
+    "promote": "promote",
+    "demote": "demote",
+
+    "confirmRoleAction": "You are going to {{action}} {{user}} to {{role}}.",
+        
     "errors": {
         "preconditionFailed": "Invitation link expired"
     }

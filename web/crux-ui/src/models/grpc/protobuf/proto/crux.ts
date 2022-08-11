@@ -25,6 +25,7 @@ export enum UserRole {
   UNKNOWN_USER_ROLE = 0,
   USER = 1,
   OWNER = 2,
+  ADMIN = 3,
   UNRECOGNIZED = -1,
 }
 
@@ -39,6 +40,9 @@ export function userRoleFromJSON(object: any): UserRole {
     case 2:
     case 'OWNER':
       return UserRole.OWNER
+    case 3:
+    case 'ADMIN':
+      return UserRole.ADMIN
     case -1:
     case 'UNRECOGNIZED':
     default:
@@ -54,6 +58,8 @@ export function userRoleToJSON(object: UserRole): string {
       return 'USER'
     case UserRole.OWNER:
       return 'OWNER'
+    case UserRole.ADMIN:
+      return 'ADMIN'
     default:
       return 'UNKNOWN'
   }
@@ -536,14 +542,29 @@ export interface CreateTeamRequest {
   name: string
 }
 
-export interface UpdateActiveTeamRequest {
+export interface UpdateTeamRequest {
+  id: string
   accessedBy: string
   name: string
 }
 
-export interface UserInviteRequest {
+export interface UpdateUserRoleInTeamRequest {
+  id: string
+  accessedBy: string
+  userId: string
+  role: UserRole
+}
+
+export interface InviteUserRequest {
+  id: string
   accessedBy: string
   email: string
+}
+
+export interface DeleteUserFromTeamRequest {
+  id: string
+  accessedBy: string
+  userId: string
 }
 
 export interface AccessRequest {
@@ -567,10 +588,35 @@ export interface TeamResponse {
   name: string
 }
 
-export interface TeamDetailsResponse {
+export interface ActiveTeamDetailsResponse {
   id: string
   name: string
   users: UserResponse[]
+}
+
+export interface TeamStatistics {
+  users: number
+  products: number
+  nodes: number
+  versions: number
+  deployments: number
+}
+
+export interface TeamWithStatsResponse {
+  id: string
+  name: string
+  statistics: TeamStatistics | undefined
+}
+
+export interface TeamDetailsResponse {
+  id: string
+  name: string
+  statistics: TeamStatistics | undefined
+  users: UserResponse[]
+}
+
+export interface AllTeamsResponse {
+  data: TeamWithStatsResponse[]
 }
 
 export interface UserResponse {
@@ -1613,10 +1659,13 @@ export const CreateTeamRequest = {
   },
 }
 
-const baseUpdateActiveTeamRequest: object = { accessedBy: '', name: '' }
+const baseUpdateTeamRequest: object = { id: '', accessedBy: '', name: '' }
 
-export const UpdateActiveTeamRequest = {
-  encode(message: UpdateActiveTeamRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+export const UpdateTeamRequest = {
+  encode(message: UpdateTeamRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== '') {
+      writer.uint32(10).string(message.id)
+    }
     if (message.accessedBy !== '') {
       writer.uint32(18).string(message.accessedBy)
     }
@@ -1626,15 +1675,16 @@ export const UpdateActiveTeamRequest = {
     return writer
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): UpdateActiveTeamRequest {
+  decode(input: _m0.Reader | Uint8Array, length?: number): UpdateTeamRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = {
-      ...baseUpdateActiveTeamRequest,
-    } as UpdateActiveTeamRequest
+    const message = { ...baseUpdateTeamRequest } as UpdateTeamRequest
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
+        case 1:
+          message.id = reader.string()
+          break
         case 2:
           message.accessedBy = reader.string()
           break
@@ -1649,36 +1699,123 @@ export const UpdateActiveTeamRequest = {
     return message
   },
 
-  fromJSON(object: any): UpdateActiveTeamRequest {
-    const message = {
-      ...baseUpdateActiveTeamRequest,
-    } as UpdateActiveTeamRequest
+  fromJSON(object: any): UpdateTeamRequest {
+    const message = { ...baseUpdateTeamRequest } as UpdateTeamRequest
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
     message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
     message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
     return message
   },
 
-  toJSON(message: UpdateActiveTeamRequest): unknown {
+  toJSON(message: UpdateTeamRequest): unknown {
     const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.name !== undefined && (obj.name = message.name)
     return obj
   },
 
-  fromPartial<I extends Exact<DeepPartial<UpdateActiveTeamRequest>, I>>(object: I): UpdateActiveTeamRequest {
-    const message = {
-      ...baseUpdateActiveTeamRequest,
-    } as UpdateActiveTeamRequest
+  fromPartial<I extends Exact<DeepPartial<UpdateTeamRequest>, I>>(object: I): UpdateTeamRequest {
+    const message = { ...baseUpdateTeamRequest } as UpdateTeamRequest
+    message.id = object.id ?? ''
     message.accessedBy = object.accessedBy ?? ''
     message.name = object.name ?? ''
     return message
   },
 }
 
-const baseUserInviteRequest: object = { accessedBy: '', email: '' }
+const baseUpdateUserRoleInTeamRequest: object = {
+  id: '',
+  accessedBy: '',
+  userId: '',
+  role: 0,
+}
 
-export const UserInviteRequest = {
-  encode(message: UserInviteRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+export const UpdateUserRoleInTeamRequest = {
+  encode(message: UpdateUserRoleInTeamRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== '') {
+      writer.uint32(10).string(message.id)
+    }
+    if (message.accessedBy !== '') {
+      writer.uint32(18).string(message.accessedBy)
+    }
+    if (message.userId !== '') {
+      writer.uint32(802).string(message.userId)
+    }
+    if (message.role !== 0) {
+      writer.uint32(808).int32(message.role)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): UpdateUserRoleInTeamRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = {
+      ...baseUpdateUserRoleInTeamRequest,
+    } as UpdateUserRoleInTeamRequest
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.id = reader.string()
+          break
+        case 2:
+          message.accessedBy = reader.string()
+          break
+        case 100:
+          message.userId = reader.string()
+          break
+        case 101:
+          message.role = reader.int32() as any
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): UpdateUserRoleInTeamRequest {
+    const message = {
+      ...baseUpdateUserRoleInTeamRequest,
+    } as UpdateUserRoleInTeamRequest
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.userId = object.userId !== undefined && object.userId !== null ? String(object.userId) : ''
+    message.role = object.role !== undefined && object.role !== null ? userRoleFromJSON(object.role) : 0
+    return message
+  },
+
+  toJSON(message: UpdateUserRoleInTeamRequest): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
+    message.userId !== undefined && (obj.userId = message.userId)
+    message.role !== undefined && (obj.role = userRoleToJSON(message.role))
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<UpdateUserRoleInTeamRequest>, I>>(object: I): UpdateUserRoleInTeamRequest {
+    const message = {
+      ...baseUpdateUserRoleInTeamRequest,
+    } as UpdateUserRoleInTeamRequest
+    message.id = object.id ?? ''
+    message.accessedBy = object.accessedBy ?? ''
+    message.userId = object.userId ?? ''
+    message.role = object.role ?? 0
+    return message
+  },
+}
+
+const baseInviteUserRequest: object = { id: '', accessedBy: '', email: '' }
+
+export const InviteUserRequest = {
+  encode(message: InviteUserRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== '') {
+      writer.uint32(10).string(message.id)
+    }
     if (message.accessedBy !== '') {
       writer.uint32(18).string(message.accessedBy)
     }
@@ -1688,13 +1825,16 @@ export const UserInviteRequest = {
     return writer
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): UserInviteRequest {
+  decode(input: _m0.Reader | Uint8Array, length?: number): InviteUserRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = { ...baseUserInviteRequest } as UserInviteRequest
+    const message = { ...baseInviteUserRequest } as InviteUserRequest
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
+        case 1:
+          message.id = reader.string()
+          break
         case 2:
           message.accessedBy = reader.string()
           break
@@ -1709,24 +1849,102 @@ export const UserInviteRequest = {
     return message
   },
 
-  fromJSON(object: any): UserInviteRequest {
-    const message = { ...baseUserInviteRequest } as UserInviteRequest
+  fromJSON(object: any): InviteUserRequest {
+    const message = { ...baseInviteUserRequest } as InviteUserRequest
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
     message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
     message.email = object.email !== undefined && object.email !== null ? String(object.email) : ''
     return message
   },
 
-  toJSON(message: UserInviteRequest): unknown {
+  toJSON(message: InviteUserRequest): unknown {
     const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.email !== undefined && (obj.email = message.email)
     return obj
   },
 
-  fromPartial<I extends Exact<DeepPartial<UserInviteRequest>, I>>(object: I): UserInviteRequest {
-    const message = { ...baseUserInviteRequest } as UserInviteRequest
+  fromPartial<I extends Exact<DeepPartial<InviteUserRequest>, I>>(object: I): InviteUserRequest {
+    const message = { ...baseInviteUserRequest } as InviteUserRequest
+    message.id = object.id ?? ''
     message.accessedBy = object.accessedBy ?? ''
     message.email = object.email ?? ''
+    return message
+  },
+}
+
+const baseDeleteUserFromTeamRequest: object = {
+  id: '',
+  accessedBy: '',
+  userId: '',
+}
+
+export const DeleteUserFromTeamRequest = {
+  encode(message: DeleteUserFromTeamRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== '') {
+      writer.uint32(10).string(message.id)
+    }
+    if (message.accessedBy !== '') {
+      writer.uint32(18).string(message.accessedBy)
+    }
+    if (message.userId !== '') {
+      writer.uint32(802).string(message.userId)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): DeleteUserFromTeamRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = {
+      ...baseDeleteUserFromTeamRequest,
+    } as DeleteUserFromTeamRequest
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.id = reader.string()
+          break
+        case 2:
+          message.accessedBy = reader.string()
+          break
+        case 100:
+          message.userId = reader.string()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): DeleteUserFromTeamRequest {
+    const message = {
+      ...baseDeleteUserFromTeamRequest,
+    } as DeleteUserFromTeamRequest
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.userId = object.userId !== undefined && object.userId !== null ? String(object.userId) : ''
+    return message
+  },
+
+  toJSON(message: DeleteUserFromTeamRequest): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
+    message.userId !== undefined && (obj.userId = message.userId)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<DeleteUserFromTeamRequest>, I>>(object: I): DeleteUserFromTeamRequest {
+    const message = {
+      ...baseDeleteUserFromTeamRequest,
+    } as DeleteUserFromTeamRequest
+    message.id = object.id ?? ''
+    message.accessedBy = object.accessedBy ?? ''
+    message.userId = object.userId ?? ''
     return message
   },
 }
@@ -1976,10 +2194,10 @@ export const TeamResponse = {
   },
 }
 
-const baseTeamDetailsResponse: object = { id: '', name: '' }
+const baseActiveTeamDetailsResponse: object = { id: '', name: '' }
 
-export const TeamDetailsResponse = {
-  encode(message: TeamDetailsResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+export const ActiveTeamDetailsResponse = {
+  encode(message: ActiveTeamDetailsResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== '') {
       writer.uint32(10).string(message.id)
     }
@@ -1992,10 +2210,12 @@ export const TeamDetailsResponse = {
     return writer
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): TeamDetailsResponse {
+  decode(input: _m0.Reader | Uint8Array, length?: number): ActiveTeamDetailsResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = { ...baseTeamDetailsResponse } as TeamDetailsResponse
+    const message = {
+      ...baseActiveTeamDetailsResponse,
+    } as ActiveTeamDetailsResponse
     message.users = []
     while (reader.pos < end) {
       const tag = reader.uint32()
@@ -2017,10 +2237,256 @@ export const TeamDetailsResponse = {
     return message
   },
 
+  fromJSON(object: any): ActiveTeamDetailsResponse {
+    const message = {
+      ...baseActiveTeamDetailsResponse,
+    } as ActiveTeamDetailsResponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.users = (object.users ?? []).map((e: any) => UserResponse.fromJSON(e))
+    return message
+  },
+
+  toJSON(message: ActiveTeamDetailsResponse): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.name !== undefined && (obj.name = message.name)
+    if (message.users) {
+      obj.users = message.users.map(e => (e ? UserResponse.toJSON(e) : undefined))
+    } else {
+      obj.users = []
+    }
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<ActiveTeamDetailsResponse>, I>>(object: I): ActiveTeamDetailsResponse {
+    const message = {
+      ...baseActiveTeamDetailsResponse,
+    } as ActiveTeamDetailsResponse
+    message.id = object.id ?? ''
+    message.name = object.name ?? ''
+    message.users = object.users?.map(e => UserResponse.fromPartial(e)) || []
+    return message
+  },
+}
+
+const baseTeamStatistics: object = {
+  users: 0,
+  products: 0,
+  nodes: 0,
+  versions: 0,
+  deployments: 0,
+}
+
+export const TeamStatistics = {
+  encode(message: TeamStatistics, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.users !== 0) {
+      writer.uint32(800).uint32(message.users)
+    }
+    if (message.products !== 0) {
+      writer.uint32(808).uint32(message.products)
+    }
+    if (message.nodes !== 0) {
+      writer.uint32(816).uint32(message.nodes)
+    }
+    if (message.versions !== 0) {
+      writer.uint32(824).uint32(message.versions)
+    }
+    if (message.deployments !== 0) {
+      writer.uint32(832).uint32(message.deployments)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): TeamStatistics {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = { ...baseTeamStatistics } as TeamStatistics
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 100:
+          message.users = reader.uint32()
+          break
+        case 101:
+          message.products = reader.uint32()
+          break
+        case 102:
+          message.nodes = reader.uint32()
+          break
+        case 103:
+          message.versions = reader.uint32()
+          break
+        case 104:
+          message.deployments = reader.uint32()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): TeamStatistics {
+    const message = { ...baseTeamStatistics } as TeamStatistics
+    message.users = object.users !== undefined && object.users !== null ? Number(object.users) : 0
+    message.products = object.products !== undefined && object.products !== null ? Number(object.products) : 0
+    message.nodes = object.nodes !== undefined && object.nodes !== null ? Number(object.nodes) : 0
+    message.versions = object.versions !== undefined && object.versions !== null ? Number(object.versions) : 0
+    message.deployments =
+      object.deployments !== undefined && object.deployments !== null ? Number(object.deployments) : 0
+    return message
+  },
+
+  toJSON(message: TeamStatistics): unknown {
+    const obj: any = {}
+    message.users !== undefined && (obj.users = Math.round(message.users))
+    message.products !== undefined && (obj.products = Math.round(message.products))
+    message.nodes !== undefined && (obj.nodes = Math.round(message.nodes))
+    message.versions !== undefined && (obj.versions = Math.round(message.versions))
+    message.deployments !== undefined && (obj.deployments = Math.round(message.deployments))
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<TeamStatistics>, I>>(object: I): TeamStatistics {
+    const message = { ...baseTeamStatistics } as TeamStatistics
+    message.users = object.users ?? 0
+    message.products = object.products ?? 0
+    message.nodes = object.nodes ?? 0
+    message.versions = object.versions ?? 0
+    message.deployments = object.deployments ?? 0
+    return message
+  },
+}
+
+const baseTeamWithStatsResponse: object = { id: '', name: '' }
+
+export const TeamWithStatsResponse = {
+  encode(message: TeamWithStatsResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== '') {
+      writer.uint32(10).string(message.id)
+    }
+    if (message.name !== '') {
+      writer.uint32(802).string(message.name)
+    }
+    if (message.statistics !== undefined) {
+      TeamStatistics.encode(message.statistics, writer.uint32(810).fork()).ldelim()
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): TeamWithStatsResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = { ...baseTeamWithStatsResponse } as TeamWithStatsResponse
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.id = reader.string()
+          break
+        case 100:
+          message.name = reader.string()
+          break
+        case 101:
+          message.statistics = TeamStatistics.decode(reader, reader.uint32())
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): TeamWithStatsResponse {
+    const message = { ...baseTeamWithStatsResponse } as TeamWithStatsResponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.statistics =
+      object.statistics !== undefined && object.statistics !== null
+        ? TeamStatistics.fromJSON(object.statistics)
+        : undefined
+    return message
+  },
+
+  toJSON(message: TeamWithStatsResponse): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.name !== undefined && (obj.name = message.name)
+    message.statistics !== undefined &&
+      (obj.statistics = message.statistics ? TeamStatistics.toJSON(message.statistics) : undefined)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<TeamWithStatsResponse>, I>>(object: I): TeamWithStatsResponse {
+    const message = { ...baseTeamWithStatsResponse } as TeamWithStatsResponse
+    message.id = object.id ?? ''
+    message.name = object.name ?? ''
+    message.statistics =
+      object.statistics !== undefined && object.statistics !== null
+        ? TeamStatistics.fromPartial(object.statistics)
+        : undefined
+    return message
+  },
+}
+
+const baseTeamDetailsResponse: object = { id: '', name: '' }
+
+export const TeamDetailsResponse = {
+  encode(message: TeamDetailsResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== '') {
+      writer.uint32(10).string(message.id)
+    }
+    if (message.name !== '') {
+      writer.uint32(802).string(message.name)
+    }
+    if (message.statistics !== undefined) {
+      TeamStatistics.encode(message.statistics, writer.uint32(810).fork()).ldelim()
+    }
+    for (const v of message.users) {
+      UserResponse.encode(v!, writer.uint32(8002).fork()).ldelim()
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): TeamDetailsResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = { ...baseTeamDetailsResponse } as TeamDetailsResponse
+    message.users = []
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.id = reader.string()
+          break
+        case 100:
+          message.name = reader.string()
+          break
+        case 101:
+          message.statistics = TeamStatistics.decode(reader, reader.uint32())
+          break
+        case 1000:
+          message.users.push(UserResponse.decode(reader, reader.uint32()))
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
   fromJSON(object: any): TeamDetailsResponse {
     const message = { ...baseTeamDetailsResponse } as TeamDetailsResponse
     message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
     message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.statistics =
+      object.statistics !== undefined && object.statistics !== null
+        ? TeamStatistics.fromJSON(object.statistics)
+        : undefined
     message.users = (object.users ?? []).map((e: any) => UserResponse.fromJSON(e))
     return message
   },
@@ -2029,6 +2495,8 @@ export const TeamDetailsResponse = {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
     message.name !== undefined && (obj.name = message.name)
+    message.statistics !== undefined &&
+      (obj.statistics = message.statistics ? TeamStatistics.toJSON(message.statistics) : undefined)
     if (message.users) {
       obj.users = message.users.map(e => (e ? UserResponse.toJSON(e) : undefined))
     } else {
@@ -2041,7 +2509,63 @@ export const TeamDetailsResponse = {
     const message = { ...baseTeamDetailsResponse } as TeamDetailsResponse
     message.id = object.id ?? ''
     message.name = object.name ?? ''
+    message.statistics =
+      object.statistics !== undefined && object.statistics !== null
+        ? TeamStatistics.fromPartial(object.statistics)
+        : undefined
     message.users = object.users?.map(e => UserResponse.fromPartial(e)) || []
+    return message
+  },
+}
+
+const baseAllTeamsResponse: object = {}
+
+export const AllTeamsResponse = {
+  encode(message: AllTeamsResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    for (const v of message.data) {
+      TeamWithStatsResponse.encode(v!, writer.uint32(8002).fork()).ldelim()
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): AllTeamsResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = { ...baseAllTeamsResponse } as AllTeamsResponse
+    message.data = []
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1000:
+          message.data.push(TeamWithStatsResponse.decode(reader, reader.uint32()))
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): AllTeamsResponse {
+    const message = { ...baseAllTeamsResponse } as AllTeamsResponse
+    message.data = (object.data ?? []).map((e: any) => TeamWithStatsResponse.fromJSON(e))
+    return message
+  },
+
+  toJSON(message: AllTeamsResponse): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? TeamWithStatsResponse.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<AllTeamsResponse>, I>>(object: I): AllTeamsResponse {
+    const message = { ...baseAllTeamsResponse } as AllTeamsResponse
+    message.data = object.data?.map(e => TeamWithStatsResponse.fromPartial(e)) || []
     return message
   },
 }
@@ -8722,42 +9246,54 @@ export const CruxTeamService = {
     responseStream: false,
     requestSerialize: (value: AccessRequest) => Buffer.from(AccessRequest.encode(value).finish()),
     requestDeserialize: (value: Buffer) => AccessRequest.decode(value),
-    responseSerialize: (value: TeamDetailsResponse) => Buffer.from(TeamDetailsResponse.encode(value).finish()),
-    responseDeserialize: (value: Buffer) => TeamDetailsResponse.decode(value),
+    responseSerialize: (value: ActiveTeamDetailsResponse) =>
+      Buffer.from(ActiveTeamDetailsResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => ActiveTeamDetailsResponse.decode(value),
   },
-  updateActiveTeam: {
-    path: '/crux.CruxTeam/UpdateActiveTeam',
+  updateTeam: {
+    path: '/crux.CruxTeam/UpdateTeam',
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: UpdateActiveTeamRequest) => Buffer.from(UpdateActiveTeamRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => UpdateActiveTeamRequest.decode(value),
+    requestSerialize: (value: UpdateTeamRequest) => Buffer.from(UpdateTeamRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => UpdateTeamRequest.decode(value),
     responseSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
     responseDeserialize: (value: Buffer) => Empty.decode(value),
   },
-  deleteActiveTeam: {
-    path: '/crux.CruxTeam/DeleteActiveTeam',
-    requestStream: false,
-    responseStream: false,
-    requestSerialize: (value: AccessRequest) => Buffer.from(AccessRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => AccessRequest.decode(value),
-    responseSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
-    responseDeserialize: (value: Buffer) => Empty.decode(value),
-  },
-  inviteUserToTheActiveTeam: {
-    path: '/crux.CruxTeam/InviteUserToTheActiveTeam',
-    requestStream: false,
-    responseStream: false,
-    requestSerialize: (value: UserInviteRequest) => Buffer.from(UserInviteRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => UserInviteRequest.decode(value),
-    responseSerialize: (value: CreateEntityResponse) => Buffer.from(CreateEntityResponse.encode(value).finish()),
-    responseDeserialize: (value: Buffer) => CreateEntityResponse.decode(value),
-  },
-  deleteUserFromTheActiveTeam: {
-    path: '/crux.CruxTeam/DeleteUserFromTheActiveTeam',
+  deleteTeam: {
+    path: '/crux.CruxTeam/DeleteTeam',
     requestStream: false,
     responseStream: false,
     requestSerialize: (value: IdRequest) => Buffer.from(IdRequest.encode(value).finish()),
     requestDeserialize: (value: Buffer) => IdRequest.decode(value),
+    responseSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => Empty.decode(value),
+  },
+  updateUserRole: {
+    path: '/crux.CruxTeam/UpdateUserRole',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: UpdateUserRoleInTeamRequest) =>
+      Buffer.from(UpdateUserRoleInTeamRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => UpdateUserRoleInTeamRequest.decode(value),
+    responseSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => Empty.decode(value),
+  },
+  inviteUserToTeam: {
+    path: '/crux.CruxTeam/InviteUserToTeam',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: InviteUserRequest) => Buffer.from(InviteUserRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => InviteUserRequest.decode(value),
+    responseSerialize: (value: CreateEntityResponse) => Buffer.from(CreateEntityResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => CreateEntityResponse.decode(value),
+  },
+  deleteUserFromTeam: {
+    path: '/crux.CruxTeam/DeleteUserFromTeam',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: DeleteUserFromTeamRequest) =>
+      Buffer.from(DeleteUserFromTeamRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => DeleteUserFromTeamRequest.decode(value),
     responseSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
     responseDeserialize: (value: Buffer) => Empty.decode(value),
   },
@@ -8788,18 +9324,39 @@ export const CruxTeamService = {
     responseSerialize: (value: UserMetaResponse) => Buffer.from(UserMetaResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer) => UserMetaResponse.decode(value),
   },
+  getAllTeams: {
+    path: '/crux.CruxTeam/GetAllTeams',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: AccessRequest) => Buffer.from(AccessRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => AccessRequest.decode(value),
+    responseSerialize: (value: AllTeamsResponse) => Buffer.from(AllTeamsResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => AllTeamsResponse.decode(value),
+  },
+  getTeamById: {
+    path: '/crux.CruxTeam/GetTeamById',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: IdRequest) => Buffer.from(IdRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => IdRequest.decode(value),
+    responseSerialize: (value: TeamDetailsResponse) => Buffer.from(TeamDetailsResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => TeamDetailsResponse.decode(value),
+  },
 } as const
 
 export interface CruxTeamServer extends UntypedServiceImplementation {
   createTeam: handleUnaryCall<CreateTeamRequest, CreateEntityResponse>
-  getActiveTeamByUser: handleUnaryCall<AccessRequest, TeamDetailsResponse>
-  updateActiveTeam: handleUnaryCall<UpdateActiveTeamRequest, Empty>
-  deleteActiveTeam: handleUnaryCall<AccessRequest, Empty>
-  inviteUserToTheActiveTeam: handleUnaryCall<UserInviteRequest, CreateEntityResponse>
-  deleteUserFromTheActiveTeam: handleUnaryCall<IdRequest, Empty>
+  getActiveTeamByUser: handleUnaryCall<AccessRequest, ActiveTeamDetailsResponse>
+  updateTeam: handleUnaryCall<UpdateTeamRequest, Empty>
+  deleteTeam: handleUnaryCall<IdRequest, Empty>
+  updateUserRole: handleUnaryCall<UpdateUserRoleInTeamRequest, Empty>
+  inviteUserToTeam: handleUnaryCall<InviteUserRequest, CreateEntityResponse>
+  deleteUserFromTeam: handleUnaryCall<DeleteUserFromTeamRequest, Empty>
   acceptTeamInvite: handleUnaryCall<IdRequest, Empty>
   selectTeam: handleUnaryCall<IdRequest, Empty>
   getUserMeta: handleUnaryCall<AccessRequest, UserMetaResponse>
+  getAllTeams: handleUnaryCall<AccessRequest, AllTeamsResponse>
+  getTeamById: handleUnaryCall<IdRequest, TeamDetailsResponse>
 }
 
 export interface CruxTeamClient extends Client {
@@ -8820,75 +9377,87 @@ export interface CruxTeamClient extends Client {
   ): ClientUnaryCall
   getActiveTeamByUser(
     request: AccessRequest,
-    callback: (error: ServiceError | null, response: TeamDetailsResponse) => void,
+    callback: (error: ServiceError | null, response: ActiveTeamDetailsResponse) => void,
   ): ClientUnaryCall
   getActiveTeamByUser(
     request: AccessRequest,
     metadata: Metadata,
-    callback: (error: ServiceError | null, response: TeamDetailsResponse) => void,
+    callback: (error: ServiceError | null, response: ActiveTeamDetailsResponse) => void,
   ): ClientUnaryCall
   getActiveTeamByUser(
     request: AccessRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: TeamDetailsResponse) => void,
+    callback: (error: ServiceError | null, response: ActiveTeamDetailsResponse) => void,
   ): ClientUnaryCall
-  updateActiveTeam(
-    request: UpdateActiveTeamRequest,
+  updateTeam(
+    request: UpdateTeamRequest,
     callback: (error: ServiceError | null, response: Empty) => void,
   ): ClientUnaryCall
-  updateActiveTeam(
-    request: UpdateActiveTeamRequest,
+  updateTeam(
+    request: UpdateTeamRequest,
     metadata: Metadata,
     callback: (error: ServiceError | null, response: Empty) => void,
   ): ClientUnaryCall
-  updateActiveTeam(
-    request: UpdateActiveTeamRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: Empty) => void,
-  ): ClientUnaryCall
-  deleteActiveTeam(
-    request: AccessRequest,
-    callback: (error: ServiceError | null, response: Empty) => void,
-  ): ClientUnaryCall
-  deleteActiveTeam(
-    request: AccessRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: Empty) => void,
-  ): ClientUnaryCall
-  deleteActiveTeam(
-    request: AccessRequest,
+  updateTeam(
+    request: UpdateTeamRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: Empty) => void,
   ): ClientUnaryCall
-  inviteUserToTheActiveTeam(
-    request: UserInviteRequest,
+  deleteTeam(request: IdRequest, callback: (error: ServiceError | null, response: Empty) => void): ClientUnaryCall
+  deleteTeam(
+    request: IdRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: Empty) => void,
+  ): ClientUnaryCall
+  deleteTeam(
+    request: IdRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: Empty) => void,
+  ): ClientUnaryCall
+  updateUserRole(
+    request: UpdateUserRoleInTeamRequest,
+    callback: (error: ServiceError | null, response: Empty) => void,
+  ): ClientUnaryCall
+  updateUserRole(
+    request: UpdateUserRoleInTeamRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: Empty) => void,
+  ): ClientUnaryCall
+  updateUserRole(
+    request: UpdateUserRoleInTeamRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: Empty) => void,
+  ): ClientUnaryCall
+  inviteUserToTeam(
+    request: InviteUserRequest,
     callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
   ): ClientUnaryCall
-  inviteUserToTheActiveTeam(
-    request: UserInviteRequest,
+  inviteUserToTeam(
+    request: InviteUserRequest,
     metadata: Metadata,
     callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
   ): ClientUnaryCall
-  inviteUserToTheActiveTeam(
-    request: UserInviteRequest,
+  inviteUserToTeam(
+    request: InviteUserRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
   ): ClientUnaryCall
-  deleteUserFromTheActiveTeam(
-    request: IdRequest,
+  deleteUserFromTeam(
+    request: DeleteUserFromTeamRequest,
     callback: (error: ServiceError | null, response: Empty) => void,
   ): ClientUnaryCall
-  deleteUserFromTheActiveTeam(
-    request: IdRequest,
+  deleteUserFromTeam(
+    request: DeleteUserFromTeamRequest,
     metadata: Metadata,
     callback: (error: ServiceError | null, response: Empty) => void,
   ): ClientUnaryCall
-  deleteUserFromTheActiveTeam(
-    request: IdRequest,
+  deleteUserFromTeam(
+    request: DeleteUserFromTeamRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: Empty) => void,
@@ -8931,6 +9500,36 @@ export interface CruxTeamClient extends Client {
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: UserMetaResponse) => void,
+  ): ClientUnaryCall
+  getAllTeams(
+    request: AccessRequest,
+    callback: (error: ServiceError | null, response: AllTeamsResponse) => void,
+  ): ClientUnaryCall
+  getAllTeams(
+    request: AccessRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: AllTeamsResponse) => void,
+  ): ClientUnaryCall
+  getAllTeams(
+    request: AccessRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: AllTeamsResponse) => void,
+  ): ClientUnaryCall
+  getTeamById(
+    request: IdRequest,
+    callback: (error: ServiceError | null, response: TeamDetailsResponse) => void,
+  ): ClientUnaryCall
+  getTeamById(
+    request: IdRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: TeamDetailsResponse) => void,
+  ): ClientUnaryCall
+  getTeamById(
+    request: IdRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: TeamDetailsResponse) => void,
   ): ClientUnaryCall
 }
 

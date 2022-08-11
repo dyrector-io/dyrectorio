@@ -6,7 +6,7 @@ export const usersOnTeam = [
   {
       userId: constants.USER_ID,
       teamId: constants.TEAM_ID,
-      owner: true,
+      role: 'owner',
       active: true
   },
 ] as UsersOnTeams[]

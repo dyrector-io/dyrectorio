@@ -1,4 +1,4 @@
-import { Layout, PageHead } from '@app/components/layout'
+import { Layout } from '@app/components/layout'
 import EditRegistryCard from '@app/components/registries/edit-registry-card'
 import RegistryCard from '@app/components/registries/registry-card'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
@@ -48,16 +48,15 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
   }
 
   const pageLink: BreadcrumbLink = {
-    name: t('common:registry'),
+    name: t('common:registries'),
     url: ROUTE_REGISTRIES,
   }
 
   return (
-    <Layout>
-      <PageHead title={t('title-registry', { name: registry.name })} />
+    <Layout title={t('registriesName', registry)}>
       <PageHeading
         pageLink={pageLink}
-        subLinks={[
+        sublinks={[
           {
             name: registry.name,
             url: registryUrl(registry.id),

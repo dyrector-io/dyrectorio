@@ -13,6 +13,7 @@
     "/auth/settings/edit-profile": ["settings"],
     "/auth/settings/change-password": ["settings"],
     "/auth/verify": ["verify"],
+    "/auth/invite": ["invite"],
     "/products": ["products"],
     "/products/[productId]": ["products", "versions", "images"],
     "/products/[productId]/versions/[versionId]": ["versions", "images"],
@@ -22,9 +23,10 @@
     "/nodes/[nodeId]": ["nodes"],
     "/registries": ["registries"],
     "/registries/[registryId]": ["registries"],
-    "/teams/active": ["teams"],
-    "/teams/audit-log": ["audit"],
+    "/teams": ["teams"],
+    "/teams/[teamId]": ["teams"],
     "/teams/create": ["teams"],
-    "/teams/[teamId]/invite": ["teams"]
+    "/teams/[teamId]/invite": ["teams"],
+    "/audit-log": ["audit"]
   }
 }

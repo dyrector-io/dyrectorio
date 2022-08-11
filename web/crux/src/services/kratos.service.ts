@@ -11,9 +11,9 @@ export class KratosService {
     return identities.data.find(user => user.traits[EMAIL] === email)
   }
 
-  async getIdentitiesByIds(ids: string[]): Promise<Identity[]> {
+  async getIdentitiesByIds(ids: string[]): Promise<Map<string, Identity>> {
     const identities = await kratos.adminListIdentities()
-    return identities.data.filter(it => ids.includes(it.id))
+    return new Map(identities.data.filter(it => ids.includes(it.id)).map(it => [it.id, it]))
   }
 
   async getSessionsById(id: string, activeOnly?: boolean): Promise<Session[]> {

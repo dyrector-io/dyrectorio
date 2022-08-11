@@ -1,4 +1,4 @@
-import { Layout, PageHead } from '@app/components/layout'
+import { Layout } from '@app/components/layout'
 import EditProductCard from '@app/components/products/edit-product-card'
 import ProductCard from '@app/components/products/product-card'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
@@ -63,15 +63,14 @@ const ProductsPage = (props: ProductsPageProps) => {
   }
 
   const pageLink: BreadcrumbLink = {
-    name: t('common:product'),
+  name: t('common:products'),
     url: ROUTE_PRODUCTS,
   }
 
   const onNavigateToDetails = (id: string) => router.push(productUrl(id))
 
   return (
-    <Layout>
-      <PageHead title={t('title')} />
+    <Layout title={t('common:products')}>
       <PageHeading pageLink={pageLink}>
         <ListPageMenu creating={creating} setCreating={setCreating} submitRef={submitRef} />
       </PageHeading>

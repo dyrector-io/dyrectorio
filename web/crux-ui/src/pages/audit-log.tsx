@@ -1,4 +1,4 @@
-import { Layout, PageHead } from '@app/components/layout'
+import { Layout } from '@app/components/layout'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
 import JsonEditor from '@app/components/shared/json-editor-dynamic-module'
@@ -9,7 +9,7 @@ import { DyoList } from '@app/elements/dyo-list'
 import DyoModal from '@app/elements/dyo-modal'
 import { DateRangeFilter, dateRangeFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import { AuditLog, beautifyAuditLogEvent } from '@app/models'
-import { ROUTE_TEAMS_AUDIT } from '@app/routes'
+import { ROUTE_AUDIT } from '@app/routes'
 import { utcDateToLocale, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import clsx from 'clsx'
@@ -60,7 +60,7 @@ const AuditLogPage = (props: AuditLogPageProps) => {
 
   const selfLink: BreadcrumbLink = {
     name: t('common:audit'),
-    url: ROUTE_TEAMS_AUDIT,
+    url: ROUTE_AUDIT,
   }
 
   const listHeaders = ['common:name', 'common:date', 'event', 'info'].map(it => t(it))
@@ -72,8 +72,7 @@ const AuditLogPage = (props: AuditLogPageProps) => {
   ]
 
   return (
-    <Layout>
-      <PageHead title={t('title')} />
+    <Layout title={t('common:auditLog')}>
       <PageHeading pageLink={selfLink} />
 
       <Filters setTextFilter={it => filters.setFilter({ text: it })}>

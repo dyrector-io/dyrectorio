@@ -1,8 +1,9 @@
-import { Layout, PageHead } from '@app/components/layout'
+import { Layout } from '@app/components/layout'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { ListPageMenu, ListPageMenuTexts } from '@app/components/shared/page-menu'
 import InviteUserCard from '@app/components/team/invite-user-card'
+import UserRoleAction from '@app/components/team/user-role-action'
 import UserStatusTag from '@app/components/team/user-status-tag'
 import { DyoButton } from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
@@ -10,8 +11,8 @@ import { DyoList } from '@app/elements/dyo-list'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
-import { roleToText, Team, User, userCanEditTeam } from '@app/models'
-import { API_TEAMS_ACTIVE, ROUTE_INDEX, ROUTE_TEAMS_ACTIVE, teamsActiveUserApiUrl } from '@app/routes'
+import { ActiveTeamDetails, roleToText, TeamDetails, User, userIsAdmin, userIsOwner, UserRole } from '@app/models'
+import { ROUTE_INDEX, ROUTE_TEAMS, teamApiUrl, teamUrl, userApiUrl } from '@app/routes'
 import { redirectTo, withContextAuthorization } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
 import { cruxFromContext } from '@server/crux/crux'
@@ -23,23 +24,24 @@ import Image from 'next/image'
 import { useRouter } from 'next/router'
 import { useRef, useState } from 'react'
 
-interface ActiveTeamPageProps {
+interface TeamDetailsPageProps {
   me: Identity
-  team: Team
+  team: TeamDetails
 }
 
-const ActiveTeamPage = (props: ActiveTeamPageProps) => {
+const TeamDetailsPage = (props: TeamDetailsPageProps) => {
   const { t } = useTranslation('teams')
 
   const router = useRouter()
 
   const { me, team } = props
 
-  const canEdit = userCanEditTeam(me, team)
+  const actor = team.users.find(it => it.id === me.id)
+  const canEdit = userIsAdmin(actor)
+  const canDelete = userIsOwner(actor)
 
   const [users, setUsers] = useState(team.users)
   const [inviting, setInviting] = useState(false)
-  const [deleteTarget, setDeleteTarget] = useState('')
   const [deleteModalConfig, confirmDelete] = useConfirmation()
 
   const submitRef = useRef<() => Promise<any>>()
@@ -47,7 +49,7 @@ const ActiveTeamPage = (props: ActiveTeamPageProps) => {
   const handleApiError = defaultApiErrorHandler(t)
 
   const sendDeleteUserRequest = async (user: User) => {
-    const res = await fetch(teamsActiveUserApiUrl(user.id), {
+    const res = await fetch(userApiUrl(team.id, user.id), {
       method: 'DELETE',
     })
 
@@ -59,7 +61,7 @@ const ActiveTeamPage = (props: ActiveTeamPageProps) => {
   }
 
   const sendDeleteTeamRequest = async () => {
-    const res = await fetch(API_TEAMS_ACTIVE, {
+    const res = await fetch(teamApiUrl(team.id), {
       method: 'DELETE',
     })
 
@@ -75,23 +77,38 @@ const ActiveTeamPage = (props: ActiveTeamPageProps) => {
     setUsers([...users, user])
   }
 
-  const onDeleteUser = (user: User) => {
-    setDeleteTarget(user.name)
-    confirmDelete(
-      () => sendDeleteUserRequest(user),
-      () => setDeleteTarget(''),
-    )
-  }
+  const onDeleteUser = (user: User) =>
+    confirmDelete(() => sendDeleteUserRequest(user), {
+      title: t('common:confirmDelete', { name: user.name }),
+    })
 
-  const onDeleteTeam = () => {
-    setDeleteTarget(team.name)
-    confirmDelete(sendDeleteTeamRequest, () => setDeleteTarget(''))
+  const onDeleteTeam = () =>
+    confirmDelete(sendDeleteTeamRequest, {
+      title: t('common:confirmDelete', { name: team.name }),
+    })
+
+  const onUserRoleUpdated = (userId: string, role: UserRole) => {
+    const index = users.findIndex(it => it.id === userId)
+    if (index < 0) {
+      return
+    }
+
+    const newUsers = [...users]
+    newUsers[index].role = role
+    setUsers(newUsers)
   }
 
   const selfLink: BreadcrumbLink = {
-    name: t('common:team'),
-    url: ROUTE_TEAMS_ACTIVE,
+    name: t('common:teams'),
+    url: ROUTE_TEAMS,
   }
+
+  const sublinks: BreadcrumbLink[] = [
+    {
+      name: team.name,
+      url: teamUrl(team.id),
+    },
+  ]
 
   const listHeaders = [...['common:name', 'common:email', 'role', 'common:status'].map(it => t(it)), '']
   const defaultHeaderClass = 'uppercase text-bright text-sm font-bold bg-medium-eased pl-2 py-3 h-11'
@@ -107,14 +124,13 @@ const ActiveTeamPage = (props: ActiveTeamPageProps) => {
   }
 
   return (
-    <Layout>
-      <PageHead title={t('title')} />
-      <PageHeading pageLink={selfLink}>
+    <Layout title={t('teamsName', team)}>
+      <PageHeading pageLink={selfLink} sublinks={sublinks}>
         {!canEdit ? null : (
           <>
             <ListPageMenu texts={pageMenuTexts} creating={inviting} setCreating={setInviting} submitRef={submitRef} />
 
-            {inviting ? null : (
+            {inviting ? null : !canDelete ? null : (
               <DyoButton className="ml-4 px-4" color="bg-error-red" onClick={() => onDeleteTeam()}>
                 {t('common:delete')}
               </DyoButton>
@@ -139,7 +155,17 @@ const ActiveTeamPage = (props: ActiveTeamPageProps) => {
             return [
               <div className="font-semibold ml-14 py-1 h-8">{it.name}</div>,
               <div>{it.email}</div>,
-              <div>{t(roleToText(it.role))}</div>,
+              <div className="flex flex-row">
+                <span>{t(roleToText(it.role))}</span>
+                {!canEdit || it.status !== 'verified' ? null : (
+                  <UserRoleAction
+                    className="flex ml-2"
+                    teamId={team.id}
+                    user={it}
+                    onRoleUpdated={role => onUserRoleUpdated(it.id, role)}
+                  />
+                )}
+              </div>,
               <UserStatusTag className="my-auto w-fit" status={it.status} />,
               inviting || !canEdit || it.role === 'owner' ? null : (
                 <Image
@@ -159,7 +185,7 @@ const ActiveTeamPage = (props: ActiveTeamPageProps) => {
 
       <DyoConfirmationModal
         config={deleteModalConfig}
-        title={t('common:confirmDelete', { name: deleteTarget })}
+        title={t('common:confirmDelete')}
         confirmText={t('common:delete')}
         className="w-1/4"
         confirmColor="bg-error-red"
@@ -168,12 +194,14 @@ const ActiveTeamPage = (props: ActiveTeamPageProps) => {
   )
 }
 
-export default ActiveTeamPage
+export default TeamDetailsPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
-  const team = await cruxFromContext(context).teams.getActiveTeam()
+  const teamId = context.query.teamId as string
+
+  const team = await cruxFromContext(context).teams.getTeamById(teamId)
   if (!team) {
-    return redirectTo(ROUTE_INDEX)
+    return redirectTo(ROUTE_TEAMS)
   }
 
   return {

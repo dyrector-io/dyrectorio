@@ -74,8 +74,8 @@ const SettingsPage = (props: SelfServiceSettingsFlow) => {
   saveRef.current = formik.submitForm
 
   return (
-    <Layout>
-      <PageHeading pageLink={pageLink} subLinks={sublinks}>
+    <Layout title={t('changePass')}>
+      <PageHeading pageLink={pageLink} sublinks={sublinks}>
         <SaveDiscardPageMenu saveRef={saveRef} onDiscard={router.back} />
       </PageHeading>
 

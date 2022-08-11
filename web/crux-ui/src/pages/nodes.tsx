@@ -1,4 +1,4 @@
-import { Layout, PageHead } from '@app/components/layout'
+import { Layout } from '@app/components/layout'
 import DyoNodeCard from '@app/components/nodes/dyo-node-card'
 import EditNodeCard from '@app/components/nodes/edit-node-card'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
@@ -84,15 +84,14 @@ const NodesPage = (props: NodesPageProps) => {
   }
 
   const pageLink: BreadcrumbLink = {
-    name: t('common:node'),
+    name: t('common:nodes'),
     url: ROUTE_NODES,
   }
 
   const onNavigateToDetails = (id: string) => router.push(nodeUrl(id))
 
   return (
-    <Layout>
-      <PageHead title={t('title')} />
+    <Layout title={t('common:nodes')}>
       <PageHeading pageLink={pageLink}>
         <ListPageMenu creating={creating} setCreating={setCreating} submitRef={submitRef} />
       </PageHeading>

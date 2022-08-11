@@ -1,6 +1,5 @@
 {
-  "title": "Nodes",
-  "title-node": "{{name}} node",
+  "nodesName": "Nodes - {{name}}",
 
   "add": "Add node",
   "new": "New node",

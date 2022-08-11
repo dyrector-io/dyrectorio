@@ -49,23 +49,27 @@
 
   "confirm": "Confirm",
   "confirmDelete": "Are you sure you want to delete {{name}}?",
+  "areYouSure": "Are you sure?",
 
   "products": "Products",
   "config": "Config",
   "registries": "Registries",
   "nodes": "Nodes",
+  "versions": "Versions",
+  "deployments": "Deployments",
+  "users": "Users",
   "images": "Images",
-  "team": "Team",
+  "teams": "Teams",
   "audit": "Audit Log",
   "profile": "Profile",
-  "roleOwner": "Owner",
-  "roleUser": "User",
+  "role": {
+    "owner": "Owner",
+    "user": "User",
+    "admin": "Admin"
+  },
 
-  "product": "Product",
-  "version": "Version",
   "image": "Image",
   "container": "Container",
-  "deployment": "Deployment",
   "node": "Node",
   "registry": "Registry",
 

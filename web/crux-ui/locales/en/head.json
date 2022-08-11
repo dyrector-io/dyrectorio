@@ -1,6 +1,6 @@
 {
-    "title": "dyrector.io - Software delivery on the go without DevOps Specialists",
-    "title-param": "dyrector.io - {{param}}",
+    "title": "dyrector.io - {{page}}",
+    "motto": "Software delivery on the go without DevOps Specialists",
     "description": "Our great mission to help people understand DevOps and give them a tool that they can spare a lot of energy, money and time with.",
     "ogDescription": "Software delivery on the go without DevOps Specialists"
 }

@@ -68,8 +68,8 @@ const SettingsPage = (props: SelfServiceSettingsFlow) => {
   ]
 
   return (
-    <Layout>
-      <PageHeading pageLink={pageLink} subLinks={sublinks}>
+    <Layout title={t('editProfile')}>
+      <PageHeading pageLink={pageLink} sublinks={sublinks}>
         <SaveDiscardPageMenu saveRef={saveRef} onDiscard={router.back} />
       </PageHeading>
 

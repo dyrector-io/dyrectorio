@@ -14,6 +14,7 @@ export enum UserRole {
   UNKNOWN_USER_ROLE = 0,
   USER = 1,
   OWNER = 2,
+  ADMIN = 3,
   UNRECOGNIZED = -1,
 }
 
@@ -28,6 +29,9 @@ export function userRoleFromJSON(object: any): UserRole {
     case 2:
     case 'OWNER':
       return UserRole.OWNER
+    case 3:
+    case 'ADMIN':
+      return UserRole.ADMIN
     case -1:
     case 'UNRECOGNIZED':
     default:
@@ -43,6 +47,8 @@ export function userRoleToJSON(object: UserRole): string {
       return 'USER'
     case UserRole.OWNER:
       return 'OWNER'
+    case UserRole.ADMIN:
+      return 'ADMIN'
     default:
       return 'UNKNOWN'
   }
@@ -525,14 +531,29 @@ export interface CreateTeamRequest {
   name: string
 }
 
-export interface UpdateActiveTeamRequest {
+export interface UpdateTeamRequest {
+  id: string
   accessedBy: string
   name: string
 }
 
-export interface UserInviteRequest {
+export interface UpdateUserRoleInTeamRequest {
+  id: string
+  accessedBy: string
+  userId: string
+  role: UserRole
+}
+
+export interface InviteUserRequest {
+  id: string
   accessedBy: string
   email: string
+}
+
+export interface DeleteUserFromTeamRequest {
+  id: string
+  accessedBy: string
+  userId: string
 }
 
 export interface AccessRequest {
@@ -556,10 +577,35 @@ export interface TeamResponse {
   name: string
 }
 
-export interface TeamDetailsResponse {
+export interface ActiveTeamDetailsResponse {
   id: string
   name: string
   users: UserResponse[]
+}
+
+export interface TeamStatistics {
+  users: number
+  products: number
+  nodes: number
+  versions: number
+  deployments: number
+}
+
+export interface TeamWithStatsResponse {
+  id: string
+  name: string
+  statistics: TeamStatistics | undefined
+}
+
+export interface TeamDetailsResponse {
+  id: string
+  name: string
+  statistics: TeamStatistics | undefined
+  users: UserResponse[]
+}
+
+export interface AllTeamsResponse {
+  data: TeamWithStatsResponse[]
 }
 
 export interface UserResponse {
@@ -1256,40 +1302,97 @@ export const CreateTeamRequest = {
   },
 }
 
-const baseUpdateActiveTeamRequest: object = { accessedBy: '', name: '' }
+const baseUpdateTeamRequest: object = { id: '', accessedBy: '', name: '' }
 
-export const UpdateActiveTeamRequest = {
-  fromJSON(object: any): UpdateActiveTeamRequest {
-    const message = {
-      ...baseUpdateActiveTeamRequest,
-    } as UpdateActiveTeamRequest
+export const UpdateTeamRequest = {
+  fromJSON(object: any): UpdateTeamRequest {
+    const message = { ...baseUpdateTeamRequest } as UpdateTeamRequest
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
     message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
     message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
     return message
   },
 
-  toJSON(message: UpdateActiveTeamRequest): unknown {
+  toJSON(message: UpdateTeamRequest): unknown {
     const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.name !== undefined && (obj.name = message.name)
     return obj
   },
 }
 
-const baseUserInviteRequest: object = { accessedBy: '', email: '' }
+const baseUpdateUserRoleInTeamRequest: object = {
+  id: '',
+  accessedBy: '',
+  userId: '',
+  role: 0,
+}
 
-export const UserInviteRequest = {
-  fromJSON(object: any): UserInviteRequest {
-    const message = { ...baseUserInviteRequest } as UserInviteRequest
+export const UpdateUserRoleInTeamRequest = {
+  fromJSON(object: any): UpdateUserRoleInTeamRequest {
+    const message = {
+      ...baseUpdateUserRoleInTeamRequest,
+    } as UpdateUserRoleInTeamRequest
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.userId = object.userId !== undefined && object.userId !== null ? String(object.userId) : ''
+    message.role = object.role !== undefined && object.role !== null ? userRoleFromJSON(object.role) : 0
+    return message
+  },
+
+  toJSON(message: UpdateUserRoleInTeamRequest): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
+    message.userId !== undefined && (obj.userId = message.userId)
+    message.role !== undefined && (obj.role = userRoleToJSON(message.role))
+    return obj
+  },
+}
+
+const baseInviteUserRequest: object = { id: '', accessedBy: '', email: '' }
+
+export const InviteUserRequest = {
+  fromJSON(object: any): InviteUserRequest {
+    const message = { ...baseInviteUserRequest } as InviteUserRequest
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
     message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
     message.email = object.email !== undefined && object.email !== null ? String(object.email) : ''
     return message
   },
 
-  toJSON(message: UserInviteRequest): unknown {
+  toJSON(message: InviteUserRequest): unknown {
     const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.email !== undefined && (obj.email = message.email)
+    return obj
+  },
+}
+
+const baseDeleteUserFromTeamRequest: object = {
+  id: '',
+  accessedBy: '',
+  userId: '',
+}
+
+export const DeleteUserFromTeamRequest = {
+  fromJSON(object: any): DeleteUserFromTeamRequest {
+    const message = {
+      ...baseDeleteUserFromTeamRequest,
+    } as DeleteUserFromTeamRequest
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.userId = object.userId !== undefined && object.userId !== null ? String(object.userId) : ''
+    return message
+  },
+
+  toJSON(message: DeleteUserFromTeamRequest): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
+    message.userId !== undefined && (obj.userId = message.userId)
     return obj
   },
 }
@@ -1377,6 +1480,87 @@ export const TeamResponse = {
   },
 }
 
+const baseActiveTeamDetailsResponse: object = { id: '', name: '' }
+
+export const ActiveTeamDetailsResponse = {
+  fromJSON(object: any): ActiveTeamDetailsResponse {
+    const message = {
+      ...baseActiveTeamDetailsResponse,
+    } as ActiveTeamDetailsResponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.users = (object.users ?? []).map((e: any) => UserResponse.fromJSON(e))
+    return message
+  },
+
+  toJSON(message: ActiveTeamDetailsResponse): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.name !== undefined && (obj.name = message.name)
+    if (message.users) {
+      obj.users = message.users.map(e => (e ? UserResponse.toJSON(e) : undefined))
+    } else {
+      obj.users = []
+    }
+    return obj
+  },
+}
+
+const baseTeamStatistics: object = {
+  users: 0,
+  products: 0,
+  nodes: 0,
+  versions: 0,
+  deployments: 0,
+}
+
+export const TeamStatistics = {
+  fromJSON(object: any): TeamStatistics {
+    const message = { ...baseTeamStatistics } as TeamStatistics
+    message.users = object.users !== undefined && object.users !== null ? Number(object.users) : 0
+    message.products = object.products !== undefined && object.products !== null ? Number(object.products) : 0
+    message.nodes = object.nodes !== undefined && object.nodes !== null ? Number(object.nodes) : 0
+    message.versions = object.versions !== undefined && object.versions !== null ? Number(object.versions) : 0
+    message.deployments =
+      object.deployments !== undefined && object.deployments !== null ? Number(object.deployments) : 0
+    return message
+  },
+
+  toJSON(message: TeamStatistics): unknown {
+    const obj: any = {}
+    message.users !== undefined && (obj.users = Math.round(message.users))
+    message.products !== undefined && (obj.products = Math.round(message.products))
+    message.nodes !== undefined && (obj.nodes = Math.round(message.nodes))
+    message.versions !== undefined && (obj.versions = Math.round(message.versions))
+    message.deployments !== undefined && (obj.deployments = Math.round(message.deployments))
+    return obj
+  },
+}
+
+const baseTeamWithStatsResponse: object = { id: '', name: '' }
+
+export const TeamWithStatsResponse = {
+  fromJSON(object: any): TeamWithStatsResponse {
+    const message = { ...baseTeamWithStatsResponse } as TeamWithStatsResponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.statistics =
+      object.statistics !== undefined && object.statistics !== null
+        ? TeamStatistics.fromJSON(object.statistics)
+        : undefined
+    return message
+  },
+
+  toJSON(message: TeamWithStatsResponse): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.name !== undefined && (obj.name = message.name)
+    message.statistics !== undefined &&
+      (obj.statistics = message.statistics ? TeamStatistics.toJSON(message.statistics) : undefined)
+    return obj
+  },
+}
+
 const baseTeamDetailsResponse: object = { id: '', name: '' }
 
 export const TeamDetailsResponse = {
@@ -1384,6 +1568,10 @@ export const TeamDetailsResponse = {
     const message = { ...baseTeamDetailsResponse } as TeamDetailsResponse
     message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
     message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.statistics =
+      object.statistics !== undefined && object.statistics !== null
+        ? TeamStatistics.fromJSON(object.statistics)
+        : undefined
     message.users = (object.users ?? []).map((e: any) => UserResponse.fromJSON(e))
     return message
   },
@@ -1392,10 +1580,32 @@ export const TeamDetailsResponse = {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
     message.name !== undefined && (obj.name = message.name)
+    message.statistics !== undefined &&
+      (obj.statistics = message.statistics ? TeamStatistics.toJSON(message.statistics) : undefined)
     if (message.users) {
       obj.users = message.users.map(e => (e ? UserResponse.toJSON(e) : undefined))
     } else {
       obj.users = []
+    }
+    return obj
+  },
+}
+
+const baseAllTeamsResponse: object = {}
+
+export const AllTeamsResponse = {
+  fromJSON(object: any): AllTeamsResponse {
+    const message = { ...baseAllTeamsResponse } as AllTeamsResponse
+    message.data = (object.data ?? []).map((e: any) => TeamWithStatsResponse.fromJSON(e))
+    return message
+  },
+
+  toJSON(message: AllTeamsResponse): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? TeamWithStatsResponse.toJSON(e) : undefined))
+    } else {
+      obj.data = []
     }
     return obj
   },
@@ -3757,25 +3967,27 @@ export const CRUX_DEPLOYMENT_SERVICE_NAME = 'CruxDeployment'
 export interface CruxTeamClient {
   createTeam(request: CreateTeamRequest, metadata: Metadata, ...rest: any): Observable<CreateEntityResponse>
 
-  getActiveTeamByUser(request: AccessRequest, metadata: Metadata, ...rest: any): Observable<TeamDetailsResponse>
+  getActiveTeamByUser(request: AccessRequest, metadata: Metadata, ...rest: any): Observable<ActiveTeamDetailsResponse>
 
-  updateActiveTeam(request: UpdateActiveTeamRequest, metadata: Metadata, ...rest: any): Observable<Empty>
+  updateTeam(request: UpdateTeamRequest, metadata: Metadata, ...rest: any): Observable<Empty>
 
-  deleteActiveTeam(request: AccessRequest, metadata: Metadata, ...rest: any): Observable<Empty>
+  deleteTeam(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
 
-  inviteUserToTheActiveTeam(
-    request: UserInviteRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Observable<CreateEntityResponse>
+  updateUserRole(request: UpdateUserRoleInTeamRequest, metadata: Metadata, ...rest: any): Observable<Empty>
 
-  deleteUserFromTheActiveTeam(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
+  inviteUserToTeam(request: InviteUserRequest, metadata: Metadata, ...rest: any): Observable<CreateEntityResponse>
+
+  deleteUserFromTeam(request: DeleteUserFromTeamRequest, metadata: Metadata, ...rest: any): Observable<Empty>
 
   acceptTeamInvite(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
 
   selectTeam(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
 
   getUserMeta(request: AccessRequest, metadata: Metadata, ...rest: any): Observable<UserMetaResponse>
+
+  getAllTeams(request: AccessRequest, metadata: Metadata, ...rest: any): Observable<AllTeamsResponse>
+
+  getTeamById(request: IdRequest, metadata: Metadata, ...rest: any): Observable<TeamDetailsResponse>
 }
 
 export interface CruxTeamController {
@@ -3789,24 +4001,26 @@ export interface CruxTeamController {
     request: AccessRequest,
     metadata: Metadata,
     ...rest: any
-  ): Promise<TeamDetailsResponse> | Observable<TeamDetailsResponse> | TeamDetailsResponse
+  ): Promise<ActiveTeamDetailsResponse> | Observable<ActiveTeamDetailsResponse> | ActiveTeamDetailsResponse
 
-  updateActiveTeam(
-    request: UpdateActiveTeamRequest,
+  updateTeam(request: UpdateTeamRequest, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
+
+  deleteTeam(request: IdRequest, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
+
+  updateUserRole(
+    request: UpdateUserRoleInTeamRequest,
     metadata: Metadata,
     ...rest: any
   ): Promise<Empty> | Observable<Empty> | Empty
 
-  deleteActiveTeam(request: AccessRequest, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
-
-  inviteUserToTheActiveTeam(
-    request: UserInviteRequest,
+  inviteUserToTeam(
+    request: InviteUserRequest,
     metadata: Metadata,
     ...rest: any
   ): Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
 
-  deleteUserFromTheActiveTeam(
-    request: IdRequest,
+  deleteUserFromTeam(
+    request: DeleteUserFromTeamRequest,
     metadata: Metadata,
     ...rest: any
   ): Promise<Empty> | Observable<Empty> | Empty
@@ -3820,6 +4034,18 @@ export interface CruxTeamController {
     metadata: Metadata,
     ...rest: any
   ): Promise<UserMetaResponse> | Observable<UserMetaResponse> | UserMetaResponse
+
+  getAllTeams(
+    request: AccessRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<AllTeamsResponse> | Observable<AllTeamsResponse> | AllTeamsResponse
+
+  getTeamById(
+    request: IdRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<TeamDetailsResponse> | Observable<TeamDetailsResponse> | TeamDetailsResponse
 }
 
 export function CruxTeamControllerMethods() {
@@ -3827,13 +4053,16 @@ export function CruxTeamControllerMethods() {
     const grpcMethods: string[] = [
       'createTeam',
       'getActiveTeamByUser',
-      'updateActiveTeam',
-      'deleteActiveTeam',
-      'inviteUserToTheActiveTeam',
-      'deleteUserFromTheActiveTeam',
+      'updateTeam',
+      'deleteTeam',
+      'updateUserRole',
+      'inviteUserToTeam',
+      'deleteUserFromTeam',
       'acceptTeamInvite',
       'selectTeam',
       'getUserMeta',
+      'getAllTeams',
+      'getTeamById',
     ]
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
