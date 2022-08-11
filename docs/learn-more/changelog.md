@@ -2,37 +2,12 @@
 
 ### v0.1.1
 
-#### General
+Vital fixes and cleanups were done. Extended & actualized unit tests in agent.
 
-* README cleanup
-
-#### Agent
-
-* Node install URL corrections
-* Added more tests
+More details about this release [**here**](https://github.com/dyrector-io/dyrectorio/releases/tag/v0.1.1).
 
 ### v0.1.0
 
-#### General
+We migrated dyrector.io into a monorepo on GitHub to measure up to open-source requirements. Automations were made, and multiple platform support – Apple Silicon, Windows – is now available to provide a convenient developer experience. Agent's install script is added with MacOS support. Guidelines of contribution – code of conduct and README – were defined.
 
-* Migrated the project to GitHub.
-* Documentation improvements.
-* Lint setup for every component
-* Application configuration cleanup
-* Apple Silicon support for development
-* Protobuf support for Windows
-* Added contributing guidelines ([**CONTRIBUTING.md**](https://github.com/dyrector-io/dyrectorio/blob/v0.1.0/CONTRIBUTING.md))
-
-#### Agent
-
-* Node install script (with MacOS support)
-* Version info is added build-time
-* Globals removed where relevant
-
-#### Web
-
-* Container image search fix
-* New Registry types: GitLab, GitHub
-* WebSocket error fix
-* Audit log improvement
-* New font: Poppins
+More details about this release [**here**](https://github.com/dyrector-io/dyrectorio/releases/tag/v0.1.0).
