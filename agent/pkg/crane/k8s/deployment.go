@@ -210,44 +210,44 @@ func getResourceManagement(resourceConfig v1.ResourceConfig,
 	// Resource Limits CPU
 	if resourceConfig.Limits.CPU != "" {
 		if ResourceLimitsCPU, err = resource.ParseQuantity(resourceConfig.Limits.CPU); err != nil {
-			return nil, fmt.Errorf("failed to parse CPU limits '%s': %w", resourceConfig.Limits.CPU, err)
+			return nil, NewResourceError(FieldCPU, GroupLimits, false)
 		}
 	} else {
 		if ResourceLimitsCPU, err = resource.ParseQuantity(cfg.DefaultLimitsCPU); err != nil {
-			return nil, fmt.Errorf("failed to parse default CPU limits '%s': %w", cfg.DefaultLimitsCPU, err)
+			return nil, NewResourceError(FieldCPU, GroupLimits, true)
 		}
 	}
 
 	// Resource Limits Memory
 	if resourceConfig.Limits.Memory != "" {
 		if ResourceLimitsMemory, err = resource.ParseQuantity(resourceConfig.Limits.Memory); err != nil {
-			return nil, fmt.Errorf("failed to parse memory limits '%s': %w", resourceConfig.Limits.Memory, err)
+			return nil, NewResourceError(FieldMemory, GroupLimits, false)
 		}
 	} else {
 		if ResourceLimitsMemory, err = resource.ParseQuantity(cfg.DefaultLimitsMemory); err != nil {
-			return nil, fmt.Errorf("failed to parse default memory limits '%s': %w", cfg.DefaultLimitsMemory, err)
+			return nil, NewResourceError(FieldMemory, GroupLimits, true)
 		}
 	}
 
 	// Resource Requests CPU
 	if resourceConfig.Requests.CPU != "" {
 		if ResourceRequestsCPU, err = resource.ParseQuantity(resourceConfig.Requests.CPU); err != nil {
-			return nil, fmt.Errorf("failed to parse CPU requests '%s': %w", resourceConfig.Requests.CPU, err)
+			return nil, NewResourceError(FieldCPU, GroupRequests, false)
 		}
 	} else {
 		if ResourceRequestsCPU, err = resource.ParseQuantity(cfg.DefaultRequestsCPU); err != nil {
-			return nil, fmt.Errorf("failed to parse default CPU requests '%s': %w", cfg.DefaultRequestsCPU, err)
+			return nil, NewResourceError(FieldCPU, GroupRequests, true)
 		}
 	}
 
 	// Resource Requests Memory
 	if resourceConfig.Requests.Memory != "" {
 		if ResourceRequestsMemory, err = resource.ParseQuantity(resourceConfig.Requests.Memory); err != nil {
-			return nil, fmt.Errorf("failed to parse memory requests '%s': %w", resourceConfig.Requests.Memory, err)
+			return nil, NewResourceError(FieldMemory, GroupRequests, false)
 		}
 	} else {
 		if ResourceRequestsMemory, err = resource.ParseQuantity(cfg.DefaultRequestMemory); err != nil {
-			return nil, fmt.Errorf("failed to parse default memory requests '%s': %w", cfg.DefaultRequestMemory, err)
+			return nil, NewResourceError(FieldMemory, GroupRequests, true)
 		}
 	}
 

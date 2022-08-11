@@ -51,7 +51,7 @@ func TestResourceParsingLimitsCPUError(t *testing.T) {
 
 	_, err := k8s.GetResourceManagementForTest(resourceConfig, nil)
 
-	assert.Error(t, err)
+	assert.ErrorIs(t, err, k8s.NewResourceError(k8s.FieldCPU, k8s.GroupLimits, false))
 }
 
 func TestResourceParsingLimitsMemoryError(t *testing.T) {
@@ -68,7 +68,7 @@ func TestResourceParsingLimitsMemoryError(t *testing.T) {
 
 	_, err := k8s.GetResourceManagementForTest(resourceConfig, nil)
 
-	assert.Error(t, err)
+	assert.ErrorIs(t, err, k8s.NewResourceError(k8s.FieldMemory, k8s.GroupLimits, false))
 }
 
 func TestResourceParsingRequestsCPUError(t *testing.T) {
@@ -85,7 +85,7 @@ func TestResourceParsingRequestsCPUError(t *testing.T) {
 
 	_, err := k8s.GetResourceManagementForTest(resourceConfig, nil)
 
-	assert.Error(t, err)
+	assert.ErrorIs(t, err, k8s.NewResourceError(k8s.FieldCPU, k8s.GroupRequests, false))
 }
 
 func TestResourceParsingRequestsMemoryError(t *testing.T) {
@@ -102,7 +102,7 @@ func TestResourceParsingRequestsMemoryError(t *testing.T) {
 
 	_, err := k8s.GetResourceManagementForTest(resourceConfig, nil)
 
-	assert.Error(t, err)
+	assert.ErrorIs(t, err, k8s.NewResourceError(k8s.FieldMemory, k8s.GroupRequests, false))
 }
 
 func TestResourceParsingFallback(t *testing.T) {
@@ -188,7 +188,7 @@ func TestResourceParsingFallbackLimitsCPUError(t *testing.T) {
 
 	_, err := k8s.GetResourceManagementForTest(resourceConfig, config)
 
-	assert.Error(t, err)
+	assert.ErrorIs(t, err, k8s.NewResourceError(k8s.FieldCPU, k8s.GroupLimits, true))
 }
 
 func TestResourceParsingFallbackLimitsMemoryError(t *testing.T) {
@@ -214,7 +214,7 @@ func TestResourceParsingFallbackLimitsMemoryError(t *testing.T) {
 
 	_, err := k8s.GetResourceManagementForTest(resourceConfig, config)
 
-	assert.Error(t, err)
+	assert.ErrorIs(t, err, k8s.NewResourceError(k8s.FieldMemory, k8s.GroupLimits, true))
 }
 
 func TestResourceParsingFallbackRequestsCPUError(t *testing.T) {
@@ -240,7 +240,7 @@ func TestResourceParsingFallbackRequestsCPUError(t *testing.T) {
 
 	_, err := k8s.GetResourceManagementForTest(resourceConfig, config)
 
-	assert.Error(t, err)
+	assert.ErrorIs(t, err, k8s.NewResourceError(k8s.FieldCPU, k8s.GroupRequests, true))
 }
 
 func TestResourceParsingFallbackRequestsMemoryError(t *testing.T) {
@@ -266,5 +266,5 @@ func TestResourceParsingFallbackRequestsMemoryError(t *testing.T) {
 
 	_, err := k8s.GetResourceManagementForTest(resourceConfig, config)
 
-	assert.Error(t, err)
+	assert.ErrorIs(t, err, k8s.NewResourceError(k8s.FieldMemory, k8s.GroupRequests, true))
 }
