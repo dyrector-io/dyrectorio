@@ -26,8 +26,8 @@ export const EXPLICIT_CONTAINER_NETWORK_MODE_VALUES = ['none', 'host'] as const
 export type ExplicitContainerNetworkMode = typeof EXPLICIT_CONTAINER_NETWORK_MODE_VALUES[number]
 
 export type ExplicitContainerConfigExpose = {
-  public?: boolean
-  tls?: boolean
+  public: boolean
+  tls: boolean
 }
 
 export type ExplicitContainerConfig = {
