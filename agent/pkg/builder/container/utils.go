@@ -81,9 +81,7 @@ func imageExists(ctx context.Context, logger io.StringWriter, fullyQualifiedImag
 }
 
 // force pulls the given image name
-func pullImage(logger io.StringWriter, fullyQualifiedImageName, authCreds string) error {
-	ctx := context.Background()
-
+func pullImage(ctx context.Context, logger io.StringWriter, fullyQualifiedImageName, authCreds string) error {
 	cli, err := createCli(logger)
 	if cli == nil {
 		return err
