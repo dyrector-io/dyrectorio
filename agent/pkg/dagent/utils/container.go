@@ -158,6 +158,7 @@ func ExecTraefik(ctx context.Context, traefikDeployReq model.TraefikDeployReques
 
 	if err = CreateNetwork(ctx, "traefik", "bridge"); err != nil {
 		log.Println("create traefik network error: " + err.Error())
+		return err
 	}
 
 	builder := containerbuilder.NewDockerBuilder(ctx).WithImage("index.docker.io/library/traefik:v2.8.0").
