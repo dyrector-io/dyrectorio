@@ -2,7 +2,6 @@ import { Layout, PageHead } from '@app/components/layout'
 import DeploymentDetailsSection from '@app/components/products/versions/deployments/deployment-details-section'
 import EditDeploymentCard from '@app/components/products/versions/deployments/edit-deployment-card'
 import EditDeploymentInstances from '@app/components/products/versions/deployments/edit-deployment-instances'
-import { mergeConfigs } from '@app/components/products/versions/deployments/instances/edit-instance-card'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
@@ -14,6 +13,7 @@ import {
   DeploymentEnvUpdatedMessage,
   deploymentIsMutable,
   DeploymentRoot,
+  mergeConfigs,
   WS_TYPE_DEPLOYMENT_ENV_UPDATED,
   WS_TYPE_DYO_ERROR,
   WS_TYPE_INSTANCE_UPDATED,

@@ -27,5 +27,8 @@ func TestGetOrganizationLabelsWithEmptyKey(t *testing.T) {
 	var key string
 	value := "value"
 
-	assert.Panics(t, func() { utils.SetOrganizationLabel(key, value) }, "The code did not panic. ")
+	_, err := utils.SetOrganizationLabel(key, value)
+
+	expectedErrorMsg := "missing key or value to build an organization label"
+	assert.EqualErrorf(t, err, expectedErrorMsg, "Error should be: %v, got: %v", expectedErrorMsg, err)
 }
