@@ -1,5 +1,6 @@
 {
     "add": "Add image",
+    "delete": "Delete",
     "imageName": "Image name",
     "containerName": "Container name",
     "tag": "Tag",
