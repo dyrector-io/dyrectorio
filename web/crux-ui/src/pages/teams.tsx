@@ -45,7 +45,7 @@ const TeamsPage = (props: TeamsPageProps) => {
         <EditTeamCard className="mb-8 px-8 py-6" submitRef={submitRef} onTeamEdited={onCreated} />
       )}
 
-      {props.teams.map((team, index) => (
+      {teams.map((team, index) => (
         <TeamCard key={`team-${index}`} className="my-2" team={team} highlighted={team.id === props.me.activeTeamId} />
       ))}
     </Layout>
