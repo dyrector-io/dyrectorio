@@ -4,6 +4,7 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { DyoNode } from '@app/models'
 import clsx from 'clsx'
+import useTranslation from 'next-translate/useTranslation'
 import NodeStatusIndicator from './node-status-indicator'
 
 interface DyoNodeCardProps extends Omit<DyoCardProps, 'children'> {
@@ -13,6 +14,7 @@ interface DyoNodeCardProps extends Omit<DyoCardProps, 'children'> {
 
 const DyoNodeCard = (props: DyoNodeCardProps) => {
   const { node, onNameClick } = props
+  const { t } = useTranslation('common')
 
   return (
     <>
@@ -27,9 +29,13 @@ const DyoNodeCard = (props: DyoNodeCardProps) => {
           <NodeStatusIndicator status={node.status} />
         </div>
 
-        <DyoLabel className="mr-auto my-6">{node.address}</DyoLabel>
+        {node.address && (
+          <DyoLabel className="mr-auto mt-6">
+            {t(`address`)}: {node.address}
+          </DyoLabel>
+        )}
 
-        <p className="text-light overflow-hidden">{node.description}</p>
+        <p className="text-light overflow-hidden mt-6">{node.description}</p>
       </DyoCard>
     </>
   )

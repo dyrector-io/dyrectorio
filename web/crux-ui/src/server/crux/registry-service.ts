@@ -127,7 +127,6 @@ class DyoRegistryService {
         : {
             type: 'google',
             ...res.google,
-            token: res.google.token,
             _private: !!res.google.user,
           }),
     }

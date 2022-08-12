@@ -197,7 +197,7 @@ export class AgentService {
 
   private onAgentConnectionStatusChange(agent: Agent, status: NodeConnectionStatus) {
     if (status === NodeConnectionStatus.UNREACHABLE) {
-      this.logger.log(`left: ${agent.id}`)
+      this.logger.log(`Left: ${agent.id}`)
       this.agents.delete(agent.id)
     } else if (status === NodeConnectionStatus.CONNECTED) {
       agent.onConnected()
@@ -265,7 +265,7 @@ export class AgentService {
     this.agents.set(agent.id, agent)
     connection.status().subscribe(it => this.onAgentConnectionStatusChange(agent, it))
 
-    this.logger.log(`joined: ${request.id}`)
+    this.logger.log(`Agent joined with id: ${request.id}`)
     this.logServiceInfo()
 
     return agent.onConnected()
@@ -363,7 +363,7 @@ export class AgentService {
   }
 
   private logServiceInfo(): void {
-    this.logger.debug(`agents: ${this.agents.size}`)
+    this.logger.debug(`Agents: ${this.agents.size}`)
     this.agents.forEach(it => it.debugInfo(this.logger))
   }
 }

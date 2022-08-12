@@ -6,12 +6,12 @@ export const deploymentEvents = [
     createdAt: new Date(),
     type: 'log',
     deploymentId: constants.DEPLYOMENT_ID,
-    value: ""
+    value: '',
   },
   {
     createdAt: new Date(),
     type: 'deploymentStatus',
     deploymentId: constants.DEPLYOMENT_ID,
-    value: ""
-  }
+    value: '',
+  },
 ] as DeploymentEvent[]

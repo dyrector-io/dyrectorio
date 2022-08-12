@@ -38,7 +38,6 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
   return !containers ? null : (
     <DyoList
       className="mt-6 mb-2"
-      headers={4}
       data={containers}
       noSeparator
       itemBuilder={it => {

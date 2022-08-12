@@ -33,6 +33,7 @@
   "loading": "Loading...",
   "noNameFound": "No {{name}} found",
   "yourTeams": "Your teams",
+  "address": "Address",
 
   "editName": "Edit {{name}}",
   "add": "Add",
@@ -102,7 +103,8 @@
     "successful": "Successful",
     "failed": "Failed",
     "obsolate": "Obsolate",
-    "unknown": "Unknown"
+    "unknown": "Unknown",
+    "preparing": "Preparing"
   },
 
   "containerStatuses": {
@@ -139,5 +141,8 @@
     "December"
   ],
 
-  "upload": "Upload"
+  "upload": "Upload",
+
+  "itemsPerPage": "Items per page",
+  "showingItems": "Showing {{pageFrom}} to {{pageTo}} of {{total}} entries"
 }

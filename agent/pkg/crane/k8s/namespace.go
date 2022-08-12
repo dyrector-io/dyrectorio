@@ -16,6 +16,7 @@ import (
 
 // namespace wrapper for the facade
 type namespace struct {
+	ctx       context.Context
 	name      string
 	appConfig *config.Configuration
 }
@@ -25,8 +26,8 @@ type Namespace struct {
 	Name string `json:"name" binding:"required"`
 }
 
-func newNamespace(name string, cfg *config.Configuration) *namespace {
-	ns := namespace{name: name, appConfig: cfg}
+func newNamespace(ctx context.Context, name string, cfg *config.Configuration) *namespace {
+	ns := namespace{ctx: ctx, name: name, appConfig: cfg}
 	return &ns
 }
 
@@ -41,7 +42,7 @@ func (n *namespace) deployNamespace() error {
 		n.name = "default"
 	}
 
-	_, err = client.Apply(context.TODO(),
+	_, err = client.Apply(n.ctx,
 		corev1.Namespace(n.name),
 		metav1.ApplyOptions{
 			FieldManager: n.appConfig.FieldManagerName,
@@ -69,7 +70,7 @@ func GetNamespaces(cfg *config.Configuration) ([]Namespace, error) {
 	if err != nil {
 		return nil, err
 	}
-	rawList, err := client.List(context.TODO(), metav1.ListOptions{})
+	rawList, err := client.List(context.Background(), metav1.ListOptions{})
 
 	list := extractName(rawList)
 	if err != nil {
@@ -78,14 +79,14 @@ func GetNamespaces(cfg *config.Configuration) ([]Namespace, error) {
 	return list, err
 }
 
-func DeleteNamespace(name string, cfg *config.Configuration) error {
+func DeleteNamespace(ctx context.Context, name string, cfg *config.Configuration) error {
 	client, err := getNamespaceClient(cfg)
 	if err != nil {
 		return err
 	}
 
 	err = client.Delete(
-		context.TODO(),
+		ctx,
 		name,
 		metav1.DeleteOptions{},
 	)

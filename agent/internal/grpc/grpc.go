@@ -87,10 +87,10 @@ func (g *GrpcConnection) SetConn(conn *grpc.ClientConn) {
 // Singleton instance
 var grpcConn *GrpcConnection
 
-func fetchCertificatesFromURL(url string) (*x509.CertPool, error) {
+func fetchCertificatesFromURL(ctx context.Context, url string) (*x509.CertPool, error) {
 	log.Println("Retrieving certificate")
 
-	req, err := http.NewRequestWithContext(context.TODO(), http.MethodGet, url, http.NoBody)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, http.NoBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create the http request\n%s", err.Error())
 	}
@@ -137,7 +137,7 @@ func Init(grpcContext context.Context,
 			creds = insecure.NewCredentials()
 		} else {
 			httpAddr := fmt.Sprintf("https://%s", connParams.address)
-			certPool, err := fetchCertificatesFromURL(httpAddr)
+			certPool, err := fetchCertificatesFromURL(ctx, httpAddr)
 
 			if err != nil {
 				log.Panic(err.Error())

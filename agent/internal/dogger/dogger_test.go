@@ -69,7 +69,7 @@ func TestDoggerSingleStatusMessage(t *testing.T) {
 	ts := &AgentTestStream{
 		testing: t,
 	}
-	dogger := dogger.NewDeploymentLogger(&deploymentId, ts, context.TODO(), cfg)
+	dogger := dogger.NewDeploymentLogger(&deploymentId, ts, context.Background(), cfg)
 
 	dogger.Write("hello")
 
@@ -83,7 +83,7 @@ func TestDoggerMulipleStatusMessages(t *testing.T) {
 	ts := &AgentTestStream{
 		testing: t,
 	}
-	dogger := dogger.NewDeploymentLogger(&deploymentId, ts, context.TODO(), cfg)
+	dogger := dogger.NewDeploymentLogger(&deploymentId, ts, context.Background(), cfg)
 
 	dogger.Write("hello", "abcd")
 
@@ -97,7 +97,7 @@ func TestDoggerDeploymentStatus(t *testing.T) {
 	ts := &AgentTestStream{
 		testing: t,
 	}
-	dogger := dogger.NewDeploymentLogger(&deploymentId, ts, context.TODO(), cfg)
+	dogger := dogger.NewDeploymentLogger(&deploymentId, ts, context.Background(), cfg)
 
 	dogger.WriteDeploymentStatus(crux.DeploymentStatus_IN_PROGRESS, "hello")
 
@@ -111,7 +111,7 @@ func TestDoggerContainerStatus(t *testing.T) {
 	ts := &AgentTestStream{
 		testing: t,
 	}
-	dogger := dogger.NewDeploymentLogger(&deploymentId, ts, context.TODO(), cfg)
+	dogger := dogger.NewDeploymentLogger(&deploymentId, ts, context.Background(), cfg)
 
 	dogger.WriteContainerState("state", "hello")
 
