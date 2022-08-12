@@ -35,13 +35,13 @@ gow-dagent: ##
 .PHONY: compile-crane
 compile-crane: ##
 	cd cmd/crane && \
-	GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build ${LDFLAGS} -o ../../build/out/crane.exe; \
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build ${LDFLAGS} -o ../../build/out/crane; \
 	cd -
 
 .PHONY: compile-dagent
 compile-dagent: ##
 	cd cmd/dagent && \
-	GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build ${LDFLAGS} -o ../../build/out/dagent.exe; \
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build ${LDFLAGS} -o ../../build/out/dagent; \
 	cd -
 
 .PHONY: install-go-tools
