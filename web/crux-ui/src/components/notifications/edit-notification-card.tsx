@@ -88,7 +88,7 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
   const onTestHook = async () => {
     const url = formik.values.url as string
 
-    var res = await fetch(notificationApiHookUrl(), {
+    const res = await fetch(notificationApiHookUrl(), {
       method: 'POST',
       body: url,
     })
