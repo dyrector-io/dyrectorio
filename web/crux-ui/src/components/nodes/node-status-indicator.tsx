@@ -27,7 +27,7 @@ const statusToAssetName = (status: NodeStatus) => {
     case 'unreachable':
       return 'circle-red'
     case 'running':
-      return 'circle-turquoise'
+      return 'circle-green'
     default:
       return 'circle-orange'
   }

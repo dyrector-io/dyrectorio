@@ -1,4 +1,4 @@
-import { Team } from "@prisma/client";
+import { Team } from '@prisma/client'
 import { constants } from '../consts'
 
 export const teams = [

@@ -67,13 +67,13 @@ export type PatchVersionImage = {
   config?: Partial<ContainerConfig>
 }
 
-export type ContainerStatus = 'created' | 'restarting' | 'running' | 'removing' | 'paused' | 'exited' | 'dead'
+export type ContainerState = 'created' | 'restarting' | 'running' | 'removing' | 'paused' | 'exited' | 'dead'
 
 export type Container = {
   id: string
   name: string
   date: string
-  status: ContainerStatus
+  state: ContainerState
 }
 
 export type InstanceContainerConfig = Omit<ContainerConfig, 'name'>
@@ -81,7 +81,7 @@ export type InstanceContainerConfig = Omit<ContainerConfig, 'name'>
 export type Instance = {
   id: string
   image: VersionImage
-  status?: ContainerStatus
+  state?: ContainerState
   overriddenConfig?: Partial<InstanceContainerConfig>
 }
 
@@ -120,7 +120,7 @@ export type DeploymentEventType = 'log' | 'deploymentStatus' | 'containerStatus'
 
 export type InstanceStatus = {
   instanceId: string
-  status: ContainerStatus
+  state: ContainerState
 }
 
 export type DeploymentEvent = {

@@ -30,18 +30,18 @@ func NewDeleteFacade(ctx context.Context, namespace, name string, cfg *config.Co
 	return &deleteFacade{
 		ctx:        ctx,
 		name:       name,
-		namespace:  newNamespace(namespace, cfg),
+		namespace:  newNamespace(ctx, namespace, cfg),
 		deployment: newDeployment(ctx, cfg),
 		configmap:  newConfigmap(ctx, cfg),
 		service:    newService(ctx, cfg),
 		ingress:    newIngress(ctx, cfg),
-		pvc:        newPvc(cfg),
+		pvc:        newPvc(ctx, cfg),
 		appConfig:  cfg,
 	}
 }
 
 func (d *deleteFacade) DeleteNamespace(namespace string) error {
-	return DeleteNamespace(namespace, d.appConfig)
+	return DeleteNamespace(d.ctx, namespace, d.appConfig)
 }
 
 func (d *deleteFacade) DeleteDeployment() error {

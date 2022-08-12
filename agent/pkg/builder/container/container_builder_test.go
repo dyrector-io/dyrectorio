@@ -32,7 +32,7 @@ func (testLogger *testLogger) WriteString(s string) (int, error) {
 
 func builderCleanup(builder *containerbuilder.DockerContainerBuilder) {
 	if builder.GetContainerID() != nil {
-		containerbuilder.DeleteContainer(*builder.Create().GetContainerID())
+		containerbuilder.DeleteContainer(context.Background(), *builder.Create().GetContainerID())
 	}
 }
 

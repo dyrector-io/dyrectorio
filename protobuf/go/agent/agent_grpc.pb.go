@@ -28,10 +28,10 @@ type AgentClient interface {
 	// deploy requests and prefix status requests.
 	// In both cases, separate, shorter-living channels are opened.
 	// For deployment status reports, closed when ended.
-	// For prefix status reports, should be closed by the server.
+	// For prefix state reports, should be closed by the server.
 	Connect(ctx context.Context, in *AgentInfo, opts ...grpc.CallOption) (Agent_ConnectClient, error)
 	DeploymentStatus(ctx context.Context, opts ...grpc.CallOption) (Agent_DeploymentStatusClient, error)
-	ContainerStatus(ctx context.Context, opts ...grpc.CallOption) (Agent_ContainerStatusClient, error)
+	ContainerState(ctx context.Context, opts ...grpc.CallOption) (Agent_ContainerStateClient, error)
 }
 
 type agentClient struct {
@@ -108,30 +108,30 @@ func (x *agentDeploymentStatusClient) CloseAndRecv() (*Empty, error) {
 	return m, nil
 }
 
-func (c *agentClient) ContainerStatus(ctx context.Context, opts ...grpc.CallOption) (Agent_ContainerStatusClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Agent_ServiceDesc.Streams[2], "/agent.Agent/ContainerStatus", opts...)
+func (c *agentClient) ContainerState(ctx context.Context, opts ...grpc.CallOption) (Agent_ContainerStateClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Agent_ServiceDesc.Streams[2], "/agent.Agent/ContainerState", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &agentContainerStatusClient{stream}
+	x := &agentContainerStateClient{stream}
 	return x, nil
 }
 
-type Agent_ContainerStatusClient interface {
-	Send(*crux.ContainerStatusListMessage) error
+type Agent_ContainerStateClient interface {
+	Send(*crux.ContainerStateListMessage) error
 	CloseAndRecv() (*Empty, error)
 	grpc.ClientStream
 }
 
-type agentContainerStatusClient struct {
+type agentContainerStateClient struct {
 	grpc.ClientStream
 }
 
-func (x *agentContainerStatusClient) Send(m *crux.ContainerStatusListMessage) error {
+func (x *agentContainerStateClient) Send(m *crux.ContainerStateListMessage) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *agentContainerStatusClient) CloseAndRecv() (*Empty, error) {
+func (x *agentContainerStateClient) CloseAndRecv() (*Empty, error) {
 	if err := x.ClientStream.CloseSend(); err != nil {
 		return nil, err
 	}
@@ -151,10 +151,10 @@ type AgentServer interface {
 	// deploy requests and prefix status requests.
 	// In both cases, separate, shorter-living channels are opened.
 	// For deployment status reports, closed when ended.
-	// For prefix status reports, should be closed by the server.
+	// For prefix state reports, should be closed by the server.
 	Connect(*AgentInfo, Agent_ConnectServer) error
 	DeploymentStatus(Agent_DeploymentStatusServer) error
-	ContainerStatus(Agent_ContainerStatusServer) error
+	ContainerState(Agent_ContainerStateServer) error
 	mustEmbedUnimplementedAgentServer()
 }
 
@@ -168,8 +168,8 @@ func (UnimplementedAgentServer) Connect(*AgentInfo, Agent_ConnectServer) error {
 func (UnimplementedAgentServer) DeploymentStatus(Agent_DeploymentStatusServer) error {
 	return status.Errorf(codes.Unimplemented, "method DeploymentStatus not implemented")
 }
-func (UnimplementedAgentServer) ContainerStatus(Agent_ContainerStatusServer) error {
-	return status.Errorf(codes.Unimplemented, "method ContainerStatus not implemented")
+func (UnimplementedAgentServer) ContainerState(Agent_ContainerStateServer) error {
+	return status.Errorf(codes.Unimplemented, "method ContainerState not implemented")
 }
 func (UnimplementedAgentServer) mustEmbedUnimplementedAgentServer() {}
 
@@ -231,26 +231,26 @@ func (x *agentDeploymentStatusServer) Recv() (*crux.DeploymentStatusMessage, err
 	return m, nil
 }
 
-func _Agent_ContainerStatus_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(AgentServer).ContainerStatus(&agentContainerStatusServer{stream})
+func _Agent_ContainerState_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(AgentServer).ContainerState(&agentContainerStateServer{stream})
 }
 
-type Agent_ContainerStatusServer interface {
+type Agent_ContainerStateServer interface {
 	SendAndClose(*Empty) error
-	Recv() (*crux.ContainerStatusListMessage, error)
+	Recv() (*crux.ContainerStateListMessage, error)
 	grpc.ServerStream
 }
 
-type agentContainerStatusServer struct {
+type agentContainerStateServer struct {
 	grpc.ServerStream
 }
 
-func (x *agentContainerStatusServer) SendAndClose(m *Empty) error {
+func (x *agentContainerStateServer) SendAndClose(m *Empty) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *agentContainerStatusServer) Recv() (*crux.ContainerStatusListMessage, error) {
-	m := new(crux.ContainerStatusListMessage)
+func (x *agentContainerStateServer) Recv() (*crux.ContainerStateListMessage, error) {
+	m := new(crux.ContainerStateListMessage)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -276,8 +276,8 @@ var Agent_ServiceDesc = grpc.ServiceDesc{
 			ClientStreams: true,
 		},
 		{
-			StreamName:    "ContainerStatus",
-			Handler:       _Agent_ContainerStatus_Handler,
+			StreamName:    "ContainerState",
+			Handler:       _Agent_ContainerState_Handler,
 			ClientStreams: true,
 		},
 	},
