@@ -362,5 +362,3 @@ export const writeToClipboard = async (t: Translate, content: string) => {
 }
 
 export const isServerSide = () => typeof window === 'undefined'
-
-export const cursorPointer = (func?: () => void) => func ? 'cursor-pointer' : null

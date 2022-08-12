@@ -22,7 +22,7 @@ export class DomainNotificationService {
     })
 
     const identity = await this.kratos.getIdentityById(template.identityId)
-    template.args.push(nameOrEmailOfIdentity(identity))
+    template.message.owner = nameOrEmailOfIdentity(identity)
 
     if (userOnTeam) {
       const notifications = await this.prisma.notification.findMany({

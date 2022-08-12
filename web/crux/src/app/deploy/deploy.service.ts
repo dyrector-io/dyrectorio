@@ -334,7 +334,6 @@ export class DeployService {
       },
       {
         deploymentName: deployment.name,
-        versionName: deployment.version.name,
         accessedBy: request.accessedBy,
       },
     )

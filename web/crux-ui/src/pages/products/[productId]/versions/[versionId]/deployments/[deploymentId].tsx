@@ -151,7 +151,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
             deleteModalTitle={t('common:confirmDelete', {
               name: deployment.name,
             })}
-            deleteModalDescription={t('common:defaultDeleteDescription', {
+            deleteModalDescription={t('common:deleteDescription', {
               name: deployment.name,
             })}
           />

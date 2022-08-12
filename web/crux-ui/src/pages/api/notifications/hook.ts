@@ -3,11 +3,11 @@ import { withMiddlewares } from '@server/middlewares'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
-  const url = req.body as string
+  const id = req.body as string
 
-  const result = await crux(req).notificiations.testNotification(url)
+  await crux(req).notificiations.testNotification(id)
 
-  res.status(200).json(result)
+  res.status(204).end()
 }
 
 export default withMiddlewares({

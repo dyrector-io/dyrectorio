@@ -7,19 +7,22 @@ import {
   NotificationListResponse,
   CreateNotificationResponse,
   NotificationDetailsResponse,
-  TestNotificationRequest,
-  TestNotificationResponse,
+  Empty,
 } from 'src/grpc/protobuf/proto/crux'
 import { TeamRepository } from 'src/app/team/team.repository'
-import { Injectable, HttpStatus } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { CreateNotificationRequest } from 'src/grpc/protobuf/proto/crux'
 import { PrismaService } from 'src/services/prisma.service'
 import { NotificationMapper } from './notification.mapper'
 import { lastValueFrom } from 'rxjs'
 import { HttpService } from '@nestjs/axios'
 
+const TEST_MESSAGE = 'Its a test!'
+
 @Injectable()
 export class NotificationService {
+  private readonly logger = new Logger(NotificationService.name)
+
   constructor(
     private mapper: NotificationMapper,
     private prisma: PrismaService,
@@ -95,8 +98,8 @@ export class NotificationService {
     }
   }
 
-  async getNotificationDetail(request: IdRequest): Promise<NotificationDetailsResponse> {
-    const notification = await this.prisma.notification.findFirst({
+  async getNotificationDetails(request: IdRequest): Promise<NotificationDetailsResponse> {
+    const notification = await this.prisma.notification.findUnique({
       where: {
         id: request.id,
       },
@@ -107,17 +110,17 @@ export class NotificationService {
     return this.mapper.detailsToGrpc(notification, identity)
   }
 
-  async testNotification(request: TestNotificationRequest): Promise<TestNotificationResponse> {
-    try {
-      var res = await lastValueFrom(this.httpService.post(request.url, { content: 'Its a test!', text: 'Its a test!' }))
+  async testNotification(request: IdRequest): Promise<Empty> {
+    const notification = await this.prisma.notification.findUnique({
+      where: {
+        id: request.id,
+      },
+    })
 
-      return {
-        ok: res.status == HttpStatus.OK || res.status == HttpStatus.NO_CONTENT,
-      }
-    } catch (error) {
-      return {
-        ok: false,
-      }
-    }
+    await lastValueFrom(
+      this.httpService.post(notification.url, { content: TEST_MESSAGE, text: TEST_MESSAGE }),
+    )
+
+    return Empty;
   }
 }

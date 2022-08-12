@@ -17,6 +17,7 @@ import {
 } from 'src/grpc/protobuf/proto/crux'
 import { VersionMapper } from './version.mapper'
 import { DomainNotificationService } from 'src/services/domain.notification.service'
+import { VersionMessage } from 'src/domain/notification-templates'
 
 @Injectable()
 export class VersionService {
@@ -155,7 +156,7 @@ export class VersionService {
       await this.notificationService.sendNotification({
         identityId: req.accessedBy,
         messageType: 'version',
-        args: [version.name, product.name],
+        message: { subject: product.name, version: version.name } as VersionMessage,
       })
     }
 

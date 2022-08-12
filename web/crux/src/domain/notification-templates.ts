@@ -1,13 +1,29 @@
 import { NotificationTypeEnum } from '@prisma/client'
+import { NotificationTemplateException } from 'src/exception/errors'
 
 const title = 'dyrector.io'
 
-export type NotificationMessageType = 'node' | 'version' | 'invite' | 'failedDeploy' | 'successfullDeploy'
+export type NotificationMessageType = 'node' | 'version' | 'invite' | 'failedDeploy' | 'successfulDeploy'
+
+export type BaseMessage = {
+  owner: string
+  subject: string
+}
+
+export type VersionMessage = BaseMessage & {
+  version: string
+}
+
+export type InviteMessage = BaseMessage & {
+  team: string
+}
+
+export type Message = BaseMessage | VersionMessage| InviteMessage
 
 export type NotificationTemplate = {
   identityId: string
   messageType: NotificationMessageType
-  args: string[]
+  message: Message
 }
 
 export const getTemplate = (notificationType: NotificationTypeEnum, template: NotificationTemplate): any | null => {
@@ -19,7 +35,7 @@ export const getTemplate = (notificationType: NotificationTypeEnum, template: No
     case 'teams':
       return getTeamsTemplate(template)
     default:
-      return null
+      throw new NotificationTemplateException()
   }
 }
 
@@ -28,7 +44,7 @@ const getDiscordTemplate = (template: NotificationTemplate): any => {
     embeds: [
       {
         title: title,
-        description: getMessage(template.messageType)(...template.args),
+        description: getMessage(template.messageType)(template.message),
         color: '1555130',
         timestamp: new Date(),
       },
@@ -44,7 +60,7 @@ const getSlackTemplate = (template: NotificationTemplate): any => {
         elements: [
           {
             type: 'plain_text',
-            text: getMessage(template.messageType)(...template.args),
+            text: getMessage(template.messageType)(template.message),
           },
         ],
       },
@@ -81,7 +97,7 @@ const getTeamsTemplate = (template: NotificationTemplate): any => {
             },
             {
               type: 'TextBlock',
-              text: getMessage(template.messageType)(...template.args),
+              text: getMessage(template.messageType)(template.message),
               wrap: true,
               size: 'medium',
             },
@@ -99,27 +115,27 @@ const getTeamsTemplate = (template: NotificationTemplate): any => {
   }
 }
 
-const getNodeMessage = (node: string, owner: string): string => {
-  return `${owner} added a new node: ${node}!`
+const getNodeMessage = (args: BaseMessage): string => {
+  return `${args.owner} added a new node: ${args.subject}!`
 }
 
-const getVersionMessage = (version: string, product: string, owner: string): string => {
-  return `${owner} created a new version: ${version} for product ${product}!`
+const getVersionMessage = (args: VersionMessage): string => {
+  return `${args.owner} created a new version: ${args.version} for product ${args.subject}!`
 }
 
-const getInviteMessage = (email: string, team: string, owner: string): string => {
-  return `${email} has been invited to join team ${team} by ${owner} !`
+const getInviteMessage = (args: InviteMessage): string => {
+  return `${args.subject} has been invited to join team ${args.team} by ${args.owner} !`
 }
 
-const getFailedDeployMessage = (deployment: string, owner: string): string => {
-  return `Failed to deploy ${deployment}, initiated by: ${owner}!`
+const getFailedDeployMessage = (args: BaseMessage): string => {
+  return `Failed to deploy ${args.subject}, initiated by: ${args.owner}!`
 }
 
-const getSuccessfullDeployMessage = (deployment: string, owner: string): string => {
-  return `${owner} successfully deployed ${deployment}!`
+const getSuccessfulDeployMessage = (args: BaseMessage): string => {
+  return `${args.owner} successfully deployed ${args.subject}!`
 }
 
-const getMessage = (messageType: NotificationMessageType): ((...args: string[]) => string) => {
+const getMessage = (messageType: NotificationMessageType): ((arg: Message) => string) => {
   switch (messageType) {
     case 'node':
       return getNodeMessage
@@ -129,7 +145,7 @@ const getMessage = (messageType: NotificationMessageType): ((...args: string[]) 
       return getInviteMessage
     case 'failedDeploy':
       return getFailedDeployMessage
-    case 'successfullDeploy':
-      return getSuccessfullDeployMessage
+    case 'successfulDeploy':
+      return getSuccessfulDeployMessage
   }
 }

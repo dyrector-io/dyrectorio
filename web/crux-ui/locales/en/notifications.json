@@ -1,7 +1,7 @@
 {
-  "title": "Notifications",
-  "title-notification": "{{name}} notification",
+  "title-notification": "Notifications - {{name}}",
   "new": "New notification",
+  "description": "Get notifications via your webhooks",
 
   "altNotificationPicture": "Notification",
   "url": "Webhook URL",
@@ -14,14 +14,10 @@
     "teams": "MS Teams"
   },
 
-  "tips": {
-    "common": "Get notifications via your hooks"
-  },
-
   "active": "Active",
 
   "hook": {
-    "button": "Text Webhook",
+    "textWebhook": "Test Webhook",
     "message": "Its a test!",
     "success": "Your hook is working!",
     "error": "Something is wrong with your hook!"

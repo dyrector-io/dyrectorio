@@ -1168,15 +1168,6 @@ export interface NotificationListResponse {
   data: NotificationResponse[]
 }
 
-export interface TestNotificationRequest {
-  accessedBy: string
-  url: string
-}
-
-export interface TestNotificationResponse {
-  ok: boolean
-}
-
 export const CRUX_PACKAGE_NAME = 'crux'
 
 const baseEmpty: object = {}
@@ -3543,44 +3534,6 @@ export const NotificationListResponse = {
   },
 }
 
-const baseTestNotificationRequest: object = { accessedBy: '', url: '' }
-
-export const TestNotificationRequest = {
-  fromJSON(object: any): TestNotificationRequest {
-    const message = {
-      ...baseTestNotificationRequest,
-    } as TestNotificationRequest
-    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
-    message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
-    return message
-  },
-
-  toJSON(message: TestNotificationRequest): unknown {
-    const obj: any = {}
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
-    message.url !== undefined && (obj.url = message.url)
-    return obj
-  },
-}
-
-const baseTestNotificationResponse: object = { ok: false }
-
-export const TestNotificationResponse = {
-  fromJSON(object: any): TestNotificationResponse {
-    const message = {
-      ...baseTestNotificationResponse,
-    } as TestNotificationResponse
-    message.ok = object.ok !== undefined && object.ok !== null ? Boolean(object.ok) : false
-    return message
-  },
-
-  toJSON(message: TestNotificationResponse): unknown {
-    const obj: any = {}
-    message.ok !== undefined && (obj.ok = message.ok)
-    return obj
-  },
-}
-
 /** Services */
 
 export interface CruxProductClient {
@@ -4183,13 +4136,9 @@ export interface CruxNotificationClient {
 
   getNotificationList(request: AccessRequest, metadata: Metadata, ...rest: any): Observable<NotificationListResponse>
 
-  getNotificationDetail(request: IdRequest, metadata: Metadata, ...rest: any): Observable<NotificationDetailsResponse>
+  getNotificationDetails(request: IdRequest, metadata: Metadata, ...rest: any): Observable<NotificationDetailsResponse>
 
-  testNotification(
-    request: TestNotificationRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Observable<TestNotificationResponse>
+  testNotification(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
 }
 
 export interface CruxNotificationController {
@@ -4213,17 +4162,13 @@ export interface CruxNotificationController {
     ...rest: any
   ): Promise<NotificationListResponse> | Observable<NotificationListResponse> | NotificationListResponse
 
-  getNotificationDetail(
+  getNotificationDetails(
     request: IdRequest,
     metadata: Metadata,
     ...rest: any
   ): Promise<NotificationDetailsResponse> | Observable<NotificationDetailsResponse> | NotificationDetailsResponse
 
-  testNotification(
-    request: TestNotificationRequest,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<TestNotificationResponse> | Observable<TestNotificationResponse> | TestNotificationResponse
+  testNotification(request: IdRequest, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
 }
 
 export function CruxNotificationControllerMethods() {
@@ -4233,7 +4178,7 @@ export function CruxNotificationControllerMethods() {
       'updateNotification',
       'deleteNotification',
       'getNotificationList',
-      'getNotificationDetail',
+      'getNotificationDetails',
       'testNotification',
     ]
     for (const method of grpcMethods) {

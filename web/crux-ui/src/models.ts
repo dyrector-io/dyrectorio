@@ -627,7 +627,7 @@ export type UpdateNotification = CreateNotification & {
 
 export type NotificationDetails = CreateNotification & {
   id: string
-  createdBy: string
+  creator: string
 }
 
 export type NotificationItem = Omit<NotificationDetails, 'active'>

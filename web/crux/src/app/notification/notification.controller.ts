@@ -5,15 +5,13 @@ import {
   CreateNotificationResponse,
   CruxNotificationController,
   CruxNotificationControllerMethods,
+  Empty,
   IdRequest,
   NotificationDetailsResponse,
   NotificationListResponse,
-  TestNotificationRequest,
-  TestNotificationResponse,
   UpdateEntityResponse,
   UpdateNotificationRequest,
 } from 'src/grpc/protobuf/proto/crux'
-import { TeamRoleRequired } from '../team/guards/team.role.guard'
 import { NotificationTeamAccessGuard } from './guards/notification.team-access.guard'
 import { NotificationService } from './notification.service'
 
@@ -39,12 +37,11 @@ export class NotificationController implements CruxNotificationController {
     return await this.notificationService.getNotifications(request)
   }
 
-  async getNotificationDetail(request: IdRequest): Promise<NotificationDetailsResponse> {
-    return await this.notificationService.getNotificationDetail(request)
+  async getNotificationDetails(request: IdRequest): Promise<NotificationDetailsResponse> {
+    return await this.notificationService.getNotificationDetails(request)
   }
 
-  @TeamRoleRequired('none')
-  async testNotification(request: TestNotificationRequest): Promise<TestNotificationResponse> {
+  async testNotification(request: IdRequest): Promise<Empty> {
     return await this.notificationService.testNotification(request)
   }
 }

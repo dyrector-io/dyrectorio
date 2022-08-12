@@ -40,7 +40,7 @@ const NotificationsPage = (props: NotificationsPageProps) => {
 
   return (
     <Layout>
-      <PageHead title={t('title')} />
+      <PageHead title={t('common:notifications')} />
       <PageHeading pageLink={pageLink}>
         <ListPageMenu creating={creating} setCreating={setCreating} submitRef={submitRef} />
       </PageHeading>

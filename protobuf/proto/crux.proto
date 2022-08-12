@@ -103,8 +103,8 @@
    rpc UpdateNotification(UpdateNotificationRequest) returns (UpdateEntityResponse);
    rpc DeleteNotification(IdRequest) returns (Empty);
    rpc GetNotificationList(AccessRequest) returns (NotificationListResponse);
-   rpc GetNotificationDetail(IdRequest) returns (NotificationDetailsResponse);
-   rpc TestNotification(TestNotificationRequest) returns (TestNotificationResponse);
+   rpc GetNotificationDetails(IdRequest) returns (NotificationDetailsResponse);
+   rpc TestNotification(IdRequest) returns (Empty);
  }
  
  service CruxAudit {
@@ -864,13 +864,3 @@
  message NotificationListResponse {
    repeated NotificationResponse data = 1000;
  }
-
- message TestNotificationRequest {
-  string accessedBy = 2;
-  string url = 100;
- }
-
- message TestNotificationResponse {
-  bool ok = 100;
- }
- 

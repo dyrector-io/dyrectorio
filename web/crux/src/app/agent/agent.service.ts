@@ -1,4 +1,4 @@
-import { NotificationMessageType, NotificationTemplate } from 'src/domain/notification-templates'
+import { BaseMessage, NotificationMessageType } from 'src/domain/notification-templates'
 import { Injectable, Logger } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { DeploymentEventTypeEnum, DeploymentStatusEnum, NodeTypeEnum } from '@prisma/client'
@@ -168,12 +168,12 @@ export class AgentService {
         this.updateDeploymentStatuses(agent.id, deployment.id)
 
         let messageType: NotificationMessageType =
-          deployment.status() == DeploymentStatus.SUCCESSFUL ? 'successfullDeploy' : 'failedDeploy'
+          deployment.status() == DeploymentStatus.SUCCESSFUL ? 'successfulDeploy' : 'failedDeploy'
 
         await this.notificationService.sendNotification({
           identityId: deployment.notification.accessedBy,
           messageType: messageType,
-          args: [deployment.notification.deploymentName],
+          message: { subject: deployment.notification.deploymentName } as BaseMessage,
         })
 
         this.logger.debug(`Deployment finished: ${deployment.id}`)

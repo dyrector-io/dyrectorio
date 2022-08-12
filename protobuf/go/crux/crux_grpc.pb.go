@@ -2328,8 +2328,8 @@ type CruxNotificationClient interface {
 	UpdateNotification(ctx context.Context, in *UpdateNotificationRequest, opts ...grpc.CallOption) (*UpdateEntityResponse, error)
 	DeleteNotification(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error)
 	GetNotificationList(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*NotificationListResponse, error)
-	GetNotificationDetail(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*NotificationDetailsResponse, error)
-	TestNotification(ctx context.Context, in *TestNotificationRequest, opts ...grpc.CallOption) (*TestNotificationResponse, error)
+	GetNotificationDetails(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*NotificationDetailsResponse, error)
+	TestNotification(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error)
 }
 
 type cruxNotificationClient struct {
@@ -2376,17 +2376,17 @@ func (c *cruxNotificationClient) GetNotificationList(ctx context.Context, in *Ac
 	return out, nil
 }
 
-func (c *cruxNotificationClient) GetNotificationDetail(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*NotificationDetailsResponse, error) {
+func (c *cruxNotificationClient) GetNotificationDetails(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*NotificationDetailsResponse, error) {
 	out := new(NotificationDetailsResponse)
-	err := c.cc.Invoke(ctx, "/crux.CruxNotification/GetNotificationDetail", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/crux.CruxNotification/GetNotificationDetails", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *cruxNotificationClient) TestNotification(ctx context.Context, in *TestNotificationRequest, opts ...grpc.CallOption) (*TestNotificationResponse, error) {
-	out := new(TestNotificationResponse)
+func (c *cruxNotificationClient) TestNotification(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
 	err := c.cc.Invoke(ctx, "/crux.CruxNotification/TestNotification", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -2402,8 +2402,8 @@ type CruxNotificationServer interface {
 	UpdateNotification(context.Context, *UpdateNotificationRequest) (*UpdateEntityResponse, error)
 	DeleteNotification(context.Context, *IdRequest) (*Empty, error)
 	GetNotificationList(context.Context, *AccessRequest) (*NotificationListResponse, error)
-	GetNotificationDetail(context.Context, *IdRequest) (*NotificationDetailsResponse, error)
-	TestNotification(context.Context, *TestNotificationRequest) (*TestNotificationResponse, error)
+	GetNotificationDetails(context.Context, *IdRequest) (*NotificationDetailsResponse, error)
+	TestNotification(context.Context, *IdRequest) (*Empty, error)
 	mustEmbedUnimplementedCruxNotificationServer()
 }
 
@@ -2423,10 +2423,10 @@ func (UnimplementedCruxNotificationServer) DeleteNotification(context.Context, *
 func (UnimplementedCruxNotificationServer) GetNotificationList(context.Context, *AccessRequest) (*NotificationListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNotificationList not implemented")
 }
-func (UnimplementedCruxNotificationServer) GetNotificationDetail(context.Context, *IdRequest) (*NotificationDetailsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetNotificationDetail not implemented")
+func (UnimplementedCruxNotificationServer) GetNotificationDetails(context.Context, *IdRequest) (*NotificationDetailsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetNotificationDetails not implemented")
 }
-func (UnimplementedCruxNotificationServer) TestNotification(context.Context, *TestNotificationRequest) (*TestNotificationResponse, error) {
+func (UnimplementedCruxNotificationServer) TestNotification(context.Context, *IdRequest) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TestNotification not implemented")
 }
 func (UnimplementedCruxNotificationServer) mustEmbedUnimplementedCruxNotificationServer() {}
@@ -2514,26 +2514,26 @@ func _CruxNotification_GetNotificationList_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
-func _CruxNotification_GetNotificationDetail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _CruxNotification_GetNotificationDetails_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(IdRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CruxNotificationServer).GetNotificationDetail(ctx, in)
+		return srv.(CruxNotificationServer).GetNotificationDetails(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/crux.CruxNotification/GetNotificationDetail",
+		FullMethod: "/crux.CruxNotification/GetNotificationDetails",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CruxNotificationServer).GetNotificationDetail(ctx, req.(*IdRequest))
+		return srv.(CruxNotificationServer).GetNotificationDetails(ctx, req.(*IdRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _CruxNotification_TestNotification_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TestNotificationRequest)
+	in := new(IdRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -2545,7 +2545,7 @@ func _CruxNotification_TestNotification_Handler(srv interface{}, ctx context.Con
 		FullMethod: "/crux.CruxNotification/TestNotification",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CruxNotificationServer).TestNotification(ctx, req.(*TestNotificationRequest))
+		return srv.(CruxNotificationServer).TestNotification(ctx, req.(*IdRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -2574,8 +2574,8 @@ var CruxNotification_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _CruxNotification_GetNotificationList_Handler,
 		},
 		{
-			MethodName: "GetNotificationDetail",
-			Handler:    _CruxNotification_GetNotificationDetail_Handler,
+			MethodName: "GetNotificationDetails",
+			Handler:    _CruxNotification_GetNotificationDetails_Handler,
 		},
 		{
 			MethodName: "TestNotification",

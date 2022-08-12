@@ -1179,15 +1179,6 @@ export interface NotificationListResponse {
   data: NotificationResponse[]
 }
 
-export interface TestNotificationRequest {
-  accessedBy: string
-  url: string
-}
-
-export interface TestNotificationResponse {
-  ok: boolean
-}
-
 const baseEmpty: object = {}
 
 export const Empty = {
@@ -8241,121 +8232,6 @@ export const NotificationListResponse = {
   },
 }
 
-const baseTestNotificationRequest: object = { accessedBy: '', url: '' }
-
-export const TestNotificationRequest = {
-  encode(message: TestNotificationRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
-    }
-    if (message.url !== '') {
-      writer.uint32(802).string(message.url)
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): TestNotificationRequest {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = {
-      ...baseTestNotificationRequest,
-    } as TestNotificationRequest
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 2:
-          message.accessedBy = reader.string()
-          break
-        case 100:
-          message.url = reader.string()
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): TestNotificationRequest {
-    const message = {
-      ...baseTestNotificationRequest,
-    } as TestNotificationRequest
-    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
-    message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
-    return message
-  },
-
-  toJSON(message: TestNotificationRequest): unknown {
-    const obj: any = {}
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
-    message.url !== undefined && (obj.url = message.url)
-    return obj
-  },
-
-  fromPartial<I extends Exact<DeepPartial<TestNotificationRequest>, I>>(object: I): TestNotificationRequest {
-    const message = {
-      ...baseTestNotificationRequest,
-    } as TestNotificationRequest
-    message.accessedBy = object.accessedBy ?? ''
-    message.url = object.url ?? ''
-    return message
-  },
-}
-
-const baseTestNotificationResponse: object = { ok: false }
-
-export const TestNotificationResponse = {
-  encode(message: TestNotificationResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.ok === true) {
-      writer.uint32(800).bool(message.ok)
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): TestNotificationResponse {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = {
-      ...baseTestNotificationResponse,
-    } as TestNotificationResponse
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 100:
-          message.ok = reader.bool()
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): TestNotificationResponse {
-    const message = {
-      ...baseTestNotificationResponse,
-    } as TestNotificationResponse
-    message.ok = object.ok !== undefined && object.ok !== null ? Boolean(object.ok) : false
-    return message
-  },
-
-  toJSON(message: TestNotificationResponse): unknown {
-    const obj: any = {}
-    message.ok !== undefined && (obj.ok = message.ok)
-    return obj
-  },
-
-  fromPartial<I extends Exact<DeepPartial<TestNotificationResponse>, I>>(object: I): TestNotificationResponse {
-    const message = {
-      ...baseTestNotificationResponse,
-    } as TestNotificationResponse
-    message.ok = object.ok ?? false
-    return message
-  },
-}
-
 /** Services */
 export const CruxProductService = {
   /** CRUD */
@@ -9737,8 +9613,8 @@ export const CruxNotificationService = {
       Buffer.from(NotificationListResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer) => NotificationListResponse.decode(value),
   },
-  getNotificationDetail: {
-    path: '/crux.CruxNotification/GetNotificationDetail',
+  getNotificationDetails: {
+    path: '/crux.CruxNotification/GetNotificationDetails',
     requestStream: false,
     responseStream: false,
     requestSerialize: (value: IdRequest) => Buffer.from(IdRequest.encode(value).finish()),
@@ -9751,11 +9627,10 @@ export const CruxNotificationService = {
     path: '/crux.CruxNotification/TestNotification',
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: TestNotificationRequest) => Buffer.from(TestNotificationRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => TestNotificationRequest.decode(value),
-    responseSerialize: (value: TestNotificationResponse) =>
-      Buffer.from(TestNotificationResponse.encode(value).finish()),
-    responseDeserialize: (value: Buffer) => TestNotificationResponse.decode(value),
+    requestSerialize: (value: IdRequest) => Buffer.from(IdRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => IdRequest.decode(value),
+    responseSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => Empty.decode(value),
   },
 } as const
 
@@ -9764,8 +9639,8 @@ export interface CruxNotificationServer extends UntypedServiceImplementation {
   updateNotification: handleUnaryCall<UpdateNotificationRequest, UpdateEntityResponse>
   deleteNotification: handleUnaryCall<IdRequest, Empty>
   getNotificationList: handleUnaryCall<AccessRequest, NotificationListResponse>
-  getNotificationDetail: handleUnaryCall<IdRequest, NotificationDetailsResponse>
-  testNotification: handleUnaryCall<TestNotificationRequest, TestNotificationResponse>
+  getNotificationDetails: handleUnaryCall<IdRequest, NotificationDetailsResponse>
+  testNotification: handleUnaryCall<IdRequest, Empty>
 }
 
 export interface CruxNotificationClient extends Client {
@@ -9829,35 +9704,32 @@ export interface CruxNotificationClient extends Client {
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: NotificationListResponse) => void,
   ): ClientUnaryCall
-  getNotificationDetail(
+  getNotificationDetails(
     request: IdRequest,
     callback: (error: ServiceError | null, response: NotificationDetailsResponse) => void,
   ): ClientUnaryCall
-  getNotificationDetail(
+  getNotificationDetails(
     request: IdRequest,
     metadata: Metadata,
     callback: (error: ServiceError | null, response: NotificationDetailsResponse) => void,
   ): ClientUnaryCall
-  getNotificationDetail(
+  getNotificationDetails(
     request: IdRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: NotificationDetailsResponse) => void,
   ): ClientUnaryCall
+  testNotification(request: IdRequest, callback: (error: ServiceError | null, response: Empty) => void): ClientUnaryCall
   testNotification(
-    request: TestNotificationRequest,
-    callback: (error: ServiceError | null, response: TestNotificationResponse) => void,
-  ): ClientUnaryCall
-  testNotification(
-    request: TestNotificationRequest,
+    request: IdRequest,
     metadata: Metadata,
-    callback: (error: ServiceError | null, response: TestNotificationResponse) => void,
+    callback: (error: ServiceError | null, response: Empty) => void,
   ): ClientUnaryCall
   testNotification(
-    request: TestNotificationRequest,
+    request: IdRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: TestNotificationResponse) => void,
+    callback: (error: ServiceError | null, response: Empty) => void,
   ): ClientUnaryCall
 }
 

@@ -20,7 +20,7 @@ export const DyoToggle = (props: DyoToggleProps) => {
   }
 
   return (
-    <Switch.Group as="div" className={clsx(props.className ?? 'w-full flex justify-center')}>
+    <Switch.Group as="div" className={clsx(props.className, 'w-full flex justify-center')}>
       <Switch.Label as="div" className="mr-4">
         {checked ? props.nameChecked : props.nameUnchecked}
       </Switch.Label>

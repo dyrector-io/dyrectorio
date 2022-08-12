@@ -169,6 +169,5 @@ export const MUTABLE_DEPLOYMENT_STATUSES = [
 
 export type DeploymentNotification = {
   deploymentName: string
-  versionName: string
   accessedBy: string
 }

@@ -15,7 +15,6 @@ import {
   NodeInstallResponse,
   NodeListResponse,
   NodeScriptResponse,
-  NodeType,
   ServiceIdRequest,
   UpdateNodeRequest,
   WatchContainerStatusRequest,
@@ -24,6 +23,7 @@ import { AgentService } from '../agent/agent.service'
 import { TeamRepository } from '../team/team.repository'
 import { NodeMapper } from './node.mapper'
 import { DomainNotificationService } from 'src/services/domain.notification.service'
+import { BaseMessage } from 'src/domain/notification-templates'
 
 @Injectable()
 export class NodeService {
@@ -82,7 +82,7 @@ export class NodeService {
     await this.notificationService.sendNotification({
       identityId: req.accessedBy,
       messageType: 'node',
-      args: [node.name],
+      message: { subject: node.name } as BaseMessage,
     })
 
     return CreateEntityResponse.fromJSON(node)

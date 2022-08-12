@@ -1,3 +1,4 @@
+import { WEBOOK_TEST_DELAY } from '@app/const'
 import { DyoButton } from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoChips from '@app/elements/dyo-chips'
@@ -6,6 +7,7 @@ import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { DyoSwitch } from '@app/elements/dyo-switch'
 import { defaultApiErrorHandler } from '@app/errors'
+import { useThrottleing } from '@app/hooks/use-throttleing'
 import {
   CreateNotification,
   NotificationDetails,
@@ -14,12 +16,12 @@ import {
   NOTIFICATION_TYPE_VALUES,
   UpdateNotification,
 } from '@app/models'
-import { notificationApiHookUrl, notificationApiUrl } from '@app/routes'
+import { API_NOTIFICATIONS, API_NOTIFICATIONS_HOOK } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { notificationSchema } from '@app/validation'
 import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject, useEffect, useState } from 'react'
+import { MutableRefObject, useState } from 'react'
 import toast from 'react-hot-toast'
 
 interface EditNotificationCardProps {
@@ -39,9 +41,11 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
       name: '',
       type: 'discord',
       url: '',
-      createdBy: '',
+      creator: '',
     },
   )
+
+  const throttle = useThrottleing(WEBOOK_TEST_DELAY)
 
   const isEditMode = !!notification.id
 
@@ -60,8 +64,8 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
       }
 
       const response = await (isEditMode
-        ? sendForm('PUT', notificationApiUrl(notification.id), request as UpdateNotification)
-        : sendForm('POST', notificationApiUrl(), request as CreateNotification))
+        ? sendForm('PUT', API_NOTIFICATIONS + `/${notification.id}`, request as UpdateNotification)
+        : sendForm('POST', API_NOTIFICATIONS, request as CreateNotification))
 
       if (response.ok) {
         const result = response.status == 200 ? ((await response.json()) as NotificationDetails) : { ...values }
@@ -79,36 +83,26 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
     props.submitRef.current = formik.submitForm
   }
 
-  const [testDisabled, setTestDisabled] = useState<boolean>(true)
-
-  useEffect(() => {
-    setTestDisabled(formik.errors.url != undefined || formik.values.url.length == 0)
-  }, [formik.errors.url, formik.values.url])
-
   const onTestHook = async () => {
-    const url = formik.values.url as string
+    if (!notification.id) {
+      return
+    }
 
-    const res = await fetch(notificationApiHookUrl(), {
+    const res = await fetch(API_NOTIFICATIONS_HOOK, {
       method: 'POST',
-      body: url,
+      body: notification.id,
     })
 
-    if (res.ok) {
-      const valid = (await res.json()) as boolean
-      valid ? toast.success(t('hook.success')) : toast.error(t('hook.error'))
-    } else {
-      toast.error(t('hook.error'))
-    }
+    res.ok ? toast.success(t('hook.success')) : toast.error(t('hook.error'))
   }
 
   return (
-    <>
       <DyoCard className={props.className}>
         <DyoHeading element="h4" className="text-lg text-bright">
           {isEditMode ? t('common:editName', { name: notification.name }) : t('new')}
         </DyoHeading>
 
-        <DyoLabel className="text-light">{t('tips.common')}</DyoLabel>
+        <DyoLabel className="text-light">{t('description')}</DyoLabel>
 
         <form className="grid grid-cols-2 gap-8" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
           <div className="flex flex-col">
@@ -153,14 +147,19 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
                 <DyoSwitch fieldName="active" checked={formik.values.active} setFieldValue={formik.setFieldValue} />
               </div>
 
-              <DyoButton type="button" className="px-4 whitespace-nowrap" onClick={onTestHook} disabled={testDisabled}>
-                {t('hook.button')}
-              </DyoButton>
+              {isEditMode && (
+                <DyoButton
+                  type="button"
+                  className="px-4 whitespace-nowrap"
+                  onClick={() => throttle(onTestHook)}
+                >
+                  {t('hook.textWebhook')}
+                </DyoButton>
+              )}
             </div>
           </div>
         </form>
       </DyoCard>
-    </>
   )
 }
 

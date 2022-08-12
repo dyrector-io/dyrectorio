@@ -1,5 +1,5 @@
 import { Body, Controller, UseGuards } from '@nestjs/common'
-import { concatAll, from, last, Observable } from 'rxjs'
+import { concatAll, from, Observable } from 'rxjs'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import { Empty } from 'src/grpc/protobuf/proto/agent'
 import {

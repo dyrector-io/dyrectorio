@@ -133,7 +133,7 @@ const EditImageCard = (props: EditImageCardProps) => {
       <DyoConfirmationModal
         config={deleteModalConfig}
         title={t('common:confirmDelete', { name: image.name })}
-        description={t('common:defaultDeleteDescription', { name: image.name })}
+        description={t('common:deleteDescription', { name: image.name })}
         confirmText={t('common:delete')}
         className="w-1/4"
         confirmColor="bg-error-red"
