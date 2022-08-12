@@ -134,7 +134,7 @@ model VersionsOnParentVersion {
   parentVersionId String @unique @db.Uuid
 
   child  Version @relation(name: "child", fields: [versionId], references: [id], onDelete: Cascade)
-  parent Version @relation(name: "parent", fields: [parentVersionId], references: [id])
+  parent Version @relation(name: "parent", fields: [parentVersionId], references: [id], onDelete: Cascade)
 
   @@id([versionId, parentVersionId])
 }

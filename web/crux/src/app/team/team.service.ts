@@ -130,7 +130,7 @@ export class TeamService {
       },
     })
 
-    // If user doesn't has active team, make the current one to active
+    // If the user doesn't have an active team, make the current one active
     const active = !hasActiveTeam
 
     // Create Team entity in database
