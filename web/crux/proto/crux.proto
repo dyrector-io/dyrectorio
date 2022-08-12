@@ -629,9 +629,12 @@ message ContainerStatusItem {
   string name = 101;
   string command = 103;
   google.protobuf.Timestamp createdAt = 104;
-  /** The 'State' of the container (Created, Running, etc) */
+  /* The 'State' of the container (Created, Running, etc) */
   ContainerState state = 105;
-  /** The 'Status' of the container ("Created 1min ago", "Exited with code 123", etc) */
+  /*
+   * The 'Status' of the container ("Created 1min ago", "Exited with code 123", etc).
+   * Unused but left here for reverse compatibility with the legacy version. 
+   */
   string status = 106;
   string imageName = 107;
   string imageTag = 108;

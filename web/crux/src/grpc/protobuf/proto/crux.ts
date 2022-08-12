@@ -951,7 +951,10 @@ export interface ContainerStatusItem {
   createdAt: Timestamp | undefined
   /** The 'State' of the container (Created, Running, etc) */
   state: ContainerState
-  /** The 'Status' of the container ("Created 1min ago", "Exited with code 123", etc) */
+  /**
+   * The 'Status' of the container ("Created 1min ago", "Exited with code 123", etc).
+   * Unused but left here for reverse compatibility with the legacy version.
+   */
   status: string
   imageName: string
   imageTag: string

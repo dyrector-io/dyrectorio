@@ -4923,9 +4923,11 @@ type ContainerStatusItem struct {
 	Name        string                 `protobuf:"bytes,101,opt,name=name,proto3" json:"name,omitempty"`
 	Command     string                 `protobuf:"bytes,103,opt,name=command,proto3" json:"command,omitempty"`
 	CreatedAt   *timestamppb.Timestamp `protobuf:"bytes,104,opt,name=createdAt,proto3" json:"createdAt,omitempty"`
-	//* The 'State' of the container (Created, Running, etc)
+	// The 'State' of the container (Created, Running, etc)
 	State ContainerState `protobuf:"varint,105,opt,name=state,proto3,enum=crux.ContainerState" json:"state,omitempty"`
-	//* The 'Status' of the container ("Created 1min ago", "Exited with code 123", etc)
+	//
+	// The 'Status' of the container ("Created 1min ago", "Exited with code 123", etc).
+	// Unused but left here for reverse compatibility with the legacy version.
 	Status    string           `protobuf:"bytes,106,opt,name=status,proto3" json:"status,omitempty"`
 	ImageName string           `protobuf:"bytes,107,opt,name=imageName,proto3" json:"imageName,omitempty"`
 	ImageTag  string           `protobuf:"bytes,108,opt,name=imageTag,proto3" json:"imageTag,omitempty"`
