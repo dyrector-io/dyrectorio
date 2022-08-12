@@ -46,8 +46,8 @@ service CruxNode {
 
   rpc SubscribeNodeEventChannel(ServiceIdRequest)
       returns (stream NodeEventMessage);
-  rpc WatchContainerStatus(WatchContainerStatusRequest)
-      returns (stream ContainerStatusListMessage);
+  rpc WatchContainerState(WatchContainerStateRequest)
+      returns (stream ContainerStateListMessage);
 }
 
 service CruxProductVersion {
@@ -612,7 +612,7 @@ message NodeEventMessage {
   optional string address = 101;
 }
 
-message WatchContainerStatusRequest {
+message WatchContainerStateRequest {
   string accessedBy = 2;
 
   string nodeId = 100;
@@ -624,7 +624,7 @@ message ContainerPort {
   int32 external = 2;
 }
 
-message ContainerStatusItem {
+message ContainerStateItem {
   string containerId = 100;
   string name = 101;
   string command = 103;
@@ -642,9 +642,9 @@ message ContainerStatusItem {
   repeated ContainerPort ports = 1000;
 }
 
-message ContainerStatusListMessage {
+message ContainerStateListMessage {
   optional string prefix = 100;
-  repeated ContainerStatusItem data = 1000;
+  repeated ContainerStateItem data = 1000;
 }
 
 // DEPLOYMENT
@@ -775,7 +775,7 @@ enum DeploymentEventType {
   CONTAINER_STATUS = 3;
 }
 
-message DeploymentEventContainerStatus {
+message DeploymentEventContainerState {
   string instanceId = 1;
   ContainerState state = 2;
 }
@@ -788,7 +788,7 @@ message DeploymentEventResponse {
   oneof details {
     DeploymentEventLog log = 200;
     DeploymentStatus deploymentStatus = 201;
-    DeploymentEventContainerStatus containerStatus = 202;
+    DeploymentEventContainerState containerStatus = 202;
   }
 }
 
@@ -797,7 +797,7 @@ message DeploymentEventListResponse {
 }
 
 enum ContainerState {
-  UNKNOWN_CONTAINER_STATUS = 0;
+  UNKNOWN_CONTAINER_STATE = 0;
   CREATED = 1;
   RESTARTING = 2;
   RUNNING = 3;

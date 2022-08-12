@@ -411,7 +411,7 @@ export function deploymentEventTypeToJSON(object: DeploymentEventType): string {
 }
 
 export enum ContainerState {
-  UNKNOWN_CONTAINER_STATUS = 0,
+  UNKNOWN_CONTAINER_STATE = 0,
   CREATED = 1,
   RESTARTING = 2,
   RUNNING = 3,
@@ -425,8 +425,8 @@ export enum ContainerState {
 export function containerStateFromJSON(object: any): ContainerState {
   switch (object) {
     case 0:
-    case 'UNKNOWN_CONTAINER_STATUS':
-      return ContainerState.UNKNOWN_CONTAINER_STATUS
+    case 'UNKNOWN_CONTAINER_STATE':
+      return ContainerState.UNKNOWN_CONTAINER_STATE
     case 1:
     case 'CREATED':
       return ContainerState.CREATED
@@ -457,8 +457,8 @@ export function containerStateFromJSON(object: any): ContainerState {
 
 export function containerStateToJSON(object: ContainerState): string {
   switch (object) {
-    case ContainerState.UNKNOWN_CONTAINER_STATUS:
-      return 'UNKNOWN_CONTAINER_STATUS'
+    case ContainerState.UNKNOWN_CONTAINER_STATE:
+      return 'UNKNOWN_CONTAINER_STATE'
     case ContainerState.CREATED:
       return 'CREATED'
     case ContainerState.RESTARTING:
@@ -933,7 +933,7 @@ export interface NodeEventMessage {
   address?: string | undefined
 }
 
-export interface WatchContainerStatusRequest {
+export interface WatchContainerStateRequest {
   accessedBy: string
   nodeId: string
   prefix?: string | undefined
@@ -944,7 +944,7 @@ export interface ContainerPort {
   external: number
 }
 
-export interface ContainerStatusItem {
+export interface ContainerStateItem {
   containerId: string
   name: string
   command: string
@@ -961,9 +961,9 @@ export interface ContainerStatusItem {
   ports: ContainerPort[]
 }
 
-export interface ContainerStatusListMessage {
+export interface ContainerStateListMessage {
   prefix?: string | undefined
-  data: ContainerStatusItem[]
+  data: ContainerStateItem[]
 }
 
 export interface InstanceDeploymentItem {
@@ -1063,7 +1063,7 @@ export interface DeploymentDetailsResponse {
   instances: InstanceResponse[]
 }
 
-export interface DeploymentEventContainerStatus {
+export interface DeploymentEventContainerState {
   instanceId: string
   state: ContainerState
 }
@@ -1077,7 +1077,7 @@ export interface DeploymentEventResponse {
   createdAt: Timestamp | undefined
   log: DeploymentEventLog | undefined
   deploymentStatus: DeploymentStatus | undefined
-  containerStatus: DeploymentEventContainerStatus | undefined
+  containerStatus: DeploymentEventContainerState | undefined
 }
 
 export interface DeploymentEventListResponse {
@@ -2632,20 +2632,20 @@ export const NodeEventMessage = {
   },
 }
 
-const baseWatchContainerStatusRequest: object = { accessedBy: '', nodeId: '' }
+const baseWatchContainerStateRequest: object = { accessedBy: '', nodeId: '' }
 
-export const WatchContainerStatusRequest = {
-  fromJSON(object: any): WatchContainerStatusRequest {
+export const WatchContainerStateRequest = {
+  fromJSON(object: any): WatchContainerStateRequest {
     const message = {
-      ...baseWatchContainerStatusRequest,
-    } as WatchContainerStatusRequest
+      ...baseWatchContainerStateRequest,
+    } as WatchContainerStateRequest
     message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
     message.nodeId = object.nodeId !== undefined && object.nodeId !== null ? String(object.nodeId) : ''
     message.prefix = object.prefix !== undefined && object.prefix !== null ? String(object.prefix) : undefined
     return message
   },
 
-  toJSON(message: WatchContainerStatusRequest): unknown {
+  toJSON(message: WatchContainerStateRequest): unknown {
     const obj: any = {}
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.nodeId !== undefined && (obj.nodeId = message.nodeId)
@@ -2672,7 +2672,7 @@ export const ContainerPort = {
   },
 }
 
-const baseContainerStatusItem: object = {
+const baseContainerStateItem: object = {
   containerId: '',
   name: '',
   command: '',
@@ -2682,9 +2682,9 @@ const baseContainerStatusItem: object = {
   imageTag: '',
 }
 
-export const ContainerStatusItem = {
-  fromJSON(object: any): ContainerStatusItem {
-    const message = { ...baseContainerStatusItem } as ContainerStatusItem
+export const ContainerStateItem = {
+  fromJSON(object: any): ContainerStateItem {
+    const message = { ...baseContainerStateItem } as ContainerStateItem
     message.containerId =
       object.containerId !== undefined && object.containerId !== null ? String(object.containerId) : ''
     message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
@@ -2699,7 +2699,7 @@ export const ContainerStatusItem = {
     return message
   },
 
-  toJSON(message: ContainerStatusItem): unknown {
+  toJSON(message: ContainerStateItem): unknown {
     const obj: any = {}
     message.containerId !== undefined && (obj.containerId = message.containerId)
     message.name !== undefined && (obj.name = message.name)
@@ -2718,23 +2718,23 @@ export const ContainerStatusItem = {
   },
 }
 
-const baseContainerStatusListMessage: object = {}
+const baseContainerStateListMessage: object = {}
 
-export const ContainerStatusListMessage = {
-  fromJSON(object: any): ContainerStatusListMessage {
+export const ContainerStateListMessage = {
+  fromJSON(object: any): ContainerStateListMessage {
     const message = {
-      ...baseContainerStatusListMessage,
-    } as ContainerStatusListMessage
+      ...baseContainerStateListMessage,
+    } as ContainerStateListMessage
     message.prefix = object.prefix !== undefined && object.prefix !== null ? String(object.prefix) : undefined
-    message.data = (object.data ?? []).map((e: any) => ContainerStatusItem.fromJSON(e))
+    message.data = (object.data ?? []).map((e: any) => ContainerStateItem.fromJSON(e))
     return message
   },
 
-  toJSON(message: ContainerStatusListMessage): unknown {
+  toJSON(message: ContainerStateListMessage): unknown {
     const obj: any = {}
     message.prefix !== undefined && (obj.prefix = message.prefix)
     if (message.data) {
-      obj.data = message.data.map(e => (e ? ContainerStatusItem.toJSON(e) : undefined))
+      obj.data = message.data.map(e => (e ? ContainerStateItem.toJSON(e) : undefined))
     } else {
       obj.data = []
     }
@@ -3178,19 +3178,19 @@ export const DeploymentDetailsResponse = {
   },
 }
 
-const baseDeploymentEventContainerStatus: object = { instanceId: '', state: 0 }
+const baseDeploymentEventContainerState: object = { instanceId: '', state: 0 }
 
-export const DeploymentEventContainerStatus = {
-  fromJSON(object: any): DeploymentEventContainerStatus {
+export const DeploymentEventContainerState = {
+  fromJSON(object: any): DeploymentEventContainerState {
     const message = {
-      ...baseDeploymentEventContainerStatus,
-    } as DeploymentEventContainerStatus
+      ...baseDeploymentEventContainerState,
+    } as DeploymentEventContainerState
     message.instanceId = object.instanceId !== undefined && object.instanceId !== null ? String(object.instanceId) : ''
     message.state = object.state !== undefined && object.state !== null ? containerStateFromJSON(object.state) : 0
     return message
   },
 
-  toJSON(message: DeploymentEventContainerStatus): unknown {
+  toJSON(message: DeploymentEventContainerState): unknown {
     const obj: any = {}
     message.instanceId !== undefined && (obj.instanceId = message.instanceId)
     message.state !== undefined && (obj.state = containerStateToJSON(message.state))
@@ -3235,7 +3235,7 @@ export const DeploymentEventResponse = {
         : undefined
     message.containerStatus =
       object.containerStatus !== undefined && object.containerStatus !== null
-        ? DeploymentEventContainerStatus.fromJSON(object.containerStatus)
+        ? DeploymentEventContainerState.fromJSON(object.containerStatus)
         : undefined
     return message
   },
@@ -3250,7 +3250,7 @@ export const DeploymentEventResponse = {
         message.deploymentStatus !== undefined ? deploymentStatusToJSON(message.deploymentStatus) : undefined)
     message.containerStatus !== undefined &&
       (obj.containerStatus = message.containerStatus
-        ? DeploymentEventContainerStatus.toJSON(message.containerStatus)
+        ? DeploymentEventContainerState.toJSON(message.containerStatus)
         : undefined)
     return obj
   },
@@ -3439,11 +3439,11 @@ export interface CruxNodeClient {
 
   subscribeNodeEventChannel(request: ServiceIdRequest, metadata: Metadata, ...rest: any): Observable<NodeEventMessage>
 
-  watchContainerStatus(
-    request: WatchContainerStatusRequest,
+  watchContainerState(
+    request: WatchContainerStateRequest,
     metadata: Metadata,
     ...rest: any
-  ): Observable<ContainerStatusListMessage>
+  ): Observable<ContainerStateListMessage>
 }
 
 export interface CruxNodeController {
@@ -3489,11 +3489,11 @@ export interface CruxNodeController {
 
   subscribeNodeEventChannel(request: ServiceIdRequest, metadata: Metadata, ...rest: any): Observable<NodeEventMessage>
 
-  watchContainerStatus(
-    request: WatchContainerStatusRequest,
+  watchContainerState(
+    request: WatchContainerStateRequest,
     metadata: Metadata,
     ...rest: any
-  ): Observable<ContainerStatusListMessage>
+  ): Observable<ContainerStateListMessage>
 }
 
 export function CruxNodeControllerMethods() {
@@ -3509,7 +3509,7 @@ export function CruxNodeControllerMethods() {
       'discardScript',
       'revokeToken',
       'subscribeNodeEventChannel',
-      'watchContainerStatus',
+      'watchContainerState',
     ]
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)

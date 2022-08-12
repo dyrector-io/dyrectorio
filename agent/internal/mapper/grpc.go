@@ -121,8 +121,8 @@ func MapConfigContainer(in *agent.DeployRequest_ContainerConfig_ConfigContainer)
 	}
 }
 
-func MapContainerStatus(in *[]dockerTypes.Container) []*crux.ContainerStatusItem {
-	list := []*crux.ContainerStatusItem{}
+func MapContainerState(in *[]dockerTypes.Container) []*crux.ContainerStateItem {
+	list := []*crux.ContainerStateItem{}
 
 	for i := range *in {
 		it := (*in)[i]
@@ -142,7 +142,7 @@ func MapContainerStatus(in *[]dockerTypes.Container) []*crux.ContainerStatusItem
 			imageTag = "latest"
 		}
 
-		list = append(list, &crux.ContainerStatusItem{
+		list = append(list, &crux.ContainerStateItem{
 			ContainerId: it.ID,
 			Name:        name,
 			Command:     it.Command,
@@ -173,11 +173,11 @@ func MapContainerPorts(in *[]dockerTypes.Port) []*crux.ContainerPort {
 	return ports
 }
 
-func MapKubeDeploymentListToCruxStatusItems(deployments *appsv1.DeploymentList) []*crux.ContainerStatusItem {
-	statusItems := []*crux.ContainerStatusItem{}
+func MapKubeDeploymentListToCruxStateItems(deployments *appsv1.DeploymentList) []*crux.ContainerStateItem {
+	stateItems := []*crux.ContainerStateItem{}
 
 	for i := range deployments.Items {
-		statusItems = append(statusItems, &crux.ContainerStatusItem{
+		stateItems = append(stateItems, &crux.ContainerStateItem{
 			Name:  deployments.Items[i].Name,
 			State: MapKubeStatusToCruxContainerState(deployments.Items[i].Status),
 			CreatedAt: timestamppb.New(
@@ -186,7 +186,7 @@ func MapKubeDeploymentListToCruxStatusItems(deployments *appsv1.DeploymentList) 
 		})
 	}
 
-	return statusItems
+	return stateItems
 }
 
 // do better mapping this is quick something
@@ -197,5 +197,5 @@ func MapKubeStatusToCruxContainerState(status appsv1.DeploymentStatus) crux.Cont
 	case 0:
 		return crux.ContainerState_DEAD
 	}
-	return crux.ContainerState_UNKNOWN_CONTAINER_STATUS
+	return crux.ContainerState_UNKNOWN_CONTAINER_STATE
 }

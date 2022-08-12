@@ -88,10 +88,10 @@ func GetContainersByName(name string) []types.Container {
 	return containers
 }
 
-func GetContainersByNameCrux(ctx context.Context, name string) []*crux.ContainerStatusItem {
+func GetContainersByNameCrux(ctx context.Context, name string) []*crux.ContainerStateItem {
 	containers := GetContainersByName(name)
 
-	return mapper.MapContainerStatus(&containers)
+	return mapper.MapContainerState(&containers)
 }
 
 func GetContainer(name string) []types.Container {
@@ -334,7 +334,7 @@ func DeployImage(ctx context.Context,
 		return err
 	}
 
-	dog.WriteContainerStatus(state)
+	dog.WriteContainerState(state)
 
 	networkMode := deployImageRequest.ContainerConfig.NetworkMode
 
@@ -368,11 +368,11 @@ func DeployImage(ctx context.Context,
 
 	if err != nil {
 		dog.Write(err.Error())
-		dog.WriteContainerStatus(state, "Container start error: "+containerName)
+		dog.WriteContainerState(state, "Container start error: "+containerName)
 		return err
 	}
 
-	dog.WriteContainerStatus(state, "Started container: "+containerName)
+	dog.WriteContainerState(state, "Started container: "+containerName)
 
 	if versionData != nil {
 		DraftRelease(deployImageRequest.InstanceConfig.ContainerPreName, *versionData, v1.DeployVersionResponse{}, cfg)

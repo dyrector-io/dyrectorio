@@ -87,7 +87,7 @@ func (dog *DeploymentLogger) WriteDeploymentStatus(status crux.DeploymentStatus,
 	}
 }
 
-func (dog *DeploymentLogger) WriteContainerStatus(containerState string, messages ...string) {
+func (dog *DeploymentLogger) WriteContainerState(containerState string, messages ...string) {
 	prefix := fmt.Sprintf("%s - %s", dog.requestID, containerState)
 
 	for i := range messages {
@@ -147,6 +147,6 @@ func MapContainerState(state string) crux.ContainerState {
 	case "dead":
 		return crux.ContainerState_DEAD
 	default:
-		return crux.ContainerState_UNKNOWN_CONTAINER_STATUS
+		return crux.ContainerState_UNKNOWN_CONTAINER_STATE
 	}
 }

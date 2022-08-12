@@ -11,7 +11,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/protobuf/go/crux"
 )
 
-func GetDeployments(ctx context.Context, namespace string) []*crux.ContainerStatusItem {
+func GetDeployments(ctx context.Context, namespace string) []*crux.ContainerStateItem {
 	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
 	list, err := k8s.GetDeployments(namespace, cfg)
 
@@ -19,5 +19,5 @@ func GetDeployments(ctx context.Context, namespace string) []*crux.ContainerStat
 		log.Println(err)
 	}
 
-	return mapper.MapKubeDeploymentListToCruxStatusItems(list)
+	return mapper.MapKubeDeploymentListToCruxStateItems(list)
 }
