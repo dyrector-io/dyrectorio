@@ -17,7 +17,7 @@ import {
 import {
   AccessRequest,
   ContainerState as ProtoContainerState,
-  ContainerStatusListMessage,
+  ContainerStateListMessage,
   containerStateToJSON,
   CreateEntityResponse,
   CreateNodeRequest,
@@ -35,7 +35,7 @@ import {
   NodeType as ProtoNodeType,
   ServiceIdRequest,
   UpdateNodeRequest,
-  WatchContainerStatusRequest,
+  WatchContainerStateRequest,
 } from '@app/models/grpc/protobuf/proto/crux'
 import { timestampToUTC } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
@@ -199,18 +199,18 @@ class DyoNodeService {
     return new GrpcConnection(this.logger.descend('events'), stream, transform, options)
   }
 
-  watchContainerStatus(
+  watchContainerState(
     nodeId: string,
     prefix: string | undefined,
     options: ProtoSubscriptionOptions<ContainerListMessage>,
-  ): GrpcConnection<ContainerStatusListMessage, ContainerListMessage> {
-    const req: WatchContainerStatusRequest = {
+  ): GrpcConnection<ContainerStateListMessage, ContainerListMessage> {
+    const req: WatchContainerStateRequest = {
       nodeId,
       prefix,
       accessedBy: this.identity.id,
     }
 
-    const transform = (data: ContainerStatusListMessage) => {
+    const transform = (data: ContainerStateListMessage) => {
       return data.data.map(it => {
         return {
           id: it.containerId,
@@ -221,7 +221,7 @@ class DyoNodeService {
       }) as ContainerListMessage
     }
 
-    const stream = () => this.client.watchContainerStatus(WatchContainerStatusRequest.fromJSON(req))
+    const stream = () => this.client.watchContainerState(WatchContainerStateRequest.fromJSON(req))
     return new GrpcConnection(this.logger.descend('container-status'), stream, transform, options)
   }
 

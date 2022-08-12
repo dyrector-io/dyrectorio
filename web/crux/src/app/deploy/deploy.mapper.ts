@@ -20,7 +20,7 @@ import {
   containerStateFromJSON,
   containerStateToJSON,
   DeploymentDetailsResponse,
-  DeploymentEventContainerStatus,
+  DeploymentEventContainerState,
   DeploymentEventLog,
   DeploymentEventResponse,
   DeploymentEventType,
@@ -86,7 +86,7 @@ export class DeployMapper {
   eventToGrpc(event: DeploymentEvent): DeploymentEventResponse {
     let log: DeploymentEventLog
     let deploymentStatus: DeploymentStatus
-    let containerStatus: DeploymentEventContainerStatus
+    let containerStatus: DeploymentEventContainerState
 
     switch (event.type) {
       case DeploymentEventTypeEnum.log: {
@@ -101,7 +101,7 @@ export class DeployMapper {
       }
       case DeploymentEventTypeEnum.containerStatus: {
         const value = event.value as { instanceId: string; status: string }
-        containerStatus = DeploymentEventContainerStatus.fromJSON({
+        containerStatus = DeploymentEventContainerState.fromJSON({
           ...value,
           status: value.status.toUpperCase(),
         })
