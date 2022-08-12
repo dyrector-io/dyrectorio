@@ -15,10 +15,10 @@ export class PrismaService extends PrismaClient<Prisma.PrismaClientOptions, 'que
         findUnique: notFoundMappings,
       },
       log: [
-        // { emit: 'event', level: 'query' },
-        // { emit: 'stdout', level: 'info' },
-        // { emit: 'stdout', level: 'warn' },
-        // { emit: 'stdout', level: 'error' },
+        { emit: 'event', level: 'query' },
+        { emit: 'stdout', level: 'info' },
+        { emit: 'stdout', level: 'warn' },
+        { emit: 'stdout', level: 'error' },
       ],
     })
 

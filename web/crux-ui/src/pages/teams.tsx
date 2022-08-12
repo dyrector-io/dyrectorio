@@ -42,7 +42,7 @@ const TeamsPage = (props: TeamsPageProps) => {
       </PageHeading>
 
       {!creating ? null : (
-        <EditTeamCard className="mb-8 px-8 py-6" submitRef={submitRef} onEditTeamEdited={onCreated} />
+        <EditTeamCard className="mb-8 px-8 py-6" submitRef={submitRef} onTeamEdited={onCreated} />
       )}
 
       {props.teams.map((team, index) => (

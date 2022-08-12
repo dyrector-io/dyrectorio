@@ -13,7 +13,7 @@
   "complex": "Complex",
   "all": "All",
 
-  "addDetailsItem": "Add version",
+  "addVersion": "Add version",
 
   "deleteDescription": "If you proceed, you will lose all your data related to {{name}}, all configurations, all verison history, all deployments. This action is not revocable.",
 

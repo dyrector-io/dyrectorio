@@ -15,7 +15,7 @@ import { MutableRefObject, useState } from 'react'
 interface EditTeamCardProps {
   className?: string
   team?: Team
-  onEditTeamEdited: (team: Team) => void
+  onTeamEdited: (team: Team) => void
   submitRef?: MutableRefObject<() => Promise<any>>
 }
 
@@ -63,7 +63,7 @@ const EditTeamCard = (props: EditTeamCardProps) => {
         }
 
         setTeam(result)
-        props.onEditTeamEdited(result)
+        props.onTeamEdited(result)
       } else {
         handleApiError(res, setFieldError)
       }

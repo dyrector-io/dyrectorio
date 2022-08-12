@@ -176,7 +176,7 @@ export class TeamService {
         id: request.id,
       },
       data: {
-        ...request,
+        name: request.name,
         updatedBy: request.accessedBy,
         updatedAt: new Date(),
       },

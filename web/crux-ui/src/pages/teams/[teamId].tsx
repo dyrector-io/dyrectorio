@@ -1,17 +1,17 @@
 import { Layout } from '@app/components/layout'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
-import { ListPageMenu, ListPageMenuTexts } from '@app/components/shared/page-menu'
+import { DetailsPageMenu, DetailsPageTexts, ListPageMenuTexts } from '@app/components/shared/page-menu'
+import EditTeamCard from '@app/components/team/edit-team-card'
 import InviteUserCard from '@app/components/team/invite-user-card'
 import UserRoleAction from '@app/components/team/user-role-action'
 import UserStatusTag from '@app/components/team/user-status-tag'
-import { DyoButton } from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoList } from '@app/elements/dyo-list'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
-import { ActiveTeamDetails, roleToText, TeamDetails, User, userIsAdmin, userIsOwner, UserRole } from '@app/models'
+import { roleToText, Team, TeamDetails, User, userIsAdmin, userIsOwner, UserRole } from '@app/models'
 import { ROUTE_INDEX, ROUTE_TEAMS, teamApiUrl, teamUrl, userApiUrl } from '@app/routes'
 import { redirectTo, withContextAuthorization } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
@@ -34,15 +34,15 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
 
   const router = useRouter()
 
-  const { me, team } = props
+  const { me } = props
+
+  const [team, setTeam] = useState(props.team)
+  const [detailsState, setDetailsState] = useState<TeamDetailsState>('none')
+  const [deleteModalConfig, confirmDelete] = useConfirmation()
 
   const actor = team.users.find(it => it.id === me.id)
   const canEdit = userIsAdmin(actor)
   const canDelete = userIsOwner(actor)
-
-  const [users, setUsers] = useState(team.users)
-  const [inviting, setInviting] = useState(false)
-  const [deleteModalConfig, confirmDelete] = useConfirmation()
 
   const submitRef = useRef<() => Promise<any>>()
 
@@ -54,13 +54,24 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
     })
 
     if (res.ok) {
-      setUsers(users.filter(it => it.id !== user.id))
+      setTeam({
+        ...team,
+        users: team.users.filter(it => it.id !== user.id),
+      })
     } else {
       handleApiError(res)
     }
   }
 
-  const sendDeleteTeamRequest = async () => {
+  const onTeamEdited = (newTeam: Team) =>{
+    setDetailsState('none')
+    setTeam({
+      ...team,
+      ...newTeam,
+    })
+  }
+
+  const onDeleteTeam = async () => {
     const res = await fetch(teamApiUrl(team.id), {
       method: 'DELETE',
     })
@@ -72,9 +83,14 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
     }
   }
 
-  const onInvited = (user: User) => {
-    setInviting(false)
-    setUsers([...users, user])
+  const onInviteUser = () => setDetailsState('inviting')
+
+  const onUserInvited = (user: User) => {
+    setDetailsState('none')
+    setTeam({
+      ...team,
+      users: [...team.users, user],
+    })
   }
 
   const onDeleteUser = (user: User) =>
@@ -82,20 +98,18 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
       title: t('common:confirmDelete', { name: user.name }),
     })
 
-  const onDeleteTeam = () =>
-    confirmDelete(sendDeleteTeamRequest, {
-      title: t('common:confirmDelete', { name: team.name }),
-    })
-
   const onUserRoleUpdated = (userId: string, role: UserRole) => {
-    const index = users.findIndex(it => it.id === userId)
+    const index = team.users.findIndex(it => it.id === userId)
     if (index < 0) {
       return
     }
 
-    const newUsers = [...users]
+    const newUsers = [...team.users]
     newUsers[index].role = role
-    setUsers(newUsers)
+    setTeam({
+      ...team,
+      users: newUsers,
+    })
   }
 
   const selfLink: BreadcrumbLink = {
@@ -118,30 +132,32 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
     clsx(defaultHeaderClass, 'rounded-tr-lg pr-16'),
   ]
 
-  const pageMenuTexts: ListPageMenuTexts = {
-    add: t('invite'),
-    save: t('send'),
+  const pageMenuTexts: DetailsPageTexts = {
+    addDetailsItem: t('invite'),
+    save: detailsState === 'inviting' ? t('send') : null,
   }
 
   return (
     <Layout title={t('teamsName', team)}>
       <PageHeading pageLink={selfLink} sublinks={sublinks}>
         {!canEdit ? null : (
-          <>
-            <ListPageMenu texts={pageMenuTexts} creating={inviting} setCreating={setInviting} submitRef={submitRef} />
-
-            {inviting ? null : !canDelete ? null : (
-              <DyoButton className="ml-4 px-4" color="bg-error-red" onClick={() => onDeleteTeam()}>
-                {t('common:delete')}
-              </DyoButton>
-            )}
-          </>
+          <DetailsPageMenu
+            texts={pageMenuTexts}
+            editing={detailsState !== 'none'}
+            setEditing={it => setDetailsState(it ? 'editing' : 'none')}
+            deleteModalTitle={t('common:confirmDelete', { name: team.name })}
+            onDelete={canDelete ? onDeleteTeam : null}
+            submitRef={submitRef}
+            onAdd={canEdit ? onInviteUser : null}
+          />
         )}
       </PageHeading>
 
-      {!inviting ? null : (
-        <InviteUserCard className="mb-8 px-8 py-6" team={team} submitRef={submitRef} onUserInvited={onInvited} />
-      )}
+      {detailsState === 'editing' ? (
+        <EditTeamCard className="mb-8 px-8 py-6" team={team} submitRef={submitRef} onTeamEdited={onTeamEdited} />
+      ) : detailsState === 'inviting' ? (
+        <InviteUserCard className="mb-8 px-8 py-6" team={team} submitRef={submitRef} onUserInvited={onUserInvited} />
+      ) : null}
 
       <DyoCard className="relative">
         <DyoList
@@ -149,7 +165,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
           noSeparator
           headerClassName={headerClassNames}
           headers={listHeaders}
-          data={users}
+          data={team.users}
           itemBuilder={it => {
             /* eslint-disable react/jsx-key */
             return [
@@ -167,7 +183,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
                 )}
               </div>,
               <UserStatusTag className="my-auto w-fit" status={it.status} />,
-              inviting || !canEdit || it.role === 'owner' ? null : (
+              detailsState !== 'none' || !canEdit || it.role === 'owner' ? null : (
                 <Image
                   className="cursor-pointer mr-16"
                   src="/trash-can.svg"
@@ -181,15 +197,15 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
             /* eslint-enable react/jsx-key */
           }}
         />
-      </DyoCard>
 
-      <DyoConfirmationModal
-        config={deleteModalConfig}
-        title={t('common:confirmDelete')}
-        confirmText={t('common:delete')}
-        className="w-1/4"
-        confirmColor="bg-error-red"
-      />
+        <DyoConfirmationModal
+          config={deleteModalConfig}
+          title={t('common:confirmDelete')}
+          confirmText={t('common:delete')}
+          className="w-1/4"
+          confirmColor="bg-error-red"
+        />
+      </DyoCard>
     </Layout>
   )
 }
@@ -213,3 +229,5 @@ const getPageServerSideProps = async (context: NextPageContext) => {
 }
 
 export const getServerSideProps = withContextAuthorization(getPageServerSideProps)
+
+type TeamDetailsState = 'none' | 'editing' | 'inviting'

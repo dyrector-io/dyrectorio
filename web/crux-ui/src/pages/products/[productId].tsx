@@ -7,7 +7,7 @@ import IncreaseVersionCard from '@app/components/products/versions/increase-vers
 import VersionSections from '@app/components/products/versions/version-sections'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
-import { DetailsPageMenu } from '@app/components/shared/page-menu'
+import { DetailsPageMenu, DetailsPageTexts } from '@app/components/shared/page-menu'
 import LoadingIndicator from '@app/elements/loading-indicator'
 import {
   EditableProduct,
@@ -95,8 +95,8 @@ const ProductDetailsPage = (props: ProductDetailsPageProps) => {
     },
   ]
 
-  const pageMenuTexts = {
-    addDetailsItem: t('addDetailsItem'),
+  const pageMenuTexts: DetailsPageTexts = {
+    addDetailsItem: t('addVersion'),
   }
 
   return (
