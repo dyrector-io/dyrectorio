@@ -51,8 +51,8 @@ const TeamStatItem = (props: TeamStatItemProps) => {
       </div>
 
       <div className="flex flex-col text-bright">
-        <span className="text-4xl">{props.count}</span>
-        <span className="text-lg">{props.label}</span>
+        <span className="text-3xl">{props.count}</span>
+        <span>{props.label}</span>
       </div>
     </div>
   )
