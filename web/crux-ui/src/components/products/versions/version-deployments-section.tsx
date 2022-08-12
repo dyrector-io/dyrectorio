@@ -100,7 +100,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
             <div>{it.nodeName}</div>,
             <div>{it.date}</div>,
             <div>{it.prefix}</div>,
-            <DyoTag className="ml-auto">{it.status.toUpperCase()}</DyoTag>,
+            <DyoTag className="w-fit m-auto">{it.status.toUpperCase()}</DyoTag>,
             <Image src="/deploy.svg" alt={t('common:deploy')} width={24} height={24} />,
           ]
           /* eslint-enable react/jsx-key */

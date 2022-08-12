@@ -107,7 +107,7 @@ const EditImageCard = (props: EditImageCardProps) => {
           </DyoButton>
 
           {disabled ? null : (
-            <DyoImgButton className="ml-6" onClick={() => onDelete()} src="/trash-can.svg" alt={t('delete')} />
+            <DyoImgButton className="ml-6" onClick={() => onDelete()} src="/trash-can.svg" alt={t('common:delete')} />
           )}
         </div>
 

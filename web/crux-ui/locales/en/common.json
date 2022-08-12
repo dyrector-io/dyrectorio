@@ -34,6 +34,7 @@
   "loading": "Loading...",
   "noNameFound": "No {{name}} found",
   "yourTeams": "Your teams",
+  "address": "Address",
 
   "editName": "Edit {{name}}",
   "add": "Add",
@@ -105,7 +106,8 @@
     "successful": "Successful",
     "failed": "Failed",
     "obsolate": "Obsolate",
-    "unknown": "Unknown"
+    "unknown": "Unknown",
+    "preparing": "Preparing"
   },
 
   "containerStatuses": {
@@ -144,5 +146,8 @@
 
   "upload": "Upload",
 
-  "defaultDeleteDescription": "If you proceed, you will lose all your data related to {{name}}. This action is not revocable."
+  "defaultDeleteDescription": "If you proceed, you will lose all your data related to {{name}}. This action is not revocable.",
+  
+  "itemsPerPage": "Items per page",
+  "showingItems": "Showing {{pageFrom}} to {{pageTo}} of {{total}} entries"
 }
