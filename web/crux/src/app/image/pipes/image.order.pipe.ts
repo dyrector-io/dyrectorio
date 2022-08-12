@@ -9,7 +9,7 @@ export class OrderImagesValidationPipe implements PipeTransform {
   constructor(private prisma: PrismaService) {}
 
   async transform(value: OrderVersionImagesRequest) {
-    const version = await this.prisma.version.findUnique({
+    const version = await this.prisma.version.findUniqueOrThrow({
       include: {
         images: true,
         deployments: {

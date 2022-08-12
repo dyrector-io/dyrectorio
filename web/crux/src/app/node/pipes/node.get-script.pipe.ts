@@ -10,7 +10,6 @@ export class NodeGetScriptValidationPipe implements PipeTransform {
 
   async transform(req: ServiceIdRequest) {
     const node = await this.prisma.node.findUnique({
-      rejectOnNotFound: false,
       select: {
         id: true,
       },

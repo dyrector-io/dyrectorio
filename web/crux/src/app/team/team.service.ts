@@ -196,7 +196,7 @@ export class TeamService {
       })
     }
 
-    const team = await this.prisma.team.findUnique({
+    const team = await this.prisma.team.findUniqueOrThrow({
       where: {
         id: userOnTeam.teamId,
       },
@@ -211,7 +211,6 @@ export class TeamService {
     } else {
       // Check if User is already in the Team
       const invitedUserOnTeam = await this.prisma.usersOnTeams.findUnique({
-        rejectOnNotFound: false,
         where: {
           userId_teamId: {
             userId: user.id,
@@ -261,7 +260,7 @@ export class TeamService {
 
   async acceptTeamInvite(request: IdRequest, call: ServerUnaryCall<IdRequest, Promise<void>>): Promise<void> {
     // Check User invite is valid
-    const userInvite = await this.prisma.userInvitation.findUnique({
+    const userInvite = await this.prisma.userInvitation.findUniqueOrThrow({
       where: {
         userId_teamId: {
           userId: request.accessedBy,

@@ -10,7 +10,6 @@ export class TeamSelectGuard implements CanActivate {
     const request = context.getArgByIndex<IdRequest>(0)
 
     const team = await this.prisma.usersOnTeams.findUnique({
-      rejectOnNotFound: false,
       where: {
         userId_teamId: {
           userId: request.accessedBy,

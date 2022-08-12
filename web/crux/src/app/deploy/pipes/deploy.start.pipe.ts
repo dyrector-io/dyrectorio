@@ -9,7 +9,7 @@ export class DeployStartValidationPipe implements PipeTransform {
   constructor(private prisma: PrismaService) {}
 
   async transform(value: IdRequest) {
-    const deployment = await this.prisma.deployment.findUnique({
+    const deployment = await this.prisma.deployment.findUniqueOrThrow({
       include: {
         instances: {
           include: {

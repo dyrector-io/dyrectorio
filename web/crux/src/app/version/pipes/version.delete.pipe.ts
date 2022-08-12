@@ -8,7 +8,7 @@ export class VersionDeleteValidationPipe implements PipeTransform {
   constructor(private prisma: PrismaService) {}
 
   async transform(value: IdRequest) {
-    const version = await this.prisma.version.findUnique({
+    const version = await this.prisma.version.findUniqueOrThrow({
       include: {
         deployments: {
           select: {
