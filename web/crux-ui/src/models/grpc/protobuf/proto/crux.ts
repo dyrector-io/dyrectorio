@@ -421,8 +421,8 @@ export function deploymentEventTypeToJSON(object: DeploymentEventType): string {
   }
 }
 
-export enum ContainerStatus {
-  UNKNOWN_CONTAINER_STATUS = 0,
+export enum ContainerState {
+  UNKNOWN_CONTAINER_STATE = 0,
   CREATED = 1,
   RESTARTING = 2,
   RUNNING = 3,
@@ -433,56 +433,56 @@ export enum ContainerStatus {
   UNRECOGNIZED = -1,
 }
 
-export function containerStatusFromJSON(object: any): ContainerStatus {
+export function containerStateFromJSON(object: any): ContainerState {
   switch (object) {
     case 0:
-    case 'UNKNOWN_CONTAINER_STATUS':
-      return ContainerStatus.UNKNOWN_CONTAINER_STATUS
+    case 'UNKNOWN_CONTAINER_STATE':
+      return ContainerState.UNKNOWN_CONTAINER_STATE
     case 1:
     case 'CREATED':
-      return ContainerStatus.CREATED
+      return ContainerState.CREATED
     case 2:
     case 'RESTARTING':
-      return ContainerStatus.RESTARTING
+      return ContainerState.RESTARTING
     case 3:
     case 'RUNNING':
-      return ContainerStatus.RUNNING
+      return ContainerState.RUNNING
     case 4:
     case 'REMOVING':
-      return ContainerStatus.REMOVING
+      return ContainerState.REMOVING
     case 5:
     case 'PAUSED':
-      return ContainerStatus.PAUSED
+      return ContainerState.PAUSED
     case 6:
     case 'EXITED':
-      return ContainerStatus.EXITED
+      return ContainerState.EXITED
     case 7:
     case 'DEAD':
-      return ContainerStatus.DEAD
+      return ContainerState.DEAD
     case -1:
     case 'UNRECOGNIZED':
     default:
-      return ContainerStatus.UNRECOGNIZED
+      return ContainerState.UNRECOGNIZED
   }
 }
 
-export function containerStatusToJSON(object: ContainerStatus): string {
+export function containerStateToJSON(object: ContainerState): string {
   switch (object) {
-    case ContainerStatus.UNKNOWN_CONTAINER_STATUS:
-      return 'UNKNOWN_CONTAINER_STATUS'
-    case ContainerStatus.CREATED:
+    case ContainerState.UNKNOWN_CONTAINER_STATE:
+      return 'UNKNOWN_CONTAINER_STATE'
+    case ContainerState.CREATED:
       return 'CREATED'
-    case ContainerStatus.RESTARTING:
+    case ContainerState.RESTARTING:
       return 'RESTARTING'
-    case ContainerStatus.RUNNING:
+    case ContainerState.RUNNING:
       return 'RUNNING'
-    case ContainerStatus.REMOVING:
+    case ContainerState.REMOVING:
       return 'REMOVING'
-    case ContainerStatus.PAUSED:
+    case ContainerState.PAUSED:
       return 'PAUSED'
-    case ContainerStatus.EXITED:
+    case ContainerState.EXITED:
       return 'EXITED'
-    case ContainerStatus.DEAD:
+    case ContainerState.DEAD:
       return 'DEAD'
     default:
       return 'UNKNOWN'
@@ -944,7 +944,7 @@ export interface NodeEventMessage {
   address?: string | undefined
 }
 
-export interface WatchContainerStatusRequest {
+export interface WatchContainerStateRequest {
   accessedBy: string
   nodeId: string
   prefix?: string | undefined
@@ -955,26 +955,31 @@ export interface ContainerPort {
   external: number
 }
 
-export interface ContainerStatusItem {
+export interface ContainerStateItem {
   containerId: string
   name: string
   command: string
   createdAt: Timestamp | undefined
-  status: ContainerStatus
-  state: string
+  /** The 'State' of the container (Created, Running, etc) */
+  state: ContainerState
+  /**
+   * The 'Status' of the container ("Created 1min ago", "Exited with code 123", etc).
+   * Unused but left here for reverse compatibility with the legacy version.
+   */
+  status: string
   imageName: string
   imageTag: string
   ports: ContainerPort[]
 }
 
-export interface ContainerStatusListMessage {
+export interface ContainerStateListMessage {
   prefix?: string | undefined
-  data: ContainerStatusItem[]
+  data: ContainerStateItem[]
 }
 
 export interface InstanceDeploymentItem {
   instanceId: string
-  status: ContainerStatus
+  state: ContainerState
 }
 
 export interface DeploymentStatusMessage {
@@ -1030,7 +1035,7 @@ export interface InstanceResponse {
   id: string
   audit: AuditResponse | undefined
   image: ImageResponse | undefined
-  status?: ContainerStatus | undefined
+  state?: ContainerState | undefined
   config?: InstanceContainerConfig | undefined
 }
 
@@ -1069,9 +1074,9 @@ export interface DeploymentDetailsResponse {
   instances: InstanceResponse[]
 }
 
-export interface DeploymentEventContainerStatus {
+export interface DeploymentEventContainerState {
   instanceId: string
-  status: ContainerStatus
+  state: ContainerState
 }
 
 export interface DeploymentEventLog {
@@ -1083,7 +1088,7 @@ export interface DeploymentEventResponse {
   createdAt: Timestamp | undefined
   log: DeploymentEventLog | undefined
   deploymentStatus: DeploymentStatus | undefined
-  containerStatus: DeploymentEventContainerStatus | undefined
+  containerStatus: DeploymentEventContainerState | undefined
 }
 
 export interface DeploymentEventListResponse {
@@ -5789,10 +5794,10 @@ export const NodeEventMessage = {
   },
 }
 
-const baseWatchContainerStatusRequest: object = { accessedBy: '', nodeId: '' }
+const baseWatchContainerStateRequest: object = { accessedBy: '', nodeId: '' }
 
-export const WatchContainerStatusRequest = {
-  encode(message: WatchContainerStatusRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+export const WatchContainerStateRequest = {
+  encode(message: WatchContainerStateRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.accessedBy !== '') {
       writer.uint32(18).string(message.accessedBy)
     }
@@ -5805,12 +5810,12 @@ export const WatchContainerStatusRequest = {
     return writer
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): WatchContainerStatusRequest {
+  decode(input: _m0.Reader | Uint8Array, length?: number): WatchContainerStateRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {
-      ...baseWatchContainerStatusRequest,
-    } as WatchContainerStatusRequest
+      ...baseWatchContainerStateRequest,
+    } as WatchContainerStateRequest
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -5831,17 +5836,17 @@ export const WatchContainerStatusRequest = {
     return message
   },
 
-  fromJSON(object: any): WatchContainerStatusRequest {
+  fromJSON(object: any): WatchContainerStateRequest {
     const message = {
-      ...baseWatchContainerStatusRequest,
-    } as WatchContainerStatusRequest
+      ...baseWatchContainerStateRequest,
+    } as WatchContainerStateRequest
     message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
     message.nodeId = object.nodeId !== undefined && object.nodeId !== null ? String(object.nodeId) : ''
     message.prefix = object.prefix !== undefined && object.prefix !== null ? String(object.prefix) : undefined
     return message
   },
 
-  toJSON(message: WatchContainerStatusRequest): unknown {
+  toJSON(message: WatchContainerStateRequest): unknown {
     const obj: any = {}
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.nodeId !== undefined && (obj.nodeId = message.nodeId)
@@ -5849,10 +5854,10 @@ export const WatchContainerStatusRequest = {
     return obj
   },
 
-  fromPartial<I extends Exact<DeepPartial<WatchContainerStatusRequest>, I>>(object: I): WatchContainerStatusRequest {
+  fromPartial<I extends Exact<DeepPartial<WatchContainerStateRequest>, I>>(object: I): WatchContainerStateRequest {
     const message = {
-      ...baseWatchContainerStatusRequest,
-    } as WatchContainerStatusRequest
+      ...baseWatchContainerStateRequest,
+    } as WatchContainerStateRequest
     message.accessedBy = object.accessedBy ?? ''
     message.nodeId = object.nodeId ?? ''
     message.prefix = object.prefix ?? undefined
@@ -5916,18 +5921,18 @@ export const ContainerPort = {
   },
 }
 
-const baseContainerStatusItem: object = {
+const baseContainerStateItem: object = {
   containerId: '',
   name: '',
   command: '',
-  status: 0,
-  state: '',
+  state: 0,
+  status: '',
   imageName: '',
   imageTag: '',
 }
 
-export const ContainerStatusItem = {
-  encode(message: ContainerStatusItem, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+export const ContainerStateItem = {
+  encode(message: ContainerStateItem, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.containerId !== '') {
       writer.uint32(802).string(message.containerId)
     }
@@ -5940,11 +5945,11 @@ export const ContainerStatusItem = {
     if (message.createdAt !== undefined) {
       Timestamp.encode(message.createdAt, writer.uint32(834).fork()).ldelim()
     }
-    if (message.status !== 0) {
-      writer.uint32(840).int32(message.status)
+    if (message.state !== 0) {
+      writer.uint32(840).int32(message.state)
     }
-    if (message.state !== '') {
-      writer.uint32(850).string(message.state)
+    if (message.status !== '') {
+      writer.uint32(850).string(message.status)
     }
     if (message.imageName !== '') {
       writer.uint32(858).string(message.imageName)
@@ -5958,10 +5963,10 @@ export const ContainerStatusItem = {
     return writer
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): ContainerStatusItem {
+  decode(input: _m0.Reader | Uint8Array, length?: number): ContainerStateItem {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = { ...baseContainerStatusItem } as ContainerStatusItem
+    const message = { ...baseContainerStateItem } as ContainerStateItem
     message.ports = []
     while (reader.pos < end) {
       const tag = reader.uint32()
@@ -5979,10 +5984,10 @@ export const ContainerStatusItem = {
           message.createdAt = Timestamp.decode(reader, reader.uint32())
           break
         case 105:
-          message.status = reader.int32() as any
+          message.state = reader.int32() as any
           break
         case 106:
-          message.state = reader.string()
+          message.status = reader.string()
           break
         case 107:
           message.imageName = reader.string()
@@ -6001,30 +6006,30 @@ export const ContainerStatusItem = {
     return message
   },
 
-  fromJSON(object: any): ContainerStatusItem {
-    const message = { ...baseContainerStatusItem } as ContainerStatusItem
+  fromJSON(object: any): ContainerStateItem {
+    const message = { ...baseContainerStateItem } as ContainerStateItem
     message.containerId =
       object.containerId !== undefined && object.containerId !== null ? String(object.containerId) : ''
     message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
     message.command = object.command !== undefined && object.command !== null ? String(object.command) : ''
     message.createdAt =
       object.createdAt !== undefined && object.createdAt !== null ? fromJsonTimestamp(object.createdAt) : undefined
-    message.status = object.status !== undefined && object.status !== null ? containerStatusFromJSON(object.status) : 0
-    message.state = object.state !== undefined && object.state !== null ? String(object.state) : ''
+    message.state = object.state !== undefined && object.state !== null ? containerStateFromJSON(object.state) : 0
+    message.status = object.status !== undefined && object.status !== null ? String(object.status) : ''
     message.imageName = object.imageName !== undefined && object.imageName !== null ? String(object.imageName) : ''
     message.imageTag = object.imageTag !== undefined && object.imageTag !== null ? String(object.imageTag) : ''
     message.ports = (object.ports ?? []).map((e: any) => ContainerPort.fromJSON(e))
     return message
   },
 
-  toJSON(message: ContainerStatusItem): unknown {
+  toJSON(message: ContainerStateItem): unknown {
     const obj: any = {}
     message.containerId !== undefined && (obj.containerId = message.containerId)
     message.name !== undefined && (obj.name = message.name)
     message.command !== undefined && (obj.command = message.command)
     message.createdAt !== undefined && (obj.createdAt = fromTimestamp(message.createdAt).toISOString())
-    message.status !== undefined && (obj.status = containerStatusToJSON(message.status))
-    message.state !== undefined && (obj.state = message.state)
+    message.state !== undefined && (obj.state = containerStateToJSON(message.state))
+    message.status !== undefined && (obj.status = message.status)
     message.imageName !== undefined && (obj.imageName = message.imageName)
     message.imageTag !== undefined && (obj.imageTag = message.imageTag)
     if (message.ports) {
@@ -6035,15 +6040,15 @@ export const ContainerStatusItem = {
     return obj
   },
 
-  fromPartial<I extends Exact<DeepPartial<ContainerStatusItem>, I>>(object: I): ContainerStatusItem {
-    const message = { ...baseContainerStatusItem } as ContainerStatusItem
+  fromPartial<I extends Exact<DeepPartial<ContainerStateItem>, I>>(object: I): ContainerStateItem {
+    const message = { ...baseContainerStateItem } as ContainerStateItem
     message.containerId = object.containerId ?? ''
     message.name = object.name ?? ''
     message.command = object.command ?? ''
     message.createdAt =
       object.createdAt !== undefined && object.createdAt !== null ? Timestamp.fromPartial(object.createdAt) : undefined
-    message.status = object.status ?? 0
-    message.state = object.state ?? ''
+    message.state = object.state ?? 0
+    message.status = object.status ?? ''
     message.imageName = object.imageName ?? ''
     message.imageTag = object.imageTag ?? ''
     message.ports = object.ports?.map(e => ContainerPort.fromPartial(e)) || []
@@ -6051,25 +6056,25 @@ export const ContainerStatusItem = {
   },
 }
 
-const baseContainerStatusListMessage: object = {}
+const baseContainerStateListMessage: object = {}
 
-export const ContainerStatusListMessage = {
-  encode(message: ContainerStatusListMessage, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+export const ContainerStateListMessage = {
+  encode(message: ContainerStateListMessage, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.prefix !== undefined) {
       writer.uint32(802).string(message.prefix)
     }
     for (const v of message.data) {
-      ContainerStatusItem.encode(v!, writer.uint32(8002).fork()).ldelim()
+      ContainerStateItem.encode(v!, writer.uint32(8002).fork()).ldelim()
     }
     return writer
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): ContainerStatusListMessage {
+  decode(input: _m0.Reader | Uint8Array, length?: number): ContainerStateListMessage {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {
-      ...baseContainerStatusListMessage,
-    } as ContainerStatusListMessage
+      ...baseContainerStateListMessage,
+    } as ContainerStateListMessage
     message.data = []
     while (reader.pos < end) {
       const tag = reader.uint32()
@@ -6078,7 +6083,7 @@ export const ContainerStatusListMessage = {
           message.prefix = reader.string()
           break
         case 1000:
-          message.data.push(ContainerStatusItem.decode(reader, reader.uint32()))
+          message.data.push(ContainerStateItem.decode(reader, reader.uint32()))
           break
         default:
           reader.skipType(tag & 7)
@@ -6088,45 +6093,45 @@ export const ContainerStatusListMessage = {
     return message
   },
 
-  fromJSON(object: any): ContainerStatusListMessage {
+  fromJSON(object: any): ContainerStateListMessage {
     const message = {
-      ...baseContainerStatusListMessage,
-    } as ContainerStatusListMessage
+      ...baseContainerStateListMessage,
+    } as ContainerStateListMessage
     message.prefix = object.prefix !== undefined && object.prefix !== null ? String(object.prefix) : undefined
-    message.data = (object.data ?? []).map((e: any) => ContainerStatusItem.fromJSON(e))
+    message.data = (object.data ?? []).map((e: any) => ContainerStateItem.fromJSON(e))
     return message
   },
 
-  toJSON(message: ContainerStatusListMessage): unknown {
+  toJSON(message: ContainerStateListMessage): unknown {
     const obj: any = {}
     message.prefix !== undefined && (obj.prefix = message.prefix)
     if (message.data) {
-      obj.data = message.data.map(e => (e ? ContainerStatusItem.toJSON(e) : undefined))
+      obj.data = message.data.map(e => (e ? ContainerStateItem.toJSON(e) : undefined))
     } else {
       obj.data = []
     }
     return obj
   },
 
-  fromPartial<I extends Exact<DeepPartial<ContainerStatusListMessage>, I>>(object: I): ContainerStatusListMessage {
+  fromPartial<I extends Exact<DeepPartial<ContainerStateListMessage>, I>>(object: I): ContainerStateListMessage {
     const message = {
-      ...baseContainerStatusListMessage,
-    } as ContainerStatusListMessage
+      ...baseContainerStateListMessage,
+    } as ContainerStateListMessage
     message.prefix = object.prefix ?? undefined
-    message.data = object.data?.map(e => ContainerStatusItem.fromPartial(e)) || []
+    message.data = object.data?.map(e => ContainerStateItem.fromPartial(e)) || []
     return message
   },
 }
 
-const baseInstanceDeploymentItem: object = { instanceId: '', status: 0 }
+const baseInstanceDeploymentItem: object = { instanceId: '', state: 0 }
 
 export const InstanceDeploymentItem = {
   encode(message: InstanceDeploymentItem, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.instanceId !== '') {
       writer.uint32(802).string(message.instanceId)
     }
-    if (message.status !== 0) {
-      writer.uint32(808).int32(message.status)
+    if (message.state !== 0) {
+      writer.uint32(808).int32(message.state)
     }
     return writer
   },
@@ -6142,7 +6147,7 @@ export const InstanceDeploymentItem = {
           message.instanceId = reader.string()
           break
         case 101:
-          message.status = reader.int32() as any
+          message.state = reader.int32() as any
           break
         default:
           reader.skipType(tag & 7)
@@ -6155,21 +6160,21 @@ export const InstanceDeploymentItem = {
   fromJSON(object: any): InstanceDeploymentItem {
     const message = { ...baseInstanceDeploymentItem } as InstanceDeploymentItem
     message.instanceId = object.instanceId !== undefined && object.instanceId !== null ? String(object.instanceId) : ''
-    message.status = object.status !== undefined && object.status !== null ? containerStatusFromJSON(object.status) : 0
+    message.state = object.state !== undefined && object.state !== null ? containerStateFromJSON(object.state) : 0
     return message
   },
 
   toJSON(message: InstanceDeploymentItem): unknown {
     const obj: any = {}
     message.instanceId !== undefined && (obj.instanceId = message.instanceId)
-    message.status !== undefined && (obj.status = containerStatusToJSON(message.status))
+    message.state !== undefined && (obj.state = containerStateToJSON(message.state))
     return obj
   },
 
   fromPartial<I extends Exact<DeepPartial<InstanceDeploymentItem>, I>>(object: I): InstanceDeploymentItem {
     const message = { ...baseInstanceDeploymentItem } as InstanceDeploymentItem
     message.instanceId = object.instanceId ?? ''
-    message.status = object.status ?? 0
+    message.state = object.state ?? 0
     return message
   },
 }
@@ -6845,8 +6850,8 @@ export const InstanceResponse = {
     if (message.image !== undefined) {
       ImageResponse.encode(message.image, writer.uint32(802).fork()).ldelim()
     }
-    if (message.status !== undefined) {
-      writer.uint32(808).int32(message.status)
+    if (message.state !== undefined) {
+      writer.uint32(808).int32(message.state)
     }
     if (message.config !== undefined) {
       InstanceContainerConfig.encode(message.config, writer.uint32(818).fork()).ldelim()
@@ -6871,7 +6876,7 @@ export const InstanceResponse = {
           message.image = ImageResponse.decode(reader, reader.uint32())
           break
         case 101:
-          message.status = reader.int32() as any
+          message.state = reader.int32() as any
           break
         case 102:
           message.config = InstanceContainerConfig.decode(reader, reader.uint32())
@@ -6891,8 +6896,8 @@ export const InstanceResponse = {
       object.audit !== undefined && object.audit !== null ? AuditResponse.fromJSON(object.audit) : undefined
     message.image =
       object.image !== undefined && object.image !== null ? ImageResponse.fromJSON(object.image) : undefined
-    message.status =
-      object.status !== undefined && object.status !== null ? containerStatusFromJSON(object.status) : undefined
+    message.state =
+      object.state !== undefined && object.state !== null ? containerStateFromJSON(object.state) : undefined
     message.config =
       object.config !== undefined && object.config !== null
         ? InstanceContainerConfig.fromJSON(object.config)
@@ -6905,8 +6910,8 @@ export const InstanceResponse = {
     message.id !== undefined && (obj.id = message.id)
     message.audit !== undefined && (obj.audit = message.audit ? AuditResponse.toJSON(message.audit) : undefined)
     message.image !== undefined && (obj.image = message.image ? ImageResponse.toJSON(message.image) : undefined)
-    message.status !== undefined &&
-      (obj.status = message.status !== undefined ? containerStatusToJSON(message.status) : undefined)
+    message.state !== undefined &&
+      (obj.state = message.state !== undefined ? containerStateToJSON(message.state) : undefined)
     message.config !== undefined &&
       (obj.config = message.config ? InstanceContainerConfig.toJSON(message.config) : undefined)
     return obj
@@ -6919,7 +6924,7 @@ export const InstanceResponse = {
       object.audit !== undefined && object.audit !== null ? AuditResponse.fromPartial(object.audit) : undefined
     message.image =
       object.image !== undefined && object.image !== null ? ImageResponse.fromPartial(object.image) : undefined
-    message.status = object.status ?? undefined
+    message.state = object.state ?? undefined
     message.config =
       object.config !== undefined && object.config !== null
         ? InstanceContainerConfig.fromPartial(object.config)
@@ -7349,28 +7354,25 @@ export const DeploymentDetailsResponse = {
   },
 }
 
-const baseDeploymentEventContainerStatus: object = {
-  instanceId: '',
-  status: 0,
-}
+const baseDeploymentEventContainerState: object = { instanceId: '', state: 0 }
 
-export const DeploymentEventContainerStatus = {
-  encode(message: DeploymentEventContainerStatus, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+export const DeploymentEventContainerState = {
+  encode(message: DeploymentEventContainerState, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.instanceId !== '') {
       writer.uint32(10).string(message.instanceId)
     }
-    if (message.status !== 0) {
-      writer.uint32(16).int32(message.status)
+    if (message.state !== 0) {
+      writer.uint32(16).int32(message.state)
     }
     return writer
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): DeploymentEventContainerStatus {
+  decode(input: _m0.Reader | Uint8Array, length?: number): DeploymentEventContainerState {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = {
-      ...baseDeploymentEventContainerStatus,
-    } as DeploymentEventContainerStatus
+      ...baseDeploymentEventContainerState,
+    } as DeploymentEventContainerState
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -7378,7 +7380,7 @@ export const DeploymentEventContainerStatus = {
           message.instanceId = reader.string()
           break
         case 2:
-          message.status = reader.int32() as any
+          message.state = reader.int32() as any
           break
         default:
           reader.skipType(tag & 7)
@@ -7388,30 +7390,30 @@ export const DeploymentEventContainerStatus = {
     return message
   },
 
-  fromJSON(object: any): DeploymentEventContainerStatus {
+  fromJSON(object: any): DeploymentEventContainerState {
     const message = {
-      ...baseDeploymentEventContainerStatus,
-    } as DeploymentEventContainerStatus
+      ...baseDeploymentEventContainerState,
+    } as DeploymentEventContainerState
     message.instanceId = object.instanceId !== undefined && object.instanceId !== null ? String(object.instanceId) : ''
-    message.status = object.status !== undefined && object.status !== null ? containerStatusFromJSON(object.status) : 0
+    message.state = object.state !== undefined && object.state !== null ? containerStateFromJSON(object.state) : 0
     return message
   },
 
-  toJSON(message: DeploymentEventContainerStatus): unknown {
+  toJSON(message: DeploymentEventContainerState): unknown {
     const obj: any = {}
     message.instanceId !== undefined && (obj.instanceId = message.instanceId)
-    message.status !== undefined && (obj.status = containerStatusToJSON(message.status))
+    message.state !== undefined && (obj.state = containerStateToJSON(message.state))
     return obj
   },
 
-  fromPartial<I extends Exact<DeepPartial<DeploymentEventContainerStatus>, I>>(
+  fromPartial<I extends Exact<DeepPartial<DeploymentEventContainerState>, I>>(
     object: I,
-  ): DeploymentEventContainerStatus {
+  ): DeploymentEventContainerState {
     const message = {
-      ...baseDeploymentEventContainerStatus,
-    } as DeploymentEventContainerStatus
+      ...baseDeploymentEventContainerState,
+    } as DeploymentEventContainerState
     message.instanceId = object.instanceId ?? ''
-    message.status = object.status ?? 0
+    message.state = object.state ?? 0
     return message
   },
 }
@@ -7485,7 +7487,7 @@ export const DeploymentEventResponse = {
       writer.uint32(1608).int32(message.deploymentStatus)
     }
     if (message.containerStatus !== undefined) {
-      DeploymentEventContainerStatus.encode(message.containerStatus, writer.uint32(1618).fork()).ldelim()
+      DeploymentEventContainerState.encode(message.containerStatus, writer.uint32(1618).fork()).ldelim()
     }
     return writer
   },
@@ -7512,7 +7514,7 @@ export const DeploymentEventResponse = {
           message.deploymentStatus = reader.int32() as any
           break
         case 202:
-          message.containerStatus = DeploymentEventContainerStatus.decode(reader, reader.uint32())
+          message.containerStatus = DeploymentEventContainerState.decode(reader, reader.uint32())
           break
         default:
           reader.skipType(tag & 7)
@@ -7536,7 +7538,7 @@ export const DeploymentEventResponse = {
         : undefined
     message.containerStatus =
       object.containerStatus !== undefined && object.containerStatus !== null
-        ? DeploymentEventContainerStatus.fromJSON(object.containerStatus)
+        ? DeploymentEventContainerState.fromJSON(object.containerStatus)
         : undefined
     return message
   },
@@ -7551,7 +7553,7 @@ export const DeploymentEventResponse = {
         message.deploymentStatus !== undefined ? deploymentStatusToJSON(message.deploymentStatus) : undefined)
     message.containerStatus !== undefined &&
       (obj.containerStatus = message.containerStatus
-        ? DeploymentEventContainerStatus.toJSON(message.containerStatus)
+        ? DeploymentEventContainerState.toJSON(message.containerStatus)
         : undefined)
     return obj
   },
@@ -7568,7 +7570,7 @@ export const DeploymentEventResponse = {
     message.deploymentStatus = object.deploymentStatus ?? undefined
     message.containerStatus =
       object.containerStatus !== undefined && object.containerStatus !== null
-        ? DeploymentEventContainerStatus.fromPartial(object.containerStatus)
+        ? DeploymentEventContainerState.fromPartial(object.containerStatus)
         : undefined
     return message
   },
@@ -8003,16 +8005,16 @@ export const CruxNodeService = {
     responseSerialize: (value: NodeEventMessage) => Buffer.from(NodeEventMessage.encode(value).finish()),
     responseDeserialize: (value: Buffer) => NodeEventMessage.decode(value),
   },
-  watchContainerStatus: {
-    path: '/crux.CruxNode/WatchContainerStatus',
+  watchContainerState: {
+    path: '/crux.CruxNode/WatchContainerState',
     requestStream: false,
     responseStream: true,
-    requestSerialize: (value: WatchContainerStatusRequest) =>
-      Buffer.from(WatchContainerStatusRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => WatchContainerStatusRequest.decode(value),
-    responseSerialize: (value: ContainerStatusListMessage) =>
-      Buffer.from(ContainerStatusListMessage.encode(value).finish()),
-    responseDeserialize: (value: Buffer) => ContainerStatusListMessage.decode(value),
+    requestSerialize: (value: WatchContainerStateRequest) =>
+      Buffer.from(WatchContainerStateRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => WatchContainerStateRequest.decode(value),
+    responseSerialize: (value: ContainerStateListMessage) =>
+      Buffer.from(ContainerStateListMessage.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => ContainerStateListMessage.decode(value),
   },
 } as const
 
@@ -8028,7 +8030,7 @@ export interface CruxNodeServer extends UntypedServiceImplementation {
   discardScript: handleUnaryCall<IdRequest, Empty>
   revokeToken: handleUnaryCall<IdRequest, Empty>
   subscribeNodeEventChannel: handleServerStreamingCall<ServiceIdRequest, NodeEventMessage>
-  watchContainerStatus: handleServerStreamingCall<WatchContainerStatusRequest, ContainerStatusListMessage>
+  watchContainerState: handleServerStreamingCall<WatchContainerStateRequest, ContainerStateListMessage>
 }
 
 export interface CruxNodeClient extends Client {
@@ -8168,15 +8170,15 @@ export interface CruxNodeClient extends Client {
     metadata?: Metadata,
     options?: Partial<CallOptions>,
   ): ClientReadableStream<NodeEventMessage>
-  watchContainerStatus(
-    request: WatchContainerStatusRequest,
+  watchContainerState(
+    request: WatchContainerStateRequest,
     options?: Partial<CallOptions>,
-  ): ClientReadableStream<ContainerStatusListMessage>
-  watchContainerStatus(
-    request: WatchContainerStatusRequest,
+  ): ClientReadableStream<ContainerStateListMessage>
+  watchContainerState(
+    request: WatchContainerStateRequest,
     metadata?: Metadata,
     options?: Partial<CallOptions>,
-  ): ClientReadableStream<ContainerStatusListMessage>
+  ): ClientReadableStream<ContainerStateListMessage>
 }
 
 export const CruxNodeClient = makeGenericClientConstructor(CruxNodeService, 'crux.CruxNode') as unknown as {

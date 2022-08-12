@@ -87,7 +87,7 @@ func (dog *DeploymentLogger) WriteDeploymentStatus(status crux.DeploymentStatus,
 	}
 }
 
-func (dog *DeploymentLogger) WriteContainerStatus(containerState string, messages ...string) {
+func (dog *DeploymentLogger) WriteContainerState(containerState string, messages ...string) {
 	prefix := fmt.Sprintf("%s - %s", dog.requestID, containerState)
 
 	for i := range messages {
@@ -101,7 +101,7 @@ func (dog *DeploymentLogger) WriteContainerStatus(containerState string, message
 		instance := &crux.DeploymentStatusMessage_Instance{
 			Instance: &crux.InstanceDeploymentItem{
 				InstanceId: dog.requestID,
-				Status:     MapContainerState(containerState),
+				State:      MapContainerState(containerState),
 			},
 		}
 
@@ -130,23 +130,23 @@ func (dog *DeploymentLogger) WriteString(s string) (int, error) {
 	return len(s), nil
 }
 
-func MapContainerState(state string) crux.ContainerStatus {
+func MapContainerState(state string) crux.ContainerState {
 	switch state {
 	case "created":
-		return crux.ContainerStatus_CREATED
+		return crux.ContainerState_CREATED
 	case "restarting":
-		return crux.ContainerStatus_RESTARTING
+		return crux.ContainerState_RESTARTING
 	case "running":
-		return crux.ContainerStatus_RUNNING
+		return crux.ContainerState_RUNNING
 	case "removing":
-		return crux.ContainerStatus_REMOVING
+		return crux.ContainerState_REMOVING
 	case "paused":
-		return crux.ContainerStatus_PAUSED
+		return crux.ContainerState_PAUSED
 	case "exited":
-		return crux.ContainerStatus_EXITED
+		return crux.ContainerState_EXITED
 	case "dead":
-		return crux.ContainerStatus_DEAD
+		return crux.ContainerState_DEAD
 	default:
-		return crux.ContainerStatus_UNKNOWN_CONTAINER_STATUS
+		return crux.ContainerState_UNKNOWN_CONTAINER_STATE
 	}
 }

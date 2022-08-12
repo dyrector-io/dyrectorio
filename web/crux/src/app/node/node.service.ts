@@ -5,7 +5,7 @@ import { PrismaService } from 'src/services/prisma.service'
 import { PreconditionFailedException } from 'src/exception/errors'
 import {
   AccessRequest,
-  ContainerStatusListMessage,
+  ContainerStateListMessage,
   CreateEntityResponse,
   CreateNodeRequest,
   Empty,
@@ -19,7 +19,7 @@ import {
   NodeType,
   ServiceIdRequest,
   UpdateNodeRequest,
-  WatchContainerStatusRequest,
+  WatchContainerStateRequest,
 } from 'src/grpc/protobuf/proto/crux'
 import { AgentService } from '../agent/agent.service'
 import { TeamRepository } from '../team/team.repository'
@@ -168,7 +168,7 @@ export class NodeService {
     return await this.agentService.getNodeEventsByTeam(request.id)
   }
 
-  handleWatchContainerStatus(request: WatchContainerStatusRequest): Observable<ContainerStatusListMessage> {
+  handleWatchContainerStatus(request: WatchContainerStateRequest): Observable<ContainerStateListMessage> {
     this.logger.debug(`Opening container status channel for prefix: ${request.nodeId} - ${request.prefix}`)
 
     const agent = this.agentService.getById(request.nodeId)

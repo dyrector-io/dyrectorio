@@ -109,7 +109,7 @@
 
   "containerStatuses": {
     "created": "Created",
-    "restating": "Restatring",
+    "restarting": "Restarting",
     "running": "Running",
     "removing": "Removing",
     "paused": "Paused",

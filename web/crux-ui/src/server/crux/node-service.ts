@@ -2,7 +2,7 @@ import { Logger } from '@app/logger'
 import {
   Container,
   ContainerListMessage,
-  ContainerStatus,
+  ContainerState,
   CreateDyoNode,
   DyoNode,
   DyoNodeDetails,
@@ -16,9 +16,9 @@ import {
 } from '@app/models'
 import {
   AccessRequest,
-  ContainerStatus as ProtoContainerStatus,
-  ContainerStatusListMessage,
-  containerStatusToJSON,
+  ContainerState as ProtoContainerState,
+  ContainerStateListMessage,
+  containerStateToJSON,
   CreateEntityResponse,
   CreateNodeRequest,
   CruxNodeClient,
@@ -35,7 +35,7 @@ import {
   NodeType as ProtoNodeType,
   ServiceIdRequest,
   UpdateNodeRequest,
-  WatchContainerStatusRequest,
+  WatchContainerStateRequest,
 } from '@app/models/grpc/protobuf/proto/crux'
 import { timestampToUTC } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
@@ -199,29 +199,29 @@ class DyoNodeService {
     return new GrpcConnection(this.logger.descend('events'), stream, transform, options)
   }
 
-  watchContainerStatus(
+  watchContainerState(
     nodeId: string,
     prefix: string | undefined,
     options: ProtoSubscriptionOptions<ContainerListMessage>,
-  ): GrpcConnection<ContainerStatusListMessage, ContainerListMessage> {
-    const req: WatchContainerStatusRequest = {
+  ): GrpcConnection<ContainerStateListMessage, ContainerListMessage> {
+    const req: WatchContainerStateRequest = {
       nodeId,
       prefix,
       accessedBy: this.identity.id,
     }
 
-    const transform = (data: ContainerStatusListMessage) => {
+    const transform = (data: ContainerStateListMessage) => {
       return data.data.map(it => {
         return {
           id: it.containerId,
           name: it.name,
           date: timestampToUTC(it.createdAt),
-          status: containerStatusToDto(it.status),
+          state: containerStateToDto(it.state),
         } as Container
       }) as ContainerListMessage
     }
 
-    const stream = () => this.client.watchContainerStatus(WatchContainerStatusRequest.fromJSON(req))
+    const stream = () => this.client.watchContainerState(WatchContainerStateRequest.fromJSON(req))
     return new GrpcConnection(this.logger.descend('container-status'), stream, transform, options)
   }
 
@@ -239,8 +239,8 @@ class DyoNodeService {
 
 export default DyoNodeService
 
-export const containerStatusToDto = (status: ProtoContainerStatus): ContainerStatus =>
-  containerStatusToJSON(status).toLocaleLowerCase() as ContainerStatus
+export const containerStateToDto = (state: ProtoContainerState): ContainerState =>
+containerStateToJSON(state).toLocaleLowerCase() as ContainerState
 
 export const nodeTypeUiToGrpc = (type: NodeType): GrpcNodeType => {
   return type === NODE_TYPE_VALUES[0] ? GrpcNodeType.DOCKER : GrpcNodeType.K8S

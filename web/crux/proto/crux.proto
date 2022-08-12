@@ -46,8 +46,8 @@ service CruxNode {
 
   rpc SubscribeNodeEventChannel(ServiceIdRequest)
       returns (stream NodeEventMessage);
-  rpc WatchContainerStatus(WatchContainerStatusRequest)
-      returns (stream ContainerStatusListMessage);
+  rpc WatchContainerState(WatchContainerStateRequest)
+      returns (stream ContainerStateListMessage);
 }
 
 service CruxProductVersion {
@@ -612,7 +612,7 @@ message NodeEventMessage {
   optional string address = 101;
 }
 
-message WatchContainerStatusRequest {
+message WatchContainerStateRequest {
   string accessedBy = 2;
 
   string nodeId = 100;
@@ -624,22 +624,27 @@ message ContainerPort {
   int32 external = 2;
 }
 
-message ContainerStatusItem {
+message ContainerStateItem {
   string containerId = 100;
   string name = 101;
   string command = 103;
   google.protobuf.Timestamp createdAt = 104;
-  ContainerStatus status = 105;
-  string state = 106;
+  /* The 'State' of the container (Created, Running, etc) */
+  ContainerState state = 105;
+  /*
+   * The 'Status' of the container ("Created 1min ago", "Exited with code 123", etc).
+   * Unused but left here for reverse compatibility with the legacy version. 
+   */
+  string status = 106;
   string imageName = 107;
   string imageTag = 108;
 
   repeated ContainerPort ports = 1000;
 }
 
-message ContainerStatusListMessage {
+message ContainerStateListMessage {
   optional string prefix = 100;
-  repeated ContainerStatusItem data = 1000;
+  repeated ContainerStateItem data = 1000;
 }
 
 // DEPLOYMENT
@@ -656,7 +661,7 @@ enum DeploymentStatus {
 
 message InstanceDeploymentItem {
   string instanceId = 100;
-  ContainerStatus status = 101;
+  ContainerState state = 101;
 }
 
 message DeploymentStatusMessage {
@@ -722,7 +727,7 @@ message InstanceResponse {
   AuditResponse audit = 2;
 
   ImageResponse image = 100;
-  optional ContainerStatus status = 101;
+  optional ContainerState state = 101;
   optional InstanceContainerConfig config = 102;
 }
 
@@ -770,9 +775,9 @@ enum DeploymentEventType {
   CONTAINER_STATUS = 3;
 }
 
-message DeploymentEventContainerStatus {
+message DeploymentEventContainerState {
   string instanceId = 1;
-  ContainerStatus status = 2;
+  ContainerState state = 2;
 }
 
 message DeploymentEventLog { repeated string log = 1000; }
@@ -783,7 +788,7 @@ message DeploymentEventResponse {
   oneof details {
     DeploymentEventLog log = 200;
     DeploymentStatus deploymentStatus = 201;
-    DeploymentEventContainerStatus containerStatus = 202;
+    DeploymentEventContainerState containerStatus = 202;
   }
 }
 
@@ -791,8 +796,8 @@ message DeploymentEventListResponse {
   repeated DeploymentEventResponse data = 1000;
 }
 
-enum ContainerStatus {
-  UNKNOWN_CONTAINER_STATUS = 0;
+enum ContainerState {
+  UNKNOWN_CONTAINER_STATE = 0;
   CREATED = 1;
   RESTARTING = 2;
   RUNNING = 3;

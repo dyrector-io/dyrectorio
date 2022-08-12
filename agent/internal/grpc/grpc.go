@@ -44,7 +44,7 @@ type GrpcConnectionParams struct {
 }
 
 type DeployFunc func(context.Context, *dogger.DeploymentLogger, *v1.DeployImageRequest, *v1.VersionData) error
-type WatchFunc func(context.Context, string) []*crux.ContainerStatusItem
+type WatchFunc func(context.Context, string) []*crux.ContainerStateItem
 type DeleteFunc func(context.Context, string, string) error
 
 type WorkerFunctions struct {
@@ -232,8 +232,8 @@ func grpcLoop(
 
 		if command.GetDeploy() != nil {
 			go executeVersionDeployRequest(ctx, command.GetDeploy(), workerFuncs.Deploy, appConfig)
-		} else if command.GetContainerStatus() != nil {
-			go executeWatchContainerStatus(ctx, command.GetContainerStatus(), workerFuncs.Watch)
+		} else if command.GetContainerState() != nil {
+			go executeWatchContainerStatus(ctx, command.GetContainerState(), workerFuncs.Watch)
 		} else if command.GetContainerDelete() != nil {
 			go executeDeleteContainer(ctx, command.GetContainerDelete(), workerFuncs.Delete)
 		} else if command.GetDeployLegacy() != nil {
@@ -302,7 +302,7 @@ func executeVersionDeployRequest(
 	}
 }
 
-func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStatusRequest, listFn WatchFunc) {
+func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStateRequest, listFn WatchFunc) {
 	filterPrefix := ""
 	if req.Prefix != nil {
 		filterPrefix = *req.Prefix
@@ -311,7 +311,7 @@ func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStatus
 	log.Printf("Opening container status channel for prefix: %s", filterPrefix)
 
 	streamCtx := metadata.AppendToOutgoingContext(ctx, "dyo-filter-prefix", filterPrefix)
-	stream, err := grpcConn.Client.ContainerStatus(streamCtx, grpc.WaitForReady(true))
+	stream, err := grpcConn.Client.ContainerState(streamCtx, grpc.WaitForReady(true))
 	if err != nil {
 		log.Printf("Failed to open container status channel: %s", err.Error())
 		return
@@ -320,7 +320,7 @@ func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStatus
 	for {
 		containers := listFn(ctx, filterPrefix)
 
-		err = stream.Send(&crux.ContainerStatusListMessage{
+		err = stream.Send(&crux.ContainerStateListMessage{
 			Prefix: req.Prefix,
 			Data:   containers,
 		})

@@ -19,11 +19,11 @@ service Agent {
    * deploy requests and prefix status requests.
    * In both cases, separate, shorter-living channels are opened.
    * For deployment status reports, closed when ended.
-   * For prefix status reports, should be closed by the server.
+   * For prefix state reports, should be closed by the server.
    */
   rpc Connect(AgentInfo) returns (stream AgentCommand);
   rpc DeploymentStatus(stream crux.DeploymentStatusMessage) returns (Empty);
-  rpc ContainerStatus(stream crux.ContainerStatusListMessage) returns (Empty);
+  rpc ContainerState(stream crux.ContainerStateListMessage) returns (Empty);
 }
 
 message Empty {}
@@ -40,7 +40,7 @@ message AgentInfo {
 message AgentCommand {
   oneof command {
     VersionDeployRequest deploy = 1;
-    ContainerStatusRequest containerStatus = 2;
+    ContainerStateRequest containerState = 2;
     ContainerDeleteRequest containerDelete = 3;
     DeployRequestLegacy deployLegacy = 4;
   }
@@ -140,7 +140,7 @@ message DeployRequest {
   optional RegistryAuth registryAuth = 8;
 }
 
-message ContainerStatusRequest { 
+message ContainerStateRequest { 
   optional string prefix = 1; 
   optional bool oneShot = 2;
 }
