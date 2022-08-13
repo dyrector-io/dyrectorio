@@ -2,6 +2,8 @@ import { Identity } from '@ory/kratos-client'
 import { DyoApiError } from '@server/error-middleware'
 import { REGISTRY_GITHUB_URL, REGISTRY_GITLAB_URLS, REGISTRY_HUB_URL } from './const'
 
+// TODO(polaroi8d): refactor the models.ts
+
 export const PRODUCT_TYPE_VALUES = ['simple', 'complex'] as const
 export type ProductType = typeof PRODUCT_TYPE_VALUES[number]
 
@@ -80,7 +82,7 @@ export type Instance = {
   id: string
   image: VersionImage
   state?: ContainerState
-  overridenConfig?: Partial<InstanceContainerConfig>
+  overriddenConfig?: Partial<InstanceContainerConfig>
 }
 
 export type DeploymentStatus = 'preparing' | 'inProgress' | 'successful' | 'failed' | 'obsolate'
@@ -696,5 +698,43 @@ export const registryDetailsToRegistry = (it: RegistryDetails): Registry => {
   return {
     ...it,
     url: registryUrlOf(it),
+  }
+}
+
+const overrideKeyValues = (weak: UniqueKeyValue[], strong: UniqueKeyValue[]): UniqueKeyValue[] => {
+  const overridenKeys: Set<string> = new Set(strong?.map(it => it.key))
+  return [...(weak?.filter(it => !overridenKeys.has(it.key)) ?? []), ...(strong ?? [])]
+}
+
+const overridePorts = (
+  weak: ExplicitContainerConfigPort[],
+  strong: ExplicitContainerConfigPort[],
+): ExplicitContainerConfigPort[] => {
+  const overridenPorts: Set<number> = new Set(strong?.map(it => it.internal))
+  return [...(weak?.filter(it => !overridenPorts.has(it.internal)) ?? []), ...(strong ?? [])]
+}
+
+const overrideNetworkMode = (weak: ExplicitContainerNetworkMode, strong: ExplicitContainerNetworkMode) =>
+  strong ?? weak ?? 'none'
+
+export const mergeConfigs = (
+  imageConfig: ContainerConfig,
+  overriddenConfig: Partial<InstanceContainerConfig>,
+): ContainerConfig => {
+  const instanceConfig = overriddenConfig ?? {}
+
+  const envs = overrideKeyValues(imageConfig.environment, instanceConfig.environment)
+  const caps = overrideKeyValues(imageConfig.capabilities, instanceConfig.capabilities)
+
+  return {
+    name: imageConfig.name,
+    environment: envs,
+    capabilities: caps,
+    config: {
+      ...imageConfig.config,
+      ...(instanceConfig.config ?? {}),
+      networkMode: overrideNetworkMode(imageConfig?.config?.networkMode, instanceConfig.config?.networkMode),
+      ports: overridePorts(imageConfig?.config?.ports, instanceConfig.config?.ports),
+    },
   }
 }

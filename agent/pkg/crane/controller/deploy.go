@@ -279,7 +279,7 @@ func DeployVersion(c *gin.Context) {
 			cfg,
 		)
 
-		// todo(nandi): review bad requests, their presence is not justified, request might be correct `filozofiai kerdes`
+		// TODO(nandor-magyar): review bad requests, their presence is not justified, request might be correct `filozofiai kerdes`
 		if err := deployFacade.CheckPreConditions(); err != nil {
 			log.Println("Error in pre-conditions: " + err.Error())
 			dog.Write(err.Error())

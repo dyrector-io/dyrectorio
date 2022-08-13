@@ -147,7 +147,7 @@ func Init(grpcContext context.Context,
 		}
 
 		// TODO: Missing error or panic when the server don't have a secure connection.
-		// the application silently die. Added by @Levi 2020/05/25
+		// the application silently dies. Added by @polaroi8d 2020/05/25
 		opts := []grpc.DialOption{
 			grpc.WithTransportCredentials(creds),
 			grpc.WithBlock(),
@@ -411,7 +411,7 @@ func GetConfigFromContext(ctx context.Context) any {
 	return ctx.Value(contextConfigKey)
 }
 
-// TODO(m8): streamline the log appearince with crane
+// TODO(m8vago): streamline the log appearince with crane
 // func PrintDeployRequestStrings(req *agent.DeployRequest) []string {
 // 	return append([]string{},
 // 		fmt.Sprintf("Deployment target: k8s ~ %v\n", utils.GetEnv("INGRESS_DOMAIN_ROOT", "docker host")),
