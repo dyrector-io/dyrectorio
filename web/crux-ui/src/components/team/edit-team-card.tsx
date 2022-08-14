@@ -92,7 +92,7 @@ const EditTeamCard = (props: EditTeamCardProps) => {
             name="name"
             type="name"
             required
-            label={t('name')}
+            label={t('common:name')}
             onChange={formik.handleChange}
             value={formik.values.name}
             message={formik.errors.name}
