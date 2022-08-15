@@ -1,0 +1,25 @@
+{
+  "notificationsName": "Notifications - {{name}}",
+  "new": "New notification",
+  "description": "Get notifications via your webhooks",
+
+  "altNotificationPicture": "Notification",
+  "url": "Webhook URL",
+
+  "notificationType": "Type of Notification",
+
+  "type": {
+    "discord": "Discord",
+    "slack": "Slack",
+    "teams": "MS Teams"
+  },
+
+  "active": "Active",
+
+  "hook": {
+    "textWebhook": "Test Webhook",
+    "message": "Its a test!",
+    "success": "Your hook is working!",
+    "error": "Something is wrong with your hook!"
+  }
+}

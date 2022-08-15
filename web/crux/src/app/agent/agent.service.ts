@@ -1,3 +1,4 @@
+import { BaseMessage, NotificationMessageType } from 'src/domain/notification-templates'
 import { Injectable, Logger } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { DeploymentEventTypeEnum, DeploymentStatusEnum, NodeTypeEnum } from '@prisma/client'
@@ -11,12 +12,14 @@ import { AlreadyExistsException, NotFoundException, UnauthenticatedException } f
 import { AgentCommand, AgentInfo } from 'src/grpc/protobuf/proto/agent'
 import {
   ContainerStateListMessage,
+  DeploymentStatus,
   DeploymentStatusMessage,
   Empty,
   NodeConnectionStatus,
   NodeEventMessage,
 } from 'src/grpc/protobuf/proto/crux'
 import { GrpcNodeConnection } from 'src/shared/grpc-node-connection'
+import { DomainNotificationService } from 'src/services/domain.notification.service'
 
 @Injectable()
 export class AgentService {
@@ -28,7 +31,11 @@ export class AgentService {
 
   private static SCRIPT_EXPIRATION = 10 * 60 * 1000 // millis
 
-  constructor(private prisma: PrismaService, private jwtService: JwtService) {}
+  constructor(
+    private prisma: PrismaService,
+    private jwtService: JwtService,
+    private notificationService: DomainNotificationService,
+  ) {}
 
   getById(id: string): Agent {
     return this.agents.get(id)
@@ -156,9 +163,18 @@ export class AgentService {
         this.createDeploymentEvents(deployment.id, events)
         return Empty
       }),
-      finalize(() => {
+      finalize(async () => {
         agent.onDeploymentFinished(deployment)
         this.updateDeploymentStatuses(agent.id, deployment.id)
+
+        let messageType: NotificationMessageType =
+          deployment.status() == DeploymentStatus.SUCCESSFUL ? 'successfulDeploy' : 'failedDeploy'
+
+        await this.notificationService.sendNotification({
+          identityId: deployment.notification.accessedBy,
+          messageType: messageType,
+          message: { subject: deployment.notification.deploymentName } as BaseMessage,
+        })
 
         this.logger.debug(`Deployment finished: ${deployment.id}`)
       }),

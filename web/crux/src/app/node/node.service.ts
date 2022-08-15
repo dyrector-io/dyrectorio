@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { NodeTypeEnum } from '@prisma/client'
 import { Observable } from 'rxjs'
 import { PrismaService } from 'src/services/prisma.service'
 import { PreconditionFailedException } from 'src/exception/errors'
@@ -16,7 +15,6 @@ import {
   NodeInstallResponse,
   NodeListResponse,
   NodeScriptResponse,
-  NodeType,
   ServiceIdRequest,
   UpdateNodeRequest,
   WatchContainerStateRequest,
@@ -24,6 +22,8 @@ import {
 import { AgentService } from '../agent/agent.service'
 import { TeamRepository } from '../team/team.repository'
 import { NodeMapper } from './node.mapper'
+import { DomainNotificationService } from 'src/services/domain.notification.service'
+import { BaseMessage } from 'src/domain/notification-templates'
 
 @Injectable()
 export class NodeService {
@@ -34,6 +34,7 @@ export class NodeService {
     private prisma: PrismaService,
     private agentService: AgentService,
     private mapper: NodeMapper,
+    private notificationService: DomainNotificationService,
   ) {}
 
   async getNodes(req: AccessRequest): Promise<NodeListResponse> {
@@ -76,6 +77,12 @@ export class NodeService {
         teamId: team.teamId,
         createdBy: req.accessedBy,
       },
+    })
+
+    await this.notificationService.sendNotification({
+      identityId: req.accessedBy,
+      messageType: 'node',
+      message: { subject: node.name } as BaseMessage,
     })
 
     return CreateEntityResponse.fromJSON(node)

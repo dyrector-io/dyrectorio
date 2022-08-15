@@ -25,6 +25,7 @@ export const ROUTE_PRODUCTS = '/products'
 
 export const ROUTE_NODES = '/nodes'
 export const ROUTE_REGISTRIES = '/registries'
+export const ROUTE_NOTIFICATIONS = '/notifications'
 
 export const API_AUTH_REGISTER = '/api/auth/register'
 export const API_AUTH_LOGIN = '/api/auth/login'
@@ -46,6 +47,8 @@ export const API_TEAMS = '/api/teams'
 export const API_TEAMS_ACTIVE = '/api/teams/active'
 export const API_TEAMS_ACTIVE_USERS = `${API_TEAMS_ACTIVE}/users`
 export const API_WHOAMI = '/api/whoami'
+
+export const API_NOTIFICATIONS = '/api/notifications'
 
 export const WS_NODES = `${API_NODES}/connect`
 export const WS_REGISTRIES = `${API_REGISTRIES}/connect`
@@ -105,3 +108,8 @@ export const deploymentDeployUrl = (productId: string, versionId: string, deploy
 export const teamsInviteUrl = (teamId: string) => `${ROUTE_TEAMS}/${teamId}/invite`
 export const teamsActiveUserApiUrl = (userId: string) => `${API_TEAMS_ACTIVE_USERS}/${userId}`
 export const teamAcceptInviteApiUrl = teamId => `${API_TEAMS}/${teamId}/accept`
+
+// notification
+export const notificationUrl = (id: string) => `${ROUTE_NOTIFICATIONS}/${id}`
+export const notificationApiUrl = (id: string) => `${API_NOTIFICATIONS}/${id}`
+export const notificationApiHookUrl = (id: string) => `${notificationApiUrl(id)}/hook`

@@ -31,6 +31,7 @@ import { AgentService } from '../agent/agent.service'
 import { ImageWithConfig } from '../image/image.mapper'
 import { ImageService } from '../image/image.service'
 import { DeployMapper, InstanceDetails } from './deploy.mapper'
+import { KratosService } from 'src/services/kratos.service'
 
 @Injectable()
 export class DeployService {
@@ -44,6 +45,7 @@ export class DeployService {
     private agentService: AgentService,
     imageService: ImageService,
     private mapper: DeployMapper,
+    private kratos: KratosService,
   ) {
     imageService.imagesAddedToVersionEvent
       .pipe(
@@ -303,34 +305,41 @@ export class DeployService {
       })
     }
 
-    const deploy = new Deployment({
-      id: deployment.id,
-      releaseNotes: deployment.version.changelog,
-      versionName: deployment.version.name,
-      requests: deployment.instances.map(it => {
-        const registry = it.image.registry
-        const registryUrl = registry.type === 'v2' ? registry.url : ''
+    const deploy = new Deployment(
+      {
+        id: deployment.id,
+        releaseNotes: deployment.version.changelog,
+        versionName: deployment.version.name,
+        requests: deployment.instances.map(it => {
+          const registry = it.image.registry
+          const registryUrl = registry.type === 'v2' ? registry.url : ''
 
-        return {
-          id: it.id,
-          imageName: it.image.name,
-          tag: it.image.tag,
-          containerConfig: this.mapper.instanceToAgentContainerConfig(deployment.prefix, it),
-          instanceConfig: this.mapper.deploymentToAgentInstanceConfig(deployment),
-          registry: registryUrl,
-          registryAuth: !registry.token
-            ? undefined
-            : {
-                name: registry.name,
-                url: registryUrl,
-                user: registry.user,
-                password: registry.token,
-              },
-        } as DeployRequest
-      }),
-    })
+          return {
+            id: it.id,
+            imageName: it.image.name,
+            tag: it.image.tag,
+            containerConfig: this.mapper.instanceToAgentContainerConfig(deployment.prefix, it),
+            instanceConfig: this.mapper.deploymentToAgentInstanceConfig(deployment),
+            registry: registryUrl,
+            registryAuth: !registry.token
+              ? undefined
+              : {
+                  name: registry.name,
+                  url: registryUrl,
+                  user: registry.user,
+                  password: registry.token,
+                },
+          } as DeployRequest
+        }),
+      },
+      {
+        deploymentName: deployment.name,
+        accessedBy: request.accessedBy,
+      },
+    )
 
     this.logger.debug(`Starting deployment: ${deploy.id}`)
+
     return agent.deploy(deploy)
   }
 

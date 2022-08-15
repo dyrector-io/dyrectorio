@@ -17,12 +17,13 @@ model Team {
   updatedAt DateTime? @default(now()) @db.Timestamptz(6)
   updatedBy String?   @db.Uuid
 
-  registries  Registry[]
-  products    Product[]
-  nodes       Node[]
-  users       UsersOnTeams[]
-  invitations UserInvitation[]
-  auditLog    AuditLog[]
+  registries    Registry[]
+  products      Product[]
+  nodes         Node[]
+  users         UsersOnTeams[]
+  invitations   UserInvitation[]
+  auditLog      AuditLog[]
+  notifications Notification[]
 }
 
 model UserInvitation {
@@ -232,6 +233,23 @@ model AuditLog {
   team Team @relation(fields: [teamId], references: [id])
 }
 
+model Notification {
+  id          String                @id @default(uuid()) @db.Uuid
+  createdAt   DateTime              @default(now()) @db.Timestamptz(6)
+  createdBy   String                @db.Uuid
+  updatedAt   DateTime?             @default(now()) @db.Timestamptz(6)
+  updatedBy   String?               @db.Uuid
+  name        String
+  url         String
+  type        NotificationTypeEnum
+  active      Boolean               @default(false)
+  teamId      String                @db.Uuid
+  
+  team        Team                  @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([name, teamId])
+}
+
 enum ProductTypeEnum {
   simple
   complex
@@ -278,4 +296,10 @@ enum RegistryTypeEnum {
 enum NodeTypeEnum {
   docker
   k8s
+}
+
+enum NotificationTypeEnum {
+  discord
+  slack
+  teams
 }

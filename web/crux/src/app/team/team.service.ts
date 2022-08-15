@@ -29,6 +29,8 @@ import { TeamRepository } from './team.repository'
 import { REGISTRY_HUB_URL } from 'src/shared/const'
 import { KratosService } from 'src/services/kratos.service'
 import { EmailService } from 'src/services/email.service'
+import { DomainNotificationService } from 'src/services/domain.notification.service'
+import { InviteMessage } from 'src/domain/notification-templates'
 
 const VALIDITY_DAY = 1
 const EPOCH_TIME = 24 * 60 * 60 * 1000 // 1 day in millis
@@ -45,6 +47,7 @@ export class TeamService {
     private mapper: TeamMapper,
     private auditHelper: InterceptorGrpcHelperProvider,
     private emailBuilder: EmailBuilder,
+    private notificationService: DomainNotificationService,
   ) {}
 
   async getUserMeta(request: AccessRequest): Promise<UserMetaResponse> {
@@ -243,6 +246,12 @@ export class TeamService {
     if (!mailSent) {
       throw new MailServiceException()
     }
+
+    await this.notificationService.sendNotification({
+      identityId: request.accessedBy,
+      messageType: 'invite',
+      message:  { subject: request.email, team: team.name } as InviteMessage,
+    })
 
     const invite = await this.prisma.userInvitation.create({
       data: {
