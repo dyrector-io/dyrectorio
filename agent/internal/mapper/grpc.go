@@ -96,6 +96,10 @@ func MapContainerConfig(in *agent.DeployRequest_ContainerConfig) v1.ContainerCon
 		containerConfig.ConfigContainer = MapConfigContainer(in.ConfigContainer)
 	}
 
+	if in.NetworkMode != nil {
+		containerConfig.NetworkMode = *in.NetworkMode
+	}
+
 	return containerConfig
 }
 
