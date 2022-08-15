@@ -39,6 +39,7 @@ require (
 	github.com/form3tech-oss/jwt-go v3.2.3+incompatible
 	github.com/hashicorp/go-version v1.3.0
 	github.com/ilyakaznacheev/cleanenv v1.3.0
+	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e
 	google.golang.org/protobuf v1.28.1
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -93,7 +94,7 @@ require (
 
 require (
 	github.com/go-logr/logr v1.2.0 // indirect
-	github.com/google/go-cmp v0.5.7 // indirect
+	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect

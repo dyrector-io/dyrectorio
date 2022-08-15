@@ -41,7 +41,7 @@ import { WsMessage } from '@app/websockets/common'
 import { Identity } from '@ory/kratos-client'
 import { GrpcConnection, protomisify, ProtoSubscriptionOptions } from './grpc-connection'
 import { explicitContainerConfigToDto, explicitContainerConfigToProto, imageToDto } from './image-service'
-import { containerStatusToDto } from './node-service'
+import { containerStateToDto } from './node-service'
 
 class DyoDeploymentService {
   private logger = new Logger(DyoDeploymentService.name)
@@ -112,7 +112,7 @@ class DyoDeploymentService {
             : type === 'containerStatus'
             ? {
                 instanceId: it.containerStatus.instanceId,
-                status: containerStatusToDto(it.containerStatus.status),
+                state: containerStateToDto(it.containerStatus.state),
               }
             : null,
       }
@@ -214,7 +214,7 @@ class DyoDeploymentService {
           createdAt,
           value: {
             instanceId: data.instance.instanceId,
-            status: containerStatusToDto(data.instance.status),
+            state: containerStateToDto(data.instance.state),
           },
         })
       } else if (data.status) {
@@ -295,7 +295,7 @@ export const instanceToDto = (res: InstanceResponse): Instance => {
   return {
     ...res,
     image: imageToDto(res.image),
-    status: !res.status ? null : containerStatusToDto(res.status),
-    overridenConfig: instanceContainerConfigToDto(res.config),
+    state: !res.state ? null : containerStateToDto(res.state),
+    overriddenConfig: instanceContainerConfigToDto(res.config),
   } as Instance
 }

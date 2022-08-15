@@ -10,7 +10,7 @@ import (
 // we call into a function in a package which calls here, then we populate the
 // options which should be different if not defined otherwise
 type CommonConfiguration struct {
-	// TODO(sziszi): custom setters to validate input for resources
+	// TODO(c3ppc3pp): custom setters to validate input for resources
 	DefaultLimitsCPU     string        `yaml:"defaultLimitsCPU"      env:"DEFAULT_LIMITS_CPU"      env-default:"100m"`
 	DefaultLimitsMemory  string        `yaml:"defaultLimitsMemory"   env:"DEFAULT_LIMITS_MEMORY"   env-default:"128Mi"`
 	DefaultRequestsCPU   string        `yaml:"defaultRequestsCPU"    env:"DEFAULT_REQUESTS_CPU"    env-default:"50m"`
@@ -20,13 +20,13 @@ type CommonConfiguration struct {
 	DefaultTimeout       time.Duration `yaml:"defaultTimeout"        env:"DEFAULT_TIMEOUT"         env-default:"5s"`
 	GrpcKeepalive        time.Duration `yaml:"grpcKeepalive"         env:"GRPC_KEEPALIVE"          env-default:"60s"`
 	Debug                bool          `yaml:"debug"                 env:"DEBUG"                   env-default:"false"`
-	// TODO(sziszi): custom setter to validate input
+	// TODO(c3ppc3pp): custom setter to validate input
 	GrpcToken            string `yaml:"grpcToken"             env:"GRPC_TOKEN"`
 	GrpcInsecure         bool   `yaml:"grpcInsecure"          env:"GRPC_INSECURE"           env-default:"false"`
 	HTTPPort             int    `yaml:"httpPort"              env:"PORT"                    env-default:"8080"`
 	ImportContainerImage string `yaml:"importContainerImage"  env:"IMPORT_CONTAINER_IMAGE"  env-default:"rclone/rclone:1.57.0"`
 	IngressRootDomain    string `yaml:"ingressRootDomain"     env:"INGRESS_ROOT_DOMAIN"     env-default:""`
-	// TODO(sziszi): custom UUIDv4 setter
+	// TODO(c3ppc3pp): custom UUIDv4 setter
 	NodeID            string        `yaml:"nodeID" env:"NODE_ID" env-default:"cb7e9573-9a43-4d5b-8005-eb8bb7a423c4"`
 	ReadHeaderTimeout time.Duration `yaml:"readHeaderTimeout"    env:"READ_HEADER_TIMEOUT"  env-default:"15s"`
 	Registry          string        `yaml:"registry"             env:"REGISTRY"             env-default:"index.docker.io"`
