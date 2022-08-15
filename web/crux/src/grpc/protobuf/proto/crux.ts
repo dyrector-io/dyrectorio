@@ -478,6 +478,50 @@ export function containerStateToJSON(object: ContainerState): string {
   }
 }
 
+export enum NotificationType {
+  UNKNOWN_NOTIFICATION_TYPE = 0,
+  DISCORD = 1,
+  SLACK = 2,
+  TEAMS = 3,
+  UNRECOGNIZED = -1,
+}
+
+export function notificationTypeFromJSON(object: any): NotificationType {
+  switch (object) {
+    case 0:
+    case 'UNKNOWN_NOTIFICATION_TYPE':
+      return NotificationType.UNKNOWN_NOTIFICATION_TYPE
+    case 1:
+    case 'DISCORD':
+      return NotificationType.DISCORD
+    case 2:
+    case 'SLACK':
+      return NotificationType.SLACK
+    case 3:
+    case 'TEAMS':
+      return NotificationType.TEAMS
+    case -1:
+    case 'UNRECOGNIZED':
+    default:
+      return NotificationType.UNRECOGNIZED
+  }
+}
+
+export function notificationTypeToJSON(object: NotificationType): string {
+  switch (object) {
+    case NotificationType.UNKNOWN_NOTIFICATION_TYPE:
+      return 'UNKNOWN_NOTIFICATION_TYPE'
+    case NotificationType.DISCORD:
+      return 'DISCORD'
+    case NotificationType.SLACK:
+      return 'SLACK'
+    case NotificationType.TEAMS:
+      return 'TEAMS'
+    default:
+      return 'UNKNOWN'
+  }
+}
+
 /** Common messages */
 export interface Empty {}
 
@@ -1082,6 +1126,49 @@ export interface DeploymentEventResponse {
 
 export interface DeploymentEventListResponse {
   data: DeploymentEventResponse[]
+}
+
+export interface CreateNotificationRequest {
+  accessedBy: string
+  name: string
+  url: string
+  type: NotificationType
+  active: boolean
+}
+
+export interface CreateNotificationResponse {
+  id: string
+  creator: string
+}
+
+export interface UpdateNotificationRequest {
+  id: string
+  accessedBy: string
+  name: string
+  url: string
+  type: NotificationType
+  active: boolean
+}
+
+export interface NotificationDetailsResponse {
+  id: string
+  audit: AuditResponse | undefined
+  name: string
+  url: string
+  type: NotificationType
+  active: boolean
+}
+
+export interface NotificationResponse {
+  id: string
+  audit: AuditResponse | undefined
+  name: string
+  url: string
+  type: NotificationType
+}
+
+export interface NotificationListResponse {
+  data: NotificationResponse[]
 }
 
 export const CRUX_PACKAGE_NAME = 'crux'
@@ -3278,6 +3365,175 @@ export const DeploymentEventListResponse = {
   },
 }
 
+const baseCreateNotificationRequest: object = {
+  accessedBy: '',
+  name: '',
+  url: '',
+  type: 0,
+  active: false,
+}
+
+export const CreateNotificationRequest = {
+  fromJSON(object: any): CreateNotificationRequest {
+    const message = {
+      ...baseCreateNotificationRequest,
+    } as CreateNotificationRequest
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
+    message.type = object.type !== undefined && object.type !== null ? notificationTypeFromJSON(object.type) : 0
+    message.active = object.active !== undefined && object.active !== null ? Boolean(object.active) : false
+    return message
+  },
+
+  toJSON(message: CreateNotificationRequest): unknown {
+    const obj: any = {}
+    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
+    message.name !== undefined && (obj.name = message.name)
+    message.url !== undefined && (obj.url = message.url)
+    message.type !== undefined && (obj.type = notificationTypeToJSON(message.type))
+    message.active !== undefined && (obj.active = message.active)
+    return obj
+  },
+}
+
+const baseCreateNotificationResponse: object = { id: '', creator: '' }
+
+export const CreateNotificationResponse = {
+  fromJSON(object: any): CreateNotificationResponse {
+    const message = {
+      ...baseCreateNotificationResponse,
+    } as CreateNotificationResponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.creator = object.creator !== undefined && object.creator !== null ? String(object.creator) : ''
+    return message
+  },
+
+  toJSON(message: CreateNotificationResponse): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.creator !== undefined && (obj.creator = message.creator)
+    return obj
+  },
+}
+
+const baseUpdateNotificationRequest: object = {
+  id: '',
+  accessedBy: '',
+  name: '',
+  url: '',
+  type: 0,
+  active: false,
+}
+
+export const UpdateNotificationRequest = {
+  fromJSON(object: any): UpdateNotificationRequest {
+    const message = {
+      ...baseUpdateNotificationRequest,
+    } as UpdateNotificationRequest
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
+    message.type = object.type !== undefined && object.type !== null ? notificationTypeFromJSON(object.type) : 0
+    message.active = object.active !== undefined && object.active !== null ? Boolean(object.active) : false
+    return message
+  },
+
+  toJSON(message: UpdateNotificationRequest): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
+    message.name !== undefined && (obj.name = message.name)
+    message.url !== undefined && (obj.url = message.url)
+    message.type !== undefined && (obj.type = notificationTypeToJSON(message.type))
+    message.active !== undefined && (obj.active = message.active)
+    return obj
+  },
+}
+
+const baseNotificationDetailsResponse: object = {
+  id: '',
+  name: '',
+  url: '',
+  type: 0,
+  active: false,
+}
+
+export const NotificationDetailsResponse = {
+  fromJSON(object: any): NotificationDetailsResponse {
+    const message = {
+      ...baseNotificationDetailsResponse,
+    } as NotificationDetailsResponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.audit =
+      object.audit !== undefined && object.audit !== null ? AuditResponse.fromJSON(object.audit) : undefined
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
+    message.type = object.type !== undefined && object.type !== null ? notificationTypeFromJSON(object.type) : 0
+    message.active = object.active !== undefined && object.active !== null ? Boolean(object.active) : false
+    return message
+  },
+
+  toJSON(message: NotificationDetailsResponse): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.audit !== undefined && (obj.audit = message.audit ? AuditResponse.toJSON(message.audit) : undefined)
+    message.name !== undefined && (obj.name = message.name)
+    message.url !== undefined && (obj.url = message.url)
+    message.type !== undefined && (obj.type = notificationTypeToJSON(message.type))
+    message.active !== undefined && (obj.active = message.active)
+    return obj
+  },
+}
+
+const baseNotificationResponse: object = { id: '', name: '', url: '', type: 0 }
+
+export const NotificationResponse = {
+  fromJSON(object: any): NotificationResponse {
+    const message = { ...baseNotificationResponse } as NotificationResponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.audit =
+      object.audit !== undefined && object.audit !== null ? AuditResponse.fromJSON(object.audit) : undefined
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
+    message.type = object.type !== undefined && object.type !== null ? notificationTypeFromJSON(object.type) : 0
+    return message
+  },
+
+  toJSON(message: NotificationResponse): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.audit !== undefined && (obj.audit = message.audit ? AuditResponse.toJSON(message.audit) : undefined)
+    message.name !== undefined && (obj.name = message.name)
+    message.url !== undefined && (obj.url = message.url)
+    message.type !== undefined && (obj.type = notificationTypeToJSON(message.type))
+    return obj
+  },
+}
+
+const baseNotificationListResponse: object = {}
+
+export const NotificationListResponse = {
+  fromJSON(object: any): NotificationListResponse {
+    const message = {
+      ...baseNotificationListResponse,
+    } as NotificationListResponse
+    message.data = (object.data ?? []).map((e: any) => NotificationResponse.fromJSON(e))
+    return message
+  },
+
+  toJSON(message: NotificationListResponse): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? NotificationResponse.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+}
+
 /** Services */
 
 export interface CruxProductClient {
@@ -3862,6 +4118,82 @@ export function CruxTeamControllerMethods() {
 }
 
 export const CRUX_TEAM_SERVICE_NAME = 'CruxTeam'
+
+export interface CruxNotificationClient {
+  createNotification(
+    request: CreateNotificationRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Observable<CreateNotificationResponse>
+
+  updateNotification(
+    request: UpdateNotificationRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Observable<UpdateEntityResponse>
+
+  deleteNotification(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
+
+  getNotificationList(request: AccessRequest, metadata: Metadata, ...rest: any): Observable<NotificationListResponse>
+
+  getNotificationDetails(request: IdRequest, metadata: Metadata, ...rest: any): Observable<NotificationDetailsResponse>
+
+  testNotification(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
+}
+
+export interface CruxNotificationController {
+  createNotification(
+    request: CreateNotificationRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<CreateNotificationResponse> | Observable<CreateNotificationResponse> | CreateNotificationResponse
+
+  updateNotification(
+    request: UpdateNotificationRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<UpdateEntityResponse> | Observable<UpdateEntityResponse> | UpdateEntityResponse
+
+  deleteNotification(request: IdRequest, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
+
+  getNotificationList(
+    request: AccessRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<NotificationListResponse> | Observable<NotificationListResponse> | NotificationListResponse
+
+  getNotificationDetails(
+    request: IdRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<NotificationDetailsResponse> | Observable<NotificationDetailsResponse> | NotificationDetailsResponse
+
+  testNotification(request: IdRequest, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
+}
+
+export function CruxNotificationControllerMethods() {
+  return function (constructor: Function) {
+    const grpcMethods: string[] = [
+      'createNotification',
+      'updateNotification',
+      'deleteNotification',
+      'getNotificationList',
+      'getNotificationDetails',
+      'testNotification',
+    ]
+    for (const method of grpcMethods) {
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
+      GrpcMethod('CruxNotification', method)(constructor.prototype[method], method, descriptor)
+    }
+    const grpcStreamMethods: string[] = []
+    for (const method of grpcStreamMethods) {
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
+      GrpcStreamMethod('CruxNotification', method)(constructor.prototype[method], method, descriptor)
+    }
+  }
+}
+
+export const CRUX_NOTIFICATION_SERVICE_NAME = 'CruxNotification'
 
 export interface CruxAuditClient {
   getAuditLog(request: AccessRequest, metadata: Metadata, ...rest: any): Observable<AuditLogListResponse>

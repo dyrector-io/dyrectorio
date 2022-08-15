@@ -6,6 +6,7 @@ import {
   CruxHealthClient,
   CruxImageClient,
   CruxNodeClient,
+  CruxNotificationClient,
   CruxProductClient,
   CruxProductVersionClient,
   CruxRegistryClient,
@@ -25,6 +26,7 @@ import DyoDeploymentService from './deployment-service'
 import DyoHealthService from './health-service'
 import DyoImageService from './image-service'
 import DyoNodeService from './node-service'
+import DyoNotifcationService from './notification-service'
 import DyoProductService from './product-service'
 import DyoRegistryService from './registry-service'
 import DyoTeamService from './team-service'
@@ -40,6 +42,7 @@ class CruxClients {
   teams: CruxTeamClient
   health: CruxHealthClient
   audit: CruxAuditClient
+  notifications: CruxNotificationClient
 
   constructor(address: string, publicKey: Buffer) {
     const creds = publicKey ? credentials.createSsl(publicKey) : credentials.createInsecure()
@@ -53,6 +56,7 @@ class CruxClients {
     this.teams = new CruxTeamClient(address, creds)
     this.health = new CruxHealthClient(address, creds)
     this.audit = new CruxAuditClient(address, creds)
+    this.notifications = new CruxNotificationClient(address, creds)
   }
 }
 
@@ -66,6 +70,7 @@ export class Crux {
   private _teams: DyoTeamService
   private _health: DyoHealthService
   private _audit: DyoAuditService
+  private _notifications: DyoNotifcationService
 
   private constructor(
     private clients: CruxClients,
@@ -107,6 +112,10 @@ export class Crux {
 
   get audit() {
     return this._audit ?? new DyoAuditService(this.clients.audit, this.identity)
+  }
+
+  get notificiations() {
+    return this._notifications ?? new DyoNotifcationService(this.clients.notifications, this.identity)
   }
 
   public static withIdentity(identity: Identity): Crux {
