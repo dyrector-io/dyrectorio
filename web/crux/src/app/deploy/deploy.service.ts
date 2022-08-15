@@ -176,7 +176,7 @@ export class DeployService {
             data: version.images.map(it => {
               return {
                 imageId: it.id,
-                status: null,
+                state: null,
               }
             }),
           },
@@ -397,7 +397,7 @@ export class DeployService {
             data: {
               deploymentId: deployment.id,
               imageId: it.id,
-              status: null,
+              state: null,
             },
           }),
         ),

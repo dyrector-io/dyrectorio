@@ -315,7 +315,7 @@ export class VersionService {
             deployment.instances.map(async instance => {
               const createdInstance = await prisma.instance.create({
                 data: {
-                  status: instance.status,
+                  state: instance.state,
                   deploymentId: createdDeploy.id,
                   imageId: instance.imageId,
                 },

@@ -497,7 +497,7 @@ type CruxNodeClient interface {
 	DiscardScript(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error)
 	RevokeToken(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error)
 	SubscribeNodeEventChannel(ctx context.Context, in *ServiceIdRequest, opts ...grpc.CallOption) (CruxNode_SubscribeNodeEventChannelClient, error)
-	WatchContainerStatus(ctx context.Context, in *WatchContainerStatusRequest, opts ...grpc.CallOption) (CruxNode_WatchContainerStatusClient, error)
+	WatchContainerState(ctx context.Context, in *WatchContainerStateRequest, opts ...grpc.CallOption) (CruxNode_WatchContainerStateClient, error)
 }
 
 type cruxNodeClient struct {
@@ -621,12 +621,12 @@ func (x *cruxNodeSubscribeNodeEventChannelClient) Recv() (*NodeEventMessage, err
 	return m, nil
 }
 
-func (c *cruxNodeClient) WatchContainerStatus(ctx context.Context, in *WatchContainerStatusRequest, opts ...grpc.CallOption) (CruxNode_WatchContainerStatusClient, error) {
-	stream, err := c.cc.NewStream(ctx, &CruxNode_ServiceDesc.Streams[1], "/crux.CruxNode/WatchContainerStatus", opts...)
+func (c *cruxNodeClient) WatchContainerState(ctx context.Context, in *WatchContainerStateRequest, opts ...grpc.CallOption) (CruxNode_WatchContainerStateClient, error) {
+	stream, err := c.cc.NewStream(ctx, &CruxNode_ServiceDesc.Streams[1], "/crux.CruxNode/WatchContainerState", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &cruxNodeWatchContainerStatusClient{stream}
+	x := &cruxNodeWatchContainerStateClient{stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -636,17 +636,17 @@ func (c *cruxNodeClient) WatchContainerStatus(ctx context.Context, in *WatchCont
 	return x, nil
 }
 
-type CruxNode_WatchContainerStatusClient interface {
-	Recv() (*ContainerStatusListMessage, error)
+type CruxNode_WatchContainerStateClient interface {
+	Recv() (*ContainerStateListMessage, error)
 	grpc.ClientStream
 }
 
-type cruxNodeWatchContainerStatusClient struct {
+type cruxNodeWatchContainerStateClient struct {
 	grpc.ClientStream
 }
 
-func (x *cruxNodeWatchContainerStatusClient) Recv() (*ContainerStatusListMessage, error) {
-	m := new(ContainerStatusListMessage)
+func (x *cruxNodeWatchContainerStateClient) Recv() (*ContainerStateListMessage, error) {
+	m := new(ContainerStateListMessage)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -668,7 +668,7 @@ type CruxNodeServer interface {
 	DiscardScript(context.Context, *IdRequest) (*Empty, error)
 	RevokeToken(context.Context, *IdRequest) (*Empty, error)
 	SubscribeNodeEventChannel(*ServiceIdRequest, CruxNode_SubscribeNodeEventChannelServer) error
-	WatchContainerStatus(*WatchContainerStatusRequest, CruxNode_WatchContainerStatusServer) error
+	WatchContainerState(*WatchContainerStateRequest, CruxNode_WatchContainerStateServer) error
 	mustEmbedUnimplementedCruxNodeServer()
 }
 
@@ -706,8 +706,8 @@ func (UnimplementedCruxNodeServer) RevokeToken(context.Context, *IdRequest) (*Em
 func (UnimplementedCruxNodeServer) SubscribeNodeEventChannel(*ServiceIdRequest, CruxNode_SubscribeNodeEventChannelServer) error {
 	return status.Errorf(codes.Unimplemented, "method SubscribeNodeEventChannel not implemented")
 }
-func (UnimplementedCruxNodeServer) WatchContainerStatus(*WatchContainerStatusRequest, CruxNode_WatchContainerStatusServer) error {
-	return status.Errorf(codes.Unimplemented, "method WatchContainerStatus not implemented")
+func (UnimplementedCruxNodeServer) WatchContainerState(*WatchContainerStateRequest, CruxNode_WatchContainerStateServer) error {
+	return status.Errorf(codes.Unimplemented, "method WatchContainerState not implemented")
 }
 func (UnimplementedCruxNodeServer) mustEmbedUnimplementedCruxNodeServer() {}
 
@@ -905,24 +905,24 @@ func (x *cruxNodeSubscribeNodeEventChannelServer) Send(m *NodeEventMessage) erro
 	return x.ServerStream.SendMsg(m)
 }
 
-func _CruxNode_WatchContainerStatus_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(WatchContainerStatusRequest)
+func _CruxNode_WatchContainerState_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(WatchContainerStateRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(CruxNodeServer).WatchContainerStatus(m, &cruxNodeWatchContainerStatusServer{stream})
+	return srv.(CruxNodeServer).WatchContainerState(m, &cruxNodeWatchContainerStateServer{stream})
 }
 
-type CruxNode_WatchContainerStatusServer interface {
-	Send(*ContainerStatusListMessage) error
+type CruxNode_WatchContainerStateServer interface {
+	Send(*ContainerStateListMessage) error
 	grpc.ServerStream
 }
 
-type cruxNodeWatchContainerStatusServer struct {
+type cruxNodeWatchContainerStateServer struct {
 	grpc.ServerStream
 }
 
-func (x *cruxNodeWatchContainerStatusServer) Send(m *ContainerStatusListMessage) error {
+func (x *cruxNodeWatchContainerStateServer) Send(m *ContainerStateListMessage) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -977,8 +977,8 @@ var CruxNode_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 		{
-			StreamName:    "WatchContainerStatus",
-			Handler:       _CruxNode_WatchContainerStatus_Handler,
+			StreamName:    "WatchContainerState",
+			Handler:       _CruxNode_WatchContainerState_Handler,
 			ServerStreams: true,
 		},
 	},

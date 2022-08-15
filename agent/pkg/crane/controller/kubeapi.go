@@ -44,7 +44,7 @@ func GetNamespaces(c *gin.Context) {
 // @Success 200 {object} v1.DeploymentList
 // @Router /deployments [get]
 func GetDeployments(c *gin.Context) {
-	// todo(nandi): this is not smort to-be-done
+	// TODO(nandor-magyar): this is not smort to-be-done
 	cfg := utils.GetConfigFromGinContext(c)
 	deployments, err := k8s.GetDeployments(c, "default", cfg)
 

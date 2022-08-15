@@ -47,10 +47,10 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
 
         /* eslint-disable react/jsx-key */
         return [
-          <ContainerStatusIndicator status={it.status} />,
+          <ContainerStatusIndicator state={it.state} />,
           <span>{it.name}</span>,
           <span>{timeAgo(t, seconds)}</span>,
-          <ContainerStatusTag status={it.status} />,
+          <ContainerStatusTag state={it.state} />,
         ]
         /* eslint-enable react/jsx-key */
       }}

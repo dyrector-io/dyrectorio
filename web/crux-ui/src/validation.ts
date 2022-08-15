@@ -133,15 +133,13 @@ export const explicitContainerConfigSchema = yup.object().shape({
     .mixed<ExplicitContainerNetworkMode>()
     .oneOf([...EXPLICIT_CONTAINER_NETWORK_MODE_VALUES])
     .default('none'),
-  expose: yup.array(
-    yup
-      .object()
-      .shape({
-        public: yup.boolean().required(),
-        tls: yup.boolean().required(),
-      })
-      .default([]),
-  ),
+  expose: yup
+    .object()
+    .shape({
+      public: yup.boolean().required(),
+      tls: yup.boolean().required(),
+    })
+    .default({}),
   user: yup.number().positive().nullable().default(null),
 })
 
@@ -183,7 +181,7 @@ export const deploymentSchema = yup.object().shape({
   instances: yup.array(
     yup.object().shape({
       image: imageSchema,
-      config: explicitContainerConfigSchema.nullable(),
+      overriddenConfig: explicitContainerConfigSchema.nullable(),
     }),
   ),
 })

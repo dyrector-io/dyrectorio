@@ -8,7 +8,7 @@ import {
   AgentInfo,
   Empty,
 } from 'src/grpc/protobuf/proto/agent'
-import { ContainerStatusListMessage, DeploymentStatusMessage } from 'src/grpc/protobuf/proto/crux'
+import { ContainerStateListMessage, DeploymentStatusMessage } from 'src/grpc/protobuf/proto/crux'
 import { NodeUnaryCall } from 'src/shared/grpc-node-connection'
 import { AgentService } from './agent.service'
 import { AgentAuthGuard } from './guards/agent.auth.guard'
@@ -27,8 +27,8 @@ export class AgentController implements GrpcAgentController {
     return this.service.handleDeploymentStatus(call.connection, request)
   }
 
-  containerStatus(
-    request: Observable<ContainerStatusListMessage>,
+  containerState(
+    request: Observable<ContainerStateListMessage>,
     _: Metadata,
     call: NodeUnaryCall,
   ): Observable<Empty> {

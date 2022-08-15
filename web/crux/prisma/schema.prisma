@@ -193,7 +193,7 @@ model Deployment {
 model Instance {
   id           String               @id @default(uuid()) @db.Uuid
   updatedAt    DateTime             @default(now()) @db.Timestamptz(6)
-  status       ContainerStatusEnum?
+  state        ContainerStateEnum?
   deploymentId String               @db.Uuid
   imageId      String               @db.Uuid
 
@@ -260,9 +260,9 @@ enum VersionTypeEnum {
   rolling
 }
 
-enum ContainerStatusEnum {
+enum ContainerStateEnum {
   created
-  restating
+  restarting
   running
   removing
   paused

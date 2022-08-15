@@ -3,7 +3,7 @@ import { concatAll, from, Observable } from 'rxjs'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import {
   AccessRequest,
-  ContainerStatusListMessage,
+  ContainerStateListMessage,
   CreateEntityResponse,
   CreateNodeRequest,
   CruxNodeController,
@@ -18,7 +18,7 @@ import {
   NodeScriptResponse,
   ServiceIdRequest,
   UpdateNodeRequest,
-  WatchContainerStatusRequest,
+  WatchContainerStateRequest,
 } from 'src/grpc/protobuf/proto/crux'
 import { DisableTeamAccessCheck } from 'src/shared/team-access.guard'
 import { NodeTeamAccessGuard } from './guards/node.team-access.guard'
@@ -81,7 +81,7 @@ export class NodeController implements CruxNodeController {
   }
 
   @AuditLogLevel('disabled')
-  watchContainerStatus(request: WatchContainerStatusRequest): Observable<ContainerStatusListMessage> {
+  watchContainerState(request: WatchContainerStateRequest): Observable<ContainerStateListMessage> {
     return this.service.handleWatchContainerStatus(request)
   }
 }

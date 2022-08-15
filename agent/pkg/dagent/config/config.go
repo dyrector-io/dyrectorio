@@ -24,7 +24,7 @@ type Configuration struct {
 	TraefikEnabled         bool   `yaml:"traefikEnabled"       env:"TRAEFIK_ENABLED"        env-default:"false"`
 	TraefikLogLevel        string `yaml:"traefikLogLevel"      env:"TRAEFIK_LOG_LEVEL"      env-default:""`
 	TraefikTLS             bool   `yaml:"traefikTLS"           env:"TRAEFIK_TLS"            env-default:"false"`
-	// TODO(nandi): do we still need this?
+	// TODO(nandor-magyar): do we still need this?
 	UpdaterContainerName string        `yaml:"updaterContainerName" env:"UPDATER_CONTAINER_NAME" env-default:"dagent-updater"`
 	UpdateHostTimezone   bool          `yaml:"updateHostTimezone"   env:"UPDATE_HOST_TIMEZONE"   env-default:"true"`
 	UpdateMethod         string        `yaml:"updateMethod"         env:"UPDATE_METHOD"          env-default:"off"`

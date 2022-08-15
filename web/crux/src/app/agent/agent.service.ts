@@ -11,7 +11,7 @@ import { collectChildVersionIds, collectParentVersionIds } from 'src/domain/util
 import { AlreadyExistsException, NotFoundException, UnauthenticatedException } from 'src/exception/errors'
 import { AgentCommand, AgentInfo } from 'src/grpc/protobuf/proto/agent'
 import {
-  ContainerStatusListMessage,
+  ContainerStateListMessage,
   DeploymentStatus,
   DeploymentStatusMessage,
   Empty,
@@ -183,7 +183,7 @@ export class AgentService {
 
   handleContainerStatus(
     connection: GrpcNodeConnection,
-    request: Observable<ContainerStatusListMessage>,
+    request: Observable<ContainerStateListMessage>,
   ): Observable<Empty> {
     const agent = this.getByIdOrThrow(connection.nodeId)
     const prefix = connection.getMetaData(GrpcNodeConnection.META_FILTER_PREFIX)

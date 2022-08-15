@@ -1,15 +1,15 @@
-import { ContainerStatus } from '@app/models'
+import { ContainerState } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
 
 interface ContainerStatusIndicatorProps {
   className?: string
-  status: ContainerStatus
+  state: ContainerState
 }
 
 const ContainerStatusIndicator = (props: ContainerStatusIndicatorProps) => {
-  const { status } = props
+  const { state: status } = props
 
   const { t } = useTranslation('common')
 
@@ -22,7 +22,7 @@ const ContainerStatusIndicator = (props: ContainerStatusIndicatorProps) => {
 
 export default ContainerStatusIndicator
 
-const statusToAssetName = (status: ContainerStatus) => {
+const statusToAssetName = (status: ContainerState) => {
   switch (status) {
     case 'exited':
     case 'running':

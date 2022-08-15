@@ -182,7 +182,7 @@ type ContainerConfig struct {
 	// dagent only
 	LogConfig     *container.LogConfig      `json:"logConfig"`
 	RestartPolicy builder.RestartPolicyName `json:"restartPolicy"`
-	// bridge(container, defeault) host, none or network name
+	// bridge(container, default) host, none or network name
 	NetworkMode string `json:"networkMode"`
 
 	// k8s-only-section
