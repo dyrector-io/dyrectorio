@@ -1,7 +1,8 @@
 import { CallHandler, ExecutionContext, NestInterceptor } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
+import { NotFoundError } from '@prisma/client/runtime'
 import { catchError, Observable } from 'rxjs'
-import { AlreadyExistsException } from '../exception/errors'
+import { AlreadyExistsException, NotFoundException } from '../exception/errors'
 
 export class PrismaErrorInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
@@ -23,6 +24,13 @@ export class PrismaErrorInterceptor implements NestInterceptor {
           property,
         })
       }
+    }
+    if (err instanceof NotFoundError) {
+      throw new NotFoundException({
+        property: 'prisma', // TODO: Extend when NotFoundError is smarter
+        value: err.message,
+        message: err.message
+      })
     }
 
     throw err
