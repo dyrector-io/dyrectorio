@@ -1,5 +1,5 @@
 {
-  "title-notification": "Notifications - {{name}}",
+  "notificationsName": "Notifications - {{name}}",
   "new": "New notification",
   "description": "Get notifications via your webhooks",
 

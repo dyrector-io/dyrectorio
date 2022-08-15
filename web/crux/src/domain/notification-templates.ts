@@ -1,5 +1,5 @@
 import { NotificationTypeEnum } from '@prisma/client'
-import { NotificationTemplateException } from 'src/exception/errors'
+import { InternalException } from 'src/exception/errors'
 
 const title = 'dyrector.io'
 
@@ -35,7 +35,9 @@ export const getTemplate = (notificationType: NotificationTypeEnum, template: No
     case 'teams':
       return getTeamsTemplate(template)
     default:
-      throw new NotificationTemplateException()
+      throw new InternalException({
+        message: 'Not supported message type'
+      })
   }
 }
 

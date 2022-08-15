@@ -834,7 +834,8 @@ message CreateNotificationRequest {
 
 message CreateNotificationResponse {
   string id = 1;
-  string createdBy = 2;
+
+  string creator = 100;
 }
 
 message UpdateNotificationRequest {

@@ -1138,7 +1138,7 @@ export interface CreateNotificationRequest {
 
 export interface CreateNotificationResponse {
   id: string
-  createdBy: string
+  creator: string
 }
 
 export interface UpdateNotificationRequest {
@@ -3397,7 +3397,7 @@ export const CreateNotificationRequest = {
   },
 }
 
-const baseCreateNotificationResponse: object = { id: '', createdBy: '' }
+const baseCreateNotificationResponse: object = { id: '', creator: '' }
 
 export const CreateNotificationResponse = {
   fromJSON(object: any): CreateNotificationResponse {
@@ -3405,14 +3405,14 @@ export const CreateNotificationResponse = {
       ...baseCreateNotificationResponse,
     } as CreateNotificationResponse
     message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.createdBy = object.createdBy !== undefined && object.createdBy !== null ? String(object.createdBy) : ''
+    message.creator = object.creator !== undefined && object.creator !== null ? String(object.creator) : ''
     return message
   },
 
   toJSON(message: CreateNotificationResponse): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
-    message.createdBy !== undefined && (obj.createdBy = message.createdBy)
+    message.creator !== undefined && (obj.creator = message.creator)
     return obj
   },
 }

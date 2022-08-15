@@ -49,7 +49,6 @@ export const API_TEAMS_ACTIVE_USERS = `${API_TEAMS_ACTIVE}/users`
 export const API_WHOAMI = '/api/whoami'
 
 export const API_NOTIFICATIONS = '/api/notifications'
-export const API_NOTIFICATIONS_HOOK = '/api/notifications/hook'
 
 export const WS_NODES = `${API_NODES}/connect`
 export const WS_REGISTRIES = `${API_REGISTRIES}/connect`
@@ -112,3 +111,5 @@ export const teamAcceptInviteApiUrl = teamId => `${API_TEAMS}/${teamId}/accept`
 
 // notification
 export const notificationUrl = (id: string) => `${ROUTE_NOTIFICATIONS}/${id}`
+export const notificationApiUrl = (id: string) => `${API_NOTIFICATIONS}/${id}`
+export const notificationApiHookUrl = (id: string) => `${notificationApiUrl(id)}/hook`

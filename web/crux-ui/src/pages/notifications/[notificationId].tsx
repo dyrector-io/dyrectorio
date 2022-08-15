@@ -6,7 +6,7 @@ import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
 import { defaultApiErrorHandler } from '@app/errors'
 import { NotificationDetails, NotificationItem } from '@app/models'
-import { API_NOTIFICATIONS, notificationUrl, ROUTE_NOTIFICATIONS } from '@app/routes'
+import { API_NOTIFICATIONS, notificationApiUrl, notificationUrl, ROUTE_NOTIFICATIONS } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
@@ -23,12 +23,12 @@ const NotificationDetailsPage = (props: NotificationDetailsPageProps) => {
   const router = useRouter()
 
   const [notification, setNotification] = useState<NotificationDetails>(props.notification)
-  const [isEditMode, setIsEditMode] = useState(false)
+  const [editing, setEditing] = useState(false)
   const submitRef = useRef<() => Promise<void>>()
   const handleApiError = defaultApiErrorHandler(t)
 
   const onDelete = async () => {
-    const res = await fetch(API_NOTIFICATIONS + `/${notification.id}`, {
+    const res = await fetch(notificationApiUrl(notification.id), {
       method: 'DELETE',
     })
 
@@ -46,13 +46,13 @@ const NotificationDetailsPage = (props: NotificationDetailsPageProps) => {
   }
 
   const onSubmitted = (notification: NotificationItem) => {
-    setIsEditMode(false)
+    setEditing(false)
     setNotification(notification as NotificationDetails)
   }
 
   return (
     <Layout>
-      <PageHead title={t('title-notification', { name: notification.name })} />
+      <PageHead title={t('notificationsName', { name: notification.name })} />
       <PageHeading
         pageLink={pageLink}
         subLinks={[
@@ -64,8 +64,8 @@ const NotificationDetailsPage = (props: NotificationDetailsPageProps) => {
       >
         <DetailsPageMenu
           onDelete={onDelete}
-          editing={isEditMode}
-          setEditing={setIsEditMode}
+          editing={editing}
+          setEditing={setEditing}
           submitRef={submitRef}
           deleteModalTitle={t('common:confirmDelete', { name: notification.name })}
           deleteModalDescription={t('common:deleteDescription', {
@@ -74,8 +74,8 @@ const NotificationDetailsPage = (props: NotificationDetailsPageProps) => {
         />
       </PageHeading>
 
-      {!isEditMode ? (
-        <NotificationCard notification={notification as NotificationItem} />
+      {!editing ? (
+        <NotificationCard notification={notification} />
       ) : (
         <EditNotificationCard
           className="p-8"

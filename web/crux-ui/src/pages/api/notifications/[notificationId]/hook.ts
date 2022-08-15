@@ -3,7 +3,7 @@ import { withMiddlewares } from '@server/middlewares'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
-  const id = req.body as string
+  const id = req.query.notificationId as string
 
   await crux(req).notificiations.testNotification(id)
 

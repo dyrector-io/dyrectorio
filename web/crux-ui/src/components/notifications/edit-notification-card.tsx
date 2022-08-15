@@ -16,7 +16,7 @@ import {
   NOTIFICATION_TYPE_VALUES,
   UpdateNotification,
 } from '@app/models'
-import { API_NOTIFICATIONS, API_NOTIFICATIONS_HOOK } from '@app/routes'
+import { API_NOTIFICATIONS, notificationApiHookUrl, notificationApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { notificationSchema } from '@app/validation'
 import { useFormik } from 'formik'
@@ -47,7 +47,7 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
 
   const throttle = useThrottleing(WEBOOK_TEST_DELAY)
 
-  const isEditMode = !!notification.id
+  const editMode = !!notification.id
 
   const handleApiError = defaultApiErrorHandler(t)
 
@@ -63,8 +63,8 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
         ...values,
       }
 
-      const response = await (isEditMode
-        ? sendForm('PUT', API_NOTIFICATIONS + `/${notification.id}`, request as UpdateNotification)
+      const response = await (editMode
+        ? sendForm('PUT', notificationApiUrl(notification.id), request as UpdateNotification)
         : sendForm('POST', API_NOTIFICATIONS, request as CreateNotification))
 
       if (response.ok) {
@@ -84,13 +84,12 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
   }
 
   const onTestHook = async () => {
-    if (!notification.id) {
+    if (!editMode) {
       return
     }
 
-    const res = await fetch(API_NOTIFICATIONS_HOOK, {
+    const res = await fetch(notificationApiHookUrl(notification.id), {
       method: 'POST',
-      body: notification.id,
     })
 
     res.ok ? toast.success(t('hook.success')) : toast.error(t('hook.error'))
@@ -99,7 +98,7 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
   return (
       <DyoCard className={props.className}>
         <DyoHeading element="h4" className="text-lg text-bright">
-          {isEditMode ? t('common:editName', { name: notification.name }) : t('new')}
+          {editMode ? t('common:editName', { name: notification.name }) : t('new')}
         </DyoHeading>
 
         <DyoLabel className="text-light">{t('description')}</DyoLabel>
@@ -147,7 +146,7 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
                 <DyoSwitch fieldName="active" checked={formik.values.active} setFieldValue={formik.setFieldValue} />
               </div>
 
-              {isEditMode && (
+              {editMode && (
                 <DyoButton
                   type="button"
                   className="px-4 whitespace-nowrap"

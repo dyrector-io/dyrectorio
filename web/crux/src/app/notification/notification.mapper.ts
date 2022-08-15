@@ -55,7 +55,7 @@ export class NotificationMapper {
   toGrpcCreateResponse(notification: Notification, identity: Identity): CreateNotificationResponse {
     return {
       id: notification.id,
-      createdBy: nameOrEmailOfIdentity(identity),
+      creator: nameOrEmailOfIdentity(identity),
     }
   }
 

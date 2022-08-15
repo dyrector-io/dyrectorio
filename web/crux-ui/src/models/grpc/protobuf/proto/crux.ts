@@ -1149,7 +1149,7 @@ export interface CreateNotificationRequest {
 
 export interface CreateNotificationResponse {
   id: string
-  createdBy: string
+  creator: string
 }
 
 export interface UpdateNotificationRequest {
@@ -7816,15 +7816,15 @@ export const CreateNotificationRequest = {
   },
 }
 
-const baseCreateNotificationResponse: object = { id: '', createdBy: '' }
+const baseCreateNotificationResponse: object = { id: '', creator: '' }
 
 export const CreateNotificationResponse = {
   encode(message: CreateNotificationResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== '') {
       writer.uint32(10).string(message.id)
     }
-    if (message.createdBy !== '') {
-      writer.uint32(18).string(message.createdBy)
+    if (message.creator !== '') {
+      writer.uint32(802).string(message.creator)
     }
     return writer
   },
@@ -7841,8 +7841,8 @@ export const CreateNotificationResponse = {
         case 1:
           message.id = reader.string()
           break
-        case 2:
-          message.createdBy = reader.string()
+        case 100:
+          message.creator = reader.string()
           break
         default:
           reader.skipType(tag & 7)
@@ -7857,14 +7857,14 @@ export const CreateNotificationResponse = {
       ...baseCreateNotificationResponse,
     } as CreateNotificationResponse
     message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.createdBy = object.createdBy !== undefined && object.createdBy !== null ? String(object.createdBy) : ''
+    message.creator = object.creator !== undefined && object.creator !== null ? String(object.creator) : ''
     return message
   },
 
   toJSON(message: CreateNotificationResponse): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
-    message.createdBy !== undefined && (obj.createdBy = message.createdBy)
+    message.creator !== undefined && (obj.creator = message.creator)
     return obj
   },
 
@@ -7873,7 +7873,7 @@ export const CreateNotificationResponse = {
       ...baseCreateNotificationResponse,
     } as CreateNotificationResponse
     message.id = object.id ?? ''
-    message.createdBy = object.createdBy ?? ''
+    message.creator = object.creator ?? ''
     return message
   },
 }

@@ -61,7 +61,7 @@ class DyoNotifcationService {
     return {
       ...dto,
       id: res.id,
-      creator: res.createdBy,
+      creator: res.creator,
     }
   }
 

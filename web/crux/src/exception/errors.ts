@@ -133,13 +133,3 @@ export class EmailBuilderException extends InternalException {
     super(options)
   }
 }
-
-export class NotificationTemplateException extends InternalException {
-  constructor(
-    options: InternalExceptionOptions = {
-      message: 'Failed to create notification template',
-    },
-  ) {
-    super(options)
-  }
-}
