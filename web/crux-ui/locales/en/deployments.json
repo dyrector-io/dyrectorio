@@ -1,6 +1,6 @@
 {
-    "title": "{{product}} product {{version}} {{node}} deployment",
-    "log": "Log",
-    "environmentConfig": "Environment config",
-    "created": "Created"
+  "title": "{{product}} product {{version}} {{node}} deployment",
+  "log": "Log",
+  "environmentConfig": "Environment config",
+  "created": "Created"
 }

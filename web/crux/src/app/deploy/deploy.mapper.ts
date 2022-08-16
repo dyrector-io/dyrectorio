@@ -9,6 +9,7 @@ import {
   Instance,
   InstanceContainerConfig,
   Node,
+  Version,
 } from '@prisma/client'
 import { JsonArray } from 'prisma'
 import { deploymentStatusToDb } from 'src/domain/deployment'
@@ -19,6 +20,7 @@ import {
   ContainerState,
   containerStateFromJSON,
   containerStateToJSON,
+  DeploymentByVersionResponse,
   DeploymentDetailsResponse,
   DeploymentEventContainerState,
   DeploymentEventLog,
@@ -43,7 +45,17 @@ import { ImageMapper, ImageWithConfig } from '../image/image.mapper'
 export class DeployMapper {
   constructor(private imageMapper: ImageMapper) {}
 
-  toGrpc(deployment: DeploymentWithNode): DeploymentResponse {
+  listItemToGrpc(deployment: DeploymentListItem): DeploymentResponse {
+    return {
+      ...deployment,
+      node: deployment.node.name,
+      product: deployment.version.product.name,
+      version: deployment.version.name,
+      status: this.statusToGrpc(deployment.status),
+    }
+  }
+
+  deploymentByVersionToGrpc(deployment: DeploymentWithNode): DeploymentByVersionResponse {
     return {
       ...deployment,
       audit: AuditResponse.fromJSON(deployment),
@@ -227,3 +239,5 @@ export type DeploymentDetails = DeploymentWithNode & {
 }
 
 type DeploymentContainerConfig = Omit<ContainerConfig, 'imageId'>
+
+type DeploymentListItem = Deployment & { node: { name: string }; version: { name: string; product: { name: string } } }

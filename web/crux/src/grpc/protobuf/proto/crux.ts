@@ -774,7 +774,7 @@ export interface VersionDetailsResponse {
   mutable: boolean
   increasable: boolean
   images: ImageResponse[]
-  deployments: DeploymentResponse[]
+  deployments: DeploymentByVersionResponse[]
 }
 
 export interface IncreaseVersionRequest {
@@ -1086,6 +1086,19 @@ export interface DeploymentListResponse {
 }
 
 export interface DeploymentResponse {
+  id: string
+  name: string
+  product: string
+  version: string
+  node: string
+  status: DeploymentStatus
+}
+
+export interface DeploymentListByVersionResponse {
+  data: DeploymentByVersionResponse[]
+}
+
+export interface DeploymentByVersionResponse {
   id: string
   audit: AuditResponse | undefined
   name: string
@@ -2086,7 +2099,7 @@ export const VersionDetailsResponse = {
     message.increasable =
       object.increasable !== undefined && object.increasable !== null ? Boolean(object.increasable) : false
     message.images = (object.images ?? []).map((e: any) => ImageResponse.fromJSON(e))
-    message.deployments = (object.deployments ?? []).map((e: any) => DeploymentResponse.fromJSON(e))
+    message.deployments = (object.deployments ?? []).map((e: any) => DeploymentByVersionResponse.fromJSON(e))
     return message
   },
 
@@ -2106,7 +2119,7 @@ export const VersionDetailsResponse = {
       obj.images = []
     }
     if (message.deployments) {
-      obj.deployments = message.deployments.map(e => (e ? DeploymentResponse.toJSON(e) : undefined))
+      obj.deployments = message.deployments.map(e => (e ? DeploymentByVersionResponse.toJSON(e) : undefined))
     } else {
       obj.deployments = []
     }
@@ -3185,15 +3198,72 @@ export const DeploymentListResponse = {
 const baseDeploymentResponse: object = {
   id: '',
   name: '',
-  prefix: '',
-  nodeId: '',
-  nodeName: '',
+  product: '',
+  version: '',
+  node: '',
   status: 0,
 }
 
 export const DeploymentResponse = {
   fromJSON(object: any): DeploymentResponse {
     const message = { ...baseDeploymentResponse } as DeploymentResponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.product = object.product !== undefined && object.product !== null ? String(object.product) : ''
+    message.version = object.version !== undefined && object.version !== null ? String(object.version) : ''
+    message.node = object.node !== undefined && object.node !== null ? String(object.node) : ''
+    message.status = object.status !== undefined && object.status !== null ? deploymentStatusFromJSON(object.status) : 0
+    return message
+  },
+
+  toJSON(message: DeploymentResponse): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.name !== undefined && (obj.name = message.name)
+    message.product !== undefined && (obj.product = message.product)
+    message.version !== undefined && (obj.version = message.version)
+    message.node !== undefined && (obj.node = message.node)
+    message.status !== undefined && (obj.status = deploymentStatusToJSON(message.status))
+    return obj
+  },
+}
+
+const baseDeploymentListByVersionResponse: object = {}
+
+export const DeploymentListByVersionResponse = {
+  fromJSON(object: any): DeploymentListByVersionResponse {
+    const message = {
+      ...baseDeploymentListByVersionResponse,
+    } as DeploymentListByVersionResponse
+    message.data = (object.data ?? []).map((e: any) => DeploymentByVersionResponse.fromJSON(e))
+    return message
+  },
+
+  toJSON(message: DeploymentListByVersionResponse): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? DeploymentByVersionResponse.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+}
+
+const baseDeploymentByVersionResponse: object = {
+  id: '',
+  name: '',
+  prefix: '',
+  nodeId: '',
+  nodeName: '',
+  status: 0,
+}
+
+export const DeploymentByVersionResponse = {
+  fromJSON(object: any): DeploymentByVersionResponse {
+    const message = {
+      ...baseDeploymentByVersionResponse,
+    } as DeploymentByVersionResponse
     message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
     message.audit =
       object.audit !== undefined && object.audit !== null ? AuditResponse.fromJSON(object.audit) : undefined
@@ -3205,7 +3275,7 @@ export const DeploymentResponse = {
     return message
   },
 
-  toJSON(message: DeploymentResponse): unknown {
+  toJSON(message: DeploymentByVersionResponse): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
     message.audit !== undefined && (obj.audit = message.audit ? AuditResponse.toJSON(message.audit) : undefined)
@@ -3933,7 +4003,11 @@ export function CruxImageControllerMethods() {
 export const CRUX_IMAGE_SERVICE_NAME = 'CruxImage'
 
 export interface CruxDeploymentClient {
-  getDeploymentsByVersionId(request: IdRequest, metadata: Metadata, ...rest: any): Observable<DeploymentListResponse>
+  getDeploymentsByVersionId(
+    request: IdRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Observable<DeploymentListByVersionResponse>
 
   createDeployment(request: CreateDeploymentRequest, metadata: Metadata, ...rest: any): Observable<CreateEntityResponse>
 
@@ -3946,6 +4020,8 @@ export interface CruxDeploymentClient {
   getDeploymentDetails(request: IdRequest, metadata: Metadata, ...rest: any): Observable<DeploymentDetailsResponse>
 
   getDeploymentEvents(request: IdRequest, metadata: Metadata, ...rest: any): Observable<DeploymentEventListResponse>
+
+  getDeploymentList(request: AccessRequest, metadata: Metadata, ...rest: any): Observable<DeploymentListResponse>
 
   startDeployment(request: IdRequest, metadata: Metadata, ...rest: any): Observable<DeploymentProgressMessage>
 
@@ -3961,7 +4037,10 @@ export interface CruxDeploymentController {
     request: IdRequest,
     metadata: Metadata,
     ...rest: any
-  ): Promise<DeploymentListResponse> | Observable<DeploymentListResponse> | DeploymentListResponse
+  ):
+    | Promise<DeploymentListByVersionResponse>
+    | Observable<DeploymentListByVersionResponse>
+    | DeploymentListByVersionResponse
 
   createDeployment(
     request: CreateDeploymentRequest,
@@ -3995,6 +4074,12 @@ export interface CruxDeploymentController {
     ...rest: any
   ): Promise<DeploymentEventListResponse> | Observable<DeploymentEventListResponse> | DeploymentEventListResponse
 
+  getDeploymentList(
+    request: AccessRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<DeploymentListResponse> | Observable<DeploymentListResponse> | DeploymentListResponse
+
   startDeployment(request: IdRequest, metadata: Metadata, ...rest: any): Observable<DeploymentProgressMessage>
 
   subscribeToDeploymentEditEvents(
@@ -4014,6 +4099,7 @@ export function CruxDeploymentControllerMethods() {
       'deleteDeployment',
       'getDeploymentDetails',
       'getDeploymentEvents',
+      'getDeploymentList',
       'startDeployment',
       'subscribeToDeploymentEditEvents',
     ]

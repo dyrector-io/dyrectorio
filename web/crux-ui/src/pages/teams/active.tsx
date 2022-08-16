@@ -129,7 +129,6 @@ const ActiveTeamPage = (props: ActiveTeamPageProps) => {
 
       <DyoCard className="relative">
         <DyoList
-          className=""
           noSeparator
           headerClassName={headerClassNames}
           headers={listHeaders}

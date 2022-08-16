@@ -69,13 +69,14 @@ service CruxImage {
 }
 
 service CruxDeployment {
-  rpc GetDeploymentsByVersionId(IdRequest) returns (DeploymentListResponse);
+  rpc GetDeploymentsByVersionId(IdRequest) returns (DeploymentListByVersionResponse);
   rpc CreateDeployment(CreateDeploymentRequest) returns (CreateEntityResponse);
   rpc UpdateDeployment(UpdateDeploymentRequest) returns (UpdateEntityResponse);
   rpc PatchDeployment(PatchDeploymentRequest) returns (UpdateEntityResponse);
   rpc DeleteDeployment(IdRequest) returns (Empty);
   rpc GetDeploymentDetails(IdRequest) returns (DeploymentDetailsResponse);
   rpc GetDeploymentEvents(IdRequest) returns (DeploymentEventListResponse);
+  rpc GetDeploymentList(AccessRequest) returns (DeploymentListResponse);
 
   rpc StartDeployment(IdRequest) returns (stream DeploymentProgressMessage);
 
@@ -429,7 +430,7 @@ message VersionDetailsResponse {
   bool increasable = 105;
 
   repeated ImageResponse images = 1000;
-  repeated DeploymentResponse deployments = 1001;
+  repeated DeploymentByVersionResponse deployments = 1001;
 }
 
 message IncreaseVersionRequest {
@@ -750,9 +751,23 @@ message PatchInstanceRequest {
   optional ExplicitContainerConfig config = 102;
 }
 
-message DeploymentListResponse { repeated DeploymentResponse data = 1000; }
+message DeploymentListResponse {
+  repeated DeploymentResponse data = 1000;
+}
 
 message DeploymentResponse {
+  string id = 1;
+
+  string name = 100;
+  string product = 101;
+  string version = 102;
+  string node = 103;
+  DeploymentStatus status = 104;
+}
+
+message DeploymentListByVersionResponse { repeated DeploymentByVersionResponse data = 1000; }
+
+message DeploymentByVersionResponse {
   string id = 1;
   AuditResponse audit = 2;
 

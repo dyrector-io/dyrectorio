@@ -1521,13 +1521,14 @@ var CruxImage_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CruxDeploymentClient interface {
-	GetDeploymentsByVersionId(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*DeploymentListResponse, error)
+	GetDeploymentsByVersionId(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*DeploymentListByVersionResponse, error)
 	CreateDeployment(ctx context.Context, in *CreateDeploymentRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error)
 	UpdateDeployment(ctx context.Context, in *UpdateDeploymentRequest, opts ...grpc.CallOption) (*UpdateEntityResponse, error)
 	PatchDeployment(ctx context.Context, in *PatchDeploymentRequest, opts ...grpc.CallOption) (*UpdateEntityResponse, error)
 	DeleteDeployment(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error)
 	GetDeploymentDetails(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*DeploymentDetailsResponse, error)
 	GetDeploymentEvents(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*DeploymentEventListResponse, error)
+	GetDeploymentList(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*DeploymentListResponse, error)
 	StartDeployment(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (CruxDeployment_StartDeploymentClient, error)
 	SubscribeToDeploymentEditEvents(ctx context.Context, in *ServiceIdRequest, opts ...grpc.CallOption) (CruxDeployment_SubscribeToDeploymentEditEventsClient, error)
 }
@@ -1540,8 +1541,8 @@ func NewCruxDeploymentClient(cc grpc.ClientConnInterface) CruxDeploymentClient {
 	return &cruxDeploymentClient{cc}
 }
 
-func (c *cruxDeploymentClient) GetDeploymentsByVersionId(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*DeploymentListResponse, error) {
-	out := new(DeploymentListResponse)
+func (c *cruxDeploymentClient) GetDeploymentsByVersionId(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*DeploymentListByVersionResponse, error) {
+	out := new(DeploymentListByVersionResponse)
 	err := c.cc.Invoke(ctx, "/crux.CruxDeployment/GetDeploymentsByVersionId", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -1597,6 +1598,15 @@ func (c *cruxDeploymentClient) GetDeploymentDetails(ctx context.Context, in *IdR
 func (c *cruxDeploymentClient) GetDeploymentEvents(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*DeploymentEventListResponse, error) {
 	out := new(DeploymentEventListResponse)
 	err := c.cc.Invoke(ctx, "/crux.CruxDeployment/GetDeploymentEvents", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cruxDeploymentClient) GetDeploymentList(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*DeploymentListResponse, error) {
+	out := new(DeploymentListResponse)
+	err := c.cc.Invoke(ctx, "/crux.CruxDeployment/GetDeploymentList", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1671,13 +1681,14 @@ func (x *cruxDeploymentSubscribeToDeploymentEditEventsClient) Recv() (*Deploymen
 // All implementations must embed UnimplementedCruxDeploymentServer
 // for forward compatibility
 type CruxDeploymentServer interface {
-	GetDeploymentsByVersionId(context.Context, *IdRequest) (*DeploymentListResponse, error)
+	GetDeploymentsByVersionId(context.Context, *IdRequest) (*DeploymentListByVersionResponse, error)
 	CreateDeployment(context.Context, *CreateDeploymentRequest) (*CreateEntityResponse, error)
 	UpdateDeployment(context.Context, *UpdateDeploymentRequest) (*UpdateEntityResponse, error)
 	PatchDeployment(context.Context, *PatchDeploymentRequest) (*UpdateEntityResponse, error)
 	DeleteDeployment(context.Context, *IdRequest) (*Empty, error)
 	GetDeploymentDetails(context.Context, *IdRequest) (*DeploymentDetailsResponse, error)
 	GetDeploymentEvents(context.Context, *IdRequest) (*DeploymentEventListResponse, error)
+	GetDeploymentList(context.Context, *AccessRequest) (*DeploymentListResponse, error)
 	StartDeployment(*IdRequest, CruxDeployment_StartDeploymentServer) error
 	SubscribeToDeploymentEditEvents(*ServiceIdRequest, CruxDeployment_SubscribeToDeploymentEditEventsServer) error
 	mustEmbedUnimplementedCruxDeploymentServer()
@@ -1687,7 +1698,7 @@ type CruxDeploymentServer interface {
 type UnimplementedCruxDeploymentServer struct {
 }
 
-func (UnimplementedCruxDeploymentServer) GetDeploymentsByVersionId(context.Context, *IdRequest) (*DeploymentListResponse, error) {
+func (UnimplementedCruxDeploymentServer) GetDeploymentsByVersionId(context.Context, *IdRequest) (*DeploymentListByVersionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDeploymentsByVersionId not implemented")
 }
 func (UnimplementedCruxDeploymentServer) CreateDeployment(context.Context, *CreateDeploymentRequest) (*CreateEntityResponse, error) {
@@ -1707,6 +1718,9 @@ func (UnimplementedCruxDeploymentServer) GetDeploymentDetails(context.Context, *
 }
 func (UnimplementedCruxDeploymentServer) GetDeploymentEvents(context.Context, *IdRequest) (*DeploymentEventListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDeploymentEvents not implemented")
+}
+func (UnimplementedCruxDeploymentServer) GetDeploymentList(context.Context, *AccessRequest) (*DeploymentListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDeploymentList not implemented")
 }
 func (UnimplementedCruxDeploymentServer) StartDeployment(*IdRequest, CruxDeployment_StartDeploymentServer) error {
 	return status.Errorf(codes.Unimplemented, "method StartDeployment not implemented")
@@ -1853,6 +1867,24 @@ func _CruxDeployment_GetDeploymentEvents_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CruxDeployment_GetDeploymentList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AccessRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CruxDeploymentServer).GetDeploymentList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crux.CruxDeployment/GetDeploymentList",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CruxDeploymentServer).GetDeploymentList(ctx, req.(*AccessRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _CruxDeployment_StartDeployment_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(IdRequest)
 	if err := stream.RecvMsg(m); err != nil {
@@ -1929,6 +1961,10 @@ var CruxDeployment_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetDeploymentEvents",
 			Handler:    _CruxDeployment_GetDeploymentEvents_Handler,
+		},
+		{
+			MethodName: "GetDeploymentList",
+			Handler:    _CruxDeployment_GetDeploymentList_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

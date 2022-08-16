@@ -1,6 +1,7 @@
 import { Logger } from '@app/logger'
 import {
   Deployment,
+  DeploymentByVersion,
   DeploymentDetails,
   DeploymentEditEventMessage,
   DeploymentEvent,
@@ -16,6 +17,7 @@ import {
   WS_TYPE_INSTANCES_ADDED,
 } from '@app/models'
 import {
+  AccessRequest,
   CreateDeploymentRequest,
   CreateEntityResponse,
   CruxDeploymentClient,
@@ -23,6 +25,7 @@ import {
   DeploymentEditEventMessage as ProtoDeploymentEditEventMessage,
   DeploymentEventListResponse,
   DeploymentEventType as ProtoDeploymentEventType,
+  DeploymentListByVersionResponse,
   DeploymentListResponse,
   DeploymentProgressMessage,
   DeploymentStatus as ProtoDeploymentStatus,
@@ -48,13 +51,31 @@ class DyoDeploymentService {
 
   constructor(private client: CruxDeploymentClient, private identity: Identity) {}
 
-  async getAllByVersionId(verisonId: string): Promise<Deployment[]> {
+  async getAll(): Promise<Deployment[]> {
+    const req: AccessRequest = {
+      accessedBy: this.identity.id,
+    }
+
+    const deployments = await protomisify<AccessRequest, DeploymentListResponse>(
+      this.client,
+      this.client.getDeploymentList,
+    )(IdRequest, req)
+
+    return deployments.data.map(it => {
+      return {
+        ...it,
+        status: deploymentStatusToDto(it.status),
+      }
+    })
+  }
+
+  async getAllByVersionId(verisonId: string): Promise<DeploymentByVersion[]> {
     const req: IdRequest = {
       id: verisonId,
       accessedBy: this.identity.id,
     }
 
-    const deployments = await protomisify<IdRequest, DeploymentListResponse>(
+    const deployments = await protomisify<IdRequest, DeploymentListByVersionResponse>(
       this.client,
       this.client.getDeploymentsByVersionId,
     )(IdRequest, req)

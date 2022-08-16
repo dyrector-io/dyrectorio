@@ -12,11 +12,13 @@ import {
 import { InternalException } from 'src/exception/errors'
 import { DeployRequest } from 'src/grpc/protobuf/proto/agent'
 import {
+  AccessRequest,
   CreateDeploymentRequest,
   CreateEntityResponse,
   DeploymentDetailsResponse,
   DeploymentEditEventMessage,
   DeploymentEventListResponse,
+  DeploymentListByVersionResponse,
   DeploymentListResponse,
   DeploymentProgressMessage,
   Empty,
@@ -57,7 +59,7 @@ export class DeployService {
     this.imageDeletedEvent = imageService.imageDeletedFromVersionEvent
   }
 
-  async getDeploymentsByVersionId(request: IdRequest): Promise<DeploymentListResponse> {
+  async getDeploymentsByVersionId(request: IdRequest): Promise<DeploymentListByVersionResponse> {
     const deployments = await this.prisma.deployment.findMany({
       where: {
         versionId: request.id,
@@ -68,7 +70,7 @@ export class DeployService {
     })
 
     return {
-      data: deployments.map(it => this.mapper.toGrpc(it)),
+      data: deployments.map(it => this.mapper.deploymentByVersionToGrpc(it)),
     }
   }
 
@@ -363,6 +365,46 @@ export class DeployService {
         }),
       ),
     )
+  }
+
+  async getDeploymentList(request: AccessRequest): Promise<DeploymentListResponse> {
+    const deployments = await this.prisma.deployment.findMany({
+      where: {
+        version: {
+          product: {
+            team: {
+              users: {
+                some: {
+                  userId: request.accessedBy,
+                  active: true,
+                },
+              },
+            },
+          },
+        },
+      },
+      include: {
+        version: {
+          select: {
+            name: true,
+            product: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+        node: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    })
+
+    return {
+      data: deployments.map(it => this.mapper.listItemToGrpc(it)),
+    }
   }
 
   private async onImagesAddedToVersion(images: ImageWithConfig[]): Promise<InstancesCreatedEvent> {
