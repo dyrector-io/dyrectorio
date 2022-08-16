@@ -240,7 +240,7 @@ class DyoNodeService {
 export default DyoNodeService
 
 export const containerStateToDto = (state: ProtoContainerState): ContainerState =>
-containerStateToJSON(state).toLocaleLowerCase() as ContainerState
+  containerStateToJSON(state).toLocaleLowerCase() as ContainerState
 
 export const nodeTypeUiToGrpc = (type: NodeType): GrpcNodeType => {
   return type === NODE_TYPE_VALUES[0] ? GrpcNodeType.DOCKER : GrpcNodeType.K8S

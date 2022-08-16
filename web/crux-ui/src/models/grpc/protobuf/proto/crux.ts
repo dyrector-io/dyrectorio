@@ -722,7 +722,7 @@ export interface RegistryListResponse {
 }
 
 export interface HubRegistryDetails {
-  urlPrefix: string
+  imageNamePrefix: string
 }
 
 export interface V2RegistryDetails {
@@ -734,7 +734,7 @@ export interface V2RegistryDetails {
 export interface GitlabRegistryDetails {
   user: string
   token: string
-  urlPrefix: string
+  imageNamePrefix: string
   url?: string | undefined
   apiUrl?: string | undefined
 }
@@ -742,13 +742,14 @@ export interface GitlabRegistryDetails {
 export interface GithubRegistryDetails {
   user: string
   token: string
-  urlPrefix: string
+  imageNamePrefix: string
 }
 
 export interface GoogleRegistryDetails {
   url: string
   user?: string | undefined
   token?: string | undefined
+  imageNamePrefix: string
 }
 
 export interface CreateRegistryRequest {
@@ -3308,12 +3309,12 @@ export const RegistryListResponse = {
   },
 }
 
-const baseHubRegistryDetails: object = { urlPrefix: '' }
+const baseHubRegistryDetails: object = { imageNamePrefix: '' }
 
 export const HubRegistryDetails = {
   encode(message: HubRegistryDetails, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.urlPrefix !== '') {
-      writer.uint32(802).string(message.urlPrefix)
+    if (message.imageNamePrefix !== '') {
+      writer.uint32(802).string(message.imageNamePrefix)
     }
     return writer
   },
@@ -3326,7 +3327,7 @@ export const HubRegistryDetails = {
       const tag = reader.uint32()
       switch (tag >>> 3) {
         case 100:
-          message.urlPrefix = reader.string()
+          message.imageNamePrefix = reader.string()
           break
         default:
           reader.skipType(tag & 7)
@@ -3338,19 +3339,20 @@ export const HubRegistryDetails = {
 
   fromJSON(object: any): HubRegistryDetails {
     const message = { ...baseHubRegistryDetails } as HubRegistryDetails
-    message.urlPrefix = object.urlPrefix !== undefined && object.urlPrefix !== null ? String(object.urlPrefix) : ''
+    message.imageNamePrefix =
+      object.imageNamePrefix !== undefined && object.imageNamePrefix !== null ? String(object.imageNamePrefix) : ''
     return message
   },
 
   toJSON(message: HubRegistryDetails): unknown {
     const obj: any = {}
-    message.urlPrefix !== undefined && (obj.urlPrefix = message.urlPrefix)
+    message.imageNamePrefix !== undefined && (obj.imageNamePrefix = message.imageNamePrefix)
     return obj
   },
 
   fromPartial<I extends Exact<DeepPartial<HubRegistryDetails>, I>>(object: I): HubRegistryDetails {
     const message = { ...baseHubRegistryDetails } as HubRegistryDetails
-    message.urlPrefix = object.urlPrefix ?? ''
+    message.imageNamePrefix = object.imageNamePrefix ?? ''
     return message
   },
 }
@@ -3423,7 +3425,7 @@ export const V2RegistryDetails = {
 const baseGitlabRegistryDetails: object = {
   user: '',
   token: '',
-  urlPrefix: '',
+  imageNamePrefix: '',
 }
 
 export const GitlabRegistryDetails = {
@@ -3434,8 +3436,8 @@ export const GitlabRegistryDetails = {
     if (message.token !== '') {
       writer.uint32(810).string(message.token)
     }
-    if (message.urlPrefix !== '') {
-      writer.uint32(818).string(message.urlPrefix)
+    if (message.imageNamePrefix !== '') {
+      writer.uint32(818).string(message.imageNamePrefix)
     }
     if (message.url !== undefined) {
       writer.uint32(826).string(message.url)
@@ -3460,7 +3462,7 @@ export const GitlabRegistryDetails = {
           message.token = reader.string()
           break
         case 102:
-          message.urlPrefix = reader.string()
+          message.imageNamePrefix = reader.string()
           break
         case 103:
           message.url = reader.string()
@@ -3480,7 +3482,8 @@ export const GitlabRegistryDetails = {
     const message = { ...baseGitlabRegistryDetails } as GitlabRegistryDetails
     message.user = object.user !== undefined && object.user !== null ? String(object.user) : ''
     message.token = object.token !== undefined && object.token !== null ? String(object.token) : ''
-    message.urlPrefix = object.urlPrefix !== undefined && object.urlPrefix !== null ? String(object.urlPrefix) : ''
+    message.imageNamePrefix =
+      object.imageNamePrefix !== undefined && object.imageNamePrefix !== null ? String(object.imageNamePrefix) : ''
     message.url = object.url !== undefined && object.url !== null ? String(object.url) : undefined
     message.apiUrl = object.apiUrl !== undefined && object.apiUrl !== null ? String(object.apiUrl) : undefined
     return message
@@ -3490,7 +3493,7 @@ export const GitlabRegistryDetails = {
     const obj: any = {}
     message.user !== undefined && (obj.user = message.user)
     message.token !== undefined && (obj.token = message.token)
-    message.urlPrefix !== undefined && (obj.urlPrefix = message.urlPrefix)
+    message.imageNamePrefix !== undefined && (obj.imageNamePrefix = message.imageNamePrefix)
     message.url !== undefined && (obj.url = message.url)
     message.apiUrl !== undefined && (obj.apiUrl = message.apiUrl)
     return obj
@@ -3500,7 +3503,7 @@ export const GitlabRegistryDetails = {
     const message = { ...baseGitlabRegistryDetails } as GitlabRegistryDetails
     message.user = object.user ?? ''
     message.token = object.token ?? ''
-    message.urlPrefix = object.urlPrefix ?? ''
+    message.imageNamePrefix = object.imageNamePrefix ?? ''
     message.url = object.url ?? undefined
     message.apiUrl = object.apiUrl ?? undefined
     return message
@@ -3510,7 +3513,7 @@ export const GitlabRegistryDetails = {
 const baseGithubRegistryDetails: object = {
   user: '',
   token: '',
-  urlPrefix: '',
+  imageNamePrefix: '',
 }
 
 export const GithubRegistryDetails = {
@@ -3521,8 +3524,8 @@ export const GithubRegistryDetails = {
     if (message.token !== '') {
       writer.uint32(810).string(message.token)
     }
-    if (message.urlPrefix !== '') {
-      writer.uint32(818).string(message.urlPrefix)
+    if (message.imageNamePrefix !== '') {
+      writer.uint32(818).string(message.imageNamePrefix)
     }
     return writer
   },
@@ -3541,7 +3544,7 @@ export const GithubRegistryDetails = {
           message.token = reader.string()
           break
         case 102:
-          message.urlPrefix = reader.string()
+          message.imageNamePrefix = reader.string()
           break
         default:
           reader.skipType(tag & 7)
@@ -3555,7 +3558,8 @@ export const GithubRegistryDetails = {
     const message = { ...baseGithubRegistryDetails } as GithubRegistryDetails
     message.user = object.user !== undefined && object.user !== null ? String(object.user) : ''
     message.token = object.token !== undefined && object.token !== null ? String(object.token) : ''
-    message.urlPrefix = object.urlPrefix !== undefined && object.urlPrefix !== null ? String(object.urlPrefix) : ''
+    message.imageNamePrefix =
+      object.imageNamePrefix !== undefined && object.imageNamePrefix !== null ? String(object.imageNamePrefix) : ''
     return message
   },
 
@@ -3563,7 +3567,7 @@ export const GithubRegistryDetails = {
     const obj: any = {}
     message.user !== undefined && (obj.user = message.user)
     message.token !== undefined && (obj.token = message.token)
-    message.urlPrefix !== undefined && (obj.urlPrefix = message.urlPrefix)
+    message.imageNamePrefix !== undefined && (obj.imageNamePrefix = message.imageNamePrefix)
     return obj
   },
 
@@ -3571,12 +3575,12 @@ export const GithubRegistryDetails = {
     const message = { ...baseGithubRegistryDetails } as GithubRegistryDetails
     message.user = object.user ?? ''
     message.token = object.token ?? ''
-    message.urlPrefix = object.urlPrefix ?? ''
+    message.imageNamePrefix = object.imageNamePrefix ?? ''
     return message
   },
 }
 
-const baseGoogleRegistryDetails: object = { url: '' }
+const baseGoogleRegistryDetails: object = { url: '', imageNamePrefix: '' }
 
 export const GoogleRegistryDetails = {
   encode(message: GoogleRegistryDetails, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -3588,6 +3592,9 @@ export const GoogleRegistryDetails = {
     }
     if (message.token !== undefined) {
       writer.uint32(818).string(message.token)
+    }
+    if (message.imageNamePrefix !== '') {
+      writer.uint32(826).string(message.imageNamePrefix)
     }
     return writer
   },
@@ -3608,6 +3615,9 @@ export const GoogleRegistryDetails = {
         case 102:
           message.token = reader.string()
           break
+        case 103:
+          message.imageNamePrefix = reader.string()
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -3621,6 +3631,8 @@ export const GoogleRegistryDetails = {
     message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
     message.user = object.user !== undefined && object.user !== null ? String(object.user) : undefined
     message.token = object.token !== undefined && object.token !== null ? String(object.token) : undefined
+    message.imageNamePrefix =
+      object.imageNamePrefix !== undefined && object.imageNamePrefix !== null ? String(object.imageNamePrefix) : ''
     return message
   },
 
@@ -3629,6 +3641,7 @@ export const GoogleRegistryDetails = {
     message.url !== undefined && (obj.url = message.url)
     message.user !== undefined && (obj.user = message.user)
     message.token !== undefined && (obj.token = message.token)
+    message.imageNamePrefix !== undefined && (obj.imageNamePrefix = message.imageNamePrefix)
     return obj
   },
 
@@ -3637,6 +3650,7 @@ export const GoogleRegistryDetails = {
     message.url = object.url ?? ''
     message.user = object.user ?? undefined
     message.token = object.token ?? undefined
+    message.imageNamePrefix = object.imageNamePrefix ?? ''
     return message
   },
 }

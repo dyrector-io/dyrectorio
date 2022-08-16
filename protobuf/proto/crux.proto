@@ -342,7 +342,7 @@ message RegistryResponse {
 
 message RegistryListResponse { repeated RegistryResponse data = 1000; }
 
-message HubRegistryDetails { string urlPrefix = 100; }
+message HubRegistryDetails { string imageNamePrefix = 100; }
 
 message V2RegistryDetails {
   string url = 100;
@@ -353,7 +353,7 @@ message V2RegistryDetails {
 message GitlabRegistryDetails {
   string user = 100;
   string token = 101;
-  string urlPrefix = 102;
+  string imageNamePrefix = 102;
   optional string url = 103;
   optional string apiUrl = 104;
 }
@@ -361,13 +361,14 @@ message GitlabRegistryDetails {
 message GithubRegistryDetails {
   string user = 100;
   string token = 101;
-  string urlPrefix = 102;
+  string imageNamePrefix = 102;
 }
 
 message GoogleRegistryDetails {
   string url = 100;
   optional string user = 101;
   optional string token = 102;
+  string imageNamePrefix = 103;
 }
 
 message CreateRegistryRequest {

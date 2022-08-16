@@ -21,6 +21,7 @@ import toast from 'react-hot-toast'
 interface VerifyProps {
   email: string
   flow: SelfServiceVerificationFlow
+  recaptchaSiteKey: string
 }
 
 const VerifyPage = (props: VerifyProps) => {
@@ -104,7 +105,7 @@ const VerifyPage = (props: VerifyProps) => {
             {sent ? `${t('common:resend')} ${countdown > 0 ? countdown : ''}`.trim() : t('common:send')}
           </DyoButton>
 
-          <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY} />
+          <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={props.recaptchaSiteKey} />
         </form>
       </DyoCard>
     </SingleFormLayout>
@@ -136,6 +137,7 @@ const getPageServerSideProps = async (context: NextPageContext) => {
     props: {
       email: session.identity.traits.email,
       flow: flow.data,
+      recaptchaSiteKey: process.env.RECAPTCHA_SITE_KEY,
     },
   }
 }

@@ -147,7 +147,7 @@ export class TeamService {
             description: 'List of Docker library images',
             icon: null,
             url: REGISTRY_HUB_URL,
-            urlPrefix: 'library',
+            imageNamePrefix: 'library',
             createdBy: request.accessedBy,
             type: RegistryTypeEnum.hub,
           },
@@ -248,7 +248,7 @@ export class TeamService {
 
     return Empty
   }
-
+  
   async updateUserRole(request: UpdateUserRoleInTeamRequest): Promise<Empty> {
     await this.prisma.usersOnTeams.update({
       where: {

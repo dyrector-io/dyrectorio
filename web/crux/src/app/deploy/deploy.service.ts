@@ -73,7 +73,7 @@ export class DeployService {
   }
 
   async getDeploymentDetails(request: IdRequest): Promise<DeploymentDetailsResponse> {
-    const deployment = await this.prisma.deployment.findUnique({
+    const deployment = await this.prisma.deployment.findUniqueOrThrow({
       where: {
         id: request.id,
       },
@@ -111,7 +111,7 @@ export class DeployService {
   }
 
   async createDeployment(request: CreateDeploymentRequest): Promise<CreateEntityResponse> {
-    const version = await this.prisma.version.findUnique({
+    const version = await this.prisma.version.findUniqueOrThrow({
       where: {
         id: request.versionId,
       },
@@ -140,7 +140,7 @@ export class DeployService {
       },
     })
 
-    const node = await this.prisma.node.findUnique({
+    const node = await this.prisma.node.findUniqueOrThrow({
       where: {
         id: request.nodeId,
       },
@@ -269,7 +269,7 @@ export class DeployService {
   }
 
   async startDeployment(request: IdRequest): Promise<Observable<DeploymentProgressMessage>> {
-    const deployment = await this.prisma.deployment.findUnique({
+    const deployment = await this.prisma.deployment.findUniqueOrThrow({
       where: {
         id: request.id,
       },

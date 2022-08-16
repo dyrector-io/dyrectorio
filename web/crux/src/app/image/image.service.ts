@@ -40,7 +40,7 @@ export class ImageService {
   }
 
   async getImageDetails(request: IdRequest): Promise<ImageResponse> {
-    const image = await this.prisma.image.findUnique({
+    const image = await this.prisma.image.findUniqueOrThrow({
       where: {
         id: request.id,
       },

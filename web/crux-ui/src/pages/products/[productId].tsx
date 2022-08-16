@@ -67,7 +67,11 @@ const ProductDetailsPage = (props: ProductDetailsPageProps) => {
 
   const onVersionEdited = (version: Version) => {
     setVersions([
-      ...versions,
+      ...(version.default
+        ? versions.map(it => {
+            return { ...it, default: false }
+          })
+        : versions),
       {
         ...version,
         increasable: version.type === 'incremental',

@@ -113,10 +113,7 @@ class DyoNotifcationService {
       accessedBy: this.identity.id,
     }
 
-    await protomisify<IdRequest, Empty>(
-      this.client,
-      this.client.testNotification,
-    )(IdRequest, req)
+    await protomisify<IdRequest, Empty>(this.client, this.client.testNotification)(IdRequest, req)
   }
 }
 

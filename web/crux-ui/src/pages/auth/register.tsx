@@ -29,11 +29,16 @@ import { useRef, useState } from 'react'
 import ReCAPTCHA from 'react-google-recaptcha'
 import toast from 'react-hot-toast'
 
-const RegisterPage = (props: SelfServiceRegistrationFlow) => {
+interface RegisterPageProps {
+  flow: SelfServiceRegistrationFlow
+  recaptchaSiteKey: string
+}
+
+const RegisterPage = (props: RegisterPageProps) => {
   const { t } = useTranslation('register')
   const router = useRouter()
 
-  const flow = props
+  const { flow } = props
 
   const [ui, setUi] = useState(flow.ui)
   const [errors, setErrors] = useState<DyoErrorDto[]>([])
@@ -142,7 +147,7 @@ const RegisterPage = (props: SelfServiceRegistrationFlow) => {
             {t('createAcc')}
           </DyoButton>
 
-          <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY} />
+          <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={props.recaptchaSiteKey} />
         </form>
       </DyoCard>
 
@@ -169,7 +174,10 @@ const getPageServerSideProps = async (context: NextPageContext) => {
   forwardCookie(context, flow)
 
   return {
-    props: flow.data,
+    props: {
+      flow: flow.data,
+      recaptchaSiteKey: process.env.RECAPTCHA_SITE_KEY,
+    },
   }
 }
 

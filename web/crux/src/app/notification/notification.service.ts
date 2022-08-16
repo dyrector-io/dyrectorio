@@ -99,7 +99,7 @@ export class NotificationService {
   }
 
   async getNotificationDetails(request: IdRequest): Promise<NotificationDetailsResponse> {
-    const notification = await this.prisma.notification.findUnique({
+    const notification = await this.prisma.notification.findUniqueOrThrow({
       where: {
         id: request.id,
       },
@@ -111,16 +111,14 @@ export class NotificationService {
   }
 
   async testNotification(request: IdRequest): Promise<Empty> {
-    const notification = await this.prisma.notification.findUnique({
+    const notification = await this.prisma.notification.findUniqueOrThrow({
       where: {
         id: request.id,
       },
     })
 
-    await lastValueFrom(
-      this.httpService.post(notification.url, { content: TEST_MESSAGE, text: TEST_MESSAGE }),
-    )
+    await lastValueFrom(this.httpService.post(notification.url, { content: TEST_MESSAGE, text: TEST_MESSAGE }))
 
-    return Empty;
+    return Empty
   }
 }

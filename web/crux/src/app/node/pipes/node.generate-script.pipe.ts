@@ -9,7 +9,7 @@ export class NodeGenerateScriptValidationPipe implements PipeTransform {
   constructor(private prisma: PrismaService, private agentService: AgentService) {}
 
   async transform(req: IdRequest) {
-    const node = await this.prisma.node.findUnique({
+    const node = await this.prisma.node.findUniqueOrThrow({
       select: {
         id: true,
       },
