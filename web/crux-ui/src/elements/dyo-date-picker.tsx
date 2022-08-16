@@ -1,5 +1,5 @@
 import useTranslation from 'next-translate/useTranslation'
-import React, { ForwardedRef, forwardRef } from 'react'
+import { ForwardedRef, forwardRef } from 'react'
 import DatePicker, { ReactDatePickerProps } from 'react-datepicker'
 import { DyoInput } from './dyo-input'
 

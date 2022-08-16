@@ -30,7 +30,7 @@ import {
   versionUrl,
 } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
-import { containerConfigSchema, deploymentSchema, getValidationError } from '@app/validation'
+import { containerConfigSchema, getValidationError } from '@app/validation'
 import { Crux, cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'

@@ -27,11 +27,7 @@ export class AgentController implements GrpcAgentController {
     return this.service.handleDeploymentStatus(call.connection, request)
   }
 
-  containerState(
-    request: Observable<ContainerStateListMessage>,
-    _: Metadata,
-    call: NodeUnaryCall,
-  ): Observable<Empty> {
+  containerState(request: Observable<ContainerStateListMessage>, _: Metadata, call: NodeUnaryCall): Observable<Empty> {
     return this.service.handleContainerStatus(call.connection, request)
   }
 }

@@ -198,12 +198,12 @@ const HubRegistryFields = (props: EditRegistryTypeProps<HubRegistryDetails>) => 
       <DyoInput
         className="max-w-lg"
         grow
-        name="urlPrefix"
+        name="imageNamePrefix"
         type="text"
         label={t('orgOrUser')}
         onChange={formik.handleChange}
-        value={formik.values.urlPrefix}
-        message={formik.errors.urlPrefix}
+        value={formik.values.imageNamePrefix}
+        message={formik.errors.imageNamePrefix}
       />
     </>
   )
@@ -303,12 +303,12 @@ const GitlabRegistryFields = (props: EditRegistryTypeProps<GitlabRegistryDetails
       <DyoInput
         className="max-w-lg"
         grow
-        name="urlPrefix"
+        name="imageNamePrefix"
         type="text"
         label={t('group')}
         onChange={formik.handleChange}
-        value={formik.values.urlPrefix}
-        message={formik.errors.urlPrefix}
+        value={formik.values.imageNamePrefix}
+        message={formik.errors.imageNamePrefix}
       />
 
       <div className="mr-auto">
@@ -385,11 +385,11 @@ const GithubRegistryFields = (props: EditRegistryTypeProps<GithubRegistryDetails
       <DyoInput
         className="max-w-lg"
         grow
-        name="urlPrefix"
+        name="imageNamePrefix"
         label={t('organization')}
         onChange={formik.handleChange}
-        value={formik.values.urlPrefix}
-        message={formik.errors.urlPrefix}
+        value={formik.values.imageNamePrefix}
+        message={formik.errors.imageNamePrefix}
       />
     </>
   )

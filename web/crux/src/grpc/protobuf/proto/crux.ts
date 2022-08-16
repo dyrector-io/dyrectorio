@@ -665,7 +665,7 @@ export interface RegistryListResponse {
 }
 
 export interface HubRegistryDetails {
-  urlPrefix: string
+  imageNamePrefix: string
 }
 
 export interface V2RegistryDetails {
@@ -677,7 +677,7 @@ export interface V2RegistryDetails {
 export interface GitlabRegistryDetails {
   user: string
   token: string
-  urlPrefix: string
+  imageNamePrefix: string
   url?: string | undefined
   apiUrl?: string | undefined
 }
@@ -685,13 +685,14 @@ export interface GitlabRegistryDetails {
 export interface GithubRegistryDetails {
   user: string
   token: string
-  urlPrefix: string
+  imageNamePrefix: string
 }
 
 export interface GoogleRegistryDetails {
   url: string
   user?: string | undefined
   token?: string | undefined
+  imageNamePrefix: string
 }
 
 export interface CreateRegistryRequest {
@@ -1703,18 +1704,19 @@ export const RegistryListResponse = {
   },
 }
 
-const baseHubRegistryDetails: object = { urlPrefix: '' }
+const baseHubRegistryDetails: object = { imageNamePrefix: '' }
 
 export const HubRegistryDetails = {
   fromJSON(object: any): HubRegistryDetails {
     const message = { ...baseHubRegistryDetails } as HubRegistryDetails
-    message.urlPrefix = object.urlPrefix !== undefined && object.urlPrefix !== null ? String(object.urlPrefix) : ''
+    message.imageNamePrefix =
+      object.imageNamePrefix !== undefined && object.imageNamePrefix !== null ? String(object.imageNamePrefix) : ''
     return message
   },
 
   toJSON(message: HubRegistryDetails): unknown {
     const obj: any = {}
-    message.urlPrefix !== undefined && (obj.urlPrefix = message.urlPrefix)
+    message.imageNamePrefix !== undefined && (obj.imageNamePrefix = message.imageNamePrefix)
     return obj
   },
 }
@@ -1742,7 +1744,7 @@ export const V2RegistryDetails = {
 const baseGitlabRegistryDetails: object = {
   user: '',
   token: '',
-  urlPrefix: '',
+  imageNamePrefix: '',
 }
 
 export const GitlabRegistryDetails = {
@@ -1750,7 +1752,8 @@ export const GitlabRegistryDetails = {
     const message = { ...baseGitlabRegistryDetails } as GitlabRegistryDetails
     message.user = object.user !== undefined && object.user !== null ? String(object.user) : ''
     message.token = object.token !== undefined && object.token !== null ? String(object.token) : ''
-    message.urlPrefix = object.urlPrefix !== undefined && object.urlPrefix !== null ? String(object.urlPrefix) : ''
+    message.imageNamePrefix =
+      object.imageNamePrefix !== undefined && object.imageNamePrefix !== null ? String(object.imageNamePrefix) : ''
     message.url = object.url !== undefined && object.url !== null ? String(object.url) : undefined
     message.apiUrl = object.apiUrl !== undefined && object.apiUrl !== null ? String(object.apiUrl) : undefined
     return message
@@ -1760,7 +1763,7 @@ export const GitlabRegistryDetails = {
     const obj: any = {}
     message.user !== undefined && (obj.user = message.user)
     message.token !== undefined && (obj.token = message.token)
-    message.urlPrefix !== undefined && (obj.urlPrefix = message.urlPrefix)
+    message.imageNamePrefix !== undefined && (obj.imageNamePrefix = message.imageNamePrefix)
     message.url !== undefined && (obj.url = message.url)
     message.apiUrl !== undefined && (obj.apiUrl = message.apiUrl)
     return obj
@@ -1770,7 +1773,7 @@ export const GitlabRegistryDetails = {
 const baseGithubRegistryDetails: object = {
   user: '',
   token: '',
-  urlPrefix: '',
+  imageNamePrefix: '',
 }
 
 export const GithubRegistryDetails = {
@@ -1778,7 +1781,8 @@ export const GithubRegistryDetails = {
     const message = { ...baseGithubRegistryDetails } as GithubRegistryDetails
     message.user = object.user !== undefined && object.user !== null ? String(object.user) : ''
     message.token = object.token !== undefined && object.token !== null ? String(object.token) : ''
-    message.urlPrefix = object.urlPrefix !== undefined && object.urlPrefix !== null ? String(object.urlPrefix) : ''
+    message.imageNamePrefix =
+      object.imageNamePrefix !== undefined && object.imageNamePrefix !== null ? String(object.imageNamePrefix) : ''
     return message
   },
 
@@ -1786,12 +1790,12 @@ export const GithubRegistryDetails = {
     const obj: any = {}
     message.user !== undefined && (obj.user = message.user)
     message.token !== undefined && (obj.token = message.token)
-    message.urlPrefix !== undefined && (obj.urlPrefix = message.urlPrefix)
+    message.imageNamePrefix !== undefined && (obj.imageNamePrefix = message.imageNamePrefix)
     return obj
   },
 }
 
-const baseGoogleRegistryDetails: object = { url: '' }
+const baseGoogleRegistryDetails: object = { url: '', imageNamePrefix: '' }
 
 export const GoogleRegistryDetails = {
   fromJSON(object: any): GoogleRegistryDetails {
@@ -1799,6 +1803,8 @@ export const GoogleRegistryDetails = {
     message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
     message.user = object.user !== undefined && object.user !== null ? String(object.user) : undefined
     message.token = object.token !== undefined && object.token !== null ? String(object.token) : undefined
+    message.imageNamePrefix =
+      object.imageNamePrefix !== undefined && object.imageNamePrefix !== null ? String(object.imageNamePrefix) : ''
     return message
   },
 
@@ -1807,6 +1813,7 @@ export const GoogleRegistryDetails = {
     message.url !== undefined && (obj.url = message.url)
     message.user !== undefined && (obj.user = message.user)
     message.token !== undefined && (obj.token = message.token)
+    message.imageNamePrefix !== undefined && (obj.imageNamePrefix = message.imageNamePrefix)
     return obj
   },
 }

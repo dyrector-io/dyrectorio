@@ -117,10 +117,8 @@ export class NotificationService {
       },
     })
 
-    await lastValueFrom(
-      this.httpService.post(notification.url, { content: TEST_MESSAGE, text: TEST_MESSAGE }),
-    )
+    await lastValueFrom(this.httpService.post(notification.url, { content: TEST_MESSAGE, text: TEST_MESSAGE }))
 
-    return Empty;
+    return Empty
   }
 }

@@ -28,7 +28,7 @@ export const buildRegistry = (userId: string, teamId: string) => {
       type: 'hub',
       token: null,
       user: null,
-      urlPrefix: 'library',
+      imageNamePrefix: 'library',
     },
   ] as Registry[]
 }

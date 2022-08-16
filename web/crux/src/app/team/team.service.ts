@@ -147,7 +147,7 @@ export class TeamService {
             description: 'List of Docker library images',
             icon: null,
             url: REGISTRY_HUB_URL,
-            urlPrefix: 'library',
+            imageNamePrefix: 'library',
             createdBy: request.accessedBy,
             type: RegistryTypeEnum.hub,
           },
@@ -251,7 +251,7 @@ export class TeamService {
     await this.notificationService.sendNotification({
       identityId: request.accessedBy,
       messageType: 'invite',
-      message:  { subject: request.email, team: team.name } as InviteMessage,
+      message: { subject: request.email, team: team.name } as InviteMessage,
     })
 
     const invite = await this.prisma.userInvitation.create({

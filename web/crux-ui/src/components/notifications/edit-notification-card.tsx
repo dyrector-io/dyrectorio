@@ -96,69 +96,65 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
   }
 
   return (
-      <DyoCard className={props.className}>
-        <DyoHeading element="h4" className="text-lg text-bright">
-          {editMode ? t('common:editName', { name: notification.name }) : t('new')}
-        </DyoHeading>
+    <DyoCard className={props.className}>
+      <DyoHeading element="h4" className="text-lg text-bright">
+        {editMode ? t('common:editName', { name: notification.name }) : t('new')}
+      </DyoHeading>
 
-        <DyoLabel className="text-light">{t('description')}</DyoLabel>
+      <DyoLabel className="text-light">{t('description')}</DyoLabel>
 
-        <form className="grid grid-cols-2 gap-8" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
-          <div className="flex flex-col">
-            <DyoInput
-              className="max-w-lg"
-              grow
-              name="name"
-              type="name"
-              label={t('common:name')}
-              onChange={formik.handleChange}
-              value={formik.values.name}
-              message={formik.errors.name}
-            />
-            <DyoInput
-              className="max-w-lg"
-              grow
-              name="url"
-              type="url"
-              label={t('url')}
-              onChange={formik.handleChange}
-              value={formik.values.url}
-              message={formik.errors.url}
+      <form className="grid grid-cols-2 gap-8" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
+        <div className="flex flex-col">
+          <DyoInput
+            className="max-w-lg"
+            grow
+            name="name"
+            type="name"
+            label={t('common:name')}
+            onChange={formik.handleChange}
+            value={formik.values.name}
+            message={formik.errors.name}
+          />
+          <DyoInput
+            className="max-w-lg"
+            grow
+            name="url"
+            type="url"
+            label={t('url')}
+            onChange={formik.handleChange}
+            value={formik.values.url}
+            message={formik.errors.url}
+          />
+        </div>
+
+        <div className="flex flex-col">
+          <div className="flex flex-col flex-wrap">
+            <DyoLabel className="mt-8 mb-2.5">{t('notificationType')}</DyoLabel>
+
+            <DyoChips
+              choices={NOTIFICATION_TYPE_VALUES}
+              initialSelection={formik.values.type}
+              converter={(it: NotificationType) => t(`type.${it}`)}
+              onSelectionChange={it => formik.setFieldValue('type', it, false)}
             />
           </div>
 
-          <div className="flex flex-col">
-            <div className="flex flex-col flex-wrap">
-              <DyoLabel className="mt-8 mb-2.5">{t('notificationType')}</DyoLabel>
+          <div className="flex flex-row justify-between mt-8 items-end">
+            <div className="flex flex-col">
+              <DyoLabel className="mb-2.5">{t('active')}</DyoLabel>
 
-              <DyoChips
-                choices={NOTIFICATION_TYPE_VALUES}
-                initialSelection={formik.values.type}
-                converter={(it: NotificationType) => t(`type.${it}`)}
-                onSelectionChange={it => formik.setFieldValue('type', it, false)}
-              />
+              <DyoSwitch fieldName="active" checked={formik.values.active} setFieldValue={formik.setFieldValue} />
             </div>
 
-            <div className="flex flex-row justify-between mt-8 items-end">
-              <div className="flex flex-col">
-                <DyoLabel className="mb-2.5">{t('active')}</DyoLabel>
-
-                <DyoSwitch fieldName="active" checked={formik.values.active} setFieldValue={formik.setFieldValue} />
-              </div>
-
-              {editMode && (
-                <DyoButton
-                  type="button"
-                  className="px-4 whitespace-nowrap"
-                  onClick={() => throttle(onTestHook)}
-                >
-                  {t('hook.textWebhook')}
-                </DyoButton>
-              )}
-            </div>
+            {editMode && (
+              <DyoButton type="button" className="px-4 whitespace-nowrap" onClick={() => throttle(onTestHook)}>
+                {t('hook.textWebhook')}
+              </DyoButton>
+            )}
           </div>
-        </form>
-      </DyoCard>
+        </div>
+      </form>
+    </DyoCard>
   )
 }
 

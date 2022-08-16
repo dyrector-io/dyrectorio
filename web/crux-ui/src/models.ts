@@ -266,7 +266,7 @@ export type RegistryType = typeof REGISTRY_TYPE_VALUES[number]
 
 export type HubRegistryDetails = {
   type: 'hub'
-  urlPrefix: string
+  imageNamePrefix: string
 }
 
 export type V2RegistryDetails = {
@@ -279,7 +279,7 @@ export type V2RegistryDetails = {
 
 export type GitlabRegistryDetails = {
   type: 'gitlab'
-  urlPrefix: string
+  imageNamePrefix: string
   user: string
   token: string
   selfManaged: boolean
@@ -289,7 +289,7 @@ export type GitlabRegistryDetails = {
 
 export type GithubRegistryDetails = {
   type: 'github'
-  urlPrefix: string
+  imageNamePrefix: string
   user: string
   token: string
 }
@@ -297,6 +297,7 @@ export type GithubRegistryDetails = {
 export type GoogleRegistryDetails = {
   type: 'google'
   url: string
+  imageNamePrefix: string
   _private: boolean
   user?: string
   token?: string
