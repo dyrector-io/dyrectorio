@@ -10,6 +10,7 @@ import { DyoErrorDto, RecoverEmail } from '@app/models'
 import { API_RECOVERY, ROUTE_INDEX, ROUTE_INVITE, ROUTE_RECOVERY } from '@app/routes'
 import { findAttributes, findError, findMessage, isDyoError, redirectTo, upsertDyoError } from '@app/utils'
 import { SelfServiceRecoveryFlow } from '@ory/kratos-client'
+import { captchaDisabled } from '@server/captcha'
 import kratos, { forwardCookie, obtainKratosSession } from '@server/kratos'
 import { useFormik } from 'formik'
 import { NextPageContext } from 'next'
@@ -21,7 +22,7 @@ import toast from 'react-hot-toast'
 
 interface RecoveryPageProps {
   flow: SelfServiceRecoveryFlow
-  recaptchaSiteKey: string
+  recaptchaSiteKey?: string
 }
 
 const RecoveryPage = (props: RecoveryPageProps) => {
@@ -29,7 +30,7 @@ const RecoveryPage = (props: RecoveryPageProps) => {
   const router = useRouter()
   const token = router.query['token'] as string
 
-  const { flow } = props
+  const { flow, recaptchaSiteKey } = props
 
   const recaptcha = useRef<ReCAPTCHA>()
 
@@ -43,7 +44,7 @@ const RecoveryPage = (props: RecoveryPageProps) => {
       email: '',
     },
     onSubmit: async values => {
-      const captcha = await recaptcha.current.executeAsync()
+      const captcha = recaptchaSiteKey ? await recaptcha.current.executeAsync() : null
 
       const data: RecoverEmail = {
         flow: flow.id,
@@ -113,7 +114,7 @@ const RecoveryPage = (props: RecoveryPageProps) => {
             {sent ? `${t('common:resend')} ${countdown > 0 ? countdown : ''}`.trim() : t('common:send')}
           </DyoButton>
 
-          <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={props.recaptchaSiteKey} />
+          {recaptchaSiteKey ? <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={recaptchaSiteKey} /> : null}
         </form>
       </DyoCard>
     </SingleFormLayout>
@@ -140,7 +141,7 @@ const getPageServerSideProps = async (context: NextPageContext) => {
     return {
       props: {
         flow: flow.data,
-        recaptchaSiteKey: process.env.RECAPTCHA_SITE_KEY,
+        recaptchaSiteKey: captchaDisabled() ? null : process.env.RECAPTCHA_SITE_KEY,
       },
     }
   } catch (e) {

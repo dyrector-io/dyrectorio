@@ -583,7 +583,7 @@ export type ActiveTeamDetails = UserMetaTeam & {
 export type Login = {
   flow: string
   csrfToken: string
-  captcha: string
+  captcha?: string
   email: string
   password: string
 }
@@ -595,7 +595,7 @@ export type Logout = {
 export type Register = {
   flow: string
   csrfToken: string
-  captcha: string
+  captcha?: string
   email: string
   password: string
 }
@@ -603,7 +603,7 @@ export type Register = {
 export type RecoverEmail = {
   flow: string
   csrfToken: string
-  captcha: string
+  captcha?: string
   email: string
   token?: string
 }
@@ -611,7 +611,7 @@ export type RecoverEmail = {
 export type VerifyEmail = {
   flow: string
   csrfToken: string
-  captcha: string
+  captcha?: string
   email: string
   token?: string
 }

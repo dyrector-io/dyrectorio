@@ -10,6 +10,7 @@ import { DyoErrorDto, VerifyEmail } from '@app/models'
 import { API_VERIFICATION, ROUTE_LOGIN, ROUTE_SETTINGS } from '@app/routes'
 import { findAttributes, findError, findMessage, isDyoError, redirectTo, sendForm, upsertDyoError } from '@app/utils'
 import { SelfServiceVerificationFlow } from '@ory/kratos-client'
+import { captchaDisabled } from '@server/captcha'
 import kratos, { forwardCookie, obtainKratosSession, userVerified } from '@server/kratos'
 import { useFormik } from 'formik'
 import { NextPageContext } from 'next'
@@ -21,13 +22,13 @@ import toast from 'react-hot-toast'
 interface VerifyProps {
   email: string
   flow: SelfServiceVerificationFlow
-  recaptchaSiteKey: string
+  recaptchaSiteKey?: string
 }
 
 const VerifyPage = (props: VerifyProps) => {
   const { t } = useTranslation('verify')
 
-  const { flow, email } = props
+  const { flow, email, recaptchaSiteKey } = props
 
   const [ui, setUi] = useState(flow.ui)
   const [sent, setSent] = useState(false)
@@ -41,7 +42,7 @@ const VerifyPage = (props: VerifyProps) => {
       email,
     },
     onSubmit: async values => {
-      const captcha = await recaptcha.current.executeAsync()
+      const captcha = recaptchaSiteKey ? await recaptcha.current.executeAsync() : null
 
       const data: VerifyEmail = {
         flow: flow.id,
@@ -105,7 +106,7 @@ const VerifyPage = (props: VerifyProps) => {
             {sent ? `${t('common:resend')} ${countdown > 0 ? countdown : ''}`.trim() : t('common:send')}
           </DyoButton>
 
-          <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={props.recaptchaSiteKey} />
+          {recaptchaSiteKey ? <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={recaptchaSiteKey} /> : null}
         </form>
       </DyoCard>
     </SingleFormLayout>
@@ -137,7 +138,7 @@ const getPageServerSideProps = async (context: NextPageContext) => {
     props: {
       email: session.identity.traits.email,
       flow: flow.data,
-      recaptchaSiteKey: process.env.RECAPTCHA_SITE_KEY,
+      recaptchaSiteKey: captchaDisabled() ? null : process.env.RECAPTCHA_SITE_KEY,
     },
   }
 }

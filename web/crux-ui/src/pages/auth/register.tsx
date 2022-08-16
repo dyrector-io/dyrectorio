@@ -19,6 +19,7 @@ import {
   upsertError,
 } from '@app/utils'
 import { SelfServiceRegistrationFlow } from '@ory/kratos-client'
+import { captchaDisabled } from '@server/captcha'
 import kratos, { forwardCookie, obtainKratosSession } from '@server/kratos'
 import { useFormik } from 'formik'
 import { NextPageContext } from 'next'
@@ -31,14 +32,14 @@ import toast from 'react-hot-toast'
 
 interface RegisterPageProps {
   flow: SelfServiceRegistrationFlow
-  recaptchaSiteKey: string
+  recaptchaSiteKey?: string
 }
 
 const RegisterPage = (props: RegisterPageProps) => {
   const { t } = useTranslation('register')
   const router = useRouter()
 
-  const { flow } = props
+  const { flow, recaptchaSiteKey } = props
 
   const [ui, setUi] = useState(flow.ui)
   const [errors, setErrors] = useState<DyoErrorDto[]>([])
@@ -58,7 +59,7 @@ const RegisterPage = (props: RegisterPageProps) => {
 
       setErrors(removeError(errors, 'confirmPassword'))
 
-      const captcha = await recaptcha.current.executeAsync()
+      const captcha = recaptchaSiteKey ? await recaptcha.current.executeAsync() : null
 
       const data: Register = {
         flow: flow.id,
@@ -147,7 +148,7 @@ const RegisterPage = (props: RegisterPageProps) => {
             {t('createAcc')}
           </DyoButton>
 
-          <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={props.recaptchaSiteKey} />
+          {recaptchaSiteKey ? <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={recaptchaSiteKey} /> : null}
         </form>
       </DyoCard>
 
@@ -176,7 +177,7 @@ const getPageServerSideProps = async (context: NextPageContext) => {
   return {
     props: {
       flow: flow.data,
-      recaptchaSiteKey: process.env.RECAPTCHA_SITE_KEY,
+      recaptchaSiteKey: captchaDisabled() ? null : process.env.RECAPTCHA_SITE_KEY,
     },
   }
 }

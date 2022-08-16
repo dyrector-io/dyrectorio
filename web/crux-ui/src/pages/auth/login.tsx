@@ -10,6 +10,7 @@ import { DyoErrorDto, Login } from '@app/models'
 import { API_AUTH_LOGIN, ROUTE_INDEX, ROUTE_RECOVERY, ROUTE_REGISTER, ROUTE_VERIFICATION } from '@app/routes'
 import { findAttributes, findError, findMessage, isDyoError, redirectTo, sendForm, upsertDyoError } from '@app/utils'
 import { SelfServiceLoginFlow } from '@ory/kratos-client'
+import { captchaDisabled } from '@server/captcha'
 import kratos, { cookieOf, forwardCookie, obtainKratosSession, userVerified } from '@server/kratos'
 import { useFormik } from 'formik'
 import { NextPageContext } from 'next'
@@ -22,14 +23,14 @@ import toast from 'react-hot-toast'
 
 interface LoginPageProps {
   flow: SelfServiceLoginFlow
-  recaptchaSiteKey: string
+  recaptchaSiteKey?: string
 }
 
 const LoginPage = (props: LoginPageProps) => {
   const { t } = useTranslation('login')
   const router = useRouter()
 
-  const { flow } = props
+  const { flow, recaptchaSiteKey } = props
 
   const email = (router.query.refresh as string) ?? ''
   const refresh = email !== ''
@@ -44,7 +45,7 @@ const LoginPage = (props: LoginPageProps) => {
       password: '',
     },
     onSubmit: async values => {
-      const captcha = await recaptcha.current.executeAsync()
+      const captcha = recaptchaSiteKey ? await recaptcha.current.executeAsync() : null
 
       const data: Login = {
         flow: flow.id,
@@ -119,7 +120,7 @@ const LoginPage = (props: LoginPageProps) => {
             {t('common:logIn')}
           </DyoButton>
 
-          <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={props.recaptchaSiteKey} />
+          {recaptchaSiteKey ? <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={recaptchaSiteKey} /> : null}
         </form>
 
         <div className="flex justify-center mt-10">
@@ -166,12 +167,13 @@ const getPageServerSideProps = async (context: NextPageContext) => {
           },
         },
   )
+
   forwardCookie(context, flow)
 
   return {
     props: {
       flow: flow.data,
-      recaptchaSiteKey: process.env.RECAPTCHA_SITE_KEY,
+      recaptchaSiteKey: captchaDisabled() ? null : process.env.RECAPTCHA_SITE_KEY,
     },
   }
 }
