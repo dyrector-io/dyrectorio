@@ -8,7 +8,7 @@ export class DeleteImageValidationPipe implements PipeTransform {
   constructor(private prisma: PrismaService) {}
 
   async transform(value: IdRequest) {
-    const image = await this.prisma.image.findUnique({
+    const image = await this.prisma.image.findUniqueOrThrow({
       select: {
         version: {
           select: {

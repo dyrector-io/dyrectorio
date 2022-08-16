@@ -8,7 +8,7 @@ export class DeployPatchValidationPipe implements PipeTransform {
   constructor(private prisma: PrismaService) {}
 
   async transform(value: PatchDeploymentRequest) {
-    const deployment = await this.prisma.deployment.findUnique({
+    const deployment = await this.prisma.deployment.findUniqueOrThrow({
       where: {
         id: value.id,
       },

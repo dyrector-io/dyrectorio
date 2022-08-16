@@ -119,7 +119,7 @@ export class ProductService {
   }
 
   async getProductDetails(request: IdRequest): Promise<ProductDetailsReponse> {
-    const product = await this.prisma.product.findUnique({
+    const product = await this.prisma.product.findUniqueOrThrow({
       where: { id: request.id },
       include: {
         versions: {

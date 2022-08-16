@@ -65,7 +65,7 @@ export class AgentService {
   }
 
   async getNodeEventsByTeam(teamId: string): Promise<Subject<NodeEventMessage>> {
-    const team = await this.prisma.team.findUnique({
+    const team = await this.prisma.team.findUniqueOrThrow({
       where: {
         id: teamId,
       },
@@ -233,7 +233,7 @@ export class AgentService {
 
     let agent: Agent
     await this.prisma.$transaction(async prisma => {
-      const node = await prisma.node.findUnique({
+      const node = await prisma.node.findUniqueOrThrow({
         where: {
           id: connection.nodeId,
         },
@@ -312,7 +312,7 @@ export class AgentService {
   }
 
   private async updateDeploymentStatuses(nodeId: string, deploymentId: string) {
-    const deployment = await this.prisma.deployment.findUnique({
+    const deployment = await this.prisma.deployment.findUniqueOrThrow({
       select: {
         status: true,
         version: {

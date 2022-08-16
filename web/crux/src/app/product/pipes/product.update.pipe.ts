@@ -8,7 +8,7 @@ export class ProductUpdateValidationPipe implements PipeTransform {
   constructor(private prisma: PrismaService, private teamRepository: TeamRepository) {}
 
   async transform(value: UpdateProductRequest) {
-    const product = await this.prisma.product.findUnique({
+    const product = await this.prisma.product.findUniqueOrThrow({
       where: {
         id: value.id,
       },

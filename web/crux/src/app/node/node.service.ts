@@ -57,7 +57,7 @@ export class NodeService {
   }
 
   async getNodeDetails(req: IdRequest): Promise<NodeDetailsResponse> {
-    const node = await this.prisma.node.findUnique({
+    const node = await this.prisma.node.findUniqueOrThrow({
       where: {
         id: req.id,
       },
@@ -133,7 +133,7 @@ export class NodeService {
   }
 
   async getScript(request: ServiceIdRequest): Promise<NodeScriptResponse> {
-    const node = await this.prisma.node.findUnique({
+    const node = await this.prisma.node.findUniqueOrThrow({
       where: {
         id: request.id,
       },

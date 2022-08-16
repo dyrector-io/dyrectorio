@@ -7,13 +7,8 @@ export class PrismaService extends PrismaClient<Prisma.PrismaClientOptions, 'que
   private readonly logger = new Logger(PrismaService.name)
 
   constructor() {
-    const notFoundMappings = PrismaService.generateNotFoundErrorMappings()
-
     super({
-      rejectOnNotFound: {
-        findFirst: notFoundMappings,
-        findUnique: notFoundMappings,
-      },
+      rejectOnNotFound: false,
       log: [
         { emit: 'event', level: 'query' },
         { emit: 'stdout', level: 'info' },
@@ -35,34 +30,6 @@ export class PrismaService extends PrismaClient<Prisma.PrismaClientOptions, 'que
     this.$on('beforeExit', async () => {
       await app.close()
     })
-  }
-
-  static generateNotFoundErrorMappings(): Prisma.RejectPerModel {
-    const rejects: Prisma.RejectPerModel = {}
-    Object.entries(this.NOT_FOUND_ERRORS).forEach(entry => {
-      const [key, value] = entry
-
-      rejects[key] = mapNotFoundError(value)
-    })
-
-    return rejects
-  }
-
-  static readonly NOT_FOUND_ERRORS: NotFoundErrorMappings = {
-    Registry: 'registry',
-    Node: 'node',
-    Product: 'product',
-    Version: 'version',
-    Image: 'image',
-    ContainerConfig: 'containerConfig',
-    Deployment: 'deployment',
-    DeploymentEvent: 'deploymentEvent',
-    Instance: 'instance',
-    InstanceContainerConfig: 'instanceConfig',
-    UserInvitation: 'invitation',
-    VersionsOnParentVersion: 'versionRelation',
-    UsersOnTeams: 'team',
-    Team: 'team',
   }
 }
 

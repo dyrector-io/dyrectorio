@@ -55,7 +55,7 @@ export class VersionService {
   }
 
   async getVersionDetails(req: IdRequest): Promise<VersionDetailsResponse> {
-    const version = await this.prisma.version.findUnique({
+    const version = await this.prisma.version.findUniqueOrThrow({
       where: {
         id: req.id,
       },
@@ -82,7 +82,6 @@ export class VersionService {
 
     await this.prisma.$transaction(async prisma => {
       const defaultVersion = await prisma.version.findFirst({
-        rejectOnNotFound: false,
         where: {
           productId: req.productId,
           default: true,
@@ -225,7 +224,7 @@ export class VersionService {
   async increaseVersion(request: IncreaseVersionRequest) {
     // Query the parent Version which will be the version we will increase
     // and include all necessary objects like images and deployments
-    const parentVersion = await this.prisma.version.findUnique({
+    const parentVersion = await this.prisma.version.findUniqueOrThrow({
       where: {
         id: request.id,
       },

@@ -23,7 +23,6 @@ export class TeamRoleGuard implements CanActivate {
     const request = context.getArgByIndex<AccessRequest>(0)
 
     const team = await this.prisma.usersOnTeams.findFirst({
-      rejectOnNotFound: false,
       where: {
         userId: request.accessedBy,
         active: true,

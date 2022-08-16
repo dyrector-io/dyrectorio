@@ -7,7 +7,7 @@ export class TeamRepository {
   constructor(private prisma: PrismaService) {}
 
   async getActiveTeamByUserId(userId: string): Promise<UsersOnTeams> {
-    return await this.prisma.usersOnTeams.findFirst({
+    return await this.prisma.usersOnTeams.findFirstOrThrow({
       where: {
         userId: userId,
         active: true,
