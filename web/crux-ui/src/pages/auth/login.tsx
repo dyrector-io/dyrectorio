@@ -20,11 +20,16 @@ import { useRef, useState } from 'react'
 import ReCAPTCHA from 'react-google-recaptcha'
 import toast from 'react-hot-toast'
 
-const LoginPage = (props: SelfServiceLoginFlow) => {
+interface LoginPageProps {
+  flow: SelfServiceLoginFlow
+  recaptchaSiteKey: string
+}
+
+const LoginPage = (props: LoginPageProps) => {
   const { t } = useTranslation('login')
   const router = useRouter()
 
-  const flow = props
+  const { flow } = props
 
   const email = (router.query.refresh as string) ?? ''
   const refresh = email !== ''
@@ -116,7 +121,7 @@ const LoginPage = (props: SelfServiceLoginFlow) => {
               {t('common:logIn')}
             </DyoButton>
 
-            <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY} />
+            <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={props.recaptchaSiteKey} />
           </form>
 
           <div className="flex justify-center mt-10">
@@ -152,7 +157,7 @@ const getPageServerSideProps = async (context: NextPageContext) => {
     return redirectTo(ROUTE_INDEX)
   }
 
-  const kratosRes = await kratos.initializeSelfServiceLoginFlowForBrowsers(
+  const flow = await kratos.initializeSelfServiceLoginFlowForBrowsers(
     !!refresh,
     undefined,
     undefined,
@@ -164,10 +169,13 @@ const getPageServerSideProps = async (context: NextPageContext) => {
           },
         },
   )
-  forwardCookie(context, kratosRes)
+  forwardCookie(context, flow)
 
   return {
-    props: kratosRes.data,
+    props: {
+      flow: flow.data,
+      recaptchaSiteKey: process.env.RECAPTCHA_SITE_KEY,
+    },
   }
 }
 
