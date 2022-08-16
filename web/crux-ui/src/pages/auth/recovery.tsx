@@ -19,12 +19,17 @@ import { useRef, useState } from 'react'
 import ReCAPTCHA from 'react-google-recaptcha'
 import toast from 'react-hot-toast'
 
-const RecoveryPage = (props: SelfServiceRecoveryFlow) => {
+interface RecoveryPageProps {
+  flow: SelfServiceRecoveryFlow
+  recaptchaSiteKey: string
+}
+
+const RecoveryPage = (props: RecoveryPageProps) => {
   const { t } = useTranslation('recovery')
   const router = useRouter()
   const token = router.query['token'] as string
 
-  const flow = props
+  const { flow } = props
 
   const recaptcha = useRef<ReCAPTCHA>()
 
@@ -110,7 +115,7 @@ const RecoveryPage = (props: SelfServiceRecoveryFlow) => {
               {sent ? `${t('common:resend')} ${countdown > 0 ? countdown : ''}`.trim() : t('common:send')}
             </DyoButton>
 
-            <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY} />
+            <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={props.recaptchaSiteKey} />
           </form>
         </DyoCard>
       </SingleFormLayout>
@@ -136,7 +141,10 @@ const getPageServerSideProps = async (context: NextPageContext) => {
     forwardCookie(context, flow)
 
     return {
-      props: flow.data,
+      props: {
+        flow: flow.data,
+        recaptchaSiteKey: process.env.RECAPTCHA_SITE_KEY,
+      },
     }
   } catch (e) {
     if (e?.response?.status === 403) {
