@@ -5,8 +5,8 @@ import { ListPageMenu } from '@app/components/shared/page-menu'
 import EditTeamCard from '@app/components/team/edit-team-card'
 import TeamCard from '@app/components/team/team-card'
 import { Team, UserMeta } from '@app/models'
-import { ROUTE_TEAMS } from '@app/routes'
-import { withContextAuthorization } from '@app/utils'
+import { ROUTE_INDEX, ROUTE_TEAMS } from '@app/routes'
+import { redirectTo, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
@@ -41,9 +41,7 @@ const TeamsPage = (props: TeamsPageProps) => {
         <ListPageMenu creating={creating} setCreating={setCreating} submitRef={submitRef} />
       </PageHeading>
 
-      {!creating ? null : (
-        <EditTeamCard className="mb-8 px-8 py-6" submitRef={submitRef} onTeamEdited={onCreated} />
-      )}
+      {!creating ? null : <EditTeamCard className="mb-8 px-8 py-6" submitRef={submitRef} onTeamEdited={onCreated} />}
 
       {teams.map((team, index) => (
         <TeamCard key={`team-${index}`} className="my-2" team={team} highlighted={team.id === props.me.activeTeamId} />
@@ -58,6 +56,10 @@ const getPageServerSideProps = async (context: NextPageContext) => {
   const crux = cruxFromContext(context)
 
   const me = await crux.teams.getUserMeta()
+  if (!me.activeTeamId) {
+    return redirectTo(ROUTE_INDEX)
+  }
+
   const teams = await crux.teams.getAllTeams()
 
   return {

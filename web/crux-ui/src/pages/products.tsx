@@ -63,7 +63,7 @@ const ProductsPage = (props: ProductsPageProps) => {
   }
 
   const pageLink: BreadcrumbLink = {
-  name: t('common:products'),
+    name: t('common:products'),
     url: ROUTE_PRODUCTS,
   }
 

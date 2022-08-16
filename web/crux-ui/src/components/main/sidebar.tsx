@@ -1,4 +1,5 @@
 import {
+  ROUTE_AUDIT,
   ROUTE_INDEX,
   ROUTE_LOGOUT,
   ROUTE_NODES,
@@ -6,7 +7,6 @@ import {
   ROUTE_PROFILE,
   ROUTE_REGISTRIES,
   ROUTE_TEAMS,
-  ROUTE_AUDIT,
 } from '@app/routes'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'

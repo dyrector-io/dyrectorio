@@ -1,7 +1,7 @@
 import { Layout } from '@app/components/layout'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
-import { DetailsPageMenu, DetailsPageTexts, ListPageMenuTexts } from '@app/components/shared/page-menu'
+import { DetailsPageMenu, DetailsPageTexts } from '@app/components/shared/page-menu'
 import EditTeamCard from '@app/components/team/edit-team-card'
 import InviteUserCard from '@app/components/team/invite-user-card'
 import UserRoleAction from '@app/components/team/user-role-action'
@@ -12,7 +12,7 @@ import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { roleToText, Team, TeamDetails, User, userIsAdmin, userIsOwner, UserRole } from '@app/models'
-import { ROUTE_INDEX, ROUTE_TEAMS, teamApiUrl, teamUrl, userApiUrl } from '@app/routes'
+import { ROUTE_TEAMS, teamApiUrl, teamUrl, userApiUrl } from '@app/routes'
 import { redirectTo, withContextAuthorization } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
 import { cruxFromContext } from '@server/crux/crux'
@@ -63,7 +63,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
     }
   }
 
-  const onTeamEdited = (newTeam: Team) =>{
+  const onTeamEdited = (newTeam: Team) => {
     setDetailsState('none')
     setTeam({
       ...team,
@@ -77,7 +77,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
     })
 
     if (res.ok) {
-      router.replace(ROUTE_INDEX)
+      router.replace(ROUTE_TEAMS)
     } else {
       handleApiError(res)
     }

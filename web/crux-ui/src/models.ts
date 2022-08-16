@@ -499,7 +499,6 @@ export const WS_TYPE_DEPLOYMENT_FINISHED = 'deployment-finished'
 
 // user
 
-
 export const USER_ROLE_VALUES = ['owner', 'admin', 'user'] as const
 export type UserRole = typeof USER_ROLE_VALUES[number]
 
