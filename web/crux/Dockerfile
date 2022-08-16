@@ -7,7 +7,7 @@ COPY ./package.json ./package-lock.json ./tsconfig.build.json ./tsconfig.json ./
 COPY ./prisma ./prisma
 COPY ./src ./src
 
-RUN npm ci && npm run prismagen 
+RUN npm ci && npm run prismagen
 RUN npm run build
 
 FROM node:17.1-alpine AS RUNNER
