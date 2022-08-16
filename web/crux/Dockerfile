@@ -1,4 +1,4 @@
-FROM node:17.1-alpine AS BUILDER
+FROM node:18.7-alpine AS BUILDER
 
 ENV NODE_ENV production
 WORKDIR /app
@@ -10,7 +10,7 @@ COPY ./src ./src
 RUN npm ci && npm run prismagen
 RUN npm run build
 
-FROM node:17.1-alpine AS RUNNER
+FROM node:18.7-alpine AS RUNNER
 ENV NODE_ENV production
 ENV TZ Europe/Budapest
 
