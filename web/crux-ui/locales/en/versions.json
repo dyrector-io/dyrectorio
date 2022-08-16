@@ -1,5 +1,5 @@
 {
-    "title-product-version": "{{name}} product {{version}}",
+    "versionsName": "Products - {{product}} - Versions - {{name}}",
 
     "tips": "Create a new version for your product that you can use for different purposes. Rolling versions are ideal for continuous delivery, while Incremental ones are useful for production.",
     "increaseTips": "By increasing the version of your Product, you're able to create new releases of your already existing Product with new images or substitute included ones with a different tag.",

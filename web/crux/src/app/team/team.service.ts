@@ -1,36 +1,38 @@
-import { EmailBuilder } from '../../builders/email.builder'
 import { ServerUnaryCall } from '@grpc/grpc-js'
 import { Injectable, Logger } from '@nestjs/common'
 import { RegistryTypeEnum } from '@prisma/client'
-import { PrismaService } from 'src/services/prisma.service'
+import { InviteMessage } from 'src/domain/notification-templates'
 import {
   AlreadyExistsException,
   MailServiceException,
   NotFoundException,
-  PermissionDeniedException,
   PreconditionFailedException,
 } from 'src/exception/errors'
-import { InterceptorGrpcHelperProvider } from 'src/interceptors/helper.interceptor'
 import {
   AccessRequest,
+  ActiveTeamDetailsResponse,
+  AllTeamsResponse,
   CreateEntityResponse,
   CreateTeamRequest,
+  DeleteUserFromTeamRequest,
   Empty,
   IdRequest,
+  InviteUserRequest,
   TeamDetailsResponse,
-  UpdateActiveTeamRequest,
-  UserInviteRequest,
+  UpdateTeamRequest,
+  UpdateUserRoleInTeamRequest,
   UserMetaResponse,
-  UserRole,
   UserStatus,
 } from 'src/grpc/protobuf/proto/crux'
+import { InterceptorGrpcHelperProvider } from 'src/interceptors/helper.interceptor'
+import { DomainNotificationService } from 'src/services/domain.notification.service'
+import { EmailService } from 'src/services/email.service'
+import { KratosService } from 'src/services/kratos.service'
+import { PrismaService } from 'src/services/prisma.service'
+import { REGISTRY_HUB_URL } from 'src/shared/const'
+import { EmailBuilder } from '../../builders/email.builder'
 import { TeamMapper } from './team.mapper'
 import { TeamRepository } from './team.repository'
-import { REGISTRY_HUB_URL } from 'src/shared/const'
-import { KratosService } from 'src/services/kratos.service'
-import { EmailService } from 'src/services/email.service'
-import { DomainNotificationService } from 'src/services/domain.notification.service'
-import { InviteMessage } from 'src/domain/notification-templates'
 
 const VALIDITY_DAY = 1
 const EPOCH_TIME = 24 * 60 * 60 * 1000 // 1 day in millis
@@ -57,7 +59,7 @@ export class TeamService {
       },
       select: {
         active: true,
-        owner: true,
+        role: true,
         team: {
           select: {
             id: true,
@@ -88,7 +90,7 @@ export class TeamService {
         ? null
         : {
             activeTeamId: active.team.id,
-            role: active.owner ? UserRole.OWNER : UserRole.USER,
+            role: this.mapper.roleToGrpc(active.role),
             status: UserStatus.VERIFIED,
           },
       teams: usersOnTeams.map(it => it.team),
@@ -96,8 +98,8 @@ export class TeamService {
     }
   }
 
-  async getActiveTeamByUserId(request: AccessRequest): Promise<TeamDetailsResponse> {
-    const activeUserOnTeam = await this.prisma.usersOnTeams.findFirst({
+  async getActiveTeamByUserId(request: AccessRequest): Promise<ActiveTeamDetailsResponse> {
+    const activeUserOnTeam = await this.prisma.usersOnTeams.findFirstOrThrow({
       where: {
         userId: request.accessedBy,
         active: true,
@@ -113,20 +115,18 @@ export class TeamService {
     })
 
     const team = activeUserOnTeam.team
-    const userIds: string[] = team.users.map(it => it.userId).concat(team.invitations.map(it => it.userId))
+    const userIds = team.users.map(it => it.userId).concat(team.invitations.map(it => it.userId))
     const identities = await this.kratos.getIdentitiesByIds(userIds)
 
-    return this.mapper.detailsToGrpc(team, identities)
+    return this.mapper.activeTeamDetailsToGrpc(team, identities)
   }
 
   async createTeam(
     request: CreateTeamRequest,
     call: ServerUnaryCall<CreateTeamRequest, Promise<CreateEntityResponse>>,
   ): Promise<CreateEntityResponse> {
+    // If the user doesn't have an active team, make the current one active
     const userHasTeam = await this.teamRepository.userHasTeam(request.accessedBy)
-
-    // If user doesn't has team, make the current one to active
-    const active = !userHasTeam
 
     // Create Team entity in database
     const team = await this.prisma.team.create({
@@ -136,8 +136,8 @@ export class TeamService {
         users: {
           create: {
             userId: request.accessedBy,
-            active,
-            owner: true,
+            active: !userHasTeam,
+            role: 'owner',
           },
         },
         // Seed every team with the Docker Hub Registry
@@ -165,43 +165,123 @@ export class TeamService {
     return CreateEntityResponse.fromJSON(team)
   }
 
-  async updateActiveTeam(request: UpdateActiveTeamRequest): Promise<Empty> {
-    const team = await this.teamRepository.getActiveTeamByUserId(request.accessedBy)
-
+  async updateTeam(request: UpdateTeamRequest): Promise<Empty> {
     await this.prisma.team.update({
       where: {
-        id: team.teamId,
+        id: request.id,
       },
       data: {
-        ...request,
+        name: request.name,
+        updatedBy: request.accessedBy,
+        updatedAt: new Date(),
       },
     })
 
     return Empty
   }
 
-  async deleteActiveTeam(request: AccessRequest): Promise<void> {
-    const team = await this.teamRepository.getActiveTeamByUserId(request.accessedBy)
-
-    await this.prisma.team.delete({
+  async deleteTeam(request: IdRequest): Promise<Empty> {
+    const teamWithActiveUsers = await this.prisma.team.findFirst({
       where: {
-        id: team.teamId,
+        id: request.id,
+        users: {
+          some: {
+            active: true,
+          },
+        },
+      },
+      select: {
+        users: {
+          select: {
+            userId: true,
+          },
+        },
       },
     })
+
+    await this.prisma.$transaction(async prisma => {
+      await prisma.team.delete({
+        where: {
+          id: request.id,
+        },
+      })
+
+      if (teamWithActiveUsers) {
+        const userIds = teamWithActiveUsers.users.map(it => it.userId)
+
+        const userOnTeams = await prisma.usersOnTeams.findMany({
+          where: {
+            userId: {
+              in: userIds,
+            },
+          },
+          select: {
+            teamId: true,
+            userId: true,
+          },
+        })
+
+        const updatables: Record<string, string> = userOnTeams.reduce((result, it) => {
+          result[it.userId] = it.teamId
+          return result
+        }, {})
+
+        const updates = Object.entries(updatables).map(async entry => {
+          const [key, value] = entry
+
+          return await prisma.usersOnTeams.update({
+            where: {
+              userId_teamId: {
+                userId: key,
+                teamId: value,
+              },
+            },
+            data: {
+              active: true,
+            },
+          })
+        })
+
+        await Promise.all(updates)
+      }
+    })
+
+    return Empty
+  }
+  
+  async updateUserRole(request: UpdateUserRoleInTeamRequest): Promise<Empty> {
+    await this.prisma.usersOnTeams.update({
+      where: {
+        userId_teamId: {
+          teamId: request.id,
+          userId: request.userId,
+        },
+      },
+      data: {
+        role: this.mapper.roleToDb(request.role),
+        team: {
+          update: {
+            updatedBy: request.accessedBy,
+            updatedAt: new Date(),
+          },
+        },
+      },
+    })
+
+    return Empty
   }
 
-  async inviteUserToTheActiveTeam(request: UserInviteRequest): Promise<CreateEntityResponse> {
-    const userOnTeam = await this.teamRepository.getActiveTeamByUserId(request.accessedBy)
-
-    if (!userOnTeam.owner) {
-      throw new PermissionDeniedException({
-        message: 'User is not Admin on the given team',
-      })
-    }
-
+  async inviteUserToTeam(request: InviteUserRequest): Promise<CreateEntityResponse> {
     const team = await this.prisma.team.findUniqueOrThrow({
       where: {
-        id: userOnTeam.teamId,
+        id: request.id,
+      },
+      include: {
+        users: {
+          select: {
+            userId: true,
+          },
+        },
       },
     })
 
@@ -213,16 +293,9 @@ export class TeamService {
       user = await this.kratos.createUser(request.email)
     } else {
       // Check if User is already in the Team
-      const invitedUserOnTeam = await this.prisma.usersOnTeams.findUnique({
-        where: {
-          userId_teamId: {
-            userId: user.id,
-            teamId: team.id,
-          },
-        },
-      })
+      const userOnTeam = team.users.find(it => it.userId === user.id)
 
-      if (invitedUserOnTeam) {
+      if (userOnTeam) {
         throw new AlreadyExistsException({
           message: `User is already in the team`,
           property: 'email',
@@ -292,19 +365,14 @@ export class TeamService {
     }
 
     const userHasTeam = await this.teamRepository.userHasTeam(request.accessedBy)
-    let activeTeam = false
-
-    if (!userHasTeam) {
-      activeTeam = true
-    }
 
     await this.prisma.$transaction(async prisma => {
       await prisma.usersOnTeams.create({
         data: {
           userId: userInvite.userId,
           teamId: userInvite.teamId,
-          active: activeTeam,
-          owner: false,
+          active: !userHasTeam,
+          role: 'user',
         },
       })
 
@@ -351,16 +419,21 @@ export class TeamService {
     })
   }
 
-  async deleteUserFromTeam(request: IdRequest): Promise<void> {
-    const team = await this.teamRepository.getActiveTeamByUserId(request.accessedBy)
-    const userId = request.id
+  async deleteUserFromTeam(request: DeleteUserFromTeamRequest): Promise<void> {
+    const team = await this.prisma.team.findUniqueOrThrow({
+      where: {
+        id: request.id,
+      },
+    })
+
+    const userId = request.userId
     let deleted = false
 
     try {
       await this.prisma.userInvitation.delete({
         where: {
           userId_teamId: {
-            teamId: team.teamId,
+            teamId: team.id,
             userId,
           },
         },
@@ -372,7 +445,7 @@ export class TeamService {
       await this.prisma.usersOnTeams.delete({
         where: {
           userId_teamId: {
-            teamId: team.teamId,
+            teamId: team.id,
             userId,
           },
         },
@@ -387,5 +460,37 @@ export class TeamService {
         value: userId,
       })
     }
+  }
+
+  async getAllTeams(request: AccessRequest): Promise<AllTeamsResponse> {
+    const teams = await this.prisma.team.findMany({
+      where: {
+        users: {
+          some: {
+            userId: request.accessedBy,
+          },
+        },
+      },
+      include: this.teamRepository.teamInclude,
+    })
+
+    const identities = await this.kratos.getIdentitiesByIds(teams.flatMap(it => it.users).map(it => it.userId))
+
+    return {
+      data: teams.map(it => this.mapper.teamDetailsToGrpc(it, identities)),
+    }
+  }
+
+  async getTeamById(request: IdRequest): Promise<TeamDetailsResponse> {
+    const team = await this.prisma.team.findUniqueOrThrow({
+      where: {
+        id: request.id,
+      },
+      include: this.teamRepository.teamInclude,
+    })
+
+    const identities = await this.kratos.getIdentitiesByIds(team.users.map(it => it.userId))
+
+    return this.mapper.teamDetailsToGrpc(team, identities)
   }
 }

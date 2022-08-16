@@ -11,6 +11,8 @@ import {
   PRODUCT_TYPE_VALUES,
   RegistryType,
   REGISTRY_TYPE_VALUES,
+  UserRole,
+  USER_ROLE_VALUES,
   VersionType,
   VERSION_TYPE_VALUES,
 } from './models'
@@ -197,6 +199,10 @@ export const selectTeamSchema = yup.object().shape({
 export const createTeamSchema = yup.object().shape({
   name: yup.string().min(3).max(128),
 })
+
+export const updateTeamSchema = createTeamSchema
+
+export const roleSchema = yup.mixed<UserRole>().oneOf([...USER_ROLE_VALUES])
 
 export const notificationSchema = yup.object().shape({
   name: yup.string().required(),

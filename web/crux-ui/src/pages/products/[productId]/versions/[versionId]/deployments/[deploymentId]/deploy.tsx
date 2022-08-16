@@ -1,4 +1,4 @@
-import { Layout, PageHead } from '@app/components/layout'
+import { Layout } from '@app/components/layout'
 import DeploymentContainerStatusList from '@app/components/products/versions/deployments/deployment-container-status-list'
 import DeploymentDetailsCard from '@app/components/products/versions/deployments/deployment-details-card'
 import DeploymentEventsTerminal from '@app/components/products/versions/deployments/deployment-events-terminal'
@@ -90,7 +90,7 @@ const DeployPage = (props: DeployPageProps) => {
   })
 
   const pageLink: BreadcrumbLink = {
-    name: t('common:deployment'),
+    name: t('common:deployments'),
     url: ROUTE_PRODUCTS,
   }
 
@@ -118,15 +118,14 @@ const DeployPage = (props: DeployPageProps) => {
   const onBack = () => router.back()
 
   return (
-    <Layout>
-      <PageHead
-        title={t('title', {
-          product: product.name,
-          version: version.name,
-          node: deployment.node.name,
-        })}
-      />
-      <PageHeading pageLink={pageLink} subLinks={sublinks}>
+    <Layout
+      title={t('deploysNameDeploy', {
+        product: product.name,
+        version: version.name,
+        name: deployment.node.name,
+      })}
+    >
+      <PageHeading pageLink={pageLink} sublinks={sublinks}>
         <DyoButton className="px-6 ml-auto" onClick={onInspect}>
           {t('common:inspect')}
         </DyoButton>

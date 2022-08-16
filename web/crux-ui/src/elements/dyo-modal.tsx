@@ -55,6 +55,10 @@ export default DyoModal
 
 export type DyoConfirmationModalConfig = {
   onClose: (boolean) => void
+  title?: string
+  description?: string
+  confirmText?: string
+  cancelText?: string
 }
 
 export type DyoConfirmationModalProps = Omit<DyoModalProps, 'buttons' | 'children' | 'onClose' | 'open'> & {
@@ -68,7 +72,7 @@ export type DyoConfirmationModalProps = Omit<DyoModalProps, 'buttons' | 'childre
 export const DyoConfirmationModal = (props: DyoConfirmationModalProps) => {
   const { t } = useTranslation('common')
 
-  const { confirmText, cancelText, confirmColor, cancelColor, description, config, ...forwardedProps } = props
+  const { confirmText, cancelText, confirmColor, cancelColor, description, config, title, ...forwardedProps } = props
 
   if (!config) {
     return null
@@ -76,23 +80,26 @@ export const DyoConfirmationModal = (props: DyoConfirmationModalProps) => {
 
   const { onClose } = config
 
+  const actualDescription = config.description ?? description
+
   return (
     <DyoModal
       {...forwardedProps}
+      title={config?.title ?? title}
       open
       onClose={() => onClose(false)}
       buttons={
         <>
           <DyoButton color={confirmColor} onClick={() => onClose(true)}>
-            {confirmText ?? t('confirm')}
+            {config.confirmText ?? confirmText ?? t('confirm')}
           </DyoButton>
           <DyoButton color={cancelColor} onClick={() => onClose(false)}>
-            {cancelText ?? t('cancel')}
+            {config.cancelText ?? cancelText ?? t('cancel')}
           </DyoButton>
         </>
       }
     >
-      {!props.description ? null : <p className="text-bright mt-8 overflow-y-auto">{props.description}</p>}
+      {!actualDescription ? null : <p className="text-bright mt-8 overflow-y-auto">{actualDescription}</p>}
     </DyoModal>
   )
 }

@@ -1,4 +1,5 @@
 import {
+  ROUTE_AUDIT,
   ROUTE_INDEX,
   ROUTE_LOGOUT,
   ROUTE_NODES,
@@ -6,8 +7,7 @@ import {
   ROUTE_PRODUCTS,
   ROUTE_PROFILE,
   ROUTE_REGISTRIES,
-  ROUTE_TEAMS_ACTIVE,
-  ROUTE_TEAMS_AUDIT,
+  ROUTE_TEAMS,
 } from '@app/routes'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
@@ -34,7 +34,7 @@ export const Sidebar = (props: SidebarProps) => {
       link: ROUTE_REGISTRIES,
     },
     {
-      icon: <Image src="/notification.svg" alt={t('notification')} width={18} height={18} />,
+      icon: <Image src="/notification.svg" alt={t('notifications')} width={18} height={18} />,
       text: 'notifications',
       link: ROUTE_NOTIFICATIONS,
     },
@@ -44,12 +44,12 @@ export const Sidebar = (props: SidebarProps) => {
     {
       icon: <Image src="/audit.svg" alt={t('audit')} width={18} height={18} />,
       text: 'audit',
-      link: ROUTE_TEAMS_AUDIT,
+      link: ROUTE_AUDIT,
     },
     {
-      icon: <Image src="/team.svg" alt={t('team')} width={18} height={18} />,
-      text: 'team',
-      link: ROUTE_TEAMS_ACTIVE,
+      icon: <Image src="/team.svg" alt={t('teams')} width={18} height={18} />,
+      text: 'teams',
+      link: ROUTE_TEAMS,
     },
     {
       icon: <Image src="/profile.svg" alt={t('profile')} width={18} height={18} />,

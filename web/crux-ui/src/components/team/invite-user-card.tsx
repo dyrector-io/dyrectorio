@@ -4,8 +4,8 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { defaultApiErrorHandler } from '@app/errors'
-import { InviteUser, Team, User } from '@app/models'
-import { API_TEAMS_ACTIVE_USERS } from '@app/routes'
+import { ActiveTeamDetails, InviteUser, User } from '@app/models'
+import { teamUsersApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { inviteUserSchema } from '@app/validation'
 import { useFormik } from 'formik'
@@ -14,7 +14,7 @@ import { MutableRefObject } from 'react'
 
 interface InviteUserCardProps {
   className?: string
-  team: Team
+  team: ActiveTeamDetails
   onUserInvited: (product: User) => void
   submitRef?: MutableRefObject<() => Promise<any>>
 }
@@ -34,7 +34,7 @@ const InviteUserCard = (props: InviteUserCardProps) => {
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 
-      const res = await sendForm('POST', API_TEAMS_ACTIVE_USERS, values as InviteUser)
+      const res = await sendForm('POST', teamUsersApiUrl(team.id), values as InviteUser)
 
       if (res.ok) {
         const json = await res.json()

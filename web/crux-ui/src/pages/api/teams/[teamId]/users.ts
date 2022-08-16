@@ -6,9 +6,10 @@ import { useValidationMiddleware } from '@server/validation-middleware'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
+  const teamId = req.query.teamId as string
   const dto = req.body as InviteUser
 
-  const user = await crux(req).teams.inviteUser(dto)
+  const user = await crux(req).teams.inviteUser(teamId, dto)
 
   res.status(200).json(user)
 }

@@ -38,7 +38,7 @@
     "google-auth-library": "^8.1.1",
     "google-protobuf": "^3.15.8",
     "next": "^12.1.4",
-    "next-translate": "^1.0.7",
+    "next-translate": "^1.5.0",
     "node-fetch": "^2.6.6",
     "prismjs": "^1.28.0",
     "react": "^17.0.2",

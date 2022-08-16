@@ -1,4 +1,4 @@
-import { PageHead } from '@app/components/layout'
+import { SingleFormLayout } from '@app/components/layout'
 import { DyoButton } from '@app/elements/dyo-button'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import useTranslation from 'next-translate/useTranslation'
@@ -12,8 +12,7 @@ const Page404 = () => {
   const goBack = () => router.back()
 
   return (
-    <>
-      <PageHead title={t('title')} />
+    <SingleFormLayout title={t('oops')}>
       <div className="flex flex-row min-h-screen bg-dark">
         <div className="flex flex-col items-center w-full my-auto">
           <div>
@@ -31,7 +30,7 @@ const Page404 = () => {
           </DyoButton>
         </div>
       </div>
-    </>
+    </SingleFormLayout>
   )
 }
 

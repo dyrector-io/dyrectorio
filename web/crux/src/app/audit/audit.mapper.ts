@@ -7,8 +7,8 @@ import { nameOfIdentity } from 'src/shared/model'
 
 @Injectable()
 export class AuditMapper {
-  toGrpc(log: AuditLog, identities: Identity[]): AuditLogResponse {
-    const identity = identities.find(it => it.id === log.userId)
+  toGrpc(log: AuditLog, identities: Map<string, Identity>): AuditLogResponse {
+    const identity = identities.get(log.userId)
 
     return {
       ...log,

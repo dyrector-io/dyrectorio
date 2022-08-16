@@ -1,4 +1,4 @@
-import { PageHead, SingleFormLayout } from '@app/components/layout'
+import { SingleFormLayout } from '@app/components/layout'
 import { ATTRIB_CSRF, AUTH_RESEND_DELAY } from '@app/const'
 import { DyoButton } from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
@@ -84,42 +84,39 @@ const RecoveryPage = (props: RecoveryPageProps) => {
   const submitDisabled = countdown > 0
 
   return (
-    <>
-      <PageHead title={t('title')} />
-      <SingleFormLayout>
-        <DyoCard className="text-bright p-8 m-auto">
-          <form className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
-            <DyoSingleFormHeading>{t('recovery')}</DyoSingleFormHeading>
+    <SingleFormLayout title={t('recovery')}>
+      <DyoCard className="text-bright p-8 m-auto">
+        <form className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
+          <DyoSingleFormHeading>{t('recovery')}</DyoSingleFormHeading>
 
-            <DyoInput
-              label={t('common:email')}
-              name="email"
-              type="email"
-              onChange={formik.handleChange}
-              value={formik.values.email}
-              message={findMessage(ui, 'email')}
-            />
+          <DyoInput
+            label={t('common:email')}
+            name="email"
+            type="email"
+            onChange={formik.handleChange}
+            value={formik.values.email}
+            message={findMessage(ui, 'email')}
+          />
 
-            {sent ? <p className="w-80 mx-auto mt-8">{t('linkSent')}</p> : null}
+          {sent ? <p className="w-80 mx-auto mt-8">{t('linkSent')}</p> : null}
 
-            <DyoMessage
-              message={findError(errors, 'captcha', it =>
-                t(`errors:${it.error}`, {
-                  name: it.value,
-                }),
-              )}
-              messageType="error"
-            />
+          <DyoMessage
+            message={findError(errors, 'captcha', it =>
+              t(`errors:${it.error}`, {
+                name: it.value,
+              }),
+            )}
+            messageType="error"
+          />
 
-            <DyoButton className="mt-8" disabled={submitDisabled} type="submit">
-              {sent ? `${t('common:resend')} ${countdown > 0 ? countdown : ''}`.trim() : t('common:send')}
-            </DyoButton>
+          <DyoButton className="mt-8" disabled={submitDisabled} type="submit">
+            {sent ? `${t('common:resend')} ${countdown > 0 ? countdown : ''}`.trim() : t('common:send')}
+          </DyoButton>
 
-            <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={props.recaptchaSiteKey} />
-          </form>
-        </DyoCard>
-      </SingleFormLayout>
-    </>
+          <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={props.recaptchaSiteKey} />
+        </form>
+      </DyoCard>
+    </SingleFormLayout>
   )
 }
 

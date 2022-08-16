@@ -1,4 +1,4 @@
-import { PageHead, SingleFormLayout } from '@app/components/layout'
+import { SingleFormLayout } from '@app/components/layout'
 import { ATTRIB_CSRF } from '@app/const'
 import { DyoButton } from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
@@ -75,71 +75,68 @@ const LoginPage = (props: LoginPageProps) => {
   })
 
   return (
-    <>
-      <PageHead title={t('title')} />
-      <SingleFormLayout>
-        <DyoSingleFormLogo />
+    <SingleFormLayout title={t('common:logIn')}>
+      <DyoSingleFormLogo />
 
-        <DyoCard className=" text-bright p-8 mx-auto">
-          <form className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
-            <DyoSingleFormHeading>{t('common:logIn')}</DyoSingleFormHeading>
+      <DyoCard className=" text-bright p-8 mx-auto">
+        <form className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
+          <DyoSingleFormHeading>{t('common:logIn')}</DyoSingleFormHeading>
 
-            {!refresh ? null : <p className="w-80 mx-auto mt-8">{t('refresh')}</p>}
+          {!refresh ? null : <p className="w-80 mx-auto mt-8">{t('refresh')}</p>}
 
-            <DyoInput
-              label={t('common:email')}
-              name="email"
-              type="email"
-              onChange={formik.handleChange}
-              value={formik.values.email}
-              message={findMessage(ui, 'identifier')}
-            />
+          <DyoInput
+            label={t('common:email')}
+            name="email"
+            type="email"
+            onChange={formik.handleChange}
+            value={formik.values.email}
+            message={findMessage(ui, 'identifier')}
+          />
 
-            <DyoInput
-              label={t('common:password')}
-              name="password"
-              type="password"
-              onChange={formik.handleChange}
-              value={formik.values.password}
-              message={findMessage(ui, 'password')}
-            />
+          <DyoInput
+            label={t('common:password')}
+            name="password"
+            type="password"
+            onChange={formik.handleChange}
+            value={formik.values.password}
+            message={findMessage(ui, 'password')}
+          />
 
-            {ui.messages?.map((it, index) => (
-              <DyoMessage key={`error-${index}`} message={it?.text} />
-            ))}
+          {ui.messages?.map((it, index) => (
+            <DyoMessage key={`error-${index}`} message={it?.text} />
+          ))}
 
-            <DyoMessage
-              message={findError(errors, 'captcha', it =>
-                t(`errors:${it.error}`, {
-                  name: it.value,
-                }),
-              )}
-              messageType="error"
-            />
+          <DyoMessage
+            message={findError(errors, 'captcha', it =>
+              t(`errors:${it.error}`, {
+                name: it.value,
+              }),
+            )}
+            messageType="error"
+          />
 
-            <DyoButton className="mt-8" type="submit">
-              {t('common:logIn')}
-            </DyoButton>
+          <DyoButton className="mt-8" type="submit">
+            {t('common:logIn')}
+          </DyoButton>
 
-            <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={props.recaptchaSiteKey} />
-          </form>
+          <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={props.recaptchaSiteKey} />
+        </form>
 
-          <div className="flex justify-center mt-10">
-            <Link href={ROUTE_RECOVERY}>
-              <a>{t('forgotPassword')}</a>
-            </Link>
-          </div>
-        </DyoCard>
-
-        <div className="flex justify-center  text-bright mt-8 mb-auto">
-          <p className="mr-2">{t('dontHaveAnAccount')}</p>
-
-          <Link href={ROUTE_REGISTER}>
-            <a className="font-bold underline">{t('common:signUp')}</a>
+        <div className="flex justify-center mt-10">
+          <Link href={ROUTE_RECOVERY}>
+            <a>{t('forgotPassword')}</a>
           </Link>
         </div>
-      </SingleFormLayout>
-    </>
+      </DyoCard>
+
+      <div className="flex justify-center  text-bright mt-8 mb-auto">
+        <p className="mr-2">{t('dontHaveAnAccount')}</p>
+
+        <Link href={ROUTE_REGISTER}>
+          <a className="font-bold underline">{t('common:signUp')}</a>
+        </Link>
+      </div>
+    </SingleFormLayout>
   )
 }
 

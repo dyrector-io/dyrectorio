@@ -1,4 +1,4 @@
-import { PageHead } from '@app/components/layout'
+import { SingleFormLayout } from '@app/components/layout'
 import { DyoButton } from '@app/elements/dyo-button'
 import { DyoContainer } from '@app/elements/dyo-container'
 import { ROUTE_INDEX } from '@app/routes'
@@ -22,8 +22,7 @@ const ErrorPage = (props: SelfServiceError) => {
   const onGoBack = () => router.back()
 
   return (
-    <>
-      <PageHead title={t('title')} />
+    <SingleFormLayout title={t('oops')}>
       <DyoContainer className="text-center my-20">
         <h2 className="text-4xl font-extrabold text-blue">{t('oops')}</h2>
 
@@ -33,7 +32,7 @@ const ErrorPage = (props: SelfServiceError) => {
 
         <div className="mt-16"></div>
       </DyoContainer>
-    </>
+    </SingleFormLayout>
   )
 }
 
