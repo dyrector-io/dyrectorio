@@ -44,9 +44,7 @@ const NotificationsPage = (props: NotificationsPageProps) => {
       <PageHeading pageLink={pageLink}>
         <ListPageMenu creating={creating} setCreating={setCreating} submitRef={submitRef} />
       </PageHeading>
-      {creating && (
-        <EditNotificationCard onSubmitted={onSubmitted} submitRef={submitRef} className="mb-8 px-8 py-6" />
-      )}
+      {creating && <EditNotificationCard onSubmitted={onSubmitted} submitRef={submitRef} className="mb-8 px-8 py-6" />}
 
       <DyoWrap itemClassName="lg:w-1/2 xl:w-1/3 p-2">
         {notifications.map((it, index) => {

@@ -47,11 +47,11 @@ export class RegistryAccessValidationGuard implements CanActivate {
   }
 
   private validateHub(req: HubRegistryDetails): Observable<boolean> {
-    if (!req.urlPrefix || req.urlPrefix.trim().length < 1) {
+    if (!req.imageNamePrefix || req.imageNamePrefix.trim().length < 1) {
       return of(false)
     }
 
-    return this.httpService.get(`https://${REGISTRY_HUB_URL}/v2/orgs/${req.urlPrefix}`).pipe(
+    return this.httpService.get(`https://${REGISTRY_HUB_URL}/v2/orgs/${req.imageNamePrefix}`).pipe(
       map(res => res.status === HttpStatus.OK),
       catchError((error: AxiosError) => {
         this.logger.warn(error)
@@ -59,15 +59,15 @@ export class RegistryAccessValidationGuard implements CanActivate {
         if (!error.response || error.response.status !== HttpStatus.NOT_FOUND) {
           throw new InvalidArgumentException({
             message: 'Failed to fetch hub prefix',
-            property: 'urlPrefix',
-            value: req.urlPrefix,
+            property: 'imageNamePrefix',
+            value: req.imageNamePrefix,
           })
         }
 
         throw new NotFoundException({
           message: 'Hub organization with prefix not found',
-          property: 'urlPrefix',
-          value: req.urlPrefix,
+          property: 'imageNamePrefix',
+          value: req.imageNamePrefix,
         })
       }),
     )
@@ -127,7 +127,7 @@ export class RegistryAccessValidationGuard implements CanActivate {
     const { apiUrl, registryUrl } = REGISTRY_GITLAB_URLS
 
     return this.httpService
-      .get(`https://${apiUrl}/api/v4/groups?top_level_only=true&search=${req.urlPrefix}`, {
+      .get(`https://${apiUrl}/api/v4/groups?top_level_only=true&search=${req.imageNamePrefix}`, {
         headers: {
           Authorization: `Bearer ${auth.password}`,
         },
@@ -140,7 +140,7 @@ export class RegistryAccessValidationGuard implements CanActivate {
           }
 
           return this.httpService
-            .get(`https://${apiUrl}/jwt/auth?service=container_registry&scope=repository:${req.urlPrefix}:pull`, {
+            .get(`https://${apiUrl}/jwt/auth?service=container_registry&scope=repository:${req.imageNamePrefix}:pull`, {
               withCredentials: true,
               auth,
             })
@@ -166,8 +166,8 @@ export class RegistryAccessValidationGuard implements CanActivate {
             if (res.status === HttpStatus.NOT_FOUND) {
               throw new NotFoundException({
                 message: 'Gitlab group with prefix not found',
-                property: 'urlPrefix',
-                value: req.urlPrefix,
+                property: 'imageNamePrefix',
+                value: req.imageNamePrefix,
               })
             } else if (res.status === HttpStatus.FORBIDDEN || res.status === HttpStatus.UNAUTHORIZED) {
               throw new UnauthenticatedException({
@@ -178,8 +178,8 @@ export class RegistryAccessValidationGuard implements CanActivate {
 
           throw new InvalidArgumentException({
             message: 'Failed to fetch gitlab prefix',
-            property: 'urlPrefix',
-            value: req.urlPrefix,
+            property: 'imageNamePrefix',
+            value: req.imageNamePrefix,
           })
         }),
       )
@@ -192,7 +192,7 @@ export class RegistryAccessValidationGuard implements CanActivate {
     }
 
     return this.httpService
-      .get(`https://api.github.com/orgs/${req.urlPrefix}/packages?package_type=container`, {
+      .get(`https://api.github.com/orgs/${req.imageNamePrefix}/packages?package_type=container`, {
         withCredentials: true,
         auth,
       })
@@ -206,8 +206,8 @@ export class RegistryAccessValidationGuard implements CanActivate {
             if (res.status === HttpStatus.NOT_FOUND) {
               throw new NotFoundException({
                 message: 'Github organization with prefix not found',
-                property: 'urlPrefix',
-                value: req.urlPrefix,
+                property: 'imageNamePrefix',
+                value: req.imageNamePrefix,
               })
             } else if (res.status === HttpStatus.FORBIDDEN || res.status === HttpStatus.UNAUTHORIZED) {
               throw new UnauthenticatedException({
@@ -218,8 +218,8 @@ export class RegistryAccessValidationGuard implements CanActivate {
 
           throw new InvalidArgumentException({
             message: 'Failed to fetch github prefix',
-            property: 'urlPrefix',
-            value: req.urlPrefix,
+            property: 'imageNamePrefix',
+            value: req.imageNamePrefix,
           })
         }),
       )

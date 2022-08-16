@@ -18,7 +18,7 @@ export type InviteMessage = BaseMessage & {
   team: string
 }
 
-export type Message = BaseMessage | VersionMessage| InviteMessage
+export type Message = BaseMessage | VersionMessage | InviteMessage
 
 export type NotificationTemplate = {
   identityId: string
@@ -36,7 +36,7 @@ export const getTemplate = (notificationType: NotificationTypeEnum, template: No
       return getTeamsTemplate(template)
     default:
       throw new InternalException({
-        message: 'Not supported message type'
+        message: 'Not supported message type',
       })
   }
 }

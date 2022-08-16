@@ -1,9 +1,9 @@
 import { CreateNotification } from '@app/models'
+import { notificationSchema } from '@app/validation'
 import crux from '@server/crux/crux'
 import { withMiddlewares } from '@server/middlewares'
+import { useValidationMiddleware } from '@server/validation-middleware'
 import { NextApiRequest, NextApiResponse } from 'next'
-import { notificationSchema } from '@app/validation';
-import { useValidationMiddleware } from '@server/validation-middleware';
 
 const onGet = async (req: NextApiRequest, res: NextApiResponse) => {
   const notifications = await crux(req).notificiations.getAll()
@@ -12,17 +12,17 @@ const onGet = async (req: NextApiRequest, res: NextApiResponse) => {
 }
 
 const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
-    const dto = req.body as CreateNotification
+  const dto = req.body as CreateNotification
 
-    const notification = await crux(req).notificiations.create(dto)
+  const notification = await crux(req).notificiations.create(dto)
 
-    res.status(200).json(notification)
+  res.status(200).json(notification)
 }
 
 export default withMiddlewares({
-    onGet: onGet,
-    onPost: {
-        middlewares: [useValidationMiddleware(notificationSchema)],
-        endpoint: onPost
-    }
+  onGet: onGet,
+  onPost: {
+    middlewares: [useValidationMiddleware(notificationSchema)],
+    endpoint: onPost,
+  },
 })

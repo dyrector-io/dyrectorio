@@ -2,7 +2,6 @@ import { DyoButton } from '@app/elements/dyo-button'
 import { DyoInput } from '@app/elements/dyo-input'
 import { pageSizes, PaginationConfig } from '@app/hooks/use-pagination'
 import useTranslation from 'next-translate/useTranslation'
-import React from 'react'
 
 export interface PaginatorProps<Item> {
   pagination: PaginationConfig<Item>

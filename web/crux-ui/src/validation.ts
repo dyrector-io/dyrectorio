@@ -63,7 +63,7 @@ export const registrySchema = yup.object().shape({
   description: descriptionRule,
   type: yup.mixed<RegistryType>().oneOf([...REGISTRY_TYPE_VALUES]),
   icon: iconRule,
-  urlPrefix: yup.string().when('type', {
+  imageNamePrefix: yup.string().when('type', {
     is: type => ['hub', 'gitlab', 'github'].includes(type),
     then: yup.string().required(),
   }),
@@ -200,6 +200,9 @@ export const createTeamSchema = yup.object().shape({
 
 export const notificationSchema = yup.object().shape({
   name: yup.string().required(),
-  type: yup.mixed<NotificationType>().oneOf([...NOTIFICATION_TYPE_VALUES]).required(),
-  url: yup.string().required()
+  type: yup
+    .mixed<NotificationType>()
+    .oneOf([...NOTIFICATION_TYPE_VALUES])
+    .required(),
+  url: yup.string().required(),
 })

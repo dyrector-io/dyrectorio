@@ -82,7 +82,7 @@ model Registry {
   user        String?
   token       String?
   type        RegistryTypeEnum
-  urlPrefix   String?
+  imageNamePrefix   String?
   apiUrl      String?
 
   images Image[]
