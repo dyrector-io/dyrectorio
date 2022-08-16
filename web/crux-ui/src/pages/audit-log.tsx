@@ -3,11 +3,13 @@ import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
 import JsonEditor from '@app/components/shared/json-editor-dynamic-module'
 import PageHeading from '@app/components/shared/page-heading'
+import Paginator from '@app/components/shared/paginator'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoDatePicker } from '@app/elements/dyo-date-picker'
 import { DyoList } from '@app/elements/dyo-list'
 import DyoModal from '@app/elements/dyo-modal'
 import { DateRangeFilter, dateRangeFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
+import { usePagination } from '@app/hooks/use-pagination'
 import { AuditLog, beautifyAuditLogEvent } from '@app/models'
 import { ROUTE_AUDIT } from '@app/routes'
 import { utcDateToLocale, withContextAuthorization } from '@app/utils'
@@ -15,7 +17,7 @@ import { cruxFromContext } from '@server/crux/crux'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 interface AuditLogPageProps {
   auditLog: AuditLog[]
@@ -58,18 +60,29 @@ const AuditLogPage = (props: AuditLogPageProps) => {
 
   const onShowInfoClick = (logEntry: AuditLog) => setShowInfo(logEntry)
 
+  useEffect(() => {
+    pagination.setItems(filters.filtered)
+  }, [filters])
+
   const selfLink: BreadcrumbLink = {
     name: t('common:audit'),
     url: ROUTE_AUDIT,
   }
 
-  const listHeaders = ['common:name', 'common:date', 'event', 'info'].map(it => t(it))
+  const pagination = usePagination<AuditLog>({
+    initialData: auditLog,
+    initialPagination: { pageSize: 10, currentPage: 0 },
+  })
+
+  const listHeaders = ['', ...['common:name', 'common:date', 'event', 'info'].map(it => t(it))]
   const defaultHeaderClass = 'uppercase text-bright text-sm font-bold bg-medium-eased pl-2 py-3 h-11'
   const headerClassNames = [
-    clsx(defaultHeaderClass, 'rounded-tl-lg w-20 min-w-full pl-4'),
-    ...Array.from({ length: listHeaders.length - 2 }).map(() => defaultHeaderClass),
-    clsx(defaultHeaderClass, 'rounded-tr-lg pr-16'),
+    defaultHeaderClass,
+    clsx(defaultHeaderClass, 'w-20 min-w-full pl-4'),
+    ...Array.from({ length: listHeaders.length - 3 }).map(() => defaultHeaderClass),
+    clsx(defaultHeaderClass, 'pr-16'),
   ]
+  const itemClassNames = ['py-2 w-14'] // Only for the first column
 
   return (
     <Layout title={t('common:auditLog')}>
@@ -88,20 +101,25 @@ const AuditLogPage = (props: AuditLogPageProps) => {
         />
       </Filters>
 
-      <DyoCard className="relative mt-4">
+      <DyoCard className="relative mt-4 overflow-auto">
         <DyoList
           className=""
           noSeparator
           headerClassName={headerClassNames}
           headers={listHeaders}
-          data={filters.filtered}
+          data={pagination.displayed}
+          footer={<Paginator pagination={pagination} />}
+          itemClassName={itemClassNames}
           itemBuilder={it => {
             /* eslint-disable react/jsx-key */
             return [
+              <div className="w-10 ml-auto">
+                <img src="/default_avatar.svg" />
+              </div>,
               <div className="font-semibold min-w-max pl-2">{it.identityName}</div>,
               <div className="min-w-max">{utcDateToLocale(it.date)}</div>,
               <div>{beautifyAuditLogEvent(it.event)}</div>,
-              <div className="cursor-pointer" onClick={() => onShowInfoClick(it)}>
+              <div className="cursor-pointer max-w-4xl truncate" onClick={() => onShowInfoClick(it)}>
                 {it.info}
               </div>,
             ]

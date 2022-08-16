@@ -1,5 +1,5 @@
 import {
-  ContainerStatusEnum,
+  ContainerStateEnum,
   Deployment as DbDeployment,
   DeploymentEventTypeEnum,
   DeploymentStatusEnum,
@@ -8,8 +8,8 @@ import { Logger, PreconditionFailedException } from '@nestjs/common'
 import { Observable, Subject } from 'rxjs'
 import { AgentCommand, VersionDeployRequest } from 'src/grpc/protobuf/proto/agent'
 import {
-  ContainerStatus,
-  containerStatusToJSON,
+  ContainerState,
+  containerStateToJSON,
   DeploymentProgressMessage,
   DeploymentStatus,
   DeploymentStatusMessage,
@@ -22,7 +22,7 @@ export class Deployment {
 
   readonly id: string
 
-  constructor(private readonly request: VersionDeployRequest) {
+  constructor(private readonly request: VersionDeployRequest, public notification: DeploymentNotification) {
     this.id = request.id
   }
 
@@ -60,7 +60,7 @@ export class Deployment {
         type: DeploymentEventTypeEnum.containerStatus,
         value: {
           instanceId: progress.instance.instanceId,
-          status: containerStatusToDb(progress.instance.status),
+          state: containerStateToDb(progress.instance.state),
         },
       })
     }
@@ -93,7 +93,7 @@ export class Deployment {
 
 export type DeploymentProgressContainerEvent = {
   instanceId: string
-  status: ContainerStatusEnum
+  state: ContainerStateEnum
 }
 
 export type DeploymentProgressEvent = {
@@ -135,8 +135,8 @@ export const deploymentStatusToDb = (status: DeploymentStatus): DeploymentStatus
   return deploymentStatusToJSON(status).toLowerCase() as DeploymentStatusEnum
 }
 
-export const containerStatusToDb = (status: ContainerStatus): ContainerStatusEnum => {
-  return containerStatusToJSON(status).toLowerCase() as ContainerStatusEnum
+export const containerStateToDb = (state: ContainerState): ContainerStateEnum => {
+  return containerStateToJSON(state).toLowerCase() as ContainerStateEnum
 }
 
 export const containerNameFromImageName = (imageName: string): string => {
@@ -166,3 +166,8 @@ export const MUTABLE_DEPLOYMENT_STATUSES = [
   DeploymentStatusEnum.preparing,
   DeploymentStatusEnum.failed,
 ] as DeploymentStatusEnum[]
+
+export type DeploymentNotification = {
+  deploymentName: string
+  accessedBy: string
+}

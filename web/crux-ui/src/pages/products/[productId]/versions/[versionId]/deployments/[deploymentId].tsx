@@ -13,6 +13,7 @@ import {
   DeploymentEnvUpdatedMessage,
   deploymentIsMutable,
   DeploymentRoot,
+  mergeConfigs,
   WS_TYPE_DEPLOYMENT_ENV_UPDATED,
   WS_TYPE_DYO_ERROR,
   WS_TYPE_INSTANCE_UPDATED,
@@ -29,13 +30,14 @@ import {
   versionUrl,
 } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
-import { deploymentSchema, getValidationError } from '@app/validation'
+import { containerConfigSchema, deploymentSchema, getValidationError } from '@app/validation'
 import { Crux, cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import { useRef, useState } from 'react'
 import toast from 'react-hot-toast'
+import { ValidationError } from 'yup'
 
 interface DeploymentDetailsPageProps {
   deployment: DeploymentRoot
@@ -120,7 +122,17 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
   const onOpenLog = () => router.push(deploymentDeployUrl(product.id, version.id, deployment.id))
 
   const onDeploy = () => {
-    const error = getValidationError(deploymentSchema, deployment)
+    let error: ValidationError
+
+    for (const instance of deployment.instances) {
+      const mergedConfig = mergeConfigs(instance.image.config, instance.overriddenConfig)
+      error = getValidationError(containerConfigSchema, mergedConfig)
+
+      if (error) {
+        break
+      }
+    }
+
     if (error) {
       console.error(error)
       toast.error(t('errors:invalid'))
@@ -150,7 +162,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
             deleteModalTitle={t('common:confirmDelete', {
               name: deployment.name,
             })}
-            deleteModalDescription={t('deleteDescription', {
+            deleteModalDescription={t('common:deleteDescription', {
               name: deployment.name,
             })}
           />

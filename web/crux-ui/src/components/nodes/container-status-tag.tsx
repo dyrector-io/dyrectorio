@@ -1,16 +1,16 @@
 import DyoTag from '@app/elements/dyo-tag'
-import { ContainerStatus } from '@app/models'
+import { ContainerState } from '@app/models'
 
 interface ContainerStatusTagProps {
   className?: string
-  status: ContainerStatus
+  state: ContainerState
 }
 
 const ContainerStatusTag = (props: ContainerStatusTagProps) => {
-  const { status } = props
+  const { state } = props
 
   const statusToBgColor = () => {
-    switch (status) {
+    switch (state) {
       case 'exited':
       case 'running':
         return 'bg-dyo-green'
@@ -25,7 +25,7 @@ const ContainerStatusTag = (props: ContainerStatusTagProps) => {
   }
 
   const statusToTextColor = () => {
-    switch (status) {
+    switch (state) {
       case 'exited':
       case 'running':
         return 'text-dyo-green'
@@ -41,7 +41,7 @@ const ContainerStatusTag = (props: ContainerStatusTagProps) => {
 
   return (
     <DyoTag color={statusToBgColor()} textColor={statusToTextColor()} className={props.className}>
-      {status.toUpperCase()}
+      {state.toUpperCase()}
     </DyoTag>
   )
 }

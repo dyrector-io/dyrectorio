@@ -3,6 +3,7 @@ import {
   ROUTE_INDEX,
   ROUTE_LOGOUT,
   ROUTE_NODES,
+  ROUTE_NOTIFICATIONS,
   ROUTE_PRODUCTS,
   ROUTE_PROFILE,
   ROUTE_REGISTRIES,
@@ -31,6 +32,11 @@ export const Sidebar = (props: SidebarProps) => {
       icon: <Image src="/copy.svg" alt={t('registries')} width={18} height={18} />,
       text: 'registries',
       link: ROUTE_REGISTRIES,
+    },
+    {
+      icon: <Image src="/notification.svg" alt={t('notifications')} width={18} height={18} />,
+      text: 'notifications',
+      link: ROUTE_NOTIFICATIONS,
     },
   ]
 

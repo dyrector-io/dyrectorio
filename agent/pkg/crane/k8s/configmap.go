@@ -33,7 +33,7 @@ func (cm *configmap) loadSharedConfig(namespace string) error {
 	}
 
 	commonConfigMapName := util.JoinV("-", namespace, "shared")
-	commonConfigMap, err := client.Get(context.TODO(), commonConfigMapName, metaV1.GetOptions{})
+	commonConfigMap, err := client.Get(cm.ctx, commonConfigMapName, metaV1.GetOptions{})
 	if err != nil {
 		log.Println("shared configmaps could not be loaded ns: ", namespace)
 	}
@@ -51,7 +51,7 @@ func (cm *configmap) deployConfigMapData(namespace, name string, envList map[str
 		return err
 	}
 
-	result, err := client.Apply(context.TODO(),
+	result, err := client.Apply(cm.ctx,
 		corev1.ConfigMap(name, namespace).
 			WithData(envList),
 		metaV1.ApplyOptions{FieldManager: cm.appConfig.FieldManagerName, Force: cm.appConfig.ForceOnConflicts},

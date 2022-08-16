@@ -5,6 +5,7 @@ import (
 	"log"
 
 	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
+	builder "github.com/dyrector-io/dyrectorio/agent/pkg/builder/container"
 )
 
 type Port struct {
@@ -28,12 +29,12 @@ func ParseLabelsIntoContainerConfig(labels map[string]string, config *v1.Contain
 				log.Println(err.Error())
 			}
 
-			ports := []v1.PortBinding{}
+			ports := []builder.PortBinding{}
 			if config.Ports != nil && len(config.Ports) > 0 {
 				ports = config.Ports
 			}
 			for i := range network.Ports {
-				ports = append(ports, v1.PortBinding{ExposedPort: uint16(network.Ports[i].Listening), PortBinding: 0})
+				ports = append(ports, builder.PortBinding{ExposedPort: uint16(network.Ports[i].Listening), PortBinding: 0})
 			}
 
 			config.Ports = ports

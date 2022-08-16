@@ -13,7 +13,6 @@ export const collectParentVersionIds = async (
   let target = versionId
   while (true) {
     const parent = await prisma.versionsOnParentVersion.findFirst({
-      rejectOnNotFound: false,
       select: {
         parentVersionId: true,
       },

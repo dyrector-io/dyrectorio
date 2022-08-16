@@ -5,10 +5,11 @@ export const deployments = [
   {
     id: constants.DEPLYOMENT_ID,
     name: '1.0.0 Deplyoment to AWS EC2',
-    description: 'Sed eu justo at dolor efficitur fermentum at sed quam. Nullam tellus magna, sollicitudin eu elementum sit amet, gravida sed tortor.',
+    description:
+      'Sed eu justo at dolor efficitur fermentum at sed quam. Nullam tellus magna, sollicitudin eu elementum sit amet, gravida sed tortor.',
     nodeId: constants.NODE_ID,
     versionId: constants.VERSION_ID,
-    environment: [{id: "FEF63E0B-D634-4AC8-BA8C-ECD673A92E25", key: "key", value: "value"}] as Prisma.JsonArray,
+    environment: [{ id: 'FEF63E0B-D634-4AC8-BA8C-ECD673A92E25', key: 'key', value: 'value' }] as Prisma.JsonArray,
     prefix: 'test-namespace',
     status: 'preparing',
     createdBy: 'a27c0bb3-4c67-4a60-9f0e-5ef2bc6c666b',
@@ -20,10 +21,10 @@ export const deployments = [
     description: 'Test',
     nodeId: constants.NODE_ID,
     versionId: '5260B9D6-0BE0-491B-8808-836DC285B12C',
-    environment: [{id: "FEF63E0B-D634-4AC8-BA8C-ECD673A92E25", key: "key", value: "value"}] as Prisma.JsonArray,
+    environment: [{ id: 'FEF63E0B-D634-4AC8-BA8C-ECD673A92E25', key: 'key', value: 'value' }] as Prisma.JsonArray,
     prefix: 'test-namespace',
     status: 'preparing',
     createdBy: 'a27c0bb3-4c67-4a60-9f0e-5ef2bc6c666b',
     createdAt: new Date(),
-  }
+  },
 ] as Deployment[]

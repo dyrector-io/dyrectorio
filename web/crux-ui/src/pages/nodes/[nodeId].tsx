@@ -71,7 +71,7 @@ const NodeDetails = (props: NodeDetailsProps) => {
           setEditing={setEditing}
           submitRef={submitRef}
           deleteModalTitle={t('common:confirmDelete', { name: node.name })}
-          deleteModalDescription={t('deleteDescription', {
+          deleteModalDescription={t('common:deleteDescription', {
             name: node.name,
           })}
         />

@@ -27,12 +27,14 @@
   "icon": "Icon",
   "updatedAt": "Update at",
   "createdAt": "Created at",
+  "createdByName" : "Created by {{name}}",
   "date": "Date",
   "type": "Type",
   "status": "Status",
   "loading": "Loading...",
   "noNameFound": "No {{name}} found",
   "yourTeams": "Your teams",
+  "address": "Address",
 
   "editName": "Edit {{name}}",
   "add": "Add",
@@ -58,6 +60,7 @@
   "versions": "Versions",
   "deployments": "Deployments",
   "users": "Users",
+  "notifications": "Notifications",
   "images": "Images",
   "teams": "Teams",
   "audit": "Audit Log",
@@ -106,12 +109,13 @@
     "successful": "Successful",
     "failed": "Failed",
     "obsolate": "Obsolate",
-    "unknown": "Unknown"
+    "unknown": "Unknown",
+    "preparing": "Preparing"
   },
 
   "containerStatuses": {
     "created": "Created",
-    "restating": "Restatring",
+    "restarting": "Restarting",
     "running": "Running",
     "removing": "Removing",
     "paused": "Paused",
@@ -143,5 +147,10 @@
     "December"
   ],
 
-  "upload": "Upload"
+  "upload": "Upload",
+
+  "deleteDescription": "If you proceed, you will lose all your data related to {{name}}. This action is not revocable.",
+  
+  "itemsPerPage": "Items per page",
+  "showingItems": "Showing {{pageFrom}} to {{pageTo}} of {{total}} entries"
 }

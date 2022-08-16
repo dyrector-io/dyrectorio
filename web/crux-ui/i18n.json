@@ -27,6 +27,8 @@
     "/teams/[teamId]": ["teams"],
     "/teams/create": ["teams"],
     "/teams/[teamId]/invite": ["teams"],
-    "/audit-log": ["audit"]
+    "/audit-log": ["audit"],
+    "/notifications": ["notifications"],
+    "/notifications/[notificationId]": ["notifications"]
   }
 }

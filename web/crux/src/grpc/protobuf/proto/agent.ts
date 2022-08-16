@@ -4,7 +4,7 @@ import { util, configure } from 'protobufjs/minimal'
 import * as Long from 'long'
 import { Observable } from 'rxjs'
 import { Metadata } from '@grpc/grpc-js'
-import { DeploymentStatusMessage, ContainerStatusListMessage } from './crux'
+import { DeploymentStatusMessage, ContainerStateListMessage } from './crux'
 
 export const protobufPackage = 'agent'
 
@@ -23,7 +23,9 @@ export interface AgentInfo {
 
 export interface AgentCommand {
   deploy: VersionDeployRequest | undefined
-  containerStatus: ContainerStatusRequest | undefined
+  containerState: ContainerStateRequest | undefined
+  containerDelete: ContainerDeleteRequest | undefined
+  deployLegacy: DeployRequestLegacy | undefined
 }
 
 /**
@@ -158,8 +160,20 @@ export interface DeployRequest_RegistryAuth {
   password: string
 }
 
-export interface ContainerStatusRequest {
+export interface ContainerStateRequest {
   prefix?: string | undefined
+  oneShot?: boolean | undefined
+}
+
+export interface ContainerDeleteRequest {
+  prefix: string
+  name: string
+}
+
+export interface DeployRequestLegacy {
+  /** for early dogger logging */
+  requestId: string
+  json: string
 }
 
 export const AGENT_PACKAGE_NAME = 'agent'
@@ -203,9 +217,17 @@ export const AgentCommand = {
     const message = { ...baseAgentCommand } as AgentCommand
     message.deploy =
       object.deploy !== undefined && object.deploy !== null ? VersionDeployRequest.fromJSON(object.deploy) : undefined
-    message.containerStatus =
-      object.containerStatus !== undefined && object.containerStatus !== null
-        ? ContainerStatusRequest.fromJSON(object.containerStatus)
+    message.containerState =
+      object.containerState !== undefined && object.containerState !== null
+        ? ContainerStateRequest.fromJSON(object.containerState)
+        : undefined
+    message.containerDelete =
+      object.containerDelete !== undefined && object.containerDelete !== null
+        ? ContainerDeleteRequest.fromJSON(object.containerDelete)
+        : undefined
+    message.deployLegacy =
+      object.deployLegacy !== undefined && object.deployLegacy !== null
+        ? DeployRequestLegacy.fromJSON(object.deployLegacy)
         : undefined
     return message
   },
@@ -214,10 +236,14 @@ export const AgentCommand = {
     const obj: any = {}
     message.deploy !== undefined &&
       (obj.deploy = message.deploy ? VersionDeployRequest.toJSON(message.deploy) : undefined)
-    message.containerStatus !== undefined &&
-      (obj.containerStatus = message.containerStatus
-        ? ContainerStatusRequest.toJSON(message.containerStatus)
+    message.containerState !== undefined &&
+      (obj.containerState = message.containerState ? ContainerStateRequest.toJSON(message.containerState) : undefined)
+    message.containerDelete !== undefined &&
+      (obj.containerDelete = message.containerDelete
+        ? ContainerDeleteRequest.toJSON(message.containerDelete)
         : undefined)
+    message.deployLegacy !== undefined &&
+      (obj.deployLegacy = message.deployLegacy ? DeployRequestLegacy.toJSON(message.deployLegacy) : undefined)
     return obj
   },
 }
@@ -548,18 +574,56 @@ export const DeployRequest_RegistryAuth = {
   },
 }
 
-const baseContainerStatusRequest: object = {}
+const baseContainerStateRequest: object = {}
 
-export const ContainerStatusRequest = {
-  fromJSON(object: any): ContainerStatusRequest {
-    const message = { ...baseContainerStatusRequest } as ContainerStatusRequest
+export const ContainerStateRequest = {
+  fromJSON(object: any): ContainerStateRequest {
+    const message = { ...baseContainerStateRequest } as ContainerStateRequest
     message.prefix = object.prefix !== undefined && object.prefix !== null ? String(object.prefix) : undefined
+    message.oneShot = object.oneShot !== undefined && object.oneShot !== null ? Boolean(object.oneShot) : undefined
     return message
   },
 
-  toJSON(message: ContainerStatusRequest): unknown {
+  toJSON(message: ContainerStateRequest): unknown {
     const obj: any = {}
     message.prefix !== undefined && (obj.prefix = message.prefix)
+    message.oneShot !== undefined && (obj.oneShot = message.oneShot)
+    return obj
+  },
+}
+
+const baseContainerDeleteRequest: object = { prefix: '', name: '' }
+
+export const ContainerDeleteRequest = {
+  fromJSON(object: any): ContainerDeleteRequest {
+    const message = { ...baseContainerDeleteRequest } as ContainerDeleteRequest
+    message.prefix = object.prefix !== undefined && object.prefix !== null ? String(object.prefix) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    return message
+  },
+
+  toJSON(message: ContainerDeleteRequest): unknown {
+    const obj: any = {}
+    message.prefix !== undefined && (obj.prefix = message.prefix)
+    message.name !== undefined && (obj.name = message.name)
+    return obj
+  },
+}
+
+const baseDeployRequestLegacy: object = { requestId: '', json: '' }
+
+export const DeployRequestLegacy = {
+  fromJSON(object: any): DeployRequestLegacy {
+    const message = { ...baseDeployRequestLegacy } as DeployRequestLegacy
+    message.requestId = object.requestId !== undefined && object.requestId !== null ? String(object.requestId) : ''
+    message.json = object.json !== undefined && object.json !== null ? String(object.json) : ''
+    return message
+  },
+
+  toJSON(message: DeployRequestLegacy): unknown {
+    const obj: any = {}
+    message.requestId !== undefined && (obj.requestId = message.requestId)
+    message.json !== undefined && (obj.json = message.json)
     return obj
   },
 }
@@ -572,14 +636,14 @@ export interface AgentClient {
    * deploy requests and prefix status requests.
    * In both cases, separate, shorter-living channels are opened.
    * For deployment status reports, closed when ended.
-   * For prefix status reports, should be closed by the server.
+   * For prefix state reports, should be closed by the server.
    */
 
   connect(request: AgentInfo, metadata: Metadata, ...rest: any): Observable<AgentCommand>
 
   deploymentStatus(request: Observable<DeploymentStatusMessage>, metadata: Metadata, ...rest: any): Observable<Empty>
 
-  containerStatus(request: Observable<ContainerStatusListMessage>, metadata: Metadata, ...rest: any): Observable<Empty>
+  containerState(request: Observable<ContainerStateListMessage>, metadata: Metadata, ...rest: any): Observable<Empty>
 }
 
 /** Service handling deployment of containers and fetching statuses */
@@ -590,7 +654,7 @@ export interface AgentController {
    * deploy requests and prefix status requests.
    * In both cases, separate, shorter-living channels are opened.
    * For deployment status reports, closed when ended.
-   * For prefix status reports, should be closed by the server.
+   * For prefix state reports, should be closed by the server.
    */
 
   connect(request: AgentInfo, metadata: Metadata, ...rest: any): Observable<AgentCommand>
@@ -601,8 +665,8 @@ export interface AgentController {
     ...rest: any
   ): Promise<Empty> | Observable<Empty> | Empty
 
-  containerStatus(
-    request: Observable<ContainerStatusListMessage>,
+  containerState(
+    request: Observable<ContainerStateListMessage>,
     metadata: Metadata,
     ...rest: any
   ): Promise<Empty> | Observable<Empty> | Empty
@@ -615,7 +679,7 @@ export function AgentControllerMethods() {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
       GrpcMethod('Agent', method)(constructor.prototype[method], method, descriptor)
     }
-    const grpcStreamMethods: string[] = ['deploymentStatus', 'containerStatus']
+    const grpcStreamMethods: string[] = ['deploymentStatus', 'containerState']
     for (const method of grpcStreamMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
       GrpcStreamMethod('Agent', method)(constructor.prototype[method], method, descriptor)

@@ -1,13 +1,13 @@
 import { finalize, Observable, Subject } from 'rxjs'
 import { PreconditionFailedException } from 'src/exception/errors'
 import { AgentCommand } from 'src/grpc/protobuf/proto/agent'
-import { ContainerStatusListMessage } from 'src/grpc/protobuf/proto/crux'
+import { ContainerStateListMessage } from 'src/grpc/protobuf/proto/crux'
 import { GrpcNodeConnection } from 'src/shared/grpc-node-connection'
 
 export type ContainerStatusStreamCompleter = Subject<unknown>
 
 export class ContainerStatusWatcher {
-  private stream = new Subject<ContainerStatusListMessage>()
+  private stream = new Subject<ContainerStateListMessage>()
   private started = false
   private completer: ContainerStatusStreamCompleter = null
 
@@ -19,14 +19,14 @@ export class ContainerStatusWatcher {
     }
 
     commandChannel.next({
-      containerStatus: {
+      containerState: {
         prefix: this.prefix,
       },
     } as AgentCommand)
     this.started = true
   }
 
-  update(status: ContainerStatusListMessage) {
+  update(status: ContainerStateListMessage) {
     this.stream.next(status)
   }
 
@@ -41,7 +41,7 @@ export class ContainerStatusWatcher {
     this.completer = null
   }
 
-  watch(): Observable<ContainerStatusListMessage> {
+  watch(): Observable<ContainerStateListMessage> {
     return this.stream.pipe(finalize(() => this.onWatcherDisconnected()))
   }
 

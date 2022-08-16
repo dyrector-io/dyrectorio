@@ -1,7 +1,6 @@
 import { UsersOnTeams } from '@prisma/client'
 import { constants } from '../consts'
 
-
 export const usersOnTeam = [
   {
       userId: constants.USER_ID,

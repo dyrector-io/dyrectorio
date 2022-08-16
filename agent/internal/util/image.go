@@ -3,6 +3,7 @@ package util
 import (
 	"strings"
 
+	builder "github.com/dyrector-io/dyrectorio/agent/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 )
 
@@ -10,13 +11,6 @@ type ImageURI struct {
 	Host string
 	Name string
 	Tag  string
-}
-
-type RegistryAuth struct {
-	Name     string `json:"name" binding:"required"`
-	URL      string `json:"url" binding:"required"`
-	User     string `json:"user" binding:"required"`
-	Password string `json:"password" binding:"required"`
 }
 
 type EmptyImageError struct{}
@@ -95,7 +89,7 @@ func setDefaults(image *ImageURI) {
 	}
 }
 
-func GetRegistryURL(registry *string, registryAuth *RegistryAuth) string {
+func GetRegistryURL(registry *string, registryAuth *builder.RegistryAuth) string {
 	if registryAuth != nil {
 		return registryAuth.URL
 	} else if registry != nil {

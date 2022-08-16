@@ -11,7 +11,6 @@ import (
 
 	"github.com/dyrector-io/dyrectorio/agent/internal/util"
 	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
-	model "github.com/dyrector-io/dyrectorio/agent/pkg/dagent/model"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/utils"
 )
 
@@ -44,7 +43,7 @@ func GetContainers(c *gin.Context) {
 // @Produce json
 // @Param containerName path string true "containerName"
 // @Param containerPreName path string true "containerPreName"
-// @Success 200 {object} model.ContainerStatusResponse
+// @Success 200 {object} v1.ContainerStatusResponse
 // @Router /containers/{containerPreName}/{containerName}/status [get]
 func GetContainerStatus(c *gin.Context) {
 	query := v1.DeploymentQuery{}
@@ -74,16 +73,16 @@ func GetContainerStatus(c *gin.Context) {
 		// for others it is index.docker.io/user/imagename:tag
 		// !! with k8s its better to always use FQDN
 
-		resp := model.ContainerStatusResponse{Repository: imageName[0], Tag: imageTag, State: containers[0].State, Status: containers[0].Status}
+		resp := v1.ContainerStatusResponse{Repository: imageName[0], Tag: imageTag, State: containers[0].State, Status: containers[0].Status}
 
 		log.Println(resp)
 
 		c.JSON(http.StatusOK, resp)
 	} else {
-		c.JSON(http.StatusNotFound, model.ErrorResponse{
-			Errors: []model.Error{
+		c.JSON(http.StatusNotFound, v1.ErrorResponse{
+			Errors: []v1.Error{
 				{
-					Error:       model.NotFound,
+					Error:       v1.NotFound,
 					Value:       containerName,
 					Description: "The {" + containerName + "} name not belongs to any container.",
 				},
@@ -103,8 +102,8 @@ func GetContainerStatus(c *gin.Context) {
 // @Param skip query int false "paginationSkip" default(0)
 // @Param take query int false "paginationTake" default(100)
 // @Success 200 {array} []string
-// @Failure 400 {object} model.ErrorResponse
-// @Failure 404 {object} model.ErrorResponse
+// @Failure 400 {object} v1.ErrorResponse
+// @Failure 404 {object} v1.ErrorResponse
 // @Router /containers/{containerPreName}/{containerName}/logs [get]
 func GetContainerLogs(c *gin.Context) {
 	query := &v1.DeploymentQuery{}
@@ -121,10 +120,10 @@ func GetContainerLogs(c *gin.Context) {
 	cfg := utils.GetConfigFromGinContext(c)
 
 	if len(containers) < 1 {
-		c.JSON(http.StatusNotFound, model.ErrorResponse{
-			Errors: []model.Error{
+		c.JSON(http.StatusNotFound, v1.ErrorResponse{
+			Errors: []v1.Error{
 				{
-					Error:       model.NotFound,
+					Error:       v1.NotFound,
 					Value:       "name",
 					Description: "The container with the given name doesn't exist",
 				},
@@ -157,8 +156,8 @@ func GetContainerLogs(c *gin.Context) {
 // @Param containerName path string true "containerName"
 // @Param containerPreName path string true "containerPreName"
 // @Success 200 {object} types.ContainerJSON
-// @Failure 400 {object} model.ErrorResponse
-// @Failure 404 {object} model.ErrorResponse
+// @Failure 400 {object} v1.ErrorResponse
+// @Failure 404 {object} v1.ErrorResponse
 // @Router /containers/{containerPreName}/{containerName}/inspect [get]
 func InspectContainer(c *gin.Context) {
 	query := &v1.DeploymentQuery{}
@@ -173,10 +172,10 @@ func InspectContainer(c *gin.Context) {
 	containers := utils.GetContainer(containerName)
 
 	if len(containers) < 1 {
-		c.JSON(http.StatusNotFound, model.ErrorResponse{
-			Errors: []model.Error{
+		c.JSON(http.StatusNotFound, v1.ErrorResponse{
+			Errors: []v1.Error{
 				{
-					Error:       model.NotFound,
+					Error:       v1.NotFound,
 					Value:       "name",
 					Description: "The container with the given name doesn't exist",
 				},
@@ -215,10 +214,10 @@ func DeleteContainer(c *gin.Context) {
 		if err := utils.DeleteContainer(containerName); err != nil {
 			log.Println(err.Error())
 
-			c.JSON(http.StatusConflict, model.ErrorResponse{
-				Errors: []model.Error{
+			c.JSON(http.StatusConflict, v1.ErrorResponse{
+				Errors: []v1.Error{
 					{
-						Error:       model.NotFound,
+						Error:       v1.NotFound,
 						Value:       "containerName",
 						Description: "Container error.",
 					},
@@ -229,20 +228,20 @@ func DeleteContainer(c *gin.Context) {
 
 		c.JSON(http.StatusOK, gin.H{"deleted": true})
 	} else if len(containers) > 1 {
-		c.JSON(http.StatusConflict, model.ErrorResponse{
-			Errors: []model.Error{
+		c.JSON(http.StatusConflict, v1.ErrorResponse{
+			Errors: []v1.Error{
 				{
-					Error:       model.MultipleContainerFound,
+					Error:       v1.MultipleContainerFound,
 					Value:       "containerName",
 					Description: "The given name belongs to multiple container.",
 				},
 			},
 		})
 	} else {
-		c.JSON(http.StatusNotFound, model.ErrorResponse{
-			Errors: []model.Error{
+		c.JSON(http.StatusNotFound, v1.ErrorResponse{
+			Errors: []v1.Error{
 				{
-					Error:       model.NotFound,
+					Error:       v1.NotFound,
 					Value:       "containerName",
 					Description: "The given name not belongs to any container.",
 				},
@@ -262,8 +261,8 @@ func DeleteContainer(c *gin.Context) {
 // @Param meta formData v1.UploadFileData  true "File metadata (destination, uid, gid)"
 // @Param file formData file true "file"
 // @Success 204
-// @Failure 400 {object} model.ErrorResponse
-// @Failure 404 {object} model.ErrorResponse
+// @Failure 400 {object} v1.ErrorResponse
+// @Failure 404 {object} v1.ErrorResponse
 // @Router /containers/{containerPreName}/{containerName}/upload [post]
 func UploadFile(c *gin.Context) {
 	query := v1.DeploymentQuery{}
@@ -289,7 +288,6 @@ func UploadFile(c *gin.Context) {
 		return
 	}
 
-	log.Println(file.Filename)
 	err = utils.CopyToContainer(c, util.JoinV("-", query.ContainerPreName, query.ContainerName), meta, file)
 	if err != nil {
 		log.Printf("UploadFile formFile copy error: %s", err.Error())

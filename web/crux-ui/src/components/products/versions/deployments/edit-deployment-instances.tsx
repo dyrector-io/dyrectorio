@@ -72,6 +72,6 @@ export default EditDeploymentInstances
 const mergeInstancePatch = (instance: Instance, message: InstanceUpdatedMessage): Instance => {
   return {
     ...instance,
-    overridenConfig: message,
+    overriddenConfig: message,
   }
 }

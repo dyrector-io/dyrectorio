@@ -37,7 +37,5 @@
     "google": "Google Registry"
   },
 
-  "deleteDescription": "If you proceed, you will lose all your data related to {{name}}. This action is not revocable.",
-
   "altDefaultRegistryPicture": "Picture of registry"
 }

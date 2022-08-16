@@ -13,21 +13,20 @@ import (
 // if Expose is provided we bind 80 and the given ingressName + ingressHost
 func GetTraefikLabels(instanceConfig *v1.InstanceConfig, containerConfig *v1.ContainerConfig, cfg *config.Configuration) map[string]string {
 	labels := map[string]string{}
-	if containerConfig.Expose {
-		serviceName := util.JoinV("-", instanceConfig.ContainerPreName, containerConfig.Container)
-		labels["traefik.enable"] = "true"
 
-		labels["traefik.http.services."+serviceName+".loadbalancer.server.port"] = fmt.Sprint(containerConfig.Ports[0].ExposedPort)
-		labels["traefik.http.routers."+serviceName+".rule"] =
-			"Host(`" + GetServiceName(instanceConfig, containerConfig, cfg) + "`)"
-		if containerConfig.ExposeTLS {
-			labels["traefik.http.routers."+serviceName+".entrypoints"] = "websecure"
-			labels["traefik.http.routers."+serviceName+".tls.certresolver"] = "le"
-		}
+	serviceName := util.JoinV("-", instanceConfig.ContainerPreName, containerConfig.Container)
+	labels["traefik.enable"] = "true"
 
-		if containerConfig.IngressUploadLimit != "" {
-			labels["traefik.http.middlewares.limit.buffering.maxRequestBodyBytes"] = containerConfig.IngressUploadLimit
-		}
+	labels["traefik.http.services."+serviceName+".loadbalancer.server.port"] = fmt.Sprint(containerConfig.Ports[0].ExposedPort)
+	labels["traefik.http.routers."+serviceName+".rule"] =
+		"Host(`" + GetServiceName(instanceConfig, containerConfig, cfg) + "`)"
+	if containerConfig.ExposeTLS {
+		labels["traefik.http.routers."+serviceName+".entrypoints"] = "websecure"
+		labels["traefik.http.routers."+serviceName+".tls.certresolver"] = "le"
+	}
+
+	if containerConfig.IngressUploadLimit != "" {
+		labels["traefik.http.middlewares.limit.buffering.maxRequestBodyBytes"] = containerConfig.IngressUploadLimit
 	}
 
 	return labels
@@ -55,11 +54,11 @@ func GetServiceName(instanceConfig *v1.InstanceConfig, containerConfig *v1.Conta
 
 // keeping the template like this solves builds/asset management issues
 // dev environment <-> containerization differences
-// todo(nandi): solve assets' relative directory issues
+// TODO(nandor-magyar): solve assets' relative directory issues
 func GetTraefikGoTemplate() string {
 	return `
 log:
-  level: {{ or .LogLevel "INFO"}} 
+  level: {{ or .LogLevel "INFO"}}
 
 accessLog: {}
 
@@ -84,7 +83,6 @@ entryPoints:
 
   websecure:
     address: ":443"
-  
 
 certificatesResolvers:
   le:

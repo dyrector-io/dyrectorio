@@ -10,7 +10,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
-	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
+	builder "github.com/dyrector-io/dyrectorio/agent/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/config"
 
 	typedcorev1 "k8s.io/client-go/kubernetes/typed/core/v1"
@@ -44,8 +44,8 @@ type ServiceParams struct {
 	namespace     string
 	name          string
 	selector      string
-	portBindings  []v1.PortBinding
-	portRanges    []v1.PortRangeBinding
+	portBindings  []builder.PortBinding
+	portRanges    []builder.PortRangeBinding
 	useLB         bool
 	LBAnnotations map[string]string
 }
@@ -80,7 +80,7 @@ func (s *service) deployService(params *ServiceParams) error {
 		svc.WithAnnotations(params.LBAnnotations)
 	}
 
-	res, err := client.Apply(context.TODO(), svc, metav1.ApplyOptions{
+	res, err := client.Apply(s.ctx, svc, metav1.ApplyOptions{
 		FieldManager: s.appConfig.FieldManagerName,
 		Force:        s.appConfig.ForceOnConflicts,
 	})
@@ -111,7 +111,7 @@ func (s *service) deleteServices(namespace, name string) error {
 	return client.Delete(s.ctx, name, metav1.DeleteOptions{})
 }
 
-func getServicePorts(portBindings []v1.PortBinding, portRanges []v1.PortRangeBinding) []*acorev1.ServicePortApplyConfiguration {
+func getServicePorts(portBindings []builder.PortBinding, portRanges []builder.PortRangeBinding) []*acorev1.ServicePortApplyConfiguration {
 	ports := []*acorev1.ServicePortApplyConfiguration{}
 
 	for i := range portBindings {

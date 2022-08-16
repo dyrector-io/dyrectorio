@@ -25,7 +25,6 @@ export class TeamRoleGuard implements CanActivate {
 
     const getActiveTeam = async () =>
       await this.prisma.usersOnTeams.findFirst({
-        rejectOnNotFound: false,
         where: {
           userId: request.accessedBy,
           active: true,
@@ -34,7 +33,6 @@ export class TeamRoleGuard implements CanActivate {
 
     const getTeamById = async () =>
       await this.prisma.usersOnTeams.findUnique({
-        rejectOnNotFound: false,
         where: {
           userId_teamId: {
             userId: request.accessedBy,

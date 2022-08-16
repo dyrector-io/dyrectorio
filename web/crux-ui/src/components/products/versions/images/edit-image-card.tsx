@@ -107,7 +107,7 @@ const EditImageCard = (props: EditImageCardProps) => {
           </DyoButton>
 
           {disabled ? null : (
-            <DyoImgButton className="ml-6" onClick={() => onDelete()} src="/trash-can.svg" alt={t('delete')} />
+            <DyoImgButton className="ml-6" onClick={() => onDelete()} src="/trash-can.svg" alt={t('common:delete')} />
           )}
         </div>
 
@@ -133,7 +133,7 @@ const EditImageCard = (props: EditImageCardProps) => {
       <DyoConfirmationModal
         config={deleteModalConfig}
         title={t('common:confirmDelete', { name: image.name })}
-        description={t('deleteDescription', { name: image.name })}
+        description={t('common:deleteDescription', { name: image.name })}
         confirmText={t('common:delete')}
         className="w-1/4"
         confirmColor="bg-error-red"

@@ -55,7 +55,6 @@ export class ImageService {
   async addImagesToVersion(request: AddImagesToVersionRequest): Promise<ImageListResponse> {
     const images = await this.prisma.$transaction(async prisma => {
       const lastImageOrder = await this.prisma.image.findFirst({
-        rejectOnNotFound: false,
         select: {
           order: true,
         },
