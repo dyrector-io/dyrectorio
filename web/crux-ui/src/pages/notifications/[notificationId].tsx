@@ -1,4 +1,4 @@
-import { Layout, PageHead } from '@app/components/layout'
+import { Layout } from '@app/components/layout'
 import EditNotificationCard from '@app/components/notifications/edit-notification-card'
 import NotificationCard from '@app/components/notifications/notification-card'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
@@ -41,7 +41,7 @@ const NotificationDetailsPage = (props: NotificationDetailsPageProps) => {
   }
 
   const pageLink: BreadcrumbLink = {
-    name: t('common:notification'),
+    name: t('common:notifications'),
     url: ROUTE_NOTIFICATIONS,
   }
 
@@ -51,11 +51,10 @@ const NotificationDetailsPage = (props: NotificationDetailsPageProps) => {
   }
 
   return (
-    <Layout>
-      <PageHead title={t('notificationsName', { name: notification.name })} />
+    <Layout title={t('notificationsName', { name: notification.name })}>
       <PageHeading
         pageLink={pageLink}
-        subLinks={[
+        sublinks={[
           {
             name: notification.name,
             url: notificationUrl(notification.id),

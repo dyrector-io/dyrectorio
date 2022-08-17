@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Observable } from 'rxjs'
-import { PrismaService } from 'src/services/prisma.service'
 import { PreconditionFailedException } from 'src/exception/errors'
 import {
   AccessRequest,
@@ -19,6 +18,7 @@ import {
   UpdateNodeRequest,
   WatchContainerStateRequest,
 } from 'src/grpc/protobuf/proto/crux'
+import { PrismaService } from 'src/services/prisma.service'
 import { AgentService } from '../agent/agent.service'
 import { TeamRepository } from '../team/team.repository'
 import { NodeMapper } from './node.mapper'

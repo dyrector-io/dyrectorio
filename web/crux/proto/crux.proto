@@ -86,17 +86,20 @@ service CruxDeployment {
 
 service CruxTeam {
   rpc CreateTeam(CreateTeamRequest) returns (CreateEntityResponse);
-  rpc GetActiveTeamByUser(AccessRequest) returns (TeamDetailsResponse);
-  rpc UpdateActiveTeam(UpdateActiveTeamRequest) returns (Empty);
-  rpc DeleteActiveTeam(AccessRequest) returns (Empty);
+  rpc GetActiveTeamByUser(AccessRequest) returns (ActiveTeamDetailsResponse);
+  rpc UpdateTeam(UpdateTeamRequest) returns (Empty);
+  rpc DeleteTeam(IdRequest) returns (Empty);
+  rpc UpdateUserRole(UpdateUserRoleInTeamRequest) returns (Empty);
 
-  rpc InviteUserToTheActiveTeam(UserInviteRequest)
+  rpc InviteUserToTeam(InviteUserRequest)
       returns (CreateEntityResponse);
-  rpc DeleteUserFromTheActiveTeam(IdRequest) returns (Empty);
+  rpc DeleteUserFromTeam(DeleteUserFromTeamRequest) returns (Empty);
   rpc AcceptTeamInvite(IdRequest) returns (Empty);
   rpc SelectTeam(IdRequest) returns (Empty);
 
   rpc GetUserMeta(AccessRequest) returns (UserMetaResponse);
+  rpc GetAllTeams(AccessRequest) returns (AllTeamsResponse);
+  rpc GetTeamById(IdRequest) returns (TeamDetailsResponse);
 }
 
 service CruxNotification {
@@ -167,16 +170,33 @@ message CreateTeamRequest {
   string name = 100;
 }
 
-message UpdateActiveTeamRequest {
+message UpdateTeamRequest {
+  string id = 1;
   string accessedBy = 2;
 
   string name = 100;
 }
 
-message UserInviteRequest {
+message UpdateUserRoleInTeamRequest {
+  string id = 1;
+  string accessedBy = 2;
+
+  string userId = 100;
+  UserRole role = 101;
+}
+
+message InviteUserRequest {
+  string id = 1;
   string accessedBy = 2;
 
   string email = 100;
+}
+
+message DeleteUserFromTeamRequest {
+  string id = 1;
+  string accessedBy = 2;
+
+  string userId = 100;
 }
 
 message AccessRequest { string accessedBy = 2; }
@@ -200,7 +220,7 @@ message TeamResponse {
   string name = 100;
 }
 
-message TeamDetailsResponse {
+message ActiveTeamDetailsResponse {
   string id = 1;
 
   string name = 100;
@@ -208,10 +228,37 @@ message TeamDetailsResponse {
   repeated UserResponse users = 1000;
 }
 
+message TeamStatistics {
+  uint32 users = 100;
+  uint32 products = 101;
+  uint32 nodes = 102;
+  uint32 versions = 103;
+  uint32 deployments = 104;
+}
+
+message TeamWithStatsResponse {
+  string id = 1;
+
+  string name = 100;
+  TeamStatistics statistics = 101;
+}
+
+message TeamDetailsResponse {
+  string id = 1;
+
+  string name = 100;
+  TeamStatistics statistics = 101;
+
+  repeated UserResponse users = 1000;
+}
+
+message AllTeamsResponse { repeated TeamWithStatsResponse data = 1000; }
+
 enum UserRole {
   UNKNOWN_USER_ROLE = 0;
   USER = 1;
   OWNER = 2;
+  ADMIN = 3;
 }
 
 enum UserStatus {

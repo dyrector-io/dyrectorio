@@ -67,3 +67,8 @@ export const toTimestamp = (date: Date): Timestamp => {
   const nanos = (date.getTime() % 1_000) * 1_000_000
   return { seconds, nanos }
 }
+
+export const typedQuery =
+  <T>() =>
+  <U extends T>(query: U): U =>
+    query

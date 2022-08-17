@@ -7,7 +7,6 @@ export const DyoHead = () => {
   return (
     <Head>
       <meta charSet="utf-8" />
-      <title>{t('title')}</title>
       <meta name="description" content={t('description')} />
       <meta property="og:title" content="dyrector.io" />
       <meta property="og:type" content="article" />

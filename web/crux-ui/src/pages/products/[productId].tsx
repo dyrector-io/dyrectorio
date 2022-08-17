@@ -1,4 +1,4 @@
-import { Layout, PageHead } from '@app/components/layout'
+import { Layout } from '@app/components/layout'
 import EditProductCard from '@app/components/products/edit-product-card'
 import ProductDetailsCard from '@app/components/products/product-details-card'
 import ProductVersionsSection from '@app/components/products/product-versions-section'
@@ -7,7 +7,7 @@ import IncreaseVersionCard from '@app/components/products/versions/increase-vers
 import VersionSections from '@app/components/products/versions/version-sections'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
-import { DetailsPageMenu } from '@app/components/shared/page-menu'
+import { DetailsPageMenu, DetailsPageTexts } from '@app/components/shared/page-menu'
 import LoadingIndicator from '@app/elements/loading-indicator'
 import {
   EditableProduct,
@@ -88,7 +88,7 @@ const ProductDetailsPage = (props: ProductDetailsPageProps) => {
   const onVersionIncreased = (version: Version) => router.push(versionUrl(product.id, version.id))
 
   const pageLink: BreadcrumbLink = {
-    name: t('common:product'),
+    name: t('common:products'),
     url: ROUTE_PRODUCTS,
   }
 
@@ -99,14 +99,13 @@ const ProductDetailsPage = (props: ProductDetailsPageProps) => {
     },
   ]
 
-  const pageMenuTexts = {
-    addDetailsItem: t('addDetailsItem'),
+  const pageMenuTexts: DetailsPageTexts = {
+    addDetailsItem: t('addVersion'),
   }
 
   return (
-    <Layout>
-      <PageHead title={t('title-product', { name: product.name })} />
-      <PageHeading pageLink={pageLink} subLinks={sublinks}>
+    <Layout title={t('productsName', product)}>
+      <PageHeading pageLink={pageLink} sublinks={sublinks}>
         {saving ? <LoadingIndicator className="flex ml-4 my-auto" /> : null}
 
         <DetailsPageMenu

@@ -1,10 +1,14 @@
 import { Logger } from '@app/logger'
 import {
+  ActiveTeamDetails,
   CreateTeam,
+  DEFAULT_TEAM_STATISTICS,
   IdentityTraits,
   InviteUser,
   nameOfIdentity,
   Team,
+  TeamDetails,
+  UpdateTeam,
   User,
   UserMeta,
   UserRole,
@@ -12,16 +16,22 @@ import {
 } from '@app/models'
 import {
   AccessRequest,
+  ActiveTeamDetailsResponse,
+  AllTeamsResponse,
   CreateEntityResponse,
   CreateTeamRequest,
   CruxTeamClient,
+  DeleteUserFromTeamRequest,
   Empty,
   IdRequest,
+  InviteUserRequest,
   TeamDetailsResponse,
-  UserInviteRequest,
+  UpdateTeamRequest,
+  UpdateUserRoleInTeamRequest,
   UserMetaResponse,
   UserResponse,
   UserRole as ProtoUserRole,
+  userRoleFromJSON,
   userRoleToJSON,
   UserStatus as ProtoUserStatus,
   userStatusToJSON,
@@ -66,16 +76,16 @@ class DyoTeamService {
     }
   }
 
-  async getActiveTeam(): Promise<Team> {
+  async getActiveTeam(): Promise<ActiveTeamDetails> {
     const req = {
       accessedBy: this.identity.id,
     } as AccessRequest
 
     try {
-      const res = await protomisify<AccessRequest, TeamDetailsResponse>(this.client, this.client.getActiveTeamByUser)(
-        AccessRequest,
-        req,
-      )
+      const res = await protomisify<AccessRequest, ActiveTeamDetailsResponse>(
+        this.client,
+        this.client.getActiveTeamByUser,
+      )(AccessRequest, req)
 
       return {
         ...res,
@@ -102,21 +112,35 @@ class DyoTeamService {
       req,
     )
 
-    const traits = this.identity.traits as IdentityTraits
-
     return {
       id: res.id,
       name: dto.name,
-      users: [
-        {
-          id: this.identity.id,
-          name: nameOfIdentity(this.identity),
-          email: traits.email,
-          role: 'owner',
-          status: 'verified',
-        },
-      ],
+      statistics: DEFAULT_TEAM_STATISTICS,
     }
+  }
+
+  async updateTeam(teamId: string, dto: UpdateTeam): Promise<void> {
+    const req: UpdateTeamRequest = {
+      id: teamId,
+      name: dto.name,
+      accessedBy: this.identity.id,
+    }
+
+    await protomisify<UpdateTeamRequest, Empty>(this.client, this.client.updateTeam)(UpdateTeamRequest, req)
+  }
+
+  async updateUserRole(teamId: string, userId: string, role: UserRole): Promise<void> {
+    const req: UpdateUserRoleInTeamRequest = {
+      id: teamId,
+      accessedBy: this.identity.id,
+      userId: userId,
+      role: userRoleToGrpc(role),
+    }
+
+    await protomisify<UpdateUserRoleInTeamRequest, Empty>(this.client, this.client.updateUserRole)(
+      UpdateUserRoleInTeamRequest,
+      req,
+    )
   }
 
   async selectTeam(teamId: string): Promise<void> {
@@ -128,24 +152,26 @@ class DyoTeamService {
     await protomisify<IdRequest, Empty>(this.client, this.client.selectTeam)(IdRequest, req)
   }
 
-  async deleteActiveTeam(): Promise<void> {
-    const req: AccessRequest = {
+  async deleteTeam(teamId: string): Promise<void> {
+    const req: IdRequest = {
+      id: teamId,
       accessedBy: this.identity.id,
     }
 
-    await protomisify<AccessRequest, Empty>(this.client, this.client.deleteActiveTeam)(AccessRequest, req)
+    await protomisify<AccessRequest, Empty>(this.client, this.client.deleteTeam)(IdRequest, req)
   }
 
-  async inviteUser(dto: InviteUser): Promise<User> {
-    const req: UserInviteRequest = {
+  async inviteUser(teamId: string, dto: InviteUser): Promise<User> {
+    const req: InviteUserRequest = {
+      id: teamId,
       email: dto.email,
       accessedBy: this.identity.id,
     }
 
-    const res = await protomisify<UserInviteRequest, CreateEntityResponse>(
-      this.client,
-      this.client.inviteUserToTheActiveTeam,
-    )(UserInviteRequest, req)
+    const res = await protomisify<InviteUserRequest, CreateEntityResponse>(this.client, this.client.inviteUserToTeam)(
+      InviteUserRequest,
+      req,
+    )
 
     return {
       id: res.id,
@@ -156,13 +182,18 @@ class DyoTeamService {
     }
   }
 
-  async deleteUser(targetId: string): Promise<void> {
-    const req: IdRequest = {
-      id: targetId,
+  async deleteUser(teamId: string, userId: string): Promise<void> {
+    const req: DeleteUserFromTeamRequest = {
+      id: teamId,
+      userId,
       accessedBy: this.identity.id,
     }
 
-    await protomisify<IdRequest, Empty>(this.client, this.client.deleteUserFromTheActiveTeam)(IdRequest, req)
+    await protomisify<DeleteUserFromTeamRequest, Empty>(this.client, this.client.deleteUserFromTeam)(
+      DeleteUserFromTeamRequest,
+      req,
+    )
+
     this.registryConnections.resetAuthorization(this.identity)
   }
 
@@ -173,6 +204,33 @@ class DyoTeamService {
     }
 
     await protomisify<IdRequest, Empty>(this.client, this.client.acceptTeamInvite)(IdRequest, req)
+  }
+
+  async getAllTeams(): Promise<Team[]> {
+    const req: AccessRequest = {
+      accessedBy: this.identity.id,
+    }
+
+    const res = await protomisify<AccessRequest, AllTeamsResponse>(this.client, this.client.getAllTeams)(
+      AccessRequest,
+      req,
+    )
+
+    return res.data
+  }
+
+  async getTeamById(teamId: string): Promise<TeamDetails> {
+    const req: IdRequest = {
+      id: teamId,
+      accessedBy: this.identity.id,
+    }
+
+    const res = await protomisify<IdRequest, TeamDetailsResponse>(this.client, this.client.getTeamById)(IdRequest, req)
+
+    return {
+      ...res,
+      users: res.users.map(userToDto),
+    }
   }
 }
 
@@ -187,5 +245,7 @@ export const userToDto = (user: UserResponse): User => {
 }
 
 export const userRoleToDto = (role: ProtoUserRole): UserRole => userRoleToJSON(role).toLocaleLowerCase() as UserRole
+export const userRoleToGrpc = (role: UserRole): ProtoUserRole => userRoleFromJSON(role.toUpperCase()) as ProtoUserRole
+
 export const userStatusToDto = (status: ProtoUserStatus): UserStatus =>
   userStatusToJSON(status).toLocaleLowerCase() as UserStatus

@@ -3,7 +3,7 @@ import { CanActivate, ExecutionContext, HttpStatus, Injectable, Logger } from '@
 import { AxiosError } from 'axios'
 import { JWT } from 'google-auth-library'
 import { GetAccessTokenResponse } from 'google-auth-library/build/src/auth/oauth2client'
-import { catchError, from, map, mergeMap, Observable, of, switchMap, tap } from 'rxjs'
+import { catchError, from, map, mergeMap, Observable, of, switchMap } from 'rxjs'
 import { InvalidArgumentException, NotFoundException, UnauthenticatedException } from 'src/exception/errors'
 import {
   CreateRegistryRequest,

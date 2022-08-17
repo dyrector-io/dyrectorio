@@ -1,4 +1,4 @@
-#!/bin/sh 
+#!/bin/sh
 
 CERT_DIR="/app/certs"
 

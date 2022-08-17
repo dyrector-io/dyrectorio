@@ -33,9 +33,9 @@ export class NotificationMapper {
     }
   }
 
-  toGrpcListResponse(notifications: Notification[], identities: Identity[]): NotificationResponse[] {
+  toGrpcListResponse(notifications: Notification[], identities: Map<string, Identity>): NotificationResponse[] {
     return notifications.map(it => {
-      const identity = identities.find(i => i.id == it.createdBy)
+      const identity = identities.get(it.createdBy)
 
       if (!identity) {
         return null

@@ -1987,14 +1987,17 @@ var CruxDeployment_ServiceDesc = grpc.ServiceDesc{
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CruxTeamClient interface {
 	CreateTeam(ctx context.Context, in *CreateTeamRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error)
-	GetActiveTeamByUser(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*TeamDetailsResponse, error)
-	UpdateActiveTeam(ctx context.Context, in *UpdateActiveTeamRequest, opts ...grpc.CallOption) (*Empty, error)
-	DeleteActiveTeam(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*Empty, error)
-	InviteUserToTheActiveTeam(ctx context.Context, in *UserInviteRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error)
-	DeleteUserFromTheActiveTeam(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error)
+	GetActiveTeamByUser(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*ActiveTeamDetailsResponse, error)
+	UpdateTeam(ctx context.Context, in *UpdateTeamRequest, opts ...grpc.CallOption) (*Empty, error)
+	DeleteTeam(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error)
+	UpdateUserRole(ctx context.Context, in *UpdateUserRoleInTeamRequest, opts ...grpc.CallOption) (*Empty, error)
+	InviteUserToTeam(ctx context.Context, in *InviteUserRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error)
+	DeleteUserFromTeam(ctx context.Context, in *DeleteUserFromTeamRequest, opts ...grpc.CallOption) (*Empty, error)
 	AcceptTeamInvite(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error)
 	SelectTeam(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error)
 	GetUserMeta(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*UserMetaResponse, error)
+	GetAllTeams(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*AllTeamsResponse, error)
+	GetTeamById(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*TeamDetailsResponse, error)
 }
 
 type cruxTeamClient struct {
@@ -2014,8 +2017,8 @@ func (c *cruxTeamClient) CreateTeam(ctx context.Context, in *CreateTeamRequest, 
 	return out, nil
 }
 
-func (c *cruxTeamClient) GetActiveTeamByUser(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*TeamDetailsResponse, error) {
-	out := new(TeamDetailsResponse)
+func (c *cruxTeamClient) GetActiveTeamByUser(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*ActiveTeamDetailsResponse, error) {
+	out := new(ActiveTeamDetailsResponse)
 	err := c.cc.Invoke(ctx, "/crux.CruxTeam/GetActiveTeamByUser", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -2023,36 +2026,45 @@ func (c *cruxTeamClient) GetActiveTeamByUser(ctx context.Context, in *AccessRequ
 	return out, nil
 }
 
-func (c *cruxTeamClient) UpdateActiveTeam(ctx context.Context, in *UpdateActiveTeamRequest, opts ...grpc.CallOption) (*Empty, error) {
+func (c *cruxTeamClient) UpdateTeam(ctx context.Context, in *UpdateTeamRequest, opts ...grpc.CallOption) (*Empty, error) {
 	out := new(Empty)
-	err := c.cc.Invoke(ctx, "/crux.CruxTeam/UpdateActiveTeam", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/crux.CruxTeam/UpdateTeam", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *cruxTeamClient) DeleteActiveTeam(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*Empty, error) {
+func (c *cruxTeamClient) DeleteTeam(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error) {
 	out := new(Empty)
-	err := c.cc.Invoke(ctx, "/crux.CruxTeam/DeleteActiveTeam", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/crux.CruxTeam/DeleteTeam", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *cruxTeamClient) InviteUserToTheActiveTeam(ctx context.Context, in *UserInviteRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error) {
+func (c *cruxTeamClient) UpdateUserRole(ctx context.Context, in *UpdateUserRoleInTeamRequest, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/crux.CruxTeam/UpdateUserRole", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cruxTeamClient) InviteUserToTeam(ctx context.Context, in *InviteUserRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error) {
 	out := new(CreateEntityResponse)
-	err := c.cc.Invoke(ctx, "/crux.CruxTeam/InviteUserToTheActiveTeam", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/crux.CruxTeam/InviteUserToTeam", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *cruxTeamClient) DeleteUserFromTheActiveTeam(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error) {
+func (c *cruxTeamClient) DeleteUserFromTeam(ctx context.Context, in *DeleteUserFromTeamRequest, opts ...grpc.CallOption) (*Empty, error) {
 	out := new(Empty)
-	err := c.cc.Invoke(ctx, "/crux.CruxTeam/DeleteUserFromTheActiveTeam", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/crux.CruxTeam/DeleteUserFromTeam", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2086,19 +2098,40 @@ func (c *cruxTeamClient) GetUserMeta(ctx context.Context, in *AccessRequest, opt
 	return out, nil
 }
 
+func (c *cruxTeamClient) GetAllTeams(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*AllTeamsResponse, error) {
+	out := new(AllTeamsResponse)
+	err := c.cc.Invoke(ctx, "/crux.CruxTeam/GetAllTeams", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cruxTeamClient) GetTeamById(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*TeamDetailsResponse, error) {
+	out := new(TeamDetailsResponse)
+	err := c.cc.Invoke(ctx, "/crux.CruxTeam/GetTeamById", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CruxTeamServer is the server API for CruxTeam service.
 // All implementations must embed UnimplementedCruxTeamServer
 // for forward compatibility
 type CruxTeamServer interface {
 	CreateTeam(context.Context, *CreateTeamRequest) (*CreateEntityResponse, error)
-	GetActiveTeamByUser(context.Context, *AccessRequest) (*TeamDetailsResponse, error)
-	UpdateActiveTeam(context.Context, *UpdateActiveTeamRequest) (*Empty, error)
-	DeleteActiveTeam(context.Context, *AccessRequest) (*Empty, error)
-	InviteUserToTheActiveTeam(context.Context, *UserInviteRequest) (*CreateEntityResponse, error)
-	DeleteUserFromTheActiveTeam(context.Context, *IdRequest) (*Empty, error)
+	GetActiveTeamByUser(context.Context, *AccessRequest) (*ActiveTeamDetailsResponse, error)
+	UpdateTeam(context.Context, *UpdateTeamRequest) (*Empty, error)
+	DeleteTeam(context.Context, *IdRequest) (*Empty, error)
+	UpdateUserRole(context.Context, *UpdateUserRoleInTeamRequest) (*Empty, error)
+	InviteUserToTeam(context.Context, *InviteUserRequest) (*CreateEntityResponse, error)
+	DeleteUserFromTeam(context.Context, *DeleteUserFromTeamRequest) (*Empty, error)
 	AcceptTeamInvite(context.Context, *IdRequest) (*Empty, error)
 	SelectTeam(context.Context, *IdRequest) (*Empty, error)
 	GetUserMeta(context.Context, *AccessRequest) (*UserMetaResponse, error)
+	GetAllTeams(context.Context, *AccessRequest) (*AllTeamsResponse, error)
+	GetTeamById(context.Context, *IdRequest) (*TeamDetailsResponse, error)
 	mustEmbedUnimplementedCruxTeamServer()
 }
 
@@ -2109,20 +2142,23 @@ type UnimplementedCruxTeamServer struct {
 func (UnimplementedCruxTeamServer) CreateTeam(context.Context, *CreateTeamRequest) (*CreateEntityResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateTeam not implemented")
 }
-func (UnimplementedCruxTeamServer) GetActiveTeamByUser(context.Context, *AccessRequest) (*TeamDetailsResponse, error) {
+func (UnimplementedCruxTeamServer) GetActiveTeamByUser(context.Context, *AccessRequest) (*ActiveTeamDetailsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetActiveTeamByUser not implemented")
 }
-func (UnimplementedCruxTeamServer) UpdateActiveTeam(context.Context, *UpdateActiveTeamRequest) (*Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateActiveTeam not implemented")
+func (UnimplementedCruxTeamServer) UpdateTeam(context.Context, *UpdateTeamRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateTeam not implemented")
 }
-func (UnimplementedCruxTeamServer) DeleteActiveTeam(context.Context, *AccessRequest) (*Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteActiveTeam not implemented")
+func (UnimplementedCruxTeamServer) DeleteTeam(context.Context, *IdRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteTeam not implemented")
 }
-func (UnimplementedCruxTeamServer) InviteUserToTheActiveTeam(context.Context, *UserInviteRequest) (*CreateEntityResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method InviteUserToTheActiveTeam not implemented")
+func (UnimplementedCruxTeamServer) UpdateUserRole(context.Context, *UpdateUserRoleInTeamRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateUserRole not implemented")
 }
-func (UnimplementedCruxTeamServer) DeleteUserFromTheActiveTeam(context.Context, *IdRequest) (*Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteUserFromTheActiveTeam not implemented")
+func (UnimplementedCruxTeamServer) InviteUserToTeam(context.Context, *InviteUserRequest) (*CreateEntityResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method InviteUserToTeam not implemented")
+}
+func (UnimplementedCruxTeamServer) DeleteUserFromTeam(context.Context, *DeleteUserFromTeamRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteUserFromTeam not implemented")
 }
 func (UnimplementedCruxTeamServer) AcceptTeamInvite(context.Context, *IdRequest) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AcceptTeamInvite not implemented")
@@ -2132,6 +2168,12 @@ func (UnimplementedCruxTeamServer) SelectTeam(context.Context, *IdRequest) (*Emp
 }
 func (UnimplementedCruxTeamServer) GetUserMeta(context.Context, *AccessRequest) (*UserMetaResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserMeta not implemented")
+}
+func (UnimplementedCruxTeamServer) GetAllTeams(context.Context, *AccessRequest) (*AllTeamsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllTeams not implemented")
+}
+func (UnimplementedCruxTeamServer) GetTeamById(context.Context, *IdRequest) (*TeamDetailsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTeamById not implemented")
 }
 func (UnimplementedCruxTeamServer) mustEmbedUnimplementedCruxTeamServer() {}
 
@@ -2182,74 +2224,92 @@ func _CruxTeam_GetActiveTeamByUser_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
-func _CruxTeam_UpdateActiveTeam_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateActiveTeamRequest)
+func _CruxTeam_UpdateTeam_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateTeamRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CruxTeamServer).UpdateActiveTeam(ctx, in)
+		return srv.(CruxTeamServer).UpdateTeam(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/crux.CruxTeam/UpdateActiveTeam",
+		FullMethod: "/crux.CruxTeam/UpdateTeam",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CruxTeamServer).UpdateActiveTeam(ctx, req.(*UpdateActiveTeamRequest))
+		return srv.(CruxTeamServer).UpdateTeam(ctx, req.(*UpdateTeamRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _CruxTeam_DeleteActiveTeam_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AccessRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(CruxTeamServer).DeleteActiveTeam(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/crux.CruxTeam/DeleteActiveTeam",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CruxTeamServer).DeleteActiveTeam(ctx, req.(*AccessRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _CruxTeam_InviteUserToTheActiveTeam_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UserInviteRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(CruxTeamServer).InviteUserToTheActiveTeam(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/crux.CruxTeam/InviteUserToTheActiveTeam",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CruxTeamServer).InviteUserToTheActiveTeam(ctx, req.(*UserInviteRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _CruxTeam_DeleteUserFromTheActiveTeam_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _CruxTeam_DeleteTeam_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(IdRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CruxTeamServer).DeleteUserFromTheActiveTeam(ctx, in)
+		return srv.(CruxTeamServer).DeleteTeam(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/crux.CruxTeam/DeleteUserFromTheActiveTeam",
+		FullMethod: "/crux.CruxTeam/DeleteTeam",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CruxTeamServer).DeleteUserFromTheActiveTeam(ctx, req.(*IdRequest))
+		return srv.(CruxTeamServer).DeleteTeam(ctx, req.(*IdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CruxTeam_UpdateUserRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateUserRoleInTeamRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CruxTeamServer).UpdateUserRole(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crux.CruxTeam/UpdateUserRole",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CruxTeamServer).UpdateUserRole(ctx, req.(*UpdateUserRoleInTeamRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CruxTeam_InviteUserToTeam_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InviteUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CruxTeamServer).InviteUserToTeam(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crux.CruxTeam/InviteUserToTeam",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CruxTeamServer).InviteUserToTeam(ctx, req.(*InviteUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CruxTeam_DeleteUserFromTeam_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteUserFromTeamRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CruxTeamServer).DeleteUserFromTeam(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crux.CruxTeam/DeleteUserFromTeam",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CruxTeamServer).DeleteUserFromTeam(ctx, req.(*DeleteUserFromTeamRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -2308,6 +2368,42 @@ func _CruxTeam_GetUserMeta_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CruxTeam_GetAllTeams_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AccessRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CruxTeamServer).GetAllTeams(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crux.CruxTeam/GetAllTeams",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CruxTeamServer).GetAllTeams(ctx, req.(*AccessRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CruxTeam_GetTeamById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CruxTeamServer).GetTeamById(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crux.CruxTeam/GetTeamById",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CruxTeamServer).GetTeamById(ctx, req.(*IdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CruxTeam_ServiceDesc is the grpc.ServiceDesc for CruxTeam service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -2324,20 +2420,24 @@ var CruxTeam_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _CruxTeam_GetActiveTeamByUser_Handler,
 		},
 		{
-			MethodName: "UpdateActiveTeam",
-			Handler:    _CruxTeam_UpdateActiveTeam_Handler,
+			MethodName: "UpdateTeam",
+			Handler:    _CruxTeam_UpdateTeam_Handler,
 		},
 		{
-			MethodName: "DeleteActiveTeam",
-			Handler:    _CruxTeam_DeleteActiveTeam_Handler,
+			MethodName: "DeleteTeam",
+			Handler:    _CruxTeam_DeleteTeam_Handler,
 		},
 		{
-			MethodName: "InviteUserToTheActiveTeam",
-			Handler:    _CruxTeam_InviteUserToTheActiveTeam_Handler,
+			MethodName: "UpdateUserRole",
+			Handler:    _CruxTeam_UpdateUserRole_Handler,
 		},
 		{
-			MethodName: "DeleteUserFromTheActiveTeam",
-			Handler:    _CruxTeam_DeleteUserFromTheActiveTeam_Handler,
+			MethodName: "InviteUserToTeam",
+			Handler:    _CruxTeam_InviteUserToTeam_Handler,
+		},
+		{
+			MethodName: "DeleteUserFromTeam",
+			Handler:    _CruxTeam_DeleteUserFromTeam_Handler,
 		},
 		{
 			MethodName: "AcceptTeamInvite",
@@ -2350,6 +2450,14 @@ var CruxTeam_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUserMeta",
 			Handler:    _CruxTeam_GetUserMeta_Handler,
+		},
+		{
+			MethodName: "GetAllTeams",
+			Handler:    _CruxTeam_GetAllTeams_Handler,
+		},
+		{
+			MethodName: "GetTeamById",
+			Handler:    _CruxTeam_GetTeamById_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

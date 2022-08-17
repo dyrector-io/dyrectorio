@@ -1,6 +1,5 @@
 {
-  "title": "Registries",
-  "title-registry": "{{name}} registry",
+  "registriesName": "Registries - {{name}}",
 
   "registries": "Registries",
   "add": "Add registry",

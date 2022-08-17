@@ -1,6 +1,12 @@
 import { internalError, invalidArgument, missingParameter } from './error-middleware'
 
+export const captchaDisabled = () => process.env.DISABLE_RECAPTCHA === 'true'
+
 export const validateCaptcha = async (captcha: string): Promise<void> => {
+  if (captchaDisabled()) {
+    return
+  }
+
   if (!captcha) {
     throw missingParameter('captcha')
   }
