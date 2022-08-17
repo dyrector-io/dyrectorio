@@ -1,4 +1,3 @@
-import { defaultWsErrorHandler } from '@app/errors'
 import { useWebSocket } from '@app/hooks/use-websocket'
 import {
   AddImagesMessage,
@@ -9,7 +8,6 @@ import {
   VersionDetails,
   VersionImage,
   WS_TYPE_ADD_IMAGES,
-  WS_TYPE_DYO_ERROR,
   WS_TYPE_IMAGES_WERE_REORDERED,
   WS_TYPE_IMAGE_UPDATED,
   WS_TYPE_ORDER_IMAGES,
@@ -57,10 +55,6 @@ const VersionSections = (props: VersionSectionsProps) => {
     },
   })
 
-  registriesSock.on(WS_TYPE_DYO_ERROR, defaultWsErrorHandler(t))
-
-  const handleWsError = defaultWsErrorHandler(t)
-
   const versionSock = useWebSocket(versionWsUrl(props.product.id, version.id), {
     onSend: message => {
       if (message.type === WS_TYPE_PATCH_IMAGE) {
@@ -70,8 +64,6 @@ const VersionSections = (props: VersionSectionsProps) => {
     onReceive: message => {
       if (WS_TYPE_IMAGE_UPDATED === message.type) {
         setSaving(false)
-      } else if (message.type === WS_TYPE_DYO_ERROR) {
-        handleWsError(message.payload)
       }
     },
     onError: e => {

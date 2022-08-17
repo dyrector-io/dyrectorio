@@ -8,7 +8,6 @@ import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { DyoList } from '@app/elements/dyo-list'
 import LoadingIndicator from '@app/elements/loading-indicator'
-import { defaultWsErrorHandler } from '@app/errors'
 import { useThrottleing } from '@app/hooks/use-throttleing'
 import { useWebSocket } from '@app/hooks/use-websocket'
 import {
@@ -63,10 +62,8 @@ const SelectImagesCard = (props: SelectImagesCardProps) => {
     }
   })
 
-  const handleWsError = defaultWsErrorHandler(t)
   sock.on(WS_TYPE_DYO_ERROR, (message: DyoApiError) => {
     setSearching(false)
-    handleWsError(message)
   })
 
   useEffect(() => setRegistry(registriesFound ? registries[0] : null), [registries, registriesFound])
