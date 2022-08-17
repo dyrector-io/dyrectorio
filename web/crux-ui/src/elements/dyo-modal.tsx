@@ -34,7 +34,7 @@ const DyoModal = (props: DyoModalProps) => {
       >
         <Dialog.Overlay />
 
-        <DyoCard className={clsx(props.className, 'flex flex-col m-auto p-8')} modal={true}>
+        <DyoCard className={clsx(props.className, 'flex flex-col m-auto p-8')} modal>
           <DyoHeading element="h4" className="text-xl font-bold text-bright">
             {props.title}
           </DyoHeading>

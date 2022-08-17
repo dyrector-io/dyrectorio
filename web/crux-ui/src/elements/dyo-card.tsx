@@ -8,7 +8,5 @@ export interface DyoCardProps extends RefAttributes<HTMLDivElement> {
 }
 
 export const DyoCard = (props: DyoCardProps) => {
-  const boxShadow = props.modal ? 'shadow-modal' : 'shadow-lg'
-
-  return <div className={clsx(props.className ?? 'p-8', 'card rounded-lg bg-medium', boxShadow)}>{props.children}</div>
+  return <div className={clsx(props.className ?? 'p-8', 'card rounded-lg bg-medium', props.modal ? 'shadow-modal' : 'shadow-lg')}>{props.children}</div>
 }
