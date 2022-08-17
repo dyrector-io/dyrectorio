@@ -1,6 +1,6 @@
 import {
-  ROUTE_DEPLOYMENTS,
   ROUTE_AUDIT,
+  ROUTE_DEPLOYMENTS,
   ROUTE_INDEX,
   ROUTE_LOGOUT,
   ROUTE_NODES,
@@ -24,13 +24,13 @@ export const Sidebar = (props: SidebarProps) => {
 
   const productOptions = [
     {
-      icon: <Image src="/products.svg" alt={t('product')} width={18} height={18} />,
-      text: 'product',
+      icon: <Image src="/products.svg" alt={t('products')} width={18} height={18} />,
+      text: 'products',
       link: ROUTE_PRODUCTS,
     },
     {
-      icon: <Image src="/deployment.svg" alt={t('deployment')} width={18} height={18} />,
-      text: 'deployment',
+      icon: <Image src="/deployment.svg" alt={t('deployments')} width={18} height={18} />,
+      text: 'deployments',
       link: ROUTE_DEPLOYMENTS,
     },
   ]

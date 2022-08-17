@@ -1,4 +1,4 @@
-import { Layout, PageHead } from '@app/components/layout'
+import { Layout } from '@app/components/layout'
 import DeploymentStatusTag from '@app/components/products/versions/deployments/deployment-status-tag'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
@@ -21,7 +21,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
   const { t } = useTranslation('deployments')
 
   const selfLink: BreadcrumbLink = {
-    name: t('common:deployment'),
+    name: t('common:deployments'),
     url: ROUTE_DEPLOYMENTS,
   }
 
@@ -34,8 +34,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
   ]
 
   return (
-    <Layout>
-      <PageHead title={t('common:deployments')} />
+    <Layout title={t('common:deployments')}>
       <PageHeading pageLink={selfLink} />
       <DyoCard className="relative">
         <DyoList

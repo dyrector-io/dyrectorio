@@ -75,6 +75,9 @@
   "container": "Container",
   "node": "Node",
   "registry": "Registry",
+  "deployment": "Deployment",
+  "product": "Product",
+  "version": "Version",
 
   "prefix": "Prefix",
 
