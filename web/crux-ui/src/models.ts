@@ -113,7 +113,9 @@ export type DeploymentDetails = {
 export type Deployment = {
   id: string
   name: string
+  productId: string
   product: string
+  versionId: string
   version: string
   node: string
   status: DeploymentStatus

@@ -1135,7 +1135,9 @@ export interface DeploymentResponse {
   id: string
   name: string
   product: string
+  productId: string
   version: string
+  versionId: string
   node: string
   status: DeploymentStatus
 }
@@ -3409,7 +3411,9 @@ const baseDeploymentResponse: object = {
   id: '',
   name: '',
   product: '',
+  productId: '',
   version: '',
+  versionId: '',
   node: '',
   status: 0,
 }
@@ -3420,7 +3424,9 @@ export const DeploymentResponse = {
     message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
     message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
     message.product = object.product !== undefined && object.product !== null ? String(object.product) : ''
+    message.productId = object.productId !== undefined && object.productId !== null ? String(object.productId) : ''
     message.version = object.version !== undefined && object.version !== null ? String(object.version) : ''
+    message.versionId = object.versionId !== undefined && object.versionId !== null ? String(object.versionId) : ''
     message.node = object.node !== undefined && object.node !== null ? String(object.node) : ''
     message.status = object.status !== undefined && object.status !== null ? deploymentStatusFromJSON(object.status) : 0
     return message
@@ -3431,7 +3437,9 @@ export const DeploymentResponse = {
     message.id !== undefined && (obj.id = message.id)
     message.name !== undefined && (obj.name = message.name)
     message.product !== undefined && (obj.product = message.product)
+    message.productId !== undefined && (obj.productId = message.productId)
     message.version !== undefined && (obj.version = message.version)
+    message.versionId !== undefined && (obj.versionId = message.versionId)
     message.node !== undefined && (obj.node = message.node)
     message.status !== undefined && (obj.status = deploymentStatusToJSON(message.status))
     return obj

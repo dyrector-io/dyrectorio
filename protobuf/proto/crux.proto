@@ -807,9 +807,11 @@ message DeploymentResponse {
 
   string name = 100;
   string product = 101;
-  string version = 102;
-  string node = 103;
-  DeploymentStatus status = 104;
+  string productId = 102;
+  string version = 103;
+  string versionId = 104;
+  string node = 105;
+  DeploymentStatus status = 106;
 }
 
 message DeploymentListByVersionResponse { repeated DeploymentByVersionResponse data = 1000; }

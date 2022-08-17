@@ -5,13 +5,14 @@ import PageHeading from '@app/components/shared/page-heading'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoList } from '@app/elements/dyo-list'
 import { Deployment } from '@app/models'
-import { ROUTE_DEPLOYMENTS } from '@app/routes'
+import { deploymentUrl, ROUTE_DEPLOYMENTS } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
+import { useRouter } from 'next/router'
 
 interface DeploymentsPageProps {
   deployments: Deployment[]
@@ -19,6 +20,7 @@ interface DeploymentsPageProps {
 
 const DeploymentsPage = (props: DeploymentsPageProps) => {
   const { t } = useTranslation('deployments')
+  const router = useRouter()
 
   const selfLink: BreadcrumbLink = {
     name: t('common:deployments'),
@@ -28,9 +30,10 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
   const headers = ['common:deployment', 'common:product', 'common:version', 'common:node', 'common:status']
   const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-3 pl-4 font-semibold'
   const headerClasses = [
-    ...Array.from({ length: headers.length - 1 }).map(() => defaultHeaderClass),
+    clsx('rounded-tl-lg', defaultHeaderClass),
+    ...Array.from({ length: headers.length - 2 }).map(() => defaultHeaderClass),
     clsx('text-center', defaultHeaderClass),
-    defaultHeaderClass,
+    clsx('rounded-tr-lg', defaultHeaderClass),
   ]
 
   return (
@@ -51,7 +54,14 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
               it.version,
               it.node,
               <DeploymentStatusTag status={it.status} className="w-fit mx-auto" />,
-              <Image src="/eye.svg" alt={t('common:deploy')} width={24} height={24} className="mr-8 cursor-pointer" />,
+              <Image
+                src="/eye.svg"
+                alt={t('common:deploy')}
+                width={24}
+                height={24}
+                className="mr-8 cursor-pointer"
+                onClick={() => router.push(deploymentUrl(it.productId, it.versionId, it.id))}
+              />,
             ]
             /* eslint-enable react/jsx-key */
           }}

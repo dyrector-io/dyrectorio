@@ -386,9 +386,11 @@ export class DeployService {
       include: {
         version: {
           select: {
+            id: true,
             name: true,
             product: {
               select: {
+                id: true,
                 name: true,
               },
             },
