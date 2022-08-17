@@ -1,7 +1,6 @@
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoList } from '@app/elements/dyo-list'
-import DyoTag from '@app/elements/dyo-tag'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import { useWebSocket } from '@app/hooks/use-websocket'
 import {
@@ -22,6 +21,7 @@ import { useRouter } from 'next/dist/client/router'
 import Image from 'next/image'
 import { useState } from 'react'
 import DeploymentStatusIndicator from './deployments/deployment-status-indicator'
+import DeploymentStatusTag from './deployments/deployment-status-tag'
 
 interface VersionDeploymentsSectionProps {
   product: ProductDetails
@@ -30,6 +30,7 @@ interface VersionDeploymentsSectionProps {
 
 const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   const { t } = useTranslation('versions')
+  const { t: tCommon } = useTranslation('common')
 
   const router = useRouter()
 
@@ -98,7 +99,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
             <div>{it.nodeName}</div>,
             <div>{it.date}</div>,
             <div>{it.prefix}</div>,
-            <DyoTag className="w-fit m-auto">{it.status.toUpperCase()}</DyoTag>,
+            <DeploymentStatusTag className="w-fit m-auto" status={it.status} />,
             <Image src="/deploy.svg" alt={t('common:deploy')} width={24} height={24} />,
           ]
           /* eslint-enable react/jsx-key */

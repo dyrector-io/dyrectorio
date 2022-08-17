@@ -21,6 +21,7 @@ import {
   DeploymentListByVersionResponse,
   DeploymentListResponse,
   DeploymentProgressMessage,
+  DeploymentStatus,
   Empty,
   IdRequest,
   PatchDeploymentRequest,
@@ -296,6 +297,14 @@ export class DeployService {
       },
     })
 
+    if (deployment.status !== DeploymentStatusEnum.preparing && deployment.status !== DeploymentStatusEnum.failed) {
+      throw new PreconditionFailedException({
+        message: 'Invalid deployment state',
+        property: 'status',
+        value: deployment.nodeId,
+      })
+    }
+
     const agent = this.agentService.getById(deployment.nodeId)
     if (!agent) {
       // Todo in the client is this just a simple internal server error
@@ -306,6 +315,15 @@ export class DeployService {
         value: deployment.nodeId,
       })
     }
+
+    await this.prisma.deployment.update({
+      where: {
+        id: deployment.id,
+      },
+      data: {
+        status: DeploymentStatusEnum.inProgress,
+      },
+    })
 
     const deploy = new Deployment(
       {

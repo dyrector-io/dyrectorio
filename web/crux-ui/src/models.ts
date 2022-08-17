@@ -85,7 +85,7 @@ export type Instance = {
   overriddenConfig?: Partial<InstanceContainerConfig>
 }
 
-export type DeploymentStatus = 'preparing' | 'inProgress' | 'successful' | 'failed' | 'obsolate'
+export type DeploymentStatus = 'preparing' | 'in_progress' | 'successful' | 'failed' | 'obsolate'
 
 export type DeploymentByVersion = {
   id: string

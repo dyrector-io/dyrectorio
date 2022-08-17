@@ -29,7 +29,7 @@ export class PrismaErrorInterceptor implements NestInterceptor {
       throw new NotFoundException({
         property: 'prisma', // TODO(robot9706): Extend when NotFoundError is smarter
         value: err.message,
-        message: err.message
+        message: err.message,
       })
     }
 

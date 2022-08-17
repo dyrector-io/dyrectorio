@@ -8,7 +8,12 @@ import { Agent, AgentToken } from 'src/domain/agent'
 import { AgentInstaller } from 'src/domain/agent-installer'
 import { DeploymentProgressEvent } from 'src/domain/deployment'
 import { collectChildVersionIds, collectParentVersionIds } from 'src/domain/utils'
-import { AlreadyExistsException, NotFoundException, UnauthenticatedException } from 'src/exception/errors'
+import {
+  AlreadyExistsException,
+  NotFoundException,
+  PreconditionFailedException,
+  UnauthenticatedException,
+} from 'src/exception/errors'
 import { AgentCommand, AgentInfo } from 'src/grpc/protobuf/proto/agent'
 import {
   ContainerStateListMessage,

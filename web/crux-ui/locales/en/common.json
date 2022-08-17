@@ -113,7 +113,8 @@
     "failed": "Failed",
     "obsolate": "Obsolate",
     "unknown": "Unknown",
-    "preparing": "Preparing"
+    "preparing": "Preparing",
+    "in_progress": "In progress"
   },
 
   "containerStatuses": {

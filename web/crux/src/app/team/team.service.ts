@@ -248,7 +248,7 @@ export class TeamService {
 
     return Empty
   }
-  
+
   async updateUserRole(request: UpdateUserRoleInTeamRequest): Promise<Empty> {
     await this.prisma.usersOnTeams.update({
       where: {

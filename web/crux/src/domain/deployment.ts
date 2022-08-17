@@ -132,7 +132,12 @@ export const previousDeployPrefix = (
 export const deploymentPrefixFromName = (name: string) => name.toLowerCase().replace(/\s/g, '')
 
 export const deploymentStatusToDb = (status: DeploymentStatus): DeploymentStatusEnum => {
-  return deploymentStatusToJSON(status).toLowerCase() as DeploymentStatusEnum
+  switch (status) {
+    case DeploymentStatus.IN_PROGRESS:
+      return DeploymentStatusEnum.inProgress
+    default:
+      return deploymentStatusToJSON(status).toLowerCase() as DeploymentStatusEnum
+  }
 }
 
 export const containerStateToDb = (state: ContainerState): ContainerStateEnum => {
