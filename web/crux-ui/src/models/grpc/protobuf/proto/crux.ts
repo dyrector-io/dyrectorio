@@ -831,7 +831,7 @@ export interface VersionDetailsResponse {
   mutable: boolean
   increasable: boolean
   images: ImageResponse[]
-  deployments: DeploymentResponse[]
+  deployments: DeploymentByVersionResponse[]
 }
 
 export interface IncreaseVersionRequest {
@@ -1143,6 +1143,21 @@ export interface DeploymentListResponse {
 }
 
 export interface DeploymentResponse {
+  id: string
+  name: string
+  product: string
+  productId: string
+  version: string
+  versionId: string
+  node: string
+  status: DeploymentStatus
+}
+
+export interface DeploymentListByVersionResponse {
+  data: DeploymentByVersionResponse[]
+}
+
+export interface DeploymentByVersionResponse {
   id: string
   audit: AuditResponse | undefined
   name: string
@@ -4480,7 +4495,7 @@ export const VersionDetailsResponse = {
       ImageResponse.encode(v!, writer.uint32(8002).fork()).ldelim()
     }
     for (const v of message.deployments) {
-      DeploymentResponse.encode(v!, writer.uint32(8010).fork()).ldelim()
+      DeploymentByVersionResponse.encode(v!, writer.uint32(8010).fork()).ldelim()
     }
     return writer
   },
@@ -4522,7 +4537,7 @@ export const VersionDetailsResponse = {
           message.images.push(ImageResponse.decode(reader, reader.uint32()))
           break
         case 1001:
-          message.deployments.push(DeploymentResponse.decode(reader, reader.uint32()))
+          message.deployments.push(DeploymentByVersionResponse.decode(reader, reader.uint32()))
           break
         default:
           reader.skipType(tag & 7)
@@ -4545,7 +4560,7 @@ export const VersionDetailsResponse = {
     message.increasable =
       object.increasable !== undefined && object.increasable !== null ? Boolean(object.increasable) : false
     message.images = (object.images ?? []).map((e: any) => ImageResponse.fromJSON(e))
-    message.deployments = (object.deployments ?? []).map((e: any) => DeploymentResponse.fromJSON(e))
+    message.deployments = (object.deployments ?? []).map((e: any) => DeploymentByVersionResponse.fromJSON(e))
     return message
   },
 
@@ -4565,7 +4580,7 @@ export const VersionDetailsResponse = {
       obj.images = []
     }
     if (message.deployments) {
-      obj.deployments = message.deployments.map(e => (e ? DeploymentResponse.toJSON(e) : undefined))
+      obj.deployments = message.deployments.map(e => (e ? DeploymentByVersionResponse.toJSON(e) : undefined))
     } else {
       obj.deployments = []
     }
@@ -4584,7 +4599,7 @@ export const VersionDetailsResponse = {
     message.mutable = object.mutable ?? false
     message.increasable = object.increasable ?? false
     message.images = object.images?.map(e => ImageResponse.fromPartial(e)) || []
-    message.deployments = object.deployments?.map(e => DeploymentResponse.fromPartial(e)) || []
+    message.deployments = object.deployments?.map(e => DeploymentByVersionResponse.fromPartial(e)) || []
     return message
   },
 }
@@ -7717,14 +7732,193 @@ export const DeploymentListResponse = {
 const baseDeploymentResponse: object = {
   id: '',
   name: '',
+  product: '',
+  productId: '',
+  version: '',
+  versionId: '',
+  node: '',
+  status: 0,
+}
+
+export const DeploymentResponse = {
+  encode(message: DeploymentResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== '') {
+      writer.uint32(10).string(message.id)
+    }
+    if (message.name !== '') {
+      writer.uint32(802).string(message.name)
+    }
+    if (message.product !== '') {
+      writer.uint32(810).string(message.product)
+    }
+    if (message.productId !== '') {
+      writer.uint32(818).string(message.productId)
+    }
+    if (message.version !== '') {
+      writer.uint32(826).string(message.version)
+    }
+    if (message.versionId !== '') {
+      writer.uint32(834).string(message.versionId)
+    }
+    if (message.node !== '') {
+      writer.uint32(842).string(message.node)
+    }
+    if (message.status !== 0) {
+      writer.uint32(848).int32(message.status)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): DeploymentResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = { ...baseDeploymentResponse } as DeploymentResponse
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.id = reader.string()
+          break
+        case 100:
+          message.name = reader.string()
+          break
+        case 101:
+          message.product = reader.string()
+          break
+        case 102:
+          message.productId = reader.string()
+          break
+        case 103:
+          message.version = reader.string()
+          break
+        case 104:
+          message.versionId = reader.string()
+          break
+        case 105:
+          message.node = reader.string()
+          break
+        case 106:
+          message.status = reader.int32() as any
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): DeploymentResponse {
+    const message = { ...baseDeploymentResponse } as DeploymentResponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.product = object.product !== undefined && object.product !== null ? String(object.product) : ''
+    message.productId = object.productId !== undefined && object.productId !== null ? String(object.productId) : ''
+    message.version = object.version !== undefined && object.version !== null ? String(object.version) : ''
+    message.versionId = object.versionId !== undefined && object.versionId !== null ? String(object.versionId) : ''
+    message.node = object.node !== undefined && object.node !== null ? String(object.node) : ''
+    message.status = object.status !== undefined && object.status !== null ? deploymentStatusFromJSON(object.status) : 0
+    return message
+  },
+
+  toJSON(message: DeploymentResponse): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.name !== undefined && (obj.name = message.name)
+    message.product !== undefined && (obj.product = message.product)
+    message.productId !== undefined && (obj.productId = message.productId)
+    message.version !== undefined && (obj.version = message.version)
+    message.versionId !== undefined && (obj.versionId = message.versionId)
+    message.node !== undefined && (obj.node = message.node)
+    message.status !== undefined && (obj.status = deploymentStatusToJSON(message.status))
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<DeploymentResponse>, I>>(object: I): DeploymentResponse {
+    const message = { ...baseDeploymentResponse } as DeploymentResponse
+    message.id = object.id ?? ''
+    message.name = object.name ?? ''
+    message.product = object.product ?? ''
+    message.productId = object.productId ?? ''
+    message.version = object.version ?? ''
+    message.versionId = object.versionId ?? ''
+    message.node = object.node ?? ''
+    message.status = object.status ?? 0
+    return message
+  },
+}
+
+const baseDeploymentListByVersionResponse: object = {}
+
+export const DeploymentListByVersionResponse = {
+  encode(message: DeploymentListByVersionResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    for (const v of message.data) {
+      DeploymentByVersionResponse.encode(v!, writer.uint32(8002).fork()).ldelim()
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): DeploymentListByVersionResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = {
+      ...baseDeploymentListByVersionResponse,
+    } as DeploymentListByVersionResponse
+    message.data = []
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1000:
+          message.data.push(DeploymentByVersionResponse.decode(reader, reader.uint32()))
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): DeploymentListByVersionResponse {
+    const message = {
+      ...baseDeploymentListByVersionResponse,
+    } as DeploymentListByVersionResponse
+    message.data = (object.data ?? []).map((e: any) => DeploymentByVersionResponse.fromJSON(e))
+    return message
+  },
+
+  toJSON(message: DeploymentListByVersionResponse): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? DeploymentByVersionResponse.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<DeploymentListByVersionResponse>, I>>(
+    object: I,
+  ): DeploymentListByVersionResponse {
+    const message = {
+      ...baseDeploymentListByVersionResponse,
+    } as DeploymentListByVersionResponse
+    message.data = object.data?.map(e => DeploymentByVersionResponse.fromPartial(e)) || []
+    return message
+  },
+}
+
+const baseDeploymentByVersionResponse: object = {
+  id: '',
+  name: '',
   prefix: '',
   nodeId: '',
   nodeName: '',
   status: 0,
 }
 
-export const DeploymentResponse = {
-  encode(message: DeploymentResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+export const DeploymentByVersionResponse = {
+  encode(message: DeploymentByVersionResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== '') {
       writer.uint32(10).string(message.id)
     }
@@ -7749,10 +7943,12 @@ export const DeploymentResponse = {
     return writer
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): DeploymentResponse {
+  decode(input: _m0.Reader | Uint8Array, length?: number): DeploymentByVersionResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = { ...baseDeploymentResponse } as DeploymentResponse
+    const message = {
+      ...baseDeploymentByVersionResponse,
+    } as DeploymentByVersionResponse
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -7785,8 +7981,10 @@ export const DeploymentResponse = {
     return message
   },
 
-  fromJSON(object: any): DeploymentResponse {
-    const message = { ...baseDeploymentResponse } as DeploymentResponse
+  fromJSON(object: any): DeploymentByVersionResponse {
+    const message = {
+      ...baseDeploymentByVersionResponse,
+    } as DeploymentByVersionResponse
     message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
     message.audit =
       object.audit !== undefined && object.audit !== null ? AuditResponse.fromJSON(object.audit) : undefined
@@ -7798,7 +7996,7 @@ export const DeploymentResponse = {
     return message
   },
 
-  toJSON(message: DeploymentResponse): unknown {
+  toJSON(message: DeploymentByVersionResponse): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
     message.audit !== undefined && (obj.audit = message.audit ? AuditResponse.toJSON(message.audit) : undefined)
@@ -7810,8 +8008,10 @@ export const DeploymentResponse = {
     return obj
   },
 
-  fromPartial<I extends Exact<DeepPartial<DeploymentResponse>, I>>(object: I): DeploymentResponse {
-    const message = { ...baseDeploymentResponse } as DeploymentResponse
+  fromPartial<I extends Exact<DeepPartial<DeploymentByVersionResponse>, I>>(object: I): DeploymentByVersionResponse {
+    const message = {
+      ...baseDeploymentByVersionResponse,
+    } as DeploymentByVersionResponse
     message.id = object.id ?? ''
     message.audit =
       object.audit !== undefined && object.audit !== null ? AuditResponse.fromPartial(object.audit) : undefined
@@ -9656,8 +9856,9 @@ export const CruxDeploymentService = {
     responseStream: false,
     requestSerialize: (value: IdRequest) => Buffer.from(IdRequest.encode(value).finish()),
     requestDeserialize: (value: Buffer) => IdRequest.decode(value),
-    responseSerialize: (value: DeploymentListResponse) => Buffer.from(DeploymentListResponse.encode(value).finish()),
-    responseDeserialize: (value: Buffer) => DeploymentListResponse.decode(value),
+    responseSerialize: (value: DeploymentListByVersionResponse) =>
+      Buffer.from(DeploymentListByVersionResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => DeploymentListByVersionResponse.decode(value),
   },
   createDeployment: {
     path: '/crux.CruxDeployment/CreateDeployment',
@@ -9715,6 +9916,15 @@ export const CruxDeploymentService = {
       Buffer.from(DeploymentEventListResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer) => DeploymentEventListResponse.decode(value),
   },
+  getDeploymentList: {
+    path: '/crux.CruxDeployment/GetDeploymentList',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: AccessRequest) => Buffer.from(AccessRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => AccessRequest.decode(value),
+    responseSerialize: (value: DeploymentListResponse) => Buffer.from(DeploymentListResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => DeploymentListResponse.decode(value),
+  },
   startDeployment: {
     path: '/crux.CruxDeployment/StartDeployment',
     requestStream: false,
@@ -9738,13 +9948,14 @@ export const CruxDeploymentService = {
 } as const
 
 export interface CruxDeploymentServer extends UntypedServiceImplementation {
-  getDeploymentsByVersionId: handleUnaryCall<IdRequest, DeploymentListResponse>
+  getDeploymentsByVersionId: handleUnaryCall<IdRequest, DeploymentListByVersionResponse>
   createDeployment: handleUnaryCall<CreateDeploymentRequest, CreateEntityResponse>
   updateDeployment: handleUnaryCall<UpdateDeploymentRequest, UpdateEntityResponse>
   patchDeployment: handleUnaryCall<PatchDeploymentRequest, UpdateEntityResponse>
   deleteDeployment: handleUnaryCall<IdRequest, Empty>
   getDeploymentDetails: handleUnaryCall<IdRequest, DeploymentDetailsResponse>
   getDeploymentEvents: handleUnaryCall<IdRequest, DeploymentEventListResponse>
+  getDeploymentList: handleUnaryCall<AccessRequest, DeploymentListResponse>
   startDeployment: handleServerStreamingCall<IdRequest, DeploymentProgressMessage>
   subscribeToDeploymentEditEvents: handleServerStreamingCall<ServiceIdRequest, DeploymentEditEventMessage>
 }
@@ -9752,18 +9963,18 @@ export interface CruxDeploymentServer extends UntypedServiceImplementation {
 export interface CruxDeploymentClient extends Client {
   getDeploymentsByVersionId(
     request: IdRequest,
-    callback: (error: ServiceError | null, response: DeploymentListResponse) => void,
+    callback: (error: ServiceError | null, response: DeploymentListByVersionResponse) => void,
   ): ClientUnaryCall
   getDeploymentsByVersionId(
     request: IdRequest,
     metadata: Metadata,
-    callback: (error: ServiceError | null, response: DeploymentListResponse) => void,
+    callback: (error: ServiceError | null, response: DeploymentListByVersionResponse) => void,
   ): ClientUnaryCall
   getDeploymentsByVersionId(
     request: IdRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: DeploymentListResponse) => void,
+    callback: (error: ServiceError | null, response: DeploymentListByVersionResponse) => void,
   ): ClientUnaryCall
   createDeployment(
     request: CreateDeploymentRequest,
@@ -9851,6 +10062,21 @@ export interface CruxDeploymentClient extends Client {
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: DeploymentEventListResponse) => void,
+  ): ClientUnaryCall
+  getDeploymentList(
+    request: AccessRequest,
+    callback: (error: ServiceError | null, response: DeploymentListResponse) => void,
+  ): ClientUnaryCall
+  getDeploymentList(
+    request: AccessRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: DeploymentListResponse) => void,
+  ): ClientUnaryCall
+  getDeploymentList(
+    request: AccessRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: DeploymentListResponse) => void,
   ): ClientUnaryCall
   startDeployment(request: IdRequest, options?: Partial<CallOptions>): ClientReadableStream<DeploymentProgressMessage>
   startDeployment(

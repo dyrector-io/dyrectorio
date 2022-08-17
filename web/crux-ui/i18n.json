@@ -29,6 +29,7 @@
     "/teams/[teamId]/invite": ["teams"],
     "/audit-log": ["audit"],
     "/notifications": ["notifications"],
-    "/notifications/[notificationId]": ["notifications"]
+    "/notifications/[notificationId]": ["notifications"],
+    "/deployments": ["deployments"]
   }
 }

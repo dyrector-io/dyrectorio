@@ -1,5 +1,6 @@
 import {
   ROUTE_AUDIT,
+  ROUTE_DEPLOYMENTS,
   ROUTE_INDEX,
   ROUTE_LOGOUT,
   ROUTE_NODES,
@@ -12,7 +13,6 @@ import {
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { NavButton } from './nav-button'
 import { NavSection } from './nav-section'
 
 export interface SidebarProps {
@@ -21,6 +21,19 @@ export interface SidebarProps {
 
 export const Sidebar = (props: SidebarProps) => {
   const { t } = useTranslation('common')
+
+  const productOptions = [
+    {
+      icon: <Image src="/products.svg" alt={t('products')} width={18} height={18} />,
+      text: 'products',
+      link: ROUTE_PRODUCTS,
+    },
+    {
+      icon: <Image src="/deployment.svg" alt={t('deployments')} width={18} height={18} />,
+      text: 'deployments',
+      link: ROUTE_DEPLOYMENTS,
+    },
+  ]
 
   const configOptions = [
     {
@@ -80,13 +93,7 @@ export const Sidebar = (props: SidebarProps) => {
       </div>
 
       <div className="flex flex-col flex-grow px-6 pb-4">
-        <NavButton
-          className="mt-14 ml-4"
-          href={ROUTE_PRODUCTS}
-          icon={<Image src="/products.svg" alt={t('products')} width={18} height={18} />}
-        >
-          {t('products')}
-        </NavButton>
+        <NavSection className="mt-12" title={t('product')} options={productOptions} />
 
         <NavSection className="mt-12" title={t('config')} options={configOptions} />
 

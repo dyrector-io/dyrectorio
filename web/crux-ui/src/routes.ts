@@ -21,6 +21,7 @@ export const ROUTE_AUDIT = '/audit-log'
 export const ROUTE_TEAMS_CREATE = '/teams/create'
 
 export const ROUTE_PRODUCTS = '/products'
+export const ROUTE_DEPLOYMENTS = '/deployments'
 
 export const ROUTE_NODES = '/nodes'
 export const ROUTE_REGISTRIES = '/registries'

@@ -5,7 +5,7 @@ import DyoTag from '@app/elements/dyo-tag'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import { useWebSocket } from '@app/hooks/use-websocket'
 import {
-  Deployment,
+  DeploymentByVersion,
   GetNodeStatusListMessage,
   NodeStatus,
   NodeStatusMessage,
@@ -35,8 +35,8 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
 
   const { version } = props
 
-  const filters = useFilters<Deployment, TextFilter>({
-    filters: [textFilterFor<Deployment>(it => [it.name, it.nodeName, it.prefix, it.status, it.date])],
+  const filters = useFilters<DeploymentByVersion, TextFilter>({
+    filters: [textFilterFor<DeploymentByVersion>(it => [it.name, it.nodeName, it.prefix, it.status, it.date])],
     initialData: version.deployments,
     initialFilter: { text: '' },
   })
@@ -66,7 +66,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
 
   nodeSock.on(WS_TYPE_NODE_STATUS, (message: NodeStatusMessage) => updateNodeStatuses([message]))
 
-  const onNavigateToDeployment = (deployment: Deployment) =>
+  const onNavigateToDeployment = (deployment: DeploymentByVersion) =>
     router.push(deploymentUrl(props.product.id, version.id, deployment.id))
 
   return (
@@ -89,8 +89,6 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
         ]}
         data={filters.filtered}
         itemBuilder={it => {
-          const nodeStatus = nodeStatuses[it.nodeId] ?? 'unreachable'
-
           /* eslint-disable react/jsx-key */
           return [
             <DeploymentStatusIndicator status={it.status} />,

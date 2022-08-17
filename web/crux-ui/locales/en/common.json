@@ -27,7 +27,7 @@
   "icon": "Icon",
   "updatedAt": "Update at",
   "createdAt": "Created at",
-  "createdByName" : "Created by {{name}}",
+  "createdByName": "Created by {{name}}",
   "date": "Date",
   "type": "Type",
   "status": "Status",
@@ -75,6 +75,9 @@
   "container": "Container",
   "node": "Node",
   "registry": "Registry",
+  "deployment": "Deployment",
+  "product": "Product",
+  "version": "Version",
 
   "prefix": "Prefix",
 
@@ -150,7 +153,7 @@
   "upload": "Upload",
 
   "deleteDescription": "If you proceed, you will lose all your data related to {{name}}. This action is not revocable.",
-  
+
   "itemsPerPage": "Items per page",
   "showingItems": "Showing {{pageFrom}} to {{pageTo}} of {{total}} entries"
 }

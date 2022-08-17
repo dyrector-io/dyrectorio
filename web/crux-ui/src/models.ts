@@ -87,7 +87,7 @@ export type Instance = {
 
 export type DeploymentStatus = 'preparing' | 'inProgress' | 'successful' | 'failed' | 'obsolate'
 
-export type Deployment = {
+export type DeploymentByVersion = {
   id: string
   name: string
   nodeId: string
@@ -108,6 +108,17 @@ export type DeploymentDetails = {
   environment: Environment
   status: DeploymentStatus
   instances: Instance[]
+}
+
+export type Deployment = {
+  id: string
+  name: string
+  productId: string
+  product: string
+  versionId: string
+  version: string
+  node: string
+  status: DeploymentStatus
 }
 
 export type DeploymentRoot = DeploymentDetails & {
@@ -180,7 +191,7 @@ export type CreateVersion = UpdateVersion & {
 export type VersionDetails = Version & {
   mutable: boolean
   images: VersionImage[]
-  deployments: Deployment[]
+  deployments: DeploymentByVersion[]
 }
 
 export type Product = {

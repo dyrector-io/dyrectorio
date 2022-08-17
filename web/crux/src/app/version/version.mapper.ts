@@ -33,7 +33,7 @@ export class VersionMapper {
       mutable: versionIsMutable(version),
       increasable: versionIsIncreasable(version),
       images: version.images.map(it => this.imageMapper.toGrpc(it)),
-      deployments: version.deployments.map(it => this.deployMapper.toGrpc(it)),
+      deployments: version.deployments.map(it => this.deployMapper.deploymentByVersionToGrpc(it)),
     }
   }
 
