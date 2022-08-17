@@ -45,5 +45,6 @@
 * [Roadmap](learn-more/roadmap/README.md)
   * [Features in progress](learn-more/roadmap/features-in-progress.md)
   * [Integrations in progress](learn-more/roadmap/integrations-in-progress.md)
+* [Pricing](learn-more/pricing.md)
 * [FAQ](learn-more/faq.md)
 * [Community](learn-more/community.md)
