@@ -1,4 +1,5 @@
 import * as yup from 'yup'
+import { AnyObject } from 'yup/lib/types'
 import { DYO_ICONS } from './elements/dyo-icon-picker'
 import {
   ExplicitContainerNetworkMode,
@@ -210,5 +211,24 @@ export const notificationSchema = yup.object().shape({
     .mixed<NotificationType>()
     .oneOf([...NOTIFICATION_TYPE_VALUES])
     .required(),
-  url: yup.string().required(),
+  url: yup
+    .string()
+    .url()
+    .when('type', (type: NotificationType, schema: yup.StringSchema<string, AnyObject, string>) => {
+      let pattern: RegExp
+      switch (type) {
+        case 'discord':
+          pattern = /^https:\/\/discord.com\/api\/webhooks/
+          break
+        case 'slack':
+          pattern = /^https:\/\/hooks.slack.com\/services/
+          break
+        case 'teams':
+          pattern = /^https:\/\/[a-zA-Z]+.webhook.office.com/
+          break
+      }
+
+      return schema.matches(pattern)
+    })
+    .required(),
 })
