@@ -15,7 +15,7 @@ export const DyoMessage = (props: DyoMessageProps) => {
         <p
           className={clsx(
             'mt-1 text-xs italic w-80',
-            messageType === 'error' ? 'text-error-red ' : 'text-warning-orange ',
+            messageType === 'error' ? 'text-error-red' : 'text-warning-orange',
           )}
         >
           {message}

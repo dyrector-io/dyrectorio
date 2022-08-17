@@ -18,7 +18,7 @@ const DyoNodeCard = (props: DyoNodeCardProps) => {
 
   return (
     <>
-      <DyoCard className={clsx(props.className ?? 'p-6', 'flex flex-col')} modal={false}>
+      <DyoCard className={clsx(props.className ?? 'p-6', 'flex flex-col')}>
         <div className={clsx(onNameClick ? 'cursor-pointer' : null, 'flex flex-row flex-grow')} onClick={onNameClick}>
           {node.icon ? <DyoBadge icon={node.icon} /> : null}
 

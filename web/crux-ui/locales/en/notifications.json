@@ -11,7 +11,7 @@
   "type": {
     "discord": "Discord",
     "slack": "Slack",
-    "teams": "MS Teams"
+    "teams": "Microsoft Teams"
   },
 
   "active": "Active",
