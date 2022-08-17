@@ -135,7 +135,7 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
               choices={NOTIFICATION_TYPE_VALUES}
               initialSelection={formik.values.type}
               converter={(it: NotificationType) => t(`type.${it}`)}
-              onSelectionChange={it => formik.setFieldValue('type', it, false)}
+              onSelectionChange={it => formik.setFieldValue('type', it, true)}
             />
           </div>
 
