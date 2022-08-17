@@ -130,6 +130,7 @@ const ProductDetailsPage = (props: ProductDetailsPageProps) => {
           product={productDetailsToEditableProduct(product)}
           onProductEdited={onProductEdited}
           submitRef={submitRef}
+          versions={versions}
         />
       ) : editState === 'add-version' ? (
         <EditVersionCard
@@ -137,6 +138,7 @@ const ProductDetailsPage = (props: ProductDetailsPageProps) => {
           product={product}
           submitRef={submitRef}
           onVersionEdited={onVersionEdited}
+          versions={versions}
         />
       ) : (
         <IncreaseVersionCard
@@ -151,7 +153,7 @@ const ProductDetailsPage = (props: ProductDetailsPageProps) => {
       {editState !== 'version-list' ? null : simpleProduct ? (
         <VersionSections product={product} version={props.simpleProductVersionDetails} setSaving={setSaving} />
       ) : (
-        <ProductVersionsSection productId={product.id} versions={versions} onIncrease={onIncreaseVersion} />
+        <ProductVersionsSection productId={product.id} versions={versions ?? []} onIncrease={onIncreaseVersion} />
       )}
     </Layout>
   )
