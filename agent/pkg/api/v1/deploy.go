@@ -44,7 +44,6 @@ type VersionData struct {
 
 type DeployVersionRequest struct {
 	VersionData
-
 	DeployImages []DeployImageRequest `json:"deployImageRequest" binding:"dive,min=1"`
 }
 
@@ -318,12 +317,6 @@ const (
 	EmptyDirVolumeType      VolumeType = "tmp"
 )
 
-type IngressConfig struct {
-	// name override, default set ingress route can be overwritten, default used otherwise
-	BaseDomain string `json:"baseDomain"`
-	// domain list, one is fine
-	Domains []string `json:"domains"`
-}
 type ConfigContainer struct {
 	Image     string `json:"image" binding:"required"`
 	Volume    string `json:"volume" binding:"required"`
