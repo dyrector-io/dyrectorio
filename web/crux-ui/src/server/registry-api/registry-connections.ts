@@ -89,6 +89,7 @@ export class RegistryConnections {
           )
         : new GoogleRegistryClient(
             registry.url,
+            registry.imageNamePrefix,
             registry._private
               ? {
                   username: registry.user,

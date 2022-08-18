@@ -419,10 +419,21 @@ const GoogleRegistryFields = (props: EditRegistryTypeProps<GoogleRegistryDetails
         grow
         name="url"
         type="text"
-        label={t('organization')}
+        label={t('url')}
         onChange={formik.handleChange}
         value={formik.values.url}
         message={formik.errors.url}
+      />
+
+      <DyoInput
+        className="max-w-lg"
+        grow
+        name="imageNamePrefix"
+        type="text"
+        label={t('organization')}
+        onChange={formik.handleChange}
+        value={formik.values.imageNamePrefix}
+        message={formik.errors.imageNamePrefix}
       />
 
       <div className="mr-auto">
