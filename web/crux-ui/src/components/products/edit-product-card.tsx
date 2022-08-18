@@ -6,19 +6,21 @@ import { DyoLabel } from '@app/elements/dyo-label'
 import { DyoTextArea } from '@app/elements/dyo-text-area'
 import { DyoToggle } from '@app/elements/dyo-toggle'
 import { defaultApiErrorHandler } from '@app/errors'
-import { CreateProduct, EditableProduct, Product, UpdateProduct } from '@app/models'
+import { CreateProduct, EditableProduct, Product, UpdateProduct, Version } from '@app/models'
 import { API_PRODUCTS, productApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { createProductSchema, updateProductSchema } from '@app/validation'
 import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
 import { MutableRefObject, useState } from 'react'
+import ProductVersionsSection from './product-versions-section'
 
 interface EditProductCardProps {
   className?: string
   product?: EditableProduct
   onProductEdited: (product: Product) => void
   submitRef?: MutableRefObject<() => Promise<any>>
+  versions?: Version[]
 }
 
 const EditProductCard = (props: EditProductCardProps) => {
@@ -143,6 +145,7 @@ const EditProductCard = (props: EditProductCardProps) => {
           <DyoButton className="hidden" type="submit"></DyoButton>
         </form>
       </DyoCard>
+      <ProductVersionsSection productId={product.id} versions={props.versions ?? []} disabled />
     </>
   )
 }
