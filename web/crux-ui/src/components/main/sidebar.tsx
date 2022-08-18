@@ -29,7 +29,7 @@ export const Sidebar = (props: SidebarProps) => {
       link: ROUTE_PRODUCTS,
     },
     {
-      icon: <Image src="/deployment.svg" alt={t('deployments')} width={18} height={18} />,
+      icon: <Image src="/deploy.svg" alt={t('deployments')} width={18} height={18} />,
       text: 'deployments',
       link: ROUTE_DEPLOYMENTS,
     },
