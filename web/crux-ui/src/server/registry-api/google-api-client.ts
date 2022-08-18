@@ -13,7 +13,7 @@ export class GoogleRegistryClient implements RegistryApiClient {
   private headers: HeadersInit = {}
   private client: JWT
 
-  constructor(private url: string, options?: GoogleClientOptions) {
+  constructor(private url: string, private imageNamePrefix: string, options?: GoogleClientOptions) {
     if (options?.username) {
       if (!options.password) {
         throw unauthorizedError(`Invalid authentication parameters for: ${url}`)
@@ -46,7 +46,7 @@ export class GoogleRegistryClient implements RegistryApiClient {
       await this.registryCredentialsToBearerAuth()
     }
 
-    const url = `https://gcr.io/v2/${this.url}/tags/list`
+    const url = `https://${this.url}/v2/${this.imageNamePrefix}/tags/list`
 
     const res = await fetch(url, {
       headers: this.headers,
@@ -67,7 +67,7 @@ export class GoogleRegistryClient implements RegistryApiClient {
       await this.registryCredentialsToBearerAuth()
     }
 
-    const url = `https://gcr.io/v2/${this.url}/${image}/tags/list`
+    const url = `https://${this.url}/v2/${this.imageNamePrefix}/${image}/tags/list`
 
     const tagRes = await fetch(url, {
       headers: this.headers,

@@ -332,7 +332,12 @@ export class DeployService {
         versionName: deployment.version.name,
         requests: deployment.instances.map(it => {
           const registry = it.image.registry
-          const registryUrl = registry.type === 'v2' ? registry.url : ''
+          const registryUrl =
+            registry.type === 'google' || registry.type === 'github'
+              ? `${registry.url}/${registry.imageNamePrefix}`
+              : registry.type === 'v2' || registry.type === 'gitlab'
+              ? registry.url
+              : ''
 
           return {
             id: it.id,
