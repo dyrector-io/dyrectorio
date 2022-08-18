@@ -218,7 +218,7 @@ export const notificationSchema = yup.object().shape({
       let pattern: RegExp
       switch (type) {
         case 'discord':
-          pattern = /^https:\/\/discord.com\/api\/webhooks/
+          pattern = /^https:\/\/(discord|discordapp).com\/api\/webhooks/
           break
         case 'slack':
           pattern = /^https:\/\/hooks.slack.com\/services/
