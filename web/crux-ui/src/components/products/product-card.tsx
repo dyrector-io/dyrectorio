@@ -20,8 +20,8 @@ const ProductCard = (props: ProductCardProps) => {
 
   return (
     <>
-      <DyoCard className={clsx(props.className ?? 'p-6', 'flex flex-col flex-grow')}>
-        <div className="flex flex-col overflow-hidden">
+      <DyoCard className={clsx(props.className ?? 'p-6', 'flex flex-col flex-grow w-full')}>
+        <div className="flex flex-col w-full">
           <div className="flex flex-row">
             <Image
               className={clsx(onClick ? 'cursor-pointer' : null)}
@@ -47,7 +47,7 @@ const ProductCard = (props: ProductCardProps) => {
             </div>
           </div>
 
-          <p className="text-md text-bright mt-4 overflow-y-auto">{product.description}</p>
+          <div className="text-md text-bright mt-4 line-clamp-2 break-words">{product.description}</div>
         </div>
       </DyoCard>
     </>

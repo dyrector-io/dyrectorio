@@ -1,6 +1,7 @@
 import { UserMeta } from '@app/models'
 import { API_WHOAMI, ROUTE_LOGIN } from '@app/routes'
 import { configuredFetcher } from '@app/utils'
+import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import Head from 'next/head'
@@ -15,6 +16,9 @@ export interface LayoutProps {
   title: string
   children: React.ReactNode
 }
+
+const sidebarWidth = 'w-[20rem]'
+const mainWidth = 'w-[calc(100vw-20rem)]' // ViewWidth - sidebar
 
 export const Layout = (props: LayoutProps) => {
   const { data: meta, error } = useSWR<UserMeta>(
@@ -32,8 +36,7 @@ export const Layout = (props: LayoutProps) => {
   return (
     <>
       <PageHead title={props.title} />
-
-      <main className="flex flex-row h-full bg-dark">
+      <main className="flex flex-row h-full bg-dark w-screen">
         <Toaster
           toastOptions={{
             error: {
@@ -46,9 +49,9 @@ export const Layout = (props: LayoutProps) => {
           }}
         />
 
-        <Sidebar className="flex flex-col bg-medium h-screen sticky top-0 w-80" />
+        <Sidebar className={clsx('flex flex-col bg-medium h-screen sticky top-0', sidebarWidth)} />
 
-        <div className="flex flex-col w-full px-7 pt-4">
+        <div className={clsx('flex flex-col px-7 pt-4', mainWidth)}>
           <Topbar className="flex flex-row mb-4" meta={meta} />
 
           <div className="flex flex-col h-full">{props.children}</div>
