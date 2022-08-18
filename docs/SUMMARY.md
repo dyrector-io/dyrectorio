@@ -38,6 +38,7 @@
     * [Create an Incremental Product](tutorials/create-your-product/create-a-complex-product/create-an-incremental-product.md)
     * [Add a version to your Complex Product](tutorials/create-your-product/create-a-complex-product/add-a-version-to-your-complex-product.md)
 * [Deploy your Product](tutorials/deploy-your-product.md)
+* [Create Chat Notifications](tutorials/create-chat-notifications.md)
 
 ## Learn more
 
