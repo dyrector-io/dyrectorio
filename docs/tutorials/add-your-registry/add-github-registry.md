@@ -10,6 +10,8 @@
 
 **Step 3:** Select GitHub Registry type.
 
+![](../../.gitbook/assets/githubregistry.jpg)
+
 **Step 4:** In the corresponding fields, enter:
 
 * your GitHub username,

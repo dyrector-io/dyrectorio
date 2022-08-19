@@ -12,6 +12,8 @@
 
 **Step 3:** Select Google Registry and switch the toggle under the URL field to ‘Private’.
 
+![](../../.gitbook/assets/googleregistry.jpg)
+
 **Step 4:** In the corresponding fields, enter the Organization name. Upload the JSON key file you can generate as documented [**here**](https://cloud.google.com/container-registry/docs/advanced-authentication#json-key). In the Google Cloud documentation you only need to follow instructions until the 2nd part.
 
 **Step 5:** Click ‘Save’ button on the top right.

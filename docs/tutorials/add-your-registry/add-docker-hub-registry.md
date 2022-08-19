@@ -12,6 +12,8 @@ Docker Hub is a public image library. You can add Registries from Docker Hub in 
 
 **Step 3:** Select Docker Hub type.
 
+![](../../.gitbook/assets/dockerhubregistry.jpg)
+
 **Step 4:** Enter the Registry’s name or your username in Docker Hub in the ‘Organization name or username’ field.
 
 **Step 5:** Click ‘Save’ button on the top right.

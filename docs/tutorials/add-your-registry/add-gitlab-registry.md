@@ -38,6 +38,8 @@ Tip: You can write a description, so others on your team can understand what’s
 
 **Step 3:** Select GitLab Registry type.
 
+![](../../.gitbook/assets/gitlabregistry.jpg)
+
 **Step 4:** In the corresponding fields, enter:
 
 * your GitLab username,
