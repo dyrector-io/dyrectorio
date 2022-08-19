@@ -48,7 +48,7 @@ type ContainerBuilder interface {
 	WithPreStartHooks(hooks ...LifecycleFunc) ContainerBuilder
 	WithPostStartHooks(hooks ...LifecycleFunc) ContainerBuilder
 	GetContainerId() *string
-	GetNetworkId() *string
+	GetNetworkID() *string
 	Create() ContainerBuilder
 	Start() (bool, error)
 }
@@ -262,20 +262,14 @@ func (dc *DockerContainerBuilder) GetContainerID() *string {
 	return dc.containerID
 }
 
-func (dc *DockerContainerBuilder) GetNetworkId() *string {
+func (dc *DockerContainerBuilder) GetNetworkID() *string {
 	return dc.networkID
 }
 
 // Creates the container using the configuration given by 'With...' functions.
 func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
-	if pullRequired, err := needToPullImage(dc); pullRequired {
-		if err = pullImage(dc.ctx, *dc.logger, dc.imageWithTag, dc.registryAuth); err != nil {
-			if err != nil && err.Error() != "EOF" {
-				logWrite(dc, fmt.Sprintf("Image pull error: %s", err.Error()))
-			}
-		}
-	} else if err != nil {
-		logWrite(dc, fmt.Sprintf("Failed to check image: %s", err.Error()))
+	if err := prepareImage(dc); err != nil {
+		logWrite(dc, fmt.Sprintf("Failed to prepare image: %s", err.Error()))
 		return dc
 	}
 
@@ -313,12 +307,12 @@ func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 	if dc.networkMode == "" || dc.networkMode == "none" {
 		hostConfig.NetworkMode = container.NetworkMode(dc.networkMode)
 	} else {
-		network, err := createNetwork(dc)
+		networkID, err := createNetwork(dc)
 		if err != nil {
 			logWrite(dc, fmt.Sprintln("Failed to create network: ", err.Error()))
 			return dc
 		}
-		dc.networkID = network
+		dc.networkID = networkID
 		logWrite(dc, fmt.Sprintln("Container network: ", dc.networkID))
 	}
 
@@ -390,6 +384,20 @@ func (dc *DockerContainerBuilder) Start() (bool, error) {
 		logWrite(dc, fmt.Sprintf("Started container: %s", *dc.containerID))
 		return true, nil
 	}
+}
+
+func prepareImage(dc *DockerContainerBuilder) error {
+	if pullRequired, err := needToPullImage(dc); pullRequired {
+		if err = pullImage(dc.ctx, *dc.logger, dc.imageWithTag, dc.registryAuth); err != nil {
+			if err != nil && err.Error() != "EOF" {
+				return fmt.Errorf("image pull error: %s", err.Error())
+			}
+		}
+	} else if err != nil {
+		return fmt.Errorf("image check error: %s", err.Error())
+	}
+
+	return nil
 }
 
 func createNetwork(dc *DockerContainerBuilder) (*string, error) {
