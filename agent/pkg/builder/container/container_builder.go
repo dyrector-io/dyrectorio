@@ -13,6 +13,7 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/mount"
+	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
 )
@@ -28,6 +29,7 @@ type ContainerBuilder interface {
 	WithPortRange(portRanges []PortRange) ContainerBuilder
 	WithMountPoints(mounts []mount.Mount) ContainerBuilder
 	WithName(name string) ContainerBuilder
+	WithNetworkAliases(aliases []string) ContainerBuilder
 	WithNetworkMode(networkMode string) ContainerBuilder
 	WithEnvironment(envList string) ContainerBuilder
 	WithLabels(labels map[string]string) ContainerBuilder
@@ -46,6 +48,7 @@ type ContainerBuilder interface {
 	WithPreStartHooks(hooks ...LifecycleFunc) ContainerBuilder
 	WithPostStartHooks(hooks ...LifecycleFunc) ContainerBuilder
 	GetContainerId() *string
+	GetNetworkId() *string
 	Create() ContainerBuilder
 	Start() (bool, error)
 }
@@ -54,6 +57,8 @@ type DockerContainerBuilder struct {
 	ctx             context.Context
 	client          *client.Client
 	containerID     *string
+	networkID       *string
+	networkAliases  []string
 	containerName   string
 	imageWithTag    string
 	envList         []string
@@ -105,6 +110,13 @@ func (dc *DockerContainerBuilder) WithClient(cli *client.Client) *DockerContaine
 // Sets the name of the target container.
 func (dc *DockerContainerBuilder) WithName(name string) *DockerContainerBuilder {
 	dc.containerName = name
+	return dc
+}
+
+// Sets the network aliases used when connecting the container to the network.
+// Applied only if the NetworkMode is not none.
+func (dc *DockerContainerBuilder) WithNetworkAliases(aliases []string) *DockerContainerBuilder {
+	dc.networkAliases = aliases
 	return dc
 }
 
@@ -250,6 +262,10 @@ func (dc *DockerContainerBuilder) GetContainerID() *string {
 	return dc.containerID
 }
 
+func (dc *DockerContainerBuilder) GetNetworkId() *string {
+	return dc.networkID
+}
+
 // Creates the container using the configuration given by 'With...' functions.
 func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 	if pullRequired, err := needToPullImage(dc); pullRequired {
@@ -293,9 +309,17 @@ func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 	policy.Name = string(dc.restartPolicy)
 	hostConfig.RestartPolicy = policy
 
-	if dc.networkMode != "" {
-		log.Println("Provided networkMode: ", dc.networkMode)
+	log.Println("Provided networkMode: ", dc.networkMode)
+	if dc.networkMode == "" || dc.networkMode == "none" {
 		hostConfig.NetworkMode = container.NetworkMode(dc.networkMode)
+	} else {
+		network, err := createNetwork(dc)
+		if err != nil {
+			logWrite(dc, fmt.Sprintln("Failed to create network: ", err.Error()))
+			return dc
+		}
+		dc.networkID = network
+		logWrite(dc, fmt.Sprintln("Container network: ", dc.networkID))
 	}
 
 	var name string
@@ -330,6 +354,12 @@ func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 		logWrite(dc, "Container was not created.")
 	} else {
 		dc.containerID = &containers[0].ID
+
+		if dc.networkID != nil {
+			if err := attachNetwork(dc, *dc.networkID); err != nil {
+				logWrite(dc, fmt.Sprintln("Container network attach error: ", err))
+			}
+		}
 	}
 
 	return dc
@@ -360,6 +390,41 @@ func (dc *DockerContainerBuilder) Start() (bool, error) {
 		logWrite(dc, fmt.Sprintf("Started container: %s", *dc.containerID))
 		return true, nil
 	}
+}
+
+func createNetwork(dc *DockerContainerBuilder) (*string, error) {
+	networkName := fmt.Sprintf("%s-network", dc.networkMode)
+
+	filter := filters.NewArgs()
+	filter.Add("name", networkName)
+
+	networks, err := dc.client.NetworkList(dc.ctx, types.NetworkListOptions{Filters: filter})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(networks) == 1 {
+		return &networks[0].ID, nil
+	}
+
+	networkOpts := types.NetworkCreate{
+		CheckDuplicate: true,
+	}
+	networkResult, err := dc.client.NetworkCreate(dc.ctx, networkName, networkOpts)
+	if err != nil {
+		return nil, err
+	}
+	networkID := networkResult.ID
+
+	return &networkID, nil
+}
+
+func attachNetwork(dc *DockerContainerBuilder, networkID string) error {
+	endpointSettings := &network.EndpointSettings{
+		Aliases: dc.networkAliases,
+	}
+
+	return dc.client.NetworkConnect(dc.ctx, networkID, *dc.containerID, endpointSettings)
 }
 
 func execHooks(dc *DockerContainerBuilder, hooks []LifecycleFunc) error {

@@ -172,6 +172,15 @@ func removeContainer(ctx context.Context, containerName string) error {
 	return nil
 }
 
+func deleteNetwork(ctx context.Context, networkID string) error {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		panic(err)
+	}
+
+	return cli.NetworkRemove(ctx, networkID)
+}
+
 type defaultLogger struct {
 	io.StringWriter
 }
