@@ -8,17 +8,22 @@ import { missingParameter } from './error-middleware'
 
 const config = new Configuration({ basePath: process.env.KRATOS_URL })
 const kratos = new V0alpha2Api(config)
-const meta = new MetadataApi({
-  basePath: 'http://172.17.0.1:9434',
-})
+const meta = new MetadataApi(
+  new Configuration({
+    basePath: process.env.KRATOS_ADMIN_URL ?? process.env.KRATOS_URL,
+  }),
+)
 
 export const getKratosServiceStatus = async (): Promise<ServiceInfo> => {
   try {
-    const versionRes = await meta.getVersion()
-    if (versionRes.status === 200) {
-      return {
-        status: 'operational',
-        version: versionRes.data.version,
+    if (process.env.KRATOS_ADMIN_URL) {
+      const versionRes = await meta.getVersion()
+
+      if (versionRes.status === 200) {
+        return {
+          status: 'operational',
+          version: versionRes.data.version,
+        }
       }
     }
 
