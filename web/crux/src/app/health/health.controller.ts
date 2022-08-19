@@ -1,12 +1,15 @@
 import { Controller } from '@nestjs/common'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
-import { CruxHealthController, CruxHealthControllerMethods, Empty } from 'src/grpc/protobuf/proto/crux'
+import { CruxHealthController, CruxHealthControllerMethods, HealthResponse } from 'src/grpc/protobuf/proto/crux'
+import { HealthService } from './health.service'
 
 @Controller()
 @CruxHealthControllerMethods()
 export class HealthController implements CruxHealthController {
+  constructor(private readonly service: HealthService) {}
+
   @AuditLogLevel('disabled')
-  getHealth(): Empty {
-    return Empty
+  async getHealth(): Promise<HealthResponse> {
+    return this.service.getHealth()
   }
 }

@@ -115,7 +115,7 @@ service CruxAudit {
   rpc GetAuditLog(AccessRequest) returns (AuditLogListResponse);
 }
 
-service CruxHealth { rpc getHealth(Empty) returns (Empty); }
+service CruxHealth { rpc getHealth(Empty) returns (HealthResponse); }
 
 /**
  *
@@ -881,6 +881,8 @@ enum ContainerState {
   DEAD = 7;
 }
 
+// NOTIFICATION
+
 enum NotificationType {
   UNKNOWN_NOTIFICATION_TYPE = 0;
   DISCORD = 1;
@@ -934,4 +936,19 @@ message NotificationResponse {
 
 message NotificationListResponse {
   repeated NotificationResponse data = 1000;
+}
+
+// HEALTH
+
+enum ServiceStatus {
+  UNKNOWN_SERVICE_STATUS = 0;
+  UNAVAILABLE = 1;
+  DISRUPTED = 2;
+  OPERATIONAL = 3;
+}
+
+message HealthResponse {
+  ServiceStatus status = 100;
+  string cruxVersion = 101;
+  optional string lastMigration = 102;
 }

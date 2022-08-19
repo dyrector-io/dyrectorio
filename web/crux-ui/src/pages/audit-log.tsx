@@ -54,6 +54,11 @@ const AuditLogPage = (props: AuditLogPageProps) => {
     ],
   })
 
+  const pagination = usePagination<AuditLog>({
+    initialData: auditLog,
+    initialPagination: { pageSize: 10, currentPage: 0 },
+  })
+
   const [showInfo, setShowInfo] = useState<AuditLog>(null)
 
   const parsedJSONInfo = useMemo(() => (showInfo ? JSON.parse(showInfo.info) : null), [showInfo])
@@ -68,11 +73,6 @@ const AuditLogPage = (props: AuditLogPageProps) => {
     name: t('common:audit'),
     url: ROUTE_AUDIT,
   }
-
-  const pagination = usePagination<AuditLog>({
-    initialData: auditLog,
-    initialPagination: { pageSize: 10, currentPage: 0 },
-  })
 
   const listHeaders = ['', ...['common:name', 'common:date', 'event', 'info'].map(it => t(it))]
   const defaultHeaderClass = 'uppercase text-bright text-sm font-bold bg-medium-eased pl-2 py-3 h-11'

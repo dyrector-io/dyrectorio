@@ -1,16 +1,18 @@
 import { SERVICE_STATUS_CHECK_INTERVAL } from '@app/const'
-import { ServiceStatus } from '@app/models'
-import { getCruxServiceStatus } from './crux/crux'
+import { CruxHealth, DEFAULT_CRUX_HEALTH, DEFAULT_SERVICE_INFO, ServiceInfo } from '@app/models'
+import { getCruxHealth } from './crux/crux'
 import { getKratosServiceStatus } from './kratos'
 
-class ServiceStatusChecker {
+class ServiceStatusChecker<T extends ServiceInfo> {
   private lastCheck = 0
-  private lastStatus: ServiceStatus = 'unavailable'
+  private lastInfo: T
   private checking = false
 
-  constructor(private runCheck: () => Promise<ServiceStatus>) {}
+  constructor(defaultInfo: T, private runCheck: () => Promise<T>) {
+    this.lastInfo = defaultInfo
+  }
 
-  async status(): Promise<ServiceStatus> {
+  async info(): Promise<T> {
     const now = new Date().getTime()
 
     if (now - this.lastCheck > SERVICE_STATUS_CHECK_INTERVAL && !this.checking) {
@@ -18,27 +20,27 @@ class ServiceStatusChecker {
       this.lastCheck = now
 
       try {
-        this.lastStatus = await this.runCheck()
+        this.lastInfo = await this.runCheck()
       } catch {
-        this.lastStatus = 'unavailable'
+        this.lastInfo.status = 'unavailable'
       }
 
       this.checking = false
     }
 
-    return this.lastStatus
+    return this.lastInfo
   }
 }
 
 export type DyoServiceStatusCheckers = {
-  crux: ServiceStatusChecker
-  kratos: ServiceStatusChecker
+  crux: ServiceStatusChecker<CruxHealth>
+  kratos: ServiceStatusChecker<ServiceInfo>
 }
 
 if (!global._serviceStatus) {
   global._serviceStatus = {
-    crux: new ServiceStatusChecker(getCruxServiceStatus),
-    kratos: new ServiceStatusChecker(getKratosServiceStatus),
+    crux: new ServiceStatusChecker(DEFAULT_CRUX_HEALTH, getCruxHealth),
+    kratos: new ServiceStatusChecker(DEFAULT_SERVICE_INFO, getKratosServiceStatus),
   }
 }
 
