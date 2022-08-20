@@ -9,7 +9,6 @@ import {
   Instance,
   InstanceContainerConfig,
   Node,
-  Version,
 } from '@prisma/client'
 import { JsonArray } from 'prisma'
 import { deploymentStatusToDb } from 'src/domain/deployment'

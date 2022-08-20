@@ -1,19 +1,13 @@
-import { BaseMessage, NotificationMessageType } from 'src/domain/notification-templates'
 import { Injectable, Logger } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { DeploymentEventTypeEnum, DeploymentStatusEnum, NodeTypeEnum } from '@prisma/client'
 import { concatAll, finalize, from, map, Observable, Subject, takeUntil } from 'rxjs'
-import { PrismaService } from 'src/services/prisma.service'
 import { Agent, AgentToken } from 'src/domain/agent'
 import { AgentInstaller } from 'src/domain/agent-installer'
 import { DeploymentProgressEvent } from 'src/domain/deployment'
+import { BaseMessage, NotificationMessageType } from 'src/domain/notification-templates'
 import { collectChildVersionIds, collectParentVersionIds } from 'src/domain/utils'
-import {
-  AlreadyExistsException,
-  NotFoundException,
-  PreconditionFailedException,
-  UnauthenticatedException,
-} from 'src/exception/errors'
+import { AlreadyExistsException, NotFoundException, UnauthenticatedException } from 'src/exception/errors'
 import { AgentCommand, AgentInfo } from 'src/grpc/protobuf/proto/agent'
 import {
   ContainerStateListMessage,
@@ -23,8 +17,9 @@ import {
   NodeConnectionStatus,
   NodeEventMessage,
 } from 'src/grpc/protobuf/proto/crux'
-import { GrpcNodeConnection } from 'src/shared/grpc-node-connection'
 import { DomainNotificationService } from 'src/services/domain.notification.service'
+import { PrismaService } from 'src/services/prisma.service'
+import { GrpcNodeConnection } from 'src/shared/grpc-node-connection'
 
 @Injectable()
 export class AgentService {
@@ -172,7 +167,7 @@ export class AgentService {
         agent.onDeploymentFinished(deployment)
         this.updateDeploymentStatuses(agent.id, deployment.id)
 
-        let messageType: NotificationMessageType =
+        const messageType: NotificationMessageType =
           deployment.status() == DeploymentStatus.SUCCESSFUL ? 'successfulDeploy' : 'failedDeploy'
 
         await this.notificationService.sendNotification({

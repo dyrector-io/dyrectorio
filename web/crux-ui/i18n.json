@@ -30,6 +30,7 @@
     "/audit-log": ["audit"],
     "/notifications": ["notifications"],
     "/notifications/[notificationId]": ["notifications"],
-    "/deployments": ["deployments"]
+    "/deployments": ["deployments"],
+    "/status": ["status"]
   }
 }

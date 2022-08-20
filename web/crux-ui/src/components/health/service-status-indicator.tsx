@@ -15,7 +15,13 @@ const ServiceStatusIndicator = (props: ServiceStatusIndicatorProps) => {
 
   return (
     <div className={clsx(props.className, 'flex')}>
-      <Image src={`/${statusToAssetName(status)}.svg`} alt={t(`serviceStatuses.${status}`)} width={16} height={16} />
+      <Image
+        src={`/${statusToAssetName(status)}.svg`}
+        alt={t(`serviceStatuses.${status}`)}
+        width={16}
+        height={16}
+        layout="fixed"
+      />
     </div>
   )
 }

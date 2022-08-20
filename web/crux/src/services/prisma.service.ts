@@ -1,6 +1,5 @@
 import { INestApplication, Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { Prisma, PrismaClient } from '@prisma/client'
-import { mapNotFoundError } from 'src/exception/errors'
 
 @Injectable()
 export class PrismaService extends PrismaClient<Prisma.PrismaClientOptions, 'query'> implements OnModuleInit {
@@ -31,6 +30,11 @@ export class PrismaService extends PrismaClient<Prisma.PrismaClientOptions, 'que
       await app.close()
     })
   }
-}
 
-type NotFoundErrorMappings = { [P in Prisma.ModelName]?: string }
+  async findLastMigration(): Promise<string> {
+    const migrations: { migration_name: string }[] = await this
+      .$queryRaw`SELECT migration_name from _prisma_migrations WHERE rolled_back_at IS NULL ORDER BY finished_at DESC LIMIT 1`
+
+    return migrations && migrations.length > 0 ? migrations[0].migration_name : null
+  }
+}
