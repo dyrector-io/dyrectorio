@@ -53,7 +53,6 @@
     "@prisma/client": "4.1.1",
     "@sendgrid/mail": "^7.7.0",
     "@types/google-protobuf": "^3.15.6",
-    "@types/handlebars": "^4.1.0",
     "@willsoto/nestjs-prometheus": "^4.7.0",
     "axios": "^0.27.2",
     "class-transformer": "^0.5.1",
