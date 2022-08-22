@@ -77,7 +77,7 @@ const VersionCard = (props: VersionCardProps) => {
           text={version.changelog}
           lineClamp={6}
           className="text-md text-bright mt-2 max-h-44"
-          buttonClassName="ml-auto mb-8"
+          buttonClassName="w-fit mb-8"
           modalTitle={t('changelogName', { name: version.name })}
         />
 

@@ -37,9 +37,9 @@ const DyoNodeCard = (props: DyoNodeCardProps) => {
         )}
         <DyoExpandableText
           text={node.description}
-          lineClamp={6}
+          lineClamp={node.address ? 4 : 6}
           className="text-md text-light mt-2 max-h-44"
-          buttonClassName="ml-auto"
+          buttonClassName="w-fit"
           modalTitle={node.name}
         />
       </DyoCard>

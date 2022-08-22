@@ -160,7 +160,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
 
   return (
     <>
-      <DyoWrap className={clsx(props.className, 'flex flex-row ')}>
+      <DyoWrap className={clsx(props.className, 'flex flex-row')}>
         <DyoCard className="w-full p-8">
           <DyoHeading element="h4" className="text-lg text-bright">
             {editing ? t('common:editName', { name: node.name }) : t('new')}

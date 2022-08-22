@@ -22,32 +22,35 @@ const ProductDetailsCard = (props: ProductDetailsCardProps) => {
 
   return (
     <>
-      <DyoCard className={clsx(props.className ?? 'p-6', 'flex flex-col')}>
-        <div className="flex flex-row">
-          <Image src="/product_default.svg" alt={t('altPicture', { name: product.name })} width={100} height={100} />
+      <DyoCard className={clsx(props.className ?? 'p-6')}>
+        <div className="float-left">
+          <Image
+            src="/product_default.svg"
+            alt={t('altPicture', { name: product.name })}
+            width={100}
+            height={100}
+            layout="fixed"
+          />
+        </div>
+        <div className="flex flex-col flex-grow">
+          <DyoHeading element="h5" className="text-xl text-bright ml-6 mb-1">
+            {product.name}
+          </DyoHeading>
 
-          <div className="flex flex-col flex-grow w-px">
-            <DyoHeading element="h5" className="text-xl text-bright ml-6 mb-1">
-              {product.name}
-            </DyoHeading>
+          <div className="flex flex-row">
+            <div className="mx-6 overflow-hidden">
+              <DyoExpandableText
+                text={product.description}
+                lineClamp={2}
+                className="text-md text-light"
+                modalTitle={product.name}
+              />
+            </div>
 
-            <div className="flex flex-row">
-              <div className="mx-6 overflow-hidden">
-                <DyoExpandableText
-                  text={product.description}
-                  lineClamp={2}
-                  className="text-md text-slate-500"
-                  modalTitle={product.name}
-                />
-              </div>
+            <div className="flex flex-col flex-grow">
+              <span className="self-end text-bright whitespace-nowrap ml-2">{utcDateToLocale(product.createdAt)}</span>
 
-              <div className="flex flex-col flex-grow">
-                <span className="self-end text-bright whitespace-nowrap ml-2">
-                  {utcDateToLocale(product.createdAt)}
-                </span>
-
-                <DyoTag className="ml-auto">{t(product.type).toUpperCase()}</DyoTag>
-              </div>
+              <DyoTag className="ml-auto">{t(product.type).toUpperCase()}</DyoTag>
             </div>
           </div>
         </div>

@@ -47,7 +47,7 @@ const ProductCard = (props: ProductCardProps) => {
             </div>
           </div>
 
-          <div className="text-md text-bright mt-4 line-clamp-2 break-words">{product.description}</div>
+          <p className="text-md text-bright mt-4 line-clamp-2 break-words">{product.description}</p>
         </div>
       </DyoCard>
     </>

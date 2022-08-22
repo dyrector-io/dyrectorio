@@ -36,7 +36,7 @@ export const Layout = (props: LayoutProps) => {
   return (
     <>
       <PageHead title={props.title} />
-      <main className="flex flex-row h-full bg-dark w-screen">
+      <main className="flex flex-row h-full bg-dark w-full">
         <Toaster
           toastOptions={{
             error: {
