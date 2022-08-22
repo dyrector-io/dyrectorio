@@ -689,8 +689,6 @@ export type NotificationDetails = CreateNotification & {
   creator: string
 }
 
-export type NotificationItem = Omit<NotificationDetails, 'active'>
-
 export const roleToText = (role: UserRole) => {
   switch (role) {
     case 'owner':

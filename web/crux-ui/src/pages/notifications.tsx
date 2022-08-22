@@ -4,8 +4,9 @@ import NotificationCard from '@app/components/notifications/notification-card'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { ListPageMenu } from '@app/components/shared/page-menu'
+import { DyoLabel } from '@app/elements/dyo-label'
 import DyoWrap from '@app/elements/dyo-wrap'
-import { NotificationItem } from '@app/models'
+import { NotificationDetails } from '@app/models'
 import { notificationUrl, ROUTE_NOTIFICATIONS } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
@@ -16,7 +17,7 @@ import { useRouter } from 'next/router'
 import { useRef, useState } from 'react'
 
 interface NotificationsPageProps {
-  notifications: NotificationItem[]
+  notifications: NotificationDetails[]
 }
 
 const NotificationsPage = (props: NotificationsPageProps) => {
@@ -24,14 +25,14 @@ const NotificationsPage = (props: NotificationsPageProps) => {
   const router = useRouter()
 
   const [creating, setCreating] = useState<boolean>(false)
-  const [notifications, setNotifications] = useState<NotificationItem[]>(props.notifications)
+  const [notifications, setNotifications] = useState<NotificationDetails[]>(props.notifications)
 
   const pageLink: BreadcrumbLink = {
     name: t('common:notifications'),
     url: ROUTE_NOTIFICATIONS,
   }
 
-  const onSubmitted = (item: NotificationItem) => {
+  const onSubmitted = (item: NotificationDetails) => {
     setCreating(false)
     setNotifications([...notifications, item])
   }
@@ -45,6 +46,9 @@ const NotificationsPage = (props: NotificationsPageProps) => {
       </PageHeading>
       {creating && <EditNotificationCard onSubmitted={onSubmitted} submitRef={submitRef} className="mb-8 px-8 py-6" />}
 
+      <DyoLabel className="w-full px-2">
+          {t("webhooks")}
+      </DyoLabel>
       <DyoWrap itemClassName="lg:w-1/2 xl:w-1/3 p-2">
         {notifications.map((it, index) => {
           return (

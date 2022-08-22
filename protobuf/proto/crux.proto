@@ -932,6 +932,7 @@ message NotificationResponse {
   string name = 100;
   string url = 101;
   NotificationType type = 103;
+  bool active = 104;
 }
 
 message NotificationListResponse {

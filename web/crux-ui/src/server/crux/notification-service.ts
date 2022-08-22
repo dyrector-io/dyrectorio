@@ -1,7 +1,6 @@
 import {
   CreateNotification,
   NotificationDetails,
-  NotificationItem,
   NotificationType,
   UpdateNotification,
 } from '@app/models'
@@ -27,7 +26,7 @@ import { protomisify } from './grpc-connection'
 class DyoNotifcationService {
   constructor(private client: CruxNotificationClient, private identity: Identity) {}
 
-  async getAll(): Promise<NotificationItem[]> {
+  async getAll(): Promise<NotificationDetails[]> {
     const req: AccessRequest = {
       accessedBy: this.identity.id,
     }
