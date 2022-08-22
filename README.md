@@ -40,7 +40,7 @@ The easiest way to get started with the dyrector.io platform is by our premade [
 
 On *Windows* and *Mac* use `host.docker.internal` in the `.env` files for URLs.
 
-2. Build the dyrector.io platform dependencies, this step is only required once: 
+2. Build the dyrector.io platform dependencies, this step is only required once:
 ```
 docker-compose -f web/docker-compose.dev.yaml build
 ```
@@ -118,11 +118,11 @@ git tag -a vx.y.z
 git push --tags
 ```
 
-In order to draft a new release: 
+In order to draft a new release:
 - create a new release tag on develop
 - generate changelogs
 
-See [CHANGELOG.md](CHANGELOG.md) 
+See [CHANGELOG.md](CHANGELOG.md)
 
 ## Feedback
 

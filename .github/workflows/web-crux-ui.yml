@@ -41,7 +41,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        npm ci --arch=x64 --platform=linuxmusl --cache .npm --prefer-offline
+        npm ci --arch=x64 --platform=linuxmusl --cache .npm --prefer-offline --no-fund
 
     - name: Lint and Build
       run: |
