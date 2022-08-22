@@ -1,5 +1,6 @@
 import DyoTag from '@app/elements/dyo-tag'
 import { DeploymentStatus } from '@app/models'
+import useTranslation from 'next-translate/useTranslation'
 
 interface DeploymentStatusTagProps {
   className?: string
@@ -9,11 +10,13 @@ interface DeploymentStatusTagProps {
 const DeploymentStatusTag = (props: DeploymentStatusTagProps) => {
   const { status } = props
 
+  const { t } = useTranslation('common')
+
   const statusToBgColor = () => {
     switch (status) {
       case 'failed':
         return 'bg-error-red'
-      case 'inProgress':
+      case 'in_progress':
         return 'bg-warning-orange'
       case 'obsolate':
         return 'bg-dyo-purple'
@@ -30,7 +33,7 @@ const DeploymentStatusTag = (props: DeploymentStatusTagProps) => {
     switch (status) {
       case 'failed':
         return 'text-error-red'
-      case 'inProgress':
+      case 'in_progress':
         return 'text-warning-orange'
       case 'obsolate':
         return 'text-dyo-purple'
@@ -45,7 +48,7 @@ const DeploymentStatusTag = (props: DeploymentStatusTagProps) => {
 
   return (
     <DyoTag color={statusToBgColor()} textColor={statusToTextColor()} className={props.className}>
-      {status.toUpperCase()}
+      {t(`deploymentStatuses.${status}`)}
     </DyoTag>
   )
 }

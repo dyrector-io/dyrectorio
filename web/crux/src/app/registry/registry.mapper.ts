@@ -121,7 +121,7 @@ export class RegistryMapper {
         ...request.google,
         user: request.google.user ?? null,
         token: request.google.token ?? null,
-        imageNamePrefix: null,
+        imageNamePrefix: request.google.imageNamePrefix,
         apiUrl: null,
       }
     } else {

@@ -29,13 +29,13 @@ export const Sidebar = (props: SidebarProps) => {
       link: ROUTE_PRODUCTS,
     },
     {
-      icon: <Image src="/deployment.svg" alt={t('deployments')} width={18} height={18} />,
+      icon: <Image src="/deploy.svg" alt={t('deployments')} width={18} height={18} />,
       text: 'deployments',
       link: ROUTE_DEPLOYMENTS,
     },
   ]
 
-  const configOptions = [
+  const componentOptions = [
     {
       icon: <Image src="/servers.svg" alt={t('nodes')} width={18} height={18} />,
       text: 'nodes',
@@ -95,7 +95,7 @@ export const Sidebar = (props: SidebarProps) => {
       <div className="flex flex-col flex-grow px-6 pb-4">
         <NavSection className="mt-12" title={t('product')} options={productOptions} />
 
-        <NavSection className="mt-12" title={t('config')} options={configOptions} />
+        <NavSection className="mt-12" title={t('components')} options={componentOptions} />
 
         <NavSection className="mt-auto mb-4" title={t('settings')} options={settingsOptions} />
       </div>

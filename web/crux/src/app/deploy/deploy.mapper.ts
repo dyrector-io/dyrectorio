@@ -9,7 +9,6 @@ import {
   Instance,
   InstanceContainerConfig,
   Node,
-  Version,
 } from '@prisma/client'
 import { JsonArray } from 'prisma'
 import { deploymentStatusToDb } from 'src/domain/deployment'
@@ -173,11 +172,21 @@ export class DeployMapper {
   }
 
   statusToGrpc(status: DeploymentStatusEnum): DeploymentStatus {
-    return deploymentStatusFromJSON(status.toUpperCase())
+    switch (status) {
+      case DeploymentStatusEnum.inProgress:
+        return DeploymentStatus.IN_PROGRESS
+      default:
+        return deploymentStatusFromJSON(status.toUpperCase())
+    }
   }
 
   statusToDb(status: DeploymentStatus): DeploymentStatusEnum {
-    return deploymentStatusToDb(status)
+    switch (status) {
+      case DeploymentStatus.IN_PROGRESS:
+        return DeploymentStatusEnum.inProgress
+      default:
+        return deploymentStatusToDb(status)
+    }
   }
 
   containerStateToGrpc(state?: ContainerStateEnum): ContainerState {

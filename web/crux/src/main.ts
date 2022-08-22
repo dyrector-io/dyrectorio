@@ -48,7 +48,7 @@ const parseLogLevelFromEnv = (logLevelEnv: string): LogLevel[] => {
   return VALID_LOG_LEVEL_VALUES.slice(0, index) as LogLevel[]
 }
 
-async function bootstrap() {
+const bootstrap = async () => {
   const app = await NestFactory.create(AppModule, {
     logger: parseLogLevelFromEnv(process.env.LOG_LEVEL),
   })

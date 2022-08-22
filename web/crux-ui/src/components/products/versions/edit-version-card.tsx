@@ -13,6 +13,7 @@ import { createVersionSchema, updateVersionSchema } from '@app/validation'
 import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
 import { MutableRefObject, useState } from 'react'
+import ProductVersionsSection from '../product-versions-section'
 
 interface EditVersionCardProps {
   className?: string
@@ -20,6 +21,7 @@ interface EditVersionCardProps {
   version?: Version
   onVersionEdited: (version: Version) => void
   submitRef?: MutableRefObject<() => Promise<any>>
+  versions?: Version[]
 }
 
 const EditVersionCard = (props: EditVersionCardProps) => {
@@ -141,6 +143,7 @@ const EditVersionCard = (props: EditVersionCardProps) => {
           <DyoButton className="hidden" type="submit"></DyoButton>
         </form>
       </DyoCard>
+      <ProductVersionsSection productId={product.id} versions={props.versions ?? []} disabled />
     </>
   )
 }

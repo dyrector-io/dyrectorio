@@ -16,7 +16,7 @@
   "private": "Private",
   "selfManaged": "Self-managed GitLab",
   "saas": "SaaS",
-  "apiUrl": "GitLab api URL",
+  "apiUrl": "GitLab API URL",
   "keyFile": "Key file",
   "privateKey": "Private key",
 

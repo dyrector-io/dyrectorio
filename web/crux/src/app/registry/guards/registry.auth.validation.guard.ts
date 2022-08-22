@@ -134,9 +134,15 @@ export class RegistryAccessValidationGuard implements CanActivate {
       })
       .pipe(
         mergeMap(res => {
-          const groups = res.data as any[]
-          if (res.status !== HttpStatus.OK || groups.length < 1) {
+          const groups = res.data.map(it => it.path == req.imageNamePrefix) as any[]
+          if (res.status !== HttpStatus.OK) {
             return of(false)
+          } else if (groups.length < 1) {
+            throw new InvalidArgumentException({
+              message: 'Gitlab group not found',
+              property: 'imageNamePrefix',
+              value: req.imageNamePrefix,
+            })
           }
 
           return this.httpService
@@ -237,7 +243,7 @@ export class RegistryAccessValidationGuard implements CanActivate {
 
     const validator = (accessTokenResponse: GetAccessTokenResponse) =>
       this.httpService
-        .get(`https://gcr.io/v2/${req.url}/tags/list`, {
+        .get(`https://${req.url}/v2/${req.imageNamePrefix}/tags/list`, {
           withCredentials,
           auth: {
             username: 'oauth2accesstoken',
@@ -252,8 +258,8 @@ export class RegistryAccessValidationGuard implements CanActivate {
             if (!withCredentials || !error.response || error.response.status !== HttpStatus.UNAUTHORIZED) {
               throw new InvalidArgumentException({
                 message: 'Failed to fetch google registry',
-                property: 'url',
-                value: req.url,
+                property: 'imageNamePrefix',
+                value: req.imageNamePrefix,
               })
             }
 

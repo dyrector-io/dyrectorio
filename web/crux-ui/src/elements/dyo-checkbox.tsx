@@ -5,14 +5,13 @@ import Image from 'next/image'
 interface DyoCheckboxProps {
   className?: string
   name?: string
-  label?: string
   checked?: boolean
   setFieldValue?: FormikSetFieldValue
   onCheckedChange?: (checked: boolean) => void
 }
 
 const DyoCheckbox = (props: DyoCheckboxProps) => {
-  const { className, name, label, checked, setFieldValue, onCheckedChange } = props
+  const { className, name, checked, setFieldValue, onCheckedChange } = props
 
   const handleCheckedChange = checked => {
     setFieldValue?.call(this, name, checked, false)

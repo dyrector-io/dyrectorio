@@ -39,7 +39,7 @@ export const Layout = (props: LayoutProps) => {
             error: {
               icon: null,
               style: {
-                background: '#ea5455',
+                background: 'error-red',
                 color: 'white',
               },
             },
@@ -71,7 +71,7 @@ export const SingleFormLayout = (props: LayoutProps) => {
             error: {
               icon: null,
               style: {
-                background: '#ea5455',
+                background: 'error-red',
                 color: 'white',
               },
             },

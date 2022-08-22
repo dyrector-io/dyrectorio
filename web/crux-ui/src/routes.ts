@@ -2,7 +2,7 @@ import { VersionSectionsState } from './components/products/versions/version-sec
 import { appendUrlParams } from './utils'
 
 export const ROUTE_INDEX = '/'
-export const ROUTE_500 = '/500'
+export const ROUTE_STATUS = '/status'
 export const ROUTE_404 = '/404'
 export const ROUTE_PROFILE = '/auth/settings'
 export const ROUTE_LOGIN = '/auth/login'

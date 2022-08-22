@@ -58,7 +58,7 @@ security: # running gosec for static code analysis for bugs and leaks
 	gosec ./...
 
 .PHONY: lint
-lint: # golangci for linting 
+lint: # golangci for linting
 	golangci-lint run  ./... --timeout=3m
 
 .PHONY: build-dagent
@@ -127,7 +127,7 @@ k3s-start: # start k3s with docker
 .PHONY: k3s-config
 k3s-config:
 	curl -sf localhost:8081 > k3s.yaml && \
-	sed -i 's/k3s:6443/localhost:6443/g' ./k3s.yaml 
+	sed -i 's/k3s:6443/localhost:6443/g' ./k3s.yaml
 
 .PHONY: k3s-clean
 k3s-clean: #
@@ -139,7 +139,7 @@ k3s-test: # make sure to have k3s set and configured
 
 .PHONY: test-unit
 test-unit: # dependency: valid & working k8s configuration
-	go test -tags=unit -race ./... 
+	go test -tags=unit -race ./...
 
 .PHONY: test-unit-with-coverage
 test-unit-with-coverage: # dependency: valid & working k8s configuration
@@ -161,4 +161,3 @@ docs: # generate godocs markdown
 
 debug-grpc: # this can be used to print all gRPC connection info
 	GRPC_GO_LOG_VERBOSITY_LEVEL=99 GRPC_GO_LOG_SEVERITY_LEVEL=info go run .
-

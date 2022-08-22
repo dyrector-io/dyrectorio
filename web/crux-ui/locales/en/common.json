@@ -2,7 +2,7 @@
   "logIn": "Log in",
   "logOut": "Log out",
   "signUp": "Sign up",
-  "email": "e-mail",
+  "email": "E-mail",
   "name": "Name",
   "password": "Password",
   "confirmPass": "Confirm password",
@@ -17,6 +17,7 @@
 
   "home": "Home",
   "settings": "Settings",
+  "components": "Components",
 
   "logout": "Log out",
 
@@ -113,7 +114,8 @@
     "failed": "Failed",
     "obsolate": "Obsolate",
     "unknown": "Unknown",
-    "preparing": "Preparing"
+    "preparing": "Preparing",
+    "in_progress": "In progress"
   },
 
   "containerStatuses": {

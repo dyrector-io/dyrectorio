@@ -528,6 +528,50 @@ export function notificationTypeToJSON(object: NotificationType): string {
   }
 }
 
+export enum ServiceStatus {
+  UNKNOWN_SERVICE_STATUS = 0,
+  UNAVAILABLE = 1,
+  DISRUPTED = 2,
+  OPERATIONAL = 3,
+  UNRECOGNIZED = -1,
+}
+
+export function serviceStatusFromJSON(object: any): ServiceStatus {
+  switch (object) {
+    case 0:
+    case 'UNKNOWN_SERVICE_STATUS':
+      return ServiceStatus.UNKNOWN_SERVICE_STATUS
+    case 1:
+    case 'UNAVAILABLE':
+      return ServiceStatus.UNAVAILABLE
+    case 2:
+    case 'DISRUPTED':
+      return ServiceStatus.DISRUPTED
+    case 3:
+    case 'OPERATIONAL':
+      return ServiceStatus.OPERATIONAL
+    case -1:
+    case 'UNRECOGNIZED':
+    default:
+      return ServiceStatus.UNRECOGNIZED
+  }
+}
+
+export function serviceStatusToJSON(object: ServiceStatus): string {
+  switch (object) {
+    case ServiceStatus.UNKNOWN_SERVICE_STATUS:
+      return 'UNKNOWN_SERVICE_STATUS'
+    case ServiceStatus.UNAVAILABLE:
+      return 'UNAVAILABLE'
+    case ServiceStatus.DISRUPTED:
+      return 'DISRUPTED'
+    case ServiceStatus.OPERATIONAL:
+      return 'OPERATIONAL'
+    default:
+      return 'UNKNOWN'
+  }
+}
+
 /** Common messages */
 export interface Empty {}
 
@@ -1231,6 +1275,12 @@ export interface NotificationResponse {
 
 export interface NotificationListResponse {
   data: NotificationResponse[]
+}
+
+export interface HealthResponse {
+  status: ServiceStatus
+  cruxVersion: string
+  lastMigration?: string | undefined
 }
 
 export const CRUX_PACKAGE_NAME = 'crux'
@@ -3829,6 +3879,28 @@ export const NotificationListResponse = {
   },
 }
 
+const baseHealthResponse: object = { status: 0, cruxVersion: '' }
+
+export const HealthResponse = {
+  fromJSON(object: any): HealthResponse {
+    const message = { ...baseHealthResponse } as HealthResponse
+    message.status = object.status !== undefined && object.status !== null ? serviceStatusFromJSON(object.status) : 0
+    message.cruxVersion =
+      object.cruxVersion !== undefined && object.cruxVersion !== null ? String(object.cruxVersion) : ''
+    message.lastMigration =
+      object.lastMigration !== undefined && object.lastMigration !== null ? String(object.lastMigration) : undefined
+    return message
+  },
+
+  toJSON(message: HealthResponse): unknown {
+    const obj: any = {}
+    message.status !== undefined && (obj.status = serviceStatusToJSON(message.status))
+    message.cruxVersion !== undefined && (obj.cruxVersion = message.cruxVersion)
+    message.lastMigration !== undefined && (obj.lastMigration = message.lastMigration)
+    return obj
+  },
+}
+
 /** Services */
 
 export interface CruxProductClient {
@@ -4555,11 +4627,15 @@ export function CruxAuditControllerMethods() {
 export const CRUX_AUDIT_SERVICE_NAME = 'CruxAudit'
 
 export interface CruxHealthClient {
-  getHealth(request: Empty, metadata: Metadata, ...rest: any): Observable<Empty>
+  getHealth(request: Empty, metadata: Metadata, ...rest: any): Observable<HealthResponse>
 }
 
 export interface CruxHealthController {
-  getHealth(request: Empty, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
+  getHealth(
+    request: Empty,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<HealthResponse> | Observable<HealthResponse> | HealthResponse
 }
 
 export function CruxHealthControllerMethods() {

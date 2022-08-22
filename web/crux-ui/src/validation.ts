@@ -61,19 +61,24 @@ const registryCredentialRole = yup.string().when(['type', '_private'], {
   then: yup.string().required(),
 })
 
+const googleRegistryUrls = ['gcr.io', 'us.gcr.io', 'eu.gcr.io', 'asia.gcr.io'] as const
+
 export const registrySchema = yup.object().shape({
   name: nameRule,
   description: descriptionRule,
   type: yup.mixed<RegistryType>().oneOf([...REGISTRY_TYPE_VALUES]),
   icon: iconRule,
   imageNamePrefix: yup.string().when('type', {
-    is: type => ['hub', 'gitlab', 'github'].includes(type),
+    is: type => ['hub', 'gitlab', 'github', 'google'].includes(type),
     then: yup.string().required(),
   }),
-  url: yup.string().when(['type', 'selfManaged'], {
-    is: (type, selfManaged) => type === 'v2' || type === 'google' || (type === 'gitlab' && selfManaged),
-    then: yup.string().required(),
-  }),
+  url: yup
+    .string()
+    .when(['type', 'selfManaged'], {
+      is: (type, selfManaged) => type === 'v2' || type === 'google' || (type === 'gitlab' && selfManaged),
+      then: yup.string().required(),
+    })
+    .when(['type'], { is: type => type === 'google', then: yup.string().oneOf([...googleRegistryUrls]) }),
   apiUrl: yup.string().when(['type', 'selfManaged'], {
     is: (type, selfManaged) => type === 'gitlab' && selfManaged,
     then: yup.string().required(),
@@ -218,7 +223,7 @@ export const notificationSchema = yup.object().shape({
       let pattern: RegExp
       switch (type) {
         case 'discord':
-          pattern = /^https:\/\/discord.com\/api\/webhooks/
+          pattern = /^https:\/\/(discord|discordapp).com\/api\/webhooks/
           break
         case 'slack':
           pattern = /^https:\/\/hooks.slack.com\/services/

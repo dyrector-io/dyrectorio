@@ -2820,7 +2820,7 @@ var CruxAudit_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CruxHealthClient interface {
-	GetHealth(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error)
+	GetHealth(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*HealthResponse, error)
 }
 
 type cruxHealthClient struct {
@@ -2831,8 +2831,8 @@ func NewCruxHealthClient(cc grpc.ClientConnInterface) CruxHealthClient {
 	return &cruxHealthClient{cc}
 }
 
-func (c *cruxHealthClient) GetHealth(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
+func (c *cruxHealthClient) GetHealth(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*HealthResponse, error) {
+	out := new(HealthResponse)
 	err := c.cc.Invoke(ctx, "/crux.CruxHealth/getHealth", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -2844,7 +2844,7 @@ func (c *cruxHealthClient) GetHealth(ctx context.Context, in *Empty, opts ...grp
 // All implementations must embed UnimplementedCruxHealthServer
 // for forward compatibility
 type CruxHealthServer interface {
-	GetHealth(context.Context, *Empty) (*Empty, error)
+	GetHealth(context.Context, *Empty) (*HealthResponse, error)
 	mustEmbedUnimplementedCruxHealthServer()
 }
 
@@ -2852,7 +2852,7 @@ type CruxHealthServer interface {
 type UnimplementedCruxHealthServer struct {
 }
 
-func (UnimplementedCruxHealthServer) GetHealth(context.Context, *Empty) (*Empty, error) {
+func (UnimplementedCruxHealthServer) GetHealth(context.Context, *Empty) (*HealthResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetHealth not implemented")
 }
 func (UnimplementedCruxHealthServer) mustEmbedUnimplementedCruxHealthServer() {}

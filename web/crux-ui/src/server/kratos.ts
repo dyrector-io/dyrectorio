@@ -1,5 +1,5 @@
 import { HEADER_SET_COOKIE } from '@app/const'
-import { ServiceStatus } from '@app/models'
+import { DEFAULT_SERVICE_INFO, ServiceInfo } from '@app/models'
 import { Configuration, Identity, MetadataApi, Session, V0alpha2Api } from '@ory/kratos-client'
 import { AxiosResponse } from 'axios'
 import http from 'http'
@@ -8,25 +8,45 @@ import { missingParameter } from './error-middleware'
 
 const config = new Configuration({ basePath: process.env.KRATOS_URL })
 const kratos = new V0alpha2Api(config)
+const meta = new MetadataApi(
+  new Configuration({
+    basePath: process.env.KRATOS_ADMIN_URL ?? process.env.KRATOS_URL,
+  }),
+)
 
-export const getKratosServiceStatus = async (): Promise<ServiceStatus> => {
-  const meta = new MetadataApi(config)
-
+export const getKratosServiceStatus = async (): Promise<ServiceInfo> => {
   try {
-    let res = await meta.isReady()
-    if (res.status === 200) {
-      return 'operational'
+    if (process.env.KRATOS_ADMIN_URL) {
+      const versionRes = await meta.getVersion()
+
+      if (versionRes.status === 200) {
+        return {
+          status: 'operational',
+          version: versionRes.data.version,
+        }
+      }
     }
 
-    res = await meta.isAlive()
-    if (res.status === 200) {
-      return 'disrupted'
+    const info: ServiceInfo = {
+      status: 'operational',
+      version: null,
     }
-    // TODO
-    // eslint-disable-next-line
-  } catch {}
 
-  return 'unavailable'
+    const readyRes = await meta.isReady()
+    if (readyRes.status !== 200) {
+      info.status = 'disrupted'
+    }
+
+    const aliveRes = await meta.isAlive()
+    if (aliveRes.status !== 200) {
+      info.status = 'unavailable'
+    }
+
+    return info
+  } catch (err) {
+    console.error(err)
+    return DEFAULT_SERVICE_INFO
+  }
 }
 
 export const userVerified = (user: Identity) => {

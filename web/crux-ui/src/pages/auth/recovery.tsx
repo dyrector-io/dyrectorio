@@ -37,7 +37,7 @@ const RecoveryPage = (props: RecoveryPageProps) => {
   const [ui, setUi] = useState(flow.ui)
   const [sent, setSent] = useState(false)
   const [errors, setErrors] = useState<DyoErrorDto[]>([])
-  const [countdown, startCountdown] = useTimer(-1, () => recaptcha.current.reset())
+  const [countdown, startCountdown] = useTimer(-1, () => (recaptchaSiteKey ? recaptcha.current.reset() : null))
 
   const formik = useFormik({
     initialValues: {
