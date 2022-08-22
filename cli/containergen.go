@@ -40,27 +40,15 @@ type Container struct {
 }
 
 // Container services
-type ServiceName string
+type Services string
 
 const (
-	CruxUI ServiceName = "cruxui"
-	Crux   ServiceName = "crux"
-	Utils  ServiceName = "utils"
+	CruxUI Services = "crux-ui"
+	Crux   Services = "crux"
+	Utils  Services = "utils"
 )
 
-// Gather and strip environment variables from .env.examples
-// func Get_env_opts(envexample string) []string {
-// 	env_var := regexp.MustCompile(`(([A-Z_]){3,})`)
-// 	found := env_var.FindAll([]byte(envexample), -1)
-// 	var results []string
-// 	for _, item := range found {
-// 		fmt.Println(item)
-// 		results = append(results, string(item))
-// 	}
-// 	return results
-// }
-
-func Get_crux_container_defaults() []Container {
+func GetCruxContainerDefaults() []Container {
 	return []Container{
 		{
 			Enabled: true,
@@ -97,7 +85,7 @@ func Get_crux_container_defaults() []Container {
 	}
 }
 
-func Get_cruxui_container_defaults() []Container {
+func GetCruxuiContainerDefaults() []Container {
 	return []Container{
 		{
 			Enabled: true,
@@ -117,7 +105,7 @@ func Get_cruxui_container_defaults() []Container {
 	}
 }
 
-func Get_utils_container_defaults() []Container {
+func GetUtilsContainerDefaults() []Container {
 	return []Container{
 		{
 			Enabled: true,
@@ -181,17 +169,17 @@ func Get_utils_container_defaults() []Container {
 	}
 }
 
-func Get_container_defaults(services []ServiceName) (error, []Container) {
+func GetContainerDefaults(services []Services) (error, []Container) {
 	var containers []Container
 
 	for _, i := range services {
 		switch i {
 		case CruxUI:
-			containers = append(containers, Get_cruxui_container_defaults()...)
+			containers = append(containers, GetCruxuiContainerDefaults()...)
 		case Crux:
-			containers = append(containers, Get_crux_container_defaults()...)
+			containers = append(containers, GetCruxContainerDefaults()...)
 		case Utils:
-			containers = append(containers, Get_utils_container_defaults()...)
+			containers = append(containers, GetUtilsContainerDefaults()...)
 		default:
 			return errors.New("invalid service name"), []Container{}
 		}
@@ -200,7 +188,7 @@ func Get_container_defaults(services []ServiceName) (error, []Container) {
 	return nil, containers
 }
 
-func Gen_container(services []ServiceName) (error, string) {
+func GenContainer(services []Services) (error, string) {
 	ReadConfig()
 	container_template := `version: "3.9"
 services:{{ range . }}{{ if .Enabled }}
@@ -237,8 +225,8 @@ volumes:{{ range . }}{{ range .Volumes}}
 	buffer := bufio.NewWriter(f)
 
 	var containers []Container
-	allservices := []ServiceName{"crux", "cruxui", "utils"}
-	services = []ServiceName{}
+	allservices := []Services{"crux", "crux-ui", "utils"}
+	services = []Services{}
 
 	for _, a := range allservices {
 		if Cfg.Services.Disabled != nil {
@@ -249,10 +237,12 @@ volumes:{{ range . }}{{ range .Volumes}}
 			} else {
 				services = append(services, a)
 			}
+		} else {
+			services = allservices
 		}
 	}
 
-	err, containers = Get_container_defaults(services)
+	err, containers = GetContainerDefaults(services)
 	if err != nil {
 		return err, ""
 	}
@@ -261,8 +251,6 @@ volumes:{{ range . }}{{ range .Volumes}}
 	if err != nil {
 		return err, ""
 	}
-
-	//log.Println(containers)
 
 	template, err := template.New("container").Parse(container_template)
 	if err != nil {

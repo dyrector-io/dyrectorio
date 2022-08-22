@@ -1,4 +1,4 @@
-module github.com/dyrector-io/dyrectorio/dyo-cli
+module github.com/dyrector-io/dyrectorio/cli
 
 go 1.18
 

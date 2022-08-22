@@ -58,11 +58,11 @@ func templating(cCtx *cli.Context) error {
 	var err error
 	switch cCtx.String("disable") {
 	case "crux":
-		err, _ = Gen_container([]ServiceName{"cruxui", "utils"})
+		err, _ = GenContainer([]Services{"crux-ui", "utils"})
 	case "cruxui":
-		err, _ = Gen_container([]ServiceName{"crux", "utils"})
+		err, _ = GenContainer([]Services{"crux", "utils"})
 	default:
-		err, _ = Gen_container([]ServiceName{"crux", "cruxui", "utils"})
+		err, _ = GenContainer([]Services{"crux", "crux-ui", "utils"})
 	}
 
 	if err != nil {

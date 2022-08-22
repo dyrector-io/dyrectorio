@@ -3,5 +3,5 @@ go 1.18
 use (
 	./agent
 	./protobuf
-	./dyo
+	./cli
 )

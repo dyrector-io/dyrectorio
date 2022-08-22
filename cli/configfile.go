@@ -13,7 +13,7 @@ type Settings struct {
 }
 
 type ServicesType struct {
-	Disabled []ServiceName `yaml:"disabled"`
+	Disabled []Services `yaml:"disabled"`
 }
 
 var Cfg Settings
@@ -22,7 +22,7 @@ func ReadConfig() {
 	examplefile := []byte(`# services:
   # disabled:
   # - crux
-  # - cruxui
+  # - crux-ui
   # envOverrides:
     # -
       # variable: TZ

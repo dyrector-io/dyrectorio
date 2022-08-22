@@ -1,3 +1,4 @@
+# Stage 1
 FROM node:18.7-alpine AS BUILDER
 
 ENV NODE_ENV production
