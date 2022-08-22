@@ -5,7 +5,6 @@ import DeploymentEventsTerminal from '@app/components/products/versions/deployme
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DyoButton } from '@app/elements/dyo-button'
-import { defaultWsErrorHandler } from '@app/errors'
 import { useWebSocket } from '@app/hooks/use-websocket'
 import {
   DeploymentEvent,
@@ -17,7 +16,6 @@ import {
   StartDeploymentMessage,
   WS_TYPE_DEPLOYMENT_EVENT,
   WS_TYPE_DEPLOYMENT_EVENT_LIST,
-  WS_TYPE_DYO_ERROR,
   WS_TYPE_FETCH_DEPLOYMENT_EVENTS,
   WS_TYPE_START_DEPLOYMENT,
 } from '@app/models'
@@ -58,8 +56,6 @@ const DeployPage = (props: DeployPageProps) => {
   const version = deployment.version
   const mutable = deploymentIsMutable(deployment.status)
 
-  const handleWsError = defaultWsErrorHandler(t)
-
   const sock = useWebSocket(deploymentWsUrl(deployment.product.id, deployment.versionId, deployment.id), {
     onOpen: () => {
       if (mutable) {
@@ -70,11 +66,6 @@ const DeployPage = (props: DeployPageProps) => {
         sock.send(WS_TYPE_FETCH_DEPLOYMENT_EVENTS, {
           id: deployment.id,
         } as FetchDeploymentEventsMessage)
-      }
-    },
-    onReceive: message => {
-      if (message.type === WS_TYPE_DYO_ERROR) {
-        handleWsError(message.payload)
       }
     },
   })

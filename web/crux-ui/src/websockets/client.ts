@@ -1,8 +1,12 @@
 import { WS_RECONNECT_TIMEOUT } from '@app/const'
 import { Logger } from '@app/logger'
+import { WS_TYPE_DYO_ERROR } from '@app/models'
+import { DyoApiError } from '@server/error-middleware'
 import { WsConnectDto, WsMessage } from './common'
 
 export type WsMessageCallback<T extends any> = (message: T) => void
+
+export type WsErrorHandler = (message: DyoApiError) => void
 
 export type WebSocketClientOptions = {
   onOpen?: VoidFunction
@@ -135,6 +139,7 @@ export class WebSocketClient {
   private token?: string
   private unsubscribe?: VoidFunction
   private routes: Map<string, WebSocketRoute> = new Map()
+  private errorHandler: WsErrorHandler = null
 
   async register(endpoint: WebSocketEndpoint): Promise<boolean> {
     const url = endpoint.url
@@ -257,6 +262,10 @@ export class WebSocketClient {
     }
   }
 
+  setErrorHandler(handler: WsErrorHandler) {
+    this.errorHandler = handler
+  }
+
   private async connect(route: WebSocketRoute): Promise<boolean> {
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
       return true
@@ -317,6 +326,10 @@ export class WebSocketClient {
 
         this.logger.verbose('Receiving message:', message.type)
         this.logger.verbose('Content:', message.payload)
+
+        if (message.type === WS_TYPE_DYO_ERROR && this.errorHandler) {
+          this.errorHandler(message.payload as DyoApiError)
+        }
 
         this.routes.forEach(route => route.endpoints.forEach(it => it.onMessage(message)))
       }
