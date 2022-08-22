@@ -27,6 +27,7 @@ export type ContainerConfigData = {
   capabilities: UniqueKeyValue[]
   environment: UniqueKeyValue[]
   config: JsonObject
+  secrets: UniqueKeyValue[]
 }
 
 export type InstanceContainerConfigData = Omit<ContainerConfigData, 'name'>

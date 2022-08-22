@@ -182,8 +182,16 @@ class DyoDeploymentService {
               : {
                   data: dto.instance.config.environment,
                 },
+            secrets: !dto.instance.config?.environment
+              ? undefined
+              : {
+                  data: dto.instance.config.environment,
+                },
           },
     } as PatchDeploymentRequest
+
+    console.log('penis faj')
+    console.log(req.instance?.secrets)
 
     await protomisify<PatchDeploymentRequest, UpdateEntityResponse>(this.client, this.client.patchDeployment)(
       PatchDeploymentRequest,

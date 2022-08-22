@@ -20,9 +20,12 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-/* data:
+/*
+	data:
+
 9000: "default/example-go:8080"
-this is/was needed to expose ancient ports - passive ftp */
+this is/was needed to expose ancient ports - passive ftp
+*/
 type IngressPortMap struct {
 	TCP   map[uint16]string `yaml:"tcp"`
 	Ports map[string]int    `yaml:"ports"`

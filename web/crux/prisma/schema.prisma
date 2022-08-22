@@ -38,11 +38,11 @@ model UserInvitation {
 }
 
 model UsersOnTeams {
-  userId String  @db.Uuid
-  active Boolean @default(false)
-  role  UserRoleEnum
-  teamId String  @db.Uuid
-  team   Team    @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  userId String       @db.Uuid
+  active Boolean      @default(false)
+  role   UserRoleEnum
+  teamId String       @db.Uuid
+  team   Team         @relation(fields: [teamId], references: [id], onDelete: Cascade)
 
   @@id([userId, teamId])
 }
@@ -70,20 +70,20 @@ model Node {
 }
 
 model Registry {
-  id          String           @id @default(uuid()) @db.Uuid
-  createdAt   DateTime         @default(now()) @db.Timestamptz(6)
-  createdBy   String           @db.Uuid
-  updatedAt   DateTime?        @default(now()) @db.Timestamptz(6)
-  updatedBy   String?          @db.Uuid
-  name        String           @db.VarChar(70)
-  description String?
-  icon        String?
-  url         String
-  user        String?
-  token       String?
-  type        RegistryTypeEnum
-  imageNamePrefix   String?
-  apiUrl      String?
+  id              String           @id @default(uuid()) @db.Uuid
+  createdAt       DateTime         @default(now()) @db.Timestamptz(6)
+  createdBy       String           @db.Uuid
+  updatedAt       DateTime?        @default(now()) @db.Timestamptz(6)
+  updatedBy       String?          @db.Uuid
+  name            String           @db.VarChar(70)
+  description     String?
+  icon            String?
+  url             String
+  user            String?
+  token           String?
+  type            RegistryTypeEnum
+  imageNamePrefix String?
+  apiUrl          String?
 
   images Image[]
   team   Team    @relation(fields: [teamId], references: [id], onDelete: Cascade)
@@ -160,6 +160,7 @@ model ContainerConfig {
   id           String @id @default(uuid()) @db.Uuid
   name         String
   environment  Json
+  secrets      Json?
   capabilities Json
   config       Json
 
@@ -191,11 +192,11 @@ model Deployment {
 }
 
 model Instance {
-  id           String               @id @default(uuid()) @db.Uuid
-  updatedAt    DateTime             @default(now()) @db.Timestamptz(6)
+  id           String              @id @default(uuid()) @db.Uuid
+  updatedAt    DateTime            @default(now()) @db.Timestamptz(6)
   state        ContainerStateEnum?
-  deploymentId String               @db.Uuid
-  imageId      String               @db.Uuid
+  deploymentId String              @db.Uuid
+  imageId      String              @db.Uuid
 
   deployment Deployment               @relation(fields: [deploymentId], references: [id], onDelete: Cascade)
   image      Image                    @relation(fields: [imageId], references: [id], onDelete: Cascade)
@@ -206,6 +207,7 @@ model InstanceContainerConfig {
   id           String @id @default(uuid()) @db.Uuid
   capabilities Json?
   config       Json?
+  secrets      Json?
   environment  Json?
   instanceId   String @unique @db.Uuid
 
@@ -240,18 +242,18 @@ enum UserRoleEnum {
 }
 
 model Notification {
-  id          String                @id @default(uuid()) @db.Uuid
-  createdAt   DateTime              @default(now()) @db.Timestamptz(6)
-  createdBy   String                @db.Uuid
-  updatedAt   DateTime?             @default(now()) @db.Timestamptz(6)
-  updatedBy   String?               @db.Uuid
-  name        String                @db.VarChar(70)
-  url         String
-  type        NotificationTypeEnum
-  active      Boolean               @default(false)
-  teamId      String                @db.Uuid
-  
-  team        Team                  @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  id        String               @id @default(uuid()) @db.Uuid
+  createdAt DateTime             @default(now()) @db.Timestamptz(6)
+  createdBy String               @db.Uuid
+  updatedAt DateTime?            @default(now()) @db.Timestamptz(6)
+  updatedBy String?              @db.Uuid
+  name      String               @db.VarChar(70)
+  url       String
+  type      NotificationTypeEnum
+  active    Boolean              @default(false)
+  teamId    String               @db.Uuid
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
 
   events      NotificationEvent[]
 

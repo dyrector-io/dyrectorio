@@ -15,7 +15,9 @@ import {
   DeploymentListResponse,
   DeploymentProgressMessage,
   IdRequest,
+  ListSecretsResponse,
   PatchDeploymentRequest,
+  PrefixRequest,
   ServiceIdRequest,
   UpdateDeploymentRequest,
   UpdateEntityResponse,
@@ -62,6 +64,10 @@ export default class DeployController implements CruxDeploymentController {
     @Body(DeployUpdateValidationPipe) request: UpdateDeploymentRequest,
   ): Promise<UpdateEntityResponse> {
     return await this.service.updateDeployment(request)
+  }
+
+  async getSecrets(request: PrefixRequest, ...rest: any): Promise<ListSecretsResponse> {
+    return await new Promise(null)
   }
 
   @AuditLogLevel('no-data')

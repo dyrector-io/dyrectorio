@@ -101,6 +101,7 @@ export default class DeployMapper {
         capabilities: (instance.config?.capabilities as UniqueKeyValue[]) ?? [],
         environment: (instance.config?.environment as UniqueKeyValue[]) ?? [],
         config: config.config as JsonObject,
+        secrets: (instance.config?.secrets as UniqueKeyValue[]) ?? [],
       },
     }
   }
@@ -166,6 +167,7 @@ export default class DeployMapper {
 
     const config: ContainerConfigData = this.mergeConfigs(imageConfig, instaceConfig)
 
+    console.log('config:', config)
     return {
       ...config.config,
       environments: this.jsonToPipedFormat(config.environment ?? []),
@@ -234,11 +236,15 @@ export default class DeployMapper {
   private mergeConfigs(imageConfig: ContainerConfigData, instanceConfig: ContainerConfigData): ContainerConfigData {
     const envs = this.overrideKeyValues(imageConfig?.environment, instanceConfig?.environment)
     const caps = this.overrideKeyValues(imageConfig?.capabilities, instanceConfig?.capabilities)
+    const secrets = this.overrideKeyValues(imageConfig?.secrets, instanceConfig?.secrets)
+
+    console.log('penisss:', secrets)
 
     return {
       name: imageConfig.name,
       environment: envs,
       capabilities: caps,
+      secrets: secrets,
       config: {
         ...imageConfig?.config,
         ...instanceConfig?.config,

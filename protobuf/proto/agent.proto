@@ -22,8 +22,10 @@ service Agent {
    * For prefix state reports, should be closed by the server.
    */
   rpc Connect(AgentInfo) returns (stream AgentCommand);
+
   rpc DeploymentStatus(stream common.DeploymentStatusMessage) returns (Empty);
   rpc ContainerState(stream common.ContainerStateListMessage) returns (Empty);
+  rpc GetSecretList(common.ListSecretsResponse) returns (Empty);
 }
 
 message Empty {}
@@ -35,6 +37,7 @@ message Empty {}
 message AgentInfo {
   string id = 1;
   string version = 2;
+  string publicKey = 3;
 }
 
 message AgentCommand {
@@ -43,10 +46,11 @@ message AgentCommand {
     ContainerStateRequest containerState = 2;
     ContainerDeleteRequest containerDelete = 3;
     DeployRequestLegacy deployLegacy = 4;
+    ListSecretsRequest listSecrets = 5;
   }
 }
 
-/**
+/*
  * This is more of a placeholder, we could include more, or return this
  * instantly after validation success.
  */
@@ -59,6 +63,10 @@ message VersionDeployRequest {
 
   repeated DeployRequest requests = 4;
 }
+/*
+ * Request for a keys of existing secrets in a prefix, eg. namespace
+ */
+message ListSecretsRequest { string prefix = 1; }
 
 /**
  * Deploys a single container
@@ -83,6 +91,50 @@ message DeployRequest {
   /* InstanceConfig is set for multiple containers */
   InstanceConfig instanceConfig = 3;
 
+  message ContainerConfig {
+    /* Container name - must have, used by everthing */
+    string name = 1;
+    /* Container prefix */
+    optional string prefix = 2;
+    message Port {
+      int32 internal = 1; // internal that is bound by the container
+      int32 external = 3; // external is docker only
+    }
+    /* container ports */
+    repeated Port ports = 3;
+    /* volume mounts in a piped format */
+    repeated string mounts = 4;
+    /* environment variables in a piped format  */
+    repeated string environments = 5;
+    /* could be enum, i'm not sure if it is in use */
+    optional string networkMode = 6;
+    enum RuntimeConfigType {
+      /* appconfig will be parsed into environment variables */
+      DOTNET_APPCONFIG = 0;
+    }
+    // runtime config type if given, magic can happen
+    optional RuntimeConfigType runtimeConfigType = 7;
+    message Expose {
+      bool public = 1; // if expose is needed
+      bool tls = 2;    // if tls is needed
+    }
+    /* exposure configuration*/
+    optional Expose expose = 8;
+
+    message ConfigContainer {
+      string image = 1;
+      string volume = 2;
+      string path = 3;
+      bool keepFiles = 4;
+    }
+    /* Config container is started before the container and contents are copied
+     * to the volume set */
+    optional ConfigContainer configContainer = 9;
+    /* userId that is used to run the container, number */
+    int64 user = 10;
+    /* Secret key values */
+  }
+
   /* Runtime info and requirements of a container */
   common.ExplicitContainerConfig containerConfig = 4;
   optional string runtimeConfig = 5;
@@ -98,8 +150,8 @@ message DeployRequest {
   optional RegistryAuth registryAuth = 9;
 }
 
-message ContainerStateRequest { 
-  optional string prefix = 1; 
+message ContainerStateRequest {
+  optional string prefix = 1;
   optional bool oneShot = 2;
 }
 

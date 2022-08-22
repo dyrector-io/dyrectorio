@@ -13,11 +13,11 @@ import (
 
 	"github.com/form3tech-oss/jwt-go"
 
+	v1 "github.com/dyrector-io/dyrectorio/agent/api/v1"
 	"github.com/dyrector-io/dyrectorio/agent/internal/config"
 	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
 	"github.com/dyrector-io/dyrectorio/agent/internal/mapper"
 	"github.com/dyrector-io/dyrectorio/agent/internal/version"
-	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 
@@ -203,8 +203,17 @@ func grpcLoop(
 		if grpcConn.Client == nil {
 			client := agent.NewAgentClient(grpcConn.Conn)
 			grpcConn.SetClient(client)
+
+			publicKey, keyErr := config.GetPublicKey(string(appConfig.SecretPrivateKey))
+
+			if keyErr != nil {
+				log.Println("gprpc public key error")
+				log.Println(keyErr)
+				log.Println(publicKey)
+			}
+
 			stream, err = grpcConn.Client.Connect(
-				ctx, &agent.AgentInfo{Id: nodeID, Version: version.BuildVersion()},
+				ctx, &agent.AgentInfo{Id: nodeID, Version: version.BuildVersion(), PublicKey: publicKey},
 				grpc.WaitForReady(true),
 			)
 			if err != nil {
@@ -330,7 +339,7 @@ func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStateR
 
 		if err != nil {
 			log.Printf("Container status channel error: %s", err.Error())
-			return
+			break
 		}
 
 		if req.OneShot != nil && *req.OneShot {

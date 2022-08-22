@@ -2,15 +2,18 @@ package mapper
 
 import (
 	"fmt"
+
+	"log"
 	"strings"
 	"time"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	v1 "github.com/dyrector-io/dyrectorio/agent/api/v1"
 	"github.com/dyrector-io/dyrectorio/agent/internal/config"
 	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
 	"github.com/dyrector-io/dyrectorio/agent/internal/util"
-	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
+
 	builder "github.com/dyrector-io/dyrectorio/agent/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
@@ -77,10 +80,11 @@ func mapContainerConfig(in *agent.DeployRequest) v1.ContainerConfig {
 	containerConfig := v1.ContainerConfig{
 		Container:        in.ContainerName,
 		ContainerPreName: in.InstanceConfig.Prefix,
-		Ports:            mapPorts(cc.Ports),
+		Ports:            MapPorts(cc.Ports),
 		PortRanges:       mapPortRanges(cc.PortRanges),
 		Volumes:          mapVolumes(cc.Volumes),
 		User:             cc.User,
+		Secrets:          MapSecrets(cc.Secrets),
 	}
 
 	if cc.Environments != nil {
@@ -266,7 +270,18 @@ func mapPortRanges(in []*common.PortRangeBinding) []builder.PortRangeBinding {
 	return portRanges
 }
 
-func mapPorts(in []*common.Port) []builder.PortBinding {
+func MapSecrets(in *common.KeyValueList) map[string]string {
+	res := map[string]string{}
+
+	for _, value := range in.GetData() {
+		res[value.GetKey()] = value.GetValue()
+	}
+
+	log.Println("mapped secrets", res)
+	return res
+}
+
+func MapPorts(in []*common.Port) []builder.PortBinding {
 	ports := []builder.PortBinding{}
 
 	for i := range in {

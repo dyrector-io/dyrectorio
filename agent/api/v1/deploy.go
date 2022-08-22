@@ -30,7 +30,6 @@ type DeployImageRequest struct {
 	Tag             string                `json:"Tag" binding:"required"`
 	Issuer          string                `json:"Issuer"`
 }
-
 type VersionData struct {
 	Version      string `json:"version" binding:"required"`
 	ReleaseNotes string `json:"releaseNotes"`
@@ -134,6 +133,8 @@ type ContainerConfig struct {
 	Volumes []Volume `json:"volumes,omitempty" binding:"dive"`
 	// environment variables list
 	Environment []string `json:"environment"`
+	// Secrets
+	Secrets map[string]string `json:"secrets,omitempty"`
 	// the type of the runtime text provided eg. dotnet-appsettings
 	RuntimeConfigType RuntimeConfigType `json:"runtimeConfigType"`
 	// create an ingress object or not
@@ -170,8 +171,7 @@ type ContainerConfig struct {
 	RestartPolicy builder.RestartPolicyName `json:"restartPolicy"`
 	// bridge(container, default) host, none or network name
 	NetworkMode string `json:"networkMode"`
-	// extra networks
-	Networks []string `json:"networks"`
+
 	// k8s-only-section
 	// Deployments strategy, on deployment how to restart underlying pods
 	// Values: Recreate (all-at-once), Rolling(one-by-one only if succeeds)
@@ -186,7 +186,9 @@ type ContainerConfig struct {
 	ProxyHeaders bool `json:"proxyHeaders"`
 	// Expose service using external IP
 	// also sets the externalTrafficPolcy to "local"
-	UseLoadBalancer bool `json:"useLoadBalancer"`
+	// extra networks
+	Networks        []string `json:"networks"`
+	UseLoadBalancer bool     `json:"useLoadBalancer"`
 	// ExtraLBAnnotations
 	// lots of cloud provider specific configs can be put into annotations
 	// they vary enough to have it exposed like this

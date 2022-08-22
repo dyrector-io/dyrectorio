@@ -108,7 +108,7 @@ push-dagent: ##
 	docker push ${CONTAINER_URL}dagent:$(image_version)
 
 .PHONY: push-both
-push-both: push-crane push-dagent
+push-both: | push-crane push-dagent
 
 
 .PHONY: k3d-start # todo: put these into use

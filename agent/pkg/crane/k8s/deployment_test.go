@@ -6,7 +6,7 @@ package k8s_test
 import (
 	"testing"
 
-	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
+	v1 "github.com/dyrector-io/dyrectorio/agent/api/v1"
 
 	"github.com/stretchr/testify/assert"
 

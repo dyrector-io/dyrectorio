@@ -9,8 +9,8 @@ import (
 	corev1 "k8s.io/client-go/applyconfigurations/core/v1"
 	typedv1 "k8s.io/client-go/kubernetes/typed/core/v1"
 
+	v1 "github.com/dyrector-io/dyrectorio/agent/api/v1"
 	"github.com/dyrector-io/dyrectorio/agent/internal/util"
-	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/config"
 )
 

@@ -9,8 +9,13 @@ export type UniqueKeyValue = {
   value: string
 }
 
+export type UniqueKeySecretValue = UniqueKeyValue & {
+  encrypted: boolean
+}
+
 export type Environment = UniqueKeyValue[]
 export type Capabilities = UniqueKeyValue[]
+export type Secrets = UniqueKeyValue[]
 
 export type CompleteContainerConfig = ExplicitContainerConfig & {
   name: string

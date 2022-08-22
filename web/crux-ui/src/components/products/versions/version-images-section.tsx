@@ -60,3 +60,17 @@ const VersionImagesSection = (props: VersionImagesSectionProps) => {
 }
 
 export default VersionImagesSection
+
+export const mergeImagePatch = (oldImage: VersionImage, newImage: PatchVersionImage): VersionImage => {
+  return {
+    ...oldImage,
+    ...newImage,
+    config: {
+      name: newImage.config?.name ?? oldImage.config.name,
+      environment: newImage.config?.environment ?? oldImage.config.environment,
+      capabilities: newImage.config?.capabilities ?? oldImage.config.capabilities,
+      config: newImage.config?.config ?? oldImage.config.config,
+      secrets: newImage.config?.secrets ?? oldImage.config.secrets,
+    },
+  }
+}

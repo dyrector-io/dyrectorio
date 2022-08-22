@@ -131,12 +131,14 @@ export default class ImageService {
     if (request.config) {
       const caps = request.config.capabilities
       const envs = request.config.environment
+      const secrets = request.config.secrets
 
       config = {
         name: request.config.name ?? undefined,
         capabilities: caps ? caps.data ?? [] : (undefined as JsonArray),
         environment: envs ? envs.data ?? [] : (undefined as JsonArray),
         config: request.config?.config,
+        secrets: secrets ? secrets.data ?? [] : (undefined as JsonArray),
       }
     }
 

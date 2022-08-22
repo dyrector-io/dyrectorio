@@ -748,7 +748,9 @@ export const registryUrlOf = (it: RegistryDetails) => {
   }
 }
 
-export const registryDetailsToRegistry = (it: RegistryDetails): Registry => ({
-  ...it,
-  url: registryUrlOf(it),
-})
+export const registryDetailsToRegistry = (it: RegistryDetails): Registry => {
+  return {
+    ...it,
+    url: registryUrlOf(it),
+  }
+}
