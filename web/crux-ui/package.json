@@ -1,6 +1,6 @@
 {
   "name": "crux-ui",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Open-source delivery platform that helps developers to deliver applications efficiently by simplifying software releases and operations in any environment.",
   "author": "dyrector.io",
   "private": true,
@@ -38,7 +38,7 @@
     "google-auth-library": "^8.1.1",
     "google-protobuf": "^3.15.8",
     "next": "^12.1.4",
-    "next-translate": "^1.5.0",
+    "next-translate": "1.6.0-canary.1",
     "node-fetch": "^2.6.6",
     "prismjs": "^1.28.0",
     "react": "^17.0.2",

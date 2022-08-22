@@ -4,7 +4,7 @@ WORKDIR /app
 
 RUN apk add --no-cache libc6-compat nasm autoconf automake bash libltdl libtool gcc make g++ zlib-dev
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --no-fund
 
 # stage 2, build app
 FROM node:17.1.0-alpine AS BUILDER

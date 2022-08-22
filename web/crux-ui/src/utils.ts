@@ -14,7 +14,7 @@ import { NextRouter } from 'next/router'
 import toast from 'react-hot-toast'
 import { DyoErrorDto, DyoFetchError } from './models'
 import { Timestamp } from './models/grpc/google/protobuf/timestamp'
-import { ROUTE_404, ROUTE_500, ROUTE_INDEX, ROUTE_LOGIN, ROUTE_VERIFICATION } from './routes'
+import { ROUTE_404, ROUTE_INDEX, ROUTE_LOGIN, ROUTE_STATUS, ROUTE_VERIFICATION } from './routes'
 
 // date
 export const dateToUtcTime = (date: Date): number => {
@@ -308,7 +308,7 @@ const dyoApiErrorStatusToRedirectUrl = (status: number): string => {
     case 403:
       return ROUTE_404
     default:
-      return ROUTE_500
+      return ROUTE_STATUS
   }
 }
 

@@ -1,7 +1,11 @@
 {
     "serviceStatus": "Service status",
-    "auth": "Authentication Service",
-    "api": "Api",
+    "auth": "Authentication",
+    "api": "API",
+    "app": "Application UI",
+    "database": "Database",
+    "version": "Version",
+    "unknown": "Unknown",
 
     "serviceStatuses": {
         "unavailable": "Unavailable",

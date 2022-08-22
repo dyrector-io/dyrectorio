@@ -1,5 +1,5 @@
 import { WS_DATA_CRUX } from '@app/const'
-import { ServiceStatus } from '@app/models'
+import { CruxHealth } from '@app/models'
 import {
   CruxAuditClient,
   CruxDeploymentClient,
@@ -135,8 +135,7 @@ if (!global._cruxClients) {
   }
 }
 
-export const getCruxServiceStatus = async (): Promise<ServiceStatus> =>
-  (await Crux.withIdentity(null).health.getHealth()) ? 'operational' : 'unavailable'
+export const getCruxHealth = async (): Promise<CruxHealth> => await Crux.withIdentity(null).health.getHealth()
 
 export const cruxFromContext = (context: NextPageContext): Crux => {
   const session = sessionOfContext(context)

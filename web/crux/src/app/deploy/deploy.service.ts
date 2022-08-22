@@ -2,7 +2,6 @@ import { Injectable, Logger, PreconditionFailedException } from '@nestjs/common'
 import { DeploymentStatusEnum } from '@prisma/client'
 import { JsonArray } from 'prisma'
 import { concatAll, filter, from, map, merge, Observable, Subject } from 'rxjs'
-import { PrismaService } from 'src/services/prisma.service'
 import {
   defaultDeploymentName,
   Deployment,
@@ -21,7 +20,6 @@ import {
   DeploymentListByVersionResponse,
   DeploymentListResponse,
   DeploymentProgressMessage,
-  DeploymentStatus,
   Empty,
   IdRequest,
   PatchDeploymentRequest,
@@ -29,12 +27,13 @@ import {
   UpdateDeploymentRequest,
   UpdateEntityResponse,
 } from 'src/grpc/protobuf/proto/crux'
+import { KratosService } from 'src/services/kratos.service'
+import { PrismaService } from 'src/services/prisma.service'
 import { InstanceContainerConfigData } from 'src/shared/model'
 import { AgentService } from '../agent/agent.service'
 import { ImageWithConfig } from '../image/image.mapper'
 import { ImageService } from '../image/image.service'
 import { DeployMapper, InstanceDetails } from './deploy.mapper'
-import { KratosService } from 'src/services/kratos.service'
 
 @Injectable()
 export class DeployService {
