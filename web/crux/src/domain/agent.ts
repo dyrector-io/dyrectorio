@@ -108,9 +108,9 @@ export class Agent {
   }
 
   debugInfo(logger: Logger) {
-    logger.debug(`agent id: ${this.id}, open: ${!this.commandChannel.closed}`)
-    logger.debug(`deployments: ${this.deployments.size}`)
-    logger.debug(`watchers: ${this.statusWatchers.size}`)
+    logger.debug(`Agent id: ${this.id}, open: ${!this.commandChannel.closed}`)
+    logger.debug(`Deployments: ${this.deployments.size}`)
+    logger.debug(`Watchers: ${this.statusWatchers.size}`)
     this.deployments.forEach(it => it.debugInfo(logger))
   }
 }

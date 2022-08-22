@@ -2,7 +2,6 @@ import { Injectable, Logger, PreconditionFailedException } from '@nestjs/common'
 import { DeploymentStatusEnum } from '@prisma/client'
 import { JsonArray } from 'prisma'
 import { concatAll, filter, from, map, merge, Observable, Subject } from 'rxjs'
-import { PrismaService } from 'src/services/prisma.service'
 import {
   defaultDeploymentName,
   Deployment,
@@ -12,11 +11,13 @@ import {
 import { InternalException } from 'src/exception/errors'
 import { DeployRequest } from 'src/grpc/protobuf/proto/agent'
 import {
+  AccessRequest,
   CreateDeploymentRequest,
   CreateEntityResponse,
   DeploymentDetailsResponse,
   DeploymentEditEventMessage,
   DeploymentEventListResponse,
+  DeploymentListByVersionResponse,
   DeploymentListResponse,
   DeploymentProgressMessage,
   Empty,
@@ -26,6 +27,8 @@ import {
   UpdateDeploymentRequest,
   UpdateEntityResponse,
 } from 'src/grpc/protobuf/proto/crux'
+import { KratosService } from 'src/services/kratos.service'
+import { PrismaService } from 'src/services/prisma.service'
 import { InstanceContainerConfigData } from 'src/shared/model'
 import { AgentService } from '../agent/agent.service'
 import { ImageWithConfig } from '../image/image.mapper'
@@ -44,6 +47,7 @@ export class DeployService {
     private agentService: AgentService,
     imageService: ImageService,
     private mapper: DeployMapper,
+    private kratos: KratosService,
   ) {
     imageService.imagesAddedToVersionEvent
       .pipe(
@@ -55,7 +59,7 @@ export class DeployService {
     this.imageDeletedEvent = imageService.imageDeletedFromVersionEvent
   }
 
-  async getDeploymentsByVersionId(request: IdRequest): Promise<DeploymentListResponse> {
+  async getDeploymentsByVersionId(request: IdRequest): Promise<DeploymentListByVersionResponse> {
     const deployments = await this.prisma.deployment.findMany({
       where: {
         versionId: request.id,
@@ -66,12 +70,12 @@ export class DeployService {
     })
 
     return {
-      data: deployments.map(it => this.mapper.toGrpc(it)),
+      data: deployments.map(it => this.mapper.deploymentByVersionToGrpc(it)),
     }
   }
 
   async getDeploymentDetails(request: IdRequest): Promise<DeploymentDetailsResponse> {
-    const deployment = await this.prisma.deployment.findUnique({
+    const deployment = await this.prisma.deployment.findUniqueOrThrow({
       where: {
         id: request.id,
       },
@@ -109,7 +113,7 @@ export class DeployService {
   }
 
   async createDeployment(request: CreateDeploymentRequest): Promise<CreateEntityResponse> {
-    const version = await this.prisma.version.findUnique({
+    const version = await this.prisma.version.findUniqueOrThrow({
       where: {
         id: request.versionId,
       },
@@ -138,7 +142,7 @@ export class DeployService {
       },
     })
 
-    const node = await this.prisma.node.findUnique({
+    const node = await this.prisma.node.findUniqueOrThrow({
       where: {
         id: request.nodeId,
       },
@@ -174,7 +178,7 @@ export class DeployService {
             data: version.images.map(it => {
               return {
                 imageId: it.id,
-                status: null,
+                state: null,
               }
             }),
           },
@@ -267,7 +271,7 @@ export class DeployService {
   }
 
   async startDeployment(request: IdRequest): Promise<Observable<DeploymentProgressMessage>> {
-    const deployment = await this.prisma.deployment.findUnique({
+    const deployment = await this.prisma.deployment.findUniqueOrThrow({
       where: {
         id: request.id,
       },
@@ -292,6 +296,14 @@ export class DeployService {
       },
     })
 
+    if (deployment.status !== DeploymentStatusEnum.preparing && deployment.status !== DeploymentStatusEnum.failed) {
+      throw new PreconditionFailedException({
+        message: 'Invalid deployment state',
+        property: 'status',
+        value: deployment.nodeId,
+      })
+    }
+
     const agent = this.agentService.getById(deployment.nodeId)
     if (!agent) {
       // Todo in the client is this just a simple internal server error
@@ -303,34 +315,55 @@ export class DeployService {
       })
     }
 
-    const deploy = new Deployment({
-      id: deployment.id,
-      releaseNotes: deployment.version.changelog,
-      versionName: deployment.version.name,
-      requests: deployment.instances.map(it => {
-        const registry = it.image.registry
-        const registryUrl = registry.type === 'v2' ? registry.url : ''
-
-        return {
-          id: it.id,
-          imageName: it.image.name,
-          tag: it.image.tag,
-          containerConfig: this.mapper.instanceToAgentContainerConfig(deployment.prefix, it),
-          instanceConfig: this.mapper.deploymentToAgentInstanceConfig(deployment),
-          registry: registryUrl,
-          registryAuth: !registry.token
-            ? undefined
-            : {
-                name: registry.name,
-                url: registryUrl,
-                user: registry.user,
-                password: registry.token,
-              },
-        } as DeployRequest
-      }),
+    await this.prisma.deployment.update({
+      where: {
+        id: deployment.id,
+      },
+      data: {
+        status: DeploymentStatusEnum.inProgress,
+      },
     })
 
+    const deploy = new Deployment(
+      {
+        id: deployment.id,
+        releaseNotes: deployment.version.changelog,
+        versionName: deployment.version.name,
+        requests: deployment.instances.map(it => {
+          const registry = it.image.registry
+          const registryUrl =
+            registry.type === 'google' || registry.type === 'github'
+              ? `${registry.url}/${registry.imageNamePrefix}`
+              : registry.type === 'v2' || registry.type === 'gitlab'
+              ? registry.url
+              : ''
+
+          return {
+            id: it.id,
+            imageName: it.image.name,
+            tag: it.image.tag,
+            containerConfig: this.mapper.instanceToAgentContainerConfig(deployment.prefix, it),
+            instanceConfig: this.mapper.deploymentToAgentInstanceConfig(deployment),
+            registry: registryUrl,
+            registryAuth: !registry.token
+              ? undefined
+              : {
+                  name: registry.name,
+                  url: registryUrl,
+                  user: registry.user,
+                  password: registry.token,
+                },
+          } as DeployRequest
+        }),
+      },
+      {
+        deploymentName: deployment.name,
+        accessedBy: request.accessedBy,
+      },
+    )
+
     this.logger.debug(`Starting deployment: ${deploy.id}`)
+
     return agent.deploy(deploy)
   }
 
@@ -354,6 +387,48 @@ export class DeployService {
         }),
       ),
     )
+  }
+
+  async getDeploymentList(request: AccessRequest): Promise<DeploymentListResponse> {
+    const deployments = await this.prisma.deployment.findMany({
+      where: {
+        version: {
+          product: {
+            team: {
+              users: {
+                some: {
+                  userId: request.accessedBy,
+                  active: true,
+                },
+              },
+            },
+          },
+        },
+      },
+      include: {
+        version: {
+          select: {
+            id: true,
+            name: true,
+            product: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+        node: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    })
+
+    return {
+      data: deployments.map(it => this.mapper.listItemToGrpc(it)),
+    }
   }
 
   private async onImagesAddedToVersion(images: ImageWithConfig[]): Promise<InstancesCreatedEvent> {
@@ -388,7 +463,7 @@ export class DeployService {
             data: {
               deploymentId: deployment.id,
               imageId: it.id,
-              status: null,
+              state: null,
             },
           }),
         ),

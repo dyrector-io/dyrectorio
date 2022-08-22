@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import {
   ContainerConfig,
-  ContainerStatusEnum,
+  ContainerStateEnum,
   Deployment,
   DeploymentEvent,
   DeploymentEventTypeEnum,
@@ -16,11 +16,12 @@ import { toTimestamp } from 'src/domain/utils'
 import { DeployRequest_ContainerConfig, DeployRequest_InstanceConfig } from 'src/grpc/protobuf/proto/agent'
 import {
   AuditResponse,
-  ContainerStatus,
-  containerStatusFromJSON,
-  containerStatusToJSON,
+  ContainerState,
+  containerStateFromJSON,
+  containerStateToJSON,
+  DeploymentByVersionResponse,
   DeploymentDetailsResponse,
-  DeploymentEventContainerStatus,
+  DeploymentEventContainerState,
   DeploymentEventLog,
   DeploymentEventResponse,
   DeploymentEventType,
@@ -43,7 +44,19 @@ import { ImageMapper, ImageWithConfig } from '../image/image.mapper'
 export class DeployMapper {
   constructor(private imageMapper: ImageMapper) {}
 
-  toGrpc(deployment: DeploymentWithNode): DeploymentResponse {
+  listItemToGrpc(deployment: DeploymentListItem): DeploymentResponse {
+    return {
+      ...deployment,
+      node: deployment.node.name,
+      product: deployment.version.product.name,
+      version: deployment.version.name,
+      status: this.statusToGrpc(deployment.status),
+      productId: deployment.version.product.id,
+      versionId: deployment.version.id,
+    }
+  }
+
+  deploymentByVersionToGrpc(deployment: DeploymentWithNode): DeploymentByVersionResponse {
     return {
       ...deployment,
       audit: AuditResponse.fromJSON(deployment),
@@ -74,7 +87,7 @@ export class DeployMapper {
       ...instance,
       audit: AuditResponse.fromJSON(instance),
       image: this.imageMapper.toGrpc(instance.image),
-      status: this.containerStatusToGrpc(instance.status),
+      state: this.containerStateToGrpc(instance.state),
       config: {
         capabilities: (instance.config?.capabilities as UniqueKeyValue[]) ?? [],
         environment: (instance.config?.environment as UniqueKeyValue[]) ?? [],
@@ -86,7 +99,7 @@ export class DeployMapper {
   eventToGrpc(event: DeploymentEvent): DeploymentEventResponse {
     let log: DeploymentEventLog
     let deploymentStatus: DeploymentStatus
-    let containerStatus: DeploymentEventContainerStatus
+    let containerStatus: DeploymentEventContainerState
 
     switch (event.type) {
       case DeploymentEventTypeEnum.log: {
@@ -101,7 +114,7 @@ export class DeployMapper {
       }
       case DeploymentEventTypeEnum.containerStatus: {
         const value = event.value as { instanceId: string; status: string }
-        containerStatus = DeploymentEventContainerStatus.fromJSON({
+        containerStatus = DeploymentEventContainerState.fromJSON({
           ...value,
           status: value.status.toUpperCase(),
         })
@@ -159,19 +172,29 @@ export class DeployMapper {
   }
 
   statusToGrpc(status: DeploymentStatusEnum): DeploymentStatus {
-    return deploymentStatusFromJSON(status.toUpperCase())
+    switch (status) {
+      case DeploymentStatusEnum.inProgress:
+        return DeploymentStatus.IN_PROGRESS
+      default:
+        return deploymentStatusFromJSON(status.toUpperCase())
+    }
   }
 
   statusToDb(status: DeploymentStatus): DeploymentStatusEnum {
-    return deploymentStatusToDb(status)
+    switch (status) {
+      case DeploymentStatus.IN_PROGRESS:
+        return DeploymentStatusEnum.inProgress
+      default:
+        return deploymentStatusToDb(status)
+    }
   }
 
-  containerStatusToGrpc(status?: ContainerStatusEnum): ContainerStatus {
-    return status ? containerStatusFromJSON(status.toUpperCase()) : null
+  containerStateToGrpc(state?: ContainerStateEnum): ContainerState {
+    return state ? containerStateFromJSON(state.toUpperCase()) : null
   }
 
-  containerStatusToDb(status?: ContainerStatus): ContainerStatusEnum {
-    return status ? (containerStatusToJSON(status).toLowerCase() as ContainerStatusEnum) : null
+  containerStateToDb(state?: ContainerState): ContainerStateEnum {
+    return state ? (containerStateToJSON(state).toLowerCase() as ContainerStateEnum) : null
   }
 
   private jsonToPipedFormat(environment: UniqueKeyValue[]): string[] {
@@ -227,3 +250,8 @@ export type DeploymentDetails = DeploymentWithNode & {
 }
 
 type DeploymentContainerConfig = Omit<ContainerConfig, 'imageId'>
+
+type DeploymentListItem = Deployment & {
+  node: { name: string }
+  version: { id: string; name: string; product: { id: string; name: string } }
+}

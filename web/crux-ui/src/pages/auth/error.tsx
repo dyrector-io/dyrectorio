@@ -1,4 +1,4 @@
-import { PageHead } from '@app/components/layout'
+import { SingleFormLayout } from '@app/components/layout'
 import { DyoButton } from '@app/elements/dyo-button'
 import { ROUTE_INDEX } from '@app/routes'
 import { redirectTo } from '@app/utils'
@@ -19,8 +19,7 @@ const ErrorPage = (props: SelfServiceError) => {
   const error = props.error && 'message' in props.error ? (props.error as Error) : null
 
   return (
-    <>
-      <PageHead title={t('title')} />
+    <SingleFormLayout title={t('oops')}>
       <div className="text-center my-20">
         <h2 className="text-4xl font-extrabold text-blue">{t('oops')}</h2>
 
@@ -30,7 +29,7 @@ const ErrorPage = (props: SelfServiceError) => {
 
         <div className="mt-16"></div>
       </div>
-    </>
+    </SingleFormLayout>
   )
 }
 

@@ -1,11 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { NodeTypeEnum } from '@prisma/client'
 import { Observable } from 'rxjs'
-import { PrismaService } from 'src/services/prisma.service'
 import { PreconditionFailedException } from 'src/exception/errors'
 import {
   AccessRequest,
-  ContainerStatusListMessage,
+  ContainerStateListMessage,
   CreateEntityResponse,
   CreateNodeRequest,
   Empty,
@@ -16,14 +14,16 @@ import {
   NodeInstallResponse,
   NodeListResponse,
   NodeScriptResponse,
-  NodeType,
   ServiceIdRequest,
   UpdateNodeRequest,
-  WatchContainerStatusRequest,
+  WatchContainerStateRequest,
 } from 'src/grpc/protobuf/proto/crux'
+import { PrismaService } from 'src/services/prisma.service'
 import { AgentService } from '../agent/agent.service'
 import { TeamRepository } from '../team/team.repository'
 import { NodeMapper } from './node.mapper'
+import { DomainNotificationService } from 'src/services/domain.notification.service'
+import { BaseMessage } from 'src/domain/notification-templates'
 
 @Injectable()
 export class NodeService {
@@ -34,6 +34,7 @@ export class NodeService {
     private prisma: PrismaService,
     private agentService: AgentService,
     private mapper: NodeMapper,
+    private notificationService: DomainNotificationService,
   ) {}
 
   async getNodes(req: AccessRequest): Promise<NodeListResponse> {
@@ -56,7 +57,7 @@ export class NodeService {
   }
 
   async getNodeDetails(req: IdRequest): Promise<NodeDetailsResponse> {
-    const node = await this.prisma.node.findUnique({
+    const node = await this.prisma.node.findUniqueOrThrow({
       where: {
         id: req.id,
       },
@@ -76,6 +77,12 @@ export class NodeService {
         teamId: team.teamId,
         createdBy: req.accessedBy,
       },
+    })
+
+    await this.notificationService.sendNotification({
+      identityId: req.accessedBy,
+      messageType: 'node',
+      message: { subject: node.name } as BaseMessage,
     })
 
     return CreateEntityResponse.fromJSON(node)
@@ -126,7 +133,7 @@ export class NodeService {
   }
 
   async getScript(request: ServiceIdRequest): Promise<NodeScriptResponse> {
-    const node = await this.prisma.node.findUnique({
+    const node = await this.prisma.node.findUniqueOrThrow({
       where: {
         id: request.id,
       },
@@ -168,7 +175,7 @@ export class NodeService {
     return await this.agentService.getNodeEventsByTeam(request.id)
   }
 
-  handleWatchContainerStatus(request: WatchContainerStatusRequest): Observable<ContainerStatusListMessage> {
+  handleWatchContainerStatus(request: WatchContainerStateRequest): Observable<ContainerStateListMessage> {
     this.logger.debug(`Opening container status channel for prefix: ${request.nodeId} - ${request.prefix}`)
 
     const agent = this.agentService.getById(request.nodeId)

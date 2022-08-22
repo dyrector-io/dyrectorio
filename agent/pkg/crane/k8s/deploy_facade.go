@@ -10,6 +10,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/agent/internal/grpc"
 	"github.com/dyrector-io/dyrectorio/agent/internal/util"
 	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
+	builder "github.com/dyrector-io/dyrectorio/agent/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/config"
 )
 
@@ -48,14 +49,14 @@ func NewDeployFacade(params *DeployFacadeParams, cfg *config.Configuration) *dep
 		ctx:        params.Ctx,
 		params:     params,
 		image:      params.Image,
-		namespace:  newNamespace(params.InstanceConfig.ContainerPreName, cfg),
+		namespace:  newNamespace(params.Ctx, params.InstanceConfig.ContainerPreName, cfg),
 		deployment: newDeployment(params.Ctx, cfg),
 		configmap:  newConfigmap(params.Ctx, cfg),
 		service:    newService(params.Ctx, cfg),
 		ingress:    newIngress(params.Ctx, cfg),
 		appConfig:  cfg,
 
-		pvc: newPvc(cfg),
+		pvc: newPvc(params.Ctx, cfg),
 	}
 }
 
@@ -136,7 +137,7 @@ func (d *deployFacade) PreDeploy() error {
 }
 
 func (d *deployFacade) Deploy() error {
-	var portList []v1.PortBinding
+	var portList []builder.PortBinding
 	if d.params.ContainerConfig.Ports != nil {
 		portList = append(portList, d.params.ContainerConfig.Ports...)
 	}

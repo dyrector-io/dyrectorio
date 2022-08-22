@@ -17,12 +17,13 @@ model Team {
   updatedAt DateTime? @default(now()) @db.Timestamptz(6)
   updatedBy String?   @db.Uuid
 
-  registries  Registry[]
-  products    Product[]
-  nodes       Node[]
-  users       UsersOnTeams[]
-  invitations UserInvitation[]
-  auditLog    AuditLog[]
+  registries    Registry[]
+  products      Product[]
+  nodes         Node[]
+  users         UsersOnTeams[]
+  invitations   UserInvitation[]
+  auditLog      AuditLog[]
+  notifications Notification[]
 }
 
 model UserInvitation {
@@ -39,7 +40,7 @@ model UserInvitation {
 model UsersOnTeams {
   userId String  @db.Uuid
   active Boolean @default(false)
-  owner  Boolean @default(false)
+  role  UserRoleEnum
   teamId String  @db.Uuid
   team   Team    @relation(fields: [teamId], references: [id], onDelete: Cascade)
 
@@ -81,7 +82,7 @@ model Registry {
   user        String?
   token       String?
   type        RegistryTypeEnum
-  urlPrefix   String?
+  imageNamePrefix   String?
   apiUrl      String?
 
   images Image[]
@@ -134,7 +135,7 @@ model VersionsOnParentVersion {
   parentVersionId String @unique @db.Uuid
 
   child  Version @relation(name: "child", fields: [versionId], references: [id], onDelete: Cascade)
-  parent Version @relation(name: "parent", fields: [parentVersionId], references: [id])
+  parent Version @relation(name: "parent", fields: [parentVersionId], references: [id], onDelete: Cascade)
 
   @@id([versionId, parentVersionId])
 }
@@ -192,7 +193,7 @@ model Deployment {
 model Instance {
   id           String               @id @default(uuid()) @db.Uuid
   updatedAt    DateTime             @default(now()) @db.Timestamptz(6)
-  status       ContainerStatusEnum?
+  state        ContainerStateEnum?
   deploymentId String               @db.Uuid
   imageId      String               @db.Uuid
 
@@ -218,7 +219,7 @@ model DeploymentEvent {
   value        Json
   deploymentId String                  @db.Uuid
 
-  deployment Deployment @relation(fields: [deploymentId], references: [id])
+  deployment Deployment @relation(fields: [deploymentId], references: [id], onDelete: Cascade)
 }
 
 model AuditLog {
@@ -229,7 +230,30 @@ model AuditLog {
   serviceCall String
   data        Json?
 
-  team Team @relation(fields: [teamId], references: [id])
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+}
+
+enum UserRoleEnum {
+  owner
+  admin
+  user
+}
+
+model Notification {
+  id          String                @id @default(uuid()) @db.Uuid
+  createdAt   DateTime              @default(now()) @db.Timestamptz(6)
+  createdBy   String                @db.Uuid
+  updatedAt   DateTime?             @default(now()) @db.Timestamptz(6)
+  updatedBy   String?               @db.Uuid
+  name        String
+  url         String
+  type        NotificationTypeEnum
+  active      Boolean               @default(false)
+  teamId      String                @db.Uuid
+  
+  team        Team                  @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([name, teamId])
 }
 
 enum ProductTypeEnum {
@@ -242,9 +266,9 @@ enum VersionTypeEnum {
   rolling
 }
 
-enum ContainerStatusEnum {
+enum ContainerStateEnum {
   created
-  restating
+  restarting
   running
   removing
   paused
@@ -278,4 +302,10 @@ enum RegistryTypeEnum {
 enum NodeTypeEnum {
   docker
   k8s
+}
+
+enum NotificationTypeEnum {
+  discord
+  slack
+  teams
 }

@@ -1,4 +1,4 @@
-import { PageHead, SingleFormLayout } from '@app/components/layout'
+import { SingleFormLayout } from '@app/components/layout'
 import { ATTRIB_CSRF } from '@app/const'
 import { DyoButton } from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
@@ -19,6 +19,7 @@ import {
   upsertError,
 } from '@app/utils'
 import { SelfServiceRegistrationFlow } from '@ory/kratos-client'
+import { captchaDisabled } from '@server/captcha'
 import kratos, { forwardCookie, obtainKratosSession } from '@server/kratos'
 import { useFormik } from 'formik'
 import { NextPageContext } from 'next'
@@ -29,11 +30,16 @@ import { useRef, useState } from 'react'
 import ReCAPTCHA from 'react-google-recaptcha'
 import toast from 'react-hot-toast'
 
-const RegisterPage = (props: SelfServiceRegistrationFlow) => {
+interface RegisterPageProps {
+  flow: SelfServiceRegistrationFlow
+  recaptchaSiteKey?: string
+}
+
+const RegisterPage = (props: RegisterPageProps) => {
   const { t } = useTranslation('register')
   const router = useRouter()
 
-  const flow = props
+  const { flow, recaptchaSiteKey } = props
 
   const [ui, setUi] = useState(flow.ui)
   const [errors, setErrors] = useState<DyoErrorDto[]>([])
@@ -53,7 +59,7 @@ const RegisterPage = (props: SelfServiceRegistrationFlow) => {
 
       setErrors(removeError(errors, 'confirmPassword'))
 
-      const captcha = await recaptcha.current.executeAsync()
+      const captcha = recaptchaSiteKey ? await recaptcha.current.executeAsync() : null
 
       const data: Register = {
         flow: flow.id,
@@ -90,73 +96,70 @@ const RegisterPage = (props: SelfServiceRegistrationFlow) => {
   })
 
   return (
-    <>
-      <PageHead title={t('title')} />
-      <SingleFormLayout>
-        <DyoSingleFormLogo />
+    <SingleFormLayout title={t('signUp')}>
+      <DyoSingleFormLogo />
 
-        <DyoCard className="p-8 mx-auto">
-          <form className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
-            <DyoSingleFormHeading>{t('signUp')}</DyoSingleFormHeading>
+      <DyoCard className="p-8 mx-auto">
+        <form className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
+          <DyoSingleFormHeading>{t('signUp')}</DyoSingleFormHeading>
 
-            <DyoInput
-              label={t('common:email')}
-              name="email"
-              type="email"
-              onChange={formik.handleChange}
-              value={formik.values.email}
-              message={findMessage(ui, 'traits.email')}
-            />
+          <DyoInput
+            label={t('common:email')}
+            name="email"
+            type="email"
+            onChange={formik.handleChange}
+            value={formik.values.email}
+            message={findMessage(ui, 'traits.email')}
+          />
 
-            <DyoInput
-              label={t('common:password')}
-              name="password"
-              type="password"
-              onChange={formik.handleChange}
-              value={formik.values.password}
-              message={findMessage(ui, 'password')}
-            />
+          <DyoInput
+            label={t('common:password')}
+            name="password"
+            type="password"
+            onChange={formik.handleChange}
+            value={formik.values.password}
+            message={findMessage(ui, 'password')}
+          />
 
-            <DyoInput
-              label={t('common:confirmPass')}
-              name="confirmPassword"
-              type="password"
-              onChange={formik.handleChange}
-              value={formik.values.confirmPassword}
-              message={findError(errors, 'confirmPassword', it => t(`errors:${it.error}`))}
-              messageType="error"
-            />
+          <DyoInput
+            label={t('common:confirmPass')}
+            name="confirmPassword"
+            type="password"
+            onChange={formik.handleChange}
+            value={formik.values.confirmPassword}
+            message={findError(errors, 'confirmPassword', it => t(`errors:${it.error}`))}
+            messageType="error"
+          />
 
-            {ui.messages?.map((it, index) => (
-              <DyoMessage key={`error-${index}`} message={it.text} />
-            ))}
+          {ui.messages?.map((it, index) => (
+            <DyoMessage key={`error-${index}`} message={it.text} />
+          ))}
 
-            <DyoMessage
-              message={findError(errors, 'captcha', it =>
-                t(`errors:${it.error}`, {
-                  name: it.value,
-                }),
-              )}
-              messageType="error"
-            />
+          <DyoMessage
+            message={findError(errors, 'captcha', it =>
+              t(`errors:${it.error}`, {
+                name: it.value,
+              }),
+            )}
+            messageType="error"
+          />
 
-            <DyoButton className="mt-8" type="submit">
-              {t('createAcc')}
-            </DyoButton>
+          <DyoButton className="mt-8" type="submit">
+            {t('createAcc')}
+          </DyoButton>
 
-            <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY} />
-          </form>
-        </DyoCard>
+          {recaptchaSiteKey ? <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={recaptchaSiteKey} /> : null}
+        </form>
+      </DyoCard>
 
-        <div className="flex justify-center text-bright mt-8 mb-auto">
-          <p className="mr-2">{t('alreadyUser')}</p>
+      <div className="flex justify-center text-bright mt-8 mb-auto">
+        <p className="mr-2">{t('alreadyUser')}</p>
 
-          <Link href={ROUTE_LOGIN}>
-            <a className="font-bold underline">{t('common:logIn')}</a>
-          </Link>
-        </div>
-      </SingleFormLayout>
-    </>
+        <Link href={ROUTE_LOGIN}>
+          <a className="font-bold underline">{t('common:logIn')}</a>
+        </Link>
+      </div>
+    </SingleFormLayout>
   )
 }
 
@@ -172,7 +175,10 @@ const getPageServerSideProps = async (context: NextPageContext) => {
   forwardCookie(context, flow)
 
   return {
-    props: flow.data,
+    props: {
+      flow: flow.data,
+      recaptchaSiteKey: captchaDisabled() ? null : process.env.RECAPTCHA_SITE_KEY,
+    },
   }
 }
 

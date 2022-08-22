@@ -24,3 +24,4 @@ export const INVITE_LINK_EXPIRATION = '12h'
 export const ATTRIB_CSRF = 'csrf_token'
 export const HEADER_SET_COOKIE = 'set-cookie'
 export const AUTH_RESEND_DELAY = 30 // seconds
+export const WEBOOK_TEST_DELAY = 500 //millis

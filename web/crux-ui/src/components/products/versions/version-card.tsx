@@ -17,7 +17,8 @@ interface VersionCardProps {
   productId: string
   version: Version
   onClick?: () => void
-  onIncreaseClick: () => void
+  onIncreaseClick?: () => void
+  disabled?: boolean
 }
 
 const VersionCard = (props: VersionCardProps) => {
@@ -91,11 +92,11 @@ const VersionCard = (props: VersionCardProps) => {
         )}
 
         <div className={clsx('flex flex-row ml-auto', !overflow ? 'mt-auto' : 'mt-8')}>
-          <DyoButton className="px-6 mx-2" outlined onClick={onDeploymentsClick}>
+          <DyoButton className="px-6 mx-2" outlined onClick={onDeploymentsClick} disabled={props.disabled}>
             {t('deployments')}
           </DyoButton>
 
-          <DyoButton className="px-6 mx-2" outlined onClick={onImagesClick}>
+          <DyoButton className="px-6 mx-2" outlined onClick={onImagesClick} disabled={props.disabled}>
             {t('images')}
           </DyoButton>
 
@@ -105,6 +106,7 @@ const VersionCard = (props: VersionCardProps) => {
               color="ring-dyo-green"
               textColor="text-dyo-green"
               outlined
+              disabled={props.disabled}
               onClick={props.onIncreaseClick}
             >
               {t('increase')}

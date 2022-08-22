@@ -82,7 +82,7 @@ export class RegistryService {
   }
 
   async getRegistryDetails(req: IdRequest): Promise<RegistryDetailsResponse> {
-    const registry = await this.prisma.registry.findUnique({
+    const registry = await this.prisma.registry.findUniqueOrThrow({
       where: {
         id: req.id,
       },

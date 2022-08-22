@@ -1,4 +1,4 @@
-import { PageHead, SingleFormLayout } from '@app/components/layout'
+import { SingleFormLayout } from '@app/components/layout'
 import { ATTRIB_CSRF, AUTH_RESEND_DELAY } from '@app/const'
 import { DyoButton } from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
@@ -10,6 +10,7 @@ import { DyoErrorDto, VerifyEmail } from '@app/models'
 import { API_VERIFICATION, ROUTE_LOGIN, ROUTE_SETTINGS } from '@app/routes'
 import { findAttributes, findError, findMessage, isDyoError, redirectTo, sendForm, upsertDyoError } from '@app/utils'
 import { SelfServiceVerificationFlow } from '@ory/kratos-client'
+import { captchaDisabled } from '@server/captcha'
 import kratos, { forwardCookie, obtainKratosSession, userVerified } from '@server/kratos'
 import { useFormik } from 'formik'
 import { NextPageContext } from 'next'
@@ -21,17 +22,18 @@ import toast from 'react-hot-toast'
 interface VerifyProps {
   email: string
   flow: SelfServiceVerificationFlow
+  recaptchaSiteKey?: string
 }
 
 const VerifyPage = (props: VerifyProps) => {
   const { t } = useTranslation('verify')
 
-  const { flow, email } = props
+  const { flow, email, recaptchaSiteKey } = props
 
   const [ui, setUi] = useState(flow.ui)
   const [sent, setSent] = useState(false)
   const [errors, setErrors] = useState<DyoErrorDto[]>([])
-  const [countdown, startCountdown] = useTimer(-1, () => recaptcha.current.reset())
+  const [countdown, startCountdown] = useTimer(-1, recaptchaSiteKey ? () => recaptcha.current.reset() : null)
 
   const recaptcha = useRef<ReCAPTCHA>()
 
@@ -40,7 +42,7 @@ const VerifyPage = (props: VerifyProps) => {
       email,
     },
     onSubmit: async values => {
-      const captcha = await recaptcha.current.executeAsync()
+      const captcha = recaptchaSiteKey ? await recaptcha.current.executeAsync() : null
 
       const data: VerifyEmail = {
         flow: flow.id,
@@ -74,43 +76,40 @@ const VerifyPage = (props: VerifyProps) => {
   const submitDisabled = countdown > 0
 
   return (
-    <>
-      <PageHead title={t('title')} />
-      <SingleFormLayout>
-        <DyoCard className="p-8 m-auto">
-          <form className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
-            <DyoSingleFormHeading className="max-w-xs">{t('verification')}</DyoSingleFormHeading>
+    <SingleFormLayout title={t('verification')}>
+      <DyoCard className="p-8 m-auto">
+        <form className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
+          <DyoSingleFormHeading className="max-w-xs">{t('verification')}</DyoSingleFormHeading>
 
-            <DyoInput
-              disabled
-              label={t('common:email')}
-              name="email"
-              type="email"
-              onChange={formik.handleChange}
-              value={formik.values.email}
-              message={findMessage(ui, 'email')}
-            />
+          <DyoInput
+            disabled
+            label={t('common:email')}
+            name="email"
+            type="email"
+            onChange={formik.handleChange}
+            value={formik.values.email}
+            message={findMessage(ui, 'email')}
+          />
 
-            {sent ? <p className="w-80 text-bright text-center mt-8">{t('linkSent')}</p> : null}
+          {sent ? <p className="w-80 text-bright text-center mt-8">{t('linkSent')}</p> : null}
 
-            <DyoMessage
-              message={findError(errors, 'captcha', it =>
-                t(`errors:${it.error}`, {
-                  name: it.value,
-                }),
-              )}
-              messageType="error"
-            />
+          <DyoMessage
+            message={findError(errors, 'captcha', it =>
+              t(`errors:${it.error}`, {
+                name: it.value,
+              }),
+            )}
+            messageType="error"
+          />
 
-            <DyoButton className="mt-8" type="submit" disabled={submitDisabled}>
-              {sent ? `${t('common:resend')} ${countdown > 0 ? countdown : ''}`.trim() : t('common:send')}
-            </DyoButton>
+          <DyoButton className="mt-8" type="submit" disabled={submitDisabled}>
+            {sent ? `${t('common:resend')} ${countdown > 0 ? countdown : ''}`.trim() : t('common:send')}
+          </DyoButton>
 
-            <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY} />
-          </form>
-        </DyoCard>
-      </SingleFormLayout>
-    </>
+          {recaptchaSiteKey ? <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={recaptchaSiteKey} /> : null}
+        </form>
+      </DyoCard>
+    </SingleFormLayout>
   )
 }
 
@@ -139,6 +138,7 @@ const getPageServerSideProps = async (context: NextPageContext) => {
     props: {
       email: session.identity.traits.email,
       flow: flow.data,
+      recaptchaSiteKey: captchaDisabled() ? null : process.env.RECAPTCHA_SITE_KEY,
     },
   }
 }

@@ -1,4 +1,4 @@
-import { Layout, PageHead } from '@app/components/layout'
+import { Layout } from '@app/components/layout'
 import DyoNodeCard from '@app/components/nodes/dyo-node-card'
 import EditNodeCard from '@app/components/nodes/edit-node-card'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
@@ -50,16 +50,15 @@ const NodeDetails = (props: NodeDetailsProps) => {
   }
 
   const pageLink: BreadcrumbLink = {
-    name: t('common:node'),
+    name: t('common:nodes'),
     url: ROUTE_NODES,
   }
 
   return (
-    <Layout>
-      <PageHead title={t('title-node', { name: node.name })} />
+    <Layout title={t('nodesName', node)}>
       <PageHeading
         pageLink={pageLink}
-        subLinks={[
+        sublinks={[
           {
             name: node.name,
             url: `${nodeUrl(node.id)}`,
@@ -72,7 +71,7 @@ const NodeDetails = (props: NodeDetailsProps) => {
           setEditing={setEditing}
           submitRef={submitRef}
           deleteModalTitle={t('common:confirmDelete', { name: node.name })}
-          deleteModalDescription={t('deleteDescription', {
+          deleteModalDescription={t('common:deleteDescription', {
             name: node.name,
           })}
         />

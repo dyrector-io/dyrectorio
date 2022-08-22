@@ -19,6 +19,7 @@ import (
 
 	"github.com/dyrector-io/dyrectorio/agent/internal/util"
 	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
+	builder "github.com/dyrector-io/dyrectorio/agent/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/routes"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/utils"
@@ -87,7 +88,7 @@ func TestLabelDeploy(t *testing.T) {
 		},
 		ContainerConfig: v1.ContainerConfig{
 			Container:     "test-2",
-			RestartPolicy: v1.OnFailureRestartPolicy,
+			RestartPolicy: builder.OnFailureRestartPolicy,
 		},
 		ImageName: imageName,
 		Tag:       "latest",
@@ -124,7 +125,7 @@ func TestBasicDeploy(t *testing.T) {
 		},
 		ContainerConfig: v1.ContainerConfig{
 			Container:     "test-1",
-			RestartPolicy: v1.OnFailureRestartPolicy,
+			RestartPolicy: builder.OnFailureRestartPolicy,
 		},
 		ImageName: nginxImageName,
 		Tag:       "latest",
@@ -178,7 +179,7 @@ func TestBatchDeploy(t *testing.T) {
 		},
 		ContainerConfig: v1.ContainerConfig{
 			Container:     ContainerName001,
-			RestartPolicy: v1.OnFailureRestartPolicy,
+			RestartPolicy: builder.OnFailureRestartPolicy,
 		},
 		ImageName: nginxImageName,
 		Tag:       "latest",
@@ -190,7 +191,7 @@ func TestBatchDeploy(t *testing.T) {
 		},
 		ContainerConfig: v1.ContainerConfig{
 			Container:     ContainerName002,
-			RestartPolicy: v1.OnFailureRestartPolicy,
+			RestartPolicy: builder.OnFailureRestartPolicy,
 		},
 		ImageName: nginxImageName,
 		Tag:       "latest",
@@ -202,7 +203,7 @@ func TestBatchDeploy(t *testing.T) {
 		},
 		ContainerConfig: v1.ContainerConfig{
 			Container:     ContainerName003,
-			RestartPolicy: v1.OnFailureRestartPolicy,
+			RestartPolicy: builder.OnFailureRestartPolicy,
 		},
 		ImageName: nginxImageName,
 		Tag:       "latest",

@@ -18,7 +18,7 @@ const InvitePage = (props: InviteProps) => {
 
   if (!props.url) {
     return (
-      <SingleFormLayout>
+      <SingleFormLayout title={t('expired')}>
         <DyoCard className="my-16 mx-auto flex flex-col items-center">
           <DyoHeading>{t('expired')}</DyoHeading>
           <DyoLabel>{t('pleaseContact')}</DyoLabel>
@@ -30,13 +30,13 @@ const InvitePage = (props: InviteProps) => {
   const onAccept = () => window.location.assign(props.url)
 
   return (
-    <SingleFormLayout>
-      <DyoCard className="flex flex-col items-center">
+    <SingleFormLayout title={t('welcome')}>
+      <DyoCard className="flex flex-col items-center p-8 m-auto">
         <DyoHeading>{t('welcome')}</DyoHeading>
 
         <DyoLabel>{t('youAreInvited')}</DyoLabel>
 
-        <p className="my-8">{t('pleaseAccept')}</p>
+        <p className="my-8 text-bright">{t('pleaseAccept')}</p>
 
         <DyoButton className="px-8" onClick={onAccept}>
           {t('accept')}
@@ -49,7 +49,7 @@ const InvitePage = (props: InviteProps) => {
 export default InvitePage
 
 export const getPageServerSideProps = async (context: NextPageContext) => {
-  const session = await obtainKratosSession
+  const session = await obtainKratosSession(context.req)
 
   if (session) {
     return redirectTo(ROUTE_SETTINGS)

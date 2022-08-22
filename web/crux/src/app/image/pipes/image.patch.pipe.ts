@@ -8,7 +8,7 @@ export class ImagePatchValidationPipe implements PipeTransform {
   constructor(private prisma: PrismaService) {}
 
   async transform(value: PatchImageRequest) {
-    const image = await this.prisma.image.findUnique({
+    const image = await this.prisma.image.findUniqueOrThrow({
       include: {
         version: {
           include: {

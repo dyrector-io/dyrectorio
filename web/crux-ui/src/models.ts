@@ -2,6 +2,8 @@ import { Identity } from '@ory/kratos-client'
 import { DyoApiError } from '@server/error-middleware'
 import { REGISTRY_GITHUB_URL, REGISTRY_GITLAB_URLS, REGISTRY_HUB_URL } from './const'
 
+// TODO(polaroi8d): refactor the models.ts
+
 export const PRODUCT_TYPE_VALUES = ['simple', 'complex'] as const
 export type ProductType = typeof PRODUCT_TYPE_VALUES[number]
 
@@ -65,13 +67,13 @@ export type PatchVersionImage = {
   config?: Partial<ContainerConfig>
 }
 
-export type ContainerStatus = 'created' | 'restarting' | 'running' | 'removing' | 'paused' | 'exited' | 'dead'
+export type ContainerState = 'created' | 'restarting' | 'running' | 'removing' | 'paused' | 'exited' | 'dead'
 
 export type Container = {
   id: string
   name: string
   date: string
-  status: ContainerStatus
+  state: ContainerState
 }
 
 export type InstanceContainerConfig = Omit<ContainerConfig, 'name'>
@@ -79,13 +81,13 @@ export type InstanceContainerConfig = Omit<ContainerConfig, 'name'>
 export type Instance = {
   id: string
   image: VersionImage
-  status?: ContainerStatus
-  overridenConfig?: Partial<InstanceContainerConfig>
+  state?: ContainerState
+  overriddenConfig?: Partial<InstanceContainerConfig>
 }
 
-export type DeploymentStatus = 'preparing' | 'inProgress' | 'successful' | 'failed' | 'obsolate'
+export type DeploymentStatus = 'preparing' | 'in_progress' | 'successful' | 'failed' | 'obsolate'
 
-export type Deployment = {
+export type DeploymentByVersion = {
   id: string
   name: string
   nodeId: string
@@ -108,6 +110,17 @@ export type DeploymentDetails = {
   instances: Instance[]
 }
 
+export type Deployment = {
+  id: string
+  name: string
+  productId: string
+  product: string
+  versionId: string
+  version: string
+  node: string
+  status: DeploymentStatus
+}
+
 export type DeploymentRoot = DeploymentDetails & {
   product: ProductDetails
   version: VersionDetails
@@ -118,7 +131,7 @@ export type DeploymentEventType = 'log' | 'deploymentStatus' | 'containerStatus'
 
 export type InstanceStatus = {
   instanceId: string
-  status: ContainerStatus
+  state: ContainerState
 }
 
 export type DeploymentEvent = {
@@ -178,7 +191,7 @@ export type CreateVersion = UpdateVersion & {
 export type VersionDetails = Version & {
   mutable: boolean
   images: VersionImage[]
-  deployments: Deployment[]
+  deployments: DeploymentByVersion[]
 }
 
 export type Product = {
@@ -264,7 +277,7 @@ export type RegistryType = typeof REGISTRY_TYPE_VALUES[number]
 
 export type HubRegistryDetails = {
   type: 'hub'
-  urlPrefix: string
+  imageNamePrefix: string
 }
 
 export type V2RegistryDetails = {
@@ -277,7 +290,7 @@ export type V2RegistryDetails = {
 
 export type GitlabRegistryDetails = {
   type: 'gitlab'
-  urlPrefix: string
+  imageNamePrefix: string
   user: string
   token: string
   selfManaged: boolean
@@ -287,7 +300,7 @@ export type GitlabRegistryDetails = {
 
 export type GithubRegistryDetails = {
   type: 'github'
-  urlPrefix: string
+  imageNamePrefix: string
   user: string
   token: string
 }
@@ -295,6 +308,7 @@ export type GithubRegistryDetails = {
 export type GoogleRegistryDetails = {
   type: 'google'
   url: string
+  imageNamePrefix: string
   _private: boolean
   user?: string
   token?: string
@@ -317,9 +331,28 @@ export type AuditLog = {
 
 export type ServiceStatus = 'unavailable' | 'disrupted' | 'operational'
 
-export type DyoServiceStatus = {
-  crux: ServiceStatus
-  kratos: ServiceStatus
+export type ServiceInfo = {
+  status: ServiceStatus
+  version?: string
+}
+export const DEFAULT_SERVICE_INFO: ServiceInfo = {
+  status: 'unavailable',
+  version: null,
+}
+
+export type CruxHealth = ServiceInfo & {
+  lastMigration?: string
+}
+export const DEFAULT_CRUX_HEALTH: CruxHealth = {
+  ...DEFAULT_SERVICE_INFO,
+  lastMigration: null,
+}
+
+export type DyoServiceInfo = {
+  app: ServiceInfo
+  crux: ServiceInfo
+  database: ServiceInfo
+  kratos: ServiceInfo
 }
 
 export type DyoErrorDto = {
@@ -499,11 +532,8 @@ export const WS_TYPE_DEPLOYMENT_FINISHED = 'deployment-finished'
 
 // user
 
-export type Team = UserMetaTeam & {
-  users: User[]
-}
-
-export type UserRole = 'owner' | 'user'
+export const USER_ROLE_VALUES = ['owner', 'admin', 'user'] as const
+export type UserRole = typeof USER_ROLE_VALUES[number]
 
 export type UserStatus = 'pending' | 'verified'
 
@@ -541,6 +571,7 @@ export type UserMetaTeam = {
   name: string
 }
 
+// team
 export type SelectTeam = {
   id: string
 }
@@ -548,13 +579,41 @@ export type SelectTeam = {
 export type CreateTeam = {
   name: string
 }
+export type UpdateTeam = CreateTeam
+
+export type TeamStatistics = {
+  users: number
+  products: number
+  nodes: number
+  versions: number
+  deployments: number
+}
+export const DEFAULT_TEAM_STATISTICS: TeamStatistics = {
+  users: 1,
+  products: 0,
+  nodes: 0,
+  versions: 0,
+  deployments: 0,
+}
+
+export type Team = UserMetaTeam & {
+  statistics: TeamStatistics
+}
+
+export type TeamDetails = Team & {
+  users: User[]
+}
+
+export type ActiveTeamDetails = UserMetaTeam & {
+  users: User[]
+}
 
 // auth
 
 export type Login = {
   flow: string
   csrfToken: string
-  captcha: string
+  captcha?: string
   email: string
   password: string
 }
@@ -566,7 +625,7 @@ export type Logout = {
 export type Register = {
   flow: string
   csrfToken: string
-  captcha: string
+  captcha?: string
   email: string
   password: string
 }
@@ -574,7 +633,7 @@ export type Register = {
 export type RecoverEmail = {
   flow: string
   csrfToken: string
-  captcha: string
+  captcha?: string
   email: string
   token?: string
 }
@@ -582,7 +641,7 @@ export type RecoverEmail = {
 export type VerifyEmail = {
   flow: string
   csrfToken: string
-  captcha: string
+  captcha?: string
   email: string
   token?: string
 }
@@ -611,12 +670,35 @@ export type UserTraits = {
   name?: UserName
 }
 
+export const NOTIFICATION_TYPE_VALUES = ['discord', 'slack', 'teams'] as const
+export type NotificationType = typeof NOTIFICATION_TYPE_VALUES[number]
+
+export type CreateNotification = {
+  name: string
+  url: string
+  type: NotificationType
+  active: boolean
+}
+
+export type UpdateNotification = CreateNotification & {
+  id: string
+}
+
+export type NotificationDetails = CreateNotification & {
+  id: string
+  creator: string
+}
+
+export type NotificationItem = Omit<NotificationDetails, 'active'>
+
 export const roleToText = (role: UserRole) => {
   switch (role) {
     case 'owner':
-      return 'common:roleOwner'
-    case 'user':
-      return 'common:roleUser'
+      return 'common:role.owner'
+    case 'admin':
+      return 'common:role.admin'
+    default:
+      return 'common:role.user'
   }
 }
 
@@ -625,14 +707,8 @@ export const selectedTeamOf = (meta: UserMeta): UserMetaTeam => {
   return team
 }
 
-export const userCanEditTeam = (identity: Identity, team: Team): boolean => {
-  const user = team.users.find(it => it.id === identity.id)
-  if (!user) {
-    return false
-  }
-
-  return user.role === 'owner'
-}
+export const userIsAdmin = (user: User): boolean => user.role === 'owner' || user.role === 'admin'
+export const userIsOwner = (user: User): boolean => user.role === 'owner'
 
 export const nameOfIdentity = (identity: Identity): string => {
   const traits = identity.traits as IdentityTraits
@@ -696,5 +772,43 @@ export const registryDetailsToRegistry = (it: RegistryDetails): Registry => {
   return {
     ...it,
     url: registryUrlOf(it),
+  }
+}
+
+const overrideKeyValues = (weak: UniqueKeyValue[], strong: UniqueKeyValue[]): UniqueKeyValue[] => {
+  const overridenKeys: Set<string> = new Set(strong?.map(it => it.key))
+  return [...(weak?.filter(it => !overridenKeys.has(it.key)) ?? []), ...(strong ?? [])]
+}
+
+const overridePorts = (
+  weak: ExplicitContainerConfigPort[],
+  strong: ExplicitContainerConfigPort[],
+): ExplicitContainerConfigPort[] => {
+  const overridenPorts: Set<number> = new Set(strong?.map(it => it.internal))
+  return [...(weak?.filter(it => !overridenPorts.has(it.internal)) ?? []), ...(strong ?? [])]
+}
+
+const overrideNetworkMode = (weak: ExplicitContainerNetworkMode, strong: ExplicitContainerNetworkMode) =>
+  strong ?? weak ?? 'none'
+
+export const mergeConfigs = (
+  imageConfig: ContainerConfig,
+  overriddenConfig: Partial<InstanceContainerConfig>,
+): ContainerConfig => {
+  const instanceConfig = overriddenConfig ?? {}
+
+  const envs = overrideKeyValues(imageConfig.environment, instanceConfig.environment)
+  const caps = overrideKeyValues(imageConfig.capabilities, instanceConfig.capabilities)
+
+  return {
+    name: imageConfig.name,
+    environment: envs,
+    capabilities: caps,
+    config: {
+      ...imageConfig.config,
+      ...(instanceConfig.config ?? {}),
+      networkMode: overrideNetworkMode(imageConfig?.config?.networkMode, instanceConfig.config?.networkMode),
+      ports: overridePorts(imageConfig?.config?.ports, instanceConfig.config?.ports),
+    },
   }
 }

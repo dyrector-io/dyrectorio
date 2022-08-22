@@ -3,16 +3,16 @@ import Breadcrumb, { BreadcrumbLink } from './breadcrumb'
 
 export interface EditButtonsProps {
   pageLink: BreadcrumbLink
-  subLinks?: BreadcrumbLink[]
+  sublinks?: BreadcrumbLink[]
   children?: React.ReactNode
 }
 
 const PageHeading = (props: EditButtonsProps) => {
-  const { pageLink: selfLink, subLinks, children } = props
+  const { pageLink: selfLink, sublinks, children } = props
 
   return (
     <div className="flex flex-row items-center mb-4">
-      <Breadcrumb page={selfLink.name} pageUrl={selfLink.url} links={subLinks ?? (selfLink ? [selfLink] : [])} />
+      <Breadcrumb page={selfLink.name} pageUrl={selfLink.url} links={sublinks ?? (selfLink ? [selfLink] : [])} />
 
       {children}
     </div>

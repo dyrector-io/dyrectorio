@@ -17,6 +17,7 @@ import { PrismaErrorInterceptor } from './interceptors/prisma-error-interceptor'
 import { GrpcContextLogger } from './interceptors/grpc-context-logger.interceptor'
 import { AuditLoggerInterceptor } from './interceptors/audit-logger.interceptor'
 import { PrismaService } from './services/prisma.service'
+import { NotificationModule } from './app/notification/notification.module'
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { PrismaService } from './services/prisma.service'
     AgentModule,
     AuditModule,
     HealthModule,
+    NotificationModule,
   ],
   controllers: [],
   providers: [

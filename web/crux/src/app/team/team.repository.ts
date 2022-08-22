@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common'
-import { UsersOnTeams } from '@prisma/client'
+import { Prisma, UsersOnTeams } from '@prisma/client'
+import { typedQuery } from 'src/domain/utils'
 import { PrismaService } from 'src/services/prisma.service'
 
 @Injectable()
@@ -7,7 +8,7 @@ export class TeamRepository {
   constructor(private prisma: PrismaService) {}
 
   async getActiveTeamByUserId(userId: string): Promise<UsersOnTeams> {
-    return await this.prisma.usersOnTeams.findFirst({
+    return await this.prisma.usersOnTeams.findFirstOrThrow({
       where: {
         userId: userId,
         active: true,
@@ -24,4 +25,36 @@ export class TeamRepository {
 
     return teams > 0
   }
+
+  public readonly teamInclude = typedQuery<Prisma.TeamInclude>()({
+    _count: {
+      select: {
+        users: true,
+        invitations: true,
+        products: true,
+        nodes: true,
+        registries: true,
+      },
+    },
+    products: {
+      select: {
+        _count: {
+          select: {
+            versions: true,
+          },
+        },
+        versions: {
+          select: {
+            _count: {
+              select: {
+                deployments: true,
+              },
+            },
+          },
+        },
+      },
+    },
+    users: true,
+    invitations: true,
+  })
 }

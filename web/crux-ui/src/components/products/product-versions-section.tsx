@@ -7,7 +7,8 @@ import VersionCard from './versions/version-card'
 interface ProductVersionsSectionProps {
   productId: string
   versions: Version[]
-  onIncrease: (version: Version) => void
+  onIncrease?: (version: Version) => void
+  disabled?: boolean
 }
 
 const ProductVersionsSection = (props: ProductVersionsSectionProps) => {
@@ -25,7 +26,8 @@ const ProductVersionsSection = (props: ProductVersionsSectionProps) => {
           productId={productId}
           version={it}
           onClick={() => onClick(it.id)}
-          onIncreaseClick={() => props.onIncrease(it)}
+          disabled={props.disabled}
+          onIncreaseClick={props.onIncrease ? () => props.onIncrease(it) : null}
         />
       ))}
     </DyoWrap>

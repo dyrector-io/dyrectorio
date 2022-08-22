@@ -1,45 +1,34 @@
-import ServiceStatusCard from '@app/components/health/service-status-card'
-import { PageHead, SingleFormLayout } from '@app/components/layout'
+import { SingleFormLayout } from '@app/components/layout'
 import { DyoButton } from '@app/elements/dyo-button'
 import { DyoHeading } from '@app/elements/dyo-heading'
-import { DyoServiceStatus } from '@app/models'
-import { API_STATUS } from '@app/routes'
-import { fetcher } from '@app/utils'
+import { ROUTE_STATUS } from '@app/routes'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
-import useSWR from 'swr'
 
 const Page500 = () => {
-  const { t } = useTranslation('500')
+  const { t } = useTranslation('status')
   const router = useRouter()
-
-  const { data: status, error } = useSWR<DyoServiceStatus, any>(API_STATUS, fetcher)
 
   const goBack = () => router.back()
 
-  if (error) {
-    console.error(error)
-  }
+  const checkStatus = () => router.push(ROUTE_STATUS)
 
   return (
-    <>
-      <PageHead title={t('title')} />
-      <SingleFormLayout>
-        <DyoHeading element="h2" className="self-center text-2xl text-white font-extrabold mt-auto">
-          {t('serviceStatus')}
-        </DyoHeading>
+    <SingleFormLayout title={t('errors:internalError')}>
+      <DyoHeading element="h2" className="self-center text-lg lg:text-2xl text-white font-extrabold mt-auto">
+        {t('errors:internalError')}
+      </DyoHeading>
 
-        <div className="flex flex-row justify-center mt-12">
-          <ServiceStatusCard className="w-1/5" name={t('auth')} status={status?.kratos ?? 'unavailable'} />
-
-          <ServiceStatusCard className="w-1/5" name={t('api')} status={status?.crux ?? 'unavailable'} />
-        </div>
-
-        <DyoButton className="mx-auto px-12 mt-12 mb-auto" secondary outlined onClick={goBack}>
+      <div className="flex flex-row mb-auto mt-12">
+        <DyoButton className="ml-auto mr-2 px-10 mb-auto" secondary outlined onClick={goBack}>
           {t('common:goBack')}
         </DyoButton>
-      </SingleFormLayout>
-    </>
+
+        <DyoButton className="ml-2 mr-auto px-12" onClick={checkStatus}>
+          {t('common:status')}
+        </DyoButton>
+      </div>
+    </SingleFormLayout>
   )
 }
 

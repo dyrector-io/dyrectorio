@@ -10,7 +10,7 @@ export class VersionUpdateValidationPipe implements PipeTransform {
   constructor(private prisma: PrismaService) {}
 
   async transform(value: UpdateVersionRequest) {
-    const version = await this.prisma.version.findUnique({
+    const version = await this.prisma.version.findUniqueOrThrow({
       include: {
         product: {
           select: {

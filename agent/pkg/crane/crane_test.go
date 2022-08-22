@@ -63,7 +63,7 @@ func TestMain(m *testing.M) {
 
 	// following is executed after every tests are run in this file
 
-	err := k8s.DeleteNamespace(TestNamespace, &config.Configuration{})
+	err := k8s.DeleteNamespace(context.Background(), TestNamespace, &config.Configuration{})
 	if err != nil {
 		log.Println("(cleanup) failed to delete namespace: ", err)
 	}
@@ -105,7 +105,7 @@ func TestDeploySimpleHappy(t *testing.T) {
 	t.Run("basic happy deployment", func(t *testing.T) {
 		rec := httptest.NewRecorder()
 		byt, _ := json.Marshal(body)
-		router.ServeHTTP(rec, createDeployRequest(context.TODO(), bytes.NewReader(byt)))
+		router.ServeHTTP(rec, createDeployRequest(context.Background(), bytes.NewReader(byt)))
 		assert.Equal(t, http.StatusOK, rec.Code)
 	})
 }
@@ -131,7 +131,7 @@ func TestDeployFieldConflictSad(t *testing.T) {
 
 	rec := httptest.NewRecorder()
 	byt, _ := json.Marshal(body)
-	router.ServeHTTP(rec, createDeployRequest(context.TODO(), bytes.NewReader(byt)))
+	router.ServeHTTP(rec, createDeployRequest(context.Background(), bytes.NewReader(byt)))
 	assert.Equal(t, http.StatusOK, rec.Code)
 
 	t.Run("basic happy deployment for conflicts", func(t *testing.T) {
@@ -147,7 +147,7 @@ func TestDeployFieldConflictSad(t *testing.T) {
 
 		rec := httptest.NewRecorder()
 		byt, _ := json.Marshal(body)
-		router.ServeHTTP(rec, createDeployRequest(context.TODO(), bytes.NewReader(byt)))
+		router.ServeHTTP(rec, createDeployRequest(context.Background(), bytes.NewReader(byt)))
 		assert.Equal(t, http.StatusOK, rec.Code)
 	})
 
@@ -175,7 +175,7 @@ func TestDeployFieldConflictHappy(t *testing.T) {
 	t.Run("basic happy deployment", func(t *testing.T) {
 		rec := httptest.NewRecorder()
 		byt, _ := json.Marshal(body)
-		router.ServeHTTP(rec, createDeployRequest(context.TODO(), bytes.NewReader(byt)))
+		router.ServeHTTP(rec, createDeployRequest(context.Background(), bytes.NewReader(byt)))
 		assert.Equal(t, http.StatusOK, rec.Code)
 	})
 }
@@ -206,7 +206,7 @@ func TestDeploySimpleWithConfigContainerHappy(t *testing.T) {
 	t.Run("basic deployment", func(t *testing.T) {
 		rec := httptest.NewRecorder()
 		byt, _ := json.Marshal(body)
-		router.ServeHTTP(rec, createDeployRequest(context.TODO(), bytes.NewReader(byt)))
+		router.ServeHTTP(rec, createDeployRequest(context.Background(), bytes.NewReader(byt)))
 		assert.Equal(t, http.StatusOK, rec.Code)
 	})
 }
@@ -248,11 +248,11 @@ func TestDeploymentPVCExtensionFailSad(t *testing.T) {
 
 	t.Run("deploy with pvc step-1", func(t *testing.T) {
 		rec := httptest.NewRecorder()
-		router.ServeHTTP(rec, createDeployRequest(context.TODO(), bytes.NewReader(body)))
+		router.ServeHTTP(rec, createDeployRequest(context.Background(), bytes.NewReader(body)))
 		assert.Equal(t, http.StatusOK, rec.Code)
 	})
 
-	k8s.WaitForRunningDeployment(TestNamespace, containerName, 1, config.TestTimeoutDuration, &config)
+	k8s.WaitForRunningDeployment(context.Background(), TestNamespace, containerName, 1, config.TestTimeoutDuration, &config)
 
 	// modify pvc size
 	deployRequest.ContainerConfig.Volumes[0].Size = "256M"
@@ -264,7 +264,7 @@ func TestDeploymentPVCExtensionFailSad(t *testing.T) {
 
 	t.Run("deploy with pvc step-2-sad", func(t *testing.T) {
 		rec := httptest.NewRecorder()
-		router.ServeHTTP(rec, createDeployRequest(context.TODO(), bytes.NewReader(body)))
+		router.ServeHTTP(rec, createDeployRequest(context.Background(), bytes.NewReader(body)))
 		assert.Equal(t, http.StatusBadRequest, rec.Code)
 	})
 }
@@ -300,12 +300,12 @@ func TestDeploymentRestartAllTheTimeHappy(t *testing.T) {
 
 	t.Run("deploy with restart and issuer", func(t *testing.T) {
 		rec := httptest.NewRecorder()
-		router.ServeHTTP(rec, createDeployRequest(context.TODO(), bytes.NewReader(body)))
+		router.ServeHTTP(rec, createDeployRequest(context.Background(), bytes.NewReader(body)))
 		assert.Equal(t, http.StatusOK, rec.Code)
 		log.Println(rec.Body)
 	})
 
-	k8s.WaitForRunningDeployment(TestNamespace, containerName, 1, config.TestTimeoutDuration, &config)
+	k8s.WaitForRunningDeployment(context.Background(), TestNamespace, containerName, 1, config.TestTimeoutDuration, &config)
 
 	body, err = json.Marshal(deployRequest)
 	if err != nil {
@@ -314,7 +314,7 @@ func TestDeploymentRestartAllTheTimeHappy(t *testing.T) {
 
 	t.Run("deploy again expecting a restart to happen", func(t *testing.T) {
 		rec := httptest.NewRecorder()
-		router.ServeHTTP(rec, createDeployRequest(context.TODO(), bytes.NewReader(body)))
+		router.ServeHTTP(rec, createDeployRequest(context.Background(), bytes.NewReader(body)))
 		assert.Equal(t, http.StatusOK, rec.Code)
 		log.Println(rec.Body)
 	})
@@ -353,7 +353,7 @@ func TestDeploymentPVCInvalidSizeSad(t *testing.T) {
 
 	t.Run("deploy with pvc with invalid storage request size", func(t *testing.T) {
 		rec := httptest.NewRecorder()
-		router.ServeHTTP(rec, createDeployRequest(context.TODO(), bytes.NewReader(body)))
+		router.ServeHTTP(rec, createDeployRequest(context.Background(), bytes.NewReader(body)))
 		assert.Equal(t, http.StatusBadRequest, rec.Code)
 	})
 
@@ -379,7 +379,7 @@ func TestDeploySimpleBodyNoImageSad(t *testing.T) {
 	t.Run("incomplete deployment - missing image", func(t *testing.T) {
 		rec := httptest.NewRecorder()
 		byt, _ := json.Marshal(body)
-		router.ServeHTTP(rec, createDeployRequest(context.TODO(), bytes.NewReader(byt)))
+		router.ServeHTTP(rec, createDeployRequest(context.Background(), bytes.NewReader(byt)))
 		assert.Equal(t, http.StatusBadRequest, rec.Code)
 	})
 }
@@ -390,7 +390,7 @@ func TestDeploySimpleBodyEmptySad(t *testing.T) {
 
 	t.Run("incomplete deployment - empty body", func(t *testing.T) {
 		rec := httptest.NewRecorder()
-		router.ServeHTTP(rec, createDeployRequest(context.TODO(), nil))
+		router.ServeHTTP(rec, createDeployRequest(context.Background(), nil))
 		assert.Equal(t, http.StatusBadRequest, rec.Code)
 	})
 }
@@ -422,11 +422,11 @@ func TestDeployAndGetStatus(t *testing.T) {
 	}
 	t.Run("deploy for status check tests", func(t *testing.T) {
 		rec := httptest.NewRecorder()
-		router.ServeHTTP(rec, createDeployRequest(context.TODO(), bytes.NewReader(b)))
+		router.ServeHTTP(rec, createDeployRequest(context.Background(), bytes.NewReader(b)))
 		assert.Equal(t, http.StatusOK, rec.Code)
 	})
 
-	err = k8s.WaitForRunningDeployment(TestNamespace, containerName, 1, config.TestTimeoutDuration, &config)
+	err = k8s.WaitForRunningDeployment(context.Background(), TestNamespace, containerName, 1, config.TestTimeoutDuration, &config)
 
 	if err != nil {
 		t.Fatal(err)
@@ -434,21 +434,21 @@ func TestDeployAndGetStatus(t *testing.T) {
 
 	t.Run("fetch status", func(t *testing.T) {
 		rec := httptest.NewRecorder()
-		req, _ := http.NewRequestWithContext(context.TODO(), http.MethodGet, fmt.Sprintf(string(DeploymentStatus), TestNamespace, containerName), nil)
+		req, _ := http.NewRequestWithContext(context.Background(), http.MethodGet, fmt.Sprintf(string(DeploymentStatus), TestNamespace, containerName), nil)
 		router.ServeHTTP(rec, req)
 		assert.Equal(t, http.StatusOK, rec.Code)
 	})
 
 	t.Run("fetch logs", func(t *testing.T) {
 		rec := httptest.NewRecorder()
-		req, _ := http.NewRequestWithContext(context.TODO(), http.MethodGet, fmt.Sprintf(string(DeploymentLog), TestNamespace, containerName), nil)
+		req, _ := http.NewRequestWithContext(context.Background(), http.MethodGet, fmt.Sprintf(string(DeploymentLog), TestNamespace, containerName), nil)
 		router.ServeHTTP(rec, req)
 		assert.Equal(t, http.StatusOK, rec.Code)
 	})
 
 	t.Run("fetch inspect", func(t *testing.T) {
 		rec := httptest.NewRecorder()
-		req, _ := http.NewRequestWithContext(context.TODO(), http.MethodGet, fmt.Sprintf(string(DeploymentInspect), TestNamespace, containerName), nil)
+		req, _ := http.NewRequestWithContext(context.Background(), http.MethodGet, fmt.Sprintf(string(DeploymentInspect), TestNamespace, containerName), nil)
 		router.ServeHTTP(rec, req)
 		assert.Equal(t, http.StatusOK, rec.Code)
 	})
@@ -480,12 +480,12 @@ func TestWaitDeploymentHappy(t *testing.T) {
 		t.Error(err)
 	}
 	rec := httptest.NewRecorder()
-	router.ServeHTTP(rec, createDeployRequest(context.TODO(), bytes.NewReader(b)))
+	router.ServeHTTP(rec, createDeployRequest(context.Background(), bytes.NewReader(b)))
 	assert.Equal(t, http.StatusOK, rec.Code)
 	log.Println("body:", rec.Body)
 
 	t.Run("wait for deployment to be running", func(t *testing.T) {
-		err = k8s.WaitForRunningDeployment(TestNamespace, containerName, 1, config.TestTimeoutDuration, &config)
+		err = k8s.WaitForRunningDeployment(context.Background(), TestNamespace, containerName, 1, config.TestTimeoutDuration, &config)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -519,12 +519,12 @@ func TestTimeoutIfConditionFailsSad(t *testing.T) {
 	}
 	t.Run("deploy for status check tests", func(t *testing.T) {
 		rec := httptest.NewRecorder()
-		router.ServeHTTP(rec, createDeployRequest(context.TODO(), bytes.NewReader(b)))
+		router.ServeHTTP(rec, createDeployRequest(context.Background(), bytes.NewReader(b)))
 		assert.Equal(t, http.StatusOK, rec.Code)
 	})
 
 	t1 := time.Now()
-	err = k8s.WaitForRunningDeployment(TestNamespace, containerName, 2, config.TestTimeoutDuration, &config)
+	err = k8s.WaitForRunningDeployment(context.Background(), TestNamespace, containerName, 2, config.TestTimeoutDuration, &config)
 
 	assert.NotNil(t, err, "Error has to occur if condition is not fulfilled")
 	assert.True(t, t1.Before(time.Now().Add(config.TestTimeoutDuration)))

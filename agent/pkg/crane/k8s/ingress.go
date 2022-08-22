@@ -99,7 +99,7 @@ func (ing *ingress) deployIngress(options *DeployIngressOptions) error {
 				)),
 		Spec: spec}
 
-	ingress, err := client.Apply(context.TODO(), applyConfig, metav1.ApplyOptions{
+	ingress, err := client.Apply(ing.ctx, applyConfig, metav1.ApplyOptions{
 		FieldManager: ing.appConfig.FieldManagerName,
 		Force:        ing.appConfig.ForceOnConflicts,
 	})

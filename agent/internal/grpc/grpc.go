@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"crypto/x509"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -43,11 +44,13 @@ type GrpcConnectionParams struct {
 }
 
 type DeployFunc func(context.Context, *dogger.DeploymentLogger, *v1.DeployImageRequest, *v1.VersionData) error
-type WatchFunc func(context.Context, string) []*crux.ContainerStatusItem
+type WatchFunc func(context.Context, string) []*crux.ContainerStateItem
+type DeleteFunc func(context.Context, string, string) error
 
 type WorkerFunctions struct {
 	Deploy DeployFunc
 	Watch  WatchFunc
+	Delete DeleteFunc
 }
 
 type contextKey int
@@ -84,10 +87,10 @@ func (g *GrpcConnection) SetConn(conn *grpc.ClientConn) {
 // Singleton instance
 var grpcConn *GrpcConnection
 
-func fetchCertificatesFromURL(url string) (*x509.CertPool, error) {
+func fetchCertificatesFromURL(ctx context.Context, url string) (*x509.CertPool, error) {
 	log.Println("Retrieving certificate")
 
-	req, err := http.NewRequestWithContext(context.TODO(), http.MethodGet, url, http.NoBody)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, http.NoBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create the http request\n%s", err.Error())
 	}
@@ -134,7 +137,7 @@ func Init(grpcContext context.Context,
 			creds = insecure.NewCredentials()
 		} else {
 			httpAddr := fmt.Sprintf("https://%s", connParams.address)
-			certPool, err := fetchCertificatesFromURL(httpAddr)
+			certPool, err := fetchCertificatesFromURL(ctx, httpAddr)
 
 			if err != nil {
 				log.Panic(err.Error())
@@ -144,7 +147,7 @@ func Init(grpcContext context.Context,
 		}
 
 		// TODO: Missing error or panic when the server don't have a secure connection.
-		// the application silently die. Added by @Levi 2020/05/25
+		// the application silently dies. Added by @polaroi8d 2020/05/25
 		opts := []grpc.DialOption{
 			grpc.WithTransportCredentials(creds),
 			grpc.WithBlock(),
@@ -216,6 +219,7 @@ func grpcLoop(
 		if err == io.EOF {
 			log.Print("End of receiving")
 			grpcConn.Client = nil
+			time.Sleep(appConfig.DefaultTimeout)
 			continue
 		}
 		if err != nil {
@@ -228,8 +232,12 @@ func grpcLoop(
 
 		if command.GetDeploy() != nil {
 			go executeVersionDeployRequest(ctx, command.GetDeploy(), workerFuncs.Deploy, appConfig)
-		} else if command.GetContainerStatus() != nil {
-			go executeWatchContainerStatus(ctx, command.GetContainerStatus(), workerFuncs.Watch)
+		} else if command.GetContainerState() != nil {
+			go executeWatchContainerStatus(ctx, command.GetContainerState(), workerFuncs.Watch)
+		} else if command.GetContainerDelete() != nil {
+			go executeDeleteContainer(ctx, command.GetContainerDelete(), workerFuncs.Delete)
+		} else if command.GetDeployLegacy() != nil {
+			go executeVersionDeployLegacyRequest(ctx, command.GetDeployLegacy(), workerFuncs.Deploy, appConfig)
 		} else {
 			log.Println("Unknown agent command")
 		}
@@ -268,7 +276,12 @@ func executeVersionDeployRequest(
 		imageReq := mapper.MapDeployImage(req.Requests[i], appConfig)
 		dog.SetRequestID(imageReq.RequestID)
 
-		if err = deploy(ctx, dog, imageReq, &v1.VersionData{Version: req.VersionName, ReleaseNotes: req.ReleaseNotes}); err != nil {
+		var versionData *v1.VersionData
+		if len(req.VersionName) > 0 {
+			versionData = &v1.VersionData{Version: req.VersionName, ReleaseNotes: req.ReleaseNotes}
+		}
+
+		if err = deploy(ctx, dog, imageReq, versionData); err != nil {
 			failed = true
 			dog.Write(err.Error())
 		}
@@ -289,7 +302,7 @@ func executeVersionDeployRequest(
 	}
 }
 
-func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStatusRequest, listFn WatchFunc) {
+func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStateRequest, listFn WatchFunc) {
 	filterPrefix := ""
 	if req.Prefix != nil {
 		filterPrefix = *req.Prefix
@@ -298,7 +311,7 @@ func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStatus
 	log.Printf("Opening container status channel for prefix: %s", filterPrefix)
 
 	streamCtx := metadata.AppendToOutgoingContext(ctx, "dyo-filter-prefix", filterPrefix)
-	stream, err := grpcConn.Client.ContainerStatus(streamCtx, grpc.WaitForReady(true))
+	stream, err := grpcConn.Client.ContainerState(streamCtx, grpc.WaitForReady(true))
 	if err != nil {
 		log.Printf("Failed to open container status channel: %s", err.Error())
 		return
@@ -307,7 +320,7 @@ func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStatus
 	for {
 		containers := listFn(ctx, filterPrefix)
 
-		err = stream.Send(&crux.ContainerStatusListMessage{
+		err = stream.Send(&crux.ContainerStateListMessage{
 			Prefix: req.Prefix,
 			Data:   containers,
 		})
@@ -317,7 +330,76 @@ func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStatus
 			return
 		}
 
+		if req.OneShot != nil && *req.OneShot {
+			if err := stream.CloseSend(); err == nil {
+				log.Printf("Closed container status channel for prefix: %s", filterPrefix)
+			} else {
+				log.Printf("Failed to close container status channel for prefix: %s %v", filterPrefix, err)
+			}
+			return
+		}
+
 		time.Sleep(time.Second)
+	}
+}
+
+func executeDeleteContainer(ctx context.Context, req *agent.ContainerDeleteRequest, deleteFn DeleteFunc) {
+	log.Printf("Deleting container: %s-%s", req.Prefix, req.Name)
+
+	err := deleteFn(ctx, req.Prefix, req.Name)
+	if err != nil {
+		log.Printf("Failed to delete container: %v", err)
+	}
+}
+
+func executeVersionDeployLegacyRequest(
+	ctx context.Context, req *agent.DeployRequestLegacy,
+	deploy DeployFunc, appConfig *config.CommonConfiguration) {
+	if req.RequestId == "" {
+		log.Println("Empty request")
+		return
+	}
+	log.Println("Deployment -", req.RequestId, "Opening status channel.")
+
+	deployCtx := metadata.AppendToOutgoingContext(ctx, "dyo-deployment-id", req.RequestId)
+	statusStream, err := grpcConn.Client.DeploymentStatus(deployCtx, grpc.WaitForReady(true))
+
+	if err != nil {
+		log.Println("Deployment -", &req.RequestId, "Status connect error: ", err.Error())
+		return
+	}
+
+	dog := dogger.NewDeploymentLogger(&req.RequestId, statusStream, ctx, appConfig)
+	dog.SetRequestID(req.RequestId)
+
+	deployImageRequest := v1.DeployImageRequest{}
+	if err = json.Unmarshal([]byte(req.Json), &deployImageRequest); err != nil {
+		log.Printf("Failed to parse deploy request JSON! %v", err)
+
+		errorText := fmt.Sprintf("JSON parse error: %v", err)
+		dog.WriteDeploymentStatus(crux.DeploymentStatus_FAILED, errorText)
+		return
+	}
+
+	dog.WriteDeploymentStatus(crux.DeploymentStatus_IN_PROGRESS, "Started.")
+
+	t1 := time.Now()
+
+	deployStatus := crux.DeploymentStatus_SUCCESSFUL
+	if err = deploy(ctx, dog, &deployImageRequest, nil); err == nil {
+		dog.Write(fmt.Sprintf("Deployment took: %.2f seconds", time.Since(t1).Seconds()))
+		dog.Write("Deployment succeeded.")
+	} else {
+		deployStatus = crux.DeploymentStatus_FAILED
+		dog.Write("Deployment failed " + err.Error())
+	}
+
+	dog.WriteDeploymentStatus(deployStatus)
+
+	err = statusStream.CloseSend()
+	if err != nil {
+		log.Println(deployImageRequest.RequestID, "Stream close err: ", err.Error())
+		return
 	}
 }
 
@@ -329,7 +411,7 @@ func GetConfigFromContext(ctx context.Context) any {
 	return ctx.Value(contextConfigKey)
 }
 
-// TODO(m8): streamline the log appearince with crane
+// TODO(m8vago): streamline the log appearince with crane
 // func PrintDeployRequestStrings(req *agent.DeployRequest) []string {
 // 	return append([]string{},
 // 		fmt.Sprintf("Deployment target: k8s ~ %v\n", utils.GetEnv("INGRESS_ROOT_DOMAIN", "docker host")),

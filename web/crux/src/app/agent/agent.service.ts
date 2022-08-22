@@ -2,20 +2,23 @@ import { Injectable, Logger } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { DeploymentEventTypeEnum, DeploymentStatusEnum, NodeTypeEnum } from '@prisma/client'
 import { concatAll, finalize, from, map, Observable, Subject, takeUntil } from 'rxjs'
-import { PrismaService } from 'src/services/prisma.service'
 import { Agent, AgentToken } from 'src/domain/agent'
 import { AgentInstaller } from 'src/domain/agent-installer'
 import { DeploymentProgressEvent } from 'src/domain/deployment'
+import { BaseMessage, NotificationMessageType } from 'src/domain/notification-templates'
 import { collectChildVersionIds, collectParentVersionIds } from 'src/domain/utils'
 import { AlreadyExistsException, NotFoundException, UnauthenticatedException } from 'src/exception/errors'
 import { AgentCommand, AgentInfo } from 'src/grpc/protobuf/proto/agent'
 import {
-  ContainerStatusListMessage,
+  ContainerStateListMessage,
+  DeploymentStatus,
   DeploymentStatusMessage,
   Empty,
   NodeConnectionStatus,
   NodeEventMessage,
 } from 'src/grpc/protobuf/proto/crux'
+import { DomainNotificationService } from 'src/services/domain.notification.service'
+import { PrismaService } from 'src/services/prisma.service'
 import { GrpcNodeConnection } from 'src/shared/grpc-node-connection'
 
 @Injectable()
@@ -28,7 +31,11 @@ export class AgentService {
 
   private static SCRIPT_EXPIRATION = 10 * 60 * 1000 // millis
 
-  constructor(private prisma: PrismaService, private jwtService: JwtService) {}
+  constructor(
+    private prisma: PrismaService,
+    private jwtService: JwtService,
+    private notificationService: DomainNotificationService,
+  ) {}
 
   getById(id: string): Agent {
     return this.agents.get(id)
@@ -58,7 +65,7 @@ export class AgentService {
   }
 
   async getNodeEventsByTeam(teamId: string): Promise<Subject<NodeEventMessage>> {
-    const team = await this.prisma.team.findUnique({
+    const team = await this.prisma.team.findUniqueOrThrow({
       where: {
         id: teamId,
       },
@@ -156,9 +163,18 @@ export class AgentService {
         this.createDeploymentEvents(deployment.id, events)
         return Empty
       }),
-      finalize(() => {
+      finalize(async () => {
         agent.onDeploymentFinished(deployment)
         this.updateDeploymentStatuses(agent.id, deployment.id)
+
+        const messageType: NotificationMessageType =
+          deployment.status() == DeploymentStatus.SUCCESSFUL ? 'successfulDeploy' : 'failedDeploy'
+
+        await this.notificationService.sendNotification({
+          identityId: deployment.notification.accessedBy,
+          messageType: messageType,
+          message: { subject: deployment.notification.deploymentName } as BaseMessage,
+        })
 
         this.logger.debug(`Deployment finished: ${deployment.id}`)
       }),
@@ -167,7 +183,7 @@ export class AgentService {
 
   handleContainerStatus(
     connection: GrpcNodeConnection,
-    request: Observable<ContainerStatusListMessage>,
+    request: Observable<ContainerStateListMessage>,
   ): Observable<Empty> {
     const agent = this.getByIdOrThrow(connection.nodeId)
     const prefix = connection.getMetaData(GrpcNodeConnection.META_FILTER_PREFIX)
@@ -197,7 +213,7 @@ export class AgentService {
 
   private onAgentConnectionStatusChange(agent: Agent, status: NodeConnectionStatus) {
     if (status === NodeConnectionStatus.UNREACHABLE) {
-      this.logger.log(`left: ${agent.id}`)
+      this.logger.log(`Left: ${agent.id}`)
       this.agents.delete(agent.id)
     } else if (status === NodeConnectionStatus.CONNECTED) {
       agent.onConnected()
@@ -217,7 +233,7 @@ export class AgentService {
 
     let agent: Agent
     await this.prisma.$transaction(async prisma => {
-      const node = await prisma.node.findUnique({
+      const node = await prisma.node.findUniqueOrThrow({
         where: {
           id: connection.nodeId,
         },
@@ -265,7 +281,7 @@ export class AgentService {
     this.agents.set(agent.id, agent)
     connection.status().subscribe(it => this.onAgentConnectionStatusChange(agent, it))
 
-    this.logger.log(`joined: ${request.id}`)
+    this.logger.log(`Agent joined with id: ${request.id}`)
     this.logServiceInfo()
 
     return agent.onConnected()
@@ -296,7 +312,7 @@ export class AgentService {
   }
 
   private async updateDeploymentStatuses(nodeId: string, deploymentId: string) {
-    const deployment = await this.prisma.deployment.findUnique({
+    const deployment = await this.prisma.deployment.findUniqueOrThrow({
       select: {
         status: true,
         version: {
@@ -363,7 +379,7 @@ export class AgentService {
   }
 
   private logServiceInfo(): void {
-    this.logger.debug(`agents: ${this.agents.size}`)
+    this.logger.debug(`Agents: ${this.agents.size}`)
     this.agents.forEach(it => it.debugInfo(this.logger))
   }
 }

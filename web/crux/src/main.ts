@@ -48,7 +48,7 @@ const parseLogLevelFromEnv = (logLevelEnv: string): LogLevel[] => {
   return VALID_LOG_LEVEL_VALUES.slice(0, index) as LogLevel[]
 }
 
-async function bootstrap() {
+const bootstrap = async () => {
   const app = await NestFactory.create(AppModule, {
     logger: parseLogLevelFromEnv(process.env.LOG_LEVEL),
   })
@@ -69,7 +69,7 @@ async function bootstrap() {
     },
   })
 
-  // api
+  // API
   app.connectMicroservice<MicroserviceOptions>(
     {
       transport: Transport.GRPC,
@@ -87,7 +87,7 @@ async function bootstrap() {
   await app.startAllMicroservices()
 
   logger.log(`gRPC agent services are running on: ${agentOptions.url}`)
-  logger.log(`gRPC api services are running on: ${apiOptions.url}`)
+  logger.log(`gRPC API services are running on: ${apiOptions.url}`)
 }
 
 bootstrap()

@@ -1,14 +1,15 @@
 package mapper
 
 import (
+	"strings"
 	"time"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/dyrector-io/dyrectorio/agent/internal/config"
 	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
-	"github.com/dyrector-io/dyrectorio/agent/internal/util"
 	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
+	builder "github.com/dyrector-io/dyrectorio/agent/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/crux"
 
@@ -47,7 +48,7 @@ func MapDeployImage(req *agent.DeployRequest, appConfig *config.CommonConfigurat
 	}
 
 	if req.RegistryAuth != nil {
-		res.RegistryAuth = &util.RegistryAuth{
+		res.RegistryAuth = &builder.RegistryAuth{
 			Name:     req.RegistryAuth.Name,
 			URL:      req.RegistryAuth.Url,
 			User:     req.RegistryAuth.User,
@@ -95,14 +96,18 @@ func MapContainerConfig(in *agent.DeployRequest_ContainerConfig) v1.ContainerCon
 		containerConfig.ConfigContainer = MapConfigContainer(in.ConfigContainer)
 	}
 
+	if in.NetworkMode != nil {
+		containerConfig.NetworkMode = *in.NetworkMode
+	}
+
 	return containerConfig
 }
 
-func MapPorts(in []*agent.DeployRequest_ContainerConfig_Port) []v1.PortBinding {
-	ports := []v1.PortBinding{}
+func MapPorts(in []*agent.DeployRequest_ContainerConfig_Port) []builder.PortBinding {
+	ports := []builder.PortBinding{}
 
 	for i := range in {
-		ports = append(ports, v1.PortBinding{
+		ports = append(ports, builder.PortBinding{
 			ExposedPort: uint16(in[i].Internal),
 			PortBinding: uint16(in[i].External),
 		})
@@ -120,8 +125,8 @@ func MapConfigContainer(in *agent.DeployRequest_ContainerConfig_ConfigContainer)
 	}
 }
 
-func MapContainerStatus(in *[]dockerTypes.Container) []*crux.ContainerStatusItem {
-	list := []*crux.ContainerStatusItem{}
+func MapContainerState(in *[]dockerTypes.Container) []*crux.ContainerStateItem {
+	list := []*crux.ContainerStateItem{}
 
 	for i := range *in {
 		it := (*in)[i]
@@ -131,13 +136,26 @@ func MapContainerStatus(in *[]dockerTypes.Container) []*crux.ContainerStatusItem
 			name = it.Names[0]
 		}
 
-		list = append(list, &crux.ContainerStatusItem{
+		imageName := strings.Split(it.Image, ":")
+
+		var imageTag string
+
+		if len(imageName) > 0 {
+			imageTag = imageName[1]
+		} else {
+			imageTag = "latest"
+		}
+
+		list = append(list, &crux.ContainerStateItem{
 			ContainerId: it.ID,
 			Name:        name,
 			Command:     it.Command,
 			CreatedAt:   timestamppb.New(time.UnixMilli(it.Created * int64(time.Microsecond)).UTC()),
-			Status:      dogger.MapContainerState(it.State),
+			State:       dogger.MapContainerState(it.State),
+			Status:      it.Status,
 			Ports:       MapContainerPorts(&it.Ports),
+			ImageName:   imageName[0],
+			ImageTag:    imageTag,
 		})
 	}
 
@@ -159,29 +177,29 @@ func MapContainerPorts(in *[]dockerTypes.Port) []*crux.ContainerPort {
 	return ports
 }
 
-func MapKubeDeploymentListToCruxStatusItems(deployments *appsv1.DeploymentList) []*crux.ContainerStatusItem {
-	statusItems := []*crux.ContainerStatusItem{}
+func MapKubeDeploymentListToCruxStateItems(deployments *appsv1.DeploymentList) []*crux.ContainerStateItem {
+	stateItems := []*crux.ContainerStateItem{}
 
 	for i := range deployments.Items {
-		statusItems = append(statusItems, &crux.ContainerStatusItem{
-			Name:   deployments.Items[i].Name,
-			Status: MapKubeStatusToCruxContainerStatus(deployments.Items[i].Status),
+		stateItems = append(stateItems, &crux.ContainerStateItem{
+			Name:  deployments.Items[i].Name,
+			State: MapKubeStatusToCruxContainerState(deployments.Items[i].Status),
 			CreatedAt: timestamppb.New(
 				time.UnixMilli(deployments.Items[i].GetCreationTimestamp().Unix() * int64(time.Microsecond)).UTC(),
 			),
 		})
 	}
 
-	return statusItems
+	return stateItems
 }
 
 // do better mapping this is quick something
-func MapKubeStatusToCruxContainerStatus(status appsv1.DeploymentStatus) crux.ContainerStatus {
+func MapKubeStatusToCruxContainerState(status appsv1.DeploymentStatus) crux.ContainerState {
 	switch status.ReadyReplicas {
 	case 1:
-		return crux.ContainerStatus_RUNNING
+		return crux.ContainerState_RUNNING
 	case 0:
-		return crux.ContainerStatus_DEAD
+		return crux.ContainerState_DEAD
 	}
-	return crux.ContainerStatus_UNKNOWN_CONTAINER_STATUS
+	return crux.ContainerState_UNKNOWN_CONTAINER_STATE
 }

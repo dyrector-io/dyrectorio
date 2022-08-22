@@ -1,6 +1,5 @@
 {
-  "title": "Nodes",
-  "title-node": "{{name}} node",
+  "nodesName": "Nodes - {{name}}",
 
   "add": "Add node",
   "new": "New node",
@@ -33,6 +32,5 @@
   "technologies": {
     "docker": "Docker Host",
     "k8s": "Kubernetes Cluster"
-  },
-  "deleteDescription": "If you proceed, you will lose all your data related to {{name}}. This action is not revocable."
+  }
 }

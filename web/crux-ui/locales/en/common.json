@@ -2,7 +2,7 @@
   "logIn": "Log in",
   "logOut": "Log out",
   "signUp": "Sign up",
-  "email": "e-mail",
+  "email": "E-mail",
   "name": "Name",
   "password": "Password",
   "confirmPass": "Confirm password",
@@ -17,6 +17,7 @@
 
   "home": "Home",
   "settings": "Settings",
+  "components": "Components",
 
   "logout": "Log out",
 
@@ -27,12 +28,14 @@
   "icon": "Icon",
   "updatedAt": "Update at",
   "createdAt": "Created at",
+  "createdByName": "Created by {{name}}",
   "date": "Date",
   "type": "Type",
   "status": "Status",
   "loading": "Loading...",
   "noNameFound": "No {{name}} found",
   "yourTeams": "Your teams",
+  "address": "Address",
 
   "editName": "Edit {{name}}",
   "add": "Add",
@@ -49,25 +52,33 @@
 
   "confirm": "Confirm",
   "confirmDelete": "Are you sure you want to delete {{name}}?",
+  "areYouSure": "Are you sure?",
 
   "products": "Products",
   "config": "Config",
   "registries": "Registries",
   "nodes": "Nodes",
+  "versions": "Versions",
+  "deployments": "Deployments",
+  "users": "Users",
+  "notifications": "Notifications",
   "images": "Images",
-  "team": "Team",
+  "teams": "Teams",
   "audit": "Audit Log",
   "profile": "Profile",
-  "roleOwner": "Owner",
-  "roleUser": "User",
+  "role": {
+    "owner": "Owner",
+    "user": "User",
+    "admin": "Admin"
+  },
 
-  "product": "Product",
-  "version": "Version",
   "image": "Image",
   "container": "Container",
-  "deployment": "Deployment",
   "node": "Node",
   "registry": "Registry",
+  "deployment": "Deployment",
+  "product": "Product",
+  "version": "Version",
 
   "prefix": "Prefix",
 
@@ -102,12 +113,14 @@
     "successful": "Successful",
     "failed": "Failed",
     "obsolate": "Obsolate",
-    "unknown": "Unknown"
+    "unknown": "Unknown",
+    "preparing": "Preparing",
+    "in_progress": "In progress"
   },
 
   "containerStatuses": {
     "created": "Created",
-    "restating": "Restatring",
+    "restarting": "Restarting",
     "running": "Running",
     "removing": "Removing",
     "paused": "Paused",
@@ -139,5 +152,10 @@
     "December"
   ],
 
-  "upload": "Upload"
+  "upload": "Upload",
+
+  "deleteDescription": "If you proceed, you will lose all your data related to {{name}}. This action is not revocable.",
+
+  "itemsPerPage": "Items per page",
+  "showingItems": "Showing {{pageFrom}} to {{pageTo}} of {{total}} entries"
 }

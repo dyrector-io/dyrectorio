@@ -1,5 +1,12 @@
 import { Logger } from '@app/logger'
-import { CruxHealthClient, Empty } from '@app/models/grpc/protobuf/proto/crux'
+import { CruxHealth, DEFAULT_CRUX_HEALTH, ServiceStatus } from '@app/models'
+import {
+  CruxHealthClient,
+  Empty,
+  HealthResponse,
+  ServiceStatus as ProtoServiceStatus,
+  serviceStatusToJSON,
+} from '@app/models/grpc/protobuf/proto/crux'
 import { protomisify } from '@server/crux/grpc-connection'
 
 class DyoHealthService {
@@ -7,18 +14,24 @@ class DyoHealthService {
 
   constructor(private client: CruxHealthClient) {}
 
-  async getHealth(): Promise<boolean> {
+  async getHealth(): Promise<CruxHealth> {
     const req: Empty = {}
 
     try {
-      await protomisify<Empty, Empty>(this.client, this.client.getHealth)(Empty, req)
+      const res = await protomisify<Empty, HealthResponse>(this.client, this.client.getHealth)(Empty, req)
+      return {
+        status: serviceStatusToDto(res.status),
+        version: res.cruxVersion,
+        lastMigration: res.lastMigration,
+      }
     } catch (e) {
-      this.logger.debug('Health check', e)
-      return false
+      this.logger.error('Health check', e)
+      return DEFAULT_CRUX_HEALTH
     }
-
-    return true
   }
 }
 
 export default DyoHealthService
+
+export const serviceStatusToDto = (status: ProtoServiceStatus): ServiceStatus =>
+  serviceStatusToJSON(status).toLocaleLowerCase() as ServiceStatus

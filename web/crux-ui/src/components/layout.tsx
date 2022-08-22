@@ -12,11 +12,8 @@ import { Sidebar } from './main/sidebar'
 import Topbar from './main/top-bar'
 
 export interface LayoutProps {
-  children: React.ReactNode
-}
-
-export interface PageHeadProps {
   title: string
+  children: React.ReactNode
 }
 
 export const Layout = (props: LayoutProps) => {
@@ -34,13 +31,15 @@ export const Layout = (props: LayoutProps) => {
 
   return (
     <>
+      <PageHead title={props.title} />
+
       <main className="flex flex-row h-full bg-dark">
         <Toaster
           toastOptions={{
             error: {
               icon: null,
               style: {
-                background: '#ea5455',
+                background: 'error-red',
                 color: 'white',
               },
             },
@@ -64,13 +63,15 @@ export const Layout = (props: LayoutProps) => {
 export const SingleFormLayout = (props: LayoutProps) => {
   return (
     <>
+      <PageHead title={props.title} />
+
       <main className="flex flex-row h-full bg-dark">
         <Toaster
           toastOptions={{
             error: {
               icon: null,
               style: {
-                background: '#ea5455',
+                background: 'error-red',
                 color: 'white',
               },
             },
@@ -89,15 +90,16 @@ export const SingleFormLayout = (props: LayoutProps) => {
   )
 }
 
-export const PageHead = (props: React.PropsWithChildren<PageHeadProps>) => {
+interface PageHeadProps {
+  title: string
+}
+
+const PageHead = (props: PageHeadProps) => {
   const { t } = useTranslation('head')
 
   return (
-    <>
-      <Head>
-        <title>{t('title-param', { param: props.title })}</title>
-        {props.children}
-      </Head>
-    </>
+    <Head>
+      <title>{t('title', { page: props.title })}</title>
+    </Head>
   )
 }

@@ -1,19 +1,13 @@
 import { INestApplication, Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { Prisma, PrismaClient } from '@prisma/client'
-import { mapNotFoundError } from 'src/exception/errors'
 
 @Injectable()
 export class PrismaService extends PrismaClient<Prisma.PrismaClientOptions, 'query'> implements OnModuleInit {
   private readonly logger = new Logger(PrismaService.name)
 
   constructor() {
-    const notFoundMappings = PrismaService.generateNotFoundErrorMappings()
-
     super({
-      rejectOnNotFound: {
-        findFirst: notFoundMappings,
-        findUnique: notFoundMappings,
-      },
+      rejectOnNotFound: false,
       log: [
         { emit: 'event', level: 'query' },
         { emit: 'stdout', level: 'info' },
@@ -37,33 +31,10 @@ export class PrismaService extends PrismaClient<Prisma.PrismaClientOptions, 'que
     })
   }
 
-  static generateNotFoundErrorMappings(): Prisma.RejectPerModel {
-    const rejects: Prisma.RejectPerModel = {}
-    Object.entries(this.NOT_FOUND_ERRORS).forEach(entry => {
-      const [key, value] = entry
+  async findLastMigration(): Promise<string> {
+    const migrations: { migration_name: string }[] = await this
+      .$queryRaw`SELECT migration_name from _prisma_migrations WHERE rolled_back_at IS NULL ORDER BY finished_at DESC LIMIT 1`
 
-      rejects[key] = mapNotFoundError(value)
-    })
-
-    return rejects
-  }
-
-  static readonly NOT_FOUND_ERRORS: NotFoundErrorMappings = {
-    Registry: 'registry',
-    Node: 'node',
-    Product: 'product',
-    Version: 'version',
-    Image: 'image',
-    ContainerConfig: 'containerConfig',
-    Deployment: 'deployment',
-    DeploymentEvent: 'deploymentEvent',
-    Instance: 'instance',
-    InstanceContainerConfig: 'instanceConfig',
-    UserInvitation: 'invitation',
-    VersionsOnParentVersion: 'versionRelation',
-    UsersOnTeams: 'team',
-    Team: 'team',
+    return migrations && migrations.length > 0 ? migrations[0].migration_name : null
   }
 }
-
-type NotFoundErrorMappings = { [P in Prisma.ModelName]?: string }

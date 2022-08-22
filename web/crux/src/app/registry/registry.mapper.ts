@@ -32,7 +32,7 @@ export class RegistryMapper {
         registry.type !== RegistryTypeEnum.hub
           ? null
           : {
-              urlPrefix: registry.urlPrefix,
+              imageNamePrefix: registry.imageNamePrefix,
             },
       v2:
         registry.type !== RegistryTypeEnum.v2
@@ -48,7 +48,7 @@ export class RegistryMapper {
           : {
               user: registry.user,
               token: registry.token,
-              urlPrefix: registry.urlPrefix,
+              imageNamePrefix: registry.imageNamePrefix,
               url: registry.apiUrl ? registry.url : null,
               apiUrl: registry.apiUrl,
             },
@@ -58,7 +58,7 @@ export class RegistryMapper {
           : {
               user: registry.user,
               token: registry.token,
-              urlPrefix: registry.urlPrefix,
+              imageNamePrefix: registry.imageNamePrefix,
             },
       google:
         registry.type !== RegistryTypeEnum.google
@@ -67,6 +67,7 @@ export class RegistryMapper {
               url: registry.url,
               user: registry.user,
               token: registry.token,
+              imageNamePrefix: registry.imageNamePrefix,
             },
     }
   }
@@ -81,7 +82,7 @@ export class RegistryMapper {
 
   detailsToDb(
     request: CreateRegistryRequest | UpdateRegistryRequest,
-  ): Pick<Registry, 'url' | 'type' | 'apiUrl' | 'user' | 'token' | 'urlPrefix'> {
+  ): Pick<Registry, 'url' | 'type' | 'apiUrl' | 'user' | 'token' | 'imageNamePrefix'> {
     if (request.hub) {
       return {
         type: RegistryTypeEnum.hub,
@@ -97,7 +98,7 @@ export class RegistryMapper {
         ...request.v2,
         user: request.v2.user ?? null,
         token: request.v2.token ?? null,
-        urlPrefix: null,
+        imageNamePrefix: null,
         apiUrl: null,
       }
     } else if (request.gitlab) {
@@ -120,7 +121,7 @@ export class RegistryMapper {
         ...request.google,
         user: request.google.user ?? null,
         token: request.google.token ?? null,
-        urlPrefix: null,
+        imageNamePrefix: request.google.imageNamePrefix,
         apiUrl: null,
       }
     } else {

@@ -1,6 +1,7 @@
 import { Logger } from '@app/logger'
 import {
   Deployment,
+  DeploymentByVersion,
   DeploymentDetails,
   DeploymentEditEventMessage,
   DeploymentEvent,
@@ -16,6 +17,7 @@ import {
   WS_TYPE_INSTANCES_ADDED,
 } from '@app/models'
 import {
+  AccessRequest,
   CreateDeploymentRequest,
   CreateEntityResponse,
   CruxDeploymentClient,
@@ -23,6 +25,7 @@ import {
   DeploymentEditEventMessage as ProtoDeploymentEditEventMessage,
   DeploymentEventListResponse,
   DeploymentEventType as ProtoDeploymentEventType,
+  DeploymentListByVersionResponse,
   DeploymentListResponse,
   DeploymentProgressMessage,
   DeploymentStatus as ProtoDeploymentStatus,
@@ -41,20 +44,38 @@ import { WsMessage } from '@app/websockets/common'
 import { Identity } from '@ory/kratos-client'
 import { GrpcConnection, protomisify, ProtoSubscriptionOptions } from './grpc-connection'
 import { explicitContainerConfigToDto, explicitContainerConfigToProto, imageToDto } from './image-service'
-import { containerStatusToDto } from './node-service'
+import { containerStateToDto } from './node-service'
 
 class DyoDeploymentService {
   private logger = new Logger(DyoDeploymentService.name)
 
   constructor(private client: CruxDeploymentClient, private identity: Identity) {}
 
-  async getAllByVersionId(verisonId: string): Promise<Deployment[]> {
+  async getAll(): Promise<Deployment[]> {
+    const req: AccessRequest = {
+      accessedBy: this.identity.id,
+    }
+
+    const deployments = await protomisify<AccessRequest, DeploymentListResponse>(
+      this.client,
+      this.client.getDeploymentList,
+    )(IdRequest, req)
+
+    return deployments.data.map(it => {
+      return {
+        ...it,
+        status: deploymentStatusToDto(it.status),
+      }
+    })
+  }
+
+  async getAllByVersionId(verisonId: string): Promise<DeploymentByVersion[]> {
     const req: IdRequest = {
       id: verisonId,
       accessedBy: this.identity.id,
     }
 
-    const deployments = await protomisify<IdRequest, DeploymentListResponse>(
+    const deployments = await protomisify<IdRequest, DeploymentListByVersionResponse>(
       this.client,
       this.client.getDeploymentsByVersionId,
     )(IdRequest, req)
@@ -112,7 +133,7 @@ class DyoDeploymentService {
             : type === 'containerStatus'
             ? {
                 instanceId: it.containerStatus.instanceId,
-                status: containerStatusToDto(it.containerStatus.status),
+                state: containerStateToDto(it.containerStatus.state),
               }
             : null,
       }
@@ -214,7 +235,7 @@ class DyoDeploymentService {
           createdAt,
           value: {
             instanceId: data.instance.instanceId,
-            status: containerStatusToDto(data.instance.status),
+            state: containerStateToDto(data.instance.state),
           },
         })
       } else if (data.status) {
@@ -295,7 +316,7 @@ export const instanceToDto = (res: InstanceResponse): Instance => {
   return {
     ...res,
     image: imageToDto(res.image),
-    status: !res.status ? null : containerStatusToDto(res.status),
-    overridenConfig: instanceContainerConfigToDto(res.config),
+    state: !res.state ? null : containerStateToDto(res.state),
+    overriddenConfig: instanceContainerConfigToDto(res.config),
   } as Instance
 }

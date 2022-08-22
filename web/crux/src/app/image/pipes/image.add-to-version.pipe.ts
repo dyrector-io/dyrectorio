@@ -9,7 +9,7 @@ export class ImageAddToVersionValidationPipe implements PipeTransform {
 
   // TODO validate unique container names
   async transform(value: AddImagesToVersionRequest) {
-    const version = await this.prisma.version.findUnique({
+    const version = await this.prisma.version.findUniqueOrThrow({
       select: {
         type: true,
         deployments: {

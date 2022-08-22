@@ -14,7 +14,6 @@ import (
 	"github.com/dyrector-io/dyrectorio/agent/internal/util"
 	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/k8s"
-	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/model"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/utils"
 )
 
@@ -99,7 +98,7 @@ func handleDeployBindingError(c *gin.Context, deployImageRequest *v1.DeployImage
 
 		if readerr != nil {
 			log.Println("Error reading request body", err.Error())
-			c.JSON(http.StatusBadRequest, model.NewErrorResponse(model.ValidationError, msg, "Invalid deploy request"))
+			c.JSON(http.StatusBadRequest, v1.NewErrorResponse(v1.ValidationError, msg, "Invalid deploy request"))
 			return
 		}
 
@@ -122,7 +121,7 @@ func handleDeployBindingError(c *gin.Context, deployImageRequest *v1.DeployImage
 	}
 
 	dog.Write(fmt.Sprintf("Invalid deployment request: %v", msg))
-	c.JSON(http.StatusBadRequest, model.NewErrorResponse(model.ValidationError, msg, "Invalid deploy request"))
+	c.JSON(http.StatusBadRequest, v1.NewErrorResponse(v1.ValidationError, msg, "Invalid deploy request"))
 }
 
 func handleDeploymentError(c *gin.Context, dog *dogger.DeploymentLogger, deployment *v1.DeployImageRequest, err error) {
@@ -280,7 +279,7 @@ func DeployVersion(c *gin.Context) {
 			cfg,
 		)
 
-		// todo(nandi): review bad requests, their presence is not justified, request might be correct `filozofiai kerdes`
+		// TODO(nandor-magyar): review bad requests, their presence is not justified, request might be correct `filozofiai kerdes`
 		if err := deployFacade.CheckPreConditions(); err != nil {
 			log.Println("Error in pre-conditions: " + err.Error())
 			dog.Write(err.Error())

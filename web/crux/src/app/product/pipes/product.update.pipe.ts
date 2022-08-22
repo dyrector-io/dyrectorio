@@ -1,14 +1,13 @@
 import { Injectable, PipeTransform, PreconditionFailedException } from '@nestjs/common'
-import { TeamRepository } from 'src/app/team/team.repository'
-import { PrismaService } from 'src/services/prisma.service'
 import { UpdateProductRequest } from 'src/grpc/protobuf/proto/crux'
+import { PrismaService } from 'src/services/prisma.service'
 
 @Injectable()
 export class ProductUpdateValidationPipe implements PipeTransform {
-  constructor(private prisma: PrismaService, private teamRepository: TeamRepository) {}
+  constructor(private prisma: PrismaService) {}
 
   async transform(value: UpdateProductRequest) {
-    const product = await this.prisma.product.findUnique({
+    const product = await this.prisma.product.findUniqueOrThrow({
       where: {
         id: value.id,
       },

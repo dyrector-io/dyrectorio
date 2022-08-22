@@ -91,7 +91,7 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GHCR_PAT }}
 
-    - name: Docker build 
+    - name: Docker build
       run: |
         docker build . -t ${REGISTRY}/${IMAGE_NAME}:${{ needs.prerequirements.outputs.tag }}
       env:

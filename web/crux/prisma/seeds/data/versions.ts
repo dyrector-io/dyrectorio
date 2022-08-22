@@ -65,6 +65,6 @@ export const versions = [
     createdAt: new Date(),
     type: VersionType.ROLLING,
     productId: '399B5495-0ACA-4395-88B3-EF1AA2C2E015',
-    default: true
-  }
+    default: true,
+  },
 ] as Version[]

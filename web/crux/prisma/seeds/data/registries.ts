@@ -1,5 +1,5 @@
-import { Registry } from "@prisma/client"
-import { constants } from "../consts"
+import { Registry } from '@prisma/client'
+import { constants } from '../consts'
 
 export const registries = [
   {
@@ -27,4 +27,4 @@ export const registries = [
     teamId: constants.TEAM_ID,
     type: 'v2',
   },
-] as Omit<Registry, "id">[]
+] as Omit<Registry, 'id'>[]

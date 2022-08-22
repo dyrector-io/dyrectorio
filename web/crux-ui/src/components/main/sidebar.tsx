@@ -1,17 +1,18 @@
 import {
+  ROUTE_AUDIT,
+  ROUTE_DEPLOYMENTS,
   ROUTE_INDEX,
   ROUTE_LOGOUT,
   ROUTE_NODES,
+  ROUTE_NOTIFICATIONS,
   ROUTE_PRODUCTS,
   ROUTE_PROFILE,
   ROUTE_REGISTRIES,
-  ROUTE_TEAMS_ACTIVE,
-  ROUTE_TEAMS_AUDIT,
+  ROUTE_TEAMS,
 } from '@app/routes'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { NavButton } from './nav-button'
 import { NavSection } from './nav-section'
 
 export interface SidebarProps {
@@ -21,7 +22,20 @@ export interface SidebarProps {
 export const Sidebar = (props: SidebarProps) => {
   const { t } = useTranslation('common')
 
-  const configOptions = [
+  const productOptions = [
+    {
+      icon: <Image src="/products.svg" alt={t('products')} width={18} height={18} />,
+      text: 'products',
+      link: ROUTE_PRODUCTS,
+    },
+    {
+      icon: <Image src="/deploy.svg" alt={t('deployments')} width={18} height={18} />,
+      text: 'deployments',
+      link: ROUTE_DEPLOYMENTS,
+    },
+  ]
+
+  const componentOptions = [
     {
       icon: <Image src="/servers.svg" alt={t('nodes')} width={18} height={18} />,
       text: 'nodes',
@@ -32,18 +46,23 @@ export const Sidebar = (props: SidebarProps) => {
       text: 'registries',
       link: ROUTE_REGISTRIES,
     },
+    {
+      icon: <Image src="/notification.svg" alt={t('notifications')} width={18} height={18} />,
+      text: 'notifications',
+      link: ROUTE_NOTIFICATIONS,
+    },
   ]
 
   const settingsOptions = [
     {
       icon: <Image src="/audit.svg" alt={t('audit')} width={18} height={18} />,
       text: 'audit',
-      link: ROUTE_TEAMS_AUDIT,
+      link: ROUTE_AUDIT,
     },
     {
-      icon: <Image src="/team.svg" alt={t('team')} width={18} height={18} />,
-      text: 'team',
-      link: ROUTE_TEAMS_ACTIVE,
+      icon: <Image src="/team.svg" alt={t('teams')} width={18} height={18} />,
+      text: 'teams',
+      link: ROUTE_TEAMS,
     },
     {
       icon: <Image src="/profile.svg" alt={t('profile')} width={18} height={18} />,
@@ -74,15 +93,9 @@ export const Sidebar = (props: SidebarProps) => {
       </div>
 
       <div className="flex flex-col flex-grow px-6 pb-4">
-        <NavButton
-          className="mt-14 ml-4"
-          href={ROUTE_PRODUCTS}
-          icon={<Image src="/products.svg" alt={t('products')} width={18} height={18} />}
-        >
-          {t('products')}
-        </NavButton>
+        <NavSection className="mt-12" title={t('product')} options={productOptions} />
 
-        <NavSection className="mt-12" title={t('config')} options={configOptions} />
+        <NavSection className="mt-12" title={t('components')} options={componentOptions} />
 
         <NavSection className="mt-auto mb-4" title={t('settings')} options={settingsOptions} />
       </div>

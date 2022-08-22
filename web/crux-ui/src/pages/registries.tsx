@@ -1,4 +1,4 @@
-import { Layout, PageHead } from '@app/components/layout'
+import { Layout } from '@app/components/layout'
 import EditRegistryCard from '@app/components/registries/edit-registry-card'
 import RegistryCard from '@app/components/registries/registry-card'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
@@ -43,13 +43,12 @@ const RegistriesPage = (props: RegistriesPageProps) => {
   const onNavigateToDetails = (id: string) => router.push(registryUrl(id))
 
   const selfLink: BreadcrumbLink = {
-    name: t('common:registry'),
+    name: t('common:registries'),
     url: ROUTE_REGISTRIES,
   }
 
   return (
-    <Layout>
-      <PageHead title={t('title')} />
+    <Layout title={t('common:registries')}>
       <PageHeading pageLink={selfLink}>
         <ListPageMenu creating={creating} setCreating={setCreating} submitRef={submitRef} />
       </PageHeading>

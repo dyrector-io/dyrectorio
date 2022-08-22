@@ -19,17 +19,10 @@ const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
   res.status(204).end()
 }
 
-const onDelete = async (req: NextApiRequest, res: NextApiResponse) => {
-  await crux(req).teams.deleteActiveTeam()
-
-  res.status(204).end()
-}
-
 export default withMiddlewares({
-  onGet,
+  onGet: onGet,
   onPost: {
     middlewares: [useValidationMiddleware(selectTeamSchema)],
     endpoint: onPost,
   },
-  onDelete,
 })

@@ -1,21 +1,26 @@
 import { Metadata, ServerUnaryCall } from '@grpc/grpc-js'
-import { Controller, UseGuards } from '@nestjs/common'
+import { Body, Controller, UseGuards } from '@nestjs/common'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import {
   AccessRequest,
+  ActiveTeamDetailsResponse,
+  AllTeamsResponse,
   CreateEntityResponse,
   CreateTeamRequest,
   CruxTeamController,
   CruxTeamControllerMethods,
+  DeleteUserFromTeamRequest,
   Empty,
   IdRequest,
+  InviteUserRequest,
   TeamDetailsResponse,
-  UpdateActiveTeamRequest,
-  UserInviteRequest,
+  UpdateTeamRequest,
+  UpdateUserRoleInTeamRequest,
   UserMetaResponse,
 } from 'src/grpc/protobuf/proto/crux'
 import { TeamRoleGuard, TeamRoleRequired } from './guards/team.role.guard'
 import { TeamSelectGuard } from './guards/team.select.guard'
+import { TeamUpdateUserRoleValidationPipe } from './pipes/team.update-user-role.pipe'
 import { TeamService } from './team.service'
 
 @Controller()
@@ -35,18 +40,24 @@ export class TeamController implements CruxTeamController {
   }
 
   @TeamRoleRequired('owner')
-  async updateActiveTeam(request: UpdateActiveTeamRequest): Promise<Empty> {
-    return await this.service.updateActiveTeam(request)
+  async updateTeam(request: UpdateTeamRequest): Promise<Empty> {
+    return await this.service.updateTeam(request)
   }
 
+  @AuditLogLevel('disabled')
   @TeamRoleRequired('owner')
-  async deleteActiveTeam(request: AccessRequest): Promise<void> {
-    return await this.service.deleteActiveTeam(request)
+  async deleteTeam(request: IdRequest): Promise<Empty> {
+    return await this.service.deleteTeam(request)
   }
 
-  @TeamRoleRequired('owner')
-  async inviteUserToTheActiveTeam(request: UserInviteRequest): Promise<CreateEntityResponse> {
-    return await this.service.inviteUserToTheActiveTeam(request)
+  @TeamRoleRequired('admin')
+  async updateUserRole(@Body(TeamUpdateUserRoleValidationPipe) request: UpdateUserRoleInTeamRequest): Promise<Empty> {
+    return await this.service.updateUserRole(request)
+  }
+
+  @TeamRoleRequired('admin')
+  async inviteUserToTeam(request: InviteUserRequest): Promise<CreateEntityResponse> {
+    return await this.service.inviteUserToTeam(request)
   }
 
   @TeamRoleRequired('none')
@@ -68,7 +79,7 @@ export class TeamController implements CruxTeamController {
 
   @AuditLogLevel('disabled')
   @TeamRoleRequired('none')
-  async getActiveTeamByUser(request: AccessRequest): Promise<TeamDetailsResponse> {
+  async getActiveTeamByUser(request: AccessRequest): Promise<ActiveTeamDetailsResponse> {
     return await this.service.getActiveTeamByUserId(request)
   }
 
@@ -78,8 +89,16 @@ export class TeamController implements CruxTeamController {
     return await this.service.getUserMeta(request)
   }
 
-  @TeamRoleRequired('owner')
-  async deleteUserFromTheActiveTeam(request: IdRequest): Promise<void> {
+  @TeamRoleRequired('admin')
+  async deleteUserFromTeam(request: DeleteUserFromTeamRequest): Promise<void> {
     return await this.service.deleteUserFromTeam(request)
+  }
+
+  async getAllTeams(request: AccessRequest): Promise<AllTeamsResponse> {
+    return await this.service.getAllTeams(request)
+  }
+
+  async getTeamById(request: IdRequest): Promise<TeamDetailsResponse> {
+    return await this.service.getTeamById(request)
   }
 }

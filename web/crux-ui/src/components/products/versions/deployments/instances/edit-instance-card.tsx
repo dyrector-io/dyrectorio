@@ -1,15 +1,12 @@
 import { DyoButton } from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import {
-  ContainerConfig,
-  ExplicitContainerConfigPort,
-  ExplicitContainerNetworkMode,
   Instance,
   InstanceContainerConfig,
+  mergeConfigs,
   PatchInstanceMessage,
   WS_TYPE_PATCH_INSTANCE,
 } from '@app/models'
-import { UniqueKeyValue } from '@app/models/grpc/protobuf/proto/crux'
 import { containerConfigSchema, getValidationError } from '@app/validation'
 import { WebSocketEndpoint } from '@app/websockets/client'
 import useTranslation from 'next-translate/useTranslation'
@@ -32,12 +29,12 @@ const EditInstanceCard = (props: EditInstanceCardProps) => {
   const { disabled, instance, deploymentSock: sock } = props
 
   const [selection, setSelection] = useState<EditInstanceCardSelection>('config')
-  const [mergedConfig, setMergedConfig] = useState(mergeConfigs(instance.image.config, instance.overridenConfig))
+  const [mergedConfig, setMergedConfig] = useState(mergeConfigs(instance.image.config, instance.overriddenConfig))
   const [parseError, setParseError] = useState<string>(null)
 
   useEffect(
-    () => setMergedConfig(mergeConfigs(instance.image.config, instance.overridenConfig)),
-    [instance.image.config, instance.overridenConfig],
+    () => setMergedConfig(mergeConfigs(instance.image.config, instance.overriddenConfig)),
+    [instance.image.config, instance.overriddenConfig],
   )
 
   const onPatch = (id: string, config: Partial<InstanceContainerConfig>) => {
@@ -107,41 +104,3 @@ const EditInstanceCard = (props: EditInstanceCardProps) => {
 }
 
 export default EditInstanceCard
-
-const overrideKeyValues = (weak: UniqueKeyValue[], strong: UniqueKeyValue[]): UniqueKeyValue[] => {
-  const overridenKeys: Set<string> = new Set(strong?.map(it => it.key))
-  return [...(weak?.filter(it => !overridenKeys.has(it.key)) ?? []), ...(strong ?? [])]
-}
-
-const overridePorts = (
-  weak: ExplicitContainerConfigPort[],
-  strong: ExplicitContainerConfigPort[],
-): ExplicitContainerConfigPort[] => {
-  const overridenPorts: Set<number> = new Set(strong?.map(it => it.internal))
-  return [...(weak?.filter(it => !overridenPorts.has(it.internal)) ?? []), ...(strong ?? [])]
-}
-
-const overrideNetworkMode = (weak: ExplicitContainerNetworkMode, strong: ExplicitContainerNetworkMode) =>
-  strong ?? weak ?? 'none'
-
-const mergeConfigs = (
-  imageConfig: ContainerConfig,
-  overriddenConfig: Partial<InstanceContainerConfig>,
-): ContainerConfig => {
-  const instanceConfig = overriddenConfig ?? {}
-
-  const envs = overrideKeyValues(imageConfig.environment, instanceConfig.environment)
-  const caps = overrideKeyValues(imageConfig.capabilities, instanceConfig.capabilities)
-
-  return {
-    name: imageConfig.name,
-    environment: envs,
-    capabilities: caps,
-    config: {
-      ...imageConfig.config,
-      ...(instanceConfig.config ?? {}),
-      networkMode: overrideNetworkMode(imageConfig?.config?.networkMode, instanceConfig.config?.networkMode),
-      ports: overridePorts(imageConfig?.config?.ports, instanceConfig.config?.ports),
-    },
-  }
-}

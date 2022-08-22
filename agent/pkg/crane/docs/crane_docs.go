@@ -95,13 +95,13 @@ const docTemplateCrane = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/model.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/model.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     }
                 }
@@ -166,13 +166,13 @@ const docTemplateCrane = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/model.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/model.ErrorResponse"
+                            "$ref": "#/definitions/v1.ErrorResponse"
                         }
                     }
                 }
@@ -994,6 +994,81 @@ const docTemplateCrane = `{
                 }
             }
         },
+        "containerbuilder.PortBinding": {
+            "type": "object",
+            "required": [
+                "exposedPort",
+                "portBinding"
+            ],
+            "properties": {
+                "exposedPort": {
+                    "type": "integer",
+                    "maximum": 65535,
+                    "minimum": 0
+                },
+                "portBinding": {
+                    "type": "integer",
+                    "maximum": 65535,
+                    "minimum": 0
+                }
+            }
+        },
+        "containerbuilder.PortRange": {
+            "type": "object",
+            "required": [
+                "from",
+                "to"
+            ],
+            "properties": {
+                "from": {
+                    "type": "integer",
+                    "maximum": 65535,
+                    "minimum": 0
+                },
+                "to": {
+                    "type": "integer",
+                    "maximum": 65535
+                }
+            }
+        },
+        "containerbuilder.PortRangeBinding": {
+            "type": "object",
+            "required": [
+                "external",
+                "internal"
+            ],
+            "properties": {
+                "external": {
+                    "$ref": "#/definitions/containerbuilder.PortRange"
+                },
+                "internal": {
+                    "$ref": "#/definitions/containerbuilder.PortRange"
+                }
+            }
+        },
+        "containerbuilder.RegistryAuth": {
+            "type": "object",
+            "required": [
+                "name",
+                "password",
+                "url",
+                "user"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                },
+                "user": {
+                    "type": "string"
+                }
+            }
+        },
         "github.com_dyrector-io_dyrectorio_agent_pkg_api_v1.Probe": {
             "type": "object",
             "properties": {
@@ -1222,31 +1297,6 @@ const docTemplateCrane = `{
                 "vsphereVolume": {
                     "description": "VsphereVolume represents a vSphere volume attached and mounted on kubelets host machine\n+optional",
                     "$ref": "#/definitions/v1.VsphereVirtualDiskVolumeSource"
-                }
-            }
-        },
-        "model.Error": {
-            "type": "object",
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "error": {
-                    "type": "string"
-                },
-                "value": {
-                    "type": "string"
-                }
-            }
-        },
-        "model.ErrorResponse": {
-            "type": "object",
-            "properties": {
-                "errors": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.Error"
-                    }
                 }
             }
         },
@@ -1801,29 +1851,6 @@ const docTemplateCrane = `{
                 }
             }
         },
-        "util.RegistryAuth": {
-            "type": "object",
-            "required": [
-                "name",
-                "password",
-                "url",
-                "user"
-            ],
-            "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "url": {
-                    "type": "string"
-                },
-                "user": {
-                    "type": "string"
-                }
-            }
-        },
         "v1.AWSElasticBlockStoreVolumeSource": {
             "type": "object",
             "properties": {
@@ -2305,7 +2332,7 @@ const docTemplateCrane = `{
                 },
                 "logConfig": {
                     "description": "dagent only",
-                    "$ref": "#/definitions/v1.LogConfig"
+                    "$ref": "#/definitions/container.LogConfig"
                 },
                 "mount": {
                     "description": "mount list, if a name starts with @ it can be used by multiple components eg @data|/target/mount/path",
@@ -2322,14 +2349,14 @@ const docTemplateCrane = `{
                     "description": "portbinding list contains external/interal ports",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/v1.PortBinding"
+                        "$ref": "#/definitions/containerbuilder.PortBinding"
                     }
                 },
                 "portRanges": {
                     "description": "Port ranges to be exposed ! no native range support in k8s",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/v1.PortRangeBinding"
+                        "$ref": "#/definitions/containerbuilder.PortRangeBinding"
                     }
                 },
                 "proxyHeaders": {
@@ -2446,7 +2473,7 @@ const docTemplateCrane = `{
                     "type": "string"
                 },
                 "RegistryAuth": {
-                    "$ref": "#/definitions/util.RegistryAuth"
+                    "$ref": "#/definitions/containerbuilder.RegistryAuth"
                 },
                 "RequestId": {
                     "type": "string"
@@ -3007,6 +3034,31 @@ const docTemplateCrane = `{
                 }
             }
         },
+        "v1.Error": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/v1.Error"
+                    }
+                }
+            }
+        },
         "v1.ExecAction": {
             "type": "object",
             "properties": {
@@ -3464,24 +3516,6 @@ const docTemplateCrane = `{
                 "name": {
                     "description": "Name of the referent.\nMore info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names\nTODO: Add other useful fields. apiVersion, kind, uid?\n+optional",
                     "type": "string"
-                }
-            }
-        },
-        "v1.LogConfig": {
-            "type": "object",
-            "required": [
-                "logDriver"
-            ],
-            "properties": {
-                "logDriver": {
-                    "description": "https://docs.docker.com/config/containers/logging/configure/#supported-logging-drivers",
-                    "type": "string"
-                },
-                "logOpts": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
                 }
             }
         },
@@ -4232,58 +4266,6 @@ const docTemplateCrane = `{
                 "uid": {
                     "description": "UID is the unique in time and space value for this object. It is typically generated by\nthe server on successful creation of a resource and is not allowed to change on PUT\noperations.\n\nPopulated by the system.\nRead-only.\nMore info: http://kubernetes.io/docs/user-guide/identifiers#uids\n+optional",
                     "type": "string"
-                }
-            }
-        },
-        "v1.PortBinding": {
-            "type": "object",
-            "required": [
-                "exposedPort",
-                "portBinding"
-            ],
-            "properties": {
-                "exposedPort": {
-                    "type": "integer",
-                    "maximum": 65535,
-                    "minimum": 0
-                },
-                "portBinding": {
-                    "type": "integer",
-                    "maximum": 65535,
-                    "minimum": 0
-                }
-            }
-        },
-        "v1.PortRange": {
-            "type": "object",
-            "required": [
-                "from",
-                "to"
-            ],
-            "properties": {
-                "from": {
-                    "type": "integer",
-                    "maximum": 65535,
-                    "minimum": 0
-                },
-                "to": {
-                    "type": "integer",
-                    "maximum": 65535
-                }
-            }
-        },
-        "v1.PortRangeBinding": {
-            "type": "object",
-            "required": [
-                "external",
-                "internal"
-            ],
-            "properties": {
-                "external": {
-                    "$ref": "#/definitions/v1.PortRange"
-                },
-                "internal": {
-                    "$ref": "#/definitions/v1.PortRange"
                 }
             }
         },

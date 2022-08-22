@@ -4,9 +4,7 @@ import (
 	"archive/tar"
 	"bytes"
 	"context"
-	"encoding/base64"
 	"encoding/binary"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -19,11 +17,14 @@ import (
 	"strings"
 	"time"
 
+	"golang.org/x/exp/maps"
+
 	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
 	"github.com/dyrector-io/dyrectorio/agent/internal/grpc"
 	"github.com/dyrector-io/dyrectorio/agent/internal/mapper"
 	"github.com/dyrector-io/dyrectorio/agent/internal/util"
 	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
+	containerbuilder "github.com/dyrector-io/dyrectorio/agent/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/caps"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/crux"
@@ -34,7 +35,7 @@ import (
 	"github.com/docker/docker/client"
 )
 
-const DockerClientTimeoutSeconds = 30
+const dockerClientTimeoutSeconds = 30
 
 type DockerVersion struct {
 	ServerVersion string
@@ -89,10 +90,10 @@ func GetContainersByName(name string) []types.Container {
 	return containers
 }
 
-func GetContainersByNameCrux(ctx context.Context, name string) []*crux.ContainerStatusItem {
+func GetContainersByNameCrux(ctx context.Context, name string) []*crux.ContainerStateItem {
 	containers := GetContainersByName(name)
 
-	return mapper.MapContainerStatus(&containers)
+	return mapper.MapContainerState(&containers)
 }
 
 func GetContainer(name string) []types.Container {
@@ -254,58 +255,6 @@ func InspectContainer(name string) types.ContainerJSON {
 	return inspection
 }
 
-// ImagePullResponse is not explicit
-type ImagePullResponse struct {
-	ID             string `json:"id"`
-	Status         string `json:"status"`
-	ProgressDetail struct {
-		Current int64 `json:"current"`
-		Total   int64 `json:"total"`
-	} `json:"progressDetail"`
-	Progress string `json:"progress"`
-}
-
-// force pulls the given image name
-func PullImage(dog *dogger.DeploymentLogger, fullyQualifiedImageName, authCreds string) error {
-	ctx := context.Background()
-
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	checkDockerError(err)
-
-	dog.Write("Pulling image: " + fullyQualifiedImageName)
-	reader, err := cli.ImagePull(ctx, fullyQualifiedImageName, types.ImagePullOptions{RegistryAuth: authCreds})
-	if err != nil {
-		return err
-	}
-	defer reader.Close()
-
-	d := json.NewDecoder(reader)
-
-	for {
-		pullResult := ImagePullResponse{}
-		err = d.Decode(&pullResult)
-		if err == io.EOF {
-			break
-		} else if err != nil {
-			log.Println("decode error: " + err.Error())
-			break
-		}
-
-		if pullResult.ProgressDetail.Current != 0 && pullResult.ProgressDetail.Total != 0 {
-			dog.Write(
-				fmt.Sprintf("Image: %s %s  %0.2f%%",
-					pullResult.ID,
-					pullResult.Status,
-					float64(pullResult.ProgressDetail.Current)/float64(pullResult.ProgressDetail.Total)*100)) //nolint:gomnd
-		} else {
-			dog.Write(fmt.Sprintf("Image: %s %s", pullResult.ID, pullResult.Status))
-		}
-		time.Sleep(time.Second)
-	}
-
-	return err
-}
-
 func logDeployInfo(dog *dogger.DeploymentLogger, deployImageRequest *v1.DeployImageRequest, image *util.ImageURI, containerName string) {
 	reqID := deployImageRequest.RequestID
 
@@ -349,9 +298,6 @@ func DeployImage(ctx context.Context,
 			util.JoinV(":", deployImageRequest.ImageName, deployImageRequest.Tag)))
 
 	logDeployInfo(dog, deployImageRequest, image, containerName)
-	labels, _ := GetImageLabels(image.String())
-
-	caps.ParseLabelsIntoContainerConfig(labels, &deployImageRequest.ContainerConfig)
 
 	envList := MergeStringMapToUniqueSlice(
 		EnvPipeSeparatedToStringMap(&deployImageRequest.InstanceConfig.Environment),
@@ -387,17 +333,21 @@ func DeployImage(ctx context.Context,
 		return err
 	}
 
-	dog.WriteContainerStatus(state)
+	dog.WriteContainerState(state)
 
-	networkMode := deployImageRequest.ContainerConfig.NetworkMode
-
+	var networkMode string
 	if deployImageRequest.ContainerConfig.Expose {
 		networkMode = "traefik"
+	} else {
+		networkMode = deployImageRequest.ContainerConfig.NetworkMode
 	}
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	checkDockerError(err)
 
-	builder := NewDockerBuilder(cli, cfg)
+	builder := containerbuilder.NewDockerBuilder(ctx)
+
+	labels, err := setImageLabels(image.String(), deployImageRequest, cfg)
+	if err != nil {
+		return fmt.Errorf("error building lables: %w", err)
+	}
 
 	builder.WithImage(image.String()).
 		WithName(containerName).
@@ -408,34 +358,50 @@ func DeployImage(ctx context.Context,
 		WithRegistryAuth(deployImageRequest.RegistryAuth).
 		WithRestartPolicy(deployImageRequest.ContainerConfig.RestartPolicy).
 		WithEnv(envList).
-		WithLabels(GetTraefikLabels(&deployImageRequest.InstanceConfig, &deployImageRequest.ContainerConfig, cfg)).
+		WithLabels(labels).
 		WithLogConfig(deployImageRequest.ContainerConfig.LogConfig).
 		WithUser(deployImageRequest.ContainerConfig.User).
 		WithEntrypoint(deployImageRequest.ContainerConfig.Command).
 		WithCmd(deployImageRequest.ContainerConfig.Args).
-		WithDogger(dog)
+		WithLogWriter(dog)
 
-	if deployImageRequest.ContainerConfig.ImportContainer != nil {
-		builder.WithImportContainer(*deployImageRequest.ContainerConfig.ImportContainer)
-	}
+	WithImportContainer(builder, deployImageRequest.ContainerConfig.ImportContainer, dog, cfg)
 
-	builder.Create(ctx)
+	builder.Create()
 
 	_, err = builder.Start()
 
 	if err != nil {
 		dog.Write(err.Error())
-		dog.WriteContainerStatus(state, "Container start error: "+containerName)
+		dog.WriteContainerState(state, "Container start error: "+containerName)
 		return err
 	}
 
-	dog.WriteContainerStatus(state, "Started container: "+containerName)
+	dog.WriteContainerState(state, "Started container: "+containerName)
 
 	if versionData != nil {
 		DraftRelease(deployImageRequest.InstanceConfig.ContainerPreName, *versionData, v1.DeployVersionResponse{}, cfg)
 	}
 
 	return err
+}
+
+func WithImportContainer(dc *containerbuilder.DockerContainerBuilder, importConfig *v1.ImportContainer,
+	dog *dogger.DeploymentLogger, cfg *config.Configuration) {
+	if importConfig != nil {
+		dc.WithPreStartHooks(func(ctx context.Context,
+			client *client.Client,
+			containerName string,
+			containerId *string,
+			mountList []mount.Mount,
+			logger *io.StringWriter) error {
+			if initError := spawnInitContainer(client, ctx, containerName, mountList, importConfig, dog, cfg); initError != nil {
+				log.Printf("Failed to spawn init container: %v", initError)
+				return initError
+			}
+			return nil
+		})
+	}
 }
 
 func volumesToMounts(volumes []v1.Volume) []string {
@@ -503,7 +469,7 @@ func mountStrToDocker(mountIn []string, containerPreName, containerName string, 
 			mountSplit := strings.Split(mountStr, "|")
 			if len(mountSplit[0]) > 0 && len(mountSplit[1]) > 0 {
 				containerPath := path.Join(cfg.InternalMountPath, containerPreName, containerName, mountSplit[0])
-				hostPath := path.Join(cfg.HostMountPath, containerPreName, containerName, mountSplit[0])
+				hostPath := path.Join(cfg.DataMountPath, containerPreName, containerName, mountSplit[0])
 				_, err := os.Stat(containerPath)
 				if os.IsNotExist(err) {
 					if err := os.MkdirAll(containerPath, os.ModePerm); err != nil {
@@ -595,7 +561,7 @@ func stopContainer(containerName string) error {
 		panic(err)
 	}
 
-	timeoutValue := (time.Duration(DockerClientTimeoutSeconds) * time.Second)
+	timeoutValue := (time.Duration(dockerClientTimeoutSeconds) * time.Second)
 	if err := cli.ContainerStop(ctx, containerName, &timeoutValue); err != nil {
 		return err
 	}
@@ -653,7 +619,7 @@ func MergeStringMapUnique(src, dest map[string]string) map[string]string {
 	return dest
 }
 
-// todo(nandi): refactor this into unmarshalling
+// TODO(nandor-magyar): refactor this into unmarshalling
 // `[]"VARIABLE|value"` pair mapped into a string keyed map, collision is ignored, the latter value is used
 func EnvPipeSeparatedToStringMap(envIn *[]string) map[string]string {
 	envList := make(map[string]string)
@@ -670,23 +636,6 @@ func EnvPipeSeparatedToStringMap(envIn *[]string) map[string]string {
 	return envList
 }
 
-func RegistryAuthBase64(user, password string) string {
-	if user == "" || password == "" {
-		return ""
-	}
-
-	authConfig := types.AuthConfig{
-		Username: user,
-		Password: password,
-	}
-	encodedJSON, err := json.Marshal(authConfig)
-	if err != nil {
-		log.Println(err)
-		return ""
-	}
-	return base64.URLEncoding.EncodeToString(encodedJSON)
-}
-
 func GetImageLabels(fullyQualifiedImageName string) (map[string]string, error) {
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
@@ -699,6 +648,78 @@ func GetImageLabels(fullyQualifiedImageName string) (map[string]string, error) {
 	if res.Config != nil && res.Config.Labels != nil {
 		return res.Config.Labels, err
 	} else {
-		return nil, errors.New("no labels")
+		return map[string]string{}, nil
 	}
+}
+
+func DeleteContainerByName(ctx context.Context, preName, name string) error {
+	containerName := util.JoinV("-", preName, name)
+	containers := GetContainer(containerName)
+
+	if len(containers) == 1 {
+		return DeleteContainer(containerName)
+	}
+
+	return errors.New("No or more containers found for " + containerName)
+}
+
+func setImageLabels(image string, deployImageRequest *v1.DeployImageRequest, cfg *config.Configuration) (map[string]string, error) {
+	// parse image labels
+	labels, err := GetImageLabels(image)
+	if err != nil {
+		return nil, fmt.Errorf("error get image labels: %w", err)
+	}
+
+	caps.ParseLabelsIntoContainerConfig(labels, &deployImageRequest.ContainerConfig)
+
+	// add traefik related labels to the container if expose true
+	if deployImageRequest.ContainerConfig.Expose {
+		maps.Copy(labels, GetTraefikLabels(&deployImageRequest.InstanceConfig, &deployImageRequest.ContainerConfig, cfg))
+	}
+
+	// set organization labels to the container
+	organizationLabels, err := SetOrganizationLabel("container.prefix", deployImageRequest.InstanceConfig.ContainerPreName)
+	if err != nil {
+		return nil, fmt.Errorf("setting organization prefix: %s", err.Error())
+	}
+	maps.Copy(labels, organizationLabels)
+
+	return labels, nil
+}
+
+func CreateNetwork(ctx context.Context, name, driver string) error {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		panic(err)
+	}
+
+	filter := filters.NewArgs()
+	filter.Add("name", name)
+
+	networkListOption := types.NetworkListOptions{
+		Filters: filter,
+	}
+
+	networks, err := cli.NetworkList(ctx, networkListOption)
+	if err != nil {
+		return fmt.Errorf("error list existing networks: %w", err)
+	}
+
+	if len(networks) > 0 {
+		log.Printf("Provided network name: %s is exists. Skip to create new network.", name)
+		return nil
+	}
+
+	networkCreateOptions := types.NetworkCreate{
+		CheckDuplicate: true,
+		Driver:         driver,
+	}
+
+	_, err = cli.NetworkCreate(ctx, name, networkCreateOptions)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

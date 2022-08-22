@@ -1,4 +1,4 @@
-import { Layout, PageHead } from '@app/components/layout'
+import { Layout } from '@app/components/layout'
 import DeploymentDetailsSection from '@app/components/products/versions/deployments/deployment-details-section'
 import EditDeploymentCard from '@app/components/products/versions/deployments/edit-deployment-card'
 import EditDeploymentInstances from '@app/components/products/versions/deployments/edit-deployment-instances'
@@ -13,6 +13,7 @@ import {
   DeploymentEnvUpdatedMessage,
   deploymentIsMutable,
   DeploymentRoot,
+  mergeConfigs,
   WS_TYPE_DEPLOYMENT_ENV_UPDATED,
   WS_TYPE_DYO_ERROR,
   WS_TYPE_INSTANCE_UPDATED,
@@ -29,13 +30,14 @@ import {
   versionUrl,
 } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
-import { deploymentSchema, getValidationError } from '@app/validation'
+import { containerConfigSchema, getValidationError } from '@app/validation'
 import { Crux, cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import { useRef, useState } from 'react'
 import toast from 'react-hot-toast'
+import { ValidationError } from 'yup'
 
 interface DeploymentDetailsPageProps {
   deployment: DeploymentRoot
@@ -86,7 +88,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
   const mutable = deploymentIsMutable(deployment.status)
 
   const pageLink: BreadcrumbLink = {
-    name: t('common:deployment'),
+    name: t('common:deployments'),
     url: ROUTE_PRODUCTS,
   }
 
@@ -120,7 +122,17 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
   const onOpenLog = () => router.push(deploymentDeployUrl(product.id, version.id, deployment.id))
 
   const onDeploy = () => {
-    const error = getValidationError(deploymentSchema, deployment)
+    let error: ValidationError
+
+    for (const instance of deployment.instances) {
+      const mergedConfig = mergeConfigs(instance.image.config, instance.overriddenConfig)
+      error = getValidationError(containerConfigSchema, mergedConfig)
+
+      if (error) {
+        break
+      }
+    }
+
     if (error) {
       console.error(error)
       toast.error(t('errors:invalid'))
@@ -131,15 +143,14 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
   }
 
   return (
-    <Layout>
-      <PageHead
-        title={t('title', {
-          product: product.name,
-          version: version.name,
-          node: deployment.node.name,
-        })}
-      />
-      <PageHeading pageLink={pageLink} subLinks={sublinks}>
+    <Layout
+      title={t('deploysName', {
+        product: product.name,
+        version: version.name,
+        name: deployment.node.name,
+      })}
+    >
+      <PageHeading pageLink={pageLink} sublinks={sublinks}>
         {saving ? <LoadingIndicator className="flex ml-4 my-auto" /> : null}
 
         {!mutable ? null : (
@@ -151,7 +162,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
             deleteModalTitle={t('common:confirmDelete', {
               name: deployment.name,
             })}
-            deleteModalDescription={t('deleteDescription', {
+            deleteModalDescription={t('common:deleteDescription', {
               name: deployment.name,
             })}
           />

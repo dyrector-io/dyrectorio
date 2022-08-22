@@ -3,6 +3,7 @@ import { concatAll, from, Observable } from 'rxjs'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import { Empty } from 'src/grpc/protobuf/proto/agent'
 import {
+  AccessRequest,
   CreateDeploymentRequest,
   CreateEntityResponse,
   CruxDeploymentController,
@@ -10,6 +11,7 @@ import {
   DeploymentDetailsResponse,
   DeploymentEditEventMessage,
   DeploymentEventListResponse,
+  DeploymentListByVersionResponse,
   DeploymentListResponse,
   DeploymentProgressMessage,
   IdRequest,
@@ -37,7 +39,7 @@ export class DeployController implements CruxDeploymentController {
 
   @DisableTeamAccessCheck()
   @UseGuards(DeployGetByVersionTeamAccessGuard)
-  async getDeploymentsByVersionId(request: IdRequest): Promise<DeploymentListResponse> {
+  async getDeploymentsByVersionId(request: IdRequest): Promise<DeploymentListByVersionResponse> {
     return await this.service.getDeploymentsByVersionId(request)
   }
 
@@ -81,5 +83,9 @@ export class DeployController implements CruxDeploymentController {
   @AuditLogLevel('disabled')
   subscribeToDeploymentEditEvents(request: ServiceIdRequest): Observable<DeploymentEditEventMessage> {
     return this.service.subscribeToDeploymentEditEvents(request)
+  }
+
+  async getDeploymentList(request: AccessRequest): Promise<DeploymentListResponse> {
+    return await this.service.getDeploymentList(request)
   }
 }

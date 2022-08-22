@@ -13,7 +13,6 @@ export const collectParentVersionIds = async (
   let target = versionId
   while (true) {
     const parent = await prisma.versionsOnParentVersion.findFirst({
-      rejectOnNotFound: false,
       select: {
         parentVersionId: true,
       },
@@ -68,3 +67,8 @@ export const toTimestamp = (date: Date): Timestamp => {
   const nanos = (date.getTime() % 1_000) * 1_000_000
   return { seconds, nanos }
 }
+
+export const typedQuery =
+  <T>() =>
+  <U extends T>(query: U): U =>
+    query

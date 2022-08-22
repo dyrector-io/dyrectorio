@@ -40,7 +40,7 @@ export class ImageService {
   }
 
   async getImageDetails(request: IdRequest): Promise<ImageResponse> {
-    const image = await this.prisma.image.findUnique({
+    const image = await this.prisma.image.findUniqueOrThrow({
       where: {
         id: request.id,
       },
@@ -55,7 +55,6 @@ export class ImageService {
   async addImagesToVersion(request: AddImagesToVersionRequest): Promise<ImageListResponse> {
     const images = await this.prisma.$transaction(async prisma => {
       const lastImageOrder = await this.prisma.image.findFirst({
-        rejectOnNotFound: false,
         select: {
           order: true,
         },

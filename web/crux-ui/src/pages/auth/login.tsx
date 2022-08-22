@@ -1,4 +1,4 @@
-import { PageHead, SingleFormLayout } from '@app/components/layout'
+import { SingleFormLayout } from '@app/components/layout'
 import { ATTRIB_CSRF } from '@app/const'
 import { DyoButton } from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
@@ -10,6 +10,7 @@ import { DyoErrorDto, Login } from '@app/models'
 import { API_AUTH_LOGIN, ROUTE_INDEX, ROUTE_RECOVERY, ROUTE_REGISTER, ROUTE_VERIFICATION } from '@app/routes'
 import { findAttributes, findError, findMessage, isDyoError, redirectTo, sendForm, upsertDyoError } from '@app/utils'
 import { SelfServiceLoginFlow } from '@ory/kratos-client'
+import { captchaDisabled } from '@server/captcha'
 import kratos, { cookieOf, forwardCookie, obtainKratosSession, userVerified } from '@server/kratos'
 import { useFormik } from 'formik'
 import { NextPageContext } from 'next'
@@ -20,11 +21,16 @@ import { useRef, useState } from 'react'
 import ReCAPTCHA from 'react-google-recaptcha'
 import toast from 'react-hot-toast'
 
-const LoginPage = (props: SelfServiceLoginFlow) => {
+interface LoginPageProps {
+  flow: SelfServiceLoginFlow
+  recaptchaSiteKey?: string
+}
+
+const LoginPage = (props: LoginPageProps) => {
   const { t } = useTranslation('login')
   const router = useRouter()
 
-  const flow = props
+  const { flow, recaptchaSiteKey } = props
 
   const email = (router.query.refresh as string) ?? ''
   const refresh = email !== ''
@@ -39,7 +45,7 @@ const LoginPage = (props: SelfServiceLoginFlow) => {
       password: '',
     },
     onSubmit: async values => {
-      const captcha = await recaptcha.current.executeAsync()
+      const captcha = recaptchaSiteKey ? await recaptcha.current.executeAsync() : null
 
       const data: Login = {
         flow: flow.id,
@@ -70,71 +76,68 @@ const LoginPage = (props: SelfServiceLoginFlow) => {
   })
 
   return (
-    <>
-      <PageHead title={t('title')} />
-      <SingleFormLayout>
-        <DyoSingleFormLogo />
+    <SingleFormLayout title={t('common:logIn')}>
+      <DyoSingleFormLogo />
 
-        <DyoCard className=" text-bright p-8 mx-auto">
-          <form className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
-            <DyoSingleFormHeading>{t('common:logIn')}</DyoSingleFormHeading>
+      <DyoCard className=" text-bright p-8 mx-auto">
+        <form className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
+          <DyoSingleFormHeading>{t('common:logIn')}</DyoSingleFormHeading>
 
-            {!refresh ? null : <p className="w-80 mx-auto mt-8">{t('refresh')}</p>}
+          {!refresh ? null : <p className="w-80 mx-auto mt-8">{t('refresh')}</p>}
 
-            <DyoInput
-              label={t('common:email')}
-              name="email"
-              type="email"
-              onChange={formik.handleChange}
-              value={formik.values.email}
-              message={findMessage(ui, 'identifier')}
-            />
+          <DyoInput
+            label={t('common:email')}
+            name="email"
+            type="email"
+            onChange={formik.handleChange}
+            value={formik.values.email}
+            message={findMessage(ui, 'identifier')}
+          />
 
-            <DyoInput
-              label={t('common:password')}
-              name="password"
-              type="password"
-              onChange={formik.handleChange}
-              value={formik.values.password}
-              message={findMessage(ui, 'password')}
-            />
+          <DyoInput
+            label={t('common:password')}
+            name="password"
+            type="password"
+            onChange={formik.handleChange}
+            value={formik.values.password}
+            message={findMessage(ui, 'password')}
+          />
 
-            {ui.messages?.map((it, index) => (
-              <DyoMessage key={`error-${index}`} message={it?.text} />
-            ))}
+          {ui.messages?.map((it, index) => (
+            <DyoMessage key={`error-${index}`} message={it?.text} />
+          ))}
 
-            <DyoMessage
-              message={findError(errors, 'captcha', it =>
-                t(`errors:${it.error}`, {
-                  name: it.value,
-                }),
-              )}
-              messageType="error"
-            />
+          <DyoMessage
+            message={findError(errors, 'captcha', it =>
+              t(`errors:${it.error}`, {
+                name: it.value,
+              }),
+            )}
+            messageType="error"
+          />
 
-            <DyoButton className="mt-8" type="submit">
-              {t('common:logIn')}
-            </DyoButton>
+          <DyoButton className="mt-8" type="submit">
+            {t('common:logIn')}
+          </DyoButton>
 
-            <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY} />
-          </form>
+          {recaptchaSiteKey ? <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={recaptchaSiteKey} /> : null}
+        </form>
 
-          <div className="flex justify-center mt-10">
-            <Link href={ROUTE_RECOVERY}>
-              <a>{t('forgotPassword')}</a>
-            </Link>
-          </div>
-        </DyoCard>
-
-        <div className="flex justify-center  text-bright mt-8 mb-auto">
-          <p className="mr-2">{t('dontHaveAnAccount')}</p>
-
-          <Link href={ROUTE_REGISTER}>
-            <a className="font-bold underline">{t('common:signUp')}</a>
+        <div className="flex justify-center mt-10">
+          <Link href={ROUTE_RECOVERY}>
+            <a>{t('forgotPassword')}</a>
           </Link>
         </div>
-      </SingleFormLayout>
-    </>
+      </DyoCard>
+
+      <div className="flex justify-center  text-bright mt-8 mb-auto">
+        <p className="mr-2">{t('dontHaveAnAccount')}</p>
+
+        <Link href={ROUTE_REGISTER}>
+          <a className="font-bold underline">{t('common:signUp')}</a>
+        </Link>
+      </div>
+    </SingleFormLayout>
   )
 }
 
@@ -152,7 +155,7 @@ const getPageServerSideProps = async (context: NextPageContext) => {
     return redirectTo(ROUTE_INDEX)
   }
 
-  const kratosRes = await kratos.initializeSelfServiceLoginFlowForBrowsers(
+  const flow = await kratos.initializeSelfServiceLoginFlowForBrowsers(
     !!refresh,
     undefined,
     undefined,
@@ -164,10 +167,14 @@ const getPageServerSideProps = async (context: NextPageContext) => {
           },
         },
   )
-  forwardCookie(context, kratosRes)
+
+  forwardCookie(context, flow)
 
   return {
-    props: kratosRes.data,
+    props: {
+      flow: flow.data,
+      recaptchaSiteKey: captchaDisabled() ? null : process.env.RECAPTCHA_SITE_KEY,
+    },
   }
 }
 

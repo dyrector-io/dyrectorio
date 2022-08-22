@@ -1,5 +1,5 @@
-import { Product } from "@prisma/client"
-import { constants } from "../consts"
+import { Product } from '@prisma/client'
+import { constants } from '../consts'
 
 export enum ProductType {
   SIMPLE = 'simple',

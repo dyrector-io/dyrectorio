@@ -127,7 +127,6 @@ class DyoRegistryService {
         : {
             type: 'google',
             ...res.google,
-            token: res.google.token,
             _private: !!res.google.user,
           }),
     }
@@ -147,7 +146,7 @@ class DyoRegistryService {
         dto.type !== 'hub'
           ? null
           : {
-              urlPrefix: dto.urlPrefix,
+              imageNamePrefix: dto.imageNamePrefix,
             },
       v2:
         dto.type !== 'v2'
@@ -163,7 +162,7 @@ class DyoRegistryService {
           : {
               user: dto.user,
               token: dto.token,
-              urlPrefix: dto.urlPrefix,
+              imageNamePrefix: dto.imageNamePrefix,
               url: dto.selfManaged ? dto.url : null,
               apiUrl: dto.selfManaged ? dto.apiUrl : null,
             },
@@ -173,13 +172,14 @@ class DyoRegistryService {
           : {
               user: dto.user,
               token: dto.token,
-              urlPrefix: dto.urlPrefix,
+              imageNamePrefix: dto.imageNamePrefix,
             },
       google:
         dto.type !== 'google'
           ? null
           : {
               url: dto.url,
+              imageNamePrefix: dto.imageNamePrefix,
               user: dto.user,
               token: dto.token ?? Buffer.from(dto.token).toString('base64'),
             },

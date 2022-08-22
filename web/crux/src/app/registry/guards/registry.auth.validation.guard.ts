@@ -1,10 +1,9 @@
-import { Status } from '@grpc/grpc-js/build/src/constants'
 import { HttpService } from '@nestjs/axios'
 import { CanActivate, ExecutionContext, HttpStatus, Injectable, Logger } from '@nestjs/common'
 import { AxiosError } from 'axios'
 import { JWT } from 'google-auth-library'
 import { GetAccessTokenResponse } from 'google-auth-library/build/src/auth/oauth2client'
-import { catchError, from, map, mergeMap, Observable, of, switchMap, tap } from 'rxjs'
+import { catchError, from, map, mergeMap, Observable, of, switchMap } from 'rxjs'
 import { InvalidArgumentException, NotFoundException, UnauthenticatedException } from 'src/exception/errors'
 import {
   CreateRegistryRequest,
@@ -48,11 +47,11 @@ export class RegistryAccessValidationGuard implements CanActivate {
   }
 
   private validateHub(req: HubRegistryDetails): Observable<boolean> {
-    if (!req.urlPrefix || req.urlPrefix.trim().length < 1) {
+    if (!req.imageNamePrefix || req.imageNamePrefix.trim().length < 1) {
       return of(false)
     }
 
-    return this.httpService.get(`https://${REGISTRY_HUB_URL}/v2/orgs/${req.urlPrefix}`).pipe(
+    return this.httpService.get(`https://${REGISTRY_HUB_URL}/v2/orgs/${req.imageNamePrefix}`).pipe(
       map(res => res.status === HttpStatus.OK),
       catchError((error: AxiosError) => {
         this.logger.warn(error)
@@ -60,15 +59,15 @@ export class RegistryAccessValidationGuard implements CanActivate {
         if (!error.response || error.response.status !== HttpStatus.NOT_FOUND) {
           throw new InvalidArgumentException({
             message: 'Failed to fetch hub prefix',
-            property: 'urlPrefix',
-            value: req.urlPrefix,
+            property: 'imageNamePrefix',
+            value: req.imageNamePrefix,
           })
         }
 
         throw new NotFoundException({
           message: 'Hub organization with prefix not found',
-          property: 'urlPrefix',
-          value: req.urlPrefix,
+          property: 'imageNamePrefix',
+          value: req.imageNamePrefix,
         })
       }),
     )
@@ -128,20 +127,26 @@ export class RegistryAccessValidationGuard implements CanActivate {
     const { apiUrl, registryUrl } = REGISTRY_GITLAB_URLS
 
     return this.httpService
-      .get(`https://${apiUrl}/api/v4/groups?top_level_only=true&search=${req.urlPrefix}`, {
+      .get(`https://${apiUrl}/api/v4/groups?top_level_only=true&search=${req.imageNamePrefix}`, {
         headers: {
           Authorization: `Bearer ${auth.password}`,
         },
       })
       .pipe(
         mergeMap(res => {
-          const groups = res.data as any[]
-          if (res.status !== HttpStatus.OK || groups.length < 1) {
+          const groups = res.data.map(it => it.path == req.imageNamePrefix) as any[]
+          if (res.status !== HttpStatus.OK) {
             return of(false)
+          } else if (groups.length < 1) {
+            throw new InvalidArgumentException({
+              message: 'Gitlab group not found',
+              property: 'imageNamePrefix',
+              value: req.imageNamePrefix,
+            })
           }
 
           return this.httpService
-            .get(`https://${apiUrl}/jwt/auth?service=container_registry&scope=repository:${req.urlPrefix}:pull`, {
+            .get(`https://${apiUrl}/jwt/auth?service=container_registry&scope=repository:${req.imageNamePrefix}:pull`, {
               withCredentials: true,
               auth,
             })
@@ -167,8 +172,8 @@ export class RegistryAccessValidationGuard implements CanActivate {
             if (res.status === HttpStatus.NOT_FOUND) {
               throw new NotFoundException({
                 message: 'Gitlab group with prefix not found',
-                property: 'urlPrefix',
-                value: req.urlPrefix,
+                property: 'imageNamePrefix',
+                value: req.imageNamePrefix,
               })
             } else if (res.status === HttpStatus.FORBIDDEN || res.status === HttpStatus.UNAUTHORIZED) {
               throw new UnauthenticatedException({
@@ -179,8 +184,8 @@ export class RegistryAccessValidationGuard implements CanActivate {
 
           throw new InvalidArgumentException({
             message: 'Failed to fetch gitlab prefix',
-            property: 'urlPrefix',
-            value: req.urlPrefix,
+            property: 'imageNamePrefix',
+            value: req.imageNamePrefix,
           })
         }),
       )
@@ -193,7 +198,7 @@ export class RegistryAccessValidationGuard implements CanActivate {
     }
 
     return this.httpService
-      .get(`https://api.github.com/orgs/${req.urlPrefix}/packages?package_type=container`, {
+      .get(`https://api.github.com/orgs/${req.imageNamePrefix}/packages?package_type=container`, {
         withCredentials: true,
         auth,
       })
@@ -207,8 +212,8 @@ export class RegistryAccessValidationGuard implements CanActivate {
             if (res.status === HttpStatus.NOT_FOUND) {
               throw new NotFoundException({
                 message: 'Github organization with prefix not found',
-                property: 'urlPrefix',
-                value: req.urlPrefix,
+                property: 'imageNamePrefix',
+                value: req.imageNamePrefix,
               })
             } else if (res.status === HttpStatus.FORBIDDEN || res.status === HttpStatus.UNAUTHORIZED) {
               throw new UnauthenticatedException({
@@ -219,8 +224,8 @@ export class RegistryAccessValidationGuard implements CanActivate {
 
           throw new InvalidArgumentException({
             message: 'Failed to fetch github prefix',
-            property: 'urlPrefix',
-            value: req.urlPrefix,
+            property: 'imageNamePrefix',
+            value: req.imageNamePrefix,
           })
         }),
       )
@@ -238,7 +243,7 @@ export class RegistryAccessValidationGuard implements CanActivate {
 
     const validator = (accessTokenResponse: GetAccessTokenResponse) =>
       this.httpService
-        .get(`https://gcr.io/v2/${req.url}/tags/list`, {
+        .get(`https://${req.url}/v2/${req.imageNamePrefix}/tags/list`, {
           withCredentials,
           auth: {
             username: 'oauth2accesstoken',
@@ -253,8 +258,8 @@ export class RegistryAccessValidationGuard implements CanActivate {
             if (!withCredentials || !error.response || error.response.status !== HttpStatus.UNAUTHORIZED) {
               throw new InvalidArgumentException({
                 message: 'Failed to fetch google registry',
-                property: 'url',
-                value: req.url,
+                property: 'imageNamePrefix',
+                value: req.imageNamePrefix,
               })
             }
 

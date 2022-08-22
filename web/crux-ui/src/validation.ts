@@ -1,14 +1,19 @@
 import * as yup from 'yup'
+import { AnyObject } from 'yup/lib/types'
 import { DYO_ICONS } from './elements/dyo-icon-picker'
 import {
   ExplicitContainerNetworkMode,
   EXPLICIT_CONTAINER_NETWORK_MODE_VALUES,
   NodeType,
   NODE_TYPE_VALUES,
+  NotificationType,
+  NOTIFICATION_TYPE_VALUES,
   ProductType,
   PRODUCT_TYPE_VALUES,
   RegistryType,
   REGISTRY_TYPE_VALUES,
+  UserRole,
+  USER_ROLE_VALUES,
   VersionType,
   VERSION_TYPE_VALUES,
 } from './models'
@@ -56,19 +61,24 @@ const registryCredentialRole = yup.string().when(['type', '_private'], {
   then: yup.string().required(),
 })
 
+const googleRegistryUrls = ['gcr.io', 'us.gcr.io', 'eu.gcr.io', 'asia.gcr.io'] as const
+
 export const registrySchema = yup.object().shape({
   name: nameRule,
   description: descriptionRule,
   type: yup.mixed<RegistryType>().oneOf([...REGISTRY_TYPE_VALUES]),
   icon: iconRule,
-  urlPrefix: yup.string().when('type', {
-    is: type => ['hub', 'gitlab', 'github'].includes(type),
+  imageNamePrefix: yup.string().when('type', {
+    is: type => ['hub', 'gitlab', 'github', 'google'].includes(type),
     then: yup.string().required(),
   }),
-  url: yup.string().when(['type', 'selfManaged'], {
-    is: (type, selfManaged) => type === 'v2' || type === 'google' || (type === 'gitlab' && selfManaged),
-    then: yup.string().required(),
-  }),
+  url: yup
+    .string()
+    .when(['type', 'selfManaged'], {
+      is: (type, selfManaged) => type === 'v2' || type === 'google' || (type === 'gitlab' && selfManaged),
+      then: yup.string().required(),
+    })
+    .when(['type'], { is: type => type === 'google', then: yup.string().oneOf([...googleRegistryUrls]) }),
   apiUrl: yup.string().when(['type', 'selfManaged'], {
     is: (type, selfManaged) => type === 'gitlab' && selfManaged,
     then: yup.string().required(),
@@ -131,15 +141,13 @@ export const explicitContainerConfigSchema = yup.object().shape({
     .mixed<ExplicitContainerNetworkMode>()
     .oneOf([...EXPLICIT_CONTAINER_NETWORK_MODE_VALUES])
     .default('none'),
-  expose: yup.array(
-    yup
-      .object()
-      .shape({
-        public: yup.boolean().required(),
-        tls: yup.boolean().required(),
-      })
-      .default([]),
-  ),
+  expose: yup
+    .object()
+    .shape({
+      public: yup.boolean().required(),
+      tls: yup.boolean().required(),
+    })
+    .default({}),
   user: yup.number().positive().nullable().default(null),
 })
 
@@ -181,7 +189,7 @@ export const deploymentSchema = yup.object().shape({
   instances: yup.array(
     yup.object().shape({
       image: imageSchema,
-      config: explicitContainerConfigSchema.nullable(),
+      overriddenConfig: explicitContainerConfigSchema.nullable(),
     }),
   ),
 })
@@ -196,4 +204,36 @@ export const selectTeamSchema = yup.object().shape({
 
 export const createTeamSchema = yup.object().shape({
   name: yup.string().min(3).max(128),
+})
+
+export const updateTeamSchema = createTeamSchema
+
+export const roleSchema = yup.mixed<UserRole>().oneOf([...USER_ROLE_VALUES])
+
+export const notificationSchema = yup.object().shape({
+  name: yup.string().required(),
+  type: yup
+    .mixed<NotificationType>()
+    .oneOf([...NOTIFICATION_TYPE_VALUES])
+    .required(),
+  url: yup
+    .string()
+    .url()
+    .when('type', (type: NotificationType, schema: yup.StringSchema<string, AnyObject, string>) => {
+      let pattern: RegExp
+      switch (type) {
+        case 'discord':
+          pattern = /^https:\/\/(discord|discordapp).com\/api\/webhooks/
+          break
+        case 'slack':
+          pattern = /^https:\/\/hooks.slack.com\/services/
+          break
+        case 'teams':
+          pattern = /^https:\/\/[a-zA-Z]+.webhook.office.com/
+          break
+      }
+
+      return schema.matches(pattern)
+    })
+    .required(),
 })

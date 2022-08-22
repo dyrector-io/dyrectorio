@@ -9,7 +9,7 @@ import { RegistryApiClient } from './registry-api-client'
 import RegistryV2ApiClient from './v2-api-client'
 
 export class RegistryConnections {
-  private hubCaches: Map<string, HubApiCache> = new Map() // urlPrefix to cache
+  private hubCaches: Map<string, HubApiCache> = new Map() // imageNamePrefix to cache
   private registryIdToHubCache: Map<string, string> = new Map()
 
   private clients: Map<string, RegistryApiClient> = new Map()
@@ -18,14 +18,14 @@ export class RegistryConnections {
   invalidate(registryId: string) {
     this.clients.delete(registryId)
 
-    const hubUrlPrefix = this.registryIdToHubCache.get(registryId)
-    if (!hubUrlPrefix) {
+    const hubImageNamePrefix = this.registryIdToHubCache.get(registryId)
+    if (!hubImageNamePrefix) {
       return
     }
 
     this.registryIdToHubCache.delete(registryId)
 
-    const cache = this.hubCaches.get(hubUrlPrefix)
+    const cache = this.hubCaches.get(hubImageNamePrefix)
     if (!cache) {
       return
     }
@@ -35,7 +35,7 @@ export class RegistryConnections {
       return
     }
 
-    this.hubCaches.delete(hubUrlPrefix)
+    this.hubCaches.delete(hubImageNamePrefix)
   }
 
   resetAuthorization(identity: Identity) {
@@ -64,18 +64,18 @@ export class RegistryConnections {
           )
         : registry.type === 'hub'
         ? new HubApiClient(
-            this.getHubCacheForUrlPrefix(registry.id, registry.urlPrefix),
+            this.getHubCacheForImageNamePrefix(registry.id, registry.imageNamePrefix),
             REGISTRY_HUB_URL,
-            registry.urlPrefix,
+            registry.imageNamePrefix,
           )
         : registry.type === 'github'
-        ? new GithubRegistryClient(registry.urlPrefix, {
+        ? new GithubRegistryClient(registry.imageNamePrefix, {
             username: registry.user,
             password: registry.token,
           })
         : registry.type === 'gitlab'
         ? new GitlabRegistryClient(
-            registry.urlPrefix,
+            registry.imageNamePrefix,
             {
               username: registry.user,
               password: registry.token,
@@ -89,6 +89,7 @@ export class RegistryConnections {
           )
         : new GoogleRegistryClient(
             registry.url,
+            registry.imageNamePrefix,
             registry._private
               ? {
                   username: registry.user,
@@ -111,7 +112,7 @@ export class RegistryConnections {
     await crux.registries.getRegistryDetails(registryId)
   }
 
-  private getHubCacheForUrlPrefix(registryId: string, prefix: string) {
+  private getHubCacheForImageNamePrefix(registryId: string, prefix: string) {
     let cache = this.hubCaches.get(prefix)
     if (!cache) {
       cache = new HubApiCache(REGISTRY_HUB_CACHE_EXPIRATION * 60 * 1000) // minutes to millis

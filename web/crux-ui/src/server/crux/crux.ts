@@ -1,11 +1,12 @@
 import { WS_DATA_CRUX } from '@app/const'
-import { ServiceStatus } from '@app/models'
+import { CruxHealth } from '@app/models'
 import {
   CruxAuditClient,
   CruxDeploymentClient,
   CruxHealthClient,
   CruxImageClient,
   CruxNodeClient,
+  CruxNotificationClient,
   CruxProductClient,
   CruxProductVersionClient,
   CruxRegistryClient,
@@ -25,6 +26,7 @@ import DyoDeploymentService from './deployment-service'
 import DyoHealthService from './health-service'
 import DyoImageService from './image-service'
 import DyoNodeService from './node-service'
+import DyoNotifcationService from './notification-service'
 import DyoProductService from './product-service'
 import DyoRegistryService from './registry-service'
 import DyoTeamService from './team-service'
@@ -40,6 +42,7 @@ class CruxClients {
   teams: CruxTeamClient
   health: CruxHealthClient
   audit: CruxAuditClient
+  notifications: CruxNotificationClient
 
   constructor(address: string, publicKey: Buffer) {
     const creds = publicKey ? credentials.createSsl(publicKey) : credentials.createInsecure()
@@ -53,6 +56,7 @@ class CruxClients {
     this.teams = new CruxTeamClient(address, creds)
     this.health = new CruxHealthClient(address, creds)
     this.audit = new CruxAuditClient(address, creds)
+    this.notifications = new CruxNotificationClient(address, creds)
   }
 }
 
@@ -66,6 +70,7 @@ export class Crux {
   private _teams: DyoTeamService
   private _health: DyoHealthService
   private _audit: DyoAuditService
+  private _notifications: DyoNotifcationService
 
   private constructor(
     private clients: CruxClients,
@@ -109,6 +114,10 @@ export class Crux {
     return this._audit ?? new DyoAuditService(this.clients.audit, this.identity)
   }
 
+  get notificiations() {
+    return this._notifications ?? new DyoNotifcationService(this.clients.notifications, this.identity)
+  }
+
   public static withIdentity(identity: Identity): Crux {
     return new Crux(global._cruxClients, identity, registryConnections)
   }
@@ -116,7 +125,7 @@ export class Crux {
 
 if (!global._cruxClients) {
   try {
-    const cert = process.env.CRUX_INSECURE === 'true' ? null : readFileSync(join(cwd(), './certs/public.crt'))
+    const cert = process.env.CRUX_INSECURE === 'true' ? null : readFileSync(join(cwd(), './certs/api-public.crt'))
     global._cruxClients = new CruxClients(process.env.CRUX_ADDRESS, cert)
   } catch (error) {
     if (process.env.NEXT_PHASE !== 'phase-production-build') {
@@ -126,8 +135,7 @@ if (!global._cruxClients) {
   }
 }
 
-export const getCruxServiceStatus = async (): Promise<ServiceStatus> =>
-  (await Crux.withIdentity(null).health.getHealth()) ? 'operational' : 'unavailable'
+export const getCruxHealth = async (): Promise<CruxHealth> => await Crux.withIdentity(null).health.getHealth()
 
 export const cruxFromContext = (context: NextPageContext): Crux => {
   const session = sessionOfContext(context)
