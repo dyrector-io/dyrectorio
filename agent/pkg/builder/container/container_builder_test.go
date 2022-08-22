@@ -188,7 +188,7 @@ func TestNetwork(t *testing.T) {
 		WithName("prefix-container").
 		WithLogWriter(logger).
 		WithNetworkMode("prefix").
-		WithNetworkAliases([]string{"prefix-container", "container"})
+		WithNetworkAliases("prefix-container", "container")
 
 	defer builderCleanup(builder)
 

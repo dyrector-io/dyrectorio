@@ -355,7 +355,7 @@ func DeployImage(ctx context.Context,
 		WithPortBindings(deployImageRequest.ContainerConfig.Ports).
 		WithPortRanges(deployImageRequest.ContainerConfig.PortRanges).
 		WithNetworkMode(networkMode).
-		WithNetworkAliases([]string{containerName, deployImageRequest.ContainerConfig.Container}).
+		WithNetworkAliases(containerName, deployImageRequest.ContainerConfig.Container).
 		WithRegistryAuth(deployImageRequest.RegistryAuth).
 		WithRestartPolicy(deployImageRequest.ContainerConfig.RestartPolicy).
 		WithEnv(envList).

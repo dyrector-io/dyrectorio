@@ -29,7 +29,7 @@ type ContainerBuilder interface {
 	WithPortRange(portRanges []PortRange) ContainerBuilder
 	WithMountPoints(mounts []mount.Mount) ContainerBuilder
 	WithName(name string) ContainerBuilder
-	WithNetworkAliases(aliases []string) ContainerBuilder
+	WithNetworkAliases(aliases ...string) ContainerBuilder
 	WithNetworkMode(networkMode string) ContainerBuilder
 	WithEnvironment(envList string) ContainerBuilder
 	WithLabels(labels map[string]string) ContainerBuilder
@@ -47,7 +47,7 @@ type ContainerBuilder interface {
 	WithPostCreateHooks(hooks ...LifecycleFunc) ContainerBuilder
 	WithPreStartHooks(hooks ...LifecycleFunc) ContainerBuilder
 	WithPostStartHooks(hooks ...LifecycleFunc) ContainerBuilder
-	GetContainerId() *string
+	GetContainerID() *string
 	GetNetworkID() *string
 	Create() ContainerBuilder
 	Start() (bool, error)
@@ -115,7 +115,7 @@ func (dc *DockerContainerBuilder) WithName(name string) *DockerContainerBuilder 
 
 // Sets the network aliases used when connecting the container to the network.
 // Applied only if the NetworkMode is not none.
-func (dc *DockerContainerBuilder) WithNetworkAliases(aliases []string) *DockerContainerBuilder {
+func (dc *DockerContainerBuilder) WithNetworkAliases(aliases ...string) *DockerContainerBuilder {
 	dc.networkAliases = aliases
 	return dc
 }
