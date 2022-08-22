@@ -10,6 +10,7 @@ COPY ./src ./src
 RUN npm ci && npm run prismagen 
 RUN npm run build
 
+# Stage 2
 FROM node:17.1-alpine AS RUNNER
 ENV NODE_ENV production
 ENV TZ Europe/Budapest

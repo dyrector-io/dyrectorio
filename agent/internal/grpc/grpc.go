@@ -332,7 +332,7 @@ func GetConfigFromContext(ctx context.Context) any {
 // TODO(m8): streamline the log appearince with crane
 // func PrintDeployRequestStrings(req *agent.DeployRequest) []string {
 // 	return append([]string{},
-// 		fmt.Sprintf("Deployment target: k8s ~ %v\n", utils.GetEnv("INGRESS_DOMAIN_ROOT", "docker host")),
+// 		fmt.Sprintf("Deployment target: k8s ~ %v\n", utils.GetEnv("INGRESS_ROOT_DOMAIN", "docker host")),
 // 		fmt.Sprintf("Image: %v\n", utils.JoinV(":", req.ImageName, req.Tag)),
 // 		fmt.Sprintf("Registry: %v\n", req.Registry),
 // 		fmt.Sprintf("Container name: %v\n", utils.JoinV("-", req.InstanceConfig.Prefix, req.ContainerConfig.Name)),
