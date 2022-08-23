@@ -1,3 +1,4 @@
+import { defaultWsErrorHandler } from '@app/errors'
 import { useWebSocket } from '@app/hooks/use-websocket'
 import {
   AddImagesMessage,
@@ -111,8 +112,6 @@ const VersionSections = (props: VersionSectionsProps) => {
     })
     setImageTags(tags)
   })
-
-  const handleWsError = defaultWsErrorHandler(t)
 
   const versionSock = useWebSocket(versionWsUrl(props.product.id, version.id), {
     onSend: message => {

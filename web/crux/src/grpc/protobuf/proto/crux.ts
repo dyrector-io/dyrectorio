@@ -1271,6 +1271,7 @@ export interface NotificationResponse {
   name: string
   url: string
   type: NotificationType
+  active: boolean
 }
 
 export interface NotificationListResponse {
@@ -3832,7 +3833,13 @@ export const NotificationDetailsResponse = {
   },
 }
 
-const baseNotificationResponse: object = { id: '', name: '', url: '', type: 0 }
+const baseNotificationResponse: object = {
+  id: '',
+  name: '',
+  url: '',
+  type: 0,
+  active: false,
+}
 
 export const NotificationResponse = {
   fromJSON(object: any): NotificationResponse {
@@ -3843,6 +3850,7 @@ export const NotificationResponse = {
     message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
     message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
     message.type = object.type !== undefined && object.type !== null ? notificationTypeFromJSON(object.type) : 0
+    message.active = object.active !== undefined && object.active !== null ? Boolean(object.active) : false
     return message
   },
 
@@ -3853,6 +3861,7 @@ export const NotificationResponse = {
     message.name !== undefined && (obj.name = message.name)
     message.url !== undefined && (obj.url = message.url)
     message.type !== undefined && (obj.type = notificationTypeToJSON(message.type))
+    message.active !== undefined && (obj.active = message.active)
     return obj
   },
 }
