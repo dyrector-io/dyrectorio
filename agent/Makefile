@@ -41,7 +41,7 @@ compile-crane: ##
 .PHONY: compile-dagent
 compile-dagent: ##
 	cd cmd/dagent && \
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build ${LDFLAGS} -o ../../build/out/dagent; \
+	GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build ${LDFLAGS} -o ../../build/out/dagent.exe; \
 	cd -
 
 .PHONY: install-go-tools
