@@ -83,6 +83,8 @@ export class RegistryMapper {
   detailsToDb(
     request: CreateRegistryRequest | UpdateRegistryRequest,
   ): Pick<Registry, 'url' | 'type' | 'apiUrl' | 'user' | 'token' | 'imageNamePrefix'> {
+    const emptyOrDefault = (value: string | null | undefined, def: string | null = null) => value ? value : def
+
     if (request.hub) {
       return {
         type: RegistryTypeEnum.hub,
@@ -96,8 +98,8 @@ export class RegistryMapper {
       return {
         type: RegistryTypeEnum.v2,
         ...request.v2,
-        user: request.v2.user ?? null,
-        token: request.v2.token ?? null,
+        user: emptyOrDefault(request.v2.user),
+        token: emptyOrDefault(request.v2.token),
         imageNamePrefix: null,
         apiUrl: null,
       }
@@ -119,8 +121,8 @@ export class RegistryMapper {
       return {
         type: RegistryTypeEnum.google,
         ...request.google,
-        user: request.google.user ?? null,
-        token: request.google.token ?? null,
+        user: emptyOrDefault(request.google.user),
+        token: emptyOrDefault(request.google.token),
         imageNamePrefix: request.google.imageNamePrefix,
         apiUrl: null,
       }
