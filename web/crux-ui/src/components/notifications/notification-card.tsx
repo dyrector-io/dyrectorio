@@ -17,8 +17,8 @@ const NotificationCard = (props: NotificationCardProps) => {
 
   const getDefaultImage = <Image src="/notification.svg" width={17} height={21} alt={t('altNotificationPicture')} />
 
-  const activeToBgColor = () => props.notification.active ? "bg-dyo-turquoise" : "bg-warning-orange";
-  const activeToTextColor = () => props.notification.active ? "text-dyo-turquoise" : "text-warning-orange";
+  const activeToBgColor = () => (props.notification.active ? 'bg-dyo-turquoise' : 'bg-warning-orange')
+  const activeToTextColor = () => (props.notification.active ? 'text-dyo-turquoise' : 'text-warning-orange')
 
   return (
     <DyoCard className={clsx(props.className ?? 'p-6', 'flex flex-col')}>
@@ -35,9 +35,7 @@ const NotificationCard = (props: NotificationCardProps) => {
       </div>
 
       <div className="flex wrap my-2">
-        <DyoLabel className="mr-4 mt-auto py-0.5 leading-4">
-          {t('status', { name: props.notification.creator })}
-        </DyoLabel>
+        <DyoLabel className="mr-4 mt-auto py-0.5 leading-4">{t('status')}</DyoLabel>
         <DyoTag color={activeToBgColor()} textColor={activeToTextColor()} className="px-2.5">
           {t(props.notification.active ? 'active' : 'inactive')}
         </DyoTag>

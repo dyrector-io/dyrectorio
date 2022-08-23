@@ -1,9 +1,4 @@
-import {
-  CreateNotification,
-  NotificationDetails,
-  NotificationType,
-  UpdateNotification,
-} from '@app/models'
+import { CreateNotification, NotificationDetails, NotificationType, UpdateNotification } from '@app/models'
 import {
   AccessRequest,
   CreateNotificationRequest,

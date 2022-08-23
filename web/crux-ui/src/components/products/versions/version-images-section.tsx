@@ -1,12 +1,8 @@
 import DyoWrap from '@app/elements/dyo-wrap'
-import {
-  ImageTagsMap,
-  PatchVersionImage,
-  RegistryImageTags,
-  VersionImage,
-} from '@app/models'
+import { PatchVersionImage, VersionImage } from '@app/models'
 import { WebSocketEndpoint } from '@app/websockets/client'
 import EditImageCard from './images/edit-image-card'
+import { imageTagKey, ImageTagsMap } from './use-images-websocket'
 
 interface VersionImagesSectionProps {
   disabled?: boolean
@@ -18,10 +14,8 @@ interface VersionImagesSectionProps {
   onTagSelected: (image: VersionImage, tag: string) => void
 }
 
-const imageTagKey = (registryId: string, imageName: string) => `${registryId}/${imageName}`
-
 const VersionImagesSection = (props: VersionImagesSectionProps) => {
-  const { images, imageTags, versionSock, onTagSelected } = props;
+  const { images, imageTags, versionSock, onTagSelected } = props
 
   return (
     <DyoWrap>

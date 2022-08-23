@@ -194,8 +194,6 @@ export type VersionDetails = Version & {
   deployments: DeploymentByVersion[]
 }
 
-export type ImageTagsMap = { [key: string]: RegistryImageTags }
-
 export type Product = {
   id: string
   name: string
