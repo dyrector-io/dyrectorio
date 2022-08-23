@@ -104,3 +104,9 @@ dist
 .tern-port
 
 .vscode
+
+# playwright test results
+e2e_results
+
+# playwright screenshots
+e2e/screenshots

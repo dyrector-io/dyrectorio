@@ -22,7 +22,8 @@
     "format": "prettier --write './**/*.tsx' './**/*.ts'",
     "build": "next build",
     "build:proto": "find proto -name '*.proto' -exec protoc --experimental_allow_proto3_optional --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_opt=esModuleInterop=true --ts_proto_opt=outputJsonMethods=true --ts_proto_opt=useDate=false --ts_proto_opt=outputServices=grpc-js --ts_proto_out=./src/models/ {} \\;",
-    "start": "npm run dev"
+    "start": "npm run dev",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.3.7",
@@ -54,6 +55,7 @@
     "yup": "^0.32.11"
   },
   "devDependencies": {
+    "@playwright/test": "^1.26.0-alpha-aug-23-2022",
     "@types/google-protobuf": "^3.15.5",
     "@types/jsoneditor": "^9.5.1",
     "@types/prismjs": "^1.26.0",
