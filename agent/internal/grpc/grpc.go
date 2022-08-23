@@ -8,7 +8,9 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/form3tech-oss/jwt-go"
@@ -87,20 +89,39 @@ func (g *GrpcConnection) SetConn(conn *grpc.ClientConn) {
 // Singleton instance
 var grpcConn *GrpcConnection
 
-func fetchCertificatesFromURL(ctx context.Context, url string) (*x509.CertPool, error) {
+func fetchCertificatesFromURL(ctx context.Context, addr string) (*x509.CertPool, error) {
 	log.Println("Retrieving certificate")
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, http.NoBody)
+	var urlToDial *url.URL
+	parsedURL, err := url.Parse(addr)
+
+	if parsedURL.Scheme == "https" && parsedURL.Port() == "443" {
+		host, _, _ := net.SplitHostPort(parsedURL.Host)
+		urlToDial = &url.URL{Scheme: parsedURL.Scheme, Host: host}
+	} else {
+		urlToDial = parsedURL
+	}
+
 	if err != nil {
-		return nil, fmt.Errorf("failed to create the http request\n%s", err.Error())
+		return nil, err
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodHead, urlToDial.String(), http.NoBody)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to create the http request: %s", err.Error())
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to retrieve the certificates\n%s", err.Error())
+		return nil, fmt.Errorf("failed to execute request for certificates: %s", err.Error())
 	}
 
 	defer resp.Body.Close()
+
+	if resp.TLS == nil {
+		return nil, errors.New("TLS info is missing")
+	}
 
 	if !resp.TLS.HandshakeComplete {
 		return nil, errors.New("TLS handshake was incomplete")
