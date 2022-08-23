@@ -19,7 +19,7 @@ const Breadcrumb = (props: BreadcrumbProps) => {
   const { t } = useTranslation('common')
 
   return (
-    <div key="breadcrumb" className="flex flex-row items-center">
+    <div key="breadcrumb" className="flex flex-row items-center w-1/2 flex-grow">
       <DyoHeading element="h2" className="text-2xl text-bright">
         {props.page}
       </DyoHeading>
@@ -36,13 +36,13 @@ const Breadcrumb = (props: BreadcrumbProps) => {
         const last = index >= props.links.length - 1
 
         return (
-          <div key={`breadcrumb-link-${index}`} className="flex flex-row">
+          <div key={`breadcrumb-link-${index}`} className="flex flex-row max-w-lg">
             <div className="mx-4 mt-1">
-              <Image src={`/breadcrumb_next.svg`} alt={t('rightArrowIcon')} width={16} height={16} />
+              <Image src={`/breadcrumb_next.svg`} alt={t('rightArrowIcon')} width={16} height={16} layout="fixed" />
             </div>
 
             {last ? (
-              <DyoLabel className="my-auto">{it.name}</DyoLabel>
+              <DyoLabel className="my-auto truncate">{it.name}</DyoLabel>
             ) : (
               <Link key={`breadcrumb-link-${index}-link`} href={it.url}>
                 <a>

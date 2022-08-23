@@ -15,20 +15,22 @@ interface NotificationCardProps extends Omit<DyoCardProps, 'children'> {
 const NotificationCard = (props: NotificationCardProps) => {
   const { t } = useTranslation('notifications')
 
-  const getDefaultImage = <Image src="/notification.svg" width={17} height={21} alt={t('altNotificationPicture')} />
+  const getDefaultImage = (
+    <Image src="/notification.svg" width={17} height={21} alt={t('altNotificationPicture')} layout="fixed" />
+  )
 
   return (
     <DyoCard className={clsx(props.className ?? 'p-6', 'flex flex-col')}>
       <div className={clsx('flex flex-row flex-grow', props.onClick ? 'cursor-pointer' : null)}>
-        {getDefaultImage}
+        <div>{getDefaultImage}</div>
 
-        <DyoHeading className="text-xl text-bright ml-2 my-auto mr-auto" element="h3" onClick={props.onClick}>
+        <DyoHeading className="text-xl text-bright ml-2 my-auto mr-auto truncate" element="h3" onClick={props.onClick}>
           {props.notification.name}
         </DyoHeading>
       </div>
 
       <div className="flex wrap my-4">
-        <p className="text-light break-all">{props.notification.url}</p>
+        <p className="text-light break-all line-clamp-2">{props.notification.url}</p>
       </div>
 
       <div className="flex flex-row flex-grow justify-end">
