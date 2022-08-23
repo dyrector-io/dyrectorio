@@ -29,3 +29,7 @@ Before you start creating your Notifications on dyrector.io, make sure you have 
 **Step 4:** Set the toggle for 'Active' or 'Inactive' notifications. You can change this later to activate or inactivate the notifications.
 
 **Step 5:** Click 'Save' on the top right.
+
+{% hint style="info" %}
+To test your notification, head to Notifications on the left, select the Notification you'd like to test and press the Test webhook message button.
+{% endhint %}
