@@ -96,7 +96,7 @@ const NodesPage = (props: NodesPageProps) => {
         <ListPageMenu creating={creating} setCreating={setCreating} submitRef={submitRef} />
       </PageHeading>
 
-      {!creating ? null : <EditNodeCard className="mb-8 px-8 py-6" submitRef={submitRef} onNodeEdited={onCreated} />}
+      {!creating ? null : <EditNodeCard className="mb-2" submitRef={submitRef} onNodeEdited={onCreated} />}
 
       <DyoCard className="flex flex-col p-8">
         <DyoHeading element="h3" className="text-xl text-bright">

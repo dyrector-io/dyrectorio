@@ -1,14 +1,11 @@
-import { DyoButton } from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
+import { DyoExpandableText } from '@app/elements/dyo-expandable-text'
 import { DyoHeading } from '@app/elements/dyo-heading'
-import DyoModal from '@app/elements/dyo-modal'
 import DyoTag from '@app/elements/dyo-tag'
-import { useOverflowDetection } from '@app/hooks/use-overflow-detection'
 import { Version } from '@app/models'
 import { utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import { useState } from 'react'
 
 interface VersionDetailsCardProps {
   className?: string
@@ -20,9 +17,6 @@ const VersionDetailsCard = (props: VersionDetailsCardProps) => {
 
   const { version } = props
 
-  const [showAll, setShowAll] = useState(false)
-  const [overflow, overflowRef] = useOverflowDetection<HTMLParagraphElement>()
-
   return (
     <DyoCard className={clsx(props.className ?? 'p-6', 'flex flex-col')}>
       <DyoHeading element="h2" className="text-xl font-bold text-bright">
@@ -31,15 +25,13 @@ const VersionDetailsCard = (props: VersionDetailsCardProps) => {
 
       <div className="flex flex-row">
         <div className="flex flex-col">
-          <p ref={overflowRef} className="text-light line-clamp-6 mt-1">
-            {version.changelog}
-          </p>
-
-          {!overflow ? null : (
-            <DyoButton className="ml-auto my-2" text onClick={() => setShowAll(true)}>
-              {t('showAll')}
-            </DyoButton>
-          )}
+          <DyoExpandableText
+            text={version.changelog}
+            lineClamp={6}
+            className="text-md text-light mt-4"
+            buttonClassName="w-fit"
+            modalTitle={t('changelogName', { name: version.name })}
+          />
         </div>
 
         <div className="flex flex-col flex-grow">
@@ -55,17 +47,6 @@ const VersionDetailsCard = (props: VersionDetailsCardProps) => {
           </div>
         </div>
       </div>
-
-      {!showAll ? null : (
-        <DyoModal
-          className="w-1/2 h-1/2"
-          title={t('changelogName', { name: version.name })}
-          open={showAll}
-          onClose={() => setShowAll(false)}
-        >
-          <p className="text-bright mt-8 overflow-y-auto">{version.changelog}</p>
-        </DyoModal>
-      )}
     </DyoCard>
   )
 }

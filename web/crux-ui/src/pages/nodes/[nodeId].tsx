@@ -80,7 +80,7 @@ const NodeDetails = (props: NodeDetailsProps) => {
       {!editing ? (
         <DyoNodeCard node={node} />
       ) : (
-        <EditNodeCard className="p-8" node={node} onNodeEdited={onNodeEdited} submitRef={submitRef} />
+        <EditNodeCard node={node} onNodeEdited={onNodeEdited} submitRef={submitRef} />
       )}
     </Layout>
   )

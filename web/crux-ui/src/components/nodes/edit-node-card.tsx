@@ -6,6 +6,7 @@ import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { DyoTextArea } from '@app/elements/dyo-text-area'
+import DyoWrap from '@app/elements/dyo-wrap'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { useWebSocket } from '@app/hooks/use-websocket'
@@ -159,8 +160,8 @@ const EditNodeCard = (props: EditNodeCardProps) => {
 
   return (
     <>
-      <DyoCard className={clsx(props.className, 'flex flex-row')}>
-        <div className="flex flex-col flex-grow mr-4">
+      <DyoWrap className={clsx(props.className, 'flex flex-row')}>
+        <DyoCard className="w-full p-8">
           <DyoHeading element="h4" className="text-lg text-bright">
             {editing ? t('common:editName', { name: node.name }) : t('new')}
           </DyoHeading>
@@ -174,6 +175,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
               onChange={formik.handleChange}
               value={formik.values.name}
               required
+              grow
             />
 
             <div className={inputClassName}>
@@ -188,13 +190,13 @@ const EditNodeCard = (props: EditNodeCardProps) => {
               label={t('common:description')}
               onChange={formik.handleChange}
               value={formik.values.description}
+              grow
             />
 
             <DyoButton className="hidden" type="submit"></DyoButton>
           </form>
-        </div>
-
-        <div className="flex flex-col flex-grow pb-1 ml-4">
+        </DyoCard>
+        <DyoCard className="w-full p-8">
           <DyoHeading element="h4" className="text-lg text-bright mb-4">
             {t('setup')}
           </DyoHeading>
@@ -204,7 +206,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
               {t('whatScriptDoesHeader')}
             </DyoHeading>
 
-            <p className="text-light-eased max-w-lg ml-4">{t('scriptExplanation')}</p>
+            <p className="text-light-eased ml-4">{t('scriptExplanation')}</p>
           </div>
 
           {node.install ? (
@@ -241,8 +243,8 @@ const EditNodeCard = (props: EditNodeCardProps) => {
               onNodeInstallChanged={onNodeInstallChanged}
             />
           )}
-        </div>
-      </DyoCard>
+        </DyoCard>
+      </DyoWrap>
 
       <DyoConfirmationModal
         config={revokeModalConfig}

@@ -1,16 +1,14 @@
 import { DyoButton } from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
+import { DyoExpandableText } from '@app/elements/dyo-expandable-text'
 import { DyoHeading } from '@app/elements/dyo-heading'
-import DyoModal from '@app/elements/dyo-modal'
 import DyoTag from '@app/elements/dyo-tag'
-import { useOverflowDetection } from '@app/hooks/use-overflow-detection'
 import { Version } from '@app/models'
 import { versionUrl } from '@app/routes'
 import { utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
-import { useState } from 'react'
 
 interface VersionCardProps {
   className?: string
@@ -28,9 +26,6 @@ const VersionCard = (props: VersionCardProps) => {
 
   const { className, productId, version, onClick } = props
 
-  const [overflow, overflowRef] = useOverflowDetection<HTMLParagraphElement>()
-  const [showAll, setShowAll] = useState(false)
-
   const onImagesClick = () =>
     router.push(
       versionUrl(productId, version.id, {
@@ -47,12 +42,12 @@ const VersionCard = (props: VersionCardProps) => {
 
   return (
     <>
-      <DyoCard className={clsx(className ?? 'p-6', 'flex flex-col flex-grow')}>
+      <DyoCard className={clsx(className ?? 'p-6', 'flex flex-col flex-grow w-full')}>
         <div className="flex flex-col">
           <div className="flex flex-row flex-grow">
             <DyoHeading
               element="h5"
-              className={clsx('text-lg text-bright', onClick ? 'cursor-pointer' : null)}
+              className={clsx('text-xl text-bright', onClick ? 'cursor-pointer' : null)}
               onClick={onClick}
             >
               {version.name}
@@ -78,20 +73,15 @@ const VersionCard = (props: VersionCardProps) => {
 
         <span className="text-bright font-bold">{t('changelog')}</span>
 
-        <p
-          ref={overflowRef}
-          className={clsx('text-md text-bright line-clamp-6 mt-2 max-h-44', overflow ? 'mb-6' : 'mb-8')}
-        >
-          {version.changelog}
-        </p>
+        <DyoExpandableText
+          text={version.changelog}
+          lineClamp={6}
+          className="text-md text-bright mt-2 max-h-44"
+          buttonClassName="w-fit mb-8"
+          modalTitle={t('changelogName', { name: version.name })}
+        />
 
-        {!overflow ? null : (
-          <DyoButton className="ml-auto my-2" text onClick={() => setShowAll(true)}>
-            {t('showAll')}
-          </DyoButton>
-        )}
-
-        <div className={clsx('flex flex-row ml-auto', !overflow ? 'mt-auto' : 'mt-8')}>
+        <div className="flex flex-row ml-auto mt-auto">
           <DyoButton className="px-6 mx-2" outlined onClick={onDeploymentsClick} disabled={props.disabled}>
             {t('deployments')}
           </DyoButton>
@@ -114,17 +104,6 @@ const VersionCard = (props: VersionCardProps) => {
           )}
         </div>
       </DyoCard>
-
-      {!showAll ? null : (
-        <DyoModal
-          className="w-1/2 h-1/2"
-          title={t('changelogName', { name: version.name })}
-          open={showAll}
-          onClose={() => setShowAll(false)}
-        >
-          <p className="text-bright mt-8 overflow-y-auto">{version.changelog}</p>
-        </DyoModal>
-      )}
     </>
   )
 }
