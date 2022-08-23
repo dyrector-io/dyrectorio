@@ -1,5 +1,6 @@
 .env
 node_modules/
 
+<<<<<<< HEAD
 # Ignore all log files from .vscode folder
 .vscode/*.log
