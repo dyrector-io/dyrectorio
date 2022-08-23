@@ -1,0 +1,189 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+package common;
+option go_package = "github.com/dyrector-io/dyrectorio/protobuf/go/common";
+
+//Deployment
+enum ContainerState {
+  UNKNOWN_CONTAINER_STATE = 0;
+  CREATED = 1;
+  RESTARTING = 2;
+  RUNNING = 3;
+  REMOVING = 4;
+  PAUSED = 5;
+  EXITED = 6;
+  DEAD = 7;
+}
+
+message ContainerStateItem {
+  string containerId = 100;
+  string name = 101;
+  string command = 103;
+  google.protobuf.Timestamp createdAt = 104;
+  /* The 'State' of the container (Created, Running, etc) */
+  ContainerState state = 105;
+  /*
+   * The 'Status' of the container ("Created 1min ago", "Exited with code 123", etc).
+   * Unused but left here for reverse compatibility with the legacy version. 
+   */
+  string status = 106;
+  string imageName = 107;
+  string imageTag = 108;
+
+  repeated Port ports = 1000;
+}
+
+message ContainerStateListMessage {
+  optional string prefix = 100;
+  repeated ContainerStateItem data = 1000;
+}
+
+enum DeploymentStatus {
+  UNKNOWN_DEPLOYMENT_STATUS = 0;
+  PREPARING = 1;
+  IN_PROGRESS = 2;
+  SUCCESSFUL = 3;
+  FAILED = 4;
+  OBSOLATE = 5;
+  DOWNGRADED = 6;
+}
+
+message InstanceDeploymentItem {
+  string instanceId = 100;
+  ContainerState state = 101;
+}
+
+message DeploymentStatusMessage {
+  oneof data {
+    InstanceDeploymentItem instance = 200;
+    DeploymentStatus deploymentStatus = 201;
+  }
+
+  repeated string log = 1000;
+}
+
+enum NetworkMode {
+  UNKNOWN_NETWORK_MODE = 0;
+  NONE = 1;
+  HOST = 2;
+}
+
+enum RestartPolicy {
+  UNKNOWN_POLICY = 0;
+  EMPTY = 1;
+  ALWAYS = 2;
+  UNLESS_STOPPED = 3;
+  NO = 4;
+  ON_FAILURE = 5;
+}
+
+enum DeploymentStrategy {
+  UNKOWN_DEPLOYMENT_STRATEGY = 0;
+  RECREATE = 1;
+  ROLLING = 2;
+}
+
+message Port {
+  int32 internal = 1;
+  int32 external = 2;
+}
+
+message PortRange {
+  int32 from = 1;
+  int32 to = 2;
+}
+
+message PortRangeBinding {
+  PortRange internal = 1;
+  PortRange external = 2;
+}
+
+message Volume {
+  string name = 100;
+  string path = 101;
+  optional string size = 102;
+  optional string type = 103;
+  optional string class = 104;
+}
+
+message Expose {
+  bool public = 100; // if expose is needed
+  bool tls = 101;    // if tls is needed
+}
+
+message Ingress {
+  string name = 100;
+  string host = 101;
+  optional string uploadLimit = 102;
+}
+
+message ConfigContainer {
+  string image = 100;
+  string volume = 101;
+  string path = 102;
+  bool keepFiles = 103;
+}
+
+message ImportContainer {
+  map<string, string> environments = 100;
+  string volume = 101;
+  string command = 102;
+}
+
+message LogConfig {
+  string driver = 100;
+  map<string, string> options = 101;
+}
+
+message DagentContainerConfig {
+  optional LogConfig logConfig = 100;
+  optional RestartPolicy restartPolicy = 101;
+  optional NetworkMode networkMode = 102;
+}
+
+message HealthCheckConfig {
+  int32 port = 100;
+  optional string livenessProbe = 101;
+  optional string readinessProbe = 102;
+  optional string startupProbe = 103; 
+}
+
+message Resource {
+  optional string cpu = 100;
+  optional string memory = 101;
+}
+
+message ResourceConfig {
+  optional Resource limits = 100;
+  optional Resource requests = 101;
+}
+
+message CraneContainerConfig {
+  optional DeploymentStrategy deploymentStatregy = 100;
+  optional HealthCheckConfig healthCheckConfig = 101;
+  optional ResourceConfig  resourceConfig = 102;
+  optional bool proxyHeaders = 103;
+  optional bool useLoadBalancer = 104;
+  map<string, string> extraLBAnnotations = 105;
+
+  repeated string customHeaders = 1000;
+}
+
+message ExplicitContainerConfig {
+  optional DagentContainerConfig dagent = 100;
+  optional CraneContainerConfig crane = 101;
+  optional Expose expose = 102;
+  optional Ingress ingress = 103;
+  optional ConfigContainer configContainer = 104;
+  optional ImportContainer importContainer = 105;
+  optional int64 user = 106;
+  optional bool TTY = 107;
+
+  repeated Port ports = 1000;
+  repeated PortRangeBinding portRanges = 1001;
+  repeated Volume volumes = 1002;
+  repeated string command = 1003;
+  repeated string args = 1004;
+}

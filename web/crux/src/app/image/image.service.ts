@@ -13,8 +13,8 @@ import {
   OrderVersionImagesRequest,
   PatchImageRequest,
 } from 'src/grpc/protobuf/proto/crux'
-import { ContainerConfigData } from 'src/shared/model'
 import { ImageMapper, ImageWithConfig } from './image.mapper'
+import { ContainerConfigData } from 'src/shared/model'
 
 @Injectable()
 export class ImageService {
@@ -134,7 +134,7 @@ export class ImageService {
         name: request.config.name ?? undefined,
         capabilities: caps ? caps.data ?? [] : (undefined as JsonArray),
         environment: envs ? envs.data ?? [] : (undefined as JsonArray),
-        config: this.mapper.explicitConfigToDb(request.config?.config),
+        config: request.config?.config,
       }
     }
 

@@ -3,8 +3,8 @@ import { GrpcMethod, GrpcStreamMethod } from '@nestjs/microservices'
 import { util, configure } from 'protobufjs/minimal'
 import * as Long from 'long'
 import { Observable } from 'rxjs'
+import { ExplicitContainerConfig, DeploymentStatusMessage, ContainerStateListMessage } from './common'
 import { Metadata } from '@grpc/grpc-js'
-import { DeploymentStatusMessage, ContainerStateListMessage } from './crux'
 
 export const protobufPackage = 'agent'
 
@@ -46,10 +46,11 @@ export interface VersionDeployRequest {
 /** Deploys a single container */
 export interface DeployRequest {
   id: string
+  name: string
   /** InstanceConfig is set for multiple containers */
   instanceConfig: DeployRequest_InstanceConfig | undefined
   /** Runtime info and requirements of a container */
-  containerConfig: DeployRequest_ContainerConfig | undefined
+  containerConfig: ExplicitContainerConfig | undefined
   runtimeConfig?: string | undefined
   registry?: string | undefined
   imageName: string
@@ -73,84 +74,6 @@ export interface DeployRequest_InstanceConfig {
 
 export interface DeployRequest_InstanceConfig_Environment {
   env: string[]
-}
-
-export interface DeployRequest_ContainerConfig {
-  /** Container name - must have, used by everthing */
-  name: string
-  /** Container prefix */
-  prefix?: string | undefined
-  /** container ports */
-  ports: DeployRequest_ContainerConfig_Port[]
-  /** volume mounts in a piped format */
-  mounts: string[]
-  /** environment variables in a piped format */
-  environments: string[]
-  /** could be enum, i'm not sure if it is in use */
-  networkMode?: string | undefined
-  /** runtime config type if given, magic can happen */
-  runtimeConfigType?: DeployRequest_ContainerConfig_RuntimeConfigType | undefined
-  /** exposure configuration */
-  expose?: DeployRequest_ContainerConfig_Expose | undefined
-  /**
-   * Config container is started before the container and contents are copied
-   * to the volume set
-   */
-  configContainer?: DeployRequest_ContainerConfig_ConfigContainer | undefined
-  /** userId that is used to run the container, number */
-  user: number
-}
-
-export enum DeployRequest_ContainerConfig_RuntimeConfigType {
-  /** DOTNET_APPCONFIG - appconfig will be parsed into environment variables */
-  DOTNET_APPCONFIG = 0,
-  UNRECOGNIZED = -1,
-}
-
-export function deployRequest_ContainerConfig_RuntimeConfigTypeFromJSON(
-  object: any,
-): DeployRequest_ContainerConfig_RuntimeConfigType {
-  switch (object) {
-    case 0:
-    case 'DOTNET_APPCONFIG':
-      return DeployRequest_ContainerConfig_RuntimeConfigType.DOTNET_APPCONFIG
-    case -1:
-    case 'UNRECOGNIZED':
-    default:
-      return DeployRequest_ContainerConfig_RuntimeConfigType.UNRECOGNIZED
-  }
-}
-
-export function deployRequest_ContainerConfig_RuntimeConfigTypeToJSON(
-  object: DeployRequest_ContainerConfig_RuntimeConfigType,
-): string {
-  switch (object) {
-    case DeployRequest_ContainerConfig_RuntimeConfigType.DOTNET_APPCONFIG:
-      return 'DOTNET_APPCONFIG'
-    default:
-      return 'UNKNOWN'
-  }
-}
-
-export interface DeployRequest_ContainerConfig_Port {
-  /** internal that is bound by the container */
-  internal: number
-  /** external is docker only */
-  external: number
-}
-
-export interface DeployRequest_ContainerConfig_Expose {
-  /** if expose is needed */
-  public: boolean
-  /** if tls is needed */
-  tls: boolean
-}
-
-export interface DeployRequest_ContainerConfig_ConfigContainer {
-  image: string
-  volume: string
-  path: string
-  keepFiles: boolean
 }
 
 export interface DeployRequest_RegistryAuth {
@@ -296,19 +219,20 @@ export const VersionDeployRequest = {
   },
 }
 
-const baseDeployRequest: object = { id: '', imageName: '', tag: '' }
+const baseDeployRequest: object = { id: '', name: '', imageName: '', tag: '' }
 
 export const DeployRequest = {
   fromJSON(object: any): DeployRequest {
     const message = { ...baseDeployRequest } as DeployRequest
     message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
     message.instanceConfig =
       object.instanceConfig !== undefined && object.instanceConfig !== null
         ? DeployRequest_InstanceConfig.fromJSON(object.instanceConfig)
         : undefined
     message.containerConfig =
       object.containerConfig !== undefined && object.containerConfig !== null
-        ? DeployRequest_ContainerConfig.fromJSON(object.containerConfig)
+        ? ExplicitContainerConfig.fromJSON(object.containerConfig)
         : undefined
     message.runtimeConfig =
       object.runtimeConfig !== undefined && object.runtimeConfig !== null ? String(object.runtimeConfig) : undefined
@@ -325,13 +249,14 @@ export const DeployRequest = {
   toJSON(message: DeployRequest): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
+    message.name !== undefined && (obj.name = message.name)
     message.instanceConfig !== undefined &&
       (obj.instanceConfig = message.instanceConfig
         ? DeployRequest_InstanceConfig.toJSON(message.instanceConfig)
         : undefined)
     message.containerConfig !== undefined &&
       (obj.containerConfig = message.containerConfig
-        ? DeployRequest_ContainerConfig.toJSON(message.containerConfig)
+        ? ExplicitContainerConfig.toJSON(message.containerConfig)
         : undefined)
     message.runtimeConfig !== undefined && (obj.runtimeConfig = message.runtimeConfig)
     message.registry !== undefined && (obj.registry = message.registry)
@@ -395,152 +320,6 @@ export const DeployRequest_InstanceConfig_Environment = {
     } else {
       obj.env = []
     }
-    return obj
-  },
-}
-
-const baseDeployRequest_ContainerConfig: object = {
-  name: '',
-  mounts: '',
-  environments: '',
-  user: 0,
-}
-
-export const DeployRequest_ContainerConfig = {
-  fromJSON(object: any): DeployRequest_ContainerConfig {
-    const message = {
-      ...baseDeployRequest_ContainerConfig,
-    } as DeployRequest_ContainerConfig
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.prefix = object.prefix !== undefined && object.prefix !== null ? String(object.prefix) : undefined
-    message.ports = (object.ports ?? []).map((e: any) => DeployRequest_ContainerConfig_Port.fromJSON(e))
-    message.mounts = (object.mounts ?? []).map((e: any) => String(e))
-    message.environments = (object.environments ?? []).map((e: any) => String(e))
-    message.networkMode =
-      object.networkMode !== undefined && object.networkMode !== null ? String(object.networkMode) : undefined
-    message.runtimeConfigType =
-      object.runtimeConfigType !== undefined && object.runtimeConfigType !== null
-        ? deployRequest_ContainerConfig_RuntimeConfigTypeFromJSON(object.runtimeConfigType)
-        : undefined
-    message.expose =
-      object.expose !== undefined && object.expose !== null
-        ? DeployRequest_ContainerConfig_Expose.fromJSON(object.expose)
-        : undefined
-    message.configContainer =
-      object.configContainer !== undefined && object.configContainer !== null
-        ? DeployRequest_ContainerConfig_ConfigContainer.fromJSON(object.configContainer)
-        : undefined
-    message.user = object.user !== undefined && object.user !== null ? Number(object.user) : 0
-    return message
-  },
-
-  toJSON(message: DeployRequest_ContainerConfig): unknown {
-    const obj: any = {}
-    message.name !== undefined && (obj.name = message.name)
-    message.prefix !== undefined && (obj.prefix = message.prefix)
-    if (message.ports) {
-      obj.ports = message.ports.map(e => (e ? DeployRequest_ContainerConfig_Port.toJSON(e) : undefined))
-    } else {
-      obj.ports = []
-    }
-    if (message.mounts) {
-      obj.mounts = message.mounts.map(e => e)
-    } else {
-      obj.mounts = []
-    }
-    if (message.environments) {
-      obj.environments = message.environments.map(e => e)
-    } else {
-      obj.environments = []
-    }
-    message.networkMode !== undefined && (obj.networkMode = message.networkMode)
-    message.runtimeConfigType !== undefined &&
-      (obj.runtimeConfigType =
-        message.runtimeConfigType !== undefined
-          ? deployRequest_ContainerConfig_RuntimeConfigTypeToJSON(message.runtimeConfigType)
-          : undefined)
-    message.expose !== undefined &&
-      (obj.expose = message.expose ? DeployRequest_ContainerConfig_Expose.toJSON(message.expose) : undefined)
-    message.configContainer !== undefined &&
-      (obj.configContainer = message.configContainer
-        ? DeployRequest_ContainerConfig_ConfigContainer.toJSON(message.configContainer)
-        : undefined)
-    message.user !== undefined && (obj.user = Math.round(message.user))
-    return obj
-  },
-}
-
-const baseDeployRequest_ContainerConfig_Port: object = {
-  internal: 0,
-  external: 0,
-}
-
-export const DeployRequest_ContainerConfig_Port = {
-  fromJSON(object: any): DeployRequest_ContainerConfig_Port {
-    const message = {
-      ...baseDeployRequest_ContainerConfig_Port,
-    } as DeployRequest_ContainerConfig_Port
-    message.internal = object.internal !== undefined && object.internal !== null ? Number(object.internal) : 0
-    message.external = object.external !== undefined && object.external !== null ? Number(object.external) : 0
-    return message
-  },
-
-  toJSON(message: DeployRequest_ContainerConfig_Port): unknown {
-    const obj: any = {}
-    message.internal !== undefined && (obj.internal = Math.round(message.internal))
-    message.external !== undefined && (obj.external = Math.round(message.external))
-    return obj
-  },
-}
-
-const baseDeployRequest_ContainerConfig_Expose: object = {
-  public: false,
-  tls: false,
-}
-
-export const DeployRequest_ContainerConfig_Expose = {
-  fromJSON(object: any): DeployRequest_ContainerConfig_Expose {
-    const message = {
-      ...baseDeployRequest_ContainerConfig_Expose,
-    } as DeployRequest_ContainerConfig_Expose
-    message.public = object.public !== undefined && object.public !== null ? Boolean(object.public) : false
-    message.tls = object.tls !== undefined && object.tls !== null ? Boolean(object.tls) : false
-    return message
-  },
-
-  toJSON(message: DeployRequest_ContainerConfig_Expose): unknown {
-    const obj: any = {}
-    message.public !== undefined && (obj.public = message.public)
-    message.tls !== undefined && (obj.tls = message.tls)
-    return obj
-  },
-}
-
-const baseDeployRequest_ContainerConfig_ConfigContainer: object = {
-  image: '',
-  volume: '',
-  path: '',
-  keepFiles: false,
-}
-
-export const DeployRequest_ContainerConfig_ConfigContainer = {
-  fromJSON(object: any): DeployRequest_ContainerConfig_ConfigContainer {
-    const message = {
-      ...baseDeployRequest_ContainerConfig_ConfigContainer,
-    } as DeployRequest_ContainerConfig_ConfigContainer
-    message.image = object.image !== undefined && object.image !== null ? String(object.image) : ''
-    message.volume = object.volume !== undefined && object.volume !== null ? String(object.volume) : ''
-    message.path = object.path !== undefined && object.path !== null ? String(object.path) : ''
-    message.keepFiles = object.keepFiles !== undefined && object.keepFiles !== null ? Boolean(object.keepFiles) : false
-    return message
-  },
-
-  toJSON(message: DeployRequest_ContainerConfig_ConfigContainer): unknown {
-    const obj: any = {}
-    message.image !== undefined && (obj.image = message.image)
-    message.volume !== undefined && (obj.volume = message.volume)
-    message.path !== undefined && (obj.path = message.path)
-    message.keepFiles !== undefined && (obj.keepFiles = message.keepFiles)
     return obj
   },
 }

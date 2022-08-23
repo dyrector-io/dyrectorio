@@ -2,24 +2,6 @@
 
 Implement the .NET Mandy in Go
 
-## Development
-
-### Start
-
-```
-go install .
-```
-
-```
-gow run .
-```
-
-Clean up go modules
-
-```
-go mod tidy
-```
-
 ### Swagger
 
 ```
@@ -39,9 +21,9 @@ Note the index.html is important to refer explicitly.
 
 Needed for debugging:
 
-- https://github.com/go-delve/delve
-- Go Tools for VSCode
-- Add launch json: Launch package
+-   https://github.com/go-delve/delve
+-   Go Tools for VSCode
+-   Add launch json: Launch package
 
 ### Debug locally using Remote Instance
 
@@ -56,6 +38,7 @@ https://golangci-lint.run/
 Run installed tool with like so
 
 AUR install
+
 ```
 paru -S golangci-lint
 ```
@@ -114,15 +97,15 @@ Configuration will take place before starting up the application, and store the 
 | LOG_DEFAULT_SKIP       | Loglines to skip                                                                                              | 0                                     |
 | LOG_DEFAULT_TAKE       | Loglines to take                                                                                              | 100                                   |
 | MIN_DOCKER_VERSION     | Minimum required docker version, it's exposed to help debugging and also help podman users                    | 20.10                                 |
-| TRAEFIK_ACME_MAIL      | E-mail address to use for dynamic certificate requests                                                        | *none*                                |
-| TRAEFIK_ENABLED        | *self explanatory*                                                                                            | false                                 |
-| TRAEFIK_LOG_LEVEL      | Loglevel for Traefik                                                                                          | *none*                                |
+| TRAEFIK_ACME_MAIL      | E-mail address to use for dynamic certificate requests                                                        | _none_                                |
+| TRAEFIK_ENABLED        | _self explanatory_                                                                                            | false                                 |
+| TRAEFIK_LOG_LEVEL      | Loglevel for Traefik                                                                                          | _none_                                |
 | TRAEFIK_TLS            | Whether to enable traefik TLS or not                                                                          | false                                 |
 | UPDATER_CONTAINER_NAME | Container name for the updater container, useful if multiple instances are running                            | dagent-updater                        |
 | UPDATE_HOST_TIMEZONE   | Whether to mount localtime into the update container                                                          | true                                  |
 | UPDATE_METHOD          | Values: `off`, `webhook`, `poll`                                                                              | off                                   |
 | UPDATE_POLL_INTERVAL   | Agent polling frequency, should be defined in time.Duration parseable format (eg. 10s, 20m, 1h20m, 4395s etc) | 600s                                  |
-| WEBHOOK_TOKEN          | Token used by the webhook to trigger the update                                                               | *none*                                |
+| WEBHOOK_TOKEN          | Token used by the webhook to trigger the update                                                               | _none_                                |
 
 Example docker run command
 

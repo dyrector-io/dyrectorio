@@ -1,3 +1,4 @@
+import { JsonObject } from 'prisma'
 import { Identity } from '@ory/kratos-client'
 
 export type UniqueKeyValue = {
@@ -6,33 +7,26 @@ export type UniqueKeyValue = {
   value: string
 }
 
-export type ExplicitContainerConfigPort = {
-  internal: number
-  external: number
-}
-
 export const EXPLICIT_CONTAINER_NETWORK_MODE_VALUES = ['none', 'host'] as const
 export type ExplicitContainerNetworkMode = typeof EXPLICIT_CONTAINER_NETWORK_MODE_VALUES[number]
 
-export type ExplicitContainerConfigData = {
-  ports: ExplicitContainerConfigPort[]
-  mounts: string[]
-  networkMode?: ExplicitContainerNetworkMode
-  /** exposure configuration */
-  expose?: ExplicitContainerConfigExpose
-  user?: number
-}
+export const EXPLICIT_CONTAINER_RESTART_POLICY_TYPE_VALUES = [
+  '',
+  'always',
+  'unless_stopped',
+  'no',
+  'on_failure',
+] as const
+export type ExplicitContainerRestartPolicyType = typeof EXPLICIT_CONTAINER_RESTART_POLICY_TYPE_VALUES[number]
 
-export type ExplicitContainerConfigExpose = {
-  public: boolean
-  tls: boolean
-}
+export const EXPLICIT_CONTAINER_DEPLOYMENT_STRATEGY_VALUES = ['recreate', 'rolling'] as const
+export type ExplicitContainerDeploymentStrategyType = typeof EXPLICIT_CONTAINER_DEPLOYMENT_STRATEGY_VALUES[number]
 
 export type ContainerConfigData = {
   name: string
   capabilities: UniqueKeyValue[]
   environment: UniqueKeyValue[]
-  config: ExplicitContainerConfigData
+  config: JsonObject
 }
 
 export type InstanceContainerConfigData = Omit<ContainerConfigData, 'name'>

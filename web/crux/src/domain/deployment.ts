@@ -7,14 +7,14 @@ import {
 import { Logger, PreconditionFailedException } from '@nestjs/common'
 import { Observable, Subject } from 'rxjs'
 import { AgentCommand, VersionDeployRequest } from 'src/grpc/protobuf/proto/agent'
+import { DeploymentProgressMessage } from 'src/grpc/protobuf/proto/crux'
 import {
   ContainerState,
   containerStateToJSON,
-  DeploymentProgressMessage,
   DeploymentStatus,
   DeploymentStatusMessage,
   deploymentStatusToJSON,
-} from 'src/grpc/protobuf/proto/crux'
+} from 'src/grpc/protobuf/proto/common'
 
 export class Deployment {
   private statusChannel = new Subject<DeploymentProgressMessage>()

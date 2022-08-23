@@ -2,6 +2,17 @@
 import { GrpcMethod, GrpcStreamMethod } from '@nestjs/microservices'
 import { util, configure } from 'protobufjs/minimal'
 import * as Long from 'long'
+import {
+  ContainerState,
+  DeploymentStatus,
+  ExplicitContainerConfig,
+  Port,
+  InstanceDeploymentItem,
+  containerStateFromJSON,
+  containerStateToJSON,
+  deploymentStatusFromJSON,
+  deploymentStatusToJSON,
+} from './common'
 import { Observable } from 'rxjs'
 import { Timestamp } from '../../google/protobuf/timestamp'
 import { Metadata } from '@grpc/grpc-js'
@@ -310,68 +321,6 @@ export function nodeTypeToJSON(object: NodeType): string {
   }
 }
 
-export enum DeploymentStatus {
-  UNKNOWN_DEPLOYMENT_STATUS = 0,
-  PREPARING = 1,
-  IN_PROGRESS = 2,
-  SUCCESSFUL = 3,
-  FAILED = 4,
-  OBSOLATE = 5,
-  DOWNGRADED = 6,
-  UNRECOGNIZED = -1,
-}
-
-export function deploymentStatusFromJSON(object: any): DeploymentStatus {
-  switch (object) {
-    case 0:
-    case 'UNKNOWN_DEPLOYMENT_STATUS':
-      return DeploymentStatus.UNKNOWN_DEPLOYMENT_STATUS
-    case 1:
-    case 'PREPARING':
-      return DeploymentStatus.PREPARING
-    case 2:
-    case 'IN_PROGRESS':
-      return DeploymentStatus.IN_PROGRESS
-    case 3:
-    case 'SUCCESSFUL':
-      return DeploymentStatus.SUCCESSFUL
-    case 4:
-    case 'FAILED':
-      return DeploymentStatus.FAILED
-    case 5:
-    case 'OBSOLATE':
-      return DeploymentStatus.OBSOLATE
-    case 6:
-    case 'DOWNGRADED':
-      return DeploymentStatus.DOWNGRADED
-    case -1:
-    case 'UNRECOGNIZED':
-    default:
-      return DeploymentStatus.UNRECOGNIZED
-  }
-}
-
-export function deploymentStatusToJSON(object: DeploymentStatus): string {
-  switch (object) {
-    case DeploymentStatus.UNKNOWN_DEPLOYMENT_STATUS:
-      return 'UNKNOWN_DEPLOYMENT_STATUS'
-    case DeploymentStatus.PREPARING:
-      return 'PREPARING'
-    case DeploymentStatus.IN_PROGRESS:
-      return 'IN_PROGRESS'
-    case DeploymentStatus.SUCCESSFUL:
-      return 'SUCCESSFUL'
-    case DeploymentStatus.FAILED:
-      return 'FAILED'
-    case DeploymentStatus.OBSOLATE:
-      return 'OBSOLATE'
-    case DeploymentStatus.DOWNGRADED:
-      return 'DOWNGRADED'
-    default:
-      return 'UNKNOWN'
-  }
-}
-
 export enum DeploymentEventType {
   UNKNOWN_DEPLOYMENT_EVENT_TYPE = 0,
   DEPLOYMENT_LOG = 1,
@@ -411,74 +360,6 @@ export function deploymentEventTypeToJSON(object: DeploymentEventType): string {
       return 'DEPLOYMENT_STATUS'
     case DeploymentEventType.CONTAINER_STATUS:
       return 'CONTAINER_STATUS'
-    default:
-      return 'UNKNOWN'
-  }
-}
-
-export enum ContainerState {
-  UNKNOWN_CONTAINER_STATE = 0,
-  CREATED = 1,
-  RESTARTING = 2,
-  RUNNING = 3,
-  REMOVING = 4,
-  PAUSED = 5,
-  EXITED = 6,
-  DEAD = 7,
-  UNRECOGNIZED = -1,
-}
-
-export function containerStateFromJSON(object: any): ContainerState {
-  switch (object) {
-    case 0:
-    case 'UNKNOWN_CONTAINER_STATE':
-      return ContainerState.UNKNOWN_CONTAINER_STATE
-    case 1:
-    case 'CREATED':
-      return ContainerState.CREATED
-    case 2:
-    case 'RESTARTING':
-      return ContainerState.RESTARTING
-    case 3:
-    case 'RUNNING':
-      return ContainerState.RUNNING
-    case 4:
-    case 'REMOVING':
-      return ContainerState.REMOVING
-    case 5:
-    case 'PAUSED':
-      return ContainerState.PAUSED
-    case 6:
-    case 'EXITED':
-      return ContainerState.EXITED
-    case 7:
-    case 'DEAD':
-      return ContainerState.DEAD
-    case -1:
-    case 'UNRECOGNIZED':
-    default:
-      return ContainerState.UNRECOGNIZED
-  }
-}
-
-export function containerStateToJSON(object: ContainerState): string {
-  switch (object) {
-    case ContainerState.UNKNOWN_CONTAINER_STATE:
-      return 'UNKNOWN_CONTAINER_STATE'
-    case ContainerState.CREATED:
-      return 'CREATED'
-    case ContainerState.RESTARTING:
-      return 'RESTARTING'
-    case ContainerState.RUNNING:
-      return 'RUNNING'
-    case ContainerState.REMOVING:
-      return 'REMOVING'
-    case ContainerState.PAUSED:
-      return 'PAUSED'
-    case ContainerState.EXITED:
-      return 'EXITED'
-    case ContainerState.DEAD:
-      return 'DEAD'
     default:
       return 'UNKNOWN'
   }
@@ -874,70 +755,6 @@ export interface IncreaseVersionRequest {
   changelog?: string | undefined
 }
 
-export interface ExplicitContainerConfig {
-  /** container ports */
-  ports: ExplicitContainerConfig_Port[]
-  /** volume mounts in a piped format */
-  mounts: string[]
-  /** could be enum, i'm not sure if it is in use */
-  networkMode?: ExplicitContainerConfig_NetworkMode | undefined
-  /** exposure configuration */
-  expose?: ExplicitContainerConfig_Expose | undefined
-  user?: number | undefined
-}
-
-export enum ExplicitContainerConfig_NetworkMode {
-  UNKNOWN_NETWORK_MODE = 0,
-  NONE = 1,
-  HOST = 2,
-  UNRECOGNIZED = -1,
-}
-
-export function explicitContainerConfig_NetworkModeFromJSON(object: any): ExplicitContainerConfig_NetworkMode {
-  switch (object) {
-    case 0:
-    case 'UNKNOWN_NETWORK_MODE':
-      return ExplicitContainerConfig_NetworkMode.UNKNOWN_NETWORK_MODE
-    case 1:
-    case 'NONE':
-      return ExplicitContainerConfig_NetworkMode.NONE
-    case 2:
-    case 'HOST':
-      return ExplicitContainerConfig_NetworkMode.HOST
-    case -1:
-    case 'UNRECOGNIZED':
-    default:
-      return ExplicitContainerConfig_NetworkMode.UNRECOGNIZED
-  }
-}
-
-export function explicitContainerConfig_NetworkModeToJSON(object: ExplicitContainerConfig_NetworkMode): string {
-  switch (object) {
-    case ExplicitContainerConfig_NetworkMode.UNKNOWN_NETWORK_MODE:
-      return 'UNKNOWN_NETWORK_MODE'
-    case ExplicitContainerConfig_NetworkMode.NONE:
-      return 'NONE'
-    case ExplicitContainerConfig_NetworkMode.HOST:
-      return 'HOST'
-    default:
-      return 'UNKNOWN'
-  }
-}
-
-export interface ExplicitContainerConfig_Port {
-  /** internal that is bound by the container */
-  internal: number
-  /** external is docker only */
-  external: number
-}
-
-export interface ExplicitContainerConfig_Expose {
-  /** if expose is needed */
-  public: boolean
-  /** if tls is needed */
-  tls: boolean
-}
-
 export interface ContainerConfig {
   config: ExplicitContainerConfig | undefined
   name: string
@@ -1074,11 +891,6 @@ export interface WatchContainerStateRequest {
   prefix?: string | undefined
 }
 
-export interface ContainerPort {
-  internal: number
-  external: number
-}
-
 export interface ContainerStateItem {
   containerId: string
   name: string
@@ -1093,23 +905,12 @@ export interface ContainerStateItem {
   status: string
   imageName: string
   imageTag: string
-  ports: ContainerPort[]
+  ports: Port[]
 }
 
 export interface ContainerStateListMessage {
   prefix?: string | undefined
   data: ContainerStateItem[]
-}
-
-export interface InstanceDeploymentItem {
-  instanceId: string
-  state: ContainerState
-}
-
-export interface DeploymentStatusMessage {
-  instance: InstanceDeploymentItem | undefined
-  deploymentStatus: DeploymentStatus | undefined
-  log: string[]
 }
 
 export interface DeploymentProgressMessage {
@@ -2412,92 +2213,6 @@ export const IncreaseVersionRequest = {
   },
 }
 
-const baseExplicitContainerConfig: object = { mounts: '' }
-
-export const ExplicitContainerConfig = {
-  fromJSON(object: any): ExplicitContainerConfig {
-    const message = {
-      ...baseExplicitContainerConfig,
-    } as ExplicitContainerConfig
-    message.ports = (object.ports ?? []).map((e: any) => ExplicitContainerConfig_Port.fromJSON(e))
-    message.mounts = (object.mounts ?? []).map((e: any) => String(e))
-    message.networkMode =
-      object.networkMode !== undefined && object.networkMode !== null
-        ? explicitContainerConfig_NetworkModeFromJSON(object.networkMode)
-        : undefined
-    message.expose =
-      object.expose !== undefined && object.expose !== null
-        ? ExplicitContainerConfig_Expose.fromJSON(object.expose)
-        : undefined
-    message.user = object.user !== undefined && object.user !== null ? Number(object.user) : undefined
-    return message
-  },
-
-  toJSON(message: ExplicitContainerConfig): unknown {
-    const obj: any = {}
-    if (message.ports) {
-      obj.ports = message.ports.map(e => (e ? ExplicitContainerConfig_Port.toJSON(e) : undefined))
-    } else {
-      obj.ports = []
-    }
-    if (message.mounts) {
-      obj.mounts = message.mounts.map(e => e)
-    } else {
-      obj.mounts = []
-    }
-    message.networkMode !== undefined &&
-      (obj.networkMode =
-        message.networkMode !== undefined ? explicitContainerConfig_NetworkModeToJSON(message.networkMode) : undefined)
-    message.expose !== undefined &&
-      (obj.expose = message.expose ? ExplicitContainerConfig_Expose.toJSON(message.expose) : undefined)
-    message.user !== undefined && (obj.user = Math.round(message.user))
-    return obj
-  },
-}
-
-const baseExplicitContainerConfig_Port: object = { internal: 0, external: 0 }
-
-export const ExplicitContainerConfig_Port = {
-  fromJSON(object: any): ExplicitContainerConfig_Port {
-    const message = {
-      ...baseExplicitContainerConfig_Port,
-    } as ExplicitContainerConfig_Port
-    message.internal = object.internal !== undefined && object.internal !== null ? Number(object.internal) : 0
-    message.external = object.external !== undefined && object.external !== null ? Number(object.external) : 0
-    return message
-  },
-
-  toJSON(message: ExplicitContainerConfig_Port): unknown {
-    const obj: any = {}
-    message.internal !== undefined && (obj.internal = Math.round(message.internal))
-    message.external !== undefined && (obj.external = Math.round(message.external))
-    return obj
-  },
-}
-
-const baseExplicitContainerConfig_Expose: object = {
-  public: false,
-  tls: false,
-}
-
-export const ExplicitContainerConfig_Expose = {
-  fromJSON(object: any): ExplicitContainerConfig_Expose {
-    const message = {
-      ...baseExplicitContainerConfig_Expose,
-    } as ExplicitContainerConfig_Expose
-    message.public = object.public !== undefined && object.public !== null ? Boolean(object.public) : false
-    message.tls = object.tls !== undefined && object.tls !== null ? Boolean(object.tls) : false
-    return message
-  },
-
-  toJSON(message: ExplicitContainerConfig_Expose): unknown {
-    const obj: any = {}
-    message.public !== undefined && (obj.public = message.public)
-    message.tls !== undefined && (obj.tls = message.tls)
-    return obj
-  },
-}
-
 const baseContainerConfig: object = { name: '' }
 
 export const ContainerConfig = {
@@ -3023,24 +2738,6 @@ export const WatchContainerStateRequest = {
   },
 }
 
-const baseContainerPort: object = { internal: 0, external: 0 }
-
-export const ContainerPort = {
-  fromJSON(object: any): ContainerPort {
-    const message = { ...baseContainerPort } as ContainerPort
-    message.internal = object.internal !== undefined && object.internal !== null ? Number(object.internal) : 0
-    message.external = object.external !== undefined && object.external !== null ? Number(object.external) : 0
-    return message
-  },
-
-  toJSON(message: ContainerPort): unknown {
-    const obj: any = {}
-    message.internal !== undefined && (obj.internal = Math.round(message.internal))
-    message.external !== undefined && (obj.external = Math.round(message.external))
-    return obj
-  },
-}
-
 const baseContainerStateItem: object = {
   containerId: '',
   name: '',
@@ -3064,7 +2761,7 @@ export const ContainerStateItem = {
     message.status = object.status !== undefined && object.status !== null ? String(object.status) : ''
     message.imageName = object.imageName !== undefined && object.imageName !== null ? String(object.imageName) : ''
     message.imageTag = object.imageTag !== undefined && object.imageTag !== null ? String(object.imageTag) : ''
-    message.ports = (object.ports ?? []).map((e: any) => ContainerPort.fromJSON(e))
+    message.ports = (object.ports ?? []).map((e: any) => Port.fromJSON(e))
     return message
   },
 
@@ -3079,7 +2776,7 @@ export const ContainerStateItem = {
     message.imageName !== undefined && (obj.imageName = message.imageName)
     message.imageTag !== undefined && (obj.imageTag = message.imageTag)
     if (message.ports) {
-      obj.ports = message.ports.map(e => (e ? ContainerPort.toJSON(e) : undefined))
+      obj.ports = message.ports.map(e => (e ? Port.toJSON(e) : undefined))
     } else {
       obj.ports = []
     }
@@ -3106,59 +2803,6 @@ export const ContainerStateListMessage = {
       obj.data = message.data.map(e => (e ? ContainerStateItem.toJSON(e) : undefined))
     } else {
       obj.data = []
-    }
-    return obj
-  },
-}
-
-const baseInstanceDeploymentItem: object = { instanceId: '', state: 0 }
-
-export const InstanceDeploymentItem = {
-  fromJSON(object: any): InstanceDeploymentItem {
-    const message = { ...baseInstanceDeploymentItem } as InstanceDeploymentItem
-    message.instanceId = object.instanceId !== undefined && object.instanceId !== null ? String(object.instanceId) : ''
-    message.state = object.state !== undefined && object.state !== null ? containerStateFromJSON(object.state) : 0
-    return message
-  },
-
-  toJSON(message: InstanceDeploymentItem): unknown {
-    const obj: any = {}
-    message.instanceId !== undefined && (obj.instanceId = message.instanceId)
-    message.state !== undefined && (obj.state = containerStateToJSON(message.state))
-    return obj
-  },
-}
-
-const baseDeploymentStatusMessage: object = { log: '' }
-
-export const DeploymentStatusMessage = {
-  fromJSON(object: any): DeploymentStatusMessage {
-    const message = {
-      ...baseDeploymentStatusMessage,
-    } as DeploymentStatusMessage
-    message.instance =
-      object.instance !== undefined && object.instance !== null
-        ? InstanceDeploymentItem.fromJSON(object.instance)
-        : undefined
-    message.deploymentStatus =
-      object.deploymentStatus !== undefined && object.deploymentStatus !== null
-        ? deploymentStatusFromJSON(object.deploymentStatus)
-        : undefined
-    message.log = (object.log ?? []).map((e: any) => String(e))
-    return message
-  },
-
-  toJSON(message: DeploymentStatusMessage): unknown {
-    const obj: any = {}
-    message.instance !== undefined &&
-      (obj.instance = message.instance ? InstanceDeploymentItem.toJSON(message.instance) : undefined)
-    message.deploymentStatus !== undefined &&
-      (obj.deploymentStatus =
-        message.deploymentStatus !== undefined ? deploymentStatusToJSON(message.deploymentStatus) : undefined)
-    if (message.log) {
-      obj.log = message.log.map(e => e)
-    } else {
-      obj.log = []
     }
     return obj
   },

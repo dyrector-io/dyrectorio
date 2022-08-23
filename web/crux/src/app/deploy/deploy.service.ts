@@ -219,7 +219,7 @@ export class DeployService {
       instanceConfigPatchSet = {
         capabilities: caps ? caps.data ?? [] : (undefined as JsonArray),
         environment: envs ? envs.data ?? [] : (undefined as JsonArray),
-        config: this.mapper.explicitConfigToDb(request.instance.config),
+        config: request.instance.config,
       }
     }
 
@@ -340,9 +340,10 @@ export class DeployService {
 
           return {
             id: it.id,
+            name: it.image.config.name,
             imageName: it.image.name,
             tag: it.image.tag,
-            containerConfig: this.mapper.instanceToAgentContainerConfig(deployment.prefix, it),
+            containerConfig: this.mapper.instanceToAgentContainerConfig(it),
             instanceConfig: this.mapper.deploymentToAgentInstanceConfig(deployment),
             registry: registryUrl,
             registryAuth: !registry.token

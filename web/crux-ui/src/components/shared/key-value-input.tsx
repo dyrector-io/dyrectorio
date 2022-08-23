@@ -1,6 +1,6 @@
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
-import { UniqueKeyValue } from '@app/models'
+import { UniqueKeyValue } from '@app/models-config'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useReducer } from 'react'

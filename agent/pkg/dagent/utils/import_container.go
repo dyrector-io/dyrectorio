@@ -16,7 +16,7 @@ import (
 	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 	containerbuilder "github.com/dyrector-io/dyrectorio/agent/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
-	"github.com/dyrector-io/dyrectorio/protobuf/go/crux"
+	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 )
 
 func checkIfTargetVolumeIsThere(mountList []mount.Mount, importContainer *v1.ImportContainer) (int, error) {
@@ -33,7 +33,7 @@ func checkIfTargetVolumeIsThere(mountList []mount.Mount, importContainer *v1.Imp
 func spawnInitContainer(
 	cli *client.Client, ctx context.Context, name string, mountList []mount.Mount,
 	importContainer *v1.ImportContainer, dog *dogger.DeploymentLogger, cfg *config.Configuration) error {
-	dog.WriteDeploymentStatus(crux.DeploymentStatus_IN_PROGRESS, "Spawning importer container to load assets")
+	dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Spawning importer container to load assets")
 	targetVolumeIndex, err := checkIfTargetVolumeIsThere(mountList, importContainer)
 
 	if err != nil {
@@ -62,7 +62,7 @@ func spawnInitContainer(
 		return err
 	}
 
-	dog.WriteDeploymentStatus(crux.DeploymentStatus_IN_PROGRESS, "Waiting for import container to finish")
+	dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Waiting for import container to finish")
 
 	containerID := *builder.GetContainerID()
 	cli.ContainerWait(ctx, containerID, container.WaitConditionNextExit)

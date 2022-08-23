@@ -77,7 +77,9 @@ const VersionImagesSection = (props: VersionImagesSectionProps) => {
 
   const versionSock = useWebSocket(versionWsUrl(props.productId, props.versionId))
 
-  versionSock.on(WS_TYPE_IMAGES_ADDED, (message: ImagesAddedMessage) => setImages([...images, ...message.images]))
+  versionSock.on(WS_TYPE_IMAGES_ADDED, (message: ImagesAddedMessage) => {
+    setImages([...images, ...message.images])
+  })
 
   versionSock.on(WS_TYPE_IMAGE, (message: ImageMessage) => {
     setImages([...images, message])

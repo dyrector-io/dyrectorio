@@ -1,12 +1,7 @@
 import { DyoButton } from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
-import {
-  Instance,
-  InstanceContainerConfig,
-  mergeConfigs,
-  PatchInstanceMessage,
-  WS_TYPE_PATCH_INSTANCE,
-} from '@app/models'
+import { Instance, PatchInstanceMessage, WS_TYPE_PATCH_INSTANCE } from '@app/models'
+import { InstanceContainerConfig, mergeConfigs } from '@app/models-config'
 import { containerConfigSchema, getValidationError } from '@app/validation'
 import { WebSocketEndpoint } from '@app/websockets/client'
 import useTranslation from 'next-translate/useTranslation'

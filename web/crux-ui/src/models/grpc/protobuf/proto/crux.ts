@@ -16,6 +16,17 @@ import {
 import Long from 'long'
 import _m0 from 'protobufjs/minimal'
 import { Timestamp } from '../../google/protobuf/timestamp'
+import {
+  ContainerState,
+  containerStateFromJSON,
+  containerStateToJSON,
+  DeploymentStatus,
+  deploymentStatusFromJSON,
+  deploymentStatusToJSON,
+  ExplicitContainerConfig,
+  InstanceDeploymentItem,
+  Port,
+} from './common'
 
 export const protobufPackage = 'crux'
 
@@ -321,68 +332,6 @@ export function nodeTypeToJSON(object: NodeType): string {
   }
 }
 
-export enum DeploymentStatus {
-  UNKNOWN_DEPLOYMENT_STATUS = 0,
-  PREPARING = 1,
-  IN_PROGRESS = 2,
-  SUCCESSFUL = 3,
-  FAILED = 4,
-  OBSOLATE = 5,
-  DOWNGRADED = 6,
-  UNRECOGNIZED = -1,
-}
-
-export function deploymentStatusFromJSON(object: any): DeploymentStatus {
-  switch (object) {
-    case 0:
-    case 'UNKNOWN_DEPLOYMENT_STATUS':
-      return DeploymentStatus.UNKNOWN_DEPLOYMENT_STATUS
-    case 1:
-    case 'PREPARING':
-      return DeploymentStatus.PREPARING
-    case 2:
-    case 'IN_PROGRESS':
-      return DeploymentStatus.IN_PROGRESS
-    case 3:
-    case 'SUCCESSFUL':
-      return DeploymentStatus.SUCCESSFUL
-    case 4:
-    case 'FAILED':
-      return DeploymentStatus.FAILED
-    case 5:
-    case 'OBSOLATE':
-      return DeploymentStatus.OBSOLATE
-    case 6:
-    case 'DOWNGRADED':
-      return DeploymentStatus.DOWNGRADED
-    case -1:
-    case 'UNRECOGNIZED':
-    default:
-      return DeploymentStatus.UNRECOGNIZED
-  }
-}
-
-export function deploymentStatusToJSON(object: DeploymentStatus): string {
-  switch (object) {
-    case DeploymentStatus.UNKNOWN_DEPLOYMENT_STATUS:
-      return 'UNKNOWN_DEPLOYMENT_STATUS'
-    case DeploymentStatus.PREPARING:
-      return 'PREPARING'
-    case DeploymentStatus.IN_PROGRESS:
-      return 'IN_PROGRESS'
-    case DeploymentStatus.SUCCESSFUL:
-      return 'SUCCESSFUL'
-    case DeploymentStatus.FAILED:
-      return 'FAILED'
-    case DeploymentStatus.OBSOLATE:
-      return 'OBSOLATE'
-    case DeploymentStatus.DOWNGRADED:
-      return 'DOWNGRADED'
-    default:
-      return 'UNKNOWN'
-  }
-}
-
 export enum DeploymentEventType {
   UNKNOWN_DEPLOYMENT_EVENT_TYPE = 0,
   DEPLOYMENT_LOG = 1,
@@ -422,74 +371,6 @@ export function deploymentEventTypeToJSON(object: DeploymentEventType): string {
       return 'DEPLOYMENT_STATUS'
     case DeploymentEventType.CONTAINER_STATUS:
       return 'CONTAINER_STATUS'
-    default:
-      return 'UNKNOWN'
-  }
-}
-
-export enum ContainerState {
-  UNKNOWN_CONTAINER_STATE = 0,
-  CREATED = 1,
-  RESTARTING = 2,
-  RUNNING = 3,
-  REMOVING = 4,
-  PAUSED = 5,
-  EXITED = 6,
-  DEAD = 7,
-  UNRECOGNIZED = -1,
-}
-
-export function containerStateFromJSON(object: any): ContainerState {
-  switch (object) {
-    case 0:
-    case 'UNKNOWN_CONTAINER_STATE':
-      return ContainerState.UNKNOWN_CONTAINER_STATE
-    case 1:
-    case 'CREATED':
-      return ContainerState.CREATED
-    case 2:
-    case 'RESTARTING':
-      return ContainerState.RESTARTING
-    case 3:
-    case 'RUNNING':
-      return ContainerState.RUNNING
-    case 4:
-    case 'REMOVING':
-      return ContainerState.REMOVING
-    case 5:
-    case 'PAUSED':
-      return ContainerState.PAUSED
-    case 6:
-    case 'EXITED':
-      return ContainerState.EXITED
-    case 7:
-    case 'DEAD':
-      return ContainerState.DEAD
-    case -1:
-    case 'UNRECOGNIZED':
-    default:
-      return ContainerState.UNRECOGNIZED
-  }
-}
-
-export function containerStateToJSON(object: ContainerState): string {
-  switch (object) {
-    case ContainerState.UNKNOWN_CONTAINER_STATE:
-      return 'UNKNOWN_CONTAINER_STATE'
-    case ContainerState.CREATED:
-      return 'CREATED'
-    case ContainerState.RESTARTING:
-      return 'RESTARTING'
-    case ContainerState.RUNNING:
-      return 'RUNNING'
-    case ContainerState.REMOVING:
-      return 'REMOVING'
-    case ContainerState.PAUSED:
-      return 'PAUSED'
-    case ContainerState.EXITED:
-      return 'EXITED'
-    case ContainerState.DEAD:
-      return 'DEAD'
     default:
       return 'UNKNOWN'
   }
@@ -885,70 +766,6 @@ export interface IncreaseVersionRequest {
   changelog?: string | undefined
 }
 
-export interface ExplicitContainerConfig {
-  /** container ports */
-  ports: ExplicitContainerConfig_Port[]
-  /** volume mounts in a piped format */
-  mounts: string[]
-  /** could be enum, i'm not sure if it is in use */
-  networkMode?: ExplicitContainerConfig_NetworkMode | undefined
-  /** exposure configuration */
-  expose?: ExplicitContainerConfig_Expose | undefined
-  user?: number | undefined
-}
-
-export enum ExplicitContainerConfig_NetworkMode {
-  UNKNOWN_NETWORK_MODE = 0,
-  NONE = 1,
-  HOST = 2,
-  UNRECOGNIZED = -1,
-}
-
-export function explicitContainerConfig_NetworkModeFromJSON(object: any): ExplicitContainerConfig_NetworkMode {
-  switch (object) {
-    case 0:
-    case 'UNKNOWN_NETWORK_MODE':
-      return ExplicitContainerConfig_NetworkMode.UNKNOWN_NETWORK_MODE
-    case 1:
-    case 'NONE':
-      return ExplicitContainerConfig_NetworkMode.NONE
-    case 2:
-    case 'HOST':
-      return ExplicitContainerConfig_NetworkMode.HOST
-    case -1:
-    case 'UNRECOGNIZED':
-    default:
-      return ExplicitContainerConfig_NetworkMode.UNRECOGNIZED
-  }
-}
-
-export function explicitContainerConfig_NetworkModeToJSON(object: ExplicitContainerConfig_NetworkMode): string {
-  switch (object) {
-    case ExplicitContainerConfig_NetworkMode.UNKNOWN_NETWORK_MODE:
-      return 'UNKNOWN_NETWORK_MODE'
-    case ExplicitContainerConfig_NetworkMode.NONE:
-      return 'NONE'
-    case ExplicitContainerConfig_NetworkMode.HOST:
-      return 'HOST'
-    default:
-      return 'UNKNOWN'
-  }
-}
-
-export interface ExplicitContainerConfig_Port {
-  /** internal that is bound by the container */
-  internal: number
-  /** external is docker only */
-  external: number
-}
-
-export interface ExplicitContainerConfig_Expose {
-  /** if expose is needed */
-  public: boolean
-  /** if tls is needed */
-  tls: boolean
-}
-
 export interface ContainerConfig {
   config: ExplicitContainerConfig | undefined
   name: string
@@ -1085,11 +902,6 @@ export interface WatchContainerStateRequest {
   prefix?: string | undefined
 }
 
-export interface ContainerPort {
-  internal: number
-  external: number
-}
-
 export interface ContainerStateItem {
   containerId: string
   name: string
@@ -1104,23 +916,12 @@ export interface ContainerStateItem {
   status: string
   imageName: string
   imageTag: string
-  ports: ContainerPort[]
+  ports: Port[]
 }
 
 export interface ContainerStateListMessage {
   prefix?: string | undefined
   data: ContainerStateItem[]
-}
-
-export interface InstanceDeploymentItem {
-  instanceId: string
-  state: ContainerState
-}
-
-export interface DeploymentStatusMessage {
-  instance: InstanceDeploymentItem | undefined
-  deploymentStatus: DeploymentStatus | undefined
-  log: string[]
 }
 
 export interface DeploymentProgressMessage {
@@ -4729,246 +4530,6 @@ export const IncreaseVersionRequest = {
   },
 }
 
-const baseExplicitContainerConfig: object = { mounts: '' }
-
-export const ExplicitContainerConfig = {
-  encode(message: ExplicitContainerConfig, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    for (const v of message.ports) {
-      ExplicitContainerConfig_Port.encode(v!, writer.uint32(10).fork()).ldelim()
-    }
-    for (const v of message.mounts) {
-      writer.uint32(18).string(v!)
-    }
-    if (message.networkMode !== undefined) {
-      writer.uint32(32).int32(message.networkMode)
-    }
-    if (message.expose !== undefined) {
-      ExplicitContainerConfig_Expose.encode(message.expose, writer.uint32(42).fork()).ldelim()
-    }
-    if (message.user !== undefined) {
-      writer.uint32(48).uint64(message.user)
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): ExplicitContainerConfig {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = {
-      ...baseExplicitContainerConfig,
-    } as ExplicitContainerConfig
-    message.ports = []
-    message.mounts = []
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 1:
-          message.ports.push(ExplicitContainerConfig_Port.decode(reader, reader.uint32()))
-          break
-        case 2:
-          message.mounts.push(reader.string())
-          break
-        case 4:
-          message.networkMode = reader.int32() as any
-          break
-        case 5:
-          message.expose = ExplicitContainerConfig_Expose.decode(reader, reader.uint32())
-          break
-        case 6:
-          message.user = longToNumber(reader.uint64() as Long)
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): ExplicitContainerConfig {
-    const message = {
-      ...baseExplicitContainerConfig,
-    } as ExplicitContainerConfig
-    message.ports = (object.ports ?? []).map((e: any) => ExplicitContainerConfig_Port.fromJSON(e))
-    message.mounts = (object.mounts ?? []).map((e: any) => String(e))
-    message.networkMode =
-      object.networkMode !== undefined && object.networkMode !== null
-        ? explicitContainerConfig_NetworkModeFromJSON(object.networkMode)
-        : undefined
-    message.expose =
-      object.expose !== undefined && object.expose !== null
-        ? ExplicitContainerConfig_Expose.fromJSON(object.expose)
-        : undefined
-    message.user = object.user !== undefined && object.user !== null ? Number(object.user) : undefined
-    return message
-  },
-
-  toJSON(message: ExplicitContainerConfig): unknown {
-    const obj: any = {}
-    if (message.ports) {
-      obj.ports = message.ports.map(e => (e ? ExplicitContainerConfig_Port.toJSON(e) : undefined))
-    } else {
-      obj.ports = []
-    }
-    if (message.mounts) {
-      obj.mounts = message.mounts.map(e => e)
-    } else {
-      obj.mounts = []
-    }
-    message.networkMode !== undefined &&
-      (obj.networkMode =
-        message.networkMode !== undefined ? explicitContainerConfig_NetworkModeToJSON(message.networkMode) : undefined)
-    message.expose !== undefined &&
-      (obj.expose = message.expose ? ExplicitContainerConfig_Expose.toJSON(message.expose) : undefined)
-    message.user !== undefined && (obj.user = Math.round(message.user))
-    return obj
-  },
-
-  fromPartial<I extends Exact<DeepPartial<ExplicitContainerConfig>, I>>(object: I): ExplicitContainerConfig {
-    const message = {
-      ...baseExplicitContainerConfig,
-    } as ExplicitContainerConfig
-    message.ports = object.ports?.map(e => ExplicitContainerConfig_Port.fromPartial(e)) || []
-    message.mounts = object.mounts?.map(e => e) || []
-    message.networkMode = object.networkMode ?? undefined
-    message.expose =
-      object.expose !== undefined && object.expose !== null
-        ? ExplicitContainerConfig_Expose.fromPartial(object.expose)
-        : undefined
-    message.user = object.user ?? undefined
-    return message
-  },
-}
-
-const baseExplicitContainerConfig_Port: object = { internal: 0, external: 0 }
-
-export const ExplicitContainerConfig_Port = {
-  encode(message: ExplicitContainerConfig_Port, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.internal !== 0) {
-      writer.uint32(8).int32(message.internal)
-    }
-    if (message.external !== 0) {
-      writer.uint32(16).int32(message.external)
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): ExplicitContainerConfig_Port {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = {
-      ...baseExplicitContainerConfig_Port,
-    } as ExplicitContainerConfig_Port
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 1:
-          message.internal = reader.int32()
-          break
-        case 2:
-          message.external = reader.int32()
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): ExplicitContainerConfig_Port {
-    const message = {
-      ...baseExplicitContainerConfig_Port,
-    } as ExplicitContainerConfig_Port
-    message.internal = object.internal !== undefined && object.internal !== null ? Number(object.internal) : 0
-    message.external = object.external !== undefined && object.external !== null ? Number(object.external) : 0
-    return message
-  },
-
-  toJSON(message: ExplicitContainerConfig_Port): unknown {
-    const obj: any = {}
-    message.internal !== undefined && (obj.internal = Math.round(message.internal))
-    message.external !== undefined && (obj.external = Math.round(message.external))
-    return obj
-  },
-
-  fromPartial<I extends Exact<DeepPartial<ExplicitContainerConfig_Port>, I>>(object: I): ExplicitContainerConfig_Port {
-    const message = {
-      ...baseExplicitContainerConfig_Port,
-    } as ExplicitContainerConfig_Port
-    message.internal = object.internal ?? 0
-    message.external = object.external ?? 0
-    return message
-  },
-}
-
-const baseExplicitContainerConfig_Expose: object = {
-  public: false,
-  tls: false,
-}
-
-export const ExplicitContainerConfig_Expose = {
-  encode(message: ExplicitContainerConfig_Expose, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.public === true) {
-      writer.uint32(8).bool(message.public)
-    }
-    if (message.tls === true) {
-      writer.uint32(16).bool(message.tls)
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): ExplicitContainerConfig_Expose {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = {
-      ...baseExplicitContainerConfig_Expose,
-    } as ExplicitContainerConfig_Expose
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 1:
-          message.public = reader.bool()
-          break
-        case 2:
-          message.tls = reader.bool()
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): ExplicitContainerConfig_Expose {
-    const message = {
-      ...baseExplicitContainerConfig_Expose,
-    } as ExplicitContainerConfig_Expose
-    message.public = object.public !== undefined && object.public !== null ? Boolean(object.public) : false
-    message.tls = object.tls !== undefined && object.tls !== null ? Boolean(object.tls) : false
-    return message
-  },
-
-  toJSON(message: ExplicitContainerConfig_Expose): unknown {
-    const obj: any = {}
-    message.public !== undefined && (obj.public = message.public)
-    message.tls !== undefined && (obj.tls = message.tls)
-    return obj
-  },
-
-  fromPartial<I extends Exact<DeepPartial<ExplicitContainerConfig_Expose>, I>>(
-    object: I,
-  ): ExplicitContainerConfig_Expose {
-    const message = {
-      ...baseExplicitContainerConfig_Expose,
-    } as ExplicitContainerConfig_Expose
-    message.public = object.public ?? false
-    message.tls = object.tls ?? false
-    return message
-  },
-}
-
 const baseContainerConfig: object = { name: '' }
 
 export const ContainerConfig = {
@@ -6555,62 +6116,6 @@ export const WatchContainerStateRequest = {
   },
 }
 
-const baseContainerPort: object = { internal: 0, external: 0 }
-
-export const ContainerPort = {
-  encode(message: ContainerPort, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.internal !== 0) {
-      writer.uint32(8).int32(message.internal)
-    }
-    if (message.external !== 0) {
-      writer.uint32(16).int32(message.external)
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): ContainerPort {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = { ...baseContainerPort } as ContainerPort
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 1:
-          message.internal = reader.int32()
-          break
-        case 2:
-          message.external = reader.int32()
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): ContainerPort {
-    const message = { ...baseContainerPort } as ContainerPort
-    message.internal = object.internal !== undefined && object.internal !== null ? Number(object.internal) : 0
-    message.external = object.external !== undefined && object.external !== null ? Number(object.external) : 0
-    return message
-  },
-
-  toJSON(message: ContainerPort): unknown {
-    const obj: any = {}
-    message.internal !== undefined && (obj.internal = Math.round(message.internal))
-    message.external !== undefined && (obj.external = Math.round(message.external))
-    return obj
-  },
-
-  fromPartial<I extends Exact<DeepPartial<ContainerPort>, I>>(object: I): ContainerPort {
-    const message = { ...baseContainerPort } as ContainerPort
-    message.internal = object.internal ?? 0
-    message.external = object.external ?? 0
-    return message
-  },
-}
-
 const baseContainerStateItem: object = {
   containerId: '',
   name: '',
@@ -6648,7 +6153,7 @@ export const ContainerStateItem = {
       writer.uint32(866).string(message.imageTag)
     }
     for (const v of message.ports) {
-      ContainerPort.encode(v!, writer.uint32(8002).fork()).ldelim()
+      Port.encode(v!, writer.uint32(8002).fork()).ldelim()
     }
     return writer
   },
@@ -6686,7 +6191,7 @@ export const ContainerStateItem = {
           message.imageTag = reader.string()
           break
         case 1000:
-          message.ports.push(ContainerPort.decode(reader, reader.uint32()))
+          message.ports.push(Port.decode(reader, reader.uint32()))
           break
         default:
           reader.skipType(tag & 7)
@@ -6708,7 +6213,7 @@ export const ContainerStateItem = {
     message.status = object.status !== undefined && object.status !== null ? String(object.status) : ''
     message.imageName = object.imageName !== undefined && object.imageName !== null ? String(object.imageName) : ''
     message.imageTag = object.imageTag !== undefined && object.imageTag !== null ? String(object.imageTag) : ''
-    message.ports = (object.ports ?? []).map((e: any) => ContainerPort.fromJSON(e))
+    message.ports = (object.ports ?? []).map((e: any) => Port.fromJSON(e))
     return message
   },
 
@@ -6723,7 +6228,7 @@ export const ContainerStateItem = {
     message.imageName !== undefined && (obj.imageName = message.imageName)
     message.imageTag !== undefined && (obj.imageTag = message.imageTag)
     if (message.ports) {
-      obj.ports = message.ports.map(e => (e ? ContainerPort.toJSON(e) : undefined))
+      obj.ports = message.ports.map(e => (e ? Port.toJSON(e) : undefined))
     } else {
       obj.ports = []
     }
@@ -6741,7 +6246,7 @@ export const ContainerStateItem = {
     message.status = object.status ?? ''
     message.imageName = object.imageName ?? ''
     message.imageTag = object.imageTag ?? ''
-    message.ports = object.ports?.map(e => ContainerPort.fromPartial(e)) || []
+    message.ports = object.ports?.map(e => Port.fromPartial(e)) || []
     return message
   },
 }
@@ -6809,150 +6314,6 @@ export const ContainerStateListMessage = {
     } as ContainerStateListMessage
     message.prefix = object.prefix ?? undefined
     message.data = object.data?.map(e => ContainerStateItem.fromPartial(e)) || []
-    return message
-  },
-}
-
-const baseInstanceDeploymentItem: object = { instanceId: '', state: 0 }
-
-export const InstanceDeploymentItem = {
-  encode(message: InstanceDeploymentItem, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.instanceId !== '') {
-      writer.uint32(802).string(message.instanceId)
-    }
-    if (message.state !== 0) {
-      writer.uint32(808).int32(message.state)
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): InstanceDeploymentItem {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = { ...baseInstanceDeploymentItem } as InstanceDeploymentItem
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 100:
-          message.instanceId = reader.string()
-          break
-        case 101:
-          message.state = reader.int32() as any
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): InstanceDeploymentItem {
-    const message = { ...baseInstanceDeploymentItem } as InstanceDeploymentItem
-    message.instanceId = object.instanceId !== undefined && object.instanceId !== null ? String(object.instanceId) : ''
-    message.state = object.state !== undefined && object.state !== null ? containerStateFromJSON(object.state) : 0
-    return message
-  },
-
-  toJSON(message: InstanceDeploymentItem): unknown {
-    const obj: any = {}
-    message.instanceId !== undefined && (obj.instanceId = message.instanceId)
-    message.state !== undefined && (obj.state = containerStateToJSON(message.state))
-    return obj
-  },
-
-  fromPartial<I extends Exact<DeepPartial<InstanceDeploymentItem>, I>>(object: I): InstanceDeploymentItem {
-    const message = { ...baseInstanceDeploymentItem } as InstanceDeploymentItem
-    message.instanceId = object.instanceId ?? ''
-    message.state = object.state ?? 0
-    return message
-  },
-}
-
-const baseDeploymentStatusMessage: object = { log: '' }
-
-export const DeploymentStatusMessage = {
-  encode(message: DeploymentStatusMessage, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.instance !== undefined) {
-      InstanceDeploymentItem.encode(message.instance, writer.uint32(1602).fork()).ldelim()
-    }
-    if (message.deploymentStatus !== undefined) {
-      writer.uint32(1608).int32(message.deploymentStatus)
-    }
-    for (const v of message.log) {
-      writer.uint32(8002).string(v!)
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): DeploymentStatusMessage {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = {
-      ...baseDeploymentStatusMessage,
-    } as DeploymentStatusMessage
-    message.log = []
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 200:
-          message.instance = InstanceDeploymentItem.decode(reader, reader.uint32())
-          break
-        case 201:
-          message.deploymentStatus = reader.int32() as any
-          break
-        case 1000:
-          message.log.push(reader.string())
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): DeploymentStatusMessage {
-    const message = {
-      ...baseDeploymentStatusMessage,
-    } as DeploymentStatusMessage
-    message.instance =
-      object.instance !== undefined && object.instance !== null
-        ? InstanceDeploymentItem.fromJSON(object.instance)
-        : undefined
-    message.deploymentStatus =
-      object.deploymentStatus !== undefined && object.deploymentStatus !== null
-        ? deploymentStatusFromJSON(object.deploymentStatus)
-        : undefined
-    message.log = (object.log ?? []).map((e: any) => String(e))
-    return message
-  },
-
-  toJSON(message: DeploymentStatusMessage): unknown {
-    const obj: any = {}
-    message.instance !== undefined &&
-      (obj.instance = message.instance ? InstanceDeploymentItem.toJSON(message.instance) : undefined)
-    message.deploymentStatus !== undefined &&
-      (obj.deploymentStatus =
-        message.deploymentStatus !== undefined ? deploymentStatusToJSON(message.deploymentStatus) : undefined)
-    if (message.log) {
-      obj.log = message.log.map(e => e)
-    } else {
-      obj.log = []
-    }
-    return obj
-  },
-
-  fromPartial<I extends Exact<DeepPartial<DeploymentStatusMessage>, I>>(object: I): DeploymentStatusMessage {
-    const message = {
-      ...baseDeploymentStatusMessage,
-    } as DeploymentStatusMessage
-    message.instance =
-      object.instance !== undefined && object.instance !== null
-        ? InstanceDeploymentItem.fromPartial(object.instance)
-        : undefined
-    message.deploymentStatus = object.deploymentStatus ?? undefined
-    message.log = object.log?.map(e => e) || []
     return message
   },
 }
@@ -10772,17 +10133,6 @@ export const CruxHealthClient = makeGenericClientConstructor(CruxHealthService, 
   service: typeof CruxHealthService
 }
 
-declare var self: any | undefined
-declare var window: any | undefined
-declare var global: any | undefined
-var globalThis: any = (() => {
-  if (typeof globalThis !== 'undefined') return globalThis
-  if (typeof self !== 'undefined') return self
-  if (typeof window !== 'undefined') return window
-  if (typeof global !== 'undefined') return global
-  throw 'Unable to locate global object'
-})()
-
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined
 
 export type DeepPartial<T> = T extends Builtin
@@ -10820,13 +10170,6 @@ function fromJsonTimestamp(o: any): Timestamp {
   } else {
     return Timestamp.fromJSON(o)
   }
-}
-
-function longToNumber(long: Long): number {
-  if (long.gt(Number.MAX_SAFE_INTEGER)) {
-    throw new globalThis.Error('Value is larger than Number.MAX_SAFE_INTEGER')
-  }
-  return long.toNumber()
 }
 
 if (_m0.util.Long !== Long) {

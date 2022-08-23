@@ -1,7 +1,7 @@
 import JsonEditor from '@app/components/shared/json-editor-dynamic-module'
 import { IMAGE_WS_REQUEST_DELAY } from '@app/const'
 import { CANCEL_THROTTLE, useThrottling } from '@app/hooks/use-throttleing'
-import { CompleteContainerConfig, ContainerConfig, UniqueKeyValue } from '@app/models'
+import { CompleteContainerConfig, ContainerConfig, UniqueKeyValue } from '@app/models-config'
 import { fold } from '@app/utils'
 import { completeContainerConfigSchema } from '@app/validation'
 import clsx from 'clsx'

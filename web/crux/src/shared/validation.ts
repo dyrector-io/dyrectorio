@@ -1,6 +1,13 @@
 import { InvalidArgumentException } from 'src/exception/errors'
 import * as yup from 'yup'
-import { ExplicitContainerNetworkMode, EXPLICIT_CONTAINER_NETWORK_MODE_VALUES } from './model'
+import {
+  ExplicitContainerDeploymentStrategyType,
+  ExplicitContainerNetworkMode,
+  ExplicitContainerRestartPolicyType,
+  EXPLICIT_CONTAINER_DEPLOYMENT_STRATEGY_VALUES,
+  EXPLICIT_CONTAINER_NETWORK_MODE_VALUES,
+  EXPLICIT_CONTAINER_RESTART_POLICY_TYPE_VALUES,
+} from './model'
 
 export const uniqueKeyValuesSchema = yup
   .array(
@@ -15,6 +22,44 @@ export const uniqueKeyValuesSchema = yup
 const portNumberRule = yup.number().positive().lessThan(65536).required()
 
 export const explicitContainerConfigSchema = yup.object().shape({
+  ingress: yup
+    .object()
+    .shape({
+      name: yup.string(),
+      host: yup.string(),
+      uploadLimitInBytes: yup.string().optional(),
+    })
+    .default({})
+    .optional(),
+  expose: yup
+    .object()
+    .shape({
+      public: yup.boolean(),
+      tls: yup.boolean(),
+    })
+    .default({})
+    .optional(),
+  importContainer: yup
+    .object()
+    .shape({
+      volume: yup.string(),
+      command: yup.string(),
+      environments: yup.object().shape({}),
+    })
+    .default({})
+    .optional(),
+  configContainer: yup
+    .object()
+    .shape({
+      image: yup.string(),
+      volume: yup.string(),
+      path: yup.boolean(),
+      keepFiles: yup.boolean(),
+    })
+    .default({})
+    .optional(),
+  user: yup.number().positive().nullable().default(null).optional(),
+  TTY: yup.boolean().default(false).optional(),
   ports: yup
     .array(
       yup.object().shape({
@@ -22,20 +67,88 @@ export const explicitContainerConfigSchema = yup.object().shape({
         external: portNumberRule,
       }),
     )
-    .default([]),
-  mounts: yup.array(yup.string()).default([]),
-  networkMode: yup
-    .mixed<ExplicitContainerNetworkMode>()
-    .oneOf([...EXPLICIT_CONTAINER_NETWORK_MODE_VALUES])
-    .default('none'),
-  expose: yup
+    .default([])
+    .optional(),
+  portRanges: yup
+    .array(
+      yup.object().shape({
+        internal: yup.object().shape({ from: portNumberRule, to: portNumberRule }),
+        external: yup.object().shape({ from: portNumberRule, to: portNumberRule }),
+      }),
+    )
+    .default([])
+    .optional(),
+  volumes: yup
+    .array(
+      yup.object().shape({
+        name: yup.string(),
+        path: yup.string(),
+        size: yup.string().nullable(),
+        type: yup.string().nullable(),
+        class: yup.string().nullable(),
+      }),
+    )
+    .default([])
+    .optional(),
+  commands: yup.array(yup.string()).default([]).optional(),
+  args: yup.array(yup.string()).default([]).optional(),
+
+  //dagent:
+  logConfig: yup
     .object()
     .shape({
-      public: yup.boolean().required(),
-      tls: yup.boolean().required(),
+      type: yup.string(),
+      config: yup.object().shape({}),
     })
-    .default([]),
-  user: yup.number().positive().nullable().default(null),
+    .default({})
+    .optional(),
+  restartPolicy: yup
+    .mixed<ExplicitContainerRestartPolicyType>()
+    .oneOf([...EXPLICIT_CONTAINER_RESTART_POLICY_TYPE_VALUES, null])
+    .default('unless_stopped')
+    .optional(),
+  networkMode: yup
+    .mixed<ExplicitContainerNetworkMode>()
+    .oneOf([...EXPLICIT_CONTAINER_NETWORK_MODE_VALUES, null])
+    .default('none')
+    .optional(),
+
+  //crane:
+  deploymentStrategy: yup
+    .mixed<ExplicitContainerDeploymentStrategyType>()
+    .oneOf([...EXPLICIT_CONTAINER_DEPLOYMENT_STRATEGY_VALUES, null])
+    .default('recreate')
+    .optional(),
+  customHeaders: yup.array(yup.string()).default([]).optional(),
+  proxyHeaders: yup.boolean().default(false).optional(),
+  useLoadBalancer: yup.boolean().default(false).optional(),
+  healthCheckConfig: yup
+    .object()
+    .shape({
+      port: yup.number().positive().lessThan(65536),
+      livenessProbe: yup.string().optional(),
+      readinessProbe: yup.string().optional(),
+      startupProbe: yup.string().optional(),
+    })
+    .default({})
+    .optional(),
+  resourceConfig: yup
+    .object()
+    .shape({
+      limits: yup
+        .object()
+        .shape({ cpu: yup.string().nullable(), memory: yup.string().nullable() })
+        .default({})
+        .optional(),
+      requests: yup
+        .object()
+        .shape({ cpu: yup.string().nullable(), memory: yup.string().nullable() })
+        .default({})
+        .optional(),
+    })
+    .default({})
+    .optional(),
+  extraLBAnnotations: yup.object().shape({}).default({}).optional(),
 })
 
 export const containerConfigSchema = yup.object({
