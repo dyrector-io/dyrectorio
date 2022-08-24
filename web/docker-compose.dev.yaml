@@ -36,8 +36,6 @@ services:
       - SQA_OPT_OUT=true
       - DSN=postgres://kratos:${KRATOS_POSTGRES_PASSWORD}@kratos-postgres:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4
     command: -c /etc/config/kratos/kratos.yaml migrate sql -e --yes
-    volumes:
-      - kratos-config:/etc/config/kratos
     networks:
       - crux-intranet
 
@@ -57,7 +55,6 @@ services:
     environment:
       - KRATOS_ADMIN_URL=${KRATOS_ADMIN_URL:-http://172.17.0.1:9434}
       - KRATOS_URL=${KRATOS_URL:-http://172.17.0.1:8000/kratos}
-      - AUTH_URL=${AUTH_URL:-http://172.17.0.1:8000/auth}
       - CRUX_UI_URL=${CRUX_UI_URL:-http://172.17.0.1:8000}
       - DEV=${KRATOS_DEV:-false}
       - SQA_OPT_OUT=true
@@ -68,8 +65,13 @@ services:
       - COURIER_SMTP_CONNECTION_URI=smtps://${SMTP_USER}:${SMTP_PASSWORD}@${SMTP_URL}
     restart: unless-stopped
     command: serve -c /etc/config/kratos/kratos.yaml --watch-courier
-    volumes:
-      - kratos-config:/etc/config/kratos
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.kratos.rule=Host(`${TRAEFIK_HOST:-172.17.0.1}`) && PathPrefix(`/kratos`)
+      - traefik.http.routers.kratos.entrypoints=web
+      - traefik.http.services.kratos.loadbalancer.server.port=4433
+      - traefik.http.middlewares.kratos-strip.stripprefix.prefixes=/kratos
+      - traefik.http.routers.kratos.middlewares=kratos-strip
     networks:
       - crux-intranet
 
@@ -82,25 +84,29 @@ services:
     networks:
       - crux-intranet
 
-  crux-nginx:
-    container_name: crux-nginx
-    image: ghcr.io/dyrector-io/dyrectorio/nginx:${DYO_VERSION}
+  crux-traefik:
+    container_name: crux-traefik
+    image: traefik:v2.8
     depends_on:
       - kratos
-    build:
-      context: ./nginx
     platform: linux/amd64
     ports:
       - 8000:8000
+      - 8080:8080 # web ui
+    command:
+      - --log.level=INFO
+      - --api.insecure=true
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.file.filename=/etc/traefik/traefik.dev.yml
+      - --entrypoints.web.address=:8000
     environment:
-      SERVER_NAME: ${SERVER_NAME:-172.17.0.1}
-      NGINX_PORT: ${NGINX_PORT:-8000}
-      AUTH_ADDRESS: ${AUTH_ADDRESS:-172.17.0.1:9000}
-      KRATOS_ADDRESS: kratos:4433
-      CRUX_UI_ADDRESS: ${CRUX_UI_ADDRESS:-172.17.0.1:3000}
+      - TRAEFIK_HOST=${TRAEFIK_HOST:-172.17.0.1}
+    volumes:
+      - ./traefik.dev.yml:/etc/traefik/traefik.dev.yml
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - crux-intranet
-
 volumes:
   kratos-db:
   kratos-config:
