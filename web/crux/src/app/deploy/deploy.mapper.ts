@@ -53,6 +53,7 @@ export class DeployMapper {
       status: this.statusToGrpc(deployment.status),
       productId: deployment.version.product.id,
       versionId: deployment.version.id,
+      nodeId: deployment.node.id,
     }
   }
 
@@ -252,6 +253,6 @@ export type DeploymentDetails = DeploymentWithNode & {
 type DeploymentContainerConfig = Omit<ContainerConfig, 'imageId'>
 
 type DeploymentListItem = Deployment & {
-  node: { name: string }
+  node: { id: string; name: string }
   version: { id: string; name: string; product: { id: string; name: string } }
 }
