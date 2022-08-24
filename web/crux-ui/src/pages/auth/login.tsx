@@ -45,7 +45,7 @@ const LoginPage = (props: LoginPageProps) => {
       password: '',
     },
     onSubmit: async values => {
-      const captcha = recaptchaSiteKey ? await recaptcha.current.executeAsync() : null
+      const captcha = await recaptcha.current?.executeAsync()
 
       const data: Login = {
         flow: flow.id,
@@ -60,8 +60,7 @@ const LoginPage = (props: LoginPageProps) => {
       if (res.ok) {
         router.replace(ROUTE_INDEX)
       } else {
-        recaptcha.current.reset()
-
+        recaptcha.current?.reset()
         const data = await res.json()
 
         if (isDyoError(data)) {
