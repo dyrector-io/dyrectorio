@@ -183,19 +183,19 @@ func MapKubeDeploymentListToCruxStateItems(deployments *appsv1.DeploymentList) [
 	stateItems := []*crux.ContainerStateItem{}
 
 	for i := range deployments.Items {
-		deploymentName := deployments.Items[i].Name
+		deployment := deployments.Items[i]
 
 		stateItem := &crux.ContainerStateItem{
-			Name:  deployments.Items[i].Name,
-			State: MapKubeStatusToCruxContainerState(deployments.Items[i].Status),
+			Name:  deployment.Name,
+			State: MapKubeStatusToCruxContainerState(deployment.Status),
 			CreatedAt: timestamppb.New(
-				time.UnixMilli(deployments.Items[i].GetCreationTimestamp().Unix() * int64(time.Microsecond)).UTC(),
+				time.UnixMilli(deployment.GetCreationTimestamp().Unix() * int64(time.Microsecond)).UTC(),
 			),
 		}
 
-		if containers := deployments.Items[i].Spec.Template.Spec.Containers; containers != nil {
+		if containers := deployment.Spec.Template.Spec.Containers; containers != nil {
 			for i := 0; i < len(containers); i++ {
-				if containers[i].Name != deploymentName {
+				if containers[i].Name != deployment.Name {
 					// this move was suggested by golangci
 					continue
 				}
