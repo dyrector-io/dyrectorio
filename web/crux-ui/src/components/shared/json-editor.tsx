@@ -39,17 +39,17 @@ const _JsonEditor = <T,>(props: JsonEditorProps<T>) => {
   }
 
   return (
-    <Editor
-      disabled={props.disabled}
-      preClassName={props.className}
-      className={clsx('text-white bg-gray-900 rounded-md ring-2 ring-light-grey border-dark')}
-      padding={2}
-      tabSize={2}
-      insertSpaces
-      value={state}
-      onValueChange={onChange}
-      highlight={value => highlight(value, languages['json'], 'json')}
-    />
+    <div className={clsx('bg-gray-900 rounded-md ring-2 ring-light-grey border-dark caret-white', props.className)}>
+      <Editor
+        disabled={props.disabled}
+        padding={2}
+        tabSize={2}
+        insertSpaces
+        value={state}
+        onValueChange={onChange}
+        highlight={value => highlight(value, languages['json'], 'json')}
+      />
+    </div>
   )
 }
 

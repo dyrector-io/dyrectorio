@@ -1184,6 +1184,7 @@ export interface DeploymentResponse {
   versionId: string
   node: string
   status: DeploymentStatus
+  nodeId: string
 }
 
 export interface DeploymentListByVersionResponse {
@@ -3467,6 +3468,7 @@ const baseDeploymentResponse: object = {
   versionId: '',
   node: '',
   status: 0,
+  nodeId: '',
 }
 
 export const DeploymentResponse = {
@@ -3480,6 +3482,7 @@ export const DeploymentResponse = {
     message.versionId = object.versionId !== undefined && object.versionId !== null ? String(object.versionId) : ''
     message.node = object.node !== undefined && object.node !== null ? String(object.node) : ''
     message.status = object.status !== undefined && object.status !== null ? deploymentStatusFromJSON(object.status) : 0
+    message.nodeId = object.nodeId !== undefined && object.nodeId !== null ? String(object.nodeId) : ''
     return message
   },
 
@@ -3493,6 +3496,7 @@ export const DeploymentResponse = {
     message.versionId !== undefined && (obj.versionId = message.versionId)
     message.node !== undefined && (obj.node = message.node)
     message.status !== undefined && (obj.status = deploymentStatusToJSON(message.status))
+    message.nodeId !== undefined && (obj.nodeId = message.nodeId)
     return obj
   },
 }

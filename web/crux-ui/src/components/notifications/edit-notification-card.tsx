@@ -7,7 +7,7 @@ import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { DyoSwitch } from '@app/elements/dyo-switch'
 import { defaultApiErrorHandler } from '@app/errors'
-import { useThrottleing } from '@app/hooks/use-throttleing'
+import { useThrottling } from '@app/hooks/use-throttleing'
 import {
   CreateNotification,
   NotificationDetails,
@@ -44,7 +44,7 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
     },
   )
 
-  const throttle = useThrottleing(WEBOOK_TEST_DELAY)
+  const throttle = useThrottling(WEBOOK_TEST_DELAY)
 
   const editMode = !!notification.id
 

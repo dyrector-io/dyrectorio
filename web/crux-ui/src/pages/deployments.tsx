@@ -5,7 +5,7 @@ import PageHeading from '@app/components/shared/page-heading'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoList } from '@app/elements/dyo-list'
 import { Deployment } from '@app/models'
-import { deploymentUrl, ROUTE_DEPLOYMENTS } from '@app/routes'
+import { deploymentUrl, nodeUrl, productUrl, ROUTE_DEPLOYMENTS, versionUrl } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import clsx from 'clsx'
@@ -50,9 +50,15 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
             /* eslint-disable react/jsx-key */
             return [
               it.name,
-              it.product,
-              it.version,
-              it.node,
+              <a className="cursor-pointer" onClick={() => router.push(productUrl(it.productId))}>
+                {it.product}
+              </a>,
+              <a className="cursor-pointer" onClick={() => router.push(versionUrl(it.productId, it.versionId))}>
+                {it.version}
+              </a>,
+              <a className="cursor-pointer" onClick={() => router.push(nodeUrl(it.nodeId))}>
+                {it.node}
+              </a>,
               <DeploymentStatusTag status={it.status} className="w-fit mx-auto" />,
               <Image
                 src="/eye.svg"

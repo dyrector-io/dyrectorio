@@ -87,20 +87,25 @@ func (g *GrpcConnection) SetConn(conn *grpc.ClientConn) {
 // Singleton instance
 var grpcConn *GrpcConnection
 
-func fetchCertificatesFromURL(ctx context.Context, url string) (*x509.CertPool, error) {
+func fetchCertificatesFromURL(ctx context.Context, addr string) (*x509.CertPool, error) {
 	log.Println("Retrieving certificate")
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, http.NoBody)
+	req, err := http.NewRequestWithContext(ctx, http.MethodHead, addr, http.NoBody)
+
 	if err != nil {
-		return nil, fmt.Errorf("failed to create the http request\n%s", err.Error())
+		return nil, fmt.Errorf("failed to create the http request: %s", err.Error())
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to retrieve the certificates\n%s", err.Error())
+		return nil, fmt.Errorf("failed to execute request for certificates: %s", err.Error())
 	}
 
 	defer resp.Body.Close()
+
+	if resp.TLS == nil {
+		return nil, errors.New("TLS info is missing")
+	}
 
 	if !resp.TLS.HandshakeComplete {
 		return nil, errors.New("TLS handshake was incomplete")

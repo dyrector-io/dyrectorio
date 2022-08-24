@@ -23,7 +23,7 @@ type CommonConfiguration struct {
 	// TODO(c3ppc3pp): custom setter to validate input
 	GrpcToken            string `yaml:"grpcToken"             env:"GRPC_TOKEN"`
 	GrpcInsecure         bool   `yaml:"grpcInsecure"          env:"GRPC_INSECURE"           env-default:"false"`
-	HTTPPort             int    `yaml:"httpPort"              env:"PORT"                    env-default:"8080"`
+	HTTPPort             int    `yaml:"httpPort"              env:"PORT"`
 	ImportContainerImage string `yaml:"importContainerImage"  env:"IMPORT_CONTAINER_IMAGE"  env-default:"rclone/rclone:1.57.0"`
 	IngressRootDomain    string `yaml:"ingressRootDomain"     env:"INGRESS_ROOT_DOMAIN"     env-default:""`
 	// TODO(c3ppc3pp): custom UUIDv4 setter

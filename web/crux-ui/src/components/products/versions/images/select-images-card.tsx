@@ -8,7 +8,7 @@ import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { DyoList } from '@app/elements/dyo-list'
 import LoadingIndicator from '@app/elements/loading-indicator'
-import { useThrottleing } from '@app/hooks/use-throttleing'
+import { useThrottling } from '@app/hooks/use-throttleing'
 import { useWebSocket } from '@app/hooks/use-websocket'
 import {
   FindImageMessage,
@@ -42,7 +42,7 @@ const SelectImagesCard = (props: SelectImagesCardProps) => {
   const [selected, setSelected] = useState<SelectableImage[]>([])
   const [images, setImages] = useState<SelectableImage[]>([])
   const [filter, setFilter] = useState('')
-  const throttleFilter = useThrottleing(IMAGE_WS_REQUEST_DELAY)
+  const throttleFilter = useThrottling(IMAGE_WS_REQUEST_DELAY)
 
   const registriesFound = registries?.length > 0
 

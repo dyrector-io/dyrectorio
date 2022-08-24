@@ -4,7 +4,9 @@ type ThrottledAction = {
   trigger: VoidFunction
 }
 
-export const useThrottleing = (delay: number): ((action: VoidFunction) => void) => {
+export const CANCEL_THROTTLE = () => {}
+
+export const useThrottling = (delay: number): ((action: VoidFunction) => void) => {
   const [action, setAction] = useState<ThrottledAction>()
   const schedule = useRef<NodeJS.Timeout>()
 

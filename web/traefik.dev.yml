@@ -1,0 +1,13 @@
+http:
+  routers:
+    crux-ui:
+      rule: Host(`{{ env "TRAEFIK_HOST" }}`)
+      service: crux-ui
+      entryPoints:
+        - web
+
+  services:
+    crux-ui:
+      loadBalancer:
+        servers:
+          - url: http://{{ env "TRAEFIK_HOST" }}:3000/

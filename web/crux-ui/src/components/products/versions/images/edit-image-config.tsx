@@ -1,6 +1,6 @@
 import { IMAGE_WS_REQUEST_DELAY } from '@app/const'
 import { DyoInput } from '@app/elements/dyo-input'
-import { useThrottleing } from '@app/hooks/use-throttleing'
+import { useThrottling } from '@app/hooks/use-throttleing'
 import { ContainerConfig, Environment } from '@app/models'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useRef, useState } from 'react'
@@ -21,7 +21,7 @@ const EditImageConfig = (props: EditImageConfigProps) => {
   const patch = useRef<Partial<ContainerConfig>>({})
   const [containerName, setContainerName] = useState(config?.name)
 
-  const throttle = useThrottleing(IMAGE_WS_REQUEST_DELAY)
+  const throttle = useThrottling(IMAGE_WS_REQUEST_DELAY)
 
   const sendPatch = (config: Partial<ContainerConfig>) => {
     const newPatch = {

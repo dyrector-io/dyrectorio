@@ -119,6 +119,7 @@ export type Deployment = {
   version: string
   node: string
   status: DeploymentStatus
+  nodeId: string
 }
 
 export type DeploymentRoot = DeploymentDetails & {
