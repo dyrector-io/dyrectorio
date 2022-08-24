@@ -1,6 +1,6 @@
-# dyrector.io docs
+# dyrector.io documentation
 
-dyrector.io is an open-source deployment platform that helps software teams manage releases & deployments easily and efficiently. While non-specialists are enabled to manage these processes in a simplified, self-service manner, specialists can deploy and manage containerized apps faster through the platform. Find out what you can do with dyrector.io!
+dyrector.io is an open-source deployment platform that helps software teams manage releases & deployments easily and efficiently. While non-specialists aredasdasdasdasdas enabled to manage these processes in a simplified, self-service manner, specialists can deploy and manage containerized apps faster through the platform. Find out what you can do with dyrector.io!
 
 **You can find dyrector.io's GitHub repository** [**here**](https://github.com/dyrector-io/dyrectorio/)**. Feel free to contribute!**
 
