@@ -25,7 +25,7 @@ dyrector.io is an **open-source** internal delivery platform that helps develope
 - Audit log
 - Container Registry integrations
 - Fine-grained RBAC
-- ChatOps & notification solutions
+- ChatOps & notification solutions
 
 ## Quick Start
 
