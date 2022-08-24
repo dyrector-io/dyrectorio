@@ -1,6 +1,6 @@
 {
     "root": "./docs",
-    "title:": "dyrectorio User facing documentation",
+    "title:": "dyrector.io User facing documentation",
     "description": "Open-source CD platform that helps developers to deliver applications efficiently by simplifying software releases and operations in any environment.",
     "structure": {
         "readme": "README.md",
