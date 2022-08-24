@@ -4,6 +4,7 @@ import PageHeading from '@app/components/shared/page-heading'
 import { DyoButton } from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
+import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import {
   ROUTE_SETTINGS,
@@ -21,45 +22,54 @@ import Link from 'next/link'
 const SettingsPage = (props: Identity) => {
   const { t } = useTranslation('settings')
 
-  const labelClass = 'text-right mr-2 mt-2'
-  const valueClass = 'mt-2'
-
   const pageLink: BreadcrumbLink = {
-    name: t('common:settings'),
+    name: t('common:profile'),
     url: ROUTE_SETTINGS,
   }
 
   return (
-    <Layout title={t('common:settings')}>
+    <Layout title={t('common:profile')}>
       <PageHeading pageLink={pageLink}>
         <div className="ml-auto">
           <Link href={ROUTE_SETTINGS_EDIT_PROFILE} passHref>
             <DyoButton>{t('editProfile')}</DyoButton>
           </Link>
-
           <Link href={ROUTE_SETTINGS_CHANGE_PASSWORD} passHref>
             <DyoButton>{t('changePass')}</DyoButton>
           </Link>
         </div>
       </PageHeading>
 
-      <DyoCard className="text-bright px-8 py-6">
+      <DyoCard className="flex flex-col text-bright p-8">
         <DyoHeading element="h2" className="text-2xl">
           {t('profile')}
         </DyoHeading>
-
-        <div className="flex flex-row">
-          <div className="flex flex-col items-right">
-            <DyoLabel className={labelClass}>{t('common:email')}</DyoLabel>
-            <DyoLabel className={labelClass}>{t('firstName')}</DyoLabel>
-            <DyoLabel className={labelClass}>{t('lastName')}</DyoLabel>
-          </div>
-
-          <div className="flex flex-col">
-            <p className={valueClass}>{props.traits.email}</p>
-            <p className={valueClass}>{props.traits.name?.first}</p>
-            <p className={valueClass}>{props.traits.name?.last}</p>
-          </div>
+        <DyoLabel textColor="text-bright-muted">{t('tips')}</DyoLabel>
+        <div className="flex flex-col w-1/2">
+          <DyoInput
+            label={t('firstName')}
+            name="firstName"
+            type="text"
+            defaultValue={props.traits.name?.first}
+            disabled
+            grow
+          />
+          <DyoInput
+            label={t('lastName')}
+            name="lastName"
+            type="text"
+            defaultValue={props.traits.name?.last}
+            disabled
+            grow
+          />
+          <DyoInput
+            label={t('common:email')}
+            name="email"
+            type="email"
+            defaultValue={props.traits.email}
+            disabled
+            grow
+          />
         </div>
       </DyoCard>
     </Layout>

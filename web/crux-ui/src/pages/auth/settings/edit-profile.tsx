@@ -7,6 +7,7 @@ import { DyoButton } from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
+import { DyoLabel } from '@app/elements/dyo-label'
 import { EditProfile } from '@app/models'
 import { API_SETTINGS_EDIT_PROFILE, ROUTE_LOGIN, ROUTE_SETTINGS, ROUTE_SETTINGS_EDIT_PROFILE } from '@app/routes'
 import { findAttributes, findMessage, sendForm, withContextAuthorization } from '@app/utils'
@@ -39,7 +40,6 @@ const SettingsPage = (props: SelfServiceSettingsFlow) => {
         firstName: values.firstName,
         lastName: values.lastName,
       }
-
       const res = await sendForm('POST', API_SETTINGS_EDIT_PROFILE, data)
 
       if (res.ok) {
@@ -56,7 +56,7 @@ const SettingsPage = (props: SelfServiceSettingsFlow) => {
   saveRef.current = formik.submitForm
 
   const pageLink: BreadcrumbLink = {
-    name: t('common:settings'),
+    name: t('common:profile'),
     url: ROUTE_SETTINGS,
   }
 
@@ -74,20 +74,11 @@ const SettingsPage = (props: SelfServiceSettingsFlow) => {
       </PageHeading>
 
       <DyoCard>
-        <form className="flex flex-col text-bright" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
+        <form className="flex flex-col text-bright w-1/2" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
           <DyoHeading element="h2" className="text-2xl">
             {t('editProfile')}
           </DyoHeading>
-
-          <DyoInput
-            label={t('common:email')}
-            name="email"
-            type="email"
-            onChange={formik.handleChange}
-            value={formik.values.email}
-            message={findMessage(ui, 'traits.email')}
-          />
-
+          <DyoLabel textColor="text-bright-muted">{t('tips')}</DyoLabel>
           <DyoInput
             label={t('firstName')}
             name="firstName"
@@ -95,8 +86,8 @@ const SettingsPage = (props: SelfServiceSettingsFlow) => {
             onChange={formik.handleChange}
             value={formik.values.firstName}
             message={findMessage(ui, 'traits.name.first')}
+            grow
           />
-
           <DyoInput
             label={t('lastName')}
             name="lastName"
@@ -104,8 +95,17 @@ const SettingsPage = (props: SelfServiceSettingsFlow) => {
             onChange={formik.handleChange}
             value={formik.values.lastName}
             message={findMessage(ui, 'traits.name.last')}
+            grow
           />
-
+          <DyoInput
+            label={t('common:email')}
+            name="email"
+            type="email"
+            onChange={formik.handleChange}
+            value={formik.values.email}
+            message={findMessage(ui, 'traits.email')}
+            grow
+          />
           <DyoButton className="hidden" type="submit" />
         </form>
       </DyoCard>
