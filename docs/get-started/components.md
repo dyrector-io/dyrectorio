@@ -9,7 +9,7 @@ description: >-
 
 ### Node
 
-Nodes are deployment targets. They can be Docker, Kubernetes or on-premises environments; it really depends on your needs. Specifying at least one Node is a basic requirement of both using dyrector.io and deploying your application. For this reason, we suggest this should be the first step you do after the first login.
+Nodes are deployment targets. They can be Docker, Kubernetes, even on-premises environments; it really depends on your needs. Specifying at least one Node is a basic requirement of both using dyrector.io and deploying your application. For this reason, we suggest this should be the first step you do after the first login.
 
 ### **Team**
 
@@ -33,7 +33,7 @@ Registry is the place where you can store your images. You can use any Docker Re
 
 Products are the applications you’ll manage in dyrector.io. There are two types of Products.
 
-![The differences between types of Products in dyrector.io.](<../../docs/.gitbook/assets/product types\_dark.png>)
+![The differences between types of Products in dyrector.io.](<../.gitbook/assets/product types\_dark.png>)
 
 * **Simple:** these Products have only one version and cannot be rolled back. These are mostly useful for testing purposes, because simple Products come without versions.
 * **Complex:** complex Products have two types of versions: Rolling and Incremental.
