@@ -81,6 +81,7 @@ func imageExists(ctx context.Context, logger io.StringWriter, fullyQualifiedImag
 }
 
 // force pulls the given image name
+// todo(nandor-magyar): the output from docker is not really nice, should be improved
 func pullImage(ctx context.Context, logger io.StringWriter, fullyQualifiedImageName, authCreds string) error {
 	cli, err := createCli(logger)
 	if cli == nil {
@@ -102,6 +103,7 @@ func pullImage(ctx context.Context, logger io.StringWriter, fullyQualifiedImageN
 
 	d := json.NewDecoder(reader)
 
+	var lastLog time.Time
 	for {
 		pullResult := ImagePullResponse{}
 		err = d.Decode(&pullResult)
@@ -112,7 +114,7 @@ func pullImage(ctx context.Context, logger io.StringWriter, fullyQualifiedImageN
 			break
 		}
 
-		if logger != nil {
+		if logger != nil && time.Since(lastLog) > time.Second {
 			var logErr error
 			if pullResult.ProgressDetail.Current != 0 && pullResult.ProgressDetail.Total != 0 {
 				_, logErr = logger.WriteString(
@@ -120,14 +122,15 @@ func pullImage(ctx context.Context, logger io.StringWriter, fullyQualifiedImageN
 						pullResult.ID,
 						pullResult.Status,
 						float64(pullResult.ProgressDetail.Current)/float64(pullResult.ProgressDetail.Total)*100)) //nolint:gomnd
+				lastLog = time.Now()
 			} else {
 				_, logErr = logger.WriteString(fmt.Sprintf("Image: %s %s", pullResult.ID, pullResult.Status))
+				lastLog = time.Now()
 			}
 			if logErr != nil {
 				fmt.Printf("Failed to write log: %s", logErr.Error())
 			}
 		}
-		time.Sleep(time.Second)
 	}
 
 	return err
