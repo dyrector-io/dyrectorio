@@ -30,7 +30,8 @@ export const explicitContainerConfigSchema = yup.object().shape({
       uploadLimitInBytes: yup.string().optional(),
     })
     .default({})
-    .optional(),
+    .optional()
+    .nullable(),
   expose: yup
     .object()
     .shape({
@@ -38,7 +39,8 @@ export const explicitContainerConfigSchema = yup.object().shape({
       tls: yup.boolean(),
     })
     .default({})
-    .optional(),
+    .optional()
+    .nullable(),
   importContainer: yup
     .object()
     .shape({
@@ -47,7 +49,8 @@ export const explicitContainerConfigSchema = yup.object().shape({
       environments: yup.object().shape({}),
     })
     .default({})
-    .optional(),
+    .optional()
+    .nullable(),
   configContainer: yup
     .object()
     .shape({
@@ -57,7 +60,8 @@ export const explicitContainerConfigSchema = yup.object().shape({
       keepFiles: yup.boolean(),
     })
     .default({})
-    .optional(),
+    .optional()
+    .nullable(),
   user: yup.number().positive().nullable().default(null).optional(),
   TTY: yup.boolean().default(false).optional(),
   ports: yup
@@ -83,9 +87,9 @@ export const explicitContainerConfigSchema = yup.object().shape({
       yup.object().shape({
         name: yup.string(),
         path: yup.string(),
-        size: yup.string().nullable(),
-        type: yup.string().nullable(),
-        class: yup.string().nullable(),
+        size: yup.string().optional(),
+        type: yup.string().optional(),
+        class: yup.string().optional(),
       }),
     )
     .default([])
@@ -101,22 +105,23 @@ export const explicitContainerConfigSchema = yup.object().shape({
       config: yup.object().shape({}),
     })
     .default({})
-    .optional(),
+    .optional()
+    .nullable(),
   restartPolicy: yup
     .mixed<ExplicitContainerRestartPolicyType>()
-    .oneOf([...EXPLICIT_CONTAINER_RESTART_POLICY_TYPE_VALUES, null])
+    .oneOf([...EXPLICIT_CONTAINER_RESTART_POLICY_TYPE_VALUES])
     .default('unless_stopped')
     .optional(),
   networkMode: yup
     .mixed<ExplicitContainerNetworkMode>()
-    .oneOf([...EXPLICIT_CONTAINER_NETWORK_MODE_VALUES, null])
+    .oneOf([...EXPLICIT_CONTAINER_NETWORK_MODE_VALUES])
     .default('none')
     .optional(),
 
   //crane:
   deploymentStrategy: yup
     .mixed<ExplicitContainerDeploymentStrategyType>()
-    .oneOf([...EXPLICIT_CONTAINER_DEPLOYMENT_STRATEGY_VALUES, null])
+    .oneOf([...EXPLICIT_CONTAINER_DEPLOYMENT_STRATEGY_VALUES])
     .default('recreate')
     .optional(),
   customHeaders: yup.array(yup.string()).default([]).optional(),
@@ -131,7 +136,8 @@ export const explicitContainerConfigSchema = yup.object().shape({
       startupProbe: yup.string().optional(),
     })
     .default({})
-    .optional(),
+    .optional()
+    .nullable(),
   resourceConfig: yup
     .object()
     .shape({
@@ -147,8 +153,9 @@ export const explicitContainerConfigSchema = yup.object().shape({
         .optional(),
     })
     .default({})
+    .nullable()
     .optional(),
-  extraLBAnnotations: yup.object().shape({}).default({}).optional(),
+  extraLBAnnotations: yup.object().shape({}).default({}).nullable().optional(),
 })
 
 export const containerConfigSchema = yup.object({

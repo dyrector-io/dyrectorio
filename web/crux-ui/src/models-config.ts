@@ -1,3 +1,8 @@
+/**
+ * This file contains only ContainerConfig releated definitions.
+ * TODO: Create a models folder for future definitions. After that we can leave "models" name from the file.
+ */
+
 export type UniqueKeyValue = {
   id: string
   key: string

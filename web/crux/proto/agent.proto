@@ -67,7 +67,7 @@ message VersionDeployRequest {
 message DeployRequest {
 
   string id = 1;
-  string name = 2;
+  string containerName = 2;
 
   message InstanceConfig {
     /*

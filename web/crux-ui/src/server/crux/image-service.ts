@@ -158,19 +158,25 @@ export const deploymentStrategyToProto = (strategy?: ExplicitContainerDeployment
   !strategy ? undefined : deploymentStrategyFromJSON(strategy.toUpperCase())
 
 export const logConfigToProto = (logConfig?: ExplicitContainerConfigLog): LogConfig => {
-  if (!logConfig) return null
+  if (!logConfig) {
+    return null
+  }
 
   return { driver: logConfig.type, options: logConfig.config }
 }
 
 export const logConfigToDto = (logConfig?: LogConfig): ExplicitContainerConfigLog => {
-  if (!logConfig) return null
+  if (!logConfig) {
+    return null
+  }
 
   return { type: logConfig.driver, config: logConfig.options }
 }
 
 export const explicitContainerConfigToDto = (config?: ProtoExplicitContainerConfig): ExplicitContainerConfig => {
-  if (!config) return undefined
+  if (!config) {
+    return null
+  }
 
   const explicit: ExplicitContainerConfig = {
     user: config.user ?? null,
@@ -200,7 +206,9 @@ export const explicitContainerConfigToDto = (config?: ProtoExplicitContainerConf
 }
 
 export const explicitContainerConfigToProto = (config?: ExplicitContainerConfig): ProtoExplicitContainerConfig => {
-  if (!config) return null
+  if (!config) {
+    return null
+  }
 
   const protoConfig: ProtoExplicitContainerConfig = {
     user: config.user,
@@ -214,6 +222,7 @@ export const explicitContainerConfigToProto = (config?: ExplicitContainerConfig)
     configContainer: config.configContainer,
     dagent: undefined,
     crane: undefined,
+    environments: [],
   }
 
   if (config.expose) {

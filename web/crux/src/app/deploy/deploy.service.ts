@@ -340,7 +340,7 @@ export class DeployService {
 
           return {
             id: it.id,
-            name: it.image.config.name,
+            containerName: it.image.config.name,
             imageName: it.image.name,
             tag: it.image.tag,
             containerConfig: this.mapper.instanceToAgentContainerConfig(it),

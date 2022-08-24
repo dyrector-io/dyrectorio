@@ -186,4 +186,5 @@ message ExplicitContainerConfig {
   repeated Volume volumes = 1002;
   repeated string command = 1003;
   repeated string args = 1004;
+  repeated string environments = 1005;
 }

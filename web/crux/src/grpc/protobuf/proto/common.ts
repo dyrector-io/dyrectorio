@@ -417,6 +417,7 @@ export interface ExplicitContainerConfig {
   volumes: Volume[]
   command: string[]
   args: string[]
+  environments: string[]
 }
 
 export const COMMON_PACKAGE_NAME = 'common'
@@ -964,7 +965,11 @@ export const CraneContainerConfig_ExtraLBAnnotationsEntry = {
   },
 }
 
-const baseExplicitContainerConfig: object = { command: '', args: '' }
+const baseExplicitContainerConfig: object = {
+  command: '',
+  args: '',
+  environments: '',
+}
 
 export const ExplicitContainerConfig = {
   fromJSON(object: any): ExplicitContainerConfig {
@@ -993,6 +998,7 @@ export const ExplicitContainerConfig = {
     message.volumes = (object.volumes ?? []).map((e: any) => Volume.fromJSON(e))
     message.command = (object.command ?? []).map((e: any) => String(e))
     message.args = (object.args ?? []).map((e: any) => String(e))
+    message.environments = (object.environments ?? []).map((e: any) => String(e))
     return message
   },
 
@@ -1033,6 +1039,11 @@ export const ExplicitContainerConfig = {
       obj.args = message.args.map(e => e)
     } else {
       obj.args = []
+    }
+    if (message.environments) {
+      obj.environments = message.environments.map(e => e)
+    } else {
+      obj.environments = []
     }
     return obj
   },

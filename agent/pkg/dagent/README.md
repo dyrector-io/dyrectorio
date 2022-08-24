@@ -1,7 +1,5 @@
 # dagent
 
-Implement the .NET Mandy in Go
-
 ### Swagger
 
 ```

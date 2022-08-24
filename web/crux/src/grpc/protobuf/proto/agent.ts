@@ -46,7 +46,7 @@ export interface VersionDeployRequest {
 /** Deploys a single container */
 export interface DeployRequest {
   id: string
-  name: string
+  containerName: string
   /** InstanceConfig is set for multiple containers */
   instanceConfig: DeployRequest_InstanceConfig | undefined
   /** Runtime info and requirements of a container */
@@ -219,13 +219,19 @@ export const VersionDeployRequest = {
   },
 }
 
-const baseDeployRequest: object = { id: '', name: '', imageName: '', tag: '' }
+const baseDeployRequest: object = {
+  id: '',
+  containerName: '',
+  imageName: '',
+  tag: '',
+}
 
 export const DeployRequest = {
   fromJSON(object: any): DeployRequest {
     const message = { ...baseDeployRequest } as DeployRequest
     message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.containerName =
+      object.containerName !== undefined && object.containerName !== null ? String(object.containerName) : ''
     message.instanceConfig =
       object.instanceConfig !== undefined && object.instanceConfig !== null
         ? DeployRequest_InstanceConfig.fromJSON(object.instanceConfig)
@@ -249,7 +255,7 @@ export const DeployRequest = {
   toJSON(message: DeployRequest): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
-    message.name !== undefined && (obj.name = message.name)
+    message.containerName !== undefined && (obj.containerName = message.containerName)
     message.instanceConfig !== undefined &&
       (obj.instanceConfig = message.instanceConfig
         ? DeployRequest_InstanceConfig.toJSON(message.instanceConfig)

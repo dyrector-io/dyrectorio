@@ -417,6 +417,7 @@ export interface ExplicitContainerConfig {
   volumes: Volume[]
   command: string[]
   args: string[]
+  environments: string[]
 }
 
 const baseContainerStateItem: object = {
@@ -1997,7 +1998,11 @@ export const CraneContainerConfig_ExtraLBAnnotationsEntry = {
   },
 }
 
-const baseExplicitContainerConfig: object = { command: '', args: '' }
+const baseExplicitContainerConfig: object = {
+  command: '',
+  args: '',
+  environments: '',
+}
 
 export const ExplicitContainerConfig = {
   encode(message: ExplicitContainerConfig, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -2040,6 +2045,9 @@ export const ExplicitContainerConfig = {
     for (const v of message.args) {
       writer.uint32(8034).string(v!)
     }
+    for (const v of message.environments) {
+      writer.uint32(8042).string(v!)
+    }
     return writer
   },
 
@@ -2054,6 +2062,7 @@ export const ExplicitContainerConfig = {
     message.volumes = []
     message.command = []
     message.args = []
+    message.environments = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -2096,6 +2105,9 @@ export const ExplicitContainerConfig = {
         case 1004:
           message.args.push(reader.string())
           break
+        case 1005:
+          message.environments.push(reader.string())
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -2130,6 +2142,7 @@ export const ExplicitContainerConfig = {
     message.volumes = (object.volumes ?? []).map((e: any) => Volume.fromJSON(e))
     message.command = (object.command ?? []).map((e: any) => String(e))
     message.args = (object.args ?? []).map((e: any) => String(e))
+    message.environments = (object.environments ?? []).map((e: any) => String(e))
     return message
   },
 
@@ -2171,6 +2184,11 @@ export const ExplicitContainerConfig = {
     } else {
       obj.args = []
     }
+    if (message.environments) {
+      obj.environments = message.environments.map(e => e)
+    } else {
+      obj.environments = []
+    }
     return obj
   },
 
@@ -2203,6 +2221,7 @@ export const ExplicitContainerConfig = {
     message.volumes = object.volumes?.map(e => Volume.fromPartial(e)) || []
     message.command = object.command?.map(e => e) || []
     message.args = object.args?.map(e => e) || []
+    message.environments = object.environments?.map(e => e) || []
     return message
   },
 }

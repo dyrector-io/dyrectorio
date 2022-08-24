@@ -1,6 +1,7 @@
 package mapper
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -8,6 +9,7 @@ import (
 
 	"github.com/dyrector-io/dyrectorio/agent/internal/config"
 	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
+	"github.com/dyrector-io/dyrectorio/agent/internal/util"
 	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 	builder "github.com/dyrector-io/dyrectorio/agent/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
@@ -18,7 +20,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 )
 
-func MapInstanceConfig(in *agent.DeployRequest_InstanceConfig) v1.InstanceConfig {
+func mapInstanceConfig(in *agent.DeployRequest_InstanceConfig) v1.InstanceConfig {
 	instanceConfig := v1.InstanceConfig{
 		ContainerPreName: in.Prefix,
 	}
@@ -41,8 +43,8 @@ func MapInstanceConfig(in *agent.DeployRequest_InstanceConfig) v1.InstanceConfig
 func MapDeployImage(req *agent.DeployRequest, appConfig *config.CommonConfiguration) *v1.DeployImageRequest {
 	res := &v1.DeployImageRequest{
 		RequestID:       req.Id,
-		InstanceConfig:  MapInstanceConfig(req.InstanceConfig),
-		ContainerConfig: MapContainerConfig(req),
+		InstanceConfig:  mapInstanceConfig(req.InstanceConfig),
+		ContainerConfig: mapContainerConfig(req),
 		ImageName:       req.ImageName,
 		Tag:             req.Tag,
 		Registry:        req.Registry,
@@ -69,90 +71,103 @@ func MapDeployImage(req *agent.DeployRequest, appConfig *config.CommonConfigurat
 	return res
 }
 
-func MapContainerConfig(in *agent.DeployRequest) v1.ContainerConfig {
+func mapContainerConfig(in *agent.DeployRequest) v1.ContainerConfig {
+	cc := in.ContainerConfig
+
 	containerConfig := v1.ContainerConfig{
-		Container:        in.Name,
+		Container:        in.ContainerName,
 		ContainerPreName: in.InstanceConfig.Prefix,
-		Ports:            MapPorts(in.ContainerConfig.Ports),
-		PortRanges:       MapPortRanges(in.ContainerConfig.PortRanges),
-		Volumes:          MapVolumes(in.ContainerConfig.Volumes),
-		User:             in.ContainerConfig.User,
+		Ports:            mapPorts(cc.Ports),
+		PortRanges:       mapPortRanges(cc.PortRanges),
+		Volumes:          mapVolumes(cc.Volumes),
+		User:             cc.User,
 	}
 
-	if in.ContainerConfig.TTY != nil {
-		containerConfig.TTY = *in.ContainerConfig.TTY
+	if cc.Environments != nil {
+		containerConfig.Environment = cc.Environments
 	}
 
-	if in.ContainerConfig.Args != nil {
-		containerConfig.Args = in.ContainerConfig.Args
+	if cc.TTY != nil {
+		containerConfig.TTY = *cc.TTY
 	}
 
-	if in.ContainerConfig.Command != nil {
-		containerConfig.Command = in.ContainerConfig.Command
+	if cc.Args != nil {
+		containerConfig.Args = cc.Args
 	}
 
-	if in.ContainerConfig.Expose != nil {
-		containerConfig.Expose = in.ContainerConfig.Expose.Public
-		containerConfig.ExposeTLS = in.ContainerConfig.Expose.Tls
+	if cc.Command != nil {
+		containerConfig.Command = cc.Command
 	}
 
-	if in.ContainerConfig.Ingress != nil {
-		containerConfig.IngressName = in.ContainerConfig.Ingress.Name
-		containerConfig.IngressHost = in.ContainerConfig.Ingress.Host
-		containerConfig.IngressUploadLimit = *in.ContainerConfig.Ingress.UploadLimit
+	if cc.Expose != nil {
+		containerConfig.Expose = cc.Expose.Public
+		containerConfig.ExposeTLS = cc.Expose.Tls
 	}
 
-	if in.ContainerConfig.ConfigContainer != nil {
-		containerConfig.ConfigContainer = MapConfigContainer(in.ContainerConfig.ConfigContainer)
-	}
+	if cc.Ingress != nil {
+		containerConfig.IngressName = cc.Ingress.Name
+		containerConfig.IngressHost = cc.Ingress.Host
 
-	dagentConfig := in.ContainerConfig.Dagent
-
-	if dagentConfig != nil {
-		containerConfig.NetworkMode = dagentConfig.NetworkMode.String()
-		containerConfig.RestartPolicy = MapRestartPolicy(dagentConfig.RestartPolicy.String())
-
-		if dagentConfig.LogConfig != nil {
-			containerConfig.LogConfig = &container.LogConfig{Type: dagentConfig.LogConfig.Driver, Config: dagentConfig.LogConfig.Options}
+		if cc.Ingress.UploadLimit != nil {
+			containerConfig.IngressUploadLimit = *cc.Ingress.UploadLimit
 		}
 	}
 
-	craneConfig := in.ContainerConfig.Crane
+	if cc.ConfigContainer != nil {
+		containerConfig.ConfigContainer = mapConfigContainer(cc.ConfigContainer)
+	}
 
-	if craneConfig != nil {
-		containerConfig.DeploymentStrategy = craneConfig.DeploymentStatregy.String()
+	if cc.Dagent != nil {
+		mapDagentConfig(cc.Dagent, &containerConfig)
+	}
 
-		if craneConfig.ProxyHeaders != nil {
-			containerConfig.ProxyHeaders = *craneConfig.ProxyHeaders
-		}
-
-		if craneConfig.UseLoadBalancer != nil {
-			containerConfig.UseLoadBalancer = *craneConfig.UseLoadBalancer
-		}
-
-		if craneConfig.HealthCheckConfig != nil {
-			containerConfig.HealthCheckConfig = MapHealthCheckConfig(craneConfig.HealthCheckConfig)
-		}
-
-		if craneConfig.ResourceConfig != nil {
-			containerConfig.ResourceConfig = MapResourceConfig(craneConfig.ResourceConfig)
-		}
-
-		if craneConfig.ExtraLBAnnotations != nil {
-			containerConfig.ExtraLBAnnotations = craneConfig.ExtraLBAnnotations
-		}
+	if cc.Crane != nil {
+		mapCraneConfig(cc.Crane, &containerConfig)
 	}
 
 	return containerConfig
 }
 
-func MapRestartPolicy(policy string) builder.RestartPolicyName {
+func mapDagentConfig(dagent *common.DagentContainerConfig, containerConfig *v1.ContainerConfig) {
+	containerConfig.NetworkMode = dagent.NetworkMode.String()
+	containerConfig.RestartPolicy = mapRestartPolicy(dagent.RestartPolicy.String())
+
+	if dagent.LogConfig != nil {
+		containerConfig.LogConfig = &container.LogConfig{Type: dagent.LogConfig.Driver, Config: dagent.LogConfig.Options}
+	}
+}
+
+func mapCraneConfig(crane *common.CraneContainerConfig, containerConfig *v1.ContainerConfig) {
+	containerConfig.DeploymentStrategy = crane.DeploymentStatregy.String()
+
+	if crane.ProxyHeaders != nil {
+		containerConfig.ProxyHeaders = *crane.ProxyHeaders
+	}
+
+	if crane.UseLoadBalancer != nil {
+		containerConfig.UseLoadBalancer = *crane.UseLoadBalancer
+	}
+
+	if crane.HealthCheckConfig != nil {
+		containerConfig.HealthCheckConfig = mapHealthCheckConfig(crane.HealthCheckConfig)
+	}
+
+	if crane.ResourceConfig != nil {
+		containerConfig.ResourceConfig = mapResourceConfig(crane.ResourceConfig)
+	}
+
+	if crane.ExtraLBAnnotations != nil {
+		containerConfig.ExtraLBAnnotations = crane.ExtraLBAnnotations
+	}
+}
+
+func mapRestartPolicy(policy string) builder.RestartPolicyName {
 	lower := strings.ToLower(policy)
 
 	return builder.RestartPolicyName(strings.Replace(lower, "_", "-", -1))
 }
 
-func MapResourceConfig(resourceConfig *common.ResourceConfig) v1.ResourceConfig {
+func mapResourceConfig(resourceConfig *common.ResourceConfig) v1.ResourceConfig {
 	mappedConfig := v1.ResourceConfig{}
 
 	if resourceConfig.Limits != nil {
@@ -182,7 +197,7 @@ func MapResourceConfig(resourceConfig *common.ResourceConfig) v1.ResourceConfig 
 	return mappedConfig
 }
 
-func MapHealthCheckConfig(healthCheckConfig *common.HealthCheckConfig) v1.HealthCheckConfig {
+func mapHealthCheckConfig(healthCheckConfig *common.HealthCheckConfig) v1.HealthCheckConfig {
 	mappedConfig := v1.HealthCheckConfig{
 		Port: uint16(healthCheckConfig.Port),
 	}
@@ -202,7 +217,7 @@ func MapHealthCheckConfig(healthCheckConfig *common.HealthCheckConfig) v1.Health
 	return mappedConfig
 }
 
-func MapVolumes(in []*common.Volume) []v1.Volume {
+func mapVolumes(in []*common.Volume) []v1.Volume {
 	volumes := []v1.Volume{}
 
 	for i := range in {
@@ -229,7 +244,7 @@ func MapVolumes(in []*common.Volume) []v1.Volume {
 	return volumes
 }
 
-func MapPortRanges(in []*common.PortRangeBinding) []builder.PortRangeBinding {
+func mapPortRanges(in []*common.PortRangeBinding) []builder.PortRangeBinding {
 	portRanges := []builder.PortRangeBinding{}
 
 	for i := range in {
@@ -242,7 +257,7 @@ func MapPortRanges(in []*common.PortRangeBinding) []builder.PortRangeBinding {
 	return portRanges
 }
 
-func MapPorts(in []*common.Port) []builder.PortBinding {
+func mapPorts(in []*common.Port) []builder.PortBinding {
 	ports := []builder.PortBinding{}
 
 	for i := range in {
@@ -255,7 +270,7 @@ func MapPorts(in []*common.Port) []builder.PortBinding {
 	return ports
 }
 
-func MapConfigContainer(in *common.ConfigContainer) *v1.ConfigContainer {
+func mapConfigContainer(in *common.ConfigContainer) *v1.ConfigContainer {
 	return &v1.ConfigContainer{
 		Image:     in.Image,
 		Volume:    in.Volume,
@@ -292,7 +307,7 @@ func MapContainerState(in *[]dockerTypes.Container) []*common.ContainerStateItem
 			CreatedAt:   timestamppb.New(time.UnixMilli(it.Created * int64(time.Microsecond)).UTC()),
 			State:       dogger.MapContainerState(it.State),
 			Status:      it.Status,
-			Ports:       MapContainerPorts(&it.Ports),
+			Ports:       mapContainerPorts(&it.Ports),
 			ImageName:   imageName[0],
 			ImageTag:    imageTag,
 		})
@@ -301,7 +316,7 @@ func MapContainerState(in *[]dockerTypes.Container) []*common.ContainerStateItem
 	return list
 }
 
-func MapContainerPorts(in *[]dockerTypes.Port) []*common.Port {
+func mapContainerPorts(in *[]dockerTypes.Port) []*common.Port {
 	ports := []*common.Port{}
 
 	for i := range *in {
@@ -320,20 +335,40 @@ func MapKubeDeploymentListToCruxStateItems(deployments *appsv1.DeploymentList) [
 	stateItems := []*common.ContainerStateItem{}
 
 	for i := range deployments.Items {
-		stateItems = append(stateItems, &common.ContainerStateItem{
-			Name:  deployments.Items[i].Name,
-			State: MapKubeStatusToCruxContainerState(deployments.Items[i].Status),
+		deployment := deployments.Items[i]
+
+		stateItem := &common.ContainerStateItem{
+			Name:  deployment.Name,
+			State: mapKubeStatusToCruxContainerState(deployment.Status),
 			CreatedAt: timestamppb.New(
-				time.UnixMilli(deployments.Items[i].GetCreationTimestamp().Unix() * int64(time.Microsecond)).UTC(),
+				time.UnixMilli(deployment.GetCreationTimestamp().Unix() * int64(time.Microsecond)).UTC(),
 			),
-		})
+		}
+
+		if containers := deployment.Spec.Template.Spec.Containers; containers != nil {
+			for i := 0; i < len(containers); i++ {
+				if containers[i].Name != deployment.Name {
+					// this move was suggested by golangci
+					continue
+				}
+				image, err := util.ImageURIFromString(containers[i].Image)
+				if err == nil {
+					stateItem.ImageName = image.StringNoTag()
+					stateItem.ImageTag = image.Tag
+				} else {
+					fmt.Println("Failed to get k8s container image info: ", err)
+				}
+			}
+		}
+
+		stateItems = append(stateItems, stateItem)
 	}
 
 	return stateItems
 }
 
 // do better mapping this is quick something
-func MapKubeStatusToCruxContainerState(status appsv1.DeploymentStatus) common.ContainerState {
+func mapKubeStatusToCruxContainerState(status appsv1.DeploymentStatus) common.ContainerState {
 	switch status.ReadyReplicas {
 	case 1:
 		return common.ContainerState_RUNNING
