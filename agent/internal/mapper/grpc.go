@@ -1,6 +1,7 @@
 package mapper
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -8,6 +9,7 @@ import (
 
 	"github.com/dyrector-io/dyrectorio/agent/internal/config"
 	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
+	"github.com/dyrector-io/dyrectorio/agent/internal/util"
 	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 	builder "github.com/dyrector-io/dyrectorio/agent/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
@@ -181,13 +183,33 @@ func MapKubeDeploymentListToCruxStateItems(deployments *appsv1.DeploymentList) [
 	stateItems := []*crux.ContainerStateItem{}
 
 	for i := range deployments.Items {
-		stateItems = append(stateItems, &crux.ContainerStateItem{
+		deploymentName := deployments.Items[i].Name
+
+		stateItem := &crux.ContainerStateItem{
 			Name:  deployments.Items[i].Name,
 			State: MapKubeStatusToCruxContainerState(deployments.Items[i].Status),
 			CreatedAt: timestamppb.New(
 				time.UnixMilli(deployments.Items[i].GetCreationTimestamp().Unix() * int64(time.Microsecond)).UTC(),
 			),
-		})
+		}
+
+		if containers := deployments.Items[i].Spec.Template.Spec.Containers; containers != nil {
+			for i := 0; i < len(containers); i++ {
+				if containers[i].Name != deploymentName {
+					// this move was suggested by golangci
+					continue
+				}
+				image, err := util.ImageURIFromString(containers[i].Image)
+				if err == nil {
+					stateItem.ImageName = image.StringNoTag()
+					stateItem.ImageTag = image.Tag
+				} else {
+					fmt.Println("Failed to get k8s container image info: ", err)
+				}
+			}
+		}
+
+		stateItems = append(stateItems, stateItem)
 	}
 
 	return stateItems
