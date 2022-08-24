@@ -1195,6 +1195,7 @@ export interface DeploymentResponse {
   versionId: string
   node: string
   status: DeploymentStatus
+  nodeId: string
 }
 
 export interface DeploymentListByVersionResponse {
@@ -7788,6 +7789,7 @@ const baseDeploymentResponse: object = {
   versionId: '',
   node: '',
   status: 0,
+  nodeId: '',
 }
 
 export const DeploymentResponse = {
@@ -7815,6 +7817,9 @@ export const DeploymentResponse = {
     }
     if (message.status !== 0) {
       writer.uint32(848).int32(message.status)
+    }
+    if (message.nodeId !== '') {
+      writer.uint32(858).string(message.nodeId)
     }
     return writer
   },
@@ -7850,6 +7855,9 @@ export const DeploymentResponse = {
         case 106:
           message.status = reader.int32() as any
           break
+        case 107:
+          message.nodeId = reader.string()
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -7868,6 +7876,7 @@ export const DeploymentResponse = {
     message.versionId = object.versionId !== undefined && object.versionId !== null ? String(object.versionId) : ''
     message.node = object.node !== undefined && object.node !== null ? String(object.node) : ''
     message.status = object.status !== undefined && object.status !== null ? deploymentStatusFromJSON(object.status) : 0
+    message.nodeId = object.nodeId !== undefined && object.nodeId !== null ? String(object.nodeId) : ''
     return message
   },
 
@@ -7881,6 +7890,7 @@ export const DeploymentResponse = {
     message.versionId !== undefined && (obj.versionId = message.versionId)
     message.node !== undefined && (obj.node = message.node)
     message.status !== undefined && (obj.status = deploymentStatusToJSON(message.status))
+    message.nodeId !== undefined && (obj.nodeId = message.nodeId)
     return obj
   },
 
@@ -7894,6 +7904,7 @@ export const DeploymentResponse = {
     message.versionId = object.versionId ?? ''
     message.node = object.node ?? ''
     message.status = object.status ?? 0
+    message.nodeId = object.nodeId ?? ''
     return message
   },
 }
