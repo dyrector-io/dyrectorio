@@ -1,7 +1,5 @@
 # Use cases
 
-### v0.1.0
-
 #### Multi-Instance Deployments
 
 Microservice architectures are challenging to manage, especially when your team has to distribute them through multiple Nodes. Deployments become repetitive, time-consuming, and due to human presence, risky.
