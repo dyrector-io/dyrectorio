@@ -83,7 +83,7 @@ const EditTeamCard = (props: EditTeamCardProps) => {
           {editing ? t('common:editName', { name: team.name }) : t('createTeam')}
         </DyoHeading>
 
-        <DyoLabel className="text-light">{t('tips')}</DyoLabel>
+        <DyoLabel textColor="text-bright-muted">{t('tips')}</DyoLabel>
 
         <form className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
           <DyoInput

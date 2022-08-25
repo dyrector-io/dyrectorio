@@ -7,6 +7,7 @@ import { DyoButton } from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
+import { DyoLabel } from '@app/elements/dyo-label'
 import { DyoMessage } from '@app/elements/dyo-message'
 import { ChangePassword } from '@app/models'
 import { API_SETTINGS_CHANGE_PASSWORD, ROUTE_LOGIN, ROUTE_SETTINGS, ROUTE_SETTINGS_CHANGE_PASSWORD } from '@app/routes'
@@ -60,7 +61,7 @@ const SettingsPage = (props: SelfServiceSettingsFlow) => {
   })
 
   const pageLink: BreadcrumbLink = {
-    name: t('common:settings'),
+    name: t('common:profile'),
     url: ROUTE_SETTINGS,
   }
 
@@ -80,11 +81,12 @@ const SettingsPage = (props: SelfServiceSettingsFlow) => {
       </PageHeading>
 
       <DyoCard className="text-bright p-8">
-        <form className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
+        <form className="flex flex-col w-1/2" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
           <DyoHeading element="h2" className="text-2xl">
             {t('changePass')}
           </DyoHeading>
 
+          <DyoLabel textColor="text-bright-muted">{t('tips')}</DyoLabel>
           <DyoInput
             label={t('common:password')}
             name="password"
@@ -92,6 +94,7 @@ const SettingsPage = (props: SelfServiceSettingsFlow) => {
             onChange={formik.handleChange}
             value={formik.values.password}
             message={findMessage(ui, 'password')}
+            grow
           />
 
           <DyoInput
@@ -102,6 +105,7 @@ const SettingsPage = (props: SelfServiceSettingsFlow) => {
             value={formik.values.confirmPassword}
             message={confirmError}
             messageType="error"
+            grow
           />
 
           {ui.messages?.map((it, index) => (

@@ -42,7 +42,7 @@ const VerifyPage = (props: VerifyProps) => {
       email,
     },
     onSubmit: async values => {
-      const captcha = recaptchaSiteKey ? await recaptcha.current.executeAsync() : null
+      const captcha = await recaptcha.current?.executeAsync()
 
       const data: VerifyEmail = {
         flow: flow.id,
@@ -58,7 +58,7 @@ const VerifyPage = (props: VerifyProps) => {
         startCountdown(AUTH_RESEND_DELAY)
         setUi(flow.ui)
       } else {
-        recaptcha.current.reset()
+        recaptcha.current?.reset()
 
         const data = await res.json()
 
