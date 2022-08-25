@@ -40,7 +40,6 @@ export type ImageTagsMap = { [key: string]: RegistryImageTags }
 export const imageTagKey = (registryId: string, imageName: string) => `${registryId}/${imageName}`
 
 export interface ImagesWebSocketOptions {
-  t: Translate
   productId: string
   versionId: string
   images: VersionImage[]
@@ -59,15 +58,11 @@ export interface ImagesWebSocket {
 }
 
 export const useImagesWebSocket = (options: ImagesWebSocketOptions): ImagesWebSocket => {
-  const { t, productId, versionId, images, imageTags, setImages, setImageTags, setPatchingImage } = options
+  const { productId, versionId, images, imageTags, setImages, setImageTags, setPatchingImage } = options
 
   const registriesSock = useWebSocket(WS_REGISTRIES, {
     onOpen: () => {
       updateImageTags(images)
-    },
-    onError: e => {
-      console.error('ws', 'registries', e)
-      toast(t('errors:connectionLost'))
     },
   })
 

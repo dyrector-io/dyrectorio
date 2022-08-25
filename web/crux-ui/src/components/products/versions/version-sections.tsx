@@ -6,7 +6,7 @@ import { useRouter } from 'next/dist/client/router'
 import { useRef, useState } from 'react'
 import AddDeploymentCard from './deployments/add-deployment-card'
 import SelectImagesCard from './images/select-images-card'
-import { ImageTagsMap, useImagesWebSocket } from './use-images-websocket'
+import { ImagesWebSocketOptions, ImageTagsMap, useImagesWebSocket } from './use-images-websocket'
 import VersionDeploymentsSection from './version-deployments-section'
 import VersionImagesSection from './version-images-section'
 import VersionReorderImagesSection from './version-reorder-images-section'
@@ -32,8 +32,7 @@ const VersionSections = (props: VersionSectionsProps) => {
   const [images, setImages] = useState(props.version.images)
   const [imageTags, setImageTags] = useState<ImageTagsMap>({})
 
-  const wsOptions = {
-    t,
+  const wsOptions: ImagesWebSocketOptions = {
     productId: props.product.id,
     versionId: props.version.id,
     images,
