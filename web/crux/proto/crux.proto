@@ -761,7 +761,7 @@ message UpdateDeploymentRequest {
   string accessedBy = 2;
 
   string name = 100;
-  optional string descripion = 101;
+  optional string description = 101;
   string prefix = 102;
 }
 

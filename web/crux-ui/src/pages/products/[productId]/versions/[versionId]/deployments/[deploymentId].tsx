@@ -136,6 +136,11 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
     onOpenLog()
   }
 
+  const onDeploymentEdited = deployment => {
+    setDeployment(deployment)
+    setEditing(false)
+  }
+
   return (
     <Layout
       title={t('deploysName', {
@@ -174,11 +179,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
       </PageHeading>
 
       {editing ? (
-        <EditDeploymentCard
-          deployment={deployment}
-          submitRef={submitRef}
-          onDeploymentEdited={it => setDeployment(it)}
-        />
+        <EditDeploymentCard deployment={deployment} submitRef={submitRef} onDeploymentEdited={onDeploymentEdited} />
       ) : (
         <>
           <DeploymentDetailsSection deployment={deployment} deploySock={sock} />
