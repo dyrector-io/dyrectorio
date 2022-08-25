@@ -30,9 +30,7 @@ import { versionWsUrl, WS_REGISTRIES } from '@app/routes'
 import { fold } from '@app/utils'
 import { WebSocketEndpoint } from '@app/websockets/client'
 
-import { Translate } from 'next-translate'
 import { Dispatch, SetStateAction } from 'react'
-import toast from 'react-hot-toast'
 import { mergeImagePatch } from './version-images-section'
 
 export type ImageTagsMap = { [key: string]: RegistryImageTags }
