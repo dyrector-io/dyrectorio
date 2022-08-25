@@ -75,6 +75,7 @@ export type Deployment = {
   version: string
   node: string
   status: DeploymentStatus
+  nodeId: string
 }
 
 export type DeploymentRoot = DeploymentDetails & {
@@ -644,8 +645,6 @@ export type NotificationDetails = CreateNotification & {
   id: string
   creator: string
 }
-
-export type NotificationItem = Omit<NotificationDetails, 'active'>
 
 export const roleToText = (role: UserRole) => {
   switch (role) {

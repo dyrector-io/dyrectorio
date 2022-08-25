@@ -996,6 +996,7 @@ export interface DeploymentResponse {
   versionId: string
   node: string
   status: DeploymentStatus
+  nodeId: string
 }
 
 export interface DeploymentListByVersionResponse {
@@ -1083,6 +1084,7 @@ export interface NotificationResponse {
   name: string
   url: string
   type: NotificationType
+  active: boolean
 }
 
 export interface NotificationListResponse {
@@ -7149,6 +7151,7 @@ const baseDeploymentResponse: object = {
   versionId: '',
   node: '',
   status: 0,
+  nodeId: '',
 }
 
 export const DeploymentResponse = {
@@ -7176,6 +7179,9 @@ export const DeploymentResponse = {
     }
     if (message.status !== 0) {
       writer.uint32(848).int32(message.status)
+    }
+    if (message.nodeId !== '') {
+      writer.uint32(858).string(message.nodeId)
     }
     return writer
   },
@@ -7211,6 +7217,9 @@ export const DeploymentResponse = {
         case 106:
           message.status = reader.int32() as any
           break
+        case 107:
+          message.nodeId = reader.string()
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -7229,6 +7238,7 @@ export const DeploymentResponse = {
     message.versionId = object.versionId !== undefined && object.versionId !== null ? String(object.versionId) : ''
     message.node = object.node !== undefined && object.node !== null ? String(object.node) : ''
     message.status = object.status !== undefined && object.status !== null ? deploymentStatusFromJSON(object.status) : 0
+    message.nodeId = object.nodeId !== undefined && object.nodeId !== null ? String(object.nodeId) : ''
     return message
   },
 
@@ -7242,6 +7252,7 @@ export const DeploymentResponse = {
     message.versionId !== undefined && (obj.versionId = message.versionId)
     message.node !== undefined && (obj.node = message.node)
     message.status !== undefined && (obj.status = deploymentStatusToJSON(message.status))
+    message.nodeId !== undefined && (obj.nodeId = message.nodeId)
     return obj
   },
 
@@ -7255,6 +7266,7 @@ export const DeploymentResponse = {
     message.versionId = object.versionId ?? ''
     message.node = object.node ?? ''
     message.status = object.status ?? 0
+    message.nodeId = object.nodeId ?? ''
     return message
   },
 }
@@ -8238,7 +8250,13 @@ export const NotificationDetailsResponse = {
   },
 }
 
-const baseNotificationResponse: object = { id: '', name: '', url: '', type: 0 }
+const baseNotificationResponse: object = {
+  id: '',
+  name: '',
+  url: '',
+  type: 0,
+  active: false,
+}
 
 export const NotificationResponse = {
   encode(message: NotificationResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -8256,6 +8274,9 @@ export const NotificationResponse = {
     }
     if (message.type !== 0) {
       writer.uint32(824).int32(message.type)
+    }
+    if (message.active === true) {
+      writer.uint32(832).bool(message.active)
     }
     return writer
   },
@@ -8282,6 +8303,9 @@ export const NotificationResponse = {
         case 103:
           message.type = reader.int32() as any
           break
+        case 104:
+          message.active = reader.bool()
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -8298,6 +8322,7 @@ export const NotificationResponse = {
     message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
     message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
     message.type = object.type !== undefined && object.type !== null ? notificationTypeFromJSON(object.type) : 0
+    message.active = object.active !== undefined && object.active !== null ? Boolean(object.active) : false
     return message
   },
 
@@ -8308,6 +8333,7 @@ export const NotificationResponse = {
     message.name !== undefined && (obj.name = message.name)
     message.url !== undefined && (obj.url = message.url)
     message.type !== undefined && (obj.type = notificationTypeToJSON(message.type))
+    message.active !== undefined && (obj.active = message.active)
     return obj
   },
 
@@ -8319,6 +8345,7 @@ export const NotificationResponse = {
     message.name = object.name ?? ''
     message.url = object.url ?? ''
     message.type = object.type ?? 0
+    message.active = object.active ?? false
     return message
   },
 }

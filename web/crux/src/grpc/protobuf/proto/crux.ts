@@ -985,6 +985,7 @@ export interface DeploymentResponse {
   versionId: string
   node: string
   status: DeploymentStatus
+  nodeId: string
 }
 
 export interface DeploymentListByVersionResponse {
@@ -1072,6 +1073,7 @@ export interface NotificationResponse {
   name: string
   url: string
   type: NotificationType
+  active: boolean
 }
 
 export interface NotificationListResponse {
@@ -3110,6 +3112,7 @@ const baseDeploymentResponse: object = {
   versionId: '',
   node: '',
   status: 0,
+  nodeId: '',
 }
 
 export const DeploymentResponse = {
@@ -3123,6 +3126,7 @@ export const DeploymentResponse = {
     message.versionId = object.versionId !== undefined && object.versionId !== null ? String(object.versionId) : ''
     message.node = object.node !== undefined && object.node !== null ? String(object.node) : ''
     message.status = object.status !== undefined && object.status !== null ? deploymentStatusFromJSON(object.status) : 0
+    message.nodeId = object.nodeId !== undefined && object.nodeId !== null ? String(object.nodeId) : ''
     return message
   },
 
@@ -3136,6 +3140,7 @@ export const DeploymentResponse = {
     message.versionId !== undefined && (obj.versionId = message.versionId)
     message.node !== undefined && (obj.node = message.node)
     message.status !== undefined && (obj.status = deploymentStatusToJSON(message.status))
+    message.nodeId !== undefined && (obj.nodeId = message.nodeId)
     return obj
   },
 }
@@ -3476,7 +3481,13 @@ export const NotificationDetailsResponse = {
   },
 }
 
-const baseNotificationResponse: object = { id: '', name: '', url: '', type: 0 }
+const baseNotificationResponse: object = {
+  id: '',
+  name: '',
+  url: '',
+  type: 0,
+  active: false,
+}
 
 export const NotificationResponse = {
   fromJSON(object: any): NotificationResponse {
@@ -3487,6 +3498,7 @@ export const NotificationResponse = {
     message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
     message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
     message.type = object.type !== undefined && object.type !== null ? notificationTypeFromJSON(object.type) : 0
+    message.active = object.active !== undefined && object.active !== null ? Boolean(object.active) : false
     return message
   },
 
@@ -3497,6 +3509,7 @@ export const NotificationResponse = {
     message.name !== undefined && (obj.name = message.name)
     message.url !== undefined && (obj.url = message.url)
     message.type !== undefined && (obj.type = notificationTypeToJSON(message.type))
+    message.active !== undefined && (obj.active = message.active)
     return obj
   },
 }

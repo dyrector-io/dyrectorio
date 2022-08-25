@@ -3,7 +3,6 @@ import DyoChips from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
-import { DyoTextArea } from '@app/elements/dyo-text-area'
 import RemainingTimeLabel from '@app/elements/remaining-time-label'
 import { defaultApiErrorHandler } from '@app/errors'
 import { useTimer } from '@app/hooks/use-timer'
@@ -11,6 +10,7 @@ import { DyoNodeDetails, DyoNodeInstall, NodeType, NODE_TYPE_VALUES } from '@app
 import { nodeSetupApiUrl } from '@app/routes'
 import { sendForm, writeToClipboard } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
+import ShEditor from '../shared/sh-editor'
 import DyoNodeConnectionInfo from './dyo-node-connection-info'
 
 interface DyoNodeSetupProps {
@@ -92,6 +92,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
             <DyoInput
               label={t('command')}
               className="bg-gray-900"
+              disabled
               grow
               defaultValue={node.install.command}
               onFocus={ev => ev.target.select()}
@@ -103,7 +104,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
             </div>
           </div>
 
-          <div className="flex flex-row mt-4">
+          <div className="flex flex-row mt-4 mb-4">
             <DyoButton className="px-4 py-2 mr-4" secondary onClick={onDiscard}>
               {t('common:discard')}
             </DyoButton>
@@ -113,7 +114,10 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
             </DyoButton>
           </div>
 
-          <DyoTextArea label={t('script')} grow className="bg-gray-900 h-48 mb-4" defaultValue={node.install.script} />
+          <div className="flex flex-col">
+            <DyoLabel className="mb-2.5">{t('script')}</DyoLabel>
+            <ShEditor className={'h-48 mb-4 w-full overflow-x-auto'} readOnly value={node.install.script} />
+          </div>
         </>
       )}
 

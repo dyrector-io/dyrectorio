@@ -421,6 +421,7 @@ export class DeployService {
         },
         node: {
           select: {
+            id: true,
             name: true,
           },
         },
