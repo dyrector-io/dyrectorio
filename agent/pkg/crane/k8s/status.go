@@ -9,16 +9,22 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/dyrector-io/dyrectorio/agent/internal/util"
-	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/config"
 )
 
+type ContainerStatusResponse struct {
+	Repository string `json:"repository" binding:"required"`
+	Tag        string `json:"tag" binding:"required"`
+	State      string `json:"state" binding:"required"`
+	Status     string `json:"status" binding:"required"`
+}
+
 // DeploymentStatus get collective status of relevant k8s objects
-func DeploymentStatus(ctx context.Context, namespace, name string, cfg *config.Configuration) (*v1.ContainerStatusResponse, error) {
+func DeploymentStatus(ctx context.Context, namespace, name string, cfg *config.Configuration) (*ContainerStatusResponse, error) {
 	// what is up
 	// ingress - svc - deployment - pod
 
-	statusResp := &v1.ContainerStatusResponse{
+	statusResp := &ContainerStatusResponse{
 		Repository: "",
 		Tag:        "",
 		State:      "",
