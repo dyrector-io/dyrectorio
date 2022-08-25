@@ -80,7 +80,7 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
       ) : (
         <EditRegistryCard
           className="p-8"
-          registry={props.registry}
+          registry={registry}
           onRegistryEdited={onRegistryEdited}
           submitRef={submitRef}
         />

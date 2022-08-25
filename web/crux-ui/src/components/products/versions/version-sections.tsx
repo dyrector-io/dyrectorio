@@ -1,27 +1,12 @@
-import { useWebSocket } from '@app/hooks/use-websocket'
-import {
-  AddImagesMessage,
-  ImagesWereReorderedMessage,
-  OrderImagesMessage,
-  ProductDetails,
-  RegistryImages,
-  VersionDetails,
-  VersionImage,
-  WS_TYPE_ADD_IMAGES,
-  WS_TYPE_IMAGES_WERE_REORDERED,
-  WS_TYPE_IMAGE_UPDATED,
-  WS_TYPE_ORDER_IMAGES,
-  WS_TYPE_PATCH_IMAGE,
-  WS_TYPE_REGISTRY_FETCH_IMAGE_TAGS,
-} from '@app/models'
-import { deploymentUrl, versionWsUrl, WS_REGISTRIES } from '@app/routes'
+import { ProductDetails, RegistryImages, VersionDetails, VersionImage } from '@app/models'
+import { deploymentUrl } from '@app/routes'
 import { parseStringUnionType } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import { useRef, useState } from 'react'
-import toast from 'react-hot-toast'
 import AddDeploymentCard from './deployments/add-deployment-card'
 import SelectImagesCard from './images/select-images-card'
+import { ImagesWebSocketOptions, ImageTagsMap, useImagesWebSocket } from './use-images-websocket'
 import VersionDeploymentsSection from './version-deployments-section'
 import VersionImagesSection from './version-images-section'
 import VersionReorderImagesSection from './version-reorder-images-section'
@@ -45,57 +30,29 @@ const VersionSections = (props: VersionSectionsProps) => {
   const [sectionState, setSectionState] = useState(initialSection)
   const [addSectionState, setAddSectionState] = useState<VersionAddSectionState>('none')
   const [images, setImages] = useState(props.version.images)
+  const [imageTags, setImageTags] = useState<ImageTagsMap>({})
+
+  const wsOptions: ImagesWebSocketOptions = {
+    productId: props.product.id,
+    versionId: props.version.id,
+    images,
+    imageTags,
+    setImages,
+    setImageTags,
+    setPatchingImage: setSaving,
+  }
+  const { versionSock, fetchImageTags, addImages, orderImages, patchImage } = useImagesWebSocket(wsOptions)
 
   const saveImageOrderRef = useRef<VoidFunction>()
-
-  const registriesSock = useWebSocket(WS_REGISTRIES, {
-    onError: e => {
-      console.error('ws', 'registries', e)
-      toast(t('errors:connectionLost'))
-    },
-  })
-
-  const versionSock = useWebSocket(versionWsUrl(props.product.id, version.id), {
-    onSend: message => {
-      if (message.type === WS_TYPE_PATCH_IMAGE) {
-        setSaving(true)
-      }
-    },
-    onReceive: message => {
-      if (WS_TYPE_IMAGE_UPDATED === message.type) {
-        setSaving(false)
-      }
-    },
-    onError: e => {
-      console.error('ws', 'version', e)
-      toast(t('errors:connectionLost'))
-    },
-  })
-
-  versionSock.on(WS_TYPE_IMAGES_WERE_REORDERED, (message: ImagesWereReorderedMessage) => {
-    const ids = [...message]
-
-    const newImages = ids.map((id, index) => {
-      const image = images.find(it => it.id === id)
-      return {
-        ...image,
-        order: index,
-      }
-    })
-
-    setImages(newImages)
-  })
 
   const onImagesSelected = (registryImages: RegistryImages[]) => {
     setAddSectionState('none')
 
     registryImages.forEach(it => {
-      registriesSock.send(WS_TYPE_REGISTRY_FETCH_IMAGE_TAGS, it)
+      fetchImageTags(it)
     })
 
-    versionSock.send(WS_TYPE_ADD_IMAGES, {
-      registryImages,
-    } as AddImagesMessage)
+    addImages(registryImages)
   }
 
   const onAddDeployment = async (deploymentId: string) =>
@@ -103,7 +60,7 @@ const VersionSections = (props: VersionSectionsProps) => {
 
   const onReorderImages = (images: VersionImage[]) => {
     const ids = images.map(it => it.id)
-    versionSock.send(WS_TYPE_ORDER_IMAGES, ids as OrderImagesMessage)
+    orderImages(ids)
 
     const newImages = images.map((it, index) => {
       return {
@@ -119,6 +76,18 @@ const VersionSections = (props: VersionSectionsProps) => {
   const onSelectAddSectionState = (state: VersionAddSectionState) => {
     setAddSectionState(state)
     setSectionState(ADD_SECTION_TO_SECTION[state])
+  }
+
+  const onImageTagSelected = (image: VersionImage, tag: string) => {
+    const index = images.indexOf(image)
+    const newImages = [...images]
+    newImages[index] = {
+      ...image,
+      tag,
+    }
+    setImages(newImages)
+
+    patchImage(image.id, tag)
   }
 
   return (
@@ -147,8 +116,11 @@ const VersionSections = (props: VersionSectionsProps) => {
         <VersionImagesSection
           disabled={!version.mutable}
           images={images}
+          imageTags={imageTags}
           productId={props.product.id}
           versionId={version.id}
+          versionSock={versionSock}
+          onTagSelected={onImageTagSelected}
         />
       ) : sectionState === 'deployments' ? (
         <VersionDeploymentsSection product={props.product} version={version} />

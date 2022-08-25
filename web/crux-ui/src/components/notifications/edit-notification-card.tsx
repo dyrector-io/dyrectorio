@@ -11,7 +11,6 @@ import { useThrottling } from '@app/hooks/use-throttleing'
 import {
   CreateNotification,
   NotificationDetails,
-  NotificationItem,
   NotificationType,
   NOTIFICATION_TYPE_VALUES,
   UpdateNotification,
@@ -27,7 +26,7 @@ import toast from 'react-hot-toast'
 interface EditNotificationCardProps {
   notification?: NotificationDetails
   submitRef: MutableRefObject<() => Promise<any>>
-  onSubmitted: (notifcation: NotificationItem) => void
+  onSubmitted: (notifcation: NotificationDetails) => void
   className?: string
 }
 
@@ -70,7 +69,7 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
       if (response.ok) {
         const result = response.status == 200 ? ((await response.json()) as NotificationDetails) : { ...values }
         setNotification(result)
-        props.onSubmitted(result as NotificationItem)
+        props.onSubmitted(result as NotificationDetails)
       } else {
         handleApiError(response, setFieldError)
       }

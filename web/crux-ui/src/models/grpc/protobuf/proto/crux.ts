@@ -1283,6 +1283,7 @@ export interface NotificationResponse {
   name: string
   url: string
   type: NotificationType
+  active: boolean
 }
 
 export interface NotificationListResponse {
@@ -8888,7 +8889,13 @@ export const NotificationDetailsResponse = {
   },
 }
 
-const baseNotificationResponse: object = { id: '', name: '', url: '', type: 0 }
+const baseNotificationResponse: object = {
+  id: '',
+  name: '',
+  url: '',
+  type: 0,
+  active: false,
+}
 
 export const NotificationResponse = {
   encode(message: NotificationResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -8906,6 +8913,9 @@ export const NotificationResponse = {
     }
     if (message.type !== 0) {
       writer.uint32(824).int32(message.type)
+    }
+    if (message.active === true) {
+      writer.uint32(832).bool(message.active)
     }
     return writer
   },
@@ -8932,6 +8942,9 @@ export const NotificationResponse = {
         case 103:
           message.type = reader.int32() as any
           break
+        case 104:
+          message.active = reader.bool()
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -8948,6 +8961,7 @@ export const NotificationResponse = {
     message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
     message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
     message.type = object.type !== undefined && object.type !== null ? notificationTypeFromJSON(object.type) : 0
+    message.active = object.active !== undefined && object.active !== null ? Boolean(object.active) : false
     return message
   },
 
@@ -8958,6 +8972,7 @@ export const NotificationResponse = {
     message.name !== undefined && (obj.name = message.name)
     message.url !== undefined && (obj.url = message.url)
     message.type !== undefined && (obj.type = notificationTypeToJSON(message.type))
+    message.active !== undefined && (obj.active = message.active)
     return obj
   },
 
@@ -8969,6 +8984,7 @@ export const NotificationResponse = {
     message.name = object.name ?? ''
     message.url = object.url ?? ''
     message.type = object.type ?? 0
+    message.active = object.active ?? false
     return message
   },
 }
