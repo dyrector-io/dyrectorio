@@ -73,7 +73,7 @@ export default class Deployment {
 
   readonly id: string
 
-  constructor(private readonly request: VersionDeployRequest, public notification: DeploymentNotification) {
+  constructor(readonly request: VersionDeployRequest, public notification: DeploymentNotification) {
     this.id = request.id
   }
 
@@ -89,6 +89,8 @@ export default class Deployment {
       status: DeploymentStatus.IN_PROGRESS,
     })
 
+    this.logger.debug('Starting deployment')
+    this.logger.debug(this.request)
     commandChannel.next({
       deploy: this.request,
     } as AgentCommand)

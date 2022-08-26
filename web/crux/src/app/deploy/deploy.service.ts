@@ -319,6 +319,8 @@ export default class DeployService {
 
     this.logger.debug(`Starting deployment: ${deploy.id}`)
 
+    this.logger.debug(`Container config: ${deploy.request.requests[0].containerConfig}`)
+
     return agent.deploy(deploy)
   }
 

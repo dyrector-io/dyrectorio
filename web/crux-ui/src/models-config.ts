@@ -21,6 +21,7 @@ export type CompleteContainerConfig = ExplicitContainerConfig & {
   name: string
   environment?: Record<string, string>
   capabilities?: Record<string, string>
+  secrets?: Record<string, string>
 }
 
 export type ContainerConfig = {
@@ -28,6 +29,7 @@ export type ContainerConfig = {
   capabilities: Capabilities
   environment: Environment
   config: ExplicitContainerConfig
+  secrets: Secrets
 }
 
 export type ExplicitContainerConfigPort = {
@@ -181,6 +183,7 @@ export const mergeConfigs = (
     name: imageConfig.name,
     environment: envs,
     capabilities: caps,
+    secrets: instanceConfig?.secrets,
     config: {
       ...imageConfig.config,
       ...(instanceConfig.config ?? {}),

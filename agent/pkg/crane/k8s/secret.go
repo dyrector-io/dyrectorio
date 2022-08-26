@@ -1,7 +1,10 @@
 package k8s
 
 import (
+	"bufio"
+	"bytes"
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/config"
@@ -10,6 +13,8 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	corev1 "k8s.io/client-go/applyconfigurations/core/v1"
+
+	"github.com/ProtonMail/gopenpgp/v2/helper"
 )
 
 // namespace wrapper for the facade
@@ -30,7 +35,14 @@ func (s *secret) applySecrets(namespace, name string, values map[string]string) 
 	if err != nil {
 		return err
 	}
-	secrets := corev1.Secret(name, namespace).WithData(StringMapToByteMap(values))
+
+	decrypted, err := decryptSecrets(values, s.appConfig)
+
+	if err != nil {
+		return err
+	}
+
+	secrets := corev1.Secret(name, namespace).WithData(decrypted)
 
 	result, err := cli.Apply(s.ctx, secrets, metav1.ApplyOptions{
 		FieldManager: s.appConfig.FieldManagerName,
@@ -38,7 +50,7 @@ func (s *secret) applySecrets(namespace, name string, values map[string]string) 
 	})
 
 	if result != nil {
-		log.Println("ConfigMap updated: " + result.Name)
+		log.Println("Secret updated: " + result.Name)
 		if len(values) > 0 {
 			s.avail = append(s.avail, name)
 		}
@@ -47,14 +59,28 @@ func (s *secret) applySecrets(namespace, name string, values map[string]string) 
 	return err
 }
 
-func StringMapToByteMap(in map[string]string) map[string][]byte {
+func decryptSecrets(arr map[string]string, appConfig *config.Configuration) (map[string][]byte, error) {
 	out := map[string][]byte{}
 
-	for key, value := range in {
-		out[key] = []byte(value)
+	b := bytes.NewBuffer([]byte{})
+	w := bufio.NewWriter(b)
+	count, err := w.WriteString("meleg")
+
+	log.Println("ennyi vot: ", count)
+
+	if err != nil {
+		log.Println(err)
 	}
 
-	return out
+	for key, sec := range arr {
+		decrypted, err := helper.DecryptMessageArmored(string(appConfig.SecretPrivateKey), []byte{}, sec)
+		if err != nil {
+			return out, fmt.Errorf("could not process secret: %v", key)
+		}
+		out[key] = []byte(decrypted)
+	}
+
+	return out, nil
 }
 
 func getSecretClient(namespace string, cfg *config.Configuration) (v1.SecretInterface, error) {

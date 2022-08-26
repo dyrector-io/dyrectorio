@@ -265,7 +265,6 @@ export const explicitContainerConfigSchema = yup.object().shape({
       readinessProbe: yup.string().optional(),
       startupProbe: yup.string().optional(),
     })
-<<<<<<< HEAD
     .default({})
     .optional()
     .nullable(),
@@ -287,10 +286,6 @@ export const explicitContainerConfigSchema = yup.object().shape({
     .nullable()
     .optional(),
   extraLBAnnotations: yup.object().shape({}).default({}).nullable().optional(),
-=======
-    .default(null),
-  user: yup.number().positive().nullable().default(null),
->>>>>>> 2313c68 (feat: secrets wip, almost in action)
 })
 
 export const completeContainerConfigSchema = explicitContainerConfigSchema.shape({
@@ -321,12 +316,8 @@ export const uniqueKeysOnlySchema = yup
 export const containerConfigSchema = yup.object().shape({
   environment: uniqueKeyValuesSchema,
   capabilities: uniqueKeyValuesSchema,
-<<<<<<< HEAD
   config: explicitContainerConfigSchema.nullable(),
-=======
   secrets: uniqueKeysOnlySchema,
-  config: explicitContainerConfigSchema,
->>>>>>> 2313c68 (feat: secrets wip, almost in action)
 })
 
 export const patchContainerConfigSchema = yup.object().shape({

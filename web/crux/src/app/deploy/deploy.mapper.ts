@@ -172,6 +172,7 @@ export default class DeployMapper {
       ...config.config,
       environments: this.jsonToPipedFormat(config.environment ?? []),
       user: config.config.user ?? 0,
+      secrets: { data: config?.secrets },
     }
   }
 

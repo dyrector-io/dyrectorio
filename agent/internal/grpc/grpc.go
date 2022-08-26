@@ -91,7 +91,6 @@ func fetchCertificatesFromURL(ctx context.Context, addr string) (*x509.CertPool,
 	log.Println("Retrieving certificate")
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodHead, addr, http.NoBody)
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to create the http request: %s", err.Error())
 	}
