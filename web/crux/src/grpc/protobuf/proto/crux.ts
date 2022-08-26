@@ -828,7 +828,6 @@ export interface CreateVersionRequest {
   productId: string
   name: string
   changelog?: string | undefined
-  default: boolean
   type: VersionType
 }
 
@@ -837,7 +836,6 @@ export interface UpdateVersionRequest {
   accessedBy: string
   name: string
   changelog?: string | undefined
-  default: boolean
 }
 
 export interface VersionResponse {
@@ -1087,8 +1085,9 @@ export interface ContainerStateItem {
   /** The 'State' of the container (Created, Running, etc) */
   state: ContainerState
   /**
-   * The 'Status' of the container ("Created 1min ago", "Exited with code 123", etc).
-   * Unused but left here for reverse compatibility with the legacy version.
+   * The 'Status' of the container ("Created 1min ago", "Exited with code 123",
+   * etc). Unused but left here for reverse compatibility with the legacy
+   * version.
    */
   status: string
   imageName: string
@@ -2222,7 +2221,6 @@ const baseCreateVersionRequest: object = {
   accessedBy: '',
   productId: '',
   name: '',
-  default: false,
   type: 0,
 }
 
@@ -2234,7 +2232,6 @@ export const CreateVersionRequest = {
     message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
     message.changelog =
       object.changelog !== undefined && object.changelog !== null ? String(object.changelog) : undefined
-    message.default = object.default !== undefined && object.default !== null ? Boolean(object.default) : false
     message.type = object.type !== undefined && object.type !== null ? versionTypeFromJSON(object.type) : 0
     return message
   },
@@ -2245,18 +2242,12 @@ export const CreateVersionRequest = {
     message.productId !== undefined && (obj.productId = message.productId)
     message.name !== undefined && (obj.name = message.name)
     message.changelog !== undefined && (obj.changelog = message.changelog)
-    message.default !== undefined && (obj.default = message.default)
     message.type !== undefined && (obj.type = versionTypeToJSON(message.type))
     return obj
   },
 }
 
-const baseUpdateVersionRequest: object = {
-  id: '',
-  accessedBy: '',
-  name: '',
-  default: false,
-}
+const baseUpdateVersionRequest: object = { id: '', accessedBy: '', name: '' }
 
 export const UpdateVersionRequest = {
   fromJSON(object: any): UpdateVersionRequest {
@@ -2266,7 +2257,6 @@ export const UpdateVersionRequest = {
     message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
     message.changelog =
       object.changelog !== undefined && object.changelog !== null ? String(object.changelog) : undefined
-    message.default = object.default !== undefined && object.default !== null ? Boolean(object.default) : false
     return message
   },
 
@@ -2276,7 +2266,6 @@ export const UpdateVersionRequest = {
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.name !== undefined && (obj.name = message.name)
     message.changelog !== undefined && (obj.changelog = message.changelog)
-    message.default !== undefined && (obj.default = message.default)
     return obj
   },
 }
@@ -4161,6 +4150,8 @@ export interface CruxProductVersionClient {
 
   deleteVersion(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
 
+  setDefaultVersion(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
+
   getVersionDetails(request: IdRequest, metadata: Metadata, ...rest: any): Observable<VersionDetailsResponse>
 
   increaseVersion(request: IncreaseVersionRequest, metadata: Metadata, ...rest: any): Observable<CreateEntityResponse>
@@ -4187,6 +4178,8 @@ export interface CruxProductVersionController {
 
   deleteVersion(request: IdRequest, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
 
+  setDefaultVersion(request: IdRequest, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
+
   getVersionDetails(
     request: IdRequest,
     metadata: Metadata,
@@ -4207,6 +4200,7 @@ export function CruxProductVersionControllerMethods() {
       'createVersion',
       'updateVersion',
       'deleteVersion',
+      'setDefaultVersion',
       'getVersionDetails',
       'increaseVersion',
     ]

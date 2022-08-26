@@ -55,6 +55,7 @@ service CruxProductVersion {
   rpc CreateVersion(CreateVersionRequest) returns (CreateEntityResponse);
   rpc UpdateVersion(UpdateVersionRequest) returns (UpdateEntityResponse);
   rpc DeleteVersion(IdRequest) returns (Empty);
+  rpc SetDefaultVersion(IdRequest) returns (Empty);
   rpc GetVersionDetails(IdRequest) returns (VersionDetailsResponse);
   rpc IncreaseVersion(IncreaseVersionRequest) returns (CreateEntityResponse);
 }
@@ -69,7 +70,8 @@ service CruxImage {
 }
 
 service CruxDeployment {
-  rpc GetDeploymentsByVersionId(IdRequest) returns (DeploymentListByVersionResponse);
+  rpc GetDeploymentsByVersionId(IdRequest)
+      returns (DeploymentListByVersionResponse);
   rpc CreateDeployment(CreateDeploymentRequest) returns (CreateEntityResponse);
   rpc UpdateDeployment(UpdateDeploymentRequest) returns (UpdateEntityResponse);
   rpc PatchDeployment(PatchDeploymentRequest) returns (UpdateEntityResponse);
@@ -91,8 +93,7 @@ service CruxTeam {
   rpc DeleteTeam(IdRequest) returns (Empty);
   rpc UpdateUserRole(UpdateUserRoleInTeamRequest) returns (Empty);
 
-  rpc InviteUserToTeam(InviteUserRequest)
-      returns (CreateEntityResponse);
+  rpc InviteUserToTeam(InviteUserRequest) returns (CreateEntityResponse);
   rpc DeleteUserFromTeam(DeleteUserFromTeamRequest) returns (Empty);
   rpc AcceptTeamInvite(IdRequest) returns (Empty);
   rpc SelectTeam(IdRequest) returns (Empty);
@@ -103,8 +104,10 @@ service CruxTeam {
 }
 
 service CruxNotification {
-  rpc CreateNotification(CreateNotificationRequest) returns (CreateNotificationResponse);
-  rpc UpdateNotification(UpdateNotificationRequest) returns (UpdateEntityResponse);
+  rpc CreateNotification(CreateNotificationRequest)
+      returns (CreateNotificationResponse);
+  rpc UpdateNotification(UpdateNotificationRequest)
+      returns (UpdateEntityResponse);
   rpc DeleteNotification(IdRequest) returns (Empty);
   rpc GetNotificationList(AccessRequest) returns (NotificationListResponse);
   rpc GetNotificationDetails(IdRequest) returns (NotificationDetailsResponse);
@@ -439,7 +442,6 @@ message CreateVersionRequest {
   string productId = 100;
   string name = 101;
   optional string changelog = 102;
-  bool default = 103;
   VersionType type = 104;
 }
 
@@ -449,7 +451,6 @@ message UpdateVersionRequest {
 
   string name = 100;
   optional string changelog = 101;
-  bool default = 102;
 }
 
 message VersionResponse {
@@ -690,8 +691,9 @@ message ContainerStateItem {
   /* The 'State' of the container (Created, Running, etc) */
   ContainerState state = 105;
   /*
-   * The 'Status' of the container ("Created 1min ago", "Exited with code 123", etc).
-   * Unused but left here for reverse compatibility with the legacy version. 
+   * The 'Status' of the container ("Created 1min ago", "Exited with code 123",
+   * etc). Unused but left here for reverse compatibility with the legacy
+   * version.
    */
   string status = 106;
   string imageName = 107;
@@ -798,9 +800,7 @@ message PatchInstanceRequest {
   optional ExplicitContainerConfig config = 102;
 }
 
-message DeploymentListResponse {
-  repeated DeploymentResponse data = 1000;
-}
+message DeploymentListResponse { repeated DeploymentResponse data = 1000; }
 
 message DeploymentResponse {
   string id = 1;
@@ -815,7 +815,9 @@ message DeploymentResponse {
   string nodeId = 107;
 }
 
-message DeploymentListByVersionResponse { repeated DeploymentByVersionResponse data = 1000; }
+message DeploymentListByVersionResponse {
+  repeated DeploymentByVersionResponse data = 1000;
+}
 
 message DeploymentByVersionResponse {
   string id = 1;
@@ -935,9 +937,7 @@ message NotificationResponse {
   NotificationType type = 103;
 }
 
-message NotificationListResponse {
-  repeated NotificationResponse data = 1000;
-}
+message NotificationListResponse { repeated NotificationResponse data = 1000; }
 
 // HEALTH
 

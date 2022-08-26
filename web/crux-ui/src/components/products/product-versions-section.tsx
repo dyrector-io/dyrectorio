@@ -8,6 +8,7 @@ interface ProductVersionsSectionProps {
   productId: string
   versions: Version[]
   onIncrease?: (version: Version) => void
+  onSetAsDefault?: (version: Version) => void
   disabled?: boolean
 }
 
@@ -28,6 +29,7 @@ const ProductVersionsSection = (props: ProductVersionsSectionProps) => {
           onClick={() => onClick(it.id)}
           disabled={props.disabled}
           onIncreaseClick={props.onIncrease ? () => props.onIncrease(it) : null}
+          onSetAsDefaultClick={props.onSetAsDefault ? () => props.onSetAsDefault(it) : null}
         />
       ))}
     </DyoWrap>

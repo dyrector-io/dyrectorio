@@ -9,15 +9,17 @@ import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu, DetailsPageTexts } from '@app/components/shared/page-menu'
 import LoadingIndicator from '@app/elements/loading-indicator'
+import { defaultApiErrorHandler } from '@app/errors'
 import {
   EditableProduct,
+  EditableVersion,
   ProductDetails,
   productDetailsToEditableProduct,
   updateProductDetailsWithEditableProduct,
   Version,
   VersionDetails,
 } from '@app/models'
-import { productApiUrl, productUrl, ROUTE_PRODUCTS, versionUrl } from '@app/routes'
+import { productApiUrl, productUrl, ROUTE_PRODUCTS, versionSetDefaultApiUrl, versionUrl } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
@@ -36,7 +38,6 @@ const ProductDetailsPage = (props: ProductDetailsPageProps) => {
   const router = useRouter()
 
   const [product, setProduct] = useState(props.product)
-  const [versions, setVersions] = useState(props.product.versions)
   const [editState, setEditState] = useState<ProductDetailsEditState>('version-list')
   const [increaseTarget, setIncreaseTarget] = useState<Version>(null)
   const [saving, setSaving] = useState(false)
@@ -44,11 +45,12 @@ const ProductDetailsPage = (props: ProductDetailsPageProps) => {
 
   const simpleProduct = product.type === 'simple'
 
+  const handleApiError = defaultApiErrorHandler(t)
+
   const onProductEdited = (edit: EditableProduct) => {
     const newProduct = updateProductDetailsWithEditableProduct(product, edit)
     setEditState('version-list')
     setProduct(newProduct)
-    setVersions(newProduct.versions)
   }
 
   const onDelete = async () => {
@@ -65,24 +67,49 @@ const ProductDetailsPage = (props: ProductDetailsPageProps) => {
 
   const onAddVersion = () => setEditState('add-version')
 
-  const onVersionEdited = (version: Version) => {
-    setVersions([
-      ...(version.default
-        ? versions.map(it => {
-            return { ...it, default: false }
-          })
-        : versions),
+  const onVersionCreated = (version: EditableVersion) => {
+    const newVersions = [
+      ...product.versions,
       {
         ...version,
+        default: product.versions.length < 1,
         increasable: version.type === 'incremental',
       },
-    ])
+    ]
+
+    setProduct({
+      ...product,
+      versions: newVersions,
+    })
     setEditState('version-list')
   }
 
   const onIncreaseVersion = (version: Version) => {
     setIncreaseTarget(version)
     setEditState('increase-version')
+  }
+
+  const onSetDefaultVersion = async (version: Version) => {
+    const res = await fetch(versionSetDefaultApiUrl(product.id, version.id), {
+      method: 'PUT',
+    })
+
+    if (!res.ok) {
+      handleApiError(res)
+      return
+    }
+
+    const newVersions = product.versions.map(it => {
+      return {
+        ...it,
+        default: it.id === version.id,
+      }
+    })
+
+    setProduct({
+      ...product,
+      versions: newVersions,
+    })
   }
 
   const onVersionIncreased = (version: Version) => router.push(versionUrl(product.id, version.id))
@@ -130,15 +157,14 @@ const ProductDetailsPage = (props: ProductDetailsPageProps) => {
           product={productDetailsToEditableProduct(product)}
           onProductEdited={onProductEdited}
           submitRef={submitRef}
-          versions={versions}
+          versions={product.versions}
         />
       ) : editState === 'add-version' ? (
         <EditVersionCard
           className="mb-8 px-8 py-6"
           product={product}
           submitRef={submitRef}
-          onVersionEdited={onVersionEdited}
-          versions={versions}
+          onVersionEdited={onVersionCreated}
         />
       ) : (
         <IncreaseVersionCard
@@ -150,11 +176,18 @@ const ProductDetailsPage = (props: ProductDetailsPageProps) => {
         />
       )}
 
-      {editState !== 'version-list' ? null : simpleProduct ? (
+      {simpleProduct ? (
         <VersionSections product={product} version={props.simpleProductVersionDetails} setSaving={setSaving} />
-      ) : (
-        <ProductVersionsSection productId={product.id} versions={versions ?? []} onIncrease={onIncreaseVersion} />
-      )}
+      ) : editState === 'version-list' ? (
+        <ProductVersionsSection
+          productId={product.id}
+          versions={product.versions}
+          onIncrease={onIncreaseVersion}
+          onSetAsDefault={onSetDefaultVersion}
+        />
+      ) : editState === 'add-version' || editState === 'edit-product' ? (
+        <ProductVersionsSection disabled productId={product.id} versions={product.versions} />
+      ) : null}
     </Layout>
   )
 }

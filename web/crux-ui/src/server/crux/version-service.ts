@@ -70,6 +70,7 @@ class DyoVersionService {
       ...dto,
       id: version.id,
       increasable: dto.type === 'incremental',
+      default: false,
       updatedAt: timestampToUTC(version.createdAt),
     }
   }
@@ -109,6 +110,15 @@ class DyoVersionService {
       updatedAt: timestampToUTC(res.createdAt),
       id: res.id,
     }
+  }
+
+  async setDefault(versionId: string): Promise<void> {
+    const req: IdRequest = {
+      id: versionId,
+      accessedBy: this.identity.id,
+    }
+
+    await protomisify<IdRequest, Empty>(this.client, this.client.setDefaultVersion)(IdRequest, req)
   }
 
   async delete(id: string): Promise<void> {

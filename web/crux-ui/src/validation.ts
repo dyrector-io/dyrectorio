@@ -103,11 +103,7 @@ export const increaseVersionSchema = yup.object().shape({
   changelog: descriptionRule,
 })
 
-export const updateVersionSchema = increaseVersionSchema.concat(
-  yup.object().shape({
-    default: yup.boolean().required(),
-  }),
-)
+export const updateVersionSchema = increaseVersionSchema
 
 export const createVersionSchema = updateVersionSchema.concat(
   yup.object().shape({

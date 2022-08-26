@@ -993,6 +993,7 @@ type CruxProductVersionClient interface {
 	CreateVersion(ctx context.Context, in *CreateVersionRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error)
 	UpdateVersion(ctx context.Context, in *UpdateVersionRequest, opts ...grpc.CallOption) (*UpdateEntityResponse, error)
 	DeleteVersion(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error)
+	SetDefaultVersion(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error)
 	GetVersionDetails(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*VersionDetailsResponse, error)
 	IncreaseVersion(ctx context.Context, in *IncreaseVersionRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error)
 }
@@ -1041,6 +1042,15 @@ func (c *cruxProductVersionClient) DeleteVersion(ctx context.Context, in *IdRequ
 	return out, nil
 }
 
+func (c *cruxProductVersionClient) SetDefaultVersion(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/crux.CruxProductVersion/SetDefaultVersion", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *cruxProductVersionClient) GetVersionDetails(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*VersionDetailsResponse, error) {
 	out := new(VersionDetailsResponse)
 	err := c.cc.Invoke(ctx, "/crux.CruxProductVersion/GetVersionDetails", in, out, opts...)
@@ -1067,6 +1077,7 @@ type CruxProductVersionServer interface {
 	CreateVersion(context.Context, *CreateVersionRequest) (*CreateEntityResponse, error)
 	UpdateVersion(context.Context, *UpdateVersionRequest) (*UpdateEntityResponse, error)
 	DeleteVersion(context.Context, *IdRequest) (*Empty, error)
+	SetDefaultVersion(context.Context, *IdRequest) (*Empty, error)
 	GetVersionDetails(context.Context, *IdRequest) (*VersionDetailsResponse, error)
 	IncreaseVersion(context.Context, *IncreaseVersionRequest) (*CreateEntityResponse, error)
 	mustEmbedUnimplementedCruxProductVersionServer()
@@ -1087,6 +1098,9 @@ func (UnimplementedCruxProductVersionServer) UpdateVersion(context.Context, *Upd
 }
 func (UnimplementedCruxProductVersionServer) DeleteVersion(context.Context, *IdRequest) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteVersion not implemented")
+}
+func (UnimplementedCruxProductVersionServer) SetDefaultVersion(context.Context, *IdRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetDefaultVersion not implemented")
 }
 func (UnimplementedCruxProductVersionServer) GetVersionDetails(context.Context, *IdRequest) (*VersionDetailsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetVersionDetails not implemented")
@@ -1179,6 +1193,24 @@ func _CruxProductVersion_DeleteVersion_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CruxProductVersion_SetDefaultVersion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CruxProductVersionServer).SetDefaultVersion(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crux.CruxProductVersion/SetDefaultVersion",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CruxProductVersionServer).SetDefaultVersion(ctx, req.(*IdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _CruxProductVersion_GetVersionDetails_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(IdRequest)
 	if err := dec(in); err != nil {
@@ -1237,6 +1269,10 @@ var CruxProductVersion_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteVersion",
 			Handler:    _CruxProductVersion_DeleteVersion_Handler,
+		},
+		{
+			MethodName: "SetDefaultVersion",
+			Handler:    _CruxProductVersion_SetDefaultVersion_Handler,
 		},
 		{
 			MethodName: "GetVersionDetails",
