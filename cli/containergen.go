@@ -2,9 +2,10 @@ package main
 
 import (
 	"bufio"
+	"bytes"
+	_ "embed"
 	"errors"
-	"log"
-	"os"
+	"io/ioutil"
 	"text/template"
 )
 
@@ -42,11 +43,17 @@ type Container struct {
 // Container services
 type Services string
 
+// template file
+//go:embed "template.hbr"
+var templatefile string
+
 const (
 	CruxUI Services = "crux-ui"
 	Crux   Services = "crux"
 	Utils  Services = "utils"
 )
+
+var AllServices []Services
 
 func GetCruxContainerDefaults() []Container {
 	return []Container{
@@ -188,71 +195,29 @@ func GetContainerDefaults(services []Services) (error, []Container) {
 	return nil, containers
 }
 
-func GenContainer(services []Services) (error, string) {
-	ReadConfig()
-	container_template := `version: "3.9"
-services:{{ range . }}{{ if .Enabled }}
+func GenContainer(services []Services, write bool) (error, string) {
+	//AllServices := []Services{Crux, CruxUI, Utils}
 
-  {{ .Name }}:
-    image: {{ .Image }}
-    networks:
-    - dyo{{ if .EnvVars }}
-    environment:{{ end }}{{ range .EnvVars }}
-    - {{ .Key }}={{ .Value }}{{ end }}{{ if .Depends }}
-    depends_on:{{ end }}{{range .Depends }}
-      {{ . }}{{ end }}{{ if .Ports }}
-    ports:{{ end }}{{ range .Ports }}
-    - {{ .Host }}:{{ .Container }}{{ end }}{{ if .Volumes }}
-    volumes:{{ end }}{{ range .Volumes }}
-    - {{ .Host }}:{{ .Container }}:{{ if .RO }}ro{{ else }}rw{{ end }}{{ end }}
-    restart: unless-stopped{{ if .Command }}
-    command: {{ .Command }}{{ end }}{{ end }}{{ end }}
-
-networks:
-  dyo:
-    driver: bridge
-
-volumes:{{ range . }}{{ range .Volumes}}
-  {{ .Host }}:{{ end }}{{ end }}
-`
-
-	f, err := os.Create("docker-compose.yaml")
+	err, containers := GetContainerDefaults(services)
 	if err != nil {
 		return err, ""
 	}
 
-	defer f.Close()
-	buffer := bufio.NewWriter(f)
-
-	var containers []Container
-	allservices := []Services{"crux", "crux-ui", "utils"}
-	services = []Services{}
-
-	for _, a := range allservices {
-		if Cfg.Services.Disabled != nil {
-			if Cfg.Services.Disabled[0] == a {
-				if len(Cfg.Services.Disabled) > 1 {
-					Cfg.Services.Disabled = Cfg.Services.Disabled[1:]
-				}
-			} else {
-				services = append(services, a)
-			}
-		} else {
-			services = allservices
+	if write {
+		err, settings := ReadSettingsFile(true)
+		if err != nil {
+			return err, ""
+		}
+		err, containers = EnvVarOverwrite(settings, containers)
+		if err != nil {
+			return err, ""
 		}
 	}
 
-	err, containers = GetContainerDefaults(services)
-	if err != nil {
-		return err, ""
-	}
+	buf := bytes.Buffer{}
+	buffer := bufio.NewWriter(&buf)
 
-	err, containers = EnvVarOverwrite(containers)
-	if err != nil {
-		return err, ""
-	}
-
-	template, err := template.New("container").Parse(container_template)
+	template, err := template.New("container").Parse(templatefile)
 	if err != nil {
 		return err, ""
 	}
@@ -263,8 +228,19 @@ volumes:{{ range . }}{{ range .Volumes}}
 	}
 
 	if err = buffer.Flush(); err != nil {
-		log.Fatal(err)
+		return err, ""
 	}
 
-	return nil, ""
+	var containersString string
+	_, err = buffer.WriteString(containersString)
+	if err = buffer.Flush(); err != nil {
+		return err, ""
+	}
+
+	return nil, containersString
+}
+
+func WriteComposeFile(containers string) error {
+	err := ioutil.WriteFile("docker-compose.yaml", []byte(containers), 0644)
+	return err
 }

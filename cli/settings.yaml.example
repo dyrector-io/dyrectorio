@@ -1,0 +1,8 @@
+# services:
+  # disabled:
+  # - crux
+  # - crux-ui
+  # envOverrides:
+    # -
+      # variable: TZ
+      # value: Europe/Budapest

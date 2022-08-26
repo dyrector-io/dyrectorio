@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "embed"
 	"io/ioutil"
 	"log"
 
@@ -16,39 +17,39 @@ type ServicesType struct {
 	Disabled []Services `yaml:"disabled"`
 }
 
-var Cfg Settings
+const SettingsFileName = "settings.yaml"
 
-func ReadConfig() {
-	examplefile := []byte(`# services:
-  # disabled:
-  # - crux
-  # - crux-ui
-  # envOverrides:
-    # -
-      # variable: TZ
-      # value: Europe/Budapest
-`)
+//go:embed "settings.yaml.example"
+var content string
 
-	file, err := ioutil.ReadFile("settings.yaml")
+func ReadSettingsFile(write bool) (error, Settings) {
+	examplefile := []byte(content)
+
+	file, err := ioutil.ReadFile(SettingsFileName)
 	if err != nil {
-		err := ioutil.WriteFile("settings.yaml", examplefile, 0644)
-		if err != nil {
-			log.Fatalln(err)
+		if write {
+			err := ioutil.WriteFile(SettingsFileName, examplefile, 0644)
+			if err != nil {
+				return err, Settings{}
+			}
 		}
-		file, err = ioutil.ReadFile("settings.yaml")
+
+		file, err = ioutil.ReadFile(SettingsFileName)
 		if err != nil {
-			log.Fatalln(err)
+			return err, Settings{}
 		}
 	}
 
-	err = yaml.Unmarshal(file, &Cfg)
+	var settings Settings
+	err = yaml.Unmarshal(file, settings)
 	if err != nil {
 		log.Fatalln(err)
 	}
+	return nil, settings
 }
 
-func OverwriteOpt(env EnvVar) EnvVar {
-	for _, item := range Cfg.EnvOverrides {
+func OverwriteOpt(settings Settings, env EnvVar) EnvVar {
+	for _, item := range settings.EnvOverrides {
 		if item.Key == env.Key {
 			env.Value = item.Value
 			return env
@@ -57,10 +58,10 @@ func OverwriteOpt(env EnvVar) EnvVar {
 	return env
 }
 
-func EnvVarOverwrite(services []Container) (error, []Container) {
+func EnvVarOverwrite(settings Settings, services []Container) (error, []Container) {
 	for i, container := range services {
 		for j, item := range container.EnvVars {
-			item = OverwriteOpt(item)
+			item = OverwriteOpt(settings, item)
 			container.EnvVars[j] = item
 		}
 		services[i] = container
