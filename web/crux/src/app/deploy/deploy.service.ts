@@ -193,7 +193,7 @@ export class DeployService {
     const deployment = await this.prisma.deployment.update({
       data: {
         name: request.name,
-        description: request.descripion,
+        description: request.description,
         prefix: request.prefix,
         updatedAt: new Date(),
         updatedBy: request.accessedBy,

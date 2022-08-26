@@ -950,7 +950,7 @@ export interface UpdateDeploymentRequest {
   id: string
   accessedBy: string
   name: string
-  descripion?: string | undefined
+  description?: string | undefined
   prefix: string
 }
 
@@ -6637,8 +6637,8 @@ export const UpdateDeploymentRequest = {
     if (message.name !== '') {
       writer.uint32(802).string(message.name)
     }
-    if (message.descripion !== undefined) {
-      writer.uint32(810).string(message.descripion)
+    if (message.description !== undefined) {
+      writer.uint32(810).string(message.description)
     }
     if (message.prefix !== '') {
       writer.uint32(818).string(message.prefix)
@@ -6665,7 +6665,7 @@ export const UpdateDeploymentRequest = {
           message.name = reader.string()
           break
         case 101:
-          message.descripion = reader.string()
+          message.description = reader.string()
           break
         case 102:
           message.prefix = reader.string()
@@ -6685,8 +6685,8 @@ export const UpdateDeploymentRequest = {
     message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
     message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
     message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.descripion =
-      object.descripion !== undefined && object.descripion !== null ? String(object.descripion) : undefined
+    message.description =
+      object.description !== undefined && object.description !== null ? String(object.description) : undefined
     message.prefix = object.prefix !== undefined && object.prefix !== null ? String(object.prefix) : ''
     return message
   },
@@ -6696,7 +6696,7 @@ export const UpdateDeploymentRequest = {
     message.id !== undefined && (obj.id = message.id)
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.name !== undefined && (obj.name = message.name)
-    message.descripion !== undefined && (obj.descripion = message.descripion)
+    message.description !== undefined && (obj.description = message.description)
     message.prefix !== undefined && (obj.prefix = message.prefix)
     return obj
   },
@@ -6708,7 +6708,7 @@ export const UpdateDeploymentRequest = {
     message.id = object.id ?? ''
     message.accessedBy = object.accessedBy ?? ''
     message.name = object.name ?? ''
-    message.descripion = object.descripion ?? undefined
+    message.description = object.description ?? undefined
     message.prefix = object.prefix ?? ''
     return message
   },

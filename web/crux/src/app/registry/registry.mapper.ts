@@ -83,7 +83,7 @@ export class RegistryMapper {
   detailsToDb(
     request: CreateRegistryRequest | UpdateRegistryRequest,
   ): Pick<Registry, 'url' | 'type' | 'apiUrl' | 'user' | 'token' | 'imageNamePrefix'> {
-    const emptyOrDefault = (value: string | null | undefined, def: string | null = null) => value ? value : def
+    const emptyOrDefault = (value: string | null | undefined, def: string | null = null) => (value ? value : def)
 
     if (request.hub) {
       return {
