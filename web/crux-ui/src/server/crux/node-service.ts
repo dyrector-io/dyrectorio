@@ -14,11 +14,10 @@ import {
   NODE_TYPE_VALUES,
   UpdateDyoNode,
 } from '@app/models'
+import { ContainerState as ProtoContainerState, containerStateToJSON } from '@app/models/grpc/protobuf/proto/common'
 import {
   AccessRequest,
-  ContainerState as ProtoContainerState,
   ContainerStateListMessage,
-  containerStateToJSON,
   CreateEntityResponse,
   CreateNodeRequest,
   CruxNodeClient,

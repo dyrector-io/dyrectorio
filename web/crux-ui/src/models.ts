@@ -1,6 +1,7 @@
 import { Identity } from '@ory/kratos-client'
 import { DyoApiError } from '@server/error-middleware'
 import { REGISTRY_GITHUB_URL, REGISTRY_GITLAB_URLS, REGISTRY_HUB_URL } from './const'
+import { ContainerConfig, Environment, InstanceContainerConfig } from './models-config'
 
 // TODO(polaroi8d): refactor the models.ts
 
@@ -9,49 +10,6 @@ export type ProductType = typeof PRODUCT_TYPE_VALUES[number]
 
 export const VERSION_TYPE_VALUES = ['incremental', 'rolling'] as const
 export type VersionType = typeof VERSION_TYPE_VALUES[number]
-
-export type UniqueKeyValue = {
-  id: string
-  key: string
-  value: string
-}
-
-export type Environment = UniqueKeyValue[]
-export type Capabilities = UniqueKeyValue[]
-
-export type ExplicitContainerConfigPort = {
-  internal: number
-  external: number
-}
-
-export const EXPLICIT_CONTAINER_NETWORK_MODE_VALUES = ['none', 'host'] as const
-export type ExplicitContainerNetworkMode = typeof EXPLICIT_CONTAINER_NETWORK_MODE_VALUES[number]
-
-export type ExplicitContainerConfigExpose = {
-  public: boolean
-  tls: boolean
-}
-
-export type ExplicitContainerConfig = {
-  ports: ExplicitContainerConfigPort[]
-  mounts: string[]
-  networkMode: ExplicitContainerNetworkMode
-  expose?: ExplicitContainerConfigExpose
-  user?: number
-}
-
-export type CompleteContainerConfig = ExplicitContainerConfig & {
-  name: string
-  environment?: Record<string, string>
-  capabilities?: Record<string, string>
-}
-
-export type ContainerConfig = {
-  name: string
-  capabilities: Capabilities
-  environment: Environment
-  config: ExplicitContainerConfig
-}
 
 export type VersionImage = {
   id: string
@@ -75,8 +33,6 @@ export type Container = {
   date: string
   state: ContainerState
 }
-
-export type InstanceContainerConfig = Omit<ContainerConfig, 'name'>
 
 export type Instance = {
   id: string
@@ -771,43 +727,5 @@ export const registryDetailsToRegistry = (it: RegistryDetails): Registry => {
   return {
     ...it,
     url: registryUrlOf(it),
-  }
-}
-
-const overrideKeyValues = (weak: UniqueKeyValue[], strong: UniqueKeyValue[]): UniqueKeyValue[] => {
-  const overridenKeys: Set<string> = new Set(strong?.map(it => it.key))
-  return [...(weak?.filter(it => !overridenKeys.has(it.key)) ?? []), ...(strong ?? [])]
-}
-
-const overridePorts = (
-  weak: ExplicitContainerConfigPort[],
-  strong: ExplicitContainerConfigPort[],
-): ExplicitContainerConfigPort[] => {
-  const overridenPorts: Set<number> = new Set(strong?.map(it => it.internal))
-  return [...(weak?.filter(it => !overridenPorts.has(it.internal)) ?? []), ...(strong ?? [])]
-}
-
-const overrideNetworkMode = (weak: ExplicitContainerNetworkMode, strong: ExplicitContainerNetworkMode) =>
-  strong ?? weak ?? 'none'
-
-export const mergeConfigs = (
-  imageConfig: ContainerConfig,
-  overriddenConfig: Partial<InstanceContainerConfig>,
-): ContainerConfig => {
-  const instanceConfig = overriddenConfig ?? {}
-
-  const envs = overrideKeyValues(imageConfig.environment, instanceConfig.environment)
-  const caps = overrideKeyValues(imageConfig.capabilities, instanceConfig.capabilities)
-
-  return {
-    name: imageConfig.name,
-    environment: envs,
-    capabilities: caps,
-    config: {
-      ...imageConfig.config,
-      ...(instanceConfig.config ?? {}),
-      networkMode: overrideNetworkMode(imageConfig?.config?.networkMode, instanceConfig.config?.networkMode),
-      ports: overridePorts(imageConfig?.config?.ports, instanceConfig.config?.ports),
-    },
   }
 }

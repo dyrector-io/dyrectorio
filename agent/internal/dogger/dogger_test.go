@@ -10,7 +10,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/agent/internal/config"
 	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
-	"github.com/dyrector-io/dyrectorio/protobuf/go/crux"
+	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/metadata"
 )
@@ -20,7 +20,7 @@ type AgentTestStream struct {
 	messages []string
 }
 
-func (tStream *AgentTestStream) Send(message *crux.DeploymentStatusMessage) error {
+func (tStream *AgentTestStream) Send(message *common.DeploymentStatusMessage) error {
 	tStream.testing.Logf("Dogger said: '%s'", message.Log)
 	tStream.messages = append(tStream.messages, message.Log...)
 	return nil
@@ -99,7 +99,7 @@ func TestDoggerDeploymentStatus(t *testing.T) {
 	}
 	dogger := dogger.NewDeploymentLogger(&deploymentId, ts, context.Background(), cfg)
 
-	dogger.WriteDeploymentStatus(crux.DeploymentStatus_IN_PROGRESS, "hello")
+	dogger.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "hello")
 
 	assertDoggerMessage(t, ts, []string{"hello"})
 }

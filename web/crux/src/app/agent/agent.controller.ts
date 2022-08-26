@@ -8,7 +8,7 @@ import {
   AgentInfo,
   Empty,
 } from 'src/grpc/protobuf/proto/agent'
-import { ContainerStateListMessage, DeploymentStatusMessage } from 'src/grpc/protobuf/proto/crux'
+import { ContainerStateListMessage, DeploymentStatusMessage } from 'src/grpc/protobuf/proto/common'
 import { NodeUnaryCall } from 'src/shared/grpc-node-connection'
 import { AgentService } from './agent.service'
 import { AgentAuthGuard } from './guards/agent.auth.guard'

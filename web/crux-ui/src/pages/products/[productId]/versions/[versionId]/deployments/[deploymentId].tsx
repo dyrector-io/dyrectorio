@@ -12,12 +12,12 @@ import {
   DeploymentEnvUpdatedMessage,
   deploymentIsMutable,
   DeploymentRoot,
-  mergeConfigs,
   WS_TYPE_DEPLOYMENT_ENV_UPDATED,
   WS_TYPE_INSTANCE_UPDATED,
   WS_TYPE_PATCH_DEPLOYMENT_ENV,
   WS_TYPE_PATCH_INSTANCE,
 } from '@app/models'
+import { mergeConfigs } from '@app/models-config'
 import {
   deploymentApiUrl,
   deploymentDeployUrl,

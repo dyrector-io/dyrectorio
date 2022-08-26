@@ -19,7 +19,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/agent/internal/version"
 	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
-	"github.com/dyrector-io/dyrectorio/protobuf/go/crux"
+	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -44,7 +44,7 @@ type GrpcConnectionParams struct {
 }
 
 type DeployFunc func(context.Context, *dogger.DeploymentLogger, *v1.DeployImageRequest, *v1.VersionData) error
-type WatchFunc func(context.Context, string) []*crux.ContainerStateItem
+type WatchFunc func(context.Context, string) []*common.ContainerStateItem
 type DeleteFunc func(context.Context, string, string) error
 
 type WorkerFunctions struct {
@@ -268,15 +268,15 @@ func executeVersionDeployRequest(
 
 	dog := dogger.NewDeploymentLogger(&req.Id, statusStream, ctx, appConfig)
 
-	dog.WriteDeploymentStatus(crux.DeploymentStatus_IN_PROGRESS, "Started.")
+	dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Started.")
 
 	if len(req.Requests) < 1 {
-		dog.WriteDeploymentStatus(crux.DeploymentStatus_PREPARING, "There were no images to deploy.")
+		dog.WriteDeploymentStatus(common.DeploymentStatus_PREPARING, "There were no images to deploy.")
 		return
 	}
 
 	var failed = false
-	var deployStatus crux.DeploymentStatus
+	var deployStatus common.DeploymentStatus
 	for i := range req.Requests {
 		imageReq := mapper.MapDeployImage(req.Requests[i], appConfig)
 		dog.SetRequestID(imageReq.RequestID)
@@ -293,9 +293,9 @@ func executeVersionDeployRequest(
 	}
 
 	if failed {
-		deployStatus = crux.DeploymentStatus_FAILED
+		deployStatus = common.DeploymentStatus_FAILED
 	} else {
-		deployStatus = crux.DeploymentStatus_SUCCESSFUL
+		deployStatus = common.DeploymentStatus_SUCCESSFUL
 	}
 
 	dog.WriteDeploymentStatus(deployStatus)
@@ -325,7 +325,7 @@ func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStateR
 	for {
 		containers := listFn(ctx, filterPrefix)
 
-		err = stream.Send(&crux.ContainerStateListMessage{
+		err = stream.Send(&common.ContainerStateListMessage{
 			Prefix: req.Prefix,
 			Data:   containers,
 		})
@@ -382,20 +382,20 @@ func executeVersionDeployLegacyRequest(
 		log.Printf("Failed to parse deploy request JSON! %v", err)
 
 		errorText := fmt.Sprintf("JSON parse error: %v", err)
-		dog.WriteDeploymentStatus(crux.DeploymentStatus_FAILED, errorText)
+		dog.WriteDeploymentStatus(common.DeploymentStatus_FAILED, errorText)
 		return
 	}
 
-	dog.WriteDeploymentStatus(crux.DeploymentStatus_IN_PROGRESS, "Started.")
+	dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Started.")
 
 	t1 := time.Now()
 
-	deployStatus := crux.DeploymentStatus_SUCCESSFUL
+	deployStatus := common.DeploymentStatus_SUCCESSFUL
 	if err = deploy(ctx, dog, &deployImageRequest, nil); err == nil {
 		dog.Write(fmt.Sprintf("Deployment took: %.2f seconds", time.Since(t1).Seconds()))
 		dog.Write("Deployment succeeded.")
 	} else {
-		deployStatus = crux.DeploymentStatus_FAILED
+		deployStatus = common.DeploymentStatus_FAILED
 		dog.Write("Deployment failed " + err.Error())
 	}
 

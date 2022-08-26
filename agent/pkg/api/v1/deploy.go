@@ -263,18 +263,17 @@ type ImportContainer struct {
 
 // Verbose volume definitions with support of size and type parameters
 //
-//
 // Example JSON defining a temporal volume:
+//
 //	"volumes": [{
 //		"name": "app-import",
 //		"path": "/path/in/container",
-// 		"size": "10Gi",
+//		"size": "10Gi",
 //		"type": "tmp",
 //		"class": ""
 //		}]
 //
 // Note: dagent maps these back into the old "name|/some/path" format, ingoring type and size constraints
-//
 type Volume struct {
 	// name of the volume, the prefix will be the pod using it
 	Name string `json:"name"`

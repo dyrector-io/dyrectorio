@@ -9,14 +9,8 @@ import { BaseMessage, NotificationMessageType } from 'src/domain/notification-te
 import { collectChildVersionIds, collectParentVersionIds } from 'src/domain/utils'
 import { AlreadyExistsException, NotFoundException, UnauthenticatedException } from 'src/exception/errors'
 import { AgentCommand, AgentInfo } from 'src/grpc/protobuf/proto/agent'
-import {
-  ContainerStateListMessage,
-  DeploymentStatus,
-  DeploymentStatusMessage,
-  Empty,
-  NodeConnectionStatus,
-  NodeEventMessage,
-} from 'src/grpc/protobuf/proto/crux'
+import { ContainerStateListMessage, Empty, NodeConnectionStatus, NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
+import { DeploymentStatus, DeploymentStatusMessage } from 'src/grpc/protobuf/proto/common'
 import { DomainNotificationService } from 'src/services/domain.notification.service'
 import { PrismaService } from 'src/services/prisma.service'
 import { GrpcNodeConnection } from 'src/shared/grpc-node-connection'
