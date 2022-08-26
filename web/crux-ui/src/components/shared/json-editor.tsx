@@ -46,6 +46,7 @@ const _JsonEditor = <T,>(props: JsonEditorProps<T>) => {
       )}
     >
       <Editor
+        textareaClassName="outline-none"
         disabled={props.disabled}
         padding={2}
         tabSize={2}
