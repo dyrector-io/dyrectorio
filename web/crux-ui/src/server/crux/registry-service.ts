@@ -181,7 +181,7 @@ class DyoRegistryService {
               url: dto.url,
               imageNamePrefix: dto.imageNamePrefix,
               user: dto.user,
-              token: dto.token ?? Buffer.from(dto.token).toString('base64'),
+              token: dto.token ? Buffer.from(dto.token).toString('base64') : null,
             },
     }
   }
