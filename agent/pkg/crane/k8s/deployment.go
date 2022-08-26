@@ -207,7 +207,6 @@ func getResourceManagement(resourceConfig v1.ResourceConfig,
 	var ResourceLimitsCPU, ResourceLimitsMemory, ResourceRequestsCPU, ResourceRequestsMemory resource.Quantity
 	var err error
 
-	// TODO(nandor-magyar): panic on invalid userinput!?!??!?!?!??!?!!?!??!?!?!
 	// Resource Limits CPU
 	if resourceConfig.Limits.CPU != "" {
 		if ResourceLimitsCPU, err = resource.ParseQuantity(resourceConfig.Limits.CPU); err != nil {

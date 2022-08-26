@@ -45,7 +45,7 @@ func (dog *DeploymentLogger) SetRequestID(requestID string) {
 	dog.requestID = requestID
 }
 
-// Writes to all available streams, std.out, signalr, grpc streams
+// Writes to all available streams: std.out and grpc streams
 func (dog *DeploymentLogger) Write(messages ...string) {
 	for i := range messages {
 		log.Printf("Deployment - %s: %s", dog.deploymentID, messages[i])
