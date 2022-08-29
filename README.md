@@ -8,7 +8,7 @@
   </a>
 </p>
 
-<p align="center">dyrector.io is an open-source CD platform for developers and non-specialists to manage multi-instance deployments, microservices and configurations in Kubernetes, Docker.</p>
+<p align="center">Open-source CD platform for developers and non-specialists to manage multi-instance deployments, microservices and configurations in Kubernetes, Docker.</p>
 
 <p align="center">
   <a href="https://github.com/dyrector-io/dyrectorio/tags" target="_blank"><img src="https://img.shields.io/github/v/tag/dyrector-io/dyrectorio" alt="GitHub tag (latest by date)"/></a>
@@ -20,10 +20,13 @@
     <a href="https://twitter.com/dyrectorio" target="_blank"><img src="https://img.shields.io/twitter/follow/dyrectorio?style=social" alt="Twitter Follow"/></a>
 </p>
 
-
 ## Overview
 
-dyrector.io is an **open-source** internal delivery platform that helps developers to deliver applications to more places efficiently by simplifying software releases and operations in any environment.
+Life isn’t about application management. Why should your team focus so much of its precious time and effort on it when things can be simpler?
+
+dyrector.io is for you if you’d like to shift your team’s focus from repeatable steps of multi-instance deployments to delivering value to your users. And when a deployment is successful or any error occurs, the team gets notified on chat so they can react as soon as possible.
+
+While dyrector.io enables non-technical staff members to help with certain tasks, it’s also useful to reduce time technical staff spend on deployment and system administration.
 
 > **Warning**
 > dyrector.io platform is under development, please treat as such. Expect bugs here and there. Early adopters welcome.
@@ -35,13 +38,25 @@ dyrector.io is an **open-source** internal delivery platform that helps develope
 -   Instant test environments from any branches
 -   Environment management
 -   Secret and configuration management
--   Auto-generated changelogs and release notes
+-   Auto-generated changelogs and release notes (WIP)
 -   Workflow support
--   Scheduled releases
+-   Scheduled releases (WIP)
 -   Audit log
 -   Container Registry integrations
--   Fine-grained RBAC
+-   Fine-grained RBAC (WIP)
 -   ChatOps & notification solutions
+
+## How it works
+
+// TBD
+
+<p align="center">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="how-it-works-dark.png">
+      <source media="(prefers-color-scheme: light)" srcset="how-it-works-light.png">
+      <img alt="dyrector.io official logo" src="how-it-works-dark.png" width="600">
+    </picture>
+</p>
 
 ## Quick Start
 
