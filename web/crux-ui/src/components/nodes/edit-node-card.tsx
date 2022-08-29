@@ -176,6 +176,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
               value={formik.values.name}
               required
               grow
+              message={formik.errors.name}
             />
 
             <div className={inputClassName}>

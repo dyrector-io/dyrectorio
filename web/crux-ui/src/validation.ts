@@ -48,7 +48,7 @@ const iconRule = yup
   .oneOf([null, ...DYO_ICONS])
   .nullable()
 
-const nameRule = yup.string().required()
+const nameRule = yup.string().min(3).max(70)
 const descriptionRule = yup.string().optional()
 
 export const updateProductSchema = yup.object().shape({
@@ -126,7 +126,7 @@ export const createDeploymentSchema = yup.object().shape({
 })
 
 export const updateDeploymentSchema = yup.object().shape({
-  name: yup.string().required(),
+  name: nameRule,
   description: yup.string(),
   prefix: yup.string().required(),
 })
@@ -322,7 +322,7 @@ export const selectTeamSchema = yup.object().shape({
 })
 
 export const createTeamSchema = yup.object().shape({
-  name: yup.string().min(3).max(128),
+  name: nameRule,
 })
 
 export const updateTeamSchema = createTeamSchema
@@ -330,7 +330,7 @@ export const updateTeamSchema = createTeamSchema
 export const roleSchema = yup.mixed<UserRole>().oneOf([...USER_ROLE_VALUES])
 
 export const notificationSchema = yup.object().shape({
-  name: yup.string().required(),
+  name: nameRule,
   type: yup
     .mixed<NotificationType>()
     .oneOf([...NOTIFICATION_TYPE_VALUES])
