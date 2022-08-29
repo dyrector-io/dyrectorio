@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <p align="center">
   <a href="http://docs.dyrector.io/" target="blank">
     <picture>
@@ -185,3 +186,24 @@ We’d love to hear your thoughts on this project. Feel free to drop us a note!
 dyrector.io is open source software under the [Apache License 2.0](LICENSE). Complete license and copyright information can be found in the source code.
 
 > Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+=======
+# dyrector.io documentation
+
+dyrector.io is an open-source deployment platform that helps software developer teams manage releases & deployments easily and efficiently. While non-specialists are enabled to manage these processes in a simplified, self-service manner, specialists can deploy and manage containerized apps faster through the platform. Find out what you can do with dyrector.io!
+
+**You can find dyrector.io's GitHub repository** [**here**](https://github.com/dyrector-io/dyrectorio/)**. Feel free to contribute!**
+
+{% hint style="info" %}
+This documentation is in the works along with our product’s development. In case you’ve got feedback regarding the docs, please reach out to us at [hello@dyrector.io](mailto:hello@dyrector.io). **Contributions are always welcome.**
+{% endhint %}
+
+**If you want to cut to the chase, go to** [**Tutorials**](broken-reference) **to see how you can execute deployments with dyrector.io.**
+
+### Concept
+
+**Life isn’t about release management.** Why should teams focus so much of their precious time and effort on it when things can be simpler?
+
+dyrector.io is for you if you’d like to shift your team’s focus from repeatable steps of multi-instance deployments to delivering value to your users. And when a deployment is successful or any error occurs, the team gets notified so they can react as soon as possible.
+
+While dyrector.io enables non-technical staff members to help with certain tasks, it’s also useful to reduce time technical staff spend on deployment and system administration.
+>>>>>>> 88196b6 (GitBook: [#36] docs: minor fix)
