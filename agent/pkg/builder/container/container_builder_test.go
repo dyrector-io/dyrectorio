@@ -32,7 +32,10 @@ func (testLogger *testLogger) WriteString(s string) (int, error) {
 
 func builderCleanup(builder *containerbuilder.DockerContainerBuilder) {
 	if builder.GetContainerID() != nil {
-		containerbuilder.DeleteContainer(context.Background(), *builder.Create().GetContainerID())
+		containerbuilder.DeleteContainer(context.Background(), *builder.GetContainerID())
+	}
+	if builder.GetNetworkID() != nil {
+		containerbuilder.DeleteNetwork(context.Background(), *builder.GetNetworkID())
 	}
 }
 
@@ -173,4 +176,26 @@ func TestHooks(t *testing.T) {
 	assert.Equal(t, "post-create", order[1])
 	assert.Equal(t, "pre-start", order[2])
 	assert.Equal(t, "post-start", order[3])
+}
+
+func TestNetwork(t *testing.T) {
+	logger := &testLogger{
+		test: t,
+	}
+
+	builder := containerbuilder.NewDockerBuilder(context.Background()).
+		WithImage("nginx:latest").
+		WithName("prefix-container").
+		WithLogWriter(logger).
+		WithNetworkMode("prefix").
+		WithNetworkAliases("prefix-container", "container")
+
+	defer builderCleanup(builder)
+
+	success, err := builder.Create().Start()
+
+	assert.Nil(t, err)
+	assert.True(t, success)
+
+	assert.NotNil(t, builder.GetNetworkID())
 }

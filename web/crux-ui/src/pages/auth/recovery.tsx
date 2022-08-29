@@ -44,7 +44,7 @@ const RecoveryPage = (props: RecoveryPageProps) => {
       email: '',
     },
     onSubmit: async values => {
-      const captcha = recaptchaSiteKey ? await recaptcha.current.executeAsync() : null
+      const captcha = await recaptcha.current?.executeAsync()
 
       const data: RecoverEmail = {
         flow: flow.id,
@@ -67,7 +67,7 @@ const RecoveryPage = (props: RecoveryPageProps) => {
         startCountdown(AUTH_RESEND_DELAY)
         setUi(flow.ui)
       } else {
-        recaptcha.current.reset()
+        recaptcha.current?.reset()
 
         const data = await res.json()
 

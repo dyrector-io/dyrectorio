@@ -136,11 +136,7 @@ const AuditLogPage = (props: AuditLogPageProps) => {
           onClose={() => setShowInfo(null)}
         >
           <span className="text-bright font-semibold">{beautifyAuditLogEvent(showInfo.event)}</span>
-          <JsonEditor
-            className="text-bright mt-8 overflow-y-auto h-full !pointer-events-auto"
-            disabled
-            value={parsedJSONInfo}
-          />
+          <JsonEditor className="overflow-y-auto mt-8" disabled value={parsedJSONInfo} />
         </DyoModal>
       )}
     </Layout>

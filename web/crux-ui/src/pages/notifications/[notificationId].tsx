@@ -5,7 +5,7 @@ import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
 import { defaultApiErrorHandler } from '@app/errors'
-import { NotificationDetails, NotificationItem } from '@app/models'
+import { NotificationDetails } from '@app/models'
 import { notificationApiUrl, notificationUrl, ROUTE_NOTIFICATIONS } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
@@ -45,7 +45,7 @@ const NotificationDetailsPage = (props: NotificationDetailsPageProps) => {
     url: ROUTE_NOTIFICATIONS,
   }
 
-  const onSubmitted = (notification: NotificationItem) => {
+  const onSubmitted = (notification: NotificationDetails) => {
     setEditing(false)
     setNotification(notification as NotificationDetails)
   }

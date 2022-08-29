@@ -7,19 +7,17 @@ import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
 import { DyoButton } from '@app/elements/dyo-button'
 import LoadingIndicator from '@app/elements/loading-indicator'
-import { defaultWsErrorHandler } from '@app/errors'
 import { useWebSocket } from '@app/hooks/use-websocket'
 import {
   DeploymentEnvUpdatedMessage,
   deploymentIsMutable,
   DeploymentRoot,
-  mergeConfigs,
   WS_TYPE_DEPLOYMENT_ENV_UPDATED,
-  WS_TYPE_DYO_ERROR,
   WS_TYPE_INSTANCE_UPDATED,
   WS_TYPE_PATCH_DEPLOYMENT_ENV,
   WS_TYPE_PATCH_INSTANCE,
 } from '@app/models'
+import { mergeConfigs } from '@app/models-config'
 import {
   deploymentApiUrl,
   deploymentDeployUrl,
@@ -56,8 +54,6 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
   const [saving, setSaving] = useState(false)
   const submitRef = useRef<() => Promise<any>>()
 
-  const handleWsError = defaultWsErrorHandler(t)
-
   const sock = useWebSocket(deploymentWsUrl(deployment.product.id, deployment.version.id, deployment.id), {
     onSend: message => {
       if ([WS_TYPE_PATCH_INSTANCE, WS_TYPE_PATCH_DEPLOYMENT_ENV].includes(message.type)) {
@@ -67,8 +63,6 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
     onReceive: message => {
       if ([WS_TYPE_INSTANCE_UPDATED, WS_TYPE_DEPLOYMENT_ENV_UPDATED].includes(message.type)) {
         setSaving(false)
-      } else if (message.type === WS_TYPE_DYO_ERROR) {
-        handleWsError(message.payload)
       }
     },
     onError: e => {
@@ -142,6 +136,11 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
     onOpenLog()
   }
 
+  const onDeploymentEdited = deployment => {
+    setDeployment(deployment)
+    setEditing(false)
+  }
+
   return (
     <Layout
       title={t('deploysName', {
@@ -180,11 +179,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
       </PageHeading>
 
       {editing ? (
-        <EditDeploymentCard
-          deployment={deployment}
-          submitRef={submitRef}
-          onDeploymentEdited={it => setDeployment(it)}
-        />
+        <EditDeploymentCard deployment={deployment} submitRef={submitRef} onDeploymentEdited={onDeploymentEdited} />
       ) : (
         <>
           <DeploymentDetailsSection deployment={deployment} deploySock={sock} />

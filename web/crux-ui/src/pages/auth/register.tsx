@@ -59,7 +59,7 @@ const RegisterPage = (props: RegisterPageProps) => {
 
       setErrors(removeError(errors, 'confirmPassword'))
 
-      const captcha = recaptchaSiteKey ? await recaptcha.current.executeAsync() : null
+      const captcha = await recaptcha.current?.executeAsync()
 
       const data: Register = {
         flow: flow.id,
@@ -80,7 +80,7 @@ const RegisterPage = (props: RegisterPageProps) => {
       if (res.ok) {
         router.replace(`${ROUTE_VERIFICATION}/?email=${values.email}`)
       } else {
-        recaptcha.current.reset()
+        recaptcha.current?.reset()
 
         const data = await res.json()
 

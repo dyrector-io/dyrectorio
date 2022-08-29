@@ -1,7 +1,7 @@
 import JsonEditor from '@app/components/shared/json-editor-dynamic-module'
 import { IMAGE_WS_REQUEST_DELAY } from '@app/const'
-import { useThrottleing } from '@app/hooks/use-throttleing'
-import { CompleteContainerConfig, ContainerConfig, UniqueKeyValue } from '@app/models'
+import { CANCEL_THROTTLE, useThrottling } from '@app/hooks/use-throttleing'
+import { CompleteContainerConfig, ContainerConfig, UniqueKeyValue } from '@app/models-config'
 import { fold } from '@app/utils'
 import { completeContainerConfigSchema } from '@app/validation'
 import clsx from 'clsx'
@@ -18,7 +18,7 @@ interface EditImageJsonProps {
 }
 
 const EditImageJson = (props: EditImageJsonProps) => {
-  const throttle = useThrottleing(IMAGE_WS_REQUEST_DELAY)
+  const throttle = useThrottling(IMAGE_WS_REQUEST_DELAY)
 
   const [state, dispatch] = useReducer(reducer, imageConfigToCompleteContainerConfig(null, props.config))
 
@@ -45,8 +45,7 @@ const EditImageJson = (props: EditImageJsonProps) => {
 
   const onParseError = useCallback(
     (err: Error) => {
-      // TODO @m8 why is this arrow function is empty?
-      throttle(() => {})
+      throttle(CANCEL_THROTTLE)
 
       props.onParseError(err)
     },
@@ -68,7 +67,7 @@ const EditImageJson = (props: EditImageJsonProps) => {
 
   return (
     <JsonEditor
-      className={clsx('flex flex-col flex-grow h-128', props.className)}
+      className={clsx('h-128 overflow-y-auto', props.className)}
       disabled={props.disabled}
       value={state}
       onChange={onChange}

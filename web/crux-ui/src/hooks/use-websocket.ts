@@ -1,13 +1,9 @@
-import { isServerSide } from '@app/utils'
-import { WebSocketClient, WebSocketClientOptions, WebSocketEndpoint } from '@app/websockets/client'
-import { useEffect, useRef, useState } from 'react'
-
-let client: WebSocketClient
+import { WebSocketContext } from '@app/providers/websocket'
+import { WebSocketClientOptions, WebSocketEndpoint } from '@app/websockets/client'
+import { useContext, useEffect, useRef, useState } from 'react'
 
 export const useWebSocket = (route: string, options?: WebSocketClientOptions): WebSocketEndpoint => {
-  if (!isServerSide() && !client) {
-    client = new WebSocketClient()
-  }
+  const wsContext = useContext(WebSocketContext)
 
   const [readyState, setReadyState] = useState<number>(null)
   const endpointRef = useRef(new WebSocketEndpoint(route))
@@ -23,14 +19,18 @@ export const useWebSocket = (route: string, options?: WebSocketClientOptions): W
   useEffect(() => destructCallback.current, [])
 
   useEffect(() => {
+    if (wsContext.client == null) {
+      return
+    }
+
     if (!readyState) {
-      client.register(endpointRef.current)
+      wsContext.client.register(endpointRef.current)
     } else if (readyState === WebSocket.CLOSED) {
       destructCallback.current()
 
-      client.register(endpointRef.current)
+      wsContext.client.register(endpointRef.current)
     }
-  }, [readyState])
+  }, [wsContext, readyState])
 
   return endpoint
 }

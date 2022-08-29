@@ -59,7 +59,7 @@ const InviteUserCard = (props: InviteUserCardProps) => {
         {t('inviteMember', { name: team.name })}
       </DyoHeading>
 
-      <DyoLabel className="text-light">{t('tips')}</DyoLabel>
+      <DyoLabel textColor="text-bright-muted">{t('tips')}</DyoLabel>
 
       <form className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
         <DyoInput

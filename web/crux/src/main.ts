@@ -63,7 +63,11 @@ const bootstrap = async () => {
     transport: Transport.GRPC,
     options: {
       package: ['agent'],
-      protoPath: [join(__dirname, '../proto/crux.proto'), join(__dirname, '../proto/agent.proto')],
+      protoPath: [
+        join(__dirname, '../proto/crux.proto'),
+        join(__dirname, '../proto/agent.proto'),
+        join(__dirname, '../proto/common.proto'),
+      ],
       keepalive: { keepaliveTimeoutMs: HOUR_IN_MS },
       ...agentOptions,
     },
@@ -75,7 +79,7 @@ const bootstrap = async () => {
       transport: Transport.GRPC,
       options: {
         package: ['crux'],
-        protoPath: [join(__dirname, '../proto/crux.proto')],
+        protoPath: [join(__dirname, '../proto/crux.proto'), join(__dirname, '../proto/common.proto')],
         keepalive: { keepaliveTimeoutMs: HOUR_IN_MS },
         ...apiOptions,
       },

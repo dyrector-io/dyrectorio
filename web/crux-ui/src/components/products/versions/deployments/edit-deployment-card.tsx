@@ -4,7 +4,7 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoTextArea } from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
-import { DeploymentRoot, UpdateDeployment, UpdateProduct } from '@app/models'
+import { DeploymentRoot, UpdateDeployment } from '@app/models'
 import { deploymentApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { updateDeploymentSchema } from '@app/validation'
@@ -39,8 +39,10 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
       const res = await sendForm(
         'PUT',
         deploymentApiUrl(deployment.product.id, deployment.versionId, deployment.id),
-        body as UpdateProduct,
+        body,
       )
+
+      setSubmitting(false)
 
       if (res.ok) {
         props.onDeploymentEdited({
@@ -50,8 +52,6 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
       } else {
         handleApiError(res, setFieldError)
       }
-
-      setSubmitting(false)
     },
   })
 

@@ -9,13 +9,17 @@ import {
   DeploymentStatus,
   ImageDeletedMessage,
   Instance,
-  InstanceContainerConfig,
   InstancesAddedMessage,
   PatchDeployment,
   UpdateDeployment,
   WS_TYPE_IMAGE_DELETED,
   WS_TYPE_INSTANCES_ADDED,
 } from '@app/models'
+import { InstanceContainerConfig } from '@app/models-config'
+import {
+  DeploymentStatus as ProtoDeploymentStatus,
+  deploymentStatusToJSON,
+} from '@app/models/grpc/protobuf/proto/common'
 import {
   AccessRequest,
   CreateDeploymentRequest,
@@ -28,8 +32,6 @@ import {
   DeploymentListByVersionResponse,
   DeploymentListResponse,
   DeploymentProgressMessage,
-  DeploymentStatus as ProtoDeploymentStatus,
-  deploymentStatusToJSON,
   Empty,
   IdRequest,
   InstanceContainerConfig as ProtoInstanceContainerConfig,

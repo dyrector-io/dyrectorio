@@ -1,7 +1,8 @@
 import KeyValueInput from '@app/components/shared/key-value-input'
 import { DEPLOYMENT_EDIT_WS_REQUEST_DELAY } from '@app/const'
-import { useThrottleing } from '@app/hooks/use-throttleing'
-import { deploymentIsMutable, DeploymentRoot, Environment, WS_TYPE_PATCH_DEPLOYMENT_ENV } from '@app/models'
+import { useThrottling } from '@app/hooks/use-throttleing'
+import { deploymentIsMutable, DeploymentRoot, WS_TYPE_PATCH_DEPLOYMENT_ENV } from '@app/models'
+import { Environment } from '@app/models-config'
 import { WebSocketEndpoint } from '@app/websockets/client'
 import useTranslation from 'next-translate/useTranslation'
 import DeploymentDetailsCard from './deployment-details-card'
@@ -18,7 +19,7 @@ const DeploymentDetailsSection = (props: DeploymentDetailsSectionProps) => {
 
   const mutable = deploymentIsMutable(deployment.status)
 
-  const throttle = useThrottleing(DEPLOYMENT_EDIT_WS_REQUEST_DELAY)
+  const throttle = useThrottling(DEPLOYMENT_EDIT_WS_REQUEST_DELAY)
 
   const onEnvChange = (env: Environment) => throttle(() => sock.send(WS_TYPE_PATCH_DEPLOYMENT_ENV, env))
   return (

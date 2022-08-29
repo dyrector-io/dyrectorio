@@ -91,7 +91,7 @@ const EditVersionCard = (props: EditVersionCardProps) => {
           {editing ? t('common:editName', { name: version.name }) : t('new')}
         </DyoHeading>
 
-        <DyoLabel className="text-light">{t('tips')}</DyoLabel>
+        <DyoLabel textColor="text-bright-muted">{t('tips')}</DyoLabel>
 
         <form className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
           <DyoInput

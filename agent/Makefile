@@ -20,16 +20,16 @@ GOSEC=v2.12.0
 GOLANGCI=v1.46.2
 GOSWAG=v1.8.3
 
-.PHONY: gow-crane
-gow-crane: ##
+.PHONY: go-crane
+go-crane: ##
 	cd cmd/crane && \
-	gow run . ; \
+	go run . ; \
 	cd -
 
-.PHONY: gow-dagent
-gow-dagent: ##
+.PHONY: go-dagent
+go-dagent: ##
 	cd cmd/dagent && \
-	gow run . ; \
+	go run . ; \
 	cd -
 
 .PHONY: compile-crane
