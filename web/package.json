@@ -2,11 +2,9 @@
     "name": "@dyrectorio/root",
     "private": true,
     "version": "0.1.1",
-    "workspaces": {
-        "packages": [
-            "common",
-            "crux",
-            "crux-ui"
-        ]
-    }
+    "workspaces": [
+        "common",
+        "crux",
+        "crux-ui"
+    ]
 }
