@@ -4,6 +4,7 @@ interface DyoTagProps {
   className?: string
   textColor?: string
   color?: string
+  solid?: boolean
   children: React.ReactNode
 }
 
@@ -18,6 +19,7 @@ const DyoTag = (props: DyoTagProps) => {
           props.className,
           color,
           textColor,
+          !props.solid && 'bg-opacity-10',
           'rounded-full bg-opacity-10 text-xs font-semibold px-8 py-0.5 mt-auto',
         )}
       >

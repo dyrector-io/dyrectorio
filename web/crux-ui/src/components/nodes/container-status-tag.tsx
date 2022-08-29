@@ -33,14 +33,19 @@ const ContainerStatusTag = (props: ContainerStatusTagProps) => {
       case 'restarting':
         return 'text-error-red'
       case 'removing':
-        return 'text-dyo-purple'
+        return 'text-dyo-light-purple'
       default:
         return 'text-warning-orange'
     }
   }
 
   return (
-    <DyoTag color={statusToBgColor()} textColor={statusToTextColor()} className={props.className}>
+    <DyoTag
+      color={statusToBgColor()}
+      textColor={statusToTextColor()}
+      className={props.className}
+      solid={state === 'removing'}
+    >
       {state.toUpperCase()}
     </DyoTag>
   )
