@@ -4,12 +4,39 @@
 @tailwind components;
 @tailwind utilities;
 
-@import "./dyo-date-picker.css";
+@import './dyo-date-picker.css';
 
 .grecaptcha-badge {
-    bottom: 4.25rem !important;
+  bottom: 4.25rem !important;
 }
 
-html, body {
-    font-family: 'Poppins', sans-serif;
+html,
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: #161d31;
+}
+
+* {
+  scrollbar-color: #c4c4c4 #404656;
+  scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+  height: 12px;
+  width: 12px;
+
+  background: #404656;
+  border-radius: 1ex;
+  -webkit-border-radius: 1ex;
+}
+
+::-webkit-scrollbar-thumb {
+  border: 2px solid #404656;
+  background: #c4c4c4;
+  border-radius: 1ex;
+  -webkit-border-radius: 1ex;
+}
+
+::-webkit-scrollbar-corner {
+  background: #161d31;
 }
