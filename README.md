@@ -60,13 +60,17 @@ While dyrector.io enables non-technical staff members to help with certain tasks
 
 ## Use cases
 
-- Multi-Instance Deployments:
+### Multi-Instance Deployments
 
-Microservice architectures are challenging to manage, especially when your team has to distribute them through multiple Nodes (for example to Azure VMs, and custom self managed VPSs). Deployments become repetitive, time-consuming, and due to human presence, risky.
-By using dyrector.io, you can simplify the whole process. Assemble your images from private or public Registries in an instant, then trigger the deployments to Nodes – on-prem or cloud environments.
-The most common use case of Multi-Instance Deployments is when your team directly distributes the applications they create. The flowchart below illustrates how the process takes place.
+Trigger deployments of the same application to multiple environments from one place using the same or various configurations.
 
-We've seen less frequently but at significant levels that when a company outsources the development of an application to your team, they'd still like to manage deployments because they handle billing and other administrative processes. In the flowchart below you can see how this process differs from direct distribution.
+### Docker & Kubernetes utilization without specialists
+
+Both Docker and Kubernetes require specialized staff to manage. Via dyrector.io, your team’s non-specialist staff can contribute to the process, as well.
+
+### Instant test environments
+
+Seamless testing whenever your team wants to test the application, without waiting for a SysAdmin to set up an environment.
 
 ## Quick Start
 
