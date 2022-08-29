@@ -11,7 +11,7 @@ datasource db {
 
 model Team {
   id        String    @id @default(uuid()) @db.Uuid
-  name      String    @unique
+  name      String    @unique @db.VarChar(70)
   createdAt DateTime  @default(now()) @db.Timestamptz(6)
   createdBy String    @db.Uuid
   updatedAt DateTime? @default(now()) @db.Timestamptz(6)
@@ -53,7 +53,7 @@ model Node {
   createdBy      String        @db.Uuid
   updatedAt      DateTime?     @default(now()) @db.Timestamptz(6)
   updatedBy      String?       @db.Uuid
-  name           String
+  name           String        @db.VarChar(70)
   type           NodeTypeEnum? @default(docker)
   description    String?
   icon           String?
@@ -75,7 +75,7 @@ model Registry {
   createdBy   String           @db.Uuid
   updatedAt   DateTime?        @default(now()) @db.Timestamptz(6)
   updatedBy   String?          @db.Uuid
-  name        String
+  name        String           @db.VarChar(70)
   description String?
   icon        String?
   url         String
@@ -98,7 +98,7 @@ model Product {
   createdBy   String          @db.Uuid
   updatedAt   DateTime?       @default(now()) @db.Timestamptz(6)
   updatedBy   String?         @db.Uuid
-  name        String
+  name        String          @db.VarChar(70)
   description String?
   type        ProductTypeEnum @default(simple)
 
@@ -115,7 +115,7 @@ model Version {
   createdBy String          @db.Uuid
   updatedAt DateTime?       @default(now()) @db.Timestamptz(6)
   updatedBy String?         @db.Uuid
-  name      String
+  name      String          @db.VarChar(70)
   changelog String?
   default   Boolean         @default(false)
   type      VersionTypeEnum @default(incremental)
@@ -173,7 +173,7 @@ model Deployment {
   createdBy   String               @db.Uuid
   updatedAt   DateTime?            @default(now()) @db.Timestamptz(6)
   updatedBy   String?              @db.Uuid
-  name        String
+  name        String               @db.VarChar(70)
   description String?
   prefix      String?
   status      DeploymentStatusEnum
@@ -245,7 +245,7 @@ model Notification {
   createdBy   String                @db.Uuid
   updatedAt   DateTime?             @default(now()) @db.Timestamptz(6)
   updatedBy   String?               @db.Uuid
-  name        String
+  name        String                @db.VarChar(70)
   url         String
   type        NotificationTypeEnum
   active      Boolean               @default(false)

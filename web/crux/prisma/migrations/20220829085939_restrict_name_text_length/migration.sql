@@ -1,0 +1,20 @@
+-- AlterTable
+ALTER TABLE "Deployment" ALTER COLUMN "name" SET DATA TYPE VARCHAR(70);
+
+-- AlterTable
+ALTER TABLE "Node" ALTER COLUMN "name" SET DATA TYPE VARCHAR(70);
+
+-- AlterTable
+ALTER TABLE "Notification" ALTER COLUMN "name" SET DATA TYPE VARCHAR(70);
+
+-- AlterTable
+ALTER TABLE "Product" ALTER COLUMN "name" SET DATA TYPE VARCHAR(70);
+
+-- AlterTable
+ALTER TABLE "Registry" ALTER COLUMN "name" SET DATA TYPE VARCHAR(70);
+
+-- AlterTable
+ALTER TABLE "Team" ALTER COLUMN "name" SET DATA TYPE VARCHAR(70);
+
+-- AlterTable
+ALTER TABLE "Version" ALTER COLUMN "name" SET DATA TYPE VARCHAR(70);
