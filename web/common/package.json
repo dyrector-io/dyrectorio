@@ -1,0 +1,10 @@
+{
+    "name": "@dyrectorio/common",
+    "private": true,
+    "version": "0.1.1",
+    "main": "src/index.ts",
+    "main:src": "src/index.ts",
+    "dependencies": {
+        "yup": "^0.32.11"
+    }
+}

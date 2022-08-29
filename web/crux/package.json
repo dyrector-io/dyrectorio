@@ -1,5 +1,5 @@
 {
-  "name": "crux",
+  "name": "@dyrectorio/crux",
   "version": "0.1.1",
   "description": "Open-source delivery platform that helps developers to deliver applications efficiently by simplifying software releases and operations in any environment.",
   "author": "dyrector.io",
@@ -42,10 +42,13 @@
     "schema": "prisma/schema.prisma"
   },
   "dependencies": {
+    "@dyrectorio/common": "0.1.1",
     "@grpc/grpc-js": "^1.6.8",
     "@grpc/proto-loader": "^0.7.0",
     "@nestjs/axios": "^0.1.0",
     "@nestjs/cli": "^9.0.0",
+    "@nestjs/common": "^9.0.11",
+    "@nestjs/core": "^9.0.11",
     "@nestjs/jwt": "^9.0.0",
     "@nestjs/microservices": "^9.0.8",
     "@nestjs/platform-express": "^9.0.8",
@@ -57,6 +60,7 @@
     "axios": "^0.27.2",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
+    "crux": "^1.0.3",
     "dotenv": "^16.0.1",
     "google-auth-library": "^8.1.1",
     "google-protobuf": "^3.21.0",

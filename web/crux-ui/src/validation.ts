@@ -24,6 +24,8 @@ import {
   EXPLICIT_CONTAINER_RESTART_POLICY_TYPE_VALUES,
 } from './models-config'
 
+import { portNumberRule } from '@dyrectorio/common'
+
 export const getValidationError = (schema: yup.AnySchema, candidate: any): yup.ValidationError => {
   try {
     schema.validateSync(candidate)
@@ -130,8 +132,6 @@ export const updateDeploymentSchema = yup.object().shape({
   description: yup.string(),
   prefix: yup.string().required(),
 })
-
-const portNumberRule = yup.number().positive().lessThan(65536).required()
 
 export const explicitContainerConfigSchema = yup.object().shape({
   ingress: yup
