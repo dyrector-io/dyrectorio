@@ -48,7 +48,7 @@ While dyrector.io enables non-technical staff members to help with certain tasks
 
 ## How it works
 
-// TBD
+dyrector.io consists of an agent (GoLang) and a platform (UI developed in React.js, Next.js. Backend developed in Node.js, Nest.js). There are two types of agents communicating with the platform: one for Docker and another for Kubernetes. Communication takes place in gRPC with TLS encryption. The data is managed in a PostgreSQL database which we use with Prisma ORM.
 
 <p align="center">
     <picture>
