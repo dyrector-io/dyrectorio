@@ -21,7 +21,7 @@ const DyoNodeCard = (props: DyoNodeCardProps) => {
     <>
       <DyoCard className={clsx(props.className ?? 'p-6', 'flex flex-col')}>
         <div className={clsx(onNameClick ? 'cursor-pointer' : null, 'flex flex-row')} onClick={onNameClick}>
-          {node.icon ? <DyoBadge large icon={node.icon} /> : null}
+          {node.icon ? <DyoBadge icon={node.icon} /> : null}
 
           <DyoHeading className="text-xl text-bright font-semibold ml-4 my-auto mr-auto" element="h3">
             {node.name}

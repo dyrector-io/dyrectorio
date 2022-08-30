@@ -43,6 +43,7 @@ const VersionDetailsCard = (props: VersionDetailsCardProps) => {
                 {t('default').toUpperCase()}
               </DyoTag>
             )}
+
             <DyoTag className="ml-8">{t(version.type).toUpperCase()}</DyoTag>
           </div>
         </div>

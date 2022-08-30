@@ -9,7 +9,9 @@ import { versionUrl } from '@app/routes'
 import { utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
+import Image from 'next/image'
 import { useRouter } from 'next/router'
+import VersionTypeTag from './version-type-tag'
 
 interface VersionCardProps {
   className?: string
@@ -61,7 +63,7 @@ const VersionCard = (props: VersionCardProps) => {
               </DyoTag>
             )}
 
-            <DyoTag className="ml-6">{t(version.type).toUpperCase()}</DyoTag>
+            <VersionTypeTag className="ml-6" type={version.type} />
           </div>
         </div>
       </div>
@@ -88,7 +90,7 @@ const VersionCard = (props: VersionCardProps) => {
 
         {!props.onSetAsDefaultClick || version.default ? null : (
           <DyoImgButton
-            className="px-2 h-8 mx-2"
+            className="px-2 h-6 mx-2"
             disabled={props.disabled}
             src="/home_bold.svg"
             alt={t('default')}
@@ -100,7 +102,7 @@ const VersionCard = (props: VersionCardProps) => {
         )}
       </div>
 
-      <span className="text-bright font-bold">{t('changelog')}</span>
+      <span className="text-bright font-semibold">{t('changelog')}</span>
 
       <DyoExpandableText
         text={version.changelog}
@@ -112,12 +114,20 @@ const VersionCard = (props: VersionCardProps) => {
 
       {props.disabled ? null : (
         <div className="flex flex-row ml-auto mt-auto">
-          <DyoButton className="px-6 mx-2" outlined onClick={onDeploymentsClick}>
-            {t('deployments')}
+          <DyoButton className="px-4 mx-2" outlined onClick={onDeploymentsClick}>
+            <div className="flex flex-row items-center gap-2">
+              <Image src="/deployments.svg" alt={t('deployments')} width={20} height={20} layout="fixed" />
+
+              {t('deployments')}
+            </div>
           </DyoButton>
 
-          <DyoButton className="px-6 mx-2" outlined onClick={onImagesClick}>
-            {t('images')}
+          <DyoButton className="px-4 mx-2" outlined onClick={onImagesClick}>
+            <div className="flex flex-row items-center gap-2">
+              <Image src="/images.svg" alt={t('images')} width={20} height={20} layout="fixed" />
+
+              {t('images')}
+            </div>
           </DyoButton>
         </div>
       )}

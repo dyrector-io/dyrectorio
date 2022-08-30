@@ -10,6 +10,7 @@ module.exports = {
                 'dyo-turquoise': '#00d0bf',
                 'dyo-green': '#28c76f',
                 'dyo-purple': '#540BA7',
+                'dyo-blue': '#00CFE8',
                 'bright': "#d0d2d6",
                 'light-eased': '#b4b7bd',
                 'light-grey': '#3b4253',

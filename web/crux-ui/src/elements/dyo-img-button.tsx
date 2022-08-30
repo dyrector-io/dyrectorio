@@ -9,6 +9,7 @@ interface DyoImgButtonProps {
   onClick: VoidFunction
   width?: number
   height?: number
+  primary?: boolean
   secondary?: boolean
   outlined?: boolean
 }
@@ -16,14 +17,8 @@ interface DyoImgButtonProps {
 const DyoImgButton = (props: DyoImgButtonProps) => {
   const { outlined, secondary, disabled, colorClassName } = props
 
-  const defaultColor = secondary
-    ? outlined
-      ? 'ring-warning-orange'
-      : 'bg-warning-orange'
-    : outlined
-    ? 'ring-dyo-turquoise'
-    : 'bg-dyo-turquoise'
-  const disabledColor = outlined ? 'ring-light-grey' : 'bg-light-grey'
+  const defaultColor = outlined ? (secondary ? 'ring-warning-orange' : 'ring-dyo-turquoise') : null
+  const disabledColor = outlined ? 'ring-light-grey' : null
   const color = disabled ? disabledColor : colorClassName ?? defaultColor
 
   const ring = outlined ? 'ring-2' : null

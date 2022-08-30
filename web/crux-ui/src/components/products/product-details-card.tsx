@@ -1,12 +1,12 @@
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoExpandableText } from '@app/elements/dyo-expandable-text'
 import { DyoHeading } from '@app/elements/dyo-heading'
-import DyoTag from '@app/elements/dyo-tag'
 import { ProductDetails } from '@app/models'
 import { utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
+import ProductTypeTag from './product-type-tag'
 
 interface ProductDetailsCardProps {
   className?: string
@@ -42,7 +42,7 @@ const ProductDetailsCard = (props: ProductDetailsCardProps) => {
             <div className="flex flex-col ml-auto">
               <span className="text-bright whitespace-nowrap">{utcDateToLocale(product.createdAt)}</span>
 
-              <DyoTag className="mt-2 ml-auto">{t(product.type).toUpperCase()}</DyoTag>
+              <ProductTypeTag className="mt-2 ml-auto" type={product.type} />
             </div>
           </div>
 
