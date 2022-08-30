@@ -1,4 +1,4 @@
-import { nameOrEmailOfIdentity } from './../shared/model'
+import { nameOrEmailOfIdentity } from '@dyrectorio/common'
 import { HttpService } from '@nestjs/axios'
 import { Injectable, Logger } from '@nestjs/common'
 import { NotificationTypeEnum } from '@prisma/client'

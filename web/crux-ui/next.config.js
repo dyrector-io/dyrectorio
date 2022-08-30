@@ -5,4 +5,7 @@ module.exports = {
   eslint: {
     dirs: ['src'],
   },
+  experimental: {
+    useExternalCode: true
+  }
 }

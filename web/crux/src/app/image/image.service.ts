@@ -14,7 +14,7 @@ import {
   PatchImageRequest,
 } from 'src/grpc/protobuf/proto/crux'
 import { ImageMapper, ImageWithConfig } from './image.mapper'
-import { ContainerConfigData } from 'src/shared/model'
+import { ContainerConfigData } from '@dyrectorio/common'
 
 @Injectable()
 export class ImageService {

@@ -29,7 +29,7 @@ import {
 } from 'src/grpc/protobuf/proto/crux'
 import { KratosService } from 'src/services/kratos.service'
 import { PrismaService } from 'src/services/prisma.service'
-import { InstanceContainerConfigData } from 'src/shared/model'
+import { InstanceContainerConfigData } from '@dyrectorio/common'
 import { AgentService } from '../agent/agent.service'
 import { ImageWithConfig } from '../image/image.mapper'
 import { ImageService } from '../image/image.service'

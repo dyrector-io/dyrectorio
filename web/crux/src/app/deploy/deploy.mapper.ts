@@ -35,7 +35,7 @@ import {
   Port,
   NetworkMode,
 } from 'src/grpc/protobuf/proto/common'
-import { ContainerConfigData, UniqueKeyValue } from 'src/shared/model'
+import { ContainerConfigData, UniqueKeyValue } from '@dyrectorio/common'
 import { ImageMapper, ImageWithConfig } from '../image/image.mapper'
 
 @Injectable()

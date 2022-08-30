@@ -8,7 +8,7 @@ import {
   UserRole,
   UserStatus,
 } from 'src/grpc/protobuf/proto/crux'
-import { IdentityTraits, nameOfIdentity } from 'src/shared/model'
+import { IdentityTraits, nameOfIdentity } from '@dyrectorio/common'
 
 @Injectable()
 export class TeamMapper {

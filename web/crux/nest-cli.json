@@ -4,5 +4,6 @@
   "compilerOptions": {
     "assets": ["**/*.proto"],
     "watchAssets": true
-  }
+  },
+  "entryFile": "crux/src/main"
 }

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { ContainerConfig, Image } from '@prisma/client'
 import { JsonObject } from 'prisma'
 import { ContainerConfig as ProtoContainerConfig, ImageResponse } from 'src/grpc/protobuf/proto/crux'
-import { UniqueKeyValue } from 'src/shared/model'
+import { UniqueKeyValue } from '@dyrectorio/common'
 
 @Injectable()
 export class ImageMapper {

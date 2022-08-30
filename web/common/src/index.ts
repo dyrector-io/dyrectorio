@@ -1,3 +1,14 @@
-import * as yup from 'yup'
+import { UniqueKeyValue, EXPLICIT_CONTAINER_NETWORK_MODE_VALUES, ExplicitContainerNetworkMode, EXPLICIT_CONTAINER_RESTART_POLICY_TYPE_VALUES, ExplicitContainerRestartPolicyType, 
+    EXPLICIT_CONTAINER_DEPLOYMENT_STRATEGY_VALUES, ExplicitContainerDeploymentStrategyType, ContainerConfigData, InstanceContainerConfigData, 
+    IdentityTraits, IdentityTraitsName, nameOfIdentity, nameOrEmailOfIdentity } from './model'
+import { uniqueKeyValuesSchema, explicitContainerConfigSchema, containerConfigSchema, deploymentSchema } from './validation'
 
-export const portNumberRule = yup.number().positive().lessThan(65536).required()
+export type {
+    ExplicitContainerDeploymentStrategyType, ContainerConfigData, InstanceContainerConfigData, IdentityTraitsName, IdentityTraits, UniqueKeyValue, ExplicitContainerNetworkMode,
+    ExplicitContainerRestartPolicyType
+}
+
+export { uniqueKeyValuesSchema, explicitContainerConfigSchema, containerConfigSchema, deploymentSchema, EXPLICIT_CONTAINER_NETWORK_MODE_VALUES, 
+    EXPLICIT_CONTAINER_RESTART_POLICY_TYPE_VALUES, EXPLICIT_CONTAINER_DEPLOYMENT_STRATEGY_VALUES, nameOfIdentity, nameOrEmailOfIdentity }
+
+export const jozsi = "asd"

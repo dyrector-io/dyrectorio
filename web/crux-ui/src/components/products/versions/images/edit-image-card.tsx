@@ -11,7 +11,7 @@ import {
   WS_TYPE_PATCH_IMAGE,
 } from '@app/models'
 import { ContainerConfig } from '@app/models-config'
-import { containerConfigSchema, getValidationError } from '@app/validation'
+import { getValidationError } from '@app/validation'
 import { WebSocketEndpoint } from '@app/websockets/client'
 import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
@@ -19,6 +19,7 @@ import EditImageConfig from './edit-image-config'
 import EditImageHeading from './edit-image-heading'
 import EditImageJson from './edit-image-json'
 import EditImageTags from './edit-image-tags'
+import { containerConfigSchema } from '@dyrectorio/common'
 
 export type EditImageCardSelection = 'tag' | 'config' | 'json'
 

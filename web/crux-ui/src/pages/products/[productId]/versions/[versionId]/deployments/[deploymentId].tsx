@@ -28,7 +28,7 @@ import {
   versionUrl,
 } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
-import { containerConfigSchema, getValidationError } from '@app/validation'
+import { getValidationError } from '@app/validation'
 import { Crux, cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
@@ -36,6 +36,7 @@ import { useRouter } from 'next/dist/client/router'
 import { useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 import { ValidationError } from 'yup'
+import { containerConfigSchema } from '@dyrectorio/common'
 
 interface DeploymentDetailsPageProps {
   deployment: DeploymentRoot

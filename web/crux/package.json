@@ -41,8 +41,10 @@
     "seed": "ts-node prisma/seeds/seeder.ts",
     "schema": "prisma/schema.prisma"
   },
+  "peerDependencies": {
+    "@dyrectorio/common": "0.1.1"
+  },
   "dependencies": {
-    "@dyrectorio/common": "0.1.1",
     "@grpc/grpc-js": "^1.6.8",
     "@grpc/proto-loader": "^0.7.0",
     "@nestjs/axios": "^0.1.0",
