@@ -5,6 +5,7 @@ services:{{ range . }}{{ if .Enabled }}
     image: {{ .Image }}
     networks:
     - dyo{{ if .EnvVars }}
+    pull_policy: always
     environment:{{ end }}{{ range .EnvVars }}
     - {{ .Key }}={{ .Value }}{{ end }}{{ if .Depends }}
     depends_on:{{ end }}{{range .Depends }}
