@@ -196,8 +196,8 @@ func GetUtilsContainerDefaults() []Container {
 			Image:   "docker.io/oryd/mailslurper:latest-smtps",
 			Name:    "mailslurper",
 			Ports: []Port{
-				{9436, 9436},
-				{9437, 9437},
+				{4436, 4436},
+				{4437, 4437},
 			},
 			Restart: true,
 		},
