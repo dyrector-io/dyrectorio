@@ -2,18 +2,20 @@ version: "3.9"
 services:{{ range . }}{{ if .Enabled }}
 
   {{ .Name }}:
+    hostname: {{ .Name }}
+    container_name: dyocli_{{ .Name }}
     image: {{ .Image }}
     networks:
-    - dyo{{ if .EnvVars }}
+      - dyo{{ if .EnvVars }}
     pull_policy: always
     environment:{{ end }}{{ range .EnvVars }}
-    - {{ .Key }}={{ .Value }}{{ end }}{{ if .Depends }}
+      - {{ .Key }}={{ .Value }}{{ end }}{{ if .Depends }}
     depends_on:{{ end }}{{range .Depends }}
       {{ . }}{{ end }}{{ if .Ports }}
     ports:{{ end }}{{ range .Ports }}
-    - {{ .Host }}:{{ .Container }}{{ end }}{{ if .Volumes }}
+      - {{ .Host }}:{{ .Container }}{{ end }}{{ if .Volumes }}
     volumes:{{ end }}{{ range .Volumes }}
-    - {{ .Host }}:{{ .Container }}:{{ if .RO }}ro{{ else }}rw{{ end }}{{ end }}{{ if .Restart }}
+      - {{ .Host }}:{{ .Container }}:{{ if .RO }}ro{{ else }}rw{{ end }}{{ end }}{{ if .Restart }}
     restart: unless-stopped{{ end }}{{ if .Command }}
     command: {{ .Command }}{{ end }}{{ end }}{{ end }}
 
