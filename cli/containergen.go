@@ -37,6 +37,7 @@ type Container struct {
 	Volumes []Volume
 	Depends []string
 	Ports   []Port
+	Restart bool
 	Command string
 }
 
@@ -70,12 +71,16 @@ func GetCruxContainerDefaults() []Container {
 				{"SENDGRID_KEY", "$SENDGRID_KEY"},
 				{"FROM_EMAIL", "$FROM_EMAIL"},
 				{"FROM_NAME", "$FROM_NAME"},
+				{"SMTP_USER", "test"},
+				{"SMTP_PASSWORD", "test"},
+				{"SMTP_URL", "mailslurper:1025/?skip_ssl_verify=true&legacy_ssl=true"},
 			},
 			Volumes: []Volume{{"crux-certs", "/app/certs", false}},
 			Ports: []Port{
 				{5000, 5000},
 				{5001, 5001},
 			},
+			Restart: true,
 			Command: "serve",
 		},
 		{
@@ -102,12 +107,17 @@ func GetCruxuiContainerDefaults() []Container {
 				{"TZ", "Europe/Budapest"},
 				{"KRATOS_URL", "http://kratos:4433"},
 				{"CRUX_ADDRESS", "http://crux:5001"},
-				{"CAPTCHA", "false"},
+				{"GRPC_API_INSECURE", "true"},
+				{"DISABLE_RECAPTCHA", "true"},
 				{"RECAPTCHA_SECRET_KEY", ""},
 				{"RECAPTCHA_SITE_KEY", ""},
+				{"SMTP_USER", "test"},
+				{"SMTP_PASSWORD", "test"},
+				{"SMTP_URL", "mailslurper:1025/?skip_ssl_verify=true&legacy_ssl=true"},
 			},
 			Volumes: []Volume{{"crux-certs", "/app/certs", true}},
 			Ports:   []Port{{3000, 3000}},
+			Restart: true,
 		},
 	}
 }
@@ -123,7 +133,7 @@ func GetUtilsContainerDefaults() []Container {
 				{"SQA_OPT_OUT", "true"},
 				{"DSN", "postgres://kratos:IPNuH10gAXT7bg8g@kratos-postgres:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4"},
 			},
-			Volumes: []Volume{{"kratos-config", "/etc/config/kratos", true}},
+			Volumes: []Volume{{"kratos-config", "/etc/config/kratos", false}},
 			Command: "-c /etc/config/kratos/kratos.yaml migrate sql -e --yes",
 		},
 		{
@@ -142,8 +152,12 @@ func GetUtilsContainerDefaults() []Container {
 				{"LOG_LEVEL", "info"},
 				{"LOG_LEAK_SENSITIVE_VALUES", "true"},
 				{"SECRETS_COOKIE", "AvGMteMxePpJ4ZVM"},
-				{"COURIER_SMTP_CONNECTION_URI", "smtps://${SMTP_USER}:${SMTP_PASSWORD}@${SMTP_URL}"},
+				{"SMTP_USER", "test"},
+				{"SMTP_PASSWORD", "test"},
+				{"SMTP_URL", "mailslurper:1025/?skip_ssl_verify=true&legacy_ssl=true"},
+				{"COURIER_SMTP_CONNECTION_URI", "smtps://test:test@mailslurper:1025/?skip_ssl_verify=true&legacy_ssl=true"},
 			},
+			Restart: true,
 			Ports: []Port{
 				{9433, 4433},
 				{9434, 9434},
@@ -159,6 +173,7 @@ func GetUtilsContainerDefaults() []Container {
 				{"POSTGRES_DB", "crux"},
 			},
 			Ports:   []Port{{5432, 5432}},
+			Restart: true,
 			Volumes: []Volume{{"crux-db", "/var/lib/postgresql/data", false}},
 		},
 		{
@@ -171,7 +186,18 @@ func GetUtilsContainerDefaults() []Container {
 				{"POSTGRES_DB", "kratos"},
 			},
 			Ports:   []Port{{5433, 5432}},
+			Restart: true,
 			Volumes: []Volume{{"kratos-db", "/var/lib/postgresql/data", false}},
+		},
+		{
+			Enabled: true,
+			Image:   "docker.io/oryd/mailslurper:latest-smtps",
+			Name:    "mailslurper",
+			Ports: []Port{
+				{9436, 9436},
+				{9437, 9437},
+			},
+			Restart: true,
 		},
 	}
 }
@@ -231,13 +257,7 @@ func GenContainer(services []Services, write bool) (error, string) {
 		return err, ""
 	}
 
-	var containersString string
-	_, err = buffer.WriteString(containersString)
-	if err = buffer.Flush(); err != nil {
-		return err, ""
-	}
-
-	return nil, containersString
+	return nil, buf.String()
 }
 
 func WriteComposeFile(containers string) error {

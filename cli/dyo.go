@@ -27,8 +27,8 @@ func main() {
 				Action: compose,
 			},
 			{
-				Name:    "run",
-				Aliases: []string{"r"},
+				Name:    "start",
+				Aliases: []string{"r", "run", "s"},
 				Usage:   "Run the stack",
 
 				Action: run,
