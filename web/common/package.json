@@ -6,7 +6,8 @@
     "main:src": "src/index.ts",
     "scripts": {
         "build": "tsc",
-        "watch": "tsc --watch"
+        "watch": "tsc --watch",
+        "format": "prettier --write './**/*.tsx' './**/*.ts'"
     },
     "dependencies": {
         "yup": "^0.32.11"

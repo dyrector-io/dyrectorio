@@ -8,7 +8,9 @@
         "crux-ui"
     ],
     "scripts": {
-        "nextjs": "concurrently -p name -n \"common,crux-ui\" --kill-others \"npm -w common run watch\" \"npm -w crux-ui run start\""
+        "crux:dev": "npm -w crux run start",
+        "crux-ui:dev": "concurrently -p name -n \"common,crux-ui\" --kill-others \"npm -w common run watch\" \"npm -w crux-ui run start\"",
+        "format": "npm run -w common format && npm -w crux run format && npm -w crux-ui run format"
     },
     "devDependencies": {
         "concurrently": "^7.3.0"
