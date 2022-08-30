@@ -68,8 +68,10 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 
+      const transformedValues = registrySchema.cast(values) as any
+
       const body: CreateRegistry | UpdateRegistry = {
-        ...values,
+        ...transformedValues,
       }
 
       const res = await (!editing

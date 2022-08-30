@@ -62,9 +62,10 @@ export const createProductSchema = updateProductSchema.concat(
   }),
 )
 
-const registryCredentialRole = yup.string().when(['type', '_private'], {
-  is: (type, _private) => ['gitlab', 'github'].includes(type) || ((type === 'v2' || type === 'google') && _private),
+const registryCredentialRole = yup.mixed().when(['type', '_private'], {
+  is: (type, _private) => (type === 'gitlab' || type === 'github') || ((type === 'v2' || type === 'google') && _private),
   then: yup.string().required(),
+  otherwise: yup.mixed().transform(it => it ? it : undefined)
 })
 
 const googleRegistryUrls = ['gcr.io', 'us.gcr.io', 'eu.gcr.io', 'asia.gcr.io'] as const
