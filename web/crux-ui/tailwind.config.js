@@ -22,7 +22,7 @@ module.exports = {
                 'error-red': '#ea5455',
                 'warning-orange': '#ff9f43',
                 'dyo-shadowed-purple': '#6A6680',
-                'dyo-light-purple': '#F9F8FC',
+                'dyo-light-purple': '#E1CCF8',
                 'dyo-dark-purple': '#302474',
                 'dyo-light-purple-pale': '#DEDBEB',
                 'dyo-light-purple-pale-shadow': '#DCE2F3',

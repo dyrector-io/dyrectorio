@@ -23,41 +23,45 @@ const ProductDetailsCard = (props: ProductDetailsCardProps) => {
   return (
     <>
       <DyoCard className={clsx(props.className ?? 'p-6')}>
-        <div className="float-left">
-          <Image
-            src="/product_default.svg"
-            alt={t('altPicture', { name: product.name })}
-            width={100}
-            height={100}
-            layout="fixed"
-          />
-        </div>
-        <div className="flex flex-col flex-grow">
-          <DyoHeading element="h5" className="text-xl text-bright ml-6 mb-1">
-            {product.name}
-          </DyoHeading>
+        <div className="flex">
+          <div className="float-left">
+            <Image
+              src="/product_default.svg"
+              alt={t('altPicture', { name: product.name })}
+              width={100}
+              height={100}
+              layout="fixed"
+            />
+          </div>
+          <div className="flex flex-col flex-grow">
+            <DyoHeading element="h5" className="text-xl text-bright ml-6 mb-1">
+              {product.name}
+            </DyoHeading>
 
-          <div className="flex flex-row">
-            <div className="mx-6 overflow-hidden">
-              <DyoExpandableText
-                text={product.description}
-                lineClamp={2}
-                className="text-md text-light"
-                modalTitle={product.name}
-              />
-            </div>
+            <div className="flex flex-row flex-grow">
+              <div className="mx-6 overflow-hidden">
+                <DyoExpandableText
+                  text={product.description}
+                  lineClamp={2}
+                  className="text-md text-light"
+                  modalTitle={product.name}
+                />
+              </div>
 
-            <div className="flex flex-col flex-grow">
-              <span className="self-end text-bright whitespace-nowrap ml-2">{utcDateToLocale(product.createdAt)}</span>
+              <div className="flex flex-col flex-grow">
+                <span className="self-end text-bright whitespace-nowrap ml-2">
+                  {utcDateToLocale(product.createdAt)}
+                </span>
 
-              <DyoTag className="ml-auto">{t(product.type).toUpperCase()}</DyoTag>
+                <DyoTag className="ml-auto">{t(product.type).toUpperCase()}</DyoTag>
+              </div>
             </div>
           </div>
         </div>
 
         {!version ? null : (
           <>
-            <span className="text-bright font-bold mt-2">{t('versions:changelog')}</span>
+            <p className="text-bright font-bold mt-2">{t('versions:changelog')}</p>
 
             <DyoExpandableText
               text={version.changelog}
