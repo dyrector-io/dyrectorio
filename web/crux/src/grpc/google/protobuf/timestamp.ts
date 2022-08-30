@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { util, configure } from 'protobufjs/minimal'
-import Long from 'long'
+import * as Long from 'long'
 
 export const protobufPackage = 'google.protobuf'
 

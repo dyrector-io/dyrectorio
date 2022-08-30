@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { GrpcMethod, GrpcStreamMethod } from '@nestjs/microservices'
 import { util, configure } from 'protobufjs/minimal'
-import Long from 'long'
+import * as Long from 'long'
 import {
   ContainerState,
   DeploymentStatus,

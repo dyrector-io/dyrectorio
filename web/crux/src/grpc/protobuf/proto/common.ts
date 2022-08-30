@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { util, configure } from 'protobufjs/minimal'
-import Long from 'long'
+import * as Long from 'long'
 import { Timestamp } from '../../google/protobuf/timestamp'
 
 export const protobufPackage = 'common'
