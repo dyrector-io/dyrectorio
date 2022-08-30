@@ -138,7 +138,7 @@ export default class ImageService {
         capabilities: caps ? caps.data ?? [] : (undefined as JsonArray),
         environment: envs ? envs.data ?? [] : (undefined as JsonArray),
         config: request.config?.config,
-        secrets: secrets ? secrets.data ?? [] : (undefined as JsonArray),
+        secrets: secrets ? secrets : (undefined as JsonArray),
       }
     }
 

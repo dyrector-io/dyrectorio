@@ -9,10 +9,9 @@ import { v4 as uuid } from 'uuid'
 
 interface SecretKeyValueInputProps {
   disabled?: boolean
-  valueDisabled?: boolean
   className?: string
   heading?: string
-  publicKey: string
+  publicKey?: string
   items: UniqueKeySecretValue[]
   onSubmit: (items: UniqueKeySecretValue[]) => void
 }
@@ -26,7 +25,9 @@ const EMPTY_SECRET_KEY_VALUE_PAIR = {
 const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
   const { t } = useTranslation('common')
 
-  const { heading, disabled, valueDisabled } = props
+  const { heading, disabled, publicKey } = props
+  const valueDisabled = !publicKey
+  console.log('value', valueDisabled, publicKey)
 
   const [state, dispatch] = useReducer(reducer, props.items)
 
@@ -87,7 +88,7 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
   const elements = stateToElements(state)
 
   const renderItem = (entry: KeyValueElement, index: number) => {
-    const { key, value, message } = entry
+    const { key, value, message, encrypted } = entry
 
     return (
       <div key={entry.id} className="flex flex-row flex-grow p-1">
@@ -101,21 +102,22 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
             value={key}
             message={message}
             onChange={e => onChange(index, e.target.value, value)}
-            // onBlur={e => onBlur(index, e.target.value, value)}
           />
         </div>
 
         <div className="w-6/12 ml-2">
-          <DyoInput
-            key={`${entry.id}-value`}
-            disabled={disabled || valueDisabled}
-            className="w-full"
-            grow
-            placeholder={t('value')}
-            value={value}
-            onChange={e => onChange(index, key, e.target.value)}
-            // onBlur={e => onBlur(index, key, e.target.value)}
-          />
+          {!valueDisabled ? (
+            <DyoInput
+              key={`${entry.id}-value`}
+              disabled={disabled || valueDisabled || encrypted}
+              className="w-full"
+              type={encrypted ? 'password' : 'text'}
+              grow
+              placeholder={t('value')}
+              value={value}
+              onChange={e => onChange(index, key, e.target.value)}
+            />
+          ) : null}
         </div>
 
         <div className="w-1/12 ml-1 text-white">
@@ -134,7 +136,7 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
           {heading}
         </DyoHeading>
       )}
-
+      {valueDisabled ? <div className="text-light-eased">{t('cannotDefineSecretsHere')}</div> : null}
       {elements.map((it, index) => renderItem(it, index))}
     </form>
   )

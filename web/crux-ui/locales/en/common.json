@@ -163,6 +163,6 @@
 
   "itemsPerPage": "Items per page",
   "showingItems": "Showing {{pageFrom}} to {{pageTo}} of {{total}} entries",
-
-  "openSource": "is an Open Source project"
+  "openSource": "is an Open Source project",
+  "cannotDefineSecretsHere": "Secret keys can be provided, values only at later stages."
 }

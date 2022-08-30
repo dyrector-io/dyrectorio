@@ -19,7 +19,7 @@ export default class ImageMapper {
       capabilities: config.capabilities as UniqueKeyValue[],
       environment: config.environment as UniqueKeyValue[],
       config: config.config as JsonObject,
-      secrets: config.secrets as UniqueKeyValue[],
+      secrets: config.secrets,
     }
   }
 }

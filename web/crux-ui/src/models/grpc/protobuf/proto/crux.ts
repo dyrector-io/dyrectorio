@@ -776,7 +776,7 @@ export interface ContainerConfig {
   name: string
   capabilities: UniqueKeyValue[]
   environment: UniqueKeyValue[]
-  secrets: UniqueKeyValue[]
+  secrets: string[]
 }
 
 export interface ImageResponse {
@@ -812,7 +812,7 @@ export interface AddImagesToVersionRequest {
 export interface PatchContainerConfig {
   capabilities?: KeyValueList | undefined
   environment?: KeyValueList | undefined
-  secrets?: KeyValueList | undefined
+  secrets: string[]
   config?: ExplicitContainerConfig | undefined
   name?: string | undefined
 }
@@ -4559,7 +4559,7 @@ export const IncreaseVersionRequest = {
   },
 }
 
-const baseContainerConfig: object = { name: '' }
+const baseContainerConfig: object = { name: '', secrets: '' }
 
 export const ContainerConfig = {
   encode(message: ContainerConfig, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -4576,7 +4576,7 @@ export const ContainerConfig = {
       UniqueKeyValue.encode(v!, writer.uint32(8010).fork()).ldelim()
     }
     for (const v of message.secrets) {
-      UniqueKeyValue.encode(v!, writer.uint32(8018).fork()).ldelim()
+      writer.uint32(8018).string(v!)
     }
     return writer
   },
@@ -4604,7 +4604,7 @@ export const ContainerConfig = {
           message.environment.push(UniqueKeyValue.decode(reader, reader.uint32()))
           break
         case 1002:
-          message.secrets.push(UniqueKeyValue.decode(reader, reader.uint32()))
+          message.secrets.push(reader.string())
           break
         default:
           reader.skipType(tag & 7)
@@ -4623,7 +4623,7 @@ export const ContainerConfig = {
     message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
     message.capabilities = (object.capabilities ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
     message.environment = (object.environment ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
-    message.secrets = (object.secrets ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
+    message.secrets = (object.secrets ?? []).map((e: any) => String(e))
     return message
   },
 
@@ -4643,7 +4643,7 @@ export const ContainerConfig = {
       obj.environment = []
     }
     if (message.secrets) {
-      obj.secrets = message.secrets.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
+      obj.secrets = message.secrets.map(e => e)
     } else {
       obj.secrets = []
     }
@@ -4659,7 +4659,7 @@ export const ContainerConfig = {
     message.name = object.name ?? ''
     message.capabilities = object.capabilities?.map(e => UniqueKeyValue.fromPartial(e)) || []
     message.environment = object.environment?.map(e => UniqueKeyValue.fromPartial(e)) || []
-    message.secrets = object.secrets?.map(e => UniqueKeyValue.fromPartial(e)) || []
+    message.secrets = object.secrets?.map(e => e) || []
     return message
   },
 }
@@ -5033,7 +5033,7 @@ export const AddImagesToVersionRequest = {
   },
 }
 
-const basePatchContainerConfig: object = {}
+const basePatchContainerConfig: object = { secrets: '' }
 
 export const PatchContainerConfig = {
   encode(message: PatchContainerConfig, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -5043,8 +5043,8 @@ export const PatchContainerConfig = {
     if (message.environment !== undefined) {
       KeyValueList.encode(message.environment, writer.uint32(810).fork()).ldelim()
     }
-    if (message.secrets !== undefined) {
-      KeyValueList.encode(message.secrets, writer.uint32(818).fork()).ldelim()
+    for (const v of message.secrets) {
+      writer.uint32(818).string(v!)
     }
     if (message.config !== undefined) {
       ExplicitContainerConfig.encode(message.config, writer.uint32(826).fork()).ldelim()
@@ -5059,6 +5059,7 @@ export const PatchContainerConfig = {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = { ...basePatchContainerConfig } as PatchContainerConfig
+    message.secrets = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -5069,7 +5070,7 @@ export const PatchContainerConfig = {
           message.environment = KeyValueList.decode(reader, reader.uint32())
           break
         case 102:
-          message.secrets = KeyValueList.decode(reader, reader.uint32())
+          message.secrets.push(reader.string())
           break
         case 103:
           message.config = ExplicitContainerConfig.decode(reader, reader.uint32())
@@ -5095,8 +5096,7 @@ export const PatchContainerConfig = {
       object.environment !== undefined && object.environment !== null
         ? KeyValueList.fromJSON(object.environment)
         : undefined
-    message.secrets =
-      object.secrets !== undefined && object.secrets !== null ? KeyValueList.fromJSON(object.secrets) : undefined
+    message.secrets = (object.secrets ?? []).map((e: any) => String(e))
     message.config =
       object.config !== undefined && object.config !== null
         ? ExplicitContainerConfig.fromJSON(object.config)
@@ -5111,7 +5111,11 @@ export const PatchContainerConfig = {
       (obj.capabilities = message.capabilities ? KeyValueList.toJSON(message.capabilities) : undefined)
     message.environment !== undefined &&
       (obj.environment = message.environment ? KeyValueList.toJSON(message.environment) : undefined)
-    message.secrets !== undefined && (obj.secrets = message.secrets ? KeyValueList.toJSON(message.secrets) : undefined)
+    if (message.secrets) {
+      obj.secrets = message.secrets.map(e => e)
+    } else {
+      obj.secrets = []
+    }
     message.config !== undefined &&
       (obj.config = message.config ? ExplicitContainerConfig.toJSON(message.config) : undefined)
     message.name !== undefined && (obj.name = message.name)
@@ -5128,8 +5132,7 @@ export const PatchContainerConfig = {
       object.environment !== undefined && object.environment !== null
         ? KeyValueList.fromPartial(object.environment)
         : undefined
-    message.secrets =
-      object.secrets !== undefined && object.secrets !== null ? KeyValueList.fromPartial(object.secrets) : undefined
+    message.secrets = object.secrets?.map(e => e) || []
     message.config =
       object.config !== undefined && object.config !== null
         ? ExplicitContainerConfig.fromPartial(object.config)

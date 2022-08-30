@@ -36,10 +36,9 @@ import {
   NetworkMode,
   Port,
 } from 'src/grpc/protobuf/proto/common'
-import { ContainerConfigData, UniqueKeyValue } from 'src/shared/model'
-import { InternalException } from 'src/exception/errors'
-import ImageMapper, { ImageWithConfig } from '../image/image.mapper'
-import AgentService from '../agent/agent.service'
+import { ContainerConfigData, InstanceContainerConfigData, UniqueKeyValue } from 'src/shared/model'
+import { ImageMapper, ImageWithConfig } from '../image/image.mapper'
+import { AgentService } from '../agent/agent.service'
 
 @Injectable()
 export default class DeployMapper {
@@ -89,7 +88,8 @@ export default class DeployMapper {
   instanceToGrpc(instance: InstanceDetails): InstanceResponse {
     const config: DeploymentContainerConfig = {
       ...(instance.config ?? instance.image.config),
-      name: instance.image.config.name,
+      instanceId: instance.id,
+      // name: instance.image.config.name,
     }
 
     return {
@@ -163,9 +163,9 @@ export default class DeployMapper {
 
   instanceToAgentContainerConfig(instance: InstanceDetails): ExplicitContainerConfig {
     const imageConfig = (instance.image.config ?? {}) as ContainerConfigData
-    const instaceConfig = (instance.config ?? {}) as ContainerConfigData
+    const instaceConfig = (instance.config ?? {}) as InstanceContainerConfigData
 
-    const config: ContainerConfigData = this.mergeConfigs(imageConfig, instaceConfig)
+    const config = this.mergeConfigs(imageConfig, instaceConfig) as InstanceContainerConfigData
 
     console.log('config:', config)
     return {
@@ -216,8 +216,8 @@ export default class DeployMapper {
   }
 
   private overrideKeyValues(weak: UniqueKeyValue[], strong: UniqueKeyValue[]): UniqueKeyValue[] {
-    const overridenKeys: Set<string> = new Set(strong?.map(it => it.key))
-    return [...(weak?.filter(it => !overridenKeys.has(it.key)) ?? []), ...(strong ?? [])]
+    const overriddenKeys: Set<string> = new Set(strong?.map(it => it.key))
+    return [...(weak?.filter(it => !overriddenKeys.has(it.key)) ?? []), ...(strong ?? [])]
   }
 
   private overridePorts(weak: Port[], strong: Port[]): Port[] {
@@ -234,18 +234,17 @@ export default class DeployMapper {
     return strong ?? weak ?? 'none'
   }
 
-  private mergeConfigs(imageConfig: ContainerConfigData, instanceConfig: ContainerConfigData): ContainerConfigData {
+  private mergeConfigs(
+    imageConfig: ContainerConfigData,
+    instanceConfig: InstanceContainerConfigData,
+  ): ContainerConfigData | InstanceContainerConfigData {
     const envs = this.overrideKeyValues(imageConfig?.environment, instanceConfig?.environment)
     const caps = this.overrideKeyValues(imageConfig?.capabilities, instanceConfig?.capabilities)
-    const secrets = this.overrideKeyValues(imageConfig?.secrets, instanceConfig?.secrets)
-
-    console.log('penisss:', secrets)
-
     return {
       name: imageConfig.name,
       environment: envs,
       capabilities: caps,
-      secrets: secrets,
+      secrets: instanceConfig.secrets,
       config: {
         ...imageConfig?.config,
         ...instanceConfig?.config,
@@ -273,7 +272,7 @@ export type DeploymentDetails = DeploymentWithNode & {
   instances: InstanceDetails[]
 }
 
-type DeploymentContainerConfig = Omit<ContainerConfig, 'imageId'>
+type DeploymentContainerConfig = Omit<InstanceContainerConfig, 'imageId'>
 
 type DeploymentListItem = Deployment & {
   node: { id: string; name: string }

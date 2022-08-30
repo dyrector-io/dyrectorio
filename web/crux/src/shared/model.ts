@@ -27,10 +27,15 @@ export type ContainerConfigData = {
   capabilities: UniqueKeyValue[]
   environment: UniqueKeyValue[]
   config: JsonObject
-  secrets: UniqueKeyValue[]
+  secrets: string[]
 }
 
-export type InstanceContainerConfigData = Omit<ContainerConfigData, 'name'>
+export type InstanceContainerConfigData = {
+  capabilities: UniqueKeyValue[]
+  environment: UniqueKeyValue[]
+  config: JsonObject
+  secrets: UniqueKeyValue[]
+}
 
 export type IdentityTraits = {
   email: string

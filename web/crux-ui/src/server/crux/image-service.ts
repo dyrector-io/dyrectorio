@@ -95,15 +95,9 @@ class DyoImageService {
               : {
                   data: image.config.environment,
                 },
-            secrets: !image.config?.secrets
-              ? undefined
-              : {
-                  data: image.config.secrets,
-                },
+            secrets: !image.config?.secrets ? undefined : image.config.secrets,
           },
     } as PatchImageRequest
-    console.log('penis size')
-    console.log(req.config?.secrets)
 
     await protomisify<PatchImageRequest, Empty>(this.client, this.client.patchImage)(PatchImageRequest, req)
   }

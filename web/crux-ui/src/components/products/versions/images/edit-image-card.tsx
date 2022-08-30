@@ -111,20 +111,23 @@ const EditImageCard = (props: EditImageCardProps) => {
           )}
         </div>
 
-        <div className="flex flex-col h-128">
-          {selection === 'tag' ? (
-            <EditImageTags disabled={disabled} selected={image.tag} tags={tags} onTagSelected={onTagSelected} />
-          ) : selection === 'config' ? (
-            <EditImageConfig disabled={disabled} config={image.config} onPatch={it => onPatch(image.id, it)} />
-          ) : (
-            <EditImageJson
-              disabled={disabled}
-              config={image.config}
-              onPatch={it => onPatch(image.id, it)}
-              onParseError={onParseError}
-            />
-          )}
-        </div>
+        {selection === 'tag' ? (
+          <EditImageTags disabled={disabled} selected={image.tag} tags={tags} onTagSelected={onTagSelected} />
+        ) : selection === 'config' ? (
+          <EditImageConfig
+            disabled={disabled}
+            config={image.config}
+            disabledSecretEditing
+            onPatch={it => onPatch(image.id, it)}
+          />
+        ) : (
+          <EditImageJson
+            disabled={disabled}
+            config={image.config}
+            onPatch={it => onPatch(image.id, it)}
+            onParseError={onParseError}
+          />
+        )}
       </DyoCard>
 
       <DyoConfirmationModal

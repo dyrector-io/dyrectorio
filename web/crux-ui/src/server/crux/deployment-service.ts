@@ -190,7 +190,6 @@ class DyoDeploymentService {
           },
     } as PatchDeploymentRequest
 
-    console.log('penis faj')
     console.log(req.instance?.secrets)
 
     await protomisify<PatchDeploymentRequest, UpdateEntityResponse>(this.client, this.client.patchDeployment)(

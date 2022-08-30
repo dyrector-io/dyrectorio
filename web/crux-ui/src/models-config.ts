@@ -15,7 +15,7 @@ export type UniqueKeySecretValue = UniqueKeyValue & {
 
 export type Environment = UniqueKeyValue[]
 export type Capabilities = UniqueKeyValue[]
-export type Secrets = UniqueKeyValue[]
+export type Secrets = string[]
 
 export type CompleteContainerConfig = ExplicitContainerConfig & {
   name: string
@@ -146,7 +146,12 @@ export type ExplicitContainerConfig = {
   resourceConfig?: ExplicitContainerConfigResourceConfig
 }
 
-export type InstanceContainerConfig = Omit<ContainerConfig, 'name'>
+export type InstanceContainerConfig = {
+  capabilities: Capabilities
+  environment: Environment
+  config: ExplicitContainerConfig
+  secrets: UniqueKeySecretValue[]
+}
 
 const overrideKeyValues = (weak: UniqueKeyValue[], strong: UniqueKeyValue[]): UniqueKeyValue[] => {
   const overridenKeys: Set<string> = new Set(strong?.map(it => it.key))
@@ -173,7 +178,7 @@ const overrideArrays = <T>(weak: T[], strong: T[]): T[] => {
 export const mergeConfigs = (
   imageConfig: ContainerConfig,
   overriddenConfig: Partial<InstanceContainerConfig>,
-): ContainerConfig => {
+): InstanceContainerConfig | ContainerConfig => {
   const instanceConfig = overriddenConfig ?? {}
 
   const envs = overrideKeyValues(imageConfig.environment, instanceConfig.environment)

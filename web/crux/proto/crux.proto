@@ -500,7 +500,7 @@ message ContainerConfig {
 
   repeated common.UniqueKeyValue capabilities = 1000;
   repeated common.UniqueKeyValue environment = 1001;
-  repeated common.UniqueKeyValue secrets = 1002;
+  repeated string secrets = 1002;
 }
 
 message ImageResponse {
@@ -537,7 +537,7 @@ message AddImagesToVersionRequest {
 message PatchContainerConfig {
   optional common.KeyValueList capabilities = 100;
   optional common.KeyValueList environment = 101;
-  optional common.KeyValueList secrets = 102;
+  repeated string secrets = 102;
   optional common.ExplicitContainerConfig config = 103;
   optional string name = 104;
 }
