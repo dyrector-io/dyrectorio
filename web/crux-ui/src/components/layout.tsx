@@ -41,8 +41,8 @@ export const Layout = (props: LayoutProps) => {
           toastOptions={{
             error: {
               icon: null,
+              className: '!bg-error-red',
               style: {
-                background: 'error-red',
                 color: 'white',
               },
             },
@@ -73,8 +73,8 @@ export const SingleFormLayout = (props: LayoutProps) => {
           toastOptions={{
             error: {
               icon: null,
+              className: '!bg-error-red',
               style: {
-                background: 'error-red',
                 color: 'white',
               },
             },
