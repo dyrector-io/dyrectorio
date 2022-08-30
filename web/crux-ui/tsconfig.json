@@ -39,5 +39,10 @@
     "**/*.ts",
     "**/*.tsx",
     "gtag.js",
+  ],
+  "references": [
+    {
+      "path": "../common"
+    }
   ]
 }

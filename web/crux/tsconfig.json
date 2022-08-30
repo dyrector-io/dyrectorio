@@ -31,5 +31,10 @@
     "resolveJsonModule": true
   },
   "include": ["src", "decs.d.ts"],
-  "exclude": ["node_modules", "prisma"]
+  "exclude": ["node_modules", "prisma"],
+  "references": [
+    {
+      "path": "../common"
+    }
+  ]
 }

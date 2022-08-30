@@ -6,5 +6,11 @@
         "common",
         "crux",
         "crux-ui"
-    ]
+    ],
+    "scripts": {
+        "nextjs": "concurrently --kill-others \"npm -w common run watch\" \"npm -w crux-ui run start\""
+    },
+    "devDependencies": {
+        "concurrently": "^7.3.0"
+    }
 }

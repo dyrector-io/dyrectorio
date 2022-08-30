@@ -9,8 +9,6 @@ import { getServerCredentials } from './shared/cert'
 
 const HOUR_IN_MS: number = 60 * 60 * 1000
 
-import { jozsi } from "@dyrectorio/common"
-
 type GrpcOptions = {
   url: string
   credentials: ServerCredentials
@@ -56,9 +54,7 @@ const bootstrap = async () => {
   })
 
   app.enableShutdownHooks()
-
-  console.log(jozsi)
-
+  
   const agentOptions = loadGrpcOptions(app, 'agent', process.env.GRPC_AGENT_PORT, process.env.GRPC_AGENT_INSECURE)
   const apiOptions = loadGrpcOptions(app, 'api', process.env.GRPC_API_PORT, process.env.GRPC_API_INSECURE)
 

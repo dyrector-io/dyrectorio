@@ -2,10 +2,11 @@
     "name": "@dyrectorio/common",
     "private": true,
     "version": "0.1.1",
-    "main": "dist/index.js",
+    "main": "dist/src/index.js",
     "main:src": "src/index.ts",
     "scripts": {
-        "build": "tsc"
+        "build": "tsc",
+        "watch": "tsc --watch"
     },
     "dependencies": {
         "yup": "^0.32.11"

@@ -10,5 +10,3 @@ export type {
 
 export { uniqueKeyValuesSchema, explicitContainerConfigSchema, containerConfigSchema, deploymentSchema, EXPLICIT_CONTAINER_NETWORK_MODE_VALUES, 
     EXPLICIT_CONTAINER_RESTART_POLICY_TYPE_VALUES, EXPLICIT_CONTAINER_DEPLOYMENT_STRATEGY_VALUES, nameOfIdentity, nameOrEmailOfIdentity }
-
-export const jozsi = "asd"
