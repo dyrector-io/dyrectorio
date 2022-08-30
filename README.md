@@ -50,27 +50,25 @@ docker-compose -f web/docker-compose.dev.yaml build
 docker-compose -f web/docker-compose.dev.yaml up
 ```
 
-If you are having problems starting `crux-kratos-migrate` change the line endings of `web/kratos/entrypoint.sh` from CRLF to LF. These problems include `ERROR: Encountered errors while bringing up the project.` while running `docker-compose up` or `': No such file or directory` in the container log.
+> ℹ️ If you are having problems starting `crux-kratos-migrate` change the line endings of `web/kratos/entrypoint.sh` from CRLF to LF. These problems include `ERROR: Encountered errors while bringing up the project.` while running `docker-compose up` or `': No such file or directory` in the container log.
 
-4. Now as all the infrastructure is ready, you need to install all the node.js dependencies in the specific projects' folder. To install all (  `web/crux/`, `web/crux-ui/` ) dependencies run `npm install`.
+4. Now as all the infrastructure is ready, you need to install all the node.js dependencies. Run `npm install` in `web/`.
 
 _on Apple Silicon run `npm install --target_arch=x64`_
 
-5. In `crux/` folder you have to migrate the database and generate the Prisma client
+5. In `web/crux/` folder you have to migrate the database and generate the Prisma client
 ```
 npx prisma generate
 npx prisma migrate deploy
 ```
 
-6. Create a reCaptcha v3 key pair and set `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` and `RECAPTCHA_SECRET_KEY` in `/web/crux-ui/.env`. Make sure to use `localhost` or `host.internal` as the domain.
+6. To start services run `npm start` in the followind folders `web/crux` and `web/crux-ui`
 
-7. To start services run `npm start` in the followind folders `/web/crux` and `/web/crux-ui`
+7. Open the platform in `host.docker.internal:8000` and register
 
-8. Open the platform in `host.docker.internal:8000` and register
+8. In local our auth service is using a mock, so you can confirm your email in `http://localhost:4436/`
 
-9. In local our auth service is using a mock, so you can confirm your email in `http://localhost:4436/`
-
-10. Now you can log in and use the platform
+9. Now you can log in and use the platform
 
 ### Hosted version (SaaS)
 
