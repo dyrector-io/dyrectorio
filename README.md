@@ -8,7 +8,7 @@
   </a>
 </p>
 
-<p align="center">Open-source CD platform for developers and non-specialists to manage multi-instance deployments, microservices and configurations in Kubernetes, Docker.</p>
+<p align="center">Open-source CD platform for developers and non-specialists to manage multi-instance deployments, microservices and configurations in Kubernetes & Docker.</p>
 
 <p align="center">
   <a href="https://github.com/dyrector-io/dyrectorio/tags" target="_blank"><img src="https://img.shields.io/github/v/tag/dyrector-io/dyrectorio" alt="GitHub tag (latest by date)"/></a>
@@ -24,7 +24,7 @@
 
 Life isn’t about application management. Why should your team focus so much of its precious time and effort on it when things can be simpler?
 
-dyrector.io is for you if you’d like to shift your team’s focus from repeatable steps of multi-instance deployments to delivering value to your users. And when a deployment is successful or any error occurs, the team gets notified on chat so they can react as soon as possible.
+dyrector.io is for you if you’d like to shift your team’s focus from repeatable steps of multi-instance deployments to delivering value to your users, also when a deployment is successful or any error occurs, the team gets notified on chat so they can react as soon as possible.
 
 While dyrector.io enables non-technical staff members to help with certain tasks, it’s also useful to reduce time technical staff spend on deployment and system administration.
 
