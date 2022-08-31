@@ -7,7 +7,6 @@ import (
 	"log"
 
 	"github.com/dyrector-io/dyrectorio/agent/internal/config"
-	"github.com/dyrector-io/dyrectorio/agent/internal/sigmalr"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 )
@@ -46,7 +45,7 @@ func (dog *DeploymentLogger) SetRequestID(requestID string) {
 	dog.requestID = requestID
 }
 
-// Writes to all available streams, std.out, signalr, grpc streams
+// Writes to all available streams: std.out and grpc streams
 func (dog *DeploymentLogger) Write(messages ...string) {
 	for i := range messages {
 		log.Printf("Deployment - %s: %s", dog.deploymentID, messages[i])
@@ -61,10 +60,6 @@ func (dog *DeploymentLogger) Write(messages ...string) {
 		if err != nil {
 			log.Printf("Deployment - %s: Status close err: %s", dog.deploymentID, err)
 		}
-	}
-
-	if dog.requestID != "" {
-		sigmalr.Log(&dog.requestID, messages...)
 	}
 }
 
@@ -95,8 +90,6 @@ func (dog *DeploymentLogger) WriteContainerState(containerState string, messages
 		dog.logs = append(dog.logs, messages...)
 	}
 
-	sigmalr.Log(&dog.requestID, messages...)
-
 	if dog.stream != nil {
 		instance := &common.DeploymentStatusMessage_Instance{
 			Instance: &common.InstanceDeploymentItem{
@@ -113,10 +106,6 @@ func (dog *DeploymentLogger) WriteContainerState(containerState string, messages
 		if err != nil {
 			log.Println("Status close err: ", err.Error())
 		}
-	}
-
-	if dog.requestID != "" {
-		sigmalr.Log(&dog.requestID, messages...)
 	}
 }
 

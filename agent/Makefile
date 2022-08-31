@@ -20,6 +20,12 @@ GOSEC=v2.12.0
 GOLANGCI=v1.46.2
 GOSWAG=v1.8.3
 
+GOOS?=linux
+
+ifeq ($(GOOS),windows)
+	OUT_EXT=.exe
+endif
+
 .PHONY: go-crane
 go-crane: ##
 	cd cmd/crane && \
@@ -35,13 +41,13 @@ go-dagent: ##
 .PHONY: compile-crane
 compile-crane: ##
 	cd cmd/crane && \
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build ${LDFLAGS} -o ../../build/out/crane; \
+	GOARCH=amd64 CGO_ENABLED=0 go build ${LDFLAGS} -o ../../build/out/crane${OUT_EXT}; \
 	cd -
 
 .PHONY: compile-dagent
 compile-dagent: ##
 	cd cmd/dagent && \
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build ${LDFLAGS} -o ../../build/out/dagent; \
+	GOARCH=amd64 CGO_ENABLED=0 go build ${LDFLAGS} -o ../../build/out/dagent${OUT_EXT}; \
 	cd -
 
 .PHONY: install-go-tools
