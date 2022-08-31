@@ -33,6 +33,13 @@ func main() {
 
 				Action: run,
 			},
+			{
+				Name:    "stop",
+				Aliases: []string{},
+				Usage:   "Stop the stack",
+
+				Action: stop,
+			},
 			// {
 			// 	Name: "demo",
 			// 	Subcommands: []*cli.Command{
@@ -98,7 +105,11 @@ func run(cCtx *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	err = RunContainers(containers, true)
+	err = WriteComposeFile(containers)
+	if err != nil {
+		return err
+	}
+	err = RunContainers(containers, true, false)
 	if err != nil {
 		return err
 	}
@@ -111,7 +122,7 @@ func stop(cCtx *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	err = RunContainers(containers, false)
+	err = RunContainers(containers, false, true)
 	if err != nil {
 		return err
 	}
