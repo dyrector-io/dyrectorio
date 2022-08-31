@@ -75,9 +75,11 @@ const NotificationDetailsPage = (props: NotificationDetailsPageProps) => {
           },
         ]}
       >
-        <DyoButton type="button" className="px-4 mr-4 whitespace-nowrap" onClick={() => throttle(onTestHook)}>
-          {t('hook.textWebhook')}
-        </DyoButton>
+        {!editing && (
+          <DyoButton type="button" className="px-4 mr-4 whitespace-nowrap" onClick={() => throttle(onTestHook)}>
+            {t('hook.textWebhook')}
+          </DyoButton>
+        )}
         <DetailsPageMenu
           onDelete={onDelete}
           editing={editing}
