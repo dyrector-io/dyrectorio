@@ -43,9 +43,9 @@ export const NotificationEventList = (props: NotificationEventListProps) => {
             const textKey = snakeToCamel(it)
             const checked = value.includes(it)
 
-            return <div key={it} className="flex flex-row p-auto mb-5">
+            return <div key={it} className="flex flex-row p-auto mb-5 pl-4">
                 <DyoCheckbox className="my-auto mr-2" checked={checked} onCheckedChange={check => onCheckChanged(check, it)} />
-                <DyoLabel className="cursor-pointer" onClick={() => onCheckChanged(!checked, it)}>{t(`settingType.${textKey}`)}</DyoLabel>
+                <DyoLabel className="cursor-pointer" onClick={() => onCheckChanged(!checked, it)}>{t(`eventType.${textKey}`)}</DyoLabel>
             </div>
         })
     }

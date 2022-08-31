@@ -27,11 +27,11 @@
     "error": "Something is wrong with your hook!"
   },
 
-  "settings": "Settings",
-  "settingType": {
-    "deploymentCreated": "New deploy created",
-    "versionCreated": "New version added",
-    "nodeAdded": "New node added",
-    "userTeamInvited": "Someone invited to a team"
+  "events": "Send message when:",
+  "eventType": {
+    "deploymentCreated": "New deployment is created",
+    "versionCreated": "New version is added",
+    "nodeAdded": "New node is added",
+    "userTeamInvited": "New user invited to my team"
   }
 }
