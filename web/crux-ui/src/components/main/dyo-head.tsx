@@ -1,7 +1,7 @@
 import useTranslation from 'next-translate/useTranslation'
 import Head from 'next/head'
 
-export const DyoHead = () => {
+const DyoHead = () => {
   const { t } = useTranslation('head')
 
   return (
@@ -22,3 +22,5 @@ export const DyoHead = () => {
     </Head>
   )
 }
+
+export default DyoHead

@@ -13,7 +13,7 @@ interface DyoIconPickerProps {
 export const DYO_ICONS = ['dog', 'kangaroo', 'lion', 'monkey', 'penguin', 'shark']
 
 const DyoIconPicker = (props: DyoIconPickerProps) => {
-  const { name, value, setFieldValue } = props
+  const { name, value, setFieldValue, className } = props
 
   const [selected, setSelected] = useState(value ?? null)
 
@@ -27,23 +27,21 @@ const DyoIconPicker = (props: DyoIconPickerProps) => {
   }
 
   return (
-    <>
-      <div className={props.className}>
-        {DYO_ICONS.map(icon => (
-          <button
-            key={icon}
-            type="button"
-            className={clsx(
-              icon === selected ? 'border-1 ring-2 ring-dyo-turquoise bg-light-grey rounded-full' : null,
-              'w-8 h-8 m-2',
-            )}
-            onClick={() => onSelectIcon(icon)}
-          >
-            <DyoBadge icon={icon} />
-          </button>
-        ))}
-      </div>
-    </>
+    <div className={className}>
+      {DYO_ICONS.map(icon => (
+        <button
+          key={icon}
+          type="button"
+          className={clsx(
+            icon === selected ? 'border-1 ring-2 ring-dyo-turquoise bg-light-grey rounded-full' : null,
+            'w-8 h-8 m-2',
+          )}
+          onClick={() => onSelectIcon(icon)}
+        >
+          <DyoBadge icon={icon} />
+        </button>
+      ))}
+    </div>
   )
 }
 

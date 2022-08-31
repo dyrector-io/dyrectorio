@@ -5,10 +5,11 @@ import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
 import { ListPageMenu } from '@app/components/shared/page-menu'
+import { ROUTE_REGISTRIES } from '@app/const'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import { Registry } from '@app/models'
-import { registryUrl, ROUTE_REGISTRIES } from '@app/routes'
+import { registryUrl } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import clsx from 'clsx'
@@ -22,13 +23,15 @@ interface RegistriesPageProps {
 }
 
 const RegistriesPage = (props: RegistriesPageProps) => {
+  const { registries } = props
+
   const { t } = useTranslation('registries')
 
   const router = useRouter()
 
   const filters = useFilters<Registry, TextFilter>({
     filters: [textFilterFor<Registry>(it => [it.name, it.url, it.description, it.icon])],
-    initialData: props.registries,
+    initialData: registries,
     initialFilter: { text: '' },
   })
 
@@ -80,12 +83,10 @@ const RegistriesPage = (props: RegistriesPageProps) => {
 
 export default RegistriesPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
-  return {
-    props: {
-      registries: await cruxFromContext(context).registries.getAll(),
-    },
-  }
-}
+const getPageServerSideProps = async (context: NextPageContext) => ({
+  props: {
+    registries: await cruxFromContext(context).registries.getAll(),
+  },
+})
 
 export const getServerSideProps = withContextAuthorization(getPageServerSideProps)

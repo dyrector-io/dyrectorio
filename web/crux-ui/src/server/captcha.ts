@@ -1,4 +1,4 @@
-import { internalError, invalidArgument, missingParameter } from './error-middleware'
+import { internalError, invalidArgument, missingParameter } from '@app/models'
 
 export const captchaDisabled = () => process.env.DISABLE_RECAPTCHA === 'true'
 

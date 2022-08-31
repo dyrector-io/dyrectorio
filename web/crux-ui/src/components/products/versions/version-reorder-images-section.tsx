@@ -1,22 +1,21 @@
 import DragAndDropList from '@app/components/shared/drag-and-drop-list'
 import { DyoCard } from '@app/elements/dyo-card'
-import { ProductDetails, VersionImage } from '@app/models'
+import { VersionImage } from '@app/models'
 import { useState } from 'react'
 
 interface VersionReorderImagesSectionProps {
-  product: ProductDetails
   images: VersionImage[]
   saveRef: React.MutableRefObject<VoidFunction>
   onSave: (images: VersionImage[]) => void
 }
 
 const VersionReorderImagesSection = (props: VersionReorderImagesSectionProps) => {
-  const { saveRef } = props
+  const { saveRef, images, onSave } = props
 
-  const [items, setItems] = useState(props.images)
+  const [items, setItems] = useState(images)
 
   saveRef.current = () => {
-    const currentImages = props.images
+    const currentImages = images
 
     const order: Map<string, number> = new Map()
     items.forEach((it, index) => order.set(it.id, index))
@@ -27,28 +26,21 @@ const VersionReorderImagesSection = (props: VersionReorderImagesSectionProps) =>
 
       if (oneOrder !== undefined) {
         return otherOrder !== undefined ? oneOrder - otherOrder : -1
-      } else {
-        return otherOrder !== undefined ? 1 : 0
       }
+      return otherOrder !== undefined ? 1 : 0
     })
 
-    props.onSave(sorted)
+    onSave(sorted)
   }
 
-  return (
-    <DragAndDropList
-      items={items}
-      onItemsChange={setItems}
-      itemBuilder={image => (
-        <DyoCard key={image.id} className="flex text-bright m-2 p-4">
-          <span className="mr-2">{`#${image.order}`}</span>
-          <span className="mx-auto">{image.name}</span>
-          {/* <DyoTag>{image.newVersion}</DyoTag> */}
-          {/* <span>{image.date}</span> */}
-        </DyoCard>
-      )}
-    />
+  const itemTemplate = (image: any) => (
+    <DyoCard key={image.id} className="flex text-bright m-2 p-4">
+      <span className="mr-2">{`#${image.order}`}</span>
+      <span className="mx-auto">{image.name}</span>
+    </DyoCard>
   )
+
+  return <DragAndDropList items={items} onItemsChange={setItems} itemBuilder={image => itemTemplate(image)} />
 }
 
 export default VersionReorderImagesSection

@@ -1,9 +1,9 @@
 import { SingleFormLayout } from '@app/components/layout'
-import { DyoButton } from '@app/elements/dyo-button'
+import { ROUTE_LOGIN, ROUTE_SETTINGS } from '@app/const'
+import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
-import { ROUTE_LOGIN, ROUTE_SETTINGS } from '@app/routes'
 import { redirectTo } from '@app/utils'
 import { assambleKratosRecoveryUrl, obtainKratosSession } from '@server/kratos'
 import { NextPageContext } from 'next'
@@ -14,9 +14,11 @@ interface InviteProps {
 }
 
 const InvitePage = (props: InviteProps) => {
+  const { url } = props
+
   const { t } = useTranslation('invite')
 
-  if (!props.url) {
+  if (!url) {
     return (
       <SingleFormLayout title={t('expired')}>
         <DyoCard className="my-16 mx-auto flex flex-col items-center">
@@ -27,7 +29,7 @@ const InvitePage = (props: InviteProps) => {
     )
   }
 
-  const onAccept = () => window.location.assign(props.url)
+  const onAccept = () => window.location.assign(url)
 
   return (
     <SingleFormLayout title={t('welcome')}>
@@ -57,7 +59,7 @@ export const getPageServerSideProps = async (context: NextPageContext) => {
 
   const flow = context.query.flow as string
   const token = context.query.token as string
-  const expired = context.query.expired
+  const { expired } = context.query
 
   if (expired) {
     return {

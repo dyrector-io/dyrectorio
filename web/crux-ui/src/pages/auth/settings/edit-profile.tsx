@@ -2,14 +2,19 @@ import { Layout } from '@app/components/layout'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { SaveDiscardPageMenu } from '@app/components/shared/page-menu'
-import { ATTRIB_CSRF } from '@app/const'
-import { DyoButton } from '@app/elements/dyo-button'
+import {
+  API_SETTINGS_EDIT_PROFILE,
+  ATTRIB_CSRF,
+  ROUTE_LOGIN,
+  ROUTE_SETTINGS,
+  ROUTE_SETTINGS_EDIT_PROFILE,
+} from '@app/const'
+import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { EditProfile } from '@app/models'
-import { API_SETTINGS_EDIT_PROFILE, ROUTE_LOGIN, ROUTE_SETTINGS, ROUTE_SETTINGS_EDIT_PROFILE } from '@app/routes'
 import { findAttributes, findMessage, sendForm, withContextAuthorization } from '@app/utils'
 import { SelfServiceSettingsFlow } from '@ory/kratos-client'
 import kratos from '@server/kratos'
@@ -20,10 +25,12 @@ import { useRouter } from 'next/dist/client/router'
 import { useRef, useState } from 'react'
 
 const SettingsPage = (props: SelfServiceSettingsFlow) => {
+  const { ui: propsUi, id, identity } = props
+
   const { t } = useTranslation('settings')
   const router = useRouter()
 
-  const [ui, setUi] = useState(props.ui)
+  const [ui, setUi] = useState(propsUi)
   const saveRef = useRef<() => Promise<any>>()
 
   const formik = useFormik({
@@ -34,7 +41,7 @@ const SettingsPage = (props: SelfServiceSettingsFlow) => {
     },
     onSubmit: async values => {
       const data: EditProfile = {
-        flow: props.id,
+        flow: id,
         csrfToken: findAttributes(ui, ATTRIB_CSRF).value,
         email: values.email,
         firstName: values.firstName,
@@ -45,10 +52,10 @@ const SettingsPage = (props: SelfServiceSettingsFlow) => {
       if (res.ok) {
         router.back()
       } else if (res.status === 403) {
-        router.replace(`${ROUTE_LOGIN}?refresh=${props.identity.traits.email}`)
+        router.replace(`${ROUTE_LOGIN}?refresh=${identity.traits.email}`)
       } else {
-        const data = await res.json()
-        setUi(data.ui)
+        const result = await res.json()
+        setUi(result.ui)
       }
     },
   })
@@ -116,7 +123,7 @@ const SettingsPage = (props: SelfServiceSettingsFlow) => {
 export default SettingsPage
 
 export const getPageServerSideProps = async (context: NextPageContext) => {
-  const cookie = context.req.headers.cookie
+  const { cookie } = context.req.headers
 
   const flow = await kratos.initializeSelfServiceSettingsFlowForBrowsers(undefined, {
     headers: {

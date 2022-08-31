@@ -4,9 +4,10 @@ import EditNodeCard from '@app/components/nodes/edit-node-card'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
+import { ROUTE_NODES } from '@app/const'
 import { defaultApiErrorHandler } from '@app/errors'
 import { DyoNodeDetails } from '@app/models'
-import { nodeApiUrl, nodeUrl, ROUTE_NODES } from '@app/routes'
+import { nodeApiUrl, nodeUrl } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
@@ -19,21 +20,23 @@ interface NodeDetailsProps {
 }
 
 const NodeDetails = (props: NodeDetailsProps) => {
+  const { node: propsNode } = props
+
   const { t } = useTranslation('nodes')
 
   const router = useRouter()
 
-  const [node, setNode] = useState(props.node)
+  const [node, setNode] = useState(propsNode)
   const [editing, setEditing] = useState(false)
   const submitRef = useRef<() => Promise<any>>()
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const onNodeEdited = (node: DyoNodeDetails, shouldClose?: boolean) => {
+  const onNodeEdited = (nodeArg: DyoNodeDetails, shouldClose?: boolean) => {
     if (shouldClose) {
       setEditing(false)
     }
-    setNode(node)
+    setNode(nodeArg)
   }
 
   const onDelete = async () => {

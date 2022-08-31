@@ -1,5 +1,7 @@
+/* eslint-disable */
+
 import { NextApiRequest, NextApiResponse } from 'next'
-import { useAuthorizeApiMiddleware } from './auth-middleware'
+import useAuthorizeApiMiddleware from './auth-middleware'
 import { useErrorMiddleware } from './error-middleware'
 
 export type AsyncVoidFunction = () => Promise<void>
@@ -61,7 +63,6 @@ export const withMiddlewares = (
 
           if (!handler) {
             res.status(405).end()
-            return
           } else if (typeof handler === 'function') {
             return handler(req, res)
           } else {

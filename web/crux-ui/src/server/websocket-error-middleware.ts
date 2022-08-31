@@ -1,10 +1,11 @@
-import { WS_TYPE_DYO_ERROR } from '@app/models'
+import { DyoApiError, internalError, WS_TYPE_DYO_ERROR } from '@app/models'
+import { isDyoApiError } from '@app/utils'
 import { WsMessage } from '@app/websockets/common'
-import { WsConnection, WsEndpoint } from '@app/websockets/server'
+import WsConnection from '@app/websockets/connection'
+import WsEndpoint from '@app/websockets/endpoint'
 import { Logger } from '../logger'
-import { DyoApiError, internalError, isDyoApiError } from './error-middleware'
 
-export const useWebsocketErrorMiddleware = async (
+const useWebsocketErrorMiddleware = async (
   logger: Logger,
   endpoint: WsEndpoint,
   connection: WsConnection,
@@ -23,3 +24,5 @@ export const useWebsocketErrorMiddleware = async (
     }
   }
 }
+
+export default useWebsocketErrorMiddleware

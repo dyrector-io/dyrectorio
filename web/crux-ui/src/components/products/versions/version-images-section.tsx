@@ -1,13 +1,11 @@
 import DyoWrap from '@app/elements/dyo-wrap'
-import { PatchVersionImage, VersionImage } from '@app/models'
-import { WebSocketEndpoint } from '@app/websockets/client'
+import { VersionImage } from '@app/models'
+import WebSocketEndpoint from '@app/websockets/websocket-endpoint'
 import EditImageCard from './images/edit-image-card'
 import { imageTagKey, ImageTagsMap } from './use-images-websocket'
 
 interface VersionImagesSectionProps {
   disabled?: boolean
-  productId: string
-  versionId: string
   images: VersionImage[]
   imageTags: ImageTagsMap
   versionSock: WebSocketEndpoint
@@ -15,7 +13,7 @@ interface VersionImagesSectionProps {
 }
 
 const VersionImagesSection = (props: VersionImagesSectionProps) => {
-  const { images, imageTags, versionSock, onTagSelected } = props
+  const { images, imageTags, versionSock, onTagSelected, disabled } = props
 
   return (
     <DyoWrap>
@@ -27,7 +25,7 @@ const VersionImagesSection = (props: VersionImagesSectionProps) => {
 
           return (
             <EditImageCard
-              disabled={props.disabled}
+              disabled={disabled}
               versionSock={versionSock}
               key={it.order}
               image={it}
@@ -41,16 +39,3 @@ const VersionImagesSection = (props: VersionImagesSectionProps) => {
 }
 
 export default VersionImagesSection
-
-export const mergeImagePatch = (oldImage: VersionImage, newImage: PatchVersionImage): VersionImage => {
-  return {
-    ...oldImage,
-    ...newImage,
-    config: {
-      name: newImage.config?.name ?? oldImage.config.name,
-      environment: newImage.config?.environment ?? oldImage.config.environment,
-      capabilities: newImage.config?.capabilities ?? oldImage.config.capabilities,
-      config: newImage.config?.config ?? oldImage.config.config,
-    },
-  }
-}

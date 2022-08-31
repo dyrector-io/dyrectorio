@@ -1,11 +1,11 @@
-import { WEBOOK_TEST_DELAY } from '@app/const'
-import { DyoButton } from '@app/elements/dyo-button'
+import { API_NOTIFICATIONS, WEBOOK_TEST_DELAY } from '@app/const'
+import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoChips from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
-import { DyoSwitch } from '@app/elements/dyo-switch'
+import DyoSwitch from '@app/elements/dyo-switch'
 import { defaultApiErrorHandler } from '@app/errors'
 import { useThrottling } from '@app/hooks/use-throttleing'
 import {
@@ -15,7 +15,7 @@ import {
   NOTIFICATION_TYPE_VALUES,
   UpdateNotification,
 } from '@app/models'
-import { API_NOTIFICATIONS, notificationApiHookUrl, notificationApiUrl } from '@app/routes'
+import { notificationApiHookUrl, notificationApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { notificationSchema } from '@app/validation'
 import { useFormik } from 'formik'
@@ -31,10 +31,12 @@ interface EditNotificationCardProps {
 }
 
 const EditNotificationCard = (props: EditNotificationCardProps) => {
+  const { notification: propsNotification, submitRef, onSubmitted, className } = props
+
   const { t } = useTranslation('notifications')
 
   const [notification, setNotification] = useState<NotificationDetails>(
-    props.notification ?? {
+    propsNotification ?? {
       id: null,
       active: true,
       name: '',
@@ -67,9 +69,9 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
         : sendForm('POST', API_NOTIFICATIONS, request as CreateNotification))
 
       if (response.ok) {
-        const result = response.status == 200 ? ((await response.json()) as NotificationDetails) : { ...values }
+        const result = response.status === 200 ? ((await response.json()) as NotificationDetails) : { ...values }
         setNotification(result)
-        props.onSubmitted(result as NotificationDetails)
+        onSubmitted(result as NotificationDetails)
       } else {
         handleApiError(response, setFieldError)
       }
@@ -78,8 +80,8 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
     },
   })
 
-  if (props.submitRef) {
-    props.submitRef.current = formik.submitForm
+  if (submitRef) {
+    submitRef.current = formik.submitForm
   }
 
   const onTestHook = async () => {
@@ -95,7 +97,7 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
   }
 
   return (
-    <DyoCard className={props.className}>
+    <DyoCard className={className}>
       <DyoHeading element="h4" className="text-lg text-bright">
         {editMode ? t('common:editName', { name: notification.name }) : t('new')}
       </DyoHeading>

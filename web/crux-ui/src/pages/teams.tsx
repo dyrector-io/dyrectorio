@@ -4,8 +4,8 @@ import PageHeading from '@app/components/shared/page-heading'
 import { ListPageMenu } from '@app/components/shared/page-menu'
 import EditTeamCard from '@app/components/team/edit-team-card'
 import TeamCard from '@app/components/team/team-card'
+import { ROUTE_INDEX, ROUTE_TEAMS } from '@app/const'
 import { Team, UserMeta } from '@app/models'
-import { ROUTE_INDEX, ROUTE_TEAMS } from '@app/routes'
 import { redirectTo, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
@@ -18,9 +18,11 @@ interface TeamsPageProps {
 }
 
 const TeamsPage = (props: TeamsPageProps) => {
+  const { me, teams: propsTeams } = props
+
   const { t } = useTranslation('teams')
 
-  const [teams, setTeams] = useState(props.teams)
+  const [teams, setTeams] = useState(propsTeams)
   const [creating, setCreating] = useState(false)
 
   const submitRef = useRef<() => Promise<any>>()
@@ -44,7 +46,7 @@ const TeamsPage = (props: TeamsPageProps) => {
       {!creating ? null : <EditTeamCard className="mb-8 px-8 py-6" submitRef={submitRef} onTeamEdited={onCreated} />}
 
       {teams.map((team, index) => (
-        <TeamCard key={`team-${index}`} className="my-2" team={team} highlighted={team.id === props.me.activeTeamId} />
+        <TeamCard key={`team-${index}`} className="my-2" team={team} highlighted={team.id === me.activeTeamId} />
       ))}
     </Layout>
   )

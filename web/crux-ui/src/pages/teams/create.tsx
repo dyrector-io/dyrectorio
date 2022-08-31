@@ -1,7 +1,7 @@
 import { SingleFormLayout } from '@app/components/layout'
 import CreateTeamCard from '@app/components/team/create-team-card'
+import { ROUTE_INDEX } from '@app/const'
 import { ActiveTeamDetails } from '@app/models'
-import { ROUTE_INDEX } from '@app/routes'
 import { redirectTo, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'

@@ -6,6 +6,64 @@ import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useReducer } from 'react'
 import { v4 as uuid } from 'uuid'
 
+const EMPTY_KEY_VALUE_PAIR = {
+  id: uuid(),
+  key: '',
+  value: '',
+} as UniqueKeyValue
+
+type KeyValueElement = UniqueKeyValue & {
+  message?: string
+}
+
+type KeyValueInputActionType = 'merge-items' | 'set-items'
+
+type KeyValueInputAction = {
+  type: KeyValueInputActionType
+  items: UniqueKeyValue[]
+}
+
+const isCompletelyEmpty = (it: UniqueKeyValue) => it.key.trim().length < 1 && it.value.trim().length < 1
+
+const pushEmptyLineIfNecessary = (items: UniqueKeyValue[]) => {
+  if (items.length < 1 || (items[items.length - 1].key?.trim() ?? '') !== '') {
+    items.push({
+      ...EMPTY_KEY_VALUE_PAIR,
+      id: uuid(),
+    })
+  }
+}
+
+const reducer = (state: UniqueKeyValue[], action: KeyValueInputAction): UniqueKeyValue[] => {
+  const { type } = action
+
+  if (type === 'set-items') {
+    const result = [...action.items]
+    pushEmptyLineIfNecessary(result)
+    return result
+  }
+  if (type === 'merge-items') {
+    const updatedItems = action.items
+    const result = [
+      ...state.filter(old => !isCompletelyEmpty(old) && updatedItems.filter(it => old.id === it.id).length > 0),
+    ]
+
+    updatedItems.forEach(newItem => {
+      const index = result.findIndex(it => it.id === newItem.id)
+
+      if (index < 0) {
+        result.push(newItem)
+      } else {
+        result[index] = newItem
+      }
+    })
+
+    pushEmptyLineIfNecessary(result)
+    return result
+  }
+  throw Error(`Invalid KeyValueInput action: ${type}`)
+}
+
 interface KeyValueInputProps {
   disabled?: boolean
   className?: string
@@ -14,23 +72,17 @@ interface KeyValueInputProps {
   onChange: (items: UniqueKeyValue[]) => void
 }
 
-const EMPTY_KEY_VALUE_PAIR = {
-  id: uuid(),
-  key: '',
-  value: '',
-} as UniqueKeyValue
-
 const KeyValueInput = (props: KeyValueInputProps) => {
+  const { heading, disabled, className, items, onChange: propOnChange } = props
+
   const { t } = useTranslation('common')
 
-  const { heading, disabled } = props
+  const [state, dispatch] = useReducer(reducer, items)
 
-  const [state, dispatch] = useReducer(reducer, props.items)
-
-  const stateToElements = (items: UniqueKeyValue[]) => {
+  const stateToElements = (itemsArg: UniqueKeyValue[]) => {
     const result = []
 
-    items.forEach(item =>
+    itemsArg.forEach(item =>
       result.push({
         ...item,
         message: result.find(it => it.key === item.key) ? t('keyMustUnique') : null,
@@ -44,9 +96,9 @@ const KeyValueInput = (props: KeyValueInputProps) => {
     () =>
       dispatch({
         type: 'merge-items',
-        items: props.items,
+        items,
       }),
-    [props.items],
+    [items],
   )
 
   const onChange = (index: number, key: string, value: string) => {
@@ -62,7 +114,7 @@ const KeyValueInput = (props: KeyValueInputProps) => {
 
     newItems = newItems.filter(it => !isCompletelyEmpty(it))
 
-    props.onChange(newItems)
+    propOnChange(newItems)
     dispatch({
       type: 'set-items',
       items: newItems,
@@ -105,7 +157,7 @@ const KeyValueInput = (props: KeyValueInputProps) => {
   }
 
   return (
-    <form className={clsx(props.className, 'flex flex-col max-h-128 overflow-y-auto')}>
+    <form className={clsx(className, 'flex flex-col max-h-128 overflow-y-auto')}>
       {!heading ? null : (
         <DyoHeading element="h6" className="text-bright mt-4 mb-2">
           {heading}
@@ -118,57 +170,3 @@ const KeyValueInput = (props: KeyValueInputProps) => {
 }
 
 export default KeyValueInput
-
-type KeyValueElement = UniqueKeyValue & {
-  message?: string
-}
-
-type KeyValueInputActionType = 'merge-items' | 'set-items'
-
-type KeyValueInputAction = {
-  type: KeyValueInputActionType
-  items: UniqueKeyValue[]
-}
-
-const isCompletelyEmpty = (it: UniqueKeyValue) => {
-  return it.key.trim().length < 1 && it.value.trim().length < 1
-}
-
-const pushEmptyLineIfNecessary = (items: UniqueKeyValue[]) => {
-  if (items.length < 1 || (items[items.length - 1].key?.trim() ?? '') !== '') {
-    items.push({
-      ...EMPTY_KEY_VALUE_PAIR,
-      id: uuid(),
-    })
-  }
-}
-
-const reducer = (state: UniqueKeyValue[], action: KeyValueInputAction): UniqueKeyValue[] => {
-  const type = action.type
-
-  if (type === 'set-items') {
-    const result = [...action.items]
-    pushEmptyLineIfNecessary(result)
-    return result
-  } else if (type === 'merge-items') {
-    const updatedItems = action.items
-    const result = [
-      ...state.filter(old => !isCompletelyEmpty(old) && updatedItems.filter(it => old.id === it.id).length > 0),
-    ]
-
-    updatedItems.forEach(newItem => {
-      const index = result.findIndex(it => it.id == newItem.id)
-
-      if (index < 0) {
-        result.push(newItem)
-      } else {
-        result[index] = newItem
-      }
-    })
-
-    pushEmptyLineIfNecessary(result)
-    return result
-  } else {
-    throw Error(`Invalid KeyValueInput action: ${type}`)
-  }
-}

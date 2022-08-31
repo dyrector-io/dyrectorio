@@ -62,10 +62,11 @@ export const createProductSchema = updateProductSchema.concat(
   }),
 )
 
-const registryCredentialRole = yup.mixed().when(['type', '_private'], {
-  is: (type, _private) => (type === 'gitlab' || type === 'github') || ((type === 'v2' || type === 'google') && _private),
+const registryCredentialRole = yup.mixed().when(['type', 'isPrivate'], {
+  is: (type, isPrivate) =>
+    type === 'gitlab' || type === 'github' || ((type === 'v2' || type === 'google') && isPrivate),
   then: yup.string().required(),
-  otherwise: yup.mixed().transform(it => it ? it : undefined)
+  otherwise: yup.mixed().transform(it => it ?? undefined),
 })
 
 const googleRegistryUrls = ['gcr.io', 'us.gcr.io', 'eu.gcr.io', 'asia.gcr.io'] as const
@@ -210,7 +211,7 @@ export const explicitContainerConfigSchema = yup.object().shape({
   commands: yup.array(yup.string()).default([]).optional(),
   args: yup.array(yup.string()).default([]).optional(),
 
-  //dagent:
+  // dagent:
   logConfig: yup
     .object()
     .shape({
@@ -231,7 +232,7 @@ export const explicitContainerConfigSchema = yup.object().shape({
     .default('none')
     .optional(),
 
-  //crane:
+  // crane:
   deploymentStrategy: yup
     .mixed<ExplicitContainerDeploymentStrategyType>()
     .oneOf([...EXPLICIT_CONTAINER_DEPLOYMENT_STRATEGY_VALUES])
@@ -351,6 +352,12 @@ export const notificationSchema = yup.object().shape({
         case 'teams':
           pattern = /^https:\/\/[a-zA-Z]+.webhook.office.com/
           break
+        default:
+          break
+      }
+
+      if (!pattern) {
+        return schema
       }
 
       return schema.matches(pattern)

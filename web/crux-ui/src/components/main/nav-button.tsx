@@ -8,17 +8,21 @@ interface NavButtonProps {
   icon?: JSX.Element
 }
 
-export const NavButton = (props: NavButtonProps) => {
+const NavButton = (props: NavButtonProps) => {
+  const { className, children, href, passHref, icon } = props
+
   return (
-    <div className={props.className}>
-      <Link href={props.href} passHref={props.passHref}>
+    <div className={className}>
+      <Link href={href} passHref={passHref}>
         <a className="text-bright font-bold">
           <div className="flex flex-row text-sm">
-            <div className="flex flex-row items-center mr-2">{props.icon} </div>
-            {props.children}
+            <div className="flex flex-row items-center mr-2">{icon} </div>
+            {children}
           </div>
         </a>
       </Link>
     </div>
   )
 }
+
+export default NavButton

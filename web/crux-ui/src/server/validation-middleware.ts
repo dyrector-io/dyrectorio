@@ -1,11 +1,11 @@
+import { invalidArgument } from '@app/models'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { AnySchema, ValidationError } from 'yup'
-import { invalidArgument } from './error-middleware'
 
-export const useValidationMiddleware =
+const useValidationMiddleware =
   (schema: AnySchema) =>
   async (req: NextApiRequest, res: NextApiResponse, next: () => Promise<void>): Promise<void> => {
-    const body = req.body
+    const { body } = req
     try {
       schema.validateSync(body)
     } catch (error) {
@@ -15,3 +15,5 @@ export const useValidationMiddleware =
 
     await next()
   }
+
+export default useValidationMiddleware

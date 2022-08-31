@@ -10,12 +10,12 @@ interface DyoSwitchProps extends Omit<React.InputHTMLAttributes<HTMLInputElement
   onCheckedChange?: (checked: boolean) => void
 }
 
-export const DyoSwitch = (props: DyoSwitchProps) => {
+const DyoSwitch = (props: DyoSwitchProps) => {
   const { fieldName, checked, setFieldValue, onCheckedChange } = props
 
-  const handleCheckedChange = checked => {
-    setFieldValue?.call(this, fieldName, checked, false)
-    onCheckedChange?.call(this, checked)
+  const handleCheckedChange = checkedArg => {
+    setFieldValue?.call(this, fieldName, checkedArg, false)
+    onCheckedChange?.call(this, checkedArg)
   }
 
   return (
@@ -36,3 +36,5 @@ export const DyoSwitch = (props: DyoSwitchProps) => {
     </Switch>
   )
 }
+
+export default DyoSwitch

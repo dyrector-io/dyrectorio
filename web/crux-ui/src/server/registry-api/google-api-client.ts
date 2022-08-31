@@ -1,5 +1,4 @@
-import { RegistryImageTags } from '@app/models'
-import { internalError, unauthorizedError } from '@server/error-middleware'
+import { internalError, RegistryImageTags, unauthorizedError } from '@app/models'
 import { JWT } from 'google-auth-library'
 import { GetAccessTokenResponse } from 'google-auth-library/build/src/auth/oauth2client'
 import { RegistryApiClient } from './registry-api-client'
@@ -11,6 +10,7 @@ export type GoogleClientOptions = {
 
 export class GoogleRegistryClient implements RegistryApiClient {
   private headers: HeadersInit = {}
+
   private client: JWT
 
   constructor(private url: string, private imageNamePrefix: string, options?: GoogleClientOptions) {

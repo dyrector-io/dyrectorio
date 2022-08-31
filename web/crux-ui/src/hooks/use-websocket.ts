@@ -1,8 +1,9 @@
 import { WebSocketContext } from '@app/providers/websocket'
-import { WebSocketClientOptions, WebSocketEndpoint } from '@app/websockets/client'
+import { WebSocketClientOptions } from '@app/websockets/common'
+import WebSocketEndpoint from '@app/websockets/websocket-endpoint'
 import { useContext, useEffect, useRef, useState } from 'react'
 
-export const useWebSocket = (route: string, options?: WebSocketClientOptions): WebSocketEndpoint => {
+const useWebSocket = (route: string, options?: WebSocketClientOptions): WebSocketEndpoint => {
   const wsContext = useContext(WebSocketContext)
 
   const [readyState, setReadyState] = useState<number>(null)
@@ -34,3 +35,5 @@ export const useWebSocket = (route: string, options?: WebSocketClientOptions): W
 
   return endpoint
 }
+
+export default useWebSocket

@@ -1,3 +1,4 @@
+/* eslint-disable react/button-has-type */
 import clsx from 'clsx'
 import React from 'react'
 
@@ -10,65 +11,61 @@ export interface DyoButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButt
   text?: boolean
   color?: string
   textColor?: string
+  type?: 'button' | 'reset' | 'submit'
+}
+const DyoButton = (props: DyoButtonProps) => {
+  const {
+    secondary,
+    outlined,
+    underlined,
+    text,
+    thin,
+    className,
+    heightClassName,
+    color: colorClassName,
+    textColor: textColorClassName,
+    disabled,
+    children,
+    ...forwaredProps
+  } = props
+
+  const defaultColor = secondary
+    ? outlined
+      ? 'ring-warning-orange'
+      : 'bg-warning-orange'
+    : outlined
+    ? 'ring-dyo-turquoise'
+    : 'bg-dyo-turquoise'
+  const disabledColor = outlined ? 'ring-light-grey' : 'bg-light-grey'
+
+  const color = text ? 'bg-transparent' : disabled ? disabledColor : colorClassName ?? defaultColor
+
+  const defaultTextColor = text || outlined ? (secondary ? 'text-warning-orange' : 'text-dyo-turquoise') : 'text-white'
+
+  const textColor = disabled ? 'text-light' : textColorClassName ?? defaultTextColor
+
+  const ring = outlined && !text ? 'ring-2' : null
+  const border = underlined ? 'border-b-2 border-dyo-turquoise' : null
+  const rounded = !underlined ? 'rounded' : null
+  const font = !thin && (text || !outlined) ? 'font-semibold' : null
+
+  return (
+    <button
+      {...forwaredProps}
+      className={clsx(
+        className ?? 'mx-2 px-10',
+        ring,
+        border,
+        color,
+        textColor,
+        font,
+        rounded,
+        heightClassName ?? 'h-10',
+      )}
+    >
+      {children}
+    </button>
+  )
 }
 
-export class DyoButton extends React.Component<DyoButtonProps> {
-  constructor(props: DyoButtonProps) {
-    super(props)
-  }
-
-  render() {
-    const {
-      secondary,
-      outlined,
-      underlined,
-      text,
-      thin,
-      className,
-      heightClassName,
-      color: colorClassName,
-      textColor: textColorClassName,
-      ...forwaredProps
-    } = this.props
-    const disabled = this.props.disabled
-
-    const defaultColor = secondary
-      ? outlined
-        ? 'ring-warning-orange'
-        : 'bg-warning-orange'
-      : outlined
-      ? 'ring-dyo-turquoise'
-      : 'bg-dyo-turquoise'
-    const disabledColor = outlined ? 'ring-light-grey' : 'bg-light-grey'
-
-    const color = text ? 'bg-transparent' : disabled ? disabledColor : colorClassName ?? defaultColor
-
-    const defaultTextColor =
-      text || outlined ? (secondary ? 'text-warning-orange' : 'text-dyo-turquoise') : 'text-white'
-
-    const textColor = disabled ? 'text-light' : textColorClassName ?? defaultTextColor
-
-    const ring = outlined && !text ? 'ring-2' : null
-    const border = underlined ? 'border-b-2 border-dyo-turquoise' : null
-    const rounded = !underlined ? 'rounded' : null
-    const font = !thin && (text || !outlined) ? 'font-semibold' : null
-
-    return (
-      <button
-        {...forwaredProps}
-        className={clsx(
-          className ?? 'mx-2 px-10',
-          ring,
-          border,
-          color,
-          textColor,
-          font,
-          rounded,
-          heightClassName ?? 'h-10',
-        )}
-      >
-        {this.props.children}
-      </button>
-    )
-  }
-}
+export default DyoButton

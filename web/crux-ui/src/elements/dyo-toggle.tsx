@@ -11,18 +11,18 @@ interface DyoToggleProps extends Omit<React.InputHTMLAttributes<HTMLInputElement
   onCheckedChange?: (checked: boolean) => void
 }
 
-export const DyoToggle = (props: DyoToggleProps) => {
-  const { name, checked, setFieldValue, onCheckedChange } = props
+const DyoToggle = (props: DyoToggleProps) => {
+  const { name, checked, setFieldValue, onCheckedChange, className, nameUnchecked, nameChecked } = props
 
-  const handleCheckedChange = checked => {
-    setFieldValue?.call(this, name, checked, false)
-    onCheckedChange?.call(this, checked)
+  const handleCheckedChange = checkedArg => {
+    setFieldValue?.call(this, name, checkedArg, false)
+    onCheckedChange?.call(this, checkedArg)
   }
 
   return (
-    <Switch.Group as="div" className={clsx(props.className, 'w-full flex justify-center')}>
+    <Switch.Group as="div" className={clsx(className, 'w-full flex justify-center')}>
       <Switch.Label as="div" className="mr-4">
-        {checked ? props.nameChecked : props.nameUnchecked}
+        {checked ? nameChecked : nameUnchecked}
       </Switch.Label>
 
       <Switch
@@ -32,7 +32,7 @@ export const DyoToggle = (props: DyoToggleProps) => {
           checked ? 'bg-dyo-turquoise' : 'bg-light'
         } relative inline-flex items-center h-6 rounded-full w-11 outline-none`}
       >
-        <span className="sr-only">{checked ? props.nameChecked : props.nameUnchecked}</span>
+        <span className="sr-only">{checked ? nameChecked : nameUnchecked}</span>
         <span
           className={`${
             checked ? 'translate-x-6' : 'translate-x-1'
@@ -42,3 +42,5 @@ export const DyoToggle = (props: DyoToggleProps) => {
     </Switch.Group>
   )
 }
+
+export default DyoToggle

@@ -1,10 +1,9 @@
 import { HEADER_SET_COOKIE } from '@app/const'
-import { DEFAULT_SERVICE_INFO, ServiceInfo } from '@app/models'
+import { DEFAULT_SERVICE_INFO, missingParameter, ServiceInfo } from '@app/models'
 import { Configuration, Identity, MetadataApi, Session, V0alpha2Api } from '@ory/kratos-client'
 import { AxiosResponse } from 'axios'
 import http from 'http'
 import { NextApiRequest, NextPageContext } from 'next'
-import { missingParameter } from './error-middleware'
 
 const config = new Configuration({ basePath: process.env.KRATOS_URL })
 const kratos = new V0alpha2Api(config)
@@ -56,7 +55,7 @@ export const userVerified = (user: Identity) => {
 }
 
 export const cookieOf = (request: http.IncomingMessage): string => {
-  const cookie = request.headers.cookie
+  const { cookie } = request.headers
   if (!cookie) {
     throw missingParameter('cookie')
   }
@@ -65,7 +64,7 @@ export const cookieOf = (request: http.IncomingMessage): string => {
 }
 
 export const obtainKratosSession = async (request: http.IncomingMessage): Promise<Session> => {
-  const cookie = request.headers.cookie
+  const { cookie } = request.headers
 
   try {
     if (!cookie) {
@@ -94,9 +93,6 @@ export const sessionOfContext = (context: NextPageContext): Session => {
   return cruxContext.session
 }
 
-export const forwardCookie = (context: NextPageContext, resOrCookie: AxiosResponse | string | undefined) =>
-  forwardCookieToResponse(context.res, resOrCookie)
-
 export const forwardCookieToResponse = (res: http.OutgoingMessage, resOrCookie: AxiosResponse | string | undefined) => {
   const cookie =
     typeof resOrCookie === 'string' || undefined ? (resOrCookie as string) : resOrCookie.headers[HEADER_SET_COOKIE]
@@ -106,6 +102,9 @@ export const forwardCookieToResponse = (res: http.OutgoingMessage, resOrCookie: 
     res.removeHeader(HEADER_SET_COOKIE)
   }
 }
+
+export const forwardCookie = (context: NextPageContext, resOrCookie: AxiosResponse | string | undefined) =>
+  forwardCookieToResponse(context.res, resOrCookie)
 
 export type IncomingMessageWithSession = http.IncomingMessage & {
   session?: Session

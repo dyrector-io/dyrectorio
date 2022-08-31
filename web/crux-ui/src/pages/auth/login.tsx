@@ -1,13 +1,19 @@
 import { SingleFormLayout } from '@app/components/layout'
-import { ATTRIB_CSRF } from '@app/const'
-import { DyoButton } from '@app/elements/dyo-button'
+import {
+  API_AUTH_LOGIN,
+  ATTRIB_CSRF,
+  ROUTE_INDEX,
+  ROUTE_RECOVERY,
+  ROUTE_REGISTER,
+  ROUTE_VERIFICATION,
+} from '@app/const'
+import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoInput } from '@app/elements/dyo-input'
-import { DyoMessage } from '@app/elements/dyo-message'
+import DyoMessage from '@app/elements/dyo-message'
 import DyoSingleFormHeading from '@app/elements/dyo-single-form-heading'
 import DyoSingleFormLogo from '@app/elements/dyo-single-form-logo'
 import { DyoErrorDto, Login } from '@app/models'
-import { API_AUTH_LOGIN, ROUTE_INDEX, ROUTE_RECOVERY, ROUTE_REGISTER, ROUTE_VERIFICATION } from '@app/routes'
 import { findAttributes, findError, findMessage, isDyoError, redirectTo, sendForm, upsertDyoError } from '@app/utils'
 import { SelfServiceLoginFlow } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'
@@ -61,12 +67,12 @@ const LoginPage = (props: LoginPageProps) => {
         router.replace(ROUTE_INDEX)
       } else {
         recaptcha.current?.reset()
-        const data = await res.json()
+        const result = await res.json()
 
-        if (isDyoError(data)) {
-          setErrors(upsertDyoError(errors, data as DyoErrorDto))
-        } else if (data?.ui) {
-          setUi(data.ui)
+        if (isDyoError(result)) {
+          setErrors(upsertDyoError(errors, result as DyoErrorDto))
+        } else if (result?.ui) {
+          setUi(result.ui)
         } else {
           toast(t('errors:internalError'))
         }

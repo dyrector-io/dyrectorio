@@ -17,24 +17,25 @@ interface UserRoleActionProps {
 }
 
 const UserRoleAction = (props: UserRoleActionProps) => {
+  const { user, className, teamId, onRoleUpdated } = props
+
   const { t } = useTranslation('teams')
 
-  const { user } = props
-  const role = user.role
+  const { role } = user
 
   const [updating, setUpdating] = useState(false)
   const [roleUpdateModalConfig, confirmRoleUpdate] = useConfirmation()
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const onUpdateUserRole = (role: UserRole, promote: boolean) =>
+  const onUpdateUserRole = (roleArg: UserRole, promote: boolean) =>
     confirmRoleUpdate(
       async () => {
         setUpdating(true)
 
-        const res = await sendForm('PUT', userRoleApiUrl(props.teamId, user.id), role)
+        const res = await sendForm('PUT', userRoleApiUrl(teamId, user.id), role)
         if (res.ok) {
-          props.onRoleUpdated(role)
+          onRoleUpdated(roleArg)
         } else {
           handleApiError(res)
         }
@@ -45,13 +46,13 @@ const UserRoleAction = (props: UserRoleActionProps) => {
         description: t('confirmRoleAction', {
           action: t(promote ? 'promote' : 'demote'),
           user: user.name !== '' ? user.name : user.email,
-          role: t(`common:role.${role}`),
+          role: t(`common:role.${roleArg}`),
         }),
       },
     )
 
   return (
-    <div className={props.className}>
+    <div className={className}>
       {updating ? (
         <LoadingIndicator />
       ) : role === 'admin' ? (

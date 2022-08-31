@@ -1,15 +1,16 @@
-import { DyoButton } from '@app/elements/dyo-button'
+import { API_NODES, WS_NODES } from '@app/const'
+import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIconPicker from '@app/elements/dyo-icon-picker'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
-import { DyoTextArea } from '@app/elements/dyo-text-area'
+import DyoTextArea from '@app/elements/dyo-text-area'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
-import { useWebSocket } from '@app/hooks/use-websocket'
+import useWebSocket from '@app/hooks/use-websocket'
 import {
   CreateDyoNode,
   DyoNode,
@@ -20,7 +21,7 @@ import {
   UpdateDyoNode,
   WS_TYPE_NODE_STATUS,
 } from '@app/models'
-import { API_NODES, nodeApiUrl, nodeTokenApiUrl, WS_NODES } from '@app/routes'
+import { nodeApiUrl, nodeTokenApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { nodeSchema } from '@app/validation'
 import clsx from 'clsx'
@@ -38,10 +39,14 @@ interface EditNodeCardProps {
 }
 
 const EditNodeCard = (props: EditNodeCardProps) => {
+  const { className, node: propsNode, onNodeEdited, submitRef } = props
+
   const { t } = useTranslation('nodes')
 
+  const [revokeModalConfig, confirmTokenRevoke] = useConfirmation()
+
   const [node, setNode] = useState(
-    props.node ??
+    propsNode ??
       ({
         name: '',
         description: '',
@@ -50,7 +55,9 @@ const EditNodeCard = (props: EditNodeCardProps) => {
       } as DyoNodeDetails),
   )
 
-  const [revokeModalConfig, confirmTokenRevoke] = useConfirmation()
+  const editing = !!node.id
+
+  const handleApiError = defaultApiErrorHandler(t)
 
   const socket = useWebSocket(WS_NODES)
   socket.on(WS_TYPE_NODE_STATUS, (message: NodeStatusMessage) => {
@@ -67,7 +74,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
     } as DyoNodeDetails
 
     setNode(newNode)
-    props.onNodeEdited(newNode)
+    onNodeEdited(newNode)
   })
 
   const onNodeInstallChanged = (install: DyoNodeInstall) => {
@@ -77,7 +84,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
     }
 
     setNode(newNode)
-    props.onNodeEdited(newNode)
+    onNodeEdited(newNode)
   }
 
   const onRevokeToken = () =>
@@ -99,7 +106,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
       } as DyoNodeDetails
 
       setNode(newNode)
-      props.onNodeEdited(newNode)
+      onNodeEdited(newNode)
     })
 
   const onNodeTypeChanged = (type: NodeType): void => {
@@ -108,10 +115,6 @@ const EditNodeCard = (props: EditNodeCardProps) => {
       type,
     })
   }
-
-  const editing = !!node.id
-
-  const handleApiError = defaultApiErrorHandler(t)
 
   const formik = useFormik({
     validationSchema: nodeSchema,
@@ -129,7 +132,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
 
       if (res.ok) {
         let result: DyoNodeDetails
-        if (res.status != 204) {
+        if (res.status !== 204) {
           const json = await res.json()
           result = {
             ...json,
@@ -143,7 +146,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
         }
 
         setNode(result)
-        props.onNodeEdited(result, editing)
+        onNodeEdited(result, editing)
       } else {
         handleApiError(res, setFieldError)
       }
@@ -152,15 +155,15 @@ const EditNodeCard = (props: EditNodeCardProps) => {
     },
   })
 
-  if (props.submitRef) {
-    props.submitRef.current = formik.submitForm
+  if (submitRef) {
+    submitRef.current = formik.submitForm
   }
 
   const inputClassName = 'my-2 w-full'
 
   return (
     <>
-      <DyoWrap className={clsx(props.className, 'flex flex-row')}>
+      <DyoWrap className={clsx(className, 'flex flex-row')}>
         <DyoCard className="w-full p-8">
           <DyoHeading element="h4" className="text-lg text-bright">
             {editing ? t('common:editName', { name: node.name }) : t('new')}
@@ -194,7 +197,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
               grow
             />
 
-            <DyoButton className="hidden" type="submit"></DyoButton>
+            <DyoButton className="hidden" type="submit" />
           </form>
         </DyoCard>
         <DyoCard className="w-full p-8">
@@ -211,21 +214,17 @@ const EditNodeCard = (props: EditNodeCardProps) => {
           </div>
 
           {node.install ? (
-            <>
-              <div className="text-bright mb-4">
-                <DyoHeading element="h5" className="text-md">
-                  {t('requirementsHeader')}
-                </DyoHeading>
+            <div className="text-bright mb-4">
+              <DyoHeading element="h5" className="text-md">
+                {t('requirementsHeader')}
+              </DyoHeading>
 
-                {(t('requirements.' + node.type, null, { returnObjects: true }) as string[]).map(
-                  (requirement, index) => (
-                    <p className="text-light-eased max-w-lg ml-4" key={'req-' + index}>
-                      - {requirement}
-                    </p>
-                  ),
-                )}
-              </div>
-            </>
+              {(t(`requirements.${node.type}`, null, { returnObjects: true }) as string[]).map((requirement, index) => (
+                <p className="text-light-eased max-w-lg ml-4" key={index}>
+                  - {requirement}
+                </p>
+              ))}
+            </div>
           ) : null}
 
           {!editing ? (

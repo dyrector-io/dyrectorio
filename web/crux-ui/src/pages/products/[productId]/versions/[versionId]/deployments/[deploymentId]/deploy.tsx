@@ -4,8 +4,9 @@ import DeploymentDetailsCard from '@app/components/products/versions/deployments
 import DeploymentEventsTerminal from '@app/components/products/versions/deployments/deployment-events-terminal'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
-import { DyoButton } from '@app/elements/dyo-button'
-import { useWebSocket } from '@app/hooks/use-websocket'
+import { ROUTE_PRODUCTS } from '@app/const'
+import DyoButton from '@app/elements/dyo-button'
+import useWebSocket from '@app/hooks/use-websocket'
 import {
   DeploymentEvent,
   DeploymentEventMessage,
@@ -25,7 +26,6 @@ import {
   deploymentWsUrl,
   nodeInspectUrl,
   productUrl,
-  ROUTE_PRODUCTS,
   versionUrl,
 } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
@@ -41,19 +41,21 @@ interface DeployPageProps {
 }
 
 const DeployPage = (props: DeployPageProps) => {
+  const { deployment: propsDeployment } = props
+
   const { t } = useTranslation('deployments')
 
   const router = useRouter()
 
   const [events, setEvents] = useState<DeploymentEvent[]>([])
-  const [status, setStatus] = useState<DeploymentStatus>(props.deployment.status)
+  const [status, setStatus] = useState<DeploymentStatus>(propsDeployment.status)
 
   const deployment = {
-    ...props.deployment,
+    ...propsDeployment,
     status,
   }
-  const product = deployment.product
-  const version = deployment.version
+  const { product } = deployment
+  const { version } = deployment
   const mutable = deploymentIsMutable(deployment.status)
 
   const sock = useWebSocket(deploymentWsUrl(deployment.product.id, deployment.versionId, deployment.id), {
@@ -127,8 +129,8 @@ const DeployPage = (props: DeployPageProps) => {
       </PageHeading>
 
       <DeploymentDetailsCard className="flex flex-grow p-6" deployment={deployment}>
-        <DeploymentContainerStatusList deployment={props.deployment} />
-        <DeploymentEventsTerminal deployment={props.deployment} events={events} />
+        <DeploymentContainerStatusList deployment={propsDeployment} />
+        <DeploymentEventsTerminal events={events} />
       </DeploymentDetailsCard>
     </Layout>
   )
@@ -136,12 +138,10 @@ const DeployPage = (props: DeployPageProps) => {
 
 export default DeployPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
-  return {
-    props: {
-      deployment: await getDeploymentRoot(context, cruxFromContext(context)),
-    },
-  }
-}
+const getPageServerSideProps = async (context: NextPageContext) => ({
+  props: {
+    deployment: await getDeploymentRoot(context, cruxFromContext(context)),
+  },
+})
 
 export const getServerSideProps = withContextAuthorization(getPageServerSideProps)

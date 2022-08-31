@@ -4,9 +4,10 @@ import NotificationCard from '@app/components/notifications/notification-card'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
+import { ROUTE_NOTIFICATIONS } from '@app/const'
 import { defaultApiErrorHandler } from '@app/errors'
 import { NotificationDetails } from '@app/models'
-import { notificationApiUrl, notificationUrl, ROUTE_NOTIFICATIONS } from '@app/routes'
+import { notificationApiUrl, notificationUrl } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
@@ -19,10 +20,12 @@ interface NotificationDetailsPageProps {
 }
 
 const NotificationDetailsPage = (props: NotificationDetailsPageProps) => {
+  const { notification: propsNotification } = props
+
   const { t } = useTranslation('notifications')
   const router = useRouter()
 
-  const [notification, setNotification] = useState<NotificationDetails>(props.notification)
+  const [notification, setNotification] = useState<NotificationDetails>(propsNotification)
   const [editing, setEditing] = useState(false)
   const submitRef = useRef<() => Promise<void>>()
   const handleApiError = defaultApiErrorHandler(t)
@@ -45,9 +48,9 @@ const NotificationDetailsPage = (props: NotificationDetailsPageProps) => {
     url: ROUTE_NOTIFICATIONS,
   }
 
-  const onSubmitted = (notification: NotificationDetails) => {
+  const onSubmitted = (notificationArg: NotificationDetails) => {
     setEditing(false)
-    setNotification(notification as NotificationDetails)
+    setNotification(notificationArg as NotificationDetails)
   }
 
   return (

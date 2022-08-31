@@ -1,10 +1,10 @@
-import { DyoButton } from '@app/elements/dyo-button'
+import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
-import { DyoTextArea } from '@app/elements/dyo-text-area'
-import { DyoToggle } from '@app/elements/dyo-toggle'
+import DyoTextArea from '@app/elements/dyo-text-area'
+import DyoToggle from '@app/elements/dyo-toggle'
 import { defaultApiErrorHandler } from '@app/errors'
 import { CreateVersion, Product, UpdateVersion, Version, VersionType } from '@app/models'
 import { productVersionsApiUrl, versionApiUrl } from '@app/routes'
@@ -25,12 +25,12 @@ interface EditVersionCardProps {
 }
 
 const EditVersionCard = (props: EditVersionCardProps) => {
+  const { className, product, version: propsVersion, onVersionEdited, submitRef, versions } = props
+
   const { t } = useTranslation('versions')
 
-  const { product } = props
-
   const [version, setVersion] = useState<Version>(
-    props.version ?? {
+    propsVersion ?? {
       id: null,
       name: '',
       changelog: '',
@@ -61,7 +61,7 @@ const EditVersionCard = (props: EditVersionCardProps) => {
 
       if (res.ok) {
         let result: Version
-        if (res.status != 204) {
+        if (res.status !== 204) {
           const json = await res.json()
           result = json as Version
         } else {
@@ -71,7 +71,7 @@ const EditVersionCard = (props: EditVersionCardProps) => {
         }
 
         setVersion(result)
-        props.onVersionEdited(result)
+        onVersionEdited(result)
       } else {
         handleApiError(res, setFieldError)
       }
@@ -80,13 +80,13 @@ const EditVersionCard = (props: EditVersionCardProps) => {
     },
   })
 
-  if (props.submitRef) {
-    props.submitRef.current = formik.submitForm
+  if (submitRef) {
+    submitRef.current = formik.submitForm
   }
 
   return (
     <>
-      <DyoCard className={props.className}>
+      <DyoCard className={className}>
         <DyoHeading element="h4" className="text-lg text-bright">
           {editing ? t('common:editName', { name: version.name }) : t('new')}
         </DyoHeading>
@@ -140,10 +140,10 @@ const EditVersionCard = (props: EditVersionCardProps) => {
             />
           </div>
 
-          <DyoButton className="hidden" type="submit"></DyoButton>
+          <DyoButton className="hidden" type="submit" />
         </form>
       </DyoCard>
-      <ProductVersionsSection productId={product.id} versions={props.versions ?? []} disabled />
+      <ProductVersionsSection productId={product.id} versions={versions ?? []} disabled />
     </>
   )
 }

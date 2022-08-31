@@ -8,26 +8,6 @@ interface ServiceStatusIndicatorProps {
   status: ServiceStatus
 }
 
-const ServiceStatusIndicator = (props: ServiceStatusIndicatorProps) => {
-  const { status } = props
-
-  const { t } = useTranslation('500')
-
-  return (
-    <div className={clsx(props.className, 'flex')}>
-      <Image
-        src={`/${statusToAssetName(status)}.svg`}
-        alt={t(`serviceStatuses.${status}`)}
-        width={16}
-        height={16}
-        layout="fixed"
-      />
-    </div>
-  )
-}
-
-export default ServiceStatusIndicator
-
 const statusToAssetName = (status: ServiceStatus) => {
   switch (status) {
     case 'operational':
@@ -40,3 +20,23 @@ const statusToAssetName = (status: ServiceStatus) => {
       return 'circle-red'
   }
 }
+
+const ServiceStatusIndicator = (props: ServiceStatusIndicatorProps) => {
+  const { status, className } = props
+
+  const { t } = useTranslation('500')
+
+  return (
+    <div className={clsx(className, 'flex')}>
+      <Image
+        src={`/${statusToAssetName(status)}.svg`}
+        alt={t(`serviceStatuses.${status}`)}
+        width={16}
+        height={16}
+        layout="fixed"
+      />
+    </div>
+  )
+}
+
+export default ServiceStatusIndicator

@@ -4,14 +4,15 @@ import EditNodeCard from '@app/components/nodes/edit-node-card'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { ListPageMenu } from '@app/components/shared/page-menu'
+import { ROUTE_NODES, WS_NODES } from '@app/const'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
-import { useWebSocket } from '@app/hooks/use-websocket'
+import useWebSocket from '@app/hooks/use-websocket'
 import { DyoNode, NodeStatusMessage, WS_TYPE_NODE_STATUS } from '@app/models'
-import { nodeUrl, ROUTE_NODES, WS_NODES } from '@app/routes'
+import { nodeUrl } from '@app/routes'
 import { upsertById, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import clsx from 'clsx'
@@ -26,13 +27,15 @@ interface NodesPageProps {
 }
 
 const NodesPage = (props: NodesPageProps) => {
+  const { nodes } = props
+
   const router = useRouter()
 
   const { t } = useTranslation('nodes')
 
   const filters = useFilters<DyoNode, TextFilter>({
     filters: [textFilterFor<DyoNode>(it => [it.address, it.name, it.description, it.status, it.icon])],
-    initialData: props.nodes,
+    initialData: nodes,
     initialFilter: { text: '' },
   })
 
@@ -40,7 +43,7 @@ const NodesPage = (props: NodesPageProps) => {
   const submitRef = useRef<() => Promise<any>>()
 
   const socket = useWebSocket(WS_NODES, {
-    onError: err => {
+    onError: _ => {
       toast(t('errors:connectionLost'))
     },
   })
@@ -56,31 +59,27 @@ const NodesPage = (props: NodesPageProps) => {
       createdAt: new Date().toUTCString(),
     } as DyoNode
 
-    const nodes = upsertById(filters.items, newNode, {
-      onUpdate: old => {
-        return {
-          ...old,
-          address: message.address ?? old.address,
-          status: message.status,
-        }
-      },
+    const newNodes = upsertById(filters.items, newNode, {
+      onUpdate: old => ({
+        ...old,
+        address: message.address ?? old.address,
+        status: message.status,
+      }),
     })
 
-    filters.setItems(nodes)
+    filters.setItems(newNodes)
   })
 
   const onCreated = (node: DyoNode) => {
-    const nodes = upsertById(filters.items, node, {
-      onUpdate: old => {
-        return {
-          ...node,
-          address: old.address,
-          status: old.status,
-        }
-      },
+    const newNodes = upsertById(filters.items, node, {
+      onUpdate: old => ({
+        ...node,
+        address: old.address,
+        status: old.status,
+      }),
     })
 
-    filters.setItems(nodes)
+    filters.setItems(newNodes)
   }
 
   const pageLink: BreadcrumbLink = {
@@ -133,12 +132,10 @@ const NodesPage = (props: NodesPageProps) => {
 
 export default NodesPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
-  return {
-    props: {
-      nodes: await cruxFromContext(context).nodes.getAll(),
-    },
-  }
-}
+const getPageServerSideProps = async (context: NextPageContext) => ({
+  props: {
+    nodes: await cruxFromContext(context).nodes.getAll(),
+  },
+})
 
 export const getServerSideProps = withContextAuthorization(getPageServerSideProps)

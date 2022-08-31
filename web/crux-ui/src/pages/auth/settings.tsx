@@ -1,17 +1,17 @@
 import { Layout } from '@app/components/layout'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
-import { DyoButton } from '@app/elements/dyo-button'
-import { DyoCard } from '@app/elements/dyo-card'
-import { DyoHeading } from '@app/elements/dyo-heading'
-import { DyoInput } from '@app/elements/dyo-input'
-import { DyoLabel } from '@app/elements/dyo-label'
 import {
   ROUTE_SETTINGS,
   ROUTE_SETTINGS_CHANGE_PASSWORD,
   ROUTE_SETTINGS_EDIT_PROFILE,
   ROUTE_VERIFICATION,
-} from '@app/routes'
+} from '@app/const'
+import DyoButton from '@app/elements/dyo-button'
+import { DyoCard } from '@app/elements/dyo-card'
+import { DyoHeading } from '@app/elements/dyo-heading'
+import { DyoInput } from '@app/elements/dyo-input'
+import { DyoLabel } from '@app/elements/dyo-label'
 import { redirectTo, withContextAuthorization } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
 import { sessionOfContext } from '@server/kratos'
@@ -20,6 +20,8 @@ import useTranslation from 'next-translate/useTranslation'
 import Link from 'next/link'
 
 const SettingsPage = (props: Identity) => {
+  const { traits } = props
+
   const { t } = useTranslation('settings')
 
   const pageLink: BreadcrumbLink = {
@@ -50,26 +52,12 @@ const SettingsPage = (props: Identity) => {
             label={t('firstName')}
             name="firstName"
             type="text"
-            defaultValue={props.traits.name?.first}
+            defaultValue={traits.name?.first}
             disabled
             grow
           />
-          <DyoInput
-            label={t('lastName')}
-            name="lastName"
-            type="text"
-            defaultValue={props.traits.name?.last}
-            disabled
-            grow
-          />
-          <DyoInput
-            label={t('common:email')}
-            name="email"
-            type="email"
-            defaultValue={props.traits.email}
-            disabled
-            grow
-          />
+          <DyoInput label={t('lastName')} name="lastName" type="text" defaultValue={traits.name?.last} disabled grow />
+          <DyoInput label={t('common:email')} name="email" type="email" defaultValue={traits.email} disabled grow />
         </div>
       </DyoCard>
     </Layout>
@@ -81,8 +69,8 @@ export default SettingsPage
 const getPageServerSideProps = async (context: NextPageContext) => {
   const session = sessionOfContext(context)
 
-  const identity = session.identity
-  const email = identity.traits.email
+  const { identity } = session
+  const { email } = identity.traits
   const verifiable = identity.verifiable_addresses?.filter(it => it.value === email && !it.verified)
 
   if ((verifiable?.length ?? 0) > 0) {

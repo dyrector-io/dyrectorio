@@ -1,4 +1,5 @@
-import { useWebSocket } from '@app/hooks/use-websocket'
+import { WS_REGISTRIES } from '@app/const'
+import useWebSocket from '@app/hooks/use-websocket'
 import {
   AddImagesMessage,
   DeleteImageMessage,
@@ -10,6 +11,7 @@ import {
   ImageUpdateMessage,
   OrderImagesMessage,
   PatchImageMessage,
+  PatchVersionImage,
   RegistryImages,
   RegistryImageTags,
   RegistryImageTagsMessage,
@@ -26,16 +28,26 @@ import {
   WS_TYPE_REGISTRY_FETCH_IMAGE_TAGS,
   WS_TYPE_REGISTRY_IMAGE_TAGS,
 } from '@app/models'
-import { versionWsUrl, WS_REGISTRIES } from '@app/routes'
+import { versionWsUrl } from '@app/routes'
 import { fold } from '@app/utils'
-import { WebSocketEndpoint } from '@app/websockets/client'
+import WebSocketEndpoint from '@app/websockets/websocket-endpoint'
 
 import { Dispatch, SetStateAction } from 'react'
-import { mergeImagePatch } from './version-images-section'
 
 export type ImageTagsMap = { [key: string]: RegistryImageTags }
 
 export const imageTagKey = (registryId: string, imageName: string) => `${registryId}/${imageName}`
+
+const mergeImagePatch = (oldImage: VersionImage, newImage: PatchVersionImage): VersionImage => ({
+  ...oldImage,
+  ...newImage,
+  config: {
+    name: newImage.config?.name ?? oldImage.config.name,
+    environment: newImage.config?.environment ?? oldImage.config.environment,
+    capabilities: newImage.config?.capabilities ?? oldImage.config.capabilities,
+    config: newImage.config?.config ?? oldImage.config.config,
+  },
+})
 
 export interface ImagesWebSocketOptions {
   productId: string
@@ -60,12 +72,13 @@ export const useImagesWebSocket = (options: ImagesWebSocketOptions): ImagesWebSo
 
   const registriesSock = useWebSocket(WS_REGISTRIES, {
     onOpen: () => {
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
       updateImageTags(images)
     },
   })
 
-  const updateImageTags = (images: VersionImage[]) => {
-    const fetchTags = fold(images, new Map<string, Set<string>>(), (map, it) => {
+  const updateImageTags = (imgs: VersionImage[]) => {
+    const fetchTags = fold(imgs, new Map<string, Set<string>>(), (map, it) => {
       let names = map.get(it.registryId)
       if (!names) {
         names = new Set()
@@ -171,7 +184,7 @@ export const useImagesWebSocket = (options: ImagesWebSocketOptions): ImagesWebSo
 
   const patchImage = (id, tag?) => {
     versionSock.send(WS_TYPE_PATCH_IMAGE, {
-      id: id,
+      id,
       tag,
     } as PatchImageMessage)
   }

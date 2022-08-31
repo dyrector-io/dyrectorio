@@ -23,7 +23,7 @@ const DyoRadioButton = (props: DyoCheckboxProps) => {
   return (
     <div className="flex flex-row" onClick={() => handleCheckedChange()}>
       <div className={clsx(className, 'flex ring-light-grey w-4 h-4 rounded-full ring-2 cursor-pointer m-2')}>
-        {!checked ? null : <div className="self-center rounded-full bg-dyo-turquoise w-3 h-3 mx-auto"></div>}
+        {!checked ? null : <div className="self-center rounded-full bg-dyo-turquoise w-3 h-3 mx-auto" />}
         <input type="radio" checked={checked} onChange={() => handleCheckedChange()} className="hidden" />
       </div>
 

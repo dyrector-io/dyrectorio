@@ -1,5 +1,4 @@
-import { RegistryImageTags } from '@app/models'
-import { internalError, notFoundError, unauthorizedError } from '@server/error-middleware'
+import { internalError, notFoundError, RegistryImageTags, unauthorizedError } from '@app/models'
 import { RegistryApiClient } from './registry-api-client'
 import RegistryV2ApiClient, { RegistryV2ApiClientOptions } from './v2-api-client'
 
@@ -10,7 +9,9 @@ export type GitlabRegistryClientUrls = {
 
 export class GitlabRegistryClient implements RegistryApiClient {
   private basicAuthHeaders: HeadersInit
+
   private patAuthHeaders: HeadersInit
+
   private groupId?: string = null
 
   constructor(private groupName: string, options: RegistryV2ApiClientOptions, private urls: GitlabRegistryClientUrls) {

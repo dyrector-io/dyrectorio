@@ -1,14 +1,14 @@
-import { DyoButton } from '@app/elements/dyo-button'
+import { API_NODES } from '@app/const'
+import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoChips from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { defaultApiErrorHandler } from '@app/errors'
-import { CreateDeployment, DeploymentCreated, DyoNode } from '@app/models'
-import { API_NODES, versionDeploymentsApiUrl } from '@app/routes'
+import { CreateDeployment, DeploymentCreated, DyoApiError, DyoNode } from '@app/models'
+import { versionDeploymentsApiUrl } from '@app/routes'
 import { fetcher, sendForm } from '@app/utils'
 import { createDeploymentSchema } from '@app/validation'
-import { DyoApiError } from '@server/error-middleware'
 import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
 import useSWR from 'swr'
@@ -22,7 +22,7 @@ interface AddDeploymentCardProps {
 }
 
 const AddDeploymentCard = (props: AddDeploymentCardProps) => {
-  const { productId, versionId } = props
+  const { productId, versionId, className, onAdd, onDiscard } = props
 
   const { t } = useTranslation('versions')
 
@@ -46,11 +46,11 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
 
       if (res.ok) {
         const result = (await res.json()) as DeploymentCreated
-        props.onAdd(result.id)
+        onAdd(result.id)
       } else if (res.status === 409) {
         // There is already a deployment for the selected node
         const dto = (await res.json()) as DyoApiError
-        props.onAdd(dto.value)
+        onAdd(dto.value)
       } else {
         handleApiError(res, setFieldError)
       }
@@ -60,13 +60,13 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
   })
 
   return (
-    <DyoCard className={props.className}>
+    <DyoCard className={className}>
       <div className="flex flex-row">
         <DyoHeading element="h4" className="text-lg text-bright">
           {t('addDeployment')}
         </DyoHeading>
 
-        <DyoButton outlined secondary className="ml-auto mr-2 px-10" onClick={props.onDiscard}>
+        <DyoButton outlined secondary className="ml-auto mr-2 px-10" onClick={onDiscard}>
           {t('common:discard')}
         </DyoButton>
 

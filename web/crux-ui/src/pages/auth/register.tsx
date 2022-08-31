@@ -1,13 +1,12 @@
 import { SingleFormLayout } from '@app/components/layout'
-import { ATTRIB_CSRF } from '@app/const'
-import { DyoButton } from '@app/elements/dyo-button'
+import { API_AUTH_REGISTER, ATTRIB_CSRF, ROUTE_LOGIN, ROUTE_SETTINGS, ROUTE_VERIFICATION } from '@app/const'
+import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoInput } from '@app/elements/dyo-input'
-import { DyoMessage } from '@app/elements/dyo-message'
+import DyoMessage from '@app/elements/dyo-message'
 import DyoSingleFormHeading from '@app/elements/dyo-single-form-heading'
 import DyoSingleFormLogo from '@app/elements/dyo-single-form-logo'
 import { DyoErrorDto, Register } from '@app/models'
-import { API_AUTH_REGISTER, ROUTE_LOGIN, ROUTE_SETTINGS, ROUTE_VERIFICATION } from '@app/routes'
 import {
   findAttributes,
   findError,
@@ -82,12 +81,12 @@ const RegisterPage = (props: RegisterPageProps) => {
       } else {
         recaptcha.current?.reset()
 
-        const data = await res.json()
+        const result = await res.json()
 
-        if (isDyoError(data)) {
-          setErrors(upsertDyoError(errors, data as DyoErrorDto))
-        } else if (data?.ui) {
-          setUi(data.ui)
+        if (isDyoError(result)) {
+          setErrors(upsertDyoError(errors, result as DyoErrorDto))
+        } else if (result?.ui) {
+          setUi(result.ui)
         } else {
           toast(t('errors:internalError'))
         }

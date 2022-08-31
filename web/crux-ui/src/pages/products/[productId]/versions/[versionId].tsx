@@ -5,9 +5,10 @@ import VersionSections from '@app/components/products/versions/version-sections'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
+import { ROUTE_PRODUCTS } from '@app/const'
 import LoadingIndicator from '@app/elements/loading-indicator'
 import { ProductDetails, Version, VersionDetails } from '@app/models'
-import { productUrl, ROUTE_PRODUCTS, versionApiUrl, versionUrl } from '@app/routes'
+import { productUrl, versionApiUrl, versionUrl } from '@app/routes'
 import { anchorLinkOf, redirectTo, searchParamsOf, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
@@ -22,12 +23,12 @@ interface VersionDetailsPageProps {
 }
 
 const VersionDetailsPage = (props: VersionDetailsPageProps) => {
-  const { product } = props
+  const { product, version: propsVersion } = props
 
   const { t } = useTranslation('versions')
   const router = useRouter()
 
-  const [version, setVersion] = useState(props.version)
+  const [version, setVersion] = useState(propsVersion)
   const [editing, setEditing] = useState(anchorLinkOf(router) === '#edit')
   const [saving, setSaving] = useState(false)
   const submitRef = useRef<() => Promise<any>>()
@@ -46,7 +47,7 @@ const VersionDetailsPage = (props: VersionDetailsPageProps) => {
     })
 
     if (res.ok) {
-      router.replace(productUrl(props.product.id))
+      router.replace(productUrl(product.id))
     } else {
       toast(t('errors:oops'))
     }

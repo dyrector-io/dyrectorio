@@ -16,29 +16,31 @@ export interface BreadcrumbProps {
 }
 
 const Breadcrumb = (props: BreadcrumbProps) => {
+  const { page, pageUrl, links } = props
+
   const { t } = useTranslation('common')
 
   return (
     <div key="breadcrumb" className="flex flex-row items-center w-1/2 flex-grow">
       <DyoHeading element="h2" className="text-2xl text-bright">
-        {props.page}
+        {page}
       </DyoHeading>
 
       <div className="bg-bright w-px h-8 mx-6" />
 
-      <Link href={props.pageUrl}>
+      <Link href={pageUrl}>
         <a>
-          <Image className="cursor-pointer" src={`/breadcrumb_home.svg`} alt={t('home')} width={16} height={16} />
+          <Image className="cursor-pointer" src="/breadcrumb_home.svg" alt={t('home')} width={16} height={16} />
         </a>
       </Link>
 
-      {props.links?.map((it, index) => {
-        const last = index >= props.links.length - 1
+      {links?.map((it, index) => {
+        const last = index >= links.length - 1
 
         return (
           <div key={`breadcrumb-link-${index}`} className="flex flex-row max-w-lg">
             <div className="mx-4 mt-1">
-              <Image src={`/breadcrumb_next.svg`} alt={t('rightArrowIcon')} width={16} height={16} layout="fixed" />
+              <Image src="/breadcrumb_next.svg" alt={t('rightArrowIcon')} width={16} height={16} layout="fixed" />
             </div>
 
             {last ? (

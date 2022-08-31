@@ -3,6 +3,7 @@ import {
   ActiveTeamDetails,
   CreateTeam,
   DEFAULT_TEAM_STATISTICS,
+  DyoApiError,
   IdentityTraits,
   InviteUser,
   nameOfIdentity,
@@ -12,7 +13,6 @@ import {
   User,
   UserMeta,
   UserRole,
-  UserStatus,
 } from '@app/models'
 import {
   AccessRequest,
@@ -29,17 +29,12 @@ import {
   UpdateTeamRequest,
   UpdateUserRoleInTeamRequest,
   UserMetaResponse,
-  UserResponse,
-  UserRole as ProtoUserRole,
-  userRoleFromJSON,
-  userRoleToJSON,
-  UserStatus as ProtoUserStatus,
-  userStatusToJSON,
 } from '@app/models/grpc/protobuf/proto/crux'
 import { Identity } from '@ory/kratos-client'
 import { protomisify } from '@server/crux/grpc-connection'
-import { DyoApiError } from '@server/error-middleware'
+/* eslint-disable import/no-cycle */
 import { RegistryConnections } from '@server/registry-api/registry-connections'
+import { userRoleToDto, userRoleToGrpc, userStatusToDto, userToDto } from './mappers/team-mapper'
 
 class DyoTeamService {
   private logger = new Logger(DyoTeamService.name)
@@ -133,7 +128,7 @@ class DyoTeamService {
     const req: UpdateUserRoleInTeamRequest = {
       id: teamId,
       accessedBy: this.identity.id,
-      userId: userId,
+      userId,
       role: userRoleToGrpc(role),
     }
 
@@ -235,17 +230,3 @@ class DyoTeamService {
 }
 
 export default DyoTeamService
-
-export const userToDto = (user: UserResponse): User => {
-  return {
-    ...user,
-    status: userStatusToDto(user.status),
-    role: userRoleToDto(user.role),
-  }
-}
-
-export const userRoleToDto = (role: ProtoUserRole): UserRole => userRoleToJSON(role).toLocaleLowerCase() as UserRole
-export const userRoleToGrpc = (role: UserRole): ProtoUserRole => userRoleFromJSON(role.toUpperCase()) as ProtoUserRole
-
-export const userStatusToDto = (status: ProtoUserStatus): UserStatus =>
-  userStatusToJSON(status).toLocaleLowerCase() as UserStatus

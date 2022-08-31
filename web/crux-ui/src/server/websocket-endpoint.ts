@@ -1,7 +1,10 @@
-import { WebSocketServer, WsEndpoint, WsEndpointOnMessage, WsEndpointOptions } from '@app/websockets/server'
+import { internalError } from '@app/models'
+import { WsEndpointOnMessage, WsEndpointOptions } from '@app/websockets/common'
+import WsEndpoint from '@app/websockets/endpoint'
+import WebSocketServer from '@app/websockets/server'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { Logger } from '../logger'
-import { internalError } from './error-middleware'
+
 import { NextApiEndpoint, withMiddlewares } from './middlewares'
 import { useWebsocketMiddlewares, WsMiddleWareFunction } from './websocket-middlewares'
 
@@ -34,7 +37,7 @@ const websocketEndpoint = (
     }
 
     const route = req.url
-    const query = req.query
+    const { query } = req
 
     switch (req.method) {
       case 'POST': {
@@ -80,7 +83,7 @@ export const routedWebSocketEndpoint = (
     handlers.set(msgType, handler)
   })
 
-  const onMessage: WsEndpointOnMessage = async (endpoint, connection, message) => {
+  const onMessage: WsEndpointOnMessage = async (endpoint: WsEndpoint, connection, message) => {
     options?.onMessage?.call(null)
 
     const handler = handlers.get(message.type)
@@ -88,13 +91,8 @@ export const routedWebSocketEndpoint = (
       logger.warn('Handler missing for message type: ', message.type)
     }
 
-    await useWebsocketMiddlewares(
-      logger,
-      middlewares,
-      endpoint,
-      connection,
-      message,
-      async () => await handler(endpoint, connection, message),
+    await useWebsocketMiddlewares(logger, middlewares, endpoint, connection, message, async () =>
+      handler(endpoint, connection, message),
     )
   }
 

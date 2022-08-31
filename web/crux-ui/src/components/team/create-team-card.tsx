@@ -1,11 +1,11 @@
-import { DyoButton } from '@app/elements/dyo-button'
+import { API_TEAMS } from '@app/const'
+import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { defaultApiErrorHandler } from '@app/errors'
 import { ActiveTeamDetails, CreateTeam } from '@app/models'
-import { API_TEAMS } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { createTeamSchema } from '@app/validation'
 import { useFormik } from 'formik'
@@ -17,6 +17,8 @@ interface CreateTeamCardProps {
 }
 
 const CreateTeamCard = (props: CreateTeamCardProps) => {
+  const { className, onTeamCreated } = props
+
   const { t } = useTranslation('teams')
 
   const handleApiError = defaultApiErrorHandler(t)
@@ -35,7 +37,7 @@ const CreateTeamCard = (props: CreateTeamCardProps) => {
         const json = await res.json()
         const team = json as ActiveTeamDetails
 
-        props.onTeamCreated(team)
+        onTeamCreated(team)
       } else {
         handleApiError(res, setFieldError)
       }
@@ -45,7 +47,7 @@ const CreateTeamCard = (props: CreateTeamCardProps) => {
   })
 
   return (
-    <DyoCard className={props.className}>
+    <DyoCard className={className}>
       <DyoHeading element="h4" className="text-lg text-bright">
         {t('createTeam')}
       </DyoHeading>

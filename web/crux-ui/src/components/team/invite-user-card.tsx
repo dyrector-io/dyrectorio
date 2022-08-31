@@ -1,4 +1,4 @@
-import { DyoButton } from '@app/elements/dyo-button'
+import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
@@ -20,9 +20,9 @@ interface InviteUserCardProps {
 }
 
 const InviteUserCard = (props: InviteUserCardProps) => {
-  const { t } = useTranslation('teams')
+  const { team, className, onUserInvited, submitRef } = props
 
-  const { team } = props
+  const { t } = useTranslation('teams')
 
   const handleApiError = defaultApiErrorHandler(t)
 
@@ -40,7 +40,7 @@ const InviteUserCard = (props: InviteUserCardProps) => {
         const json = await res.json()
         const user = json as User
 
-        props.onUserInvited(user)
+        onUserInvited(user)
       } else {
         handleApiError(res, setFieldError)
       }
@@ -49,12 +49,12 @@ const InviteUserCard = (props: InviteUserCardProps) => {
     },
   })
 
-  if (props.submitRef) {
-    props.submitRef.current = formik.submitForm
+  if (submitRef) {
+    submitRef.current = formik.submitForm
   }
 
   return (
-    <DyoCard className={props.className}>
+    <DyoCard className={className}>
       <DyoHeading element="h4" className="text-lg text-bright">
         {t('inviteMember', { name: team.name })}
       </DyoHeading>
@@ -74,7 +74,7 @@ const InviteUserCard = (props: InviteUserCardProps) => {
           message={formik.errors.email}
         />
 
-        <DyoButton className="hidden" type="submit"></DyoButton>
+        <DyoButton className="hidden" type="submit" />
       </form>
     </DyoCard>
   )

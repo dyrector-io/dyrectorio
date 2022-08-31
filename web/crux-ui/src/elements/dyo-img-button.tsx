@@ -11,15 +11,17 @@ interface DyoImgButtonProps {
 }
 
 const DyoImgButton = (props: DyoImgButtonProps) => {
+  const { className, src, alt, onClick, width, height } = props
+
   return (
-    <div className={clsx('flex', props.className)}>
+    <div className={clsx('flex', className)}>
       <Image
         className="cursor-pointer"
-        onClick={() => props.onClick()}
-        src={props.src}
-        width={props.width ?? 24}
-        height={props.height ?? 24}
-        alt={props.alt}
+        onClick={() => onClick()}
+        src={src}
+        width={width ?? 24}
+        height={height ?? 24}
+        alt={alt}
         layout="fixed"
       />
     </div>

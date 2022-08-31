@@ -8,6 +8,7 @@ import VersionSections from '@app/components/products/versions/version-sections'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu, DetailsPageTexts } from '@app/components/shared/page-menu'
+import { ROUTE_PRODUCTS } from '@app/const'
 import LoadingIndicator from '@app/elements/loading-indicator'
 import {
   EditableProduct,
@@ -17,7 +18,7 @@ import {
   Version,
   VersionDetails,
 } from '@app/models'
-import { productApiUrl, productUrl, ROUTE_PRODUCTS, versionUrl } from '@app/routes'
+import { productApiUrl, productUrl, versionUrl } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
@@ -32,11 +33,13 @@ interface ProductDetailsPageProps {
 }
 
 const ProductDetailsPage = (props: ProductDetailsPageProps) => {
+  const { product: propsProduct, simpleProductVersionDetails } = props
+
   const { t } = useTranslation('products')
   const router = useRouter()
 
-  const [product, setProduct] = useState(props.product)
-  const [versions, setVersions] = useState(props.product.versions)
+  const [product, setProduct] = useState(propsProduct)
+  const [versions, setVersions] = useState(propsProduct.versions)
   const [editState, setEditState] = useState<ProductDetailsEditState>('version-list')
   const [increaseTarget, setIncreaseTarget] = useState<Version>(null)
   const [saving, setSaving] = useState(false)
@@ -67,11 +70,7 @@ const ProductDetailsPage = (props: ProductDetailsPageProps) => {
 
   const onVersionEdited = (version: Version) => {
     setVersions([
-      ...(version.default
-        ? versions.map(it => {
-            return { ...it, default: false }
-          })
-        : versions),
+      ...(version.default ? versions.map(it => ({ ...it, default: false })) : versions),
       {
         ...version,
         increasable: version.type === 'incremental',
@@ -151,7 +150,7 @@ const ProductDetailsPage = (props: ProductDetailsPageProps) => {
       )}
 
       {editState !== 'version-list' ? null : simpleProduct ? (
-        <VersionSections product={product} version={props.simpleProductVersionDetails} setSaving={setSaving} />
+        <VersionSections product={product} version={simpleProductVersionDetails} setSaving={setSaving} />
       ) : (
         <ProductVersionsSection productId={product.id} versions={versions ?? []} onIncrease={onIncreaseVersion} />
       )}

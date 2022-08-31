@@ -5,67 +5,12 @@ import 'prismjs/themes/prism-tomorrow.css'
 import { useEffect, useReducer } from 'react'
 import Editor from 'react-simple-code-editor'
 
-interface JsonEditorProps<T> {
-  className?: string
-  disabled?: boolean
-  value?: T
-  onChange?: (value?: T) => void
-  onParseError?: (err: Error) => void
-}
-
-const _JsonEditor = <T,>(props: JsonEditorProps<T>) => {
-  const [state, dispatch] = useReducer(reducer, JSON.stringify(props.value, undefined, '  '))
-
-  useEffect(() => {
-    dispatch({
-      type: 'update',
-      content: JSON.stringify(props.value, undefined, '  '),
-    })
-  }, [props.value])
-
-  const onChange = (text: string) => {
-    dispatch({
-      type: 'text-changed',
-      content: text,
-    })
-
-    try {
-      const json = JSON.parse(text)
-      props.onChange?.call(null, json)
-    } catch (e) {
-      const err = e as Error
-      props.onParseError?.call(null, err)
-    }
+const tryParseJson = (text: string): object => {
+  try {
+    return JSON.parse(text)
+  } catch {
+    return null
   }
-
-  return (
-    <div
-      className={clsx(
-        'text-bright bg-gray-900 rounded-md ring-2 ring-light-grey border-dark caret-white',
-        props.className,
-      )}
-    >
-      <Editor
-        textareaClassName="outline-none"
-        disabled={props.disabled}
-        padding={2}
-        tabSize={2}
-        insertSpaces
-        value={state}
-        onValueChange={onChange}
-        highlight={value => highlight(value, languages['json'], 'json')}
-      />
-    </div>
-  )
-}
-
-export default _JsonEditor
-
-type JsonEditorActionType = 'update' | 'text-changed'
-
-type JsonEditorAction = {
-  type: JsonEditorActionType
-  content: string
 }
 
 const reducer = (state: string, action: JsonEditorAction): string => {
@@ -85,10 +30,64 @@ const reducer = (state: string, action: JsonEditorAction): string => {
   return JSON.stringify(stateJson) !== JSON.stringify(contentJson) ? content : state
 }
 
-const tryParseJson = (text: string): object => {
-  try {
-    return JSON.parse(text)
-  } catch {
-    return null
+interface JsonEditorProps<T> {
+  className?: string
+  disabled?: boolean
+  value?: T
+  onChange?: (value?: T) => void
+  onParseError?: (err: Error) => void
+}
+
+const JsonEditor = <T,>(props: JsonEditorProps<T>) => {
+  const { className, disabled, value, onChange: propOnChange, onParseError } = props
+
+  const [state, dispatch] = useReducer(reducer, JSON.stringify(value, undefined, '  '))
+
+  useEffect(() => {
+    dispatch({
+      type: 'update',
+      content: JSON.stringify(value, undefined, '  '),
+    })
+  }, [value])
+
+  const onChange = (text: string) => {
+    dispatch({
+      type: 'text-changed',
+      content: text,
+    })
+
+    try {
+      const json = JSON.parse(text)
+      propOnChange?.call(null, json)
+    } catch (e) {
+      const err = e as Error
+      onParseError?.call(null, err)
+    }
   }
+
+  return (
+    <div
+      className={clsx('text-bright bg-gray-900 rounded-md ring-2 ring-light-grey border-dark caret-white', className)}
+    >
+      <Editor
+        textareaClassName="outline-none"
+        disabled={disabled}
+        padding={2}
+        tabSize={2}
+        insertSpaces
+        value={state}
+        onValueChange={onChange}
+        highlight={valueArg => highlight(valueArg, languages.json, 'json')}
+      />
+    </div>
+  )
+}
+
+export default JsonEditor
+
+type JsonEditorActionType = 'update' | 'text-changed'
+
+type JsonEditorAction = {
+  type: JsonEditorActionType
+  content: string
 }

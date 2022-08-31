@@ -12,22 +12,22 @@ interface ProductVersionsSectionProps {
 }
 
 const ProductVersionsSection = (props: ProductVersionsSectionProps) => {
-  const { productId } = props
+  const { productId, versions, onIncrease, disabled } = props
 
   const router = useRouter()
 
-  const onClick = (versionId: string) => router.push(versionUrl(props.productId, versionId))
+  const onClick = (versionId: string) => router.push(versionUrl(productId, versionId))
 
   return (
     <DyoWrap>
-      {props.versions.map((it, index) => (
+      {versions.map((it, index) => (
         <VersionCard
           key={`version-${index}`}
           productId={productId}
           version={it}
           onClick={() => onClick(it.id)}
-          disabled={props.disabled}
-          onIncreaseClick={props.onIncrease ? () => props.onIncrease(it) : null}
+          disabled={disabled}
+          onIncreaseClick={onIncrease ? () => onIncrease(it) : null}
         />
       ))}
     </DyoWrap>

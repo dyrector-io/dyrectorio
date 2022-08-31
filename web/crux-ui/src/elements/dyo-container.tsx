@@ -5,8 +5,8 @@ export interface DyoContainerProps extends React.HTMLProps<HTMLDivElement> {
   component?: string
 }
 
-export const DyoContainer = ({ component = 'div', className, children, ...props }: DyoContainerProps) => {
-  return React.createElement(
+export const DyoContainer = ({ component = 'div', className, children, ...props }: DyoContainerProps) =>
+  React.createElement(
     component,
     {
       ...props,
@@ -14,4 +14,3 @@ export const DyoContainer = ({ component = 'div', className, children, ...props 
     },
     children,
   )
-}

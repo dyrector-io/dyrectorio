@@ -7,7 +7,7 @@ interface ServiceStatusTagProps {
 }
 
 const ServiceStatusTag = (props: ServiceStatusTagProps) => {
-  const { status } = props
+  const { status, className } = props
 
   const statusToBgColor = () => {
     switch (status) {
@@ -36,7 +36,7 @@ const ServiceStatusTag = (props: ServiceStatusTagProps) => {
   }
 
   return (
-    <DyoTag color={statusToBgColor()} textColor={statusToTextColor()} className={props.className}>
+    <DyoTag color={statusToBgColor()} textColor={statusToTextColor()} className={className}>
       {status.toUpperCase()}
     </DyoTag>
   )

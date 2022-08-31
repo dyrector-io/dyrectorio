@@ -5,22 +5,19 @@ interface DyoMessageProps {
   messageType?: 'error' | 'info'
 }
 
-export const DyoMessage = (props: DyoMessageProps) => {
-  const message = props.message
-  const messageType = props.messageType ?? 'error'
+const DyoMessage = (props: DyoMessageProps) => {
+  const { message, messageType } = props
 
-  return (
-    <>
-      {!message ? null : (
-        <p
-          className={clsx(
-            'mt-1 text-xs italic w-80',
-            messageType === 'error' ? 'text-error-red' : 'text-warning-orange',
-          )}
-        >
-          {message}
-        </p>
+  return !message ? null : (
+    <p
+      className={clsx(
+        'mt-1 text-xs italic w-80',
+        !messageType ? 'text-error-red' : messageType === 'error' ? 'text-error-red' : 'text-warning-orange',
       )}
-    </>
+    >
+      {message}
+    </p>
   )
 }
+
+export default DyoMessage

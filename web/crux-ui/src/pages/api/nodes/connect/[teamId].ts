@@ -7,7 +7,8 @@ import {
   WS_TYPE_NODE_STATUSES,
 } from '@app/models'
 import { WsMessage } from '@app/websockets/common'
-import { WsConnection, WsEndpoint } from '@app/websockets/server'
+import WsConnection from '@app/websockets/connection'
+import WsEndpoint from '@app/websockets/endpoint'
 import crux, { Crux, cruxFromConnection } from '@server/crux/crux'
 import { routedWebSocketEndpoint } from '@server/websocket-endpoint'
 import { NextApiRequest } from 'next'
@@ -44,13 +45,14 @@ const onGetNodeStatuses = async (
   const nodes = await cruxFromConnection(connection).nodes.getAll()
   const res = nodes
     .filter(it => req.nodeIds.includes(it.id))
-    .map(it => {
-      return {
-        nodeId: it.id,
-        status: it.status,
-        address: it.address,
-      } as NodeStatusMessage
-    })
+    .map(
+      it =>
+        ({
+          nodeId: it.id,
+          status: it.status,
+          address: it.address,
+        } as NodeStatusMessage),
+    )
 
   connection.send(WS_TYPE_NODE_STATUSES, res as NodeStatusMessage[])
 }

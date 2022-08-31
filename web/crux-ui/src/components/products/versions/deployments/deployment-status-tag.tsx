@@ -8,7 +8,7 @@ interface DeploymentStatusTagProps {
 }
 
 const DeploymentStatusTag = (props: DeploymentStatusTagProps) => {
-  const { status } = props
+  const { status, className } = props
 
   const { t } = useTranslation('common')
 
@@ -50,7 +50,7 @@ const DeploymentStatusTag = (props: DeploymentStatusTagProps) => {
     <DyoTag
       color={statusToBgColor()}
       textColor={statusToTextColor()}
-      className={props.className}
+      className={className}
       solid={status === 'obsolate'}
     >
       {t(`deploymentStatuses.${status}`)}

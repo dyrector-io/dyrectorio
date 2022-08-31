@@ -1,5 +1,5 @@
 import { DyoCard } from '@app/elements/dyo-card'
-import { DyoExpandableText } from '@app/elements/dyo-expandable-text'
+import DyoExpandableText from '@app/elements/dyo-expandable-text'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoTag from '@app/elements/dyo-tag'
 import { Version } from '@app/models'
@@ -13,12 +13,12 @@ interface VersionDetailsCardProps {
 }
 
 const VersionDetailsCard = (props: VersionDetailsCardProps) => {
+  const { className, version } = props
+
   const { t } = useTranslation('versions')
 
-  const { version } = props
-
   return (
-    <DyoCard className={clsx(props.className ?? 'p-6', 'flex flex-col')}>
+    <DyoCard className={clsx(className ?? 'p-6', 'flex flex-col')}>
       <DyoHeading element="h2" className="text-xl font-bold text-bright">
         {version.name}
       </DyoHeading>

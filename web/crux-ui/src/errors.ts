@@ -20,10 +20,9 @@ export const defaultTranslator: (t: Translate) => Translator = (t: Translate) =>
       input: translation,
       toast: translation,
     }
-  } else {
-    return {
-      toast: t('errors:oops'),
-    }
+  }
+  return {
+    toast: t('errors:oops'),
   }
 }
 
@@ -31,7 +30,7 @@ export const apiErrorHandler =
   (translator: Translator) => async (res: Response, setErrorValue?: FormikSetErrorValue) => {
     const toaster = message => toast.error(message)
 
-    const status = res.status
+    const { status } = res
     let translation = null
 
     try {

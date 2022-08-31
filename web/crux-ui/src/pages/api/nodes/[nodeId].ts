@@ -2,7 +2,7 @@ import { UpdateDyoNode } from '@app/models'
 import { nodeSchema } from '@app/validation'
 import crux from '@server/crux/crux'
 import { withMiddlewares } from '@server/middlewares'
-import { useValidationMiddleware } from '@server/validation-middleware'
+import useValidationMiddleware from '@server/validation-middleware'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const onGet = async (req: NextApiRequest, res: NextApiResponse) => {

@@ -1,4 +1,4 @@
-import { DyoButton } from '@app/elements/dyo-button'
+import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoImgButton from '@app/elements/dyo-img-button'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
@@ -12,7 +12,7 @@ import {
 } from '@app/models'
 import { ContainerConfig } from '@app/models-config'
 import { containerConfigSchema, getValidationError } from '@app/validation'
-import { WebSocketEndpoint } from '@app/websockets/client'
+import WebSocketEndpoint from '@app/websockets/websocket-endpoint'
 import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
 import EditImageConfig from './edit-image-config'
@@ -31,9 +31,9 @@ interface EditImageCardProps {
 }
 
 const EditImageCard = (props: EditImageCardProps) => {
-  const { t } = useTranslation('images')
+  const { tags, image, versionSock: sock, disabled, onTagSelected } = props
 
-  const { tags, image, versionSock: sock, disabled } = props
+  const { t } = useTranslation('images')
 
   const [selection, setSelection] = useState<EditImageCardSelection>('tag')
   const [deleteModalConfig, confirmDelete] = useConfirmation()
@@ -112,12 +112,7 @@ const EditImageCard = (props: EditImageCardProps) => {
         </div>
 
         {selection === 'tag' ? (
-          <EditImageTags
-            disabled={disabled}
-            selected={props.image.tag}
-            tags={tags}
-            onTagSelected={props.onTagSelected}
-          />
+          <EditImageTags disabled={disabled} selected={image.tag} tags={tags} onTagSelected={onTagSelected} />
         ) : selection === 'config' ? (
           <EditImageConfig disabled={disabled} config={image.config} onPatch={it => onPatch(image.id, it)} />
         ) : (

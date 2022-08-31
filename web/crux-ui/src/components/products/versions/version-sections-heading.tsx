@@ -1,6 +1,6 @@
-import { DyoButton } from '@app/elements/dyo-button'
+import DyoButton from '@app/elements/dyo-button'
+import { VersionAddSectionState, VersionSectionsState } from '@app/models'
 import useTranslation from 'next-translate/useTranslation'
-import { VersionAddSectionState, VersionSectionsState } from './version-sections'
 
 interface VersionSectionsHeadingProps {
   versionMutable: boolean
@@ -12,17 +12,17 @@ interface VersionSectionsHeadingProps {
 }
 
 const VersionSectionsHeading = (props: VersionSectionsHeadingProps) => {
+  const { versionMutable, state, onStateSelected, onAddStateSelected, onSaveImageOrder, onDiscardImageOrder } = props
+
   const { t } = useTranslation('versions')
 
-  const { versionMutable, state, onStateSelected, onAddStateSelected } = props
-
   const saveOrder = () => {
-    props.onSaveImageOrder()
+    onSaveImageOrder()
     onStateSelected('images')
   }
 
   const discardOrder = () => {
-    props.onDiscardImageOrder()
+    onDiscardImageOrder()
     onStateSelected('images')
   }
 
