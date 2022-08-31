@@ -27,7 +27,7 @@ import (
 	containerbuilder "github.com/dyrector-io/dyrectorio/agent/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/caps"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
-	"github.com/dyrector-io/dyrectorio/protobuf/go/crux"
+	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
@@ -90,7 +90,7 @@ func GetContainersByName(name string) []types.Container {
 	return containers
 }
 
-func GetContainersByNameCrux(ctx context.Context, name string) []*crux.ContainerStateItem {
+func GetContainersByNameCrux(ctx context.Context, name string) []*common.ContainerStateItem {
 	containers := GetContainersByName(name)
 
 	return mapper.MapContainerState(&containers)

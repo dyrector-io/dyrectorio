@@ -1,14 +1,15 @@
 import { DyoCard, DyoCardProps } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
-import { NotificationItem } from '@app/models'
+import { NotificationDetails } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
+import NotificationStatusTag from './notification-status-tag'
 import NotificationTypeTag from './notification-type-tag'
 
 interface NotificationCardProps extends Omit<DyoCardProps, 'children'> {
-  notification: NotificationItem
+  notification: NotificationDetails
   onClick?: () => void
 }
 
@@ -35,12 +36,18 @@ const NotificationCard = (props: NotificationCardProps) => {
         <p className="text-light break-all line-clamp-2">{notification.url}</p>
       </div>
 
+      <div className="flex wrap my-2">
+        <DyoLabel className="mr-4 mt-auto py-0.5 leading-4">{t('status')}</DyoLabel>
+
+        <NotificationStatusTag className="px-2.5" />
+      </div>
+
       <div className="flex flex-row flex-grow justify-end">
         <DyoLabel className="mr-4 mt-auto py-0.5 leading-4">
           {t('common:createdByName', { name: notification.creator })}
         </DyoLabel>
 
-        <NotificationTypeTag type={notification.type} />
+        <NotificationTypeTag className="px-2.5" type={notification.type} />
       </div>
     </DyoCard>
   )

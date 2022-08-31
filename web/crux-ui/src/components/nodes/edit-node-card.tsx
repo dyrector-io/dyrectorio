@@ -166,7 +166,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
             {editing ? t('common:editName', { name: node.name }) : t('new')}
           </DyoHeading>
 
-          <DyoLabel className="text-light">{t('tips')}</DyoLabel>
+          <DyoLabel textColor="text-bright-muted">{t('tips')}</DyoLabel>
 
           <form className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
             <DyoInput
@@ -176,6 +176,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
               value={formik.values.name}
               required
               grow
+              message={formik.errors.name}
             />
 
             <div className={inputClassName}>

@@ -33,7 +33,7 @@ const ProductDetailsCard = (props: ProductDetailsCardProps) => {
           />
         </div>
 
-        <div className="flex flex-col flex-grow ml-6">
+        <div className="flex flex-col ml-6">
           <div className="flex flex-row">
             <DyoHeading element="h5" className="text-xl text-bright leading-none">
               {product.name}
@@ -46,7 +46,7 @@ const ProductDetailsCard = (props: ProductDetailsCardProps) => {
             </div>
           </div>
 
-          <div className="overflow-hidden">
+          <div className="overflow-hidden mt-2">
             <DyoExpandableText
               text={product.description}
               lineClamp={2}

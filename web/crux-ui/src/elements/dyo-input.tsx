@@ -26,8 +26,9 @@ export const DyoInput = forwardRef((props: DyoInputProps, ref: ForwardedRef<HTML
         ref={ref}
         className={clsx(
           props.className,
-          'bg-medium h-11 p-4 ring-2 rounded-md text-bright ring-light-grey focus:outline-none focus:dark',
+          'bg-medium h-11 p-4 ring-2 rounded-md focus:outline-none focus:dark',
           grow ? null : 'w-80',
+          props.disabled ? 'text-bright-muted ring-light-grey-muted' : 'text-bright ring-light-grey',
         )}
       >
         {props.children}

@@ -39,7 +39,7 @@ export class DyoButton extends React.Component<DyoButtonProps> {
       : outlined
       ? 'ring-dyo-turquoise'
       : 'bg-dyo-turquoise'
-    const disabledColor = outlined ? 'ring-light-grey' : 'bg-light-grey'
+    const disabledColor = outlined ? 'ring-light-grey-muted' : 'bg-light-grey-muted'
 
     const color = text ? 'bg-transparent' : disabled ? disabledColor : colorClassName ?? defaultColor
 

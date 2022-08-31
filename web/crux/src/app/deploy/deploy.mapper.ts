@@ -10,15 +10,12 @@ import {
   InstanceContainerConfig,
   Node,
 } from '@prisma/client'
-import { JsonArray } from 'prisma'
+import { JsonArray, JsonObject } from 'prisma'
 import { deploymentStatusToDb } from 'src/domain/deployment'
 import { toTimestamp } from 'src/domain/utils'
-import { DeployRequest_ContainerConfig, DeployRequest_InstanceConfig } from 'src/grpc/protobuf/proto/agent'
+import { DeployRequest_InstanceConfig } from 'src/grpc/protobuf/proto/agent'
 import {
   AuditResponse,
-  ContainerState,
-  containerStateFromJSON,
-  containerStateToJSON,
   DeploymentByVersionResponse,
   DeploymentDetailsResponse,
   DeploymentEventContainerState,
@@ -26,18 +23,19 @@ import {
   DeploymentEventResponse,
   DeploymentEventType,
   DeploymentResponse,
-  DeploymentStatus,
-  deploymentStatusFromJSON,
-  ExplicitContainerConfig,
   InstanceResponse,
 } from 'src/grpc/protobuf/proto/crux'
 import {
-  ContainerConfigData,
-  ExplicitContainerConfigData,
-  ExplicitContainerConfigPort,
-  ExplicitContainerNetworkMode,
-  UniqueKeyValue,
-} from 'src/shared/model'
+  ContainerState,
+  containerStateFromJSON,
+  containerStateToJSON,
+  DeploymentStatus,
+  deploymentStatusFromJSON,
+  ExplicitContainerConfig,
+  Port,
+  NetworkMode,
+} from 'src/grpc/protobuf/proto/common'
+import { ContainerConfigData, UniqueKeyValue } from 'src/shared/model'
 import { ImageMapper, ImageWithConfig } from '../image/image.mapper'
 
 @Injectable()
@@ -92,7 +90,7 @@ export class DeployMapper {
       config: {
         capabilities: (instance.config?.capabilities as UniqueKeyValue[]) ?? [],
         environment: (instance.config?.environment as UniqueKeyValue[]) ?? [],
-        config: this.imageMapper.explicitConfigToGrpc(config.config as ExplicitContainerConfigData),
+        config: config.config as JsonObject,
       },
     }
   }
@@ -144,7 +142,7 @@ export class DeployMapper {
     }
   }
 
-  instanceToAgentContainerConfig(prefix: string, instance: InstanceDetails): DeployRequest_ContainerConfig {
+  instanceToAgentContainerConfig(instance: InstanceDetails): ExplicitContainerConfig {
     const imageConfig = (instance.image.config ?? {}) as ContainerConfigData
     const instaceConfig = (instance.config ?? {}) as ContainerConfigData
 
@@ -152,8 +150,6 @@ export class DeployMapper {
 
     return {
       ...config.config,
-      name: config.name,
-      prefix,
       environments: this.jsonToPipedFormat(config.environment ?? []),
       user: config.config.user ?? 0,
     }
@@ -166,10 +162,6 @@ export class DeployMapper {
         env: this.jsonToPipedFormat((deployment.environment as UniqueKeyValue[]) ?? []),
       },
     }
-  }
-
-  explicitConfigToDb(config: ExplicitContainerConfig): ExplicitContainerConfigData {
-    return this.imageMapper.explicitConfigToDb(config)
   }
 
   statusToGrpc(status: DeploymentStatusEnum): DeploymentStatus {
@@ -207,15 +199,12 @@ export class DeployMapper {
     return [...(weak?.filter(it => !overridenKeys.has(it.key)) ?? []), ...(strong ?? [])]
   }
 
-  private overridePorts(
-    weak: ExplicitContainerConfigPort[],
-    strong: ExplicitContainerConfigPort[],
-  ): ExplicitContainerConfigPort[] {
+  private overridePorts(weak: Port[], strong: Port[]): Port[] {
     const overridenPorts: Set<number> = new Set(strong?.map(it => it.internal))
     return [...(weak?.filter(it => !overridenPorts.has(it.internal)) ?? []), ...(strong ?? [])]
   }
 
-  private overrideNetworkMode(weak: ExplicitContainerNetworkMode, strong: ExplicitContainerNetworkMode) {
+  private overrideNetworkMode(weak: NetworkMode, strong: NetworkMode) {
     return strong ?? weak ?? 'none'
   }
 

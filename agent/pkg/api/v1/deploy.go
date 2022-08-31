@@ -19,10 +19,6 @@ import (
 	builder "github.com/dyrector-io/dyrectorio/agent/pkg/builder/container"
 )
 
-type Namespace struct {
-	Name string `json:"name" binding:"required"`
-}
-
 type DeployImageRequest struct {
 	RequestID       string                `json:"RequestId" binding:"required"`
 	RegistryAuth    *builder.RegistryAuth `json:"RegistryAuth,omitempty"`
@@ -35,16 +31,9 @@ type DeployImageRequest struct {
 	Issuer          string                `json:"Issuer"`
 }
 
-type BatchDeployImageRequest []DeployImageRequest
-
 type VersionData struct {
 	Version      string `json:"version" binding:"required"`
 	ReleaseNotes string `json:"releaseNotes"`
-}
-
-type DeployVersionRequest struct {
-	VersionData
-	DeployImages []DeployImageRequest `json:"deployImageRequest" binding:"dive,min=1"`
 }
 
 func (d *DeployImageRequest) Strings(appConfig *config.CommonConfiguration) []string {
@@ -74,8 +63,6 @@ type DeployImageResponse struct {
 }
 
 type DeployVersionResponse []DeployImageResponse
-
-type BatchDeployImageResponse []DeployImageResponse
 
 type Base64JSONBytes []byte
 
@@ -263,18 +250,17 @@ type ImportContainer struct {
 
 // Verbose volume definitions with support of size and type parameters
 //
-//
 // Example JSON defining a temporal volume:
+//
 //	"volumes": [{
 //		"name": "app-import",
 //		"path": "/path/in/container",
-// 		"size": "10Gi",
+//		"size": "10Gi",
 //		"type": "tmp",
 //		"class": ""
 //		}]
 //
 // Note: dagent maps these back into the old "name|/some/path" format, ingoring type and size constraints
-//
 type Volume struct {
 	// name of the volume, the prefix will be the pod using it
 	Name string `json:"name"`

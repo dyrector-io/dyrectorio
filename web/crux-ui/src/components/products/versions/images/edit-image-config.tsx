@@ -1,7 +1,7 @@
 import { IMAGE_WS_REQUEST_DELAY } from '@app/const'
 import { DyoInput } from '@app/elements/dyo-input'
 import { useThrottling } from '@app/hooks/use-throttleing'
-import { ContainerConfig, Environment } from '@app/models'
+import { ContainerConfig, Environment } from '@app/models-config'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useRef, useState } from 'react'
 import KeyValueInput from '../../../shared/key-value-input'

@@ -1,62 +1,111 @@
-![dyrectorio logo](dyrectorio.svg)
+<p align="center">
+  <a href="http://docs.dyrector.io/" target="blank">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="dyrectorio-dark.png">
+      <source media="(prefers-color-scheme: light)" srcset="dyrectorio-light.png">
+      <img alt="dyrector.io official logo" src="dyrectorio-dark.png" width="400">
+    </picture>
+  </a>
+</p>
 
-# dyrector.io - The open source internal delivery platform
+<p align="center">Open-source CD platform for developers and non-specialists to manage multi-instance deployments, microservices and configurations in Kubernetes & Docker.</p>
 
-[![License](https://img.shields.io/badge/licence-Apache%202.0-brightgreen.svg?style=flat)](LICENSE)
-[![Discord Budget](https://img.shields.io/discord/797082431902449694)](https://discord.gg/pZWbd4fxga)
-[![codecov](https://img.shields.io/codecov/c/github/dyrector-io/dyrectorio/develop?logo=Go&token=F5TZTAJTKX)](https://codecov.io/gh/dyrector-io/dyrectorio)
+<p align="center">
+  <a href="https://github.com/dyrector-io/dyrectorio/tags" target="_blank"><img src="https://img.shields.io/github/v/tag/dyrector-io/dyrectorio" alt="GitHub tag (latest by date)"/></a>
+    <a href="./LICENSE" target="_blank"><img src="https://img.shields.io/badge/licence-Apache%202.0-brightgreen.svg?style=flat)" alt="License"/></a>
+    <a href="https://discord.gg/pZWbd4fxga" target="_blank"><img src="https://img.shields.io/discord/797082431902449694" alt="Discord Budget"/></a>
+    <a href="https://codecov.io/gh/dyrector-io/dyrectorio" target="_blank"><img src="https://img.shields.io/codecov/c/github/dyrector-io/dyrectorio/develop?logo=Go&token=F5TZTAJTKX" alt="codecov"/></a>
+    <a href="https://github.com/dyrector-io/dyrectorio/graphs/contributors" target="_blank"><img src="https://img.shields.io/github/contributors/dyrector-io/dyrectorio" alt="GitHub contributors"/></a>
+    <a href="https://github.com/dyrector-io/dyrectorio/issues" target="_blank"><img src="https://img.shields.io/github/issues-raw/dyrector-io/dyrectorio" alt="GitHub issues"/></a>
+    <a href="https://twitter.com/dyrectorio" target="_blank"><img src="https://img.shields.io/twitter/follow/dyrectorio?style=social" alt="Twitter Follow"/></a>
+</p>
 
 ## Overview
 
-dyrector.io is an **open-source** internal delivery platform that helps developers to deliver applications to more places efficiently by simplifying software releases and operations in any environment.
+Life isn’t about application management. Why should your team focus so much of its precious time and effort on it when things can be simpler?
 
-> ⚠️ Disclaimer: dyrector.io platform is under development, please treat as such. Expect bugs here and there. Early adopters welcome.
+dyrector.io is for you if you’d like to shift your team’s focus from repeatable steps of multi-instance deployments to delivering value to your users, also when a deployment is successful or any error occurs, the team gets notified on chat so they can react as soon as possible.
+
+While dyrector.io enables non-technical staff members to help with certain tasks, it’s also useful to reduce time technical staff spend on deployment and system administration.
+
+> **Warning**
+> dyrector.io platform is under development, please treat as such. Expect bugs here and there. Early adopters welcome.
 
 ## Key features
 
-- Kubernetes and Docker support
-- Multi-instance deployment
-- Instant test environments from any branches
-- Environment management
-- Secret and configuration management
-- Auto-generated changelogs and release notes
-- Workflow support
-- Scheduled releases
-- Audit log
-- Container Registry integrations
-- Fine-grained RBAC
-- ChatOps & notification solutions
+-   Kubernetes and Docker support
+-   Multi-instance deployment
+-   Instant test environments from any branches
+-   Environment management
+-   Secret and configuration management
+-   Auto-generated changelogs and release notes (WIP)
+-   Workflow support
+-   Scheduled releases (WIP)
+-   Audit log
+-   Container Registry integrations
+-   Fine-grained RBAC (WIP)
+-   ChatOps & notification solutions
+
+## How it works
+
+dyrector.io consists of an agent (GoLang) and a platform (UI developed in React.js, Next.js. Backend developed in Node.js, Nest.js). There are two types of agents communicating with the platform: one for Docker and another for Kubernetes. Communication takes place in gRPC with TLS encryption. The data is managed in a PostgreSQL database which we use with Prisma ORM.
+
+<p align="center">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="how-it-works-dark.png">
+      <source media="(prefers-color-scheme: light)" srcset="how-it-works-light.png">
+      <img alt="dyrector.io official logo" src="how-it-works-dark.png" width="600">
+    </picture>
+</p>
+
+## Use cases
+
+### Multi-Instance Deployments
+
+Trigger deployments of the same application to multiple environments from one place using the same or various configurations.
+
+### Docker & Kubernetes utilization without specialists
+
+Both Docker and Kubernetes require specialized staff to manage. Via dyrector.io, your team’s non-specialist staff can contribute to the process, as well.
+
+### Instant test environments
+
+Seamless testing whenever your team wants to test the application, without waiting for a SysAdmin to set up an environment.
 
 ## Quick Start
 
 ### Prerequirements
 
-- Install Docker and Docker Compose to your machine
+-   Install Docker and Docker Compose to your machine
 
 ### Development (Local)
+
 The easiest way to get started with the dyrector.io platform is by our premade [docker-compose](./web/docker-compose.dev.yaml) file.
 
 1. First you have to create `.env` from `.env.example` files in your local environment, in the following folders: `/web`, `/web/crux`, `/web/crux-ui`
 
-On *Windows* and *Mac* use `host.docker.internal` in the `.env` files for URLs.
+On _Windows_ and _Mac_ use `host.docker.internal` in the `.env` files for URLs.
 
 2. Build the dyrector.io platform dependencies, this step is only required once:
+
 ```
 docker-compose -f web/docker-compose.dev.yaml build
 ```
 
 3. To run the dyrector.io platform dependencies:
+
 ```
 docker-compose -f web/docker-compose.dev.yaml up
 ```
 
 If you are having problems starting `crux-kratos-migrate` change the line endings of `web/kratos/entrypoint.sh` from CRLF to LF. These problems include `ERROR: Encountered errors while bringing up the project.` while running `docker-compose up` or `': No such file or directory` in the container log.
 
-4. Now as all the infrastructure is ready, you need to install all the node.js dependencies in the specific projects' folder. To install all (  `web/crux/`, `web/crux-ui/` ) dependencies run `npm install`.
+4. Now as all the infrastructure is ready, you need to install all the node.js dependencies in the specific projects' folder. To install all ( `web/crux/`, `web/crux-ui/` ) dependencies run `npm install`.
 
 _on Apple Silicon run `npm install --target_arch=x64`_
 
 5. In `crux/` folder you have to migrate the database and generate the Prisma client
+
 ```
 npx prisma generate
 npx prisma migrate deploy
@@ -78,14 +127,13 @@ We are planning to support a hosted version in the near future.
 
 ## FAQ
 
-- How do I get in touch with the Support Team?
+-   How do I get in touch with the Support Team?
 
     You can contact dyrector.io support directly using our [contact forms](https://dyrector.io/contact) for users and developers or by reaching out to us via email at help@dyrector.io. Developers can get in touch via our Community Discord server.
 
-- Can we use dyrector.io without containerization?
+-   Can we use dyrector.io without containerization?
 
     Unfortunately, we're unable to support applications that don't run in a containerization environment.
-
 
 ## Community
 
@@ -99,16 +147,19 @@ Send a pull request to any of our open source repositories on Github. Check our 
 [![dyrectorio Discord server Banner](https://discordapp.com/api/guilds/797082431902449694/widget.png?style=banner2)](https://discord.gg/pZWbd4fxga)
 
 ## Contributing
+
 The project can only accept contributions which are licensed under the [Apache License 2.0](LICENSE). For further information please see our [Contribution Guidelines](CONTRIBUTING.md).
 
 ## Changelog
 
 Install the generator
+
 ```
 go get -u github.com/git-chglog/git-chglog/cmd/git-chglog
 ```
 
 Usage
+
 ```
 git-chglog --next-tag vx.y.z -o CHANGELOG.md
 ```
@@ -119,8 +170,9 @@ git push --tags
 ```
 
 In order to draft a new release:
-- create a new release tag on develop
-- generate changelogs
+
+-   create a new release tag on develop
+-   generate changelogs
 
 See [CHANGELOG.md](CHANGELOG.md)
 
@@ -129,7 +181,7 @@ See [CHANGELOG.md](CHANGELOG.md)
 We’d love to hear your thoughts on this project. Feel free to drop us a note!
 
 ## License
-dyrector.io is open source software under the [Apache License 2.0](LICENSE). Complete license and copyright information can be found in the source code.
 
+dyrector.io is open source software under the [Apache License 2.0](LICENSE). Complete license and copyright information can be found in the source code.
 
 > Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.

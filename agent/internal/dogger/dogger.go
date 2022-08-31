@@ -7,9 +7,8 @@ import (
 	"log"
 
 	"github.com/dyrector-io/dyrectorio/agent/internal/config"
-	"github.com/dyrector-io/dyrectorio/agent/internal/sigmalr"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
-	"github.com/dyrector-io/dyrectorio/protobuf/go/crux"
+	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 )
 
 type DeploymentLogger struct {
@@ -46,7 +45,7 @@ func (dog *DeploymentLogger) SetRequestID(requestID string) {
 	dog.requestID = requestID
 }
 
-// Writes to all available streams, std.out, signalr, grpc streams
+// Writes to all available streams: std.out and grpc streams
 func (dog *DeploymentLogger) Write(messages ...string) {
 	for i := range messages {
 		log.Printf("Deployment - %s: %s", dog.deploymentID, messages[i])
@@ -54,7 +53,7 @@ func (dog *DeploymentLogger) Write(messages ...string) {
 	}
 
 	if dog.stream != nil {
-		err := dog.stream.Send(&crux.DeploymentStatusMessage{
+		err := dog.stream.Send(&common.DeploymentStatusMessage{
 			Log: messages,
 		})
 
@@ -62,22 +61,18 @@ func (dog *DeploymentLogger) Write(messages ...string) {
 			log.Printf("Deployment - %s: Status close err: %s", dog.deploymentID, err)
 		}
 	}
-
-	if dog.requestID != "" {
-		sigmalr.Log(&dog.requestID, messages...)
-	}
 }
 
-func (dog *DeploymentLogger) WriteDeploymentStatus(status crux.DeploymentStatus, messages ...string) {
+func (dog *DeploymentLogger) WriteDeploymentStatus(status common.DeploymentStatus, messages ...string) {
 	for i := range messages {
 		log.Printf("Deployment - %s - %s: %s", dog.deploymentID, status, messages[i])
 		dog.logs = append(dog.logs, messages...)
 	}
 
 	if dog.stream != nil {
-		err := dog.stream.Send(&crux.DeploymentStatusMessage{
+		err := dog.stream.Send(&common.DeploymentStatusMessage{
 			Log: messages,
-			Data: &crux.DeploymentStatusMessage_DeploymentStatus{
+			Data: &common.DeploymentStatusMessage_DeploymentStatus{
 				DeploymentStatus: status,
 			},
 		})
@@ -95,17 +90,15 @@ func (dog *DeploymentLogger) WriteContainerState(containerState string, messages
 		dog.logs = append(dog.logs, messages...)
 	}
 
-	sigmalr.Log(&dog.requestID, messages...)
-
 	if dog.stream != nil {
-		instance := &crux.DeploymentStatusMessage_Instance{
-			Instance: &crux.InstanceDeploymentItem{
+		instance := &common.DeploymentStatusMessage_Instance{
+			Instance: &common.InstanceDeploymentItem{
 				InstanceId: dog.requestID,
 				State:      MapContainerState(containerState),
 			},
 		}
 
-		var err = dog.stream.Send(&crux.DeploymentStatusMessage{
+		var err = dog.stream.Send(&common.DeploymentStatusMessage{
 			Log:  messages,
 			Data: instance,
 		})
@@ -113,10 +106,6 @@ func (dog *DeploymentLogger) WriteContainerState(containerState string, messages
 		if err != nil {
 			log.Println("Status close err: ", err.Error())
 		}
-	}
-
-	if dog.requestID != "" {
-		sigmalr.Log(&dog.requestID, messages...)
 	}
 }
 
@@ -130,23 +119,23 @@ func (dog *DeploymentLogger) WriteString(s string) (int, error) {
 	return len(s), nil
 }
 
-func MapContainerState(state string) crux.ContainerState {
+func MapContainerState(state string) common.ContainerState {
 	switch state {
 	case "created":
-		return crux.ContainerState_CREATED
+		return common.ContainerState_CREATED
 	case "restarting":
-		return crux.ContainerState_RESTARTING
+		return common.ContainerState_RESTARTING
 	case "running":
-		return crux.ContainerState_RUNNING
+		return common.ContainerState_RUNNING
 	case "removing":
-		return crux.ContainerState_REMOVING
+		return common.ContainerState_REMOVING
 	case "paused":
-		return crux.ContainerState_PAUSED
+		return common.ContainerState_PAUSED
 	case "exited":
-		return crux.ContainerState_EXITED
+		return common.ContainerState_EXITED
 	case "dead":
-		return crux.ContainerState_DEAD
+		return common.ContainerState_DEAD
 	default:
-		return crux.ContainerState_UNKNOWN_CONTAINER_STATE
+		return common.ContainerState_UNKNOWN_CONTAINER_STATE
 	}
 }

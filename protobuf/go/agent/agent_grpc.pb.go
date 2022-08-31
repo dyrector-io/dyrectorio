@@ -8,7 +8,7 @@ package agent
 
 import (
 	context "context"
-	crux "github.com/dyrector-io/dyrectorio/protobuf/go/crux"
+	common "github.com/dyrector-io/dyrectorio/protobuf/go/common"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -84,7 +84,7 @@ func (c *agentClient) DeploymentStatus(ctx context.Context, opts ...grpc.CallOpt
 }
 
 type Agent_DeploymentStatusClient interface {
-	Send(*crux.DeploymentStatusMessage) error
+	Send(*common.DeploymentStatusMessage) error
 	CloseAndRecv() (*Empty, error)
 	grpc.ClientStream
 }
@@ -93,7 +93,7 @@ type agentDeploymentStatusClient struct {
 	grpc.ClientStream
 }
 
-func (x *agentDeploymentStatusClient) Send(m *crux.DeploymentStatusMessage) error {
+func (x *agentDeploymentStatusClient) Send(m *common.DeploymentStatusMessage) error {
 	return x.ClientStream.SendMsg(m)
 }
 
@@ -118,7 +118,7 @@ func (c *agentClient) ContainerState(ctx context.Context, opts ...grpc.CallOptio
 }
 
 type Agent_ContainerStateClient interface {
-	Send(*crux.ContainerStateListMessage) error
+	Send(*common.ContainerStateListMessage) error
 	CloseAndRecv() (*Empty, error)
 	grpc.ClientStream
 }
@@ -127,7 +127,7 @@ type agentContainerStateClient struct {
 	grpc.ClientStream
 }
 
-func (x *agentContainerStateClient) Send(m *crux.ContainerStateListMessage) error {
+func (x *agentContainerStateClient) Send(m *common.ContainerStateListMessage) error {
 	return x.ClientStream.SendMsg(m)
 }
 
@@ -211,7 +211,7 @@ func _Agent_DeploymentStatus_Handler(srv interface{}, stream grpc.ServerStream) 
 
 type Agent_DeploymentStatusServer interface {
 	SendAndClose(*Empty) error
-	Recv() (*crux.DeploymentStatusMessage, error)
+	Recv() (*common.DeploymentStatusMessage, error)
 	grpc.ServerStream
 }
 
@@ -223,8 +223,8 @@ func (x *agentDeploymentStatusServer) SendAndClose(m *Empty) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *agentDeploymentStatusServer) Recv() (*crux.DeploymentStatusMessage, error) {
-	m := new(crux.DeploymentStatusMessage)
+func (x *agentDeploymentStatusServer) Recv() (*common.DeploymentStatusMessage, error) {
+	m := new(common.DeploymentStatusMessage)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -237,7 +237,7 @@ func _Agent_ContainerState_Handler(srv interface{}, stream grpc.ServerStream) er
 
 type Agent_ContainerStateServer interface {
 	SendAndClose(*Empty) error
-	Recv() (*crux.ContainerStateListMessage, error)
+	Recv() (*common.ContainerStateListMessage, error)
 	grpc.ServerStream
 }
 
@@ -249,8 +249,8 @@ func (x *agentContainerStateServer) SendAndClose(m *Empty) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *agentContainerStateServer) Recv() (*crux.ContainerStateListMessage, error) {
-	m := new(crux.ContainerStateListMessage)
+func (x *agentContainerStateServer) Recv() (*common.ContainerStateListMessage, error) {
+	m := new(common.ContainerStateListMessage)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}

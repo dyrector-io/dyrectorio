@@ -20,5 +20,7 @@
 
   "errors": {
     "alreadyExists": "Product name taken."
-  }
+  },
+
+  "changelogName": "Changelog: {{name}}"
 }

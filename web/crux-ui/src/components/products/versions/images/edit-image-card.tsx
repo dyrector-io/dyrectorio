@@ -4,13 +4,13 @@ import DyoImgButton from '@app/elements/dyo-img-button'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import useConfirmation from '@app/hooks/use-confirmation'
 import {
-  ContainerConfig,
   DeleteImageMessage,
   PatchImageMessage,
   VersionImage,
   WS_TYPE_DELETE_IMAGE,
   WS_TYPE_PATCH_IMAGE,
 } from '@app/models'
+import { ContainerConfig } from '@app/models-config'
 import { containerConfigSchema, getValidationError } from '@app/validation'
 import { WebSocketEndpoint } from '@app/websockets/client'
 import useTranslation from 'next-translate/useTranslation'

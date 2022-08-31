@@ -5,6 +5,7 @@
 syntax = "proto3";
 
 import "google/protobuf/timestamp.proto";
+import "protobuf/proto/common.proto";
 
 package crux;
 option go_package = "github.com/dyrector-io/dyrectorio/protobuf/go/crux";
@@ -489,36 +490,8 @@ message IncreaseVersionRequest {
   optional string changelog = 101;
 }
 
-// IMAGE
-
-message ExplicitContainerConfig {
-  message Port {
-    int32 internal = 1; // internal that is bound by the container
-    int32 external = 2; // external is docker only
-  }
-  /* container ports */
-  repeated Port ports = 1;
-  /* volume mounts in a piped format */
-  repeated string mounts = 2;
-  enum NetworkMode {
-    UNKNOWN_NETWORK_MODE = 0;
-    NONE = 1;
-    HOST = 2;
-  }
-  /* could be enum, i'm not sure if it is in use */
-  optional NetworkMode networkMode = 4;
-
-  message Expose {
-    bool public = 1; // if expose is needed
-    bool tls = 2;    // if tls is needed
-  }
-  /* exposure configuration*/
-  optional Expose expose = 5;
-  optional uint64 user = 6;
-}
-
 message ContainerConfig {
-  ExplicitContainerConfig config = 100;
+  common.ExplicitContainerConfig config = 100;
   string name = 101;
 
   repeated UniqueKeyValue capabilities = 1000;
@@ -567,7 +540,7 @@ message KeyValueList { repeated UniqueKeyValue data = 1000; }
 message PatchContainerConfig {
   optional KeyValueList capabilities = 100;
   optional KeyValueList environment = 101;
-  optional ExplicitContainerConfig config = 103;
+  optional common.ExplicitContainerConfig config = 103;
   optional string name = 104;
 }
 
@@ -678,18 +651,13 @@ message WatchContainerStateRequest {
   optional string prefix = 101;
 }
 
-message ContainerPort {
-  int32 internal = 1;
-  int32 external = 2;
-}
-
 message ContainerStateItem {
   string containerId = 100;
   string name = 101;
   string command = 103;
   google.protobuf.Timestamp createdAt = 104;
   /* The 'State' of the container (Created, Running, etc) */
-  ContainerState state = 105;
+  common.ContainerState state = 105;
   /*
    * The 'Status' of the container ("Created 1min ago", "Exited with code 123",
    * etc). Unused but left here for reverse compatibility with the legacy
@@ -699,7 +667,7 @@ message ContainerStateItem {
   string imageName = 107;
   string imageTag = 108;
 
-  repeated ContainerPort ports = 1000;
+  repeated common.Port ports = 1000;
 }
 
 message ContainerStateListMessage {
@@ -709,35 +677,11 @@ message ContainerStateListMessage {
 
 // DEPLOYMENT
 
-enum DeploymentStatus {
-  UNKNOWN_DEPLOYMENT_STATUS = 0;
-  PREPARING = 1;
-  IN_PROGRESS = 2;
-  SUCCESSFUL = 3;
-  FAILED = 4;
-  OBSOLATE = 5;
-  DOWNGRADED = 6;
-}
-
-message InstanceDeploymentItem {
-  string instanceId = 100;
-  ContainerState state = 101;
-}
-
-message DeploymentStatusMessage {
-  oneof data {
-    InstanceDeploymentItem instance = 200;
-    DeploymentStatus deploymentStatus = 201;
-  }
-
-  repeated string log = 1000;
-}
-
 message DeploymentProgressMessage {
   string id = 1;
 
-  optional DeploymentStatus status = 100;
-  optional InstanceDeploymentItem instance = 101;
+  optional common.DeploymentStatus status = 100;
+  optional common.InstanceDeploymentItem instance = 101;
 
   repeated string log = 1000;
 }
@@ -763,7 +707,7 @@ message UpdateDeploymentRequest {
   string accessedBy = 2;
 
   string name = 100;
-  optional string descripion = 101;
+  optional string description = 101;
   string prefix = 102;
 }
 
@@ -776,7 +720,7 @@ message PatchDeploymentRequest {
 }
 
 message InstanceContainerConfig {
-  ExplicitContainerConfig config = 100;
+  common.ExplicitContainerConfig config = 100;
 
   repeated UniqueKeyValue capabilities = 1000;
   repeated UniqueKeyValue environment = 1001;
@@ -787,7 +731,7 @@ message InstanceResponse {
   AuditResponse audit = 2;
 
   ImageResponse image = 100;
-  optional ContainerState state = 101;
+  optional common.ContainerState state = 101;
   optional InstanceContainerConfig config = 102;
 }
 
@@ -797,7 +741,7 @@ message PatchInstanceRequest {
 
   optional KeyValueList environment = 100;
   optional KeyValueList capabilities = 101;
-  optional ExplicitContainerConfig config = 102;
+  optional common.ExplicitContainerConfig config = 102;
 }
 
 message DeploymentListResponse { repeated DeploymentResponse data = 1000; }
@@ -811,7 +755,7 @@ message DeploymentResponse {
   string version = 103;
   string versionId = 104;
   string node = 105;
-  DeploymentStatus status = 106;
+  common.DeploymentStatus status = 106;
   string nodeId = 107;
 }
 
@@ -827,7 +771,7 @@ message DeploymentByVersionResponse {
   string prefix = 101;
   string nodeId = 102;
   string nodeName = 103;
-  DeploymentStatus status = 104;
+  common.DeploymentStatus status = 104;
 }
 
 message DeploymentDetailsResponse {
@@ -840,7 +784,7 @@ message DeploymentDetailsResponse {
   optional string description = 103;
   string prefix = 104;
   repeated UniqueKeyValue environment = 105;
-  DeploymentStatus status = 106;
+  common.DeploymentStatus status = 106;
 
   repeated InstanceResponse instances = 1000;
 }
@@ -854,7 +798,7 @@ enum DeploymentEventType {
 
 message DeploymentEventContainerState {
   string instanceId = 1;
-  ContainerState state = 2;
+  common.ContainerState state = 2;
 }
 
 message DeploymentEventLog { repeated string log = 1000; }
@@ -864,24 +808,13 @@ message DeploymentEventResponse {
   google.protobuf.Timestamp createdAt = 101;
   oneof details {
     DeploymentEventLog log = 200;
-    DeploymentStatus deploymentStatus = 201;
+    common.DeploymentStatus deploymentStatus = 201;
     DeploymentEventContainerState containerStatus = 202;
   }
 }
 
 message DeploymentEventListResponse {
   repeated DeploymentEventResponse data = 1000;
-}
-
-enum ContainerState {
-  UNKNOWN_CONTAINER_STATE = 0;
-  CREATED = 1;
-  RESTARTING = 2;
-  RUNNING = 3;
-  REMOVING = 4;
-  PAUSED = 5;
-  EXITED = 6;
-  DEAD = 7;
 }
 
 // NOTIFICATION
@@ -935,6 +868,7 @@ message NotificationResponse {
   string name = 100;
   string url = 101;
   NotificationType type = 103;
+  bool active = 104;
 }
 
 message NotificationListResponse { repeated NotificationResponse data = 1000; }

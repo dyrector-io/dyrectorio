@@ -68,8 +68,10 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 
+      const transformedValues = registrySchema.cast(values) as any
+
       const body: CreateRegistry | UpdateRegistry = {
-        ...values,
+        ...transformedValues,
       }
 
       const res = await (!editing
@@ -236,7 +238,13 @@ const V2RegistryFields = (props: EditRegistryTypeProps<V2RegistryDetails>) => {
           nameChecked={t('private')}
           nameUnchecked={t('public')}
           checked={formik.values._private}
-          setFieldValue={formik.setFieldValue}
+          setFieldValue={(field: string, value: boolean, shouldValidate?: boolean | undefined) => {
+            if (!value) {
+              formik.setFieldValue('user', '', false)
+              formik.setFieldValue('token', '', false)
+            }
+            return formik.setFieldValue(field, value, shouldValidate)
+          }}
         />
       </div>
 
@@ -318,7 +326,13 @@ const GitlabRegistryFields = (props: EditRegistryTypeProps<GitlabRegistryDetails
           nameChecked={t('selfManaged')}
           nameUnchecked={t('saas')}
           checked={formik.values.selfManaged}
-          setFieldValue={formik.setFieldValue}
+          setFieldValue={(field: string, value: boolean, shouldValidate?: boolean | undefined) => {
+            if (!value) {
+              formik.setFieldValue('url', '', false)
+              formik.setFieldValue('apiUrl', '', false)
+            }
+            return formik.setFieldValue(field, value, shouldValidate)
+          }}
         />
       </div>
 
@@ -443,7 +457,13 @@ const GoogleRegistryFields = (props: EditRegistryTypeProps<GoogleRegistryDetails
           nameChecked={t('private')}
           nameUnchecked={t('public')}
           checked={formik.values._private}
-          setFieldValue={formik.setFieldValue}
+          setFieldValue={(field: string, value: boolean, shouldValidate?: boolean | undefined) => {
+            if (!value) {
+              formik.setFieldValue('user', '', false)
+              formik.setFieldValue('token', '', false)
+            }
+            return formik.setFieldValue(field, value, shouldValidate)
+          }}
         />
       </div>
 

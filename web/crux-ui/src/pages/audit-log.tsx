@@ -17,6 +17,7 @@ import { cruxFromContext } from '@server/crux/crux'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
+import Image from 'next/image'
 import { useEffect, useMemo, useState } from 'react'
 
 interface AuditLogPageProps {
@@ -85,7 +86,7 @@ const AuditLogPage = (props: AuditLogPageProps) => {
   const itemClassNames = ['py-2 w-14'] // Only for the first column
 
   return (
-    <Layout title={t('common:auditLog')}>
+    <Layout title={t('common:audit')}>
       <PageHeading pageLink={selfLink} />
 
       <Filters setTextFilter={it => filters.setFilter({ text: it })}>
@@ -114,7 +115,7 @@ const AuditLogPage = (props: AuditLogPageProps) => {
             /* eslint-disable react/jsx-key */
             return [
               <div className="w-10 ml-auto">
-                <img src="/default_avatar.svg" />
+                <Image src="/default_avatar.svg" width={38} height={38} layout={'fixed'} />
               </div>,
               <div className="font-semibold min-w-max pl-2">{it.identityName}</div>,
               <div className="min-w-max">{utcDateToLocale(it.date)}</div>,

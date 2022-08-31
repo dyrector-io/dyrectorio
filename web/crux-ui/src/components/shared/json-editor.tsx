@@ -39,8 +39,14 @@ const _JsonEditor = <T,>(props: JsonEditorProps<T>) => {
   }
 
   return (
-    <div className={clsx('bg-gray-900 rounded-md ring-2 ring-light-grey border-dark caret-white', props.className)}>
+    <div
+      className={clsx(
+        'text-bright bg-gray-900 rounded-md ring-2 ring-light-grey border-dark caret-white',
+        props.className,
+      )}
+    >
       <Editor
+        textareaClassName="outline-none"
         disabled={props.disabled}
         padding={2}
         tabSize={2}
