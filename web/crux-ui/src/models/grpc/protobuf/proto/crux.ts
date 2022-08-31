@@ -13,6 +13,7 @@ import {
   ServiceError,
   UntypedServiceImplementation,
 } from '@grpc/grpc-js'
+import Long from 'long'
 import _m0 from 'protobufjs/minimal'
 import { Timestamp } from '../../google/protobuf/timestamp'
 import {

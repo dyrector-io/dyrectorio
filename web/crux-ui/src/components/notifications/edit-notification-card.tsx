@@ -1,7 +1,6 @@
 import { WEBOOK_TEST_DELAY } from '@app/const'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
-import DyoCheckbox from '@app/elements/dyo-checkbox'
 import DyoChips from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
@@ -46,7 +45,7 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
       type: 'discord',
       url: '',
       creator: '',
-      events: [ ...NOTIFICATION_EVENT_VALUES ]
+      events: [...NOTIFICATION_EVENT_VALUES],
     },
   )
 
@@ -160,8 +159,11 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
         <div className="flex flex-col">
           <div className="flex flex-col">
             <DyoLabel className="mb-2.5">{t('events')}</DyoLabel>
-            
-            <NotificationEventList value={formik.values.events} onChanged={value => formik.setFieldValue('events', value, false)} />
+
+            <NotificationEventList
+              value={formik.values.events}
+              onChanged={value => formik.setFieldValue('events', value, false)}
+            />
           </div>
         </div>
       </form>

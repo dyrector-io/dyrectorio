@@ -1,4 +1,10 @@
-import { CreateNotification, NotificationDetails, NotificationEventType, NotificationType, UpdateNotification } from '@app/models'
+import {
+  CreateNotification,
+  NotificationDetails,
+  NotificationEventType,
+  NotificationType,
+  UpdateNotification,
+} from '@app/models'
 import {
   AccessRequest,
   CreateNotificationRequest,
@@ -7,15 +13,15 @@ import {
   Empty,
   IdRequest,
   NotificationDetailsResponse,
+  NotificationEventType as ProtoNotificationEventType,
+  notificationEventTypeFromJSON,
+  notificationEventTypeToJSON,
   NotificationListResponse,
   NotificationType as ProtoNotificationType,
-  NotificationEventType as ProtoNotificationEventType,
   notificationTypeFromJSON,
   notificationTypeToJSON,
   UpdateEntityResponse,
   UpdateNotificationRequest,
-  notificationEventTypeFromJSON,
-  notificationEventTypeToJSON,
 } from '@app/models/grpc/protobuf/proto/crux'
 import { timestampToUTC } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
