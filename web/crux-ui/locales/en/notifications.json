@@ -25,5 +25,13 @@
     "message": "Its a test!",
     "success": "Your hook is working!",
     "error": "Something is wrong with your hook!"
+  },
+
+  "settings": "Settings",
+  "settingType": {
+    "deploymentCreated": "New deploy created",
+    "versionCreated": "New version added",
+    "nodeAdded": "New node added",
+    "userTeamInvited": "Someone invited to a team"
   }
 }

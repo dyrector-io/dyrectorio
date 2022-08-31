@@ -1,4 +1,4 @@
-import { NotificationTypeEnum } from '@prisma/client'
+import { NotificationEventTypeEnum, NotificationTypeEnum } from '@prisma/client'
 import { InternalException } from 'src/exception/errors'
 
 const title = 'dyrector.io'
@@ -149,5 +149,20 @@ const getMessage = (messageType: NotificationMessageType): ((arg: Message) => st
       return getFailedDeployMessage
     case 'successfulDeploy':
       return getSuccessfulDeployMessage
+  }
+}
+
+export const getMessageEventFromType = (messageType: NotificationMessageType): NotificationEventTypeEnum => {
+  switch (messageType) {
+    case 'node':
+      return NotificationEventTypeEnum.node_added
+    case 'version':
+      return NotificationEventTypeEnum.version_created
+    case 'invite':
+      return NotificationEventTypeEnum.user_team_invited
+    case 'failedDeploy':
+      return NotificationEventTypeEnum.deployment_created
+    case 'successfulDeploy':
+      return NotificationEventTypeEnum.deployment_created
   }
 }

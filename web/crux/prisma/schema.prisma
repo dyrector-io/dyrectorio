@@ -253,7 +253,19 @@ model Notification {
   
   team        Team                  @relation(fields: [teamId], references: [id], onDelete: Cascade)
 
+  events      NotificationEvent[]
+
   @@unique([name, teamId])
+}
+
+model NotificationEvent {
+  id              String                    @id @default(uuid()) @db.Uuid
+  event           NotificationEventTypeEnum
+  notificationId  String                    @db.Uuid
+
+  notification    Notification              @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  @@unique([event, notificationId])
 }
 
 enum ProductTypeEnum {
@@ -308,4 +320,11 @@ enum NotificationTypeEnum {
   discord
   slack
   teams
+}
+
+enum NotificationEventTypeEnum {
+  deployment_created
+  version_created
+  node_added
+  user_team_invited
 }

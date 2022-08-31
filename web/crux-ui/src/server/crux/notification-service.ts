@@ -1,4 +1,4 @@
-import { CreateNotification, NotificationDetails, NotificationType, UpdateNotification } from '@app/models'
+import { CreateNotification, NotificationDetails, NotificationEventType, NotificationType, UpdateNotification } from '@app/models'
 import {
   AccessRequest,
   CreateNotificationRequest,
@@ -9,10 +9,13 @@ import {
   NotificationDetailsResponse,
   NotificationListResponse,
   NotificationType as ProtoNotificationType,
+  NotificationEventType as ProtoNotificationEventType,
   notificationTypeFromJSON,
   notificationTypeToJSON,
   UpdateEntityResponse,
   UpdateNotificationRequest,
+  notificationEventTypeFromJSON,
+  notificationEventTypeToJSON,
 } from '@app/models/grpc/protobuf/proto/crux'
 import { timestampToUTC } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
@@ -36,6 +39,7 @@ class DyoNotifcationService {
         ...it,
         type: notificationTypeToDto(it.type),
         creator: it.audit.createdBy,
+        events: it.events.map(ev => notificationEventTypeToDto(ev)),
       }
     })
   }
@@ -45,6 +49,7 @@ class DyoNotifcationService {
       ...dto,
       type: notificationTypeToGrpc(dto.type),
       accessedBy: this.identity.id,
+      events: dto.events.map(ev => notificationEventTypeToGrpc(ev)),
     }
 
     const res = await protomisify<CreateNotificationRequest, CreateNotificationResponse>(
@@ -64,6 +69,7 @@ class DyoNotifcationService {
       ...dto,
       type: notificationTypeToGrpc(dto.type),
       accessedBy: this.identity.id,
+      events: dto.events.map(ev => notificationEventTypeToGrpc(ev)),
     }
 
     const res = await protomisify<UpdateNotificationRequest, UpdateEntityResponse>(
@@ -89,6 +95,7 @@ class DyoNotifcationService {
       ...res,
       type: notificationTypeToDto(res.type),
       creator: res.audit.createdBy,
+      events: res.events.map(ev => notificationEventTypeToDto(ev)),
     }
   }
 
@@ -119,4 +126,12 @@ export const notificationTypeToGrpc = (type: NotificationType): ProtoNotificatio
 
 export const notificationTypeToDto = (type: ProtoNotificationType): NotificationType => {
   return notificationTypeToJSON(type).toLocaleLowerCase() as NotificationType
+}
+
+export const notificationEventTypeToGrpc = (type: NotificationEventType): ProtoNotificationEventType => {
+  return notificationEventTypeFromJSON(type.toUpperCase())
+}
+
+export const notificationEventTypeToDto = (type: ProtoNotificationEventType): NotificationEventType => {
+  return notificationEventTypeToJSON(type).toLocaleLowerCase() as NotificationEventType
 }

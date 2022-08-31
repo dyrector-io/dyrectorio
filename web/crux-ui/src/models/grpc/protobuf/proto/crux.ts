@@ -1,32 +1,32 @@
 /* eslint-disable */
+import Long from 'long'
 import {
-  CallOptions,
+  makeGenericClientConstructor,
   ChannelCredentials,
   ChannelOptions,
-  Client,
-  ClientReadableStream,
-  ClientUnaryCall,
-  handleServerStreamingCall,
-  handleUnaryCall,
-  makeGenericClientConstructor,
-  Metadata,
-  ServiceError,
   UntypedServiceImplementation,
+  handleUnaryCall,
+  Client,
+  ClientUnaryCall,
+  Metadata,
+  CallOptions,
+  handleServerStreamingCall,
+  ClientReadableStream,
+  ServiceError,
 } from '@grpc/grpc-js'
-import Long from 'long'
 import _m0 from 'protobufjs/minimal'
-import { Timestamp } from '../../google/protobuf/timestamp'
 import {
   ContainerState,
+  DeploymentStatus,
+  ExplicitContainerConfig,
+  Port,
+  InstanceDeploymentItem,
   containerStateFromJSON,
   containerStateToJSON,
-  DeploymentStatus,
   deploymentStatusFromJSON,
   deploymentStatusToJSON,
-  ExplicitContainerConfig,
-  InstanceDeploymentItem,
-  Port,
 } from './common'
+import { Timestamp } from '../../google/protobuf/timestamp'
 
 export const protobufPackage = 'crux'
 
@@ -415,6 +415,56 @@ export function notificationTypeToJSON(object: NotificationType): string {
       return 'SLACK'
     case NotificationType.TEAMS:
       return 'TEAMS'
+    default:
+      return 'UNKNOWN'
+  }
+}
+
+export enum NotificationEventType {
+  UNKNOWN_NOTIFICATION_EVENT_TYPE = 0,
+  DEPLOYMENT_CREATED = 1,
+  VERSION_CREATED = 2,
+  NODE_ADDED = 3,
+  USER_TEAM_INVITED = 4,
+  UNRECOGNIZED = -1,
+}
+
+export function notificationEventTypeFromJSON(object: any): NotificationEventType {
+  switch (object) {
+    case 0:
+    case 'UNKNOWN_NOTIFICATION_EVENT_TYPE':
+      return NotificationEventType.UNKNOWN_NOTIFICATION_EVENT_TYPE
+    case 1:
+    case 'DEPLOYMENT_CREATED':
+      return NotificationEventType.DEPLOYMENT_CREATED
+    case 2:
+    case 'VERSION_CREATED':
+      return NotificationEventType.VERSION_CREATED
+    case 3:
+    case 'NODE_ADDED':
+      return NotificationEventType.NODE_ADDED
+    case 4:
+    case 'USER_TEAM_INVITED':
+      return NotificationEventType.USER_TEAM_INVITED
+    case -1:
+    case 'UNRECOGNIZED':
+    default:
+      return NotificationEventType.UNRECOGNIZED
+  }
+}
+
+export function notificationEventTypeToJSON(object: NotificationEventType): string {
+  switch (object) {
+    case NotificationEventType.UNKNOWN_NOTIFICATION_EVENT_TYPE:
+      return 'UNKNOWN_NOTIFICATION_EVENT_TYPE'
+    case NotificationEventType.DEPLOYMENT_CREATED:
+      return 'DEPLOYMENT_CREATED'
+    case NotificationEventType.VERSION_CREATED:
+      return 'VERSION_CREATED'
+    case NotificationEventType.NODE_ADDED:
+      return 'NODE_ADDED'
+    case NotificationEventType.USER_TEAM_INVITED:
+      return 'USER_TEAM_INVITED'
     default:
       return 'UNKNOWN'
   }
@@ -1052,6 +1102,7 @@ export interface CreateNotificationRequest {
   url: string
   type: NotificationType
   active: boolean
+  events: NotificationEventType[]
 }
 
 export interface CreateNotificationResponse {
@@ -1066,6 +1117,7 @@ export interface UpdateNotificationRequest {
   url: string
   type: NotificationType
   active: boolean
+  events: NotificationEventType[]
 }
 
 export interface NotificationDetailsResponse {
@@ -1075,6 +1127,7 @@ export interface NotificationDetailsResponse {
   url: string
   type: NotificationType
   active: boolean
+  events: NotificationEventType[]
 }
 
 export interface NotificationResponse {
@@ -1084,6 +1137,7 @@ export interface NotificationResponse {
   url: string
   type: NotificationType
   active: boolean
+  events: NotificationEventType[]
 }
 
 export interface NotificationListResponse {
@@ -7863,6 +7917,7 @@ const baseCreateNotificationRequest: object = {
   url: '',
   type: 0,
   active: false,
+  events: 0,
 }
 
 export const CreateNotificationRequest = {
@@ -7882,6 +7937,11 @@ export const CreateNotificationRequest = {
     if (message.active === true) {
       writer.uint32(824).bool(message.active)
     }
+    writer.uint32(8002).fork()
+    for (const v of message.events) {
+      writer.int32(v)
+    }
+    writer.ldelim()
     return writer
   },
 
@@ -7891,6 +7951,7 @@ export const CreateNotificationRequest = {
     const message = {
       ...baseCreateNotificationRequest,
     } as CreateNotificationRequest
+    message.events = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -7909,6 +7970,16 @@ export const CreateNotificationRequest = {
         case 103:
           message.active = reader.bool()
           break
+        case 1000:
+          if ((tag & 7) === 2) {
+            const end2 = reader.uint32() + reader.pos
+            while (reader.pos < end2) {
+              message.events.push(reader.int32() as any)
+            }
+          } else {
+            message.events.push(reader.int32() as any)
+          }
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -7926,6 +7997,7 @@ export const CreateNotificationRequest = {
     message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
     message.type = object.type !== undefined && object.type !== null ? notificationTypeFromJSON(object.type) : 0
     message.active = object.active !== undefined && object.active !== null ? Boolean(object.active) : false
+    message.events = (object.events ?? []).map((e: any) => notificationEventTypeFromJSON(e))
     return message
   },
 
@@ -7936,6 +8008,11 @@ export const CreateNotificationRequest = {
     message.url !== undefined && (obj.url = message.url)
     message.type !== undefined && (obj.type = notificationTypeToJSON(message.type))
     message.active !== undefined && (obj.active = message.active)
+    if (message.events) {
+      obj.events = message.events.map(e => notificationEventTypeToJSON(e))
+    } else {
+      obj.events = []
+    }
     return obj
   },
 
@@ -7948,6 +8025,7 @@ export const CreateNotificationRequest = {
     message.url = object.url ?? ''
     message.type = object.type ?? 0
     message.active = object.active ?? false
+    message.events = object.events?.map(e => e) || []
     return message
   },
 }
@@ -8021,6 +8099,7 @@ const baseUpdateNotificationRequest: object = {
   url: '',
   type: 0,
   active: false,
+  events: 0,
 }
 
 export const UpdateNotificationRequest = {
@@ -8043,6 +8122,11 @@ export const UpdateNotificationRequest = {
     if (message.active === true) {
       writer.uint32(824).bool(message.active)
     }
+    writer.uint32(8002).fork()
+    for (const v of message.events) {
+      writer.int32(v)
+    }
+    writer.ldelim()
     return writer
   },
 
@@ -8052,6 +8136,7 @@ export const UpdateNotificationRequest = {
     const message = {
       ...baseUpdateNotificationRequest,
     } as UpdateNotificationRequest
+    message.events = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -8073,6 +8158,16 @@ export const UpdateNotificationRequest = {
         case 103:
           message.active = reader.bool()
           break
+        case 1000:
+          if ((tag & 7) === 2) {
+            const end2 = reader.uint32() + reader.pos
+            while (reader.pos < end2) {
+              message.events.push(reader.int32() as any)
+            }
+          } else {
+            message.events.push(reader.int32() as any)
+          }
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -8091,6 +8186,7 @@ export const UpdateNotificationRequest = {
     message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
     message.type = object.type !== undefined && object.type !== null ? notificationTypeFromJSON(object.type) : 0
     message.active = object.active !== undefined && object.active !== null ? Boolean(object.active) : false
+    message.events = (object.events ?? []).map((e: any) => notificationEventTypeFromJSON(e))
     return message
   },
 
@@ -8102,6 +8198,11 @@ export const UpdateNotificationRequest = {
     message.url !== undefined && (obj.url = message.url)
     message.type !== undefined && (obj.type = notificationTypeToJSON(message.type))
     message.active !== undefined && (obj.active = message.active)
+    if (message.events) {
+      obj.events = message.events.map(e => notificationEventTypeToJSON(e))
+    } else {
+      obj.events = []
+    }
     return obj
   },
 
@@ -8115,6 +8216,7 @@ export const UpdateNotificationRequest = {
     message.url = object.url ?? ''
     message.type = object.type ?? 0
     message.active = object.active ?? false
+    message.events = object.events?.map(e => e) || []
     return message
   },
 }
@@ -8125,6 +8227,7 @@ const baseNotificationDetailsResponse: object = {
   url: '',
   type: 0,
   active: false,
+  events: 0,
 }
 
 export const NotificationDetailsResponse = {
@@ -8147,6 +8250,11 @@ export const NotificationDetailsResponse = {
     if (message.active === true) {
       writer.uint32(824).bool(message.active)
     }
+    writer.uint32(8002).fork()
+    for (const v of message.events) {
+      writer.int32(v)
+    }
+    writer.ldelim()
     return writer
   },
 
@@ -8156,6 +8264,7 @@ export const NotificationDetailsResponse = {
     const message = {
       ...baseNotificationDetailsResponse,
     } as NotificationDetailsResponse
+    message.events = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -8177,6 +8286,16 @@ export const NotificationDetailsResponse = {
         case 103:
           message.active = reader.bool()
           break
+        case 1000:
+          if ((tag & 7) === 2) {
+            const end2 = reader.uint32() + reader.pos
+            while (reader.pos < end2) {
+              message.events.push(reader.int32() as any)
+            }
+          } else {
+            message.events.push(reader.int32() as any)
+          }
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -8196,6 +8315,7 @@ export const NotificationDetailsResponse = {
     message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
     message.type = object.type !== undefined && object.type !== null ? notificationTypeFromJSON(object.type) : 0
     message.active = object.active !== undefined && object.active !== null ? Boolean(object.active) : false
+    message.events = (object.events ?? []).map((e: any) => notificationEventTypeFromJSON(e))
     return message
   },
 
@@ -8207,6 +8327,11 @@ export const NotificationDetailsResponse = {
     message.url !== undefined && (obj.url = message.url)
     message.type !== undefined && (obj.type = notificationTypeToJSON(message.type))
     message.active !== undefined && (obj.active = message.active)
+    if (message.events) {
+      obj.events = message.events.map(e => notificationEventTypeToJSON(e))
+    } else {
+      obj.events = []
+    }
     return obj
   },
 
@@ -8221,6 +8346,7 @@ export const NotificationDetailsResponse = {
     message.url = object.url ?? ''
     message.type = object.type ?? 0
     message.active = object.active ?? false
+    message.events = object.events?.map(e => e) || []
     return message
   },
 }
@@ -8231,6 +8357,7 @@ const baseNotificationResponse: object = {
   url: '',
   type: 0,
   active: false,
+  events: 0,
 }
 
 export const NotificationResponse = {
@@ -8253,6 +8380,11 @@ export const NotificationResponse = {
     if (message.active === true) {
       writer.uint32(832).bool(message.active)
     }
+    writer.uint32(8002).fork()
+    for (const v of message.events) {
+      writer.int32(v)
+    }
+    writer.ldelim()
     return writer
   },
 
@@ -8260,6 +8392,7 @@ export const NotificationResponse = {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
     const message = { ...baseNotificationResponse } as NotificationResponse
+    message.events = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -8281,6 +8414,16 @@ export const NotificationResponse = {
         case 104:
           message.active = reader.bool()
           break
+        case 1000:
+          if ((tag & 7) === 2) {
+            const end2 = reader.uint32() + reader.pos
+            while (reader.pos < end2) {
+              message.events.push(reader.int32() as any)
+            }
+          } else {
+            message.events.push(reader.int32() as any)
+          }
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -8298,6 +8441,7 @@ export const NotificationResponse = {
     message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
     message.type = object.type !== undefined && object.type !== null ? notificationTypeFromJSON(object.type) : 0
     message.active = object.active !== undefined && object.active !== null ? Boolean(object.active) : false
+    message.events = (object.events ?? []).map((e: any) => notificationEventTypeFromJSON(e))
     return message
   },
 
@@ -8309,6 +8453,11 @@ export const NotificationResponse = {
     message.url !== undefined && (obj.url = message.url)
     message.type !== undefined && (obj.type = notificationTypeToJSON(message.type))
     message.active !== undefined && (obj.active = message.active)
+    if (message.events) {
+      obj.events = message.events.map(e => notificationEventTypeToJSON(e))
+    } else {
+      obj.events = []
+    }
     return obj
   },
 
@@ -8321,6 +8470,7 @@ export const NotificationResponse = {
     message.url = object.url ?? ''
     message.type = object.type ?? 0
     message.active = object.active ?? false
+    message.events = object.events?.map(e => e) || []
     return message
   },
 }
