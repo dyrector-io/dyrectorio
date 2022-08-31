@@ -34,11 +34,14 @@ export class NotificationMapper {
         ...AuditResponse.fromJSON(notification),
         createdBy: nameOrEmailOfIdentity(identity),
       },
-      events: notification.events.map(ev => this.eventTypeToGrpc(ev.event))
+      events: notification.events.map(ev => this.eventTypeToGrpc(ev.event)),
     }
   }
 
-  toGrpcListResponse(notifications: NotificationWithEvents[], identities: Map<string, Identity>): NotificationResponse[] {
+  toGrpcListResponse(
+    notifications: NotificationWithEvents[],
+    identities: Map<string, Identity>,
+  ): NotificationResponse[] {
     return notifications.map(it => {
       const identity = identities.get(it.createdBy)
 
@@ -53,7 +56,7 @@ export class NotificationMapper {
           ...AuditResponse.fromJSON(it),
           createdBy: nameOrEmailOfIdentity(identity),
         },
-        events: it.events.map(ev => this.eventTypeToGrpc(ev.event))
+        events: it.events.map(ev => this.eventTypeToGrpc(ev.event)),
       } as NotificationResponse
     })
   }
@@ -83,5 +86,5 @@ export class NotificationMapper {
 }
 
 export type NotificationWithEvents = Notification & {
-  events: NotificationEvent[];
+  events: NotificationEvent[]
 }

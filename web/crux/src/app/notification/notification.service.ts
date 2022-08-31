@@ -46,11 +46,11 @@ export class NotificationService {
           createMany: {
             data: (request.events ?? []).map(it => {
               return {
-                event: this.mapper.eventTypeToDb(it)
+                event: this.mapper.eventTypeToDb(it),
               }
-            })
-          }
-        }
+            }),
+          },
+        },
       },
     })
 
@@ -62,13 +62,17 @@ export class NotificationService {
   async updateNotification(request: UpdateNotificationRequest): Promise<UpdateEntityResponse> {
     const notificationEvents = await this.prisma.notificationEvent.findMany({
       where: {
-        notificationId: request.id
-      }
+        notificationId: request.id,
+      },
     })
 
     const eventsDbMapped = (request.events ?? []).map(ev => this.mapper.eventTypeToDb(ev))
-    const newEvents = eventsDbMapped.filter(requestEvent => notificationEvents.find(dbEvent => dbEvent.event == requestEvent) == null)
-    const deleteEvents = notificationEvents.filter(dbEvent => eventsDbMapped.find(requestEvent => dbEvent.event == requestEvent) == null)
+    const newEvents = eventsDbMapped.filter(
+      requestEvent => notificationEvents.find(dbEvent => dbEvent.event == requestEvent) == null,
+    )
+    const deleteEvents = notificationEvents.filter(
+      dbEvent => eventsDbMapped.find(requestEvent => dbEvent.event == requestEvent) == null,
+    )
 
     const notification = await this.prisma.notification.update({
       where: {
@@ -84,17 +88,17 @@ export class NotificationService {
         events: {
           deleteMany: {
             id: {
-              in: deleteEvents.map(ev => ev.id)
-            }
+              in: deleteEvents.map(ev => ev.id),
+            },
           },
           createMany: {
             data: newEvents.map(it => {
               return {
-                event: it
+                event: it,
               }
-            })
-          }
-        }
+            }),
+          },
+        },
       },
     })
 
@@ -122,7 +126,7 @@ export class NotificationService {
         },
       },
       include: {
-        events: true
+        events: true,
       },
     })
 
@@ -140,7 +144,7 @@ export class NotificationService {
         id: request.id,
       },
       include: {
-        events: true
+        events: true,
       },
     })
 

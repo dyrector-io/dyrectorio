@@ -1,32 +1,32 @@
 /* eslint-disable */
-import Long from 'long'
 import {
-  makeGenericClientConstructor,
+  CallOptions,
   ChannelCredentials,
   ChannelOptions,
-  UntypedServiceImplementation,
-  handleUnaryCall,
   Client,
-  ClientUnaryCall,
-  Metadata,
-  CallOptions,
-  handleServerStreamingCall,
   ClientReadableStream,
+  ClientUnaryCall,
+  handleServerStreamingCall,
+  handleUnaryCall,
+  makeGenericClientConstructor,
+  Metadata,
   ServiceError,
+  UntypedServiceImplementation,
 } from '@grpc/grpc-js'
+import Long from 'long'
 import _m0 from 'protobufjs/minimal'
+import { Timestamp } from '../../google/protobuf/timestamp'
 import {
   ContainerState,
-  DeploymentStatus,
-  ExplicitContainerConfig,
-  Port,
-  InstanceDeploymentItem,
   containerStateFromJSON,
   containerStateToJSON,
+  DeploymentStatus,
   deploymentStatusFromJSON,
   deploymentStatusToJSON,
+  ExplicitContainerConfig,
+  InstanceDeploymentItem,
+  Port,
 } from './common'
-import { Timestamp } from '../../google/protobuf/timestamp'
 
 export const protobufPackage = 'crux'
 

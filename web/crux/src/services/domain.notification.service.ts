@@ -15,7 +15,7 @@ export class DomainNotificationService {
 
   async sendNotification(template: NotificationTemplate): Promise<void> {
     const eventType = this.getMessageEventFromType(template.messageType)
-    
+
     const userOnTeam = await this.prisma.usersOnTeams.findFirst({
       where: {
         userId: template.identityId,
@@ -38,9 +38,9 @@ export class DomainNotificationService {
         const count = await this.prisma.notificationEvent.count({
           where: {
             notificationId: notification.id,
-            event: eventType
+            event: eventType,
           },
-          take: 1
+          take: 1,
         })
 
         if (count > 0) {

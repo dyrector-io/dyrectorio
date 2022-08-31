@@ -334,7 +334,7 @@ export class VersionService {
 
     const product = await this.prisma.product.findFirst({
       where: {
-        id: parentVersion.productId
+        id: parentVersion.productId,
       },
     })
 
