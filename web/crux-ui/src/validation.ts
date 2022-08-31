@@ -63,9 +63,9 @@ export const createProductSchema = updateProductSchema.concat(
 )
 
 const registryCredentialRole = yup.mixed().when(['type', '_private'], {
-  is: (type, _private) => (type === 'gitlab' || type === 'github') || ((type === 'v2' || type === 'google') && _private),
+  is: (type, _private) => type === 'gitlab' || type === 'github' || ((type === 'v2' || type === 'google') && _private),
   then: yup.string().required(),
-  otherwise: yup.mixed().transform(it => it ? it : undefined)
+  otherwise: yup.mixed().transform(it => (it ? it : undefined)),
 })
 
 const googleRegistryUrls = ['gcr.io', 'us.gcr.io', 'eu.gcr.io', 'asia.gcr.io'] as const
@@ -110,11 +110,7 @@ export const increaseVersionSchema = yup.object().shape({
   changelog: descriptionRule,
 })
 
-export const updateVersionSchema = increaseVersionSchema.concat(
-  yup.object().shape({
-    default: yup.boolean().required(),
-  }),
-)
+export const updateVersionSchema = increaseVersionSchema
 
 export const createVersionSchema = updateVersionSchema.concat(
   yup.object().shape({

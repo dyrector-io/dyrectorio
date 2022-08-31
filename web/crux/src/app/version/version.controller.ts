@@ -16,6 +16,7 @@ import { VersionCreateTeamAccessGuard } from './guards/version.create.team-acces
 import { VersionTeamAccessGuard } from './guards/version.team-access.guard'
 import { VersionCreateValidationPipe } from './pipes/version.create.pipe'
 import { VersionDeleteValidationPipe } from './pipes/version.delete.pipe'
+import { VersionIncreaseValidationPipe } from './pipes/version.increase.pipe'
 import { VersionUpdateValidationPipe } from './pipes/version.update.pipe'
 import { VersionService } from './version.service'
 
@@ -25,7 +26,9 @@ import { VersionService } from './version.service'
 export class VersionController implements CruxProductVersionController {
   constructor(private service: VersionService) {}
 
-  async increaseVersion(request: IncreaseVersionRequest): Promise<CreateEntityResponse> {
+  async increaseVersion(
+    @Body(VersionIncreaseValidationPipe) request: IncreaseVersionRequest,
+  ): Promise<CreateEntityResponse> {
     return await this.service.increaseVersion(request)
   }
 
@@ -44,6 +47,10 @@ export class VersionController implements CruxProductVersionController {
 
   async updateVersion(@Body(VersionUpdateValidationPipe) request: UpdateVersionRequest): Promise<UpdateEntityResponse> {
     return await this.service.updateVersion(request)
+  }
+
+  async setDefaultVersion(request: IdRequest): Promise<Empty> {
+    return await this.service.setDefaultVersion(request)
   }
 
   async deleteVersion(@Body(VersionDeleteValidationPipe) request: IdRequest): Promise<Empty> {

@@ -720,7 +720,6 @@ export interface CreateVersionRequest {
   productId: string
   name: string
   changelog?: string | undefined
-  default: boolean
   type: VersionType
 }
 
@@ -729,7 +728,6 @@ export interface UpdateVersionRequest {
   accessedBy: string
   name: string
   changelog?: string | undefined
-  default: boolean
 }
 
 export interface VersionResponse {
@@ -910,8 +908,9 @@ export interface ContainerStateItem {
   /** The 'State' of the container (Created, Running, etc) */
   state: ContainerState
   /**
-   * The 'Status' of the container ("Created 1min ago", "Exited with code 123", etc).
-   * Unused but left here for reverse compatibility with the legacy version.
+   * The 'Status' of the container ("Created 1min ago", "Exited with code 123",
+   * etc). Unused but left here for reverse compatibility with the legacy
+   * version.
    */
   status: string
   imageName: string
@@ -3961,7 +3960,6 @@ const baseCreateVersionRequest: object = {
   accessedBy: '',
   productId: '',
   name: '',
-  default: false,
   type: 0,
 }
 
@@ -3978,9 +3976,6 @@ export const CreateVersionRequest = {
     }
     if (message.changelog !== undefined) {
       writer.uint32(818).string(message.changelog)
-    }
-    if (message.default === true) {
-      writer.uint32(824).bool(message.default)
     }
     if (message.type !== 0) {
       writer.uint32(832).int32(message.type)
@@ -4007,9 +4002,6 @@ export const CreateVersionRequest = {
         case 102:
           message.changelog = reader.string()
           break
-        case 103:
-          message.default = reader.bool()
-          break
         case 104:
           message.type = reader.int32() as any
           break
@@ -4028,7 +4020,6 @@ export const CreateVersionRequest = {
     message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
     message.changelog =
       object.changelog !== undefined && object.changelog !== null ? String(object.changelog) : undefined
-    message.default = object.default !== undefined && object.default !== null ? Boolean(object.default) : false
     message.type = object.type !== undefined && object.type !== null ? versionTypeFromJSON(object.type) : 0
     return message
   },
@@ -4039,7 +4030,6 @@ export const CreateVersionRequest = {
     message.productId !== undefined && (obj.productId = message.productId)
     message.name !== undefined && (obj.name = message.name)
     message.changelog !== undefined && (obj.changelog = message.changelog)
-    message.default !== undefined && (obj.default = message.default)
     message.type !== undefined && (obj.type = versionTypeToJSON(message.type))
     return obj
   },
@@ -4050,18 +4040,12 @@ export const CreateVersionRequest = {
     message.productId = object.productId ?? ''
     message.name = object.name ?? ''
     message.changelog = object.changelog ?? undefined
-    message.default = object.default ?? false
     message.type = object.type ?? 0
     return message
   },
 }
 
-const baseUpdateVersionRequest: object = {
-  id: '',
-  accessedBy: '',
-  name: '',
-  default: false,
-}
+const baseUpdateVersionRequest: object = { id: '', accessedBy: '', name: '' }
 
 export const UpdateVersionRequest = {
   encode(message: UpdateVersionRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -4076,9 +4060,6 @@ export const UpdateVersionRequest = {
     }
     if (message.changelog !== undefined) {
       writer.uint32(810).string(message.changelog)
-    }
-    if (message.default === true) {
-      writer.uint32(816).bool(message.default)
     }
     return writer
   },
@@ -4102,9 +4083,6 @@ export const UpdateVersionRequest = {
         case 101:
           message.changelog = reader.string()
           break
-        case 102:
-          message.default = reader.bool()
-          break
         default:
           reader.skipType(tag & 7)
           break
@@ -4120,7 +4098,6 @@ export const UpdateVersionRequest = {
     message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
     message.changelog =
       object.changelog !== undefined && object.changelog !== null ? String(object.changelog) : undefined
-    message.default = object.default !== undefined && object.default !== null ? Boolean(object.default) : false
     return message
   },
 
@@ -4130,7 +4107,6 @@ export const UpdateVersionRequest = {
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.name !== undefined && (obj.name = message.name)
     message.changelog !== undefined && (obj.changelog = message.changelog)
-    message.default !== undefined && (obj.default = message.default)
     return obj
   },
 
@@ -4140,7 +4116,6 @@ export const UpdateVersionRequest = {
     message.accessedBy = object.accessedBy ?? ''
     message.name = object.name ?? ''
     message.changelog = object.changelog ?? undefined
-    message.default = object.default ?? false
     return message
   },
 }
@@ -9064,6 +9039,15 @@ export const CruxProductVersionService = {
     responseSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
     responseDeserialize: (value: Buffer) => Empty.decode(value),
   },
+  setDefaultVersion: {
+    path: '/crux.CruxProductVersion/SetDefaultVersion',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: IdRequest) => Buffer.from(IdRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => IdRequest.decode(value),
+    responseSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => Empty.decode(value),
+  },
   getVersionDetails: {
     path: '/crux.CruxProductVersion/GetVersionDetails',
     requestStream: false,
@@ -9089,6 +9073,7 @@ export interface CruxProductVersionServer extends UntypedServiceImplementation {
   createVersion: handleUnaryCall<CreateVersionRequest, CreateEntityResponse>
   updateVersion: handleUnaryCall<UpdateVersionRequest, UpdateEntityResponse>
   deleteVersion: handleUnaryCall<IdRequest, Empty>
+  setDefaultVersion: handleUnaryCall<IdRequest, Empty>
   getVersionDetails: handleUnaryCall<IdRequest, VersionDetailsResponse>
   increaseVersion: handleUnaryCall<IncreaseVersionRequest, CreateEntityResponse>
 }
@@ -9146,6 +9131,21 @@ export interface CruxProductVersionClient extends Client {
     callback: (error: ServiceError | null, response: Empty) => void,
   ): ClientUnaryCall
   deleteVersion(
+    request: IdRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: Empty) => void,
+  ): ClientUnaryCall
+  setDefaultVersion(
+    request: IdRequest,
+    callback: (error: ServiceError | null, response: Empty) => void,
+  ): ClientUnaryCall
+  setDefaultVersion(
+    request: IdRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: Empty) => void,
+  ): ClientUnaryCall
+  setDefaultVersion(
     request: IdRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,

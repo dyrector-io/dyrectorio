@@ -132,14 +132,14 @@ export type Version = {
   updatedAt: string
 }
 
+export type EditableVersion = Omit<Version, 'default'>
+
 export type IncreaseVersion = {
   name: string
   changelog?: string
 }
 
-export type UpdateVersion = IncreaseVersion & {
-  default: boolean
-}
+export type UpdateVersion = IncreaseVersion
 
 export type CreateVersion = UpdateVersion & {
   type: VersionType

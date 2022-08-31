@@ -43,8 +43,6 @@ const VersionReorderImagesSection = (props: VersionReorderImagesSectionProps) =>
         <DyoCard key={image.id} className="flex text-bright m-2 p-4">
           <span className="mr-2">{`#${image.order}`}</span>
           <span className="mx-auto">{image.name}</span>
-          {/* <DyoTag>{image.newVersion}</DyoTag> */}
-          {/* <span>{image.date}</span> */}
         </DyoCard>
       )}
     />

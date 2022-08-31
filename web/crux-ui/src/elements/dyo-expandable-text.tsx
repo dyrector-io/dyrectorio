@@ -24,7 +24,7 @@ export const DyoExpandableText = (props: DyoExpandableTextProps) => {
 
   return (
     <>
-      <p ref={overflowRef} className={clsx(props.className, lineClamp[props.lineClamp - 1], 'break-words')}>
+      <p ref={overflowRef} className={clsx(props.className, lineClamp[props.lineClamp - 1], 'break-all')}>
         {props.text}
       </p>
       {!overflow ? null : (
@@ -39,7 +39,7 @@ export const DyoExpandableText = (props: DyoExpandableTextProps) => {
           open={show}
           onClose={() => setShow(false)}
         >
-          <p className="text-bright mt-8 overflow-y-auto">{props.text}</p>
+          <p className="text-bright mt-8 break-all overflow-y-auto">{props.text}</p>
         </DyoModal>
       )}
     </>
