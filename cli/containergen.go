@@ -41,13 +41,14 @@ type Container struct {
 	Command string
 }
 
-// Container services
-type Services string
-
 // template file
 //go:embed "template.hbr"
 var templatefile string
 
+// Container services
+type Services string
+
+// Go's idea about enums :c
 const (
 	CruxUI Services = "crux-ui"
 	Crux   Services = "crux"
@@ -56,6 +57,7 @@ const (
 
 var AllServices []Services
 
+// Crux services: db migrations and crux api service
 func GetCruxContainerDefaults() []Container {
 	return []Container{
 		{
@@ -66,7 +68,7 @@ func GetCruxContainerDefaults() []Container {
 			EnvVars: []EnvVar{
 				{"TZ", "Europe/Budapest"},
 				{"DATABASE_URL", "postgresql://crux:RhdAVuEnozSR4FLS@crux-postgres:5432/crux?schema=public"},
-				{"KRATOS_ADMIN_URL", "http://kratos:9434"},
+				{"KRATOS_ADMIN_URL", "http://kratos:4434"},
 				{"CRUX_UI_URL", "http://crux-ui:3000"},
 				{"GRPC_API_INSECURE", "true"},
 				{"GRPC_AGENT_INSECURE", "true"},
@@ -108,13 +110,12 @@ func GetCruxuiContainerDefaults() []Container {
 			EnvVars: []EnvVar{
 				{"TZ", "Europe/Budapest"},
 				{"KRATOS_URL", "http://kratos:4433"},
+				{"KRATOS_ADMIN_URL", "http://kratos:9434"},
 				{"CRUX_ADDRESS", "crux:5001"},
 				{"CRUX_INSECURE", "true"},
 				{"DISABLE_RECAPTCHA", "true"},
 				{"RECAPTCHA_SECRET_KEY", ""},
 				{"RECAPTCHA_SITE_KEY", ""},
-				{"SMTP_USER", "test"},
-				{"SMTP_PASSWORD", "test"},
 				{"SMTP_URL", "mailslurper:1025/?skip_ssl_verify=true&legacy_ssl=true"},
 			},
 			Volumes: []Volume{{"crux-certs", "/app/certs", true}},
@@ -146,7 +147,7 @@ func GetUtilsContainerDefaults() []Container {
 			EnvVars: []EnvVar{
 				{"SQA_OPT_OUT", "true"},
 				{"DSN", "postgres://kratos:IPNuH10gAXT7bg8g@kratos-postgres:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4"},
-				{"KRATOS_ADMIN_URL", "http://kratos:9434"},
+				{"KRATOS_ADMIN_URL", "http://kratos:4434"},
 				{"KRATOS_URL", "http://kratos:4433"},
 				{"AUTH_URL", "http://crux-ui:3000/auth"},
 				{"CRUX_UI_URL", "http://crux-ui:3000"},
@@ -161,8 +162,8 @@ func GetUtilsContainerDefaults() []Container {
 			},
 			Restart: true,
 			Ports: []Port{
-				{9433, 4433},
-				//{9434, 9434},
+				{4433, 4433},
+				{4434, 4434},
 			},
 		},
 		{
