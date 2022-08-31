@@ -1,6 +1,6 @@
 import { nameOrEmailOfIdentity } from 'src/shared/model'
 import { Injectable } from '@nestjs/common'
-import { NotificationTypeEnum, Notification } from '@prisma/client'
+import { NotificationTypeEnum, Notification, NotificationEvent, NotificationEventTypeEnum } from '@prisma/client'
 import {
   AuditResponse,
   NotificationResponse,
@@ -9,20 +9,24 @@ import {
   notificationTypeToJSON,
   CreateNotificationResponse,
   NotificationDetailsResponse,
+  NotificationEventType,
+  notificationEventTypeFromJSON,
+  notificationEventTypeToJSON,
 } from 'src/grpc/protobuf/proto/crux'
 import { Identity } from '@ory/kratos-client'
 
 @Injectable()
 export class NotificationMapper {
-  toGrpc(notification: Notification): NotificationResponse {
+  toGrpc(notification: NotificationWithEvents): NotificationResponse {
     return {
       ...notification,
       type: this.typeToGrpc(notification.type),
       audit: AuditResponse.fromJSON(notification),
+      events: notification.events.map(ev => this.eventTypeToGrpc(ev.event)),
     }
   }
 
-  detailsToGrpc(notification: Notification, identity: Identity): NotificationDetailsResponse {
+  detailsToGrpc(notification: NotificationWithEvents, identity: Identity): NotificationDetailsResponse {
     return {
       ...notification,
       type: this.typeToGrpc(notification.type),
@@ -30,10 +34,11 @@ export class NotificationMapper {
         ...AuditResponse.fromJSON(notification),
         createdBy: nameOrEmailOfIdentity(identity),
       },
+      events: notification.events.map(ev => this.eventTypeToGrpc(ev.event))
     }
   }
 
-  toGrpcListResponse(notifications: Notification[], identities: Map<string, Identity>): NotificationResponse[] {
+  toGrpcListResponse(notifications: NotificationWithEvents[], identities: Map<string, Identity>): NotificationResponse[] {
     return notifications.map(it => {
       const identity = identities.get(it.createdBy)
 
@@ -48,6 +53,7 @@ export class NotificationMapper {
           ...AuditResponse.fromJSON(it),
           createdBy: nameOrEmailOfIdentity(identity),
         },
+        events: it.events.map(ev => this.eventTypeToGrpc(ev.event))
       } as NotificationResponse
     })
   }
@@ -66,4 +72,16 @@ export class NotificationMapper {
   typeToDb(type: NotificationType): NotificationTypeEnum {
     return notificationTypeToJSON(type).toLowerCase() as NotificationTypeEnum
   }
+
+  eventTypeToGrpc(type: NotificationEventTypeEnum): NotificationEventType {
+    return notificationEventTypeFromJSON(type.toUpperCase())
+  }
+
+  eventTypeToDb(type: NotificationEventType): NotificationEventTypeEnum {
+    return notificationEventTypeToJSON(type).toLocaleLowerCase() as NotificationEventTypeEnum
+  }
+}
+
+export type NotificationWithEvents = Notification & {
+  events: NotificationEvent[];
 }

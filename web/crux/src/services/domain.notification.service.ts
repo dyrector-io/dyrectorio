@@ -1,9 +1,9 @@
 import { nameOrEmailOfIdentity } from './../shared/model'
 import { HttpService } from '@nestjs/axios'
 import { Injectable, Logger } from '@nestjs/common'
-import { NotificationTypeEnum } from '@prisma/client'
+import { NotificationEventTypeEnum, NotificationTypeEnum } from '@prisma/client'
 import { lastValueFrom } from 'rxjs'
-import { getTemplate, NotificationTemplate } from 'src/domain/notification-templates'
+import { getMessageEventFromType, getTemplate, NotificationTemplate } from 'src/domain/notification-templates'
 import { KratosService } from './kratos.service'
 import { PrismaService } from './prisma.service'
 
@@ -14,6 +14,8 @@ export class DomainNotificationService {
   constructor(private prisma: PrismaService, private httpService: HttpService, private kratos: KratosService) {}
 
   async sendNotification(template: NotificationTemplate): Promise<void> {
+    const eventType = getMessageEventFromType(template.messageType)
+    
     const userOnTeam = await this.prisma.usersOnTeams.findFirst({
       where: {
         userId: template.identityId,
@@ -33,7 +35,17 @@ export class DomainNotificationService {
       })
 
       notifications.forEach(async notification => {
-        await this.send(notification.url, notification.type, template)
+        const count = await this.prisma.notificationEvent.count({
+          where: {
+            notificationId: notification.id,
+            event: eventType
+          },
+          take: 1
+        })
+
+        if (count > 0) {
+          await this.send(notification.url, notification.type, template)
+        }
       })
     }
   }
