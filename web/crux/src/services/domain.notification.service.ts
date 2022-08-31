@@ -3,7 +3,7 @@ import { HttpService } from '@nestjs/axios'
 import { Injectable, Logger } from '@nestjs/common'
 import { NotificationEventTypeEnum, NotificationTypeEnum } from '@prisma/client'
 import { lastValueFrom } from 'rxjs'
-import { getMessageEventFromType, getTemplate, NotificationTemplate } from 'src/domain/notification-templates'
+import { getTemplate, NotificationMessageType, NotificationTemplate } from 'src/domain/notification-templates'
 import { KratosService } from './kratos.service'
 import { PrismaService } from './prisma.service'
 
@@ -14,7 +14,7 @@ export class DomainNotificationService {
   constructor(private prisma: PrismaService, private httpService: HttpService, private kratos: KratosService) {}
 
   async sendNotification(template: NotificationTemplate): Promise<void> {
-    const eventType = getMessageEventFromType(template.messageType)
+    const eventType = this.getMessageEventFromType(template.messageType)
     
     const userOnTeam = await this.prisma.usersOnTeams.findFirst({
       where: {
@@ -59,6 +59,21 @@ export class DomainNotificationService {
       }
     } catch (err) {
       this.logger.error(err)
+    }
+  }
+
+  private getMessageEventFromType(messageType: NotificationMessageType): NotificationEventTypeEnum {
+    switch (messageType) {
+      case 'node':
+        return NotificationEventTypeEnum.node_added
+      case 'version':
+        return NotificationEventTypeEnum.version_created
+      case 'invite':
+        return NotificationEventTypeEnum.user_team_invited
+      case 'failedDeploy':
+        return NotificationEventTypeEnum.deployment_created
+      case 'successfulDeploy':
+        return NotificationEventTypeEnum.deployment_created
     }
   }
 }

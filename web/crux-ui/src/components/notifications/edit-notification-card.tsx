@@ -13,6 +13,7 @@ import {
   CreateNotification,
   NotificationDetails,
   NotificationType,
+  NOTIFICATION_EVENT_VALUES,
   NOTIFICATION_TYPE_VALUES,
   UpdateNotification,
 } from '@app/models'
@@ -45,7 +46,7 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
       type: 'discord',
       url: '',
       creator: '',
-      events: []
+      events: [ ...NOTIFICATION_EVENT_VALUES ]
     },
   )
 
@@ -158,7 +159,7 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
 
         <div className="flex flex-col">
           <div className="flex flex-col">
-            <DyoLabel className="mb-2.5">{t('settings')}</DyoLabel>
+            <DyoLabel className="mb-2.5">{t('events')}</DyoLabel>
             
             <NotificationEventList value={formik.values.events} onChanged={value => formik.setFieldValue('events', value, false)} />
           </div>
