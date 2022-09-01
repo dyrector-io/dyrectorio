@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"runtime"
 	"strings"
 )
 
@@ -60,7 +61,12 @@ func RunContainers(containers string, start bool, quiet bool) error {
 func findExec(compose bool) (error, string) {
 	osPath := os.Getenv("PATH")
 
-	osPathList := strings.Split(osPath, ":")
+	separator := ":"
+	if runtime.GOOS == "windows" {
+		separator = ";"
+	}
+
+	osPathList := strings.Split(osPath, separator)
 
 	podmanPresent := false
 	dockerPresent := false

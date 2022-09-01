@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"runtime"
 	"strings"
 	"time"
 
@@ -157,8 +158,11 @@ func disableService(services []Services, service Services) []Services {
 
 func test(cCtx *cli.Context) error {
 	osPath := os.Getenv("PATH")
-
-	osPathList := strings.Split(osPath, ":")
+	separator := ":"
+	if runtime.GOOS == "windows" {
+		separator = ";"
+	}
+	osPathList := strings.Split(osPath, separator)
 
 	log.Println(osPath)
 	log.Println(osPathList)
