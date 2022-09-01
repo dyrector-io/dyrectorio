@@ -62,8 +62,14 @@ func findExec(compose bool) (error, string) {
 	osPath := os.Getenv("PATH")
 
 	separator := ":"
+
+	// I refuse to spend more time to debug this OS's blasphemy
 	if runtime.GOOS == "windows" {
-		separator = ";"
+		if compose {
+			return nil, "docker-compose.exe"
+		} else {
+			return nil, "docker.exe"
+		}
 	}
 
 	osPathList := strings.Split(osPath, separator)
