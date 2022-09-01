@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "embed"
+	"fmt"
 	"io/ioutil"
 	"log"
 
@@ -56,6 +57,22 @@ func OverwriteOpt(settings Settings, env EnvVar) EnvVar {
 		}
 	}
 	return env
+}
+
+func OverwriteContainerConf(containers []Container) []Container {
+	for i, container := range containers {
+		for j, env := range container.EnvVars {
+			if env.Key == "CRUX_ADDRESS" {
+				err, gwip := GetCNIGateway()
+				if err != nil {
+					log.Panicln(err)
+				}
+				containers[i].EnvVars[j].Value = fmt.Sprintf("%s%s", gwip, containers[i].EnvVars[j].Value)
+			}
+		}
+	}
+
+	return containers
 }
 
 func EnvVarOverwrite(settings Settings, services []Container) (error, []Container) {

@@ -59,7 +59,7 @@ var AllServices []Services
 
 // Crux services: db migrations and crux api service
 func GetCruxContainerDefaults() []Container {
-	return []Container{
+	crux := []Container{
 		{
 			Enabled: true,
 			Image:   "ghcr.io/dyrector-io/dyrectorio/web/crux:latest",
@@ -70,11 +70,15 @@ func GetCruxContainerDefaults() []Container {
 				{"DATABASE_URL", "postgresql://crux:RhdAVuEnozSR4FLS@crux-postgres:5432/crux?schema=public"},
 				{"KRATOS_ADMIN_URL", "http://kratos:4434"},
 				{"CRUX_UI_URL", "http://crux-ui:3000"},
+				{"CRUX_ADDRESS", ":5000"},
 				{"GRPC_API_INSECURE", "true"},
 				{"GRPC_AGENT_INSECURE", "true"},
+				{"GRPC_AGENT_INSTALL_SCRIPT_INSECURE", "true"},
+				{"JWT_SECRET", "alDhxsIP7VvsKNEJ"},
+				{"CRUX_DOMAIN", "DNS:localhost"},
+				{"FROM_NAME", "Dyo"},
 				{"SENDGRID_KEY", "SG.InvalidKey"},
 				{"FROM_EMAIL", "mail@szolgalta.to"},
-				{"FROM_NAME", "Dyo"},
 				{"SMTP_USER", "test"},
 				{"SMTP_PASSWORD", "test"},
 				{"SMTP_URL", "mailslurper:1025/?skip_ssl_verify=true&legacy_ssl=true"},
@@ -99,6 +103,8 @@ func GetCruxContainerDefaults() []Container {
 			Command: "migrate",
 		},
 	}
+
+	return OverwriteContainerConf(crux)
 }
 
 func GetCruxuiContainerDefaults() []Container {
@@ -110,7 +116,7 @@ func GetCruxuiContainerDefaults() []Container {
 			EnvVars: []EnvVar{
 				{"TZ", "Europe/Budapest"},
 				{"KRATOS_URL", "http://kratos:4433"},
-				{"KRATOS_ADMIN_URL", "http://kratos:9434"},
+				{"KRATOS_ADMIN_URL", "http://kratos:4434"},
 				{"CRUX_ADDRESS", "crux:5001"},
 				{"CRUX_INSECURE", "true"},
 				{"DISABLE_RECAPTCHA", "true"},

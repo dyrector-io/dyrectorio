@@ -50,7 +50,8 @@ func main() {
 			// 	},
 			// },
 			{
-				Name: "dev",
+				Name:   "test",
+				Action: test,
 			},
 		},
 		Flags: []cli.Flag{
@@ -150,4 +151,10 @@ func disableService(services []Services, service Services) []Services {
 		}
 	}
 	return newServices
+}
+
+func test(cCtx *cli.Context) error {
+	err, ip := GetCNIGateway()
+	log.Println(ip)
+	return err
 }
