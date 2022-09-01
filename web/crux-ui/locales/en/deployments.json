@@ -4,5 +4,6 @@
   "log": "Log",
   "environmentConfig": "Environment config",
   "created": "Created",
+  "actions": "Actions",
   "noItems": "You haven't made a deployment."
 }

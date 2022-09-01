@@ -90,3 +90,20 @@ export const dateRangeFilterFor =
       )
     })
   }
+
+export type EnumFilter<TEnum> = {
+  enum?: TEnum
+}
+
+export const enumFilterFor =
+  <Item, Enum>(propertiesOf: PropertyValuesOf<Item>): FilterFunction<Item, EnumFilter<Enum>> =>
+  (items: Item[], filter: EnumFilter<Enum>) => {
+    if (filter.enum == undefined) {
+      return items
+    }
+
+    return items.filter(it => {
+      const properties = propertiesOf(it)
+      return properties.filter(i => i == filter.enum.toString()).length > 0
+    })
+  }

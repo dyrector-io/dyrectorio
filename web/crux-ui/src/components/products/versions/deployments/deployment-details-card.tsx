@@ -7,7 +7,6 @@ import { DeploymentRoot, NodeStatusMessage, WS_TYPE_NODE_STATUS } from '@app/mod
 import { WS_NODES } from '@app/routes'
 import clsx from 'clsx'
 import React, { useState } from 'react'
-import DeploymentStatusIndicator from './deployment-status-indicator'
 import DeploymentStatusTag from './deployment-status-tag'
 
 interface DeploymentDetailsCardProps {
@@ -33,7 +32,6 @@ const DeploymentDetailsCard = (props: DeploymentDetailsCardProps) => {
     <DyoCard className={clsx('flex flex-col', props.className ?? 'p-6')}>
       <div className="flex flex-row justify-between">
         <div className="flex">
-          <DeploymentStatusIndicator className="mr-4" status={deployment.status} />
           <DyoHeading element="h4" className="text-xl font-bold text-bright">
             {deployment.name}
           </DyoHeading>

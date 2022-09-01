@@ -50,7 +50,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
           <ContainerStatusIndicator state={it.state} />,
           <span>{it.name}</span>,
           <span>{timeAgo(t, seconds)}</span>,
-          <ContainerStatusTag state={it.state} />,
+          <ContainerStatusTag className="inline-block" state={it.state} />,
         ]
         /* eslint-enable react/jsx-key */
       }}
