@@ -69,9 +69,9 @@ const VersionSectionsHeading = (props: VersionSectionsHeadingProps) => {
               </DyoButton>
             )}
 
-            <DyoButton onClick={() => onAddStateSelected('deployment')}>{t('addDeployment')}</DyoButton>
-
             {versionMutable ? null : <DyoButton onClick={() => onAddStateSelected('image')}>{t('addImage')}</DyoButton>}
+
+            <DyoButton onClick={() => onAddStateSelected('deployment')}>{t('addDeployment')}</DyoButton>
           </div>
         </>
       )}

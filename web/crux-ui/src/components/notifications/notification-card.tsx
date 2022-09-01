@@ -19,21 +19,21 @@ const NotificationCard = (props: NotificationCardProps) => {
   const { notification } = props
 
   const getDefaultImage = (
-    <Image src="/notification.svg" width={17} height={21} alt={t('altNotificationPicture')} layout="fixed" />
+    <Image src="/notification.svg" width={18} height={20} alt={t('altNotificationPicture')} layout="fixed" />
   )
 
   return (
     <DyoCard className={clsx(props.className ?? 'p-6', 'flex flex-col')}>
-      <div className={clsx('flex flex-row flex-grow', props.onClick ? 'cursor-pointer' : null)}>
-        <div>{getDefaultImage}</div>
+      <div className={clsx('flex flex-row flex-grow mb-2', props.onClick ? 'cursor-pointer' : null)}>
+        <div className="flex items-center">{getDefaultImage}</div>
 
         <DyoHeading className="text-xl text-bright ml-2 my-auto mr-auto truncate" element="h3" onClick={props.onClick}>
           {notification.name}
         </DyoHeading>
       </div>
 
-      <div className="flex wrap my-4">
-        <p className="text-light break-all line-clamp-2">{notification.url}</p>
+      <div className="flex wrap my-2">
+        <p className="text-light break-all truncate">{notification.url}</p>
       </div>
 
       <div className="flex wrap my-2">

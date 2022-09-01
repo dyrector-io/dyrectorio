@@ -2,11 +2,10 @@ import { Layout } from '@app/components/layout'
 import DyoNodeCard from '@app/components/nodes/dyo-node-card'
 import EditNodeCard from '@app/components/nodes/edit-node-card'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
+import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
 import { ListPageMenu } from '@app/components/shared/page-menu'
-import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
-import { DyoInput } from '@app/elements/dyo-input'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import { useWebSocket } from '@app/hooks/use-websocket'
@@ -97,36 +96,31 @@ const NodesPage = (props: NodesPageProps) => {
       </PageHeading>
 
       {!creating ? null : <EditNodeCard className="mb-2" submitRef={submitRef} onNodeEdited={onCreated} />}
+      {filters.items.length ? (
+        <>
+          <Filters setTextFilter={it => filters.setFilter({ text: it })} />
 
-      <DyoCard className="flex flex-col p-8">
-        <DyoHeading element="h3" className="text-xl text-bright">
-          {t('common:filters')}
+          <DyoWrap itemClassName="lg:w-1/2 xl:w-1/3">
+            {filters.filtered.map((it, index) => {
+              const modulo3Class = index % 3 === 1 ? 'xl:mx-4' : null
+              const modulo2Class = clsx(index % 2 > 0 ? 'lg:ml-2' : 'lg:mr-2', modulo3Class ?? 'xl:mx-0')
+
+              return (
+                <DyoNodeCard
+                  className={clsx('max-h-72 w-full p-8 my-2', modulo3Class, modulo2Class)}
+                  key={`node-${index}`}
+                  node={it}
+                  onNameClick={() => onNavigateToDetails(it.id)}
+                />
+              )
+            })}
+          </DyoWrap>
+        </>
+      ) : (
+        <DyoHeading element="h3" className="text-md text-center text-light-eased pt-32">
+          {t('noItems')}
         </DyoHeading>
-
-        <div className="flex items-center mt-4">
-          <DyoInput
-            className="w-2/3"
-            placeholder={t('common:search')}
-            onChange={e => filters.setFilter({ text: e.target.value })}
-          />
-        </div>
-      </DyoCard>
-
-      <DyoWrap itemClassName="lg:w-1/2 xl:w-1/3">
-        {filters.filtered.map((it, index) => {
-          const modulo3Class = index % 3 === 1 ? 'xl:mx-4' : null
-          const modulo2Class = clsx(index % 2 > 0 ? 'lg:ml-2' : 'lg:mr-2', modulo3Class ?? 'xl:mx-0')
-
-          return (
-            <DyoNodeCard
-              className={clsx('max-h-72 w-full p-8 my-2', modulo3Class, modulo2Class)}
-              key={`node-${index}`}
-              node={it}
-              onNameClick={() => onNavigateToDetails(it.id)}
-            />
-          )
-        })}
-      </DyoWrap>
+      )}
     </Layout>
   )
 }

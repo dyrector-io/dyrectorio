@@ -4,6 +4,7 @@
   "add": "Add node",
   "new": "New node",
   "tips": "Nodes are the environments where you plan to run your applications.",
+  "noItems": "You haven't added any nodes yet. To add a new node click 'Add' on the top right.",
 
   "revoke": "Revoke token",
   "confirmRevoke": "Are you sure you want to revoke the token?",

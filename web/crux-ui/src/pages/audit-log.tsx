@@ -6,6 +6,7 @@ import PageHeading from '@app/components/shared/page-heading'
 import Paginator from '@app/components/shared/paginator'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoDatePicker } from '@app/elements/dyo-date-picker'
+import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoList } from '@app/elements/dyo-list'
 import DyoModal from '@app/elements/dyo-modal'
 import { DateRangeFilter, dateRangeFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
@@ -88,46 +89,53 @@ const AuditLogPage = (props: AuditLogPageProps) => {
   return (
     <Layout title={t('common:audit')}>
       <PageHeading pageLink={selfLink} />
+      {filters.items.length ? (
+        <>
+          <Filters setTextFilter={it => filters.setFilter({ text: it })}>
+            <DyoDatePicker
+              selectsRange
+              startDate={startDate}
+              endDate={endDate}
+              onChange={onChange}
+              shouldCloseOnSelect={false}
+              maxDate={new Date()}
+              isClearable
+              className="ml-8 w-1/3"
+            />
+          </Filters>
 
-      <Filters setTextFilter={it => filters.setFilter({ text: it })}>
-        <DyoDatePicker
-          selectsRange
-          startDate={startDate}
-          endDate={endDate}
-          onChange={onChange}
-          shouldCloseOnSelect={false}
-          maxDate={new Date()}
-          isClearable
-          className="ml-8 w-1/3"
-        />
-      </Filters>
-
-      <DyoCard className="relative mt-4 overflow-auto">
-        <DyoList
-          className=""
-          noSeparator
-          headerClassName={headerClassNames}
-          headers={listHeaders}
-          data={pagination.displayed}
-          footer={<Paginator pagination={pagination} />}
-          itemClassName={itemClassNames}
-          itemBuilder={it => {
-            /* eslint-disable react/jsx-key */
-            return [
-              <div className="w-10 ml-auto">
-                <Image src="/default_avatar.svg" width={38} height={38} layout={'fixed'} />
-              </div>,
-              <div className="font-semibold min-w-max pl-2">{it.identityName}</div>,
-              <div className="min-w-max">{utcDateToLocale(it.date)}</div>,
-              <div>{beautifyAuditLogEvent(it.event)}</div>,
-              <div className="cursor-pointer max-w-4xl truncate" onClick={() => onShowInfoClick(it)}>
-                {it.info}
-              </div>,
-            ]
-            /* eslint-enable react/jsx-key */
-          }}
-        />
-      </DyoCard>
+          <DyoCard className="relative mt-4 overflow-auto">
+            <DyoList
+              className=""
+              noSeparator
+              headerClassName={headerClassNames}
+              headers={listHeaders}
+              data={pagination.displayed}
+              footer={<Paginator pagination={pagination} />}
+              itemClassName={itemClassNames}
+              itemBuilder={it => {
+                /* eslint-disable react/jsx-key */
+                return [
+                  <div className="w-10 ml-auto">
+                    <Image src="/default_avatar.svg" width={38} height={38} layout={'fixed'} />
+                  </div>,
+                  <div className="font-semibold min-w-max pl-2">{it.identityName}</div>,
+                  <div className="min-w-max">{utcDateToLocale(it.date)}</div>,
+                  <div>{beautifyAuditLogEvent(it.event)}</div>,
+                  <div className="cursor-pointer max-w-4xl truncate" onClick={() => onShowInfoClick(it)}>
+                    {it.info}
+                  </div>,
+                ]
+                /* eslint-enable react/jsx-key */
+              }}
+            />
+          </DyoCard>
+        </>
+      ) : (
+        <DyoHeading element="h3" className="text-md text-center text-light-eased pt-32">
+          {t('noItems')}
+        </DyoHeading>
+      )}
 
       {!showInfo ? null : (
         <DyoModal
