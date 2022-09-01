@@ -84,7 +84,8 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-3 pl-4 font-semibold'
   const headerClasses = [
     clsx('rounded-tl-lg', defaultHeaderClass),
-    ...Array.from({ length: 2 }).map(() => defaultHeaderClass),
+    defaultHeaderClass,
+    defaultHeaderClass,
     clsx('text-center', defaultHeaderClass),
     defaultHeaderClass,
     clsx('rounded-tr-lg', defaultHeaderClass),
