@@ -68,10 +68,10 @@ export class NotificationService {
 
     const eventsDbMapped = (request.events ?? []).map(ev => this.mapper.eventTypeToDb(ev))
     const newEvents = eventsDbMapped.filter(
-      requestEvent => notificationEvents.find(dbEvent => dbEvent.event == requestEvent) == null,
+      event => !notificationEvents.find(it => it.event == event),
     )
     const deleteEvents = notificationEvents.filter(
-      dbEvent => eventsDbMapped.find(requestEvent => dbEvent.event == requestEvent) == null,
+      event => !eventsDbMapped.find(it => event.event == it),
     )
 
     const notification = await this.prisma.notification.update({

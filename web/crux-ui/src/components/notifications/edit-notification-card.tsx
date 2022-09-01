@@ -132,14 +132,12 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
         </div>
 
         <div className="flex flex-col">
-          <div className="flex flex-col">
-            <DyoLabel className="mb-2.5">{t('events')}</DyoLabel>
+          <DyoLabel className="mb-2.5">{t('events')}</DyoLabel>
 
-            <NotificationEventList
-              value={formik.values.events}
-              onChanged={value => formik.setFieldValue('events', value, false)}
-            />
-          </div>
+          <NotificationEventList
+            value={formik.values.events}
+            onChanged={value => formik.setFieldValue('events', value, false)}
+          />
         </div>
       </form>
     </DyoCard>

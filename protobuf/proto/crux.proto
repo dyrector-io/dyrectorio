@@ -831,7 +831,7 @@ enum NotificationEventType {
   DEPLOYMENT_CREATED = 1;
   VERSION_CREATED = 2;
   NODE_ADDED = 3;
-  USER_TEAM_INVITED = 4;
+  USER_INVITED = 4;
 }
 
 message CreateNotificationRequest {

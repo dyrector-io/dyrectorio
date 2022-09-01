@@ -323,8 +323,8 @@ enum NotificationTypeEnum {
 }
 
 enum NotificationEventTypeEnum {
-  deployment_created
-  version_created
-  node_added
-  user_team_invited
+  deploymentCreated
+  versionCreated
+  nodeAdded
+  userInvited
 }

@@ -414,7 +414,7 @@ export enum NotificationEventType {
   DEPLOYMENT_CREATED = 1,
   VERSION_CREATED = 2,
   NODE_ADDED = 3,
-  USER_TEAM_INVITED = 4,
+  USER_INVITED = 4,
   UNRECOGNIZED = -1,
 }
 
@@ -433,8 +433,8 @@ export function notificationEventTypeFromJSON(object: any): NotificationEventTyp
     case 'NODE_ADDED':
       return NotificationEventType.NODE_ADDED
     case 4:
-    case 'USER_TEAM_INVITED':
-      return NotificationEventType.USER_TEAM_INVITED
+    case 'USER_INVITED':
+      return NotificationEventType.USER_INVITED
     case -1:
     case 'UNRECOGNIZED':
     default:
@@ -452,8 +452,8 @@ export function notificationEventTypeToJSON(object: NotificationEventType): stri
       return 'VERSION_CREATED'
     case NotificationEventType.NODE_ADDED:
       return 'NODE_ADDED'
-    case NotificationEventType.USER_TEAM_INVITED:
-      return 'USER_TEAM_INVITED'
+    case NotificationEventType.USER_INVITED:
+      return 'USER_INVITED'
     default:
       return 'UNKNOWN'
   }

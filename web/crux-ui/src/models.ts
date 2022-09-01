@@ -631,10 +631,10 @@ export const NOTIFICATION_TYPE_VALUES = ['discord', 'slack', 'teams'] as const
 export type NotificationType = typeof NOTIFICATION_TYPE_VALUES[number]
 
 export const NOTIFICATION_EVENT_VALUES = [
-  'deployment_created',
-  'version_created',
-  'node_added',
-  'user_team_invited',
+  'deployment-created',
+  'version-created',
+  'node-added',
+  'user-invited',
 ] as const
 export type NotificationEventType = typeof NOTIFICATION_EVENT_VALUES[number]
 

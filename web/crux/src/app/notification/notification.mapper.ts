@@ -77,11 +77,31 @@ export class NotificationMapper {
   }
 
   eventTypeToGrpc(type: NotificationEventTypeEnum): NotificationEventType {
-    return notificationEventTypeFromJSON(type.toUpperCase())
+    switch(type) {
+      case NotificationEventTypeEnum.deploymentCreated:
+        return NotificationEventType.DEPLOYMENT_CREATED
+      case NotificationEventTypeEnum.versionCreated:
+        return NotificationEventType.VERSION_CREATED
+      case NotificationEventTypeEnum.nodeAdded:
+        return NotificationEventType.NODE_ADDED
+      case NotificationEventTypeEnum.userInvited:
+        return NotificationEventType.USER_INVITED
+    }
   }
 
   eventTypeToDb(type: NotificationEventType): NotificationEventTypeEnum {
-    return notificationEventTypeToJSON(type).toLocaleLowerCase() as NotificationEventTypeEnum
+    switch (type) {
+      case NotificationEventType.DEPLOYMENT_CREATED:
+        return NotificationEventTypeEnum.deploymentCreated
+      case NotificationEventType.VERSION_CREATED:
+        return NotificationEventTypeEnum.versionCreated
+      case NotificationEventType.NODE_ADDED:
+        return NotificationEventTypeEnum.nodeAdded
+      case NotificationEventType.USER_INVITED:
+        return NotificationEventTypeEnum.userInvited
+      case NotificationEventType.UNKNOWN_NOTIFICATION_EVENT_TYPE:
+        return null
+    }
   }
 }
 

@@ -135,9 +135,31 @@ export const notificationTypeToDto = (type: ProtoNotificationType): Notification
 }
 
 export const notificationEventTypeToGrpc = (type: NotificationEventType): ProtoNotificationEventType => {
-  return notificationEventTypeFromJSON(type.toUpperCase())
+  switch(type) {
+    case 'deployment-created':
+      return ProtoNotificationEventType.DEPLOYMENT_CREATED
+    case 'version-created':
+      return ProtoNotificationEventType.VERSION_CREATED
+    case 'node-added':
+      return ProtoNotificationEventType.NODE_ADDED
+    case 'user-invited':
+      return ProtoNotificationEventType.USER_INVITED
+    default:
+      return ProtoNotificationEventType.UNKNOWN_NOTIFICATION_EVENT_TYPE
+  }
 }
 
 export const notificationEventTypeToDto = (type: ProtoNotificationEventType): NotificationEventType => {
-  return notificationEventTypeToJSON(type).toLocaleLowerCase() as NotificationEventType
+  switch (type) {
+    case ProtoNotificationEventType.DEPLOYMENT_CREATED:
+      return 'deployment-created'
+    case ProtoNotificationEventType.VERSION_CREATED:
+      return 'version-created'
+    case ProtoNotificationEventType.NODE_ADDED:
+      return 'node-added'
+    case ProtoNotificationEventType.USER_INVITED:
+      return 'user-invited'
+    case ProtoNotificationEventType.UNKNOWN_NOTIFICATION_EVENT_TYPE:
+      throw null
+  }
 }
