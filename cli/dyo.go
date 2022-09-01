@@ -1,8 +1,10 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	cli "github.com/urfave/cli/v2"
@@ -154,7 +156,25 @@ func disableService(services []Services, service Services) []Services {
 }
 
 func test(cCtx *cli.Context) error {
-	err, ip := GetCNIGateway()
-	log.Println(ip)
-	return err
+	osPath := os.Getenv("PATH")
+
+	osPathList := strings.Split(osPath, ":")
+
+	log.Println(osPath)
+	log.Println(osPathList)
+
+	for _, path := range osPathList {
+		files, err := ioutil.ReadDir(path)
+		if err != nil {
+			return err
+		}
+
+		var filenames []string
+		for _, f := range files {
+			filenames = append(filenames, f.Name())
+		}
+		log.Println(filenames)
+	}
+
+	return nil
 }
