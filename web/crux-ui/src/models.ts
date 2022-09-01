@@ -715,6 +715,7 @@ export const registryUrlOf = (it: RegistryDetails) => {
     case 'hub':
       return REGISTRY_HUB_URL
     case 'v2':
+    case 'google':
       return it.url
     case 'gitlab':
       return it.selfManaged ? it.url : REGISTRY_GITLAB_URLS.registryUrl

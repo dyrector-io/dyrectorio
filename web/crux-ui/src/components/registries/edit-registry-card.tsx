@@ -34,7 +34,7 @@ interface EditRegistryCardProps {
   className?: string
   registry?: RegistryDetails
   onSubmittingChange?: (submitting: boolean) => void
-  onRegistryEdited: (product: Registry) => void
+  onRegistryEdited: (registry: Registry) => void
   submitRef: MutableRefObject<() => Promise<any>>
 }
 
@@ -105,6 +105,23 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
 
   const registryType = formik.values.type
 
+  const onRegistryTypeChange = (changedRegistry: RegistryType) => {
+    if (registryType !== changedRegistry) {
+      const meta = registrySchema.describe()
+      const registrySchemaFieldDescription = Object.entries(meta.fields)
+
+      registrySchemaFieldDescription.map(it => {
+        const [field, value]: [string, any] = it
+        if (value.meta?.reset) {
+          formik.setFieldValue(field, '', false)
+          formik.setFieldError(field, '')
+        }
+      })
+    }
+
+    formik.setFieldValue('type', changedRegistry, false)
+  }
+
   return (
     <>
       <DyoCard className={props.className}>
@@ -151,7 +168,7 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
                 choices={REGISTRY_TYPE_VALUES}
                 initialSelection={formik.values.type}
                 converter={(it: RegistryType) => t(`type.${it}`)}
-                onSelectionChange={it => formik.setFieldValue('type', it, false)}
+                onSelectionChange={it => onRegistryTypeChange(it)}
               />
             </div>
 
