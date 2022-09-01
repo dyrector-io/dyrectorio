@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "NotificationEventTypeEnum" AS ENUM ('deployment_created', 'version_created', 'node_added', 'user_team_invited');
+CREATE TYPE "NotificationEventTypeEnum" AS ENUM ('deploymentCreated', 'versionCreated', 'nodeAdded', 'userInvited');
 
 -- CreateTable
 CREATE TABLE "NotificationEvent" (

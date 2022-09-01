@@ -65,15 +65,15 @@ export class DomainNotificationService {
   private getMessageEventFromType(messageType: NotificationMessageType): NotificationEventTypeEnum {
     switch (messageType) {
       case 'node':
-        return NotificationEventTypeEnum.node_added
+        return NotificationEventTypeEnum.nodeAdded
       case 'version':
-        return NotificationEventTypeEnum.version_created
+        return NotificationEventTypeEnum.versionCreated
       case 'invite':
-        return NotificationEventTypeEnum.user_team_invited
+        return NotificationEventTypeEnum.userInvited
       case 'failedDeploy':
-        return NotificationEventTypeEnum.deployment_created
+        return NotificationEventTypeEnum.deploymentCreated
       case 'successfulDeploy':
-        return NotificationEventTypeEnum.deployment_created
+        return NotificationEventTypeEnum.deploymentCreated
     }
   }
 }

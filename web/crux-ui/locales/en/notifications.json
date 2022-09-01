@@ -32,6 +32,6 @@
     "deploymentCreated": "New deployment is created",
     "versionCreated": "New version is added",
     "nodeAdded": "New node is added",
-    "userTeamInvited": "New user invited to my team"
+    "userInvited": "New user invited to my team"
   }
 }
