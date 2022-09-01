@@ -14,6 +14,7 @@ import {
   notificationEventTypeToJSON,
 } from 'src/grpc/protobuf/proto/crux'
 import { Identity } from '@ory/kratos-client'
+import { InternalException, InvalidArgumentException } from 'src/exception/errors'
 
 @Injectable()
 export class NotificationMapper {
@@ -86,6 +87,10 @@ export class NotificationMapper {
         return NotificationEventType.NODE_ADDED
       case NotificationEventTypeEnum.userInvited:
         return NotificationEventType.USER_INVITED
+      default:
+        throw new InternalException({
+          message: `Unknown NotificationEventType '${type}'`
+        })
     }
   }
 
@@ -99,8 +104,12 @@ export class NotificationMapper {
         return NotificationEventTypeEnum.nodeAdded
       case NotificationEventType.USER_INVITED:
         return NotificationEventTypeEnum.userInvited
-      case NotificationEventType.UNKNOWN_NOTIFICATION_EVENT_TYPE:
-        return null
+      default:
+        throw new InvalidArgumentException({
+          property: 'notificationType',
+          value: type,
+          message: `Unknown NotificationEventType '${type}'`
+        })
     }
   }
 }
