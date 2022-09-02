@@ -6,8 +6,8 @@ services:{{ range . }}{{ if .Enabled }}
     container_name: dyocli_{{ .Name }}
     image: {{ .Image }}
     networks:
-      - dyo{{ if .EnvVars }}
-    pull_policy: always
+      - dyocli
+    pull_policy: always{{ if .EnvVars }}
     environment:{{ end }}{{ range .EnvVars }}
       - {{ .Key }}={{ .Value }}{{ end }}{{ if .Depends }}
     depends_on:{{ end }}{{range .Depends }}
@@ -20,8 +20,9 @@ services:{{ range . }}{{ if .Enabled }}
     command: {{ .Command }}{{ end }}{{ end }}{{ end }}
 
 networks:
-  dyo:
+  dyocli:
     driver: bridge
+    external: true
 
 volumes:{{ range . }}{{ range .Volumes}}
   {{ .Host }}:{{ end }}{{ end }}
