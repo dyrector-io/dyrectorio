@@ -32,7 +32,9 @@ const AuditLogPage = (props: AuditLogPageProps) => {
 
   const { auditLog } = props
 
-  const [startDate, setStartDate] = useState<Date>(new Date(Date.now() - 1000 * 3600 * 24 * 6))
+  const sixdays = 1000 * 60 * 60 * 24 * 6 // ms * minutes * hours * day * six
+
+  const [startDate, setStartDate] = useState<Date>(new Date(Date.now() - sixdays))
   const [endDate, setEndDate] = useState<Date>(new Date())
 
   const onChange = dates => {
