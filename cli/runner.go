@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -61,8 +62,6 @@ func RunContainers(containers string, start bool, quiet bool) error {
 func findExec(compose bool) (error, string) {
 	osPath := os.Getenv("PATH")
 
-	separator := ":"
-
 	// I refuse to spend more time to debug this OS's blasphemy
 	if runtime.GOOS == "windows" {
 		if compose {
@@ -72,7 +71,7 @@ func findExec(compose bool) (error, string) {
 		}
 	}
 
-	osPathList := strings.Split(osPath, separator)
+	osPathList := strings.Split(osPath, string(os.PathListSeparator))
 
 	podmanPresent := false
 	dockerPresent := false
@@ -122,17 +121,38 @@ func findExec(compose bool) (error, string) {
 	return errors.New("executable not found"), ""
 }
 
+type PodmanNetwork struct {
+	Name   string `json:"name"`
+	Id     string `json:"id"`
+	Driver string `json:"driver"`
+	// NetIF    string   `json:"network_interface"`
+	// Created  string   `json:"created"`
+	Subnets []Subnet `json:"subnets"`
+	// IPv6     bool     `json:"ipv6_enabled"`
+	// Internal bool     `json:"internal"`
+	// DNS      bool     `json:"dns_enabled"`
+	// IpamOpt  IpamOpt  `json:"ipam_options"`
+}
+
 type DockerNetwork struct {
-	Name     string   `json:"name"`
-	Id       string   `json:"id"`
-	Driver   string   `json:"driver"`
-	NetIF    string   `json:"network_interface"`
-	Created  string   `json:"created"`
-	Subnets  []Subnet `json:"subnets"`
-	IPv6     bool     `json:"ipv6_enabled"`
-	Internal bool     `json:"internal"`
-	DNS      bool     `json:"dns_enabled"`
-	IpamOpt  IpamOpt  `json:"ipam_options"`
+	Name   string `json:"Name"`
+	Id     string `json:"Id"`
+	Driver string `json:"Driver"`
+	// 	Scope    string   `json:"Scope"`
+	// 	Created  string   `json:"Created"`
+	// 	IPv6     bool     `json:"EnableIPv6"`
+	// 	Internal bool     `json:"Internal"`
+	// 	Attachable
+	// 	Ingress
+	// 	Containers
+	// 	DNS      bool     `json:"dns_enabled"`
+	Ipam Ipam `json:"IPAM"`
+}
+
+type Ipam struct {
+	//Driver
+	//Options
+	Config []Subnet
 }
 
 type Subnet struct {
@@ -151,7 +171,9 @@ func GetCNIGateway() (error, string) {
 		return err, ""
 	}
 
-	cmd := exec.Command(executable, "network", "ls", "-q")
+	namefilter := fmt.Sprintf("name=%s", ContainerNetName)
+
+	cmd := exec.Command(executable, "network", "ls", "-f", "driver=bridge", "-f", namefilter, "--format", "'{{.Name}}'")
 
 	cmdOutput := &bytes.Buffer{}
 	cmd.Stdout = cmdOutput
@@ -163,73 +185,95 @@ func GetCNIGateway() (error, string) {
 		return err, ""
 	}
 
-	nets := strings.Split(cmdOutput.String(), "\n")
-
-	for i, item := range nets {
-		if item == ContainerNetName {
-			break
-		}
-		// if dyocli doesn't exist or in bridge, create one
-		if i == len(nets)-1 {
-			err = CreateContainerNetwork(false)
-			if err != nil {
-				return err, ""
-			}
-		}
+	if cmdOutput.String() == "" {
+		err = EnsureDyoNetwork(executable, true)
 	}
 
-	// inspect, get gw addr
-	cmd = exec.Command(executable, "network", "inspect", ContainerNetName)
+	return GetGatewayIP(executable)
+}
 
-	cmdOutput = &bytes.Buffer{}
+func GetGatewayIP(executable string) (error, string) {
+
+	// inspect, get gw addr
+	cmd := exec.Command(executable, "network", "inspect", ContainerNetName)
+
+	cmdOutput := &bytes.Buffer{}
 	cmd.Stdout = cmdOutput
 	cmd.Stderr = os.Stderr
 
 	log.Println("Executing", executable, "in the background, inspecting network...")
-	err = cmd.Run()
+	err := cmd.Run()
 	if err != nil {
 		return err, ""
 	}
 
-	var network []DockerNetwork
-	err = json.Unmarshal(cmdOutput.Bytes(), &network)
-	if err != nil {
-		return err, ""
-	}
-
-	if len(network) != 1 {
-		return errors.New("there are more than one network"), ""
-	}
-
-	// network should be bridge otherwise recreate
-	if network[0].Driver != "bridge" {
-		err = CreateContainerNetwork(true)
+	switch executable {
+	case "podman":
+		var network []PodmanNetwork
+		err = json.Unmarshal(cmdOutput.Bytes(), &network)
 		if err != nil {
 			return err, ""
 		}
-	}
 
-	if len(network[0].Subnets) != 1 {
-		return errors.New("there are more than one network subnets"), ""
-	}
+		if len(network) != 1 {
+			return errors.New("there are more than one network"), ""
+		}
 
-	gwip := network[0].Subnets[0].Gateway
+		if len(network[0].Subnets) != 1 {
+			return errors.New("there are more than one network subnets"), ""
+		}
 
-	if gwip != "" {
-		return nil, gwip
+		gwip := network[0].Subnets[0].Gateway
+
+		if gwip != "" {
+			return nil, gwip
+		}
+	case "docker":
+		var network []DockerNetwork
+		err = json.Unmarshal(cmdOutput.Bytes(), &network)
+		if err != nil {
+			return err, ""
+		}
+
+		if len(network) != 1 {
+			return errors.New("there are more than one network"), ""
+		}
+
+		if len(network[0].Ipam.Config) != 1 {
+			return errors.New("there are more than one network subnets"), ""
+		}
+
+		gwip := network[0].Ipam.Config[0].Gateway
+
+		if gwip != "" {
+			return nil, gwip
+		}
+	default:
+		return errors.New("Unknown binary"), ""
 	}
 
 	return errors.New("gateway IP is empty"), ""
 }
 
-func CreateContainerNetwork(delnet bool) error {
-	err, executable := findExec(false)
+func EnsureDyoNetwork(executable string, delnet bool) error {
+
+	namefilter := fmt.Sprintf("name=%s", ContainerNetName)
+
+	cmd := exec.Command(executable, "network", "ls", "-f", namefilter, "--format", "'{{.Name}}'")
+
+	cmdOutput := &bytes.Buffer{}
+	cmd.Stdout = cmdOutput
+	cmd.Stderr = os.Stderr
+
+	log.Println("Executing", executable, "in the background, listing network...")
+	err := cmd.Run()
 	if err != nil {
 		return err
 	}
 
-	//if options are fook'd we re-create the network
-	if delnet {
+	if cmdOutput.String() != "" && delnet {
+		//if options are fook'd we re-create the network
+
 		cmd := exec.Command(executable, "network", "rm", ContainerNetName)
 
 		cmd.Stdout = os.Stdout
@@ -240,9 +284,10 @@ func CreateContainerNetwork(delnet bool) error {
 		if err != nil {
 			return err
 		}
+
 	}
 
-	cmd := exec.Command(executable, "network", "create", ContainerNetName)
+	cmd = exec.Command(executable, "network", "create", ContainerNetName, "-d", "bridge")
 
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
