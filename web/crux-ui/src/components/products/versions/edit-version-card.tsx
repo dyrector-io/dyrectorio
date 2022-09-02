@@ -1,14 +1,14 @@
 import { DyoButton } from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
+import DyoChips from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { DyoTextArea } from '@app/elements/dyo-text-area'
-import { DyoToggle } from '@app/elements/dyo-toggle'
 import { defaultApiErrorHandler } from '@app/errors'
-import { CreateVersion, EditableVersion, Product, UpdateVersion, VersionType } from '@app/models'
+import { CreateVersion, EditableVersion, Product, UpdateVersion, VERSION_TYPE_VALUES } from '@app/models'
 import { productVersionsApiUrl, versionApiUrl } from '@app/routes'
-import { formikFieldValueConverter, sendForm } from '@app/utils'
+import { sendForm } from '@app/utils'
 import { createVersionSchema, updateVersionSchema } from '@app/validation'
 import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
@@ -114,13 +114,14 @@ const EditVersionCard = (props: EditVersionCardProps) => {
 
         {editing ? null : (
           <div className="mr-auto">
-            <DyoToggle
+            <DyoChips
               className="text-bright mt-8"
-              name="type"
-              nameChecked={t('incremental')}
-              nameUnchecked={t('rolling')}
-              checked={formik.values.type === 'incremental'}
-              setFieldValue={formikFieldValueConverter<VersionType>(formik, it => (it ? 'incremental' : 'rolling'))}
+              choices={VERSION_TYPE_VALUES}
+              initialSelection={formik.values.type}
+              converter={it => t(it)}
+              onSelectionChange={type => {
+                formik.setFieldValue('type', type, false)
+              }}
             />
           </div>
         )}
