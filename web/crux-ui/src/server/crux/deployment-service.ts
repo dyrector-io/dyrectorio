@@ -46,7 +46,7 @@ import { WsMessage } from '@app/websockets/common'
 import { Identity } from '@ory/kratos-client'
 import { GrpcConnection, protomisify, ProtoSubscriptionOptions } from './grpc-connection'
 import { explicitContainerConfigToDto, explicitContainerConfigToProto, imageToDto } from './image-service'
-import { containerStateToDto } from './node-service'
+import { containerStateToDto, nodeStatusToDto } from './node-service'
 
 class DyoDeploymentService {
   private logger = new Logger(DyoDeploymentService.name)
@@ -87,6 +87,7 @@ class DyoDeploymentService {
         ...it,
         date: timestampToUTC(it.audit.updatedAt),
         status: deploymentStatusToDto(it.status),
+        nodeStatus: nodeStatusToDto(it.nodeStatus),
       }
     })
   }

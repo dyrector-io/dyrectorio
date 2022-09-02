@@ -60,7 +60,7 @@ class DyoNodeService {
       return {
         ...it,
         connectedAt: timestampToUTC(it.connectedAt),
-        status: this.statusToDto(it.status),
+        status: nodeStatusToDto(it.status),
         type: nodeTypeGrpcToUi(it.type),
       }
     })
@@ -119,7 +119,7 @@ class DyoNodeService {
     return {
       ...res,
       connectedAt: timestampToUTC(res.connectedAt),
-      status: this.statusToDto(res.status),
+      status: nodeStatusToDto(res.status),
       type: nodeTypeGrpcToUi(res.type),
       install: !res.install
         ? null
@@ -189,7 +189,7 @@ class DyoNodeService {
     const transform = (data: NodeEventMessage) => {
       return {
         nodeId: data.id,
-        status: this.statusToDto(data.status),
+        status: nodeStatusToDto(data.status),
         address: data.address,
       } as NodeStatusMessage
     }
@@ -223,17 +223,6 @@ class DyoNodeService {
     const stream = () => this.client.watchContainerState(WatchContainerStateRequest.fromJSON(req))
     return new GrpcConnection(this.logger.descend('container-status'), stream, transform, options)
   }
-
-  statusToDto(status: NodeConnectionStatus): NodeStatus {
-    switch (status) {
-      case NodeConnectionStatus.CONNECTED:
-        return 'running'
-      case NodeConnectionStatus.UNREACHABLE:
-        return 'unreachable'
-      default:
-        return 'unreachable'
-    }
-  }
 }
 
 export default DyoNodeService
@@ -246,4 +235,15 @@ export const nodeTypeUiToGrpc = (type: NodeType): GrpcNodeType => {
 }
 export const nodeTypeGrpcToUi = (type: GrpcNodeType): NodeType => {
   return type === GrpcNodeType.DOCKER ? NODE_TYPE_VALUES[0] : NODE_TYPE_VALUES[1]
+}
+
+export const nodeStatusToDto = (status: NodeConnectionStatus): NodeStatus => {
+  switch (status) {
+    case NodeConnectionStatus.CONNECTED:
+      return 'running'
+    case NodeConnectionStatus.UNREACHABLE:
+      return 'unreachable'
+    default:
+      return 'unreachable'
+  }
 }

@@ -24,6 +24,7 @@ import {
   DeploymentEventType,
   DeploymentResponse,
   InstanceResponse,
+  NodeConnectionStatus,
 } from 'src/grpc/protobuf/proto/crux'
 import {
   ContainerState,
@@ -37,10 +38,11 @@ import {
 } from 'src/grpc/protobuf/proto/common'
 import { ContainerConfigData, UniqueKeyValue } from 'src/shared/model'
 import { ImageMapper, ImageWithConfig } from '../image/image.mapper'
+import { AgentService } from '../agent/agent.service'
 
 @Injectable()
 export class DeployMapper {
-  constructor(private imageMapper: ImageMapper) {}
+  constructor(private imageMapper: ImageMapper, private agentService: AgentService) {}
 
   listItemToGrpc(deployment: DeploymentListItem): DeploymentResponse {
     return {
@@ -56,12 +58,16 @@ export class DeployMapper {
   }
 
   deploymentByVersionToGrpc(deployment: DeploymentWithNode): DeploymentByVersionResponse {
+    const agent = this.agentService.getById(deployment.nodeId)
+
+    const status = agent?.getConnectionStatus() ?? NodeConnectionStatus.UNREACHABLE
     return {
       ...deployment,
       audit: AuditResponse.fromJSON(deployment),
       status: this.statusToGrpc(deployment.status),
       nodeId: deployment.nodeId,
       nodeName: deployment.node.name,
+      nodeStatus: status
     }
   }
 

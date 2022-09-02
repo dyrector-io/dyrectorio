@@ -1010,6 +1010,7 @@ export interface DeploymentByVersionResponse {
   nodeId: string
   nodeName: string
   status: DeploymentStatus
+  nodeStatus: NodeConnectionStatus
 }
 
 export interface DeploymentDetailsResponse {
@@ -7313,6 +7314,7 @@ const baseDeploymentByVersionResponse: object = {
   nodeId: '',
   nodeName: '',
   status: 0,
+  nodeStatus: 0,
 }
 
 export const DeploymentByVersionResponse = {
@@ -7337,6 +7339,9 @@ export const DeploymentByVersionResponse = {
     }
     if (message.status !== 0) {
       writer.uint32(832).int32(message.status)
+    }
+    if (message.nodeStatus !== 0) {
+      writer.uint32(840).int32(message.nodeStatus)
     }
     return writer
   },
@@ -7371,6 +7376,9 @@ export const DeploymentByVersionResponse = {
         case 104:
           message.status = reader.int32() as any
           break
+        case 105:
+          message.nodeStatus = reader.int32() as any
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -7391,6 +7399,10 @@ export const DeploymentByVersionResponse = {
     message.nodeId = object.nodeId !== undefined && object.nodeId !== null ? String(object.nodeId) : ''
     message.nodeName = object.nodeName !== undefined && object.nodeName !== null ? String(object.nodeName) : ''
     message.status = object.status !== undefined && object.status !== null ? deploymentStatusFromJSON(object.status) : 0
+    message.nodeStatus =
+      object.nodeStatus !== undefined && object.nodeStatus !== null
+        ? nodeConnectionStatusFromJSON(object.nodeStatus)
+        : 0
     return message
   },
 
@@ -7403,6 +7415,7 @@ export const DeploymentByVersionResponse = {
     message.nodeId !== undefined && (obj.nodeId = message.nodeId)
     message.nodeName !== undefined && (obj.nodeName = message.nodeName)
     message.status !== undefined && (obj.status = deploymentStatusToJSON(message.status))
+    message.nodeStatus !== undefined && (obj.nodeStatus = nodeConnectionStatusToJSON(message.nodeStatus))
     return obj
   },
 
@@ -7418,6 +7431,7 @@ export const DeploymentByVersionResponse = {
     message.nodeId = object.nodeId ?? ''
     message.nodeName = object.nodeName ?? ''
     message.status = object.status ?? 0
+    message.nodeStatus = object.nodeStatus ?? 0
     return message
   },
 }

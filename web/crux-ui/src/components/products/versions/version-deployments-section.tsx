@@ -1,3 +1,4 @@
+import NodeStatusIndicator from '@app/components/nodes/node-status-indicator'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
@@ -7,6 +8,7 @@ import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from
 import { useWebSocket } from '@app/hooks/use-websocket'
 import {
   DeploymentByVersion,
+  deploymentIsMutable,
   DeploymentStatus,
   DEPLOYMENT_STATUS_VALUES,
   GetNodeStatusListMessage,
@@ -18,7 +20,7 @@ import {
   WS_TYPE_NODE_STATUS,
   WS_TYPE_NODE_STATUSES,
 } from '@app/models'
-import { deploymentUrl, WS_NODES } from '@app/routes'
+import { deploymentDeployUrl, deploymentUrl, WS_NODES } from '@app/routes'
 import { distinct } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
@@ -77,7 +79,9 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
 
   const onNavigateToDeployment = (deployment: DeploymentByVersion) =>
     router.push(deploymentUrl(props.product.id, version.id, deployment.id))
-    
+
+  const onDeploy = (deployment: DeploymentByVersion) => router.push(deploymentDeployUrl(props.product.id, version.id, deployment.id))
+  
   const headers = [
     ...['deploymentName', 'common:node', 'common:prefix', 'common:status', 'common:date', 'actions'].map(it => t(it)),
   ]
@@ -114,9 +118,13 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
             })
           }}
         >
-          <option value={'default'}>{tCommon('all')}</option>
+          <option value={'default'}>{t('common:all')}</option>
           {DEPLOYMENT_STATUS_VALUES.map(it => {
-            return <option key={it} value={it}>{tCommon(`deploymentStatuses.${it}`)}</option>
+            return (
+              <option key={it} value={it}>
+                {t(`common:deploymentStatuses.${it}`)}
+              </option>
+            )
           })}
         </DyoSelect>
       </DyoCard>
@@ -128,16 +136,28 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
           noSeparator
           data={filters.filtered}
           itemBuilder={it => {
+            const mutable = deploymentIsMutable(it.status)
+
             /* eslint-disable react/jsx-key */
             return [
               <div className="cursor-pointer text-bold" onClick={() => onNavigateToDeployment(it)}>
                 {it.name}
               </div>,
-              <div>{it.nodeName}</div>,
+              <div className="flex">
+                <NodeStatusIndicator className="mr-2" status={it.nodeStatus} />
+                {it.nodeName}
+              </div>,
               <div>{it.prefix}</div>,
               <DeploymentStatusTag className="w-fit m-auto" status={it.status} />,
               <div>{it.date}</div>,
-              <Image src="/deploy.svg" alt={t('common:deploy')} width={24} height={24} />,
+              mutable ? <Image
+                src="/deploy.svg"
+                alt={t('common:deploy')}
+                className={it.nodeStatus == 'running' ? "cursor-pointer" : "cursor-not-allowed opacity-30"}
+                onClick={() => it.nodeStatus == 'running' && onDeploy(it)}
+                width={24}
+                height={24}
+              /> : null,
             ]
             /* eslint-enable react/jsx-key */
           }}

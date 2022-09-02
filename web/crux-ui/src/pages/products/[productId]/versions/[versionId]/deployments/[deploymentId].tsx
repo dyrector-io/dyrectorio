@@ -33,7 +33,7 @@ import { Crux, cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 import { ValidationError } from 'yup'
 
@@ -141,6 +141,12 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
     setEditing(false)
   }
 
+  useEffect(() => {
+    if (mutable && deployment.node.status !== 'running') {
+      toast.error(t('common:nodeUnreachable'))
+    }
+  }, [])
+
   return (
     <Layout
       title={t('deploysName', {
@@ -172,7 +178,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
             {t('log')}
           </DyoButton>
         ) : !editing ? (
-          <DyoButton className="px-6 ml-4" onClick={onDeploy}>
+          <DyoButton className="px-6 ml-4" onClick={onDeploy} disabled={deployment.node.status !== 'running'}>
             {t('common:deploy')}
           </DyoButton>
         ) : null}

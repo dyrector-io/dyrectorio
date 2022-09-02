@@ -104,6 +104,8 @@
     "shark": "Shark icon"
   },
 
+  "nodeUnreachable": "Node is unreachable!",
+
   "nodeStatuses": {
     "connecting": "Connecting",
     "running": "Running",

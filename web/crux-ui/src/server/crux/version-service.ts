@@ -18,6 +18,7 @@ import { Identity } from '@ory/kratos-client'
 import { protomisify } from '@server/crux/grpc-connection'
 import { deploymentStatusToDto } from './deployment-service'
 import { containerConfigToDto } from './image-service'
+import { nodeStatusToDto } from './node-service'
 
 class DyoVersionService {
   constructor(private client: CruxProductVersionClient, private identity: Identity) {}
@@ -42,6 +43,7 @@ class DyoVersionService {
           ...it,
           date: timestampToUTC(it.audit.updatedAt),
           status: deploymentStatusToDto(it.status),
+          nodeStatus: nodeStatusToDto(it.nodeStatus),
         }
       }),
       images: res.images.map(it => {

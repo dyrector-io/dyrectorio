@@ -52,6 +52,7 @@ export type DeploymentByVersion = {
   date: string
   prefix: string
   status: DeploymentStatus
+  nodeStatus: NodeStatus
 }
 
 export type DeploymentDetails = {
