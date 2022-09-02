@@ -6,6 +6,7 @@ import { lastValueFrom } from 'rxjs'
 import { getTemplate, NotificationMessageType, NotificationTemplate } from 'src/domain/notification-templates'
 import { KratosService } from './kratos.service'
 import { PrismaService } from './prisma.service'
+import { InvalidArgumentException } from 'src/exception/errors'
 
 @Injectable()
 export class DomainNotificationService {
@@ -74,6 +75,12 @@ export class DomainNotificationService {
         return NotificationEventTypeEnum.deploymentCreated
       case 'successfulDeploy':
         return NotificationEventTypeEnum.deploymentCreated
+      default:
+        throw new InvalidArgumentException({
+          property: 'messageType',
+          value: messageType,
+          message: `Unknown NotificationMessageType '${messageType}'`
+        })
     }
   }
 }

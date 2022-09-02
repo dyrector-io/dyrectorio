@@ -14,8 +14,6 @@ import {
   IdRequest,
   NotificationDetailsResponse,
   NotificationEventType as ProtoNotificationEventType,
-  notificationEventTypeFromJSON,
-  notificationEventTypeToJSON,
   NotificationListResponse,
   NotificationType as ProtoNotificationType,
   notificationTypeFromJSON,
@@ -135,7 +133,7 @@ export const notificationTypeToDto = (type: ProtoNotificationType): Notification
 }
 
 export const notificationEventTypeToGrpc = (type: NotificationEventType): ProtoNotificationEventType => {
-  switch(type) {
+  switch (type) {
     case 'deployment-created':
       return ProtoNotificationEventType.DEPLOYMENT_CREATED
     case 'version-created':
