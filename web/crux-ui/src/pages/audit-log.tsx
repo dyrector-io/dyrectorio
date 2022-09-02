@@ -32,8 +32,8 @@ const AuditLogPage = (props: AuditLogPageProps) => {
 
   const { auditLog } = props
 
-  const [startDate, setStartDate] = useState<Date>(null)
-  const [endDate, setEndDate] = useState<Date>(null)
+  const [startDate, setStartDate] = useState<Date>(new Date(Date.now() - 1000 * 3600 * 24 * 6))
+  const [endDate, setEndDate] = useState<Date>(new Date())
 
   const onChange = dates => {
     const [start, end] = dates
@@ -48,7 +48,7 @@ const AuditLogPage = (props: AuditLogPageProps) => {
     initialData: auditLog,
     initialFilter: {
       text: '',
-      dateRange: [null, null],
+      dateRange: [startDate, endDate],
     },
     filters: [
       textFilterFor<AuditLog>(it => [it.identityName, utcDateToLocale(it.date), it.event, it.info]),
