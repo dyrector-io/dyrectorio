@@ -80,8 +80,9 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   const onNavigateToDeployment = (deployment: DeploymentByVersion) =>
     router.push(deploymentUrl(props.product.id, version.id, deployment.id))
 
-  const onDeploy = (deployment: DeploymentByVersion) => router.push(deploymentDeployUrl(props.product.id, version.id, deployment.id))
-  
+  const onDeploy = (deployment: DeploymentByVersion) =>
+    router.push(deploymentDeployUrl(props.product.id, version.id, deployment.id))
+    
   const headers = [
     ...['deploymentName', 'common:node', 'common:prefix', 'common:status', 'common:date', 'actions'].map(it => t(it)),
   ]
@@ -150,14 +151,16 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
               <div>{it.prefix}</div>,
               <DeploymentStatusTag className="w-fit m-auto" status={it.status} />,
               <div>{it.date}</div>,
-              mutable ? <Image
-                src="/deploy.svg"
-                alt={t('common:deploy')}
-                className={it.nodeStatus == 'running' ? "cursor-pointer" : "cursor-not-allowed opacity-30"}
-                onClick={() => it.nodeStatus == 'running' && onDeploy(it)}
-                width={24}
-                height={24}
-              /> : null,
+              mutable ? (
+                <Image
+                  src="/deploy.svg"
+                  alt={t('common:deploy')}
+                  className={it.nodeStatus == 'running' ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
+                  onClick={() => it.nodeStatus == 'running' && onDeploy(it)}
+                  width={24}
+                  height={24}
+                />
+              ) : null,
             ]
             /* eslint-enable react/jsx-key */
           }}
