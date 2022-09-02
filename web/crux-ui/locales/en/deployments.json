@@ -3,5 +3,6 @@
   "deploysNameDeploy": "Products - {{product}} - Versions - {{version}} - Deployments - {{name}} - Deploy",
   "log": "Log",
   "environmentConfig": "Environment config",
-  "created": "Created"
+  "created": "Created",
+  "noItems": "You haven't made a deployment."
 }

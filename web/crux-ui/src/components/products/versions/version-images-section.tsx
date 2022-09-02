@@ -1,6 +1,8 @@
+import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { PatchVersionImage, VersionImage } from '@app/models'
 import { WebSocketEndpoint } from '@app/websockets/client'
+import useTranslation from 'next-translate/useTranslation'
 import EditImageCard from './images/edit-image-card'
 import { imageTagKey, ImageTagsMap } from './use-images-websocket'
 
@@ -17,7 +19,9 @@ interface VersionImagesSectionProps {
 const VersionImagesSection = (props: VersionImagesSectionProps) => {
   const { images, imageTags, versionSock, onTagSelected } = props
 
-  return (
+  const { t } = useTranslation('images')
+
+  return images.length ? (
     <DyoWrap>
       {images
         .sort((one, other) => one.order - other.order)
@@ -37,6 +41,10 @@ const VersionImagesSection = (props: VersionImagesSectionProps) => {
           )
         })}
     </DyoWrap>
+  ) : (
+    <DyoHeading element="h3" className="text-md text-center text-light-eased pt-32">
+      {t('noItems')}
+    </DyoHeading>
   )
 }
 

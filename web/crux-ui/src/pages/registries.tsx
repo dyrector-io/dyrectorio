@@ -5,6 +5,7 @@ import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
 import { ListPageMenu } from '@app/components/shared/page-menu'
+import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import { Registry } from '@app/models'
@@ -56,24 +57,31 @@ const RegistriesPage = (props: RegistriesPageProps) => {
       {!creating ? null : (
         <EditRegistryCard className="mb-8 px-8 py-6" submitRef={submitRef} onRegistryEdited={onCreated} />
       )}
+      {filters.items.length ? (
+        <>
+          <Filters setTextFilter={it => filters.setFilter({ text: it })} />
 
-      <Filters setTextFilter={it => filters.setFilter({ text: it })} />
+          <DyoWrap itemClassName="lg:w-1/2 xl:w-1/3">
+            {filters.filtered.map((it, index) => {
+              const modulo3Class = index % 3 === 1 ? 'xl:mx-4' : null
+              const modulo2Class = clsx(index % 2 > 0 ? 'lg:ml-2' : 'lg:mr-2', modulo3Class ?? 'xl:mx-0')
 
-      <DyoWrap itemClassName="lg:w-1/2 xl:w-1/3">
-        {filters.filtered.map((it, index) => {
-          const modulo3Class = index % 3 === 1 ? 'xl:mx-4' : null
-          const modulo2Class = clsx(index % 2 > 0 ? 'lg:ml-2' : 'lg:mr-2', modulo3Class ?? 'xl:mx-0')
-
-          return (
-            <RegistryCard
-              className={clsx('max-h-72 w-full p-8 my-2', modulo3Class, modulo2Class)}
-              key={`registry-${index}`}
-              registry={it}
-              onClick={() => onNavigateToDetails(it.id)}
-            />
-          )
-        })}
-      </DyoWrap>
+              return (
+                <RegistryCard
+                  className={clsx('max-h-72 w-full p-8 my-2', modulo3Class, modulo2Class)}
+                  key={`registry-${index}`}
+                  registry={it}
+                  onClick={() => onNavigateToDetails(it.id)}
+                />
+              )
+            })}
+          </DyoWrap>
+        </>
+      ) : (
+        <DyoHeading element="h3" className="text-md text-center text-light-eased pt-32">
+          {t('noItems')}
+        </DyoHeading>
+      )}
     </Layout>
   )
 }

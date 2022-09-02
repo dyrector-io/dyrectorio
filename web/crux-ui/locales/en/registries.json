@@ -4,6 +4,7 @@
   "registries": "Registries",
   "add": "Add registry",
   "new": "New registry",
+  "noItems": "You haven't added a registry. To add a new one, click 'Add' on the top right.",
   "user": "User",
   "token": "Token or password",
   "pat": "Personal access token",

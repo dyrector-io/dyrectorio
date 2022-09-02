@@ -23,10 +23,7 @@ const DyoWrap = (props: DyoWrapProps) => {
         {children.map((it, index) => (
           <div
             key={`${key}-item-${index}`}
-            className={clsx(
-              'flex w-full',
-              itemClassName ?? clsx('lg:w-1/2 py-2', index % 2 > 0 ? 'lg:pr-2' : 'lg:pr-2'),
-            )}
+            className={clsx('flex w-full', itemClassName ?? ['lg:w-1/2 py-2', index % 2 ? 'lg:pl-2' : 'lg:pr-2'])}
           >
             {it}
           </div>

@@ -1,4 +1,5 @@
 {
-    "event": "Event",
-    "info": "Info"
+  "event": "Event",
+  "info": "Info",
+  "noItems": "Sorry, there's no activity which we could've logged."
 }

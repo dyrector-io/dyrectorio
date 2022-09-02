@@ -8,11 +8,11 @@ interface NotificationTypeTagProps {
 }
 
 const NotificationTypeTag = (props: NotificationTypeTagProps) => {
-  const { t } = useTranslation('notification')
+  const { t } = useTranslation('notifications')
 
   return (
     <DyoTag className={props.className} color="bg-dyo-blue" textColor="text-dyo-blue">
-      {t(`type.${props.type}`).toUpperCase()}
+      {t(`type.${props.type}`)}
     </DyoTag>
   )
 }

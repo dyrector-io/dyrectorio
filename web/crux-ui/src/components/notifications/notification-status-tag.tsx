@@ -7,7 +7,7 @@ interface NotificationStatusTagProps {
 }
 
 const NotificationStatusTag = (props: NotificationStatusTagProps) => {
-  const { t } = useTranslation('notification')
+  const { t } = useTranslation('notifications')
 
   const { active } = props
 
