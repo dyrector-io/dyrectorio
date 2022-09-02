@@ -92,7 +92,7 @@ export const Sidebar = (props: SidebarProps) => {
         </Link>
       </div>
 
-      <div className="flex flex-col flex-grow px-6 pb-4">
+      <div className="flex flex-col flex-grow pb-4">
         <NavSection className="mt-12" title={t('product')} options={productOptions} />
 
         <NavSection className="mt-12" title={t('components')} options={componentOptions} />
