@@ -114,9 +114,10 @@ const EditProductCard = (props: EditProductCardProps) => {
         />
 
         {editing ? null : (
-          <div className="mr-auto">
+          <>
+            <DyoLabel textColor="mt-8 mb-2.5 text-light-eased">{t('type')}</DyoLabel>
             <DyoChips
-              className="text-bright mt-8"
+              className="text-bright"
               choices={PRODUCT_TYPE_VALUES}
               initialSelection={formik.values.type}
               converter={it => t(it)}
@@ -124,7 +125,7 @@ const EditProductCard = (props: EditProductCardProps) => {
                 formik.setFieldValue('type', type, false)
               }}
             />
-          </div>
+          </>
         )}
 
         {!changelogVisible ? null : (

@@ -113,9 +113,10 @@ const EditVersionCard = (props: EditVersionCardProps) => {
         />
 
         {editing ? null : (
-          <div className="mr-auto">
+          <>
+            <DyoLabel textColor="mt-8 mb-2.5 text-light-eased">{t('type')}</DyoLabel>
             <DyoChips
-              className="text-bright mt-8"
+              className="text-bright"
               choices={VERSION_TYPE_VALUES}
               initialSelection={formik.values.type}
               converter={it => t(it)}
@@ -123,7 +124,7 @@ const EditVersionCard = (props: EditVersionCardProps) => {
                 formik.setFieldValue('type', type, false)
               }}
             />
-          </div>
+          </>
         )}
 
         <DyoButton className="hidden" type="submit"></DyoButton>
