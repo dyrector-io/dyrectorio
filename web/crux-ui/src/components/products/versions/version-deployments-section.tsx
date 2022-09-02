@@ -116,7 +116,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
         >
           <option value={'default'}>{tCommon('all')}</option>
           {DEPLOYMENT_STATUS_VALUES.map(it => {
-            return <option value={it}>{tCommon(`deploymentStatuses.${it}`)}</option>
+            return <option key={it} value={it}>{tCommon(`deploymentStatuses.${it}`)}</option>
           })}
         </DyoSelect>
       </DyoCard>
