@@ -208,6 +208,8 @@ func GetGatewayIP(executable string) (error, string) {
 	}
 
 	switch executable {
+	case "podman.exe":
+		fallthrough
 	case "podman":
 		var network []PodmanNetwork
 		err = json.Unmarshal(cmdOutput.Bytes(), &network)
@@ -228,6 +230,8 @@ func GetGatewayIP(executable string) (error, string) {
 		if gwip != "" {
 			return nil, gwip
 		}
+	case "docker.exe":
+		fallthrough
 	case "docker":
 		var network []DockerNetwork
 		err = json.Unmarshal(cmdOutput.Bytes(), &network)
