@@ -8,6 +8,7 @@
   "name": "Name",
   "description": "Description",
   "altPicture": "Picture of {{name}}",
+  "type": "Type",
 
   "simple": "Simple",
   "complex": "Complex",
@@ -16,6 +17,7 @@
   "addVersion": "Add version",
 
   "deleteDescription": "If you proceed, you will lose all your data related to {{name}}, all configurations, all verison history, all deployments. This action is not revocable.",
+  "setNameAsDefault": "If you set {{name}} as the default version, all newly created versions will contain the same images by default.",
 
   "errors": {
     "alreadyExists": "Product name taken."

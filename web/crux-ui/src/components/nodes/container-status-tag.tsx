@@ -33,7 +33,7 @@ const ContainerStatusTag = (props: ContainerStatusTagProps) => {
       case 'restarting':
         return 'text-error-red'
       case 'removing':
-        return 'text-dyo-light-purple'
+        return 'text-dyo-purple-light'
       default:
         return 'text-warning-orange'
     }

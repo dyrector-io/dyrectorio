@@ -6,6 +6,7 @@
     "new": "New version",
     "default": "Default",
     "changelog": "Changelog",
+    "type": "Type",
     "incremental": "Incremental",
     "rolling": "Rolling",
     

@@ -10,7 +10,7 @@ interface VersionReorderImagesSectionProps {
 }
 
 const VersionReorderImagesSection = (props: VersionReorderImagesSectionProps) => {
-  const { saveRef, images, onSave } = props
+  const { images, saveRef, onSave } = props
 
   const [items, setItems] = useState(images)
 
@@ -27,16 +27,17 @@ const VersionReorderImagesSection = (props: VersionReorderImagesSectionProps) =>
       if (oneOrder !== undefined) {
         return otherOrder !== undefined ? oneOrder - otherOrder : -1
       }
+
       return otherOrder !== undefined ? 1 : 0
     })
 
     onSave(sorted)
   }
 
-  const itemTemplate = (image: any) => (
-    <DyoCard key={image.id} className="flex text-bright m-2 p-4">
-      <span className="mr-2">{`#${image.order}`}</span>
-      <span className="mx-auto">{image.name}</span>
+  const itemTemplate = img => (
+    <DyoCard key={img.id} className="flex text-bright m-2 p-4">
+      <span className="mr-2">{`#${img.order}`}</span>
+      <span className="mx-auto">{img.name}</span>
     </DyoCard>
   )
 

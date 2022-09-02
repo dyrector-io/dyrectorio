@@ -1,12 +1,12 @@
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoExpandableText from '@app/elements/dyo-expandable-text'
 import { DyoHeading } from '@app/elements/dyo-heading'
-import DyoTag from '@app/elements/dyo-tag'
 import { ProductDetails } from '@app/models'
 import { utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
+import ProductTypeTag from './product-type-tag'
 
 interface ProductDetailsCardProps {
   className?: string
@@ -14,16 +14,16 @@ interface ProductDetailsCardProps {
 }
 
 const ProductDetailsCard = (props: ProductDetailsCardProps) => {
-  const { t } = useTranslation('products')
-
   const { product, className } = props
+
+  const { t } = useTranslation('products')
 
   const version = product.type === 'simple' ? product.versions[0] : null
 
   return (
-    <DyoCard className={clsx(className ?? 'p-6')}>
-      <div className="flex">
-        <div className="float-left">
+    <DyoCard className={clsx(className ?? 'p-6', 'flex flex-col')}>
+      <div className="flex flex-row">
+        <div>
           <Image
             src="/product_default.svg"
             alt={t('altPicture', { name: product.name })}
@@ -32,33 +32,34 @@ const ProductDetailsCard = (props: ProductDetailsCardProps) => {
             layout="fixed"
           />
         </div>
-        <div className="flex flex-col flex-grow">
-          <DyoHeading element="h5" className="text-xl text-bright ml-6 mb-1">
-            {product.name}
-          </DyoHeading>
 
-          <div className="flex flex-row flex-grow">
-            <div className="mx-6 overflow-hidden">
-              <DyoExpandableText
-                text={product.description}
-                lineClamp={2}
-                className="text-md text-light"
-                modalTitle={product.name}
-              />
+        <div className="flex flex-col ml-6">
+          <div className="flex flex-row">
+            <DyoHeading element="h5" className="text-xl text-bright leading-none">
+              {product.name}
+            </DyoHeading>
+
+            <div className="flex flex-col ml-auto">
+              <span className="text-bright whitespace-nowrap">{utcDateToLocale(product.createdAt)}</span>
+
+              <ProductTypeTag className="mt-2 ml-auto" type={product.type} />
             </div>
+          </div>
 
-            <div className="flex flex-col flex-grow">
-              <span className="self-end text-bright whitespace-nowrap ml-2">{utcDateToLocale(product.createdAt)}</span>
-
-              <DyoTag className="ml-auto">{t(product.type).toUpperCase()}</DyoTag>
-            </div>
+          <div className="overflow-hidden mt-2">
+            <DyoExpandableText
+              text={product.description}
+              lineClamp={2}
+              className="text-md text-light"
+              modalTitle={product.name}
+            />
           </div>
         </div>
       </div>
 
       {!version ? null : (
         <>
-          <p className="text-bright font-bold mt-2">{t('versions:changelog')}</p>
+          <span className="text-bright font-bold mt-2">{t('versions:changelog')}</span>
 
           <DyoExpandableText
             text={version.changelog}

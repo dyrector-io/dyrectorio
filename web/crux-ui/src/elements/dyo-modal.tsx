@@ -17,25 +17,27 @@ export interface DyoModalProps {
 }
 
 const DyoModal = (props: DyoModalProps) => {
+  const { className, title, description, buttons: propsButtons, children, open, onClose } = props
+
   const { t } = useTranslation('common')
 
-  const buttons = props.buttons ?? <DyoButton onClick={() => props.onClose()}>{t('close')}</DyoButton>
+  const buttons = propsButtons ?? <DyoButton onClick={() => onClose()}>{t('close')}</DyoButton>
 
   const modal = (
     <Dialog
       className="flex fixed inset-0 bg-light-grey bg-opacity-50 h-screen w-screen"
-      open={props.open}
-      onClose={() => props.onClose()}
+      open={open}
+      onClose={() => onClose()}
     >
       <Dialog.Overlay />
 
-      <DyoCard className={clsx(props.className, 'flex flex-col m-auto p-8')} modal>
+      <DyoCard className={clsx(className, 'flex flex-col m-auto p-8')} modal>
         <DyoHeading element="h4" className="text-xl font-bold text-bright">
-          {props.title}
+          {title}
         </DyoHeading>
-        {!props.description ? null : <Dialog.Description>{props.description}</Dialog.Description>}
+        {!description ? null : <Dialog.Description>{description}</Dialog.Description>}
 
-        {props.children}
+        {children}
 
         <div className="mx-auto mt-auto pt-8">{buttons}</div>
       </DyoCard>

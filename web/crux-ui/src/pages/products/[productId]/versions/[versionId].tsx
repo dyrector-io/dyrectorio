@@ -1,4 +1,5 @@
 import { Layout } from '@app/components/layout'
+import ProductVersionsSection from '@app/components/products/product-versions-section'
 import EditVersionCard from '@app/components/products/versions/edit-version-card'
 import VersionDetailsCard from '@app/components/products/versions/version-details-card'
 import VersionSections from '@app/components/products/versions/version-sections'
@@ -7,7 +8,7 @@ import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
 import { ROUTE_PRODUCTS } from '@app/const'
 import LoadingIndicator from '@app/elements/loading-indicator'
-import { ProductDetails, Version, VersionDetails } from '@app/models'
+import { EditableVersion, ProductDetails, VersionDetails } from '@app/models'
 import { productUrl, versionApiUrl, versionUrl } from '@app/routes'
 import { anchorLinkOf, redirectTo, searchParamsOf, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
@@ -28,17 +29,27 @@ const VersionDetailsPage = (props: VersionDetailsPageProps) => {
   const { t } = useTranslation('versions')
   const router = useRouter()
 
+  const [allVersions, setAllVersions] = useState(product.versions)
   const [version, setVersion] = useState(propsVersion)
   const [editing, setEditing] = useState(anchorLinkOf(router) === '#edit')
   const [saving, setSaving] = useState(false)
   const submitRef = useRef<() => Promise<any>>()
 
-  const onVersionEdited = (newVersion: Version) => {
+  const onVersionEdited = (newVersion: EditableVersion) => {
     setEditing(false)
     setVersion({
       ...version,
       ...newVersion,
     })
+
+    const newAllVersion = [...allVersions]
+    const index = newAllVersion.findIndex(it => it.id === newVersion.id)
+    const oldVersion = newAllVersion[index]
+    newAllVersion[index] = {
+      ...newVersion,
+      default: oldVersion.default,
+    }
+    setAllVersions(newAllVersion)
   }
 
   const onDelete = async () => {
@@ -100,7 +111,11 @@ const VersionDetailsPage = (props: VersionDetailsPageProps) => {
         />
       )}
 
-      {editing ? null : <VersionSections product={product} version={version} setSaving={setSaving} />}
+      {editing ? (
+        <ProductVersionsSection productId={product.id} versions={allVersions} disabled />
+      ) : (
+        <VersionSections product={product} version={version} setSaving={setSaving} />
+      )}
     </Layout>
   )
 }

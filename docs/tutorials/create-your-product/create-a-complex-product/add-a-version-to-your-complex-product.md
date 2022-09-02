@@ -1,6 +1,6 @@
 # Add a version to your Complex Product
 
-If you’ve created a Complex product, you’ll need to add a version to it. This version could be a Rolling or an Incremental version. Select Rolling for continuous development or Incremental.&#x20;
+If you’ve created a Complex product, you’ll need to add a version to it. This version could be a Rolling or an Incremental version. Select Rolling for continuous development or Incremental.
 
 **Step 1:** Open Products on the left and select the Product you want to set a version to.
 

@@ -7,7 +7,7 @@
     "version": "Version",
     "unknown": "Unknown",
 
-    "serviceStatuses": {
+    "status": {
         "unavailable": "Unavailable",
         "disrupted": "Disrupted",
         "operational": "Operational"

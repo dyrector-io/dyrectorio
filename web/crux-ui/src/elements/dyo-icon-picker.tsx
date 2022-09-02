@@ -10,7 +10,39 @@ interface DyoIconPickerProps {
   setFieldValue: FormikSetFieldValue
 }
 
-export const DYO_ICONS = ['dog', 'kangaroo', 'lion', 'monkey', 'penguin', 'shark']
+export const DYO_ICONS = [
+  'goat',
+  'jellyfish',
+  'kangaroo',
+  'shark',
+  'sloth',
+  'buffalo',
+  'cat',
+  'llama',
+  'bug',
+  'shrimp',
+  'donkey',
+  'flamingo',
+  'lion',
+  'hedgehog',
+  'giraffe',
+  'penguin',
+  'bat',
+  'goose',
+  'seal',
+  'spider',
+  'squirrel',
+  'monkey',
+  'gecko',
+  'owl',
+  'dog',
+  'rhino',
+  'bee',
+  'dino',
+  'sheep',
+  'crow',
+  'snail',
+]
 
 const DyoIconPicker = (props: DyoIconPickerProps) => {
   const { name, value, setFieldValue, className } = props
@@ -34,7 +66,7 @@ const DyoIconPicker = (props: DyoIconPickerProps) => {
           type="button"
           className={clsx(
             icon === selected ? 'border-1 ring-2 ring-dyo-turquoise bg-light-grey rounded-full' : null,
-            'w-8 h-8 m-2',
+            'w-10 h-10',
           )}
           onClick={() => onSelectIcon(icon)}
         >

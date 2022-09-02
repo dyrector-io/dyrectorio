@@ -20,10 +20,10 @@ export const NavSection = (props: NavSectionProps) => {
 
   return (
     <div className={className}>
-      <p className="text-bright text-sm tracking-widest">{title.toUpperCase()}</p>
+      <p className="text-bright px-6 text-sm tracking-widest">{title.toUpperCase()}</p>
       <ul className="list-none flex flex-col text-bright">
         {options.map((option, index) => (
-          <li key={index} className="flex flex-row space-x-2 items-center mt-6 ml-4">
+          <li key={index} className="flex flex-row items-center mt-2">
             <NavButton href={option.link} icon={option.icon}>
               {t(option.text)}
             </NavButton>

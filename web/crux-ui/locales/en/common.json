@@ -157,5 +157,7 @@
   "deleteDescription": "If you proceed, you will lose all your data related to {{name}}. This action is not revocable.",
 
   "itemsPerPage": "Items per page",
-  "showingItems": "Showing {{pageFrom}} to {{pageTo}} of {{total}} entries"
+  "showingItems": "Showing {{pageFrom}} to {{pageTo}} of {{total}} entries",
+
+  "openSource": "is an Open Source project"
 }

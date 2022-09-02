@@ -2,25 +2,29 @@ import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoExpandableText from '@app/elements/dyo-expandable-text'
 import { DyoHeading } from '@app/elements/dyo-heading'
+import DyoImgButton from '@app/elements/dyo-img-button'
 import DyoTag from '@app/elements/dyo-tag'
 import { Version } from '@app/models'
 import { versionUrl } from '@app/routes'
 import { utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
+import Image from 'next/image'
 import { useRouter } from 'next/router'
+import VersionTypeTag from './version-type-tag'
 
 interface VersionCardProps {
   className?: string
+  disabled?: boolean
   productId: string
   version: Version
-  onClick?: () => void
-  onIncreaseClick?: () => void
-  disabled?: boolean
+  onClick?: VoidFunction
+  onIncreaseClick?: VoidFunction
+  onSetAsDefaultClick?: VoidFunction
 }
 
 const VersionCard = (props: VersionCardProps) => {
-  const { className, productId, version, onClick, onIncreaseClick, disabled } = props
+  const { className, productId, version, onClick, disabled, onIncreaseClick, onSetAsDefaultClick } = props
 
   const { t } = useTranslation('versions')
 
@@ -59,7 +63,7 @@ const VersionCard = (props: VersionCardProps) => {
               </DyoTag>
             )}
 
-            <DyoTag className="ml-6">{t(version.type).toUpperCase()}</DyoTag>
+            <VersionTypeTag className="ml-6" type={version.type} />
           </div>
         </div>
       </div>
@@ -70,7 +74,35 @@ const VersionCard = (props: VersionCardProps) => {
         <span className="text-bright ml-2">{utcDateToLocale(version.updatedAt)}</span>
       </div>
 
-      <span className="text-bright font-bold">{t('changelog')}</span>
+      <div className="flex flex-row my-2">
+        {!onIncreaseClick || !version.increasable ? null : (
+          <DyoImgButton
+            className="px-2 h-6 mr-2"
+            disabled={disabled}
+            src="/arrow_up_bold.svg"
+            alt={t('increase')}
+            width={18}
+            height={18}
+            outlined
+            onClick={onIncreaseClick}
+          />
+        )}
+
+        {!onSetAsDefaultClick || version.default ? null : (
+          <DyoImgButton
+            className="px-2 h-6 mx-2"
+            disabled={disabled}
+            src="/home_bold.svg"
+            alt={t('default')}
+            width={18}
+            height={18}
+            outlined
+            onClick={onSetAsDefaultClick}
+          />
+        )}
+      </div>
+
+      <span className="text-bright font-semibold">{t('changelog')}</span>
 
       <DyoExpandableText
         text={version.changelog}
@@ -80,28 +112,25 @@ const VersionCard = (props: VersionCardProps) => {
         modalTitle={t('changelogName', { name: version.name })}
       />
 
-      <div className="flex flex-row ml-auto mt-auto">
-        <DyoButton className="px-6 mx-2" outlined onClick={onDeploymentsClick} disabled={disabled}>
-          {t('deployments')}
-        </DyoButton>
+      {disabled ? null : (
+        <div className="flex flex-row ml-auto mt-auto">
+          <DyoButton className="px-4 mx-2" outlined onClick={onDeploymentsClick}>
+            <div className="flex flex-row items-center gap-2">
+              <Image src="/deployments.svg" alt={t('deployments')} width={20} height={20} layout="fixed" />
 
-        <DyoButton className="px-6 mx-2" outlined onClick={onImagesClick} disabled={disabled}>
-          {t('images')}
-        </DyoButton>
-
-        {version.type === 'rolling' || !version.increasable ? null : (
-          <DyoButton
-            className="px-6 ml-2"
-            color="ring-dyo-green"
-            textColor="text-dyo-green"
-            outlined
-            disabled={disabled}
-            onClick={onIncreaseClick}
-          >
-            {t('increase')}
+              {t('deployments')}
+            </div>
           </DyoButton>
-        )}
-      </div>
+
+          <DyoButton className="px-4 mx-2" outlined onClick={onImagesClick}>
+            <div className="flex flex-row items-center gap-2">
+              <Image src="/images.svg" alt={t('images')} width={20} height={20} layout="fixed" />
+
+              {t('images')}
+            </div>
+          </DyoButton>
+        </div>
+      )}
     </DyoCard>
   )
 }

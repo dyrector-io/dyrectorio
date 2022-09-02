@@ -37,17 +37,17 @@ import V2RegistryFields from './registry-fields/v2-registry-field'
 interface EditRegistryCardProps {
   className?: string
   registry?: RegistryDetails
-  onRegistryEdited: (product: Registry) => void
+  onRegistryEdited: (registry: Registry) => void
   submitRef: MutableRefObject<() => Promise<any>>
 }
 
 const EditRegistryCard = (props: EditRegistryCardProps) => {
-  const { className, registry: propRegistry, onRegistryEdited, submitRef } = props
+  const { className, registry: propsRegistry, onRegistryEdited, submitRef } = props
 
   const { t } = useTranslation('registries')
 
   const [registry, setRegistry] = useState<RegistryDetails>(
-    propRegistry ?? {
+    propsRegistry ?? {
       id: null,
       name: '',
       description: '',
@@ -110,6 +110,25 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
 
   const registryType = formik.values.type
 
+  const onRegistryTypeChange = (changedRegistry: RegistryType) => {
+    if (registryType !== changedRegistry) {
+      const meta = registrySchema.describe()
+      const registrySchemaFieldDescription = Object.entries(meta.fields)
+
+      registrySchemaFieldDescription.map(it => {
+        const [field, value]: [string, any] = it
+        if (value.meta?.reset) {
+          formik.setFieldValue(field, '', false)
+          formik.setFieldError(field, '')
+        }
+
+        return it
+      })
+    }
+
+    formik.setFieldValue('type', changedRegistry, false)
+  }
+
   return (
     <DyoCard className={className}>
       <DyoHeading element="h4" className="text-lg text-bright">
@@ -155,7 +174,7 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
               choices={REGISTRY_TYPE_VALUES}
               initialSelection={formik.values.type}
               converter={(it: RegistryType) => t(`type.${it}`)}
-              onSelectionChange={it => formik.setFieldValue('type', it, false)}
+              onSelectionChange={it => onRegistryTypeChange(it)}
             />
           </div>
 

@@ -11,8 +11,8 @@ export interface DyoButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButt
   text?: boolean
   color?: string
   textColor?: string
-  type?: 'button' | 'reset' | 'submit'
 }
+
 const DyoButton = (props: DyoButtonProps) => {
   const {
     secondary,
@@ -26,6 +26,7 @@ const DyoButton = (props: DyoButtonProps) => {
     textColor: textColorClassName,
     disabled,
     children,
+    type,
     ...forwaredProps
   } = props
 
@@ -36,7 +37,7 @@ const DyoButton = (props: DyoButtonProps) => {
     : outlined
     ? 'ring-dyo-turquoise'
     : 'bg-dyo-turquoise'
-  const disabledColor = outlined ? 'ring-light-grey' : 'bg-light-grey'
+  const disabledColor = outlined ? 'ring-light-grey-muted' : 'bg-light-grey-muted'
 
   const color = text ? 'bg-transparent' : disabled ? disabledColor : colorClassName ?? defaultColor
 
@@ -52,6 +53,7 @@ const DyoButton = (props: DyoButtonProps) => {
   return (
     <button
       {...forwaredProps}
+      type={type ?? 'button'}
       className={clsx(
         className ?? 'mx-2 px-10',
         ring,

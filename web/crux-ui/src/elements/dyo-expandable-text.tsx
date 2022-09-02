@@ -1,8 +1,8 @@
-import DyoButton from '@app/elements/dyo-button'
 import useOverflowDetection from '@app/hooks/use-overflow-detection'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
+import DyoButton from './dyo-button'
 import DyoModal from './dyo-modal'
 
 interface DyoExpandableTextProps {
@@ -26,7 +26,7 @@ const DyoExpandableText = (props: DyoExpandableTextProps) => {
 
   return (
     <>
-      <p ref={overflowRef} className={clsx(className, lineClamp[propsLineClamp - 1], 'break-words')}>
+      <p ref={overflowRef} className={clsx(className, lineClamp[propsLineClamp - 1], 'break-all')}>
         {text}
       </p>
       {!overflow ? null : (
@@ -41,7 +41,7 @@ const DyoExpandableText = (props: DyoExpandableTextProps) => {
           open={show}
           onClose={() => setShow(false)}
         >
-          <p className="text-bright mt-8 overflow-y-auto">{text}</p>
+          <p className="text-bright mt-8 break-all overflow-y-auto">{text}</p>
         </DyoModal>
       )}
     </>

@@ -1,7 +1,8 @@
+import clsx from 'clsx'
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 
 interface NavButtonProps {
-  className?: string
   children: React.ReactNode
   href: string
   passHref?: boolean
@@ -9,19 +10,26 @@ interface NavButtonProps {
 }
 
 const NavButton = (props: NavButtonProps) => {
-  const { className, children, href, passHref, icon } = props
+  const { children, href, passHref, icon } = props
+
+  const router = useRouter()
+
+  const isActive = router.pathname === href
 
   return (
-    <div className={className}>
-      <Link href={href} passHref={passHref}>
-        <a className="text-bright font-bold">
-          <div className="flex flex-row text-sm">
-            <div className="flex flex-row items-center mr-2">{icon} </div>
-            {children}
-          </div>
-        </a>
-      </Link>
-    </div>
+    <>
+      <div className={clsx('w-1 py-3', isActive ? 'bg-dyo-turquoise' : null)}>&nbsp;</div>
+      <div className={clsx('pl-8 py-3', isActive ? 'bg-dark w-full' : null)}>
+        <Link href={href} passHref={passHref}>
+          <a>
+            <div className="flex flex-row">
+              <div className="flex items-center mr-2 text-bright text-sm font-semibold">{icon}</div>
+              {children}
+            </div>
+          </a>
+        </Link>
+      </div>
+    </>
   )
 }
 

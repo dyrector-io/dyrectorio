@@ -62,12 +62,17 @@ export const createProductSchema = updateProductSchema.concat(
   }),
 )
 
-const registryCredentialRole = yup.mixed().when(['type', 'isPrivate'], {
-  is: (type, isPrivate) =>
-    type === 'gitlab' || type === 'github' || ((type === 'v2' || type === 'google') && isPrivate),
-  then: yup.string().required(),
-  otherwise: yup.mixed().transform(it => it ?? undefined),
-})
+const shouldResetMetaData = { reset: true }
+
+const registryCredentialRole = yup
+  .mixed()
+  .meta(shouldResetMetaData)
+  .when(['type', '_private'], {
+    is: (type, _private) =>
+      type === 'gitlab' || type === 'github' || ((type === 'v2' || type === 'google') && _private),
+    then: yup.string().required(),
+    otherwise: yup.mixed().transform(it => it ?? undefined),
+  })
 
 const googleRegistryUrls = ['gcr.io', 'us.gcr.io', 'eu.gcr.io', 'asia.gcr.io'] as const
 
@@ -76,21 +81,30 @@ export const registrySchema = yup.object().shape({
   description: descriptionRule,
   type: yup.mixed<RegistryType>().oneOf([...REGISTRY_TYPE_VALUES]),
   icon: iconRule,
-  imageNamePrefix: yup.string().when('type', {
-    is: type => ['hub', 'gitlab', 'github', 'google'].includes(type),
-    then: yup.string().required(),
-  }),
+  imageNamePrefix: yup
+    .string()
+    .meta(shouldResetMetaData)
+    .when('type', {
+      is: type => ['hub', 'gitlab', 'github', 'google'].includes(type),
+      then: yup.string().required(),
+    }),
   url: yup
     .string()
+    .meta(shouldResetMetaData)
     .when(['type', 'selfManaged'], {
       is: (type, selfManaged) => type === 'v2' || type === 'google' || (type === 'gitlab' && selfManaged),
       then: yup.string().required(),
     })
     .when(['type'], { is: type => type === 'google', then: yup.string().oneOf([...googleRegistryUrls]) }),
-  apiUrl: yup.string().when(['type', 'selfManaged'], {
-    is: (type, selfManaged) => type === 'gitlab' && selfManaged,
-    then: yup.string().required(),
-  }),
+  apiUrl: yup
+    .string()
+    .meta(shouldResetMetaData)
+    .when(['type', 'selfManaged'], {
+      is: (type, selfManaged) => type === 'gitlab' && selfManaged,
+      then: yup.string().required(),
+    }),
+  selfManaged: yup.mixed().meta(shouldResetMetaData),
+  _private: yup.mixed().meta(shouldResetMetaData),
   user: registryCredentialRole,
   token: registryCredentialRole,
 })
@@ -111,11 +125,7 @@ export const increaseVersionSchema = yup.object().shape({
   changelog: descriptionRule,
 })
 
-export const updateVersionSchema = increaseVersionSchema.concat(
-  yup.object().shape({
-    default: yup.boolean().required(),
-  }),
-)
+export const updateVersionSchema = increaseVersionSchema
 
 export const createVersionSchema = updateVersionSchema.concat(
   yup.object().shape({

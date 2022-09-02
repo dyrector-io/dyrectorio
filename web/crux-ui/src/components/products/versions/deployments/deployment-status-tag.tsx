@@ -36,7 +36,7 @@ const DeploymentStatusTag = (props: DeploymentStatusTagProps) => {
       case 'in_progress':
         return 'text-warning-orange'
       case 'obsolate':
-        return 'text-dyo-light-purple'
+        return 'text-dyo-purple-light'
       case 'preparing':
         return 'text-dyo-turquoise'
       case 'successful':
