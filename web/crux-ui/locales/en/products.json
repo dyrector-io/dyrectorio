@@ -9,6 +9,7 @@
   "name": "Name",
   "description": "Description",
   "altPicture": "Picture of {{name}}",
+  "type": "Type",
 
   "simple": "Simple",
   "complex": "Complex",

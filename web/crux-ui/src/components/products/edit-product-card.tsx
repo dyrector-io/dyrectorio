@@ -1,12 +1,12 @@
 import { DyoButton } from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
+import DyoChips from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { DyoTextArea } from '@app/elements/dyo-text-area'
-import { DyoToggle } from '@app/elements/dyo-toggle'
 import { defaultApiErrorHandler } from '@app/errors'
-import { CreateProduct, EditableProduct, Product, UpdateProduct, Version } from '@app/models'
+import { CreateProduct, EditableProduct, Product, PRODUCT_TYPE_VALUES, UpdateProduct, Version } from '@app/models'
 import { API_PRODUCTS, productApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { createProductSchema, updateProductSchema } from '@app/validation'
@@ -46,14 +46,12 @@ const EditProductCard = (props: EditProductCardProps) => {
     validationSchema: !editing ? createProductSchema : updateProductSchema,
     initialValues: {
       ...product,
-      complex: product.type === 'complex',
     },
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 
       const body: CreateProduct | UpdateProduct = {
         ...values,
-        type: values.complex ? 'complex' : 'simple',
       }
 
       const res = await (!editing
@@ -68,7 +66,6 @@ const EditProductCard = (props: EditProductCardProps) => {
         } else {
           result = {
             ...values,
-            type: values.complex ? 'complex' : 'simple',
           } as Product
         }
 
@@ -117,16 +114,18 @@ const EditProductCard = (props: EditProductCardProps) => {
         />
 
         {editing ? null : (
-          <div className="mr-auto">
-            <DyoToggle
-              className="text-bright mt-8"
-              name="complex"
-              nameChecked={t('complex')}
-              nameUnchecked={t('simple')}
-              checked={formik.values.complex}
-              setFieldValue={formik.setFieldValue}
+          <>
+            <DyoLabel textColor="mt-8 mb-2.5 text-light-eased">{t('type')}</DyoLabel>
+            <DyoChips
+              className="text-bright"
+              choices={PRODUCT_TYPE_VALUES}
+              initialSelection={formik.values.type}
+              converter={it => t(it)}
+              onSelectionChange={type => {
+                formik.setFieldValue('type', type, false)
+              }}
             />
-          </div>
+          </>
         )}
 
         {!changelogVisible ? null : (
