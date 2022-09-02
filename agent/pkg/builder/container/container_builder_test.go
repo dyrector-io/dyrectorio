@@ -34,8 +34,10 @@ func builderCleanup(builder *containerbuilder.DockerContainerBuilder) {
 	if builder.GetContainerID() != nil {
 		containerbuilder.DeleteContainer(context.Background(), *builder.GetContainerID())
 	}
-	if builder.GetNetworkID() != nil {
-		containerbuilder.DeleteNetwork(context.Background(), *builder.GetNetworkID())
+	if networks := builder.GetNetworkIDs();  networks != nil {
+		for _, network := range networks {
+			containerbuilder.DeleteNetwork(context.Background(), network)
+		}
 	}
 }
 
@@ -197,5 +199,5 @@ func TestNetwork(t *testing.T) {
 	assert.Nil(t, err)
 	assert.True(t, success)
 
-	assert.NotNil(t, builder.GetNetworkID())
+	assert.NotNil(t, builder.GetNetworkIDs())
 }

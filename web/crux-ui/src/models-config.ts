@@ -40,7 +40,7 @@ export type ExplicitContainerConfigPortRange = {
   external: PortRange
 }
 
-export const EXPLICIT_CONTAINER_NETWORK_MODE_VALUES = ['none', 'host'] as const
+export const EXPLICIT_CONTAINER_NETWORK_MODE_VALUES = ['none', 'host', 'bridge'] as const
 export type ExplicitContainerNetworkMode = typeof EXPLICIT_CONTAINER_NETWORK_MODE_VALUES[number]
 
 export const EXPLICIT_CONTAINER_RESTART_POLICY_TYPE_VALUES = [
@@ -127,6 +127,7 @@ export type ExplicitContainerConfig = {
   logConfig?: ExplicitContainerConfigLog
   restartPolicy?: ExplicitContainerRestartPolicyType
   networkMode?: ExplicitContainerNetworkMode
+  networks?: string[]
 
   // crane-specific:
   deploymentStrategy?: ExplicitContainerDeploymentStrategyType
