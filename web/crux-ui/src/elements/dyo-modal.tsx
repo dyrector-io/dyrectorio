@@ -8,6 +8,8 @@ import { DyoHeading } from './dyo-heading'
 
 export interface DyoModalProps {
   className?: string
+  titleClassName?: string
+  descClassName?: string
   title: string
   description?: string
   buttons?: React.ReactNode
@@ -35,11 +37,12 @@ const DyoModal = (props: DyoModalProps) => {
         <Dialog.Overlay />
 
         <DyoCard className={clsx(props.className, 'flex flex-col m-auto p-8')} modal>
-          <DyoHeading element="h4" className="text-xl font-bold text-bright">
+          <DyoHeading element="h4" className={props.titleClassName ?? 'text-xl font-bold text-bright'}>
             {props.title}
           </DyoHeading>
-          {!props.description ? null : <Dialog.Description>{props.description}</Dialog.Description>}
-
+          {!props.description ? null : (
+            <Dialog.Description className={props.descClassName}>{props.description}</Dialog.Description>
+          )}
           {props.children}
 
           <div className="mx-auto mt-auto pt-8">{buttons}</div>

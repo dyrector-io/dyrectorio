@@ -15,7 +15,6 @@ import { AuditLog, beautifyAuditLogEvent } from '@app/models'
 import { ROUTE_AUDIT } from '@app/routes'
 import { utcDateToLocale, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
-import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
@@ -78,15 +77,9 @@ const AuditLogPage = (props: AuditLogPageProps) => {
     url: ROUTE_AUDIT,
   }
 
-  const listHeaders = ['', ...['common:name', 'common:date', 'event', 'info'].map(it => t(it))]
-  const defaultHeaderClass = 'uppercase text-bright text-sm font-bold bg-medium-eased pl-2 py-3 h-11'
-  const headerClassNames = [
-    defaultHeaderClass,
-    clsx(defaultHeaderClass, 'w-20 min-w-full pl-4'),
-    ...Array.from({ length: listHeaders.length - 3 }).map(() => defaultHeaderClass),
-    clsx(defaultHeaderClass, 'pr-16'),
-  ]
-  const itemClassNames = ['py-2 w-14'] // Only for the first column
+  const headerClassName = 'uppercase text-bright text-sm font-semibold bg-medium-eased pl-2 py-3 h-11'
+  const columnWidths = ['w-16', 'w-2/12', 'w-48', 'w-2/12', '', 'w-20']
+  const listHeaders = ['', ...['common:name', 'common:date', 'event', 'data', 'common:actions'].map(it => t(it))]
 
   return (
     <Layout title={t('common:audit')}>
@@ -108,24 +101,34 @@ const AuditLogPage = (props: AuditLogPageProps) => {
 
           <DyoCard className="relative mt-4 overflow-auto">
             <DyoList
-              className=""
               noSeparator
-              headerClassName={headerClassNames}
-              headers={listHeaders}
+              headerClassName={headerClassName}
+              columnWidths={columnWidths}
               data={pagination.displayed}
+              headers={listHeaders}
               footer={<Paginator pagination={pagination} />}
-              itemClassName={itemClassNames}
               itemBuilder={it => {
                 /* eslint-disable react/jsx-key */
                 return [
-                  <div className="w-10 ml-auto">
+                  <div className="text-right">
                     <Image src="/default_avatar.svg" width={38} height={38} layout={'fixed'} />
                   </div>,
-                  <div className="font-semibold min-w-max pl-2">{it.identityName}</div>,
-                  <div className="min-w-max">{utcDateToLocale(it.date)}</div>,
-                  <div>{beautifyAuditLogEvent(it.event)}</div>,
-                  <div className="cursor-pointer max-w-4xl truncate" onClick={() => onShowInfoClick(it)}>
+                  <div className="font-semibold">{it.identityName}</div>,
+                  utcDateToLocale(it.date),
+                  beautifyAuditLogEvent(it.event),
+                  <div className="cursor-pointer truncate" onClick={() => onShowInfoClick(it)}>
                     {it.info}
+                  </div>,
+                  <div className="text-center">
+                    <Image
+                      src="/eye.svg"
+                      alt={t('common:view')}
+                      width={24}
+                      height={24}
+                      className="cursor-pointer"
+                      layout="fixed"
+                      onClick={() => onShowInfoClick(it)}
+                    />
                   </div>,
                 ]
                 /* eslint-enable react/jsx-key */
@@ -142,12 +145,13 @@ const AuditLogPage = (props: AuditLogPageProps) => {
       {!showInfo ? null : (
         <DyoModal
           className="w-1/2 h-1/2"
+          titleClassName="pl-4 font-medium text-xl text-bright mb-3"
           title={`${showInfo.identityName} | ${showInfo.date}`}
           open={!!showInfo}
           onClose={() => setShowInfo(null)}
         >
-          <span className="text-bright font-semibold">{beautifyAuditLogEvent(showInfo.event)}</span>
-          <JsonEditor className="overflow-y-auto mt-8" disabled value={parsedJSONInfo} />
+          <span className="text-bright font-semibold pl-4">{beautifyAuditLogEvent(showInfo.event)}</span>
+          <JsonEditor className="overflow-y-auto mt-8 p-4" disabled value={parsedJSONInfo} />
         </DyoModal>
       )}
     </Layout>

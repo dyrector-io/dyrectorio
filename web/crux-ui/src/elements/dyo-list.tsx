@@ -10,6 +10,7 @@ export type DyoListProps<T> = {
   headerClassName?: string | string[]
   itemClassName?: string | string[]
   footerClassName?: string | string[]
+  columnWidths?: string[]
   headers?: string[]
   footer?: React.ReactNode
   data: T[]
@@ -47,18 +48,23 @@ export const DyoList = <T,>(props: DyoListProps<T>) => {
 
   return (
     <>
-      <div key={props.key} className={clsx('table w-full rounded-lg overflow-auto', props.className)}>
+      <div
+        key={props.key}
+        className={clsx('table w-full rounded-lg overflow-auto', props.className, props.columnWidths && 'table-fixed')}
+      >
         {props.headers ? (
           <div className="table-header-group">
             <div className="table-row">
               {props.headers.map((header, index) => (
-                <div key={`${props.key}-col-${index}`} className="table-cell text-left align-middle">
-                  <div
-                    key={`${props.key}-header-${index}`}
-                    className={headerClassNames[index] ?? 'text-bright font-bold h-8 mb-4 ml-2 mr-auto'}
-                  >
-                    {header}
-                  </div>
+                <div
+                  key={`${props.key}-header-${index}`}
+                  className={clsx(
+                    'table-cell text-left align-middle',
+                    headerClassNames[index] ?? 'text-bright font-bold h-8 mb-4 ml-2 mr-auto',
+                    props.columnWidths ? props.columnWidths[index] ?? '' : '',
+                  )}
+                >
+                  {header}
                 </div>
               ))}
             </div>
