@@ -5,7 +5,7 @@ import (
 	"bytes"
 	_ "embed"
 	"errors"
-	"io/ioutil"
+	"os"
 	"text/template"
 )
 
@@ -55,7 +55,7 @@ const (
 	Utils  Services = "utils"
 )
 
-var AllServices []Services
+const FilePerms = 0600
 
 // Crux services: db migrations and crux api service
 func GetCruxContainerDefaults() []Container {
@@ -212,7 +212,7 @@ func GetUtilsContainerDefaults() []Container {
 	}
 }
 
-func GetContainerDefaults(services []Services) (error, []Container) {
+func GetContainerDefaults(services []Services) ([]Container, error) {
 	var containers []Container
 
 	for _, i := range services {
@@ -224,53 +224,53 @@ func GetContainerDefaults(services []Services) (error, []Container) {
 		case Utils:
 			containers = append(containers, GetUtilsContainerDefaults()...)
 		default:
-			return errors.New("invalid service name"), []Container{}
+			return []Container{}, errors.New("invalid service name")
 		}
 	}
 
-	return nil, containers
+	return containers, nil
 }
 
-func GenContainer(services []Services, write bool) (error, string) {
-	//AllServices := []Services{Crux, CruxUI, Utils}
-
-	err, containers := GetContainerDefaults(services)
+func GenContainer(services []Services, write bool) (string, error) {
+	containers, err := GetContainerDefaults(services)
 	if err != nil {
-		return err, ""
+		return "", err
 	}
 
 	if write {
-		err, settings := ReadSettingsFile(true)
+		var settings Settings
+		settings, err = ReadSettingsFile(true)
 		if err != nil {
-			return err, ""
+			return "", err
 		}
-		err, containers = EnvVarOverwrite(settings, containers)
+		containers, err = EnvVarOverwrite(settings, containers)
 		if err != nil {
-			return err, ""
+			return "", err
 		}
 	}
 
 	buf := bytes.Buffer{}
 	buffer := bufio.NewWriter(&buf)
 
-	template, err := template.New("container").Parse(templatefile)
+	composetemplate, err := template.New("container").Parse(templatefile)
 	if err != nil {
-		return err, ""
+		return "", err
 	}
 
-	err = template.Execute(buffer, containers)
+	err = composetemplate.Execute(buffer, containers)
 	if err != nil {
-		return err, ""
+		return "", err
 	}
 
-	if err = buffer.Flush(); err != nil {
-		return err, ""
+	err = buffer.Flush()
+	if err != nil {
+		return "", err
 	}
 
-	return nil, buf.String()
+	return buf.String(), nil
 }
 
 func WriteComposeFile(containers string) error {
-	err := ioutil.WriteFile("docker-compose.yaml", []byte(containers), 0644)
+	err := os.WriteFile("docker-compose.yaml", []byte(containers), FilePerms)
 	return err
 }

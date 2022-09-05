@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io/ioutil"
 	"log"
 	"os"
 	"runtime"
@@ -92,7 +91,7 @@ func main() {
 
 func compose(cCtx *cli.Context) error {
 	services := serviceSelector(cCtx)
-	err, containers := GenContainer(services, cCtx.Bool("store"))
+	containers, err := GenContainer(services, cCtx.Bool("store"))
 	if err != nil {
 		return err
 	}
@@ -105,7 +104,7 @@ func compose(cCtx *cli.Context) error {
 
 func run(cCtx *cli.Context) error {
 	services := serviceSelector(cCtx)
-	err, containers := GenContainer(services, cCtx.Bool("store"))
+	containers, err := GenContainer(services, cCtx.Bool("store"))
 	if err != nil {
 		return err
 	}
@@ -122,7 +121,7 @@ func run(cCtx *cli.Context) error {
 
 func stop(cCtx *cli.Context) error {
 	services := serviceSelector(cCtx)
-	err, containers := GenContainer(services, cCtx.Bool("store"))
+	containers, err := GenContainer(services, cCtx.Bool("store"))
 	if err != nil {
 		return err
 	}
@@ -168,7 +167,7 @@ func test(cCtx *cli.Context) error {
 	log.Println(osPathList)
 
 	for _, path := range osPathList {
-		files, err := ioutil.ReadDir(path)
+		files, err := os.ReadDir(path)
 		if err != nil {
 			return err
 		}

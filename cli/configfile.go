@@ -3,8 +3,8 @@ package main
 import (
 	_ "embed"
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 
 	"gopkg.in/yaml.v3"
 )
@@ -23,21 +23,21 @@ const SettingsFileName = "settings.yaml"
 //go:embed "settings.yaml.example"
 var content string
 
-func ReadSettingsFile(write bool) (error, Settings) {
+func ReadSettingsFile(write bool) (Settings, error) {
 	examplefile := []byte(content)
 
-	file, err := ioutil.ReadFile(SettingsFileName)
+	file, err := os.ReadFile(SettingsFileName)
 	if err != nil {
 		if write {
-			err := ioutil.WriteFile(SettingsFileName, examplefile, 0644)
+			err = os.WriteFile(SettingsFileName, examplefile, FilePerms)
 			if err != nil {
-				return err, Settings{}
+				return Settings{}, err
 			}
 		}
 
-		file, err = ioutil.ReadFile(SettingsFileName)
+		file, err = os.ReadFile(SettingsFileName)
 		if err != nil {
-			return err, Settings{}
+			return Settings{}, err
 		}
 	}
 
@@ -46,7 +46,7 @@ func ReadSettingsFile(write bool) (error, Settings) {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	return nil, settings
+	return settings, nil
 }
 
 func OverwriteOpt(settings Settings, env EnvVar) EnvVar {
@@ -60,10 +60,10 @@ func OverwriteOpt(settings Settings, env EnvVar) EnvVar {
 }
 
 func OverwriteContainerConf(containers []Container) []Container {
-	for i, container := range containers {
-		for j, env := range container.EnvVars {
+	for i := range containers {
+		for j, env := range containers[i].EnvVars {
 			if env.Key == "CRUX_ADDRESS" {
-				err, gwip := GetCNIGateway()
+				gwip, err := GetCNIGateway()
 				if err != nil {
 					log.Panicln(err)
 				}
@@ -75,13 +75,12 @@ func OverwriteContainerConf(containers []Container) []Container {
 	return containers
 }
 
-func EnvVarOverwrite(settings Settings, services []Container) (error, []Container) {
-	for i, container := range services {
-		for j, item := range container.EnvVars {
+func EnvVarOverwrite(settings Settings, services []Container) ([]Container, error) {
+	for i := range services {
+		for j, item := range services[i].EnvVars {
 			item = OverwriteOpt(settings, item)
-			container.EnvVars[j] = item
+			services[i].EnvVars[j] = item
 		}
-		services[i] = container
 	}
-	return nil, services
+	return services, nil
 }

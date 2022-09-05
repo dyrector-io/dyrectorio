@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -13,12 +12,20 @@ import (
 	"strings"
 )
 
-const ContainerNetName = "dyocli"
+const ContainerNetName = "dyo-cli"
 
-func RunContainers(containers string, start bool, quiet bool) error {
+const OSwindows = "windows"
+const ExecPodman = "podman"
+const ExecPodmanCompose = "podman-compose"
 
-	//search for podman/docker
-	err, executable := findExec(true)
+const ExecDocker = "docker"
+const ExecDockerCompose = "docker-compose"
+const ExecWinDocker = "docker.exe"
+const ExecWinDockerCompose = "docker-compose.exe"
+
+func RunContainers(containers string, start, quiet bool) error {
+	// search for podman/docker
+	executable, err := FindExec(true)
 	if err != nil {
 		return err
 	}
@@ -58,100 +65,89 @@ func RunContainers(containers string, start bool, quiet bool) error {
 	return nil
 }
 
-// Find a compose executable
-func findExec(compose bool) (error, string) {
-	osPath := os.Getenv("PATH")
-
+// Find a compose or docker executable
+func FindExec(compose bool) (executable string, errormsg error) {
 	// I refuse to spend more time to debug this OS's blasphemy
-	if runtime.GOOS == "windows" {
+	if runtime.GOOS == OSwindows {
 		if compose {
-			return nil, "docker-compose.exe"
+			return ExecWinDockerCompose, nil
 		} else {
-			return nil, "docker.exe"
+			return ExecWinDocker, nil
 		}
 	}
 
+	executables, err := exploreOSPaths()
+	if err != nil {
+		return "", err
+	}
+
+	dockerComposePresent := false
+	dockerPresent := false
+	for _, file := range executables {
+		switch file {
+		case ExecPodmanCompose:
+			if compose {
+				return ExecPodmanCompose, nil
+			}
+		case ExecDockerCompose:
+			dockerComposePresent = true
+		case ExecPodman:
+			if !compose {
+				return ExecPodman, nil
+			}
+		case ExecDocker:
+			dockerPresent = true
+		}
+	}
+
+	if compose {
+		if dockerComposePresent {
+			return ExecDockerCompose, nil
+		}
+	} else {
+		if dockerPresent {
+			return ExecDocker, nil
+		}
+	}
+
+	return "", errors.New("executable not found")
+}
+
+func exploreOSPaths() ([]string, error) {
+	osPath := os.Getenv("PATH")
 	osPathList := strings.Split(osPath, string(os.PathListSeparator))
 
-	podmanPresent := false
-	dockerPresent := false
+	var executables []string
 
 	for _, path := range osPathList {
-		files, err := ioutil.ReadDir(path)
+		files, err := os.ReadDir(path)
 		if err != nil {
-			return err, ""
+			return []string{}, err
 		}
 
 		for _, f := range files {
-			if compose {
-				switch f.Name() {
-				case "podman-compose":
-					podmanPresent = true
-				case "docker-compose":
-					dockerPresent = true
-				}
-			} else {
-				switch f.Name() {
-				case "podman":
-					podmanPresent = true
-				case "docker":
-					dockerPresent = true
-				}
-			}
+			executables = append(executables, f.Name())
 		}
 	}
 
-	//podman takes precedence
-	if compose {
-		if podmanPresent {
-			return nil, "podman-compose"
-		}
-		if dockerPresent {
-			return nil, "docker-compose"
-		}
-	} else {
-		if podmanPresent {
-			return nil, "podman"
-		}
-		if dockerPresent {
-			return nil, "docker"
-		}
-	}
-
-	return errors.New("executable not found"), ""
+	return executables, nil
 }
 
 type PodmanNetwork struct {
-	Name   string `json:"name"`
-	Id     string `json:"id"`
-	Driver string `json:"driver"`
-	// NetIF    string   `json:"network_interface"`
-	// Created  string   `json:"created"`
+	Name    string   `json:"name"`
+	ID      string   `json:"id"`
+	Driver  string   `json:"driver"`
 	Subnets []Subnet `json:"subnets"`
-	// IPv6     bool     `json:"ipv6_enabled"`
-	// Internal bool     `json:"internal"`
-	// DNS      bool     `json:"dns_enabled"`
-	// IpamOpt  IpamOpt  `json:"ipam_options"`
 }
 
 type DockerNetwork struct {
 	Name   string `json:"Name"`
-	Id     string `json:"Id"`
+	ID     string `json:"Id"`
 	Driver string `json:"Driver"`
-	// 	Scope    string   `json:"Scope"`
-	// 	Created  string   `json:"Created"`
-	// 	IPv6     bool     `json:"EnableIPv6"`
-	// 	Internal bool     `json:"Internal"`
-	// 	Attachable
-	// 	Ingress
-	// 	Containers
-	// 	DNS      bool     `json:"dns_enabled"`
-	Ipam Ipam `json:"IPAM"`
+	Ipam   Ipam   `json:"IPAM"`
 }
 
 type Ipam struct {
-	//Driver
-	//Options
 	Config []Subnet
 }
 
@@ -159,20 +155,15 @@ type Subnet struct {
 	Subnet  string `json:"subnet"`
 	Gateway string `json:"gateway"`
 }
-type IpamOpt struct {
-	Driver string `json:"driver"`
-}
 
-func GetCNIGateway() (error, string) {
-	//get networks
-
-	err, executable := findExec(false)
+func GetCNIGateway() (string, error) {
+	// get networks
+	executable, err := FindExec(false)
 	if err != nil {
-		return err, ""
+		return "", err
 	}
 
 	namefilter := fmt.Sprintf("name=%s", ContainerNetName)
-
 	cmd := exec.Command(executable, "network", "ls", "-f", "driver=bridge", "-f", namefilter, "--format", "'{{.Name}}'")
 
 	cmdOutput := &bytes.Buffer{}
@@ -182,18 +173,19 @@ func GetCNIGateway() (error, string) {
 	log.Println("Executing", executable, "in the background, listing network...")
 	err = cmd.Run()
 	if err != nil {
-		return err, ""
+		return "", err
 	}
 
 	if cmdOutput.String() == "" {
-		err = EnsureDyoNetwork(executable, true)
+		if EnsureDyoNetwork(executable, true) != nil {
+			return "", err
+		}
 	}
 
 	return GetGatewayIP(executable)
 }
 
-func GetGatewayIP(executable string) (error, string) {
-
+func GetGatewayIP(executable string) (string, error) {
 	// inspect, get gw addr
 	cmd := exec.Command(executable, "network", "inspect", ContainerNetName)
 
@@ -204,100 +196,92 @@ func GetGatewayIP(executable string) (error, string) {
 	log.Println("Executing", executable, "in the background, inspecting network...")
 	err := cmd.Run()
 	if err != nil {
-		return err, ""
+		return "", err
 	}
 
 	switch executable {
-	case "podman.exe":
-		fallthrough
-	case "podman":
+	case ExecPodman:
 		var network []PodmanNetwork
 		err = json.Unmarshal(cmdOutput.Bytes(), &network)
 		if err != nil {
-			return err, ""
+			return "", err
 		}
 
 		if len(network) != 1 {
-			return errors.New("there are more than one network"), ""
+			return "", errors.New("there are more than one network")
 		}
 
 		if len(network[0].Subnets) != 1 {
-			return errors.New("there are more than one network subnets"), ""
+			return "", errors.New("there are more than one network subnets")
 		}
 
 		gwip := network[0].Subnets[0].Gateway
 
 		if gwip != "" {
-			return nil, gwip
+			return gwip, nil
 		}
-	case "docker.exe":
-		fallthrough
-	case "docker":
+	case ExecDocker, ExecWinDocker:
 		var network []DockerNetwork
 		err = json.Unmarshal(cmdOutput.Bytes(), &network)
 		if err != nil {
-			return err, ""
+			return "", err
 		}
 
 		if len(network) != 1 {
-			return errors.New("there are more than one network"), ""
+			return "", errors.New("there are more than one network")
 		}
 
 		if len(network[0].Ipam.Config) != 1 {
-			return errors.New("there are more than one network subnets"), ""
+			return "", errors.New("there are more than one network subnets")
 		}
 
 		gwip := network[0].Ipam.Config[0].Gateway
 
 		if gwip != "" {
-			return nil, gwip
+			return gwip, nil
 		}
 	default:
-		return errors.New("Unknown binary"), ""
+		return "", errors.New("unknown binary")
 	}
 
-	return errors.New("gateway IP is empty"), ""
+	return "", errors.New("gateway IP is empty")
 }
 
 func EnsureDyoNetwork(executable string, delnet bool) error {
-
 	namefilter := fmt.Sprintf("name=%s", ContainerNetName)
+	lscmd := exec.Command(executable, "network", "ls", "-f", namefilter, "--format", "'{{.Name}}'")
 
-	cmd := exec.Command(executable, "network", "ls", "-f", namefilter, "--format", "'{{.Name}}'")
-
-	cmdOutput := &bytes.Buffer{}
-	cmd.Stdout = cmdOutput
-	cmd.Stderr = os.Stderr
+	lscmdOutput := &bytes.Buffer{}
+	lscmd.Stdout = lscmdOutput
+	lscmd.Stderr = os.Stderr
 
 	log.Println("Executing", executable, "in the background, listing network...")
-	err := cmd.Run()
+	err := lscmd.Run()
 	if err != nil {
 		return err
 	}
 
-	if cmdOutput.String() != "" && delnet {
-		//if options are fook'd we re-create the network
+	if lscmdOutput.String() != "" && delnet {
+		// if options are fook'd we re-create the network
+		rmcmd := exec.Command(executable, "network", "rm", ContainerNetName)
 
-		cmd := exec.Command(executable, "network", "rm", ContainerNetName)
-
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
+		rmcmd.Stdout = os.Stdout
+		rmcmd.Stderr = os.Stderr
 
 		log.Println("Executing", executable, "in the background, removing network...")
-		err = cmd.Run()
+		err = rmcmd.Run()
 		if err != nil {
 			return err
 		}
-
 	}
 
-	cmd = exec.Command(executable, "network", "create", ContainerNetName, "-d", "bridge")
+	createcmd := exec.Command(executable, "network", "create", ContainerNetName, "-d", "bridge")
 
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	createcmd.Stdout = os.Stdout
+	createcmd.Stderr = os.Stderr
 
 	log.Println("Executing", executable, "in the background, creating network...")
-	err = cmd.Run()
+	err = createcmd.Run()
 	if err != nil {
 		return err
 	}
