@@ -106,7 +106,9 @@ const VersionSections = (props: VersionSectionsProps) => {
       ) : (
         <AddDeploymentCard
           productId={props.product.id}
+          productName={props.product.name}
           versionId={props.version.id}
+          versionName={props.version.name}
           onAdd={onAddDeployment}
           onDiscard={() => setAddSectionState('none')}
         />

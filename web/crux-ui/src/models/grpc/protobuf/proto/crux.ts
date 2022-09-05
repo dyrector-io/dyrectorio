@@ -943,6 +943,9 @@ export interface CreateDeploymentRequest {
   accessedBy: string
   versionId: string
   nodeId: string
+  name: string
+  description?: string | undefined
+  prefix: string
 }
 
 export interface UpdateDeploymentRequest {
@@ -6524,6 +6527,8 @@ const baseCreateDeploymentRequest: object = {
   accessedBy: '',
   versionId: '',
   nodeId: '',
+  name: '',
+  prefix: '',
 }
 
 export const CreateDeploymentRequest = {
@@ -6536,6 +6541,15 @@ export const CreateDeploymentRequest = {
     }
     if (message.nodeId !== '') {
       writer.uint32(810).string(message.nodeId)
+    }
+    if (message.name !== '') {
+      writer.uint32(818).string(message.name)
+    }
+    if (message.description !== undefined) {
+      writer.uint32(826).string(message.description)
+    }
+    if (message.prefix !== '') {
+      writer.uint32(834).string(message.prefix)
     }
     return writer
   },
@@ -6558,6 +6572,15 @@ export const CreateDeploymentRequest = {
         case 101:
           message.nodeId = reader.string()
           break
+        case 102:
+          message.name = reader.string()
+          break
+        case 103:
+          message.description = reader.string()
+          break
+        case 104:
+          message.prefix = reader.string()
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -6573,6 +6596,10 @@ export const CreateDeploymentRequest = {
     message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
     message.versionId = object.versionId !== undefined && object.versionId !== null ? String(object.versionId) : ''
     message.nodeId = object.nodeId !== undefined && object.nodeId !== null ? String(object.nodeId) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.description =
+      object.description !== undefined && object.description !== null ? String(object.description) : undefined
+    message.prefix = object.prefix !== undefined && object.prefix !== null ? String(object.prefix) : ''
     return message
   },
 
@@ -6581,6 +6608,9 @@ export const CreateDeploymentRequest = {
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.versionId !== undefined && (obj.versionId = message.versionId)
     message.nodeId !== undefined && (obj.nodeId = message.nodeId)
+    message.name !== undefined && (obj.name = message.name)
+    message.description !== undefined && (obj.description = message.description)
+    message.prefix !== undefined && (obj.prefix = message.prefix)
     return obj
   },
 
@@ -6591,6 +6621,9 @@ export const CreateDeploymentRequest = {
     message.accessedBy = object.accessedBy ?? ''
     message.versionId = object.versionId ?? ''
     message.nodeId = object.nodeId ?? ''
+    message.name = object.name ?? ''
+    message.description = object.description ?? undefined
+    message.prefix = object.prefix ?? ''
     return message
   },
 }

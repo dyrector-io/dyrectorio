@@ -101,6 +101,9 @@ export type DeploymentEvent = {
 
 export type CreateDeployment = {
   nodeId: string
+  name: string
+  prefix: string
+  description?: string | undefined
 }
 
 export type DeploymentCreated = {

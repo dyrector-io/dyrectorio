@@ -1,5 +1,6 @@
 import { Logger } from '@app/logger'
 import {
+  CreateDeployment,
   Deployment,
   DeploymentByVersion,
   DeploymentDetails,
@@ -143,10 +144,10 @@ class DyoDeploymentService {
     })
   }
 
-  async create(versionId: string, nodeId: string): Promise<string> {
+  async create(versionId: string, deployment: CreateDeployment): Promise<string> {
     const req: CreateDeploymentRequest = {
+      ...deployment,
       versionId,
-      nodeId,
       accessedBy: this.identity.id,
     }
 
