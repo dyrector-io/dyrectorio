@@ -1,9 +1,8 @@
 import { Version } from '.prisma/client'
 import { Injectable } from '@nestjs/common'
 import { DeploymentStatusEnum } from '@prisma/client'
-import { PrismaService } from 'src/services/prisma.service'
 import { containerNameFromImageName } from 'src/domain/deployment'
-import { AlreadyExistsException } from 'src/exception/errors'
+import { VersionMessage } from 'src/domain/notification-templates'
 import {
   CreateEntityResponse,
   CreateVersionRequest,
@@ -15,9 +14,9 @@ import {
   VersionDetailsResponse,
   VersionListResponse,
 } from 'src/grpc/protobuf/proto/crux'
-import { VersionMapper } from './version.mapper'
 import { DomainNotificationService } from 'src/services/domain.notification.service'
-import { VersionMessage } from 'src/domain/notification-templates'
+import { PrismaService } from 'src/services/prisma.service'
+import { VersionMapper } from './version.mapper'
 
 @Injectable()
 export class VersionService {
@@ -78,9 +77,7 @@ export class VersionService {
   }
 
   async createVersion(req: CreateVersionRequest): Promise<CreateEntityResponse> {
-    let version: Version = null
-
-    await this.prisma.$transaction(async prisma => {
+    const version = await this.prisma.$transaction(async prisma => {
       const defaultVersion = await prisma.version.findFirst({
         where: {
           productId: req.productId,
@@ -96,13 +93,13 @@ export class VersionService {
         },
       })
 
-      version = await prisma.version.create({
+      const version = await prisma.version.create({
         data: {
           productId: req.productId,
           name: req.name,
           changelog: req.changelog,
           type: this.mapper.typeToDb(req.type),
-          default: req.default,
+          default: !defaultVersion,
           createdBy: req.accessedBy,
         },
       })
@@ -131,70 +128,70 @@ export class VersionService {
         )
 
         await Promise.all(images)
-
-        if (req.default) {
-          await prisma.version.update({
-            where: {
-              id: defaultVersion.id,
-            },
-            data: {
-              default: false,
-            },
-          })
-        }
       }
+
+      return version
     })
 
-    const product = await this.prisma.product.findFirst({
+    const product = await this.prisma.product.findUnique({
       where: {
         id: req.productId,
       },
     })
 
-    if (product) {
-      await this.notificationService.sendNotification({
-        identityId: req.accessedBy,
-        messageType: 'version',
-        message: { subject: product.name, version: version.name } as VersionMessage,
-      })
-    }
+    await this.notificationService.sendNotification({
+      identityId: req.accessedBy,
+      messageType: 'version',
+      message: { subject: product.name, version: version.name } as VersionMessage,
+    })
 
     return CreateEntityResponse.fromJSON(version)
   }
 
   async updateVersion(req: UpdateVersionRequest): Promise<UpdateEntityResponse> {
-    let version: Version = null
+    const version = await this.prisma.version.update({
+      where: {
+        id: req.id,
+      },
+      data: {
+        name: req.name,
+        changelog: req.changelog,
+        updatedAt: new Date(),
+        updatedBy: req.accessedBy,
+      },
+    })
 
+    return UpdateEntityResponse.fromJSON(version)
+  }
+
+  async setDefaultVersion(req: IdRequest): Promise<Empty> {
     await this.prisma.$transaction(async prisma => {
-      version = await prisma.version.update({
+      const version = prisma.version.update({
         where: {
           id: req.id,
         },
         data: {
-          name: req.name,
-          changelog: req.changelog,
-          default: req.default,
-          updatedAt: new Date(),
-          updatedBy: req.accessedBy,
+          default: true,
+        },
+        select: {
+          productId: true,
         },
       })
 
-      if (req.default) {
-        await prisma.version.updateMany({
-          where: {
-            productId: version.productId,
-            NOT: {
-              id: version.id,
-            },
+      await prisma.version.updateMany({
+        where: {
+          NOT: {
+            id: req.id,
           },
-          data: {
-            default: false,
-          },
-        })
-      }
+          productId: (await version).productId,
+        },
+        data: {
+          default: false,
+        },
+      })
     })
 
-    return UpdateEntityResponse.fromJSON(version)
+    return Empty
   }
 
   async deleteVersion(req: IdRequest): Promise<Empty> {
@@ -251,24 +248,16 @@ export class VersionService {
     let version: Version = null
 
     await this.prisma.$transaction(async prisma => {
-      try {
-        version = await prisma.version.create({
-          data: {
-            productId: parentVersion.productId,
-            name: request.name,
-            changelog: request.changelog,
-            default: false,
-            createdBy: request.accessedBy,
-            type: parentVersion.type,
-          },
-        })
-      } catch (error) {
-        throw new AlreadyExistsException({
-          message: 'This version already has a child version',
-          property: 'productId',
-          value: parentVersion.id,
-        })
-      }
+      version = await prisma.version.create({
+        data: {
+          productId: parentVersion.productId,
+          name: request.name,
+          changelog: request.changelog,
+          default: false,
+          createdBy: request.accessedBy,
+          type: parentVersion.type,
+        },
+      })
 
       await Promise.all(
         // Iterate through the version images

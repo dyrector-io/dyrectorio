@@ -52,12 +52,15 @@ docker run \
   -e UPDATE_METHOD='off' \
   -e UPDATE_POLL_INTERVAL='600s' \
   {{#if insecure}}
-    -e GRPC_INSECURE='true' \
+  -e GRPC_INSECURE='true' \
   {{/if}}
   -e DAGENT_IMAGE='ghcr.io/dyrector-io/dyrectorio/agent/dagent' \
   -e DAGENT_TAG='stable' \
   -e DAGENT_NAME='{{name}}' \
   -v /var/run/docker.sock:/var/run/docker.sock \
+  {{#if network}}
+  --network dyocli \
+  {{/if}}
   --name 'dagent' \
   {{! -e UPDATE_REGISTRY_USER='' \ }}
   {{! -e UPDATE_REGISTRY_PASSWORD='' \ }}

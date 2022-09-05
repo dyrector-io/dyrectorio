@@ -3,11 +3,11 @@ import { DyoCard, DyoCardProps } from '@app/elements/dyo-card'
 import { DyoExpandableText } from '@app/elements/dyo-expandable-text'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
-import DyoTag from '@app/elements/dyo-tag'
 import { Registry } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
+import RegistryTypeTag from './registry-type-tag'
 
 interface RegistryCardProps extends Omit<DyoCardProps, 'children'> {
   registry: Registry
@@ -27,7 +27,7 @@ const RegistryCard = (props: RegistryCardProps) => {
     <>
       <DyoCard className={clsx(props.className ?? 'p-6', 'flex flex-col')}>
         <div className={clsx(onClick ? 'cursor-pointer' : null, 'flex flex-row')} onClick={onClick}>
-          {!registry.icon ? getDefaultImage() : <DyoBadge icon={registry.icon} />}
+          {!registry.icon ? getDefaultImage() : <DyoBadge large icon={registry.icon} />}
 
           <DyoHeading className="text-xl text-bright font-semibold ml-2 my-auto mr-auto" element="h3">
             {registry.name}
@@ -46,11 +46,7 @@ const RegistryCard = (props: RegistryCardProps) => {
           modalTitle={registry.name}
         />
 
-        <div className="flex flex-row flex-grow mt-4 justify-end">
-          <DyoTag color="bg-dyo-turquoise" textColor="text-dyo-turquoise">
-            {t(`type.${registry.type}`)}
-          </DyoTag>
-        </div>
+        <RegistryTypeTag className="ml-auto mr-4" type={registry.type} />
       </DyoCard>
     </>
   )

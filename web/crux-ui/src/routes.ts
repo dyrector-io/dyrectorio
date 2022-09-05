@@ -84,6 +84,8 @@ export const versionUrl = (productId: string, versionId: string, params?: Versio
 export const versionApiUrl = (productId: string, versionId: string) => `/api${versionUrl(productId, versionId)}`
 export const versionIncreaseApiUrl = (productId: string, versionId: string) =>
   `${versionApiUrl(productId, versionId)}/increase`
+export const versionSetDefaultApiUrl = (productId: string, versionId: string) =>
+  `${versionApiUrl(productId, versionId)}/default`
 export const versionWsUrl = (productId: string, versionId: string) => `${versionApiUrl(productId, versionId)}/connect`
 
 // deployment

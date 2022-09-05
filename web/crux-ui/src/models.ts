@@ -132,14 +132,14 @@ export type Version = {
   updatedAt: string
 }
 
+export type EditableVersion = Omit<Version, 'default'>
+
 export type IncreaseVersion = {
   name: string
   changelog?: string
 }
 
-export type UpdateVersion = IncreaseVersion & {
-  default: boolean
-}
+export type UpdateVersion = IncreaseVersion
 
 export type CreateVersion = UpdateVersion & {
   type: VersionType
@@ -715,6 +715,7 @@ export const registryUrlOf = (it: RegistryDetails) => {
     case 'hub':
       return REGISTRY_HUB_URL
     case 'v2':
+    case 'google':
       return it.url
     case 'gitlab':
       return it.selfManaged ? it.url : REGISTRY_GITLAB_URLS.registryUrl

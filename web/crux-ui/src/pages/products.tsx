@@ -6,6 +6,7 @@ import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
 import { ListPageMenu } from '@app/components/shared/page-menu'
 import DyoChips from '@app/elements/dyo-chips'
+import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import { Product } from '@app/models'
@@ -79,30 +80,38 @@ const ProductsPage = (props: ProductsPageProps) => {
         <EditProductCard className="mb-8 px-8 py-6" submitRef={submitRef} onProductEdited={onCreated} />
       )}
 
-      <Filters setTextFilter={it => filters.setFilter({ text: it })}>
-        <DyoChips
-          className="pl-8"
-          choices={PRODUCT_TYPE_FILTER_VALUES}
-          initialSelection={initalTypeFilter}
-          converter={it => t(it)}
-          onSelectionChange={type => {
-            filters.setFilter({
-              type,
-            })
-          }}
-        />
-      </Filters>
+      {filters.items.length ? (
+        <>
+          <Filters setTextFilter={it => filters.setFilter({ text: it })}>
+            <DyoChips
+              className="pl-8"
+              choices={PRODUCT_TYPE_FILTER_VALUES}
+              initialSelection={initalTypeFilter}
+              converter={it => t(it)}
+              onSelectionChange={type => {
+                filters.setFilter({
+                  type,
+                })
+              }}
+            />
+          </Filters>
 
-      <DyoWrap>
-        {filters.filtered.map((it, index) => (
-          <ProductCard
-            className="max-h-72 p-8"
-            key={`product-${index}`}
-            product={it}
-            onClick={() => onNavigateToDetails(it.id)}
-          />
-        ))}
-      </DyoWrap>
+          <DyoWrap>
+            {filters.filtered.map((it, index) => (
+              <ProductCard
+                className="max-h-72 p-8"
+                key={`product-${index}`}
+                product={it}
+                onClick={() => onNavigateToDetails(it.id)}
+              />
+            ))}
+          </DyoWrap>
+        </>
+      ) : (
+        <DyoHeading element="h3" className="text-md text-center text-light-eased pt-32">
+          {t('noItems')}
+        </DyoHeading>
+      )}
     </Layout>
   )
 }

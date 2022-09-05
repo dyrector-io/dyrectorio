@@ -19,10 +19,6 @@ import (
 	builder "github.com/dyrector-io/dyrectorio/agent/pkg/builder/container"
 )
 
-type Namespace struct {
-	Name string `json:"name" binding:"required"`
-}
-
 type DeployImageRequest struct {
 	RequestID       string                `json:"RequestId" binding:"required"`
 	RegistryAuth    *builder.RegistryAuth `json:"RegistryAuth,omitempty"`
@@ -35,16 +31,9 @@ type DeployImageRequest struct {
 	Issuer          string                `json:"Issuer"`
 }
 
-type BatchDeployImageRequest []DeployImageRequest
-
 type VersionData struct {
 	Version      string `json:"version" binding:"required"`
 	ReleaseNotes string `json:"releaseNotes"`
-}
-
-type DeployVersionRequest struct {
-	VersionData
-	DeployImages []DeployImageRequest `json:"deployImageRequest" binding:"dive,min=1"`
 }
 
 func (d *DeployImageRequest) Strings(appConfig *config.CommonConfiguration) []string {
@@ -74,8 +63,6 @@ type DeployImageResponse struct {
 }
 
 type DeployVersionResponse []DeployImageResponse
-
-type BatchDeployImageResponse []DeployImageResponse
 
 type Base64JSONBytes []byte
 

@@ -48,7 +48,7 @@ const iconRule = yup
   .oneOf([null, ...DYO_ICONS])
   .nullable()
 
-const nameRule = yup.string().required()
+const nameRule = yup.string().required().min(3).max(70)
 const descriptionRule = yup.string().optional()
 
 export const updateProductSchema = yup.object().shape({
@@ -62,10 +62,17 @@ export const createProductSchema = updateProductSchema.concat(
   }),
 )
 
-const registryCredentialRole = yup.string().when(['type', '_private'], {
-  is: (type, _private) => ['gitlab', 'github'].includes(type) || ((type === 'v2' || type === 'google') && _private),
-  then: yup.string().required(),
-})
+const shouldResetMetaData = { reset: true }
+
+const registryCredentialRole = yup
+  .mixed()
+  .meta(shouldResetMetaData)
+  .when(['type', '_private'], {
+    is: (type, _private) =>
+      type === 'gitlab' || type === 'github' || ((type === 'v2' || type === 'google') && _private),
+    then: yup.string().required(),
+    otherwise: yup.mixed().transform(it => (it ? it : undefined)),
+  })
 
 const googleRegistryUrls = ['gcr.io', 'us.gcr.io', 'eu.gcr.io', 'asia.gcr.io'] as const
 
@@ -74,21 +81,30 @@ export const registrySchema = yup.object().shape({
   description: descriptionRule,
   type: yup.mixed<RegistryType>().oneOf([...REGISTRY_TYPE_VALUES]),
   icon: iconRule,
-  imageNamePrefix: yup.string().when('type', {
-    is: type => ['hub', 'gitlab', 'github', 'google'].includes(type),
-    then: yup.string().required(),
-  }),
+  imageNamePrefix: yup
+    .string()
+    .meta(shouldResetMetaData)
+    .when('type', {
+      is: type => ['hub', 'gitlab', 'github', 'google'].includes(type),
+      then: yup.string().required(),
+    }),
   url: yup
     .string()
+    .meta(shouldResetMetaData)
     .when(['type', 'selfManaged'], {
       is: (type, selfManaged) => type === 'v2' || type === 'google' || (type === 'gitlab' && selfManaged),
       then: yup.string().required(),
     })
     .when(['type'], { is: type => type === 'google', then: yup.string().oneOf([...googleRegistryUrls]) }),
-  apiUrl: yup.string().when(['type', 'selfManaged'], {
-    is: (type, selfManaged) => type === 'gitlab' && selfManaged,
-    then: yup.string().required(),
-  }),
+  apiUrl: yup
+    .string()
+    .meta(shouldResetMetaData)
+    .when(['type', 'selfManaged'], {
+      is: (type, selfManaged) => type === 'gitlab' && selfManaged,
+      then: yup.string().required(),
+    }),
+  selfManaged: yup.mixed().meta(shouldResetMetaData),
+  _private: yup.mixed().meta(shouldResetMetaData),
   user: registryCredentialRole,
   token: registryCredentialRole,
 })
@@ -109,11 +125,7 @@ export const increaseVersionSchema = yup.object().shape({
   changelog: descriptionRule,
 })
 
-export const updateVersionSchema = increaseVersionSchema.concat(
-  yup.object().shape({
-    default: yup.boolean().required(),
-  }),
-)
+export const updateVersionSchema = increaseVersionSchema
 
 export const createVersionSchema = updateVersionSchema.concat(
   yup.object().shape({
@@ -126,7 +138,7 @@ export const createDeploymentSchema = yup.object().shape({
 })
 
 export const updateDeploymentSchema = yup.object().shape({
-  name: yup.string().required(),
+  name: nameRule,
   description: yup.string(),
   prefix: yup.string().required(),
 })
@@ -322,7 +334,7 @@ export const selectTeamSchema = yup.object().shape({
 })
 
 export const createTeamSchema = yup.object().shape({
-  name: yup.string().min(3).max(128),
+  name: nameRule,
 })
 
 export const updateTeamSchema = createTeamSchema
@@ -330,7 +342,7 @@ export const updateTeamSchema = createTeamSchema
 export const roleSchema = yup.mixed<UserRole>().oneOf([...USER_ROLE_VALUES])
 
 export const notificationSchema = yup.object().shape({
-  name: yup.string().required(),
+  name: nameRule,
   type: yup
     .mixed<NotificationType>()
     .oneOf([...NOTIFICATION_TYPE_VALUES])

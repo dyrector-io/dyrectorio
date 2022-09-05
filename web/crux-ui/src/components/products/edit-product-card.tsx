@@ -1,19 +1,18 @@
 import { DyoButton } from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
+import DyoChips from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { DyoTextArea } from '@app/elements/dyo-text-area'
-import { DyoToggle } from '@app/elements/dyo-toggle'
 import { defaultApiErrorHandler } from '@app/errors'
-import { CreateProduct, EditableProduct, Product, UpdateProduct, Version } from '@app/models'
+import { CreateProduct, EditableProduct, Product, PRODUCT_TYPE_VALUES, UpdateProduct, Version } from '@app/models'
 import { API_PRODUCTS, productApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { createProductSchema, updateProductSchema } from '@app/validation'
 import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
 import { MutableRefObject, useState } from 'react'
-import ProductVersionsSection from './product-versions-section'
 
 interface EditProductCardProps {
   className?: string
@@ -47,14 +46,12 @@ const EditProductCard = (props: EditProductCardProps) => {
     validationSchema: !editing ? createProductSchema : updateProductSchema,
     initialValues: {
       ...product,
-      complex: product.type === 'complex',
     },
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 
       const body: CreateProduct | UpdateProduct = {
         ...values,
-        type: values.complex ? 'complex' : 'simple',
       }
 
       const res = await (!editing
@@ -69,7 +66,6 @@ const EditProductCard = (props: EditProductCardProps) => {
         } else {
           result = {
             ...values,
-            type: values.complex ? 'complex' : 'simple',
           } as Product
         }
 
@@ -88,65 +84,64 @@ const EditProductCard = (props: EditProductCardProps) => {
   }
 
   return (
-    <>
-      <DyoCard className={props.className}>
-        <DyoHeading element="h4" className="text-lg text-bright">
-          {editing ? t('common:editName', { name: product.name }) : t('new')}
-        </DyoHeading>
+    <DyoCard className={props.className}>
+      <DyoHeading element="h4" className="text-lg text-bright">
+        {editing ? t('common:editName', { name: product.name }) : t('new')}
+      </DyoHeading>
 
-        <DyoLabel textColor="text-bright-muted">{t('tips')}</DyoLabel>
+      <DyoLabel textColor="text-bright-muted">{t('tips')}</DyoLabel>
 
-        <form className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
-          <DyoInput
-            className="max-w-lg"
-            grow
-            name="name"
-            type="name"
-            required
-            label={t('name')}
-            onChange={formik.handleChange}
-            value={formik.values.name}
-            message={formik.errors.name}
-          />
+      <form className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
+        <DyoInput
+          className="max-w-lg"
+          grow
+          name="name"
+          type="name"
+          required
+          label={t('name')}
+          onChange={formik.handleChange}
+          value={formik.values.name}
+          message={formik.errors.name}
+        />
 
+        <DyoTextArea
+          className="h-48"
+          grow
+          name="description"
+          label={t('description')}
+          onChange={formik.handleChange}
+          value={formik.values.description}
+        />
+
+        {editing ? null : (
+          <>
+            <DyoLabel textColor="mt-8 mb-2.5 text-light-eased">{t('type')}</DyoLabel>
+            <DyoChips
+              className="text-bright"
+              choices={PRODUCT_TYPE_VALUES}
+              initialSelection={formik.values.type}
+              converter={it => t(it)}
+              onSelectionChange={type => {
+                formik.setFieldValue('type', type, false)
+              }}
+            />
+          </>
+        )}
+
+        {!changelogVisible ? null : (
           <DyoTextArea
             className="h-48"
             grow
-            name="description"
-            label={t('description')}
+            name="changelog"
+            label={t('versions:changelog')}
             onChange={formik.handleChange}
-            value={formik.values.description}
+            value={formik.values.changelog}
           />
+        )}
 
-          {editing ? null : (
-            <div className="mr-auto">
-              <DyoToggle
-                className="text-bright mt-8"
-                name="complex"
-                nameChecked={t('complex')}
-                nameUnchecked={t('simple')}
-                checked={formik.values.complex}
-                setFieldValue={formik.setFieldValue}
-              />
-            </div>
-          )}
-
-          {!changelogVisible ? null : (
-            <DyoTextArea
-              className="h-48"
-              grow
-              name="changelog"
-              label={t('versions:changelog')}
-              onChange={formik.handleChange}
-              value={formik.values.changelog}
-            />
-          )}
-
-          <DyoButton className="hidden" type="submit"></DyoButton>
-        </form>
-      </DyoCard>
-      <ProductVersionsSection productId={product.id} versions={props.versions ?? []} disabled />
-    </>
+        <DyoButton className="hidden" type="submit"></DyoButton>
+      </form>
+    </DyoCard>
   )
 }
 

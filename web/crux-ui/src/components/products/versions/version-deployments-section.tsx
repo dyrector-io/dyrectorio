@@ -1,4 +1,5 @@
 import { DyoCard } from '@app/elements/dyo-card'
+import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoList } from '@app/elements/dyo-list'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
@@ -30,7 +31,6 @@ interface VersionDeploymentsSectionProps {
 
 const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   const { t } = useTranslation('versions')
-  const { t: tCommon } = useTranslation('common')
 
   const router = useRouter()
 
@@ -70,7 +70,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   const onNavigateToDeployment = (deployment: DeploymentByVersion) =>
     router.push(deploymentUrl(props.product.id, version.id, deployment.id))
 
-  return (
+  return filters.items.length ? (
     <DyoCard className="p-8 mt-4">
       <DyoInput
         className="w-2/3 mb-6"
@@ -106,6 +106,10 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
         }}
       />
     </DyoCard>
+  ) : (
+    <DyoHeading element="h3" className="text-md text-center text-light-eased pt-32">
+      {t('noDeployments')}
+    </DyoHeading>
   )
 }
 

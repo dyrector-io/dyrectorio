@@ -3,14 +3,17 @@ import Image from 'next/image'
 
 interface DyoBadgeProps {
   icon: string
+  large?: boolean
 }
 
 const DyoBadge = (props: DyoBadgeProps) => {
-  const { icon } = props
+  const { icon, large } = props
+
+  const size = large ? 32 : 24
 
   const { t } = useTranslation('badges')
 
-  return <Image src={`/badges/${icon}.svg`} alt={t(`${icon}`)} width={24} height={24} />
+  return <Image src={`/badges/${icon}.svg`} alt={t(`${icon}`)} width={size} height={size} />
 }
 
 export default DyoBadge

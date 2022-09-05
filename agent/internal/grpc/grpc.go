@@ -187,11 +187,9 @@ func Init(grpcContext context.Context,
 		grpcConn.Conn = conn
 	}
 
-	// if binding multiple ports, eg http, we have to run stuff in go func
 	grpcLoop(ctx, connParams.nodeID, workerFuncs, cancel, appConfig)
 }
 
-// grpc message loop for crane, first difference in their grpc communication
 func grpcLoop(
 	ctx context.Context,
 	nodeID string,

@@ -2,6 +2,7 @@ import { DyoButton } from '@app/elements/dyo-button'
 import { DyoInput } from '@app/elements/dyo-input'
 import { pageSizes, PaginationConfig } from '@app/hooks/use-pagination'
 import useTranslation from 'next-translate/useTranslation'
+import Image from 'next/image'
 
 export interface PaginatorProps<Item> {
   pagination: PaginationConfig<Item>
@@ -92,10 +93,10 @@ const Paginator = <Item,>(props: PaginatorProps<Item>) => {
           {t('showingItems', { pageFrom: pageFrom, pageTo: pageTo, total: pagination.items.length })}
         </a>
         <DyoButton className="w-8 text-xl" onClick={() => changePage({ type: 'first' })} text thin>
-          <img className="h-6 m-auto" src="/carets_left.svg" />
+          <Image src="/carets_left.svg" width={24} height={24} layout={'fixed'} className="h-6 m-auto" alt='carets left' />
         </DyoButton>
         <DyoButton className="w-8 text-xl" onClick={() => changePage({ type: 'previous' })} text thin>
-          <img className="h-6 m-auto" src="/caret_left.svg" />
+          <Image src="/caret_left.svg" width={24} height={24} layout={'fixed'} className="h-6 m-auto" alt='caret left' />
         </DyoButton>
         {pagination.pageData.currentPage - 2 >= 0 && (
           <DyoButton
@@ -134,10 +135,10 @@ const Paginator = <Item,>(props: PaginatorProps<Item>) => {
           </DyoButton>
         )}
         <DyoButton className="w-8 text-xl" onClick={() => changePage({ type: 'next' })} text thin>
-          <img className="h-6 m-auto" src="/caret_right.svg" />
+          <Image src="/caret_right.svg" width={24} height={24} layout={'fixed'} className="h-6 m-auto" alt='caret right' />
         </DyoButton>
         <DyoButton className="w-8 text-xl" onClick={() => changePage({ type: 'last' })} text thin>
-          <img className="h-6 m-auto" src="/carets_right.svg" />
+          <Image src="/carets_right.svg" width={24} height={24} layout={'fixed'} className="h-6 m-auto" alt='carets right'/>
         </DyoButton>
       </div>
     </div>

@@ -36,7 +36,7 @@ const DeploymentStatusTag = (props: DeploymentStatusTagProps) => {
       case 'in_progress':
         return 'text-warning-orange'
       case 'obsolate':
-        return 'text-dyo-purple'
+        return 'text-dyo-purple-light'
       case 'preparing':
         return 'text-dyo-turquoise'
       case 'successful':
@@ -47,7 +47,12 @@ const DeploymentStatusTag = (props: DeploymentStatusTagProps) => {
   }
 
   return (
-    <DyoTag color={statusToBgColor()} textColor={statusToTextColor()} className={props.className}>
+    <DyoTag
+      color={statusToBgColor()}
+      textColor={statusToTextColor()}
+      className={props.className}
+      solid={status === 'obsolate'}
+    >
       {t(`deploymentStatuses.${status}`)}
     </DyoTag>
   )

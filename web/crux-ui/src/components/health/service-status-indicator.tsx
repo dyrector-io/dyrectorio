@@ -11,13 +11,13 @@ interface ServiceStatusIndicatorProps {
 const ServiceStatusIndicator = (props: ServiceStatusIndicatorProps) => {
   const { status } = props
 
-  const { t } = useTranslation('500')
+  const { t } = useTranslation('status')
 
   return (
     <div className={clsx(props.className, 'flex')}>
       <Image
         src={`/${statusToAssetName(status)}.svg`}
-        alt={t(`serviceStatuses.${status}`)}
+        alt={t(`status.${status}`)}
         width={16}
         height={16}
         layout="fixed"

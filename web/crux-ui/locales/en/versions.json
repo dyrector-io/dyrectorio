@@ -1,28 +1,31 @@
 {
-    "versionsName": "Products - {{product}} - Versions - {{name}}",
+  "versionsName": "Products - {{product}} - Versions - {{name}}",
 
-    "tips": "Create a new version for your product that you can use for different purposes. Rolling versions are ideal for continuous delivery, while Incremental ones are useful for production.",
-    "increaseTips": "By increasing the version of your Product, you're able to create new releases of your already existing Product with new images or substitute included ones with a different tag.",
-    "new": "New version",
-    "default": "Default",
-    "changelog": "Changelog",
-    "incremental": "Incremental",
-    "rolling": "Rolling",
-    
-    "deleteDescription": "If you proceed, you will lose all your data related to {{name}}, all configurations, all verison history, all deployments. This action is not revocable.",
+  "tips": "Create a new version for your product that you can use for different purposes. Rolling versions are ideal for continuous delivery, while Incremental ones are useful for production.",
+  "increaseTips": "By increasing the version of your Product, you're able to create new releases of your already existing Product with new images or substitute included ones with a different tag.",
+  "new": "New version",
+  "default": "Default",
+  "changelog": "Changelog",  
+  "type": "Type",
+  "incremental": "Incremental",
+  "rolling": "Rolling",
+  "noItems": "You haven't added a version to this product yet. Click on 'Add Version'.",
+  "noDeployments": "You haven't added a deployment to this version. Click 'Add deployment' to browse images you can add.",
 
-    "deployments": "Deployments",
-    "images": "Images",
-    "increase": "Increase",
-    "increaseName": "Increase {{name}}",
+  "deleteDescription": "If you proceed, you will lose all your data related to {{name}}, all configurations, all verison history, all deployments. This action is not revocable.",
 
-    "showAll": "Show all",
-    "changelogName": "Changelog: {{name}}",
+  "deployments": "Deployments",
+  "images": "Images",
+  "increase": "Increase",
+  "increaseName": "Increase {{name}}",
 
-    "reorderImages": "Reorder images",
-    "saveOrder": "Save image order",
-    "addDeployment": "Add deployment",
-    "addImage": "Add image",
+  "showAll": "Show all",
+  "changelogName": "Changelog: {{name}}",
 
-    "deploymentName": "Deployment name"
+  "reorderImages": "Reorder images",
+  "saveOrder": "Save image order",
+  "addDeployment": "Add deployment",
+  "addImage": "Add image",
+
+  "deploymentName": "Deployment name"
 }
