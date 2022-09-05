@@ -114,19 +114,19 @@ const VersionCard = (props: VersionCardProps) => {
 
       {disabled ? null : (
         <div className="flex flex-row ml-auto mt-auto">
-          <DyoButton className="px-4 mx-2" outlined onClick={onDeploymentsClick}>
-            <div className="flex flex-row items-center gap-2">
-              <Image src="/deployments.svg" alt={t('deployments')} width={20} height={20} layout="fixed" />
-
-              {t('deployments')}
-            </div>
-          </DyoButton>
-
           <DyoButton className="px-4 mx-2" outlined onClick={onImagesClick}>
             <div className="flex flex-row items-center gap-2">
               <Image src="/images.svg" alt={t('images')} width={20} height={20} layout="fixed" />
 
               {t('images')}
+            </div>
+          </DyoButton>
+
+          <DyoButton className="px-4 mx-2" outlined onClick={onDeploymentsClick}>
+            <div className="flex flex-row items-center gap-2">
+              <Image src="/deployments.svg" alt={t('deployments')} width={20} height={20} layout="fixed" />
+
+              {t('deployments')}
             </div>
           </DyoButton>
         </div>

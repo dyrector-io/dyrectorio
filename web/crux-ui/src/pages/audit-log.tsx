@@ -4,14 +4,15 @@ import Filters from '@app/components/shared/filters'
 import JsonEditor from '@app/components/shared/json-editor-dynamic-module'
 import PageHeading from '@app/components/shared/page-heading'
 import Paginator from '@app/components/shared/paginator'
-import { ROUTE_AUDIT } from '@app/const'
 import { DyoCard } from '@app/elements/dyo-card'
-import DyoDatePicker from '@app/elements/dyo-date-picker'
+import { DyoDatePicker } from '@app/elements/dyo-date-picker'
+import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoList } from '@app/elements/dyo-list'
 import DyoModal from '@app/elements/dyo-modal'
 import { DateRangeFilter, dateRangeFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import { usePagination } from '@app/hooks/use-pagination'
 import { AuditLog, beautifyAuditLogEvent } from '@app/models'
+import { ROUTE_AUDIT } from '@app/routes'
 import { utcDateToLocale, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import clsx from 'clsx'
@@ -31,20 +32,10 @@ const AuditLogPage = (props: AuditLogPageProps) => {
 
   const { auditLog } = props
 
-  const [startDate, setStartDate] = useState<Date>(null)
-  const [endDate, setEndDate] = useState<Date>(null)
+  const sixdays = 1000 * 60 * 60 * 24 * 6 // ms * minutes * hours * day * six
 
-  const filters = useFilters<AuditLog, AuditLogFilter>({
-    initialData: auditLog,
-    initialFilter: {
-      text: '',
-      dateRange: [null, null],
-    },
-    filters: [
-      textFilterFor<AuditLog>(it => [it.identityName, utcDateToLocale(it.date), it.event, it.info]),
-      dateRangeFilterFor<AuditLog>(it => [utcDateToLocale(it.date)]),
-    ],
-  })
+  const [startDate, setStartDate] = useState<Date>(new Date(Date.now() - sixdays))
+  const [endDate, setEndDate] = useState<Date>(new Date())
 
   const onChange = dates => {
     const [start, end] = dates
@@ -54,6 +45,18 @@ const AuditLogPage = (props: AuditLogPageProps) => {
     setEndDate(end)
     filters.setFilter({ dateRange: [start, end] })
   }
+
+  const filters = useFilters<AuditLog, AuditLogFilter>({
+    initialData: auditLog,
+    initialFilter: {
+      text: '',
+      dateRange: [startDate, endDate],
+    },
+    filters: [
+      textFilterFor<AuditLog>(it => [it.identityName, utcDateToLocale(it.date), it.event, it.info]),
+      dateRangeFilterFor<AuditLog>(it => [utcDateToLocale(it.date)]),
+    ],
+  })
 
   const pagination = usePagination<AuditLog>({
     initialData: auditLog,
@@ -68,7 +71,7 @@ const AuditLogPage = (props: AuditLogPageProps) => {
 
   useEffect(() => {
     pagination.setItems(filters.filtered)
-  }, [filters, pagination])
+  }, [filters])
 
   const selfLink: BreadcrumbLink = {
     name: t('common:audit'),
@@ -85,48 +88,56 @@ const AuditLogPage = (props: AuditLogPageProps) => {
   ]
   const itemClassNames = ['py-2 w-14'] // Only for the first column
 
-  const itemTemplate = (log: AuditLog) => /* eslint-disable react/jsx-key */ [
-    <div className="w-10 ml-auto">
-      <Image src="/default_avatar.svg" width={38} height={38} layout="fixed" />
-    </div>,
-    <div className="font-semibold min-w-max pl-2">{log.identityName}</div>,
-    <div className="min-w-max">{utcDateToLocale(log.date)}</div>,
-    <div>{beautifyAuditLogEvent(log.event)}</div>,
-    <div className="cursor-pointer max-w-4xl truncate" onClick={() => onShowInfoClick(log)}>
-      {log.info}
-    </div>,
-  ]
-  /* eslint-enable react/jsx-key */
-
   return (
     <Layout title={t('common:audit')}>
       <PageHeading pageLink={selfLink} />
+      {filters.items.length ? (
+        <>
+          <Filters setTextFilter={it => filters.setFilter({ text: it })}>
+            <DyoDatePicker
+              selectsRange
+              startDate={startDate}
+              endDate={endDate}
+              onChange={onChange}
+              shouldCloseOnSelect={false}
+              maxDate={new Date()}
+              isClearable
+              className="ml-8 w-1/3"
+            />
+          </Filters>
 
-      <Filters setTextFilter={it => filters.setFilter({ text: it })}>
-        <DyoDatePicker
-          selectsRange
-          startDate={startDate}
-          endDate={endDate}
-          onChange={onChange}
-          shouldCloseOnSelect={false}
-          maxDate={new Date()}
-          isClearable
-          className="ml-8 w-1/3"
-        />
-      </Filters>
-
-      <DyoCard className="relative mt-4 overflow-auto">
-        <DyoList
-          className=""
-          noSeparator
-          headerClassName={headerClassNames}
-          headers={listHeaders}
-          data={pagination.displayed}
-          footer={<Paginator pagination={pagination} />}
-          itemClassName={itemClassNames}
-          itemBuilder={it => itemTemplate(it)}
-        />
-      </DyoCard>
+          <DyoCard className="relative mt-4 overflow-auto">
+            <DyoList
+              className=""
+              noSeparator
+              headerClassName={headerClassNames}
+              headers={listHeaders}
+              data={pagination.displayed}
+              footer={<Paginator pagination={pagination} />}
+              itemClassName={itemClassNames}
+              itemBuilder={it => {
+                /* eslint-disable react/jsx-key */
+                return [
+                  <div className="w-10 ml-auto">
+                    <Image src="/default_avatar.svg" width={38} height={38} layout={'fixed'} />
+                  </div>,
+                  <div className="font-semibold min-w-max pl-2">{it.identityName}</div>,
+                  <div className="min-w-max">{utcDateToLocale(it.date)}</div>,
+                  <div>{beautifyAuditLogEvent(it.event)}</div>,
+                  <div className="cursor-pointer max-w-4xl truncate" onClick={() => onShowInfoClick(it)}>
+                    {it.info}
+                  </div>,
+                ]
+                /* eslint-enable react/jsx-key */
+              }}
+            />
+          </DyoCard>
+        </>
+      ) : (
+        <DyoHeading element="h3" className="text-md text-center text-light-eased pt-32">
+          {t('noItems')}
+        </DyoHeading>
+      )}
 
       {!showInfo ? null : (
         <DyoModal

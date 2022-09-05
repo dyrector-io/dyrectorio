@@ -1,3 +1,4 @@
+import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import DyoWrap from '@app/elements/dyo-wrap'
 import useConfirmation from '@app/hooks/use-confirmation'
@@ -31,7 +32,7 @@ const ProductVersionsSection = (props: ProductVersionsSectionProps) => {
       description: t('setNameAsDefault', version),
     })
 
-  return (
+  return props.versions.length ? (
     <>
       <DyoWrap>
         {versions.map((it, index) => (
@@ -49,6 +50,10 @@ const ProductVersionsSection = (props: ProductVersionsSectionProps) => {
 
       <DyoConfirmationModal config={modalConfig} title={t('common:areYouSure')} />
     </>
+  ) : (
+    <DyoHeading element="h3" className="text-md text-center text-light-eased pt-32">
+      {t('versions:noItems')}
+    </DyoHeading>
   )
 }
 

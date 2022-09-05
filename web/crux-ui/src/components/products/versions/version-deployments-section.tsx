@@ -1,5 +1,6 @@
 import { WS_NODES } from '@app/const'
 import { DyoCard } from '@app/elements/dyo-card'
+import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoList } from '@app/elements/dyo-list'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
@@ -83,7 +84,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   ]
   /* eslint-enable react/jsx-key */
 
-  return (
+  return filters.items.length ? (
     <DyoCard className="p-8 mt-4">
       <DyoInput
         className="w-2/3 mb-6"
@@ -105,6 +106,10 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
         itemBuilder={it => itemTemplate(it)}
       />
     </DyoCard>
+  ) : (
+    <DyoHeading element="h3" className="text-md text-center text-light-eased pt-32">
+      {t('noDeployments')}
+    </DyoHeading>
   )
 }
 

@@ -7,15 +7,15 @@ interface NotificationStatusTagProps {
 }
 
 const NotificationStatusTag = (props: NotificationStatusTagProps) => {
-  const { active, className } = props
+  const { t } = useTranslation('notifications')
 
-  const { t } = useTranslation('notification')
+  const { active } = props
 
   const color = active ? 'bg-dyo-turquoise' : 'bg-warning-orange'
   const textColor = active ? 'text-dyo-turquoise' : 'text-warning-orange'
 
   return (
-    <DyoTag className={className} color={color} textColor={textColor}>
+    <DyoTag className={props.className} color={color} textColor={textColor}>
       {t(active ? 'active' : 'inactive')}
     </DyoTag>
   )

@@ -4,11 +4,11 @@ import NotificationCard from '@app/components/notifications/notification-card'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { ListPageMenu } from '@app/components/shared/page-menu'
-import { ROUTE_NOTIFICATIONS } from '@app/const'
+import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { NotificationDetails } from '@app/models'
-import { notificationUrl } from '@app/routes'
+import { notificationUrl, ROUTE_NOTIFICATIONS } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import clsx from 'clsx'
@@ -22,13 +22,11 @@ interface NotificationsPageProps {
 }
 
 const NotificationsPage = (props: NotificationsPageProps) => {
-  const { notifications: propsNotifications } = props
-
   const { t } = useTranslation('notifications')
   const router = useRouter()
 
   const [creating, setCreating] = useState<boolean>(false)
-  const [notifications, setNotifications] = useState<NotificationDetails[]>(propsNotifications)
+  const [notifications, setNotifications] = useState<NotificationDetails[]>(props.notifications)
 
   const pageLink: BreadcrumbLink = {
     name: t('common:notifications'),
@@ -48,27 +46,40 @@ const NotificationsPage = (props: NotificationsPageProps) => {
         <ListPageMenu creating={creating} setCreating={setCreating} submitRef={submitRef} />
       </PageHeading>
       {creating && <EditNotificationCard onSubmitted={onSubmitted} submitRef={submitRef} className="mb-8 px-8 py-6" />}
-
-      <DyoLabel className="w-full px-2">{t('webhooks')}</DyoLabel>
-      <DyoWrap itemClassName="lg:w-1/2 xl:w-1/3 p-2">
-        {notifications.map((it, index) => (
-          <NotificationCard
-            className={clsx('max-h-72 w-full p-8 my-2')}
-            key={`notification-${index}`}
-            notification={it}
-            onClick={() => router.push(notificationUrl(it.id))}
-          />
-        ))}
-      </DyoWrap>
+      {notifications.length ? (
+        <>
+          <DyoLabel className="w-full px-2 text-xl" textColor="text-bright">
+            {t('webhooks')}
+          </DyoLabel>
+          <DyoWrap itemClassName="lg:w-1/2 xl:w-1/3 p-2">
+            {notifications.map((it, index) => {
+              return (
+                <NotificationCard
+                  className={clsx('max-h-64 w-full p-6')}
+                  key={`notification-${index}`}
+                  notification={it}
+                  onClick={() => router.push(notificationUrl(it.id))}
+                />
+              )
+            })}
+          </DyoWrap>
+        </>
+      ) : (
+        <DyoHeading element="h3" className="text-md text-center text-light-eased pt-32">
+          {t('noItems')}
+        </DyoHeading>
+      )}
     </Layout>
   )
 }
 
-const getPageServerSideProps = async (context: NextPageContext) => ({
-  props: {
-    notifications: await cruxFromContext(context).notificiations.getAll(),
-  },
-})
+const getPageServerSideProps = async (context: NextPageContext) => {
+  return {
+    props: {
+      notifications: await cruxFromContext(context).notificiations.getAll(),
+    },
+  }
+}
 
 export default NotificationsPage
 

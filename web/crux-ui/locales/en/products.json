@@ -4,6 +4,7 @@
   "add": "Add product",
   "new": "New product",
   "tips": "Products are your applications made up from images available in Registries.",
+  "noItems": "You haven't created a product yet. Make one by clicking 'Add' on the top right.",
 
   "name": "Name",
   "description": "Description",

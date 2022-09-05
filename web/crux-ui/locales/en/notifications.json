@@ -3,6 +3,7 @@
   "new": "New notification",
   "description": "Get notifications via your webhooks",
   "webhooks": "Webhooks",
+  "noItems": "You haven't added notifications. Add one by clicking on 'Add'.",
 
   "altNotificationPicture": "Notification",
   "url": "Webhook URL",

@@ -151,7 +151,7 @@ const ProductDetailsPage = (props: ProductDetailsPageProps) => {
       </PageHeading>
 
       {editState === 'version-list' ? (
-        <ProductDetailsCard product={product} className="mb-4 p-6" />
+        <ProductDetailsCard product={product} className="p-6" />
       ) : editState === 'edit-product' ? (
         <EditProductCard
           className="mb-8 px-8 py-6"

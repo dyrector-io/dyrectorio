@@ -51,6 +51,7 @@ export class AgentInstaller {
       name: name.toLowerCase().replace(/\s/g, ''),
       token: this.token,
       insecure: process.env.GRPC_AGENT_INSTALL_SCRIPT_INSECURE === 'true',
+      network: process.env.LOCAL_DEPLOYMENT === 'true',
     }
 
     if (this.nodeType === NodeTypeEnum.k8s) {

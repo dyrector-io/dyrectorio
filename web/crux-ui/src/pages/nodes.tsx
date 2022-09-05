@@ -2,17 +2,15 @@ import { Layout } from '@app/components/layout'
 import DyoNodeCard from '@app/components/nodes/dyo-node-card'
 import EditNodeCard from '@app/components/nodes/edit-node-card'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
+import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
 import { ListPageMenu } from '@app/components/shared/page-menu'
-import { ROUTE_NODES, WS_NODES } from '@app/const'
-import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
-import { DyoInput } from '@app/elements/dyo-input'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
-import useWebSocket from '@app/hooks/use-websocket'
+import { useWebSocket } from '@app/hooks/use-websocket'
 import { DyoNode, NodeStatusMessage, WS_TYPE_NODE_STATUS } from '@app/models'
-import { nodeUrl } from '@app/routes'
+import { nodeUrl, ROUTE_NODES, WS_NODES } from '@app/routes'
 import { upsertById, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import clsx from 'clsx'
@@ -27,15 +25,13 @@ interface NodesPageProps {
 }
 
 const NodesPage = (props: NodesPageProps) => {
-  const { nodes } = props
-
   const router = useRouter()
 
   const { t } = useTranslation('nodes')
 
   const filters = useFilters<DyoNode, TextFilter>({
     filters: [textFilterFor<DyoNode>(it => [it.address, it.name, it.description, it.status, it.icon])],
-    initialData: nodes,
+    initialData: props.nodes,
     initialFilter: { text: '' },
   })
 
@@ -43,7 +39,7 @@ const NodesPage = (props: NodesPageProps) => {
   const submitRef = useRef<() => Promise<any>>()
 
   const socket = useWebSocket(WS_NODES, {
-    onError: _ => {
+    onError: err => {
       toast(t('errors:connectionLost'))
     },
   })
@@ -59,27 +55,31 @@ const NodesPage = (props: NodesPageProps) => {
       createdAt: new Date().toUTCString(),
     } as DyoNode
 
-    const newNodes = upsertById(filters.items, newNode, {
-      onUpdate: old => ({
-        ...old,
-        address: message.address ?? old.address,
-        status: message.status,
-      }),
+    const nodes = upsertById(filters.items, newNode, {
+      onUpdate: old => {
+        return {
+          ...old,
+          address: message.address ?? old.address,
+          status: message.status,
+        }
+      },
     })
 
-    filters.setItems(newNodes)
+    filters.setItems(nodes)
   })
 
   const onCreated = (node: DyoNode) => {
-    const newNodes = upsertById(filters.items, node, {
-      onUpdate: old => ({
-        ...node,
-        address: old.address,
-        status: old.status,
-      }),
+    const nodes = upsertById(filters.items, node, {
+      onUpdate: old => {
+        return {
+          ...node,
+          address: old.address,
+          status: old.status,
+        }
+      },
     })
 
-    filters.setItems(newNodes)
+    filters.setItems(nodes)
   }
 
   const pageLink: BreadcrumbLink = {
@@ -96,46 +96,43 @@ const NodesPage = (props: NodesPageProps) => {
       </PageHeading>
 
       {!creating ? null : <EditNodeCard className="mb-2" submitRef={submitRef} onNodeEdited={onCreated} />}
+      {filters.items.length ? (
+        <>
+          <Filters setTextFilter={it => filters.setFilter({ text: it })} />
 
-      <DyoCard className="flex flex-col p-8">
-        <DyoHeading element="h3" className="text-xl text-bright">
-          {t('common:filters')}
+          <DyoWrap itemClassName="lg:w-1/2 xl:w-1/3">
+            {filters.filtered.map((it, index) => {
+              const modulo3Class = index % 3 === 1 ? 'xl:mx-4' : null
+              const modulo2Class = clsx(index % 2 > 0 ? 'lg:ml-2' : 'lg:mr-2', modulo3Class ?? 'xl:mx-0')
+
+              return (
+                <DyoNodeCard
+                  className={clsx('max-h-72 w-full p-8 my-2', modulo3Class, modulo2Class)}
+                  key={`node-${index}`}
+                  node={it}
+                  onNameClick={() => onNavigateToDetails(it.id)}
+                />
+              )
+            })}
+          </DyoWrap>
+        </>
+      ) : (
+        <DyoHeading element="h3" className="text-md text-center text-light-eased pt-32">
+          {t('noItems')}
         </DyoHeading>
-
-        <div className="flex items-center mt-4">
-          <DyoInput
-            className="w-2/3"
-            placeholder={t('common:search')}
-            onChange={e => filters.setFilter({ text: e.target.value })}
-          />
-        </div>
-      </DyoCard>
-
-      <DyoWrap itemClassName="lg:w-1/2 xl:w-1/3">
-        {filters.filtered.map((it, index) => {
-          const modulo3Class = index % 3 === 1 ? 'xl:mx-4' : null
-          const modulo2Class = clsx(index % 2 > 0 ? 'lg:ml-2' : 'lg:mr-2', modulo3Class ?? 'xl:mx-0')
-
-          return (
-            <DyoNodeCard
-              className={clsx('max-h-72 w-full p-8 my-2', modulo3Class, modulo2Class)}
-              key={`node-${index}`}
-              node={it}
-              onNameClick={() => onNavigateToDetails(it.id)}
-            />
-          )
-        })}
-      </DyoWrap>
+      )}
     </Layout>
   )
 }
 
 export default NodesPage
 
-const getPageServerSideProps = async (context: NextPageContext) => ({
-  props: {
-    nodes: await cruxFromContext(context).nodes.getAll(),
-  },
-})
+const getPageServerSideProps = async (context: NextPageContext) => {
+  return {
+    props: {
+      nodes: await cruxFromContext(context).nodes.getAll(),
+    },
+  }
+}
 
 export const getServerSideProps = withContextAuthorization(getPageServerSideProps)

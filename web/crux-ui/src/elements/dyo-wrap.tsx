@@ -13,21 +13,23 @@ export const dyoWrapItemClassName = (cols: number, className?: string) => (index
 }
 
 const DyoWrap = (props: DyoWrapProps) => {
-  const { className, children, itemClassName, key: propsKey } = props
+  const { className, children, itemClassName } = props
 
-  const key = propsKey ?? 'dyo-wrap'
+  const key = props.key ?? 'dyo-wrap'
 
   return (
-    <div className={clsx('flex flex-wrap', className ?? 'mt-2 mb-4')}>
-      {children.map((it, index) => (
-        <div
-          key={`${key}-item-${index}`}
-          className={clsx('flex w-full', itemClassName ?? clsx('lg:w-1/2 py-2', index % 2 > 0 ? 'lg:pr-2' : 'lg:pr-2'))}
-        >
-          {it}
-        </div>
-      ))}
-    </div>
+    <>
+      <div className={clsx('flex flex-wrap', className ?? 'mt-2 mb-4')}>
+        {children.map((it, index) => (
+          <div
+            key={`${key}-item-${index}`}
+            className={clsx('flex w-full', itemClassName ?? ['lg:w-1/2 py-2', index % 2 ? 'lg:pl-2' : 'lg:pr-2'])}
+          >
+            {it}
+          </div>
+        ))}
+      </div>
+    </>
   )
 }
 

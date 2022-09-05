@@ -1,13 +1,14 @@
 {
-    "add": "Add image",
-    "imageName": "Image name",
-    "containerName": "Container name",
-    "tag": "Tag",
-    "config": "Config",
-    "json": "JSON",
-    "filterMinChars": "Minimum filter length is {{length}} character",
-    "availableTags": "Available tags",
-    "environment": "Environment",
-    "capabilities": "Capabilities",
-    "selectTag": "You must select a tag"
+  "add": "Add image",
+  "imageName": "Image name",
+  "containerName": "Container name",
+  "tag": "Tag",
+  "config": "Config",
+  "json": "JSON",
+  "filterMinChars": "Minimum filter length is {{length}} character",
+  "availableTags": "Available tags",
+  "environment": "Environment",
+  "capabilities": "Capabilities",
+  "selectTag": "You must select a tag",
+  "noItems": "You haven't added an image to this version. Click 'Add image' to browse images you can add."
 }
