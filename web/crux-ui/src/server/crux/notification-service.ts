@@ -1,4 +1,4 @@
-import { CreateNotification, NotificationDetails, UpdateNotification } from '@app/models'
+import { CreateNotification, NotificationDetails, NotificationType, UpdateNotification } from '@app/models'
 import {
   AccessRequest,
   CreateNotificationRequest,
@@ -8,13 +8,15 @@ import {
   IdRequest,
   NotificationDetailsResponse,
   NotificationListResponse,
+  NotificationType as ProtoNotificationType,
+  notificationTypeFromJSON,
+  notificationTypeToJSON,
   UpdateEntityResponse,
   UpdateNotificationRequest,
 } from '@app/models/grpc/protobuf/proto/crux'
 import { timestampToUTC } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
 import { protomisify } from './grpc-connection'
-import { notificationTypeToDto, notificationTypeToGrpc } from './mappers/notification-mappers'
 
 class DyoNotifcationService {
   constructor(private client: CruxNotificationClient, private identity: Identity) {}
@@ -29,11 +31,13 @@ class DyoNotifcationService {
       this.client.getNotificationList,
     )(AccessRequest, req)
 
-    return res.data.map(it => ({
-      ...it,
-      type: notificationTypeToDto(it.type),
-      creator: it.audit.createdBy,
-    }))
+    return res.data.map(it => {
+      return {
+        ...it,
+        type: notificationTypeToDto(it.type),
+        creator: it.audit.createdBy,
+      }
+    })
   }
 
   async create(dto: CreateNotification): Promise<NotificationDetails> {
@@ -72,7 +76,7 @@ class DyoNotifcationService {
 
   async getNotificationDetails(id: string): Promise<NotificationDetails> {
     const req: IdRequest = {
-      id,
+      id: id,
       accessedBy: this.identity.id,
     }
 
@@ -90,7 +94,7 @@ class DyoNotifcationService {
 
   async delete(id: string) {
     const req: IdRequest = {
-      id,
+      id: id,
       accessedBy: this.identity.id,
     }
 
@@ -99,7 +103,7 @@ class DyoNotifcationService {
 
   async testNotification(id: string): Promise<void> {
     const req: IdRequest = {
-      id,
+      id: id,
       accessedBy: this.identity.id,
     }
 
@@ -108,3 +112,11 @@ class DyoNotifcationService {
 }
 
 export default DyoNotifcationService
+
+export const notificationTypeToGrpc = (type: NotificationType): ProtoNotificationType => {
+  return notificationTypeFromJSON(type.toUpperCase())
+}
+
+export const notificationTypeToDto = (type: ProtoNotificationType): NotificationType => {
+  return notificationTypeToJSON(type).toLocaleLowerCase() as NotificationType
+}

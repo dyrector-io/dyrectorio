@@ -25,13 +25,5 @@
     "message": "Its a test!",
     "success": "Your hook is working!",
     "error": "Something is wrong with your hook!"
-  },
-
-  "events": "Send message when:",
-  "eventType": {
-    "deploymentCreated": "New deployment is created",
-    "versionCreated": "New version is added",
-    "nodeAdded": "New node is added",
-    "userInvited": "New user invited to my team"
   }
 }
