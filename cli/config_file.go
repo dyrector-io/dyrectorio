@@ -75,12 +75,12 @@ func OverwriteContainerConf(containers []Container) []Container {
 	return containers
 }
 
-func EnvVarOverwrite(settings Settings, services []Container) ([]Container, error) {
+func EnvVarOverwrite(settings Settings, services []Container) []Container {
 	for i := range services {
 		for j, item := range services[i].EnvVars {
 			item = OverwriteOpt(settings, item)
 			services[i].EnvVars[j] = item
 		}
 	}
-	return services, nil
+	return services
 }

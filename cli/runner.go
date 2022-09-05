@@ -23,7 +23,7 @@ const ExecDockerCompose = "docker-compose"
 const ExecWinDocker = "docker.exe"
 const ExecWinDockerCompose = "docker-compose.exe"
 
-func RunContainers(containers string, start, quiet bool) error {
+func RunContainers(start, quiet bool) error {
 	// search for podman/docker
 	executable, err := FindExec(true)
 	if err != nil {

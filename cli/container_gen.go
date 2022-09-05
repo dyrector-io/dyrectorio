@@ -244,10 +244,7 @@ func GenContainer(services []Services, write bool) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		containers, err = EnvVarOverwrite(settings, containers)
-		if err != nil {
-			return "", err
-		}
+		containers = EnvVarOverwrite(settings, containers)
 	}
 
 	buf := bytes.Buffer{}

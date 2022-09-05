@@ -97,7 +97,7 @@ func run(cCtx *cli.Context) error {
 		return err
 	}
 
-	err = RunContainers(containers, true, false)
+	err = RunContainers(true, false)
 	if err != nil {
 		return err
 	}
@@ -106,14 +106,7 @@ func run(cCtx *cli.Context) error {
 }
 
 func stop(cCtx *cli.Context) error {
-	services := serviceSelector(cCtx)
-
-	containers, err := GenContainer(services, cCtx.Bool("store"))
-	if err != nil {
-		return err
-	}
-
-	err = RunContainers(containers, false, true)
+	err := RunContainers(false, true)
 	if err != nil {
 		return err
 	}
