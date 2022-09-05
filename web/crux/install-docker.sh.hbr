@@ -39,6 +39,8 @@ fi
 mkdir -p $ROOT_FOLDER
 docker pull ghcr.io/dyrector-io/dyrectorio/agent/dagent:latest
 
+MSYS_NO_PATHCONV=1
+
 docker run \
   --restart unless-stopped \
   -e GRPC_TOKEN='{{token}}' \
