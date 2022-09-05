@@ -162,7 +162,6 @@ type Ipam struct {
 
 // Retrieving docker networks gateway IP
 func GetCNIGateway() (string, error) {
-	// get networks
 	executable, err := FindExec(false)
 	if err != nil {
 		return "", err
@@ -192,7 +191,6 @@ func GetCNIGateway() (string, error) {
 
 // Extract the docker network gateway IP from cli output
 func GetGatewayIP(executable string) (string, error) {
-	// inspect, get gw addr
 	cmd := exec.Command(executable, "network", "inspect", ContainerNetName)
 
 	cmdOutput := &bytes.Buffer{}
@@ -226,6 +224,7 @@ func GetGatewayIP(executable string) (string, error) {
 		if gwip != "" {
 			return gwip, nil
 		}
+
 	case ExecDocker, ExecWinDocker:
 		var network []DockerNetwork
 		err = json.Unmarshal(cmdOutput.Bytes(), &network)
@@ -246,6 +245,7 @@ func GetGatewayIP(executable string) (string, error) {
 		if gwip != "" {
 			return gwip, nil
 		}
+
 	default:
 		return "", errors.New("unknown binary")
 	}
@@ -269,7 +269,7 @@ func EnsureDyoNetwork(executable string, delnet bool) error {
 	}
 
 	if lscmdOutput.String() != "" && delnet {
-		// if options are fook'd we re-create the network
+		// If options are not ideal we re-create the network
 		rmcmd := exec.Command(executable, "network", "rm", ContainerNetName)
 
 		rmcmd.Stdout = os.Stdout
