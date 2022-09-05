@@ -1,7 +1,7 @@
-import { IWebSocketClient, IWebSocketEndpoint, WebSocketClientOptions, WsMessage, WsMessageCallback } from './common'
+import { WebSocketClientOptions, WebSocketClientSendMessage, WsMessage, WsMessageCallback } from './common'
 
-class WebSocketEndpoint implements IWebSocketEndpoint {
-  private client: IWebSocketClient
+class WebSocketClientEndpoint {
+  private sendClientMessage: WebSocketClientSendMessage = null
 
   private callbacks: Map<string, Array<WsMessageCallback<object>>> = new Map()
 
@@ -19,15 +19,8 @@ class WebSocketEndpoint implements IWebSocketEndpoint {
     this.callbacks.clear()
   }
 
-  async close() {
-    if (this.client) {
-      await this.client.remove(this.url, this)
-      this.kill()
-    }
-  }
-
   kill() {
-    this.client = null
+    this.sendClientMessage = null
     this.callbacks = new Map()
     this.sendables = []
   }
@@ -43,7 +36,7 @@ class WebSocketEndpoint implements IWebSocketEndpoint {
   }
 
   sendWsMessage(message: WsMessage<object>) {
-    if (!this.client || !this.client.sendWsMessage(message, this.url)) {
+    if (!this.sendClientMessage || !this.sendClientMessage(message)) {
       this.sendables.push(message)
     }
   }
@@ -62,8 +55,8 @@ class WebSocketEndpoint implements IWebSocketEndpoint {
     callbacks?.forEach(it => it(message.payload))
   }
 
-  onOpen(client: IWebSocketClient) {
-    this.client = client
+  onOpen(sendClientMessage: WebSocketClientSendMessage): void {
+    this.sendClientMessage = sendClientMessage
 
     if (this.options?.onOpen) {
       this.options.onOpen()
@@ -92,4 +85,4 @@ class WebSocketEndpoint implements IWebSocketEndpoint {
   }
 }
 
-export default WebSocketEndpoint
+export default WebSocketClientEndpoint

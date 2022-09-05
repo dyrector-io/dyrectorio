@@ -1,10 +1,25 @@
 import { distinct } from '@app/utils'
 import { IncomingMessage } from 'http'
 import { NextApiRequest } from 'next'
-import { IWsConnection, IWsEndpoint, WsEndpointOptions, WsMessage } from './common'
+import { WsMessage } from './common'
+import WsConnection from './connection'
 
-class WsEndpoint implements IWsEndpoint {
-  private connections: Array<IWsConnection> = []
+export type WsEndpointOnMessage = (
+  endpoint: WsEndpoint,
+  connection: WsConnection,
+  message: WsMessage<object>,
+) => Promise<any>
+
+export type WsEndpointOptions = {
+  onReady?: (endpoint: WsEndpoint) => Promise<any>
+  onAuthorize?: (endpoint: WsEndpoint, req: NextApiRequest) => Promise<boolean>
+  onMessage?: WsEndpointOnMessage
+  onConnect?: (endpoint: WsEndpoint, connection: WsConnection, request: IncomingMessage) => void
+  onDisconnect?: (endpoint: WsEndpoint, connection: WsConnection) => void
+}
+
+class WsEndpoint {
+  private connections: Array<WsConnection> = []
 
   constructor(
     public readonly route: string,
@@ -35,31 +50,23 @@ class WsEndpoint implements IWsEndpoint {
     distinct(this.connections).forEach(it => it.send(type, payload))
   }
 
-  sendAllExcept<T extends object>(type: string, payload: T, except: IWsConnection) {
+  sendAllExcept<T extends object>(type: string, payload: T, except: WsConnection) {
     distinct(this.connections)
       .filter(it => it !== except)
       .forEach(it => it.send(type, payload))
   }
 
-  onConnect(connection: IWsConnection, req: IncomingMessage) {
+  onConnect(connection: WsConnection, req: IncomingMessage) {
     this.connections.push(connection)
-    connection.endpoints.add(this)
-
     this.options?.onConnect?.call(null, this, connection, req)
   }
 
-  onDisconnect(connection: IWsConnection) {
+  onDisconnect(connection: WsConnection) {
     this.connections = this.connections.filter(it => it !== connection)
-    connection.endpoints.delete(this)
-
     this.options?.onDisconnect?.call(null, this, connection)
   }
 
-  onMessage(connection: IWsConnection, message: WsMessage<object>) {
-    if (!connection.endpoints.has(this)) {
-      return
-    }
-
+  onMessage(connection: WsConnection, message: WsMessage<object>) {
     const handler = this.options?.onMessage
     if (handler) {
       handler(this, connection, message)

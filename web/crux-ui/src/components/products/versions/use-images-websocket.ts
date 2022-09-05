@@ -29,7 +29,7 @@ import {
 } from '@app/models'
 import { versionWsUrl, WS_REGISTRIES } from '@app/routes'
 import { fold } from '@app/utils'
-import WebSocketEndpoint from '@app/websockets/websocket-endpoint'
+import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 
 import { Dispatch, SetStateAction } from 'react'
 
@@ -59,7 +59,7 @@ export interface ImagesWebSocketOptions {
 }
 
 export interface ImagesWebSocket {
-  versionSock: WebSocketEndpoint
+  versionSock: WebSocketClientEndpoint
   fetchImageTags: (image: RegistryImages) => void
   addImages: (images: RegistryImages[]) => void
   orderImages: (ids: string[]) => void

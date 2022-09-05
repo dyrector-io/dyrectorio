@@ -1,8 +1,9 @@
 import { WS_RECONNECT_TIMEOUT } from '@app/const'
 import { Logger } from '@app/logger'
 import { DyoApiError, WS_TYPE_DYO_ERROR } from '@app/models'
-import { IWebSocketEndpoint, IWebSocketRoute, WsConnectDto, WsErrorHandler, WsMessage } from './common'
-import WebSocketRoute from './websocket-route'
+import { WsConnectDto, WsErrorHandler, WsMessage } from './common'
+import WebSocketClientEndpoint from './websocket-client-endpoint'
+import WebSocketClientRoute from './websocket-client-route'
 
 class WebSocketClient {
   private logger = new Logger('WebSocketClient') // need to be explicit string because of production build uglification
@@ -17,16 +18,16 @@ class WebSocketClient {
 
   private unsubscribe?: VoidFunction
 
-  private routes: Map<string, IWebSocketRoute> = new Map()
+  private routes: Map<string, WebSocketClientRoute> = new Map()
 
   private errorHandler: WsErrorHandler = null
 
-  async register(endpoint: IWebSocketEndpoint): Promise<boolean> {
+  async register(endpoint: WebSocketClientEndpoint): Promise<boolean> {
     const { url } = endpoint
 
     let route = this.routes.get(url)
     if (!route) {
-      route = new WebSocketRoute(url)
+      route = new WebSocketClientRoute(url)
       this.routes.set(url, route)
     }
     const connected = await this.connect(route)
@@ -36,16 +37,16 @@ class WebSocketClient {
 
     if (connected) {
       if (route.subscribed) {
-        endpoint.onOpen(this)
+        endpoint.onOpen(msg => this.sendWsMessage(msg, endpoint.url))
       } else {
-        route.onOpen(this)
+        await this.onRouteOpen(route)
       }
     }
 
     return connected
   }
 
-  async remove(url: string, endpoint: IWebSocketEndpoint) {
+  async remove(url: string, endpoint: WebSocketClientEndpoint) {
     this.logger.debug('Disconnecting:', url)
 
     const route = this.routes.get(url)
@@ -145,7 +146,12 @@ class WebSocketClient {
     this.errorHandler = handler
   }
 
-  private async connect(route: WebSocketRoute): Promise<boolean> {
+  private async onRouteOpen(route: WebSocketClientRoute) {
+    const url = await this.subscribeToRoute(route.url)
+    route.onOpen(url, msg => this.sendWsMessage(msg, url))
+  }
+
+  private async connect(route: WebSocketClientRoute): Promise<boolean> {
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
       return true
     }
@@ -178,7 +184,7 @@ class WebSocketClient {
         }
 
         this.logger.info('Connected')
-        this.routes.forEach(it => it.onOpen(this))
+        this.routes.forEach(it => this.onRouteOpen(it))
       }
 
       const onClose = () => {

@@ -1,11 +1,9 @@
 import { Identity } from '@ory/kratos-client'
 import http from 'http'
 import WebSocket from 'ws'
-import { IWsConnection, IWsEndpoint, WsMessage } from './common'
+import { WsMessage } from './common'
 
-class WsConnection implements IWsConnection {
-  endpoints: Set<IWsEndpoint> = new Set()
-
+class WsConnection {
   data: Map<string, any> = new Map()
 
   constructor(

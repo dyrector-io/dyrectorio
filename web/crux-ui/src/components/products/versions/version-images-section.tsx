@@ -1,7 +1,7 @@
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { PatchVersionImage, VersionImage } from '@app/models'
-import WebSocketEndpoint from '@app/websockets/websocket-endpoint'
+import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 import useTranslation from 'next-translate/useTranslation'
 import EditImageCard from './images/edit-image-card'
 import { imageTagKey, ImageTagsMap } from './use-images-websocket'
@@ -21,7 +21,7 @@ interface VersionImagesSectionProps {
   disabled?: boolean
   images: VersionImage[]
   imageTags: ImageTagsMap
-  versionSock: WebSocketEndpoint
+  versionSock: WebSocketClientEndpoint
   onTagSelected: (image: VersionImage, tag: string) => void
 }
 

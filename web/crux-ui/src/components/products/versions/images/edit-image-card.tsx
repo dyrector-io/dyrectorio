@@ -12,7 +12,7 @@ import {
 } from '@app/models'
 import { ContainerConfig } from '@app/models-config'
 import { containerConfigSchema, getValidationError } from '@app/validation'
-import WebSocketEndpoint from '@app/websockets/websocket-endpoint'
+import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
 import EditImageConfig from './edit-image-config'
@@ -26,7 +26,7 @@ interface EditImageCardProps {
   disabled?: boolean
   image: VersionImage
   tags: string[]
-  versionSock: WebSocketEndpoint
+  versionSock: WebSocketClientEndpoint
   onTagSelected: (tag: string) => void
 }
 

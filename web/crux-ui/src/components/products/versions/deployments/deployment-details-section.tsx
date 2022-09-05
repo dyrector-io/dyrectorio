@@ -3,13 +3,13 @@ import { DEPLOYMENT_EDIT_WS_REQUEST_DELAY } from '@app/const'
 import { useThrottling } from '@app/hooks/use-throttleing'
 import { deploymentIsMutable, DeploymentRoot, WS_TYPE_PATCH_DEPLOYMENT_ENV } from '@app/models'
 import { Environment } from '@app/models-config'
-import WebSocketEndpoint from '@app/websockets/websocket-endpoint'
+import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 import useTranslation from 'next-translate/useTranslation'
 import DeploymentDetailsCard from './deployment-details-card'
 
 interface DeploymentDetailsSectionProps {
   deployment: DeploymentRoot
-  deploySock: WebSocketEndpoint
+  deploySock: WebSocketClientEndpoint
 }
 
 const DeploymentDetailsSection = (props: DeploymentDetailsSectionProps) => {

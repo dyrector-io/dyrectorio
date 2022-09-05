@@ -1,6 +1,5 @@
 import { internalError } from '@app/error-responses'
-import { WsEndpointOnMessage, WsEndpointOptions } from '@app/websockets/common'
-import WsEndpoint from '@app/websockets/endpoint'
+import WsEndpoint, { WsEndpointOnMessage, WsEndpointOptions } from '@app/websockets/endpoint'
 import WebSocketServer from '@app/websockets/server'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { Logger } from '../logger'

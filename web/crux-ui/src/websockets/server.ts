@@ -5,8 +5,14 @@ import { Server as HTTPSServer } from 'https'
 import { NextApiRequest, NextApiResponse } from 'next'
 import WebSocket from 'ws'
 import WsAuthorizer from './authorizer'
-import { IWsConnection, IWsEndpoint, WsConnectDto, WsMessage } from './common'
+import { WsConnectDto, WsMessage } from './common'
 import WsConnection from './connection'
+import WsEndpoint from './endpoint'
+
+type ConnectionEntry = {
+  connection: WsConnection
+  endpoints: Set<WsEndpoint>
+}
 
 class WebSocketServer {
   private logger = new Logger(WebSocketServer.name)
@@ -15,13 +21,11 @@ class WebSocketServer {
 
   private server: WebSocket.Server
 
-  private endpoints: Map<string, IWsEndpoint> = new Map()
+  private endpoints: Map<string, WsEndpoint> = new Map()
 
-  private connectionsByToken: Map<string, IWsConnection> = new Map()
+  private connectionsByToken: Map<string, ConnectionEntry> = new Map()
 
-  private connectionsBySocket: Map<WebSocket, IWsConnection> = new Map()
-
-  private interests: Map<string, Array<IWsEndpoint>> = new Map()
+  private interests: Map<string, Array<WsEndpoint>> = new Map()
 
   constructor(httpServer: HTTPServer | HTTPSServer) {
     this.server = new WebSocket.Server({
@@ -35,7 +39,7 @@ class WebSocketServer {
     return this.endpoints.get(route)
   }
 
-  registerEndpoint(endpoint: IWsEndpoint) {
+  registerEndpoint(endpoint: WsEndpoint) {
     if (this.endpoints.has(endpoint.route)) {
       this.logger.error('Endpoint for route', null, endpoint.route, 'is already registered.')
       return
@@ -69,15 +73,16 @@ class WebSocketServer {
     }
 
     const token = req.headers.authorization
-    const connection = this.connectionsByToken.get(token)
-    if (!connection) {
+    const connEntry = this.connectionsByToken.get(token)
+    if (!connEntry) {
       const session = sessionOf(req)
 
       res.json({
         token: this.authorizer.generate(session.identity),
       } as WsConnectDto)
     } else {
-      endpoint.onConnect(connection, req)
+      connEntry.endpoints.add(endpoint)
+      endpoint.onConnect(connEntry.connection, req)
       res.status(204).end()
     }
   }
@@ -130,31 +135,31 @@ class WebSocketServer {
       return
     }
 
-    this.connectionsBySocket.set(socket, connection)
-    this.connectionsByToken.set(token, connection)
+    const connEntry: ConnectionEntry = {
+      connection,
+      endpoints: new Set(),
+    }
+
+    this.connectionsByToken.set(token, connEntry)
 
     endpoint.onConnect(connection, req)
     this.logger.debug('Connected:', connection.address)
 
-    socket.on('close', () => this.onDisconnect(connection))
-    socket.on('message', (data, binary) => this.onMessage(socket, data, binary))
+    socket.on('close', () => this.onDisconnect(connEntry))
+    socket.on('message', (data, binary) => this.onMessage(connEntry, data, binary))
   }
 
-  private onDisconnect(connection: WsConnection) {
+  private onDisconnect(connEntry: ConnectionEntry) {
+    const { connection, endpoints } = connEntry
+
     this.logger.debug('Disconnected:', connection.address)
-    connection.endpoints.forEach(it => it.onDisconnect(connection))
+    endpoints.forEach(it => it.onDisconnect(connection))
 
     this.connectionsByToken.delete(connection.token)
-    this.connectionsBySocket.delete(connection.socket)
   }
 
-  private onMessage(socket: WebSocket, data: WebSocket.RawData, binary: boolean) {
-    const connection = this.connectionsBySocket.get(socket)
-    if (!connection) {
-      this.logger.warn('No matching connection for socket. Terminating.', socket)
-      socket.terminate()
-      return
-    }
+  private onMessage(connEntry: ConnectionEntry, data: WebSocket.RawData, binary: boolean) {
+    const { connection, endpoints } = connEntry
 
     if (binary) {
       this.logger.warn('Received binary from:', connection.address)
@@ -170,13 +175,13 @@ class WebSocketServer {
       return
     }
 
-    const endpoints = this.interests.get(message.type)
-    if (!endpoints || endpoints.length < 1) {
+    const interests = this.interests.get(message.type)
+    if (!interests || interests.length < 1) {
       this.logger.warn('No endpoint for message:', message.type)
       return
     }
 
-    endpoints.forEach(it => it.onMessage(connection, message))
+    interests.filter(it => endpoints.has(it)).forEach(it => it.onMessage(connection, message))
   }
 }
 
