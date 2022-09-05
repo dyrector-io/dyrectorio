@@ -3,8 +3,6 @@ package main
 import (
 	"log"
 	"os"
-	"runtime"
-	"strings"
 	"time"
 
 	cli "github.com/urfave/cli/v2"
@@ -12,48 +10,30 @@ import (
 
 func main() {
 	app := &cli.App{
-		Name:      "dyo",
-		Version:   "0.1.1",
-		Compiled:  time.Now(),
-		HelpName:  "dyo",
-		Usage:     "demonstrate available API",
-		UsageText: "contrive - demonstrating the available API",
-		ArgsUsage: "[args and such]",
+		Name:     "dyo",
+		Version:  "0.1.1",
+		Compiled: time.Now(),
+		HelpName: "dyo",
+		Usage:    "dyo - cli tool for deploying a complete Dyrectorio stack locally, for demonstration, testing, or development purposes",
 
 		Commands: []*cli.Command{
 			{
 				Name:    "init",
-				Aliases: []string{"i"},
+				Aliases: []string{"i", "g", "gen", "generate"},
 				Usage:   "Create a docker-compose.yaml",
-
-				Action: compose,
+				Action:  compose,
 			},
 			{
 				Name:    "start",
 				Aliases: []string{"r", "run", "s"},
 				Usage:   "Run the stack",
-
-				Action: run,
+				Action:  run,
 			},
 			{
 				Name:    "stop",
 				Aliases: []string{},
 				Usage:   "Stop the stack",
-
-				Action: stop,
-			},
-			// {
-			// 	Name: "demo",
-			// 	Subcommands: []*cli.Command{
-			// 		{
-			// 			Name:   "template",
-			// 			Action: templating,
-			// 		},
-			// 	},
-			// },
-			{
-				Name:   "test",
-				Action: test,
+				Action:  stop,
 			},
 		},
 		Flags: []cli.Flag{
@@ -91,10 +71,12 @@ func main() {
 
 func compose(cCtx *cli.Context) error {
 	services := serviceSelector(cCtx)
+
 	containers, err := GenContainer(services, cCtx.Bool("store"))
 	if err != nil {
 		return err
 	}
+
 	err = WriteComposeFile(containers)
 	if err != nil {
 		return err
@@ -104,31 +86,38 @@ func compose(cCtx *cli.Context) error {
 
 func run(cCtx *cli.Context) error {
 	services := serviceSelector(cCtx)
+
 	containers, err := GenContainer(services, cCtx.Bool("store"))
 	if err != nil {
 		return err
 	}
+
 	err = WriteComposeFile(containers)
 	if err != nil {
 		return err
 	}
+
 	err = RunContainers(containers, true, false)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
 func stop(cCtx *cli.Context) error {
 	services := serviceSelector(cCtx)
+
 	containers, err := GenContainer(services, cCtx.Bool("store"))
 	if err != nil {
 		return err
 	}
+
 	err = RunContainers(containers, false, true)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -138,6 +127,7 @@ func serviceSelector(cCtx *cli.Context) []Services {
 	if cCtx.Bool("disable-crux-ui") {
 		services = disableService(services, CruxUI)
 	}
+
 	if cCtx.Bool("disable-crux") {
 		services = disableService(services, Crux)
 	}
@@ -152,32 +142,6 @@ func disableService(services []Services, service Services) []Services {
 			newServices = append(newServices, item)
 		}
 	}
+
 	return newServices
-}
-
-func test(cCtx *cli.Context) error {
-	osPath := os.Getenv("PATH")
-	separator := ":"
-	if runtime.GOOS == "windows" {
-		separator = ";"
-	}
-	osPathList := strings.Split(osPath, separator)
-
-	log.Println(osPath)
-	log.Println(osPathList)
-
-	for _, path := range osPathList {
-		files, err := os.ReadDir(path)
-		if err != nil {
-			return err
-		}
-
-		var filenames []string
-		for _, f := range files {
-			filenames = append(filenames, f.Name())
-		}
-		log.Println(filenames)
-	}
-
-	return nil
 }

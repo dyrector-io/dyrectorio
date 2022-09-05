@@ -3,10 +3,10 @@ services:{{ range . }}{{ if .Enabled }}
 
   {{ .Name }}:
     hostname: {{ .Name }}
-    container_name: dyocli_{{ .Name }}
+    container_name: dyo-cli_{{ .Name }}
     image: {{ .Image }}
     networks:
-      - dyocli
+      - dyo-cli
     pull_policy: always{{ if .EnvVars }}
     environment:{{ end }}{{ range .EnvVars }}
       - {{ .Key }}={{ .Value }}{{ end }}{{ if .Depends }}
@@ -20,7 +20,7 @@ services:{{ range . }}{{ if .Enabled }}
     command: {{ .Command }}{{ end }}{{ end }}{{ end }}
 
 networks:
-  dyocli:
+  dyo-cli:
     driver: bridge
     external: true
 
