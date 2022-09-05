@@ -78,7 +78,7 @@ export class NotificationMapper {
   }
 
   eventTypeToGrpc(type: NotificationEventTypeEnum): NotificationEventType {
-    switch(type) {
+    switch (type) {
       case NotificationEventTypeEnum.deploymentCreated:
         return NotificationEventType.DEPLOYMENT_CREATED
       case NotificationEventTypeEnum.versionCreated:
@@ -89,7 +89,7 @@ export class NotificationMapper {
         return NotificationEventType.USER_INVITED
       default:
         throw new InternalException({
-          message: `Unknown NotificationEventType '${type}'`
+          message: `Unknown NotificationEventType '${type}'`,
         })
     }
   }
@@ -108,7 +108,7 @@ export class NotificationMapper {
         throw new InvalidArgumentException({
           property: 'notificationType',
           value: type,
-          message: `Unknown NotificationEventType '${type}'`
+          message: `Unknown NotificationEventType '${type}'`,
         })
     }
   }

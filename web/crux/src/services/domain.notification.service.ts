@@ -79,7 +79,7 @@ export class DomainNotificationService {
         throw new InvalidArgumentException({
           property: 'messageType',
           value: messageType,
-          message: `Unknown NotificationMessageType '${messageType}'`
+          message: `Unknown NotificationMessageType '${messageType}'`,
         })
     }
   }
