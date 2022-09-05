@@ -1,10 +1,4 @@
-import {
-  CreateNotification,
-  NotificationDetails,
-  NotificationEventType,
-  NotificationType,
-  UpdateNotification,
-} from '@app/models'
+import { CreateNotification, NotificationDetails, NotificationType, UpdateNotification } from '@app/models'
 import {
   AccessRequest,
   CreateNotificationRequest,
@@ -13,7 +7,6 @@ import {
   Empty,
   IdRequest,
   NotificationDetailsResponse,
-  NotificationEventType as ProtoNotificationEventType,
   NotificationListResponse,
   NotificationType as ProtoNotificationType,
   notificationTypeFromJSON,
@@ -43,7 +36,6 @@ class DyoNotifcationService {
         ...it,
         type: notificationTypeToDto(it.type),
         creator: it.audit.createdBy,
-        events: it.events.map(ev => notificationEventTypeToDto(ev)),
       }
     })
   }
@@ -53,7 +45,6 @@ class DyoNotifcationService {
       ...dto,
       type: notificationTypeToGrpc(dto.type),
       accessedBy: this.identity.id,
-      events: dto.events.map(ev => notificationEventTypeToGrpc(ev)),
     }
 
     const res = await protomisify<CreateNotificationRequest, CreateNotificationResponse>(
@@ -73,7 +64,6 @@ class DyoNotifcationService {
       ...dto,
       type: notificationTypeToGrpc(dto.type),
       accessedBy: this.identity.id,
-      events: dto.events.map(ev => notificationEventTypeToGrpc(ev)),
     }
 
     const res = await protomisify<UpdateNotificationRequest, UpdateEntityResponse>(
@@ -99,7 +89,6 @@ class DyoNotifcationService {
       ...res,
       type: notificationTypeToDto(res.type),
       creator: res.audit.createdBy,
-      events: res.events.map(ev => notificationEventTypeToDto(ev)),
     }
   }
 
@@ -130,34 +119,4 @@ export const notificationTypeToGrpc = (type: NotificationType): ProtoNotificatio
 
 export const notificationTypeToDto = (type: ProtoNotificationType): NotificationType => {
   return notificationTypeToJSON(type).toLocaleLowerCase() as NotificationType
-}
-
-export const notificationEventTypeToGrpc = (type: NotificationEventType): ProtoNotificationEventType => {
-  switch (type) {
-    case 'deployment-created':
-      return ProtoNotificationEventType.DEPLOYMENT_CREATED
-    case 'version-created':
-      return ProtoNotificationEventType.VERSION_CREATED
-    case 'node-added':
-      return ProtoNotificationEventType.NODE_ADDED
-    case 'user-invited':
-      return ProtoNotificationEventType.USER_INVITED
-    default:
-      return ProtoNotificationEventType.UNKNOWN_NOTIFICATION_EVENT_TYPE
-  }
-}
-
-export const notificationEventTypeToDto = (type: ProtoNotificationEventType): NotificationEventType => {
-  switch (type) {
-    case ProtoNotificationEventType.DEPLOYMENT_CREATED:
-      return 'deployment-created'
-    case ProtoNotificationEventType.VERSION_CREATED:
-      return 'version-created'
-    case ProtoNotificationEventType.NODE_ADDED:
-      return 'node-added'
-    case ProtoNotificationEventType.USER_INVITED:
-      return 'user-invited'
-    case ProtoNotificationEventType.UNKNOWN_NOTIFICATION_EVENT_TYPE:
-      throw null
-  }
 }

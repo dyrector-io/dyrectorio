@@ -93,24 +93,10 @@ const Paginator = <Item,>(props: PaginatorProps<Item>) => {
           {t('showingItems', { pageFrom: pageFrom, pageTo: pageTo, total: pagination.items.length })}
         </a>
         <DyoButton className="w-8 text-xl" onClick={() => changePage({ type: 'first' })} text thin>
-          <Image
-            src="/carets_left.svg"
-            width={24}
-            height={24}
-            layout={'fixed'}
-            className="h-6 m-auto"
-            alt="carets left"
-          />
+          <Image src="/carets_left.svg" width={24} height={24} layout={'fixed'} className="h-6 m-auto" alt='carets left' />
         </DyoButton>
         <DyoButton className="w-8 text-xl" onClick={() => changePage({ type: 'previous' })} text thin>
-          <Image
-            src="/caret_left.svg"
-            width={24}
-            height={24}
-            layout={'fixed'}
-            className="h-6 m-auto"
-            alt="caret left"
-          />
+          <Image src="/caret_left.svg" width={24} height={24} layout={'fixed'} className="h-6 m-auto" alt='caret left' />
         </DyoButton>
         {pagination.pageData.currentPage - 2 >= 0 && (
           <DyoButton
@@ -149,24 +135,10 @@ const Paginator = <Item,>(props: PaginatorProps<Item>) => {
           </DyoButton>
         )}
         <DyoButton className="w-8 text-xl" onClick={() => changePage({ type: 'next' })} text thin>
-          <Image
-            src="/caret_right.svg"
-            width={24}
-            height={24}
-            layout={'fixed'}
-            className="h-6 m-auto"
-            alt="caret right"
-          />
+          <Image src="/caret_right.svg" width={24} height={24} layout={'fixed'} className="h-6 m-auto" alt='caret right' />
         </DyoButton>
         <DyoButton className="w-8 text-xl" onClick={() => changePage({ type: 'last' })} text thin>
-          <Image
-            src="/carets_right.svg"
-            width={24}
-            height={24}
-            layout={'fixed'}
-            className="h-6 m-auto"
-            alt="carets right"
-          />
+          <Image src="/carets_right.svg" width={24} height={24} layout={'fixed'} className="h-6 m-auto" alt='carets right'/>
         </DyoButton>
       </div>
     </div>
