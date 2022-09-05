@@ -67,7 +67,7 @@ export class DeployMapper {
       status: this.statusToGrpc(deployment.status),
       nodeId: deployment.nodeId,
       nodeName: deployment.node.name,
-      nodeStatus: status
+      nodeStatus: status,
     }
   }
 

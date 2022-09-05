@@ -82,7 +82,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
 
   const onDeploy = (deployment: DeploymentByVersion) =>
     router.push(deploymentDeployUrl(props.product.id, version.id, deployment.id))
-    
+
   const headers = [
     ...['deploymentName', 'common:node', 'common:prefix', 'common:status', 'common:date', 'actions'].map(it => t(it)),
   ]

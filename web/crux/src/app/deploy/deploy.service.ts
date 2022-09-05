@@ -2,9 +2,7 @@ import { Injectable, Logger, PreconditionFailedException } from '@nestjs/common'
 import { DeploymentStatusEnum } from '@prisma/client'
 import { JsonArray } from 'prisma'
 import { concatAll, filter, from, map, merge, Observable, Subject } from 'rxjs'
-import {
-  Deployment,
-} from 'src/domain/deployment'
+import { Deployment } from 'src/domain/deployment'
 import { InternalException } from 'src/exception/errors'
 import { DeployRequest } from 'src/grpc/protobuf/proto/agent'
 import {
@@ -120,7 +118,7 @@ export class DeployService {
         images: true,
       },
     })
-    
+
     const deployment = await this.prisma.deployment.create({
       data: {
         versionId: request.versionId,
