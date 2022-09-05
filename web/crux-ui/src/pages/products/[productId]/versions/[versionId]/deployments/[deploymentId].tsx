@@ -5,7 +5,6 @@ import EditDeploymentInstances from '@app/components/products/versions/deploymen
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
-import { ROUTE_PRODUCTS } from '@app/const'
 import DyoButton from '@app/elements/dyo-button'
 import LoadingIndicator from '@app/elements/loading-indicator'
 import useWebSocket from '@app/hooks/use-websocket'
@@ -25,6 +24,7 @@ import {
   deploymentUrl,
   deploymentWsUrl,
   productUrl,
+  ROUTE_PRODUCTS,
   versionUrl,
 } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
@@ -137,8 +137,8 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
     onOpenLog()
   }
 
-  const onDeploymentEdited = deploymentArg => {
-    setDeployment(deploymentArg)
+  const onDeploymentEdited = dep => {
+    setDeployment(dep)
     setEditing(false)
   }
 

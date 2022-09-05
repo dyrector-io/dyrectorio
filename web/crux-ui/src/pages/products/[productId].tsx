@@ -8,7 +8,6 @@ import VersionSections from '@app/components/products/versions/version-sections'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu, DetailsPageTexts } from '@app/components/shared/page-menu'
-import { ROUTE_PRODUCTS } from '@app/const'
 import LoadingIndicator from '@app/elements/loading-indicator'
 import { defaultApiErrorHandler } from '@app/errors'
 import {
@@ -20,7 +19,7 @@ import {
   Version,
   VersionDetails,
 } from '@app/models'
-import { productApiUrl, productUrl, versionSetDefaultApiUrl, versionUrl } from '@app/routes'
+import { productApiUrl, productUrl, ROUTE_PRODUCTS, versionSetDefaultApiUrl, versionUrl } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'

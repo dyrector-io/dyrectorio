@@ -1,4 +1,5 @@
-import { internalError, RegistryImageTags, unauthorizedError } from '@app/models'
+import { internalError, unauthorizedError } from '@app/error-responses'
+import { RegistryImageTags } from '@app/models'
 import { JWT } from 'google-auth-library'
 import { GetAccessTokenResponse } from 'google-auth-library/build/src/auth/oauth2client'
 import { RegistryApiClient } from './registry-api-client'

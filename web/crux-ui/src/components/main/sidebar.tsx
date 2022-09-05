@@ -9,7 +9,7 @@ import {
   ROUTE_PROFILE,
   ROUTE_REGISTRIES,
   ROUTE_TEAMS,
-} from '@app/const'
+} from '@app/routes'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
 import Link from 'next/link'

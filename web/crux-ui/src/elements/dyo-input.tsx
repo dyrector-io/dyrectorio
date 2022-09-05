@@ -11,7 +11,7 @@ export interface DyoInputProps extends React.InputHTMLAttributes<HTMLInputElemen
 }
 
 export const DyoInput = forwardRef((props: DyoInputProps, ref: ForwardedRef<HTMLInputElement>) => {
-  const { label, message, messageType, grow, name, className, disabled } = props
+  const { label, message, messageType, grow, name, className, disabled, ...forwardedProps } = props
 
   return (
     <>
@@ -22,7 +22,8 @@ export const DyoInput = forwardRef((props: DyoInputProps, ref: ForwardedRef<HTML
       )}
 
       <input
-        {...props}
+        {...forwardedProps}
+        name={name}
         ref={ref}
         className={clsx(
           className,

@@ -14,7 +14,7 @@ import {
 import { timestampToUTC } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
 import { protomisify } from './grpc-connection'
-import { notificationTypeToDto, notificationTypeToGrpc } from './mappers/notification-mapper'
+import { notificationTypeToDto, notificationTypeToGrpc } from './mappers/notification-mappers'
 
 class DyoNotifcationService {
   constructor(private client: CruxNotificationClient, private identity: Identity) {}

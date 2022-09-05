@@ -1,13 +1,96 @@
-import {
-  API_NOTIFICATIONS,
-  ROUTE_NODES,
-  ROUTE_NOTIFICATIONS,
-  ROUTE_PRODUCTS,
-  ROUTE_REGISTRIES,
-  ROUTE_TEAMS,
-} from './const'
 import { VersionSectionsState } from './models'
-import { appendUrlParams } from './utils'
+
+// Routes:
+export const ROUTE_INDEX = '/'
+export const ROUTE_STATUS = '/status'
+export const ROUTE_404 = '/404'
+export const ROUTE_PROFILE = '/auth/settings'
+export const ROUTE_LOGIN = '/auth/login'
+export const ROUTE_LOGOUT = '/auth/logout'
+export const ROUTE_REGISTER = '/auth/register'
+
+export const ROUTE_INVITE = '/auth/invite'
+export const ROUTE_SETTINGS = '/auth/settings'
+export const ROUTE_SETTINGS_EDIT_PROFILE = '/auth/settings/edit-profile'
+export const ROUTE_SETTINGS_CHANGE_PASSWORD = '/auth/settings/change-password'
+export const ROUTE_RECOVERY = '/auth/recovery'
+export const ROUTE_VERIFICATION = '/auth/verify'
+
+export const ROUTE_TEAMS = '/teams'
+export const ROUTE_AUDIT = '/audit-log'
+export const ROUTE_TEAMS_CREATE = '/teams/create'
+
+export const ROUTE_PRODUCTS = '/products'
+export const ROUTE_DEPLOYMENTS = '/deployments'
+
+export const ROUTE_NODES = '/nodes'
+export const ROUTE_REGISTRIES = '/registries'
+export const ROUTE_NOTIFICATIONS = '/notifications'
+
+export const API_AUTH_REGISTER = '/api/auth/register'
+export const API_AUTH_LOGIN = '/api/auth/login'
+export const API_AUTH_LOGOUT = '/api/auth/logout'
+
+export const API_SETTINGS = '/api/auth/settings'
+export const API_SETTINGS_EDIT_PROFILE = '/api/auth/settings/edit-profile'
+export const API_SETTINGS_CHANGE_PASSWORD = '/api/auth/settings/change-password'
+export const API_RECOVERY = '/api/auth/recovery'
+export const API_VERIFICATION = '/api/auth/verify'
+
+export const API_STATUS = '/api/status'
+
+export const API_PRODUCTS = '/api/products'
+export const API_REGISTRIES = '/api/registries'
+export const API_NODES = '/api/nodes'
+
+export const API_TEAMS = '/api/teams'
+export const API_TEAMS_ACTIVE = '/api/teams/active'
+export const API_WHOAMI = '/api/whoami'
+
+export const API_NOTIFICATIONS = '/api/notifications'
+
+export const WS_NODES = `${API_NODES}/connect`
+export const WS_REGISTRIES = `${API_REGISTRIES}/connect`
+
+export type CruxUrlParams = {
+  anchor?: string
+}
+
+export const appendUrlParams = <T extends CruxUrlParams>(url: string, params: T): string => {
+  let result = url
+  const paramMap: Map<string, any> = new Map()
+  const anchor = params?.anchor
+
+  if (params) {
+    delete params.anchor
+
+    Object.entries(params).map(entry => {
+      const [key, value] = entry
+      if (key) {
+        paramMap.set(key, value)
+      }
+
+      return entry
+    })
+  }
+
+  if (paramMap.size > 0) {
+    const entries = Array.from(paramMap.entries())
+    const [firstKey, firstValue] = entries[0]
+    result = `${result}?${firstKey}=${firstValue}`
+
+    if (entries.length > 1) {
+      const rest = entries.slice(1)
+
+      result = rest.reduce((prev, current) => {
+        const [key, value] = current
+        return `${prev}&${key}=${value}`
+      }, result)
+    }
+  }
+
+  return anchor ? `${result}#${anchor}` : result
+}
 
 // product
 export const productUrl = (id: string, params?: VersionUrlParams) => appendUrlParams(`${ROUTE_PRODUCTS}/${id}`, params)

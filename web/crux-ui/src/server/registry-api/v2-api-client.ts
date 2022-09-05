@@ -1,4 +1,5 @@
-import { internalError, RegistryImageTags, unauthorizedError } from '@app/models'
+import { internalError, unauthorizedError } from '@app/error-responses'
+import { RegistryImageTags } from '@app/models'
 import { RegistryApiClient } from './registry-api-client'
 
 export type RegistryV2ApiClientOptions = {

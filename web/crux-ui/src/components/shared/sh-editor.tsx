@@ -31,7 +31,7 @@ const ShEditor = (props: ShEditorProps) => {
         insertSpaces
         value={state}
         onValueChange={onChange}
-        highlight={valueArg => highlight(valueArg, languages.shell, 'shell')}
+        highlight={newValue => highlight(newValue, languages.shell, 'shell')}
       />
     </div>
   )

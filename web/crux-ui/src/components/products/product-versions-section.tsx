@@ -32,7 +32,7 @@ const ProductVersionsSection = (props: ProductVersionsSectionProps) => {
       description: t('setNameAsDefault', version),
     })
 
-  return props.versions.length ? (
+  return versions.length ? (
     <>
       <DyoWrap>
         {versions.map((it, index) => (

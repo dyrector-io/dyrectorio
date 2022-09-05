@@ -13,9 +13,9 @@ interface DyoSwitchProps extends Omit<React.InputHTMLAttributes<HTMLInputElement
 const DyoSwitch = (props: DyoSwitchProps) => {
   const { fieldName, checked, setFieldValue, onCheckedChange } = props
 
-  const handleCheckedChange = checkedArg => {
-    setFieldValue?.call(this, fieldName, checkedArg, false)
-    onCheckedChange?.call(this, checkedArg)
+  const handleCheckedChange = (isChecked: boolean) => {
+    setFieldValue?.call(this, fieldName, isChecked, false)
+    onCheckedChange?.call(this, isChecked)
   }
 
   return (

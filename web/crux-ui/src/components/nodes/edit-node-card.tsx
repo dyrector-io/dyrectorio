@@ -1,4 +1,3 @@
-import { API_NODES, WS_NODES } from '@app/const'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
@@ -21,7 +20,7 @@ import {
   UpdateDyoNode,
   WS_TYPE_NODE_STATUS,
 } from '@app/models'
-import { nodeApiUrl, nodeTokenApiUrl } from '@app/routes'
+import { API_NODES, nodeApiUrl, nodeTokenApiUrl, WS_NODES } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { nodeSchema } from '@app/validation'
 import clsx from 'clsx'

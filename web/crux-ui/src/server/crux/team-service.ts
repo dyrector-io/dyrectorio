@@ -34,7 +34,7 @@ import { Identity } from '@ory/kratos-client'
 import { protomisify } from '@server/crux/grpc-connection'
 /* eslint-disable import/no-cycle */
 import { RegistryConnections } from '@server/registry-api/registry-connections'
-import { userRoleToDto, userRoleToGrpc, userStatusToDto, userToDto } from './mappers/team-mapper'
+import { userRoleToDto, userRoleToGrpc, userStatusToDto, userToDto } from './mappers/team-mappers'
 
 class DyoTeamService {
   private logger = new Logger(DyoTeamService.name)

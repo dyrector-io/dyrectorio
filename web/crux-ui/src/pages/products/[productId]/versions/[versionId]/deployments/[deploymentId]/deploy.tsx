@@ -4,7 +4,6 @@ import DeploymentDetailsCard from '@app/components/products/versions/deployments
 import DeploymentEventsTerminal from '@app/components/products/versions/deployments/deployment-events-terminal'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
-import { ROUTE_PRODUCTS } from '@app/const'
 import DyoButton from '@app/elements/dyo-button'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
@@ -26,6 +25,7 @@ import {
   deploymentWsUrl,
   nodeInspectUrl,
   productUrl,
+  ROUTE_PRODUCTS,
   versionUrl,
 } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
@@ -54,8 +54,7 @@ const DeployPage = (props: DeployPageProps) => {
     ...propsDeployment,
     status,
   }
-  const { product } = deployment
-  const { version } = deployment
+  const { product, version } = deployment
   const mutable = deploymentIsMutable(deployment.status)
 
   const sock = useWebSocket(deploymentWsUrl(deployment.product.id, deployment.versionId, deployment.id), {

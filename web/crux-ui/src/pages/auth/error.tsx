@@ -1,6 +1,6 @@
 import { SingleFormLayout } from '@app/components/layout'
-import { ROUTE_INDEX } from '@app/const'
 import DyoButton from '@app/elements/dyo-button'
+import { ROUTE_INDEX } from '@app/routes'
 import { redirectTo } from '@app/utils'
 import { SelfServiceError } from '@ory/kratos-client'
 import kratos from '@server/kratos'

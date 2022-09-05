@@ -4,10 +4,9 @@ import RegistryCard from '@app/components/registries/registry-card'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
-import { ROUTE_REGISTRIES } from '@app/const'
 import { defaultApiErrorHandler } from '@app/errors'
 import { RegistryDetails, registryDetailsToRegistry } from '@app/models'
-import { registryApiUrl, registryUrl } from '@app/routes'
+import { registryApiUrl, registryUrl, ROUTE_REGISTRIES } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
@@ -32,9 +31,9 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const onRegistryEdited = registryArg => {
+  const onRegistryEdited = reg => {
     setEditing(false)
-    setRegistry(registryArg)
+    setRegistry(reg)
   }
 
   const onDelete = async () => {

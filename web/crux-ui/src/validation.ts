@@ -71,7 +71,8 @@ const registryCredentialRole = yup
     is: (type, _private) =>
       type === 'gitlab' || type === 'github' || ((type === 'v2' || type === 'google') && _private),
     then: yup.string().required(),
-    otherwise: yup.mixed().transform(it => it ?? undefined),
+    // eslint-disable-next-line no-unneeded-ternary
+    otherwise: yup.mixed().transform(it => (it ? it : undefined)),
   })
 
 const googleRegistryUrls = ['gcr.io', 'us.gcr.io', 'eu.gcr.io', 'asia.gcr.io'] as const

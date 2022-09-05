@@ -1,4 +1,3 @@
-/* eslint-disable react/button-has-type */
 import clsx from 'clsx'
 import React from 'react'
 
@@ -53,6 +52,7 @@ const DyoButton = (props: DyoButtonProps) => {
   return (
     <button
       {...forwaredProps}
+      /* eslint-disable-next-line react/button-has-type */
       type={type ?? 'button'}
       className={clsx(
         className ?? 'mx-2 px-10',

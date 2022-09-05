@@ -72,11 +72,11 @@ const VersionSections = (props: VersionSectionsProps) => {
   const onAddDeployment = async (deploymentId: string) =>
     router.push(deploymentUrl(product.id, version.id, deploymentId))
 
-  const onReorderImages = (imagesArg: VersionImage[]) => {
-    const ids = imagesArg.map(it => it.id)
+  const onReorderImages = (imgs: VersionImage[]) => {
+    const ids = imgs.map(it => it.id)
     orderImages(ids)
 
-    const newImages = imagesArg.map((it, index) => ({
+    const newImages = imgs.map((it, index) => ({
       ...it,
       order: index,
     }))

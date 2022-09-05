@@ -1,5 +1,4 @@
-import { ROUTE_PRODUCTS, ROUTE_TEAMS_CREATE } from '@app/const'
-import { teamInviteUrl } from '@app/routes'
+import { ROUTE_PRODUCTS, ROUTE_TEAMS_CREATE, teamInviteUrl } from '@app/routes'
 import { redirectTo, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'

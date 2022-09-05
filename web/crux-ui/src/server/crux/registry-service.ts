@@ -16,7 +16,7 @@ import { Identity } from '@ory/kratos-client'
 import { protomisify } from '@server/crux/grpc-connection'
 /* eslint-disable import/no-cycle */
 import { RegistryConnections } from '@server/registry-api/registry-connections'
-import registryTypeProtoToDto from './mappers/registry-mapper'
+import registryTypeProtoToDto from './mappers/registry-mappers'
 
 class DyoRegistryService {
   constructor(

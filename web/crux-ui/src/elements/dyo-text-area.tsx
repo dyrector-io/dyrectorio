@@ -11,7 +11,7 @@ export interface DyoTextAreaProps extends Omit<React.TextareaHTMLAttributes<HTML
 }
 
 const DyoTextArea = (props: DyoTextAreaProps) => {
-  const { label, message, messageType, grow, name, className, children, ...forwaredProps } = props
+  const { label, message, messageType, grow, name, className, children, ...forwardedProps } = props
 
   return (
     <>
@@ -22,7 +22,8 @@ const DyoTextArea = (props: DyoTextAreaProps) => {
       )}
 
       <textarea
-        {...forwaredProps}
+        {...forwardedProps}
+        name={name}
         className={clsx(
           className,
           'bg-medium p-4 ring-2 rounded-md text-bright ring-light-grey focus:outline-none focus:dark',

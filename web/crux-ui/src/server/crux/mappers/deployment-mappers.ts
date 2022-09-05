@@ -11,7 +11,7 @@ import {
   InstanceResponse,
 } from '@app/models/grpc/protobuf/proto/crux'
 import { explicitContainerConfigToDto, imageToDto } from './image-mappers'
-import { containerStateToDto } from './node-mapper'
+import { containerStateToDto } from './node-mappers'
 
 export const deploymentStatusToDto = (status: ProtoDeploymentStatus): DeploymentStatus =>
   deploymentStatusToJSON(status).toLocaleLowerCase() as DeploymentStatus

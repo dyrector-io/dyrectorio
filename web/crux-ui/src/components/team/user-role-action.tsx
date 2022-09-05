@@ -28,14 +28,14 @@ const UserRoleAction = (props: UserRoleActionProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const onUpdateUserRole = (roleArg: UserRole, promote: boolean) =>
+  const onUpdateUserRole = (updatedRole: UserRole, promote: boolean) =>
     confirmRoleUpdate(
       async () => {
         setUpdating(true)
 
         const res = await sendForm('PUT', userRoleApiUrl(teamId, user.id), role)
         if (res.ok) {
-          onRoleUpdated(roleArg)
+          onRoleUpdated(updatedRole)
         } else {
           handleApiError(res)
         }
@@ -46,7 +46,7 @@ const UserRoleAction = (props: UserRoleActionProps) => {
         description: t('confirmRoleAction', {
           action: t(promote ? 'promote' : 'demote'),
           user: user.name !== '' ? user.name : user.email,
-          role: t(`common:role.${roleArg}`),
+          role: t(`common:role.${updatedRole}`),
         }),
       },
     )

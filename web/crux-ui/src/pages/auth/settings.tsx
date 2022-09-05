@@ -1,17 +1,17 @@
 import { Layout } from '@app/components/layout'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
-import {
-  ROUTE_SETTINGS,
-  ROUTE_SETTINGS_CHANGE_PASSWORD,
-  ROUTE_SETTINGS_EDIT_PROFILE,
-  ROUTE_VERIFICATION,
-} from '@app/const'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
+import {
+  ROUTE_SETTINGS,
+  ROUTE_SETTINGS_CHANGE_PASSWORD,
+  ROUTE_SETTINGS_EDIT_PROFILE,
+  ROUTE_VERIFICATION,
+} from '@app/routes'
 import { redirectTo, withContextAuthorization } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
 import { sessionOfContext } from '@server/kratos'

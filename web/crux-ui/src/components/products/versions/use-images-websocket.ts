@@ -1,4 +1,3 @@
-import { WS_REGISTRIES } from '@app/const'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
   AddImagesMessage,
@@ -28,7 +27,7 @@ import {
   WS_TYPE_REGISTRY_FETCH_IMAGE_TAGS,
   WS_TYPE_REGISTRY_IMAGE_TAGS,
 } from '@app/models'
-import { versionWsUrl } from '@app/routes'
+import { versionWsUrl, WS_REGISTRIES } from '@app/routes'
 import { fold } from '@app/utils'
 import WebSocketEndpoint from '@app/websockets/websocket-endpoint'
 

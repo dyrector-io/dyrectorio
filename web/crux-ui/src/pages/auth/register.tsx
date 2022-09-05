@@ -1,5 +1,5 @@
 import { SingleFormLayout } from '@app/components/layout'
-import { API_AUTH_REGISTER, ATTRIB_CSRF, ROUTE_LOGIN, ROUTE_SETTINGS, ROUTE_VERIFICATION } from '@app/const'
+import { ATTRIB_CSRF } from '@app/const'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoInput } from '@app/elements/dyo-input'
@@ -7,6 +7,7 @@ import DyoMessage from '@app/elements/dyo-message'
 import DyoSingleFormHeading from '@app/elements/dyo-single-form-heading'
 import DyoSingleFormLogo from '@app/elements/dyo-single-form-logo'
 import { DyoErrorDto, Register } from '@app/models'
+import { API_AUTH_REGISTER, ROUTE_LOGIN, ROUTE_SETTINGS, ROUTE_VERIFICATION } from '@app/routes'
 import {
   findAttributes,
   findError,

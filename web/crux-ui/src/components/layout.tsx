@@ -1,5 +1,5 @@
-import { API_WHOAMI, ROUTE_LOGIN } from '@app/const'
 import { UserMeta } from '@app/models'
+import { API_WHOAMI, ROUTE_LOGIN } from '@app/routes'
 import { configuredFetcher } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'

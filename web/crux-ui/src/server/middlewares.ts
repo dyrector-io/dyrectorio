@@ -63,6 +63,7 @@ export const withMiddlewares = (
 
           if (!handler) {
             res.status(405).end()
+            return
           } else if (typeof handler === 'function') {
             return handler(req, res)
           } else {

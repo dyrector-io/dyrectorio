@@ -79,10 +79,10 @@ const KeyValueInput = (props: KeyValueInputProps) => {
 
   const [state, dispatch] = useReducer(reducer, items)
 
-  const stateToElements = (itemsArg: UniqueKeyValue[]) => {
+  const stateToElements = (keyValues: UniqueKeyValue[]) => {
     const result = []
 
-    itemsArg.forEach(item =>
+    keyValues.forEach(item =>
       result.push({
         ...item,
         message: result.find(it => it.key === item.key) ? t('keyMustUnique') : null,

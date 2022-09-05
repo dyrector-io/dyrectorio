@@ -137,13 +137,13 @@ interface SaveDiscardPageMenuProps {
 }
 
 export const SaveDiscardPageMenu = (props: SaveDiscardPageMenuProps) => {
-  const { className, saveRef, onSave: propsOnSave, onDiscard } = props
+  const { className, saveRef, onSave, onDiscard } = props
 
   const { t } = useTranslation('common')
 
-  const onSave = () => {
+  const onSaveSaveClick = () => {
     saveRef.current()
-    propsOnSave?.call(null)
+    onSave?.call(null)
   }
 
   return (
@@ -152,7 +152,7 @@ export const SaveDiscardPageMenu = (props: SaveDiscardPageMenuProps) => {
         {t('discard')}
       </DyoButton>
 
-      <DyoButton className="px-6 ml-2" onClick={onSave}>
+      <DyoButton className="px-6 ml-2" onClick={onSaveSaveClick}>
         {t('save')}
       </DyoButton>
     </div>

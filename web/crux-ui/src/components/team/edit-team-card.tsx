@@ -1,4 +1,3 @@
-import { API_TEAMS } from '@app/const'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
@@ -6,7 +5,7 @@ import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { defaultApiErrorHandler } from '@app/errors'
 import { CreateTeam, DEFAULT_TEAM_STATISTICS, Team, UpdateTeam } from '@app/models'
-import { teamApiUrl } from '@app/routes'
+import { API_TEAMS, teamApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { createProductSchema, updateProductSchema } from '@app/validation'
 import { useFormik } from 'formik'
@@ -21,12 +20,12 @@ interface EditTeamCardProps {
 }
 
 const EditTeamCard = (props: EditTeamCardProps) => {
-  const { className, team: teamProps, onTeamEdited, submitRef } = props
+  const { className, team: propsTeam, onTeamEdited, submitRef } = props
 
   const { t } = useTranslation('teams')
 
   const [team, setTeam] = useState<Team>(
-    teamProps ?? {
+    propsTeam ?? {
       id: null,
       name: '',
       statistics: DEFAULT_TEAM_STATISTICS,

@@ -11,9 +11,9 @@ import {
 import { Translate } from 'next-translate'
 import { NextRouter } from 'next/router'
 import toast from 'react-hot-toast'
-import { ROUTE_404, ROUTE_INDEX, ROUTE_LOGIN, ROUTE_STATUS, ROUTE_VERIFICATION } from './const'
 import { DyoApiError, DyoErrorDto, DyoFetchError, RegistryDetails } from './models'
 import { Timestamp } from './models/grpc/google/protobuf/timestamp'
+import { ROUTE_404, ROUTE_INDEX, ROUTE_LOGIN, ROUTE_STATUS, ROUTE_VERIFICATION } from './routes'
 
 // date
 export const dateToUtcTime = (date: Date): number =>
@@ -247,46 +247,6 @@ export const searchParamsOf = (context: NextPageContext): string => {
   }
 
   return `?${parts[1]}`
-}
-
-export type CruxUrlParams = {
-  anchor?: string
-}
-
-export const appendUrlParams = <T extends CruxUrlParams>(url: string, params: T): string => {
-  let result = url
-  const paramMap: Map<string, any> = new Map()
-  const anchor = params?.anchor
-
-  if (params) {
-    delete params.anchor
-
-    Object.entries(params).map(entry => {
-      const [key, value] = entry
-      if (key) {
-        paramMap.set(key, value)
-      }
-
-      return entry
-    })
-  }
-
-  if (paramMap.size > 0) {
-    const entries = Array.from(paramMap.entries())
-    const [firstKey, firstValue] = entries[0]
-    result = `${result}?${firstKey}=${firstValue}`
-
-    if (entries.length > 1) {
-      const rest = entries.slice(1)
-
-      result = fold(rest, result, (prev, it) => {
-        const [key, value] = it
-        return `${prev}&${key}=${value}`
-      })
-    }
-  }
-
-  return anchor ? `${result}#${anchor}` : result
 }
 
 // page ssr

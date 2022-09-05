@@ -1,5 +1,6 @@
 import { HEADER_SET_COOKIE } from '@app/const'
-import { DEFAULT_SERVICE_INFO, missingParameter, ServiceInfo } from '@app/models'
+import { missingParameter } from '@app/error-responses'
+import { DEFAULT_SERVICE_INFO, ServiceInfo } from '@app/models'
 import { Configuration, Identity, MetadataApi, Session, V0alpha2Api } from '@ory/kratos-client'
 import { AxiosResponse } from 'axios'
 import http from 'http'

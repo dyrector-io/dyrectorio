@@ -1,6 +1,5 @@
 import {
   alreadyExistsError,
-  DyoApiError,
   forbiddenError,
   internalError,
   invalidArgument,
@@ -8,7 +7,8 @@ import {
   preconditionFailedError,
   unauthorizedError,
   unavailableError,
-} from '@app/models'
+} from '@app/error-responses'
+import { DyoApiError } from '@app/models'
 import { isDyoApiError } from '@app/utils'
 import { ServiceError } from '@grpc/grpc-js'
 import { Status } from '@grpc/grpc-js/build/src/constants'

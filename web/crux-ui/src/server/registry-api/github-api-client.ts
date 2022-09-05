@@ -1,5 +1,6 @@
 import { REGISTRY_GITHUB_URL } from '@app/const'
-import { internalError, RegistryImageTags, unauthorizedError } from '@app/models'
+import { internalError, unauthorizedError } from '@app/error-responses'
+import { RegistryImageTags } from '@app/models'
 import { RegistryApiClient } from './registry-api-client'
 import RegistryV2ApiClient, { registryCredentialsToBasicAuth, RegistryV2ApiClientOptions } from './v2-api-client'
 

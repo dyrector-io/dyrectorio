@@ -1,4 +1,4 @@
-import { API_NOTIFICATIONS, WEBOOK_TEST_DELAY } from '@app/const'
+import { WEBOOK_TEST_DELAY } from '@app/const'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoChips from '@app/elements/dyo-chips'
@@ -15,7 +15,7 @@ import {
   NOTIFICATION_TYPE_VALUES,
   UpdateNotification,
 } from '@app/models'
-import { notificationApiHookUrl, notificationApiUrl } from '@app/routes'
+import { API_NOTIFICATIONS, notificationApiHookUrl, notificationApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { notificationSchema } from '@app/validation'
 import { useFormik } from 'formik'

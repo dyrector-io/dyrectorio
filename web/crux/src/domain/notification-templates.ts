@@ -137,7 +137,7 @@ const getSuccessfulDeployMessage = (args: BaseMessage): string => {
   return `${args.owner} successfully deployed ${args.subject}!`
 }
 
-const getMessage = (messageType: NotificationMessageType): ((arg: Message) => string) => {
+const getMessage = (messageType: NotificationMessageType): ((message: Message) => string) => {
   switch (messageType) {
     case 'node':
       return getNodeMessage

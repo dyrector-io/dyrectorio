@@ -196,7 +196,7 @@ class WebSocketClient {
       const onError = ev => {
         this.logger.error(`Error occurred:`, ev)
 
-        this.routes.forEach(routeArg => routeArg.endpoints.forEach(it => it.onError(ev)))
+        this.routes.forEach(r => r.endpoints.forEach(it => it.onError(ev)))
       }
 
       const onMessage = ev => {
@@ -211,7 +211,7 @@ class WebSocketClient {
           this.errorHandler(message.payload as DyoApiError)
         }
 
-        this.routes.forEach(routeArg => routeArg.endpoints.forEach(it => it.onMessage(message)))
+        this.routes.forEach(r => r.endpoints.forEach(it => it.onMessage(message)))
       }
 
       const ws = this.socket

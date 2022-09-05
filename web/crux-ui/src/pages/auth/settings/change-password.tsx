@@ -2,13 +2,7 @@ import { Layout } from '@app/components/layout'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { SaveDiscardPageMenu } from '@app/components/shared/page-menu'
-import {
-  API_SETTINGS_CHANGE_PASSWORD,
-  ATTRIB_CSRF,
-  ROUTE_LOGIN,
-  ROUTE_SETTINGS,
-  ROUTE_SETTINGS_CHANGE_PASSWORD,
-} from '@app/const'
+import { ATTRIB_CSRF } from '@app/const'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
@@ -16,6 +10,7 @@ import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoMessage from '@app/elements/dyo-message'
 import { ChangePassword } from '@app/models'
+import { API_SETTINGS_CHANGE_PASSWORD, ROUTE_LOGIN, ROUTE_SETTINGS, ROUTE_SETTINGS_CHANGE_PASSWORD } from '@app/routes'
 import { findAttributes, findMessage, sendForm, withContextAuthorization } from '@app/utils'
 import { SelfServiceSettingsFlow } from '@ory/kratos-client'
 import kratos from '@server/kratos'

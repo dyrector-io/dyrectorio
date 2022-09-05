@@ -21,14 +21,10 @@ const DyoModal = (props: DyoModalProps) => {
 
   const { t } = useTranslation('common')
 
-  const buttons = propsButtons ?? <DyoButton onClick={() => onClose()}>{t('close')}</DyoButton>
+  const buttons = propsButtons ?? <DyoButton onClick={onClose}>{t('close')}</DyoButton>
 
   const modal = (
-    <Dialog
-      className="flex fixed inset-0 bg-light-grey bg-opacity-50 h-screen w-screen"
-      open={open}
-      onClose={() => onClose()}
-    >
+    <Dialog className="flex fixed inset-0 bg-light-grey bg-opacity-50 h-screen w-screen" open={open} onClose={onClose}>
       <Dialog.Overlay />
 
       <DyoCard className={clsx(className, 'flex flex-col m-auto p-8')} modal>

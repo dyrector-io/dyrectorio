@@ -1,4 +1,4 @@
-import { internalError } from '@app/models'
+import { internalError } from '@app/error-responses'
 import { WsEndpointOnMessage, WsEndpointOptions } from '@app/websockets/common'
 import WsEndpoint from '@app/websockets/endpoint'
 import WebSocketServer from '@app/websockets/server'

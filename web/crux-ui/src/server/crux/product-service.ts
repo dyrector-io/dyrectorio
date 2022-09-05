@@ -14,8 +14,8 @@ import {
 import { timestampToUTC } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
 import { protomisify } from '@server/crux/grpc-connection'
-import { typeToDyo, typeToProto } from './mappers/product-mapper'
-import { versionTypeToDyo } from './mappers/version-mapper'
+import { typeToDyo, typeToProto } from './mappers/product-mappers'
+import { versionTypeToDyo } from './mappers/version-mappers'
 
 class DyoProductService {
   constructor(private client: CruxProductClient, private identity: Identity) {}

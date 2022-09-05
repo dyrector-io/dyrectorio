@@ -1,4 +1,3 @@
-/* eslint-disable react/button-has-type */
 import clsx from 'clsx'
 
 interface DyoImgButtonProps {
@@ -24,6 +23,7 @@ const DyoImgButton = (props: DyoImgButtonProps) => {
   const ring = outlined ? 'ring-2' : null
 
   return (
+    /* eslint-disable-next-line react/button-has-type */
     <button className={clsx(color, ring, className, 'rounded')} disabled={disabled} onClick={onClick}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={src} width={width ?? 24} height={height ?? 24} alt={alt} />

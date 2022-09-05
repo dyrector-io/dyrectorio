@@ -32,7 +32,7 @@ import {
 import { timestampToUTC } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
 import { GrpcConnection, protomisify, ProtoSubscriptionOptions } from '@server/crux/grpc-connection'
-import { containerStateToDto, nodeTypeGrpcToUi, statusToDto } from './mappers/node-mapper'
+import { containerStateToDto, nodeTypeGrpcToUi, statusToDto } from './mappers/node-mappers'
 
 class DyoNodeService {
   private logger = new Logger(DyoNodeService.name)

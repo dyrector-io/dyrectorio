@@ -1,12 +1,5 @@
 import { SingleFormLayout } from '@app/components/layout'
-import {
-  API_AUTH_LOGIN,
-  ATTRIB_CSRF,
-  ROUTE_INDEX,
-  ROUTE_RECOVERY,
-  ROUTE_REGISTER,
-  ROUTE_VERIFICATION,
-} from '@app/const'
+import { ATTRIB_CSRF } from '@app/const'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoInput } from '@app/elements/dyo-input'
@@ -14,6 +7,7 @@ import DyoMessage from '@app/elements/dyo-message'
 import DyoSingleFormHeading from '@app/elements/dyo-single-form-heading'
 import DyoSingleFormLogo from '@app/elements/dyo-single-form-logo'
 import { DyoErrorDto, Login } from '@app/models'
+import { API_AUTH_LOGIN, ROUTE_INDEX, ROUTE_RECOVERY, ROUTE_REGISTER, ROUTE_VERIFICATION } from '@app/routes'
 import { findAttributes, findError, findMessage, isDyoError, redirectTo, sendForm, upsertDyoError } from '@app/utils'
 import { SelfServiceLoginFlow } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'

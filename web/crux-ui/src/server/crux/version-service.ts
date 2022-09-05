@@ -13,9 +13,9 @@ import {
 import { timestampToUTC } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
 import { protomisify } from '@server/crux/grpc-connection'
-import { deploymentStatusToDto } from './mappers/deployment-mapper'
+import { deploymentStatusToDto } from './mappers/deployment-mappers'
 import { containerConfigToDto } from './mappers/image-mappers'
-import { versionTypeToDyo, versionTypeToProto } from './mappers/version-mapper'
+import { versionTypeToDyo, versionTypeToProto } from './mappers/version-mappers'
 
 class DyoVersionService {
   constructor(private client: CruxProductVersionClient, private identity: Identity) {}

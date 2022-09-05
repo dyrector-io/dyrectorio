@@ -34,9 +34,9 @@ import { timestampToUTC } from '@app/utils'
 import { WsMessage } from '@app/websockets/common'
 import { Identity } from '@ory/kratos-client'
 import { GrpcConnection, protomisify, ProtoSubscriptionOptions } from './grpc-connection'
-import { deploymentEventTypeToDto, deploymentStatusToDto, instanceToDto } from './mappers/deployment-mapper'
+import { deploymentEventTypeToDto, deploymentStatusToDto, instanceToDto } from './mappers/deployment-mappers'
 import { explicitContainerConfigToProto } from './mappers/image-mappers'
-import { containerStateToDto } from './mappers/node-mapper'
+import { containerStateToDto } from './mappers/node-mappers'
 
 class DyoDeploymentService {
   private logger = new Logger(DyoDeploymentService.name)

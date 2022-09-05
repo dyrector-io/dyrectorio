@@ -1,4 +1,4 @@
-import { invalidArgument } from '@app/models'
+import { invalidArgument } from '@app/error-responses'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { AnySchema, ValidationError } from 'yup'
 

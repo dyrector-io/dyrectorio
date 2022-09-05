@@ -1,7 +1,7 @@
 import { SingleFormLayout } from '@app/components/layout'
-import { ROUTE_STATUS } from '@app/const'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoHeading } from '@app/elements/dyo-heading'
+import { ROUTE_STATUS } from '@app/routes'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
 

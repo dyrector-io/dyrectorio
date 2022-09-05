@@ -1,0 +1,6 @@
+
+> crux-ui@0.1.1 lint
+> next lint
+
+info  - Loaded env from C:\work\dyrectorio\web\crux-ui\.env
+✔ No ESLint warnings or errors

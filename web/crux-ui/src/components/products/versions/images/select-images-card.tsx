@@ -1,4 +1,4 @@
-import { API_REGISTRIES, IMAGE_FILTER_MIN_LENGTH, IMAGE_WS_REQUEST_DELAY, WS_REGISTRIES } from '@app/const'
+import { IMAGE_FILTER_MIN_LENGTH, IMAGE_WS_REQUEST_DELAY } from '@app/const'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoCheckbox from '@app/elements/dyo-checkbox'
@@ -21,6 +21,7 @@ import {
   WS_TYPE_FIND_IMAGE,
   WS_TYPE_FIND_IMAGE_RESULT,
 } from '@app/models'
+import { API_REGISTRIES, WS_REGISTRIES } from '@app/routes'
 import { fetcher } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useState } from 'react'
@@ -67,8 +68,8 @@ const SelectImagesCard = (props: SelectImagesCardProps) => {
 
   useEffect(() => setRegistry(registriesFound ? registries[0] : null), [registries, registriesFound])
 
-  const findImage = (registryArg: Registry, filterArg?: string) => {
-    if (!registryArg || filter.length < IMAGE_FILTER_MIN_LENGTH) {
+  const findImage = (reg: Registry, fil?: string) => {
+    if (!reg || filter.length < IMAGE_FILTER_MIN_LENGTH) {
       setImages([])
       setSearching(false)
       return
@@ -76,8 +77,8 @@ const SelectImagesCard = (props: SelectImagesCardProps) => {
 
     const send = () => {
       sock.send(WS_TYPE_FIND_IMAGE, {
-        registryId: registryArg.id,
-        filter: filterArg,
+        registryId: reg.id,
+        filter: fil,
       } as FindImageMessage)
     }
 
@@ -85,14 +86,14 @@ const SelectImagesCard = (props: SelectImagesCardProps) => {
     throttleFilter(send)
   }
 
-  const onRegistrySelectionChange = (registryArg: Registry) => {
-    setRegistry(registryArg)
-    findImage(registryArg, filter)
+  const onRegistrySelectionChange = (reg: Registry) => {
+    setRegistry(reg)
+    findImage(reg, filter)
   }
 
-  const onFilterChange = (filterArg: string) => {
-    setFilter(filterArg)
-    findImage(registry, filterArg)
+  const onFilterChange = (filterValue: string) => {
+    setFilter(filterValue)
+    findImage(registry, filterValue)
   }
 
   const onImageCheckedChange = (target: SelectableImage, checked: boolean) => {
@@ -131,7 +132,7 @@ const SelectImagesCard = (props: SelectImagesCardProps) => {
 
   const itemTemplate = (selectable: SelectableImage) => {
     const checked = !!selected.find(it => it.image.name === selectable.image.name)
-    const onCheckedChange = checkedArg => onImageCheckedChange(selectable, checkedArg)
+    const onCheckedChange = isChecked => onImageCheckedChange(selectable, isChecked)
 
     /* eslint-disable react/jsx-key */
     return [

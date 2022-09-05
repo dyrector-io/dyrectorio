@@ -1,4 +1,5 @@
-import { internalError, RegistryImageTags, unauthorizedError } from '@app/models'
+import { internalError, unauthorizedError } from '@app/error-responses'
+import { RegistryImageTags } from '@app/models'
 import HubApiCache from './caches/hub-api-cache'
 import { RegistryApiClient } from './registry-api-client'
 

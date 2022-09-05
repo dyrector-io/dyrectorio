@@ -19,14 +19,14 @@ const RegistryCard = (props: RegistryCardProps) => {
 
   const { registry, onClick, className } = props
 
-  const getDefaultImage = () => (
-    <Image src="/default_registry.svg" width={17} height={21} alt={t('altDefaultRegistryPicture')} />
-  )
-
   return (
     <DyoCard className={clsx(className ?? 'p-6', 'flex flex-col')}>
       <div className={clsx(onClick ? 'cursor-pointer' : null, 'flex flex-row')} onClick={onClick}>
-        {!registry.icon ? getDefaultImage() : <DyoBadge large icon={registry.icon} />}
+        {!registry.icon ? (
+          <Image src="/default_registry.svg" width={17} height={21} alt={t('altDefaultRegistryPicture')} />
+        ) : (
+          <DyoBadge large icon={registry.icon} />
+        )}
 
         <DyoHeading className="text-xl text-bright font-semibold ml-2 my-auto mr-auto" element="h3">
           {registry.name}

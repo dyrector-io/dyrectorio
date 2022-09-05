@@ -77,7 +77,7 @@ const JsonEditor = <T,>(props: JsonEditorProps<T>) => {
         insertSpaces
         value={state}
         onValueChange={onChange}
-        highlight={valueArg => highlight(valueArg, languages.json, 'json')}
+        highlight={newValue => highlight(newValue, languages.json, 'json')}
       />
     </div>
   )

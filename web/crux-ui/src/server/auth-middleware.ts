@@ -1,4 +1,4 @@
-import { unauthorizedError } from '@app/models'
+import { unauthorizedError } from '@app/error-responses'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { IncomingMessageWithSession, obtainKratosSession } from './kratos'
 

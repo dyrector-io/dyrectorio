@@ -1,4 +1,3 @@
-import { WS_NODES } from '@app/const'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
@@ -16,7 +15,7 @@ import {
   WS_TYPE_NODE_STATUS,
   WS_TYPE_NODE_STATUSES,
 } from '@app/models'
-import { deploymentUrl } from '@app/routes'
+import { deploymentUrl, WS_NODES } from '@app/routes'
 import { distinct } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'

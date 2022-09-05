@@ -14,20 +14,20 @@ interface NotificationCardProps extends Omit<DyoCardProps, 'children'> {
 }
 
 const NotificationCard = (props: NotificationCardProps) => {
-  const { t } = useTranslation('notifications')
+  const { notification, onClick, className } = props
 
-  const { notification } = props
+  const { t } = useTranslation('notifications')
 
   const getDefaultImage = (
     <Image src="/notification.svg" width={18} height={20} alt={t('altNotificationPicture')} layout="fixed" />
   )
 
   return (
-    <DyoCard className={clsx(props.className ?? 'p-6', 'flex flex-col')}>
-      <div className={clsx('flex flex-row flex-grow mb-2', props.onClick ? 'cursor-pointer' : null)}>
+    <DyoCard className={clsx(className ?? 'p-6', 'flex flex-col')}>
+      <div className={clsx('flex flex-row flex-grow mb-2', onClick ? 'cursor-pointer' : null)}>
         <div className="flex items-center">{getDefaultImage}</div>
 
-        <DyoHeading className="text-xl text-bright ml-2 my-auto mr-auto truncate" element="h3" onClick={props.onClick}>
+        <DyoHeading className="text-xl text-bright ml-2 my-auto mr-auto truncate" element="h3" onClick={onClick}>
           {notification.name}
         </DyoHeading>
       </div>

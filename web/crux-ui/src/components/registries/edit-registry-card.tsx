@@ -1,4 +1,3 @@
-import { API_REGISTRIES } from '@app/const'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoChips from '@app/elements/dyo-chips'
@@ -22,7 +21,7 @@ import {
   UpdateRegistry,
   V2RegistryDetails,
 } from '@app/models'
-import { registryApiUrl } from '@app/routes'
+import { API_REGISTRIES, registryApiUrl } from '@app/routes'
 import { FormikProps, sendForm } from '@app/utils'
 import { registrySchema } from '@app/validation'
 import { useFormik } from 'formik'
