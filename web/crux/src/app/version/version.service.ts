@@ -332,20 +332,6 @@ export class VersionService {
       })
     }) // End of Prisma transaction
 
-    const product = await this.prisma.product.findFirst({
-      where: {
-        id: parentVersion.productId,
-      },
-    })
-
-    if (product) {
-      await this.notificationService.sendNotification({
-        identityId: request.accessedBy,
-        messageType: 'version',
-        message: { subject: product.name, version: version.name } as VersionMessage,
-      })
-    }
-
     return CreateEntityResponse.fromJSON(version)
   }
 }
