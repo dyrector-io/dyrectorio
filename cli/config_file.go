@@ -23,6 +23,7 @@ const SettingsFileName = "settings.yaml"
 //go:embed "settings.yaml.example"
 var content string
 
+// Reading and parsing the settings.yaml
 func ReadSettingsFile(write bool) (Settings, error) {
 	examplefile := []byte(content)
 
@@ -49,16 +50,7 @@ func ReadSettingsFile(write bool) (Settings, error) {
 	return settings, nil
 }
 
-func OverwriteOpt(settings Settings, env EnvVar) EnvVar {
-	for _, item := range settings.EnvOverrides {
-		if item.Key == env.Key {
-			env.Value = item.Value
-			return env
-		}
-	}
-	return env
-}
-
+// Configuration needs some setting that only can be retrieved during runtime (like the gatweway address of the dyo-cli network)
 func OverwriteContainerConf(containers []Container) []Container {
 	for i := range containers {
 		for j, env := range containers[i].EnvVars {
@@ -75,6 +67,7 @@ func OverwriteContainerConf(containers []Container) []Container {
 	return containers
 }
 
+// For overwriting generated/on-the-fly envvars for compose generation
 func EnvVarOverwrite(settings Settings, services []Container) []Container {
 	for i := range services {
 		for j, item := range services[i].EnvVars {
@@ -83,4 +76,15 @@ func EnvVarOverwrite(settings Settings, services []Container) []Container {
 		}
 	}
 	return services
+}
+
+// Overwriting a single option
+func OverwriteOpt(settings Settings, env EnvVar) EnvVar {
+	for _, item := range settings.EnvOverrides {
+		if item.Key == env.Key {
+			env.Value = item.Value
+			return env
+		}
+	}
+	return env
 }

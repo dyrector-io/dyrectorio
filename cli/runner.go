@@ -23,6 +23,7 @@ const ExecDockerCompose = "docker-compose"
 const ExecWinDocker = "docker.exe"
 const ExecWinDockerCompose = "docker-compose.exe"
 
+// Start compose file
 func RunContainers(start, quiet bool) error {
 	// search for podman/docker
 	executable, err := FindExec(true)
@@ -65,7 +66,7 @@ func RunContainers(start, quiet bool) error {
 	return nil
 }
 
-// Find a compose or docker executable
+// Find a compose or docker executable, prioritizing podman
 func FindExec(compose bool) (executable string, errormsg error) {
 	// I refuse to spend more time to debug this OS's blasphemy
 	if runtime.GOOS == OSwindows {
@@ -113,6 +114,7 @@ func FindExec(compose bool) (executable string, errormsg error) {
 	return "", errors.New("executable not found")
 }
 
+// Collect all executable names from OS's PATHs
 func exploreOSPaths() ([]string, error) {
 	osPath := os.Getenv("PATH")
 	osPathList := strings.Split(osPath, string(os.PathListSeparator))
@@ -133,6 +135,7 @@ func exploreOSPaths() ([]string, error) {
 	return executables, nil
 }
 
+// Minimal configuration to parse podman networks
 type PodmanNetwork struct {
 	Name    string   `json:"name"`
 	ID      string   `json:"id"`
@@ -140,6 +143,12 @@ type PodmanNetwork struct {
 	Subnets []Subnet `json:"subnets"`
 }
 
+type Subnet struct {
+	Subnet  string `json:"subnet"`
+	Gateway string `json:"gateway"`
+}
+
+// Minimal configuration to parse docker networks
 type DockerNetwork struct {
 	Name   string `json:"Name"`
 	ID     string `json:"Id"`
@@ -151,11 +160,7 @@ type Ipam struct {
 	Config []Subnet
 }
 
-type Subnet struct {
-	Subnet  string `json:"subnet"`
-	Gateway string `json:"gateway"`
-}
-
+// Retrieving docker networks gateway IP
 func GetCNIGateway() (string, error) {
 	// get networks
 	executable, err := FindExec(false)
@@ -185,6 +190,7 @@ func GetCNIGateway() (string, error) {
 	return GetGatewayIP(executable)
 }
 
+// Extract the docker network gateway IP from cli output
 func GetGatewayIP(executable string) (string, error) {
 	// inspect, get gw addr
 	cmd := exec.Command(executable, "network", "inspect", ContainerNetName)
@@ -247,6 +253,7 @@ func GetGatewayIP(executable string) (string, error) {
 	return "", errors.New("gateway IP is empty")
 }
 
+// Make sure dyo-cli network is exists and has correct settings
 func EnsureDyoNetwork(executable string, delnet bool) error {
 	namefilter := fmt.Sprintf("name=%s", ContainerNetName)
 	lscmd := exec.Command(executable, "network", "ls", "-f", namefilter, "--format", "'{{.Name}}'")

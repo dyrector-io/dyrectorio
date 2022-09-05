@@ -69,6 +69,7 @@ func main() {
 	}
 }
 
+// Write compose file
 func compose(cCtx *cli.Context) error {
 	services := serviceSelector(cCtx)
 
@@ -84,6 +85,7 @@ func compose(cCtx *cli.Context) error {
 	return nil
 }
 
+// Write compose file and start the compose process
 func run(cCtx *cli.Context) error {
 	services := serviceSelector(cCtx)
 
@@ -105,6 +107,7 @@ func run(cCtx *cli.Context) error {
 	return nil
 }
 
+// Stop the compose process
 func stop(cCtx *cli.Context) error {
 	err := RunContainers(false, true)
 	if err != nil {
@@ -114,6 +117,7 @@ func stop(cCtx *cli.Context) error {
 	return nil
 }
 
+// Service disabling based on parsing command line parameters
 func serviceSelector(cCtx *cli.Context) []Services {
 	services := []Services{Crux, CruxUI, Utils}
 
@@ -128,6 +132,7 @@ func serviceSelector(cCtx *cli.Context) []Services {
 	return services
 }
 
+// Service disabling
 func disableService(services []Services, service Services) []Services {
 	var newServices []Services
 	for _, item := range services {
