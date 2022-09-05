@@ -278,6 +278,7 @@ message UserResponse {
   string email = 101;
   UserRole role = 102;
   UserStatus status = 103;
+  optional google.protobuf.Timestamp lastLogin = 104;
 }
 
 // PRODUCT

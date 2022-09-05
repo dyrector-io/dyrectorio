@@ -21,6 +21,14 @@ export class KratosService {
     return sessions.data ?? []
   }
 
+  async getSessionsByIds(ids: string[], activeOnly?: boolean): Promise<Map<string, Session[]>> {
+    const data = await Promise.all(ids.map(async (it: string): Promise<[string, Session[]]> => {
+      const sessions = await this.getSessionsById(it, activeOnly)
+      return [it, sessions]
+    }))
+    return new Map(data)
+  }
+
   async createUser(email: string): Promise<Identity> {
     const res = await kratos.adminCreateIdentity({
       schema_id: 'default',
