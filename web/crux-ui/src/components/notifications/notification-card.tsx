@@ -39,7 +39,7 @@ const NotificationCard = (props: NotificationCardProps) => {
       <div className="flex wrap my-2">
         <DyoLabel className="mr-4 mt-auto py-0.5 leading-4">{t('status')}</DyoLabel>
 
-        <NotificationStatusTag className="px-2.5" />
+        <NotificationStatusTag className="px-2.5" active={notification.active} />
       </div>
 
       <div className="flex flex-row flex-grow justify-end">
