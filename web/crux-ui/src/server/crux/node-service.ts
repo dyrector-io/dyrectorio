@@ -31,8 +31,8 @@ import {
 } from '@app/models/grpc/protobuf/proto/crux'
 import { timestampToUTC } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
-import { GrpcConnection, protomisify, ProtoSubscriptionOptions } from '@server/crux/grpc-connection'
-import { containerStateToDto, nodeTypeGrpcToUi, statusToDto } from './mappers/node-mappers'
+import { GrpcConnection, protomisify, ProtoSubscriptionOptions } from './grpc-connection'
+import { containerStateToDto, nodeStatusToDto, nodeTypeGrpcToUi } from './mappers/node-mappers'
 
 class DyoNodeService {
   private logger = new Logger(DyoNodeService.name)
@@ -52,7 +52,7 @@ class DyoNodeService {
     return nodes.data.map(it => ({
       ...it,
       connectedAt: timestampToUTC(it.connectedAt),
-      status: statusToDto(it.status),
+      status: nodeStatusToDto(it.status),
       type: nodeTypeGrpcToUi(it.type),
     }))
   }
@@ -110,7 +110,7 @@ class DyoNodeService {
     return {
       ...res,
       connectedAt: timestampToUTC(res.connectedAt),
-      status: statusToDto(res.status),
+      status: nodeStatusToDto(res.status),
       type: nodeTypeGrpcToUi(res.type),
       install: !res.install
         ? null
@@ -180,7 +180,7 @@ class DyoNodeService {
     const transform = (data: NodeEventMessage) =>
       ({
         nodeId: data.id,
-        status: statusToDto(data.status),
+        status: nodeStatusToDto(data.status),
         address: data.address,
       } as NodeStatusMessage)
 

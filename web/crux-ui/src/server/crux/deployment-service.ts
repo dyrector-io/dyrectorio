@@ -1,5 +1,6 @@
 import { Logger } from '@app/logger'
 import {
+  CreateDeployment,
   Deployment,
   DeploymentByVersion,
   DeploymentDetails,
@@ -36,7 +37,7 @@ import { Identity } from '@ory/kratos-client'
 import { GrpcConnection, protomisify, ProtoSubscriptionOptions } from './grpc-connection'
 import { deploymentEventTypeToDto, deploymentStatusToDto, instanceToDto } from './mappers/deployment-mappers'
 import { explicitContainerConfigToProto } from './mappers/image-mappers'
-import { containerStateToDto } from './mappers/node-mappers'
+import { containerStateToDto, nodeStatusToDto } from './mappers/node-mappers'
 
 class DyoDeploymentService {
   private logger = new Logger(DyoDeploymentService.name)
@@ -74,6 +75,7 @@ class DyoDeploymentService {
       ...it,
       date: timestampToUTC(it.audit.updatedAt),
       status: deploymentStatusToDto(it.status),
+      nodeStatus: nodeStatusToDto(it.nodeStatus),
     }))
   }
 
@@ -128,10 +130,10 @@ class DyoDeploymentService {
     })
   }
 
-  async create(versionId: string, nodeId: string): Promise<string> {
+  async create(versionId: string, deployment: CreateDeployment): Promise<string> {
     const req: CreateDeploymentRequest = {
+      ...deployment,
       versionId,
-      nodeId,
       accessedBy: this.identity.id,
     }
 
@@ -256,6 +258,7 @@ class DyoDeploymentService {
           payload: data.instancesCreated.data.map(it => instanceToDto(it)) as InstancesAddedMessage,
         } as WsMessage<DeploymentEditEventMessage>
       }
+
       if (data.imageIdDeleted) {
         return {
           type: WS_TYPE_IMAGE_DELETED,
@@ -264,6 +267,7 @@ class DyoDeploymentService {
           } as ImageDeletedMessage,
         } as WsMessage<DeploymentEditEventMessage>
       }
+
       this.logger.error('Invalid DeploymentEditEventMessage')
       return undefined
     }

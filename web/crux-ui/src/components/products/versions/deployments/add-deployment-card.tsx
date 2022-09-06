@@ -2,7 +2,10 @@ import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoChips from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
+import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
+import DyoMessage from '@app/elements/dyo-message'
+import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import { CreateDeployment, DeploymentCreated, DyoApiError, DyoNode } from '@app/models'
 import { API_NODES, versionDeploymentsApiUrl } from '@app/routes'
@@ -33,6 +36,9 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
     validationSchema: createDeploymentSchema,
     initialValues: {
       nodeId: null as string,
+      name: '',
+      description: '',
+      prefix: '',
     },
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
@@ -69,11 +75,9 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
           {t('common:discard')}
         </DyoButton>
 
-        {!formik.values.nodeId ? null : (
-          <DyoButton outlined className="ml-2 px-10" onClick={() => formik.submitForm()}>
-            {t('common:add')}
-          </DyoButton>
-        )}
+        <DyoButton outlined className="ml-2 px-10" onClick={() => formik.submitForm()}>
+          {t('common:add')}
+        </DyoButton>
       </div>
 
       {fetchNodesError ? (
@@ -86,15 +90,45 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
         <DyoLabel>{t('common:loading')}</DyoLabel>
       ) : (
         <div className="flex flex-col">
-          <div className="flex flex-wrap mt-4">
-            <DyoLabel className="ml-8 mr-2 my-auto">{t('common:nodes')}</DyoLabel>
+          <DyoLabel className="mt-8 mb-2.5">{t('common:nodes')}</DyoLabel>
 
-            <DyoChips
-              choices={nodes}
-              converter={(it: DyoNode) => it.name}
-              onSelectionChange={it => formik.setFieldValue('nodeId', it.id)}
-            />
-          </div>
+          <DyoChips
+            choices={nodes}
+            converter={(it: DyoNode) => it.name}
+            onSelectionChange={it => formik.setFieldValue('nodeId', it.id)}
+          />
+          {!formik.errors.nodeId ? null : <DyoMessage message={formik.errors.nodeId} messageType="error" />}
+
+          <DyoInput
+            className="max-w-lg"
+            grow
+            name="name"
+            required
+            label={t('common:name')}
+            onChange={formik.handleChange}
+            value={formik.values.name}
+            message={formik.errors.name}
+          />
+
+          <DyoInput
+            className="max-w-lg"
+            grow
+            name="prefix"
+            required
+            label={t('common:prefix')}
+            onChange={formik.handleChange}
+            value={formik.values.prefix}
+            message={formik.errors.prefix}
+          />
+
+          <DyoTextArea
+            className="h-48"
+            grow
+            name="description"
+            label={t('common:description')}
+            onChange={formik.handleChange}
+            value={formik.values.description}
+          />
         </div>
       )}
     </DyoCard>

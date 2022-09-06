@@ -1,12 +1,4 @@
-import {
-  ProductDetails,
-  RegistryImages,
-  VersionAddSectionState,
-  VersionDetails,
-  VersionImage,
-  VersionSectionsState,
-  VERSION_SECTIONS_STATE_VALUES,
-} from '@app/models'
+import { ProductDetails, RegistryImages, VersionDetails, VersionImage } from '@app/models'
 import { deploymentUrl } from '@app/routes'
 import { parseStringUnionType } from '@app/utils'
 import { useRouter } from 'next/dist/client/router'
@@ -19,14 +11,19 @@ import VersionImagesSection from './version-images-section'
 import VersionReorderImagesSection from './version-reorder-images-section'
 import VersionSectionsHeading from './version-sections-heading'
 
-export const parseVersionSectionState = (section: string, fallback: VersionSectionsState) =>
-  parseStringUnionType(section, fallback, VERSION_SECTIONS_STATE_VALUES)
-
 const ADD_SECTION_TO_SECTION: Record<VersionAddSectionState, VersionSectionsState> = {
   image: 'images',
   deployment: 'deployments',
   none: 'images',
 }
+
+export type VersionAddSectionState = 'image' | 'deployment' | 'none'
+
+const VERSION_SECTIONS_STATE_VALUES = ['images', 'deployments', 'reorder'] as const
+export type VersionSectionsState = typeof VERSION_SECTIONS_STATE_VALUES[number]
+
+export const parseVersionSectionState = (section: string, fallback: VersionSectionsState) =>
+  parseStringUnionType(section, fallback, VERSION_SECTIONS_STATE_VALUES)
 
 interface VersionSectionsProps {
   product: ProductDetails

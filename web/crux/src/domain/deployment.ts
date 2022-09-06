@@ -101,36 +101,6 @@ export type DeploymentProgressEvent = {
   value: string[] | DeploymentStatusEnum | DeploymentProgressContainerEvent
 }
 
-export const defaultDeploymentName = (product: string, version: string, node: string): string =>
-  `${product}-${version}-${node}`
-
-export const previousDeployPrefix = (
-  deployments: DbDeployment[],
-  versionId: string,
-  parentVersionId?: string,
-): string => {
-  if (deployments.length < 1) {
-    return null
-  }
-
-  const prevDeployment = deployments.reduce((prev, it) => {
-    if (!prev) {
-      return it
-    }
-
-    if (prev.versionId === parentVersionId && it.versionId === versionId) {
-      // the same version is more relevant, the parent is just a fallback
-      return it
-    }
-
-    return prev.updatedAt < it.updatedAt ? it : prev
-  })
-
-  return prevDeployment?.prefix
-}
-
-export const deploymentPrefixFromName = (name: string) => name.toLowerCase().replace(/\s/g, '')
-
 export const deploymentStatusToDb = (status: DeploymentStatus): DeploymentStatusEnum => {
   switch (status) {
     case DeploymentStatus.IN_PROGRESS:

@@ -7,10 +7,11 @@ export const containerStateToDto = (state: ProtoContainerState): ContainerState 
 
 export const nodeTypeUiToGrpc = (type: NodeType): GrpcNodeType =>
   type === NODE_TYPE_VALUES[0] ? GrpcNodeType.DOCKER : GrpcNodeType.K8S
+
 export const nodeTypeGrpcToUi = (type: GrpcNodeType): NodeType =>
   type === GrpcNodeType.DOCKER ? NODE_TYPE_VALUES[0] : NODE_TYPE_VALUES[1]
 
-export const statusToDto = (status: NodeConnectionStatus): NodeStatus => {
+export const nodeStatusToDto = (status: NodeConnectionStatus): NodeStatus => {
   switch (status) {
     case NodeConnectionStatus.CONNECTED:
       return 'running'

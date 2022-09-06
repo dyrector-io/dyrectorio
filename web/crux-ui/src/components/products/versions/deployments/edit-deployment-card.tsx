@@ -20,7 +20,7 @@ interface EditDeploymentCardProps {
 }
 
 const EditDeploymentCard = (props: EditDeploymentCardProps) => {
-  const { deployment, className, submitRef, onDeploymentEdited } = props
+  const { deployment, className, onDeploymentEdited, submitRef } = props
 
   const { t } = useTranslation('deployments')
 
@@ -77,15 +77,6 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
           message={formik.errors.name}
         />
 
-        <DyoTextArea
-          className="h-48"
-          grow
-          name="description"
-          label={t('common:description')}
-          onChange={formik.handleChange}
-          value={formik.values.description}
-        />
-
         <DyoInput
           className="max-w-lg"
           grow
@@ -95,6 +86,15 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
           onChange={formik.handleChange}
           value={formik.values.prefix}
           message={formik.errors.prefix}
+        />
+
+        <DyoTextArea
+          className="h-48"
+          grow
+          name="description"
+          label={t('common:description')}
+          onChange={formik.handleChange}
+          value={formik.values.description}
         />
 
         <DyoButton className="hidden" type="submit" />

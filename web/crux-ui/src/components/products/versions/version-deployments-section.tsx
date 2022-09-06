@@ -1,11 +1,16 @@
+import NodeStatusIndicator from '@app/components/nodes/node-status-indicator'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoList } from '@app/elements/dyo-list'
-import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
+import { DyoSelect } from '@app/elements/dyo-select'
+import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
   DeploymentByVersion,
+  deploymentIsMutable,
+  DeploymentStatus,
+  DEPLOYMENT_STATUS_VALUES,
   GetNodeStatusListMessage,
   NodeStatus,
   NodeStatusMessage,
@@ -15,13 +20,13 @@ import {
   WS_TYPE_NODE_STATUS,
   WS_TYPE_NODE_STATUSES,
 } from '@app/models'
-import { deploymentUrl, WS_NODES } from '@app/routes'
+import { deploymentDeployUrl, deploymentUrl, WS_NODES } from '@app/routes'
 import { distinct } from '@app/utils'
+import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import Image from 'next/image'
 import { useState } from 'react'
-import DeploymentStatusIndicator from './deployments/deployment-status-indicator'
 import DeploymentStatusTag from './deployments/deployment-status-tag'
 
 interface VersionDeploymentsSectionProps {
@@ -29,15 +34,20 @@ interface VersionDeploymentsSectionProps {
   version: VersionDetails
 }
 
+type DeploymentFilter = TextFilter & EnumFilter<DeploymentStatus>
+
 const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
-  const { product, version } = props
+  const { version, product } = props
 
   const { t } = useTranslation('versions')
 
   const router = useRouter()
 
-  const filters = useFilters<DeploymentByVersion, TextFilter>({
-    filters: [textFilterFor<DeploymentByVersion>(it => [it.name, it.nodeName, it.prefix, it.status, it.date])],
+  const filters = useFilters<DeploymentByVersion, DeploymentFilter>({
+    filters: [
+      textFilterFor<DeploymentByVersion>(it => [it.name, it.nodeName, it.prefix, it.status, it.date]),
+      enumFilterFor<DeploymentByVersion, DeploymentStatus>(it => [it.status]),
+    ],
     initialData: version.deployments,
     initialFilter: { text: '' },
   })
@@ -70,41 +80,93 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   const onNavigateToDeployment = (deployment: DeploymentByVersion) =>
     router.push(deploymentUrl(product.id, version.id, deployment.id))
 
-  const itemTemplate = (deployment: DeploymentByVersion) => /* eslint-disable react/jsx-key */ [
-    <DeploymentStatusIndicator status={deployment.status} />,
-    <div className="cursor-pointer text-bold" onClick={() => onNavigateToDeployment(deployment)}>
-      {deployment.name}
-    </div>,
-    <div>{deployment.nodeName}</div>,
-    <div>{deployment.date}</div>,
-    <div>{deployment.prefix}</div>,
-    <DeploymentStatusTag className="w-fit m-auto" status={deployment.status} />,
-    <Image src="/deploy.svg" alt={t('common:deploy')} width={24} height={24} />,
+  const onDeploy = (deployment: DeploymentByVersion) =>
+    router.push(deploymentDeployUrl(product.id, version.id, deployment.id))
+
+  const headers = [
+    ...['deploymentName', 'common:node', 'common:prefix', 'common:status', 'common:date', 'actions'].map(it => t(it)),
   ]
-  /* eslint-enable react/jsx-key */
+  const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-3 pl-4 font-semibold'
+  const headerClasses = [
+    clsx('rounded-tl-lg', defaultHeaderClass),
+    defaultHeaderClass,
+    defaultHeaderClass,
+    clsx('text-center', defaultHeaderClass),
+    defaultHeaderClass,
+    clsx('rounded-tr-lg', defaultHeaderClass),
+  ]
+
+  const itemTemplate = (item: DeploymentByVersion) => {
+    const mutable = deploymentIsMutable(item.status)
+
+    /* eslint-disable react/jsx-key */
+    return [
+      <div className="cursor-pointer text-bold" onClick={() => onNavigateToDeployment(item)}>
+        {item.name}
+      </div>,
+      <div className="flex">
+        <NodeStatusIndicator className="mr-2" status={item.nodeStatus} />
+        {item.nodeName}
+      </div>,
+      <div>{item.prefix}</div>,
+      <DeploymentStatusTag className="w-fit m-auto" status={item.status} />,
+      <div>{item.date}</div>,
+      mutable ? (
+        <Image
+          src="/deploy.svg"
+          alt={t('common:deploy')}
+          className={item.nodeStatus === 'running' ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
+          onClick={() => item.nodeStatus === 'running' && onDeploy(item)}
+          width={24}
+          height={24}
+        />
+      ) : null,
+    ]
+    /* eslint-enable react/jsx-key */
+  }
 
   return filters.items.length ? (
-    <DyoCard className="p-8 mt-4">
-      <DyoInput
-        className="w-2/3 mb-6"
-        placeholder={t('common:search')}
-        onChange={e =>
-          filters.setFilter({
-            text: e.target.value,
-          })
-        }
-      />
-
-      <DyoList
-        headers={[
-          '',
-          ...['deploymentName', 'common:node', 'common:date', 'common:prefix', 'common:status'].map(it => t(it)),
-          '',
-        ]}
-        data={filters.filtered}
-        itemBuilder={itemTemplate}
-      />
-    </DyoCard>
+    <>
+      <DyoCard className="p-8 mt-4 flex">
+        <DyoInput
+          className="basis-4/5 mr-4"
+          grow
+          placeholder={t('common:search')}
+          onChange={e =>
+            filters.setFilter({
+              text: e.target.value,
+            })
+          }
+        />
+        <DyoSelect
+          className="basis-1/5 ml-4"
+          placeholder="Status"
+          value={filters.filter.enum ?? 'default'}
+          onChange={e => {
+            filters.setFilter({
+              enum: e.target.value === 'default' ? undefined : (e.target.value as DeploymentStatus),
+            })
+          }}
+        >
+          <option value="default">{t('common:all')}</option>
+          {DEPLOYMENT_STATUS_VALUES.map(it => (
+            <option key={it} value={it}>
+              {t(`common:deploymentStatuses.${it}`)}
+            </option>
+          ))}
+        </DyoSelect>
+      </DyoCard>
+      <DyoCard className="mt-4">
+        <DyoList
+          headerClassName={headerClasses}
+          headers={headers}
+          itemClassName="h-11 min-h-min text-light-eased pl-4 w-fit"
+          noSeparator
+          data={filters.filtered}
+          itemBuilder={itemTemplate}
+        />
+      </DyoCard>
+    </>
   ) : (
     <DyoHeading element="h3" className="text-md text-center text-light-eased pt-32">
       {t('noDeployments')}

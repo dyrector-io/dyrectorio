@@ -943,6 +943,9 @@ export interface CreateDeploymentRequest {
   accessedBy: string
   versionId: string
   nodeId: string
+  name: string
+  description?: string | undefined
+  prefix: string
 }
 
 export interface UpdateDeploymentRequest {
@@ -1010,6 +1013,7 @@ export interface DeploymentByVersionResponse {
   nodeId: string
   nodeName: string
   status: DeploymentStatus
+  nodeStatus: NodeConnectionStatus
 }
 
 export interface DeploymentDetailsResponse {
@@ -6523,6 +6527,8 @@ const baseCreateDeploymentRequest: object = {
   accessedBy: '',
   versionId: '',
   nodeId: '',
+  name: '',
+  prefix: '',
 }
 
 export const CreateDeploymentRequest = {
@@ -6535,6 +6541,15 @@ export const CreateDeploymentRequest = {
     }
     if (message.nodeId !== '') {
       writer.uint32(810).string(message.nodeId)
+    }
+    if (message.name !== '') {
+      writer.uint32(818).string(message.name)
+    }
+    if (message.description !== undefined) {
+      writer.uint32(826).string(message.description)
+    }
+    if (message.prefix !== '') {
+      writer.uint32(834).string(message.prefix)
     }
     return writer
   },
@@ -6557,6 +6572,15 @@ export const CreateDeploymentRequest = {
         case 101:
           message.nodeId = reader.string()
           break
+        case 102:
+          message.name = reader.string()
+          break
+        case 103:
+          message.description = reader.string()
+          break
+        case 104:
+          message.prefix = reader.string()
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -6572,6 +6596,10 @@ export const CreateDeploymentRequest = {
     message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
     message.versionId = object.versionId !== undefined && object.versionId !== null ? String(object.versionId) : ''
     message.nodeId = object.nodeId !== undefined && object.nodeId !== null ? String(object.nodeId) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.description =
+      object.description !== undefined && object.description !== null ? String(object.description) : undefined
+    message.prefix = object.prefix !== undefined && object.prefix !== null ? String(object.prefix) : ''
     return message
   },
 
@@ -6580,6 +6608,9 @@ export const CreateDeploymentRequest = {
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.versionId !== undefined && (obj.versionId = message.versionId)
     message.nodeId !== undefined && (obj.nodeId = message.nodeId)
+    message.name !== undefined && (obj.name = message.name)
+    message.description !== undefined && (obj.description = message.description)
+    message.prefix !== undefined && (obj.prefix = message.prefix)
     return obj
   },
 
@@ -6590,6 +6621,9 @@ export const CreateDeploymentRequest = {
     message.accessedBy = object.accessedBy ?? ''
     message.versionId = object.versionId ?? ''
     message.nodeId = object.nodeId ?? ''
+    message.name = object.name ?? ''
+    message.description = object.description ?? undefined
+    message.prefix = object.prefix ?? ''
     return message
   },
 }
@@ -7313,6 +7347,7 @@ const baseDeploymentByVersionResponse: object = {
   nodeId: '',
   nodeName: '',
   status: 0,
+  nodeStatus: 0,
 }
 
 export const DeploymentByVersionResponse = {
@@ -7337,6 +7372,9 @@ export const DeploymentByVersionResponse = {
     }
     if (message.status !== 0) {
       writer.uint32(832).int32(message.status)
+    }
+    if (message.nodeStatus !== 0) {
+      writer.uint32(840).int32(message.nodeStatus)
     }
     return writer
   },
@@ -7371,6 +7409,9 @@ export const DeploymentByVersionResponse = {
         case 104:
           message.status = reader.int32() as any
           break
+        case 105:
+          message.nodeStatus = reader.int32() as any
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -7391,6 +7432,10 @@ export const DeploymentByVersionResponse = {
     message.nodeId = object.nodeId !== undefined && object.nodeId !== null ? String(object.nodeId) : ''
     message.nodeName = object.nodeName !== undefined && object.nodeName !== null ? String(object.nodeName) : ''
     message.status = object.status !== undefined && object.status !== null ? deploymentStatusFromJSON(object.status) : 0
+    message.nodeStatus =
+      object.nodeStatus !== undefined && object.nodeStatus !== null
+        ? nodeConnectionStatusFromJSON(object.nodeStatus)
+        : 0
     return message
   },
 
@@ -7403,6 +7448,7 @@ export const DeploymentByVersionResponse = {
     message.nodeId !== undefined && (obj.nodeId = message.nodeId)
     message.nodeName !== undefined && (obj.nodeName = message.nodeName)
     message.status !== undefined && (obj.status = deploymentStatusToJSON(message.status))
+    message.nodeStatus !== undefined && (obj.nodeStatus = nodeConnectionStatusToJSON(message.nodeStatus))
     return obj
   },
 
@@ -7418,6 +7464,7 @@ export const DeploymentByVersionResponse = {
     message.nodeId = object.nodeId ?? ''
     message.nodeName = object.nodeName ?? ''
     message.status = object.status ?? 0
+    message.nodeStatus = object.nodeStatus ?? 0
     return message
   },
 }

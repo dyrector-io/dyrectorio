@@ -17,7 +17,7 @@ const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
   const versionId = req.query.versionId as string
   const dto = req.body as CreateDeployment
 
-  const id = await crux(req).deployments.create(versionId, dto.nodeId)
+  const id = await crux(req).deployments.create(versionId, dto)
 
   res.status(201).json({
     id,
