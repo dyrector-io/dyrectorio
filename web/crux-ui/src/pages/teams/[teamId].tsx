@@ -13,7 +13,7 @@ import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { roleToText, Team, TeamDetails, User, userIsAdmin, userIsOwner, UserRole } from '@app/models'
 import { ROUTE_TEAMS, teamApiUrl, teamUrl, userApiUrl } from '@app/routes'
-import { redirectTo, withContextAuthorization } from '@app/utils'
+import { redirectTo, utcDateToLocale, withContextAuthorization } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
 import { cruxFromContext } from '@server/crux/crux'
 import { sessionOfContext } from '@server/kratos'
@@ -182,7 +182,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
                   />
                 )}
               </div>,
-              <div>{ it.lastLogin }</div>,
+              <div>{utcDateToLocale(it.lastLogin)}</div>,
               <UserStatusTag className="my-auto w-fit" status={it.status} />,
               detailsState !== 'none' || !canEdit || it.role === 'owner' ? null : (
                 <Image
