@@ -57,7 +57,7 @@ type DockerContainerBuilder struct {
 	ctx             context.Context
 	client          *client.Client
 	containerID     *string
-	networkID       *string
+	networkIDs      []string
 	networkAliases  []string
 	containerName   string
 	imageWithTag    string
@@ -68,6 +68,7 @@ type DockerContainerBuilder struct {
 	portRanges      []PortRangeBinding
 	mountList       []mount.Mount
 	networkMode     string
+	networks        []string
 	registryAuth    string
 	remove          bool
 	restartPolicy   RestartPolicyName
@@ -114,7 +115,7 @@ func (dc *DockerContainerBuilder) WithName(name string) *DockerContainerBuilder 
 }
 
 // Sets the network aliases used when connecting the container to the network.
-// Applied only if the NetworkMode is not none.
+// Applied only if the NetworkMode is not none/host.
 func (dc *DockerContainerBuilder) WithNetworkAliases(aliases ...string) *DockerContainerBuilder {
 	dc.networkAliases = aliases
 	return dc
@@ -167,6 +168,12 @@ func (dc *DockerContainerBuilder) WithMountPoints(mountList []mount.Mount) *Dock
 // Sets the network mode of a container.
 func (dc *DockerContainerBuilder) WithNetworkMode(networkMode string) *DockerContainerBuilder {
 	dc.networkMode = networkMode
+	return dc
+}
+
+// Sets the extra networks.
+func (dc *DockerContainerBuilder) WithNetworks(networks []string) *DockerContainerBuilder {
+	dc.networks = networks
 	return dc
 }
 
@@ -262,8 +269,8 @@ func (dc *DockerContainerBuilder) GetContainerID() *string {
 	return dc.containerID
 }
 
-func (dc *DockerContainerBuilder) GetNetworkID() *string {
-	return dc.networkID
+func (dc *DockerContainerBuilder) GetNetworkIDs() []string {
+	return dc.networkIDs
 }
 
 // Creates the container using the configuration given by 'With...' functions.
@@ -307,13 +314,13 @@ func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 	if dc.networkMode == "" || dc.networkMode == "none" {
 		hostConfig.NetworkMode = container.NetworkMode(dc.networkMode)
 	} else {
-		networkID := createNetwork(dc)
-		if networkID == nil {
+		networkIDs := createNetworks(dc)
+		if networkIDs == nil {
 			return dc
 		}
 
-		dc.networkID = networkID
-		logWrite(dc, fmt.Sprintln("Container network: ", *dc.networkID))
+		dc.networkIDs = networkIDs
+		logWrite(dc, fmt.Sprintln("Container network: ", dc.networkIDs))
 	}
 
 	var name string
@@ -348,12 +355,7 @@ func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 		logWrite(dc, "Container was not created.")
 	} else {
 		dc.containerID = &containers[0].ID
-
-		if dc.networkID != nil {
-			if err := attachNetwork(dc, *dc.networkID); err != nil {
-				logWrite(dc, fmt.Sprintln("Container network attach error: ", err))
-			}
-		}
+		attachNetworks(dc)
 	}
 
 	return dc
@@ -400,41 +402,51 @@ func prepareImage(dc *DockerContainerBuilder) error {
 	return nil
 }
 
-func createNetwork(dc *DockerContainerBuilder) *string {
-	networkName := fmt.Sprintf("%s-network", dc.networkMode)
+func createNetworks(dc *DockerContainerBuilder) []string {
+	var networkIDs []string
 
-	filter := filters.NewArgs()
-	filter.Add("name", networkName)
+	for _, networkName := range dc.networks {
+		filter := filters.NewArgs()
+		filter.Add("name", fmt.Sprintf("^%s$", networkName))
+		networks, err := dc.client.NetworkList(dc.ctx, types.NetworkListOptions{Filters: filter})
+		if err != nil {
+			logWrite(dc, fmt.Sprintln("Failed to create network: ", err.Error()))
+			return nil
+		}
 
-	networks, err := dc.client.NetworkList(dc.ctx, types.NetworkListOptions{Filters: filter})
-	if err != nil {
-		logWrite(dc, fmt.Sprintln("Failed to create network: ", err.Error()))
-		return nil
+		if len(networks) == 1 {
+			networkIDs = append(networkIDs, networks[0].ID)
+			continue
+		}
+
+		networkOpts := types.NetworkCreate{
+			CheckDuplicate: true,
+		}
+
+		networkResult, err := dc.client.NetworkCreate(dc.ctx, networkName, networkOpts)
+		if err != nil {
+			logWrite(dc, fmt.Sprintln("Failed to create network: ", err.Error()))
+			return nil
+		}
+
+		networkIDs = append(networkIDs, networkResult.ID)
 	}
 
-	if len(networks) == 1 {
-		return &networks[0].ID
-	}
-
-	networkOpts := types.NetworkCreate{
-		CheckDuplicate: true,
-	}
-	networkResult, err := dc.client.NetworkCreate(dc.ctx, networkName, networkOpts)
-	if err != nil {
-		logWrite(dc, fmt.Sprintln("Failed to create network: ", err.Error()))
-		return nil
-	}
-	networkID := networkResult.ID
-
-	return &networkID
+	return networkIDs
 }
 
-func attachNetwork(dc *DockerContainerBuilder, networkID string) error {
-	endpointSettings := &network.EndpointSettings{
-		Aliases: dc.networkAliases,
-	}
+func attachNetworks(dc *DockerContainerBuilder) {
+	if dc.networkIDs != nil {
+		for _, networkID := range dc.networkIDs {
+			endpointSettings := &network.EndpointSettings{
+				Aliases: dc.networkAliases,
+			}
 
-	return dc.client.NetworkConnect(dc.ctx, networkID, *dc.containerID, endpointSettings)
+			if err := dc.client.NetworkConnect(dc.ctx, networkID, *dc.containerID, endpointSettings); err != nil {
+				logWrite(dc, fmt.Sprintln("Container network attach error: ", err))
+			}
+		}
+	}
 }
 
 func execHooks(dc *DockerContainerBuilder, hooks []LifecycleFunc) error {

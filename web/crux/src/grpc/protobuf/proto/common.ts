@@ -140,6 +140,7 @@ export enum NetworkMode {
   UNKNOWN_NETWORK_MODE = 0,
   NONE = 1,
   HOST = 2,
+  BRIDGE = 3,
   UNRECOGNIZED = -1,
 }
 
@@ -154,6 +155,9 @@ export function networkModeFromJSON(object: any): NetworkMode {
     case 2:
     case 'HOST':
       return NetworkMode.HOST
+    case 3:
+    case 'BRIDGE':
+      return NetworkMode.BRIDGE
     case -1:
     case 'UNRECOGNIZED':
     default:
@@ -169,6 +173,8 @@ export function networkModeToJSON(object: NetworkMode): string {
       return 'NONE'
     case NetworkMode.HOST:
       return 'HOST'
+    case NetworkMode.BRIDGE:
+      return 'BRIDGE'
     case NetworkMode.UNRECOGNIZED:
     default:
       return 'UNRECOGNIZED'
@@ -372,6 +378,7 @@ export interface DagentContainerConfig {
   logConfig?: LogConfig | undefined
   restartPolicy?: RestartPolicy | undefined
   networkMode?: NetworkMode | undefined
+  networks: string[]
 }
 
 export interface HealthCheckConfig {
@@ -792,7 +799,7 @@ export const LogConfig_OptionsEntry = {
 }
 
 function createBaseDagentContainerConfig(): DagentContainerConfig {
-  return {}
+  return { networks: [] }
 }
 
 export const DagentContainerConfig = {
@@ -801,6 +808,7 @@ export const DagentContainerConfig = {
       logConfig: isSet(object.logConfig) ? LogConfig.fromJSON(object.logConfig) : undefined,
       restartPolicy: isSet(object.restartPolicy) ? restartPolicyFromJSON(object.restartPolicy) : undefined,
       networkMode: isSet(object.networkMode) ? networkModeFromJSON(object.networkMode) : undefined,
+      networks: Array.isArray(object?.networks) ? object.networks.map((e: any) => String(e)) : [],
     }
   },
 
@@ -812,6 +820,11 @@ export const DagentContainerConfig = {
       (obj.restartPolicy = message.restartPolicy !== undefined ? restartPolicyToJSON(message.restartPolicy) : undefined)
     message.networkMode !== undefined &&
       (obj.networkMode = message.networkMode !== undefined ? networkModeToJSON(message.networkMode) : undefined)
+    if (message.networks) {
+      obj.networks = message.networks.map(e => e)
+    } else {
+      obj.networks = []
+    }
     return obj
   },
 }

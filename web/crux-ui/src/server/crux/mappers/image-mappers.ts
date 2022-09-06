@@ -25,7 +25,7 @@ import {
 import { ContainerConfig as ProtoContainerConfig, ImageResponse } from '@app/models/grpc/protobuf/proto/crux'
 
 export const networkModeToDto = (networkMode?: NetworkMode): ExplicitContainerNetworkMode =>
-  !networkMode ? 'none' : (networkModeToJSON(networkMode).toLocaleLowerCase() as ExplicitContainerNetworkMode)
+  !networkMode ? 'bridge' : (networkModeToJSON(networkMode).toLocaleLowerCase() as ExplicitContainerNetworkMode)
 
 export const deploymentStrategyToDto = (strategy?: DeploymentStrategy): ExplicitContainerDeploymentStrategyType =>
   !strategy
@@ -80,6 +80,7 @@ export const explicitContainerConfigToDto = (config?: ProtoExplicitContainerConf
     logConfig: logConfigToDto(config.dagent?.logConfig),
     restartPolicy: restartPolicyTypeToDto(config.dagent?.restartPolicy),
     networkMode: networkModeToDto(config.dagent?.networkMode),
+    networks: config.dagent?.networks ?? [],
     deploymentStrategy: deploymentStrategyToDto(config.crane?.deploymentStatregy),
     customHeaders: config.crane?.customHeaders ?? [],
     proxyHeaders: config.crane?.proxyHeaders ?? false,
@@ -129,6 +130,7 @@ export const explicitContainerConfigToProto = (config?: ExplicitContainerConfig)
       logConfig: logConfigToProto(config.logConfig),
       restartPolicy: restartPolicyTypeToProto(config.restartPolicy),
       networkMode: networkModeToProto(config.networkMode),
+      networks: config.networks,
     }
   }
 

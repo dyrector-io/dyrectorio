@@ -33,8 +33,8 @@ import {
   DeploymentStatus,
   deploymentStatusFromJSON,
   ExplicitContainerConfig,
-  Port,
   NetworkMode,
+  Port,
 } from 'src/grpc/protobuf/proto/common'
 import { ContainerConfigData, UniqueKeyValue } from 'src/shared/model'
 import { ImageMapper, ImageWithConfig } from '../image/image.mapper'
@@ -213,6 +213,11 @@ export class DeployMapper {
     return [...(weak?.filter(it => !overridenPorts.has(it.internal)) ?? []), ...(strong ?? [])]
   }
 
+  private overrideArrays = <T>(weak: T[], strong: T[]): T[] => {
+    const strongs: Set<T> = new Set(strong?.map(it => it))
+    return [...(weak?.filter(it => !strongs.has(it)) ?? []), ...(strong ?? [])]
+  }
+
   private overrideNetworkMode(weak: NetworkMode, strong: NetworkMode) {
     return strong ?? weak ?? 'none'
   }
@@ -228,7 +233,11 @@ export class DeployMapper {
       config: {
         ...imageConfig?.config,
         ...instanceConfig?.config,
-        networkMode: this.overrideNetworkMode(imageConfig?.config?.networkMode, instanceConfig?.config?.networkMode),
+        networkMode: this.overrideNetworkMode(
+          imageConfig?.config?.dagent?.networkMode,
+          instanceConfig?.config?.dagent?.networkMode,
+        ),
+        networks: this.overrideArrays(imageConfig?.config?.dagent?.networks, instanceConfig?.config?.dagent?.networks),
         ports: this.overridePorts(imageConfig?.config?.ports, instanceConfig?.config?.ports),
       },
     }

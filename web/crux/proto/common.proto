@@ -68,6 +68,7 @@ enum NetworkMode {
   UNKNOWN_NETWORK_MODE = 0;
   NONE = 1;
   HOST = 2;
+  BRIDGE = 3;
 }
 
 enum RestartPolicy {
@@ -141,6 +142,7 @@ message DagentContainerConfig {
   optional LogConfig logConfig = 100;
   optional RestartPolicy restartPolicy = 101;
   optional NetworkMode networkMode = 102;
+  repeated string networks = 1000;
 }
 
 message HealthCheckConfig {
