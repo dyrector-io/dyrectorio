@@ -242,7 +242,7 @@ export const userToDto = (user: UserResponse): User => {
     ...user,
     status: userStatusToDto(user.status),
     role: userRoleToDto(user.role),
-    lastLogin: timestampToUTC(user.lastLogin)
+    lastLogin: timestampToUTC(user.lastLogin),
   }
 }
 
