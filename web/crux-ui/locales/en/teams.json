@@ -5,6 +5,7 @@
     "invite": "Invite",
     "send": "Send",
     "role": "Role",
+    "lastLogin": "Last login",
     "inviteMember": "Invite team member to {{name}}",
     "tips": "Users in your team will be able to access everything.",
 
