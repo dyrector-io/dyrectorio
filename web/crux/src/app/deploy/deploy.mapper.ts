@@ -78,7 +78,10 @@ export class DeployMapper {
       productVersionId: deployment.versionId,
       status: this.statusToGrpc(deployment.status),
       environment: deployment.environment as JsonArray,
-      instances: deployment.instances.map(it => this.instanceToGrpc(it)),
+      instances: deployment.instances.map(it => ({
+        ...this.instanceToGrpc(it),
+        audit: AuditResponse.fromJSON(deployment),
+      })),
     }
   }
 

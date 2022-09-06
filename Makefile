@@ -57,6 +57,7 @@ proto-crux-ui:
 			--ts_proto_opt=useDate=false \
 			--ts_proto_opt=outputServices=grpc-js \
 			--ts_proto_out=./web/crux-ui/src/models/grpc \
+			--ts_proto_opt=initializeFieldsAsUndefined=false \
 			protobuf/proto/crux.proto" && \
 		cd ./web/crux-ui && \
 		npx prettier -w "./src/models/grpc/**/*.ts"
