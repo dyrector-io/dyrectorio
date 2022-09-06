@@ -18,7 +18,6 @@ const NavButton = (props: NavButtonProps) => {
 
   return (
     <>
-      <div className={clsx('w-1 py-3', isActive ? 'bg-dyo-turquoise' : null)}>&nbsp;</div>
       <div className={clsx('pl-8 py-3', isActive ? 'bg-dark w-full' : null)}>
         <Link href={href} passHref={passHref}>
           <a>
@@ -29,6 +28,7 @@ const NavButton = (props: NavButtonProps) => {
           </a>
         </Link>
       </div>
+      <div className={clsx('w-1 py-3', isActive ? 'bg-dyo-turquoise opacity-50' : null)}>&nbsp;</div>
     </>
   )
 }

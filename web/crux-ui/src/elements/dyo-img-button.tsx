@@ -14,7 +14,7 @@ interface DyoImgButtonProps {
 }
 
 const DyoImgButton = (props: DyoImgButtonProps) => {
-  const { outlined, secondary, disabled, colorClassName, className, onClick, alt, height, width, src } = props
+  const { outlined, secondary, disabled, colorClassName, className, onClick, alt, width = 24, height = 24, src } = props
 
   const defaultColor = outlined ? (secondary ? 'ring-warning-orange' : 'ring-dyo-turquoise') : null
   const disabledColor = outlined ? 'ring-light-grey' : null
@@ -26,7 +26,7 @@ const DyoImgButton = (props: DyoImgButtonProps) => {
     /* eslint-disable-next-line react/button-has-type */
     <button className={clsx(color, ring, className, 'rounded')} disabled={disabled} onClick={onClick}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={src} width={width ?? 24} height={height ?? 24} alt={alt} />
+      <img src={src} width={width} height={height} alt={alt} />
     </button>
   )
 }

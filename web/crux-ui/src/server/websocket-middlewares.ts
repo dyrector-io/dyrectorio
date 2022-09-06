@@ -1,5 +1,3 @@
-/* eslint-disable */
-
 import { WsMessage } from '@app/websockets/common'
 import WsConnection from '@app/websockets/connection'
 import WsEndpoint from '@app/websockets/endpoint'
@@ -28,6 +26,8 @@ export const useWebsocketMiddlewares = async (
   }
 
   let i = 0
+
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   const callNext = async () => (i < middlewares.length ? await callNextMiddleware() : await next())
 
   const callNextMiddleware = async () => await middlewares[i++](logger, endpoint, connection, message, callNext)

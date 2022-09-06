@@ -7,7 +7,10 @@ import { CruxHealth } from '@app/models'
 import WsConnection from '@app/websockets/connection'
 import { Identity } from '@ory/kratos-client'
 import { sessionOf, sessionOfContext } from '@server/kratos'
-import registryConnections, { RegistryConnections } from '@server/registry-api/registry-connections'
+import registryConnections, {
+  CruxRegistryConnectionsServices,
+  RegistryConnections,
+} from '@server/registry-api/registry-connections'
 import { readFileSync } from 'fs'
 import { NextApiRequest, NextPageContext } from 'next'
 import { join } from 'path'
@@ -89,6 +92,13 @@ export class Crux {
 
   get notificiations() {
     return this._notifications ?? new DyoNotifcationService(this.clients.notifications, this.identity)
+  }
+
+  get registryConnectionsServices(): CruxRegistryConnectionsServices {
+    return {
+      getIdentity: () => this.identity,
+      getRegistryDetails: (id: string) => this.registries.getRegistryDetails(id),
+    }
   }
 
   public static withIdentity(identity: Identity): Crux {

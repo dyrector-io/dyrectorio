@@ -27,7 +27,10 @@ const onDisconnect = (endpoint: WsEndpoint, connection: WsConnection): void => {
 const onFindImage = async (endpoint: WsEndpoint, connection: WsConnection, message: WsMessage<FindImageMessage>) => {
   const req = message.payload
 
-  const registry = await registryConnections.getByRegistryId(req.registryId, cruxFromConnection(connection))
+  const registry = await registryConnections.getByRegistryId(
+    req.registryId,
+    cruxFromConnection(connection).registryConnectionsServices,
+  )
 
   const images = await registry.catalog(req.filter, IMAGE_FILTER_TAKE)
   connection.send(WS_TYPE_FIND_IMAGE_RESULT, {
@@ -47,7 +50,10 @@ const onFetchImageTags = async (
 ) => {
   const req = message.payload
 
-  const registry = await registryConnections.getByRegistryId(req.registryId, cruxFromConnection(connection))
+  const registry = await registryConnections.getByRegistryId(
+    req.registryId,
+    cruxFromConnection(connection).registryConnectionsServices,
+  )
 
   const tags = req.images.map(it => registry.tags(it))
   connection.send(WS_TYPE_REGISTRY_IMAGE_TAGS, {
