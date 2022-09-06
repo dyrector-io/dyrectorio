@@ -322,3 +322,6 @@ export const writeToClipboard = async (t: Translate, content: string) => {
 }
 
 export const isServerSide = () => typeof window === 'undefined'
+
+export const snakeToCamel = str =>
+  str.toLowerCase().replace(/([-_][a-z])/g, group => group.toUpperCase().replace('-', '').replace('_', ''))

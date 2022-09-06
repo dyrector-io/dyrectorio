@@ -1,6 +1,7 @@
 import DyoCheckbox from '@app/elements/dyo-checkbox'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { NotificationEventType, NOTIFICATION_EVENT_VALUES } from '@app/models'
+import { snakeToCamel } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 
 export interface NotificationEventListProps {
@@ -12,9 +13,6 @@ export const NotificationEventList = (props: NotificationEventListProps) => {
   const { value, onChanged } = props
 
   const { t } = useTranslation('notifications')
-
-  const snakeToCamel = str =>
-    str.toLowerCase().replace(/([-_][a-z])/g, group => group.toUpperCase().replace('-', '').replace('_', ''))
 
   const onCheckChanged = (checked: boolean, item: NotificationEventType) => {
     if (checked && !value.includes(item)) {

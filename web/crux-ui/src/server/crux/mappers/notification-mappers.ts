@@ -1,3 +1,4 @@
+import { internalError } from '@app/error-responses'
 import { NotificationEventType, NotificationType } from '@app/models'
 import {
   NotificationEventType as ProtoNotificationEventType,
@@ -39,6 +40,6 @@ export const notificationEventTypeToDto = (type: ProtoNotificationEventType): No
       return 'user-invited'
     case ProtoNotificationEventType.UNKNOWN_NOTIFICATION_EVENT_TYPE:
     default:
-      throw null
+      throw internalError(`Unknown ProtoNotificationEventType '${type}'`)
   }
 }
