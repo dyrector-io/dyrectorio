@@ -37,6 +37,7 @@
   "noNameFound": "No {{name}} found",
   "yourTeams": "Your teams",
   "address": "Address",
+  "actions": "Actions",
 
   "editName": "Edit {{name}}",
   "add": "Add",
@@ -50,6 +51,7 @@
   "showAll": "Show all",
   "inspect": "Inspect",
   "deploy": "Deploy",
+  "view": "View",
 
   "confirm": "Confirm",
   "confirmDelete": "Are you sure you want to delete {{name}}?",

@@ -10,6 +10,7 @@ export type DyoListProps<T> = {
   headerClassName?: string | string[]
   itemClassName?: string | string[]
   footerClassName?: string | string[]
+  columnWidths?: string[]
   headers?: string[]
   footer?: React.ReactNode
   data: T[]
@@ -22,12 +23,14 @@ export const DyoList = <T,>(props: DyoListProps<T>) => {
     key,
     className,
     headerClassName,
-    itemBuilder,
-    footer,
     itemClassName,
+    footerClassName,
+    columnWidths,
     headers,
+    footer,
     data: propsData,
     noSeparator,
+    itemBuilder,
   } = props
 
   const isArrayOfStringArrays = it =>
@@ -59,18 +62,23 @@ export const DyoList = <T,>(props: DyoListProps<T>) => {
 
   return (
     <>
-      <div key={key} className={clsx('table w-full rounded-lg overflow-auto', className)}>
+      <div
+        key={key}
+        className={clsx('table w-full rounded-lg overflow-auto', className, columnWidths && 'table-fixed')}
+      >
         {headers ? (
           <div className="table-header-group">
             <div className="table-row">
               {headers.map((header, index) => (
-                <div key={`${key}-col-${index}`} className="table-cell text-left align-middle">
-                  <div
-                    key={`${key}-header-${index}`}
-                    className={headerClassNames[index] ?? 'text-bright font-bold h-8 mb-4 ml-2 mr-auto'}
-                  >
-                    {header}
-                  </div>
+                <div
+                  key={`${key}-header-${index}`}
+                  className={clsx(
+                    'table-cell text-left align-middle',
+                    headerClassNames[index] ?? 'text-bright font-bold h-8 mb-4 ml-2 mr-auto',
+                    columnWidths ? columnWidths[index] ?? '' : '',
+                  )}
+                >
+                  {header}
                 </div>
               ))}
             </div>
@@ -95,7 +103,7 @@ export const DyoList = <T,>(props: DyoListProps<T>) => {
           ))}
         </div>
       </div>
-      <div>{footer}</div>
+      <div className={clsx(footerClassName)}>{footer}</div>
     </>
   )
 }
