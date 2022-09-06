@@ -102,7 +102,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
           '',
         ]}
         data={filters.filtered}
-        itemBuilder={it => itemTemplate(it)}
+        itemBuilder={itemTemplate}
       />
     </DyoCard>
   ) : (

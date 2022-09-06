@@ -1,5 +1,3 @@
-/* eslint-disable */
-
 import { NextApiRequest, NextApiResponse } from 'next'
 import useAuthorizeApiMiddleware from './auth-middleware'
 import { useErrorMiddleware } from './error-middleware'
@@ -17,6 +15,7 @@ export const useMiddlewares = async (
   callEndpoint: NextApiEndpoint,
 ) => {
   let i = 0
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   const callNext = async () => (i < middlewares.length ? await callNextMiddleware() : await callEndpoint(req, res))
   const callNextMiddleware = async () => await middlewares[i++](req, res, callNext)
 
@@ -63,14 +62,16 @@ export const withMiddlewares = (
 
           if (!handler) {
             res.status(405).end()
-            return
-          } else if (typeof handler === 'function') {
-            return handler(req, res)
-          } else {
-            const route: MiddlewareRoute = handler
-
-            return useMiddlewares(route.middlewares, req, res, () => route.endpoint(req, res))
+            return null
           }
+
+          if (typeof handler === 'function') {
+            return handler(req, res)
+          }
+
+          const route: MiddlewareRoute = handler
+
+          return useMiddlewares(route.middlewares, req, res, () => route.endpoint(req, res))
         }
 
   return (req, res) => useMiddlewares(allMiddleware, req, res, actualEndpoint)

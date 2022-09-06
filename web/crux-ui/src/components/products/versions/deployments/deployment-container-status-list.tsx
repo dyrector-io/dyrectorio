@@ -50,9 +50,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
     /* eslint-enable react/jsx-key */
   }
 
-  return !containers ? null : (
-    <DyoList className="mt-6 mb-2" data={containers} noSeparator itemBuilder={it => itemTemplate(it)} />
-  )
+  return !containers ? null : <DyoList className="mt-6 mb-2" data={containers} noSeparator itemBuilder={itemTemplate} />
 }
 
 export default DeploymentContainerStatusList

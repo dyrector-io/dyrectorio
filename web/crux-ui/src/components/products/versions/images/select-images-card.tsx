@@ -206,7 +206,7 @@ const SelectImagesCard = (props: SelectImagesCardProps) => {
               className="mt-4"
               data={filterResult}
               headers={['imageName'].map(it => t(it))}
-              itemBuilder={selectable => itemTemplate(selectable)}
+              itemBuilder={itemTemplate}
             />
           )}
         </div>

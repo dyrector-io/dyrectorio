@@ -72,7 +72,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
             itemClassName="h-11 min-h-min text-light-eased pl-4 w-fit"
             data={deployments}
             noSeparator
-            itemBuilder={it => itemTemplate(it)}
+            itemBuilder={itemTemplate}
           />
         </DyoCard>
       ) : (

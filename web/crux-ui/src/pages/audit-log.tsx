@@ -128,7 +128,7 @@ const AuditLogPage = (props: AuditLogPageProps) => {
               data={pagination.displayed}
               footer={<Paginator pagination={pagination} />}
               itemClassName={itemClassNames}
-              itemBuilder={it => itemTemplate(it)}
+              itemBuilder={itemTemplate}
             />
           </DyoCard>
         </>

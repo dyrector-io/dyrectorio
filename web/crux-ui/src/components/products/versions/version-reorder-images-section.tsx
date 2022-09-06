@@ -41,7 +41,7 @@ const VersionReorderImagesSection = (props: VersionReorderImagesSectionProps) =>
     </DyoCard>
   )
 
-  return <DragAndDropList items={items} onItemsChange={setItems} itemBuilder={image => itemTemplate(image)} />
+  return <DragAndDropList items={items} onItemsChange={setItems} itemBuilder={itemTemplate} />
 }
 
 export default VersionReorderImagesSection

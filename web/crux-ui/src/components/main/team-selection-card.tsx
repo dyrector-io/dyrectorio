@@ -69,7 +69,7 @@ const TeamSelectionCard = (props: TeamSelectionCardProps) => {
         itemClassName="flex text-bright pl-10 py-4"
         headers={[t('yourTeams')]}
         data={meta.teams}
-        itemBuilder={it => itemTemplate(it)}
+        itemBuilder={itemTemplate}
       />
     </DyoCard>
   )

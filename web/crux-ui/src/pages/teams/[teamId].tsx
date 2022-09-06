@@ -194,7 +194,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
           headerClassName={headerClassNames}
           headers={listHeaders}
           data={team.users}
-          itemBuilder={it => itemTemplate(it)}
+          itemBuilder={itemTemplate}
         />
 
         <DyoConfirmationModal

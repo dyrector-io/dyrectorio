@@ -38,7 +38,7 @@ interface JsonEditorProps<T> {
   onParseError?: (err: Error) => void
 }
 
-const JsonEditor = <T,>(props: JsonEditorProps<T>) => {
+const JsonEditorInternal = <T,>(props: JsonEditorProps<T>) => {
   const { className, disabled, value, onChange: propOnChange, onParseError } = props
 
   const [state, dispatch] = useReducer(reducer, JSON.stringify(value, undefined, '  '))
@@ -83,7 +83,7 @@ const JsonEditor = <T,>(props: JsonEditorProps<T>) => {
   )
 }
 
-export default JsonEditor
+export default JsonEditorInternal
 
 type JsonEditorActionType = 'update' | 'text-changed'
 
