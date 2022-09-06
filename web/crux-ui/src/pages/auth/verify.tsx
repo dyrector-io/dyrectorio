@@ -1,11 +1,11 @@
 import { SingleFormLayout } from '@app/components/layout'
 import { ATTRIB_CSRF, AUTH_RESEND_DELAY } from '@app/const'
-import { DyoButton } from '@app/elements/dyo-button'
+import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoInput } from '@app/elements/dyo-input'
-import { DyoMessage } from '@app/elements/dyo-message'
+import DyoMessage from '@app/elements/dyo-message'
 import DyoSingleFormHeading from '@app/elements/dyo-single-form-heading'
-import { useTimer } from '@app/hooks/use-timer'
+import useTimer from '@app/hooks/use-timer'
 import { DyoErrorDto, VerifyEmail } from '@app/models'
 import { API_VERIFICATION, ROUTE_LOGIN, ROUTE_SETTINGS } from '@app/routes'
 import { findAttributes, findError, findMessage, isDyoError, redirectTo, sendForm, upsertDyoError } from '@app/utils'
@@ -30,12 +30,11 @@ const VerifyPage = (props: VerifyProps) => {
 
   const { flow, email, recaptchaSiteKey } = props
 
+  const recaptcha = useRef<ReCAPTCHA>()
   const [ui, setUi] = useState(flow.ui)
   const [sent, setSent] = useState(false)
   const [errors, setErrors] = useState<DyoErrorDto[]>([])
   const [countdown, startCountdown] = useTimer(-1, recaptchaSiteKey ? () => recaptcha.current.reset() : null)
-
-  const recaptcha = useRef<ReCAPTCHA>()
 
   const formik = useFormik({
     initialValues: {
@@ -60,12 +59,12 @@ const VerifyPage = (props: VerifyProps) => {
       } else {
         recaptcha.current?.reset()
 
-        const data = await res.json()
+        const result = await res.json()
 
-        if (isDyoError(data)) {
-          setErrors(upsertDyoError(errors, data as DyoErrorDto))
-        } else if (data?.ui) {
-          setUi(data.ui)
+        if (isDyoError(result)) {
+          setErrors(upsertDyoError(errors, result as DyoErrorDto))
+        } else if (result?.ui) {
+          setUi(result.ui)
         } else {
           toast(t('errors:internalError'))
         }
@@ -127,7 +126,7 @@ const getPageServerSideProps = async (context: NextPageContext) => {
     return redirectTo(ROUTE_SETTINGS)
   }
 
-  const cookie = context.req.headers.cookie
+  const { cookie } = context.req.headers
   const flow = flowId
     ? await kratos.getSelfServiceVerificationFlow(flowId, cookie)
     : await kratos.initializeSelfServiceVerificationFlowForBrowsers()

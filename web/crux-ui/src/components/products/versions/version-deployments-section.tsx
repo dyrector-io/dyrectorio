@@ -3,7 +3,7 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoList } from '@app/elements/dyo-list'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
-import { useWebSocket } from '@app/hooks/use-websocket'
+import useWebSocket from '@app/hooks/use-websocket'
 import {
   DeploymentByVersion,
   GetNodeStatusListMessage,
@@ -30,11 +30,11 @@ interface VersionDeploymentsSectionProps {
 }
 
 const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
+  const { product, version } = props
+
   const { t } = useTranslation('versions')
 
   const router = useRouter()
-
-  const { version } = props
 
   const filters = useFilters<DeploymentByVersion, TextFilter>({
     filters: [textFilterFor<DeploymentByVersion>(it => [it.name, it.nodeName, it.prefix, it.status, it.date])],
@@ -68,7 +68,20 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   nodeSock.on(WS_TYPE_NODE_STATUS, (message: NodeStatusMessage) => updateNodeStatuses([message]))
 
   const onNavigateToDeployment = (deployment: DeploymentByVersion) =>
-    router.push(deploymentUrl(props.product.id, version.id, deployment.id))
+    router.push(deploymentUrl(product.id, version.id, deployment.id))
+
+  const itemTemplate = (deployment: DeploymentByVersion) => /* eslint-disable react/jsx-key */ [
+    <DeploymentStatusIndicator status={deployment.status} />,
+    <div className="cursor-pointer text-bold" onClick={() => onNavigateToDeployment(deployment)}>
+      {deployment.name}
+    </div>,
+    <div>{deployment.nodeName}</div>,
+    <div>{deployment.date}</div>,
+    <div>{deployment.prefix}</div>,
+    <DeploymentStatusTag className="w-fit m-auto" status={deployment.status} />,
+    <Image src="/deploy.svg" alt={t('common:deploy')} width={24} height={24} />,
+  ]
+  /* eslint-enable react/jsx-key */
 
   return filters.items.length ? (
     <DyoCard className="p-8 mt-4">
@@ -89,21 +102,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
           '',
         ]}
         data={filters.filtered}
-        itemBuilder={it => {
-          /* eslint-disable react/jsx-key */
-          return [
-            <DeploymentStatusIndicator status={it.status} />,
-            <div className="cursor-pointer text-bold" onClick={() => onNavigateToDeployment(it)}>
-              {it.name}
-            </div>,
-            <div>{it.nodeName}</div>,
-            <div>{it.date}</div>,
-            <div>{it.prefix}</div>,
-            <DeploymentStatusTag className="w-fit m-auto" status={it.status} />,
-            <Image src="/deploy.svg" alt={t('common:deploy')} width={24} height={24} />,
-          ]
-          /* eslint-enable react/jsx-key */
-        }}
+        itemBuilder={itemTemplate}
       />
     </DyoCard>
   ) : (

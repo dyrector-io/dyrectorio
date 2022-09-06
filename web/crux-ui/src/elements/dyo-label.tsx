@@ -5,11 +5,11 @@ export interface DyoLabelProps extends React.LabelHTMLAttributes<HTMLLabelElemen
 }
 
 export const DyoLabel = (props: DyoLabelProps) => {
-  const { className, textColor, ...forwardedProps } = props
+  const { className, textColor, children, ...forwardedProps } = props
 
   return (
     <label {...forwardedProps} className={clsx(className, textColor ?? 'text-light-eased')}>
-      {props.children}
+      {children}
     </label>
   )
 }

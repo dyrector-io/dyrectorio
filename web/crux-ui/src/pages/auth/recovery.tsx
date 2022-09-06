@@ -1,11 +1,11 @@
 import { SingleFormLayout } from '@app/components/layout'
 import { ATTRIB_CSRF, AUTH_RESEND_DELAY } from '@app/const'
-import { DyoButton } from '@app/elements/dyo-button'
+import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoInput } from '@app/elements/dyo-input'
-import { DyoMessage } from '@app/elements/dyo-message'
+import DyoMessage from '@app/elements/dyo-message'
 import DyoSingleFormHeading from '@app/elements/dyo-single-form-heading'
-import { useTimer } from '@app/hooks/use-timer'
+import useTimer from '@app/hooks/use-timer'
 import { DyoErrorDto, RecoverEmail } from '@app/models'
 import { API_RECOVERY, ROUTE_INDEX, ROUTE_INVITE, ROUTE_RECOVERY } from '@app/routes'
 import { findAttributes, findError, findMessage, isDyoError, redirectTo, upsertDyoError } from '@app/utils'
@@ -28,7 +28,7 @@ interface RecoveryPageProps {
 const RecoveryPage = (props: RecoveryPageProps) => {
   const { t } = useTranslation('recovery')
   const router = useRouter()
-  const token = router.query['token'] as string
+  const token = router.query.token as string
 
   const { flow, recaptchaSiteKey } = props
 
@@ -69,12 +69,12 @@ const RecoveryPage = (props: RecoveryPageProps) => {
       } else {
         recaptcha.current?.reset()
 
-        const data = await res.json()
+        const result = await res.json()
 
-        if (isDyoError(data)) {
-          setErrors(upsertDyoError(errors, data as DyoErrorDto))
-        } else if (data?.ui) {
-          setUi(data.ui)
+        if (isDyoError(result)) {
+          setErrors(upsertDyoError(errors, result as DyoErrorDto))
+        } else if (result?.ui) {
+          setUi(result.ui)
         } else {
           toast(t('errors:internalError'))
         }
@@ -131,7 +131,7 @@ const getPageServerSideProps = async (context: NextPageContext) => {
   }
 
   const flowId = context.query.flow as string
-  const cookie = context.req.headers.cookie
+  const { cookie } = context.req.headers
   try {
     const flow = flowId
       ? await kratos.getSelfServiceRecoveryFlow(flowId, cookie)
@@ -147,9 +147,8 @@ const getPageServerSideProps = async (context: NextPageContext) => {
   } catch (e) {
     if (e?.response?.status === 403) {
       return redirectTo(`${ROUTE_INVITE}?expired=true`)
-    } else {
-      return redirectTo(ROUTE_RECOVERY)
     }
+    return redirectTo(ROUTE_RECOVERY)
   }
 }
 

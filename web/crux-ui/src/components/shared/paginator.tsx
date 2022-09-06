@@ -1,4 +1,4 @@
-import { DyoButton } from '@app/elements/dyo-button'
+import DyoButton from '@app/elements/dyo-button'
 import { DyoInput } from '@app/elements/dyo-input'
 import { pageSizes, PaginationConfig } from '@app/hooks/use-pagination'
 import useTranslation from 'next-translate/useTranslation'
@@ -8,7 +8,7 @@ export interface PaginatorProps<Item> {
   pagination: PaginationConfig<Item>
 }
 
-export type changePageProps = { type: 'first' | 'last' | 'next' | 'previous' } | { type: 'exact'; page: number }
+export type ChangePageProps = { type: 'first' | 'last' | 'next' | 'previous' } | { type: 'exact'; page: number }
 
 const Paginator = <Item,>(props: PaginatorProps<Item>) => {
   const { pagination } = props
@@ -23,7 +23,7 @@ const Paginator = <Item,>(props: PaginatorProps<Item>) => {
       ? pagination.items.length
       : pageFrom + pagination.pageData.pageSize - 1
 
-  const changePage = (p: changePageProps) => {
+  const changePage = (p: ChangePageProps) => {
     switch (p.type) {
       case 'first': {
         pagination.setPageData({ ...pagination.pageData, currentPage: 0 })
@@ -48,12 +48,14 @@ const Paginator = <Item,>(props: PaginatorProps<Item>) => {
         break
       }
       case 'exact': {
-        if (isNaN(p.page)) break
+        if (Number.isNaN(p.page)) break
         if (p.page > maxPage) p.page = maxPage
         else if (p.page < 0) p.page = 0
         pagination.setPageData({ ...pagination.pageData, currentPage: p.page })
         break
       }
+      default:
+        break
     }
   }
 
@@ -79,24 +81,29 @@ const Paginator = <Item,>(props: PaginatorProps<Item>) => {
           }}
           value={pageSizes.indexOf(pagination.pageData.pageSize)}
         >
-          {pageSizes.map((v, i) => {
-            return (
-              <option key={v} value={i} className="bg-medium">
-                {v}
-              </option>
-            )
-          })}
+          {pageSizes.map((v, i) => (
+            <option key={v} value={i} className="bg-medium">
+              {v}
+            </option>
+          ))}
         </select>
       </div>
       <div className="flex items-center mx-4">
         <a className="text-light-eased mr-8">
-          {t('showingItems', { pageFrom: pageFrom, pageTo: pageTo, total: pagination.items.length })}
+          {t('showingItems', { pageFrom, pageTo, total: pagination.items.length })}
         </a>
         <DyoButton className="w-8 text-xl" onClick={() => changePage({ type: 'first' })} text thin>
-          <Image src="/carets_left.svg" width={24} height={24} layout={'fixed'} className="h-6 m-auto" alt='carets left' />
+          <Image
+            src="/carets_left.svg"
+            width={24}
+            height={24}
+            layout="fixed"
+            className="h-6 m-auto"
+            alt="carets left"
+          />
         </DyoButton>
         <DyoButton className="w-8 text-xl" onClick={() => changePage({ type: 'previous' })} text thin>
-          <Image src="/caret_left.svg" width={24} height={24} layout={'fixed'} className="h-6 m-auto" alt='caret left' />
+          <Image src="/caret_left.svg" width={24} height={24} layout="fixed" className="h-6 m-auto" alt="caret left" />
         </DyoButton>
         {pagination.pageData.currentPage - 2 >= 0 && (
           <DyoButton
@@ -116,7 +123,7 @@ const Paginator = <Item,>(props: PaginatorProps<Item>) => {
         <DyoInput
           className="w-10 h-10 bg-dyo-turquoise rounded-full text-center !text-white font-semibold p-0"
           value={pagination.pageData.currentPage + 1}
-          onChange={e => changePage({ type: 'exact', page: parseInt(e.target.value) - 1 })}
+          onChange={e => changePage({ type: 'exact', page: Number(e.target.value) - 1 })}
           grow
         />
         {pagination.pageData.currentPage + 1 <= maxPage && (
@@ -135,10 +142,24 @@ const Paginator = <Item,>(props: PaginatorProps<Item>) => {
           </DyoButton>
         )}
         <DyoButton className="w-8 text-xl" onClick={() => changePage({ type: 'next' })} text thin>
-          <Image src="/caret_right.svg" width={24} height={24} layout={'fixed'} className="h-6 m-auto" alt='caret right' />
+          <Image
+            src="/caret_right.svg"
+            width={24}
+            height={24}
+            layout="fixed"
+            className="h-6 m-auto"
+            alt="caret right"
+          />
         </DyoButton>
         <DyoButton className="w-8 text-xl" onClick={() => changePage({ type: 'last' })} text thin>
-          <Image src="/carets_right.svg" width={24} height={24} layout={'fixed'} className="h-6 m-auto" alt='carets right'/>
+          <Image
+            src="/carets_right.svg"
+            width={24}
+            height={24}
+            layout="fixed"
+            className="h-6 m-auto"
+            alt="carets right"
+          />
         </DyoButton>
       </div>
     </div>

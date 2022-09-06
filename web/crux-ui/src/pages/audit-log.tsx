@@ -5,7 +5,7 @@ import JsonEditor from '@app/components/shared/json-editor-dynamic-module'
 import PageHeading from '@app/components/shared/page-heading'
 import Paginator from '@app/components/shared/paginator'
 import { DyoCard } from '@app/elements/dyo-card'
-import { DyoDatePicker } from '@app/elements/dyo-date-picker'
+import DyoDatePicker from '@app/elements/dyo-date-picker'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoList } from '@app/elements/dyo-list'
 import DyoModal from '@app/elements/dyo-modal'
@@ -37,15 +37,6 @@ const AuditLogPage = (props: AuditLogPageProps) => {
   const [startDate, setStartDate] = useState<Date>(new Date(Date.now() - sixdays))
   const [endDate, setEndDate] = useState<Date>(new Date())
 
-  const onChange = dates => {
-    const [start, end] = dates
-    setStartDate(start)
-
-    if (end !== null) end.setHours(23, 59, 59, 999)
-    setEndDate(end)
-    filters.setFilter({ dateRange: [start, end] })
-  }
-
   const filters = useFilters<AuditLog, AuditLogFilter>({
     initialData: auditLog,
     initialFilter: {
@@ -57,6 +48,15 @@ const AuditLogPage = (props: AuditLogPageProps) => {
       dateRangeFilterFor<AuditLog>(it => [utcDateToLocale(it.date)]),
     ],
   })
+
+  const onChange = dates => {
+    const [start, end] = dates
+    setStartDate(start)
+
+    if (end !== null) end.setHours(23, 59, 59, 999)
+    setEndDate(end)
+    filters.setFilter({ dateRange: [start, end] })
+  }
 
   const pagination = usePagination<AuditLog>({
     initialData: auditLog,
@@ -71,7 +71,7 @@ const AuditLogPage = (props: AuditLogPageProps) => {
 
   useEffect(() => {
     pagination.setItems(filters.filtered)
-  }, [filters])
+  }, [filters, pagination])
 
   const selfLink: BreadcrumbLink = {
     name: t('common:audit'),
@@ -87,6 +87,19 @@ const AuditLogPage = (props: AuditLogPageProps) => {
     clsx(defaultHeaderClass, 'pr-16'),
   ]
   const itemClassNames = ['py-2 w-14'] // Only for the first column
+
+  const itemTemplate = (log: AuditLog) => /* eslint-disable react/jsx-key */ [
+    <div className="w-10 ml-auto">
+      <Image src="/default_avatar.svg" width={38} height={38} layout="fixed" />
+    </div>,
+    <div className="font-semibold min-w-max pl-2">{log.identityName}</div>,
+    <div className="min-w-max">{utcDateToLocale(log.date)}</div>,
+    <div>{beautifyAuditLogEvent(log.event)}</div>,
+    <div className="cursor-pointer max-w-4xl truncate" onClick={() => onShowInfoClick(log)}>
+      {log.info}
+    </div>,
+  ]
+  /* eslint-enable react/jsx-key */
 
   return (
     <Layout title={t('common:audit')}>
@@ -115,21 +128,7 @@ const AuditLogPage = (props: AuditLogPageProps) => {
               data={pagination.displayed}
               footer={<Paginator pagination={pagination} />}
               itemClassName={itemClassNames}
-              itemBuilder={it => {
-                /* eslint-disable react/jsx-key */
-                return [
-                  <div className="w-10 ml-auto">
-                    <Image src="/default_avatar.svg" width={38} height={38} layout={'fixed'} />
-                  </div>,
-                  <div className="font-semibold min-w-max pl-2">{it.identityName}</div>,
-                  <div className="min-w-max">{utcDateToLocale(it.date)}</div>,
-                  <div>{beautifyAuditLogEvent(it.event)}</div>,
-                  <div className="cursor-pointer max-w-4xl truncate" onClick={() => onShowInfoClick(it)}>
-                    {it.info}
-                  </div>,
-                ]
-                /* eslint-enable react/jsx-key */
-              }}
+              itemBuilder={itemTemplate}
             />
           </DyoCard>
         </>

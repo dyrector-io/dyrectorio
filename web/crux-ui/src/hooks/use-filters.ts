@@ -1,5 +1,9 @@
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react'
 
+const setItemsError = () => {
+  throw new Error('Can not set filter items, when data was explicitly provided.')
+}
+
 export type FilterFunction<Item, Filter> = (items: Item[], filter: Filter) => Item[]
 
 export type UseFiltersOptions<Item, Filter> = {
@@ -44,10 +48,6 @@ export const useFilters = <Item, Filter>(options: UseFiltersOptions<Item, Filter
   }
 }
 
-const setItemsError = () => {
-  throw new Error('Can not set filter items, when data was explicitly provided.')
-}
-
 export type PropertyValuesOf<Item> = (item: Item) => string[]
 
 export type TextFilter = {
@@ -64,7 +64,7 @@ export const textFilterFor =
 
     return items.filter(it => {
       const properties = propertiesOf(it)
-      return properties.filter(it => !!it && it.toLowerCase().includes(text)).length > 0
+      return properties.filter(pit => !!pit && pit.toLowerCase().includes(text)).length > 0
     })
   }
 

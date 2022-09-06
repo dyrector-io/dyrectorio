@@ -1,9 +1,9 @@
-import { DyoButton } from '@app/elements/dyo-button'
+import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
-import { DyoTextArea } from '@app/elements/dyo-text-area'
+import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import { IncreaseVersion, Product, Version } from '@app/models'
 import { versionIncreaseApiUrl } from '@app/routes'
@@ -22,9 +22,9 @@ interface IncreaseVersionCardProps {
 }
 
 const IncreaseVersionCard = (props: IncreaseVersionCardProps) => {
-  const { t } = useTranslation('versions')
+  const { className, parent, product, onVersionIncreased, submitRef } = props
 
-  const { product, parent } = props
+  const { t } = useTranslation('versions')
 
   const handleApiError = defaultApiErrorHandler(t)
 
@@ -43,7 +43,7 @@ const IncreaseVersionCard = (props: IncreaseVersionCardProps) => {
 
       if (res.ok) {
         const result = (await res.json()) as Version
-        props.onVersionIncreased(result)
+        onVersionIncreased(result)
       } else {
         handleApiError(res, setFieldError)
       }
@@ -52,12 +52,12 @@ const IncreaseVersionCard = (props: IncreaseVersionCardProps) => {
     },
   })
 
-  if (props.submitRef) {
-    props.submitRef.current = formik.submitForm
+  if (submitRef) {
+    submitRef.current = formik.submitForm
   }
 
   return (
-    <DyoCard className={props.className}>
+    <DyoCard className={className}>
       <DyoHeading element="h4" className="text-lg text-bright">
         {t('increaseName', { name: parent.name })}
       </DyoHeading>
@@ -87,7 +87,7 @@ const IncreaseVersionCard = (props: IncreaseVersionCardProps) => {
           message={formik.errors.changelog}
         />
 
-        <DyoButton className="hidden" type="submit"></DyoButton>
+        <DyoButton className="hidden" type="submit" />
       </form>
     </DyoCard>
   )

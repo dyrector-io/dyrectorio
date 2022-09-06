@@ -2,19 +2,14 @@ import { Logger } from '@app/logger'
 import {
   Container,
   ContainerListMessage,
-  ContainerState,
   CreateDyoNode,
   DyoNode,
   DyoNodeDetails,
   DyoNodeInstall,
   DyoNodeScript,
-  NodeStatus,
   NodeStatusMessage,
-  NodeType,
-  NODE_TYPE_VALUES,
   UpdateDyoNode,
 } from '@app/models'
-import { ContainerState as ProtoContainerState, containerStateToJSON } from '@app/models/grpc/protobuf/proto/common'
 import {
   AccessRequest,
   ContainerStateListMessage,
@@ -24,13 +19,11 @@ import {
   Empty,
   GenerateScriptRequest,
   IdRequest,
-  NodeConnectionStatus,
   NodeDetailsResponse,
   NodeEventMessage,
   NodeInstallResponse,
   NodeListResponse,
   NodeScriptResponse,
-  NodeType as GrpcNodeType,
   NodeType as ProtoNodeType,
   ServiceIdRequest,
   UpdateNodeRequest,
@@ -38,8 +31,8 @@ import {
 } from '@app/models/grpc/protobuf/proto/crux'
 import { timestampToUTC } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
-import { protomisify } from '@server/crux/grpc-connection'
-import { GrpcConnection, ProtoSubscriptionOptions } from './grpc-connection'
+import { GrpcConnection, protomisify, ProtoSubscriptionOptions } from '@server/crux/grpc-connection'
+import { containerStateToDto, nodeTypeGrpcToUi, statusToDto } from './mappers/node-mappers'
 
 class DyoNodeService {
   private logger = new Logger(DyoNodeService.name)
@@ -56,14 +49,12 @@ class DyoNodeService {
       req,
     )
 
-    return nodes.data.map(it => {
-      return {
-        ...it,
-        connectedAt: timestampToUTC(it.connectedAt),
-        status: this.statusToDto(it.status),
-        type: nodeTypeGrpcToUi(it.type),
-      }
-    })
+    return nodes.data.map(it => ({
+      ...it,
+      connectedAt: timestampToUTC(it.connectedAt),
+      status: statusToDto(it.status),
+      type: nodeTypeGrpcToUi(it.type),
+    }))
   }
 
   async create(dto: CreateDyoNode): Promise<DyoNode> {
@@ -119,7 +110,7 @@ class DyoNodeService {
     return {
       ...res,
       connectedAt: timestampToUTC(res.connectedAt),
-      status: this.statusToDto(res.status),
+      status: statusToDto(res.status),
       type: nodeTypeGrpcToUi(res.type),
       install: !res.install
         ? null
@@ -186,13 +177,12 @@ class DyoNodeService {
       id: teamId,
     }
 
-    const transform = (data: NodeEventMessage) => {
-      return {
+    const transform = (data: NodeEventMessage) =>
+      ({
         nodeId: data.id,
-        status: this.statusToDto(data.status),
+        status: statusToDto(data.status),
         address: data.address,
-      } as NodeStatusMessage
-    }
+      } as NodeStatusMessage)
 
     const stream = () => this.client.subscribeNodeEventChannel(ServiceIdRequest.fromJSON(req))
     return new GrpcConnection(this.logger.descend('events'), stream, transform, options)
@@ -209,41 +199,20 @@ class DyoNodeService {
       accessedBy: this.identity.id,
     }
 
-    const transform = (data: ContainerStateListMessage) => {
-      return data.data.map(it => {
-        return {
-          id: it.containerId,
-          name: it.name,
-          date: timestampToUTC(it.createdAt),
-          state: containerStateToDto(it.state),
-        } as Container
-      }) as ContainerListMessage
-    }
+    const transform = (data: ContainerStateListMessage) =>
+      data.data.map(
+        it =>
+          ({
+            id: it.containerId,
+            name: it.name,
+            date: timestampToUTC(it.createdAt),
+            state: containerStateToDto(it.state),
+          } as Container),
+      ) as ContainerListMessage
 
     const stream = () => this.client.watchContainerState(WatchContainerStateRequest.fromJSON(req))
     return new GrpcConnection(this.logger.descend('container-status'), stream, transform, options)
   }
-
-  statusToDto(status: NodeConnectionStatus): NodeStatus {
-    switch (status) {
-      case NodeConnectionStatus.CONNECTED:
-        return 'running'
-      case NodeConnectionStatus.UNREACHABLE:
-        return 'unreachable'
-      default:
-        return 'unreachable'
-    }
-  }
 }
 
 export default DyoNodeService
-
-export const containerStateToDto = (state: ProtoContainerState): ContainerState =>
-  containerStateToJSON(state).toLocaleLowerCase() as ContainerState
-
-export const nodeTypeUiToGrpc = (type: NodeType): GrpcNodeType => {
-  return type === NODE_TYPE_VALUES[0] ? GrpcNodeType.DOCKER : GrpcNodeType.K8S
-}
-export const nodeTypeGrpcToUi = (type: GrpcNodeType): NodeType => {
-  return type === GrpcNodeType.DOCKER ? NODE_TYPE_VALUES[0] : NODE_TYPE_VALUES[1]
-}

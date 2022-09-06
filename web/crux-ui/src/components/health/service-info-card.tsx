@@ -15,13 +15,13 @@ interface ServiceStatusCardProps {
 const ServiceInfoCard = (props: ServiceStatusCardProps) => {
   const { t } = useTranslation('status')
 
-  const { info } = props
+  const { info, name, className } = props
 
   return (
-    <DyoCard className={clsx(props.className, 'flex flex-col p-8 m-4')}>
+    <DyoCard className={clsx(className, 'flex flex-col p-8 m-4')}>
       <div className="flex flex-row flex-grow">
         <DyoHeading element="h3" className="text-xl text-white">
-          {props.name}
+          {name}
         </DyoHeading>
 
         <ServiceStatusIndicator className="ml-auto pl-8 py-auto" status={info.status} />

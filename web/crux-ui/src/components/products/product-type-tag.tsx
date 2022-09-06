@@ -8,11 +8,13 @@ interface ProductTypeTagProps {
 }
 
 const ProductTypeTag = (props: ProductTypeTagProps) => {
+  const { className, type } = props
+
   const { t } = useTranslation('products')
 
   return (
-    <DyoTag className={props.className} color="bg-dyo-blue" textColor="text-dyo-blue">
-      {t(props.type).toUpperCase()}
+    <DyoTag className={className} color="bg-dyo-blue" textColor="text-dyo-blue">
+      {t(type).toUpperCase()}
     </DyoTag>
   )
 }

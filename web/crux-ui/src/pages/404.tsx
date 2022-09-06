@@ -1,5 +1,5 @@
 import { SingleFormLayout } from '@app/components/layout'
-import { DyoButton } from '@app/elements/dyo-button'
+import DyoButton from '@app/elements/dyo-button'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'

@@ -1,13 +1,14 @@
-import { DeploymentEvent, DeploymentRoot } from '@app/models'
+import { DeploymentEvent } from '@app/models'
 import { terminalDateFormat } from '@app/utils'
 
 interface DeploymentEventsTerminalProps {
-  deployment: DeploymentRoot
   events: DeploymentEvent[]
 }
 
 const DeploymentEventsTerminal = (props: DeploymentEventsTerminalProps) => {
-  const events = props.events.sort((one, other) => {
+  const { events: propsEvents } = props
+
+  const events = propsEvents.sort((one, other) => {
     const oneDate = new Date(one.createdAt)
     const otherDate = new Date(other.createdAt)
     return oneDate.getTime() - otherDate.getTime()

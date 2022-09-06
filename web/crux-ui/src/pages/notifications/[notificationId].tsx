@@ -19,10 +19,12 @@ interface NotificationDetailsPageProps {
 }
 
 const NotificationDetailsPage = (props: NotificationDetailsPageProps) => {
+  const { notification: propsNotification } = props
+
   const { t } = useTranslation('notifications')
   const router = useRouter()
 
-  const [notification, setNotification] = useState<NotificationDetails>(props.notification)
+  const [notification, setNotification] = useState<NotificationDetails>(propsNotification)
   const [editing, setEditing] = useState(false)
   const submitRef = useRef<() => Promise<void>>()
   const handleApiError = defaultApiErrorHandler(t)
@@ -45,9 +47,9 @@ const NotificationDetailsPage = (props: NotificationDetailsPageProps) => {
     url: ROUTE_NOTIFICATIONS,
   }
 
-  const onSubmitted = (notification: NotificationDetails) => {
+  const onSubmitted = (item: NotificationDetails) => {
     setEditing(false)
-    setNotification(notification as NotificationDetails)
+    setNotification(item as NotificationDetails)
   }
 
   return (

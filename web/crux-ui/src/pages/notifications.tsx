@@ -22,11 +22,13 @@ interface NotificationsPageProps {
 }
 
 const NotificationsPage = (props: NotificationsPageProps) => {
+  const { notifications: propsNotifications } = props
+
   const { t } = useTranslation('notifications')
   const router = useRouter()
 
   const [creating, setCreating] = useState<boolean>(false)
-  const [notifications, setNotifications] = useState<NotificationDetails[]>(props.notifications)
+  const [notifications, setNotifications] = useState<NotificationDetails[]>(propsNotifications)
 
   const pageLink: BreadcrumbLink = {
     name: t('common:notifications'),
@@ -52,16 +54,14 @@ const NotificationsPage = (props: NotificationsPageProps) => {
             {t('webhooks')}
           </DyoLabel>
           <DyoWrap itemClassName="lg:w-1/2 xl:w-1/3 p-2">
-            {notifications.map((it, index) => {
-              return (
-                <NotificationCard
-                  className={clsx('max-h-64 w-full p-6')}
-                  key={`notification-${index}`}
-                  notification={it}
-                  onClick={() => router.push(notificationUrl(it.id))}
-                />
-              )
-            })}
+            {notifications.map((it, index) => (
+              <NotificationCard
+                className={clsx('max-h-64 w-full p-6')}
+                key={`notification-${index}`}
+                notification={it}
+                onClick={() => router.push(notificationUrl(it.id))}
+              />
+            ))}
           </DyoWrap>
         </>
       ) : (
@@ -73,13 +73,11 @@ const NotificationsPage = (props: NotificationsPageProps) => {
   )
 }
 
-const getPageServerSideProps = async (context: NextPageContext) => {
-  return {
-    props: {
-      notifications: await cruxFromContext(context).notificiations.getAll(),
-    },
-  }
-}
+const getPageServerSideProps = async (context: NextPageContext) => ({
+  props: {
+    notifications: await cruxFromContext(context).notificiations.getAll(),
+  },
+})
 
 export default NotificationsPage
 

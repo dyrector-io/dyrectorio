@@ -1,44 +1,10 @@
-import { ContainerListMessage, WS_TYPE_CONTAINER_STATUS_LIST } from '@app/models'
-import { ContainerStateListMessage } from '@app/models/grpc/protobuf/proto/crux'
-import { WsConnection } from '@app/websockets/server'
-import { GrpcConnection } from './crux/grpc-connection'
+import WsConnection from '@app/websockets/connection'
+import ContainerStatusWatcher from './container-status-watcher'
 import DyoNodeService from './crux/node-service'
 
-class ContainerStatusWatcher {
-  private grpc: GrpcConnection<ContainerStateListMessage, ContainerListMessage> = null
-  private connections: Set<WsConnection> = new Set()
-
-  constructor(public prefix: string) {}
-
-  start(connection: WsConnection, nodeId: string, nodeService: DyoNodeService) {
-    this.addConnection(connection)
-
-    this.grpc = nodeService.watchContainerState(nodeId, this.prefix, {
-      onMessage: message => {
-        this.connections.forEach(it => it.send(WS_TYPE_CONTAINER_STATUS_LIST, message))
-      },
-    })
-  }
-
-  addConnection(connection: WsConnection) {
-    this.connections.add(connection)
-  }
-
-  removeConnection(connection: WsConnection): boolean {
-    this.connections.delete(connection)
-
-    if (this.connections.size < 1) {
-      this.grpc?.cancel()
-      this.grpc = null
-      return true
-    }
-
-    return false
-  }
-}
-
-export class ContainerStatusWatcherService {
+class ContainerStatusWatcherService {
   private watchers: Map<string, ContainerStatusWatcher> = new Map()
+
   private connectionToPrefixes: Map<WsConnection, Set<string>> = new Map()
 
   constructor(private nodeId: string) {}
@@ -100,3 +66,5 @@ export class ContainerStatusWatcherService {
     }
   }
 }
+
+export default ContainerStatusWatcherService

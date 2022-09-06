@@ -1,6 +1,6 @@
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
-import { DyoMessage } from '@app/elements/dyo-message'
+import DyoMessage from '@app/elements/dyo-message'
 import DyoRadioButton from '@app/elements/dyo-radio-button'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useTranslation from 'next-translate/useTranslation'

@@ -2,7 +2,7 @@ import { SelectTeam } from '@app/models'
 import { selectTeamSchema } from '@app/validation'
 import crux from '@server/crux/crux'
 import { withMiddlewares } from '@server/middlewares'
-import { useValidationMiddleware } from '@server/validation-middleware'
+import useValidationMiddleware from '@server/validation-middleware'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const onGet = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -20,7 +20,7 @@ const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
 }
 
 export default withMiddlewares({
-  onGet: onGet,
+  onGet,
   onPost: {
     middlewares: [useValidationMiddleware(selectTeamSchema)],
     endpoint: onPost,

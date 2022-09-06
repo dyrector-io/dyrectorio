@@ -1,5 +1,15 @@
-import { DyoErrorDto, UnavailableErrorType } from '@app/models'
-import { isDyoError } from '@app/utils'
+import {
+  alreadyExistsError,
+  forbiddenError,
+  internalError,
+  invalidArgument,
+  notFoundError,
+  preconditionFailedError,
+  unauthorizedError,
+  unavailableError,
+} from '@app/error-responses'
+import { DyoApiError } from '@app/models'
+import { isDyoApiError } from '@app/utils'
 import { ServiceError } from '@grpc/grpc-js'
 import { Status } from '@grpc/grpc-js/build/src/constants'
 import { NextApiRequest, NextApiResponse } from 'next'
@@ -13,96 +23,9 @@ import {
   UnavailableError,
 } from './crux/grpc-errors'
 
-export type DyoApiError = DyoErrorDto & {
-  status: number
-}
-
-export const isDyoApiError = (instance: any): instance is DyoApiError => isDyoError(instance) && 'status' in instance
-
-export const invalidArgument = (property: string, description?: string, value?: string): DyoApiError => {
-  return {
-    status: 400,
-    error: 'invalidArgument',
-    property,
-    description: description ?? `Invalid ${property}`,
-    value,
-  }
-}
-
-export const missingParameter = (property: string, description?: string): DyoApiError => {
-  return {
-    status: 400,
-    error: 'missingParameter',
-    property,
-    description: description ?? `Missing ${property}`,
-  }
-}
-
-export const notFoundError = (property: string, description?: string, value?: string): DyoApiError => {
-  return {
-    status: 404,
-    error: 'notFound',
-    property,
-    value,
-    description: description ?? `The value of ${property} not found.`,
-  }
-}
-
-export const alreadyExistsError = (property: string, description?: string, value?: string): DyoApiError => {
-  return {
-    status: 409,
-    error: 'alreadyExists',
-    property,
-    value,
-    description: description ?? `The value of ${property} already exists.`,
-  }
-}
-
-export const preconditionFailedError = (property: string, description?: string, value?: string): DyoApiError => {
-  return {
-    status: 412,
-    error: 'preconditionFailed',
-    property,
-    value,
-    description: description ?? `Precondition failed for: ${property}`,
-  }
-}
-
-export const unauthorizedError = (description: string = 'Unauthorized'): DyoApiError => {
-  return {
-    status: 401,
-    error: 'unauthorized',
-    description,
-  }
-}
-
-export const forbiddenError = (description: string = 'Forbidden'): DyoApiError => {
-  return {
-    status: 403,
-    error: 'forbidden',
-    description,
-  }
-}
-
-export const internalError = (description: string): DyoApiError => {
-  return {
-    status: 500,
-    error: 'internalError',
-    description,
-  }
-}
-
-export const unavailableError = (error: UnavailableErrorType, description: string): DyoApiError => {
-  return {
-    status: 503,
-    error,
-    description,
-  }
-}
-
 export const parseGrpcError = (error: ServiceError): CruxGrpcError => {
-  let message = error.message
-  let details = undefined
+  let { message } = error
+  let details
 
   try {
     const json = JSON.parse(error.details)

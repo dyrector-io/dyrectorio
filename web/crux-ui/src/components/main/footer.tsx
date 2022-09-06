@@ -14,7 +14,7 @@ const Footer = (props: React.HTMLProps<HTMLDivElement>) => {
       </div>
       <div className="flex items-stretch text-sm">
         <span className="text-light pr-2">
-          <Link href="https://github.com/dyrector-io/dyrectorio" passHref target={'_blank'}>
+          <Link href="https://github.com/dyrector-io/dyrectorio" passHref target="_blank">
             <a>
               <span className="text-dyo-turquoise font-bold">dyrector.io</span>
             </a>

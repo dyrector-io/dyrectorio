@@ -1,4 +1,4 @@
-import { CreateVersion, IncreaseVersion, UpdateVersion, Version, VersionDetails, VersionType } from '@app/models'
+import { CreateVersion, IncreaseVersion, UpdateVersion, Version, VersionDetails } from '@app/models'
 import {
   CreateEntityResponse,
   CreateVersionRequest,
@@ -9,15 +9,13 @@ import {
   UpdateEntityResponse,
   UpdateVersionRequest,
   VersionDetailsResponse,
-  VersionType as ProtoVersionType,
-  versionTypeFromJSON,
-  versionTypeToJSON,
 } from '@app/models/grpc/protobuf/proto/crux'
 import { timestampToUTC } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
 import { protomisify } from '@server/crux/grpc-connection'
-import { deploymentStatusToDto } from './deployment-service'
-import { containerConfigToDto } from './image-service'
+import { deploymentStatusToDto } from './mappers/deployment-mappers'
+import { containerConfigToDto } from './mappers/image-mappers'
+import { versionTypeToDyo, versionTypeToProto } from './mappers/version-mappers'
 
 class DyoVersionService {
   constructor(private client: CruxProductVersionClient, private identity: Identity) {}
@@ -37,19 +35,15 @@ class DyoVersionService {
       ...res,
       type: versionTypeToDyo(res.type),
       updatedAt: timestampToUTC(res.audit.updatedAt),
-      deployments: res.deployments.map(it => {
-        return {
-          ...it,
-          date: timestampToUTC(it.audit.updatedAt),
-          status: deploymentStatusToDto(it.status),
-        }
-      }),
-      images: res.images.map(it => {
-        return {
-          ...it,
-          config: containerConfigToDto(it.config),
-        }
-      }),
+      deployments: res.deployments.map(it => ({
+        ...it,
+        date: timestampToUTC(it.audit.updatedAt),
+        status: deploymentStatusToDto(it.status),
+      })),
+      images: res.images.map(it => ({
+        ...it,
+        config: containerConfigToDto(it.config),
+      })),
     }
   }
 
@@ -132,11 +126,3 @@ class DyoVersionService {
 }
 
 export default DyoVersionService
-
-export const versionTypeToProto = (type: VersionType): ProtoVersionType => {
-  return versionTypeFromJSON(type.toUpperCase())
-}
-
-export const versionTypeToDyo = (type: ProtoVersionType): VersionType => {
-  return versionTypeToJSON(type).toLowerCase() as VersionType
-}

@@ -22,10 +22,11 @@ import {
   WS_TYPE_PATCH_IMAGE,
 } from '@app/models'
 import { WsMessage } from '@app/websockets/common'
-import { WsConnection, WsEndpoint } from '@app/websockets/server'
+import WsConnection from '@app/websockets/connection'
+import WsEndpoint from '@app/websockets/endpoint'
 import crux, { cruxFromConnection } from '@server/crux/crux'
 import { routedWebSocketEndpoint } from '@server/websocket-endpoint'
-import { useWebsocketErrorMiddleware } from '@server/websocket-error-middleware'
+import useWebsocketErrorMiddleware from '@server/websocket-error-middleware'
 import { NextApiRequest } from 'next'
 
 const logger = new Logger('ws-version')

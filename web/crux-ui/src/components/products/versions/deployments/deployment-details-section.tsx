@@ -3,13 +3,13 @@ import { DEPLOYMENT_EDIT_WS_REQUEST_DELAY } from '@app/const'
 import { useThrottling } from '@app/hooks/use-throttleing'
 import { deploymentIsMutable, DeploymentRoot, WS_TYPE_PATCH_DEPLOYMENT_ENV } from '@app/models'
 import { Environment } from '@app/models-config'
-import { WebSocketEndpoint } from '@app/websockets/client'
+import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 import useTranslation from 'next-translate/useTranslation'
 import DeploymentDetailsCard from './deployment-details-card'
 
 interface DeploymentDetailsSectionProps {
   deployment: DeploymentRoot
-  deploySock: WebSocketEndpoint
+  deploySock: WebSocketClientEndpoint
 }
 
 const DeploymentDetailsSection = (props: DeploymentDetailsSectionProps) => {
@@ -23,16 +23,14 @@ const DeploymentDetailsSection = (props: DeploymentDetailsSectionProps) => {
 
   const onEnvChange = (env: Environment) => throttle(() => sock.send(WS_TYPE_PATCH_DEPLOYMENT_ENV, env))
   return (
-    <>
-      <DeploymentDetailsCard deployment={deployment}>
-        <KeyValueInput
-          disabled={!mutable}
-          heading={t('images:environment').toUpperCase()}
-          items={deployment.environment ?? []}
-          onChange={onEnvChange}
-        />
-      </DeploymentDetailsCard>
-    </>
+    <DeploymentDetailsCard deployment={deployment}>
+      <KeyValueInput
+        disabled={!mutable}
+        heading={t('images:environment').toUpperCase()}
+        items={deployment.environment ?? []}
+        onChange={onEnvChange}
+      />
+    </DeploymentDetailsCard>
   )
 }
 

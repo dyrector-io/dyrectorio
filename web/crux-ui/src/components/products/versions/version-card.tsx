@@ -1,6 +1,6 @@
-import { DyoButton } from '@app/elements/dyo-button'
+import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
-import { DyoExpandableText } from '@app/elements/dyo-expandable-text'
+import DyoExpandableText from '@app/elements/dyo-expandable-text'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoImgButton from '@app/elements/dyo-img-button'
 import DyoTag from '@app/elements/dyo-tag'
@@ -24,11 +24,11 @@ interface VersionCardProps {
 }
 
 const VersionCard = (props: VersionCardProps) => {
+  const { className, productId, version, onClick, disabled, onIncreaseClick, onSetAsDefaultClick } = props
+
   const { t } = useTranslation('versions')
 
   const router = useRouter()
-
-  const { className, productId, version, onClick } = props
 
   const onImagesClick = () =>
     router.push(
@@ -75,29 +75,29 @@ const VersionCard = (props: VersionCardProps) => {
       </div>
 
       <div className="flex flex-row my-2">
-        {!props.onIncreaseClick || !version.increasable ? null : (
+        {!onIncreaseClick || !version.increasable ? null : (
           <DyoImgButton
             className="px-2 h-6 mr-2"
-            disabled={props.disabled}
+            disabled={disabled}
             src="/arrow_up_bold.svg"
             alt={t('increase')}
             width={18}
             height={18}
             outlined
-            onClick={props.onIncreaseClick}
+            onClick={onIncreaseClick}
           />
         )}
 
-        {!props.onSetAsDefaultClick || version.default ? null : (
+        {!onSetAsDefaultClick || version.default ? null : (
           <DyoImgButton
             className="px-2 h-6 mx-2"
-            disabled={props.disabled}
+            disabled={disabled}
             src="/home_bold.svg"
             alt={t('default')}
             width={18}
             height={18}
             outlined
-            onClick={props.onSetAsDefaultClick}
+            onClick={onSetAsDefaultClick}
           />
         )}
       </div>
@@ -112,7 +112,7 @@ const VersionCard = (props: VersionCardProps) => {
         modalTitle={t('changelogName', { name: version.name })}
       />
 
-      {props.disabled ? null : (
+      {disabled ? null : (
         <div className="flex flex-row ml-auto mt-auto">
           <DyoButton className="px-4 mx-2" outlined onClick={onImagesClick}>
             <div className="flex flex-row items-center gap-2">
