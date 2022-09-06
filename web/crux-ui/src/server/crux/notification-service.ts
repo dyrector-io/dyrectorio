@@ -1,10 +1,4 @@
-import {
-  CreateNotification,
-  NotificationDetails,
-  NotificationEventType,
-  NotificationType,
-  UpdateNotification,
-} from '@app/models'
+import { CreateNotification, NotificationDetails, UpdateNotification } from '@app/models'
 import {
   AccessRequest,
   CreateNotificationRequest,
@@ -13,17 +7,19 @@ import {
   Empty,
   IdRequest,
   NotificationDetailsResponse,
-  NotificationEventType as ProtoNotificationEventType,
   NotificationListResponse,
-  NotificationType as ProtoNotificationType,
-  notificationTypeFromJSON,
-  notificationTypeToJSON,
   UpdateEntityResponse,
   UpdateNotificationRequest,
 } from '@app/models/grpc/protobuf/proto/crux'
 import { timestampToUTC } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
 import { protomisify } from './grpc-connection'
+import {
+  notificationEventTypeToDto,
+  notificationEventTypeToGrpc,
+  notificationTypeToDto,
+  notificationTypeToGrpc,
+} from './mappers/notification-mappers'
 
 class DyoNotifcationService {
   constructor(private client: CruxNotificationClient, private identity: Identity) {}
@@ -38,14 +34,12 @@ class DyoNotifcationService {
       this.client.getNotificationList,
     )(AccessRequest, req)
 
-    return res.data.map(it => {
-      return {
-        ...it,
-        type: notificationTypeToDto(it.type),
-        creator: it.audit.createdBy,
-        events: it.events.map(ev => notificationEventTypeToDto(ev)),
-      }
-    })
+    return res.data.map(it => ({
+      ...it,
+      type: notificationTypeToDto(it.type),
+      creator: it.audit.createdBy,
+      events: it.events.map(ev => notificationEventTypeToDto(ev)),
+    }))
   }
 
   async create(dto: CreateNotification): Promise<NotificationDetails> {
@@ -86,7 +80,7 @@ class DyoNotifcationService {
 
   async getNotificationDetails(id: string): Promise<NotificationDetails> {
     const req: IdRequest = {
-      id: id,
+      id,
       accessedBy: this.identity.id,
     }
 
@@ -105,7 +99,7 @@ class DyoNotifcationService {
 
   async delete(id: string) {
     const req: IdRequest = {
-      id: id,
+      id,
       accessedBy: this.identity.id,
     }
 
@@ -114,7 +108,7 @@ class DyoNotifcationService {
 
   async testNotification(id: string): Promise<void> {
     const req: IdRequest = {
-      id: id,
+      id,
       accessedBy: this.identity.id,
     }
 
@@ -123,41 +117,3 @@ class DyoNotifcationService {
 }
 
 export default DyoNotifcationService
-
-export const notificationTypeToGrpc = (type: NotificationType): ProtoNotificationType => {
-  return notificationTypeFromJSON(type.toUpperCase())
-}
-
-export const notificationTypeToDto = (type: ProtoNotificationType): NotificationType => {
-  return notificationTypeToJSON(type).toLocaleLowerCase() as NotificationType
-}
-
-export const notificationEventTypeToGrpc = (type: NotificationEventType): ProtoNotificationEventType => {
-  switch (type) {
-    case 'deployment-created':
-      return ProtoNotificationEventType.DEPLOYMENT_CREATED
-    case 'version-created':
-      return ProtoNotificationEventType.VERSION_CREATED
-    case 'node-added':
-      return ProtoNotificationEventType.NODE_ADDED
-    case 'user-invited':
-      return ProtoNotificationEventType.USER_INVITED
-    default:
-      return ProtoNotificationEventType.UNKNOWN_NOTIFICATION_EVENT_TYPE
-  }
-}
-
-export const notificationEventTypeToDto = (type: ProtoNotificationEventType): NotificationEventType => {
-  switch (type) {
-    case ProtoNotificationEventType.DEPLOYMENT_CREATED:
-      return 'deployment-created'
-    case ProtoNotificationEventType.VERSION_CREATED:
-      return 'version-created'
-    case ProtoNotificationEventType.NODE_ADDED:
-      return 'node-added'
-    case ProtoNotificationEventType.USER_INVITED:
-      return 'user-invited'
-    case ProtoNotificationEventType.UNKNOWN_NOTIFICATION_EVENT_TYPE:
-      throw null
-  }
-}
