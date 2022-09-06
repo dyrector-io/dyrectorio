@@ -7,6 +7,7 @@ import {
   UserStatus as ProtoUserStatus,
   userStatusToJSON,
 } from '@app/models/grpc/protobuf/proto/crux'
+import { timestampToUTC } from '@app/utils'
 
 export const userStatusToDto = (status: ProtoUserStatus): UserStatus =>
   userStatusToJSON(status).toLocaleLowerCase() as UserStatus
@@ -17,6 +18,7 @@ export const userToDto = (user: UserResponse): User => ({
   ...user,
   status: userStatusToDto(user.status),
   role: userRoleToDto(user.role),
+  lastLogin: timestampToUTC(user.lastLogin),
 })
 
 export const userRoleToGrpc = (role: UserRole): ProtoUserRole => userRoleFromJSON(role.toUpperCase()) as ProtoUserRole
