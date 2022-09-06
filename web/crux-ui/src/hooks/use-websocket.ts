@@ -14,8 +14,7 @@ const useWebSocket = (route: string, options?: WebSocketClientOptions): WebSocke
     setReadyState(undefined)
 
     if (wsContext.client) {
-      wsContext.client.remove(endpoint.url, this)
-      endpoint.kill()
+      wsContext.client.remove(endpoint)
     }
   })
 

@@ -46,8 +46,12 @@ class WebSocketClient {
     return connected
   }
 
-  async remove(url: string, endpoint: WebSocketClientEndpoint) {
+  async remove(endpoint: WebSocketClientEndpoint) {
+    const { url } = endpoint
+
     this.logger.debug('Disconnecting:', url)
+
+    endpoint.kill()
 
     const route = this.routes.get(url)
     if (route) {
