@@ -7,7 +7,7 @@ interface ContainerStatusTagProps {
 }
 
 const ContainerStatusTag = (props: ContainerStatusTagProps) => {
-  const { state } = props
+  const { state, className } = props
 
   const statusToBgColor = () => {
     switch (state) {
@@ -43,7 +43,7 @@ const ContainerStatusTag = (props: ContainerStatusTagProps) => {
     <DyoTag
       color={statusToBgColor()}
       textColor={statusToTextColor()}
-      className={props.className}
+      className={className}
       solid={state === 'removing'}
     >
       {state.toUpperCase()}

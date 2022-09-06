@@ -34,10 +34,12 @@ interface ProductDetailsPageProps {
 }
 
 const ProductDetailsPage = (props: ProductDetailsPageProps) => {
+  const { product: propsProduct, simpleProductVersionDetails } = props
+
   const { t } = useTranslation('products')
   const router = useRouter()
 
-  const [product, setProduct] = useState(props.product)
+  const [product, setProduct] = useState(propsProduct)
   const [editState, setEditState] = useState<ProductDetailsEditState>('version-list')
   const [increaseTarget, setIncreaseTarget] = useState<Version>(null)
   const [saving, setSaving] = useState(false)
@@ -99,12 +101,10 @@ const ProductDetailsPage = (props: ProductDetailsPageProps) => {
       return
     }
 
-    const newVersions = product.versions.map(it => {
-      return {
-        ...it,
-        default: it.id === version.id,
-      }
-    })
+    const newVersions = product.versions.map(it => ({
+      ...it,
+      default: it.id === version.id,
+    }))
 
     setProduct({
       ...product,
@@ -157,7 +157,6 @@ const ProductDetailsPage = (props: ProductDetailsPageProps) => {
           product={productDetailsToEditableProduct(product)}
           onProductEdited={onProductEdited}
           submitRef={submitRef}
-          versions={product.versions}
         />
       ) : editState === 'add-version' ? (
         <EditVersionCard
@@ -177,7 +176,7 @@ const ProductDetailsPage = (props: ProductDetailsPageProps) => {
       )}
 
       {simpleProduct ? (
-        <VersionSections product={product} version={props.simpleProductVersionDetails} setSaving={setSaving} />
+        <VersionSections product={product} version={simpleProductVersionDetails} setSaving={setSaving} />
       ) : editState === 'version-list' ? (
         <ProductVersionsSection
           productId={product.id}

@@ -1,7 +1,6 @@
 import { UiContainer, UiNodeInputAttributes } from '@ory/kratos-client'
-import { isDyoApiError } from '@server/error-middleware'
 import { IncomingMessageWithSession, obtainKratosSession, userVerified } from '@server/kratos'
-import { FormikErrors } from 'formik'
+import { FormikErrors, FormikHandlers, FormikState } from 'formik'
 import {
   GetServerSideProps,
   GetServerSidePropsContext,
@@ -12,13 +11,13 @@ import {
 import { Translate } from 'next-translate'
 import { NextRouter } from 'next/router'
 import toast from 'react-hot-toast'
-import { DyoErrorDto, DyoFetchError } from './models'
+import { DyoApiError, DyoErrorDto, DyoFetchError, RegistryDetails } from './models'
 import { Timestamp } from './models/grpc/google/protobuf/timestamp'
 import { ROUTE_404, ROUTE_INDEX, ROUTE_LOGIN, ROUTE_STATUS, ROUTE_VERIFICATION } from './routes'
 
 // date
-export const dateToUtcTime = (date: Date): number => {
-  return Date.UTC(
+export const dateToUtcTime = (date: Date): number =>
+  Date.UTC(
     date.getUTCFullYear(),
     date.getUTCMonth(),
     date.getUTCDate(),
@@ -27,7 +26,6 @@ export const dateToUtcTime = (date: Date): number => {
     date.getUTCSeconds(),
     date.getUTCMilliseconds(),
   )
-}
 
 export const utcNow = (): number => dateToUtcTime(new Date())
 
@@ -109,6 +107,7 @@ export const findMessage = (ui: UiContainer, name: string): string => {
 
 // errors
 export const isDyoError = (instance: any) => 'error' in instance && 'description' in instance
+export const isDyoApiError = (instance: any): instance is DyoApiError => isDyoError(instance) && 'status' in instance
 
 export const findError = (errors: DyoErrorDto[], name: string, converter?: (error: DyoErrorDto) => string): string => {
   const error = errors.find(it => it.property === name)
@@ -117,19 +116,6 @@ export const findError = (errors: DyoErrorDto[], name: string, converter?: (erro
   }
 
   return error?.error
-}
-
-export const upsertError = (
-  errors: DyoErrorDto[],
-  name: string,
-  error: string,
-  description?: string,
-): DyoErrorDto[] => {
-  return upsertDyoError(errors, {
-    description: description ?? 'Ui error.',
-    error,
-    property: name,
-  })
 }
 
 export const upsertDyoError = (errors: DyoErrorDto[], error: DyoErrorDto): DyoErrorDto[] => {
@@ -143,9 +129,15 @@ export const upsertDyoError = (errors: DyoErrorDto[], error: DyoErrorDto): DyoEr
   return [...errors, error]
 }
 
-export const removeError = (errors: DyoErrorDto[], name: string): DyoErrorDto[] => {
-  return errors.filter(it => it.property !== name)
-}
+export const upsertError = (errors: DyoErrorDto[], name: string, error: string, description?: string): DyoErrorDto[] =>
+  upsertDyoError(errors, {
+    description: description ?? 'Ui error.',
+    error,
+    property: name,
+  })
+
+export const removeError = (errors: DyoErrorDto[], name: string): DyoErrorDto[] =>
+  errors.filter(it => it.property !== name)
 
 // fetch
 export const configuredFetcher = (init?: RequestInit) => {
@@ -169,7 +161,7 @@ export const configuredFetcher = (init?: RequestInit) => {
       throw error
     }
 
-    return await res.json()
+    return res.json()
   }
 }
 
@@ -177,8 +169,8 @@ export const fetcher = configuredFetcher()
 
 // forms
 export const paginationParams = (req: NextApiRequest, defaultTake: 100): [number, number] => {
-  const skip = (req.query['skip'] ?? 0) as number
-  const take = (req.query['take'] ?? defaultTake) as number
+  const skip = (req.query.skip ?? 0) as number
+  const take = (req.query.take ?? defaultTake) as number
   return [skip, take]
 }
 
@@ -188,20 +180,28 @@ export type FormikSetFieldValue = (
   shouldValidate?: boolean | undefined,
 ) => Promise<FormikErrors<any>> | Promise<void>
 
+export type FormikProps<T> = FormikState<T> &
+  FormikHandlers & {
+    setFieldValue: FormikSetFieldValue
+  }
+
+export type EditRegistryTypeProps<T = RegistryDetails> = {
+  formik: FormikProps<T>
+}
+
 export const formikFieldValueConverter =
   <T>(formik: { setFieldValue: FormikSetFieldValue }, converter: (value: boolean) => T): FormikSetFieldValue =>
   (field, value, shouldValidate) =>
     formik.setFieldValue(field, converter(value), shouldValidate)
 
-export const sendForm = async <Dto>(method: 'POST' | 'PUT', url: string, body: Dto): Promise<Response> => {
-  return await fetch(url, {
+export const sendForm = async <Dto>(method: 'POST' | 'PUT', url: string, body: Dto): Promise<Response> =>
+  await fetch(url, {
     method,
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(body),
   })
-}
 
 type Identifiable = {
   id: string
@@ -249,53 +249,13 @@ export const searchParamsOf = (context: NextPageContext): string => {
   return `?${parts[1]}`
 }
 
-export type CruxUrlParams = {
-  anchor?: string
-}
-
-export const appendUrlParams = <T extends CruxUrlParams>(url: string, params: T): string => {
-  let result = url
-  const paramMap: Map<string, any> = new Map()
-  const anchor = params?.anchor
-
-  if (params) {
-    delete params.anchor
-
-    Object.entries(params).map(entry => {
-      const [key, value] = entry
-      if (key) {
-        paramMap.set(key, value)
-      }
-    })
-  }
-
-  if (paramMap.size > 0) {
-    const entries = Array.from(paramMap.entries())
-    const [firstKey, firstValue] = entries[0]
-    result = `${result}?${firstKey}=${firstValue}`
-
-    if (entries.length > 1) {
-      const rest = entries.slice(1)
-
-      result = fold(rest, result, (prev, it) => {
-        const [key, value] = it
-        return `${prev}&${key}=${value}`
-      })
-    }
-  }
-
-  return anchor ? `${result}#${anchor}` : result
-}
-
 // page ssr
-export const redirectTo = (destination: string, permanent = false): GetServerSidePropsResult<any> => {
-  return {
-    redirect: {
-      destination,
-      permanent,
-    },
-  }
-}
+export const redirectTo = (destination: string, permanent = false): GetServerSidePropsResult<any> => ({
+  redirect: {
+    destination,
+    permanent,
+  },
+})
 
 export type CruxGetServerSideProps<T> = (context: NextPageContext) => Promise<GetServerSidePropsResult<T>>
 
@@ -320,7 +280,8 @@ export const withContextAuthorization =
     const session = await obtainKratosSession(req)
     if (!session) {
       return redirectTo(ROUTE_LOGIN)
-    } else if (!userVerified(session.identity)) {
+    }
+    if (!userVerified(session.identity)) {
       return redirectTo(ROUTE_VERIFICATION)
     }
 
@@ -337,9 +298,8 @@ export const withContextAuthorization =
 
         const url = dyoApiErrorStatusToRedirectUrl(err.status)
         return redirectTo(url)
-      } else {
-        throw err
       }
+      throw err
     }
   }
 

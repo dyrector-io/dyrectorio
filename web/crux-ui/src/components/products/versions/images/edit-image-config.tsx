@@ -14,7 +14,7 @@ interface EditImageConfigProps {
 }
 
 const EditImageConfig = (props: EditImageConfigProps) => {
-  const { config, disabled, disabledContainerNameEditing } = props
+  const { config, disabled, disabledContainerNameEditing, onPatch } = props
 
   const { t } = useTranslation('images')
 
@@ -23,15 +23,15 @@ const EditImageConfig = (props: EditImageConfigProps) => {
 
   const throttle = useThrottling(IMAGE_WS_REQUEST_DELAY)
 
-  const sendPatch = (config: Partial<ContainerConfig>) => {
+  const sendPatch = (cfg: Partial<ContainerConfig>) => {
     const newPatch = {
       ...patch.current,
-      ...config,
+      ...cfg,
     }
     patch.current = newPatch
 
     throttle(() => {
-      props.onPatch(patch.current)
+      onPatch(patch.current)
 
       patch.current = {}
     })
@@ -50,7 +50,7 @@ const EditImageConfig = (props: EditImageConfigProps) => {
     })
   }
 
-  useEffect(() => setContainerName(props.config?.name), [props.config])
+  useEffect(() => setContainerName(config?.name), [config])
 
   return (
     <>

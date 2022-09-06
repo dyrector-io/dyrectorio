@@ -3,9 +3,8 @@ import { redirectTo, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 
-const Index = () => {
-  return <></>
-}
+// eslint-disable-next-line react/jsx-no-useless-fragment
+const Index = () => <></>
 
 export default Index
 

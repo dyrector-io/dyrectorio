@@ -1,152 +1,33 @@
 import { WS_RECONNECT_TIMEOUT } from '@app/const'
 import { Logger } from '@app/logger'
-import { WS_TYPE_DYO_ERROR } from '@app/models'
-import { DyoApiError } from '@server/error-middleware'
-import { WsConnectDto, WsMessage } from './common'
+import { DyoApiError, WS_TYPE_DYO_ERROR } from '@app/models'
+import { WsConnectDto, WsErrorHandler, WsMessage } from './common'
+import WebSocketClientEndpoint from './websocket-client-endpoint'
+import WebSocketClientRoute from './websocket-client-route'
 
-export type WsMessageCallback<T extends any> = (message: T) => void
-
-export type WsErrorHandler = (message: DyoApiError) => void
-
-export type WebSocketClientOptions = {
-  onOpen?: VoidFunction
-  onClose?: VoidFunction
-  onSend?: (message: WsMessage<any>) => void
-  onReceive?: (message: WsMessage<any>) => void
-  onError?: (error: any) => void
-}
-
-export class WebSocketEndpoint {
-  private client: WebSocketClient
-  private callbacks: Map<string, Array<WsMessageCallback<object>>> = new Map()
-  private sendables: Array<WsMessage<object>> = []
-
-  constructor(readonly url: string) {}
-
-  readyStateChanged: (readyState: number) => void
-  options?: WebSocketClientOptions
-
-  setup(readyStateChanged: (readyState: number) => void, options?: WebSocketClientOptions) {
-    this.readyStateChanged = readyStateChanged
-    this.options = options
-    this.callbacks.clear()
-  }
-
-  async close() {
-    if (this.client) {
-      await this.client.remove(this.url, this)
-      this.kill()
-    }
-  }
-
-  kill() {
-    this.client = null
-    this.callbacks = new Map()
-    this.sendables = []
-  }
-
-  on<T extends object>(type: string, callback: (message: T) => void) {
-    let callbacks = this.callbacks.get(type)
-    if (!callbacks) {
-      callbacks = []
-      this.callbacks.set(type, callbacks)
-    }
-
-    callbacks.push(callback)
-  }
-
-  sendWsMessage(message: WsMessage<object>) {
-    if (!this.client || !this.client.sendWsMessage(message, this.url)) {
-      this.sendables.push(message)
-    }
-  }
-
-  send(type: string, payload: object) {
-    this.sendWsMessage({
-      type,
-      payload,
-    } as WsMessage<object>)
-  }
-
-  onMessage(message: WsMessage<object>) {
-    this.options?.onReceive?.call(null, message)
-
-    const callbacks = this.callbacks.get(message.type)
-    callbacks?.forEach(it => it(message.payload))
-  }
-
-  onOpen(client: WebSocketClient) {
-    this.client = client
-
-    if (this.options?.onOpen) {
-      this.options.onOpen()
-    }
-
-    this.flushSendables()
-  }
-
-  onClose() {
-    if (this.options?.onClose) {
-      this.options.onClose()
-    }
-  }
-
-  onError(ev) {
-    if (this.options?.onError) {
-      this.options.onError(ev)
-    }
-  }
-
-  private flushSendables() {
-    if (this.sendables.length > 0) {
-      this.sendables.forEach(it => this.sendWsMessage(it))
-      this.sendables = []
-    }
-  }
-}
-
-export class WebSocketRoute {
-  subscribed = false
-  endpoints: WebSocketEndpoint[] = []
-
-  constructor(public url: string) {}
-
-  kill() {
-    this.endpoints.forEach(it => it.kill())
-    this.endpoints = []
-  }
-
-  async onOpen(client: WebSocketClient) {
-    if (!this.subscribed) {
-      const url = await client.subscribeToRoute(this.url)
-      this.subscribed = !!url
-    }
-
-    this.endpoints.forEach(it => it.onOpen(client))
-  }
-
-  onClose() {
-    this.subscribed = false
-    this.endpoints.forEach(it => it.onClose())
-  }
-}
-
-export class WebSocketClient {
+class WebSocketClient {
   private logger = new Logger('WebSocketClient') // need to be explicit string because of production build uglification
+
   private socket?: WebSocket
+
   private connectionAttempt?: Promise<boolean>
+
   private lastAttempt = 0
+
   private token?: string
+
   private unsubscribe?: VoidFunction
-  private routes: Map<string, WebSocketRoute> = new Map()
+
+  private routes: Map<string, WebSocketClientRoute> = new Map()
+
   private errorHandler: WsErrorHandler = null
 
-  async register(endpoint: WebSocketEndpoint): Promise<boolean> {
-    const url = endpoint.url
+  async register(endpoint: WebSocketClientEndpoint): Promise<boolean> {
+    const { url } = endpoint
 
     let route = this.routes.get(url)
     if (!route) {
-      route = new WebSocketRoute(url)
+      route = new WebSocketClientRoute(url)
       this.routes.set(url, route)
     }
     const connected = await this.connect(route)
@@ -156,16 +37,16 @@ export class WebSocketClient {
 
     if (connected) {
       if (route.subscribed) {
-        endpoint.onOpen(this)
+        endpoint.onOpen(msg => this.sendWsMessage(msg, endpoint.url))
       } else {
-        route.onOpen(this)
+        await this.onRouteOpen(route)
       }
     }
 
     return connected
   }
 
-  async remove(url: string, endpoint: WebSocketEndpoint) {
+  async remove(url: string, endpoint: WebSocketClientEndpoint) {
     this.logger.debug('Disconnecting:', url)
 
     const route = this.routes.get(url)
@@ -247,26 +128,30 @@ export class WebSocketClient {
       this.logger.debug('Failed to subscribe to:', url)
       this.logger.debug('ReadyState:', this.socket?.readyState)
       return null
-    } else {
-      if (res.status === 200) {
-        const dto = (await res.json()) as WsConnectDto
-        this.token = dto.token
-      }
-
-      if (res.redirected) {
-        url = new URL(res.url).pathname
-      }
-
-      this.logger.debug('Subscribed:', url)
-      return url
     }
+    if (res.status === 200) {
+      const dto = (await res.json()) as WsConnectDto
+      this.token = dto.token
+    }
+
+    if (res.redirected) {
+      url = new URL(res.url).pathname
+    }
+
+    this.logger.debug('Subscribed:', url)
+    return url
   }
 
   setErrorHandler(handler: WsErrorHandler) {
     this.errorHandler = handler
   }
 
-  private async connect(route: WebSocketRoute): Promise<boolean> {
+  private async onRouteOpen(route: WebSocketClientRoute) {
+    const url = await this.subscribeToRoute(route.url)
+    route.onOpen(url, msg => this.sendWsMessage(msg, url))
+  }
+
+  private async connect(route: WebSocketClientRoute): Promise<boolean> {
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
       return true
     }
@@ -285,7 +170,8 @@ export class WebSocketClient {
       const url = await this.subscribeToRoute(route.url)
       route.subscribed = !!url
       if (!route.subscribed) {
-        return false
+        resolve(false)
+        return
       }
 
       let resolved = false
@@ -298,7 +184,7 @@ export class WebSocketClient {
         }
 
         this.logger.info('Connected')
-        this.routes.forEach(it => it.onOpen(this))
+        this.routes.forEach(it => this.onRouteOpen(it))
       }
 
       const onClose = () => {
@@ -316,7 +202,7 @@ export class WebSocketClient {
       const onError = ev => {
         this.logger.error(`Error occurred:`, ev)
 
-        this.routes.forEach(route => route.endpoints.forEach(it => it.onError(ev)))
+        this.routes.forEach(r => r.endpoints.forEach(it => it.onError(ev)))
       }
 
       const onMessage = ev => {
@@ -331,7 +217,7 @@ export class WebSocketClient {
           this.errorHandler(message.payload as DyoApiError)
         }
 
-        this.routes.forEach(route => route.endpoints.forEach(it => it.onMessage(message)))
+        this.routes.forEach(r => r.endpoints.forEach(it => it.onMessage(message)))
       }
 
       const ws = this.socket
@@ -381,10 +267,12 @@ export class WebSocketClient {
   }
 
   private assembleWsUrl(endpoint: string) {
-    const location = window.location
+    const { location } = window
     // TODO create some warning when we are in production build but the connection is insecure
     const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
     const route = `${protocol}//${location.host}${endpoint}`
     return !this.token ? route : `${route}?token=${this.token}`
   }
 }
+
+export default WebSocketClient

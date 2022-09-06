@@ -12,24 +12,24 @@ interface DyoChipsProps<T> {
 }
 
 const DyoChips = <T,>(props: DyoChipsProps<T>) => {
-  const { choices, converter, onSelectionChange } = props
+  const { choices, converter, onSelectionChange, key: propsKey, className, initialSelection } = props
 
   assert(
     converter || choices.length < 1 || typeof choices[0] === 'string',
     'When choices are not string, you must define a converter.',
   )
 
-  const [selection, setSelection] = useState<T>(props.initialSelection ?? null)
+  const [selection, setSelection] = useState<T>(initialSelection ?? null)
 
   const onToggle = item => {
     setSelection(item)
     onSelectionChange(item)
   }
 
-  const key = props.key ?? 'dyo-chips'
+  const key = propsKey ?? 'dyo-chips'
 
   return (
-    <div className={props.className}>
+    <div className={className}>
       {choices.map((it, index) => {
         const text = converter ? converter(it) : it
 

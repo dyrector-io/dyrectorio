@@ -1,43 +1,7 @@
+import { internalError, unauthorizedError } from '@app/error-responses'
 import { RegistryImageTags } from '@app/models'
-import { internalError, unauthorizedError } from '@server/error-middleware'
+import HubApiCache from './caches/hub-api-cache'
 import { RegistryApiClient } from './registry-api-client'
-
-type CacheEntry = {
-  createdAt: number
-  data: any
-}
-
-export class HubApiCache {
-  constructor(private expirationMillis: number) {}
-
-  private entries: Map<string, CacheEntry> = new Map()
-
-  public clients = 1
-
-  get(url: string) {
-    const now = new Date().getTime()
-
-    const entry = this.entries.get(url)
-
-    if (!entry) {
-      return null
-    }
-
-    if (now - entry.createdAt >= this.expirationMillis) {
-      this.entries.delete(url)
-      return null
-    }
-
-    return entry.data
-  }
-
-  upsert(url: string, data: any) {
-    this.entries.set(url, {
-      createdAt: new Date().getTime(),
-      data,
-    })
-  }
-}
 
 type HubApiPaginatedResponse = {
   count: number
@@ -80,7 +44,7 @@ class HubApiClient implements RegistryApiClient {
     }
   }
 
-  private async _fetch(endpoint: string, init?: RequestInit) {
+  private async fetch(endpoint: string, init?: RequestInit) {
     const initializer = init ?? {}
     const fullUrl = `https://${this.url}/v2/repositories/${this.prefix}/${endpoint}`
 
@@ -95,7 +59,7 @@ class HubApiClient implements RegistryApiClient {
   private async fetchPaginatedEndpoint(endpoint: string) {
     const result = []
 
-    let next = () => this._fetch(`${endpoint}`)
+    let next = () => this.fetch(`${endpoint}`)
 
     do {
       const res = await next()

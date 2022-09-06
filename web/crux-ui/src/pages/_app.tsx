@@ -1,7 +1,7 @@
+import DyoHead from '@app/components/main/dyo-head'
 import { WebSocketProvider } from '@app/providers/websocket'
 import '@app/styles/global.css'
 import { AppProps } from 'next/app'
-import { DyoHead } from '../components/main/dyo-head'
 
 const CruxApp = ({ Component, pageProps }: AppProps) => (
   <>

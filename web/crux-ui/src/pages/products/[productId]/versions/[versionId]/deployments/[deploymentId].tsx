@@ -5,9 +5,9 @@ import EditDeploymentInstances from '@app/components/products/versions/deploymen
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
-import { DyoButton } from '@app/elements/dyo-button'
+import DyoButton from '@app/elements/dyo-button'
 import LoadingIndicator from '@app/elements/loading-indicator'
-import { useWebSocket } from '@app/hooks/use-websocket'
+import useWebSocket from '@app/hooks/use-websocket'
 import {
   DeploymentEnvUpdatedMessage,
   deploymentIsMutable,
@@ -42,14 +42,15 @@ interface DeploymentDetailsPageProps {
 }
 
 const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
+  const { deployment: propsDeployment } = props
+
   const { t } = useTranslation('deployments')
 
   const router = useRouter()
 
-  const product = props.deployment.product
-  const version = props.deployment.version
+  const { product, version } = propsDeployment
 
-  const [deployment, setDeployment] = useState(props.deployment)
+  const [deployment, setDeployment] = useState(propsDeployment)
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
   const submitRef = useRef<() => Promise<any>>()
@@ -118,13 +119,13 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
   const onDeploy = () => {
     let error: ValidationError
 
-    for (const instance of deployment.instances) {
+    let i = 0
+
+    while (!error && i < deployment.instances.length) {
+      const instance = deployment.instances[i]
       const mergedConfig = mergeConfigs(instance.image.config, instance.overriddenConfig)
       error = getValidationError(containerConfigSchema, mergedConfig)
-
-      if (error) {
-        break
-      }
+      i++
     }
 
     if (error) {
@@ -136,8 +137,8 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
     onOpenLog()
   }
 
-  const onDeploymentEdited = deployment => {
-    setDeployment(deployment)
+  const onDeploymentEdited = dep => {
+    setDeployment(dep)
     setEditing(false)
   }
 
@@ -145,7 +146,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
     if (mutable && deployment.node.status !== 'running') {
       toast.error(t('common:nodeUnreachable'))
     }
-  }, [])
+  }, [deployment, mutable, t])
 
   return (
     <Layout
@@ -199,16 +200,6 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
 
 export default DeploymentDetailsPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
-  return {
-    props: {
-      deployment: await getDeploymentRoot(context, cruxFromContext(context)),
-    },
-  }
-}
-
-export const getServerSideProps = withContextAuthorization(getPageServerSideProps)
-
 export const getDeploymentRoot = async (context: NextPageContext, crux: Crux) => {
   const { productId, versionId, deploymentId } = context.query
 
@@ -224,3 +215,11 @@ export const getDeploymentRoot = async (context: NextPageContext, crux: Crux) =>
     node: await node,
   } as DeploymentRoot
 }
+
+const getPageServerSideProps = async (context: NextPageContext) => ({
+  props: {
+    deployment: await getDeploymentRoot(context, cruxFromContext(context)),
+  },
+})
+
+export const getServerSideProps = withContextAuthorization(getPageServerSideProps)

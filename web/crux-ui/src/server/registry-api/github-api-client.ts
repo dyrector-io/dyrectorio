@@ -1,10 +1,10 @@
 import { REGISTRY_GITHUB_URL } from '@app/const'
+import { internalError, unauthorizedError } from '@app/error-responses'
 import { RegistryImageTags } from '@app/models'
-import { internalError, unauthorizedError } from '@server/error-middleware'
 import { RegistryApiClient } from './registry-api-client'
 import RegistryV2ApiClient, { registryCredentialsToBasicAuth, RegistryV2ApiClientOptions } from './v2-api-client'
 
-export class GithubRegistryClient implements RegistryApiClient {
+class GithubRegistryClient implements RegistryApiClient {
   private basicAuthHeaders: HeadersInit
 
   constructor(private organization: string, options: RegistryV2ApiClientOptions) {
@@ -62,3 +62,5 @@ export class GithubRegistryClient implements RegistryApiClient {
     }
   }
 }
+
+export default GithubRegistryClient

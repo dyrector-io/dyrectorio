@@ -1,19 +1,10 @@
+/* eslint-disable import/no-cycle */
+/* eslint-disable no-underscore-dangle */
+/* eslint-disable @typescript-eslint/no-shadow */
+// TODO(Balanceee): refactor
 import { WS_DATA_CRUX } from '@app/const'
 import { CruxHealth } from '@app/models'
-import {
-  CruxAuditClient,
-  CruxDeploymentClient,
-  CruxHealthClient,
-  CruxImageClient,
-  CruxNodeClient,
-  CruxNotificationClient,
-  CruxProductClient,
-  CruxProductVersionClient,
-  CruxRegistryClient,
-  CruxTeamClient,
-} from '@app/models/grpc/protobuf/proto/crux'
-import { WsConnection } from '@app/websockets/server'
-import { credentials } from '@grpc/grpc-js'
+import WsConnection from '@app/websockets/connection'
 import { Identity } from '@ory/kratos-client'
 import { sessionOf, sessionOfContext } from '@server/kratos'
 import registryConnections, { RegistryConnections } from '@server/registry-api/registry-connections'
@@ -22,6 +13,7 @@ import { NextApiRequest, NextPageContext } from 'next'
 import { join } from 'path'
 import { cwd } from 'process'
 import DyoAuditService from './audit-service'
+import CruxClients from './crux-clients'
 import DyoDeploymentService from './deployment-service'
 import DyoHealthService from './health-service'
 import DyoImageService from './image-service'
@@ -32,44 +24,25 @@ import DyoRegistryService from './registry-service'
 import DyoTeamService from './team-service'
 import DyoVersionService from './version-service'
 
-class CruxClients {
-  products: CruxProductClient
-  registries: CruxRegistryClient
-  nodes: CruxNodeClient
-  versions: CruxProductVersionClient
-  images: CruxImageClient
-  deployments: CruxDeploymentClient
-  teams: CruxTeamClient
-  health: CruxHealthClient
-  audit: CruxAuditClient
-  notifications: CruxNotificationClient
-
-  constructor(address: string, publicKey: Buffer) {
-    const creds = publicKey ? credentials.createSsl(publicKey) : credentials.createInsecure()
-
-    this.products = new CruxProductClient(address, creds)
-    this.registries = new CruxRegistryClient(address, creds)
-    this.nodes = new CruxNodeClient(address, creds)
-    this.versions = new CruxProductVersionClient(address, creds)
-    this.images = new CruxImageClient(address, creds)
-    this.deployments = new CruxDeploymentClient(address, creds)
-    this.teams = new CruxTeamClient(address, creds)
-    this.health = new CruxHealthClient(address, creds)
-    this.audit = new CruxAuditClient(address, creds)
-    this.notifications = new CruxNotificationClient(address, creds)
-  }
-}
-
 export class Crux {
   private _products: DyoProductService
+
   private _registries: DyoRegistryService
+
   private _nodes: DyoNodeService
+
   private _versions: DyoVersionService
+
   private _images: DyoImageService
+
   private _deployments: DyoDeploymentService
+
   private _teams: DyoTeamService
+
   private _health: DyoHealthService
+
   private _audit: DyoAuditService
+
   private _notifications: DyoNotifcationService
 
   private constructor(
@@ -119,14 +92,14 @@ export class Crux {
   }
 
   public static withIdentity(identity: Identity): Crux {
-    return new Crux(global._cruxClients, identity, registryConnections)
+    return new Crux(global.cruxClients, identity, registryConnections)
   }
 }
 
-if (!global._cruxClients) {
+if (!global.cruxClients) {
   try {
     const cert = process.env.CRUX_INSECURE === 'true' ? null : readFileSync(join(cwd(), './certs/api-public.crt'))
-    global._cruxClients = new CruxClients(process.env.CRUX_ADDRESS, cert)
+    global.cruxClients = new CruxClients(process.env.CRUX_ADDRESS, cert)
   } catch (error) {
     if (process.env.NEXT_PHASE !== 'phase-production-build') {
       const msg = 'could not load public cert file'

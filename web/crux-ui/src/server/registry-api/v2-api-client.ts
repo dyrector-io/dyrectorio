@@ -1,5 +1,5 @@
+import { internalError, unauthorizedError } from '@app/error-responses'
 import { RegistryImageTags } from '@app/models'
-import { internalError, unauthorizedError } from '@server/error-middleware'
 import { RegistryApiClient } from './registry-api-client'
 
 export type RegistryV2ApiClientOptions = {
@@ -28,7 +28,7 @@ class RegistryV2ApiClient implements RegistryApiClient {
   }
 
   async version() {
-    const res = await this._fetch('/')
+    const res = await this.fetch('/')
     if (!res.ok) {
       const errorMessage = `Version request failed with status: ${res.status} ${res.statusText}`
       throw res.status === 401 ? unauthorizedError(errorMessage) : internalError(errorMessage)
@@ -38,7 +38,7 @@ class RegistryV2ApiClient implements RegistryApiClient {
   }
 
   async catalog(text: string, take: number): Promise<string[]> {
-    const res = await RegistryV2ApiClient.fetchPaginatedEndpoint(it => this._fetch(it), '/_catalog')
+    const res = await RegistryV2ApiClient.fetchPaginatedEndpoint(it => this.fetch(it), '/_catalog')
     if (!res.ok) {
       const errorMessage = `Catalog request failed with status: ${res.status} ${res.statusText}`
       throw res.status === 401 ? unauthorizedError(errorMessage) : internalError(errorMessage)
@@ -50,7 +50,7 @@ class RegistryV2ApiClient implements RegistryApiClient {
   }
 
   async tags(image: string): Promise<RegistryImageTags> {
-    const res = await RegistryV2ApiClient.fetchPaginatedEndpoint(it => this._fetch(it), `/${image}/tags/list`)
+    const res = await RegistryV2ApiClient.fetchPaginatedEndpoint(it => this.fetch(it), `/${image}/tags/list`)
     if (!res.ok) {
       const errorMessage = `Tags request failed with status: ${res.status} ${res.statusText}`
       throw res.status === 401 ? unauthorizedError(errorMessage) : internalError(errorMessage)
@@ -63,7 +63,7 @@ class RegistryV2ApiClient implements RegistryApiClient {
     }
   }
 
-  private async _fetch(endpoint: string, init?: RequestInit): Promise<Response> {
+  private async fetch(endpoint: string, init?: RequestInit): Promise<Response> {
     const initializer = init ?? {}
     const fullUrl = `https://${this.url}/v2${endpoint}`
 

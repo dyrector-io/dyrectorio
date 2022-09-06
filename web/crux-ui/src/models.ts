@@ -1,9 +1,12 @@
 import { Identity } from '@ory/kratos-client'
-import { DyoApiError } from '@server/error-middleware'
 import { REGISTRY_GITHUB_URL, REGISTRY_GITLAB_URLS, REGISTRY_HUB_URL } from './const'
 import { ContainerConfig, Environment, InstanceContainerConfig } from './models-config'
 
 // TODO(polaroi8d): refactor the models.ts
+
+export type DyoApiError = DyoErrorDto & {
+  status: number
+}
 
 export const PRODUCT_TYPE_VALUES = ['simple', 'complex'] as const
 export type ProductType = typeof PRODUCT_TYPE_VALUES[number]
@@ -156,6 +159,11 @@ export type VersionDetails = Version & {
   deployments: DeploymentByVersion[]
 }
 
+export type VersionAddSectionState = 'image' | 'deployment' | 'none'
+
+export const VERSION_SECTIONS_STATE_VALUES = ['images', 'deployments', 'reorder'] as const
+export type VersionSectionsState = typeof VERSION_SECTIONS_STATE_VALUES[number]
+
 export type Product = {
   id: string
   name: string
@@ -245,7 +253,7 @@ export type HubRegistryDetails = {
 export type V2RegistryDetails = {
   type: 'v2'
   url: string
-  _private: boolean
+  isPrivate: boolean
   user?: string
   token?: string
 }
@@ -271,7 +279,7 @@ export type GoogleRegistryDetails = {
   type: 'google'
   url: string
   imageNamePrefix: string
-  _private: boolean
+  isPrivate: boolean
   user?: string
   token?: string
 }
@@ -675,12 +683,11 @@ export const nameOfIdentity = (identity: Identity): string => {
   return `${traits?.name?.first ?? ''} ${traits?.name?.last ?? ''}`
 }
 
-export const productDetailsToEditableProduct = (product: ProductDetails) => {
-  return {
+export const productDetailsToEditableProduct = (product: ProductDetails) =>
+  ({
     ...product,
     changelog: product.type === 'simple' ? product.versions[0].changelog : null,
-  } as EditableProduct
-}
+  } as EditableProduct)
 
 export const updateProductDetailsWithEditableProduct = (product: ProductDetails, edit: EditableProduct) => {
   const newProduct = {
@@ -726,12 +733,12 @@ export const registryUrlOf = (it: RegistryDetails) => {
       return it.selfManaged ? it.url : REGISTRY_GITLAB_URLS.registryUrl
     case 'github':
       return REGISTRY_GITHUB_URL
+    default:
+      return null
   }
 }
 
-export const registryDetailsToRegistry = (it: RegistryDetails): Registry => {
-  return {
-    ...it,
-    url: registryUrlOf(it),
-  }
-}
+export const registryDetailsToRegistry = (it: RegistryDetails): Registry => ({
+  ...it,
+  url: registryUrlOf(it),
+})

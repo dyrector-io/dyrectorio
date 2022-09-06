@@ -25,44 +25,42 @@ const Topbar = (props: TopbarProps) => {
   const toggleTeamSelection = () => setTeamSelectionVisible(!teamSelectionVisible)
 
   return (
-    <>
-      <DyoCard className={clsx(className, 'flex flex-row justify-end relative p-4')}>
-        {!user ? (
-          <LoadingIndicator />
-        ) : (
-          <>
-            <div className="flex flex-col items-end cursor-pointer mr-4" onClick={toggleTeamSelection}>
-              <DyoLabel className="cursor-pointer">{user.name}</DyoLabel>
-              <DyoLabel className="text-sm cursor-pointer">{`${t(roleToText(user.role))} @ ${
-                selectedTeamOf(meta)?.name
-              }`}</DyoLabel>
-            </div>
+    <DyoCard className={clsx(className, 'flex flex-row justify-end relative p-4')}>
+      {!user ? (
+        <LoadingIndicator />
+      ) : (
+        <>
+          <div className="flex flex-col items-end cursor-pointer mr-4" onClick={toggleTeamSelection}>
+            <DyoLabel className="cursor-pointer">{user.name}</DyoLabel>
+            <DyoLabel className="text-sm cursor-pointer">{`${t(roleToText(user.role))} @ ${
+              selectedTeamOf(meta)?.name
+            }`}</DyoLabel>
+          </div>
 
-            <Image
-              className="cursor-pointer"
-              src="/default_avatar.svg"
-              alt={t('teamAvatar')}
-              width={38}
-              height={38}
-              onClick={toggleTeamSelection}
-            />
+          <Image
+            className="cursor-pointer"
+            src="/default_avatar.svg"
+            alt={t('teamAvatar')}
+            width={38}
+            height={38}
+            onClick={toggleTeamSelection}
+          />
 
-            {!teamSelectionVisible ? null : (
-              <>
-                <div className="w-full absolute bottom-0 right-0">
-                  <TeamSelectionCard
-                    className="flex flex-col flex-grow absolute top-0 right-0 mt-2 z-20"
-                    meta={meta}
-                    onTeamSelected={toggleTeamSelection}
-                  />
-                </div>
-                <div className="w-full h-full fixed top-0 right-0 z-10" onClick={toggleTeamSelection} />
-              </>
-            )}
-          </>
-        )}
-      </DyoCard>
-    </>
+          {!teamSelectionVisible ? null : (
+            <>
+              <div className="w-full absolute bottom-0 right-0">
+                <TeamSelectionCard
+                  className="flex flex-col flex-grow absolute top-0 right-0 mt-2 z-20"
+                  meta={meta}
+                  onTeamSelected={toggleTeamSelection}
+                />
+              </div>
+              <div className="w-full h-full fixed top-0 right-0 z-10" onClick={toggleTeamSelection} />
+            </>
+          )}
+        </>
+      )}
+    </DyoCard>
   )
 }
 

@@ -20,6 +20,8 @@ export interface SidebarProps {
 }
 
 export const Sidebar = (props: SidebarProps) => {
+  const { className } = props
+
   const { t } = useTranslation('common')
 
   const productOptions = [
@@ -77,7 +79,7 @@ export const Sidebar = (props: SidebarProps) => {
   ]
 
   return (
-    <div className={props.className}>
+    <div className={className}>
       <div className="mx-12">
         <Link href={ROUTE_INDEX}>
           <a>

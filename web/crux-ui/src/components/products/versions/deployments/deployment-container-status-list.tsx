@@ -1,7 +1,7 @@
 import ContainerStatusIndicator from '@app/components/nodes/container-status-indicator'
 import ContainerStatusTag from '@app/components/nodes/container-status-tag'
 import { DyoList } from '@app/elements/dyo-list'
-import { useWebSocket } from '@app/hooks/use-websocket'
+import useWebSocket from '@app/hooks/use-websocket'
 import {
   Container,
   ContainerListMessage,
@@ -35,27 +35,22 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
 
   sock.on(WS_TYPE_CONTAINER_STATUS_LIST, (message: ContainerListMessage) => setContainers(message))
 
-  return !containers ? null : (
-    <DyoList
-      className="mt-6 mb-2"
-      data={containers}
-      noSeparator
-      itemBuilder={it => {
-        const now = utcNow()
-        const created = new Date(it.date).getTime()
-        const seconds = Math.floor((now - created) / 1000)
+  const itemTemplate = (item: Container) => {
+    const now = utcNow()
+    const created = new Date(item.date).getTime()
+    const seconds = Math.floor((now - created) / 1000)
 
-        /* eslint-disable react/jsx-key */
-        return [
-          <ContainerStatusIndicator state={it.state} />,
-          <span>{it.name}</span>,
-          <span>{timeAgo(t, seconds)}</span>,
-          <ContainerStatusTag className="inline-block" state={it.state} />,
-        ]
-        /* eslint-enable react/jsx-key */
-      }}
-    />
-  )
+    /* eslint-disable react/jsx-key */
+    return [
+      <ContainerStatusIndicator state={item.state} />,
+      <span>{item.name}</span>,
+      <span>{timeAgo(t, seconds)}</span>,
+      <ContainerStatusTag className="inline-block" state={item.state} />,
+    ]
+    /* eslint-enable react/jsx-key */
+  }
+
+  return !containers ? null : <DyoList className="mt-6 mb-2" data={containers} noSeparator itemBuilder={itemTemplate} />
 }
 
 export default DeploymentContainerStatusList

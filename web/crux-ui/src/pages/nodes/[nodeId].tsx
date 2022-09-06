@@ -19,21 +19,23 @@ interface NodeDetailsProps {
 }
 
 const NodeDetails = (props: NodeDetailsProps) => {
+  const { node: propsNode } = props
+
   const { t } = useTranslation('nodes')
 
   const router = useRouter()
 
-  const [node, setNode] = useState(props.node)
+  const [node, setNode] = useState(propsNode)
   const [editing, setEditing] = useState(false)
   const submitRef = useRef<() => Promise<any>>()
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const onNodeEdited = (node: DyoNodeDetails, shouldClose?: boolean) => {
+  const onNodeEdited = (item: DyoNodeDetails, shouldClose?: boolean) => {
     if (shouldClose) {
       setEditing(false)
     }
-    setNode(node)
+    setNode(item)
   }
 
   const onDelete = async () => {

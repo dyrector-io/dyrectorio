@@ -3,12 +3,12 @@ import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { SaveDiscardPageMenu } from '@app/components/shared/page-menu'
 import { ATTRIB_CSRF } from '@app/const'
-import { DyoButton } from '@app/elements/dyo-button'
+import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
-import { DyoMessage } from '@app/elements/dyo-message'
+import DyoMessage from '@app/elements/dyo-message'
 import { ChangePassword } from '@app/models'
 import { API_SETTINGS_CHANGE_PASSWORD, ROUTE_LOGIN, ROUTE_SETTINGS, ROUTE_SETTINGS_CHANGE_PASSWORD } from '@app/routes'
 import { findAttributes, findMessage, sendForm, withContextAuthorization } from '@app/utils'
@@ -21,10 +21,12 @@ import { useRouter } from 'next/dist/client/router'
 import { useRef, useState } from 'react'
 
 const SettingsPage = (props: SelfServiceSettingsFlow) => {
+  const { ui: propsUi, id, identity } = props
+
   const { t } = useTranslation('settings')
   const router = useRouter()
 
-  const [ui, setUi] = useState(props.ui)
+  const [ui, setUi] = useState(propsUi)
   const [confirmError, setConfirmError] = useState<string>(null)
   const saveRef = useRef<() => Promise<any>>()
 
@@ -42,7 +44,7 @@ const SettingsPage = (props: SelfServiceSettingsFlow) => {
       setConfirmError(null)
 
       const data: ChangePassword = {
-        flow: props.id,
+        flow: id,
         csrfToken: findAttributes(ui, ATTRIB_CSRF).value,
         password: values.password,
       }
@@ -52,10 +54,10 @@ const SettingsPage = (props: SelfServiceSettingsFlow) => {
       if (res.ok) {
         router.back()
       } else if (res.status === 403) {
-        router.replace(`${ROUTE_LOGIN}?refresh=${props.identity.traits.email}`)
+        router.replace(`${ROUTE_LOGIN}?refresh=${identity.traits.email}`)
       } else {
-        const data = await res.json()
-        setUi(data.ui)
+        const result = await res.json()
+        setUi(result.ui)
       }
     },
   })
@@ -122,7 +124,7 @@ const SettingsPage = (props: SelfServiceSettingsFlow) => {
 export default SettingsPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
-  const cookie = context.req.headers.cookie
+  const { cookie } = context.req.headers
 
   const flow = await kratos.initializeSelfServiceSettingsFlowForBrowsers(undefined, {
     headers: {

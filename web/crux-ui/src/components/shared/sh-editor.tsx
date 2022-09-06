@@ -9,11 +9,12 @@ interface ShEditorProps {
   className?: string
   readOnly?: boolean
   value?: string
-  onChange?: (value?: string) => void
 }
 
 const ShEditor = (props: ShEditorProps) => {
-  const [state, setState] = useState(props.value)
+  const { className, readOnly, value } = props
+
+  const [state, setState] = useState(value)
 
   const onChange = (text: string) => {
     setState(text)
@@ -21,19 +22,16 @@ const ShEditor = (props: ShEditorProps) => {
 
   return (
     <div
-      className={clsx(
-        'bg-gray-900 rounded-md ring-2 ring-light-grey border-dark caret-white text-blue-300',
-        props.className,
-      )}
+      className={clsx('bg-gray-900 rounded-md ring-2 ring-light-grey border-dark caret-white text-blue-300', className)}
     >
       <Editor
-        readOnly={props.readOnly}
+        readOnly={readOnly}
         padding={2}
         tabSize={2}
         insertSpaces
         value={state}
         onValueChange={onChange}
-        highlight={value => highlight(value, languages['shell'], 'shell')}
+        highlight={newValue => highlight(newValue, languages.shell, 'shell')}
       />
     </div>
   )

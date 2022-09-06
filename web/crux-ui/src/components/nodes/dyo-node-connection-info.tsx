@@ -30,10 +30,8 @@ const DyoNodeConnectionInfo = (props: DyoNodeConnectionInfoProps) => {
 
         <span className="text-light-eased">{node.address}</span>
 
-        <>
-          <DyoLabel> {t('version')}</DyoLabel>
-          <DyoNodeVersionText className="text-light-eased" version={node.version} />
-        </>
+        <DyoLabel> {t('version')}</DyoLabel>
+        <DyoNodeVersionText className="text-light-eased" version={node.version} />
 
         <DyoLabel>{t('status')}</DyoLabel>
 

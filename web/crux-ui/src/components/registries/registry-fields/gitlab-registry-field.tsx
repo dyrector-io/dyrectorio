@@ -1,0 +1,96 @@
+import { DyoInput } from '@app/elements/dyo-input'
+import { DyoLabel } from '@app/elements/dyo-label'
+import DyoToggle from '@app/elements/dyo-toggle'
+import { GitlabRegistryDetails } from '@app/models'
+import { EditRegistryTypeProps } from '@app/utils'
+import useTranslation from 'next-translate/useTranslation'
+
+const GitlabRegistryFields = (props: EditRegistryTypeProps<GitlabRegistryDetails>) => {
+  const { formik } = props
+
+  const { t } = useTranslation('registries')
+
+  return (
+    <>
+      <DyoLabel className="text-light mt-2">{t('tips.gitlab')}</DyoLabel>
+
+      <DyoInput
+        className="max-w-lg"
+        grow
+        name="user"
+        type="text"
+        label={t('user')}
+        onChange={formik.handleChange}
+        value={formik.values.user}
+        message={formik.errors.user}
+      />
+
+      <DyoInput
+        className="max-w-lg"
+        grow
+        name="token"
+        type="password"
+        label={t('token')}
+        onChange={formik.handleChange}
+        value={formik.values.token}
+        message={formik.errors.token}
+      />
+
+      <DyoInput
+        className="max-w-lg"
+        grow
+        name="imageNamePrefix"
+        type="text"
+        label={t('group')}
+        onChange={formik.handleChange}
+        value={formik.values.imageNamePrefix}
+        message={formik.errors.imageNamePrefix}
+      />
+
+      <div className="mr-auto">
+        <DyoToggle
+          className="text-bright mt-8"
+          name="selfManaged"
+          nameChecked={t('selfManaged')}
+          nameUnchecked={t('saas')}
+          checked={formik.values.selfManaged}
+          setFieldValue={(field: string, value: boolean, shouldValidate?: boolean | undefined) => {
+            if (!value) {
+              formik.setFieldValue('url', '', false)
+              formik.setFieldValue('apiUrl', '', false)
+            }
+            return formik.setFieldValue(field, value, shouldValidate)
+          }}
+        />
+      </div>
+
+      {!formik.values.selfManaged ? null : (
+        <>
+          <DyoInput
+            className="max-w-lg"
+            grow
+            name="url"
+            type="text"
+            label={t('url')}
+            onChange={formik.handleChange}
+            value={formik.values.url}
+            message={formik.errors.url}
+          />
+
+          <DyoInput
+            className="max-w-lg"
+            grow
+            name="apiUrl"
+            type="text"
+            label={t('apiUrl')}
+            onChange={formik.handleChange}
+            value={formik.values.apiUrl}
+            message={formik.errors.apiUrl}
+          />
+        </>
+      )}
+    </>
+  )
+}
+
+export default GitlabRegistryFields

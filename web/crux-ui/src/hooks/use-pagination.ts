@@ -36,7 +36,7 @@ export const usePagination = <Item>(options: UsePaginationOptions<Item>): Pagina
     items,
     displayed,
     pageData,
-    setItems: setItems,
+    setItems,
     setPageData: it =>
       setPageData({
         ...pageData,

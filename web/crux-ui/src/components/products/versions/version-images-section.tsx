@@ -1,23 +1,32 @@
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { PatchVersionImage, VersionImage } from '@app/models'
-import { WebSocketEndpoint } from '@app/websockets/client'
+import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 import useTranslation from 'next-translate/useTranslation'
 import EditImageCard from './images/edit-image-card'
 import { imageTagKey, ImageTagsMap } from './use-images-websocket'
 
+export const mergeImagePatch = (oldImage: VersionImage, newImage: PatchVersionImage): VersionImage => ({
+  ...oldImage,
+  ...newImage,
+  config: {
+    name: newImage.config?.name ?? oldImage.config.name,
+    environment: newImage.config?.environment ?? oldImage.config.environment,
+    capabilities: newImage.config?.capabilities ?? oldImage.config.capabilities,
+    config: newImage.config?.config ?? oldImage.config.config,
+  },
+})
+
 interface VersionImagesSectionProps {
   disabled?: boolean
-  productId: string
-  versionId: string
   images: VersionImage[]
   imageTags: ImageTagsMap
-  versionSock: WebSocketEndpoint
+  versionSock: WebSocketClientEndpoint
   onTagSelected: (image: VersionImage, tag: string) => void
 }
 
 const VersionImagesSection = (props: VersionImagesSectionProps) => {
-  const { images, imageTags, versionSock, onTagSelected } = props
+  const { images, imageTags, versionSock, onTagSelected, disabled } = props
 
   const { t } = useTranslation('images')
 
@@ -31,7 +40,7 @@ const VersionImagesSection = (props: VersionImagesSectionProps) => {
 
           return (
             <EditImageCard
-              disabled={props.disabled}
+              disabled={disabled}
               versionSock={versionSock}
               key={it.order}
               image={it}
@@ -49,16 +58,3 @@ const VersionImagesSection = (props: VersionImagesSectionProps) => {
 }
 
 export default VersionImagesSection
-
-export const mergeImagePatch = (oldImage: VersionImage, newImage: PatchVersionImage): VersionImage => {
-  return {
-    ...oldImage,
-    ...newImage,
-    config: {
-      name: newImage.config?.name ?? oldImage.config.name,
-      environment: newImage.config?.environment ?? oldImage.config.environment,
-      capabilities: newImage.config?.capabilities ?? oldImage.config.capabilities,
-      config: newImage.config?.config ?? oldImage.config.config,
-    },
-  }
-}

@@ -6,21 +6,13 @@ import {
   DeploymentDetails,
   DeploymentEditEventMessage,
   DeploymentEvent,
-  DeploymentEventType,
-  DeploymentStatus,
   ImageDeletedMessage,
-  Instance,
   InstancesAddedMessage,
   PatchDeployment,
   UpdateDeployment,
   WS_TYPE_IMAGE_DELETED,
   WS_TYPE_INSTANCES_ADDED,
 } from '@app/models'
-import { InstanceContainerConfig } from '@app/models-config'
-import {
-  DeploymentStatus as ProtoDeploymentStatus,
-  deploymentStatusToJSON,
-} from '@app/models/grpc/protobuf/proto/common'
 import {
   AccessRequest,
   CreateDeploymentRequest,
@@ -29,14 +21,11 @@ import {
   DeploymentDetailsResponse,
   DeploymentEditEventMessage as ProtoDeploymentEditEventMessage,
   DeploymentEventListResponse,
-  DeploymentEventType as ProtoDeploymentEventType,
   DeploymentListByVersionResponse,
   DeploymentListResponse,
   DeploymentProgressMessage,
   Empty,
   IdRequest,
-  InstanceContainerConfig as ProtoInstanceContainerConfig,
-  InstanceResponse,
   PatchDeploymentRequest,
   ServiceIdRequest,
   UpdateDeploymentRequest,
@@ -46,8 +35,9 @@ import { timestampToUTC } from '@app/utils'
 import { WsMessage } from '@app/websockets/common'
 import { Identity } from '@ory/kratos-client'
 import { GrpcConnection, protomisify, ProtoSubscriptionOptions } from './grpc-connection'
-import { explicitContainerConfigToDto, explicitContainerConfigToProto, imageToDto } from './image-service'
-import { containerStateToDto, nodeStatusToDto } from './node-service'
+import { deploymentEventTypeToDto, deploymentStatusToDto, instanceToDto } from './mappers/deployment-mappers'
+import { explicitContainerConfigToProto } from './mappers/image-mappers'
+import { containerStateToDto, nodeStatusToDto } from './mappers/node-mappers'
 
 class DyoDeploymentService {
   private logger = new Logger(DyoDeploymentService.name)
@@ -64,12 +54,10 @@ class DyoDeploymentService {
       this.client.getDeploymentList,
     )(IdRequest, req)
 
-    return deployments.data.map(it => {
-      return {
-        ...it,
-        status: deploymentStatusToDto(it.status),
-      }
-    })
+    return deployments.data.map(it => ({
+      ...it,
+      status: deploymentStatusToDto(it.status),
+    }))
   }
 
   async getAllByVersionId(verisonId: string): Promise<DeploymentByVersion[]> {
@@ -83,14 +71,12 @@ class DyoDeploymentService {
       this.client.getDeploymentsByVersionId,
     )(IdRequest, req)
 
-    return deployments.data.map(it => {
-      return {
-        ...it,
-        date: timestampToUTC(it.audit.updatedAt),
-        status: deploymentStatusToDto(it.status),
-        nodeStatus: nodeStatusToDto(it.nodeStatus),
-      }
-    })
+    return deployments.data.map(it => ({
+      ...it,
+      date: timestampToUTC(it.audit.updatedAt),
+      status: deploymentStatusToDto(it.status),
+      nodeStatus: nodeStatusToDto(it.nodeStatus),
+    }))
   }
 
   async getById(id: string): Promise<DeploymentDetails> {
@@ -271,17 +257,19 @@ class DyoDeploymentService {
           type: WS_TYPE_INSTANCES_ADDED,
           payload: data.instancesCreated.data.map(it => instanceToDto(it)) as InstancesAddedMessage,
         } as WsMessage<DeploymentEditEventMessage>
-      } else if (data.imageIdDeleted) {
+      }
+
+      if (data.imageIdDeleted) {
         return {
           type: WS_TYPE_IMAGE_DELETED,
           payload: {
             imageId: data.imageIdDeleted,
           } as ImageDeletedMessage,
         } as WsMessage<DeploymentEditEventMessage>
-      } else {
-        this.logger.error('Invalid DeploymentEditEventMessage')
-        return undefined
       }
+
+      this.logger.error('Invalid DeploymentEditEventMessage')
+      return undefined
     }
 
     const stream = () => this.client.subscribeToDeploymentEditEvents(IdRequest.fromJSON(req))
@@ -290,37 +278,3 @@ class DyoDeploymentService {
 }
 
 export default DyoDeploymentService
-
-export const deploymentStatusToDto = (status: ProtoDeploymentStatus): DeploymentStatus =>
-  deploymentStatusToJSON(status).toLocaleLowerCase() as DeploymentStatus
-
-export const deploymentEventTypeToDto = (type: ProtoDeploymentEventType): DeploymentEventType => {
-  switch (type) {
-    case ProtoDeploymentEventType.DEPLOYMENT_LOG:
-      return 'log'
-    case ProtoDeploymentEventType.CONTAINER_STATUS:
-      return 'containerStatus'
-    case ProtoDeploymentEventType.DEPLOYMENT_STATUS:
-      return 'deploymentStatus'
-    default:
-      return null
-  }
-}
-
-export const instanceContainerConfigToDto = (config: ProtoInstanceContainerConfig): InstanceContainerConfig => {
-  return !config
-    ? null
-    : {
-        ...config,
-        config: explicitContainerConfigToDto(config.config),
-      }
-}
-
-export const instanceToDto = (res: InstanceResponse): Instance => {
-  return {
-    ...res,
-    image: imageToDto(res.image),
-    state: !res.state ? null : containerStateToDto(res.state),
-    overriddenConfig: instanceContainerConfigToDto(res.config),
-  } as Instance
-}

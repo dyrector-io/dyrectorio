@@ -9,23 +9,23 @@ interface DyoTagProps {
 }
 
 const DyoTag = (props: DyoTagProps) => {
-  const color = props.color ?? 'bg-dyo-turquoise'
-  const textColor = props.textColor ?? 'text-dyo-turquoise'
+  const { className, textColor: propsTextColor, color: propsColor, solid, children } = props
+
+  const color = propsColor ?? 'bg-dyo-turquoise'
+  const textColor = propsTextColor ?? 'text-dyo-turquoise'
 
   return (
-    <>
-      <div
-        className={clsx(
-          props.className,
-          color,
-          textColor,
-          !props.solid && 'bg-opacity-10',
-          'rounded-full bg-opacity-10 text-xs font-semibold px-8 py-0.5 mt-auto',
-        )}
-      >
-        {props.children}
-      </div>
-    </>
+    <div
+      className={clsx(
+        className,
+        color,
+        textColor,
+        !solid && 'bg-opacity-10',
+        'rounded-full bg-opacity-10 text-xs font-semibold px-8 py-0.5 mt-auto',
+      )}
+    >
+      {children}
+    </div>
   )
 }
 

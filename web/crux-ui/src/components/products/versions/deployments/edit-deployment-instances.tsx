@@ -1,5 +1,5 @@
 import DyoWrap from '@app/elements/dyo-wrap'
-import { useWebSocket } from '@app/hooks/use-websocket'
+import useWebSocket from '@app/hooks/use-websocket'
 import {
   deploymentIsMutable,
   DeploymentRoot,
@@ -18,6 +18,11 @@ import {
 import { deploymentWsUrl } from '@app/routes'
 import { useState } from 'react'
 import EditInstanceCard from './instances/edit-instance-card'
+
+const mergeInstancePatch = (instance: Instance, message: InstanceUpdatedMessage): Instance => ({
+  ...instance,
+  overriddenConfig: message,
+})
 
 interface EditDeploymentInstancesProps {
   deployment: DeploymentRoot
@@ -60,18 +65,11 @@ const EditDeploymentInstances = (props: EditDeploymentInstancesProps) => {
 
   return (
     <DyoWrap>
-      {instances.map(it => {
-        return <EditInstanceCard key={it.id} disabled={!mutable} instance={it} deploymentSock={sock} />
-      })}
+      {instances.map(it => (
+        <EditInstanceCard key={it.id} disabled={!mutable} instance={it} deploymentSock={sock} />
+      ))}
     </DyoWrap>
   )
 }
 
 export default EditDeploymentInstances
-
-const mergeInstancePatch = (instance: Instance, message: InstanceUpdatedMessage): Instance => {
-  return {
-    ...instance,
-    overriddenConfig: message,
-  }
-}
