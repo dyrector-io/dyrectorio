@@ -6,17 +6,18 @@ import DyoMessage from './dyo-message'
 export interface DyoInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   grow?: boolean
   label?: string
+  labelClassName?: string
   message?: string
   messageType?: 'error' | 'info'
 }
 
 export const DyoInput = forwardRef((props: DyoInputProps, ref: ForwardedRef<HTMLInputElement>) => {
-  const { label, message, messageType, grow, name, className, disabled, ...forwardedProps } = props
+  const { label, labelClassName, message, messageType, grow, name, className, disabled, ...forwardedProps } = props
 
   return (
     <>
       {!label ? null : (
-        <DyoLabel className="mt-8 mb-2.5" htmlFor={name}>
+        <DyoLabel className={clsx(labelClassName ?? 'mt-8 mb-2.5')} htmlFor={name}>
           {label}
         </DyoLabel>
       )}

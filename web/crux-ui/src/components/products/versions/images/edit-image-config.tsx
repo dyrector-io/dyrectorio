@@ -58,6 +58,8 @@ const EditImageConfig = (props: EditImageConfigProps) => {
         <DyoInput
           disabled={disabled}
           label={t('containerName').toUpperCase()}
+          labelClassName="mt-2 mb-2.5"
+          className="mb-4"
           value={containerName}
           onChange={ev => onContainerNameChange(ev.target.value)}
         />

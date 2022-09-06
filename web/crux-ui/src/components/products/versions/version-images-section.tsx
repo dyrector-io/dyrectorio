@@ -39,14 +39,15 @@ const VersionImagesSection = (props: VersionImagesSectionProps) => {
           const details = imageTags[key]
 
           return (
-            <EditImageCard
-              disabled={disabled}
-              versionSock={versionSock}
-              key={it.order}
-              image={it}
-              tags={details?.tags ?? []}
-              onTagSelected={tag => onTagSelected(it, tag)}
-            />
+            <div className="w-full h-full" key={it.order}>
+              <EditImageCard
+                disabled={disabled}
+                versionSock={versionSock}
+                image={it}
+                tags={details?.tags ?? []}
+                onTagSelected={tag => onTagSelected(it, tag)}
+              />
+            </div>
           )
         })}
     </DyoWrap>
