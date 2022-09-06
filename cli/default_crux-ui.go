@@ -15,7 +15,6 @@ func GetCruxuiContainerDefaults() []Container {
 				{"DISABLE_RECAPTCHA", "true"},
 				{"RECAPTCHA_SECRET_KEY", ""},
 				{"RECAPTCHA_SITE_KEY", ""},
-				{"SMTP_URL", "mailslurper:1025/?skip_ssl_verify=true&legacy_ssl=true"},
 			},
 			Volumes: []Volume{{"crux-certs", "/app/certs", true}},
 			Ports:   []Port{{3000, 3000}},

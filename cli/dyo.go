@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"os"
-	"time"
 
 	cli "github.com/urfave/cli/v2"
 )
@@ -12,7 +11,6 @@ func main() {
 	app := &cli.App{
 		Name:     "dyo",
 		Version:  "0.1.1",
-		Compiled: time.Now(),
 		HelpName: "dyo",
 		Usage:    "dyo - cli tool for deploying a complete Dyrectorio stack locally, for demonstration, testing, or development purposes",
 
