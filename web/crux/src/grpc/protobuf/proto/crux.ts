@@ -940,6 +940,9 @@ export interface CreateDeploymentRequest {
   accessedBy: string
   versionId: string
   nodeId: string
+  name: string
+  description?: string | undefined
+  prefix: string
 }
 
 export interface UpdateDeploymentRequest {
@@ -1007,6 +1010,7 @@ export interface DeploymentByVersionResponse {
   nodeId: string
   nodeName: string
   status: DeploymentStatus
+  nodeStatus: NodeConnectionStatus
 }
 
 export interface DeploymentDetailsResponse {
@@ -2864,7 +2868,7 @@ export const DeploymentEditEventMessage = {
 }
 
 function createBaseCreateDeploymentRequest(): CreateDeploymentRequest {
-  return { accessedBy: '', versionId: '', nodeId: '' }
+  return { accessedBy: '', versionId: '', nodeId: '', name: '', prefix: '' }
 }
 
 export const CreateDeploymentRequest = {
@@ -2873,6 +2877,9 @@ export const CreateDeploymentRequest = {
       accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       versionId: isSet(object.versionId) ? String(object.versionId) : '',
       nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      description: isSet(object.description) ? String(object.description) : undefined,
+      prefix: isSet(object.prefix) ? String(object.prefix) : '',
     }
   },
 
@@ -2881,6 +2888,9 @@ export const CreateDeploymentRequest = {
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.versionId !== undefined && (obj.versionId = message.versionId)
     message.nodeId !== undefined && (obj.nodeId = message.nodeId)
+    message.name !== undefined && (obj.name = message.name)
+    message.description !== undefined && (obj.description = message.description)
+    message.prefix !== undefined && (obj.prefix = message.prefix)
     return obj
   },
 }
@@ -3106,7 +3116,7 @@ export const DeploymentListByVersionResponse = {
 }
 
 function createBaseDeploymentByVersionResponse(): DeploymentByVersionResponse {
-  return { id: '', audit: undefined, name: '', prefix: '', nodeId: '', nodeName: '', status: 0 }
+  return { id: '', audit: undefined, name: '', prefix: '', nodeId: '', nodeName: '', status: 0, nodeStatus: 0 }
 }
 
 export const DeploymentByVersionResponse = {
@@ -3119,6 +3129,7 @@ export const DeploymentByVersionResponse = {
       nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
       nodeName: isSet(object.nodeName) ? String(object.nodeName) : '',
       status: isSet(object.status) ? deploymentStatusFromJSON(object.status) : 0,
+      nodeStatus: isSet(object.nodeStatus) ? nodeConnectionStatusFromJSON(object.nodeStatus) : 0,
     }
   },
 
@@ -3131,6 +3142,7 @@ export const DeploymentByVersionResponse = {
     message.nodeId !== undefined && (obj.nodeId = message.nodeId)
     message.nodeName !== undefined && (obj.nodeName = message.nodeName)
     message.status !== undefined && (obj.status = deploymentStatusToJSON(message.status))
+    message.nodeStatus !== undefined && (obj.nodeStatus = nodeConnectionStatusToJSON(message.nodeStatus))
     return obj
   },
 }
