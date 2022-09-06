@@ -8,11 +8,13 @@ interface RegistryTypeTagProps {
 }
 
 const RegistryTypeTag = (props: RegistryTypeTagProps) => {
+  const { className, type } = props
+
   const { t } = useTranslation('registries')
 
   return (
-    <DyoTag className={props.className} color="bg-dyo-blue" textColor="text-dyo-blue">
-      {t(`type.${props.type}`).toUpperCase()}
+    <DyoTag className={className} color="bg-dyo-blue" textColor="text-dyo-blue">
+      {t(`type.${type}`).toUpperCase()}
     </DyoTag>
   )
 }

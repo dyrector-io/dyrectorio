@@ -45,7 +45,7 @@ export const DYO_ICONS = [
 ]
 
 const DyoIconPicker = (props: DyoIconPickerProps) => {
-  const { name, value, setFieldValue } = props
+  const { name, value, setFieldValue, className } = props
 
   const [selected, setSelected] = useState(value ?? null)
 
@@ -59,7 +59,7 @@ const DyoIconPicker = (props: DyoIconPickerProps) => {
   }
 
   return (
-    <div className={props.className}>
+    <div className={className}>
       {DYO_ICONS.map(icon => (
         <button
           key={icon}

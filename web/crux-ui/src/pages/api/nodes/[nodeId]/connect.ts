@@ -5,11 +5,12 @@ import {
   WS_TYPE_WATCH_CONTAINER_STATUS,
 } from '@app/models'
 import { WsMessage } from '@app/websockets/common'
-import { WsConnection, WsEndpoint } from '@app/websockets/server'
-import { ContainerStatusWatcherService } from '@server/container-status-watchers'
+import WsConnection from '@app/websockets/connection'
+import WsEndpoint from '@app/websockets/endpoint'
+import ContainerStatusWatcherService from '@server/container-status-watchers-service'
 import crux, { cruxFromConnection } from '@server/crux/crux'
 import { routedWebSocketEndpoint } from '@server/websocket-endpoint'
-import { useWebsocketErrorMiddleware } from '@server/websocket-error-middleware'
+import useWebsocketErrorMiddleware from '@server/websocket-error-middleware'
 import { NextApiRequest } from 'next'
 
 const logger = new Logger('ws-nodes/nodeId')

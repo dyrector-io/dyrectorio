@@ -1,6 +1,6 @@
 import { defaultWsErrorHandler } from '@app/errors'
 import { isServerSide } from '@app/utils'
-import { WebSocketClient } from '@app/websockets/client'
+import WebSocketClient from '@app/websockets/websocket-client'
 import useTranslation from 'next-translate/useTranslation'
 import React, { useState } from 'react'
 
@@ -11,9 +11,11 @@ interface WebSocketContextInterface {
 export const WebSocketContext = React.createContext<WebSocketContextInterface>({ client: null })
 
 export const WebSocketProvider = (props: React.PropsWithChildren<{}>) => {
+  const { children } = props
+
   const { t } = useTranslation()
 
-  const [wsClient, _] = useState(() => {
+  const [wsClient] = useState(() => {
     if (isServerSide()) {
       return null
     }
@@ -26,5 +28,6 @@ export const WebSocketProvider = (props: React.PropsWithChildren<{}>) => {
     return client
   })
 
-  return <WebSocketContext.Provider value={{ client: wsClient }}>{props.children}</WebSocketContext.Provider>
+  // eslint-disable-next-line react/jsx-no-constructed-context-values
+  return <WebSocketContext.Provider value={{ client: wsClient }}>{children}</WebSocketContext.Provider>
 }

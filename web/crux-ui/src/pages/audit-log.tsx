@@ -5,7 +5,7 @@ import JsonEditor from '@app/components/shared/json-editor-dynamic-module'
 import PageHeading from '@app/components/shared/page-heading'
 import Paginator from '@app/components/shared/paginator'
 import { DyoCard } from '@app/elements/dyo-card'
-import { DyoDatePicker } from '@app/elements/dyo-date-picker'
+import DyoDatePicker from '@app/elements/dyo-date-picker'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoList } from '@app/elements/dyo-list'
 import DyoModal from '@app/elements/dyo-modal'
@@ -36,15 +36,6 @@ const AuditLogPage = (props: AuditLogPageProps) => {
   const [startDate, setStartDate] = useState<Date>(new Date(Date.now() - sixdays))
   const [endDate, setEndDate] = useState<Date>(new Date())
 
-  const onChange = dates => {
-    const [start, end] = dates
-    setStartDate(start)
-
-    if (end !== null) end.setHours(23, 59, 59, 999)
-    setEndDate(end)
-    filters.setFilter({ dateRange: [start, end] })
-  }
-
   const filters = useFilters<AuditLog, AuditLogFilter>({
     initialData: auditLog,
     initialFilter: {
@@ -56,6 +47,15 @@ const AuditLogPage = (props: AuditLogPageProps) => {
       dateRangeFilterFor<AuditLog>(it => [utcDateToLocale(it.date)]),
     ],
   })
+
+  const onChange = dates => {
+    const [start, end] = dates
+    setStartDate(start)
+
+    if (end !== null) end.setHours(23, 59, 59, 999)
+    setEndDate(end)
+    filters.setFilter({ dateRange: [start, end] })
+  }
 
   const pagination = usePagination<AuditLog>({
     initialData: auditLog,
@@ -70,7 +70,7 @@ const AuditLogPage = (props: AuditLogPageProps) => {
 
   useEffect(() => {
     pagination.setItems(filters.filtered)
-  }, [filters])
+  }, [filters, pagination])
 
   const selfLink: BreadcrumbLink = {
     name: t('common:audit'),
@@ -80,6 +80,30 @@ const AuditLogPage = (props: AuditLogPageProps) => {
   const headerClassName = 'uppercase text-bright text-sm font-semibold bg-medium-eased pl-2 py-3 h-11'
   const columnWidths = ['w-16', 'w-2/12', 'w-48', 'w-2/12', '', 'w-20']
   const listHeaders = ['', ...['common:name', 'common:date', 'event', 'data', 'common:actions'].map(it => t(it))]
+
+  const itemTemplate = (log: AuditLog) => /* eslint-disable react/jsx-key */ [
+    <div className="w-10 ml-auto">
+      <Image src="/default_avatar.svg" width={38} height={38} layout="fixed" />
+    </div>,
+    <div className="font-semibold min-w-max pl-2">{log.identityName}</div>,
+    <div className="min-w-max">{utcDateToLocale(log.date)}</div>,
+    <div>{beautifyAuditLogEvent(log.event)}</div>,
+    <div className="cursor-pointer max-w-4xl truncate" onClick={() => onShowInfoClick(log)}>
+      {log.info}
+    </div>,
+    <div className="text-center">
+      <Image
+        src="/eye.svg"
+        alt={t('common:view')}
+        width={24}
+        height={24}
+        className="cursor-pointer"
+        layout="fixed"
+        onClick={() => onShowInfoClick(log)}
+      />
+    </div>,
+  ]
+  /* eslint-enable react/jsx-key */
 
   return (
     <Layout title={t('common:audit')}>
@@ -107,32 +131,7 @@ const AuditLogPage = (props: AuditLogPageProps) => {
               data={pagination.displayed}
               headers={listHeaders}
               footer={<Paginator pagination={pagination} />}
-              itemBuilder={it => {
-                /* eslint-disable react/jsx-key */
-                return [
-                  <div className="text-right">
-                    <Image src="/default_avatar.svg" width={38} height={38} layout={'fixed'} />
-                  </div>,
-                  <div className="font-semibold">{it.identityName}</div>,
-                  utcDateToLocale(it.date),
-                  beautifyAuditLogEvent(it.event),
-                  <div className="cursor-pointer truncate" onClick={() => onShowInfoClick(it)}>
-                    {it.info}
-                  </div>,
-                  <div className="text-center">
-                    <Image
-                      src="/eye.svg"
-                      alt={t('common:view')}
-                      width={24}
-                      height={24}
-                      className="cursor-pointer"
-                      layout="fixed"
-                      onClick={() => onShowInfoClick(it)}
-                    />
-                  </div>,
-                ]
-                /* eslint-enable react/jsx-key */
-              }}
+              itemBuilder={itemTemplate}
             />
           </DyoCard>
         </>

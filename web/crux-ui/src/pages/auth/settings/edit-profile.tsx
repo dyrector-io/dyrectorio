@@ -3,7 +3,7 @@ import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { SaveDiscardPageMenu } from '@app/components/shared/page-menu'
 import { ATTRIB_CSRF } from '@app/const'
-import { DyoButton } from '@app/elements/dyo-button'
+import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
@@ -20,10 +20,12 @@ import { useRouter } from 'next/dist/client/router'
 import { useRef, useState } from 'react'
 
 const SettingsPage = (props: SelfServiceSettingsFlow) => {
+  const { ui: propsUi, id, identity } = props
+
   const { t } = useTranslation('settings')
   const router = useRouter()
 
-  const [ui, setUi] = useState(props.ui)
+  const [ui, setUi] = useState(propsUi)
   const saveRef = useRef<() => Promise<any>>()
 
   const formik = useFormik({
@@ -34,7 +36,7 @@ const SettingsPage = (props: SelfServiceSettingsFlow) => {
     },
     onSubmit: async values => {
       const data: EditProfile = {
-        flow: props.id,
+        flow: id,
         csrfToken: findAttributes(ui, ATTRIB_CSRF).value,
         email: values.email,
         firstName: values.firstName,
@@ -45,10 +47,10 @@ const SettingsPage = (props: SelfServiceSettingsFlow) => {
       if (res.ok) {
         router.back()
       } else if (res.status === 403) {
-        router.replace(`${ROUTE_LOGIN}?refresh=${props.identity.traits.email}`)
+        router.replace(`${ROUTE_LOGIN}?refresh=${identity.traits.email}`)
       } else {
-        const data = await res.json()
-        setUi(data.ui)
+        const result = await res.json()
+        setUi(result.ui)
       }
     },
   })
@@ -116,7 +118,7 @@ const SettingsPage = (props: SelfServiceSettingsFlow) => {
 export default SettingsPage
 
 export const getPageServerSideProps = async (context: NextPageContext) => {
-  const cookie = context.req.headers.cookie
+  const { cookie } = context.req.headers
 
   const flow = await kratos.initializeSelfServiceSettingsFlowForBrowsers(undefined, {
     headers: {

@@ -2,12 +2,7 @@ import { Injectable, Logger, PreconditionFailedException } from '@nestjs/common'
 import { DeploymentStatusEnum } from '@prisma/client'
 import { JsonArray } from 'prisma'
 import { concatAll, filter, from, map, merge, Observable, Subject } from 'rxjs'
-import {
-  defaultDeploymentName,
-  Deployment,
-  deploymentPrefixFromName,
-  previousDeployPrefix,
-} from 'src/domain/deployment'
+import { Deployment } from 'src/domain/deployment'
 import { InternalException } from 'src/exception/errors'
 import { DeployRequest } from 'src/grpc/protobuf/proto/agent'
 import {
@@ -124,55 +119,15 @@ export class DeployService {
       },
     })
 
-    const versionIds = version.parent ? [version.parent.parentVersionId, version.id] : [version.id]
-
-    const previousDeploys = await this.prisma.deployment.findMany({
-      where: {
-        nodeId: request.nodeId,
-        version: {
-          OR: versionIds.map(it => {
-            return {
-              id: it,
-            }
-          }),
-        },
-      },
-      orderBy: {
-        prefix: 'asc',
-      },
-    })
-
-    const node = await this.prisma.node.findUniqueOrThrow({
-      where: {
-        id: request.nodeId,
-      },
-    })
-
-    let name = defaultDeploymentName(version.product.name, version.name, node.name)
-
-    const nextIncrement = await this.prisma.deployment.count({
-      where: {
-        versionId: request.versionId,
-        name: {
-          startsWith: name,
-        },
-      },
-    })
-
-    if (nextIncrement > 0) {
-      name = `${name} ${nextIncrement + 1}`
-    }
-
     const deployment = await this.prisma.deployment.create({
       data: {
         versionId: request.versionId,
         nodeId: request.nodeId,
         status: DeploymentStatusEnum.preparing,
-        name,
+        name: request.name,
+        description: request.description,
         createdBy: request.accessedBy,
-        prefix:
-          previousDeployPrefix(previousDeploys, version.id, version.parent?.parentVersionId) ??
-          deploymentPrefixFromName(version.product.name),
+        prefix: request.prefix,
         instances: {
           createMany: {
             data: version.images.map(it => {

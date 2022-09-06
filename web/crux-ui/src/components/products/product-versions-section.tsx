@@ -17,33 +17,33 @@ interface ProductVersionsSectionProps {
 }
 
 const ProductVersionsSection = (props: ProductVersionsSectionProps) => {
-  const { productId } = props
+  const { productId, versions, onIncrease, onSetAsDefault, disabled } = props
 
   const { t } = useTranslation('products')
 
   const router = useRouter()
 
-  const onClick = (versionId: string) => router.push(versionUrl(props.productId, versionId))
+  const onClick = (versionId: string) => router.push(versionUrl(productId, versionId))
 
   const [modalConfig, confirmSetAsDefault] = useConfirmation()
 
   const onSetAsDefaultClick = (version: Version) =>
-    confirmSetAsDefault(() => props.onSetAsDefault(version), {
+    confirmSetAsDefault(() => onSetAsDefault(version), {
       description: t('setNameAsDefault', version),
     })
 
-  return props.versions.length ? (
+  return versions.length ? (
     <>
       <DyoWrap>
-        {props.versions.map((it, index) => (
+        {versions.map((it, index) => (
           <VersionCard
             key={`version-${index}`}
             productId={productId}
             version={it}
             onClick={() => onClick(it.id)}
-            disabled={props.disabled}
-            onIncreaseClick={props.onIncrease ? () => props.onIncrease(it) : null}
-            onSetAsDefaultClick={props.onSetAsDefault ? () => onSetAsDefaultClick(it) : null}
+            disabled={disabled}
+            onIncreaseClick={onIncrease ? () => onIncrease(it) : null}
+            onSetAsDefaultClick={onSetAsDefault ? () => onSetAsDefaultClick(it) : null}
           />
         ))}
       </DyoWrap>

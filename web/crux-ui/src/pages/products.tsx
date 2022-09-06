@@ -28,9 +28,8 @@ type ProductFilter = TextFilter & {
 const productTypeFilter = (items: Product[], filter: ProductFilter) => {
   if (filter.type === 'all') {
     return items
-  } else {
-    return items.filter(it => filter.type.includes(it.type))
   }
+  return items.filter(it => filter.type.includes(it.type))
 }
 
 interface ProductsPageProps {
@@ -38,13 +37,15 @@ interface ProductsPageProps {
 }
 
 const ProductsPage = (props: ProductsPageProps) => {
+  const { products } = props
+
   const { t } = useTranslation('products')
 
   const router = useRouter()
 
   const initalTypeFilter = 'all' as ProductTypeFilter
   const filters = useFilters<Product, ProductFilter>({
-    initialData: props.products,
+    initialData: products,
     initialFilter: {
       text: '',
       type: initalTypeFilter,
@@ -117,12 +118,10 @@ const ProductsPage = (props: ProductsPageProps) => {
 }
 export default ProductsPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
-  return {
-    props: {
-      products: await cruxFromContext(context).products.getAll(),
-    },
-  }
-}
+const getPageServerSideProps = async (context: NextPageContext) => ({
+  props: {
+    products: await cruxFromContext(context).products.getAll(),
+  },
+})
 
 export const getServerSideProps = withContextAuthorization(getPageServerSideProps)

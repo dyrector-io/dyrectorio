@@ -71,6 +71,7 @@ const registryCredentialRole = yup
     is: (type, _private) =>
       type === 'gitlab' || type === 'github' || ((type === 'v2' || type === 'google') && _private),
     then: yup.string().required(),
+    // eslint-disable-next-line no-unneeded-ternary
     otherwise: yup.mixed().transform(it => (it ? it : undefined)),
   })
 
@@ -134,7 +135,10 @@ export const createVersionSchema = updateVersionSchema.concat(
 )
 
 export const createDeploymentSchema = yup.object().shape({
-  nodeId: yup.string().required(),
+  nodeId: yup.mixed().nullable().required().label('node'),
+  name: nameRule,
+  prefix: yup.string().required(),
+  description: yup.string(),
 })
 
 export const updateDeploymentSchema = yup.object().shape({
@@ -221,7 +225,7 @@ export const explicitContainerConfigSchema = yup.object().shape({
   commands: yup.array(yup.string()).default([]).optional(),
   args: yup.array(yup.string()).default([]).optional(),
 
-  //dagent:
+  // dagent:
   logConfig: yup
     .object()
     .shape({
@@ -239,10 +243,11 @@ export const explicitContainerConfigSchema = yup.object().shape({
   networkMode: yup
     .mixed<ExplicitContainerNetworkMode>()
     .oneOf([...EXPLICIT_CONTAINER_NETWORK_MODE_VALUES])
-    .default('none')
+    .default('bridge')
     .optional(),
+  networks: yup.array(yup.string()).default([]).optional(),
 
-  //crane:
+  // crane:
   deploymentStrategy: yup
     .mixed<ExplicitContainerDeploymentStrategyType>()
     .oneOf([...EXPLICIT_CONTAINER_DEPLOYMENT_STRATEGY_VALUES])
@@ -362,6 +367,12 @@ export const notificationSchema = yup.object().shape({
         case 'teams':
           pattern = /^https:\/\/[a-zA-Z]+.webhook.office.com/
           break
+        default:
+          break
+      }
+
+      if (!pattern) {
+        return schema
       }
 
       return schema.matches(pattern)

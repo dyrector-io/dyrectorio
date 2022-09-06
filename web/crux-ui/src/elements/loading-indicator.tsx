@@ -6,10 +6,12 @@ interface LoadingIndicatorProps {
 }
 
 const LoadingIndicator = (props: LoadingIndicatorProps) => {
+  const { className } = props
+
   const { t } = useTranslation('common')
 
   return (
-    <div className={props.className}>
+    <div className={className}>
       <Image className="animate-spin" src="/loading.svg" alt={t('loading')} width={24} height={24} />
     </div>
   )

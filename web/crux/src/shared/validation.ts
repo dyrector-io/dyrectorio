@@ -117,6 +117,7 @@ export const explicitContainerConfigSchema = yup.object().shape({
     .oneOf([...EXPLICIT_CONTAINER_NETWORK_MODE_VALUES])
     .default('none')
     .optional(),
+  networks: yup.array(yup.string()).default([]).optional(),
 
   //crane:
   deploymentStrategy: yup

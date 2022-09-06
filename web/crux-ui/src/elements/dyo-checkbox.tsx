@@ -13,9 +13,9 @@ interface DyoCheckboxProps {
 const DyoCheckbox = (props: DyoCheckboxProps) => {
   const { className, name, checked, setFieldValue, onCheckedChange } = props
 
-  const handleCheckedChange = checked => {
-    setFieldValue?.call(this, name, checked, false)
-    onCheckedChange?.call(this, checked)
+  const handleCheckedChange = (isChecked: boolean) => {
+    setFieldValue?.call(this, name, isChecked, false)
+    onCheckedChange?.call(this, isChecked)
   }
 
   return (

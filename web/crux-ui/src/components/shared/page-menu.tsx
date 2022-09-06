@@ -1,4 +1,4 @@
-import { DyoButton } from '@app/elements/dyo-button'
+import DyoButton from '@app/elements/dyo-button'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import useConfirmation from '@app/hooks/use-confirmation'
 import clsx from 'clsx'
@@ -63,9 +63,19 @@ export interface DetailsPageMenuProps {
 }
 
 export const DetailsPageMenu = (props: DetailsPageMenuProps) => {
-  const { t } = useTranslation('common')
+  const {
+    texts: propsTexts,
+    disableEditing,
+    editing,
+    setEditing,
+    submitRef,
+    onDelete,
+    onAdd,
+    deleteModalTitle,
+    deleteModalDescription,
+  } = props
 
-  const { texts: propsTexts, disableEditing, editing, setEditing, submitRef } = props
+  const { t } = useTranslation('common')
 
   const [deleteModalConfig, confirmDelete] = useConfirmation()
 
@@ -79,27 +89,27 @@ export const DetailsPageMenu = (props: DetailsPageMenuProps) => {
         </DyoButton>
       )}
 
-      {!props.onDelete ? null : (
+      {!onDelete ? null : (
         <DyoButton
-          className={clsx(props.onAdd ? 'mx-2' : 'ml-2', 'px-6')}
+          className={clsx(onAdd ? 'mx-2' : 'ml-2', 'px-6')}
           color="bg-error-red"
-          onClick={() => confirmDelete(props.onDelete)}
+          onClick={() => confirmDelete(onDelete)}
         >
           {texts.delete ?? t('delete')}
         </DyoButton>
       )}
 
-      {!props.onAdd ? null : (
-        <DyoButton className="px-6 ml-2" onClick={props.onAdd}>
+      {!onAdd ? null : (
+        <DyoButton className="px-6 ml-2" onClick={onAdd}>
           {texts.addDetailsItem ?? t('addDetailsItem')}
         </DyoButton>
       )}
 
-      {!props.onDelete ? null : (
+      {!onDelete ? null : (
         <DyoConfirmationModal
           config={deleteModalConfig}
-          title={props.deleteModalTitle}
-          description={props.deleteModalDescription}
+          title={deleteModalTitle}
+          description={deleteModalDescription}
           confirmText={texts.delete ?? t('delete')}
           className="w-1/4"
           confirmColor="bg-error-red"
@@ -127,20 +137,22 @@ interface SaveDiscardPageMenuProps {
 }
 
 export const SaveDiscardPageMenu = (props: SaveDiscardPageMenuProps) => {
+  const { className, saveRef, onSave, onDiscard } = props
+
   const { t } = useTranslation('common')
 
-  const onSave = () => {
-    props.saveRef.current()
-    props.onSave?.call(null)
+  const onSaveSaveClick = () => {
+    saveRef.current()
+    onSave?.call(null)
   }
 
   return (
-    <div className={props.className ?? 'ml-auto'}>
-      <DyoButton className="px-6 mr-2" secondary onClick={props.onDiscard}>
+    <div className={className ?? 'ml-auto'}>
+      <DyoButton className="px-6 mr-2" secondary onClick={onDiscard}>
         {t('discard')}
       </DyoButton>
 
-      <DyoButton className="px-6 ml-2" onClick={onSave}>
+      <DyoButton className="px-6 ml-2" onClick={onSaveSaveClick}>
         {t('save')}
       </DyoButton>
     </div>

@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react'
 
-interface DragAndDropList<T> {
+interface DragAndDropListProps<T> {
   items: T[]
   itemBuilder: (T) => React.ReactNode
   onItemsChange?: (items: T[]) => void
 }
 
-const DragAndDropList = <T,>(props: DragAndDropList<T>) => {
-  const { itemBuilder, onItemsChange } = props
+const DragAndDropList = <T,>(props: DragAndDropListProps<T>) => {
+  const { itemBuilder, onItemsChange, items: propsItems } = props
 
-  const [items, setItems] = useState(props.items)
+  const [items, setItems] = useState(propsItems)
   const [dragging, setDragging] = useState<T>()
 
   const onDragEndContainer = () => {
@@ -65,7 +65,7 @@ const DragAndDropList = <T,>(props: DragAndDropList<T>) => {
         if (it === dragging) {
           return (
             <div key={index} className="opacity-50">
-              {props.itemBuilder(it)}
+              {itemBuilder(it)}
             </div>
           )
         }

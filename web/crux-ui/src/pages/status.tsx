@@ -1,6 +1,6 @@
 import ServiceInfoCard from '@app/components/health/service-info-card'
 import { SingleFormLayout } from '@app/components/layout'
-import { DyoButton } from '@app/elements/dyo-button'
+import DyoButton from '@app/elements/dyo-button'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DEFAULT_SERVICE_INFO, DyoServiceInfo } from '@app/models'
 import { API_STATUS } from '@app/routes'

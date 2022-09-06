@@ -129,8 +129,17 @@ func mapContainerConfig(in *agent.DeployRequest) v1.ContainerConfig {
 }
 
 func mapDagentConfig(dagent *common.DagentContainerConfig, containerConfig *v1.ContainerConfig) {
-	containerConfig.NetworkMode = dagent.NetworkMode.String()
-	containerConfig.RestartPolicy = mapRestartPolicy(dagent.RestartPolicy.String())
+	if dagent.NetworkMode != nil {
+		containerConfig.NetworkMode = dagent.NetworkMode.String()
+	}
+
+	if dagent.Networks != nil {
+		containerConfig.Networks = dagent.Networks
+	}
+
+	if dagent.RestartPolicy != nil {
+		containerConfig.RestartPolicy = mapRestartPolicy(dagent.RestartPolicy.String())
+	}
 
 	if dagent.LogConfig != nil {
 		containerConfig.LogConfig = &container.LogConfig{Type: dagent.LogConfig.Driver, Config: dagent.LogConfig.Options}

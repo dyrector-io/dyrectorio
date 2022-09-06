@@ -23,6 +23,7 @@
 
   "filters": "Filters",
   "search": "Search",
+  "all": "All",
   "id": "#",
   "description": "Description",
   "icon": "Icon",
@@ -104,6 +105,8 @@
     "penguin": "Penguin icon",
     "shark": "Shark icon"
   },
+
+  "nodeUnreachable": "Node is unreachable!",
 
   "nodeStatuses": {
     "connecting": "Connecting",

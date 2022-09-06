@@ -1,13 +1,13 @@
 import { SingleFormLayout } from '@app/components/layout'
-import { DyoButton } from '@app/elements/dyo-button'
+import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoLabel } from '@app/elements/dyo-label'
+import { notFoundError } from '@app/error-responses'
 import { defaultApiErrorHandler, defaultTranslator } from '@app/errors'
-import { UserMetaTeam } from '@app/models'
+import { DyoApiError, UserMetaTeam } from '@app/models'
 import { ROUTE_INDEX, teamAcceptInviteApiUrl } from '@app/routes'
-import { withContextAuthorization } from '@app/utils'
+import { isDyoApiError, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
-import { DyoApiError, isDyoApiError, notFoundError } from '@server/error-middleware'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
@@ -87,7 +87,7 @@ export default AcceptInvitationPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
   const teamId = context.query.teamId as string
-  const accept = context.query.accept
+  const { accept } = context.query
 
   let error: DyoApiError = null
   let team: UserMetaTeam = null

@@ -8,16 +8,15 @@ import {
   IdRequest,
   RegistryDetailsResponse,
   RegistryListResponse,
-  RegistryType as ProtoRegistryType,
-  registryTypeToJSON,
   UpdateEntityResponse,
   UpdateRegistryRequest,
 } from '@app/models/grpc/protobuf/proto/crux'
 import { timestampToUTC } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
 import { protomisify } from '@server/crux/grpc-connection'
+/* eslint-disable import/no-cycle */
 import { RegistryConnections } from '@server/registry-api/registry-connections'
-import { RegistryType } from './../../models'
+import registryTypeProtoToDto from './mappers/registry-mappers'
 
 class DyoRegistryService {
   constructor(
@@ -36,12 +35,10 @@ class DyoRegistryService {
       req,
     )
 
-    return res.data.map(it => {
-      return {
-        ...it,
-        type: this.registryTypeProtoToDto(it.type),
-      }
-    })
+    return res.data.map(it => ({
+      ...it,
+      type: registryTypeProtoToDto(it.type),
+    }))
   }
 
   async create(dto: CreateRegistry): Promise<RegistryDetails> {
@@ -111,7 +108,7 @@ class DyoRegistryService {
         ? {
             type: 'v2',
             ...res.v2,
-            _private: !!res.v2.user,
+            isPrivate: !!res.v2.user,
           }
         : res.gitlab
         ? {
@@ -127,13 +124,9 @@ class DyoRegistryService {
         : {
             type: 'google',
             ...res.google,
-            _private: !!res.google.user,
+            isPrivate: !!res.google.user,
           }),
     }
-  }
-
-  private registryTypeProtoToDto(type: ProtoRegistryType): RegistryType {
-    return registryTypeToJSON(type).toLocaleLowerCase() as RegistryType
   }
 
   private createDtoToProto(dto: CreateRegistry): CreateRegistryRequest {

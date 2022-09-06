@@ -13,8 +13,11 @@ export type ProtoSubscriptionOptions<O extends object> = {
 
 export class GrpcConnection<I, O extends object> {
   private stream: grpc.ClientReadableStream<I>
+
   private connecting = false
+
   private reconnecting = 0
+
   private lastConnectionAttempt = 0
 
   constructor(
@@ -109,14 +112,13 @@ export class GrpcConnection<I, O extends object> {
 
       if (this.reconnecting < 0) {
         return
-      } else {
-        this.logger.info('Grpc reconnecting...')
       }
+      this.logger.info('Grpc reconnecting...')
     }
 
     const reconnect = () => {
       this.connecting = false
-      this.reconnecting++
+      this.reconnecting += 1
       this.connect()
     }
 

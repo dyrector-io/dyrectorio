@@ -19,49 +19,63 @@ export type DyoListProps<T> = {
 }
 
 export const DyoList = <T,>(props: DyoListProps<T>) => {
+  const {
+    key,
+    className,
+    headerClassName,
+    itemClassName,
+    footerClassName,
+    columnWidths,
+    headers,
+    footer,
+    data: propsData,
+    noSeparator,
+    itemBuilder,
+  } = props
+
   const isArrayOfStringArrays = it =>
     Array.isArray(it) &&
     (it.length === 0 || (it.length > 0 && Array.isArray(it[0]) && it[0].length > 0 && typeof it[0][0] === 'string'))
 
   assert(
-    props.itemBuilder || isArrayOfStringArrays(props.data),
+    itemBuilder || isArrayOfStringArrays(propsData),
     'If the data type is not string, then you must define the itemBuilder',
   )
 
   const data: Array<string[]> | Array<React.ReactNode[]> = !props
     ? []
-    : isArrayOfStringArrays(props.data)
-    ? (props.data as any as string[][])
-    : props.data.map((it, index) => props.itemBuilder(it, index))
+    : isArrayOfStringArrays(propsData)
+    ? (propsData as any as string[][])
+    : propsData.map((it, index) => itemBuilder(it, index))
 
-  const headerClassNames: string[] = props.headers
-    ? typeof props.headerClassName === 'string'
-      ? props.headers.map(() => props.headerClassName as string)
-      : props.headerClassName ?? props.headers.map(() => null)
+  const headerClassNames: string[] = headers
+    ? typeof headerClassName === 'string'
+      ? headers.map(() => headerClassName as string)
+      : headerClassName ?? headers.map(() => null)
     : []
 
   const itemClassNames: string[] = data[0]
-    ? typeof props.itemClassName === 'string'
-      ? data[0].map(() => props.itemClassName as string)
-      : props.itemClassName ?? data[0].map(() => null)
+    ? typeof itemClassName === 'string'
+      ? data[0].map(() => itemClassName as string)
+      : itemClassName ?? data[0].map(() => null)
     : []
 
   return (
     <>
       <div
-        key={props.key}
-        className={clsx('table w-full rounded-lg overflow-auto', props.className, props.columnWidths && 'table-fixed')}
+        key={key}
+        className={clsx('table w-full rounded-lg overflow-auto', className, columnWidths && 'table-fixed')}
       >
-        {props.headers ? (
+        {headers ? (
           <div className="table-header-group">
             <div className="table-row">
-              {props.headers.map((header, index) => (
+              {headers.map((header, index) => (
                 <div
-                  key={`${props.key}-header-${index}`}
+                  key={`${key}-header-${index}`}
                   className={clsx(
                     'table-cell text-left align-middle',
                     headerClassNames[index] ?? 'text-bright font-bold h-8 mb-4 ml-2 mr-auto',
-                    props.columnWidths ? props.columnWidths[index] ?? '' : '',
+                    columnWidths ? columnWidths[index] ?? '' : '',
                   )}
                 >
                   {header}
@@ -72,13 +86,13 @@ export const DyoList = <T,>(props: DyoListProps<T>) => {
         ) : null}
         <div className="table-row-group">
           {data.map((row, rowIndex) => (
-            <div className="table-row" key={`${props.key}-${rowIndex}`}>
+            <div className="table-row" key={`${key}-${rowIndex}`}>
               {row.map((_, colIndex) => (
                 <div
-                  key={`${props.key}-${colIndex}-${rowIndex}`}
+                  key={`${key}-${colIndex}-${rowIndex}`}
                   className={clsx(
                     'table-cell align-middle',
-                    !props.noSeparator ? 'border-t-2 border-light-grey' : null,
+                    !noSeparator ? 'border-t-2 border-light-grey' : null,
                     itemClassNames[colIndex] ?? 'h-12 min-h-min text-light-eased p-2',
                   )}
                 >
@@ -89,7 +103,7 @@ export const DyoList = <T,>(props: DyoListProps<T>) => {
           ))}
         </div>
       </div>
-      <div>{props.footer}</div>
+      <div className={clsx(footerClassName)}>{footer}</div>
     </>
   )
 }

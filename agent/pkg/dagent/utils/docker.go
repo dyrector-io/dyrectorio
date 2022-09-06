@@ -335,12 +335,7 @@ func DeployImage(ctx context.Context,
 
 	dog.WriteContainerState(state)
 
-	var networkMode string
-	if deployImageRequest.ContainerConfig.Expose {
-		networkMode = "traefik"
-	} else {
-		networkMode = deployImageRequest.ContainerConfig.NetworkMode
-	}
+	networkMode, networks := setNetwork(deployImageRequest)
 
 	builder := containerbuilder.NewDockerBuilder(ctx)
 
@@ -355,6 +350,7 @@ func DeployImage(ctx context.Context,
 		WithPortBindings(deployImageRequest.ContainerConfig.Ports).
 		WithPortRanges(deployImageRequest.ContainerConfig.PortRanges).
 		WithNetworkMode(networkMode).
+		WithNetworks(networks).
 		WithNetworkAliases(containerName, deployImageRequest.ContainerConfig.Container).
 		WithRegistryAuth(deployImageRequest.RegistryAuth).
 		WithRestartPolicy(deployImageRequest.ContainerConfig.RestartPolicy).
@@ -385,6 +381,18 @@ func DeployImage(ctx context.Context,
 	}
 
 	return err
+}
+
+func setNetwork(deployImageRequest *v1.DeployImageRequest) (networkMode string, networks []string) {
+	if deployImageRequest.ContainerConfig.Expose {
+		networkMode = "traefik"
+	} else {
+		networkMode = strings.ToLower(deployImageRequest.ContainerConfig.NetworkMode)
+		if networkMode == "bridge" {
+			networks = deployImageRequest.ContainerConfig.Networks
+		}
+	}
+	return networkMode, networks
 }
 
 func WithImportContainer(dc *containerbuilder.DockerContainerBuilder, importConfig *v1.ImportContainer,

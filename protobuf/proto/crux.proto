@@ -700,6 +700,9 @@ message CreateDeploymentRequest {
 
   string versionId = 100;
   string nodeId = 101;
+  string name = 102;
+  optional string description = 103;
+  string prefix = 104;
 }
 
 message UpdateDeploymentRequest {
@@ -772,6 +775,7 @@ message DeploymentByVersionResponse {
   string nodeId = 102;
   string nodeName = 103;
   common.DeploymentStatus status = 104;
+  NodeConnectionStatus nodeStatus = 105;
 }
 
 message DeploymentDetailsResponse {

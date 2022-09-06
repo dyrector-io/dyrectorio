@@ -1,6 +1,6 @@
-import { VersionSectionsState } from './components/products/versions/version-sections'
-import { appendUrlParams } from './utils'
+import { VersionSectionsState } from './models'
 
+// Routes:
 export const ROUTE_INDEX = '/'
 export const ROUTE_STATUS = '/status'
 export const ROUTE_404 = '/404'
@@ -52,6 +52,46 @@ export const API_NOTIFICATIONS = '/api/notifications'
 export const WS_NODES = `${API_NODES}/connect`
 export const WS_REGISTRIES = `${API_REGISTRIES}/connect`
 
+export type CruxUrlParams = {
+  anchor?: string
+}
+
+export const appendUrlParams = <T extends CruxUrlParams>(url: string, params: T): string => {
+  let result = url
+  const paramMap: Map<string, any> = new Map()
+  const anchor = params?.anchor
+
+  if (params) {
+    delete params.anchor
+
+    Object.entries(params).map(entry => {
+      const [key, value] = entry
+      if (key) {
+        paramMap.set(key, value)
+      }
+
+      return entry
+    })
+  }
+
+  if (paramMap.size > 0) {
+    const entries = Array.from(paramMap.entries())
+    const [firstKey, firstValue] = entries[0]
+    result = `${result}?${firstKey}=${firstValue}`
+
+    if (entries.length > 1) {
+      const rest = entries.slice(1)
+
+      result = rest.reduce((prev, current) => {
+        const [key, value] = current
+        return `${prev}&${key}=${value}`
+      }, result)
+    }
+  }
+
+  return anchor ? `${result}#${anchor}` : result
+}
+
 // product
 export const productUrl = (id: string, params?: VersionUrlParams) => appendUrlParams(`${ROUTE_PRODUCTS}/${id}`, params)
 export const productApiUrl = (id: string) => `/api${productUrl(id)}`
@@ -72,9 +112,9 @@ export const nodeInspectUrl = (id: string, prefix?: string) => `${nodeUrl(id)}?p
 
 // version
 
-export type versionUrlAnchor = 'edit'
+export type VersionUrlAnchor = 'edit'
 export type VersionUrlParams = {
-  anchor?: versionUrlAnchor
+  anchor?: VersionUrlAnchor
   section?: VersionSectionsState
 }
 

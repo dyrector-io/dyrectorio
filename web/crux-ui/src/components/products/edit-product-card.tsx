@@ -1,12 +1,12 @@
-import { DyoButton } from '@app/elements/dyo-button'
+import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoChips from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
-import { DyoTextArea } from '@app/elements/dyo-text-area'
+import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
-import { CreateProduct, EditableProduct, Product, PRODUCT_TYPE_VALUES, UpdateProduct, Version } from '@app/models'
+import { CreateProduct, EditableProduct, Product, PRODUCT_TYPE_VALUES, UpdateProduct } from '@app/models'
 import { API_PRODUCTS, productApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { createProductSchema, updateProductSchema } from '@app/validation'
@@ -19,14 +19,15 @@ interface EditProductCardProps {
   product?: EditableProduct
   onProductEdited: (product: Product) => void
   submitRef?: MutableRefObject<() => Promise<any>>
-  versions?: Version[]
 }
 
 const EditProductCard = (props: EditProductCardProps) => {
+  const { product: propsProduct, className, onProductEdited, submitRef } = props
+
   const { t } = useTranslation('products')
 
   const [product, setProduct] = useState<EditableProduct>(
-    props.product ?? {
+    propsProduct ?? {
       id: null,
       name: '',
       description: '',
@@ -60,7 +61,7 @@ const EditProductCard = (props: EditProductCardProps) => {
 
       if (res.ok) {
         let result: Product
-        if (res.status != 204) {
+        if (res.status !== 204) {
           const json = await res.json()
           result = json as Product
         } else {
@@ -70,7 +71,7 @@ const EditProductCard = (props: EditProductCardProps) => {
         }
 
         setProduct(result)
-        props.onProductEdited(result)
+        onProductEdited(result)
       } else {
         handleApiError(res, setFieldError)
       }
@@ -79,12 +80,12 @@ const EditProductCard = (props: EditProductCardProps) => {
     },
   })
 
-  if (props.submitRef) {
-    props.submitRef.current = formik.submitForm
+  if (submitRef) {
+    submitRef.current = formik.submitForm
   }
 
   return (
-    <DyoCard className={props.className}>
+    <DyoCard className={className}>
       <DyoHeading element="h4" className="text-lg text-bright">
         {editing ? t('common:editName', { name: product.name }) : t('new')}
       </DyoHeading>
@@ -139,7 +140,7 @@ const EditProductCard = (props: EditProductCardProps) => {
           />
         )}
 
-        <DyoButton className="hidden" type="submit"></DyoButton>
+        <DyoButton className="hidden" type="submit" />
       </form>
     </DyoCard>
   )
