@@ -95,7 +95,11 @@ class DyoImageService {
               : {
                   data: image.config.environment,
                 },
-            secrets: !image.config?.secrets ? undefined : image.config.secrets,
+            secrets: !image.config?.secrets
+              ? undefined
+              : {
+                  data: image.config.secrets,
+                },
           },
     } as PatchImageRequest
 

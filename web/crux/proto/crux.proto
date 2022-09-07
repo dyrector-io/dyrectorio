@@ -500,7 +500,7 @@ message ContainerConfig {
 
   repeated common.UniqueKeyValue capabilities = 1000;
   repeated common.UniqueKeyValue environment = 1001;
-  repeated string secrets = 1002;
+  repeated common.UniqueKey secrets = 1002;
 }
 
 message ImageResponse {
@@ -537,7 +537,7 @@ message AddImagesToVersionRequest {
 message PatchContainerConfig {
   optional common.KeyValueList capabilities = 100;
   optional common.KeyValueList environment = 101;
-  repeated string secrets = 102;
+  optional common.KeyList secrets = 102;
   optional common.ExplicitContainerConfig config = 103;
   optional string name = 104;
 }
@@ -725,7 +725,7 @@ message InstanceContainerConfig {
 
   repeated common.UniqueKeyValue capabilities = 1000;
   repeated common.UniqueKeyValue environment = 1001;
-  repeated common.UniqueKeyValue secrets = 1002;
+  repeated common.UniqueKeySecretValue secrets = 1002;
 }
 
 message InstanceResponse {
@@ -789,6 +789,7 @@ message DeploymentDetailsResponse {
   string prefix = 104;
   repeated common.UniqueKeyValue environment = 105;
   common.DeploymentStatus status = 106;
+  optional string publicKey = 107;
 
   repeated InstanceResponse instances = 1000;
 }

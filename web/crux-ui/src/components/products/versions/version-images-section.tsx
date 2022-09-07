@@ -7,17 +7,6 @@ import useTranslation from 'next-translate/useTranslation'
 import EditImageCard from './images/edit-image-card'
 import { imageTagKey, ImageTagsMap } from './use-images-websocket'
 
-export const mergeImagePatch = (oldImage: VersionImage, newImage: PatchVersionImage): VersionImage => ({
-  ...oldImage,
-  ...newImage,
-  config: {
-    name: newImage.config?.name ?? oldImage.config.name,
-    environment: newImage.config?.environment ?? oldImage.config.environment,
-    capabilities: newImage.config?.capabilities ?? oldImage.config.capabilities,
-    config: newImage.config?.config ?? oldImage.config.config,
-  },
-})
-
 interface VersionImagesSectionProps {
   disabled?: boolean
   images: VersionImage[]

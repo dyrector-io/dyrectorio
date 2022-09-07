@@ -193,10 +193,24 @@ message ExplicitContainerConfig {
   optional KeyValueList secrets = 1006;
 }
 
+message UniqueKey {
+  string id = 100;
+  string key = 101;
+}
+
+message KeyList { repeated UniqueKey data = 1000; }
+
 message UniqueKeyValue {
   string id = 100;
   string key = 101;
   string value = 102;
+}
+
+message UniqueKeySecretValue {
+  string id = 100;
+  string key = 101;
+  string value = 103;
+  bool encrypted = 104;
 }
 
 message KeyValueList { repeated UniqueKeyValue data = 1000; }

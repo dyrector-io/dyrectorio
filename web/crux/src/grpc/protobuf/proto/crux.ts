@@ -7,9 +7,12 @@ import {
   DeploymentStatus,
   ExplicitContainerConfig,
   UniqueKeyValue,
+  UniqueKey,
   KeyValueList,
+  KeyList,
   Port,
   InstanceDeploymentItem,
+  UniqueKeySecretValue,
   ListSecretsResponse,
   containerStateFromJSON,
   containerStateToJSON,
@@ -765,7 +768,7 @@ export interface ContainerConfig {
   name: string
   capabilities: UniqueKeyValue[]
   environment: UniqueKeyValue[]
-  secrets: string[]
+  secrets: UniqueKey[]
 }
 
 export interface ImageResponse {
@@ -801,7 +804,7 @@ export interface AddImagesToVersionRequest {
 export interface PatchContainerConfig {
   capabilities?: KeyValueList | undefined
   environment?: KeyValueList | undefined
-  secrets: string[]
+  secrets?: KeyList | undefined
   config?: ExplicitContainerConfig | undefined
   name?: string | undefined
 }
@@ -955,7 +958,7 @@ export interface InstanceContainerConfig {
   config: ExplicitContainerConfig | undefined
   capabilities: UniqueKeyValue[]
   environment: UniqueKeyValue[]
-  secrets: UniqueKeyValue[]
+  secrets: UniqueKeySecretValue[]
 }
 
 export interface InstanceResponse {
@@ -1016,6 +1019,7 @@ export interface DeploymentDetailsResponse {
   prefix: string
   environment: UniqueKeyValue[]
   status: DeploymentStatus
+  publicKey?: string | undefined
   instances: InstanceResponse[]
 }
 
@@ -2225,7 +2229,7 @@ export const IncreaseVersionRequest = {
   },
 }
 
-const baseContainerConfig: object = { name: '', secrets: '' }
+const baseContainerConfig: object = { name: '' }
 
 export const ContainerConfig = {
   fromJSON(object: any): ContainerConfig {
@@ -2237,7 +2241,7 @@ export const ContainerConfig = {
     message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
     message.capabilities = (object.capabilities ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
     message.environment = (object.environment ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
-    message.secrets = (object.secrets ?? []).map((e: any) => String(e))
+    message.secrets = (object.secrets ?? []).map((e: any) => UniqueKey.fromJSON(e))
     return message
   },
 
@@ -2257,7 +2261,7 @@ export const ContainerConfig = {
       obj.environment = []
     }
     if (message.secrets) {
-      obj.secrets = message.secrets.map(e => e)
+      obj.secrets = message.secrets.map(e => (e ? UniqueKey.toJSON(e) : undefined))
     } else {
       obj.secrets = []
     }
@@ -2396,7 +2400,7 @@ export const AddImagesToVersionRequest = {
   },
 }
 
-const basePatchContainerConfig: object = { secrets: '' }
+const basePatchContainerConfig: object = {}
 
 export const PatchContainerConfig = {
   fromJSON(object: any): PatchContainerConfig {
@@ -2409,7 +2413,8 @@ export const PatchContainerConfig = {
       object.environment !== undefined && object.environment !== null
         ? KeyValueList.fromJSON(object.environment)
         : undefined
-    message.secrets = (object.secrets ?? []).map((e: any) => String(e))
+    message.secrets =
+      object.secrets !== undefined && object.secrets !== null ? KeyList.fromJSON(object.secrets) : undefined
     message.config =
       object.config !== undefined && object.config !== null
         ? ExplicitContainerConfig.fromJSON(object.config)
@@ -2424,11 +2429,7 @@ export const PatchContainerConfig = {
       (obj.capabilities = message.capabilities ? KeyValueList.toJSON(message.capabilities) : undefined)
     message.environment !== undefined &&
       (obj.environment = message.environment ? KeyValueList.toJSON(message.environment) : undefined)
-    if (message.secrets) {
-      obj.secrets = message.secrets.map(e => e)
-    } else {
-      obj.secrets = []
-    }
+    message.secrets !== undefined && (obj.secrets = message.secrets ? KeyList.toJSON(message.secrets) : undefined)
     message.config !== undefined &&
       (obj.config = message.config ? ExplicitContainerConfig.toJSON(message.config) : undefined)
     message.name !== undefined && (obj.name = message.name)
@@ -2985,7 +2986,7 @@ export const InstanceContainerConfig = {
         : undefined
     message.capabilities = (object.capabilities ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
     message.environment = (object.environment ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
-    message.secrets = (object.secrets ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
+    message.secrets = (object.secrets ?? []).map((e: any) => UniqueKeySecretValue.fromJSON(e))
     return message
   },
 
@@ -3004,7 +3005,7 @@ export const InstanceContainerConfig = {
       obj.environment = []
     }
     if (message.secrets) {
-      obj.secrets = message.secrets.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
+      obj.secrets = message.secrets.map(e => (e ? UniqueKeySecretValue.toJSON(e) : undefined))
     } else {
       obj.secrets = []
     }
@@ -3237,6 +3238,8 @@ export const DeploymentDetailsResponse = {
     message.prefix = object.prefix !== undefined && object.prefix !== null ? String(object.prefix) : ''
     message.environment = (object.environment ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
     message.status = object.status !== undefined && object.status !== null ? deploymentStatusFromJSON(object.status) : 0
+    message.publicKey =
+      object.publicKey !== undefined && object.publicKey !== null ? String(object.publicKey) : undefined
     message.instances = (object.instances ?? []).map((e: any) => InstanceResponse.fromJSON(e))
     return message
   },
@@ -3256,6 +3259,7 @@ export const DeploymentDetailsResponse = {
       obj.environment = []
     }
     message.status !== undefined && (obj.status = deploymentStatusToJSON(message.status))
+    message.publicKey !== undefined && (obj.publicKey = message.publicKey)
     if (message.instances) {
       obj.instances = message.instances.map(e => (e ? InstanceResponse.toJSON(e) : undefined))
     } else {

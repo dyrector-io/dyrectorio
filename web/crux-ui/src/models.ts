@@ -41,6 +41,7 @@ export type Instance = {
   id: string
   image: VersionImage
   state?: ContainerState
+  publicKey?: string
   overriddenConfig?: Partial<InstanceContainerConfig>
 }
 
@@ -68,6 +69,7 @@ export type DeploymentDetails = {
   updatedAt: string
   environment: Environment
   status: DeploymentStatus
+  publicKey?: string
   instances: Instance[]
 }
 
@@ -115,7 +117,7 @@ export type DeploymentCreated = {
 
 export type PatchInstance = {
   instanceId: string
-  config: Partial<ContainerConfig>
+  config: Partial<InstanceContainerConfig>
 }
 
 export type PatchDeployment = {

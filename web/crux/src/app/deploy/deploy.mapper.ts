@@ -35,6 +35,7 @@ import {
   ExplicitContainerConfig,
   NetworkMode,
   Port,
+  UniqueKeySecretValue,
 } from 'src/grpc/protobuf/proto/common'
 import { ContainerConfigData, InstanceContainerConfigData, UniqueKeyValue } from 'src/shared/model'
 import { ImageMapper, ImageWithConfig } from '../image/image.mapper'
@@ -71,12 +72,13 @@ export default class DeployMapper {
     }
   }
 
-  detailsToGrpc(deployment: DeploymentDetails): DeploymentDetailsResponse {
+  detailsToGrpc(deployment: DeploymentDetails, publicKey?: string): DeploymentDetailsResponse {
     return {
       ...deployment,
       audit: AuditResponse.fromJSON(deployment),
       productVersionId: deployment.versionId,
       status: this.statusToGrpc(deployment.status),
+      publicKey,
       environment: deployment.environment as JsonArray,
       instances: deployment.instances.map(it => ({
         ...this.instanceToGrpc(it),
@@ -101,7 +103,7 @@ export default class DeployMapper {
         capabilities: (instance.config?.capabilities as UniqueKeyValue[]) ?? [],
         environment: (instance.config?.environment as UniqueKeyValue[]) ?? [],
         config: config.config as JsonObject,
-        secrets: (instance.config?.secrets as UniqueKeyValue[]) ?? [],
+        secrets: (instance.config?.secrets as unknown as UniqueKeySecretValue[]) ?? [],
       },
     }
   }

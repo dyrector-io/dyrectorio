@@ -429,10 +429,26 @@ export interface ExplicitContainerConfig {
   secrets?: KeyValueList | undefined
 }
 
+export interface UniqueKey {
+  id: string
+  key: string
+}
+
+export interface KeyList {
+  data: UniqueKey[]
+}
+
 export interface UniqueKeyValue {
   id: string
   key: string
   value: string
+}
+
+export interface UniqueKeySecretValue {
+  id: string
+  key: string
+  value: string
+  encrypted: boolean
 }
 
 export interface KeyValueList {
@@ -1083,6 +1099,44 @@ export const ExplicitContainerConfig = {
   },
 }
 
+const baseUniqueKey: object = { id: '', key: '' }
+
+export const UniqueKey = {
+  fromJSON(object: any): UniqueKey {
+    const message = { ...baseUniqueKey } as UniqueKey
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.key = object.key !== undefined && object.key !== null ? String(object.key) : ''
+    return message
+  },
+
+  toJSON(message: UniqueKey): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.key !== undefined && (obj.key = message.key)
+    return obj
+  },
+}
+
+const baseKeyList: object = {}
+
+export const KeyList = {
+  fromJSON(object: any): KeyList {
+    const message = { ...baseKeyList } as KeyList
+    message.data = (object.data ?? []).map((e: any) => UniqueKey.fromJSON(e))
+    return message
+  },
+
+  toJSON(message: KeyList): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? UniqueKey.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+}
+
 const baseUniqueKeyValue: object = { id: '', key: '', value: '' }
 
 export const UniqueKeyValue = {
@@ -1099,6 +1153,33 @@ export const UniqueKeyValue = {
     message.id !== undefined && (obj.id = message.id)
     message.key !== undefined && (obj.key = message.key)
     message.value !== undefined && (obj.value = message.value)
+    return obj
+  },
+}
+
+const baseUniqueKeySecretValue: object = {
+  id: '',
+  key: '',
+  value: '',
+  encrypted: false,
+}
+
+export const UniqueKeySecretValue = {
+  fromJSON(object: any): UniqueKeySecretValue {
+    const message = { ...baseUniqueKeySecretValue } as UniqueKeySecretValue
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.key = object.key !== undefined && object.key !== null ? String(object.key) : ''
+    message.value = object.value !== undefined && object.value !== null ? String(object.value) : ''
+    message.encrypted = object.encrypted !== undefined && object.encrypted !== null ? Boolean(object.encrypted) : false
+    return message
+  },
+
+  toJSON(message: UniqueKeySecretValue): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.key !== undefined && (obj.key = message.key)
+    message.value !== undefined && (obj.value = message.value)
+    message.encrypted !== undefined && (obj.encrypted = message.encrypted)
     return obj
   },
 }

@@ -1677,6 +1677,108 @@ func (x *ExplicitContainerConfig) GetSecrets() *KeyValueList {
 	return nil
 }
 
+type UniqueKey struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id  string `protobuf:"bytes,100,opt,name=id,proto3" json:"id,omitempty"`
+	Key string `protobuf:"bytes,101,opt,name=key,proto3" json:"key,omitempty"`
+}
+
+func (x *UniqueKey) Reset() {
+	*x = UniqueKey{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_protobuf_proto_common_proto_msgTypes[19]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *UniqueKey) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UniqueKey) ProtoMessage() {}
+
+func (x *UniqueKey) ProtoReflect() protoreflect.Message {
+	mi := &file_protobuf_proto_common_proto_msgTypes[19]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UniqueKey.ProtoReflect.Descriptor instead.
+func (*UniqueKey) Descriptor() ([]byte, []int) {
+	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *UniqueKey) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *UniqueKey) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
+type KeyList struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Data []*UniqueKey `protobuf:"bytes,1000,rep,name=data,proto3" json:"data,omitempty"`
+}
+
+func (x *KeyList) Reset() {
+	*x = KeyList{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_protobuf_proto_common_proto_msgTypes[20]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *KeyList) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*KeyList) ProtoMessage() {}
+
+func (x *KeyList) ProtoReflect() protoreflect.Message {
+	mi := &file_protobuf_proto_common_proto_msgTypes[20]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use KeyList.ProtoReflect.Descriptor instead.
+func (*KeyList) Descriptor() ([]byte, []int) {
+	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *KeyList) GetData() []*UniqueKey {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
 type UniqueKeyValue struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1690,7 +1792,7 @@ type UniqueKeyValue struct {
 func (x *UniqueKeyValue) Reset() {
 	*x = UniqueKeyValue{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_common_proto_msgTypes[19]
+		mi := &file_protobuf_proto_common_proto_msgTypes[21]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1703,7 +1805,7 @@ func (x *UniqueKeyValue) String() string {
 func (*UniqueKeyValue) ProtoMessage() {}
 
 func (x *UniqueKeyValue) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_common_proto_msgTypes[19]
+	mi := &file_protobuf_proto_common_proto_msgTypes[21]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1716,7 +1818,7 @@ func (x *UniqueKeyValue) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UniqueKeyValue.ProtoReflect.Descriptor instead.
 func (*UniqueKeyValue) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{19}
+	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *UniqueKeyValue) GetId() string {
@@ -1740,6 +1842,77 @@ func (x *UniqueKeyValue) GetValue() string {
 	return ""
 }
 
+type UniqueKeySecretValue struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id        string `protobuf:"bytes,100,opt,name=id,proto3" json:"id,omitempty"`
+	Key       string `protobuf:"bytes,101,opt,name=key,proto3" json:"key,omitempty"`
+	Value     string `protobuf:"bytes,103,opt,name=value,proto3" json:"value,omitempty"`
+	Encrypted bool   `protobuf:"varint,104,opt,name=encrypted,proto3" json:"encrypted,omitempty"`
+}
+
+func (x *UniqueKeySecretValue) Reset() {
+	*x = UniqueKeySecretValue{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_protobuf_proto_common_proto_msgTypes[22]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *UniqueKeySecretValue) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UniqueKeySecretValue) ProtoMessage() {}
+
+func (x *UniqueKeySecretValue) ProtoReflect() protoreflect.Message {
+	mi := &file_protobuf_proto_common_proto_msgTypes[22]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UniqueKeySecretValue.ProtoReflect.Descriptor instead.
+func (*UniqueKeySecretValue) Descriptor() ([]byte, []int) {
+	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *UniqueKeySecretValue) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *UniqueKeySecretValue) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
+func (x *UniqueKeySecretValue) GetValue() string {
+	if x != nil {
+		return x.Value
+	}
+	return ""
+}
+
+func (x *UniqueKeySecretValue) GetEncrypted() bool {
+	if x != nil {
+		return x.Encrypted
+	}
+	return false
+}
+
 type KeyValueList struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1751,7 +1924,7 @@ type KeyValueList struct {
 func (x *KeyValueList) Reset() {
 	*x = KeyValueList{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_common_proto_msgTypes[20]
+		mi := &file_protobuf_proto_common_proto_msgTypes[23]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1764,7 +1937,7 @@ func (x *KeyValueList) String() string {
 func (*KeyValueList) ProtoMessage() {}
 
 func (x *KeyValueList) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_common_proto_msgTypes[20]
+	mi := &file_protobuf_proto_common_proto_msgTypes[23]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1777,7 +1950,7 @@ func (x *KeyValueList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use KeyValueList.ProtoReflect.Descriptor instead.
 func (*KeyValueList) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{20}
+	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *KeyValueList) GetData() []*UniqueKeyValue {
@@ -1800,7 +1973,7 @@ type ListSecretsResponse struct {
 func (x *ListSecretsResponse) Reset() {
 	*x = ListSecretsResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_common_proto_msgTypes[21]
+		mi := &file_protobuf_proto_common_proto_msgTypes[24]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1813,7 +1986,7 @@ func (x *ListSecretsResponse) String() string {
 func (*ListSecretsResponse) ProtoMessage() {}
 
 func (x *ListSecretsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_common_proto_msgTypes[21]
+	mi := &file_protobuf_proto_common_proto_msgTypes[24]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1826,7 +1999,7 @@ func (x *ListSecretsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSecretsResponse.ProtoReflect.Descriptor instead.
 func (*ListSecretsResponse) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{21}
+	return file_protobuf_proto_common_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *ListSecretsResponse) GetPrefix() string {
@@ -2105,12 +2278,25 @@ var file_protobuf_proto_common_proto_rawDesc = []byte{
 	0x43, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x42, 0x12, 0x0a, 0x10, 0x5f, 0x69, 0x6d,
 	0x70, 0x6f, 0x72, 0x74, 0x43, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x42, 0x07, 0x0a,
 	0x05, 0x5f, 0x75, 0x73, 0x65, 0x72, 0x42, 0x06, 0x0a, 0x04, 0x5f, 0x54, 0x54, 0x59, 0x42, 0x0a,
-	0x0a, 0x08, 0x5f, 0x73, 0x65, 0x63, 0x72, 0x65, 0x74, 0x73, 0x22, 0x48, 0x0a, 0x0e, 0x55, 0x6e,
-	0x69, 0x71, 0x75, 0x65, 0x4b, 0x65, 0x79, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x0e, 0x0a, 0x02,
-	0x69, 0x64, 0x18, 0x64, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12, 0x10, 0x0a, 0x03,
-	0x6b, 0x65, 0x79, 0x18, 0x65, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x14,
-	0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x66, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x76,
-	0x61, 0x6c, 0x75, 0x65, 0x22, 0x3b, 0x0a, 0x0c, 0x4b, 0x65, 0x79, 0x56, 0x61, 0x6c, 0x75, 0x65,
+	0x0a, 0x08, 0x5f, 0x73, 0x65, 0x63, 0x72, 0x65, 0x74, 0x73, 0x22, 0x2d, 0x0a, 0x09, 0x55, 0x6e,
+	0x69, 0x71, 0x75, 0x65, 0x4b, 0x65, 0x79, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x64, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x65,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x22, 0x31, 0x0a, 0x07, 0x4b, 0x65, 0x79,
+	0x4c, 0x69, 0x73, 0x74, 0x12, 0x26, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x61, 0x18, 0xe8, 0x07, 0x20,
+	0x03, 0x28, 0x0b, 0x32, 0x11, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x55, 0x6e, 0x69,
+	0x71, 0x75, 0x65, 0x4b, 0x65, 0x79, 0x52, 0x04, 0x64, 0x61, 0x74, 0x61, 0x22, 0x48, 0x0a, 0x0e,
+	0x55, 0x6e, 0x69, 0x71, 0x75, 0x65, 0x4b, 0x65, 0x79, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x0e,
+	0x0a, 0x02, 0x69, 0x64, 0x18, 0x64, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12, 0x10,
+	0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x65, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79,
+	0x12, 0x14, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x66, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x22, 0x6c, 0x0a, 0x14, 0x55, 0x6e, 0x69, 0x71, 0x75, 0x65,
+	0x4b, 0x65, 0x79, 0x53, 0x65, 0x63, 0x72, 0x65, 0x74, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x0e,
+	0x0a, 0x02, 0x69, 0x64, 0x18, 0x64, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12, 0x10,
+	0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x65, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79,
+	0x12, 0x14, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x67, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x65, 0x6e, 0x63, 0x72, 0x79, 0x70,
+	0x74, 0x65, 0x64, 0x18, 0x68, 0x20, 0x01, 0x28, 0x08, 0x52, 0x09, 0x65, 0x6e, 0x63, 0x72, 0x79,
+	0x70, 0x74, 0x65, 0x64, 0x22, 0x3b, 0x0a, 0x0c, 0x4b, 0x65, 0x79, 0x56, 0x61, 0x6c, 0x75, 0x65,
 	0x4c, 0x69, 0x73, 0x74, 0x12, 0x2b, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x61, 0x18, 0xe8, 0x07, 0x20,
 	0x03, 0x28, 0x0b, 0x32, 0x16, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x55, 0x6e, 0x69,
 	0x71, 0x75, 0x65, 0x4b, 0x65, 0x79, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x52, 0x04, 0x64, 0x61, 0x74,
@@ -2173,7 +2359,7 @@ func file_protobuf_proto_common_proto_rawDescGZIP() []byte {
 }
 
 var file_protobuf_proto_common_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
-var file_protobuf_proto_common_proto_msgTypes = make([]protoimpl.MessageInfo, 25)
+var file_protobuf_proto_common_proto_msgTypes = make([]protoimpl.MessageInfo, 28)
 var file_protobuf_proto_common_proto_goTypes = []interface{}{
 	(ContainerState)(0),               // 0: common.ContainerState
 	(DeploymentStatus)(0),             // 1: common.DeploymentStatus
@@ -2199,16 +2385,19 @@ var file_protobuf_proto_common_proto_goTypes = []interface{}{
 	(*ResourceConfig)(nil),            // 21: common.ResourceConfig
 	(*CraneContainerConfig)(nil),      // 22: common.CraneContainerConfig
 	(*ExplicitContainerConfig)(nil),   // 23: common.ExplicitContainerConfig
-	(*UniqueKeyValue)(nil),            // 24: common.UniqueKeyValue
-	(*KeyValueList)(nil),              // 25: common.KeyValueList
-	(*ListSecretsResponse)(nil),       // 26: common.ListSecretsResponse
-	nil,                               // 27: common.ImportContainer.EnvironmentsEntry
-	nil,                               // 28: common.LogConfig.OptionsEntry
-	nil,                               // 29: common.CraneContainerConfig.ExtraLBAnnotationsEntry
-	(*timestamppb.Timestamp)(nil),     // 30: google.protobuf.Timestamp
+	(*UniqueKey)(nil),                 // 24: common.UniqueKey
+	(*KeyList)(nil),                   // 25: common.KeyList
+	(*UniqueKeyValue)(nil),            // 26: common.UniqueKeyValue
+	(*UniqueKeySecretValue)(nil),      // 27: common.UniqueKeySecretValue
+	(*KeyValueList)(nil),              // 28: common.KeyValueList
+	(*ListSecretsResponse)(nil),       // 29: common.ListSecretsResponse
+	nil,                               // 30: common.ImportContainer.EnvironmentsEntry
+	nil,                               // 31: common.LogConfig.OptionsEntry
+	nil,                               // 32: common.CraneContainerConfig.ExtraLBAnnotationsEntry
+	(*timestamppb.Timestamp)(nil),     // 33: google.protobuf.Timestamp
 }
 var file_protobuf_proto_common_proto_depIdxs = []int32{
-	30, // 0: common.ContainerStateItem.createdAt:type_name -> google.protobuf.Timestamp
+	33, // 0: common.ContainerStateItem.createdAt:type_name -> google.protobuf.Timestamp
 	0,  // 1: common.ContainerStateItem.state:type_name -> common.ContainerState
 	9,  // 2: common.ContainerStateItem.ports:type_name -> common.Port
 	5,  // 3: common.ContainerStateListMessage.data:type_name -> common.ContainerStateItem
@@ -2217,8 +2406,8 @@ var file_protobuf_proto_common_proto_depIdxs = []int32{
 	1,  // 6: common.DeploymentStatusMessage.deploymentStatus:type_name -> common.DeploymentStatus
 	10, // 7: common.PortRangeBinding.internal:type_name -> common.PortRange
 	10, // 8: common.PortRangeBinding.external:type_name -> common.PortRange
-	27, // 9: common.ImportContainer.environments:type_name -> common.ImportContainer.EnvironmentsEntry
-	28, // 10: common.LogConfig.options:type_name -> common.LogConfig.OptionsEntry
+	30, // 9: common.ImportContainer.environments:type_name -> common.ImportContainer.EnvironmentsEntry
+	31, // 10: common.LogConfig.options:type_name -> common.LogConfig.OptionsEntry
 	17, // 11: common.DagentContainerConfig.logConfig:type_name -> common.LogConfig
 	3,  // 12: common.DagentContainerConfig.restartPolicy:type_name -> common.RestartPolicy
 	2,  // 13: common.DagentContainerConfig.networkMode:type_name -> common.NetworkMode
@@ -2227,7 +2416,7 @@ var file_protobuf_proto_common_proto_depIdxs = []int32{
 	4,  // 16: common.CraneContainerConfig.deploymentStatregy:type_name -> common.DeploymentStrategy
 	19, // 17: common.CraneContainerConfig.healthCheckConfig:type_name -> common.HealthCheckConfig
 	21, // 18: common.CraneContainerConfig.resourceConfig:type_name -> common.ResourceConfig
-	29, // 19: common.CraneContainerConfig.extraLBAnnotations:type_name -> common.CraneContainerConfig.ExtraLBAnnotationsEntry
+	32, // 19: common.CraneContainerConfig.extraLBAnnotations:type_name -> common.CraneContainerConfig.ExtraLBAnnotationsEntry
 	18, // 20: common.ExplicitContainerConfig.dagent:type_name -> common.DagentContainerConfig
 	22, // 21: common.ExplicitContainerConfig.crane:type_name -> common.CraneContainerConfig
 	13, // 22: common.ExplicitContainerConfig.expose:type_name -> common.Expose
@@ -2237,13 +2426,14 @@ var file_protobuf_proto_common_proto_depIdxs = []int32{
 	9,  // 26: common.ExplicitContainerConfig.ports:type_name -> common.Port
 	11, // 27: common.ExplicitContainerConfig.portRanges:type_name -> common.PortRangeBinding
 	12, // 28: common.ExplicitContainerConfig.volumes:type_name -> common.Volume
-	25, // 29: common.ExplicitContainerConfig.secrets:type_name -> common.KeyValueList
-	24, // 30: common.KeyValueList.data:type_name -> common.UniqueKeyValue
-	31, // [31:31] is the sub-list for method output_type
-	31, // [31:31] is the sub-list for method input_type
-	31, // [31:31] is the sub-list for extension type_name
-	31, // [31:31] is the sub-list for extension extendee
-	0,  // [0:31] is the sub-list for field type_name
+	28, // 29: common.ExplicitContainerConfig.secrets:type_name -> common.KeyValueList
+	24, // 30: common.KeyList.data:type_name -> common.UniqueKey
+	26, // 31: common.KeyValueList.data:type_name -> common.UniqueKeyValue
+	32, // [32:32] is the sub-list for method output_type
+	32, // [32:32] is the sub-list for method input_type
+	32, // [32:32] is the sub-list for extension type_name
+	32, // [32:32] is the sub-list for extension extendee
+	0,  // [0:32] is the sub-list for field type_name
 }
 
 func init() { file_protobuf_proto_common_proto_init() }
@@ -2481,7 +2671,7 @@ func file_protobuf_proto_common_proto_init() {
 			}
 		}
 		file_protobuf_proto_common_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UniqueKeyValue); i {
+			switch v := v.(*UniqueKey); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2493,7 +2683,7 @@ func file_protobuf_proto_common_proto_init() {
 			}
 		}
 		file_protobuf_proto_common_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*KeyValueList); i {
+			switch v := v.(*KeyList); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2505,6 +2695,42 @@ func file_protobuf_proto_common_proto_init() {
 			}
 		}
 		file_protobuf_proto_common_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*UniqueKeyValue); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_protobuf_proto_common_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*UniqueKeySecretValue); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_protobuf_proto_common_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*KeyValueList); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_protobuf_proto_common_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ListSecretsResponse); i {
 			case 0:
 				return &v.state
@@ -2536,7 +2762,7 @@ func file_protobuf_proto_common_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_protobuf_proto_common_proto_rawDesc,
 			NumEnums:      5,
-			NumMessages:   25,
+			NumMessages:   28,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

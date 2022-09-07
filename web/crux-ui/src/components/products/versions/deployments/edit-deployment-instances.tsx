@@ -49,6 +49,7 @@ const EditDeploymentInstances = (props: EditDeploymentInstancesProps) => {
     const oldOne = instances[index]
     const instance = mergeInstancePatch(oldOne, message)
 
+    console.log(instance)
     const newInstances = [...instances]
     newInstances[index] = instance
 
@@ -65,9 +66,17 @@ const EditDeploymentInstances = (props: EditDeploymentInstancesProps) => {
 
   return (
     <DyoWrap>
-      {instances.map(it => (
-        <EditInstanceCard key={it.id} disabled={!mutable} instance={it} deploymentSock={sock} />
-      ))}
+      {instances.map(it => {
+        return (
+          <EditInstanceCard
+            key={it.id}
+            disabled={!mutable}
+            instance={it}
+            deploymentSock={sock}
+            publicKey={deployment?.publicKey}
+          />
+        )
+      })}
     </DyoWrap>
   )
 }

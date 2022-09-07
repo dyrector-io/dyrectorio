@@ -2,26 +2,30 @@ import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { Instance, PatchInstanceMessage, WS_TYPE_PATCH_INSTANCE } from '@app/models'
 import { InstanceContainerConfig, mergeConfigs } from '@app/models-config'
-import { containerConfigSchema, getValidationError } from '@app/validation'
+import { getValidationError, instanceConfigSchema } from '@app/validation'
 import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useState } from 'react'
-import EditImageConfig from '../../images/edit-image-config'
 import EditImageHeading from '../../images/edit-image-heading'
-import EditImageJson from '../../images/edit-image-json'
+import EditInstanceConfig from './edit-instance-config'
+import EditInstanceJson from './edit-instance-json'
 
 export type EditInstanceCardSelection = 'config' | 'json'
 
 interface EditInstanceCardProps {
   disabled?: boolean
   instance: Instance
+  publicKey?: string
   deploymentSock: WebSocketClientEndpoint
 }
 
 const EditInstanceCard = (props: EditInstanceCardProps) => {
   const { t } = useTranslation('images')
 
-  const { disabled, instance, deploymentSock: sock } = props
+  const { disabled, instance, deploymentSock: sock, publicKey } = props
+
+  console.log('got this: ')
+  console.log(instance)
 
   const [selection, setSelection] = useState<EditInstanceCardSelection>('config')
   const [mergedConfig, setMergedConfig] = useState(mergeConfigs(instance.image.config, instance.overriddenConfig))
@@ -35,6 +39,8 @@ const EditInstanceCard = (props: EditInstanceCardProps) => {
   const onPatch = (id: string, config: Partial<InstanceContainerConfig>) => {
     setParseError(null)
 
+    console.log('send', config)
+
     sock.send(WS_TYPE_PATCH_INSTANCE, {
       ...config,
       instanceId: id,
@@ -43,7 +49,7 @@ const EditInstanceCard = (props: EditInstanceCardProps) => {
 
   const onParseError = (err: Error) => setParseError(err.message)
 
-  const errorMessage = parseError ?? getValidationError(containerConfigSchema, mergedConfig)?.message
+  const errorMessage = parseError ?? getValidationError(instanceConfigSchema, mergedConfig)?.message
 
   return (
     <DyoCard className="flex flex-col flex-grow px-6 pb-6 pt-4">
@@ -79,14 +85,15 @@ const EditInstanceCard = (props: EditInstanceCardProps) => {
       </div>
 
       {selection === 'config' ? (
-        <EditImageConfig
+        <EditInstanceConfig
           disabled={disabled}
           disabledContainerNameEditing
           config={mergedConfig}
+          publicKey={publicKey}
           onPatch={it => onPatch(instance.id, it)}
         />
       ) : (
-        <EditImageJson
+        <EditInstanceJson
           disabled={disabled}
           disabledContainerNameEditing
           config={mergedConfig}

@@ -39,8 +39,13 @@ const EditImageCard = (props: EditImageCardProps) => {
   const [deleteModalConfig, confirmDelete] = useConfirmation()
   const [parseError, setParseError] = useState<string>(null)
 
+  console.log('imageConf')
+  console.log(image.config)
+
   const onPatch = (id: string, config: Partial<ContainerConfig>) => {
     setParseError(null)
+
+    console.log(config)
 
     sock.send(WS_TYPE_PATCH_IMAGE, {
       id,

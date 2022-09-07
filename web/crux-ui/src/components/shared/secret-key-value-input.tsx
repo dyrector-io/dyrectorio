@@ -25,18 +25,17 @@ const EMPTY_SECRET_KEY_VALUE_PAIR = {
 const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
   const { t } = useTranslation('common')
 
-  const { heading, disabled, publicKey } = props
-  const valueDisabled = !publicKey
-  console.log('value', valueDisabled, publicKey)
+  const { heading, disabled, publicKey, items } = props
 
-  const [state, dispatch] = useReducer(reducer, props.items)
+  const [state, dispatch] = useReducer(reducer, items)
 
   const stateToElements = (items: UniqueKeySecretValue[]) => {
-    const result = []
+    const result = new Array<KeyValueElement>()
 
     items.forEach(item =>
       result.push({
         ...item,
+        encrypted: item.encrypted,
         message: result.find(it => it.key === item.key) ? t('keyMustUnique') : null,
       }),
     )
@@ -65,18 +64,23 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
     newItems[index] = item
 
     newItems = newItems.filter(it => !isCompletelyEmpty(it))
+
+    console.log('newItems: ', newItems)
     dispatch({
       type: 'set-items',
       items: newItems,
     })
   }
   const onSubmit = async () => {
-    let newItems = await Promise.all(
-      [...state].map(async (it): Promise<UniqueKeySecretValue> => {
-        return { ...it, value: await encryptWithPGP(it.value, props.publicKey) }
+    let newItems = [...state].filter(it => !isCompletelyEmpty(it))
+
+    newItems = await Promise.all(
+      [...newItems].map(async (it): Promise<UniqueKeySecretValue> => {
+        return { ...it, value: await encryptWithPGP(it.value, publicKey), encrypted: true }
       }),
     )
-    newItems = newItems.filter(it => !isCompletelyEmpty(it))
+
+    console.log('items', newItems)
 
     props.onSubmit(newItems)
     dispatch({
@@ -84,6 +88,8 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
       items: newItems,
     })
   }
+
+  const onRemove = async () => {}
 
   const elements = stateToElements(state)
 
@@ -106,18 +112,22 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
         </div>
 
         <div className="w-6/12 ml-2">
-          {!valueDisabled ? (
-            <DyoInput
-              key={`${entry.id}-value`}
-              disabled={disabled || valueDisabled || encrypted}
-              className="w-full"
-              type={encrypted ? 'password' : 'text'}
-              grow
-              placeholder={t('value')}
-              value={value}
-              onChange={e => onChange(index, key, e.target.value)}
-            />
-          ) : null}
+          <DyoInput
+            key={`${entry.id}-value`}
+            disabled={disabled || encrypted}
+            className="w-full"
+            type={encrypted ? 'password' : 'text'}
+            grow
+            placeholder={t('value')}
+            value={value}
+            onChange={e => onChange(index, key, e.target.value)}
+          />
+        </div>
+
+        <div className="w-1/12 ml-1 text-white">
+          <button onClick={onRemove} type="button">
+            Rm
+          </button>
         </div>
 
         <div className="w-1/12 ml-1 text-white">
@@ -129,6 +139,11 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
     )
   }
 
+  console.log('elem')
+  console.log(elements)
+  console.log('state')
+  console.log(state)
+
   return (
     <form className={clsx(props.className, 'flex flex-col max-h-128 overflow-y-auto')}>
       {!heading ? null : (
@@ -136,7 +151,6 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
           {heading}
         </DyoHeading>
       )}
-      {valueDisabled ? <div className="text-light-eased">{t('cannotDefineSecretsHere')}</div> : null}
       {elements.map((it, index) => renderItem(it, index))}
     </form>
   )
@@ -155,15 +169,12 @@ const encryptWithPGP = async (text: string, key: string): Promise<string> => {
   const publicKey = await readKey({ armoredKey: key })
   const textStream = await encrypt({ message: await createMessage({ text }), encryptionKeys: publicKey })
 
-  console.log(textStream)
-
   const str = textStream as string
-  console.log(str)
 
   return (await encrypt({ message: await createMessage({ text }), encryptionKeys: publicKey })) as Promise<string>
 }
 
-type KeyValueInputActionType = 'merge-items' | 'set-items'
+type KeyValueInputActionType = 'merge-items' | 'set-items' | 'remove-item'
 
 type KeyValueInputAction = {
   type: KeyValueInputActionType
@@ -208,6 +219,10 @@ const reducer = (state: UniqueKeySecretValue[], action: KeyValueInputAction): Un
 
     pushEmptyLineIfNecessary(result)
     return result
+  } else if (type === 'remove-item') {
+    const toRemove = action.items[0]
+    const result = [...state.filter(old => old.id == toRemove.id)]
+    pushEmptyLineIfNecessary(result)
   } else {
     throw Error(`Invalid KeyValueInput action: ${type}`)
   }

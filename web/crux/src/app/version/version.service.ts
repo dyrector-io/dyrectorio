@@ -121,6 +121,7 @@ export default class VersionService {
                     environment: image.config.environment,
                     capabilities: image.config.capabilities,
                     config: image.config.config,
+                    secrets: image.config.secrets,
                   },
                 },
               },

@@ -292,6 +292,7 @@ export const completeContainerConfigSchema = explicitContainerConfigSchema.shape
   name: yup.string().required(),
   environment: stringStringMapRule.default({}),
   capabilities: stringStringMapRule.default({}),
+  secrets: stringStringMapRule.default({}),
 })
 
 export const uniqueKeyValuesSchema = yup
@@ -312,6 +313,13 @@ export const uniqueKeysOnlySchema = yup
   )
   .ensure()
   .test('keysAreUnique', 'Keys must be unique', arr => new Set(arr.map(it => it.key)).size === arr.length)
+
+export const instanceConfigSchema = yup.object().shape({
+  environment: uniqueKeyValuesSchema,
+  capabilities: uniqueKeyValuesSchema,
+  config: explicitContainerConfigSchema.nullable(),
+  secrets: uniqueKeyValuesSchema,
+})
 
 export const containerConfigSchema = yup.object().shape({
   environment: uniqueKeyValuesSchema,
