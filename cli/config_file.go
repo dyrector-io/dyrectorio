@@ -51,20 +51,27 @@ func ReadSettingsFile(write bool) (Settings, error) {
 }
 
 // Configuration needs some setting that only can be retrieved during runtime (like the gatweway address of the dyo-cli network)
-func OverwriteContainerConf(containers []Container) []Container {
+func OverwriteContainerConf(containers []Container) ([]Container, error) {
 	for i := range containers {
 		for j, env := range containers[i].EnvVars {
 			if env.Key == "CRUX_ADDRESS" {
 				gwip, err := GetCNIGateway()
 				if err != nil {
-					log.Panicln(err)
+					return []Container{}, err
 				}
 				containers[i].EnvVars[j].Value = fmt.Sprintf("%s%s", gwip, containers[i].EnvVars[j].Value)
+			}
+			if env.Key == "CRUX_UI_URL" {
+				gwip, err := GetCNIGateway()
+				if err != nil {
+					return []Container{}, err
+				}
+				containers[i].EnvVars[j].Value = fmt.Sprintf("http://%s:3000", gwip)
 			}
 		}
 	}
 
-	return containers
+	return containers, nil
 }
 
 // For overwriting generated/on-the-fly envvars for compose generation

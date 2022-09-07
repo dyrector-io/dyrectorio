@@ -1,7 +1,7 @@
 package main
 
 // Crux services: db migrations and crux api service
-func GetCruxContainerDefaults() []Container {
+func GetCruxContainerDefaults() ([]Container, error) {
 	crux := []Container{
 		{
 			Enabled: true,

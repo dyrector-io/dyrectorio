@@ -105,13 +105,15 @@ func FindExec(compose bool) (executable string, errormsg error) {
 		if dockerComposePresent {
 			return ExecDockerCompose, nil
 		}
+
+		return "", errors.New("docker-compose executable not found")
 	} else {
 		if dockerPresent {
 			return ExecDocker, nil
 		}
-	}
 
-	return "", errors.New("executable not found")
+		return "", errors.New("docker executable not found")
+	}
 }
 
 // Collect all executable names from OS's PATHs

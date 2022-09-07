@@ -5,7 +5,6 @@ import (
 	"bytes"
 	_ "embed"
 	"errors"
-	"os"
 	"text/template"
 )
 
@@ -43,7 +42,7 @@ type Container struct {
 
 // template file
 //
-//go:embed "template.hbr"
+//go:embed "template.tmpl"
 var templatefile string
 
 // Container services
@@ -67,7 +66,11 @@ func GetContainerDefaults(services []Services) ([]Container, error) {
 		case CruxUI:
 			containers = append(containers, GetCruxuiContainerDefaults()...)
 		case Crux:
-			containers = append(containers, GetCruxContainerDefaults()...)
+			container, err := GetCruxContainerDefaults()
+			if err != nil {
+				return []Container{}, err
+			}
+			containers = append(containers, container...)
 		case Utils:
 			containers = append(containers, GetUtilsContainerDefaults()...)
 		default:
@@ -97,12 +100,12 @@ func GenContainer(services []Services, write bool) (string, error) {
 	buf := bytes.Buffer{}
 	buffer := bufio.NewWriter(&buf)
 
-	composetemplate, err := template.New("container").Parse(templatefile)
+	composeTemplate, err := template.New("container").Parse(templatefile)
 	if err != nil {
 		return "", err
 	}
 
-	err = composetemplate.Execute(buffer, containers)
+	err = composeTemplate.Execute(buffer, containers)
 	if err != nil {
 		return "", err
 	}
@@ -113,10 +116,4 @@ func GenContainer(services []Services, write bool) (string, error) {
 	}
 
 	return buf.String(), nil
-}
-
-// Write out compose file
-func WriteComposeFile(containers string) error {
-	err := os.WriteFile("docker-compose.yaml", []byte(containers), FilePerms)
-	return err
 }

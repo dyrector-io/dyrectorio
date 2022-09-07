@@ -12,26 +12,26 @@ func main() {
 		Name:     "dyo",
 		Version:  "0.1.1",
 		HelpName: "dyo",
-		Usage:    "dyo - cli tool for deploying a complete Dyrectorio stack locally, for demonstration, testing, or development purposes",
+		Usage:    "dyo - cli tool for deploying a complete dyrector.io stack locally, for demonstration, testing, or development purposes",
 
 		Commands: []*cli.Command{
 			{
-				Name:    "init",
-				Aliases: []string{"i", "g", "gen", "generate"},
+				Name:    "gen",
+				Aliases: []string{"g", "generate"},
 				Usage:   "Create a docker-compose.yaml",
-				Action:  compose,
+				Action:  writeCompose,
 			},
 			{
-				Name:    "start",
-				Aliases: []string{"r", "run", "s"},
+				Name:    "up",
+				Aliases: []string{"u"},
 				Usage:   "Run the stack",
-				Action:  run,
+				Action:  up,
 			},
 			{
-				Name:    "stop",
-				Aliases: []string{},
+				Name:    "down",
+				Aliases: []string{"d"},
 				Usage:   "Stop the stack",
-				Action:  stop,
+				Action:  down,
 			},
 		},
 		Flags: []cli.Flag{
@@ -68,7 +68,7 @@ func main() {
 }
 
 // Write compose file
-func compose(cCtx *cli.Context) error {
+func writeCompose(cCtx *cli.Context) error {
 	services := serviceSelector(cCtx)
 
 	containers, err := GenContainer(services, cCtx.Bool("store"))
@@ -76,15 +76,16 @@ func compose(cCtx *cli.Context) error {
 		return err
 	}
 
-	err = WriteComposeFile(containers)
+	err = os.WriteFile("docker-compose.yaml", []byte(containers), FilePerms)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
 // Write compose file and start the compose process
-func run(cCtx *cli.Context) error {
+func up(cCtx *cli.Context) error {
 	services := serviceSelector(cCtx)
 
 	containers, err := GenContainer(services, cCtx.Bool("store"))
@@ -92,7 +93,7 @@ func run(cCtx *cli.Context) error {
 		return err
 	}
 
-	err = WriteComposeFile(containers)
+	err = os.WriteFile("docker-compose.yaml", []byte(containers), FilePerms)
 	if err != nil {
 		return err
 	}
@@ -106,7 +107,7 @@ func run(cCtx *cli.Context) error {
 }
 
 // Stop the compose process
-func stop(cCtx *cli.Context) error {
+func down(cCtx *cli.Context) error {
 	err := RunContainers(false, true)
 	if err != nil {
 		return err
