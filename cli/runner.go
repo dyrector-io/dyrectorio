@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-const ContainerNetName = "dyo-cli"
+const ContainerNetName = "dyrectorio-stack"
 
 const OSwindows = "windows"
 const ExecPodman = "podman"
@@ -255,7 +255,7 @@ func GetGatewayIP(executable string) (string, error) {
 	return "", errors.New("gateway IP is empty")
 }
 
-// Make sure dyo-cli network is exists and has correct settings
+// Make sure dyrectorio-stack network is exists and has correct settings
 func EnsureDyoNetwork(executable string, delnet bool) error {
 	namefilter := fmt.Sprintf("name=%s", ContainerNetName)
 	lscmd := exec.Command(executable, "network", "ls", "-f", namefilter, "--format", "'{{.Name}}'")

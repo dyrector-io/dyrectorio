@@ -50,7 +50,7 @@ func ReadSettingsFile(write bool) (Settings, error) {
 	return settings, nil
 }
 
-// Configuration needs some setting that only can be retrieved during runtime (like the gatweway address of the dyo-cli network)
+// Configuration needs some setting that only can be retrieved during runtime (like the gatweway address of the dyrectorio-stack network)
 func OverwriteContainerConf(containers []Container) ([]Container, error) {
 	for i := range containers {
 		for j, env := range containers[i].EnvVars {

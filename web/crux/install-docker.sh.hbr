@@ -59,7 +59,7 @@ docker run \
   -e DAGENT_NAME='{{name}}' \
   -v /var/run/docker.sock:/var/run/docker.sock \
   {{#if network}}
-  --network dyo-cli \
+  --network dyrectorio-stack \
   {{/if}}
   --name 'dagent' \
   {{! -e UPDATE_REGISTRY_USER='' \ }}
