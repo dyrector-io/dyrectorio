@@ -1,8 +1,6 @@
 package k8s
 
 import (
-	"bufio"
-	"bytes"
 	"context"
 	"fmt"
 	"log"
@@ -62,20 +60,10 @@ func (s *secret) applySecrets(namespace, name string, values map[string]string) 
 func decryptSecrets(arr map[string]string, appConfig *config.Configuration) (map[string][]byte, error) {
 	out := map[string][]byte{}
 
-	b := bytes.NewBuffer([]byte{})
-	w := bufio.NewWriter(b)
-	count, err := w.WriteString("meleg")
-
-	log.Println("ennyi vot: ", count)
-
-	if err != nil {
-		log.Println(err)
-	}
-
 	for key, sec := range arr {
-		decrypted, err := helper.DecryptMessageArmored(string(appConfig.SecretPrivateKey), []byte{}, sec)
+		decrypted, err := helper.DecryptMessageArmored(string(appConfig.SecretPrivateKey), nil, sec)
 		if err != nil {
-			return out, fmt.Errorf("could not process secret: %v", key)
+			return out, fmt.Errorf("could not process secret: %v %w", key, err)
 		}
 		out[key] = []byte(decrypted)
 	}
