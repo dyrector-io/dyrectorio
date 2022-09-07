@@ -448,11 +448,15 @@ export interface UniqueKeySecretValue {
   id: string
   key: string
   value: string
-  encrypted: boolean
+  encrypted?: boolean | undefined
 }
 
 export interface KeyValueList {
   data: UniqueKeyValue[]
+}
+
+export interface SecretList {
+  data: UniqueKeySecretValue[]
 }
 
 export interface ListSecretsResponse {
@@ -2465,12 +2469,7 @@ export const UniqueKeyValue = {
   },
 }
 
-const baseUniqueKeySecretValue: object = {
-  id: '',
-  key: '',
-  value: '',
-  encrypted: false,
-}
+const baseUniqueKeySecretValue: object = { id: '', key: '', value: '' }
 
 export const UniqueKeySecretValue = {
   encode(message: UniqueKeySecretValue, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -2483,7 +2482,7 @@ export const UniqueKeySecretValue = {
     if (message.value !== '') {
       writer.uint32(826).string(message.value)
     }
-    if (message.encrypted === true) {
+    if (message.encrypted !== undefined) {
       writer.uint32(832).bool(message.encrypted)
     }
     return writer
@@ -2521,7 +2520,8 @@ export const UniqueKeySecretValue = {
     message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
     message.key = object.key !== undefined && object.key !== null ? String(object.key) : ''
     message.value = object.value !== undefined && object.value !== null ? String(object.value) : ''
-    message.encrypted = object.encrypted !== undefined && object.encrypted !== null ? Boolean(object.encrypted) : false
+    message.encrypted =
+      object.encrypted !== undefined && object.encrypted !== null ? Boolean(object.encrypted) : undefined
     return message
   },
 
@@ -2539,7 +2539,7 @@ export const UniqueKeySecretValue = {
     message.id = object.id ?? ''
     message.key = object.key ?? ''
     message.value = object.value ?? ''
-    message.encrypted = object.encrypted ?? false
+    message.encrypted = object.encrypted ?? undefined
     return message
   },
 }
@@ -2592,6 +2592,58 @@ export const KeyValueList = {
   fromPartial<I extends Exact<DeepPartial<KeyValueList>, I>>(object: I): KeyValueList {
     const message = { ...baseKeyValueList } as KeyValueList
     message.data = object.data?.map(e => UniqueKeyValue.fromPartial(e)) || []
+    return message
+  },
+}
+
+const baseSecretList: object = {}
+
+export const SecretList = {
+  encode(message: SecretList, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    for (const v of message.data) {
+      UniqueKeySecretValue.encode(v!, writer.uint32(8002).fork()).ldelim()
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): SecretList {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = { ...baseSecretList } as SecretList
+    message.data = []
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1000:
+          message.data.push(UniqueKeySecretValue.decode(reader, reader.uint32()))
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): SecretList {
+    const message = { ...baseSecretList } as SecretList
+    message.data = (object.data ?? []).map((e: any) => UniqueKeySecretValue.fromJSON(e))
+    return message
+  },
+
+  toJSON(message: SecretList): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? UniqueKeySecretValue.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<SecretList>, I>>(object: I): SecretList {
+    const message = { ...baseSecretList } as SecretList
+    message.data = object.data?.map(e => UniqueKeySecretValue.fromPartial(e)) || []
     return message
   },
 }

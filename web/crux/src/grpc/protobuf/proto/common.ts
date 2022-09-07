@@ -448,11 +448,15 @@ export interface UniqueKeySecretValue {
   id: string
   key: string
   value: string
-  encrypted: boolean
+  encrypted?: boolean | undefined
 }
 
 export interface KeyValueList {
   data: UniqueKeyValue[]
+}
+
+export interface SecretList {
+  data: UniqueKeySecretValue[]
 }
 
 export interface ListSecretsResponse {
@@ -1157,12 +1161,7 @@ export const UniqueKeyValue = {
   },
 }
 
-const baseUniqueKeySecretValue: object = {
-  id: '',
-  key: '',
-  value: '',
-  encrypted: false,
-}
+const baseUniqueKeySecretValue: object = { id: '', key: '', value: '' }
 
 export const UniqueKeySecretValue = {
   fromJSON(object: any): UniqueKeySecretValue {
@@ -1170,7 +1169,8 @@ export const UniqueKeySecretValue = {
     message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
     message.key = object.key !== undefined && object.key !== null ? String(object.key) : ''
     message.value = object.value !== undefined && object.value !== null ? String(object.value) : ''
-    message.encrypted = object.encrypted !== undefined && object.encrypted !== null ? Boolean(object.encrypted) : false
+    message.encrypted =
+      object.encrypted !== undefined && object.encrypted !== null ? Boolean(object.encrypted) : undefined
     return message
   },
 
@@ -1197,6 +1197,26 @@ export const KeyValueList = {
     const obj: any = {}
     if (message.data) {
       obj.data = message.data.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+}
+
+const baseSecretList: object = {}
+
+export const SecretList = {
+  fromJSON(object: any): SecretList {
+    const message = { ...baseSecretList } as SecretList
+    message.data = (object.data ?? []).map((e: any) => UniqueKeySecretValue.fromJSON(e))
+    return message
+  },
+
+  toJSON(message: SecretList): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? UniqueKeySecretValue.toJSON(e) : undefined))
     } else {
       obj.data = []
     }

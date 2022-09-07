@@ -29,6 +29,7 @@ import {
   KeyValueList,
   ListSecretsResponse,
   Port,
+  SecretList,
   UniqueKey,
   UniqueKeySecretValue,
   UniqueKeyValue,
@@ -986,7 +987,7 @@ export interface PatchInstanceRequest {
   environment?: KeyValueList | undefined
   capabilities?: KeyValueList | undefined
   config?: ExplicitContainerConfig | undefined
-  secrets?: KeyValueList | undefined
+  secrets?: SecretList | undefined
 }
 
 export interface DeploymentListResponse {
@@ -6989,7 +6990,7 @@ export const PatchInstanceRequest = {
       ExplicitContainerConfig.encode(message.config, writer.uint32(818).fork()).ldelim()
     }
     if (message.secrets !== undefined) {
-      KeyValueList.encode(message.secrets, writer.uint32(826).fork()).ldelim()
+      SecretList.encode(message.secrets, writer.uint32(826).fork()).ldelim()
     }
     return writer
   },
@@ -7017,7 +7018,7 @@ export const PatchInstanceRequest = {
           message.config = ExplicitContainerConfig.decode(reader, reader.uint32())
           break
         case 103:
-          message.secrets = KeyValueList.decode(reader, reader.uint32())
+          message.secrets = SecretList.decode(reader, reader.uint32())
           break
         default:
           reader.skipType(tag & 7)
@@ -7044,7 +7045,7 @@ export const PatchInstanceRequest = {
         ? ExplicitContainerConfig.fromJSON(object.config)
         : undefined
     message.secrets =
-      object.secrets !== undefined && object.secrets !== null ? KeyValueList.fromJSON(object.secrets) : undefined
+      object.secrets !== undefined && object.secrets !== null ? SecretList.fromJSON(object.secrets) : undefined
     return message
   },
 
@@ -7058,7 +7059,7 @@ export const PatchInstanceRequest = {
       (obj.capabilities = message.capabilities ? KeyValueList.toJSON(message.capabilities) : undefined)
     message.config !== undefined &&
       (obj.config = message.config ? ExplicitContainerConfig.toJSON(message.config) : undefined)
-    message.secrets !== undefined && (obj.secrets = message.secrets ? KeyValueList.toJSON(message.secrets) : undefined)
+    message.secrets !== undefined && (obj.secrets = message.secrets ? SecretList.toJSON(message.secrets) : undefined)
     return obj
   },
 
@@ -7079,7 +7080,7 @@ export const PatchInstanceRequest = {
         ? ExplicitContainerConfig.fromPartial(object.config)
         : undefined
     message.secrets =
-      object.secrets !== undefined && object.secrets !== null ? KeyValueList.fromPartial(object.secrets) : undefined
+      object.secrets !== undefined && object.secrets !== null ? SecretList.fromPartial(object.secrets) : undefined
     return message
   },
 }

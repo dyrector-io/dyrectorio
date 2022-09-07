@@ -13,6 +13,7 @@ import {
   Port,
   InstanceDeploymentItem,
   UniqueKeySecretValue,
+  SecretList,
   ListSecretsResponse,
   containerStateFromJSON,
   containerStateToJSON,
@@ -975,7 +976,7 @@ export interface PatchInstanceRequest {
   environment?: KeyValueList | undefined
   capabilities?: KeyValueList | undefined
   config?: ExplicitContainerConfig | undefined
-  secrets?: KeyValueList | undefined
+  secrets?: SecretList | undefined
 }
 
 export interface DeploymentListResponse {
@@ -3065,7 +3066,7 @@ export const PatchInstanceRequest = {
         ? ExplicitContainerConfig.fromJSON(object.config)
         : undefined
     message.secrets =
-      object.secrets !== undefined && object.secrets !== null ? KeyValueList.fromJSON(object.secrets) : undefined
+      object.secrets !== undefined && object.secrets !== null ? SecretList.fromJSON(object.secrets) : undefined
     return message
   },
 
@@ -3079,7 +3080,7 @@ export const PatchInstanceRequest = {
       (obj.capabilities = message.capabilities ? KeyValueList.toJSON(message.capabilities) : undefined)
     message.config !== undefined &&
       (obj.config = message.config ? ExplicitContainerConfig.toJSON(message.config) : undefined)
-    message.secrets !== undefined && (obj.secrets = message.secrets ? KeyValueList.toJSON(message.secrets) : undefined)
+    message.secrets !== undefined && (obj.secrets = message.secrets ? SecretList.toJSON(message.secrets) : undefined)
     return obj
   },
 }

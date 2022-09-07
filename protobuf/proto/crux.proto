@@ -744,7 +744,7 @@ message PatchInstanceRequest {
   optional common.KeyValueList environment = 100;
   optional common.KeyValueList capabilities = 101;
   optional common.ExplicitContainerConfig config = 102;
-  optional common.KeyValueList secrets = 103;
+  optional common.SecretList secrets = 103;
 }
 
 message DeploymentListResponse { repeated DeploymentResponse data = 1000; }
