@@ -29,32 +29,25 @@ export class DomainNotificationService {
 
     if (userOnTeam) {
       const notifications = await this.prisma.notification.findMany({
+        include: {
+          events: {
+            select: {
+              event: true
+            }
+          }
+        },
         where: {
           teamId: userOnTeam.teamId,
           active: true,
+          events: {
+            some:{
+              event: eventType
+            }
+          }
         },
       })
 
-      const enabledNotifications = (
-        await this.prisma.notificationEvent.groupBy({
-          by: ['notificationId'],
-          _count: {
-            id: true,
-          },
-          where: {
-            notificationId: {
-              in: notifications.map(it => it.id),
-            },
-            event: eventType,
-          },
-        })
-      ).map(it => it.notificationId)
-
-      notifications.forEach(async notification => {
-        if (enabledNotifications.includes(notification.id)) {
-          await this.send(notification.url, notification.type, template)
-        }
-      })
+      await Promise.all(notifications.map(it => this.send(it.url, it.type, template)))
     }
   }
 
