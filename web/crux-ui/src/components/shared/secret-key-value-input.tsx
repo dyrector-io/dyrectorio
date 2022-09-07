@@ -89,6 +89,26 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
     })
   }
 
+  const renderButton = (key: string, value: string, encrypted: boolean) => {
+    if (encrypted) {
+      return (
+        <div className="w-1/12 ml-1 text-white">
+          <button onClick={onRemove} type="button">
+            {t('clear')}
+          </button>
+        </div>
+      )
+    }
+
+    return (
+      <div className="w-1/12 ml-1 text-white">
+        <button onClick={onSubmit} type="button" disabled={key?.length === 0 || value?.length === 0}>
+          {t('send')}
+        </button>
+      </div>
+    )
+  }
+
   const onRemove = async () => {}
 
   const elements = stateToElements(state)
@@ -124,25 +144,10 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
           />
         </div>
 
-        <div className="w-1/12 ml-1 text-white">
-          <button onClick={onRemove} type="button">
-            Rm
-          </button>
-        </div>
-
-        <div className="w-1/12 ml-1 text-white">
-          <button onClick={onSubmit} type="button">
-            Send
-          </button>
-        </div>
+        {renderButton(key, value, encrypted)}
       </div>
     )
   }
-
-  console.log('elem')
-  console.log(elements)
-  console.log('state')
-  console.log(state)
 
   return (
     <form className={clsx(props.className, 'flex flex-col max-h-128 overflow-y-auto')}>
