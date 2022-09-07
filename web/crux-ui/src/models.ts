@@ -513,6 +513,7 @@ export type User = {
   email: string
   role: UserRole
   status: UserStatus
+  lastLogin?: string
 }
 
 export type InviteUser = {

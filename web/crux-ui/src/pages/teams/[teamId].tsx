@@ -13,7 +13,7 @@ import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { roleToText, Team, TeamDetails, User, userIsAdmin, userIsOwner, UserRole } from '@app/models'
 import { ROUTE_TEAMS, teamApiUrl, teamUrl, userApiUrl } from '@app/routes'
-import { redirectTo, withContextAuthorization } from '@app/utils'
+import { redirectTo, utcDateToLocale, withContextAuthorization } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
 import { cruxFromContext } from '@server/crux/crux'
 import { sessionOfContext } from '@server/kratos'
@@ -30,11 +30,11 @@ interface TeamDetailsPageProps {
 }
 
 const TeamDetailsPage = (props: TeamDetailsPageProps) => {
-  const { me, team: propsTeam } = props
-
   const { t } = useTranslation('teams')
 
   const router = useRouter()
+
+  const { me, team: propsTeam } = props
 
   const [team, setTeam] = useState(propsTeam)
   const [detailsState, setDetailsState] = useState<TeamDetailsState>('none')
@@ -124,7 +124,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
     },
   ]
 
-  const listHeaders = [...['common:name', 'common:email', 'role', 'common:status'].map(it => t(it)), '']
+  const listHeaders = [...['common:name', 'common:email', 'role', 'lastLogin', 'common:status'].map(it => t(it)), '']
   const defaultHeaderClass = 'uppercase text-bright text-sm font-bold bg-medium-eased pl-2 py-3 h-11'
   const headerClassNames = [
     clsx(defaultHeaderClass, 'rounded-tl-lg pl-16'),
@@ -137,29 +137,31 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
     save: detailsState === 'inviting' ? t('send') : null,
   }
 
-  const itemTemplate = (item: User) => /* eslint-disable react/jsx-key */ [
-    <div className="font-semibold ml-14 py-1 h-8">{item.name}</div>,
-    <div>{item.email}</div>,
+  /* eslint-disable react/jsx-key */
+  const itemTemplate = (it: User) => [
+    <div className="font-semibold ml-14 py-1 h-8">{it.name}</div>,
+    <div>{it.email}</div>,
     <div className="flex flex-row">
-      <span>{t(roleToText(item.role))}</span>
-      {!canEdit || item.status !== 'verified' ? null : (
+      <span>{t(roleToText(it.role))}</span>
+      {!canEdit || it.status !== 'verified' ? null : (
         <UserRoleAction
           className="flex ml-2"
           teamId={team.id}
-          user={item}
-          onRoleUpdated={role => onUserRoleUpdated(item.id, role)}
+          user={it}
+          onRoleUpdated={role => onUserRoleUpdated(it.id, role)}
         />
       )}
     </div>,
-    <UserStatusTag className="my-auto w-fit" status={item.status} />,
-    detailsState !== 'none' || !canEdit || item.role === 'owner' ? null : (
+    <div>{utcDateToLocale(it.lastLogin)}</div>,
+    <UserStatusTag className="my-auto w-fit" status={it.status} />,
+    detailsState !== 'none' || !canEdit || it.role === 'owner' ? null : (
       <Image
         className="cursor-pointer mr-16"
         src="/trash-can.svg"
         alt={t('common:delete')}
         width={24}
         height={24}
-        onClick={() => onDeleteUser(item)}
+        onClick={() => onDeleteUser(it)}
       />
     ),
   ]

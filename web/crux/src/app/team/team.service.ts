@@ -117,8 +117,9 @@ export class TeamService {
     const team = activeUserOnTeam.team
     const userIds = team.users.map(it => it.userId).concat(team.invitations.map(it => it.userId))
     const identities = await this.kratos.getIdentitiesByIds(userIds)
+    const sessions = await this.kratos.getSessionsByIds(userIds)
 
-    return this.mapper.activeTeamDetailsToGrpc(team, identities)
+    return this.mapper.activeTeamDetailsToGrpc(team, identities, sessions)
   }
 
   async createTeam(
@@ -474,10 +475,12 @@ export class TeamService {
       include: this.teamRepository.teamInclude,
     })
 
-    const identities = await this.kratos.getIdentitiesByIds(teams.flatMap(it => it.users).map(it => it.userId))
+    const userIds = teams.flatMap(it => it.users).map(it => it.userId)
+    const identities = await this.kratos.getIdentitiesByIds(userIds)
+    const sessions = await this.kratos.getSessionsByIds(userIds)
 
     return {
-      data: teams.map(it => this.mapper.teamDetailsToGrpc(it, identities)),
+      data: teams.map(it => this.mapper.teamDetailsToGrpc(it, identities, sessions)),
     }
   }
 
@@ -489,8 +492,10 @@ export class TeamService {
       include: this.teamRepository.teamInclude,
     })
 
-    const identities = await this.kratos.getIdentitiesByIds(team.users.map(it => it.userId))
+    const userIds = team.users.map(it => it.userId)
+    const identities = await this.kratos.getIdentitiesByIds(userIds)
+    const sessions = await this.kratos.getSessionsByIds(userIds)
 
-    return this.mapper.teamDetailsToGrpc(team, identities)
+    return this.mapper.teamDetailsToGrpc(team, identities, sessions)
   }
 }

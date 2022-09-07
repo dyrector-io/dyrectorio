@@ -603,6 +603,7 @@ export interface UserResponse {
   email: string
   role: UserRole
   status: UserStatus
+  lastLogin?: Timestamp | undefined
 }
 
 export interface ProductDetailsReponse {
@@ -2540,6 +2541,9 @@ export const UserResponse = {
     if (message.status !== 0) {
       writer.uint32(824).int32(message.status)
     }
+    if (message.lastLogin !== undefined) {
+      Timestamp.encode(message.lastLogin, writer.uint32(834).fork()).ldelim()
+    }
     return writer
   },
 
@@ -2565,6 +2569,9 @@ export const UserResponse = {
         case 103:
           message.status = reader.int32() as any
           break
+        case 104:
+          message.lastLogin = Timestamp.decode(reader, reader.uint32())
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -2580,6 +2587,7 @@ export const UserResponse = {
       email: isSet(object.email) ? String(object.email) : '',
       role: isSet(object.role) ? userRoleFromJSON(object.role) : 0,
       status: isSet(object.status) ? userStatusFromJSON(object.status) : 0,
+      lastLogin: isSet(object.lastLogin) ? fromJsonTimestamp(object.lastLogin) : undefined,
     }
   },
 
@@ -2590,6 +2598,7 @@ export const UserResponse = {
     message.email !== undefined && (obj.email = message.email)
     message.role !== undefined && (obj.role = userRoleToJSON(message.role))
     message.status !== undefined && (obj.status = userStatusToJSON(message.status))
+    message.lastLogin !== undefined && (obj.lastLogin = fromTimestamp(message.lastLogin).toISOString())
     return obj
   },
 
@@ -2600,6 +2609,8 @@ export const UserResponse = {
     message.email = object.email ?? ''
     message.role = object.role ?? 0
     message.status = object.status ?? 0
+    message.lastLogin =
+      object.lastLogin !== undefined && object.lastLogin !== null ? Timestamp.fromPartial(object.lastLogin) : undefined
     return message
   },
 }

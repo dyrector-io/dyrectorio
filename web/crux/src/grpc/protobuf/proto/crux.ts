@@ -591,6 +591,7 @@ export interface UserResponse {
   email: string
   role: UserRole
   status: UserStatus
+  lastLogin?: Timestamp | undefined
 }
 
 export interface ProductDetailsReponse {
@@ -1589,6 +1590,7 @@ export const UserResponse = {
       email: isSet(object.email) ? String(object.email) : '',
       role: isSet(object.role) ? userRoleFromJSON(object.role) : 0,
       status: isSet(object.status) ? userStatusFromJSON(object.status) : 0,
+      lastLogin: isSet(object.lastLogin) ? fromJsonTimestamp(object.lastLogin) : undefined,
     }
   },
 
@@ -1599,6 +1601,7 @@ export const UserResponse = {
     message.email !== undefined && (obj.email = message.email)
     message.role !== undefined && (obj.role = userRoleToJSON(message.role))
     message.status !== undefined && (obj.status = userStatusToJSON(message.status))
+    message.lastLogin !== undefined && (obj.lastLogin = fromTimestamp(message.lastLogin).toISOString())
     return obj
   },
 }
