@@ -9,14 +9,12 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
-	"strings"
 )
 
 const ContainerNetName = "dyrectorio-stack"
 
 const OSwindows = "windows"
 const ExecPodman = "podman"
-const ExecPodmanCompose = "podman-compose"
 
 const ExecDocker = "docker"
 const ExecDockerCompose = "docker-compose"
@@ -26,10 +24,7 @@ const ExecWinDockerCompose = "docker-compose.exe"
 // Start compose file
 func RunContainers(start, quiet bool) error {
 	// search for podman/docker
-	executable, err := FindExec(true)
-	if err != nil {
-		return err
-	}
+	executable := FindExec(true)
 
 	var cmd *exec.Cmd
 	if start {
@@ -42,7 +37,7 @@ func RunContainers(start, quiet bool) error {
 	cmd.Stderr = os.Stderr
 
 	log.Println("Executing", executable, "in the background...")
-	err = cmd.Run()
+	err := cmd.Run()
 	if err != nil {
 		return err
 	}
@@ -67,74 +62,21 @@ func RunContainers(start, quiet bool) error {
 }
 
 // Find a compose or docker executable, prioritizing podman
-func FindExec(compose bool) (executable string, errormsg error) {
+func FindExec(compose bool) (executable string) {
 	// I refuse to spend more time to debug this OS's blasphemy
 	if runtime.GOOS == OSwindows {
 		if compose {
-			return ExecWinDockerCompose, nil
+			return ExecWinDockerCompose
 		} else {
-			return ExecWinDocker, nil
-		}
-	}
-
-	executables, err := exploreOSPaths()
-	if err != nil {
-		return "", err
-	}
-
-	dockerComposePresent := false
-	dockerPresent := false
-	for _, file := range executables {
-		switch file {
-		case ExecPodmanCompose:
-			if compose {
-				return ExecPodmanCompose, nil
-			}
-		case ExecDockerCompose:
-			dockerComposePresent = true
-		case ExecPodman:
-			if !compose {
-				return ExecPodman, nil
-			}
-		case ExecDocker:
-			dockerPresent = true
+			return ExecWinDocker
 		}
 	}
 
 	if compose {
-		if dockerComposePresent {
-			return ExecDockerCompose, nil
-		}
-
-		return "", errors.New("docker-compose executable not found")
+		return ExecDockerCompose
 	} else {
-		if dockerPresent {
-			return ExecDocker, nil
-		}
-
-		return "", errors.New("docker executable not found")
+		return ExecDocker
 	}
-}
-
-// Collect all executable names from OS's PATHs
-func exploreOSPaths() ([]string, error) {
-	osPath := os.Getenv("PATH")
-	osPathList := strings.Split(osPath, string(os.PathListSeparator))
-
-	var executables []string
-
-	for _, path := range osPathList {
-		files, err := os.ReadDir(path)
-		if err != nil {
-			return []string{}, err
-		}
-
-		for _, f := range files {
-			executables = append(executables, f.Name())
-		}
-	}
-
-	return executables, nil
 }
 
 // Minimal configuration to parse podman networks
@@ -164,10 +106,7 @@ type Ipam struct {
 
 // Retrieving docker networks gateway IP
 func GetCNIGateway() (string, error) {
-	executable, err := FindExec(false)
-	if err != nil {
-		return "", err
-	}
+	executable := FindExec(false)
 
 	namefilter := fmt.Sprintf("name=%s", ContainerNetName)
 	cmd := exec.Command(executable, "network", "ls", "-f", "driver=bridge", "-f", namefilter, "--format", "'{{.Name}}'")
@@ -177,7 +116,7 @@ func GetCNIGateway() (string, error) {
 	cmd.Stderr = os.Stderr
 
 	log.Println("Executing", executable, "in the background, listing network...")
-	err = cmd.Run()
+	err := cmd.Run()
 	if err != nil {
 		return "", err
 	}
