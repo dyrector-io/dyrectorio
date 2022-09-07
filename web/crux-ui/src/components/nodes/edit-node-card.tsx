@@ -140,8 +140,25 @@ const EditNodeCard = (props: EditNodeCardProps) => {
         } else {
           result = {
             ...values,
+            id: node.id,
             status: node.status,
+            type: node.type,
           } as DyoNodeDetails
+
+          if (values.name !== node.name) {
+            const revokeScript = await fetch(nodeTokenApiUrl(node.id), {
+              method: 'DELETE',
+            })
+
+            if (revokeScript.ok) {
+              result = {
+                ...result,
+                hasToken: false,
+                install: null,
+                type: node.type,
+              }
+            }
+          }
         }
 
         setNode(result)

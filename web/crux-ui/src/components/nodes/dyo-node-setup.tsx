@@ -37,6 +37,10 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
   const handleApiError = defaultApiErrorHandler(t)
 
   const onGenerateInstallScript = async () => {
+    if (remaining > 0) {
+      cancelCountdown()
+    }
+
     const body = {
       type: node.type,
     }

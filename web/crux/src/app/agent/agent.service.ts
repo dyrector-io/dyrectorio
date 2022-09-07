@@ -84,7 +84,7 @@ export class AgentService {
 
   async install(nodeId: string, nodeType: NodeTypeEnum): Promise<AgentInstaller> {
     let installer = this.getInstallerByNodeId(nodeId)
-    if (!installer) {
+    if (!installer || installer.nodeType !== nodeType) {
       const now = new Date().getTime()
 
       const token: AgentToken = {
