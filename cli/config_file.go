@@ -10,8 +10,15 @@ import (
 )
 
 type Settings struct {
-	Services     ServicesType `yaml:"services"`
-	EnvOverrides []EnvVar     `yaml:"envOverrides"`
+	Services   ServicesType      `yaml:"services"`
+	Containers ContainerSettings `yaml:"containers"`
+}
+
+type ContainerSettings struct {
+	CruxEnabled   bool   `yaml:"crux_enabled"`
+	CruxUiEnabled bool   `yaml:"crux-ui_enabled"`
+	Network       string `yaml:"network"`
+	CertVolume    string `yaml:"cert-volume"`
 }
 
 type ServicesType struct {
@@ -72,26 +79,4 @@ func OverwriteContainerConf(containers []Container) ([]Container, error) {
 	}
 
 	return containers, nil
-}
-
-// For overwriting generated/on-the-fly envvars for compose generation
-func EnvVarOverwrite(settings Settings, services []Container) []Container {
-	for i := range services {
-		for j, item := range services[i].EnvVars {
-			item = OverwriteOpt(settings, item)
-			services[i].EnvVars[j] = item
-		}
-	}
-	return services
-}
-
-// Overwriting a single option
-func OverwriteOpt(settings Settings, env EnvVar) EnvVar {
-	for _, item := range settings.EnvOverrides {
-		if item.Key == env.Key {
-			env.Value = item.Value
-			return env
-		}
-	}
-	return env
 }

@@ -88,15 +88,6 @@ func GenContainer(services []Services, write bool) (string, error) {
 		return "", err
 	}
 
-	if write {
-		var settings Settings
-		settings, err = ReadSettingsFile(true)
-		if err != nil {
-			return "", err
-		}
-		containers = EnvVarOverwrite(settings, containers)
-	}
-
 	buf := bytes.Buffer{}
 	buffer := bufio.NewWriter(&buf)
 
