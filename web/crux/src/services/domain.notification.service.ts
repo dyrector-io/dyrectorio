@@ -35,16 +35,23 @@ export class DomainNotificationService {
         },
       })
 
-      notifications.forEach(async notification => {
-        const count = await this.prisma.notificationEvent.count({
+      const enabledNotifications = (
+        await this.prisma.notificationEvent.groupBy({
+          by: ['notificationId'],
+          _count: {
+            id: true,
+          },
           where: {
-            notificationId: notification.id,
+            notificationId: {
+              in: notifications.map(it => it.id),
+            },
             event: eventType,
           },
-          take: 1,
         })
+      ).map(it => it.notificationId)
 
-        if (count > 0) {
+      notifications.forEach(async notification => {
+        if (enabledNotifications.includes(notification.id)) {
           await this.send(notification.url, notification.type, template)
         }
       })
