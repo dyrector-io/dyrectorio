@@ -32,18 +32,18 @@ export class DomainNotificationService {
         include: {
           events: {
             select: {
-              event: true
-            }
-          }
+              event: true,
+            },
+          },
         },
         where: {
           teamId: userOnTeam.teamId,
           active: true,
           events: {
-            some:{
-              event: eventType
-            }
-          }
+            some: {
+              event: eventType,
+            },
+          },
         },
       })
 
