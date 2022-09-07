@@ -1,5 +1,7 @@
-import { NotificationType } from '@app/models'
+import { internalError } from '@app/error-responses'
+import { NotificationEventType, NotificationType } from '@app/models'
 import {
+  NotificationEventType as ProtoNotificationEventType,
   NotificationType as ProtoNotificationType,
   notificationTypeFromJSON,
   notificationTypeToJSON,
@@ -10,3 +12,34 @@ export const notificationTypeToGrpc = (type: NotificationType): ProtoNotificatio
 
 export const notificationTypeToDto = (type: ProtoNotificationType): NotificationType =>
   notificationTypeToJSON(type).toLocaleLowerCase() as NotificationType
+
+export const notificationEventTypeToGrpc = (type: NotificationEventType): ProtoNotificationEventType => {
+  switch (type) {
+    case 'deployment-created':
+      return ProtoNotificationEventType.DEPLOYMENT_CREATED
+    case 'version-created':
+      return ProtoNotificationEventType.VERSION_CREATED
+    case 'node-added':
+      return ProtoNotificationEventType.NODE_ADDED
+    case 'user-invited':
+      return ProtoNotificationEventType.USER_INVITED
+    default:
+      return ProtoNotificationEventType.UNKNOWN_NOTIFICATION_EVENT_TYPE
+  }
+}
+
+export const notificationEventTypeToDto = (type: ProtoNotificationEventType): NotificationEventType => {
+  switch (type) {
+    case ProtoNotificationEventType.DEPLOYMENT_CREATED:
+      return 'deployment-created'
+    case ProtoNotificationEventType.VERSION_CREATED:
+      return 'version-created'
+    case ProtoNotificationEventType.NODE_ADDED:
+      return 'node-added'
+    case ProtoNotificationEventType.USER_INVITED:
+      return 'user-invited'
+    case ProtoNotificationEventType.UNKNOWN_NOTIFICATION_EVENT_TYPE:
+    default:
+      throw internalError(`Unknown ProtoNotificationEventType '${type}'`)
+  }
+}

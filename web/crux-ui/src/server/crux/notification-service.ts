@@ -14,7 +14,12 @@ import {
 import { timestampToUTC } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
 import { protomisify } from './grpc-connection'
-import { notificationTypeToDto, notificationTypeToGrpc } from './mappers/notification-mappers'
+import {
+  notificationEventTypeToDto,
+  notificationEventTypeToGrpc,
+  notificationTypeToDto,
+  notificationTypeToGrpc,
+} from './mappers/notification-mappers'
 
 class DyoNotifcationService {
   constructor(private client: CruxNotificationClient, private identity: Identity) {}
@@ -33,6 +38,7 @@ class DyoNotifcationService {
       ...it,
       type: notificationTypeToDto(it.type),
       creator: it.audit.createdBy,
+      events: it.events.map(ev => notificationEventTypeToDto(ev)),
     }))
   }
 
@@ -41,6 +47,7 @@ class DyoNotifcationService {
       ...dto,
       type: notificationTypeToGrpc(dto.type),
       accessedBy: this.identity.id,
+      events: dto.events.map(ev => notificationEventTypeToGrpc(ev)),
     }
 
     const res = await protomisify<CreateNotificationRequest, CreateNotificationResponse>(
@@ -60,6 +67,7 @@ class DyoNotifcationService {
       ...dto,
       type: notificationTypeToGrpc(dto.type),
       accessedBy: this.identity.id,
+      events: dto.events.map(ev => notificationEventTypeToGrpc(ev)),
     }
 
     const res = await protomisify<UpdateNotificationRequest, UpdateEntityResponse>(
@@ -85,6 +93,7 @@ class DyoNotifcationService {
       ...res,
       type: notificationTypeToDto(res.type),
       creator: res.audit.createdBy,
+      events: res.events.map(ev => notificationEventTypeToDto(ev)),
     }
   }
 

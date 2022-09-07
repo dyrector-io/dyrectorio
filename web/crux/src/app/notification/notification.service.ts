@@ -42,6 +42,15 @@ export class NotificationService {
         type: this.mapper.typeToDb(request.type),
         createdBy: request.accessedBy,
         active: !!request.active,
+        events: {
+          createMany: {
+            data: (request.events ?? []).map(it => {
+              return {
+                event: this.mapper.eventTypeToDb(it),
+              }
+            }),
+          },
+        },
       },
     })
 
@@ -51,6 +60,16 @@ export class NotificationService {
   }
 
   async updateNotification(request: UpdateNotificationRequest): Promise<UpdateEntityResponse> {
+    const notificationEvents = await this.prisma.notificationEvent.findMany({
+      where: {
+        notificationId: request.id,
+      },
+    })
+
+    const eventsDbMapped = (request.events ?? []).map(ev => this.mapper.eventTypeToDb(ev))
+    const newEvents = eventsDbMapped.filter(event => !notificationEvents.find(it => it.event == event))
+    const deleteEvents = notificationEvents.filter(event => !eventsDbMapped.find(it => event.event == it))
+
     const notification = await this.prisma.notification.update({
       where: {
         id: request.id,
@@ -62,6 +81,20 @@ export class NotificationService {
         type: this.mapper.typeToDb(request.type),
         updatedBy: request.accessedBy,
         updatedAt: new Date(),
+        events: {
+          deleteMany: {
+            id: {
+              in: deleteEvents.map(ev => ev.id),
+            },
+          },
+          createMany: {
+            data: newEvents.map(it => {
+              return {
+                event: it,
+              }
+            }),
+          },
+        },
       },
     })
 
@@ -88,6 +121,9 @@ export class NotificationService {
           },
         },
       },
+      include: {
+        events: true,
+      },
     })
 
     const userIds = notifications.map(r => r.createdBy)
@@ -102,6 +138,9 @@ export class NotificationService {
     const notification = await this.prisma.notification.findUniqueOrThrow({
       where: {
         id: request.id,
+      },
+      include: {
+        events: true,
       },
     })
 

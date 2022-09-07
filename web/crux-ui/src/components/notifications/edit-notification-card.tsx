@@ -12,6 +12,7 @@ import {
   CreateNotification,
   NotificationDetails,
   NotificationType,
+  NOTIFICATION_EVENT_VALUES,
   NOTIFICATION_TYPE_VALUES,
   UpdateNotification,
 } from '@app/models'
@@ -22,6 +23,7 @@ import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
 import { MutableRefObject, useState } from 'react'
 import toast from 'react-hot-toast'
+import { NotificationEventList } from './notification-event-list'
 
 interface EditNotificationCardProps {
   notification?: NotificationDetails
@@ -43,6 +45,7 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
       type: 'discord',
       url: '',
       creator: '',
+      events: [...NOTIFICATION_EVENT_VALUES],
     },
   )
 
@@ -126,9 +129,7 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
             value={formik.values.url}
             message={formik.errors.url}
           />
-        </div>
 
-        <div className="flex flex-col">
           <div className="flex flex-col flex-wrap">
             <DyoLabel className="mt-8 mb-2.5">{t('notificationType')}</DyoLabel>
 
@@ -153,6 +154,15 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
               </DyoButton>
             )}
           </div>
+        </div>
+
+        <div className="flex flex-col">
+          <DyoLabel className="mb-2.5">{t('events')}</DyoLabel>
+
+          <NotificationEventList
+            value={formik.values.events}
+            onChanged={value => formik.setFieldValue('events', value, false)}
+          />
         </div>
       </form>
     </DyoCard>

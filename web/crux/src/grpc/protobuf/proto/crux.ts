@@ -416,6 +416,57 @@ export function notificationTypeToJSON(object: NotificationType): string {
   }
 }
 
+export enum NotificationEventType {
+  UNKNOWN_NOTIFICATION_EVENT_TYPE = 0,
+  DEPLOYMENT_CREATED = 1,
+  VERSION_CREATED = 2,
+  NODE_ADDED = 3,
+  USER_INVITED = 4,
+  UNRECOGNIZED = -1,
+}
+
+export function notificationEventTypeFromJSON(object: any): NotificationEventType {
+  switch (object) {
+    case 0:
+    case 'UNKNOWN_NOTIFICATION_EVENT_TYPE':
+      return NotificationEventType.UNKNOWN_NOTIFICATION_EVENT_TYPE
+    case 1:
+    case 'DEPLOYMENT_CREATED':
+      return NotificationEventType.DEPLOYMENT_CREATED
+    case 2:
+    case 'VERSION_CREATED':
+      return NotificationEventType.VERSION_CREATED
+    case 3:
+    case 'NODE_ADDED':
+      return NotificationEventType.NODE_ADDED
+    case 4:
+    case 'USER_INVITED':
+      return NotificationEventType.USER_INVITED
+    case -1:
+    case 'UNRECOGNIZED':
+    default:
+      return NotificationEventType.UNRECOGNIZED
+  }
+}
+
+export function notificationEventTypeToJSON(object: NotificationEventType): string {
+  switch (object) {
+    case NotificationEventType.UNKNOWN_NOTIFICATION_EVENT_TYPE:
+      return 'UNKNOWN_NOTIFICATION_EVENT_TYPE'
+    case NotificationEventType.DEPLOYMENT_CREATED:
+      return 'DEPLOYMENT_CREATED'
+    case NotificationEventType.VERSION_CREATED:
+      return 'VERSION_CREATED'
+    case NotificationEventType.NODE_ADDED:
+      return 'NODE_ADDED'
+    case NotificationEventType.USER_INVITED:
+      return 'USER_INVITED'
+    case NotificationEventType.UNRECOGNIZED:
+    default:
+      return 'UNRECOGNIZED'
+  }
+}
+
 export enum ServiceStatus {
   UNKNOWN_SERVICE_STATUS = 0,
   UNAVAILABLE = 1,
@@ -1054,6 +1105,7 @@ export interface CreateNotificationRequest {
   url: string
   type: NotificationType
   active: boolean
+  events: NotificationEventType[]
 }
 
 export interface CreateNotificationResponse {
@@ -1068,6 +1120,7 @@ export interface UpdateNotificationRequest {
   url: string
   type: NotificationType
   active: boolean
+  events: NotificationEventType[]
 }
 
 export interface NotificationDetailsResponse {
@@ -1077,6 +1130,7 @@ export interface NotificationDetailsResponse {
   url: string
   type: NotificationType
   active: boolean
+  events: NotificationEventType[]
 }
 
 export interface NotificationResponse {
@@ -1086,6 +1140,7 @@ export interface NotificationResponse {
   url: string
   type: NotificationType
   active: boolean
+  events: NotificationEventType[]
 }
 
 export interface NotificationListResponse {
@@ -3302,7 +3357,7 @@ export const DeploymentEventListResponse = {
 }
 
 function createBaseCreateNotificationRequest(): CreateNotificationRequest {
-  return { accessedBy: '', name: '', url: '', type: 0, active: false }
+  return { accessedBy: '', name: '', url: '', type: 0, active: false, events: [] }
 }
 
 export const CreateNotificationRequest = {
@@ -3313,6 +3368,7 @@ export const CreateNotificationRequest = {
       url: isSet(object.url) ? String(object.url) : '',
       type: isSet(object.type) ? notificationTypeFromJSON(object.type) : 0,
       active: isSet(object.active) ? Boolean(object.active) : false,
+      events: Array.isArray(object?.events) ? object.events.map((e: any) => notificationEventTypeFromJSON(e)) : [],
     }
   },
 
@@ -3323,6 +3379,11 @@ export const CreateNotificationRequest = {
     message.url !== undefined && (obj.url = message.url)
     message.type !== undefined && (obj.type = notificationTypeToJSON(message.type))
     message.active !== undefined && (obj.active = message.active)
+    if (message.events) {
+      obj.events = message.events.map(e => notificationEventTypeToJSON(e))
+    } else {
+      obj.events = []
+    }
     return obj
   },
 }
@@ -3348,7 +3409,7 @@ export const CreateNotificationResponse = {
 }
 
 function createBaseUpdateNotificationRequest(): UpdateNotificationRequest {
-  return { id: '', accessedBy: '', name: '', url: '', type: 0, active: false }
+  return { id: '', accessedBy: '', name: '', url: '', type: 0, active: false, events: [] }
 }
 
 export const UpdateNotificationRequest = {
@@ -3360,6 +3421,7 @@ export const UpdateNotificationRequest = {
       url: isSet(object.url) ? String(object.url) : '',
       type: isSet(object.type) ? notificationTypeFromJSON(object.type) : 0,
       active: isSet(object.active) ? Boolean(object.active) : false,
+      events: Array.isArray(object?.events) ? object.events.map((e: any) => notificationEventTypeFromJSON(e)) : [],
     }
   },
 
@@ -3371,12 +3433,17 @@ export const UpdateNotificationRequest = {
     message.url !== undefined && (obj.url = message.url)
     message.type !== undefined && (obj.type = notificationTypeToJSON(message.type))
     message.active !== undefined && (obj.active = message.active)
+    if (message.events) {
+      obj.events = message.events.map(e => notificationEventTypeToJSON(e))
+    } else {
+      obj.events = []
+    }
     return obj
   },
 }
 
 function createBaseNotificationDetailsResponse(): NotificationDetailsResponse {
-  return { id: '', audit: undefined, name: '', url: '', type: 0, active: false }
+  return { id: '', audit: undefined, name: '', url: '', type: 0, active: false, events: [] }
 }
 
 export const NotificationDetailsResponse = {
@@ -3388,6 +3455,7 @@ export const NotificationDetailsResponse = {
       url: isSet(object.url) ? String(object.url) : '',
       type: isSet(object.type) ? notificationTypeFromJSON(object.type) : 0,
       active: isSet(object.active) ? Boolean(object.active) : false,
+      events: Array.isArray(object?.events) ? object.events.map((e: any) => notificationEventTypeFromJSON(e)) : [],
     }
   },
 
@@ -3399,12 +3467,17 @@ export const NotificationDetailsResponse = {
     message.url !== undefined && (obj.url = message.url)
     message.type !== undefined && (obj.type = notificationTypeToJSON(message.type))
     message.active !== undefined && (obj.active = message.active)
+    if (message.events) {
+      obj.events = message.events.map(e => notificationEventTypeToJSON(e))
+    } else {
+      obj.events = []
+    }
     return obj
   },
 }
 
 function createBaseNotificationResponse(): NotificationResponse {
-  return { id: '', audit: undefined, name: '', url: '', type: 0, active: false }
+  return { id: '', audit: undefined, name: '', url: '', type: 0, active: false, events: [] }
 }
 
 export const NotificationResponse = {
@@ -3416,6 +3489,7 @@ export const NotificationResponse = {
       url: isSet(object.url) ? String(object.url) : '',
       type: isSet(object.type) ? notificationTypeFromJSON(object.type) : 0,
       active: isSet(object.active) ? Boolean(object.active) : false,
+      events: Array.isArray(object?.events) ? object.events.map((e: any) => notificationEventTypeFromJSON(e)) : [],
     }
   },
 
@@ -3427,6 +3501,11 @@ export const NotificationResponse = {
     message.url !== undefined && (obj.url = message.url)
     message.type !== undefined && (obj.type = notificationTypeToJSON(message.type))
     message.active !== undefined && (obj.active = message.active)
+    if (message.events) {
+      obj.events = message.events.map(e => notificationEventTypeToJSON(e))
+    } else {
+      obj.events = []
+    }
     return obj
   },
 }
