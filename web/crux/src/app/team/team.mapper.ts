@@ -33,7 +33,7 @@ export class TeamMapper {
 
     const userSessions = sessions.get(user.userId)
     const lastSession = userSessions
-      .filter(it => it.authenticated_at !== undefined)
+      .filter(it => !!it.authenticated_at)
       .sort((a, b) => new Date(b.authenticated_at!).getTime() - new Date(a.authenticated_at!).getTime())
       .shift()
 
