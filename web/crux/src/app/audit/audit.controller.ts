@@ -5,11 +5,11 @@ import {
   CruxAuditController,
   CruxAuditControllerMethods,
 } from 'src/grpc/protobuf/proto/crux'
-import { AuditService } from './audit.service'
+import AuditService from './audit.service'
 
 @Controller()
 @CruxAuditControllerMethods()
-export class AuditController implements CruxAuditController {
+export default class AuditController implements CruxAuditController {
   constructor(private service: AuditService) {}
 
   async getAuditLog(request: AccessRequest): Promise<AuditLogListResponse> {

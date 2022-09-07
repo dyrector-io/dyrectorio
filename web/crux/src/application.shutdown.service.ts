@@ -2,8 +2,9 @@ import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common'
 import { Subject } from 'rxjs'
 
 @Injectable()
-export class ShutdownService implements OnModuleDestroy {
+export default class ShutdownService implements OnModuleDestroy {
   private readonly logger = new Logger(ShutdownService.name)
+
   private shutdownListener: Subject<void> = new Subject()
 
   onModuleDestroy() {

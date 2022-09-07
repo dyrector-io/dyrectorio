@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { JsonArray } from 'prisma'
 import { Subject } from 'rxjs'
-import { PrismaService } from 'src/services/prisma.service'
+import PrismaService from 'src/services/prisma.service'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import { containerNameFromImageName } from 'src/domain/deployment'
 import {
@@ -13,13 +13,15 @@ import {
   OrderVersionImagesRequest,
   PatchImageRequest,
 } from 'src/grpc/protobuf/proto/crux'
-import { ImageMapper, ImageWithConfig } from './image.mapper'
 import { ContainerConfigData } from 'src/shared/model'
+import ImageMapper, { ImageWithConfig } from './image.mapper'
 
 @Injectable()
-export class ImageService {
+export default class ImageService {
   readonly imageUpdatedEvent = new Subject<ImageWithConfig>()
+
   readonly imagesAddedToVersionEvent = new Subject<ImageWithConfig[]>()
+
   readonly imageDeletedFromVersionEvent = new Subject<string>()
 
   constructor(private prisma: PrismaService, private mapper: ImageMapper) {}
@@ -70,7 +72,7 @@ export class ImageService {
       let order = lastOrder + 1
 
       // we need the generated uuids, so we can't use createMany
-      const images = request.images.flatMap(registyImages =>
+      const imgs = request.images.flatMap(registyImages =>
         registyImages.imageNames.map(async it => {
           const image = await prisma.image.create({
             include: {
@@ -96,7 +98,7 @@ export class ImageService {
         }),
       )
 
-      return await Promise.all(images)
+      return await Promise.all(imgs)
     })
 
     this.imagesAddedToVersionEvent.next(images)
@@ -107,16 +109,16 @@ export class ImageService {
   }
 
   async orderImages(request: OrderVersionImagesRequest): Promise<Empty> {
-    const updates = request.imageIds.map((it, index) => {
-      return this.prisma.image.update({
+    const updates = request.imageIds.map((it, index) =>
+      this.prisma.image.update({
         data: {
           order: index,
         },
         where: {
           id: it,
         },
-      })
-    })
+      }),
+    )
 
     await this.prisma.$transaction(updates)
 
@@ -125,7 +127,7 @@ export class ImageService {
 
   @AuditLogLevel('no-data')
   async patchImage(request: PatchImageRequest): Promise<Empty> {
-    let config: ContainerConfigData = undefined
+    let config: ContainerConfigData
     if (request.config) {
       const caps = request.config.capabilities
       const envs = request.config.environment

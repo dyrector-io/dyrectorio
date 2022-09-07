@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { ProductTypeEnum, VersionTypeEnum } from '@prisma/client'
-import { PrismaService } from 'src/services/prisma.service'
+import PrismaService from 'src/services/prisma.service'
 import {
   AccessRequest,
   CreateEntityResponse,
@@ -12,11 +12,11 @@ import {
   UpdateEntityResponse,
   UpdateProductRequest,
 } from 'src/grpc/protobuf/proto/crux'
-import { TeamRepository } from '../team/team.repository'
-import { ProductMapper } from './product.mapper'
+import TeamRepository from '../team/team.repository'
+import ProductMapper from './product.mapper'
 
 @Injectable()
-export class ProductService {
+export default class ProductService {
   constructor(private teamRepository: TeamRepository, private prisma: PrismaService, private mapper: ProductMapper) {}
 
   private readonly logger = new Logger(ProductService.name)

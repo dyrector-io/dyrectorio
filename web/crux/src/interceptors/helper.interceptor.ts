@@ -13,7 +13,7 @@ type GrpcCallLog = {
  *
  */
 @Injectable()
-export class InterceptorGrpcHelperProvider {
+export default class InterceptorGrpcHelperProvider {
   mapToGrpcObject(context: ExecutionContext): GrpcCallLog {
     const request = context.getArgByIndex<AccessRequest>(0)
     const surfaceCall = context.getArgByIndex<ServerSurfaceCall>(2)
@@ -22,7 +22,7 @@ export class InterceptorGrpcHelperProvider {
 
   mapServerCallToGrpcLog(request: AccessRequest, surfaceCall: ServerSurfaceCall): GrpcCallLog {
     const serverCall = surfaceCall as any as ServerCall
-    const handler = serverCall.call.handler
+    const { handler } = serverCall.call
 
     return {
       userId: request.accessedBy,

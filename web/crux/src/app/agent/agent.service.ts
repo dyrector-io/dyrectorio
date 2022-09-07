@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { DeploymentEventTypeEnum, DeploymentStatusEnum, NodeTypeEnum } from '@prisma/client'
-import { concatAll, finalize, from, map, Observable, Subject, takeUntil } from 'rxjs'
+import { concatAll, finalize, from, map, Observable, of, Subject, takeUntil } from 'rxjs'
 import { Agent, AgentToken } from 'src/domain/agent'
-import { AgentInstaller } from 'src/domain/agent-installer'
+import AgentInstaller from 'src/domain/agent-installer'
 import { DeploymentProgressEvent } from 'src/domain/deployment'
 import { BaseMessage, NotificationMessageType } from 'src/domain/notification-templates'
 import { collectChildVersionIds, collectParentVersionIds } from 'src/domain/utils'
@@ -11,16 +11,18 @@ import { AlreadyExistsException, NotFoundException, UnauthenticatedException } f
 import { AgentCommand, AgentInfo } from 'src/grpc/protobuf/proto/agent'
 import { ContainerStateListMessage, Empty, NodeConnectionStatus, NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
 import { DeploymentStatus, DeploymentStatusMessage } from 'src/grpc/protobuf/proto/common'
-import { DomainNotificationService } from 'src/services/domain.notification.service'
-import { PrismaService } from 'src/services/prisma.service'
-import { GrpcNodeConnection } from 'src/shared/grpc-node-connection'
+import DomainNotificationService from 'src/services/domain.notification.service'
+import PrismaService from 'src/services/prisma.service'
+import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 
 @Injectable()
-export class AgentService {
+export default class AgentService {
   private readonly logger = new Logger(AgentService.name)
 
   private installers: Map<string, AgentInstaller> = new Map()
+
   private agents: Map<string, Agent> = new Map()
+
   private eventChannelByTeamId: Map<string, Subject<NodeEventMessage>> = new Map()
 
   private static SCRIPT_EXPIRATION = 10 * 60 * 1000 // millis
@@ -146,7 +148,7 @@ export class AgentService {
 
     const deployment = agent.getDeployment(deploymentId)
     if (!deployment) {
-      return
+      return of(Empty)
     }
 
     return request.pipe(
@@ -162,11 +164,11 @@ export class AgentService {
         this.updateDeploymentStatuses(agent.id, deployment.id)
 
         const messageType: NotificationMessageType =
-          deployment.status() == DeploymentStatus.SUCCESSFUL ? 'successfulDeploy' : 'failedDeploy'
+          deployment.getStatus() === DeploymentStatus.SUCCESSFUL ? 'successfulDeploy' : 'failedDeploy'
 
         await this.notificationService.sendNotification({
           identityId: deployment.notification.accessedBy,
-          messageType: messageType,
+          messageType,
           message: { subject: deployment.notification.deploymentName } as BaseMessage,
         })
 
@@ -296,12 +298,10 @@ export class AgentService {
     }
 
     await this.prisma.deploymentEvent.createMany({
-      data: events.map(it => {
-        return {
-          ...it,
-          deploymentId: id,
-        }
-      }),
+      data: events.map(it => ({
+        ...it,
+        deploymentId: id,
+      })),
     })
   }
 
@@ -354,7 +354,7 @@ export class AgentService {
         versionId: {
           in: parentVersionIds,
         },
-        nodeId: nodeId,
+        nodeId,
       },
     })
 
@@ -367,7 +367,7 @@ export class AgentService {
         versionId: {
           in: childVersionIds,
         },
-        nodeId: nodeId,
+        nodeId,
       },
     })
   }

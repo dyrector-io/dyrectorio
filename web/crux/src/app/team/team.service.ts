@@ -24,21 +24,21 @@ import {
   UserMetaResponse,
   UserStatus,
 } from 'src/grpc/protobuf/proto/crux'
-import { InterceptorGrpcHelperProvider } from 'src/interceptors/helper.interceptor'
-import { DomainNotificationService } from 'src/services/domain.notification.service'
-import { EmailService } from 'src/services/email.service'
-import { KratosService } from 'src/services/kratos.service'
-import { PrismaService } from 'src/services/prisma.service'
+import InterceptorGrpcHelperProvider from 'src/interceptors/helper.interceptor'
+import DomainNotificationService from 'src/services/domain.notification.service'
+import EmailService from 'src/services/email.service'
+import KratosService from 'src/services/kratos.service'
+import PrismaService from 'src/services/prisma.service'
 import { REGISTRY_HUB_URL } from 'src/shared/const'
-import { EmailBuilder } from '../../builders/email.builder'
-import { TeamMapper } from './team.mapper'
-import { TeamRepository } from './team.repository'
+import EmailBuilder from '../../builders/email.builder'
+import TeamMapper from './team.mapper'
+import TeamRepository from './team.repository'
 
 const VALIDITY_DAY = 1
 const EPOCH_TIME = 24 * 60 * 60 * 1000 // 1 day in millis
 
 @Injectable()
-export class TeamService {
+export default class TeamService {
   private readonly logger = new Logger(TeamService.name)
 
   constructor(
@@ -114,7 +114,7 @@ export class TeamService {
       },
     })
 
-    const team = activeUserOnTeam.team
+    const { team } = activeUserOnTeam
     const userIds = team.users.map(it => it.userId).concat(team.invitations.map(it => it.userId))
     const identities = await this.kratos.getIdentitiesByIds(userIds)
     const sessions = await this.kratos.getSessionsByIds(userIds)
@@ -298,7 +298,7 @@ export class TeamService {
 
       if (userOnTeam) {
         throw new AlreadyExistsException({
-          message: `User is already in the team`,
+          message: 'User is already in the team',
           property: 'email',
         })
       }
@@ -427,7 +427,7 @@ export class TeamService {
       },
     })
 
-    const userId = request.userId
+    const { userId } = request
     let deleted = false
 
     try {
@@ -440,6 +440,7 @@ export class TeamService {
         },
       })
       deleted = true
+      // eslint-disable-next-line no-empty
     } catch {} // ignored
 
     try {
@@ -452,6 +453,7 @@ export class TeamService {
         },
       })
       deleted = true
+      // eslint-disable-next-line no-empty
     } catch {} // ignored
 
     if (!deleted) {

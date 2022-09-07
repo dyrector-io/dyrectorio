@@ -10,14 +10,12 @@ import {
   CreateNotificationResponse,
   NotificationDetailsResponse,
   NotificationEventType,
-  notificationEventTypeFromJSON,
-  notificationEventTypeToJSON,
 } from 'src/grpc/protobuf/proto/crux'
 import { Identity } from '@ory/kratos-client'
 import { InternalException, InvalidArgumentException } from 'src/exception/errors'
 
 @Injectable()
-export class NotificationMapper {
+export default class NotificationMapper {
   toGrpc(notification: NotificationWithEvents): NotificationResponse {
     return {
       ...notification,

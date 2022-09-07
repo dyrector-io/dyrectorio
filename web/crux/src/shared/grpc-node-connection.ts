@@ -5,15 +5,19 @@ import { AgentToken } from 'src/domain/agent'
 import { InvalidArgumentException } from 'src/exception/errors'
 import { NodeConnectionStatus } from 'src/grpc/protobuf/proto/crux'
 
-export class GrpcNodeConnection {
+export default class GrpcNodeConnection {
   public static META_NODE_TOKEN = 'dyo-node-token'
+
   public static META_DEPLOYMENT_ID = 'dyo-deployment-id'
+
   public static META_FILTER_PREFIX = 'dyo-filter-prefix'
 
   private statusChannel = new Subject<NodeConnectionStatus>()
 
   readonly jwt: string
+
   readonly address: string
+
   private token: AgentToken
 
   get nodeId() {

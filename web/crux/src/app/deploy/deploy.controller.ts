@@ -21,20 +21,20 @@ import {
   UpdateEntityResponse,
 } from 'src/grpc/protobuf/proto/crux'
 import { DisableTeamAccessCheck } from 'src/shared/team-access.guard'
-import { DeployService } from './deploy.service'
-import { DeployCreateTeamAccessGuard } from './guards/deploy.create.team-access.guard'
-import { DeployGetByVersionTeamAccessGuard } from './guards/deploy.get-by-version.team-access.guard'
-import { DeployTeamAccessGuard } from './guards/deploy.team-access.guard'
-import { DeployCreateValidationPipe } from './pipes/deploy.create.pipe'
-import { DeleteDeploymentValidationPipe } from './pipes/deploy.delete.pipe'
-import { DeployPatchValidationPipe } from './pipes/deploy.patch.pipe'
-import { DeployStartValidationPipe } from './pipes/deploy.start.pipe'
-import { DeployUpdateValidationPipe } from './pipes/deploy.update.pipe'
+import DeployService from './deploy.service'
+import DeployCreateTeamAccessGuard from './guards/deploy.create.team-access.guard'
+import DeployGetByVersionTeamAccessGuard from './guards/deploy.get-by-version.team-access.guard'
+import DeployTeamAccessGuard from './guards/deploy.team-access.guard'
+import DeployCreateValidationPipe from './pipes/deploy.create.pipe'
+import DeleteDeploymentValidationPipe from './pipes/deploy.delete.pipe'
+import DeployPatchValidationPipe from './pipes/deploy.patch.pipe'
+import DeployStartValidationPipe from './pipes/deploy.start.pipe'
+import DeployUpdateValidationPipe from './pipes/deploy.update.pipe'
 
 @Controller()
 @CruxDeploymentControllerMethods()
 @UseGuards(DeployTeamAccessGuard)
-export class DeployController implements CruxDeploymentController {
+export default class DeployController implements CruxDeploymentController {
   constructor(private service: DeployService) {}
 
   @DisableTeamAccessCheck()

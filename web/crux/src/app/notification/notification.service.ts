@@ -1,4 +1,4 @@
-import { KratosService } from 'src/services/kratos.service'
+import KratosService from 'src/services/kratos.service'
 import {
   IdRequest,
   UpdateNotificationRequest,
@@ -8,19 +8,19 @@ import {
   CreateNotificationResponse,
   NotificationDetailsResponse,
   Empty,
+  CreateNotificationRequest,
 } from 'src/grpc/protobuf/proto/crux'
-import { TeamRepository } from 'src/app/team/team.repository'
+import TeamRepository from 'src/app/team/team.repository'
 import { Injectable, Logger } from '@nestjs/common'
-import { CreateNotificationRequest } from 'src/grpc/protobuf/proto/crux'
-import { PrismaService } from 'src/services/prisma.service'
-import { NotificationMapper } from './notification.mapper'
+import PrismaService from 'src/services/prisma.service'
 import { lastValueFrom } from 'rxjs'
 import { HttpService } from '@nestjs/axios'
+import NotificationMapper from './notification.mapper'
 
 const TEST_MESSAGE = 'Its a test!'
 
 @Injectable()
-export class NotificationService {
+export default class NotificationService {
   private readonly logger = new Logger(NotificationService.name)
 
   constructor(
@@ -44,11 +44,9 @@ export class NotificationService {
         active: !!request.active,
         events: {
           createMany: {
-            data: (request.events ?? []).map(it => {
-              return {
-                event: this.mapper.eventTypeToDb(it),
-              }
-            }),
+            data: (request.events ?? []).map(it => ({
+              event: this.mapper.eventTypeToDb(it),
+            })),
           },
         },
       },
@@ -67,8 +65,8 @@ export class NotificationService {
     })
 
     const eventsDbMapped = (request.events ?? []).map(ev => this.mapper.eventTypeToDb(ev))
-    const newEvents = eventsDbMapped.filter(event => !notificationEvents.find(it => it.event == event))
-    const deleteEvents = notificationEvents.filter(event => !eventsDbMapped.find(it => event.event == it))
+    const newEvents = eventsDbMapped.filter(event => !notificationEvents.find(it => it.event === event))
+    const deleteEvents = notificationEvents.filter(event => !eventsDbMapped.find(it => event.event === it))
 
     const notification = await this.prisma.notification.update({
       where: {
@@ -88,11 +86,9 @@ export class NotificationService {
             },
           },
           createMany: {
-            data: newEvents.map(it => {
-              return {
-                event: it,
-              }
-            }),
+            data: newEvents.map(it => ({
+              event: it,
+            })),
           },
         },
       },

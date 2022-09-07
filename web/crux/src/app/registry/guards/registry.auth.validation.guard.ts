@@ -17,7 +17,7 @@ import { REGISTRY_GITLAB_URLS, REGISTRY_HUB_URL } from 'src/shared/const'
 import { parsers } from 'www-authenticate'
 
 @Injectable()
-export class RegistryAccessValidationGuard implements CanActivate {
+export default class RegistryAccessValidationGuard implements CanActivate {
   constructor(private httpService: HttpService) {}
 
   private readonly logger = new Logger(RegistryAccessValidationGuard.name)
@@ -33,17 +33,20 @@ export class RegistryAccessValidationGuard implements CanActivate {
 
     if (req.hub) {
       return this.validateHub(req.hub)
-    } else if (req.v2) {
-      return this.validateV2(req.v2)
-    } else if (req.gitlab) {
-      return this.validateGitlab(req.gitlab)
-    } else if (req.github) {
-      return this.validateGithub(req.github)
-    } else if (req.google) {
-      return this.validateGoogle(req.google)
-    } else {
-      return of(false)
     }
+    if (req.v2) {
+      return this.validateV2(req.v2)
+    }
+    if (req.gitlab) {
+      return this.validateGitlab(req.gitlab)
+    }
+    if (req.github) {
+      return this.validateGithub(req.github)
+    }
+    if (req.google) {
+      return this.validateGoogle(req.google)
+    }
+    return of(false)
   }
 
   private validateHub(req: HubRegistryDetails): Observable<boolean> {
@@ -133,11 +136,12 @@ export class RegistryAccessValidationGuard implements CanActivate {
         },
       })
       .pipe(
-        mergeMap(res => {
-          const groups = res.data.map(it => it.path == req.imageNamePrefix) as any[]
-          if (res.status !== HttpStatus.OK) {
+        mergeMap(groupsRes => {
+          const groups = groupsRes.data.map(it => it.path === req.imageNamePrefix) as any[]
+          if (groupsRes.status !== HttpStatus.OK) {
             return of(false)
-          } else if (groups.length < 1) {
+          }
+          if (groups.length < 1) {
             throw new InvalidArgumentException({
               message: 'Gitlab group not found',
               property: 'imageNamePrefix',
@@ -151,8 +155,8 @@ export class RegistryAccessValidationGuard implements CanActivate {
               auth,
             })
             .pipe(
-              mergeMap(res => {
-                const token = res.data as GitlabToken
+              mergeMap(registryRes => {
+                const token = registryRes.data as GitlabToken
 
                 return this.httpService
                   .get(`https://${registryUrl}/v2/`, {
@@ -287,8 +291,7 @@ export class RegistryAccessValidationGuard implements CanActivate {
 
     return withCredentials
       ? from(client.getAccessToken()).pipe(
-          catchError(error => {
-            error.error
+          catchError(() => {
             throw new UnauthenticatedException({
               message: 'Failed to authenticate with the google registry',
             })

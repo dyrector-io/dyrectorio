@@ -7,12 +7,12 @@ import { cwd } from 'process'
 import { Subject } from 'rxjs'
 import { PreconditionFailedException } from 'src/exception/errors'
 import { NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
-import { GrpcNodeConnection } from 'src/shared/grpc-node-connection'
+import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import { Agent } from './agent'
 
 const agentFileTemplate = 'install-{{nodeType}}.sh.hbr'
 
-export class AgentInstaller {
+export default class AgentInstaller {
   private readonly logger = new Logger(AgentInstaller.name)
 
   scriptCompiler: ScriptCompiler

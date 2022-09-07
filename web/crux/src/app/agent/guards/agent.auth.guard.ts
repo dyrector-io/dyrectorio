@@ -1,10 +1,10 @@
 import { Metadata } from '@grpc/grpc-js'
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
-import { GrpcNodeConnection, NodeUnaryCall } from 'src/shared/grpc-node-connection'
+import GrpcNodeConnection, { NodeUnaryCall } from 'src/shared/grpc-node-connection'
 
 @Injectable()
-export class AgentAuthGuard implements CanActivate {
+export default class AgentAuthGuard implements CanActivate {
   constructor(private jwt: JwtService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {

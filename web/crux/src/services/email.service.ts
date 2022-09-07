@@ -2,10 +2,10 @@ import { Injectable, Logger } from '@nestjs/common'
 import * as SendGrid from '@sendgrid/mail'
 import { MailDataRequired } from '@sendgrid/mail'
 
-const SENDGRID_KEY = process.env.SENDGRID_KEY
+const { SENDGRID_KEY } = process.env
 
 @Injectable()
-export class EmailService {
+export default class EmailService {
   private readonly logger = new Logger(EmailService.name)
 
   constructor() {

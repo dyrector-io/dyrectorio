@@ -10,13 +10,13 @@ import {
 } from 'src/grpc/protobuf/proto/agent'
 import { ContainerStateListMessage, DeploymentStatusMessage } from 'src/grpc/protobuf/proto/common'
 import { NodeUnaryCall } from 'src/shared/grpc-node-connection'
-import { AgentService } from './agent.service'
-import { AgentAuthGuard } from './guards/agent.auth.guard'
+import AgentService from './agent.service'
+import AgentAuthGuard from './guards/agent.auth.guard'
 
 @Controller()
 @AgentControllerMethods()
 @UseGuards(AgentAuthGuard)
-export class AgentController implements GrpcAgentController {
+export default class AgentController implements GrpcAgentController {
   constructor(private service: AgentService) {}
 
   connect(request: AgentInfo, _: Metadata, call: NodeUnaryCall): Observable<AgentCommand> {

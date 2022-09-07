@@ -1,4 +1,3 @@
-import { Product, ProductTypeEnum } from '.prisma/client'
 import { Injectable } from '@nestjs/common'
 import {
   AuditResponse,
@@ -8,10 +7,11 @@ import {
   productTypeFromJSON,
   productTypeToJSON,
 } from 'src/grpc/protobuf/proto/crux'
-import { VersionMapper, VersionWithChildren } from '../version/version.mapper'
+import { Product, ProductTypeEnum } from '.prisma/client'
+import VersionMapper, { VersionWithChildren } from '../version/version.mapper'
 
 @Injectable()
-export class ProductMapper {
+export default class ProductMapper {
   constructor(private versionMapper: VersionMapper) {}
 
   toGrpc(product: Product): ProductReponse {

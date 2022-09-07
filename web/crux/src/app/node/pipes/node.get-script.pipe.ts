@@ -1,11 +1,11 @@
 import { Injectable, PipeTransform } from '@nestjs/common'
-import { AgentService } from 'src/app/agent/agent.service'
-import { PrismaService } from 'src/services/prisma.service'
+import AgentService from 'src/app/agent/agent.service'
+import PrismaService from 'src/services/prisma.service'
 import { UnauthenticatedException } from 'src/exception/errors'
 import { ServiceIdRequest } from 'src/grpc/protobuf/proto/crux'
 
 @Injectable()
-export class NodeGetScriptValidationPipe implements PipeTransform {
+export default class NodeGetScriptValidationPipe implements PipeTransform {
   constructor(private prisma: PrismaService, private agentService: AgentService) {}
 
   async transform(req: ServiceIdRequest) {

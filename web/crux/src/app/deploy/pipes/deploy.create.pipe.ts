@@ -1,10 +1,10 @@
 import { Injectable, PipeTransform } from '@nestjs/common'
-import { PrismaService } from 'src/services/prisma.service'
+import PrismaService from 'src/services/prisma.service'
 import { AlreadyExistsException } from 'src/exception/errors'
 import { CreateDeploymentRequest } from 'src/grpc/protobuf/proto/crux'
 
 @Injectable()
-export class DeployCreateValidationPipe implements PipeTransform {
+export default class DeployCreateValidationPipe implements PipeTransform {
   constructor(private prisma: PrismaService) {}
 
   async transform(value: CreateDeploymentRequest) {

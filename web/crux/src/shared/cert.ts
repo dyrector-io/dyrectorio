@@ -9,7 +9,7 @@ import { join } from 'path'
  * @throws {Error}
  * @returns {gRPCKeys}
  */
-export function getServerCredentials(prefix: string, handleErr: CallableFunction): KeyCertPair[] {
+export default function getServerCredentials(prefix: string, handleErr: CallableFunction): KeyCertPair[] {
   const logger: Logger = new Logger('getServerCredentials')
 
   try {
@@ -19,5 +19,6 @@ export function getServerCredentials(prefix: string, handleErr: CallableFunction
   } catch (error) {
     logger.error(`Error while loading TLS Cert files: ${error}`)
     handleErr()
+    return []
   }
 }

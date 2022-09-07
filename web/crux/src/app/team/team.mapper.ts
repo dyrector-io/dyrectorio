@@ -9,13 +9,10 @@ import {
   UserRole,
   UserStatus,
 } from 'src/grpc/protobuf/proto/crux'
-import { KratosService } from 'src/services/kratos.service'
 import { IdentityTraits, nameOfIdentity } from 'src/shared/model'
 
 @Injectable()
-export class TeamMapper {
-  constructor(private kratosService: KratosService) {}
-
+export default class TeamMapper {
   private userToGrpc(
     user: UsersOnTeams,
     identities: Map<string, Identity>,
@@ -34,7 +31,7 @@ export class TeamMapper {
     const userSessions = sessions.get(user.userId)
     const lastSession = userSessions
       .filter(it => !!it.authenticated_at)
-      .sort((a, b) => new Date(b.authenticated_at!).getTime() - new Date(a.authenticated_at!).getTime())
+      .sort((a, b) => new Date(b.authenticated_at).getTime() - new Date(a.authenticated_at).getTime())
       .shift()
 
     return {

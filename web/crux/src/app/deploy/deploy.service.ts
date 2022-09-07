@@ -2,7 +2,7 @@ import { Injectable, Logger, PreconditionFailedException } from '@nestjs/common'
 import { DeploymentStatusEnum } from '@prisma/client'
 import { JsonArray } from 'prisma'
 import { concatAll, filter, from, map, merge, Observable, Subject } from 'rxjs'
-import { Deployment } from 'src/domain/deployment'
+import Deployment from 'src/domain/deployment'
 import { InternalException } from 'src/exception/errors'
 import { DeployRequest } from 'src/grpc/protobuf/proto/agent'
 import {
@@ -22,19 +22,19 @@ import {
   UpdateDeploymentRequest,
   UpdateEntityResponse,
 } from 'src/grpc/protobuf/proto/crux'
-import { KratosService } from 'src/services/kratos.service'
-import { PrismaService } from 'src/services/prisma.service'
+import PrismaService from 'src/services/prisma.service'
 import { InstanceContainerConfigData } from 'src/shared/model'
-import { AgentService } from '../agent/agent.service'
+import AgentService from '../agent/agent.service'
 import { ImageWithConfig } from '../image/image.mapper'
-import { ImageService } from '../image/image.service'
-import { DeployMapper, InstanceDetails } from './deploy.mapper'
+import ImageService from '../image/image.service'
+import DeployMapper, { InstanceDetails } from './deploy.mapper'
 
 @Injectable()
-export class DeployService {
+export default class DeployService {
   private readonly logger = new Logger(DeployService.name)
 
   readonly instancesCreatedEvent = new Subject<InstancesCreatedEvent>()
+
   readonly imageDeletedEvent: Observable<string>
 
   constructor(
@@ -42,7 +42,6 @@ export class DeployService {
     private agentService: AgentService,
     imageService: ImageService,
     private mapper: DeployMapper,
-    private kratos: KratosService,
   ) {
     imageService.imagesAddedToVersionEvent
       .pipe(
@@ -130,12 +129,10 @@ export class DeployService {
         prefix: request.prefix,
         instances: {
           createMany: {
-            data: version.images.map(it => {
-              return {
-                imageId: it.id,
-                state: null,
-              }
-            }),
+            data: version.images.map(it => ({
+              imageId: it.id,
+              state: null,
+            })),
           },
         },
       },
@@ -285,7 +282,7 @@ export class DeployService {
         releaseNotes: deployment.version.changelog,
         versionName: deployment.version.name,
         requests: deployment.instances.map(it => {
-          const registry = it.image.registry
+          const { registry } = it.image
           const registryUrl =
             registry.type === 'google' || registry.type === 'github'
               ? `${registry.url}/${registry.imageNamePrefix}`
@@ -327,20 +324,22 @@ export class DeployService {
     return merge(
       this.instancesCreatedEvent.pipe(
         filter(it => it.deploymentIds.includes(request.id)),
-        map(it => {
-          return {
-            instancesCreated: {
-              data: it.instances.map(it => this.mapper.instanceToGrpc(it)),
-            },
-          } as DeploymentEditEventMessage
-        }),
+        map(
+          event =>
+            ({
+              instancesCreated: {
+                data: event.instances.map(it => this.mapper.instanceToGrpc(it)),
+              },
+            } as DeploymentEditEventMessage),
+        ),
       ),
       this.imageDeletedEvent.pipe(
-        map(it => {
-          return {
-            imageIdDeleted: it,
-          } as DeploymentEditEventMessage
-        }),
+        map(
+          str =>
+            ({
+              imageIdDeleted: str,
+            } as DeploymentEditEventMessage),
+        ),
       ),
     )
   }

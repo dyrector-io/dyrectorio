@@ -1,15 +1,15 @@
-import { nameOrEmailOfIdentity } from './../shared/model'
 import { HttpService } from '@nestjs/axios'
 import { Injectable, Logger } from '@nestjs/common'
 import { NotificationEventTypeEnum, NotificationTypeEnum } from '@prisma/client'
 import { lastValueFrom } from 'rxjs'
 import { getTemplate, NotificationMessageType, NotificationTemplate } from 'src/domain/notification-templates'
-import { KratosService } from './kratos.service'
-import { PrismaService } from './prisma.service'
 import { InvalidArgumentException } from 'src/exception/errors'
+import { nameOrEmailOfIdentity } from '../shared/model'
+import KratosService from './kratos.service'
+import PrismaService from './prisma.service'
 
 @Injectable()
-export class DomainNotificationService {
+export default class DomainNotificationService {
   private readonly logger = new Logger(DomainNotificationService.name)
 
   constructor(private prisma: PrismaService, private httpService: HttpService, private kratos: KratosService) {}
