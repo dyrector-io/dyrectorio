@@ -1,8 +1,10 @@
 import { DyoHeading } from '@app/elements/dyo-heading'
+import DyoImgButton from '@app/elements/dyo-img-button'
 import { DyoInput } from '@app/elements/dyo-input'
 import { UniqueKeySecretValue } from '@app/models-config'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
+import Image from 'next/image'
 import { createMessage, encrypt, readKey } from 'openpgp'
 import { useEffect, useReducer } from 'react'
 import { v4 as uuid } from 'uuid'
@@ -86,27 +88,17 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
     })
   }
 
-  const renderButton = (key: string, value: string, encrypted: boolean) => {
-    if (encrypted) {
-      return (
-        <div className="w-1/12 ml-1 text-white">
-          <button onClick={onRemove} type="button">
-            {t('clear')}
-          </button>
-        </div>
-      )
-    }
+  const onRemove = async (index: number) => {
+    let newItems = [...state].filter(it => !isCompletelyEmpty(it))
 
-    return (
-      <div className="w-1/12 ml-1 text-white">
-        <button onClick={onSubmit} type="button" disabled={key?.length === 0 || value?.length === 0}>
-          {t('send')}
-        </button>
-      </div>
-    )
+    newItems.splice(index, 1)
+
+    props.onSubmit(newItems)
+    dispatch({
+      type: 'set-items',
+      items: newItems,
+    })
   }
-
-  const onRemove = async () => {}
 
   const elements = stateToElements(state)
 
@@ -115,7 +107,7 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
 
     return (
       <div key={entry.id} className="flex flex-row flex-grow p-1">
-        <div className="w-4/12">
+        <div className="w-5/12">
           <DyoInput
             key={`${entry.id}-key`}
             disabled={disabled}
@@ -128,20 +120,23 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
           />
         </div>
 
-        <div className="w-6/12 ml-2">
+        <div className="w-7/12 ml-2 flex">
           <DyoInput
             key={`${entry.id}-value`}
             disabled={disabled || encrypted}
-            className="w-full"
+            className="flex-auto"
             type={encrypted ? 'password' : 'text'}
             grow
             placeholder={t('value')}
             value={value}
             onChange={e => onChange(index, key, e.target.value)}
           />
-        </div>
 
-        {renderButton(key, value, encrypted)}
+          {encrypted && <div onClick={() => onRemove(index)}
+            className="flex-initial cursor-pointer ml-2 h-11 w-11 ring-2 rounded-md focus:outline-none focus:dark text-bright-muted ring-light-grey-muted flex justify-center">
+            <Image className="text-bright-muted" src="/cancel.svg" alt="save" width={24} height={24} />
+          </div>}
+        </div>
       </div>
     )
   }

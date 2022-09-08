@@ -45,6 +45,7 @@ const mergeImagePatch = (oldImage: VersionImage, newImage: PatchVersionImage): V
     environment: newImage.config?.environment ?? oldImage.config.environment,
     capabilities: newImage.config?.capabilities ?? oldImage.config.capabilities,
     config: newImage.config?.config ?? oldImage.config.config,
+    secrets: newImage.config?.secrets ?? oldImage.config.secrets
   },
 })
 

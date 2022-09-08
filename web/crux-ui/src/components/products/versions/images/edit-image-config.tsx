@@ -46,7 +46,9 @@ const EditImageConfig = (props: EditImageConfigProps) => {
     })
 
   const onSecretSubmit = (secrets: Secrets) => {
-    sendPatch(null)
+    sendPatch({
+      secrets,
+    })
   }
 
   const onContainerNameChange = (name: string) => {
@@ -58,7 +60,7 @@ const EditImageConfig = (props: EditImageConfigProps) => {
   }
 
   useEffect(() => setContainerName(config?.name), [config])
-
+  
   return (
     <>
       {disabledContainerNameEditing ? null : (

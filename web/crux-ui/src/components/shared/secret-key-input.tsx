@@ -59,14 +59,6 @@ const SecretKeyOnlyInput = (props: SecretKeyInputProps) => {
     newItems[index] = item
 
     newItems = newItems.filter(it => !isCompletelyEmpty(it))
-    dispatch({
-      type: 'set-items',
-      items: newItems,
-    })
-  }
-  const onSubmit = async () => {
-    let newItems = [...state]
-    newItems = newItems.filter(it => !isCompletelyEmpty(it))
 
     props.onSubmit(newItems)
     dispatch({
@@ -82,7 +74,7 @@ const SecretKeyOnlyInput = (props: SecretKeyInputProps) => {
 
     return (
       <div key={id} className="flex flex-row flex-grow p-1">
-        <div className="w-4/12">
+        <div className="w-5/12">
           <DyoInput
             key={`${id}-key`}
             disabled={disabled}
@@ -94,12 +86,6 @@ const SecretKeyOnlyInput = (props: SecretKeyInputProps) => {
             onChange={e => onChange(index, e.target.value)}
           />
         </div>
-
-        <div className="w-1/12 ml-1 text-white">
-          <button onClick={onSubmit} type="button">
-            Send
-          </button>
-        </div>
       </div>
     )
   }
@@ -107,11 +93,11 @@ const SecretKeyOnlyInput = (props: SecretKeyInputProps) => {
   return (
     <form className={clsx(props.className, 'flex flex-col max-h-128 overflow-y-auto')}>
       {!heading ? null : (
-        <DyoHeading element="h6" className="text-bright mt-4 mb-2">
+        <DyoHeading element="h6" className="text-bright mt-5">
           {heading}
         </DyoHeading>
       )}
-      <div className="text-light-eased">{t('cannotDefineSecretsHere')}</div>
+      <div className="text-light-eased mb-2 ml-1">{t('cannotDefineSecretsHere')}</div>
       {elements.map((it, index) => renderItem(it, index))}
     </form>
   )
