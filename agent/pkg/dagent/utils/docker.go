@@ -20,6 +20,7 @@ import (
 	"golang.org/x/exp/maps"
 
 	v1 "github.com/dyrector-io/dyrectorio/agent/api/v1"
+	"github.com/dyrector-io/dyrectorio/agent/internal/crypt"
 	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
 	"github.com/dyrector-io/dyrectorio/agent/internal/grpc"
 	"github.com/dyrector-io/dyrectorio/agent/internal/mapper"
@@ -296,13 +297,15 @@ func DeployImage(ctx context.Context,
 		util.JoinV("/",
 			*deployImageRequest.Registry,
 			util.JoinV(":", deployImageRequest.ImageName, deployImageRequest.Tag)))
-
 	logDeployInfo(dog, deployImageRequest, image, containerName)
 
-	envList := MergeStringMapToUniqueSlice(
-		EnvPipeSeparatedToStringMap(&deployImageRequest.InstanceConfig.Environment),
-		EnvPipeSeparatedToStringMap(&deployImageRequest.ContainerConfig.Environment),
-	)
+	envMap := MergeStringMapUnique(EnvPipeSeparatedToStringMap(&deployImageRequest.InstanceConfig.Environment), EnvPipeSeparatedToStringMap(&deployImageRequest.ContainerConfig.Environment))
+	secret, err := crypt.DecryptSecrets(deployImageRequest.ContainerConfig.Secrets, &cfg.CommonConfiguration)
+	if err != nil {
+		return fmt.Errorf("deployment failed, secret error: %w", err)
+	}
+	envMap = MergeStringMapUnique(envMap, mapper.ByteMapToStringMap(secret))
+	envList := EnvMapToSlice(envMap)
 
 	mountList := mountStrToDocker(
 		// volumes are mapped into the legacy format, until further support of different types is needed

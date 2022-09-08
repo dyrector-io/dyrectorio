@@ -58,7 +58,7 @@ func generateKey(location string) (string, error) {
 	log.Printf("Generating new key file...")
 	const (
 		name  = "dyrectorio crane"
-		email = "test@test.te"
+		email = "agent@dyrector.io"
 	)
 
 	ecKey, keyErr := crypto.GenerateKey(name, email, "x25519", 0)

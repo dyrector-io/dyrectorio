@@ -2,17 +2,15 @@ package k8s
 
 import (
 	"context"
-	"fmt"
 	"log"
 
+	"github.com/dyrector-io/dyrectorio/agent/internal/crypt"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/config"
 
 	v1 "k8s.io/client-go/kubernetes/typed/core/v1"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	corev1 "k8s.io/client-go/applyconfigurations/core/v1"
-
-	"github.com/ProtonMail/gopenpgp/v2/helper"
 )
 
 // namespace wrapper for the facade
@@ -34,7 +32,7 @@ func (s *secret) applySecrets(namespace, name string, values map[string]string) 
 		return err
 	}
 
-	decrypted, err := decryptSecrets(values, s.appConfig)
+	decrypted, err := crypt.DecryptSecrets(values, &s.appConfig.CommonConfiguration)
 
 	if err != nil {
 		return err
@@ -55,20 +53,6 @@ func (s *secret) applySecrets(namespace, name string, values map[string]string) 
 	}
 
 	return err
-}
-
-func decryptSecrets(arr map[string]string, appConfig *config.Configuration) (map[string][]byte, error) {
-	out := map[string][]byte{}
-
-	for key, sec := range arr {
-		decrypted, err := helper.DecryptMessageArmored(string(appConfig.SecretPrivateKey), nil, sec)
-		if err != nil {
-			return out, fmt.Errorf("could not process secret: %v %w", key, err)
-		}
-		out[key] = []byte(decrypted)
-	}
-
-	return out, nil
 }
 
 func getSecretClient(namespace string, cfg *config.Configuration) (v1.SecretInterface, error) {
