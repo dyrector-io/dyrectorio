@@ -24,9 +24,6 @@ const EditInstanceCard = (props: EditInstanceCardProps) => {
 
   const { disabled, instance, deploymentSock: sock, publicKey } = props
 
-  console.log('got this: ')
-  console.log(instance)
-
   const [selection, setSelection] = useState<EditInstanceCardSelection>('config')
   const [mergedConfig, setMergedConfig] = useState(mergeConfigs(instance.image.config, instance.overriddenConfig))
   const [parseError, setParseError] = useState<string>(null)
@@ -38,8 +35,6 @@ const EditInstanceCard = (props: EditInstanceCardProps) => {
 
   const onPatch = (id: string, config: Partial<InstanceContainerConfig>) => {
     setParseError(null)
-
-    console.log('send', config)
 
     sock.send(WS_TYPE_PATCH_INSTANCE, {
       ...config,

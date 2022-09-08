@@ -27,8 +27,6 @@ const EditInstanceConfig = (props: EditInstanceProps) => {
   const throttle = useThrottling(IMAGE_WS_REQUEST_DELAY)
 
   const sendPatch = (config: Partial<InstanceContainerConfig>, immediate?: boolean) => {
-    console.log('sending')
-    console.log(config)
     const newPatch = {
       ...patch.current,
       ...config,

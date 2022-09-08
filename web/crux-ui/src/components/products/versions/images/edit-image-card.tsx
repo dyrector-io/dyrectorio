@@ -39,13 +39,8 @@ const EditImageCard = (props: EditImageCardProps) => {
   const [deleteModalConfig, confirmDelete] = useConfirmation()
   const [parseError, setParseError] = useState<string>(null)
 
-  console.log('imageConf')
-  console.log(image.config)
-
   const onPatch = (id: string, config: Partial<ContainerConfig>) => {
     setParseError(null)
-
-    console.log(config)
 
     sock.send(WS_TYPE_PATCH_IMAGE, {
       id,
@@ -119,12 +114,7 @@ const EditImageCard = (props: EditImageCardProps) => {
         {selection === 'tag' ? (
           <EditImageTags disabled={disabled} selected={image.tag} tags={tags} onTagSelected={onTagSelected} />
         ) : selection === 'config' ? (
-          <EditImageConfig
-            disabled={disabled}
-            config={image.config}
-            disabledSecretEditing
-            onPatch={it => onPatch(image.id, it)}
-          />
+          <EditImageConfig disabled={disabled} config={image.config} onPatch={it => onPatch(image.id, it)} />
         ) : (
           <EditImageJson
             disabled={disabled}

@@ -65,7 +65,6 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
 
     newItems = newItems.filter(it => !isCompletelyEmpty(it))
 
-    console.log('newItems: ', newItems)
     dispatch({
       type: 'set-items',
       items: newItems,
@@ -79,8 +78,6 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
         return { ...it, value: await encryptWithPGP(it.value, publicKey), encrypted: true }
       }),
     )
-
-    console.log('items', newItems)
 
     props.onSubmit(newItems)
     dispatch({

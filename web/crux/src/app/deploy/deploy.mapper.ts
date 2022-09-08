@@ -169,7 +169,6 @@ export default class DeployMapper {
 
     const config = this.mergeConfigs(imageConfig, instaceConfig) as InstanceContainerConfigData
 
-    console.log('config:', config)
     return {
       ...config.config,
       environments: this.jsonToPipedFormat(config.environment ?? []),

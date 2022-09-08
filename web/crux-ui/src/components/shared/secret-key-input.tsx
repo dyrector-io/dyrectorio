@@ -76,14 +76,9 @@ const SecretKeyOnlyInput = (props: SecretKeyInputProps) => {
   }
 
   const elements = stateToElements(state)
-  console.log('elem')
-  console.log(elements)
-  console.log('state')
-  console.log(state)
 
   const renderItem = (entry: KeyValueElement, index: number) => {
     const { id, key, message } = entry
-    console.log('id: ', id, ' key:', key)
 
     return (
       <div key={id} className="flex flex-row flex-grow p-1">

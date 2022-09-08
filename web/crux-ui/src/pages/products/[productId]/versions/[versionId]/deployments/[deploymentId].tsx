@@ -46,8 +46,6 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
 
   const { t } = useTranslation('deployments')
 
-  console.log('still:', props.deployment.publicKey)
-
   const router = useRouter()
 
   const { product, version } = propsDeployment
@@ -210,8 +208,6 @@ export const getDeploymentRoot = async (context: NextPageContext, crux: Crux) =>
   const deployment = await crux.deployments.getById(deploymentId as string)
   const node = crux.nodes.getNodeDetails(deployment.nodeId)
 
-  console.log('this might be it')
-  console.log(deployment)
   return {
     ...deployment,
     product: await product,

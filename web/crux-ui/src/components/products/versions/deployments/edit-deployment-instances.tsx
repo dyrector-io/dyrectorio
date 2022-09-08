@@ -49,7 +49,6 @@ const EditDeploymentInstances = (props: EditDeploymentInstancesProps) => {
     const oldOne = instances[index]
     const instance = mergeInstancePatch(oldOne, message)
 
-    console.log(instance)
     const newInstances = [...instances]
     newInstances[index] = instance
 

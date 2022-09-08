@@ -89,7 +89,6 @@ export default class DeployService {
     })
 
     const publicKey = this.agentService.getById(deployment.nodeId)?.publicKey
-    console.log('public', publicKey)
 
     return this.mapper.detailsToGrpc(deployment, publicKey)
   }
@@ -166,8 +165,6 @@ export default class DeployService {
   async patchDeployment(request: PatchDeploymentRequest): Promise<UpdateEntityResponse> {
     const reqInstance = request.instance
     let instanceConfigPatchSet: InstanceContainerConfigData = null
-
-    this.logger.debug('instace in:', reqInstance)
 
     if (reqInstance) {
       const caps = request.instance.capabilities

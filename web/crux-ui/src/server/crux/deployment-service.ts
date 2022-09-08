@@ -89,7 +89,6 @@ class DyoDeploymentService {
       IdRequest,
       req,
     )
-    console.log('getting this public key: ', res.publicKey)
 
     return {
       ...res,
@@ -192,8 +191,6 @@ class DyoDeploymentService {
                 },
           },
     }
-
-    console.log(req.instance?.secrets)
 
     await protomisify<PatchDeploymentRequest, UpdateEntityResponse>(this.client, this.client.patchDeployment)(
       PatchDeploymentRequest,

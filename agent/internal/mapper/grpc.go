@@ -277,7 +277,6 @@ func MapSecrets(in *common.KeyValueList) map[string]string {
 		res[value.GetKey()] = value.GetValue()
 	}
 
-	log.Println("mapped secrets", res)
 	return res
 }
 
