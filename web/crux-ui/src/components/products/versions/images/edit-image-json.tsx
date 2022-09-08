@@ -167,7 +167,7 @@ const EditImageJson = (props: EditImageJsonProps) => {
 
   return (
     <JsonEditor
-      className={clsx('h-128 overflow-y-auto', className)}
+      className={clsx('h-full overflow-y-auto', className)}
       disabled={disabled}
       value={state}
       onChange={onChange}
