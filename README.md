@@ -1,9 +1,9 @@
 <p align="center">
   <a href="http://docs.dyrector.io/" target="blank">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="dyrectorio-dark.png">
-      <source media="(prefers-color-scheme: light)" srcset="dyrectorio-light.png">
-      <img alt="dyrector.io official logo" src="dyrectorio-dark.png" width="400">
+      <source media="(prefers-color-scheme: dark)" srcset="docs/dyrectorio-dark.png">
+      <source media="(prefers-color-scheme: light)" srcset="docs/dyrectorio-light.png">
+      <img alt="dyrector.io official logo" src="docs/dyrectorio-dark.png" width="400">
     </picture>
   </a>
 </p>
@@ -52,9 +52,9 @@ dyrector.io consists of an agent (GoLang) and a platform (UI developed in React.
 
 <p align="center">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="how-it-works-dark.png">
-      <source media="(prefers-color-scheme: light)" srcset="how-it-works-light.png">
-      <img alt="dyrector.io official logo" src="how-it-works-dark.png" width="600">
+      <source media="(prefers-color-scheme: dark)" srcset="docs/how-it-works-dark.png">
+      <source media="(prefers-color-scheme: light)" srcset="docs/how-it-works-light.png">
+      <img alt="dyrector.io official logo" src="docs/how-it-works-dark.png" width="600">
     </picture>
 </p>
 
