@@ -3,7 +3,7 @@ import { Identity } from '@ory/kratos-client'
 import { AuditLog } from '@prisma/client'
 import { toTimestamp } from 'src/domain/utils'
 import { AuditLogResponse } from 'src/grpc/protobuf/proto/crux'
-import { nameOfIdentity } from 'src/shared/model'
+import { emailOfIdentity, nameOfIdentity } from 'src/shared/model'
 
 @Injectable()
 export default class AuditMapper {
@@ -12,7 +12,7 @@ export default class AuditMapper {
 
     return {
       ...log,
-      identityName: nameOfIdentity(identity),
+      identityEmail: emailOfIdentity(identity),
       createdAt: toTimestamp(log.createdAt),
       data: JSON.stringify(log.data),
     }

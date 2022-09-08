@@ -160,7 +160,7 @@ message UpdateEntityResponse { google.protobuf.Timestamp updatedAt = 100; }
 message AuditLogResponse {
   google.protobuf.Timestamp createdAt = 100;
   string userId = 101;
-  string identityName = 102;
+  string identityEmail = 102;
   string serviceCall = 103;
   optional string data = 104;
 }

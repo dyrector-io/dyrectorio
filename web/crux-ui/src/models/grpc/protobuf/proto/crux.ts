@@ -556,7 +556,7 @@ export interface UpdateEntityResponse {
 export interface AuditLogResponse {
   createdAt: Timestamp | undefined
   userId: string
-  identityName: string
+  identityEmail: string
   serviceCall: string
   data?: string | undefined
 }
@@ -1495,7 +1495,7 @@ export const UpdateEntityResponse = {
 }
 
 function createBaseAuditLogResponse(): AuditLogResponse {
-  return { createdAt: undefined, userId: '', identityName: '', serviceCall: '' }
+  return { createdAt: undefined, userId: '', identityEmail: '', serviceCall: '' }
 }
 
 export const AuditLogResponse = {
@@ -1506,8 +1506,8 @@ export const AuditLogResponse = {
     if (message.userId !== '') {
       writer.uint32(810).string(message.userId)
     }
-    if (message.identityName !== '') {
-      writer.uint32(818).string(message.identityName)
+    if (message.identityEmail !== '') {
+      writer.uint32(818).string(message.identityEmail)
     }
     if (message.serviceCall !== '') {
       writer.uint32(826).string(message.serviceCall)
@@ -1532,7 +1532,7 @@ export const AuditLogResponse = {
           message.userId = reader.string()
           break
         case 102:
-          message.identityName = reader.string()
+          message.identityEmail = reader.string()
           break
         case 103:
           message.serviceCall = reader.string()
@@ -1552,7 +1552,7 @@ export const AuditLogResponse = {
     return {
       createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
       userId: isSet(object.userId) ? String(object.userId) : '',
-      identityName: isSet(object.identityName) ? String(object.identityName) : '',
+      identityEmail: isSet(object.identityEmail) ? String(object.identityEmail) : '',
       serviceCall: isSet(object.serviceCall) ? String(object.serviceCall) : '',
       data: isSet(object.data) ? String(object.data) : undefined,
     }
@@ -1562,7 +1562,7 @@ export const AuditLogResponse = {
     const obj: any = {}
     message.createdAt !== undefined && (obj.createdAt = fromTimestamp(message.createdAt).toISOString())
     message.userId !== undefined && (obj.userId = message.userId)
-    message.identityName !== undefined && (obj.identityName = message.identityName)
+    message.identityEmail !== undefined && (obj.identityEmail = message.identityEmail)
     message.serviceCall !== undefined && (obj.serviceCall = message.serviceCall)
     message.data !== undefined && (obj.data = message.data)
     return obj
@@ -1573,7 +1573,7 @@ export const AuditLogResponse = {
     message.createdAt =
       object.createdAt !== undefined && object.createdAt !== null ? Timestamp.fromPartial(object.createdAt) : undefined
     message.userId = object.userId ?? ''
-    message.identityName = object.identityName ?? ''
+    message.identityEmail = object.identityEmail ?? ''
     message.serviceCall = object.serviceCall ?? ''
     message.data = object.data ?? undefined
     return message

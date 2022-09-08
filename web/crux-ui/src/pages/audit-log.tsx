@@ -43,7 +43,7 @@ const AuditLogPage = (props: AuditLogPageProps) => {
       dateRange: [startDate, endDate],
     },
     filters: [
-      textFilterFor<AuditLog>(it => [it.identityName, utcDateToLocale(it.date), it.event, it.info]),
+      textFilterFor<AuditLog>(it => [it.identityEmail, utcDateToLocale(it.date), it.event, it.info]),
       dateRangeFilterFor<AuditLog>(it => [utcDateToLocale(it.date)]),
     ],
   })
@@ -79,13 +79,13 @@ const AuditLogPage = (props: AuditLogPageProps) => {
 
   const headerClassName = 'uppercase text-bright text-sm font-semibold bg-medium-eased pl-2 py-3 h-11'
   const columnWidths = ['w-16', 'w-2/12', 'w-48', 'w-2/12', '', 'w-20']
-  const listHeaders = ['', ...['common:name', 'common:date', 'event', 'data', 'common:actions'].map(it => t(it))]
+  const listHeaders = ['', ...['common:email', 'common:date', 'event', 'data', 'common:actions'].map(it => t(it))]
 
   const itemTemplate = (log: AuditLog) => /* eslint-disable react/jsx-key */ [
     <div className="w-10 ml-auto">
       <Image src="/default_avatar.svg" width={38} height={38} layout="fixed" />
     </div>,
-    <div className="font-semibold min-w-max pl-2">{log.identityName}</div>,
+    <div className="font-semibold min-w-max pl-2">{log.identityEmail}</div>,
     <div className="min-w-max">{utcDateToLocale(log.date)}</div>,
     <div>{beautifyAuditLogEvent(log.event)}</div>,
     <div className="cursor-pointer max-w-4xl truncate" onClick={() => onShowInfoClick(log)}>
@@ -145,7 +145,7 @@ const AuditLogPage = (props: AuditLogPageProps) => {
         <DyoModal
           className="w-1/2 h-1/2"
           titleClassName="pl-4 font-medium text-xl text-bright mb-3"
-          title={`${showInfo.identityName} | ${showInfo.date}`}
+          title={`${showInfo.identityEmail} | ${showInfo.date}`}
           open={!!showInfo}
           onClose={() => setShowInfo(null)}
         >
