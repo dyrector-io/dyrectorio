@@ -59,3 +59,9 @@ export const nameOrEmailOfIdentity = (identity: Identity) => {
 
   return traits.email
 }
+
+export const emailOfIdentity = (identity: Identity) => {
+  const traits = identity?.traits as IdentityTraits
+
+  return traits.email
+}

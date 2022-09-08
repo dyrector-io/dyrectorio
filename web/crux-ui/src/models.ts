@@ -293,7 +293,7 @@ export type UpdateRegistry = RegistryDetails
 export type CreateRegistry = UpdateRegistry
 
 export type AuditLog = {
-  identityName: string
+  identityEmail: string
   date: string
   event: string
   info?: any

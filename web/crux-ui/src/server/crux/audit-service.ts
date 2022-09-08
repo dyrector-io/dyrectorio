@@ -18,7 +18,7 @@ class DyoAuditService {
     )
 
     return auditLog.data.map(it => ({
-      identityName: it.identityName,
+      identityEmail: it.identityEmail,
       date: timestampToUTC(it.createdAt),
       event: it.serviceCall,
       info: it.data,
