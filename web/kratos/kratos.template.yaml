@@ -30,13 +30,13 @@ selfservice:
       enabled: true
       ui_url: ${CRUX_UI_URL}/auth/recovery
       after:
-        default_browser_return_url: ${CRUX_UI_URL}/auth/settings
+        default_browser_return_url: ${CRUX_UI_URL}
 
     verification:
       enabled: true
       ui_url: ${CRUX_UI_URL}/auth/verify
       after:
-        default_browser_return_url: ${CRUX_UI_URL}/auth/settings
+        default_browser_return_url: ${CRUX_UI_URL}
 
     logout:
       after:

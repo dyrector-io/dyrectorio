@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { devices, PlaywrightTestConfig } from '@playwright/test'
 import path from 'path'
 
@@ -5,6 +6,8 @@ const baseURL = process.env.E2E_BASE_URL || 'http://172.17.0.1:8000'
 
 // Reference: https://playwright.dev/docs/test-configuration
 const config: PlaywrightTestConfig = {
+  globalSetup: path.join(__dirname, 'e2e', 'utils', 'global-setup.ts'),
+  globalTeardown: path.join(__dirname, 'e2e', 'utils', 'global-teardown.ts'),
   timeout: 30 * 1000, // 30 sec
   testDir: path.join(__dirname, 'e2e'),
   // If a test fails, retry it additional 2 times

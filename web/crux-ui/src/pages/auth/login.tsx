@@ -1,5 +1,5 @@
 import { SingleFormLayout } from '@app/components/layout'
-import { ATTRIB_CSRF } from '@app/const'
+import { ATTRIB_CSRF, KRATOS_ERROR_NO_VERIFIED_EMAIL_ADDRESS } from '@app/const'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoInput } from '@app/elements/dyo-input'
@@ -7,9 +7,16 @@ import DyoMessage from '@app/elements/dyo-message'
 import DyoSingleFormHeading from '@app/elements/dyo-single-form-heading'
 import DyoSingleFormLogo from '@app/elements/dyo-single-form-logo'
 import { DyoErrorDto, Login } from '@app/models'
-import { API_AUTH_LOGIN, ROUTE_INDEX, ROUTE_RECOVERY, ROUTE_REGISTER, ROUTE_VERIFICATION } from '@app/routes'
+import {
+  API_AUTH_LOGIN,
+  ROUTE_INDEX,
+  ROUTE_RECOVERY,
+  ROUTE_REGISTER,
+  ROUTE_VERIFICATION,
+  verificationUrl,
+} from '@app/routes'
 import { findAttributes, findError, findMessage, isDyoError, redirectTo, sendForm, upsertDyoError } from '@app/utils'
-import { SelfServiceLoginFlow } from '@ory/kratos-client'
+import { SelfServiceLoginFlow, UiContainer } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'
 import kratos, { cookieOf, forwardCookie, obtainKratosSession, userVerified } from '@server/kratos'
 import { useFormik } from 'formik'
@@ -66,7 +73,13 @@ const LoginPage = (props: LoginPageProps) => {
         if (isDyoError(result)) {
           setErrors(upsertDyoError(errors, result as DyoErrorDto))
         } else if (result?.ui) {
-          setUi(result.ui)
+          const newUi = result.ui as UiContainer
+          const noVerifiedEmail = newUi.messages.find(it => it.id === KRATOS_ERROR_NO_VERIFIED_EMAIL_ADDRESS)
+          if (noVerifiedEmail) {
+            router.push(verificationUrl(values.email))
+          }
+
+          setUi(newUi)
         } else {
           toast(t('errors:internalError'))
         }

@@ -14,11 +14,11 @@ const NavButton = (props: NavButtonProps) => {
 
   const router = useRouter()
 
-  const isActive = router.pathname.startsWith(href)
+  const active = router.pathname.startsWith(href)
 
   return (
     <>
-      <div className={clsx('pl-8 py-3', isActive ? 'bg-dark w-full' : null)}>
+      <div className={clsx('pl-8 py-3', active ? 'bg-dark w-full' : null)}>
         <Link href={href} passHref={passHref}>
           <a>
             <div className="flex flex-row">
@@ -28,7 +28,8 @@ const NavButton = (props: NavButtonProps) => {
           </a>
         </Link>
       </div>
-      <div className={clsx('w-1 py-3', isActive ? 'bg-dyo-turquoise opacity-50' : null)}>&nbsp;</div>
+
+      <div className={clsx('w-1 py-3', active ? 'bg-dyo-turquoise opacity-50' : null)}>&nbsp;</div>
     </>
   )
 }
