@@ -27,7 +27,7 @@ const DeploymentEventsTerminal = (props: DeploymentEventsTerminalProps) => {
   const eventStrings: string[] = events.flatMap(it => eventToString(it))
 
   return (
-    <div className="flex flex-col h-full overflow-y-scroll bg-gray-900 rounded-md ring-2 ring-light-grey border-dark px-2 py-1 mt-4">
+    <div className="flex flex-col h-full overflow-y-auto bg-gray-900 rounded-md ring-2 ring-light-grey border-dark px-2 py-1 mt-4 h-96">
       {eventStrings.map((it, index) => (
         <span className="text-bright tracking-widest" key={`event-${index}`}>
           {it}
