@@ -14,7 +14,7 @@ const NavButton = (props: NavButtonProps) => {
 
   const router = useRouter()
 
-  const isActive = router.pathname === href
+  const isActive = router.pathname.startsWith(href)
 
   return (
     <>
