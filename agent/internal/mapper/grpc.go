@@ -3,7 +3,6 @@ package mapper
 import (
 	"fmt"
 
-	"log"
 	"strings"
 	"time"
 
