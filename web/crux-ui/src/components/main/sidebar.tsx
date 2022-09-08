@@ -87,8 +87,8 @@ export const Sidebar = (props: SidebarProps) => {
               className="cursor-pointer"
               src="/dyrector_io_logo_white.svg"
               alt={t('dyoWhiteLogo')}
-              width={200}
-              height={80}
+              width={160}
+              height={64}
             />
           </a>
         </Link>
