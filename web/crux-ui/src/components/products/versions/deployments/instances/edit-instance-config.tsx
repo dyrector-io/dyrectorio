@@ -67,7 +67,7 @@ const EditInstanceConfig = (props: EditInstanceProps) => {
   }
 
   useEffect(() => setContainerName(props.config?.name), [props.config])
-
+  
   return (
     <>
       {disabledContainerNameEditing ? null : (

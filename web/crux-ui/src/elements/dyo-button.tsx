@@ -48,6 +48,7 @@ const DyoButton = (props: DyoButtonProps) => {
   const border = underlined ? 'border-b-2 border-dyo-turquoise' : null
   const rounded = !underlined ? 'rounded' : null
   const font = !thin && (text || !outlined) ? 'font-semibold' : null
+  const cursor = disabled ? "cursor-not-allowed" : "cursor-pointer"
 
   return (
     <button
@@ -62,6 +63,7 @@ const DyoButton = (props: DyoButtonProps) => {
         textColor,
         font,
         rounded,
+        cursor,
         heightClassName ?? 'h-10',
       )}
     >

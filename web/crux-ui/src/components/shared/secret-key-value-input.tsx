@@ -1,3 +1,4 @@
+import DyoButton from '@app/elements/dyo-button'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoImgButton from '@app/elements/dyo-img-button'
 import { DyoInput } from '@app/elements/dyo-input'
@@ -6,7 +7,7 @@ import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
 import { createMessage, encrypt, readKey } from 'openpgp'
-import { useEffect, useReducer } from 'react'
+import { useEffect, useReducer, useState } from 'react'
 import { v4 as uuid } from 'uuid'
 
 interface SecretKeyValueInputProps {
@@ -30,6 +31,7 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
   const { heading, disabled, publicKey, items } = props
 
   const [state, dispatch] = useReducer(reducer, items)
+  const [changed, setChanged] = useState<boolean>(false)
 
   const stateToElements = (items: UniqueKeySecretValue[]) => {
     const result = new Array<KeyValueElement>()
@@ -37,7 +39,7 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
     items.forEach(item =>
       result.push({
         ...item,
-        encrypted: item.encrypted,
+        encrypted: item.encrypted ?? false,
         message: result.find(it => it.key === item.key) ? t('keyMustUnique') : null,
       }),
     )
@@ -46,11 +48,13 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
   }
 
   useEffect(
-    () =>
+    () => {
       dispatch({
         type: 'merge-items',
         items: props.items,
-      }),
+      })
+      setChanged(false)
+    },
     [props.items],
   )
 
@@ -71,7 +75,17 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
       type: 'set-items',
       items: newItems,
     })
+    setChanged(true)
   }
+
+  const onDiscard = () => {
+    dispatch({
+      type: 'set-items',
+      items: items,
+    })
+    setChanged(false)
+  }
+
   const onSubmit = async () => {
     let newItems = [...state].filter(it => !isCompletelyEmpty(it))
 
@@ -86,6 +100,7 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
       type: 'set-items',
       items: newItems,
     })
+    setChanged(false)
   }
 
   const onRemove = async (index: number) => {
@@ -149,6 +164,14 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
         </DyoHeading>
       )}
       {elements.map((it, index) => renderItem(it, index))}
+      <div className="flex flex-row flex-grow p-1 justify-end">
+        <DyoButton className="px-10 mr-1" disabled={!changed} secondary onClick={onDiscard}>
+          {t('common:discard')}
+        </DyoButton>
+        <DyoButton className="px-10 ml-1" disabled={!changed} onClick={onSubmit}>
+          {t('common:save')}
+        </DyoButton>
+      </div>
     </form>
   )
 }
