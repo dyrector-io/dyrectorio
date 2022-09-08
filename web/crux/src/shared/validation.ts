@@ -97,7 +97,7 @@ export const explicitContainerConfigSchema = yup.object().shape({
   commands: yup.array(yup.string()).default([]).optional(),
   args: yup.array(yup.string()).default([]).optional(),
 
-  //dagent:
+  // dagent:
   logConfig: yup
     .object()
     .shape({
@@ -119,7 +119,7 @@ export const explicitContainerConfigSchema = yup.object().shape({
     .optional(),
   networks: yup.array(yup.string()).default([]).optional(),
 
-  //crane:
+  // crane:
   deploymentStrategy: yup
     .mixed<ExplicitContainerDeploymentStrategyType>()
     .oneOf([...EXPLICIT_CONTAINER_DEPLOYMENT_STRATEGY_VALUES])

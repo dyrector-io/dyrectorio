@@ -1,6 +1,6 @@
 import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from '@nestjs/common'
 import { catchError, Observable } from 'rxjs'
-import { InterceptorGrpcHelperProvider } from './helper.interceptor'
+import InterceptorGrpcHelperProvider from './helper.interceptor'
 
 /**
  * gRPC request controller logger. We are using this to get more information
@@ -9,7 +9,7 @@ import { InterceptorGrpcHelperProvider } from './helper.interceptor'
  * Disclaimer: Works only with gRPC controllers.
  */
 @Injectable()
-export class GrpcContextLogger implements NestInterceptor {
+export default class GrpcContextLogger implements NestInterceptor {
   private readonly logger = new Logger(GrpcContextLogger.name)
 
   constructor(private readonly helper: InterceptorGrpcHelperProvider) {}

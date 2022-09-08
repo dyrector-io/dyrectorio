@@ -1,10 +1,10 @@
 import { Injectable, PipeTransform } from '@nestjs/common'
-import { PrismaService } from 'src/services/prisma.service'
+import PrismaService from 'src/services/prisma.service'
 import { checkVersionMutability } from 'src/domain/version'
 import { PatchImageRequest } from 'src/grpc/protobuf/proto/crux'
 
 @Injectable()
-export class ImagePatchValidationPipe implements PipeTransform {
+export default class ImagePatchValidationPipe implements PipeTransform {
   constructor(private prisma: PrismaService) {}
 
   async transform(value: PatchImageRequest) {

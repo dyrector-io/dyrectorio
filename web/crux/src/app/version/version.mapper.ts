@@ -1,4 +1,3 @@
-import { Version, VersionTypeEnum } from '.prisma/client'
 import { Injectable } from '@nestjs/common'
 import { versionIsIncreasable, versionIsMutable } from 'src/domain/version'
 import {
@@ -9,11 +8,12 @@ import {
   versionTypeFromJSON,
   versionTypeToJSON,
 } from 'src/grpc/protobuf/proto/crux'
-import { DeployMapper, DeploymentWithNode } from '../deploy/deploy.mapper'
-import { ImageMapper, ImageWithConfig } from '../image/image.mapper'
+import { Version, VersionTypeEnum } from '.prisma/client'
+import DeployMapper, { DeploymentWithNode } from '../deploy/deploy.mapper'
+import ImageMapper, { ImageWithConfig } from '../image/image.mapper'
 
 @Injectable()
-export class VersionMapper {
+export default class VersionMapper {
   constructor(private deployMapper: DeployMapper, private imageMapper: ImageMapper) {}
 
   toGrpc(version: VersionWithChildren): VersionResponse {

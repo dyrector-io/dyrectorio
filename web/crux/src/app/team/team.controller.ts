@@ -18,15 +18,15 @@ import {
   UpdateUserRoleInTeamRequest,
   UserMetaResponse,
 } from 'src/grpc/protobuf/proto/crux'
-import { TeamRoleGuard, TeamRoleRequired } from './guards/team.role.guard'
-import { TeamSelectGuard } from './guards/team.select.guard'
-import { TeamUpdateUserRoleValidationPipe } from './pipes/team.update-user-role.pipe'
-import { TeamService } from './team.service'
+import TeamRoleGuard, { TeamRoleRequired } from './guards/team.role.guard'
+import TeamSelectGuard from './guards/team.select.guard'
+import TeamUpdateUserRoleValidationPipe from './pipes/team.update-user-role.pipe'
+import TeamService from './team.service'
 
 @Controller()
 @CruxTeamControllerMethods()
 @UseGuards(TeamRoleGuard)
-export class TeamController implements CruxTeamController {
+export default class TeamController implements CruxTeamController {
   constructor(private service: TeamService) {}
 
   @AuditLogLevel('disabled')

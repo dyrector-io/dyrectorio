@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common'
 import { IdRequest } from 'src/grpc/protobuf/proto/crux'
-import { TeamAccessGuard } from 'src/shared/team-access.guard'
+import TeamAccessGuard from 'src/shared/team-access.guard'
 
 @Injectable()
-export class DeployTeamAccessGuard extends TeamAccessGuard {
+export default class DeployTeamAccessGuard extends TeamAccessGuard {
   async canActivateWithIdRequest(request: IdRequest): Promise<boolean> {
     const deployments = await this.prisma.deployment.count({
       where: {

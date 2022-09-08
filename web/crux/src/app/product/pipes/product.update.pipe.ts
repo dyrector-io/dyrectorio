@@ -1,9 +1,9 @@
 import { Injectable, PipeTransform, PreconditionFailedException } from '@nestjs/common'
 import { UpdateProductRequest } from 'src/grpc/protobuf/proto/crux'
-import { PrismaService } from 'src/services/prisma.service'
+import PrismaService from 'src/services/prisma.service'
 
 @Injectable()
-export class ProductUpdateValidationPipe implements PipeTransform {
+export default class ProductUpdateValidationPipe implements PipeTransform {
   constructor(private prisma: PrismaService) {}
 
   async transform(value: UpdateProductRequest) {

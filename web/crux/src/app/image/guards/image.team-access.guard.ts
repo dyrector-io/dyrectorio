@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common'
 import { IdRequest } from 'src/grpc/protobuf/proto/crux'
-import { TeamAccessGuard } from 'src/shared/team-access.guard'
+import TeamAccessGuard from 'src/shared/team-access.guard'
 
 @Injectable()
-export class ImageTeamAccessGuard extends TeamAccessGuard {
+export default class ImageTeamAccessGuard extends TeamAccessGuard {
   async canActivateWithIdRequest(request: IdRequest): Promise<boolean> {
     const images = await this.prisma.image.count({
       where: {

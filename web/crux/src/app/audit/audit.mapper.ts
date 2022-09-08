@@ -6,7 +6,7 @@ import { AuditLogResponse } from 'src/grpc/protobuf/proto/crux'
 import { nameOfIdentity } from 'src/shared/model'
 
 @Injectable()
-export class AuditMapper {
+export default class AuditMapper {
   toGrpc(log: AuditLog, identities: Map<string, Identity>): AuditLogResponse {
     const identity = identities.get(log.userId)
 

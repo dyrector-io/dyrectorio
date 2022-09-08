@@ -4,7 +4,9 @@ import { NotFoundError } from '@prisma/client/runtime'
 import { catchError, Observable } from 'rxjs'
 import { AlreadyExistsException, NotFoundException } from '../exception/errors'
 
-export class PrismaErrorInterceptor implements NestInterceptor {
+const UNIQUE_CONSTRAINT_FAILED = 'P2002'
+
+export default class PrismaErrorInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(catchError(err => this.onError(err)))
   }
@@ -14,7 +16,7 @@ export class PrismaErrorInterceptor implements NestInterceptor {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
       if (err.code === UNIQUE_CONSTRAINT_FAILED) {
         const meta = err.meta ?? ({} as any)
-        const target: string[] = meta.target
+        const { target } = meta
 
         const hasName = target && target.includes('name')
         const property = hasName ? 'name' : target?.toString() ?? 'unknown'
@@ -36,5 +38,3 @@ export class PrismaErrorInterceptor implements NestInterceptor {
     throw err
   }
 }
-
-const UNIQUE_CONSTRAINT_FAILED = 'P2002'

@@ -12,13 +12,13 @@ import {
   UpdateEntityResponse,
   UpdateNotificationRequest,
 } from 'src/grpc/protobuf/proto/crux'
-import { NotificationTeamAccessGuard } from './guards/notification.team-access.guard'
-import { NotificationService } from './notification.service'
+import NotificationTeamAccessGuard from './guards/notification.team-access.guard'
+import NotificationService from './notification.service'
 
 @Controller()
 @CruxNotificationControllerMethods()
 @UseGuards(NotificationTeamAccessGuard)
-export class NotificationController implements CruxNotificationController {
+export default class NotificationController implements CruxNotificationController {
   constructor(private notificationService: NotificationService) {}
 
   async createNotification(request: CreateNotificationRequest): Promise<CreateNotificationResponse> {

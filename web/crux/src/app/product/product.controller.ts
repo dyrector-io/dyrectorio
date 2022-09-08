@@ -12,15 +12,16 @@ import {
   UpdateEntityResponse,
   UpdateProductRequest,
 } from 'src/grpc/protobuf/proto/crux'
-import { ProductTeamAccessGuard } from './guards/product.team-access.guard'
-import { ProductUpdateValidationPipe } from './pipes/product.update.pipe'
-import { ProductService } from './product.service'
+import ProductTeamAccessGuard from './guards/product.team-access.guard'
+import ProductUpdateValidationPipe from './pipes/product.update.pipe'
+import ProductService from './product.service'
 
 @Controller()
 @CruxProductControllerMethods()
 @UseGuards(ProductTeamAccessGuard)
-export class ProductController implements CruxProductController {
+export default class ProductController implements CruxProductController {
   constructor(private service: ProductService) {}
+
   async getProducts(request: AccessRequest): Promise<ProductListResponse> {
     return this.service.getProducts(request)
   }

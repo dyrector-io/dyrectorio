@@ -1,4 +1,3 @@
-import { Version } from '.prisma/client'
 import { Injectable } from '@nestjs/common'
 import { DeploymentStatusEnum } from '@prisma/client'
 import { containerNameFromImageName } from 'src/domain/deployment'
@@ -14,12 +13,13 @@ import {
   VersionDetailsResponse,
   VersionListResponse,
 } from 'src/grpc/protobuf/proto/crux'
-import { DomainNotificationService } from 'src/services/domain.notification.service'
-import { PrismaService } from 'src/services/prisma.service'
-import { VersionMapper } from './version.mapper'
+import DomainNotificationService from 'src/services/domain.notification.service'
+import PrismaService from 'src/services/prisma.service'
+import { Version } from '.prisma/client'
+import VersionMapper from './version.mapper'
 
 @Injectable()
-export class VersionService {
+export default class VersionService {
   constructor(
     private prisma: PrismaService,
     private mapper: VersionMapper,
@@ -93,7 +93,7 @@ export class VersionService {
         },
       })
 
-      const version = await prisma.version.create({
+      const newVersion = await prisma.version.create({
         data: {
           productId: req.productId,
           name: req.name,
@@ -114,7 +114,7 @@ export class VersionService {
               data: {
                 ...image,
                 id: undefined,
-                versionId: version.id,
+                versionId: newVersion.id,
                 config: {
                   create: {
                     name: containerNameFromImageName(image.name),
@@ -130,7 +130,7 @@ export class VersionService {
         await Promise.all(images)
       }
 
-      return version
+      return newVersion
     })
 
     const product = await this.prisma.product.findUnique({

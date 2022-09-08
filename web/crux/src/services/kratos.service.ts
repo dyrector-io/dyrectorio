@@ -5,7 +5,7 @@ const kratos = new V0alpha2Api(new Configuration({ basePath: process.env.KRATOS_
 const EMAIL = 'email'
 
 @Injectable()
-export class KratosService {
+export default class KratosService {
   async getIdentityByEmail(email: string): Promise<Identity> {
     const identities = await kratos.adminListIdentities()
     return identities.data.find(user => user.traits[EMAIL] === email)

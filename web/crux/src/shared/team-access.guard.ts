@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable, SetMetadata } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
-import { PrismaService } from 'src/services/prisma.service'
+import PrismaService from 'src/services/prisma.service'
 import { InvalidArgumentException } from 'src/exception/errors'
 import { IdRequest } from 'src/grpc/protobuf/proto/crux'
 
@@ -9,7 +9,7 @@ const DISABLE_TEAM_ACCESS_CHECK = 'disable-team-access-check'
 export const DisableTeamAccessCheck = () => SetMetadata(DISABLE_TEAM_ACCESS_CHECK, true)
 
 @Injectable()
-export abstract class TeamAccessGuard implements CanActivate {
+export default abstract class TeamAccessGuard implements CanActivate {
   constructor(protected readonly reflector: Reflector, protected readonly prisma: PrismaService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {

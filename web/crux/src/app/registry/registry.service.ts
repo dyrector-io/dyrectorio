@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { PrismaService } from 'src/services/prisma.service'
+import PrismaService from 'src/services/prisma.service'
 import {
   AccessRequest,
   CreateEntityResponse,
@@ -10,11 +10,11 @@ import {
   UpdateEntityResponse,
   UpdateRegistryRequest,
 } from 'src/grpc/protobuf/proto/crux'
-import { TeamRepository } from '../team/team.repository'
-import { RegistryMapper } from './registry.mapper'
+import TeamRepository from '../team/team.repository'
+import RegistryMapper from './registry.mapper'
 
 @Injectable()
-export class RegistryService {
+export default class RegistryService {
   constructor(private teamRepository: TeamRepository, private prisma: PrismaService, private mapper: RegistryMapper) {}
 
   private readonly logger = new Logger(RegistryService.name)

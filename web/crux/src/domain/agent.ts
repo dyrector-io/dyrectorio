@@ -3,17 +3,21 @@ import { Observable, Subject } from 'rxjs'
 import { AlreadyExistsException } from 'src/exception/errors'
 import { AgentCommand } from 'src/grpc/protobuf/proto/agent'
 import { DeploymentProgressMessage, NodeConnectionStatus, NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
-import { GrpcNodeConnection } from 'src/shared/grpc-node-connection'
-import { ContainerStatusStreamCompleter, ContainerStatusWatcher } from './container-status-watcher'
-import { Deployment } from './deployment'
+import GrpcNodeConnection from 'src/shared/grpc-node-connection'
+import ContainerStatusWatcher, { ContainerStatusStreamCompleter } from './container-status-watcher'
+import Deployment from './deployment'
 
 export class Agent {
   private commandChannel = new Subject<AgentCommand>()
+
   private deployments: Map<string, Deployment> = new Map()
+
   private statusWatchers: Map<string, ContainerStatusWatcher> = new Map()
 
   readonly id: string
+
   readonly address: string
+
   readonly version: string
 
   constructor(

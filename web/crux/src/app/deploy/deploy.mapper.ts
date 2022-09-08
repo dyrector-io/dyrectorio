@@ -37,11 +37,12 @@ import {
   Port,
 } from 'src/grpc/protobuf/proto/common'
 import { ContainerConfigData, UniqueKeyValue } from 'src/shared/model'
-import { ImageMapper, ImageWithConfig } from '../image/image.mapper'
-import { AgentService } from '../agent/agent.service'
+import { InternalException } from 'src/exception/errors'
+import ImageMapper, { ImageWithConfig } from '../image/image.mapper'
+import AgentService from '../agent/agent.service'
 
 @Injectable()
-export class DeployMapper {
+export default class DeployMapper {
   constructor(private imageMapper: ImageMapper, private agentService: AgentService) {}
 
   listItemToGrpc(deployment: DeploymentListItem): DeploymentResponse {
@@ -128,6 +129,10 @@ export class DeployMapper {
         })
         break
       }
+      default:
+        throw new InternalException({
+          message: 'Unsupported deployment event type!',
+        })
     }
 
     return {
@@ -148,6 +153,10 @@ export class DeployMapper {
         return DeploymentEventType.DEPLOYMENT_STATUS
       case 'log':
         return DeploymentEventType.DEPLOYMENT_LOG
+      default:
+        throw new InternalException({
+          message: 'Unsupported event type!',
+        })
     }
   }
 

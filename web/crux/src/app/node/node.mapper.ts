@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { Node, NodeTypeEnum } from '@prisma/client'
-import { AgentInstaller } from 'src/domain/agent-installer'
+import AgentInstaller from 'src/domain/agent-installer'
 import { toTimestamp } from 'src/domain/utils'
 import {
   AuditResponse,
@@ -11,10 +11,10 @@ import {
   NodeScriptResponse,
   NodeType,
 } from 'src/grpc/protobuf/proto/crux'
-import { AgentService } from '../agent/agent.service'
+import AgentService from '../agent/agent.service'
 
 @Injectable()
-export class NodeMapper {
+export default class NodeMapper {
   constructor(private agentService: AgentService) {}
 
   toGrpc(node: Node): NodeResponse {
