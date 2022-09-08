@@ -1,4 +1,4 @@
-import { DyoButton } from '@app/elements/dyo-button'
+import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
@@ -20,10 +20,12 @@ interface EditTeamCardProps {
 }
 
 const EditTeamCard = (props: EditTeamCardProps) => {
+  const { className, team: propsTeam, onTeamEdited, submitRef } = props
+
   const { t } = useTranslation('teams')
 
   const [team, setTeam] = useState<Team>(
-    props.team ?? {
+    propsTeam ?? {
       id: null,
       name: '',
       statistics: DEFAULT_TEAM_STATISTICS,
@@ -52,7 +54,7 @@ const EditTeamCard = (props: EditTeamCardProps) => {
 
       if (res.ok) {
         let result: Team
-        if (res.status != 204) {
+        if (res.status !== 204) {
           const json = await res.json()
           result = json as Team
         } else {
@@ -63,7 +65,7 @@ const EditTeamCard = (props: EditTeamCardProps) => {
         }
 
         setTeam(result)
-        props.onTeamEdited(result)
+        onTeamEdited(result)
       } else {
         handleApiError(res, setFieldError)
       }
@@ -72,36 +74,34 @@ const EditTeamCard = (props: EditTeamCardProps) => {
     },
   })
 
-  if (props.submitRef) {
-    props.submitRef.current = formik.submitForm
+  if (submitRef) {
+    submitRef.current = formik.submitForm
   }
 
   return (
-    <>
-      <DyoCard className={props.className}>
-        <DyoHeading element="h4" className="text-lg text-bright">
-          {editing ? t('common:editName', { name: team.name }) : t('createTeam')}
-        </DyoHeading>
+    <DyoCard className={className}>
+      <DyoHeading element="h4" className="text-lg text-bright">
+        {editing ? t('common:editName', { name: team.name }) : t('createTeam')}
+      </DyoHeading>
 
-        <DyoLabel textColor="text-bright-muted">{t('tips')}</DyoLabel>
+      <DyoLabel textColor="text-bright-muted">{t('tips')}</DyoLabel>
 
-        <form className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
-          <DyoInput
-            className="max-w-lg"
-            grow
-            name="name"
-            type="name"
-            required
-            label={t('common:name')}
-            onChange={formik.handleChange}
-            value={formik.values.name}
-            message={formik.errors.name}
-          />
+      <form className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
+        <DyoInput
+          className="max-w-lg"
+          grow
+          name="name"
+          type="name"
+          required
+          label={t('common:name')}
+          onChange={formik.handleChange}
+          value={formik.values.name}
+          message={formik.errors.name}
+        />
 
-          <DyoButton className="hidden" type="submit"></DyoButton>
-        </form>
-      </DyoCard>
-    </>
+        <DyoButton className="hidden" type="submit" />
+      </form>
+    </DyoCard>
   )
 }
 

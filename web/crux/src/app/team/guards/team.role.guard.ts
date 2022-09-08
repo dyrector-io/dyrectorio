@@ -2,7 +2,7 @@ import { CanActivate, ExecutionContext, Injectable, SetMetadata } from '@nestjs/
 import { Reflector } from '@nestjs/core'
 import { userIsAdmin, userIsOwner } from 'src/domain/user'
 import { IdRequest } from 'src/grpc/protobuf/proto/crux'
-import { PrismaService } from 'src/services/prisma.service'
+import PrismaService from 'src/services/prisma.service'
 
 const TEAM_ROLE = 'team-role'
 
@@ -11,7 +11,7 @@ export type TeamRole = 'none' | 'user' | 'admin' | 'owner'
 export const TeamRoleRequired = (role: TeamRole = 'user') => SetMetadata(TEAM_ROLE, role)
 
 @Injectable()
-export class TeamRoleGuard implements CanActivate {
+export default class TeamRoleGuard implements CanActivate {
   constructor(private readonly reflector: Reflector, private readonly prisma: PrismaService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {

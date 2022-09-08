@@ -1,18 +1,26 @@
 import { REGISTRY_GITLAB_URLS, REGISTRY_HUB_CACHE_EXPIRATION, REGISTRY_HUB_URL } from '@app/const'
+import { RegistryDetails } from '@app/models'
 import { Identity } from '@ory/kratos-client'
-import { Crux } from '@server/crux/crux'
-import { GithubRegistryClient } from './github-api-client'
+import HubApiCache from './caches/hub-api-cache'
+import GithubRegistryClient from './github-api-client'
 import { GitlabRegistryClient } from './gitlab-api-client'
 import { GoogleRegistryClient } from './google-api-client'
-import HubApiClient, { HubApiCache } from './hub-api-client'
+import HubApiClient from './hub-api-client'
 import { RegistryApiClient } from './registry-api-client'
 import RegistryV2ApiClient from './v2-api-client'
 
+export type CruxRegistryConnectionsServices = {
+  getIdentity: () => Identity
+  getRegistryDetails: (id: string) => Promise<RegistryDetails>
+}
+
 export class RegistryConnections {
   private hubCaches: Map<string, HubApiCache> = new Map() // imageNamePrefix to cache
+
   private registryIdToHubCache: Map<string, string> = new Map()
 
   private clients: Map<string, RegistryApiClient> = new Map()
+
   private authorized: Map<string, string[]> = new Map() // identityId to registyIds
 
   invalidate(registryId: string) {
@@ -30,7 +38,7 @@ export class RegistryConnections {
       return
     }
 
-    cache.clients--
+    cache.clients -= 1
     if (cache.clients > 0) {
       return
     }
@@ -42,20 +50,20 @@ export class RegistryConnections {
     this.authorized.delete(identity.id)
   }
 
-  async getByRegistryId(registryId: string, crux: Crux): Promise<RegistryApiClient> {
+  async getByRegistryId(registryId: string, crux: CruxRegistryConnectionsServices): Promise<RegistryApiClient> {
     let client = this.clients.get(registryId)
     if (client) {
       await this.authorize(registryId, crux)
       return client
     }
 
-    const registry = await crux.registries.getRegistryDetails(registryId)
+    const registry = await crux.getRegistryDetails(registryId)
 
     client =
       registry.type === 'v2'
         ? new RegistryV2ApiClient(
             registry.url,
-            registry._private
+            registry.isPrivate
               ? {
                   username: registry.user,
                   password: registry.token,
@@ -90,7 +98,7 @@ export class RegistryConnections {
         : new GoogleRegistryClient(
             registry.url,
             registry.imageNamePrefix,
-            registry._private
+            registry.isPrivate
               ? {
                   username: registry.user,
                   password: registry.token,
@@ -103,22 +111,22 @@ export class RegistryConnections {
     return client
   }
 
-  private async authorize(registryId: string, crux: Crux) {
-    const authorizedRegistries = this.authorized.get(crux.identity.id)
+  private async authorize(registryId: string, crux: CruxRegistryConnectionsServices): Promise<void> {
+    const authorizedRegistries = this.authorized.get(crux.getIdentity().id)
     if (authorizedRegistries && authorizedRegistries.includes(registryId)) {
       return
     }
 
-    await crux.registries.getRegistryDetails(registryId)
+    await crux.getRegistryDetails(registryId)
   }
 
-  private getHubCacheForImageNamePrefix(registryId: string, prefix: string) {
+  private getHubCacheForImageNamePrefix(registryId: string, prefix: string): HubApiCache {
     let cache = this.hubCaches.get(prefix)
     if (!cache) {
       cache = new HubApiCache(REGISTRY_HUB_CACHE_EXPIRATION * 60 * 1000) // minutes to millis
       this.hubCaches.set(prefix, cache)
     } else {
-      cache.clients++
+      cache.clients += 1
     }
 
     this.registryIdToHubCache.set(registryId, prefix)
@@ -127,9 +135,7 @@ export class RegistryConnections {
   }
 }
 
-if (!global._registryConnections) {
-  global._registryConnections = new RegistryConnections()
-}
+const registryConnections: RegistryConnections =
+  global.registryConnections ?? (global.registryConnections = new RegistryConnections())
 
-const registryConnections: RegistryConnections = global._registryConnections
 export default registryConnections

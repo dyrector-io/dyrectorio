@@ -9,24 +9,28 @@ interface NavButtonProps {
   icon?: JSX.Element
 }
 
-export const NavButton = (props: NavButtonProps) => {
+const NavButton = (props: NavButtonProps) => {
+  const { children, href, passHref, icon } = props
+
   const router = useRouter()
 
-  const isActive = router.pathname === props.href
+  const isActive = router.pathname === href
 
   return (
     <>
-      <div className={clsx('w-1 py-3', isActive ? 'bg-dyo-turquoise' : null)}>&nbsp;</div>
       <div className={clsx('pl-8 py-3', isActive ? 'bg-dark w-full' : null)}>
-        <Link href={props.href} passHref={props.passHref}>
+        <Link href={href} passHref={passHref}>
           <a>
             <div className="flex flex-row">
-              <div className="flex items-center mr-2 text-bright text-sm font-semibold">{props.icon}</div>
-              {props.children}
+              <div className="flex items-center mr-2 text-bright text-sm font-semibold">{icon}</div>
+              {children}
             </div>
           </a>
         </Link>
       </div>
+      <div className={clsx('w-1 py-3', isActive ? 'bg-dyo-turquoise opacity-50' : null)}>&nbsp;</div>
     </>
   )
 }
+
+export default NavButton

@@ -1,7 +1,6 @@
 import { ProductDetails, RegistryImages, VersionDetails, VersionImage } from '@app/models'
 import { deploymentUrl } from '@app/routes'
 import { parseStringUnionType } from '@app/utils'
-import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import { useRef, useState } from 'react'
 import AddDeploymentCard from './deployments/add-deployment-card'
@@ -12,6 +11,20 @@ import VersionImagesSection from './version-images-section'
 import VersionReorderImagesSection from './version-reorder-images-section'
 import VersionSectionsHeading from './version-sections-heading'
 
+const ADD_SECTION_TO_SECTION: Record<VersionAddSectionState, VersionSectionsState> = {
+  image: 'images',
+  deployment: 'deployments',
+  none: 'images',
+}
+
+export type VersionAddSectionState = 'image' | 'deployment' | 'none'
+
+const VERSION_SECTIONS_STATE_VALUES = ['images', 'deployments', 'reorder'] as const
+export type VersionSectionsState = typeof VERSION_SECTIONS_STATE_VALUES[number]
+
+export const parseVersionSectionState = (section: string, fallback: VersionSectionsState) =>
+  parseStringUnionType(section, fallback, VERSION_SECTIONS_STATE_VALUES)
+
 interface VersionSectionsProps {
   product: ProductDetails
   version: VersionDetails
@@ -19,22 +32,20 @@ interface VersionSectionsProps {
 }
 
 const VersionSections = (props: VersionSectionsProps) => {
-  const { t } = useTranslation('')
+  const { version, setSaving, product } = props
 
   const router = useRouter()
-
-  const { version, setSaving } = props
 
   const initialSection = parseVersionSectionState(router.query.section as string, 'images')
 
   const [sectionState, setSectionState] = useState(initialSection)
   const [addSectionState, setAddSectionState] = useState<VersionAddSectionState>('none')
-  const [images, setImages] = useState(props.version.images)
+  const [images, setImages] = useState(version.images)
   const [imageTags, setImageTags] = useState<ImageTagsMap>({})
 
   const wsOptions: ImagesWebSocketOptions = {
-    productId: props.product.id,
-    versionId: props.version.id,
+    productId: product.id,
+    versionId: version.id,
     images,
     imageTags,
     setImages,
@@ -56,18 +67,16 @@ const VersionSections = (props: VersionSectionsProps) => {
   }
 
   const onAddDeployment = async (deploymentId: string) =>
-    router.push(deploymentUrl(props.product.id, props.version.id, deploymentId))
+    router.push(deploymentUrl(product.id, version.id, deploymentId))
 
-  const onReorderImages = (images: VersionImage[]) => {
-    const ids = images.map(it => it.id)
+  const onReorderImages = (imgs: VersionImage[]) => {
+    const ids = imgs.map(it => it.id)
     orderImages(ids)
 
-    const newImages = images.map((it, index) => {
-      return {
-        ...it,
-        order: index,
-      }
-    })
+    const newImages = imgs.map((it, index) => ({
+      ...it,
+      order: index,
+    }))
 
     setImages(newImages)
     setAddSectionState('none')
@@ -105,8 +114,8 @@ const VersionSections = (props: VersionSectionsProps) => {
         <SelectImagesCard onImagesSelected={onImagesSelected} onDiscard={() => setAddSectionState('none')} />
       ) : (
         <AddDeploymentCard
-          productId={props.product.id}
-          versionId={props.version.id}
+          productId={product.id}
+          versionId={version.id}
           onAdd={onAddDeployment}
           onDiscard={() => setAddSectionState('none')}
         />
@@ -117,37 +126,16 @@ const VersionSections = (props: VersionSectionsProps) => {
           disabled={!version.mutable}
           images={images}
           imageTags={imageTags}
-          productId={props.product.id}
-          versionId={version.id}
           versionSock={versionSock}
           onTagSelected={onImageTagSelected}
         />
       ) : sectionState === 'deployments' ? (
-        <VersionDeploymentsSection product={props.product} version={version} />
+        <VersionDeploymentsSection product={product} version={version} />
       ) : (
-        <VersionReorderImagesSection
-          product={props.product}
-          images={images}
-          saveRef={saveImageOrderRef}
-          onSave={onReorderImages}
-        />
+        <VersionReorderImagesSection images={images} saveRef={saveImageOrderRef} onSave={onReorderImages} />
       )}
     </>
   )
 }
 
-const ADD_SECTION_TO_SECTION: Record<VersionAddSectionState, VersionSectionsState> = {
-  image: 'images',
-  deployment: 'deployments',
-  none: 'images',
-}
-
 export default VersionSections
-
-export type VersionAddSectionState = 'image' | 'deployment' | 'none'
-
-const VERSION_SECTIONS_STATE_VALUES = ['images', 'deployments', 'reorder'] as const
-export type VersionSectionsState = typeof VERSION_SECTIONS_STATE_VALUES[number]
-
-export const parseVersionSectionState = (section: string, fallback: VersionSectionsState) =>
-  parseStringUnionType(section, fallback, VERSION_SECTIONS_STATE_VALUES)

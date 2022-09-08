@@ -1,6 +1,6 @@
+import DyoButton from '@app/elements/dyo-button'
 import useTranslation from 'next-translate/useTranslation'
 import React from 'react'
-import { DyoButton } from './dyo-button'
 import { DyoLabel } from './dyo-label'
 
 export interface DyoFileUploadProps {

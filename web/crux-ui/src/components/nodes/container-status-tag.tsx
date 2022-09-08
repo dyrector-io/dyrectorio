@@ -7,13 +7,13 @@ interface ContainerStatusTagProps {
 }
 
 const ContainerStatusTag = (props: ContainerStatusTagProps) => {
-  const { state } = props
+  const { state, className } = props
 
   const statusToBgColor = () => {
     switch (state) {
-      case 'exited':
       case 'running':
         return 'bg-dyo-green'
+      case 'exited':
       case 'dead':
       case 'restarting':
         return 'bg-error-red'
@@ -26,9 +26,9 @@ const ContainerStatusTag = (props: ContainerStatusTagProps) => {
 
   const statusToTextColor = () => {
     switch (state) {
-      case 'exited':
       case 'running':
         return 'text-dyo-green'
+      case 'exited':
       case 'dead':
       case 'restarting':
         return 'text-error-red'
@@ -43,7 +43,7 @@ const ContainerStatusTag = (props: ContainerStatusTagProps) => {
     <DyoTag
       color={statusToBgColor()}
       textColor={statusToTextColor()}
-      className={props.className}
+      className={className}
       solid={state === 'removing'}
     >
       {state.toUpperCase()}

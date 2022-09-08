@@ -1,9 +1,9 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
-import { PrismaService } from 'src/services/prisma.service'
+import PrismaService from 'src/services/prisma.service'
 import { AddImagesToVersionRequest } from 'src/grpc/protobuf/proto/crux'
 
 @Injectable()
-export class ImageAddToVersionTeamAccessGuard implements CanActivate {
+export default class ImageAddToVersionTeamAccessGuard implements CanActivate {
   constructor(private prisma: PrismaService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {

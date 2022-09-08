@@ -1,17 +1,17 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { Observable, tap } from 'rxjs'
-import { TeamRepository } from 'src/app/team/team.repository'
-import { PrismaService } from 'src/services/prisma.service'
+import TeamRepository from 'src/app/team/team.repository'
+import PrismaService from 'src/services/prisma.service'
 import { AuditLogLevelOption, AUDIT_LOGGER_LEVEL } from 'src/decorators/audit-logger.decorators'
-import { InterceptorGrpcHelperProvider } from './helper.interceptor'
+import InterceptorGrpcHelperProvider from './helper.interceptor'
 
 /**
  * Audit Logger Interceptor helps to log every activity to a database and only
  * ones where the transaction are run successfully.
  */
 @Injectable()
-export class AuditLoggerInterceptor implements NestInterceptor {
+export default class AuditLoggerInterceptor implements NestInterceptor {
   constructor(
     private readonly prisma: PrismaService,
     private readonly helper: InterceptorGrpcHelperProvider,

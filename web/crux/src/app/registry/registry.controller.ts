@@ -12,14 +12,14 @@ import {
   UpdateEntityResponse,
   UpdateRegistryRequest,
 } from 'src/grpc/protobuf/proto/crux'
-import { RegistryAccessValidationGuard } from './guards/registry.auth.validation.guard'
-import { RegistryTeamAccessGuard } from './guards/registry.team-access.guart'
-import { RegistryService } from './registry.service'
+import RegistryAccessValidationGuard from './guards/registry.auth.validation.guard'
+import RegistryTeamAccessGuard from './guards/registry.team-access.guart'
+import RegistryService from './registry.service'
 
 @Controller()
 @CruxRegistryControllerMethods()
 @UseGuards(RegistryTeamAccessGuard)
-export class RegistryController implements CruxRegistryController {
+export default class RegistryController implements CruxRegistryController {
   constructor(private service: RegistryService) {}
 
   async getRegistries(request: AccessRequest): Promise<RegistryListResponse> {

@@ -1,12 +1,8 @@
+import { unauthorizedError } from '@app/error-responses'
 import { NextApiRequest, NextApiResponse } from 'next'
-import { unauthorizedError } from './error-middleware'
 import { IncomingMessageWithSession, obtainKratosSession } from './kratos'
 
-export const useAuthorizeApiMiddleware = async (
-  req: NextApiRequest,
-  res: NextApiResponse,
-  next: () => Promise<void>,
-) => {
+const useAuthorizeApiMiddleware = async (req: NextApiRequest, res: NextApiResponse, next: () => Promise<void>) => {
   const session = await obtainKratosSession(req)
   if (!session) {
     throw unauthorizedError('Cookie is missing')
@@ -17,3 +13,5 @@ export const useAuthorizeApiMiddleware = async (
 
   await next()
 }
+
+export default useAuthorizeApiMiddleware

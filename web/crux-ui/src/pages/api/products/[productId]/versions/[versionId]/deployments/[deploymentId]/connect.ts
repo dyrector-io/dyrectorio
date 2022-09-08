@@ -20,11 +20,12 @@ import {
   WS_TYPE_START_DEPLOYMENT,
 } from '@app/models'
 import { WsMessage } from '@app/websockets/common'
-import { WsConnection, WsEndpoint } from '@app/websockets/server'
+import WsConnection from '@app/websockets/connection'
+import WsEndpoint from '@app/websockets/endpoint'
 import crux, { Crux, cruxFromConnection } from '@server/crux/crux'
 import { fromGrpcError, parseGrpcError } from '@server/error-middleware'
 import { routedWebSocketEndpoint } from '@server/websocket-endpoint'
-import { useWebsocketErrorMiddleware } from '@server/websocket-error-middleware'
+import useWebsocketErrorMiddleware from '@server/websocket-error-middleware'
 import { NextApiRequest } from 'next'
 
 const logger = new Logger('ws-deployment')

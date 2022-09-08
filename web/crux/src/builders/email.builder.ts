@@ -13,7 +13,7 @@ const HOST = process.env.CRUX_UI_URL
 const from = { email: process.env.FROM_EMAIL, name: process.env.FROM_NAME }
 
 @Injectable()
-export class EmailBuilder {
+export default class EmailBuilder {
   buildInviteEmail(email: string, teamName: string, teamId?: string, kratosRecoveryLink?: string): MailDataRequired {
     if (!teamId && !kratosRecoveryLink) {
       throw new EmailBuilderException()
@@ -22,7 +22,7 @@ export class EmailBuilder {
     const inviteTemplate = this.getInviteTemplate(teamName, teamId, kratosRecoveryLink)
 
     const emailItem: MailDataRequired = {
-      from: from,
+      from,
       to: email,
       subject: inviteTemplate.subject,
       text: inviteTemplate.text,

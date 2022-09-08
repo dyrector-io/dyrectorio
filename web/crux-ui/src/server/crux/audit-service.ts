@@ -17,14 +17,12 @@ class DyoAuditService {
       req,
     )
 
-    return auditLog.data.map(it => {
-      return {
-        identityName: it.identityName,
-        date: timestampToUTC(it.createdAt),
-        event: it.serviceCall,
-        info: it.data,
-      }
-    })
+    return auditLog.data.map(it => ({
+      identityEmail: it.identityEmail,
+      date: timestampToUTC(it.createdAt),
+      event: it.serviceCall,
+      info: it.data,
+    }))
   }
 }
 

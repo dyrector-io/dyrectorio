@@ -23,13 +23,15 @@ interface RegistriesPageProps {
 }
 
 const RegistriesPage = (props: RegistriesPageProps) => {
+  const { registries } = props
+
   const { t } = useTranslation('registries')
 
   const router = useRouter()
 
   const filters = useFilters<Registry, TextFilter>({
     filters: [textFilterFor<Registry>(it => [it.name, it.url, it.description, it.icon])],
-    initialData: props.registries,
+    initialData: registries,
     initialFilter: { text: '' },
   })
 
@@ -88,12 +90,10 @@ const RegistriesPage = (props: RegistriesPageProps) => {
 
 export default RegistriesPage
 
-const getPageServerSideProps = async (context: NextPageContext) => {
-  return {
-    props: {
-      registries: await cruxFromContext(context).registries.getAll(),
-    },
-  }
-}
+const getPageServerSideProps = async (context: NextPageContext) => ({
+  props: {
+    registries: await cruxFromContext(context).registries.getAll(),
+  },
+})
 
 export const getServerSideProps = withContextAuthorization(getPageServerSideProps)

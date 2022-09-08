@@ -14,7 +14,7 @@ import {
 import { REGISTRY_HUB_URL } from 'src/shared/const'
 
 @Injectable()
-export class RegistryMapper {
+export default class RegistryMapper {
   toGrpc(registry: Registry): RegistryResponse {
     return {
       ...registry,
@@ -83,7 +83,7 @@ export class RegistryMapper {
   detailsToDb(
     request: CreateRegistryRequest | UpdateRegistryRequest,
   ): Pick<Registry, 'url' | 'type' | 'apiUrl' | 'user' | 'token' | 'imageNamePrefix'> {
-    const emptyOrDefault = (value: string | null | undefined, def: string | null = null) => (value ? value : def)
+    const emptyOrDefault = (value: string | null | undefined, def: string | null = null) => value || def
 
     if (request.hub) {
       return {
@@ -94,7 +94,8 @@ export class RegistryMapper {
         token: null,
         user: null,
       }
-    } else if (request.v2) {
+    }
+    if (request.v2) {
       return {
         type: RegistryTypeEnum.v2,
         ...request.v2,
@@ -103,21 +104,24 @@ export class RegistryMapper {
         imageNamePrefix: null,
         apiUrl: null,
       }
-    } else if (request.gitlab) {
+    }
+    if (request.gitlab) {
       return {
         type: RegistryTypeEnum.gitlab,
         ...request.gitlab,
         url: request.gitlab.apiUrl ? request.gitlab.url : 'registry.gitlab.com',
         apiUrl: request.gitlab.apiUrl ?? null,
       }
-    } else if (request.github) {
+    }
+    if (request.github) {
       return {
         type: RegistryTypeEnum.github,
         ...request.github,
         url: 'ghcr.io',
         apiUrl: null,
       }
-    } else if (request.google) {
+    }
+    if (request.google) {
       return {
         type: RegistryTypeEnum.google,
         ...request.google,
@@ -126,11 +130,10 @@ export class RegistryMapper {
         imageNamePrefix: request.google.imageNamePrefix,
         apiUrl: null,
       }
-    } else {
-      throw new InvalidArgumentException({
-        message: 'Registry type is undeductable',
-        property: 'type',
-      })
     }
+    throw new InvalidArgumentException({
+      message: 'Registry type is undeductable',
+      property: 'type',
+    })
   }
 }

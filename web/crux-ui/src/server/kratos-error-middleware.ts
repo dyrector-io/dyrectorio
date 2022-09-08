@@ -1,7 +1,7 @@
+import { isDyoApiError } from '@app/utils'
 import { NextApiRequest, NextApiResponse } from 'next'
-import { isDyoApiError } from './error-middleware'
 
-export const useKratosErrorMiddleware = async (
+const useKratosErrorMiddleware = async (
   req: NextApiRequest,
   res: NextApiResponse,
   next: () => Promise<void>,
@@ -16,3 +16,5 @@ export const useKratosErrorMiddleware = async (
     }
   }
 }
+
+export default useKratosErrorMiddleware

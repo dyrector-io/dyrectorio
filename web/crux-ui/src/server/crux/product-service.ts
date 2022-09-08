@@ -1,4 +1,4 @@
-import { CreateProduct, Product, ProductDetails, ProductType, UpdateProduct, Version } from '@app/models'
+import { CreateProduct, Product, ProductDetails, UpdateProduct, Version } from '@app/models'
 import {
   AccessRequest,
   CreateEntityResponse,
@@ -8,16 +8,14 @@ import {
   IdRequest,
   ProductDetailsReponse,
   ProductListResponse,
-  ProductType as ProtoProductType,
-  productTypeFromJSON,
-  productTypeToJSON,
   UpdateEntityResponse,
   UpdateProductRequest,
 } from '@app/models/grpc/protobuf/proto/crux'
 import { timestampToUTC } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
 import { protomisify } from '@server/crux/grpc-connection'
-import { versionTypeToDyo } from './version-service'
+import { typeToDyo, typeToProto } from './mappers/product-mappers'
+import { versionTypeToDyo } from './mappers/version-mappers'
 
 class DyoProductService {
   constructor(private client: CruxProductClient, private identity: Identity) {}
@@ -32,13 +30,11 @@ class DyoProductService {
       req,
     )
 
-    return products.data.map(it => {
-      return {
-        ...it,
-        type: this.typeToDyo(it.type),
-        updatedAt: timestampToUTC(it.audit.updatedAt ?? it.audit.createdAt),
-      }
-    })
+    return products.data.map(it => ({
+      ...it,
+      type: typeToDyo(it.type),
+      updatedAt: timestampToUTC(it.audit.updatedAt ?? it.audit.createdAt),
+    }))
   }
 
   async getById(id: string): Promise<ProductDetails> {
@@ -54,23 +50,24 @@ class DyoProductService {
 
     return {
       ...res,
-      type: this.typeToDyo(res.type),
+      type: typeToDyo(res.type),
       updatedAt: timestampToUTC(res.audit.updatedAt),
       createdAt: timestampToUTC(res.audit.createdAt),
-      versions: res.versions.map(it => {
-        return {
-          ...it,
-          type: versionTypeToDyo(it.type),
-          updatedAt: timestampToUTC(it.audit.updatedAt ?? it.audit.createdAt),
-        } as Version
-      }),
+      versions: res.versions.map(
+        it =>
+          ({
+            ...it,
+            type: versionTypeToDyo(it.type),
+            updatedAt: timestampToUTC(it.audit.updatedAt ?? it.audit.createdAt),
+          } as Version),
+      ),
     }
   }
 
   async create(dto: CreateProduct): Promise<Product> {
     const req: CreateProductRequest = {
       ...dto,
-      type: this.typeToProto(dto.type),
+      type: typeToProto(dto.type),
       accessedBy: this.identity.id,
     }
 
@@ -108,14 +105,6 @@ class DyoProductService {
     }
 
     await protomisify<IdRequest, Empty>(this.client, this.client.deleteProduct)(IdRequest, req)
-  }
-
-  private typeToDyo(type: ProtoProductType): ProductType {
-    return productTypeToJSON(type).toLowerCase() as ProductType
-  }
-
-  private typeToProto(type: ProductType): ProtoProductType {
-    return productTypeFromJSON(type.toUpperCase())
   }
 }
 

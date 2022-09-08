@@ -160,7 +160,7 @@ message UpdateEntityResponse { google.protobuf.Timestamp updatedAt = 100; }
 message AuditLogResponse {
   google.protobuf.Timestamp createdAt = 100;
   string userId = 101;
-  string identityName = 102;
+  string identityEmail = 102;
   string serviceCall = 103;
   optional string data = 104;
 }
@@ -278,6 +278,7 @@ message UserResponse {
   string email = 101;
   UserRole role = 102;
   UserStatus status = 103;
+  optional google.protobuf.Timestamp lastLogin = 104;
 }
 
 // PRODUCT
@@ -700,6 +701,9 @@ message CreateDeploymentRequest {
 
   string versionId = 100;
   string nodeId = 101;
+  string name = 102;
+  optional string description = 103;
+  string prefix = 104;
 }
 
 message UpdateDeploymentRequest {
@@ -772,6 +776,7 @@ message DeploymentByVersionResponse {
   string nodeId = 102;
   string nodeName = 103;
   common.DeploymentStatus status = 104;
+  NodeConnectionStatus nodeStatus = 105;
 }
 
 message DeploymentDetailsResponse {
@@ -826,6 +831,14 @@ enum NotificationType {
   TEAMS = 3;
 }
 
+enum NotificationEventType {
+  UNKNOWN_NOTIFICATION_EVENT_TYPE = 0;
+  DEPLOYMENT_CREATED = 1;
+  VERSION_CREATED = 2;
+  NODE_ADDED = 3;
+  USER_INVITED = 4;
+}
+
 message CreateNotificationRequest {
   string accessedBy = 2;
 
@@ -833,6 +846,8 @@ message CreateNotificationRequest {
   string url = 101;
   NotificationType type = 102;
   bool active = 103;
+
+  repeated NotificationEventType events = 1000;
 }
 
 message CreateNotificationResponse {
@@ -849,6 +864,8 @@ message UpdateNotificationRequest {
   string url = 101;
   NotificationType type = 102;
   bool active = 103;
+  
+  repeated NotificationEventType events = 1000; 
 }
 
 message NotificationDetailsResponse {
@@ -859,6 +876,8 @@ message NotificationDetailsResponse {
   string url = 101;
   NotificationType type = 102;
   bool active = 103;
+
+  repeated NotificationEventType events = 1000; 
 }
 
 message NotificationResponse {
@@ -869,6 +888,8 @@ message NotificationResponse {
   string url = 101;
   NotificationType type = 103;
   bool active = 104;
+
+  repeated NotificationEventType events = 1000; 
 }
 
 message NotificationListResponse { repeated NotificationResponse data = 1000; }

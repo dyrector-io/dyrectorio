@@ -1,11 +1,11 @@
 import { Injectable, PipeTransform } from '@nestjs/common'
-import { PrismaService } from 'src/services/prisma.service'
+import PrismaService from 'src/services/prisma.service'
 import { checkDeploymentMutability } from 'src/domain/deployment'
 import { IdRequest } from 'src/grpc/protobuf/proto/crux'
 import { deploymentSchema, yupValidate } from 'src/shared/validation'
 
 @Injectable()
-export class DeployStartValidationPipe implements PipeTransform {
+export default class DeployStartValidationPipe implements PipeTransform {
   constructor(private prisma: PrismaService) {}
 
   async transform(value: IdRequest) {

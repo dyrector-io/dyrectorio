@@ -19,19 +19,21 @@ interface RegistryDetailsPageProps {
 }
 
 const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
+  const { registry: propsRegistry } = props
+
   const { t } = useTranslation('registries')
 
   const router = useRouter()
 
-  const [registry, setRegistry] = useState(props.registry)
+  const [registry, setRegistry] = useState(propsRegistry)
   const [editing, setEditing] = useState(false)
   const submitRef = useRef<() => Promise<any>>()
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const onRegistryEdited = registry => {
+  const onRegistryEdited = reg => {
     setEditing(false)
-    setRegistry(registry)
+    setRegistry(reg)
   }
 
   const onDelete = async () => {

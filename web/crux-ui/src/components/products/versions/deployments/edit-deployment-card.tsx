@@ -1,8 +1,8 @@
-import { DyoButton } from '@app/elements/dyo-button'
+import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
-import { DyoTextArea } from '@app/elements/dyo-text-area'
+import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import { DeploymentRoot, UpdateDeployment } from '@app/models'
 import { deploymentApiUrl } from '@app/routes'
@@ -20,14 +20,14 @@ interface EditDeploymentCardProps {
 }
 
 const EditDeploymentCard = (props: EditDeploymentCardProps) => {
-  const { t } = useTranslation('deployments')
+  const { deployment, className, onDeploymentEdited, submitRef } = props
 
-  const { deployment } = props
+  const { t } = useTranslation('deployments')
 
   const handleApiError = defaultApiErrorHandler(t)
 
   const formik = useFormik({
-    initialValues: props.deployment,
+    initialValues: deployment,
     validationSchema: updateDeploymentSchema,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
@@ -45,7 +45,7 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
       setSubmitting(false)
 
       if (res.ok) {
-        props.onDeploymentEdited({
+        onDeploymentEdited({
           ...deployment,
           ...values,
         })
@@ -55,12 +55,12 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
     },
   })
 
-  if (props.submitRef) {
-    props.submitRef.current = formik.submitForm
+  if (submitRef) {
+    submitRef.current = formik.submitForm
   }
 
   return (
-    <DyoCard className={props.className}>
+    <DyoCard className={className}>
       <DyoHeading element="h4" className="text-lg text-bright">
         {t('common:editName', { name: deployment.name })}
       </DyoHeading>
@@ -77,15 +77,6 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
           message={formik.errors.name}
         />
 
-        <DyoTextArea
-          className="h-48"
-          grow
-          name="description"
-          label={t('common:description')}
-          onChange={formik.handleChange}
-          value={formik.values.description}
-        />
-
         <DyoInput
           className="max-w-lg"
           grow
@@ -97,7 +88,16 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
           message={formik.errors.prefix}
         />
 
-        <DyoButton className="hidden" type="submit"></DyoButton>
+        <DyoTextArea
+          className="h-48"
+          grow
+          name="description"
+          label={t('common:description')}
+          onChange={formik.handleChange}
+          value={formik.values.description}
+        />
+
+        <DyoButton className="hidden" type="submit" />
       </form>
     </DyoCard>
   )

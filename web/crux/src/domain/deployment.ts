@@ -1,9 +1,3 @@
-import {
-  ContainerStateEnum,
-  Deployment as DbDeployment,
-  DeploymentEventTypeEnum,
-  DeploymentStatusEnum,
-} from '.prisma/client'
 import { Logger, PreconditionFailedException } from '@nestjs/common'
 import { Observable, Subject } from 'rxjs'
 import { AgentCommand, VersionDeployRequest } from 'src/grpc/protobuf/proto/agent'
@@ -15,10 +9,67 @@ import {
   DeploymentStatusMessage,
   deploymentStatusToJSON,
 } from 'src/grpc/protobuf/proto/common'
+import { ContainerStateEnum, DeploymentEventTypeEnum, DeploymentStatusEnum } from '.prisma/client'
 
-export class Deployment {
+export type DeploymentProgressContainerEvent = {
+  instanceId: string
+  state: ContainerStateEnum
+}
+
+export type DeploymentProgressEvent = {
+  type: DeploymentEventTypeEnum
+  value: string[] | DeploymentStatusEnum | DeploymentProgressContainerEvent
+}
+
+export const deploymentStatusToDb = (status: DeploymentStatus): DeploymentStatusEnum => {
+  switch (status) {
+    case DeploymentStatus.IN_PROGRESS:
+      return DeploymentStatusEnum.inProgress
+    default:
+      return deploymentStatusToJSON(status).toLowerCase() as DeploymentStatusEnum
+  }
+}
+
+export const containerStateToDb = (state: ContainerState): ContainerStateEnum =>
+  containerStateToJSON(state).toLowerCase() as ContainerStateEnum
+
+export const containerNameFromImageName = (imageName: string): string => {
+  const index = imageName.lastIndexOf('/')
+  if (index < 0 || index + 1 >= imageName.length) {
+    return imageName
+  }
+
+  return imageName.substring(index + 1)
+}
+
+export type DeploymentMutabilityCheckDao = {
+  status: DeploymentStatusEnum
+}
+
+export const MUTABLE_DEPLOYMENT_STATUSES = [
+  DeploymentStatusEnum.preparing,
+  DeploymentStatusEnum.failed,
+] as DeploymentStatusEnum[]
+
+export const checkDeploymentMutability = (deployment: DeploymentMutabilityCheckDao) => {
+  if (!MUTABLE_DEPLOYMENT_STATUSES.includes(deployment.status)) {
+    throw new PreconditionFailedException({
+      message: 'Invalid deployment status.',
+      property: 'status',
+      value: deployment.status,
+    })
+  }
+}
+
+export type DeploymentNotification = {
+  deploymentName: string
+  accessedBy: string
+}
+
+export default class Deployment {
   private statusChannel = new Subject<DeploymentProgressMessage>()
-  private _status = DeploymentStatus.PREPARING
+
+  private status = DeploymentStatus.PREPARING
 
   readonly id: string
 
@@ -26,12 +77,12 @@ export class Deployment {
     this.id = request.id
   }
 
-  status() {
-    return this._status
+  getStatus() {
+    return this.status
   }
 
   start(commandChannel: Subject<AgentCommand>): Observable<DeploymentProgressMessage> {
-    this._status = DeploymentStatus.IN_PROGRESS
+    this.status = DeploymentStatus.IN_PROGRESS
     this.statusChannel.next({
       id: this.id,
       log: [],
@@ -48,7 +99,7 @@ export class Deployment {
   onUpdate(progress: DeploymentStatusMessage): DeploymentProgressEvent[] {
     const events: DeploymentProgressEvent[] = []
 
-    if (progress.deploymentStatus && this._status !== progress.deploymentStatus) {
+    if (progress.deploymentStatus && this.status !== progress.deploymentStatus) {
       events.push({
         type: DeploymentEventTypeEnum.deploymentStatus,
         value: deploymentStatusToDb(progress.deploymentStatus),
@@ -65,7 +116,9 @@ export class Deployment {
       })
     }
 
-    if (progress.log?.length ?? 0 > 0) {
+    const length = progress.log?.length ?? 0
+
+    if (length > 0) {
       events.push({
         type: DeploymentEventTypeEnum.log,
         value: progress.log,
@@ -89,90 +142,4 @@ export class Deployment {
   debugInfo(logger: Logger): void {
     logger.debug(`> ${this.id}, open: ${!this.statusChannel.closed}`)
   }
-}
-
-export type DeploymentProgressContainerEvent = {
-  instanceId: string
-  state: ContainerStateEnum
-}
-
-export type DeploymentProgressEvent = {
-  type: DeploymentEventTypeEnum
-  value: string[] | DeploymentStatusEnum | DeploymentProgressContainerEvent
-}
-
-export const defaultDeploymentName = (product: string, version: string, node: string): string =>
-  `${product}-${version}-${node}`
-
-export const previousDeployPrefix = (
-  deployments: DbDeployment[],
-  versionId: string,
-  parentVersionId?: string,
-): string => {
-  if (deployments.length < 1) {
-    return null
-  }
-
-  const prevDeployment = deployments.reduce((prev, it) => {
-    if (!prev) {
-      return it
-    }
-
-    if (prev.versionId === parentVersionId && it.versionId === versionId) {
-      // the same version is more relevant, the parent is just a fallback
-      return it
-    }
-
-    return prev.updatedAt < it.updatedAt ? it : prev
-  })
-
-  return prevDeployment?.prefix
-}
-
-export const deploymentPrefixFromName = (name: string) => name.toLowerCase().replace(/\s/g, '')
-
-export const deploymentStatusToDb = (status: DeploymentStatus): DeploymentStatusEnum => {
-  switch (status) {
-    case DeploymentStatus.IN_PROGRESS:
-      return DeploymentStatusEnum.inProgress
-    default:
-      return deploymentStatusToJSON(status).toLowerCase() as DeploymentStatusEnum
-  }
-}
-
-export const containerStateToDb = (state: ContainerState): ContainerStateEnum => {
-  return containerStateToJSON(state).toLowerCase() as ContainerStateEnum
-}
-
-export const containerNameFromImageName = (imageName: string): string => {
-  const index = imageName.lastIndexOf('/')
-  if (index < 0 || index + 1 >= imageName.length) {
-    return imageName
-  }
-
-  return imageName.substring(index + 1)
-}
-
-export type DeploymentMutabilityCheckDao = {
-  status: DeploymentStatusEnum
-}
-
-export const checkDeploymentMutability = (deployment: DeploymentMutabilityCheckDao) => {
-  if (!MUTABLE_DEPLOYMENT_STATUSES.includes(deployment.status)) {
-    throw new PreconditionFailedException({
-      message: 'Invalid deployment status.',
-      property: 'status',
-      value: deployment.status,
-    })
-  }
-}
-
-export const MUTABLE_DEPLOYMENT_STATUSES = [
-  DeploymentStatusEnum.preparing,
-  DeploymentStatusEnum.failed,
-] as DeploymentStatusEnum[]
-
-export type DeploymentNotification = {
-  deploymentName: string
-  accessedBy: string
 }

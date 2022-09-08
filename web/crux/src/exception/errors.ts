@@ -1,11 +1,6 @@
+/* eslint-disable max-classes-per-file */
 import { Status } from '@grpc/grpc-js/build/src/constants'
-import { BaseGrpcException, BaseGrpcExceptionOptions } from './crux-exception'
-
-export const mapNotFoundError = (property: string) => () =>
-  new NotFoundException({
-    message: `${property} not found`,
-    property,
-  })
+import BaseGrpcException, { BaseGrpcExceptionOptions } from './crux-exception'
 
 export type AlreadyExistsExceptionOptions = Omit<BaseGrpcExceptionOptions, 'status'> & {
   property: string
@@ -133,3 +128,9 @@ export class EmailBuilderException extends InternalException {
     super(options)
   }
 }
+
+export const mapNotFoundError = (property: string) => () =>
+  new NotFoundException({
+    message: `${property} not found`,
+    property,
+  })

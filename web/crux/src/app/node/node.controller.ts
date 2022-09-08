@@ -21,15 +21,15 @@ import {
   WatchContainerStateRequest,
 } from 'src/grpc/protobuf/proto/crux'
 import { DisableTeamAccessCheck } from 'src/shared/team-access.guard'
-import { NodeTeamAccessGuard } from './guards/node.team-access.guard'
-import { NodeService } from './node.service'
-import { NodeGenerateScriptValidationPipe } from './pipes/node.generate-script.pipe'
-import { NodeGetScriptValidationPipe } from './pipes/node.get-script.pipe'
+import NodeTeamAccessGuard from './guards/node.team-access.guard'
+import NodeService from './node.service'
+import NodeGenerateScriptValidationPipe from './pipes/node.generate-script.pipe'
+import NodeGetScriptValidationPipe from './pipes/node.get-script.pipe'
 
 @Controller()
 @CruxNodeControllerMethods()
 @UseGuards(NodeTeamAccessGuard)
-export class NodeController implements CruxNodeController {
+export default class NodeController implements CruxNodeController {
   constructor(private service: NodeService) {}
 
   async getNodes(request: AccessRequest): Promise<NodeListResponse> {

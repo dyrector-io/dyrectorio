@@ -23,13 +23,13 @@ interface VersionDetailsPageProps {
 }
 
 const VersionDetailsPage = (props: VersionDetailsPageProps) => {
-  const { product } = props
+  const { product, version: propsVersion } = props
 
   const { t } = useTranslation('versions')
   const router = useRouter()
 
-  const [allVersions, setAllVersions] = useState(props.product.versions)
-  const [version, setVersion] = useState(props.version)
+  const [allVersions, setAllVersions] = useState(product.versions)
+  const [version, setVersion] = useState(propsVersion)
   const [editing, setEditing] = useState(anchorLinkOf(router) === '#edit')
   const [saving, setSaving] = useState(false)
   const submitRef = useRef<() => Promise<any>>()
@@ -57,7 +57,7 @@ const VersionDetailsPage = (props: VersionDetailsPageProps) => {
     })
 
     if (res.ok) {
-      router.replace(productUrl(props.product.id))
+      router.replace(productUrl(product.id))
     } else {
       toast(t('errors:oops'))
     }

@@ -10,8 +10,8 @@ const onGet = async (_: NextApiRequest, res: NextApiResponse) => {
   const kratos = await dyoServiceStatus.kratos.info()
 
   const dto: DyoServiceInfo = {
-    crux: crux,
-    kratos: kratos,
+    crux,
+    kratos,
     database: {
       status: crux.lastMigration ? 'operational' : 'unavailable',
       version: crux.lastMigration ? crux.lastMigration.split('_', 1)[0] : null,

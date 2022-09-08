@@ -1,6 +1,6 @@
 import { EditProfile } from '@app/models'
 import kratos, { cookieOf } from '@server/kratos'
-import { useKratosErrorMiddleware } from '@server/kratos-error-middleware'
+import useKratosErrorMiddleware from '@server/kratos-error-middleware'
 import { withMiddlewares } from '@server/middlewares'
 import { NextApiRequest, NextApiResponse } from 'next'
 

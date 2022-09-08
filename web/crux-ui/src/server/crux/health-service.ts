@@ -1,13 +1,8 @@
 import { Logger } from '@app/logger'
-import { CruxHealth, DEFAULT_CRUX_HEALTH, ServiceStatus } from '@app/models'
-import {
-  CruxHealthClient,
-  Empty,
-  HealthResponse,
-  ServiceStatus as ProtoServiceStatus,
-  serviceStatusToJSON,
-} from '@app/models/grpc/protobuf/proto/crux'
+import { CruxHealth, DEFAULT_CRUX_HEALTH } from '@app/models'
+import { CruxHealthClient, Empty, HealthResponse } from '@app/models/grpc/protobuf/proto/crux'
 import { protomisify } from '@server/crux/grpc-connection'
+import serviceStatusToDto from './mappers/health-mappers'
 
 class DyoHealthService {
   private logger = new Logger(DyoHealthService.name)
@@ -32,6 +27,3 @@ class DyoHealthService {
 }
 
 export default DyoHealthService
-
-export const serviceStatusToDto = (status: ProtoServiceStatus): ServiceStatus =>
-  serviceStatusToJSON(status).toLocaleLowerCase() as ServiceStatus

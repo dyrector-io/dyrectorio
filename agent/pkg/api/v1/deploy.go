@@ -170,7 +170,8 @@ type ContainerConfig struct {
 	RestartPolicy builder.RestartPolicyName `json:"restartPolicy"`
 	// bridge(container, default) host, none or network name
 	NetworkMode string `json:"networkMode"`
-
+	// extra networks
+	Networks []string `json:"networks"`
 	// k8s-only-section
 	// Deployments strategy, on deployment how to restart underlying pods
 	// Values: Recreate (all-at-once), Rolling(one-by-one only if succeeds)

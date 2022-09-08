@@ -11,5 +11,5 @@ const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
 }
 
 export default withMiddlewares({
-  onPost: onPost,
+  onPost,
 })

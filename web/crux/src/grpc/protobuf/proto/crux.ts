@@ -1,21 +1,19 @@
 /* eslint-disable */
+import { Metadata } from '@grpc/grpc-js'
 import { GrpcMethod, GrpcStreamMethod } from '@nestjs/microservices'
-import { util, configure } from 'protobufjs/minimal'
-import * as Long from 'long'
-import {
-  ContainerState,
-  DeploymentStatus,
-  ExplicitContainerConfig,
-  Port,
-  InstanceDeploymentItem,
-  containerStateFromJSON,
-  containerStateToJSON,
-  deploymentStatusFromJSON,
-  deploymentStatusToJSON,
-} from './common'
 import { Observable } from 'rxjs'
 import { Timestamp } from '../../google/protobuf/timestamp'
-import { Metadata } from '@grpc/grpc-js'
+import {
+  ContainerState,
+  containerStateFromJSON,
+  containerStateToJSON,
+  DeploymentStatus,
+  deploymentStatusFromJSON,
+  deploymentStatusToJSON,
+  ExplicitContainerConfig,
+  InstanceDeploymentItem,
+  Port,
+} from './common'
 
 export const protobufPackage = 'crux'
 
@@ -60,8 +58,9 @@ export function userRoleToJSON(object: UserRole): string {
       return 'OWNER'
     case UserRole.ADMIN:
       return 'ADMIN'
+    case UserRole.UNRECOGNIZED:
     default:
-      return 'UNKNOWN'
+      return 'UNRECOGNIZED'
   }
 }
 
@@ -98,8 +97,9 @@ export function userStatusToJSON(object: UserStatus): string {
       return 'PENDING'
     case UserStatus.VERIFIED:
       return 'VERIFIED'
+    case UserStatus.UNRECOGNIZED:
     default:
-      return 'UNKNOWN'
+      return 'UNRECOGNIZED'
   }
 }
 
@@ -137,8 +137,9 @@ export function productTypeToJSON(object: ProductType): string {
       return 'SIMPLE'
     case ProductType.COMPLEX:
       return 'COMPLEX'
+    case ProductType.UNRECOGNIZED:
     default:
-      return 'UNKNOWN'
+      return 'UNRECOGNIZED'
   }
 }
 
@@ -175,8 +176,9 @@ export function versionTypeToJSON(object: VersionType): string {
       return 'INCREMENTAL'
     case VersionType.ROLLING:
       return 'ROLLING'
+    case VersionType.UNRECOGNIZED:
     default:
-      return 'UNKNOWN'
+      return 'UNRECOGNIZED'
   }
 }
 
@@ -231,8 +233,9 @@ export function registryTypeToJSON(object: RegistryType): string {
       return 'GITHUB'
     case RegistryType.GOOGLE:
       return 'GOOGLE'
+    case RegistryType.UNRECOGNIZED:
     default:
-      return 'UNKNOWN'
+      return 'UNRECOGNIZED'
   }
 }
 
@@ -278,8 +281,9 @@ export function nodeConnectionStatusToJSON(object: NodeConnectionStatus): string
       return 'UNREACHABLE'
     case NodeConnectionStatus.CONNECTED:
       return 'CONNECTED'
+    case NodeConnectionStatus.UNRECOGNIZED:
     default:
-      return 'UNKNOWN'
+      return 'UNRECOGNIZED'
   }
 }
 
@@ -316,8 +320,9 @@ export function nodeTypeToJSON(object: NodeType): string {
       return 'DOCKER'
     case NodeType.K8S:
       return 'K8S'
+    case NodeType.UNRECOGNIZED:
     default:
-      return 'UNKNOWN'
+      return 'UNRECOGNIZED'
   }
 }
 
@@ -360,8 +365,9 @@ export function deploymentEventTypeToJSON(object: DeploymentEventType): string {
       return 'DEPLOYMENT_STATUS'
     case DeploymentEventType.CONTAINER_STATUS:
       return 'CONTAINER_STATUS'
+    case DeploymentEventType.UNRECOGNIZED:
     default:
-      return 'UNKNOWN'
+      return 'UNRECOGNIZED'
   }
 }
 
@@ -404,8 +410,60 @@ export function notificationTypeToJSON(object: NotificationType): string {
       return 'SLACK'
     case NotificationType.TEAMS:
       return 'TEAMS'
+    case NotificationType.UNRECOGNIZED:
     default:
-      return 'UNKNOWN'
+      return 'UNRECOGNIZED'
+  }
+}
+
+export enum NotificationEventType {
+  UNKNOWN_NOTIFICATION_EVENT_TYPE = 0,
+  DEPLOYMENT_CREATED = 1,
+  VERSION_CREATED = 2,
+  NODE_ADDED = 3,
+  USER_INVITED = 4,
+  UNRECOGNIZED = -1,
+}
+
+export function notificationEventTypeFromJSON(object: any): NotificationEventType {
+  switch (object) {
+    case 0:
+    case 'UNKNOWN_NOTIFICATION_EVENT_TYPE':
+      return NotificationEventType.UNKNOWN_NOTIFICATION_EVENT_TYPE
+    case 1:
+    case 'DEPLOYMENT_CREATED':
+      return NotificationEventType.DEPLOYMENT_CREATED
+    case 2:
+    case 'VERSION_CREATED':
+      return NotificationEventType.VERSION_CREATED
+    case 3:
+    case 'NODE_ADDED':
+      return NotificationEventType.NODE_ADDED
+    case 4:
+    case 'USER_INVITED':
+      return NotificationEventType.USER_INVITED
+    case -1:
+    case 'UNRECOGNIZED':
+    default:
+      return NotificationEventType.UNRECOGNIZED
+  }
+}
+
+export function notificationEventTypeToJSON(object: NotificationEventType): string {
+  switch (object) {
+    case NotificationEventType.UNKNOWN_NOTIFICATION_EVENT_TYPE:
+      return 'UNKNOWN_NOTIFICATION_EVENT_TYPE'
+    case NotificationEventType.DEPLOYMENT_CREATED:
+      return 'DEPLOYMENT_CREATED'
+    case NotificationEventType.VERSION_CREATED:
+      return 'VERSION_CREATED'
+    case NotificationEventType.NODE_ADDED:
+      return 'NODE_ADDED'
+    case NotificationEventType.USER_INVITED:
+      return 'USER_INVITED'
+    case NotificationEventType.UNRECOGNIZED:
+    default:
+      return 'UNRECOGNIZED'
   }
 }
 
@@ -448,8 +506,9 @@ export function serviceStatusToJSON(object: ServiceStatus): string {
       return 'DISRUPTED'
     case ServiceStatus.OPERATIONAL:
       return 'OPERATIONAL'
+    case ServiceStatus.UNRECOGNIZED:
     default:
-      return 'UNKNOWN'
+      return 'UNRECOGNIZED'
   }
 }
 
@@ -485,7 +544,7 @@ export interface UpdateEntityResponse {
 export interface AuditLogResponse {
   createdAt: Timestamp | undefined
   userId: string
-  identityName: string
+  identityEmail: string
   serviceCall: string
   data?: string | undefined
 }
@@ -583,6 +642,7 @@ export interface UserResponse {
   email: string
   role: UserRole
   status: UserStatus
+  lastLogin?: Timestamp | undefined
 }
 
 export interface ProductDetailsReponse {
@@ -932,6 +992,9 @@ export interface CreateDeploymentRequest {
   accessedBy: string
   versionId: string
   nodeId: string
+  name: string
+  description?: string | undefined
+  prefix: string
 }
 
 export interface UpdateDeploymentRequest {
@@ -999,6 +1062,7 @@ export interface DeploymentByVersionResponse {
   nodeId: string
   nodeName: string
   status: DeploymentStatus
+  nodeStatus: NodeConnectionStatus
 }
 
 export interface DeploymentDetailsResponse {
@@ -1041,6 +1105,7 @@ export interface CreateNotificationRequest {
   url: string
   type: NotificationType
   active: boolean
+  events: NotificationEventType[]
 }
 
 export interface CreateNotificationResponse {
@@ -1055,6 +1120,7 @@ export interface UpdateNotificationRequest {
   url: string
   type: NotificationType
   active: boolean
+  events: NotificationEventType[]
 }
 
 export interface NotificationDetailsResponse {
@@ -1064,6 +1130,7 @@ export interface NotificationDetailsResponse {
   url: string
   type: NotificationType
   active: boolean
+  events: NotificationEventType[]
 }
 
 export interface NotificationResponse {
@@ -1073,6 +1140,7 @@ export interface NotificationResponse {
   url: string
   type: NotificationType
   active: boolean
+  events: NotificationEventType[]
 }
 
 export interface NotificationListResponse {
@@ -1087,12 +1155,13 @@ export interface HealthResponse {
 
 export const CRUX_PACKAGE_NAME = 'crux'
 
-const baseEmpty: object = {}
+function createBaseEmpty(): Empty {
+  return {}
+}
 
 export const Empty = {
   fromJSON(_: any): Empty {
-    const message = { ...baseEmpty } as Empty
-    return message
+    return {}
   },
 
   toJSON(_: Empty): unknown {
@@ -1101,13 +1170,13 @@ export const Empty = {
   },
 }
 
-const baseServiceIdRequest: object = { id: '' }
+function createBaseServiceIdRequest(): ServiceIdRequest {
+  return { id: '' }
+}
 
 export const ServiceIdRequest = {
   fromJSON(object: any): ServiceIdRequest {
-    const message = { ...baseServiceIdRequest } as ServiceIdRequest
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    return message
+    return { id: isSet(object.id) ? String(object.id) : '' }
   },
 
   toJSON(message: ServiceIdRequest): unknown {
@@ -1117,14 +1186,16 @@ export const ServiceIdRequest = {
   },
 }
 
-const baseIdRequest: object = { id: '', accessedBy: '' }
+function createBaseIdRequest(): IdRequest {
+  return { id: '', accessedBy: '' }
+}
 
 export const IdRequest = {
   fromJSON(object: any): IdRequest {
-    const message = { ...baseIdRequest } as IdRequest
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+    }
   },
 
   toJSON(message: IdRequest): unknown {
@@ -1135,19 +1206,18 @@ export const IdRequest = {
   },
 }
 
-const baseAuditResponse: object = { createdBy: '' }
+function createBaseAuditResponse(): AuditResponse {
+  return { createdBy: '', createdAt: undefined }
+}
 
 export const AuditResponse = {
   fromJSON(object: any): AuditResponse {
-    const message = { ...baseAuditResponse } as AuditResponse
-    message.createdBy = object.createdBy !== undefined && object.createdBy !== null ? String(object.createdBy) : ''
-    message.createdAt =
-      object.createdAt !== undefined && object.createdAt !== null ? fromJsonTimestamp(object.createdAt) : undefined
-    message.updatedBy =
-      object.updatedBy !== undefined && object.updatedBy !== null ? String(object.updatedBy) : undefined
-    message.updatedAt =
-      object.updatedAt !== undefined && object.updatedAt !== null ? fromJsonTimestamp(object.updatedAt) : undefined
-    return message
+    return {
+      createdBy: isSet(object.createdBy) ? String(object.createdBy) : '',
+      createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
+      updatedBy: isSet(object.updatedBy) ? String(object.updatedBy) : undefined,
+      updatedAt: isSet(object.updatedAt) ? fromJsonTimestamp(object.updatedAt) : undefined,
+    }
   },
 
   toJSON(message: AuditResponse): unknown {
@@ -1160,15 +1230,16 @@ export const AuditResponse = {
   },
 }
 
-const baseCreateEntityResponse: object = { id: '' }
+function createBaseCreateEntityResponse(): CreateEntityResponse {
+  return { id: '', createdAt: undefined }
+}
 
 export const CreateEntityResponse = {
   fromJSON(object: any): CreateEntityResponse {
-    const message = { ...baseCreateEntityResponse } as CreateEntityResponse
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.createdAt =
-      object.createdAt !== undefined && object.createdAt !== null ? fromJsonTimestamp(object.createdAt) : undefined
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
+    }
   },
 
   toJSON(message: CreateEntityResponse): unknown {
@@ -1179,14 +1250,13 @@ export const CreateEntityResponse = {
   },
 }
 
-const baseUpdateEntityResponse: object = {}
+function createBaseUpdateEntityResponse(): UpdateEntityResponse {
+  return { updatedAt: undefined }
+}
 
 export const UpdateEntityResponse = {
   fromJSON(object: any): UpdateEntityResponse {
-    const message = { ...baseUpdateEntityResponse } as UpdateEntityResponse
-    message.updatedAt =
-      object.updatedAt !== undefined && object.updatedAt !== null ? fromJsonTimestamp(object.updatedAt) : undefined
-    return message
+    return { updatedAt: isSet(object.updatedAt) ? fromJsonTimestamp(object.updatedAt) : undefined }
   },
 
   toJSON(message: UpdateEntityResponse): unknown {
@@ -1196,44 +1266,39 @@ export const UpdateEntityResponse = {
   },
 }
 
-const baseAuditLogResponse: object = {
-  userId: '',
-  identityName: '',
-  serviceCall: '',
+function createBaseAuditLogResponse(): AuditLogResponse {
+  return { createdAt: undefined, userId: '', identityEmail: '', serviceCall: '' }
 }
 
 export const AuditLogResponse = {
   fromJSON(object: any): AuditLogResponse {
-    const message = { ...baseAuditLogResponse } as AuditLogResponse
-    message.createdAt =
-      object.createdAt !== undefined && object.createdAt !== null ? fromJsonTimestamp(object.createdAt) : undefined
-    message.userId = object.userId !== undefined && object.userId !== null ? String(object.userId) : ''
-    message.identityName =
-      object.identityName !== undefined && object.identityName !== null ? String(object.identityName) : ''
-    message.serviceCall =
-      object.serviceCall !== undefined && object.serviceCall !== null ? String(object.serviceCall) : ''
-    message.data = object.data !== undefined && object.data !== null ? String(object.data) : undefined
-    return message
+    return {
+      createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
+      userId: isSet(object.userId) ? String(object.userId) : '',
+      identityEmail: isSet(object.identityEmail) ? String(object.identityEmail) : '',
+      serviceCall: isSet(object.serviceCall) ? String(object.serviceCall) : '',
+      data: isSet(object.data) ? String(object.data) : undefined,
+    }
   },
 
   toJSON(message: AuditLogResponse): unknown {
     const obj: any = {}
     message.createdAt !== undefined && (obj.createdAt = fromTimestamp(message.createdAt).toISOString())
     message.userId !== undefined && (obj.userId = message.userId)
-    message.identityName !== undefined && (obj.identityName = message.identityName)
+    message.identityEmail !== undefined && (obj.identityEmail = message.identityEmail)
     message.serviceCall !== undefined && (obj.serviceCall = message.serviceCall)
     message.data !== undefined && (obj.data = message.data)
     return obj
   },
 }
 
-const baseAuditLogListResponse: object = {}
+function createBaseAuditLogListResponse(): AuditLogListResponse {
+  return { data: [] }
+}
 
 export const AuditLogListResponse = {
   fromJSON(object: any): AuditLogListResponse {
-    const message = { ...baseAuditLogListResponse } as AuditLogListResponse
-    message.data = (object.data ?? []).map((e: any) => AuditLogResponse.fromJSON(e))
-    return message
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => AuditLogResponse.fromJSON(e)) : [] }
   },
 
   toJSON(message: AuditLogListResponse): unknown {
@@ -1247,14 +1312,16 @@ export const AuditLogListResponse = {
   },
 }
 
-const baseCreateTeamRequest: object = { accessedBy: '', name: '' }
+function createBaseCreateTeamRequest(): CreateTeamRequest {
+  return { accessedBy: '', name: '' }
+}
 
 export const CreateTeamRequest = {
   fromJSON(object: any): CreateTeamRequest {
-    const message = { ...baseCreateTeamRequest } as CreateTeamRequest
-    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    return message
+    return {
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+    }
   },
 
   toJSON(message: CreateTeamRequest): unknown {
@@ -1265,15 +1332,17 @@ export const CreateTeamRequest = {
   },
 }
 
-const baseUpdateTeamRequest: object = { id: '', accessedBy: '', name: '' }
+function createBaseUpdateTeamRequest(): UpdateTeamRequest {
+  return { id: '', accessedBy: '', name: '' }
+}
 
 export const UpdateTeamRequest = {
   fromJSON(object: any): UpdateTeamRequest {
-    const message = { ...baseUpdateTeamRequest } as UpdateTeamRequest
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+    }
   },
 
   toJSON(message: UpdateTeamRequest): unknown {
@@ -1285,23 +1354,18 @@ export const UpdateTeamRequest = {
   },
 }
 
-const baseUpdateUserRoleInTeamRequest: object = {
-  id: '',
-  accessedBy: '',
-  userId: '',
-  role: 0,
+function createBaseUpdateUserRoleInTeamRequest(): UpdateUserRoleInTeamRequest {
+  return { id: '', accessedBy: '', userId: '', role: 0 }
 }
 
 export const UpdateUserRoleInTeamRequest = {
   fromJSON(object: any): UpdateUserRoleInTeamRequest {
-    const message = {
-      ...baseUpdateUserRoleInTeamRequest,
-    } as UpdateUserRoleInTeamRequest
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
-    message.userId = object.userId !== undefined && object.userId !== null ? String(object.userId) : ''
-    message.role = object.role !== undefined && object.role !== null ? userRoleFromJSON(object.role) : 0
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      userId: isSet(object.userId) ? String(object.userId) : '',
+      role: isSet(object.role) ? userRoleFromJSON(object.role) : 0,
+    }
   },
 
   toJSON(message: UpdateUserRoleInTeamRequest): unknown {
@@ -1314,15 +1378,17 @@ export const UpdateUserRoleInTeamRequest = {
   },
 }
 
-const baseInviteUserRequest: object = { id: '', accessedBy: '', email: '' }
+function createBaseInviteUserRequest(): InviteUserRequest {
+  return { id: '', accessedBy: '', email: '' }
+}
 
 export const InviteUserRequest = {
   fromJSON(object: any): InviteUserRequest {
-    const message = { ...baseInviteUserRequest } as InviteUserRequest
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
-    message.email = object.email !== undefined && object.email !== null ? String(object.email) : ''
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      email: isSet(object.email) ? String(object.email) : '',
+    }
   },
 
   toJSON(message: InviteUserRequest): unknown {
@@ -1334,21 +1400,17 @@ export const InviteUserRequest = {
   },
 }
 
-const baseDeleteUserFromTeamRequest: object = {
-  id: '',
-  accessedBy: '',
-  userId: '',
+function createBaseDeleteUserFromTeamRequest(): DeleteUserFromTeamRequest {
+  return { id: '', accessedBy: '', userId: '' }
 }
 
 export const DeleteUserFromTeamRequest = {
   fromJSON(object: any): DeleteUserFromTeamRequest {
-    const message = {
-      ...baseDeleteUserFromTeamRequest,
-    } as DeleteUserFromTeamRequest
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
-    message.userId = object.userId !== undefined && object.userId !== null ? String(object.userId) : ''
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      userId: isSet(object.userId) ? String(object.userId) : '',
+    }
   },
 
   toJSON(message: DeleteUserFromTeamRequest): unknown {
@@ -1360,13 +1422,13 @@ export const DeleteUserFromTeamRequest = {
   },
 }
 
-const baseAccessRequest: object = { accessedBy: '' }
+function createBaseAccessRequest(): AccessRequest {
+  return { accessedBy: '' }
+}
 
 export const AccessRequest = {
   fromJSON(object: any): AccessRequest {
-    const message = { ...baseAccessRequest } as AccessRequest
-    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
-    return message
+    return { accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '' }
   },
 
   toJSON(message: AccessRequest): unknown {
@@ -1376,15 +1438,19 @@ export const AccessRequest = {
   },
 }
 
-const baseUserMetaResponse: object = {}
+function createBaseUserMetaResponse(): UserMetaResponse {
+  return { user: undefined, teams: [], invitations: [] }
+}
 
 export const UserMetaResponse = {
   fromJSON(object: any): UserMetaResponse {
-    const message = { ...baseUserMetaResponse } as UserMetaResponse
-    message.user = object.user !== undefined && object.user !== null ? ActiveTeamUser.fromJSON(object.user) : undefined
-    message.teams = (object.teams ?? []).map((e: any) => TeamResponse.fromJSON(e))
-    message.invitations = (object.invitations ?? []).map((e: any) => TeamResponse.fromJSON(e))
-    return message
+    return {
+      user: isSet(object.user) ? ActiveTeamUser.fromJSON(object.user) : undefined,
+      teams: Array.isArray(object?.teams) ? object.teams.map((e: any) => TeamResponse.fromJSON(e)) : [],
+      invitations: Array.isArray(object?.invitations)
+        ? object.invitations.map((e: any) => TeamResponse.fromJSON(e))
+        : [],
+    }
   },
 
   toJSON(message: UserMetaResponse): unknown {
@@ -1404,16 +1470,17 @@ export const UserMetaResponse = {
   },
 }
 
-const baseActiveTeamUser: object = { activeTeamId: '', role: 0, status: 0 }
+function createBaseActiveTeamUser(): ActiveTeamUser {
+  return { activeTeamId: '', role: 0, status: 0 }
+}
 
 export const ActiveTeamUser = {
   fromJSON(object: any): ActiveTeamUser {
-    const message = { ...baseActiveTeamUser } as ActiveTeamUser
-    message.activeTeamId =
-      object.activeTeamId !== undefined && object.activeTeamId !== null ? String(object.activeTeamId) : ''
-    message.role = object.role !== undefined && object.role !== null ? userRoleFromJSON(object.role) : 0
-    message.status = object.status !== undefined && object.status !== null ? userStatusFromJSON(object.status) : 0
-    return message
+    return {
+      activeTeamId: isSet(object.activeTeamId) ? String(object.activeTeamId) : '',
+      role: isSet(object.role) ? userRoleFromJSON(object.role) : 0,
+      status: isSet(object.status) ? userStatusFromJSON(object.status) : 0,
+    }
   },
 
   toJSON(message: ActiveTeamUser): unknown {
@@ -1425,14 +1492,13 @@ export const ActiveTeamUser = {
   },
 }
 
-const baseTeamResponse: object = { id: '', name: '' }
+function createBaseTeamResponse(): TeamResponse {
+  return { id: '', name: '' }
+}
 
 export const TeamResponse = {
   fromJSON(object: any): TeamResponse {
-    const message = { ...baseTeamResponse } as TeamResponse
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    return message
+    return { id: isSet(object.id) ? String(object.id) : '', name: isSet(object.name) ? String(object.name) : '' }
   },
 
   toJSON(message: TeamResponse): unknown {
@@ -1443,17 +1509,17 @@ export const TeamResponse = {
   },
 }
 
-const baseActiveTeamDetailsResponse: object = { id: '', name: '' }
+function createBaseActiveTeamDetailsResponse(): ActiveTeamDetailsResponse {
+  return { id: '', name: '', users: [] }
+}
 
 export const ActiveTeamDetailsResponse = {
   fromJSON(object: any): ActiveTeamDetailsResponse {
-    const message = {
-      ...baseActiveTeamDetailsResponse,
-    } as ActiveTeamDetailsResponse
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.users = (object.users ?? []).map((e: any) => UserResponse.fromJSON(e))
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      users: Array.isArray(object?.users) ? object.users.map((e: any) => UserResponse.fromJSON(e)) : [],
+    }
   },
 
   toJSON(message: ActiveTeamDetailsResponse): unknown {
@@ -1469,24 +1535,19 @@ export const ActiveTeamDetailsResponse = {
   },
 }
 
-const baseTeamStatistics: object = {
-  users: 0,
-  products: 0,
-  nodes: 0,
-  versions: 0,
-  deployments: 0,
+function createBaseTeamStatistics(): TeamStatistics {
+  return { users: 0, products: 0, nodes: 0, versions: 0, deployments: 0 }
 }
 
 export const TeamStatistics = {
   fromJSON(object: any): TeamStatistics {
-    const message = { ...baseTeamStatistics } as TeamStatistics
-    message.users = object.users !== undefined && object.users !== null ? Number(object.users) : 0
-    message.products = object.products !== undefined && object.products !== null ? Number(object.products) : 0
-    message.nodes = object.nodes !== undefined && object.nodes !== null ? Number(object.nodes) : 0
-    message.versions = object.versions !== undefined && object.versions !== null ? Number(object.versions) : 0
-    message.deployments =
-      object.deployments !== undefined && object.deployments !== null ? Number(object.deployments) : 0
-    return message
+    return {
+      users: isSet(object.users) ? Number(object.users) : 0,
+      products: isSet(object.products) ? Number(object.products) : 0,
+      nodes: isSet(object.nodes) ? Number(object.nodes) : 0,
+      versions: isSet(object.versions) ? Number(object.versions) : 0,
+      deployments: isSet(object.deployments) ? Number(object.deployments) : 0,
+    }
   },
 
   toJSON(message: TeamStatistics): unknown {
@@ -1500,18 +1561,17 @@ export const TeamStatistics = {
   },
 }
 
-const baseTeamWithStatsResponse: object = { id: '', name: '' }
+function createBaseTeamWithStatsResponse(): TeamWithStatsResponse {
+  return { id: '', name: '', statistics: undefined }
+}
 
 export const TeamWithStatsResponse = {
   fromJSON(object: any): TeamWithStatsResponse {
-    const message = { ...baseTeamWithStatsResponse } as TeamWithStatsResponse
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.statistics =
-      object.statistics !== undefined && object.statistics !== null
-        ? TeamStatistics.fromJSON(object.statistics)
-        : undefined
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      statistics: isSet(object.statistics) ? TeamStatistics.fromJSON(object.statistics) : undefined,
+    }
   },
 
   toJSON(message: TeamWithStatsResponse): unknown {
@@ -1524,19 +1584,18 @@ export const TeamWithStatsResponse = {
   },
 }
 
-const baseTeamDetailsResponse: object = { id: '', name: '' }
+function createBaseTeamDetailsResponse(): TeamDetailsResponse {
+  return { id: '', name: '', statistics: undefined, users: [] }
+}
 
 export const TeamDetailsResponse = {
   fromJSON(object: any): TeamDetailsResponse {
-    const message = { ...baseTeamDetailsResponse } as TeamDetailsResponse
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.statistics =
-      object.statistics !== undefined && object.statistics !== null
-        ? TeamStatistics.fromJSON(object.statistics)
-        : undefined
-    message.users = (object.users ?? []).map((e: any) => UserResponse.fromJSON(e))
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      statistics: isSet(object.statistics) ? TeamStatistics.fromJSON(object.statistics) : undefined,
+      users: Array.isArray(object?.users) ? object.users.map((e: any) => UserResponse.fromJSON(e)) : [],
+    }
   },
 
   toJSON(message: TeamDetailsResponse): unknown {
@@ -1554,13 +1613,13 @@ export const TeamDetailsResponse = {
   },
 }
 
-const baseAllTeamsResponse: object = {}
+function createBaseAllTeamsResponse(): AllTeamsResponse {
+  return { data: [] }
+}
 
 export const AllTeamsResponse = {
   fromJSON(object: any): AllTeamsResponse {
-    const message = { ...baseAllTeamsResponse } as AllTeamsResponse
-    message.data = (object.data ?? []).map((e: any) => TeamWithStatsResponse.fromJSON(e))
-    return message
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => TeamWithStatsResponse.fromJSON(e)) : [] }
   },
 
   toJSON(message: AllTeamsResponse): unknown {
@@ -1574,23 +1633,20 @@ export const AllTeamsResponse = {
   },
 }
 
-const baseUserResponse: object = {
-  id: '',
-  name: '',
-  email: '',
-  role: 0,
-  status: 0,
+function createBaseUserResponse(): UserResponse {
+  return { id: '', name: '', email: '', role: 0, status: 0 }
 }
 
 export const UserResponse = {
   fromJSON(object: any): UserResponse {
-    const message = { ...baseUserResponse } as UserResponse
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.email = object.email !== undefined && object.email !== null ? String(object.email) : ''
-    message.role = object.role !== undefined && object.role !== null ? userRoleFromJSON(object.role) : 0
-    message.status = object.status !== undefined && object.status !== null ? userStatusFromJSON(object.status) : 0
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      email: isSet(object.email) ? String(object.email) : '',
+      role: isSet(object.role) ? userRoleFromJSON(object.role) : 0,
+      status: isSet(object.status) ? userStatusFromJSON(object.status) : 0,
+      lastLogin: isSet(object.lastLogin) ? fromJsonTimestamp(object.lastLogin) : undefined,
+    }
   },
 
   toJSON(message: UserResponse): unknown {
@@ -1600,24 +1656,25 @@ export const UserResponse = {
     message.email !== undefined && (obj.email = message.email)
     message.role !== undefined && (obj.role = userRoleToJSON(message.role))
     message.status !== undefined && (obj.status = userStatusToJSON(message.status))
+    message.lastLogin !== undefined && (obj.lastLogin = fromTimestamp(message.lastLogin).toISOString())
     return obj
   },
 }
 
-const baseProductDetailsReponse: object = { id: '', name: '', type: 0 }
+function createBaseProductDetailsReponse(): ProductDetailsReponse {
+  return { id: '', audit: undefined, name: '', type: 0, versions: [] }
+}
 
 export const ProductDetailsReponse = {
   fromJSON(object: any): ProductDetailsReponse {
-    const message = { ...baseProductDetailsReponse } as ProductDetailsReponse
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.audit =
-      object.audit !== undefined && object.audit !== null ? AuditResponse.fromJSON(object.audit) : undefined
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.description =
-      object.description !== undefined && object.description !== null ? String(object.description) : undefined
-    message.type = object.type !== undefined && object.type !== null ? productTypeFromJSON(object.type) : 0
-    message.versions = (object.versions ?? []).map((e: any) => VersionResponse.fromJSON(e))
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
+      name: isSet(object.name) ? String(object.name) : '',
+      description: isSet(object.description) ? String(object.description) : undefined,
+      type: isSet(object.type) ? productTypeFromJSON(object.type) : 0,
+      versions: Array.isArray(object?.versions) ? object.versions.map((e: any) => VersionResponse.fromJSON(e)) : [],
+    }
   },
 
   toJSON(message: ProductDetailsReponse): unknown {
@@ -1636,19 +1693,19 @@ export const ProductDetailsReponse = {
   },
 }
 
-const baseProductReponse: object = { id: '', name: '', type: 0 }
+function createBaseProductReponse(): ProductReponse {
+  return { id: '', audit: undefined, name: '', type: 0 }
+}
 
 export const ProductReponse = {
   fromJSON(object: any): ProductReponse {
-    const message = { ...baseProductReponse } as ProductReponse
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.audit =
-      object.audit !== undefined && object.audit !== null ? AuditResponse.fromJSON(object.audit) : undefined
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.description =
-      object.description !== undefined && object.description !== null ? String(object.description) : undefined
-    message.type = object.type !== undefined && object.type !== null ? productTypeFromJSON(object.type) : 0
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
+      name: isSet(object.name) ? String(object.name) : '',
+      description: isSet(object.description) ? String(object.description) : undefined,
+      type: isSet(object.type) ? productTypeFromJSON(object.type) : 0,
+    }
   },
 
   toJSON(message: ProductReponse): unknown {
@@ -1662,13 +1719,13 @@ export const ProductReponse = {
   },
 }
 
-const baseProductListResponse: object = {}
+function createBaseProductListResponse(): ProductListResponse {
+  return { data: [] }
+}
 
 export const ProductListResponse = {
   fromJSON(object: any): ProductListResponse {
-    const message = { ...baseProductListResponse } as ProductListResponse
-    message.data = (object.data ?? []).map((e: any) => ProductReponse.fromJSON(e))
-    return message
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => ProductReponse.fromJSON(e)) : [] }
   },
 
   toJSON(message: ProductListResponse): unknown {
@@ -1682,17 +1739,18 @@ export const ProductListResponse = {
   },
 }
 
-const baseCreateProductRequest: object = { accessedBy: '', name: '', type: 0 }
+function createBaseCreateProductRequest(): CreateProductRequest {
+  return { accessedBy: '', name: '', type: 0 }
+}
 
 export const CreateProductRequest = {
   fromJSON(object: any): CreateProductRequest {
-    const message = { ...baseCreateProductRequest } as CreateProductRequest
-    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.description =
-      object.description !== undefined && object.description !== null ? String(object.description) : undefined
-    message.type = object.type !== undefined && object.type !== null ? productTypeFromJSON(object.type) : 0
-    return message
+    return {
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      description: isSet(object.description) ? String(object.description) : undefined,
+      type: isSet(object.type) ? productTypeFromJSON(object.type) : 0,
+    }
   },
 
   toJSON(message: CreateProductRequest): unknown {
@@ -1705,19 +1763,19 @@ export const CreateProductRequest = {
   },
 }
 
-const baseUpdateProductRequest: object = { id: '', accessedBy: '', name: '' }
+function createBaseUpdateProductRequest(): UpdateProductRequest {
+  return { id: '', accessedBy: '', name: '' }
+}
 
 export const UpdateProductRequest = {
   fromJSON(object: any): UpdateProductRequest {
-    const message = { ...baseUpdateProductRequest } as UpdateProductRequest
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.description =
-      object.description !== undefined && object.description !== null ? String(object.description) : undefined
-    message.changelog =
-      object.changelog !== undefined && object.changelog !== null ? String(object.changelog) : undefined
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      description: isSet(object.description) ? String(object.description) : undefined,
+      changelog: isSet(object.changelog) ? String(object.changelog) : undefined,
+    }
   },
 
   toJSON(message: UpdateProductRequest): unknown {
@@ -1731,21 +1789,21 @@ export const UpdateProductRequest = {
   },
 }
 
-const baseRegistryResponse: object = { id: '', name: '', url: '', type: 0 }
+function createBaseRegistryResponse(): RegistryResponse {
+  return { id: '', audit: undefined, name: '', url: '', type: 0 }
+}
 
 export const RegistryResponse = {
   fromJSON(object: any): RegistryResponse {
-    const message = { ...baseRegistryResponse } as RegistryResponse
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.audit =
-      object.audit !== undefined && object.audit !== null ? AuditResponse.fromJSON(object.audit) : undefined
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.description =
-      object.description !== undefined && object.description !== null ? String(object.description) : undefined
-    message.icon = object.icon !== undefined && object.icon !== null ? String(object.icon) : undefined
-    message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
-    message.type = object.type !== undefined && object.type !== null ? registryTypeFromJSON(object.type) : 0
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
+      name: isSet(object.name) ? String(object.name) : '',
+      description: isSet(object.description) ? String(object.description) : undefined,
+      icon: isSet(object.icon) ? String(object.icon) : undefined,
+      url: isSet(object.url) ? String(object.url) : '',
+      type: isSet(object.type) ? registryTypeFromJSON(object.type) : 0,
+    }
   },
 
   toJSON(message: RegistryResponse): unknown {
@@ -1761,13 +1819,13 @@ export const RegistryResponse = {
   },
 }
 
-const baseRegistryListResponse: object = {}
+function createBaseRegistryListResponse(): RegistryListResponse {
+  return { data: [] }
+}
 
 export const RegistryListResponse = {
   fromJSON(object: any): RegistryListResponse {
-    const message = { ...baseRegistryListResponse } as RegistryListResponse
-    message.data = (object.data ?? []).map((e: any) => RegistryResponse.fromJSON(e))
-    return message
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => RegistryResponse.fromJSON(e)) : [] }
   },
 
   toJSON(message: RegistryListResponse): unknown {
@@ -1781,14 +1839,13 @@ export const RegistryListResponse = {
   },
 }
 
-const baseHubRegistryDetails: object = { imageNamePrefix: '' }
+function createBaseHubRegistryDetails(): HubRegistryDetails {
+  return { imageNamePrefix: '' }
+}
 
 export const HubRegistryDetails = {
   fromJSON(object: any): HubRegistryDetails {
-    const message = { ...baseHubRegistryDetails } as HubRegistryDetails
-    message.imageNamePrefix =
-      object.imageNamePrefix !== undefined && object.imageNamePrefix !== null ? String(object.imageNamePrefix) : ''
-    return message
+    return { imageNamePrefix: isSet(object.imageNamePrefix) ? String(object.imageNamePrefix) : '' }
   },
 
   toJSON(message: HubRegistryDetails): unknown {
@@ -1798,15 +1855,17 @@ export const HubRegistryDetails = {
   },
 }
 
-const baseV2RegistryDetails: object = { url: '' }
+function createBaseV2RegistryDetails(): V2RegistryDetails {
+  return { url: '' }
+}
 
 export const V2RegistryDetails = {
   fromJSON(object: any): V2RegistryDetails {
-    const message = { ...baseV2RegistryDetails } as V2RegistryDetails
-    message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
-    message.user = object.user !== undefined && object.user !== null ? String(object.user) : undefined
-    message.token = object.token !== undefined && object.token !== null ? String(object.token) : undefined
-    return message
+    return {
+      url: isSet(object.url) ? String(object.url) : '',
+      user: isSet(object.user) ? String(object.user) : undefined,
+      token: isSet(object.token) ? String(object.token) : undefined,
+    }
   },
 
   toJSON(message: V2RegistryDetails): unknown {
@@ -1818,22 +1877,19 @@ export const V2RegistryDetails = {
   },
 }
 
-const baseGitlabRegistryDetails: object = {
-  user: '',
-  token: '',
-  imageNamePrefix: '',
+function createBaseGitlabRegistryDetails(): GitlabRegistryDetails {
+  return { user: '', token: '', imageNamePrefix: '' }
 }
 
 export const GitlabRegistryDetails = {
   fromJSON(object: any): GitlabRegistryDetails {
-    const message = { ...baseGitlabRegistryDetails } as GitlabRegistryDetails
-    message.user = object.user !== undefined && object.user !== null ? String(object.user) : ''
-    message.token = object.token !== undefined && object.token !== null ? String(object.token) : ''
-    message.imageNamePrefix =
-      object.imageNamePrefix !== undefined && object.imageNamePrefix !== null ? String(object.imageNamePrefix) : ''
-    message.url = object.url !== undefined && object.url !== null ? String(object.url) : undefined
-    message.apiUrl = object.apiUrl !== undefined && object.apiUrl !== null ? String(object.apiUrl) : undefined
-    return message
+    return {
+      user: isSet(object.user) ? String(object.user) : '',
+      token: isSet(object.token) ? String(object.token) : '',
+      imageNamePrefix: isSet(object.imageNamePrefix) ? String(object.imageNamePrefix) : '',
+      url: isSet(object.url) ? String(object.url) : undefined,
+      apiUrl: isSet(object.apiUrl) ? String(object.apiUrl) : undefined,
+    }
   },
 
   toJSON(message: GitlabRegistryDetails): unknown {
@@ -1847,20 +1903,17 @@ export const GitlabRegistryDetails = {
   },
 }
 
-const baseGithubRegistryDetails: object = {
-  user: '',
-  token: '',
-  imageNamePrefix: '',
+function createBaseGithubRegistryDetails(): GithubRegistryDetails {
+  return { user: '', token: '', imageNamePrefix: '' }
 }
 
 export const GithubRegistryDetails = {
   fromJSON(object: any): GithubRegistryDetails {
-    const message = { ...baseGithubRegistryDetails } as GithubRegistryDetails
-    message.user = object.user !== undefined && object.user !== null ? String(object.user) : ''
-    message.token = object.token !== undefined && object.token !== null ? String(object.token) : ''
-    message.imageNamePrefix =
-      object.imageNamePrefix !== undefined && object.imageNamePrefix !== null ? String(object.imageNamePrefix) : ''
-    return message
+    return {
+      user: isSet(object.user) ? String(object.user) : '',
+      token: isSet(object.token) ? String(object.token) : '',
+      imageNamePrefix: isSet(object.imageNamePrefix) ? String(object.imageNamePrefix) : '',
+    }
   },
 
   toJSON(message: GithubRegistryDetails): unknown {
@@ -1872,17 +1925,18 @@ export const GithubRegistryDetails = {
   },
 }
 
-const baseGoogleRegistryDetails: object = { url: '', imageNamePrefix: '' }
+function createBaseGoogleRegistryDetails(): GoogleRegistryDetails {
+  return { url: '', imageNamePrefix: '' }
+}
 
 export const GoogleRegistryDetails = {
   fromJSON(object: any): GoogleRegistryDetails {
-    const message = { ...baseGoogleRegistryDetails } as GoogleRegistryDetails
-    message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
-    message.user = object.user !== undefined && object.user !== null ? String(object.user) : undefined
-    message.token = object.token !== undefined && object.token !== null ? String(object.token) : undefined
-    message.imageNamePrefix =
-      object.imageNamePrefix !== undefined && object.imageNamePrefix !== null ? String(object.imageNamePrefix) : ''
-    return message
+    return {
+      url: isSet(object.url) ? String(object.url) : '',
+      user: isSet(object.user) ? String(object.user) : undefined,
+      token: isSet(object.token) ? String(object.token) : undefined,
+      imageNamePrefix: isSet(object.imageNamePrefix) ? String(object.imageNamePrefix) : '',
+    }
   },
 
   toJSON(message: GoogleRegistryDetails): unknown {
@@ -1895,25 +1949,31 @@ export const GoogleRegistryDetails = {
   },
 }
 
-const baseCreateRegistryRequest: object = { accessedBy: '', name: '' }
+function createBaseCreateRegistryRequest(): CreateRegistryRequest {
+  return {
+    accessedBy: '',
+    name: '',
+    hub: undefined,
+    v2: undefined,
+    gitlab: undefined,
+    github: undefined,
+    google: undefined,
+  }
+}
 
 export const CreateRegistryRequest = {
   fromJSON(object: any): CreateRegistryRequest {
-    const message = { ...baseCreateRegistryRequest } as CreateRegistryRequest
-    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.description =
-      object.description !== undefined && object.description !== null ? String(object.description) : undefined
-    message.icon = object.icon !== undefined && object.icon !== null ? String(object.icon) : undefined
-    message.hub = object.hub !== undefined && object.hub !== null ? HubRegistryDetails.fromJSON(object.hub) : undefined
-    message.v2 = object.v2 !== undefined && object.v2 !== null ? V2RegistryDetails.fromJSON(object.v2) : undefined
-    message.gitlab =
-      object.gitlab !== undefined && object.gitlab !== null ? GitlabRegistryDetails.fromJSON(object.gitlab) : undefined
-    message.github =
-      object.github !== undefined && object.github !== null ? GithubRegistryDetails.fromJSON(object.github) : undefined
-    message.google =
-      object.google !== undefined && object.google !== null ? GoogleRegistryDetails.fromJSON(object.google) : undefined
-    return message
+    return {
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      description: isSet(object.description) ? String(object.description) : undefined,
+      icon: isSet(object.icon) ? String(object.icon) : undefined,
+      hub: isSet(object.hub) ? HubRegistryDetails.fromJSON(object.hub) : undefined,
+      v2: isSet(object.v2) ? V2RegistryDetails.fromJSON(object.v2) : undefined,
+      gitlab: isSet(object.gitlab) ? GitlabRegistryDetails.fromJSON(object.gitlab) : undefined,
+      github: isSet(object.github) ? GithubRegistryDetails.fromJSON(object.github) : undefined,
+      google: isSet(object.google) ? GoogleRegistryDetails.fromJSON(object.google) : undefined,
+    }
   },
 
   toJSON(message: CreateRegistryRequest): unknown {
@@ -1934,26 +1994,33 @@ export const CreateRegistryRequest = {
   },
 }
 
-const baseUpdateRegistryRequest: object = { id: '', accessedBy: '', name: '' }
+function createBaseUpdateRegistryRequest(): UpdateRegistryRequest {
+  return {
+    id: '',
+    accessedBy: '',
+    name: '',
+    hub: undefined,
+    v2: undefined,
+    gitlab: undefined,
+    github: undefined,
+    google: undefined,
+  }
+}
 
 export const UpdateRegistryRequest = {
   fromJSON(object: any): UpdateRegistryRequest {
-    const message = { ...baseUpdateRegistryRequest } as UpdateRegistryRequest
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.description =
-      object.description !== undefined && object.description !== null ? String(object.description) : undefined
-    message.icon = object.icon !== undefined && object.icon !== null ? String(object.icon) : undefined
-    message.hub = object.hub !== undefined && object.hub !== null ? HubRegistryDetails.fromJSON(object.hub) : undefined
-    message.v2 = object.v2 !== undefined && object.v2 !== null ? V2RegistryDetails.fromJSON(object.v2) : undefined
-    message.gitlab =
-      object.gitlab !== undefined && object.gitlab !== null ? GitlabRegistryDetails.fromJSON(object.gitlab) : undefined
-    message.github =
-      object.github !== undefined && object.github !== null ? GithubRegistryDetails.fromJSON(object.github) : undefined
-    message.google =
-      object.google !== undefined && object.google !== null ? GoogleRegistryDetails.fromJSON(object.google) : undefined
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      description: isSet(object.description) ? String(object.description) : undefined,
+      icon: isSet(object.icon) ? String(object.icon) : undefined,
+      hub: isSet(object.hub) ? HubRegistryDetails.fromJSON(object.hub) : undefined,
+      v2: isSet(object.v2) ? V2RegistryDetails.fromJSON(object.v2) : undefined,
+      gitlab: isSet(object.gitlab) ? GitlabRegistryDetails.fromJSON(object.gitlab) : undefined,
+      github: isSet(object.github) ? GithubRegistryDetails.fromJSON(object.github) : undefined,
+      google: isSet(object.google) ? GoogleRegistryDetails.fromJSON(object.google) : undefined,
+    }
   },
 
   toJSON(message: UpdateRegistryRequest): unknown {
@@ -1975,29 +2042,33 @@ export const UpdateRegistryRequest = {
   },
 }
 
-const baseRegistryDetailsResponse: object = { id: '', name: '' }
+function createBaseRegistryDetailsResponse(): RegistryDetailsResponse {
+  return {
+    id: '',
+    audit: undefined,
+    name: '',
+    hub: undefined,
+    v2: undefined,
+    gitlab: undefined,
+    github: undefined,
+    google: undefined,
+  }
+}
 
 export const RegistryDetailsResponse = {
   fromJSON(object: any): RegistryDetailsResponse {
-    const message = {
-      ...baseRegistryDetailsResponse,
-    } as RegistryDetailsResponse
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.audit =
-      object.audit !== undefined && object.audit !== null ? AuditResponse.fromJSON(object.audit) : undefined
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.description =
-      object.description !== undefined && object.description !== null ? String(object.description) : undefined
-    message.icon = object.icon !== undefined && object.icon !== null ? String(object.icon) : undefined
-    message.hub = object.hub !== undefined && object.hub !== null ? HubRegistryDetails.fromJSON(object.hub) : undefined
-    message.v2 = object.v2 !== undefined && object.v2 !== null ? V2RegistryDetails.fromJSON(object.v2) : undefined
-    message.gitlab =
-      object.gitlab !== undefined && object.gitlab !== null ? GitlabRegistryDetails.fromJSON(object.gitlab) : undefined
-    message.github =
-      object.github !== undefined && object.github !== null ? GithubRegistryDetails.fromJSON(object.github) : undefined
-    message.google =
-      object.google !== undefined && object.google !== null ? GoogleRegistryDetails.fromJSON(object.google) : undefined
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
+      name: isSet(object.name) ? String(object.name) : '',
+      description: isSet(object.description) ? String(object.description) : undefined,
+      icon: isSet(object.icon) ? String(object.icon) : undefined,
+      hub: isSet(object.hub) ? HubRegistryDetails.fromJSON(object.hub) : undefined,
+      v2: isSet(object.v2) ? V2RegistryDetails.fromJSON(object.v2) : undefined,
+      gitlab: isSet(object.gitlab) ? GitlabRegistryDetails.fromJSON(object.gitlab) : undefined,
+      github: isSet(object.github) ? GithubRegistryDetails.fromJSON(object.github) : undefined,
+      google: isSet(object.google) ? GoogleRegistryDetails.fromJSON(object.google) : undefined,
+    }
   },
 
   toJSON(message: RegistryDetailsResponse): unknown {
@@ -2019,23 +2090,19 @@ export const RegistryDetailsResponse = {
   },
 }
 
-const baseCreateVersionRequest: object = {
-  accessedBy: '',
-  productId: '',
-  name: '',
-  type: 0,
+function createBaseCreateVersionRequest(): CreateVersionRequest {
+  return { accessedBy: '', productId: '', name: '', type: 0 }
 }
 
 export const CreateVersionRequest = {
   fromJSON(object: any): CreateVersionRequest {
-    const message = { ...baseCreateVersionRequest } as CreateVersionRequest
-    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
-    message.productId = object.productId !== undefined && object.productId !== null ? String(object.productId) : ''
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.changelog =
-      object.changelog !== undefined && object.changelog !== null ? String(object.changelog) : undefined
-    message.type = object.type !== undefined && object.type !== null ? versionTypeFromJSON(object.type) : 0
-    return message
+    return {
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      productId: isSet(object.productId) ? String(object.productId) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      changelog: isSet(object.changelog) ? String(object.changelog) : undefined,
+      type: isSet(object.type) ? versionTypeFromJSON(object.type) : 0,
+    }
   },
 
   toJSON(message: CreateVersionRequest): unknown {
@@ -2049,17 +2116,18 @@ export const CreateVersionRequest = {
   },
 }
 
-const baseUpdateVersionRequest: object = { id: '', accessedBy: '', name: '' }
+function createBaseUpdateVersionRequest(): UpdateVersionRequest {
+  return { id: '', accessedBy: '', name: '' }
+}
 
 export const UpdateVersionRequest = {
   fromJSON(object: any): UpdateVersionRequest {
-    const message = { ...baseUpdateVersionRequest } as UpdateVersionRequest
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.changelog =
-      object.changelog !== undefined && object.changelog !== null ? String(object.changelog) : undefined
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      changelog: isSet(object.changelog) ? String(object.changelog) : undefined,
+    }
   },
 
   toJSON(message: UpdateVersionRequest): unknown {
@@ -2072,28 +2140,21 @@ export const UpdateVersionRequest = {
   },
 }
 
-const baseVersionResponse: object = {
-  id: '',
-  name: '',
-  changelog: '',
-  default: false,
-  type: 0,
-  increasable: false,
+function createBaseVersionResponse(): VersionResponse {
+  return { id: '', audit: undefined, name: '', changelog: '', default: false, type: 0, increasable: false }
 }
 
 export const VersionResponse = {
   fromJSON(object: any): VersionResponse {
-    const message = { ...baseVersionResponse } as VersionResponse
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.audit =
-      object.audit !== undefined && object.audit !== null ? AuditResponse.fromJSON(object.audit) : undefined
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.changelog = object.changelog !== undefined && object.changelog !== null ? String(object.changelog) : ''
-    message.default = object.default !== undefined && object.default !== null ? Boolean(object.default) : false
-    message.type = object.type !== undefined && object.type !== null ? versionTypeFromJSON(object.type) : 0
-    message.increasable =
-      object.increasable !== undefined && object.increasable !== null ? Boolean(object.increasable) : false
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
+      name: isSet(object.name) ? String(object.name) : '',
+      changelog: isSet(object.changelog) ? String(object.changelog) : '',
+      default: isSet(object.default) ? Boolean(object.default) : false,
+      type: isSet(object.type) ? versionTypeFromJSON(object.type) : 0,
+      increasable: isSet(object.increasable) ? Boolean(object.increasable) : false,
+    }
   },
 
   toJSON(message: VersionResponse): unknown {
@@ -2109,13 +2170,13 @@ export const VersionResponse = {
   },
 }
 
-const baseVersionListResponse: object = {}
+function createBaseVersionListResponse(): VersionListResponse {
+  return { data: [] }
+}
 
 export const VersionListResponse = {
   fromJSON(object: any): VersionListResponse {
-    const message = { ...baseVersionListResponse } as VersionListResponse
-    message.data = (object.data ?? []).map((e: any) => VersionResponse.fromJSON(e))
-    return message
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => VersionResponse.fromJSON(e)) : [] }
   },
 
   toJSON(message: VersionListResponse): unknown {
@@ -2129,32 +2190,37 @@ export const VersionListResponse = {
   },
 }
 
-const baseVersionDetailsResponse: object = {
-  id: '',
-  name: '',
-  changelog: '',
-  default: false,
-  type: 0,
-  mutable: false,
-  increasable: false,
+function createBaseVersionDetailsResponse(): VersionDetailsResponse {
+  return {
+    id: '',
+    audit: undefined,
+    name: '',
+    changelog: '',
+    default: false,
+    type: 0,
+    mutable: false,
+    increasable: false,
+    images: [],
+    deployments: [],
+  }
 }
 
 export const VersionDetailsResponse = {
   fromJSON(object: any): VersionDetailsResponse {
-    const message = { ...baseVersionDetailsResponse } as VersionDetailsResponse
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.audit =
-      object.audit !== undefined && object.audit !== null ? AuditResponse.fromJSON(object.audit) : undefined
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.changelog = object.changelog !== undefined && object.changelog !== null ? String(object.changelog) : ''
-    message.default = object.default !== undefined && object.default !== null ? Boolean(object.default) : false
-    message.type = object.type !== undefined && object.type !== null ? versionTypeFromJSON(object.type) : 0
-    message.mutable = object.mutable !== undefined && object.mutable !== null ? Boolean(object.mutable) : false
-    message.increasable =
-      object.increasable !== undefined && object.increasable !== null ? Boolean(object.increasable) : false
-    message.images = (object.images ?? []).map((e: any) => ImageResponse.fromJSON(e))
-    message.deployments = (object.deployments ?? []).map((e: any) => DeploymentByVersionResponse.fromJSON(e))
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
+      name: isSet(object.name) ? String(object.name) : '',
+      changelog: isSet(object.changelog) ? String(object.changelog) : '',
+      default: isSet(object.default) ? Boolean(object.default) : false,
+      type: isSet(object.type) ? versionTypeFromJSON(object.type) : 0,
+      mutable: isSet(object.mutable) ? Boolean(object.mutable) : false,
+      increasable: isSet(object.increasable) ? Boolean(object.increasable) : false,
+      images: Array.isArray(object?.images) ? object.images.map((e: any) => ImageResponse.fromJSON(e)) : [],
+      deployments: Array.isArray(object?.deployments)
+        ? object.deployments.map((e: any) => DeploymentByVersionResponse.fromJSON(e))
+        : [],
+    }
   },
 
   toJSON(message: VersionDetailsResponse): unknown {
@@ -2181,17 +2247,18 @@ export const VersionDetailsResponse = {
   },
 }
 
-const baseIncreaseVersionRequest: object = { id: '', accessedBy: '', name: '' }
+function createBaseIncreaseVersionRequest(): IncreaseVersionRequest {
+  return { id: '', accessedBy: '', name: '' }
+}
 
 export const IncreaseVersionRequest = {
   fromJSON(object: any): IncreaseVersionRequest {
-    const message = { ...baseIncreaseVersionRequest } as IncreaseVersionRequest
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.changelog =
-      object.changelog !== undefined && object.changelog !== null ? String(object.changelog) : undefined
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      changelog: isSet(object.changelog) ? String(object.changelog) : undefined,
+    }
   },
 
   toJSON(message: IncreaseVersionRequest): unknown {
@@ -2204,19 +2271,22 @@ export const IncreaseVersionRequest = {
   },
 }
 
-const baseContainerConfig: object = { name: '' }
+function createBaseContainerConfig(): ContainerConfig {
+  return { config: undefined, name: '', capabilities: [], environment: [] }
+}
 
 export const ContainerConfig = {
   fromJSON(object: any): ContainerConfig {
-    const message = { ...baseContainerConfig } as ContainerConfig
-    message.config =
-      object.config !== undefined && object.config !== null
-        ? ExplicitContainerConfig.fromJSON(object.config)
-        : undefined
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.capabilities = (object.capabilities ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
-    message.environment = (object.environment ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
-    return message
+    return {
+      config: isSet(object.config) ? ExplicitContainerConfig.fromJSON(object.config) : undefined,
+      name: isSet(object.name) ? String(object.name) : '',
+      capabilities: Array.isArray(object?.capabilities)
+        ? object.capabilities.map((e: any) => UniqueKeyValue.fromJSON(e))
+        : [],
+      environment: Array.isArray(object?.environment)
+        ? object.environment.map((e: any) => UniqueKeyValue.fromJSON(e))
+        : [],
+    }
   },
 
   toJSON(message: ContainerConfig): unknown {
@@ -2238,25 +2308,20 @@ export const ContainerConfig = {
   },
 }
 
-const baseImageResponse: object = {
-  id: '',
-  name: '',
-  tag: '',
-  order: 0,
-  registryId: '',
+function createBaseImageResponse(): ImageResponse {
+  return { id: '', name: '', tag: '', order: 0, registryId: '', config: undefined }
 }
 
 export const ImageResponse = {
   fromJSON(object: any): ImageResponse {
-    const message = { ...baseImageResponse } as ImageResponse
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.tag = object.tag !== undefined && object.tag !== null ? String(object.tag) : ''
-    message.order = object.order !== undefined && object.order !== null ? Number(object.order) : 0
-    message.registryId = object.registryId !== undefined && object.registryId !== null ? String(object.registryId) : ''
-    message.config =
-      object.config !== undefined && object.config !== null ? ContainerConfig.fromJSON(object.config) : undefined
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      tag: isSet(object.tag) ? String(object.tag) : '',
+      order: isSet(object.order) ? Number(object.order) : 0,
+      registryId: isSet(object.registryId) ? String(object.registryId) : '',
+      config: isSet(object.config) ? ContainerConfig.fromJSON(object.config) : undefined,
+    }
   },
 
   toJSON(message: ImageResponse): unknown {
@@ -2271,13 +2336,13 @@ export const ImageResponse = {
   },
 }
 
-const baseImageListResponse: object = {}
+function createBaseImageListResponse(): ImageListResponse {
+  return { data: [] }
+}
 
 export const ImageListResponse = {
   fromJSON(object: any): ImageListResponse {
-    const message = { ...baseImageListResponse } as ImageListResponse
-    message.data = (object.data ?? []).map((e: any) => ImageResponse.fromJSON(e))
-    return message
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => ImageResponse.fromJSON(e)) : [] }
   },
 
   toJSON(message: ImageListResponse): unknown {
@@ -2291,21 +2356,17 @@ export const ImageListResponse = {
   },
 }
 
-const baseOrderVersionImagesRequest: object = {
-  accessedBy: '',
-  versionId: '',
-  imageIds: '',
+function createBaseOrderVersionImagesRequest(): OrderVersionImagesRequest {
+  return { accessedBy: '', versionId: '', imageIds: [] }
 }
 
 export const OrderVersionImagesRequest = {
   fromJSON(object: any): OrderVersionImagesRequest {
-    const message = {
-      ...baseOrderVersionImagesRequest,
-    } as OrderVersionImagesRequest
-    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
-    message.versionId = object.versionId !== undefined && object.versionId !== null ? String(object.versionId) : ''
-    message.imageIds = (object.imageIds ?? []).map((e: any) => String(e))
-    return message
+    return {
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      versionId: isSet(object.versionId) ? String(object.versionId) : '',
+      imageIds: Array.isArray(object?.imageIds) ? object.imageIds.map((e: any) => String(e)) : [],
+    }
   },
 
   toJSON(message: OrderVersionImagesRequest): unknown {
@@ -2321,14 +2382,16 @@ export const OrderVersionImagesRequest = {
   },
 }
 
-const baseRegistryImages: object = { registryId: '', imageNames: '' }
+function createBaseRegistryImages(): RegistryImages {
+  return { registryId: '', imageNames: [] }
+}
 
 export const RegistryImages = {
   fromJSON(object: any): RegistryImages {
-    const message = { ...baseRegistryImages } as RegistryImages
-    message.registryId = object.registryId !== undefined && object.registryId !== null ? String(object.registryId) : ''
-    message.imageNames = (object.imageNames ?? []).map((e: any) => String(e))
-    return message
+    return {
+      registryId: isSet(object.registryId) ? String(object.registryId) : '',
+      imageNames: Array.isArray(object?.imageNames) ? object.imageNames.map((e: any) => String(e)) : [],
+    }
   },
 
   toJSON(message: RegistryImages): unknown {
@@ -2343,17 +2406,17 @@ export const RegistryImages = {
   },
 }
 
-const baseAddImagesToVersionRequest: object = { accessedBy: '', versionId: '' }
+function createBaseAddImagesToVersionRequest(): AddImagesToVersionRequest {
+  return { accessedBy: '', versionId: '', images: [] }
+}
 
 export const AddImagesToVersionRequest = {
   fromJSON(object: any): AddImagesToVersionRequest {
-    const message = {
-      ...baseAddImagesToVersionRequest,
-    } as AddImagesToVersionRequest
-    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
-    message.versionId = object.versionId !== undefined && object.versionId !== null ? String(object.versionId) : ''
-    message.images = (object.images ?? []).map((e: any) => RegistryImages.fromJSON(e))
-    return message
+    return {
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      versionId: isSet(object.versionId) ? String(object.versionId) : '',
+      images: Array.isArray(object?.images) ? object.images.map((e: any) => RegistryImages.fromJSON(e)) : [],
+    }
   },
 
   toJSON(message: AddImagesToVersionRequest): unknown {
@@ -2369,15 +2432,17 @@ export const AddImagesToVersionRequest = {
   },
 }
 
-const baseUniqueKeyValue: object = { id: '', key: '', value: '' }
+function createBaseUniqueKeyValue(): UniqueKeyValue {
+  return { id: '', key: '', value: '' }
+}
 
 export const UniqueKeyValue = {
   fromJSON(object: any): UniqueKeyValue {
-    const message = { ...baseUniqueKeyValue } as UniqueKeyValue
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.key = object.key !== undefined && object.key !== null ? String(object.key) : ''
-    message.value = object.value !== undefined && object.value !== null ? String(object.value) : ''
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      key: isSet(object.key) ? String(object.key) : '',
+      value: isSet(object.value) ? String(object.value) : '',
+    }
   },
 
   toJSON(message: UniqueKeyValue): unknown {
@@ -2389,13 +2454,13 @@ export const UniqueKeyValue = {
   },
 }
 
-const baseKeyValueList: object = {}
+function createBaseKeyValueList(): KeyValueList {
+  return { data: [] }
+}
 
 export const KeyValueList = {
   fromJSON(object: any): KeyValueList {
-    const message = { ...baseKeyValueList } as KeyValueList
-    message.data = (object.data ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
-    return message
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => UniqueKeyValue.fromJSON(e)) : [] }
   },
 
   toJSON(message: KeyValueList): unknown {
@@ -2409,25 +2474,18 @@ export const KeyValueList = {
   },
 }
 
-const basePatchContainerConfig: object = {}
+function createBasePatchContainerConfig(): PatchContainerConfig {
+  return {}
+}
 
 export const PatchContainerConfig = {
   fromJSON(object: any): PatchContainerConfig {
-    const message = { ...basePatchContainerConfig } as PatchContainerConfig
-    message.capabilities =
-      object.capabilities !== undefined && object.capabilities !== null
-        ? KeyValueList.fromJSON(object.capabilities)
-        : undefined
-    message.environment =
-      object.environment !== undefined && object.environment !== null
-        ? KeyValueList.fromJSON(object.environment)
-        : undefined
-    message.config =
-      object.config !== undefined && object.config !== null
-        ? ExplicitContainerConfig.fromJSON(object.config)
-        : undefined
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : undefined
-    return message
+    return {
+      capabilities: isSet(object.capabilities) ? KeyValueList.fromJSON(object.capabilities) : undefined,
+      environment: isSet(object.environment) ? KeyValueList.fromJSON(object.environment) : undefined,
+      config: isSet(object.config) ? ExplicitContainerConfig.fromJSON(object.config) : undefined,
+      name: isSet(object.name) ? String(object.name) : undefined,
+    }
   },
 
   toJSON(message: PatchContainerConfig): unknown {
@@ -2443,17 +2501,18 @@ export const PatchContainerConfig = {
   },
 }
 
-const basePatchImageRequest: object = { id: '', accessedBy: '' }
+function createBasePatchImageRequest(): PatchImageRequest {
+  return { id: '', accessedBy: '' }
+}
 
 export const PatchImageRequest = {
   fromJSON(object: any): PatchImageRequest {
-    const message = { ...basePatchImageRequest } as PatchImageRequest
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
-    message.tag = object.tag !== undefined && object.tag !== null ? String(object.tag) : undefined
-    message.config =
-      object.config !== undefined && object.config !== null ? PatchContainerConfig.fromJSON(object.config) : undefined
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      tag: isSet(object.tag) ? String(object.tag) : undefined,
+      config: isSet(object.config) ? PatchContainerConfig.fromJSON(object.config) : undefined,
+    }
   },
 
   toJSON(message: PatchImageRequest): unknown {
@@ -2467,28 +2526,24 @@ export const PatchImageRequest = {
   },
 }
 
-const baseNodeResponse: object = { id: '', name: '', status: 0, type: 0 }
+function createBaseNodeResponse(): NodeResponse {
+  return { id: '', audit: undefined, name: '', status: 0, type: 0 }
+}
 
 export const NodeResponse = {
   fromJSON(object: any): NodeResponse {
-    const message = { ...baseNodeResponse } as NodeResponse
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.audit =
-      object.audit !== undefined && object.audit !== null ? AuditResponse.fromJSON(object.audit) : undefined
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.description =
-      object.description !== undefined && object.description !== null ? String(object.description) : undefined
-    message.icon = object.icon !== undefined && object.icon !== null ? String(object.icon) : undefined
-    message.address = object.address !== undefined && object.address !== null ? String(object.address) : undefined
-    message.status =
-      object.status !== undefined && object.status !== null ? nodeConnectionStatusFromJSON(object.status) : 0
-    message.connectedAt =
-      object.connectedAt !== undefined && object.connectedAt !== null
-        ? fromJsonTimestamp(object.connectedAt)
-        : undefined
-    message.version = object.version !== undefined && object.version !== null ? String(object.version) : undefined
-    message.type = object.type !== undefined && object.type !== null ? nodeTypeFromJSON(object.type) : 0
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
+      name: isSet(object.name) ? String(object.name) : '',
+      description: isSet(object.description) ? String(object.description) : undefined,
+      icon: isSet(object.icon) ? String(object.icon) : undefined,
+      address: isSet(object.address) ? String(object.address) : undefined,
+      status: isSet(object.status) ? nodeConnectionStatusFromJSON(object.status) : 0,
+      connectedAt: isSet(object.connectedAt) ? fromJsonTimestamp(object.connectedAt) : undefined,
+      version: isSet(object.version) ? String(object.version) : undefined,
+      type: isSet(object.type) ? nodeTypeFromJSON(object.type) : 0,
+    }
   },
 
   toJSON(message: NodeResponse): unknown {
@@ -2507,39 +2562,27 @@ export const NodeResponse = {
   },
 }
 
-const baseNodeDetailsResponse: object = {
-  id: '',
-  name: '',
-  status: 0,
-  hasToken: false,
-  type: 0,
+function createBaseNodeDetailsResponse(): NodeDetailsResponse {
+  return { id: '', audit: undefined, name: '', status: 0, hasToken: false, type: 0 }
 }
 
 export const NodeDetailsResponse = {
   fromJSON(object: any): NodeDetailsResponse {
-    const message = { ...baseNodeDetailsResponse } as NodeDetailsResponse
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.audit =
-      object.audit !== undefined && object.audit !== null ? AuditResponse.fromJSON(object.audit) : undefined
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.description =
-      object.description !== undefined && object.description !== null ? String(object.description) : undefined
-    message.icon = object.icon !== undefined && object.icon !== null ? String(object.icon) : undefined
-    message.address = object.address !== undefined && object.address !== null ? String(object.address) : undefined
-    message.status =
-      object.status !== undefined && object.status !== null ? nodeConnectionStatusFromJSON(object.status) : 0
-    message.hasToken = object.hasToken !== undefined && object.hasToken !== null ? Boolean(object.hasToken) : false
-    message.connectedAt =
-      object.connectedAt !== undefined && object.connectedAt !== null
-        ? fromJsonTimestamp(object.connectedAt)
-        : undefined
-    message.install =
-      object.install !== undefined && object.install !== null ? NodeInstallResponse.fromJSON(object.install) : undefined
-    message.script =
-      object.script !== undefined && object.script !== null ? NodeScriptResponse.fromJSON(object.script) : undefined
-    message.version = object.version !== undefined && object.version !== null ? String(object.version) : undefined
-    message.type = object.type !== undefined && object.type !== null ? nodeTypeFromJSON(object.type) : 0
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
+      name: isSet(object.name) ? String(object.name) : '',
+      description: isSet(object.description) ? String(object.description) : undefined,
+      icon: isSet(object.icon) ? String(object.icon) : undefined,
+      address: isSet(object.address) ? String(object.address) : undefined,
+      status: isSet(object.status) ? nodeConnectionStatusFromJSON(object.status) : 0,
+      hasToken: isSet(object.hasToken) ? Boolean(object.hasToken) : false,
+      connectedAt: isSet(object.connectedAt) ? fromJsonTimestamp(object.connectedAt) : undefined,
+      install: isSet(object.install) ? NodeInstallResponse.fromJSON(object.install) : undefined,
+      script: isSet(object.script) ? NodeScriptResponse.fromJSON(object.script) : undefined,
+      version: isSet(object.version) ? String(object.version) : undefined,
+      type: isSet(object.type) ? nodeTypeFromJSON(object.type) : 0,
+    }
   },
 
   toJSON(message: NodeDetailsResponse): unknown {
@@ -2563,13 +2606,13 @@ export const NodeDetailsResponse = {
   },
 }
 
-const baseNodeListResponse: object = {}
+function createBaseNodeListResponse(): NodeListResponse {
+  return { data: [] }
+}
 
 export const NodeListResponse = {
   fromJSON(object: any): NodeListResponse {
-    const message = { ...baseNodeListResponse } as NodeListResponse
-    message.data = (object.data ?? []).map((e: any) => NodeResponse.fromJSON(e))
-    return message
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => NodeResponse.fromJSON(e)) : [] }
   },
 
   toJSON(message: NodeListResponse): unknown {
@@ -2583,17 +2626,18 @@ export const NodeListResponse = {
   },
 }
 
-const baseCreateNodeRequest: object = { accessedBy: '', name: '' }
+function createBaseCreateNodeRequest(): CreateNodeRequest {
+  return { accessedBy: '', name: '' }
+}
 
 export const CreateNodeRequest = {
   fromJSON(object: any): CreateNodeRequest {
-    const message = { ...baseCreateNodeRequest } as CreateNodeRequest
-    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.description =
-      object.description !== undefined && object.description !== null ? String(object.description) : undefined
-    message.icon = object.icon !== undefined && object.icon !== null ? String(object.icon) : undefined
-    return message
+    return {
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      description: isSet(object.description) ? String(object.description) : undefined,
+      icon: isSet(object.icon) ? String(object.icon) : undefined,
+    }
   },
 
   toJSON(message: CreateNodeRequest): unknown {
@@ -2606,18 +2650,19 @@ export const CreateNodeRequest = {
   },
 }
 
-const baseUpdateNodeRequest: object = { id: '', accessedBy: '', name: '' }
+function createBaseUpdateNodeRequest(): UpdateNodeRequest {
+  return { id: '', accessedBy: '', name: '' }
+}
 
 export const UpdateNodeRequest = {
   fromJSON(object: any): UpdateNodeRequest {
-    const message = { ...baseUpdateNodeRequest } as UpdateNodeRequest
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.description =
-      object.description !== undefined && object.description !== null ? String(object.description) : undefined
-    message.icon = object.icon !== undefined && object.icon !== null ? String(object.icon) : undefined
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      description: isSet(object.description) ? String(object.description) : undefined,
+      icon: isSet(object.icon) ? String(object.icon) : undefined,
+    }
   },
 
   toJSON(message: UpdateNodeRequest): unknown {
@@ -2631,15 +2676,17 @@ export const UpdateNodeRequest = {
   },
 }
 
-const baseGenerateScriptRequest: object = { id: '', accessedBy: '', type: 0 }
+function createBaseGenerateScriptRequest(): GenerateScriptRequest {
+  return { id: '', accessedBy: '', type: 0 }
+}
 
 export const GenerateScriptRequest = {
   fromJSON(object: any): GenerateScriptRequest {
-    const message = { ...baseGenerateScriptRequest } as GenerateScriptRequest
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
-    message.type = object.type !== undefined && object.type !== null ? nodeTypeFromJSON(object.type) : 0
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      type: isSet(object.type) ? nodeTypeFromJSON(object.type) : 0,
+    }
   },
 
   toJSON(message: GenerateScriptRequest): unknown {
@@ -2651,15 +2698,16 @@ export const GenerateScriptRequest = {
   },
 }
 
-const baseNodeInstallResponse: object = { command: '' }
+function createBaseNodeInstallResponse(): NodeInstallResponse {
+  return { command: '', expireAt: undefined }
+}
 
 export const NodeInstallResponse = {
   fromJSON(object: any): NodeInstallResponse {
-    const message = { ...baseNodeInstallResponse } as NodeInstallResponse
-    message.command = object.command !== undefined && object.command !== null ? String(object.command) : ''
-    message.expireAt =
-      object.expireAt !== undefined && object.expireAt !== null ? fromJsonTimestamp(object.expireAt) : undefined
-    return message
+    return {
+      command: isSet(object.command) ? String(object.command) : '',
+      expireAt: isSet(object.expireAt) ? fromJsonTimestamp(object.expireAt) : undefined,
+    }
   },
 
   toJSON(message: NodeInstallResponse): unknown {
@@ -2670,13 +2718,13 @@ export const NodeInstallResponse = {
   },
 }
 
-const baseNodeScriptResponse: object = { content: '' }
+function createBaseNodeScriptResponse(): NodeScriptResponse {
+  return { content: '' }
+}
 
 export const NodeScriptResponse = {
   fromJSON(object: any): NodeScriptResponse {
-    const message = { ...baseNodeScriptResponse } as NodeScriptResponse
-    message.content = object.content !== undefined && object.content !== null ? String(object.content) : ''
-    return message
+    return { content: isSet(object.content) ? String(object.content) : '' }
   },
 
   toJSON(message: NodeScriptResponse): unknown {
@@ -2686,16 +2734,17 @@ export const NodeScriptResponse = {
   },
 }
 
-const baseNodeEventMessage: object = { id: '', status: 0 }
+function createBaseNodeEventMessage(): NodeEventMessage {
+  return { id: '', status: 0 }
+}
 
 export const NodeEventMessage = {
   fromJSON(object: any): NodeEventMessage {
-    const message = { ...baseNodeEventMessage } as NodeEventMessage
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.status =
-      object.status !== undefined && object.status !== null ? nodeConnectionStatusFromJSON(object.status) : 0
-    message.address = object.address !== undefined && object.address !== null ? String(object.address) : undefined
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      status: isSet(object.status) ? nodeConnectionStatusFromJSON(object.status) : 0,
+      address: isSet(object.address) ? String(object.address) : undefined,
+    }
   },
 
   toJSON(message: NodeEventMessage): unknown {
@@ -2707,17 +2756,17 @@ export const NodeEventMessage = {
   },
 }
 
-const baseWatchContainerStateRequest: object = { accessedBy: '', nodeId: '' }
+function createBaseWatchContainerStateRequest(): WatchContainerStateRequest {
+  return { accessedBy: '', nodeId: '' }
+}
 
 export const WatchContainerStateRequest = {
   fromJSON(object: any): WatchContainerStateRequest {
-    const message = {
-      ...baseWatchContainerStateRequest,
-    } as WatchContainerStateRequest
-    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
-    message.nodeId = object.nodeId !== undefined && object.nodeId !== null ? String(object.nodeId) : ''
-    message.prefix = object.prefix !== undefined && object.prefix !== null ? String(object.prefix) : undefined
-    return message
+    return {
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
+      prefix: isSet(object.prefix) ? String(object.prefix) : undefined,
+    }
   },
 
   toJSON(message: WatchContainerStateRequest): unknown {
@@ -2729,31 +2778,33 @@ export const WatchContainerStateRequest = {
   },
 }
 
-const baseContainerStateItem: object = {
-  containerId: '',
-  name: '',
-  command: '',
-  state: 0,
-  status: '',
-  imageName: '',
-  imageTag: '',
+function createBaseContainerStateItem(): ContainerStateItem {
+  return {
+    containerId: '',
+    name: '',
+    command: '',
+    createdAt: undefined,
+    state: 0,
+    status: '',
+    imageName: '',
+    imageTag: '',
+    ports: [],
+  }
 }
 
 export const ContainerStateItem = {
   fromJSON(object: any): ContainerStateItem {
-    const message = { ...baseContainerStateItem } as ContainerStateItem
-    message.containerId =
-      object.containerId !== undefined && object.containerId !== null ? String(object.containerId) : ''
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.command = object.command !== undefined && object.command !== null ? String(object.command) : ''
-    message.createdAt =
-      object.createdAt !== undefined && object.createdAt !== null ? fromJsonTimestamp(object.createdAt) : undefined
-    message.state = object.state !== undefined && object.state !== null ? containerStateFromJSON(object.state) : 0
-    message.status = object.status !== undefined && object.status !== null ? String(object.status) : ''
-    message.imageName = object.imageName !== undefined && object.imageName !== null ? String(object.imageName) : ''
-    message.imageTag = object.imageTag !== undefined && object.imageTag !== null ? String(object.imageTag) : ''
-    message.ports = (object.ports ?? []).map((e: any) => Port.fromJSON(e))
-    return message
+    return {
+      containerId: isSet(object.containerId) ? String(object.containerId) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      command: isSet(object.command) ? String(object.command) : '',
+      createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
+      state: isSet(object.state) ? containerStateFromJSON(object.state) : 0,
+      status: isSet(object.status) ? String(object.status) : '',
+      imageName: isSet(object.imageName) ? String(object.imageName) : '',
+      imageTag: isSet(object.imageTag) ? String(object.imageTag) : '',
+      ports: Array.isArray(object?.ports) ? object.ports.map((e: any) => Port.fromJSON(e)) : [],
+    }
   },
 
   toJSON(message: ContainerStateItem): unknown {
@@ -2775,16 +2826,16 @@ export const ContainerStateItem = {
   },
 }
 
-const baseContainerStateListMessage: object = {}
+function createBaseContainerStateListMessage(): ContainerStateListMessage {
+  return { data: [] }
+}
 
 export const ContainerStateListMessage = {
   fromJSON(object: any): ContainerStateListMessage {
-    const message = {
-      ...baseContainerStateListMessage,
-    } as ContainerStateListMessage
-    message.prefix = object.prefix !== undefined && object.prefix !== null ? String(object.prefix) : undefined
-    message.data = (object.data ?? []).map((e: any) => ContainerStateItem.fromJSON(e))
-    return message
+    return {
+      prefix: isSet(object.prefix) ? String(object.prefix) : undefined,
+      data: Array.isArray(object?.data) ? object.data.map((e: any) => ContainerStateItem.fromJSON(e)) : [],
+    }
   },
 
   toJSON(message: ContainerStateListMessage): unknown {
@@ -2799,22 +2850,18 @@ export const ContainerStateListMessage = {
   },
 }
 
-const baseDeploymentProgressMessage: object = { id: '', log: '' }
+function createBaseDeploymentProgressMessage(): DeploymentProgressMessage {
+  return { id: '', log: [] }
+}
 
 export const DeploymentProgressMessage = {
   fromJSON(object: any): DeploymentProgressMessage {
-    const message = {
-      ...baseDeploymentProgressMessage,
-    } as DeploymentProgressMessage
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.status =
-      object.status !== undefined && object.status !== null ? deploymentStatusFromJSON(object.status) : undefined
-    message.instance =
-      object.instance !== undefined && object.instance !== null
-        ? InstanceDeploymentItem.fromJSON(object.instance)
-        : undefined
-    message.log = (object.log ?? []).map((e: any) => String(e))
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      status: isSet(object.status) ? deploymentStatusFromJSON(object.status) : undefined,
+      instance: isSet(object.instance) ? InstanceDeploymentItem.fromJSON(object.instance) : undefined,
+      log: Array.isArray(object?.log) ? object.log.map((e: any) => String(e)) : [],
+    }
   },
 
   toJSON(message: DeploymentProgressMessage): unknown {
@@ -2833,15 +2880,13 @@ export const DeploymentProgressMessage = {
   },
 }
 
-const baseInstancesCreatedEventList: object = {}
+function createBaseInstancesCreatedEventList(): InstancesCreatedEventList {
+  return { data: [] }
+}
 
 export const InstancesCreatedEventList = {
   fromJSON(object: any): InstancesCreatedEventList {
-    const message = {
-      ...baseInstancesCreatedEventList,
-    } as InstancesCreatedEventList
-    message.data = (object.data ?? []).map((e: any) => InstanceResponse.fromJSON(e))
-    return message
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => InstanceResponse.fromJSON(e)) : [] }
   },
 
   toJSON(message: InstancesCreatedEventList): unknown {
@@ -2855,20 +2900,18 @@ export const InstancesCreatedEventList = {
   },
 }
 
-const baseDeploymentEditEventMessage: object = {}
+function createBaseDeploymentEditEventMessage(): DeploymentEditEventMessage {
+  return { instancesCreated: undefined, imageIdDeleted: undefined }
+}
 
 export const DeploymentEditEventMessage = {
   fromJSON(object: any): DeploymentEditEventMessage {
-    const message = {
-      ...baseDeploymentEditEventMessage,
-    } as DeploymentEditEventMessage
-    message.instancesCreated =
-      object.instancesCreated !== undefined && object.instancesCreated !== null
+    return {
+      instancesCreated: isSet(object.instancesCreated)
         ? InstancesCreatedEventList.fromJSON(object.instancesCreated)
-        : undefined
-    message.imageIdDeleted =
-      object.imageIdDeleted !== undefined && object.imageIdDeleted !== null ? String(object.imageIdDeleted) : undefined
-    return message
+        : undefined,
+      imageIdDeleted: isSet(object.imageIdDeleted) ? String(object.imageIdDeleted) : undefined,
+    }
   },
 
   toJSON(message: DeploymentEditEventMessage): unknown {
@@ -2882,21 +2925,20 @@ export const DeploymentEditEventMessage = {
   },
 }
 
-const baseCreateDeploymentRequest: object = {
-  accessedBy: '',
-  versionId: '',
-  nodeId: '',
+function createBaseCreateDeploymentRequest(): CreateDeploymentRequest {
+  return { accessedBy: '', versionId: '', nodeId: '', name: '', prefix: '' }
 }
 
 export const CreateDeploymentRequest = {
   fromJSON(object: any): CreateDeploymentRequest {
-    const message = {
-      ...baseCreateDeploymentRequest,
-    } as CreateDeploymentRequest
-    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
-    message.versionId = object.versionId !== undefined && object.versionId !== null ? String(object.versionId) : ''
-    message.nodeId = object.nodeId !== undefined && object.nodeId !== null ? String(object.nodeId) : ''
-    return message
+    return {
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      versionId: isSet(object.versionId) ? String(object.versionId) : '',
+      nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      description: isSet(object.description) ? String(object.description) : undefined,
+      prefix: isSet(object.prefix) ? String(object.prefix) : '',
+    }
   },
 
   toJSON(message: CreateDeploymentRequest): unknown {
@@ -2904,29 +2946,26 @@ export const CreateDeploymentRequest = {
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.versionId !== undefined && (obj.versionId = message.versionId)
     message.nodeId !== undefined && (obj.nodeId = message.nodeId)
+    message.name !== undefined && (obj.name = message.name)
+    message.description !== undefined && (obj.description = message.description)
+    message.prefix !== undefined && (obj.prefix = message.prefix)
     return obj
   },
 }
 
-const baseUpdateDeploymentRequest: object = {
-  id: '',
-  accessedBy: '',
-  name: '',
-  prefix: '',
+function createBaseUpdateDeploymentRequest(): UpdateDeploymentRequest {
+  return { id: '', accessedBy: '', name: '', prefix: '' }
 }
 
 export const UpdateDeploymentRequest = {
   fromJSON(object: any): UpdateDeploymentRequest {
-    const message = {
-      ...baseUpdateDeploymentRequest,
-    } as UpdateDeploymentRequest
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.description =
-      object.description !== undefined && object.description !== null ? String(object.description) : undefined
-    message.prefix = object.prefix !== undefined && object.prefix !== null ? String(object.prefix) : ''
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      description: isSet(object.description) ? String(object.description) : undefined,
+      prefix: isSet(object.prefix) ? String(object.prefix) : '',
+    }
   },
 
   toJSON(message: UpdateDeploymentRequest): unknown {
@@ -2940,22 +2979,18 @@ export const UpdateDeploymentRequest = {
   },
 }
 
-const basePatchDeploymentRequest: object = { id: '', accessedBy: '' }
+function createBasePatchDeploymentRequest(): PatchDeploymentRequest {
+  return { id: '', accessedBy: '' }
+}
 
 export const PatchDeploymentRequest = {
   fromJSON(object: any): PatchDeploymentRequest {
-    const message = { ...basePatchDeploymentRequest } as PatchDeploymentRequest
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
-    message.environment =
-      object.environment !== undefined && object.environment !== null
-        ? KeyValueList.fromJSON(object.environment)
-        : undefined
-    message.instance =
-      object.instance !== undefined && object.instance !== null
-        ? PatchInstanceRequest.fromJSON(object.instance)
-        : undefined
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      environment: isSet(object.environment) ? KeyValueList.fromJSON(object.environment) : undefined,
+      instance: isSet(object.instance) ? PatchInstanceRequest.fromJSON(object.instance) : undefined,
+    }
   },
 
   toJSON(message: PatchDeploymentRequest): unknown {
@@ -2970,20 +3005,21 @@ export const PatchDeploymentRequest = {
   },
 }
 
-const baseInstanceContainerConfig: object = {}
+function createBaseInstanceContainerConfig(): InstanceContainerConfig {
+  return { config: undefined, capabilities: [], environment: [] }
+}
 
 export const InstanceContainerConfig = {
   fromJSON(object: any): InstanceContainerConfig {
-    const message = {
-      ...baseInstanceContainerConfig,
-    } as InstanceContainerConfig
-    message.config =
-      object.config !== undefined && object.config !== null
-        ? ExplicitContainerConfig.fromJSON(object.config)
-        : undefined
-    message.capabilities = (object.capabilities ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
-    message.environment = (object.environment ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
-    return message
+    return {
+      config: isSet(object.config) ? ExplicitContainerConfig.fromJSON(object.config) : undefined,
+      capabilities: Array.isArray(object?.capabilities)
+        ? object.capabilities.map((e: any) => UniqueKeyValue.fromJSON(e))
+        : [],
+      environment: Array.isArray(object?.environment)
+        ? object.environment.map((e: any) => UniqueKeyValue.fromJSON(e))
+        : [],
+    }
   },
 
   toJSON(message: InstanceContainerConfig): unknown {
@@ -3004,23 +3040,19 @@ export const InstanceContainerConfig = {
   },
 }
 
-const baseInstanceResponse: object = { id: '' }
+function createBaseInstanceResponse(): InstanceResponse {
+  return { id: '', audit: undefined, image: undefined }
+}
 
 export const InstanceResponse = {
   fromJSON(object: any): InstanceResponse {
-    const message = { ...baseInstanceResponse } as InstanceResponse
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.audit =
-      object.audit !== undefined && object.audit !== null ? AuditResponse.fromJSON(object.audit) : undefined
-    message.image =
-      object.image !== undefined && object.image !== null ? ImageResponse.fromJSON(object.image) : undefined
-    message.state =
-      object.state !== undefined && object.state !== null ? containerStateFromJSON(object.state) : undefined
-    message.config =
-      object.config !== undefined && object.config !== null
-        ? InstanceContainerConfig.fromJSON(object.config)
-        : undefined
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
+      image: isSet(object.image) ? ImageResponse.fromJSON(object.image) : undefined,
+      state: isSet(object.state) ? containerStateFromJSON(object.state) : undefined,
+      config: isSet(object.config) ? InstanceContainerConfig.fromJSON(object.config) : undefined,
+    }
   },
 
   toJSON(message: InstanceResponse): unknown {
@@ -3036,26 +3068,19 @@ export const InstanceResponse = {
   },
 }
 
-const basePatchInstanceRequest: object = { id: '', accessedBy: '' }
+function createBasePatchInstanceRequest(): PatchInstanceRequest {
+  return { id: '', accessedBy: '' }
+}
 
 export const PatchInstanceRequest = {
   fromJSON(object: any): PatchInstanceRequest {
-    const message = { ...basePatchInstanceRequest } as PatchInstanceRequest
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
-    message.environment =
-      object.environment !== undefined && object.environment !== null
-        ? KeyValueList.fromJSON(object.environment)
-        : undefined
-    message.capabilities =
-      object.capabilities !== undefined && object.capabilities !== null
-        ? KeyValueList.fromJSON(object.capabilities)
-        : undefined
-    message.config =
-      object.config !== undefined && object.config !== null
-        ? ExplicitContainerConfig.fromJSON(object.config)
-        : undefined
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      environment: isSet(object.environment) ? KeyValueList.fromJSON(object.environment) : undefined,
+      capabilities: isSet(object.capabilities) ? KeyValueList.fromJSON(object.capabilities) : undefined,
+      config: isSet(object.config) ? ExplicitContainerConfig.fromJSON(object.config) : undefined,
+    }
   },
 
   toJSON(message: PatchInstanceRequest): unknown {
@@ -3072,13 +3097,13 @@ export const PatchInstanceRequest = {
   },
 }
 
-const baseDeploymentListResponse: object = {}
+function createBaseDeploymentListResponse(): DeploymentListResponse {
+  return { data: [] }
+}
 
 export const DeploymentListResponse = {
   fromJSON(object: any): DeploymentListResponse {
-    const message = { ...baseDeploymentListResponse } as DeploymentListResponse
-    message.data = (object.data ?? []).map((e: any) => DeploymentResponse.fromJSON(e))
-    return message
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => DeploymentResponse.fromJSON(e)) : [] }
   },
 
   toJSON(message: DeploymentListResponse): unknown {
@@ -3092,31 +3117,23 @@ export const DeploymentListResponse = {
   },
 }
 
-const baseDeploymentResponse: object = {
-  id: '',
-  name: '',
-  product: '',
-  productId: '',
-  version: '',
-  versionId: '',
-  node: '',
-  status: 0,
-  nodeId: '',
+function createBaseDeploymentResponse(): DeploymentResponse {
+  return { id: '', name: '', product: '', productId: '', version: '', versionId: '', node: '', status: 0, nodeId: '' }
 }
 
 export const DeploymentResponse = {
   fromJSON(object: any): DeploymentResponse {
-    const message = { ...baseDeploymentResponse } as DeploymentResponse
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.product = object.product !== undefined && object.product !== null ? String(object.product) : ''
-    message.productId = object.productId !== undefined && object.productId !== null ? String(object.productId) : ''
-    message.version = object.version !== undefined && object.version !== null ? String(object.version) : ''
-    message.versionId = object.versionId !== undefined && object.versionId !== null ? String(object.versionId) : ''
-    message.node = object.node !== undefined && object.node !== null ? String(object.node) : ''
-    message.status = object.status !== undefined && object.status !== null ? deploymentStatusFromJSON(object.status) : 0
-    message.nodeId = object.nodeId !== undefined && object.nodeId !== null ? String(object.nodeId) : ''
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      product: isSet(object.product) ? String(object.product) : '',
+      productId: isSet(object.productId) ? String(object.productId) : '',
+      version: isSet(object.version) ? String(object.version) : '',
+      versionId: isSet(object.versionId) ? String(object.versionId) : '',
+      node: isSet(object.node) ? String(object.node) : '',
+      status: isSet(object.status) ? deploymentStatusFromJSON(object.status) : 0,
+      nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
+    }
   },
 
   toJSON(message: DeploymentResponse): unknown {
@@ -3134,15 +3151,15 @@ export const DeploymentResponse = {
   },
 }
 
-const baseDeploymentListByVersionResponse: object = {}
+function createBaseDeploymentListByVersionResponse(): DeploymentListByVersionResponse {
+  return { data: [] }
+}
 
 export const DeploymentListByVersionResponse = {
   fromJSON(object: any): DeploymentListByVersionResponse {
-    const message = {
-      ...baseDeploymentListByVersionResponse,
-    } as DeploymentListByVersionResponse
-    message.data = (object.data ?? []).map((e: any) => DeploymentByVersionResponse.fromJSON(e))
-    return message
+    return {
+      data: Array.isArray(object?.data) ? object.data.map((e: any) => DeploymentByVersionResponse.fromJSON(e)) : [],
+    }
   },
 
   toJSON(message: DeploymentListByVersionResponse): unknown {
@@ -3156,29 +3173,22 @@ export const DeploymentListByVersionResponse = {
   },
 }
 
-const baseDeploymentByVersionResponse: object = {
-  id: '',
-  name: '',
-  prefix: '',
-  nodeId: '',
-  nodeName: '',
-  status: 0,
+function createBaseDeploymentByVersionResponse(): DeploymentByVersionResponse {
+  return { id: '', audit: undefined, name: '', prefix: '', nodeId: '', nodeName: '', status: 0, nodeStatus: 0 }
 }
 
 export const DeploymentByVersionResponse = {
   fromJSON(object: any): DeploymentByVersionResponse {
-    const message = {
-      ...baseDeploymentByVersionResponse,
-    } as DeploymentByVersionResponse
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.audit =
-      object.audit !== undefined && object.audit !== null ? AuditResponse.fromJSON(object.audit) : undefined
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.prefix = object.prefix !== undefined && object.prefix !== null ? String(object.prefix) : ''
-    message.nodeId = object.nodeId !== undefined && object.nodeId !== null ? String(object.nodeId) : ''
-    message.nodeName = object.nodeName !== undefined && object.nodeName !== null ? String(object.nodeName) : ''
-    message.status = object.status !== undefined && object.status !== null ? deploymentStatusFromJSON(object.status) : 0
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
+      name: isSet(object.name) ? String(object.name) : '',
+      prefix: isSet(object.prefix) ? String(object.prefix) : '',
+      nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
+      nodeName: isSet(object.nodeName) ? String(object.nodeName) : '',
+      status: isSet(object.status) ? deploymentStatusFromJSON(object.status) : 0,
+      nodeStatus: isSet(object.nodeStatus) ? nodeConnectionStatusFromJSON(object.nodeStatus) : 0,
+    }
   },
 
   toJSON(message: DeploymentByVersionResponse): unknown {
@@ -3190,38 +3200,41 @@ export const DeploymentByVersionResponse = {
     message.nodeId !== undefined && (obj.nodeId = message.nodeId)
     message.nodeName !== undefined && (obj.nodeName = message.nodeName)
     message.status !== undefined && (obj.status = deploymentStatusToJSON(message.status))
+    message.nodeStatus !== undefined && (obj.nodeStatus = nodeConnectionStatusToJSON(message.nodeStatus))
     return obj
   },
 }
 
-const baseDeploymentDetailsResponse: object = {
-  id: '',
-  productVersionId: '',
-  nodeId: '',
-  name: '',
-  prefix: '',
-  status: 0,
+function createBaseDeploymentDetailsResponse(): DeploymentDetailsResponse {
+  return {
+    id: '',
+    audit: undefined,
+    productVersionId: '',
+    nodeId: '',
+    name: '',
+    prefix: '',
+    environment: [],
+    status: 0,
+    instances: [],
+  }
 }
 
 export const DeploymentDetailsResponse = {
   fromJSON(object: any): DeploymentDetailsResponse {
-    const message = {
-      ...baseDeploymentDetailsResponse,
-    } as DeploymentDetailsResponse
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.audit =
-      object.audit !== undefined && object.audit !== null ? AuditResponse.fromJSON(object.audit) : undefined
-    message.productVersionId =
-      object.productVersionId !== undefined && object.productVersionId !== null ? String(object.productVersionId) : ''
-    message.nodeId = object.nodeId !== undefined && object.nodeId !== null ? String(object.nodeId) : ''
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.description =
-      object.description !== undefined && object.description !== null ? String(object.description) : undefined
-    message.prefix = object.prefix !== undefined && object.prefix !== null ? String(object.prefix) : ''
-    message.environment = (object.environment ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
-    message.status = object.status !== undefined && object.status !== null ? deploymentStatusFromJSON(object.status) : 0
-    message.instances = (object.instances ?? []).map((e: any) => InstanceResponse.fromJSON(e))
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
+      productVersionId: isSet(object.productVersionId) ? String(object.productVersionId) : '',
+      nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      description: isSet(object.description) ? String(object.description) : undefined,
+      prefix: isSet(object.prefix) ? String(object.prefix) : '',
+      environment: Array.isArray(object?.environment)
+        ? object.environment.map((e: any) => UniqueKeyValue.fromJSON(e))
+        : [],
+      status: isSet(object.status) ? deploymentStatusFromJSON(object.status) : 0,
+      instances: Array.isArray(object?.instances) ? object.instances.map((e: any) => InstanceResponse.fromJSON(e)) : [],
+    }
   },
 
   toJSON(message: DeploymentDetailsResponse): unknown {
@@ -3248,16 +3261,16 @@ export const DeploymentDetailsResponse = {
   },
 }
 
-const baseDeploymentEventContainerState: object = { instanceId: '', state: 0 }
+function createBaseDeploymentEventContainerState(): DeploymentEventContainerState {
+  return { instanceId: '', state: 0 }
+}
 
 export const DeploymentEventContainerState = {
   fromJSON(object: any): DeploymentEventContainerState {
-    const message = {
-      ...baseDeploymentEventContainerState,
-    } as DeploymentEventContainerState
-    message.instanceId = object.instanceId !== undefined && object.instanceId !== null ? String(object.instanceId) : ''
-    message.state = object.state !== undefined && object.state !== null ? containerStateFromJSON(object.state) : 0
-    return message
+    return {
+      instanceId: isSet(object.instanceId) ? String(object.instanceId) : '',
+      state: isSet(object.state) ? containerStateFromJSON(object.state) : 0,
+    }
   },
 
   toJSON(message: DeploymentEventContainerState): unknown {
@@ -3268,13 +3281,13 @@ export const DeploymentEventContainerState = {
   },
 }
 
-const baseDeploymentEventLog: object = { log: '' }
+function createBaseDeploymentEventLog(): DeploymentEventLog {
+  return { log: [] }
+}
 
 export const DeploymentEventLog = {
   fromJSON(object: any): DeploymentEventLog {
-    const message = { ...baseDeploymentEventLog } as DeploymentEventLog
-    message.log = (object.log ?? []).map((e: any) => String(e))
-    return message
+    return { log: Array.isArray(object?.log) ? object.log.map((e: any) => String(e)) : [] }
   },
 
   toJSON(message: DeploymentEventLog): unknown {
@@ -3288,26 +3301,21 @@ export const DeploymentEventLog = {
   },
 }
 
-const baseDeploymentEventResponse: object = { type: 0 }
+function createBaseDeploymentEventResponse(): DeploymentEventResponse {
+  return { type: 0, createdAt: undefined, log: undefined, deploymentStatus: undefined, containerStatus: undefined }
+}
 
 export const DeploymentEventResponse = {
   fromJSON(object: any): DeploymentEventResponse {
-    const message = {
-      ...baseDeploymentEventResponse,
-    } as DeploymentEventResponse
-    message.type = object.type !== undefined && object.type !== null ? deploymentEventTypeFromJSON(object.type) : 0
-    message.createdAt =
-      object.createdAt !== undefined && object.createdAt !== null ? fromJsonTimestamp(object.createdAt) : undefined
-    message.log = object.log !== undefined && object.log !== null ? DeploymentEventLog.fromJSON(object.log) : undefined
-    message.deploymentStatus =
-      object.deploymentStatus !== undefined && object.deploymentStatus !== null
-        ? deploymentStatusFromJSON(object.deploymentStatus)
-        : undefined
-    message.containerStatus =
-      object.containerStatus !== undefined && object.containerStatus !== null
+    return {
+      type: isSet(object.type) ? deploymentEventTypeFromJSON(object.type) : 0,
+      createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
+      log: isSet(object.log) ? DeploymentEventLog.fromJSON(object.log) : undefined,
+      deploymentStatus: isSet(object.deploymentStatus) ? deploymentStatusFromJSON(object.deploymentStatus) : undefined,
+      containerStatus: isSet(object.containerStatus)
         ? DeploymentEventContainerState.fromJSON(object.containerStatus)
-        : undefined
-    return message
+        : undefined,
+    }
   },
 
   toJSON(message: DeploymentEventResponse): unknown {
@@ -3326,15 +3334,15 @@ export const DeploymentEventResponse = {
   },
 }
 
-const baseDeploymentEventListResponse: object = {}
+function createBaseDeploymentEventListResponse(): DeploymentEventListResponse {
+  return { data: [] }
+}
 
 export const DeploymentEventListResponse = {
   fromJSON(object: any): DeploymentEventListResponse {
-    const message = {
-      ...baseDeploymentEventListResponse,
-    } as DeploymentEventListResponse
-    message.data = (object.data ?? []).map((e: any) => DeploymentEventResponse.fromJSON(e))
-    return message
+    return {
+      data: Array.isArray(object?.data) ? object.data.map((e: any) => DeploymentEventResponse.fromJSON(e)) : [],
+    }
   },
 
   toJSON(message: DeploymentEventListResponse): unknown {
@@ -3348,25 +3356,20 @@ export const DeploymentEventListResponse = {
   },
 }
 
-const baseCreateNotificationRequest: object = {
-  accessedBy: '',
-  name: '',
-  url: '',
-  type: 0,
-  active: false,
+function createBaseCreateNotificationRequest(): CreateNotificationRequest {
+  return { accessedBy: '', name: '', url: '', type: 0, active: false, events: [] }
 }
 
 export const CreateNotificationRequest = {
   fromJSON(object: any): CreateNotificationRequest {
-    const message = {
-      ...baseCreateNotificationRequest,
-    } as CreateNotificationRequest
-    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
-    message.type = object.type !== undefined && object.type !== null ? notificationTypeFromJSON(object.type) : 0
-    message.active = object.active !== undefined && object.active !== null ? Boolean(object.active) : false
-    return message
+    return {
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      url: isSet(object.url) ? String(object.url) : '',
+      type: isSet(object.type) ? notificationTypeFromJSON(object.type) : 0,
+      active: isSet(object.active) ? Boolean(object.active) : false,
+      events: Array.isArray(object?.events) ? object.events.map((e: any) => notificationEventTypeFromJSON(e)) : [],
+    }
   },
 
   toJSON(message: CreateNotificationRequest): unknown {
@@ -3376,20 +3379,25 @@ export const CreateNotificationRequest = {
     message.url !== undefined && (obj.url = message.url)
     message.type !== undefined && (obj.type = notificationTypeToJSON(message.type))
     message.active !== undefined && (obj.active = message.active)
+    if (message.events) {
+      obj.events = message.events.map(e => notificationEventTypeToJSON(e))
+    } else {
+      obj.events = []
+    }
     return obj
   },
 }
 
-const baseCreateNotificationResponse: object = { id: '', creator: '' }
+function createBaseCreateNotificationResponse(): CreateNotificationResponse {
+  return { id: '', creator: '' }
+}
 
 export const CreateNotificationResponse = {
   fromJSON(object: any): CreateNotificationResponse {
-    const message = {
-      ...baseCreateNotificationResponse,
-    } as CreateNotificationResponse
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.creator = object.creator !== undefined && object.creator !== null ? String(object.creator) : ''
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      creator: isSet(object.creator) ? String(object.creator) : '',
+    }
   },
 
   toJSON(message: CreateNotificationResponse): unknown {
@@ -3400,27 +3408,21 @@ export const CreateNotificationResponse = {
   },
 }
 
-const baseUpdateNotificationRequest: object = {
-  id: '',
-  accessedBy: '',
-  name: '',
-  url: '',
-  type: 0,
-  active: false,
+function createBaseUpdateNotificationRequest(): UpdateNotificationRequest {
+  return { id: '', accessedBy: '', name: '', url: '', type: 0, active: false, events: [] }
 }
 
 export const UpdateNotificationRequest = {
   fromJSON(object: any): UpdateNotificationRequest {
-    const message = {
-      ...baseUpdateNotificationRequest,
-    } as UpdateNotificationRequest
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
-    message.type = object.type !== undefined && object.type !== null ? notificationTypeFromJSON(object.type) : 0
-    message.active = object.active !== undefined && object.active !== null ? Boolean(object.active) : false
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      url: isSet(object.url) ? String(object.url) : '',
+      type: isSet(object.type) ? notificationTypeFromJSON(object.type) : 0,
+      active: isSet(object.active) ? Boolean(object.active) : false,
+      events: Array.isArray(object?.events) ? object.events.map((e: any) => notificationEventTypeFromJSON(e)) : [],
+    }
   },
 
   toJSON(message: UpdateNotificationRequest): unknown {
@@ -3431,31 +3433,30 @@ export const UpdateNotificationRequest = {
     message.url !== undefined && (obj.url = message.url)
     message.type !== undefined && (obj.type = notificationTypeToJSON(message.type))
     message.active !== undefined && (obj.active = message.active)
+    if (message.events) {
+      obj.events = message.events.map(e => notificationEventTypeToJSON(e))
+    } else {
+      obj.events = []
+    }
     return obj
   },
 }
 
-const baseNotificationDetailsResponse: object = {
-  id: '',
-  name: '',
-  url: '',
-  type: 0,
-  active: false,
+function createBaseNotificationDetailsResponse(): NotificationDetailsResponse {
+  return { id: '', audit: undefined, name: '', url: '', type: 0, active: false, events: [] }
 }
 
 export const NotificationDetailsResponse = {
   fromJSON(object: any): NotificationDetailsResponse {
-    const message = {
-      ...baseNotificationDetailsResponse,
-    } as NotificationDetailsResponse
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.audit =
-      object.audit !== undefined && object.audit !== null ? AuditResponse.fromJSON(object.audit) : undefined
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
-    message.type = object.type !== undefined && object.type !== null ? notificationTypeFromJSON(object.type) : 0
-    message.active = object.active !== undefined && object.active !== null ? Boolean(object.active) : false
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
+      name: isSet(object.name) ? String(object.name) : '',
+      url: isSet(object.url) ? String(object.url) : '',
+      type: isSet(object.type) ? notificationTypeFromJSON(object.type) : 0,
+      active: isSet(object.active) ? Boolean(object.active) : false,
+      events: Array.isArray(object?.events) ? object.events.map((e: any) => notificationEventTypeFromJSON(e)) : [],
+    }
   },
 
   toJSON(message: NotificationDetailsResponse): unknown {
@@ -3466,29 +3467,30 @@ export const NotificationDetailsResponse = {
     message.url !== undefined && (obj.url = message.url)
     message.type !== undefined && (obj.type = notificationTypeToJSON(message.type))
     message.active !== undefined && (obj.active = message.active)
+    if (message.events) {
+      obj.events = message.events.map(e => notificationEventTypeToJSON(e))
+    } else {
+      obj.events = []
+    }
     return obj
   },
 }
 
-const baseNotificationResponse: object = {
-  id: '',
-  name: '',
-  url: '',
-  type: 0,
-  active: false,
+function createBaseNotificationResponse(): NotificationResponse {
+  return { id: '', audit: undefined, name: '', url: '', type: 0, active: false, events: [] }
 }
 
 export const NotificationResponse = {
   fromJSON(object: any): NotificationResponse {
-    const message = { ...baseNotificationResponse } as NotificationResponse
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.audit =
-      object.audit !== undefined && object.audit !== null ? AuditResponse.fromJSON(object.audit) : undefined
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
-    message.type = object.type !== undefined && object.type !== null ? notificationTypeFromJSON(object.type) : 0
-    message.active = object.active !== undefined && object.active !== null ? Boolean(object.active) : false
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
+      name: isSet(object.name) ? String(object.name) : '',
+      url: isSet(object.url) ? String(object.url) : '',
+      type: isSet(object.type) ? notificationTypeFromJSON(object.type) : 0,
+      active: isSet(object.active) ? Boolean(object.active) : false,
+      events: Array.isArray(object?.events) ? object.events.map((e: any) => notificationEventTypeFromJSON(e)) : [],
+    }
   },
 
   toJSON(message: NotificationResponse): unknown {
@@ -3499,19 +3501,22 @@ export const NotificationResponse = {
     message.url !== undefined && (obj.url = message.url)
     message.type !== undefined && (obj.type = notificationTypeToJSON(message.type))
     message.active !== undefined && (obj.active = message.active)
+    if (message.events) {
+      obj.events = message.events.map(e => notificationEventTypeToJSON(e))
+    } else {
+      obj.events = []
+    }
     return obj
   },
 }
 
-const baseNotificationListResponse: object = {}
+function createBaseNotificationListResponse(): NotificationListResponse {
+  return { data: [] }
+}
 
 export const NotificationListResponse = {
   fromJSON(object: any): NotificationListResponse {
-    const message = {
-      ...baseNotificationListResponse,
-    } as NotificationListResponse
-    message.data = (object.data ?? []).map((e: any) => NotificationResponse.fromJSON(e))
-    return message
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => NotificationResponse.fromJSON(e)) : [] }
   },
 
   toJSON(message: NotificationListResponse): unknown {
@@ -3525,17 +3530,17 @@ export const NotificationListResponse = {
   },
 }
 
-const baseHealthResponse: object = { status: 0, cruxVersion: '' }
+function createBaseHealthResponse(): HealthResponse {
+  return { status: 0, cruxVersion: '' }
+}
 
 export const HealthResponse = {
   fromJSON(object: any): HealthResponse {
-    const message = { ...baseHealthResponse } as HealthResponse
-    message.status = object.status !== undefined && object.status !== null ? serviceStatusFromJSON(object.status) : 0
-    message.cruxVersion =
-      object.cruxVersion !== undefined && object.cruxVersion !== null ? String(object.cruxVersion) : ''
-    message.lastMigration =
-      object.lastMigration !== undefined && object.lastMigration !== null ? String(object.lastMigration) : undefined
-    return message
+    return {
+      status: isSet(object.status) ? serviceStatusFromJSON(object.status) : 0,
+      cruxVersion: isSet(object.cruxVersion) ? String(object.cruxVersion) : '',
+      lastMigration: isSet(object.lastMigration) ? String(object.lastMigration) : undefined,
+    }
   },
 
   toJSON(message: HealthResponse): unknown {
@@ -4328,9 +4333,6 @@ function fromJsonTimestamp(o: any): Timestamp {
   }
 }
 
-// If you get a compile-error about 'Constructor<Long> and ... have no overlap',
-// add '--ts_proto_opt=esModuleInterop=true' as a flag when calling 'protoc'.
-if (util.Long !== Long) {
-  util.Long = Long as any
-  configure()
+function isSet(value: any): boolean {
+  return value !== null && value !== undefined
 }

@@ -1,4 +1,4 @@
-import { DyoButton } from '@app/elements/dyo-button'
+import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
@@ -17,6 +17,8 @@ interface CreateTeamCardProps {
 }
 
 const CreateTeamCard = (props: CreateTeamCardProps) => {
+  const { className, onTeamCreated } = props
+
   const { t } = useTranslation('teams')
 
   const handleApiError = defaultApiErrorHandler(t)
@@ -35,7 +37,7 @@ const CreateTeamCard = (props: CreateTeamCardProps) => {
         const json = await res.json()
         const team = json as ActiveTeamDetails
 
-        props.onTeamCreated(team)
+        onTeamCreated(team)
       } else {
         handleApiError(res, setFieldError)
       }
@@ -45,7 +47,7 @@ const CreateTeamCard = (props: CreateTeamCardProps) => {
   })
 
   return (
-    <DyoCard className={props.className}>
+    <DyoCard className={className}>
       <DyoHeading element="h4" className="text-lg text-bright">
         {t('createTeam')}
       </DyoHeading>

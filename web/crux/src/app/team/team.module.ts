@@ -1,15 +1,15 @@
 import { Module } from '@nestjs/common'
-import { PrismaService } from 'src/services/prisma.service'
-import { InterceptorGrpcHelperProvider } from 'src/interceptors/helper.interceptor'
-import { TeamController } from './team.controller'
-import { TeamMapper } from './team.mapper'
-import { TeamRepository } from './team.repository'
-import { TeamService } from './team.service'
-import { EmailService } from 'src/services/email.service'
-import { KratosService } from 'src/services/kratos.service'
-import { EmailBuilder } from 'src/builders/email.builder'
+import PrismaService from 'src/services/prisma.service'
+import InterceptorGrpcHelperProvider from 'src/interceptors/helper.interceptor'
+import EmailService from 'src/services/email.service'
+import KratosService from 'src/services/kratos.service'
+import EmailBuilder from 'src/builders/email.builder'
 import { HttpModule } from '@nestjs/axios'
-import { DomainNotificationService } from 'src/services/domain.notification.service'
+import DomainNotificationService from 'src/services/domain.notification.service'
+import TeamService from './team.service'
+import TeamRepository from './team.repository'
+import TeamMapper from './team.mapper'
+import TeamController from './team.controller'
 
 @Module({
   imports: [HttpModule],
@@ -27,4 +27,4 @@ import { DomainNotificationService } from 'src/services/domain.notification.serv
     DomainNotificationService,
   ],
 })
-export class TeamModule {}
+export default class TeamModule {}

@@ -23,6 +23,7 @@
 
   "filters": "Filters",
   "search": "Search",
+  "all": "All",
   "id": "#",
   "description": "Description",
   "icon": "Icon",
@@ -36,6 +37,7 @@
   "noNameFound": "No {{name}} found",
   "yourTeams": "Your teams",
   "address": "Address",
+  "actions": "Actions",
 
   "editName": "Edit {{name}}",
   "add": "Add",
@@ -49,6 +51,7 @@
   "showAll": "Show all",
   "inspect": "Inspect",
   "deploy": "Deploy",
+  "view": "View",
 
   "confirm": "Confirm",
   "confirmDelete": "Are you sure you want to delete {{name}}?",
@@ -102,6 +105,8 @@
     "penguin": "Penguin icon",
     "shark": "Shark icon"
   },
+
+  "nodeUnreachable": "Node is unreachable!",
 
   "nodeStatuses": {
     "connecting": "Connecting",

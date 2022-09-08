@@ -1,12 +1,12 @@
-import { ProductTypeEnum } from '.prisma/client'
 import { Injectable, PipeTransform } from '@nestjs/common'
 import { checkVersionMutability } from 'src/domain/version'
 import { AlreadyExistsException, PreconditionFailedException } from 'src/exception/errors'
 import { IncreaseVersionRequest } from 'src/grpc/protobuf/proto/crux'
-import { PrismaService } from 'src/services/prisma.service'
+import PrismaService from 'src/services/prisma.service'
+import { ProductTypeEnum } from '.prisma/client'
 
 @Injectable()
-export class VersionIncreaseValidationPipe implements PipeTransform {
+export default class VersionIncreaseValidationPipe implements PipeTransform {
   constructor(private prisma: PrismaService) {}
 
   async transform(value: IncreaseVersionRequest) {

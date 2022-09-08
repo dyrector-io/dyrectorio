@@ -2,7 +2,7 @@ import { INestApplication, Injectable, Logger, OnModuleInit } from '@nestjs/comm
 import { Prisma, PrismaClient } from '@prisma/client'
 
 @Injectable()
-export class PrismaService extends PrismaClient<Prisma.PrismaClientOptions, 'query'> implements OnModuleInit {
+export default class PrismaService extends PrismaClient<Prisma.PrismaClientOptions, 'query'> implements OnModuleInit {
   private readonly logger = new Logger(PrismaService.name)
 
   constructor() {

@@ -5,7 +5,7 @@ const kratos = new V0alpha2Api(new Configuration({ basePath: process.env.KRATOS_
 const EMAIL = 'email'
 
 @Injectable()
-export class KratosService {
+export default class KratosService {
   async getIdentityByEmail(email: string): Promise<Identity> {
     const identities = await kratos.adminListIdentities()
     return identities.data.find(user => user.traits[EMAIL] === email)
@@ -19,6 +19,16 @@ export class KratosService {
   async getSessionsById(id: string, activeOnly?: boolean): Promise<Session[]> {
     const sessions = await kratos.adminListIdentitySessions(id, undefined, undefined, activeOnly)
     return sessions.data ?? []
+  }
+
+  async getSessionsByIds(ids: string[], activeOnly?: boolean): Promise<Map<string, Session[]>> {
+    const data = await Promise.all(
+      ids.map(async (it: string): Promise<[string, Session[]]> => {
+        const sessions = await this.getSessionsById(it, activeOnly)
+        return [it, sessions]
+      }),
+    )
+    return new Map(data)
   }
 
   async createUser(email: string): Promise<Identity> {

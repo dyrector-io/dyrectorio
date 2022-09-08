@@ -19,6 +19,14 @@ type Environment = {
   value: string
 }
 
+enum NetworkMode {
+  NONE = 1,
+  HOST = 2,
+  BRIDGE = 3,
+}
+
+const dagentNetwork = { networkMode: NetworkMode.BRIDGE, networks: ['googlemicroservicesdemo'] }
+
 const mapConfigToImage = (name: ImageName) => {
   const config =
     name == ImageName.Adservice
@@ -28,28 +36,28 @@ const mapConfigToImage = (name: ImageName) => {
             { key: 'DISABLE_STATS', value: '1' },
             { key: 'DISABLE_TRACING', value: '1' },
           ] as Environment[],
-          config: { ports: [{ external: 9555, internal: 9555 }] },
+          config: { ports: [{ external: 9555, internal: 9555 }], dagent: dagentNetwork },
         }
       : name == ImageName.Cartservice
       ? {
-          environment: [{ key: 'REDIS_ADDR', value: '172.17.0.1:6379' }] as Environment[],
-          config: { ports: [{ external: 7070, internal: 7070 }] },
+          environment: [{ key: 'REDIS_ADDR', value: 'redis:6379' }] as Environment[],
+          config: { ports: [{ external: 7070, internal: 7070 }], dagent: dagentNetwork },
         }
       : name == ImageName.Checkoutservice
       ? {
           environment: [
             { key: 'PORT', value: '5050' },
-            { key: 'PRODUCT_CATALOG_SERVICE_ADDR', value: '172.17.0.1:3550' },
-            { key: 'SHIPPING_SERVICE_ADDR', value: '172.17.0.1:50054' },
-            { key: 'PAYMENT_SERVICE_ADDR', value: '172.17.0.1:50051' },
-            { key: 'EMAIL_SERVICE_ADDR', value: '172.17.0.1:50052' },
-            { key: 'CURRENCY_SERVICE_ADDR', value: '172.17.0.1:7000' },
-            { key: 'CART_SERVICE_ADDR', value: '172.17.0.1:7070' },
+            { key: 'PRODUCT_CATALOG_SERVICE_ADDR', value: 'productcatalogservice:3550' },
+            { key: 'SHIPPING_SERVICE_ADDR', value: 'shippingservice:50054' },
+            { key: 'PAYMENT_SERVICE_ADDR', value: 'paymentservice:50051' },
+            { key: 'EMAIL_SERVICE_ADDR', value: 'emailservice:50052' },
+            { key: 'CURRENCY_SERVICE_ADDR', value: 'currencyservice:7000' },
+            { key: 'CART_SERVICE_ADDR', value: 'cartservice:7070' },
             { key: 'DISABLE_STATS', value: '1' },
             { key: 'DISABLE_TRACING', value: '1' },
             { key: 'DISABLE_PROFILER', value: '1' },
           ] as Environment[],
-          config: { ports: [{ external: 5050, internal: 5050 }] },
+          config: { ports: [{ external: 5050, internal: 5050 }], dagent: dagentNetwork },
         }
       : name == ImageName.Currencyservice
       ? {
@@ -59,7 +67,7 @@ const mapConfigToImage = (name: ImageName) => {
             { key: 'DISABLE_PROFILER', value: '1' },
             { key: 'DISABLE_DEBUGGER', value: '1' },
           ] as Environment[],
-          config: { ports: [{ external: 7000, internal: 7000 }] },
+          config: { ports: [{ external: 7000, internal: 7000 }], dagent: dagentNetwork },
         }
       : name == ImageName.Emailservice
       ? {
@@ -68,31 +76,31 @@ const mapConfigToImage = (name: ImageName) => {
             { key: 'DISABLE_TRACING', value: '1' },
             { key: 'DISABLE_PROFILER', value: '1' },
           ] as Environment[],
-          config: { ports: [{ external: 50052, internal: 50052 }] },
+          config: { ports: [{ external: 50052, internal: 50052 }], dagent: dagentNetwork },
         }
       : name == ImageName.Frontend
       ? {
           environment: [
-            { key: 'PORT', value: '8080' },
-            { key: 'PRODUCT_CATALOG_SERVICE_ADDR', value: '172.17.0.1:3550' },
-            { key: 'CURRENCY_SERVICE_ADDR', value: '172.17.0.1:7000' },
-            { key: 'CART_SERVICE_ADDR', value: '172.17.0.1:7070' },
-            { key: 'RECOMMENDATION_SERVICE_ADDR', value: '172.17.0.1:50053' },
-            { key: 'SHIPPING_SERVICE_ADDR', value: '172.17.0.1:50054' },
-            { key: 'CHECKOUT_SERVICE_ADDR', value: '172.17.0.1:5050' },
-            { key: 'AD_SERVICE_ADDR', value: '172.17.0.1:9555' },
+            { key: 'PORT', value: '65534' },
+            { key: 'PRODUCT_CATALOG_SERVICE_ADDR', value: 'productcatalogservice:3550' },
+            { key: 'CURRENCY_SERVICE_ADDR', value: 'currencyservice:7000' },
+            { key: 'CART_SERVICE_ADDR', value: 'cartservice:7070' },
+            { key: 'RECOMMENDATION_SERVICE_ADDR', value: 'recommendationservice:50053' },
+            { key: 'SHIPPING_SERVICE_ADDR', value: 'shippingservice:50054' },
+            { key: 'CHECKOUT_SERVICE_ADDR', value: 'checkoutservice:5050' },
+            { key: 'AD_SERVICE_ADDR', value: 'adservice:9555' },
             { key: 'DISABLE_TRACING', value: '1' },
             { key: 'DISABLE_PROFILER', value: '1' },
           ] as Environment[],
-          config: { ports: [{ external: 8080, internal: 8080 }] },
+          config: { ports: [{ external: 65534, internal: 65534 }], dagent: dagentNetwork },
         }
       : name == ImageName.Loadgenerator
       ? {
           environment: [
-            { key: 'FRONTEND_ADDR', value: '172.17.0.1:8080' },
+            { key: 'FRONTEND_ADDR', value: 'frontend:65534' },
             { key: 'USERS', value: '10' },
           ] as Environment[],
-          config: {},
+          config: { dagent: dagentNetwork },
         }
       : name == ImageName.Paymentservice
       ? {
@@ -102,7 +110,7 @@ const mapConfigToImage = (name: ImageName) => {
             { key: 'DISABLE_PROFILER', value: '1' },
             { key: 'DISABLE_DEBUGGER', value: '1' },
           ] as Environment[],
-          config: { ports: [{ external: 50051, internal: 50051 }] },
+          config: { ports: [{ external: 50051, internal: 50051 }], dagent: dagentNetwork },
         }
       : name == ImageName.Productcatalogservice
       ? {
@@ -112,18 +120,18 @@ const mapConfigToImage = (name: ImageName) => {
             { key: 'DISABLE_TRACING', value: '1' },
             { key: 'DISABLE_PROFILER', value: '1' },
           ] as Environment[],
-          config: { ports: [{ external: 3550, internal: 3550 }] },
+          config: { ports: [{ external: 3550, internal: 3550 }], dagent: dagentNetwork },
         }
       : name == ImageName.Recommendationservice
       ? {
           environment: [
             { key: 'PORT', value: '50053' },
-            { key: 'PRODUCT_CATALOG_SERVICE_ADDR', value: '172.17.0.1:3550' },
+            { key: 'PRODUCT_CATALOG_SERVICE_ADDR', value: 'productcatalogservice:3550' },
             { key: 'DISABLE_TRACING', value: '1' },
             { key: 'DISABLE_PROFILER', value: '1' },
             { key: 'DISABLE_DEBUGGER', value: '1' },
           ] as Environment[],
-          config: { ports: [{ external: 50053, internal: 50053 }] },
+          config: { ports: [{ external: 50053, internal: 50053 }], dagent: dagentNetwork },
         }
       : name == ImageName.Shippingservice
       ? {
@@ -133,12 +141,12 @@ const mapConfigToImage = (name: ImageName) => {
             { key: 'DISABLE_TRACING', value: '1' },
             { key: 'DISABLE_PROFILER', value: '1' },
           ] as Environment[],
-          config: { ports: [{ external: 50054, internal: 50054 }] },
+          config: { ports: [{ external: 50054, internal: 50054 }], dagent: dagentNetwork },
         }
       : name == ImageName.Redis
       ? {
           environment: [] as Environment[],
-          config: { ports: [{ external: 6379, internal: 6379 }] },
+          config: { ports: [{ external: 6379, internal: 6379 }], dagent: dagentNetwork },
         }
       : { environment: [] as Environment[], config: {} }
 

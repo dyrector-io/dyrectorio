@@ -16,7 +16,7 @@ interface TeamSelectionCardProps {
 }
 
 const TeamSelectionCard = (props: TeamSelectionCardProps) => {
-  const { meta, className } = props
+  const { meta, className, onTeamSelected } = props
 
   const { t } = useTranslation('common')
 
@@ -34,40 +34,42 @@ const TeamSelectionCard = (props: TeamSelectionCardProps) => {
     if (res.ok) {
       router.replace(ROUTE_INDEX)
       router.reload()
-      props.onTeamSelected?.call(null)
+      onTeamSelected?.call(null)
     } else {
       handleApiError(res)
     }
   }
 
+  const itemTemplate = (user: UserMetaTeam) => {
+    const currentTeam = meta.activeTeamId === user.id
+
+    /* eslint-disable react/jsx-key */
+    return [
+      <div
+        className={clsx('flex flex-row items-center', currentTeam ? null : 'cursor-pointer')}
+        onClick={currentTeam ? null : () => onSelectTeam(user)}
+      >
+        <Image
+          className={currentTeam ? null : 'opacity-30 bg-blend-darken'}
+          src="/default_team_avatar.svg"
+          alt={t('teamAvatar')}
+          width={32}
+          height={32}
+        />
+        <div className="ml-4">{user.name}</div>
+      </div>,
+    ]
+    /* eslint-enable react/jsx-key */
+  }
+
   return (
     <DyoCard className={className}>
       <DyoList
-        headerClassName={'flex text-bright text-xl px-10 pr-32 my-4'}
-        itemClassName={'flex text-bright pl-10 py-4'}
+        headerClassName="flex text-bright text-xl px-10 pr-32 my-4"
+        itemClassName="flex text-bright pl-10 py-4"
         headers={[t('yourTeams')]}
         data={meta.teams}
-        itemBuilder={it => {
-          const currentTeam = meta.activeTeamId === it.id
-
-          /* eslint-disable react/jsx-key */
-          return [
-            <div
-              className={clsx('flex flex-row items-center', currentTeam ? null : 'cursor-pointer')}
-              onClick={currentTeam ? null : () => onSelectTeam(it)}
-            >
-              <Image
-                className={currentTeam ? null : 'opacity-30 bg-blend-darken'}
-                src="/default_team_avatar.svg"
-                alt={t('teamAvatar')}
-                width={32}
-                height={32}
-              />
-              <div className="ml-4">{it.name}</div>
-            </div>,
-          ]
-          /* eslint-enable react/jsx-key */
-        }}
+        itemBuilder={itemTemplate}
       />
     </DyoCard>
   )

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
-import { Identity } from '@ory/kratos-client'
+import { Identity, Session } from '@ory/kratos-client'
 import { Team, UserInvitation, UserRoleEnum, UsersOnTeams } from '@prisma/client'
+import { toTimestamp } from 'src/domain/utils'
 import {
   ActiveTeamDetailsResponse,
   TeamDetailsResponse,
@@ -11,8 +12,12 @@ import {
 import { IdentityTraits, nameOfIdentity } from 'src/shared/model'
 
 @Injectable()
-export class TeamMapper {
-  private userToGrpc(user: UsersOnTeams, identities: Map<string, Identity>): UserResponse {
+export default class TeamMapper {
+  private userToGrpc(
+    user: UsersOnTeams,
+    identities: Map<string, Identity>,
+    sessions: Map<string, Session[]>,
+  ): UserResponse {
     const identity = identities.get(user.userId)
     if (!identity) {
       return null
@@ -23,12 +28,19 @@ export class TeamMapper {
       return null
     }
 
+    const userSessions = sessions.get(user.userId)
+    const lastSession = userSessions
+      .filter(it => !!it.authenticated_at)
+      .sort((a, b) => new Date(b.authenticated_at).getTime() - new Date(a.authenticated_at).getTime())
+      .shift()
+
     return {
       id: user.userId,
       name: nameOfIdentity(identity),
       email: traits.email,
       role: this.roleToGrpc(user.role),
       status: UserStatus.VERIFIED,
+      lastLogin: lastSession ? toTimestamp(new Date(lastSession.authenticated_at)) : undefined,
     }
   }
 
@@ -44,8 +56,12 @@ export class TeamMapper {
     }
   }
 
-  private teamUsersToGrpc(team: TeamWithUsersAndInvitations, identities: Map<string, Identity>): UserResponse[] {
-    const users = team.users.map(it => this.userToGrpc(it, identities)).filter(it => !!it)
+  private teamUsersToGrpc(
+    team: TeamWithUsersAndInvitations,
+    identities: Map<string, Identity>,
+    sessions: Map<string, Session[]>,
+  ): UserResponse[] {
+    const users = team.users.map(it => this.userToGrpc(it, identities, sessions)).filter(it => !!it)
     const invitations = team.invitations.map(it => this.invitationToUserGrpc(it, identities)).filter(it => !!it)
 
     return users.concat(invitations)
@@ -54,18 +70,23 @@ export class TeamMapper {
   activeTeamDetailsToGrpc(
     team: TeamWithUsersAndInvitations,
     identities: Map<string, Identity>,
+    sessions: Map<string, Session[]>,
   ): ActiveTeamDetailsResponse {
     return {
       ...team,
-      users: this.teamUsersToGrpc(team, identities),
+      users: this.teamUsersToGrpc(team, identities, sessions),
     }
   }
 
-  teamDetailsToGrpc(team: TeamDetails, identities: Map<string, Identity>): TeamDetailsResponse {
+  teamDetailsToGrpc(
+    team: TeamDetails,
+    identities: Map<string, Identity>,
+    sessions: Map<string, Session[]>,
+  ): TeamDetailsResponse {
     return {
       id: team.id,
       name: team.name,
-      users: this.teamUsersToGrpc(team, identities),
+      users: this.teamUsersToGrpc(team, identities, sessions),
       statistics: {
         users: team._count.users + team._count.invitations,
         products: team._count.products,

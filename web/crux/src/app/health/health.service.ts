@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { HealthResponse, ServiceStatus } from 'src/grpc/protobuf/proto/crux'
-import { PrismaService } from 'src/services/prisma.service'
+import PrismaService from 'src/services/prisma.service'
 
 @Injectable()
-export class HealthService {
+export default class HealthService {
   private logger = new Logger(HealthService.name)
 
   constructor(private prisma: PrismaService) {}

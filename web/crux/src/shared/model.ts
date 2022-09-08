@@ -7,7 +7,7 @@ export type UniqueKeyValue = {
   value: string
 }
 
-export const EXPLICIT_CONTAINER_NETWORK_MODE_VALUES = ['none', 'host'] as const
+export const EXPLICIT_CONTAINER_NETWORK_MODE_VALUES = ['none', 'host', 'bridge'] as const
 export type ExplicitContainerNetworkMode = typeof EXPLICIT_CONTAINER_NETWORK_MODE_VALUES[number]
 
 export const EXPLICIT_CONTAINER_RESTART_POLICY_TYPE_VALUES = [
@@ -56,6 +56,12 @@ export const nameOrEmailOfIdentity = (identity: Identity) => {
   if (traits.name) {
     return nameOfIdentity(identity)
   }
+
+  return traits.email
+}
+
+export const emailOfIdentity = (identity: Identity) => {
+  const traits = identity?.traits as IdentityTraits
 
   return traits.email
 }

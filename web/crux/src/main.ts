@@ -3,9 +3,9 @@ import { INestApplication, Logger, LogLevel } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
 import { MicroserviceOptions, Transport } from '@nestjs/microservices'
 import { join } from 'path'
-import { AppModule } from './app.module'
-import { ShutdownService } from './application.shutdown.service'
-import { getServerCredentials } from './shared/cert'
+import AppModule from './app.module'
+import ShutdownService from './application.shutdown.service'
+import getServerCredentials from './shared/cert'
 
 const HOUR_IN_MS: number = 60 * 60 * 1000
 
@@ -22,7 +22,7 @@ const loadGrpcOptions = (
   portEnv: string,
   insecureEnv: string,
 ): GrpcOptions => {
-  const port = portEnv ? parseInt(portEnv) : certPrefix === 'agent' ? 5000 : 5001
+  const port = portEnv ? Number(portEnv) : certPrefix === 'agent' ? 5000 : 5001
 
   const certPairs =
     insecureEnv === 'true'

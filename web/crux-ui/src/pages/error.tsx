@@ -1,6 +1,5 @@
 import { SingleFormLayout } from '@app/components/layout'
-import { DyoButton } from '@app/elements/dyo-button'
-import { DyoContainer } from '@app/elements/dyo-container'
+import DyoButton from '@app/elements/dyo-button'
 import { ROUTE_INDEX } from '@app/routes'
 import { redirectTo, withContextAuthorization } from '@app/utils'
 import { SelfServiceError } from '@ory/kratos-client'
@@ -14,24 +13,26 @@ interface Error {
 }
 
 const ErrorPage = (props: SelfServiceError) => {
+  const { error: propsError } = props
+
   const { t } = useTranslation('errors')
   const router = useRouter()
 
-  const error = props.error && 'message' in props.error ? (props.error as Error) : null
+  const error = propsError && 'message' in propsError ? (propsError as Error) : null
 
   const onGoBack = () => router.back()
 
   return (
     <SingleFormLayout title={t('oops')}>
-      <DyoContainer className="text-center my-20">
+      <div className="container mx-auto px-6 w-full max-w-2xl md:max-w-5xl lg:max-w-7xl text-center my-20">
         <h2 className="text-4xl font-extrabold text-blue">{t('oops')}</h2>
 
         <div className="my-4 text-center text-purple-lightText font-semibold">{error?.message}</div>
 
         <DyoButton onClick={onGoBack}>{t('common:goBack')}</DyoButton>
 
-        <div className="mt-16"></div>
-      </DyoContainer>
+        <div className="mt-16" />
+      </div>
     </SingleFormLayout>
   )
 }

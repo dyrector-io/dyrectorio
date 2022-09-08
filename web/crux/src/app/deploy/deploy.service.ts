@@ -2,12 +2,7 @@ import { Injectable, Logger, PreconditionFailedException } from '@nestjs/common'
 import { DeploymentStatusEnum } from '@prisma/client'
 import { JsonArray } from 'prisma'
 import { concatAll, filter, from, map, merge, Observable, Subject } from 'rxjs'
-import {
-  defaultDeploymentName,
-  Deployment,
-  deploymentPrefixFromName,
-  previousDeployPrefix,
-} from 'src/domain/deployment'
+import Deployment from 'src/domain/deployment'
 import { InternalException } from 'src/exception/errors'
 import { DeployRequest } from 'src/grpc/protobuf/proto/agent'
 import {
@@ -27,19 +22,19 @@ import {
   UpdateDeploymentRequest,
   UpdateEntityResponse,
 } from 'src/grpc/protobuf/proto/crux'
-import { KratosService } from 'src/services/kratos.service'
-import { PrismaService } from 'src/services/prisma.service'
+import PrismaService from 'src/services/prisma.service'
 import { InstanceContainerConfigData } from 'src/shared/model'
-import { AgentService } from '../agent/agent.service'
+import AgentService from '../agent/agent.service'
 import { ImageWithConfig } from '../image/image.mapper'
-import { ImageService } from '../image/image.service'
-import { DeployMapper, InstanceDetails } from './deploy.mapper'
+import ImageService from '../image/image.service'
+import DeployMapper, { InstanceDetails } from './deploy.mapper'
 
 @Injectable()
-export class DeployService {
+export default class DeployService {
   private readonly logger = new Logger(DeployService.name)
 
   readonly instancesCreatedEvent = new Subject<InstancesCreatedEvent>()
+
   readonly imageDeletedEvent: Observable<string>
 
   constructor(
@@ -47,7 +42,6 @@ export class DeployService {
     private agentService: AgentService,
     imageService: ImageService,
     private mapper: DeployMapper,
-    private kratos: KratosService,
   ) {
     imageService.imagesAddedToVersionEvent
       .pipe(
@@ -124,63 +118,21 @@ export class DeployService {
       },
     })
 
-    const versionIds = version.parent ? [version.parent.parentVersionId, version.id] : [version.id]
-
-    const previousDeploys = await this.prisma.deployment.findMany({
-      where: {
-        nodeId: request.nodeId,
-        version: {
-          OR: versionIds.map(it => {
-            return {
-              id: it,
-            }
-          }),
-        },
-      },
-      orderBy: {
-        prefix: 'asc',
-      },
-    })
-
-    const node = await this.prisma.node.findUniqueOrThrow({
-      where: {
-        id: request.nodeId,
-      },
-    })
-
-    let name = defaultDeploymentName(version.product.name, version.name, node.name)
-
-    const nextIncrement = await this.prisma.deployment.count({
-      where: {
-        versionId: request.versionId,
-        name: {
-          startsWith: name,
-        },
-      },
-    })
-
-    if (nextIncrement > 0) {
-      name = `${name} ${nextIncrement + 1}`
-    }
-
     const deployment = await this.prisma.deployment.create({
       data: {
         versionId: request.versionId,
         nodeId: request.nodeId,
         status: DeploymentStatusEnum.preparing,
-        name,
+        name: request.name,
+        description: request.description,
         createdBy: request.accessedBy,
-        prefix:
-          previousDeployPrefix(previousDeploys, version.id, version.parent?.parentVersionId) ??
-          deploymentPrefixFromName(version.product.name),
+        prefix: request.prefix,
         instances: {
           createMany: {
-            data: version.images.map(it => {
-              return {
-                imageId: it.id,
-                state: null,
-              }
-            }),
+            data: version.images.map(it => ({
+              imageId: it.id,
+              state: null,
+            })),
           },
         },
       },
@@ -330,7 +282,7 @@ export class DeployService {
         releaseNotes: deployment.version.changelog,
         versionName: deployment.version.name,
         requests: deployment.instances.map(it => {
-          const registry = it.image.registry
+          const { registry } = it.image
           const registryUrl =
             registry.type === 'google' || registry.type === 'github'
               ? `${registry.url}/${registry.imageNamePrefix}`
@@ -372,20 +324,22 @@ export class DeployService {
     return merge(
       this.instancesCreatedEvent.pipe(
         filter(it => it.deploymentIds.includes(request.id)),
-        map(it => {
-          return {
-            instancesCreated: {
-              data: it.instances.map(it => this.mapper.instanceToGrpc(it)),
-            },
-          } as DeploymentEditEventMessage
-        }),
+        map(
+          event =>
+            ({
+              instancesCreated: {
+                data: event.instances.map(it => this.mapper.instanceToGrpc(it)),
+              },
+            } as DeploymentEditEventMessage),
+        ),
       ),
       this.imageDeletedEvent.pipe(
-        map(it => {
-          return {
-            imageIdDeleted: it,
-          } as DeploymentEditEventMessage
-        }),
+        map(
+          str =>
+            ({
+              imageIdDeleted: str,
+            } as DeploymentEditEventMessage),
+        ),
       ),
     )
   }

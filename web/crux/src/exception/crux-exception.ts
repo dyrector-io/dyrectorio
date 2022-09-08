@@ -6,7 +6,7 @@ export type BaseGrpcExceptionOptions = {
   message: string
 }
 
-export class BaseGrpcException extends RpcException {
+export default class BaseGrpcException extends RpcException {
   constructor(error: BaseGrpcExceptionOptions) {
     super(BaseGrpcException.formatMessage(error))
   }

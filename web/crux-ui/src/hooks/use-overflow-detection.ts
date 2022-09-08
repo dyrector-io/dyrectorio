@@ -2,7 +2,7 @@ import { MutableRefObject, useEffect, useRef, useState } from 'react'
 
 type OverflowState = 'clear' | 'overflow'
 
-export const useOverflowDetection = <T extends HTMLElement>(): [boolean, MutableRefObject<T>] => {
+const useOverflowDetection = <T extends HTMLElement>(): [boolean, MutableRefObject<T>] => {
   const [overflow, setOverflow] = useState(false)
   const [state, setState] = useState<OverflowState>('clear')
   const [result, setResult] = useState(overflow)
@@ -27,3 +27,5 @@ export const useOverflowDetection = <T extends HTMLElement>(): [boolean, Mutable
 
   return [result, ref]
 }
+
+export default useOverflowDetection

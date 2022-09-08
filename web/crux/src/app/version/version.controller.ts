@@ -12,18 +12,18 @@ import {
   VersionDetailsResponse,
   VersionListResponse,
 } from 'src/grpc/protobuf/proto/crux'
-import { VersionCreateTeamAccessGuard } from './guards/version.create.team-access.guard'
-import { VersionTeamAccessGuard } from './guards/version.team-access.guard'
-import { VersionCreateValidationPipe } from './pipes/version.create.pipe'
-import { VersionDeleteValidationPipe } from './pipes/version.delete.pipe'
-import { VersionIncreaseValidationPipe } from './pipes/version.increase.pipe'
-import { VersionUpdateValidationPipe } from './pipes/version.update.pipe'
-import { VersionService } from './version.service'
+import VersionCreateTeamAccessGuard from './guards/version.create.team-access.guard'
+import VersionTeamAccessGuard from './guards/version.team-access.guard'
+import VersionCreateValidationPipe from './pipes/version.create.pipe'
+import VersionDeleteValidationPipe from './pipes/version.delete.pipe'
+import VersionIncreaseValidationPipe from './pipes/version.increase.pipe'
+import VersionUpdateValidationPipe from './pipes/version.update.pipe'
+import VersionService from './version.service'
 
 @Controller()
 @CruxProductVersionControllerMethods()
 @UseGuards(VersionTeamAccessGuard)
-export class VersionController implements CruxProductVersionController {
+export default class VersionController implements CruxProductVersionController {
   constructor(private service: VersionService) {}
 
   async increaseVersion(

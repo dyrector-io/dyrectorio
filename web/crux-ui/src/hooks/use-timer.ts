@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
-export const useTimer = (
+const useTimer = (
   initialTimeout?: number,
   onExpire?: VoidFunction,
 ): [number, (timeout?: number) => void, VoidFunction] => {
@@ -23,3 +23,5 @@ export const useTimer = (
 
   return [remaining, (timeout: number) => setRemaining(timeout), () => clearTimeout(timer.current)]
 }
+
+export default useTimer

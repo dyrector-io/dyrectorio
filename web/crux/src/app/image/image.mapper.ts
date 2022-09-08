@@ -5,7 +5,7 @@ import { ContainerConfig as ProtoContainerConfig, ImageResponse } from 'src/grpc
 import { UniqueKeyValue } from 'src/shared/model'
 
 @Injectable()
-export class ImageMapper {
+export default class ImageMapper {
   toGrpc(image: ImageWithConfig): ImageResponse {
     return {
       ...image,

@@ -13,7 +13,7 @@ import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { roleToText, Team, TeamDetails, User, userIsAdmin, userIsOwner, UserRole } from '@app/models'
 import { ROUTE_TEAMS, teamApiUrl, teamUrl, userApiUrl } from '@app/routes'
-import { redirectTo, withContextAuthorization } from '@app/utils'
+import { redirectTo, utcDateToLocale, withContextAuthorization } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
 import { cruxFromContext } from '@server/crux/crux'
 import { sessionOfContext } from '@server/kratos'
@@ -34,9 +34,9 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
 
   const router = useRouter()
 
-  const { me } = props
+  const { me, team: propsTeam } = props
 
-  const [team, setTeam] = useState(props.team)
+  const [team, setTeam] = useState(propsTeam)
   const [detailsState, setDetailsState] = useState<TeamDetailsState>('none')
   const [deleteModalConfig, confirmDelete] = useConfirmation()
 
@@ -124,7 +124,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
     },
   ]
 
-  const listHeaders = [...['common:name', 'common:email', 'role', 'common:status'].map(it => t(it)), '']
+  const listHeaders = [...['common:name', 'common:email', 'role', 'lastLogin', 'common:status'].map(it => t(it)), '']
   const defaultHeaderClass = 'uppercase text-bright text-sm font-bold bg-medium-eased pl-2 py-3 h-11'
   const headerClassNames = [
     clsx(defaultHeaderClass, 'rounded-tl-lg pl-16'),
@@ -136,6 +136,36 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
     addDetailsItem: t('invite'),
     save: detailsState === 'inviting' ? t('send') : null,
   }
+
+  /* eslint-disable react/jsx-key */
+  const itemTemplate = (it: User) => [
+    <div className="font-semibold ml-14 py-1 h-8">{it.name}</div>,
+    <div>{it.email}</div>,
+    <div className="flex flex-row">
+      <span>{t(roleToText(it.role))}</span>
+      {!canEdit || it.status !== 'verified' ? null : (
+        <UserRoleAction
+          className="flex ml-2"
+          teamId={team.id}
+          user={it}
+          onRoleUpdated={role => onUserRoleUpdated(it.id, role)}
+        />
+      )}
+    </div>,
+    <div>{utcDateToLocale(it.lastLogin)}</div>,
+    <UserStatusTag className="my-auto w-fit" status={it.status} />,
+    detailsState !== 'none' || !canEdit || it.role === 'owner' ? null : (
+      <Image
+        className="cursor-pointer mr-16"
+        src="/trash-can.svg"
+        alt={t('common:delete')}
+        width={24}
+        height={24}
+        onClick={() => onDeleteUser(it)}
+      />
+    ),
+  ]
+  /* eslint-enable react/jsx-key */
 
   return (
     <Layout title={t('teamsName', team)}>
@@ -166,36 +196,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
           headerClassName={headerClassNames}
           headers={listHeaders}
           data={team.users}
-          itemBuilder={it => {
-            /* eslint-disable react/jsx-key */
-            return [
-              <div className="font-semibold ml-14 py-1 h-8">{it.name}</div>,
-              <div>{it.email}</div>,
-              <div className="flex flex-row">
-                <span>{t(roleToText(it.role))}</span>
-                {!canEdit || it.status !== 'verified' ? null : (
-                  <UserRoleAction
-                    className="flex ml-2"
-                    teamId={team.id}
-                    user={it}
-                    onRoleUpdated={role => onUserRoleUpdated(it.id, role)}
-                  />
-                )}
-              </div>,
-              <UserStatusTag className="my-auto w-fit" status={it.status} />,
-              detailsState !== 'none' || !canEdit || it.role === 'owner' ? null : (
-                <Image
-                  className="cursor-pointer mr-16"
-                  src="/trash-can.svg"
-                  alt={t('common:delete')}
-                  width={24}
-                  height={24}
-                  onClick={() => onDeleteUser(it)}
-                />
-              ),
-            ]
-            /* eslint-enable react/jsx-key */
-          }}
+          itemBuilder={itemTemplate}
         />
 
         <DyoConfirmationModal

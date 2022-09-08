@@ -1,5 +1,5 @@
 import { DyoCard } from '@app/elements/dyo-card'
-import { DyoExpandableText } from '@app/elements/dyo-expandable-text'
+import DyoExpandableText from '@app/elements/dyo-expandable-text'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { ProductDetails } from '@app/models'
 import { utcDateToLocale } from '@app/utils'
@@ -14,14 +14,14 @@ interface ProductDetailsCardProps {
 }
 
 const ProductDetailsCard = (props: ProductDetailsCardProps) => {
-  const { t } = useTranslation('products')
+  const { product, className } = props
 
-  const { product } = props
+  const { t } = useTranslation('products')
 
   const version = product.type === 'simple' ? product.versions[0] : null
 
   return (
-    <DyoCard className={clsx(props.className ?? 'p-6', 'flex flex-col')}>
+    <DyoCard className={clsx(className ?? 'p-6', 'flex flex-col')}>
       <div className="flex flex-row">
         <div>
           <Image

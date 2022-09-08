@@ -5,7 +5,9 @@ import { getKratosServiceStatus } from './kratos'
 
 class ServiceStatusChecker<T extends ServiceInfo> {
   private lastCheck = 0
+
   private lastInfo: T
+
   private checking = false
 
   constructor(defaultInfo: T, private runCheck: () => Promise<T>) {
@@ -37,12 +39,12 @@ export type DyoServiceStatusCheckers = {
   kratos: ServiceStatusChecker<ServiceInfo>
 }
 
-if (!global._serviceStatus) {
-  global._serviceStatus = {
+if (!global.serviceStatus) {
+  global.serviceStatus = {
     crux: new ServiceStatusChecker(DEFAULT_CRUX_HEALTH, getCruxHealth),
     kratos: new ServiceStatusChecker(DEFAULT_SERVICE_INFO, getKratosServiceStatus),
   }
 }
 
-const dyoServiceStatus: DyoServiceStatusCheckers = global._serviceStatus
+const dyoServiceStatus: DyoServiceStatusCheckers = global.serviceStatus
 export default dyoServiceStatus

@@ -40,7 +40,7 @@ export type ExplicitContainerConfigPortRange = {
   external: PortRange
 }
 
-export const EXPLICIT_CONTAINER_NETWORK_MODE_VALUES = ['none', 'host'] as const
+export const EXPLICIT_CONTAINER_NETWORK_MODE_VALUES = ['none', 'host', 'bridge'] as const
 export type ExplicitContainerNetworkMode = typeof EXPLICIT_CONTAINER_NETWORK_MODE_VALUES[number]
 
 export const EXPLICIT_CONTAINER_RESTART_POLICY_TYPE_VALUES = [
@@ -123,12 +123,13 @@ export type ExplicitContainerConfig = {
   commands?: string[]
   args?: string[]
 
-  //dagent-specific:
+  // dagent-specific:
   logConfig?: ExplicitContainerConfigLog
   restartPolicy?: ExplicitContainerRestartPolicyType
   networkMode?: ExplicitContainerNetworkMode
+  networks?: string[]
 
-  //crane-specific:
+  // crane-specific:
   deploymentStrategy?: ExplicitContainerDeploymentStrategyType
   customHeaders?: string[]
   proxyHeaders?: boolean
@@ -153,13 +154,9 @@ const overridePorts = (
   return [...(weak?.filter(it => !overridenPorts.has(it.internal)) ?? []), ...(strong ?? [])]
 }
 
-const override = <T>(weak: T, strong: T): T => {
-  return strong ?? weak
-}
+const override = <T>(weak: T, strong: T): T => strong ?? weak
 
-const overrideWithDefaultValue = <T>(weak: T, strong: T, defaultValue: T): T => {
-  return override(weak, strong) ?? defaultValue
-}
+const overrideWithDefaultValue = <T>(weak: T, strong: T, defaultValue: T): T => override(weak, strong) ?? defaultValue
 
 const overrideArrays = <T>(weak: T[], strong: T[]): T[] => {
   const strongs: Set<T> = new Set(strong?.map(it => it))

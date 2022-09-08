@@ -1,17 +1,22 @@
-import { DyoButton } from '@app/elements/dyo-button'
+import DyoButton from '@app/elements/dyo-button'
 import DyoChips from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import RemainingTimeLabel from '@app/elements/remaining-time-label'
 import { defaultApiErrorHandler } from '@app/errors'
-import { useTimer } from '@app/hooks/use-timer'
+import useTimer from '@app/hooks/use-timer'
 import { DyoNodeDetails, DyoNodeInstall, NodeType, NODE_TYPE_VALUES } from '@app/models'
 import { nodeSetupApiUrl } from '@app/routes'
 import { sendForm, writeToClipboard } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import ShEditor from '../shared/sh-editor'
 import DyoNodeConnectionInfo from './dyo-node-connection-info'
+
+const expiresIn = (expireAt: Date): number => {
+  const now = new Date().getTime()
+  return (expireAt.getTime() - now) / 1000
+}
 
 interface DyoNodeSetupProps {
   node: DyoNodeDetails
@@ -22,18 +27,22 @@ interface DyoNodeSetupProps {
 const DyoNodeSetup = (props: DyoNodeSetupProps) => {
   const { t } = useTranslation('nodes')
 
-  const { node, onNodeTypeChanged } = props
+  const { node, onNodeTypeChanged, onNodeInstallChanged } = props
 
   const [remaining, startCountdown, cancelCountdown] = useTimer(
     node.install ? expiresIn(new Date(node.install.expireAt)) : null,
-    () => props.onNodeInstallChanged(null),
+    () => onNodeInstallChanged(null),
   )
 
   const handleApiError = defaultApiErrorHandler(t)
 
   const onGenerateInstallScript = async () => {
+    if (remaining > 0) {
+      cancelCountdown()
+    }
+
     const body = {
-      type: props.node.type,
+      type: node.type,
     }
 
     const res = await sendForm('POST', nodeSetupApiUrl(node.id), body)
@@ -47,7 +56,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
 
     startCountdown(expiresIn(new Date(install.expireAt)))
 
-    props.onNodeInstallChanged(install)
+    onNodeInstallChanged(install)
   }
 
   const onDiscard = async () => {
@@ -61,7 +70,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
     }
 
     cancelCountdown()
-    props.onNodeInstallChanged(null)
+    onNodeInstallChanged(null)
   }
 
   const onCopyScript = () => writeToClipboard(t, node.install.command)
@@ -116,7 +125,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
 
           <div className="flex flex-col">
             <DyoLabel className="mb-2.5">{t('script')}</DyoLabel>
-            <ShEditor className={'h-48 mb-4 w-full overflow-x-auto'} readOnly value={node.install.script} />
+            <ShEditor className="h-48 mb-4 w-full overflow-x-auto" readOnly value={node.install.script} />
           </div>
         </>
       )}
@@ -127,8 +136,3 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
 }
 
 export default DyoNodeSetup
-
-const expiresIn = (expireAt: Date): number => {
-  const now = new Date().getTime()
-  return (expireAt.getTime() - now) / 1000
-}

@@ -1,5 +1,6 @@
 import { WsMessage } from '@app/websockets/common'
-import { WsConnection, WsEndpoint } from '@app/websockets/server'
+import WsConnection from '@app/websockets/connection'
+import WsEndpoint from '@app/websockets/endpoint'
 import { Logger } from '../logger'
 import { AsyncVoidFunction } from './middlewares'
 
@@ -25,6 +26,8 @@ export const useWebsocketMiddlewares = async (
   }
 
   let i = 0
+
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   const callNext = async () => (i < middlewares.length ? await callNextMiddleware() : await next())
 
   const callNextMiddleware = async () => await middlewares[i++](logger, endpoint, connection, message, callNext)

@@ -24,6 +24,7 @@ import {
   DeploymentEventType,
   DeploymentResponse,
   InstanceResponse,
+  NodeConnectionStatus,
 } from 'src/grpc/protobuf/proto/crux'
 import {
   ContainerState,
@@ -32,15 +33,17 @@ import {
   DeploymentStatus,
   deploymentStatusFromJSON,
   ExplicitContainerConfig,
-  Port,
   NetworkMode,
+  Port,
 } from 'src/grpc/protobuf/proto/common'
 import { ContainerConfigData, UniqueKeyValue } from 'src/shared/model'
-import { ImageMapper, ImageWithConfig } from '../image/image.mapper'
+import { InternalException } from 'src/exception/errors'
+import ImageMapper, { ImageWithConfig } from '../image/image.mapper'
+import AgentService from '../agent/agent.service'
 
 @Injectable()
-export class DeployMapper {
-  constructor(private imageMapper: ImageMapper) {}
+export default class DeployMapper {
+  constructor(private imageMapper: ImageMapper, private agentService: AgentService) {}
 
   listItemToGrpc(deployment: DeploymentListItem): DeploymentResponse {
     return {
@@ -56,12 +59,16 @@ export class DeployMapper {
   }
 
   deploymentByVersionToGrpc(deployment: DeploymentWithNode): DeploymentByVersionResponse {
+    const agent = this.agentService.getById(deployment.nodeId)
+
+    const status = agent?.getConnectionStatus() ?? NodeConnectionStatus.UNREACHABLE
     return {
       ...deployment,
       audit: AuditResponse.fromJSON(deployment),
       status: this.statusToGrpc(deployment.status),
       nodeId: deployment.nodeId,
       nodeName: deployment.node.name,
+      nodeStatus: status,
     }
   }
 
@@ -72,7 +79,10 @@ export class DeployMapper {
       productVersionId: deployment.versionId,
       status: this.statusToGrpc(deployment.status),
       environment: deployment.environment as JsonArray,
-      instances: deployment.instances.map(it => this.instanceToGrpc(it)),
+      instances: deployment.instances.map(it => ({
+        ...this.instanceToGrpc(it),
+        audit: AuditResponse.fromJSON(deployment),
+      })),
     }
   }
 
@@ -119,6 +129,10 @@ export class DeployMapper {
         })
         break
       }
+      default:
+        throw new InternalException({
+          message: 'Unsupported deployment event type!',
+        })
     }
 
     return {
@@ -139,6 +153,10 @@ export class DeployMapper {
         return DeploymentEventType.DEPLOYMENT_STATUS
       case 'log':
         return DeploymentEventType.DEPLOYMENT_LOG
+      default:
+        throw new InternalException({
+          message: 'Unsupported event type!',
+        })
     }
   }
 
@@ -204,6 +222,11 @@ export class DeployMapper {
     return [...(weak?.filter(it => !overridenPorts.has(it.internal)) ?? []), ...(strong ?? [])]
   }
 
+  private overrideArrays = <T>(weak: T[], strong: T[]): T[] => {
+    const strongs: Set<T> = new Set(strong?.map(it => it))
+    return [...(weak?.filter(it => !strongs.has(it)) ?? []), ...(strong ?? [])]
+  }
+
   private overrideNetworkMode(weak: NetworkMode, strong: NetworkMode) {
     return strong ?? weak ?? 'none'
   }
@@ -219,7 +242,11 @@ export class DeployMapper {
       config: {
         ...imageConfig?.config,
         ...instanceConfig?.config,
-        networkMode: this.overrideNetworkMode(imageConfig?.config?.networkMode, instanceConfig?.config?.networkMode),
+        networkMode: this.overrideNetworkMode(
+          imageConfig?.config?.dagent?.networkMode,
+          instanceConfig?.config?.dagent?.networkMode,
+        ),
+        networks: this.overrideArrays(imageConfig?.config?.dagent?.networks, instanceConfig?.config?.dagent?.networks),
         ports: this.overridePorts(imageConfig?.config?.ports, instanceConfig?.config?.ports),
       },
     }
