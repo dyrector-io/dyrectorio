@@ -31,6 +31,7 @@ type ContainerBuilder interface {
 	WithName(name string) ContainerBuilder
 	WithNetworkAliases(aliases ...string) ContainerBuilder
 	WithNetworkMode(networkMode string) ContainerBuilder
+	WithNetworks(networks []string) ContainerBuilder
 	WithEnvironment(envList string) ContainerBuilder
 	WithLabels(labels map[string]string) ContainerBuilder
 	WithLogConfig(config container.LogConfig)

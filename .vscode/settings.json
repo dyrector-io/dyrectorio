@@ -1,3 +1,4 @@
 {
     "go.buildFlags": ["-tags=unit,integration"],
+    "go.lintTool": "golangci-lint",
 }

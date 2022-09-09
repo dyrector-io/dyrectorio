@@ -16,48 +16,49 @@ func main() {
 
 		Commands: []*cli.Command{
 			{
-				Name:    "gen",
-				Aliases: []string{"g", "generate"},
-				Usage:   "Create a docker-compose.yaml",
-				Action:  writeCompose,
-			},
-			{
 				Name:    "up",
 				Aliases: []string{"u"},
 				Usage:   "Run the stack",
-				Action:  up,
+				Action:  run,
 			},
 			{
 				Name:    "down",
 				Aliases: []string{"d"},
 				Usage:   "Stop the stack",
-				Action:  down,
+				Action:  run,
 			},
 		},
 		Flags: []cli.Flag{
-			&cli.StringFlag{
+			&cli.BoolFlag{
 				Name:     "disable-crux",
-				Value:    "none",
+				Aliases:  []string{"dc"},
+				Value:    false,
 				Usage:    "disable crux(backend) service",
 				Required: false,
+				EnvVars:  []string{"DISABLE_CRUX"},
 			},
-			&cli.StringFlag{
+			&cli.BoolFlag{
 				Name:     "disable-crux-ui",
-				Value:    "none",
+				Aliases:  []string{"dcu"},
+				Value:    false,
 				Usage:    "disable crux-ui(frontend) service",
 				Required: false,
+				EnvVars:  []string{"DISABLE_CRUXUI"},
 			},
 			&cli.BoolFlag{
-				Name:     "store",
+				Name:     "write",
+				Aliases:  []string{"w"},
 				Value:    false,
-				Usage:    "enables writing configuration, storing state",
+				Usage:    "enables writing configuration, storing current state",
 				Required: false,
 			},
-			&cli.BoolFlag{
-				Name:     "ignore-config",
-				Value:    false,
-				Usage:    "ignores configuration",
+			&cli.StringFlag{
+				Name:     "config",
+				Aliases:  []string{"c"},
+				Value:    "",
+				Usage:    "configuration location",
 				Required: false,
+				EnvVars:  []string{"DYO_CONFIG"},
 			},
 		},
 	}
@@ -67,78 +68,18 @@ func main() {
 	}
 }
 
-// Write compose file
-func writeCompose(cCtx *cli.Context) error {
-	services := serviceSelector(cCtx)
-
-	containers, err := GenContainer(services, cCtx.Bool("store"))
-	if err != nil {
-		return err
+func run(cCtx *cli.Context) error {
+	state := Settings{
+		SettingsWrite:    cCtx.Bool("write"),
+		SettingsFilePath: SettingsFileLocation(cCtx.String("config")),
+		SettingsExists:   SettingsExists(cCtx.String("config")),
+		CruxUIDisabled:   cCtx.Bool("disable-crux-ui"),
+		CruxDisabled:     cCtx.Bool("disable-crux"),
+		Command:          cCtx.Command.Name,
 	}
 
-	err = os.WriteFile("docker-compose.yaml", []byte(containers), FilePerms)
-	if err != nil {
-		return err
-	}
+	settings := SettingsFileReadWrite(state)
+	RunContainers(settings)
 
 	return nil
-}
-
-// Write compose file and start the compose process
-func up(cCtx *cli.Context) error {
-	services := serviceSelector(cCtx)
-
-	containers, err := GenContainer(services, cCtx.Bool("store"))
-	if err != nil {
-		return err
-	}
-
-	err = os.WriteFile("docker-compose.yaml", []byte(containers), FilePerms)
-	if err != nil {
-		return err
-	}
-
-	err = RunContainers(true, false)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Stop the compose process
-func down(cCtx *cli.Context) error {
-	err := RunContainers(false, true)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Service disabling based on parsing command line parameters
-func serviceSelector(cCtx *cli.Context) []Services {
-	services := []Services{Crux, CruxUI, Utils}
-
-	if cCtx.Bool("disable-crux-ui") {
-		services = disableService(services, CruxUI)
-	}
-
-	if cCtx.Bool("disable-crux") {
-		services = disableService(services, Crux)
-	}
-
-	return services
-}
-
-// Service disabling
-func disableService(services []Services, service Services) []Services {
-	var newServices []Services
-	for _, item := range services {
-		if item != service {
-			newServices = append(newServices, item)
-		}
-	}
-
-	return newServices
 }
