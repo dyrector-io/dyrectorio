@@ -15,10 +15,10 @@ import AgentService from './agent.service'
     JwtModule.register({
       secret: process.env.JWT_SECRET,
       signOptions: {
-        issuer: process.env.CRUX_ADDRESS,
+        issuer: process.env.CRUX_AGENT_ADDRESS,
       },
       verifyOptions: {
-        issuer: process.env.CRUX_ADDRESS,
+        issuer: process.env.CRUX_AGENT_ADDRESS,
       },
     }),
   ],

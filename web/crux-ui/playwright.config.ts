@@ -15,7 +15,7 @@ const config: PlaywrightTestConfig = {
   // Artifacts folder where screenshots, videos, and traces are stored.
   outputDir: path.join(__dirname, 'e2e_results/'),
   webServer: {
-    command: 'npm start',
+    command: 'npm run prod',
     url: baseURL,
     timeout: 120 * 1000, // 2 min
     reuseExistingServer: !process.env.CI,
@@ -36,9 +36,9 @@ const config: PlaywrightTestConfig = {
   },
   projects: [
     {
-      name: 'Desktop Chrome',
+      name: 'Desktop Chromium',
       use: {
-        ...devices['Desktop Chrome'],
+        ...devices['Desktop Chromium'],
       },
     },
     // {

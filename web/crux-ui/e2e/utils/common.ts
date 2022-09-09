@@ -4,6 +4,7 @@ import { FullConfig } from '@playwright/test'
 import path from 'path'
 import MailSlurper from './mail-slurper'
 
+export const MAILSLURPER_TIMEOUT = 30000 // millis
 export const USER_EMAIL = 'john.doe@example.com'
 export const USER_PASSWORD = 'TestPw23233'
 export const USER_TEAM = "John's Team"
@@ -16,14 +17,14 @@ const replacePort = (address: string, port: string): string => {
   return `${url}:${port}`
 }
 
-export const mailslurpFromBaseURL = (baseURL: string): MailSlurper => {
+export const mailslurperFromBaseURL = (baseURL: string): MailSlurper => {
   const url = replacePort(baseURL, '4437')
   return new MailSlurper(url)
 }
 
-export const mailslurpFromConfig = (config: FullConfig) => {
+export const mailslurperFromConfig = (config: FullConfig) => {
   const { baseURL } = config.projects[0].use
-  return mailslurpFromBaseURL(baseURL)
+  return mailslurperFromBaseURL(baseURL)
 }
 
 export const cruxAddressFromConfig = (config: FullConfig) => {

@@ -35,6 +35,7 @@ services:
       - FROM_NAME=$FROM_NAME
       - KRATOS_ADMIN_URL=$KRATOS_ADMIN_URL
       - CRUX_UI_URL=$CRUX_UI_URL
+      - CRUX_AGENT_ADDRESS=$CRUX_AGENT_ADDRESS
     volumes:
       - crux-certs:/app/certs
     restart: unless-stopped

@@ -5,7 +5,7 @@ import {
   createUser,
   extractKratosLinkFromMail,
   kratosFromConfig,
-  mailslurpFromConfig,
+  mailslurperFromConfig,
   USER_EMAIL,
   USER_PASSWORD,
   USER_TEAM,
@@ -18,7 +18,8 @@ const globalSetup = async (config: FullConfig) => {
   const kratos = kratosFromConfig(config)
   await createUser(kratos, USER_EMAIL, USER_PASSWORD)
 
-  const { baseURL, storageState } = config.projects[0].use
+  const project = config.projects[0].use
+  const { baseURL, storageState } = project
   const browser = await chromium.launch()
   const page = await browser.newPage({
     baseURL,
@@ -28,8 +29,8 @@ const globalSetup = async (config: FullConfig) => {
   await page.locator('button[type=submit]').click()
 
   await page.waitForTimeout(1000)
-  const mailSlurper = mailslurpFromConfig(config)
-  const mail = await mailSlurper.getAndDelete({
+  const mailSlurper = mailslurperFromConfig(config)
+  const mail = await mailSlurper.getMail({
     toAddress: USER_EMAIL,
   })
   const verificationLink = extractKratosLinkFromMail(mail.body)

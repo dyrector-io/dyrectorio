@@ -1,3 +1,5 @@
+import { MAILSLURPER_TIMEOUT } from "./common"
+
 // further info: https://github.com/mailslurper/mailslurper/wiki/Email-Endpoints
 type Mail = {
   id: string
@@ -14,24 +16,49 @@ type MailFilterOptions = {
 class MailSlurper {
   constructor(private url: string) {}
 
-  async getAndDelete(filters?: MailFilterOptions): Promise<Mail> {
-    const res = await fetch(`${this.url}/mail`)
-    const body = (await res.json()) as {
-      mailItems: Mail[]
+  async getMail(filters?: MailFilterOptions, timeout: number = MAILSLURPER_TIMEOUT): Promise<Mail> {
+    const startedAt = new Date().getTime()
+    let result: Mail = null
+
+    const timeoutReached = () => {
+      const now = new Date().getTime()
+      return now - startedAt >= timeout
     }
 
-    let emails = body.mailItems
-    if (filters) {
-      if (filters.subject) {
-        emails = emails.filter(it => it.subject.startsWith(filters.subject))
+    while (!result) {
+      if (timeoutReached()) {
+        throw new Error('Mailslurper timeout reached')
       }
 
-      if (filters.toAddress) {
-        emails = emails.filter(it => it.toAddresses.includes(filters.toAddress))
+      const res = await fetch(`${this.url}/mail`)
+      if (!res.ok) {
+        throw new Error('Failed to get mails from Mailslurper')
+      }
+
+      const body = (await res.json()) as {
+        mailItems: Mail[],
+        totalRecords: number,
+      }
+
+      if (body.totalRecords < 1) {
+        continue
+      }
+  
+      let emails = body.mailItems
+      if (filters) {
+        if (filters.subject) {
+          emails = emails.filter(it => it.subject.startsWith(filters.subject))
+        }
+  
+        if (filters.toAddress) {
+          emails = emails.filter(it => it.toAddresses.includes(filters.toAddress))
+        }
+      }
+
+      if (emails.length > 0) {
+        return emails[0]
       }
     }
-
-    return emails.length > 0 ? emails[0] : null
   }
 }
 

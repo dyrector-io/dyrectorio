@@ -8,13 +8,13 @@ services:
     environment:
       - TZ=Europe/Budapest
       - KRATOS_URL=$KRATOS_URL
-      - CRUX_ADDRESS=$CRUX_ADDRESS
+      - CRUX_API_ADDRESS=$CRUX_API_ADDRESS
       - RECAPTCHA_SECRET_KEY=$RECAPTCHA_SECRET_KEY
       - RECAPTCHA_SITE_KEY=$RECAPTCHA_SITE_KEY
     restart: unless-stopped
     volumes:
       - crux-ui-certs:/app/certs
-    networks:
+    networks: 
       - crux-intranet
 
 volumes:
