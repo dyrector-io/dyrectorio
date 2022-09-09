@@ -21,7 +21,10 @@ import EditInstanceCard from './instances/edit-instance-card'
 
 const mergeInstancePatch = (instance: Instance, message: InstanceUpdatedMessage): Instance => ({
   ...instance,
-  overriddenConfig: message,
+  overriddenConfig: {
+    ...instance.overriddenConfig,
+    ...message,
+  },
 })
 
 interface EditDeploymentInstancesProps {
