@@ -1,4 +1,3 @@
-import { ContainerStateEnum, DeploymentEventTypeEnum, DeploymentStatusEnum } from '.prisma/client'
 import { Logger, PreconditionFailedException } from '@nestjs/common'
 import { Observable, Subject } from 'rxjs'
 import { AgentCommand, VersionDeployRequest } from 'src/grpc/protobuf/proto/agent'
@@ -10,6 +9,7 @@ import {
   DeploymentStatusMessage,
   deploymentStatusToJSON,
 } from 'src/grpc/protobuf/proto/common'
+import { ContainerStateEnum, DeploymentEventTypeEnum, DeploymentStatusEnum } from '.prisma/client'
 
 export type DeploymentProgressContainerEvent = {
   instanceId: string
@@ -73,7 +73,7 @@ export default class Deployment {
 
   readonly id: string
 
-  constructor(readonly request: VersionDeployRequest, public notification: DeploymentNotification) {
+  constructor(private readonly request: VersionDeployRequest, public notification: DeploymentNotification) {
     this.id = request.id
   }
 
@@ -89,8 +89,6 @@ export default class Deployment {
       status: DeploymentStatus.IN_PROGRESS,
     })
 
-    this.logger.debug('Starting deployment')
-    this.logger.debug(this.request)
     commandChannel.next({
       deploy: this.request,
     } as AgentCommand)
