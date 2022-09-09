@@ -26,7 +26,7 @@ export const mailslurpFromConfig = (config: FullConfig) => {
   return mailslurpFromBaseURL(baseURL)
 }
 
-export const cruxAddressOfConfig = (config: FullConfig) => {
+export const cruxAddressFromConfig = (config: FullConfig) => {
   const { baseURL } = config.projects[0].use
   const address = baseURL.substring(baseURL.indexOf('//') + 2)
   return replacePort(address, '5001')
@@ -92,4 +92,4 @@ export const deleteUserByEmail = async (kratos: V0alpha2Api, email: string) => {
   await kratos.adminDeleteIdentity(identity.id)
 }
 
-export const screenshotPath = (name: string) => path.join(__dirname, SCREENSHOTS_FOLDER, `${name}.png`)
+export const screenshotPath = (name: string) => path.join(__dirname, '..', SCREENSHOTS_FOLDER, `${name}.png`)

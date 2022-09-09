@@ -6,7 +6,6 @@ import {
   extractKratosLinkFromMail,
   kratosFromConfig,
   mailslurpFromConfig,
-  screenshotPath,
   USER_EMAIL,
   USER_PASSWORD,
   USER_TEAM,
@@ -45,7 +44,6 @@ const globalSetup = async (config: FullConfig) => {
   await page.locator('input[name=name]').fill(USER_TEAM)
   await page.locator('button[type=submit]').click()
 
-  await page.screenshot({ path: screenshotPath('cica'), fullPage: true })
   await page.waitForURL(ROUTE_PRODUCTS)
 
   await page.context().storageState({ path: storageState as string })

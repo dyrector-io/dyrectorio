@@ -2,7 +2,7 @@
 import { FullConfig } from '@playwright/test'
 import CruxClients from '@server/crux/crux-clients'
 import DyoTeamService from '@server/crux/team-service'
-import { cruxAddressOfConfig, deleteUserByEmail, getUserByEmail, kratosFromConfig, USER_EMAIL } from './common'
+import { cruxAddressFromConfig, deleteUserByEmail, getUserByEmail, kratosFromConfig, USER_EMAIL } from './common'
 
 const globalTeardown = async (config: FullConfig) => {
   const kratos = kratosFromConfig(config)
@@ -11,7 +11,7 @@ const globalTeardown = async (config: FullConfig) => {
     return
   }
 
-  const cruxAddress = cruxAddressOfConfig(config)
+  const cruxAddress = cruxAddressFromConfig(config)
   const clients = new CruxClients(cruxAddress, undefined)
   const teams = new DyoTeamService(clients.teams, identity, null)
   const team = await teams.getActiveTeam()
