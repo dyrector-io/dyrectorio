@@ -48,7 +48,7 @@ const DyoButton = (props: DyoButtonProps) => {
   const border = underlined ? 'border-b-2 border-dyo-turquoise' : null
   const rounded = !underlined ? 'rounded' : null
   const font = !thin && (text || !outlined) ? 'font-semibold' : null
-  const cursor = disabled ? "cursor-not-allowed" : "cursor-pointer"
+  const cursor = disabled ? 'cursor-not-allowed' : 'cursor-pointer'
 
   return (
     <button

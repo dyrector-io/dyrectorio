@@ -1,6 +1,5 @@
 import DyoButton from '@app/elements/dyo-button'
 import { DyoHeading } from '@app/elements/dyo-heading'
-import DyoImgButton from '@app/elements/dyo-img-button'
 import { DyoInput } from '@app/elements/dyo-input'
 import { UniqueKeySecretValue } from '@app/models-config'
 import clsx from 'clsx'
@@ -47,16 +46,13 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
     return result as KeyValueElement[]
   }
 
-  useEffect(
-    () => {
-      dispatch({
-        type: 'merge-items',
-        items: props.items,
-      })
-      setChanged(false)
-    },
-    [props.items],
-  )
+  useEffect(() => {
+    dispatch({
+      type: 'merge-items',
+      items: props.items,
+    })
+    setChanged(false)
+  }, [props.items])
 
   const onChange = async (index: number, key: string, value: string) => {
     let newItems = [...state]
@@ -147,10 +143,14 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
             onChange={e => onChange(index, key, e.target.value)}
           />
 
-          {encrypted && <div onClick={() => onRemove(index)}
-            className="flex-initial cursor-pointer ml-2 h-11 w-11 ring-2 rounded-md focus:outline-none focus:dark text-bright-muted ring-light-grey-muted flex justify-center">
-            <Image className="text-bright-muted" src="/cancel.svg" alt="save" width={24} height={24} />
-          </div>}
+          {encrypted && (
+            <div
+              onClick={() => onRemove(index)}
+              className="flex-initial cursor-pointer ml-2 h-11 w-11 ring-2 rounded-md focus:outline-none focus:dark text-bright-muted ring-light-grey-muted flex justify-center"
+            >
+              <Image className="text-bright-muted" src="/cancel.svg" alt="save" width={24} height={24} />
+            </div>
+          )}
         </div>
       </div>
     )
