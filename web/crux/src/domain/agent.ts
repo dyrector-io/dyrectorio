@@ -19,7 +19,7 @@ export class Agent {
   readonly address: string
 
   readonly version: string
-  
+
   readonly publicKey: string
 
   constructor(

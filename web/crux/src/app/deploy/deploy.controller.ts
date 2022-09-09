@@ -66,7 +66,7 @@ export default class DeployController implements CruxDeploymentController {
     return await this.service.updateDeployment(request)
   }
 
-  /* tslint:disable-next-line @typescript-eslint/no-unused-vars */
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   async getSecrets(request: PrefixRequest, ...rest: any): Promise<ListSecretsResponse> {
     return await new Promise(null)
   }
