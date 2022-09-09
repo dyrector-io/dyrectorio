@@ -1,4 +1,5 @@
 import clsx from 'clsx'
+import Image from 'next/image'
 
 interface DyoImgButtonProps {
   className?: string
@@ -24,9 +25,8 @@ const DyoImgButton = (props: DyoImgButtonProps) => {
 
   return (
     /* eslint-disable-next-line react/button-has-type */
-    <button className={clsx(color, ring, className, 'rounded')} disabled={disabled} onClick={onClick}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={src} width={width} height={height} alt={alt} />
+    <button className={clsx(color, ring, className, 'rounded grid items-center')} disabled={disabled} onClick={onClick}>
+      <Image layout="fixed" src={src} width={width} height={height} alt={alt} />
     </button>
   )
 }

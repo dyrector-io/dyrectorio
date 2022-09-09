@@ -82,7 +82,7 @@ func GetContainersByName(name string) []types.Container {
 
 	containers, err := cli.ContainerList(ctx, types.ContainerListOptions{
 		All:     true,
-		Filters: filters.NewArgs(filters.KeyValuePair{Key: "name", Value: name}),
+		Filters: filters.NewArgs(filters.KeyValuePair{Key: "name", Value: fmt.Sprintf("^/?%s-", name)}),
 	})
 
 	checkDockerError(err)
@@ -360,6 +360,7 @@ func DeployImage(ctx context.Context,
 		WithUser(deployImageRequest.ContainerConfig.User).
 		WithEntrypoint(deployImageRequest.ContainerConfig.Command).
 		WithCmd(deployImageRequest.ContainerConfig.Args).
+		WithoutConflict().
 		WithLogWriter(dog)
 
 	WithImportContainer(builder, deployImageRequest.ContainerConfig.ImportContainer, dog, cfg)
@@ -405,9 +406,10 @@ func WithImportContainer(dc *containerbuilder.DockerContainerBuilder, importConf
 			mountList []mount.Mount,
 			logger *io.StringWriter) error {
 			if initError := spawnInitContainer(client, ctx, containerName, mountList, importConfig, dog, cfg); initError != nil {
-				log.Printf("Failed to spawn init container: %v", initError)
+				dog.WriteDeploymentStatus(common.DeploymentStatus_FAILED, "Failed to spawn init container: "+initError.Error())
 				return initError
 			}
+			dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Loading assets was successful.")
 			return nil
 		})
 	}

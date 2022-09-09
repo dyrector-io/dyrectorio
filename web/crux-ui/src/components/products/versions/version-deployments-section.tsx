@@ -84,7 +84,9 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
     router.push(deploymentDeployUrl(product.id, version.id, deployment.id))
 
   const headers = [
-    ...['deploymentName', 'common:node', 'common:prefix', 'common:status', 'common:date', 'actions'].map(it => t(it)),
+    ...['deploymentName', 'common:node', 'common:prefix', 'common:status', 'common:date', 'common:actions'].map(it =>
+      t(it),
+    ),
   ]
   const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-3 pl-4 font-semibold'
   const headerClasses = [

@@ -26,7 +26,10 @@ const DyoExpandableText = (props: DyoExpandableTextProps) => {
 
   return (
     <>
-      <p ref={overflowRef} className={clsx(className, lineClamp[propsLineClamp - 1], 'break-all')}>
+      <p
+        ref={overflowRef}
+        className={clsx(className, lineClamp[propsLineClamp - 1], 'break-all', overflow ? null : 'mb-8')}
+      >
         {text}
       </p>
       {!overflow ? null : (

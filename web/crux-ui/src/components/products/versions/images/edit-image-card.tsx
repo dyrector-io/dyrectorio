@@ -61,7 +61,7 @@ const EditImageCard = (props: EditImageCardProps) => {
 
   return (
     <>
-      <DyoCard className="flex flex-col flex-grow px-6 pb-6 pt-4">
+      <DyoCard className="flex flex-col flex-grow px-6 pb-6 pt-4 h-full">
         <div className="flex flex-row items-start mb-4">
           <EditImageHeading
             imageName={image.name}
@@ -111,18 +111,20 @@ const EditImageCard = (props: EditImageCardProps) => {
           )}
         </div>
 
-        {selection === 'tag' ? (
-          <EditImageTags disabled={disabled} selected={image.tag} tags={tags} onTagSelected={onTagSelected} />
-        ) : selection === 'config' ? (
-          <EditImageConfig disabled={disabled} config={image.config} onPatch={it => onPatch(image.id, it)} />
-        ) : (
-          <EditImageJson
-            disabled={disabled}
-            config={image.config}
-            onPatch={it => onPatch(image.id, it)}
-            onParseError={onParseError}
-          />
-        )}
+        <div className="flex flex-col h-128">
+          {selection === 'tag' ? (
+            <EditImageTags disabled={disabled} selected={image.tag} tags={tags} onTagSelected={onTagSelected} />
+          ) : selection === 'config' ? (
+            <EditImageConfig disabled={disabled} config={image.config} onPatch={it => onPatch(image.id, it)} />
+          ) : (
+            <EditImageJson
+              disabled={disabled}
+              config={image.config}
+              onPatch={it => onPatch(image.id, it)}
+              onParseError={onParseError}
+            />
+          )}
+        </div>
       </DyoCard>
 
       <DyoConfirmationModal

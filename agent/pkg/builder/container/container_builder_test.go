@@ -34,7 +34,7 @@ func builderCleanup(builder *containerbuilder.DockerContainerBuilder) {
 	if builder.GetContainerID() != nil {
 		containerbuilder.DeleteContainer(context.Background(), *builder.GetContainerID())
 	}
-	if networks := builder.GetNetworkIDs();  networks != nil {
+	if networks := builder.GetNetworkIDs(); networks != nil {
 		for _, network := range networks {
 			containerbuilder.DeleteNetwork(context.Background(), network)
 		}

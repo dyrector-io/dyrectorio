@@ -52,6 +52,7 @@ type ContainerBuilder interface {
 	GetNetworkID() *string
 	Create() ContainerBuilder
 	Start() (bool, error)
+	StartWaitUntilExit() (ContainerWaitResult, error)
 }
 
 type DockerContainerBuilder struct {
@@ -360,6 +361,25 @@ func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 	}
 
 	return dc
+}
+
+// Starts the container and waits until the first exit to happen then returns
+func (dc *DockerContainerBuilder) StartWaitUntilExit() (*ContainerWaitResult, error) {
+	containerID := *dc.GetContainerID()
+	waitC, errC := dc.client.ContainerWait(dc.ctx, containerID, container.WaitConditionNextExit)
+	_, err := dc.Start()
+
+	if err != nil {
+		return nil, fmt.Errorf("failed start-waiting container: %w", err)
+	}
+
+	select {
+	case result := <-waitC:
+		return &ContainerWaitResult{StatusCode: result.StatusCode}, nil
+
+	case err = <-errC:
+		return nil, fmt.Errorf("error container waiting: %w", err)
+	}
 }
 
 // Starts the container using the configuration given by 'With...' functions.

@@ -122,10 +122,10 @@ export default class DeployMapper {
         break
       }
       case DeploymentEventTypeEnum.containerStatus: {
-        const value = event.value as { instanceId: string; status: string }
+        const value = event.value as { instanceId: string; state: string }
         containerStatus = DeploymentEventContainerState.fromJSON({
           ...value,
-          status: value.status.toUpperCase(),
+          state: value.state.toUpperCase(),
         })
         break
       }
