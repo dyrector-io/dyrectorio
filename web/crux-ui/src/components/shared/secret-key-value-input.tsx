@@ -215,12 +215,12 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
             onChange={e => onChange(index, key, e.target.value)}
           />
 
-          {encrypted && (
+          {encrypted && disabled !== true && (
             <div
               onClick={() => onRemove(index)}
               className="flex-initial cursor-pointer ml-2 h-11 w-11 ring-2 rounded-md focus:outline-none focus:dark text-bright-muted ring-light-grey-muted flex justify-center"
             >
-              <Image className="text-bright-muted" src="/cancel.svg" alt="save" width={24} height={24} />
+              <Image className="text-bright-muted" src="/trash-can.svg" alt="save" width={24} height={24} />
             </div>
           )}
         </div>
