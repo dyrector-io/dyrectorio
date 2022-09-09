@@ -102,7 +102,7 @@ export default class DeployMapper {
       config: {
         capabilities: (instance.config?.capabilities as UniqueKeyValue[]) ?? [],
         environment: (instance.config?.environment as UniqueKeyValue[]) ?? [],
-        config: config.config as JsonObject,
+        config: config.config as JsonObject ?? {},
         secrets: (instance.config?.secrets as unknown as UniqueKeySecretValue[]) ?? [],
       },
     }
