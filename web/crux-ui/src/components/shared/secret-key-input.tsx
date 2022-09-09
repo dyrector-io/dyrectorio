@@ -19,17 +19,70 @@ const EMPTY_SECRET_KEY = {
   key: '',
 } as UniqueKey
 
+type KeyValueElement = UniqueKey & {
+  message?: string
+}
+
+type KeyValueInputActionType = 'merge-items' | 'set-items'
+
+type KeyValueInputAction = {
+  type: KeyValueInputActionType
+  items: UniqueKey[]
+}
+
+const isCompletelyEmpty = (it: UniqueKey): boolean => !it.key || it.key.length < 1
+
+const pushEmptyLineIfNecessary = (items: UniqueKey[]) => {
+  if (items.length < 1 || (items[items.length - 1].key?.trim() ?? '') !== '') {
+    items.push({
+      ...EMPTY_SECRET_KEY,
+      id: uuid(),
+    })
+  }
+}
+
+const reducer = (state: UniqueKey[], action: KeyValueInputAction): UniqueKey[] => {
+  const { type } = action
+
+  if (type === 'set-items') {
+    const result = [...action.items]
+    pushEmptyLineIfNecessary(result)
+    return result
+  }
+  if (type === 'merge-items') {
+    const updatedItems = action.items
+    const result = [
+      ...state.filter(old => !isCompletelyEmpty(old) && updatedItems.filter(it => old.id === it.id).length > 0),
+    ]
+
+    updatedItems.forEach(newItem => {
+      const index = result.findIndex(it => it.id === newItem.id)
+
+      if (index < 0) {
+        result.push(newItem)
+      } else {
+        result[index] = newItem
+      }
+    })
+
+    pushEmptyLineIfNecessary(result)
+    return result
+  }
+
+  throw Error(`Invalid KeyValueInput action: ${type}`)
+}
+
 const SecretKeyOnlyInput = (props: SecretKeyInputProps) => {
   const { t } = useTranslation('common')
 
-  const { heading, disabled } = props
+  const { heading, disabled, items, className, onSubmit } = props
 
-  const [state, dispatch] = useReducer(reducer, props.items)
+  const [state, dispatch] = useReducer(reducer, items)
 
-  const stateToElements = (items: UniqueKey[]) => {
+  const stateToElements = (itemArray: UniqueKey[]) => {
     const result = new Array<KeyValueElement>()
 
-    items.forEach(item =>
+    itemArray.forEach(item =>
       result.push({
         ...item,
         message: result.find(it => it.key === item.key) ? t('keyMustUnique') : null,
@@ -43,9 +96,9 @@ const SecretKeyOnlyInput = (props: SecretKeyInputProps) => {
     () =>
       dispatch({
         type: 'merge-items',
-        items: props.items,
+        items,
       }),
-    [props.items],
+    [items],
   )
 
   const onChange = async (index: number, key: string) => {
@@ -60,7 +113,7 @@ const SecretKeyOnlyInput = (props: SecretKeyInputProps) => {
 
     newItems = newItems.filter(it => !isCompletelyEmpty(it))
 
-    props.onSubmit(newItems)
+    onSubmit(newItems)
     dispatch({
       type: 'set-items',
       items: newItems,
@@ -91,7 +144,7 @@ const SecretKeyOnlyInput = (props: SecretKeyInputProps) => {
   }
 
   return (
-    <form className={clsx(props.className, 'flex flex-col max-h-128 overflow-y-auto')}>
+    <form className={clsx(className, 'flex flex-col max-h-128 overflow-y-auto')}>
       {!heading ? null : (
         <DyoHeading element="h6" className="text-bright mt-5">
           {heading}
@@ -104,57 +157,3 @@ const SecretKeyOnlyInput = (props: SecretKeyInputProps) => {
 }
 
 export default SecretKeyOnlyInput
-
-type KeyValueElement = UniqueKey & {
-  message?: string
-}
-
-type KeyValueInputActionType = 'merge-items' | 'set-items'
-
-type KeyValueInputAction = {
-  type: KeyValueInputActionType
-  items: UniqueKey[]
-}
-
-const isCompletelyEmpty = (it: UniqueKey): boolean => {
-  return !it.key || it.key.length < 1
-}
-
-const pushEmptyLineIfNecessary = (items: UniqueKey[]) => {
-  if (items.length < 1 || (items[items.length - 1].key?.trim() ?? '') !== '') {
-    items.push({
-      ...EMPTY_SECRET_KEY,
-      id: uuid(),
-    })
-  }
-}
-
-const reducer = (state: UniqueKey[], action: KeyValueInputAction): UniqueKey[] => {
-  const type = action.type
-
-  if (type === 'set-items') {
-    const result = [...action.items]
-    pushEmptyLineIfNecessary(result)
-    return result
-  } else if (type === 'merge-items') {
-    const updatedItems = action.items
-    const result = [
-      ...state.filter(old => !isCompletelyEmpty(old) && updatedItems.filter(it => old.id === it.id).length > 0),
-    ]
-
-    updatedItems.forEach(newItem => {
-      const index = result.findIndex(it => it.id == newItem.id)
-
-      if (index < 0) {
-        result.push(newItem)
-      } else {
-        result[index] = newItem
-      }
-    })
-
-    pushEmptyLineIfNecessary(result)
-    return result
-  } else {
-    throw Error(`Invalid KeyValueInput action: ${type}`)
-  }
-}

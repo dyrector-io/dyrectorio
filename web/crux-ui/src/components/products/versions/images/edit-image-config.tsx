@@ -11,7 +11,6 @@ import KeyValueInput from '../../../shared/key-value-input'
 interface EditImageConfigProps {
   disabled?: boolean
   disabledContainerNameEditing?: boolean
-  publicKey?: string
   config: ContainerConfig | InstanceContainerConfig
   onPatch: (config: Partial<ContainerConfig | InstanceContainerConfig>) => void
 }

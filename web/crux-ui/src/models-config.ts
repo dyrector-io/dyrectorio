@@ -164,13 +164,9 @@ const overrideKeyValues = (weak: UniqueKeyValue[], strong: UniqueKeyValue[]): Un
   return [...(weak?.filter(it => !overridenKeys.has(it.key)) ?? []), ...(strong ?? [])]
 }
 
-const expandKeytoKeyValues = (weak: UniqueKey[]): UniqueKeyValue[] => {
-  return [
-    ...weak.map((it): UniqueKeyValue => {
-      return { id: it.id, key: it.key, value: '' }
-    }),
-  ]
-}
+const expandKeytoKeyValues = (weak: UniqueKey[]): UniqueKeyValue[] => [
+  ...weak.map((it): UniqueKeyValue => ({ id: it.id, key: it.key, value: '' })),
+]
 
 const overridePorts = (
   weak: ExplicitContainerConfigPort[],
@@ -187,15 +183,6 @@ const overrideWithDefaultValue = <T>(weak: T, strong: T, defaultValue: T): T => 
 const overrideArrays = <T>(weak: T[], strong: T[]): T[] => {
   const strongs: Set<T> = new Set(strong?.map(it => it))
   return [...(weak?.filter(it => !strongs.has(it)) ?? []), ...(strong ?? [])]
-}
-
-export const mergeContainerConfig = (
-  imageConfig: ContainerConfig,
-  overriddenConfig: Partial<InstanceContainerConfig>,
-): ContainerConfig => {
-  const result = mergeConfigs(imageConfig, overriddenConfig)
-
-  return result as ContainerConfig
 }
 
 export const mergeConfigs = (
@@ -253,4 +240,13 @@ export const mergeConfigs = (
       resourceConfig: override(imageConfig?.config?.resourceConfig, instanceConfig.config?.resourceConfig),
     },
   }
+}
+
+export const mergeContainerConfig = (
+  imageConfig: ContainerConfig,
+  overriddenConfig: Partial<InstanceContainerConfig>,
+): ContainerConfig => {
+  const result = mergeConfigs(imageConfig, overriddenConfig)
+
+  return result as ContainerConfig
 }

@@ -68,17 +68,15 @@ const EditDeploymentInstances = (props: EditDeploymentInstancesProps) => {
 
   return (
     <DyoWrap>
-      {instances.map(it => {
-        return (
-          <EditInstanceCard
-            key={it.id}
-            disabled={!mutable}
-            instance={it}
-            deploymentSock={sock}
-            publicKey={deployment?.publicKey}
-          />
-        )
-      })}
+      {instances.map(it => (
+        <EditInstanceCard
+          key={it.id}
+          disabled={!mutable}
+          instance={it}
+          deploymentSock={sock}
+          publicKey={deployment?.publicKey}
+        />
+      ))}
     </DyoWrap>
   )
 }

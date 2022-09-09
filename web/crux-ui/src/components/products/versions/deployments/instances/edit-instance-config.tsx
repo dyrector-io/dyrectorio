@@ -17,7 +17,7 @@ interface EditInstanceProps {
 }
 
 const EditInstanceConfig = (props: EditInstanceProps) => {
-  const { config, disabled, disabledContainerNameEditing, publicKey } = props
+  const { config, disabled, disabledContainerNameEditing, publicKey, onPatch } = props
 
   const { t } = useTranslation('images')
 
@@ -26,19 +26,19 @@ const EditInstanceConfig = (props: EditInstanceProps) => {
 
   const throttle = useThrottling(IMAGE_WS_REQUEST_DELAY)
 
-  const sendPatch = (config: Partial<InstanceContainerConfig>, immediate?: boolean) => {
+  const sendPatch = (configPartial: Partial<InstanceContainerConfig>, immediate?: boolean) => {
     const newPatch = {
       ...patch.current,
-      ...config,
+      ...configPartial,
     }
     patch.current = newPatch
 
     if (immediate) {
-      props.onPatch(patch.current)
+      onPatch(patch.current)
       patch.current = {}
     } else {
       throttle(() => {
-        props.onPatch(patch.current)
+        onPatch(patch.current)
         patch.current = {}
       })
     }
@@ -66,7 +66,7 @@ const EditInstanceConfig = (props: EditInstanceProps) => {
     })
   }
 
-  useEffect(() => setContainerName(props.config?.name), [props.config])
+  useEffect(() => setContainerName(config?.name), [config])
 
   return (
     <>

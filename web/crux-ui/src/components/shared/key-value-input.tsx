@@ -78,7 +78,7 @@ const KeyValueInput = (props: KeyValueInputProps) => {
 
   const { t } = useTranslation('common')
 
-  const [state, dispatch] = useReducer(reducer, props.items)
+  const [state, dispatch] = useReducer(reducer, items)
 
   const stateToElements = (keyValues: UniqueKeyValue[]) => {
     const result = []

@@ -24,18 +24,86 @@ const EMPTY_SECRET_KEY_VALUE_PAIR = {
   value: '',
 } as UniqueKeySecretValue
 
+type KeyValueElement = UniqueKeySecretValue & {
+  message?: string
+}
+
+const encryptWithPGP = async (text: string, key: string): Promise<string> => {
+  if (!text) {
+    return Promise.resolve('')
+  }
+  const publicKey = await readKey({ armoredKey: key })
+
+  return (await encrypt({ message: await createMessage({ text }), encryptionKeys: publicKey })) as Promise<string>
+}
+
+type KeyValueInputActionType = 'merge-items' | 'set-items' | 'remove-item'
+
+type KeyValueInputAction = {
+  type: KeyValueInputActionType
+  items: UniqueKeySecretValue[]
+}
+
+const isCompletelyEmpty = (it: UniqueKeySecretValue) => it.key.trim().length < 1 && it.value.trim().length < 1
+
+const pushEmptyLineIfNecessary = (items: UniqueKeySecretValue[]) => {
+  if (items.length < 1 || (items[items.length - 1].key?.trim() ?? '') !== '') {
+    items.push({
+      ...EMPTY_SECRET_KEY_VALUE_PAIR,
+      id: uuid(),
+    })
+  }
+}
+
+const reducer = (state: UniqueKeySecretValue[], action: KeyValueInputAction): UniqueKeySecretValue[] => {
+  const { type } = action
+
+  if (type === 'set-items') {
+    const result = [...action.items]
+    pushEmptyLineIfNecessary(result)
+    return result
+  }
+  if (type === 'merge-items') {
+    const updatedItems = action.items
+    const result = [
+      ...state.filter(old => !isCompletelyEmpty(old) && updatedItems.filter(it => old.id === it.id).length > 0),
+    ]
+
+    updatedItems.forEach(newItem => {
+      const index = result.findIndex(it => it.id === newItem.id)
+
+      if (index < 0) {
+        result.push(newItem)
+      } else {
+        result[index] = newItem
+      }
+    })
+
+    pushEmptyLineIfNecessary(result)
+    return result
+  }
+  if (type === 'remove-item') {
+    const toRemove = action.items[0]
+    const result = [...state.filter(old => old.id === toRemove.id)]
+    pushEmptyLineIfNecessary(result)
+    return result
+  }
+
+  throw Error(`Invalid KeyValueInput action: ${type}`)
+}
+
 const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
   const { t } = useTranslation('common')
 
-  const { heading, disabled, publicKey, items } = props
+  const { heading, disabled, publicKey, items, className, onSubmit: propsOnSubmit } = props
 
   const [state, dispatch] = useReducer(reducer, items)
   const [changed, setChanged] = useState<boolean>(false)
 
-  const stateToElements = (items: UniqueKeySecretValue[]) => {
+  const stateToElements = (itemArray: UniqueKeySecretValue[]) => {
     const result = new Array<KeyValueElement>()
 
-    items.forEach(item =>
+    itemArray.forEach(item =>
       result.push({
         ...item,
         encrypted: item.encrypted ?? false,
@@ -49,10 +117,10 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
   useEffect(() => {
     dispatch({
       type: 'merge-items',
-      items: props.items,
+      items,
     })
     setChanged(false)
-  }, [props.items])
+  }, [items])
 
   const onChange = async (index: number, key: string, value: string) => {
     let newItems = [...state]
@@ -77,7 +145,7 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
   const onDiscard = () => {
     dispatch({
       type: 'set-items',
-      items: items,
+      items,
     })
     setChanged(false)
   }
@@ -86,12 +154,16 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
     let newItems = [...state].filter(it => !isCompletelyEmpty(it))
 
     newItems = await Promise.all(
-      [...newItems].map(async (it): Promise<UniqueKeySecretValue> => {
-        return { ...it, value: await encryptWithPGP(it.value, publicKey), encrypted: true }
-      }),
+      [...newItems].map(
+        async (it): Promise<UniqueKeySecretValue> => ({
+          ...it,
+          value: await encryptWithPGP(it.value, publicKey),
+          encrypted: true,
+        }),
+      ),
     )
 
-    props.onSubmit(newItems)
+    propsOnSubmit(newItems)
     dispatch({
       type: 'set-items',
       items: newItems,
@@ -100,11 +172,11 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
   }
 
   const onRemove = async (index: number) => {
-    let newItems = [...state].filter(it => !isCompletelyEmpty(it))
+    const newItems = [...state].filter(it => !isCompletelyEmpty(it))
 
     newItems.splice(index, 1)
 
-    props.onSubmit(newItems)
+    propsOnSubmit(newItems)
     dispatch({
       type: 'set-items',
       items: newItems,
@@ -157,7 +229,7 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
   }
 
   return (
-    <form className={clsx(props.className, 'flex flex-col max-h-128 overflow-y-auto')}>
+    <form className={clsx(className, 'flex flex-col max-h-128 overflow-y-auto')}>
       {!heading ? null : (
         <DyoHeading element="h6" className="text-bright mt-4 mb-2">
           {heading}
@@ -177,73 +249,3 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
 }
 
 export default SecretKeyValInput
-
-type KeyValueElement = UniqueKeySecretValue & {
-  message?: string
-}
-
-const encryptWithPGP = async (text: string, key: string): Promise<string> => {
-  if (!text) {
-    return Promise.resolve('')
-  }
-  const publicKey = await readKey({ armoredKey: key })
-  const textStream = await encrypt({ message: await createMessage({ text }), encryptionKeys: publicKey })
-
-  const str = textStream as string
-
-  return (await encrypt({ message: await createMessage({ text }), encryptionKeys: publicKey })) as Promise<string>
-}
-
-type KeyValueInputActionType = 'merge-items' | 'set-items' | 'remove-item'
-
-type KeyValueInputAction = {
-  type: KeyValueInputActionType
-  items: UniqueKeySecretValue[]
-}
-
-const isCompletelyEmpty = (it: UniqueKeySecretValue) => {
-  return it.key.trim().length < 1 && it.value.trim().length < 1
-}
-
-const pushEmptyLineIfNecessary = (items: UniqueKeySecretValue[]) => {
-  if (items.length < 1 || (items[items.length - 1].key?.trim() ?? '') !== '') {
-    items.push({
-      ...EMPTY_SECRET_KEY_VALUE_PAIR,
-      id: uuid(),
-    })
-  }
-}
-
-const reducer = (state: UniqueKeySecretValue[], action: KeyValueInputAction): UniqueKeySecretValue[] => {
-  const type = action.type
-
-  if (type === 'set-items') {
-    const result = [...action.items]
-    pushEmptyLineIfNecessary(result)
-    return result
-  } else if (type === 'merge-items') {
-    const updatedItems = action.items
-    const result = [
-      ...state.filter(old => !isCompletelyEmpty(old) && updatedItems.filter(it => old.id === it.id).length > 0),
-    ]
-
-    updatedItems.forEach(newItem => {
-      const index = result.findIndex(it => it.id == newItem.id)
-
-      if (index < 0) {
-        result.push(newItem)
-      } else {
-        result[index] = newItem
-      }
-    })
-
-    pushEmptyLineIfNecessary(result)
-    return result
-  } else if (type === 'remove-item') {
-    const toRemove = action.items[0]
-    const result = [...state.filter(old => old.id == toRemove.id)]
-    pushEmptyLineIfNecessary(result)
-  } else {
-    throw Error(`Invalid KeyValueInput action: ${type}`)
-  }
-}
