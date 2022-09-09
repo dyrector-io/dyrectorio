@@ -32,7 +32,7 @@ export default class AgentController implements GrpcAgentController {
   }
 
   // todo(nandor-magyar): impl
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   getSecretList(
     request: ListSecretsResponse,
     metadata: Metadata,
@@ -40,4 +40,5 @@ export default class AgentController implements GrpcAgentController {
   ): Empty | Promise<Empty> | Observable<Empty> {
     return Empty
   }
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 }
