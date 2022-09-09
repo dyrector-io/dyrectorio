@@ -82,7 +82,7 @@ func GetContainersByName(name string) []types.Container {
 
 	containers, err := cli.ContainerList(ctx, types.ContainerListOptions{
 		All:     true,
-		Filters: filters.NewArgs(filters.KeyValuePair{Key: "name", Value: name}),
+		Filters: filters.NewArgs(filters.KeyValuePair{Key: "name", Value: fmt.Sprintf("^/?%s-", name)}),
 	})
 
 	checkDockerError(err)
