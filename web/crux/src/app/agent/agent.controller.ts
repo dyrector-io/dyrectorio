@@ -32,6 +32,7 @@ export default class AgentController implements GrpcAgentController {
   }
 
   // todo(nandor-magyar): impl
+  /* tslint:disable-next-line @typescript-eslint/no-unused-vars */
   getSecretList(
     request: ListSecretsResponse,
     metadata: Metadata,

@@ -167,9 +167,7 @@ export default class DeployService {
     let instanceConfigPatchSet: InstanceContainerConfigData = null
 
     if (reqInstance) {
-      const caps = request.instance.capabilities
-      const envs = request.instance.environment
-      const secrets = request.instance.secrets
+      const { capabilities: caps, environment: envs, secrets } = request.instance
 
       instanceConfigPatchSet = {
         capabilities: caps ? caps.data ?? [] : (undefined as JsonArray),
