@@ -7,7 +7,6 @@ import (
 	"log"
 	"strings"
 
-	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
 
@@ -56,33 +55,22 @@ func spawnInitContainer(
 		WithLogWriter(dog).
 		Create()
 
-	_, err = builder.Start()
-
-	if err != nil {
-		return err
-	}
-
 	dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Waiting for import container to finish")
 
-	containerID := *builder.GetContainerID()
-	cli.ContainerWait(ctx, containerID, container.WaitConditionNextExit)
-	cont, err := cli.ContainerInspect(ctx, containerID)
+	exitResult, err := builder.StartWaitUntilExit()
 
 	if err != nil {
-		return err
+		return fmt.Errorf("import container start failed: %w", err)
 	}
 
-	if cont.State.ExitCode == 0 {
+	if exitResult.StatusCode == 0 {
+		containerID := *builder.GetContainerID()
 		err = DeleteContainer(containerID)
 		if err != nil {
 			log.Println("warning: failed to delete import container after completion")
 		}
 	} else {
-		return fmt.Errorf("import container exited with code: %v", cont.State.ExitCode)
-	}
-
-	if err != nil {
-		return err
+		return fmt.Errorf("import container exited with code: %v", exitResult.StatusCode)
 	}
 	return nil
 }
