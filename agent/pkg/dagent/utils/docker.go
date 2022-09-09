@@ -406,9 +406,7 @@ func WithImportContainer(dc *containerbuilder.DockerContainerBuilder, importConf
 			mountList []mount.Mount,
 			logger *io.StringWriter) error {
 			if initError := spawnInitContainer(client, ctx, containerName, mountList, importConfig, dog, cfg); initError != nil {
-				errStr := fmt.Sprintf("Failed to spawn init container: %v", initError)
-				log.Println(errStr)
-				dog.WriteDeploymentStatus(common.DeploymentStatus_FAILED, errStr)
+				dog.WriteDeploymentStatus(common.DeploymentStatus_FAILED, "Failed to spawn init container: "+initError.Error())
 				return initError
 			}
 			dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Loading assets was successful.")
