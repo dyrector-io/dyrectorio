@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common'
 import {
-  ContainerConfig,
   ContainerStateEnum,
   Deployment,
   DeploymentEvent,

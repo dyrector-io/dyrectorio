@@ -1,3 +1,4 @@
+import { ContainerStateEnum, DeploymentEventTypeEnum, DeploymentStatusEnum } from '.prisma/client'
 import { Logger, PreconditionFailedException } from '@nestjs/common'
 import { Observable, Subject } from 'rxjs'
 import { AgentCommand, VersionDeployRequest } from 'src/grpc/protobuf/proto/agent'
@@ -9,7 +10,6 @@ import {
   DeploymentStatusMessage,
   deploymentStatusToJSON,
 } from 'src/grpc/protobuf/proto/common'
-import { ContainerStateEnum, DeploymentEventTypeEnum, DeploymentStatusEnum } from '.prisma/client'
 
 export type DeploymentProgressContainerEvent = {
   instanceId: string
