@@ -424,7 +424,7 @@ func prepareImage(dc *DockerContainerBuilder) error {
 }
 
 func createNetworks(dc *DockerContainerBuilder) []string {
-	var networkIDs []string
+	networkIDs := []string{}
 
 	for _, networkName := range dc.networks {
 		filter := filters.NewArgs()
