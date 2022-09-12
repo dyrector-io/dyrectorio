@@ -313,8 +313,8 @@ func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 	hostConfig.RestartPolicy = policy
 
 	log.Println("Provided networkMode: ", dc.networkMode)
-	if dc.networkMode == "none" {
-		hostConfig.NetworkMode = container.NetworkMode(dc.networkMode)
+	if nw := container.NetworkMode(dc.networkMode); nw.IsPrivate() {
+		hostConfig.NetworkMode = nw
 	} else {
 		networkIDs := createNetworks(dc)
 		if networkIDs == nil {
@@ -424,7 +424,7 @@ func prepareImage(dc *DockerContainerBuilder) error {
 }
 
 func createNetworks(dc *DockerContainerBuilder) []string {
-	var networkIDs []string
+	networkIDs := []string{}
 
 	for _, networkName := range dc.networks {
 		filter := filters.NewArgs()
