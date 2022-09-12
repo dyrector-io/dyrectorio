@@ -86,9 +86,13 @@ func GetNetworkGatewayIP(settings Settings, networkID string) Settings {
 		log.Fatalf("error: %v", err)
 	}
 
+	filter := filters.NewArgs()
+	filter.Add("id", fmt.Sprintf("^%s$", networkID))
+
 	networks, err := cli.NetworkList(context.Background(),
 		types.NetworkListOptions{
-			Filters: filters.NewArgs(filters.Arg("ID", networkID))})
+			Filters: filter,
+		})
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
