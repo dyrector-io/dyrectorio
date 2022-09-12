@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/docker/docker/api/types"
@@ -110,11 +111,13 @@ func EnsureNetworkExists(settings Settings) string {
 		log.Fatalf("error: %v", err)
 	}
 
+	filter := filters.NewArgs()
+	filter.Add("name", fmt.Sprintf("^%s$", settings.SettingsFile.Network))
+
 	networks, err := cli.NetworkList(context.Background(),
 		types.NetworkListOptions{
-			Filters: filters.NewArgs(
-				filters.Arg("Name", settings.SettingsFile.Network),
-			)})
+			Filters: filter,
+		})
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
