@@ -220,7 +220,13 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
               onClick={() => onRemove(index)}
               className="flex-initial cursor-pointer ml-2 h-11 w-11 ring-2 rounded-md focus:outline-none focus:dark text-bright-muted ring-light-grey-muted flex justify-center"
             >
-              <Image className="text-bright-muted" src="/trash-can.svg" alt="save" width={24} height={24} />
+              <Image
+                className="text-bright-muted"
+                src="/trash-can.svg"
+                alt={t('common:clear')}
+                width={24}
+                height={24}
+              />
             </div>
           )}
         </div>

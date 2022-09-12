@@ -91,7 +91,6 @@ export default class DeployMapper {
     const config: DeploymentContainerConfig = {
       ...(instance.config ?? instance.image.config),
       instanceId: instance.id,
-      // name: instance.image.config.name,
     }
 
     return {
