@@ -73,7 +73,7 @@ const DefaultCruxPostgresPort = 5432
 const DefaultKratosAdminPort = 4433
 const DefaultKratosPublicPort = 4434
 const DefaultKratosPostgresPort = 5433
-const DefaultMailSlurperPort = 5433
+const DefaultMailSlurperPort = 4436
 
 const SecretLength = 32
 

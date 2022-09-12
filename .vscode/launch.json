@@ -37,7 +37,17 @@
             "program": "${workspaceFolder}/agent/cmd/crane"
         },
     
-    
+        {
+            "name": "Launch cli",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "args": [
+                "up"
+            ],
+            "program": "${workspaceFolder}/cli",
+            "cwd": "${workspaceFolder}/cli"
+        },
         {
             "name": "Debug dagent",
             "type": "go",
@@ -57,5 +67,16 @@
             "cwd": "${workspaceFolder}/agent/cmd/crane"
         },
 
+        {
+            "name": "Debug cli",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "args": [
+                "up"
+            ],
+            "program": "${workspaceFolder}/cli",
+            "cwd": "${workspaceFolder}/cli"
+        },
     ]
 }

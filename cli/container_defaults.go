@@ -25,7 +25,7 @@ func GetCrux(settings Settings) *containerbuilder.DockerContainerBuilder {
 				settings.SettingsFile.CruxPostgresUser,
 				settings.SettingsFile.CruxPostgresPassword,
 				settings.SettingsFile.Prefix,
-				settings.SettingsFile.CruxPostgresPort,
+				DefaultPostgresPort,
 				settings.SettingsFile.CruxPostgresDB),
 			fmt.Sprintf("KRATOS_ADMIN_URL=http://%s_kratos:%d",
 				settings.SettingsFile.Prefix,
@@ -79,7 +79,7 @@ func GetCruxMigrate(settings Settings) *containerbuilder.DockerContainerBuilder 
 				settings.SettingsFile.CruxPostgresUser,
 				settings.SettingsFile.CruxPostgresPassword,
 				settings.SettingsFile.Prefix,
-				settings.SettingsFile.CruxPostgresPort,
+				DefaultPostgresPort,
 				settings.SettingsFile.CruxPostgresDB)}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
 		WithCmd([]string{"migrate"})
@@ -138,7 +138,7 @@ func GetKratos(settings Settings) *containerbuilder.DockerContainerBuilder {
 				settings.SettingsFile.KratosPostgresUser,
 				settings.SettingsFile.KratosPostgresPassword,
 				settings.SettingsFile.Prefix,
-				settings.SettingsFile.KratosPostgresPort,
+				DefaultPostgresPort,
 				settings.SettingsFile.KratosPostgresDB),
 			fmt.Sprintf("KRATOS_URL=http://%s_kratos:%d",
 				settings.SettingsFile.Prefix,
@@ -184,7 +184,7 @@ func GetKratosMigrate(settings Settings) *containerbuilder.DockerContainerBuilde
 				settings.SettingsFile.KratosPostgresUser,
 				settings.SettingsFile.KratosPostgresPassword,
 				settings.SettingsFile.Prefix,
-				settings.SettingsFile.KratosPostgresPort,
+				DefaultPostgresPort,
 				settings.SettingsFile.KratosPostgresDB),
 		}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
@@ -232,6 +232,7 @@ func GetCruxPostgres(settings Settings) *containerbuilder.DockerContainerBuilder
 				PortBinding: uint16(settings.SettingsFile.CruxPostgresPort),
 			}}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
+		WithNetworkAliases(fmt.Sprintf("%s_crux-postgres", settings.SettingsFile.Prefix)).
 		WithMountPoints([]mount.Mount{{
 			Type:   mount.TypeVolume,
 			Source: fmt.Sprintf("%s_crux-postgres-data", settings.SettingsFile.Prefix), Target: "/var/lib/postgresql/data"}})

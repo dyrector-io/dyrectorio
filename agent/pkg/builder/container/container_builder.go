@@ -313,7 +313,7 @@ func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 	hostConfig.RestartPolicy = policy
 
 	log.Println("Provided networkMode: ", dc.networkMode)
-	if dc.networkMode == "" || dc.networkMode == "none" {
+	if dc.networkMode == "none" {
 		hostConfig.NetworkMode = container.NetworkMode(dc.networkMode)
 	} else {
 		networkIDs := createNetworks(dc)
