@@ -31,7 +31,7 @@ func (field *ConfigFromFile) SetValue(location string) error {
 
 func checkGenerateKeys(location string) (string, error) {
 	log.Printf("Checking key file: %v\n", location)
-	file, err := os.ReadFile(location)
+	file, err := os.ReadFile(location) //#nosec G304 -- location comes from an env
 
 	if errors.Is(err, os.ErrNotExist) {
 		log.Printf("Key file does not exist: %v\n", location)
