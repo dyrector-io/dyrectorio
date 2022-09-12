@@ -56,6 +56,7 @@ func GetCrux(settings Settings) *containerbuilder.DockerContainerBuilder {
 				PortBinding: uint16(settings.SettingsFile.CruxGrpcPort),
 			}}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
+		WithNetworkAliases(fmt.Sprintf("%s_crux", settings.SettingsFile.Prefix)).
 		WithMountPoints([]mount.Mount{
 			{
 				Type:   mount.TypeVolume,
@@ -82,6 +83,7 @@ func GetCruxMigrate(settings Settings) *containerbuilder.DockerContainerBuilder 
 				DefaultPostgresPort,
 				settings.SettingsFile.CruxPostgresDB)}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
+		WithNetworkAliases(fmt.Sprintf("%s_crux-migrate", settings.SettingsFile.Prefix)).
 		WithCmd([]string{"migrate"})
 
 	return cruxMigrate
@@ -112,6 +114,7 @@ func GetCruxUI(settings Settings) *containerbuilder.DockerContainerBuilder {
 				PortBinding: uint16(settings.SettingsFile.CruxUIPort),
 			}}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
+		WithNetworkAliases(fmt.Sprintf("%s_crux-ui", settings.SettingsFile.Prefix)).
 		WithMountPoints([]mount.Mount{
 			{
 				Type:     mount.TypeVolume,
@@ -167,7 +170,8 @@ func GetKratos(settings Settings) *containerbuilder.DockerContainerBuilder {
 				ExposedPort: DefaultKratosAdminPort,
 				PortBinding: uint16(settings.SettingsFile.KratosAdminPort),
 			}}).
-		WithNetworks([]string{settings.SettingsFile.Network})
+		WithNetworks([]string{settings.SettingsFile.Network}).
+		WithNetworkAliases(fmt.Sprintf("%s_kratos", settings.SettingsFile.Prefix))
 
 	return kratos
 }
