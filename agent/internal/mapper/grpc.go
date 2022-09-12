@@ -295,7 +295,7 @@ func MapContainerState(in *[]dockerTypes.Container) []*common.ContainerStateItem
 		it := (*in)[i]
 
 		name := ""
-		if len(it.Names) > 0 {
+		if len(it.Names) > 1 {
 			name = it.Names[0]
 		}
 
