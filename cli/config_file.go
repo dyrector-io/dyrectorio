@@ -161,6 +161,8 @@ func DisabledServiceSettings(settings Settings) Settings {
 
 	if settings.CruxUIDisabled {
 		settings.CruxUI.CruxAddr = "localhost"
+	} else {
+		settings.CruxUI.CruxAddr = fmt.Sprintf("%s_crux", settings.SettingsFile.Prefix)
 	}
 
 	return settings
