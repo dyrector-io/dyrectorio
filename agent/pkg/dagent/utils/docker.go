@@ -299,7 +299,9 @@ func DeployImage(ctx context.Context,
 			util.JoinV(":", deployImageRequest.ImageName, deployImageRequest.Tag)))
 	logDeployInfo(dog, deployImageRequest, image, containerName)
 
-	envMap := MergeStringMapUnique(EnvPipeSeparatedToStringMap(&deployImageRequest.InstanceConfig.Environment), EnvPipeSeparatedToStringMap(&deployImageRequest.ContainerConfig.Environment))
+	envMap := MergeStringMapUnique(
+		EnvPipeSeparatedToStringMap(&deployImageRequest.InstanceConfig.Environment),
+		EnvPipeSeparatedToStringMap(&deployImageRequest.ContainerConfig.Environment))
 	secret, err := crypt.DecryptSecrets(deployImageRequest.ContainerConfig.Secrets, &cfg.CommonConfiguration)
 	if err != nil {
 		return fmt.Errorf("deployment failed, secret error: %w", err)
@@ -315,7 +317,6 @@ func DeployImage(ctx context.Context,
 		cfg)
 	// dotnet specific magic
 	if containsConfig(mountList) {
-		var err error
 		mountList, err = createRuntimeConfigFileOnHost(
 			mountList,
 			deployImageRequest.ContainerConfig.Container,
@@ -332,7 +333,8 @@ func DeployImage(ctx context.Context,
 	// err is ignored because it means no container is available
 	// nothing to stop or remove then
 
-	if err := checkContainerState(dog, containerName, state); err != nil {
+	err = checkContainerState(dog, containerName, state)
+	if err != nil {
 		return err
 	}
 

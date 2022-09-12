@@ -3,8 +3,9 @@ package crypt
 import (
 	"fmt"
 
-	"github.com/ProtonMail/gopenpgp/v2/helper"
 	"github.com/dyrector-io/dyrectorio/agent/internal/config"
+
+	"github.com/ProtonMail/gopenpgp/v2/helper"
 )
 
 func DecryptSecrets(arr map[string]string, appConfig *config.CommonConfiguration) (map[string][]byte, error) {
