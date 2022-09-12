@@ -1,6 +1,6 @@
 module github.com/dyrector-io/dyrectorio/agent
 
-go 1.19
+go 1.18
 
 require (
 	github.com/Microsoft/go-winio v0.5.0 // indirect
