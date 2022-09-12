@@ -41,7 +41,7 @@ func RunContainers(settings Settings) {
 	}
 
 	log.Printf("Migration (kratos) in progress...")
-	_, err = kratosMigrate.Create().Start()
+	_, err = kratosMigrate.Create().StartWaitUntilExit()
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
@@ -54,7 +54,7 @@ func RunContainers(settings Settings) {
 
 	if !settings.CruxDisabled {
 		log.Printf("Migration (crux) in progress...")
-		_, err = cruxMigrate.Create().Start()
+		_, err = cruxMigrate.Create().StartWaitUntilExit()
 		if err != nil {
 			log.Fatalf("error: %v", err)
 		}
@@ -132,13 +132,13 @@ func EnsureNetworkExists(settings Settings) string {
 		return resp.ID
 	}
 
-	for _, network := range networks {
-		if network.Driver != ContainerNetDriver {
+	for i := range networks {
+		if networks[i].Driver != ContainerNetDriver {
 			log.Fatalf("error: %s network exists, but doesn't have the correct driver: %s",
 				settings.SettingsFile.Network,
 				ContainerNetDriver)
 		} else {
-			return network.ID
+			return networks[i].ID
 		}
 	}
 

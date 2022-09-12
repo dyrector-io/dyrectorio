@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -76,6 +77,8 @@ const DefaultMailSlurperPort = 5433
 
 const SecretLength = 32
 
+const bufferMultiplier = 2
+
 const FilePerms = 0600
 const DirPerms = 0750
 
@@ -138,12 +141,15 @@ func SettingsFileReadWrite(state Settings) Settings {
 
 	saveSettings(settings)
 
+	log.Printf("%v", settings)
+
 	return settings
 }
 
 func DisabledServiceSettings(settings Settings) Settings {
-	if !settings.CruxDisabled {
-		fmt.Printf("Do not forget to add your DATABASE_URL to your crux environment.\n\nDATABASE_URL=postgresql://%s:%s@%s_crux-postgres:%d/%s?schema=public\n\n",
+	if settings.CruxDisabled {
+		fmt.Printf("Do not forget to add your DATABASE_URL to your crux environment.\n\n")
+		fmt.Printf("DATABASE_URL=postgresql://%s:%s@%s_crux-postgres:%d/%s?schema=public\n\n",
 			settings.SettingsFile.CruxPostgresUser,
 			settings.SettingsFile.CruxPostgresPassword,
 			settings.SettingsFile.Prefix,
@@ -151,7 +157,7 @@ func DisabledServiceSettings(settings Settings) Settings {
 			settings.SettingsFile.CruxPostgresDB)
 	}
 
-	if !settings.CruxUIDisabled {
+	if settings.CruxUIDisabled {
 		settings.CruxUI.CruxAddr = "localhost"
 	}
 
@@ -166,7 +172,7 @@ func saveSettings(settings Settings) {
 
 		// If settingspath is default, we create the directory for it
 		if settings.SettingsFilePath == settingspath {
-			if _, err := os.Stat(settingspath); errors.Is(err, os.ErrNotExist) {
+			if _, err := os.Stat(filepath.Dir(settingspath)); errors.Is(err, os.ErrNotExist) {
 				err = os.Mkdir(filepath.Dir(settingspath), DirPerms)
 				if err != nil {
 					log.Fatalf("%v", err)
@@ -245,7 +251,7 @@ func LoadIntVal(value, def uint) uint {
 }
 
 func RandomChars(bufflength uint) string {
-	buffer := make([]byte, bufflength)
+	buffer := make([]byte, bufflength*bufferMultiplier)
 	_, err := rand.Read(buffer)
 	if err != nil {
 		log.Fatalf("error: %v", err)
@@ -253,5 +259,13 @@ func RandomChars(bufflength uint) string {
 	secureString := make([]byte, base64.StdEncoding.EncodedLen(len(buffer)))
 	base64.StdEncoding.Encode(secureString, buffer)
 
-	return string(secureString)
+	result := strings.ReplaceAll(
+		strings.ReplaceAll(
+			strings.ReplaceAll(
+				string(secureString),
+				"+", ""),
+			"/", ""),
+		"=", "")
+
+	return result[0:bufflength]
 }
