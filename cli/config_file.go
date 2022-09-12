@@ -62,6 +62,7 @@ type Options struct {
 	KratosPostgresPassword string `yaml:"kratosPostgresPassword"`
 	KratosSecret           string `yaml:"kratosSecret"`
 	MailSlurperPort        uint   `yaml:"mailSlurperPort"`
+	MailSlurperPort2       uint   `yaml:"mailSlurperPort2"`
 }
 
 const DefaultPostgresPort = 5432
@@ -74,6 +75,7 @@ const DefaultKratosAdminPort = 4433
 const DefaultKratosPublicPort = 4434
 const DefaultKratosPostgresPort = 5433
 const DefaultMailSlurperPort = 4436
+const DefaultMailSlurperPort2 = 4437
 
 const SecretLength = 32
 
@@ -230,6 +232,7 @@ func LoadDefaultsOnEmpty(settings Settings) Settings {
 	settings.SettingsFile.KratosPostgresPassword = LoadStringVal(settings.SettingsFile.KratosPostgresPassword, RandomChars(SecretLength))
 	settings.SettingsFile.KratosSecret = LoadStringVal(settings.SettingsFile.KratosSecret, RandomChars(SecretLength))
 	settings.SettingsFile.MailSlurperPort = LoadIntVal(settings.SettingsFile.MailSlurperPort, DefaultMailSlurperPort)
+	settings.SettingsFile.MailSlurperPort2 = LoadIntVal(settings.SettingsFile.MailSlurperPort2, DefaultMailSlurperPort2)
 
 	// settings.NetworkGatewayIP = GetNetworkID()
 

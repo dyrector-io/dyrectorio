@@ -156,7 +156,7 @@ func GetKratos(settings Settings) *containerbuilder.DockerContainerBuilder {
 			"SMTP_USER=test",
 			"SMTP_PASSWORD=test",
 			fmt.Sprintf("SMTP_URL=%s_mailslurper:1025/?skip_ssl_verify=true&legacy_ssl=true", settings.SettingsFile.Prefix),
-			fmt.Sprintf("SMTP_URL=test:test@%s_mailslurper:1025/?skip_ssl_verify=true&legacy_ssl=true", settings.SettingsFile.Prefix),
+			fmt.Sprintf("COURIER_SMTP_CONNECTION_URI=smtps://test:test@%s_mailslurper:1025/?skip_ssl_verify=true&legacy_ssl=true", settings.SettingsFile.Prefix),
 		}).
 		WithPortBindings([]containerbuilder.PortBinding{
 			{
@@ -206,6 +206,10 @@ func GetMailSlurper(settings Settings) *containerbuilder.DockerContainerBuilder 
 			{
 				ExposedPort: DefaultMailSlurperPort,
 				PortBinding: uint16(settings.SettingsFile.MailSlurperPort),
+			},
+			{
+				ExposedPort: DefaultMailSlurperPort2,
+				PortBinding: uint16(settings.SettingsFile.MailSlurperPort2),
 			}}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
 		WithNetworkAliases(fmt.Sprintf("%s_mailslurper", settings.SettingsFile.Prefix))
@@ -222,9 +226,9 @@ func GetCruxPostgres(settings Settings) *containerbuilder.DockerContainerBuilder
 		WithoutConflict().
 		WithForcePullImage().
 		WithEnv([]string{
-			fmt.Sprintf("POSTGRES_USER=%s", settings.SettingsFile.KratosPostgresUser),
-			fmt.Sprintf("POSTGRES_PASSWORD=%s", settings.SettingsFile.KratosPostgresPassword),
-			fmt.Sprintf("POSTGRES_DB=%s", settings.SettingsFile.KratosPostgresDB),
+			fmt.Sprintf("POSTGRES_USER=%s", settings.SettingsFile.CruxPostgresUser),
+			fmt.Sprintf("POSTGRES_PASSWORD=%s", settings.SettingsFile.CruxPostgresPassword),
+			fmt.Sprintf("POSTGRES_DB=%s", settings.SettingsFile.CruxPostgresDB),
 		}).
 		WithPortBindings([]containerbuilder.PortBinding{
 			{
