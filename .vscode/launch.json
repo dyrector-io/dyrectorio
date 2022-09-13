@@ -38,7 +38,7 @@
         },
     
         {
-            "name": "Launch cli",
+            "name": "Launch CLI",
             "type": "go",
             "request": "launch",
             "mode": "auto",
@@ -68,7 +68,7 @@
         },
 
         {
-            "name": "Debug cli",
+            "name": "Debug CLI",
             "type": "go",
             "request": "launch",
             "mode": "debug",

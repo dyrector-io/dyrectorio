@@ -88,13 +88,13 @@ const DefaultMailSlurperPort2 = 4437
 
 const SecretLength = 32
 
-const bufferMultiplier = 2
+const BufferMultiplier = 2
 
 const FilePerms = 0600
 const DirPerms = 0750
 
 const SettingsFileName = "settings.yaml"
-const SettingsFileDir = "dyo"
+const SettingsFileDir = "dyo-cli"
 
 // Check if the settings file is exists
 func SettingsExists(settingspath string) bool {
@@ -148,7 +148,7 @@ func SettingsFileReadWrite(state *Settings) *Settings {
 
 	// Settings Validation steps
 
-	// TODO: Check for available ports
+	// TODO(c3ppc3pp): Check for available ports
 
 	saveSettings(settings)
 
@@ -272,7 +272,7 @@ func LoadIntVal(value, def uint) uint {
 }
 
 func RandomChars(bufflength uint) string {
-	buffer := make([]byte, bufflength*bufferMultiplier)
+	buffer := make([]byte, bufflength*BufferMultiplier)
 	_, err := rand.Read(buffer)
 	if err != nil {
 		log.Fatalf("error: %v", err)
