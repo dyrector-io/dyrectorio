@@ -12,7 +12,14 @@ import {
   deploymentStatusToJSON,
   ExplicitContainerConfig,
   InstanceDeploymentItem,
+  KeyList,
+  KeyValueList,
+  ListSecretsResponse,
   Port,
+  SecretList,
+  UniqueKey,
+  UniqueKeySecretValue,
+  UniqueKeyValue,
 } from './common'
 
 export const protobufPackage = 'crux'
@@ -540,6 +547,10 @@ export interface UpdateEntityResponse {
   updatedAt: Timestamp | undefined
 }
 
+export interface PrefixRequest {
+  prefix: string
+}
+
 /** AUDIT */
 export interface AuditLogResponse {
   createdAt: Timestamp | undefined
@@ -818,6 +829,7 @@ export interface ContainerConfig {
   name: string
   capabilities: UniqueKeyValue[]
   environment: UniqueKeyValue[]
+  secrets: UniqueKey[]
 }
 
 export interface ImageResponse {
@@ -850,19 +862,10 @@ export interface AddImagesToVersionRequest {
   images: RegistryImages[]
 }
 
-export interface UniqueKeyValue {
-  id: string
-  key: string
-  value: string
-}
-
-export interface KeyValueList {
-  data: UniqueKeyValue[]
-}
-
 export interface PatchContainerConfig {
   capabilities?: KeyValueList | undefined
   environment?: KeyValueList | undefined
+  secrets?: KeyList | undefined
   config?: ExplicitContainerConfig | undefined
   name?: string | undefined
 }
@@ -1016,6 +1019,7 @@ export interface InstanceContainerConfig {
   config: ExplicitContainerConfig | undefined
   capabilities: UniqueKeyValue[]
   environment: UniqueKeyValue[]
+  secrets: UniqueKeySecretValue[]
 }
 
 export interface InstanceResponse {
@@ -1032,6 +1036,7 @@ export interface PatchInstanceRequest {
   environment?: KeyValueList | undefined
   capabilities?: KeyValueList | undefined
   config?: ExplicitContainerConfig | undefined
+  secrets?: SecretList | undefined
 }
 
 export interface DeploymentListResponse {
@@ -1075,6 +1080,7 @@ export interface DeploymentDetailsResponse {
   prefix: string
   environment: UniqueKeyValue[]
   status: DeploymentStatus
+  publicKey?: string | undefined
   instances: InstanceResponse[]
 }
 
@@ -1262,6 +1268,22 @@ export const UpdateEntityResponse = {
   toJSON(message: UpdateEntityResponse): unknown {
     const obj: any = {}
     message.updatedAt !== undefined && (obj.updatedAt = fromTimestamp(message.updatedAt).toISOString())
+    return obj
+  },
+}
+
+function createBasePrefixRequest(): PrefixRequest {
+  return { prefix: '' }
+}
+
+export const PrefixRequest = {
+  fromJSON(object: any): PrefixRequest {
+    return { prefix: isSet(object.prefix) ? String(object.prefix) : '' }
+  },
+
+  toJSON(message: PrefixRequest): unknown {
+    const obj: any = {}
+    message.prefix !== undefined && (obj.prefix = message.prefix)
     return obj
   },
 }
@@ -2272,7 +2294,7 @@ export const IncreaseVersionRequest = {
 }
 
 function createBaseContainerConfig(): ContainerConfig {
-  return { config: undefined, name: '', capabilities: [], environment: [] }
+  return { config: undefined, name: '', capabilities: [], environment: [], secrets: [] }
 }
 
 export const ContainerConfig = {
@@ -2286,6 +2308,7 @@ export const ContainerConfig = {
       environment: Array.isArray(object?.environment)
         ? object.environment.map((e: any) => UniqueKeyValue.fromJSON(e))
         : [],
+      secrets: Array.isArray(object?.secrets) ? object.secrets.map((e: any) => UniqueKey.fromJSON(e)) : [],
     }
   },
 
@@ -2303,6 +2326,11 @@ export const ContainerConfig = {
       obj.environment = message.environment.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
     } else {
       obj.environment = []
+    }
+    if (message.secrets) {
+      obj.secrets = message.secrets.map(e => (e ? UniqueKey.toJSON(e) : undefined))
+    } else {
+      obj.secrets = []
     }
     return obj
   },
@@ -2432,48 +2460,6 @@ export const AddImagesToVersionRequest = {
   },
 }
 
-function createBaseUniqueKeyValue(): UniqueKeyValue {
-  return { id: '', key: '', value: '' }
-}
-
-export const UniqueKeyValue = {
-  fromJSON(object: any): UniqueKeyValue {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      key: isSet(object.key) ? String(object.key) : '',
-      value: isSet(object.value) ? String(object.value) : '',
-    }
-  },
-
-  toJSON(message: UniqueKeyValue): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.key !== undefined && (obj.key = message.key)
-    message.value !== undefined && (obj.value = message.value)
-    return obj
-  },
-}
-
-function createBaseKeyValueList(): KeyValueList {
-  return { data: [] }
-}
-
-export const KeyValueList = {
-  fromJSON(object: any): KeyValueList {
-    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => UniqueKeyValue.fromJSON(e)) : [] }
-  },
-
-  toJSON(message: KeyValueList): unknown {
-    const obj: any = {}
-    if (message.data) {
-      obj.data = message.data.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
-    } else {
-      obj.data = []
-    }
-    return obj
-  },
-}
-
 function createBasePatchContainerConfig(): PatchContainerConfig {
   return {}
 }
@@ -2483,6 +2469,7 @@ export const PatchContainerConfig = {
     return {
       capabilities: isSet(object.capabilities) ? KeyValueList.fromJSON(object.capabilities) : undefined,
       environment: isSet(object.environment) ? KeyValueList.fromJSON(object.environment) : undefined,
+      secrets: isSet(object.secrets) ? KeyList.fromJSON(object.secrets) : undefined,
       config: isSet(object.config) ? ExplicitContainerConfig.fromJSON(object.config) : undefined,
       name: isSet(object.name) ? String(object.name) : undefined,
     }
@@ -2494,6 +2481,7 @@ export const PatchContainerConfig = {
       (obj.capabilities = message.capabilities ? KeyValueList.toJSON(message.capabilities) : undefined)
     message.environment !== undefined &&
       (obj.environment = message.environment ? KeyValueList.toJSON(message.environment) : undefined)
+    message.secrets !== undefined && (obj.secrets = message.secrets ? KeyList.toJSON(message.secrets) : undefined)
     message.config !== undefined &&
       (obj.config = message.config ? ExplicitContainerConfig.toJSON(message.config) : undefined)
     message.name !== undefined && (obj.name = message.name)
@@ -3006,7 +2994,7 @@ export const PatchDeploymentRequest = {
 }
 
 function createBaseInstanceContainerConfig(): InstanceContainerConfig {
-  return { config: undefined, capabilities: [], environment: [] }
+  return { config: undefined, capabilities: [], environment: [], secrets: [] }
 }
 
 export const InstanceContainerConfig = {
@@ -3019,6 +3007,7 @@ export const InstanceContainerConfig = {
       environment: Array.isArray(object?.environment)
         ? object.environment.map((e: any) => UniqueKeyValue.fromJSON(e))
         : [],
+      secrets: Array.isArray(object?.secrets) ? object.secrets.map((e: any) => UniqueKeySecretValue.fromJSON(e)) : [],
     }
   },
 
@@ -3035,6 +3024,11 @@ export const InstanceContainerConfig = {
       obj.environment = message.environment.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
     } else {
       obj.environment = []
+    }
+    if (message.secrets) {
+      obj.secrets = message.secrets.map(e => (e ? UniqueKeySecretValue.toJSON(e) : undefined))
+    } else {
+      obj.secrets = []
     }
     return obj
   },
@@ -3080,6 +3074,7 @@ export const PatchInstanceRequest = {
       environment: isSet(object.environment) ? KeyValueList.fromJSON(object.environment) : undefined,
       capabilities: isSet(object.capabilities) ? KeyValueList.fromJSON(object.capabilities) : undefined,
       config: isSet(object.config) ? ExplicitContainerConfig.fromJSON(object.config) : undefined,
+      secrets: isSet(object.secrets) ? SecretList.fromJSON(object.secrets) : undefined,
     }
   },
 
@@ -3093,6 +3088,7 @@ export const PatchInstanceRequest = {
       (obj.capabilities = message.capabilities ? KeyValueList.toJSON(message.capabilities) : undefined)
     message.config !== undefined &&
       (obj.config = message.config ? ExplicitContainerConfig.toJSON(message.config) : undefined)
+    message.secrets !== undefined && (obj.secrets = message.secrets ? SecretList.toJSON(message.secrets) : undefined)
     return obj
   },
 }
@@ -3233,6 +3229,7 @@ export const DeploymentDetailsResponse = {
         ? object.environment.map((e: any) => UniqueKeyValue.fromJSON(e))
         : [],
       status: isSet(object.status) ? deploymentStatusFromJSON(object.status) : 0,
+      publicKey: isSet(object.publicKey) ? String(object.publicKey) : undefined,
       instances: Array.isArray(object?.instances) ? object.instances.map((e: any) => InstanceResponse.fromJSON(e)) : [],
     }
   },
@@ -3252,6 +3249,7 @@ export const DeploymentDetailsResponse = {
       obj.environment = []
     }
     message.status !== undefined && (obj.status = deploymentStatusToJSON(message.status))
+    message.publicKey !== undefined && (obj.publicKey = message.publicKey)
     if (message.instances) {
       obj.instances = message.instances.map(e => (e ? InstanceResponse.toJSON(e) : undefined))
     } else {
@@ -3969,6 +3967,8 @@ export interface CruxDeploymentClient {
 
   getDeploymentList(request: AccessRequest, metadata: Metadata, ...rest: any): Observable<DeploymentListResponse>
 
+  getSecrets(request: PrefixRequest, metadata: Metadata, ...rest: any): Observable<ListSecretsResponse>
+
   startDeployment(request: IdRequest, metadata: Metadata, ...rest: any): Observable<DeploymentProgressMessage>
 
   subscribeToDeploymentEditEvents(
@@ -4026,6 +4026,12 @@ export interface CruxDeploymentController {
     ...rest: any
   ): Promise<DeploymentListResponse> | Observable<DeploymentListResponse> | DeploymentListResponse
 
+  getSecrets(
+    request: PrefixRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<ListSecretsResponse> | Observable<ListSecretsResponse> | ListSecretsResponse
+
   startDeployment(request: IdRequest, metadata: Metadata, ...rest: any): Observable<DeploymentProgressMessage>
 
   subscribeToDeploymentEditEvents(
@@ -4046,6 +4052,7 @@ export function CruxDeploymentControllerMethods() {
       'getDeploymentDetails',
       'getDeploymentEvents',
       'getDeploymentList',
+      'getSecrets',
       'startDeployment',
       'subscribeToDeploymentEditEvents',
     ]

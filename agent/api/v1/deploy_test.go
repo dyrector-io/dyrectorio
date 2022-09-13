@@ -8,8 +8,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	v1 "github.com/dyrector-io/dyrectorio/agent/api/v1"
 	"github.com/dyrector-io/dyrectorio/agent/internal/config"
-	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 )
 
 func TestSetDeploymentDefaults(t *testing.T) {

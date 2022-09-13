@@ -7,7 +7,12 @@ export type UniqueKeyValue = {
   value: string
 }
 
+export type UniqueKeySecretValue = UniqueKeyValue & {
+  encrypted: boolean
+}
+
 export const EXPLICIT_CONTAINER_NETWORK_MODE_VALUES = ['none', 'host', 'bridge'] as const
+
 export type ExplicitContainerNetworkMode = typeof EXPLICIT_CONTAINER_NETWORK_MODE_VALUES[number]
 
 export const EXPLICIT_CONTAINER_RESTART_POLICY_TYPE_VALUES = [
@@ -27,9 +32,15 @@ export type ContainerConfigData = {
   capabilities: UniqueKeyValue[]
   environment: UniqueKeyValue[]
   config: JsonObject
+  secrets: string[]
 }
 
-export type InstanceContainerConfigData = Omit<ContainerConfigData, 'name'>
+export type InstanceContainerConfigData = {
+  capabilities: UniqueKeyValue[]
+  environment: UniqueKeyValue[]
+  config: JsonObject
+  secrets: UniqueKeySecretValue[]
+}
 
 export type IdentityTraits = {
   email: string

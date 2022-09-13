@@ -258,6 +258,7 @@ export const explicitContainerConfigSchema = yup.object().shape({
   useLoadBalancer: yup.boolean().default(false).optional(),
   healthCheckConfig: yup
     .object()
+    .nullable()
     .shape({
       port: yup.number().positive().lessThan(65536),
       livenessProbe: yup.string().optional(),
@@ -291,6 +292,7 @@ export const completeContainerConfigSchema = explicitContainerConfigSchema.shape
   name: yup.string().required(),
   environment: stringStringMapRule.default({}),
   capabilities: stringStringMapRule.default({}),
+  secrets: stringStringMapRule.default({}),
 })
 
 export const uniqueKeyValuesSchema = yup
@@ -303,10 +305,27 @@ export const uniqueKeyValuesSchema = yup
   .ensure()
   .test('keysAreUnique', 'Keys must be unique', arr => new Set(arr.map(it => it.key)).size === arr.length)
 
+export const uniqueKeysOnlySchema = yup
+  .array(
+    yup.object().shape({
+      key: yup.string().required().ensure().matches(/^\S+$/g),
+    }),
+  )
+  .ensure()
+  .test('keysAreUnique', 'Keys must be unique', arr => new Set(arr.map(it => it.key)).size === arr.length)
+
+export const instanceConfigSchema = yup.object().shape({
+  environment: uniqueKeyValuesSchema,
+  capabilities: uniqueKeyValuesSchema,
+  config: explicitContainerConfigSchema.nullable(),
+  secrets: uniqueKeyValuesSchema,
+})
+
 export const containerConfigSchema = yup.object().shape({
   environment: uniqueKeyValuesSchema,
   capabilities: uniqueKeyValuesSchema,
   config: explicitContainerConfigSchema.nullable(),
+  secrets: uniqueKeysOnlySchema,
 })
 
 export const patchContainerConfigSchema = yup.object().shape({

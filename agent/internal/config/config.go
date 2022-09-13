@@ -26,9 +26,10 @@ type CommonConfiguration struct {
 	ImportContainerImage string `yaml:"importContainerImage"  env:"IMPORT_CONTAINER_IMAGE"  env-default:"rclone/rclone:1.57.0"`
 	IngressRootDomain    string `yaml:"ingressRootDomain"     env:"INGRESS_ROOT_DOMAIN"     env-default:""`
 	// TODO(c3ppc3pp): custom UUIDv4 setter
-	NodeID            string        `yaml:"nodeID" env:"NODE_ID" env-default:"cb7e9573-9a43-4d5b-8005-eb8bb7a423c4"`
-	ReadHeaderTimeout time.Duration `yaml:"readHeaderTimeout"    env:"READ_HEADER_TIMEOUT"  env-default:"15s"`
-	Registry          string        `yaml:"registry"             env:"REGISTRY"             env-default:"index.docker.io"`
-	RegistryPassword  string        `yaml:"registryPassword"     env:"REGISTRY_PASSWORD"    env-default:""`
-	RegistryUsername  string        `yaml:"registryUsername"     env:"REGISTRY_USERNAME"    env-default:""`
+	NodeID            string         `yaml:"nodeID" env:"NODE_ID" env-default:"cb7e9573-9a43-4d5b-8005-eb8bb7a423c4"`
+	ReadHeaderTimeout time.Duration  `yaml:"readHeaderTimeout"    env:"READ_HEADER_TIMEOUT"      env-default:"15s"`
+	Registry          string         `yaml:"registry"             env:"REGISTRY"                 env-default:"index.docker.io"`
+	RegistryPassword  string         `yaml:"registryPassword"     env:"REGISTRY_PASSWORD"        env-default:""`
+	RegistryUsername  string         `yaml:"registryUsername"     env:"REGISTRY_USERNAME"        env-default:""`
+	SecretPrivateKey  ConfigFromFile `yaml:"secretPrivateKeyFile" env:"SECRET_PRIVATE_KEY_FILE"  env-default:"/srv/dagent/private.key"`
 }

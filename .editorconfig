@@ -28,6 +28,11 @@ indent_size = 2
 indent_style = space
 
 
+# Prisma schema
+[*.prisma]
+indent_size = 2
+indent_style = space
+
 # Alongside EditorConfig ESLint and Prettier are also in use
 [*.{ts,tsx}]
 indent_size = 2

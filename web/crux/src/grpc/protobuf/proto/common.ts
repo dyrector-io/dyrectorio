@@ -285,8 +285,9 @@ export interface ContainerStateItem {
   /** The 'State' of the container (Created, Running, etc) */
   state: ContainerState
   /**
-   * The 'Status' of the container ("Created 1min ago", "Exited with code 123", etc).
-   * Unused but left here for reverse compatibility with the legacy version.
+   * The 'Status' of the container ("Created 1min ago", "Exited with code 123",
+   * etc). Unused but left here for reverse compatibility with the legacy
+   * version.
    */
   status: string
   imageName: string
@@ -428,6 +429,43 @@ export interface ExplicitContainerConfig {
   command: string[]
   args: string[]
   environments: string[]
+  secrets?: KeyValueList | undefined
+}
+
+export interface UniqueKey {
+  id: string
+  key: string
+}
+
+export interface KeyList {
+  data: UniqueKey[]
+}
+
+export interface UniqueKeyValue {
+  id: string
+  key: string
+  value: string
+}
+
+export interface UniqueKeySecretValue {
+  id: string
+  key: string
+  value: string
+  encrypted?: boolean | undefined
+}
+
+export interface KeyValueList {
+  data: UniqueKeyValue[]
+}
+
+export interface SecretList {
+  data: UniqueKeySecretValue[]
+}
+
+export interface ListSecretsResponse {
+  prefix: string
+  publicKey: string
+  keys: string[]
 }
 
 export const COMMON_PACKAGE_NAME = 'common'
@@ -987,6 +1025,7 @@ export const ExplicitContainerConfig = {
       command: Array.isArray(object?.command) ? object.command.map((e: any) => String(e)) : [],
       args: Array.isArray(object?.args) ? object.args.map((e: any) => String(e)) : [],
       environments: Array.isArray(object?.environments) ? object.environments.map((e: any) => String(e)) : [],
+      secrets: isSet(object.secrets) ? KeyValueList.fromJSON(object.secrets) : undefined,
     }
   },
 
@@ -1032,6 +1071,156 @@ export const ExplicitContainerConfig = {
       obj.environments = message.environments.map(e => e)
     } else {
       obj.environments = []
+    }
+    message.secrets !== undefined && (obj.secrets = message.secrets ? KeyValueList.toJSON(message.secrets) : undefined)
+    return obj
+  },
+}
+
+function createBaseUniqueKey(): UniqueKey {
+  return { id: '', key: '' }
+}
+
+export const UniqueKey = {
+  fromJSON(object: any): UniqueKey {
+    return { id: isSet(object.id) ? String(object.id) : '', key: isSet(object.key) ? String(object.key) : '' }
+  },
+
+  toJSON(message: UniqueKey): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.key !== undefined && (obj.key = message.key)
+    return obj
+  },
+}
+
+function createBaseKeyList(): KeyList {
+  return { data: [] }
+}
+
+export const KeyList = {
+  fromJSON(object: any): KeyList {
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => UniqueKey.fromJSON(e)) : [] }
+  },
+
+  toJSON(message: KeyList): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? UniqueKey.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+}
+
+function createBaseUniqueKeyValue(): UniqueKeyValue {
+  return { id: '', key: '', value: '' }
+}
+
+export const UniqueKeyValue = {
+  fromJSON(object: any): UniqueKeyValue {
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      key: isSet(object.key) ? String(object.key) : '',
+      value: isSet(object.value) ? String(object.value) : '',
+    }
+  },
+
+  toJSON(message: UniqueKeyValue): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.key !== undefined && (obj.key = message.key)
+    message.value !== undefined && (obj.value = message.value)
+    return obj
+  },
+}
+
+function createBaseUniqueKeySecretValue(): UniqueKeySecretValue {
+  return { id: '', key: '', value: '' }
+}
+
+export const UniqueKeySecretValue = {
+  fromJSON(object: any): UniqueKeySecretValue {
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      key: isSet(object.key) ? String(object.key) : '',
+      value: isSet(object.value) ? String(object.value) : '',
+      encrypted: isSet(object.encrypted) ? Boolean(object.encrypted) : undefined,
+    }
+  },
+
+  toJSON(message: UniqueKeySecretValue): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.key !== undefined && (obj.key = message.key)
+    message.value !== undefined && (obj.value = message.value)
+    message.encrypted !== undefined && (obj.encrypted = message.encrypted)
+    return obj
+  },
+}
+
+function createBaseKeyValueList(): KeyValueList {
+  return { data: [] }
+}
+
+export const KeyValueList = {
+  fromJSON(object: any): KeyValueList {
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => UniqueKeyValue.fromJSON(e)) : [] }
+  },
+
+  toJSON(message: KeyValueList): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+}
+
+function createBaseSecretList(): SecretList {
+  return { data: [] }
+}
+
+export const SecretList = {
+  fromJSON(object: any): SecretList {
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => UniqueKeySecretValue.fromJSON(e)) : [] }
+  },
+
+  toJSON(message: SecretList): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? UniqueKeySecretValue.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+}
+
+function createBaseListSecretsResponse(): ListSecretsResponse {
+  return { prefix: '', publicKey: '', keys: [] }
+}
+
+export const ListSecretsResponse = {
+  fromJSON(object: any): ListSecretsResponse {
+    return {
+      prefix: isSet(object.prefix) ? String(object.prefix) : '',
+      publicKey: isSet(object.publicKey) ? String(object.publicKey) : '',
+      keys: Array.isArray(object?.keys) ? object.keys.map((e: any) => String(e)) : [],
+    }
+  },
+
+  toJSON(message: ListSecretsResponse): unknown {
+    const obj: any = {}
+    message.prefix !== undefined && (obj.prefix = message.prefix)
+    message.publicKey !== undefined && (obj.publicKey = message.publicKey)
+    if (message.keys) {
+      obj.keys = message.keys.map(e => e)
+    } else {
+      obj.keys = []
     }
     return obj
   },

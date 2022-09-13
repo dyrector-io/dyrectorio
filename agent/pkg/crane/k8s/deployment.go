@@ -22,7 +22,7 @@ import (
 
 	typedv1 "k8s.io/client-go/kubernetes/typed/apps/v1"
 
-	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
+	v1 "github.com/dyrector-io/dyrectorio/agent/api/v1"
 
 	appsv1 "k8s.io/client-go/applyconfigurations/apps/v1"
 
@@ -50,6 +50,7 @@ type deploymentParams struct {
 	image           util.ImageURI
 	containerConfig *v1.ContainerConfig
 	configMapsEnv   []string
+	secrets         []string
 	volumes         map[string]v1.Volume
 	portList        []builder.PortBinding
 	command         []string
@@ -176,7 +177,7 @@ func buildContainer(p *deploymentParams,
 	container := corev1.Container().
 		WithName(p.containerConfig.Container).
 		WithImage(p.image.String()).
-		WithEnvFrom(getEnvConfigMaps(p.configMapsEnv)...).
+		WithEnvFrom(getEnvConfigMapsAndSecrets(p.configMapsEnv, p.secrets)...).
 		WithVolumeMounts(getVolumeMountsFromMap(p.volumes)...).
 		WithPorts(getContainerPorts(p.portList)...).
 		WithLivenessProbe(livenessProbe).
@@ -322,16 +323,22 @@ func getEnvs(environments map[string]string) []*corev1.EnvVarApplyConfiguration 
 	return apply
 }
 
-func getEnvConfigMaps(configs []string) []*corev1.EnvFromSourceApplyConfiguration {
-	configmaps := []*corev1.EnvFromSourceApplyConfiguration{}
+func getEnvConfigMapsAndSecrets(configs, secrets []string) []*corev1.EnvFromSourceApplyConfiguration {
+	envs := []*corev1.EnvFromSourceApplyConfiguration{}
 
 	for i := range configs {
-		configmaps = append(configmaps,
+		envs = append(envs,
 			corev1.EnvFromSource().WithConfigMapRef(corev1.ConfigMapEnvSource().WithName(configs[i])),
 		)
 	}
 
-	return configmaps
+	for i := range secrets {
+		envs = append(envs,
+			corev1.EnvFromSource().WithSecretRef(corev1.SecretEnvSource().WithName(secrets[i])),
+		)
+	}
+
+	return envs
 }
 
 func getProbes(path string, port uint16) *corev1.HTTPGetActionApplyConfiguration {
@@ -432,13 +439,4 @@ func GetDeployments(ctx context.Context, namespace string, cfg *config.Configura
 		panic(err)
 	}
 	return list, nil
-}
-
-//nolint
-func getReplicaSetClient(namespace string, cfg *config.Configuration) typedv1.ReplicaSetInterface {
-	client, err := GetClientSet(cfg)
-	if err != nil {
-		panic(err)
-	}
-	return client.AppsV1().ReplicaSets(namespace)
 }

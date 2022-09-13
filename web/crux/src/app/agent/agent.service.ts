@@ -262,7 +262,7 @@ export default class AgentService {
             message: 'Invalid token',
           })
         }
-        agent = new Agent(connection, eventChannel as Subject<NodeEventMessage>, request?.version)
+        agent = new Agent(connection, eventChannel as Subject<NodeEventMessage>, request?.version, request?.publicKey)
 
         await prisma.node.update({
           where: { id: node.id },
@@ -274,10 +274,12 @@ export default class AgentService {
       }
     })
 
+    this.logger.log(`Agent key: ${request.publicKey}`)
+
     this.agents.set(agent.id, agent)
     connection.status().subscribe(it => this.onAgentConnectionStatusChange(agent, it))
 
-    this.logger.log(`Agent joined with id: ${request.id}`)
+    this.logger.log(`Agent joined with id: ${request.id}, key: ${!!agent.publicKey}`)
     this.logServiceInfo()
 
     return agent.onConnected()

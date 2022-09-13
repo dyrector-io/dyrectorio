@@ -32,7 +32,6 @@ type ContainerBuilder interface {
 	WithNetworkAliases(aliases ...string) ContainerBuilder
 	WithNetworkMode(networkMode string) ContainerBuilder
 	WithNetworks(networks []string) ContainerBuilder
-	WithEnvironment(envList string) ContainerBuilder
 	WithLabels(labels map[string]string) ContainerBuilder
 	WithLogConfig(config container.LogConfig)
 	WithRegistryAuth(auth RegistryAuth) ContainerBuilder
@@ -48,9 +47,9 @@ type ContainerBuilder interface {
 	WithPostCreateHooks(hooks ...LifecycleFunc) ContainerBuilder
 	WithPreStartHooks(hooks ...LifecycleFunc) ContainerBuilder
 	WithPostStartHooks(hooks ...LifecycleFunc) ContainerBuilder
+	Create() ContainerBuilder
 	GetContainerID() *string
 	GetNetworkID() *string
-	Create() ContainerBuilder
 	Start() (bool, error)
 	StartWaitUntilExit() (ContainerWaitResult, error)
 }

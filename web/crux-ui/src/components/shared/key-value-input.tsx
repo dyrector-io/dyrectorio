@@ -66,6 +66,7 @@ const reducer = (state: UniqueKeyValue[], action: KeyValueInputAction): UniqueKe
 
 interface KeyValueInputProps {
   disabled?: boolean
+  valueDisabled?: boolean
   className?: string
   heading?: string
   items: UniqueKeyValue[]
@@ -73,7 +74,7 @@ interface KeyValueInputProps {
 }
 
 const KeyValueInput = (props: KeyValueInputProps) => {
-  const { heading, disabled, className, items, onChange: propOnChange } = props
+  const { heading, disabled, className, items, valueDisabled, onChange: propOnChange } = props
 
   const { t } = useTranslation('common')
 
@@ -144,7 +145,7 @@ const KeyValueInput = (props: KeyValueInputProps) => {
         <div className="w-7/12 ml-2">
           <DyoInput
             key={`${entry.id}-value`}
-            disabled={disabled}
+            disabled={disabled || valueDisabled}
             className="w-full"
             grow
             placeholder={t('value')}

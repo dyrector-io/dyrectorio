@@ -80,6 +80,7 @@ service CruxDeployment {
   rpc GetDeploymentDetails(IdRequest) returns (DeploymentDetailsResponse);
   rpc GetDeploymentEvents(IdRequest) returns (DeploymentEventListResponse);
   rpc GetDeploymentList(AccessRequest) returns (DeploymentListResponse);
+  rpc GetSecrets(PrefixRequest) returns (common.ListSecretsResponse);
 
   rpc StartDeployment(IdRequest) returns (stream DeploymentProgressMessage);
 
@@ -149,6 +150,8 @@ message CreateEntityResponse {
 }
 
 message UpdateEntityResponse { google.protobuf.Timestamp updatedAt = 100; }
+
+message PrefixRequest { string prefix = 1; }
 
 /*
  *
@@ -495,8 +498,9 @@ message ContainerConfig {
   common.ExplicitContainerConfig config = 100;
   string name = 101;
 
-  repeated UniqueKeyValue capabilities = 1000;
-  repeated UniqueKeyValue environment = 1001;
+  repeated common.UniqueKeyValue capabilities = 1000;
+  repeated common.UniqueKeyValue environment = 1001;
+  repeated common.UniqueKey secrets = 1002;
 }
 
 message ImageResponse {
@@ -530,17 +534,10 @@ message AddImagesToVersionRequest {
   repeated RegistryImages images = 101;
 }
 
-message UniqueKeyValue {
-  string id = 100;
-  string key = 101;
-  string value = 102;
-}
-
-message KeyValueList { repeated UniqueKeyValue data = 1000; }
-
 message PatchContainerConfig {
-  optional KeyValueList capabilities = 100;
-  optional KeyValueList environment = 101;
+  optional common.KeyValueList capabilities = 100;
+  optional common.KeyValueList environment = 101;
+  optional common.KeyList secrets = 102;
   optional common.ExplicitContainerConfig config = 103;
   optional string name = 104;
 }
@@ -719,15 +716,16 @@ message PatchDeploymentRequest {
   string id = 1;
   string accessedBy = 2;
 
-  optional KeyValueList environment = 100;
+  optional common.KeyValueList environment = 100;
   optional PatchInstanceRequest instance = 1001;
 }
 
 message InstanceContainerConfig {
   common.ExplicitContainerConfig config = 100;
 
-  repeated UniqueKeyValue capabilities = 1000;
-  repeated UniqueKeyValue environment = 1001;
+  repeated common.UniqueKeyValue capabilities = 1000;
+  repeated common.UniqueKeyValue environment = 1001;
+  repeated common.UniqueKeySecretValue secrets = 1002;
 }
 
 message InstanceResponse {
@@ -743,9 +741,10 @@ message PatchInstanceRequest {
   string id = 1;
   string accessedBy = 2;
 
-  optional KeyValueList environment = 100;
-  optional KeyValueList capabilities = 101;
+  optional common.KeyValueList environment = 100;
+  optional common.KeyValueList capabilities = 101;
   optional common.ExplicitContainerConfig config = 102;
+  optional common.SecretList secrets = 103;
 }
 
 message DeploymentListResponse { repeated DeploymentResponse data = 1000; }
@@ -788,8 +787,9 @@ message DeploymentDetailsResponse {
   string name = 102;
   optional string description = 103;
   string prefix = 104;
-  repeated UniqueKeyValue environment = 105;
+  repeated common.UniqueKeyValue environment = 105;
   common.DeploymentStatus status = 106;
+  optional string publicKey = 107;
 
   repeated InstanceResponse instances = 1000;
 }
