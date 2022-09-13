@@ -158,7 +158,7 @@ const EditInstanceJson = (props: EditInstanceJsonProps) => {
     () =>
       dispatch({
         type: 'config-change',
-        config: props.config,
+        config,
       }),
     [config],
   )

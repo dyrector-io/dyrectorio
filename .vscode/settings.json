@@ -11,4 +11,8 @@
         "**/Thumbs.db": true,
         "**/node_modules": true
     },
+    "eslint.workingDirectories": [
+        "web/crux",
+        "web/crux-ui"
+    ]
 }
