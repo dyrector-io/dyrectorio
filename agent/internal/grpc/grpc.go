@@ -206,8 +206,7 @@ func grpcLoop(
 			publicKey, keyErr := config.GetPublicKey(string(appConfig.SecretPrivateKey))
 
 			if keyErr != nil {
-				log.Println("gprpc public key error")
-				log.Println(keyErr)
+				log.Printf("grpc public key error: %s", keyErr.Error())
 				log.Println(publicKey)
 			}
 

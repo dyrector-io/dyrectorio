@@ -15,7 +15,6 @@ import (
 type ConfigFromFile string
 
 func (field *ConfigFromFile) SetValue(location string) error {
-	log.Println("Custom key parsing config things")
 	if location == "" {
 		return fmt.Errorf("field value can't be empty")
 	}
@@ -57,8 +56,8 @@ func checkGenerateKeys(location string) (string, error) {
 func generateKey(location string) (string, error) {
 	log.Printf("Generating new key file...")
 	const (
-		name  = "dyrectorio crane"
-		email = "agent@dyrector.io"
+		name  = "dyrector.io agent"
+		email = "hello@dyrector.io"
 	)
 
 	ecKey, keyErr := crypto.GenerateKey(name, email, "x25519", 0)
