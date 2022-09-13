@@ -303,7 +303,7 @@ func MapContainerState(in *[]dockerTypes.Container) []*common.ContainerStateItem
 
 		var imageTag string
 
-		if len(imageName) > 0 {
+		if len(imageName) > 1 {
 			imageTag = imageName[1]
 		} else {
 			imageTag = "latest"
