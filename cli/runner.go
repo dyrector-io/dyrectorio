@@ -28,19 +28,20 @@ const ContainerNetDriver = "bridge"
 
 func ProcessCommand(settings Settings) {
 	containers := DyrectorioStack{
-		Crux:           GetCrux(settings),
-		CruxMigrate:    GetCruxMigrate(settings),
-		CruxUI:         GetCruxUI(settings),
-		Kratos:         GetKratos(settings),
-		KratosMigrate:  GetKratosMigrate(settings),
-		CruxPostgres:   GetCruxPostgres(settings),
-		KratosPostgres: GetKratosPostgres(settings),
-		MailSlurper:    GetMailSlurper(settings),
-		Containers:     settings.Containers,
+		Containers: settings.Containers,
 	}
 
 	switch settings.Command {
 	case "up":
+		containers.Crux = GetCrux(settings)
+		containers.CruxMigrate = GetCruxMigrate(settings)
+		containers.CruxUI = GetCruxUI(settings)
+		containers.Kratos = GetKratos(settings)
+		containers.KratosMigrate = GetKratosMigrate(settings)
+		containers.CruxPostgres = GetCruxPostgres(settings)
+		containers.KratosPostgres = GetKratosPostgres(settings)
+		containers.MailSlurper = GetMailSlurper(settings)
+
 		StartContainers(containers)
 	case "down":
 		StopContainers(containers)
@@ -106,13 +107,13 @@ func StopContainers(containers DyrectorioStack) {
 		CleanupContainer(containerID)
 	}
 
-	if containers.Containers.CruxUI.Disabled {
+	if !containers.Containers.CruxUI.Disabled {
 		if containerID := containers.Containers.CruxUI.Name; GetContainerID(containerID) != "" {
 			CleanupContainer(containerID)
 		}
 	}
 
-	if containers.Containers.Crux.Disabled {
+	if !containers.Containers.Crux.Disabled {
 		if containerID := containers.Containers.Crux.Name; GetContainerID(containerID) != "" {
 			CleanupContainer(containerID)
 		}
@@ -152,6 +153,7 @@ func GetContainerID(name string) string {
 	containers, err := cli.ContainerList(
 		context.Background(),
 		types.ContainerListOptions{
+			All:     true,
 			Filters: filter,
 		})
 	if err != nil {
@@ -186,6 +188,7 @@ func CleanupContainer(ID string) {
 	if err != nil {
 		log.Printf("error: %v", err)
 	}
+
 	err = cli.ContainerRemove(context.Background(), ID, types.ContainerRemoveOptions{Force: true, RemoveVolumes: false})
 	if err != nil {
 		log.Printf("error: %v", err)
