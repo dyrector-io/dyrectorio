@@ -159,10 +159,10 @@ model Image {
 model ContainerConfig {
   id           String @id @default(uuid()) @db.Uuid
   name         String
-  environment  Json
-  secrets      Json
-  capabilities Json
-  config       Json
+  environment  Json   @default("[]")
+  secrets      Json   @default("[]")
+  capabilities Json   @default("[]")
+  config       Json   @default("{}")
 
   image   Image  @relation(fields: [imageId], references: [id], onDelete: Cascade)
   imageId String @unique @db.Uuid
@@ -255,17 +255,17 @@ model Notification {
 
   team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
 
-  events      NotificationEvent[]
+  events NotificationEvent[]
 
   @@unique([name, teamId])
 }
 
 model NotificationEvent {
-  id              String                    @id @default(uuid()) @db.Uuid
-  event           NotificationEventTypeEnum
-  notificationId  String                    @db.Uuid
+  id             String                    @id @default(uuid()) @db.Uuid
+  event          NotificationEventTypeEnum
+  notificationId String                    @db.Uuid
 
-  notification    Notification              @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
 
   @@unique([event, notificationId])
 }
