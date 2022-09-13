@@ -332,7 +332,7 @@ func getEnvConfigMapsAndSecrets(configs, secrets []string) []*corev1.EnvFromSour
 		)
 	}
 
-	for i := range configs {
+	for i := range secrets {
 		envs = append(envs,
 			corev1.EnvFromSource().WithSecretRef(corev1.SecretEnvSource().WithName(secrets[i])),
 		)

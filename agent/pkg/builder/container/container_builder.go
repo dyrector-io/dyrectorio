@@ -47,7 +47,7 @@ type ContainerBuilder interface {
 	WithPostCreateHooks(hooks ...LifecycleFunc) ContainerBuilder
 	WithPreStartHooks(hooks ...LifecycleFunc) ContainerBuilder
 	WithPostStartHooks(hooks ...LifecycleFunc) ContainerBuilder
-	// Create() ContainerBuilder
+	Create() ContainerBuilder
 	GetContainerID() *string
 	GetNetworkID() *string
 	Start() (bool, error)

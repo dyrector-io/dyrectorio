@@ -207,7 +207,7 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
           <DyoInput
             key={`${entry.id}-value`}
             disabled={disabled || encrypted}
-            className="flex-auto"
+            className="flex-auto w-full"
             type={encrypted ? 'password' : 'text'}
             grow
             placeholder={t('value')}

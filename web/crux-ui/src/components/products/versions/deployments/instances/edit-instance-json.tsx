@@ -1,7 +1,7 @@
 import JsonEditor from '@app/components/shared/json-editor-dynamic-module'
 import { IMAGE_WS_REQUEST_DELAY } from '@app/const'
 import { CANCEL_THROTTLE, useThrottling } from '@app/hooks/use-throttleing'
-import { CompleteContainerConfig, ContainerConfig, InstanceContainerConfig, UniqueKeyValue } from '@app/models-config'
+import { CompleteContainerConfig, InstanceContainerConfig, UniqueKeyValue } from '@app/models-config'
 import { fold } from '@app/utils'
 import { completeContainerConfigSchema } from '@app/validation'
 import clsx from 'clsx'
@@ -22,7 +22,7 @@ type EditImageJsonActionType = 'config-change' | 'set-content'
 type EditImageJsonAction = {
   type: EditImageJsonActionType
   content?: CompleteContainerConfig
-  config?: ContainerConfig
+  config?: InstanceContainerConfig
 }
 
 const DEFAULT_CONFIG = completeContainerConfigSchema.getDefault() as any as CompleteContainerConfig
@@ -38,7 +38,7 @@ const keyValueArrayToJson = (envs: UniqueKeyValue[]): Record<string, string> =>
 
 const imageConfigToCompleteContainerConfig = (
   currentConfig: CompleteContainerConfig,
-  imageConfig: ContainerConfig,
+  imageConfig: InstanceContainerConfig,
 ): CompleteContainerConfig => {
   if (!imageConfig) {
     return currentConfig ?? DEFAULT_CONFIG
@@ -158,7 +158,7 @@ const EditInstanceJson = (props: EditInstanceJsonProps) => {
     () =>
       dispatch({
         type: 'config-change',
-        // config: props.config,
+        config: props.config,
       }),
     [config],
   )
