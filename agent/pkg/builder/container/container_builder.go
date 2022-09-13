@@ -117,6 +117,7 @@ func (dc *DockerContainerBuilder) WithName(name string) *DockerContainerBuilder 
 
 // Sets the network aliases used when connecting the container to the network.
 // Applied only if the NetworkMode is not none/host.
+// It is a must for Podman, without this the DNS resolution won't work.
 func (dc *DockerContainerBuilder) WithNetworkAliases(aliases ...string) *DockerContainerBuilder {
 	dc.networkAliases = aliases
 	return dc
