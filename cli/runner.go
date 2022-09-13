@@ -9,6 +9,7 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
+
 	containerbuilder "github.com/dyrector-io/dyrectorio/agent/pkg/builder/container"
 )
 
@@ -26,7 +27,7 @@ type DyrectorioStack struct {
 
 const ContainerNetDriver = "bridge"
 
-func ProcessCommand(settings Settings) {
+func ProcessCommand(settings *Settings) {
 	containers := DyrectorioStack{
 		Containers: settings.Containers,
 	}
@@ -42,16 +43,16 @@ func ProcessCommand(settings Settings) {
 		containers.KratosPostgres = GetKratosPostgres(settings)
 		containers.MailSlurper = GetMailSlurper(settings)
 
-		StartContainers(containers)
+		StartContainers(&containers)
 	case "down":
-		StopContainers(containers)
+		StopContainers(&containers)
 	default:
 		log.Fatalln("invalid command")
 	}
 }
 
 // Create and Start containers
-func StartContainers(containers DyrectorioStack) {
+func StartContainers(containers *DyrectorioStack) {
 	_, err := containers.CruxPostgres.Create().Start()
 	if err != nil {
 		log.Fatalf("error: %v", err)
@@ -102,7 +103,7 @@ func StartContainers(containers DyrectorioStack) {
 }
 
 // Cleanup for "down" command
-func StopContainers(containers DyrectorioStack) {
+func StopContainers(containers *DyrectorioStack) {
 	if containerID := containers.Containers.MailSlurper.Name; GetContainerID(containerID) != "" {
 		CleanupContainer(containerID)
 	}
@@ -173,7 +174,7 @@ func GetContainerID(name string) string {
 }
 
 // Stop and Delete container
-func CleanupContainer(ID string) {
+func CleanupContainer(id string) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		log.Fatalf("error: %v", err)
@@ -184,19 +185,19 @@ func CleanupContainer(ID string) {
 		log.Fatalf("error: %v", err)
 	}
 
-	err = cli.ContainerStop(context.Background(), ID, &timeout)
+	err = cli.ContainerStop(context.Background(), id, &timeout)
 	if err != nil {
 		log.Printf("error: %v", err)
 	}
 
-	err = cli.ContainerRemove(context.Background(), ID, types.ContainerRemoveOptions{Force: true, RemoveVolumes: false})
+	err = cli.ContainerRemove(context.Background(), id, types.ContainerRemoveOptions{Force: true, RemoveVolumes: false})
 	if err != nil {
 		log.Printf("error: %v", err)
 	}
 }
 
 // Retrieving docker networks gateway IP
-func GetNetworkGatewayIP(settings Settings, networkID string) Settings {
+func GetNetworkGatewayIP(settings *Settings, networkID string) *Settings {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		log.Fatalf("error: %v", err)
@@ -225,7 +226,7 @@ func GetNetworkGatewayIP(settings Settings, networkID string) Settings {
 	return settings
 }
 
-func EnsureNetworkExists(settings Settings) string {
+func EnsureNetworkExists(settings *Settings) string {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		log.Fatalf("error: %v", err)

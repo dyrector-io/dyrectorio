@@ -124,7 +124,7 @@ func SettingsFileLocation(settingspath string) string {
 }
 
 // Reading and parsing the settings.yaml
-func SettingsFileReadWrite(state Settings) Settings {
+func SettingsFileReadWrite(state *Settings) *Settings {
 	if !state.SettingsExists {
 		state.SettingsWrite = true
 	} else {
@@ -155,7 +155,7 @@ func SettingsFileReadWrite(state Settings) Settings {
 	return settings
 }
 
-func DisabledServiceSettings(settings Settings) Settings {
+func DisabledServiceSettings(settings *Settings) *Settings {
 	if settings.Containers.Crux.Disabled {
 		fmt.Printf("Do not forget to add your DATABASE_URL to your crux environment.\n\n")
 		fmt.Printf("DATABASE_URL=postgresql://%s:%s@%s_crux-postgres:%d/%s?schema=public\n\n",
@@ -176,7 +176,7 @@ func DisabledServiceSettings(settings Settings) Settings {
 }
 
 // Save the settings
-func saveSettings(settings Settings) {
+func saveSettings(settings *Settings) {
 	if settings.SettingsWrite {
 		userconfdir, _ := os.UserConfigDir()
 		settingspath := fmt.Sprintf("%s/%s/%s", userconfdir, SettingsFileDir, SettingsFileName)
@@ -206,7 +206,7 @@ func saveSettings(settings Settings) {
 }
 
 // There are options which are not filled out by default, we need to initialize values
-func LoadDefaultsOnEmpty(settings Settings) Settings {
+func LoadDefaultsOnEmpty(settings *Settings) *Settings {
 	// Set Docker Image location
 	settings.Crux.Image = "ghcr.io/dyrector-io/dyrectorio/web/crux"
 	settings.CruxUI.Image = "ghcr.io/dyrector-io/dyrectorio/web/crux-ui"

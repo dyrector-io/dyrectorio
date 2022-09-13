@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/docker/docker/api/types/mount"
+
 	containerbuilder "github.com/dyrector-io/dyrectorio/agent/pkg/builder/container"
 )
 
@@ -12,7 +13,7 @@ const PostgresImage = "docker.io/library/postgres:13-alpine"
 const MailSlurperImage = "docker.io/oryd/mailslurper:latest-smtps"
 
 // Crux services: db migrations and crux api service
-func GetCrux(settings Settings) *containerbuilder.DockerContainerBuilder {
+func GetCrux(settings *Settings) *containerbuilder.DockerContainerBuilder {
 	crux := containerbuilder.NewDockerBuilder(context.Background()).
 		WithImage(fmt.Sprintf("%s:%s", settings.Crux.Image, settings.SettingsFile.Version)).
 		WithName(settings.Containers.Crux.Name).
@@ -68,7 +69,7 @@ func GetCrux(settings Settings) *containerbuilder.DockerContainerBuilder {
 	return crux
 }
 
-func GetCruxMigrate(settings Settings) *containerbuilder.DockerContainerBuilder {
+func GetCruxMigrate(settings *Settings) *containerbuilder.DockerContainerBuilder {
 	cruxMigrate := containerbuilder.NewDockerBuilder(context.Background()).
 		WithImage(fmt.Sprintf("%s:%s", settings.Crux.Image, settings.SettingsFile.Version)).
 		WithName(settings.Containers.CruxMigrate.Name).
@@ -89,7 +90,7 @@ func GetCruxMigrate(settings Settings) *containerbuilder.DockerContainerBuilder 
 	return cruxMigrate
 }
 
-func GetCruxUI(settings Settings) *containerbuilder.DockerContainerBuilder {
+func GetCruxUI(settings *Settings) *containerbuilder.DockerContainerBuilder {
 	cruxUI := containerbuilder.NewDockerBuilder(context.Background()).
 		WithImage(fmt.Sprintf("%s:%s", settings.CruxUI.Image, settings.SettingsFile.Version)).
 		WithName(settings.Containers.CruxUI.Name).
@@ -128,7 +129,7 @@ func GetCruxUI(settings Settings) *containerbuilder.DockerContainerBuilder {
 }
 
 // Return Kratos services' containers
-func GetKratos(settings Settings) *containerbuilder.DockerContainerBuilder {
+func GetKratos(settings *Settings) *containerbuilder.DockerContainerBuilder {
 	kratos := containerbuilder.NewDockerBuilder(context.Background()).
 		WithImage(fmt.Sprintf("%s:%s", settings.Kratos.Image, settings.SettingsFile.Version)).
 		WithName(settings.Containers.Kratos.Name).
@@ -159,7 +160,8 @@ func GetKratos(settings Settings) *containerbuilder.DockerContainerBuilder {
 			"SMTP_USER=test",
 			"SMTP_PASSWORD=test",
 			fmt.Sprintf("SMTP_URL=%s:1025/?skip_ssl_verify=true&legacy_ssl=true", settings.Containers.MailSlurper.Name),
-			fmt.Sprintf("COURIER_SMTP_CONNECTION_URI=smtps://test:test@%s:1025/?skip_ssl_verify=true&legacy_ssl=true", settings.Containers.MailSlurper.Name),
+			fmt.Sprintf("COURIER_SMTP_CONNECTION_URI=smtps://test:test@%s:1025/?skip_ssl_verify=true&legacy_ssl=true",
+				settings.Containers.MailSlurper.Name),
 		}).
 		WithPortBindings([]containerbuilder.PortBinding{
 			{
@@ -176,7 +178,7 @@ func GetKratos(settings Settings) *containerbuilder.DockerContainerBuilder {
 	return kratos
 }
 
-func GetKratosMigrate(settings Settings) *containerbuilder.DockerContainerBuilder {
+func GetKratosMigrate(settings *Settings) *containerbuilder.DockerContainerBuilder {
 	kratosMigrate := containerbuilder.NewDockerBuilder(context.Background()).
 		WithImage(fmt.Sprintf("%s:%s", settings.Kratos.Image, settings.SettingsFile.Version)).
 		WithName(settings.Containers.KratosMigrate.Name).
@@ -199,7 +201,7 @@ func GetKratosMigrate(settings Settings) *containerbuilder.DockerContainerBuilde
 }
 
 // Return Mailslurper services container
-func GetMailSlurper(settings Settings) *containerbuilder.DockerContainerBuilder {
+func GetMailSlurper(settings *Settings) *containerbuilder.DockerContainerBuilder {
 	mailslurper := containerbuilder.NewDockerBuilder(context.Background()).
 		WithImage(MailSlurperImage).
 		WithName(settings.Containers.MailSlurper.Name).
@@ -222,13 +224,10 @@ func GetMailSlurper(settings Settings) *containerbuilder.DockerContainerBuilder 
 }
 
 // Return Postgres services' containers
-func GetCruxPostgres(settings Settings) *containerbuilder.DockerContainerBuilder {
-	cruxPostgres := containerbuilder.NewDockerBuilder(context.Background()).
-		WithImage(PostgresImage).
+func GetCruxPostgres(settings *Settings) *containerbuilder.DockerContainerBuilder {
+	cruxPostgres := GetBasePostgres(settings).
 		WithName(settings.Containers.CruxPostgres.Name).
-		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
-		WithoutConflict().
-		WithForcePullImage().
+		WithNetworkAliases(settings.Containers.CruxPostgres.Name).
 		WithEnv([]string{
 			fmt.Sprintf("POSTGRES_USER=%s", settings.SettingsFile.CruxPostgresUser),
 			fmt.Sprintf("POSTGRES_PASSWORD=%s", settings.SettingsFile.CruxPostgresPassword),
@@ -239,8 +238,6 @@ func GetCruxPostgres(settings Settings) *containerbuilder.DockerContainerBuilder
 				ExposedPort: DefaultPostgresPort,
 				PortBinding: uint16(settings.SettingsFile.CruxPostgresPort),
 			}}).
-		WithNetworks([]string{settings.SettingsFile.Network}).
-		WithNetworkAliases(settings.Containers.CruxPostgres.Name).
 		WithMountPoints([]mount.Mount{{
 			Type:   mount.TypeVolume,
 			Source: fmt.Sprintf("%s-data", settings.Containers.CruxPostgres.Name),
@@ -249,13 +246,8 @@ func GetCruxPostgres(settings Settings) *containerbuilder.DockerContainerBuilder
 	return cruxPostgres
 }
 
-func GetKratosPostgres(settings Settings) *containerbuilder.DockerContainerBuilder {
-	kratosPostgres := containerbuilder.NewDockerBuilder(context.Background()).
-		WithImage(PostgresImage).
-		WithName(settings.Containers.KratosPostgres.Name).
-		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
-		WithoutConflict().
-		WithForcePullImage().
+func GetKratosPostgres(settings *Settings) *containerbuilder.DockerContainerBuilder {
+	kratosPostgres := GetBasePostgres(settings).
 		WithEnv([]string{
 			fmt.Sprintf("POSTGRES_USER=%s", settings.SettingsFile.KratosPostgresUser),
 			fmt.Sprintf("POSTGRES_PASSWORD=%s", settings.SettingsFile.KratosPostgresPassword),
@@ -266,7 +258,7 @@ func GetKratosPostgres(settings Settings) *containerbuilder.DockerContainerBuild
 				ExposedPort: DefaultPostgresPort,
 				PortBinding: uint16(settings.SettingsFile.KratosPostgresPort),
 			}}).
-		WithNetworks([]string{settings.SettingsFile.Network}).
+		WithName(settings.Containers.KratosPostgres.Name).
 		WithNetworkAliases(settings.Containers.KratosPostgres.Name).
 		WithMountPoints([]mount.Mount{
 			{Type: mount.TypeVolume,
@@ -274,4 +266,16 @@ func GetKratosPostgres(settings Settings) *containerbuilder.DockerContainerBuild
 				Target: "/var/lib/postgresql/data"}})
 
 	return kratosPostgres
+}
+
+func GetBasePostgres(settings *Settings) *containerbuilder.DockerContainerBuilder {
+	basePostgres := containerbuilder.
+		NewDockerBuilder(context.Background()).
+		WithImage(PostgresImage).
+		WithNetworks([]string{settings.SettingsFile.Network}).
+		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
+		WithoutConflict().
+		WithForcePullImage()
+
+	return basePostgres
 }

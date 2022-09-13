@@ -84,7 +84,7 @@ func run(cCtx *cli.Context) error {
 		Command: cCtx.Command.Name,
 	}
 
-	settings := SettingsFileReadWrite(state)
+	settings := SettingsFileReadWrite(&state)
 	ProcessCommand(settings)
 
 	return nil
