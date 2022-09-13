@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { DeploymentEventTypeEnum, DeploymentStatusEnum, NodeTypeEnum } from '@prisma/client'
-import { concatAll, finalize, from, map, Observable, of, Subject, takeUntil } from 'rxjs'
+import { concatAll, concatMap, finalize, from, map, Observable, of, Subject, takeUntil } from 'rxjs'
 import { Agent, AgentToken } from 'src/domain/agent'
 import AgentInstaller from 'src/domain/agent-installer'
 import { DeploymentProgressEvent } from 'src/domain/deployment'
@@ -152,12 +152,11 @@ export default class AgentService {
     }
 
     return request.pipe(
-      map(it => {
+      concatMap(it => {
         this.logger.verbose(`Deployment update - ${deploymentId}`)
 
         const events = deployment.onUpdate(it)
-        this.createDeploymentEvents(deployment.id, events)
-        return Empty
+        return from(this.createDeploymentEvents(deployment.id, events)).pipe(map(() => Empty))
       }),
       finalize(async () => {
         agent.onDeploymentFinished(deployment)

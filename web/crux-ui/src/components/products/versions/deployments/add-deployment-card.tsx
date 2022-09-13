@@ -13,6 +13,7 @@ import { fetcher, sendForm } from '@app/utils'
 import { createDeploymentSchema } from '@app/validation'
 import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
+import toast from 'react-hot-toast'
 import useSWR from 'swr'
 
 interface AddDeploymentCardProps {
@@ -54,6 +55,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
         onAdd(result.id)
       } else if (res.status === 409) {
         // There is already a deployment for the selected node
+        toast.error(t('alreadyHavePreparing'))
         const dto = (await res.json()) as DyoApiError
         onAdd(dto.value)
       } else {
