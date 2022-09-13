@@ -420,26 +420,3 @@ func WithGRPCConfig(parentContext context.Context, cfg any) context.Context {
 func GetConfigFromContext(ctx context.Context) any {
 	return ctx.Value(contextConfigKey)
 }
-
-// TODO(m8vago): streamline the log appearince with crane
-// func PrintDeployRequestStrings(req *agent.DeployRequest) []string {
-// 	return append([]string{},
-// 		fmt.Sprintf("Deployment target: k8s ~ %v\n", utils.GetEnv("INGRESS_DOMAIN_ROOT", "docker host")),
-// 		fmt.Sprintf("Image: %v\n", utils.JoinV(":", req.ImageName, req.Tag)),
-// 		fmt.Sprintf("Registry: %v\n", req.Registry),
-// 		fmt.Sprintf("Container name: %v\n", utils.JoinV("-", req.InstanceConfig.Prefix, req.ContainerConfig.Name)),
-// 		fmt.Sprintf("Exposed ports: %v\n", req.ContainerConfig.Ports),
-// 	)
-// }
-
-// func (c *AgentClient) Deploy(deployRequest *agent.DeployRequest) (*agent.DeployResponse, error) {
-// 	if deployRequest.Id == "" {
-// 		return &agent.DeployResponse{Started: false}, fmt.Errorf("empty request")
-// 	}
-// 	// utils.RemoteLog(&deployRequest.RequestId, PrintDeployRequestStrings(deployRequest)...)
-// 	if err := utils.DeployImage(mapDeployImage(deployRequest)); err != nil {
-// 		return &agent.DeployResponse{Started: false}, err
-// 	}
-
-// 	return &agent.DeployResponse{Started: true}, nil
-// }

@@ -52,6 +52,7 @@ export default class AgentInstaller {
       token: this.token,
       insecure: process.env.GRPC_AGENT_INSTALL_SCRIPT_INSECURE === 'true',
       network: process.env.LOCAL_DEPLOYMENT === 'true',
+      networkName: process.env.LOCAL_DEPLOYMENT_NETWORK,
     }
 
     if (this.nodeType === NodeTypeEnum.k8s) {
