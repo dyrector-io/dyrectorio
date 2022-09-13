@@ -20,14 +20,18 @@ export class Agent {
 
   readonly version: string
 
+  readonly publicKey: string
+
   constructor(
     connection: GrpcNodeConnection,
     private readonly eventChannel: Subject<NodeEventMessage>,
     version?: string,
+    publicKey?: string,
   ) {
     this.id = connection.nodeId
     this.address = connection.address
     this.version = version
+    this.publicKey = publicKey
   }
 
   getConnectionStatus(): NodeConnectionStatus {

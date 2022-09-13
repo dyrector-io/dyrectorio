@@ -19,6 +19,15 @@ export const uniqueKeyValuesSchema = yup
   .ensure()
   .test('keysAreUnique', 'Keys must be unique', arr => new Set(arr.map(it => it.key)).size === arr.length)
 
+export const uniqueKeysOnlySchema = yup
+  .array(
+    yup.object().shape({
+      key: yup.string().required().ensure().matches(/^\S+$/g),
+    }),
+  )
+  .ensure()
+  .test('keysAreUnique', 'Keys must be unique', arr => new Set(arr.map(it => it.key)).size === arr.length)
+
 const portNumberRule = yup.number().positive().lessThan(65536).required()
 
 export const explicitContainerConfigSchema = yup.object().shape({
@@ -162,14 +171,22 @@ export const explicitContainerConfigSchema = yup.object().shape({
 export const containerConfigSchema = yup.object({
   environment: uniqueKeyValuesSchema,
   capabilities: uniqueKeyValuesSchema,
+  secrets: uniqueKeysOnlySchema,
   config: explicitContainerConfigSchema,
+})
+
+export const instanceConfigSchema = yup.object().shape({
+  environment: uniqueKeyValuesSchema,
+  capabilities: uniqueKeyValuesSchema,
+  config: explicitContainerConfigSchema.nullable(),
+  secrets: uniqueKeyValuesSchema,
 })
 
 export const deploymentSchema = yup.object({
   environment: uniqueKeyValuesSchema,
   instances: yup.array(
     yup.object({
-      config: containerConfigSchema.nullable(),
+      config: instanceConfigSchema.nullable(),
       image: yup.object({
         config: containerConfigSchema,
       }),

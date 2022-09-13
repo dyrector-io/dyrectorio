@@ -103,6 +103,7 @@ async function main() {
           ...it,
           environment: it.environment as Prisma.InputJsonArray,
           capabilities: it.capabilities as Prisma.InputJsonArray,
+          secrets: it.secrets as Prisma.InputJsonArray,
           config: it.config as Prisma.InputJsonValue,
         },
       })

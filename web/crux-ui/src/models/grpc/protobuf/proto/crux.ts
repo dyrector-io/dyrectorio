@@ -24,7 +24,14 @@ import {
   deploymentStatusToJSON,
   ExplicitContainerConfig,
   InstanceDeploymentItem,
+  KeyList,
+  KeyValueList,
+  ListSecretsResponse,
   Port,
+  SecretList,
+  UniqueKey,
+  UniqueKeySecretValue,
+  UniqueKeyValue,
 } from './common'
 
 export const protobufPackage = 'crux'
@@ -552,6 +559,10 @@ export interface UpdateEntityResponse {
   updatedAt: Timestamp | undefined
 }
 
+export interface PrefixRequest {
+  prefix: string
+}
+
 /** AUDIT */
 export interface AuditLogResponse {
   createdAt: Timestamp | undefined
@@ -830,6 +841,7 @@ export interface ContainerConfig {
   name: string
   capabilities: UniqueKeyValue[]
   environment: UniqueKeyValue[]
+  secrets: UniqueKey[]
 }
 
 export interface ImageResponse {
@@ -862,19 +874,10 @@ export interface AddImagesToVersionRequest {
   images: RegistryImages[]
 }
 
-export interface UniqueKeyValue {
-  id: string
-  key: string
-  value: string
-}
-
-export interface KeyValueList {
-  data: UniqueKeyValue[]
-}
-
 export interface PatchContainerConfig {
   capabilities?: KeyValueList | undefined
   environment?: KeyValueList | undefined
+  secrets?: KeyList | undefined
   config?: ExplicitContainerConfig | undefined
   name?: string | undefined
 }
@@ -1028,6 +1031,7 @@ export interface InstanceContainerConfig {
   config: ExplicitContainerConfig | undefined
   capabilities: UniqueKeyValue[]
   environment: UniqueKeyValue[]
+  secrets: UniqueKeySecretValue[]
 }
 
 export interface InstanceResponse {
@@ -1044,6 +1048,7 @@ export interface PatchInstanceRequest {
   environment?: KeyValueList | undefined
   capabilities?: KeyValueList | undefined
   config?: ExplicitContainerConfig | undefined
+  secrets?: SecretList | undefined
 }
 
 export interface DeploymentListResponse {
@@ -1087,6 +1092,7 @@ export interface DeploymentDetailsResponse {
   prefix: string
   environment: UniqueKeyValue[]
   status: DeploymentStatus
+  publicKey?: string | undefined
   instances: InstanceResponse[]
 }
 
@@ -1490,6 +1496,53 @@ export const UpdateEntityResponse = {
     const message = createBaseUpdateEntityResponse()
     message.updatedAt =
       object.updatedAt !== undefined && object.updatedAt !== null ? Timestamp.fromPartial(object.updatedAt) : undefined
+    return message
+  },
+}
+
+function createBasePrefixRequest(): PrefixRequest {
+  return { prefix: '' }
+}
+
+export const PrefixRequest = {
+  encode(message: PrefixRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.prefix !== '') {
+      writer.uint32(10).string(message.prefix)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): PrefixRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBasePrefixRequest()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.prefix = reader.string()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): PrefixRequest {
+    return { prefix: isSet(object.prefix) ? String(object.prefix) : '' }
+  },
+
+  toJSON(message: PrefixRequest): unknown {
+    const obj: any = {}
+    message.prefix !== undefined && (obj.prefix = message.prefix)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<PrefixRequest>, I>>(object: I): PrefixRequest {
+    const message = createBasePrefixRequest()
+    message.prefix = object.prefix ?? ''
     return message
   },
 }
@@ -4556,7 +4609,7 @@ export const IncreaseVersionRequest = {
 }
 
 function createBaseContainerConfig(): ContainerConfig {
-  return { config: undefined, name: '', capabilities: [], environment: [] }
+  return { config: undefined, name: '', capabilities: [], environment: [], secrets: [] }
 }
 
 export const ContainerConfig = {
@@ -4572,6 +4625,9 @@ export const ContainerConfig = {
     }
     for (const v of message.environment) {
       UniqueKeyValue.encode(v!, writer.uint32(8010).fork()).ldelim()
+    }
+    for (const v of message.secrets) {
+      UniqueKey.encode(v!, writer.uint32(8018).fork()).ldelim()
     }
     return writer
   },
@@ -4595,6 +4651,9 @@ export const ContainerConfig = {
         case 1001:
           message.environment.push(UniqueKeyValue.decode(reader, reader.uint32()))
           break
+        case 1002:
+          message.secrets.push(UniqueKey.decode(reader, reader.uint32()))
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -4613,6 +4672,7 @@ export const ContainerConfig = {
       environment: Array.isArray(object?.environment)
         ? object.environment.map((e: any) => UniqueKeyValue.fromJSON(e))
         : [],
+      secrets: Array.isArray(object?.secrets) ? object.secrets.map((e: any) => UniqueKey.fromJSON(e)) : [],
     }
   },
 
@@ -4631,6 +4691,11 @@ export const ContainerConfig = {
     } else {
       obj.environment = []
     }
+    if (message.secrets) {
+      obj.secrets = message.secrets.map(e => (e ? UniqueKey.toJSON(e) : undefined))
+    } else {
+      obj.secrets = []
+    }
     return obj
   },
 
@@ -4643,6 +4708,7 @@ export const ContainerConfig = {
     message.name = object.name ?? ''
     message.capabilities = object.capabilities?.map(e => UniqueKeyValue.fromPartial(e)) || []
     message.environment = object.environment?.map(e => UniqueKeyValue.fromPartial(e)) || []
+    message.secrets = object.secrets?.map(e => UniqueKey.fromPartial(e)) || []
     return message
   },
 }
@@ -4997,124 +5063,6 @@ export const AddImagesToVersionRequest = {
   },
 }
 
-function createBaseUniqueKeyValue(): UniqueKeyValue {
-  return { id: '', key: '', value: '' }
-}
-
-export const UniqueKeyValue = {
-  encode(message: UniqueKeyValue, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.id !== '') {
-      writer.uint32(802).string(message.id)
-    }
-    if (message.key !== '') {
-      writer.uint32(810).string(message.key)
-    }
-    if (message.value !== '') {
-      writer.uint32(818).string(message.value)
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): UniqueKeyValue {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseUniqueKeyValue()
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 100:
-          message.id = reader.string()
-          break
-        case 101:
-          message.key = reader.string()
-          break
-        case 102:
-          message.value = reader.string()
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): UniqueKeyValue {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      key: isSet(object.key) ? String(object.key) : '',
-      value: isSet(object.value) ? String(object.value) : '',
-    }
-  },
-
-  toJSON(message: UniqueKeyValue): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.key !== undefined && (obj.key = message.key)
-    message.value !== undefined && (obj.value = message.value)
-    return obj
-  },
-
-  fromPartial<I extends Exact<DeepPartial<UniqueKeyValue>, I>>(object: I): UniqueKeyValue {
-    const message = createBaseUniqueKeyValue()
-    message.id = object.id ?? ''
-    message.key = object.key ?? ''
-    message.value = object.value ?? ''
-    return message
-  },
-}
-
-function createBaseKeyValueList(): KeyValueList {
-  return { data: [] }
-}
-
-export const KeyValueList = {
-  encode(message: KeyValueList, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    for (const v of message.data) {
-      UniqueKeyValue.encode(v!, writer.uint32(8002).fork()).ldelim()
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): KeyValueList {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseKeyValueList()
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 1000:
-          message.data.push(UniqueKeyValue.decode(reader, reader.uint32()))
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): KeyValueList {
-    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => UniqueKeyValue.fromJSON(e)) : [] }
-  },
-
-  toJSON(message: KeyValueList): unknown {
-    const obj: any = {}
-    if (message.data) {
-      obj.data = message.data.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
-    } else {
-      obj.data = []
-    }
-    return obj
-  },
-
-  fromPartial<I extends Exact<DeepPartial<KeyValueList>, I>>(object: I): KeyValueList {
-    const message = createBaseKeyValueList()
-    message.data = object.data?.map(e => UniqueKeyValue.fromPartial(e)) || []
-    return message
-  },
-}
-
 function createBasePatchContainerConfig(): PatchContainerConfig {
   return {}
 }
@@ -5126,6 +5074,9 @@ export const PatchContainerConfig = {
     }
     if (message.environment !== undefined) {
       KeyValueList.encode(message.environment, writer.uint32(810).fork()).ldelim()
+    }
+    if (message.secrets !== undefined) {
+      KeyList.encode(message.secrets, writer.uint32(818).fork()).ldelim()
     }
     if (message.config !== undefined) {
       ExplicitContainerConfig.encode(message.config, writer.uint32(826).fork()).ldelim()
@@ -5149,6 +5100,9 @@ export const PatchContainerConfig = {
         case 101:
           message.environment = KeyValueList.decode(reader, reader.uint32())
           break
+        case 102:
+          message.secrets = KeyList.decode(reader, reader.uint32())
+          break
         case 103:
           message.config = ExplicitContainerConfig.decode(reader, reader.uint32())
           break
@@ -5167,6 +5121,7 @@ export const PatchContainerConfig = {
     return {
       capabilities: isSet(object.capabilities) ? KeyValueList.fromJSON(object.capabilities) : undefined,
       environment: isSet(object.environment) ? KeyValueList.fromJSON(object.environment) : undefined,
+      secrets: isSet(object.secrets) ? KeyList.fromJSON(object.secrets) : undefined,
       config: isSet(object.config) ? ExplicitContainerConfig.fromJSON(object.config) : undefined,
       name: isSet(object.name) ? String(object.name) : undefined,
     }
@@ -5178,6 +5133,7 @@ export const PatchContainerConfig = {
       (obj.capabilities = message.capabilities ? KeyValueList.toJSON(message.capabilities) : undefined)
     message.environment !== undefined &&
       (obj.environment = message.environment ? KeyValueList.toJSON(message.environment) : undefined)
+    message.secrets !== undefined && (obj.secrets = message.secrets ? KeyList.toJSON(message.secrets) : undefined)
     message.config !== undefined &&
       (obj.config = message.config ? ExplicitContainerConfig.toJSON(message.config) : undefined)
     message.name !== undefined && (obj.name = message.name)
@@ -5194,6 +5150,8 @@ export const PatchContainerConfig = {
       object.environment !== undefined && object.environment !== null
         ? KeyValueList.fromPartial(object.environment)
         : undefined
+    message.secrets =
+      object.secrets !== undefined && object.secrets !== null ? KeyList.fromPartial(object.secrets) : undefined
     message.config =
       object.config !== undefined && object.config !== null
         ? ExplicitContainerConfig.fromPartial(object.config)
@@ -6767,7 +6725,7 @@ export const PatchDeploymentRequest = {
 }
 
 function createBaseInstanceContainerConfig(): InstanceContainerConfig {
-  return { config: undefined, capabilities: [], environment: [] }
+  return { config: undefined, capabilities: [], environment: [], secrets: [] }
 }
 
 export const InstanceContainerConfig = {
@@ -6780,6 +6738,9 @@ export const InstanceContainerConfig = {
     }
     for (const v of message.environment) {
       UniqueKeyValue.encode(v!, writer.uint32(8010).fork()).ldelim()
+    }
+    for (const v of message.secrets) {
+      UniqueKeySecretValue.encode(v!, writer.uint32(8018).fork()).ldelim()
     }
     return writer
   },
@@ -6800,6 +6761,9 @@ export const InstanceContainerConfig = {
         case 1001:
           message.environment.push(UniqueKeyValue.decode(reader, reader.uint32()))
           break
+        case 1002:
+          message.secrets.push(UniqueKeySecretValue.decode(reader, reader.uint32()))
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -6817,6 +6781,7 @@ export const InstanceContainerConfig = {
       environment: Array.isArray(object?.environment)
         ? object.environment.map((e: any) => UniqueKeyValue.fromJSON(e))
         : [],
+      secrets: Array.isArray(object?.secrets) ? object.secrets.map((e: any) => UniqueKeySecretValue.fromJSON(e)) : [],
     }
   },
 
@@ -6834,6 +6799,11 @@ export const InstanceContainerConfig = {
     } else {
       obj.environment = []
     }
+    if (message.secrets) {
+      obj.secrets = message.secrets.map(e => (e ? UniqueKeySecretValue.toJSON(e) : undefined))
+    } else {
+      obj.secrets = []
+    }
     return obj
   },
 
@@ -6845,6 +6815,7 @@ export const InstanceContainerConfig = {
         : undefined
     message.capabilities = object.capabilities?.map(e => UniqueKeyValue.fromPartial(e)) || []
     message.environment = object.environment?.map(e => UniqueKeyValue.fromPartial(e)) || []
+    message.secrets = object.secrets?.map(e => UniqueKeySecretValue.fromPartial(e)) || []
     return message
   },
 }
@@ -6962,6 +6933,9 @@ export const PatchInstanceRequest = {
     if (message.config !== undefined) {
       ExplicitContainerConfig.encode(message.config, writer.uint32(818).fork()).ldelim()
     }
+    if (message.secrets !== undefined) {
+      SecretList.encode(message.secrets, writer.uint32(826).fork()).ldelim()
+    }
     return writer
   },
 
@@ -6987,6 +6961,9 @@ export const PatchInstanceRequest = {
         case 102:
           message.config = ExplicitContainerConfig.decode(reader, reader.uint32())
           break
+        case 103:
+          message.secrets = SecretList.decode(reader, reader.uint32())
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -7002,6 +6979,7 @@ export const PatchInstanceRequest = {
       environment: isSet(object.environment) ? KeyValueList.fromJSON(object.environment) : undefined,
       capabilities: isSet(object.capabilities) ? KeyValueList.fromJSON(object.capabilities) : undefined,
       config: isSet(object.config) ? ExplicitContainerConfig.fromJSON(object.config) : undefined,
+      secrets: isSet(object.secrets) ? SecretList.fromJSON(object.secrets) : undefined,
     }
   },
 
@@ -7015,6 +6993,7 @@ export const PatchInstanceRequest = {
       (obj.capabilities = message.capabilities ? KeyValueList.toJSON(message.capabilities) : undefined)
     message.config !== undefined &&
       (obj.config = message.config ? ExplicitContainerConfig.toJSON(message.config) : undefined)
+    message.secrets !== undefined && (obj.secrets = message.secrets ? SecretList.toJSON(message.secrets) : undefined)
     return obj
   },
 
@@ -7034,6 +7013,8 @@ export const PatchInstanceRequest = {
       object.config !== undefined && object.config !== null
         ? ExplicitContainerConfig.fromPartial(object.config)
         : undefined
+    message.secrets =
+      object.secrets !== undefined && object.secrets !== null ? SecretList.fromPartial(object.secrets) : undefined
     return message
   },
 }
@@ -7421,6 +7402,9 @@ export const DeploymentDetailsResponse = {
     if (message.status !== 0) {
       writer.uint32(848).int32(message.status)
     }
+    if (message.publicKey !== undefined) {
+      writer.uint32(858).string(message.publicKey)
+    }
     for (const v of message.instances) {
       InstanceResponse.encode(v!, writer.uint32(8002).fork()).ldelim()
     }
@@ -7461,6 +7445,9 @@ export const DeploymentDetailsResponse = {
         case 106:
           message.status = reader.int32() as any
           break
+        case 107:
+          message.publicKey = reader.string()
+          break
         case 1000:
           message.instances.push(InstanceResponse.decode(reader, reader.uint32()))
           break
@@ -7485,6 +7472,7 @@ export const DeploymentDetailsResponse = {
         ? object.environment.map((e: any) => UniqueKeyValue.fromJSON(e))
         : [],
       status: isSet(object.status) ? deploymentStatusFromJSON(object.status) : 0,
+      publicKey: isSet(object.publicKey) ? String(object.publicKey) : undefined,
       instances: Array.isArray(object?.instances) ? object.instances.map((e: any) => InstanceResponse.fromJSON(e)) : [],
     }
   },
@@ -7504,6 +7492,7 @@ export const DeploymentDetailsResponse = {
       obj.environment = []
     }
     message.status !== undefined && (obj.status = deploymentStatusToJSON(message.status))
+    message.publicKey !== undefined && (obj.publicKey = message.publicKey)
     if (message.instances) {
       obj.instances = message.instances.map(e => (e ? InstanceResponse.toJSON(e) : undefined))
     } else {
@@ -7524,6 +7513,7 @@ export const DeploymentDetailsResponse = {
     message.prefix = object.prefix ?? ''
     message.environment = object.environment?.map(e => UniqueKeyValue.fromPartial(e)) || []
     message.status = object.status ?? 0
+    message.publicKey = object.publicKey ?? undefined
     message.instances = object.instances?.map(e => InstanceResponse.fromPartial(e)) || []
     return message
   },
@@ -9409,6 +9399,15 @@ export const CruxDeploymentService = {
     responseSerialize: (value: DeploymentListResponse) => Buffer.from(DeploymentListResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer) => DeploymentListResponse.decode(value),
   },
+  getSecrets: {
+    path: '/crux.CruxDeployment/GetSecrets',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: PrefixRequest) => Buffer.from(PrefixRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => PrefixRequest.decode(value),
+    responseSerialize: (value: ListSecretsResponse) => Buffer.from(ListSecretsResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => ListSecretsResponse.decode(value),
+  },
   startDeployment: {
     path: '/crux.CruxDeployment/StartDeployment',
     requestStream: false,
@@ -9440,6 +9439,7 @@ export interface CruxDeploymentServer extends UntypedServiceImplementation {
   getDeploymentDetails: handleUnaryCall<IdRequest, DeploymentDetailsResponse>
   getDeploymentEvents: handleUnaryCall<IdRequest, DeploymentEventListResponse>
   getDeploymentList: handleUnaryCall<AccessRequest, DeploymentListResponse>
+  getSecrets: handleUnaryCall<PrefixRequest, ListSecretsResponse>
   startDeployment: handleServerStreamingCall<IdRequest, DeploymentProgressMessage>
   subscribeToDeploymentEditEvents: handleServerStreamingCall<ServiceIdRequest, DeploymentEditEventMessage>
 }
@@ -9561,6 +9561,21 @@ export interface CruxDeploymentClient extends Client {
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: DeploymentListResponse) => void,
+  ): ClientUnaryCall
+  getSecrets(
+    request: PrefixRequest,
+    callback: (error: ServiceError | null, response: ListSecretsResponse) => void,
+  ): ClientUnaryCall
+  getSecrets(
+    request: PrefixRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: ListSecretsResponse) => void,
+  ): ClientUnaryCall
+  getSecrets(
+    request: PrefixRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: ListSecretsResponse) => void,
   ): ClientUnaryCall
   startDeployment(request: IdRequest, options?: Partial<CallOptions>): ClientReadableStream<DeploymentProgressMessage>
   startDeployment(

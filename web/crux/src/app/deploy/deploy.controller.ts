@@ -2,6 +2,7 @@ import { Body, Controller, UseGuards } from '@nestjs/common'
 import { concatAll, from, Observable } from 'rxjs'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import { Empty } from 'src/grpc/protobuf/proto/agent'
+import { ListSecretsResponse } from 'src/grpc/protobuf/proto/common'
 import {
   AccessRequest,
   CreateDeploymentRequest,
@@ -16,6 +17,7 @@ import {
   DeploymentProgressMessage,
   IdRequest,
   PatchDeploymentRequest,
+  PrefixRequest,
   ServiceIdRequest,
   UpdateDeploymentRequest,
   UpdateEntityResponse,
@@ -62,6 +64,11 @@ export default class DeployController implements CruxDeploymentController {
     @Body(DeployUpdateValidationPipe) request: UpdateDeploymentRequest,
   ): Promise<UpdateEntityResponse> {
     return await this.service.updateDeployment(request)
+  }
+
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  async getSecrets(request: PrefixRequest, ...rest: any): Promise<ListSecretsResponse> {
+    return await new Promise(null)
   }
 
   @AuditLogLevel('no-data')

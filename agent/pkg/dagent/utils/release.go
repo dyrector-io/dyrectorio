@@ -12,7 +12,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
+	v1 "github.com/dyrector-io/dyrectorio/agent/api/v1"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
 )
 

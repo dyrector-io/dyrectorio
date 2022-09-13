@@ -19,11 +19,12 @@ import (
 
 	"golang.org/x/exp/maps"
 
+	v1 "github.com/dyrector-io/dyrectorio/agent/api/v1"
+	"github.com/dyrector-io/dyrectorio/agent/internal/crypt"
 	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
 	"github.com/dyrector-io/dyrectorio/agent/internal/grpc"
 	"github.com/dyrector-io/dyrectorio/agent/internal/mapper"
 	"github.com/dyrector-io/dyrectorio/agent/internal/util"
-	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 	containerbuilder "github.com/dyrector-io/dyrectorio/agent/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/caps"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
@@ -296,13 +297,17 @@ func DeployImage(ctx context.Context,
 		util.JoinV("/",
 			*deployImageRequest.Registry,
 			util.JoinV(":", deployImageRequest.ImageName, deployImageRequest.Tag)))
-
 	logDeployInfo(dog, deployImageRequest, image, containerName)
 
-	envList := MergeStringMapToUniqueSlice(
+	envMap := MergeStringMapUnique(
 		EnvPipeSeparatedToStringMap(&deployImageRequest.InstanceConfig.Environment),
-		EnvPipeSeparatedToStringMap(&deployImageRequest.ContainerConfig.Environment),
-	)
+		EnvPipeSeparatedToStringMap(&deployImageRequest.ContainerConfig.Environment))
+	secret, err := crypt.DecryptSecrets(deployImageRequest.ContainerConfig.Secrets, &cfg.CommonConfiguration)
+	if err != nil {
+		return fmt.Errorf("deployment failed, secret error: %w", err)
+	}
+	envMap = MergeStringMapUnique(envMap, mapper.ByteMapToStringMap(secret))
+	envList := EnvMapToSlice(envMap)
 
 	mountList := mountStrToDocker(
 		// volumes are mapped into the legacy format, until further support of different types is needed
@@ -312,7 +317,6 @@ func DeployImage(ctx context.Context,
 		cfg)
 	// dotnet specific magic
 	if containsConfig(mountList) {
-		var err error
 		mountList, err = createRuntimeConfigFileOnHost(
 			mountList,
 			deployImageRequest.ContainerConfig.Container,
@@ -329,7 +333,8 @@ func DeployImage(ctx context.Context,
 	// err is ignored because it means no container is available
 	// nothing to stop or remove then
 
-	if err := checkContainerState(dog, containerName, state); err != nil {
+	err = checkContainerState(dog, containerName, state)
+	if err != nil {
 		return err
 	}
 

@@ -287,8 +287,9 @@ export interface ContainerStateItem {
   /** The 'State' of the container (Created, Running, etc) */
   state: ContainerState
   /**
-   * The 'Status' of the container ("Created 1min ago", "Exited with code 123", etc).
-   * Unused but left here for reverse compatibility with the legacy version.
+   * The 'Status' of the container ("Created 1min ago", "Exited with code 123",
+   * etc). Unused but left here for reverse compatibility with the legacy
+   * version.
    */
   status: string
   imageName: string
@@ -430,6 +431,43 @@ export interface ExplicitContainerConfig {
   command: string[]
   args: string[]
   environments: string[]
+  secrets?: KeyValueList | undefined
+}
+
+export interface UniqueKey {
+  id: string
+  key: string
+}
+
+export interface KeyList {
+  data: UniqueKey[]
+}
+
+export interface UniqueKeyValue {
+  id: string
+  key: string
+  value: string
+}
+
+export interface UniqueKeySecretValue {
+  id: string
+  key: string
+  value: string
+  encrypted?: boolean | undefined
+}
+
+export interface KeyValueList {
+  data: UniqueKeyValue[]
+}
+
+export interface SecretList {
+  data: UniqueKeySecretValue[]
+}
+
+export interface ListSecretsResponse {
+  prefix: string
+  publicKey: string
+  keys: string[]
 }
 
 function createBaseContainerStateItem(): ContainerStateItem {
@@ -2030,6 +2068,9 @@ export const ExplicitContainerConfig = {
     for (const v of message.environments) {
       writer.uint32(8042).string(v!)
     }
+    if (message.secrets !== undefined) {
+      KeyValueList.encode(message.secrets, writer.uint32(8050).fork()).ldelim()
+    }
     return writer
   },
 
@@ -2082,6 +2123,9 @@ export const ExplicitContainerConfig = {
         case 1005:
           message.environments.push(reader.string())
           break
+        case 1006:
+          message.secrets = KeyValueList.decode(reader, reader.uint32())
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -2108,6 +2152,7 @@ export const ExplicitContainerConfig = {
       command: Array.isArray(object?.command) ? object.command.map((e: any) => String(e)) : [],
       args: Array.isArray(object?.args) ? object.args.map((e: any) => String(e)) : [],
       environments: Array.isArray(object?.environments) ? object.environments.map((e: any) => String(e)) : [],
+      secrets: isSet(object.secrets) ? KeyValueList.fromJSON(object.secrets) : undefined,
     }
   },
 
@@ -2154,6 +2199,7 @@ export const ExplicitContainerConfig = {
     } else {
       obj.environments = []
     }
+    message.secrets !== undefined && (obj.secrets = message.secrets ? KeyValueList.toJSON(message.secrets) : undefined)
     return obj
   },
 
@@ -2185,6 +2231,430 @@ export const ExplicitContainerConfig = {
     message.command = object.command?.map(e => e) || []
     message.args = object.args?.map(e => e) || []
     message.environments = object.environments?.map(e => e) || []
+    message.secrets =
+      object.secrets !== undefined && object.secrets !== null ? KeyValueList.fromPartial(object.secrets) : undefined
+    return message
+  },
+}
+
+function createBaseUniqueKey(): UniqueKey {
+  return { id: '', key: '' }
+}
+
+export const UniqueKey = {
+  encode(message: UniqueKey, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== '') {
+      writer.uint32(802).string(message.id)
+    }
+    if (message.key !== '') {
+      writer.uint32(810).string(message.key)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): UniqueKey {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseUniqueKey()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 100:
+          message.id = reader.string()
+          break
+        case 101:
+          message.key = reader.string()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): UniqueKey {
+    return { id: isSet(object.id) ? String(object.id) : '', key: isSet(object.key) ? String(object.key) : '' }
+  },
+
+  toJSON(message: UniqueKey): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.key !== undefined && (obj.key = message.key)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<UniqueKey>, I>>(object: I): UniqueKey {
+    const message = createBaseUniqueKey()
+    message.id = object.id ?? ''
+    message.key = object.key ?? ''
+    return message
+  },
+}
+
+function createBaseKeyList(): KeyList {
+  return { data: [] }
+}
+
+export const KeyList = {
+  encode(message: KeyList, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    for (const v of message.data) {
+      UniqueKey.encode(v!, writer.uint32(8002).fork()).ldelim()
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): KeyList {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseKeyList()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1000:
+          message.data.push(UniqueKey.decode(reader, reader.uint32()))
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): KeyList {
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => UniqueKey.fromJSON(e)) : [] }
+  },
+
+  toJSON(message: KeyList): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? UniqueKey.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<KeyList>, I>>(object: I): KeyList {
+    const message = createBaseKeyList()
+    message.data = object.data?.map(e => UniqueKey.fromPartial(e)) || []
+    return message
+  },
+}
+
+function createBaseUniqueKeyValue(): UniqueKeyValue {
+  return { id: '', key: '', value: '' }
+}
+
+export const UniqueKeyValue = {
+  encode(message: UniqueKeyValue, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== '') {
+      writer.uint32(802).string(message.id)
+    }
+    if (message.key !== '') {
+      writer.uint32(810).string(message.key)
+    }
+    if (message.value !== '') {
+      writer.uint32(818).string(message.value)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): UniqueKeyValue {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseUniqueKeyValue()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 100:
+          message.id = reader.string()
+          break
+        case 101:
+          message.key = reader.string()
+          break
+        case 102:
+          message.value = reader.string()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): UniqueKeyValue {
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      key: isSet(object.key) ? String(object.key) : '',
+      value: isSet(object.value) ? String(object.value) : '',
+    }
+  },
+
+  toJSON(message: UniqueKeyValue): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.key !== undefined && (obj.key = message.key)
+    message.value !== undefined && (obj.value = message.value)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<UniqueKeyValue>, I>>(object: I): UniqueKeyValue {
+    const message = createBaseUniqueKeyValue()
+    message.id = object.id ?? ''
+    message.key = object.key ?? ''
+    message.value = object.value ?? ''
+    return message
+  },
+}
+
+function createBaseUniqueKeySecretValue(): UniqueKeySecretValue {
+  return { id: '', key: '', value: '' }
+}
+
+export const UniqueKeySecretValue = {
+  encode(message: UniqueKeySecretValue, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== '') {
+      writer.uint32(802).string(message.id)
+    }
+    if (message.key !== '') {
+      writer.uint32(810).string(message.key)
+    }
+    if (message.value !== '') {
+      writer.uint32(826).string(message.value)
+    }
+    if (message.encrypted !== undefined) {
+      writer.uint32(832).bool(message.encrypted)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): UniqueKeySecretValue {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseUniqueKeySecretValue()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 100:
+          message.id = reader.string()
+          break
+        case 101:
+          message.key = reader.string()
+          break
+        case 103:
+          message.value = reader.string()
+          break
+        case 104:
+          message.encrypted = reader.bool()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): UniqueKeySecretValue {
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      key: isSet(object.key) ? String(object.key) : '',
+      value: isSet(object.value) ? String(object.value) : '',
+      encrypted: isSet(object.encrypted) ? Boolean(object.encrypted) : undefined,
+    }
+  },
+
+  toJSON(message: UniqueKeySecretValue): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.key !== undefined && (obj.key = message.key)
+    message.value !== undefined && (obj.value = message.value)
+    message.encrypted !== undefined && (obj.encrypted = message.encrypted)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<UniqueKeySecretValue>, I>>(object: I): UniqueKeySecretValue {
+    const message = createBaseUniqueKeySecretValue()
+    message.id = object.id ?? ''
+    message.key = object.key ?? ''
+    message.value = object.value ?? ''
+    message.encrypted = object.encrypted ?? undefined
+    return message
+  },
+}
+
+function createBaseKeyValueList(): KeyValueList {
+  return { data: [] }
+}
+
+export const KeyValueList = {
+  encode(message: KeyValueList, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    for (const v of message.data) {
+      UniqueKeyValue.encode(v!, writer.uint32(8002).fork()).ldelim()
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): KeyValueList {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseKeyValueList()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1000:
+          message.data.push(UniqueKeyValue.decode(reader, reader.uint32()))
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): KeyValueList {
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => UniqueKeyValue.fromJSON(e)) : [] }
+  },
+
+  toJSON(message: KeyValueList): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<KeyValueList>, I>>(object: I): KeyValueList {
+    const message = createBaseKeyValueList()
+    message.data = object.data?.map(e => UniqueKeyValue.fromPartial(e)) || []
+    return message
+  },
+}
+
+function createBaseSecretList(): SecretList {
+  return { data: [] }
+}
+
+export const SecretList = {
+  encode(message: SecretList, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    for (const v of message.data) {
+      UniqueKeySecretValue.encode(v!, writer.uint32(8002).fork()).ldelim()
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): SecretList {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseSecretList()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1000:
+          message.data.push(UniqueKeySecretValue.decode(reader, reader.uint32()))
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): SecretList {
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => UniqueKeySecretValue.fromJSON(e)) : [] }
+  },
+
+  toJSON(message: SecretList): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? UniqueKeySecretValue.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<SecretList>, I>>(object: I): SecretList {
+    const message = createBaseSecretList()
+    message.data = object.data?.map(e => UniqueKeySecretValue.fromPartial(e)) || []
+    return message
+  },
+}
+
+function createBaseListSecretsResponse(): ListSecretsResponse {
+  return { prefix: '', publicKey: '', keys: [] }
+}
+
+export const ListSecretsResponse = {
+  encode(message: ListSecretsResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.prefix !== '') {
+      writer.uint32(10).string(message.prefix)
+    }
+    if (message.publicKey !== '') {
+      writer.uint32(18).string(message.publicKey)
+    }
+    for (const v of message.keys) {
+      writer.uint32(26).string(v!)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): ListSecretsResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseListSecretsResponse()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.prefix = reader.string()
+          break
+        case 2:
+          message.publicKey = reader.string()
+          break
+        case 3:
+          message.keys.push(reader.string())
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): ListSecretsResponse {
+    return {
+      prefix: isSet(object.prefix) ? String(object.prefix) : '',
+      publicKey: isSet(object.publicKey) ? String(object.publicKey) : '',
+      keys: Array.isArray(object?.keys) ? object.keys.map((e: any) => String(e)) : [],
+    }
+  },
+
+  toJSON(message: ListSecretsResponse): unknown {
+    const obj: any = {}
+    message.prefix !== undefined && (obj.prefix = message.prefix)
+    message.publicKey !== undefined && (obj.publicKey = message.publicKey)
+    if (message.keys) {
+      obj.keys = message.keys.map(e => e)
+    } else {
+      obj.keys = []
+    }
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<ListSecretsResponse>, I>>(object: I): ListSecretsResponse {
+    const message = createBaseListSecretsResponse()
+    message.prefix = object.prefix ?? ''
+    message.publicKey = object.publicKey ?? ''
+    message.keys = object.keys?.map(e => e) || []
     return message
   },
 }

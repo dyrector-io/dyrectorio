@@ -40,6 +40,7 @@ const imageConfigToCompleteContainerConfig = (
     name: imageConfig.name ?? currentConfig.name,
     environment: currentConfig?.environment ?? {},
     capabilities: currentConfig?.capabilities ?? {},
+    secrets: currentConfig?.secrets ?? {},
   }
 
   if (imageConfig.environment) {

@@ -1,4 +1,18 @@
 {
-    "go.buildFlags": ["-tags=unit,integration"],
-    "go.lintTool": "golangci-lint",
+    "go.buildFlags": [
+        "-tags=unit,integration"
+    ],
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "**/node_modules": true
+    },
+    "eslint.workingDirectories": [
+        "web/crux",
+        "web/crux-ui"
+    ]
 }

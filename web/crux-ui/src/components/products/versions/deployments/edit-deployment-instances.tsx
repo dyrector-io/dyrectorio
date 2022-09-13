@@ -21,7 +21,10 @@ import EditInstanceCard from './instances/edit-instance-card'
 
 const mergeInstancePatch = (instance: Instance, message: InstanceUpdatedMessage): Instance => ({
   ...instance,
-  overriddenConfig: message,
+  overriddenConfig: {
+    ...instance.overriddenConfig,
+    ...message,
+  },
 })
 
 interface EditDeploymentInstancesProps {
@@ -66,7 +69,13 @@ const EditDeploymentInstances = (props: EditDeploymentInstancesProps) => {
   return (
     <DyoWrap>
       {instances.map(it => (
-        <EditInstanceCard key={it.id} disabled={!mutable} instance={it} deploymentSock={sock} />
+        <EditInstanceCard
+          key={it.id}
+          disabled={!mutable}
+          instance={it}
+          deploymentSock={sock}
+          publicKey={deployment?.publicKey}
+        />
       ))}
     </DyoWrap>
   )

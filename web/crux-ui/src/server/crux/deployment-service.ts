@@ -94,6 +94,7 @@ class DyoDeploymentService {
       ...res,
       versionId: res.productVersionId,
       status: deploymentStatusToDto(res.status),
+      publicKey: res?.publicKey || null,
       updatedAt: timestampToUTC(res.audit.updatedAt ?? res.audit.createdAt),
       instances: res.instances.map(it => instanceToDto(it)),
     }
@@ -159,7 +160,7 @@ class DyoDeploymentService {
   }
 
   async patch(dto: PatchDeployment): Promise<void> {
-    const req = {
+    const req: PatchDeploymentRequest = {
       ...dto,
       accessedBy: this.identity.id,
       environment: !dto.environment
@@ -171,6 +172,7 @@ class DyoDeploymentService {
         ? undefined
         : {
             id: dto.instance.instanceId,
+            accessedBy: this.identity.id,
             config: explicitContainerConfigToProto(dto.instance.config?.config),
             capabilities: !dto.instance.config?.capabilities
               ? undefined
@@ -182,8 +184,13 @@ class DyoDeploymentService {
               : {
                   data: dto.instance.config.environment,
                 },
+            secrets: !dto.instance.config?.secrets
+              ? undefined
+              : {
+                  data: dto.instance.config.secrets,
+                },
           },
-    } as PatchDeploymentRequest
+    }
 
     await protomisify<PatchDeploymentRequest, UpdateEntityResponse>(this.client, this.client.patchDeployment)(
       PatchDeploymentRequest,

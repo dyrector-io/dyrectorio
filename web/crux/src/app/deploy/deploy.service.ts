@@ -88,7 +88,9 @@ export default class DeployService {
       },
     })
 
-    return this.mapper.detailsToGrpc(deployment)
+    const publicKey = this.agentService.getById(deployment.nodeId)?.publicKey
+
+    return this.mapper.detailsToGrpc(deployment, publicKey)
   }
 
   async getDeploymentEvents(request: IdRequest): Promise<DeploymentEventListResponse> {
@@ -165,13 +167,13 @@ export default class DeployService {
     let instanceConfigPatchSet: InstanceContainerConfigData = null
 
     if (reqInstance) {
-      const caps = request.instance.capabilities
-      const envs = request.instance.environment
+      const { capabilities: caps, environment: envs, secrets } = request.instance
 
       instanceConfigPatchSet = {
         capabilities: caps ? caps.data ?? [] : (undefined as JsonArray),
         environment: envs ? envs.data ?? [] : (undefined as JsonArray),
         config: request.instance.config,
+        secrets: secrets ? secrets.data ?? [] : (undefined as JsonArray),
       }
     }
 

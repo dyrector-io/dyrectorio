@@ -6,10 +6,10 @@ import (
 	"log"
 	"strings"
 
+	v1 "github.com/dyrector-io/dyrectorio/agent/api/v1"
 	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
 	"github.com/dyrector-io/dyrectorio/agent/internal/grpc"
 	"github.com/dyrector-io/dyrectorio/agent/internal/util"
-	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 	builder "github.com/dyrector-io/dyrectorio/agent/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/config"
 )
@@ -23,6 +23,7 @@ type deployFacade struct {
 	service    *service
 	configmap  *configmap
 	ingress    *ingress
+	secret     *secret
 	pvc        *pvc
 	appConfig  *config.Configuration
 }
@@ -54,6 +55,7 @@ func NewDeployFacade(params *DeployFacadeParams, cfg *config.Configuration) *dep
 		configmap:  newConfigmap(params.Ctx, cfg),
 		service:    newService(params.Ctx, cfg),
 		ingress:    newIngress(params.Ctx, cfg),
+		secret:     newSecret(params.Ctx, cfg),
 		appConfig:  cfg,
 
 		pvc: newPvc(params.Ctx, cfg),
@@ -133,6 +135,10 @@ func (d *deployFacade) PreDeploy() error {
 		return err
 	}
 
+	if err := d.secret.applySecrets(d.namespace.name, d.params.ContainerConfig.Container, d.params.ContainerConfig.Secrets); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -161,6 +167,7 @@ func (d *deployFacade) Deploy() error {
 		namespace:       d.params.InstanceConfig.ContainerPreName,
 		containerConfig: &d.params.ContainerConfig,
 		configMapsEnv:   d.configmap.avail,
+		secrets:         d.secret.avail,
 		volumes:         d.pvc.avail,
 		portList:        portList,
 		command:         d.params.ContainerConfig.Command,
