@@ -15,20 +15,20 @@ const MailSlurperImage = "docker.io/oryd/mailslurper:latest-smtps"
 func GetCrux(settings Settings) *containerbuilder.DockerContainerBuilder {
 	crux := containerbuilder.NewDockerBuilder(context.Background()).
 		WithImage(fmt.Sprintf("%s:%s", settings.Crux.Image, settings.SettingsFile.Version)).
-		WithName(fmt.Sprintf("%s_crux", settings.SettingsFile.Prefix)).
+		WithName(settings.Containers.Crux.Name).
 		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
 		WithoutConflict().
 		WithForcePullImage().
 		WithEnv([]string{
 			fmt.Sprintf("TZ=%s", settings.SettingsFile.TimeZone),
-			fmt.Sprintf("DATABASE_URL=postgresql://%s:%s@%s_crux-postgres:%d/%s?schema=public",
+			fmt.Sprintf("DATABASE_URL=postgresql://%s:%s@%s:%d/%s?schema=public",
 				settings.SettingsFile.CruxPostgresUser,
 				settings.SettingsFile.CruxPostgresPassword,
-				settings.SettingsFile.Prefix,
+				settings.Containers.CruxPostgres.Name,
 				DefaultPostgresPort,
 				settings.SettingsFile.CruxPostgresDB),
-			fmt.Sprintf("KRATOS_ADMIN_URL=http://%s_kratos:%d",
-				settings.SettingsFile.Prefix,
+			fmt.Sprintf("KRATOS_ADMIN_URL=http://%s:%d",
+				settings.Containers.Kratos.Name,
 				settings.SettingsFile.KratosAdminPort),
 			fmt.Sprintf("CRUX_UI_URL=localhost:%d", settings.SettingsFile.CruxUIPort),
 			fmt.Sprintf("CRUX_ADDRESS=%s:%d", settings.NetworkGatewayIP, settings.SettingsFile.CruxAgentGrpcPort),
@@ -44,7 +44,7 @@ func GetCrux(settings Settings) *containerbuilder.DockerContainerBuilder {
 			"FROM_EMAIL=mail@szolgalta.to",
 			"SMTP_USER=test",
 			"SMTP_PASSWORD=test",
-			fmt.Sprintf("SMTP_URL=%s_mailslurper:1025/?skip_ssl_verify=true&legacy_ssl=true", settings.SettingsFile.Prefix),
+			fmt.Sprintf("SMTP_URL=%s:1025/?skip_ssl_verify=true&legacy_ssl=true", settings.Containers.MailSlurper.Name),
 		}).
 		WithPortBindings([]containerbuilder.PortBinding{
 			{
@@ -56,11 +56,11 @@ func GetCrux(settings Settings) *containerbuilder.DockerContainerBuilder {
 				PortBinding: uint16(settings.SettingsFile.CruxGrpcPort),
 			}}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
-		WithNetworkAliases(fmt.Sprintf("%s_crux", settings.SettingsFile.Prefix)).
+		WithNetworkAliases(settings.Containers.Crux.Name).
 		WithMountPoints([]mount.Mount{
 			{
 				Type:   mount.TypeVolume,
-				Source: fmt.Sprintf("%s_crux-certs", settings.SettingsFile.Prefix),
+				Source: fmt.Sprintf("%s-certs", settings.Containers.Crux.Name),
 				Target: "/app/certs",
 			},
 		}).
@@ -71,19 +71,19 @@ func GetCrux(settings Settings) *containerbuilder.DockerContainerBuilder {
 func GetCruxMigrate(settings Settings) *containerbuilder.DockerContainerBuilder {
 	cruxMigrate := containerbuilder.NewDockerBuilder(context.Background()).
 		WithImage(fmt.Sprintf("%s:%s", settings.Crux.Image, settings.SettingsFile.Version)).
-		WithName(fmt.Sprintf("%s_crux-migrate", settings.SettingsFile.Prefix)).
+		WithName(settings.Containers.CruxMigrate.Name).
 		WithoutConflict().
 		WithForcePullImage().
 		WithEnv([]string{
 			fmt.Sprintf("TZ=%s", settings.SettingsFile.TimeZone),
-			fmt.Sprintf("DATABASE_URL=postgresql://%s:%s@%s_crux-postgres:%d/%s?schema=public",
+			fmt.Sprintf("DATABASE_URL=postgresql://%s:%s@%s:%d/%s?schema=public",
 				settings.SettingsFile.CruxPostgresUser,
 				settings.SettingsFile.CruxPostgresPassword,
-				settings.SettingsFile.Prefix,
+				settings.Containers.CruxPostgres.Name,
 				DefaultPostgresPort,
 				settings.SettingsFile.CruxPostgresDB)}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
-		WithNetworkAliases(fmt.Sprintf("%s_crux-migrate", settings.SettingsFile.Prefix)).
+		WithNetworkAliases(settings.Containers.CruxMigrate.Name).
 		WithCmd([]string{"migrate"})
 
 	return cruxMigrate
@@ -92,17 +92,17 @@ func GetCruxMigrate(settings Settings) *containerbuilder.DockerContainerBuilder 
 func GetCruxUI(settings Settings) *containerbuilder.DockerContainerBuilder {
 	cruxUI := containerbuilder.NewDockerBuilder(context.Background()).
 		WithImage(fmt.Sprintf("%s:%s", settings.CruxUI.Image, settings.SettingsFile.Version)).
-		WithName(fmt.Sprintf("%s_crux-ui", settings.SettingsFile.Prefix)).
+		WithName(settings.Containers.CruxUI.Name).
 		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
 		WithoutConflict().
 		WithForcePullImage().
 		WithEnv([]string{
 			fmt.Sprintf("TZ=%s", settings.SettingsFile.TimeZone),
-			fmt.Sprintf("KRATOS_URL=http://%s_kratos:%d",
-				settings.SettingsFile.Prefix,
+			fmt.Sprintf("KRATOS_URL=http://%s:%d",
+				settings.Containers.Kratos.Name,
 				settings.SettingsFile.KratosPublicPort),
-			fmt.Sprintf("KRATOS_ADMIN_URL=http://%s_kratos:%d",
-				settings.SettingsFile.Prefix,
+			fmt.Sprintf("KRATOS_ADMIN_URL=http://%s:%d",
+				settings.Containers.Kratos.Name,
 				settings.SettingsFile.KratosAdminPort),
 			fmt.Sprintf("CRUX_ADDRESS=%s:%d", settings.CruxUI.CruxAddr, settings.SettingsFile.CruxGrpcPort),
 			"CRUX_INSECURE=true",
@@ -114,11 +114,11 @@ func GetCruxUI(settings Settings) *containerbuilder.DockerContainerBuilder {
 				PortBinding: uint16(settings.SettingsFile.CruxUIPort),
 			}}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
-		WithNetworkAliases(fmt.Sprintf("%s_crux-ui", settings.SettingsFile.Prefix)).
+		WithNetworkAliases(settings.Containers.CruxUI.Name).
 		WithMountPoints([]mount.Mount{
 			{
 				Type:     mount.TypeVolume,
-				Source:   fmt.Sprintf("%s_crux-certs", settings.SettingsFile.Prefix),
+				Source:   fmt.Sprintf("%s-certs", settings.Containers.Crux.Name),
 				Target:   "/app/certs",
 				ReadOnly: true,
 			},
@@ -131,26 +131,26 @@ func GetCruxUI(settings Settings) *containerbuilder.DockerContainerBuilder {
 func GetKratos(settings Settings) *containerbuilder.DockerContainerBuilder {
 	kratos := containerbuilder.NewDockerBuilder(context.Background()).
 		WithImage(fmt.Sprintf("%s:%s", settings.Kratos.Image, settings.SettingsFile.Version)).
-		WithName(fmt.Sprintf("%s_kratos", settings.SettingsFile.Prefix)).
+		WithName(settings.Containers.Kratos.Name).
 		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
 		WithoutConflict().
 		WithForcePullImage().
 		WithEnv([]string{
 			"SQA_OPT_OUT=true",
-			fmt.Sprintf("DSN=postgresql://%s:%s@%s_kratos-postgres:%d/%s?sslmode=disable&max_conns=20&max_idle_conns=4",
+			fmt.Sprintf("DSN=postgresql://%s:%s@%s:%d/%s?sslmode=disable&max_conns=20&max_idle_conns=4",
 				settings.SettingsFile.KratosPostgresUser,
 				settings.SettingsFile.KratosPostgresPassword,
-				settings.SettingsFile.Prefix,
+				settings.Containers.KratosPostgres.Name,
 				DefaultPostgresPort,
 				settings.SettingsFile.KratosPostgresDB),
-			fmt.Sprintf("KRATOS_URL=http://%s_kratos:%d",
-				settings.SettingsFile.Prefix,
+			fmt.Sprintf("KRATOS_URL=http://%s:%d",
+				settings.Containers.Kratos.Name,
 				settings.SettingsFile.KratosPublicPort),
-			fmt.Sprintf("KRATOS_ADMIN_URL=http://%s_kratos:%d",
-				settings.SettingsFile.Prefix,
+			fmt.Sprintf("KRATOS_ADMIN_URL=http://%s:%d",
+				settings.Containers.Kratos.Name,
 				settings.SettingsFile.KratosAdminPort),
-			fmt.Sprintf("AUTH_URL=http://%s_crux-ui:%d/auth", settings.SettingsFile.Prefix, settings.SettingsFile.CruxUIPort),
-			fmt.Sprintf("CRUX_UI_URL=http://%s_crux-ui:%d", settings.SettingsFile.Prefix, settings.SettingsFile.CruxUIPort),
+			fmt.Sprintf("AUTH_URL=http://%s:%d/auth", settings.Containers.CruxUI.Name, settings.SettingsFile.CruxUIPort),
+			fmt.Sprintf("CRUX_UI_URL=http://%s:%d", settings.Containers.CruxUI.Name, settings.SettingsFile.CruxUIPort),
 			fmt.Sprintf("CRUX_ADDRESS=%s:%d", settings.NetworkGatewayIP, settings.SettingsFile.CruxAgentGrpcPort),
 			"DEV=false",
 			"LOG_LEVEL=info",
@@ -158,8 +158,8 @@ func GetKratos(settings Settings) *containerbuilder.DockerContainerBuilder {
 			fmt.Sprintf("SECRETS_COOKIE=%s", settings.SettingsFile.KratosSecret),
 			"SMTP_USER=test",
 			"SMTP_PASSWORD=test",
-			fmt.Sprintf("SMTP_URL=%s_mailslurper:1025/?skip_ssl_verify=true&legacy_ssl=true", settings.SettingsFile.Prefix),
-			fmt.Sprintf("COURIER_SMTP_CONNECTION_URI=smtps://test:test@%s_mailslurper:1025/?skip_ssl_verify=true&legacy_ssl=true", settings.SettingsFile.Prefix),
+			fmt.Sprintf("SMTP_URL=%s:1025/?skip_ssl_verify=true&legacy_ssl=true", settings.Containers.MailSlurper.Name),
+			fmt.Sprintf("COURIER_SMTP_CONNECTION_URI=smtps://test:test@%s:1025/?skip_ssl_verify=true&legacy_ssl=true", settings.Containers.MailSlurper.Name),
 		}).
 		WithPortBindings([]containerbuilder.PortBinding{
 			{
@@ -171,7 +171,7 @@ func GetKratos(settings Settings) *containerbuilder.DockerContainerBuilder {
 				PortBinding: uint16(settings.SettingsFile.KratosAdminPort),
 			}}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
-		WithNetworkAliases(fmt.Sprintf("%s_kratos", settings.SettingsFile.Prefix))
+		WithNetworkAliases(settings.Containers.Kratos.Name)
 
 	return kratos
 }
@@ -179,20 +179,20 @@ func GetKratos(settings Settings) *containerbuilder.DockerContainerBuilder {
 func GetKratosMigrate(settings Settings) *containerbuilder.DockerContainerBuilder {
 	kratosMigrate := containerbuilder.NewDockerBuilder(context.Background()).
 		WithImage(fmt.Sprintf("%s:%s", settings.Kratos.Image, settings.SettingsFile.Version)).
-		WithName(fmt.Sprintf("%s_kratos-migrate", settings.SettingsFile.Prefix)).
+		WithName(settings.Containers.KratosMigrate.Name).
 		WithoutConflict().
 		WithForcePullImage().
 		WithEnv([]string{
 			"SQA_OPT_OUT=true",
-			fmt.Sprintf("DSN=postgresql://%s:%s@%s_kratos-postgres:%d/%s?sslmode=disable&max_conns=20&max_idle_conns=4",
+			fmt.Sprintf("DSN=postgresql://%s:%s@%s:%d/%s?sslmode=disable&max_conns=20&max_idle_conns=4",
 				settings.SettingsFile.KratosPostgresUser,
 				settings.SettingsFile.KratosPostgresPassword,
-				settings.SettingsFile.Prefix,
+				settings.Containers.KratosPostgres.Name,
 				DefaultPostgresPort,
 				settings.SettingsFile.KratosPostgresDB),
 		}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
-		WithNetworkAliases(fmt.Sprintf("%s_kratos-migrate", settings.SettingsFile.Prefix)).
+		WithNetworkAliases(settings.Containers.KratosMigrate.Name).
 		WithCmd([]string{"-c /etc/config/kratos/kratos.yaml", "migrate", "sql", "-e", "--yes"})
 
 	return kratosMigrate
@@ -202,7 +202,7 @@ func GetKratosMigrate(settings Settings) *containerbuilder.DockerContainerBuilde
 func GetMailSlurper(settings Settings) *containerbuilder.DockerContainerBuilder {
 	mailslurper := containerbuilder.NewDockerBuilder(context.Background()).
 		WithImage(MailSlurperImage).
-		WithName(fmt.Sprintf("%s_mailslurper", settings.SettingsFile.Prefix)).
+		WithName(settings.Containers.MailSlurper.Name).
 		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
 		WithoutConflict().
 		WithForcePullImage().
@@ -216,7 +216,7 @@ func GetMailSlurper(settings Settings) *containerbuilder.DockerContainerBuilder 
 				PortBinding: uint16(settings.SettingsFile.MailSlurperPort2),
 			}}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
-		WithNetworkAliases(fmt.Sprintf("%s_mailslurper", settings.SettingsFile.Prefix))
+		WithNetworkAliases(settings.Containers.MailSlurper.Name)
 
 	return mailslurper
 }
@@ -225,7 +225,7 @@ func GetMailSlurper(settings Settings) *containerbuilder.DockerContainerBuilder 
 func GetCruxPostgres(settings Settings) *containerbuilder.DockerContainerBuilder {
 	cruxPostgres := containerbuilder.NewDockerBuilder(context.Background()).
 		WithImage(PostgresImage).
-		WithName(fmt.Sprintf("%s_crux-postgres", settings.SettingsFile.Prefix)).
+		WithName(settings.Containers.CruxPostgres.Name).
 		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
 		WithoutConflict().
 		WithForcePullImage().
@@ -240,10 +240,11 @@ func GetCruxPostgres(settings Settings) *containerbuilder.DockerContainerBuilder
 				PortBinding: uint16(settings.SettingsFile.CruxPostgresPort),
 			}}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
-		WithNetworkAliases(fmt.Sprintf("%s_crux-postgres", settings.SettingsFile.Prefix)).
+		WithNetworkAliases(settings.Containers.CruxPostgres.Name).
 		WithMountPoints([]mount.Mount{{
 			Type:   mount.TypeVolume,
-			Source: fmt.Sprintf("%s_crux-postgres-data", settings.SettingsFile.Prefix), Target: "/var/lib/postgresql/data"}})
+			Source: fmt.Sprintf("%s-data", settings.Containers.CruxPostgres.Name),
+			Target: "/var/lib/postgresql/data"}})
 
 	return cruxPostgres
 }
@@ -251,7 +252,7 @@ func GetCruxPostgres(settings Settings) *containerbuilder.DockerContainerBuilder
 func GetKratosPostgres(settings Settings) *containerbuilder.DockerContainerBuilder {
 	kratosPostgres := containerbuilder.NewDockerBuilder(context.Background()).
 		WithImage(PostgresImage).
-		WithName(fmt.Sprintf("%s_kratos-postgres", settings.SettingsFile.Prefix)).
+		WithName(settings.Containers.KratosPostgres.Name).
 		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
 		WithoutConflict().
 		WithForcePullImage().
@@ -266,10 +267,10 @@ func GetKratosPostgres(settings Settings) *containerbuilder.DockerContainerBuild
 				PortBinding: uint16(settings.SettingsFile.KratosPostgresPort),
 			}}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
-		WithNetworkAliases(fmt.Sprintf("%s_kratos-postgres", settings.SettingsFile.Prefix)).
+		WithNetworkAliases(settings.Containers.KratosPostgres.Name).
 		WithMountPoints([]mount.Mount{
 			{Type: mount.TypeVolume,
-				Source: fmt.Sprintf("%s_kratos-postgres-data", settings.SettingsFile.Prefix),
+				Source: fmt.Sprintf("%s-data", settings.Containers.KratosPostgres.Name),
 				Target: "/var/lib/postgresql/data"}})
 
 	return kratosPostgres

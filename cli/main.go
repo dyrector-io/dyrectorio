@@ -73,13 +73,19 @@ func run(cCtx *cli.Context) error {
 		SettingsWrite:    cCtx.Bool("write"),
 		SettingsFilePath: SettingsFileLocation(cCtx.String("config")),
 		SettingsExists:   SettingsExists(cCtx.String("config")),
-		CruxUIDisabled:   cCtx.Bool("disable-crux-ui"),
-		CruxDisabled:     cCtx.Bool("disable-crux"),
-		Command:          cCtx.Command.Name,
+		Containers: Containers{
+			CruxUI: ContainerSettings{
+				Disabled: cCtx.Bool("disable-crux-ui"),
+			},
+			Crux: ContainerSettings{
+				Disabled: cCtx.Bool("disable-crux"),
+			},
+		},
+		Command: cCtx.Command.Name,
 	}
 
 	settings := SettingsFileReadWrite(state)
-	RunContainers(settings)
+	ProcessCommand(settings)
 
 	return nil
 }

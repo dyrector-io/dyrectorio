@@ -4,78 +4,191 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
+	containerbuilder "github.com/dyrector-io/dyrectorio/agent/pkg/builder/container"
 )
+
+type DyrectorioStack struct {
+	Containers     Containers
+	Crux           *containerbuilder.DockerContainerBuilder
+	CruxMigrate    *containerbuilder.DockerContainerBuilder
+	CruxUI         *containerbuilder.DockerContainerBuilder
+	Kratos         *containerbuilder.DockerContainerBuilder
+	KratosMigrate  *containerbuilder.DockerContainerBuilder
+	CruxPostgres   *containerbuilder.DockerContainerBuilder
+	KratosPostgres *containerbuilder.DockerContainerBuilder
+	MailSlurper    *containerbuilder.DockerContainerBuilder
+}
 
 const ContainerNetDriver = "bridge"
 
-// Start compose file
-func RunContainers(settings Settings) {
-	_, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+func ProcessCommand(settings Settings) {
+	containers := DyrectorioStack{
+		Crux:           GetCrux(settings),
+		CruxMigrate:    GetCruxMigrate(settings),
+		CruxUI:         GetCruxUI(settings),
+		Kratos:         GetKratos(settings),
+		KratosMigrate:  GetKratosMigrate(settings),
+		CruxPostgres:   GetCruxPostgres(settings),
+		KratosPostgres: GetKratosPostgres(settings),
+		MailSlurper:    GetMailSlurper(settings),
+		Containers:     settings.Containers,
+	}
+
+	switch settings.Command {
+	case "up":
+		StartContainers(containers)
+	case "down":
+		StopContainers(containers)
+	default:
+		log.Fatalln("invalid command")
+	}
+}
+
+// Create and Start containers
+func StartContainers(containers DyrectorioStack) {
+	_, err := containers.CruxPostgres.Create().Start()
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
 
-	crux := GetCrux(settings)
-	cruxMigrate := GetCruxMigrate(settings)
-	cruxUI := GetCruxUI(settings)
-
-	kratos := GetKratos(settings)
-	kratosMigrate := GetKratosMigrate(settings)
-
-	cruxPostgres := GetCruxPostgres(settings)
-	kratosPostgres := GetKratosPostgres(settings)
-
-	mailslurper := GetMailSlurper(settings)
-
-	_, err = cruxPostgres.Create().Start()
-	if err != nil {
-		log.Fatalf("error: %v", err)
-	}
-
-	_, err = kratosPostgres.Create().Start()
+	_, err = containers.KratosPostgres.Create().Start()
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
 
 	log.Printf("Migration (kratos) in progress...")
-	_, err = kratosMigrate.Create().StartWaitUntilExit()
+	_, err = containers.KratosMigrate.Create().StartWaitUntilExit()
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
 	log.Printf("Migration (kratos) done!")
 
-	_, err = kratos.Create().Start()
+	_, err = containers.Kratos.Create().Start()
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
 
-	if !settings.CruxDisabled {
+	if !containers.Containers.Crux.Disabled {
 		log.Printf("Migration (crux) in progress...")
-		_, err = cruxMigrate.Create().StartWaitUntilExit()
+		_, err = containers.CruxMigrate.Create().StartWaitUntilExit()
 		if err != nil {
 			log.Fatalf("error: %v", err)
 		}
 		log.Printf("Migration (crux) done!")
-		_, err = crux.Create().Start()
+
+		_, err = containers.Crux.Create().Start()
 		if err != nil {
 			log.Fatalf("error: %v", err)
 		}
 	}
 
-	if !settings.CruxUIDisabled {
-		_, err = cruxUI.Create().Start()
+	if !containers.Containers.CruxUI.Disabled {
+		_, err = containers.CruxUI.Create().Start()
 		if err != nil {
 			log.Fatalf("error: %v", err)
 		}
 	}
 
-	_, err = mailslurper.Create().Start()
+	_, err = containers.MailSlurper.Create().Start()
 	if err != nil {
 		log.Fatalf("error: %v", err)
+	}
+}
+
+// Cleanup for "down" command
+func StopContainers(containers DyrectorioStack) {
+	if containerID := containers.Containers.MailSlurper.Name; GetContainerID(containerID) != "" {
+		CleanupContainer(containerID)
+	}
+
+	if containers.Containers.CruxUI.Disabled {
+		if containerID := containers.Containers.CruxUI.Name; GetContainerID(containerID) != "" {
+			CleanupContainer(containerID)
+		}
+	}
+
+	if containers.Containers.Crux.Disabled {
+		if containerID := containers.Containers.Crux.Name; GetContainerID(containerID) != "" {
+			CleanupContainer(containerID)
+		}
+
+		if containerID := containers.Containers.CruxMigrate.Name; GetContainerID(containerID) != "" {
+			CleanupContainer(containerID)
+		}
+	}
+
+	if containerID := containers.Containers.KratosMigrate.Name; GetContainerID(containerID) != "" {
+		CleanupContainer(containerID)
+	}
+
+	if containerID := containers.Containers.Kratos.Name; GetContainerID(containerID) != "" {
+		CleanupContainer(containerID)
+	}
+
+	if containerID := containers.Containers.CruxPostgres.Name; GetContainerID(containerID) != "" {
+		CleanupContainer(containerID)
+	}
+
+	if containerID := containers.Containers.KratosPostgres.Name; GetContainerID(containerID) != "" {
+		CleanupContainer(containerID)
+	}
+}
+
+// Helper function to get the container's ID from name
+func GetContainerID(name string) string {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+
+	filter := filters.NewArgs()
+	filter.Add("name", fmt.Sprintf("^%s$", name))
+
+	containers, err := cli.ContainerList(
+		context.Background(),
+		types.ContainerListOptions{
+			Filters: filter,
+		})
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+
+	switch len(containers) {
+	case 0:
+		log.Printf("no such container found with name: %s", name)
+		return ""
+	case 1:
+		return containers[0].ID
+	default:
+		log.Fatalf("error: ambigous name")
+		return ""
+	}
+}
+
+// Stop and Delete container
+func CleanupContainer(ID string) {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+
+	timeout, err := time.ParseDuration("10s")
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+
+	err = cli.ContainerStop(context.Background(), ID, &timeout)
+	if err != nil {
+		log.Printf("error: %v", err)
+	}
+	err = cli.ContainerRemove(context.Background(), ID, types.ContainerRemoveOptions{Force: true, RemoveVolumes: false})
+	if err != nil {
+		log.Printf("error: %v", err)
 	}
 }
 

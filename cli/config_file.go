@@ -20,16 +20,25 @@ type Settings struct {
 	SettingsExists   bool
 	SettingsFilePath string
 	Command          string
-	CruxDisabled     bool
-	CruxUIDisabled   bool
 	NetworkGatewayIP string
-	Crux             ContainerSettings
-	CruxUI           ContainerSettings
-	Kratos           ContainerSettings
+	Containers
+}
+
+type Containers struct {
+	Crux           ContainerSettings
+	CruxMigrate    ContainerSettings
+	CruxUI         ContainerSettings
+	Kratos         ContainerSettings
+	KratosMigrate  ContainerSettings
+	CruxPostgres   ContainerSettings
+	KratosPostgres ContainerSettings
+	MailSlurper    ContainerSettings
 }
 
 type ContainerSettings struct {
 	Image    string
+	Name     string
+	Disabled bool
 	CruxAddr string
 }
 
@@ -143,13 +152,11 @@ func SettingsFileReadWrite(state Settings) Settings {
 
 	saveSettings(settings)
 
-	log.Printf("%v", settings)
-
 	return settings
 }
 
 func DisabledServiceSettings(settings Settings) Settings {
-	if settings.CruxDisabled {
+	if settings.Containers.Crux.Disabled {
 		fmt.Printf("Do not forget to add your DATABASE_URL to your crux environment.\n\n")
 		fmt.Printf("DATABASE_URL=postgresql://%s:%s@%s_crux-postgres:%d/%s?schema=public\n\n",
 			settings.SettingsFile.CruxPostgresUser,
@@ -159,7 +166,7 @@ func DisabledServiceSettings(settings Settings) Settings {
 			settings.SettingsFile.CruxPostgresDB)
 	}
 
-	if settings.CruxUIDisabled {
+	if settings.Containers.CruxUI.Disabled {
 		settings.CruxUI.CruxAddr = "localhost"
 	} else {
 		settings.CruxUI.CruxAddr = fmt.Sprintf("%s_crux", settings.SettingsFile.Prefix)
@@ -206,13 +213,14 @@ func LoadDefaultsOnEmpty(settings Settings) Settings {
 	settings.Kratos.Image = "ghcr.io/dyrector-io/dyrectorio/web/kratos"
 
 	// Store state to settings
-	if settings.CruxDisabled != settings.SettingsFile.CruxDisabled {
-		settings.SettingsFile.CruxDisabled = settings.CruxDisabled
+	if settings.Containers.Crux.Disabled != settings.SettingsFile.CruxDisabled {
+		settings.SettingsFile.CruxDisabled = settings.Containers.Crux.Disabled
 	}
-	if settings.CruxUIDisabled != settings.SettingsFile.CruxUIDisabled {
-		settings.SettingsFile.CruxUIDisabled = settings.CruxUIDisabled
+	if settings.Containers.CruxUI.Disabled != settings.SettingsFile.CruxUIDisabled {
+		settings.SettingsFile.CruxUIDisabled = settings.Containers.CruxUI.Disabled
 	}
 
+	// Load defaults
 	settings.SettingsFile.Version = LoadStringVal(settings.SettingsFile.Version, "latest")
 	settings.SettingsFile.Network = LoadStringVal(settings.SettingsFile.Network, "dyrectorio-stack")
 	settings.SettingsFile.Prefix = LoadStringVal(settings.SettingsFile.Prefix, "dyrectorio-stack")
@@ -236,7 +244,15 @@ func LoadDefaultsOnEmpty(settings Settings) Settings {
 	settings.SettingsFile.MailSlurperPort = LoadIntVal(settings.SettingsFile.MailSlurperPort, DefaultMailSlurperPort)
 	settings.SettingsFile.MailSlurperPort2 = LoadIntVal(settings.SettingsFile.MailSlurperPort2, DefaultMailSlurperPort2)
 
-	// settings.NetworkGatewayIP = GetNetworkID()
+	// Generate names
+	settings.Containers.Crux.Name = fmt.Sprintf("%s_crux", settings.SettingsFile.Prefix)
+	settings.Containers.CruxMigrate.Name = fmt.Sprintf("%s_crux-migrate", settings.SettingsFile.Prefix)
+	settings.Containers.CruxUI.Name = fmt.Sprintf("%s_crux-ui", settings.SettingsFile.Prefix)
+	settings.Containers.Kratos.Name = fmt.Sprintf("%s_kratos", settings.SettingsFile.Prefix)
+	settings.Containers.KratosMigrate.Name = fmt.Sprintf("%s_kratos-migrate", settings.SettingsFile.Prefix)
+	settings.Containers.CruxPostgres.Name = fmt.Sprintf("%s_crux-postgres", settings.SettingsFile.Prefix)
+	settings.Containers.KratosPostgres.Name = fmt.Sprintf("%s_kratos-postgres", settings.SettingsFile.Prefix)
+	settings.Containers.MailSlurper.Name = fmt.Sprintf("%s_mailslurper", settings.SettingsFile.Prefix)
 
 	return settings
 }
