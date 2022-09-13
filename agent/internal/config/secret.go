@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"regexp"
 
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
 )
@@ -16,7 +17,17 @@ type ConfigFromFile string
 
 func (field *ConfigFromFile) SetValue(location string) error {
 	if location == "" {
-		return fmt.Errorf("field value can't be empty")
+		return fmt.Errorf("env private key file value can't be empty")
+	}
+
+	validKeyFile, err := regexp.MatchString("(.*?)\\.(key)$", location)
+
+	if err != nil {
+		return err
+	}
+
+	if !validKeyFile {
+		return fmt.Errorf("given file is not a file with .key extension")
 	}
 
 	key, err := checkGenerateKeys(location)
