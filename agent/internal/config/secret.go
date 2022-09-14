@@ -48,7 +48,7 @@ func checkGenerateKeys(location string) (string, error) {
 		return "", fmt.Errorf("key file is nil: %v", location)
 	}
 
-	if privateKeyObj != nil && !privateKeyObj.IsExpired() {
+	if !privateKeyObj.IsExpired() {
 		keyStr, keyErr := privateKeyObj.Armor()
 
 		return keyStr, keyErr
