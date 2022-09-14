@@ -44,7 +44,7 @@ const AuditLogPage = (props: AuditLogPageProps) => {
     },
     filters: [
       textFilterFor<AuditLog>(it => [it.identityEmail, utcDateToLocale(it.date), it.event, it.info]),
-      dateRangeFilterFor<AuditLog>(it => [utcDateToLocale(it.date)]),
+      dateRangeFilterFor<AuditLog>(it => [it.date]),
     ],
   })
 
