@@ -62,7 +62,7 @@ export type DeploymentDetails = {
   id: string
   versionId: string
   nodeId: string
-  description?: string | undefined
+  note?: string | undefined
   prefix: string
   updatedAt: string
   environment: Environment
@@ -104,7 +104,7 @@ export type DeploymentEvent = {
 export type CreateDeployment = {
   nodeId: string
   prefix: string
-  description?: string | undefined
+  note?: string | undefined
 }
 
 export type DeploymentCreated = {
@@ -123,7 +123,7 @@ export type PatchDeployment = {
 }
 
 export type UpdateDeployment = {
-  description?: string
+  note?: string
   prefix: string
 }
 

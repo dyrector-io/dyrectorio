@@ -20,13 +20,14 @@ import useSWR from 'swr'
 interface AddDeploymentCardProps {
   className?: string
   productId: string
+  productName: string
   versionId: string
   onAdd: (deploymentId: string) => void
   onDiscard: VoidFunction
 }
 
 const AddDeploymentCard = (props: AddDeploymentCardProps) => {
-  const { productId, versionId, className, onAdd, onDiscard } = props
+  const { productId, productName, versionId, className, onAdd, onDiscard } = props
 
   const { t } = useTranslation('versions')
 
@@ -40,12 +41,14 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
+  const nameToPrefix = (name: string) => name.replaceAll(' ', '-').toLocaleLowerCase()
+
   const formik = useFormik({
     validationSchema: createDeploymentSchema,
     initialValues: {
       nodeId: null as string,
-      description: '',
-      prefix: '',
+      note: '',
+      prefix: nameToPrefix(productName),
     },
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
@@ -121,10 +124,10 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
           <DyoTextArea
             className="h-48"
             grow
-            name="description"
+            name="note"
             label={t('common:note')}
             onChange={formik.handleChange}
-            value={formik.values.description}
+            value={formik.values.note}
           />
         </div>
       )}

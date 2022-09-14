@@ -125,7 +125,7 @@ export default class DeployService {
         versionId: request.versionId,
         nodeId: request.nodeId,
         status: DeploymentStatusEnum.preparing,
-        description: request.description,
+        note: request.note,
         createdBy: request.accessedBy,
         prefix: request.prefix,
         instances: {
@@ -145,7 +145,7 @@ export default class DeployService {
   async updateDeployment(request: UpdateDeploymentRequest): Promise<UpdateEntityResponse> {
     const deployment = await this.prisma.deployment.update({
       data: {
-        description: request.description,
+        note: request.note,
         prefix: request.prefix,
         updatedAt: new Date(),
         updatedBy: request.accessedBy,

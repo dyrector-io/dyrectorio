@@ -80,10 +80,10 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
         <DyoTextArea
           className="h-48"
           grow
-          name="description"
-          label={t('common:description')}
+          name="note"
+          label={t('common:note')}
           onChange={formik.handleChange}
-          value={formik.values.description}
+          value={formik.values.note}
         />
 
         <DyoButton className="hidden" type="submit" />
