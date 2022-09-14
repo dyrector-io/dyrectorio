@@ -37,7 +37,8 @@ const getInviteMessage = (args: InviteMessage): string =>
 const getFailedDeployMessage = (args: BaseMessage): string =>
   `Failed to deploy on node ${args.subject}, initiated by: ${args.owner}!`
 
-const getSuccessfulDeployMessage = (args: BaseMessage): string => `${args.owner} successfully deployed on node ${args.subject}!`
+const getSuccessfulDeployMessage = (args: BaseMessage): string =>
+  `${args.owner} successfully deployed on node ${args.subject}!`
 
 const getMessage = (messageType: NotificationMessageType): ((message: Message) => string) => {
   switch (messageType) {

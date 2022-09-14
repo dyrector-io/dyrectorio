@@ -1,6 +1,5 @@
 import NodeStatusIndicator from '@app/components/nodes/node-status-indicator'
 import { DyoCard } from '@app/elements/dyo-card'
-import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
 import useWebSocket from '@app/hooks/use-websocket'
 import { DeploymentRoot, NodeStatusMessage, WS_TYPE_NODE_STATUS } from '@app/models'

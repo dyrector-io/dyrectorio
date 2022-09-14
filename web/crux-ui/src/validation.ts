@@ -136,13 +136,11 @@ export const createVersionSchema = updateVersionSchema.concat(
 
 export const createDeploymentSchema = yup.object().shape({
   nodeId: yup.mixed().nullable().required().label('node'),
-  name: nameRule,
   prefix: yup.string().required(),
   description: yup.string(),
 })
 
 export const updateDeploymentSchema = yup.object().shape({
-  name: nameRule,
   description: yup.string(),
   prefix: yup.string().required(),
 })
