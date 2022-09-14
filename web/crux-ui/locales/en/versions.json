@@ -27,5 +27,6 @@
   "addDeployment": "Add deployment",
   "addImage": "Add image",
 
-  "deploymentName": "Deployment name"
+  "deploymentName": "Deployment name",
+  "alreadyHavePreparing": "You already have one preparing deployment!"
 }
