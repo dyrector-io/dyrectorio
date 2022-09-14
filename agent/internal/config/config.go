@@ -10,7 +10,6 @@ import (
 // we call into a function in a package which calls here, then we populate the
 // options which should be different if not defined otherwise
 type CommonConfiguration struct {
-	// TODO(c3ppc3pp): custom setters to validate input for resources
 	DefaultLimitsCPU     string        `yaml:"defaultLimitsCPU"      env:"DEFAULT_LIMITS_CPU"      env-default:"100m"`
 	DefaultLimitsMemory  string        `yaml:"defaultLimitsMemory"   env:"DEFAULT_LIMITS_MEMORY"   env-default:"128Mi"`
 	DefaultRequestsCPU   string        `yaml:"defaultRequestsCPU"    env:"DEFAULT_REQUESTS_CPU"    env-default:"50m"`

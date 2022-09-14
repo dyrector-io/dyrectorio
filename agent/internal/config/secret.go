@@ -16,7 +16,7 @@ type ConfigFromFile string
 
 func (field *ConfigFromFile) SetValue(location string) error {
 	if location == "" {
-		return fmt.Errorf("field value can't be empty")
+		return fmt.Errorf("env private key file value can't be empty")
 	}
 
 	key, err := checkGenerateKeys(location)
@@ -40,10 +40,15 @@ func checkGenerateKeys(location string) (string, error) {
 	// exists but expired -> migrate present keys?!
 	privateKeyObj, keyErr := crypto.NewKeyFromArmored(string(file))
 
+	if keyErr != nil {
+		return "", keyErr
+	}
+
+	if privateKeyObj == nil {
+		return "", fmt.Errorf("key file is nil: %v", location)
+	}
+
 	if !privateKeyObj.IsExpired() {
-		if keyErr != nil {
-			return "", keyErr
-		}
 		keyStr, keyErr := privateKeyObj.Armor()
 
 		return keyStr, keyErr
