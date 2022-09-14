@@ -1007,7 +1007,6 @@ export interface CreateDeploymentRequest {
   accessedBy: string
   versionId: string
   nodeId: string
-  name: string
   description?: string | undefined
   prefix: string
 }
@@ -1015,7 +1014,6 @@ export interface CreateDeploymentRequest {
 export interface UpdateDeploymentRequest {
   id: string
   accessedBy: string
-  name: string
   description?: string | undefined
   prefix: string
 }
@@ -1057,7 +1055,6 @@ export interface DeploymentListResponse {
 
 export interface DeploymentResponse {
   id: string
-  name: string
   product: string
   productId: string
   version: string
@@ -1074,7 +1071,6 @@ export interface DeploymentListByVersionResponse {
 export interface DeploymentByVersionResponse {
   id: string
   audit: AuditResponse | undefined
-  name: string
   prefix: string
   nodeId: string
   nodeName: string
@@ -1087,7 +1083,6 @@ export interface DeploymentDetailsResponse {
   audit: AuditResponse | undefined
   productVersionId: string
   nodeId: string
-  name: string
   description?: string | undefined
   prefix: string
   environment: UniqueKeyValue[]
@@ -6462,7 +6457,7 @@ export const DeploymentEditEventMessage = {
 }
 
 function createBaseCreateDeploymentRequest(): CreateDeploymentRequest {
-  return { accessedBy: '', versionId: '', nodeId: '', name: '', prefix: '' }
+  return { accessedBy: '', versionId: '', nodeId: '', prefix: '' }
 }
 
 export const CreateDeploymentRequest = {
@@ -6476,14 +6471,11 @@ export const CreateDeploymentRequest = {
     if (message.nodeId !== '') {
       writer.uint32(810).string(message.nodeId)
     }
-    if (message.name !== '') {
-      writer.uint32(818).string(message.name)
-    }
     if (message.description !== undefined) {
-      writer.uint32(826).string(message.description)
+      writer.uint32(818).string(message.description)
     }
     if (message.prefix !== '') {
-      writer.uint32(834).string(message.prefix)
+      writer.uint32(826).string(message.prefix)
     }
     return writer
   },
@@ -6505,12 +6497,9 @@ export const CreateDeploymentRequest = {
           message.nodeId = reader.string()
           break
         case 102:
-          message.name = reader.string()
-          break
-        case 103:
           message.description = reader.string()
           break
-        case 104:
+        case 103:
           message.prefix = reader.string()
           break
         default:
@@ -6526,7 +6515,6 @@ export const CreateDeploymentRequest = {
       accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       versionId: isSet(object.versionId) ? String(object.versionId) : '',
       nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
-      name: isSet(object.name) ? String(object.name) : '',
       description: isSet(object.description) ? String(object.description) : undefined,
       prefix: isSet(object.prefix) ? String(object.prefix) : '',
     }
@@ -6537,7 +6525,6 @@ export const CreateDeploymentRequest = {
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.versionId !== undefined && (obj.versionId = message.versionId)
     message.nodeId !== undefined && (obj.nodeId = message.nodeId)
-    message.name !== undefined && (obj.name = message.name)
     message.description !== undefined && (obj.description = message.description)
     message.prefix !== undefined && (obj.prefix = message.prefix)
     return obj
@@ -6548,7 +6535,6 @@ export const CreateDeploymentRequest = {
     message.accessedBy = object.accessedBy ?? ''
     message.versionId = object.versionId ?? ''
     message.nodeId = object.nodeId ?? ''
-    message.name = object.name ?? ''
     message.description = object.description ?? undefined
     message.prefix = object.prefix ?? ''
     return message
@@ -6556,7 +6542,7 @@ export const CreateDeploymentRequest = {
 }
 
 function createBaseUpdateDeploymentRequest(): UpdateDeploymentRequest {
-  return { id: '', accessedBy: '', name: '', prefix: '' }
+  return { id: '', accessedBy: '', prefix: '' }
 }
 
 export const UpdateDeploymentRequest = {
@@ -6567,14 +6553,11 @@ export const UpdateDeploymentRequest = {
     if (message.accessedBy !== '') {
       writer.uint32(18).string(message.accessedBy)
     }
-    if (message.name !== '') {
-      writer.uint32(802).string(message.name)
-    }
     if (message.description !== undefined) {
-      writer.uint32(810).string(message.description)
+      writer.uint32(802).string(message.description)
     }
     if (message.prefix !== '') {
-      writer.uint32(818).string(message.prefix)
+      writer.uint32(810).string(message.prefix)
     }
     return writer
   },
@@ -6593,12 +6576,9 @@ export const UpdateDeploymentRequest = {
           message.accessedBy = reader.string()
           break
         case 100:
-          message.name = reader.string()
-          break
-        case 101:
           message.description = reader.string()
           break
-        case 102:
+        case 101:
           message.prefix = reader.string()
           break
         default:
@@ -6613,7 +6593,6 @@ export const UpdateDeploymentRequest = {
     return {
       id: isSet(object.id) ? String(object.id) : '',
       accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      name: isSet(object.name) ? String(object.name) : '',
       description: isSet(object.description) ? String(object.description) : undefined,
       prefix: isSet(object.prefix) ? String(object.prefix) : '',
     }
@@ -6623,7 +6602,6 @@ export const UpdateDeploymentRequest = {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
-    message.name !== undefined && (obj.name = message.name)
     message.description !== undefined && (obj.description = message.description)
     message.prefix !== undefined && (obj.prefix = message.prefix)
     return obj
@@ -6633,7 +6611,6 @@ export const UpdateDeploymentRequest = {
     const message = createBaseUpdateDeploymentRequest()
     message.id = object.id ?? ''
     message.accessedBy = object.accessedBy ?? ''
-    message.name = object.name ?? ''
     message.description = object.description ?? undefined
     message.prefix = object.prefix ?? ''
     return message
@@ -7071,7 +7048,7 @@ export const DeploymentListResponse = {
 }
 
 function createBaseDeploymentResponse(): DeploymentResponse {
-  return { id: '', name: '', product: '', productId: '', version: '', versionId: '', node: '', status: 0, nodeId: '' }
+  return { id: '', product: '', productId: '', version: '', versionId: '', node: '', status: 0, nodeId: '' }
 }
 
 export const DeploymentResponse = {
@@ -7079,29 +7056,26 @@ export const DeploymentResponse = {
     if (message.id !== '') {
       writer.uint32(10).string(message.id)
     }
-    if (message.name !== '') {
-      writer.uint32(802).string(message.name)
-    }
     if (message.product !== '') {
-      writer.uint32(810).string(message.product)
+      writer.uint32(802).string(message.product)
     }
     if (message.productId !== '') {
-      writer.uint32(818).string(message.productId)
+      writer.uint32(810).string(message.productId)
     }
     if (message.version !== '') {
-      writer.uint32(826).string(message.version)
+      writer.uint32(818).string(message.version)
     }
     if (message.versionId !== '') {
-      writer.uint32(834).string(message.versionId)
+      writer.uint32(826).string(message.versionId)
     }
     if (message.node !== '') {
-      writer.uint32(842).string(message.node)
+      writer.uint32(834).string(message.node)
     }
     if (message.status !== 0) {
-      writer.uint32(848).int32(message.status)
+      writer.uint32(840).int32(message.status)
     }
     if (message.nodeId !== '') {
-      writer.uint32(858).string(message.nodeId)
+      writer.uint32(850).string(message.nodeId)
     }
     return writer
   },
@@ -7117,27 +7091,24 @@ export const DeploymentResponse = {
           message.id = reader.string()
           break
         case 100:
-          message.name = reader.string()
-          break
-        case 101:
           message.product = reader.string()
           break
-        case 102:
+        case 101:
           message.productId = reader.string()
           break
-        case 103:
+        case 102:
           message.version = reader.string()
           break
-        case 104:
+        case 103:
           message.versionId = reader.string()
           break
-        case 105:
+        case 104:
           message.node = reader.string()
           break
-        case 106:
+        case 105:
           message.status = reader.int32() as any
           break
-        case 107:
+        case 106:
           message.nodeId = reader.string()
           break
         default:
@@ -7151,7 +7122,6 @@ export const DeploymentResponse = {
   fromJSON(object: any): DeploymentResponse {
     return {
       id: isSet(object.id) ? String(object.id) : '',
-      name: isSet(object.name) ? String(object.name) : '',
       product: isSet(object.product) ? String(object.product) : '',
       productId: isSet(object.productId) ? String(object.productId) : '',
       version: isSet(object.version) ? String(object.version) : '',
@@ -7165,7 +7135,6 @@ export const DeploymentResponse = {
   toJSON(message: DeploymentResponse): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
-    message.name !== undefined && (obj.name = message.name)
     message.product !== undefined && (obj.product = message.product)
     message.productId !== undefined && (obj.productId = message.productId)
     message.version !== undefined && (obj.version = message.version)
@@ -7179,7 +7148,6 @@ export const DeploymentResponse = {
   fromPartial<I extends Exact<DeepPartial<DeploymentResponse>, I>>(object: I): DeploymentResponse {
     const message = createBaseDeploymentResponse()
     message.id = object.id ?? ''
-    message.name = object.name ?? ''
     message.product = object.product ?? ''
     message.productId = object.productId ?? ''
     message.version = object.version ?? ''
@@ -7247,7 +7215,7 @@ export const DeploymentListByVersionResponse = {
 }
 
 function createBaseDeploymentByVersionResponse(): DeploymentByVersionResponse {
-  return { id: '', audit: undefined, name: '', prefix: '', nodeId: '', nodeName: '', status: 0, nodeStatus: 0 }
+  return { id: '', audit: undefined, prefix: '', nodeId: '', nodeName: '', status: 0, nodeStatus: 0 }
 }
 
 export const DeploymentByVersionResponse = {
@@ -7258,23 +7226,20 @@ export const DeploymentByVersionResponse = {
     if (message.audit !== undefined) {
       AuditResponse.encode(message.audit, writer.uint32(18).fork()).ldelim()
     }
-    if (message.name !== '') {
-      writer.uint32(802).string(message.name)
-    }
     if (message.prefix !== '') {
-      writer.uint32(810).string(message.prefix)
+      writer.uint32(802).string(message.prefix)
     }
     if (message.nodeId !== '') {
-      writer.uint32(818).string(message.nodeId)
+      writer.uint32(810).string(message.nodeId)
     }
     if (message.nodeName !== '') {
-      writer.uint32(826).string(message.nodeName)
+      writer.uint32(818).string(message.nodeName)
     }
     if (message.status !== 0) {
-      writer.uint32(832).int32(message.status)
+      writer.uint32(824).int32(message.status)
     }
     if (message.nodeStatus !== 0) {
-      writer.uint32(840).int32(message.nodeStatus)
+      writer.uint32(832).int32(message.nodeStatus)
     }
     return writer
   },
@@ -7293,21 +7258,18 @@ export const DeploymentByVersionResponse = {
           message.audit = AuditResponse.decode(reader, reader.uint32())
           break
         case 100:
-          message.name = reader.string()
-          break
-        case 101:
           message.prefix = reader.string()
           break
-        case 102:
+        case 101:
           message.nodeId = reader.string()
           break
-        case 103:
+        case 102:
           message.nodeName = reader.string()
           break
-        case 104:
+        case 103:
           message.status = reader.int32() as any
           break
-        case 105:
+        case 104:
           message.nodeStatus = reader.int32() as any
           break
         default:
@@ -7322,7 +7284,6 @@ export const DeploymentByVersionResponse = {
     return {
       id: isSet(object.id) ? String(object.id) : '',
       audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
-      name: isSet(object.name) ? String(object.name) : '',
       prefix: isSet(object.prefix) ? String(object.prefix) : '',
       nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
       nodeName: isSet(object.nodeName) ? String(object.nodeName) : '',
@@ -7335,7 +7296,6 @@ export const DeploymentByVersionResponse = {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
     message.audit !== undefined && (obj.audit = message.audit ? AuditResponse.toJSON(message.audit) : undefined)
-    message.name !== undefined && (obj.name = message.name)
     message.prefix !== undefined && (obj.prefix = message.prefix)
     message.nodeId !== undefined && (obj.nodeId = message.nodeId)
     message.nodeName !== undefined && (obj.nodeName = message.nodeName)
@@ -7349,7 +7309,6 @@ export const DeploymentByVersionResponse = {
     message.id = object.id ?? ''
     message.audit =
       object.audit !== undefined && object.audit !== null ? AuditResponse.fromPartial(object.audit) : undefined
-    message.name = object.name ?? ''
     message.prefix = object.prefix ?? ''
     message.nodeId = object.nodeId ?? ''
     message.nodeName = object.nodeName ?? ''
@@ -7365,7 +7324,6 @@ function createBaseDeploymentDetailsResponse(): DeploymentDetailsResponse {
     audit: undefined,
     productVersionId: '',
     nodeId: '',
-    name: '',
     prefix: '',
     environment: [],
     status: 0,
@@ -7387,23 +7345,20 @@ export const DeploymentDetailsResponse = {
     if (message.nodeId !== '') {
       writer.uint32(810).string(message.nodeId)
     }
-    if (message.name !== '') {
-      writer.uint32(818).string(message.name)
-    }
     if (message.description !== undefined) {
-      writer.uint32(826).string(message.description)
+      writer.uint32(818).string(message.description)
     }
     if (message.prefix !== '') {
-      writer.uint32(834).string(message.prefix)
+      writer.uint32(826).string(message.prefix)
     }
     for (const v of message.environment) {
-      UniqueKeyValue.encode(v!, writer.uint32(842).fork()).ldelim()
+      UniqueKeyValue.encode(v!, writer.uint32(834).fork()).ldelim()
     }
     if (message.status !== 0) {
-      writer.uint32(848).int32(message.status)
+      writer.uint32(840).int32(message.status)
     }
     if (message.publicKey !== undefined) {
-      writer.uint32(858).string(message.publicKey)
+      writer.uint32(850).string(message.publicKey)
     }
     for (const v of message.instances) {
       InstanceResponse.encode(v!, writer.uint32(8002).fork()).ldelim()
@@ -7431,21 +7386,18 @@ export const DeploymentDetailsResponse = {
           message.nodeId = reader.string()
           break
         case 102:
-          message.name = reader.string()
-          break
-        case 103:
           message.description = reader.string()
           break
-        case 104:
+        case 103:
           message.prefix = reader.string()
           break
-        case 105:
+        case 104:
           message.environment.push(UniqueKeyValue.decode(reader, reader.uint32()))
           break
-        case 106:
+        case 105:
           message.status = reader.int32() as any
           break
-        case 107:
+        case 106:
           message.publicKey = reader.string()
           break
         case 1000:
@@ -7465,7 +7417,6 @@ export const DeploymentDetailsResponse = {
       audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
       productVersionId: isSet(object.productVersionId) ? String(object.productVersionId) : '',
       nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
-      name: isSet(object.name) ? String(object.name) : '',
       description: isSet(object.description) ? String(object.description) : undefined,
       prefix: isSet(object.prefix) ? String(object.prefix) : '',
       environment: Array.isArray(object?.environment)
@@ -7483,7 +7434,6 @@ export const DeploymentDetailsResponse = {
     message.audit !== undefined && (obj.audit = message.audit ? AuditResponse.toJSON(message.audit) : undefined)
     message.productVersionId !== undefined && (obj.productVersionId = message.productVersionId)
     message.nodeId !== undefined && (obj.nodeId = message.nodeId)
-    message.name !== undefined && (obj.name = message.name)
     message.description !== undefined && (obj.description = message.description)
     message.prefix !== undefined && (obj.prefix = message.prefix)
     if (message.environment) {
@@ -7508,7 +7458,6 @@ export const DeploymentDetailsResponse = {
       object.audit !== undefined && object.audit !== null ? AuditResponse.fromPartial(object.audit) : undefined
     message.productVersionId = object.productVersionId ?? ''
     message.nodeId = object.nodeId ?? ''
-    message.name = object.name ?? ''
     message.description = object.description ?? undefined
     message.prefix = object.prefix ?? ''
     message.environment = object.environment?.map(e => UniqueKeyValue.fromPartial(e)) || []

@@ -62,21 +62,10 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
   return (
     <DyoCard className={className}>
       <DyoHeading element="h4" className="text-lg text-bright">
-        {t('common:editName', { name: deployment.name })}
+        {t('common:editName', { name: t('common:deployment') })}
       </DyoHeading>
 
       <form className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
-        <DyoInput
-          className="max-w-lg"
-          grow
-          name="name"
-          required
-          label={t('common:name')}
-          onChange={formik.handleChange}
-          value={formik.values.name}
-          message={formik.errors.name}
-        />
-
         <DyoInput
           className="max-w-lg"
           grow

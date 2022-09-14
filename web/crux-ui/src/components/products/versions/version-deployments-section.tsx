@@ -21,7 +21,7 @@ import {
   WS_TYPE_NODE_STATUSES,
 } from '@app/models'
 import { deploymentDeployUrl, deploymentUrl, WS_NODES } from '@app/routes'
-import { distinct } from '@app/utils'
+import { distinct, utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
@@ -45,7 +45,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
 
   const filters = useFilters<DeploymentByVersion, DeploymentFilter>({
     filters: [
-      textFilterFor<DeploymentByVersion>(it => [it.name, it.nodeName, it.prefix, it.status, it.date]),
+      textFilterFor<DeploymentByVersion>(it => [it.nodeName, it.prefix, it.status, it.date]),
       enumFilterFor<DeploymentByVersion, DeploymentStatus>(it => [it.status]),
     ],
     initialData: version.deployments,
@@ -84,14 +84,13 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
     router.push(deploymentDeployUrl(product.id, version.id, deployment.id))
 
   const headers = [
-    ...['deploymentName', 'common:node', 'common:prefix', 'common:status', 'common:date', 'common:actions'].map(it =>
+    ...['common:node', 'common:prefix', 'common:status', 'common:date', 'common:actions'].map(it =>
       t(it),
     ),
   ]
   const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-3 pl-4 font-semibold'
   const headerClasses = [
     clsx('rounded-tl-lg', defaultHeaderClass),
-    defaultHeaderClass,
     defaultHeaderClass,
     clsx('text-center', defaultHeaderClass),
     defaultHeaderClass,
@@ -103,26 +102,33 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
 
     /* eslint-disable react/jsx-key */
     return [
-      <div className="cursor-pointer text-bold" onClick={() => onNavigateToDeployment(item)}>
-        {item.name}
-      </div>,
       <div className="flex">
         <NodeStatusIndicator className="mr-2" status={item.nodeStatus} />
         {item.nodeName}
       </div>,
       <div>{item.prefix}</div>,
       <DeploymentStatusTag className="w-fit m-auto" status={item.status} />,
-      <div>{item.date}</div>,
-      mutable ? (
-        <Image
+      <div>{utcDateToLocale(item.date)}</div>,
+      <>
+        <div className='mr-2 inline-block'>
+          <Image
+            src="/eye.svg"
+            alt={t('common:deploy')}
+            width={24}
+            height={24}
+            className="cursor-pointer"
+            onClick={() => router.push(deploymentUrl(product.id, version.id, item.id))}
+          />
+        </div>
+        {mutable && <Image
           src="/deploy.svg"
           alt={t('common:deploy')}
           className={item.nodeStatus === 'running' ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
           onClick={() => item.nodeStatus === 'running' && onDeploy(item)}
           width={24}
           height={24}
-        />
-      ) : null,
+        />}
+      </>
     ]
     /* eslint-enable react/jsx-key */
   }

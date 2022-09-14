@@ -97,7 +97,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
       url: versionUrl(product.id, version.id),
     },
     {
-      name: deployment.name,
+      name: t('common:deployment'),
       url: deploymentUrl(product.id, version.id, deployment.id),
     },
   ]
@@ -166,10 +166,10 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
             setEditing={setEditing}
             submitRef={submitRef}
             deleteModalTitle={t('common:confirmDelete', {
-              name: deployment.name,
+              name: t('common:deployment'),
             })}
             deleteModalDescription={t('common:deleteDescription', {
-              name: deployment.name,
+              name: t('common:deployment'),
             })}
           />
         )}

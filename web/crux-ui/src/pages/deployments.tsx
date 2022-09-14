@@ -29,7 +29,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
     url: ROUTE_DEPLOYMENTS,
   }
 
-  const headers = ['common:deployment', 'common:product', 'common:version', 'common:node', 'common:status']
+  const headers = ['common:product', 'common:version', 'common:node', 'common:status']
   const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-3 pl-4 font-semibold'
   const headerClasses = [
     clsx('rounded-tl-lg', defaultHeaderClass),
@@ -39,7 +39,6 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
   ]
 
   const itemTemplate = (item: Deployment) => /* eslint-disable react/jsx-key */ [
-    item.name,
     <a className="cursor-pointer" onClick={() => router.push(productUrl(item.productId))}>
       {item.product}
     </a>,
