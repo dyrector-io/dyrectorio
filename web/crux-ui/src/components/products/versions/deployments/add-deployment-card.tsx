@@ -13,6 +13,7 @@ import { fetcher, sendForm } from '@app/utils'
 import { createDeploymentSchema } from '@app/validation'
 import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
+import { useEffect } from 'react'
 import toast from 'react-hot-toast'
 import useSWR from 'swr'
 
@@ -30,6 +31,12 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
   const { t } = useTranslation('versions')
 
   const { data: nodes, error: fetchNodesError } = useSWR<DyoNode[]>(API_NODES, fetcher)
+
+  useEffect(() => {
+    if (nodes && nodes.length < 1) {
+      toast.error(t('nodeRequired'))
+    }
+  }, [nodes, t])
 
   const handleApiError = defaultApiErrorHandler(t)
 

@@ -6,10 +6,11 @@ import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
 import { ListPageMenu } from '@app/components/shared/page-menu'
 import { DyoHeading } from '@app/elements/dyo-heading'
+import { DyoSelect } from '@app/elements/dyo-select'
 import DyoWrap from '@app/elements/dyo-wrap'
-import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
+import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useWebSocket from '@app/hooks/use-websocket'
-import { DyoNode, NodeStatusMessage, WS_TYPE_NODE_STATUS } from '@app/models'
+import { DyoNode, NodeStatus, NodeStatusMessage, WS_TYPE_NODE_STATUS } from '@app/models'
 import { nodeUrl, ROUTE_NODES, WS_NODES } from '@app/routes'
 import { upsertById, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
@@ -24,6 +25,14 @@ interface NodesPageProps {
   nodes: DyoNode[]
 }
 
+const nodeStatusFilters = [
+  { name: 'all', value: 'default' },
+  { name: 'active', value: 'running' },
+  { name: 'inactive', value: 'unreachable' },
+]
+
+type NodeFilter = TextFilter & EnumFilter<NodeStatus>
+
 const NodesPage = (props: NodesPageProps) => {
   const { nodes } = props
 
@@ -31,8 +40,11 @@ const NodesPage = (props: NodesPageProps) => {
 
   const { t } = useTranslation('nodes')
 
-  const filters = useFilters<DyoNode, TextFilter>({
-    filters: [textFilterFor<DyoNode>(it => [it.address, it.name, it.description, it.status, it.icon])],
+  const filters = useFilters<DyoNode, NodeFilter>({
+    filters: [
+      textFilterFor<DyoNode>(it => [it.address, it.name, it.description, it.status, it.icon]),
+      enumFilterFor<DyoNode, NodeStatus>(it => [it.status]),
+    ],
     initialData: nodes,
     initialFilter: { text: '' },
   })
@@ -96,7 +108,24 @@ const NodesPage = (props: NodesPageProps) => {
       {!creating ? null : <EditNodeCard className="mb-2" submitRef={submitRef} onNodeEdited={onCreated} />}
       {filters.items.length ? (
         <>
-          <Filters setTextFilter={it => filters.setFilter({ text: it })} />
+          <Filters setTextFilter={it => filters.setFilter({ text: it })} searchClassName="w-5/6">
+            <DyoSelect
+              className="ml-4 w-1/6"
+              grow
+              value={filters.filter.enum ?? 'default'}
+              onChange={e => {
+                filters.setFilter({
+                  enum: e.target.value === 'default' ? undefined : (e.target.value as NodeStatus),
+                })
+              }}
+            >
+              {nodeStatusFilters.map((it, index) => (
+                <option key={`${index}-node-status`} value={it.value}>
+                  {t(`statusFilters.${it.name}`)}
+                </option>
+              ))}
+            </DyoSelect>
+          </Filters>
 
           <DyoWrap itemClassName="lg:w-1/2 xl:w-1/3">
             {filters.filtered.map((it, index) => {

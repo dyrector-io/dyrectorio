@@ -28,5 +28,6 @@
   "addImage": "Add image",
 
   "deploymentName": "Deployment name",
-  "alreadyHavePreparing": "You already have one preparing deployment!"
+  "alreadyHavePreparing": "You already have one preparing deployment!",
+  "nodeRequired": "You can't create deployment without having at least one node!"
 }
