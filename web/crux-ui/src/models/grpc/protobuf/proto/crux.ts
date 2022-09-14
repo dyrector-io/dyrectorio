@@ -1007,14 +1007,14 @@ export interface CreateDeploymentRequest {
   accessedBy: string
   versionId: string
   nodeId: string
-  description?: string | undefined
+  note?: string | undefined
   prefix: string
 }
 
 export interface UpdateDeploymentRequest {
   id: string
   accessedBy: string
-  description?: string | undefined
+  note?: string | undefined
   prefix: string
 }
 
@@ -1083,7 +1083,7 @@ export interface DeploymentDetailsResponse {
   audit: AuditResponse | undefined
   productVersionId: string
   nodeId: string
-  description?: string | undefined
+  note?: string | undefined
   prefix: string
   environment: UniqueKeyValue[]
   status: DeploymentStatus
@@ -6471,8 +6471,8 @@ export const CreateDeploymentRequest = {
     if (message.nodeId !== '') {
       writer.uint32(810).string(message.nodeId)
     }
-    if (message.description !== undefined) {
-      writer.uint32(818).string(message.description)
+    if (message.note !== undefined) {
+      writer.uint32(818).string(message.note)
     }
     if (message.prefix !== '') {
       writer.uint32(826).string(message.prefix)
@@ -6497,7 +6497,7 @@ export const CreateDeploymentRequest = {
           message.nodeId = reader.string()
           break
         case 102:
-          message.description = reader.string()
+          message.note = reader.string()
           break
         case 103:
           message.prefix = reader.string()
@@ -6515,7 +6515,7 @@ export const CreateDeploymentRequest = {
       accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       versionId: isSet(object.versionId) ? String(object.versionId) : '',
       nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
-      description: isSet(object.description) ? String(object.description) : undefined,
+      note: isSet(object.note) ? String(object.note) : undefined,
       prefix: isSet(object.prefix) ? String(object.prefix) : '',
     }
   },
@@ -6525,7 +6525,7 @@ export const CreateDeploymentRequest = {
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.versionId !== undefined && (obj.versionId = message.versionId)
     message.nodeId !== undefined && (obj.nodeId = message.nodeId)
-    message.description !== undefined && (obj.description = message.description)
+    message.note !== undefined && (obj.note = message.note)
     message.prefix !== undefined && (obj.prefix = message.prefix)
     return obj
   },
@@ -6535,7 +6535,7 @@ export const CreateDeploymentRequest = {
     message.accessedBy = object.accessedBy ?? ''
     message.versionId = object.versionId ?? ''
     message.nodeId = object.nodeId ?? ''
-    message.description = object.description ?? undefined
+    message.note = object.note ?? undefined
     message.prefix = object.prefix ?? ''
     return message
   },
@@ -6553,8 +6553,8 @@ export const UpdateDeploymentRequest = {
     if (message.accessedBy !== '') {
       writer.uint32(18).string(message.accessedBy)
     }
-    if (message.description !== undefined) {
-      writer.uint32(802).string(message.description)
+    if (message.note !== undefined) {
+      writer.uint32(802).string(message.note)
     }
     if (message.prefix !== '') {
       writer.uint32(810).string(message.prefix)
@@ -6576,7 +6576,7 @@ export const UpdateDeploymentRequest = {
           message.accessedBy = reader.string()
           break
         case 100:
-          message.description = reader.string()
+          message.note = reader.string()
           break
         case 101:
           message.prefix = reader.string()
@@ -6593,7 +6593,7 @@ export const UpdateDeploymentRequest = {
     return {
       id: isSet(object.id) ? String(object.id) : '',
       accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      description: isSet(object.description) ? String(object.description) : undefined,
+      note: isSet(object.note) ? String(object.note) : undefined,
       prefix: isSet(object.prefix) ? String(object.prefix) : '',
     }
   },
@@ -6602,7 +6602,7 @@ export const UpdateDeploymentRequest = {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
-    message.description !== undefined && (obj.description = message.description)
+    message.note !== undefined && (obj.note = message.note)
     message.prefix !== undefined && (obj.prefix = message.prefix)
     return obj
   },
@@ -6611,7 +6611,7 @@ export const UpdateDeploymentRequest = {
     const message = createBaseUpdateDeploymentRequest()
     message.id = object.id ?? ''
     message.accessedBy = object.accessedBy ?? ''
-    message.description = object.description ?? undefined
+    message.note = object.note ?? undefined
     message.prefix = object.prefix ?? ''
     return message
   },
@@ -7345,8 +7345,8 @@ export const DeploymentDetailsResponse = {
     if (message.nodeId !== '') {
       writer.uint32(810).string(message.nodeId)
     }
-    if (message.description !== undefined) {
-      writer.uint32(818).string(message.description)
+    if (message.note !== undefined) {
+      writer.uint32(818).string(message.note)
     }
     if (message.prefix !== '') {
       writer.uint32(826).string(message.prefix)
@@ -7386,7 +7386,7 @@ export const DeploymentDetailsResponse = {
           message.nodeId = reader.string()
           break
         case 102:
-          message.description = reader.string()
+          message.note = reader.string()
           break
         case 103:
           message.prefix = reader.string()
@@ -7417,7 +7417,7 @@ export const DeploymentDetailsResponse = {
       audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
       productVersionId: isSet(object.productVersionId) ? String(object.productVersionId) : '',
       nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
-      description: isSet(object.description) ? String(object.description) : undefined,
+      note: isSet(object.note) ? String(object.note) : undefined,
       prefix: isSet(object.prefix) ? String(object.prefix) : '',
       environment: Array.isArray(object?.environment)
         ? object.environment.map((e: any) => UniqueKeyValue.fromJSON(e))
@@ -7434,7 +7434,7 @@ export const DeploymentDetailsResponse = {
     message.audit !== undefined && (obj.audit = message.audit ? AuditResponse.toJSON(message.audit) : undefined)
     message.productVersionId !== undefined && (obj.productVersionId = message.productVersionId)
     message.nodeId !== undefined && (obj.nodeId = message.nodeId)
-    message.description !== undefined && (obj.description = message.description)
+    message.note !== undefined && (obj.note = message.note)
     message.prefix !== undefined && (obj.prefix = message.prefix)
     if (message.environment) {
       obj.environment = message.environment.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
@@ -7458,7 +7458,7 @@ export const DeploymentDetailsResponse = {
       object.audit !== undefined && object.audit !== null ? AuditResponse.fromPartial(object.audit) : undefined
     message.productVersionId = object.productVersionId ?? ''
     message.nodeId = object.nodeId ?? ''
-    message.description = object.description ?? undefined
+    message.note = object.note ?? undefined
     message.prefix = object.prefix ?? ''
     message.environment = object.environment?.map(e => UniqueKeyValue.fromPartial(e)) || []
     message.status = object.status ?? 0

@@ -698,7 +698,7 @@ message CreateDeploymentRequest {
 
   string versionId = 100;
   string nodeId = 101;
-  optional string description = 102;
+  optional string note = 102;
   string prefix = 103;
 }
 
@@ -706,7 +706,7 @@ message UpdateDeploymentRequest {
   string id = 1;
   string accessedBy = 2;
 
-  optional string description = 100;
+  optional string note = 100;
   string prefix = 101;
 }
 
@@ -780,7 +780,7 @@ message DeploymentDetailsResponse {
 
   string productVersionId = 100;
   string nodeId = 101;
-  optional string description = 102;
+  optional string note = 102;
   string prefix = 103;
   repeated common.UniqueKeyValue environment = 104;
   common.DeploymentStatus status = 105;

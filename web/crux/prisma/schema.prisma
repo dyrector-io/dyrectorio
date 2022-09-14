@@ -174,7 +174,7 @@ model Deployment {
   createdBy   String               @db.Uuid
   updatedAt   DateTime?            @default(now()) @db.Timestamptz(6)
   updatedBy   String?              @db.Uuid
-  description String?
+  note        String?
   prefix      String?
   status      DeploymentStatusEnum
   environment Json?
