@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"regexp"
 
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
 )
@@ -18,16 +17,6 @@ type ConfigFromFile string
 func (field *ConfigFromFile) SetValue(location string) error {
 	if location == "" {
 		return fmt.Errorf("env private key file value can't be empty")
-	}
-
-	validKeyFile, err := regexp.MatchString("(.*?)\\.(key)$", location)
-
-	if err != nil {
-		return err
-	}
-
-	if !validKeyFile {
-		return fmt.Errorf("given file is not a file with .key extension")
 	}
 
 	key, err := checkGenerateKeys(location)
@@ -51,10 +40,15 @@ func checkGenerateKeys(location string) (string, error) {
 	// exists but expired -> migrate present keys?!
 	privateKeyObj, keyErr := crypto.NewKeyFromArmored(string(file))
 
-	if !privateKeyObj.IsExpired() {
-		if keyErr != nil {
-			return "", keyErr
-		}
+	if keyErr != nil {
+		return "", keyErr
+	}
+
+	if privateKeyObj == nil {
+		return "", fmt.Errorf("key file is nil: %v", location)
+	}
+
+	if privateKeyObj != nil && !privateKeyObj.IsExpired() {
 		keyStr, keyErr := privateKeyObj.Armor()
 
 		return keyStr, keyErr
