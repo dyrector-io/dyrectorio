@@ -50,7 +50,6 @@ export type DeploymentStatus = typeof DEPLOYMENT_STATUS_VALUES[number]
 
 export type DeploymentByVersion = {
   id: string
-  name: string
   nodeId: string
   nodeName: string
   date: string
@@ -63,7 +62,6 @@ export type DeploymentDetails = {
   id: string
   versionId: string
   nodeId: string
-  name: string
   description?: string | undefined
   prefix: string
   updatedAt: string
@@ -75,7 +73,6 @@ export type DeploymentDetails = {
 
 export type Deployment = {
   id: string
-  name: string
   productId: string
   product: string
   versionId: string
@@ -106,7 +103,6 @@ export type DeploymentEvent = {
 
 export type CreateDeployment = {
   nodeId: string
-  name: string
   prefix: string
   description?: string | undefined
 }
@@ -127,7 +123,6 @@ export type PatchDeployment = {
 }
 
 export type UpdateDeployment = {
-  name: string
   description?: string
   prefix: string
 }

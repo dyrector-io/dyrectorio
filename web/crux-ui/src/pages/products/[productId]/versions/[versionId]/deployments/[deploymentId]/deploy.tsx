@@ -96,7 +96,7 @@ const DeployPage = (props: DeployPageProps) => {
       url: versionUrl(product.id, version.id),
     },
     {
-      name: deployment.name,
+      name: t('common:deployment'),
       url: deploymentUrl(product.id, version.id, deployment.id),
     },
     {

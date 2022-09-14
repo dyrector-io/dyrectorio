@@ -44,7 +44,6 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
     validationSchema: createDeploymentSchema,
     initialValues: {
       nodeId: null as string,
-      name: '',
       description: '',
       prefix: '',
     },
@@ -111,17 +110,6 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
           <DyoInput
             className="max-w-lg"
             grow
-            name="name"
-            required
-            label={t('common:name')}
-            onChange={formik.handleChange}
-            value={formik.values.name}
-            message={formik.errors.name}
-          />
-
-          <DyoInput
-            className="max-w-lg"
-            grow
             name="prefix"
             required
             label={t('common:prefix')}
@@ -134,7 +122,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
             className="h-48"
             grow
             name="description"
-            label={t('common:description')}
+            label={t('common:note')}
             onChange={formik.handleChange}
             value={formik.values.description}
           />

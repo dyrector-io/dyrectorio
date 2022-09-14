@@ -289,7 +289,6 @@ export default class VersionService {
           const createdDeploy = await prisma.deployment.create({
             data: {
               createdBy: request.accessedBy,
-              name: `Increased ${deployment.name}`,
               description: deployment.description,
               prefix: deployment.prefix,
               // Default status for deployments is preparing

@@ -168,7 +168,7 @@ export default class AgentService {
         await this.notificationService.sendNotification({
           identityId: deployment.notification.accessedBy,
           messageType,
-          message: { subject: deployment.notification.deploymentName } as BaseMessage,
+          message: { subject: deployment.notification.nodeName } as BaseMessage,
         })
 
         this.logger.debug(`Deployment finished: ${deployment.id}`)

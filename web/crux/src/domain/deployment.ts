@@ -62,8 +62,8 @@ export const checkDeploymentMutability = (deployment: DeploymentMutabilityCheckD
 }
 
 export type DeploymentNotification = {
-  deploymentName: string
   accessedBy: string
+  nodeName: string
 }
 
 export default class Deployment {
