@@ -247,9 +247,9 @@ export default class DeployService {
         },
         node: {
           select: {
-            name: true
-          }
-        }
+            name: true,
+          },
+        },
       },
     })
 
@@ -316,7 +316,7 @@ export default class DeployService {
       },
       {
         accessedBy: request.accessedBy,
-        nodeName: deployment.node.name
+        nodeName: deployment.node.name,
       },
     )
 

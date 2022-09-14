@@ -84,9 +84,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
     router.push(deploymentDeployUrl(product.id, version.id, deployment.id))
 
   const headers = [
-    ...['common:node', 'common:prefix', 'common:status', 'common:date', 'common:actions'].map(it =>
-      t(it),
-    ),
+    ...['common:node', 'common:prefix', 'common:status', 'common:date', 'common:actions'].map(it => t(it)),
   ]
   const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-3 pl-4 font-semibold'
   const headerClasses = [
@@ -110,25 +108,27 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
       <DeploymentStatusTag className="w-fit m-auto" status={item.status} />,
       <div>{utcDateToLocale(item.date)}</div>,
       <>
-        <div className='mr-2 inline-block'>
+        <div className="mr-2 inline-block">
           <Image
             src="/eye.svg"
             alt={t('common:deploy')}
             width={24}
             height={24}
             className="cursor-pointer"
-            onClick={() => router.push(deploymentUrl(product.id, version.id, item.id))}
+            onClick={() => onNavigateToDeployment(item)}
           />
         </div>
-        {mutable && <Image
-          src="/deploy.svg"
-          alt={t('common:deploy')}
-          className={item.nodeStatus === 'running' ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
-          onClick={() => item.nodeStatus === 'running' && onDeploy(item)}
-          width={24}
-          height={24}
-        />}
-      </>
+        {mutable && (
+          <Image
+            src="/deploy.svg"
+            alt={t('common:deploy')}
+            className={item.nodeStatus === 'running' ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
+            onClick={() => item.nodeStatus === 'running' && onDeploy(item)}
+            width={24}
+            height={24}
+          />
+        )}
+      </>,
     ]
     /* eslint-enable react/jsx-key */
   }
