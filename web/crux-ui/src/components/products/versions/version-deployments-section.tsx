@@ -138,8 +138,8 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
           alt={t('common:deploy')}
           width={24}
           height={24}
-          className={!!item.note && item.note.length > 0 ? 'cursor-not-allowed opacity-30' : 'cursor-pointer'}
-          onClick={() => setShowInfo(item)}
+          className={!!item.note && item.note.length > 0 ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
+          onClick={() => !!item.note && item.note.length > 0 && setShowInfo(item)}
         />
       </>,
     ]
