@@ -29,7 +29,7 @@ const V2RegistryFields = (props: EditRegistryTypeProps<V2RegistryDetails>) => {
         <DyoToggle
           className="text-bright mt-8"
           name="isPrivate"
-          nameChecked={t('isPrivate')}
+          nameChecked={t('private')}
           nameUnchecked={t('public')}
           checked={formik.values.isPrivate}
           setFieldValue={(field: string, value: boolean, shouldValidate?: boolean | undefined) => {
