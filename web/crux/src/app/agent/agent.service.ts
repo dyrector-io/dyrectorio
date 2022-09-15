@@ -5,7 +5,7 @@ import { concatAll, concatMap, finalize, from, map, Observable, of, Subject, tak
 import { Agent, AgentToken } from 'src/domain/agent'
 import AgentInstaller from 'src/domain/agent-installer'
 import { DeploymentProgressEvent } from 'src/domain/deployment'
-import { BaseMessage, DeployMessage, NotificationMessageType } from 'src/domain/notification-templates'
+import { DeployMessage, NotificationMessageType } from 'src/domain/notification-templates'
 import { collectChildVersionIds, collectParentVersionIds } from 'src/domain/utils'
 import { AlreadyExistsException, NotFoundException, UnauthenticatedException } from 'src/exception/errors'
 import { AgentCommand, AgentInfo } from 'src/grpc/protobuf/proto/agent'
@@ -168,7 +168,7 @@ export default class AgentService {
         await this.notificationService.sendNotification({
           identityId: deployment.notification.accessedBy,
           messageType,
-          message: { 
+          message: {
             subject: deployment.notification.productName,
             version: deployment.notification.versionName,
             node: deployment.notification.nodeName,

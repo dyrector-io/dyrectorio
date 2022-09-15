@@ -9,10 +9,10 @@ export default class PrismaService extends PrismaClient<Prisma.PrismaClientOptio
     super({
       rejectOnNotFound: false,
       log: [
-        //{ emit: 'event', level: 'query' },
-        //{ emit: 'stdout', level: 'info' },
-        //{ emit: 'stdout', level: 'warn' },
-        //{ emit: 'stdout', level: 'error' },
+        { emit: 'event', level: 'query' },
+        { emit: 'stdout', level: 'info' },
+        { emit: 'stdout', level: 'warn' },
+        { emit: 'stdout', level: 'error' },
       ],
     })
 
