@@ -29,3 +29,6 @@ ADD COLUMN     "note" TEXT;
 -- Update values
 UPDATE "Deployment" SET "note" = "_migration_deployment"."description"
 FROM "_migration_deployment" WHERE "_migration_deployment".id = "Deployment".id;
+
+-- Drop temp table
+DROP TABLE IF EXISTS public._migration_deployment;

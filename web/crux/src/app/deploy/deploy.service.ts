@@ -229,10 +229,13 @@ export default class DeployService {
       },
       include: {
         version: {
-          select: {
-            name: true,
-            changelog: true,
-          },
+          include: {
+            product: {
+              select: {
+                name: true
+              }
+            }
+          }
         },
         instances: {
           include: {
@@ -316,6 +319,8 @@ export default class DeployService {
       },
       {
         accessedBy: request.accessedBy,
+        productName: deployment.version.product.name,
+        versionName: deployment.version.name,
         nodeName: deployment.node.name,
       },
     )
