@@ -82,6 +82,8 @@ export type Deployment = {
   status: DeploymentStatus
   nodeId: string
   note?: string
+  prefix: string
+  updatedAt: string
 }
 
 export type DeploymentRoot = DeploymentDetails & {
