@@ -139,6 +139,19 @@ message LogConfig {
   map<string, string> options = 101;
 }
 
+message InitContainer {
+  string image = 100;
+  repeated string command = 101;
+  repeated string args = 102;
+  map<string, string> environments = 103;
+  bool useParentConfig = 104;
+  message VolumeLink {
+    string name = 100;
+    string path = 101;
+  }
+  repeated VolumeLink volumes = 105;
+}
+
 message DagentContainerConfig {
   optional LogConfig logConfig = 100;
   optional RestartPolicy restartPolicy = 101;
@@ -191,6 +204,7 @@ message ExplicitContainerConfig {
   repeated string args = 1004;
   repeated string environments = 1005;
   optional KeyValueList secrets = 1006;
+  repeated InitContainer InitContainers = 1007;
 }
 
 message UniqueKey {
