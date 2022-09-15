@@ -377,27 +377,28 @@ export interface LogConfig_OptionsEntry {
   value: string
 }
 
+/**
+ * volumes referred as VolumeLink
+ * they won't get created if non-existent
+ */
+export interface VolumeLink {
+  name: string
+  path: string
+}
+
 export interface InitContainer {
+  name: string
   image: string
+  environments: { [key: string]: string }
+  useParentConfig?: boolean | undefined
+  volumes: VolumeLink[]
   command: string[]
   args: string[]
-  environments: { [key: string]: string }
-  useParentConfig: boolean
-  volumes: InitContainer_VolumeLink[]
 }
 
 export interface InitContainer_EnvironmentsEntry {
   key: string
   value: string
-}
-
-/**
- * volumes referred as VolumeLink
- * they won't get created if non-existent
- */
-export interface InitContainer_VolumeLink {
-  name: string
-  path: string
 }
 
 export interface DagentContainerConfig {
@@ -1562,29 +1563,87 @@ export const LogConfig_OptionsEntry = {
   },
 }
 
+function createBaseVolumeLink(): VolumeLink {
+  return { name: '', path: '' }
+}
+
+export const VolumeLink = {
+  encode(message: VolumeLink, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.name !== '') {
+      writer.uint32(802).string(message.name)
+    }
+    if (message.path !== '') {
+      writer.uint32(810).string(message.path)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): VolumeLink {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseVolumeLink()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 100:
+          message.name = reader.string()
+          break
+        case 101:
+          message.path = reader.string()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): VolumeLink {
+    return { name: isSet(object.name) ? String(object.name) : '', path: isSet(object.path) ? String(object.path) : '' }
+  },
+
+  toJSON(message: VolumeLink): unknown {
+    const obj: any = {}
+    message.name !== undefined && (obj.name = message.name)
+    message.path !== undefined && (obj.path = message.path)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<VolumeLink>, I>>(object: I): VolumeLink {
+    const message = createBaseVolumeLink()
+    message.name = object.name ?? ''
+    message.path = object.path ?? ''
+    return message
+  },
+}
+
 function createBaseInitContainer(): InitContainer {
-  return { image: '', command: [], args: [], environments: {}, useParentConfig: false, volumes: [] }
+  return { name: '', image: '', environments: {}, volumes: [], command: [], args: [] }
 }
 
 export const InitContainer = {
   encode(message: InitContainer, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.name !== '') {
+      writer.uint32(802).string(message.name)
+    }
     if (message.image !== '') {
-      writer.uint32(802).string(message.image)
-    }
-    for (const v of message.command) {
-      writer.uint32(810).string(v!)
-    }
-    for (const v of message.args) {
-      writer.uint32(818).string(v!)
+      writer.uint32(810).string(message.image)
     }
     Object.entries(message.environments).forEach(([key, value]) => {
-      InitContainer_EnvironmentsEntry.encode({ key: key as any, value }, writer.uint32(826).fork()).ldelim()
+      InitContainer_EnvironmentsEntry.encode({ key: key as any, value }, writer.uint32(818).fork()).ldelim()
     })
-    if (message.useParentConfig === true) {
-      writer.uint32(832).bool(message.useParentConfig)
+    if (message.useParentConfig !== undefined) {
+      writer.uint32(824).bool(message.useParentConfig)
     }
     for (const v of message.volumes) {
-      InitContainer_VolumeLink.encode(v!, writer.uint32(842).fork()).ldelim()
+      VolumeLink.encode(v!, writer.uint32(8002).fork()).ldelim()
+    }
+    for (const v of message.command) {
+      writer.uint32(8010).string(v!)
+    }
+    for (const v of message.args) {
+      writer.uint32(8018).string(v!)
     }
     return writer
   },
@@ -1597,25 +1656,28 @@ export const InitContainer = {
       const tag = reader.uint32()
       switch (tag >>> 3) {
         case 100:
-          message.image = reader.string()
+          message.name = reader.string()
           break
         case 101:
-          message.command.push(reader.string())
+          message.image = reader.string()
           break
         case 102:
-          message.args.push(reader.string())
-          break
-        case 103:
-          const entry103 = InitContainer_EnvironmentsEntry.decode(reader, reader.uint32())
-          if (entry103.value !== undefined) {
-            message.environments[entry103.key] = entry103.value
+          const entry102 = InitContainer_EnvironmentsEntry.decode(reader, reader.uint32())
+          if (entry102.value !== undefined) {
+            message.environments[entry102.key] = entry102.value
           }
           break
-        case 104:
+        case 103:
           message.useParentConfig = reader.bool()
           break
-        case 105:
-          message.volumes.push(InitContainer_VolumeLink.decode(reader, reader.uint32()))
+        case 1000:
+          message.volumes.push(VolumeLink.decode(reader, reader.uint32()))
+          break
+        case 1001:
+          message.command.push(reader.string())
+          break
+        case 1002:
+          message.args.push(reader.string())
           break
         default:
           reader.skipType(tag & 7)
@@ -1627,25 +1689,37 @@ export const InitContainer = {
 
   fromJSON(object: any): InitContainer {
     return {
+      name: isSet(object.name) ? String(object.name) : '',
       image: isSet(object.image) ? String(object.image) : '',
-      command: Array.isArray(object?.command) ? object.command.map((e: any) => String(e)) : [],
-      args: Array.isArray(object?.args) ? object.args.map((e: any) => String(e)) : [],
       environments: isObject(object.environments)
         ? Object.entries(object.environments).reduce<{ [key: string]: string }>((acc, [key, value]) => {
             acc[key] = String(value)
             return acc
           }, {})
         : {},
-      useParentConfig: isSet(object.useParentConfig) ? Boolean(object.useParentConfig) : false,
-      volumes: Array.isArray(object?.volumes)
-        ? object.volumes.map((e: any) => InitContainer_VolumeLink.fromJSON(e))
-        : [],
+      useParentConfig: isSet(object.useParentConfig) ? Boolean(object.useParentConfig) : undefined,
+      volumes: Array.isArray(object?.volumes) ? object.volumes.map((e: any) => VolumeLink.fromJSON(e)) : [],
+      command: Array.isArray(object?.command) ? object.command.map((e: any) => String(e)) : [],
+      args: Array.isArray(object?.args) ? object.args.map((e: any) => String(e)) : [],
     }
   },
 
   toJSON(message: InitContainer): unknown {
     const obj: any = {}
+    message.name !== undefined && (obj.name = message.name)
     message.image !== undefined && (obj.image = message.image)
+    obj.environments = {}
+    if (message.environments) {
+      Object.entries(message.environments).forEach(([k, v]) => {
+        obj.environments[k] = v
+      })
+    }
+    message.useParentConfig !== undefined && (obj.useParentConfig = message.useParentConfig)
+    if (message.volumes) {
+      obj.volumes = message.volumes.map(e => (e ? VolumeLink.toJSON(e) : undefined))
+    } else {
+      obj.volumes = []
+    }
     if (message.command) {
       obj.command = message.command.map(e => e)
     } else {
@@ -1656,26 +1730,13 @@ export const InitContainer = {
     } else {
       obj.args = []
     }
-    obj.environments = {}
-    if (message.environments) {
-      Object.entries(message.environments).forEach(([k, v]) => {
-        obj.environments[k] = v
-      })
-    }
-    message.useParentConfig !== undefined && (obj.useParentConfig = message.useParentConfig)
-    if (message.volumes) {
-      obj.volumes = message.volumes.map(e => (e ? InitContainer_VolumeLink.toJSON(e) : undefined))
-    } else {
-      obj.volumes = []
-    }
     return obj
   },
 
   fromPartial<I extends Exact<DeepPartial<InitContainer>, I>>(object: I): InitContainer {
     const message = createBaseInitContainer()
+    message.name = object.name ?? ''
     message.image = object.image ?? ''
-    message.command = object.command?.map(e => e) || []
-    message.args = object.args?.map(e => e) || []
     message.environments = Object.entries(object.environments ?? {}).reduce<{ [key: string]: string }>(
       (acc, [key, value]) => {
         if (value !== undefined) {
@@ -1685,8 +1746,10 @@ export const InitContainer = {
       },
       {},
     )
-    message.useParentConfig = object.useParentConfig ?? false
-    message.volumes = object.volumes?.map(e => InitContainer_VolumeLink.fromPartial(e)) || []
+    message.useParentConfig = object.useParentConfig ?? undefined
+    message.volumes = object.volumes?.map(e => VolumeLink.fromPartial(e)) || []
+    message.command = object.command?.map(e => e) || []
+    message.args = object.args?.map(e => e) || []
     return message
   },
 }
@@ -1744,61 +1807,6 @@ export const InitContainer_EnvironmentsEntry = {
     const message = createBaseInitContainer_EnvironmentsEntry()
     message.key = object.key ?? ''
     message.value = object.value ?? ''
-    return message
-  },
-}
-
-function createBaseInitContainer_VolumeLink(): InitContainer_VolumeLink {
-  return { name: '', path: '' }
-}
-
-export const InitContainer_VolumeLink = {
-  encode(message: InitContainer_VolumeLink, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.name !== '') {
-      writer.uint32(802).string(message.name)
-    }
-    if (message.path !== '') {
-      writer.uint32(810).string(message.path)
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): InitContainer_VolumeLink {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseInitContainer_VolumeLink()
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 100:
-          message.name = reader.string()
-          break
-        case 101:
-          message.path = reader.string()
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): InitContainer_VolumeLink {
-    return { name: isSet(object.name) ? String(object.name) : '', path: isSet(object.path) ? String(object.path) : '' }
-  },
-
-  toJSON(message: InitContainer_VolumeLink): unknown {
-    const obj: any = {}
-    message.name !== undefined && (obj.name = message.name)
-    message.path !== undefined && (obj.path = message.path)
-    return obj
-  },
-
-  fromPartial<I extends Exact<DeepPartial<InitContainer_VolumeLink>, I>>(object: I): InitContainer_VolumeLink {
-    const message = createBaseInitContainer_VolumeLink()
-    message.name = object.name ?? ''
-    message.path = object.path ?? ''
     return message
   },
 }

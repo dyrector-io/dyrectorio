@@ -375,27 +375,28 @@ export interface LogConfig_OptionsEntry {
   value: string
 }
 
+/**
+ * volumes referred as VolumeLink
+ * they won't get created if non-existent
+ */
+export interface VolumeLink {
+  name: string
+  path: string
+}
+
 export interface InitContainer {
+  name: string
   image: string
+  environments: { [key: string]: string }
+  useParentConfig?: boolean | undefined
+  volumes: VolumeLink[]
   command: string[]
   args: string[]
-  environments: { [key: string]: string }
-  useParentConfig: boolean
-  volumes: InitContainer_VolumeLink[]
 }
 
 export interface InitContainer_EnvironmentsEntry {
   key: string
   value: string
-}
-
-/**
- * volumes referred as VolumeLink
- * they won't get created if non-existent
- */
-export interface InitContainer_VolumeLink {
-  name: string
-  path: string
 }
 
 export interface DagentContainerConfig {
@@ -860,32 +861,61 @@ export const LogConfig_OptionsEntry = {
   },
 }
 
+function createBaseVolumeLink(): VolumeLink {
+  return { name: '', path: '' }
+}
+
+export const VolumeLink = {
+  fromJSON(object: any): VolumeLink {
+    return { name: isSet(object.name) ? String(object.name) : '', path: isSet(object.path) ? String(object.path) : '' }
+  },
+
+  toJSON(message: VolumeLink): unknown {
+    const obj: any = {}
+    message.name !== undefined && (obj.name = message.name)
+    message.path !== undefined && (obj.path = message.path)
+    return obj
+  },
+}
+
 function createBaseInitContainer(): InitContainer {
-  return { image: '', command: [], args: [], environments: {}, useParentConfig: false, volumes: [] }
+  return { name: '', image: '', environments: {}, volumes: [], command: [], args: [] }
 }
 
 export const InitContainer = {
   fromJSON(object: any): InitContainer {
     return {
+      name: isSet(object.name) ? String(object.name) : '',
       image: isSet(object.image) ? String(object.image) : '',
-      command: Array.isArray(object?.command) ? object.command.map((e: any) => String(e)) : [],
-      args: Array.isArray(object?.args) ? object.args.map((e: any) => String(e)) : [],
       environments: isObject(object.environments)
         ? Object.entries(object.environments).reduce<{ [key: string]: string }>((acc, [key, value]) => {
             acc[key] = String(value)
             return acc
           }, {})
         : {},
-      useParentConfig: isSet(object.useParentConfig) ? Boolean(object.useParentConfig) : false,
-      volumes: Array.isArray(object?.volumes)
-        ? object.volumes.map((e: any) => InitContainer_VolumeLink.fromJSON(e))
-        : [],
+      useParentConfig: isSet(object.useParentConfig) ? Boolean(object.useParentConfig) : undefined,
+      volumes: Array.isArray(object?.volumes) ? object.volumes.map((e: any) => VolumeLink.fromJSON(e)) : [],
+      command: Array.isArray(object?.command) ? object.command.map((e: any) => String(e)) : [],
+      args: Array.isArray(object?.args) ? object.args.map((e: any) => String(e)) : [],
     }
   },
 
   toJSON(message: InitContainer): unknown {
     const obj: any = {}
+    message.name !== undefined && (obj.name = message.name)
     message.image !== undefined && (obj.image = message.image)
+    obj.environments = {}
+    if (message.environments) {
+      Object.entries(message.environments).forEach(([k, v]) => {
+        obj.environments[k] = v
+      })
+    }
+    message.useParentConfig !== undefined && (obj.useParentConfig = message.useParentConfig)
+    if (message.volumes) {
+      obj.volumes = message.volumes.map(e => (e ? VolumeLink.toJSON(e) : undefined))
+    } else {
+      obj.volumes = []
+    }
     if (message.command) {
       obj.command = message.command.map(e => e)
     } else {
@@ -895,18 +925,6 @@ export const InitContainer = {
       obj.args = message.args.map(e => e)
     } else {
       obj.args = []
-    }
-    obj.environments = {}
-    if (message.environments) {
-      Object.entries(message.environments).forEach(([k, v]) => {
-        obj.environments[k] = v
-      })
-    }
-    message.useParentConfig !== undefined && (obj.useParentConfig = message.useParentConfig)
-    if (message.volumes) {
-      obj.volumes = message.volumes.map(e => (e ? InitContainer_VolumeLink.toJSON(e) : undefined))
-    } else {
-      obj.volumes = []
     }
     return obj
   },
@@ -925,23 +943,6 @@ export const InitContainer_EnvironmentsEntry = {
     const obj: any = {}
     message.key !== undefined && (obj.key = message.key)
     message.value !== undefined && (obj.value = message.value)
-    return obj
-  },
-}
-
-function createBaseInitContainer_VolumeLink(): InitContainer_VolumeLink {
-  return { name: '', path: '' }
-}
-
-export const InitContainer_VolumeLink = {
-  fromJSON(object: any): InitContainer_VolumeLink {
-    return { name: isSet(object.name) ? String(object.name) : '', path: isSet(object.path) ? String(object.path) : '' }
-  },
-
-  toJSON(message: InitContainer_VolumeLink): unknown {
-    const obj: any = {}
-    message.name !== undefined && (obj.name = message.name)
-    message.path !== undefined && (obj.path = message.path)
     return obj
   },
 }

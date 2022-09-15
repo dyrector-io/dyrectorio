@@ -224,6 +224,26 @@ export const explicitContainerConfigSchema = yup.object().shape({
     .optional(),
   commands: yup.array(yup.string()).default([]).optional(),
   args: yup.array(yup.string()).default([]).optional(),
+  initContainers: yup.array(
+    yup
+      .object()
+      .shape({
+        name: yup.string().required(),
+        image: yup.string().required(),
+        args: yup.array(yup.string()).default([]).optional(),
+        command: yup.array(yup.string()).default([]).optional(),
+        useParentConfig: yup.boolean().default(false).optional(),
+        environments: yup.object().shape({}).default({}).optional(),
+        volumes: yup.array(
+          yup.object().shape({
+            name: yup.string(),
+            path: yup.string(),
+          }),
+        ),
+      })
+      .default([])
+      .optional(),
+  ),
 
   // dagent:
   logConfig: yup
