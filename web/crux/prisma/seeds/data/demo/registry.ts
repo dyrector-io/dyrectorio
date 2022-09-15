@@ -5,8 +5,8 @@ export const buildRegistry = (userId: string, teamId: string) => {
   return [
     {
       id: DemoConstants.MICROSERVICES_REGISTRY_ID,
-      name: 'Google microservices registry',
-      description: 'Google microservices demo registry',
+      name: 'Google Microservices Demo Registry',
+      description: `Google uses this application to demonstrate use of technologies like Kubernetes/GKE, Istio, Stackdriver, gRPC and OpenCensus. This application works on any Kubernetes cluster, as well as Google Kubernetes Engine. It’s easy to deploy with little to no configuration.`,
       createdAt: new Date(),
       createdBy: userId,
       icon: 'shark',
@@ -19,8 +19,8 @@ export const buildRegistry = (userId: string, teamId: string) => {
     },
     {
       id: DemoConstants.DOCKER_HUB_REGISTRY_ID,
-      name: 'Docker hub for google demo',
-      description: 'Docker hub for google demo',
+      name: 'Docker Hub',
+      description: `Docker Hub is the world's easiest way to create, manage, and deliver your team's container applications.`,
       createdAt: new Date(),
       createdBy: userId,
       icon: 'shark',
