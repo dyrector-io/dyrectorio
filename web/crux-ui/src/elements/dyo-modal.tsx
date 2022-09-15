@@ -75,7 +75,17 @@ export type DyoConfirmationModalProps = Omit<DyoModalProps, 'buttons' | 'childre
 export const DyoConfirmationModal = (props: DyoConfirmationModalProps) => {
   const { t } = useTranslation('common')
 
-  const { confirmText, cancelText, confirmColor, cancelColor, description, config, title, ...forwardedProps } = props
+  const {
+    confirmText,
+    cancelText,
+    confirmColor,
+    cancelColor,
+    description,
+    config,
+    title,
+    className,
+    ...forwardedProps
+  } = props
 
   if (!config) {
     return null
@@ -88,6 +98,7 @@ export const DyoConfirmationModal = (props: DyoConfirmationModalProps) => {
   return (
     <DyoModal
       {...forwardedProps}
+      className={clsx(className, 'min-w-[450px]')}
       title={config?.title ?? title}
       open
       onClose={() => onClose(false)}
