@@ -1062,6 +1062,7 @@ export interface DeploymentResponse {
   node: string
   status: DeploymentStatus
   nodeId: string
+  note?: string | undefined
 }
 
 export interface DeploymentListByVersionResponse {
@@ -1076,6 +1077,7 @@ export interface DeploymentByVersionResponse {
   nodeName: string
   status: DeploymentStatus
   nodeStatus: NodeConnectionStatus
+  note?: string | undefined
 }
 
 export interface DeploymentDetailsResponse {
@@ -7077,6 +7079,9 @@ export const DeploymentResponse = {
     if (message.nodeId !== '') {
       writer.uint32(850).string(message.nodeId)
     }
+    if (message.note !== undefined) {
+      writer.uint32(858).string(message.note)
+    }
     return writer
   },
 
@@ -7111,6 +7116,9 @@ export const DeploymentResponse = {
         case 106:
           message.nodeId = reader.string()
           break
+        case 107:
+          message.note = reader.string()
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -7129,6 +7137,7 @@ export const DeploymentResponse = {
       node: isSet(object.node) ? String(object.node) : '',
       status: isSet(object.status) ? deploymentStatusFromJSON(object.status) : 0,
       nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
+      note: isSet(object.note) ? String(object.note) : undefined,
     }
   },
 
@@ -7142,6 +7151,7 @@ export const DeploymentResponse = {
     message.node !== undefined && (obj.node = message.node)
     message.status !== undefined && (obj.status = deploymentStatusToJSON(message.status))
     message.nodeId !== undefined && (obj.nodeId = message.nodeId)
+    message.note !== undefined && (obj.note = message.note)
     return obj
   },
 
@@ -7155,6 +7165,7 @@ export const DeploymentResponse = {
     message.node = object.node ?? ''
     message.status = object.status ?? 0
     message.nodeId = object.nodeId ?? ''
+    message.note = object.note ?? undefined
     return message
   },
 }
@@ -7241,6 +7252,9 @@ export const DeploymentByVersionResponse = {
     if (message.nodeStatus !== 0) {
       writer.uint32(832).int32(message.nodeStatus)
     }
+    if (message.note !== undefined) {
+      writer.uint32(842).string(message.note)
+    }
     return writer
   },
 
@@ -7272,6 +7286,9 @@ export const DeploymentByVersionResponse = {
         case 104:
           message.nodeStatus = reader.int32() as any
           break
+        case 105:
+          message.note = reader.string()
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -7289,6 +7306,7 @@ export const DeploymentByVersionResponse = {
       nodeName: isSet(object.nodeName) ? String(object.nodeName) : '',
       status: isSet(object.status) ? deploymentStatusFromJSON(object.status) : 0,
       nodeStatus: isSet(object.nodeStatus) ? nodeConnectionStatusFromJSON(object.nodeStatus) : 0,
+      note: isSet(object.note) ? String(object.note) : undefined,
     }
   },
 
@@ -7301,6 +7319,7 @@ export const DeploymentByVersionResponse = {
     message.nodeName !== undefined && (obj.nodeName = message.nodeName)
     message.status !== undefined && (obj.status = deploymentStatusToJSON(message.status))
     message.nodeStatus !== undefined && (obj.nodeStatus = nodeConnectionStatusToJSON(message.nodeStatus))
+    message.note !== undefined && (obj.note = message.note)
     return obj
   },
 
@@ -7314,6 +7333,7 @@ export const DeploymentByVersionResponse = {
     message.nodeName = object.nodeName ?? ''
     message.status = object.status ?? 0
     message.nodeStatus = object.nodeStatus ?? 0
+    message.note = object.note ?? undefined
     return message
   },
 }

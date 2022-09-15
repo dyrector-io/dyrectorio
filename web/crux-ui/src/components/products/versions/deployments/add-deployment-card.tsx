@@ -53,8 +53,10 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 
+      const transformedValues = createDeploymentSchema.cast(values) as any
+
       const body: CreateDeployment = {
-        ...values,
+        ...transformedValues,
       }
 
       const res = await sendForm('POST', versionDeploymentsApiUrl(productId, versionId), body)

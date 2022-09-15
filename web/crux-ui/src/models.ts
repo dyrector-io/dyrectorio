@@ -56,6 +56,7 @@ export type DeploymentByVersion = {
   prefix: string
   status: DeploymentStatus
   nodeStatus: NodeStatus
+  note?: string
 }
 
 export type DeploymentDetails = {
@@ -80,6 +81,7 @@ export type Deployment = {
   node: string
   status: DeploymentStatus
   nodeId: string
+  note?: string
 }
 
 export type DeploymentRoot = DeploymentDetails & {

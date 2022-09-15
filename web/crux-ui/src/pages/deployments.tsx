@@ -5,6 +5,7 @@ import PageHeading from '@app/components/shared/page-heading'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoList } from '@app/elements/dyo-list'
+import DyoModal from '@app/elements/dyo-modal'
 import { Deployment } from '@app/models'
 import { deploymentUrl, nodeUrl, productUrl, ROUTE_DEPLOYMENTS, versionUrl } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
@@ -14,6 +15,7 @@ import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
+import { useState } from 'react'
 
 interface DeploymentsPageProps {
   deployments: Deployment[]
@@ -23,6 +25,8 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
   const { deployments } = props
   const { t } = useTranslation('deployments')
   const router = useRouter()
+
+  const [showInfo, setShowInfo] = useState<Deployment>(null)
 
   const selfLink: BreadcrumbLink = {
     name: t('common:deployments'),
@@ -49,14 +53,26 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
       {item.node}
     </a>,
     <DeploymentStatusTag status={item.status} className="w-fit mx-auto" />,
-    <Image
-      src="/eye.svg"
-      alt={t('common:deploy')}
-      width={24}
-      height={24}
-      className="mr-8 cursor-pointer"
-      onClick={() => router.push(deploymentUrl(item.productId, item.versionId, item.id))}
-    />,
+    <>
+      <div className="mr-2 inline-block">
+        <Image
+          src="/eye.svg"
+          alt={t('common:deploy')}
+          width={24}
+          height={24}
+          className="cursor-pointer"
+          onClick={() => router.push(deploymentUrl(item.productId, item.versionId, item.id))}
+        />
+      </div>
+      <Image
+        src="/note.svg"
+        alt={t('common:deploy')}
+        width={24}
+        height={24}
+        className="cursor-pointer"
+        onClick={() => setShowInfo(item)}
+      />
+    </>,
   ]
   /* eslint-enable react/jsx-key */
 
@@ -78,6 +94,17 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
         <DyoHeading element="h3" className="text-md text-center text-light-eased pt-32">
           {t('noItems')}
         </DyoHeading>
+      )}
+      {!showInfo ? null : (
+        <DyoModal
+          className="w-1/2 h-1/2"
+          titleClassName="pl-4 font-medium text-xl text-bright mb-3"
+          title={t('common:note')}
+          open={!!showInfo}
+          onClose={() => setShowInfo(null)}
+        >
+          <p className="text-bright mt-8 break-all overflow-y-auto">{showInfo.note}</p>
+        </DyoModal>
       )}
     </Layout>
   )

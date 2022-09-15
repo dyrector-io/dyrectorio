@@ -757,6 +757,7 @@ message DeploymentResponse {
   string node = 104;
   common.DeploymentStatus status = 105;
   string nodeId = 106;
+  optional string note = 107;
 }
 
 message DeploymentListByVersionResponse {
@@ -772,6 +773,7 @@ message DeploymentByVersionResponse {
   string nodeName = 102;
   common.DeploymentStatus status = 103;
   NodeConnectionStatus nodeStatus = 104;
+  optional string note = 105;
 }
 
 message DeploymentDetailsResponse {
