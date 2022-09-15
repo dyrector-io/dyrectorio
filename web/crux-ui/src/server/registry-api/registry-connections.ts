@@ -63,7 +63,7 @@ export class RegistryConnections {
       registry.type === 'v2'
         ? new RegistryV2ApiClient(
             registry.url,
-            registry.isPrivate
+            registry.private
               ? {
                   username: registry.user,
                   password: registry.token,
@@ -98,7 +98,7 @@ export class RegistryConnections {
         : new GoogleRegistryClient(
             registry.url,
             registry.imageNamePrefix,
-            registry.isPrivate
+            registry.private
               ? {
                   username: registry.user,
                   password: registry.token,

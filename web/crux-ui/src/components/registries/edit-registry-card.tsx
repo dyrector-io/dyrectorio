@@ -54,7 +54,7 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
       url: '',
       type: 'v2',
       updatedAt: null,
-      isPrivate: false,
+      private: false,
       token: '',
       user: '',
     },

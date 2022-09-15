@@ -1,6 +1,6 @@
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
-import DyoToggle from '@app/elements/dyo-toggle'
+import DyoSwitch from '@app/elements/dyo-switch'
 import { V2RegistryDetails } from '@app/models'
 import { EditRegistryTypeProps } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
@@ -25,13 +25,12 @@ const V2RegistryFields = (props: EditRegistryTypeProps<V2RegistryDetails>) => {
         message={formik.errors.url}
       />
 
-      <div className="mr-auto">
-        <DyoToggle
-          className="text-bright mt-8"
-          name="isPrivate"
-          nameChecked={t('private')}
-          nameUnchecked={t('public')}
-          checked={formik.values.isPrivate}
+      <div className="flex mt-8">
+        <DyoLabel className="mr-2">{t('private')}</DyoLabel>
+
+        <DyoSwitch
+          fieldName="private"
+          checked={formik.values.private}
           setFieldValue={(field: string, value: boolean, shouldValidate?: boolean | undefined) => {
             if (!value) {
               formik.setFieldValue('user', '', false)
@@ -42,7 +41,7 @@ const V2RegistryFields = (props: EditRegistryTypeProps<V2RegistryDetails>) => {
         />
       </div>
 
-      {!formik.values.isPrivate ? null : (
+      {!formik.values.private ? null : (
         <>
           <DyoInput
             className="max-w-lg"
