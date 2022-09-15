@@ -1,8 +1,8 @@
 import { DyoFileUploadInput } from '@app/elements/dyo-file-upload'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
+import DyoSwitch from '@app/elements/dyo-switch'
 import DyoTextArea from '@app/elements/dyo-text-area'
-import DyoToggle from '@app/elements/dyo-toggle'
 import { GoogleRegistryDetails } from '@app/models'
 import { EditRegistryTypeProps } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
@@ -48,13 +48,12 @@ const GoogleRegistryFields = (props: EditRegistryTypeProps<GoogleRegistryDetails
         message={formik.errors.imageNamePrefix}
       />
 
-      <div className="mr-auto">
-        <DyoToggle
-          className="text-bright mt-8"
-          name="isPrivate"
-          nameChecked={t('isPrivate')}
-          nameUnchecked={t('public')}
-          checked={formik.values.isPrivate}
+      <div className="flex mt-4">
+        <DyoLabel className="mr-2">{t('private')}</DyoLabel>
+
+        <DyoSwitch
+          fieldName="private"
+          checked={formik.values.private}
           setFieldValue={(field: string, value: boolean, shouldValidate?: boolean | undefined) => {
             if (!value) {
               formik.setFieldValue('user', '', false)
@@ -65,7 +64,7 @@ const GoogleRegistryFields = (props: EditRegistryTypeProps<GoogleRegistryDetails
         />
       </div>
 
-      {!formik.values.isPrivate ? null : (
+      {!formik.values.private ? null : (
         <>
           <DyoFileUploadInput
             name="uploadFile"

@@ -1,6 +1,6 @@
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
-import DyoToggle from '@app/elements/dyo-toggle'
+import DyoSwitch from '@app/elements/dyo-switch'
 import { GitlabRegistryDetails } from '@app/models'
 import { EditRegistryTypeProps } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
@@ -47,12 +47,11 @@ const GitlabRegistryFields = (props: EditRegistryTypeProps<GitlabRegistryDetails
         message={formik.errors.imageNamePrefix}
       />
 
-      <div className="mr-auto">
-        <DyoToggle
-          className="text-bright mt-8"
-          name="selfManaged"
-          nameChecked={t('selfManaged')}
-          nameUnchecked={t('saas')}
+      <div className="flex mt-8">
+        <DyoLabel className="mr-2">{t('selfManaged')}</DyoLabel>
+
+        <DyoSwitch
+          fieldName="selfManaged"
           checked={formik.values.selfManaged}
           setFieldValue={(field: string, value: boolean, shouldValidate?: boolean | undefined) => {
             if (!value) {

@@ -38,5 +38,8 @@
     "google": "Google Registry"
   },
 
-  "altDefaultRegistryPicture": "Picture of registry"
+  "altDefaultRegistryPicture": "Picture of registry",
+  "errors": {
+    "invalidArgument": "Registry with the given URL doesn't exist"
+  }
 }

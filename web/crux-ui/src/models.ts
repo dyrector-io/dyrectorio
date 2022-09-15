@@ -255,7 +255,7 @@ export type HubRegistryDetails = {
 export type V2RegistryDetails = {
   type: 'v2'
   url: string
-  isPrivate: boolean
+  private: boolean
   user?: string
   token?: string
 }
@@ -281,7 +281,7 @@ export type GoogleRegistryDetails = {
   type: 'google'
   url: string
   imageNamePrefix: string
-  isPrivate: boolean
+  private: boolean
   user?: string
   token?: string
 }
