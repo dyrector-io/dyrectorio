@@ -32,8 +32,10 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 
+      const transformedValues = updateDeploymentSchema.cast(values) as any
+
       const body: UpdateDeployment = {
-        ...values,
+        ...transformedValues,
       }
 
       const res = await sendForm(
@@ -47,7 +49,7 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
       if (res.ok) {
         onDeploymentEdited({
           ...deployment,
-          ...values,
+          ...transformedValues,
         })
       } else {
         handleApiError(res, setFieldError)
