@@ -12,9 +12,6 @@ DROP INDEX "Deployment_versionId_name_key";
 -- AlterTable
 ALTER TABLE "Deployment" DROP COLUMN "name";
 
--- CreateIndex
-CREATE UNIQUE INDEX "Deployment_versionId_nodeId_prefix_key" ON "Deployment"("versionId", "nodeId", "prefix");
-
 -- Copy data
 DROP TABLE IF EXISTS public._migration_deployment;
 SELECT
