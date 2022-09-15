@@ -186,8 +186,6 @@ model Deployment {
 
   instances Instance[]
   events    DeploymentEvent[]
-
-  @@unique([versionId, nodeId, prefix])
 }
 
 model Instance {
