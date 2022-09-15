@@ -8,7 +8,7 @@ import { DyoList } from '@app/elements/dyo-list'
 import DyoModal from '@app/elements/dyo-modal'
 import { Deployment } from '@app/models'
 import { deploymentUrl, nodeUrl, productUrl, ROUTE_DEPLOYMENTS, versionUrl } from '@app/routes'
-import { withContextAuthorization } from '@app/utils'
+import { utcDateToLocale, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
@@ -33,7 +33,14 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
     url: ROUTE_DEPLOYMENTS,
   }
 
-  const headers = ['common:product', 'common:version', 'common:node', 'common:status']
+  const headers = [
+    'common:product',
+    'common:version',
+    'common:node',
+    'common:prefix',
+    'common:updatedAt',
+    'common:status',
+  ]
   const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-3 pl-4 font-semibold'
   const headerClasses = [
     clsx('rounded-tl-lg', defaultHeaderClass),
@@ -52,6 +59,8 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
     <a className="cursor-pointer" onClick={() => router.push(nodeUrl(item.nodeId))}>
       {item.node}
     </a>,
+    <a>{item.prefix}</a>,
+    <a>{utcDateToLocale(item.updatedAt)}</a>,
     <DeploymentStatusTag status={item.status} className="w-fit mx-auto" />,
     <>
       <div className="mr-2 inline-block">

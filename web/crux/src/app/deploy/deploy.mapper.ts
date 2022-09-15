@@ -55,6 +55,7 @@ export default class DeployMapper {
       productId: deployment.version.product.id,
       versionId: deployment.version.id,
       nodeId: deployment.node.id,
+      updatedAt: toTimestamp(deployment.updatedAt),
     }
   }
 

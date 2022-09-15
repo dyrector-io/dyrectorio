@@ -57,6 +57,7 @@ class DyoDeploymentService {
     return deployments.data.map(it => ({
       ...it,
       status: deploymentStatusToDto(it.status),
+      updatedAt: timestampToUTC(it.updatedAt),
     }))
   }
 

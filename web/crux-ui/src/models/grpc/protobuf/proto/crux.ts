@@ -1063,6 +1063,8 @@ export interface DeploymentResponse {
   status: DeploymentStatus
   nodeId: string
   note?: string | undefined
+  prefix: string
+  updatedAt?: Timestamp | undefined
 }
 
 export interface DeploymentListByVersionResponse {
@@ -7050,7 +7052,17 @@ export const DeploymentListResponse = {
 }
 
 function createBaseDeploymentResponse(): DeploymentResponse {
-  return { id: '', product: '', productId: '', version: '', versionId: '', node: '', status: 0, nodeId: '' }
+  return {
+    id: '',
+    product: '',
+    productId: '',
+    version: '',
+    versionId: '',
+    node: '',
+    status: 0,
+    nodeId: '',
+    prefix: '',
+  }
 }
 
 export const DeploymentResponse = {
@@ -7081,6 +7093,12 @@ export const DeploymentResponse = {
     }
     if (message.note !== undefined) {
       writer.uint32(858).string(message.note)
+    }
+    if (message.prefix !== '') {
+      writer.uint32(866).string(message.prefix)
+    }
+    if (message.updatedAt !== undefined) {
+      Timestamp.encode(message.updatedAt, writer.uint32(874).fork()).ldelim()
     }
     return writer
   },
@@ -7119,6 +7137,12 @@ export const DeploymentResponse = {
         case 107:
           message.note = reader.string()
           break
+        case 108:
+          message.prefix = reader.string()
+          break
+        case 109:
+          message.updatedAt = Timestamp.decode(reader, reader.uint32())
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -7138,6 +7162,8 @@ export const DeploymentResponse = {
       status: isSet(object.status) ? deploymentStatusFromJSON(object.status) : 0,
       nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
       note: isSet(object.note) ? String(object.note) : undefined,
+      prefix: isSet(object.prefix) ? String(object.prefix) : '',
+      updatedAt: isSet(object.updatedAt) ? fromJsonTimestamp(object.updatedAt) : undefined,
     }
   },
 
@@ -7152,6 +7178,8 @@ export const DeploymentResponse = {
     message.status !== undefined && (obj.status = deploymentStatusToJSON(message.status))
     message.nodeId !== undefined && (obj.nodeId = message.nodeId)
     message.note !== undefined && (obj.note = message.note)
+    message.prefix !== undefined && (obj.prefix = message.prefix)
+    message.updatedAt !== undefined && (obj.updatedAt = fromTimestamp(message.updatedAt).toISOString())
     return obj
   },
 
@@ -7166,6 +7194,9 @@ export const DeploymentResponse = {
     message.status = object.status ?? 0
     message.nodeId = object.nodeId ?? ''
     message.note = object.note ?? undefined
+    message.prefix = object.prefix ?? ''
+    message.updatedAt =
+      object.updatedAt !== undefined && object.updatedAt !== null ? Timestamp.fromPartial(object.updatedAt) : undefined
     return message
   },
 }

@@ -758,6 +758,8 @@ message DeploymentResponse {
   common.DeploymentStatus status = 105;
   string nodeId = 106;
   optional string note = 107;
+  string prefix = 108;
+  optional google.protobuf.Timestamp updatedAt = 109;
 }
 
 message DeploymentListByVersionResponse {
