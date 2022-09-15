@@ -232,10 +232,10 @@ export default class DeployService {
           include: {
             product: {
               select: {
-                name: true
-              }
-            }
-          }
+                name: true,
+              },
+            },
+          },
         },
         instances: {
           include: {
