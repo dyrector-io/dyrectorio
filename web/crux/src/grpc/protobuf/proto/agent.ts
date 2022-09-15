@@ -1,15 +1,13 @@
 /* eslint-disable */
+import { Metadata } from '@grpc/grpc-js'
 import { GrpcMethod, GrpcStreamMethod } from '@nestjs/microservices'
-import { util, configure } from 'protobufjs/minimal'
-import * as Long from 'long'
 import { Observable } from 'rxjs'
 import {
+  ContainerStateListMessage,
+  DeploymentStatusMessage,
   ExplicitContainerConfig,
   ListSecretsResponse,
-  DeploymentStatusMessage,
-  ContainerStateListMessage,
 } from './common'
-import { Metadata } from '@grpc/grpc-js'
 
 export const protobufPackage = 'agent'
 
@@ -113,12 +111,13 @@ export interface DeployRequestLegacy {
 
 export const AGENT_PACKAGE_NAME = 'agent'
 
-const baseEmpty: object = {}
+function createBaseEmpty(): Empty {
+  return {}
+}
 
 export const Empty = {
   fromJSON(_: any): Empty {
-    const message = { ...baseEmpty } as Empty
-    return message
+    return {}
   },
 
   toJSON(_: Empty): unknown {
@@ -127,15 +126,17 @@ export const Empty = {
   },
 }
 
-const baseAgentInfo: object = { id: '', version: '', publicKey: '' }
+function createBaseAgentInfo(): AgentInfo {
+  return { id: '', version: '', publicKey: '' }
+}
 
 export const AgentInfo = {
   fromJSON(object: any): AgentInfo {
-    const message = { ...baseAgentInfo } as AgentInfo
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.version = object.version !== undefined && object.version !== null ? String(object.version) : ''
-    message.publicKey = object.publicKey !== undefined && object.publicKey !== null ? String(object.publicKey) : ''
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      version: isSet(object.version) ? String(object.version) : '',
+      publicKey: isSet(object.publicKey) ? String(object.publicKey) : '',
+    }
   },
 
   toJSON(message: AgentInfo): unknown {
@@ -147,30 +148,27 @@ export const AgentInfo = {
   },
 }
 
-const baseAgentCommand: object = {}
+function createBaseAgentCommand(): AgentCommand {
+  return {
+    deploy: undefined,
+    containerState: undefined,
+    containerDelete: undefined,
+    deployLegacy: undefined,
+    listSecrets: undefined,
+  }
+}
 
 export const AgentCommand = {
   fromJSON(object: any): AgentCommand {
-    const message = { ...baseAgentCommand } as AgentCommand
-    message.deploy =
-      object.deploy !== undefined && object.deploy !== null ? VersionDeployRequest.fromJSON(object.deploy) : undefined
-    message.containerState =
-      object.containerState !== undefined && object.containerState !== null
-        ? ContainerStateRequest.fromJSON(object.containerState)
-        : undefined
-    message.containerDelete =
-      object.containerDelete !== undefined && object.containerDelete !== null
+    return {
+      deploy: isSet(object.deploy) ? VersionDeployRequest.fromJSON(object.deploy) : undefined,
+      containerState: isSet(object.containerState) ? ContainerStateRequest.fromJSON(object.containerState) : undefined,
+      containerDelete: isSet(object.containerDelete)
         ? ContainerDeleteRequest.fromJSON(object.containerDelete)
-        : undefined
-    message.deployLegacy =
-      object.deployLegacy !== undefined && object.deployLegacy !== null
-        ? DeployRequestLegacy.fromJSON(object.deployLegacy)
-        : undefined
-    message.listSecrets =
-      object.listSecrets !== undefined && object.listSecrets !== null
-        ? ListSecretsRequest.fromJSON(object.listSecrets)
-        : undefined
-    return message
+        : undefined,
+      deployLegacy: isSet(object.deployLegacy) ? DeployRequestLegacy.fromJSON(object.deployLegacy) : undefined,
+      listSecrets: isSet(object.listSecrets) ? ListSecretsRequest.fromJSON(object.listSecrets) : undefined,
+    }
   },
 
   toJSON(message: AgentCommand): unknown {
@@ -191,13 +189,13 @@ export const AgentCommand = {
   },
 }
 
-const baseDeployResponse: object = { started: false }
+function createBaseDeployResponse(): DeployResponse {
+  return { started: false }
+}
 
 export const DeployResponse = {
   fromJSON(object: any): DeployResponse {
-    const message = { ...baseDeployResponse } as DeployResponse
-    message.started = object.started !== undefined && object.started !== null ? Boolean(object.started) : false
-    return message
+    return { started: isSet(object.started) ? Boolean(object.started) : false }
   },
 
   toJSON(message: DeployResponse): unknown {
@@ -207,22 +205,18 @@ export const DeployResponse = {
   },
 }
 
-const baseVersionDeployRequest: object = {
-  id: '',
-  versionName: '',
-  releaseNotes: '',
+function createBaseVersionDeployRequest(): VersionDeployRequest {
+  return { id: '', versionName: '', releaseNotes: '', requests: [] }
 }
 
 export const VersionDeployRequest = {
   fromJSON(object: any): VersionDeployRequest {
-    const message = { ...baseVersionDeployRequest } as VersionDeployRequest
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.versionName =
-      object.versionName !== undefined && object.versionName !== null ? String(object.versionName) : ''
-    message.releaseNotes =
-      object.releaseNotes !== undefined && object.releaseNotes !== null ? String(object.releaseNotes) : ''
-    message.requests = (object.requests ?? []).map((e: any) => DeployRequest.fromJSON(e))
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      versionName: isSet(object.versionName) ? String(object.versionName) : '',
+      releaseNotes: isSet(object.releaseNotes) ? String(object.releaseNotes) : '',
+      requests: Array.isArray(object?.requests) ? object.requests.map((e: any) => DeployRequest.fromJSON(e)) : [],
+    }
   },
 
   toJSON(message: VersionDeployRequest): unknown {
@@ -239,13 +233,13 @@ export const VersionDeployRequest = {
   },
 }
 
-const baseListSecretsRequest: object = { prefix: '' }
+function createBaseListSecretsRequest(): ListSecretsRequest {
+  return { prefix: '' }
+}
 
 export const ListSecretsRequest = {
   fromJSON(object: any): ListSecretsRequest {
-    const message = { ...baseListSecretsRequest } as ListSecretsRequest
-    message.prefix = object.prefix !== undefined && object.prefix !== null ? String(object.prefix) : ''
-    return message
+    return { prefix: isSet(object.prefix) ? String(object.prefix) : '' }
   },
 
   toJSON(message: ListSecretsRequest): unknown {
@@ -255,37 +249,27 @@ export const ListSecretsRequest = {
   },
 }
 
-const baseDeployRequest: object = {
-  id: '',
-  containerName: '',
-  imageName: '',
-  tag: '',
+function createBaseDeployRequest(): DeployRequest {
+  return { id: '', containerName: '', instanceConfig: undefined, containerConfig: undefined, imageName: '', tag: '' }
 }
 
 export const DeployRequest = {
   fromJSON(object: any): DeployRequest {
-    const message = { ...baseDeployRequest } as DeployRequest
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.containerName =
-      object.containerName !== undefined && object.containerName !== null ? String(object.containerName) : ''
-    message.instanceConfig =
-      object.instanceConfig !== undefined && object.instanceConfig !== null
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      containerName: isSet(object.containerName) ? String(object.containerName) : '',
+      instanceConfig: isSet(object.instanceConfig)
         ? DeployRequest_InstanceConfig.fromJSON(object.instanceConfig)
-        : undefined
-    message.containerConfig =
-      object.containerConfig !== undefined && object.containerConfig !== null
+        : undefined,
+      containerConfig: isSet(object.containerConfig)
         ? ExplicitContainerConfig.fromJSON(object.containerConfig)
-        : undefined
-    message.runtimeConfig =
-      object.runtimeConfig !== undefined && object.runtimeConfig !== null ? String(object.runtimeConfig) : undefined
-    message.registry = object.registry !== undefined && object.registry !== null ? String(object.registry) : undefined
-    message.imageName = object.imageName !== undefined && object.imageName !== null ? String(object.imageName) : ''
-    message.tag = object.tag !== undefined && object.tag !== null ? String(object.tag) : ''
-    message.registryAuth =
-      object.registryAuth !== undefined && object.registryAuth !== null
-        ? DeployRequest_RegistryAuth.fromJSON(object.registryAuth)
-        : undefined
-    return message
+        : undefined,
+      runtimeConfig: isSet(object.runtimeConfig) ? String(object.runtimeConfig) : undefined,
+      registry: isSet(object.registry) ? String(object.registry) : undefined,
+      imageName: isSet(object.imageName) ? String(object.imageName) : '',
+      tag: isSet(object.tag) ? String(object.tag) : '',
+      registryAuth: isSet(object.registryAuth) ? DeployRequest_RegistryAuth.fromJSON(object.registryAuth) : undefined,
+    }
   },
 
   toJSON(message: DeployRequest): unknown {
@@ -310,25 +294,20 @@ export const DeployRequest = {
   },
 }
 
-const baseDeployRequest_InstanceConfig: object = { prefix: '' }
+function createBaseDeployRequest_InstanceConfig(): DeployRequest_InstanceConfig {
+  return { prefix: '' }
+}
 
 export const DeployRequest_InstanceConfig = {
   fromJSON(object: any): DeployRequest_InstanceConfig {
-    const message = {
-      ...baseDeployRequest_InstanceConfig,
-    } as DeployRequest_InstanceConfig
-    message.prefix = object.prefix !== undefined && object.prefix !== null ? String(object.prefix) : ''
-    message.mountPath =
-      object.mountPath !== undefined && object.mountPath !== null ? String(object.mountPath) : undefined
-    message.environment =
-      object.environment !== undefined && object.environment !== null
+    return {
+      prefix: isSet(object.prefix) ? String(object.prefix) : '',
+      mountPath: isSet(object.mountPath) ? String(object.mountPath) : undefined,
+      environment: isSet(object.environment)
         ? DeployRequest_InstanceConfig_Environment.fromJSON(object.environment)
-        : undefined
-    message.repositoryPrefix =
-      object.repositoryPrefix !== undefined && object.repositoryPrefix !== null
-        ? String(object.repositoryPrefix)
-        : undefined
-    return message
+        : undefined,
+      repositoryPrefix: isSet(object.repositoryPrefix) ? String(object.repositoryPrefix) : undefined,
+    }
   },
 
   toJSON(message: DeployRequest_InstanceConfig): unknown {
@@ -344,15 +323,13 @@ export const DeployRequest_InstanceConfig = {
   },
 }
 
-const baseDeployRequest_InstanceConfig_Environment: object = { env: '' }
+function createBaseDeployRequest_InstanceConfig_Environment(): DeployRequest_InstanceConfig_Environment {
+  return { env: [] }
+}
 
 export const DeployRequest_InstanceConfig_Environment = {
   fromJSON(object: any): DeployRequest_InstanceConfig_Environment {
-    const message = {
-      ...baseDeployRequest_InstanceConfig_Environment,
-    } as DeployRequest_InstanceConfig_Environment
-    message.env = (object.env ?? []).map((e: any) => String(e))
-    return message
+    return { env: Array.isArray(object?.env) ? object.env.map((e: any) => String(e)) : [] }
   },
 
   toJSON(message: DeployRequest_InstanceConfig_Environment): unknown {
@@ -366,23 +343,18 @@ export const DeployRequest_InstanceConfig_Environment = {
   },
 }
 
-const baseDeployRequest_RegistryAuth: object = {
-  name: '',
-  url: '',
-  user: '',
-  password: '',
+function createBaseDeployRequest_RegistryAuth(): DeployRequest_RegistryAuth {
+  return { name: '', url: '', user: '', password: '' }
 }
 
 export const DeployRequest_RegistryAuth = {
   fromJSON(object: any): DeployRequest_RegistryAuth {
-    const message = {
-      ...baseDeployRequest_RegistryAuth,
-    } as DeployRequest_RegistryAuth
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
-    message.user = object.user !== undefined && object.user !== null ? String(object.user) : ''
-    message.password = object.password !== undefined && object.password !== null ? String(object.password) : ''
-    return message
+    return {
+      name: isSet(object.name) ? String(object.name) : '',
+      url: isSet(object.url) ? String(object.url) : '',
+      user: isSet(object.user) ? String(object.user) : '',
+      password: isSet(object.password) ? String(object.password) : '',
+    }
   },
 
   toJSON(message: DeployRequest_RegistryAuth): unknown {
@@ -395,14 +367,16 @@ export const DeployRequest_RegistryAuth = {
   },
 }
 
-const baseContainerStateRequest: object = {}
+function createBaseContainerStateRequest(): ContainerStateRequest {
+  return {}
+}
 
 export const ContainerStateRequest = {
   fromJSON(object: any): ContainerStateRequest {
-    const message = { ...baseContainerStateRequest } as ContainerStateRequest
-    message.prefix = object.prefix !== undefined && object.prefix !== null ? String(object.prefix) : undefined
-    message.oneShot = object.oneShot !== undefined && object.oneShot !== null ? Boolean(object.oneShot) : undefined
-    return message
+    return {
+      prefix: isSet(object.prefix) ? String(object.prefix) : undefined,
+      oneShot: isSet(object.oneShot) ? Boolean(object.oneShot) : undefined,
+    }
   },
 
   toJSON(message: ContainerStateRequest): unknown {
@@ -413,14 +387,16 @@ export const ContainerStateRequest = {
   },
 }
 
-const baseContainerDeleteRequest: object = { prefix: '', name: '' }
+function createBaseContainerDeleteRequest(): ContainerDeleteRequest {
+  return { prefix: '', name: '' }
+}
 
 export const ContainerDeleteRequest = {
   fromJSON(object: any): ContainerDeleteRequest {
-    const message = { ...baseContainerDeleteRequest } as ContainerDeleteRequest
-    message.prefix = object.prefix !== undefined && object.prefix !== null ? String(object.prefix) : ''
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    return message
+    return {
+      prefix: isSet(object.prefix) ? String(object.prefix) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+    }
   },
 
   toJSON(message: ContainerDeleteRequest): unknown {
@@ -431,14 +407,16 @@ export const ContainerDeleteRequest = {
   },
 }
 
-const baseDeployRequestLegacy: object = { requestId: '', json: '' }
+function createBaseDeployRequestLegacy(): DeployRequestLegacy {
+  return { requestId: '', json: '' }
+}
 
 export const DeployRequestLegacy = {
   fromJSON(object: any): DeployRequestLegacy {
-    const message = { ...baseDeployRequestLegacy } as DeployRequestLegacy
-    message.requestId = object.requestId !== undefined && object.requestId !== null ? String(object.requestId) : ''
-    message.json = object.json !== undefined && object.json !== null ? String(object.json) : ''
-    return message
+    return {
+      requestId: isSet(object.requestId) ? String(object.requestId) : '',
+      json: isSet(object.json) ? String(object.json) : '',
+    }
   },
 
   toJSON(message: DeployRequestLegacy): unknown {
@@ -518,9 +496,6 @@ export function AgentControllerMethods() {
 
 export const AGENT_SERVICE_NAME = 'Agent'
 
-// If you get a compile-error about 'Constructor<Long> and ... have no overlap',
-// add '--ts_proto_opt=esModuleInterop=true' as a flag when calling 'protoc'.
-if (util.Long !== Long) {
-  util.Long = Long as any
-  configure()
+function isSet(value: any): boolean {
+  return value !== null && value !== undefined
 }

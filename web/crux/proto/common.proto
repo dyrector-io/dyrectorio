@@ -145,6 +145,8 @@ message InitContainer {
   repeated string args = 102;
   map<string, string> environments = 103;
   bool useParentConfig = 104;
+  // volumes referred as VolumeLink
+  // they won't get created if non-existent
   message VolumeLink {
     string name = 100;
     string path = 101;
@@ -204,7 +206,7 @@ message ExplicitContainerConfig {
   repeated string args = 1004;
   repeated string environments = 1005;
   optional KeyValueList secrets = 1006;
-  repeated InitContainer InitContainers = 1007;
+  repeated InitContainer initContainers = 1007;
 }
 
 message UniqueKey {
