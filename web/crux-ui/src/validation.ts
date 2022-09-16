@@ -48,7 +48,7 @@ const iconRule = yup
   .oneOf([null, ...DYO_ICONS])
   .nullable()
 
-const nameRule = yup.string().required().min(3).max(70)
+export const nameRule = yup.string().required().min(3).max(70)
 const descriptionRule = yup.string().optional()
 
 export const updateProductSchema = yup.object().shape({
@@ -120,6 +120,10 @@ export const nodeSchema = yup.object().shape({
 export const nodeType = yup.object().shape({
   type: yup.mixed<NodeType>().oneOf([...NODE_TYPE_VALUES]),
 })
+
+// Ref: https://ihateregex.io/expr/semver/
+export const versionRegex =
+  /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/
 
 export const increaseVersionSchema = yup.object().shape({
   name: nameRule,
