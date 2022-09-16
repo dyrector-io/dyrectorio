@@ -8,7 +8,7 @@
   </a>
 </p>
 
-<p align="center">Open-source CD platform for developers and non-specialists to manage multi-instance deployments, microservices and configurations in Kubernetes & Docker.</p>
+<p align="center">Open-source IDP for developers and non-specialists to manage multi-instance deployments, microservices and configurations in Kubernetes & Docker.</p>
 
 <p align="center">
   <a href="https://github.com/dyrector-io/dyrectorio/tags" target="_blank"><img src="https://img.shields.io/github/v/tag/dyrector-io/dyrectorio" alt="GitHub tag (latest by date)"/></a>
@@ -22,11 +22,13 @@
 
 ## Overview
 
-Life isn’t about application management. Why should your team focus so much of its precious time and effort on it when things can be simpler?
+dyrector.io is an open-source deployment platform that helps software teams manage releases & deployments easily and efficiently. While non-specialists are enabled to manage these processes in a simplified, self-service manner, specialists can deploy and manage containerized apps faster through the platform.
 
-dyrector.io is for you if you’d like to shift your team’s focus from repeatable steps of multi-instance deployments to delivering value to your users, also when a deployment is successful or any error occurs, the team gets notified on chat so they can react as soon as possible.
-
-While dyrector.io enables non-technical staff members to help with certain tasks, it’s also useful to reduce time technical staff spend on deployment and system administration.
+Our product is a platform for:
+- **DevOps & System Engineers** can build and manage robust cloud infrastructure
+- **Engineers** can focus more on developing the product because self-service deployments are faster
+- **Stakeholders** can deliver new functions and products with a higher velocity
+- **CTOs & Technical Managers** can reduce time-to-market, manage cloud costs more efficiently and maintain team productivity.
 
 > **Warning**
 > dyrector.io platform is under development, please treat as such. Expect bugs here and there. Early adopters welcome.
@@ -72,13 +74,31 @@ Both Docker and Kubernetes require specialized staff to manage. Via dyrector.io,
 
 Seamless testing whenever your team wants to test the application, without waiting for a SysAdmin to set up an environment.
 
-## Quick Start
+## Get Started
+
+dyrectorio CLI, is a command-line interface that lets you run and manage the whole dyrectorio projects locally.
+
+This means you get a full-featured dyrectorio platform running locally on your machine.
 
 ### Prerequirements
 
--   Install Docker and Docker Compose to your machine
+- Docker installed on your system but Podman works, too. In case of Linux, you need Docker Compose, as well.
+- Go Compiler to run the CLI by its source code.
 
-### Development (Local)
+### With CLI
+
+> **Note**
+> The CLI is only available from the codebase at the moment. Package manager installation is in the works.
+
+1. Clone the repository to your local workdir with `git clone`
+2. Open the `/cli` folder and execute `go run . up`
+3. Open the `localhost:3000` and use the platform
+
+dyrectorios's command-line interface (CLI) lets you run a complete dyrectorio development environment locally with the following services: UI Service (crux-ui), Backend Service (crux), PostgreSQL database, Authentication, Migrations, and SMTP mail server.
+
+Read more about the CLI in the [documentation](https://docs.dyrector.io/get-started/cli).
+
+### With Docker compose files
 
 The easiest way to get started with the dyrector.io platform is by our premade [docker-compose](./web/docker-compose.dev.yaml) file.
 
@@ -111,15 +131,13 @@ npx prisma generate
 npx prisma migrate deploy
 ```
 
-6. Create a reCaptcha v3 key pair and set `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` and `RECAPTCHA_SECRET_KEY` in `/web/crux-ui/.env`. Make sure to use `localhost` or `host.internal` as the domain.
+6. To start services run `npm start` in the followind folders `/web/crux` and `/web/crux-ui`
 
-7. To start services run `npm start` in the followind folders `/web/crux` and `/web/crux-ui`
+7. Open the platform in `host.docker.internal:8000` and register
 
-8. Open the platform in `host.docker.internal:8000` and register
+8. In local our auth service is using a mock, so you can confirm your email in `http://localhost:4436/`
 
-9. In local our auth service is using a mock, so you can confirm your email in `http://localhost:4436/`
-
-10. Now you can log in and use the platform
+9. Now you can log in and use the platform
 
 ### Hosted version (SaaS)
 
