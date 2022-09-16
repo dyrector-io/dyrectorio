@@ -375,6 +375,30 @@ export interface LogConfig_OptionsEntry {
   value: string
 }
 
+/**
+ * volumes referred as VolumeLink
+ * they won't get created if non-existent
+ */
+export interface VolumeLink {
+  name: string
+  path: string
+}
+
+export interface InitContainer {
+  name: string
+  image: string
+  environments: { [key: string]: string }
+  useParentConfig?: boolean | undefined
+  volumes: VolumeLink[]
+  command: string[]
+  args: string[]
+}
+
+export interface InitContainer_EnvironmentsEntry {
+  key: string
+  value: string
+}
+
 export interface DagentContainerConfig {
   logConfig?: LogConfig | undefined
   restartPolicy?: RestartPolicy | undefined
@@ -430,6 +454,7 @@ export interface ExplicitContainerConfig {
   args: string[]
   environments: string[]
   secrets?: KeyValueList | undefined
+  initContainers: InitContainer[]
 }
 
 export interface UniqueKey {
@@ -836,6 +861,92 @@ export const LogConfig_OptionsEntry = {
   },
 }
 
+function createBaseVolumeLink(): VolumeLink {
+  return { name: '', path: '' }
+}
+
+export const VolumeLink = {
+  fromJSON(object: any): VolumeLink {
+    return { name: isSet(object.name) ? String(object.name) : '', path: isSet(object.path) ? String(object.path) : '' }
+  },
+
+  toJSON(message: VolumeLink): unknown {
+    const obj: any = {}
+    message.name !== undefined && (obj.name = message.name)
+    message.path !== undefined && (obj.path = message.path)
+    return obj
+  },
+}
+
+function createBaseInitContainer(): InitContainer {
+  return { name: '', image: '', environments: {}, volumes: [], command: [], args: [] }
+}
+
+export const InitContainer = {
+  fromJSON(object: any): InitContainer {
+    return {
+      name: isSet(object.name) ? String(object.name) : '',
+      image: isSet(object.image) ? String(object.image) : '',
+      environments: isObject(object.environments)
+        ? Object.entries(object.environments).reduce<{ [key: string]: string }>((acc, [key, value]) => {
+            acc[key] = String(value)
+            return acc
+          }, {})
+        : {},
+      useParentConfig: isSet(object.useParentConfig) ? Boolean(object.useParentConfig) : undefined,
+      volumes: Array.isArray(object?.volumes) ? object.volumes.map((e: any) => VolumeLink.fromJSON(e)) : [],
+      command: Array.isArray(object?.command) ? object.command.map((e: any) => String(e)) : [],
+      args: Array.isArray(object?.args) ? object.args.map((e: any) => String(e)) : [],
+    }
+  },
+
+  toJSON(message: InitContainer): unknown {
+    const obj: any = {}
+    message.name !== undefined && (obj.name = message.name)
+    message.image !== undefined && (obj.image = message.image)
+    obj.environments = {}
+    if (message.environments) {
+      Object.entries(message.environments).forEach(([k, v]) => {
+        obj.environments[k] = v
+      })
+    }
+    message.useParentConfig !== undefined && (obj.useParentConfig = message.useParentConfig)
+    if (message.volumes) {
+      obj.volumes = message.volumes.map(e => (e ? VolumeLink.toJSON(e) : undefined))
+    } else {
+      obj.volumes = []
+    }
+    if (message.command) {
+      obj.command = message.command.map(e => e)
+    } else {
+      obj.command = []
+    }
+    if (message.args) {
+      obj.args = message.args.map(e => e)
+    } else {
+      obj.args = []
+    }
+    return obj
+  },
+}
+
+function createBaseInitContainer_EnvironmentsEntry(): InitContainer_EnvironmentsEntry {
+  return { key: '', value: '' }
+}
+
+export const InitContainer_EnvironmentsEntry = {
+  fromJSON(object: any): InitContainer_EnvironmentsEntry {
+    return { key: isSet(object.key) ? String(object.key) : '', value: isSet(object.value) ? String(object.value) : '' }
+  },
+
+  toJSON(message: InitContainer_EnvironmentsEntry): unknown {
+    const obj: any = {}
+    message.key !== undefined && (obj.key = message.key)
+    message.value !== undefined && (obj.value = message.value)
+    return obj
+  },
+}
+
 function createBaseDagentContainerConfig(): DagentContainerConfig {
   return { networks: [] }
 }
@@ -1003,7 +1114,7 @@ export const CraneContainerConfig_ExtraLBAnnotationsEntry = {
 }
 
 function createBaseExplicitContainerConfig(): ExplicitContainerConfig {
-  return { ports: [], portRanges: [], volumes: [], command: [], args: [], environments: [] }
+  return { ports: [], portRanges: [], volumes: [], command: [], args: [], environments: [], initContainers: [] }
 }
 
 export const ExplicitContainerConfig = {
@@ -1026,6 +1137,9 @@ export const ExplicitContainerConfig = {
       args: Array.isArray(object?.args) ? object.args.map((e: any) => String(e)) : [],
       environments: Array.isArray(object?.environments) ? object.environments.map((e: any) => String(e)) : [],
       secrets: isSet(object.secrets) ? KeyValueList.fromJSON(object.secrets) : undefined,
+      initContainers: Array.isArray(object?.initContainers)
+        ? object.initContainers.map((e: any) => InitContainer.fromJSON(e))
+        : [],
     }
   },
 
@@ -1073,6 +1187,11 @@ export const ExplicitContainerConfig = {
       obj.environments = []
     }
     message.secrets !== undefined && (obj.secrets = message.secrets ? KeyValueList.toJSON(message.secrets) : undefined)
+    if (message.initContainers) {
+      obj.initContainers = message.initContainers.map(e => (e ? InitContainer.toJSON(e) : undefined))
+    } else {
+      obj.initContainers = []
+    }
     return obj
   },
 }

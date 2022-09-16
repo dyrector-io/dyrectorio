@@ -377,6 +377,30 @@ export interface LogConfig_OptionsEntry {
   value: string
 }
 
+/**
+ * volumes referred as VolumeLink
+ * they won't get created if non-existent
+ */
+export interface VolumeLink {
+  name: string
+  path: string
+}
+
+export interface InitContainer {
+  name: string
+  image: string
+  environments: { [key: string]: string }
+  useParentConfig?: boolean | undefined
+  volumes: VolumeLink[]
+  command: string[]
+  args: string[]
+}
+
+export interface InitContainer_EnvironmentsEntry {
+  key: string
+  value: string
+}
+
 export interface DagentContainerConfig {
   logConfig?: LogConfig | undefined
   restartPolicy?: RestartPolicy | undefined
@@ -432,6 +456,7 @@ export interface ExplicitContainerConfig {
   args: string[]
   environments: string[]
   secrets?: KeyValueList | undefined
+  initContainers: InitContainer[]
 }
 
 export interface UniqueKey {
@@ -1538,6 +1563,254 @@ export const LogConfig_OptionsEntry = {
   },
 }
 
+function createBaseVolumeLink(): VolumeLink {
+  return { name: '', path: '' }
+}
+
+export const VolumeLink = {
+  encode(message: VolumeLink, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.name !== '') {
+      writer.uint32(802).string(message.name)
+    }
+    if (message.path !== '') {
+      writer.uint32(810).string(message.path)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): VolumeLink {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseVolumeLink()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 100:
+          message.name = reader.string()
+          break
+        case 101:
+          message.path = reader.string()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): VolumeLink {
+    return { name: isSet(object.name) ? String(object.name) : '', path: isSet(object.path) ? String(object.path) : '' }
+  },
+
+  toJSON(message: VolumeLink): unknown {
+    const obj: any = {}
+    message.name !== undefined && (obj.name = message.name)
+    message.path !== undefined && (obj.path = message.path)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<VolumeLink>, I>>(object: I): VolumeLink {
+    const message = createBaseVolumeLink()
+    message.name = object.name ?? ''
+    message.path = object.path ?? ''
+    return message
+  },
+}
+
+function createBaseInitContainer(): InitContainer {
+  return { name: '', image: '', environments: {}, volumes: [], command: [], args: [] }
+}
+
+export const InitContainer = {
+  encode(message: InitContainer, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.name !== '') {
+      writer.uint32(802).string(message.name)
+    }
+    if (message.image !== '') {
+      writer.uint32(810).string(message.image)
+    }
+    Object.entries(message.environments).forEach(([key, value]) => {
+      InitContainer_EnvironmentsEntry.encode({ key: key as any, value }, writer.uint32(818).fork()).ldelim()
+    })
+    if (message.useParentConfig !== undefined) {
+      writer.uint32(824).bool(message.useParentConfig)
+    }
+    for (const v of message.volumes) {
+      VolumeLink.encode(v!, writer.uint32(8002).fork()).ldelim()
+    }
+    for (const v of message.command) {
+      writer.uint32(8010).string(v!)
+    }
+    for (const v of message.args) {
+      writer.uint32(8018).string(v!)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): InitContainer {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseInitContainer()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 100:
+          message.name = reader.string()
+          break
+        case 101:
+          message.image = reader.string()
+          break
+        case 102:
+          const entry102 = InitContainer_EnvironmentsEntry.decode(reader, reader.uint32())
+          if (entry102.value !== undefined) {
+            message.environments[entry102.key] = entry102.value
+          }
+          break
+        case 103:
+          message.useParentConfig = reader.bool()
+          break
+        case 1000:
+          message.volumes.push(VolumeLink.decode(reader, reader.uint32()))
+          break
+        case 1001:
+          message.command.push(reader.string())
+          break
+        case 1002:
+          message.args.push(reader.string())
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): InitContainer {
+    return {
+      name: isSet(object.name) ? String(object.name) : '',
+      image: isSet(object.image) ? String(object.image) : '',
+      environments: isObject(object.environments)
+        ? Object.entries(object.environments).reduce<{ [key: string]: string }>((acc, [key, value]) => {
+            acc[key] = String(value)
+            return acc
+          }, {})
+        : {},
+      useParentConfig: isSet(object.useParentConfig) ? Boolean(object.useParentConfig) : undefined,
+      volumes: Array.isArray(object?.volumes) ? object.volumes.map((e: any) => VolumeLink.fromJSON(e)) : [],
+      command: Array.isArray(object?.command) ? object.command.map((e: any) => String(e)) : [],
+      args: Array.isArray(object?.args) ? object.args.map((e: any) => String(e)) : [],
+    }
+  },
+
+  toJSON(message: InitContainer): unknown {
+    const obj: any = {}
+    message.name !== undefined && (obj.name = message.name)
+    message.image !== undefined && (obj.image = message.image)
+    obj.environments = {}
+    if (message.environments) {
+      Object.entries(message.environments).forEach(([k, v]) => {
+        obj.environments[k] = v
+      })
+    }
+    message.useParentConfig !== undefined && (obj.useParentConfig = message.useParentConfig)
+    if (message.volumes) {
+      obj.volumes = message.volumes.map(e => (e ? VolumeLink.toJSON(e) : undefined))
+    } else {
+      obj.volumes = []
+    }
+    if (message.command) {
+      obj.command = message.command.map(e => e)
+    } else {
+      obj.command = []
+    }
+    if (message.args) {
+      obj.args = message.args.map(e => e)
+    } else {
+      obj.args = []
+    }
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<InitContainer>, I>>(object: I): InitContainer {
+    const message = createBaseInitContainer()
+    message.name = object.name ?? ''
+    message.image = object.image ?? ''
+    message.environments = Object.entries(object.environments ?? {}).reduce<{ [key: string]: string }>(
+      (acc, [key, value]) => {
+        if (value !== undefined) {
+          acc[key] = String(value)
+        }
+        return acc
+      },
+      {},
+    )
+    message.useParentConfig = object.useParentConfig ?? undefined
+    message.volumes = object.volumes?.map(e => VolumeLink.fromPartial(e)) || []
+    message.command = object.command?.map(e => e) || []
+    message.args = object.args?.map(e => e) || []
+    return message
+  },
+}
+
+function createBaseInitContainer_EnvironmentsEntry(): InitContainer_EnvironmentsEntry {
+  return { key: '', value: '' }
+}
+
+export const InitContainer_EnvironmentsEntry = {
+  encode(message: InitContainer_EnvironmentsEntry, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.key !== '') {
+      writer.uint32(10).string(message.key)
+    }
+    if (message.value !== '') {
+      writer.uint32(18).string(message.value)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): InitContainer_EnvironmentsEntry {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseInitContainer_EnvironmentsEntry()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.key = reader.string()
+          break
+        case 2:
+          message.value = reader.string()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): InitContainer_EnvironmentsEntry {
+    return { key: isSet(object.key) ? String(object.key) : '', value: isSet(object.value) ? String(object.value) : '' }
+  },
+
+  toJSON(message: InitContainer_EnvironmentsEntry): unknown {
+    const obj: any = {}
+    message.key !== undefined && (obj.key = message.key)
+    message.value !== undefined && (obj.value = message.value)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<InitContainer_EnvironmentsEntry>, I>>(
+    object: I,
+  ): InitContainer_EnvironmentsEntry {
+    const message = createBaseInitContainer_EnvironmentsEntry()
+    message.key = object.key ?? ''
+    message.value = object.value ?? ''
+    return message
+  },
+}
+
 function createBaseDagentContainerConfig(): DagentContainerConfig {
   return { networks: [] }
 }
@@ -2021,7 +2294,7 @@ export const CraneContainerConfig_ExtraLBAnnotationsEntry = {
 }
 
 function createBaseExplicitContainerConfig(): ExplicitContainerConfig {
-  return { ports: [], portRanges: [], volumes: [], command: [], args: [], environments: [] }
+  return { ports: [], portRanges: [], volumes: [], command: [], args: [], environments: [], initContainers: [] }
 }
 
 export const ExplicitContainerConfig = {
@@ -2070,6 +2343,9 @@ export const ExplicitContainerConfig = {
     }
     if (message.secrets !== undefined) {
       KeyValueList.encode(message.secrets, writer.uint32(8050).fork()).ldelim()
+    }
+    for (const v of message.initContainers) {
+      InitContainer.encode(v!, writer.uint32(8058).fork()).ldelim()
     }
     return writer
   },
@@ -2126,6 +2402,9 @@ export const ExplicitContainerConfig = {
         case 1006:
           message.secrets = KeyValueList.decode(reader, reader.uint32())
           break
+        case 1007:
+          message.initContainers.push(InitContainer.decode(reader, reader.uint32()))
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -2153,6 +2432,9 @@ export const ExplicitContainerConfig = {
       args: Array.isArray(object?.args) ? object.args.map((e: any) => String(e)) : [],
       environments: Array.isArray(object?.environments) ? object.environments.map((e: any) => String(e)) : [],
       secrets: isSet(object.secrets) ? KeyValueList.fromJSON(object.secrets) : undefined,
+      initContainers: Array.isArray(object?.initContainers)
+        ? object.initContainers.map((e: any) => InitContainer.fromJSON(e))
+        : [],
     }
   },
 
@@ -2200,6 +2482,11 @@ export const ExplicitContainerConfig = {
       obj.environments = []
     }
     message.secrets !== undefined && (obj.secrets = message.secrets ? KeyValueList.toJSON(message.secrets) : undefined)
+    if (message.initContainers) {
+      obj.initContainers = message.initContainers.map(e => (e ? InitContainer.toJSON(e) : undefined))
+    } else {
+      obj.initContainers = []
+    }
     return obj
   },
 
@@ -2233,6 +2520,7 @@ export const ExplicitContainerConfig = {
     message.environments = object.environments?.map(e => e) || []
     message.secrets =
       object.secrets !== undefined && object.secrets !== null ? KeyValueList.fromPartial(object.secrets) : undefined
+    message.initContainers = object.initContainers?.map(e => InitContainer.fromPartial(e)) || []
     return message
   },
 }

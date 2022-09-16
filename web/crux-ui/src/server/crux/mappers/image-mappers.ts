@@ -12,6 +12,7 @@ import {
   deploymentStrategyFromJSON,
   deploymentStrategyToJSON,
   ExplicitContainerConfig as ProtoExplicitContainerConfig,
+  InitContainer,
   LogConfig,
   NetworkMode,
   networkModeFromJSON,
@@ -88,6 +89,7 @@ export const explicitContainerConfigToDto = (config?: ProtoExplicitContainerConf
     extraLBAnnotations: config.crane?.extraLBAnnotations ?? null,
     healthCheckConfig: config.crane?.healthCheckConfig ?? null,
     resourceConfig: config.crane?.resourceConfig ?? null,
+    initContainers: config.initContainers ?? [],
   }
 
   return explicit
@@ -111,6 +113,17 @@ export const explicitContainerConfigToProto = (config?: ExplicitContainerConfig)
     dagent: undefined,
     crane: undefined,
     environments: [],
+    initContainers: [],
+  }
+
+  if (config.initContainers) {
+    protoConfig.initContainers = config.initContainers.map(
+      it =>
+        ({
+          ...it,
+          environments: it.environments ?? [],
+        } as InitContainer),
+    )
   }
 
   if (config.expose) {

@@ -154,6 +154,8 @@ type ContainerConfig struct {
 	ConfigContainer *ConfigContainer `json:"configContainer,omitempty"`
 	// import container uses rclone to copy over files before container startup
 	ImportContainer *ImportContainer `json:"importContainer,omitempty"`
+	// standard initContainers
+	InitContainers []InitContainer `json:"initContainers,omitempty" binding:"dive"`
 	// container user id
 	User *int64 `json:"user"`
 	// the initial command of a container have mixed terms
@@ -216,6 +218,14 @@ func (c *ContainerConfig) Strings(appConfig *config.CommonConfiguration) []strin
 		str = append(str, fmt.Sprintf("Volumes: %v", c.Volumes))
 	}
 
+	if len(c.InitContainers) > 0 {
+		names := []string{}
+		for _, ic := range c.InitContainers {
+			names = append(names, ic.Name)
+		}
+		str = append(str, fmt.Sprintf("Init containers: %v", names))
+	}
+
 	str = append(str,
 		fmt.Sprintf("Memory limit: %v, CPU limit: %v",
 			util.Fallback(c.ResourceConfig.Limits.Memory, appConfig.DefaultLimitsMemory),
@@ -249,6 +259,30 @@ type ImportContainer struct {
 	Volume string `json:"volume" binding:"required"`
 	// for azureblob storage use `sync :azuresync:<container>/<product-guid>/<version-guid>/<component>/<volume>`
 	Command string `json:"command" binding:"required"`
+}
+
+// classic initContainer, also mimicked on docker
+// todo(nandor-magyar): extend docs here
+type InitContainer struct {
+	// name of the init container, they must be unique within a pod
+	Name string
+	// image to use
+	Image string
+	// Reference(s) to already existing volume(s)
+	Volumes []VolumeLink
+	// command to run, expecting exit code 0
+	Command []string
+	// arguments added to the command
+	Args []string
+	// use env/secrets from the parent container
+	UseParent bool
+	// envs directly defined
+	Envs map[string]string
+}
+
+type VolumeLink struct {
+	Name string
+	Path string
 }
 
 // Verbose volume definitions with support of size and type parameters

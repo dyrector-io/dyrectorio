@@ -81,7 +81,7 @@ func (d *deployment) deployDeployment(p *deploymentParams) error {
 					d.appConfig.KeyIssuer:  p.issuer,
 				}).WithSpec(
 					corev1.PodSpec().WithContainers(containerConfig).
-						WithInitContainers(getInitContainers(p.containerConfig, d.appConfig)...).
+						WithInitContainers(getInitContainers(p, d.appConfig)...).
 						WithVolumes(getVolumesFromMap(p.volumes, d.appConfig)...),
 				)),
 		)
@@ -264,49 +264,97 @@ func getResourceManagement(resourceConfig v1.ResourceConfig,
 	), nil
 }
 
-func getInitContainers(containerConfig *v1.ContainerConfig, cfg *config.Configuration) []*corev1.ContainerApplyConfiguration {
+// getInitContainers returns every init container specific(import/config) or custom ones
+func getInitContainers(params *deploymentParams, cfg *config.Configuration) []*corev1.ContainerApplyConfiguration {
 	// this is only the config container / could be general / wait for it / other init purposes
 	initContainers := []*corev1.ContainerApplyConfiguration{}
 
-	if containerConfig != nil {
-		if containerConfig.ConfigContainer != nil {
-			initContainers = append(initContainers,
-				corev1.Container().
-					WithName("config-loader").
-					WithImage(containerConfig.ConfigContainer.Image).
-					WithImagePullPolicy(coreV1.PullAlways).
-					WithCommand([]string{
-						"sh",
-						"-c",
-						fmt.Sprintf("rsync --delete -a %s /targetconfig", containerConfig.ConfigContainer.Path)}...).
-					WithVolumeMounts(getVolumeMountsFromMap(map[string]v1.Volume{
-						util.JoinV("-", containerConfig.Container, containerConfig.ConfigContainer.Volume): {
-							Name: util.JoinV("-", containerConfig.Container, containerConfig.ConfigContainer.Volume),
-							Path: "/targetconfig",
-						},
-					})...),
-			)
+	if params != nil && params.containerConfig != nil {
+		initContainers = addConfigContainer(initContainers, params.containerConfig)
+		initContainers = addImportContainer(initContainers, params.containerConfig, cfg)
+		initContainers = addInitContainers(initContainers, params)
+	}
+
+	return initContainers
+}
+
+func addConfigContainer(initContainers []*corev1.ContainerApplyConfiguration,
+	containerConfig *v1.ContainerConfig) []*corev1.ContainerApplyConfiguration {
+	if containerConfig.ConfigContainer != nil {
+		initContainers = append(initContainers,
+			corev1.Container().
+				WithName("config-loader").
+				WithImage(containerConfig.ConfigContainer.Image).
+				WithImagePullPolicy(coreV1.PullAlways).
+				WithCommand([]string{
+					"sh",
+					"-c",
+					fmt.Sprintf("rsync --delete -a %s /targetconfig", containerConfig.ConfigContainer.Path)}...).
+				WithVolumeMounts(getVolumeMountsFromMap(map[string]v1.Volume{
+					util.JoinV("-", containerConfig.Container, containerConfig.ConfigContainer.Volume): {
+						Name: util.JoinV("-", containerConfig.Container, containerConfig.ConfigContainer.Volume),
+						Path: "/targetconfig",
+					},
+				})...),
+		)
+	}
+
+	return initContainers
+}
+
+func addImportContainer(initContainers []*corev1.ContainerApplyConfiguration,
+	containerConfig *v1.ContainerConfig, cfg *config.Configuration) []*corev1.ContainerApplyConfiguration {
+	if containerConfig.ImportContainer != nil {
+		importContainerVolumeName := util.JoinV("-", containerConfig.Container, containerConfig.ImportContainer.Volume)
+
+		initContainers = append(initContainers,
+			corev1.Container().
+				WithName("import").
+				WithImage(cfg.ImportContainerImage).
+				WithImagePullPolicy(coreV1.PullAlways).
+				WithEnv(getEnvs(containerConfig.ImportContainer.Environments)...).
+				WithArgs(
+					strings.Split(containerConfig.ImportContainer.Command, " ")...).
+				WithVolumeMounts(getVolumeMountsFromMap(map[string]v1.Volume{
+					importContainerVolumeName: {
+						Name: importContainerVolumeName,
+						Path: "/data/output",
+					},
+				})...),
+		)
+	}
+
+	return initContainers
+}
+
+func addInitContainers(initContainers []*corev1.ContainerApplyConfiguration,
+	params *deploymentParams) []*corev1.ContainerApplyConfiguration {
+	for _, iCont := range params.containerConfig.InitContainers {
+		container := corev1.Container().
+			WithName(iCont.Name).
+			WithImage(iCont.Image).
+			WithCommand(iCont.Command...).
+			WithArgs(iCont.Args...).
+			WithImagePullPolicy(coreV1.PullAlways)
+
+		volumeMounts := []*corev1.VolumeMountApplyConfiguration{}
+
+		for _, v := range iCont.Volumes {
+			volumeMounts = append(volumeMounts, getVolumeMountFromLink(params.containerConfig.Container, v))
 		}
 
-		if containerConfig.ImportContainer != nil {
-			importContainerVolumeName := util.JoinV("-", containerConfig.Container, containerConfig.ImportContainer.Volume)
-
-			initContainers = append(initContainers,
-				corev1.Container().
-					WithName("import").
-					WithImage(cfg.ImportContainerImage).
-					WithImagePullPolicy(coreV1.PullAlways).
-					WithEnv(getEnvs(containerConfig.ImportContainer.Environments)...).
-					WithArgs(
-						strings.Split(containerConfig.ImportContainer.Command, " ")...).
-					WithVolumeMounts(getVolumeMountsFromMap(map[string]v1.Volume{
-						importContainerVolumeName: {
-							Name: importContainerVolumeName,
-							Path: "/data/output",
-						},
-					})...),
-			)
+		if len(volumeMounts) > 0 {
+			container.WithVolumeMounts(volumeMounts...)
 		}
+
+		if iCont.UseParent {
+			container.WithEnvFrom(getEnvConfigMapsAndSecrets(params.configMapsEnv, params.secrets)...)
+		}
+
+		if len(iCont.Envs) > 0 {
+			container.WithEnv(getEnvs(iCont.Envs)...)
+		}
+		initContainers = append(initContainers, container)
 	}
 
 	return initContainers
@@ -367,6 +415,10 @@ func getDeploymentsClient(namespace string, cfg *config.Configuration) typedv1.D
 	}
 
 	return client.AppsV1().Deployments(namespace)
+}
+
+func getVolumeMountFromLink(containerName string, volume v1.VolumeLink) *corev1.VolumeMountApplyConfiguration {
+	return corev1.VolumeMount().WithName(util.JoinV("-", containerName, volume.Name)).WithMountPath(volume.Path)
 }
 
 func getVolumesFromMap(volumes map[string]v1.Volume, cfg *config.Configuration) []*corev1.VolumeApplyConfiguration {

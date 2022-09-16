@@ -121,6 +121,21 @@ export type ExplicitContainerConfigImportContainer = {
   command: string
 }
 
+export type ExplicitInitContainerVolumeLink = {
+  name: string
+  path: string
+}
+
+export type ExplicitInitContainer = {
+  name: string
+  image: string
+  command?: string[]
+  args?: string[]
+  environments?: { [key: string]: string }
+  useParentConfig?: boolean
+  volumes?: ExplicitInitContainerVolumeLink[]
+}
+
 export type ExplicitContainerConfig = {
   ingress?: ExplicitContainerConfigIngress
   expose?: ExplicitContainerConfigExpose
@@ -134,6 +149,7 @@ export type ExplicitContainerConfig = {
   volumes?: ExplicitContainerConfigVolume[]
   commands?: string[]
   args?: string[]
+  initContainers?: ExplicitInitContainer[]
 
   // dagent-specific:
   logConfig?: ExplicitContainerConfigLog
@@ -238,6 +254,7 @@ export const mergeConfigs = (
       healthCheckConfig: override(imageConfig?.config?.healthCheckConfig, instanceConfig.config?.healthCheckConfig),
       importContainer: override(imageConfig?.config?.importContainer, instanceConfig.config?.importContainer),
       resourceConfig: override(imageConfig?.config?.resourceConfig, instanceConfig.config?.resourceConfig),
+      initContainers: override(imageConfig?.config?.initContainers, instanceConfig.config?.initContainers),
     },
   }
 }

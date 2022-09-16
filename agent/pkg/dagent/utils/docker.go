@@ -284,6 +284,10 @@ func logDeployInfo(dog *dogger.DeploymentLogger, deployImageRequest *v1.DeployIm
 	if deployImageRequest.ContainerConfig.User != nil {
 		dog.Write(fmt.Sprintf("User: %v", *deployImageRequest.ContainerConfig.User))
 	}
+
+	if len(deployImageRequest.ContainerConfig.InitContainers) > 0 {
+		dog.Write("WARNING: missing implementation: initContainers!")
+	}
 }
 
 func DeployImage(ctx context.Context,

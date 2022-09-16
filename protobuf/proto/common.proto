@@ -139,6 +139,24 @@ message LogConfig {
   map<string, string> options = 101;
 }
 
+// volumes referred as VolumeLink
+// they won't get created if non-existent
+message VolumeLink {
+  string name = 100;
+  string path = 101;
+}
+
+message InitContainer {
+  string name = 100;
+  string image = 101;
+  map<string, string> environments = 102;
+  optional bool useParentConfig = 103;
+
+  repeated VolumeLink volumes = 1000;
+  repeated string command = 1001;
+  repeated string args = 1002;
+}
+
 message DagentContainerConfig {
   optional LogConfig logConfig = 100;
   optional RestartPolicy restartPolicy = 101;
@@ -191,6 +209,7 @@ message ExplicitContainerConfig {
   repeated string args = 1004;
   repeated string environments = 1005;
   optional KeyValueList secrets = 1006;
+  repeated InitContainer initContainers = 1007;
 }
 
 message UniqueKey {
