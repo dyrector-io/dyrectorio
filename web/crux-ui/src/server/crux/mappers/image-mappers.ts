@@ -12,6 +12,7 @@ import {
   deploymentStrategyFromJSON,
   deploymentStrategyToJSON,
   ExplicitContainerConfig as ProtoExplicitContainerConfig,
+  InitContainer,
   LogConfig,
   NetworkMode,
   networkModeFromJSON,
@@ -21,7 +22,6 @@ import {
   restartPolicyToJSON,
   Volume,
 } from '@app/models/grpc/protobuf/proto/common'
-import { InitContainer } from './../../../models/grpc/protobuf/proto/common'
 
 import { ContainerConfig as ProtoContainerConfig, ImageResponse } from '@app/models/grpc/protobuf/proto/crux'
 
