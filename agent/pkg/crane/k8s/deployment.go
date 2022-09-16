@@ -81,7 +81,7 @@ func (d *deployment) deployDeployment(p *deploymentParams) error {
 					d.appConfig.KeyIssuer:  p.issuer,
 				}).WithSpec(
 					corev1.PodSpec().WithContainers(containerConfig).
-						WithInitContainers(getInitContainers(p.containerConfig, d.appConfig, p)...).
+						WithInitContainers(getInitContainers(p, d.appConfig)...).
 						WithVolumes(getVolumesFromMap(p.volumes, d.appConfig)...),
 				)),
 		)
@@ -265,15 +265,14 @@ func getResourceManagement(resourceConfig v1.ResourceConfig,
 }
 
 // getInitContainers returns every init container specific(import/config) or custom ones
-func getInitContainers(containerConfig *v1.ContainerConfig,
-	cfg *config.Configuration, params *deploymentParams) []*corev1.ContainerApplyConfiguration {
+func getInitContainers(params *deploymentParams, cfg *config.Configuration) []*corev1.ContainerApplyConfiguration {
 	// this is only the config container / could be general / wait for it / other init purposes
 	initContainers := []*corev1.ContainerApplyConfiguration{}
 
-	if containerConfig != nil {
-		initContainers = addConfigContainer(initContainers, containerConfig)
-		initContainers = addImportContainer(initContainers, containerConfig, cfg)
-		initContainers = addInitContainers(initContainers, containerConfig, params)
+	if params != nil && params.containerConfig != nil {
+		initContainers = addConfigContainer(initContainers, params.containerConfig)
+		initContainers = addImportContainer(initContainers, params.containerConfig, cfg)
+		initContainers = addInitContainers(initContainers, params)
 	}
 
 	return initContainers
@@ -329,8 +328,8 @@ func addImportContainer(initContainers []*corev1.ContainerApplyConfiguration,
 }
 
 func addInitContainers(initContainers []*corev1.ContainerApplyConfiguration,
-	containerConfig *v1.ContainerConfig, params *deploymentParams) []*corev1.ContainerApplyConfiguration {
-	for _, iCont := range containerConfig.InitContainers {
+	params *deploymentParams) []*corev1.ContainerApplyConfiguration {
+	for _, iCont := range params.containerConfig.InitContainers {
 		container := corev1.Container().
 			WithName(iCont.Name).
 			WithImage(iCont.Image).
@@ -341,7 +340,7 @@ func addInitContainers(initContainers []*corev1.ContainerApplyConfiguration,
 		volumeMounts := []*corev1.VolumeMountApplyConfiguration{}
 
 		for _, v := range iCont.Volumes {
-			volumeMounts = append(volumeMounts, getVolumeMountFromLink(containerConfig.Container, v))
+			volumeMounts = append(volumeMounts, getVolumeMountFromLink(params.containerConfig.Container, v))
 		}
 
 		if len(volumeMounts) > 0 {
