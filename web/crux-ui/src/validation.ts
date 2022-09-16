@@ -48,7 +48,7 @@ const iconRule = yup
   .oneOf([null, ...DYO_ICONS])
   .nullable()
 
-export const nameRule = yup.string().required().min(3).max(70)
+export const nameRule = yup.string().required().trim().min(3).max(70)
 const descriptionRule = yup.string().optional()
 
 export const updateProductSchema = yup.object().shape({
