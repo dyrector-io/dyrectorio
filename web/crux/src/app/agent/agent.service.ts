@@ -1,11 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { DeploymentEventTypeEnum, DeploymentStatusEnum, NodeTypeEnum } from '@prisma/client'
-import { concatAll, finalize, from, map, Observable, of, Subject, takeUntil } from 'rxjs'
+import { concatAll, concatMap, finalize, from, map, Observable, of, Subject, takeUntil } from 'rxjs'
 import { Agent, AgentToken } from 'src/domain/agent'
 import AgentInstaller from 'src/domain/agent-installer'
 import { DeploymentProgressEvent } from 'src/domain/deployment'
-import { BaseMessage, NotificationMessageType } from 'src/domain/notification-templates'
+import { DeployMessage, NotificationMessageType } from 'src/domain/notification-templates'
 import { collectChildVersionIds, collectParentVersionIds } from 'src/domain/utils'
 import { AlreadyExistsException, NotFoundException, UnauthenticatedException } from 'src/exception/errors'
 import { AgentCommand, AgentInfo } from 'src/grpc/protobuf/proto/agent'
@@ -152,12 +152,11 @@ export default class AgentService {
     }
 
     return request.pipe(
-      map(it => {
+      concatMap(it => {
         this.logger.verbose(`Deployment update - ${deploymentId}`)
 
         const events = deployment.onUpdate(it)
-        this.createDeploymentEvents(deployment.id, events)
-        return Empty
+        return from(this.createDeploymentEvents(deployment.id, events)).pipe(map(() => Empty))
       }),
       finalize(async () => {
         agent.onDeploymentFinished(deployment)
@@ -169,7 +168,11 @@ export default class AgentService {
         await this.notificationService.sendNotification({
           identityId: deployment.notification.accessedBy,
           messageType,
-          message: { subject: deployment.notification.deploymentName } as BaseMessage,
+          message: {
+            subject: deployment.notification.productName,
+            version: deployment.notification.versionName,
+            node: deployment.notification.nodeName,
+          } as DeployMessage,
         })
 
         this.logger.debug(`Deployment finished: ${deployment.id}`)
@@ -262,7 +265,7 @@ export default class AgentService {
             message: 'Invalid token',
           })
         }
-        agent = new Agent(connection, eventChannel as Subject<NodeEventMessage>, request?.version)
+        agent = new Agent(connection, eventChannel as Subject<NodeEventMessage>, request?.version, request?.publicKey)
 
         await prisma.node.update({
           where: { id: node.id },
@@ -274,10 +277,12 @@ export default class AgentService {
       }
     })
 
+    this.logger.log(`Agent key: ${request.publicKey}`)
+
     this.agents.set(agent.id, agent)
     connection.status().subscribe(it => this.onAgentConnectionStatusChange(agent, it))
 
-    this.logger.log(`Agent joined with id: ${request.id}`)
+    this.logger.log(`Agent joined with id: ${request.id}, key: ${!!agent.publicKey}`)
     this.logServiceInfo()
 
     return agent.onConnected()

@@ -22,8 +22,10 @@ service Agent {
    * For prefix state reports, should be closed by the server.
    */
   rpc Connect(AgentInfo) returns (stream AgentCommand);
+
   rpc DeploymentStatus(stream common.DeploymentStatusMessage) returns (Empty);
   rpc ContainerState(stream common.ContainerStateListMessage) returns (Empty);
+  rpc GetSecretList(common.ListSecretsResponse) returns (Empty);
 }
 
 message Empty {}
@@ -35,6 +37,7 @@ message Empty {}
 message AgentInfo {
   string id = 1;
   string version = 2;
+  string publicKey = 3;
 }
 
 message AgentCommand {
@@ -43,10 +46,11 @@ message AgentCommand {
     ContainerStateRequest containerState = 2;
     ContainerDeleteRequest containerDelete = 3;
     DeployRequestLegacy deployLegacy = 4;
+    ListSecretsRequest listSecrets = 5;
   }
 }
 
-/**
+/*
  * This is more of a placeholder, we could include more, or return this
  * instantly after validation success.
  */
@@ -59,6 +63,10 @@ message VersionDeployRequest {
 
   repeated DeployRequest requests = 4;
 }
+/*
+ * Request for a keys of existing secrets in a prefix, eg. namespace
+ */
+message ListSecretsRequest { string prefix = 1; }
 
 /**
  * Deploys a single container
@@ -98,8 +106,8 @@ message DeployRequest {
   optional RegistryAuth registryAuth = 9;
 }
 
-message ContainerStateRequest { 
-  optional string prefix = 1; 
+message ContainerStateRequest {
+  optional string prefix = 1;
   optional bool oneShot = 2;
 }
 

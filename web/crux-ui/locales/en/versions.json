@@ -1,7 +1,7 @@
 {
   "versionsName": "Products - {{product}} - Versions - {{name}}",
 
-  "tips": "Create a new version for your product that you can use for different purposes. Rolling versions are ideal for continuous delivery, while Incremental ones are useful for production.",
+  "tips": "Create a new version for your product. You can select a default version, from which other versions will inherit images and configuration. dyrector.io is the most suitable for semantic versioning, since it's the de facto way of version control. We recommend using that.",
   "increaseTips": "By increasing the version of your Product, you're able to create new releases of your already existing Product with new images or substitute included ones with a different tag.",
   "new": "New version",
   "default": "Default",
@@ -27,5 +27,9 @@
   "addDeployment": "Add deployment",
   "addImage": "Add image",
 
-  "deploymentName": "Deployment name"
+  "deploymentName": "Deployment name",
+  "alreadyHavePreparing": "You already have one preparing deployment!",
+  "nodeRequired": "You can't create deployment without having at least one node!",
+  "versionSemanticHint": "Version is not in semantic format.",
+  "emptyChangelog": "You have not provided any changes"
 }

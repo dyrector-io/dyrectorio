@@ -105,7 +105,7 @@ const VersionCard = (props: VersionCardProps) => {
       <span className="text-bright font-semibold">{t('changelog')}</span>
 
       <DyoExpandableText
-        text={version.changelog}
+        text={version.changelog ? version.changelog : t('emptyChangelog')}
         lineClamp={6}
         className="text-md text-bright mt-2 max-h-44"
         buttonClassName="w-fit mb-8"

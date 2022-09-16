@@ -31,7 +31,7 @@ type ContainerBuilder interface {
 	WithName(name string) ContainerBuilder
 	WithNetworkAliases(aliases ...string) ContainerBuilder
 	WithNetworkMode(networkMode string) ContainerBuilder
-	WithEnvironment(envList string) ContainerBuilder
+	WithNetworks(networks []string) ContainerBuilder
 	WithLabels(labels map[string]string) ContainerBuilder
 	WithLogConfig(config container.LogConfig)
 	WithRegistryAuth(auth RegistryAuth) ContainerBuilder
@@ -47,10 +47,11 @@ type ContainerBuilder interface {
 	WithPostCreateHooks(hooks ...LifecycleFunc) ContainerBuilder
 	WithPreStartHooks(hooks ...LifecycleFunc) ContainerBuilder
 	WithPostStartHooks(hooks ...LifecycleFunc) ContainerBuilder
+	Create() ContainerBuilder
 	GetContainerID() *string
 	GetNetworkID() *string
-	Create() ContainerBuilder
 	Start() (bool, error)
+	StartWaitUntilExit() (ContainerWaitResult, error)
 }
 
 type DockerContainerBuilder struct {
@@ -116,6 +117,7 @@ func (dc *DockerContainerBuilder) WithName(name string) *DockerContainerBuilder 
 
 // Sets the network aliases used when connecting the container to the network.
 // Applied only if the NetworkMode is not none/host.
+// It is a must for Podman, without this the DNS resolution won't work.
 func (dc *DockerContainerBuilder) WithNetworkAliases(aliases ...string) *DockerContainerBuilder {
 	dc.networkAliases = aliases
 	return dc
@@ -311,8 +313,8 @@ func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 	hostConfig.RestartPolicy = policy
 
 	log.Println("Provided networkMode: ", dc.networkMode)
-	if dc.networkMode == "" || dc.networkMode == "none" {
-		hostConfig.NetworkMode = container.NetworkMode(dc.networkMode)
+	if nw := container.NetworkMode(dc.networkMode); !nw.IsPrivate() {
+		hostConfig.NetworkMode = nw
 	} else {
 		networkIDs := createNetworks(dc)
 		if networkIDs == nil {
@@ -361,6 +363,25 @@ func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 	return dc
 }
 
+// Starts the container and waits until the first exit to happen then returns
+func (dc *DockerContainerBuilder) StartWaitUntilExit() (*ContainerWaitResult, error) {
+	containerID := *dc.GetContainerID()
+	waitC, errC := dc.client.ContainerWait(dc.ctx, containerID, container.WaitConditionNextExit)
+	_, err := dc.Start()
+
+	if err != nil {
+		return nil, fmt.Errorf("failed start-waiting container: %w", err)
+	}
+
+	select {
+	case result := <-waitC:
+		return &ContainerWaitResult{StatusCode: result.StatusCode}, nil
+
+	case err = <-errC:
+		return nil, fmt.Errorf("error container waiting: %w", err)
+	}
+}
+
 // Starts the container using the configuration given by 'With...' functions.
 // Returns true if successful, false and an error if not.
 func (dc *DockerContainerBuilder) Start() (bool, error) {
@@ -403,7 +424,7 @@ func prepareImage(dc *DockerContainerBuilder) error {
 }
 
 func createNetworks(dc *DockerContainerBuilder) []string {
-	var networkIDs []string
+	networkIDs := []string{}
 
 	for _, networkName := range dc.networks {
 		filter := filters.NewArgs()

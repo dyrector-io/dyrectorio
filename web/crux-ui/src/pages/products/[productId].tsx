@@ -22,6 +22,7 @@ import {
 import { productApiUrl, productUrl, ROUTE_PRODUCTS, versionSetDefaultApiUrl, versionUrl } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
+import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
@@ -150,7 +151,7 @@ const ProductDetailsPage = (props: ProductDetailsPageProps) => {
       </PageHeading>
 
       {editState === 'version-list' ? (
-        <ProductDetailsCard product={product} className="p-6" />
+        <ProductDetailsCard product={product} className={clsx('p-6', simpleProduct ? 'mb-4' : null)} />
       ) : editState === 'edit-product' ? (
         <EditProductCard
           className="mb-8 px-8 py-6"

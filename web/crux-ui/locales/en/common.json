@@ -8,6 +8,7 @@
   "confirmPass": "Confirm password",
   "send": "Send",
   "resend": "Resend",
+  "clear": "Clear",
 
   "goBack": "Go back",
   "back": "Back",
@@ -27,7 +28,7 @@
   "id": "#",
   "description": "Description",
   "icon": "Icon",
-  "updatedAt": "Update at",
+  "updatedAt": "Updated at",
   "createdAt": "Created at",
   "createdByName": "Created by {{name}}",
   "date": "Date",
@@ -38,6 +39,7 @@
   "yourTeams": "Your teams",
   "address": "Address",
   "actions": "Actions",
+  "note": "Note",
 
   "editName": "Edit {{name}}",
   "add": "Add",
@@ -163,6 +165,6 @@
 
   "itemsPerPage": "Items per page",
   "showingItems": "Showing {{pageFrom}} to {{pageTo}} of {{total}} entries",
-
-  "openSource": "is an Open Source project"
+  "openSource": "is an Open Source project",
+  "cannotDefineSecretsHere": "Secret keys can be provided here, values can be set in deployments."
 }

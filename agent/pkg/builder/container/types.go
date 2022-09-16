@@ -118,3 +118,8 @@ type ImagePullResponse struct {
 // 'containerId' can be nil depending on the hook.
 type LifecycleFunc func(ctx context.Context, client *client.Client, containerName string,
 	containerId *string, mountList []mount.Mount, logger *io.StringWriter) error
+
+// ContainerWaitResult with the status code from the container
+type ContainerWaitResult struct {
+	StatusCode int64
+}

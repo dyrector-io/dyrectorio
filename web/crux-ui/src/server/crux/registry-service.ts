@@ -108,7 +108,7 @@ class DyoRegistryService {
         ? {
             type: 'v2',
             ...res.v2,
-            isPrivate: !!res.v2.user,
+            private: !!res.v2.user,
           }
         : res.gitlab
         ? {
@@ -124,7 +124,7 @@ class DyoRegistryService {
         : {
             type: 'google',
             ...res.google,
-            isPrivate: !!res.google.user,
+            private: !!res.google.user,
           }),
     }
   }

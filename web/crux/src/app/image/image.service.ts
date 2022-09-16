@@ -88,6 +88,7 @@ export default class ImageService {
                   name: containerNameFromImageName(it),
                   environment: [],
                   capabilities: [],
+                  secrets: [],
                   config: {},
                 },
               },
@@ -129,14 +130,14 @@ export default class ImageService {
   async patchImage(request: PatchImageRequest): Promise<Empty> {
     let config: ContainerConfigData
     if (request.config) {
-      const caps = request.config.capabilities
-      const envs = request.config.environment
+      const { capabilities: caps, environment: envs, secrets } = request.config
 
       config = {
         name: request.config.name ?? undefined,
         capabilities: caps ? caps.data ?? [] : (undefined as JsonArray),
         environment: envs ? envs.data ?? [] : (undefined as JsonArray),
         config: request.config?.config,
+        secrets: secrets ? secrets.data ?? [] : (undefined as JsonArray),
       }
     }
 

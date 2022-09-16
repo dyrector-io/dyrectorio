@@ -121,6 +121,7 @@ export default class VersionService {
                     environment: image.config.environment,
                     capabilities: image.config.capabilities,
                     config: image.config.config,
+                    secrets: image.config.secrets,
                   },
                 },
               },
@@ -288,8 +289,7 @@ export default class VersionService {
           const createdDeploy = await prisma.deployment.create({
             data: {
               createdBy: request.accessedBy,
-              name: `Increased ${deployment.name}`,
-              description: deployment.description,
+              note: deployment.note,
               prefix: deployment.prefix,
               // Default status for deployments is preparing
               status: DeploymentStatusEnum.preparing,

@@ -1,3 +1,4 @@
+# Stage 1
 FROM node:18.7-alpine AS BUILDER
 
 ENV NODE_ENV production
@@ -10,6 +11,7 @@ COPY ./src ./src
 RUN npm ci --no-fund && npm run prismagen
 RUN npm run build
 
+# Stage 2
 FROM node:18.7-alpine AS RUNNER
 ENV NODE_ENV production
 ENV TZ Europe/Budapest

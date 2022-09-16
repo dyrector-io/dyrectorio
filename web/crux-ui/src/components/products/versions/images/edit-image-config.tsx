@@ -1,7 +1,9 @@
 import { IMAGE_WS_REQUEST_DELAY } from '@app/const'
 import { DyoInput } from '@app/elements/dyo-input'
 import { useThrottling } from '@app/hooks/use-throttleing'
-import { ContainerConfig, Environment } from '@app/models-config'
+import { ContainerConfig, Environment, InstanceContainerConfig, Secrets } from '@app/models-config'
+
+import SecretKeyOnlyInput from '@app/components/shared/secret-key-input'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useRef, useState } from 'react'
 import KeyValueInput from '../../../shared/key-value-input'
@@ -9,8 +11,8 @@ import KeyValueInput from '../../../shared/key-value-input'
 interface EditImageConfigProps {
   disabled?: boolean
   disabledContainerNameEditing?: boolean
-  config: ContainerConfig
-  onPatch: (config: Partial<ContainerConfig>) => void
+  config: ContainerConfig | InstanceContainerConfig
+  onPatch: (config: Partial<ContainerConfig | InstanceContainerConfig>) => void
 }
 
 const EditImageConfig = (props: EditImageConfigProps) => {
@@ -42,6 +44,12 @@ const EditImageConfig = (props: EditImageConfigProps) => {
       environment,
     })
 
+  const onSecretSubmit = (secrets: Secrets) => {
+    sendPatch({
+      secrets,
+    })
+  }
+
   const onContainerNameChange = (name: string) => {
     setContainerName(name)
 
@@ -70,6 +78,12 @@ const EditImageConfig = (props: EditImageConfigProps) => {
         heading={t('environment').toUpperCase()}
         items={config?.environment ?? []}
         onChange={onEnvChange}
+      />
+      <SecretKeyOnlyInput
+        disabled={disabled}
+        heading={t('secrets').toUpperCase()}
+        items={config.secrets ?? []}
+        onSubmit={onSecretSubmit}
       />
     </>
   )

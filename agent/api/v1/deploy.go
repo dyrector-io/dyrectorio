@@ -30,7 +30,6 @@ type DeployImageRequest struct {
 	Tag             string                `json:"Tag" binding:"required"`
 	Issuer          string                `json:"Issuer"`
 }
-
 type VersionData struct {
 	Version      string `json:"version" binding:"required"`
 	ReleaseNotes string `json:"releaseNotes"`
@@ -134,6 +133,8 @@ type ContainerConfig struct {
 	Volumes []Volume `json:"volumes,omitempty" binding:"dive"`
 	// environment variables list
 	Environment []string `json:"environment"`
+	// Secrets
+	Secrets map[string]string `json:"secrets,omitempty"`
 	// the type of the runtime text provided eg. dotnet-appsettings
 	RuntimeConfigType RuntimeConfigType `json:"runtimeConfigType"`
 	// create an ingress object or not
@@ -153,6 +154,8 @@ type ContainerConfig struct {
 	ConfigContainer *ConfigContainer `json:"configContainer,omitempty"`
 	// import container uses rclone to copy over files before container startup
 	ImportContainer *ImportContainer `json:"importContainer,omitempty"`
+	// standard initContainers
+	InitContainers []InitContainer `json:"initContainers,omitempty" binding:"dive"`
 	// container user id
 	User *int64 `json:"user"`
 	// the initial command of a container have mixed terms
@@ -170,8 +173,7 @@ type ContainerConfig struct {
 	RestartPolicy builder.RestartPolicyName `json:"restartPolicy"`
 	// bridge(container, default) host, none or network name
 	NetworkMode string `json:"networkMode"`
-	// extra networks
-	Networks []string `json:"networks"`
+
 	// k8s-only-section
 	// Deployments strategy, on deployment how to restart underlying pods
 	// Values: Recreate (all-at-once), Rolling(one-by-one only if succeeds)
@@ -186,7 +188,9 @@ type ContainerConfig struct {
 	ProxyHeaders bool `json:"proxyHeaders"`
 	// Expose service using external IP
 	// also sets the externalTrafficPolcy to "local"
-	UseLoadBalancer bool `json:"useLoadBalancer"`
+	// extra networks
+	Networks        []string `json:"networks"`
+	UseLoadBalancer bool     `json:"useLoadBalancer"`
 	// ExtraLBAnnotations
 	// lots of cloud provider specific configs can be put into annotations
 	// they vary enough to have it exposed like this
@@ -212,6 +216,14 @@ func (c *ContainerConfig) Strings(appConfig *config.CommonConfiguration) []strin
 
 	if c.Volumes != nil {
 		str = append(str, fmt.Sprintf("Volumes: %v", c.Volumes))
+	}
+
+	if len(c.InitContainers) > 0 {
+		names := []string{}
+		for _, ic := range c.InitContainers {
+			names = append(names, ic.Name)
+		}
+		str = append(str, fmt.Sprintf("Init containers: %v", names))
 	}
 
 	str = append(str,
@@ -247,6 +259,30 @@ type ImportContainer struct {
 	Volume string `json:"volume" binding:"required"`
 	// for azureblob storage use `sync :azuresync:<container>/<product-guid>/<version-guid>/<component>/<volume>`
 	Command string `json:"command" binding:"required"`
+}
+
+// classic initContainer, also mimicked on docker
+// todo(nandor-magyar): extend docs here
+type InitContainer struct {
+	// name of the init container, they must be unique within a pod
+	Name string
+	// image to use
+	Image string
+	// Reference(s) to already existing volume(s)
+	Volumes []VolumeLink
+	// command to run, expecting exit code 0
+	Command []string
+	// arguments added to the command
+	Args []string
+	// use env/secrets from the parent container
+	UseParent bool
+	// envs directly defined
+	Envs map[string]string
+}
+
+type VolumeLink struct {
+	Name string
+	Path string
 }
 
 // Verbose volume definitions with support of size and type parameters

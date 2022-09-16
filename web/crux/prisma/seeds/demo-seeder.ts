@@ -62,6 +62,7 @@ async function main() {
         data: {
           ...containerConfig,
           environment: containerConfig.environment as Prisma.InputJsonArray,
+          secrets: containerConfig.secrets as Prisma.InputJsonArray,
           capabilities: containerConfig.capabilities as Prisma.InputJsonArray,
           config: containerConfig.config as Prisma.InputJsonValue,
         },

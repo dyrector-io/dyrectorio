@@ -77,6 +77,7 @@ services:
 
   mailslurper:
     container_name: crux-mailslurper
+    restart: unless-stopped
     image: oryd/mailslurper:latest-smtps
     ports:
       - 4436:4436
@@ -87,6 +88,7 @@ services:
   crux-traefik:
     container_name: crux-traefik
     image: traefik:v2.8
+    restart: unless-stopped
     depends_on:
       - kratos
     platform: linux/amd64

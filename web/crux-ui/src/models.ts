@@ -41,6 +41,7 @@ export type Instance = {
   id: string
   image: VersionImage
   state?: ContainerState
+  publicKey?: string
   overriddenConfig?: Partial<InstanceContainerConfig>
 }
 
@@ -49,31 +50,30 @@ export type DeploymentStatus = typeof DEPLOYMENT_STATUS_VALUES[number]
 
 export type DeploymentByVersion = {
   id: string
-  name: string
   nodeId: string
   nodeName: string
   date: string
   prefix: string
   status: DeploymentStatus
   nodeStatus: NodeStatus
+  note?: string
 }
 
 export type DeploymentDetails = {
   id: string
   versionId: string
   nodeId: string
-  name: string
-  description?: string | undefined
+  note?: string | undefined
   prefix: string
   updatedAt: string
   environment: Environment
   status: DeploymentStatus
+  publicKey?: string
   instances: Instance[]
 }
 
 export type Deployment = {
   id: string
-  name: string
   productId: string
   product: string
   versionId: string
@@ -81,6 +81,9 @@ export type Deployment = {
   node: string
   status: DeploymentStatus
   nodeId: string
+  note?: string
+  prefix: string
+  updatedAt: string
 }
 
 export type DeploymentRoot = DeploymentDetails & {
@@ -104,9 +107,8 @@ export type DeploymentEvent = {
 
 export type CreateDeployment = {
   nodeId: string
-  name: string
   prefix: string
-  description?: string | undefined
+  note?: string | undefined
 }
 
 export type DeploymentCreated = {
@@ -115,7 +117,7 @@ export type DeploymentCreated = {
 
 export type PatchInstance = {
   instanceId: string
-  config: Partial<ContainerConfig>
+  config: Partial<InstanceContainerConfig>
 }
 
 export type PatchDeployment = {
@@ -125,8 +127,7 @@ export type PatchDeployment = {
 }
 
 export type UpdateDeployment = {
-  name: string
-  description?: string
+  note?: string
   prefix: string
 }
 
@@ -253,7 +254,7 @@ export type HubRegistryDetails = {
 export type V2RegistryDetails = {
   type: 'v2'
   url: string
-  isPrivate: boolean
+  private: boolean
   user?: string
   token?: string
 }
@@ -279,7 +280,7 @@ export type GoogleRegistryDetails = {
   type: 'google'
   url: string
   imageNamePrefix: string
-  isPrivate: boolean
+  private: boolean
   user?: string
   token?: string
 }

@@ -33,5 +33,10 @@
   "technologies": {
     "docker": "Docker Host",
     "k8s": "Kubernetes Cluster"
+  },
+  "statusFilters": {
+    "all": "All",
+    "active": "Active",
+    "inactive": "Inactive"
   }
 }

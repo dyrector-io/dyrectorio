@@ -7,6 +7,7 @@ export const buildContainerConfig = (imageId: string, name: ImageName) => {
   return {
     name: name,
     capabilities: [],
+    secrets: [],
     config: imageConfig.config,
     environment: imageConfig.environment,
     imageId: imageId,

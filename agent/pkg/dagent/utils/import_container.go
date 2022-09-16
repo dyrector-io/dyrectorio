@@ -7,13 +7,12 @@ import (
 	"log"
 	"strings"
 
-	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
 
+	v1 "github.com/dyrector-io/dyrectorio/agent/api/v1"
 	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
 	"github.com/dyrector-io/dyrectorio/agent/internal/util"
-	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 	containerbuilder "github.com/dyrector-io/dyrectorio/agent/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
@@ -56,33 +55,22 @@ func spawnInitContainer(
 		WithLogWriter(dog).
 		Create()
 
-	_, err = builder.Start()
-
-	if err != nil {
-		return err
-	}
-
 	dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Waiting for import container to finish")
 
-	containerID := *builder.GetContainerID()
-	cli.ContainerWait(ctx, containerID, container.WaitConditionNextExit)
-	cont, err := cli.ContainerInspect(ctx, containerID)
+	exitResult, err := builder.StartWaitUntilExit()
 
 	if err != nil {
-		return err
+		return fmt.Errorf("import container start failed: %w", err)
 	}
 
-	if cont.State.ExitCode == 0 {
+	if exitResult.StatusCode == 0 {
+		containerID := *builder.GetContainerID()
 		err = DeleteContainer(containerID)
 		if err != nil {
 			log.Println("warning: failed to delete import container after completion")
 		}
 	} else {
-		return fmt.Errorf("import container exited with code: %v", cont.State.ExitCode)
-	}
-
-	if err != nil {
-		return err
+		return fmt.Errorf("import container exited with code: %v", exitResult.StatusCode)
 	}
 	return nil
 }

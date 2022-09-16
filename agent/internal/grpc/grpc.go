@@ -13,11 +13,11 @@ import (
 
 	"github.com/form3tech-oss/jwt-go"
 
+	v1 "github.com/dyrector-io/dyrectorio/agent/api/v1"
 	"github.com/dyrector-io/dyrectorio/agent/internal/config"
 	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
 	"github.com/dyrector-io/dyrectorio/agent/internal/mapper"
 	"github.com/dyrector-io/dyrectorio/agent/internal/version"
-	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 
@@ -91,7 +91,6 @@ func fetchCertificatesFromURL(ctx context.Context, addr string) (*x509.CertPool,
 	log.Println("Retrieving certificate")
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodHead, addr, http.NoBody)
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to create the http request: %s", err.Error())
 	}
@@ -203,8 +202,16 @@ func grpcLoop(
 		if grpcConn.Client == nil {
 			client := agent.NewAgentClient(grpcConn.Conn)
 			grpcConn.SetClient(client)
+
+			publicKey, keyErr := config.GetPublicKey(string(appConfig.SecretPrivateKey))
+
+			if keyErr != nil {
+				log.Printf("grpc public key error: %s", keyErr.Error())
+				log.Println(publicKey)
+			}
+
 			stream, err = grpcConn.Client.Connect(
-				ctx, &agent.AgentInfo{Id: nodeID, Version: version.BuildVersion()},
+				ctx, &agent.AgentInfo{Id: nodeID, Version: version.BuildVersion(), PublicKey: publicKey},
 				grpc.WaitForReady(true),
 			)
 			if err != nil {
@@ -330,7 +337,7 @@ func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStateR
 
 		if err != nil {
 			log.Printf("Container status channel error: %s", err.Error())
-			return
+			break
 		}
 
 		if req.OneShot != nil && *req.OneShot {
@@ -413,26 +420,3 @@ func WithGRPCConfig(parentContext context.Context, cfg any) context.Context {
 func GetConfigFromContext(ctx context.Context) any {
 	return ctx.Value(contextConfigKey)
 }
-
-// TODO(m8vago): streamline the log appearince with crane
-// func PrintDeployRequestStrings(req *agent.DeployRequest) []string {
-// 	return append([]string{},
-// 		fmt.Sprintf("Deployment target: k8s ~ %v\n", utils.GetEnv("INGRESS_DOMAIN_ROOT", "docker host")),
-// 		fmt.Sprintf("Image: %v\n", utils.JoinV(":", req.ImageName, req.Tag)),
-// 		fmt.Sprintf("Registry: %v\n", req.Registry),
-// 		fmt.Sprintf("Container name: %v\n", utils.JoinV("-", req.InstanceConfig.Prefix, req.ContainerConfig.Name)),
-// 		fmt.Sprintf("Exposed ports: %v\n", req.ContainerConfig.Ports),
-// 	)
-// }
-
-// func (c *AgentClient) Deploy(deployRequest *agent.DeployRequest) (*agent.DeployResponse, error) {
-// 	if deployRequest.Id == "" {
-// 		return &agent.DeployResponse{Started: false}, fmt.Errorf("empty request")
-// 	}
-// 	// utils.RemoteLog(&deployRequest.RequestId, PrintDeployRequestStrings(deployRequest)...)
-// 	if err := utils.DeployImage(mapDeployImage(deployRequest)); err != nil {
-// 		return &agent.DeployResponse{Started: false}, err
-// 	}
-
-// 	return &agent.DeployResponse{Started: true}, nil
-// }

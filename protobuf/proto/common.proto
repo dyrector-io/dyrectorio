@@ -5,7 +5,7 @@ import "google/protobuf/timestamp.proto";
 package common;
 option go_package = "github.com/dyrector-io/dyrectorio/protobuf/go/common";
 
-//Deployment
+// Deployment
 enum ContainerState {
   UNKNOWN_CONTAINER_STATE = 0;
   CREATED = 1;
@@ -25,8 +25,9 @@ message ContainerStateItem {
   /* The 'State' of the container (Created, Running, etc) */
   ContainerState state = 105;
   /*
-   * The 'Status' of the container ("Created 1min ago", "Exited with code 123", etc).
-   * Unused but left here for reverse compatibility with the legacy version. 
+   * The 'Status' of the container ("Created 1min ago", "Exited with code 123",
+   * etc). Unused but left here for reverse compatibility with the legacy
+   * version.
    */
   string status = 106;
   string imageName = 107;
@@ -138,6 +139,24 @@ message LogConfig {
   map<string, string> options = 101;
 }
 
+// volumes referred as VolumeLink
+// they won't get created if non-existent
+message VolumeLink {
+  string name = 100;
+  string path = 101;
+}
+
+message InitContainer {
+  string name = 100;
+  string image = 101;
+  map<string, string> environments = 102;
+  optional bool useParentConfig = 103;
+
+  repeated VolumeLink volumes = 1000;
+  repeated string command = 1001;
+  repeated string args = 1002;
+}
+
 message DagentContainerConfig {
   optional LogConfig logConfig = 100;
   optional RestartPolicy restartPolicy = 101;
@@ -149,7 +168,7 @@ message HealthCheckConfig {
   int32 port = 100;
   optional string livenessProbe = 101;
   optional string readinessProbe = 102;
-  optional string startupProbe = 103; 
+  optional string startupProbe = 103;
 }
 
 message Resource {
@@ -165,7 +184,7 @@ message ResourceConfig {
 message CraneContainerConfig {
   optional DeploymentStrategy deploymentStatregy = 100;
   optional HealthCheckConfig healthCheckConfig = 101;
-  optional ResourceConfig  resourceConfig = 102;
+  optional ResourceConfig resourceConfig = 102;
   optional bool proxyHeaders = 103;
   optional bool useLoadBalancer = 104;
   map<string, string> extraLBAnnotations = 105;
@@ -189,4 +208,36 @@ message ExplicitContainerConfig {
   repeated string command = 1003;
   repeated string args = 1004;
   repeated string environments = 1005;
+  optional KeyValueList secrets = 1006;
+  repeated InitContainer initContainers = 1007;
+}
+
+message UniqueKey {
+  string id = 100;
+  string key = 101;
+}
+
+message KeyList { repeated UniqueKey data = 1000; }
+
+message UniqueKeyValue {
+  string id = 100;
+  string key = 101;
+  string value = 102;
+}
+
+message UniqueKeySecretValue {
+  string id = 100;
+  string key = 101;
+  string value = 103;
+  optional bool encrypted = 104;
+}
+
+message KeyValueList { repeated UniqueKeyValue data = 1000; }
+
+message SecretList { repeated UniqueKeySecretValue data = 1000; }
+
+message ListSecretsResponse {
+  string prefix = 1;
+  string publicKey = 2;
+  repeated string keys = 3;
 }

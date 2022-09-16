@@ -19,11 +19,12 @@ import (
 
 	"golang.org/x/exp/maps"
 
+	v1 "github.com/dyrector-io/dyrectorio/agent/api/v1"
+	"github.com/dyrector-io/dyrectorio/agent/internal/crypt"
 	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
 	"github.com/dyrector-io/dyrectorio/agent/internal/grpc"
 	"github.com/dyrector-io/dyrectorio/agent/internal/mapper"
 	"github.com/dyrector-io/dyrectorio/agent/internal/util"
-	v1 "github.com/dyrector-io/dyrectorio/agent/pkg/api/v1"
 	containerbuilder "github.com/dyrector-io/dyrectorio/agent/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/caps"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
@@ -82,7 +83,7 @@ func GetContainersByName(name string) []types.Container {
 
 	containers, err := cli.ContainerList(ctx, types.ContainerListOptions{
 		All:     true,
-		Filters: filters.NewArgs(filters.KeyValuePair{Key: "name", Value: name}),
+		Filters: filters.NewArgs(filters.KeyValuePair{Key: "name", Value: fmt.Sprintf("^/?%s-", name)}),
 	})
 
 	checkDockerError(err)
@@ -283,6 +284,10 @@ func logDeployInfo(dog *dogger.DeploymentLogger, deployImageRequest *v1.DeployIm
 	if deployImageRequest.ContainerConfig.User != nil {
 		dog.Write(fmt.Sprintf("User: %v", *deployImageRequest.ContainerConfig.User))
 	}
+
+	if len(deployImageRequest.ContainerConfig.InitContainers) > 0 {
+		dog.Write("WARNING: missing implementation: initContainers!")
+	}
 }
 
 func DeployImage(ctx context.Context,
@@ -296,13 +301,17 @@ func DeployImage(ctx context.Context,
 		util.JoinV("/",
 			*deployImageRequest.Registry,
 			util.JoinV(":", deployImageRequest.ImageName, deployImageRequest.Tag)))
-
 	logDeployInfo(dog, deployImageRequest, image, containerName)
 
-	envList := MergeStringMapToUniqueSlice(
+	envMap := MergeStringMapUnique(
 		EnvPipeSeparatedToStringMap(&deployImageRequest.InstanceConfig.Environment),
-		EnvPipeSeparatedToStringMap(&deployImageRequest.ContainerConfig.Environment),
-	)
+		EnvPipeSeparatedToStringMap(&deployImageRequest.ContainerConfig.Environment))
+	secret, err := crypt.DecryptSecrets(deployImageRequest.ContainerConfig.Secrets, &cfg.CommonConfiguration)
+	if err != nil {
+		return fmt.Errorf("deployment failed, secret error: %w", err)
+	}
+	envMap = MergeStringMapUnique(envMap, mapper.ByteMapToStringMap(secret))
+	envList := EnvMapToSlice(envMap)
 
 	mountList := mountStrToDocker(
 		// volumes are mapped into the legacy format, until further support of different types is needed
@@ -312,7 +321,6 @@ func DeployImage(ctx context.Context,
 		cfg)
 	// dotnet specific magic
 	if containsConfig(mountList) {
-		var err error
 		mountList, err = createRuntimeConfigFileOnHost(
 			mountList,
 			deployImageRequest.ContainerConfig.Container,
@@ -329,7 +337,8 @@ func DeployImage(ctx context.Context,
 	// err is ignored because it means no container is available
 	// nothing to stop or remove then
 
-	if err := checkContainerState(dog, containerName, state); err != nil {
+	err = checkContainerState(dog, containerName, state)
+	if err != nil {
 		return err
 	}
 
@@ -360,6 +369,7 @@ func DeployImage(ctx context.Context,
 		WithUser(deployImageRequest.ContainerConfig.User).
 		WithEntrypoint(deployImageRequest.ContainerConfig.Command).
 		WithCmd(deployImageRequest.ContainerConfig.Args).
+		WithoutConflict().
 		WithLogWriter(dog)
 
 	WithImportContainer(builder, deployImageRequest.ContainerConfig.ImportContainer, dog, cfg)
@@ -405,9 +415,10 @@ func WithImportContainer(dc *containerbuilder.DockerContainerBuilder, importConf
 			mountList []mount.Mount,
 			logger *io.StringWriter) error {
 			if initError := spawnInitContainer(client, ctx, containerName, mountList, importConfig, dog, cfg); initError != nil {
-				log.Printf("Failed to spawn init container: %v", initError)
+				dog.WriteDeploymentStatus(common.DeploymentStatus_FAILED, "Failed to spawn init container: "+initError.Error())
 				return initError
 			}
+			dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Loading assets was successful.")
 			return nil
 		})
 	}

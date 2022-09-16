@@ -32,6 +32,7 @@ type AgentClient interface {
 	Connect(ctx context.Context, in *AgentInfo, opts ...grpc.CallOption) (Agent_ConnectClient, error)
 	DeploymentStatus(ctx context.Context, opts ...grpc.CallOption) (Agent_DeploymentStatusClient, error)
 	ContainerState(ctx context.Context, opts ...grpc.CallOption) (Agent_ContainerStateClient, error)
+	GetSecretList(ctx context.Context, in *common.ListSecretsResponse, opts ...grpc.CallOption) (*Empty, error)
 }
 
 type agentClient struct {
@@ -142,6 +143,15 @@ func (x *agentContainerStateClient) CloseAndRecv() (*Empty, error) {
 	return m, nil
 }
 
+func (c *agentClient) GetSecretList(ctx context.Context, in *common.ListSecretsResponse, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/agent.Agent/GetSecretList", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AgentServer is the server API for Agent service.
 // All implementations must embed UnimplementedAgentServer
 // for forward compatibility
@@ -155,6 +165,7 @@ type AgentServer interface {
 	Connect(*AgentInfo, Agent_ConnectServer) error
 	DeploymentStatus(Agent_DeploymentStatusServer) error
 	ContainerState(Agent_ContainerStateServer) error
+	GetSecretList(context.Context, *common.ListSecretsResponse) (*Empty, error)
 	mustEmbedUnimplementedAgentServer()
 }
 
@@ -170,6 +181,9 @@ func (UnimplementedAgentServer) DeploymentStatus(Agent_DeploymentStatusServer) e
 }
 func (UnimplementedAgentServer) ContainerState(Agent_ContainerStateServer) error {
 	return status.Errorf(codes.Unimplemented, "method ContainerState not implemented")
+}
+func (UnimplementedAgentServer) GetSecretList(context.Context, *common.ListSecretsResponse) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSecretList not implemented")
 }
 func (UnimplementedAgentServer) mustEmbedUnimplementedAgentServer() {}
 
@@ -257,13 +271,36 @@ func (x *agentContainerStateServer) Recv() (*common.ContainerStateListMessage, e
 	return m, nil
 }
 
+func _Agent_GetSecretList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(common.ListSecretsResponse)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AgentServer).GetSecretList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/agent.Agent/GetSecretList",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AgentServer).GetSecretList(ctx, req.(*common.ListSecretsResponse))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Agent_ServiceDesc is the grpc.ServiceDesc for Agent service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Agent_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "agent.Agent",
 	HandlerType: (*AgentServer)(nil),
-	Methods:     []grpc.MethodDesc{},
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetSecretList",
+			Handler:    _Agent_GetSecretList_Handler,
+		},
+	},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "Connect",

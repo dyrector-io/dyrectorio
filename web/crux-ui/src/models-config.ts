@@ -3,19 +3,30 @@
  * TODO: Create a models folder for future definitions. After that we can leave "models" name from the file.
  */
 
+export type UniqueKey = {
+  id: string
+  key: string
+}
+
 export type UniqueKeyValue = {
   id: string
   key: string
   value: string
 }
 
+export type UniqueKeySecretValue = UniqueKeyValue & {
+  encrypted?: boolean
+}
+
 export type Environment = UniqueKeyValue[]
 export type Capabilities = UniqueKeyValue[]
+export type Secrets = UniqueKey[]
 
 export type CompleteContainerConfig = ExplicitContainerConfig & {
   name: string
   environment?: Record<string, string>
   capabilities?: Record<string, string>
+  secrets?: Record<string, string>
 }
 
 export type ContainerConfig = {
@@ -23,6 +34,7 @@ export type ContainerConfig = {
   capabilities: Capabilities
   environment: Environment
   config: ExplicitContainerConfig
+  secrets: Secrets
 }
 
 export type ExplicitContainerConfigPort = {
@@ -109,6 +121,21 @@ export type ExplicitContainerConfigImportContainer = {
   command: string
 }
 
+export type ExplicitInitContainerVolumeLink = {
+  name: string
+  path: string
+}
+
+export type ExplicitInitContainer = {
+  name: string
+  image: string
+  command?: string[]
+  args?: string[]
+  environments?: { [key: string]: string }
+  useParentConfig?: boolean
+  volumes?: ExplicitInitContainerVolumeLink[]
+}
+
 export type ExplicitContainerConfig = {
   ingress?: ExplicitContainerConfigIngress
   expose?: ExplicitContainerConfigExpose
@@ -122,6 +149,7 @@ export type ExplicitContainerConfig = {
   volumes?: ExplicitContainerConfigVolume[]
   commands?: string[]
   args?: string[]
+  initContainers?: ExplicitInitContainer[]
 
   // dagent-specific:
   logConfig?: ExplicitContainerConfigLog
@@ -139,12 +167,22 @@ export type ExplicitContainerConfig = {
   resourceConfig?: ExplicitContainerConfigResourceConfig
 }
 
-export type InstanceContainerConfig = Omit<ContainerConfig, 'name'>
+export type InstanceContainerConfig = {
+  name?: string
+  capabilities: Capabilities
+  environment: Environment
+  secrets: UniqueKeySecretValue[]
+  config: ExplicitContainerConfig
+}
 
 const overrideKeyValues = (weak: UniqueKeyValue[], strong: UniqueKeyValue[]): UniqueKeyValue[] => {
   const overridenKeys: Set<string> = new Set(strong?.map(it => it.key))
   return [...(weak?.filter(it => !overridenKeys.has(it.key)) ?? []), ...(strong ?? [])]
 }
+
+const expandKeytoKeyValues = (weak: UniqueKey[]): UniqueKeyValue[] => [
+  ...weak.map((it): UniqueKeyValue => ({ id: it.id, key: it.key, value: '' })),
+]
 
 const overridePorts = (
   weak: ExplicitContainerConfigPort[],
@@ -166,16 +204,20 @@ const overrideArrays = <T>(weak: T[], strong: T[]): T[] => {
 export const mergeConfigs = (
   imageConfig: ContainerConfig,
   overriddenConfig: Partial<InstanceContainerConfig>,
-): ContainerConfig => {
+): InstanceContainerConfig => {
   const instanceConfig = overriddenConfig ?? {}
 
   const envs = overrideKeyValues(imageConfig.environment, instanceConfig.environment)
   const caps = overrideKeyValues(imageConfig.capabilities, instanceConfig.capabilities)
 
   return {
-    name: imageConfig.name,
+    name: overriddenConfig.name || imageConfig.name,
     environment: envs,
     capabilities: caps,
+    secrets:
+      instanceConfig?.secrets && instanceConfig.secrets.length > 0
+        ? instanceConfig.secrets
+        : expandKeytoKeyValues(imageConfig.secrets),
     config: {
       ...imageConfig.config,
       ...(instanceConfig.config ?? {}),
@@ -212,6 +254,16 @@ export const mergeConfigs = (
       healthCheckConfig: override(imageConfig?.config?.healthCheckConfig, instanceConfig.config?.healthCheckConfig),
       importContainer: override(imageConfig?.config?.importContainer, instanceConfig.config?.importContainer),
       resourceConfig: override(imageConfig?.config?.resourceConfig, instanceConfig.config?.resourceConfig),
+      initContainers: override(imageConfig?.config?.initContainers, instanceConfig.config?.initContainers),
     },
   }
+}
+
+export const mergeContainerConfig = (
+  imageConfig: ContainerConfig,
+  overriddenConfig: Partial<InstanceContainerConfig>,
+): ContainerConfig => {
+  const result = mergeConfigs(imageConfig, overriddenConfig)
+
+  return result as ContainerConfig
 }

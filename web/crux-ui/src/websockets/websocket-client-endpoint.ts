@@ -58,6 +58,10 @@ class WebSocketClientEndpoint {
   onOpen(sendClientMessage: WebSocketClientSendMessage): void {
     this.sendClientMessage = sendClientMessage
 
+    if (this.readyStateChanged) {
+      this.readyStateChanged(WebSocket.OPEN)
+    }
+
     if (this.options?.onOpen) {
       this.options.onOpen()
     }
@@ -68,6 +72,10 @@ class WebSocketClientEndpoint {
   onClose() {
     if (this.options?.onClose) {
       this.options.onClose()
+    }
+
+    if (this.readyStateChanged) {
+      this.readyStateChanged(WebSocket.CLOSED)
     }
   }
 

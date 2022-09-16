@@ -88,7 +88,9 @@ export default class DeployService {
       },
     })
 
-    return this.mapper.detailsToGrpc(deployment)
+    const publicKey = this.agentService.getById(deployment.nodeId)?.publicKey
+
+    return this.mapper.detailsToGrpc(deployment, publicKey)
   }
 
   async getDeploymentEvents(request: IdRequest): Promise<DeploymentEventListResponse> {
@@ -123,8 +125,7 @@ export default class DeployService {
         versionId: request.versionId,
         nodeId: request.nodeId,
         status: DeploymentStatusEnum.preparing,
-        name: request.name,
-        description: request.description,
+        note: request.note,
         createdBy: request.accessedBy,
         prefix: request.prefix,
         instances: {
@@ -144,8 +145,7 @@ export default class DeployService {
   async updateDeployment(request: UpdateDeploymentRequest): Promise<UpdateEntityResponse> {
     const deployment = await this.prisma.deployment.update({
       data: {
-        name: request.name,
-        description: request.description,
+        note: request.note,
         prefix: request.prefix,
         updatedAt: new Date(),
         updatedBy: request.accessedBy,
@@ -165,13 +165,13 @@ export default class DeployService {
     let instanceConfigPatchSet: InstanceContainerConfigData = null
 
     if (reqInstance) {
-      const caps = request.instance.capabilities
-      const envs = request.instance.environment
+      const { capabilities: caps, environment: envs, secrets } = request.instance
 
       instanceConfigPatchSet = {
         capabilities: caps ? caps.data ?? [] : (undefined as JsonArray),
         environment: envs ? envs.data ?? [] : (undefined as JsonArray),
         config: request.instance.config,
+        secrets: secrets ? secrets.data ?? [] : (undefined as JsonArray),
       }
     }
 
@@ -229,9 +229,12 @@ export default class DeployService {
       },
       include: {
         version: {
-          select: {
-            name: true,
-            changelog: true,
+          include: {
+            product: {
+              select: {
+                name: true,
+              },
+            },
           },
         },
         instances: {
@@ -243,6 +246,11 @@ export default class DeployService {
               },
             },
             config: true,
+          },
+        },
+        node: {
+          select: {
+            name: true,
           },
         },
       },
@@ -310,8 +318,10 @@ export default class DeployService {
         }),
       },
       {
-        deploymentName: deployment.name,
         accessedBy: request.accessedBy,
+        productName: deployment.version.product.name,
+        versionName: deployment.version.name,
+        nodeName: deployment.node.name,
       },
     )
 

@@ -48,7 +48,7 @@ const iconRule = yup
   .oneOf([null, ...DYO_ICONS])
   .nullable()
 
-const nameRule = yup.string().required().min(3).max(70)
+export const nameRule = yup.string().required().trim().min(3).max(70)
 const descriptionRule = yup.string().optional()
 
 export const updateProductSchema = yup.object().shape({
@@ -121,6 +121,10 @@ export const nodeType = yup.object().shape({
   type: yup.mixed<NodeType>().oneOf([...NODE_TYPE_VALUES]),
 })
 
+// Ref: https://ihateregex.io/expr/semver/
+export const versionRegex =
+  /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/
+
 export const increaseVersionSchema = yup.object().shape({
   name: nameRule,
   changelog: descriptionRule,
@@ -136,15 +140,13 @@ export const createVersionSchema = updateVersionSchema.concat(
 
 export const createDeploymentSchema = yup.object().shape({
   nodeId: yup.mixed().nullable().required().label('node'),
-  name: nameRule,
-  prefix: yup.string().required(),
-  description: yup.string(),
+  prefix: yup.string().trim().required(),
+  note: yup.string(),
 })
 
 export const updateDeploymentSchema = yup.object().shape({
-  name: nameRule,
-  description: yup.string(),
-  prefix: yup.string().required(),
+  note: yup.string(),
+  prefix: yup.string().trim().required(),
 })
 
 const portNumberRule = yup.number().positive().lessThan(65536).required()
@@ -224,6 +226,26 @@ export const explicitContainerConfigSchema = yup.object().shape({
     .optional(),
   commands: yup.array(yup.string()).default([]).optional(),
   args: yup.array(yup.string()).default([]).optional(),
+  initContainers: yup.array(
+    yup
+      .object()
+      .shape({
+        name: yup.string().required(),
+        image: yup.string().required(),
+        args: yup.array(yup.string()).default([]).optional(),
+        command: yup.array(yup.string()).default([]).optional(),
+        useParentConfig: yup.boolean().default(false).optional(),
+        environments: yup.object().shape({}).default({}).optional(),
+        volumes: yup.array(
+          yup.object().shape({
+            name: yup.string(),
+            path: yup.string(),
+          }),
+        ),
+      })
+      .default([])
+      .optional(),
+  ),
 
   // dagent:
   logConfig: yup
@@ -258,6 +280,7 @@ export const explicitContainerConfigSchema = yup.object().shape({
   useLoadBalancer: yup.boolean().default(false).optional(),
   healthCheckConfig: yup
     .object()
+    .nullable()
     .shape({
       port: yup.number().positive().lessThan(65536),
       livenessProbe: yup.string().optional(),
@@ -291,6 +314,7 @@ export const completeContainerConfigSchema = explicitContainerConfigSchema.shape
   name: yup.string().required(),
   environment: stringStringMapRule.default({}),
   capabilities: stringStringMapRule.default({}),
+  secrets: stringStringMapRule.default({}),
 })
 
 export const uniqueKeyValuesSchema = yup
@@ -303,10 +327,27 @@ export const uniqueKeyValuesSchema = yup
   .ensure()
   .test('keysAreUnique', 'Keys must be unique', arr => new Set(arr.map(it => it.key)).size === arr.length)
 
+export const uniqueKeysOnlySchema = yup
+  .array(
+    yup.object().shape({
+      key: yup.string().required().ensure().matches(/^\S+$/g),
+    }),
+  )
+  .ensure()
+  .test('keysAreUnique', 'Keys must be unique', arr => new Set(arr.map(it => it.key)).size === arr.length)
+
+export const instanceConfigSchema = yup.object().shape({
+  environment: uniqueKeyValuesSchema,
+  capabilities: uniqueKeyValuesSchema,
+  config: explicitContainerConfigSchema.nullable(),
+  secrets: uniqueKeyValuesSchema,
+})
+
 export const containerConfigSchema = yup.object().shape({
   environment: uniqueKeyValuesSchema,
   capabilities: uniqueKeyValuesSchema,
   config: explicitContainerConfigSchema.nullable(),
+  secrets: uniqueKeysOnlySchema,
 })
 
 export const patchContainerConfigSchema = yup.object().shape({
