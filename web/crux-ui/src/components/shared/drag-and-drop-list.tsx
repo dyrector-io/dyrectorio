@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface DragAndDropListProps<T> {
   items: T[]
@@ -6,11 +6,15 @@ interface DragAndDropListProps<T> {
   onItemsChange?: (items: T[]) => void
 }
 
+type DragState = { counter: number; current: HTMLDivElement }
+
 const DragAndDropList = <T,>(props: DragAndDropListProps<T>) => {
   const { itemBuilder, onItemsChange, items: propsItems } = props
 
   const [items, setItems] = useState(propsItems)
   const [dragging, setDragging] = useState<T>()
+
+  const dragState = useRef<DragState>({ counter: 0, current: null })
 
   const onDragEndContainer = () => {
     if (!dragging) {
@@ -27,18 +31,40 @@ const DragAndDropList = <T,>(props: DragAndDropListProps<T>) => {
   }
 
   const onDragEnter = (event: React.DragEvent<HTMLDivElement>) => {
-    event.currentTarget.className = 'rounded-md ring-2 ring-bright'
+    const { counter, current } = dragState.current
+
+    if (current === event.currentTarget) {
+      dragState.current.counter = counter + 1
+    } else {
+      dragState.current = {
+        counter: 1,
+        current: event.currentTarget,
+      }
+
+      event.currentTarget.className = 'rounded-md ring-2 ring-bright'
+    }
   }
 
-  const onDragExit = (event: React.DragEvent<HTMLDivElement>) => {
-    event.currentTarget.className = ''
+  const onDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
+    const { counter, current } = dragState.current
+
+    if (current === event.currentTarget) {
+      dragState.current.counter -= 1
+    } else {
+      event.currentTarget.className = ''
+    }
+
+    if (counter === 0 && current != null) {
+      event.currentTarget.className = ''
+      dragState.current.current = null
+    }
   }
 
   const onDrop = (event: React.DragEvent<HTMLDivElement>, target: T) => {
     event.currentTarget.className = ''
 
+    const dropIndex = items.indexOf(target)
     let newItems = items.filter(it => it !== dragging)
-    const dropIndex = newItems.indexOf(target)
 
     if (dropIndex < 1) {
       newItems = [dragging, ...newItems]
@@ -79,7 +105,7 @@ const DragAndDropList = <T,>(props: DragAndDropListProps<T>) => {
             onDragStart={() => onDragStart(it)}
             onDragEnd={onDragEnd}
             onDragEnter={onDragEnter}
-            onDragExit={onDragExit}
+            onDragLeave={onDragLeave}
           >
             {itemBuilder(it)}
           </div>
