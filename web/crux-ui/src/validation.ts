@@ -138,8 +138,8 @@ export const createDeploymentSchema = yup.object().shape({
   nodeId: yup.mixed().nullable().required().label('node'),
   prefix: yup
     .string()
-    .required()
-    .transform(it => it.trim()),
+    .trim()
+    .required(),
   note: yup.string(),
 })
 
@@ -147,8 +147,8 @@ export const updateDeploymentSchema = yup.object().shape({
   note: yup.string(),
   prefix: yup
     .string()
-    .required()
-    .transform(it => it.trim()),
+    .trim()
+    .required(),
 })
 
 const portNumberRule = yup.number().positive().lessThan(65536).required()
