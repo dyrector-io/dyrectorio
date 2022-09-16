@@ -6,7 +6,6 @@ import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import Head from 'next/head'
 import React from 'react'
-import { Toaster } from 'react-hot-toast'
 import useSWR from 'swr'
 import Footer from './main/footer'
 import { Sidebar } from './main/sidebar'
@@ -55,18 +54,6 @@ export const Layout = (props: LayoutProps) => {
     <>
       <PageHead title={title} />
       <main className="flex flex-row h-full bg-dark w-full">
-        <Toaster
-          toastOptions={{
-            error: {
-              icon: null,
-              className: '!bg-error-red',
-              style: {
-                color: 'white',
-              },
-            },
-          }}
-        />
-
         <Sidebar className={clsx('flex flex-col bg-medium h-screen sticky top-0', sidebarWidth)} />
 
         <div className={clsx('flex flex-col px-7 pt-4', mainWidth)}>
@@ -89,18 +76,6 @@ export const SingleFormLayout = (props: LayoutProps) => {
       <PageHead title={title} />
 
       <main className="flex flex-row h-full bg-dark">
-        <Toaster
-          toastOptions={{
-            error: {
-              icon: null,
-              className: '!bg-error-red',
-              style: {
-                color: 'white',
-              },
-            },
-          }}
-        />
-
         <div className="h-screen" />
 
         <div className="flex flex-col w-full px-7 pt-4">
