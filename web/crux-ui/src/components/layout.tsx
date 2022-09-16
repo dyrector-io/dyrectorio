@@ -13,7 +13,7 @@ import { Sidebar } from './main/sidebar'
 import Topbar from './main/top-bar'
 
 const sidebarWidth = 'w-[17rem]'
-const mainWidth = 'w-[calc(100vw-20rem)]' // ViewWidth - sidebar
+const mainWidth = 'w-[calc(100vw-17rem)]' // ViewWidth - sidebar
 
 interface PageHeadProps {
   title: string

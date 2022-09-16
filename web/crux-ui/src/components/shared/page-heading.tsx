@@ -11,7 +11,7 @@ const PageHeading = (props: EditButtonsProps) => {
   const { pageLink: selfLink, sublinks, children } = props
 
   return (
-    <div className="flex flex-row items-center mb-4">
+    <div className="flex flex-row items-center mb-4 h-10">
       <Breadcrumb page={selfLink.name} pageUrl={selfLink.url} links={sublinks ?? (selfLink ? [selfLink] : [])} />
 
       {children}

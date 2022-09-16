@@ -5,6 +5,7 @@ import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
+import useVersionHint from '@app/hooks/use-version-hint'
 import { IncreaseVersion, Product, Version } from '@app/models'
 import { versionIncreaseApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
@@ -56,6 +57,13 @@ const IncreaseVersionCard = (props: IncreaseVersionCardProps) => {
     submitRef.current = formik.submitForm
   }
 
+  const [versionHint, setVersionHint] = useVersionHint(null)
+
+  const onVersionChange = (value: string) => {
+    formik.setFieldValue('name', value, true)
+    setVersionHint(value)
+  }
+
   return (
     <DyoCard className={className}>
       <DyoHeading element="h4" className="text-lg text-bright">
@@ -72,9 +80,12 @@ const IncreaseVersionCard = (props: IncreaseVersionCardProps) => {
           type="name"
           required
           label={t('common:name')}
-          onChange={formik.handleChange}
+          onChange={e => {
+            onVersionChange(e.currentTarget.value)
+          }}
           value={formik.values.name}
-          message={formik.errors.name}
+          message={versionHint ?? formik.errors.name}
+          messageType={versionHint ? 'info' : 'error'}
         />
 
         <DyoTextArea
