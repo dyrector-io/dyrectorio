@@ -85,7 +85,7 @@ const AuditLogPage = (props: AuditLogPageProps) => {
     <div className="w-10 ml-auto">
       <Image src="/default_avatar.svg" width={38} height={38} layout="fixed" />
     </div>,
-    <div className="font-semibold min-w-max pl-2">{log.identityEmail}</div>,
+    <div className="font-semibold min-w-max">{log.identityEmail}</div>,
     <div className="min-w-max">{utcDateToLocale(log.date)}</div>,
     <div>{beautifyAuditLogEvent(log.event)}</div>,
     <div className="cursor-pointer max-w-4xl truncate" onClick={() => onShowInfoClick(log)}>
