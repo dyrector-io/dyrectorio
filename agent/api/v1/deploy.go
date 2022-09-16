@@ -155,7 +155,7 @@ type ContainerConfig struct {
 	// import container uses rclone to copy over files before container startup
 	ImportContainer *ImportContainer `json:"importContainer,omitempty"`
 	// standard initContainers
-	InitContainers []InitContainer `json:"initContainer,omitempty" binding:"dive"`
+	InitContainers []InitContainer `json:"initContainers,omitempty" binding:"dive"`
 	// container user id
 	User *int64 `json:"user"`
 	// the initial command of a container have mixed terms
@@ -218,6 +218,14 @@ func (c *ContainerConfig) Strings(appConfig *config.CommonConfiguration) []strin
 		str = append(str, fmt.Sprintf("Volumes: %v", c.Volumes))
 	}
 
+	if len(c.InitContainers) > 0 {
+		names := []string{}
+		for _, ic := range c.InitContainers {
+			names = append(names, ic.Name)
+		}
+		str = append(str, fmt.Sprintf("Init containers: %v", names))
+	}
+
 	str = append(str,
 		fmt.Sprintf("Memory limit: %v, CPU limit: %v",
 			util.Fallback(c.ResourceConfig.Limits.Memory, appConfig.DefaultLimitsMemory),
@@ -258,6 +266,8 @@ type ImportContainer struct {
 type InitContainer struct {
 	// name of the init container, they must be unique within a pod
 	Name string
+	// image to use
+	Image string
 	// Reference(s) to already existing volume(s)
 	Volumes []VolumeLink
 	// command to run, expecting exit code 0

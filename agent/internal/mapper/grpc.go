@@ -84,6 +84,7 @@ func mapContainerConfig(in *agent.DeployRequest) v1.ContainerConfig {
 		Volumes:          mapVolumes(cc.Volumes),
 		User:             cc.User,
 		Secrets:          MapSecrets(cc.Secrets),
+		InitContainers:   mapInitContainers(cc.InitContainers),
 	}
 
 	if cc.Environments != nil {
@@ -299,6 +300,38 @@ func mapConfigContainer(in *common.ConfigContainer) *v1.ConfigContainer {
 		Path:      in.Path,
 		KeepFiles: in.KeepFiles,
 	}
+}
+
+func mapInitContainers(in []*common.InitContainer) []v1.InitContainer {
+	containers := []v1.InitContainer{}
+
+	for _, ic := range in {
+		useParentConfig := false
+		if ic.UseParentConfig != nil {
+			useParentConfig = *ic.UseParentConfig
+		}
+		containers = append(containers, v1.InitContainer{
+			Name:      ic.Name,
+			Image:     ic.Image,
+			Command:   ic.Command,
+			Volumes:   mapVolumeLinks(ic.Volumes),
+			Args:      ic.Args,
+			UseParent: useParentConfig,
+			Envs:      ic.Environments,
+		})
+	}
+
+	return containers
+}
+
+func mapVolumeLinks(in []*common.VolumeLink) []v1.VolumeLink {
+	volumeLinks := []v1.VolumeLink{}
+
+	for _, vl := range in {
+		volumeLinks = append(volumeLinks, v1.VolumeLink{Name: vl.Name, Path: vl.Path})
+	}
+
+	return volumeLinks
 }
 
 func MapContainerState(in *[]dockerTypes.Container) []*common.ContainerStateItem {
