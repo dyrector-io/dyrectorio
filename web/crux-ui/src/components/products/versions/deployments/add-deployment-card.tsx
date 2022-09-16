@@ -20,13 +20,14 @@ import useSWR from 'swr'
 interface AddDeploymentCardProps {
   className?: string
   productId: string
+  productName: string
   versionId: string
   onAdd: (deploymentId: string) => void
   onDiscard: VoidFunction
 }
 
 const AddDeploymentCard = (props: AddDeploymentCardProps) => {
-  const { productId, versionId, className, onAdd, onDiscard } = props
+  const { productId, productName, versionId, className, onAdd, onDiscard } = props
 
   const { t } = useTranslation('versions')
 
@@ -40,19 +41,22 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
+  const nameToPrefix = (name: string) => name.replaceAll(' ', '-').toLocaleLowerCase()
+
   const formik = useFormik({
     validationSchema: createDeploymentSchema,
     initialValues: {
       nodeId: null as string,
-      name: '',
-      description: '',
-      prefix: '',
+      note: '',
+      prefix: nameToPrefix(productName),
     },
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 
+      const transformedValues = createDeploymentSchema.cast(values) as any
+
       const body: CreateDeployment = {
-        ...values,
+        ...transformedValues,
       }
 
       const res = await sendForm('POST', versionDeploymentsApiUrl(productId, versionId), body)
@@ -111,17 +115,6 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
           <DyoInput
             className="max-w-lg"
             grow
-            name="name"
-            required
-            label={t('common:name')}
-            onChange={formik.handleChange}
-            value={formik.values.name}
-            message={formik.errors.name}
-          />
-
-          <DyoInput
-            className="max-w-lg"
-            grow
             name="prefix"
             required
             label={t('common:prefix')}
@@ -133,10 +126,10 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
           <DyoTextArea
             className="h-48"
             grow
-            name="description"
-            label={t('common:description')}
+            name="note"
+            label={t('common:note')}
             onChange={formik.handleChange}
-            value={formik.values.description}
+            value={formik.values.note}
           />
         </div>
       )}

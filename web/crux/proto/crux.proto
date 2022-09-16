@@ -698,18 +698,16 @@ message CreateDeploymentRequest {
 
   string versionId = 100;
   string nodeId = 101;
-  string name = 102;
-  optional string description = 103;
-  string prefix = 104;
+  optional string note = 102;
+  string prefix = 103;
 }
 
 message UpdateDeploymentRequest {
   string id = 1;
   string accessedBy = 2;
 
-  string name = 100;
-  optional string description = 101;
-  string prefix = 102;
+  optional string note = 100;
+  string prefix = 101;
 }
 
 message PatchDeploymentRequest {
@@ -752,14 +750,16 @@ message DeploymentListResponse { repeated DeploymentResponse data = 1000; }
 message DeploymentResponse {
   string id = 1;
 
-  string name = 100;
-  string product = 101;
-  string productId = 102;
-  string version = 103;
-  string versionId = 104;
-  string node = 105;
-  common.DeploymentStatus status = 106;
-  string nodeId = 107;
+  string product = 100;
+  string productId = 101;
+  string version = 102;
+  string versionId = 103;
+  string node = 104;
+  common.DeploymentStatus status = 105;
+  string nodeId = 106;
+  optional string note = 107;
+  string prefix = 108;
+  optional google.protobuf.Timestamp updatedAt = 109;
 }
 
 message DeploymentListByVersionResponse {
@@ -770,12 +770,12 @@ message DeploymentByVersionResponse {
   string id = 1;
   AuditResponse audit = 2;
 
-  string name = 100;
-  string prefix = 101;
-  string nodeId = 102;
-  string nodeName = 103;
-  common.DeploymentStatus status = 104;
-  NodeConnectionStatus nodeStatus = 105;
+  string prefix = 100;
+  string nodeId = 101;
+  string nodeName = 102;
+  common.DeploymentStatus status = 103;
+  NodeConnectionStatus nodeStatus = 104;
+  optional string note = 105;
 }
 
 message DeploymentDetailsResponse {
@@ -784,12 +784,11 @@ message DeploymentDetailsResponse {
 
   string productVersionId = 100;
   string nodeId = 101;
-  string name = 102;
-  optional string description = 103;
-  string prefix = 104;
-  repeated common.UniqueKeyValue environment = 105;
-  common.DeploymentStatus status = 106;
-  optional string publicKey = 107;
+  optional string note = 102;
+  string prefix = 103;
+  repeated common.UniqueKeyValue environment = 104;
+  common.DeploymentStatus status = 105;
+  optional string publicKey = 106;
 
   repeated InstanceResponse instances = 1000;
 }

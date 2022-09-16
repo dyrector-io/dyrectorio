@@ -32,8 +32,10 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 
+      const transformedValues = updateDeploymentSchema.cast(values) as any
+
       const body: UpdateDeployment = {
-        ...values,
+        ...transformedValues,
       }
 
       const res = await sendForm(
@@ -47,7 +49,7 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
       if (res.ok) {
         onDeploymentEdited({
           ...deployment,
-          ...values,
+          ...transformedValues,
         })
       } else {
         handleApiError(res, setFieldError)
@@ -62,21 +64,10 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
   return (
     <DyoCard className={className}>
       <DyoHeading element="h4" className="text-lg text-bright">
-        {t('common:editName', { name: deployment.name })}
+        {t('common:editName', { name: t('common:deployment') })}
       </DyoHeading>
 
       <form className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
-        <DyoInput
-          className="max-w-lg"
-          grow
-          name="name"
-          required
-          label={t('common:name')}
-          onChange={formik.handleChange}
-          value={formik.values.name}
-          message={formik.errors.name}
-        />
-
         <DyoInput
           className="max-w-lg"
           grow
@@ -91,10 +82,10 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
         <DyoTextArea
           className="h-48"
           grow
-          name="description"
-          label={t('common:description')}
+          name="note"
+          label={t('common:note')}
           onChange={formik.handleChange}
-          value={formik.values.description}
+          value={formik.values.note}
         />
 
         <DyoButton className="hidden" type="submit" />

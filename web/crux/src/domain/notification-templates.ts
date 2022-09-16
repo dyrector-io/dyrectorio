@@ -18,7 +18,12 @@ export type InviteMessage = BaseMessage & {
   team: string
 }
 
-export type Message = BaseMessage | VersionMessage | InviteMessage
+export type DeployMessage = BaseMessage & {
+  version: string
+  node: string
+}
+
+export type Message = BaseMessage | VersionMessage | InviteMessage | DeployMessage
 
 export type NotificationTemplate = {
   identityId: string
@@ -34,10 +39,11 @@ const getVersionMessage = (args: VersionMessage): string =>
 const getInviteMessage = (args: InviteMessage): string =>
   `${args.subject} has been invited to join team ${args.team} by ${args.owner} !`
 
-const getFailedDeployMessage = (args: BaseMessage): string =>
-  `Failed to deploy ${args.subject}, initiated by: ${args.owner}!`
+const getFailedDeployMessage = (args: DeployMessage): string =>
+  `Failed to deploy ${args.subject} version ${args.version} on node ${args.node}, initiated by: ${args.owner}!`
 
-const getSuccessfulDeployMessage = (args: BaseMessage): string => `${args.owner} successfully deployed ${args.subject}!`
+const getSuccessfulDeployMessage = (args: DeployMessage): string =>
+  `${args.owner} successfully deployed ${args.subject} version ${args.version} on node ${args.node}!`
 
 const getMessage = (messageType: NotificationMessageType): ((message: Message) => string) => {
   switch (messageType) {

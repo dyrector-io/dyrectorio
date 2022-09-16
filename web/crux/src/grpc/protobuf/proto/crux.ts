@@ -995,16 +995,14 @@ export interface CreateDeploymentRequest {
   accessedBy: string
   versionId: string
   nodeId: string
-  name: string
-  description?: string | undefined
+  note?: string | undefined
   prefix: string
 }
 
 export interface UpdateDeploymentRequest {
   id: string
   accessedBy: string
-  name: string
-  description?: string | undefined
+  note?: string | undefined
   prefix: string
 }
 
@@ -1045,7 +1043,6 @@ export interface DeploymentListResponse {
 
 export interface DeploymentResponse {
   id: string
-  name: string
   product: string
   productId: string
   version: string
@@ -1053,6 +1050,9 @@ export interface DeploymentResponse {
   node: string
   status: DeploymentStatus
   nodeId: string
+  note?: string | undefined
+  prefix: string
+  updatedAt?: Timestamp | undefined
 }
 
 export interface DeploymentListByVersionResponse {
@@ -1062,12 +1062,12 @@ export interface DeploymentListByVersionResponse {
 export interface DeploymentByVersionResponse {
   id: string
   audit: AuditResponse | undefined
-  name: string
   prefix: string
   nodeId: string
   nodeName: string
   status: DeploymentStatus
   nodeStatus: NodeConnectionStatus
+  note?: string | undefined
 }
 
 export interface DeploymentDetailsResponse {
@@ -1075,8 +1075,7 @@ export interface DeploymentDetailsResponse {
   audit: AuditResponse | undefined
   productVersionId: string
   nodeId: string
-  name: string
-  description?: string | undefined
+  note?: string | undefined
   prefix: string
   environment: UniqueKeyValue[]
   status: DeploymentStatus
@@ -2914,7 +2913,7 @@ export const DeploymentEditEventMessage = {
 }
 
 function createBaseCreateDeploymentRequest(): CreateDeploymentRequest {
-  return { accessedBy: '', versionId: '', nodeId: '', name: '', prefix: '' }
+  return { accessedBy: '', versionId: '', nodeId: '', prefix: '' }
 }
 
 export const CreateDeploymentRequest = {
@@ -2923,8 +2922,7 @@ export const CreateDeploymentRequest = {
       accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       versionId: isSet(object.versionId) ? String(object.versionId) : '',
       nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      description: isSet(object.description) ? String(object.description) : undefined,
+      note: isSet(object.note) ? String(object.note) : undefined,
       prefix: isSet(object.prefix) ? String(object.prefix) : '',
     }
   },
@@ -2934,15 +2932,14 @@ export const CreateDeploymentRequest = {
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.versionId !== undefined && (obj.versionId = message.versionId)
     message.nodeId !== undefined && (obj.nodeId = message.nodeId)
-    message.name !== undefined && (obj.name = message.name)
-    message.description !== undefined && (obj.description = message.description)
+    message.note !== undefined && (obj.note = message.note)
     message.prefix !== undefined && (obj.prefix = message.prefix)
     return obj
   },
 }
 
 function createBaseUpdateDeploymentRequest(): UpdateDeploymentRequest {
-  return { id: '', accessedBy: '', name: '', prefix: '' }
+  return { id: '', accessedBy: '', prefix: '' }
 }
 
 export const UpdateDeploymentRequest = {
@@ -2950,8 +2947,7 @@ export const UpdateDeploymentRequest = {
     return {
       id: isSet(object.id) ? String(object.id) : '',
       accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      description: isSet(object.description) ? String(object.description) : undefined,
+      note: isSet(object.note) ? String(object.note) : undefined,
       prefix: isSet(object.prefix) ? String(object.prefix) : '',
     }
   },
@@ -2960,8 +2956,7 @@ export const UpdateDeploymentRequest = {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
-    message.name !== undefined && (obj.name = message.name)
-    message.description !== undefined && (obj.description = message.description)
+    message.note !== undefined && (obj.note = message.note)
     message.prefix !== undefined && (obj.prefix = message.prefix)
     return obj
   },
@@ -3114,14 +3109,23 @@ export const DeploymentListResponse = {
 }
 
 function createBaseDeploymentResponse(): DeploymentResponse {
-  return { id: '', name: '', product: '', productId: '', version: '', versionId: '', node: '', status: 0, nodeId: '' }
+  return {
+    id: '',
+    product: '',
+    productId: '',
+    version: '',
+    versionId: '',
+    node: '',
+    status: 0,
+    nodeId: '',
+    prefix: '',
+  }
 }
 
 export const DeploymentResponse = {
   fromJSON(object: any): DeploymentResponse {
     return {
       id: isSet(object.id) ? String(object.id) : '',
-      name: isSet(object.name) ? String(object.name) : '',
       product: isSet(object.product) ? String(object.product) : '',
       productId: isSet(object.productId) ? String(object.productId) : '',
       version: isSet(object.version) ? String(object.version) : '',
@@ -3129,13 +3133,15 @@ export const DeploymentResponse = {
       node: isSet(object.node) ? String(object.node) : '',
       status: isSet(object.status) ? deploymentStatusFromJSON(object.status) : 0,
       nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
+      note: isSet(object.note) ? String(object.note) : undefined,
+      prefix: isSet(object.prefix) ? String(object.prefix) : '',
+      updatedAt: isSet(object.updatedAt) ? fromJsonTimestamp(object.updatedAt) : undefined,
     }
   },
 
   toJSON(message: DeploymentResponse): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
-    message.name !== undefined && (obj.name = message.name)
     message.product !== undefined && (obj.product = message.product)
     message.productId !== undefined && (obj.productId = message.productId)
     message.version !== undefined && (obj.version = message.version)
@@ -3143,6 +3149,9 @@ export const DeploymentResponse = {
     message.node !== undefined && (obj.node = message.node)
     message.status !== undefined && (obj.status = deploymentStatusToJSON(message.status))
     message.nodeId !== undefined && (obj.nodeId = message.nodeId)
+    message.note !== undefined && (obj.note = message.note)
+    message.prefix !== undefined && (obj.prefix = message.prefix)
+    message.updatedAt !== undefined && (obj.updatedAt = fromTimestamp(message.updatedAt).toISOString())
     return obj
   },
 }
@@ -3170,7 +3179,7 @@ export const DeploymentListByVersionResponse = {
 }
 
 function createBaseDeploymentByVersionResponse(): DeploymentByVersionResponse {
-  return { id: '', audit: undefined, name: '', prefix: '', nodeId: '', nodeName: '', status: 0, nodeStatus: 0 }
+  return { id: '', audit: undefined, prefix: '', nodeId: '', nodeName: '', status: 0, nodeStatus: 0 }
 }
 
 export const DeploymentByVersionResponse = {
@@ -3178,12 +3187,12 @@ export const DeploymentByVersionResponse = {
     return {
       id: isSet(object.id) ? String(object.id) : '',
       audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
-      name: isSet(object.name) ? String(object.name) : '',
       prefix: isSet(object.prefix) ? String(object.prefix) : '',
       nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
       nodeName: isSet(object.nodeName) ? String(object.nodeName) : '',
       status: isSet(object.status) ? deploymentStatusFromJSON(object.status) : 0,
       nodeStatus: isSet(object.nodeStatus) ? nodeConnectionStatusFromJSON(object.nodeStatus) : 0,
+      note: isSet(object.note) ? String(object.note) : undefined,
     }
   },
 
@@ -3191,12 +3200,12 @@ export const DeploymentByVersionResponse = {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
     message.audit !== undefined && (obj.audit = message.audit ? AuditResponse.toJSON(message.audit) : undefined)
-    message.name !== undefined && (obj.name = message.name)
     message.prefix !== undefined && (obj.prefix = message.prefix)
     message.nodeId !== undefined && (obj.nodeId = message.nodeId)
     message.nodeName !== undefined && (obj.nodeName = message.nodeName)
     message.status !== undefined && (obj.status = deploymentStatusToJSON(message.status))
     message.nodeStatus !== undefined && (obj.nodeStatus = nodeConnectionStatusToJSON(message.nodeStatus))
+    message.note !== undefined && (obj.note = message.note)
     return obj
   },
 }
@@ -3207,7 +3216,6 @@ function createBaseDeploymentDetailsResponse(): DeploymentDetailsResponse {
     audit: undefined,
     productVersionId: '',
     nodeId: '',
-    name: '',
     prefix: '',
     environment: [],
     status: 0,
@@ -3222,8 +3230,7 @@ export const DeploymentDetailsResponse = {
       audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
       productVersionId: isSet(object.productVersionId) ? String(object.productVersionId) : '',
       nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      description: isSet(object.description) ? String(object.description) : undefined,
+      note: isSet(object.note) ? String(object.note) : undefined,
       prefix: isSet(object.prefix) ? String(object.prefix) : '',
       environment: Array.isArray(object?.environment)
         ? object.environment.map((e: any) => UniqueKeyValue.fromJSON(e))
@@ -3240,8 +3247,7 @@ export const DeploymentDetailsResponse = {
     message.audit !== undefined && (obj.audit = message.audit ? AuditResponse.toJSON(message.audit) : undefined)
     message.productVersionId !== undefined && (obj.productVersionId = message.productVersionId)
     message.nodeId !== undefined && (obj.nodeId = message.nodeId)
-    message.name !== undefined && (obj.name = message.name)
-    message.description !== undefined && (obj.description = message.description)
+    message.note !== undefined && (obj.note = message.note)
     message.prefix !== undefined && (obj.prefix = message.prefix)
     if (message.environment) {
       obj.environment = message.environment.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))

@@ -174,8 +174,7 @@ model Deployment {
   createdBy   String               @db.Uuid
   updatedAt   DateTime?            @default(now()) @db.Timestamptz(6)
   updatedBy   String?              @db.Uuid
-  name        String               @db.VarChar(70)
-  description String?
+  note        String?
   prefix      String?
   status      DeploymentStatusEnum
   environment Json?
@@ -187,8 +186,6 @@ model Deployment {
 
   instances Instance[]
   events    DeploymentEvent[]
-
-  @@unique([versionId, name])
 }
 
 model Instance {

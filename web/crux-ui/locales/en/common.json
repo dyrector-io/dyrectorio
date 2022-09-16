@@ -28,7 +28,7 @@
   "id": "#",
   "description": "Description",
   "icon": "Icon",
-  "updatedAt": "Update at",
+  "updatedAt": "Updated at",
   "createdAt": "Created at",
   "createdByName": "Created by {{name}}",
   "date": "Date",
@@ -39,6 +39,7 @@
   "yourTeams": "Your teams",
   "address": "Address",
   "actions": "Actions",
+  "note": "Note",
 
   "editName": "Edit {{name}}",
   "add": "Add",
