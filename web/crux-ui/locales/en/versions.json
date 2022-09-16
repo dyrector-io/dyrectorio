@@ -30,5 +30,6 @@
   "deploymentName": "Deployment name",
   "alreadyHavePreparing": "You already have one preparing deployment!",
   "nodeRequired": "You can't create deployment without having at least one node!",
-  "versionSemanticHint": "Version is not in semantic format."
+  "versionSemanticHint": "Version is not in semantic format.",
+  "emptyChangelog": "You have not provided any changes"
 }
