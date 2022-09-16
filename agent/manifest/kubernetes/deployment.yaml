@@ -29,3 +29,11 @@ spec:
           envFrom:
             - configMapRef:
                 name: crane-config
+          volumeMounts:
+            - name: agent-data
+              mountPath: /srv/dagent
+      volumes:
+      - name: agent-data
+        persistentVolumeClaim:
+          claimName: agent-data
+
