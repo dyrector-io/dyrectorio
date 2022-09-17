@@ -76,14 +76,14 @@ Seamless testing whenever your team wants to test the application, without waiti
 
 ## Get Started
 
-dyrectorio CLI, is a command-line interface that lets you run and manage the whole dyrectorio projects locally.
+dyrector.io CLI, is a command-line interface that lets you run and manage the whole dyrector.io projects locally.
 
-This means you get a full-featured dyrectorio platform running locally on your machine.
+This means you get a full-featured dyrector.io platform running locally on your machine.
 
 ### Prerequirements
 
 - Docker installed on your system but Podman works, too. In case of Linux, you need Docker Compose, as well.
-- Go Compiler to run the CLI by its source code.
+- Go Compiler to run the CLI by it's source code.
 
 ### With CLI
 
@@ -94,7 +94,7 @@ This means you get a full-featured dyrectorio platform running locally on your m
 2. Open the `/cli` folder and execute `go run . up`
 3. Open the `localhost:3000` and use the platform
 
-dyrectorios's command-line interface (CLI) lets you run a complete dyrectorio development environment locally with the following services: UI Service (crux-ui), Backend Service (crux), PostgreSQL database, Authentication, Migrations, and SMTP mail server.
+dyrector.io's command-line interface (CLI) lets you run a complete dyrector.io development environment locally with the following services: UI Service (crux-ui), Backend Service (crux), PostgreSQL database, Authentication, Migrations, and SMTP mail server.
 
 Read more about the CLI in the [documentation](https://docs.dyrector.io/get-started/cli).
 
