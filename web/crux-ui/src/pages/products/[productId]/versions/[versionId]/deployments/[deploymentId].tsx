@@ -117,6 +117,11 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
   const onOpenLog = () => router.push(deploymentDeployUrl(product.id, version.id, deployment.id))
 
   const onDeploy = () => {
+    if (deployment.node.status !== 'running') {
+      toast.error(t('common:nodeUnreachable'))
+      return
+    }
+
     let error: ValidationError
 
     let i = 0
