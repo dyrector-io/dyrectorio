@@ -1,6 +1,5 @@
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
-import DyoMessage from '@app/elements/dyo-message'
 import useTranslation from 'next-translate/useTranslation'
 
 interface EditImageHeadingProps {
@@ -8,11 +7,10 @@ interface EditImageHeadingProps {
   imageName: string
   imageTag: string
   containerName: string
-  errorMessage?: string
 }
 
 const EditImageHeading = (props: EditImageHeadingProps) => {
-  const { imageName, imageTag, containerName, errorMessage, className } = props
+  const { imageName, imageTag, containerName, className } = props
 
   const { t } = useTranslation('common')
 
@@ -34,8 +32,6 @@ const EditImageHeading = (props: EditImageHeadingProps) => {
           {containerName}
         </DyoHeading>
       </div>
-
-      {errorMessage ? <DyoMessage message={errorMessage} messageType="error" /> : null}
     </div>
   )
 }
