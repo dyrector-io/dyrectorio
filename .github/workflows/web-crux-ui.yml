@@ -18,7 +18,6 @@ env:
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
   LOG_LEVEL: info
   KRATOS_URL: http://172.17.0.1:8000/kratos
-  CRUX_ADDRESS: http://172.17.0.1:8000
   TIME_ZONE: Europe/Budapest
   # Default GitHub variables
   CRUX_UI_VERSION: ${{ github.sha }}
