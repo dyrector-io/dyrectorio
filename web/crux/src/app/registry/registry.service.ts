@@ -10,9 +10,9 @@ import {
   UpdateEntityResponse,
   UpdateRegistryRequest,
 } from 'src/grpc/protobuf/proto/crux'
+import { PreconditionFailedException } from 'src/exception/errors'
 import TeamRepository from '../team/team.repository'
 import RegistryMapper from './registry.mapper'
-import { PreconditionFailedException } from 'src/exception/errors'
 
 @Injectable()
 export default class RegistryService {
@@ -86,7 +86,7 @@ export default class RegistryService {
       throw new PreconditionFailedException({
         property: 'id',
         value: req.id,
-        message: 'Registry is already in use.'
+        message: 'Registry is already in use.',
       })
     }
 

@@ -6,7 +6,6 @@ import {
   CreateRegistryRequest,
   CruxRegistryController,
   CruxRegistryControllerMethods,
-  Empty,
   IdRequest,
   RegistryDetailsResponse,
   RegistryListResponse,
