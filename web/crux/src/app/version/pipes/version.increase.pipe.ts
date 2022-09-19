@@ -1,5 +1,4 @@
 import { Injectable, PipeTransform } from '@nestjs/common'
-import { checkVersionMutability } from 'src/domain/version'
 import { AlreadyExistsException, PreconditionFailedException } from 'src/exception/errors'
 import { IncreaseVersionRequest } from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
@@ -33,8 +32,6 @@ export default class VersionIncreaseValidationPipe implements PipeTransform {
         id: value.id,
       },
     })
-
-    checkVersionMutability(version)
 
     if (version.product.type === ProductTypeEnum.simple) {
       throw new PreconditionFailedException({
