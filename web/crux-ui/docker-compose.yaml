@@ -14,7 +14,7 @@ services:
     restart: unless-stopped
     volumes:
       - crux-ui-certs:/app/certs
-    networks: 
+    networks:
       - crux-intranet
 
 volumes:
