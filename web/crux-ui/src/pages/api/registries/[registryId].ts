@@ -17,9 +17,9 @@ const onPut = async (req: NextApiRequest, res: NextApiResponse) => {
 const onDelete = async (req: NextApiRequest, res: NextApiResponse) => {
   const registryId = req.query.registryId as string
 
-  await crux(req).registries.delete(registryId)
+  const response = await crux(req).registries.delete(registryId)
 
-  res.status(204).end()
+  res.status(response.deletable ? 204 : 409).end()
 }
 
 export default withMiddlewares({

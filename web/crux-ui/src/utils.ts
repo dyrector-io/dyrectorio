@@ -10,7 +10,7 @@ import {
 } from 'next'
 import { Translate } from 'next-translate'
 import { NextRouter } from 'next/router'
-import toast from 'react-hot-toast'
+import toast, { ToastOptions } from 'react-hot-toast'
 import { DyoApiError, DyoErrorDto, DyoFetchError, RegistryDetails } from './models'
 import { Timestamp } from './models/grpc/google/protobuf/timestamp'
 import { ROUTE_404, ROUTE_INDEX, ROUTE_LOGIN, ROUTE_STATUS, ROUTE_VERIFICATION } from './routes'
@@ -325,3 +325,13 @@ export const isServerSide = () => typeof window === 'undefined'
 
 export const snakeToCamel = str =>
   str.toLowerCase().replace(/([-_][a-z])/g, group => group.toUpperCase().replace('-', '').replace('_', ''))
+
+export const toastWarning = (message: string, opts?: ToastOptions) => {
+  toast(message, {
+    ...opts,
+    className: '!bg-warning-orange',
+    style: {
+      color: 'white',
+    },
+  })
+}

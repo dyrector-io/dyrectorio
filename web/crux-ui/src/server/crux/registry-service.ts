@@ -4,8 +4,8 @@ import {
   CreateEntityResponse,
   CreateRegistryRequest,
   CruxRegistryClient,
-  Empty,
   IdRequest,
+  RegistryDeleteResponse,
   RegistryDetailsResponse,
   RegistryListResponse,
   UpdateEntityResponse,
@@ -72,7 +72,7 @@ class DyoRegistryService {
     return timestampToUTC(res.updatedAt)
   }
 
-  async delete(id: string) {
+  async delete(id: string): Promise<RegistryDeleteResponse> {
     const req: IdRequest = {
       id,
       accessedBy: this.identity.id,
@@ -80,7 +80,7 @@ class DyoRegistryService {
 
     this.connections.invalidate(id)
 
-    await protomisify<IdRequest, Empty>(this.client, this.client.deleteRegistry)(IdRequest, req)
+    return await protomisify<IdRequest, RegistryDeleteResponse>(this.client, this.client.deleteRegistry)(IdRequest, req)
   }
 
   async getRegistryDetails(id: string): Promise<RegistryDetails> {

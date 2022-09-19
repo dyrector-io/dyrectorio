@@ -787,6 +787,10 @@ export interface RegistryDetailsResponse {
   google: GoogleRegistryDetails | undefined
 }
 
+export interface RegistryDeleteResponse {
+  deletable: boolean
+}
+
 export interface CreateVersionRequest {
   accessedBy: string
   productId: string
@@ -4059,6 +4063,53 @@ export const RegistryDetailsResponse = {
       object.google !== undefined && object.google !== null
         ? GoogleRegistryDetails.fromPartial(object.google)
         : undefined
+    return message
+  },
+}
+
+function createBaseRegistryDeleteResponse(): RegistryDeleteResponse {
+  return { deletable: false }
+}
+
+export const RegistryDeleteResponse = {
+  encode(message: RegistryDeleteResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.deletable === true) {
+      writer.uint32(800).bool(message.deletable)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): RegistryDeleteResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseRegistryDeleteResponse()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 100:
+          message.deletable = reader.bool()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): RegistryDeleteResponse {
+    return { deletable: isSet(object.deletable) ? Boolean(object.deletable) : false }
+  },
+
+  toJSON(message: RegistryDeleteResponse): unknown {
+    const obj: any = {}
+    message.deletable !== undefined && (obj.deletable = message.deletable)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<RegistryDeleteResponse>, I>>(object: I): RegistryDeleteResponse {
+    const message = createBaseRegistryDeleteResponse()
+    message.deletable = object.deletable ?? false
     return message
   },
 }
@@ -8590,8 +8641,8 @@ export const CruxRegistryService = {
     responseStream: false,
     requestSerialize: (value: IdRequest) => Buffer.from(IdRequest.encode(value).finish()),
     requestDeserialize: (value: Buffer) => IdRequest.decode(value),
-    responseSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
-    responseDeserialize: (value: Buffer) => Empty.decode(value),
+    responseSerialize: (value: RegistryDeleteResponse) => Buffer.from(RegistryDeleteResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => RegistryDeleteResponse.decode(value),
   },
   getRegistryDetails: {
     path: '/crux.CruxRegistry/GetRegistryDetails',
@@ -8609,7 +8660,7 @@ export interface CruxRegistryServer extends UntypedServiceImplementation {
   getRegistries: handleUnaryCall<AccessRequest, RegistryListResponse>
   createRegistry: handleUnaryCall<CreateRegistryRequest, CreateEntityResponse>
   updateRegistry: handleUnaryCall<UpdateRegistryRequest, UpdateEntityResponse>
-  deleteRegistry: handleUnaryCall<IdRequest, Empty>
+  deleteRegistry: handleUnaryCall<IdRequest, RegistryDeleteResponse>
   getRegistryDetails: handleUnaryCall<IdRequest, RegistryDetailsResponse>
 }
 
@@ -8660,17 +8711,20 @@ export interface CruxRegistryClient extends Client {
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: UpdateEntityResponse) => void,
   ): ClientUnaryCall
-  deleteRegistry(request: IdRequest, callback: (error: ServiceError | null, response: Empty) => void): ClientUnaryCall
+  deleteRegistry(
+    request: IdRequest,
+    callback: (error: ServiceError | null, response: RegistryDeleteResponse) => void,
+  ): ClientUnaryCall
   deleteRegistry(
     request: IdRequest,
     metadata: Metadata,
-    callback: (error: ServiceError | null, response: Empty) => void,
+    callback: (error: ServiceError | null, response: RegistryDeleteResponse) => void,
   ): ClientUnaryCall
   deleteRegistry(
     request: IdRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: Empty) => void,
+    callback: (error: ServiceError | null, response: RegistryDeleteResponse) => void,
   ): ClientUnaryCall
   getRegistryDetails(
     request: IdRequest,

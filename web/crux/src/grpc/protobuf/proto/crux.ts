@@ -775,6 +775,10 @@ export interface RegistryDetailsResponse {
   google: GoogleRegistryDetails | undefined
 }
 
+export interface RegistryDeleteResponse {
+  deletable: boolean
+}
+
 export interface CreateVersionRequest {
   accessedBy: string
   productId: string
@@ -2107,6 +2111,22 @@ export const RegistryDetailsResponse = {
       (obj.github = message.github ? GithubRegistryDetails.toJSON(message.github) : undefined)
     message.google !== undefined &&
       (obj.google = message.google ? GoogleRegistryDetails.toJSON(message.google) : undefined)
+    return obj
+  },
+}
+
+function createBaseRegistryDeleteResponse(): RegistryDeleteResponse {
+  return { deletable: false }
+}
+
+export const RegistryDeleteResponse = {
+  fromJSON(object: any): RegistryDeleteResponse {
+    return { deletable: isSet(object.deletable) ? Boolean(object.deletable) : false }
+  },
+
+  toJSON(message: RegistryDeleteResponse): unknown {
+    const obj: any = {}
+    message.deletable !== undefined && (obj.deletable = message.deletable)
     return obj
   },
 }
@@ -3636,7 +3656,7 @@ export interface CruxRegistryClient {
 
   updateRegistry(request: UpdateRegistryRequest, metadata: Metadata, ...rest: any): Observable<UpdateEntityResponse>
 
-  deleteRegistry(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
+  deleteRegistry(request: IdRequest, metadata: Metadata, ...rest: any): Observable<RegistryDeleteResponse>
 
   getRegistryDetails(request: IdRequest, metadata: Metadata, ...rest: any): Observable<RegistryDetailsResponse>
 }
@@ -3662,7 +3682,11 @@ export interface CruxRegistryController {
     ...rest: any
   ): Promise<UpdateEntityResponse> | Observable<UpdateEntityResponse> | UpdateEntityResponse
 
-  deleteRegistry(request: IdRequest, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
+  deleteRegistry(
+    request: IdRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<RegistryDeleteResponse> | Observable<RegistryDeleteResponse> | RegistryDeleteResponse
 
   getRegistryDetails(
     request: IdRequest,

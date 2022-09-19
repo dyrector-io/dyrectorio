@@ -5,6 +5,7 @@ import {
   CreateEntityResponse,
   CreateRegistryRequest,
   IdRequest,
+  RegistryDeleteResponse,
   RegistryDetailsResponse,
   RegistryListResponse,
   UpdateEntityResponse,
@@ -73,12 +74,29 @@ export default class RegistryService {
     return UpdateEntityResponse.fromJSON(registry)
   }
 
-  async deleteRegistry(req: IdRequest): Promise<void> {
+  async deleteRegistry(req: IdRequest): Promise<RegistryDeleteResponse> {
+    const used = await this.prisma.image.count({
+      where: {
+        registryId: req.id,
+      },
+      take: 1,
+    })
+
+    if (used > 0) {
+      return {
+        deletable: false,
+      }
+    }
+
     await this.prisma.registry.delete({
       where: {
         id: req.id,
       },
     })
+
+    return {
+      deletable: true,
+    }
   }
 
   async getRegistryDetails(req: IdRequest): Promise<RegistryDetailsResponse> {

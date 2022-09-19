@@ -20,6 +20,7 @@
   "apiUrl": "GitLab API URL",
   "keyFile": "Key file",
   "privateKey": "Private key",
+  "inUse": "This registry is in use.",
 
   "tips": {
     "common": "Registries contain the images you can select to create new Products.",
