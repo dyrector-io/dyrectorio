@@ -33,7 +33,7 @@ const UserRoleAction = (props: UserRoleActionProps) => {
       async () => {
         setUpdating(true)
 
-        const res = await sendForm('PUT', userRoleApiUrl(teamId, user.id), role)
+        const res = await sendForm('PUT', userRoleApiUrl(teamId, user.id), updatedRole)
         if (res.ok) {
           onRoleUpdated(updatedRole)
         } else {
