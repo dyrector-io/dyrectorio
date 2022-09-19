@@ -1,4 +1,4 @@
-import { MAILSLURPER_TIMEOUT } from "./common"
+import { MAILSLURPER_TIMEOUT } from './common'
 
 // further info: https://github.com/mailslurper/mailslurper/wiki/Email-Endpoints
 type Mail = {
@@ -36,20 +36,20 @@ class MailSlurper {
       }
 
       const body = (await res.json()) as {
-        mailItems: Mail[],
-        totalRecords: number,
+        mailItems: Mail[]
+        totalRecords: number
       }
 
       if (body.totalRecords < 1) {
         continue
       }
-  
+
       let emails = body.mailItems
       if (filters) {
         if (filters.subject) {
           emails = emails.filter(it => it.subject.startsWith(filters.subject))
         }
-  
+
         if (filters.toAddress) {
           emails = emails.filter(it => it.toAddresses.includes(filters.toAddress))
         }
