@@ -10,7 +10,6 @@ import {
   UpdateEntityResponse,
   UpdateRegistryRequest,
 } from 'src/grpc/protobuf/proto/crux'
-import { PreconditionFailedException } from 'src/exception/errors'
 import TeamRepository from '../team/team.repository'
 import RegistryMapper from './registry.mapper'
 
@@ -75,21 +74,6 @@ export default class RegistryService {
   }
 
   async deleteRegistry(req: IdRequest): Promise<void> {
-    const used = await this.prisma.image.count({
-      where: {
-        registryId: req.id,
-      },
-      take: 1,
-    })
-
-    if (used > 0) {
-      throw new PreconditionFailedException({
-        property: 'id',
-        value: req.id,
-        message: 'Registry is already in use.',
-      })
-    }
-
     await this.prisma.registry.delete({
       where: {
         id: req.id,
