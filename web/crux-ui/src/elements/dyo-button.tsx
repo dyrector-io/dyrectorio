@@ -53,6 +53,7 @@ const DyoButton = (props: DyoButtonProps) => {
   return (
     <button
       {...forwaredProps}
+      disabled={disabled}
       /* eslint-disable-next-line react/button-has-type */
       type={type ?? 'button'}
       className={clsx(
