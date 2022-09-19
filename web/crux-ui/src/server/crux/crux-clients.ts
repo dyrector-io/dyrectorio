@@ -1,3 +1,4 @@
+import { invalidArgument } from '@app/error-responses'
 import {
   CruxAuditClient,
   CruxDeploymentClient,
@@ -35,6 +36,10 @@ class CruxClients {
 
   constructor(address: string, publicKey: Buffer) {
     const creds = publicKey ? credentials.createSsl(publicKey) : credentials.createInsecure()
+
+    if (address === undefined || address === '') {
+      throw invalidArgument('address', 'address cannot be empty!')
+    }
 
     this.products = new CruxProductClient(address, creds)
     this.registries = new CruxRegistryClient(address, creds)
