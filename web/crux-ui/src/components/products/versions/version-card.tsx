@@ -77,7 +77,7 @@ const VersionCard = (props: VersionCardProps) => {
       <div className="flex flex-row my-2">
         {!onIncreaseClick || !version.increasable ? null : (
           <DyoImgButton
-            className="px-2 h-6"
+            className="px-2 h-6 mr-2"
             disabled={disabled}
             src="/arrow_up_bold.svg"
             alt={t('increase')}
@@ -90,7 +90,7 @@ const VersionCard = (props: VersionCardProps) => {
 
         {!onSetAsDefaultClick || version.default ? null : (
           <DyoImgButton
-            className="px-2 h-6 mx-2"
+            className="px-2 h-6"
             disabled={disabled}
             src="/home_bold.svg"
             alt={t('default')}

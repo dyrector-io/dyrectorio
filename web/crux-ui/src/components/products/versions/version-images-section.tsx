@@ -29,7 +29,7 @@ const VersionImagesSection = (props: VersionImagesSectionProps) => {
           const details = imageTags[key]
 
           return (
-            <div className={clsx('w-full h-full min-w-min', index % 2 ? 'xl:pl-2' : 'xl:pr-2')} key={it.order}>
+            <div className={clsx('w-full h-full', index % 2 ? 'xl:pl-2' : 'xl:pr-2')} key={it.order}>
               <EditImageCard
                 disabled={disabled}
                 versionSock={versionSock}

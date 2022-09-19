@@ -1,5 +1,6 @@
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
+import DyoMessage from '@app/elements/dyo-message'
 import { Instance, PatchInstanceMessage, WS_TYPE_PATCH_INSTANCE } from '@app/models'
 import { InstanceContainerConfig, mergeConfigs } from '@app/models-config'
 import { getValidationError, instanceConfigSchema } from '@app/validation'
@@ -48,12 +49,11 @@ const EditInstanceCard = (props: EditInstanceCardProps) => {
 
   return (
     <DyoCard className="flex flex-col flex-grow px-6 pb-6 pt-4">
-      <div className="flex flex-row items-center">
+      <div className="flex mb-2 flex-row items-center">
         <EditImageHeading
           imageName={instance.image.name}
           imageTag={instance.image.tag}
           containerName={instance.image.config.name}
-          errorMessage={errorMessage}
         />
 
         <DyoButton
@@ -79,23 +79,29 @@ const EditInstanceCard = (props: EditInstanceCardProps) => {
         </DyoButton>
       </div>
 
-      {selection === 'config' ? (
-        <EditInstanceConfig
-          disabled={disabled}
-          disabledContainerNameEditing
-          config={mergedConfig}
-          publicKey={publicKey}
-          onPatch={it => onPatch(instance.id, it)}
-        />
-      ) : (
-        <EditInstanceJson
-          disabled={disabled}
-          disabledContainerNameEditing
-          config={mergedConfig}
-          onPatch={it => onPatch(instance.id, it)}
-          onParseError={onParseError}
-        />
-      )}
+      {errorMessage ? (
+        <DyoMessage message={errorMessage} className="text-xs italic w-full" messageType="error" />
+      ) : null}
+
+      <div className="flex flex-col mt-2 h-128">
+        {selection === 'config' ? (
+          <EditInstanceConfig
+            disabled={disabled}
+            disabledContainerNameEditing
+            config={mergedConfig}
+            publicKey={publicKey}
+            onPatch={it => onPatch(instance.id, it)}
+          />
+        ) : (
+          <EditInstanceJson
+            disabled={disabled}
+            disabledContainerNameEditing
+            config={mergedConfig}
+            onPatch={it => onPatch(instance.id, it)}
+            onParseError={onParseError}
+          />
+        )}
+      </div>
     </DyoCard>
   )
 }

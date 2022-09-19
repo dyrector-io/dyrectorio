@@ -1,6 +1,7 @@
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoImgButton from '@app/elements/dyo-img-button'
+import DyoMessage from '@app/elements/dyo-message'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import useConfirmation from '@app/hooks/use-confirmation'
 import {
@@ -62,13 +63,8 @@ const EditImageCard = (props: EditImageCardProps) => {
   return (
     <>
       <DyoCard className="flex flex-col flex-grow px-6 pb-6 pt-4 h-full">
-        <div className="flex flex-row items-start mb-4">
-          <EditImageHeading
-            imageName={image.name}
-            imageTag={image.tag}
-            containerName={image.config.name}
-            errorMessage={errorMessage}
-          />
+        <div className="flex mb-2 flex-row items-start">
+          <EditImageHeading imageName={image.name} imageTag={image.tag} containerName={image.config.name} />
 
           <DyoButton
             text
@@ -111,18 +107,24 @@ const EditImageCard = (props: EditImageCardProps) => {
           )}
         </div>
 
-        {selection === 'tag' ? (
-          <EditImageTags disabled={disabled} selected={image.tag} tags={tags} onTagSelected={onTagSelected} />
-        ) : selection === 'config' ? (
-          <EditImageConfig disabled={disabled} config={image.config} onPatch={it => onPatch(image.id, it)} />
-        ) : (
-          <EditImageJson
-            disabled={disabled}
-            config={image.config}
-            onPatch={it => onPatch(image.id, it)}
-            onParseError={onParseError}
-          />
-        )}
+        {errorMessage ? (
+          <DyoMessage message={errorMessage} className="text-xs italic w-full" messageType="error" />
+        ) : null}
+
+        <div className="flex flex-col mt-2 h-128">
+          {selection === 'tag' ? (
+            <EditImageTags disabled={disabled} selected={image.tag} tags={tags} onTagSelected={onTagSelected} />
+          ) : selection === 'config' ? (
+            <EditImageConfig disabled={disabled} config={image.config} onPatch={it => onPatch(image.id, it)} />
+          ) : (
+            <EditImageJson
+              disabled={disabled}
+              config={image.config}
+              onPatch={it => onPatch(image.id, it)}
+              onParseError={onParseError}
+            />
+          )}
+        </div>
       </DyoCard>
 
       <DyoConfirmationModal
