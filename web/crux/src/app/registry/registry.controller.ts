@@ -6,8 +6,8 @@ import {
   CreateRegistryRequest,
   CruxRegistryController,
   CruxRegistryControllerMethods,
+  Empty,
   IdRequest,
-  RegistryDeleteResponse,
   RegistryDetailsResponse,
   RegistryListResponse,
   UpdateEntityResponse,
@@ -32,8 +32,8 @@ export default class RegistryController implements CruxRegistryController {
     return await this.service.createRegistry(request)
   }
 
-  async deleteRegistry(request: IdRequest): Promise<RegistryDeleteResponse> {
-    return await this.service.deleteRegistry(request)
+  async deleteRegistry(request: IdRequest): Promise<void> {
+    await this.service.deleteRegistry(request)
   }
 
   @UseGuards(RegistryAccessValidationGuard)

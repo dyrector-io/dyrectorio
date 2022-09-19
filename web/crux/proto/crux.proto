@@ -29,7 +29,7 @@ service CruxRegistry {
   rpc GetRegistries(AccessRequest) returns (RegistryListResponse);
   rpc CreateRegistry(CreateRegistryRequest) returns (CreateEntityResponse);
   rpc UpdateRegistry(UpdateRegistryRequest) returns (UpdateEntityResponse);
-  rpc DeleteRegistry(IdRequest) returns (RegistryDeleteResponse);
+  rpc DeleteRegistry(IdRequest) returns (Empty);
   rpc GetRegistryDetails(IdRequest) returns (RegistryDetailsResponse);
 }
 
@@ -428,10 +428,6 @@ message RegistryDetailsResponse {
     GithubRegistryDetails github = 203;
     GoogleRegistryDetails google = 204;
   }
-}
-
-message RegistryDeleteResponse {
-  bool deletable = 100;
 }
 
 enum RegistryType {

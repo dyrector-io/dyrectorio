@@ -259,7 +259,7 @@ type CruxRegistryClient interface {
 	GetRegistries(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*RegistryListResponse, error)
 	CreateRegistry(ctx context.Context, in *CreateRegistryRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error)
 	UpdateRegistry(ctx context.Context, in *UpdateRegistryRequest, opts ...grpc.CallOption) (*UpdateEntityResponse, error)
-	DeleteRegistry(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*RegistryDeleteResponse, error)
+	DeleteRegistry(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error)
 	GetRegistryDetails(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*RegistryDetailsResponse, error)
 }
 
@@ -298,8 +298,8 @@ func (c *cruxRegistryClient) UpdateRegistry(ctx context.Context, in *UpdateRegis
 	return out, nil
 }
 
-func (c *cruxRegistryClient) DeleteRegistry(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*RegistryDeleteResponse, error) {
-	out := new(RegistryDeleteResponse)
+func (c *cruxRegistryClient) DeleteRegistry(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
 	err := c.cc.Invoke(ctx, "/crux.CruxRegistry/DeleteRegistry", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -324,7 +324,7 @@ type CruxRegistryServer interface {
 	GetRegistries(context.Context, *AccessRequest) (*RegistryListResponse, error)
 	CreateRegistry(context.Context, *CreateRegistryRequest) (*CreateEntityResponse, error)
 	UpdateRegistry(context.Context, *UpdateRegistryRequest) (*UpdateEntityResponse, error)
-	DeleteRegistry(context.Context, *IdRequest) (*RegistryDeleteResponse, error)
+	DeleteRegistry(context.Context, *IdRequest) (*Empty, error)
 	GetRegistryDetails(context.Context, *IdRequest) (*RegistryDetailsResponse, error)
 	mustEmbedUnimplementedCruxRegistryServer()
 }
@@ -342,7 +342,7 @@ func (UnimplementedCruxRegistryServer) CreateRegistry(context.Context, *CreateRe
 func (UnimplementedCruxRegistryServer) UpdateRegistry(context.Context, *UpdateRegistryRequest) (*UpdateEntityResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateRegistry not implemented")
 }
-func (UnimplementedCruxRegistryServer) DeleteRegistry(context.Context, *IdRequest) (*RegistryDeleteResponse, error) {
+func (UnimplementedCruxRegistryServer) DeleteRegistry(context.Context, *IdRequest) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteRegistry not implemented")
 }
 func (UnimplementedCruxRegistryServer) GetRegistryDetails(context.Context, *IdRequest) (*RegistryDetailsResponse, error) {

@@ -5,7 +5,6 @@ import {
   CreateEntityResponse,
   CreateRegistryRequest,
   IdRequest,
-  RegistryDeleteResponse,
   RegistryDetailsResponse,
   RegistryListResponse,
   UpdateEntityResponse,
@@ -13,6 +12,7 @@ import {
 } from 'src/grpc/protobuf/proto/crux'
 import TeamRepository from '../team/team.repository'
 import RegistryMapper from './registry.mapper'
+import { PreconditionFailedException } from 'src/exception/errors'
 
 @Injectable()
 export default class RegistryService {
@@ -74,7 +74,7 @@ export default class RegistryService {
     return UpdateEntityResponse.fromJSON(registry)
   }
 
-  async deleteRegistry(req: IdRequest): Promise<RegistryDeleteResponse> {
+  async deleteRegistry(req: IdRequest): Promise<void> {
     const used = await this.prisma.image.count({
       where: {
         registryId: req.id,
@@ -83,9 +83,11 @@ export default class RegistryService {
     })
 
     if (used > 0) {
-      return {
-        deletable: false,
-      }
+      throw new PreconditionFailedException({
+        property: 'id',
+        value: req.id,
+        message: 'Registry is already in use.'
+      })
     }
 
     await this.prisma.registry.delete({
@@ -93,10 +95,6 @@ export default class RegistryService {
         id: req.id,
       },
     })
-
-    return {
-      deletable: true,
-    }
   }
 
   async getRegistryDetails(req: IdRequest): Promise<RegistryDetailsResponse> {

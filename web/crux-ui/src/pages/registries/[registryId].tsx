@@ -40,10 +40,10 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
     const res = await fetch(registryApiUrl(registry.id), {
       method: 'DELETE',
     })
-
+    
     if (res.ok) {
       router.back()
-    } else if (res.status === 409) {
+    } else if (res.status === 412) {
       toastWarning(t('inUse'))
     } else {
       handleApiError(res)
