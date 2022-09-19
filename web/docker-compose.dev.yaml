@@ -29,7 +29,7 @@ services:
 
   kratos-migrate:
     container_name: crux-kratos-migrate
-    image: ghcr.io/dyrector-io/dyrectorio/kratos:${DYO_VERSION}
+    image: ghcr.io/dyrector-io/dyrectorio/web/kratos:${DYO_VERSION}
     depends_on:
       - kratos-postgres
     environment:
@@ -41,7 +41,7 @@ services:
 
   kratos:
     container_name: crux-kratos
-    image: ghcr.io/dyrector-io/dyrectorio/kratos:${DYO_VERSION}
+    image: ghcr.io/dyrector-io/dyrectorio/web/kratos:${DYO_VERSION}
     build:
       context: ./kratos
     depends_on:
@@ -111,7 +111,6 @@ services:
       - crux-intranet
 volumes:
   kratos-db:
-  kratos-config:
 
 networks:
   crux-intranet:

@@ -109,7 +109,7 @@ export class Crux {
 if (!global.cruxClients) {
   try {
     const cert = process.env.CRUX_INSECURE === 'true' ? null : readFileSync(join(cwd(), './certs/api-public.crt'))
-    global.cruxClients = new CruxClients(process.env.CRUX_ADDRESS, cert)
+    global.cruxClients = new CruxClients(process.env.CRUX_API_ADDRESS, cert)
   } catch (error) {
     if (process.env.NEXT_PHASE !== 'phase-production-build') {
       const msg = 'could not load public cert file'

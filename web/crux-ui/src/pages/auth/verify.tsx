@@ -7,7 +7,7 @@ import DyoMessage from '@app/elements/dyo-message'
 import DyoSingleFormHeading from '@app/elements/dyo-single-form-heading'
 import useTimer from '@app/hooks/use-timer'
 import { DyoErrorDto, VerifyEmail } from '@app/models'
-import { API_VERIFICATION, ROUTE_LOGIN, ROUTE_SETTINGS } from '@app/routes'
+import { API_VERIFICATION, ROUTE_SETTINGS } from '@app/routes'
 import { findAttributes, findError, findMessage, isDyoError, redirectTo, sendForm, upsertDyoError } from '@app/utils'
 import { SelfServiceVerificationFlow } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'
@@ -116,13 +116,10 @@ export default VerifyPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
   const flowId = context.query.flow as string
+  const email = context.query.email as string
 
   const session = await obtainKratosSession(context.req)
-  if (!session) {
-    return redirectTo(ROUTE_LOGIN)
-  }
-
-  if (userVerified(session.identity)) {
+  if (session && userVerified(session.identity)) {
     return redirectTo(ROUTE_SETTINGS)
   }
 
@@ -135,7 +132,7 @@ const getPageServerSideProps = async (context: NextPageContext) => {
 
   return {
     props: {
-      email: session.identity.traits.email,
+      email: (email ?? session?.identity?.traits?.email) || null,
       flow: flow.data,
       recaptchaSiteKey: captchaDisabled() ? null : process.env.RECAPTCHA_SITE_KEY,
     },

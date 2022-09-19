@@ -92,6 +92,9 @@ export const appendUrlParams = <T extends CruxUrlParams>(url: string, params: T)
   return anchor ? `${result}#${anchor}` : result
 }
 
+// auth
+export const verificationUrl = (email: string) => `${ROUTE_VERIFICATION}?email=${email}`
+
 // product
 export const productUrl = (id: string, params?: VersionUrlParams) => appendUrlParams(`${ROUTE_PRODUCTS}/${id}`, params)
 export const productApiUrl = (id: string) => `/api${productUrl(id)}`

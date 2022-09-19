@@ -15,20 +15,14 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: dyrector-io/dyrectorio/web/crux-ui
   WORKING_DIRECTORY: web/crux-ui
-  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
-  LOG_LEVEL: info
-  KRATOS_URL: http://192.168.1.30:8000/kratos
-  CRUX_ADDRESS: http://172.17.0.1:8000
-  TIME_ZONE: Europe/Budapest
   # Default GitHub variables
-  CRUX_UI_VERSION: ${{ github.sha }}
   CRUX_UI_IMAGE_TAG: ${{ github.ref_name }}
 
 jobs:
   check:
     runs-on: ubuntu-20.04
     container:
-      image: node:17.1-alpine
+      image: node:18.0-alpine
     outputs:
       tag: ${{ steps.settag.outputs.tag }}
       version: ${{ steps.settag.outputs.version }}
@@ -50,17 +44,64 @@ jobs:
       env:
         NEXT_TELEMETRY_DISABLED: 1
         NODE_ENV: production
-        NEXT_PUBLIC_RECAPTCHA_SITE_KEY: 6LeSBegfAAAAAGMnFacsTivlw4PdF2LBMi8g5tZ-
 
     - name: Setting a buildtag
       id: settag
       working-directory: .github/workflows
       run: ./pipeline_set_output_tag.sh $GITHUB_REF_TYPE ${{ github.ref_name }} ${{ github.sha }}
 
+  # job: Test e2e
+  test_e2e:
+    runs-on: ubuntu-20.04
+    needs: check
+    container:
+      image: dyrectorio/playwright:1.26.0-alpha-aug-23-2022
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.
+      ports:
+        - 3000:3000 # crux-ui
+        - 5000:5000 # crux-agent
+        - 5001:5001 # crux-api
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Setup containers
+      working-directory: web
+      run: |
+        docker network create crux-intranet
+        ./setup_e2e_env.sh
+
+    - name: Setup crux
+      working-directory: web/crux
+      run: |
+        npm i
+        npx prisma generate
+        npx prisma migrate deploy
+        npm run build
+
+    - name: Run tests
+      working-directory: web
+      run: |
+        cd crux
+        npm run start:prod & 
+        cd ../crux-ui
+        npm i
+        npm run build
+        npm run disable-telemetry
+        npx playwright install
+        npm run test:e2e
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: e2e-screenshots
+        path: web/crux-ui/e2e/screenshots/
+
   # job: Build image
   build_image:
     runs-on: ubuntu-20.04
-    needs: check
+    needs: test_e2e
     container: docker:latest
     if: github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag'
     defaults:
@@ -84,7 +125,7 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GHCR_PAT }}
 
-    - name: Docker build 
+    - name: Docker build
       run: |
         docker build . -t ${REGISTRY}/${IMAGE_NAME}:${{ needs.check.outputs.tag }}
       env:
