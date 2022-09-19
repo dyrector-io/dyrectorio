@@ -83,7 +83,7 @@ This means you get a full-featured dyrector.io platform running locally on your 
 ### Prerequirements
 
 - Docker installed on your system but Podman works, too. In case of Linux, you need Docker Compose, as well.
-- Go Compiler to run the CLI by it's source code.
+- Go Compiler to run the CLI by its source code.
 
 ### With CLI
 
