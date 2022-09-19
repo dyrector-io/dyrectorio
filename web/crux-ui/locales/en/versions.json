@@ -31,5 +31,8 @@
   "alreadyHavePreparing": "You already have one preparing deployment!",
   "nodeRequired": "You can't create deployment without having at least one node!",
   "versionSemanticHint": "Version is not in semantic format.",
-  "emptyChangelog": "You have not provided any changes"
+  "emptyChangelog": "You have not provided any changes",
+  "errors": {
+    "preconditionFailed": "You can't create a deployment without having atleast one image"
+  }
 }
