@@ -3,11 +3,19 @@ import { sessionOf } from '@server/kratos'
 import { IncomingMessage, Server as HTTPServer } from 'http'
 import { Server as HTTPSServer } from 'https'
 import { NextApiRequest, NextApiResponse } from 'next'
+import { parse } from 'url'
 import WebSocket from 'ws'
 import WsAuthorizer from './authorizer'
 import { WsConnectDto, WsMessage } from './common'
 import WsConnection from './connection'
 import WsEndpoint from './endpoint'
+
+export type HttpServerWithInternals = (HTTPServer | HTTPSServer) & {
+  ws: WebSocketServer
+  _events: {
+    upgrade: (request, socket, head) => void
+  }
+}
 
 type ConnectionEntry = {
   connection: WsConnection
@@ -27,12 +35,35 @@ class WebSocketServer {
 
   private interests: Map<string, Array<WsEndpoint>> = new Map()
 
-  constructor(httpServer: HTTPServer | HTTPSServer) {
-    this.server = new WebSocket.Server({
-      server: httpServer,
-    })
+  constructor(httpServer: HttpServerWithInternals) {
+    if (process.env.NODE_ENV === 'development') {
+      // eslint-disable-next-line no-underscore-dangle
+      const hmrUpgrade = httpServer._events.upgrade
 
-    this.server.on('connection', (socket, request: IncomingMessage) => this.onConnect(socket, request))
+      const server = new WebSocket.Server({
+        noServer: true,
+      })
+      this.server = server
+
+      // eslint-disable-next-line no-underscore-dangle
+      httpServer._events.upgrade = (request, socket, head) => {
+        const { pathname } = parse(request.url)
+
+        if (pathname === '/_next/webpack-hmr') {
+          hmrUpgrade(request, socket, head)
+        } else {
+          server.handleUpgrade(request, socket, head, ws => {
+            server.emit('connection', ws, request)
+          })
+        }
+      }
+    } else {
+      this.server = new WebSocket.Server({
+        server: httpServer,
+      })
+
+      this.server.on('connection', (socket, request: IncomingMessage) => this.onConnect(socket, request))
+    }
   }
 
   getEndpoint(route: string) {
@@ -105,10 +136,6 @@ class WebSocketServer {
 
   private onConnect(socket: WebSocket, req: IncomingMessage) {
     const { url } = req
-
-    if (process.env.NODE_ENV === 'development' && url.startsWith('/_next')) {
-      return
-    }
 
     const split = url?.split('?token=')
     if (split.length < 2) {

@@ -1,14 +1,14 @@
 import { internalError } from '@app/error-responses'
 import WsEndpoint, { WsEndpointOnMessage, WsEndpointOptions } from '@app/websockets/endpoint'
-import WebSocketServer from '@app/websockets/server'
+import WebSocketServer, { HttpServerWithInternals } from '@app/websockets/server'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { Logger } from '../logger'
-
 import { NextApiEndpoint, withMiddlewares } from './middlewares'
 import { useWebsocketMiddlewares, WsMiddleWareFunction } from './websocket-middlewares'
 
 const initWebSocketServer = (req: NextApiRequest, res: NextApiResponse): WebSocketServer => {
-  const httpServer = (res.socket as any).server
+  const httpServer: HttpServerWithInternals = (res.socket as any).server
+
   let server: WebSocketServer = httpServer.ws
   if (!server) {
     server = new WebSocketServer(httpServer)
