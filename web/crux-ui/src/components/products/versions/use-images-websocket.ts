@@ -70,12 +70,7 @@ export interface ImagesWebSocket {
 export const useImagesWebSocket = (options: ImagesWebSocketOptions): ImagesWebSocket => {
   const { productId, versionId, images, imageTags, setImages, setImageTags, setPatchingImage } = options
 
-  const registriesSock = useWebSocket(WS_REGISTRIES, {
-    onOpen: () => {
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
-      updateImageTags(images)
-    },
-  })
+  const registriesSock = useWebSocket(WS_REGISTRIES)
 
   const updateImageTags = (imgs: VersionImage[]) => {
     const fetchTags = fold(imgs, new Map<string, Set<string>>(), (map, it) => {

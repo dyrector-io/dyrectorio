@@ -852,6 +852,8 @@ export interface ImageResponse {
   order: number
   registryId: string
   config: ContainerConfig | undefined
+  createdAt: Timestamp | undefined
+  registryName: string
 }
 
 export interface ImageListResponse {
@@ -2394,7 +2396,16 @@ export const ContainerConfig = {
 }
 
 function createBaseImageResponse(): ImageResponse {
-  return { id: '', name: '', tag: '', order: 0, registryId: '', config: undefined }
+  return {
+    id: '',
+    name: '',
+    tag: '',
+    order: 0,
+    registryId: '',
+    config: undefined,
+    createdAt: undefined,
+    registryName: '',
+  }
 }
 
 export const ImageResponse = {
@@ -2406,6 +2417,8 @@ export const ImageResponse = {
       order: isSet(object.order) ? Number(object.order) : 0,
       registryId: isSet(object.registryId) ? String(object.registryId) : '',
       config: isSet(object.config) ? ContainerConfig.fromJSON(object.config) : undefined,
+      createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
+      registryName: isSet(object.registryName) ? String(object.registryName) : '',
     }
   },
 
@@ -2417,6 +2430,8 @@ export const ImageResponse = {
     message.order !== undefined && (obj.order = Math.round(message.order))
     message.registryId !== undefined && (obj.registryId = message.registryId)
     message.config !== undefined && (obj.config = message.config ? ContainerConfig.toJSON(message.config) : undefined)
+    message.createdAt !== undefined && (obj.createdAt = fromTimestamp(message.createdAt).toISOString())
+    message.registryName !== undefined && (obj.registryName = message.registryName)
     return obj
   },
 }

@@ -63,6 +63,7 @@ export default class VersionService {
         images: {
           include: {
             config: true,
+            registry: true,
           },
         },
         deployments: {
@@ -270,6 +271,7 @@ export default class VersionService {
               order: image.order,
               registryId: image.registryId,
               versionId: version.id,
+              createdBy: request.accessedBy,
             },
           })
 

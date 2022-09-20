@@ -864,6 +864,8 @@ export interface ImageResponse {
   order: number
   registryId: string
   config: ContainerConfig | undefined
+  createdAt: Timestamp | undefined
+  registryName: string
 }
 
 export interface ImageListResponse {
@@ -4872,7 +4874,16 @@ export const ContainerConfig = {
 }
 
 function createBaseImageResponse(): ImageResponse {
-  return { id: '', name: '', tag: '', order: 0, registryId: '', config: undefined }
+  return {
+    id: '',
+    name: '',
+    tag: '',
+    order: 0,
+    registryId: '',
+    config: undefined,
+    createdAt: undefined,
+    registryName: '',
+  }
 }
 
 export const ImageResponse = {
@@ -4894,6 +4905,12 @@ export const ImageResponse = {
     }
     if (message.config !== undefined) {
       ContainerConfig.encode(message.config, writer.uint32(834).fork()).ldelim()
+    }
+    if (message.createdAt !== undefined) {
+      Timestamp.encode(message.createdAt, writer.uint32(842).fork()).ldelim()
+    }
+    if (message.registryName !== '') {
+      writer.uint32(850).string(message.registryName)
     }
     return writer
   },
@@ -4923,6 +4940,12 @@ export const ImageResponse = {
         case 104:
           message.config = ContainerConfig.decode(reader, reader.uint32())
           break
+        case 105:
+          message.createdAt = Timestamp.decode(reader, reader.uint32())
+          break
+        case 106:
+          message.registryName = reader.string()
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -4939,6 +4962,8 @@ export const ImageResponse = {
       order: isSet(object.order) ? Number(object.order) : 0,
       registryId: isSet(object.registryId) ? String(object.registryId) : '',
       config: isSet(object.config) ? ContainerConfig.fromJSON(object.config) : undefined,
+      createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
+      registryName: isSet(object.registryName) ? String(object.registryName) : '',
     }
   },
 
@@ -4950,6 +4975,8 @@ export const ImageResponse = {
     message.order !== undefined && (obj.order = Math.round(message.order))
     message.registryId !== undefined && (obj.registryId = message.registryId)
     message.config !== undefined && (obj.config = message.config ? ContainerConfig.toJSON(message.config) : undefined)
+    message.createdAt !== undefined && (obj.createdAt = fromTimestamp(message.createdAt).toISOString())
+    message.registryName !== undefined && (obj.registryName = message.registryName)
     return obj
   },
 
@@ -4962,6 +4989,9 @@ export const ImageResponse = {
     message.registryId = object.registryId ?? ''
     message.config =
       object.config !== undefined && object.config !== null ? ContainerConfig.fromPartial(object.config) : undefined
+    message.createdAt =
+      object.createdAt !== undefined && object.createdAt !== null ? Timestamp.fromPartial(object.createdAt) : undefined
+    message.registryName = object.registryName ?? ''
     return message
   },
 }

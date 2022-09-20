@@ -525,6 +525,8 @@ message ImageResponse {
   uint32 order = 102;
   string registryId = 103;
   ContainerConfig config = 104;
+  google.protobuf.Timestamp createdAt = 105;
+  string registryName = 106;
 }
 
 message ImageListResponse { repeated ImageResponse data = 100; }

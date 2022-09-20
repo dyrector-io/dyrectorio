@@ -81,6 +81,7 @@ export default class ImageService {
             data: {
               registryId: registyImages.registryId,
               versionId: request.versionId,
+              createdBy: request.accessedBy,
               name: it,
               order: order++,
               config: {
@@ -104,8 +105,26 @@ export default class ImageService {
 
     this.imagesAddedToVersionEvent.next(images)
 
+    const registries = await this.prisma.registry.findMany({
+      where: {
+        id: {
+          in: request.images.map(it => it.registryId),
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    })
+    const registryLookup = registries.reduce((prev, current) => {
+      prev[current.id] = current.name
+      return {
+        ...prev,
+      }
+    }, {})
+
     return {
-      data: images.map(it => this.mapper.toGrpc(it)),
+      data: images.map(it => this.mapper.toGrpc(it, registryLookup[it.registryId])),
     }
   }
 
@@ -114,6 +133,8 @@ export default class ImageService {
       this.prisma.image.update({
         data: {
           order: index,
+          updatedBy: request.accessedBy,
+          updatedAt: new Date(),
         },
         where: {
           id: it,
@@ -150,6 +171,8 @@ export default class ImageService {
         config: {
           update: config,
         },
+        updatedBy: request.accessedBy,
+        updatedAt: new Date(),
       },
       where: {
         id: request.id,

@@ -1,15 +1,18 @@
 import { Injectable } from '@nestjs/common'
 import { ContainerConfig, Image } from '@prisma/client'
 import { JsonObject } from 'prisma'
+import { toTimestamp } from 'src/domain/utils'
 import { ContainerConfig as ProtoContainerConfig, ImageResponse } from 'src/grpc/protobuf/proto/crux'
 import { UniqueKeyValue } from 'src/shared/model'
 
 @Injectable()
 export default class ImageMapper {
-  toGrpc(image: ImageWithConfig): ImageResponse {
+  toGrpc(image: ImageWithConfig, registryName?: string): ImageResponse {
     return {
       ...image,
+      registryName: registryName || '',
       config: this.configToGrpc(image.config),
+      createdAt: toTimestamp(image.createdAt),
     }
   }
 
