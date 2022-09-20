@@ -138,16 +138,20 @@ export const createVersionSchema = updateVersionSchema.concat(
   }),
 )
 
-export const createDeploymentSchema = yup.object().shape({
-  nodeId: yup.mixed().nullable().required().label('node'),
-  prefix: yup.string().trim().required(),
-  note: yup.string(),
-})
-
 export const updateDeploymentSchema = yup.object().shape({
   note: yup.string(),
-  prefix: yup.string().trim().required(),
+  prefix: yup
+    .string()
+    .trim()
+    .matches(/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/) // RFC 1123
+    .required(),
 })
+
+export const createDeploymentSchema = updateDeploymentSchema.concat(
+  yup.object().shape({
+    nodeId: yup.mixed().nullable().required().label('node'),
+  }),
+)
 
 const portNumberRule = yup.number().positive().lessThan(65536).required()
 
