@@ -108,8 +108,26 @@ export default class ImageService {
 
     this.imagesAddedToVersionEvent.next(images)
 
+    const registries = await this.prisma.registry.findMany({
+      where: {
+        id: {
+          in: request.images.map(it => it.registryId),
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    })
+    const registryLookup = registries.reduce((prev, current) => {
+      prev[current.id] = current.name
+      return {
+        ...prev,
+      }
+    }, {})
+
     return {
-      data: images.map(it => this.mapper.toGrpc(it)),
+      data: images.map(it => this.mapper.toGrpc(it, registryLookup[it.registryId])),
     }
   }
 
