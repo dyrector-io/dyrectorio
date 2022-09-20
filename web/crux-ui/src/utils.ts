@@ -15,6 +15,8 @@ import { DyoApiError, DyoErrorDto, DyoFetchError, RegistryDetails } from './mode
 import { Timestamp } from './models/grpc/google/protobuf/timestamp'
 import { ROUTE_404, ROUTE_INDEX, ROUTE_LOGIN, ROUTE_STATUS, ROUTE_VERIFICATION } from './routes'
 
+export const isServerSide = () => typeof window === 'undefined'
+
 // date
 export const dateToUtcTime = (date: Date): number =>
   Date.UTC(
@@ -76,8 +78,9 @@ export const timestampToUTC = (timestamp: Timestamp): string => {
 export const utcDateToLocale = (date: string) => new Date(date).toLocaleString()
 
 export const getUserDateFormat = (fallback: string) => {
+  let dateFormat: string
   if (!isServerSide()) {
-    var dateFormat = new Intl.DateTimeFormat(window.navigator.language)
+    dateFormat = new Intl.DateTimeFormat(window.navigator.language)
       .formatToParts(new Date('1970.01.01.'))
       .map(o => {
         switch (o.type) {
@@ -341,8 +344,6 @@ export const writeToClipboard = async (t: Translate, content: string) => {
     toast(t('errors:insecure'))
   }
 }
-
-export const isServerSide = () => typeof window === 'undefined'
 
 export const snakeToCamel = str =>
   str.toLowerCase().replace(/([-_][a-z])/g, group => group.toUpperCase().replace('-', '').replace('_', ''))
