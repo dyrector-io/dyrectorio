@@ -15,8 +15,6 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: dyrector-io/dyrectorio/web/crux-ui
   WORKING_DIRECTORY: web/crux-ui
-  # Default GitHub variables
-  CRUX_UI_IMAGE_TAG: ${{ github.ref_name }}
 
 jobs:
   check:
@@ -101,7 +99,7 @@ jobs:
   # job: Build image
   build_image:
     runs-on: ubuntu-20.04
-    needs: test_e2e
+    needs: [test_e2e,check]
     container: docker:latest
     if: github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag'
     defaults:
