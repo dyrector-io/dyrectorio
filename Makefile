@@ -72,15 +72,15 @@ build-proto-image:
 
 .PHONY: release
 release:
-	@echo "Version will be: $(version)"
-	@echo "Do you want to continue?"
-	@read
+	echo "Version will be: $(version)"
+	echo "Do you want to continue?"
+	read
 
 	git checkout develop
 	git pull
-	git checkout -b "release-v$(version)"
+	git checkout -b "release-$(version)"
 ## Create changelog
-	git-chglog --next-tag v$(version) -o CHANGELOG.md
+	git-chglog --next-tag $(version) -o CHANGELOG.md
 	git add CHANGELOG.md
 ## Change version of crux
 	cat web/crux/package.json | jq -s '.[] | select(.version) | .version |= "$(version)"' > web/crux/package.json.tmp
@@ -94,5 +94,5 @@ release:
 	sed -i -e 's/^const version = "[0-9]*.[0-9]*.[0-9]*"/const version = "$(version)"/' cli/main.go
 	git add cli/main.go
 ## Finalizing changes
-	git commit -m "release: v$(version)"
-	git tag -sm "v$(version)" v$(version)
+	git commit -m "release: $(version)"
+	git tag -sm "$(version)" $(version)
