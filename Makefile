@@ -11,7 +11,7 @@ PWD := $(shell pwd)
 REMOTE=github.com/dyrector-io/dyrectorio/protobuf/go
 
 ## Compile the all grpc files
-.PNONY: protogen
+.PHONY: protogen
 protogen:| proto-agent proto-crux proto-crux-ui
 
 ## Generate agent grpc files
@@ -66,7 +66,33 @@ proto-crux-ui:
 .PHONY: all
 all: | protogen docs
 
-
 .PHONY: build-proto-image
 build-proto-image:
 	docker build -t ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16 images/proto
+
+.PHONY: release
+release:
+	@echo "Version will be: $(version)"
+	@echo "Do you want to continue?"
+	@read
+
+	git checkout develop
+	git pull
+	git checkout -b "release-v$(version)"
+## Create changelog
+	git-chglog --next-tag v$(version) -o CHANGELOG.md
+	git add CHANGELOG.md
+## Change version of crux
+	cat web/crux/package.json | jq -s '.[] | select(.version) | .version |= "$(version)"' > web/crux/package.json.tmp
+	mv web/crux/package.json.tmp web/crux/package.json
+	git add web/crux/package.json
+## Change version of crux-ui
+	cat web/crux-ui/package.json | jq -s '.[] | select(.version) | .version |= "$(version)"' > web/crux-ui/package.json.tmp
+	mv web/crux-ui/package.json.tmp web/crux-ui/package.json
+	git add web/crux-ui/package.json
+## Change version of cli
+	sed -i -e 's/^const version = "[0-9]*.[0-9]*.[0-9]*"/const version = "$(version)"/' cli/main.go
+	git add cli/main.go
+## Finalizing changes
+	git commit -m "release: v$(version)"
+	git tag -sm "v$(version)" v$(version)
