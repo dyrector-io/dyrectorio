@@ -76,15 +76,24 @@ export const timestampToUTC = (timestamp: Timestamp): string => {
 export const utcDateToLocale = (date: string) => new Date(date).toLocaleString()
 
 export const getUserDateFormat = (fallback: string) => {
-  const dateFormat = new Date('3333.1.2.')
-    .toLocaleDateString()
-    .replace('3333', 'yyyy')
-    .replace('01', 'MM')
-    .replace('02', 'dd')
-    .replace('1', 'M')
-    .replace('2', 'd')
-
-  return dateFormat.indexOf('yyyy') > -1 ? dateFormat : fallback
+  if (!isServerSide()) {
+    var dateFormat = new Intl.DateTimeFormat(window.navigator.language)
+      .formatToParts(new Date('1970.01.01.'))
+      .map(o => {
+        switch (o.type) {
+          case 'day':
+            return o.value.length > 1 ? 'dd' : 'd' // Checking if there is a leading zero to single digits
+          case 'month':
+            return o.value.length > 1 ? 'MM' : 'M'
+          case 'year':
+            return 'yyyy'
+          default: // Separator character(s)
+            return o.value
+        }
+      })
+      .join('')
+  }
+  return dateFormat?.indexOf('yyyy') > -1 ? dateFormat : fallback // If the format is invalid, use fallback
 }
 
 // array
