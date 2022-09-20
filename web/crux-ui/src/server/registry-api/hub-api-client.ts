@@ -76,23 +76,21 @@ class HubApiClient implements RegistryApiClient {
         result.push(...dto.results)
 
         next = dto.next ? () => fetch(dto.next) : null
-      } else if (res.headers.has('x-retry-after') || res.headers.has('retry-after')) {
+      } else if ((res.headers.has('x-retry-after') || res.headers.has('retry-after')) && rateTry < MAX_RATE_RETRY) {
         const retryAfterHeader = res.headers.get('x-retry-after') ?? res.headers.get('retry-after')
         const retryAfter = Number(retryAfterHeader) - new Date().getTime() / 1000
 
         this.logger.warn(`DockerHub API rate limit '${endpoint}', retry after ${retryAfter}s`)
 
-        if (rateTry < MAX_RATE_RETRY) {
-          const fetchNext = next
-          next = () =>
-            new Promise<Response>(resolve => {
-              setTimeout(async () => {
-                fetchNext().then(resolve)
-              }, retryAfter * 1000)
-            })
+        const fetchNext = next
+        next = () =>
+          new Promise<Response>(resolve => {
+            setTimeout(async () => {
+              fetchNext().then(resolve)
+            }, retryAfter * 1000)
+          })
 
-          rateTry += 1
-        }
+        rateTry += 1
       } else {
         const errorMessage = `${endpoint} request failed with status: ${res.status} ${res.statusText}`
         throw res.status === 401 ? unauthorizedError(errorMessage) : internalError(errorMessage)
