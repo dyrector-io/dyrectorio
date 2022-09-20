@@ -61,9 +61,9 @@ class WebSocketServer {
       this.server = new WebSocket.Server({
         server: httpServer,
       })
-
-      this.server.on('connection', (socket, request: IncomingMessage) => this.onConnect(socket, request))
     }
+
+    this.server.on('connection', (socket, request: IncomingMessage) => this.onConnect(socket, request))
   }
 
   getEndpoint(route: string) {
