@@ -13,7 +13,7 @@ const DyoNodeVersionText = (props: DyoNodeVersionTextProps) => {
 
   const versionSplit = version?.split(' ')
   const visibleVersion = versionSplit && versionSplit[0]
-  const tooltip = versionSplit && versionSplit[1]
+  const tooltip = (versionSplit && versionSplit[1]) || t('versionUnknown')
 
   return (
     <DyoTooltip message={tooltip}>
