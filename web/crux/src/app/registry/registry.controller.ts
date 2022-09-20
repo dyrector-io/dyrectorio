@@ -1,4 +1,4 @@
-import { Controller, UseGuards } from '@nestjs/common'
+import { Body, Controller, UseGuards } from '@nestjs/common'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import {
   AccessRequest,
@@ -14,6 +14,7 @@ import {
 } from 'src/grpc/protobuf/proto/crux'
 import RegistryAccessValidationGuard from './guards/registry.auth.validation.guard'
 import RegistryTeamAccessGuard from './guards/registry.team-access.guart'
+import DeleteRegistryValidationPipe from './pipes/registry.delete.pipe'
 import RegistryService from './registry.service'
 
 @Controller()
@@ -31,7 +32,7 @@ export default class RegistryController implements CruxRegistryController {
     return await this.service.createRegistry(request)
   }
 
-  async deleteRegistry(request: IdRequest): Promise<void> {
+  async deleteRegistry(@Body(DeleteRegistryValidationPipe) request: IdRequest): Promise<void> {
     await this.service.deleteRegistry(request)
   }
 

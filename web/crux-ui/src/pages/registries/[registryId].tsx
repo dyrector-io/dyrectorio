@@ -7,7 +7,7 @@ import { DetailsPageMenu } from '@app/components/shared/page-menu'
 import { defaultApiErrorHandler } from '@app/errors'
 import { RegistryDetails, registryDetailsToRegistry } from '@app/models'
 import { registryApiUrl, registryUrl, ROUTE_REGISTRIES } from '@app/routes'
-import { withContextAuthorization } from '@app/utils'
+import { toastWarning, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
@@ -41,12 +41,13 @@ const RegistryDetailsPage = (props: RegistryDetailsPageProps) => {
       method: 'DELETE',
     })
 
-    if (!res.ok) {
+    if (res.ok) {
+      router.back()
+    } else if (res.status === 412) {
+      toastWarning(t('inUse'))
+    } else {
       handleApiError(res)
-      return
     }
-
-    router.back()
   }
 
   const pageLink: BreadcrumbLink = {
