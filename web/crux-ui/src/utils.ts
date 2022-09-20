@@ -75,6 +75,18 @@ export const timestampToUTC = (timestamp: Timestamp): string => {
 
 export const utcDateToLocale = (date: string) => new Date(date).toLocaleString()
 
+export const getUserDateFormat = (fallback: string) => {
+  const dateFormat = new Date('3333.1.2.')
+    .toLocaleDateString()
+    .replace('3333', 'yyyy')
+    .replace('01', 'MM')
+    .replace('02', 'dd')
+    .replace('1', 'M')
+    .replace('2', 'd')
+
+  return dateFormat.indexOf('yyyy') > -1 ? dateFormat : fallback
+}
+
 // array
 export const fold = <T, R>(items: T[], initialValue: R, combine: (previous: R, current: T) => R): R => {
   let value = initialValue

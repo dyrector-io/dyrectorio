@@ -1,3 +1,4 @@
+import { getUserDateFormat } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import { ForwardedRef, forwardRef } from 'react'
 import DatePicker, { ReactDatePickerProps } from 'react-datepicker'
@@ -10,13 +11,15 @@ const DyoDatePicker = forwardRef((props: ReactDatePickerProps<never, boolean>, r
 
   const months = t('months', null, { returnObjects: true }) as string[]
 
+  const dateFormat = getUserDateFormat(t('dateFormat'))
+
   const locale = {
     localize: {
       day: (n: string | number) => days[n],
       month: (n: string | number) => months[n],
     },
     formatLong: {
-      date: () => t('dateFormat'),
+      date: () => dateFormat,
     },
     options: {
       weekStartsOn: 1 /* Monday */,
@@ -31,7 +34,7 @@ const DyoDatePicker = forwardRef((props: ReactDatePickerProps<never, boolean>, r
       <DatePicker
         locale={locale}
         closeOnScroll
-        dateFormat={t('dateFormat')}
+        dateFormat={dateFormat}
         showPopperArrow={false}
         ref={ref}
         customInput={<DyoInput grow className="w-full" />}
