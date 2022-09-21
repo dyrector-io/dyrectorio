@@ -38,5 +38,7 @@
     "all": "All",
     "active": "Active",
     "inactive": "Inactive"
-  }
+  },
+  "rootPath": "Root path",
+  "rootPathHint": "Optional, leave empty for default paths"
 }
