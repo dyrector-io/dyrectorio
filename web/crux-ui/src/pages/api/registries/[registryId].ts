@@ -1,5 +1,5 @@
 import { UpdateRegistry } from '@app/models'
-import { registrySchema } from '@app/validation'
+import { registrySchema } from '@app/validations'
 import crux from '@server/crux/crux'
 import { withMiddlewares } from '@server/middlewares'
 import useValidationMiddleware from '@server/validation-middleware'

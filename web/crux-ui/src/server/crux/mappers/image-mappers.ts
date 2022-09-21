@@ -1,4 +1,3 @@
-import { VersionImage } from '@app/models'
 import {
   ContainerConfig,
   ExplicitContainerConfig,
@@ -6,7 +5,8 @@ import {
   ExplicitContainerDeploymentStrategyType,
   ExplicitContainerNetworkMode,
   ExplicitContainerRestartPolicyType,
-} from '@app/models-config'
+  VersionImage,
+} from '@app/models'
 import {
   DeploymentStrategy,
   deploymentStrategyFromJSON,

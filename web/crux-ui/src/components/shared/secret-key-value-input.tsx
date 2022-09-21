@@ -1,7 +1,7 @@
 import DyoButton from '@app/elements/dyo-button'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
-import { UniqueKeySecretValue } from '@app/models-config'
+import { UniqueKeySecretValue } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'

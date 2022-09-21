@@ -7,7 +7,7 @@ import { defaultApiErrorHandler } from '@app/errors'
 import { ActiveTeamDetails, CreateTeam } from '@app/models'
 import { API_TEAMS } from '@app/routes'
 import { sendForm } from '@app/utils'
-import { createTeamSchema } from '@app/validation'
+import { createTeamSchema } from '@app/validations'
 import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
 

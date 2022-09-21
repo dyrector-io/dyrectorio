@@ -1,5 +1,5 @@
 import { NodeType } from '@app/models'
-import { nodeType as nodeTypeValidationSchema } from '@app/validation'
+import { nodeType as nodeTypeValidationSchema } from '@app/validations'
 import crux from '@server/crux/crux'
 import { nodeTypeUiToGrpc } from '@server/crux/mappers/node-mappers'
 import { withMiddlewares } from '@server/middlewares'

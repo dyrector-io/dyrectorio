@@ -1,5 +1,5 @@
 import { CreateDyoNode } from '@app/models'
-import { nodeSchema } from '@app/validation'
+import { nodeSchema } from '@app/validations'
 import crux from '@server/crux/crux'
 import { withMiddlewares } from '@server/middlewares'
 import useValidationMiddleware from '@server/validation-middleware'
