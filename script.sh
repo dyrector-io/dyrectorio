@@ -10,7 +10,7 @@ fi
 # Setup the default root folder for volumes
 if [ $(uname -s) = 'Darwin' ]; then
   echo "Detected: Mac OS X"
-  ROOT_FOLDER=$HOME'/Library/Dyrectorio/srv/dagent'
+  ROOT_FOLDER=$HOME'/Library/dyrectorio/srv/dagent'
 elif [ $(uname -s) = 'Linux' ]; then
   echo "Detected: Linux"
   ROOT_FOLDER='/srv/dagent'
@@ -43,30 +43,16 @@ MSYS_NO_PATHCONV=1
 
 docker run \
   --restart unless-stopped \
-  -e GRPC_TOKEN='{{token}}' \
-  -e HOSTNAME="$HOSTNAME || $HOST || '{{name}}'" \
-  {{#if traefik}}
-    -e TRAEFIK= 'true' \
-  {{/if}}
+  -e GRPC_TOKEN='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2NjM3NTMyNDEzODQsImlzcyI6IjE3Mi4yMC4wLjE6NTAwMCIsInN1YiI6IjVjNGJmNjlkLWViZWEtNDBhZS04YzIwLTc4OGZjMjc2ZmIyOCJ9.RFQkopx5ZoSDuxXDavRXmoA4NBqpMXBLIsVbU5SsWt4' \
+  -e HOSTNAME="$HOSTNAME || $HOST || 'levinexttestv2'" \
   -e DATA_MOUNT_PATH=$ROOT_FOLDER \
   -e UPDATE_METHOD='off' \
   -e UPDATE_POLL_INTERVAL='600s' \
-  {{#if insecure}}
   -e GRPC_INSECURE='true' \
-  {{/if}}
   -e DAGENT_IMAGE='ghcr.io/dyrector-io/dyrectorio/agent/dagent' \
   -e DAGENT_TAG='stable' \
-  -e DAGENT_NAME='{{name}}' \
+  -e DAGENT_NAME='levinexttestv2' \
   -v /var/run/docker.sock:/var/run/docker.sock \
-  {{#if network}}
-  --network {{networkName}} \
-  {{/if}}
+  --network dyrectorio-stack \
   --name 'dagent' \
-  {{! -e UPDATE_REGISTRY_USER='' \ }}
-  {{! -e UPDATE_REGISTRY_PASSWORD='' \ }}
-  {{! -e UPDATER_CONTAINER_NAME ='' \ }}
-  {{! -e UPDATE_HOST_TIMEZONE='' \ }}
-  {{! -e HOST_DOCKER_SOCK_PATH='' \ }}
-  {{! -e WEBHOOK_TOKEN='' \ }}
-  {{! -e DISCORD_WEBHOOK_URL='' \ }}
   -v $ROOT_FOLDER/:/srv/dagent -d ghcr.io/dyrector-io/dyrectorio/agent/dagent:latest

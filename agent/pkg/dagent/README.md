@@ -89,7 +89,7 @@ Configuration will take place before starting up the application, and store the 
 | DAGENT_TAG             | DAgent image tag versions `latest` or else                                                                    | latest                                |
 | DATA_MOUNT_PATH        | This should match the mount path that is the root of configurations and containers                            | /srv/dagent                           |
 | DEFAULT_TAG            | default tag to use with container images in deployment                                                        | latest                                |
-| HOST_DOCKER_SOCK       | Path of `docker.sock` or other local/remote address where we can communicate with docker                      | /var/run/docker.sock                  |
+| HOST_DOCKER_SOCK_PATH  | Path of `docker.sock` or other local/remote address where we can communicate with docker                      | /var/run/docker.sock                  |
 | HOST_MOUNT_PATH        | Host mount path default                                                                                       | /srv/dagent                           |
 | INTERNAL_MOUNT_PATH    | Containers mount path default                                                                                 | /srv/dagent                           |
 | LOG_DEFAULT_SKIP       | Loglines to skip                                                                                              | 0                                     |
