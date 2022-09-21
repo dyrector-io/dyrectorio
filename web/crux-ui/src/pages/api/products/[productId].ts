@@ -1,5 +1,5 @@
 import { UpdateProduct } from '@app/models'
-import { updateProductSchema } from '@app/validation'
+import { updateProductSchema } from '@app/validations'
 import crux from '@server/crux/crux'
 import { withMiddlewares } from '@server/middlewares'
 import useValidationMiddleware from '@server/validation-middleware'

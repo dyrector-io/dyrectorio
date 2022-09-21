@@ -1,5 +1,5 @@
 import { SelectTeam } from '@app/models'
-import { selectTeamSchema } from '@app/validation'
+import { selectTeamSchema } from '@app/validations'
 import crux from '@server/crux/crux'
 import { withMiddlewares } from '@server/middlewares'
 import useValidationMiddleware from '@server/validation-middleware'

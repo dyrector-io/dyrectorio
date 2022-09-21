@@ -1,5 +1,5 @@
 import { InviteUser } from '@app/models'
-import { inviteUserSchema } from '@app/validation'
+import { inviteUserSchema } from '@app/validations'
 import crux from '@server/crux/crux'
 import { withMiddlewares } from '@server/middlewares'
 import useValidationMiddleware from '@server/validation-middleware'

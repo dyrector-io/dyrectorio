@@ -1,4 +1,4 @@
-import { getValidationError, nameRule, versionRegex } from '@app/validation'
+import { getValidationError, nameRule, versionRegex } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
 

@@ -5,14 +5,14 @@ import DyoMessage from '@app/elements/dyo-message'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import useConfirmation from '@app/hooks/use-confirmation'
 import {
+  ContainerConfig,
   DeleteImageMessage,
   PatchImageMessage,
   VersionImage,
   WS_TYPE_DELETE_IMAGE,
   WS_TYPE_PATCH_IMAGE,
 } from '@app/models'
-import { ContainerConfig } from '@app/models-config'
-import { containerConfigSchema, getValidationError } from '@app/validation'
+import { containerConfigSchema, getValidationError } from '@app/validations'
 import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'

@@ -1,7 +1,7 @@
 import { IMAGE_WS_REQUEST_DELAY } from '@app/const'
 import { DyoInput } from '@app/elements/dyo-input'
 import { useThrottling } from '@app/hooks/use-throttleing'
-import { Environment, InstanceContainerConfig, UniqueKeyValue } from '@app/models-config'
+import { Environment, InstanceContainerConfig, UniqueKeyValue } from '@app/models'
 
 import KeyValueInput from '@app/components/shared/key-value-input'
 import SecretKeyValInput from '@app/components/shared/secret-key-value-input'

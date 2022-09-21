@@ -1,5 +1,5 @@
 import { UserRole } from '@app/models'
-import { roleSchema } from '@app/validation'
+import { roleSchema } from '@app/validations'
 import crux from '@server/crux/crux'
 import { withMiddlewares } from '@server/middlewares'
 import useValidationMiddleware from '@server/validation-middleware'

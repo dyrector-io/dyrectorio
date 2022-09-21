@@ -22,7 +22,7 @@ import {
 } from '@app/models'
 import { API_NODES, nodeApiUrl, nodeTokenApiUrl, WS_NODES } from '@app/routes'
 import { sendForm } from '@app/utils'
-import { nodeSchema } from '@app/validation'
+import { nodeSchema } from '@app/validations'
 import clsx from 'clsx'
 import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'

@@ -1,5 +1,5 @@
 import { UpdateNotification } from '@app/models'
-import { notificationSchema } from '@app/validation'
+import { notificationSchema } from '@app/validations'
 import crux from '@server/crux/crux'
 import { withMiddlewares } from '@server/middlewares'
 import useValidationMiddleware from '@server/validation-middleware'

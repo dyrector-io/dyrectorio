@@ -1,7 +1,7 @@
 import { IMAGE_WS_REQUEST_DELAY } from '@app/const'
 import { DyoInput } from '@app/elements/dyo-input'
 import { useThrottling } from '@app/hooks/use-throttleing'
-import { ContainerConfig, Environment, InstanceContainerConfig, Secrets } from '@app/models-config'
+import { ContainerConfig, Environment, InstanceContainerConfig, Secrets } from '@app/models'
 
 import SecretKeyOnlyInput from '@app/components/shared/secret-key-input'
 import useTranslation from 'next-translate/useTranslation'
