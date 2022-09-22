@@ -93,7 +93,7 @@
   "minutesAgo": "{{minutes}} minutes ago",
   "hoursAgo": "{{hours}} hours ago",
   "daysAgo": "{{days}} daysAgo",
-  "dateFormat": "yyyy/MM/dd",
+  "dateFormat": "yyyy. MM. dd.",
 
   "key": "Key",
   "value": "Value",

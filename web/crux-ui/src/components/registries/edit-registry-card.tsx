@@ -23,7 +23,7 @@ import {
 } from '@app/models'
 import { API_REGISTRIES, registryApiUrl } from '@app/routes'
 import { FormikProps, sendForm } from '@app/utils'
-import { registrySchema } from '@app/validation'
+import { registrySchema } from '@app/validations'
 import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
 import { MutableRefObject, useState } from 'react'

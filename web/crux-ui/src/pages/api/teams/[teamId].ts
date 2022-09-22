@@ -1,5 +1,5 @@
 import { UpdateTeam } from '@app/models'
-import { updateTeamSchema } from '@app/validation'
+import { updateTeamSchema } from '@app/validations'
 import crux from '@server/crux/crux'
 import { withMiddlewares } from '@server/middlewares'
 import useValidationMiddleware from '@server/validation-middleware'

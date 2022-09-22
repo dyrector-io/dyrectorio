@@ -18,7 +18,7 @@ import {
 } from '@app/models'
 import { API_NOTIFICATIONS, notificationApiHookUrl, notificationApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
-import { notificationSchema } from '@app/validation'
+import { notificationSchema } from '@app/validations'
 import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
 import { MutableRefObject, useState } from 'react'

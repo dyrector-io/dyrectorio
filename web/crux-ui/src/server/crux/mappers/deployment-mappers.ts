@@ -1,5 +1,4 @@
-import { DeploymentEventType, DeploymentStatus, Instance } from '@app/models'
-import { InstanceContainerConfig } from '@app/models-config'
+import { DeploymentEventType, DeploymentStatus, Instance, InstanceContainerConfig } from '@app/models'
 import {
   DeploymentStatus as ProtoDeploymentStatus,
   deploymentStatusToJSON,

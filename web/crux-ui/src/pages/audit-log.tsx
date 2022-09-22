@@ -145,7 +145,7 @@ const AuditLogPage = (props: AuditLogPageProps) => {
         <DyoModal
           className="w-1/2 h-1/2"
           titleClassName="pl-4 font-medium text-xl text-bright mb-3"
-          title={`${showInfo.identityEmail} | ${showInfo.date}`}
+          title={`${showInfo.identityEmail} | ${utcDateToLocale(showInfo.date)}`}
           open={!!showInfo}
           onClose={() => setShowInfo(null)}
         >
