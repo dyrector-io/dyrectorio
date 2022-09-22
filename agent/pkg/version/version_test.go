@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/dyrector-io/dyrectorio/agent/internal/version"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/version"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -17,7 +17,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/agent/internal/config"
 	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
 	"github.com/dyrector-io/dyrectorio/agent/internal/mapper"
-	"github.com/dyrector-io/dyrectorio/agent/internal/version"
+	"github.com/dyrector-io/dyrectorio/agent/pkg/version"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 
