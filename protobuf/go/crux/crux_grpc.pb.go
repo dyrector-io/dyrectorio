@@ -1566,7 +1566,7 @@ type CruxDeploymentClient interface {
 	GetDeploymentDetails(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*DeploymentDetailsResponse, error)
 	GetDeploymentEvents(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*DeploymentEventListResponse, error)
 	GetDeploymentList(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*DeploymentListResponse, error)
-	GetSecrets(ctx context.Context, in *PrefixRequest, opts ...grpc.CallOption) (*common.ListSecretsResponse, error)
+	GetInstanceSecrets(ctx context.Context, in *DeploymentListSecretsRequest, opts ...grpc.CallOption) (*common.ListSecretsResponse, error)
 	StartDeployment(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (CruxDeployment_StartDeploymentClient, error)
 	SubscribeToDeploymentEditEvents(ctx context.Context, in *ServiceIdRequest, opts ...grpc.CallOption) (CruxDeployment_SubscribeToDeploymentEditEventsClient, error)
 }
@@ -1651,9 +1651,9 @@ func (c *cruxDeploymentClient) GetDeploymentList(ctx context.Context, in *Access
 	return out, nil
 }
 
-func (c *cruxDeploymentClient) GetSecrets(ctx context.Context, in *PrefixRequest, opts ...grpc.CallOption) (*common.ListSecretsResponse, error) {
+func (c *cruxDeploymentClient) GetInstanceSecrets(ctx context.Context, in *DeploymentListSecretsRequest, opts ...grpc.CallOption) (*common.ListSecretsResponse, error) {
 	out := new(common.ListSecretsResponse)
-	err := c.cc.Invoke(ctx, "/crux.CruxDeployment/GetSecrets", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/crux.CruxDeployment/GetInstanceSecrets", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1736,7 +1736,7 @@ type CruxDeploymentServer interface {
 	GetDeploymentDetails(context.Context, *IdRequest) (*DeploymentDetailsResponse, error)
 	GetDeploymentEvents(context.Context, *IdRequest) (*DeploymentEventListResponse, error)
 	GetDeploymentList(context.Context, *AccessRequest) (*DeploymentListResponse, error)
-	GetSecrets(context.Context, *PrefixRequest) (*common.ListSecretsResponse, error)
+	GetInstanceSecrets(context.Context, *DeploymentListSecretsRequest) (*common.ListSecretsResponse, error)
 	StartDeployment(*IdRequest, CruxDeployment_StartDeploymentServer) error
 	SubscribeToDeploymentEditEvents(*ServiceIdRequest, CruxDeployment_SubscribeToDeploymentEditEventsServer) error
 	mustEmbedUnimplementedCruxDeploymentServer()
@@ -1770,8 +1770,8 @@ func (UnimplementedCruxDeploymentServer) GetDeploymentEvents(context.Context, *I
 func (UnimplementedCruxDeploymentServer) GetDeploymentList(context.Context, *AccessRequest) (*DeploymentListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDeploymentList not implemented")
 }
-func (UnimplementedCruxDeploymentServer) GetSecrets(context.Context, *PrefixRequest) (*common.ListSecretsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetSecrets not implemented")
+func (UnimplementedCruxDeploymentServer) GetInstanceSecrets(context.Context, *DeploymentListSecretsRequest) (*common.ListSecretsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetInstanceSecrets not implemented")
 }
 func (UnimplementedCruxDeploymentServer) StartDeployment(*IdRequest, CruxDeployment_StartDeploymentServer) error {
 	return status.Errorf(codes.Unimplemented, "method StartDeployment not implemented")
@@ -1936,20 +1936,20 @@ func _CruxDeployment_GetDeploymentList_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
-func _CruxDeployment_GetSecrets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PrefixRequest)
+func _CruxDeployment_GetInstanceSecrets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeploymentListSecretsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CruxDeploymentServer).GetSecrets(ctx, in)
+		return srv.(CruxDeploymentServer).GetInstanceSecrets(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/crux.CruxDeployment/GetSecrets",
+		FullMethod: "/crux.CruxDeployment/GetInstanceSecrets",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CruxDeploymentServer).GetSecrets(ctx, req.(*PrefixRequest))
+		return srv.(CruxDeploymentServer).GetInstanceSecrets(ctx, req.(*DeploymentListSecretsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -2036,8 +2036,8 @@ var CruxDeployment_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _CruxDeployment_GetDeploymentList_Handler,
 		},
 		{
-			MethodName: "GetSecrets",
-			Handler:    _CruxDeployment_GetSecrets_Handler,
+			MethodName: "GetInstanceSecrets",
+			Handler:    _CruxDeployment_GetInstanceSecrets_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

@@ -14,10 +14,10 @@ import {
   DeploymentEventListResponse,
   DeploymentListByVersionResponse,
   DeploymentListResponse,
+  DeploymentListSecretsRequest,
   DeploymentProgressMessage,
   IdRequest,
   PatchDeploymentRequest,
-  PrefixRequest,
   ServiceIdRequest,
   UpdateDeploymentRequest,
   UpdateEntityResponse,
@@ -66,9 +66,8 @@ export default class DeployController implements CruxDeploymentController {
     return await this.service.updateDeployment(request)
   }
 
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-  async getSecrets(request: PrefixRequest, ...rest: any): Promise<ListSecretsResponse> {
-    return await new Promise(null)
+  async getInstanceSecrets(request: DeploymentListSecretsRequest, ...rest: any): Promise<ListSecretsResponse> {
+    return await this.service.getInstanceSecrets(request)
   }
 
   @AuditLogLevel('no-data')

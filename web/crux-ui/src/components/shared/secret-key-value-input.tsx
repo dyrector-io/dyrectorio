@@ -15,6 +15,7 @@ interface SecretKeyValueInputProps {
   heading?: string
   publicKey?: string
   items: UniqueKeySecretValue[]
+  definedSecrets: string[]
   onSubmit: (items: UniqueKeySecretValue[]) => void
 }
 
@@ -26,6 +27,7 @@ const EMPTY_SECRET_KEY_VALUE_PAIR = {
 
 type KeyValueElement = UniqueKeySecretValue & {
   message?: string
+  present: boolean
 }
 
 const encryptWithPGP = async (text: string, key: string): Promise<string> => {
@@ -95,12 +97,12 @@ const reducer = (state: UniqueKeySecretValue[], action: KeyValueInputAction): Un
 const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
   const { t } = useTranslation('common')
 
-  const { heading, disabled, publicKey, items, className, onSubmit: propsOnSubmit } = props
+  const { heading, disabled, publicKey, items, className, definedSecrets, onSubmit: propsOnSubmit } = props
 
   const [state, dispatch] = useReducer(reducer, items)
   const [changed, setChanged] = useState<boolean>(false)
 
-  const stateToElements = (itemArray: UniqueKeySecretValue[]) => {
+  const stateToElements = (itemArray: UniqueKeySecretValue[], definedSecrets: string[]) => {
     const result = new Array<KeyValueElement>()
 
     itemArray.forEach(item =>
@@ -108,6 +110,7 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
         ...item,
         encrypted: item.encrypted ?? false,
         message: result.find(it => it.key === item.key) ? t('keyMustUnique') : null,
+        present: isCompletelyEmpty(item) ? false : definedSecrets.includes(item.key)
       }),
     )
 
@@ -183,14 +186,18 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
     })
   }
 
-  const elements = stateToElements(state)
+  const elements = stateToElements(state, definedSecrets)
 
   const renderItem = (entry: KeyValueElement, index: number) => {
     const { key, value, message, encrypted } = entry
 
     return (
       <div key={entry.id} className="flex flex-row flex-grow p-1">
-        <div className="w-5/12">
+        {!isCompletelyEmpty(entry) && <div className="mr-2 flex flex-row">
+          <Image className='mr-2' src={entry.present ? "/circle-green.svg" : "/circle-red.svg"} width={16} height={16} />
+        </div>}
+
+        <div className={clsx("w-5/12", isCompletelyEmpty(entry) && "ml-[24px]")}>
           <DyoInput
             key={`${entry.id}-key`}
             disabled={disabled}

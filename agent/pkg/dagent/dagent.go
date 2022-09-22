@@ -48,5 +48,6 @@ func Serve(cfg *config.Configuration) {
 		Deploy: utils.DeployImage,
 		Watch:  utils.GetContainersByNameCrux,
 		Delete: utils.DeleteContainerByName,
+		SecretList: utils.SecretList,
 	})
 }

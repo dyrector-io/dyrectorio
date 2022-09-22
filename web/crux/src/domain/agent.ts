@@ -1,7 +1,8 @@
 import { Logger } from '@nestjs/common'
-import { Observable, Subject } from 'rxjs'
+import { finalize, Observable, Subject } from 'rxjs'
 import { AlreadyExistsException } from 'src/exception/errors'
 import { AgentCommand } from 'src/grpc/protobuf/proto/agent'
+import { ListSecretsResponse } from 'src/grpc/protobuf/proto/common'
 import { DeploymentProgressMessage, NodeConnectionStatus, NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import ContainerStatusWatcher, { ContainerStatusStreamCompleter } from './container-status-watcher'
@@ -13,6 +14,8 @@ export class Agent {
   private deployments: Map<string, Deployment> = new Map()
 
   private statusWatchers: Map<string, ContainerStatusWatcher> = new Map()
+
+  private secretsWatchers: Map<String, Subject<ListSecretsResponse>> = new Map()
 
   readonly id: string
 
@@ -113,6 +116,24 @@ export class Agent {
 
     this.statusWatchers.delete(prefix)
     watcher.onNodeStreamFinished()
+  }
+
+  getContainerSecrets(prefix: string): Observable<ListSecretsResponse> {
+    let watcher = this.secretsWatchers.get(prefix)
+    if (!watcher) {
+      watcher = new Subject<ListSecretsResponse>()
+      this.secretsWatchers.set(prefix, watcher)
+
+      this.commandChannel.next({
+        listSecrets: {
+          prefix
+        }
+      } as AgentCommand)
+    }
+
+    return watcher.pipe(finalize(() => {
+      this.secretsWatchers.delete(prefix)
+    }))
   }
 
   debugInfo(logger: Logger) {

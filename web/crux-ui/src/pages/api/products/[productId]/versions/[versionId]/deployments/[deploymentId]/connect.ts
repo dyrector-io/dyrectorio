@@ -1,6 +1,8 @@
 import { Logger } from '@app/logger'
 import {
   DeploymentEventMessage,
+  DeploymentGetSecretListMessage,
+  DeploymentSecretListMessage,
   FetchDeploymentEventsMessage,
   GetInstanceMessage,
   PatchDeploymentEnvMessage,
@@ -10,6 +12,8 @@ import {
   WS_TYPE_DEPLOYMENT_EVENT,
   WS_TYPE_DEPLOYMENT_EVENT_LIST,
   WS_TYPE_DEPLOYMENT_FINISHED,
+  WS_TYPE_DEPLOYMENT_GET_SECRETS,
+  WS_TYPE_DEPLOYMENT_SECRETS,
   WS_TYPE_DYO_ERROR,
   WS_TYPE_FETCH_DEPLOYMENT_EVENTS,
   WS_TYPE_GET_INSTANCE,
@@ -136,6 +140,19 @@ const onGetInstance = async (
   )
 }
 
+const onGetSecrets = async (
+  endpoint: WsEndpoint,
+  connection: WsConnection,
+  message: WsMessage<DeploymentGetSecretListMessage>,
+) => {
+  const res = await cruxFromConnection(connection).deployments.getSecretsList(message.payload.id, message.payload.instanceId)
+
+  connection.send(WS_TYPE_DEPLOYMENT_SECRETS, {
+    instanceId: message.payload.instanceId,
+    keys: res.keys
+  } as DeploymentSecretListMessage)
+}
+
 export default routedWebSocketEndpoint(
   logger,
   [
@@ -144,6 +161,7 @@ export default routedWebSocketEndpoint(
     [WS_TYPE_PATCH_INSTANCE, onPatchInstance],
     [WS_TYPE_PATCH_DEPLOYMENT_ENV, onPatchDeploymentEnvironment],
     [WS_TYPE_GET_INSTANCE, onGetInstance],
+    [WS_TYPE_DEPLOYMENT_GET_SECRETS, onGetSecrets],
   ],
   [useWebsocketErrorMiddleware],
   {

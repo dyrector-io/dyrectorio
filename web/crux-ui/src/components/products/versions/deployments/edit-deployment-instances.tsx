@@ -3,12 +3,14 @@ import useWebSocket from '@app/hooks/use-websocket'
 import {
   deploymentIsMutable,
   DeploymentRoot,
+  DeploymentSecretListMessage,
   GetInstanceMessage,
   ImageDeletedMessage,
   Instance,
   InstanceMessage,
   InstancesAddedMessage,
   InstanceUpdatedMessage,
+  WS_TYPE_DEPLOYMENT_SECRETS,
   WS_TYPE_GET_INSTANCE,
   WS_TYPE_IMAGE_DELETED,
   WS_TYPE_INSTANCE,
@@ -39,6 +41,7 @@ const EditDeploymentInstances = (props: EditDeploymentInstancesProps) => {
 
   const [instances, setInstances] = useState<Instance[]>(deployment.instances ?? [])
   const [viewMode, setViewMode] = useState<ViewMode>('tile')
+  const [secretsList, setSecretsList] = useState<{ [instance: string]: string[] }>({})
 
   const sock = useWebSocket(deploymentWsUrl(deployment.product.id, deployment.versionId, deployment.id))
 
@@ -68,6 +71,13 @@ const EditDeploymentInstances = (props: EditDeploymentInstancesProps) => {
     setInstances(instances.filter(it => it.image.id !== message.imageId)),
   )
 
+  sock.on(WS_TYPE_DEPLOYMENT_SECRETS, (message: DeploymentSecretListMessage) => {
+    const newList = { ...secretsList }
+    newList[message.instanceId] = message.keys
+
+    setSecretsList(newList)
+  })
+
   return (
     <>
       <div className="flex flex-row justify-end mt-4">
@@ -78,7 +88,9 @@ const EditDeploymentInstances = (props: EditDeploymentInstancesProps) => {
           disabled={!mutable}
           instances={instances}
           deploymentSock={sock}
+          deploymentId={deployment.id}
           publicKey={deployment?.publicKey}
+          definedSecrets={secretsList[it.id] ?? []}
         />
       ) : (
         <DeploymentViewList instances={instances} />

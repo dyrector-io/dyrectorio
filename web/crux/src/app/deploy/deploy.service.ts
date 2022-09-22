@@ -1,10 +1,11 @@
 import { Injectable, Logger, PreconditionFailedException } from '@nestjs/common'
 import { DeploymentStatusEnum } from '@prisma/client'
 import { JsonArray } from 'prisma'
-import { concatAll, filter, from, map, merge, Observable, Subject } from 'rxjs'
+import { concatAll, filter, from, lastValueFrom, map, merge, Observable, Subject } from 'rxjs'
 import Deployment from 'src/domain/deployment'
 import { InternalException } from 'src/exception/errors'
 import { DeployRequest } from 'src/grpc/protobuf/proto/agent'
+import { ListSecretsResponse } from 'src/grpc/protobuf/proto/common'
 import {
   AccessRequest,
   CreateDeploymentRequest,
@@ -14,6 +15,7 @@ import {
   DeploymentEventListResponse,
   DeploymentListByVersionResponse,
   DeploymentListResponse,
+  DeploymentListSecretsRequest,
   DeploymentProgressMessage,
   Empty,
   IdRequest,
@@ -442,6 +444,29 @@ export default class DeployService {
       deploymentIds: deployments.map(it => it.id),
       instances,
     }
+  }
+
+  async getInstanceSecrets(request: DeploymentListSecretsRequest): Promise<ListSecretsResponse> {
+    const deployment = await this.prisma.deployment.findFirstOrThrow({
+      where: {
+        id: request.id
+      }
+    })
+
+    const agent = this.agentService.getById(deployment.nodeId)
+    if (!agent) {
+      // Todo in the client is this just a simple internal server error
+      // please show a proper error message
+      throw new PreconditionFailedException({
+        message: 'Node is unreachable',
+        property: 'nodeId',
+        value: deployment.nodeId,
+      })
+    }
+
+    const watcher = agent.getContainerSecrets("test-nginx")
+
+    return lastValueFrom(watcher)
   }
 }
 

@@ -13,6 +13,7 @@ import {
   WS_TYPE_IMAGE_DELETED,
   WS_TYPE_INSTANCES_ADDED,
 } from '@app/models'
+import { ListSecretsResponse } from '@app/models/grpc/protobuf/proto/common'
 import {
   AccessRequest,
   CreateDeploymentRequest,
@@ -30,6 +31,7 @@ import {
   ServiceIdRequest,
   UpdateDeploymentRequest,
   UpdateEntityResponse,
+  DeploymentListSecretsRequest,
 } from '@app/models/grpc/protobuf/proto/crux'
 import { timestampToUTC } from '@app/utils'
 import { WsMessage } from '@app/websockets/common'
@@ -130,6 +132,21 @@ class DyoDeploymentService {
             : null,
       }
     })
+  }
+
+  async getSecretsList(deploymentId: string, instanceId: string): Promise<ListSecretsResponse> {
+    const req: DeploymentListSecretsRequest = {
+      id: deploymentId,
+      instanceId,
+      accessedBy: this.identity.id,
+    }
+
+    const res = await protomisify<DeploymentListSecretsRequest, ListSecretsResponse>(this.client, this.client.getInstanceSecrets)(
+      DeploymentListSecretsRequest,
+      req,
+    )
+
+    return res
   }
 
   async create(versionId: string, deployment: CreateDeployment): Promise<string> {

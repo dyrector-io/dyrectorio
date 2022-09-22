@@ -704,6 +704,18 @@ func setImageLabels(image string, deployImageRequest *v1.DeployImageRequest, cfg
 	}
 	maps.Copy(labels, organizationLabels)
 
+	// set secret keys list
+	secretKeys := []string{}
+	for secretKey := range deployImageRequest.ContainerConfig.Secrets {
+		secretKeys = append(secretKeys, secretKey)
+	}
+
+	secretKeysList, err := SetOrganizationLabel("secret.keys", strings.Join(secretKeys, ","))
+	if err != nil {
+		return nil, fmt.Errorf("setting secret list: %s", err.Error())
+	}
+	maps.Copy(labels, secretKeysList)
+
 	return labels, nil
 }
 
@@ -742,4 +754,19 @@ func CreateNetwork(ctx context.Context, name, driver string) error {
 	}
 
 	return nil
+}
+
+func SecretList(ctx context.Context, prefix string) ([]string, error) {
+	containers := GetContainersByName(prefix)
+	if len(containers) != 1 {
+		return nil, errors.New("failed to get containers")
+	}
+
+	container := containers[0]
+
+	if val, ok := GetOrganizationLabel(container.Labels, "secret.keys"); ok {
+		return strings.Split(val, ","), nil
+	}
+
+	return []string{}, nil
 }

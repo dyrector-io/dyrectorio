@@ -17,3 +17,11 @@ func SetOrganizationLabel(key, value string) (map[string]string, error) {
 
 	return labels, nil
 }
+
+func GetOrganizationLabel(labels map[string]string, key string) (string, bool) {
+	if val, ok := labels[key]; ok {
+		return val, true
+	}
+
+	return "", false
+}
