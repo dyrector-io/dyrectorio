@@ -90,9 +90,6 @@ release:
 	cat web/crux-ui/package.json | jq -s '.[] | select(.version) | .version |= "$(version)"' > web/crux-ui/package.json.tmp
 	mv web/crux-ui/package.json.tmp web/crux-ui/package.json
 	git add web/crux-ui/package.json
-## Change version of cli
-	sed -i -e 's/^const version = "[0-9]*.[0-9]*.[0-9]*"/const version = "$(version)"/' cli/main.go
-	git add cli/main.go
 ## Finalizing changes
 	git commit -m "release: $(version)"
 	git tag -sm "$(version)" $(version)
