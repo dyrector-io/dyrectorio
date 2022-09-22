@@ -453,6 +453,21 @@ export default class DeployService {
       }
     })
 
+    const instanceWithImageAndConfig = await this.prisma.instance.findFirstOrThrow({
+      where: {
+        id: request.instanceId
+      },
+      include: {
+        image: {
+          include: {
+            config: true
+          }
+        }
+      }
+    })
+
+    const containerName = instanceWithImageAndConfig.image.config.name
+
     const agent = this.agentService.getById(deployment.nodeId)
     if (!agent) {
       // Todo in the client is this just a simple internal server error
@@ -464,7 +479,7 @@ export default class DeployService {
       })
     }
 
-    const watcher = agent.getContainerSecrets("test-nginx")
+    const watcher = agent.getContainerSecrets(`${deployment.prefix}-${containerName}`)
 
     return lastValueFrom(watcher)
   }

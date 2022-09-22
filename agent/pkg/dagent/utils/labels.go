@@ -19,7 +19,7 @@ func SetOrganizationLabel(key, value string) (map[string]string, error) {
 }
 
 func GetOrganizationLabel(labels map[string]string, key string) (string, bool) {
-	if val, ok := labels[key]; ok {
+	if val, ok := labels["org.dyrectorio."+key]; ok {
 		return val, true
 	}
 

@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common'
-import { finalize, Observable, Subject } from 'rxjs'
-import { AlreadyExistsException } from 'src/exception/errors'
+import { finalize, Observable, Subject, throwError, timeout } from 'rxjs'
+import { AlreadyExistsException, InternalException } from 'src/exception/errors'
 import { AgentCommand } from 'src/grpc/protobuf/proto/agent'
 import { ListSecretsResponse } from 'src/grpc/protobuf/proto/common'
 import { DeploymentProgressMessage, NodeConnectionStatus, NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
@@ -86,6 +86,7 @@ export class Agent {
   onDisconnected() {
     this.deployments.forEach(it => it.onDisconnected())
     this.statusWatchers.forEach(it => it.stop())
+    this.secretsWatchers.forEach(it => it.complete())
     this.commandChannel.complete()
 
     this.eventChannel.next({
@@ -133,7 +134,29 @@ export class Agent {
 
     return watcher.pipe(finalize(() => {
       this.secretsWatchers.delete(prefix)
+    }),
+    timeout({
+      each: 5000,
+      with: () => {
+        this.secretsWatchers.delete(prefix)
+
+        return throwError(() => new InternalException({
+          message: "Agent container secrets timed out."
+        }))
+      }
     }))
+  }
+
+  onContainerSecrets(res: ListSecretsResponse) {
+    const watcher = this.secretsWatchers.get(res.prefix)
+    if (!watcher) {
+      return
+    }
+
+    watcher.next(res)
+    watcher.complete()
+
+    this.secretsWatchers.delete(res.prefix)
   }
 
   debugInfo(logger: Logger) {

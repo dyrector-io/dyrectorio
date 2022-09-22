@@ -420,7 +420,7 @@ func executeVersionDeployLegacyRequest(
 func executeSecretList(context context.Context, command *agent.ListSecretsRequest, listFunc SecretListFunc, appConfig *config.CommonConfiguration) {
 	prefix := command.Prefix
 
-	log.Println("Getting secrets for prefix: '", prefix, "'")
+	log.Printf("Getting secrets for prefix: '%s'", prefix)
 
 	keys, err := listFunc(context, prefix)
 	if err != nil {

@@ -31,14 +31,11 @@ export default class AgentController implements GrpcAgentController {
     return this.service.handleContainerStatus(call.connection, request)
   }
 
-  // todo(nandor-magyar): impl
-  /* eslint-disable @typescript-eslint/no-unused-vars */
   getSecretList(
     request: ListSecretsResponse,
-    metadata: Metadata,
-    ...rest: any
+    _: Metadata,
+    call: NodeUnaryCall
   ): Empty | Promise<Empty> | Observable<Empty> {
-    return Empty
+    return this.service.handleSecretList(call.connection, request)
   }
-  /* eslint-enable @typescript-eslint/no-unused-vars */
 }
