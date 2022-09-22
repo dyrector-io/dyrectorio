@@ -78,18 +78,22 @@ release:
 
 	git checkout develop
 	git pull
-	git checkout -b "release-$(version)"
+	git checkout -b "release/$(version)"
+
 ## Create changelog
 	git-chglog --next-tag $(version) -o CHANGELOG.md
 	git add CHANGELOG.md
+
 ## Change version of crux
 	cat web/crux/package.json | jq -s '.[] | select(.version) | .version |= "$(version)"' > web/crux/package.json.tmp
 	mv web/crux/package.json.tmp web/crux/package.json
 	git add web/crux/package.json
+
 ## Change version of crux-ui
 	cat web/crux-ui/package.json | jq -s '.[] | select(.version) | .version |= "$(version)"' > web/crux-ui/package.json.tmp
 	mv web/crux-ui/package.json.tmp web/crux-ui/package.json
 	git add web/crux-ui/package.json
+
 ## Finalizing changes
 	git commit -m "release: $(version)"
 	git tag -sm "$(version)" $(version)
