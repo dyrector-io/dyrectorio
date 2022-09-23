@@ -241,7 +241,7 @@ func PodmanInfo() {
 	}
 
 	if len(readstderr) != 0 {
-		log.Fatalf("error - podman command execution error:", string(readstderr))
+		log.Fatalf("error - podman command execution error: %s", string(readstderr))
 	}
 
 	if string(readstdout) != "netavark\n" {
