@@ -122,12 +122,12 @@ class DyoNodeService {
     }
   }
 
-  async generateScript(id: string, nodeType: ProtoNodeType, rootPath: string): Promise<DyoNodeInstall> {
+  async generateScript(id: string, nodeType: ProtoNodeType, rootPath?: string): Promise<DyoNodeInstall> {
     const req: GenerateScriptRequest = {
       id,
       accessedBy: this.identity.id,
       type: nodeType,
-      rootPath: rootPath.length > 0 ? rootPath : undefined,
+      rootPath: rootPath ? rootPath.trim() : undefined
     }
 
     const res = await protomisify<ServiceIdRequest, NodeInstallResponse>(this.client, this.client.generateScript)(

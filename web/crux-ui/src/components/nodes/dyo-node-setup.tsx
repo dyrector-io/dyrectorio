@@ -33,7 +33,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
     node.install ? expiresIn(new Date(node.install.expireAt)) : null,
     () => onNodeInstallChanged(null),
   )
-  const [rootPath, setRootPath] = useState<string>('')
+  const [rootPath, setRootPath] = useState<string>(null)
 
   const handleApiError = defaultApiErrorHandler(t)
 
@@ -44,7 +44,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
 
     const body = {
       type: node.type,
-      rootPath,
+      rootPath: rootPath ? rootPath : undefined,
     }
 
     const res = await sendForm('POST', nodeSetupApiUrl(node.id), body)
