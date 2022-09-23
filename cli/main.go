@@ -4,15 +4,15 @@ import (
 	"log"
 	"os"
 
+	"github.com/dyrector-io/dyrectorio/agent/pkg/version"
+
 	cli "github.com/urfave/cli/v2"
 )
-
-const version = "0.1.1"
 
 func main() {
 	app := &cli.App{
 		Name:     "dyo",
-		Version:  version,
+		Version:  version.BuildVersion(),
 		HelpName: "dyo",
 		Usage:    "dyo - cli tool for deploying a complete dyrector.io stack locally, for demonstration, testing, or development purposes",
 
