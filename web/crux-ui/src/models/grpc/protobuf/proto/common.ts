@@ -491,6 +491,7 @@ export interface SecretList {
 
 export interface ListSecretsResponse {
   prefix: string
+  name: string
   publicKey: string
   keys: string[]
 }
@@ -2877,7 +2878,7 @@ export const SecretList = {
 }
 
 function createBaseListSecretsResponse(): ListSecretsResponse {
-  return { prefix: '', publicKey: '', keys: [] }
+  return { prefix: '', name: '', publicKey: '', keys: [] }
 }
 
 export const ListSecretsResponse = {
@@ -2885,11 +2886,14 @@ export const ListSecretsResponse = {
     if (message.prefix !== '') {
       writer.uint32(10).string(message.prefix)
     }
+    if (message.name !== '') {
+      writer.uint32(18).string(message.name)
+    }
     if (message.publicKey !== '') {
-      writer.uint32(18).string(message.publicKey)
+      writer.uint32(26).string(message.publicKey)
     }
     for (const v of message.keys) {
-      writer.uint32(26).string(v!)
+      writer.uint32(34).string(v!)
     }
     return writer
   },
@@ -2905,9 +2909,12 @@ export const ListSecretsResponse = {
           message.prefix = reader.string()
           break
         case 2:
-          message.publicKey = reader.string()
+          message.name = reader.string()
           break
         case 3:
+          message.publicKey = reader.string()
+          break
+        case 4:
           message.keys.push(reader.string())
           break
         default:
@@ -2921,6 +2928,7 @@ export const ListSecretsResponse = {
   fromJSON(object: any): ListSecretsResponse {
     return {
       prefix: isSet(object.prefix) ? String(object.prefix) : '',
+      name: isSet(object.name) ? String(object.name) : '',
       publicKey: isSet(object.publicKey) ? String(object.publicKey) : '',
       keys: Array.isArray(object?.keys) ? object.keys.map((e: any) => String(e)) : [],
     }
@@ -2929,6 +2937,7 @@ export const ListSecretsResponse = {
   toJSON(message: ListSecretsResponse): unknown {
     const obj: any = {}
     message.prefix !== undefined && (obj.prefix = message.prefix)
+    message.name !== undefined && (obj.name = message.name)
     message.publicKey !== undefined && (obj.publicKey = message.publicKey)
     if (message.keys) {
       obj.keys = message.keys.map(e => e)
@@ -2941,6 +2950,7 @@ export const ListSecretsResponse = {
   fromPartial<I extends Exact<DeepPartial<ListSecretsResponse>, I>>(object: I): ListSecretsResponse {
     const message = createBaseListSecretsResponse()
     message.prefix = object.prefix ?? ''
+    message.name = object.name ?? ''
     message.publicKey = object.publicKey ?? ''
     message.keys = object.keys?.map(e => e) || []
     return message

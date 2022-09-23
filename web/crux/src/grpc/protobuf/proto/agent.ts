@@ -51,6 +51,7 @@ export interface VersionDeployRequest {
 /** Request for a keys of existing secrets in a prefix, eg. namespace */
 export interface ListSecretsRequest {
   prefix: string
+  name: string
 }
 
 /** Deploys a single container */
@@ -234,17 +235,21 @@ export const VersionDeployRequest = {
 }
 
 function createBaseListSecretsRequest(): ListSecretsRequest {
-  return { prefix: '' }
+  return { prefix: '', name: '' }
 }
 
 export const ListSecretsRequest = {
   fromJSON(object: any): ListSecretsRequest {
-    return { prefix: isSet(object.prefix) ? String(object.prefix) : '' }
+    return {
+      prefix: isSet(object.prefix) ? String(object.prefix) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+    }
   },
 
   toJSON(message: ListSecretsRequest): unknown {
     const obj: any = {}
     message.prefix !== undefined && (obj.prefix = message.prefix)
+    message.name !== undefined && (obj.name = message.name)
     return obj
   },
 }

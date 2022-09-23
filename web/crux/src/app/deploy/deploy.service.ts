@@ -479,7 +479,7 @@ export default class DeployService {
       })
     }
 
-    const watcher = agent.getContainerSecrets(`${deployment.prefix}-${containerName}`)
+    const watcher = agent.getContainerSecrets(deployment.prefix, containerName)
 
     return lastValueFrom(watcher)
   }

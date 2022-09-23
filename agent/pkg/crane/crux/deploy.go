@@ -22,8 +22,8 @@ func GetDeployments(ctx context.Context, namespace string) []*common.ContainerSt
 	return mapper.MapKubeDeploymentListToCruxStateItems(list)
 }
 
-func GetSecretsList(ctx context.Context, prefix string) ([]string, error) {
-	// TODO(robot9706): implement secrets list
-	log.Println("Secrets list not implemented!")
-	return nil, nil
+func GetSecretsList(ctx context.Context, prefix, name string) ([]string, error) {
+	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
+
+	return k8s.ListSecrets(ctx, prefix, name, cfg)
 }

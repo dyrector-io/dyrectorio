@@ -104,7 +104,7 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
 
   const stateToElements = (itemArray: UniqueKeySecretValue[], definedSecrets: string[]) => {
     const result = new Array<KeyValueElement>()
-
+    
     itemArray.forEach(item =>
       result.push({
         ...item,

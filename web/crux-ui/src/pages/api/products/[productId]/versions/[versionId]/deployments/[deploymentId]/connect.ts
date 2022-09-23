@@ -146,7 +146,7 @@ const onGetSecrets = async (
   message: WsMessage<DeploymentGetSecretListMessage>,
 ) => {
   const res = await cruxFromConnection(connection).deployments.getSecretsList(message.payload.id, message.payload.instanceId)
-
+  
   if (res.keys === undefined) {
     return
   }

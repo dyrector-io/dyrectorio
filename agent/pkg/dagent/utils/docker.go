@@ -758,7 +758,7 @@ func CreateNetwork(ctx context.Context, name, driver string) error {
 	return nil
 }
 
-func SecretList(ctx context.Context, prefix string) ([]string, error) {
+func SecretList(ctx context.Context, prefix, name string) ([]string, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return nil, err
@@ -766,7 +766,7 @@ func SecretList(ctx context.Context, prefix string) ([]string, error) {
 
 	containers, err := cli.ContainerList(ctx, types.ContainerListOptions{
 		All:     true,
-		Filters: filters.NewArgs(filters.KeyValuePair{Key: "name", Value: fmt.Sprintf("^/?%s", prefix)}),
+		Filters: filters.NewArgs(filters.KeyValuePair{Key: "name", Value: fmt.Sprintf("^/?%s-%s$", prefix, name)}),
 	})
 
 	if err != nil {
@@ -774,7 +774,7 @@ func SecretList(ctx context.Context, prefix string) ([]string, error) {
 	}
 
 	if len(containers) != 1 {
-		log.Printf("Container does not exist for prefix: '%s'", prefix)
+		log.Printf("Container does not exist for prefix-name: '%s-%s'", prefix, name)
 		return nil, nil
 	}
 

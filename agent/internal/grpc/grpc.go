@@ -46,7 +46,7 @@ type GrpcConnectionParams struct {
 type DeployFunc func(context.Context, *dogger.DeploymentLogger, *v1.DeployImageRequest, *v1.VersionData) error
 type WatchFunc func(context.Context, string) []*common.ContainerStateItem
 type DeleteFunc func(context.Context, string, string) error
-type SecretListFunc func(context.Context, string) ([]string, error)
+type SecretListFunc func(context.Context, string, string) ([]string, error)
 
 type WorkerFunctions struct {
 	Deploy     DeployFunc
@@ -419,10 +419,11 @@ func executeVersionDeployLegacyRequest(
 
 func executeSecretList(context context.Context, command *agent.ListSecretsRequest, listFunc SecretListFunc, appConfig *config.CommonConfiguration) {
 	prefix := command.Prefix
+	name := command.Name
 
-	log.Printf("Getting secrets for prefix: '%s'", prefix)
+	log.Printf("Getting secrets for prefix-name: '%s-%s'", prefix, name)
 
-	keys, err := listFunc(context, prefix)
+	keys, err := listFunc(context, prefix, name)
 	if err != nil {
 		log.Println("Secret list error: ", err.Error())
 		return
@@ -436,6 +437,7 @@ func executeSecretList(context context.Context, command *agent.ListSecretsReques
 
 	resp := &common.ListSecretsResponse{
 		Prefix:    prefix,
+		Name:      name,
 		PublicKey: publicKey,
 		Keys:      keys,
 	}

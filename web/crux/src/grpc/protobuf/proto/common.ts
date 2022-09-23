@@ -489,6 +489,7 @@ export interface SecretList {
 
 export interface ListSecretsResponse {
   prefix: string
+  name: string
   publicKey: string
   keys: string[]
 }
@@ -1320,13 +1321,14 @@ export const SecretList = {
 }
 
 function createBaseListSecretsResponse(): ListSecretsResponse {
-  return { prefix: '', publicKey: '', keys: [] }
+  return { prefix: '', name: '', publicKey: '', keys: [] }
 }
 
 export const ListSecretsResponse = {
   fromJSON(object: any): ListSecretsResponse {
     return {
       prefix: isSet(object.prefix) ? String(object.prefix) : '',
+      name: isSet(object.name) ? String(object.name) : '',
       publicKey: isSet(object.publicKey) ? String(object.publicKey) : '',
       keys: Array.isArray(object?.keys) ? object.keys.map((e: any) => String(e)) : [],
     }
@@ -1335,6 +1337,7 @@ export const ListSecretsResponse = {
   toJSON(message: ListSecretsResponse): unknown {
     const obj: any = {}
     message.prefix !== undefined && (obj.prefix = message.prefix)
+    message.name !== undefined && (obj.name = message.name)
     message.publicKey !== undefined && (obj.publicKey = message.publicKey)
     if (message.keys) {
       obj.keys = message.keys.map(e => e)

@@ -119,26 +119,29 @@ export class Agent {
     watcher.onNodeStreamFinished()
   }
 
-  getContainerSecrets(prefix: string): Observable<ListSecretsResponse> {
-    let watcher = this.secretsWatchers.get(prefix)
+  getContainerSecrets(prefix: string, name: string): Observable<ListSecretsResponse> {
+    const key = `${prefix}-${name}`
+
+    let watcher = this.secretsWatchers.get(key)
     if (!watcher) {
       watcher = new Subject<ListSecretsResponse>()
-      this.secretsWatchers.set(prefix, watcher)
+      this.secretsWatchers.set(key, watcher)
 
       this.commandChannel.next({
         listSecrets: {
-          prefix
+          prefix,
+          name
         }
       } as AgentCommand)
     }
 
     return watcher.pipe(finalize(() => {
-      this.secretsWatchers.delete(prefix)
+      this.secretsWatchers.delete(key)
     }),
     timeout({
       each: 5000,
       with: () => {
-        this.secretsWatchers.delete(prefix)
+        this.secretsWatchers.delete(key)
 
         return throwError(() => new InternalException({
           message: "Agent container secrets timed out."
@@ -148,7 +151,9 @@ export class Agent {
   }
 
   onContainerSecrets(res: ListSecretsResponse) {
-    const watcher = this.secretsWatchers.get(res.prefix)
+    const key = `${res.prefix}-${res.name}`
+
+    const watcher = this.secretsWatchers.get(key)
     if (!watcher) {
       return
     }
@@ -156,7 +161,7 @@ export class Agent {
     watcher.next(res)
     watcher.complete()
 
-    this.secretsWatchers.delete(res.prefix)
+    this.secretsWatchers.delete(key)
   }
 
   debugInfo(logger: Logger) {

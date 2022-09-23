@@ -145,7 +145,7 @@ class DyoDeploymentService {
       DeploymentListSecretsRequest,
       req,
     )
-
+    
     return res
   }
 
