@@ -493,6 +493,7 @@ export interface ListSecretsResponse {
   prefix: string
   name: string
   publicKey: string
+  hasKeys: boolean
   keys: string[]
 }
 
@@ -2878,7 +2879,7 @@ export const SecretList = {
 }
 
 function createBaseListSecretsResponse(): ListSecretsResponse {
-  return { prefix: '', name: '', publicKey: '', keys: [] }
+  return { prefix: '', name: '', publicKey: '', hasKeys: false, keys: [] }
 }
 
 export const ListSecretsResponse = {
@@ -2892,8 +2893,11 @@ export const ListSecretsResponse = {
     if (message.publicKey !== '') {
       writer.uint32(26).string(message.publicKey)
     }
+    if (message.hasKeys === true) {
+      writer.uint32(32).bool(message.hasKeys)
+    }
     for (const v of message.keys) {
-      writer.uint32(34).string(v!)
+      writer.uint32(42).string(v!)
     }
     return writer
   },
@@ -2915,6 +2919,9 @@ export const ListSecretsResponse = {
           message.publicKey = reader.string()
           break
         case 4:
+          message.hasKeys = reader.bool()
+          break
+        case 5:
           message.keys.push(reader.string())
           break
         default:
@@ -2930,6 +2937,7 @@ export const ListSecretsResponse = {
       prefix: isSet(object.prefix) ? String(object.prefix) : '',
       name: isSet(object.name) ? String(object.name) : '',
       publicKey: isSet(object.publicKey) ? String(object.publicKey) : '',
+      hasKeys: isSet(object.hasKeys) ? Boolean(object.hasKeys) : false,
       keys: Array.isArray(object?.keys) ? object.keys.map((e: any) => String(e)) : [],
     }
   },
@@ -2939,6 +2947,7 @@ export const ListSecretsResponse = {
     message.prefix !== undefined && (obj.prefix = message.prefix)
     message.name !== undefined && (obj.name = message.name)
     message.publicKey !== undefined && (obj.publicKey = message.publicKey)
+    message.hasKeys !== undefined && (obj.hasKeys = message.hasKeys)
     if (message.keys) {
       obj.keys = message.keys.map(e => e)
     } else {
@@ -2952,6 +2961,7 @@ export const ListSecretsResponse = {
     message.prefix = object.prefix ?? ''
     message.name = object.name ?? ''
     message.publicKey = object.publicKey ?? ''
+    message.hasKeys = object.hasKeys ?? false
     message.keys = object.keys?.map(e => e) || []
     return message
   },

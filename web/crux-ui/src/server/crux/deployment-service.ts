@@ -24,6 +24,7 @@ import {
   DeploymentEventListResponse,
   DeploymentListByVersionResponse,
   DeploymentListResponse,
+  DeploymentListSecretsRequest,
   DeploymentProgressMessage,
   Empty,
   IdRequest,
@@ -31,7 +32,6 @@ import {
   ServiceIdRequest,
   UpdateDeploymentRequest,
   UpdateEntityResponse,
-  DeploymentListSecretsRequest,
 } from '@app/models/grpc/protobuf/proto/crux'
 import { timestampToUTC } from '@app/utils'
 import { WsMessage } from '@app/websockets/common'
@@ -141,11 +141,11 @@ class DyoDeploymentService {
       accessedBy: this.identity.id,
     }
 
-    const res = await protomisify<DeploymentListSecretsRequest, ListSecretsResponse>(this.client, this.client.getInstanceSecrets)(
-      DeploymentListSecretsRequest,
-      req,
-    )
-    
+    const res = await protomisify<DeploymentListSecretsRequest, ListSecretsResponse>(
+      this.client,
+      this.client.getInstanceSecrets,
+    )(DeploymentListSecretsRequest, req)
+
     return res
   }
 

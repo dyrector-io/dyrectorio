@@ -214,10 +214,7 @@ export default class AgentService {
     )
   }
 
-  handleSecretList(
-    connection: GrpcNodeConnection,
-    request: ListSecretsResponse
-  ): Observable<Empty> {
+  handleSecretList(connection: GrpcNodeConnection, request: ListSecretsResponse): Observable<Empty> {
     const agent = this.getByIdOrThrow(connection.nodeId)
 
     agent.onContainerSecrets(request)

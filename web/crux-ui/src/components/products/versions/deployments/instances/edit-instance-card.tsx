@@ -2,12 +2,10 @@ import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoMessage from '@app/elements/dyo-message'
 import {
-  DeploymentGetSecretListMessage,
   Instance,
   InstanceContainerConfig,
   mergeConfigs,
   PatchInstanceMessage,
-  WS_TYPE_DEPLOYMENT_GET_SECRETS,
   WS_TYPE_PATCH_INSTANCE,
 } from '@app/models'
 import { getValidationError, instanceConfigSchema } from '@app/validations'
@@ -24,7 +22,6 @@ interface EditInstanceCardProps {
   disabled?: boolean
   instance: Instance
   publicKey?: string
-  deploymentId: string
   deploymentSock: WebSocketClientEndpoint
   definedSecrets?: string[]
 }
@@ -32,25 +29,16 @@ interface EditInstanceCardProps {
 const EditInstanceCard = (props: EditInstanceCardProps) => {
   const { t } = useTranslation('images')
 
-  const { disabled, instance, deploymentSock: sock, publicKey, definedSecrets, deploymentId } = props
+  const { disabled, instance, deploymentSock: sock, publicKey, definedSecrets } = props
 
   const [selection, setSelection] = useState<EditInstanceCardSelection>('config')
   const [mergedConfig, setMergedConfig] = useState(mergeConfigs(instance.image.config, instance.overriddenConfig))
   const [parseError, setParseError] = useState<string>(null)
-  
+
   useEffect(
     () => setMergedConfig(mergeConfigs(instance.image.config, instance.overriddenConfig)),
     [instance.image.config, instance.overriddenConfig],
   )
-
-  useEffect(() => {
-    if (selection === "config" && definedSecrets == null) {
-      sock.send(WS_TYPE_DEPLOYMENT_GET_SECRETS, {
-        id: deploymentId,
-        instanceId: instance.id
-      } as DeploymentGetSecretListMessage)
-    }
-  }, [selection])
 
   const onPatch = (id: string, config: Partial<InstanceContainerConfig>) => {
     setParseError(null)

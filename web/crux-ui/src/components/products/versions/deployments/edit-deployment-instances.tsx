@@ -1,6 +1,7 @@
 import ViewModeToggle, { ViewMode } from '@app/components/shared/view-mode-toggle'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
+  DeploymentGetSecretListMessage,
   deploymentIsMutable,
   DeploymentRoot,
   DeploymentSecretListMessage,
@@ -10,6 +11,7 @@ import {
   InstanceMessage,
   InstancesAddedMessage,
   InstanceUpdatedMessage,
+  WS_TYPE_DEPLOYMENT_GET_SECRETS,
   WS_TYPE_DEPLOYMENT_SECRETS,
   WS_TYPE_GET_INSTANCE,
   WS_TYPE_IMAGE_DELETED,
@@ -18,9 +20,7 @@ import {
   WS_TYPE_INSTANCE_UPDATED,
 } from '@app/models'
 import { deploymentWsUrl } from '@app/routes'
-import { useState } from 'react'
-import DeploymentViewList from './deployment-view-list'
-import DeploymentViewTile from './deployment-view-tile'
+import { useEffect, useState } from 'react'
 
 const mergeInstancePatch = (instance: Instance, message: InstanceUpdatedMessage): Instance => ({
   ...instance,
@@ -78,6 +78,17 @@ const EditDeploymentInstances = (props: EditDeploymentInstancesProps) => {
     setSecretsList(newList)
   })
 
+  useEffect(() => {
+    instances.forEach(it => {
+      sock.send(WS_TYPE_DEPLOYMENT_GET_SECRETS, {
+        id: deployment.id,
+        instanceId: it.id,
+      } as DeploymentGetSecretListMessage)
+    })
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   return (
     <>
       <div className="flex flex-row justify-end mt-4">
@@ -88,7 +99,6 @@ const EditDeploymentInstances = (props: EditDeploymentInstancesProps) => {
           disabled={!mutable}
           instances={instances}
           deploymentSock={sock}
-          deploymentId={deployment.id}
           publicKey={deployment?.publicKey}
           definedSecrets={secretsList[it.id]}
         />

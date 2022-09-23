@@ -417,13 +417,17 @@ func executeVersionDeployLegacyRequest(
 	}
 }
 
-func executeSecretList(context context.Context, command *agent.ListSecretsRequest, listFunc SecretListFunc, appConfig *config.CommonConfiguration) {
+func executeSecretList(
+	ctx context.Context,
+	command *agent.ListSecretsRequest,
+	listFunc SecretListFunc,
+	appConfig *config.CommonConfiguration) {
 	prefix := command.Prefix
 	name := command.Name
 
 	log.Printf("Getting secrets for prefix-name: '%s-%s'", prefix, name)
 
-	keys, err := listFunc(context, prefix, name)
+	keys, err := listFunc(ctx, prefix, name)
 	if err != nil {
 		log.Println("Secret list error: ", err.Error())
 		return
@@ -439,10 +443,11 @@ func executeSecretList(context context.Context, command *agent.ListSecretsReques
 		Prefix:    prefix,
 		Name:      name,
 		PublicKey: publicKey,
+		HasKeys:   keys != nil,
 		Keys:      keys,
 	}
 
-	_, err = grpcConn.Client.GetSecretList(context, resp)
+	_, err = grpcConn.Client.GetSecretList(ctx, resp)
 	if err != nil {
 		log.Println("Secret list response error: ", err.Error())
 		return

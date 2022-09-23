@@ -66,7 +66,7 @@ export default class DeployController implements CruxDeploymentController {
     return await this.service.updateDeployment(request)
   }
 
-  async getInstanceSecrets(request: DeploymentListSecretsRequest, ...rest: any): Promise<ListSecretsResponse> {
+  async getInstanceSecrets(request: DeploymentListSecretsRequest): Promise<ListSecretsResponse> {
     return await this.service.getInstanceSecrets(request)
   }
 

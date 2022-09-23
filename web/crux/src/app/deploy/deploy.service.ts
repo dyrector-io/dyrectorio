@@ -449,21 +449,21 @@ export default class DeployService {
   async getInstanceSecrets(request: DeploymentListSecretsRequest): Promise<ListSecretsResponse> {
     const deployment = await this.prisma.deployment.findFirstOrThrow({
       where: {
-        id: request.id
-      }
+        id: request.id,
+      },
     })
 
     const instanceWithImageAndConfig = await this.prisma.instance.findFirstOrThrow({
       where: {
-        id: request.instanceId
+        id: request.instanceId,
       },
       include: {
         image: {
           include: {
-            config: true
-          }
-        }
-      }
+            config: true,
+          },
+        },
+      },
     })
 
     const containerName = instanceWithImageAndConfig.image.config.name

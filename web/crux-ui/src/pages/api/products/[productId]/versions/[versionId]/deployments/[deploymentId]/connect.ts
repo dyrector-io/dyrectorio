@@ -145,15 +145,18 @@ const onGetSecrets = async (
   connection: WsConnection,
   message: WsMessage<DeploymentGetSecretListMessage>,
 ) => {
-  const res = await cruxFromConnection(connection).deployments.getSecretsList(message.payload.id, message.payload.instanceId)
-  
-  if (res.keys === undefined) {
+  const res = await cruxFromConnection(connection).deployments.getSecretsList(
+    message.payload.id,
+    message.payload.instanceId,
+  )
+
+  if (!res.hasKeys) {
     return
   }
 
   connection.send(WS_TYPE_DEPLOYMENT_SECRETS, {
     instanceId: message.payload.instanceId,
-    keys: res.keys
+    keys: res.keys,
   } as DeploymentSecretListMessage)
 }
 

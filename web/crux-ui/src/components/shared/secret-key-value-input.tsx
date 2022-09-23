@@ -102,15 +102,15 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
   const [state, dispatch] = useReducer(reducer, items)
   const [changed, setChanged] = useState<boolean>(false)
 
-  const stateToElements = (itemArray: UniqueKeySecretValue[], definedSecrets: string[]) => {
+  const stateToElements = (itemArray: UniqueKeySecretValue[], secrets: string[]) => {
     const result = new Array<KeyValueElement>()
-    
+
     itemArray.forEach(item =>
       result.push({
         ...item,
         encrypted: item.encrypted ?? false,
         message: result.find(it => it.key === item.key) ? t('keyMustUnique') : null,
-        present: (isCompletelyEmpty(item) || definedSecrets === undefined) ? undefined : definedSecrets.includes(item.key)
+        present: isCompletelyEmpty(item) || secrets === undefined ? undefined : secrets.includes(item.key),
       }),
     )
 
@@ -190,10 +190,10 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
 
   const elementSecretStatus = (present?: boolean) => {
     if (present === undefined) {
-      return "/circle-gray.svg"
+      return '/circle-gray.svg'
     }
 
-    return present ? "/circle-green.svg" : "/circle-red.svg"
+    return present ? '/circle-green.svg' : '/circle-red.svg'
   }
 
   const renderItem = (entry: KeyValueElement, index: number) => {
@@ -201,11 +201,13 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
 
     return (
       <div key={entry.id} className="flex flex-row flex-grow p-1">
-        {!isCompletelyEmpty(entry) && <div className="mr-2 flex flex-row">
-          <Image className='mr-2' src={elementSecretStatus(entry.present)} width={16} height={16} />
-        </div>}
+        {!isCompletelyEmpty(entry) && (
+          <div className="mr-2 flex flex-row">
+            <Image className="mr-2" src={elementSecretStatus(entry.present)} width={16} height={16} />
+          </div>
+        )}
 
-        <div className={clsx("w-5/12", isCompletelyEmpty(entry) && "ml-[24px]")}>
+        <div className={clsx('w-5/12', isCompletelyEmpty(entry) && 'ml-[24px]')}>
           <DyoInput
             key={`${entry.id}-key`}
             disabled={disabled}

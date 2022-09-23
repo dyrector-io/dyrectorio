@@ -240,5 +240,6 @@ message ListSecretsResponse {
   string prefix = 1;
   string name = 2;
   string publicKey = 3;
-  repeated string keys = 4;
+  bool hasKeys = 4;
+  repeated string keys = 5;
 }

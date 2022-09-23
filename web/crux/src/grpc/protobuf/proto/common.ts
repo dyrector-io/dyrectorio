@@ -491,6 +491,7 @@ export interface ListSecretsResponse {
   prefix: string
   name: string
   publicKey: string
+  hasKeys: boolean
   keys: string[]
 }
 
@@ -1321,7 +1322,7 @@ export const SecretList = {
 }
 
 function createBaseListSecretsResponse(): ListSecretsResponse {
-  return { prefix: '', name: '', publicKey: '', keys: [] }
+  return { prefix: '', name: '', publicKey: '', hasKeys: false, keys: [] }
 }
 
 export const ListSecretsResponse = {
@@ -1330,6 +1331,7 @@ export const ListSecretsResponse = {
       prefix: isSet(object.prefix) ? String(object.prefix) : '',
       name: isSet(object.name) ? String(object.name) : '',
       publicKey: isSet(object.publicKey) ? String(object.publicKey) : '',
+      hasKeys: isSet(object.hasKeys) ? Boolean(object.hasKeys) : false,
       keys: Array.isArray(object?.keys) ? object.keys.map((e: any) => String(e)) : [],
     }
   },
@@ -1339,6 +1341,7 @@ export const ListSecretsResponse = {
     message.prefix !== undefined && (obj.prefix = message.prefix)
     message.name !== undefined && (obj.name = message.name)
     message.publicKey !== undefined && (obj.publicKey = message.publicKey)
+    message.hasKeys !== undefined && (obj.hasKeys = message.hasKeys)
     if (message.keys) {
       obj.keys = message.keys.map(e => e)
     } else {

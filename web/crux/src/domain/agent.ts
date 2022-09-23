@@ -15,7 +15,7 @@ export class Agent {
 
   private statusWatchers: Map<string, ContainerStatusWatcher> = new Map()
 
-  private secretsWatchers: Map<String, Subject<ListSecretsResponse>> = new Map()
+  private secretsWatchers: Map<string, Subject<ListSecretsResponse>> = new Map()
 
   readonly id: string
 
@@ -130,24 +130,29 @@ export class Agent {
       this.commandChannel.next({
         listSecrets: {
           prefix,
-          name
-        }
+          name,
+        },
       } as AgentCommand)
     }
 
-    return watcher.pipe(finalize(() => {
-      this.secretsWatchers.delete(key)
-    }),
-    timeout({
-      each: 5000,
-      with: () => {
+    return watcher.pipe(
+      finalize(() => {
         this.secretsWatchers.delete(key)
+      }),
+      timeout({
+        each: 5000,
+        with: () => {
+          this.secretsWatchers.delete(key)
 
-        return throwError(() => new InternalException({
-          message: "Agent container secrets timed out."
-        }))
-      }
-    }))
+          return throwError(
+            () =>
+              new InternalException({
+                message: 'Agent container secrets timed out.',
+              }),
+          )
+        },
+      }),
+    )
   }
 
   onContainerSecrets(res: ListSecretsResponse) {

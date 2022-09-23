@@ -34,7 +34,7 @@ export default class AgentController implements GrpcAgentController {
   getSecretList(
     request: ListSecretsResponse,
     _: Metadata,
-    call: NodeUnaryCall
+    call: NodeUnaryCall,
   ): Empty | Promise<Empty> | Observable<Empty> {
     return this.service.handleSecretList(call.connection, request)
   }

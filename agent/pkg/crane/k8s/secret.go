@@ -68,7 +68,8 @@ func ListSecrets(ctx context.Context, namespace, name string, appConfig *config.
 
 	names := []string{}
 
-	for _, secret := range list.Items {
+	for index := range list.Items {
+		secret := &list.Items[index]
 		if secret.Namespace == namespace && secret.Name == name {
 			for key := range secret.Data {
 				names = append(names, key)
