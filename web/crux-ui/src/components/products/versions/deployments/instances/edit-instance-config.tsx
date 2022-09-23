@@ -13,7 +13,7 @@ interface EditInstanceProps {
   disabledContainerNameEditing?: boolean
   publicKey?: string
   config: InstanceContainerConfig
-  definedSecrets: string[]
+  definedSecrets?: string[]
   onPatch: (config: Partial<InstanceContainerConfig>) => void
 }
 

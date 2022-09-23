@@ -15,7 +15,7 @@ interface SecretKeyValueInputProps {
   heading?: string
   publicKey?: string
   items: UniqueKeySecretValue[]
-  definedSecrets: string[]
+  definedSecrets?: string[]
   onSubmit: (items: UniqueKeySecretValue[]) => void
 }
 
@@ -27,7 +27,7 @@ const EMPTY_SECRET_KEY_VALUE_PAIR = {
 
 type KeyValueElement = UniqueKeySecretValue & {
   message?: string
-  present: boolean
+  present?: boolean
 }
 
 const encryptWithPGP = async (text: string, key: string): Promise<string> => {
@@ -110,7 +110,7 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
         ...item,
         encrypted: item.encrypted ?? false,
         message: result.find(it => it.key === item.key) ? t('keyMustUnique') : null,
-        present: isCompletelyEmpty(item) ? false : definedSecrets.includes(item.key)
+        present: (isCompletelyEmpty(item) || definedSecrets === undefined) ? undefined : definedSecrets.includes(item.key)
       }),
     )
 
@@ -188,13 +188,21 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
 
   const elements = stateToElements(state, definedSecrets)
 
+  const elementSecretStatus = (present?: boolean) => {
+    if (present === undefined) {
+      return "/circle-gray.svg"
+    }
+
+    return present ? "/circle-green.svg" : "/circle-red.svg"
+  }
+
   const renderItem = (entry: KeyValueElement, index: number) => {
     const { key, value, message, encrypted } = entry
 
     return (
       <div key={entry.id} className="flex flex-row flex-grow p-1">
         {!isCompletelyEmpty(entry) && <div className="mr-2 flex flex-row">
-          <Image className='mr-2' src={entry.present ? "/circle-green.svg" : "/circle-red.svg"} width={16} height={16} />
+          <Image className='mr-2' src={elementSecretStatus(entry.present)} width={16} height={16} />
         </div>}
 
         <div className={clsx("w-5/12", isCompletelyEmpty(entry) && "ml-[24px]")}>

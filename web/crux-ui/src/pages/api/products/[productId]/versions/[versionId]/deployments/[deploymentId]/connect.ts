@@ -147,6 +147,10 @@ const onGetSecrets = async (
 ) => {
   const res = await cruxFromConnection(connection).deployments.getSecretsList(message.payload.id, message.payload.instanceId)
 
+  if (res.keys === undefined) {
+    return
+  }
+
   connection.send(WS_TYPE_DEPLOYMENT_SECRETS, {
     instanceId: message.payload.instanceId,
     keys: res.keys

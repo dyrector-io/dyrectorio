@@ -26,7 +26,7 @@ interface EditInstanceCardProps {
   publicKey?: string
   deploymentId: string
   deploymentSock: WebSocketClientEndpoint
-  definedSecrets: string[]
+  definedSecrets?: string[]
 }
 
 const EditInstanceCard = (props: EditInstanceCardProps) => {
@@ -37,20 +37,18 @@ const EditInstanceCard = (props: EditInstanceCardProps) => {
   const [selection, setSelection] = useState<EditInstanceCardSelection>('config')
   const [mergedConfig, setMergedConfig] = useState(mergeConfigs(instance.image.config, instance.overriddenConfig))
   const [parseError, setParseError] = useState<string>(null)
-  const [agentSecretList, setAgentSecretList] = useState<string[] | null>(null)
-
+  
   useEffect(
     () => setMergedConfig(mergeConfigs(instance.image.config, instance.overriddenConfig)),
     [instance.image.config, instance.overriddenConfig],
   )
 
   useEffect(() => {
-    if (selection === "config" && agentSecretList == null) {
+    if (selection === "config" && definedSecrets == null) {
       sock.send(WS_TYPE_DEPLOYMENT_GET_SECRETS, {
         id: deploymentId,
         instanceId: instance.id
       } as DeploymentGetSecretListMessage)
-      setAgentSecretList([])
     }
   }, [selection])
 

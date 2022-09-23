@@ -774,7 +774,8 @@ func SecretList(ctx context.Context, prefix string) ([]string, error) {
 	}
 
 	if len(containers) != 1 {
-		return nil, errors.New("failed to get containers")
+		log.Printf("Container does not exist for prefix: '%s'", prefix)
+		return nil, nil
 	}
 
 	container := containers[0]

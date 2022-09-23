@@ -90,7 +90,7 @@ const EditDeploymentInstances = (props: EditDeploymentInstancesProps) => {
           deploymentSock={sock}
           deploymentId={deployment.id}
           publicKey={deployment?.publicKey}
-          definedSecrets={secretsList[it.id] ?? []}
+          definedSecrets={secretsList[it.id]}
         />
       ) : (
         <DeploymentViewList instances={instances} />
