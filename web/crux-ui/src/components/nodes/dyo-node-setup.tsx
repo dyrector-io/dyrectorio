@@ -44,7 +44,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
 
     const body = {
       type: node.type,
-      rootPath: rootPath ? rootPath : undefined,
+      rootPath: rootPath || undefined,
     }
 
     const res = await sendForm('POST', nodeSetupApiUrl(node.id), body)

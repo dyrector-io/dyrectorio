@@ -127,7 +127,7 @@ class DyoNodeService {
       id,
       accessedBy: this.identity.id,
       type: nodeType,
-      rootPath: rootPath ? rootPath.trim() : undefined
+      rootPath: rootPath ? rootPath.trim() : undefined,
     }
 
     const res = await protomisify<ServiceIdRequest, NodeInstallResponse>(this.client, this.client.generateScript)(
