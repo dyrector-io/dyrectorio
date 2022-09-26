@@ -119,7 +119,7 @@ const AuditLogPage = (props: AuditLogPageProps) => {
               shouldCloseOnSelect={false}
               maxDate={new Date()}
               isClearable
-              className="ml-8 w-1/3"
+              className="ml-6 w-1/4"
             />
           </Filters>
 

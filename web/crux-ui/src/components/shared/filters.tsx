@@ -24,7 +24,7 @@ const Filters = (props: FiltersProps) => {
 
       <div className="flex items-center mt-4">
         <DyoInput
-          className={clsx(searchClassName ?? 'w-2/3')}
+          className={clsx(searchClassName ?? 'grow')}
           placeholder={t('common:search')}
           onChange={e => setFilter(e.target.value)}
           grow

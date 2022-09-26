@@ -51,14 +51,14 @@ export const useFilters = <Item, Filter>(options: UseFiltersOptions<Item, Filter
 export type PropertyValuesOf<Item> = (item: Item) => string[]
 
 export type TextFilter = {
-  text: string
+  text?: string
 }
 
 export const textFilterFor =
   <Item>(propertiesOf: PropertyValuesOf<Item>): FilterFunction<Item, TextFilter> =>
   (items: Item[], filter: TextFilter) => {
     const text = filter?.text?.trim().toLowerCase()
-    if (text && text.length < 1) {
+    if (!text || (text && text.length < 1)) {
       return items
     }
 
@@ -98,7 +98,7 @@ export type EnumFilter<TEnum> = {
 export const enumFilterFor =
   <Item, Enum>(propertiesOf: PropertyValuesOf<Item>): FilterFunction<Item, EnumFilter<Enum>> =>
   (items: Item[], filter: EnumFilter<Enum>) => {
-    if (filter.enum === undefined) {
+    if (filter?.enum === undefined || filter?.enum === null) {
       return items
     }
 

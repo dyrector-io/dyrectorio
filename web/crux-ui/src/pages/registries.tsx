@@ -5,10 +5,11 @@ import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
 import { ListPageMenu } from '@app/components/shared/page-menu'
+import DyoChips from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoWrap from '@app/elements/dyo-wrap'
-import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
-import { Registry } from '@app/models'
+import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
+import { Registry, RegistryType, REGISTRY_TYPE_VALUES } from '@app/models'
 import { registryUrl, ROUTE_REGISTRIES } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
@@ -22,6 +23,10 @@ interface RegistriesPageProps {
   registries: Registry[]
 }
 
+const registryTypeFilters = [null, ...REGISTRY_TYPE_VALUES]
+
+type RegistryFilter = TextFilter & EnumFilter<RegistryType>
+
 const RegistriesPage = (props: RegistriesPageProps) => {
   const { registries } = props
 
@@ -29,10 +34,12 @@ const RegistriesPage = (props: RegistriesPageProps) => {
 
   const router = useRouter()
 
-  const filters = useFilters<Registry, TextFilter>({
-    filters: [textFilterFor<Registry>(it => [it.name, it.url, it.description, it.icon])],
+  const filters = useFilters<Registry, RegistryFilter>({
+    filters: [
+      textFilterFor<Registry>(it => [it.name, it.url, it.description, it.icon]),
+      enumFilterFor<Registry, RegistryType>(it => [it.type]),
+    ],
     initialData: registries,
-    initialFilter: { text: '' },
   })
 
   const [creating, setCreating] = useState(false)
@@ -61,7 +68,19 @@ const RegistriesPage = (props: RegistriesPageProps) => {
       )}
       {filters.items.length ? (
         <>
-          <Filters setTextFilter={it => filters.setFilter({ text: it })} />
+          <Filters setTextFilter={it => filters.setFilter({ text: it })}>
+            <DyoChips
+              className="pl-6"
+              choices={registryTypeFilters}
+              isFilter
+              converter={it => t(`type.${it}`)}
+              onSelectionChange={type => {
+                filters.setFilter({
+                  enum: type as RegistryType,
+                })
+              }}
+            />
+          </Filters>
 
           <DyoWrap itemClassName="lg:w-1/2 xl:w-1/3">
             {filters.filtered.map((it, index) => {

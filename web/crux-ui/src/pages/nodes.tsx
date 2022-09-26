@@ -5,8 +5,8 @@ import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
 import { ListPageMenu } from '@app/components/shared/page-menu'
+import DyoChips from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
-import { DyoSelect } from '@app/elements/dyo-select'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useWebSocket from '@app/hooks/use-websocket'
@@ -26,7 +26,7 @@ interface NodesPageProps {
 }
 
 const nodeStatusFilters = [
-  { name: 'all', value: 'default' },
+  { name: 'all', value: null },
   { name: 'active', value: 'running' },
   { name: 'inactive', value: 'unreachable' },
 ]
@@ -46,7 +46,6 @@ const NodesPage = (props: NodesPageProps) => {
       enumFilterFor<DyoNode, NodeStatus>(it => [it.status]),
     ],
     initialData: nodes,
-    initialFilter: { text: '' },
   })
 
   const [creating, setCreating] = useState(false)
@@ -108,23 +107,19 @@ const NodesPage = (props: NodesPageProps) => {
       {!creating ? null : <EditNodeCard className="mb-2" submitRef={submitRef} onNodeEdited={onCreated} />}
       {filters.items.length ? (
         <>
-          <Filters setTextFilter={it => filters.setFilter({ text: it })} searchClassName="w-5/6">
-            <DyoSelect
-              className="ml-4 w-1/6"
-              grow
-              value={filters.filter.enum ?? 'default'}
-              onChange={e => {
+          <Filters setTextFilter={it => filters.setFilter({ text: it })}>
+            <DyoChips
+              className="pl-6"
+              choices={nodeStatusFilters}
+              isFilter
+              initialSelection={nodeStatusFilters[0]}
+              converter={it => t(`statusFilters.${it.name}`)}
+              onSelectionChange={type => {
                 filters.setFilter({
-                  enum: e.target.value === 'default' ? undefined : (e.target.value as NodeStatus),
+                  enum: type.value as NodeStatus,
                 })
               }}
-            >
-              {nodeStatusFilters.map((it, index) => (
-                <option key={`${index}-node-status`} value={it.value}>
-                  {t(`statusFilters.${it.name}`)}
-                </option>
-              ))}
-            </DyoSelect>
+            />
           </Filters>
 
           <DyoWrap itemClassName="lg:w-1/2 xl:w-1/3">

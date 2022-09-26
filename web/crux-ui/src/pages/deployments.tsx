@@ -1,12 +1,15 @@
 import { Layout } from '@app/components/layout'
 import DeploymentStatusTag from '@app/components/products/versions/deployments/deployment-status-tag'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
+import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
 import { DyoCard } from '@app/elements/dyo-card'
+import DyoChips from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoList } from '@app/elements/dyo-list'
 import DyoModal from '@app/elements/dyo-modal'
-import { Deployment } from '@app/models'
+import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
+import { Deployment, DeploymentStatus, DEPLOYMENT_STATUS_VALUES } from '@app/models'
 import { deploymentUrl, nodeUrl, productUrl, ROUTE_DEPLOYMENTS, versionUrl } from '@app/routes'
 import { utcDateToLocale, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
@@ -21,12 +24,24 @@ interface DeploymentsPageProps {
   deployments: Deployment[]
 }
 
+const deploymentStatusFilters = [null, ...DEPLOYMENT_STATUS_VALUES]
+
+type DeploymentFilter = TextFilter & EnumFilter<DeploymentStatus>
+
 const DeploymentsPage = (props: DeploymentsPageProps) => {
   const { deployments } = props
   const { t } = useTranslation('deployments')
   const router = useRouter()
 
   const [showInfo, setShowInfo] = useState<Deployment>(null)
+
+  const filters = useFilters<Deployment, DeploymentFilter>({
+    filters: [
+      textFilterFor<Deployment>(it => [it.product, it.version, it.node, it.prefix]),
+      enumFilterFor<Deployment, DeploymentStatus>(it => [it.status]),
+    ],
+    initialData: deployments,
+  })
 
   const selfLink: BreadcrumbLink = {
     name: t('common:deployments'),
@@ -89,16 +104,31 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
     <Layout title={t('common:deployments')}>
       <PageHeading pageLink={selfLink} />
       {deployments.length ? (
-        <DyoCard className="relative">
-          <DyoList
-            headers={[...headers.map(h => t(h)), '']}
-            headerClassName={headerClasses}
-            itemClassName="h-11 min-h-min text-light-eased pl-4 w-fit"
-            data={deployments}
-            noSeparator
-            itemBuilder={itemTemplate}
-          />
-        </DyoCard>
+        <>
+          <Filters setTextFilter={it => filters.setFilter({ text: it })}>
+            <DyoChips
+              className="pl-6"
+              choices={deploymentStatusFilters}
+              isFilter
+              converter={it => t(`common:deploymentStatuses.${it}`)}
+              onSelectionChange={type => {
+                filters.setFilter({
+                  enum: type as DeploymentStatus,
+                })
+              }}
+            />
+          </Filters>
+          <DyoCard className="relative mt-4">
+            <DyoList
+              headers={[...headers.map(h => t(h)), '']}
+              headerClassName={headerClasses}
+              itemClassName="h-11 min-h-min text-light-eased pl-4 w-fit"
+              data={filters.filtered}
+              noSeparator
+              itemBuilder={itemTemplate}
+            />
+          </DyoCard>
+        </>
       ) : (
         <DyoHeading element="h3" className="text-md text-center text-light-eased pt-32">
           {t('noItems')}
