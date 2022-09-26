@@ -77,10 +77,14 @@ export class RegistryConnections {
             registry.imageNamePrefix,
           )
         : registry.type === 'github'
-        ? new GithubRegistryClient(registry.imageNamePrefix, {
-            username: registry.user,
-            password: registry.token,
-          })
+        ? new GithubRegistryClient(
+            registry.imageNamePrefix,
+            {
+              username: registry.user,
+              password: registry.token,
+            },
+            registry.namespace,
+          )
         : registry.type === 'gitlab'
         ? new GitlabRegistryClient(
             registry.imageNamePrefix,
@@ -94,6 +98,7 @@ export class RegistryConnections {
                   registryUrl: registry.url,
                 }
               : REGISTRY_GITLAB_URLS,
+            registry.namespace,
           )
         : new GoogleRegistryClient(
             registry.url,

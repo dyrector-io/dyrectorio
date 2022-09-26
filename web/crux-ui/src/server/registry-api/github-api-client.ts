@@ -1,22 +1,29 @@
 import { REGISTRY_GITHUB_URL } from '@app/const'
 import { internalError, unauthorizedError } from '@app/error-responses'
-import { RegistryImageTags } from '@app/models'
+import { RegistryImageTags, RegistryNamespace } from '@app/models'
 import { RegistryApiClient } from './registry-api-client'
 import RegistryV2ApiClient, { registryCredentialsToBasicAuth, RegistryV2ApiClientOptions } from './v2-api-client'
 
 class GithubRegistryClient implements RegistryApiClient {
   private basicAuthHeaders: HeadersInit
 
-  constructor(private organization: string, options: RegistryV2ApiClientOptions) {
+  private namespace: string
+
+  constructor(private imageNamePrefix: string, options: RegistryV2ApiClientOptions, namespace: RegistryNamespace) {
     this.basicAuthHeaders = {
       Authorization: registryCredentialsToBasicAuth(options),
     }
+
+    this.namespace = namespace === 'organization' ? 'orgs' : 'users'
   }
 
   async catalog(text: string, take: number): Promise<string[]> {
-    const res = await fetch(`https://api.github.com/orgs/${this.organization}/packages?package_type=container`, {
-      headers: { ...this.basicAuthHeaders, accept: 'application/vnd.github.v3+json' },
-    })
+    const res = await fetch(
+      `https://api.github.com/${this.namespace}/${this.imageNamePrefix}/packages?package_type=container`,
+      {
+        headers: { ...this.basicAuthHeaders, accept: 'application/vnd.github.v3+json' },
+      },
+    )
 
     if (!res.ok) {
       const errorMessage = `Github packages request failed with status: ${res.status} ${res.statusText}`
@@ -30,7 +37,7 @@ class GithubRegistryClient implements RegistryApiClient {
 
   async tags(image: string): Promise<RegistryImageTags> {
     const tokenRes = await fetch(
-      `https://${REGISTRY_GITHUB_URL}/token?service=${REGISTRY_GITHUB_URL}&scope=repository:${this.organization}/${image}:pull`,
+      `https://${REGISTRY_GITHUB_URL}/token?service=${REGISTRY_GITHUB_URL}&scope=repository:${this.imageNamePrefix}/${image}:pull`,
       {
         headers: this.basicAuthHeaders,
       },
@@ -49,7 +56,7 @@ class GithubRegistryClient implements RegistryApiClient {
         },
       })
 
-    const res = await RegistryV2ApiClient.fetchPaginatedEndpoint(fetcher, `/${this.organization}/${image}/tags/list`)
+    const res = await RegistryV2ApiClient.fetchPaginatedEndpoint(fetcher, `/${this.imageNamePrefix}/${image}/tags/list`)
     if (!res.ok) {
       const errorMessage = `Github tags request failed with status: ${res.status} ${res.statusText}`
       throw res.status === 401 ? unauthorizedError(errorMessage) : internalError(errorMessage)

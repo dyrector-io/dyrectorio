@@ -48,7 +48,7 @@ const GoogleRegistryFields = (props: EditRegistryTypeProps<GoogleRegistryDetails
         message={formik.errors.imageNamePrefix}
       />
 
-      <div className="flex mt-4">
+      <div className="flex mt-8">
         <DyoLabel className="mr-2">{t('private')}</DyoLabel>
 
         <DyoSwitch
