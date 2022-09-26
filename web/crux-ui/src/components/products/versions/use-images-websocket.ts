@@ -37,6 +37,17 @@ export type ImageTagsMap = { [key: string]: RegistryImageTags }
 
 export const imageTagKey = (registryId: string, imageName: string) => `${registryId}/${imageName}`
 
+export const getImageTags = (map: ImageTagsMap, image: VersionImage) => {
+  if (image) {
+    const key = imageTagKey(image.registryId, image.name)
+    const details = map[key]
+
+    return details?.tags ?? []
+  }
+
+  return []
+}
+
 const mergeImagePatch = (oldImage: VersionImage, newImage: PatchVersionImage): VersionImage => ({
   ...oldImage,
   ...newImage,

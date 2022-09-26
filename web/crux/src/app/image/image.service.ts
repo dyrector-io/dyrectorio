@@ -77,6 +77,7 @@ export default class ImageService {
           const image = await prisma.image.create({
             include: {
               config: true,
+              registry: true,
             },
             data: {
               registryId: registyImages.registryId,
@@ -105,19 +106,8 @@ export default class ImageService {
 
     this.imagesAddedToVersionEvent.next(images)
 
-    const registries = await this.prisma.registry.findMany({
-      where: {
-        id: {
-          in: request.images.map(it => it.registryId),
-        },
-      },
-      select: {
-        id: true,
-        name: true,
-      },
-    })
-    const registryLookup = registries.reduce((prev, current) => {
-      prev[current.id] = current.name
+    const registryLookup = images.reduce((prev, current) => {
+      prev[current.registryId] = current.registry.name
       return {
         ...prev,
       }
