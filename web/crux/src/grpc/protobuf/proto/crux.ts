@@ -929,6 +929,7 @@ export interface GenerateScriptRequest {
   id: string
   accessedBy: string
   type: NodeType
+  rootPath?: string | undefined
 }
 
 export interface NodeInstallResponse {
@@ -2673,6 +2674,7 @@ export const GenerateScriptRequest = {
       id: isSet(object.id) ? String(object.id) : '',
       accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       type: isSet(object.type) ? nodeTypeFromJSON(object.type) : 0,
+      rootPath: isSet(object.rootPath) ? String(object.rootPath) : undefined,
     }
   },
 
@@ -2681,6 +2683,7 @@ export const GenerateScriptRequest = {
     message.id !== undefined && (obj.id = message.id)
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.type !== undefined && (obj.type = nodeTypeToJSON(message.type))
+    message.rootPath !== undefined && (obj.rootPath = message.rootPath)
     return obj
   },
 }
