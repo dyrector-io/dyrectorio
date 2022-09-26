@@ -1,6 +1,5 @@
 import { Layout } from '@app/components/layout'
 import EditProductCard from '@app/components/products/edit-product-card'
-import ProductCard from '@app/components/products/product-card'
 import ProductViewList from '@app/components/products/product-view-list'
 import ProductViewTile from '@app/components/products/product-view-tile'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
@@ -10,7 +9,6 @@ import { ListPageMenu } from '@app/components/shared/page-menu'
 import ViewModeToggle, { ViewMode } from '@app/components/shared/view-mode-toggle'
 import DyoChips from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
-import DyoWrap from '@app/elements/dyo-wrap'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import { Product } from '@app/models'
 import { productUrl, ROUTE_PRODUCTS } from '@app/routes'
@@ -102,7 +100,7 @@ const ProductsPage = (props: ProductsPageProps) => {
 
       {filters.items.length ? (
         <>
-          <div className='flex flex-row mt-4 justify-end'>
+          <div className="flex flex-row mt-4 justify-end">
             <ViewModeToggle viewMode={viewMode} onViewModeChanged={setViewMode} />
           </div>
 

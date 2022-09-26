@@ -1,15 +1,13 @@
-import { DyoCard } from "@app/elements/dyo-card";
-import { DyoList } from "@app/elements/dyo-list";
-import DyoWrap from "@app/elements/dyo-wrap";
-import { Product } from "@app/models";
-import { productUrl } from "@app/routes";
-import { utcDateToLocale } from "@app/utils";
-import clsx from "clsx";
-import useTranslation from "next-translate/useTranslation";
-import Image from "next/image";
-import { useRouter } from "next/router";
-import ProductCard from "./product-card";
-import ProductTypeTag from "./product-type-tag";
+import { DyoCard } from '@app/elements/dyo-card'
+import { DyoList } from '@app/elements/dyo-list'
+import { Product } from '@app/models'
+import { productUrl } from '@app/routes'
+import { utcDateToLocale } from '@app/utils'
+import clsx from 'clsx'
+import useTranslation from 'next-translate/useTranslation'
+import Image from 'next/image'
+import { useRouter } from 'next/router'
+import ProductTypeTag from './product-type-tag'
 
 export interface ProductViewListProps {
   products: Product[]
@@ -47,20 +45,28 @@ const ProductViewList = (props: ProductViewListProps) => {
     <div>
       <ProductTypeTag className="w-fit m-auto" type={item.type} />
     </div>,
-    <Image className="cursor-pointer" src="/eye.svg" width={24} height={24} onClick={() => onNavigateToDetails(item.id)} />
+    <Image
+      className="cursor-pointer"
+      src="/eye.svg"
+      width={24}
+      height={24}
+      onClick={() => onNavigateToDetails(item.id)}
+    />,
   ]
 
-  return <DyoCard className="relative mt-4">
-    <DyoList
-      headers={[...headers.map(h => t(h)), '']}
-      headerClassName={headerClasses}
-      columnWidths={columnWidths}
-      itemClassName={itemClasses}
-      data={products}
-      noSeparator
-      itemBuilder={itemTemplate}
-    />
-  </DyoCard>
+  return (
+    <DyoCard className="relative mt-4">
+      <DyoList
+        headers={[...headers.map(h => t(h)), '']}
+        headerClassName={headerClasses}
+        columnWidths={columnWidths}
+        itemClassName={itemClasses}
+        data={products}
+        noSeparator
+        itemBuilder={itemTemplate}
+      />
+    </DyoCard>
+  )
 }
 
 export default ProductViewList

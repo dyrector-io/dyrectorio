@@ -1,5 +1,5 @@
-import clsx from "clsx"
-import Image from "next/image"
+import clsx from 'clsx'
+import Image from 'next/image'
 
 export type ViewMode = 'tile' | 'list'
 
@@ -12,20 +12,24 @@ export interface ViewModeToggleProps {
 const ViewModeToggle = (props: ViewModeToggleProps) => {
   const { className, viewMode, onViewModeChanged } = props
 
-  return <div className={clsx(className, "px-1 bg-medium text-white font-semibold rounded cursor-pointer h-10 flex flex-row")}>
+  return (
     <div
-      className={clsx('px-2 py-1.5 my-1 mr-0.5', viewMode === 'tile' && 'bg-dyo-turquoise rounded')}
-      onClick={() => onViewModeChanged('tile')}
+      className={clsx(className, 'px-1 bg-medium text-white font-semibold rounded cursor-pointer h-10 flex flex-row')}
     >
-      <Image src="/view_tile.svg" width={18} height={18} />
+      <div
+        className={clsx('px-2 py-1.5 my-1 mr-0.5', viewMode === 'tile' && 'bg-dyo-turquoise rounded')}
+        onClick={() => onViewModeChanged('tile')}
+      >
+        <Image src="/view_tile.svg" width={18} height={18} />
+      </div>
+      <div
+        className={clsx('px-2 py-1.5 my-1 mr-0.5', viewMode === 'list' && 'bg-dyo-turquoise rounded')}
+        onClick={() => onViewModeChanged('list')}
+      >
+        <Image src="/view_table.svg" width={18} height={18} />
+      </div>
     </div>
-    <div
-      className={clsx('px-2 py-1.5 my-1 mr-0.5', viewMode === 'list' && 'bg-dyo-turquoise rounded')}
-      onClick={() => onViewModeChanged('list')}
-    >
-      <Image src="/view_table.svg" width={18} height={18} />
-    </div>
-  </div>
+  )
 }
 
 export default ViewModeToggle
