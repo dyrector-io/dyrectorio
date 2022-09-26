@@ -6,18 +6,11 @@ interface DyoFilterChipsProps<T> extends DyoChipsProps<T> {
 }
 
 const DyoFilterChips = <T,>(props: DyoFilterChipsProps<T>) => {
-  var { addAllOption, converter } = props
+  const { addAllOption, converter } = props
 
   const { t } = useTranslation('common')
 
-  return (
-    <DyoChips
-      {...props}
-      converter={it => {
-        return !it && addAllOption ? t('all') : converter(it)
-      }}
-    />
-  )
+  return <DyoChips {...props} converter={it => (!it && addAllOption ? t('all') : converter(it))} />
 }
 
 export default DyoFilterChips
