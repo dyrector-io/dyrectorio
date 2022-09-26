@@ -35,8 +35,22 @@ export default class ProductService {
       },
     })
 
+    const counts = await this.prisma.version.groupBy({
+      by: [ 'productId' ],
+      where: {
+        productId: {
+          in: products.map(it => it.id)
+        }
+      },
+      _count: {
+        id: true,
+      },
+    })
+
+    console.trace(JSON.stringify(counts))
+
     return {
-      data: products.map(it => this.mapper.toGrpc(it)),
+      data: products.map(it => this.mapper.toGrpc(it, counts.find(countItem => countItem.productId == it.id)!._count.id)),
     }
   }
 

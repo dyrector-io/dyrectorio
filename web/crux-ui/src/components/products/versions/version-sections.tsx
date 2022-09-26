@@ -1,3 +1,4 @@
+import { ViewMode } from '@app/components/shared/view-mode-toggle'
 import { ProductDetails, RegistryImages, VersionDetails, VersionImage } from '@app/models'
 import { deploymentUrl } from '@app/routes'
 import { parseStringUnionType } from '@app/utils'
@@ -42,7 +43,7 @@ const VersionSections = (props: VersionSectionsProps) => {
   const [addSectionState, setAddSectionState] = useState<VersionAddSectionState>('none')
   const [images, setImages] = useState(version.images)
   const [imageTags, setImageTags] = useState<ImageTagsMap>({})
-  const [viewMode, setViewMode] = useState('list')
+  const [viewMode, setViewMode] = useState<ViewMode>('list')
 
   const wsOptions: ImagesWebSocketOptions = {
     productId: product.id,
@@ -122,7 +123,7 @@ const VersionSections = (props: VersionSectionsProps) => {
           onAddStateSelected={onSelectAddSectionState}
           onSaveImageOrder={() => saveImageOrderRef.current()}
           onDiscardImageOrder={() => setAddSectionState('none')}
-          onViewModeChanged={mode => setViewMode(mode)}
+          onViewModeChanged={setViewMode}
         />
       ) : addSectionState === 'image' ? (
         <SelectImagesCard onImagesSelected={onImagesSelected} onDiscard={() => setAddSectionState('none')} />

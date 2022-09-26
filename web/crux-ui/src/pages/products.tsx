@@ -1,10 +1,13 @@
 import { Layout } from '@app/components/layout'
 import EditProductCard from '@app/components/products/edit-product-card'
 import ProductCard from '@app/components/products/product-card'
+import ProductViewList from '@app/components/products/product-view-list'
+import ProductViewTile from '@app/components/products/product-view-tile'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
 import { ListPageMenu } from '@app/components/shared/page-menu'
+import ViewModeToggle, { ViewMode } from '@app/components/shared/view-mode-toggle'
 import DyoChips from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoWrap from '@app/elements/dyo-wrap'
@@ -59,6 +62,8 @@ const ProductsPage = (props: ProductsPageProps) => {
   const [creating, setCreating] = useState(false)
   const submitRef = useRef<() => Promise<any>>()
 
+  const [viewMode, setViewMode] = useState<ViewMode>('tile')
+
   const onCreated = (product: Product) => {
     setCreating(false)
     filters.setItems([...filters.items, product])
@@ -81,32 +86,31 @@ const ProductsPage = (props: ProductsPageProps) => {
         <EditProductCard className="mb-8 px-8 py-6" submitRef={submitRef} onProductEdited={onCreated} />
       )}
 
+      <Filters setTextFilter={it => filters.setFilter({ text: it })}>
+        <DyoChips
+          className="pl-8"
+          choices={PRODUCT_TYPE_FILTER_VALUES}
+          initialSelection={initalTypeFilter}
+          converter={it => t(it)}
+          onSelectionChange={type => {
+            filters.setFilter({
+              type,
+            })
+          }}
+        />
+      </Filters>
+
       {filters.items.length ? (
         <>
-          <Filters setTextFilter={it => filters.setFilter({ text: it })}>
-            <DyoChips
-              className="pl-8"
-              choices={PRODUCT_TYPE_FILTER_VALUES}
-              initialSelection={initalTypeFilter}
-              converter={it => t(it)}
-              onSelectionChange={type => {
-                filters.setFilter({
-                  type,
-                })
-              }}
-            />
-          </Filters>
+          <div className='flex flex-row mt-4 justify-end'>
+            <ViewModeToggle viewMode={viewMode} onViewModeChanged={setViewMode} />
+          </div>
 
-          <DyoWrap>
-            {filters.filtered.map((it, index) => (
-              <ProductCard
-                className="max-h-72 p-8"
-                key={`product-${index}`}
-                product={it}
-                onClick={() => onNavigateToDetails(it.id)}
-              />
-            ))}
-          </DyoWrap>
+          {viewMode == 'tile' ? (
+            <ProductViewTile products={filters.filtered} />
+          ) : (
+            <ProductViewList products={filters.filtered} />
+          )}
         </>
       ) : (
         <DyoHeading element="h3" className="text-md text-center text-light-eased pt-32">

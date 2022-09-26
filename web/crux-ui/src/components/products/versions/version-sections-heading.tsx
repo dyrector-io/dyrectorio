@@ -1,19 +1,18 @@
+import ViewModeToggle, { ViewMode } from '@app/components/shared/view-mode-toggle'
 import DyoButton from '@app/elements/dyo-button'
 import { VersionAddSectionState, VersionSectionsState } from '@app/models'
-import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import Image from 'next/image'
 
 interface VersionSectionsHeadingProps {
   viewModeVisible: boolean
-  viewMode: string
+  viewMode: ViewMode
   versionMutable: boolean
   state: VersionSectionsState
   onStateSelected: (state: VersionSectionsState) => void
   onAddStateSelected: (state: VersionAddSectionState) => void
   onSaveImageOrder: VoidFunction
   onDiscardImageOrder: VoidFunction
-  onViewModeChanged: (mode: string) => void
+  onViewModeChanged: (mode: ViewMode) => void
 }
 
 const VersionSectionsHeading = (props: VersionSectionsHeadingProps) => {
@@ -89,20 +88,7 @@ const VersionSectionsHeading = (props: VersionSectionsHeadingProps) => {
             <DyoButton onClick={() => onAddStateSelected('deployment')}>{t('addDeployment')}</DyoButton>
 
             {viewModeVisible && (
-              <div className="px-1 bg-medium text-white font-semibold rounded cursor-pointer h-10 flex flex-row">
-                <div
-                  className={clsx('px-2 py-1.5 my-1 mr-0.5', viewMode === 'tile' && 'bg-dyo-turquoise rounded')}
-                  onClick={() => onViewModeChanged('tile')}
-                >
-                  <Image src="/view_tile.svg" width={18} height={18} />
-                </div>
-                <div
-                  className={clsx('px-2 py-1.5 my-1 mr-0.5', viewMode === 'list' && 'bg-dyo-turquoise rounded')}
-                  onClick={() => onViewModeChanged('list')}
-                >
-                  <Image src="/view_table.svg" width={18} height={18} />
-                </div>
-              </div>
+              <ViewModeToggle viewMode={viewMode} onViewModeChanged={onViewModeChanged} />
             )}
           </div>
         </>
