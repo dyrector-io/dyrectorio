@@ -5,7 +5,7 @@ import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
 import { ListPageMenu } from '@app/components/shared/page-menu'
-import DyoChips from '@app/elements/dyo-chips'
+import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
@@ -108,10 +108,10 @@ const NodesPage = (props: NodesPageProps) => {
       {filters.items.length ? (
         <>
           <Filters setTextFilter={it => filters.setFilter({ text: it })}>
-            <DyoChips
+            <DyoFilterChips
               className="pl-6"
               choices={nodeStatusFilters}
-              isFilter
+              addAllOption
               initialSelection={nodeStatusFilters[0]}
               converter={it => t(`statusFilters.${it.name}`)}
               onSelectionChange={type => {

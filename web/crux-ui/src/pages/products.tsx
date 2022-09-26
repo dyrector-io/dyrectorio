@@ -5,7 +5,7 @@ import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
 import { ListPageMenu } from '@app/components/shared/page-menu'
-import DyoChips from '@app/elements/dyo-chips'
+import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
@@ -78,10 +78,10 @@ const ProductsPage = (props: ProductsPageProps) => {
       {filters.items.length ? (
         <>
           <Filters setTextFilter={it => filters.setFilter({ text: it })}>
-            <DyoChips
+            <DyoFilterChips
               className="pl-6"
               choices={PRODUCT_TYPE_FILTER_VALUES}
-              isFilter
+              addAllOption
               converter={it => t(it)}
               onSelectionChange={type => {
                 filters.setFilter({

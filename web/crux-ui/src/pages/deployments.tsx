@@ -4,7 +4,7 @@ import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
 import { DyoCard } from '@app/elements/dyo-card'
-import DyoChips from '@app/elements/dyo-chips'
+import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoList } from '@app/elements/dyo-list'
 import DyoModal from '@app/elements/dyo-modal'
@@ -106,10 +106,10 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
       {deployments.length ? (
         <>
           <Filters setTextFilter={it => filters.setFilter({ text: it })}>
-            <DyoChips
+            <DyoFilterChips
               className="pl-6"
               choices={deploymentStatusFilters}
-              isFilter
+              addAllOption
               converter={it => t(`common:deploymentStatuses.${it}`)}
               onSelectionChange={type => {
                 filters.setFilter({

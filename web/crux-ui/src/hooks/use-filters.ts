@@ -58,7 +58,7 @@ export const textFilterFor =
   <Item>(propertiesOf: PropertyValuesOf<Item>): FilterFunction<Item, TextFilter> =>
   (items: Item[], filter: TextFilter) => {
     const text = filter?.text?.trim().toLowerCase()
-    if (!text || (text && text.length < 1)) {
+    if (!text || text.length < 1) {
       return items
     }
 

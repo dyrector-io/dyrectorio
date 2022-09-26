@@ -1,27 +1,23 @@
 import assert from 'assert'
 import clsx from 'clsx'
-import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
 
-interface DyoChipsProps<T> {
+export interface DyoChipsProps<T> {
   className?: string
   key?: React.Key
   choices: readonly T[]
-  isFilter?: boolean
   initialSelection?: T
   converter?: (choice: T) => string
   onSelectionChange: (choices: T) => void
 }
 
 const DyoChips = <T,>(props: DyoChipsProps<T>) => {
-  const { choices, isFilter, converter, onSelectionChange, key: propsKey, className, initialSelection } = props
+  const { choices, converter, onSelectionChange, key: propsKey, className, initialSelection } = props
 
   assert(
     converter || choices.length < 1 || typeof choices[0] === 'string',
     'When choices are not string, you must define a converter.',
   )
-
-  const { t } = useTranslation('common')
 
   const [selection, setSelection] = useState<T>(initialSelection ?? null)
 
@@ -31,13 +27,10 @@ const DyoChips = <T,>(props: DyoChipsProps<T>) => {
   }
 
   const key = propsKey ?? 'dyo-chips'
-
   return (
     <div className={className}>
       {choices.map((it, index) => {
-        const addAllChip = isFilter && it === null ? t('all') : undefined
-        const text = addAllChip ?? (converter ? converter(it) : it)
-
+        const text = converter ? converter(it) : it
         return (
           <button
             key={`${key}-${index}`}
