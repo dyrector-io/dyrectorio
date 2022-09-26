@@ -143,7 +143,7 @@ class DyoDeploymentService {
 
     const res = await protomisify<DeploymentListSecretsRequest, ListSecretsResponse>(
       this.client,
-      this.client.getInstanceSecrets,
+      this.client.getDeploymentSecrets,
     )(DeploymentListSecretsRequest, req)
 
     return res

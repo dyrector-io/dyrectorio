@@ -449,7 +449,7 @@ export interface AgentClient {
 
   containerState(request: Observable<ContainerStateListMessage>, metadata: Metadata, ...rest: any): Observable<Empty>
 
-  getSecretList(request: ListSecretsResponse, metadata: Metadata, ...rest: any): Observable<Empty>
+  secretsList(request: ListSecretsResponse, metadata: Metadata, ...rest: any): Observable<Empty>
 }
 
 /** Service handling deployment of containers and fetching statuses */
@@ -477,7 +477,7 @@ export interface AgentController {
     ...rest: any
   ): Promise<Empty> | Observable<Empty> | Empty
 
-  getSecretList(
+  secretsList(
     request: ListSecretsResponse,
     metadata: Metadata,
     ...rest: any
@@ -486,7 +486,7 @@ export interface AgentController {
 
 export function AgentControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ['connect', 'getSecretList']
+    const grpcMethods: string[] = ['connect', 'secretsList']
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
       GrpcMethod('Agent', method)(constructor.prototype[method], method, descriptor)

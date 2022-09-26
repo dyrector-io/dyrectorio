@@ -446,7 +446,7 @@ export default class DeployService {
     }
   }
 
-  async getInstanceSecrets(request: DeploymentListSecretsRequest): Promise<ListSecretsResponse> {
+  async getDeploymentSecrets(request: DeploymentListSecretsRequest): Promise<ListSecretsResponse> {
     const deployment = await this.prisma.deployment.findFirstOrThrow({
       where: {
         id: request.id,

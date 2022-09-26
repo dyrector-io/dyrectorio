@@ -11,7 +11,7 @@ import {
   InstanceMessage,
   InstancesAddedMessage,
   InstanceUpdatedMessage,
-  WS_TYPE_DEPLOYMENT_GET_SECRETS,
+  WS_TYPE_GET_DEPLOYMENT_SECRETS,
   WS_TYPE_DEPLOYMENT_SECRETS,
   WS_TYPE_GET_INSTANCE,
   WS_TYPE_IMAGE_DELETED,
@@ -80,7 +80,7 @@ const EditDeploymentInstances = (props: EditDeploymentInstancesProps) => {
 
   useEffect(() => {
     instances.forEach(it => {
-      sock.send(WS_TYPE_DEPLOYMENT_GET_SECRETS, {
+      sock.send(WS_TYPE_GET_DEPLOYMENT_SECRETS, {
         id: deployment.id,
         instanceId: it.id,
       } as DeploymentGetSecretListMessage)

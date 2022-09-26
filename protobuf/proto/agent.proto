@@ -25,7 +25,7 @@ service Agent {
 
   rpc DeploymentStatus(stream common.DeploymentStatusMessage) returns (Empty);
   rpc ContainerState(stream common.ContainerStateListMessage) returns (Empty);
-  rpc GetSecretList(common.ListSecretsResponse) returns (Empty);
+  rpc SecretsList(common.ListSecretsResponse) returns (Empty);
 }
 
 message Empty {}
