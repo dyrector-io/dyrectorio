@@ -106,15 +106,8 @@ export default class ImageService {
 
     this.imagesAddedToVersionEvent.next(images)
 
-    const registryLookup = images.reduce((prev, current) => {
-      prev[current.registryId] = current.registry.name
-      return {
-        ...prev,
-      }
-    }, {})
-
     return {
-      data: images.map(it => this.mapper.toGrpc(it, registryLookup[it.registryId])),
+      data: images.map(it => this.mapper.toGrpc(it, it.registry.name)),
     }
   }
 
