@@ -8,7 +8,7 @@ import {
   versionTypeFromJSON,
   versionTypeToJSON,
 } from 'src/grpc/protobuf/proto/crux'
-import { Version, VersionTypeEnum, Registry } from '.prisma/client'
+import { Version, VersionTypeEnum } from '.prisma/client'
 import DeployMapper, { DeploymentWithNode } from '../deploy/deploy.mapper'
 import ImageMapper, { ImageDetails } from '../image/image.mapper'
 
