@@ -11,12 +11,11 @@ import DyoChips from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import { Product } from '@app/models'
-import { productUrl, ROUTE_PRODUCTS } from '@app/routes'
+import { ROUTE_PRODUCTS } from '@app/routes'
 import { utcDateToLocale, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
-import { useRouter } from 'next/dist/client/router'
 import { useRef, useState } from 'react'
 
 export const PRODUCT_TYPE_FILTER_VALUES = ['simple', 'complex', 'all'] as const
@@ -41,8 +40,6 @@ const ProductsPage = (props: ProductsPageProps) => {
   const { products } = props
 
   const { t } = useTranslation('products')
-
-  const router = useRouter()
 
   const initalTypeFilter = 'all' as ProductTypeFilter
   const filters = useFilters<Product, ProductFilter>({
@@ -71,8 +68,6 @@ const ProductsPage = (props: ProductsPageProps) => {
     name: t('common:products'),
     url: ROUTE_PRODUCTS,
   }
-
-  const onNavigateToDetails = (id: string) => router.push(productUrl(id))
 
   return (
     <Layout title={t('common:products')}>
@@ -104,7 +99,7 @@ const ProductsPage = (props: ProductsPageProps) => {
             <ViewModeToggle viewMode={viewMode} onViewModeChanged={setViewMode} />
           </div>
 
-          {viewMode == 'tile' ? (
+          {viewMode === 'tile' ? (
             <ProductViewTile products={filters.filtered} />
           ) : (
             <ProductViewList products={filters.filtered} />
