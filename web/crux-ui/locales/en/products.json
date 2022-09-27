@@ -10,6 +10,7 @@
   "description": "Description",
   "altPicture": "Picture of {{name}}",
   "type": "Type",
+  "versions": "Versions",
 
   "simple": "Simple",
   "complex": "Complex",
