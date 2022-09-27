@@ -9,7 +9,7 @@ import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
-import { Product } from '@app/models'
+import { Product, ProductType, PRODUCT_TYPE_VALUES } from '@app/models'
 import { productUrl, ROUTE_PRODUCTS } from '@app/routes'
 import { utcDateToLocale, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
@@ -18,15 +18,12 @@ import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import { useRef, useState } from 'react'
 
-export const PRODUCT_TYPE_FILTER_VALUES = [null, 'simple', 'complex'] as const
-export type ProductTypeFilter = typeof PRODUCT_TYPE_FILTER_VALUES[number]
-
 type ProductFilter = TextFilter & {
-  type?: ProductTypeFilter
+  type?: ProductType | 'all'
 }
 
 const productTypeFilter = (items: Product[], filter: ProductFilter) => {
-  if (!filter?.type) {
+  if (!filter?.type || filter.type === 'all') {
     return items
   }
   return items.filter(it => filter.type.includes(it.type))
@@ -80,8 +77,7 @@ const ProductsPage = (props: ProductsPageProps) => {
           <Filters setTextFilter={it => filters.setFilter({ text: it })}>
             <DyoFilterChips
               className="pl-6"
-              choices={PRODUCT_TYPE_FILTER_VALUES}
-              addAllOption
+              choices={PRODUCT_TYPE_VALUES}
               converter={it => t(it)}
               onSelectionChange={type => {
                 filters.setFilter({

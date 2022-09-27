@@ -23,8 +23,6 @@ interface RegistriesPageProps {
   registries: Registry[]
 }
 
-const registryTypeFilters = [null, ...REGISTRY_TYPE_VALUES]
-
 type RegistryFilter = TextFilter & EnumFilter<RegistryType>
 
 const RegistriesPage = (props: RegistriesPageProps) => {
@@ -71,12 +69,11 @@ const RegistriesPage = (props: RegistriesPageProps) => {
           <Filters setTextFilter={it => filters.setFilter({ text: it })}>
             <DyoFilterChips
               className="pl-6"
-              choices={registryTypeFilters}
-              addAllOption
+              choices={REGISTRY_TYPE_VALUES}
               converter={it => t(`type.${it}`)}
               onSelectionChange={type => {
                 filters.setFilter({
-                  enum: type as RegistryType,
+                  enum: type,
                 })
               }}
             />

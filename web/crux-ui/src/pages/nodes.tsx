@@ -25,11 +25,7 @@ interface NodesPageProps {
   nodes: DyoNode[]
 }
 
-const nodeStatusFilters = [
-  { name: 'all', value: null },
-  { name: 'active', value: 'running' },
-  { name: 'inactive', value: 'unreachable' },
-]
+const nodeStatusFilters = ['running', 'unreachable'] as const
 
 type NodeFilter = TextFilter & EnumFilter<NodeStatus>
 
@@ -111,12 +107,10 @@ const NodesPage = (props: NodesPageProps) => {
             <DyoFilterChips
               className="pl-6"
               choices={nodeStatusFilters}
-              addAllOption
-              initialSelection={nodeStatusFilters[0]}
-              converter={it => t(`statusFilters.${it.name}`)}
+              converter={it => t(`statusFilters.${it}`)}
               onSelectionChange={type => {
                 filters.setFilter({
-                  enum: type.value as NodeStatus,
+                  enum: type,
                 })
               }}
             />

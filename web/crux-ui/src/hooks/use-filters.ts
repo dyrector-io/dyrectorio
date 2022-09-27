@@ -23,7 +23,7 @@ export const useFilters = <Item, Filter>(options: UseFiltersOptions<Item, Filter
   const filters = useRef(options.filters)
 
   const [items, setItems] = useState(options.data ?? options.initialData)
-  const [filter, setFilter] = useState<Filter>(options.initialFilter)
+  const [filter, setFilter] = useState<Filter>(options.initialFilter ?? ({ text: '' } as Filter))
   const [filtered, setFiltered] = useState(items)
 
   useEffect(() => {
@@ -92,13 +92,13 @@ export const dateRangeFilterFor =
   }
 
 export type EnumFilter<TEnum> = {
-  enum?: TEnum
+  enum?: TEnum | 'all'
 }
 
 export const enumFilterFor =
   <Item, Enum>(propertiesOf: PropertyValuesOf<Item>): FilterFunction<Item, EnumFilter<Enum>> =>
-  (items: Item[], filter: EnumFilter<Enum>) => {
-    if (filter?.enum === undefined || filter?.enum === null) {
+  (items: Item[], filter: EnumFilter<Enum | 'all'>) => {
+    if (!filter.enum || filter.enum === 'all') {
       return items
     }
 

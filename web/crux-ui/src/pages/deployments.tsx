@@ -24,8 +24,6 @@ interface DeploymentsPageProps {
   deployments: Deployment[]
 }
 
-const deploymentStatusFilters = [null, ...DEPLOYMENT_STATUS_VALUES]
-
 type DeploymentFilter = TextFilter & EnumFilter<DeploymentStatus>
 
 const DeploymentsPage = (props: DeploymentsPageProps) => {
@@ -108,12 +106,11 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
           <Filters setTextFilter={it => filters.setFilter({ text: it })}>
             <DyoFilterChips
               className="pl-6"
-              choices={deploymentStatusFilters}
-              addAllOption
+              choices={DEPLOYMENT_STATUS_VALUES}
               converter={it => t(`common:deploymentStatuses.${it}`)}
               onSelectionChange={type => {
                 filters.setFilter({
-                  enum: type as DeploymentStatus,
+                  enum: type,
                 })
               }}
             />
