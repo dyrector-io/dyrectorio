@@ -40,7 +40,7 @@ const ProductViewList = (props: ProductViewListProps) => {
 
   const itemTemplate = (item: Product) => [
     <a>{item.name}</a>,
-    <a>{item.versions}</a>,
+    <a>{item.versionCount}</a>,
     <a>{utcDateToLocale(item.updatedAt)}</a>,
     <div>
       <ProductTypeTag className="w-fit m-auto" type={item.type} />

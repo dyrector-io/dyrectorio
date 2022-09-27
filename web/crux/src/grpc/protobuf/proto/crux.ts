@@ -684,7 +684,7 @@ export interface ProductReponse {
   name: string
   description?: string | undefined
   type: ProductType
-  versions: number
+  versionCount: number
 }
 
 export interface ProductListResponse {
@@ -1776,7 +1776,7 @@ export const ProductDetailsReponse = {
 }
 
 function createBaseProductReponse(): ProductReponse {
-  return { id: '', audit: undefined, name: '', type: 0, versions: 0 }
+  return { id: '', audit: undefined, name: '', type: 0, versionCount: 0 }
 }
 
 export const ProductReponse = {
@@ -1787,7 +1787,7 @@ export const ProductReponse = {
       name: isSet(object.name) ? String(object.name) : '',
       description: isSet(object.description) ? String(object.description) : undefined,
       type: isSet(object.type) ? productTypeFromJSON(object.type) : 0,
-      versions: isSet(object.versions) ? Number(object.versions) : 0,
+      versionCount: isSet(object.versionCount) ? Number(object.versionCount) : 0,
     }
   },
 
@@ -1798,7 +1798,7 @@ export const ProductReponse = {
     message.name !== undefined && (obj.name = message.name)
     message.description !== undefined && (obj.description = message.description)
     message.type !== undefined && (obj.type = productTypeToJSON(message.type))
-    message.versions !== undefined && (obj.versions = Math.round(message.versions))
+    message.versionCount !== undefined && (obj.versionCount = Math.round(message.versionCount))
     return obj
   },
 }

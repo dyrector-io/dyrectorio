@@ -329,7 +329,7 @@ message ProductReponse {
   string name = 100;
   optional string description = 101;
   ProductType type = 102;
-  uint32 versions = 103;
+  uint32 versionCount = 103;
 }
 
 message ProductListResponse { repeated ProductReponse data = 1000; }

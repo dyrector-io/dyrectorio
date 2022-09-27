@@ -19,7 +19,7 @@ export default class ProductMapper {
       ...product,
       audit: AuditResponse.fromJSON(product),
       type: this.typeToGrpc(product.type),
-      versions: product._count.versions,
+      versionCount: product._count.versions,
     }
   }
 
