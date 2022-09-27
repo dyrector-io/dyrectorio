@@ -117,7 +117,8 @@ service CruxNotification {
 }
 
 service CruxAudit {
-  rpc GetAuditLog(AccessRequest) returns (AuditLogListResponse);
+  rpc GetAuditLog(AuditLogListRequest) returns (AuditLogListResponse);
+  rpc GetAuditLogListCount(AuditLogListRequest) returns (AuditLogListCountResponse);
 }
 
 service CruxHealth { rpc getHealth(Empty) returns (HealthResponse); }
@@ -160,6 +161,19 @@ message PrefixRequest { string prefix = 1; }
  */
 
 // AUDIT
+message AuditLogListRequest {
+  string accessedBy = 100;
+  uint32 pageSize = 101;
+  uint32 pageNumber = 102;
+  optional string keyword = 103;
+  optional google.protobuf.Timestamp createdFrom = 104;
+  google.protobuf.Timestamp createdTo = 105;
+}
+
+message AuditLogListCountResponse {
+  uint32 count = 100;
+}
+
 message AuditLogResponse {
   google.protobuf.Timestamp createdAt = 100;
   string userId = 101;
@@ -511,6 +525,8 @@ message ImageResponse {
   uint32 order = 102;
   string registryId = 103;
   ContainerConfig config = 104;
+  google.protobuf.Timestamp createdAt = 105;
+  string registryName = 106;
 }
 
 message ImageListResponse { repeated ImageResponse data = 100; }

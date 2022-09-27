@@ -49,6 +49,9 @@ export const API_WHOAMI = '/api/whoami'
 
 export const API_NOTIFICATIONS = '/api/notifications'
 
+export const API_AUDIT = `/api/audit`
+export const API_AUDIT_COUNT = `${API_AUDIT}/count`
+
 export const WS_NODES = `${API_NODES}/connect`
 export const WS_REGISTRIES = `${API_REGISTRIES}/connect`
 

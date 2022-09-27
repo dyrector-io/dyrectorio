@@ -37,6 +37,17 @@ export type ImageTagsMap = { [key: string]: RegistryImageTags }
 
 export const imageTagKey = (registryId: string, imageName: string) => `${registryId}/${imageName}`
 
+export const getImageTags = (map: ImageTagsMap, image: VersionImage) => {
+  if (image) {
+    const key = imageTagKey(image.registryId, image.name)
+    const details = map[key]
+
+    return details?.tags ?? []
+  }
+
+  return []
+}
+
 const mergeImagePatch = (oldImage: VersionImage, newImage: PatchVersionImage): VersionImage => ({
   ...oldImage,
   ...newImage,
@@ -70,12 +81,7 @@ export interface ImagesWebSocket {
 export const useImagesWebSocket = (options: ImagesWebSocketOptions): ImagesWebSocket => {
   const { productId, versionId, images, imageTags, setImages, setImageTags, setPatchingImage } = options
 
-  const registriesSock = useWebSocket(WS_REGISTRIES, {
-    onOpen: () => {
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
-      updateImageTags(images)
-    },
-  })
+  const registriesSock = useWebSocket(WS_REGISTRIES)
 
   const updateImageTags = (imgs: VersionImage[]) => {
     const fetchTags = fold(imgs, new Map<string, Set<string>>(), (map, it) => {

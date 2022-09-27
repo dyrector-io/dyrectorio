@@ -552,6 +552,19 @@ export interface PrefixRequest {
 }
 
 /** AUDIT */
+export interface AuditLogListRequest {
+  accessedBy: string
+  pageSize: number
+  pageNumber: number
+  keyword?: string | undefined
+  createdFrom?: Timestamp | undefined
+  createdTo: Timestamp | undefined
+}
+
+export interface AuditLogListCountResponse {
+  count: number
+}
+
 export interface AuditLogResponse {
   createdAt: Timestamp | undefined
   userId: string
@@ -839,6 +852,8 @@ export interface ImageResponse {
   order: number
   registryId: string
   config: ContainerConfig | undefined
+  createdAt: Timestamp | undefined
+  registryName: string
 }
 
 export interface ImageListResponse {
@@ -1284,6 +1299,50 @@ export const PrefixRequest = {
   toJSON(message: PrefixRequest): unknown {
     const obj: any = {}
     message.prefix !== undefined && (obj.prefix = message.prefix)
+    return obj
+  },
+}
+
+function createBaseAuditLogListRequest(): AuditLogListRequest {
+  return { accessedBy: '', pageSize: 0, pageNumber: 0, createdTo: undefined }
+}
+
+export const AuditLogListRequest = {
+  fromJSON(object: any): AuditLogListRequest {
+    return {
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      pageSize: isSet(object.pageSize) ? Number(object.pageSize) : 0,
+      pageNumber: isSet(object.pageNumber) ? Number(object.pageNumber) : 0,
+      keyword: isSet(object.keyword) ? String(object.keyword) : undefined,
+      createdFrom: isSet(object.createdFrom) ? fromJsonTimestamp(object.createdFrom) : undefined,
+      createdTo: isSet(object.createdTo) ? fromJsonTimestamp(object.createdTo) : undefined,
+    }
+  },
+
+  toJSON(message: AuditLogListRequest): unknown {
+    const obj: any = {}
+    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
+    message.pageSize !== undefined && (obj.pageSize = Math.round(message.pageSize))
+    message.pageNumber !== undefined && (obj.pageNumber = Math.round(message.pageNumber))
+    message.keyword !== undefined && (obj.keyword = message.keyword)
+    message.createdFrom !== undefined && (obj.createdFrom = fromTimestamp(message.createdFrom).toISOString())
+    message.createdTo !== undefined && (obj.createdTo = fromTimestamp(message.createdTo).toISOString())
+    return obj
+  },
+}
+
+function createBaseAuditLogListCountResponse(): AuditLogListCountResponse {
+  return { count: 0 }
+}
+
+export const AuditLogListCountResponse = {
+  fromJSON(object: any): AuditLogListCountResponse {
+    return { count: isSet(object.count) ? Number(object.count) : 0 }
+  },
+
+  toJSON(message: AuditLogListCountResponse): unknown {
+    const obj: any = {}
+    message.count !== undefined && (obj.count = Math.round(message.count))
     return obj
   },
 }
@@ -2337,7 +2396,16 @@ export const ContainerConfig = {
 }
 
 function createBaseImageResponse(): ImageResponse {
-  return { id: '', name: '', tag: '', order: 0, registryId: '', config: undefined }
+  return {
+    id: '',
+    name: '',
+    tag: '',
+    order: 0,
+    registryId: '',
+    config: undefined,
+    createdAt: undefined,
+    registryName: '',
+  }
 }
 
 export const ImageResponse = {
@@ -2349,6 +2417,8 @@ export const ImageResponse = {
       order: isSet(object.order) ? Number(object.order) : 0,
       registryId: isSet(object.registryId) ? String(object.registryId) : '',
       config: isSet(object.config) ? ContainerConfig.fromJSON(object.config) : undefined,
+      createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
+      registryName: isSet(object.registryName) ? String(object.registryName) : '',
     }
   },
 
@@ -2360,6 +2430,8 @@ export const ImageResponse = {
     message.order !== undefined && (obj.order = Math.round(message.order))
     message.registryId !== undefined && (obj.registryId = message.registryId)
     message.config !== undefined && (obj.config = message.config ? ContainerConfig.toJSON(message.config) : undefined)
+    message.createdAt !== undefined && (obj.createdAt = fromTimestamp(message.createdAt).toISOString())
+    message.registryName !== undefined && (obj.registryName = message.registryName)
     return obj
   },
 }
@@ -4270,20 +4342,32 @@ export function CruxNotificationControllerMethods() {
 export const CRUX_NOTIFICATION_SERVICE_NAME = 'CruxNotification'
 
 export interface CruxAuditClient {
-  getAuditLog(request: AccessRequest, metadata: Metadata, ...rest: any): Observable<AuditLogListResponse>
+  getAuditLog(request: AuditLogListRequest, metadata: Metadata, ...rest: any): Observable<AuditLogListResponse>
+
+  getAuditLogListCount(
+    request: AuditLogListRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Observable<AuditLogListCountResponse>
 }
 
 export interface CruxAuditController {
   getAuditLog(
-    request: AccessRequest,
+    request: AuditLogListRequest,
     metadata: Metadata,
     ...rest: any
   ): Promise<AuditLogListResponse> | Observable<AuditLogListResponse> | AuditLogListResponse
+
+  getAuditLogListCount(
+    request: AuditLogListRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<AuditLogListCountResponse> | Observable<AuditLogListCountResponse> | AuditLogListCountResponse
 }
 
 export function CruxAuditControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ['getAuditLog']
+    const grpcMethods: string[] = ['getAuditLog', 'getAuditLogListCount']
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
       GrpcMethod('CruxAudit', method)(constructor.prototype[method], method, descriptor)

@@ -2807,7 +2807,8 @@ var CruxNotification_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CruxAuditClient interface {
-	GetAuditLog(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*AuditLogListResponse, error)
+	GetAuditLog(ctx context.Context, in *AuditLogListRequest, opts ...grpc.CallOption) (*AuditLogListResponse, error)
+	GetAuditLogListCount(ctx context.Context, in *AuditLogListRequest, opts ...grpc.CallOption) (*AuditLogListCountResponse, error)
 }
 
 type cruxAuditClient struct {
@@ -2818,9 +2819,18 @@ func NewCruxAuditClient(cc grpc.ClientConnInterface) CruxAuditClient {
 	return &cruxAuditClient{cc}
 }
 
-func (c *cruxAuditClient) GetAuditLog(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*AuditLogListResponse, error) {
+func (c *cruxAuditClient) GetAuditLog(ctx context.Context, in *AuditLogListRequest, opts ...grpc.CallOption) (*AuditLogListResponse, error) {
 	out := new(AuditLogListResponse)
 	err := c.cc.Invoke(ctx, "/crux.CruxAudit/GetAuditLog", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cruxAuditClient) GetAuditLogListCount(ctx context.Context, in *AuditLogListRequest, opts ...grpc.CallOption) (*AuditLogListCountResponse, error) {
+	out := new(AuditLogListCountResponse)
+	err := c.cc.Invoke(ctx, "/crux.CruxAudit/GetAuditLogListCount", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2831,7 +2841,8 @@ func (c *cruxAuditClient) GetAuditLog(ctx context.Context, in *AccessRequest, op
 // All implementations must embed UnimplementedCruxAuditServer
 // for forward compatibility
 type CruxAuditServer interface {
-	GetAuditLog(context.Context, *AccessRequest) (*AuditLogListResponse, error)
+	GetAuditLog(context.Context, *AuditLogListRequest) (*AuditLogListResponse, error)
+	GetAuditLogListCount(context.Context, *AuditLogListRequest) (*AuditLogListCountResponse, error)
 	mustEmbedUnimplementedCruxAuditServer()
 }
 
@@ -2839,8 +2850,11 @@ type CruxAuditServer interface {
 type UnimplementedCruxAuditServer struct {
 }
 
-func (UnimplementedCruxAuditServer) GetAuditLog(context.Context, *AccessRequest) (*AuditLogListResponse, error) {
+func (UnimplementedCruxAuditServer) GetAuditLog(context.Context, *AuditLogListRequest) (*AuditLogListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAuditLog not implemented")
+}
+func (UnimplementedCruxAuditServer) GetAuditLogListCount(context.Context, *AuditLogListRequest) (*AuditLogListCountResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAuditLogListCount not implemented")
 }
 func (UnimplementedCruxAuditServer) mustEmbedUnimplementedCruxAuditServer() {}
 
@@ -2856,7 +2870,7 @@ func RegisterCruxAuditServer(s grpc.ServiceRegistrar, srv CruxAuditServer) {
 }
 
 func _CruxAudit_GetAuditLog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AccessRequest)
+	in := new(AuditLogListRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -2868,7 +2882,25 @@ func _CruxAudit_GetAuditLog_Handler(srv interface{}, ctx context.Context, dec fu
 		FullMethod: "/crux.CruxAudit/GetAuditLog",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CruxAuditServer).GetAuditLog(ctx, req.(*AccessRequest))
+		return srv.(CruxAuditServer).GetAuditLog(ctx, req.(*AuditLogListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CruxAudit_GetAuditLogListCount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AuditLogListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CruxAuditServer).GetAuditLogListCount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crux.CruxAudit/GetAuditLogListCount",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CruxAuditServer).GetAuditLogListCount(ctx, req.(*AuditLogListRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -2883,6 +2915,10 @@ var CruxAudit_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAuditLog",
 			Handler:    _CruxAudit_GetAuditLog_Handler,
+		},
+		{
+			MethodName: "GetAuditLogListCount",
+			Handler:    _CruxAudit_GetAuditLogListCount_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
