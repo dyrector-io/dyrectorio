@@ -33,6 +33,13 @@ export default class ProductService {
           },
         },
       },
+      include: {
+        _count: {
+          select: {
+            versions: true,
+          },
+        },
+      },
     })
 
     return {

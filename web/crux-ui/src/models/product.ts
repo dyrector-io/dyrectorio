@@ -9,6 +9,7 @@ export type Product = {
   description?: string
   type: ProductType
   updatedAt: string
+  versionCount?: number
 }
 
 export type EditableProduct = Product & {

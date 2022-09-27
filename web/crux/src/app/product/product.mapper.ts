@@ -14,11 +14,12 @@ import VersionMapper, { VersionWithChildren } from '../version/version.mapper'
 export default class ProductMapper {
   constructor(private versionMapper: VersionMapper) {}
 
-  toGrpc(product: Product): ProductReponse {
+  toGrpc(product: ProductWithCounts): ProductReponse {
     return {
       ...product,
       audit: AuditResponse.fromJSON(product),
       type: this.typeToGrpc(product.type),
+      versionCount: product._count.versions,
     }
   }
 
@@ -42,4 +43,10 @@ export default class ProductMapper {
 
 type ProductWithVersions = Product & {
   versions: VersionWithChildren[]
+}
+
+export type ProductWithCounts = Product & {
+  _count: {
+    versions: number
+  }
 }

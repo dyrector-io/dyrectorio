@@ -1,4 +1,4 @@
-import DyoWrap from '@app/elements/dyo-wrap'
+import ViewModeToggle, { ViewMode } from '@app/components/shared/view-mode-toggle'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
   deploymentIsMutable,
@@ -17,7 +17,8 @@ import {
 } from '@app/models'
 import { deploymentWsUrl } from '@app/routes'
 import { useState } from 'react'
-import EditInstanceCard from './instances/edit-instance-card'
+import DeploymentViewList from './deployment-view-list'
+import DeploymentViewTile from './deployment-view-tile'
 
 const mergeInstancePatch = (instance: Instance, message: InstanceUpdatedMessage): Instance => ({
   ...instance,
@@ -37,6 +38,7 @@ const EditDeploymentInstances = (props: EditDeploymentInstancesProps) => {
   const mutable = deploymentIsMutable(deployment.status)
 
   const [instances, setInstances] = useState<Instance[]>(deployment.instances ?? [])
+  const [viewMode, setViewMode] = useState<ViewMode>('tile')
 
   const sock = useWebSocket(deploymentWsUrl(deployment.product.id, deployment.versionId, deployment.id))
 
@@ -67,17 +69,21 @@ const EditDeploymentInstances = (props: EditDeploymentInstancesProps) => {
   )
 
   return (
-    <DyoWrap>
-      {instances.map(it => (
-        <EditInstanceCard
-          key={it.id}
+    <>
+      <div className="flex flex-row justify-end mt-4">
+        <ViewModeToggle viewMode={viewMode} onViewModeChanged={setViewMode} />
+      </div>
+      {viewMode === 'tile' ? (
+        <DeploymentViewTile
           disabled={!mutable}
-          instance={it}
+          instances={instances}
           deploymentSock={sock}
           publicKey={deployment?.publicKey}
         />
-      ))}
-    </DyoWrap>
+      ) : (
+        <DeploymentViewList instances={instances} />
+      )}
+    </>
   )
 }
 
