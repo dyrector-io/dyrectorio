@@ -7,26 +7,24 @@ import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
 import { ListPageMenu } from '@app/components/shared/page-menu'
 import ViewModeToggle, { ViewMode } from '@app/components/shared/view-mode-toggle'
-import DyoChips from '@app/elements/dyo-chips'
+import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
-import { Product } from '@app/models'
+import { Product, ProductType, PRODUCT_TYPE_VALUES } from '@app/models'
 import { ROUTE_PRODUCTS } from '@app/routes'
+
 import { utcDateToLocale, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRef, useState } from 'react'
 
-export const PRODUCT_TYPE_FILTER_VALUES = ['simple', 'complex', 'all'] as const
-export type ProductTypeFilter = typeof PRODUCT_TYPE_FILTER_VALUES[number]
-
 type ProductFilter = TextFilter & {
-  type: ProductTypeFilter
+  type?: ProductType | 'all'
 }
 
 const productTypeFilter = (items: Product[], filter: ProductFilter) => {
-  if (filter.type === 'all') {
+  if (!filter?.type || filter.type === 'all') {
     return items
   }
   return items.filter(it => filter.type.includes(it.type))
@@ -41,13 +39,8 @@ const ProductsPage = (props: ProductsPageProps) => {
 
   const { t } = useTranslation('products')
 
-  const initalTypeFilter = 'all' as ProductTypeFilter
   const filters = useFilters<Product, ProductFilter>({
     initialData: products,
-    initialFilter: {
-      text: '',
-      type: initalTypeFilter,
-    },
     filters: [
       textFilterFor<Product>(it => [it.name, it.description, it.type, utcDateToLocale(it.updatedAt)]),
       productTypeFilter,
@@ -79,22 +72,20 @@ const ProductsPage = (props: ProductsPageProps) => {
         <EditProductCard className="mb-8 px-8 py-6" submitRef={submitRef} onProductEdited={onCreated} />
       )}
 
-      <Filters setTextFilter={it => filters.setFilter({ text: it })}>
-        <DyoChips
-          className="pl-8"
-          choices={PRODUCT_TYPE_FILTER_VALUES}
-          initialSelection={initalTypeFilter}
-          converter={it => t(it)}
-          onSelectionChange={type => {
-            filters.setFilter({
-              type,
-            })
-          }}
-        />
-      </Filters>
-
       {filters.items.length ? (
         <>
+          <Filters setTextFilter={it => filters.setFilter({ text: it })}>
+            <DyoFilterChips
+              className="pl-6"
+              choices={PRODUCT_TYPE_VALUES}
+              converter={it => t(it)}
+              onSelectionChange={type => {
+                filters.setFilter({
+                  type,
+                })
+              }}
+            />
+          </Filters>
           <div className="flex flex-row mt-4 justify-end">
             <ViewModeToggle viewMode={viewMode} onViewModeChanged={setViewMode} />
           </div>

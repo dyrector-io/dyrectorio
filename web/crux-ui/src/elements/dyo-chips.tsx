@@ -2,7 +2,7 @@ import assert from 'assert'
 import clsx from 'clsx'
 import { useState } from 'react'
 
-interface DyoChipsProps<T> {
+export interface DyoChipsProps<T> {
   className?: string
   key?: React.Key
   choices: readonly T[]
@@ -21,18 +21,16 @@ const DyoChips = <T,>(props: DyoChipsProps<T>) => {
 
   const [selection, setSelection] = useState<T>(initialSelection ?? null)
 
-  const onToggle = item => {
+  const onToggle = (item: T) => {
     setSelection(item)
     onSelectionChange(item)
   }
 
   const key = propsKey ?? 'dyo-chips'
-
   return (
     <div className={className}>
       {choices.map((it, index) => {
         const text = converter ? converter(it) : it
-
         return (
           <button
             key={`${key}-${index}`}

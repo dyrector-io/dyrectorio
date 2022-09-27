@@ -51,14 +51,14 @@ export const useFilters = <Item, Filter>(options: UseFiltersOptions<Item, Filter
 export type PropertyValuesOf<Item> = (item: Item) => string[]
 
 export type TextFilter = {
-  text: string
+  text?: string
 }
 
 export const textFilterFor =
   <Item>(propertiesOf: PropertyValuesOf<Item>): FilterFunction<Item, TextFilter> =>
   (items: Item[], filter: TextFilter) => {
     const text = filter?.text?.trim().toLowerCase()
-    if (text && text.length < 1) {
+    if (!text || text.length < 1) {
       return items
     }
 
@@ -92,13 +92,13 @@ export const dateRangeFilterFor =
   }
 
 export type EnumFilter<TEnum> = {
-  enum?: TEnum
+  enum?: TEnum | 'all'
 }
 
 export const enumFilterFor =
   <Item, Enum>(propertiesOf: PropertyValuesOf<Item>): FilterFunction<Item, EnumFilter<Enum>> =>
-  (items: Item[], filter: EnumFilter<Enum>) => {
-    if (filter.enum === undefined) {
+  (items: Item[], filter: EnumFilter<Enum | 'all'>) => {
+    if (!filter || !filter.enum || filter.enum === 'all') {
       return items
     }
 

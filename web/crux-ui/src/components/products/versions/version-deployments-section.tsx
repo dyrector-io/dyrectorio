@@ -1,10 +1,10 @@
 import NodeStatusIndicator from '@app/components/nodes/node-status-indicator'
+import Filters from '@app/components/shared/filters'
 import { DyoCard } from '@app/elements/dyo-card'
+import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
-import { DyoInput } from '@app/elements/dyo-input'
 import { DyoList } from '@app/elements/dyo-list'
 import DyoModal from '@app/elements/dyo-modal'
-import { DyoSelect } from '@app/elements/dyo-select'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
@@ -48,11 +48,10 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
 
   const filters = useFilters<DeploymentByVersion, DeploymentFilter>({
     filters: [
-      textFilterFor<DeploymentByVersion>(it => [it.nodeName, it.prefix, it.status, it.date]),
+      textFilterFor<DeploymentByVersion>(it => [it.nodeName, it.prefix, it.date]),
       enumFilterFor<DeploymentByVersion, DeploymentStatus>(it => [it.status]),
     ],
     initialData: version.deployments,
-    initialFilter: { text: '' },
   })
 
   const [nodeStatuses, setNodeStatuses] = useState<Record<string, NodeStatus>>({})
@@ -150,35 +149,19 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
     <>
       {filters.items.length ? (
         <>
-          <DyoCard className="p-8 mt-4 flex">
-            <DyoInput
-              className="basis-4/5 mr-4"
-              grow
-              placeholder={t('common:search')}
-              onChange={e =>
+          <Filters setTextFilter={it => filters.setFilter({ text: it })}>
+            <DyoFilterChips
+              className="pl-6"
+              choices={DEPLOYMENT_STATUS_VALUES}
+              converter={it => t(`common:deploymentStatuses.${it}`)}
+              onSelectionChange={type => {
                 filters.setFilter({
-                  text: e.target.value,
-                })
-              }
-            />
-            <DyoSelect
-              className="basis-1/5 ml-4"
-              placeholder="Status"
-              value={filters.filter.enum ?? 'default'}
-              onChange={e => {
-                filters.setFilter({
-                  enum: e.target.value === 'default' ? undefined : (e.target.value as DeploymentStatus),
+                  enum: type,
                 })
               }}
-            >
-              <option value="default">{t('common:all')}</option>
-              {DEPLOYMENT_STATUS_VALUES.map(it => (
-                <option key={it} value={it}>
-                  {t(`common:deploymentStatuses.${it}`)}
-                </option>
-              ))}
-            </DyoSelect>
-          </DyoCard>
+            />
+          </Filters>
+
           <DyoCard className="mt-4">
             <DyoList
               headerClassName={headerClasses}
