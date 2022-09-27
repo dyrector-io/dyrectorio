@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 
+type Throttling = (action: VoidFunction, immediate?: boolean) => void
+
 type ThrottledAction = {
   trigger: VoidFunction
+  resetTimer?: boolean
 }
 
 export const CANCEL_THROTTLE = () => {}
 
-export const useThrottling = (delay: number): ((action: VoidFunction) => void) => {
+export const useThrottling = (delay: number): Throttling => {
   const [action, setAction] = useState<ThrottledAction>()
   const schedule = useRef<NodeJS.Timeout>()
 
@@ -19,11 +22,14 @@ export const useThrottling = (delay: number): ((action: VoidFunction) => void) =
       clearTimeout(schedule.current)
     }
 
-    schedule.current = setTimeout(() => action.trigger(), delay)
+    schedule.current = action.resetTimer
+      ? setTimeout(() => action.trigger())
+      : setTimeout(() => action.trigger(), delay)
   }, [action, delay, schedule])
 
-  return trigger =>
+  return (trigger, resetTimer = false) =>
     setAction({
       trigger,
+      resetTimer,
     })
 }

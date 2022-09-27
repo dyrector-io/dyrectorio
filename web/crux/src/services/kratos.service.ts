@@ -56,4 +56,8 @@ export default class KratosService {
 
     return res.data
   }
+
+  async getIdentityIdsByEmail(mail: string): Promise<string[]> {
+    return (await kratos.adminListIdentities()).data.filter(r => r.traits[EMAIL] === mail).map(r => r.id)
+  }
 }

@@ -564,6 +564,19 @@ export interface PrefixRequest {
 }
 
 /** AUDIT */
+export interface AuditLogListRequest {
+  accessedBy: string
+  pageSize: number
+  pageNumber: number
+  keyword?: string | undefined
+  createdFrom?: Timestamp | undefined
+  createdTo: Timestamp | undefined
+}
+
+export interface AuditLogListCountResponse {
+  count: number
+}
+
 export interface AuditLogResponse {
   createdAt: Timestamp | undefined
   userId: string
@@ -1543,6 +1556,151 @@ export const PrefixRequest = {
   fromPartial<I extends Exact<DeepPartial<PrefixRequest>, I>>(object: I): PrefixRequest {
     const message = createBasePrefixRequest()
     message.prefix = object.prefix ?? ''
+    return message
+  },
+}
+
+function createBaseAuditLogListRequest(): AuditLogListRequest {
+  return { accessedBy: '', pageSize: 0, pageNumber: 0, createdTo: undefined }
+}
+
+export const AuditLogListRequest = {
+  encode(message: AuditLogListRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.accessedBy !== '') {
+      writer.uint32(802).string(message.accessedBy)
+    }
+    if (message.pageSize !== 0) {
+      writer.uint32(808).uint32(message.pageSize)
+    }
+    if (message.pageNumber !== 0) {
+      writer.uint32(816).uint32(message.pageNumber)
+    }
+    if (message.keyword !== undefined) {
+      writer.uint32(826).string(message.keyword)
+    }
+    if (message.createdFrom !== undefined) {
+      Timestamp.encode(message.createdFrom, writer.uint32(834).fork()).ldelim()
+    }
+    if (message.createdTo !== undefined) {
+      Timestamp.encode(message.createdTo, writer.uint32(842).fork()).ldelim()
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): AuditLogListRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseAuditLogListRequest()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 100:
+          message.accessedBy = reader.string()
+          break
+        case 101:
+          message.pageSize = reader.uint32()
+          break
+        case 102:
+          message.pageNumber = reader.uint32()
+          break
+        case 103:
+          message.keyword = reader.string()
+          break
+        case 104:
+          message.createdFrom = Timestamp.decode(reader, reader.uint32())
+          break
+        case 105:
+          message.createdTo = Timestamp.decode(reader, reader.uint32())
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): AuditLogListRequest {
+    return {
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      pageSize: isSet(object.pageSize) ? Number(object.pageSize) : 0,
+      pageNumber: isSet(object.pageNumber) ? Number(object.pageNumber) : 0,
+      keyword: isSet(object.keyword) ? String(object.keyword) : undefined,
+      createdFrom: isSet(object.createdFrom) ? fromJsonTimestamp(object.createdFrom) : undefined,
+      createdTo: isSet(object.createdTo) ? fromJsonTimestamp(object.createdTo) : undefined,
+    }
+  },
+
+  toJSON(message: AuditLogListRequest): unknown {
+    const obj: any = {}
+    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
+    message.pageSize !== undefined && (obj.pageSize = Math.round(message.pageSize))
+    message.pageNumber !== undefined && (obj.pageNumber = Math.round(message.pageNumber))
+    message.keyword !== undefined && (obj.keyword = message.keyword)
+    message.createdFrom !== undefined && (obj.createdFrom = fromTimestamp(message.createdFrom).toISOString())
+    message.createdTo !== undefined && (obj.createdTo = fromTimestamp(message.createdTo).toISOString())
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<AuditLogListRequest>, I>>(object: I): AuditLogListRequest {
+    const message = createBaseAuditLogListRequest()
+    message.accessedBy = object.accessedBy ?? ''
+    message.pageSize = object.pageSize ?? 0
+    message.pageNumber = object.pageNumber ?? 0
+    message.keyword = object.keyword ?? undefined
+    message.createdFrom =
+      object.createdFrom !== undefined && object.createdFrom !== null
+        ? Timestamp.fromPartial(object.createdFrom)
+        : undefined
+    message.createdTo =
+      object.createdTo !== undefined && object.createdTo !== null ? Timestamp.fromPartial(object.createdTo) : undefined
+    return message
+  },
+}
+
+function createBaseAuditLogListCountResponse(): AuditLogListCountResponse {
+  return { count: 0 }
+}
+
+export const AuditLogListCountResponse = {
+  encode(message: AuditLogListCountResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.count !== 0) {
+      writer.uint32(800).uint32(message.count)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): AuditLogListCountResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseAuditLogListCountResponse()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 100:
+          message.count = reader.uint32()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): AuditLogListCountResponse {
+    return { count: isSet(object.count) ? Number(object.count) : 0 }
+  },
+
+  toJSON(message: AuditLogListCountResponse): unknown {
+    const obj: any = {}
+    message.count !== undefined && (obj.count = Math.round(message.count))
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<AuditLogListCountResponse>, I>>(object: I): AuditLogListCountResponse {
+    const message = createBaseAuditLogListCountResponse()
+    message.count = object.count ?? 0
     return message
   },
 }
@@ -10097,32 +10255,58 @@ export const CruxAuditService = {
     path: '/crux.CruxAudit/GetAuditLog',
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: AccessRequest) => Buffer.from(AccessRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => AccessRequest.decode(value),
+    requestSerialize: (value: AuditLogListRequest) => Buffer.from(AuditLogListRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => AuditLogListRequest.decode(value),
     responseSerialize: (value: AuditLogListResponse) => Buffer.from(AuditLogListResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer) => AuditLogListResponse.decode(value),
+  },
+  getAuditLogListCount: {
+    path: '/crux.CruxAudit/GetAuditLogListCount',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: AuditLogListRequest) => Buffer.from(AuditLogListRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => AuditLogListRequest.decode(value),
+    responseSerialize: (value: AuditLogListCountResponse) =>
+      Buffer.from(AuditLogListCountResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => AuditLogListCountResponse.decode(value),
   },
 } as const
 
 export interface CruxAuditServer extends UntypedServiceImplementation {
-  getAuditLog: handleUnaryCall<AccessRequest, AuditLogListResponse>
+  getAuditLog: handleUnaryCall<AuditLogListRequest, AuditLogListResponse>
+  getAuditLogListCount: handleUnaryCall<AuditLogListRequest, AuditLogListCountResponse>
 }
 
 export interface CruxAuditClient extends Client {
   getAuditLog(
-    request: AccessRequest,
+    request: AuditLogListRequest,
     callback: (error: ServiceError | null, response: AuditLogListResponse) => void,
   ): ClientUnaryCall
   getAuditLog(
-    request: AccessRequest,
+    request: AuditLogListRequest,
     metadata: Metadata,
     callback: (error: ServiceError | null, response: AuditLogListResponse) => void,
   ): ClientUnaryCall
   getAuditLog(
-    request: AccessRequest,
+    request: AuditLogListRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: AuditLogListResponse) => void,
+  ): ClientUnaryCall
+  getAuditLogListCount(
+    request: AuditLogListRequest,
+    callback: (error: ServiceError | null, response: AuditLogListCountResponse) => void,
+  ): ClientUnaryCall
+  getAuditLogListCount(
+    request: AuditLogListRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: AuditLogListCountResponse) => void,
+  ): ClientUnaryCall
+  getAuditLogListCount(
+    request: AuditLogListRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: AuditLogListCountResponse) => void,
   ): ClientUnaryCall
 }
 
