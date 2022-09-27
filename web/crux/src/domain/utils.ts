@@ -52,7 +52,7 @@ export const collectChildVersionIds = async (prisma: PrismaService, versionId: s
     }
 
     targets = children.map(it => it.versionId)
-    result.push(targets)
+    result.concat(targets)
   }
 }
 
