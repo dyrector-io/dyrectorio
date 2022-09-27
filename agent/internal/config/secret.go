@@ -8,18 +8,19 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"syscall"
 
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
 )
 
 type ConfigFromFile string
 
-func (field *ConfigFromFile) SetValue(location string) error {
-	if location == "" {
+func (field *ConfigFromFile) SetValue(path string) error {
+	if path == "" {
 		return fmt.Errorf("env private key file value can't be empty")
 	}
 
-	key, err := checkGenerateKeys(location)
+	key, err := checkGenerateKeys(path)
 	if err != nil {
 		return err
 	}
@@ -28,24 +29,30 @@ func (field *ConfigFromFile) SetValue(location string) error {
 	return nil
 }
 
-func checkGenerateKeys(location string) (string, error) {
-	log.Printf("Checking key file: %v\n", location)
-	file, err := os.ReadFile(location) //#nosec G304 -- location comes from an env
+func checkGenerateKeys(path string) (string, error) {
+	log.Printf("Checking key file: %v\n", path)
+	readFile, err := os.ReadFile(path) //#nosec G304 -- path comes from an env
+
+	if errors.Is(err, syscall.EISDIR) {
+		return "", fmt.Errorf("key path is a directory: %w", err)
+	}
 
 	if errors.Is(err, os.ErrNotExist) {
-		log.Printf("Key file does not exist: %v\n", location)
-		return generateKey(location)
+		log.Printf("Key file does not exist: %v\n", path)
+		return generateKey(path)
+	} else if err != nil {
+		return "", fmt.Errorf("key file can't be read: %w", err)
 	}
 
 	// exists but expired -> migrate present keys?!
-	privateKeyObj, keyErr := crypto.NewKeyFromArmored(string(file))
+	privateKeyObj, keyErr := crypto.NewKeyFromArmored(string(readFile))
 
 	if keyErr != nil {
 		return "", keyErr
 	}
 
 	if privateKeyObj == nil {
-		return "", fmt.Errorf("key file is nil: %v", location)
+		return "", fmt.Errorf("key file is nil: %v", path)
 	}
 
 	if !privateKeyObj.IsExpired() {
@@ -53,12 +60,12 @@ func checkGenerateKeys(location string) (string, error) {
 
 		return keyStr, keyErr
 	} else {
-		log.Printf("Key file is expired: %v\n", location)
-		return generateKey(location)
+		log.Printf("Key file is expired: %v\n", path)
+		return generateKey(path)
 	}
 }
 
-func generateKey(location string) (string, error) {
+func generateKey(path string) (string, error) {
 	log.Printf("Generating new key file...")
 	const (
 		name  = "dyrector.io agent"
@@ -76,7 +83,7 @@ func generateKey(location string) (string, error) {
 		return "", keyErr
 	}
 
-	fileErr := os.WriteFile(location, []byte(keyStr), os.ModePerm)
+	fileErr := os.WriteFile(path, []byte(keyStr), os.ModePerm)
 	if fileErr != nil {
 		return "", fileErr
 	}
