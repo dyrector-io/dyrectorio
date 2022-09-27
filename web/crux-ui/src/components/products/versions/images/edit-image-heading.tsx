@@ -21,7 +21,7 @@ const EditImageHeading = (props: EditImageHeadingProps) => {
 
         <DyoHeading element="h4" className="text-lg text-bright">
           {imageName}
-          {imageTag ? ` : ${imageTag}` : null}
+          {imageTag ? `:${imageTag}` : null}
         </DyoHeading>
       </div>
 

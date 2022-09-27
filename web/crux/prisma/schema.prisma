@@ -149,6 +149,10 @@ model Image {
   registryId String           @db.Uuid
   config     ContainerConfig?
   instances  Instance[]
+  createdAt  DateTime         @default(now()) @db.Timestamptz(6)
+  createdBy  String           @db.Uuid
+  updatedAt  DateTime?        @default(now()) @db.Timestamptz(6)
+  updatedBy  String?          @db.Uuid
 
   registry Registry @relation(fields: [registryId], references: [id], onDelete: Cascade)
   version  Version  @relation(fields: [versionId], references: [id], onDelete: Cascade)

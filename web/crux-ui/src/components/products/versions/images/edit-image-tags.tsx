@@ -31,7 +31,7 @@ const EditImageTags = (props: EditImageTagsProps) => {
   return (
     <div className="flex flex-col">
       <DyoInput
-        className="w-2/3 mt-6 mb-4"
+        className="w-2/3 mt-6 mb-8"
         placeholder={t('common:search')}
         onChange={e =>
           filters.setFilter({

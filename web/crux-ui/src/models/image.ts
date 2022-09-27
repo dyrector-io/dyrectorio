@@ -6,8 +6,10 @@ export type VersionImage = {
   name: string
   tag: string
   registryId: string
+  registryName: string
   order: number
   config: ContainerConfig
+  createdAt: string
 }
 
 export type PatchVersionImage = {

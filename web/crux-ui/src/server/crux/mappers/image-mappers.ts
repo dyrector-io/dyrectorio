@@ -24,6 +24,7 @@ import {
 } from '@app/models/grpc/protobuf/proto/common'
 
 import { ContainerConfig as ProtoContainerConfig, ImageResponse } from '@app/models/grpc/protobuf/proto/crux'
+import { timestampToUTC } from '@app/utils'
 
 export const networkModeToDto = (networkMode?: NetworkMode): ExplicitContainerNetworkMode =>
   !networkMode ? 'bridge' : (networkModeToJSON(networkMode).toLocaleLowerCase() as ExplicitContainerNetworkMode)
@@ -181,4 +182,5 @@ export const containerConfigToDto = (config?: ProtoContainerConfig): ContainerCo
 export const imageToDto = (image: ImageResponse): VersionImage => ({
   ...image,
   config: containerConfigToDto(image.config),
+  createdAt: timestampToUTC(image.createdAt),
 })
