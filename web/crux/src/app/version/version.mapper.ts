@@ -10,7 +10,7 @@ import {
 } from 'src/grpc/protobuf/proto/crux'
 import { Version, VersionTypeEnum, Registry } from '.prisma/client'
 import DeployMapper, { DeploymentWithNode } from '../deploy/deploy.mapper'
-import ImageMapper, { ImageWithConfig } from '../image/image.mapper'
+import ImageMapper, { ImageDetails } from '../image/image.mapper'
 
 @Injectable()
 export default class VersionMapper {
@@ -32,7 +32,7 @@ export default class VersionMapper {
       type: this.typeToGrpc(version.type),
       mutable: versionIsMutable(version),
       increasable: versionIsIncreasable(version),
-      images: version.images.map(it => this.imageMapper.toGrpc(it, it.registry.name)),
+      images: version.images.map(it => this.imageMapper.toGrpc(it)),
       deployments: version.deployments.map(it => this.deployMapper.deploymentByVersionToGrpc(it)),
     }
   }
@@ -50,7 +50,7 @@ export type VersionWithChildren = Version & {
   children: { versionId: string }[]
 }
 
-export type ImageWithConfigAndRegistry = ImageWithConfig & {
+export type ImageWithConfigAndRegistry = ImageDetails & {
   registry: Registry
 }
 

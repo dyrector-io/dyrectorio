@@ -14,13 +14,13 @@ import {
   PatchImageRequest,
 } from 'src/grpc/protobuf/proto/crux'
 import { ContainerConfigData } from 'src/shared/model'
-import ImageMapper, { ImageWithConfig } from './image.mapper'
+import ImageMapper, { ImageDetails } from './image.mapper'
 
 @Injectable()
 export default class ImageService {
-  readonly imageUpdatedEvent = new Subject<ImageWithConfig>()
+  readonly imageUpdatedEvent = new Subject<ImageDetails>()
 
-  readonly imagesAddedToVersionEvent = new Subject<ImageWithConfig[]>()
+  readonly imagesAddedToVersionEvent = new Subject<ImageDetails[]>()
 
   readonly imageDeletedFromVersionEvent = new Subject<string>()
 
@@ -33,6 +33,7 @@ export default class ImageService {
       },
       include: {
         config: true,
+        registry: true,
       },
     })
 
@@ -48,6 +49,7 @@ export default class ImageService {
       },
       include: {
         config: true,
+        registry: true,
       },
     })
 
@@ -107,7 +109,7 @@ export default class ImageService {
     this.imagesAddedToVersionEvent.next(images)
 
     return {
-      data: images.map(it => this.mapper.toGrpc(it, it.registry.name)),
+      data: images.map(it => this.mapper.toGrpc(it)),
     }
   }
 
@@ -148,6 +150,7 @@ export default class ImageService {
     const image = await this.prisma.image.update({
       include: {
         config: true,
+        registry: true,
       },
       data: {
         tag: request.tag,

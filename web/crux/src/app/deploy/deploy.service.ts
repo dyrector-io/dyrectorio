@@ -25,7 +25,7 @@ import {
 import PrismaService from 'src/services/prisma.service'
 import { InstanceContainerConfigData } from 'src/shared/model'
 import AgentService from '../agent/agent.service'
-import { ImageWithConfig } from '../image/image.mapper'
+import { ImageDetails } from '../image/image.mapper'
 import ImageService from '../image/image.service'
 import DeployMapper, { InstanceDetails } from './deploy.mapper'
 
@@ -80,6 +80,7 @@ export default class DeployService {
             image: {
               include: {
                 config: true,
+                registry: true,
               },
             },
             config: true,
@@ -397,7 +398,7 @@ export default class DeployService {
     }
   }
 
-  private async onImagesAddedToVersion(images: ImageWithConfig[]): Promise<InstancesCreatedEvent> {
+  private async onImagesAddedToVersion(images: ImageDetails[]): Promise<InstancesCreatedEvent> {
     const versionId = images?.length > 0 ? images[0].versionId : null
     if (!versionId) {
       throw new InternalException({
@@ -423,6 +424,7 @@ export default class DeployService {
               image: {
                 include: {
                   config: true,
+                  registry: true,
                 },
               },
             },
