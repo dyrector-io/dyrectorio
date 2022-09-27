@@ -15,12 +15,12 @@ import (
 
 type ConfigFromFile string
 
-func (field *ConfigFromFile) SetValue(path string) error {
-	if path == "" {
+func (field *ConfigFromFile) SetValue(secretPath string) error {
+	if secretPath == "" {
 		return fmt.Errorf("env private key file value can't be empty")
 	}
 
-	key, err := checkGenerateKeys(path)
+	key, err := checkGenerateKeys(secretPath)
 	if err != nil {
 		return err
 	}
@@ -29,30 +29,30 @@ func (field *ConfigFromFile) SetValue(path string) error {
 	return nil
 }
 
-func checkGenerateKeys(path string) (string, error) {
-	log.Printf("Checking key file: %v\n", path)
-	readFile, err := os.ReadFile(path) //#nosec G304 -- path comes from an env
+func checkGenerateKeys(secretPath string) (string, error) {
+	log.Printf("Checking key file: %v\n", secretPath)
+	fileContent, err := os.ReadFile(secretPath) //#nosec G304 -- secret path comes from an env
 
 	if errors.Is(err, syscall.EISDIR) {
 		return "", fmt.Errorf("key path is a directory: %w", err)
 	}
 
 	if errors.Is(err, os.ErrNotExist) {
-		log.Printf("Key file does not exist: %v\n", path)
-		return generateKey(path)
+		log.Printf("Key file does not exist: %v\n", secretPath)
+		return generateKey(secretPath)
 	} else if err != nil {
 		return "", fmt.Errorf("key file can't be read: %w", err)
 	}
 
 	// exists but expired -> migrate present keys?!
-	privateKeyObj, keyErr := crypto.NewKeyFromArmored(string(readFile))
+	privateKeyObj, keyErr := crypto.NewKeyFromArmored(string(fileContent))
 
 	if keyErr != nil {
 		return "", keyErr
 	}
 
 	if privateKeyObj == nil {
-		return "", fmt.Errorf("key file is nil: %v", path)
+		return "", fmt.Errorf("key file is nil: %v", secretPath)
 	}
 
 	if !privateKeyObj.IsExpired() {
@@ -60,12 +60,12 @@ func checkGenerateKeys(path string) (string, error) {
 
 		return keyStr, keyErr
 	} else {
-		log.Printf("Key file is expired: %v\n", path)
-		return generateKey(path)
+		log.Printf("Key file is expired: %v\n", secretPath)
+		return generateKey(secretPath)
 	}
 }
 
-func generateKey(path string) (string, error) {
+func generateKey(secretPath string) (string, error) {
 	log.Printf("Generating new key file...")
 	const (
 		name  = "dyrector.io agent"
@@ -83,7 +83,7 @@ func generateKey(path string) (string, error) {
 		return "", keyErr
 	}
 
-	fileErr := os.WriteFile(path, []byte(keyStr), os.ModePerm)
+	fileErr := os.WriteFile(secretPath, []byte(keyStr), os.ModePerm)
 	if fileErr != nil {
 		return "", fileErr
 	}
