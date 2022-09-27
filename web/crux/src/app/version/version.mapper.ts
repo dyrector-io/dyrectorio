@@ -50,11 +50,7 @@ export type VersionWithChildren = Version & {
   children: { versionId: string }[]
 }
 
-export type ImageWithConfigAndRegistry = ImageDetails & {
-  registry: Registry
-}
-
 export type VersionDetails = VersionWithChildren & {
-  images: ImageWithConfigAndRegistry[]
+  images: ImageDetails[]
   deployments: DeploymentWithNode[]
 }
