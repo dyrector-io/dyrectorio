@@ -1,15 +1,20 @@
 package main
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"io"
 	"log"
+	"net/url"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
+	"github.com/docker/docker/client"
 	"gopkg.in/yaml.v3"
 )
 
@@ -138,6 +143,8 @@ func SettingsFileReadWrite(state *Settings) *Settings {
 		}
 	}
 
+	CheckRequirements()
+
 	// Fill out data if empty
 	settings := LoadDefaultsOnEmpty(state)
 
@@ -153,6 +160,93 @@ func SettingsFileReadWrite(state *Settings) *Settings {
 	saveSettings(settings)
 
 	return settings
+}
+
+// Check prerequisites
+func CheckRequirements() {
+	// getenv
+	envVarValue := os.Getenv("DOCKER_HOST")
+
+	if envVarValue != "" {
+		socketurl, err := url.ParseRequestURI(envVarValue)
+		if err != nil {
+			log.Fatalf("error: %v", err)
+		}
+
+		if socketurl.Host != "" {
+			log.Fatalf("error: DOCKER_HOST variable shouldn't have host")
+		}
+
+		if socketurl.Scheme != "unix" {
+			log.Fatalf("error: DOCKER_HOST variable should contain a valid unix socket")
+		}
+	} else {
+		// We cannot assume unix:///var/run/docker.sock on Mac/Win platforms, we let Docker SDK does its magic :)
+		log.Println("\033[33mwarning: DOCKER_HOST environmental variable is empty or not set.\033[0m")
+		log.Println("\033[33mUsing default socket determined by Docker SDK\033[0m")
+	}
+
+	// Check socket
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		log.Fatalf("docker socket connection unsuccessful: %v", err)
+	}
+
+	info, err := cli.Info(context.Background())
+	if err != nil {
+		log.Fatalf("cannot get info via docker socket: %v", err)
+	}
+
+	switch info.InitBinary {
+	case "":
+		log.Printf("podman version: %s", info.ServerVersion)
+		PodmanInfo()
+	case "docker-init":
+		log.Printf("docker version: %s", info.ServerVersion)
+	default:
+		log.Fatalf("unknown init binary")
+	}
+}
+
+func PodmanInfo() {
+	cmd := exec.Command("podman", "info", "--format", "{{.Host.NetworkBackend}}")
+
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		log.Fatalf("podman check stderr pipe error: %v", err)
+	}
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		log.Fatalf("podman check stdout pipe error: %v", err)
+	}
+
+	err = cmd.Start()
+	if err != nil {
+		log.Fatalf("podman command execution error: %v", err)
+	}
+
+	readstderr, err := io.ReadAll(stderr)
+	if err != nil {
+		log.Fatalf("podman command stderr reading error: %v", err)
+	}
+
+	readstdout, err := io.ReadAll(stdout)
+	if err != nil {
+		log.Fatalf("podman command stderr reading error: %v", err)
+	}
+
+	err = cmd.Wait()
+	if err != nil {
+		log.Fatalf("podman command execution error: %v", err)
+	}
+
+	if len(readstderr) != 0 {
+		log.Fatalf("podman command has errors: %s", string(readstderr))
+	}
+
+	if string(readstdout) != "netavark\n" {
+		log.Fatalf("podman network backend error: it should have the netavark network backend")
+	}
 }
 
 func DisabledServiceSettings(settings *Settings) *Settings {
