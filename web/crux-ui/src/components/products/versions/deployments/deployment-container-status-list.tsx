@@ -24,16 +24,58 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
 
   const { t } = useTranslation('deployments')
 
-  const [containers, setContainers] = useState<Container[]>()
+  const [containers, setContainers] = useState<Container[]>(() =>
+    deployment.instances.map(
+      it =>
+        ({
+          id: it.id,
+          date: it.image.createdAt,
+          state: null,
+          name: it.image.config.name,
+        } as Container),
+    ),
+  )
 
   const sock = useWebSocket(nodeWsUrl(deployment.nodeId), {
     onOpen: () =>
       sock.send(WS_TYPE_WATCH_CONTAINER_STATUS, {
         prefix: deployment.prefix,
+        deploymentId: deployment.id,
       } as WatchContainerStatusMessage),
   })
 
-  sock.on(WS_TYPE_CONTAINER_STATUS_LIST, (message: ContainerListMessage) => setContainers(message))
+  const merge = (weak: Container[], strong: Container[]): Container[] => {
+    if (!strong) {
+      return weak
+    }
+
+    const result = []
+    const prefix = `${deployment.prefix}-`
+    const mapped = strong.map(it => {
+      if (it.name.startsWith(prefix)) {
+        return it.name.substring(prefix.length, it.name.length)
+      }
+
+      return it.name
+    })
+
+    weak.forEach(it => {
+      const index = mapped.indexOf(it.name)
+      if (index !== -1) {
+        const item = {
+          ...strong[index],
+          name: mapped[index],
+        }
+        result.push(item)
+      } else {
+        result.push(it)
+      }
+    })
+
+    return result.length !== 0 ? result : strong
+  }
+
+  sock.on(WS_TYPE_CONTAINER_STATUS_LIST, (message: ContainerListMessage) => setContainers(merge(containers, message)))
 
   const itemTemplate = (item: Container) => {
     const now = utcNow()

@@ -1,5 +1,6 @@
 import DyoTag from '@app/elements/dyo-tag'
 import { ContainerState } from '@app/models'
+import useTranslation from 'next-translate/useTranslation'
 
 interface ContainerStatusTagProps {
   className?: string
@@ -8,6 +9,7 @@ interface ContainerStatusTagProps {
 
 const ContainerStatusTag = (props: ContainerStatusTagProps) => {
   const { state, className } = props
+  const { t } = useTranslation('common')
 
   const statusToBgColor = () => {
     switch (state) {
@@ -41,12 +43,12 @@ const ContainerStatusTag = (props: ContainerStatusTagProps) => {
 
   return (
     <DyoTag
-      color={statusToBgColor()}
-      textColor={statusToTextColor()}
+      color={state ? statusToBgColor() : 'bg-bright'}
+      textColor={state ? statusToTextColor() : 'text-bright'}
       className={className}
       solid={state === 'removing'}
     >
-      {state.toUpperCase()}
+      {state ? t(`containerStatuses.${state}`) : t('notFound')}
     </DyoTag>
   )
 }
