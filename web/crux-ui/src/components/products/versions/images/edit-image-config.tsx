@@ -4,6 +4,7 @@ import { useThrottling } from '@app/hooks/use-throttleing'
 import { ContainerConfig, Environment, InstanceContainerConfig, Secrets } from '@app/models'
 
 import SecretKeyOnlyInput from '@app/components/shared/secret-key-input'
+import { sensitiveKeyRule } from '@app/validations/container'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useRef, useState } from 'react'
 import KeyValueInput from '../../../shared/key-value-input'
@@ -78,6 +79,7 @@ const EditImageConfig = (props: EditImageConfigProps) => {
         heading={t('environment').toUpperCase()}
         items={config?.environment ?? []}
         onChange={onEnvChange}
+        hint={{ hintValidation: sensitiveKeyRule, hintText: t('sensitiveKey') }}
       />
       <SecretKeyOnlyInput
         disabled={disabled}

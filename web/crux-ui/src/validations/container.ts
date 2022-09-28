@@ -196,6 +196,11 @@ export const uniqueKeysOnlySchema = yup
   .ensure()
   .test('keysAreUnique', 'Keys must be unique', arr => new Set(arr.map(it => it.key)).size === arr.length)
 
+const sensitiveKeywords = ['password', 'secret', 'token']
+const sensitiveKeywordRegExp = new RegExp(`^((?!(${sensitiveKeywords.join('|')})).)*$`, 'i')
+
+export const sensitiveKeyRule = yup.string().matches(sensitiveKeywordRegExp)
+
 export const containerConfigSchema = yup.object().shape({
   environment: uniqueKeyValuesSchema,
   capabilities: uniqueKeyValuesSchema,

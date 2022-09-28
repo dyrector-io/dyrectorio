@@ -5,6 +5,7 @@ import { Environment, InstanceContainerConfig, UniqueKeyValue } from '@app/model
 
 import KeyValueInput from '@app/components/shared/key-value-input'
 import SecretKeyValInput from '@app/components/shared/secret-key-value-input'
+import { sensitiveKeyRule } from '@app/validations/container'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useRef, useState } from 'react'
 
@@ -83,6 +84,7 @@ const EditInstanceConfig = (props: EditInstanceProps) => {
         heading={t('environment').toUpperCase()}
         items={config?.environment ?? []}
         onChange={onEnvChange}
+        hint={{ hintValidation: sensitiveKeyRule, hintText: t('sensitiveKey') }}
       />
       <SecretKeyValInput
         disabled={disabled || !publicKey}
