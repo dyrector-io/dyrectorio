@@ -182,19 +182,19 @@ func CheckRequirements() {
 		}
 	} else {
 		// We cannot assume unix:///var/run/docker.sock on Mac/Win platforms, we let Docker SDK does its magic :)
-		log.Println("\033[33mwarning: DOCKER_HOST environmental variable is empty or not set.")
-		log.Println("Using default socket determined by Docker SDK\033[0m")
+		log.Println("\033[33mwarning: DOCKER_HOST environmental variable is empty or not set.\033[0m")
+		log.Println("\033[33mUsing default socket determined by Docker SDK\033[0m")
 	}
 
 	// Check socket
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
-		log.Fatalf("error - docker socket connection unsuccessful: %v", err)
+		log.Fatalf("docker socket connection unsuccessful: %v", err)
 	}
 
 	info, err := cli.Info(context.Background())
 	if err != nil {
-		log.Fatalf("error - cannot get info: %v", err)
+		log.Fatalf("cannot get info via docker socket: %v", err)
 	}
 
 	switch info.InitBinary {
@@ -213,39 +213,39 @@ func PodmanInfo() {
 
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
-		log.Fatalf("error - podman check stderr pipe error: %v", err)
+		log.Fatalf("podman check stderr pipe error: %v", err)
 	}
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		log.Fatalf("error - podman check stdout pipe error: %v", err)
+		log.Fatalf("podman check stdout pipe error: %v", err)
 	}
 
 	err = cmd.Start()
 	if err != nil {
-		log.Fatalf("error - podman command execution error: %v", err)
+		log.Fatalf("podman command execution error: %v", err)
 	}
 
 	readstderr, err := io.ReadAll(stderr)
 	if err != nil {
-		log.Fatalf("error - podman command stderr reading error: %v", err)
+		log.Fatalf("podman command stderr reading error: %v", err)
 	}
 
 	readstdout, err := io.ReadAll(stdout)
 	if err != nil {
-		log.Fatalf("error - podman command stderr reading error: %v", err)
+		log.Fatalf("podman command stderr reading error: %v", err)
 	}
 
 	err = cmd.Wait()
 	if err != nil {
-		log.Fatalf("error - podman command execution error: %v", err)
+		log.Fatalf("podman command execution error: %v", err)
 	}
 
 	if len(readstderr) != 0 {
-		log.Fatalf("error - podman command execution error: %s", string(readstderr))
+		log.Fatalf("podman command has errors: %s", string(readstderr))
 	}
 
 	if string(readstdout) != "netavark\n" {
-		log.Fatalf("error - podman network backend error: it should have the netavark network backend")
+		log.Fatalf("podman network backend error: it should have the netavark network backend")
 	}
 }
 
