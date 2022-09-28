@@ -84,7 +84,7 @@ export default class AgentService {
     channel.next(event)
   }
 
-  async install(nodeId: string, nodeType: NodeTypeEnum): Promise<AgentInstaller> {
+  async install(nodeId: string, nodeType: NodeTypeEnum, rootPath: string | null): Promise<AgentInstaller> {
     let installer = this.getInstallerByNodeId(nodeId)
     if (!installer || installer.nodeType !== nodeType) {
       const now = new Date().getTime()
@@ -100,6 +100,7 @@ export default class AgentService {
         this.jwtService.sign(token),
         now + AgentService.SCRIPT_EXPIRATION,
         nodeType,
+        rootPath,
       )
       this.installers.set(nodeId, installer)
     }

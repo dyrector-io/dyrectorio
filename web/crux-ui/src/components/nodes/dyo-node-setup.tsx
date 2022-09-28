@@ -1,6 +1,5 @@
 import DyoButton from '@app/elements/dyo-button'
 import DyoChips from '@app/elements/dyo-chips'
-import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import RemainingTimeLabel from '@app/elements/remaining-time-label'
@@ -10,6 +9,7 @@ import { DyoNodeDetails, DyoNodeInstall, NodeType, NODE_TYPE_VALUES } from '@app
 import { nodeSetupApiUrl } from '@app/routes'
 import { sendForm, writeToClipboard } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
+import { useState } from 'react'
 import ShEditor from '../shared/sh-editor'
 import DyoNodeConnectionInfo from './dyo-node-connection-info'
 
@@ -33,6 +33,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
     node.install ? expiresIn(new Date(node.install.expireAt)) : null,
     () => onNodeInstallChanged(null),
   )
+  const [rootPath, setRootPath] = useState<string>(null)
 
   const handleApiError = defaultApiErrorHandler(t)
 
@@ -43,6 +44,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
 
     const body = {
       type: node.type,
+      rootPath: rootPath || undefined,
     }
 
     const res = await sendForm('POST', nodeSetupApiUrl(node.id), body)
@@ -79,17 +81,29 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
     <>
       {!node.install ? (
         <div className="mb-4">
-          <DyoHeading element="h4" className="text-lg text-bright mb-2">
-            {t('technology')}
-          </DyoHeading>
+          <div className="flex flex-wrap mt-4">
+            <DyoLabel className="mr-2 my-auto">{t('technology')}</DyoLabel>
 
-          <DyoChips
-            className="mb-2 ml-2"
-            choices={NODE_TYPE_VALUES}
-            initialSelection={node.type}
-            converter={(it: NodeType) => t(`technologies.${it}`)}
-            onSelectionChange={it => onNodeTypeChanged(it)}
-          />
+            <DyoChips
+              choices={NODE_TYPE_VALUES}
+              initialSelection={node.type}
+              converter={(it: NodeType) => t(`technologies.${it}`)}
+              onSelectionChange={it => onNodeTypeChanged(it)}
+            />
+          </div>
+
+          {node.type === 'docker' && (
+            <div className="flex flex-col">
+              <DyoLabel className="text-light mb-2.5">{t('rootPath')}</DyoLabel>
+              <DyoInput
+                placeholder={t('rootPathHint')}
+                className="max-w-lg"
+                grow
+                value={rootPath}
+                onChange={e => setRootPath(e.target.value)}
+              />
+            </div>
+          )}
 
           <DyoButton className="px-4 py-2 mt-4 mr-auto" onClick={onGenerateInstallScript}>
             {t('generateScript')}

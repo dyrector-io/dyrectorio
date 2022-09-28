@@ -9,8 +9,9 @@ import { NextApiRequest, NextApiResponse } from 'next'
 const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
   const nodeId = req.query.nodeId as string
   const nodeType = req.body.type as NodeType
+  const rootPath = req.body.rootPath as string
 
-  const dto = await crux(req).nodes.generateScript(nodeId, nodeTypeUiToGrpc(nodeType))
+  const dto = await crux(req).nodes.generateScript(nodeId, nodeTypeUiToGrpc(nodeType), rootPath)
   res.json(dto)
 }
 

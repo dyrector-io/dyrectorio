@@ -29,16 +29,22 @@ interface EditImageCardProps {
   tags: string[]
   versionSock: WebSocketClientEndpoint
   onTagSelected: (tag: string) => void
+  onFetchTags: () => void
 }
 
 const EditImageCard = (props: EditImageCardProps) => {
-  const { tags, image, versionSock: sock, disabled, onTagSelected } = props
+  const { tags, image, versionSock: sock, disabled, onTagSelected, onFetchTags } = props
 
   const { t } = useTranslation('images')
 
-  const [selection, setSelection] = useState<EditImageCardSelection>('tag')
+  const [selection, setSelection] = useState<EditImageCardSelection>('config')
   const [deleteModalConfig, confirmDelete] = useConfirmation()
   const [parseError, setParseError] = useState<string>(null)
+
+  const onSelectTagsView = () => {
+    setSelection('tag')
+    onFetchTags()
+  }
 
   const onPatch = (id: string, config: Partial<ContainerConfig>) => {
     setParseError(null)
@@ -71,7 +77,7 @@ const EditImageCard = (props: EditImageCardProps) => {
             thin
             textColor="text-bright"
             underlined={selection === 'tag'}
-            onClick={() => setSelection('tag')}
+            onClick={() => onSelectTagsView()}
             className="ml-auto"
             heightClassName="pb-2"
           >

@@ -3,82 +3,124 @@ import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
 import JsonEditor from '@app/components/shared/json-editor-dynamic-module'
 import PageHeading from '@app/components/shared/page-heading'
-import Paginator from '@app/components/shared/paginator'
+import Paginator, { PaginationSettings } from '@app/components/shared/paginator'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoDatePicker from '@app/elements/dyo-date-picker'
-import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoList } from '@app/elements/dyo-list'
 import DyoModal from '@app/elements/dyo-modal'
-import { DateRangeFilter, dateRangeFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
-import { usePagination } from '@app/hooks/use-pagination'
-import { AuditLog, beautifyAuditLogEvent } from '@app/models'
-import { ROUTE_AUDIT } from '@app/routes'
-import { utcDateToLocale, withContextAuthorization } from '@app/utils'
-import { cruxFromContext } from '@server/crux/crux'
-import { NextPageContext } from 'next'
+import { useThrottling } from '@app/hooks/use-throttleing'
+import { AuditLog, AuditLogListRequest, beautifyAuditLogEvent } from '@app/models'
+import { API_AUDIT, API_AUDIT_COUNT, ROUTE_AUDIT } from '@app/routes'
+import { utcDateToLocale } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
 import { useEffect, useMemo, useState } from 'react'
 
-interface AuditLogPageProps {
-  auditLog: AuditLog[]
+type AuditFilter = {
+  start: Date
+  end: Date
+  keyword: string
 }
 
-type AuditLogFilter = TextFilter & DateRangeFilter
+const headerClassName = 'uppercase text-bright text-sm font-semibold bg-medium-eased pl-2 py-3 h-11'
+const columnWidths = ['w-16', 'w-2/12', 'w-48', 'w-2/12', '', 'w-20']
+const sixdays = 1000 * 60 * 60 * 24 * 6 // ms * minutes * hours * day * six
+const defaultPagination: PaginationSettings = { pageNumber: 0, pageSize: 10 }
+const now = Date.now()
 
-const AuditLogPage = (props: AuditLogPageProps) => {
+const AuditLogPage = () => {
   const { t } = useTranslation('audit')
 
-  const { auditLog } = props
+  const [dataCount, setCount] = useState(0)
+  const [data, setData] = useState<AuditLog[]>([])
+  const [filter, setFilter] = useState<AuditFilter>({
+    start: new Date(Date.now() - sixdays),
+    end: new Date(now),
+    keyword: '',
+  })
+  const [pagination, setPagination] = useState<PaginationSettings>(defaultPagination)
+  const throttle = useThrottling(1000)
 
-  const sixdays = 1000 * 60 * 60 * 24 * 6 // ms * minutes * hours * day * six
-
-  const [startDate, setStartDate] = useState<Date>(new Date(Date.now() - sixdays))
-  const [endDate, setEndDate] = useState<Date>(new Date())
-
-  const filters = useFilters<AuditLog, AuditLogFilter>({
-    initialData: auditLog,
-    initialFilter: {
-      text: '',
-      dateRange: [startDate, endDate],
-    },
-    filters: [
-      textFilterFor<AuditLog>(it => [it.identityEmail, utcDateToLocale(it.date), it.event, it.info]),
-      dateRangeFilterFor<AuditLog>(it => [it.date]),
-    ],
+  // Data fetching
+  const getRequest = (): AuditLogListRequest => ({
+    ...pagination,
+    createdFrom: filter.start?.toString(),
+    createdTo: filter.end ? filter.end.toString() : new Date(now).toString(),
+    keyword: filter.keyword,
   })
 
-  const onChange = dates => {
-    const [start, end] = dates
-    setStartDate(start)
+  const fetchDataCount = async () => {
+    const res = await fetch(API_AUDIT_COUNT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(getRequest()),
+    })
 
-    if (end !== null) end.setHours(23, 59, 59, 999)
-    setEndDate(end)
-    filters.setFilter({ dateRange: [start, end] })
+    if (res.ok) {
+      const json = await res.json()
+      setCount(json as number)
+    } else {
+      setCount(0)
+    }
   }
 
-  const pagination = usePagination<AuditLog>({
-    initialData: auditLog,
-    initialPagination: { pageSize: 10, currentPage: 0 },
-  })
+  const fetchData = async () => {
+    fetchDataCount()
+    const res = await fetch(API_AUDIT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(getRequest()),
+    })
 
-  const [showInfo, setShowInfo] = useState<AuditLog>(null)
-
-  const parsedJSONInfo = useMemo(() => (showInfo ? JSON.parse(showInfo.info) : null), [showInfo])
-
-  const onShowInfoClick = (logEntry: AuditLog) => setShowInfo(logEntry)
+    if (res.ok) {
+      const json = await res.json()
+      setData(json as AuditLog[])
+    } else {
+      setData([])
+    }
+  }
 
   useEffect(() => {
-    pagination.setItems(filters.filtered)
-  }, [filters, pagination])
+    throttle(() => {
+      fetchData()
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter])
 
+  useEffect(() => {
+    throttle(() => {
+      fetchData()
+    }, true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pagination])
+
+  // Info modal:
+  const [showInfo, setShowInfo] = useState<AuditLog>(null)
+  const parsedJSONInfo = useMemo(() => (showInfo ? JSON.parse(showInfo.info) : null), [showInfo])
+  const onShowInfoClick = (logEntry: AuditLog) => setShowInfo(logEntry)
+
+  // Handlers
+  const onDateRangedChanged = dates => {
+    const [start, end] = dates
+    if (end !== null) end.setHours(23, 59, 59, 999) // end of the day
+
+    setFilter({ ...filter, start, end })
+  }
+
+  const onTextFilterChanged = text => {
+    setFilter({ ...filter, keyword: text })
+  }
+
+  // Render
   const selfLink: BreadcrumbLink = {
     name: t('common:audit'),
     url: ROUTE_AUDIT,
   }
 
-  const headerClassName = 'uppercase text-bright text-sm font-semibold bg-medium-eased pl-2 py-3 h-11'
-  const columnWidths = ['w-16', 'w-2/12', 'w-48', 'w-2/12', '', 'w-20']
   const listHeaders = ['', ...['common:email', 'common:date', 'event', 'data', 'common:actions'].map(it => t(it))]
 
   const itemTemplate = (log: AuditLog) => /* eslint-disable react/jsx-key */ [
@@ -108,38 +150,32 @@ const AuditLogPage = (props: AuditLogPageProps) => {
   return (
     <Layout title={t('common:audit')}>
       <PageHeading pageLink={selfLink} />
-      {filters.items.length ? (
-        <>
-          <Filters setTextFilter={it => filters.setFilter({ text: it })}>
-            <DyoDatePicker
-              selectsRange
-              startDate={startDate}
-              endDate={endDate}
-              onChange={onChange}
-              shouldCloseOnSelect={false}
-              maxDate={new Date()}
-              isClearable
-              className="ml-8 w-1/3"
-            />
-          </Filters>
+      <>
+        <Filters setTextFilter={onTextFilterChanged}>
+          <DyoDatePicker
+            selectsRange
+            startDate={filter.start}
+            endDate={filter.end}
+            onChange={onDateRangedChanged}
+            shouldCloseOnSelect={false}
+            maxDate={new Date()}
+            isClearable
+            className="ml-8 w-1/4"
+          />
+        </Filters>
 
-          <DyoCard className="relative mt-4 overflow-auto">
-            <DyoList
-              noSeparator
-              headerClassName={headerClassName}
-              columnWidths={columnWidths}
-              data={pagination.displayed}
-              headers={listHeaders}
-              footer={<Paginator pagination={pagination} />}
-              itemBuilder={itemTemplate}
-            />
-          </DyoCard>
-        </>
-      ) : (
-        <DyoHeading element="h3" className="text-md text-center text-light-eased pt-32">
-          {t('noItems')}
-        </DyoHeading>
-      )}
+        <DyoCard className="relative mt-4 overflow-auto">
+          <DyoList
+            noSeparator
+            headerClassName={headerClassName}
+            columnWidths={columnWidths}
+            data={data}
+            headers={listHeaders}
+            footer={<Paginator onChanged={setPagination} length={dataCount} defaultPagination={defaultPagination} />}
+            itemBuilder={itemTemplate}
+          />
+        </DyoCard>
+      </>
 
       {!showInfo ? null : (
         <DyoModal
@@ -158,15 +194,3 @@ const AuditLogPage = (props: AuditLogPageProps) => {
 }
 
 export default AuditLogPage
-
-const getPageServerSideProps = async (context: NextPageContext) => {
-  const auditLog = await cruxFromContext(context).audit.getAuditLog()
-
-  return {
-    props: {
-      auditLog,
-    },
-  }
-}
-
-export const getServerSideProps = withContextAuthorization(getPageServerSideProps)

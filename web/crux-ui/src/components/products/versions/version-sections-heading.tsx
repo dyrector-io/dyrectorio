@@ -1,18 +1,32 @@
+import ViewModeToggle, { ViewMode } from '@app/components/shared/view-mode-toggle'
 import DyoButton from '@app/elements/dyo-button'
 import { VersionAddSectionState, VersionSectionsState } from '@app/models'
 import useTranslation from 'next-translate/useTranslation'
 
 interface VersionSectionsHeadingProps {
+  viewModeVisible: boolean
+  viewMode: ViewMode
   versionMutable: boolean
   state: VersionSectionsState
   onStateSelected: (state: VersionSectionsState) => void
   onAddStateSelected: (state: VersionAddSectionState) => void
   onSaveImageOrder: VoidFunction
   onDiscardImageOrder: VoidFunction
+  onViewModeChanged: (mode: ViewMode) => void
 }
 
 const VersionSectionsHeading = (props: VersionSectionsHeadingProps) => {
-  const { versionMutable, state, onStateSelected, onAddStateSelected, onSaveImageOrder, onDiscardImageOrder } = props
+  const {
+    versionMutable,
+    state,
+    viewModeVisible,
+    viewMode,
+    onStateSelected,
+    onAddStateSelected,
+    onSaveImageOrder,
+    onDiscardImageOrder,
+    onViewModeChanged,
+  } = props
 
   const { t } = useTranslation('versions')
 
@@ -72,6 +86,8 @@ const VersionSectionsHeading = (props: VersionSectionsHeadingProps) => {
             {versionMutable ? null : <DyoButton onClick={() => onAddStateSelected('image')}>{t('addImage')}</DyoButton>}
 
             <DyoButton onClick={() => onAddStateSelected('deployment')}>{t('addDeployment')}</DyoButton>
+
+            {viewModeVisible && <ViewModeToggle viewMode={viewMode} onViewModeChanged={onViewModeChanged} />}
           </div>
         </>
       )}

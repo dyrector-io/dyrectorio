@@ -22,6 +22,7 @@ export default class AgentInstaller {
     readonly token: string,
     readonly expireAt: number,
     readonly nodeType: NodeTypeEnum,
+    readonly rootPath: string | null,
   ) {
     this.loadScriptAndCompiler(nodeType)
   }
@@ -53,6 +54,7 @@ export default class AgentInstaller {
       insecure: process.env.GRPC_AGENT_INSTALL_SCRIPT_INSECURE === 'true',
       network: process.env.LOCAL_DEPLOYMENT === 'true',
       networkName: process.env.LOCAL_DEPLOYMENT_NETWORK,
+      rootPath: this.rootPath,
     }
 
     if (this.nodeType === NodeTypeEnum.k8s) {

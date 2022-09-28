@@ -11,5 +11,7 @@
   "capabilities": "Capabilities",
   "selectTag": "You must select a tag",
   "noItems": "You haven't added an image to this version. Click 'Add image' to browse images you can add.",
-  "secrets": "Secrets"
+  "secrets": "Secrets",
+  "imageTag": "Image:Tag",
+  "imageTagsFor": "Image tags for {{name}}"
 }

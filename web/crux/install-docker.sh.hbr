@@ -10,10 +10,10 @@ fi
 # Setup the default root folder for volumes
 if [ $(uname -s) = 'Darwin' ]; then
   echo "Detected: Mac OS X"
-  ROOT_FOLDER=$HOME'/Library/Dyrectorio/srv/dagent'
+  ROOT_FOLDER={{#if rootPath}}'{{{rootPath}}}'{{else}}$HOME'/Library/Dyrectorio/srv/dagent'{{/if}}
 elif [ $(uname -s) = 'Linux' ]; then
   echo "Detected: Linux"
-  ROOT_FOLDER='/srv/dagent'
+  ROOT_FOLDER='{{#if rootPath}}{{{rootPath}}}{{else}}/srv/dagent{{/if}}'
 else
   echo "Not supported OS!"
 fi

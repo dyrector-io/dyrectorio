@@ -1,3 +1,4 @@
+import { ViewMode } from '@app/components/shared/view-mode-toggle'
 import { ProductDetails, RegistryImages, VersionDetails, VersionImage } from '@app/models'
 import { deploymentUrl } from '@app/routes'
 import { parseStringUnionType } from '@app/utils'
@@ -5,7 +6,7 @@ import { useRouter } from 'next/dist/client/router'
 import { useRef, useState } from 'react'
 import AddDeploymentCard from './deployments/add-deployment-card'
 import SelectImagesCard from './images/select-images-card'
-import { ImagesWebSocketOptions, ImageTagsMap, useImagesWebSocket } from './use-images-websocket'
+import { ImagesWebSocketOptions, imageTagKey, ImageTagsMap, useImagesWebSocket } from './use-images-websocket'
 import VersionDeploymentsSection from './version-deployments-section'
 import VersionImagesSection from './version-images-section'
 import VersionReorderImagesSection from './version-reorder-images-section'
@@ -42,6 +43,7 @@ const VersionSections = (props: VersionSectionsProps) => {
   const [addSectionState, setAddSectionState] = useState<VersionAddSectionState>('none')
   const [images, setImages] = useState(version.images)
   const [imageTags, setImageTags] = useState<ImageTagsMap>({})
+  const [viewMode, setViewMode] = useState<ViewMode>('list')
 
   const wsOptions: ImagesWebSocketOptions = {
     productId: product.id,
@@ -99,16 +101,29 @@ const VersionSections = (props: VersionSectionsProps) => {
     patchImage(image.id, tag)
   }
 
+  const onFetchTags = (image: VersionImage) => {
+    const key = imageTagKey(image.registryId, image.name)
+    if (!imageTags[key]) {
+      fetchImageTags({
+        registryId: image.registryId,
+        images: [image.name],
+      })
+    }
+  }
+
   return (
     <>
       {addSectionState === 'none' ? (
         <VersionSectionsHeading
+          viewModeVisible={sectionState === 'images'}
+          viewMode={viewMode}
           versionMutable={!version.mutable}
           state={sectionState}
           onStateSelected={setSectionState}
           onAddStateSelected={onSelectAddSectionState}
           onSaveImageOrder={() => saveImageOrderRef.current()}
           onDiscardImageOrder={() => setAddSectionState('none')}
+          onViewModeChanged={setViewMode}
         />
       ) : addSectionState === 'image' ? (
         <SelectImagesCard onImagesSelected={onImagesSelected} onDiscard={() => setAddSectionState('none')} />
@@ -124,11 +139,13 @@ const VersionSections = (props: VersionSectionsProps) => {
 
       {sectionState === 'images' ? (
         <VersionImagesSection
+          viewMode={viewMode}
           disabled={!version.mutable}
           images={images}
           imageTags={imageTags}
           versionSock={versionSock}
           onTagSelected={onImageTagSelected}
+          onFetchTags={onFetchTags}
         />
       ) : sectionState === 'deployments' ? (
         <VersionDeploymentsSection product={product} version={version} />

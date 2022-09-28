@@ -127,7 +127,7 @@ export default class NodeService {
       },
     })
 
-    const installer = await this.agentService.install(req.id, nodeType)
+    const installer = await this.agentService.install(req.id, nodeType, req.rootPath ?? null)
 
     return this.mapper.installerToGrpc(installer)
   }

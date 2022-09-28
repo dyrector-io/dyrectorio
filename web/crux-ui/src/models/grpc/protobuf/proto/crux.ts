@@ -564,6 +564,19 @@ export interface PrefixRequest {
 }
 
 /** AUDIT */
+export interface AuditLogListRequest {
+  accessedBy: string
+  pageSize: number
+  pageNumber: number
+  keyword?: string | undefined
+  createdFrom?: Timestamp | undefined
+  createdTo: Timestamp | undefined
+}
+
+export interface AuditLogListCountResponse {
+  count: number
+}
+
 export interface AuditLogResponse {
   createdAt: Timestamp | undefined
   userId: string
@@ -683,6 +696,7 @@ export interface ProductReponse {
   name: string
   description?: string | undefined
   type: ProductType
+  versionCount: number
 }
 
 export interface ProductListResponse {
@@ -851,6 +865,8 @@ export interface ImageResponse {
   order: number
   registryId: string
   config: ContainerConfig | undefined
+  createdAt: Timestamp | undefined
+  registryName: string
 }
 
 export interface ImageListResponse {
@@ -941,6 +957,7 @@ export interface GenerateScriptRequest {
   id: string
   accessedBy: string
   type: NodeType
+  rootPath?: string | undefined
 }
 
 export interface NodeInstallResponse {
@@ -1542,6 +1559,151 @@ export const PrefixRequest = {
   fromPartial<I extends Exact<DeepPartial<PrefixRequest>, I>>(object: I): PrefixRequest {
     const message = createBasePrefixRequest()
     message.prefix = object.prefix ?? ''
+    return message
+  },
+}
+
+function createBaseAuditLogListRequest(): AuditLogListRequest {
+  return { accessedBy: '', pageSize: 0, pageNumber: 0, createdTo: undefined }
+}
+
+export const AuditLogListRequest = {
+  encode(message: AuditLogListRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.accessedBy !== '') {
+      writer.uint32(802).string(message.accessedBy)
+    }
+    if (message.pageSize !== 0) {
+      writer.uint32(808).uint32(message.pageSize)
+    }
+    if (message.pageNumber !== 0) {
+      writer.uint32(816).uint32(message.pageNumber)
+    }
+    if (message.keyword !== undefined) {
+      writer.uint32(826).string(message.keyword)
+    }
+    if (message.createdFrom !== undefined) {
+      Timestamp.encode(message.createdFrom, writer.uint32(834).fork()).ldelim()
+    }
+    if (message.createdTo !== undefined) {
+      Timestamp.encode(message.createdTo, writer.uint32(842).fork()).ldelim()
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): AuditLogListRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseAuditLogListRequest()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 100:
+          message.accessedBy = reader.string()
+          break
+        case 101:
+          message.pageSize = reader.uint32()
+          break
+        case 102:
+          message.pageNumber = reader.uint32()
+          break
+        case 103:
+          message.keyword = reader.string()
+          break
+        case 104:
+          message.createdFrom = Timestamp.decode(reader, reader.uint32())
+          break
+        case 105:
+          message.createdTo = Timestamp.decode(reader, reader.uint32())
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): AuditLogListRequest {
+    return {
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      pageSize: isSet(object.pageSize) ? Number(object.pageSize) : 0,
+      pageNumber: isSet(object.pageNumber) ? Number(object.pageNumber) : 0,
+      keyword: isSet(object.keyword) ? String(object.keyword) : undefined,
+      createdFrom: isSet(object.createdFrom) ? fromJsonTimestamp(object.createdFrom) : undefined,
+      createdTo: isSet(object.createdTo) ? fromJsonTimestamp(object.createdTo) : undefined,
+    }
+  },
+
+  toJSON(message: AuditLogListRequest): unknown {
+    const obj: any = {}
+    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
+    message.pageSize !== undefined && (obj.pageSize = Math.round(message.pageSize))
+    message.pageNumber !== undefined && (obj.pageNumber = Math.round(message.pageNumber))
+    message.keyword !== undefined && (obj.keyword = message.keyword)
+    message.createdFrom !== undefined && (obj.createdFrom = fromTimestamp(message.createdFrom).toISOString())
+    message.createdTo !== undefined && (obj.createdTo = fromTimestamp(message.createdTo).toISOString())
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<AuditLogListRequest>, I>>(object: I): AuditLogListRequest {
+    const message = createBaseAuditLogListRequest()
+    message.accessedBy = object.accessedBy ?? ''
+    message.pageSize = object.pageSize ?? 0
+    message.pageNumber = object.pageNumber ?? 0
+    message.keyword = object.keyword ?? undefined
+    message.createdFrom =
+      object.createdFrom !== undefined && object.createdFrom !== null
+        ? Timestamp.fromPartial(object.createdFrom)
+        : undefined
+    message.createdTo =
+      object.createdTo !== undefined && object.createdTo !== null ? Timestamp.fromPartial(object.createdTo) : undefined
+    return message
+  },
+}
+
+function createBaseAuditLogListCountResponse(): AuditLogListCountResponse {
+  return { count: 0 }
+}
+
+export const AuditLogListCountResponse = {
+  encode(message: AuditLogListCountResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.count !== 0) {
+      writer.uint32(800).uint32(message.count)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): AuditLogListCountResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseAuditLogListCountResponse()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 100:
+          message.count = reader.uint32()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): AuditLogListCountResponse {
+    return { count: isSet(object.count) ? Number(object.count) : 0 }
+  },
+
+  toJSON(message: AuditLogListCountResponse): unknown {
+    const obj: any = {}
+    message.count !== undefined && (obj.count = Math.round(message.count))
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<AuditLogListCountResponse>, I>>(object: I): AuditLogListCountResponse {
+    const message = createBaseAuditLogListCountResponse()
+    message.count = object.count ?? 0
     return message
   },
 }
@@ -2822,7 +2984,7 @@ export const ProductDetailsReponse = {
 }
 
 function createBaseProductReponse(): ProductReponse {
-  return { id: '', audit: undefined, name: '', type: 0 }
+  return { id: '', audit: undefined, name: '', type: 0, versionCount: 0 }
 }
 
 export const ProductReponse = {
@@ -2841,6 +3003,9 @@ export const ProductReponse = {
     }
     if (message.type !== 0) {
       writer.uint32(816).int32(message.type)
+    }
+    if (message.versionCount !== 0) {
+      writer.uint32(824).uint32(message.versionCount)
     }
     return writer
   },
@@ -2867,6 +3032,9 @@ export const ProductReponse = {
         case 102:
           message.type = reader.int32() as any
           break
+        case 103:
+          message.versionCount = reader.uint32()
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -2882,6 +3050,7 @@ export const ProductReponse = {
       name: isSet(object.name) ? String(object.name) : '',
       description: isSet(object.description) ? String(object.description) : undefined,
       type: isSet(object.type) ? productTypeFromJSON(object.type) : 0,
+      versionCount: isSet(object.versionCount) ? Number(object.versionCount) : 0,
     }
   },
 
@@ -2892,6 +3061,7 @@ export const ProductReponse = {
     message.name !== undefined && (obj.name = message.name)
     message.description !== undefined && (obj.description = message.description)
     message.type !== undefined && (obj.type = productTypeToJSON(message.type))
+    message.versionCount !== undefined && (obj.versionCount = Math.round(message.versionCount))
     return obj
   },
 
@@ -2903,6 +3073,7 @@ export const ProductReponse = {
     message.name = object.name ?? ''
     message.description = object.description ?? undefined
     message.type = object.type ?? 0
+    message.versionCount = object.versionCount ?? 0
     return message
   },
 }
@@ -4713,7 +4884,16 @@ export const ContainerConfig = {
 }
 
 function createBaseImageResponse(): ImageResponse {
-  return { id: '', name: '', tag: '', order: 0, registryId: '', config: undefined }
+  return {
+    id: '',
+    name: '',
+    tag: '',
+    order: 0,
+    registryId: '',
+    config: undefined,
+    createdAt: undefined,
+    registryName: '',
+  }
 }
 
 export const ImageResponse = {
@@ -4735,6 +4915,12 @@ export const ImageResponse = {
     }
     if (message.config !== undefined) {
       ContainerConfig.encode(message.config, writer.uint32(834).fork()).ldelim()
+    }
+    if (message.createdAt !== undefined) {
+      Timestamp.encode(message.createdAt, writer.uint32(842).fork()).ldelim()
+    }
+    if (message.registryName !== '') {
+      writer.uint32(850).string(message.registryName)
     }
     return writer
   },
@@ -4764,6 +4950,12 @@ export const ImageResponse = {
         case 104:
           message.config = ContainerConfig.decode(reader, reader.uint32())
           break
+        case 105:
+          message.createdAt = Timestamp.decode(reader, reader.uint32())
+          break
+        case 106:
+          message.registryName = reader.string()
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -4780,6 +4972,8 @@ export const ImageResponse = {
       order: isSet(object.order) ? Number(object.order) : 0,
       registryId: isSet(object.registryId) ? String(object.registryId) : '',
       config: isSet(object.config) ? ContainerConfig.fromJSON(object.config) : undefined,
+      createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
+      registryName: isSet(object.registryName) ? String(object.registryName) : '',
     }
   },
 
@@ -4791,6 +4985,8 @@ export const ImageResponse = {
     message.order !== undefined && (obj.order = Math.round(message.order))
     message.registryId !== undefined && (obj.registryId = message.registryId)
     message.config !== undefined && (obj.config = message.config ? ContainerConfig.toJSON(message.config) : undefined)
+    message.createdAt !== undefined && (obj.createdAt = fromTimestamp(message.createdAt).toISOString())
+    message.registryName !== undefined && (obj.registryName = message.registryName)
     return obj
   },
 
@@ -4803,6 +4999,9 @@ export const ImageResponse = {
     message.registryId = object.registryId ?? ''
     message.config =
       object.config !== undefined && object.config !== null ? ContainerConfig.fromPartial(object.config) : undefined
+    message.createdAt =
+      object.createdAt !== undefined && object.createdAt !== null ? Timestamp.fromPartial(object.createdAt) : undefined
+    message.registryName = object.registryName ?? ''
     return message
   },
 }
@@ -5768,6 +5967,9 @@ export const GenerateScriptRequest = {
     if (message.type !== 0) {
       writer.uint32(800).int32(message.type)
     }
+    if (message.rootPath !== undefined) {
+      writer.uint32(810).string(message.rootPath)
+    }
     return writer
   },
 
@@ -5787,6 +5989,9 @@ export const GenerateScriptRequest = {
         case 100:
           message.type = reader.int32() as any
           break
+        case 101:
+          message.rootPath = reader.string()
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -5800,6 +6005,7 @@ export const GenerateScriptRequest = {
       id: isSet(object.id) ? String(object.id) : '',
       accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       type: isSet(object.type) ? nodeTypeFromJSON(object.type) : 0,
+      rootPath: isSet(object.rootPath) ? String(object.rootPath) : undefined,
     }
   },
 
@@ -5808,6 +6014,7 @@ export const GenerateScriptRequest = {
     message.id !== undefined && (obj.id = message.id)
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.type !== undefined && (obj.type = nodeTypeToJSON(message.type))
+    message.rootPath !== undefined && (obj.rootPath = message.rootPath)
     return obj
   },
 
@@ -5816,6 +6023,7 @@ export const GenerateScriptRequest = {
     message.id = object.id ?? ''
     message.accessedBy = object.accessedBy ?? ''
     message.type = object.type ?? 0
+    message.rootPath = object.rootPath ?? undefined
     return message
   },
 }
@@ -10087,32 +10295,58 @@ export const CruxAuditService = {
     path: '/crux.CruxAudit/GetAuditLog',
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: AccessRequest) => Buffer.from(AccessRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => AccessRequest.decode(value),
+    requestSerialize: (value: AuditLogListRequest) => Buffer.from(AuditLogListRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => AuditLogListRequest.decode(value),
     responseSerialize: (value: AuditLogListResponse) => Buffer.from(AuditLogListResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer) => AuditLogListResponse.decode(value),
+  },
+  getAuditLogListCount: {
+    path: '/crux.CruxAudit/GetAuditLogListCount',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: AuditLogListRequest) => Buffer.from(AuditLogListRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => AuditLogListRequest.decode(value),
+    responseSerialize: (value: AuditLogListCountResponse) =>
+      Buffer.from(AuditLogListCountResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => AuditLogListCountResponse.decode(value),
   },
 } as const
 
 export interface CruxAuditServer extends UntypedServiceImplementation {
-  getAuditLog: handleUnaryCall<AccessRequest, AuditLogListResponse>
+  getAuditLog: handleUnaryCall<AuditLogListRequest, AuditLogListResponse>
+  getAuditLogListCount: handleUnaryCall<AuditLogListRequest, AuditLogListCountResponse>
 }
 
 export interface CruxAuditClient extends Client {
   getAuditLog(
-    request: AccessRequest,
+    request: AuditLogListRequest,
     callback: (error: ServiceError | null, response: AuditLogListResponse) => void,
   ): ClientUnaryCall
   getAuditLog(
-    request: AccessRequest,
+    request: AuditLogListRequest,
     metadata: Metadata,
     callback: (error: ServiceError | null, response: AuditLogListResponse) => void,
   ): ClientUnaryCall
   getAuditLog(
-    request: AccessRequest,
+    request: AuditLogListRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: AuditLogListResponse) => void,
+  ): ClientUnaryCall
+  getAuditLogListCount(
+    request: AuditLogListRequest,
+    callback: (error: ServiceError | null, response: AuditLogListCountResponse) => void,
+  ): ClientUnaryCall
+  getAuditLogListCount(
+    request: AuditLogListRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: AuditLogListCountResponse) => void,
+  ): ClientUnaryCall
+  getAuditLogListCount(
+    request: AuditLogListRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: AuditLogListCountResponse) => void,
   ): ClientUnaryCall
 }
 

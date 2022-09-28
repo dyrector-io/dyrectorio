@@ -35,8 +35,9 @@
     "k8s": "Kubernetes Cluster"
   },
   "statusFilters": {
-    "all": "All",
-    "active": "Active",
-    "inactive": "Inactive"
-  }
+    "running": "Running",
+    "unreachable": "Unreachable"
+  },
+  "rootPath": "Root path",
+  "rootPathHint": "Optional, leave empty for default paths"
 }

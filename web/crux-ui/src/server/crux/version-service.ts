@@ -45,6 +45,7 @@ class DyoVersionService {
       images: res.images.map(it => ({
         ...it,
         config: containerConfigToDto(it.config),
+        createdAt: timestampToUTC(it.createdAt),
       })),
     }
   }

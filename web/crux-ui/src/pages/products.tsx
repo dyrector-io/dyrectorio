@@ -1,32 +1,30 @@
 import { Layout } from '@app/components/layout'
 import EditProductCard from '@app/components/products/edit-product-card'
-import ProductCard from '@app/components/products/product-card'
+import ProductViewList from '@app/components/products/product-view-list'
+import ProductViewTile from '@app/components/products/product-view-tile'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
 import { ListPageMenu } from '@app/components/shared/page-menu'
-import DyoChips from '@app/elements/dyo-chips'
+import ViewModeToggle, { ViewMode } from '@app/components/shared/view-mode-toggle'
+import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
-import DyoWrap from '@app/elements/dyo-wrap'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
-import { Product } from '@app/models'
-import { productUrl, ROUTE_PRODUCTS } from '@app/routes'
+import { Product, ProductType, PRODUCT_TYPE_VALUES } from '@app/models'
+import { ROUTE_PRODUCTS } from '@app/routes'
+
 import { utcDateToLocale, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
-import { useRouter } from 'next/dist/client/router'
 import { useRef, useState } from 'react'
 
-export const PRODUCT_TYPE_FILTER_VALUES = ['simple', 'complex', 'all'] as const
-export type ProductTypeFilter = typeof PRODUCT_TYPE_FILTER_VALUES[number]
-
 type ProductFilter = TextFilter & {
-  type: ProductTypeFilter
+  type?: ProductType | 'all'
 }
 
 const productTypeFilter = (items: Product[], filter: ProductFilter) => {
-  if (filter.type === 'all') {
+  if (!filter?.type || filter.type === 'all') {
     return items
   }
   return items.filter(it => filter.type.includes(it.type))
@@ -41,15 +39,8 @@ const ProductsPage = (props: ProductsPageProps) => {
 
   const { t } = useTranslation('products')
 
-  const router = useRouter()
-
-  const initalTypeFilter = 'all' as ProductTypeFilter
   const filters = useFilters<Product, ProductFilter>({
     initialData: products,
-    initialFilter: {
-      text: '',
-      type: initalTypeFilter,
-    },
     filters: [
       textFilterFor<Product>(it => [it.name, it.description, it.type, utcDateToLocale(it.updatedAt)]),
       productTypeFilter,
@@ -58,6 +49,8 @@ const ProductsPage = (props: ProductsPageProps) => {
 
   const [creating, setCreating] = useState(false)
   const submitRef = useRef<() => Promise<any>>()
+
+  const [viewMode, setViewMode] = useState<ViewMode>('tile')
 
   const onCreated = (product: Product) => {
     setCreating(false)
@@ -68,8 +61,6 @@ const ProductsPage = (props: ProductsPageProps) => {
     name: t('common:products'),
     url: ROUTE_PRODUCTS,
   }
-
-  const onNavigateToDetails = (id: string) => router.push(productUrl(id))
 
   return (
     <Layout title={t('common:products')}>
@@ -84,10 +75,9 @@ const ProductsPage = (props: ProductsPageProps) => {
       {filters.items.length ? (
         <>
           <Filters setTextFilter={it => filters.setFilter({ text: it })}>
-            <DyoChips
-              className="pl-8"
-              choices={PRODUCT_TYPE_FILTER_VALUES}
-              initialSelection={initalTypeFilter}
+            <DyoFilterChips
+              className="pl-6"
+              choices={PRODUCT_TYPE_VALUES}
               converter={it => t(it)}
               onSelectionChange={type => {
                 filters.setFilter({
@@ -96,17 +86,15 @@ const ProductsPage = (props: ProductsPageProps) => {
               }}
             />
           </Filters>
+          <div className="flex flex-row mt-4 justify-end">
+            <ViewModeToggle viewMode={viewMode} onViewModeChanged={setViewMode} />
+          </div>
 
-          <DyoWrap>
-            {filters.filtered.map((it, index) => (
-              <ProductCard
-                className="max-h-72 p-8"
-                key={`product-${index}`}
-                product={it}
-                onClick={() => onNavigateToDetails(it.id)}
-              />
-            ))}
-          </DyoWrap>
+          {viewMode === 'tile' ? (
+            <ProductViewTile products={filters.filtered} />
+          ) : (
+            <ProductViewList products={filters.filtered} />
+          )}
         </>
       ) : (
         <DyoHeading element="h3" className="text-md text-center text-light-eased pt-32">
