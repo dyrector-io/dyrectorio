@@ -1,23 +1,29 @@
 import { Injectable } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
 import { Configuration, Identity, Session, V0alpha2Api } from '@ory/kratos-client'
 
-const kratos = new V0alpha2Api(new Configuration({ basePath: process.env.KRATOS_ADMIN_URL }))
 const EMAIL = 'email'
 
 @Injectable()
 export default class KratosService {
+  private kratos: V0alpha2Api
+
+  constructor(private configService: ConfigService) {
+    this.kratos = new V0alpha2Api(new Configuration({ basePath: configService.get<string>('KRATOS_ADMIN_URL') }))
+  }
+
   async getIdentityByEmail(email: string): Promise<Identity> {
-    const identities = await kratos.adminListIdentities()
+    const identities = await this.kratos.adminListIdentities()
     return identities.data.find(user => user.traits[EMAIL] === email)
   }
 
   async getIdentitiesByIds(ids: string[]): Promise<Map<string, Identity>> {
-    const identities = await kratos.adminListIdentities()
+    const identities = await this.kratos.adminListIdentities()
     return new Map(identities.data.filter(it => ids.includes(it.id)).map(it => [it.id, it]))
   }
 
   async getSessionsById(id: string, activeOnly?: boolean): Promise<Session[]> {
-    const sessions = await kratos.adminListIdentitySessions(id, undefined, undefined, activeOnly)
+    const sessions = await this.kratos.adminListIdentitySessions(id, undefined, undefined, activeOnly)
     return sessions.data ?? []
   }
 
@@ -32,7 +38,7 @@ export default class KratosService {
   }
 
   async createUser(email: string): Promise<Identity> {
-    const res = await kratos.adminCreateIdentity({
+    const res = await this.kratos.adminCreateIdentity({
       schema_id: 'default',
       traits: {
         email,
@@ -43,7 +49,7 @@ export default class KratosService {
   }
 
   async createRecoveryLink(identity: Identity): Promise<string> {
-    const res = await kratos.adminCreateSelfServiceRecoveryLink({
+    const res = await this.kratos.adminCreateSelfServiceRecoveryLink({
       identity_id: identity.id,
       expires_in: '12h',
     })
@@ -52,12 +58,12 @@ export default class KratosService {
   }
 
   async getIdentityById(id: string): Promise<Identity> {
-    const res = await kratos.adminGetIdentity(id)
+    const res = await this.kratos.adminGetIdentity(id)
 
     return res.data
   }
 
   async getIdentityIdsByEmail(mail: string): Promise<string[]> {
-    return (await kratos.adminListIdentities()).data.filter(r => r.traits[EMAIL] === mail).map(r => r.id)
+    return (await this.kratos.adminListIdentities()).data.filter(r => r.traits[EMAIL] === mail).map(r => r.id)
   }
 }

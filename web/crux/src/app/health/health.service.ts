@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
 import { HealthResponse, ServiceStatus } from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
 
@@ -6,7 +7,7 @@ import PrismaService from 'src/services/prisma.service'
 export default class HealthService {
   private logger = new Logger(HealthService.name)
 
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private configService: ConfigService) {}
 
   async getHealth(): Promise<HealthResponse> {
     let lastMigration: string = null
@@ -18,7 +19,7 @@ export default class HealthService {
       this.logger.error(`Failed to query the last migration from the database: ${error?.message}`, error?.stack)
     }
 
-    const version = process.env.npm_package_version
+    const version = this.configService.get<string>('npm_package_version')
 
     return {
       cruxVersion: version,
