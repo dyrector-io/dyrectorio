@@ -1,10 +1,12 @@
 import { DyoHeading } from '@app/elements/dyo-heading'
-import { DyoInput } from '@app/elements/dyo-input'
+import { DyoInput, MessageType } from '@app/elements/dyo-input'
 import { UniqueKeyValue } from '@app/models'
+import { getValidationError } from '@app/validations'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useReducer } from 'react'
 import { v4 as uuid } from 'uuid'
+import BaseSchema from 'yup/lib/schema'
 
 const EMPTY_KEY_VALUE_PAIR = {
   id: uuid(),
@@ -14,6 +16,7 @@ const EMPTY_KEY_VALUE_PAIR = {
 
 type KeyValueElement = UniqueKeyValue & {
   message?: string
+  messageType: MessageType
 }
 
 type KeyValueInputActionType = 'merge-items' | 'set-items'
@@ -71,10 +74,11 @@ interface KeyValueInputProps {
   heading?: string
   items: UniqueKeyValue[]
   onChange: (items: UniqueKeyValue[]) => void
+  hint?: { hintValidation: BaseSchema; hintText: string }
 }
 
 const KeyValueInput = (props: KeyValueInputProps) => {
-  const { heading, disabled, className, items, valueDisabled, onChange: propOnChange } = props
+  const { heading, disabled, className, items, valueDisabled, hint, onChange: propOnChange } = props
 
   const { t } = useTranslation('common')
 
@@ -83,12 +87,15 @@ const KeyValueInput = (props: KeyValueInputProps) => {
   const stateToElements = (keyValues: UniqueKeyValue[]) => {
     const result = []
 
-    keyValues.forEach(item =>
+    keyValues.forEach(item => {
+      const keyUniqueErr = result.find(it => it.key === item.key) ? t('keyMustUnique') : null
+      const hintErr = !keyUniqueErr && hint ? getValidationError(hint.hintValidation, item.key) : null
       result.push({
         ...item,
-        message: result.find(it => it.key === item.key) ? t('keyMustUnique') : null,
-      }),
-    )
+        message: keyUniqueErr ?? (hintErr ? hint.hintText : null),
+        messageType: (keyUniqueErr ? 'error' : 'info') as MessageType,
+      })
+    })
 
     return result as KeyValueElement[]
   }
@@ -125,7 +132,7 @@ const KeyValueInput = (props: KeyValueInputProps) => {
   const elements = stateToElements(state)
 
   const renderItem = (entry: KeyValueElement, index: number) => {
-    const { key, value, message } = entry
+    const { key, value, message, messageType } = entry
 
     return (
       <div key={entry.id} className="flex flex-row flex-grow p-1">
@@ -138,6 +145,7 @@ const KeyValueInput = (props: KeyValueInputProps) => {
             placeholder={t('key')}
             value={key}
             message={message}
+            messageType={messageType}
             onChange={e => onChange(index, e.target.value, value)}
           />
         </div>
