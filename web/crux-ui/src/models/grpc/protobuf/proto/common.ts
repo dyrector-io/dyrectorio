@@ -69,9 +69,8 @@ export function containerStateToJSON(object: ContainerState): string {
       return 'EXITED'
     case ContainerState.DEAD:
       return 'DEAD'
-    case ContainerState.UNRECOGNIZED:
     default:
-      return 'UNRECOGNIZED'
+      return 'UNKNOWN'
   }
 }
 
@@ -132,9 +131,8 @@ export function deploymentStatusToJSON(object: DeploymentStatus): string {
       return 'OBSOLATE'
     case DeploymentStatus.DOWNGRADED:
       return 'DOWNGRADED'
-    case DeploymentStatus.UNRECOGNIZED:
     default:
-      return 'UNRECOGNIZED'
+      return 'UNKNOWN'
   }
 }
 
@@ -177,9 +175,8 @@ export function networkModeToJSON(object: NetworkMode): string {
       return 'HOST'
     case NetworkMode.BRIDGE:
       return 'BRIDGE'
-    case NetworkMode.UNRECOGNIZED:
     default:
-      return 'UNRECOGNIZED'
+      return 'UNKNOWN'
   }
 }
 
@@ -234,9 +231,8 @@ export function restartPolicyToJSON(object: RestartPolicy): string {
       return 'NO'
     case RestartPolicy.ON_FAILURE:
       return 'ON_FAILURE'
-    case RestartPolicy.UNRECOGNIZED:
     default:
-      return 'UNRECOGNIZED'
+      return 'UNKNOWN'
   }
 }
 
@@ -273,9 +269,8 @@ export function deploymentStrategyToJSON(object: DeploymentStrategy): string {
       return 'RECREATE'
     case DeploymentStrategy.ROLLING:
       return 'ROLLING'
-    case DeploymentStrategy.UNRECOGNIZED:
     default:
-      return 'UNRECOGNIZED'
+      return 'UNKNOWN'
   }
 }
 
@@ -497,18 +492,14 @@ export interface ListSecretsResponse {
   keys: string[]
 }
 
-function createBaseContainerStateItem(): ContainerStateItem {
-  return {
-    containerId: '',
-    name: '',
-    command: '',
-    createdAt: undefined,
-    state: 0,
-    status: '',
-    imageName: '',
-    imageTag: '',
-    ports: [],
-  }
+const baseContainerStateItem: object = {
+  containerId: '',
+  name: '',
+  command: '',
+  state: 0,
+  status: '',
+  imageName: '',
+  imageTag: '',
 }
 
 export const ContainerStateItem = {
@@ -546,7 +537,8 @@ export const ContainerStateItem = {
   decode(input: _m0.Reader | Uint8Array, length?: number): ContainerStateItem {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseContainerStateItem()
+    const message = { ...baseContainerStateItem } as ContainerStateItem
+    message.ports = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -586,17 +578,19 @@ export const ContainerStateItem = {
   },
 
   fromJSON(object: any): ContainerStateItem {
-    return {
-      containerId: isSet(object.containerId) ? String(object.containerId) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      command: isSet(object.command) ? String(object.command) : '',
-      createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
-      state: isSet(object.state) ? containerStateFromJSON(object.state) : 0,
-      status: isSet(object.status) ? String(object.status) : '',
-      imageName: isSet(object.imageName) ? String(object.imageName) : '',
-      imageTag: isSet(object.imageTag) ? String(object.imageTag) : '',
-      ports: Array.isArray(object?.ports) ? object.ports.map((e: any) => Port.fromJSON(e)) : [],
-    }
+    const message = { ...baseContainerStateItem } as ContainerStateItem
+    message.containerId =
+      object.containerId !== undefined && object.containerId !== null ? String(object.containerId) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.command = object.command !== undefined && object.command !== null ? String(object.command) : ''
+    message.createdAt =
+      object.createdAt !== undefined && object.createdAt !== null ? fromJsonTimestamp(object.createdAt) : undefined
+    message.state = object.state !== undefined && object.state !== null ? containerStateFromJSON(object.state) : 0
+    message.status = object.status !== undefined && object.status !== null ? String(object.status) : ''
+    message.imageName = object.imageName !== undefined && object.imageName !== null ? String(object.imageName) : ''
+    message.imageTag = object.imageTag !== undefined && object.imageTag !== null ? String(object.imageTag) : ''
+    message.ports = (object.ports ?? []).map((e: any) => Port.fromJSON(e))
+    return message
   },
 
   toJSON(message: ContainerStateItem): unknown {
@@ -618,7 +612,7 @@ export const ContainerStateItem = {
   },
 
   fromPartial<I extends Exact<DeepPartial<ContainerStateItem>, I>>(object: I): ContainerStateItem {
-    const message = createBaseContainerStateItem()
+    const message = { ...baseContainerStateItem } as ContainerStateItem
     message.containerId = object.containerId ?? ''
     message.name = object.name ?? ''
     message.command = object.command ?? ''
@@ -633,9 +627,7 @@ export const ContainerStateItem = {
   },
 }
 
-function createBaseContainerStateListMessage(): ContainerStateListMessage {
-  return { data: [] }
-}
+const baseContainerStateListMessage: object = {}
 
 export const ContainerStateListMessage = {
   encode(message: ContainerStateListMessage, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -651,7 +643,10 @@ export const ContainerStateListMessage = {
   decode(input: _m0.Reader | Uint8Array, length?: number): ContainerStateListMessage {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseContainerStateListMessage()
+    const message = {
+      ...baseContainerStateListMessage,
+    } as ContainerStateListMessage
+    message.data = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -670,10 +665,12 @@ export const ContainerStateListMessage = {
   },
 
   fromJSON(object: any): ContainerStateListMessage {
-    return {
-      prefix: isSet(object.prefix) ? String(object.prefix) : undefined,
-      data: Array.isArray(object?.data) ? object.data.map((e: any) => ContainerStateItem.fromJSON(e)) : [],
-    }
+    const message = {
+      ...baseContainerStateListMessage,
+    } as ContainerStateListMessage
+    message.prefix = object.prefix !== undefined && object.prefix !== null ? String(object.prefix) : undefined
+    message.data = (object.data ?? []).map((e: any) => ContainerStateItem.fromJSON(e))
+    return message
   },
 
   toJSON(message: ContainerStateListMessage): unknown {
@@ -688,16 +685,16 @@ export const ContainerStateListMessage = {
   },
 
   fromPartial<I extends Exact<DeepPartial<ContainerStateListMessage>, I>>(object: I): ContainerStateListMessage {
-    const message = createBaseContainerStateListMessage()
+    const message = {
+      ...baseContainerStateListMessage,
+    } as ContainerStateListMessage
     message.prefix = object.prefix ?? undefined
     message.data = object.data?.map(e => ContainerStateItem.fromPartial(e)) || []
     return message
   },
 }
 
-function createBaseInstanceDeploymentItem(): InstanceDeploymentItem {
-  return { instanceId: '', state: 0 }
-}
+const baseInstanceDeploymentItem: object = { instanceId: '', state: 0 }
 
 export const InstanceDeploymentItem = {
   encode(message: InstanceDeploymentItem, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -713,7 +710,7 @@ export const InstanceDeploymentItem = {
   decode(input: _m0.Reader | Uint8Array, length?: number): InstanceDeploymentItem {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseInstanceDeploymentItem()
+    const message = { ...baseInstanceDeploymentItem } as InstanceDeploymentItem
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -732,10 +729,10 @@ export const InstanceDeploymentItem = {
   },
 
   fromJSON(object: any): InstanceDeploymentItem {
-    return {
-      instanceId: isSet(object.instanceId) ? String(object.instanceId) : '',
-      state: isSet(object.state) ? containerStateFromJSON(object.state) : 0,
-    }
+    const message = { ...baseInstanceDeploymentItem } as InstanceDeploymentItem
+    message.instanceId = object.instanceId !== undefined && object.instanceId !== null ? String(object.instanceId) : ''
+    message.state = object.state !== undefined && object.state !== null ? containerStateFromJSON(object.state) : 0
+    return message
   },
 
   toJSON(message: InstanceDeploymentItem): unknown {
@@ -746,16 +743,14 @@ export const InstanceDeploymentItem = {
   },
 
   fromPartial<I extends Exact<DeepPartial<InstanceDeploymentItem>, I>>(object: I): InstanceDeploymentItem {
-    const message = createBaseInstanceDeploymentItem()
+    const message = { ...baseInstanceDeploymentItem } as InstanceDeploymentItem
     message.instanceId = object.instanceId ?? ''
     message.state = object.state ?? 0
     return message
   },
 }
 
-function createBaseDeploymentStatusMessage(): DeploymentStatusMessage {
-  return { instance: undefined, deploymentStatus: undefined, log: [] }
-}
+const baseDeploymentStatusMessage: object = { log: '' }
 
 export const DeploymentStatusMessage = {
   encode(message: DeploymentStatusMessage, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -774,7 +769,10 @@ export const DeploymentStatusMessage = {
   decode(input: _m0.Reader | Uint8Array, length?: number): DeploymentStatusMessage {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseDeploymentStatusMessage()
+    const message = {
+      ...baseDeploymentStatusMessage,
+    } as DeploymentStatusMessage
+    message.log = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -796,11 +794,19 @@ export const DeploymentStatusMessage = {
   },
 
   fromJSON(object: any): DeploymentStatusMessage {
-    return {
-      instance: isSet(object.instance) ? InstanceDeploymentItem.fromJSON(object.instance) : undefined,
-      deploymentStatus: isSet(object.deploymentStatus) ? deploymentStatusFromJSON(object.deploymentStatus) : undefined,
-      log: Array.isArray(object?.log) ? object.log.map((e: any) => String(e)) : [],
-    }
+    const message = {
+      ...baseDeploymentStatusMessage,
+    } as DeploymentStatusMessage
+    message.instance =
+      object.instance !== undefined && object.instance !== null
+        ? InstanceDeploymentItem.fromJSON(object.instance)
+        : undefined
+    message.deploymentStatus =
+      object.deploymentStatus !== undefined && object.deploymentStatus !== null
+        ? deploymentStatusFromJSON(object.deploymentStatus)
+        : undefined
+    message.log = (object.log ?? []).map((e: any) => String(e))
+    return message
   },
 
   toJSON(message: DeploymentStatusMessage): unknown {
@@ -819,7 +825,9 @@ export const DeploymentStatusMessage = {
   },
 
   fromPartial<I extends Exact<DeepPartial<DeploymentStatusMessage>, I>>(object: I): DeploymentStatusMessage {
-    const message = createBaseDeploymentStatusMessage()
+    const message = {
+      ...baseDeploymentStatusMessage,
+    } as DeploymentStatusMessage
     message.instance =
       object.instance !== undefined && object.instance !== null
         ? InstanceDeploymentItem.fromPartial(object.instance)
@@ -830,9 +838,7 @@ export const DeploymentStatusMessage = {
   },
 }
 
-function createBasePort(): Port {
-  return { internal: 0, external: 0 }
-}
+const basePort: object = { internal: 0, external: 0 }
 
 export const Port = {
   encode(message: Port, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -848,7 +854,7 @@ export const Port = {
   decode(input: _m0.Reader | Uint8Array, length?: number): Port {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBasePort()
+    const message = { ...basePort } as Port
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -867,10 +873,10 @@ export const Port = {
   },
 
   fromJSON(object: any): Port {
-    return {
-      internal: isSet(object.internal) ? Number(object.internal) : 0,
-      external: isSet(object.external) ? Number(object.external) : 0,
-    }
+    const message = { ...basePort } as Port
+    message.internal = object.internal !== undefined && object.internal !== null ? Number(object.internal) : 0
+    message.external = object.external !== undefined && object.external !== null ? Number(object.external) : 0
+    return message
   },
 
   toJSON(message: Port): unknown {
@@ -881,16 +887,14 @@ export const Port = {
   },
 
   fromPartial<I extends Exact<DeepPartial<Port>, I>>(object: I): Port {
-    const message = createBasePort()
+    const message = { ...basePort } as Port
     message.internal = object.internal ?? 0
     message.external = object.external ?? 0
     return message
   },
 }
 
-function createBasePortRange(): PortRange {
-  return { from: 0, to: 0 }
-}
+const basePortRange: object = { from: 0, to: 0 }
 
 export const PortRange = {
   encode(message: PortRange, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -906,7 +910,7 @@ export const PortRange = {
   decode(input: _m0.Reader | Uint8Array, length?: number): PortRange {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBasePortRange()
+    const message = { ...basePortRange } as PortRange
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -925,7 +929,10 @@ export const PortRange = {
   },
 
   fromJSON(object: any): PortRange {
-    return { from: isSet(object.from) ? Number(object.from) : 0, to: isSet(object.to) ? Number(object.to) : 0 }
+    const message = { ...basePortRange } as PortRange
+    message.from = object.from !== undefined && object.from !== null ? Number(object.from) : 0
+    message.to = object.to !== undefined && object.to !== null ? Number(object.to) : 0
+    return message
   },
 
   toJSON(message: PortRange): unknown {
@@ -936,16 +943,14 @@ export const PortRange = {
   },
 
   fromPartial<I extends Exact<DeepPartial<PortRange>, I>>(object: I): PortRange {
-    const message = createBasePortRange()
+    const message = { ...basePortRange } as PortRange
     message.from = object.from ?? 0
     message.to = object.to ?? 0
     return message
   },
 }
 
-function createBasePortRangeBinding(): PortRangeBinding {
-  return { internal: undefined, external: undefined }
-}
+const basePortRangeBinding: object = {}
 
 export const PortRangeBinding = {
   encode(message: PortRangeBinding, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -961,7 +966,7 @@ export const PortRangeBinding = {
   decode(input: _m0.Reader | Uint8Array, length?: number): PortRangeBinding {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBasePortRangeBinding()
+    const message = { ...basePortRangeBinding } as PortRangeBinding
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -980,10 +985,12 @@ export const PortRangeBinding = {
   },
 
   fromJSON(object: any): PortRangeBinding {
-    return {
-      internal: isSet(object.internal) ? PortRange.fromJSON(object.internal) : undefined,
-      external: isSet(object.external) ? PortRange.fromJSON(object.external) : undefined,
-    }
+    const message = { ...basePortRangeBinding } as PortRangeBinding
+    message.internal =
+      object.internal !== undefined && object.internal !== null ? PortRange.fromJSON(object.internal) : undefined
+    message.external =
+      object.external !== undefined && object.external !== null ? PortRange.fromJSON(object.external) : undefined
+    return message
   },
 
   toJSON(message: PortRangeBinding): unknown {
@@ -994,7 +1001,7 @@ export const PortRangeBinding = {
   },
 
   fromPartial<I extends Exact<DeepPartial<PortRangeBinding>, I>>(object: I): PortRangeBinding {
-    const message = createBasePortRangeBinding()
+    const message = { ...basePortRangeBinding } as PortRangeBinding
     message.internal =
       object.internal !== undefined && object.internal !== null ? PortRange.fromPartial(object.internal) : undefined
     message.external =
@@ -1003,9 +1010,7 @@ export const PortRangeBinding = {
   },
 }
 
-function createBaseVolume(): Volume {
-  return { name: '', path: '' }
-}
+const baseVolume: object = { name: '', path: '' }
 
 export const Volume = {
   encode(message: Volume, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -1030,7 +1035,7 @@ export const Volume = {
   decode(input: _m0.Reader | Uint8Array, length?: number): Volume {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseVolume()
+    const message = { ...baseVolume } as Volume
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -1058,13 +1063,13 @@ export const Volume = {
   },
 
   fromJSON(object: any): Volume {
-    return {
-      name: isSet(object.name) ? String(object.name) : '',
-      path: isSet(object.path) ? String(object.path) : '',
-      size: isSet(object.size) ? String(object.size) : undefined,
-      type: isSet(object.type) ? String(object.type) : undefined,
-      class: isSet(object.class) ? String(object.class) : undefined,
-    }
+    const message = { ...baseVolume } as Volume
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.path = object.path !== undefined && object.path !== null ? String(object.path) : ''
+    message.size = object.size !== undefined && object.size !== null ? String(object.size) : undefined
+    message.type = object.type !== undefined && object.type !== null ? String(object.type) : undefined
+    message.class = object.class !== undefined && object.class !== null ? String(object.class) : undefined
+    return message
   },
 
   toJSON(message: Volume): unknown {
@@ -1078,7 +1083,7 @@ export const Volume = {
   },
 
   fromPartial<I extends Exact<DeepPartial<Volume>, I>>(object: I): Volume {
-    const message = createBaseVolume()
+    const message = { ...baseVolume } as Volume
     message.name = object.name ?? ''
     message.path = object.path ?? ''
     message.size = object.size ?? undefined
@@ -1088,9 +1093,7 @@ export const Volume = {
   },
 }
 
-function createBaseExpose(): Expose {
-  return { public: false, tls: false }
-}
+const baseExpose: object = { public: false, tls: false }
 
 export const Expose = {
   encode(message: Expose, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -1106,7 +1109,7 @@ export const Expose = {
   decode(input: _m0.Reader | Uint8Array, length?: number): Expose {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseExpose()
+    const message = { ...baseExpose } as Expose
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -1125,10 +1128,10 @@ export const Expose = {
   },
 
   fromJSON(object: any): Expose {
-    return {
-      public: isSet(object.public) ? Boolean(object.public) : false,
-      tls: isSet(object.tls) ? Boolean(object.tls) : false,
-    }
+    const message = { ...baseExpose } as Expose
+    message.public = object.public !== undefined && object.public !== null ? Boolean(object.public) : false
+    message.tls = object.tls !== undefined && object.tls !== null ? Boolean(object.tls) : false
+    return message
   },
 
   toJSON(message: Expose): unknown {
@@ -1139,16 +1142,14 @@ export const Expose = {
   },
 
   fromPartial<I extends Exact<DeepPartial<Expose>, I>>(object: I): Expose {
-    const message = createBaseExpose()
+    const message = { ...baseExpose } as Expose
     message.public = object.public ?? false
     message.tls = object.tls ?? false
     return message
   },
 }
 
-function createBaseIngress(): Ingress {
-  return { name: '', host: '' }
-}
+const baseIngress: object = { name: '', host: '' }
 
 export const Ingress = {
   encode(message: Ingress, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -1167,7 +1168,7 @@ export const Ingress = {
   decode(input: _m0.Reader | Uint8Array, length?: number): Ingress {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseIngress()
+    const message = { ...baseIngress } as Ingress
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -1189,11 +1190,12 @@ export const Ingress = {
   },
 
   fromJSON(object: any): Ingress {
-    return {
-      name: isSet(object.name) ? String(object.name) : '',
-      host: isSet(object.host) ? String(object.host) : '',
-      uploadLimit: isSet(object.uploadLimit) ? String(object.uploadLimit) : undefined,
-    }
+    const message = { ...baseIngress } as Ingress
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.host = object.host !== undefined && object.host !== null ? String(object.host) : ''
+    message.uploadLimit =
+      object.uploadLimit !== undefined && object.uploadLimit !== null ? String(object.uploadLimit) : undefined
+    return message
   },
 
   toJSON(message: Ingress): unknown {
@@ -1205,7 +1207,7 @@ export const Ingress = {
   },
 
   fromPartial<I extends Exact<DeepPartial<Ingress>, I>>(object: I): Ingress {
-    const message = createBaseIngress()
+    const message = { ...baseIngress } as Ingress
     message.name = object.name ?? ''
     message.host = object.host ?? ''
     message.uploadLimit = object.uploadLimit ?? undefined
@@ -1213,8 +1215,11 @@ export const Ingress = {
   },
 }
 
-function createBaseConfigContainer(): ConfigContainer {
-  return { image: '', volume: '', path: '', keepFiles: false }
+const baseConfigContainer: object = {
+  image: '',
+  volume: '',
+  path: '',
+  keepFiles: false,
 }
 
 export const ConfigContainer = {
@@ -1237,7 +1242,7 @@ export const ConfigContainer = {
   decode(input: _m0.Reader | Uint8Array, length?: number): ConfigContainer {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseConfigContainer()
+    const message = { ...baseConfigContainer } as ConfigContainer
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -1262,12 +1267,12 @@ export const ConfigContainer = {
   },
 
   fromJSON(object: any): ConfigContainer {
-    return {
-      image: isSet(object.image) ? String(object.image) : '',
-      volume: isSet(object.volume) ? String(object.volume) : '',
-      path: isSet(object.path) ? String(object.path) : '',
-      keepFiles: isSet(object.keepFiles) ? Boolean(object.keepFiles) : false,
-    }
+    const message = { ...baseConfigContainer } as ConfigContainer
+    message.image = object.image !== undefined && object.image !== null ? String(object.image) : ''
+    message.volume = object.volume !== undefined && object.volume !== null ? String(object.volume) : ''
+    message.path = object.path !== undefined && object.path !== null ? String(object.path) : ''
+    message.keepFiles = object.keepFiles !== undefined && object.keepFiles !== null ? Boolean(object.keepFiles) : false
+    return message
   },
 
   toJSON(message: ConfigContainer): unknown {
@@ -1280,7 +1285,7 @@ export const ConfigContainer = {
   },
 
   fromPartial<I extends Exact<DeepPartial<ConfigContainer>, I>>(object: I): ConfigContainer {
-    const message = createBaseConfigContainer()
+    const message = { ...baseConfigContainer } as ConfigContainer
     message.image = object.image ?? ''
     message.volume = object.volume ?? ''
     message.path = object.path ?? ''
@@ -1289,9 +1294,7 @@ export const ConfigContainer = {
   },
 }
 
-function createBaseImportContainer(): ImportContainer {
-  return { environments: {}, volume: '', command: '' }
-}
+const baseImportContainer: object = { volume: '', command: '' }
 
 export const ImportContainer = {
   encode(message: ImportContainer, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -1310,7 +1313,8 @@ export const ImportContainer = {
   decode(input: _m0.Reader | Uint8Array, length?: number): ImportContainer {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseImportContainer()
+    const message = { ...baseImportContainer } as ImportContainer
+    message.environments = {}
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -1335,16 +1339,16 @@ export const ImportContainer = {
   },
 
   fromJSON(object: any): ImportContainer {
-    return {
-      environments: isObject(object.environments)
-        ? Object.entries(object.environments).reduce<{ [key: string]: string }>((acc, [key, value]) => {
-            acc[key] = String(value)
-            return acc
-          }, {})
-        : {},
-      volume: isSet(object.volume) ? String(object.volume) : '',
-      command: isSet(object.command) ? String(object.command) : '',
-    }
+    const message = { ...baseImportContainer } as ImportContainer
+    message.environments = Object.entries(object.environments ?? {}).reduce<{
+      [key: string]: string
+    }>((acc, [key, value]) => {
+      acc[key] = String(value)
+      return acc
+    }, {})
+    message.volume = object.volume !== undefined && object.volume !== null ? String(object.volume) : ''
+    message.command = object.command !== undefined && object.command !== null ? String(object.command) : ''
+    return message
   },
 
   toJSON(message: ImportContainer): unknown {
@@ -1361,25 +1365,22 @@ export const ImportContainer = {
   },
 
   fromPartial<I extends Exact<DeepPartial<ImportContainer>, I>>(object: I): ImportContainer {
-    const message = createBaseImportContainer()
-    message.environments = Object.entries(object.environments ?? {}).reduce<{ [key: string]: string }>(
-      (acc, [key, value]) => {
-        if (value !== undefined) {
-          acc[key] = String(value)
-        }
-        return acc
-      },
-      {},
-    )
+    const message = { ...baseImportContainer } as ImportContainer
+    message.environments = Object.entries(object.environments ?? {}).reduce<{
+      [key: string]: string
+    }>((acc, [key, value]) => {
+      if (value !== undefined) {
+        acc[key] = String(value)
+      }
+      return acc
+    }, {})
     message.volume = object.volume ?? ''
     message.command = object.command ?? ''
     return message
   },
 }
 
-function createBaseImportContainer_EnvironmentsEntry(): ImportContainer_EnvironmentsEntry {
-  return { key: '', value: '' }
-}
+const baseImportContainer_EnvironmentsEntry: object = { key: '', value: '' }
 
 export const ImportContainer_EnvironmentsEntry = {
   encode(message: ImportContainer_EnvironmentsEntry, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -1395,7 +1396,9 @@ export const ImportContainer_EnvironmentsEntry = {
   decode(input: _m0.Reader | Uint8Array, length?: number): ImportContainer_EnvironmentsEntry {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseImportContainer_EnvironmentsEntry()
+    const message = {
+      ...baseImportContainer_EnvironmentsEntry,
+    } as ImportContainer_EnvironmentsEntry
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -1414,7 +1417,12 @@ export const ImportContainer_EnvironmentsEntry = {
   },
 
   fromJSON(object: any): ImportContainer_EnvironmentsEntry {
-    return { key: isSet(object.key) ? String(object.key) : '', value: isSet(object.value) ? String(object.value) : '' }
+    const message = {
+      ...baseImportContainer_EnvironmentsEntry,
+    } as ImportContainer_EnvironmentsEntry
+    message.key = object.key !== undefined && object.key !== null ? String(object.key) : ''
+    message.value = object.value !== undefined && object.value !== null ? String(object.value) : ''
+    return message
   },
 
   toJSON(message: ImportContainer_EnvironmentsEntry): unknown {
@@ -1427,16 +1435,16 @@ export const ImportContainer_EnvironmentsEntry = {
   fromPartial<I extends Exact<DeepPartial<ImportContainer_EnvironmentsEntry>, I>>(
     object: I,
   ): ImportContainer_EnvironmentsEntry {
-    const message = createBaseImportContainer_EnvironmentsEntry()
+    const message = {
+      ...baseImportContainer_EnvironmentsEntry,
+    } as ImportContainer_EnvironmentsEntry
     message.key = object.key ?? ''
     message.value = object.value ?? ''
     return message
   },
 }
 
-function createBaseLogConfig(): LogConfig {
-  return { driver: '', options: {} }
-}
+const baseLogConfig: object = { driver: '' }
 
 export const LogConfig = {
   encode(message: LogConfig, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -1452,7 +1460,8 @@ export const LogConfig = {
   decode(input: _m0.Reader | Uint8Array, length?: number): LogConfig {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseLogConfig()
+    const message = { ...baseLogConfig } as LogConfig
+    message.options = {}
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -1474,15 +1483,15 @@ export const LogConfig = {
   },
 
   fromJSON(object: any): LogConfig {
-    return {
-      driver: isSet(object.driver) ? String(object.driver) : '',
-      options: isObject(object.options)
-        ? Object.entries(object.options).reduce<{ [key: string]: string }>((acc, [key, value]) => {
-            acc[key] = String(value)
-            return acc
-          }, {})
-        : {},
-    }
+    const message = { ...baseLogConfig } as LogConfig
+    message.driver = object.driver !== undefined && object.driver !== null ? String(object.driver) : ''
+    message.options = Object.entries(object.options ?? {}).reduce<{
+      [key: string]: string
+    }>((acc, [key, value]) => {
+      acc[key] = String(value)
+      return acc
+    }, {})
+    return message
   },
 
   toJSON(message: LogConfig): unknown {
@@ -1498,9 +1507,11 @@ export const LogConfig = {
   },
 
   fromPartial<I extends Exact<DeepPartial<LogConfig>, I>>(object: I): LogConfig {
-    const message = createBaseLogConfig()
+    const message = { ...baseLogConfig } as LogConfig
     message.driver = object.driver ?? ''
-    message.options = Object.entries(object.options ?? {}).reduce<{ [key: string]: string }>((acc, [key, value]) => {
+    message.options = Object.entries(object.options ?? {}).reduce<{
+      [key: string]: string
+    }>((acc, [key, value]) => {
       if (value !== undefined) {
         acc[key] = String(value)
       }
@@ -1510,9 +1521,7 @@ export const LogConfig = {
   },
 }
 
-function createBaseLogConfig_OptionsEntry(): LogConfig_OptionsEntry {
-  return { key: '', value: '' }
-}
+const baseLogConfig_OptionsEntry: object = { key: '', value: '' }
 
 export const LogConfig_OptionsEntry = {
   encode(message: LogConfig_OptionsEntry, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -1528,7 +1537,7 @@ export const LogConfig_OptionsEntry = {
   decode(input: _m0.Reader | Uint8Array, length?: number): LogConfig_OptionsEntry {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseLogConfig_OptionsEntry()
+    const message = { ...baseLogConfig_OptionsEntry } as LogConfig_OptionsEntry
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -1547,7 +1556,10 @@ export const LogConfig_OptionsEntry = {
   },
 
   fromJSON(object: any): LogConfig_OptionsEntry {
-    return { key: isSet(object.key) ? String(object.key) : '', value: isSet(object.value) ? String(object.value) : '' }
+    const message = { ...baseLogConfig_OptionsEntry } as LogConfig_OptionsEntry
+    message.key = object.key !== undefined && object.key !== null ? String(object.key) : ''
+    message.value = object.value !== undefined && object.value !== null ? String(object.value) : ''
+    return message
   },
 
   toJSON(message: LogConfig_OptionsEntry): unknown {
@@ -1558,16 +1570,14 @@ export const LogConfig_OptionsEntry = {
   },
 
   fromPartial<I extends Exact<DeepPartial<LogConfig_OptionsEntry>, I>>(object: I): LogConfig_OptionsEntry {
-    const message = createBaseLogConfig_OptionsEntry()
+    const message = { ...baseLogConfig_OptionsEntry } as LogConfig_OptionsEntry
     message.key = object.key ?? ''
     message.value = object.value ?? ''
     return message
   },
 }
 
-function createBaseVolumeLink(): VolumeLink {
-  return { name: '', path: '' }
-}
+const baseVolumeLink: object = { name: '', path: '' }
 
 export const VolumeLink = {
   encode(message: VolumeLink, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -1583,7 +1593,7 @@ export const VolumeLink = {
   decode(input: _m0.Reader | Uint8Array, length?: number): VolumeLink {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseVolumeLink()
+    const message = { ...baseVolumeLink } as VolumeLink
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -1602,7 +1612,10 @@ export const VolumeLink = {
   },
 
   fromJSON(object: any): VolumeLink {
-    return { name: isSet(object.name) ? String(object.name) : '', path: isSet(object.path) ? String(object.path) : '' }
+    const message = { ...baseVolumeLink } as VolumeLink
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.path = object.path !== undefined && object.path !== null ? String(object.path) : ''
+    return message
   },
 
   toJSON(message: VolumeLink): unknown {
@@ -1613,15 +1626,18 @@ export const VolumeLink = {
   },
 
   fromPartial<I extends Exact<DeepPartial<VolumeLink>, I>>(object: I): VolumeLink {
-    const message = createBaseVolumeLink()
+    const message = { ...baseVolumeLink } as VolumeLink
     message.name = object.name ?? ''
     message.path = object.path ?? ''
     return message
   },
 }
 
-function createBaseInitContainer(): InitContainer {
-  return { name: '', image: '', environments: {}, volumes: [], command: [], args: [] }
+const baseInitContainer: object = {
+  name: '',
+  image: '',
+  command: '',
+  args: '',
 }
 
 export const InitContainer = {
@@ -1653,7 +1669,11 @@ export const InitContainer = {
   decode(input: _m0.Reader | Uint8Array, length?: number): InitContainer {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseInitContainer()
+    const message = { ...baseInitContainer } as InitContainer
+    message.environments = {}
+    message.volumes = []
+    message.command = []
+    message.args = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -1690,20 +1710,23 @@ export const InitContainer = {
   },
 
   fromJSON(object: any): InitContainer {
-    return {
-      name: isSet(object.name) ? String(object.name) : '',
-      image: isSet(object.image) ? String(object.image) : '',
-      environments: isObject(object.environments)
-        ? Object.entries(object.environments).reduce<{ [key: string]: string }>((acc, [key, value]) => {
-            acc[key] = String(value)
-            return acc
-          }, {})
-        : {},
-      useParentConfig: isSet(object.useParentConfig) ? Boolean(object.useParentConfig) : undefined,
-      volumes: Array.isArray(object?.volumes) ? object.volumes.map((e: any) => VolumeLink.fromJSON(e)) : [],
-      command: Array.isArray(object?.command) ? object.command.map((e: any) => String(e)) : [],
-      args: Array.isArray(object?.args) ? object.args.map((e: any) => String(e)) : [],
-    }
+    const message = { ...baseInitContainer } as InitContainer
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.image = object.image !== undefined && object.image !== null ? String(object.image) : ''
+    message.environments = Object.entries(object.environments ?? {}).reduce<{
+      [key: string]: string
+    }>((acc, [key, value]) => {
+      acc[key] = String(value)
+      return acc
+    }, {})
+    message.useParentConfig =
+      object.useParentConfig !== undefined && object.useParentConfig !== null
+        ? Boolean(object.useParentConfig)
+        : undefined
+    message.volumes = (object.volumes ?? []).map((e: any) => VolumeLink.fromJSON(e))
+    message.command = (object.command ?? []).map((e: any) => String(e))
+    message.args = (object.args ?? []).map((e: any) => String(e))
+    return message
   },
 
   toJSON(message: InitContainer): unknown {
@@ -1736,18 +1759,17 @@ export const InitContainer = {
   },
 
   fromPartial<I extends Exact<DeepPartial<InitContainer>, I>>(object: I): InitContainer {
-    const message = createBaseInitContainer()
+    const message = { ...baseInitContainer } as InitContainer
     message.name = object.name ?? ''
     message.image = object.image ?? ''
-    message.environments = Object.entries(object.environments ?? {}).reduce<{ [key: string]: string }>(
-      (acc, [key, value]) => {
-        if (value !== undefined) {
-          acc[key] = String(value)
-        }
-        return acc
-      },
-      {},
-    )
+    message.environments = Object.entries(object.environments ?? {}).reduce<{
+      [key: string]: string
+    }>((acc, [key, value]) => {
+      if (value !== undefined) {
+        acc[key] = String(value)
+      }
+      return acc
+    }, {})
     message.useParentConfig = object.useParentConfig ?? undefined
     message.volumes = object.volumes?.map(e => VolumeLink.fromPartial(e)) || []
     message.command = object.command?.map(e => e) || []
@@ -1756,9 +1778,7 @@ export const InitContainer = {
   },
 }
 
-function createBaseInitContainer_EnvironmentsEntry(): InitContainer_EnvironmentsEntry {
-  return { key: '', value: '' }
-}
+const baseInitContainer_EnvironmentsEntry: object = { key: '', value: '' }
 
 export const InitContainer_EnvironmentsEntry = {
   encode(message: InitContainer_EnvironmentsEntry, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -1774,7 +1794,9 @@ export const InitContainer_EnvironmentsEntry = {
   decode(input: _m0.Reader | Uint8Array, length?: number): InitContainer_EnvironmentsEntry {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseInitContainer_EnvironmentsEntry()
+    const message = {
+      ...baseInitContainer_EnvironmentsEntry,
+    } as InitContainer_EnvironmentsEntry
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -1793,7 +1815,12 @@ export const InitContainer_EnvironmentsEntry = {
   },
 
   fromJSON(object: any): InitContainer_EnvironmentsEntry {
-    return { key: isSet(object.key) ? String(object.key) : '', value: isSet(object.value) ? String(object.value) : '' }
+    const message = {
+      ...baseInitContainer_EnvironmentsEntry,
+    } as InitContainer_EnvironmentsEntry
+    message.key = object.key !== undefined && object.key !== null ? String(object.key) : ''
+    message.value = object.value !== undefined && object.value !== null ? String(object.value) : ''
+    return message
   },
 
   toJSON(message: InitContainer_EnvironmentsEntry): unknown {
@@ -1806,16 +1833,16 @@ export const InitContainer_EnvironmentsEntry = {
   fromPartial<I extends Exact<DeepPartial<InitContainer_EnvironmentsEntry>, I>>(
     object: I,
   ): InitContainer_EnvironmentsEntry {
-    const message = createBaseInitContainer_EnvironmentsEntry()
+    const message = {
+      ...baseInitContainer_EnvironmentsEntry,
+    } as InitContainer_EnvironmentsEntry
     message.key = object.key ?? ''
     message.value = object.value ?? ''
     return message
   },
 }
 
-function createBaseDagentContainerConfig(): DagentContainerConfig {
-  return { networks: [] }
-}
+const baseDagentContainerConfig: object = { networks: '' }
 
 export const DagentContainerConfig = {
   encode(message: DagentContainerConfig, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -1837,7 +1864,8 @@ export const DagentContainerConfig = {
   decode(input: _m0.Reader | Uint8Array, length?: number): DagentContainerConfig {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseDagentContainerConfig()
+    const message = { ...baseDagentContainerConfig } as DagentContainerConfig
+    message.networks = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -1862,12 +1890,19 @@ export const DagentContainerConfig = {
   },
 
   fromJSON(object: any): DagentContainerConfig {
-    return {
-      logConfig: isSet(object.logConfig) ? LogConfig.fromJSON(object.logConfig) : undefined,
-      restartPolicy: isSet(object.restartPolicy) ? restartPolicyFromJSON(object.restartPolicy) : undefined,
-      networkMode: isSet(object.networkMode) ? networkModeFromJSON(object.networkMode) : undefined,
-      networks: Array.isArray(object?.networks) ? object.networks.map((e: any) => String(e)) : [],
-    }
+    const message = { ...baseDagentContainerConfig } as DagentContainerConfig
+    message.logConfig =
+      object.logConfig !== undefined && object.logConfig !== null ? LogConfig.fromJSON(object.logConfig) : undefined
+    message.restartPolicy =
+      object.restartPolicy !== undefined && object.restartPolicy !== null
+        ? restartPolicyFromJSON(object.restartPolicy)
+        : undefined
+    message.networkMode =
+      object.networkMode !== undefined && object.networkMode !== null
+        ? networkModeFromJSON(object.networkMode)
+        : undefined
+    message.networks = (object.networks ?? []).map((e: any) => String(e))
+    return message
   },
 
   toJSON(message: DagentContainerConfig): unknown {
@@ -1887,7 +1922,7 @@ export const DagentContainerConfig = {
   },
 
   fromPartial<I extends Exact<DeepPartial<DagentContainerConfig>, I>>(object: I): DagentContainerConfig {
-    const message = createBaseDagentContainerConfig()
+    const message = { ...baseDagentContainerConfig } as DagentContainerConfig
     message.logConfig =
       object.logConfig !== undefined && object.logConfig !== null ? LogConfig.fromPartial(object.logConfig) : undefined
     message.restartPolicy = object.restartPolicy ?? undefined
@@ -1897,9 +1932,7 @@ export const DagentContainerConfig = {
   },
 }
 
-function createBaseHealthCheckConfig(): HealthCheckConfig {
-  return { port: 0 }
-}
+const baseHealthCheckConfig: object = { port: 0 }
 
 export const HealthCheckConfig = {
   encode(message: HealthCheckConfig, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -1921,7 +1954,7 @@ export const HealthCheckConfig = {
   decode(input: _m0.Reader | Uint8Array, length?: number): HealthCheckConfig {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseHealthCheckConfig()
+    const message = { ...baseHealthCheckConfig } as HealthCheckConfig
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -1946,12 +1979,15 @@ export const HealthCheckConfig = {
   },
 
   fromJSON(object: any): HealthCheckConfig {
-    return {
-      port: isSet(object.port) ? Number(object.port) : 0,
-      livenessProbe: isSet(object.livenessProbe) ? String(object.livenessProbe) : undefined,
-      readinessProbe: isSet(object.readinessProbe) ? String(object.readinessProbe) : undefined,
-      startupProbe: isSet(object.startupProbe) ? String(object.startupProbe) : undefined,
-    }
+    const message = { ...baseHealthCheckConfig } as HealthCheckConfig
+    message.port = object.port !== undefined && object.port !== null ? Number(object.port) : 0
+    message.livenessProbe =
+      object.livenessProbe !== undefined && object.livenessProbe !== null ? String(object.livenessProbe) : undefined
+    message.readinessProbe =
+      object.readinessProbe !== undefined && object.readinessProbe !== null ? String(object.readinessProbe) : undefined
+    message.startupProbe =
+      object.startupProbe !== undefined && object.startupProbe !== null ? String(object.startupProbe) : undefined
+    return message
   },
 
   toJSON(message: HealthCheckConfig): unknown {
@@ -1964,7 +2000,7 @@ export const HealthCheckConfig = {
   },
 
   fromPartial<I extends Exact<DeepPartial<HealthCheckConfig>, I>>(object: I): HealthCheckConfig {
-    const message = createBaseHealthCheckConfig()
+    const message = { ...baseHealthCheckConfig } as HealthCheckConfig
     message.port = object.port ?? 0
     message.livenessProbe = object.livenessProbe ?? undefined
     message.readinessProbe = object.readinessProbe ?? undefined
@@ -1973,9 +2009,7 @@ export const HealthCheckConfig = {
   },
 }
 
-function createBaseResource(): Resource {
-  return {}
-}
+const baseResource: object = {}
 
 export const Resource = {
   encode(message: Resource, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -1991,7 +2025,7 @@ export const Resource = {
   decode(input: _m0.Reader | Uint8Array, length?: number): Resource {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseResource()
+    const message = { ...baseResource } as Resource
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -2010,10 +2044,10 @@ export const Resource = {
   },
 
   fromJSON(object: any): Resource {
-    return {
-      cpu: isSet(object.cpu) ? String(object.cpu) : undefined,
-      memory: isSet(object.memory) ? String(object.memory) : undefined,
-    }
+    const message = { ...baseResource } as Resource
+    message.cpu = object.cpu !== undefined && object.cpu !== null ? String(object.cpu) : undefined
+    message.memory = object.memory !== undefined && object.memory !== null ? String(object.memory) : undefined
+    return message
   },
 
   toJSON(message: Resource): unknown {
@@ -2024,16 +2058,14 @@ export const Resource = {
   },
 
   fromPartial<I extends Exact<DeepPartial<Resource>, I>>(object: I): Resource {
-    const message = createBaseResource()
+    const message = { ...baseResource } as Resource
     message.cpu = object.cpu ?? undefined
     message.memory = object.memory ?? undefined
     return message
   },
 }
 
-function createBaseResourceConfig(): ResourceConfig {
-  return {}
-}
+const baseResourceConfig: object = {}
 
 export const ResourceConfig = {
   encode(message: ResourceConfig, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -2049,7 +2081,7 @@ export const ResourceConfig = {
   decode(input: _m0.Reader | Uint8Array, length?: number): ResourceConfig {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseResourceConfig()
+    const message = { ...baseResourceConfig } as ResourceConfig
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -2068,10 +2100,12 @@ export const ResourceConfig = {
   },
 
   fromJSON(object: any): ResourceConfig {
-    return {
-      limits: isSet(object.limits) ? Resource.fromJSON(object.limits) : undefined,
-      requests: isSet(object.requests) ? Resource.fromJSON(object.requests) : undefined,
-    }
+    const message = { ...baseResourceConfig } as ResourceConfig
+    message.limits =
+      object.limits !== undefined && object.limits !== null ? Resource.fromJSON(object.limits) : undefined
+    message.requests =
+      object.requests !== undefined && object.requests !== null ? Resource.fromJSON(object.requests) : undefined
+    return message
   },
 
   toJSON(message: ResourceConfig): unknown {
@@ -2082,7 +2116,7 @@ export const ResourceConfig = {
   },
 
   fromPartial<I extends Exact<DeepPartial<ResourceConfig>, I>>(object: I): ResourceConfig {
-    const message = createBaseResourceConfig()
+    const message = { ...baseResourceConfig } as ResourceConfig
     message.limits =
       object.limits !== undefined && object.limits !== null ? Resource.fromPartial(object.limits) : undefined
     message.requests =
@@ -2091,9 +2125,7 @@ export const ResourceConfig = {
   },
 }
 
-function createBaseCraneContainerConfig(): CraneContainerConfig {
-  return { extraLBAnnotations: {}, customHeaders: [] }
-}
+const baseCraneContainerConfig: object = { customHeaders: '' }
 
 export const CraneContainerConfig = {
   encode(message: CraneContainerConfig, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -2127,7 +2159,9 @@ export const CraneContainerConfig = {
   decode(input: _m0.Reader | Uint8Array, length?: number): CraneContainerConfig {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseCraneContainerConfig()
+    const message = { ...baseCraneContainerConfig } as CraneContainerConfig
+    message.extraLBAnnotations = {}
+    message.customHeaders = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -2164,24 +2198,34 @@ export const CraneContainerConfig = {
   },
 
   fromJSON(object: any): CraneContainerConfig {
-    return {
-      deploymentStatregy: isSet(object.deploymentStatregy)
+    const message = { ...baseCraneContainerConfig } as CraneContainerConfig
+    message.deploymentStatregy =
+      object.deploymentStatregy !== undefined && object.deploymentStatregy !== null
         ? deploymentStrategyFromJSON(object.deploymentStatregy)
-        : undefined,
-      healthCheckConfig: isSet(object.healthCheckConfig)
+        : undefined
+    message.healthCheckConfig =
+      object.healthCheckConfig !== undefined && object.healthCheckConfig !== null
         ? HealthCheckConfig.fromJSON(object.healthCheckConfig)
-        : undefined,
-      resourceConfig: isSet(object.resourceConfig) ? ResourceConfig.fromJSON(object.resourceConfig) : undefined,
-      proxyHeaders: isSet(object.proxyHeaders) ? Boolean(object.proxyHeaders) : undefined,
-      useLoadBalancer: isSet(object.useLoadBalancer) ? Boolean(object.useLoadBalancer) : undefined,
-      extraLBAnnotations: isObject(object.extraLBAnnotations)
-        ? Object.entries(object.extraLBAnnotations).reduce<{ [key: string]: string }>((acc, [key, value]) => {
-            acc[key] = String(value)
-            return acc
-          }, {})
-        : {},
-      customHeaders: Array.isArray(object?.customHeaders) ? object.customHeaders.map((e: any) => String(e)) : [],
-    }
+        : undefined
+    message.resourceConfig =
+      object.resourceConfig !== undefined && object.resourceConfig !== null
+        ? ResourceConfig.fromJSON(object.resourceConfig)
+        : undefined
+    message.proxyHeaders =
+      object.proxyHeaders !== undefined && object.proxyHeaders !== null ? Boolean(object.proxyHeaders) : undefined
+    message.useLoadBalancer =
+      object.useLoadBalancer !== undefined && object.useLoadBalancer !== null
+        ? Boolean(object.useLoadBalancer)
+        : undefined
+    message.extraLBAnnotations = Object.entries(object.extraLBAnnotations ?? {}).reduce<{ [key: string]: string }>(
+      (acc, [key, value]) => {
+        acc[key] = String(value)
+        return acc
+      },
+      {},
+    )
+    message.customHeaders = (object.customHeaders ?? []).map((e: any) => String(e))
+    return message
   },
 
   toJSON(message: CraneContainerConfig): unknown {
@@ -2212,7 +2256,7 @@ export const CraneContainerConfig = {
   },
 
   fromPartial<I extends Exact<DeepPartial<CraneContainerConfig>, I>>(object: I): CraneContainerConfig {
-    const message = createBaseCraneContainerConfig()
+    const message = { ...baseCraneContainerConfig } as CraneContainerConfig
     message.deploymentStatregy = object.deploymentStatregy ?? undefined
     message.healthCheckConfig =
       object.healthCheckConfig !== undefined && object.healthCheckConfig !== null
@@ -2238,8 +2282,9 @@ export const CraneContainerConfig = {
   },
 }
 
-function createBaseCraneContainerConfig_ExtraLBAnnotationsEntry(): CraneContainerConfig_ExtraLBAnnotationsEntry {
-  return { key: '', value: '' }
+const baseCraneContainerConfig_ExtraLBAnnotationsEntry: object = {
+  key: '',
+  value: '',
 }
 
 export const CraneContainerConfig_ExtraLBAnnotationsEntry = {
@@ -2256,7 +2301,9 @@ export const CraneContainerConfig_ExtraLBAnnotationsEntry = {
   decode(input: _m0.Reader | Uint8Array, length?: number): CraneContainerConfig_ExtraLBAnnotationsEntry {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseCraneContainerConfig_ExtraLBAnnotationsEntry()
+    const message = {
+      ...baseCraneContainerConfig_ExtraLBAnnotationsEntry,
+    } as CraneContainerConfig_ExtraLBAnnotationsEntry
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -2275,7 +2322,12 @@ export const CraneContainerConfig_ExtraLBAnnotationsEntry = {
   },
 
   fromJSON(object: any): CraneContainerConfig_ExtraLBAnnotationsEntry {
-    return { key: isSet(object.key) ? String(object.key) : '', value: isSet(object.value) ? String(object.value) : '' }
+    const message = {
+      ...baseCraneContainerConfig_ExtraLBAnnotationsEntry,
+    } as CraneContainerConfig_ExtraLBAnnotationsEntry
+    message.key = object.key !== undefined && object.key !== null ? String(object.key) : ''
+    message.value = object.value !== undefined && object.value !== null ? String(object.value) : ''
+    return message
   },
 
   toJSON(message: CraneContainerConfig_ExtraLBAnnotationsEntry): unknown {
@@ -2288,15 +2340,19 @@ export const CraneContainerConfig_ExtraLBAnnotationsEntry = {
   fromPartial<I extends Exact<DeepPartial<CraneContainerConfig_ExtraLBAnnotationsEntry>, I>>(
     object: I,
   ): CraneContainerConfig_ExtraLBAnnotationsEntry {
-    const message = createBaseCraneContainerConfig_ExtraLBAnnotationsEntry()
+    const message = {
+      ...baseCraneContainerConfig_ExtraLBAnnotationsEntry,
+    } as CraneContainerConfig_ExtraLBAnnotationsEntry
     message.key = object.key ?? ''
     message.value = object.value ?? ''
     return message
   },
 }
 
-function createBaseExplicitContainerConfig(): ExplicitContainerConfig {
-  return { ports: [], portRanges: [], volumes: [], command: [], args: [], environments: [], initContainers: [] }
+const baseExplicitContainerConfig: object = {
+  command: '',
+  args: '',
+  environments: '',
 }
 
 export const ExplicitContainerConfig = {
@@ -2355,7 +2411,16 @@ export const ExplicitContainerConfig = {
   decode(input: _m0.Reader | Uint8Array, length?: number): ExplicitContainerConfig {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseExplicitContainerConfig()
+    const message = {
+      ...baseExplicitContainerConfig,
+    } as ExplicitContainerConfig
+    message.ports = []
+    message.portRanges = []
+    message.volumes = []
+    message.command = []
+    message.args = []
+    message.environments = []
+    message.initContainers = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -2416,28 +2481,36 @@ export const ExplicitContainerConfig = {
   },
 
   fromJSON(object: any): ExplicitContainerConfig {
-    return {
-      dagent: isSet(object.dagent) ? DagentContainerConfig.fromJSON(object.dagent) : undefined,
-      crane: isSet(object.crane) ? CraneContainerConfig.fromJSON(object.crane) : undefined,
-      expose: isSet(object.expose) ? Expose.fromJSON(object.expose) : undefined,
-      ingress: isSet(object.ingress) ? Ingress.fromJSON(object.ingress) : undefined,
-      configContainer: isSet(object.configContainer) ? ConfigContainer.fromJSON(object.configContainer) : undefined,
-      importContainer: isSet(object.importContainer) ? ImportContainer.fromJSON(object.importContainer) : undefined,
-      user: isSet(object.user) ? Number(object.user) : undefined,
-      TTY: isSet(object.TTY) ? Boolean(object.TTY) : undefined,
-      ports: Array.isArray(object?.ports) ? object.ports.map((e: any) => Port.fromJSON(e)) : [],
-      portRanges: Array.isArray(object?.portRanges)
-        ? object.portRanges.map((e: any) => PortRangeBinding.fromJSON(e))
-        : [],
-      volumes: Array.isArray(object?.volumes) ? object.volumes.map((e: any) => Volume.fromJSON(e)) : [],
-      command: Array.isArray(object?.command) ? object.command.map((e: any) => String(e)) : [],
-      args: Array.isArray(object?.args) ? object.args.map((e: any) => String(e)) : [],
-      environments: Array.isArray(object?.environments) ? object.environments.map((e: any) => String(e)) : [],
-      secrets: isSet(object.secrets) ? KeyValueList.fromJSON(object.secrets) : undefined,
-      initContainers: Array.isArray(object?.initContainers)
-        ? object.initContainers.map((e: any) => InitContainer.fromJSON(e))
-        : [],
-    }
+    const message = {
+      ...baseExplicitContainerConfig,
+    } as ExplicitContainerConfig
+    message.dagent =
+      object.dagent !== undefined && object.dagent !== null ? DagentContainerConfig.fromJSON(object.dagent) : undefined
+    message.crane =
+      object.crane !== undefined && object.crane !== null ? CraneContainerConfig.fromJSON(object.crane) : undefined
+    message.expose = object.expose !== undefined && object.expose !== null ? Expose.fromJSON(object.expose) : undefined
+    message.ingress =
+      object.ingress !== undefined && object.ingress !== null ? Ingress.fromJSON(object.ingress) : undefined
+    message.configContainer =
+      object.configContainer !== undefined && object.configContainer !== null
+        ? ConfigContainer.fromJSON(object.configContainer)
+        : undefined
+    message.importContainer =
+      object.importContainer !== undefined && object.importContainer !== null
+        ? ImportContainer.fromJSON(object.importContainer)
+        : undefined
+    message.user = object.user !== undefined && object.user !== null ? Number(object.user) : undefined
+    message.TTY = object.TTY !== undefined && object.TTY !== null ? Boolean(object.TTY) : undefined
+    message.ports = (object.ports ?? []).map((e: any) => Port.fromJSON(e))
+    message.portRanges = (object.portRanges ?? []).map((e: any) => PortRangeBinding.fromJSON(e))
+    message.volumes = (object.volumes ?? []).map((e: any) => Volume.fromJSON(e))
+    message.command = (object.command ?? []).map((e: any) => String(e))
+    message.args = (object.args ?? []).map((e: any) => String(e))
+    message.environments = (object.environments ?? []).map((e: any) => String(e))
+    message.secrets =
+      object.secrets !== undefined && object.secrets !== null ? KeyValueList.fromJSON(object.secrets) : undefined
+    message.initContainers = (object.initContainers ?? []).map((e: any) => InitContainer.fromJSON(e))
+    return message
   },
 
   toJSON(message: ExplicitContainerConfig): unknown {
@@ -2493,7 +2566,9 @@ export const ExplicitContainerConfig = {
   },
 
   fromPartial<I extends Exact<DeepPartial<ExplicitContainerConfig>, I>>(object: I): ExplicitContainerConfig {
-    const message = createBaseExplicitContainerConfig()
+    const message = {
+      ...baseExplicitContainerConfig,
+    } as ExplicitContainerConfig
     message.dagent =
       object.dagent !== undefined && object.dagent !== null
         ? DagentContainerConfig.fromPartial(object.dagent)
@@ -2527,9 +2602,7 @@ export const ExplicitContainerConfig = {
   },
 }
 
-function createBaseUniqueKey(): UniqueKey {
-  return { id: '', key: '' }
-}
+const baseUniqueKey: object = { id: '', key: '' }
 
 export const UniqueKey = {
   encode(message: UniqueKey, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -2545,7 +2618,7 @@ export const UniqueKey = {
   decode(input: _m0.Reader | Uint8Array, length?: number): UniqueKey {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseUniqueKey()
+    const message = { ...baseUniqueKey } as UniqueKey
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -2564,7 +2637,10 @@ export const UniqueKey = {
   },
 
   fromJSON(object: any): UniqueKey {
-    return { id: isSet(object.id) ? String(object.id) : '', key: isSet(object.key) ? String(object.key) : '' }
+    const message = { ...baseUniqueKey } as UniqueKey
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.key = object.key !== undefined && object.key !== null ? String(object.key) : ''
+    return message
   },
 
   toJSON(message: UniqueKey): unknown {
@@ -2575,16 +2651,14 @@ export const UniqueKey = {
   },
 
   fromPartial<I extends Exact<DeepPartial<UniqueKey>, I>>(object: I): UniqueKey {
-    const message = createBaseUniqueKey()
+    const message = { ...baseUniqueKey } as UniqueKey
     message.id = object.id ?? ''
     message.key = object.key ?? ''
     return message
   },
 }
 
-function createBaseKeyList(): KeyList {
-  return { data: [] }
-}
+const baseKeyList: object = {}
 
 export const KeyList = {
   encode(message: KeyList, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -2597,7 +2671,8 @@ export const KeyList = {
   decode(input: _m0.Reader | Uint8Array, length?: number): KeyList {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseKeyList()
+    const message = { ...baseKeyList } as KeyList
+    message.data = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -2613,7 +2688,9 @@ export const KeyList = {
   },
 
   fromJSON(object: any): KeyList {
-    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => UniqueKey.fromJSON(e)) : [] }
+    const message = { ...baseKeyList } as KeyList
+    message.data = (object.data ?? []).map((e: any) => UniqueKey.fromJSON(e))
+    return message
   },
 
   toJSON(message: KeyList): unknown {
@@ -2627,15 +2704,13 @@ export const KeyList = {
   },
 
   fromPartial<I extends Exact<DeepPartial<KeyList>, I>>(object: I): KeyList {
-    const message = createBaseKeyList()
+    const message = { ...baseKeyList } as KeyList
     message.data = object.data?.map(e => UniqueKey.fromPartial(e)) || []
     return message
   },
 }
 
-function createBaseUniqueKeyValue(): UniqueKeyValue {
-  return { id: '', key: '', value: '' }
-}
+const baseUniqueKeyValue: object = { id: '', key: '', value: '' }
 
 export const UniqueKeyValue = {
   encode(message: UniqueKeyValue, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -2654,7 +2729,7 @@ export const UniqueKeyValue = {
   decode(input: _m0.Reader | Uint8Array, length?: number): UniqueKeyValue {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseUniqueKeyValue()
+    const message = { ...baseUniqueKeyValue } as UniqueKeyValue
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -2676,11 +2751,11 @@ export const UniqueKeyValue = {
   },
 
   fromJSON(object: any): UniqueKeyValue {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      key: isSet(object.key) ? String(object.key) : '',
-      value: isSet(object.value) ? String(object.value) : '',
-    }
+    const message = { ...baseUniqueKeyValue } as UniqueKeyValue
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.key = object.key !== undefined && object.key !== null ? String(object.key) : ''
+    message.value = object.value !== undefined && object.value !== null ? String(object.value) : ''
+    return message
   },
 
   toJSON(message: UniqueKeyValue): unknown {
@@ -2692,7 +2767,7 @@ export const UniqueKeyValue = {
   },
 
   fromPartial<I extends Exact<DeepPartial<UniqueKeyValue>, I>>(object: I): UniqueKeyValue {
-    const message = createBaseUniqueKeyValue()
+    const message = { ...baseUniqueKeyValue } as UniqueKeyValue
     message.id = object.id ?? ''
     message.key = object.key ?? ''
     message.value = object.value ?? ''
@@ -2700,9 +2775,7 @@ export const UniqueKeyValue = {
   },
 }
 
-function createBaseUniqueKeySecretValue(): UniqueKeySecretValue {
-  return { id: '', key: '', value: '' }
-}
+const baseUniqueKeySecretValue: object = { id: '', key: '', value: '' }
 
 export const UniqueKeySecretValue = {
   encode(message: UniqueKeySecretValue, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -2724,7 +2797,7 @@ export const UniqueKeySecretValue = {
   decode(input: _m0.Reader | Uint8Array, length?: number): UniqueKeySecretValue {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseUniqueKeySecretValue()
+    const message = { ...baseUniqueKeySecretValue } as UniqueKeySecretValue
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -2749,12 +2822,13 @@ export const UniqueKeySecretValue = {
   },
 
   fromJSON(object: any): UniqueKeySecretValue {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      key: isSet(object.key) ? String(object.key) : '',
-      value: isSet(object.value) ? String(object.value) : '',
-      encrypted: isSet(object.encrypted) ? Boolean(object.encrypted) : undefined,
-    }
+    const message = { ...baseUniqueKeySecretValue } as UniqueKeySecretValue
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.key = object.key !== undefined && object.key !== null ? String(object.key) : ''
+    message.value = object.value !== undefined && object.value !== null ? String(object.value) : ''
+    message.encrypted =
+      object.encrypted !== undefined && object.encrypted !== null ? Boolean(object.encrypted) : undefined
+    return message
   },
 
   toJSON(message: UniqueKeySecretValue): unknown {
@@ -2767,7 +2841,7 @@ export const UniqueKeySecretValue = {
   },
 
   fromPartial<I extends Exact<DeepPartial<UniqueKeySecretValue>, I>>(object: I): UniqueKeySecretValue {
-    const message = createBaseUniqueKeySecretValue()
+    const message = { ...baseUniqueKeySecretValue } as UniqueKeySecretValue
     message.id = object.id ?? ''
     message.key = object.key ?? ''
     message.value = object.value ?? ''
@@ -2776,9 +2850,7 @@ export const UniqueKeySecretValue = {
   },
 }
 
-function createBaseKeyValueList(): KeyValueList {
-  return { data: [] }
-}
+const baseKeyValueList: object = {}
 
 export const KeyValueList = {
   encode(message: KeyValueList, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -2791,7 +2863,8 @@ export const KeyValueList = {
   decode(input: _m0.Reader | Uint8Array, length?: number): KeyValueList {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseKeyValueList()
+    const message = { ...baseKeyValueList } as KeyValueList
+    message.data = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -2807,7 +2880,9 @@ export const KeyValueList = {
   },
 
   fromJSON(object: any): KeyValueList {
-    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => UniqueKeyValue.fromJSON(e)) : [] }
+    const message = { ...baseKeyValueList } as KeyValueList
+    message.data = (object.data ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
+    return message
   },
 
   toJSON(message: KeyValueList): unknown {
@@ -2821,15 +2896,13 @@ export const KeyValueList = {
   },
 
   fromPartial<I extends Exact<DeepPartial<KeyValueList>, I>>(object: I): KeyValueList {
-    const message = createBaseKeyValueList()
+    const message = { ...baseKeyValueList } as KeyValueList
     message.data = object.data?.map(e => UniqueKeyValue.fromPartial(e)) || []
     return message
   },
 }
 
-function createBaseSecretList(): SecretList {
-  return { data: [] }
-}
+const baseSecretList: object = {}
 
 export const SecretList = {
   encode(message: SecretList, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -2842,7 +2915,8 @@ export const SecretList = {
   decode(input: _m0.Reader | Uint8Array, length?: number): SecretList {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseSecretList()
+    const message = { ...baseSecretList } as SecretList
+    message.data = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -2858,7 +2932,9 @@ export const SecretList = {
   },
 
   fromJSON(object: any): SecretList {
-    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => UniqueKeySecretValue.fromJSON(e)) : [] }
+    const message = { ...baseSecretList } as SecretList
+    message.data = (object.data ?? []).map((e: any) => UniqueKeySecretValue.fromJSON(e))
+    return message
   },
 
   toJSON(message: SecretList): unknown {
@@ -2872,14 +2948,18 @@ export const SecretList = {
   },
 
   fromPartial<I extends Exact<DeepPartial<SecretList>, I>>(object: I): SecretList {
-    const message = createBaseSecretList()
+    const message = { ...baseSecretList } as SecretList
     message.data = object.data?.map(e => UniqueKeySecretValue.fromPartial(e)) || []
     return message
   },
 }
 
-function createBaseListSecretsResponse(): ListSecretsResponse {
-  return { prefix: '', name: '', publicKey: '', hasKeys: false, keys: [] }
+const baseListSecretsResponse: object = {
+  prefix: '',
+  name: '',
+  publicKey: '',
+  hasKeys: false,
+  keys: '',
 }
 
 export const ListSecretsResponse = {
@@ -2905,7 +2985,8 @@ export const ListSecretsResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): ListSecretsResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseListSecretsResponse()
+    const message = { ...baseListSecretsResponse } as ListSecretsResponse
+    message.keys = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -2933,13 +3014,13 @@ export const ListSecretsResponse = {
   },
 
   fromJSON(object: any): ListSecretsResponse {
-    return {
-      prefix: isSet(object.prefix) ? String(object.prefix) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      publicKey: isSet(object.publicKey) ? String(object.publicKey) : '',
-      hasKeys: isSet(object.hasKeys) ? Boolean(object.hasKeys) : false,
-      keys: Array.isArray(object?.keys) ? object.keys.map((e: any) => String(e)) : [],
-    }
+    const message = { ...baseListSecretsResponse } as ListSecretsResponse
+    message.prefix = object.prefix !== undefined && object.prefix !== null ? String(object.prefix) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.publicKey = object.publicKey !== undefined && object.publicKey !== null ? String(object.publicKey) : ''
+    message.hasKeys = object.hasKeys !== undefined && object.hasKeys !== null ? Boolean(object.hasKeys) : false
+    message.keys = (object.keys ?? []).map((e: any) => String(e))
+    return message
   },
 
   toJSON(message: ListSecretsResponse): unknown {
@@ -2957,7 +3038,7 @@ export const ListSecretsResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<ListSecretsResponse>, I>>(object: I): ListSecretsResponse {
-    const message = createBaseListSecretsResponse()
+    const message = { ...baseListSecretsResponse } as ListSecretsResponse
     message.prefix = object.prefix ?? ''
     message.name = object.name ?? ''
     message.publicKey = object.publicKey ?? ''
@@ -2971,18 +3052,10 @@ declare var self: any | undefined
 declare var window: any | undefined
 declare var global: any | undefined
 var globalThis: any = (() => {
-  if (typeof globalThis !== 'undefined') {
-    return globalThis
-  }
-  if (typeof self !== 'undefined') {
-    return self
-  }
-  if (typeof window !== 'undefined') {
-    return window
-  }
-  if (typeof global !== 'undefined') {
-    return global
-  }
+  if (typeof globalThis !== 'undefined') return globalThis
+  if (typeof self !== 'undefined') return self
+  if (typeof window !== 'undefined') return window
+  if (typeof global !== 'undefined') return global
   throw 'Unable to locate global object'
 })()
 
@@ -3001,7 +3074,7 @@ export type DeepPartial<T> = T extends Builtin
 type KeysOfUnion<T> = T extends T ? keyof T : never
 export type Exact<P, I extends P> = P extends Builtin
   ? P
-  : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never }
+  : P & { [K in keyof P]: Exact<P[K], I[K]> } & Record<Exclude<keyof I, KeysOfUnion<P>>, never>
 
 function toTimestamp(date: Date): Timestamp {
   const seconds = date.getTime() / 1_000
@@ -3035,12 +3108,4 @@ function longToNumber(long: Long): number {
 if (_m0.util.Long !== Long) {
   _m0.util.Long = Long as any
   _m0.configure()
-}
-
-function isObject(value: any): boolean {
-  return typeof value === 'object' && value !== null
-}
-
-function isSet(value: any): boolean {
-  return value !== null && value !== undefined
 }
