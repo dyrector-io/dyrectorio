@@ -14,6 +14,7 @@ import { DeploymentStatus, DeploymentStatusMessage } from 'src/grpc/protobuf/pro
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
+import { ConfigService } from '@nestjs/config'
 
 @Injectable()
 export default class AgentService {
@@ -31,6 +32,7 @@ export default class AgentService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private notificationService: DomainNotificationService,
+    private configService: ConfigService,
   ) {}
 
   getById(id: string): Agent {
@@ -96,6 +98,7 @@ export default class AgentService {
       }
 
       installer = new AgentInstaller(
+        this.configService,
         nodeId,
         this.jwtService.sign(token),
         now + AgentService.SCRIPT_EXPIRATION,

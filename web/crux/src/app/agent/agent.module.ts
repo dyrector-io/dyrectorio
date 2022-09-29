@@ -5,6 +5,7 @@ import InterceptorGrpcHelperProvider from 'src/interceptors/helper.interceptor'
 import { HttpModule } from '@nestjs/axios'
 import KratosService from 'src/services/kratos.service'
 import DomainNotificationService from 'src/services/domain.notification.service'
+import { ConfigModule, ConfigService } from '@nestjs/config'
 import TeamRepository from '../team/team.repository'
 import AgentController from './agent.controller'
 import AgentService from './agent.service'
@@ -12,14 +13,18 @@ import AgentService from './agent.service'
 @Module({
   imports: [
     HttpModule,
-    JwtModule.register({
-      secret: process.env.JWT_SECRET,
-      signOptions: {
-        issuer: process.env.CRUX_AGENT_ADDRESS,
-      },
-      verifyOptions: {
-        issuer: process.env.CRUX_AGENT_ADDRESS,
-      },
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET'),
+        signOptions: {
+          issuer: configService.get<string>('CRUX_AGENT_ADDRESS'),
+        },
+        verifyOptions: {
+          issuer: configService.get<string>('CRUX_AGENT_ADDRESS'),
+        },
+      }),
     }),
   ],
   exports: [AgentService],
