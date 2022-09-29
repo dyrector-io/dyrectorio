@@ -1,7 +1,8 @@
+import DyoChips from '@app/elements/dyo-chips'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoSwitch from '@app/elements/dyo-switch'
-import { GitlabRegistryDetails } from '@app/models'
+import { GitlabRegistryDetails, GITLAB_NAMESPACE_VALUES, RegistryNamespace } from '@app/models'
 import { EditRegistryTypeProps } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 
@@ -36,12 +37,23 @@ const GitlabRegistryFields = (props: EditRegistryTypeProps<GitlabRegistryDetails
         message={formik.errors.token}
       />
 
+      <div className="flex flex-wrap mt-8">
+        <DyoLabel className="mr-2 my-auto">{t('namespaceType')}</DyoLabel>
+
+        <DyoChips
+          choices={GITLAB_NAMESPACE_VALUES}
+          initialSelection={formik.values.namespace}
+          converter={(it: RegistryNamespace) => t(`namespace.${it}`)}
+          onSelectionChange={it => formik.setFieldValue('namespace', it, true)}
+        />
+      </div>
+
       <DyoInput
         className="max-w-lg"
         grow
         name="imageNamePrefix"
         type="text"
-        label={t('group')}
+        label={formik.values.namespace === 'group' ? t('group') : t('project')}
         onChange={formik.handleChange}
         value={formik.values.imageNamePrefix}
         message={formik.errors.imageNamePrefix}

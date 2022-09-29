@@ -71,18 +71,19 @@ model Node {
 }
 
 model Registry {
-  id              String           @id @default(uuid()) @db.Uuid
-  createdAt       DateTime         @default(now()) @db.Timestamptz(6)
-  createdBy       String           @db.Uuid
-  updatedAt       DateTime?        @default(now()) @db.Timestamptz(6)
-  updatedBy       String?          @db.Uuid
-  name            String           @db.VarChar(70)
+  id              String                 @id @default(uuid()) @db.Uuid
+  createdAt       DateTime               @default(now()) @db.Timestamptz(6)
+  createdBy       String                 @db.Uuid
+  updatedAt       DateTime?              @default(now()) @db.Timestamptz(6)
+  updatedBy       String?                @db.Uuid
+  name            String                 @db.VarChar(70)
   description     String?
   icon            String?
   url             String
   user            String?
   token           String?
   type            RegistryTypeEnum
+  namespace       RegistryNamespaceEnum?
   imageNamePrefix String?
   apiUrl          String?
 
@@ -311,6 +312,13 @@ enum RegistryTypeEnum {
   gitlab
   github
   google
+}
+
+enum RegistryNamespaceEnum {
+  organization
+  user
+  group
+  project
 }
 
 enum NodeTypeEnum {

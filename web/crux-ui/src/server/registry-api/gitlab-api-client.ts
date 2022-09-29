@@ -1,5 +1,5 @@
-import { internalError, notFoundError, unauthorizedError } from '@app/error-responses'
-import { RegistryImageTags } from '@app/models'
+import { internalError, unauthorizedError } from '@app/error-responses'
+import { RegistryImageTags, RegistryNamespace } from '@app/models'
 import { RegistryApiClient } from './registry-api-client'
 import RegistryV2ApiClient, { RegistryV2ApiClientOptions } from './v2-api-client'
 
@@ -13,9 +13,14 @@ export class GitlabRegistryClient implements RegistryApiClient {
 
   private patAuthHeaders: HeadersInit
 
-  private groupId?: string = null
+  private namespace: string
 
-  constructor(private groupName: string, options: RegistryV2ApiClientOptions, private urls: GitlabRegistryClientUrls) {
+  constructor(
+    private namespaceId: string,
+    options: RegistryV2ApiClientOptions,
+    private urls: GitlabRegistryClientUrls,
+    namespace: RegistryNamespace,
+  ) {
     this.basicAuthHeaders = {
       Authorization: `Basic ${Buffer.from(`${options.username}:${options.password}`).toString('base64')}`,
     }
@@ -23,14 +28,17 @@ export class GitlabRegistryClient implements RegistryApiClient {
     this.patAuthHeaders = {
       Authorization: `Bearer ${options.password}`,
     }
+
+    this.namespace = namespace === 'group' ? 'groups' : 'projects'
   }
 
   async catalog(text: string, take: number): Promise<string[]> {
-    const groupId = await this.fetchGroupId()
-
-    const res = await fetch(`https://${this.urls.apiUrl}/api/v4/groups/${groupId}/registry/repositories`, {
-      headers: this.patAuthHeaders,
-    })
+    const res = await fetch(
+      `https://${this.urls.apiUrl}/api/v4/${this.namespace}/${this.namespaceId}/registry/repositories`,
+      {
+        headers: this.patAuthHeaders,
+      },
+    )
 
     if (!res.ok) {
       const errorMessage = `Gitlab repositories request failed with status: ${res.status} ${res.statusText}`
@@ -74,26 +82,5 @@ export class GitlabRegistryClient implements RegistryApiClient {
       name: image,
       tags: json.flatMap(it => it.tags),
     }
-  }
-
-  private async fetchGroupId(): Promise<string> {
-    if (this.groupId) {
-      return this.groupId
-    }
-
-    const res = await fetch(`https://${this.urls.apiUrl}/api/v4/groups?top_level_only=true&search=${this.groupName}`, {
-      headers: this.patAuthHeaders,
-    })
-    if (!res.ok) {
-      const errorMessage = `Gitlab repositories request failed with status: ${res.status} ${res.statusText}`
-      throw res.status === 401 ? unauthorizedError(errorMessage) : internalError(errorMessage)
-    }
-
-    const groups = (await res.json()) as { id: string }[]
-    if (!groups || groups.length < 1) {
-      throw notFoundError('groupName', 'Group not found.', this.groupName)
-    }
-
-    return groups[0].id
   }
 }

@@ -258,6 +258,57 @@ export function registryTypeToJSON(object: RegistryType): string {
   }
 }
 
+export enum RegistryNamespace {
+  UNKNOWN_REGISTRY_NAMESPACE = 0,
+  RNS_ORGANIZATION = 1,
+  RNS_USER = 2,
+  RNS_GROUP = 3,
+  RNS_PROJECT = 4,
+  UNRECOGNIZED = -1,
+}
+
+export function registryNamespaceFromJSON(object: any): RegistryNamespace {
+  switch (object) {
+    case 0:
+    case 'UNKNOWN_REGISTRY_NAMESPACE':
+      return RegistryNamespace.UNKNOWN_REGISTRY_NAMESPACE
+    case 1:
+    case 'RNS_ORGANIZATION':
+      return RegistryNamespace.RNS_ORGANIZATION
+    case 2:
+    case 'RNS_USER':
+      return RegistryNamespace.RNS_USER
+    case 3:
+    case 'RNS_GROUP':
+      return RegistryNamespace.RNS_GROUP
+    case 4:
+    case 'RNS_PROJECT':
+      return RegistryNamespace.RNS_PROJECT
+    case -1:
+    case 'UNRECOGNIZED':
+    default:
+      return RegistryNamespace.UNRECOGNIZED
+  }
+}
+
+export function registryNamespaceToJSON(object: RegistryNamespace): string {
+  switch (object) {
+    case RegistryNamespace.UNKNOWN_REGISTRY_NAMESPACE:
+      return 'UNKNOWN_REGISTRY_NAMESPACE'
+    case RegistryNamespace.RNS_ORGANIZATION:
+      return 'RNS_ORGANIZATION'
+    case RegistryNamespace.RNS_USER:
+      return 'RNS_USER'
+    case RegistryNamespace.RNS_GROUP:
+      return 'RNS_GROUP'
+    case RegistryNamespace.RNS_PROJECT:
+      return 'RNS_PROJECT'
+    case RegistryNamespace.UNRECOGNIZED:
+    default:
+      return 'UNRECOGNIZED'
+  }
+}
+
 /**
  * Lifecycle:
  * When a node connection is alive, the status is CONNECTED.
@@ -748,12 +799,14 @@ export interface GitlabRegistryDetails {
   imageNamePrefix: string
   url?: string | undefined
   apiUrl?: string | undefined
+  namespace: RegistryNamespace
 }
 
 export interface GithubRegistryDetails {
   user: string
   token: string
   imageNamePrefix: string
+  namespace: RegistryNamespace
 }
 
 export interface GoogleRegistryDetails {
@@ -3560,7 +3613,7 @@ export const V2RegistryDetails = {
 }
 
 function createBaseGitlabRegistryDetails(): GitlabRegistryDetails {
-  return { user: '', token: '', imageNamePrefix: '' }
+  return { user: '', token: '', imageNamePrefix: '', namespace: 0 }
 }
 
 export const GitlabRegistryDetails = {
@@ -3579,6 +3632,9 @@ export const GitlabRegistryDetails = {
     }
     if (message.apiUrl !== undefined) {
       writer.uint32(834).string(message.apiUrl)
+    }
+    if (message.namespace !== 0) {
+      writer.uint32(840).int32(message.namespace)
     }
     return writer
   },
@@ -3605,6 +3661,9 @@ export const GitlabRegistryDetails = {
         case 104:
           message.apiUrl = reader.string()
           break
+        case 105:
+          message.namespace = reader.int32() as any
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -3620,6 +3679,7 @@ export const GitlabRegistryDetails = {
       imageNamePrefix: isSet(object.imageNamePrefix) ? String(object.imageNamePrefix) : '',
       url: isSet(object.url) ? String(object.url) : undefined,
       apiUrl: isSet(object.apiUrl) ? String(object.apiUrl) : undefined,
+      namespace: isSet(object.namespace) ? registryNamespaceFromJSON(object.namespace) : 0,
     }
   },
 
@@ -3630,6 +3690,7 @@ export const GitlabRegistryDetails = {
     message.imageNamePrefix !== undefined && (obj.imageNamePrefix = message.imageNamePrefix)
     message.url !== undefined && (obj.url = message.url)
     message.apiUrl !== undefined && (obj.apiUrl = message.apiUrl)
+    message.namespace !== undefined && (obj.namespace = registryNamespaceToJSON(message.namespace))
     return obj
   },
 
@@ -3640,12 +3701,13 @@ export const GitlabRegistryDetails = {
     message.imageNamePrefix = object.imageNamePrefix ?? ''
     message.url = object.url ?? undefined
     message.apiUrl = object.apiUrl ?? undefined
+    message.namespace = object.namespace ?? 0
     return message
   },
 }
 
 function createBaseGithubRegistryDetails(): GithubRegistryDetails {
-  return { user: '', token: '', imageNamePrefix: '' }
+  return { user: '', token: '', imageNamePrefix: '', namespace: 0 }
 }
 
 export const GithubRegistryDetails = {
@@ -3658,6 +3720,9 @@ export const GithubRegistryDetails = {
     }
     if (message.imageNamePrefix !== '') {
       writer.uint32(818).string(message.imageNamePrefix)
+    }
+    if (message.namespace !== 0) {
+      writer.uint32(824).int32(message.namespace)
     }
     return writer
   },
@@ -3678,6 +3743,9 @@ export const GithubRegistryDetails = {
         case 102:
           message.imageNamePrefix = reader.string()
           break
+        case 103:
+          message.namespace = reader.int32() as any
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -3691,6 +3759,7 @@ export const GithubRegistryDetails = {
       user: isSet(object.user) ? String(object.user) : '',
       token: isSet(object.token) ? String(object.token) : '',
       imageNamePrefix: isSet(object.imageNamePrefix) ? String(object.imageNamePrefix) : '',
+      namespace: isSet(object.namespace) ? registryNamespaceFromJSON(object.namespace) : 0,
     }
   },
 
@@ -3699,6 +3768,7 @@ export const GithubRegistryDetails = {
     message.user !== undefined && (obj.user = message.user)
     message.token !== undefined && (obj.token = message.token)
     message.imageNamePrefix !== undefined && (obj.imageNamePrefix = message.imageNamePrefix)
+    message.namespace !== undefined && (obj.namespace = registryNamespaceToJSON(message.namespace))
     return obj
   },
 
@@ -3707,6 +3777,7 @@ export const GithubRegistryDetails = {
     message.user = object.user ?? ''
     message.token = object.token ?? ''
     message.imageNamePrefix = object.imageNamePrefix ?? ''
+    message.namespace = object.namespace ?? 0
     return message
   },
 }
