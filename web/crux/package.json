@@ -46,6 +46,7 @@
     "@grpc/proto-loader": "^0.7.0",
     "@nestjs/axios": "^0.1.0",
     "@nestjs/cli": "^9.0.0",
+    "@nestjs/config": "^2.2.0",
     "@nestjs/jwt": "^9.0.0",
     "@nestjs/microservices": "^9.0.8",
     "@nestjs/platform-express": "^9.0.8",

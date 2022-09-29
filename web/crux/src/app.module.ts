@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common'
 import { APP_INTERCEPTOR } from '@nestjs/core'
+import { ConfigModule } from '@nestjs/config'
 import TeamRepository from './app/team/team.repository'
 import AgentModule from './app/agent/agent.module'
 import AuditModule from './app/audit/audit.module'
@@ -32,6 +33,10 @@ import NotificationModule from './app/notification/notification.module'
     AuditModule,
     HealthModule,
     NotificationModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+      cache: true,
+    }),
   ],
   controllers: [],
   providers: [

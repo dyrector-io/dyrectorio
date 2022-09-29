@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
 import { MailDataRequired } from '@sendgrid/mail'
 import { disassembleKratosRecoveryUrl } from 'src/domain/utils'
 import { EmailBuilderException } from 'src/exception/errors'
@@ -9,11 +10,20 @@ type InviteTemaple = {
   html: string
 }
 
-const HOST = process.env.CRUX_UI_URL
-const from = { email: process.env.FROM_EMAIL, name: process.env.FROM_NAME }
-
 @Injectable()
 export default class EmailBuilder {
+  private host: string
+
+  private from: { email: string; name: string }
+
+  constructor(private configService: ConfigService) {
+    this.host = configService.get<string>('CRUX_UI_URL')
+    this.from = {
+      email: configService.get<string>('FROM_EMAIL'),
+      name: configService.get<string>('FROM_NAME'),
+    }
+  }
+
   buildInviteEmail(email: string, teamName: string, teamId?: string, kratosRecoveryLink?: string): MailDataRequired {
     if (!teamId && !kratosRecoveryLink) {
       throw new EmailBuilderException()
@@ -22,7 +32,7 @@ export default class EmailBuilder {
     const inviteTemplate = this.getInviteTemplate(teamName, teamId, kratosRecoveryLink)
 
     const emailItem: MailDataRequired = {
-      from,
+      from: this.from,
       to: email,
       subject: inviteTemplate.subject,
       text: inviteTemplate.text,
@@ -33,12 +43,12 @@ export default class EmailBuilder {
   }
 
   private getInviteTemplate(teamName: string, teamId?: string, kratosRecoveryLink?: string): InviteTemaple {
-    let link = `${HOST}/teams/${teamId}/invite`
+    let link = `${this.host}/teams/${teamId}/invite`
     let mode = 'to accept'
     let button = 'Accept'
 
     if (kratosRecoveryLink) {
-      link = disassembleKratosRecoveryUrl(HOST, kratosRecoveryLink)
+      link = disassembleKratosRecoveryUrl(this.host, kratosRecoveryLink)
       mode = 'to accept and create a dyrector.io account,'
       button = 'Create account'
     }
