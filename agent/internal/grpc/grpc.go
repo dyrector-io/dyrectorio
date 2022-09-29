@@ -44,7 +44,7 @@ type GrpcConnectionParams struct {
 }
 
 type DeployFunc func(context.Context, *dogger.DeploymentLogger, *v1.DeployImageRequest, *v1.VersionData) error
-type WatchFunc func(context.Context, string) []*common.ContainerStateItem
+type WatchFunc func(context.Context, string) []*agent.ContainerStateItem
 type DeleteFunc func(context.Context, string, string) error
 
 type WorkerFunctions struct {
@@ -330,7 +330,7 @@ func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStateR
 	for {
 		containers := listFn(ctx, filterPrefix)
 
-		err = stream.Send(&common.ContainerStateListMessage{
+		err = stream.Send(&agent.ContainerStateListMessage{
 			Prefix: req.Prefix,
 			Data:   containers,
 		})

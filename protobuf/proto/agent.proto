@@ -9,6 +9,7 @@ package agent;
 option go_package = "github.com/dyrector-io/dyrectorio/protobuf/go/agent";
 
 import "protobuf/proto/common.proto";
+import "google/protobuf/timestamp.proto";
 
 /**
  * Service handling deployment of containers and fetching statuses
@@ -24,7 +25,7 @@ service Agent {
   rpc Connect(AgentInfo) returns (stream AgentCommand);
 
   rpc DeploymentStatus(stream common.DeploymentStatusMessage) returns (Empty);
-  rpc ContainerState(stream common.ContainerStateListMessage) returns (Empty);
+  rpc ContainerState(stream ContainerStateListMessage) returns (Empty);
   rpc GetSecretList(common.ListSecretsResponse) returns (Empty);
 }
 
@@ -72,38 +73,159 @@ message ListSecretsRequest { string prefix = 1; }
  * Deploys a single container
  *
  */
-message DeployRequest {
+message Environment { repeated string env = 1; }
 
+message InstanceConfig {
+  /*
+  containerPreName, mapped into host folder structure,
+  used as namespace id
+  */
+  string prefix = 1;
+  optional string mountPath = 2; // mount path of instance (docker only)
+  optional Environment environment = 3; // environment variable map (piped)
+  optional string repositoryPrefix = 4; // registry repo prefix
+}
+
+message RegistryAuth {
+  string name = 1;
+  string url = 2;
+  string user = 3;
+  string password = 4;
+}
+
+message ContainerStateItem {
+  string containerId = 100;
+  string name = 101;
+  string command = 103;
+  google.protobuf.Timestamp createdAt = 104;
+  /* The 'State' of the container (Created, Running, etc) */
+  common.ContainerState state = 105;
+  /*
+   * The 'Status' of the container ("Created 1min ago", "Exited with code 123",
+   * etc). Unused but left here for reverse compatibility with the legacy
+   * version.
+   */
+  string status = 106;
+  string imageName = 107;
+  string imageTag = 108;
+
+  repeated Port ports = 1000;
+}
+
+message ContainerStateListMessage {
+  optional string prefix = 100;
+  repeated ContainerStateItem data = 1000;
+}
+
+// Container config
+
+message Port {
+  int32 internal = 100;
+  int32 external = 101;
+}
+
+message PortRange {
+  int32 from = 100;
+  int32 to = 101;
+}
+
+message PortRangeBinding {
+  PortRange internal = 100;
+  PortRange external = 101;
+}
+
+message Volume {
+  string name = 100;
+  string path = 101;
+  optional string size = 102;
+  optional common.VolumeType type = 103;
+  optional string class = 104;
+}
+
+message VolumeLink {
+  string name = 100;
+  string path = 101;
+}
+
+message InitContainer {
+  string name = 100;
+  string image = 101;
+  optional bool useParentConfig = 102;
+
+  repeated VolumeLink volumes = 1000;
+  repeated string command = 1001;
+  repeated string args = 1002;
+  repeated common.KeyValue environments = 1003;
+}
+
+message ImportContainer {
+  string volume = 100;
+  string command = 101;
+
+  repeated common.KeyValue environments = 1000;
+}
+
+message LogConfig {
+  common.DriverType driver = 100;
+  repeated common.KeyValue options = 1000;
+}
+
+message DagentContainerConfig {
+  optional LogConfig logConfig = 100;
+  optional common.RestartPolicy restartPolicy = 101;
+  optional common.NetworkMode networkMode = 102;
+  repeated string networks = 1000;
+}
+
+message CraneContainerConfig {
+  optional common.DeploymentStrategy deploymentStatregy = 100;
+  optional common.HealthCheckConfig healthCheckConfig = 101;
+  optional common.ResourceConfig resourceConfig = 102;
+  optional bool proxyHeaders = 103;
+  optional bool useLoadBalancer = 104;
+
+  repeated string customHeaders = 1000;
+  repeated common.KeyValue extraLBAnnotations = 1001;
+}
+
+message CommonContainerConfig {
+  optional string name = 101;
+  optional common.ExposeStrategy expose = 102;
+  optional common.Ingress ingress = 103;
+  optional common.ConfigContainer configContainer = 104;
+  optional ImportContainer importContainer = 105;
+  optional int64 user = 106;
+  optional bool TTY = 107;
+
+  repeated Port ports = 1000;
+  repeated PortRangeBinding portRanges = 1001;
+  repeated Volume volumes = 1002;
+  repeated string commands = 1003;
+  repeated string args = 1004;
+  repeated common.KeyValue environments = 1005;
+  repeated common.UniqueKey secrets = 1006;
+  repeated InitContainer initContainers = 1007;
+}
+
+message DeployRequest {
   string id = 1;
   string containerName = 2;
 
-  message InstanceConfig {
-    /*
-    containerPreName, mapped into host folder structure,
-    used as namespace id
-    */
-    string prefix = 1;
-    optional string mountPath = 2; // mount path of instance (docker only)
-    message Environment { repeated string env = 1; }
-    optional Environment environment = 3; // environment variable map (piped)
-    optional string repositoryPrefix = 4; // registry repo prefix
-  }
   /* InstanceConfig is set for multiple containers */
   InstanceConfig instanceConfig = 3;
 
+  /* ContainerConfigs */
+  optional CommonContainerConfig common = 4;
+  optional DagentContainerConfig dagent = 5;
+  optional CraneContainerConfig crane = 6;
+
   /* Runtime info and requirements of a container */
-  common.ExplicitContainerConfig containerConfig = 4;
-  optional string runtimeConfig = 5;
-  optional string registry = 6;
-  string imageName = 7;
-  string tag = 8;
-  message RegistryAuth {
-    string name = 1;
-    string url = 2;
-    string user = 3;
-    string password = 4;
-  }
-  optional RegistryAuth registryAuth = 9;
+  optional string runtimeConfig = 7;
+  optional string registry = 8;
+  string imageName = 9;
+  string tag = 10;
+
+  optional RegistryAuth registryAuth = 11;
 }
 
 message ContainerStateRequest {

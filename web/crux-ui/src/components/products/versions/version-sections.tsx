@@ -139,6 +139,8 @@ const VersionSections = (props: VersionSectionsProps) => {
 
       {sectionState === 'images' ? (
         <VersionImagesSection
+          versionId={version.id}
+          productId={product.id}
           viewMode={viewMode}
           disabled={!version.mutable}
           images={images}

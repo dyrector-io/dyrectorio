@@ -8,8 +8,9 @@ import { DeploymentProgressEvent } from 'src/domain/deployment'
 import { DeployMessage, NotificationMessageType } from 'src/domain/notification-templates'
 import { collectChildVersionIds, collectParentVersionIds } from 'src/domain/utils'
 import { AlreadyExistsException, NotFoundException, UnauthenticatedException } from 'src/exception/errors'
-import { AgentCommand, AgentInfo } from 'src/grpc/protobuf/proto/agent'
-import { ContainerStateListMessage, Empty, NodeConnectionStatus, NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
+import { AgentCommand, AgentInfo, ContainerStateListMessage } from 'src/grpc/protobuf/proto/agent'
+import { ContainerStateListMessage as CruxContainerStateListMessage } from 'src/grpc/protobuf/proto/crux'
+import { Empty, NodeConnectionStatus, NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
 import { DeploymentStatus, DeploymentStatusMessage } from 'src/grpc/protobuf/proto/common'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
@@ -200,7 +201,7 @@ export default class AgentService {
       map(it => {
         this.logger.verbose(`${agent.id} - Container status update - ${prefix}`)
 
-        watcher.update(it)
+        watcher.update(it as CruxContainerStateListMessage)
         return Empty
       }),
       finalize(() => {

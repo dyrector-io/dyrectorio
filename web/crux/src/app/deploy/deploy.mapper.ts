@@ -12,7 +12,6 @@ import {
 import { JsonArray, JsonObject } from 'prisma'
 import { deploymentStatusToDb } from 'src/domain/deployment'
 import { toTimestamp } from 'src/domain/utils'
-import { DeployRequest_InstanceConfig } from 'src/grpc/protobuf/proto/agent'
 import {
   AuditResponse,
   DeploymentByVersionResponse,
@@ -31,15 +30,12 @@ import {
   containerStateToJSON,
   DeploymentStatus,
   deploymentStatusFromJSON,
-  ExplicitContainerConfig,
-  NetworkMode,
-  Port,
-  UniqueKeySecretValue,
 } from 'src/grpc/protobuf/proto/common'
-import { ContainerConfigData, InstanceContainerConfigData, UniqueKeyValue } from 'src/shared/model'
+import { ContainerConfigData, UniqueKeyValue } from 'src/shared/model'
 import { InternalException } from 'src/exception/errors'
 import ImageMapper, { ImageDetails } from '../image/image.mapper'
 import AgentService from '../agent/agent.service'
+import { InstanceConfig, Port } from 'src/grpc/protobuf/proto/agent'
 
 @Injectable()
 export default class DeployMapper {
@@ -89,22 +85,12 @@ export default class DeployMapper {
   }
 
   instanceToGrpc(instance: InstanceDetails): InstanceResponse {
-    const config: DeploymentContainerConfig = {
-      ...(instance.config ?? instance.image.config),
-      instanceId: instance.id,
-    }
-
     return {
       ...instance,
       audit: AuditResponse.fromJSON(instance),
       image: this.imageMapper.toGrpc(instance.image),
       state: this.containerStateToGrpc(instance.state),
-      config: {
-        capabilities: (instance.config?.capabilities as UniqueKeyValue[]) ?? [],
-        environment: (instance.config?.environment as UniqueKeyValue[]) ?? [],
-        config: (config.config as JsonObject) ?? {},
-        secrets: (instance.config?.secrets as unknown as UniqueKeySecretValue[]) ?? [],
-      },
+      config: instance.config ? this.imageMapper.configToGrpc(instance.config as ContainerConfigData) : null,
     }
   }
 
@@ -163,21 +149,7 @@ export default class DeployMapper {
     }
   }
 
-  instanceToAgentContainerConfig(instance: InstanceDetails): ExplicitContainerConfig {
-    const imageConfig = (instance.image.config ?? {}) as ContainerConfigData
-    const instaceConfig = (instance.config ?? {}) as InstanceContainerConfigData
-
-    const config = this.mergeConfigs(imageConfig, instaceConfig) as InstanceContainerConfigData
-
-    return {
-      ...config.config,
-      environments: this.jsonToPipedFormat(config.environment ?? []),
-      user: config.config.user ?? 0,
-      secrets: { data: config?.secrets },
-    }
-  }
-
-  deploymentToAgentInstanceConfig(deployment: Deployment): DeployRequest_InstanceConfig {
+  deploymentToAgentInstanceConfig(deployment: Deployment): InstanceConfig {
     return {
       prefix: deployment.prefix,
       environment: {
@@ -226,36 +198,28 @@ export default class DeployMapper {
     return [...(weak?.filter(it => !overridenPorts.has(it.internal)) ?? []), ...(strong ?? [])]
   }
 
-  private overrideArrays = <T>(weak: T[], strong: T[]): T[] => {
-    const strongs: Set<T> = new Set(strong?.map(it => it))
-    return [...(weak?.filter(it => !strongs.has(it)) ?? []), ...(strong ?? [])]
-  }
-
-  private overrideNetworkMode(weak: NetworkMode, strong: NetworkMode) {
-    return strong ?? weak ?? 'none'
-  }
-
-  private mergeConfigs(
+  public mergeConfigs(
     imageConfig: ContainerConfigData,
-    instanceConfig: InstanceContainerConfigData,
-  ): ContainerConfigData | InstanceContainerConfigData {
-    const envs = this.overrideKeyValues(imageConfig?.environment, instanceConfig?.environment)
-    const caps = this.overrideKeyValues(imageConfig?.capabilities, instanceConfig?.capabilities)
+    instanceConfig: ContainerConfigData,
+  ): ContainerConfigData | ContainerConfigData {
+    const envs = this.overrideKeyValues(
+      imageConfig?.environment as UniqueKeyValue[],
+      instanceConfig?.environment as UniqueKeyValue[],
+    )
+    const caps = this.overrideKeyValues(
+      imageConfig?.capabilities as UniqueKeyValue[],
+      instanceConfig?.capabilities as UniqueKeyValue[],
+    )
     return {
+      ...imageConfig,
+      ...instanceConfig,
       name: imageConfig.name,
       environment: envs,
       capabilities: caps,
-      secrets: instanceConfig.secrets,
-      config: {
-        ...imageConfig?.config,
-        ...instanceConfig?.config,
-        networkMode: this.overrideNetworkMode(
-          imageConfig?.config?.dagent?.networkMode,
-          instanceConfig?.config?.dagent?.networkMode,
-        ),
-        networks: this.overrideArrays(imageConfig?.config?.dagent?.networks, instanceConfig?.config?.dagent?.networks),
-        ports: this.overridePorts(imageConfig?.config?.ports, instanceConfig?.config?.ports),
-      },
+      ports: this.overridePorts(
+        imageConfig?.ports as JsonObject as Port[],
+        instanceConfig?.ports as JsonObject as Port[],
+      ) as JsonObject,
     }
   }
 }
@@ -272,8 +236,6 @@ export type DeploymentWithNode = Deployment & {
 export type DeploymentDetails = DeploymentWithNode & {
   instances: InstanceDetails[]
 }
-
-type DeploymentContainerConfig = Omit<InstanceContainerConfig, 'imageId'>
 
 type DeploymentListItem = Deployment & {
   node: { id: string; name: string }

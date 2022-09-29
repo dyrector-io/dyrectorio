@@ -28,6 +28,7 @@ import (
 	containerbuilder "github.com/dyrector-io/dyrectorio/agent/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/caps"
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/config"
+	agent "github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 
 	"github.com/docker/docker/api/types"
@@ -91,7 +92,7 @@ func GetContainersByName(name string) []types.Container {
 	return containers
 }
 
-func GetContainersByNameCrux(ctx context.Context, name string) []*common.ContainerStateItem {
+func GetContainersByNameCrux(ctx context.Context, name string) []*agent.ContainerStateItem {
 	containers := GetContainersByName(name)
 
 	return mapper.MapContainerState(&containers)

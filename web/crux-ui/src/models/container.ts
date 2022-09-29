@@ -22,11 +22,8 @@ export type UniqueKeySecretValue = UniqueKeyValue & {
   encrypted?: boolean
 }
 
-export type Environment = UniqueKeyValue[]
-export type Capabilities = UniqueKeyValue[]
-export type Secrets = UniqueKey[]
-
-export type ExplicitContainerConfigPort = {
+export type ContainerConfigPort = {
+  id: string
   internal: number
   external: number
 }
@@ -36,137 +33,154 @@ export type PortRange = {
   to: number
 }
 
-export type ExplicitContainerConfigPortRange = {
+export type ContainerConfigPortRange = {
+  id: string
   internal: PortRange
   external: PortRange
 }
 
-export const EXPLICIT_CONTAINER_NETWORK_MODE_VALUES = ['none', 'host', 'bridge'] as const
-export type ExplicitContainerNetworkMode = typeof EXPLICIT_CONTAINER_NETWORK_MODE_VALUES[number]
+export const CONTAINER_NETWORK_MODE_VALUES = ['none', 'host', 'bridge', 'overlay', 'ipvlan', 'macvlan'] as const
+export type ContainerNetworkMode = typeof CONTAINER_NETWORK_MODE_VALUES[number]
 
-export const EXPLICIT_CONTAINER_RESTART_POLICY_TYPE_VALUES = [
-  '',
-  'always',
-  'unless_stopped',
-  'no',
-  'on_failure',
-] as const
-export type ExplicitContainerRestartPolicyType = typeof EXPLICIT_CONTAINER_RESTART_POLICY_TYPE_VALUES[number]
+export const CONTAINER_RESTART_POLICY_TYPE_VALUES = ['undefined', 'always', 'unlessStopped', 'no', 'onFailure'] as const
+export type ContainerRestartPolicyType = typeof CONTAINER_RESTART_POLICY_TYPE_VALUES[number]
 
-export const EXPLICIT_CONTAINER_DEPLOYMENT_STRATEGY_VALUES = ['recreate', 'rolling'] as const
-export type ExplicitContainerDeploymentStrategyType = typeof EXPLICIT_CONTAINER_DEPLOYMENT_STRATEGY_VALUES[number]
+export const CONTAINER_DEPLOYMENT_STRATEGY_VALUES = ['unknown', 'recreate', 'rolling'] as const
+export type ContainerDeploymentStrategyType = typeof CONTAINER_DEPLOYMENT_STRATEGY_VALUES[number]
 
-export type ExplicitContainerConfigExpose = {
-  public: boolean
-  tls: boolean
-}
+export const CONTAINER_EXPOSE_STRATEGY_VALUES = ['none', 'expose', 'expose_with_tls'] as const
+export type ContainerConfigExposeStrategy = typeof CONTAINER_EXPOSE_STRATEGY_VALUES[number]
 
-export type ExplicitContainerConfigIngress = {
+export type ContainerConfigIngress = {
   name: string
   host: string
   uploadLimitInBytes?: string
 }
+export const CONTAINER_VOLUME_TYPE_VALUES = ['ro', 'rw', 'rwx', 'mem', 'tmp'] as const
+export type VolumeType = typeof CONTAINER_VOLUME_TYPE_VALUES[number]
 
-export type ExplicitContainerConfigVolume = {
+export type ContainerConfigVolume = {
+  id: string
   name: string
   path: string
   size?: string
-  type?: string
+  type?: VolumeType
   class?: string
 }
 
-export type ExplicitContainerConfigLog = {
-  type: string
-  config: { [key: string]: string }
+export const CONTAINER_LOG_DRIVER_VALUES = [
+  'none',
+  'gcplogs',
+  'local',
+  'json-file',
+  'syslog',
+  'journald',
+  'gelf',
+  'fluentd',
+  'awslogs',
+  'splunk',
+  'etwlogs',
+  'logentries',
+] as const
+export type ContainerLogDriverType = typeof CONTAINER_LOG_DRIVER_VALUES[number]
+
+export type ContainerConfigLog = {
+  driver: ContainerLogDriverType
+  options: UniqueKeyValue[]
 }
 
-export type ExplicitContainerConfigHealthCheck = {
-  port: number
+export type ContainerConfigHealthCheck = {
+  port?: number
   livenessProbe?: string
   readinessProbe?: string
   startupProbe?: string
 }
 
-export type ExplicitContainerConfigResource = {
+export type ContainerConfigResource = {
   cpu?: string
   memory?: string
 }
 
-export type ExplicitContainerConfigResourceConfig = {
-  limits?: ExplicitContainerConfigResource
-  requests?: ExplicitContainerConfigResource
+export type ContainerConfigResourceConfig = {
+  limits?: ContainerConfigResource
+  requests?: ContainerConfigResource
 }
 
-export type ExplicitContainerConfigContainer = {
+export type ContainerConfigContainer = {
   image: string
   volume: string
   path: string
   keepFiles: boolean
 }
 
-export type ExplicitContainerConfigImportContainer = {
-  environments: { [key: string]: string }
+export type ContainerConfigImportContainer = {
+  environments: UniqueKeyValue[]
   volume: string
   command: string
 }
 
-export type ExplicitInitContainerVolumeLink = {
+export type InitContainerVolumeLink = {
+  id: string
   name: string
   path: string
 }
 
-export type ExplicitInitContainer = {
+export type InitContainer = {
+  id: string
   name: string
   image: string
-  command?: string[]
-  args?: string[]
-  environments?: { [key: string]: string }
+  command?: UniqueKey[]
+  args?: UniqueKey[]
+  environments?: UniqueKeyValue[]
   useParentConfig?: boolean
-  volumes?: ExplicitInitContainerVolumeLink[]
-}
-
-export type ExplicitContainerConfig = {
-  ingress?: ExplicitContainerConfigIngress
-  expose?: ExplicitContainerConfigExpose
-  user?: number
-  tty?: boolean
-  importContainer?: ExplicitContainerConfigImportContainer
-  configContainer?: ExplicitContainerConfigContainer
-
-  ports?: ExplicitContainerConfigPort[]
-  portRanges?: ExplicitContainerConfigPortRange[]
-  volumes?: ExplicitContainerConfigVolume[]
-  commands?: string[]
-  args?: string[]
-  initContainers?: ExplicitInitContainer[]
-
-  // dagent-specific:
-  logConfig?: ExplicitContainerConfigLog
-  restartPolicy?: ExplicitContainerRestartPolicyType
-  networkMode?: ExplicitContainerNetworkMode
-  networks?: string[]
-
-  // crane-specific:
-  deploymentStrategy?: ExplicitContainerDeploymentStrategyType
-  customHeaders?: string[]
-  proxyHeaders?: boolean
-  useLoadBalancer?: boolean
-  extraLBAnnotations?: { [key: string]: string }
-  healthCheckConfig?: ExplicitContainerConfigHealthCheck
-  resourceConfig?: ExplicitContainerConfigResourceConfig
+  volumes?: InitContainerVolumeLink[]
 }
 
 export type ContainerConfig = {
-  name: string
-  capabilities: Capabilities
-  environment: Environment
-  config: ExplicitContainerConfig
-  secrets: Secrets
+  //common
+  name?: string
+  environments?: UniqueKeyValue[]
+  secrets?: UniqueKey[]
+  ingress?: ContainerConfigIngress
+  expose?: ContainerConfigExposeStrategy
+  user?: number
+  tty?: boolean
+  importContainer?: ContainerConfigImportContainer
+  configContainer?: ContainerConfigContainer
+  ports?: ContainerConfigPort[]
+  portRanges?: ContainerConfigPortRange[]
+  volumes?: ContainerConfigVolume[]
+  commands?: UniqueKey[]
+  args?: UniqueKey[]
+  initContainers?: InitContainer[]
+  capabilities: UniqueKeyValue[]
+
+  //dagent
+  logConfig?: ContainerConfigLog
+  restartPolicy?: ContainerRestartPolicyType
+  networkMode?: ContainerNetworkMode
+  networks?: UniqueKey[]
+
+  //crane
+  deploymentStrategy?: ContainerDeploymentStrategyType
+  customHeaders?: UniqueKey[]
+  proxyHeaders?: boolean
+  useLoadBalancer?: boolean
+  extraLBAnnotations?: UniqueKeyValue[]
+  healthCheckConfig?: ContainerConfigHealthCheck
+  resourceConfig?: ContainerConfigResourceConfig
 }
 
-export type CompleteContainerConfig = ExplicitContainerConfig & {
-  name: string
-  environment?: Record<string, string>
-  capabilities?: Record<string, string>
-  secrets?: Record<string, string>
-}
+type DockerSpecificConfig = 'logConfig' | 'restartPolicy' | 'networkMode' | 'networks'
+type KubernetesSpecificConfig =
+  | 'deploymentStrategy'
+  | 'customHeaders'
+  | 'proxyHeaders'
+  | 'useLoadBalancer'
+  | 'extraLBAnnotations'
+  | 'healthCheckConfig'
+  | 'resourceConfig'
+
+export type DagentConfigDetails = Pick<ContainerConfig, DockerSpecificConfig>
+export type CraneConfigDetails = Pick<ContainerConfig, KubernetesSpecificConfig>
+export type CommonConfigDetails = Omit<ContainerConfig, DockerSpecificConfig | KubernetesSpecificConfig>

@@ -12,7 +12,7 @@ import {
 } from '@app/models/grpc/protobuf/proto/crux'
 import { Identity } from '@ory/kratos-client'
 import { protomisify } from '@server/crux/grpc-connection'
-import { explicitContainerConfigToProto, imageToDto } from './mappers/image-mappers'
+import { ContainerConfigToProto, imageToDto } from './mappers/image-mappers'
 
 class DyoImageService {
   private logger = new Logger(DyoImageService.name)
@@ -76,32 +76,14 @@ class DyoImageService {
   }
 
   async patchImage(id: string, image: PatchVersionImage) {
+    console.log('HETE')
     const req = {
       ...image,
       accessedBy: this.identity.id,
       id,
-      config: !image.config
-        ? null
-        : {
-            config: explicitContainerConfigToProto(image.config?.config),
-            name: image.config?.name,
-            capabilities: !image.config?.capabilities
-              ? undefined
-              : {
-                  data: image.config.capabilities,
-                },
-            environment: !image.config?.environment
-              ? undefined
-              : {
-                  data: image.config.environment,
-                },
-            secrets: !image.config?.secrets
-              ? undefined
-              : {
-                  data: image.config.secrets,
-                },
-          },
+      config: ContainerConfigToProto(image.config),
     } as PatchImageRequest
+    console.log('TEHE' + JSON.stringify(req))
 
     await protomisify<PatchImageRequest, Empty>(this.client, this.client.patchImage)(PatchImageRequest, req)
   }

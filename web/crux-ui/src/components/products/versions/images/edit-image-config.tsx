@@ -1,9 +1,10 @@
 import { IMAGE_WS_REQUEST_DELAY } from '@app/const'
 import { DyoInput } from '@app/elements/dyo-input'
 import { useThrottling } from '@app/hooks/use-throttleing'
-import { ContainerConfig, Environment, InstanceContainerConfig, Secrets } from '@app/models'
+import { ContainerConfig, UniqueKey } from '@app/models'
 
-import SecretKeyOnlyInput from '@app/components/shared/secret-key-input'
+import KeyOnlyInput from '@app/components/shared/key-only-input'
+import { UniqueKeyValue } from '@app/models/grpc/protobuf/proto/crux'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useRef, useState } from 'react'
 import KeyValueInput from '../../../shared/key-value-input'
@@ -11,8 +12,8 @@ import KeyValueInput from '../../../shared/key-value-input'
 interface EditImageConfigProps {
   disabled?: boolean
   disabledContainerNameEditing?: boolean
-  config: ContainerConfig | InstanceContainerConfig
-  onPatch: (config: Partial<ContainerConfig | InstanceContainerConfig>) => void
+  config: ContainerConfig
+  onPatch: (config: Partial<ContainerConfig>) => void
 }
 
 const EditImageConfig = (props: EditImageConfigProps) => {
@@ -39,14 +40,14 @@ const EditImageConfig = (props: EditImageConfigProps) => {
     })
   }
 
-  const onEnvChange = (environment: Environment) =>
+  const onEnvChange = (environments: UniqueKeyValue[]) =>
     sendPatch({
-      environment,
+      environments: environments,
     })
 
-  const onSecretSubmit = (secrets: Secrets) => {
+  const onSecretChange = (secrets: UniqueKey[]) => {
     sendPatch({
-      secrets,
+      secrets: secrets,
     })
   }
 
@@ -54,7 +55,7 @@ const EditImageConfig = (props: EditImageConfigProps) => {
     setContainerName(name)
 
     sendPatch({
-      name,
+      name: name,
     })
   }
 
@@ -75,15 +76,18 @@ const EditImageConfig = (props: EditImageConfigProps) => {
 
       <KeyValueInput
         disabled={disabled}
-        heading={t('environment').toUpperCase()}
-        items={config?.environment ?? []}
+        label={t('environment').toUpperCase()}
+        items={config?.environments ?? []}
         onChange={onEnvChange}
       />
-      <SecretKeyOnlyInput
+
+      <KeyOnlyInput
         disabled={disabled}
-        heading={t('secrets').toUpperCase()}
+        label={t('secrets').toUpperCase()}
         items={config.secrets ?? []}
-        onSubmit={onSecretSubmit}
+        keyPlaceholder={t('common:key')}
+        description={t('common:cannotDefineSecretsHere')}
+        onChange={onSecretChange}
       />
     </>
   )

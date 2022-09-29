@@ -1,7 +1,7 @@
 import { IMAGE_WS_REQUEST_DELAY } from '@app/const'
 import { DyoInput } from '@app/elements/dyo-input'
 import { useThrottling } from '@app/hooks/use-throttleing'
-import { Environment, InstanceContainerConfig, UniqueKeyValue } from '@app/models'
+import { ContainerConfig, UniqueKeyValue } from '@app/models'
 
 import KeyValueInput from '@app/components/shared/key-value-input'
 import SecretKeyValInput from '@app/components/shared/secret-key-value-input'
@@ -12,8 +12,8 @@ interface EditInstanceProps {
   disabled?: boolean
   disabledContainerNameEditing?: boolean
   publicKey?: string
-  config: InstanceContainerConfig
-  onPatch: (config: Partial<InstanceContainerConfig>) => void
+  config: ContainerConfig
+  onPatch: (config: Partial<ContainerConfig>) => void
 }
 
 const EditInstanceConfig = (props: EditInstanceProps) => {
@@ -21,12 +21,12 @@ const EditInstanceConfig = (props: EditInstanceProps) => {
 
   const { t } = useTranslation('images')
 
-  const patch = useRef<Partial<InstanceContainerConfig>>({})
+  const patch = useRef<Partial<ContainerConfig>>({})
   const [containerName, setContainerName] = useState(config?.name)
 
   const throttle = useThrottling(IMAGE_WS_REQUEST_DELAY)
 
-  const sendPatch = (configPartial: Partial<InstanceContainerConfig>, immediate?: boolean) => {
+  const sendPatch = (configPartial: Partial<ContainerConfig>, immediate?: boolean) => {
     const newPatch = {
       ...patch.current,
       ...configPartial,
@@ -44,15 +44,15 @@ const EditInstanceConfig = (props: EditInstanceProps) => {
     }
   }
 
-  const onEnvChange = (environment: Environment) =>
+  const onEnvChange = (environments: UniqueKeyValue[]) =>
     sendPatch({
-      environment,
+      environments: environments,
     })
 
   const onSecretSubmit = (secrets: UniqueKeyValue[]) => {
     sendPatch(
       {
-        secrets,
+        secrets: secrets,
       },
       true,
     )
@@ -62,7 +62,8 @@ const EditInstanceConfig = (props: EditInstanceProps) => {
     setContainerName(name)
 
     sendPatch({
-      name,
+      ...patch.current,
+      name: name,
     })
   }
 
@@ -80,15 +81,15 @@ const EditInstanceConfig = (props: EditInstanceProps) => {
       )}
       <KeyValueInput
         disabled={disabled}
-        heading={t('environment').toUpperCase()}
-        items={config?.environment ?? []}
+        label={t('environment').toUpperCase()}
+        items={config.environments ?? []}
         onChange={onEnvChange}
       />
       <SecretKeyValInput
         disabled={disabled || !publicKey}
         heading={t('secrets').toUpperCase()}
         publicKey={publicKey}
-        items={config.secrets ?? []}
+        items={(config.secrets as UniqueKeyValue[]) ?? []}
         onSubmit={onSecretSubmit}
       />
     </>

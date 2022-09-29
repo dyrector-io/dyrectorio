@@ -520,13 +520,128 @@ message IncreaseVersionRequest {
   optional string changelog = 101;
 }
 
-message ContainerConfig {
-  common.ExplicitContainerConfig config = 100;
-  string name = 101;
+// Container 
 
-  repeated common.UniqueKeyValue capabilities = 1000;
-  repeated common.UniqueKeyValue environment = 1001;
-  repeated common.UniqueKey secrets = 1002;
+message VolumeLink {
+  string id = 100;
+  string name = 101;
+  string path = 102;
+}
+
+message InitContainer {
+  string id = 100;
+  string name = 101;
+  string image = 102;
+  optional bool useParentConfig = 103;
+
+  repeated VolumeLink volumes = 1000;
+  repeated common.UniqueKey command = 1001;
+  repeated common.UniqueKey args = 1002;
+  repeated UniqueKeyValue environments = 1003;
+}
+
+message ImportContainer {
+  string volume = 100;
+  string command = 101;
+
+  repeated UniqueKeyValue environments = 1000;
+}
+
+message LogConfig {
+  common.DriverType driver = 100;
+  repeated UniqueKeyValue options = 1000;
+}
+
+
+message Port {
+  string id = 100;
+  int32 internal = 101;
+  int32 external = 102;
+}
+
+message PortRange {
+  int32 from = 100;
+  int32 to = 101;
+}
+
+message PortRangeBinding {
+  string id = 100;
+  PortRange internal = 101;
+  PortRange external = 102;
+}
+
+message Volume {
+  string id = 100;
+  string name = 101;
+  string path = 102;
+  optional string size = 103;
+  optional common.VolumeType type = 104;
+  optional string class = 105;
+}
+
+message KeyList { repeated common.UniqueKey data = 1000; }
+
+message UniqueKeyValue {
+  string id = 100;
+  string key = 101;
+  string value = 102;
+}
+
+message UniqueKeySecretValue {
+  string id = 100;
+  string key = 101;
+  string value = 103;
+  optional bool encrypted = 104;
+}
+
+message KeyValueList { repeated UniqueKeyValue data = 1000; }
+
+message SecretList { repeated UniqueKeySecretValue data = 1000; }
+
+message DagentContainerConfig {
+  optional LogConfig logConfig = 100;
+  optional common.RestartPolicy restartPolicy = 101;
+  optional common.NetworkMode networkMode = 102;
+
+  repeated common.UniqueKey networks = 1000;
+}
+
+message CraneContainerConfig {
+  optional common.DeploymentStrategy deploymentStatregy = 100;
+  optional common.HealthCheckConfig healthCheckConfig = 101;
+  optional common.ResourceConfig resourceConfig = 102;
+  optional bool proxyHeaders = 103;
+  optional bool useLoadBalancer = 104;
+
+  repeated common.UniqueKey customHeaders = 1000;
+  repeated UniqueKeyValue extraLBAnnotations = 1001;
+}
+
+message CommonContainerConfig {
+  optional string name = 101;
+  optional common.ExposeStrategy expose = 102;
+  optional common.Ingress ingress = 103;
+  optional common.ConfigContainer configContainer = 104;
+  optional ImportContainer importContainer = 105;
+  optional int64 user = 106;
+  optional bool TTY = 107;
+
+  repeated Port ports = 1000;
+  repeated PortRangeBinding portRanges = 1001;
+  repeated Volume volumes = 1002;
+  repeated common.UniqueKey commands = 1003;
+  repeated common.UniqueKey args = 1004;
+  repeated UniqueKeyValue environments = 1005;
+  repeated common.UniqueKey secrets = 1006;
+  repeated InitContainer initContainers = 1007;
+}
+
+message ContainerConfig {
+  optional CommonContainerConfig common = 100;
+  optional DagentContainerConfig dagent = 101;
+  optional CraneContainerConfig crane = 102;
+
+  repeated UniqueKeyValue capabilities = 1000;
 }
 
 message ImageResponse {
@@ -562,20 +677,12 @@ message AddImagesToVersionRequest {
   repeated RegistryImages images = 101;
 }
 
-message PatchContainerConfig {
-  optional common.KeyValueList capabilities = 100;
-  optional common.KeyValueList environment = 101;
-  optional common.KeyList secrets = 102;
-  optional common.ExplicitContainerConfig config = 103;
-  optional string name = 104;
-}
-
 message PatchImageRequest {
   string id = 1;
   string accessedBy = 2;
 
   optional string tag = 101;
-  optional PatchContainerConfig config = 102;
+  optional ContainerConfig config = 102;
 }
 
 // NODE
@@ -694,7 +801,7 @@ message ContainerStateItem {
   string imageName = 107;
   string imageTag = 108;
 
-  repeated common.Port ports = 1000;
+  repeated Port ports = 1000;
 }
 
 message ContainerStateListMessage {
@@ -743,16 +850,8 @@ message PatchDeploymentRequest {
   string id = 1;
   string accessedBy = 2;
 
-  optional common.KeyValueList environment = 100;
+  optional KeyValueList environment = 100;
   optional PatchInstanceRequest instance = 1001;
-}
-
-message InstanceContainerConfig {
-  common.ExplicitContainerConfig config = 100;
-
-  repeated common.UniqueKeyValue capabilities = 1000;
-  repeated common.UniqueKeyValue environment = 1001;
-  repeated common.UniqueKeySecretValue secrets = 1002;
 }
 
 message InstanceResponse {
@@ -761,17 +860,14 @@ message InstanceResponse {
 
   ImageResponse image = 100;
   optional common.ContainerState state = 101;
-  optional InstanceContainerConfig config = 102;
+  optional ContainerConfig config = 102;
 }
 
 message PatchInstanceRequest {
   string id = 1;
   string accessedBy = 2;
-
-  optional common.KeyValueList environment = 100;
-  optional common.KeyValueList capabilities = 101;
-  optional common.ExplicitContainerConfig config = 102;
-  optional common.SecretList secrets = 103;
+  
+  optional ContainerConfig config = 102;
 }
 
 message DeploymentListResponse { repeated DeploymentResponse data = 1000; }
@@ -815,7 +911,7 @@ message DeploymentDetailsResponse {
   string nodeId = 101;
   optional string note = 102;
   string prefix = 103;
-  repeated common.UniqueKeyValue environment = 104;
+  repeated UniqueKeyValue environment = 104;
   common.DeploymentStatus status = 105;
   optional string publicKey = 106;
 

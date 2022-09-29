@@ -173,6 +173,8 @@ type ContainerConfig struct {
 	RestartPolicy builder.RestartPolicyName `json:"restartPolicy"`
 	// bridge(container, default) host, none or network name
 	NetworkMode string `json:"networkMode"`
+	// extra networks
+	Networks []string `json:"networks"`
 
 	// k8s-only-section
 	// Deployments strategy, on deployment how to restart underlying pods
@@ -188,8 +190,6 @@ type ContainerConfig struct {
 	ProxyHeaders bool `json:"proxyHeaders"`
 	// Expose service using external IP
 	// also sets the externalTrafficPolcy to "local"
-	// extra networks
-	Networks        []string `json:"networks"`
 	UseLoadBalancer bool     `json:"useLoadBalancer"`
 	// ExtraLBAnnotations
 	// lots of cloud provider specific configs can be put into annotations

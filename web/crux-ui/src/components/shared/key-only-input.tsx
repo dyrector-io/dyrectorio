@@ -1,32 +1,36 @@
-import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
+import { DyoLabel } from '@app/elements/dyo-label'
 import { UniqueKey } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useReducer } from 'react'
 import { v4 as uuid } from 'uuid'
 
-interface SecretKeyInputProps {
+interface KeyInputProps {
   disabled?: boolean
   className?: string
-  heading?: string
+  label?: string
+  labelClassName?: string
+  description?: string
   items: UniqueKey[]
-  onSubmit: (items: UniqueKey[]) => void
+  keyPlaceholder?: string
+  unique?: boolean
+  onChange: (items: UniqueKey[]) => void
 }
 
-const EMPTY_SECRET_KEY = {
+const EMPTY_KEY = {
   id: uuid(),
   key: '',
 } as UniqueKey
 
-type KeyValueElement = UniqueKey & {
+type KeyElement = UniqueKey & {
   message?: string
 }
 
-type KeyValueInputActionType = 'merge-items' | 'set-items'
+type KeyInputActionType = 'merge-items' | 'set-items'
 
-type KeyValueInputAction = {
-  type: KeyValueInputActionType
+type KeyInputAction = {
+  type: KeyInputActionType
   items: UniqueKey[]
 }
 
@@ -35,13 +39,13 @@ const isCompletelyEmpty = (it: UniqueKey): boolean => !it.key || it.key.length <
 const pushEmptyLineIfNecessary = (items: UniqueKey[]) => {
   if (items.length < 1 || (items[items.length - 1].key?.trim() ?? '') !== '') {
     items.push({
-      ...EMPTY_SECRET_KEY,
+      ...EMPTY_KEY,
       id: uuid(),
     })
   }
 }
 
-const reducer = (state: UniqueKey[], action: KeyValueInputAction): UniqueKey[] => {
+const reducer = (state: UniqueKey[], action: KeyInputAction): UniqueKey[] => {
   const { type } = action
 
   if (type === 'set-items') {
@@ -69,23 +73,33 @@ const reducer = (state: UniqueKey[], action: KeyValueInputAction): UniqueKey[] =
     return result
   }
 
-  throw Error(`Invalid KeyValueInput action: ${type}`)
+  throw Error(`Invalid KeyInput action: ${type}`)
 }
 
-const SecretKeyOnlyInput = (props: SecretKeyInputProps) => {
+const KeyOnlyInput = (props: KeyInputProps) => {
   const { t } = useTranslation('common')
 
-  const { heading, disabled, items, className, onSubmit } = props
+  const {
+    label,
+    labelClassName,
+    description,
+    disabled,
+    items,
+    className,
+    keyPlaceholder,
+    unique = true,
+    onChange: parentOnChange,
+  } = props
 
   const [state, dispatch] = useReducer(reducer, items)
 
   const stateToElements = (itemArray: UniqueKey[]) => {
-    const result = new Array<KeyValueElement>()
+    const result = new Array<KeyElement>()
 
     itemArray.forEach(item =>
       result.push({
         ...item,
-        message: result.find(it => it.key === item.key) ? t('keyMustUnique') : null,
+        message: result.find(it => it.key === item.key) && unique ? t('keyMustUnique') : null,
       }),
     )
 
@@ -113,7 +127,7 @@ const SecretKeyOnlyInput = (props: SecretKeyInputProps) => {
 
     newItems = newItems.filter(it => !isCompletelyEmpty(it))
 
-    onSubmit(newItems)
+    parentOnChange(newItems)
     dispatch({
       type: 'set-items',
       items: newItems,
@@ -122,38 +136,35 @@ const SecretKeyOnlyInput = (props: SecretKeyInputProps) => {
 
   const elements = stateToElements(state)
 
-  const renderItem = (entry: KeyValueElement, index: number) => {
+  const renderItem = (entry: KeyElement, index: number) => {
     const { id, key, message } = entry
 
     return (
-      <div key={id} className="flex flex-row flex-grow p-1">
-        <div className="w-5/12">
-          <DyoInput
-            key={`${id}-key`}
-            disabled={disabled}
-            className="w-full mr-2"
-            grow
-            placeholder={t('key')}
-            value={key}
-            message={message}
-            onChange={e => onChange(index, e.target.value)}
-          />
-        </div>
+      <div className="ml-2">
+        <DyoInput
+          key={`${id}-key`}
+          disabled={disabled}
+          containerClassName="p-1"
+          grow
+          placeholder={keyPlaceholder}
+          value={key}
+          message={message}
+          onChange={e => onChange(index, e.target.value)}
+        />
       </div>
     )
   }
 
   return (
-    <form className={clsx(className, 'flex flex-col max-h-128 overflow-y-auto')}>
-      {!heading ? null : (
-        <DyoHeading element="h6" className="text-bright mt-5">
-          {heading}
-        </DyoHeading>
+    <div className={clsx(className, 'flex flex-col max-h-128 overflow-y-auto')}>
+      {!label ? null : (
+        <DyoLabel className={clsx(labelClassName ?? 'text-bright mb-2 whitespace-nowrap')}>{label}</DyoLabel>
       )}
-      <div className="text-light-eased mb-2 ml-1">{t('cannotDefineSecretsHere')}</div>
+      {!description ? null : <div className="text-light-eased mb-2 ml-1">{description}</div>}
+
       {elements.map((it, index) => renderItem(it, index))}
-    </form>
+    </div>
   )
 }
 
-export default SecretKeyOnlyInput
+export default KeyOnlyInput

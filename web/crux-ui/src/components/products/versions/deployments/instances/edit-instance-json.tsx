@@ -1,7 +1,7 @@
 import JsonEditor from '@app/components/shared/json-editor-dynamic-module'
 import { IMAGE_WS_REQUEST_DELAY } from '@app/const'
 import { CANCEL_THROTTLE, useThrottling } from '@app/hooks/use-throttleing'
-import { CompleteContainerConfig, InstanceContainerConfig, UniqueKeyValue } from '@app/models'
+import { ContainerConfig, UniqueKeyValue } from '@app/models'
 import { fold } from '@app/utils'
 import { completeContainerConfigSchema } from '@app/validations'
 import clsx from 'clsx'
@@ -11,9 +11,9 @@ import { v4 as uuid } from 'uuid'
 interface EditInstanceJsonProps {
   disabled?: boolean
   className?: string
-  config: InstanceContainerConfig
+  config: ContainerConfig
   disabledContainerNameEditing?: boolean
-  onPatch: (config: Partial<InstanceContainerConfig>) => void
+  onPatch: (config: Partial<ContainerConfig>) => void
   onParseError?: (err: Error) => void
 }
 
@@ -21,11 +21,11 @@ type EditImageJsonActionType = 'config-change' | 'set-content'
 
 type EditImageJsonAction = {
   type: EditImageJsonActionType
-  content?: CompleteContainerConfig
-  config?: InstanceContainerConfig
+  content?: ContainerConfig
+  config?: ContainerConfig
 }
 
-const DEFAULT_CONFIG = completeContainerConfigSchema.getDefault() as any as CompleteContainerConfig
+const DEFAULT_CONFIG = completeContainerConfigSchema.getDefault() as any as ContainerConfig
 
 const keyValueArrayToJson = (envs: UniqueKeyValue[]): Record<string, string> =>
   fold(envs, {}, (prev, it) => {
@@ -37,33 +37,30 @@ const keyValueArrayToJson = (envs: UniqueKeyValue[]): Record<string, string> =>
   })
 
 const imageConfigToCompleteContainerConfig = (
-  currentConfig: CompleteContainerConfig,
-  imageConfig: InstanceContainerConfig,
-): CompleteContainerConfig => {
+  currentConfig: ContainerConfig,
+  imageConfig: ContainerConfig,
+): ContainerConfig => {
   if (!imageConfig) {
     return currentConfig ?? DEFAULT_CONFIG
   }
 
-  const config: CompleteContainerConfig = {
-    ...(imageConfig.config ?? currentConfig ?? DEFAULT_CONFIG),
-    name: imageConfig.name ?? currentConfig.name,
-    environment: currentConfig?.environment ?? {},
-    capabilities: currentConfig?.capabilities ?? {},
-    secrets: currentConfig?.secrets ?? {},
+  const config: ContainerConfig = {
+    ...(imageConfig ?? currentConfig ?? DEFAULT_CONFIG),
+    capabilities: currentConfig?.capabilities,
   }
 
-  if (imageConfig.environment) {
-    config.environment = keyValueArrayToJson(imageConfig.environment)
+  if (imageConfig.environments) {
+    config.environments = imageConfig.environments
   }
 
   if (imageConfig.capabilities) {
-    config.capabilities = keyValueArrayToJson(imageConfig.capabilities)
+    config.capabilities = imageConfig.capabilities
   }
 
   return config
 }
 
-const reducer = (state: CompleteContainerConfig, action: EditImageJsonAction): CompleteContainerConfig => {
+const reducer = (state: ContainerConfig, action: EditImageJsonAction): ContainerConfig => {
   const { type } = action
 
   if (type === 'config-change') {
@@ -127,13 +124,10 @@ const EditInstanceJson = (props: EditInstanceJsonProps) => {
   const [state, dispatch] = useReducer(reducer, imageConfigToCompleteContainerConfig(null, null))
 
   const onChange = useCallback(
-    (newConfig: CompleteContainerConfig) => {
+    (newConfig: ContainerConfig) => {
       throttle(() => {
         onPatch({
-          config: newConfig,
-          name: newConfig.name,
-          environment: mergeKeyValuesWithJson(config?.environment ?? [], newConfig?.environment),
-          capabilities: mergeKeyValuesWithJson(config?.capabilities ?? [], newConfig?.capabilities),
+          ...config,
         })
 
         dispatch({

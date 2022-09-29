@@ -119,7 +119,7 @@ func TestRegistryUrlEmpty(t *testing.T) {
 }
 
 func TestProtoRegistryUrl(t *testing.T) {
-	auth := &agent.DeployRequest_RegistryAuth{
+	auth := &agent.RegistryAuth{
 		Url: "test",
 	}
 
@@ -129,7 +129,7 @@ func TestProtoRegistryUrl(t *testing.T) {
 
 func TestProtoRegistryUrlPriority(t *testing.T) {
 	registry := "other"
-	auth := &agent.DeployRequest_RegistryAuth{
+	auth := &agent.RegistryAuth{
 		Url: "test",
 	}
 

@@ -99,7 +99,7 @@ func GetRegistryURL(registry *string, registryAuth *builder.RegistryAuth) string
 	}
 }
 
-func GetRegistryURLProto(registry *string, registryAuth *agent.DeployRequest_RegistryAuth) string {
+func GetRegistryURLProto(registry *string, registryAuth *agent.RegistryAuth) string {
 	if registryAuth != nil {
 		return registryAuth.Url
 	} else if registry != nil {

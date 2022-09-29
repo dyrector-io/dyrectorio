@@ -7,6 +7,8 @@ import VersionViewList from './version-view-list'
 import VersionViewTile from './version-view-tile'
 
 interface VersionImagesSectionProps {
+  productId: string
+  versionId: string
   disabled?: boolean
   images: VersionImage[]
   imageTags: ImageTagsMap
@@ -17,7 +19,7 @@ interface VersionImagesSectionProps {
 }
 
 const VersionImagesSection = (props: VersionImagesSectionProps) => {
-  const { images, imageTags, versionSock, viewMode, onTagSelected, onFetchTags, disabled } = props
+  const { images, imageTags, versionSock, viewMode, onTagSelected, onFetchTags, disabled, productId, versionId } = props
 
   const { t } = useTranslation('images')
 
@@ -33,6 +35,8 @@ const VersionImagesSection = (props: VersionImagesSectionProps) => {
       />
     ) : (
       <VersionViewList
+        productId={productId}
+        versionId={versionId}
         images={images}
         imageTags={imageTags}
         versionSock={versionSock}
@@ -53,10 +57,7 @@ export const mergeImagePatch = (oldImage: VersionImage, newImage: PatchVersionIm
   ...oldImage,
   ...newImage,
   config: {
-    name: newImage.config?.name ?? oldImage.config.name,
-    environment: newImage.config?.environment ?? oldImage.config.environment,
-    capabilities: newImage.config?.capabilities ?? oldImage.config.capabilities,
-    config: newImage.config?.config ?? oldImage.config.config,
-    secrets: newImage.config?.secrets ?? oldImage.config.secrets,
+    ...oldImage.config,
+    ...newImage.config,
   },
 })

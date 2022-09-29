@@ -118,11 +118,7 @@ export default class VersionService {
                 versionId: newVersion.id,
                 config: {
                   create: {
-                    name: containerNameFromImageName(image.name),
-                    environment: image.config.environment,
-                    capabilities: image.config.capabilities,
-                    config: image.config.config,
-                    secrets: image.config.secrets,
+                    ...image,
                   },
                 },
               },

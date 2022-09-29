@@ -7,17 +7,34 @@ export interface DyoInputProps extends React.InputHTMLAttributes<HTMLInputElemen
   grow?: boolean
   label?: string
   labelClassName?: string
+  containerClassName?: string
   message?: string
   messageType?: 'error' | 'info'
+  inline?: boolean
 }
 
 export const DyoInput = forwardRef((props: DyoInputProps, ref: ForwardedRef<HTMLInputElement>) => {
-  const { label, labelClassName, message, messageType, grow, name, className, disabled, ...forwardedProps } = props
+  const {
+    label,
+    labelClassName,
+    message,
+    messageType,
+    grow,
+    name,
+    className,
+    containerClassName,
+    disabled,
+    inline,
+    ...forwardedProps
+  } = props
 
   return (
-    <>
+    <div className={clsx(containerClassName, inline ? 'flex flex-row' : 'flex flex-col')}>
       {!label ? null : (
-        <DyoLabel className={clsx(labelClassName ?? 'mt-8 mb-2.5')} htmlFor={name}>
+        <DyoLabel
+          className={clsx(labelClassName ?? (inline ? 'my-auto mr-4' : 'mt-8 mb-2.5'), 'whitespace-nowrap')}
+          htmlFor={name}
+        >
           {label}
         </DyoLabel>
       )}
@@ -30,13 +47,13 @@ export const DyoInput = forwardRef((props: DyoInputProps, ref: ForwardedRef<HTML
         className={clsx(
           className,
           'bg-medium h-11 p-4 ring-2 rounded-md focus:outline-none focus:dark',
-          grow ? null : 'w-80',
+          grow ? 'w-full' : 'w-80',
           disabled ? 'text-bright-muted ring-light-grey-muted' : 'text-bright ring-light-grey',
         )}
       />
 
       {!message ? null : <DyoMessage message={message} messageType={messageType} />}
-    </>
+    </div>
   )
 })
 

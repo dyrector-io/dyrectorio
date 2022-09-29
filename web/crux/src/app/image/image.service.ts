@@ -93,7 +93,6 @@ export default class ImageService {
                   environment: [],
                   capabilities: [],
                   secrets: [],
-                  config: {},
                 },
               },
             },
@@ -134,17 +133,10 @@ export default class ImageService {
 
   @AuditLogLevel('no-data')
   async patchImage(request: PatchImageRequest): Promise<Empty> {
+    console.log('CALLED WITH: ' + JSON.stringify(request.config))
     let config: ContainerConfigData
     if (request.config) {
-      const { capabilities: caps, environment: envs, secrets } = request.config
-
-      config = {
-        name: request.config.name ?? undefined,
-        capabilities: caps ? caps.data ?? [] : (undefined as JsonArray),
-        environment: envs ? envs.data ?? [] : (undefined as JsonArray),
-        config: request.config?.config,
-        secrets: secrets ? secrets.data ?? [] : (undefined as JsonArray),
-      }
+      config = this.mapper.configProtoToDb(request.config)
     }
 
     const image = await this.prisma.image.update({

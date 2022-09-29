@@ -76,6 +76,7 @@ const onDeleteImage = async (
 }
 
 const onPatchImage = async (endpoint: WsEndpoint, connection: WsConnection, message: WsMessage<PatchImageMessage>) => {
+  console.log('CALLEEEDD')
   const req = message.payload
 
   await cruxFromConnection(connection).images.patchImage(req.id, req)

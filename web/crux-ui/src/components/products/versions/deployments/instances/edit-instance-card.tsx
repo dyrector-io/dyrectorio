@@ -1,13 +1,7 @@
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoMessage from '@app/elements/dyo-message'
-import {
-  Instance,
-  InstanceContainerConfig,
-  mergeConfigs,
-  PatchInstanceMessage,
-  WS_TYPE_PATCH_INSTANCE,
-} from '@app/models'
+import { ContainerConfig, Instance, mergeConfigs, PatchInstanceMessage, WS_TYPE_PATCH_INSTANCE } from '@app/models'
 import { getValidationError, instanceConfigSchema } from '@app/validations'
 import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 import useTranslation from 'next-translate/useTranslation'
@@ -39,7 +33,7 @@ const EditInstanceCard = (props: EditInstanceCardProps) => {
     [instance.image.config, instance.overriddenConfig],
   )
 
-  const onPatch = (id: string, config: Partial<InstanceContainerConfig>) => {
+  const onPatch = (id: string, config: Partial<ContainerConfig>) => {
     setParseError(null)
 
     sock.send(WS_TYPE_PATCH_INSTANCE, {

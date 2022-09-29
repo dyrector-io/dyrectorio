@@ -36,7 +36,7 @@ import { WsMessage } from '@app/websockets/common'
 import { Identity } from '@ory/kratos-client'
 import { GrpcConnection, protomisify, ProtoSubscriptionOptions } from './grpc-connection'
 import { deploymentEventTypeToDto, deploymentStatusToDto, instanceToDto } from './mappers/deployment-mappers'
-import { explicitContainerConfigToProto } from './mappers/image-mappers'
+import { ContainerConfigToProto } from './mappers/image-mappers'
 import { containerStateToDto, nodeStatusToDto } from './mappers/node-mappers'
 
 class DyoDeploymentService {
@@ -174,22 +174,7 @@ class DyoDeploymentService {
         : {
             id: dto.instance.instanceId,
             accessedBy: this.identity.id,
-            config: explicitContainerConfigToProto(dto.instance.config?.config),
-            capabilities: !dto.instance.config?.capabilities
-              ? undefined
-              : {
-                  data: dto.instance.config.capabilities,
-                },
-            environment: !dto.instance.config?.environment
-              ? undefined
-              : {
-                  data: dto.instance.config.environment,
-                },
-            secrets: !dto.instance.config?.secrets
-              ? undefined
-              : {
-                  data: dto.instance.config.secrets,
-                },
+            config: ContainerConfigToProto(dto.instance.config),
           },
     }
 

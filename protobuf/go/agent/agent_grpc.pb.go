@@ -119,7 +119,7 @@ func (c *agentClient) ContainerState(ctx context.Context, opts ...grpc.CallOptio
 }
 
 type Agent_ContainerStateClient interface {
-	Send(*common.ContainerStateListMessage) error
+	Send(*ContainerStateListMessage) error
 	CloseAndRecv() (*Empty, error)
 	grpc.ClientStream
 }
@@ -128,7 +128,7 @@ type agentContainerStateClient struct {
 	grpc.ClientStream
 }
 
-func (x *agentContainerStateClient) Send(m *common.ContainerStateListMessage) error {
+func (x *agentContainerStateClient) Send(m *ContainerStateListMessage) error {
 	return x.ClientStream.SendMsg(m)
 }
 
@@ -251,7 +251,7 @@ func _Agent_ContainerState_Handler(srv interface{}, stream grpc.ServerStream) er
 
 type Agent_ContainerStateServer interface {
 	SendAndClose(*Empty) error
-	Recv() (*common.ContainerStateListMessage, error)
+	Recv() (*ContainerStateListMessage, error)
 	grpc.ServerStream
 }
 
@@ -263,8 +263,8 @@ func (x *agentContainerStateServer) SendAndClose(m *Empty) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *agentContainerStateServer) Recv() (*common.ContainerStateListMessage, error) {
-	m := new(common.ContainerStateListMessage)
+func (x *agentContainerStateServer) Recv() (*ContainerStateListMessage, error) {
+	m := new(ContainerStateListMessage)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}

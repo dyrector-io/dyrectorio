@@ -3,16 +3,20 @@ import { DyoList } from '@app/elements/dyo-list'
 import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { DeleteImageMessage, VersionImage, WS_TYPE_DELETE_IMAGE } from '@app/models'
+import { imageConfigUrl } from '@app/routes'
 import { utcDateToLocale } from '@app/utils'
 import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
+import { useRouter } from 'next/router'
 import { useState } from 'react'
 import EditImageTags from './images/edit-image-tags'
 import { getImageTags, ImageTagsMap } from './use-images-websocket'
 
 interface VersionViewListProps {
+  productId: string
+  versionId: string
   images: VersionImage[]
   imageTags: ImageTagsMap
   versionSock: WebSocketClientEndpoint
@@ -21,9 +25,10 @@ interface VersionViewListProps {
 }
 
 const VersionViewList = (props: VersionViewListProps) => {
-  const { images, imageTags, versionSock, onTagSelected, onFetchTags } = props
+  const { images, imageTags, versionSock, onTagSelected, onFetchTags, productId, versionId } = props
 
   const { t } = useTranslation('images')
+  const router = useRouter()
 
   const [deleteModalConfig, confirmDelete] = useConfirmation()
   const [selectTagsDialog, setSelectTagsDialog] = useState<VersionImage>()
@@ -60,6 +65,8 @@ const VersionViewList = (props: VersionViewListProps) => {
     onFetchTags(item)
   }
 
+  const onImageSettings = (item: VersionImage) => router.push(imageConfigUrl(productId, versionId, item.id))
+
   const itemTemplate = (item: VersionImage) => [
     <a>{item.config.name}</a>,
     <a>{item.registryName}</a>,
@@ -80,7 +87,18 @@ const VersionViewList = (props: VersionViewListProps) => {
           onClick={() => onOpenTagsDialog(item)}
         />
       </div>
-      <Image className="cursor-pointer" src="/trash-can.svg" width={24} height={24} onClick={() => onDelete(item)} />
+      <div className="mr-2 inline-block">
+        <Image className="cursor-pointer" src="/trash-can.svg" width={24} height={24} onClick={() => onDelete(item)} />
+      </div>
+      <div className="inline-block">
+        <Image
+          className="cursor-pointer"
+          src="/settings.svg"
+          width={24}
+          height={24}
+          onClick={() => onImageSettings(item)}
+        />
+      </div>
     </div>,
   ]
 

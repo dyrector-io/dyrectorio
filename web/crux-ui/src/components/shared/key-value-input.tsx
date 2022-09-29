@@ -1,5 +1,5 @@
-import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
+import { DyoLabel } from '@app/elements/dyo-label'
 import { UniqueKeyValue } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
@@ -68,13 +68,28 @@ interface KeyValueInputProps {
   disabled?: boolean
   valueDisabled?: boolean
   className?: string
-  heading?: string
+  label?: string
+  labelClassName?: string
   items: UniqueKeyValue[]
+  keyPlaceholder?: string
+  valuePlaceholder?: string
   onChange: (items: UniqueKeyValue[]) => void
+  type?: 'string' | 'number'
 }
 
 const KeyValueInput = (props: KeyValueInputProps) => {
-  const { heading, disabled, className, items, valueDisabled, onChange: propOnChange } = props
+  const {
+    label,
+    labelClassName,
+    disabled,
+    className,
+    items,
+    valueDisabled,
+    onChange: propOnChange,
+    keyPlaceholder,
+    valuePlaceholder,
+    type,
+  } = props
 
   const { t } = useTranslation('common')
 
@@ -129,16 +144,17 @@ const KeyValueInput = (props: KeyValueInputProps) => {
 
     return (
       <div key={entry.id} className="flex flex-row flex-grow p-1">
-        <div className="w-5/12">
+        <div className="w-5/12 ml-2">
           <DyoInput
             key={`${entry.id}-key`}
             disabled={disabled}
             className="w-full mr-2"
             grow
-            placeholder={t('key')}
+            placeholder={keyPlaceholder ?? t('key')}
             value={key}
             message={message}
             onChange={e => onChange(index, e.target.value, value)}
+            type={type ?? 'string'}
           />
         </div>
 
@@ -148,9 +164,10 @@ const KeyValueInput = (props: KeyValueInputProps) => {
             disabled={disabled || valueDisabled}
             className="w-full"
             grow
-            placeholder={t('value')}
+            placeholder={valuePlaceholder ?? t('value')}
             value={value}
             onChange={e => onChange(index, key, e.target.value)}
+            type={type ?? 'string'}
           />
         </div>
       </div>
@@ -158,15 +175,13 @@ const KeyValueInput = (props: KeyValueInputProps) => {
   }
 
   return (
-    <form className={clsx(className, 'flex flex-col max-h-128 overflow-y-auto')}>
-      {!heading ? null : (
-        <DyoHeading element="h6" className="text-bright mt-4 mb-2">
-          {heading}
-        </DyoHeading>
+    <div className={clsx(className, 'flex flex-col max-h-128 overflow-y-auto')}>
+      {!label ? null : (
+        <DyoLabel className={clsx(labelClassName ?? 'text-bright mb-2 whitespace-nowrap')}>{label}</DyoLabel>
       )}
 
       {elements.map((it, index) => renderItem(it, index))}
-    </form>
+    </div>
   )
 }
 
