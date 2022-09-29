@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Observable } from 'rxjs'
-import { PreconditionFailedException } from 'src/exception/errors'
 import {
   AccessRequest,
   ContainerStateListMessage,
@@ -21,6 +20,7 @@ import {
 import PrismaService from 'src/services/prisma.service'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import { BaseMessage } from 'src/domain/notification-templates'
+import { PreconditionFailedException } from 'src/exception/errors'
 import AgentService from '../agent/agent.service'
 import TeamRepository from '../team/team.repository'
 import NodeMapper from './node.mapper'
@@ -179,6 +179,7 @@ export default class NodeService {
     this.logger.debug(`Opening container status channel for prefix: ${request.nodeId} - ${request.prefix}`)
 
     const agent = this.agentService.getById(request.nodeId)
+
     if (!agent) {
       throw new PreconditionFailedException({
         message: 'Node is unreachable',
@@ -186,6 +187,7 @@ export default class NodeService {
         value: request.nodeId,
       })
     }
+
     const prefix = request.prefix ?? ''
     const watcher = agent.upsertContainerStatusWatcher(prefix)
     return watcher.watch()
