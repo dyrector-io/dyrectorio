@@ -11,8 +11,8 @@ import {
   InstanceMessage,
   InstancesAddedMessage,
   InstanceUpdatedMessage,
-  WS_TYPE_GET_DEPLOYMENT_SECRETS,
   WS_TYPE_DEPLOYMENT_SECRETS,
+  WS_TYPE_GET_DEPLOYMENT_SECRETS,
   WS_TYPE_GET_INSTANCE,
   WS_TYPE_IMAGE_DELETED,
   WS_TYPE_INSTANCE,
@@ -21,6 +21,8 @@ import {
 } from '@app/models'
 import { deploymentWsUrl } from '@app/routes'
 import { useEffect, useState } from 'react'
+import DeploymentViewList from './deployment-view-list'
+import DeploymentViewTile from './deployment-view-tile'
 
 const mergeInstancePatch = (instance: Instance, message: InstanceUpdatedMessage): Instance => ({
   ...instance,
@@ -100,7 +102,7 @@ const EditDeploymentInstances = (props: EditDeploymentInstancesProps) => {
           instances={instances}
           deploymentSock={sock}
           publicKey={deployment?.publicKey}
-          definedSecrets={secretsList[it.id]}
+          secretsList={secretsList}
         />
       ) : (
         <DeploymentViewList instances={instances} />
