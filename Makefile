@@ -29,7 +29,7 @@ proto-agent:
 # Generate API grpc files
 .PHONY: proto-crux
 proto-crux:
-	MSYS_NO_PATHCONV=1 docker run -u ${UID}:${GID} -v "${PWD}":/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16 ash -c "\
+	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v "${PWD}":/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16 ash -c "\
 		mkdir -p ./web/crux/src/grpc && \
 		protoc -I. \
 			--experimental_allow_proto3_optional \

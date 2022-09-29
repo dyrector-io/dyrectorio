@@ -115,4 +115,16 @@ export type StartDeploymentMessage = {
 
 export const WS_TYPE_DEPLOYMENT_FINISHED = 'deployment-finished'
 
+export const WS_TYPE_GET_DEPLOYMENT_SECRETS = 'deployment-secret-list'
+export type DeploymentGetSecretListMessage = {
+  id: string
+  instanceId: string
+}
+
+export const WS_TYPE_DEPLOYMENT_SECRETS = 'deployment-secrets'
+export type DeploymentSecretListMessage = {
+  instanceId: string
+  keys: string[]
+}
+
 export const deploymentIsMutable = (status: DeploymentStatus) => status === 'preparing' || status === 'failed'

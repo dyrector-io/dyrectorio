@@ -1,4 +1,6 @@
 /* eslint-disable */
+import { util, configure } from 'protobufjs/minimal'
+import * as Long from 'long'
 
 export const protobufPackage = 'google.protobuf'
 
@@ -53,6 +55,7 @@ export const protobufPackage = 'google.protobuf'
  *     Timestamp timestamp = Timestamp.newBuilder().setSeconds(millis / 1000)
  *         .setNanos((int) ((millis % 1000) * 1000000)).build();
  *
+ *
  * Example 5: Compute Timestamp from Java `Instant.now()`.
  *
  *     Instant now = Instant.now();
@@ -60,6 +63,7 @@ export const protobufPackage = 'google.protobuf'
  *     Timestamp timestamp =
  *         Timestamp.newBuilder().setSeconds(now.getEpochSecond())
  *             .setNanos(now.getNano()).build();
+ *
  *
  * Example 6: Compute Timestamp from current time in Python.
  *
@@ -111,16 +115,14 @@ export interface Timestamp {
 
 export const GOOGLE_PROTOBUF_PACKAGE_NAME = 'google.protobuf'
 
-function createBaseTimestamp(): Timestamp {
-  return { seconds: 0, nanos: 0 }
-}
+const baseTimestamp: object = { seconds: 0, nanos: 0 }
 
 export const Timestamp = {
   fromJSON(object: any): Timestamp {
-    return {
-      seconds: isSet(object.seconds) ? Number(object.seconds) : 0,
-      nanos: isSet(object.nanos) ? Number(object.nanos) : 0,
-    }
+    const message = { ...baseTimestamp } as Timestamp
+    message.seconds = object.seconds !== undefined && object.seconds !== null ? Number(object.seconds) : 0
+    message.nanos = object.nanos !== undefined && object.nanos !== null ? Number(object.nanos) : 0
+    return message
   },
 
   toJSON(message: Timestamp): unknown {
@@ -131,6 +133,9 @@ export const Timestamp = {
   },
 }
 
-function isSet(value: any): boolean {
-  return value !== null && value !== undefined
+// If you get a compile-error about 'Constructor<Long> and ... have no overlap',
+// add '--ts_proto_opt=esModuleInterop=true' as a flag when calling 'protoc'.
+if (util.Long !== Long) {
+  util.Long = Long as any
+  configure()
 }

@@ -46,11 +46,13 @@ type GrpcConnectionParams struct {
 type DeployFunc func(context.Context, *dogger.DeploymentLogger, *v1.DeployImageRequest, *v1.VersionData) error
 type WatchFunc func(context.Context, string) []*common.ContainerStateItem
 type DeleteFunc func(context.Context, string, string) error
+type SecretListFunc func(context.Context, string, string) ([]string, error)
 
 type WorkerFunctions struct {
-	Deploy DeployFunc
-	Watch  WatchFunc
-	Delete DeleteFunc
+	Deploy     DeployFunc
+	Watch      WatchFunc
+	Delete     DeleteFunc
+	SecretList SecretListFunc
 }
 
 type contextKey int
@@ -248,6 +250,8 @@ func grpcLoop(
 			go executeDeleteContainer(ctx, command.GetContainerDelete(), workerFuncs.Delete)
 		} else if command.GetDeployLegacy() != nil {
 			go executeVersionDeployLegacyRequest(ctx, command.GetDeployLegacy(), workerFuncs.Deploy, appConfig)
+		} else if command.GetListSecrets() != nil {
+			go executeSecretList(ctx, command.GetListSecrets(), workerFuncs.SecretList, appConfig)
 		} else {
 			log.Println("Unknown agent command")
 		}
@@ -409,6 +413,43 @@ func executeVersionDeployLegacyRequest(
 	err = statusStream.CloseSend()
 	if err != nil {
 		log.Println(deployImageRequest.RequestID, "Stream close err: ", err.Error())
+		return
+	}
+}
+
+func executeSecretList(
+	ctx context.Context,
+	command *agent.ListSecretsRequest,
+	listFunc SecretListFunc,
+	appConfig *config.CommonConfiguration) {
+	prefix := command.Prefix
+	name := command.Name
+
+	log.Printf("Getting secrets for prefix-name: '%s-%s'", prefix, name)
+
+	keys, err := listFunc(ctx, prefix, name)
+	if err != nil {
+		log.Println("Secret list error: ", err.Error())
+		return
+	}
+
+	publicKey, err := config.GetPublicKey(string(appConfig.SecretPrivateKey))
+	if err != nil {
+		log.Println("Failed to get public key: ", err.Error())
+		return
+	}
+
+	resp := &common.ListSecretsResponse{
+		Prefix:    prefix,
+		Name:      name,
+		PublicKey: publicKey,
+		HasKeys:   keys != nil,
+		Keys:      keys,
+	}
+
+	_, err = grpcConn.Client.SecretsList(ctx, resp)
+	if err != nil {
+		log.Println("Secret list response error: ", err.Error())
 		return
 	}
 }

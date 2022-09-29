@@ -23,12 +23,13 @@ interface EditInstanceCardProps {
   instance: Instance
   publicKey?: string
   deploymentSock: WebSocketClientEndpoint
+  definedSecrets?: string[]
 }
 
 const EditInstanceCard = (props: EditInstanceCardProps) => {
   const { t } = useTranslation('images')
 
-  const { disabled, instance, deploymentSock: sock, publicKey } = props
+  const { disabled, instance, deploymentSock: sock, publicKey, definedSecrets } = props
 
   const [selection, setSelection] = useState<EditInstanceCardSelection>('config')
   const [mergedConfig, setMergedConfig] = useState(mergeConfigs(instance.image.config, instance.overriddenConfig))
@@ -95,6 +96,7 @@ const EditInstanceCard = (props: EditInstanceCardProps) => {
             disabledContainerNameEditing
             config={mergedConfig}
             publicKey={publicKey}
+            definedSecrets={definedSecrets}
             onPatch={it => onPatch(instance.id, it)}
           />
         ) : (

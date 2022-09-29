@@ -8,10 +8,11 @@ export interface DeploymentViewTileProps {
   disabled?: boolean
   deploymentSock: WebSocketClientEndpoint
   publicKey?: string
+  secretsList: { [instance: string]: string[] }
 }
 
 const DeploymentViewTile = (props: DeploymentViewTileProps) => {
-  const { instances, disabled, deploymentSock, publicKey } = props
+  const { instances, disabled, deploymentSock, publicKey, secretsList } = props
 
   return (
     <DyoWrap>
@@ -22,6 +23,7 @@ const DeploymentViewTile = (props: DeploymentViewTileProps) => {
           instance={it}
           deploymentSock={deploymentSock}
           publicKey={publicKey}
+          definedSecrets={secretsList[it.id]}
         />
       ))}
     </DyoWrap>

@@ -13,6 +13,7 @@ import {
   WS_TYPE_IMAGE_DELETED,
   WS_TYPE_INSTANCES_ADDED,
 } from '@app/models'
+import { ListSecretsResponse } from '@app/models/grpc/protobuf/proto/common'
 import {
   AccessRequest,
   CreateDeploymentRequest,
@@ -23,6 +24,7 @@ import {
   DeploymentEventListResponse,
   DeploymentListByVersionResponse,
   DeploymentListResponse,
+  DeploymentListSecretsRequest,
   DeploymentProgressMessage,
   Empty,
   IdRequest,
@@ -130,6 +132,21 @@ class DyoDeploymentService {
             : null,
       }
     })
+  }
+
+  async getSecretsList(deploymentId: string, instanceId: string): Promise<ListSecretsResponse> {
+    const req: DeploymentListSecretsRequest = {
+      id: deploymentId,
+      instanceId,
+      accessedBy: this.identity.id,
+    }
+
+    const res = await protomisify<DeploymentListSecretsRequest, ListSecretsResponse>(
+      this.client,
+      this.client.getDeploymentSecrets,
+    )(DeploymentListSecretsRequest, req)
+
+    return res
   }
 
   async create(versionId: string, deployment: CreateDeployment): Promise<string> {

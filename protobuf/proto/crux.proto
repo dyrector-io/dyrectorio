@@ -80,7 +80,7 @@ service CruxDeployment {
   rpc GetDeploymentDetails(IdRequest) returns (DeploymentDetailsResponse);
   rpc GetDeploymentEvents(IdRequest) returns (DeploymentEventListResponse);
   rpc GetDeploymentList(AccessRequest) returns (DeploymentListResponse);
-  rpc GetSecrets(PrefixRequest) returns (common.ListSecretsResponse);
+  rpc GetDeploymentSecrets(DeploymentListSecretsRequest) returns (common.ListSecretsResponse);
 
   rpc StartDeployment(IdRequest) returns (stream DeploymentProgressMessage);
   rpc SubscribeToDeploymentEditEvents(ServiceIdRequest)
@@ -150,8 +150,6 @@ message CreateEntityResponse {
 }
 
 message UpdateEntityResponse { google.protobuf.Timestamp updatedAt = 100; }
-
-message PrefixRequest { string prefix = 1; }
 
 /*
  *
@@ -848,6 +846,12 @@ message DeploymentEventResponse {
 
 message DeploymentEventListResponse {
   repeated DeploymentEventResponse data = 1000;
+}
+
+message DeploymentListSecretsRequest {
+  string id = 1;
+  string accessedBy = 2;
+  string instanceId = 3;
 }
 
 // NOTIFICATION

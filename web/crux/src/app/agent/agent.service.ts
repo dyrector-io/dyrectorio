@@ -10,7 +10,7 @@ import { collectChildVersionIds, collectParentVersionIds } from 'src/domain/util
 import { AlreadyExistsException, NotFoundException, UnauthenticatedException } from 'src/exception/errors'
 import { AgentCommand, AgentInfo } from 'src/grpc/protobuf/proto/agent'
 import { ContainerStateListMessage, Empty, NodeConnectionStatus, NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
-import { DeploymentStatus, DeploymentStatusMessage } from 'src/grpc/protobuf/proto/common'
+import { DeploymentStatus, DeploymentStatusMessage, ListSecretsResponse } from 'src/grpc/protobuf/proto/common'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
@@ -212,6 +212,14 @@ export default class AgentService {
       }),
       takeUntil(completer),
     )
+  }
+
+  handleSecretList(connection: GrpcNodeConnection, request: ListSecretsResponse): Observable<Empty> {
+    const agent = this.getByIdOrThrow(connection.nodeId)
+
+    agent.onContainerSecrets(request)
+
+    return of(Empty)
   }
 
   private onAgentConnectionStatusChange(agent: Agent, status: NodeConnectionStatus) {

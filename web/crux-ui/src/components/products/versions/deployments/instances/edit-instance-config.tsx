@@ -13,11 +13,12 @@ interface EditInstanceProps {
   disabledContainerNameEditing?: boolean
   publicKey?: string
   config: InstanceContainerConfig
+  definedSecrets?: string[]
   onPatch: (config: Partial<InstanceContainerConfig>) => void
 }
 
 const EditInstanceConfig = (props: EditInstanceProps) => {
-  const { config, disabled, disabledContainerNameEditing, publicKey, onPatch } = props
+  const { config, disabled, disabledContainerNameEditing, publicKey, definedSecrets, onPatch } = props
 
   const { t } = useTranslation('images')
 
@@ -89,6 +90,7 @@ const EditInstanceConfig = (props: EditInstanceProps) => {
         heading={t('secrets').toUpperCase()}
         publicKey={publicKey}
         items={config.secrets ?? []}
+        definedSecrets={definedSecrets}
         onSubmit={onSecretSubmit}
       />
     </>
