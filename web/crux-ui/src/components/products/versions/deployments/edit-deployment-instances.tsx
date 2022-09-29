@@ -1,14 +1,18 @@
 import ViewModeToggle, { ViewMode } from '@app/components/shared/view-mode-toggle'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
+  DeploymentGetSecretListMessage,
   deploymentIsMutable,
   DeploymentRoot,
+  DeploymentSecretListMessage,
   GetInstanceMessage,
   ImageDeletedMessage,
   Instance,
   InstanceMessage,
   InstancesAddedMessage,
   InstanceUpdatedMessage,
+  WS_TYPE_DEPLOYMENT_SECRETS,
+  WS_TYPE_GET_DEPLOYMENT_SECRETS,
   WS_TYPE_GET_INSTANCE,
   WS_TYPE_IMAGE_DELETED,
   WS_TYPE_INSTANCE,
@@ -16,7 +20,7 @@ import {
   WS_TYPE_INSTANCE_UPDATED,
 } from '@app/models'
 import { deploymentWsUrl } from '@app/routes'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import DeploymentViewList from './deployment-view-list'
 import DeploymentViewTile from './deployment-view-tile'
 
@@ -39,6 +43,7 @@ const EditDeploymentInstances = (props: EditDeploymentInstancesProps) => {
 
   const [instances, setInstances] = useState<Instance[]>(deployment.instances ?? [])
   const [viewMode, setViewMode] = useState<ViewMode>('tile')
+  const [secretsList, setSecretsList] = useState<{ [instance: string]: string[] }>({})
 
   const sock = useWebSocket(deploymentWsUrl(deployment.product.id, deployment.versionId, deployment.id))
 
@@ -68,6 +73,24 @@ const EditDeploymentInstances = (props: EditDeploymentInstancesProps) => {
     setInstances(instances.filter(it => it.image.id !== message.imageId)),
   )
 
+  sock.on(WS_TYPE_DEPLOYMENT_SECRETS, (message: DeploymentSecretListMessage) => {
+    const newList = { ...secretsList }
+    newList[message.instanceId] = message.keys
+
+    setSecretsList(newList)
+  })
+
+  useEffect(() => {
+    instances.forEach(it => {
+      sock.send(WS_TYPE_GET_DEPLOYMENT_SECRETS, {
+        id: deployment.id,
+        instanceId: it.id,
+      } as DeploymentGetSecretListMessage)
+    })
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   return (
     <>
       <div className="flex flex-row justify-end mt-4">
@@ -79,6 +102,7 @@ const EditDeploymentInstances = (props: EditDeploymentInstancesProps) => {
           instances={instances}
           deploymentSock={sock}
           publicKey={deployment?.publicKey}
+          secretsList={secretsList}
         />
       ) : (
         <DeploymentViewList instances={instances} />

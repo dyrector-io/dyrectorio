@@ -704,6 +704,20 @@ func setImageLabels(image string, deployImageRequest *v1.DeployImageRequest, cfg
 	}
 	maps.Copy(labels, organizationLabels)
 
+	// set secret keys list
+	if len(deployImageRequest.ContainerConfig.Secrets) > 0 {
+		secretKeys := []string{}
+		for secretKey := range deployImageRequest.ContainerConfig.Secrets {
+			secretKeys = append(secretKeys, secretKey)
+		}
+
+		secretKeysList, err := SetOrganizationLabel("secret.keys", strings.Join(secretKeys, ","))
+		if err != nil {
+			return nil, fmt.Errorf("setting secret list: %s", err.Error())
+		}
+		maps.Copy(labels, secretKeysList)
+	}
+
 	return labels, nil
 }
 
@@ -742,4 +756,33 @@ func CreateNetwork(ctx context.Context, name, driver string) error {
 	}
 
 	return nil
+}
+
+func SecretList(ctx context.Context, prefix, name string) ([]string, error) {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return nil, err
+	}
+
+	containers, err := cli.ContainerList(ctx, types.ContainerListOptions{
+		All:     true,
+		Filters: filters.NewArgs(filters.KeyValuePair{Key: "name", Value: fmt.Sprintf("^/?%s-%s$", prefix, name)}),
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(containers) != 1 {
+		log.Printf("Container does not exist for prefix-name: '%s-%s'", prefix, name)
+		return nil, nil
+	}
+
+	container := containers[0]
+
+	if val, ok := GetOrganizationLabel(container.Labels, "secret.keys"); ok {
+		return strings.Split(val, ","), nil
+	}
+
+	return []string{}, nil
 }
