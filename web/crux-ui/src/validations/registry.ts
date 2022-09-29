@@ -1,5 +1,13 @@
 /* eslint-disable import/prefer-default-export */
-import { RegistryType, REGISTRY_TYPE_VALUES } from '@app/models/registry'
+import {
+  GithubNamespace,
+  GITHUB_NAMESPACE_VALUES,
+  GitlabNamespace,
+  GITLAB_NAMESPACE_VALUES,
+  RegistryNamespace,
+  RegistryType,
+  REGISTRY_TYPE_VALUES,
+} from '@app/models/registry'
 import * as yup from 'yup'
 import { descriptionRule, iconRule, nameRule } from './common'
 
@@ -47,6 +55,22 @@ export const registrySchema = yup.object().shape({
     }),
   selfManaged: yup.mixed().meta(shouldResetMetaData),
   _private: yup.mixed().meta(shouldResetMetaData),
+  namespace: yup
+    .mixed<RegistryNamespace>()
+    .when(['type'], {
+      is: type => type === 'gitlab',
+      then: yup
+        .mixed<GitlabNamespace>()
+        .oneOf([...GITLAB_NAMESPACE_VALUES])
+        .required(),
+    })
+    .when(['type'], {
+      is: type => type === 'github',
+      then: yup
+        .mixed<GithubNamespace>()
+        .oneOf([...GITHUB_NAMESPACE_VALUES])
+        .required(),
+    }),
   user: registryCredentialRole,
   token: registryCredentialRole,
 })

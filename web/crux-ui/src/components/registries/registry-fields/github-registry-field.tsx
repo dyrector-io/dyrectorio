@@ -1,6 +1,7 @@
+import DyoChips from '@app/elements/dyo-chips'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
-import { GithubRegistryDetails } from '@app/models'
+import { GithubRegistryDetails, GITHUB_NAMESPACE_VALUES, RegistryNamespace } from '@app/models'
 import { EditRegistryTypeProps } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 
@@ -35,11 +36,23 @@ const GithubRegistryFields = (props: EditRegistryTypeProps<GithubRegistryDetails
         message={formik.errors.token}
       />
 
+      <div className="flex flex-wrap mt-8">
+        <DyoLabel className="mr-2 my-auto">{t('namespaceType')}</DyoLabel>
+
+        <DyoChips
+          choices={GITHUB_NAMESPACE_VALUES}
+          initialSelection={formik.values.namespace}
+          converter={(it: RegistryNamespace) => t(`namespace.${it}`)}
+          onSelectionChange={it => formik.setFieldValue('namespace', it, true)}
+        />
+      </div>
+
       <DyoInput
         className="max-w-lg"
+        labelClassName="mt-8 mb-2.5"
         grow
         name="imageNamePrefix"
-        label={t('organization')}
+        label={formik.values.namespace === 'organization' ? t('organization') : t('userName')}
         onChange={formik.handleChange}
         value={formik.values.imageNamePrefix}
         message={formik.errors.imageNamePrefix}

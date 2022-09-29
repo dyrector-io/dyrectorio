@@ -16,7 +16,7 @@ import { Identity } from '@ory/kratos-client'
 import { protomisify } from '@server/crux/grpc-connection'
 /* eslint-disable import/no-cycle */
 import { RegistryConnections } from '@server/registry-api/registry-connections'
-import registryTypeProtoToDto from './mappers/registry-mappers'
+import { registryNamespaceToDto, registryNamespaceToGrpc, registryTypeProtoToDto } from './mappers/registry-mappers'
 
 class DyoRegistryService {
   constructor(
@@ -115,11 +115,13 @@ class DyoRegistryService {
             type: 'gitlab',
             ...res.gitlab,
             selfManaged: !!res.gitlab.apiUrl,
+            namespace: registryNamespaceToDto(res.gitlab.namespace),
           }
         : res.github
         ? {
             type: 'github',
             ...res.github,
+            namespace: registryNamespaceToDto(res.github.namespace),
           }
         : {
             type: 'google',
@@ -158,6 +160,7 @@ class DyoRegistryService {
               imageNamePrefix: dto.imageNamePrefix,
               url: dto.selfManaged ? dto.url : null,
               apiUrl: dto.selfManaged ? dto.apiUrl : null,
+              namespace: registryNamespaceToGrpc(dto.namespace),
             },
       github:
         dto.type !== 'github'
@@ -166,6 +169,7 @@ class DyoRegistryService {
               user: dto.user,
               token: dto.token,
               imageNamePrefix: dto.imageNamePrefix,
+              namespace: registryNamespaceToGrpc(dto.namespace),
             },
       google:
         dto.type !== 'google'

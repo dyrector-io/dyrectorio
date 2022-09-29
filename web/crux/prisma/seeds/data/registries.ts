@@ -14,6 +14,7 @@ export const registries = [
     token: 'random-generated-token-here',
     teamId: constants.TEAM_ID,
     type: 'v2',
+    namespace: null,
   },
   {
     id: constants.REGISTRY_ID,
@@ -26,5 +27,6 @@ export const registries = [
     url: 'reg.sunilium.com',
     teamId: constants.TEAM_ID,
     type: 'v2',
+    namespace: null,
   },
 ] as Omit<Registry, 'id'>[]

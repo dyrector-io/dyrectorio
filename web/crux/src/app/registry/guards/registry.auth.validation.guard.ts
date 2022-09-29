@@ -11,6 +11,7 @@ import {
   GitlabRegistryDetails,
   GoogleRegistryDetails,
   HubRegistryDetails,
+  RegistryNamespace,
   V2RegistryDetails,
 } from 'src/grpc/protobuf/proto/crux'
 import { REGISTRY_GITLAB_URLS, REGISTRY_HUB_URL } from 'src/shared/const'
@@ -129,24 +130,26 @@ export default class RegistryAccessValidationGuard implements CanActivate {
 
     const { apiUrl, registryUrl } = REGISTRY_GITLAB_URLS
 
+    const namespace = req.namespace === RegistryNamespace.RNS_GROUP ? 'groups' : 'projects'
+
     return this.httpService
-      .get(`https://${apiUrl}/api/v4/groups?top_level_only=true&search=${req.imageNamePrefix}`, {
+      .get(`https://${apiUrl}/api/v4/${namespace}/${req.imageNamePrefix}`, {
         headers: {
           Authorization: `Bearer ${auth.password}`,
         },
       })
       .pipe(
-        mergeMap(groupsRes => {
-          const groups = groupsRes.data.map(it => it.path === req.imageNamePrefix) as any[]
-          if (groupsRes.status !== HttpStatus.OK) {
-            return of(false)
-          }
-          if (groups.length < 1) {
-            throw new InvalidArgumentException({
-              message: 'Gitlab group not found',
-              property: 'imageNamePrefix',
-              value: req.imageNamePrefix,
-            })
+        mergeMap(response => {
+          if (response.status !== HttpStatus.OK) {
+            if (response.status === HttpStatus.NOT_FOUND) {
+              throw new InvalidArgumentException({
+                message: 'Gitlab namespace not found',
+                property: 'imageNamePrefix',
+                value: req.imageNamePrefix,
+              })
+            } else {
+              return of(false)
+            }
           }
 
           return this.httpService
@@ -175,7 +178,7 @@ export default class RegistryAccessValidationGuard implements CanActivate {
           if (res) {
             if (res.status === HttpStatus.NOT_FOUND) {
               throw new NotFoundException({
-                message: 'Gitlab group with prefix not found',
+                message: 'Gitlab namespace not found',
                 property: 'imageNamePrefix',
                 value: req.imageNamePrefix,
               })
@@ -201,8 +204,10 @@ export default class RegistryAccessValidationGuard implements CanActivate {
       password: req.token,
     }
 
+    const namespace = req.namespace === RegistryNamespace.RNS_ORGANIZATION ? 'orgs' : 'users'
+
     return this.httpService
-      .get(`https://api.github.com/orgs/${req.imageNamePrefix}/packages?package_type=container`, {
+      .get(`https://api.github.com/${namespace}/${req.imageNamePrefix}/packages?package_type=container`, {
         withCredentials: true,
         auth,
       })
@@ -215,7 +220,7 @@ export default class RegistryAccessValidationGuard implements CanActivate {
           if (res) {
             if (res.status === HttpStatus.NOT_FOUND) {
               throw new NotFoundException({
-                message: 'Github organization with prefix not found',
+                message: 'Github namespace not found',
                 property: 'imageNamePrefix',
                 value: req.imageNamePrefix,
               })

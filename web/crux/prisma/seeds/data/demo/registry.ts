@@ -16,6 +16,7 @@ export const buildRegistry = (userId: string, teamId: string) => {
       type: 'google',
       token: null,
       user: null,
+      namespace: null,
     },
     {
       id: DemoConstants.DOCKER_HUB_REGISTRY_ID,
@@ -30,6 +31,7 @@ export const buildRegistry = (userId: string, teamId: string) => {
       token: null,
       user: null,
       imageNamePrefix: 'library',
+      namespace: null,
     },
   ] as Registry[]
 }

@@ -12,7 +12,7 @@
   "url": "URL",
   "orgOrUser": "Organization name or username",
   "organization": "Organization name",
-  "group": "Group name",
+  "group": "Group ID",
   "public": "Public",
   "private": "Private",
   "selfManaged": "Self-managed GitLab",
@@ -21,6 +21,9 @@
   "keyFile": "Key file",
   "privateKey": "Private key",
   "inUse": "This registry is in use.",
+  "namespaceType": "Namespace type",
+  "project": "Project ID",
+  "userName": "User name",
 
   "tips": {
     "common": "Registries contain the images you can select to create new Products.",
@@ -37,6 +40,13 @@
     "gitlab": "GitLab Registry",
     "github": "GitHub Registry",
     "google": "Google Registry"
+  },
+
+  "namespace": {
+    "organization": "Organization",
+    "user": "User",
+    "project": "Project",
+    "group": "Group"
   },
 
   "altDefaultRegistryPicture": "Picture of registry",

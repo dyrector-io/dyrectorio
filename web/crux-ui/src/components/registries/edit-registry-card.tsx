@@ -125,6 +125,12 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
       })
     }
 
+    if (changedRegistry === 'github') {
+      formik.setFieldValue('namespace', 'organization', false)
+    } else if (changedRegistry === 'gitlab') {
+      formik.setFieldValue('namespace', 'group', false)
+    }
+
     formik.setFieldValue('type', changedRegistry, false)
   }
 
