@@ -65,7 +65,7 @@ export const explicitContainerConfigSchema = yup.object().shape({
     .shape({
       image: yup.string(),
       volume: yup.string(),
-      path: yup.boolean(),
+      path: yup.string(),
       keepFiles: yup.boolean(),
     })
     .default({})
