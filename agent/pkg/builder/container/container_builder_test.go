@@ -9,6 +9,8 @@ import (
 	"io"
 	"testing"
 
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
@@ -16,19 +18,6 @@ import (
 
 	containerbuilder "github.com/dyrector-io/dyrectorio/agent/pkg/builder/container"
 )
-
-type testLogger struct {
-	test       *testing.T
-	gotMessage bool
-
-	io.StringWriter
-}
-
-func (testLogger *testLogger) WriteString(s string) (int, error) {
-	testLogger.test.Log(s)
-	testLogger.gotMessage = true
-	return len(s), nil
-}
 
 func builderCleanup(builder *containerbuilder.DockerContainerBuilder) {
 	if builder.GetContainerID() != nil {
@@ -129,8 +118,8 @@ func TestEnvPortsLabelsRestartPolicySettings(t *testing.T) {
 	assert.Equal(t, container.HostConfig.RestartPolicy.Name, string(containerbuilder.AlwaysRestartPolicy))
 }
 
-func TestLogger(t *testing.T) {
-	logger := &testLogger{
+func TestLogging(t *testing.T) {
+	logger := &TestLogger{
 		test: t,
 	}
 
@@ -181,7 +170,7 @@ func TestHooks(t *testing.T) {
 }
 
 func TestNetwork(t *testing.T) {
-	logger := &testLogger{
+	logger := &TestLogger{
 		test: t,
 	}
 
@@ -200,4 +189,56 @@ func TestNetwork(t *testing.T) {
 	assert.True(t, success)
 
 	assert.NotNil(t, builder.GetNetworkIDs())
+}
+
+func TestAutoRemove(t *testing.T) {
+	builder := containerbuilder.NewDockerBuilder(context.Background()).
+		WithImage("nginx:latest").
+		WithName("prefix-container").
+		WithCmd([]string{"bash"}).
+		WithAutoRemove(true)
+
+	defer builderCleanup(builder)
+
+	success, err := builder.Create().StartWaitUntilExit()
+
+	assert.Nil(t, err)
+	assert.Equal(t, int64(0), success.StatusCode)
+}
+
+func TestConflict(t *testing.T) {
+	preBuilder := containerbuilder.NewDockerBuilder(context.Background()).
+		WithImage("nginx:latest").
+		WithName("conflicting-container").
+		WithLabels(map[string]string{"TEST": "OLD_CONTAINER"})
+
+	defer builderCleanup(preBuilder)
+	preBuilder.Create().Start()
+
+	builder := containerbuilder.NewDockerBuilder(context.Background()).
+		WithImage("nginx:latest").
+		WithName("conflicting-container").
+		WithLabels(map[string]string{"TEST": "NEW_CONTAINER"}).
+		WithoutConflict()
+
+	defer builderCleanup(builder)
+	builder.Create().Start()
+
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	list, err := cli.ContainerList(context.Background(), types.ContainerListOptions{
+		All:     true,
+		Filters: filters.NewArgs(filters.KeyValuePair{Key: "id", Value: *builder.GetContainerID()}),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	labelValue, ok := list[0].Labels["TEST"]
+
+	assert.True(t, ok)
+	assert.Equal(t, "NEW_CONTAINER", labelValue)
 }
