@@ -83,7 +83,6 @@ service CruxDeployment {
   rpc GetSecrets(PrefixRequest) returns (common.ListSecretsResponse);
 
   rpc StartDeployment(IdRequest) returns (stream DeploymentProgressMessage);
-
   rpc SubscribeToDeploymentEditEvents(ServiceIdRequest)
       returns (stream DeploymentEditEventMessage);
 }

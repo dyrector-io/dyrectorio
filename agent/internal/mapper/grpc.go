@@ -342,7 +342,14 @@ func MapContainerState(in *[]dockerTypes.Container) []*common.ContainerStateItem
 
 		name := ""
 		if len(it.Names) > 0 {
-			name = it.Names[0]
+			const PARTS = 2
+			splitted := strings.SplitN(it.Names[0], "/", PARTS)
+
+			if len(splitted) == PARTS {
+				name = splitted[1]
+			} else {
+				name = it.Names[0]
+			}
 		}
 
 		imageName := strings.Split(it.Image, ":")
