@@ -20,6 +20,7 @@
     "lint": "next lint",
     "prettier": "prettier --check './**/*.tsx' './**/*.ts'",
     "format": "prettier --write './**/*.tsx' './**/*.ts'",
+    "format:win32": "prettier --write \"./**/*.tsx\" \"./**/*.ts\"",
     "build": "next build",
     "build:proto": "find proto -name '*.proto' -exec protoc --experimental_allow_proto3_optional --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_opt=esModuleInterop=true --ts_proto_opt=outputJsonMethods=true --ts_proto_opt=useDate=false --ts_proto_opt=outputServices=grpc-js --ts_proto_out=./src/models/ {} \\;",
     "start": "npm run dev",
