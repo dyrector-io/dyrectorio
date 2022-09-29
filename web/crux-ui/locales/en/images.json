@@ -13,5 +13,6 @@
   "noItems": "You haven't added an image to this version. Click 'Add image' to browse images you can add.",
   "secrets": "Secrets",
   "imageTag": "Image:Tag",
-  "imageTagsFor": "Image tags for {{name}}"
+  "imageTagsFor": "Image tags for {{name}}",
+  "sensitiveKey": "Sensitive config data should be stored as secrets"
 }
