@@ -21,7 +21,7 @@ test('adding a new registry should work', async ({ page }) => {
   await page.locator('text=Add').click();
   await expect(page.locator('h4')).toContainText('New registry')
 
-  await page.locator('input[name=name]').fill('TEST REGISTRY')
+  await page.locator('input[name=name] >> visible=true').fill('TEST REGISTRY')
   await page.locator('form >> text=Docker Hub').click();
   await expect(await page.locator('label[for=imageNamePrefix]')).toContainText('Organization name or username')
   await page.locator('input[name=imageNamePrefix]').fill('library')
