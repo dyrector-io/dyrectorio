@@ -2,19 +2,6 @@ import { ROUTE_LOGIN, ROUTE_REGISTRIES } from '@app/routes'
 import { expect, test } from '@playwright/test'
 import { screenshotPath, USER_EMAIL, USER_PASSWORD } from './utils/common'
 
-test.beforeEach(async ({ page }) => {
-  await page.goto(ROUTE_LOGIN)
-
-  await page.locator('input[name=email]').fill(USER_EMAIL)
-  await page.locator('input[name=password]').fill(USER_PASSWORD)
-
-  await page.locator('button[type=submit]').click()
-
-  await page.screenshot({ path: screenshotPath('login-successful'), fullPage: true })
-
-  await expect(page).toHaveURL(`/products`)
-})
-
 test('adding a new registry should work', async ({ page }) => {
   await page.goto(ROUTE_REGISTRIES)
 
