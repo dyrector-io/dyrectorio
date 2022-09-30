@@ -1,5 +1,5 @@
 # dyrector.io platform: dagent
-We are working on the source code documentation until, please use the root [README.md](../../README.md) for further information or check our official [documentation](https://docs.dyrector.io/) site.
+We are working on the source code documentation, until then please use the root [README.md](../../../README.md) for further information or check our official [documentation](https://docs.dyrector.io/) site.
 
 Implement the current interface for Docker deployments.
 
