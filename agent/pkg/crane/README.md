@@ -1,6 +1,7 @@
-# crane
+# dyrector.io platform: crane
+We are working on the source code documentation until, please use the root [README.md](../../README.md) for further information or check our official [documentation](https://docs.dyrector.io/) site.
 
-Implement the current interface for k8s deployments
+Implement the current interface for Kubernetes deployments.
 
 ### Swagger
 

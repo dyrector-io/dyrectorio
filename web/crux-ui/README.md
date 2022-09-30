@@ -1,17 +1,3 @@
-# crux-ui
+# dyrector.io platform: crux-ui
 
-### TLS
-
-Server-side TLS is in use, the server is the `crux` component, the server's public cert is used to provide TLS.
-
-### Install `npm` modules in Apple Silicon
-
-You have to explicitly add the target architecture:
-```npm install --target_arch=x64```
-
-### e2e tests
-Install headless browser
-```npx playwright install```
-
-### run tests
-```npm run test:e2e```
+We are working on the source code documentation until, please use the root [README.md](../../README.md) for further information or check our official [documentation](https://docs.dyrector.io/) site.
