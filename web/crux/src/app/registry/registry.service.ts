@@ -65,7 +65,6 @@ export default class RegistryService {
         description: req.description,
         icon: req.icon ?? null,
         updatedBy: req.accessedBy,
-        updatedAt: new Date(),
         ...this.mapper.detailsToDb(req),
       },
     })
