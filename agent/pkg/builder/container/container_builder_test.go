@@ -200,10 +200,25 @@ func TestAutoRemove(t *testing.T) {
 
 	defer builderCleanup(builder)
 
-	success, err := builder.Create().StartWaitUntilExit()
+	waitResult, err := builder.Create().StartWaitUntilExit()
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	assert.Nil(t, err)
-	assert.Equal(t, int64(0), success.StatusCode)
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{
+		Filters: filters.NewArgs(filters.KeyValuePair{Key: "id", Value: *builder.GetContainerID()}),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, int64(0), waitResult.StatusCode)
+	assert.Zero(t, len(containers))
 }
 
 func TestConflict(t *testing.T) {
