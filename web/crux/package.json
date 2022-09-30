@@ -51,7 +51,7 @@
     "@nestjs/microservices": "^9.0.8",
     "@nestjs/platform-express": "^9.0.8",
     "@ory/kratos-client": "^0.10.1",
-    "@prisma/client": "4.1.1",
+    "@prisma/client": "4.4.0",
     "@sendgrid/mail": "^7.7.0",
     "@types/google-protobuf": "^3.15.6",
     "@willsoto/nestjs-prometheus": "^4.7.0",
