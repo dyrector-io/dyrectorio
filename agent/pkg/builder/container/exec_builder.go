@@ -24,7 +24,7 @@ type ExecBuilder interface {
 	WithLogWriter(logger io.StringWriter) *DockerExecBuilder
 	WithPrivileged() *DockerExecBuilder
 	WithTTY() *DockerExecBuilder
-	WithUser(user string) *DockerExecBuilder
+	WithUser(user *int64) *DockerExecBuilder
 	WithWorkingDir(workingDir string) *DockerExecBuilder
 	Create() *DockerExecBuilder
 	Start() (bool, error)
@@ -34,7 +34,7 @@ type DockerExecBuilder struct {
 	ctx          context.Context
 	client       *client.Client
 	containerID  string
-	user         string
+	user         *int64
 	workingDir   string
 	cmd          []string
 	logger       *io.StringWriter
@@ -121,7 +121,7 @@ func (de *DockerExecBuilder) WithTTY() *DockerExecBuilder {
 }
 
 // Sets the UID.
-func (de *DockerExecBuilder) WithUser(user string) *DockerExecBuilder {
+func (de *DockerExecBuilder) WithUser(user *int64) *DockerExecBuilder {
 	de.user = user
 	return de
 }
@@ -134,8 +134,8 @@ func (de *DockerExecBuilder) WithWorkingDir(workingDir string) *DockerExecBuilde
 
 // Creates the exec command using the configuration given by 'With...' functions.
 func (de *DockerExecBuilder) Create() *DockerExecBuilder {
+
 	execConfig := types.ExecConfig{
-		User:         de.user,
 		Privileged:   de.privileged,
 		Tty:          de.tty,
 		AttachStdin:  de.attachStdin,
@@ -147,6 +147,11 @@ func (de *DockerExecBuilder) Create() *DockerExecBuilder {
 		WorkingDir:   de.workingDir,
 		Cmd:          de.cmd,
 	}
+
+	if de.user != nil {
+		execConfig.User = fmt.Sprint(*de.user)
+	}
+
 	response, err := de.client.ContainerExecCreate(de.ctx, de.containerID, execConfig)
 	if err != nil {
 		(*de.logger).WriteString(fmt.Sprintln("Exec create failed: ", err))
