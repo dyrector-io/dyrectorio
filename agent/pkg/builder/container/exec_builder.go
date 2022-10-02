@@ -33,7 +33,7 @@ type ExecBuilder interface {
 type DockerExecBuilder struct {
 	ctx          context.Context
 	client       *client.Client
-	containerID  string
+	containerID  *string
 	user         *int64
 	workingDir   string
 	cmd          []string
@@ -50,8 +50,12 @@ type DockerExecBuilder struct {
 // A shorthand function for creating a new DockerExecBuilder and calling WithClient.
 // Creates a default Docker client which can be overwritten using 'WithClient'.
 // Creates a default logger which logs using the 'fmt' package.
-func NewExecBuilder(ctx context.Context, containerID string) *DockerExecBuilder {
+func NewExecBuilder(ctx context.Context, containerID *string) *DockerExecBuilder {
 	var logger io.StringWriter = &defaultLogger{}
+	if &containerID == nil {
+		panic("Cannot run exec on nil containerID")
+	}
+
 	b := DockerExecBuilder{
 		ctx:         ctx,
 		containerID: containerID,
@@ -152,7 +156,7 @@ func (de *DockerExecBuilder) Create() *DockerExecBuilder {
 		execConfig.User = fmt.Sprint(*de.user)
 	}
 
-	response, err := de.client.ContainerExecCreate(de.ctx, de.containerID, execConfig)
+	response, err := de.client.ContainerExecCreate(de.ctx, *de.containerID, execConfig)
 	if err != nil {
 		(*de.logger).WriteString(fmt.Sprintln("Exec create failed: ", err))
 	}
