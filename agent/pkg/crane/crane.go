@@ -31,10 +31,6 @@ func Serve(cfg *config.Configuration) {
 	grpcToken := cfg.GrpcToken
 	grpcInsecure := cfg.GrpcInsecure
 
-	if grpcToken == "" {
-		log.Panic("no grpc address was provided")
-	}
-
 	// TODO(robot9706): Implement updater
 	log.Println("No update was set up")
 
