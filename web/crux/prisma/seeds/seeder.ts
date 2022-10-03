@@ -30,11 +30,13 @@ async function main() {
   await dropDatabase()
 
   // Team seed
+  console.log('🌱 Seeding Team table.')
   await prisma.team.createMany({
     data: teams,
   })
 
   // Registry seed
+  console.log('🌱 Seeding Registry table.')
   await Promise.all(
     registries.map(async it => {
       await prisma.registry.create({
@@ -130,7 +132,7 @@ async function main() {
 }
 
 async function dropDatabase() {
-  console.info('Droppping database data.')
+  console.info('🚨 Droppping database data.')
   try {
     for (const tableName of tableNames) {
       await prisma.$queryRawUnsafe(`TRUNCATE TABLE \"public\".\"${tableName}\" CASCADE;`)
@@ -144,9 +146,11 @@ async function dropDatabase() {
 main()
   .catch(e => {
     dropDatabase()
+    console.info('🔥 The seed command has been failed.')
     console.error(e)
     process.exit(1)
   })
   .finally(async () => {
     await prisma.$disconnect()
+    console.info('🌱 The seed command has been executed.')
   })
