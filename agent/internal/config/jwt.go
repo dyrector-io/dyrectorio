@@ -29,7 +29,7 @@ type JWTPayload struct {
 
 func (field *JWTToken) SetValue(unvalidatedToken string) error {
 	if unvalidatedToken == "" {
-		return fmt.Errorf("grpc jwt token can not be unset")
+		return fmt.Errorf("grpc token can not be unset")
 	}
 
 	token, err := ValidateAndCreateJWT(unvalidatedToken)
@@ -47,26 +47,26 @@ func ValidateAndCreateJWT(unvalidatedToken string) (JWTToken, error) {
 	token := JWTToken{}
 
 	if len(split) < 3 {
-		return token, fmt.Errorf("error decoding header jwt: jwt doesn't have all necessary parts")
+		return token, fmt.Errorf("error decoding header of grpc token: jwt doesn't have all necessary parts")
 	}
 	decodedHeaderString, err := base64.RawStdEncoding.DecodeString(split[0])
 
 	if err != nil {
-		return token, fmt.Errorf("error decoding header jwt: %v", err)
+		return token, fmt.Errorf("error decoding header of grpc token: %v", err)
 	}
 
 	if err := json.Unmarshal(decodedHeaderString, &token.Header); err != nil {
-		return token, fmt.Errorf("error serializing header jwt: %v", err)
+		return token, fmt.Errorf("error serializing header of grpc token: %v", err)
 	}
 
 	decodedPayloadString, err := base64.RawStdEncoding.DecodeString(split[1])
 
 	if err != nil {
-		return token, fmt.Errorf("error decoding payload jwt: %v", err)
+		return token, fmt.Errorf("error decoding payload of grpc token: %v", err)
 	}
 
 	if err := json.Unmarshal(decodedPayloadString, &token.Payload); err != nil {
-		return token, fmt.Errorf("error serializing payload jwt: %v", err)
+		return token, fmt.Errorf("error serializing payload of grpc token: %v", err)
 	}
 
 	token.Signature = split[2]
