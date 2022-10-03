@@ -106,7 +106,6 @@ export default class NodeService {
         description: req.description,
         icon: req.icon ?? null,
         updatedBy: req.accessedBy,
-        updatedAt: new Date(),
       },
     })
 
@@ -123,7 +122,6 @@ export default class NodeService {
       data: {
         type: nodeType,
         updatedBy: req.accessedBy,
-        updatedAt: new Date(),
       },
     })
 
@@ -162,7 +160,6 @@ export default class NodeService {
       },
       data: {
         token: null,
-        updatedAt: new Date(),
         updatedBy: request.accessedBy,
       },
     })
