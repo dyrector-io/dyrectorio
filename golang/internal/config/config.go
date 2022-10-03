@@ -19,7 +19,6 @@ type CommonConfiguration struct {
 	DefaultTimeout       time.Duration `yaml:"defaultTimeout"        env:"DEFAULT_TIMEOUT"         env-default:"5s"`
 	GrpcKeepalive        time.Duration `yaml:"grpcKeepalive"         env:"GRPC_KEEPALIVE"          env-default:"60s"`
 	Debug                bool          `yaml:"debug"                 env:"DEBUG"                   env-default:"false"`
-	// TODO(c3ppc3pp): custom setter to validate input
 	GrpcToken            JWTToken `yaml:"grpcToken"             env:"GRPC_TOKEN"`
 	GrpcInsecure         bool     `yaml:"grpcInsecure"          env:"GRPC_INSECURE"           env-default:"false"`
 	ImportContainerImage string   `yaml:"importContainerImage"  env:"IMPORT_CONTAINER_IMAGE"  env-default:"rclone/rclone:1.57.0"`

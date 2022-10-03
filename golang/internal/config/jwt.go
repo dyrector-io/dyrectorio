@@ -42,14 +42,14 @@ func (field *JWTToken) SetValue(unvalidatedToken string) error {
 }
 
 func ValidateAndCreateJWT(unvalidatedToken string) (JWTToken, error) {
-	splitted := strings.Split(unvalidatedToken, ".")
+	split := strings.Split(unvalidatedToken, ".")
 
 	token := JWTToken{}
 
-	if len(splitted) < 3 {
+	if len(split) < 3 {
 		return token, fmt.Errorf("error decoding header jwt: jwt doesn't have all necessary parts")
 	}
-	decodedHeaderString, err := base64.RawStdEncoding.DecodeString(splitted[0])
+	decodedHeaderString, err := base64.RawStdEncoding.DecodeString(split[0])
 
 	if err != nil {
 		return token, fmt.Errorf("error decoding header jwt: %v", err)
@@ -59,7 +59,7 @@ func ValidateAndCreateJWT(unvalidatedToken string) (JWTToken, error) {
 		return token, fmt.Errorf("error serializing header jwt: %v", err)
 	}
 
-	decodedPayloadString, err := base64.RawStdEncoding.DecodeString(splitted[1])
+	decodedPayloadString, err := base64.RawStdEncoding.DecodeString(split[1])
 
 	if err != nil {
 		return token, fmt.Errorf("error decoding payload jwt: %v", err)
@@ -69,7 +69,7 @@ func ValidateAndCreateJWT(unvalidatedToken string) (JWTToken, error) {
 		return token, fmt.Errorf("error serializing payload jwt: %v", err)
 	}
 
-	token.Signature = splitted[2]
+	token.Signature = split[2]
 	token.InitialString = unvalidatedToken
 
 	return token, nil
