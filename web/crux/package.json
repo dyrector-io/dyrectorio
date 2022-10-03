@@ -35,7 +35,7 @@
     "database:down": "docker-compose -f docker-compose.database.yaml down",
     "prismagen": "prisma generate",
     "seed:microservice": "npx ts-node prisma/seeds/demo-seeder.ts",
-    "seed:mock": "npx ts-node prisma/seeds/seeder.ts",
+    "seed:mock": "npx ts-node prisma/seeds/seeder.ts"
   },
   "prisma": {
     "seed": "ts-node prisma/seeds/seeder.ts",
