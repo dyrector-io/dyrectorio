@@ -119,7 +119,6 @@ export default class ImageService {
         data: {
           order: index,
           updatedBy: request.accessedBy,
-          updatedAt: new Date(),
         },
         where: {
           id: it,
@@ -158,7 +157,6 @@ export default class ImageService {
           update: config,
         },
         updatedBy: request.accessedBy,
-        updatedAt: new Date(),
       },
       where: {
         id: request.id,

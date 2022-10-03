@@ -150,7 +150,6 @@ export default class DeployService {
       data: {
         note: request.note,
         prefix: request.prefix,
-        updatedAt: new Date(),
         updatedBy: request.accessedBy,
       },
       where: {
@@ -178,12 +177,9 @@ export default class DeployService {
       }
     }
 
-    const now = new Date()
-
     const deployment = await this.prisma.deployment.update({
       data: {
         environment: request.environment?.data as JsonArray,
-        updatedAt: now,
         updatedBy: request.accessedBy,
         instances: !reqInstance
           ? undefined
@@ -193,7 +189,6 @@ export default class DeployService {
                   id: reqInstance.id,
                 },
                 data: {
-                  updatedAt: now,
                   config: {
                     upsert: {
                       update: instanceConfigPatchSet,

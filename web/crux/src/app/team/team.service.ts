@@ -174,7 +174,6 @@ export default class TeamService {
       data: {
         name: request.name,
         updatedBy: request.accessedBy,
-        updatedAt: new Date(),
       },
     })
 
@@ -263,7 +262,6 @@ export default class TeamService {
         team: {
           update: {
             updatedBy: request.accessedBy,
-            updatedAt: new Date(),
           },
         },
       },

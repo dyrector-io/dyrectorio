@@ -158,7 +158,6 @@ export default class VersionService {
       data: {
         name: req.name,
         changelog: req.changelog,
-        updatedAt: new Date(),
         updatedBy: req.accessedBy,
       },
     })

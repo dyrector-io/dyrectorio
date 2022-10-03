@@ -78,7 +78,6 @@ export default class NotificationService {
         active: !!request.active,
         type: this.mapper.typeToDb(request.type),
         updatedBy: request.accessedBy,
-        updatedAt: new Date(),
         events: {
           deleteMany: {
             id: {
