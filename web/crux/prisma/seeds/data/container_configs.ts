@@ -6,6 +6,7 @@ export const containerConfigs = [
     capabilities: [],
     config: {},
     environment: [],
+    secrets: [],
     imageId: '3E89810C-158B-4026-9C22-0565080F9E6C',
   },
   {
@@ -13,6 +14,7 @@ export const containerConfigs = [
     capabilities: [],
     config: {},
     environment: [],
+    secrets: [],
     imageId: 'C798461D-7190-4F1E-B828-9E427A803B64',
   },
   {
@@ -20,6 +22,7 @@ export const containerConfigs = [
     capabilities: [],
     config: {},
     environment: [],
+    secrets: [],
     imageId: 'B3089760-3BF9-444B-9023-2D6BCBD11F8B',
   },
   {
@@ -27,6 +30,7 @@ export const containerConfigs = [
     capabilities: [],
     config: {},
     environment: [],
+    secrets: [],
     imageId: 'A94B76A3-BEDD-40A2-A383-80C6464E99F3',
   },
   {
@@ -34,6 +38,7 @@ export const containerConfigs = [
     capabilities: [],
     config: {},
     environment: [],
+    secrets: [],
     imageId: '2F36558F-1357-4195-B3A4-ADBB925A7B10',
   },
 ] as Omit<ContainerConfig, 'id'>[]
