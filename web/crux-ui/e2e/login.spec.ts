@@ -2,6 +2,13 @@ import { ROUTE_LOGIN } from '@app/routes'
 import { expect, test } from '@playwright/test'
 import { screenshotPath, USER_EMAIL, USER_PASSWORD } from './utils/common'
 
+test.use({
+  storageState: {
+    cookies:[],
+    origins: []
+  }
+})
+
 test('without cookie should redirect to the login page', async ({ page }) => {
   await page.goto('/')
 
