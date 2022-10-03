@@ -18,13 +18,13 @@ export const registries = [
   },
   {
     id: constants.REGISTRY_ID,
-    name: 'Sunilium public regisry',
+    name: 'Random Public Regisry',
     description:
       'Sed eu justo at dolor efficitur fermentum at sed quam. Nullam tellus magna, sollicitudin eu elementum sit amet, gravida sed tortor.',
     createdBy: 'a27c0bb3-4c67-4a60-9f0e-5ef2bc6c666b',
     createdAt: new Date(),
     icon: 'dog',
-    url: 'reg.sunilium.com',
+    url: 'reg.random.com',
     teamId: constants.TEAM_ID,
     type: 'v2',
     namespace: null,
