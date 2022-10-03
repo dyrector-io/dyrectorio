@@ -29,14 +29,12 @@ const tableNames = [
 async function main() {
   await dropDatabase()
 
-  // Team seed
-  console.log('🌱 Seeding Team table.')
+  console.log('🍃 Seeding [Team] table.')
   await prisma.team.createMany({
     data: teams,
   })
 
-  // Registry seed
-  console.log('🌱 Seeding Registry table.')
+  console.log('🍃 Seeding [Registry] table.')
   await Promise.all(
     registries.map(async it => {
       await prisma.registry.create({
@@ -45,12 +43,12 @@ async function main() {
     }),
   )
 
-  // Nodes seed
+  console.log('🍃 Seeding [Node] table.')
   await prisma.node.createMany({
     data: nodes,
   })
 
-  // Product seed
+  console.log('🍃 Seeding [Product] table.')
   await Promise.all(
     products.map(async it => {
       await prisma.product.create({
@@ -59,12 +57,12 @@ async function main() {
     }),
   )
 
-  // Version seed
+  console.log('🍃 Seeding [Version] table.')
   await prisma.version.createMany({
     data: versions,
   })
 
-  // Images seed
+  console.log('🍃 Seeding [Images] table.')
   await Promise.all(
     images.map(async it => {
       await prisma.image.create({
@@ -73,7 +71,7 @@ async function main() {
     }),
   )
 
-  // Deployments seed
+  console.log('🍃 Seeding [Deployments] table.')
   await Promise.all(
     deployments.map(async it => {
       await prisma.deployment.create({
@@ -85,7 +83,7 @@ async function main() {
     }),
   )
 
-  // Deployment Events seed
+  console.log('🍃 Seeding [Events] table.')
   await Promise.all(
     deploymentEvents.map(async it => {
       await prisma.deploymentEvent.create({
@@ -97,7 +95,7 @@ async function main() {
     }),
   )
 
-  // ContainerConfigs seed
+  console.log('🍃 Seeding [ContainerConfigs] table.')
   await Promise.all(
     containerConfigs.map(async it => {
       await prisma.containerConfig.create({
@@ -112,7 +110,7 @@ async function main() {
     }),
   )
 
-  // Instances seed
+  console.log('🍃 Seeding [Instances] table.')
   await Promise.all(
     instances.map(async it => {
       await prisma.instance.create({
@@ -121,7 +119,7 @@ async function main() {
     }),
   )
 
-  // UsersOnTeams seed
+  console.log('🍃 Seeding [UsersOnTeams] table.')
   await Promise.all(
     usersOnTeam.map(async it => {
       await prisma.usersOnTeams.create({
