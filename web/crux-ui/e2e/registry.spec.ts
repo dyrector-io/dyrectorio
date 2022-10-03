@@ -19,6 +19,8 @@ test('adding a new registry should work', async ({ page }) => {
 
   await page.waitForURL(ROUTE_REGISTRIES)
 
+  await expect(page.locator(`h3:text("TEST REGISTRY")`)).toHaveCount(1)
+
   await page.screenshot({ path: screenshotPath('registry_new'), fullPage: true })
 })
 
