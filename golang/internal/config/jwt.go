@@ -25,16 +25,12 @@ func (field *ValidJWT) SetValue(unvalidatedToken string) error {
 
 func ValidateAndCreateJWT(unvalidatedToken string) (ValidJWT, error) {
 
-	token := ValidJWT{}
+	token := ValidJWT{
+		Token: unvalidatedToken,
+	}
 
 	jwtParser := jwt.Parser{}
 	_, _, err := jwtParser.ParseUnverified(unvalidatedToken, &jwt.StandardClaims{})
 
-	if err != nil {
-		return token, err
-	}
-
-	token.Token = unvalidatedToken
-	return token, nil
-
+	return token, err
 }
