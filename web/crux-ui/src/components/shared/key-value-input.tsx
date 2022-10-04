@@ -1,12 +1,15 @@
 import { DyoHeading } from '@app/elements/dyo-heading'
-import { DyoInput, MessageType } from '@app/elements/dyo-input'
+import { MessageType } from '@app/elements/dyo-input'
+import useRepatch from '@app/hooks/use-repatch'
 import { UniqueKeyValue } from '@app/models'
 import { getValidationError } from '@app/validations'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import { useEffect, useReducer } from 'react'
+import { useEffect } from 'react'
 import { v4 as uuid } from 'uuid'
 import BaseSchema from 'yup/lib/schema'
+import EditorInput from '../editor/editor-input'
+import { EditorOptions } from '../editor/use-editor-state'
 
 const EMPTY_KEY_VALUE_PAIR = {
   id: uuid(),
@@ -17,13 +20,6 @@ const EMPTY_KEY_VALUE_PAIR = {
 type KeyValueElement = UniqueKeyValue & {
   message?: string
   messageType: MessageType
-}
-
-type KeyValueInputActionType = 'merge-items' | 'set-items'
-
-type KeyValueInputAction = {
-  type: KeyValueInputActionType
-  items: UniqueKeyValue[]
 }
 
 const isCompletelyEmpty = (it: UniqueKeyValue) => it.key.trim().length < 1 && it.value.trim().length < 1
@@ -37,16 +33,15 @@ const pushEmptyLineIfNecessary = (items: UniqueKeyValue[]) => {
   }
 }
 
-const reducer = (state: UniqueKeyValue[], action: KeyValueInputAction): UniqueKeyValue[] => {
-  const { type } = action
+const setItems = (items: UniqueKeyValue[]) => (): UniqueKeyValue[] => {
+  const result = [...items]
+  pushEmptyLineIfNecessary(result)
+  return result
+}
 
-  if (type === 'set-items') {
-    const result = [...action.items]
-    pushEmptyLineIfNecessary(result)
-    return result
-  }
-  if (type === 'merge-items') {
-    const updatedItems = action.items
+const mergeItems =
+  (updatedItems: UniqueKeyValue[]) =>
+  (state: UniqueKeyValue[]): UniqueKeyValue[] => {
     const result = [
       ...state.filter(old => !isCompletelyEmpty(old) && updatedItems.filter(it => old.id === it.id).length > 0),
     ]
@@ -64,8 +59,6 @@ const reducer = (state: UniqueKeyValue[], action: KeyValueInputAction): UniqueKe
     pushEmptyLineIfNecessary(result)
     return result
   }
-  throw Error(`Invalid KeyValueInput action: ${type}`)
-}
 
 interface KeyValueInputProps {
   disabled?: boolean
@@ -73,16 +66,17 @@ interface KeyValueInputProps {
   className?: string
   heading?: string
   items: UniqueKeyValue[]
+  editorOptions: EditorOptions
   onChange: (items: UniqueKeyValue[]) => void
   hint?: { hintValidation: BaseSchema; hintText: string }
 }
 
 const KeyValueInput = (props: KeyValueInputProps) => {
-  const { heading, disabled, className, items, valueDisabled, hint, onChange: propOnChange } = props
+  const { heading, disabled, className, items, valueDisabled, hint, editorOptions, onChange: propsOnChange } = props
 
   const { t } = useTranslation('common')
 
-  const [state, dispatch] = useReducer(reducer, items)
+  const [state, dispatch] = useRepatch(items)
 
   const stateToElements = (keyValues: UniqueKeyValue[]) => {
     const result = []
@@ -100,14 +94,7 @@ const KeyValueInput = (props: KeyValueInputProps) => {
     return result as KeyValueElement[]
   }
 
-  useEffect(
-    () =>
-      dispatch({
-        type: 'merge-items',
-        items,
-      }),
-    [items],
-  )
+  useEffect(() => dispatch(mergeItems(items)), [items, dispatch])
 
   const onChange = (index: number, key: string, value: string) => {
     let newItems = [...state]
@@ -122,11 +109,8 @@ const KeyValueInput = (props: KeyValueInputProps) => {
 
     newItems = newItems.filter(it => !isCompletelyEmpty(it))
 
-    propOnChange(newItems)
-    dispatch({
-      type: 'set-items',
-      items: newItems,
-    })
+    propsOnChange(newItems)
+    dispatch(setItems(newItems))
   }
 
   const elements = stateToElements(state)
@@ -134,12 +118,17 @@ const KeyValueInput = (props: KeyValueInputProps) => {
   const renderItem = (entry: KeyValueElement, index: number) => {
     const { key, value, message, messageType } = entry
 
+    const keyId = `${entry.id}-key`
+    const valueId = `${entry.id}-value`
+
     return (
       <div key={entry.id} className="flex flex-row flex-grow p-1">
         <div className="w-5/12">
-          <DyoInput
-            key={`${entry.id}-key`}
+          <EditorInput
+            key={keyId}
+            id={keyId}
             disabled={disabled}
+            options={editorOptions}
             className="w-full mr-2"
             grow
             placeholder={t('key')}
@@ -151,9 +140,11 @@ const KeyValueInput = (props: KeyValueInputProps) => {
         </div>
 
         <div className="w-7/12 ml-2">
-          <DyoInput
-            key={`${entry.id}-value`}
+          <EditorInput
+            key={valueId}
+            id={valueId}
             disabled={disabled || valueDisabled}
+            options={editorOptions}
             className="w-full"
             grow
             placeholder={t('value')}

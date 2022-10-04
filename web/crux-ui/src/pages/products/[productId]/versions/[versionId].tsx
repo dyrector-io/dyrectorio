@@ -14,7 +14,7 @@ import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
-import { useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 
 interface VersionDetailsPageProps {
@@ -32,6 +32,7 @@ const VersionDetailsPage = (props: VersionDetailsPageProps) => {
   const [version, setVersion] = useState(propsVersion)
   const [editing, setEditing] = useState(anchorLinkOf(router) === '#edit')
   const [saving, setSaving] = useState(false)
+  const [topBarContent, setTopBarContent] = useState<React.ReactNode>(null)
   const submitRef = useRef<() => Promise<any>>()
 
   const onVersionEdited = (newVersion: EditableVersion) => {
@@ -80,7 +81,7 @@ const VersionDetailsPage = (props: VersionDetailsPageProps) => {
   ]
 
   return (
-    <Layout title={t('versionsName', { product: product.name, name: version.name })}>
+    <Layout title={t('versionsName', { product: product.name, name: version.name })} topBarContent={topBarContent}>
       <PageHeading pageLink={pageLink} sublinks={sublinks}>
         {saving ? <LoadingIndicator className="flex ml-4 my-auto" /> : null}
 
@@ -113,7 +114,12 @@ const VersionDetailsPage = (props: VersionDetailsPageProps) => {
       {editing ? (
         <ProductVersionsSection productId={product.id} versions={allVersions} disabled />
       ) : (
-        <VersionSections product={product} version={version} setSaving={setSaving} />
+        <VersionSections
+          product={product}
+          version={version}
+          setSaving={setSaving}
+          setTopBarContent={setTopBarContent}
+        />
       )}
     </Layout>
   )

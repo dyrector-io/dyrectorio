@@ -10,6 +10,11 @@ module.exports = {
         allow: ['error','trace','info','debug','warn'],
       },
     ],
+    'react-hooks/exhaustive-deps': [
+      "warn", {
+        "additionalHooks": "useCica"
+      }
+    ],
     'prettier/prettier': 'error',
     'react-hooks/rules-of-hooks': 'off',
     'react/function-component-definition': 'off',

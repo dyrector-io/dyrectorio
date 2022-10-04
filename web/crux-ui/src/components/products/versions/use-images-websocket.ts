@@ -33,7 +33,7 @@ import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 
 import { Dispatch, SetStateAction } from 'react'
 
-export type ImageTagsMap = { [key: string]: RegistryImageTags }
+export type ImageTagsMap = { [key: string]: RegistryImageTags } // imageTagKey to image tags
 
 export const imageTagKey = (registryId: string, imageName: string) => `${registryId}/${imageName}`
 

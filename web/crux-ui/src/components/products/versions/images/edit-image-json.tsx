@@ -1,3 +1,4 @@
+import useEditorState, { EditorOptions } from '@app/components/editor/use-editor-state'
 import JsonEditor from '@app/components/shared/json-editor-dynamic-module'
 import { IMAGE_WS_REQUEST_DELAY } from '@app/const'
 import { CANCEL_THROTTLE, useThrottling } from '@app/hooks/use-throttleing'
@@ -5,7 +6,7 @@ import { CompleteContainerConfig, ContainerConfig, UniqueKeyValue } from '@app/m
 import { fold } from '@app/utils'
 import { completeContainerConfigSchema } from '@app/validations'
 import clsx from 'clsx'
-import { useCallback, useEffect, useReducer } from 'react'
+import { CSSProperties, useCallback, useEffect, useReducer } from 'react'
 import { v4 as uuid } from 'uuid'
 
 type EditImageJsonActionType = 'config-change' | 'set-content'
@@ -113,17 +114,29 @@ interface EditImageJsonProps {
   disabled?: boolean
   className?: string
   config: ContainerConfig
+  editorOptions: EditorOptions
   disabledContainerNameEditing?: boolean
   onPatch: (config: Partial<ContainerConfig>) => void
   onParseError?: (err: Error) => void
 }
 
 const EditImageJson = (props: EditImageJsonProps) => {
-  const { disabled, className, config, disabledContainerNameEditing, onPatch, onParseError: propOnParseError } = props
+  const {
+    disabled,
+    editorOptions,
+    className,
+    config,
+    disabledContainerNameEditing,
+    onPatch,
+    onParseError: propOnParseError,
+  } = props
 
   const throttle = useThrottling(IMAGE_WS_REQUEST_DELAY)
 
+  const editorId = 'json-config'
+
   const [state, dispatch] = useReducer(reducer, imageConfigToCompleteContainerConfig(null, config))
+  const [editorState, editorActions] = useEditorState(editorId, editorOptions, disabled)
 
   const onChange = useCallback(
     (newConfig: CompleteContainerConfig) => {
@@ -166,13 +179,27 @@ const EditImageJson = (props: EditImageJsonProps) => {
     delete state.name
   }
 
+  const { highlightColor, focused } = editorState
+
+  const style: CSSProperties =
+    highlightColor && focused
+      ? {
+          outline: 'solid',
+          outlineColor: highlightColor,
+        }
+      : null
+
   return (
     <JsonEditor
+      id={editorId}
       className={clsx('h-full overflow-y-auto', className)}
       disabled={disabled}
       value={state}
       onChange={onChange}
       onParseError={onParseError}
+      onFocus={editorActions.onFocus}
+      onBlur={editorActions.onBlur}
+      style={style}
     />
   )
 }

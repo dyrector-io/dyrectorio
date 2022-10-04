@@ -10,6 +10,7 @@ import {
 } from 'next'
 import { Translate } from 'next-translate'
 import { NextRouter } from 'next/router'
+import React from 'react'
 import toast, { ToastOptions } from 'react-hot-toast'
 import { DyoApiError, DyoErrorDto, DyoFetchError, RegistryDetails } from './models'
 import { Timestamp } from './models/grpc/google/protobuf/timestamp'

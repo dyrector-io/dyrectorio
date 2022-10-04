@@ -3,68 +3,39 @@ import { DyoCard } from '@app/elements/dyo-card'
 import DyoImgButton from '@app/elements/dyo-img-button'
 import DyoMessage from '@app/elements/dyo-message'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
-import useConfirmation from '@app/hooks/use-confirmation'
-import {
-  ContainerConfig,
-  DeleteImageMessage,
-  PatchImageMessage,
-  VersionImage,
-  WS_TYPE_DELETE_IMAGE,
-  WS_TYPE_PATCH_IMAGE,
-} from '@app/models'
+import { VersionImage } from '@app/models'
 import { containerConfigSchema, getValidationError } from '@app/validations'
-import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 import useTranslation from 'next-translate/useTranslation'
-import { useState } from 'react'
 import EditImageConfig from './edit-image-config'
 import EditImageHeading from './edit-image-heading'
 import EditImageJson from './edit-image-json'
 import EditImageTags from './edit-image-tags'
-
-export type EditImageCardSelection = 'tag' | 'config' | 'json'
+import useImageEditorState from './use-image-editor-state'
+import { ImagesActions, ImagesState } from './use-images-state'
 
 interface EditImageCardProps {
   disabled?: boolean
   image: VersionImage
-  tags: string[]
-  versionSock: WebSocketClientEndpoint
-  onTagSelected: (tag: string) => void
-  onFetchTags: () => void
+  imagesState: ImagesState
+  imagesActions: ImagesActions
 }
 
 const EditImageCard = (props: EditImageCardProps) => {
-  const { tags, image, versionSock: sock, disabled, onTagSelected, onFetchTags } = props
+  const { disabled, image, imagesState, imagesActions } = props
 
   const { t } = useTranslation('images')
 
-  const [selection, setSelection] = useState<EditImageCardSelection>('config')
-  const [deleteModalConfig, confirmDelete] = useConfirmation()
-  const [parseError, setParseError] = useState<string>(null)
+  const [state, actions] = useImageEditorState({
+    image,
+    imagesState,
+    imagesActions,
+    versionSock: imagesState.versionSock,
+  })
 
-  const onSelectTagsView = () => {
-    setSelection('tag')
-    onFetchTags()
-  }
+  const { section } = state
+  const { selectSection } = actions
 
-  const onPatch = (id: string, config: Partial<ContainerConfig>) => {
-    setParseError(null)
-
-    sock.send(WS_TYPE_PATCH_IMAGE, {
-      id,
-      config,
-    } as PatchImageMessage)
-  }
-
-  const onDelete = () =>
-    confirmDelete(() =>
-      sock.send(WS_TYPE_DELETE_IMAGE, {
-        imageId: image.id,
-      } as DeleteImageMessage),
-    )
-
-  const onParseError = (err: Error) => setParseError(err.message)
-
-  const errorMessage = parseError ?? getValidationError(containerConfigSchema, image.config)?.message
+  const errorMessage = state.parseError ?? getValidationError(containerConfigSchema, image.config)?.message
 
   return (
     <>
@@ -76,8 +47,8 @@ const EditImageCard = (props: EditImageCardProps) => {
             text
             thin
             textColor="text-bright"
-            underlined={selection === 'tag'}
-            onClick={() => onSelectTagsView()}
+            underlined={section === 'tag'}
+            onClick={() => selectSection('tag')}
             className="ml-auto"
             heightClassName="pb-2"
           >
@@ -88,8 +59,8 @@ const EditImageCard = (props: EditImageCardProps) => {
             text
             thin
             textColor="text-bright"
-            underlined={selection === 'config'}
-            onClick={() => setSelection('config')}
+            underlined={section === 'config'}
+            onClick={() => selectSection('config')}
             className="mx-8"
             heightClassName="pb-2"
           >
@@ -100,8 +71,8 @@ const EditImageCard = (props: EditImageCardProps) => {
             text
             thin
             textColor="text-bright"
-            underlined={selection === 'json'}
-            onClick={() => setSelection('json')}
+            underlined={section === 'json'}
+            onClick={() => selectSection('json')}
             className="mr-0"
             heightClassName="pb-2"
           >
@@ -109,7 +80,12 @@ const EditImageCard = (props: EditImageCardProps) => {
           </DyoButton>
 
           {disabled ? null : (
-            <DyoImgButton className="ml-6" onClick={() => onDelete()} src="/trash-can.svg" alt={t('common:delete')} />
+            <DyoImgButton
+              className="ml-6"
+              onClick={actions.deleteImage}
+              src="/trash-can.svg"
+              alt={t('common:delete')}
+            />
           )}
         </div>
 
@@ -118,23 +94,34 @@ const EditImageCard = (props: EditImageCardProps) => {
         ) : null}
 
         <div className="flex flex-col mt-2 h-128">
-          {selection === 'tag' ? (
-            <EditImageTags disabled={disabled} selected={image.tag} tags={tags} onTagSelected={onTagSelected} />
-          ) : selection === 'config' ? (
-            <EditImageConfig disabled={disabled} config={image.config} onPatch={it => onPatch(image.id, it)} />
+          {section === 'tag' ? (
+            <EditImageTags
+              disabled={disabled}
+              selected={image.tag}
+              tags={state.tags}
+              onTagSelected={actions.selectTag}
+            />
+          ) : section === 'config' ? (
+            <EditImageConfig
+              disabled={disabled}
+              config={image.config}
+              editorOptions={state.editor}
+              onPatch={actions.patchImage}
+            />
           ) : (
             <EditImageJson
               disabled={disabled}
               config={image.config}
-              onPatch={it => onPatch(image.id, it)}
-              onParseError={onParseError}
+              editorOptions={state.editor}
+              onPatch={actions.patchImage}
+              onParseError={actions.setParseError}
             />
           )}
         </div>
       </DyoCard>
 
       <DyoConfirmationModal
-        config={deleteModalConfig}
+        config={state.deleteModal}
         title={t('common:confirmDelete', { name: image.name })}
         description={t('common:deleteDescription', { name: image.name })}
         confirmText={t('common:delete')}

@@ -11,12 +11,13 @@ import TeamSelectionCard from './team-selection-card'
 interface TopbarProps {
   className?: string
   meta?: UserMeta
+  children?: React.ReactNode
 }
 
 const Topbar = (props: TopbarProps) => {
   const { t } = useTranslation('common')
 
-  const { meta, className } = props
+  const { meta, className, children } = props
 
   const user = meta?.user
 
@@ -25,12 +26,14 @@ const Topbar = (props: TopbarProps) => {
   const toggleTeamSelection = () => setTeamSelectionVisible(!teamSelectionVisible)
 
   return (
-    <DyoCard className={clsx(className, 'flex flex-row justify-end relative p-4')}>
+    <DyoCard className={clsx(className, 'flex flex-row relative p-4')}>
+      <div className="flex flex-grow">{children}</div>
+
       {!user ? (
-        <LoadingIndicator />
+        <LoadingIndicator className="ml-auto" />
       ) : (
         <>
-          <div className="flex flex-col items-end cursor-pointer mr-4" onClick={toggleTeamSelection}>
+          <div className="flex flex-col items-end cursor-pointer ml-auto mr-4" onClick={toggleTeamSelection}>
             <DyoLabel className="cursor-pointer">{user.name}</DyoLabel>
             <DyoLabel className="text-sm cursor-pointer">{`${t(roleToText(user.role))} @ ${
               selectedTeamOf(meta)?.name

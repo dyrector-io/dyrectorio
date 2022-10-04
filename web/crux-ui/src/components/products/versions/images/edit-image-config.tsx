@@ -1,8 +1,9 @@
 import { IMAGE_WS_REQUEST_DELAY } from '@app/const'
-import { DyoInput } from '@app/elements/dyo-input'
 import { useThrottling } from '@app/hooks/use-throttleing'
 import { ContainerConfig, Environment, InstanceContainerConfig, Secrets } from '@app/models'
 
+import EditorInput from '@app/components/editor/editor-input'
+import { EditorOptions } from '@app/components/editor/use-editor-state'
 import SecretKeyOnlyInput from '@app/components/shared/secret-key-input'
 import { sensitiveKeyRule } from '@app/validations/container'
 import useTranslation from 'next-translate/useTranslation'
@@ -12,12 +13,13 @@ import KeyValueInput from '../../../shared/key-value-input'
 interface EditImageConfigProps {
   disabled?: boolean
   disabledContainerNameEditing?: boolean
+  editorOptions: EditorOptions
   config: ContainerConfig | InstanceContainerConfig
   onPatch: (config: Partial<ContainerConfig | InstanceContainerConfig>) => void
 }
 
 const EditImageConfig = (props: EditImageConfigProps) => {
-  const { config, disabled, disabledContainerNameEditing, onPatch } = props
+  const { config, disabled, editorOptions, disabledContainerNameEditing, onPatch } = props
 
   const { t } = useTranslation('images')
 
@@ -64,11 +66,13 @@ const EditImageConfig = (props: EditImageConfigProps) => {
   return (
     <>
       {disabledContainerNameEditing ? null : (
-        <DyoInput
+        <EditorInput
+          id="containerName"
           disabled={disabled}
           label={t('containerName').toUpperCase()}
           labelClassName="mt-2 mb-2.5"
           className="mb-4"
+          options={editorOptions}
           value={containerName}
           onChange={ev => onContainerNameChange(ev.target.value)}
         />
@@ -77,6 +81,7 @@ const EditImageConfig = (props: EditImageConfigProps) => {
       <KeyValueInput
         disabled={disabled}
         heading={t('environment').toUpperCase()}
+        editorOptions={editorOptions}
         items={config?.environment ?? []}
         onChange={onEnvChange}
         hint={{ hintValidation: sensitiveKeyRule, hintText: t('sensitiveKey') }}
