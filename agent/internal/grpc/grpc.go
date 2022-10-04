@@ -59,9 +59,9 @@ type contextKey int
 
 const contextConfigKey contextKey = 0
 
-func GrpcTokenToConnectionParams(grpcToken config.JWTToken, insecureGrpc bool) (*GrpcConnectionParams, error) {
+func GrpcTokenToConnectionParams(grpcToken config.ValidJWT, insecureGrpc bool) (*GrpcConnectionParams, error) {
 	claims := jwt.StandardClaims{}
-	token, err := jwt.ParseWithClaims(grpcToken.InitialString, &claims, nil)
+	token, err := jwt.ParseWithClaims(grpcToken.Token, &claims, nil)
 	if token == nil {
 		log.Println("Can not parse the gRPC token")
 		if err != nil {
@@ -74,7 +74,7 @@ func GrpcTokenToConnectionParams(grpcToken config.JWTToken, insecureGrpc bool) (
 		nodeID:   claims.Subject,
 		address:  claims.Issuer,
 		insecure: insecureGrpc,
-		token:    grpcToken.InitialString,
+		token:    grpcToken.Token,
 	}, nil
 }
 
