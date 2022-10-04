@@ -288,6 +288,9 @@ func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 		Mounts:       dc.mountList,
 		PortBindings: portListNat,
 		AutoRemove:   dc.remove,
+		// TODO(c3ppc3pp): implement a WithExtraHosts function in the builder which takes care of this function
+		// where the default is given below, but can be overridden with any given value
+		ExtraHosts: []string{"host.docker.internal:host-gateway"},
 	}
 
 	containerConfig := &container.Config{
