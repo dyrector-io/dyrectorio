@@ -1,4 +1,4 @@
-export const REGISTRY_HUB_URL = 'hub.docker.com'
+export const REGISTRY_HUB_URL = 'docker.io'
 export const REGISTRY_GITHUB_URL = 'ghcr.io'
 
 export const REGISTRY_GITLAB_URLS = {

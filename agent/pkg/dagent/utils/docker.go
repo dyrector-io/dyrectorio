@@ -398,11 +398,8 @@ func setNetwork(deployImageRequest *v1.DeployImageRequest) (networkMode string, 
 		networkMode = "traefik"
 	} else {
 		networkMode = strings.ToLower(deployImageRequest.ContainerConfig.NetworkMode)
-		if networkMode == "bridge" {
-			networks = deployImageRequest.ContainerConfig.Networks
-		}
 	}
-	return networkMode, networks
+	return networkMode, deployImageRequest.ContainerConfig.Networks
 }
 
 func WithImportContainer(dc *containerbuilder.DockerContainerBuilder, importConfig *v1.ImportContainer,
