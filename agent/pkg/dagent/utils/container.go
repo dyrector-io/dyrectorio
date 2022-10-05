@@ -143,10 +143,10 @@ func ExecTraefik(ctx context.Context, traefikDeployReq model.TraefikDeployReques
 
 	// ports
 	ports := []containerbuilder.PortBinding{
-		{PortBinding: 80, ExposedPort: 80}}
+		{PortBinding: traefikDeployReq.Port, ExposedPort: 80}}
 
 	if traefikDeployReq.TLS {
-		ports = append(ports, containerbuilder.PortBinding{PortBinding: 443, ExposedPort: 443})
+		ports = append(ports, containerbuilder.PortBinding{PortBinding: traefikDeployReq.TLSPort, ExposedPort: 443})
 	}
 
 	container := GetContainer("traefik")

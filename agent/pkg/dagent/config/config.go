@@ -24,6 +24,8 @@ type Configuration struct {
 	TraefikEnabled         bool   `yaml:"traefikEnabled"       env:"TRAEFIK_ENABLED"        env-default:"false"`
 	TraefikLogLevel        string `yaml:"traefikLogLevel"      env:"TRAEFIK_LOG_LEVEL"      env-default:""`
 	TraefikTLS             bool   `yaml:"traefikTLS"           env:"TRAEFIK_TLS"            env-default:"false"`
+	TraefikPort            uint16 `yaml:"traefikPort"          env:"TRAEFIK_PORT"           env-default:"80"`
+	TraefikTLSPort         uint16 `yaml:"traefikTLSPort"       env:"TRAEFIK_TLS_PORT"       env-default:"443"`
 	// TODO(nandor-magyar): do we still need this?
 	UpdaterContainerName string        `yaml:"updaterContainerName" env:"UPDATER_CONTAINER_NAME" env-default:"dagent-updater"`
 	UpdateHostTimezone   bool          `yaml:"updateHostTimezone"   env:"UPDATE_HOST_TIMEZONE"   env-default:"true"`

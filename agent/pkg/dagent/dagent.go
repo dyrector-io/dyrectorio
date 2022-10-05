@@ -27,6 +27,8 @@ func Serve(cfg *config.Configuration) {
 			LogLevel: cfg.TraefikLogLevel,
 			TLS:      cfg.TraefikTLS,
 			AcmeMail: cfg.TraefikAcmeMail,
+			Port:     cfg.TraefikPort,
+			TLSPort:  cfg.TraefikTLSPort,
 		}
 
 		err := utils.ExecTraefik(context.Background(), params, cfg)
