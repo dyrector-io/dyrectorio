@@ -1,4 +1,4 @@
-import { REGISTRY_GITLAB_URLS, REGISTRY_HUB_API_URL, REGISTRY_HUB_CACHE_EXPIRATION, REGISTRY_HUB_URL } from '@app/const'
+import { REGISTRY_GITLAB_URLS, REGISTRY_HUB_CACHE_EXPIRATION, REGISTRY_HUB_URL } from '@app/const'
 import { RegistryDetails } from '@app/models'
 import { Identity } from '@ory/kratos-client'
 import HubApiCache from './caches/hub-api-cache'
@@ -73,7 +73,7 @@ export class RegistryConnections {
         : registry.type === 'hub'
         ? new HubApiClient(
             this.getHubCacheForImageNamePrefix(registry.id, registry.imageNamePrefix),
-            REGISTRY_HUB_API_URL,
+            REGISTRY_HUB_URL,
             registry.imageNamePrefix,
           )
         : registry.type === 'github'

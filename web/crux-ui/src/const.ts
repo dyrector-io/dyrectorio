@@ -6,8 +6,7 @@ export const DEPLOYMENT_EDIT_WS_REQUEST_DELAY = 500 // millis
 export const IMAGE_FILTER_TAKE = 6 // number of images
 export const WS_RECONNECT_TIMEOUT = 5_000 // millis
 
-export const REGISTRY_HUB_URL = 'docker.io'
-export const REGISTRY_HUB_API_URL = 'hub.docker.com'
+export const REGISTRY_HUB_URL = 'hub.docker.com'
 export const REGISTRY_GITHUB_URL = 'ghcr.io'
 
 export const REGISTRY_GITLAB_URLS = {
