@@ -4,9 +4,9 @@ import { screenshotPath, USER_EMAIL, USER_PASSWORD } from './utils/common'
 
 test.use({
   storageState: {
-    cookies:[],
-    origins: []
-  }
+    cookies: [],
+    origins: [],
+  },
 })
 
 test('without cookie should redirect to the login page', async ({ page }) => {

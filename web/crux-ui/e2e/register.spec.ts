@@ -7,9 +7,9 @@ const REGISTERED_USER_PASSWORD = `r.${USER_PASSWORD}`
 
 test.use({
   storageState: {
-    cookies:[],
-    origins: []
-  }
+    cookies: [],
+    origins: [],
+  },
 })
 
 test('should navigate to login when clicking on log in', async ({ page }) => {

@@ -14,9 +14,9 @@ const VERIFYABLE_PASSWORD = `v.${USER_PASSWORD}`
 
 test.use({
   storageState: {
-    cookies:[],
-    origins: []
-  }
+    cookies: [],
+    origins: [],
+  },
 })
 
 test('should verify address', async ({ page }) => {
