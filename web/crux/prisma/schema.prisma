@@ -14,7 +14,7 @@ model Team {
   name      String    @unique @db.VarChar(70)
   createdAt DateTime  @default(now()) @db.Timestamptz(6)
   createdBy String    @db.Uuid
-  updatedAt DateTime? @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime? @updatedAt @db.Timestamptz(6)
   updatedBy String?   @db.Uuid
 
   registries    Registry[]
@@ -51,7 +51,7 @@ model Node {
   id             String        @id @default(uuid()) @db.Uuid
   createdAt      DateTime      @default(now()) @db.Timestamptz(6)
   createdBy      String        @db.Uuid
-  updatedAt      DateTime?     @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime?     @updatedAt @db.Timestamptz(6)
   updatedBy      String?       @db.Uuid
   name           String        @db.VarChar(70)
   type           NodeTypeEnum? @default(docker)
@@ -73,7 +73,7 @@ model Registry {
   id              String                 @id @default(uuid()) @db.Uuid
   createdAt       DateTime               @default(now()) @db.Timestamptz(6)
   createdBy       String                 @db.Uuid
-  updatedAt       DateTime?              @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime?              @updatedAt @db.Timestamptz(6)
   updatedBy       String?                @db.Uuid
   name            String                 @db.VarChar(70)
   description     String?
@@ -97,7 +97,7 @@ model Product {
   id          String          @id @default(uuid()) @db.Uuid
   createdAt   DateTime        @default(now()) @db.Timestamptz(6)
   createdBy   String          @db.Uuid
-  updatedAt   DateTime?       @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime?       @updatedAt @db.Timestamptz(6)
   updatedBy   String?         @db.Uuid
   name        String          @db.VarChar(70)
   description String?
@@ -114,7 +114,7 @@ model Version {
   id        String          @id @default(uuid()) @db.Uuid
   createdAt DateTime        @default(now()) @db.Timestamptz(6)
   createdBy String          @db.Uuid
-  updatedAt DateTime?       @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime?       @updatedAt @db.Timestamptz(6)
   updatedBy String?         @db.Uuid
   name      String          @db.VarChar(70)
   changelog String?
@@ -152,7 +152,7 @@ model Image {
   instances  Instance[]
   createdAt  DateTime         @default(now()) @db.Timestamptz(6)
   createdBy  String           @db.Uuid
-  updatedAt  DateTime?        @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime?        @updatedAt @db.Timestamptz(6)
   updatedBy  String?          @db.Uuid
 
   registry Registry @relation(fields: [registryId], references: [id], onDelete: Cascade)
@@ -175,7 +175,7 @@ model Deployment {
   id          String               @id @default(uuid()) @db.Uuid
   createdAt   DateTime             @default(now()) @db.Timestamptz(6)
   createdBy   String               @db.Uuid
-  updatedAt   DateTime?            @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime?            @updatedAt @db.Timestamptz(6)
   updatedBy   String?              @db.Uuid
   note        String?
   prefix      String?
@@ -193,7 +193,7 @@ model Deployment {
 
 model Instance {
   id           String              @id @default(uuid()) @db.Uuid
-  updatedAt    DateTime            @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime            @updatedAt @db.Timestamptz(6)
   state        ContainerStateEnum?
   deploymentId String              @db.Uuid
   imageId      String              @db.Uuid
@@ -245,7 +245,7 @@ model Notification {
   id        String               @id @default(uuid()) @db.Uuid
   createdAt DateTime             @default(now()) @db.Timestamptz(6)
   createdBy String               @db.Uuid
-  updatedAt DateTime?            @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime?            @updatedAt @db.Timestamptz(6)
   updatedBy String?              @db.Uuid
   name      String               @db.VarChar(70)
   url       String

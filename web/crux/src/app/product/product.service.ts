@@ -93,7 +93,6 @@ export default class ProductService {
         name: req.name,
         description: req.description,
         updatedBy: req.accessedBy,
-        updatedAt: new Date(),
         versions:
           product.type === ProductTypeEnum.simple
             ? {
