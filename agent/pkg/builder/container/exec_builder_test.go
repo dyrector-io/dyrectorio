@@ -15,7 +15,7 @@ import (
 func TestExecBuilder(t *testing.T) {
 	var _ containerbuilder.ExecBuilder = (*containerbuilder.DockerExecBuilder)(nil)
 
-	logger := &testLogger{
+	logger := &TestLogger{
 		test: t,
 	}
 
@@ -27,9 +27,9 @@ func TestExecBuilder(t *testing.T) {
 	dockerContainerBuilder := containerBuilder.Create()
 	containerID := dockerContainerBuilder.GetContainerID()
 
-	_, err2 := dockerContainerBuilder.Start()
-	if err2 != nil {
-		panic(err2.Error())
+	_, containerBuilderErr := dockerContainerBuilder.Start()
+	if containerBuilderErr != nil {
+		t.Fatal(containerBuilderErr.Error())
 	}
 
 	defer builderCleanup(containerBuilder)
@@ -43,11 +43,11 @@ func TestExecBuilder(t *testing.T) {
 	exec, execCreationErr := execBuilder.Create()
 
 	if execCreationErr != nil {
-		panic(execCreationErr.Error())
+		t.Fatal(execCreationErr.Error())
 	}
 
-	errExecStart := exec.Start()
+	execStartErr := exec.Start()
 
-	assert.Nil(t, errExecStart)
+	assert.Nil(t, execStartErr)
 	assert.True(t, logger.gotMessage)
 }
