@@ -13,14 +13,16 @@ import (
 )
 
 func TestExecBuilder(t *testing.T) {
+	var _ containerbuilder.ExecBuilder = (*containerbuilder.DockerExecBuilder)(nil)
+
 	logger := &testLogger{
 		test: t,
 	}
 
 	containerBuilder := containerbuilder.NewDockerBuilder(context.Background()).
-		WithName("test").
-		WithImage("alpine:latest").
-		WithCmd([]string{"/bin/sh", "-c", "sleep 5"})
+		WithName("test1").
+		WithLogWriter(logger).
+		WithImage("nginx:latest")
 
 	dockerContainerBuilder := containerBuilder.Create()
 	containerID := dockerContainerBuilder.GetContainerID()
@@ -29,17 +31,23 @@ func TestExecBuilder(t *testing.T) {
 	if err2 != nil {
 		panic(err2.Error())
 	}
+
 	defer builderCleanup(containerBuilder)
 
 	execBuilder := containerbuilder.NewExecBuilder(context.Background(), containerID).
 		WithAttachStdout().
 		WithLogWriter(logger).
-		WithCmd([]string{"/bin/sh", "-c", "echo test"})
+		WithAttachStdout().
+		WithCmd([]string{"export"})
 
-	success, err := execBuilder.Create().Start()
+	exec, execCreationErr := execBuilder.Create()
 
-	assert.Nil(t, err)
-	assert.True(t, success)
+	if execCreationErr != nil {
+		panic(execCreationErr.Error())
+	}
+
+	errExecStart := exec.Start()
+
+	assert.Nil(t, errExecStart)
 	assert.True(t, logger.gotMessage)
-
 }
