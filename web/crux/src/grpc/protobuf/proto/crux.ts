@@ -1220,6 +1220,23 @@ export interface HealthResponse {
   lastMigration?: string | undefined
 }
 
+/** TEMPLATE */
+export interface TemplateResponse {
+  id: string
+  name: string
+  description: string
+}
+
+export interface TemplateListResponse {
+  data: TemplateResponse[]
+}
+
+export interface CreateProductFromTemplateRequest {
+  id: string
+  accessedBy: string
+  productName: string
+}
+
 export const CRUX_PACKAGE_NAME = 'crux'
 
 const baseEmpty: object = {}
@@ -3804,6 +3821,74 @@ export const HealthResponse = {
   },
 }
 
+const baseTemplateResponse: object = { id: '', name: '', description: '' }
+
+export const TemplateResponse = {
+  fromJSON(object: any): TemplateResponse {
+    const message = { ...baseTemplateResponse } as TemplateResponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.description =
+      object.description !== undefined && object.description !== null ? String(object.description) : ''
+    return message
+  },
+
+  toJSON(message: TemplateResponse): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.name !== undefined && (obj.name = message.name)
+    message.description !== undefined && (obj.description = message.description)
+    return obj
+  },
+}
+
+const baseTemplateListResponse: object = {}
+
+export const TemplateListResponse = {
+  fromJSON(object: any): TemplateListResponse {
+    const message = { ...baseTemplateListResponse } as TemplateListResponse
+    message.data = (object.data ?? []).map((e: any) => TemplateResponse.fromJSON(e))
+    return message
+  },
+
+  toJSON(message: TemplateListResponse): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? TemplateResponse.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+}
+
+const baseCreateProductFromTemplateRequest: object = {
+  id: '',
+  accessedBy: '',
+  productName: '',
+}
+
+export const CreateProductFromTemplateRequest = {
+  fromJSON(object: any): CreateProductFromTemplateRequest {
+    const message = {
+      ...baseCreateProductFromTemplateRequest,
+    } as CreateProductFromTemplateRequest
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.productName =
+      object.productName !== undefined && object.productName !== null ? String(object.productName) : ''
+    return message
+  },
+
+  toJSON(message: CreateProductFromTemplateRequest): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
+    message.productName !== undefined && (obj.productName = message.productName)
+    return obj
+  },
+}
+
 /** Services */
 
 export interface CruxProductClient {
@@ -4605,6 +4690,47 @@ export function CruxHealthControllerMethods() {
 }
 
 export const CRUX_HEALTH_SERVICE_NAME = 'CruxHealth'
+
+export interface CruxTemplateClient {
+  getTemplates(request: AccessRequest, metadata: Metadata, ...rest: any): Observable<TemplateListResponse>
+
+  createProductFromTemplate(
+    request: CreateProductFromTemplateRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Observable<CreateEntityResponse>
+}
+
+export interface CruxTemplateController {
+  getTemplates(
+    request: AccessRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<TemplateListResponse> | Observable<TemplateListResponse> | TemplateListResponse
+
+  createProductFromTemplate(
+    request: CreateProductFromTemplateRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
+}
+
+export function CruxTemplateControllerMethods() {
+  return function (constructor: Function) {
+    const grpcMethods: string[] = ['getTemplates', 'createProductFromTemplate']
+    for (const method of grpcMethods) {
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
+      GrpcMethod('CruxTemplate', method)(constructor.prototype[method], method, descriptor)
+    }
+    const grpcStreamMethods: string[] = []
+    for (const method of grpcStreamMethods) {
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
+      GrpcStreamMethod('CruxTemplate', method)(constructor.prototype[method], method, descriptor)
+    }
+  }
+}
+
+export const CRUX_TEMPLATE_SERVICE_NAME = 'CruxTemplate'
 
 function toTimestamp(date: Date): Timestamp {
   const seconds = date.getTime() / 1_000

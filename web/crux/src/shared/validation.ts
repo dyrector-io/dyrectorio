@@ -210,6 +210,11 @@ export const deploymentSchema = yup.object({
   ),
 })
 
+export const templateSchema = yup.object({
+  name: yup.string(),
+  description: yup.string(),
+})
+
 export const yupValidate = (schema: yup.AnySchema, candidate: any) => {
   try {
     schema.validateSync(candidate)

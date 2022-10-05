@@ -124,6 +124,11 @@ service CruxAudit {
 
 service CruxHealth { rpc getHealth(Empty) returns (HealthResponse); }
 
+service CruxTemplate {
+  rpc GetTemplates(AccessRequest) returns (TemplateListResponse);
+  rpc CreateProductFromTemplate(CreateProductFromTemplateRequest) returns (CreateEntityResponse);
+}
+
 /**
  *
  * Common messages
@@ -941,4 +946,23 @@ message HealthResponse {
   ServiceStatus status = 100;
   string cruxVersion = 101;
   optional string lastMigration = 102;
+}
+
+// TEMPLATE
+message TemplateResponse {
+  string id = 1;
+
+  string name = 100;
+  string description = 101;
+}
+
+message TemplateListResponse {
+  repeated TemplateResponse data = 1000;
+}
+
+message CreateProductFromTemplateRequest {
+  string id = 1;
+  string accessedBy = 2;
+
+  string productName = 100;
 }

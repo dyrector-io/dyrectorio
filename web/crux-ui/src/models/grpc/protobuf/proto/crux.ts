@@ -1231,6 +1231,23 @@ export interface HealthResponse {
   lastMigration?: string | undefined
 }
 
+/** TEMPLATE */
+export interface TemplateResponse {
+  id: string
+  name: string
+  description: string
+}
+
+export interface TemplateListResponse {
+  data: TemplateResponse[]
+}
+
+export interface CreateProductFromTemplateRequest {
+  id: string
+  accessedBy: string
+  productName: string
+}
+
 const baseEmpty: object = {}
 
 export const Empty = {
@@ -8964,6 +8981,202 @@ export const HealthResponse = {
   },
 }
 
+const baseTemplateResponse: object = { id: '', name: '', description: '' }
+
+export const TemplateResponse = {
+  encode(message: TemplateResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== '') {
+      writer.uint32(10).string(message.id)
+    }
+    if (message.name !== '') {
+      writer.uint32(802).string(message.name)
+    }
+    if (message.description !== '') {
+      writer.uint32(810).string(message.description)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): TemplateResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = { ...baseTemplateResponse } as TemplateResponse
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.id = reader.string()
+          break
+        case 100:
+          message.name = reader.string()
+          break
+        case 101:
+          message.description = reader.string()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): TemplateResponse {
+    const message = { ...baseTemplateResponse } as TemplateResponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.description =
+      object.description !== undefined && object.description !== null ? String(object.description) : ''
+    return message
+  },
+
+  toJSON(message: TemplateResponse): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.name !== undefined && (obj.name = message.name)
+    message.description !== undefined && (obj.description = message.description)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<TemplateResponse>, I>>(object: I): TemplateResponse {
+    const message = { ...baseTemplateResponse } as TemplateResponse
+    message.id = object.id ?? ''
+    message.name = object.name ?? ''
+    message.description = object.description ?? ''
+    return message
+  },
+}
+
+const baseTemplateListResponse: object = {}
+
+export const TemplateListResponse = {
+  encode(message: TemplateListResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    for (const v of message.data) {
+      TemplateResponse.encode(v!, writer.uint32(8002).fork()).ldelim()
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): TemplateListResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = { ...baseTemplateListResponse } as TemplateListResponse
+    message.data = []
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1000:
+          message.data.push(TemplateResponse.decode(reader, reader.uint32()))
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): TemplateListResponse {
+    const message = { ...baseTemplateListResponse } as TemplateListResponse
+    message.data = (object.data ?? []).map((e: any) => TemplateResponse.fromJSON(e))
+    return message
+  },
+
+  toJSON(message: TemplateListResponse): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? TemplateResponse.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<TemplateListResponse>, I>>(object: I): TemplateListResponse {
+    const message = { ...baseTemplateListResponse } as TemplateListResponse
+    message.data = object.data?.map(e => TemplateResponse.fromPartial(e)) || []
+    return message
+  },
+}
+
+const baseCreateProductFromTemplateRequest: object = {
+  id: '',
+  accessedBy: '',
+  productName: '',
+}
+
+export const CreateProductFromTemplateRequest = {
+  encode(message: CreateProductFromTemplateRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== '') {
+      writer.uint32(10).string(message.id)
+    }
+    if (message.accessedBy !== '') {
+      writer.uint32(18).string(message.accessedBy)
+    }
+    if (message.productName !== '') {
+      writer.uint32(802).string(message.productName)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): CreateProductFromTemplateRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = {
+      ...baseCreateProductFromTemplateRequest,
+    } as CreateProductFromTemplateRequest
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.id = reader.string()
+          break
+        case 2:
+          message.accessedBy = reader.string()
+          break
+        case 100:
+          message.productName = reader.string()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): CreateProductFromTemplateRequest {
+    const message = {
+      ...baseCreateProductFromTemplateRequest,
+    } as CreateProductFromTemplateRequest
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.productName =
+      object.productName !== undefined && object.productName !== null ? String(object.productName) : ''
+    return message
+  },
+
+  toJSON(message: CreateProductFromTemplateRequest): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
+    message.productName !== undefined && (obj.productName = message.productName)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<CreateProductFromTemplateRequest>, I>>(
+    object: I,
+  ): CreateProductFromTemplateRequest {
+    const message = {
+      ...baseCreateProductFromTemplateRequest,
+    } as CreateProductFromTemplateRequest
+    message.id = object.id ?? ''
+    message.accessedBy = object.accessedBy ?? ''
+    message.productName = object.productName ?? ''
+    return message
+  },
+}
+
 /** Services */
 export const CruxProductService = {
   /** CRUD */
@@ -10774,6 +10987,71 @@ export interface CruxHealthClient extends Client {
 export const CruxHealthClient = makeGenericClientConstructor(CruxHealthService, 'crux.CruxHealth') as unknown as {
   new (address: string, credentials: ChannelCredentials, options?: Partial<ChannelOptions>): CruxHealthClient
   service: typeof CruxHealthService
+}
+
+export const CruxTemplateService = {
+  getTemplates: {
+    path: '/crux.CruxTemplate/GetTemplates',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: AccessRequest) => Buffer.from(AccessRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => AccessRequest.decode(value),
+    responseSerialize: (value: TemplateListResponse) => Buffer.from(TemplateListResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => TemplateListResponse.decode(value),
+  },
+  createProductFromTemplate: {
+    path: '/crux.CruxTemplate/CreateProductFromTemplate',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: CreateProductFromTemplateRequest) =>
+      Buffer.from(CreateProductFromTemplateRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => CreateProductFromTemplateRequest.decode(value),
+    responseSerialize: (value: CreateEntityResponse) => Buffer.from(CreateEntityResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => CreateEntityResponse.decode(value),
+  },
+} as const
+
+export interface CruxTemplateServer extends UntypedServiceImplementation {
+  getTemplates: handleUnaryCall<AccessRequest, TemplateListResponse>
+  createProductFromTemplate: handleUnaryCall<CreateProductFromTemplateRequest, CreateEntityResponse>
+}
+
+export interface CruxTemplateClient extends Client {
+  getTemplates(
+    request: AccessRequest,
+    callback: (error: ServiceError | null, response: TemplateListResponse) => void,
+  ): ClientUnaryCall
+  getTemplates(
+    request: AccessRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: TemplateListResponse) => void,
+  ): ClientUnaryCall
+  getTemplates(
+    request: AccessRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: TemplateListResponse) => void,
+  ): ClientUnaryCall
+  createProductFromTemplate(
+    request: CreateProductFromTemplateRequest,
+    callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
+  ): ClientUnaryCall
+  createProductFromTemplate(
+    request: CreateProductFromTemplateRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
+  ): ClientUnaryCall
+  createProductFromTemplate(
+    request: CreateProductFromTemplateRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
+  ): ClientUnaryCall
+}
+
+export const CruxTemplateClient = makeGenericClientConstructor(CruxTemplateService, 'crux.CruxTemplate') as unknown as {
+  new (address: string, credentials: ChannelCredentials, options?: Partial<ChannelOptions>): CruxTemplateClient
+  service: typeof CruxTemplateService
 }
 
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined

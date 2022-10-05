@@ -9,6 +9,7 @@ import {
   ROUTE_PROFILE,
   ROUTE_REGISTRIES,
   ROUTE_TEAMS,
+  ROUTE_TEMPLATES,
 } from '@app/routes'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
@@ -52,6 +53,11 @@ export const Sidebar = (props: SidebarProps) => {
       icon: <Image src="/notification.svg" alt={t('notifications')} width={18} height={18} />,
       text: 'notifications',
       link: ROUTE_NOTIFICATIONS,
+    },
+    {
+      icon: <Image src="/note.svg" alt={t('templates')} width={18} height={18} />,
+      text: 'templates',
+      link: ROUTE_TEMPLATES,
     },
   ]
 

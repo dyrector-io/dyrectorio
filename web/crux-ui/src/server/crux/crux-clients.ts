@@ -10,6 +10,7 @@ import {
   CruxProductVersionClient,
   CruxRegistryClient,
   CruxTeamClient,
+  CruxTemplateClient,
 } from '@app/models/grpc/protobuf/proto/crux'
 import { credentials } from '@grpc/grpc-js'
 
@@ -34,6 +35,8 @@ class CruxClients {
 
   notifications: CruxNotificationClient
 
+  templates: CruxTemplateClient
+
   constructor(address: string, publicKey: Buffer) {
     const creds = publicKey ? credentials.createSsl(publicKey) : credentials.createInsecure()
 
@@ -51,6 +54,7 @@ class CruxClients {
     this.health = new CruxHealthClient(address, creds)
     this.audit = new CruxAuditClient(address, creds)
     this.notifications = new CruxNotificationClient(address, creds)
+    this.templates = new CruxTemplateClient(address, creds)
   }
 }
 
