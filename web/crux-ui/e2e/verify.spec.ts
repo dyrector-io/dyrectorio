@@ -12,6 +12,13 @@ import {
 const VERIFYABLE_EMAIL = `v.${USER_EMAIL}`
 const VERIFYABLE_PASSWORD = `v.${USER_PASSWORD}`
 
+test.use({
+  storageState: {
+    cookies: [],
+    origins: [],
+  },
+})
+
 test('should verify address', async ({ page }) => {
   await page.goto(ROUTE_VERIFICATION)
 

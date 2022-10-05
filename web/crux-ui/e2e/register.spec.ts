@@ -5,6 +5,13 @@ import { deleteUserByEmail, kratosFromBaseURL, screenshotPath, USER_EMAIL, USER_
 const REGISTERED_USER_EMAIL = `r.${USER_EMAIL}`
 const REGISTERED_USER_PASSWORD = `r.${USER_PASSWORD}`
 
+test.use({
+  storageState: {
+    cookies: [],
+    origins: [],
+  },
+})
+
 test('should navigate to login when clicking on log in', async ({ page }) => {
   await page.goto(ROUTE_REGISTER)
 

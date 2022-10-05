@@ -33,6 +33,7 @@ const config: PlaywrightTestConfig = {
     // contextOptions: {
     //   ignoreHTTPSErrors: true,
     // },
+    storageState: 'storageState.json',
   },
   projects: [
     {
