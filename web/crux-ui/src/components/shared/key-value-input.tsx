@@ -24,24 +24,19 @@ type KeyValueElement = UniqueKeyValue & {
 
 const isCompletelyEmpty = (it: UniqueKeyValue) => it.key.trim().length < 1 && it.value.trim().length < 1
 
-const pushEmptyLineIfNecessary = (items: UniqueKeyValue[]) => {
-  if (items.length < 1 || (items[items.length - 1].key?.trim() ?? '') !== '') {
-    items.push({
-      ...EMPTY_KEY_VALUE_PAIR,
-      id: uuid(),
-    })
-  }
-}
+const generateEmptyLine = () => ({
+  ...EMPTY_KEY_VALUE_PAIR,
+  id: uuid(),
+})
 
-const setItems = (items: UniqueKeyValue[]) => (): UniqueKeyValue[] => {
-  const result = [...items]
-  pushEmptyLineIfNecessary(result)
-  return result
-}
+const setItems = (items: UniqueKeyValue[]) => (): UniqueKeyValue[] => items
 
 const mergeItems =
   (updatedItems: UniqueKeyValue[]) =>
   (state: UniqueKeyValue[]): UniqueKeyValue[] => {
+    const lastLine = state.length > 0 ? state[state.length - 1] : null
+    const emptyLine = !!lastLine && isCompletelyEmpty(lastLine) ? lastLine : generateEmptyLine()
+
     const result = [
       ...state.filter(old => !isCompletelyEmpty(old) && updatedItems.filter(it => old.id === it.id).length > 0),
     ]
@@ -56,7 +51,8 @@ const mergeItems =
       }
     })
 
-    pushEmptyLineIfNecessary(result)
+    result.push(emptyLine)
+
     return result
   }
 
@@ -97,7 +93,7 @@ const KeyValueInput = (props: KeyValueInputProps) => {
   useEffect(() => dispatch(mergeItems(items)), [items, dispatch])
 
   const onChange = (index: number, key: string, value: string) => {
-    let newItems = [...state]
+    const newItems = [...state]
 
     const item = {
       id: state[index].id,
@@ -107,9 +103,9 @@ const KeyValueInput = (props: KeyValueInputProps) => {
 
     newItems[index] = item
 
-    newItems = newItems.filter(it => !isCompletelyEmpty(it))
+    const updatedItems = newItems.filter(it => !isCompletelyEmpty(it))
 
-    propsOnChange(newItems)
+    propsOnChange(updatedItems)
     dispatch(setItems(newItems))
   }
 
@@ -135,7 +131,7 @@ const KeyValueInput = (props: KeyValueInputProps) => {
             value={key}
             message={message}
             messageType={messageType}
-            onChange={e => onChange(index, e.target.value, value)}
+            onPatch={it => onChange(index, it, value)}
           />
         </div>
 
@@ -149,7 +145,7 @@ const KeyValueInput = (props: KeyValueInputProps) => {
             grow
             placeholder={t('value')}
             value={value}
-            onChange={e => onChange(index, key, e.target.value)}
+            onPatch={it => onChange(index, key, it)}
           />
         </div>
       </div>

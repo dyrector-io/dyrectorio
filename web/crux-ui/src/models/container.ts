@@ -170,3 +170,57 @@ export type CompleteContainerConfig = ExplicitContainerConfig & {
   capabilities?: Record<string, string>
   secrets?: Record<string, string>
 }
+
+export const overrideKeyValues = (weak: UniqueKeyValue[], strong: UniqueKeyValue[]): UniqueKeyValue[] => {
+  const overridenKeys: Set<string> = new Set(strong?.map(it => it.key))
+  return [...(weak?.filter(it => !overridenKeys.has(it.key)) ?? []), ...(strong ?? [])]
+}
+
+export const expandKeytoKeyValues = (weak: UniqueKey[]): UniqueKeyValue[] => [
+  ...weak.map((it): UniqueKeyValue => ({ id: it.id, key: it.key, value: '' })),
+]
+
+export const overridePorts = (
+  weak: ExplicitContainerConfigPort[],
+  strong: ExplicitContainerConfigPort[],
+): ExplicitContainerConfigPort[] => {
+  const overridenPorts: Set<number> = new Set(strong?.map(it => it.internal))
+  return [...(weak?.filter(it => !overridenPorts.has(it.internal)) ?? []), ...(strong ?? [])]
+}
+
+export const override = <T>(weak: T, strong: T): T => strong ?? weak
+
+export const overrideWithDefaultValue = <T>(weak: T, strong: T, defaultValue: T): T =>
+  override(weak, strong) ?? defaultValue
+
+export const overrideArrays = <T>(weak: T[], strong: T[]): T[] => {
+  const strongs: Set<T> = new Set(strong?.map(it => it))
+  return [...(weak?.filter(it => !strongs.has(it)) ?? []), ...(strong ?? [])]
+}
+
+export const mergeExplicitContainerConfig = (weak: ExplicitContainerConfig, strong: ExplicitContainerConfig) => ({
+  ...weak,
+  ...strong,
+  networkMode: overrideWithDefaultValue(weak.networkMode, strong.networkMode, 'none'),
+  deploymentStrategy: overrideWithDefaultValue(weak.deploymentStrategy, strong.deploymentStrategy, 'recreate'),
+  restartPolicy: overrideWithDefaultValue(weak.restartPolicy, strong.restartPolicy, 'unless_stopped'),
+  ports: overridePorts(weak.ports, strong.ports),
+  user: override(weak.user, strong.user),
+  tty: override(weak.tty, strong.tty),
+  useLoadBalancer: override(weak.useLoadBalancer, strong.useLoadBalancer),
+  portRanges: override(weak.portRanges, strong.portRanges),
+  args: overrideArrays(weak.args, strong.args),
+  commands: overrideArrays(weak.commands, strong.commands),
+  expose: override(weak.expose, strong.expose),
+  configContainer: override(weak.configContainer, strong.configContainer),
+  customHeaders: overrideArrays(weak.customHeaders, strong.customHeaders),
+  proxyHeaders: override(weak.proxyHeaders, strong.proxyHeaders),
+  extraLBAnnotations: override(weak.extraLBAnnotations, strong.extraLBAnnotations),
+  ingress: override(weak.ingress, strong.ingress),
+  volumes: override(weak.volumes, strong.volumes),
+  logConfig: override(weak.logConfig, strong.logConfig),
+  healthCheckConfig: override(weak.healthCheckConfig, strong.healthCheckConfig),
+  importContainer: override(weak.importContainer, strong.importContainer),
+  resourceConfig: override(weak.resourceConfig, strong.resourceConfig),
+  initContainers: override(weak.initContainers, strong.initContainers),
+})

@@ -25,7 +25,7 @@ import {
 import { WsMessage } from '@app/websockets/common'
 import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 import { useState } from 'react'
-import { ImagesActions, ImagesState } from './use-images-state'
+import { ImagesActions, ImagesState, selectTagsOfImage } from './use-images-state'
 
 export type ImageEditorSection = 'tag' | 'config' | 'json'
 
@@ -93,11 +93,12 @@ const transformInputFocusMessage = (message: WsMessage<any>, imageId: string) =>
 const useImageEditorState = (options: ImageEditorOptions): [ImageEditorState, ImageEditorActions] => {
   const { image, imagesState, imagesActions, versionSock } = options
 
-  const [section, setSection] = useState<ImageEditorSection>('config')
-  const [tags, setTags] = useState<string[]>(image.tag ? [image.tag] : [])
+  const [section, setSection] = useState<ImageEditorSection>('json')
   const [editors, setEditors] = useState<InputEditorsMap>({})
   const [deleteModal, confirmDelete] = useConfirmation()
   const [parseError, setParseError] = useState<string>(null)
+
+  const tags = selectTagsOfImage(imagesState, image)
 
   const sock = useWebSocket(versionSock.url, {
     transformReceive: it => transformReceive(it, image.id),
@@ -129,11 +130,7 @@ const useImageEditorState = (options: ImageEditorOptions): [ImageEditorState, Im
 
   const selectSection = (it: ImageEditorSection) => {
     if (it === 'tag') {
-      const imgTags = imagesActions.getOrFetchImageTags(image)
-
-      if (imgTags) {
-        setTags(imgTags.tags)
-      }
+      imagesActions.fetchImageTags(image)
     }
 
     setSection(it)

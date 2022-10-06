@@ -77,7 +77,7 @@ export type ImagesActions = {
   addImages: (images: RegistryImages[]) => void
   orderImages: (imgs: VersionImage[]) => void
   selectViewMode: (mode: ViewMode) => void
-  getOrFetchImageTags: (image: VersionImage) => RegistryImageTags
+  fetchImageTags: (image: VersionImage) => void
   selectTagForImage: (image: VersionImage, tag: string) => void
 }
 
@@ -121,6 +121,11 @@ const refreshImageTags = (registriesSock: WebSocketClientEndpoint, images: Versi
   })
 }
 
+export const selectTagsOfImage = (state: ImagesState, image: VersionImage): string[] => {
+  const regImgTags = state.tags[imageTagKey(image.registryId, image.name)]
+  return regImgTags ? regImgTags.tags : image.tag ? [image.tag] : []
+}
+
 export const useImagesState = (options: ImagesStateOptions): [ImagesState, ImagesActions] => {
   const { productId, version, initialSection } = options
 
@@ -136,9 +141,6 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
   const registriesSock = useWebSocket(WS_REGISTRIES, {
     onOpen: () => refreshImageTags(registriesSock, images),
   })
-
-  const fetchImageTags = (message: FetchImageTagsMessage) =>
-    registriesSock.send(WS_TYPE_REGISTRY_FETCH_IMAGE_TAGS, message)
 
   registriesSock.on(WS_TYPE_REGISTRY_IMAGE_TAGS, (message: RegistryImageTagsMessage) => {
     if (message.images.length < 1) {
@@ -268,20 +270,18 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
     setAddSection('none')
   }
 
-  const getOrFetchImageTags = (image: VersionImage): RegistryImageTags => {
+  const fetchImageTags = (image: VersionImage): RegistryImageTags => {
     const key = imageTagKey(image.registryId, image.name)
     const imgTags = tags[key]
 
-    if (!imgTags) {
-      return imgTags
+    if (imgTags) {
+      return
     }
 
-    fetchImageTags({
+    registriesSock.send(WS_TYPE_REGISTRY_FETCH_IMAGE_TAGS, {
       registryId: image.registryId,
       images: [image.name],
     })
-
-    return null
   }
 
   const selectViewMode = (mode: ViewMode) => setViewMode(mode)
@@ -317,7 +317,7 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
       orderImages,
       selectViewMode,
       selectTagForImage,
-      getOrFetchImageTags,
+      fetchImageTags,
     },
   ]
 }

@@ -12,15 +12,19 @@ import {
 import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 import { useEffect } from 'react'
 
-export type EditorState = {
+export type EditorMergeFunction<T> = (remote: T, local: T) => T
+export type EditorCompareFunction<T> = (one: T, other: T) => boolean
+export const DEFAULT_EDITOR_COMPARATOR = <T>(one: T, other: T) => one === other
+
+export type EditorState<T> = {
   highlightColor?: string
-  focused: boolean
-  value: string
+  value: T
 }
 
-export type EditorActions = {
+export type EditorActions<T> = {
   onFocus: VoidFunction
   onBlur: VoidFunction
+  onChange: (local: T) => void
 }
 
 export type EditorOptions = {
@@ -30,32 +34,120 @@ export type EditorOptions = {
   sock: WebSocketClientEndpoint
 }
 
-const addUser = (userId: string) => (state: string[]) => {
-  const found = state.includes(userId)
-  return !found ? [...state, userId] : state
+export type UseEditorStateOptions = {
+  editorOptions: EditorOptions
 }
 
-const removeUser = (userId: string) => (state: string[]) => state.filter(it => it !== userId)
+type InternalState<T> = {
+  editorIds: string[]
+  focused: boolean
+  local: T
+  remote: T
+}
+
+const addUser =
+  (userId: string) =>
+  <T>(state: InternalState<T>): InternalState<T> => {
+    const { editorIds } = state
+    const found = editorIds.includes(userId)
+
+    return found
+      ? state
+      : {
+          ...state,
+          editorIds: [...editorIds, userId],
+        }
+  }
+
+const removeUser =
+  (userId: string) =>
+  <T>(state: InternalState<T>): InternalState<T> => {
+    const { editorIds } = state
+    const newIds = editorIds.filter(it => it !== userId)
+
+    return editorIds.length === newIds.length
+      ? state
+      : {
+          ...state,
+          editorIds: newIds,
+        }
+  }
 
 const setEditors =
-  (editorIds: string[]) =>
-  (state: string[]): string[] => {
-    if (!editorIds) {
-      return []
+  (newIds: string[]) =>
+  <T>(state: InternalState<T>): InternalState<T> => {
+    const oldIds = state.editorIds
+
+    if (!newIds) {
+      return {
+        ...state,
+        editorIds: [],
+      }
     }
 
-    if (state.length !== editorIds.length) {
-      return editorIds
+    if (oldIds.length !== newIds.length) {
+      return {
+        ...state,
+        editorIds: newIds,
+      }
     }
 
-    for (let i = 0; i < state.length; i++) {
-      if (state[i] !== editorIds[i]) {
-        return editorIds
+    for (let i = 0; i < oldIds.length; i++) {
+      if (oldIds[i] !== newIds[i]) {
+        return {
+          ...state,
+          editorIds: newIds,
+        }
       }
     }
 
     return state
   }
+
+const focusInput =
+  <T>(me: Editor) =>
+  (state: InternalState<T>): InternalState<T> => {
+    const newState = addUser(me.id)(state)
+
+    return {
+      ...newState,
+      focused: true,
+      local: state.remote,
+    }
+  }
+
+const blurInput =
+  <T>(me: Editor, newValue: T) =>
+  (state: InternalState<T>): InternalState<T> => {
+    const newState = removeUser(me.id)(state)
+
+    return {
+      ...newState,
+      focused: false,
+      local: null,
+      remote: newValue,
+    }
+  }
+
+const setLocal =
+  <T>(local: T, compare: EditorCompareFunction<T>) =>
+  (state: InternalState<T>): InternalState<T> =>
+    compare(state.local, local)
+      ? state
+      : {
+          ...state,
+          local,
+        }
+
+const setRemote =
+  <T>(remote: T, compare: EditorCompareFunction<T>) =>
+  (state: InternalState<T>): InternalState<T> =>
+    compare(state.remote, remote)
+      ? state
+      : {
+          ...state,
+          remote,
+        }
 
 // selectors
 const selectHighlightColor = (state: string[], allEditors: Editor[], me: Editor): string => {
@@ -77,10 +169,24 @@ const filterInputMessage = (message: InputFocusChangeMessage, inputId: string): 
   return true
 }
 
-const useEditorState = (id: string, options: EditorOptions, disabled?: boolean): [EditorState, EditorActions] => {
+const useEditorState = <T>(
+  id: string,
+  value: T,
+  options: EditorOptions,
+  onMergeValues: EditorMergeFunction<T>,
+  disabled?: boolean,
+  onCompareValues?: EditorCompareFunction<T>,
+): [EditorState<T>, EditorActions<T>] => {
   const { inputEditors, editors, sock, me } = options
 
-  const [editorIds, dispatch] = useRepatch<string[]>([])
+  const compareValues = onCompareValues ?? DEFAULT_EDITOR_COMPARATOR
+
+  const [state, dispatch] = useRepatch<InternalState<T>>({
+    editorIds: [],
+    focused: false,
+    local: value,
+    remote: null,
+  })
 
   // dispatch should not be in useEffect()'s dependency array, but react-hooks/exhaustive-deps
   // determines stable hook return values from a hardcoded list.
@@ -88,20 +194,16 @@ const useEditorState = (id: string, options: EditorOptions, disabled?: boolean):
   // Someone forked the eslint plugin to fix this, but it was not merged for three years now. :)
   // https://github.com/facebook/react/issues/16873
   useEffect(() => dispatch(setEditors(inputEditors[id])), [inputEditors, id, dispatch])
+  useEffect(() => dispatch(setRemote(value, compareValues)), [value, compareValues, dispatch])
 
   let onFocus: VoidFunction = null
   let onBlur: VoidFunction = null
-  let focused = false
+  let onChange = (_: T) => {}
   let highlightColor: string = null
 
   if (!disabled) {
     sock.on(WS_TYPE_INPUT_FOCUSED, (message: InputFocusChangeMessage) => {
       if (!filterInputMessage(message, id)) {
-        return
-      }
-
-      const contains = editorIds.filter(it => it === message.userId).length > 0
-      if (contains) {
         return
       }
 
@@ -117,7 +219,7 @@ const useEditorState = (id: string, options: EditorOptions, disabled?: boolean):
     })
 
     onFocus = () => {
-      dispatch(addUser(me.id))
+      dispatch(focusInput(me))
 
       sock.send(WS_TYPE_FOCUS_INPUT, {
         inputId: id,
@@ -125,25 +227,28 @@ const useEditorState = (id: string, options: EditorOptions, disabled?: boolean):
     }
 
     onBlur = () => {
-      dispatch(removeUser(me.id))
-
       sock.send(WS_TYPE_BLUR_INPUT, {
         inputId: id,
       } as InputFocusMessage)
+
+      const newValue = onMergeValues(state.remote, state.local)
+      dispatch(blurInput(me, newValue))
     }
 
-    focused = !disabled && editorIds.length > 0
-    highlightColor = selectHighlightColor(editorIds, editors, me)
+    onChange = (local: T) => dispatch(setLocal(local, compareValues))
+
+    highlightColor = selectHighlightColor(state.editorIds, editors, me)
   }
 
   return [
     {
       highlightColor,
-      focused,
+      value: state.focused ? state.local : state.remote,
     },
     {
       onFocus,
       onBlur,
+      onChange,
     },
   ]
 }

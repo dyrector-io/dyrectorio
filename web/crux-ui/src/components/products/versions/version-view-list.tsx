@@ -54,7 +54,7 @@ const VersionViewList = (props: VersionViewListProps) => {
 
   const onOpenTagsDialog = (it: VersionImage) => {
     setTagsModalTarget(it)
-    actions.getOrFetchImageTags(it)
+    actions.fetchImageTags(it)
   }
 
   const itemTemplate = (item: VersionImage) => [
