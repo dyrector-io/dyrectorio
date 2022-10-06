@@ -139,5 +139,5 @@ export default class ProductService {
     return this.mapper.detailsToGrpc(product)
   }
 
-  private static SIMPLE_PRODUCT_VERSION_NAME = 'rolling'
+  public static SIMPLE_PRODUCT_VERSION_NAME = 'rolling'
 }

@@ -18,7 +18,7 @@ export default class TemplateController implements CruxTemplateController {
 
   async getTemplates(request: AccessRequest): Promise<TemplateListResponse> {
     return {
-      data: await this.templateFileService.getTemplates()
+      data: await this.templateFileService.getTemplates(),
     }
   }
 

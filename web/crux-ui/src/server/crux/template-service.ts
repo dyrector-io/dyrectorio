@@ -5,7 +5,6 @@ import {
   CreateProductFromTemplateRequest,
   CruxTemplateClient,
   TemplateListResponse,
-  TemplateResponse,
 } from '@app/models/grpc/protobuf/proto/crux'
 import { Template } from '@app/models/template'
 import { Identity } from '@ory/kratos-client'
@@ -29,7 +28,7 @@ class DyoTemplateService {
     )
 
     return res.data.map(it => ({
-      ...it
+      ...it,
     }))
   }
 
@@ -37,13 +36,13 @@ class DyoTemplateService {
     const req: CreateProductFromTemplateRequest = {
       accessedBy: this.identity.id,
       id,
-      productName
+      productName,
     }
 
-    const res = await protomisify<CreateProductFromTemplateRequest, CreateEntityResponse>(this.client, this.client.createProductFromTemplate)(
-      CreateProductFromTemplateRequest, 
-      req
-    )
+    const res = await protomisify<CreateProductFromTemplateRequest, CreateEntityResponse>(
+      this.client,
+      this.client.createProductFromTemplate,
+    )(CreateProductFromTemplateRequest, req)
 
     return res
   }

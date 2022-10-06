@@ -3,12 +3,14 @@ import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { defaultApiErrorHandler } from '@app/errors'
+import { CreateEntityResponse } from '@app/models/grpc/protobuf/proto/crux'
 import { ApplyTemplate, Template } from '@app/models/template'
-import { API_TEMPLATES } from '@app/routes'
+import { API_TEMPLATES, productUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { applyTemplateSchema } from '@app/validations'
 import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
+import { useRouter } from 'next/router'
 import { MutableRefObject } from 'react'
 
 interface ApplyTemplateCardProps {
@@ -22,6 +24,7 @@ const ApplyTemplateCard = (props: ApplyTemplateCardProps) => {
   const { template: propsTemplate, className, onTemplateApplied, submitRef } = props
 
   const { t } = useTranslation('templates')
+  const router = useRouter()
 
   const handleApiError = defaultApiErrorHandler(t)
 
@@ -42,6 +45,11 @@ const ApplyTemplateCard = (props: ApplyTemplateCardProps) => {
 
       if (res.ok) {
         onTemplateApplied()
+
+        const json = await res.json()
+        const result = json as CreateEntityResponse
+
+        router.push(productUrl(result.id))
       } else {
         handleApiError(res, setFieldError)
       }

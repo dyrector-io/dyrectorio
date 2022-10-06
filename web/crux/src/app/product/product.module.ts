@@ -10,7 +10,7 @@ import ProductService from './product.service'
 
 @Module({
   imports: [VersionModule, TeamModule],
-  exports: [],
+  exports: [ProductMapper, ProductService],
   controllers: [ProductController],
   providers: [PrismaService, ProductService, ProductMapper, InterceptorGrpcHelperProvider, TeamRepository],
 })

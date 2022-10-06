@@ -1,4 +1,158 @@
 {
-    "name": "Strapi",
-    "description": "Strapi with a Postgres database"
+  "name": "Strapi",
+  "description": "Strapi with a Postgres database",
+  "registries": [
+    {
+      "name": "Docker Hub Library",
+      "type": "hub",
+      "hub": {
+        "imageNamePrefix": "library"
+      }
+    },
+    {
+      "name": "Docker Hub Strapi",
+      "description": "Docker Hub Strapi images",
+      "type": "hub",
+      "hub": {
+        "imageNamePrefix": "strapi"
+      }
+    }
+  ],
+  "product": {
+    "description": "Strapi is the next-gen headless CMS, open-source, javascript, enabling content-rich experiences to be created, managed and exposed to any digital device.",
+    "type": "simple",
+    "versions": [
+      {
+        "images": [
+          {
+            "name": "strapi-db",
+            "registryName": "Docker Hub Library",
+            "image": "postgres",
+            "tag": "latest",
+            "capabilities": [],
+            "config": {
+              "TTY": false,
+              "args": [],
+              "crane": {
+                "proxyHeaders": false,
+                "customHeaders": [],
+                "useLoadBalancer": false,
+                "deploymentStatregy": 1,
+                "extraLBAnnotations": {}
+              },
+              "ports": [],
+              "dagent": {
+                "networks": [
+                  "strapi-network"
+                ],
+                "networkMode": 3,
+                "restartPolicy": 3
+              },
+              "command": [],
+              "volumes": [
+                {
+                  "name": "strapi-db",
+                  "path": "/var/lib/postgresql/data"
+                }
+              ],
+              "portRanges": [],
+              "environments": [],
+              "initContainers": []
+            },
+            "environment": [
+              {
+                "key": "POSTGRES_DB",
+                "value": "strapi"
+              },
+              {
+                "key": "POSTGRES_USER",
+                "value": "strapi"
+              },
+              {
+                "key": "POSTGRES_PASSWORD",
+                "value": "strapi"
+              }
+            ],
+            "secrets": []
+          },
+          {
+            "name": "strapi-service",
+            "registryName": "Docker Hub Strapi",
+            "image": "strapi",
+            "tag": "latest",
+            "capabilities": [],
+            "config": {
+              "TTY": false,
+              "args": [],
+              "crane": {
+                "proxyHeaders": false,
+                "customHeaders": [],
+                "useLoadBalancer": false,
+                "deploymentStatregy": 1,
+                "extraLBAnnotations": {}
+              },
+              "ports": [
+                {
+                  "external": 1337,
+                  "internal": 1337
+                }
+              ],
+              "dagent": {
+                "networks": [
+                  "strapi-network"
+                ],
+                "networkMode": 3,
+                "restartPolicy": 3
+              },
+              "expose": {
+                "tls": false,
+                "public": true
+              },
+              "command": [],
+              "ingress": {
+                "host": "localhost",
+                "name": ""
+              },
+              "volumes": [
+                {
+                  "name": "strapi-service",
+                  "path": "/srv/app"
+                }
+              ],
+              "portRanges": [],
+              "environments": [],
+              "initContainers": []
+            },
+            "environment": [
+              {
+                "key": "DATABASE_CLIENT",
+                "value": "postgres"
+              },
+              {
+                "key": "DATABASE_NAME",
+                "value": "strapi"
+              },
+              {
+                "key": "DATABASE_HOST",
+                "value": "strapi-strapi-db"
+              },
+              {
+                "key": "DATABASE_PORT",
+                "value": "5432"
+              },
+              {
+                "key": "DATABASE_USERNAME",
+                "value": "strapi"
+              },
+              {
+                "key": "DATABASE_PASSWORD",
+                "value": "strapi"
+              }
+            ],
+            "secrets": []
+          }
+        ]
+      }
+    ]
+  }
 }

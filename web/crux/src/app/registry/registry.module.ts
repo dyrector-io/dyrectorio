@@ -10,7 +10,7 @@ import RegistryService from './registry.service'
 
 @Module({
   imports: [HttpModule, TeamModule],
-  exports: [],
+  exports: [RegistryMapper, RegistryService],
   controllers: [RegistryController],
   providers: [RegistryService, PrismaService, RegistryMapper, InterceptorGrpcHelperProvider, TeamRepository],
 })
