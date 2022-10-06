@@ -31,9 +31,10 @@ func ProcessCommand(settings *Settings) {
 	containers := DyrectorioStack{
 		Containers: settings.Containers,
 	}
-
 	switch settings.Command {
 	case "up":
+		settings = CheckAndUpdatePorts(settings)
+
 		containers.Crux = GetCrux(settings)
 		containers.CruxMigrate = GetCruxMigrate(settings)
 		containers.CruxUI = GetCruxUI(settings)
