@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"crypto/rand"
 	"encoding/base64"
@@ -8,10 +9,12 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/docker/docker/client"
@@ -101,6 +104,23 @@ const DirPerms = 0750
 const SettingsFileName = "settings.yaml"
 const SettingsFileDir = "dyo-cli"
 
+const (
+	CruxAgentGrpcPort  = "CruxAgentGrpcPort"
+	CruxGrpcPort       = "CruxGrpcPort"
+	CruxUIPort         = "CruxUIPort"
+	KratosAdminPort    = "KratosAdminPort"
+	KratosPublicPort   = "KratosPublicPort"
+	KratosPostgresPort = "KratosPostgresPort"
+	MailSlurperPort    = "MailSlurperPort"
+	MailSlurperPort2   = "MailSlurperPort2"
+	CruxPostgresPort   = "CruxPostgresPort"
+)
+
+const (
+	ParseBase    = 10
+	ParseBitSize = 32
+)
+
 // Check if the settings file is exists
 func SettingsExists(settingspath string) bool {
 	settingsfilepath := SettingsFileLocation(settingspath)
@@ -154,8 +174,6 @@ func SettingsFileReadWrite(state *Settings) *Settings {
 	settings = DisabledServiceSettings(settings)
 
 	// Settings Validation steps
-
-	// TODO(c3ppc3pp): Check for available ports
 
 	saveSettings(settings)
 
@@ -383,4 +401,86 @@ func RandomChars(bufflength uint) string {
 		"=", "")
 
 	return result[0:bufflength]
+}
+
+func CheckAndUpdatePorts(settings *Settings) *Settings {
+	portMap := map[string]uint{}
+	if !settings.Containers.Crux.Disabled {
+		portMap[CruxAgentGrpcPort] = getAvailablePort(portMap, settings.SettingsFile.Options.CruxAgentGrpcPort, CruxAgentGrpcPort)
+		settings.SettingsFile.Options.CruxAgentGrpcPort = portMap[CruxAgentGrpcPort]
+		portMap[CruxGrpcPort] = getAvailablePort(portMap, settings.SettingsFile.Options.CruxGrpcPort, CruxGrpcPort)
+		settings.SettingsFile.Options.CruxGrpcPort = portMap[CruxGrpcPort]
+	}
+	if !settings.Containers.CruxUI.Disabled {
+		portMap[CruxUIPort] = getAvailablePort(portMap, settings.SettingsFile.Options.CruxUIPort, CruxUIPort)
+		settings.SettingsFile.Options.CruxUIPort = portMap[CruxUIPort]
+	}
+
+	portMap[CruxPostgresPort] = getAvailablePort(portMap, settings.SettingsFile.Options.CruxPostgresPort, CruxPostgresPort)
+	settings.SettingsFile.Options.CruxPostgresPort = portMap[CruxPostgresPort]
+	portMap[KratosAdminPort] = getAvailablePort(portMap, settings.SettingsFile.Options.KratosAdminPort, KratosAdminPort)
+	settings.SettingsFile.Options.KratosAdminPort = portMap[KratosAdminPort]
+	portMap[KratosPublicPort] = getAvailablePort(portMap, settings.SettingsFile.Options.KratosPublicPort, KratosPublicPort)
+	settings.SettingsFile.Options.KratosPublicPort = portMap[KratosPublicPort]
+	portMap[KratosPostgresPort] = getAvailablePort(portMap, settings.SettingsFile.Options.KratosPostgresPort, KratosPostgresPort)
+	settings.SettingsFile.Options.KratosPostgresPort = portMap[KratosPostgresPort]
+	portMap[MailSlurperPort] = getAvailablePort(portMap, settings.SettingsFile.Options.MailSlurperPort, MailSlurperPort)
+	settings.SettingsFile.Options.MailSlurperPort = portMap[MailSlurperPort]
+	portMap[MailSlurperPort2] = getAvailablePort(portMap, settings.SettingsFile.Options.MailSlurperPort2, MailSlurperPort2)
+	settings.SettingsFile.Options.MailSlurperPort2 = portMap[MailSlurperPort2]
+
+	return settings
+}
+
+func getAvailablePort(portMap map[string]uint, portNum uint, portDesc string) uint {
+	for {
+		if err := portIsAvailable(portMap, portNum); err != nil {
+			fmt.Fprintf(os.Stderr, "error in binding port for %s: %s\n", portDesc, err.Error())
+			fmt.Fprintf(os.Stdout, "type another port: ")
+			portNum = scanPort(portNum)
+			continue
+		}
+		break
+	}
+	return portNum
+}
+
+func scanPort(portNum uint) uint {
+	scanner := bufio.NewScanner(os.Stdin)
+	for scanner.Scan() {
+		newPort, err := strconv.ParseUint(scanner.Text(), ParseBase, ParseBitSize)
+		if err != nil || (newPort > 0 && newPort <= 1023) || newPort == 0 {
+			fmt.Fprintf(os.Stderr, "you typed invalid port number:\n")
+			fmt.Fprintf(os.Stdout, "type another port: ")
+			continue
+		}
+		return uint(newPort)
+	}
+	return portNum
+}
+
+func portIsAvailable(portMap map[string]uint, portNum uint) error {
+	err := portIsAvailableOnHost(portNum)
+	if err == nil {
+		err = externalPortIsDuplicated(portMap, portNum)
+	}
+	return err
+}
+
+func portIsAvailableOnHost(portNum uint) error {
+	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", portNum))
+	if err != nil {
+		return fmt.Errorf("can`t bind, %w", err)
+	}
+	ln.Close()
+	return nil
+}
+
+func externalPortIsDuplicated(portMap map[string]uint, candidatePort uint) error {
+	for desc, port := range portMap {
+		if port == candidatePort {
+			return fmt.Errorf("port %d is used by %s", port, desc)
+		}
+	}
+	return nil
 }
