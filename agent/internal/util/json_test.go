@@ -18,8 +18,8 @@ func TestRemoveJSONComment(t *testing.T) {
 			  "i":"o",//
 "kek": "// //"//
 }`
-	expectstr := `{				            	    	  			  "json" : true, 			  "i":"o","kek": "// //"}`
+	expectstr := `{			  "json" : true,			  "i":"o","kek": "// //"}`
 	resultbyte := util.RemoveJSONComment([]byte(teststr))
 
-	assert.Equal(t, string(resultbyte), expectstr)
+	assert.Equal(t, expectstr, string(resultbyte))
 }
