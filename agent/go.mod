@@ -42,6 +42,7 @@ require (
 	github.com/BurntSushi/toml v1.1.0 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20220113124808-70ae35bab23f // indirect
 	github.com/ProtonMail/go-mime v0.0.0-20220302105931-303f85f7fe0f // indirect
+	github.com/golang-jwt/jwt/v4 v4.4.2 // indirect
 	github.com/moby/term v0.0.0-20200312100748-672ec06f55cd // indirect
 	github.com/onsi/ginkgo v1.16.4 // indirect
 	gotest.tools/v3 v3.0.3 // indirect
@@ -83,6 +84,7 @@ require (
 )
 
 require (
+	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/googleapis/gnostic v0.5.5 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac // indirect
