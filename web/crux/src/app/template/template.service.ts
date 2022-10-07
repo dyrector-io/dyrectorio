@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { ProductTypeEnum } from '@prisma/client'
-import { version } from 'os'
 import {
   AddImagesToVersionRequest,
   CreateEntityResponse,
@@ -17,12 +16,12 @@ import TemplateFileService, {
   TemplateProduct,
   TemplateVersion,
 } from 'src/services/template.file.service'
+import { v4 } from 'uuid'
+import { UniqueKeyValue } from 'src/shared/model'
 import ImageService from '../image/image.service'
 import ProductService from '../product/product.service'
 import RegistryService from '../registry/registry.service'
 import VersionService from '../version/version.service'
-import { v4 as uuid, v4 } from 'uuid'
-import { UniqueKeyValue } from 'src/shared/model'
 
 @Injectable()
 export default class TemplateService {
@@ -85,6 +84,8 @@ export default class TemplateService {
     product: CreateEntityResponse,
     accessedBy: string,
   ): Promise<void> {
+    const { id: productId } = product
+
     let version =
       templateProduct.type === ProductTypeEnum.simple
         ? await this.prisma.version.findFirst({
@@ -95,15 +96,15 @@ export default class TemplateService {
           })
         : await this.prisma.version.findFirst({
             where: {
-              name: templateVersion.name!,
+              name: templateVersion.name,
               productId: product.id,
             },
           })
 
     if (version == null) {
       const createReq: CreateVersionRequest = {
-        accessedBy: accessedBy,
-        productId: product.id,
+        accessedBy,
+        productId,
         name: templateVersion.name,
         type: versionTypeFromJSON(templateVersion.type.toUpperCase()),
       }
@@ -151,8 +152,8 @@ export default class TemplateService {
         const dbImage = it[1] as ImageResponse
 
         const mapKeyValues = (array: UniqueKeyValue[]) =>
-          array.map(it => ({
-            ...it,
+          array.map(kv => ({
+            ...kv,
             id: v4(),
           }))
 

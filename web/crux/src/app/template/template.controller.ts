@@ -1,8 +1,6 @@
-import { Body, Controller, UseGuards } from '@nestjs/common'
-import { Empty } from 'src/grpc/protobuf/proto/agent'
+import { Controller } from '@nestjs/common'
 import {
   CreateEntityResponse,
-  AccessRequest,
   TemplateListResponse,
   CreateProductFromTemplateRequest,
   CruxTemplateController,
@@ -16,7 +14,7 @@ import TemplateService from './template.service'
 export default class TemplateController implements CruxTemplateController {
   constructor(private service: TemplateService, private templateFileService: TemplateFileService) {}
 
-  async getTemplates(request: AccessRequest): Promise<TemplateListResponse> {
+  async getTemplates(): Promise<TemplateListResponse> {
     return {
       data: await this.templateFileService.getTemplates(),
     }
