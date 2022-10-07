@@ -27,9 +27,7 @@ class DyoTemplateService {
       req,
     )
 
-    return res.data.map(it => ({
-      ...it,
-    }))
+    return res.data
   }
 
   async createProductFromTemplate(id: string, productName: string): Promise<CreateEntityResponse> {

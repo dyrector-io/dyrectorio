@@ -52,38 +52,25 @@ export default class TemplateFileService {
   }
 
   getTemplates(): Promise<TemplateResponse[]> {
-    const folder = join(cwd(), TEMPLATES_FOLDER)
-
     return new Promise((resolve, reject) => {
-      readdir(folder, (err, files) => {
+      readdir(this.templatesFolder, (err, files) => {
         if (err != null) {
           reject(err)
         }
 
-        const validTemplates: TemplateResponse[] = []
-
-        files
-          .filter(it => parse(it).ext.toLowerCase() === '.json')
-          .forEach(it => {
-            const templateContent = readFileSync(join(folder, it), 'utf8')
-            const template = JSON.parse(templateContent) as TemplateResponse
-
-            try {
-              templateSchema.validateSync(template)
-
-              validTemplates.push({
-                id: parse(it).name,
-                ...template,
-              })
-            } catch (error) {
-              const validationError = error as yup.ValidationError
-              this.logger.error(
-                `Failed to validate '${it}' template file '${
-                  validationError.path
-                }', errors: '${validationError.errors.join(', ')}'`,
-              )
-            }
+        const validTemplates = files
+          .map(it => parse(it))
+          .filter(it => it.ext.toLowerCase() === '.json')
+          .map(it => {
+            const template = this.readTemplate(it.name)
+            return template == null
+              ? null
+              : {
+                  id: it.name,
+                  ...template,
+                }
           })
+          .filter(it => it != null)
 
         resolve(validTemplates)
       })
@@ -111,7 +98,7 @@ export default class TemplateFileService {
     } catch (error) {
       const validationError = error as yup.ValidationError
       this.logger.error(
-        `Failed to validate '${it}' template file '${validationError.path}', errors: '${validationError.errors.join(
+        `Failed to validate '${id}' template file '${validationError.path}', errors: '${validationError.errors.join(
           ', ',
         )}'`,
       )
