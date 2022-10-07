@@ -81,6 +81,8 @@ service CruxDeployment {
   rpc GetDeploymentEvents(IdRequest) returns (DeploymentEventListResponse);
   rpc GetDeploymentList(AccessRequest) returns (DeploymentListResponse);
   rpc GetDeploymentSecrets(DeploymentListSecretsRequest) returns (common.ListSecretsResponse);
+  rpc CheckDeploymentCopy(IdRequest) returns (DeploymentCopyResponse);
+  rpc CopyDeployment(IdRequest) returns (CreateEntityResponse);
 
   rpc StartDeployment(IdRequest) returns (stream DeploymentProgressMessage);
   rpc SubscribeToDeploymentEditEvents(ServiceIdRequest)
@@ -852,6 +854,10 @@ message DeploymentListSecretsRequest {
   string id = 1;
   string accessedBy = 2;
   string instanceId = 3;
+}
+
+message DeploymentCopyResponse {
+  optional string overwriteId = 100;
 }
 
 // NOTIFICATION

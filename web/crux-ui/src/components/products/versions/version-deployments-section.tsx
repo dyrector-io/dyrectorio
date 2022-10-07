@@ -9,6 +9,7 @@ import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from
 import useWebSocket from '@app/hooks/use-websocket'
 import {
   DeploymentByVersion,
+  deploymentIsCopyable,
   deploymentIsMutable,
   DeploymentStatus,
   DEPLOYMENT_STATUS_VALUES,
@@ -85,6 +86,10 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   const onDeploy = (deployment: DeploymentByVersion) =>
     router.push(deploymentDeployUrl(product.id, version.id, deployment.id))
 
+  const onCopyDeployment = (deployment: DeploymentByVersion) => {
+
+  }
+
   const headers = [
     ...['common:node', 'common:prefix', 'common:status', 'common:date', 'common:actions'].map(it => t(it)),
   ]
@@ -132,13 +137,23 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
             />
           </div>
         )}
+        <div className="mr-2 inline-block">
+          <Image
+            src="/note.svg"
+            alt={t('common:deploy')}
+            width={24}
+            height={24}
+            className={!!item.note && item.note.length > 0 ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
+            onClick={() => !!item.note && item.note.length > 0 && setShowInfo(item)}
+          />
+        </div>
         <Image
-          src="/note.svg"
-          alt={t('common:deploy')}
+          src="/copy.svg"
+          alt={t('common:copy')}
           width={24}
           height={24}
-          className={!!item.note && item.note.length > 0 ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
-          onClick={() => !!item.note && item.note.length > 0 && setShowInfo(item)}
+          className={deploymentIsCopyable(item.status) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
+          onClick={() => deploymentIsCopyable(item.status) && onCopyDeployment(item)}
         />
       </>,
     ]

@@ -9,7 +9,7 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoList } from '@app/elements/dyo-list'
 import DyoModal from '@app/elements/dyo-modal'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
-import { Deployment, DeploymentStatus, DEPLOYMENT_STATUS_VALUES } from '@app/models'
+import { Deployment, deploymentIsCopyable, DeploymentStatus, DEPLOYMENT_STATUS_VALUES } from '@app/models'
 import { deploymentUrl, nodeUrl, productUrl, ROUTE_DEPLOYMENTS, versionUrl } from '@app/routes'
 import { utcDateToLocale, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
@@ -62,6 +62,10 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
     clsx('rounded-tr-lg', defaultHeaderClass),
   ]
 
+  const onCopyDeployment = (deployment: Deployment) => {
+    
+  }
+
   const itemTemplate = (item: Deployment) => /* eslint-disable react/jsx-key */ [
     <a className="cursor-pointer" onClick={() => router.push(productUrl(item.productId))}>
       {item.product}
@@ -86,13 +90,23 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
           onClick={() => router.push(deploymentUrl(item.productId, item.versionId, item.id))}
         />
       </div>
+      <div className="mr-2 inline-block">
+        <Image
+          src="/note.svg"
+          alt={t('common:deploy')}
+          width={24}
+          height={24}
+          className={!!item.note && item.note.length > 0 ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
+          onClick={() => !!item.note && item.note.length > 0 && setShowInfo(item)}
+        />
+      </div>
       <Image
-        src="/note.svg"
-        alt={t('common:deploy')}
+        src="/copy.svg"
+        alt={t('common:copy')}
         width={24}
         height={24}
-        className={!!item.note && item.note.length > 0 ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
-        onClick={() => !!item.note && item.note.length > 0 && setShowInfo(item)}
+        className={deploymentIsCopyable(item.status) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
+        onClick={() => deploymentIsCopyable(item.status) && onCopyDeployment(item)}
       />
     </>,
   ]

@@ -6,10 +6,13 @@ import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
 import DyoButton from '@app/elements/dyo-button'
+import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import LoadingIndicator from '@app/elements/loading-indicator'
+import useDeploymentCopy from '@app/hooks/use-deployment-copy'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
   DeploymentEnvUpdatedMessage,
+  deploymentIsCopyable,
   deploymentIsMutable,
   DeploymentRoot,
   mergeConfigs,
@@ -54,6 +57,8 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
   const submitRef = useRef<() => Promise<any>>()
+
+  const { confirmationModal: copyDeploymentModal, copy: copyDeployment } = useDeploymentCopy(propsDeployment.product.id, propsDeployment.version.id, propsDeployment.id)
 
   const sock = useWebSocket(deploymentWsUrl(deployment.product.id, deployment.version.id, deployment.id), {
     onSend: message => {
@@ -179,8 +184,12 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
           />
         )}
 
+        {deploymentIsCopyable(propsDeployment.status) && <DyoButton className="px-6 ml-4" onClick={() => copyDeployment(propsDeployment.id)}>
+          {t('common:copy')}
+        </DyoButton>}
+
         {!mutable ? (
-          <DyoButton className="px-10 ml-auto" onClick={onOpenLog}>
+          <DyoButton className="px-10 ml-4" onClick={onOpenLog}>
             {t('log')}
           </DyoButton>
         ) : !editing ? (
@@ -199,6 +208,8 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
           <EditDeploymentInstances deployment={deployment} />
         </>
       )}
+
+     
     </Layout>
   )
 }

@@ -1166,6 +1166,10 @@ export interface DeploymentListSecretsRequest {
   instanceId: string
 }
 
+export interface DeploymentCopyResponse {
+  overwriteId?: string | undefined
+}
+
 export interface CreateNotificationRequest {
   accessedBy: string
   name: string
@@ -3577,6 +3581,23 @@ export const DeploymentListSecretsRequest = {
   },
 }
 
+const baseDeploymentCopyResponse: object = {}
+
+export const DeploymentCopyResponse = {
+  fromJSON(object: any): DeploymentCopyResponse {
+    const message = { ...baseDeploymentCopyResponse } as DeploymentCopyResponse
+    message.overwriteId =
+      object.overwriteId !== undefined && object.overwriteId !== null ? String(object.overwriteId) : undefined
+    return message
+  },
+
+  toJSON(message: DeploymentCopyResponse): unknown {
+    const obj: any = {}
+    message.overwriteId !== undefined && (obj.overwriteId = message.overwriteId)
+    return obj
+  },
+}
+
 const baseCreateNotificationRequest: object = {
   accessedBy: '',
   name: '',
@@ -4227,6 +4248,10 @@ export interface CruxDeploymentClient {
     ...rest: any
   ): Observable<ListSecretsResponse>
 
+  checkDeploymentCopy(request: IdRequest, metadata: Metadata, ...rest: any): Observable<DeploymentCopyResponse>
+
+  copyDeployment(request: IdRequest, metadata: Metadata, ...rest: any): Observable<CreateEntityResponse>
+
   startDeployment(request: IdRequest, metadata: Metadata, ...rest: any): Observable<DeploymentProgressMessage>
 
   subscribeToDeploymentEditEvents(
@@ -4290,6 +4315,18 @@ export interface CruxDeploymentController {
     ...rest: any
   ): Promise<ListSecretsResponse> | Observable<ListSecretsResponse> | ListSecretsResponse
 
+  checkDeploymentCopy(
+    request: IdRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<DeploymentCopyResponse> | Observable<DeploymentCopyResponse> | DeploymentCopyResponse
+
+  copyDeployment(
+    request: IdRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
+
   startDeployment(request: IdRequest, metadata: Metadata, ...rest: any): Observable<DeploymentProgressMessage>
 
   subscribeToDeploymentEditEvents(
@@ -4311,6 +4348,8 @@ export function CruxDeploymentControllerMethods() {
       'getDeploymentEvents',
       'getDeploymentList',
       'getDeploymentSecrets',
+      'checkDeploymentCopy',
+      'copyDeployment',
       'startDeployment',
       'subscribeToDeploymentEditEvents',
     ]

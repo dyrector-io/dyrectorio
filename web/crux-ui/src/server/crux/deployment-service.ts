@@ -32,6 +32,7 @@ import {
   ServiceIdRequest,
   UpdateDeploymentRequest,
   UpdateEntityResponse,
+  DeploymentCopyResponse,
 } from '@app/models/grpc/protobuf/proto/crux'
 import { timestampToUTC } from '@app/utils'
 import { WsMessage } from '@app/websockets/common'
@@ -299,6 +300,34 @@ class DyoDeploymentService {
 
     const stream = () => this.client.subscribeToDeploymentEditEvents(IdRequest.fromJSON(req))
     return new GrpcConnection(this.logger.descend('edit-events'), stream, transform, options)
+  }
+
+  async checkCopy(id: string): Promise<string | undefined> {
+    const req = {
+      id,
+      accessedBy: this.identity.id,
+    } as IdRequest
+
+    const res = await protomisify<IdRequest, DeploymentCopyResponse>(this.client, this.client.checkDeploymentCopy)(
+      IdRequest,
+      req,
+    )
+
+    return res.overwriteId
+  }
+
+  async copyDeployment(id: string): Promise<string> {
+    const req = {
+      id,
+      accessedBy: this.identity.id,
+    } as IdRequest
+
+    const res = await protomisify<IdRequest, CreateEntityResponse>(this.client, this.client.copyDeployment)(
+      IdRequest,
+      req,
+    )
+
+    return res.id
   }
 }
 
