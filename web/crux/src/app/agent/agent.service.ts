@@ -260,7 +260,7 @@ export default class AgentService {
           })
         }
 
-        agent = installer.complete(connection, eventChannel, request?.version)
+        agent = installer.complete(connection, request, eventChannel)
         this.installers.delete(node.id)
 
         await this.prisma.node.update({
@@ -277,7 +277,7 @@ export default class AgentService {
             message: 'Invalid token',
           })
         }
-        agent = new Agent(connection, eventChannel as Subject<NodeEventMessage>, request?.version, request?.publicKey)
+        agent = new Agent(connection, request, eventChannel as Subject<NodeEventMessage>)
 
         await prisma.node.update({
           where: { id: node.id },

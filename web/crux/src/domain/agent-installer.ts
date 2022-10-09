@@ -7,6 +7,7 @@ import { join } from 'path'
 import { cwd } from 'process'
 import { Subject } from 'rxjs'
 import { PreconditionFailedException } from 'src/exception/errors'
+import { AgentInfo } from 'src/grpc/protobuf/proto/agent'
 import { NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import { Agent } from './agent'
@@ -73,9 +74,9 @@ export default class AgentInstaller {
     return this.scriptCompiler.compile(installScriptParams)
   }
 
-  complete(connection: GrpcNodeConnection, eventChannel: Subject<NodeEventMessage>, version?: string): Agent {
+  complete(connection: GrpcNodeConnection, info: AgentInfo, eventChannel: Subject<NodeEventMessage>): Agent {
     this.verify()
-    return new Agent(connection, eventChannel, version)
+    return new Agent(connection, info, eventChannel)
   }
 
   loadScriptAndCompiler(nodeType: NodeTypeEnum): void {
