@@ -472,7 +472,7 @@ func portIsAvailableOnHost(portNum uint) error {
 	if err != nil {
 		return fmt.Errorf("can`t bind, %w", err)
 	}
-	ln.Close()
+	ln.Close() // #nosec
 	return nil
 }
 
