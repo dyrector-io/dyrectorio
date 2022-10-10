@@ -3,8 +3,6 @@ version: '3.3'
 services:
   crux-migrate:
     container_name: crux-migrate
-    depends_on:
-      - crux-postgres
     image: ghcr.io/dyrector-io/dyrectorio/web/crux:${CRUX_IMAGE_TAG}
     build:
       context: ./
