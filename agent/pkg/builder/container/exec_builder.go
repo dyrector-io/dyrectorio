@@ -136,7 +136,6 @@ func (de *DockerExecBuilder) WithWorkingDir(workingDir string) *DockerExecBuilde
 
 // Creates the exec command using the configuration given by 'With...' functions.
 func (de *DockerExecBuilder) Create() (Exec, error) {
-
 	execConfig := types.ExecConfig{
 		Privileged:   de.privileged,
 		Tty:          de.tty,
@@ -156,7 +155,9 @@ func (de *DockerExecBuilder) Create() (Exec, error) {
 
 	response, err := de.client.ContainerExecCreate(de.ctx, *de.containerID, execConfig)
 	if err != nil {
-		(*de.logger).WriteString(fmt.Sprintln("Exec create failed: ", err))
+		if _, logErr := (*de.logger).WriteString(fmt.Sprintln("Exec create failed: ", err)); logErr != nil {
+			fmt.Printf("Failed to write log: %s", logErr.Error())
+		}
 		return Exec{}, err
 	}
 
@@ -168,7 +169,7 @@ func (de *DockerExecBuilder) Create() (Exec, error) {
 	return Exec{
 		ctx:            de.ctx,
 		client:         de.client,
-		ExecId:         response.ID,
+		ExecID:         response.ID,
 		execStartCheck: execStartCheck,
 	}, nil
 }
@@ -176,10 +177,10 @@ func (de *DockerExecBuilder) Create() (Exec, error) {
 type Exec struct {
 	ctx            context.Context
 	client         *client.Client
-	ExecId         string
+	ExecID         string
 	execStartCheck types.ExecStartCheck
 }
 
 func (e Exec) Start() error {
-	return e.client.ContainerExecStart(e.ctx, e.ExecId, e.execStartCheck)
+	return e.client.ContainerExecStart(e.ctx, e.ExecID, e.execStartCheck)
 }
