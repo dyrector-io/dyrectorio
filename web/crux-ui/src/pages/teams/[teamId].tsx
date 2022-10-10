@@ -152,7 +152,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
         />
       )}
     </div>,
-    <div>{utcDateToLocale(it.lastLogin)}</div>,
+    <div>{it.lastLogin ? utcDateToLocale(it.lastLogin) : t('never')}</div>,
     <UserStatusTag className="my-auto w-fit" status={it.status} />,
     detailsState !== 'none' || !canEdit || it.role === 'owner' ? null : (
       <Image
