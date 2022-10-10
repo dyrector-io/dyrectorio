@@ -7,5 +7,5 @@
   "actions": "Actions",
   "noItems": "You haven't made a deployment.",
   "copyConflictTitle": "Are you sure want to overwrite another deployment?",
-  "copyConflictContent": "Are you sure want to overwrite another deployment?",
+  "copyConflictContent": "Are you sure want to overwrite another deployment?"
 }
