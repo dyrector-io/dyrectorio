@@ -19,6 +19,7 @@ import {
   CreateDeploymentRequest,
   CreateEntityResponse,
   CruxDeploymentClient,
+  DeploymentCopyResponse,
   DeploymentDetailsResponse,
   DeploymentEditEventMessage as ProtoDeploymentEditEventMessage,
   DeploymentEventListResponse,
@@ -32,7 +33,6 @@ import {
   ServiceIdRequest,
   UpdateDeploymentRequest,
   UpdateEntityResponse,
-  DeploymentCopyResponse,
 } from '@app/models/grpc/protobuf/proto/crux'
 import { timestampToUTC } from '@app/utils'
 import { WsMessage } from '@app/websockets/common'

@@ -1,117 +1,60 @@
-import { DyoConfirmationModal, DyoConfirmationModalConfig } from "@app/elements/dyo-modal"
-import { DeploymentCopyCheckFinishedMessage, DeploymentCopyCheckMessage, DeploymentCopyFinishedMessage, DeploymentCopyMessage, WS_TYPE_COPY_DEPLOYMENT, WS_TYPE_COPY_DEPLOYMENT_CHECK, WS_TYPE_COPY_DEPLOYMENT_CHECK_FINISHED, WS_TYPE_COPY_DEPLOYMENT_FINISHED } from "@app/models"
-import { deploymentUrl, deploymentWsUrl } from "@app/routes"
-import useTranslation from "next-translate/useTranslation"
-import { useRouter } from "next/router"
-import { useRef } from "react"
-import useConfirmation from "./use-confirmation"
-import useWebSocket from "./use-websocket"
+import { DyoConfirmationModal, DyoConfirmationModalConfig } from '@app/elements/dyo-modal'
+import { CheckDeploymentCopyResponse, CopyDeploymentResponse } from '@app/models'
+import { deploymentCopyUrl } from '@app/routes'
+import useTranslation from 'next-translate/useTranslation'
+import useConfirmation from './use-confirmation'
 
-const TIMEOUT_MS = 5000
-
-export type DeploymentCopyTrigger = (id: string) => Promise<string>
+export type DeploymentCopyTrigger = (productId: string, versionId: string, deploymentId: string) => Promise<string>
 
 export interface DeploymentCopyHook {
   confirmationModal: DyoConfirmationModalConfig
   copy: DeploymentCopyTrigger
 }
 
-interface State {
-  resolve: (id: string) => void
-  reject: (reason?: any) => void
-  timeout: NodeJS.Timeout
-}
-
-const useDeploymentCopy = (productId: string, versionId: string, deploymentId: string): DeploymentCopyHook => {
-  const state = useRef<State | undefined>(undefined)
-
-  const router = useRouter()
+const useDeploymentCopy = (): DeploymentCopyHook => {
   const [confirmationModal, confirmOverwrite] = useConfirmation()
-  const deploymentSock = useWebSocket(deploymentWsUrl(productId, versionId, deploymentId))
 
-  const createTimeout = () => {
-    return setTimeout(() => {
-      if (state === undefined) {
+  const performCopy = async (productId, versionId, deploymentId) => {
+    const res = await fetch(deploymentCopyUrl(productId, versionId, deploymentId), {
+      method: 'POST',
+    })
+    if (!res.ok) {
+      throw 'Failed to copy deployment!'
+    }
+
+    const copy = (await res.json()) as CopyDeploymentResponse
+
+    return copy.id
+  }
+
+  const copy = (productId, versionId, deploymentId): Promise<string> =>
+    new Promise(async (resolve, reject) => {
+      const res = await fetch(deploymentCopyUrl(productId, versionId, deploymentId))
+      if (!res.ok) {
+        reject('Failed to check deployment copy')
         return
       }
 
-      state.current.reject()
-      state.current = undefined
-    }, TIMEOUT_MS)
-  }
-
-  const startTimeout = (): NodeJS.Timeout | null => {
-    if (state === undefined) {
-      return null
-    }
-
-    state.current.timeout = createTimeout()
-  }
-
-  deploymentSock.on(WS_TYPE_COPY_DEPLOYMENT_CHECK_FINISHED, (message: DeploymentCopyCheckFinishedMessage) => {
-    if (state === undefined) {
-      return
-    }
-
-    clearTimeout(state.current.timeout)
-
-    if (message.overwritesId === null) {
-      deploymentSock.send(WS_TYPE_COPY_DEPLOYMENT, {
-        id: message.id
-      } as DeploymentCopyMessage)
-
-      startTimeout()
-    } else {
-      confirmOverwrite(() => {
-        deploymentSock.send(WS_TYPE_COPY_DEPLOYMENT, {
-          id: message.id
-        } as DeploymentCopyMessage)
-        
-        startTimeout()
-      }, {
-        onCanceled: () => {
-          state.current.reject()
-          state.current = undefined
-        }
-      })
-    }
-  })
-
-  deploymentSock.on(WS_TYPE_COPY_DEPLOYMENT_FINISHED, (message: DeploymentCopyFinishedMessage) => {
-    if (state === undefined) {
-      return
-    }
-
-    clearTimeout(state.current.timeout)
-
-    state.current.resolve(message.copiedId)
-    state.current = undefined
-
-    router.push(deploymentUrl(productId, versionId, message.copiedId))
-  })
-
-  const copy = (id: string) => {
-    return new Promise<string>((resolve, reject) => {
-      if (state !== undefined) {
-        reject()
-        return
-      }
-
-      deploymentSock.send(WS_TYPE_COPY_DEPLOYMENT_CHECK, {
-        id
-      } as DeploymentCopyCheckMessage)
-
-      state.current = {
-        resolve,
-        reject,
-        timeout: createTimeout()
+      const checkCopy = (await res.json()) as CheckDeploymentCopyResponse
+      if (checkCopy.pendingDeployment) {
+        confirmOverwrite(
+          () => {
+            resolve(performCopy(productId, versionId, deploymentId))
+          },
+          {
+            onCanceled: () => {
+              reject()
+            },
+          },
+        )
+      } else {
+        resolve(performCopy(productId, versionId, deploymentId))
       }
     })
-  }
 
   return {
-    copy,
-    confirmationModal
+    copy: copy,
+    confirmationModal,
   }
 }
 
@@ -122,16 +65,18 @@ export interface DeploymentCopyModalProps {
 export const DeploymentCopyModal = (props: DeploymentCopyModalProps) => {
   const { confirmationModal } = props
 
-  const { t } = useTranslation('deployments')
+  const { t } = useTranslation('common')
 
-  return <DyoConfirmationModal
-    config={confirmationModal}
-    title={t('copyConflictTitle')}
-    description={t('copyConflictContent')}
-    confirmText={t('continue')}
-    className="w-1/4"
-    confirmColor="bg-error-red"
-  />
+  return (
+    <DyoConfirmationModal
+      config={confirmationModal}
+      title={t('deploymentCopyConflictTitle')}
+      description={t('deploymentCopyConflictContent')}
+      confirmText={t('continue')}
+      className="w-1/4"
+      confirmColor="bg-error-red"
+    />
+  )
 }
 
 export default useDeploymentCopy

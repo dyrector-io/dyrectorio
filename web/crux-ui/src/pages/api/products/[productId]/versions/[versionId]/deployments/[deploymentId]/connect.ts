@@ -1,9 +1,5 @@
 import { Logger } from '@app/logger'
 import {
-  DeploymentCopyCheckFinishedMessage,
-  DeploymentCopyCheckMessage,
-  DeploymentCopyFinishedMessage,
-  DeploymentCopyMessage,
   DeploymentEventMessage,
   DeploymentGetSecretListMessage,
   DeploymentSecretListMessage,
@@ -12,10 +8,6 @@ import {
   PatchDeploymentEnvMessage,
   PatchInstanceMessage,
   StartDeploymentMessage,
-  WS_TYPE_COPY_DEPLOYMENT,
-  WS_TYPE_COPY_DEPLOYMENT_CHECK,
-  WS_TYPE_COPY_DEPLOYMENT_CHECK_FINISHED,
-  WS_TYPE_COPY_DEPLOYMENT_FINISHED,
   WS_TYPE_DEPLOYMENT_ENV_UPDATED,
   WS_TYPE_DEPLOYMENT_EVENT,
   WS_TYPE_DEPLOYMENT_EVENT_LIST,
@@ -168,36 +160,6 @@ const onGetSecrets = async (
   } as DeploymentSecretListMessage)
 }
 
-const onCopyCheck = async (
-  endpoint: WsEndpoint,
-  connection: WsConnection,
-  message: WsMessage<DeploymentCopyCheckMessage>,
-) => {
-  const res = await cruxFromConnection(connection).deployments.checkCopy(
-    message.payload.id,
-  )
-
-  connection.send(WS_TYPE_COPY_DEPLOYMENT_CHECK_FINISHED, {
-    id: message.payload.id,
-    overwritesId: res
-  } as DeploymentCopyCheckFinishedMessage)
-}
-
-const onCopy = async (
-  endpoint: WsEndpoint,
-  connection: WsConnection,
-  message: WsMessage<DeploymentCopyMessage>,
-) => {
-  const res = await cruxFromConnection(connection).deployments.copyDeployment(
-    message.payload.id,
-  )
-
-  connection.send(WS_TYPE_COPY_DEPLOYMENT_FINISHED, {
-    id: message.payload.id,
-    copiedId: res
-  } as DeploymentCopyFinishedMessage)
-}
-
 export default routedWebSocketEndpoint(
   logger,
   [
@@ -207,8 +169,6 @@ export default routedWebSocketEndpoint(
     [WS_TYPE_PATCH_DEPLOYMENT_ENV, onPatchDeploymentEnvironment],
     [WS_TYPE_GET_INSTANCE, onGetInstance],
     [WS_TYPE_GET_DEPLOYMENT_SECRETS, onGetSecrets],
-    [WS_TYPE_COPY_DEPLOYMENT_CHECK, onCopyCheck],
-    [WS_TYPE_COPY_DEPLOYMENT, onCopy],
   ],
   [useWebsocketErrorMiddleware],
   {

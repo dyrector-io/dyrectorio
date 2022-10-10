@@ -8,6 +8,7 @@ import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoList } from '@app/elements/dyo-list'
 import DyoModal from '@app/elements/dyo-modal'
+import useDeploymentCopy, { DeploymentCopyModal } from '@app/hooks/use-deployment-copy'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import { Deployment, deploymentIsCopyable, DeploymentStatus, DEPLOYMENT_STATUS_VALUES } from '@app/models'
 import { deploymentUrl, nodeUrl, productUrl, ROUTE_DEPLOYMENTS, versionUrl } from '@app/routes'
@@ -30,6 +31,8 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
   const { deployments } = props
   const { t } = useTranslation('deployments')
   const router = useRouter()
+
+  const { confirmationModal: copyModal, copy: copyDeployment } = useDeploymentCopy()
 
   const [showInfo, setShowInfo] = useState<Deployment>(null)
 
@@ -62,8 +65,10 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
     clsx('rounded-tr-lg', defaultHeaderClass),
   ]
 
-  const onCopyDeployment = (deployment: Deployment) => {
-    
+  const onCopyDeployment = async (deployment: Deployment) => {
+    const newId = await copyDeployment(deployment.productId, deployment.versionId, deployment.id)
+
+    router.push(deploymentUrl(deployment.productId, deployment.versionId, newId))
   }
 
   const itemTemplate = (item: Deployment) => /* eslint-disable react/jsx-key */ [
@@ -156,6 +161,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
           <p className="text-bright mt-8 break-all overflow-y-auto">{showInfo.note}</p>
         </DyoModal>
       )}
+      <DeploymentCopyModal confirmationModal={copyModal} />
     </Layout>
   )
 }

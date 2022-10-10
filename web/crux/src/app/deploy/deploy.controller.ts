@@ -1,7 +1,6 @@
 import { Body, Controller, UseGuards } from '@nestjs/common'
 import { concatAll, from, Observable } from 'rxjs'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
-import { toTimestamp } from 'src/domain/utils'
 import { Empty } from 'src/grpc/protobuf/proto/agent'
 import { ListSecretsResponse } from 'src/grpc/protobuf/proto/common'
 import {
@@ -98,15 +97,10 @@ export default class DeployController implements CruxDeploymentController {
   }
 
   async checkDeploymentCopy(request: IdRequest): Promise<DeploymentCopyResponse> {
-    return {
-      overwriteId: undefined
-    }
+    return this.service.checkDeploymentCopy(request)
   }
 
   async copyDeployment(request: IdRequest): Promise<CreateEntityResponse> {
-    return {
-      id: "abcd",
-      createdAt: toTimestamp(new Date())
-    }
+    return this.service.copyDeployment(request)
   }
 }

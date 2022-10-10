@@ -68,6 +68,14 @@ export type UpdateDeployment = {
   prefix: string
 }
 
+export type CheckDeploymentCopyResponse = {
+  pendingDeployment?: string
+}
+
+export type CopyDeploymentResponse = {
+  id: string
+}
+
 // ws
 
 export const WS_TYPE_PATCH_DEPLOYMENT_ENV = 'patch-deployment-env'
@@ -127,28 +135,7 @@ export type DeploymentSecretListMessage = {
   keys: string[]
 }
 
-export const WS_TYPE_COPY_DEPLOYMENT_CHECK = 'check-deployment-copy'
-export type DeploymentCopyCheckMessage = {
-  id: string
-}
-
-export const WS_TYPE_COPY_DEPLOYMENT_CHECK_FINISHED = 'check-deployment-copy-finished'
-export type DeploymentCopyCheckFinishedMessage = {
-  id: string
-  overwritesId: string | null
-}
-
-export const WS_TYPE_COPY_DEPLOYMENT = 'deployment-copy'
-export type DeploymentCopyMessage = {
-  id: string
-}
-
-export const WS_TYPE_COPY_DEPLOYMENT_FINISHED = 'deployment-copy-finished'
-export type DeploymentCopyFinishedMessage = {
-  id: string
-  copiedId: string
-}
-
 export const deploymentIsMutable = (status: DeploymentStatus) => status === 'preparing' || status === 'failed'
 
-export const deploymentIsCopyable = (status: DeploymentStatus) => status === 'failed' || status === 'successful'
+export const deploymentIsCopyable = (status: DeploymentStatus) =>
+  status === 'failed' || status === 'successful' || status === 'preparing'

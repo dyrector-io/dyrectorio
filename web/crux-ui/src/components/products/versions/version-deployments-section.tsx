@@ -5,6 +5,7 @@ import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoList } from '@app/elements/dyo-list'
 import DyoModal from '@app/elements/dyo-modal'
+import useDeploymentCopy, { DeploymentCopyModal } from '@app/hooks/use-deployment-copy'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
@@ -44,6 +45,8 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   const { t } = useTranslation('versions')
 
   const router = useRouter()
+
+  const { confirmationModal: copyModal, copy: copyDeployment } = useDeploymentCopy()
 
   const [showInfo, setShowInfo] = useState<DeploymentByVersion>(null)
 
@@ -86,8 +89,10 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   const onDeploy = (deployment: DeploymentByVersion) =>
     router.push(deploymentDeployUrl(product.id, version.id, deployment.id))
 
-  const onCopyDeployment = (deployment: DeploymentByVersion) => {
+  const onCopyDeployment = async (deployment: DeploymentByVersion) => {
+    const newId = await copyDeployment(product.id, version.id, deployment.id)
 
+    router.push(deploymentUrl(product.id, version.id, newId))
   }
 
   const headers = [
@@ -204,6 +209,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
           <p className="text-bright mt-8 break-all overflow-y-auto">{showInfo.note}</p>
         </DyoModal>
       )}
+      <DeploymentCopyModal confirmationModal={copyModal} />
     </>
   )
 }
