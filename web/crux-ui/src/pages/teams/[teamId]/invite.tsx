@@ -2,11 +2,10 @@ import { SingleFormLayout } from '@app/components/layout'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoLabel } from '@app/elements/dyo-label'
-import { notFoundError } from '@app/error-responses'
 import { defaultApiErrorHandler, defaultTranslator } from '@app/errors'
 import { DyoApiError, UserMetaTeam } from '@app/models'
-import { ROUTE_INDEX, teamAcceptInviteApiUrl } from '@app/routes'
-import { isDyoApiError, withContextAuthorization } from '@app/utils'
+import { ROUTE_404, ROUTE_INDEX, teamAcceptInviteApiUrl } from '@app/routes'
+import { isDyoApiError, redirectTo, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
@@ -97,7 +96,7 @@ const getPageServerSideProps = async (context: NextPageContext) => {
     const meta = await cruxFromContext(context).teams.getUserMeta()
     team = meta.invitations.find(it => it.id === teamId) ?? null
     if (!team) {
-      throw notFoundError('teamId', 'Team not found', teamId)
+      return redirectTo(ROUTE_404)
     }
 
     if (accept) {
