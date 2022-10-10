@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common'
 import { finalize, Observable, Subject, throwError, timeout } from 'rxjs'
 import { AlreadyExistsException, InternalException } from 'src/exception/errors'
-import { AgentCommand } from 'src/grpc/protobuf/proto/agent'
+import { AgentCommand, AgentInfo } from 'src/grpc/protobuf/proto/agent'
 import { ListSecretsResponse } from 'src/grpc/protobuf/proto/common'
 import { DeploymentProgressMessage, NodeConnectionStatus, NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
@@ -27,14 +27,13 @@ export class Agent {
 
   constructor(
     connection: GrpcNodeConnection,
+    info: AgentInfo,
     private readonly eventChannel: Subject<NodeEventMessage>,
-    version?: string,
-    publicKey?: string,
   ) {
     this.id = connection.nodeId
     this.address = connection.address
-    this.version = version
-    this.publicKey = publicKey
+    this.version = info.version
+    this.publicKey = info.publicKey
   }
 
   getConnectionStatus(): NodeConnectionStatus {
