@@ -28,32 +28,35 @@ const useDeploymentCopy = (): DeploymentCopyHook => {
   }
 
   const copy = (productId, versionId, deploymentId): Promise<string> =>
-    new Promise(async (resolve, reject) => {
-      const res = await fetch(deploymentCopyUrl(productId, versionId, deploymentId))
-      if (!res.ok) {
-        reject('Failed to check deployment copy')
-        return
-      }
-
-      const checkCopy = (await res.json()) as CheckDeploymentCopyResponse
-      if (checkCopy.pendingDeployment) {
-        confirmOverwrite(
-          () => {
-            resolve(performCopy(productId, versionId, deploymentId))
-          },
-          {
-            onCanceled: () => {
-              reject()
-            },
-          },
-        )
-      } else {
-        resolve(performCopy(productId, versionId, deploymentId))
-      }
-    })
+    fetch(deploymentCopyUrl(productId, versionId, deploymentId))
+      .then(res => {
+        if (!res.ok) {
+          throw 'Failed to check deployment copy'
+        }
+        return res.json()
+      })
+      .then(
+        (checkCopy: CheckDeploymentCopyResponse) =>
+          new Promise((resolve, reject) => {
+            if (checkCopy.pendingDeployment) {
+              confirmOverwrite(
+                () => {
+                  resolve(performCopy(productId, versionId, deploymentId))
+                },
+                {
+                  onCanceled: () => {
+                    reject()
+                  },
+                },
+              )
+            } else {
+              resolve(performCopy(productId, versionId, deploymentId))
+            }
+          }),
+      )
 
   return {
-    copy: copy,
+    copy,
     confirmationModal,
   }
 }
