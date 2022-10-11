@@ -4,11 +4,11 @@ import { deploymentCopyUrl } from '@app/routes'
 import useTranslation from 'next-translate/useTranslation'
 import useConfirmation from './use-confirmation'
 
-export type DeploymentCopyTrigger = (productId: string, versionId: string, deploymentId: string) => Promise<string>
+export type DeploymentCopyFunc = (productId: string, versionId: string, deploymentId: string) => Promise<string>
 
 export interface DeploymentCopyHook {
   confirmationModal: DyoConfirmationModalConfig
-  copy: DeploymentCopyTrigger
+  copy: DeploymentCopyFunc
 }
 
 const useDeploymentCopy = (): DeploymentCopyHook => {
