@@ -141,7 +141,7 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
     },
   })
 
-  const [editor, asd] = useEditorState(versionSock)
+  const editor = useEditorState(versionSock)
 
   const registriesSock = useWebSocket(WS_REGISTRIES, {
     onOpen: () => refreshImageTags(registriesSock, images),

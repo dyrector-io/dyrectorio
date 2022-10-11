@@ -10,7 +10,7 @@ import {
   WS_TYPE_EDITOR_JOINED,
   WS_TYPE_EDITOR_LEFT,
   WS_TYPE_INPUT_BLURED,
-  WS_TYPE_INPUT_FOCUSED
+  WS_TYPE_INPUT_FOCUSED,
 } from '@app/models'
 import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 import { useState } from 'react'
@@ -47,7 +47,7 @@ export const selectInputEditorsForItem = (state: EditorState, itemId: string): I
   return result
 }
 
-const useEditorState = (sock: WebSocketClientEndpoint): [EditorState] => {
+const useEditorState = (sock: WebSocketClientEndpoint): EditorState => {
   const [me, setMe] = useState<Editor>(null)
   const [editors, setEditors] = useState<Editor[]>([])
 
@@ -104,12 +104,10 @@ const useEditorState = (sock: WebSocketClientEndpoint): [EditorState] => {
     setEditors(newEditors)
   })
 
-  return [
-    {
-      me,
-      editors,
-    },
-  ]
+  return {
+    me,
+    editors,
+  }
 }
 
 export default useEditorState

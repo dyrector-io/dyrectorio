@@ -45,7 +45,7 @@ const EditImageConfig = (props: EditImageConfigProps) => {
       environment,
     })
 
-  const onSecretSubmit = (secrets: Secrets) => {
+  const onSecretsChange = (secrets: Secrets) => {
     sendPatch({
       secrets,
     })
@@ -77,11 +77,13 @@ const EditImageConfig = (props: EditImageConfigProps) => {
         onChange={onEnvChange}
         hint={{ hintValidation: sensitiveKeyRule, hintText: t('sensitiveKey') }}
       />
+
       <SecretKeyOnlyInput
         disabled={disabled}
         heading={t('secrets').toUpperCase()}
         items={config.secrets ?? []}
-        onSubmit={onSecretSubmit}
+        editorOptions={editorOptions}
+        onChange={onSecretsChange}
       />
     </>
   )

@@ -1,5 +1,4 @@
 import { ContainerConfig } from './container'
-import { InputEditors } from './editor'
 import { RegistryImages } from './registry'
 
 export type VersionImage = {

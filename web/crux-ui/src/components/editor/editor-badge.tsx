@@ -19,6 +19,7 @@ const EditorBadge = (props: EditorBadgeProps) => {
   return (
     <span
       className={clsx('flex justify-center items-center rounded-full font-bold text-dark text-xl', className)}
+      title={editor.name}
       style={style}
     >
       {initialsOf(editor.name)}

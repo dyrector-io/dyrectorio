@@ -101,7 +101,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
     onError: onWsError,
   })
 
-  const [editor] = useEditorState(sock)
+  const editor = useEditorState(sock)
 
   sock.on(WS_TYPE_DEPLOYMENT_ENV_UPDATED, (message: DeploymentEnvUpdatedMessage) => {
     setDeployment({
