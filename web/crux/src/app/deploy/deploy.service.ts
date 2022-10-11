@@ -10,7 +10,7 @@ import {
   AccessRequest,
   CreateDeploymentRequest,
   CreateEntityResponse,
-  DeploymentCopyResponse,
+  DeploymentCheckCopyResponse,
   DeploymentDetailsResponse,
   DeploymentEditEventMessage,
   DeploymentEventListResponse,
@@ -481,7 +481,7 @@ export default class DeployService {
     return lastValueFrom(watcher)
   }
 
-  async checkDeploymentCopy(request: IdRequest): Promise<DeploymentCopyResponse> {
+  async checkDeploymentCopy(request: IdRequest): Promise<DeploymentCheckCopyResponse> {
     const deployment = await this.prisma.deployment.findFirstOrThrow({
       where: {
         id: request.id,
@@ -494,14 +494,9 @@ export default class DeployService {
       nodeId: deployment.nodeId,
       prefix: deployment.prefix,
     })
-    if (preparing) {
-      return {
-        overwriteId: preparing,
-      }
-    }
 
     return {
-      overwriteId: undefined,
+      overwriteId: preparing,
     }
   }
 

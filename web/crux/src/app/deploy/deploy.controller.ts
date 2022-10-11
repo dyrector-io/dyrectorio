@@ -9,7 +9,7 @@ import {
   CreateEntityResponse,
   CruxDeploymentController,
   CruxDeploymentControllerMethods,
-  DeploymentCopyResponse,
+  DeploymentCheckCopyResponse,
   DeploymentDetailsResponse,
   DeploymentEditEventMessage,
   DeploymentEventListResponse,
@@ -96,7 +96,7 @@ export default class DeployController implements CruxDeploymentController {
     return await this.service.getDeploymentList(request)
   }
 
-  async checkDeploymentCopy(request: IdRequest): Promise<DeploymentCopyResponse> {
+  async checkDeploymentCopy(request: IdRequest): Promise<DeploymentCheckCopyResponse> {
     return this.service.checkDeploymentCopy(request)
   }
 

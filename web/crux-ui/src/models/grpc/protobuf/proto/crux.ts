@@ -1177,7 +1177,7 @@ export interface DeploymentListSecretsRequest {
   instanceId: string
 }
 
-export interface DeploymentCopyResponse {
+export interface DeploymentCheckCopyResponse {
   overwriteId?: string | undefined
 }
 
@@ -8279,20 +8279,22 @@ export const DeploymentListSecretsRequest = {
   },
 }
 
-const baseDeploymentCopyResponse: object = {}
+const baseDeploymentCheckCopyResponse: object = {}
 
-export const DeploymentCopyResponse = {
-  encode(message: DeploymentCopyResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+export const DeploymentCheckCopyResponse = {
+  encode(message: DeploymentCheckCopyResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.overwriteId !== undefined) {
       writer.uint32(802).string(message.overwriteId)
     }
     return writer
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): DeploymentCopyResponse {
+  decode(input: _m0.Reader | Uint8Array, length?: number): DeploymentCheckCopyResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = { ...baseDeploymentCopyResponse } as DeploymentCopyResponse
+    const message = {
+      ...baseDeploymentCheckCopyResponse,
+    } as DeploymentCheckCopyResponse
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -8307,21 +8309,25 @@ export const DeploymentCopyResponse = {
     return message
   },
 
-  fromJSON(object: any): DeploymentCopyResponse {
-    const message = { ...baseDeploymentCopyResponse } as DeploymentCopyResponse
+  fromJSON(object: any): DeploymentCheckCopyResponse {
+    const message = {
+      ...baseDeploymentCheckCopyResponse,
+    } as DeploymentCheckCopyResponse
     message.overwriteId =
       object.overwriteId !== undefined && object.overwriteId !== null ? String(object.overwriteId) : undefined
     return message
   },
 
-  toJSON(message: DeploymentCopyResponse): unknown {
+  toJSON(message: DeploymentCheckCopyResponse): unknown {
     const obj: any = {}
     message.overwriteId !== undefined && (obj.overwriteId = message.overwriteId)
     return obj
   },
 
-  fromPartial<I extends Exact<DeepPartial<DeploymentCopyResponse>, I>>(object: I): DeploymentCopyResponse {
-    const message = { ...baseDeploymentCopyResponse } as DeploymentCopyResponse
+  fromPartial<I extends Exact<DeepPartial<DeploymentCheckCopyResponse>, I>>(object: I): DeploymentCheckCopyResponse {
+    const message = {
+      ...baseDeploymentCheckCopyResponse,
+    } as DeploymentCheckCopyResponse
     message.overwriteId = object.overwriteId ?? undefined
     return message
   },
@@ -10012,8 +10018,9 @@ export const CruxDeploymentService = {
     responseStream: false,
     requestSerialize: (value: IdRequest) => Buffer.from(IdRequest.encode(value).finish()),
     requestDeserialize: (value: Buffer) => IdRequest.decode(value),
-    responseSerialize: (value: DeploymentCopyResponse) => Buffer.from(DeploymentCopyResponse.encode(value).finish()),
-    responseDeserialize: (value: Buffer) => DeploymentCopyResponse.decode(value),
+    responseSerialize: (value: DeploymentCheckCopyResponse) =>
+      Buffer.from(DeploymentCheckCopyResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => DeploymentCheckCopyResponse.decode(value),
   },
   copyDeployment: {
     path: '/crux.CruxDeployment/CopyDeployment',
@@ -10056,7 +10063,7 @@ export interface CruxDeploymentServer extends UntypedServiceImplementation {
   getDeploymentEvents: handleUnaryCall<IdRequest, DeploymentEventListResponse>
   getDeploymentList: handleUnaryCall<AccessRequest, DeploymentListResponse>
   getDeploymentSecrets: handleUnaryCall<DeploymentListSecretsRequest, ListSecretsResponse>
-  checkDeploymentCopy: handleUnaryCall<IdRequest, DeploymentCopyResponse>
+  checkDeploymentCopy: handleUnaryCall<IdRequest, DeploymentCheckCopyResponse>
   copyDeployment: handleUnaryCall<IdRequest, CreateEntityResponse>
   startDeployment: handleServerStreamingCall<IdRequest, DeploymentProgressMessage>
   subscribeToDeploymentEditEvents: handleServerStreamingCall<ServiceIdRequest, DeploymentEditEventMessage>
@@ -10197,18 +10204,18 @@ export interface CruxDeploymentClient extends Client {
   ): ClientUnaryCall
   checkDeploymentCopy(
     request: IdRequest,
-    callback: (error: ServiceError | null, response: DeploymentCopyResponse) => void,
+    callback: (error: ServiceError | null, response: DeploymentCheckCopyResponse) => void,
   ): ClientUnaryCall
   checkDeploymentCopy(
     request: IdRequest,
     metadata: Metadata,
-    callback: (error: ServiceError | null, response: DeploymentCopyResponse) => void,
+    callback: (error: ServiceError | null, response: DeploymentCheckCopyResponse) => void,
   ): ClientUnaryCall
   checkDeploymentCopy(
     request: IdRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: DeploymentCopyResponse) => void,
+    callback: (error: ServiceError | null, response: DeploymentCheckCopyResponse) => void,
   ): ClientUnaryCall
   copyDeployment(
     request: IdRequest,

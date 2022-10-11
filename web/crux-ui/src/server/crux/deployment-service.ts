@@ -19,7 +19,7 @@ import {
   CreateDeploymentRequest,
   CreateEntityResponse,
   CruxDeploymentClient,
-  DeploymentCopyResponse,
+  DeploymentCheckCopyResponse,
   DeploymentDetailsResponse,
   DeploymentEditEventMessage as ProtoDeploymentEditEventMessage,
   DeploymentEventListResponse,
@@ -308,7 +308,7 @@ class DyoDeploymentService {
       accessedBy: this.identity.id,
     } as IdRequest
 
-    const res = await protomisify<IdRequest, DeploymentCopyResponse>(this.client, this.client.checkDeploymentCopy)(
+    const res = await protomisify<IdRequest, DeploymentCheckCopyResponse>(this.client, this.client.checkDeploymentCopy)(
       IdRequest,
       req,
     )

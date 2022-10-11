@@ -1166,7 +1166,7 @@ export interface DeploymentListSecretsRequest {
   instanceId: string
 }
 
-export interface DeploymentCopyResponse {
+export interface DeploymentCheckCopyResponse {
   overwriteId?: string | undefined
 }
 
@@ -3581,17 +3581,19 @@ export const DeploymentListSecretsRequest = {
   },
 }
 
-const baseDeploymentCopyResponse: object = {}
+const baseDeploymentCheckCopyResponse: object = {}
 
-export const DeploymentCopyResponse = {
-  fromJSON(object: any): DeploymentCopyResponse {
-    const message = { ...baseDeploymentCopyResponse } as DeploymentCopyResponse
+export const DeploymentCheckCopyResponse = {
+  fromJSON(object: any): DeploymentCheckCopyResponse {
+    const message = {
+      ...baseDeploymentCheckCopyResponse,
+    } as DeploymentCheckCopyResponse
     message.overwriteId =
       object.overwriteId !== undefined && object.overwriteId !== null ? String(object.overwriteId) : undefined
     return message
   },
 
-  toJSON(message: DeploymentCopyResponse): unknown {
+  toJSON(message: DeploymentCheckCopyResponse): unknown {
     const obj: any = {}
     message.overwriteId !== undefined && (obj.overwriteId = message.overwriteId)
     return obj
@@ -4248,7 +4250,7 @@ export interface CruxDeploymentClient {
     ...rest: any
   ): Observable<ListSecretsResponse>
 
-  checkDeploymentCopy(request: IdRequest, metadata: Metadata, ...rest: any): Observable<DeploymentCopyResponse>
+  checkDeploymentCopy(request: IdRequest, metadata: Metadata, ...rest: any): Observable<DeploymentCheckCopyResponse>
 
   copyDeployment(request: IdRequest, metadata: Metadata, ...rest: any): Observable<CreateEntityResponse>
 
@@ -4319,7 +4321,7 @@ export interface CruxDeploymentController {
     request: IdRequest,
     metadata: Metadata,
     ...rest: any
-  ): Promise<DeploymentCopyResponse> | Observable<DeploymentCopyResponse> | DeploymentCopyResponse
+  ): Promise<DeploymentCheckCopyResponse> | Observable<DeploymentCheckCopyResponse> | DeploymentCheckCopyResponse
 
   copyDeployment(
     request: IdRequest,

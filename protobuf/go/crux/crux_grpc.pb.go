@@ -1567,7 +1567,7 @@ type CruxDeploymentClient interface {
 	GetDeploymentEvents(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*DeploymentEventListResponse, error)
 	GetDeploymentList(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*DeploymentListResponse, error)
 	GetDeploymentSecrets(ctx context.Context, in *DeploymentListSecretsRequest, opts ...grpc.CallOption) (*common.ListSecretsResponse, error)
-	CheckDeploymentCopy(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*DeploymentCopyResponse, error)
+	CheckDeploymentCopy(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*DeploymentCheckCopyResponse, error)
 	CopyDeployment(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error)
 	StartDeployment(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (CruxDeployment_StartDeploymentClient, error)
 	SubscribeToDeploymentEditEvents(ctx context.Context, in *ServiceIdRequest, opts ...grpc.CallOption) (CruxDeployment_SubscribeToDeploymentEditEventsClient, error)
@@ -1662,8 +1662,8 @@ func (c *cruxDeploymentClient) GetDeploymentSecrets(ctx context.Context, in *Dep
 	return out, nil
 }
 
-func (c *cruxDeploymentClient) CheckDeploymentCopy(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*DeploymentCopyResponse, error) {
-	out := new(DeploymentCopyResponse)
+func (c *cruxDeploymentClient) CheckDeploymentCopy(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*DeploymentCheckCopyResponse, error) {
+	out := new(DeploymentCheckCopyResponse)
 	err := c.cc.Invoke(ctx, "/crux.CruxDeployment/CheckDeploymentCopy", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -1757,7 +1757,7 @@ type CruxDeploymentServer interface {
 	GetDeploymentEvents(context.Context, *IdRequest) (*DeploymentEventListResponse, error)
 	GetDeploymentList(context.Context, *AccessRequest) (*DeploymentListResponse, error)
 	GetDeploymentSecrets(context.Context, *DeploymentListSecretsRequest) (*common.ListSecretsResponse, error)
-	CheckDeploymentCopy(context.Context, *IdRequest) (*DeploymentCopyResponse, error)
+	CheckDeploymentCopy(context.Context, *IdRequest) (*DeploymentCheckCopyResponse, error)
 	CopyDeployment(context.Context, *IdRequest) (*CreateEntityResponse, error)
 	StartDeployment(*IdRequest, CruxDeployment_StartDeploymentServer) error
 	SubscribeToDeploymentEditEvents(*ServiceIdRequest, CruxDeployment_SubscribeToDeploymentEditEventsServer) error
@@ -1795,7 +1795,7 @@ func (UnimplementedCruxDeploymentServer) GetDeploymentList(context.Context, *Acc
 func (UnimplementedCruxDeploymentServer) GetDeploymentSecrets(context.Context, *DeploymentListSecretsRequest) (*common.ListSecretsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDeploymentSecrets not implemented")
 }
-func (UnimplementedCruxDeploymentServer) CheckDeploymentCopy(context.Context, *IdRequest) (*DeploymentCopyResponse, error) {
+func (UnimplementedCruxDeploymentServer) CheckDeploymentCopy(context.Context, *IdRequest) (*DeploymentCheckCopyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckDeploymentCopy not implemented")
 }
 func (UnimplementedCruxDeploymentServer) CopyDeployment(context.Context, *IdRequest) (*CreateEntityResponse, error) {
