@@ -289,7 +289,7 @@ export default class AgentService {
       }
     })
 
-    this.logger.log(`Agent key: ${request.publicKey}`)
+    this.logger.debug(`Agent key: ${request.publicKey}`)
 
     this.agents.set(agent.id, agent)
     connection.status().subscribe(it => this.onAgentConnectionStatusChange(agent, it))

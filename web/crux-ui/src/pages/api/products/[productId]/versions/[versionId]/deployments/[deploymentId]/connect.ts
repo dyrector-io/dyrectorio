@@ -6,6 +6,7 @@ import {
   EditorJoinedMessage,
   FetchDeploymentEventsMessage,
   GetInstanceMessage,
+  InputFocusMessage,
   PatchDeploymentEnvMessage,
   PatchInstanceMessage,
   StartDeploymentMessage,
@@ -195,7 +196,7 @@ const onGetSecrets = async (
     instanceId: message.payload.instanceId,
     keys: res.keys,
   } as DeploymentSecretListMessage)
-const onFocusInput = async (endpoint: WsEndpoint, connection: WsConnection, message: WsMessage<ItemFocusMessage>) => {
+const onFocusInput = async (endpoint: WsEndpoint, connection: WsConnection, message: WsMessage<InputFocusMessage>) => {
   const { token } = connection
   const editors = endpoint.services.get(EditorService)
 
@@ -204,7 +205,7 @@ const onFocusInput = async (endpoint: WsEndpoint, connection: WsConnection, mess
   endpoint.sendAllExcept(connection, WS_TYPE_INPUT_FOCUSED, res)
 }
 
-const onBlurInput = async (endpoint: WsEndpoint, connection: WsConnection, message: WsMessage<ItemFocusMessage>) => {
+const onBlurInput = async (endpoint: WsEndpoint, connection: WsConnection, message: WsMessage<InputFocusMessage>) => {
   const { token } = connection
   const editors = endpoint.services.get(EditorService)
 
