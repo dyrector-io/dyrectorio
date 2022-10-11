@@ -166,14 +166,6 @@
 * **(agent):** gRPC communication with core ([#61](https://github.com/dyrector-io/dyrectorio/issues/61))
 * websocket message routing
 
-### Release
-
-* 0.2.1
-
-### Techdept
-
-* add e2e tests ([#105](https://github.com/dyrector-io/dyrectorio/issues/105))
-
 
 <a name="v0.1.1"></a>
 ## [v0.1.1](https://github.com/dyrector-io/dyrectorio/compare/v0.1.0...v0.1.1) (2022-08-03)
@@ -199,10 +191,6 @@
 
 * contributing update, editorconfig and gitattributes
 
-### Cicd
-
-* added codecov
-
 ### Doc
 
 * setup steps & contributing gpg ([#35](https://github.com/dyrector-io/dyrectorio/issues/35))
@@ -210,25 +198,33 @@
 ### Feat
 
 * k8s agent install, with manifests ([#43](https://github.com/dyrector-io/dyrectorio/issues/43))
+* **(crux-ui):** font-family poppins ([#47](https://github.com/dyrector-io/dyrectorio/issues/47))
+* **(crux-ui):** add type as tag to registry-card ([#41](https://github.com/dyrector-io/dyrectorio/issues/41))
+* **(crux-ui):** page specific titles ([#37](https://github.com/dyrector-io/dyrectorio/issues/37))
+* **(crux-ui):** add default registry image ([#36](https://github.com/dyrector-io/dyrectorio/issues/36))
 * display agent version ([#28](https://github.com/dyrector-io/dyrectorio/issues/28))
 
 ### Fix
 
+* **(agent):** swagger double init during testing ([#55](https://github.com/dyrector-io/dyrectorio/issues/55))
+* **(crux-ui):** Auditlog Improvements ([#51](https://github.com/dyrector-io/dyrectorio/issues/51))
 * proto makefile does not work on windows ([#52](https://github.com/dyrector-io/dyrectorio/issues/52))
+* **(crux-ui):** layout and scaling on product card ([#46](https://github.com/dyrector-io/dyrectorio/issues/46))
 * image edit websocket errors ([#44](https://github.com/dyrector-io/dyrectorio/issues/44))
 * tsconfig parsing error in eslintrc
+* **(agent):** agent version contains random space
+* **(crux-ui):** recpatcha badge hides footer ([#34](https://github.com/dyrector-io/dyrectorio/issues/34))
 * eslint errors, and apple silicon readme
 * add pre-commit-linter and add CONTRIBUTING.md
 * add security readme
 * readme and crux `.env` configuration
 
-### Improvement
-
-* remove multiple choice from <DyoChips> component  ([#23](https://github.com/dyrector-io/dyrectorio/issues/23))
-
 ### Refactor
 
 * refactoring panic calls ([#53](https://github.com/dyrector-io/dyrectorio/issues/53))
+* **(agent):** eliminated globals & lint fixes ([#48](https://github.com/dyrector-io/dyrectorio/issues/48))
+* **(crux):** refactor email service ([#50](https://github.com/dyrector-io/dyrectorio/issues/50))
+* **(crux):** use global interceptors ([#45](https://github.com/dyrector-io/dyrectorio/issues/45))
 * Remove config module ([#40](https://github.com/dyrector-io/dyrectorio/issues/40))
 
 ### Merge Requests
@@ -245,25 +241,6 @@
 
 <a name="0.0.1"></a>
 ## 0.0.1 (2022-07-15)
-
-### Add
-
-* tests for json, string in utils; fix: json in utils; fix: remove code duplications ([#22](https://github.com/dyrector-io/dyrectorio/issues/22))
-
-### Ci
-
-* agent pipeline with tests & signing ([#3](https://github.com/dyrector-io/dyrectorio/issues/3))
-* add web-crux workflow
-* add lint to auth, apply suggested linter changes
-* add basic CI functions for frontend, backend, agent and auth services
-
-### Clean
-
-* Makefile cleanup, proto generation refactor
-
-### Docs
-
-* add comments to dev compose and registry v2 client
 
 ### Feat
 
@@ -294,14 +271,6 @@
 * add none as default network mode on images
 * remove unused env variables
 * image search in v2 registries fix: wrong ts-proto version feat: update nestjs
-
-### Improve
-
-* add quick start to general readme
-
-### Initial
-
-* merged repositories into a public one
 
 ### Refactor
 
