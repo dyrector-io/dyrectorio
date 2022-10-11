@@ -4,7 +4,7 @@ import DyoMessage from '@app/elements/dyo-message'
 import DyoRadioButton from '@app/elements/dyo-radio-button'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useTranslation from 'next-translate/useTranslation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 interface EditImageTagsProps {
   disabled?: boolean
@@ -14,7 +14,9 @@ interface EditImageTagsProps {
 }
 
 const EditImageTags = (props: EditImageTagsProps) => {
-  const { disabled, tags, selected, onTagSelected } = props
+  const { disabled, tags, selected: propsSelected, onTagSelected } = props
+
+  const [selected, setSelected] = useState(propsSelected)
 
   const { t } = useTranslation('images')
 
@@ -53,7 +55,10 @@ const EditImageTags = (props: EditImageTagsProps) => {
             disabled={disabled}
             label={it}
             checked={it === selected}
-            onSelect={() => onTagSelected(it)}
+            onSelect={() => {
+              setSelected(it)
+              onTagSelected(it)
+            }}
           />
         ))}
       </div>

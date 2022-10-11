@@ -9,8 +9,7 @@ import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
 import { useState } from 'react'
 import EditImageTags from './images/edit-image-tags'
-import { ImagesActions, ImagesState } from './images/use-images-state'
-import { getImageTags } from './use-images-websocket'
+import { ImagesActions, ImagesState, selectTagsOfImage } from './images/use-images-state'
 
 interface VersionViewListProps {
   state: ImagesState
@@ -114,14 +113,8 @@ const VersionViewList = (props: VersionViewListProps) => {
         >
           <EditImageTags
             selected={tagsModalTarget?.tag ?? ''}
-            tags={getImageTags(imageTags, selectTagsDialog)}
-            onTagSelected={tag => {
-              actions.selectTagForImage(selectTagsDialog, tag)
-              setSelectTagsDialog({
-                ...selectTagsDialog,
-                tag,
-              })
-            }}
+            tags={selectTagsOfImage(state, tagsModalTarget)}
+            onTagSelected={it => actions.selectTagForImage(tagsModalTarget, it)}
           />
         </DyoModal>
       )}

@@ -1,12 +1,5 @@
 import { ContainerConfig } from './container'
-import {
-  Editor,
-  EditorLeftMessage,
-  InputEditors,
-  InputEditorsMessage,
-  InputFocusChangeMessage,
-  InputFocusMessage,
-} from './editor'
+import { InputEditors } from './editor'
 import { RegistryImages } from './registry'
 
 export type VersionImage = {
@@ -23,11 +16,6 @@ export type VersionImage = {
 export type PatchVersionImage = {
   tag?: string
   config?: Partial<ContainerConfig>
-}
-
-export type ImageEditors = {
-  imageId: string
-  inputs: InputEditors[]
 }
 
 // ws
@@ -72,37 +60,4 @@ export type GetImageMessage = {
 }
 
 export const WS_TYPE_IMAGE = 'image'
-export type ImageMessage = VersionImage & {
-  editors: ImageEditors[]
-}
-
-export const WS_TYPE_FETCH_EDITORS = 'fetch-editors'
-export type FetchImageEditorsMessage = {
-  imageId: string
-}
-
-export type ImageEditorsMessage = InputEditorsMessage & {
-  imageId: string
-}
-
-export const WS_TYPE_ALL_IMAGE_EDITORS = 'all-image-editors'
-export type AllImageEditorsMessage = {
-  editors: Editor[]
-  imageEditors: ImageEditorsMessage[]
-}
-
-export type ImageFocusMessage = InputFocusMessage & {
-  imageId: string
-}
-
-export type ImageInputFocusChangeMessage = InputFocusChangeMessage & {
-  imageId: string
-}
-
-export type AffectedImage = {
-  imageId: string
-  affectedInputs: string[]
-}
-export type ImageEditorLeftMessage = EditorLeftMessage & {
-  affectedImages: AffectedImage[]
-}
+export type ImageMessage = VersionImage

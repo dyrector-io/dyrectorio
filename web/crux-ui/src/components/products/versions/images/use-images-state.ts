@@ -1,12 +1,9 @@
+import useEditorState, { EditorState } from '@app/components/editor/use-editor-state'
 import { ViewMode } from '@app/components/shared/view-mode-toggle'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
   AddImagesMessage,
-  AllImageEditorsMessage,
   DeleteImageMessage,
-  Editor,
-  EditorJoinedMessage,
-  EditorLeftMessage,
   FetchImageTagsMessage,
   GetImageMessage,
   ImageMessage,
@@ -23,10 +20,6 @@ import {
   VersionImage,
   VersionSectionsState,
   WS_TYPE_ADD_IMAGES,
-  WS_TYPE_ALL_IMAGE_EDITORS,
-  WS_TYPE_EDITOR_IDENTITY,
-  WS_TYPE_EDITOR_JOINED,
-  WS_TYPE_EDITOR_LEFT,
   WS_TYPE_GET_IMAGE,
   WS_TYPE_IMAGE,
   WS_TYPE_IMAGES_ADDED,
@@ -63,8 +56,7 @@ export type ImagesState = {
   section: VersionSection
   images: VersionImage[]
   tags: ImageTagsMap
-  me: Editor
-  editors: Editor[]
+  editor: EditorState
   viewMode: ViewMode
   versionSock: WebSocketClientEndpoint
 }
@@ -134,9 +126,22 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
   const [addSection, setAddSection] = useState<VersionAddSection>('none')
   const [images, setImages] = useState(version.images)
   const [tags, setTags] = useState<ImageTagsMap>({})
-  const [me, setMe] = useState<Editor>(null)
-  const [editors, setEditors] = useState<Editor[]>([])
-  const [viewMode, setViewMode] = useState<ViewMode>('tile')
+  const [viewMode, setViewMode] = useState<ViewMode>('list')
+
+  const versionSock = useWebSocket(versionWsUrl(productId, version.id), {
+    onSend: message => {
+      if (message.type === WS_TYPE_PATCH_IMAGE) {
+        setSaving(true)
+      }
+    },
+    onReceive: message => {
+      if (WS_TYPE_IMAGE_UPDATED === message.type) {
+        setSaving(false)
+      }
+    },
+  })
+
+  const [editor, asd] = useEditorState(versionSock)
 
   const registriesSock = useWebSocket(WS_REGISTRIES, {
     onOpen: () => refreshImageTags(registriesSock, images),
@@ -155,21 +160,6 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
     setTags(newTags)
   })
 
-  const versionSock = useWebSocket(versionWsUrl(productId, version.id), {
-    onSend: message => {
-      if (message.type === WS_TYPE_PATCH_IMAGE) {
-        setSaving(true)
-      }
-    },
-    onReceive: message => {
-      if (WS_TYPE_IMAGE_UPDATED === message.type) {
-        setSaving(false)
-      }
-    },
-  })
-
-  versionSock.on(WS_TYPE_EDITOR_IDENTITY, (message: EditorJoinedMessage) => setMe(message))
-
   versionSock.on(WS_TYPE_IMAGES_WERE_REORDERED, (message: ImagesWereReorderedMessage) => {
     const ids = [...message]
 
@@ -187,13 +177,11 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
   versionSock.on(WS_TYPE_IMAGES_ADDED, (message: ImagesAddedMessage) => {
     const newImages = [...images, ...message.images]
     setImages(newImages)
-    refreshImageTags(registriesSock, message.images)
   })
 
   versionSock.on(WS_TYPE_IMAGE, (message: ImageMessage) => {
     const newImages = [...images, message]
     setImages(newImages)
-    refreshImageTags(registriesSock, [message])
   })
 
   versionSock.on(WS_TYPE_IMAGE_UPDATED, (message: ImageUpdateMessage) => {
@@ -217,24 +205,6 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
   versionSock.on(WS_TYPE_IMAGE_DELETED, (message: DeleteImageMessage) =>
     setImages(images.filter(it => it.id !== message.imageId)),
   )
-
-  versionSock.on(WS_TYPE_EDITOR_JOINED, (message: EditorJoinedMessage) => {
-    if (editors.find(it => it.id === message.id)) {
-      return
-    }
-
-    setEditors([...editors, message])
-  })
-
-  versionSock.on(WS_TYPE_EDITOR_LEFT, (message: EditorLeftMessage) => {
-    if (!editors.find(it => it.id === message.userId)) {
-      return
-    }
-
-    setEditors([...editors].filter(it => it.id !== message.userId))
-  })
-
-  versionSock.on(WS_TYPE_ALL_IMAGE_EDITORS, (message: AllImageEditorsMessage) => setEditors(message.editors))
 
   const selectAddSection = (newAddSection: VersionAddSection) => {
     setAddSection(newAddSection)
@@ -308,7 +278,7 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
   }
 
   return [
-    { addSection, section, images, me, editors, saving, tags, viewMode, versionSock },
+    { addSection, section, images, editor, saving, tags, viewMode, versionSock },
     {
       selectAddSection,
       discardAddSection,

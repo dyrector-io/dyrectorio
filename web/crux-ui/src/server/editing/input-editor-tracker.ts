@@ -1,6 +1,6 @@
 import { InputEditors } from '@app/models'
 
-class EditorTracker {
+class InputEditorTracker {
   private editors: Map<string, Set<string>> = new Map() // inputId to connectionTokens
 
   getEditors(): InputEditors[] {
@@ -65,4 +65,4 @@ class EditorTracker {
   }
 }
 
-export default EditorTracker
+export default InputEditorTracker

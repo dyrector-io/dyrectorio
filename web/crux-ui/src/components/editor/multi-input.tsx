@@ -1,23 +1,23 @@
 import { DyoInput, DyoInputProps } from '@app/elements/dyo-input'
 import { CSSProperties } from 'react'
-import useEditorState, { EditorOptions } from './use-editor-state'
+import useMultiInputState, { MultiInputEditorOptions } from './use-multi-input-state'
 
-interface EditorInputProps extends Omit<DyoInputProps, 'id' | 'onFocus' | 'onBlur' | 'onChange'> {
+interface MultiInputProps extends Omit<DyoInputProps, 'id' | 'onFocus' | 'onBlur' | 'onChange'> {
   id: string
   disabled?: boolean
-  options: EditorOptions
+  editorOptions: MultiInputEditorOptions
   onPatch: (value: string) => void
 }
 
-const EditorInput = (props: EditorInputProps) => {
-  const { id, disabled, options, style: propsStyle, value, onPatch, ...forwaredProps } = props
+const MultiInput = (props: MultiInputProps) => {
+  const { id, disabled, editorOptions, style: propsStyle, value, onPatch, ...forwaredProps } = props
 
   const onMergeValues = (_: string, local: string) => {
     onPatch(local)
     return local
   }
 
-  const [state, actions] = useEditorState(id, value, options, onMergeValues, disabled)
+  const [state, actions] = useMultiInputState({ id, value, editorOptions, onMergeValues, disabled })
 
   const onChange = (newValue: string) => {
     actions.onChange(newValue)
@@ -36,6 +36,7 @@ const EditorInput = (props: EditorInputProps) => {
   return (
     <DyoInput
       id={id}
+      disabled={disabled}
       value={state.value}
       onFocus={actions.onFocus}
       onBlur={actions.onBlur}
@@ -46,4 +47,4 @@ const EditorInput = (props: EditorInputProps) => {
   )
 }
 
-export default EditorInput
+export default MultiInput

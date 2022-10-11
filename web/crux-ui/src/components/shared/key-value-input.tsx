@@ -8,8 +8,8 @@ import useTranslation from 'next-translate/useTranslation'
 import { useEffect } from 'react'
 import { v4 as uuid } from 'uuid'
 import BaseSchema from 'yup/lib/schema'
-import EditorInput from '../editor/editor-input'
-import { EditorOptions } from '../editor/use-editor-state'
+import MultiInput from '../editor/multi-input'
+import { EditorStateOptions } from '../editor/use-editor-state'
 
 const EMPTY_KEY_VALUE_PAIR = {
   id: uuid(),
@@ -62,7 +62,7 @@ interface KeyValueInputProps {
   className?: string
   heading?: string
   items: UniqueKeyValue[]
-  editorOptions: EditorOptions
+  editorOptions: EditorStateOptions
   onChange: (items: UniqueKeyValue[]) => void
   hint?: { hintValidation: BaseSchema; hintText: string }
 }
@@ -120,11 +120,11 @@ const KeyValueInput = (props: KeyValueInputProps) => {
     return (
       <div key={entry.id} className="flex flex-row flex-grow p-1">
         <div className="w-5/12">
-          <EditorInput
+          <MultiInput
             key={keyId}
             id={keyId}
             disabled={disabled}
-            options={editorOptions}
+            editorOptions={editorOptions}
             className="w-full mr-2"
             grow
             placeholder={t('key')}
@@ -136,11 +136,11 @@ const KeyValueInput = (props: KeyValueInputProps) => {
         </div>
 
         <div className="w-7/12 ml-2">
-          <EditorInput
+          <MultiInput
             key={valueId}
             id={valueId}
             disabled={disabled || valueDisabled}
-            options={editorOptions}
+            editorOptions={editorOptions}
             className="w-full"
             grow
             placeholder={t('value')}

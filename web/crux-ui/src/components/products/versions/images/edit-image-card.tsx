@@ -1,3 +1,4 @@
+import useItemEditorState from '@app/components/editor/use-item-editor-state'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoImgButton from '@app/elements/dyo-img-button'
@@ -22,6 +23,7 @@ interface EditImageCardProps {
 
 const EditImageCard = (props: EditImageCardProps) => {
   const { disabled, image, imagesState, imagesActions } = props
+  const { editor, versionSock } = imagesState
 
   const { t } = useTranslation('images')
 
@@ -29,8 +31,10 @@ const EditImageCard = (props: EditImageCardProps) => {
     image,
     imagesState,
     imagesActions,
-    versionSock: imagesState.versionSock,
+    sock: versionSock,
   })
+
+  const editorState = useItemEditorState(editor, versionSock, image.id)
 
   const { section } = state
   const { selectSection } = actions
@@ -105,14 +109,14 @@ const EditImageCard = (props: EditImageCardProps) => {
             <EditImageConfig
               disabled={disabled}
               config={image.config}
-              editorOptions={state.editor}
+              editorOptions={editorState}
               onPatch={actions.patchImage}
             />
           ) : (
             <EditImageJson
               disabled={disabled}
               config={image.config}
-              editorOptions={state.editor}
+              editorOptions={editorState}
               onPatch={actions.patchImage}
               onParseError={actions.setParseError}
             />

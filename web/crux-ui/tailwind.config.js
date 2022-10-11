@@ -34,9 +34,6 @@ module.exports = {
             boxShadow: {
                 'modal': '0 0 20px 5px rgb(0 0 0 / 0.25)',
             },
-            gridTemplateRows: {
-                '1fr-auto': '1fr auto',
-            },
         },
     },
     variants: {

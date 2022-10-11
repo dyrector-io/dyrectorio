@@ -1,28 +1,13 @@
-import { EditorOptions } from '@app/components/editor/use-editor-state'
 import { DyoConfirmationModalConfig } from '@app/elements/dyo-modal'
 import useConfirmation from '@app/hooks/use-confirmation'
-import useWebSocket from '@app/hooks/use-websocket'
 import {
-  AllImageEditorsMessage,
   ContainerConfig,
   DeleteImageMessage,
-  EditorLeftMessage,
-  InputEditorsMap,
-  InputEditorsMessage,
-  InputFocusMessage,
   PatchImageMessage,
   VersionImage,
-  WS_TYPE_ALL_IMAGE_EDITORS,
-  WS_TYPE_BLUR_INPUT,
   WS_TYPE_DELETE_IMAGE,
-  WS_TYPE_EDITOR_LEFT,
-  WS_TYPE_FOCUS_INPUT,
-  WS_TYPE_INPUT_BLURED,
-  WS_TYPE_INPUT_EDITORS,
-  WS_TYPE_INPUT_FOCUSED,
   WS_TYPE_PATCH_IMAGE,
 } from '@app/models'
-import { WsMessage } from '@app/websockets/common'
 import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 import { useState } from 'react'
 import { ImagesActions, ImagesState, selectTagsOfImage } from './use-images-state'
@@ -33,7 +18,6 @@ export type ImageEditorState = {
   image: VersionImage
   section: ImageEditorSection
   tags: string[]
-  editor: EditorOptions
   parseError: string
   deleteModal: DyoConfirmationModalConfig
   imageEditorSock: WebSocketClientEndpoint
@@ -47,86 +31,21 @@ export type ImageEditorActions = {
   setParseError: (error: Error) => void
 }
 
-export type ImageEditorOptions = {
+export type ImageEditorStateOptions = {
   image: VersionImage
   imagesState: ImagesState
   imagesActions: ImagesActions
-  versionSock: WebSocketClientEndpoint
+  sock: WebSocketClientEndpoint
 }
 
-const transformReceive = (message: WsMessage<any>, imageId: string) => {
-  const { type, payload } = message
+const useImageEditorState = (options: ImageEditorStateOptions): [ImageEditorState, ImageEditorActions] => {
+  const { image, imagesState, imagesActions, sock } = options
 
-  if (type === WS_TYPE_INPUT_FOCUSED || type === WS_TYPE_INPUT_BLURED || WS_TYPE_INPUT_EDITORS) {
-    return payload.imageId === imageId ? message : null
-  }
-
-  if (type === WS_TYPE_ALL_IMAGE_EDITORS) {
-    const msg = message as WsMessage<AllImageEditorsMessage>
-    const imgEditors = msg.payload.imageEditors.find(it => it.imageId === imageId)
-
-    message.type = WS_TYPE_INPUT_EDITORS
-    if (!imgEditors) {
-      return null
-    }
-
-    return {
-      type: WS_TYPE_INPUT_EDITORS,
-      payload: imgEditors,
-    } as WsMessage<InputEditorsMessage>
-  }
-
-  return message
-}
-
-const transformInputFocusMessage = (message: WsMessage<any>, imageId: string) => {
-  const { type } = message
-
-  if (type === WS_TYPE_FOCUS_INPUT || type === WS_TYPE_BLUR_INPUT) {
-    message.payload.imageId = imageId
-    return message as WsMessage<InputFocusMessage>
-  }
-
-  return message
-}
-
-const useImageEditorState = (options: ImageEditorOptions): [ImageEditorState, ImageEditorActions] => {
-  const { image, imagesState, imagesActions, versionSock } = options
-
-  const [section, setSection] = useState<ImageEditorSection>('json')
-  const [editors, setEditors] = useState<InputEditorsMap>({})
+  const [section, setSection] = useState<ImageEditorSection>('config')
   const [deleteModal, confirmDelete] = useConfirmation()
   const [parseError, setParseError] = useState<string>(null)
 
   const tags = selectTagsOfImage(imagesState, image)
-
-  const sock = useWebSocket(versionSock.url, {
-    transformReceive: it => transformReceive(it, image.id),
-    transformSend: it => transformInputFocusMessage(it, image.id),
-  })
-
-  sock.on(WS_TYPE_INPUT_EDITORS, (message: InputEditorsMessage) => {
-    const entries = message.inputs.map(it => [it.inputId, it.editorIds])
-    setEditors(Object.fromEntries(entries))
-  })
-
-  sock.on(WS_TYPE_EDITOR_LEFT, (message: EditorLeftMessage) => {
-    const newEditors = Object.entries(editors).reduce((result, entry) => {
-      const [inputId, editorIds] = entry
-      result[inputId] = editorIds.filter(it => it !== message.userId)
-
-      return result
-    }, {})
-
-    setEditors(newEditors)
-  })
-
-  const editorOptions: EditorOptions = {
-    me: imagesState.me,
-    editors: imagesState.editors,
-    inputEditors: editors,
-    sock,
-  }
 
   const selectSection = (it: ImageEditorSection) => {
     if (it === 'tag') {
@@ -159,7 +78,6 @@ const useImageEditorState = (options: ImageEditorOptions): [ImageEditorState, Im
       image,
       section,
       tags,
-      editor: editorOptions,
       deleteModal,
       parseError,
       imageEditorSock: sock,

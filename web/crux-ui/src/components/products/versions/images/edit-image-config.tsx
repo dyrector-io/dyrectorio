@@ -1,9 +1,9 @@
 import { IMAGE_WS_REQUEST_DELAY } from '@app/const'
 import { useThrottling } from '@app/hooks/use-throttleing'
-import { ContainerConfig, Environment, InstanceContainerConfig, Secrets } from '@app/models'
+import { ContainerConfig, Environment, Secrets } from '@app/models'
 
-import EditorInput from '@app/components/editor/editor-input'
-import { EditorOptions } from '@app/components/editor/use-editor-state'
+import MultiInput from '@app/components/editor/multi-input'
+import { EditorStateOptions } from '@app/components/editor/use-editor-state'
 import SecretKeyOnlyInput from '@app/components/shared/secret-key-input'
 import { sensitiveKeyRule } from '@app/validations/container'
 import useTranslation from 'next-translate/useTranslation'
@@ -12,14 +12,13 @@ import KeyValueInput from '../../../shared/key-value-input'
 
 interface EditImageConfigProps {
   disabled?: boolean
-  disabledContainerNameEditing?: boolean
-  editorOptions: EditorOptions
-  config: ContainerConfig | InstanceContainerConfig
-  onPatch: (config: Partial<ContainerConfig | InstanceContainerConfig>) => void
+  config: ContainerConfig
+  editorOptions: EditorStateOptions
+  onPatch: (config: Partial<ContainerConfig>) => void
 }
 
 const EditImageConfig = (props: EditImageConfigProps) => {
-  const { config, disabled, editorOptions, disabledContainerNameEditing, onPatch } = props
+  const { config, disabled, editorOptions, onPatch } = props
 
   const { t } = useTranslation('images')
 
@@ -59,18 +58,16 @@ const EditImageConfig = (props: EditImageConfigProps) => {
 
   return (
     <>
-      {disabledContainerNameEditing ? null : (
-        <EditorInput
-          id="name"
-          disabled={disabled}
-          label={t('containerName').toUpperCase()}
-          labelClassName="mt-2 mb-2.5"
-          className="mb-4"
-          options={editorOptions}
-          value={config?.name}
-          onPatch={onContainerNameChange}
-        />
-      )}
+      <MultiInput
+        id="name"
+        disabled={disabled}
+        label={t('containerName').toUpperCase()}
+        labelClassName="mt-2 mb-2.5"
+        className="mb-4"
+        editorOptions={editorOptions}
+        value={config?.name}
+        onPatch={onContainerNameChange}
+      />
 
       <KeyValueInput
         disabled={disabled}

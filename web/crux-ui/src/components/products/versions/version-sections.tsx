@@ -35,12 +35,12 @@ const VersionSections = (props: VersionSectionsProps) => {
     version,
   })
 
-  const { editors } = state
+  const { editors } = state.editor
 
   useEffect(() => setSaving(state.saving), [setSaving, state.saving])
 
   useEffect(() => {
-    const node = (
+    const reactNode = (
       <>
         {editors.map((it, index) => (
           <EditorBadge key={index} className="mr-2" editor={it} />
@@ -48,7 +48,7 @@ const VersionSections = (props: VersionSectionsProps) => {
       </>
     )
 
-    setTopBarContent(node)
+    setTopBarContent(reactNode)
   }, [editors, setTopBarContent])
 
   const saveImageOrderRef = useRef<VoidFunction>()
