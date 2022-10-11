@@ -76,25 +76,47 @@ Seamless testing whenever your team wants to test the application, without waiti
 
 ## Get Started
 
-dyrector.io CLI, is a command-line interface that lets you run and manage the whole dyrector.io projects locally.
+dyrector.io CLI, is a command-line interface that lets you run and manage the whole dyrector.io project locally.
 
 This means you get a full-featured dyrector.io platform running locally on your machine.
 
 ### Prerequirements
 
-- Docker installed on your system but Podman works, too. In case of Linux, you need Docker Compose, as well.
-- Go Compiler to run the CLI by its source code.
+- Docker installed on your system (Podman works, too).
+- Go Compiler to run the CLI from its source code. (Precompiled binaries are planned)
 
 ### With CLI
 
 > **Note**
-> The CLI is only available from the codebase at the moment. Package manager installation is in the works.
+> The CLI is only available from the codebase at the moment. 
 
 1. Clone the repository to your local workdir with `git clone`
-2. Open the `/cli` folder and execute `go run . up`
-3. Open the `localhost:3000` and use the platform
+2. Execute `go run ./cli up` in the project root
+3. Open the `localhost:8000` and use the platform
 
-dyrector.io's command-line interface (CLI) lets you run a complete dyrector.io development environment locally with the following services: UI Service (crux-ui), Backend Service (crux), PostgreSQL database, Authentication, Migrations, and SMTP mail server.
+dyrector.io's command-line interface (CLI) lets you run a complete dyrector.io development environment locally with the following services: UI Service (crux-ui), Backend Service (crux), PostgreSQL databases, Authentication, Migrations, and SMTP mail server.
+
+#### Using the platform with CLI for demonstration or testing
+
+1. Execute `go run ./cli up` in the project root
+2. After you navigated to `localhost:8000` (this is the default traefik port) you will see a Login screen
+3. Register an account with whatever e-mail address you see fit (doesn't have to be valid one)
+4. Navigate to `localhost:4436` where you will find your mail as all outgoing e-mails will land here
+5. Open your e-mail message and using the link inside you can activate your account
+6. Enjoy!
+
+#### Usint the platform with CLI for development
+
+1. Read the CLI documentation first(see the end of this section)
+2. Decide which part of the project you want to work on, in this case it is crux, crux-ui or both
+3. Modify the CLI's settings file if you need it.
+4. Execute the correct CLI command using the appropriate flags to turn off crux or crux-ui services
+5. Start crux or crux-ui with the appropriate `npm` command, usually `npm run start`
+6. After you navigated to `localhost:8000` (this is the default traefik port) you will see a Login screen
+7. Register an account with whatever e-mail address you see fit (doesn't have to be valid one)
+8. Navigate to `localhost:4436` where you will find your mail as all outgoing e-mails will land here
+9. Open your e-mail message and using the link inside you can activate your account
+10. Enjoy!
 
 Read more about the CLI in the [documentation](https://docs.dyrector.io/get-started/cli).
 
