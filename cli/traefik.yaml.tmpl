@@ -1,0 +1,13 @@
+http:
+  routers:
+    {{.Service}}:
+      rule: Host(`localhost`) || Host(`{{.Host}}`)
+      service: {{.Service}}
+      entryPoints:
+        - web
+
+  services:
+    {{.Service}}:
+      loadBalancer:
+        servers:
+          - url: http://{{.Host}}:{{.Port}}
