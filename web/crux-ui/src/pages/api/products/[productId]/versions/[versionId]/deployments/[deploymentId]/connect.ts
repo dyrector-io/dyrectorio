@@ -21,14 +21,17 @@ import {
   WS_TYPE_EDITOR_IDENTITY,
   WS_TYPE_EDITOR_JOINED,
   WS_TYPE_EDITOR_LEFT,
-  WS_TYPE_FETCH_DEPLOYMENT_EVENTS, WS_TYPE_FOCUS_INPUT, WS_TYPE_GET_DEPLOYMENT_SECRETS, WS_TYPE_GET_INSTANCE,
+  WS_TYPE_FETCH_DEPLOYMENT_EVENTS,
+  WS_TYPE_FOCUS_INPUT,
+  WS_TYPE_GET_DEPLOYMENT_SECRETS,
+  WS_TYPE_GET_INSTANCE,
   WS_TYPE_INPUT_BLURED,
   WS_TYPE_INPUT_FOCUSED,
   WS_TYPE_INSTANCE,
   WS_TYPE_INSTANCE_UPDATED,
   WS_TYPE_PATCH_DEPLOYMENT_ENV,
   WS_TYPE_PATCH_INSTANCE,
-  WS_TYPE_START_DEPLOYMENT
+  WS_TYPE_START_DEPLOYMENT,
 } from '@app/models'
 import { WsMessage } from '@app/websockets/common'
 import WsConnection from '@app/websockets/connection'
@@ -183,10 +186,7 @@ const onGetSecrets = async (
 
   const req = message.payload
 
-  const res = await cruxFromConnection(connection).deployments.getSecretsList(
-    deploymentId,
-    req.instanceId,
-  )
+  const res = await cruxFromConnection(connection).deployments.getSecretsList(deploymentId, req.instanceId)
 
   if (!res.hasKeys) {
     return
@@ -196,6 +196,8 @@ const onGetSecrets = async (
     instanceId: message.payload.instanceId,
     keys: res.keys,
   } as DeploymentSecretListMessage)
+}
+
 const onFocusInput = async (endpoint: WsEndpoint, connection: WsConnection, message: WsMessage<InputFocusMessage>) => {
   const { token } = connection
   const editors = endpoint.services.get(EditorService)
