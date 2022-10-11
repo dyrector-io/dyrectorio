@@ -20,8 +20,6 @@ class DyoTemplateService {
       accessedBy: this.identity.id,
     }
 
-    this.logger.error(JSON.stringify(req))
-
     const res = await protomisify<AccessRequest, TemplateListResponse>(this.client, this.client.getTemplates)(
       AccessRequest,
       req,
