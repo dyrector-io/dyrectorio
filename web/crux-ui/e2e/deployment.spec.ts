@@ -18,9 +18,12 @@ const setup = async (
 }
 
 test('preparing deployment is copyable on deployment list', async ({ page }) => {
-  const { productId } = await setup(page, 'NODE-TEST1', 'PRODUCT-TEST1')
+  const nodeName = 'NODE-TEST1'
+  const productName = 'PRODUCT-TEST1'
+
+  const { productId } = await setup(page, nodeName, productName)
   await addImageToSimpleProduct(page, productId, 'nginx')
-  await addDeploymentToSimpleProduct(page, productId, 'NODE-TEST1', null)
+  await addDeploymentToSimpleProduct(page, productId, nodeName, null)
 
   await page.goto(ROUTE_DEPLOYMENTS)
 
@@ -28,9 +31,12 @@ test('preparing deployment is copyable on deployment list', async ({ page }) => 
 })
 
 test('preparing deployment is copyable on deployment list in product', async ({ page }) => {
-  const { productId } = await setup(page, 'NODE-TEST2', 'PRODUCT-TEST2')
+  const nodeName = 'NODE-TEST2'
+  const productName = 'PRODUCT-TEST2'
+
+  const { productId } = await setup(page, nodeName, productName)
   await addImageToSimpleProduct(page, productId, 'nginx')
-  await addDeploymentToSimpleProduct(page, productId, 'NODE-TEST2', null)
+  await addDeploymentToSimpleProduct(page, productId, nodeName, null)
 
   await page.goto(productUrl(productId))
 
@@ -42,9 +48,12 @@ test('preparing deployment is copyable on deployment list in product', async ({ 
 })
 
 test('preparing deployment is copyable on deployment detail page', async ({ page }) => {
-  const { productId } = await setup(page, 'NODE-TEST3', 'PRODUCT-TEST3')
+  const nodeName = 'NODE-TEST3'
+  const productName = 'PRODUCT-TEST3'
+
+  const { productId } = await setup(page, nodeName, productName)
   await addImageToSimpleProduct(page, productId, 'nginx')
-  const { url } = await addDeploymentToSimpleProduct(page, productId, 'NODE-TEST3', null)
+  const { url } = await addDeploymentToSimpleProduct(page, productId, nodeName, null)
 
   await page.goto(url)
 
