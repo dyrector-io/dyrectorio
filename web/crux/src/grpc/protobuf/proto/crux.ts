@@ -1166,10 +1166,6 @@ export interface DeploymentListSecretsRequest {
   instanceId: string
 }
 
-export interface DeploymentCheckCopyResponse {
-  overwriteId?: string | undefined
-}
-
 export interface CreateNotificationRequest {
   accessedBy: string
   name: string
@@ -3581,25 +3577,6 @@ export const DeploymentListSecretsRequest = {
   },
 }
 
-const baseDeploymentCheckCopyResponse: object = {}
-
-export const DeploymentCheckCopyResponse = {
-  fromJSON(object: any): DeploymentCheckCopyResponse {
-    const message = {
-      ...baseDeploymentCheckCopyResponse,
-    } as DeploymentCheckCopyResponse
-    message.overwriteId =
-      object.overwriteId !== undefined && object.overwriteId !== null ? String(object.overwriteId) : undefined
-    return message
-  },
-
-  toJSON(message: DeploymentCheckCopyResponse): unknown {
-    const obj: any = {}
-    message.overwriteId !== undefined && (obj.overwriteId = message.overwriteId)
-    return obj
-  },
-}
-
 const baseCreateNotificationRequest: object = {
   accessedBy: '',
   name: '',
@@ -4250,9 +4227,9 @@ export interface CruxDeploymentClient {
     ...rest: any
   ): Observable<ListSecretsResponse>
 
-  checkDeploymentCopy(request: IdRequest, metadata: Metadata, ...rest: any): Observable<DeploymentCheckCopyResponse>
+  copyDeploymentSafe(request: IdRequest, metadata: Metadata, ...rest: any): Observable<CreateEntityResponse>
 
-  copyDeployment(request: IdRequest, metadata: Metadata, ...rest: any): Observable<CreateEntityResponse>
+  copyDeploymentUnsafe(request: IdRequest, metadata: Metadata, ...rest: any): Observable<CreateEntityResponse>
 
   startDeployment(request: IdRequest, metadata: Metadata, ...rest: any): Observable<DeploymentProgressMessage>
 
@@ -4317,13 +4294,13 @@ export interface CruxDeploymentController {
     ...rest: any
   ): Promise<ListSecretsResponse> | Observable<ListSecretsResponse> | ListSecretsResponse
 
-  checkDeploymentCopy(
+  copyDeploymentSafe(
     request: IdRequest,
     metadata: Metadata,
     ...rest: any
-  ): Promise<DeploymentCheckCopyResponse> | Observable<DeploymentCheckCopyResponse> | DeploymentCheckCopyResponse
+  ): Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
 
-  copyDeployment(
+  copyDeploymentUnsafe(
     request: IdRequest,
     metadata: Metadata,
     ...rest: any
@@ -4350,8 +4327,8 @@ export function CruxDeploymentControllerMethods() {
       'getDeploymentEvents',
       'getDeploymentList',
       'getDeploymentSecrets',
-      'checkDeploymentCopy',
-      'copyDeployment',
+      'copyDeploymentSafe',
+      'copyDeploymentUnsafe',
       'startDeployment',
       'subscribeToDeploymentEditEvents',
     ]

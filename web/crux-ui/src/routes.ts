@@ -152,8 +152,8 @@ export const deploymentWsUrl = (productId: string, versionId: string, deployment
 export const deploymentDeployUrl = (productId: string, versionId: string, deploymentId: string) =>
   `${deploymentUrl(productId, versionId, deploymentId)}/deploy`
 
-export const deploymentCopyUrl = (productId: string, versionId: string, deploymentId: string) =>
-  `${deploymentApiUrl(productId, versionId, deploymentId)}/copy`
+export const deploymentCopyUrl = (productId: string, versionId: string, deploymentId: string, force: boolean) =>
+  `${deploymentApiUrl(productId, versionId, deploymentId)}/copy${force ? '?force=1' : ''}`
 
 // team
 export const teamUrl = (id: string) => `${ROUTE_TEAMS}/${id}`

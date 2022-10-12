@@ -1,5 +1,5 @@
 import { DyoConfirmationModal, DyoConfirmationModalConfig } from '@app/elements/dyo-modal'
-import { CheckDeploymentCopyResponse, CopyDeploymentResponse } from '@app/models'
+import { CopyDeploymentResponse } from '@app/models'
 import { deploymentCopyUrl } from '@app/routes'
 import useTranslation from 'next-translate/useTranslation'
 import useConfirmation from './use-confirmation'
@@ -14,46 +14,35 @@ export interface DeploymentCopyHook {
 const useDeploymentCopy = (): DeploymentCopyHook => {
   const [confirmationModal, confirmOverwrite] = useConfirmation()
 
-  const performCopy = async (productId, versionId, deploymentId) => {
-    const res = await fetch(deploymentCopyUrl(productId, versionId, deploymentId), {
-      method: 'POST',
-    })
-    if (!res.ok) {
-      throw 'Failed to copy deployment!'
+  const postCopy = (productId: string, versionId: string, deploymentId: string, force: boolean): Promise<Response> =>
+    fetch(deploymentCopyUrl(productId, versionId, deploymentId, force), { method: 'POST' })
+
+  const copy = async (productId, versionId, deploymentId): Promise<string> => {
+    const res = await postCopy(productId, versionId, deploymentId, false)
+    if (res.ok) {
+      return res.json().then(json => (json as CopyDeploymentResponse).id)
+    }
+    if (res.status === 412) {
+      return new Promise((resolve, reject) => {
+        confirmOverwrite(
+          () => {
+            resolve(
+              postCopy(productId, versionId, deploymentId, true).then(copyRes =>
+                copyRes.json().then(json => (json as CopyDeploymentResponse).id),
+              ),
+            )
+          },
+          {
+            onCanceled: () => {
+              reject()
+            },
+          },
+        )
+      })
     }
 
-    const copy = (await res.json()) as CopyDeploymentResponse
-
-    return copy.id
+    throw 'Failed to copy deployment'
   }
-
-  const copy = (productId, versionId, deploymentId): Promise<string> =>
-    fetch(deploymentCopyUrl(productId, versionId, deploymentId))
-      .then(res => {
-        if (!res.ok) {
-          throw 'Failed to check deployment copy'
-        }
-        return res.json()
-      })
-      .then(
-        (checkCopy: CheckDeploymentCopyResponse) =>
-          new Promise((resolve, reject) => {
-            if (checkCopy.pendingDeployment) {
-              confirmOverwrite(
-                () => {
-                  resolve(performCopy(productId, versionId, deploymentId))
-                },
-                {
-                  onCanceled: () => {
-                    reject()
-                  },
-                },
-              )
-            } else {
-              resolve(performCopy(productId, versionId, deploymentId))
-            }
-          }),
-      )
 
   return {
     copy,

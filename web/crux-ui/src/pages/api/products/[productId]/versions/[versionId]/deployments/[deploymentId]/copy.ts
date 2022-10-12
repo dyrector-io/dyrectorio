@@ -1,33 +1,29 @@
-import { CheckDeploymentCopyResponse, CopyDeploymentResponse } from '@app/models'
+import { CopyDeploymentResponse } from '@app/models'
 import crux from '@server/crux/crux'
 import { withMiddlewares } from '@server/middlewares'
 import { NextApiRequest, NextApiResponse } from 'next'
 
-const onGet = async (req: NextApiRequest, res: NextApiResponse) => {
-  const deploymentId = req.query.deploymentId as string
-
-  const pendingDeployment = await crux(req).deployments.checkCopy(deploymentId)
-
-  const response = {
-    pendingDeployment,
-  } as CheckDeploymentCopyResponse
-
-  res.status(200).json(response)
-}
-
 const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
   const deploymentId = req.query.deploymentId as string
+  const forceCopy = req.query.force === '1'
 
-  const newDeployment = await crux(req).deployments.copyDeployment(deploymentId)
+  try {
+    const newDeployment = await crux(req).deployments.copyDeployment(deploymentId, forceCopy)
 
-  const response = {
-    id: newDeployment,
-  } as CopyDeploymentResponse
+    const response = {
+      id: newDeployment,
+    } as CopyDeploymentResponse
 
-  res.status(200).json(response)
+    res.status(200).json(response)
+  } catch (e) {
+    if (e.status === 412) {
+      res.status(412).end()
+    } else {
+      throw e
+    }
+  }
 }
 
 export default withMiddlewares({
-  onGet,
   onPost,
 })

@@ -19,7 +19,6 @@ import {
   CreateDeploymentRequest,
   CreateEntityResponse,
   CruxDeploymentClient,
-  DeploymentCheckCopyResponse,
   DeploymentDetailsResponse,
   DeploymentEditEventMessage as ProtoDeploymentEditEventMessage,
   DeploymentEventListResponse,
@@ -302,30 +301,14 @@ class DyoDeploymentService {
     return new GrpcConnection(this.logger.descend('edit-events'), stream, transform, options)
   }
 
-  async checkCopy(id: string): Promise<string | undefined> {
+  async copyDeployment(id: string, force: boolean): Promise<string> {
     const req = {
       id,
       accessedBy: this.identity.id,
     } as IdRequest
 
-    const res = await protomisify<IdRequest, DeploymentCheckCopyResponse>(this.client, this.client.checkDeploymentCopy)(
-      IdRequest,
-      req,
-    )
-
-    return res.overwriteId
-  }
-
-  async copyDeployment(id: string): Promise<string> {
-    const req = {
-      id,
-      accessedBy: this.identity.id,
-    } as IdRequest
-
-    const res = await protomisify<IdRequest, CreateEntityResponse>(this.client, this.client.copyDeployment)(
-      IdRequest,
-      req,
-    )
+    const grpcCall = force ? this.client.copyDeploymentUnsafe : this.client.copyDeploymentSafe
+    const res = await protomisify<IdRequest, CreateEntityResponse>(this.client, grpcCall)(IdRequest, req)
 
     return res.id
   }

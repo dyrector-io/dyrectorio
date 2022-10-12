@@ -1,16 +1,15 @@
-import { Injectable, Logger, PreconditionFailedException } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { DeploymentStatusEnum } from '@prisma/client'
 import { JsonArray } from 'prisma'
 import { concatAll, filter, from, lastValueFrom, map, merge, Observable, Subject } from 'rxjs'
 import Deployment from 'src/domain/deployment'
-import { InternalException } from 'src/exception/errors'
+import { InternalException, PreconditionFailedException } from 'src/exception/errors'
 import { DeployRequest } from 'src/grpc/protobuf/proto/agent'
 import { ListSecretsResponse } from 'src/grpc/protobuf/proto/common'
 import {
   AccessRequest,
   CreateDeploymentRequest,
   CreateEntityResponse,
-  DeploymentCheckCopyResponse,
   DeploymentDetailsResponse,
   DeploymentEditEventMessage,
   DeploymentEventListResponse,
@@ -481,26 +480,7 @@ export default class DeployService {
     return lastValueFrom(watcher)
   }
 
-  async checkDeploymentCopy(request: IdRequest): Promise<DeploymentCheckCopyResponse> {
-    const deployment = await this.prisma.deployment.findFirstOrThrow({
-      where: {
-        id: request.id,
-      },
-    })
-
-    const preparing = await this.getPreparingDeployment({
-      accessedBy: request.accessedBy,
-      versionId: deployment.versionId,
-      nodeId: deployment.nodeId,
-      prefix: deployment.prefix,
-    })
-
-    return {
-      overwriteId: preparing,
-    }
-  }
-
-  async copyDeployment(request: IdRequest): Promise<CreateEntityResponse> {
+  async copyDeployment(request: IdRequest, force: boolean): Promise<CreateEntityResponse> {
     const oldDeployment = await this.prisma.deployment.findFirstOrThrow({
       where: {
         id: request.id,
@@ -522,6 +502,14 @@ export default class DeployService {
     } as CreateDeploymentRequest
 
     const preparing = await this.getPreparingDeployment(createRequest)
+
+    if (preparing && !force) {
+      throw new PreconditionFailedException({
+        message: 'The node already has a preparing deployment.',
+        property: 'id',
+        value: preparing,
+      })
+    }
 
     const newDeployment = await this.prisma.deployment.create({
       data: {
