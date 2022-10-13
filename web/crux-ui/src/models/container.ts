@@ -176,7 +176,7 @@ export const overrideKeyValues = (weak: UniqueKeyValue[], strong: UniqueKeyValue
   return [...(weak?.filter(it => !overridenKeys.has(it.key)) ?? []), ...(strong ?? [])]
 }
 
-export const expandKeytoKeyValues = (weak: UniqueKey[]): UniqueKeyValue[] => [
+export const expandKeyToKeyValues = (weak: UniqueKey[]): UniqueKeyValue[] => [
   ...weak.map((it): UniqueKeyValue => ({ id: it.id, key: it.key, value: '' })),
 ]
 
