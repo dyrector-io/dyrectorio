@@ -165,6 +165,44 @@ func TestReadDockerLogsFromReadCloser_Skip(t *testing.T) {
 	assert.EqualValues(t, expected, actual)
 }
 
+func TestReadDockerLogsFromReadCloser_NegativeSkip(t *testing.T) {
+	lines := []string{
+		"line 1",
+		"line 2",
+		"line 3",
+	}
+	data := mergeLogLines(lines)
+
+	skip := 6
+	take := 3
+	reader := io.NopCloser(bytes.NewReader(data))
+	defer reader.Close()
+
+	expected := []string{}
+	actual := utils.ReadDockerLogsFromReadCloser(reader, skip, take)
+
+	assert.EqualValues(t, expected, actual)
+}
+
+func TestReadDockerLogsFromReadCloser_EOFError(t *testing.T) {
+	lines := []string{
+		"line 1",
+		"line 2",
+		"line 3",
+	}
+	data := mergeLogLines(lines)
+
+	skip := 0
+	take := 3
+	reader := io.NopCloser(bytes.NewReader(data))
+	defer reader.Close()
+
+	expected := lines
+	actual := utils.ReadDockerLogsFromReadCloser(reader, skip, take)
+
+	assert.EqualValues(t, expected, actual)
+}
+
 func TestReadDockerLogsFromReadCloser_Take(t *testing.T) {
 	lines := []string{
 		"line 1",

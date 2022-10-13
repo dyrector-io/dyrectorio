@@ -11,7 +11,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/agent/pkg/dagent/utils"
 )
 
-func TestGetOrganizationLabels(t *testing.T) {
+func TestSetOrganizationLabel(t *testing.T) {
 	key := "key"
 	value := "value"
 
@@ -23,7 +23,7 @@ func TestGetOrganizationLabels(t *testing.T) {
 	assert.EqualValues(t, expected, actual)
 }
 
-func TestGetOrganizationLabelsWithEmptyKey(t *testing.T) {
+func TestSetOrganizationLabelWithEmptyKey(t *testing.T) {
 	var key string
 	value := "value"
 
@@ -31,4 +31,19 @@ func TestGetOrganizationLabelsWithEmptyKey(t *testing.T) {
 
 	expectedErrorMsg := "missing key or value to build an organization label"
 	assert.EqualErrorf(t, err, expectedErrorMsg, "Error should be: %v, got: %v", expectedErrorMsg, err)
+}
+
+func TestGetOrganizationLabel(t *testing.T) {
+	input := map[string]string{
+		"org.dyrectorio.test": "value",
+	}
+
+	value, found := utils.GetOrganizationLabel(input, "test")
+	assert.Equal(t, found, true)
+	assert.Equal(t, value, "value")
+
+	value, found = utils.GetOrganizationLabel(input, "not-found")
+	assert.Equal(t, found, false)
+	assert.Equal(t, value, "")
+
 }
