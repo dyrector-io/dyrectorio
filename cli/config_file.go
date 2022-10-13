@@ -120,6 +120,8 @@ const (
 	MailSlurperPort    = "MailSlurperPort"
 	MailSlurperPort2   = "MailSlurperPort2"
 	CruxPostgresPort   = "CruxPostgresPort"
+	TraefikWebPort     = "TraeficWebPort"
+	TraefikUIPort      = "TraefikUIPort"
 )
 
 const (
@@ -444,6 +446,10 @@ func CheckAndUpdatePorts(settings *Settings) *Settings {
 	settings.SettingsFile.Options.MailSlurperPort = portMap[MailSlurperPort]
 	portMap[MailSlurperPort2] = getAvailablePort(portMap, settings.SettingsFile.Options.MailSlurperPort2, MailSlurperPort2)
 	settings.SettingsFile.Options.MailSlurperPort2 = portMap[MailSlurperPort2]
+	portMap[TraefikWebPort] = getAvailablePort(portMap, settings.SettingsFile.Options.TraefikWebPort, TraefikWebPort)
+	settings.SettingsFile.Options.TraefikWebPort = portMap[TraefikWebPort]
+	portMap[TraefikUIPort] = getAvailablePort(portMap, settings.SettingsFile.Options.TraefikUIPort, TraefikUIPort)
+	settings.SettingsFile.Options.TraefikUIPort = portMap[TraefikUIPort]
 
 	return settings
 }
