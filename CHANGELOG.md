@@ -8,10 +8,6 @@
 
 * use prisma's openssl binaries to workaround the segfault comming from different openssl versions
 
-### Release
-
-* 0.2.1 ([#204](https://github.com/dyrector-io/dyrectorio/issues/204))
-
 
 <a name="0.2.1"></a>
 ## [0.2.1](https://github.com/dyrector-io/dyrectorio/compare/v0.1.1...0.2.1) (2022-09-27)
