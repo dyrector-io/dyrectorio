@@ -23,7 +23,7 @@ const smtpUriToTransport = (uri: string): TransportType => {
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
-        transport: smtpUriToTransport(configService.get('SMTP_URI')),
+        transport: smtpUriToTransport(configService.getOrThrow('SMTP_URI')),
         defaults: {
           from: {
             address: configService.get('FROM_EMAIL'),
