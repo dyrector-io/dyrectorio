@@ -214,8 +214,7 @@ class WebSocketClient {
 
         const message = JSON.parse(ev.data) as WsMessage<object>
 
-        this.logger.verbose('Receiving message:', message.type)
-        this.logger.verbose('Content:', message.payload)
+        this.logger.verbose('Receiving message:', message.type, message.payload)
 
         if (message.type === WS_TYPE_DYO_ERROR && this.errorHandler) {
           this.errorHandler(message.payload as DyoApiError)

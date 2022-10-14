@@ -45,11 +45,8 @@ func GetCrux(settings *Settings) *containerbuilder.DockerContainerBuilder {
 			fmt.Sprintf("JWT_SECRET=%s", settings.SettingsFile.CruxSecret),
 			"CRUX_DOMAIN=DNS:localhost",
 			"FROM_NAME=dyrector.io",
-			"SENDGRID_KEY=SG.InvalidKey",
-			"FROM_EMAIL=mail@szolgalta.to",
-			"SMTP_USER=test",
-			"SMTP_PASSWORD=test",
-			fmt.Sprintf("SMTP_URL=%s:1025/?skip_ssl_verify=true&legacy_ssl=true", settings.Containers.MailSlurper.Name),
+			"FROM_EMAIL=mail@example.com",
+			fmt.Sprintf("SMTP_URI=%s:1025/?skip_ssl_verify=true&legacy_ssl=true", settings.Containers.MailSlurper.Name),
 		}).
 		WithPortBindings([]containerbuilder.PortBinding{
 			{
@@ -221,11 +218,9 @@ func GetKratos(settings *Settings) *containerbuilder.DockerContainerBuilder {
 				settings.SettingsFile.TraefikWebPort),
 			"DEV=false",
 			"LOG_LEVEL=info",
-			"LOG_LEAK_SENSITIVE_VALUES=true",
+			"LOG_LEAK_SENSITIVE_VALUES=false",
 			fmt.Sprintf("SECRETS_COOKIE=%s", settings.SettingsFile.KratosSecret),
-			"SMTP_USER=test",
-			"SMTP_PASSWORD=test",
-			fmt.Sprintf("SMTP_URL=%s:1025/?skip_ssl_verify=true&legacy_ssl=true", settings.Containers.MailSlurper.Name),
+			fmt.Sprintf("SMTP_URI=%s:1025/?skip_ssl_verify=true&legacy_ssl=true", settings.Containers.MailSlurper.Name),
 			fmt.Sprintf("COURIER_SMTP_CONNECTION_URI=smtps://test:test@%s:1025/?skip_ssl_verify=true&legacy_ssl=true",
 				settings.Containers.MailSlurper.Name),
 		}).

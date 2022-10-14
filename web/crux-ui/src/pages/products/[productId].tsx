@@ -44,6 +44,8 @@ const ProductDetailsPage = (props: ProductDetailsPageProps) => {
   const [editState, setEditState] = useState<ProductDetailsEditState>('version-list')
   const [increaseTarget, setIncreaseTarget] = useState<Version>(null)
   const [saving, setSaving] = useState(false)
+  const [topBarContent, setTopBarContent] = useState<React.ReactNode>(null)
+
   const submitRef = useRef<() => Promise<any>>()
 
   const simpleProduct = product.type === 'simple'
@@ -132,7 +134,7 @@ const ProductDetailsPage = (props: ProductDetailsPageProps) => {
   }
 
   return (
-    <Layout title={t('productsName', product)}>
+    <Layout title={t('productsName', product)} topBarContent={topBarContent}>
       <PageHeading pageLink={pageLink} sublinks={sublinks}>
         {saving ? <LoadingIndicator className="flex ml-4 my-auto" /> : null}
 
@@ -177,7 +179,12 @@ const ProductDetailsPage = (props: ProductDetailsPageProps) => {
       )}
 
       {simpleProduct ? (
-        <VersionSections product={product} version={simpleProductVersionDetails} setSaving={setSaving} />
+        <VersionSections
+          product={product}
+          version={simpleProductVersionDetails}
+          setSaving={setSaving}
+          setTopBarContent={setTopBarContent}
+        />
       ) : editState === 'version-list' ? (
         <ProductVersionsSection
           productId={product.id}

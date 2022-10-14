@@ -4,29 +4,25 @@ import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { DeleteImageMessage, VersionImage, WS_TYPE_DELETE_IMAGE } from '@app/models'
 import { utcDateToLocale } from '@app/utils'
-import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
 import { useState } from 'react'
 import EditImageTags from './images/edit-image-tags'
-import { getImageTags, ImageTagsMap } from './use-images-websocket'
+import { ImagesActions, ImagesState, selectTagsOfImage } from './images/use-images-state'
 
 interface VersionViewListProps {
-  images: VersionImage[]
-  imageTags: ImageTagsMap
-  versionSock: WebSocketClientEndpoint
-  onTagSelected: (image: VersionImage, tag: string) => void
-  onFetchTags: (image: VersionImage) => void
+  state: ImagesState
+  actions: ImagesActions
 }
 
 const VersionViewList = (props: VersionViewListProps) => {
-  const { images, imageTags, versionSock, onTagSelected, onFetchTags } = props
+  const { state, actions } = props
 
   const { t } = useTranslation('images')
 
-  const [deleteModalConfig, confirmDelete] = useConfirmation()
-  const [selectTagsDialog, setSelectTagsDialog] = useState<VersionImage>()
+  const [deleteModal, confirmDelete] = useConfirmation()
+  const [tagsModalTarget, setTagsModalTarget] = useState<VersionImage>(null)
 
   const columnWidths = ['w-3/12', 'w-3/12', 'w-2/12', 'w-3/12', 'w-1/12']
   const headers = ['containerName', 'common:registry', 'imageTag', 'common:createdAt', 'common:actions']
@@ -46,7 +42,7 @@ const VersionViewList = (props: VersionViewListProps) => {
   const onDelete = (item: VersionImage) =>
     confirmDelete(
       () =>
-        versionSock.send(WS_TYPE_DELETE_IMAGE, {
+        state.versionSock.send(WS_TYPE_DELETE_IMAGE, {
           imageId: item.id,
         } as DeleteImageMessage),
       {
@@ -55,9 +51,9 @@ const VersionViewList = (props: VersionViewListProps) => {
       },
     )
 
-  const onOpenTagsDialog = (item: VersionImage) => {
-    setSelectTagsDialog(item)
-    onFetchTags(item)
+  const onOpenTagsDialog = (it: VersionImage) => {
+    setTagsModalTarget(it)
+    actions.fetchImageTags(it)
   }
 
   const itemTemplate = (item: VersionImage) => [
@@ -92,38 +88,36 @@ const VersionViewList = (props: VersionViewListProps) => {
           headerClassName={headerClasses}
           columnWidths={columnWidths}
           itemClassName={itemClasses}
-          data={images}
+          data={state.images}
           noSeparator
           itemBuilder={itemTemplate}
         />
       </DyoCard>
+
       <DyoConfirmationModal
-        config={deleteModalConfig}
+        config={deleteModal}
         title={t('common:confirmDelete')}
         description={t('common:deleteDescription')}
         confirmText={t('common:delete')}
         className="w-1/4"
         confirmColor="bg-error-red"
       />
-      <DyoModal
-        className="w-1/3 min-w-[450px]"
-        titleClassName="pl-4 font-medium text-xl text-bright mb-3"
-        title={t('imageTagsFor', { name: selectTagsDialog?.config.name })}
-        open={!!selectTagsDialog}
-        onClose={() => setSelectTagsDialog(undefined)}
-      >
-        <EditImageTags
-          selected={selectTagsDialog?.tag ?? ''}
-          tags={getImageTags(imageTags, selectTagsDialog)}
-          onTagSelected={tag => {
-            onTagSelected(selectTagsDialog, tag)
-            setSelectTagsDialog({
-              ...selectTagsDialog,
-              tag,
-            })
-          }}
-        />
-      </DyoModal>
+
+      {!tagsModalTarget ? null : (
+        <DyoModal
+          className="w-1/3 min-w-[450px]"
+          titleClassName="pl-4 font-medium text-xl text-bright mb-3"
+          title={t('imageTagsFor', { name: tagsModalTarget?.config.name })}
+          open
+          onClose={() => setTagsModalTarget(null)}
+        >
+          <EditImageTags
+            selected={tagsModalTarget?.tag ?? ''}
+            tags={selectTagsOfImage(state, tagsModalTarget)}
+            onTagSelected={it => actions.selectTagForImage(tagsModalTarget, it)}
+          />
+        </DyoModal>
+      )}
     </>
   )
 }

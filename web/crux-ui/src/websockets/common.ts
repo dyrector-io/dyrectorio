@@ -21,4 +21,6 @@ export type WebSocketClientOptions = {
   onSend?: (message: WsMessage<any>) => void
   onReceive?: (message: WsMessage<any>) => void
   onError?: (error: any) => void
+  transformReceive?: (message: WsMessage<any>) => WsMessage<any>
+  transformSend?: (message: WsMessage<any>) => WsMessage<any>
 }

@@ -123,6 +123,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
 
             <div className="flex flex-row">
               <DyoLabel className="text-white mr-2">{t('scriptExpiresIn')}</DyoLabel>
+
               <RemainingTimeLabel textColor="text-dyo-turquoise" seconds={remaining} />
             </div>
           </div>
@@ -139,6 +140,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
 
           <div className="flex flex-col">
             <DyoLabel className="mb-2.5">{t('script')}</DyoLabel>
+
             <ShEditor className="h-48 mb-4 w-full overflow-x-auto" readOnly value={node.install.script} />
           </div>
         </>

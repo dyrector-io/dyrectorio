@@ -1,57 +1,35 @@
+import useItemEditorState from '@app/components/editor/use-item-editor-state'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoMessage from '@app/elements/dyo-message'
-import {
-  Instance,
-  InstanceContainerConfig,
-  mergeConfigs,
-  PatchInstanceMessage,
-  WS_TYPE_PATCH_INSTANCE,
-} from '@app/models'
-import { getValidationError, instanceConfigSchema } from '@app/validations'
-import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
+import { Instance } from '@app/models'
 import useTranslation from 'next-translate/useTranslation'
-import { useEffect, useState } from 'react'
 import EditImageHeading from '../../images/edit-image-heading'
+import EditImageJson from '../../images/edit-image-json'
+import { DeploymentState } from '../use-deployment-state'
 import EditInstanceConfig from './edit-instance-config'
-import EditInstanceJson from './edit-instance-json'
-
-export type EditInstanceCardSelection = 'config' | 'json'
+import useInstanceState from './use-instance-state'
 
 interface EditInstanceCardProps {
-  disabled?: boolean
   instance: Instance
-  publicKey?: string
-  deploymentSock: WebSocketClientEndpoint
-  definedSecrets?: string[]
+  deploymentState: DeploymentState
 }
 
 const EditInstanceCard = (props: EditInstanceCardProps) => {
   const { t } = useTranslation('images')
+  const { instance, deploymentState } = props
+  const { editor, sock } = deploymentState
 
-  const { disabled, instance, deploymentSock: sock, publicKey, definedSecrets } = props
+  const [state, actions] = useInstanceState({
+    instance,
+    deploymentState,
+  })
 
-  const [selection, setSelection] = useState<EditInstanceCardSelection>('config')
-  const [mergedConfig, setMergedConfig] = useState(mergeConfigs(instance.image.config, instance.overriddenConfig))
-  const [parseError, setParseError] = useState<string>(null)
+  const { config } = state
 
-  useEffect(
-    () => setMergedConfig(mergeConfigs(instance.image.config, instance.overriddenConfig)),
-    [instance.image.config, instance.overriddenConfig],
-  )
+  const editorState = useItemEditorState(editor, sock, instance.id)
 
-  const onPatch = (id: string, config: Partial<InstanceContainerConfig>) => {
-    setParseError(null)
-
-    sock.send(WS_TYPE_PATCH_INSTANCE, {
-      ...config,
-      instanceId: id,
-    } as PatchInstanceMessage)
-  }
-
-  const onParseError = (err: Error) => setParseError(err.message)
-
-  const errorMessage = parseError ?? getValidationError(instanceConfigSchema, mergedConfig)?.message
+  const { selection, errorMessage } = state
 
   return (
     <DyoCard className="flex flex-col flex-grow px-6 pb-6 pt-4">
@@ -67,7 +45,7 @@ const EditInstanceCard = (props: EditInstanceCardProps) => {
           thin
           textColor="text-bright"
           underlined={selection === 'config'}
-          onClick={() => setSelection('config')}
+          onClick={() => actions.selectTab('config')}
           className="ml-auto mr-8"
         >
           {t('config')}
@@ -78,7 +56,7 @@ const EditInstanceCard = (props: EditInstanceCardProps) => {
           thin
           textColor="text-bright"
           underlined={selection === 'json'}
-          onClick={() => setSelection('json')}
+          onClick={() => actions.selectTab('json')}
           className="mr-0"
         >
           {t('json')}
@@ -92,20 +70,18 @@ const EditInstanceCard = (props: EditInstanceCardProps) => {
       <div className="flex flex-col mt-2 h-128">
         {selection === 'config' ? (
           <EditInstanceConfig
-            disabled={disabled}
-            disabledContainerNameEditing
-            config={mergedConfig}
-            publicKey={publicKey}
-            definedSecrets={definedSecrets}
-            onPatch={it => onPatch(instance.id, it)}
+            config={config}
+            publicKey={deploymentState.deployment.publicKey}
+            definedSecrets={state.definedSecrets}
+            editorOptions={editorState}
+            onPatch={it => actions.onPatch(instance.id, it)}
           />
         ) : (
-          <EditInstanceJson
-            disabled={disabled}
-            disabledContainerNameEditing
-            config={mergedConfig}
-            onPatch={it => onPatch(instance.id, it)}
-            onParseError={onParseError}
+          <EditImageJson
+            disabled={!deploymentState.mutable}
+            config={config}
+            editorOptions={editorState}
+            onPatch={it => actions.onPatch(instance.id, it)}
           />
         )}
       </div>

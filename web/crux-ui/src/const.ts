@@ -27,3 +27,5 @@ export const AUTH_RESEND_DELAY = 30 // seconds
 export const WEBOOK_TEST_DELAY = 500 // millis
 
 export const KRATOS_ERROR_NO_VERIFIED_EMAIL_ADDRESS = 4000010
+
+export const STORAGE_VIEW_MODE = 'view-mode'

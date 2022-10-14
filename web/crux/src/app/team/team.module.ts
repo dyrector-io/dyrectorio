@@ -1,18 +1,19 @@
-import { Module } from '@nestjs/common'
-import PrismaService from 'src/services/prisma.service'
-import InterceptorGrpcHelperProvider from 'src/interceptors/helper.interceptor'
-import EmailService from 'src/services/email.service'
-import KratosService from 'src/services/kratos.service'
-import EmailBuilder from 'src/builders/email.builder'
 import { HttpModule } from '@nestjs/axios'
+import { Module } from '@nestjs/common'
+import EmailBuilder from 'src/builders/email.builder'
+import InterceptorGrpcHelperProvider from 'src/interceptors/helper.interceptor'
+import EmailModule from 'src/mailer/email.module'
+import EmailService from 'src/mailer/email.service'
 import DomainNotificationService from 'src/services/domain.notification.service'
-import TeamService from './team.service'
-import TeamRepository from './team.repository'
-import TeamMapper from './team.mapper'
+import KratosService from 'src/services/kratos.service'
+import PrismaService from 'src/services/prisma.service'
 import TeamController from './team.controller'
+import TeamMapper from './team.mapper'
+import TeamRepository from './team.repository'
+import TeamService from './team.service'
 
 @Module({
-  imports: [HttpModule],
+  imports: [HttpModule, EmailModule],
   exports: [TeamRepository],
   controllers: [TeamController],
   providers: [
