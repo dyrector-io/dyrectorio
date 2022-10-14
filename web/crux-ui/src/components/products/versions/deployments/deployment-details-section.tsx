@@ -17,7 +17,7 @@ const DeploymentDetailsSection = (props: DeploymentDetailsSectionProps) => {
   const { t } = useTranslation('deployments')
 
   const { state } = props
-  const { deployment, mutable, editor, sock } = state
+  const { deployment, node, mutable, editor, sock } = state
 
   const editorState = useItemEditorState(editor, sock, ITEM_ID)
 
@@ -26,7 +26,7 @@ const DeploymentDetailsSection = (props: DeploymentDetailsSectionProps) => {
   const onEnvChange = (env: Environment) => throttle(() => sock.send(WS_TYPE_PATCH_DEPLOYMENT_ENV, env))
 
   return (
-    <DeploymentDetailsCard state={state}>
+    <DeploymentDetailsCard deployment={deployment} node={node}>
       <KeyValueInput
         disabled={!mutable}
         editorOptions={editorState}

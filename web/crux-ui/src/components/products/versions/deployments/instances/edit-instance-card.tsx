@@ -72,7 +72,7 @@ const EditInstanceCard = (props: EditInstanceCardProps) => {
           <EditInstanceConfig
             config={config}
             publicKey={deploymentState.deployment.publicKey}
-            definedSecrets={definedSecrets}
+            definedSecrets={state.definedSecrets}
             editorOptions={editorState}
             onPatch={it => actions.onPatch(instance.id, it)}
           />

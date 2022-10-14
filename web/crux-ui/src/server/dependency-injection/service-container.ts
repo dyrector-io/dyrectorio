@@ -6,7 +6,7 @@ export type TypeOf<T> = Function & {
 class ServiceContainer {
   private initializers: Map<string, ServiceInitializer> = new Map()
 
-  private services: Map<string, object> = new Map()
+  private services: Map<string, any> = new Map()
 
   get<T>(type: TypeOf<T>): T {
     const { name } = type

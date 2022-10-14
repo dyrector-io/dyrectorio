@@ -1,21 +1,21 @@
 import NodeStatusIndicator from '@app/components/nodes/node-status-indicator'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoLabel } from '@app/elements/dyo-label'
+import { DeploymentDetails, DyoNode } from '@app/models'
 import { utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import React from 'react'
 import DeploymentStatusTag from './deployment-status-tag'
-import { DeploymentState } from './use-deployment-state'
 
 interface DeploymentDetailsCardProps {
   className?: string
-  state: DeploymentState
+  deployment: DeploymentDetails
+  node: DyoNode
   children?: React.ReactNode
 }
 
 const DeploymentDetailsCard = (props: DeploymentDetailsCardProps) => {
-  const { state, className, children } = props
-  const { deployment, node } = state
+  const { deployment, node, className, children } = props
 
   return (
     <DyoCard className={clsx('flex flex-col', className ?? 'p-6')}>

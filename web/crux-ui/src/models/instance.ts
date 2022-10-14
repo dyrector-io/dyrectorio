@@ -3,7 +3,7 @@ import {
   ContainerConfig,
   ContainerState,
   Environment,
-  expandKeytoKeyValues,
+  expandKeyToKeyValues,
   ExplicitContainerConfig,
   mergeExplicitContainerConfig,
   overrideKeyValues,
@@ -53,7 +53,7 @@ export const mergeConfigs = (
     secrets:
       instanceConfig?.secrets && instanceConfig.secrets.length > 0
         ? instanceConfig.secrets
-        : expandKeytoKeyValues(imageConfig.secrets),
+        : expandKeyToKeyValues(imageConfig.secrets),
     config: mergeExplicitContainerConfig(imageConfig?.config ?? {}, overriddenConfig?.config ?? {}),
   }
 }

@@ -1,12 +1,6 @@
-import {
-  WebSocketClientOptions,
-  WebSocketClientScope,
-  WebSocketClientSendMessage,
-  WsMessage,
-  WsMessageCallback,
-} from './common'
+import { WebSocketClientOptions, WebSocketClientSendMessage, WsMessage, WsMessageCallback } from './common'
 
-class WebSocketClientEndpoint implements WebSocketClientScope {
+class WebSocketClientEndpoint {
   private sendClientMessage: WebSocketClientSendMessage = null
 
   private callbacks: Map<string, Array<WsMessageCallback<object>>> = new Map()
