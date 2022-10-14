@@ -222,8 +222,10 @@ func mapResourceConfig(resourceConfig *common.ResourceConfig) v1.ResourceConfig 
 }
 
 func mapHealthCheckConfig(healthCheckConfig *common.HealthCheckConfig) v1.HealthCheckConfig {
-	mappedConfig := v1.HealthCheckConfig{
-		Port: uint16(healthCheckConfig.Port),
+	mappedConfig := v1.HealthCheckConfig{}
+
+	if healthCheckConfig.Port != nil {
+		mappedConfig.Port = uint16(*healthCheckConfig.Port)
 	}
 
 	if healthCheckConfig.LivenessProbe != nil {
