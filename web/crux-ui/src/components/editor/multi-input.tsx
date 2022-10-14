@@ -10,7 +10,7 @@ interface MultiInputProps extends Omit<DyoInputProps, 'id' | 'onFocus' | 'onBlur
 }
 
 const MultiInput = (props: MultiInputProps) => {
-  const { id, disabled, editorOptions, style: propsStyle, value, onPatch, ...forwaredProps } = props
+  const { id, disabled, editorOptions, style: propsStyle, value, onPatch, ...forwardedProps } = props
 
   const onMergeValues = (_: string, local: string) => {
     onPatch(local)
@@ -42,7 +42,7 @@ const MultiInput = (props: MultiInputProps) => {
       onBlur={actions.onBlur}
       onChange={ev => onChange(ev.target.value)}
       style={style}
-      {...forwaredProps}
+      {...forwardedProps}
     />
   )
 }
