@@ -7,7 +7,6 @@ import {
   NotificationListResponse,
   CreateNotificationResponse,
   NotificationDetailsResponse,
-  Empty,
   CreateNotificationRequest,
 } from 'src/grpc/protobuf/proto/crux'
 import TeamRepository from 'src/app/team/team.repository'
@@ -16,6 +15,7 @@ import PrismaService from 'src/services/prisma.service'
 import { lastValueFrom } from 'rxjs'
 import { HttpService } from '@nestjs/axios'
 import NotificationMapper from './notification.mapper'
+import { Empty } from 'src/grpc/protobuf/proto/common'
 
 const TEST_MESSAGE = 'Its a test!'
 
@@ -78,7 +78,6 @@ export default class NotificationService {
         active: !!request.active,
         type: this.mapper.typeToDb(request.type),
         updatedBy: request.accessedBy,
-        updatedAt: new Date(),
         events: {
           deleteMany: {
             id: {

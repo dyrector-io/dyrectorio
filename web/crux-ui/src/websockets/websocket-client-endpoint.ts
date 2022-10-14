@@ -36,8 +36,19 @@ class WebSocketClientEndpoint {
   }
 
   sendWsMessage(message: WsMessage<object>) {
-    if (!this.sendClientMessage || !this.sendClientMessage(message)) {
-      this.sendables.push(message)
+    let msg = message
+
+    const { transformSend } = this.options ?? {}
+
+    if (transformSend) {
+      msg = transformSend(message)
+      if (!msg) {
+        return
+      }
+    }
+
+    if (!this.sendClientMessage || !this.sendClientMessage(msg)) {
+      this.sendables.push(msg)
     }
   }
 
@@ -49,10 +60,21 @@ class WebSocketClientEndpoint {
   }
 
   onMessage(message: WsMessage<object>) {
-    this.options?.onReceive?.call(null, message)
+    let msg = { ...message }
 
-    const callbacks = this.callbacks.get(message.type)
-    callbacks?.forEach(it => it(message.payload))
+    const { transformReceive } = this.options ?? {}
+
+    if (transformReceive) {
+      msg = transformReceive(msg)
+      if (!msg) {
+        return
+      }
+    }
+
+    this.options?.onReceive?.call(null, msg)
+
+    const callbacks = this.callbacks.get(msg.type)
+    callbacks?.forEach(it => it(msg.payload))
   }
 
   onOpen(sendClientMessage: WebSocketClientSendMessage): void {

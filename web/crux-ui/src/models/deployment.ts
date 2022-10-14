@@ -93,7 +93,7 @@ export type GetInstanceMessage = {
 }
 
 export const WS_TYPE_INSTANCE = 'instance'
-export type InstanceMessage = Instance
+export type InstanceMessage = Instance & {}
 
 export const WS_TYPE_INSTANCES_ADDED = 'instances-added'
 export type InstancesAddedMessage = Instance[]
@@ -115,5 +115,16 @@ export type StartDeploymentMessage = {
 }
 
 export const WS_TYPE_DEPLOYMENT_FINISHED = 'deployment-finished'
+
+export const WS_TYPE_GET_DEPLOYMENT_SECRETS = 'deployment-secret-list'
+export type DeploymentGetSecretListMessage = {
+  instanceId: string
+}
+
+export const WS_TYPE_DEPLOYMENT_SECRETS = 'deployment-secrets'
+export type DeploymentSecretListMessage = {
+  instanceId: string
+  keys: string[]
+}
 
 export const deploymentIsMutable = (status: DeploymentStatus) => status === 'preparing' || status === 'failed'

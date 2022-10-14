@@ -1,10 +1,11 @@
 import { Injectable, Logger, PreconditionFailedException } from '@nestjs/common'
 import { DeploymentStatusEnum } from '@prisma/client'
 import { JsonArray } from 'prisma'
-import { concatAll, filter, from, map, merge, Observable, Subject } from 'rxjs'
+import { concatAll, filter, from, lastValueFrom, map, merge, Observable, Subject } from 'rxjs'
 import Deployment from 'src/domain/deployment'
 import { InternalException } from 'src/exception/errors'
 import { DeployRequest } from 'src/grpc/protobuf/proto/agent'
+import { Empty, ListSecretsResponse } from 'src/grpc/protobuf/proto/common'
 import {
   AccessRequest,
   CreateDeploymentRequest,
@@ -14,8 +15,8 @@ import {
   DeploymentEventListResponse,
   DeploymentListByVersionResponse,
   DeploymentListResponse,
+  DeploymentListSecretsRequest,
   DeploymentProgressMessage,
-  Empty,
   IdRequest,
   PatchDeploymentRequest,
   ServiceIdRequest,
@@ -149,7 +150,6 @@ export default class DeployService {
       data: {
         note: request.note,
         prefix: request.prefix,
-        updatedAt: new Date(),
         updatedBy: request.accessedBy,
       },
       where: {
@@ -172,12 +172,9 @@ export default class DeployService {
       }
     }
 
-    const now = new Date()
-
     const deployment = await this.prisma.deployment.update({
       data: {
         environment: request.environment?.data as JsonArray,
-        updatedAt: now,
         updatedBy: request.accessedBy,
         instances: !reqInstance
           ? undefined
@@ -187,7 +184,6 @@ export default class DeployService {
                   id: reqInstance.id,
                 },
                 data: {
-                  updatedAt: now,
                   config: {
                     upsert: {
                       update: instanceConfigPatchSet,
@@ -445,6 +441,44 @@ export default class DeployService {
       deploymentIds: deployments.map(it => it.id),
       instances,
     }
+  }
+
+  async getDeploymentSecrets(request: DeploymentListSecretsRequest): Promise<ListSecretsResponse> {
+    const deployment = await this.prisma.deployment.findFirstOrThrow({
+      where: {
+        id: request.id,
+      },
+    })
+
+    const instanceWithImageAndConfig = await this.prisma.instance.findFirstOrThrow({
+      where: {
+        id: request.instanceId,
+      },
+      include: {
+        image: {
+          include: {
+            config: true,
+          },
+        },
+      },
+    })
+
+    const containerName = instanceWithImageAndConfig.image.config.name
+
+    const agent = this.agentService.getById(deployment.nodeId)
+    if (!agent) {
+      // Todo in the client is this just a simple internal server error
+      // please show a proper error message
+      throw new PreconditionFailedException({
+        message: 'Node is unreachable',
+        property: 'nodeId',
+        value: deployment.nodeId,
+      })
+    }
+
+    const watcher = agent.getContainerSecrets(deployment.prefix, containerName)
+
+    return lastValueFrom(watcher)
   }
 }
 

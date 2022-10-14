@@ -1,31 +1,35 @@
+import useItemEditorState from '@app/components/editor/use-item-editor-state'
 import KeyValueInput from '@app/components/shared/key-value-input'
 import { DEPLOYMENT_EDIT_WS_REQUEST_DELAY } from '@app/const'
 import { useThrottling } from '@app/hooks/use-throttleing'
-import { deploymentIsMutable, DeploymentRoot, WS_TYPE_PATCH_DEPLOYMENT_ENV } from '@app/models'
-import { UniqueKeyValue } from '@app/models/grpc/protobuf/proto/crux'
-import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
+import { UniqueKeyValue, WS_TYPE_PATCH_DEPLOYMENT_ENV } from '@app/models'
 import useTranslation from 'next-translate/useTranslation'
 import DeploymentDetailsCard from './deployment-details-card'
+import { DeploymentState } from './use-deployment-state'
 
 interface DeploymentDetailsSectionProps {
-  deployment: DeploymentRoot
-  deploySock: WebSocketClientEndpoint
+  state: DeploymentState
 }
+
+const ITEM_ID = 'deployment'
 
 const DeploymentDetailsSection = (props: DeploymentDetailsSectionProps) => {
   const { t } = useTranslation('deployments')
 
-  const { deployment, deploySock: sock } = props
+  const { state } = props
+  const { deployment, node, mutable, editor, sock } = state
 
-  const mutable = deploymentIsMutable(deployment.status)
+  const editorState = useItemEditorState(editor, sock, ITEM_ID)
 
   const throttle = useThrottling(DEPLOYMENT_EDIT_WS_REQUEST_DELAY)
 
   const onEnvChange = (env: UniqueKeyValue[]) => throttle(() => sock.send(WS_TYPE_PATCH_DEPLOYMENT_ENV, env))
+
   return (
-    <DeploymentDetailsCard deployment={deployment}>
+    <DeploymentDetailsCard deployment={deployment} node={node}>
       <KeyValueInput
         disabled={!mutable}
+        editorOptions={editorState}
         label={t('images:environment').toUpperCase()}
         items={deployment.environment ?? []}
         onChange={onEnvChange}

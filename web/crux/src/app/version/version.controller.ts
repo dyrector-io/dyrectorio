@@ -1,5 +1,5 @@
 import { Body, Controller, UseGuards } from '@nestjs/common'
-import { Empty } from 'src/grpc/protobuf/proto/agent'
+import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
   CreateEntityResponse,
   CreateVersionRequest,

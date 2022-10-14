@@ -17,16 +17,14 @@ import {
   RestartPolicy as ProtoRestartPolicy,
 } from 'src/grpc/protobuf/proto/common'
 import {
-  ContainerConfig as ProtoContainerConfig,
-  ImageResponse,
-  CommonContainerConfig as ProtoCruxCommonContainerConfig,
-  CraneContainerConfig as ProtoCruxCraneContainerConfig,
-  DagentContainerConfig as ProtoCruxDagentContainerConfig,
-} from 'src/grpc/protobuf/proto/crux'
-import {
   CommonContainerConfig as ProtoAgentCommonContainerConfig,
+  CommonContainerConfig as ProtoCruxCommonContainerConfig,
+  ContainerConfig as ProtoContainerConfig,
   CraneContainerConfig as ProtoAgentCraneContainerConfig,
+  CraneContainerConfig as ProtoCruxCraneContainerConfig,
   DagentContainerConfig as ProtoAgentDagentContainerConfig,
+  DagentContainerConfig as ProtoCruxDagentContainerConfig,
+  ImageResponse,
 } from 'src/grpc/protobuf/proto/crux'
 import { ContainerConfigData, UniqueKeyValue } from 'src/shared/model'
 

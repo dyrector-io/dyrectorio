@@ -30,6 +30,7 @@ import {
   DriverType,
   driverTypeFromJSON,
   driverTypeToJSON,
+  Empty,
   ExposeStrategy,
   exposeStrategyFromJSON,
   exposeStrategyToJSON,
@@ -598,9 +599,6 @@ export function serviceStatusToJSON(object: ServiceStatus): string {
   }
 }
 
-/** Common messages */
-export interface Empty {}
-
 export interface ServiceIdRequest {
   id: string
 }
@@ -624,10 +622,6 @@ export interface CreateEntityResponse {
 
 export interface UpdateEntityResponse {
   updatedAt: Timestamp | undefined
-}
-
-export interface PrefixRequest {
-  prefix: string
 }
 
 /** AUDIT */
@@ -1297,6 +1291,12 @@ export interface DeploymentEventListResponse {
   data: DeploymentEventResponse[]
 }
 
+export interface DeploymentListSecretsRequest {
+  id: string
+  accessedBy: string
+  instanceId: string
+}
+
 export interface CreateNotificationRequest {
   accessedBy: string
   name: string
@@ -1349,45 +1349,6 @@ export interface HealthResponse {
   status: ServiceStatus
   cruxVersion: string
   lastMigration?: string | undefined
-}
-
-function createBaseEmpty(): Empty {
-  return {}
-}
-
-export const Empty = {
-  encode(_: Empty, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): Empty {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseEmpty()
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(_: any): Empty {
-    return {}
-  },
-
-  toJSON(_: Empty): unknown {
-    const obj: any = {}
-    return obj
-  },
-
-  fromPartial<I extends Exact<DeepPartial<Empty>, I>>(_: I): Empty {
-    const message = createBaseEmpty()
-    return message
-  },
 }
 
 function createBaseServiceIdRequest(): ServiceIdRequest {
@@ -1676,53 +1637,6 @@ export const UpdateEntityResponse = {
     const message = createBaseUpdateEntityResponse()
     message.updatedAt =
       object.updatedAt !== undefined && object.updatedAt !== null ? Timestamp.fromPartial(object.updatedAt) : undefined
-    return message
-  },
-}
-
-function createBasePrefixRequest(): PrefixRequest {
-  return { prefix: '' }
-}
-
-export const PrefixRequest = {
-  encode(message: PrefixRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.prefix !== '') {
-      writer.uint32(10).string(message.prefix)
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): PrefixRequest {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBasePrefixRequest()
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 1:
-          message.prefix = reader.string()
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): PrefixRequest {
-    return { prefix: isSet(object.prefix) ? String(object.prefix) : '' }
-  },
-
-  toJSON(message: PrefixRequest): unknown {
-    const obj: any = {}
-    message.prefix !== undefined && (obj.prefix = message.prefix)
-    return obj
-  },
-
-  fromPartial<I extends Exact<DeepPartial<PrefixRequest>, I>>(object: I): PrefixRequest {
-    const message = createBasePrefixRequest()
-    message.prefix = object.prefix ?? ''
     return message
   },
 }
@@ -9277,6 +9191,73 @@ export const DeploymentEventListResponse = {
   },
 }
 
+function createBaseDeploymentListSecretsRequest(): DeploymentListSecretsRequest {
+  return { id: '', accessedBy: '', instanceId: '' }
+}
+
+export const DeploymentListSecretsRequest = {
+  encode(message: DeploymentListSecretsRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== '') {
+      writer.uint32(10).string(message.id)
+    }
+    if (message.accessedBy !== '') {
+      writer.uint32(18).string(message.accessedBy)
+    }
+    if (message.instanceId !== '') {
+      writer.uint32(26).string(message.instanceId)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): DeploymentListSecretsRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseDeploymentListSecretsRequest()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.id = reader.string()
+          break
+        case 2:
+          message.accessedBy = reader.string()
+          break
+        case 3:
+          message.instanceId = reader.string()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): DeploymentListSecretsRequest {
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      instanceId: isSet(object.instanceId) ? String(object.instanceId) : '',
+    }
+  },
+
+  toJSON(message: DeploymentListSecretsRequest): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
+    message.instanceId !== undefined && (obj.instanceId = message.instanceId)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<DeploymentListSecretsRequest>, I>>(object: I): DeploymentListSecretsRequest {
+    const message = createBaseDeploymentListSecretsRequest()
+    message.id = object.id ?? ''
+    message.accessedBy = object.accessedBy ?? ''
+    message.instanceId = object.instanceId ?? ''
+    return message
+  },
+}
+
 function createBaseCreateNotificationRequest(): CreateNotificationRequest {
   return { accessedBy: '', name: '', url: '', type: 0, active: false, events: [] }
 }
@@ -10896,12 +10877,13 @@ export const CruxDeploymentService = {
     responseSerialize: (value: DeploymentListResponse) => Buffer.from(DeploymentListResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer) => DeploymentListResponse.decode(value),
   },
-  getSecrets: {
-    path: '/crux.CruxDeployment/GetSecrets',
+  getDeploymentSecrets: {
+    path: '/crux.CruxDeployment/GetDeploymentSecrets',
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: PrefixRequest) => Buffer.from(PrefixRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => PrefixRequest.decode(value),
+    requestSerialize: (value: DeploymentListSecretsRequest) =>
+      Buffer.from(DeploymentListSecretsRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => DeploymentListSecretsRequest.decode(value),
     responseSerialize: (value: ListSecretsResponse) => Buffer.from(ListSecretsResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer) => ListSecretsResponse.decode(value),
   },
@@ -10936,7 +10918,7 @@ export interface CruxDeploymentServer extends UntypedServiceImplementation {
   getDeploymentDetails: handleUnaryCall<IdRequest, DeploymentDetailsResponse>
   getDeploymentEvents: handleUnaryCall<IdRequest, DeploymentEventListResponse>
   getDeploymentList: handleUnaryCall<AccessRequest, DeploymentListResponse>
-  getSecrets: handleUnaryCall<PrefixRequest, ListSecretsResponse>
+  getDeploymentSecrets: handleUnaryCall<DeploymentListSecretsRequest, ListSecretsResponse>
   startDeployment: handleServerStreamingCall<IdRequest, DeploymentProgressMessage>
   subscribeToDeploymentEditEvents: handleServerStreamingCall<ServiceIdRequest, DeploymentEditEventMessage>
 }
@@ -11059,17 +11041,17 @@ export interface CruxDeploymentClient extends Client {
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: DeploymentListResponse) => void,
   ): ClientUnaryCall
-  getSecrets(
-    request: PrefixRequest,
+  getDeploymentSecrets(
+    request: DeploymentListSecretsRequest,
     callback: (error: ServiceError | null, response: ListSecretsResponse) => void,
   ): ClientUnaryCall
-  getSecrets(
-    request: PrefixRequest,
+  getDeploymentSecrets(
+    request: DeploymentListSecretsRequest,
     metadata: Metadata,
     callback: (error: ServiceError | null, response: ListSecretsResponse) => void,
   ): ClientUnaryCall
-  getSecrets(
-    request: PrefixRequest,
+  getDeploymentSecrets(
+    request: DeploymentListSecretsRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: ListSecretsResponse) => void,

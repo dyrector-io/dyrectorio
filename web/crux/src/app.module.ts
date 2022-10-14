@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common'
 import { APP_INTERCEPTOR } from '@nestjs/core'
+import { ConfigModule } from '@nestjs/config'
 import TeamRepository from './app/team/team.repository'
 import AgentModule from './app/agent/agent.module'
 import AuditModule from './app/audit/audit.module'
@@ -18,6 +19,7 @@ import GrpcContextLogger from './interceptors/grpc-context-logger.interceptor'
 import AuditLoggerInterceptor from './interceptors/audit-logger.interceptor'
 import PrismaService from './services/prisma.service'
 import NotificationModule from './app/notification/notification.module'
+import EmailModule from './mailer/email.module'
 
 @Module({
   imports: [
@@ -32,6 +34,11 @@ import NotificationModule from './app/notification/notification.module'
     AuditModule,
     HealthModule,
     NotificationModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+      cache: true,
+    }),
+    EmailModule,
   ],
   controllers: [],
   providers: [

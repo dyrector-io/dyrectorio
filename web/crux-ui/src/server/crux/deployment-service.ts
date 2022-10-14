@@ -13,6 +13,7 @@ import {
   WS_TYPE_IMAGE_DELETED,
   WS_TYPE_INSTANCES_ADDED,
 } from '@app/models'
+import { ListSecretsResponse } from '@app/models/grpc/protobuf/proto/common'
 import {
   AccessRequest,
   CreateDeploymentRequest,
@@ -23,6 +24,7 @@ import {
   DeploymentEventListResponse,
   DeploymentListByVersionResponse,
   DeploymentListResponse,
+  DeploymentListSecretsRequest,
   DeploymentProgressMessage,
   Empty,
   IdRequest,
@@ -36,7 +38,7 @@ import { WsMessage } from '@app/websockets/common'
 import { Identity } from '@ory/kratos-client'
 import { GrpcConnection, protomisify, ProtoSubscriptionOptions } from './grpc-connection'
 import { deploymentEventTypeToDto, deploymentStatusToDto, instanceToDto } from './mappers/deployment-mappers'
-import { ContainerConfigToProto } from './mappers/image-mappers'
+import { containerConfigToProto } from './mappers/image-mappers'
 import { containerStateToDto, nodeStatusToDto } from './mappers/node-mappers'
 
 class DyoDeploymentService {
@@ -132,6 +134,21 @@ class DyoDeploymentService {
     })
   }
 
+  async getSecretsList(deploymentId: string, instanceId: string): Promise<ListSecretsResponse> {
+    const req: DeploymentListSecretsRequest = {
+      id: deploymentId,
+      instanceId,
+      accessedBy: this.identity.id,
+    }
+
+    const res = await protomisify<DeploymentListSecretsRequest, ListSecretsResponse>(
+      this.client,
+      this.client.getDeploymentSecrets,
+    )(DeploymentListSecretsRequest, req)
+
+    return res
+  }
+
   async create(versionId: string, deployment: CreateDeployment): Promise<string> {
     const req: CreateDeploymentRequest = {
       ...deployment,
@@ -174,7 +191,7 @@ class DyoDeploymentService {
         : {
             id: dto.instance.instanceId,
             accessedBy: this.identity.id,
-            config: ContainerConfigToProto(dto.instance.config),
+            config: containerConfigToProto(dto.instance.config),
           },
     }
 

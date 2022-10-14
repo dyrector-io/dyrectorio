@@ -165,7 +165,7 @@ export const containerConfigToDto = (config?: ProtoContainerConfig): ContainerCo
   return cfg
 }
 
-export const ContainerConfigToProto = (config?: ContainerConfig | Partial<ContainerConfig>): ProtoContainerConfig => {
+export const containerConfigToProto = (config?: ContainerConfig | Partial<ContainerConfig>): ProtoContainerConfig => {
   if (!config) {
     return null
   }

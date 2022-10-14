@@ -495,6 +495,8 @@ export function exposeStrategyToJSON(object: ExposeStrategy): string {
   }
 }
 
+export interface Empty {}
+
 export interface InstanceDeploymentItem {
   instanceId: string
   state: ContainerState
@@ -543,7 +545,9 @@ export interface KeyValue {
 
 export interface ListSecretsResponse {
   prefix: string
+  name: string
   publicKey: string
+  hasKeys: boolean
   keys: string[]
 }
 
@@ -553,6 +557,21 @@ export interface UniqueKey {
 }
 
 export const COMMON_PACKAGE_NAME = 'common'
+
+function createBaseEmpty(): Empty {
+  return {}
+}
+
+export const Empty = {
+  fromJSON(_: any): Empty {
+    return {}
+  },
+
+  toJSON(_: Empty): unknown {
+    const obj: any = {}
+    return obj
+  },
+}
 
 function createBaseInstanceDeploymentItem(): InstanceDeploymentItem {
   return { instanceId: '', state: 0 }
@@ -731,14 +750,16 @@ export const KeyValue = {
 }
 
 function createBaseListSecretsResponse(): ListSecretsResponse {
-  return { prefix: '', publicKey: '', keys: [] }
+  return { prefix: '', name: '', publicKey: '', hasKeys: false, keys: [] }
 }
 
 export const ListSecretsResponse = {
   fromJSON(object: any): ListSecretsResponse {
     return {
       prefix: isSet(object.prefix) ? String(object.prefix) : '',
+      name: isSet(object.name) ? String(object.name) : '',
       publicKey: isSet(object.publicKey) ? String(object.publicKey) : '',
+      hasKeys: isSet(object.hasKeys) ? Boolean(object.hasKeys) : false,
       keys: Array.isArray(object?.keys) ? object.keys.map((e: any) => String(e)) : [],
     }
   },
@@ -746,7 +767,9 @@ export const ListSecretsResponse = {
   toJSON(message: ListSecretsResponse): unknown {
     const obj: any = {}
     message.prefix !== undefined && (obj.prefix = message.prefix)
+    message.name !== undefined && (obj.name = message.name)
     message.publicKey !== undefined && (obj.publicKey = message.publicKey)
+    message.hasKeys !== undefined && (obj.hasKeys = message.hasKeys)
     if (message.keys) {
       obj.keys = message.keys.map(e => e)
     } else {

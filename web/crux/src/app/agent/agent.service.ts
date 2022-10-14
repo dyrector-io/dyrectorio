@@ -9,12 +9,16 @@ import { DeployMessage, NotificationMessageType } from 'src/domain/notification-
 import { collectChildVersionIds, collectParentVersionIds } from 'src/domain/utils'
 import { AlreadyExistsException, NotFoundException, UnauthenticatedException } from 'src/exception/errors'
 import { AgentCommand, AgentInfo, ContainerStateListMessage } from 'src/grpc/protobuf/proto/agent'
-import { ContainerStateListMessage as CruxContainerStateListMessage } from 'src/grpc/protobuf/proto/crux'
-import { Empty, NodeConnectionStatus, NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
-import { DeploymentStatus, DeploymentStatusMessage } from 'src/grpc/protobuf/proto/common'
+import {
+  ContainerStateListMessage as CruxContainerStateListMessage,
+  NodeConnectionStatus,
+  NodeEventMessage,
+} from 'src/grpc/protobuf/proto/crux'
+import { DeploymentStatus, DeploymentStatusMessage, Empty, ListSecretsResponse } from 'src/grpc/protobuf/proto/common'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
+import { ConfigService } from '@nestjs/config'
 
 @Injectable()
 export default class AgentService {
@@ -32,6 +36,7 @@ export default class AgentService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private notificationService: DomainNotificationService,
+    private configService: ConfigService,
   ) {}
 
   getById(id: string): Agent {
@@ -97,6 +102,7 @@ export default class AgentService {
       }
 
       installer = new AgentInstaller(
+        this.configService,
         nodeId,
         this.jwtService.sign(token),
         now + AgentService.SCRIPT_EXPIRATION,
@@ -212,6 +218,14 @@ export default class AgentService {
     )
   }
 
+  handleSecretList(connection: GrpcNodeConnection, request: ListSecretsResponse): Observable<Empty> {
+    const agent = this.getByIdOrThrow(connection.nodeId)
+
+    agent.onContainerSecrets(request)
+
+    return of(Empty)
+  }
+
   private onAgentConnectionStatusChange(agent: Agent, status: NodeConnectionStatus) {
     if (status === NodeConnectionStatus.UNREACHABLE) {
       this.logger.log(`Left: ${agent.id}`)
@@ -250,7 +264,7 @@ export default class AgentService {
           })
         }
 
-        agent = installer.complete(connection, eventChannel, request?.version)
+        agent = installer.complete(connection, request, eventChannel)
         this.installers.delete(node.id)
 
         await this.prisma.node.update({
@@ -267,7 +281,7 @@ export default class AgentService {
             message: 'Invalid token',
           })
         }
-        agent = new Agent(connection, eventChannel as Subject<NodeEventMessage>, request?.version, request?.publicKey)
+        agent = new Agent(connection, request, eventChannel as Subject<NodeEventMessage>)
 
         await prisma.node.update({
           where: { id: node.id },
@@ -279,7 +293,7 @@ export default class AgentService {
       }
     })
 
-    this.logger.log(`Agent key: ${request.publicKey}`)
+    this.logger.debug(`Agent key: ${request.publicKey}`)
 
     this.agents.set(agent.id, agent)
     connection.status().subscribe(it => this.onAgentConnectionStatusChange(agent, it))

@@ -15,6 +15,7 @@ import {
   DriverType,
   driverTypeFromJSON,
   driverTypeToJSON,
+  Empty,
   ExposeStrategy,
   exposeStrategyFromJSON,
   exposeStrategyToJSON,
@@ -41,8 +42,6 @@ export const protobufPackage = 'agent'
  * Container agent interface messages and service definitions
  * Logs, statuses, deployments
  */
-
-export interface Empty {}
 
 /**  */
 export interface AgentInfo {
@@ -77,6 +76,7 @@ export interface VersionDeployRequest {
 /** Request for a keys of existing secrets in a prefix, eg. namespace */
 export interface ListSecretsRequest {
   prefix: string
+  name: string
 }
 
 /** Deploys a single container */
@@ -247,21 +247,6 @@ export interface DeployRequestLegacy {
 
 export const AGENT_PACKAGE_NAME = 'agent'
 
-function createBaseEmpty(): Empty {
-  return {}
-}
-
-export const Empty = {
-  fromJSON(_: any): Empty {
-    return {}
-  },
-
-  toJSON(_: Empty): unknown {
-    const obj: any = {}
-    return obj
-  },
-}
-
 function createBaseAgentInfo(): AgentInfo {
   return { id: '', version: '', publicKey: '' }
 }
@@ -370,17 +355,21 @@ export const VersionDeployRequest = {
 }
 
 function createBaseListSecretsRequest(): ListSecretsRequest {
-  return { prefix: '' }
+  return { prefix: '', name: '' }
 }
 
 export const ListSecretsRequest = {
   fromJSON(object: any): ListSecretsRequest {
-    return { prefix: isSet(object.prefix) ? String(object.prefix) : '' }
+    return {
+      prefix: isSet(object.prefix) ? String(object.prefix) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+    }
   },
 
   toJSON(message: ListSecretsRequest): unknown {
     const obj: any = {}
     message.prefix !== undefined && (obj.prefix = message.prefix)
+    message.name !== undefined && (obj.name = message.name)
     return obj
   },
 }

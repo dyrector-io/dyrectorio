@@ -1,7 +1,8 @@
 import { Logger } from '@nestjs/common'
-import { Observable, Subject } from 'rxjs'
-import { AlreadyExistsException } from 'src/exception/errors'
-import { AgentCommand } from 'src/grpc/protobuf/proto/agent'
+import { finalize, Observable, Subject, throwError, timeout } from 'rxjs'
+import { AlreadyExistsException, InternalException } from 'src/exception/errors'
+import { AgentCommand, AgentInfo } from 'src/grpc/protobuf/proto/agent'
+import { ListSecretsResponse } from 'src/grpc/protobuf/proto/common'
 import { DeploymentProgressMessage, NodeConnectionStatus, NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import ContainerStatusWatcher, { ContainerStatusStreamCompleter } from './container-status-watcher'
@@ -14,6 +15,8 @@ export class Agent {
 
   private statusWatchers: Map<string, ContainerStatusWatcher> = new Map()
 
+  private secretsWatchers: Map<string, Subject<ListSecretsResponse>> = new Map()
+
   readonly id: string
 
   readonly address: string
@@ -24,14 +27,13 @@ export class Agent {
 
   constructor(
     connection: GrpcNodeConnection,
+    info: AgentInfo,
     private readonly eventChannel: Subject<NodeEventMessage>,
-    version?: string,
-    publicKey?: string,
   ) {
     this.id = connection.nodeId
     this.address = connection.address
-    this.version = version
-    this.publicKey = publicKey
+    this.version = info.version
+    this.publicKey = info.publicKey
   }
 
   getConnectionStatus(): NodeConnectionStatus {
@@ -83,6 +85,7 @@ export class Agent {
   onDisconnected() {
     this.deployments.forEach(it => it.onDisconnected())
     this.statusWatchers.forEach(it => it.stop())
+    this.secretsWatchers.forEach(it => it.complete())
     this.commandChannel.complete()
 
     this.eventChannel.next({
@@ -113,6 +116,56 @@ export class Agent {
 
     this.statusWatchers.delete(prefix)
     watcher.onNodeStreamFinished()
+  }
+
+  getContainerSecrets(prefix: string, name: string): Observable<ListSecretsResponse> {
+    const key = `${prefix}-${name}`
+
+    let watcher = this.secretsWatchers.get(key)
+    if (!watcher) {
+      watcher = new Subject<ListSecretsResponse>()
+      this.secretsWatchers.set(key, watcher)
+
+      this.commandChannel.next({
+        listSecrets: {
+          prefix,
+          name,
+        },
+      } as AgentCommand)
+    }
+
+    return watcher.pipe(
+      finalize(() => {
+        this.secretsWatchers.delete(key)
+      }),
+      timeout({
+        each: 5000,
+        with: () => {
+          this.secretsWatchers.delete(key)
+
+          return throwError(
+            () =>
+              new InternalException({
+                message: 'Agent container secrets timed out.',
+              }),
+          )
+        },
+      }),
+    )
+  }
+
+  onContainerSecrets(res: ListSecretsResponse) {
+    const key = `${res.prefix}-${res.name}`
+
+    const watcher = this.secretsWatchers.get(key)
+    if (!watcher) {
+      return
+    }
+
+    watcher.next(res)
+    watcher.complete()
+
+    this.secretsWatchers.delete(key)
   }
 
   debugInfo(logger: Logger) {

@@ -48,7 +48,7 @@ const ContainerStatusTag = (props: ContainerStatusTagProps) => {
       className={className}
       solid={state === 'removing'}
     >
-      {state ? t(`containerStatuses.${state}`) : t('notFound')}
+      {state ? t(`containerStatuses.${state}`) : t('errors:notFound')}
     </DyoTag>
   )
 }

@@ -32,7 +32,7 @@ type AgentClient interface {
 	Connect(ctx context.Context, in *AgentInfo, opts ...grpc.CallOption) (Agent_ConnectClient, error)
 	DeploymentStatus(ctx context.Context, opts ...grpc.CallOption) (Agent_DeploymentStatusClient, error)
 	ContainerState(ctx context.Context, opts ...grpc.CallOption) (Agent_ContainerStateClient, error)
-	GetSecretList(ctx context.Context, in *common.ListSecretsResponse, opts ...grpc.CallOption) (*Empty, error)
+	GetSecretList(ctx context.Context, in *common.ListSecretsResponse, opts ...grpc.CallOption) (*common.Empty, error)
 }
 
 type agentClient struct {
@@ -86,7 +86,7 @@ func (c *agentClient) DeploymentStatus(ctx context.Context, opts ...grpc.CallOpt
 
 type Agent_DeploymentStatusClient interface {
 	Send(*common.DeploymentStatusMessage) error
-	CloseAndRecv() (*Empty, error)
+	CloseAndRecv() (*common.Empty, error)
 	grpc.ClientStream
 }
 
@@ -98,11 +98,11 @@ func (x *agentDeploymentStatusClient) Send(m *common.DeploymentStatusMessage) er
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *agentDeploymentStatusClient) CloseAndRecv() (*Empty, error) {
+func (x *agentDeploymentStatusClient) CloseAndRecv() (*common.Empty, error) {
 	if err := x.ClientStream.CloseSend(); err != nil {
 		return nil, err
 	}
-	m := new(Empty)
+	m := new(common.Empty)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -120,7 +120,7 @@ func (c *agentClient) ContainerState(ctx context.Context, opts ...grpc.CallOptio
 
 type Agent_ContainerStateClient interface {
 	Send(*ContainerStateListMessage) error
-	CloseAndRecv() (*Empty, error)
+	CloseAndRecv() (*common.Empty, error)
 	grpc.ClientStream
 }
 
@@ -132,19 +132,19 @@ func (x *agentContainerStateClient) Send(m *ContainerStateListMessage) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *agentContainerStateClient) CloseAndRecv() (*Empty, error) {
+func (x *agentContainerStateClient) CloseAndRecv() (*common.Empty, error) {
 	if err := x.ClientStream.CloseSend(); err != nil {
 		return nil, err
 	}
-	m := new(Empty)
+	m := new(common.Empty)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
-func (c *agentClient) GetSecretList(ctx context.Context, in *common.ListSecretsResponse, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
+func (c *agentClient) GetSecretList(ctx context.Context, in *common.ListSecretsResponse, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
 	err := c.cc.Invoke(ctx, "/agent.Agent/GetSecretList", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -165,7 +165,7 @@ type AgentServer interface {
 	Connect(*AgentInfo, Agent_ConnectServer) error
 	DeploymentStatus(Agent_DeploymentStatusServer) error
 	ContainerState(Agent_ContainerStateServer) error
-	GetSecretList(context.Context, *common.ListSecretsResponse) (*Empty, error)
+	GetSecretList(context.Context, *common.ListSecretsResponse) (*common.Empty, error)
 	mustEmbedUnimplementedAgentServer()
 }
 
@@ -182,7 +182,7 @@ func (UnimplementedAgentServer) DeploymentStatus(Agent_DeploymentStatusServer) e
 func (UnimplementedAgentServer) ContainerState(Agent_ContainerStateServer) error {
 	return status.Errorf(codes.Unimplemented, "method ContainerState not implemented")
 }
-func (UnimplementedAgentServer) GetSecretList(context.Context, *common.ListSecretsResponse) (*Empty, error) {
+func (UnimplementedAgentServer) GetSecretList(context.Context, *common.ListSecretsResponse) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetSecretList not implemented")
 }
 func (UnimplementedAgentServer) mustEmbedUnimplementedAgentServer() {}
@@ -224,7 +224,7 @@ func _Agent_DeploymentStatus_Handler(srv interface{}, stream grpc.ServerStream) 
 }
 
 type Agent_DeploymentStatusServer interface {
-	SendAndClose(*Empty) error
+	SendAndClose(*common.Empty) error
 	Recv() (*common.DeploymentStatusMessage, error)
 	grpc.ServerStream
 }
@@ -233,7 +233,7 @@ type agentDeploymentStatusServer struct {
 	grpc.ServerStream
 }
 
-func (x *agentDeploymentStatusServer) SendAndClose(m *Empty) error {
+func (x *agentDeploymentStatusServer) SendAndClose(m *common.Empty) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -250,7 +250,7 @@ func _Agent_ContainerState_Handler(srv interface{}, stream grpc.ServerStream) er
 }
 
 type Agent_ContainerStateServer interface {
-	SendAndClose(*Empty) error
+	SendAndClose(*common.Empty) error
 	Recv() (*ContainerStateListMessage, error)
 	grpc.ServerStream
 }
@@ -259,7 +259,7 @@ type agentContainerStateServer struct {
 	grpc.ServerStream
 }
 
-func (x *agentContainerStateServer) SendAndClose(m *Empty) error {
+func (x *agentContainerStateServer) SendAndClose(m *common.Empty) error {
 	return x.ServerStream.SendMsg(m)
 }
 

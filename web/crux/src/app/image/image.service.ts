@@ -6,7 +6,6 @@ import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import { containerNameFromImageName } from 'src/domain/deployment'
 import {
   AddImagesToVersionRequest,
-  Empty,
   IdRequest,
   ImageListResponse,
   ImageResponse,
@@ -15,6 +14,7 @@ import {
 } from 'src/grpc/protobuf/proto/crux'
 import { ContainerConfigData } from 'src/shared/model'
 import ImageMapper, { ImageDetails } from './image.mapper'
+import { Empty } from 'src/grpc/protobuf/proto/common'
 
 @Injectable()
 export default class ImageService {
@@ -118,7 +118,6 @@ export default class ImageService {
         data: {
           order: index,
           updatedBy: request.accessedBy,
-          updatedAt: new Date(),
         },
         where: {
           id: it,
@@ -133,7 +132,6 @@ export default class ImageService {
 
   @AuditLogLevel('no-data')
   async patchImage(request: PatchImageRequest): Promise<Empty> {
-    console.log('CALLED WITH: ' + JSON.stringify(request.config))
     let config: ContainerConfigData
     if (request.config) {
       config = this.mapper.configProtoToDb(request.config)
@@ -150,7 +148,6 @@ export default class ImageService {
           update: config,
         },
         updatedBy: request.accessedBy,
-        updatedAt: new Date(),
       },
       where: {
         id: request.id,

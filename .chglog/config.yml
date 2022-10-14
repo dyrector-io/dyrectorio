@@ -9,9 +9,10 @@ options:
   commit_groups:
     title_maps:
   header:
-    pattern: "^(\\w*)\\:\\s(.*)$"
+    pattern: "^(fix|feat|chore|doc|techdebt|refactor)(\\(web\\)|\\(agent\\)|\\(crux\\)|\\(crux-ui\\)|\\(ci\\)|\\(cli\\))?\\:\\s?([\\S ]*)$"
     pattern_maps:
       - Type
+      - Scope
       - Subject
   notes:
     keywords:

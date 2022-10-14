@@ -1,17 +1,17 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { ProductTypeEnum, VersionTypeEnum } from '@prisma/client'
-import PrismaService from 'src/services/prisma.service'
+import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
   AccessRequest,
   CreateEntityResponse,
   CreateProductRequest,
-  Empty,
   IdRequest,
   ProductDetailsReponse,
   ProductListResponse,
   UpdateEntityResponse,
   UpdateProductRequest,
 } from 'src/grpc/protobuf/proto/crux'
+import PrismaService from 'src/services/prisma.service'
 import TeamRepository from '../team/team.repository'
 import ProductMapper from './product.mapper'
 
@@ -93,7 +93,6 @@ export default class ProductService {
         name: req.name,
         description: req.description,
         updatedBy: req.accessedBy,
-        updatedAt: new Date(),
         versions:
           product.type === ProductTypeEnum.simple
             ? {

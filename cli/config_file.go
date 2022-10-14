@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"crypto/rand"
 	"encoding/base64"
@@ -8,10 +9,12 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/docker/docker/client"
@@ -20,12 +23,12 @@ import (
 
 // Settings and state of the application
 type Settings struct {
-	SettingsFile     SettingsFile
-	SettingsWrite    bool
-	SettingsExists   bool
-	SettingsFilePath string
-	Command          string
-	NetworkGatewayIP string
+	SettingsFile       SettingsFile
+	SettingsWrite      bool
+	SettingsExists     bool
+	SettingsFilePath   string
+	Command            string
+	InternalHostDomain string
 	Containers
 }
 
@@ -33,6 +36,7 @@ type Containers struct {
 	Crux           ContainerSettings
 	CruxMigrate    ContainerSettings
 	CruxUI         ContainerSettings
+	Traefik        ContainerSettings
 	Kratos         ContainerSettings
 	KratosMigrate  ContainerSettings
 	CruxPostgres   ContainerSettings
@@ -41,10 +45,11 @@ type Containers struct {
 }
 
 type ContainerSettings struct {
-	Image    string
-	Name     string
-	Disabled bool
-	CruxAddr string
+	Image      string
+	Name       string
+	Disabled   bool
+	CruxAddr   string
+	CruxUIPort uint
 }
 
 // Settings file will be read/written as this struct
@@ -68,6 +73,8 @@ type Options struct {
 	CruxPostgresDB         string `yaml:"cruxPostgresDB"`
 	CruxPostgresUser       string `yaml:"cruxPostgresUser"`
 	CruxPostgresPassword   string `yaml:"cruxPostgresPassword"`
+	TraefikWebPort         uint   `yaml:"traefikWebPort"`
+	TraefikUIPort          uint   `yaml:"traefikUIPort"`
 	KratosAdminPort        uint   `yaml:"kratosAdminPort"`
 	KratosPublicPort       uint   `yaml:"kratosPublicPort"`
 	KratosPostgresPort     uint   `yaml:"kratosPostgresPort"`
@@ -85,6 +92,8 @@ const DefaultCruxAgentGrpcPort = 5000
 const DefaultCruxGrpcPort = 5001
 const DefaultCruxUIPort = 3000
 const DefaultCruxPostgresPort = 5432
+const DefaultTraefikWebPort = 8000
+const DefaultTraefikUIPort = 8080
 const DefaultKratosPublicPort = 4433
 const DefaultKratosAdminPort = 4434
 const DefaultKratosPostgresPort = 5433
@@ -100,6 +109,23 @@ const DirPerms = 0750
 
 const SettingsFileName = "settings.yaml"
 const SettingsFileDir = "dyo-cli"
+
+const (
+	CruxAgentGrpcPort  = "CruxAgentGrpcPort"
+	CruxGrpcPort       = "CruxGrpcPort"
+	CruxUIPort         = "CruxUIPort"
+	KratosAdminPort    = "KratosAdminPort"
+	KratosPublicPort   = "KratosPublicPort"
+	KratosPostgresPort = "KratosPostgresPort"
+	MailSlurperPort    = "MailSlurperPort"
+	MailSlurperPort2   = "MailSlurperPort2"
+	CruxPostgresPort   = "CruxPostgresPort"
+)
+
+const (
+	ParseBase    = 10
+	ParseBitSize = 32
+)
 
 // Check if the settings file is exists
 func SettingsExists(settingspath string) bool {
@@ -143,19 +169,21 @@ func SettingsFileReadWrite(state *Settings) *Settings {
 		}
 	}
 
-	CheckRequirements()
+	internalHostDomain := CheckRequirements()
 
 	// Fill out data if empty
 	settings := LoadDefaultsOnEmpty(state)
+	settings.InternalHostDomain = internalHostDomain
 
-	settings = GetNetworkGatewayIP(settings, EnsureNetworkExists(settings))
+	EnsureNetworkExists(settings)
+
+	// Move other values
+	settings.Containers.CruxUI.CruxUIPort = settings.SettingsFile.CruxUIPort
 
 	// Set disabled stuff
 	settings = DisabledServiceSettings(settings)
 
 	// Settings Validation steps
-
-	// TODO(c3ppc3pp): Check for available ports
 
 	saveSettings(settings)
 
@@ -163,7 +191,7 @@ func SettingsFileReadWrite(state *Settings) *Settings {
 }
 
 // Check prerequisites
-func CheckRequirements() {
+func CheckRequirements() string {
 	// getenv
 	envVarValue := os.Getenv("DOCKER_HOST")
 
@@ -201,10 +229,13 @@ func CheckRequirements() {
 	case "":
 		log.Printf("podman version: %s", info.ServerVersion)
 		PodmanInfo()
+		return PodmanHost
 	case "docker-init":
 		log.Printf("docker version: %s", info.ServerVersion)
+		return DockerHost
 	default:
 		log.Fatalf("unknown init binary")
+		return ""
 	}
 }
 
@@ -328,6 +359,8 @@ func LoadDefaultsOnEmpty(settings *Settings) *Settings {
 	settings.SettingsFile.CruxPostgresDB = LoadStringVal(settings.SettingsFile.CruxPostgresDB, "crux")
 	settings.SettingsFile.CruxPostgresUser = LoadStringVal(settings.SettingsFile.CruxPostgresUser, "crux")
 	settings.SettingsFile.CruxPostgresPassword = LoadStringVal(settings.SettingsFile.CruxPostgresPassword, RandomChars(SecretLength))
+	settings.SettingsFile.TraefikWebPort = LoadIntVal(settings.SettingsFile.TraefikWebPort, DefaultTraefikWebPort)
+	settings.SettingsFile.TraefikUIPort = LoadIntVal(settings.SettingsFile.TraefikUIPort, DefaultTraefikUIPort)
 	settings.SettingsFile.KratosAdminPort = LoadIntVal(settings.SettingsFile.KratosAdminPort, DefaultKratosAdminPort)
 	settings.SettingsFile.KratosPublicPort = LoadIntVal(settings.SettingsFile.KratosPublicPort, DefaultKratosPublicPort)
 	settings.SettingsFile.KratosPostgresPort = LoadIntVal(settings.SettingsFile.KratosPostgresPort, DefaultKratosPostgresPort)
@@ -339,6 +372,7 @@ func LoadDefaultsOnEmpty(settings *Settings) *Settings {
 	settings.SettingsFile.MailSlurperPort2 = LoadIntVal(settings.SettingsFile.MailSlurperPort2, DefaultMailSlurperPort2)
 
 	// Generate names
+	settings.Containers.Traefik.Name = fmt.Sprintf("%s_traefik", settings.SettingsFile.Prefix)
 	settings.Containers.Crux.Name = fmt.Sprintf("%s_crux", settings.SettingsFile.Prefix)
 	settings.Containers.CruxMigrate.Name = fmt.Sprintf("%s_crux-migrate", settings.SettingsFile.Prefix)
 	settings.Containers.CruxUI.Name = fmt.Sprintf("%s_crux-ui", settings.SettingsFile.Prefix)
@@ -383,4 +417,90 @@ func RandomChars(bufflength uint) string {
 		"=", "")
 
 	return result[0:bufflength]
+}
+
+func CheckAndUpdatePorts(settings *Settings) *Settings {
+	portMap := map[string]uint{}
+	if !settings.Containers.Crux.Disabled {
+		portMap[CruxAgentGrpcPort] = getAvailablePort(portMap, settings.SettingsFile.Options.CruxAgentGrpcPort, CruxAgentGrpcPort)
+		settings.SettingsFile.Options.CruxAgentGrpcPort = portMap[CruxAgentGrpcPort]
+		portMap[CruxGrpcPort] = getAvailablePort(portMap, settings.SettingsFile.Options.CruxGrpcPort, CruxGrpcPort)
+		settings.SettingsFile.Options.CruxGrpcPort = portMap[CruxGrpcPort]
+	}
+	if !settings.Containers.CruxUI.Disabled {
+		portMap[CruxUIPort] = getAvailablePort(portMap, settings.SettingsFile.Options.CruxUIPort, CruxUIPort)
+		settings.SettingsFile.Options.CruxUIPort = portMap[CruxUIPort]
+	}
+
+	portMap[CruxPostgresPort] = getAvailablePort(portMap, settings.SettingsFile.Options.CruxPostgresPort, CruxPostgresPort)
+	settings.SettingsFile.Options.CruxPostgresPort = portMap[CruxPostgresPort]
+	portMap[KratosAdminPort] = getAvailablePort(portMap, settings.SettingsFile.Options.KratosAdminPort, KratosAdminPort)
+	settings.SettingsFile.Options.KratosAdminPort = portMap[KratosAdminPort]
+	portMap[KratosPublicPort] = getAvailablePort(portMap, settings.SettingsFile.Options.KratosPublicPort, KratosPublicPort)
+	settings.SettingsFile.Options.KratosPublicPort = portMap[KratosPublicPort]
+	portMap[KratosPostgresPort] = getAvailablePort(portMap, settings.SettingsFile.Options.KratosPostgresPort, KratosPostgresPort)
+	settings.SettingsFile.Options.KratosPostgresPort = portMap[KratosPostgresPort]
+	portMap[MailSlurperPort] = getAvailablePort(portMap, settings.SettingsFile.Options.MailSlurperPort, MailSlurperPort)
+	settings.SettingsFile.Options.MailSlurperPort = portMap[MailSlurperPort]
+	portMap[MailSlurperPort2] = getAvailablePort(portMap, settings.SettingsFile.Options.MailSlurperPort2, MailSlurperPort2)
+	settings.SettingsFile.Options.MailSlurperPort2 = portMap[MailSlurperPort2]
+
+	return settings
+}
+
+func getAvailablePort(portMap map[string]uint, portNum uint, portDesc string) uint {
+	for {
+		if err := portIsAvailable(portMap, portNum); err != nil {
+			fmt.Fprintf(os.Stderr, "error in binding port for %s: %s\n", portDesc, err.Error())
+			fmt.Fprintf(os.Stdout, "type another port: ")
+			portNum = scanPort(portNum)
+			continue
+		}
+		break
+	}
+	return portNum
+}
+
+func scanPort(portNum uint) uint {
+	scanner := bufio.NewScanner(os.Stdin)
+	for scanner.Scan() {
+		newPort, err := strconv.ParseUint(scanner.Text(), ParseBase, ParseBitSize)
+		if err != nil || (newPort > 0 && newPort <= 1023) || newPort == 0 {
+			fmt.Fprintf(os.Stderr, "you typed invalid port number:\n")
+			fmt.Fprintf(os.Stdout, "type another port: ")
+			continue
+		}
+		return uint(newPort)
+	}
+	return portNum
+}
+
+func portIsAvailable(portMap map[string]uint, portNum uint) error {
+	err := portIsAvailableOnHost(portNum)
+	if err == nil {
+		err = externalPortIsDuplicated(portMap, portNum)
+	}
+	return err
+}
+
+func portIsAvailableOnHost(portNum uint) error {
+	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", portNum))
+	if err != nil {
+		return fmt.Errorf("can`t bind, %w", err)
+	}
+
+	err = ln.Close()
+	if err != nil {
+		return fmt.Errorf("can`t close, %w", err)
+	}
+	return nil
+}
+
+func externalPortIsDuplicated(portMap map[string]uint, candidatePort uint) error {
+	for desc, port := range portMap {
+		if port == candidatePort {
+			return fmt.Errorf("port %d is used by %s", port, desc)
+		}
+	}
+	return nil
 }

@@ -5,7 +5,6 @@ import {
   ContainerStateListMessage,
   CreateEntityResponse,
   CreateNodeRequest,
-  Empty,
   GenerateScriptRequest,
   IdRequest,
   NodeDetailsResponse,
@@ -24,6 +23,7 @@ import { PreconditionFailedException } from 'src/exception/errors'
 import AgentService from '../agent/agent.service'
 import TeamRepository from '../team/team.repository'
 import NodeMapper from './node.mapper'
+import { Empty } from 'src/grpc/protobuf/proto/common'
 
 @Injectable()
 export default class NodeService {
@@ -106,7 +106,6 @@ export default class NodeService {
         description: req.description,
         icon: req.icon ?? null,
         updatedBy: req.accessedBy,
-        updatedAt: new Date(),
       },
     })
 
@@ -123,7 +122,6 @@ export default class NodeService {
       data: {
         type: nodeType,
         updatedBy: req.accessedBy,
-        updatedAt: new Date(),
       },
     })
 
@@ -162,7 +160,6 @@ export default class NodeService {
       },
       data: {
         token: null,
-        updatedAt: new Date(),
         updatedBy: request.accessedBy,
       },
     })

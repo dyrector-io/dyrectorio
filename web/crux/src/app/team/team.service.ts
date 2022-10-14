@@ -8,6 +8,7 @@ import {
   NotFoundException,
   PreconditionFailedException,
 } from 'src/exception/errors'
+import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
   AccessRequest,
   ActiveTeamDetailsResponse,
@@ -15,7 +16,6 @@ import {
   CreateEntityResponse,
   CreateTeamRequest,
   DeleteUserFromTeamRequest,
-  Empty,
   IdRequest,
   InviteUserRequest,
   TeamDetailsResponse,
@@ -25,8 +25,8 @@ import {
   UserStatus,
 } from 'src/grpc/protobuf/proto/crux'
 import InterceptorGrpcHelperProvider from 'src/interceptors/helper.interceptor'
+import EmailService from 'src/mailer/email.service'
 import DomainNotificationService from 'src/services/domain.notification.service'
-import EmailService from 'src/services/email.service'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
 import { REGISTRY_HUB_URL } from 'src/shared/const'
@@ -174,7 +174,6 @@ export default class TeamService {
       data: {
         name: request.name,
         updatedBy: request.accessedBy,
-        updatedAt: new Date(),
       },
     })
 
@@ -263,7 +262,6 @@ export default class TeamService {
         team: {
           update: {
             updatedBy: request.accessedBy,
-            updatedAt: new Date(),
           },
         },
       },

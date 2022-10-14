@@ -24,12 +24,11 @@ service Agent {
    */
   rpc Connect(AgentInfo) returns (stream AgentCommand);
 
-  rpc DeploymentStatus(stream common.DeploymentStatusMessage) returns (Empty);
-  rpc ContainerState(stream ContainerStateListMessage) returns (Empty);
-  rpc GetSecretList(common.ListSecretsResponse) returns (Empty);
-}
+  rpc DeploymentStatus(stream common.DeploymentStatusMessage) returns (common.Empty);
 
-message Empty {}
+  rpc ContainerState(stream ContainerStateListMessage) returns (common.Empty);
+  rpc GetSecretList(common.ListSecretsResponse) returns (common.Empty);
+}
 
 /**
  *
@@ -67,7 +66,10 @@ message VersionDeployRequest {
 /*
  * Request for a keys of existing secrets in a prefix, eg. namespace
  */
-message ListSecretsRequest { string prefix = 1; }
+message ListSecretsRequest { 
+  string prefix = 1;
+  string name = 2;
+}
 
 /**
  * Deploys a single container

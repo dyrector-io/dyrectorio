@@ -1,6 +1,7 @@
 import { Metadata, ServerUnaryCall } from '@grpc/grpc-js'
 import { Body, Controller, UseGuards } from '@nestjs/common'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
+import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
   AccessRequest,
   ActiveTeamDetailsResponse,
@@ -10,7 +11,6 @@ import {
   CruxTeamController,
   CruxTeamControllerMethods,
   DeleteUserFromTeamRequest,
-  Empty,
   IdRequest,
   InviteUserRequest,
   TeamDetailsResponse,

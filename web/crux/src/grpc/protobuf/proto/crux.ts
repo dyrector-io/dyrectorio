@@ -17,6 +17,7 @@ import {
   DriverType,
   driverTypeFromJSON,
   driverTypeToJSON,
+  Empty,
   ExposeStrategy,
   exposeStrategyFromJSON,
   exposeStrategyToJSON,
@@ -585,9 +586,6 @@ export function serviceStatusToJSON(object: ServiceStatus): string {
   }
 }
 
-/** Common messages */
-export interface Empty {}
-
 export interface ServiceIdRequest {
   id: string
 }
@@ -611,10 +609,6 @@ export interface CreateEntityResponse {
 
 export interface UpdateEntityResponse {
   updatedAt: Timestamp | undefined
-}
-
-export interface PrefixRequest {
-  prefix: string
 }
 
 /** AUDIT */
@@ -1284,6 +1278,12 @@ export interface DeploymentEventListResponse {
   data: DeploymentEventResponse[]
 }
 
+export interface DeploymentListSecretsRequest {
+  id: string
+  accessedBy: string
+  instanceId: string
+}
+
 export interface CreateNotificationRequest {
   accessedBy: string
   name: string
@@ -1339,21 +1339,6 @@ export interface HealthResponse {
 }
 
 export const CRUX_PACKAGE_NAME = 'crux'
-
-function createBaseEmpty(): Empty {
-  return {}
-}
-
-export const Empty = {
-  fromJSON(_: any): Empty {
-    return {}
-  },
-
-  toJSON(_: Empty): unknown {
-    const obj: any = {}
-    return obj
-  },
-}
 
 function createBaseServiceIdRequest(): ServiceIdRequest {
   return { id: '' }
@@ -1447,22 +1432,6 @@ export const UpdateEntityResponse = {
   toJSON(message: UpdateEntityResponse): unknown {
     const obj: any = {}
     message.updatedAt !== undefined && (obj.updatedAt = fromTimestamp(message.updatedAt).toISOString())
-    return obj
-  },
-}
-
-function createBasePrefixRequest(): PrefixRequest {
-  return { prefix: '' }
-}
-
-export const PrefixRequest = {
-  fromJSON(object: any): PrefixRequest {
-    return { prefix: isSet(object.prefix) ? String(object.prefix) : '' }
-  },
-
-  toJSON(message: PrefixRequest): unknown {
-    const obj: any = {}
-    message.prefix !== undefined && (obj.prefix = message.prefix)
     return obj
   },
 }
@@ -4011,6 +3980,28 @@ export const DeploymentEventListResponse = {
   },
 }
 
+function createBaseDeploymentListSecretsRequest(): DeploymentListSecretsRequest {
+  return { id: '', accessedBy: '', instanceId: '' }
+}
+
+export const DeploymentListSecretsRequest = {
+  fromJSON(object: any): DeploymentListSecretsRequest {
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      instanceId: isSet(object.instanceId) ? String(object.instanceId) : '',
+    }
+  },
+
+  toJSON(message: DeploymentListSecretsRequest): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
+    message.instanceId !== undefined && (obj.instanceId = message.instanceId)
+    return obj
+  },
+}
+
 function createBaseCreateNotificationRequest(): CreateNotificationRequest {
   return { accessedBy: '', name: '', url: '', type: 0, active: false, events: [] }
 }
@@ -4624,7 +4615,11 @@ export interface CruxDeploymentClient {
 
   getDeploymentList(request: AccessRequest, metadata: Metadata, ...rest: any): Observable<DeploymentListResponse>
 
-  getSecrets(request: PrefixRequest, metadata: Metadata, ...rest: any): Observable<ListSecretsResponse>
+  getDeploymentSecrets(
+    request: DeploymentListSecretsRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Observable<ListSecretsResponse>
 
   startDeployment(request: IdRequest, metadata: Metadata, ...rest: any): Observable<DeploymentProgressMessage>
 
@@ -4683,8 +4678,8 @@ export interface CruxDeploymentController {
     ...rest: any
   ): Promise<DeploymentListResponse> | Observable<DeploymentListResponse> | DeploymentListResponse
 
-  getSecrets(
-    request: PrefixRequest,
+  getDeploymentSecrets(
+    request: DeploymentListSecretsRequest,
     metadata: Metadata,
     ...rest: any
   ): Promise<ListSecretsResponse> | Observable<ListSecretsResponse> | ListSecretsResponse
@@ -4709,7 +4704,7 @@ export function CruxDeploymentControllerMethods() {
       'getDeploymentDetails',
       'getDeploymentEvents',
       'getDeploymentList',
-      'getSecrets',
+      'getDeploymentSecrets',
       'startDeployment',
       'subscribeToDeploymentEditEvents',
     ]

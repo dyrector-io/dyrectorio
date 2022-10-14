@@ -1,4 +1,5 @@
 import { Logger } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
 import { NodeTypeEnum } from '@prisma/client'
 import { readFileSync } from 'fs'
 import Handlebars from 'handlebars'
@@ -6,6 +7,7 @@ import { join } from 'path'
 import { cwd } from 'process'
 import { Subject } from 'rxjs'
 import { PreconditionFailedException } from 'src/exception/errors'
+import { AgentInfo } from 'src/grpc/protobuf/proto/agent'
 import { NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import { Agent } from './agent'
@@ -18,6 +20,7 @@ export default class AgentInstaller {
   scriptCompiler: ScriptCompiler
 
   constructor(
+    readonly configService: ConfigService,
     readonly nodeId: string,
     readonly token: string,
     readonly expireAt: number,
@@ -42,33 +45,38 @@ export default class AgentInstaller {
   }
 
   getCommand(): string {
-    return `curl -sL ${process.env.CRUX_UI_URL}/api/nodes/${this.nodeId}/script | sh -`
+    return `curl -sL ${this.configService.get<string>('CRUX_UI_URL')}/api/nodes/${this.nodeId}/script | sh -`
   }
 
   getScript(name: string): string {
     this.verify()
 
+    const configGrpcInsecure = this.configService.get<string>('GRPC_AGENT_INSTALL_SCRIPT_INSECURE')
+    const configLocalDeployment = this.configService.get<string>('LOCAL_DEPLOYMENT')
+    const configLocalDeploymentNetwork = this.configService.get<string>('LOCAL_DEPLOYMENT_NETWORK')
+    const configK8sLocalManifest = this.configService.get<string>('K8S_LOCAL_MANIFEST')
+
     let installScriptParams = {
       name: name.toLowerCase().replace(/\s/g, ''),
       token: this.token,
-      insecure: process.env.GRPC_AGENT_INSTALL_SCRIPT_INSECURE === 'true',
-      network: process.env.LOCAL_DEPLOYMENT === 'true',
-      networkName: process.env.LOCAL_DEPLOYMENT_NETWORK,
+      insecure: configGrpcInsecure === 'true',
+      network: configLocalDeployment,
+      networkName: configLocalDeploymentNetwork,
       rootPath: this.rootPath,
     }
 
     if (this.nodeType === NodeTypeEnum.k8s) {
       installScriptParams = Object.assign(installScriptParams, {
-        localManifests: process.env.K8S_LOCAL_MANIFEST === 'true',
+        localManifests: configK8sLocalManifest === 'true',
       })
     }
 
     return this.scriptCompiler.compile(installScriptParams)
   }
 
-  complete(connection: GrpcNodeConnection, eventChannel: Subject<NodeEventMessage>, version?: string): Agent {
+  complete(connection: GrpcNodeConnection, info: AgentInfo, eventChannel: Subject<NodeEventMessage>): Agent {
     this.verify()
-    return new Agent(connection, eventChannel, version)
+    return new Agent(connection, info, eventChannel)
   }
 
   loadScriptAndCompiler(nodeType: NodeTypeEnum): void {

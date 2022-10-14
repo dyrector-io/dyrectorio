@@ -21,3 +21,9 @@ func GetDeployments(ctx context.Context, namespace string) []*agent.ContainerSta
 
 	return mapper.MapKubeDeploymentListToCruxStateItems(list)
 }
+
+func GetSecretsList(ctx context.Context, prefix, name string) ([]string, error) {
+	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
+
+	return k8s.ListSecrets(ctx, prefix, name, cfg)
+}

@@ -1,11 +1,9 @@
 import { Injectable } from '@nestjs/common'
 import { DeploymentStatusEnum } from '@prisma/client'
-import { containerNameFromImageName } from 'src/domain/deployment'
 import { VersionMessage } from 'src/domain/notification-templates'
 import {
   CreateEntityResponse,
   CreateVersionRequest,
-  Empty,
   IdRequest,
   IncreaseVersionRequest,
   UpdateEntityResponse,
@@ -17,6 +15,7 @@ import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
 import { Version } from '.prisma/client'
 import VersionMapper from './version.mapper'
+import { Empty } from 'src/grpc/protobuf/proto/common'
 
 @Injectable()
 export default class VersionService {
@@ -154,7 +153,6 @@ export default class VersionService {
       data: {
         name: req.name,
         changelog: req.changelog,
-        updatedAt: new Date(),
         updatedBy: req.accessedBy,
       },
     })

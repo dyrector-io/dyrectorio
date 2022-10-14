@@ -3,13 +3,14 @@ import React, { ForwardedRef, forwardRef } from 'react'
 import { DyoLabel } from './dyo-label'
 import DyoMessage from './dyo-message'
 
+export type MessageType = 'error' | 'info'
 export interface DyoInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   grow?: boolean
   label?: string
   labelClassName?: string
   containerClassName?: string
   message?: string
-  messageType?: 'error' | 'info'
+  messageType?: MessageType
   inline?: boolean
 }
 

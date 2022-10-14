@@ -3,6 +3,8 @@ syntax = "proto3";
 package common;
 option go_package = "github.com/dyrector-io/dyrectorio/protobuf/go/common";
 
+message Empty {}
+
 // Deployment
 enum ContainerState {
   UNKNOWN_CONTAINER_STATE = 0;
@@ -133,8 +135,10 @@ message KeyValue {
 
 message ListSecretsResponse {
   string prefix = 1;
-  string publicKey = 2;
-  repeated string keys = 3;
+  string name = 2;
+  string publicKey = 3;
+  bool hasKeys = 4;
+  repeated string keys = 5;
 }
 
 message UniqueKey {

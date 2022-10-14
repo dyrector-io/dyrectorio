@@ -27,7 +27,7 @@ type CruxProductClient interface {
 	GetProducts(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*ProductListResponse, error)
 	CreateProduct(ctx context.Context, in *CreateProductRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error)
 	UpdateProduct(ctx context.Context, in *UpdateProductRequest, opts ...grpc.CallOption) (*UpdateEntityResponse, error)
-	DeleteProduct(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error)
+	DeleteProduct(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
 	GetProductDetails(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*ProductDetailsReponse, error)
 }
 
@@ -66,8 +66,8 @@ func (c *cruxProductClient) UpdateProduct(ctx context.Context, in *UpdateProduct
 	return out, nil
 }
 
-func (c *cruxProductClient) DeleteProduct(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
+func (c *cruxProductClient) DeleteProduct(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
 	err := c.cc.Invoke(ctx, "/crux.CruxProduct/DeleteProduct", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -92,7 +92,7 @@ type CruxProductServer interface {
 	GetProducts(context.Context, *AccessRequest) (*ProductListResponse, error)
 	CreateProduct(context.Context, *CreateProductRequest) (*CreateEntityResponse, error)
 	UpdateProduct(context.Context, *UpdateProductRequest) (*UpdateEntityResponse, error)
-	DeleteProduct(context.Context, *IdRequest) (*Empty, error)
+	DeleteProduct(context.Context, *IdRequest) (*common.Empty, error)
 	GetProductDetails(context.Context, *IdRequest) (*ProductDetailsReponse, error)
 	mustEmbedUnimplementedCruxProductServer()
 }
@@ -110,7 +110,7 @@ func (UnimplementedCruxProductServer) CreateProduct(context.Context, *CreateProd
 func (UnimplementedCruxProductServer) UpdateProduct(context.Context, *UpdateProductRequest) (*UpdateEntityResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateProduct not implemented")
 }
-func (UnimplementedCruxProductServer) DeleteProduct(context.Context, *IdRequest) (*Empty, error) {
+func (UnimplementedCruxProductServer) DeleteProduct(context.Context, *IdRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteProduct not implemented")
 }
 func (UnimplementedCruxProductServer) GetProductDetails(context.Context, *IdRequest) (*ProductDetailsReponse, error) {
@@ -259,7 +259,7 @@ type CruxRegistryClient interface {
 	GetRegistries(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*RegistryListResponse, error)
 	CreateRegistry(ctx context.Context, in *CreateRegistryRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error)
 	UpdateRegistry(ctx context.Context, in *UpdateRegistryRequest, opts ...grpc.CallOption) (*UpdateEntityResponse, error)
-	DeleteRegistry(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error)
+	DeleteRegistry(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
 	GetRegistryDetails(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*RegistryDetailsResponse, error)
 }
 
@@ -298,8 +298,8 @@ func (c *cruxRegistryClient) UpdateRegistry(ctx context.Context, in *UpdateRegis
 	return out, nil
 }
 
-func (c *cruxRegistryClient) DeleteRegistry(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
+func (c *cruxRegistryClient) DeleteRegistry(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
 	err := c.cc.Invoke(ctx, "/crux.CruxRegistry/DeleteRegistry", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -324,7 +324,7 @@ type CruxRegistryServer interface {
 	GetRegistries(context.Context, *AccessRequest) (*RegistryListResponse, error)
 	CreateRegistry(context.Context, *CreateRegistryRequest) (*CreateEntityResponse, error)
 	UpdateRegistry(context.Context, *UpdateRegistryRequest) (*UpdateEntityResponse, error)
-	DeleteRegistry(context.Context, *IdRequest) (*Empty, error)
+	DeleteRegistry(context.Context, *IdRequest) (*common.Empty, error)
 	GetRegistryDetails(context.Context, *IdRequest) (*RegistryDetailsResponse, error)
 	mustEmbedUnimplementedCruxRegistryServer()
 }
@@ -342,7 +342,7 @@ func (UnimplementedCruxRegistryServer) CreateRegistry(context.Context, *CreateRe
 func (UnimplementedCruxRegistryServer) UpdateRegistry(context.Context, *UpdateRegistryRequest) (*UpdateEntityResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateRegistry not implemented")
 }
-func (UnimplementedCruxRegistryServer) DeleteRegistry(context.Context, *IdRequest) (*Empty, error) {
+func (UnimplementedCruxRegistryServer) DeleteRegistry(context.Context, *IdRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteRegistry not implemented")
 }
 func (UnimplementedCruxRegistryServer) GetRegistryDetails(context.Context, *IdRequest) (*RegistryDetailsResponse, error) {
@@ -490,13 +490,13 @@ type CruxNodeClient interface {
 	// CRUD
 	GetNodes(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*NodeListResponse, error)
 	CreateNode(ctx context.Context, in *CreateNodeRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error)
-	UpdateNode(ctx context.Context, in *UpdateNodeRequest, opts ...grpc.CallOption) (*Empty, error)
-	DeleteNode(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error)
+	UpdateNode(ctx context.Context, in *UpdateNodeRequest, opts ...grpc.CallOption) (*common.Empty, error)
+	DeleteNode(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
 	GetNodeDetails(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*NodeDetailsResponse, error)
 	GenerateScript(ctx context.Context, in *GenerateScriptRequest, opts ...grpc.CallOption) (*NodeInstallResponse, error)
 	GetScript(ctx context.Context, in *ServiceIdRequest, opts ...grpc.CallOption) (*NodeScriptResponse, error)
-	DiscardScript(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error)
-	RevokeToken(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error)
+	DiscardScript(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
+	RevokeToken(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
 	SubscribeNodeEventChannel(ctx context.Context, in *ServiceIdRequest, opts ...grpc.CallOption) (CruxNode_SubscribeNodeEventChannelClient, error)
 	WatchContainerState(ctx context.Context, in *WatchContainerStateRequest, opts ...grpc.CallOption) (CruxNode_WatchContainerStateClient, error)
 }
@@ -527,8 +527,8 @@ func (c *cruxNodeClient) CreateNode(ctx context.Context, in *CreateNodeRequest, 
 	return out, nil
 }
 
-func (c *cruxNodeClient) UpdateNode(ctx context.Context, in *UpdateNodeRequest, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
+func (c *cruxNodeClient) UpdateNode(ctx context.Context, in *UpdateNodeRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
 	err := c.cc.Invoke(ctx, "/crux.CruxNode/UpdateNode", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -536,8 +536,8 @@ func (c *cruxNodeClient) UpdateNode(ctx context.Context, in *UpdateNodeRequest, 
 	return out, nil
 }
 
-func (c *cruxNodeClient) DeleteNode(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
+func (c *cruxNodeClient) DeleteNode(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
 	err := c.cc.Invoke(ctx, "/crux.CruxNode/DeleteNode", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -572,8 +572,8 @@ func (c *cruxNodeClient) GetScript(ctx context.Context, in *ServiceIdRequest, op
 	return out, nil
 }
 
-func (c *cruxNodeClient) DiscardScript(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
+func (c *cruxNodeClient) DiscardScript(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
 	err := c.cc.Invoke(ctx, "/crux.CruxNode/DiscardScript", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -581,8 +581,8 @@ func (c *cruxNodeClient) DiscardScript(ctx context.Context, in *IdRequest, opts 
 	return out, nil
 }
 
-func (c *cruxNodeClient) RevokeToken(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
+func (c *cruxNodeClient) RevokeToken(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
 	err := c.cc.Invoke(ctx, "/crux.CruxNode/RevokeToken", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -661,13 +661,13 @@ type CruxNodeServer interface {
 	// CRUD
 	GetNodes(context.Context, *AccessRequest) (*NodeListResponse, error)
 	CreateNode(context.Context, *CreateNodeRequest) (*CreateEntityResponse, error)
-	UpdateNode(context.Context, *UpdateNodeRequest) (*Empty, error)
-	DeleteNode(context.Context, *IdRequest) (*Empty, error)
+	UpdateNode(context.Context, *UpdateNodeRequest) (*common.Empty, error)
+	DeleteNode(context.Context, *IdRequest) (*common.Empty, error)
 	GetNodeDetails(context.Context, *IdRequest) (*NodeDetailsResponse, error)
 	GenerateScript(context.Context, *GenerateScriptRequest) (*NodeInstallResponse, error)
 	GetScript(context.Context, *ServiceIdRequest) (*NodeScriptResponse, error)
-	DiscardScript(context.Context, *IdRequest) (*Empty, error)
-	RevokeToken(context.Context, *IdRequest) (*Empty, error)
+	DiscardScript(context.Context, *IdRequest) (*common.Empty, error)
+	RevokeToken(context.Context, *IdRequest) (*common.Empty, error)
 	SubscribeNodeEventChannel(*ServiceIdRequest, CruxNode_SubscribeNodeEventChannelServer) error
 	WatchContainerState(*WatchContainerStateRequest, CruxNode_WatchContainerStateServer) error
 	mustEmbedUnimplementedCruxNodeServer()
@@ -683,10 +683,10 @@ func (UnimplementedCruxNodeServer) GetNodes(context.Context, *AccessRequest) (*N
 func (UnimplementedCruxNodeServer) CreateNode(context.Context, *CreateNodeRequest) (*CreateEntityResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateNode not implemented")
 }
-func (UnimplementedCruxNodeServer) UpdateNode(context.Context, *UpdateNodeRequest) (*Empty, error) {
+func (UnimplementedCruxNodeServer) UpdateNode(context.Context, *UpdateNodeRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateNode not implemented")
 }
-func (UnimplementedCruxNodeServer) DeleteNode(context.Context, *IdRequest) (*Empty, error) {
+func (UnimplementedCruxNodeServer) DeleteNode(context.Context, *IdRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteNode not implemented")
 }
 func (UnimplementedCruxNodeServer) GetNodeDetails(context.Context, *IdRequest) (*NodeDetailsResponse, error) {
@@ -698,10 +698,10 @@ func (UnimplementedCruxNodeServer) GenerateScript(context.Context, *GenerateScri
 func (UnimplementedCruxNodeServer) GetScript(context.Context, *ServiceIdRequest) (*NodeScriptResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetScript not implemented")
 }
-func (UnimplementedCruxNodeServer) DiscardScript(context.Context, *IdRequest) (*Empty, error) {
+func (UnimplementedCruxNodeServer) DiscardScript(context.Context, *IdRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DiscardScript not implemented")
 }
-func (UnimplementedCruxNodeServer) RevokeToken(context.Context, *IdRequest) (*Empty, error) {
+func (UnimplementedCruxNodeServer) RevokeToken(context.Context, *IdRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RevokeToken not implemented")
 }
 func (UnimplementedCruxNodeServer) SubscribeNodeEventChannel(*ServiceIdRequest, CruxNode_SubscribeNodeEventChannelServer) error {
@@ -993,8 +993,8 @@ type CruxProductVersionClient interface {
 	GetVersionsByProductId(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*VersionListResponse, error)
 	CreateVersion(ctx context.Context, in *CreateVersionRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error)
 	UpdateVersion(ctx context.Context, in *UpdateVersionRequest, opts ...grpc.CallOption) (*UpdateEntityResponse, error)
-	DeleteVersion(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error)
-	SetDefaultVersion(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error)
+	DeleteVersion(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
+	SetDefaultVersion(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
 	GetVersionDetails(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*VersionDetailsResponse, error)
 	IncreaseVersion(ctx context.Context, in *IncreaseVersionRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error)
 }
@@ -1034,8 +1034,8 @@ func (c *cruxProductVersionClient) UpdateVersion(ctx context.Context, in *Update
 	return out, nil
 }
 
-func (c *cruxProductVersionClient) DeleteVersion(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
+func (c *cruxProductVersionClient) DeleteVersion(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
 	err := c.cc.Invoke(ctx, "/crux.CruxProductVersion/DeleteVersion", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -1043,8 +1043,8 @@ func (c *cruxProductVersionClient) DeleteVersion(ctx context.Context, in *IdRequ
 	return out, nil
 }
 
-func (c *cruxProductVersionClient) SetDefaultVersion(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
+func (c *cruxProductVersionClient) SetDefaultVersion(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
 	err := c.cc.Invoke(ctx, "/crux.CruxProductVersion/SetDefaultVersion", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -1077,8 +1077,8 @@ type CruxProductVersionServer interface {
 	GetVersionsByProductId(context.Context, *IdRequest) (*VersionListResponse, error)
 	CreateVersion(context.Context, *CreateVersionRequest) (*CreateEntityResponse, error)
 	UpdateVersion(context.Context, *UpdateVersionRequest) (*UpdateEntityResponse, error)
-	DeleteVersion(context.Context, *IdRequest) (*Empty, error)
-	SetDefaultVersion(context.Context, *IdRequest) (*Empty, error)
+	DeleteVersion(context.Context, *IdRequest) (*common.Empty, error)
+	SetDefaultVersion(context.Context, *IdRequest) (*common.Empty, error)
 	GetVersionDetails(context.Context, *IdRequest) (*VersionDetailsResponse, error)
 	IncreaseVersion(context.Context, *IncreaseVersionRequest) (*CreateEntityResponse, error)
 	mustEmbedUnimplementedCruxProductVersionServer()
@@ -1097,10 +1097,10 @@ func (UnimplementedCruxProductVersionServer) CreateVersion(context.Context, *Cre
 func (UnimplementedCruxProductVersionServer) UpdateVersion(context.Context, *UpdateVersionRequest) (*UpdateEntityResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateVersion not implemented")
 }
-func (UnimplementedCruxProductVersionServer) DeleteVersion(context.Context, *IdRequest) (*Empty, error) {
+func (UnimplementedCruxProductVersionServer) DeleteVersion(context.Context, *IdRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteVersion not implemented")
 }
-func (UnimplementedCruxProductVersionServer) SetDefaultVersion(context.Context, *IdRequest) (*Empty, error) {
+func (UnimplementedCruxProductVersionServer) SetDefaultVersion(context.Context, *IdRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetDefaultVersion not implemented")
 }
 func (UnimplementedCruxProductVersionServer) GetVersionDetails(context.Context, *IdRequest) (*VersionDetailsResponse, error) {
@@ -1294,9 +1294,9 @@ var CruxProductVersion_ServiceDesc = grpc.ServiceDesc{
 type CruxImageClient interface {
 	GetImagesByVersionId(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*ImageListResponse, error)
 	AddImagesToVersion(ctx context.Context, in *AddImagesToVersionRequest, opts ...grpc.CallOption) (*ImageListResponse, error)
-	OrderImages(ctx context.Context, in *OrderVersionImagesRequest, opts ...grpc.CallOption) (*Empty, error)
-	PatchImage(ctx context.Context, in *PatchImageRequest, opts ...grpc.CallOption) (*Empty, error)
-	DeleteImage(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error)
+	OrderImages(ctx context.Context, in *OrderVersionImagesRequest, opts ...grpc.CallOption) (*common.Empty, error)
+	PatchImage(ctx context.Context, in *PatchImageRequest, opts ...grpc.CallOption) (*common.Empty, error)
+	DeleteImage(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
 	GetImageDetails(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*ImageResponse, error)
 }
 
@@ -1326,8 +1326,8 @@ func (c *cruxImageClient) AddImagesToVersion(ctx context.Context, in *AddImagesT
 	return out, nil
 }
 
-func (c *cruxImageClient) OrderImages(ctx context.Context, in *OrderVersionImagesRequest, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
+func (c *cruxImageClient) OrderImages(ctx context.Context, in *OrderVersionImagesRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
 	err := c.cc.Invoke(ctx, "/crux.CruxImage/OrderImages", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -1335,8 +1335,8 @@ func (c *cruxImageClient) OrderImages(ctx context.Context, in *OrderVersionImage
 	return out, nil
 }
 
-func (c *cruxImageClient) PatchImage(ctx context.Context, in *PatchImageRequest, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
+func (c *cruxImageClient) PatchImage(ctx context.Context, in *PatchImageRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
 	err := c.cc.Invoke(ctx, "/crux.CruxImage/PatchImage", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -1344,8 +1344,8 @@ func (c *cruxImageClient) PatchImage(ctx context.Context, in *PatchImageRequest,
 	return out, nil
 }
 
-func (c *cruxImageClient) DeleteImage(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
+func (c *cruxImageClient) DeleteImage(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
 	err := c.cc.Invoke(ctx, "/crux.CruxImage/DeleteImage", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -1368,9 +1368,9 @@ func (c *cruxImageClient) GetImageDetails(ctx context.Context, in *IdRequest, op
 type CruxImageServer interface {
 	GetImagesByVersionId(context.Context, *IdRequest) (*ImageListResponse, error)
 	AddImagesToVersion(context.Context, *AddImagesToVersionRequest) (*ImageListResponse, error)
-	OrderImages(context.Context, *OrderVersionImagesRequest) (*Empty, error)
-	PatchImage(context.Context, *PatchImageRequest) (*Empty, error)
-	DeleteImage(context.Context, *IdRequest) (*Empty, error)
+	OrderImages(context.Context, *OrderVersionImagesRequest) (*common.Empty, error)
+	PatchImage(context.Context, *PatchImageRequest) (*common.Empty, error)
+	DeleteImage(context.Context, *IdRequest) (*common.Empty, error)
 	GetImageDetails(context.Context, *IdRequest) (*ImageResponse, error)
 	mustEmbedUnimplementedCruxImageServer()
 }
@@ -1385,13 +1385,13 @@ func (UnimplementedCruxImageServer) GetImagesByVersionId(context.Context, *IdReq
 func (UnimplementedCruxImageServer) AddImagesToVersion(context.Context, *AddImagesToVersionRequest) (*ImageListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddImagesToVersion not implemented")
 }
-func (UnimplementedCruxImageServer) OrderImages(context.Context, *OrderVersionImagesRequest) (*Empty, error) {
+func (UnimplementedCruxImageServer) OrderImages(context.Context, *OrderVersionImagesRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method OrderImages not implemented")
 }
-func (UnimplementedCruxImageServer) PatchImage(context.Context, *PatchImageRequest) (*Empty, error) {
+func (UnimplementedCruxImageServer) PatchImage(context.Context, *PatchImageRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PatchImage not implemented")
 }
-func (UnimplementedCruxImageServer) DeleteImage(context.Context, *IdRequest) (*Empty, error) {
+func (UnimplementedCruxImageServer) DeleteImage(context.Context, *IdRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteImage not implemented")
 }
 func (UnimplementedCruxImageServer) GetImageDetails(context.Context, *IdRequest) (*ImageResponse, error) {
@@ -1562,11 +1562,11 @@ type CruxDeploymentClient interface {
 	CreateDeployment(ctx context.Context, in *CreateDeploymentRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error)
 	UpdateDeployment(ctx context.Context, in *UpdateDeploymentRequest, opts ...grpc.CallOption) (*UpdateEntityResponse, error)
 	PatchDeployment(ctx context.Context, in *PatchDeploymentRequest, opts ...grpc.CallOption) (*UpdateEntityResponse, error)
-	DeleteDeployment(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error)
+	DeleteDeployment(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
 	GetDeploymentDetails(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*DeploymentDetailsResponse, error)
 	GetDeploymentEvents(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*DeploymentEventListResponse, error)
 	GetDeploymentList(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*DeploymentListResponse, error)
-	GetSecrets(ctx context.Context, in *PrefixRequest, opts ...grpc.CallOption) (*common.ListSecretsResponse, error)
+	GetDeploymentSecrets(ctx context.Context, in *DeploymentListSecretsRequest, opts ...grpc.CallOption) (*common.ListSecretsResponse, error)
 	StartDeployment(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (CruxDeployment_StartDeploymentClient, error)
 	SubscribeToDeploymentEditEvents(ctx context.Context, in *ServiceIdRequest, opts ...grpc.CallOption) (CruxDeployment_SubscribeToDeploymentEditEventsClient, error)
 }
@@ -1615,8 +1615,8 @@ func (c *cruxDeploymentClient) PatchDeployment(ctx context.Context, in *PatchDep
 	return out, nil
 }
 
-func (c *cruxDeploymentClient) DeleteDeployment(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
+func (c *cruxDeploymentClient) DeleteDeployment(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
 	err := c.cc.Invoke(ctx, "/crux.CruxDeployment/DeleteDeployment", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -1651,9 +1651,9 @@ func (c *cruxDeploymentClient) GetDeploymentList(ctx context.Context, in *Access
 	return out, nil
 }
 
-func (c *cruxDeploymentClient) GetSecrets(ctx context.Context, in *PrefixRequest, opts ...grpc.CallOption) (*common.ListSecretsResponse, error) {
+func (c *cruxDeploymentClient) GetDeploymentSecrets(ctx context.Context, in *DeploymentListSecretsRequest, opts ...grpc.CallOption) (*common.ListSecretsResponse, error) {
 	out := new(common.ListSecretsResponse)
-	err := c.cc.Invoke(ctx, "/crux.CruxDeployment/GetSecrets", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/crux.CruxDeployment/GetDeploymentSecrets", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1732,11 +1732,11 @@ type CruxDeploymentServer interface {
 	CreateDeployment(context.Context, *CreateDeploymentRequest) (*CreateEntityResponse, error)
 	UpdateDeployment(context.Context, *UpdateDeploymentRequest) (*UpdateEntityResponse, error)
 	PatchDeployment(context.Context, *PatchDeploymentRequest) (*UpdateEntityResponse, error)
-	DeleteDeployment(context.Context, *IdRequest) (*Empty, error)
+	DeleteDeployment(context.Context, *IdRequest) (*common.Empty, error)
 	GetDeploymentDetails(context.Context, *IdRequest) (*DeploymentDetailsResponse, error)
 	GetDeploymentEvents(context.Context, *IdRequest) (*DeploymentEventListResponse, error)
 	GetDeploymentList(context.Context, *AccessRequest) (*DeploymentListResponse, error)
-	GetSecrets(context.Context, *PrefixRequest) (*common.ListSecretsResponse, error)
+	GetDeploymentSecrets(context.Context, *DeploymentListSecretsRequest) (*common.ListSecretsResponse, error)
 	StartDeployment(*IdRequest, CruxDeployment_StartDeploymentServer) error
 	SubscribeToDeploymentEditEvents(*ServiceIdRequest, CruxDeployment_SubscribeToDeploymentEditEventsServer) error
 	mustEmbedUnimplementedCruxDeploymentServer()
@@ -1758,7 +1758,7 @@ func (UnimplementedCruxDeploymentServer) UpdateDeployment(context.Context, *Upda
 func (UnimplementedCruxDeploymentServer) PatchDeployment(context.Context, *PatchDeploymentRequest) (*UpdateEntityResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PatchDeployment not implemented")
 }
-func (UnimplementedCruxDeploymentServer) DeleteDeployment(context.Context, *IdRequest) (*Empty, error) {
+func (UnimplementedCruxDeploymentServer) DeleteDeployment(context.Context, *IdRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteDeployment not implemented")
 }
 func (UnimplementedCruxDeploymentServer) GetDeploymentDetails(context.Context, *IdRequest) (*DeploymentDetailsResponse, error) {
@@ -1770,8 +1770,8 @@ func (UnimplementedCruxDeploymentServer) GetDeploymentEvents(context.Context, *I
 func (UnimplementedCruxDeploymentServer) GetDeploymentList(context.Context, *AccessRequest) (*DeploymentListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDeploymentList not implemented")
 }
-func (UnimplementedCruxDeploymentServer) GetSecrets(context.Context, *PrefixRequest) (*common.ListSecretsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetSecrets not implemented")
+func (UnimplementedCruxDeploymentServer) GetDeploymentSecrets(context.Context, *DeploymentListSecretsRequest) (*common.ListSecretsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDeploymentSecrets not implemented")
 }
 func (UnimplementedCruxDeploymentServer) StartDeployment(*IdRequest, CruxDeployment_StartDeploymentServer) error {
 	return status.Errorf(codes.Unimplemented, "method StartDeployment not implemented")
@@ -1936,20 +1936,20 @@ func _CruxDeployment_GetDeploymentList_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
-func _CruxDeployment_GetSecrets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PrefixRequest)
+func _CruxDeployment_GetDeploymentSecrets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeploymentListSecretsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CruxDeploymentServer).GetSecrets(ctx, in)
+		return srv.(CruxDeploymentServer).GetDeploymentSecrets(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/crux.CruxDeployment/GetSecrets",
+		FullMethod: "/crux.CruxDeployment/GetDeploymentSecrets",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CruxDeploymentServer).GetSecrets(ctx, req.(*PrefixRequest))
+		return srv.(CruxDeploymentServer).GetDeploymentSecrets(ctx, req.(*DeploymentListSecretsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -2036,8 +2036,8 @@ var CruxDeployment_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _CruxDeployment_GetDeploymentList_Handler,
 		},
 		{
-			MethodName: "GetSecrets",
-			Handler:    _CruxDeployment_GetSecrets_Handler,
+			MethodName: "GetDeploymentSecrets",
+			Handler:    _CruxDeployment_GetDeploymentSecrets_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
@@ -2061,13 +2061,13 @@ var CruxDeployment_ServiceDesc = grpc.ServiceDesc{
 type CruxTeamClient interface {
 	CreateTeam(ctx context.Context, in *CreateTeamRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error)
 	GetActiveTeamByUser(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*ActiveTeamDetailsResponse, error)
-	UpdateTeam(ctx context.Context, in *UpdateTeamRequest, opts ...grpc.CallOption) (*Empty, error)
-	DeleteTeam(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error)
-	UpdateUserRole(ctx context.Context, in *UpdateUserRoleInTeamRequest, opts ...grpc.CallOption) (*Empty, error)
+	UpdateTeam(ctx context.Context, in *UpdateTeamRequest, opts ...grpc.CallOption) (*common.Empty, error)
+	DeleteTeam(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
+	UpdateUserRole(ctx context.Context, in *UpdateUserRoleInTeamRequest, opts ...grpc.CallOption) (*common.Empty, error)
 	InviteUserToTeam(ctx context.Context, in *InviteUserRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error)
-	DeleteUserFromTeam(ctx context.Context, in *DeleteUserFromTeamRequest, opts ...grpc.CallOption) (*Empty, error)
-	AcceptTeamInvite(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error)
-	SelectTeam(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error)
+	DeleteUserFromTeam(ctx context.Context, in *DeleteUserFromTeamRequest, opts ...grpc.CallOption) (*common.Empty, error)
+	AcceptTeamInvite(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
+	SelectTeam(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
 	GetUserMeta(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*UserMetaResponse, error)
 	GetAllTeams(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*AllTeamsResponse, error)
 	GetTeamById(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*TeamDetailsResponse, error)
@@ -2099,8 +2099,8 @@ func (c *cruxTeamClient) GetActiveTeamByUser(ctx context.Context, in *AccessRequ
 	return out, nil
 }
 
-func (c *cruxTeamClient) UpdateTeam(ctx context.Context, in *UpdateTeamRequest, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
+func (c *cruxTeamClient) UpdateTeam(ctx context.Context, in *UpdateTeamRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
 	err := c.cc.Invoke(ctx, "/crux.CruxTeam/UpdateTeam", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -2108,8 +2108,8 @@ func (c *cruxTeamClient) UpdateTeam(ctx context.Context, in *UpdateTeamRequest, 
 	return out, nil
 }
 
-func (c *cruxTeamClient) DeleteTeam(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
+func (c *cruxTeamClient) DeleteTeam(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
 	err := c.cc.Invoke(ctx, "/crux.CruxTeam/DeleteTeam", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -2117,8 +2117,8 @@ func (c *cruxTeamClient) DeleteTeam(ctx context.Context, in *IdRequest, opts ...
 	return out, nil
 }
 
-func (c *cruxTeamClient) UpdateUserRole(ctx context.Context, in *UpdateUserRoleInTeamRequest, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
+func (c *cruxTeamClient) UpdateUserRole(ctx context.Context, in *UpdateUserRoleInTeamRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
 	err := c.cc.Invoke(ctx, "/crux.CruxTeam/UpdateUserRole", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -2135,8 +2135,8 @@ func (c *cruxTeamClient) InviteUserToTeam(ctx context.Context, in *InviteUserReq
 	return out, nil
 }
 
-func (c *cruxTeamClient) DeleteUserFromTeam(ctx context.Context, in *DeleteUserFromTeamRequest, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
+func (c *cruxTeamClient) DeleteUserFromTeam(ctx context.Context, in *DeleteUserFromTeamRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
 	err := c.cc.Invoke(ctx, "/crux.CruxTeam/DeleteUserFromTeam", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -2144,8 +2144,8 @@ func (c *cruxTeamClient) DeleteUserFromTeam(ctx context.Context, in *DeleteUserF
 	return out, nil
 }
 
-func (c *cruxTeamClient) AcceptTeamInvite(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
+func (c *cruxTeamClient) AcceptTeamInvite(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
 	err := c.cc.Invoke(ctx, "/crux.CruxTeam/AcceptTeamInvite", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -2153,8 +2153,8 @@ func (c *cruxTeamClient) AcceptTeamInvite(ctx context.Context, in *IdRequest, op
 	return out, nil
 }
 
-func (c *cruxTeamClient) SelectTeam(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
+func (c *cruxTeamClient) SelectTeam(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
 	err := c.cc.Invoke(ctx, "/crux.CruxTeam/SelectTeam", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -2195,13 +2195,13 @@ func (c *cruxTeamClient) GetTeamById(ctx context.Context, in *IdRequest, opts ..
 type CruxTeamServer interface {
 	CreateTeam(context.Context, *CreateTeamRequest) (*CreateEntityResponse, error)
 	GetActiveTeamByUser(context.Context, *AccessRequest) (*ActiveTeamDetailsResponse, error)
-	UpdateTeam(context.Context, *UpdateTeamRequest) (*Empty, error)
-	DeleteTeam(context.Context, *IdRequest) (*Empty, error)
-	UpdateUserRole(context.Context, *UpdateUserRoleInTeamRequest) (*Empty, error)
+	UpdateTeam(context.Context, *UpdateTeamRequest) (*common.Empty, error)
+	DeleteTeam(context.Context, *IdRequest) (*common.Empty, error)
+	UpdateUserRole(context.Context, *UpdateUserRoleInTeamRequest) (*common.Empty, error)
 	InviteUserToTeam(context.Context, *InviteUserRequest) (*CreateEntityResponse, error)
-	DeleteUserFromTeam(context.Context, *DeleteUserFromTeamRequest) (*Empty, error)
-	AcceptTeamInvite(context.Context, *IdRequest) (*Empty, error)
-	SelectTeam(context.Context, *IdRequest) (*Empty, error)
+	DeleteUserFromTeam(context.Context, *DeleteUserFromTeamRequest) (*common.Empty, error)
+	AcceptTeamInvite(context.Context, *IdRequest) (*common.Empty, error)
+	SelectTeam(context.Context, *IdRequest) (*common.Empty, error)
 	GetUserMeta(context.Context, *AccessRequest) (*UserMetaResponse, error)
 	GetAllTeams(context.Context, *AccessRequest) (*AllTeamsResponse, error)
 	GetTeamById(context.Context, *IdRequest) (*TeamDetailsResponse, error)
@@ -2218,25 +2218,25 @@ func (UnimplementedCruxTeamServer) CreateTeam(context.Context, *CreateTeamReques
 func (UnimplementedCruxTeamServer) GetActiveTeamByUser(context.Context, *AccessRequest) (*ActiveTeamDetailsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetActiveTeamByUser not implemented")
 }
-func (UnimplementedCruxTeamServer) UpdateTeam(context.Context, *UpdateTeamRequest) (*Empty, error) {
+func (UnimplementedCruxTeamServer) UpdateTeam(context.Context, *UpdateTeamRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateTeam not implemented")
 }
-func (UnimplementedCruxTeamServer) DeleteTeam(context.Context, *IdRequest) (*Empty, error) {
+func (UnimplementedCruxTeamServer) DeleteTeam(context.Context, *IdRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteTeam not implemented")
 }
-func (UnimplementedCruxTeamServer) UpdateUserRole(context.Context, *UpdateUserRoleInTeamRequest) (*Empty, error) {
+func (UnimplementedCruxTeamServer) UpdateUserRole(context.Context, *UpdateUserRoleInTeamRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateUserRole not implemented")
 }
 func (UnimplementedCruxTeamServer) InviteUserToTeam(context.Context, *InviteUserRequest) (*CreateEntityResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InviteUserToTeam not implemented")
 }
-func (UnimplementedCruxTeamServer) DeleteUserFromTeam(context.Context, *DeleteUserFromTeamRequest) (*Empty, error) {
+func (UnimplementedCruxTeamServer) DeleteUserFromTeam(context.Context, *DeleteUserFromTeamRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteUserFromTeam not implemented")
 }
-func (UnimplementedCruxTeamServer) AcceptTeamInvite(context.Context, *IdRequest) (*Empty, error) {
+func (UnimplementedCruxTeamServer) AcceptTeamInvite(context.Context, *IdRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AcceptTeamInvite not implemented")
 }
-func (UnimplementedCruxTeamServer) SelectTeam(context.Context, *IdRequest) (*Empty, error) {
+func (UnimplementedCruxTeamServer) SelectTeam(context.Context, *IdRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SelectTeam not implemented")
 }
 func (UnimplementedCruxTeamServer) GetUserMeta(context.Context, *AccessRequest) (*UserMetaResponse, error) {
@@ -2543,10 +2543,10 @@ var CruxTeam_ServiceDesc = grpc.ServiceDesc{
 type CruxNotificationClient interface {
 	CreateNotification(ctx context.Context, in *CreateNotificationRequest, opts ...grpc.CallOption) (*CreateNotificationResponse, error)
 	UpdateNotification(ctx context.Context, in *UpdateNotificationRequest, opts ...grpc.CallOption) (*UpdateEntityResponse, error)
-	DeleteNotification(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error)
+	DeleteNotification(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
 	GetNotificationList(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*NotificationListResponse, error)
 	GetNotificationDetails(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*NotificationDetailsResponse, error)
-	TestNotification(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error)
+	TestNotification(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
 }
 
 type cruxNotificationClient struct {
@@ -2575,8 +2575,8 @@ func (c *cruxNotificationClient) UpdateNotification(ctx context.Context, in *Upd
 	return out, nil
 }
 
-func (c *cruxNotificationClient) DeleteNotification(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
+func (c *cruxNotificationClient) DeleteNotification(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
 	err := c.cc.Invoke(ctx, "/crux.CruxNotification/DeleteNotification", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -2602,8 +2602,8 @@ func (c *cruxNotificationClient) GetNotificationDetails(ctx context.Context, in 
 	return out, nil
 }
 
-func (c *cruxNotificationClient) TestNotification(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
+func (c *cruxNotificationClient) TestNotification(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
 	err := c.cc.Invoke(ctx, "/crux.CruxNotification/TestNotification", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -2617,10 +2617,10 @@ func (c *cruxNotificationClient) TestNotification(ctx context.Context, in *IdReq
 type CruxNotificationServer interface {
 	CreateNotification(context.Context, *CreateNotificationRequest) (*CreateNotificationResponse, error)
 	UpdateNotification(context.Context, *UpdateNotificationRequest) (*UpdateEntityResponse, error)
-	DeleteNotification(context.Context, *IdRequest) (*Empty, error)
+	DeleteNotification(context.Context, *IdRequest) (*common.Empty, error)
 	GetNotificationList(context.Context, *AccessRequest) (*NotificationListResponse, error)
 	GetNotificationDetails(context.Context, *IdRequest) (*NotificationDetailsResponse, error)
-	TestNotification(context.Context, *IdRequest) (*Empty, error)
+	TestNotification(context.Context, *IdRequest) (*common.Empty, error)
 	mustEmbedUnimplementedCruxNotificationServer()
 }
 
@@ -2634,7 +2634,7 @@ func (UnimplementedCruxNotificationServer) CreateNotification(context.Context, *
 func (UnimplementedCruxNotificationServer) UpdateNotification(context.Context, *UpdateNotificationRequest) (*UpdateEntityResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateNotification not implemented")
 }
-func (UnimplementedCruxNotificationServer) DeleteNotification(context.Context, *IdRequest) (*Empty, error) {
+func (UnimplementedCruxNotificationServer) DeleteNotification(context.Context, *IdRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteNotification not implemented")
 }
 func (UnimplementedCruxNotificationServer) GetNotificationList(context.Context, *AccessRequest) (*NotificationListResponse, error) {
@@ -2643,7 +2643,7 @@ func (UnimplementedCruxNotificationServer) GetNotificationList(context.Context, 
 func (UnimplementedCruxNotificationServer) GetNotificationDetails(context.Context, *IdRequest) (*NotificationDetailsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNotificationDetails not implemented")
 }
-func (UnimplementedCruxNotificationServer) TestNotification(context.Context, *IdRequest) (*Empty, error) {
+func (UnimplementedCruxNotificationServer) TestNotification(context.Context, *IdRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TestNotification not implemented")
 }
 func (UnimplementedCruxNotificationServer) mustEmbedUnimplementedCruxNotificationServer() {}
@@ -2929,7 +2929,7 @@ var CruxAudit_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CruxHealthClient interface {
-	GetHealth(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*HealthResponse, error)
+	GetHealth(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*HealthResponse, error)
 }
 
 type cruxHealthClient struct {
@@ -2940,7 +2940,7 @@ func NewCruxHealthClient(cc grpc.ClientConnInterface) CruxHealthClient {
 	return &cruxHealthClient{cc}
 }
 
-func (c *cruxHealthClient) GetHealth(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*HealthResponse, error) {
+func (c *cruxHealthClient) GetHealth(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*HealthResponse, error) {
 	out := new(HealthResponse)
 	err := c.cc.Invoke(ctx, "/crux.CruxHealth/getHealth", in, out, opts...)
 	if err != nil {
@@ -2953,7 +2953,7 @@ func (c *cruxHealthClient) GetHealth(ctx context.Context, in *Empty, opts ...grp
 // All implementations must embed UnimplementedCruxHealthServer
 // for forward compatibility
 type CruxHealthServer interface {
-	GetHealth(context.Context, *Empty) (*HealthResponse, error)
+	GetHealth(context.Context, *common.Empty) (*HealthResponse, error)
 	mustEmbedUnimplementedCruxHealthServer()
 }
 
@@ -2961,7 +2961,7 @@ type CruxHealthServer interface {
 type UnimplementedCruxHealthServer struct {
 }
 
-func (UnimplementedCruxHealthServer) GetHealth(context.Context, *Empty) (*HealthResponse, error) {
+func (UnimplementedCruxHealthServer) GetHealth(context.Context, *common.Empty) (*HealthResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetHealth not implemented")
 }
 func (UnimplementedCruxHealthServer) mustEmbedUnimplementedCruxHealthServer() {}
@@ -2978,7 +2978,7 @@ func RegisterCruxHealthServer(s grpc.ServiceRegistrar, srv CruxHealthServer) {
 }
 
 func _CruxHealth_GetHealth_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Empty)
+	in := new(common.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -2990,7 +2990,7 @@ func _CruxHealth_GetHealth_Handler(srv interface{}, ctx context.Context, dec fun
 		FullMethod: "/crux.CruxHealth/getHealth",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CruxHealthServer).GetHealth(ctx, req.(*Empty))
+		return srv.(CruxHealthServer).GetHealth(ctx, req.(*common.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }

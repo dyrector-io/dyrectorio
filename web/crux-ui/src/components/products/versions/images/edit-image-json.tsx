@@ -1,22 +1,16 @@
+import { EditorStateOptions } from '@app/components/editor/use-editor-state'
+import useMultiInputState from '@app/components/editor/use-multi-input-state'
 import JsonEditor from '@app/components/shared/json-editor-dynamic-module'
 import { IMAGE_WS_REQUEST_DELAY } from '@app/const'
 import { CANCEL_THROTTLE, useThrottling } from '@app/hooks/use-throttleing'
-import { ContainerConfig, UniqueKeyValue } from '@app/models'
+import { CompleteContainerConfig, ContainerConfig, InstanceContainerConfig, UniqueKeyValue } from '@app/models'
 import { fold } from '@app/utils'
 import { completeContainerConfigSchema } from '@app/validations'
 import clsx from 'clsx'
-import { useCallback, useEffect, useReducer } from 'react'
+import { CSSProperties, useCallback } from 'react'
 import { v4 as uuid } from 'uuid'
 
-type EditImageJsonActionType = 'config-change' | 'set-content'
-
-type EditImageJsonAction = {
-  type: EditImageJsonActionType
-  content?: ContainerConfig
-  config?: ContainerConfig
-}
-
-const DEFAULT_CONFIG = completeContainerConfigSchema.getDefault() as any as ContainerConfig
+const DEFAULT_CONFIG = completeContainerConfigSchema.getDefault() as any as CompleteContainerConfig
 
 const keyValueArrayToJson = (envs: UniqueKeyValue[]): Record<string, string> =>
   fold(envs, {}, (prev, it) => {
@@ -28,9 +22,9 @@ const keyValueArrayToJson = (envs: UniqueKeyValue[]): Record<string, string> =>
   })
 
 const imageConfigToCompleteContainerConfig = (
-  currentConfig: ContainerConfig,
-  imageConfig: ContainerConfig,
-): ContainerConfig => {
+  currentConfig: CompleteContainerConfig,
+  imageConfig: ContainerConfig | InstanceContainerConfig,
+): CompleteContainerConfig => {
   if (!imageConfig) {
     return currentConfig ?? DEFAULT_CONFIG
   }
@@ -49,18 +43,6 @@ const imageConfigToCompleteContainerConfig = (
   }
 
   return config
-}
-
-const reducer = (state: ContainerConfig, action: EditImageJsonAction): ContainerConfig => {
-  const { type } = action
-
-  if (type === 'config-change') {
-    return imageConfigToCompleteContainerConfig(state, action.config)
-  }
-  if (type === 'set-content') {
-    return action.content
-  }
-  throw Error(`Invalid EditImageJson action: ${type}`)
 }
 
 const mergeKeyValuesWithJson = (items: UniqueKeyValue[], json: Record<string, string>): UniqueKeyValue[] => {
@@ -109,34 +91,53 @@ const mergeKeyValuesWithJson = (items: UniqueKeyValue[], json: Record<string, st
 interface EditImageJsonProps {
   disabled?: boolean
   className?: string
-  config: ContainerConfig
-  disabledContainerNameEditing?: boolean
-  onPatch: (config: Partial<ContainerConfig>) => void
+  config: ContainerConfig | InstanceContainerConfig
+  editorOptions: EditorStateOptions
+  onPatch: (config: Partial<ContainerConfig | InstanceContainerConfig>) => void
   onParseError?: (err: Error) => void
 }
 
+const EDITOR_ID = 'json-config'
+const JSON_EDITOR_COMPARATOR = (one: CompleteContainerConfig, other: CompleteContainerConfig): boolean =>
+  JSON.stringify(one) === JSON.stringify(other)
+
 const EditImageJson = (props: EditImageJsonProps) => {
-  const { disabled, className, config, disabledContainerNameEditing, onPatch, onParseError: propOnParseError } = props
+  const { disabled, editorOptions, className, config, onPatch, onParseError: propOnParseError } = props
 
   const throttle = useThrottling(IMAGE_WS_REQUEST_DELAY)
 
-  const [state, dispatch] = useReducer(reducer, imageConfigToCompleteContainerConfig(null, config))
+  const onMergeValues = (_: CompleteContainerConfig, local: CompleteContainerConfig): CompleteContainerConfig => {
+    onPatch({
+      config: local,
+      name: local.name,
+      environment: mergeKeyValuesWithJson(config?.environment ?? [], local?.environment),
+      capabilities: mergeKeyValuesWithJson(config?.capabilities ?? [], local?.capabilities),
+    })
 
-  const onChange = useCallback(
-    (newConfig: ContainerConfig) => {
-      throttle(() => {
-        onPatch({
-          ...newConfig,
-        })
+    return local
+  }
 
-        dispatch({
-          type: 'set-content',
-          content: newConfig,
-        })
+  const [editorState, editorActions] = useMultiInputState({
+    id: EDITOR_ID,
+    value: imageConfigToCompleteContainerConfig(null, config),
+    editorOptions,
+    onMergeValues,
+    disabled,
+    onCompareValues: JSON_EDITOR_COMPARATOR,
+  })
+
+  const onChange = (newConfig: CompleteContainerConfig) => {
+    throttle(() => {
+      onPatch({
+        config: newConfig,
+        name: newConfig.name,
+        environment: mergeKeyValuesWithJson(config?.environment ?? [], newConfig?.environment),
+        capabilities: mergeKeyValuesWithJson(config?.capabilities ?? [], newConfig?.capabilities),
       })
-    },
-    [throttle, config?.environments, config?.capabilities, onPatch],
-  )
+    })
+
+    editorActions.onChange(newConfig)
+  }
 
   const onParseError = useCallback(
     (err: Error) => {
@@ -147,26 +148,26 @@ const EditImageJson = (props: EditImageJsonProps) => {
     [throttle, propOnParseError],
   )
 
-  useEffect(
-    () =>
-      dispatch({
-        type: 'config-change',
-        config,
-      }),
-    [config],
-  )
+  const { highlightColor } = editorState
 
-  if (disabledContainerNameEditing) {
-    delete state.name
-  }
+  const style: CSSProperties = highlightColor
+    ? {
+        outline: 'solid',
+        outlineColor: highlightColor,
+      }
+    : null
 
   return (
     <JsonEditor
+      id={EDITOR_ID}
       className={clsx('h-full overflow-y-auto', className)}
       disabled={disabled}
-      value={state}
+      value={editorState.value}
       onChange={onChange}
       onParseError={onParseError}
+      onFocus={editorActions.onFocus}
+      onBlur={editorActions.onBlur}
+      style={style}
     />
   )
 }

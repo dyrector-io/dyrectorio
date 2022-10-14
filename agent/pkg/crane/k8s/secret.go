@@ -55,6 +55,32 @@ func (s *secret) applySecrets(namespace, name string, values map[string]string) 
 	return err
 }
 
+func ListSecrets(ctx context.Context, namespace, name string, appConfig *config.Configuration) ([]string, error) {
+	cli, err := getSecretClient(namespace, appConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	list, err := cli.List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	names := []string{}
+
+	for index := range list.Items {
+		secret := &list.Items[index]
+		if secret.Name == name {
+			for key := range secret.Data {
+				names = append(names, key)
+			}
+			break
+		}
+	}
+
+	return names, nil
+}
+
 func getSecretClient(namespace string, cfg *config.Configuration) (v1.SecretInterface, error) {
 	clientset, err := GetClientSet(cfg)
 

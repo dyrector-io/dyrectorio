@@ -20,7 +20,7 @@ service CruxProduct {
   rpc GetProducts(AccessRequest) returns (ProductListResponse);
   rpc CreateProduct(CreateProductRequest) returns (CreateEntityResponse);
   rpc UpdateProduct(UpdateProductRequest) returns (UpdateEntityResponse);
-  rpc DeleteProduct(IdRequest) returns (Empty);
+  rpc DeleteProduct(IdRequest) returns (common.Empty);
   rpc GetProductDetails(IdRequest) returns (ProductDetailsReponse);
 }
 
@@ -29,7 +29,7 @@ service CruxRegistry {
   rpc GetRegistries(AccessRequest) returns (RegistryListResponse);
   rpc CreateRegistry(CreateRegistryRequest) returns (CreateEntityResponse);
   rpc UpdateRegistry(UpdateRegistryRequest) returns (UpdateEntityResponse);
-  rpc DeleteRegistry(IdRequest) returns (Empty);
+  rpc DeleteRegistry(IdRequest) returns (common.Empty);
   rpc GetRegistryDetails(IdRequest) returns (RegistryDetailsResponse);
 }
 
@@ -37,13 +37,13 @@ service CruxNode {
   // CRUD
   rpc GetNodes(AccessRequest) returns (NodeListResponse);
   rpc CreateNode(CreateNodeRequest) returns (CreateEntityResponse);
-  rpc UpdateNode(UpdateNodeRequest) returns (Empty);
-  rpc DeleteNode(IdRequest) returns (Empty);
+  rpc UpdateNode(UpdateNodeRequest) returns (common.Empty);
+  rpc DeleteNode(IdRequest) returns (common.Empty);
   rpc GetNodeDetails(IdRequest) returns (NodeDetailsResponse);
   rpc GenerateScript(GenerateScriptRequest) returns (NodeInstallResponse);
   rpc GetScript(ServiceIdRequest) returns (NodeScriptResponse);
-  rpc DiscardScript(IdRequest) returns (Empty);
-  rpc RevokeToken(IdRequest) returns (Empty);
+  rpc DiscardScript(IdRequest) returns (common.Empty);
+  rpc RevokeToken(IdRequest) returns (common.Empty);
 
   rpc SubscribeNodeEventChannel(ServiceIdRequest)
       returns (stream NodeEventMessage);
@@ -55,8 +55,8 @@ service CruxProductVersion {
   rpc GetVersionsByProductId(IdRequest) returns (VersionListResponse);
   rpc CreateVersion(CreateVersionRequest) returns (CreateEntityResponse);
   rpc UpdateVersion(UpdateVersionRequest) returns (UpdateEntityResponse);
-  rpc DeleteVersion(IdRequest) returns (Empty);
-  rpc SetDefaultVersion(IdRequest) returns (Empty);
+  rpc DeleteVersion(IdRequest) returns (common.Empty);
+  rpc SetDefaultVersion(IdRequest) returns (common.Empty);
   rpc GetVersionDetails(IdRequest) returns (VersionDetailsResponse);
   rpc IncreaseVersion(IncreaseVersionRequest) returns (CreateEntityResponse);
 }
@@ -64,9 +64,9 @@ service CruxProductVersion {
 service CruxImage {
   rpc GetImagesByVersionId(IdRequest) returns (ImageListResponse);
   rpc AddImagesToVersion(AddImagesToVersionRequest) returns (ImageListResponse);
-  rpc OrderImages(OrderVersionImagesRequest) returns (Empty);
-  rpc PatchImage(PatchImageRequest) returns (Empty);
-  rpc DeleteImage(IdRequest) returns (Empty);
+  rpc OrderImages(OrderVersionImagesRequest) returns (common.Empty);
+  rpc PatchImage(PatchImageRequest) returns (common.Empty);
+  rpc DeleteImage(IdRequest) returns (common.Empty);
   rpc GetImageDetails(IdRequest) returns (ImageResponse);
 }
 
@@ -76,11 +76,11 @@ service CruxDeployment {
   rpc CreateDeployment(CreateDeploymentRequest) returns (CreateEntityResponse);
   rpc UpdateDeployment(UpdateDeploymentRequest) returns (UpdateEntityResponse);
   rpc PatchDeployment(PatchDeploymentRequest) returns (UpdateEntityResponse);
-  rpc DeleteDeployment(IdRequest) returns (Empty);
+  rpc DeleteDeployment(IdRequest) returns (common.Empty);
   rpc GetDeploymentDetails(IdRequest) returns (DeploymentDetailsResponse);
   rpc GetDeploymentEvents(IdRequest) returns (DeploymentEventListResponse);
   rpc GetDeploymentList(AccessRequest) returns (DeploymentListResponse);
-  rpc GetSecrets(PrefixRequest) returns (common.ListSecretsResponse);
+  rpc GetDeploymentSecrets(DeploymentListSecretsRequest) returns (common.ListSecretsResponse);
 
   rpc StartDeployment(IdRequest) returns (stream DeploymentProgressMessage);
   rpc SubscribeToDeploymentEditEvents(ServiceIdRequest)
@@ -90,14 +90,14 @@ service CruxDeployment {
 service CruxTeam {
   rpc CreateTeam(CreateTeamRequest) returns (CreateEntityResponse);
   rpc GetActiveTeamByUser(AccessRequest) returns (ActiveTeamDetailsResponse);
-  rpc UpdateTeam(UpdateTeamRequest) returns (Empty);
-  rpc DeleteTeam(IdRequest) returns (Empty);
-  rpc UpdateUserRole(UpdateUserRoleInTeamRequest) returns (Empty);
+  rpc UpdateTeam(UpdateTeamRequest) returns (common.Empty);
+  rpc DeleteTeam(IdRequest) returns (common.Empty);
+  rpc UpdateUserRole(UpdateUserRoleInTeamRequest) returns (common.Empty);
 
   rpc InviteUserToTeam(InviteUserRequest) returns (CreateEntityResponse);
-  rpc DeleteUserFromTeam(DeleteUserFromTeamRequest) returns (Empty);
-  rpc AcceptTeamInvite(IdRequest) returns (Empty);
-  rpc SelectTeam(IdRequest) returns (Empty);
+  rpc DeleteUserFromTeam(DeleteUserFromTeamRequest) returns (common.Empty);
+  rpc AcceptTeamInvite(IdRequest) returns (common.Empty);
+  rpc SelectTeam(IdRequest) returns (common.Empty);
 
   rpc GetUserMeta(AccessRequest) returns (UserMetaResponse);
   rpc GetAllTeams(AccessRequest) returns (AllTeamsResponse);
@@ -109,10 +109,10 @@ service CruxNotification {
       returns (CreateNotificationResponse);
   rpc UpdateNotification(UpdateNotificationRequest)
       returns (UpdateEntityResponse);
-  rpc DeleteNotification(IdRequest) returns (Empty);
+  rpc DeleteNotification(IdRequest) returns (common.Empty);
   rpc GetNotificationList(AccessRequest) returns (NotificationListResponse);
   rpc GetNotificationDetails(IdRequest) returns (NotificationDetailsResponse);
-  rpc TestNotification(IdRequest) returns (Empty);
+  rpc TestNotification(IdRequest) returns (common.Empty);
 }
 
 service CruxAudit {
@@ -120,14 +120,13 @@ service CruxAudit {
   rpc GetAuditLogListCount(AuditLogListRequest) returns (AuditLogListCountResponse);
 }
 
-service CruxHealth { rpc getHealth(Empty) returns (HealthResponse); }
+service CruxHealth { rpc getHealth(common.Empty) returns (HealthResponse); }
 
 /**
  *
  * Common messages
  *
  */
-message Empty {}
 
 message ServiceIdRequest { string id = 1; }
 
@@ -150,8 +149,6 @@ message CreateEntityResponse {
 }
 
 message UpdateEntityResponse { google.protobuf.Timestamp updatedAt = 100; }
-
-message PrefixRequest { string prefix = 1; }
 
 /*
  *
@@ -944,6 +941,12 @@ message DeploymentEventResponse {
 
 message DeploymentEventListResponse {
   repeated DeploymentEventResponse data = 1000;
+}
+
+message DeploymentListSecretsRequest {
+  string id = 1;
+  string accessedBy = 2;
+  string instanceId = 3;
 }
 
 // NOTIFICATION

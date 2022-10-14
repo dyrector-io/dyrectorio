@@ -108,6 +108,7 @@ func pullImage(ctx context.Context, logger io.StringWriter, fullyQualifiedImageN
 		pullResult := ImagePullResponse{}
 		err = d.Decode(&pullResult)
 		if err == io.EOF {
+			err = nil
 			break
 		} else if err != nil {
 			log.Println("decode error: " + err.Error())
