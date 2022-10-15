@@ -25,8 +25,8 @@ import {
   UserStatus,
 } from 'src/grpc/protobuf/proto/crux'
 import InterceptorGrpcHelperProvider from 'src/interceptors/helper.interceptor'
+import EmailService from 'src/mailer/email.service'
 import DomainNotificationService from 'src/services/domain.notification.service'
-import EmailService from 'src/services/email.service'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
 import { REGISTRY_HUB_URL } from 'src/shared/const'

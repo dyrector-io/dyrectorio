@@ -1,6 +1,6 @@
+import { ISendMailOptions } from '@nestjs-modules/mailer'
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { MailDataRequired } from '@sendgrid/mail'
 import { disassembleKratosRecoveryUrl } from 'src/domain/utils'
 import { EmailBuilderException } from 'src/exception/errors'
 
@@ -14,26 +14,19 @@ type InviteTemaple = {
 export default class EmailBuilder {
   private host: string
 
-  private from: { email: string; name: string }
-
-  constructor(private configService: ConfigService) {
+  constructor(configService: ConfigService) {
     this.host = configService.get<string>('CRUX_UI_URL')
-    this.from = {
-      email: configService.get<string>('FROM_EMAIL'),
-      name: configService.get<string>('FROM_NAME'),
-    }
   }
 
-  buildInviteEmail(email: string, teamName: string, teamId?: string, kratosRecoveryLink?: string): MailDataRequired {
+  buildInviteEmail(to: string, teamName: string, teamId?: string, kratosRecoveryLink?: string): ISendMailOptions {
     if (!teamId && !kratosRecoveryLink) {
       throw new EmailBuilderException()
     }
 
     const inviteTemplate = this.getInviteTemplate(teamName, teamId, kratosRecoveryLink)
 
-    const emailItem: MailDataRequired = {
-      from: this.from,
-      to: email,
+    const emailItem: ISendMailOptions = {
+      to,
       subject: inviteTemplate.subject,
       text: inviteTemplate.text,
       html: inviteTemplate.html,

@@ -112,8 +112,11 @@ class WebSocketServer {
         token: this.authorizer.generate(session.identity),
       } as WsConnectDto)
     } else {
-      connEntry.endpoints.add(endpoint)
-      endpoint.onConnect(connEntry.connection, req)
+      if (!connEntry.endpoints.has(endpoint)) {
+        connEntry.endpoints.add(endpoint)
+        endpoint.onConnect(connEntry.connection, req)
+      }
+
       res.status(204).end()
     }
   }
@@ -128,7 +131,11 @@ class WebSocketServer {
 
     const token = req.headers.authorization
     if (token) {
-      endpoint.disconnect(token)
+      const connEntry = this.connectionsByToken.get(token)
+      if (connEntry) {
+        endpoint.onDisconnect(connEntry.connection)
+        connEntry.endpoints.delete(endpoint)
+      }
     }
 
     res.status(204).end()
@@ -144,8 +151,7 @@ class WebSocketServer {
       return
     }
 
-    const route = split[0]
-    const token = split[1]
+    const [route, token] = split
 
     const identity = this.authorizer.exchange(token)
     if (!identity) {
@@ -169,8 +175,9 @@ class WebSocketServer {
 
     this.connectionsByToken.set(token, connEntry)
 
-    endpoint.onConnect(connection, req)
     this.logger.debug('Connected:', connection.address)
+    endpoint.onConnect(connection, req)
+    connEntry.endpoints.add(endpoint)
 
     socket.on('close', () => this.onDisconnect(connEntry))
     socket.on('message', (data, binary) => this.onMessage(connEntry, data, binary))

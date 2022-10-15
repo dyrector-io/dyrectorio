@@ -1,28 +1,28 @@
 import { IMAGE_WS_REQUEST_DELAY } from '@app/const'
-import { DyoInput } from '@app/elements/dyo-input'
 import { useThrottling } from '@app/hooks/use-throttleing'
-import { ContainerConfig, Environment, InstanceContainerConfig, Secrets } from '@app/models'
+import { ContainerConfig, Environment, Secrets } from '@app/models'
 
+import MultiInput from '@app/components/editor/multi-input'
+import { EditorStateOptions } from '@app/components/editor/use-editor-state'
 import SecretKeyOnlyInput from '@app/components/shared/secret-key-input'
 import { sensitiveKeyRule } from '@app/validations/container'
 import useTranslation from 'next-translate/useTranslation'
-import { useEffect, useRef, useState } from 'react'
+import { useRef } from 'react'
 import KeyValueInput from '../../../shared/key-value-input'
 
 interface EditImageConfigProps {
   disabled?: boolean
-  disabledContainerNameEditing?: boolean
-  config: ContainerConfig | InstanceContainerConfig
-  onPatch: (config: Partial<ContainerConfig | InstanceContainerConfig>) => void
+  config: ContainerConfig
+  editorOptions: EditorStateOptions
+  onPatch: (config: Partial<ContainerConfig>) => void
 }
 
 const EditImageConfig = (props: EditImageConfigProps) => {
-  const { config, disabled, disabledContainerNameEditing, onPatch } = props
+  const { config, disabled, editorOptions, onPatch } = props
 
   const { t } = useTranslation('images')
 
   const patch = useRef<Partial<ContainerConfig>>({})
-  const [containerName, setContainerName] = useState(config?.name)
 
   const throttle = useThrottling(IMAGE_WS_REQUEST_DELAY)
 
@@ -45,47 +45,45 @@ const EditImageConfig = (props: EditImageConfigProps) => {
       environment,
     })
 
-  const onSecretSubmit = (secrets: Secrets) => {
+  const onSecretsChange = (secrets: Secrets) => {
     sendPatch({
       secrets,
     })
   }
 
-  const onContainerNameChange = (name: string) => {
-    setContainerName(name)
-
+  const onContainerNameChange = (name: string) =>
     sendPatch({
       name,
     })
-  }
-
-  useEffect(() => setContainerName(config?.name), [config])
 
   return (
     <>
-      {disabledContainerNameEditing ? null : (
-        <DyoInput
-          disabled={disabled}
-          label={t('containerName').toUpperCase()}
-          labelClassName="mt-2 mb-2.5"
-          className="mb-4"
-          value={containerName}
-          onChange={ev => onContainerNameChange(ev.target.value)}
-        />
-      )}
+      <MultiInput
+        id="name"
+        disabled={disabled}
+        label={t('containerName').toUpperCase()}
+        labelClassName="mt-2 mb-2.5"
+        className="mb-4"
+        editorOptions={editorOptions}
+        value={config?.name}
+        onPatch={onContainerNameChange}
+      />
 
       <KeyValueInput
         disabled={disabled}
         heading={t('environment').toUpperCase()}
+        editorOptions={editorOptions}
         items={config?.environment ?? []}
         onChange={onEnvChange}
         hint={{ hintValidation: sensitiveKeyRule, hintText: t('sensitiveKey') }}
       />
+
       <SecretKeyOnlyInput
         disabled={disabled}
         heading={t('secrets').toUpperCase()}
         items={config.secrets ?? []}
-        onSubmit={onSecretSubmit}
+        editorOptions={editorOptions}
+        onChange={onSecretsChange}
       />
     </>
   )

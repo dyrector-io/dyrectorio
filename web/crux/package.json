@@ -44,6 +44,7 @@
   "dependencies": {
     "@grpc/grpc-js": "^1.6.8",
     "@grpc/proto-loader": "^0.7.0",
+    "@nestjs-modules/mailer": "^1.8.1",
     "@nestjs/axios": "^0.1.0",
     "@nestjs/cli": "^9.0.0",
     "@nestjs/config": "^2.2.0",
@@ -62,6 +63,7 @@
     "google-auth-library": "^8.1.1",
     "google-protobuf": "^3.21.0",
     "handlebars": "^4.7.7",
+    "nodemailer": "^6.8.0",
     "pg": "^8.7.3",
     "prom-client": "^14.0.1",
     "protobufjs": "^7.0.0",
@@ -77,6 +79,7 @@
     "@types/express": "^4.17.13",
     "@types/jest": "^28.1.6",
     "@types/node": "^18.8.0",
+    "@types/nodemailer": "^6.4.6",
     "@types/supertest": "^2.0.12",
     "@types/uuid": "^8.3.4",
     "@typescript-eslint/eslint-plugin": "^5.33.0",

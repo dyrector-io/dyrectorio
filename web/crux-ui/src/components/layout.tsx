@@ -32,11 +32,12 @@ const PageHead = (props: PageHeadProps) => {
 
 export interface LayoutProps {
   title: string
+  topBarContent?: React.ReactNode
   children: React.ReactNode
 }
 
 export const Layout = (props: LayoutProps) => {
-  const { title, children } = props
+  const { title, children, topBarContent } = props
 
   const { data: meta, error } = useSWR<UserMeta>(
     API_WHOAMI,
@@ -53,11 +54,14 @@ export const Layout = (props: LayoutProps) => {
   return (
     <>
       <PageHead title={title} />
+
       <main className="flex flex-row h-full bg-dark w-full">
         <Sidebar className={clsx('flex flex-col bg-medium h-screen sticky top-0', sidebarWidth)} />
 
         <div className={clsx('flex flex-col px-7 pt-4', mainWidth)}>
-          <Topbar className="flex flex-row mb-4" meta={meta} />
+          <Topbar className="flex flex-row mb-4" meta={meta}>
+            {topBarContent}
+          </Topbar>
 
           <div className="flex flex-col h-full">{children}</div>
 

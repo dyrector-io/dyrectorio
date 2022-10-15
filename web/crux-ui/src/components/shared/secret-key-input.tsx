@@ -1,18 +1,12 @@
 import { DyoHeading } from '@app/elements/dyo-heading'
-import { DyoInput } from '@app/elements/dyo-input'
+import useRepatch from '@app/hooks/use-repatch'
 import { UniqueKey } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import { useEffect, useReducer } from 'react'
+import { useEffect } from 'react'
 import { v4 as uuid } from 'uuid'
-
-interface SecretKeyInputProps {
-  disabled?: boolean
-  className?: string
-  heading?: string
-  items: UniqueKey[]
-  onSubmit: (items: UniqueKey[]) => void
-}
+import MultiInput from '../editor/multi-input'
+import { EditorStateOptions } from '../editor/use-editor-state'
 
 const EMPTY_SECRET_KEY = {
   id: uuid(),
@@ -23,34 +17,22 @@ type KeyValueElement = UniqueKey & {
   message?: string
 }
 
-type KeyValueInputActionType = 'merge-items' | 'set-items'
-
-type KeyValueInputAction = {
-  type: KeyValueInputActionType
-  items: UniqueKey[]
-}
-
 const isCompletelyEmpty = (it: UniqueKey): boolean => !it.key || it.key.length < 1
 
-const pushEmptyLineIfNecessary = (items: UniqueKey[]) => {
-  if (items.length < 1 || (items[items.length - 1].key?.trim() ?? '') !== '') {
-    items.push({
-      ...EMPTY_SECRET_KEY,
-      id: uuid(),
-    })
-  }
-}
+const generateEmptyLine = () => ({
+  ...EMPTY_SECRET_KEY,
+  id: uuid(),
+})
 
-const reducer = (state: UniqueKey[], action: KeyValueInputAction): UniqueKey[] => {
-  const { type } = action
+// actions
+const setItems = (items: UniqueKey[]) => (): UniqueKey[] => items
 
-  if (type === 'set-items') {
-    const result = [...action.items]
-    pushEmptyLineIfNecessary(result)
-    return result
-  }
-  if (type === 'merge-items') {
-    const updatedItems = action.items
+const mergeItems =
+  (updatedItems: UniqueKey[]) =>
+  (state: UniqueKey[]): UniqueKey[] => {
+    const lastLine = state.length > 0 ? state[state.length - 1] : null
+    const emptyLine = !!lastLine && isCompletelyEmpty(lastLine) ? lastLine : generateEmptyLine()
+
     const result = [
       ...state.filter(old => !isCompletelyEmpty(old) && updatedItems.filter(it => old.id === it.id).length > 0),
     ]
@@ -65,22 +47,29 @@ const reducer = (state: UniqueKey[], action: KeyValueInputAction): UniqueKey[] =
       }
     })
 
-    pushEmptyLineIfNecessary(result)
+    result.push(emptyLine)
+
     return result
   }
 
-  throw Error(`Invalid KeyValueInput action: ${type}`)
+interface SecretKeyInputProps {
+  disabled?: boolean
+  className?: string
+  heading?: string
+  items: UniqueKey[]
+  editorOptions: EditorStateOptions
+  onChange: (items: UniqueKey[]) => void
 }
 
 const SecretKeyOnlyInput = (props: SecretKeyInputProps) => {
   const { t } = useTranslation('common')
 
-  const { heading, disabled, items, className, onSubmit } = props
+  const { heading, disabled, items, className, editorOptions, onChange: propsOnChange } = props
 
-  const [state, dispatch] = useReducer(reducer, items)
+  const [state, dispatch] = useRepatch(items)
 
   const stateToElements = (itemArray: UniqueKey[]) => {
-    const result = new Array<KeyValueElement>()
+    const result: KeyValueElement[] = []
 
     itemArray.forEach(item =>
       result.push({
@@ -92,17 +81,10 @@ const SecretKeyOnlyInput = (props: SecretKeyInputProps) => {
     return result
   }
 
-  useEffect(
-    () =>
-      dispatch({
-        type: 'merge-items',
-        items,
-      }),
-    [items],
-  )
+  useEffect(() => dispatch(mergeItems(items)), [items, dispatch])
 
   const onChange = async (index: number, key: string) => {
-    let newItems = [...state]
+    const newItems = [...state]
 
     const item = {
       id: state[index].id,
@@ -111,13 +93,10 @@ const SecretKeyOnlyInput = (props: SecretKeyInputProps) => {
 
     newItems[index] = item
 
-    newItems = newItems.filter(it => !isCompletelyEmpty(it))
+    const updatedItems = newItems.filter(it => !isCompletelyEmpty(it))
 
-    onSubmit(newItems)
-    dispatch({
-      type: 'set-items',
-      items: newItems,
-    })
+    propsOnChange(updatedItems)
+    dispatch(setItems(newItems))
   }
 
   const elements = stateToElements(state)
@@ -125,18 +104,22 @@ const SecretKeyOnlyInput = (props: SecretKeyInputProps) => {
   const renderItem = (entry: KeyValueElement, index: number) => {
     const { id, key, message } = entry
 
+    const keyId = `${entry.id}-key`
+
     return (
       <div key={id} className="flex flex-row flex-grow p-1">
         <div className="w-5/12">
-          <DyoInput
-            key={`${id}-key`}
+          <MultiInput
+            key={keyId}
+            id={keyId}
             disabled={disabled}
+            editorOptions={editorOptions}
             className="w-full mr-2"
             grow
             placeholder={t('key')}
             value={key}
             message={message}
-            onChange={e => onChange(index, e.target.value)}
+            onPatch={it => onChange(index, it)}
           />
         </div>
       </div>
@@ -150,7 +133,9 @@ const SecretKeyOnlyInput = (props: SecretKeyInputProps) => {
           {heading}
         </DyoHeading>
       )}
+
       <div className="text-light-eased mb-2 ml-1">{t('cannotDefineSecretsHere')}</div>
+
       {elements.map((it, index) => renderItem(it, index))}
     </form>
   )

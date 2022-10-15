@@ -1,4 +1,4 @@
-import { distinct } from '@app/utils'
+import ServiceContainer from '@server/dependency-injection/service-container'
 import { IncomingMessage } from 'http'
 import { NextApiRequest } from 'next'
 import { WsMessage } from './common'
@@ -19,7 +19,9 @@ export type WsEndpointOptions = {
 }
 
 class WsEndpoint {
-  private connections: Array<WsConnection> = []
+  private connections: Set<WsConnection> = new Set()
+
+  readonly services = new ServiceContainer()
 
   constructor(
     public readonly route: string,
@@ -37,33 +39,27 @@ class WsEndpoint {
     return true
   }
 
-  disconnect(token: string) {
-    const connection = this.connections.find(it => it.token === token)
-    if (!connection) {
-      return
-    }
-
-    this.onDisconnect(connection)
-  }
-
   sendAll<T extends object>(type: string, payload: T) {
-    distinct(this.connections).forEach(it => it.send(type, payload))
+    Array.from(this.connections.values()).forEach(it => it.send(type, payload))
   }
 
-  sendAllExcept<T extends object>(type: string, payload: T, except: WsConnection) {
-    distinct(this.connections)
+  sendAllExcept<T extends object>(except: WsConnection, type: string, payload: T) {
+    Array.from(this.connections.values())
       .filter(it => it !== except)
       .forEach(it => it.send(type, payload))
   }
 
   onConnect(connection: WsConnection, req: IncomingMessage) {
-    this.connections.push(connection)
-    this.options?.onConnect?.call(null, this, connection, req)
+    if (!this.connections.has(connection)) {
+      this.connections.add(connection)
+      this.options?.onConnect?.call(null, this, connection, req)
+    }
   }
 
   onDisconnect(connection: WsConnection) {
-    this.connections = this.connections.filter(it => it !== connection)
-    this.options?.onDisconnect?.call(null, this, connection)
+    if (this.connections.delete(connection)) {
+      this.options?.onDisconnect?.call(null, this, connection)
+    }
   }
 
   onMessage(connection: WsConnection, message: WsMessage<object>) {
