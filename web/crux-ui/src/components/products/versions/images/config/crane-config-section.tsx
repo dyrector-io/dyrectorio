@@ -13,6 +13,7 @@ import {
   CONTAINER_DEPLOYMENT_STRATEGY_VALUES,
   CraneConfigDetails,
 } from '@app/models/container'
+import { nullify } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
 
@@ -135,7 +136,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
               className="mb-2"
               labelClassName="text-bright font-semibold tracking-wide mb-2"
               label={t('kubernetes.customHeaders').toUpperCase()}
-              items={config.customHeaders}
+              items={config.customHeaders ?? []}
               keyPlaceholder={t('kubernetes.placeholders.headerName')}
               onChange={it => onChange({ customHeaders: it })}
               editorOptions={editorOptions}
@@ -162,10 +163,10 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 placeholder={t('kubernetes.placeholders.cpuUsageExample')}
                 onChange={it =>
                   onChange({
-                    resourceConfig: {
+                    resourceConfig: nullify({
                       ...config.resourceConfig,
-                      limits: { ...config.resourceConfig.limits, cpu: it.target.value },
-                    },
+                      limits: nullify({ ...config.resourceConfig?.limits, cpu: it.target.value }),
+                    }),
                   })
                 }
               />
@@ -180,10 +181,10 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 placeholder={t('kubernetes.placeholders.memoryUsageExample')}
                 onChange={it =>
                   onChange({
-                    resourceConfig: {
+                    resourceConfig: nullify({
                       ...config.resourceConfig,
-                      limits: { ...config.resourceConfig.limits, memory: it.target.value },
-                    },
+                      limits: nullify({ ...config.resourceConfig?.limits, memory: it.target.value }),
+                    }),
                   })
                 }
               />
@@ -199,10 +200,10 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 placeholder={t('kubernetes.placeholders.cpuUsageExample')}
                 onChange={it =>
                   onChange({
-                    resourceConfig: {
+                    resourceConfig: nullify({
                       ...config.resourceConfig,
-                      requests: { ...config.resourceConfig.requests, cpu: it.target.value },
-                    },
+                      requests: nullify({ ...config.resourceConfig?.requests, cpu: it.target.value }),
+                    }),
                   })
                 }
               />
@@ -217,10 +218,10 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 placeholder={t('kubernetes.placeholders.memoryUsageExample')}
                 onChange={it =>
                   onChange({
-                    resourceConfig: {
+                    resourceConfig: nullify({
                       ...config.resourceConfig,
-                      requests: { ...config.resourceConfig.requests, memory: it.target.value },
-                    },
+                      requests: nullify({ ...config.resourceConfig?.requests, memory: it.target.value }),
+                    }),
                   })
                 }
               />
@@ -260,9 +261,9 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
               <div className="flex flex-wrap ml-2">
                 <KeyValueInput
                   label={t('kubernetes.extraLBAnnotations')}
-                  items={config.extraLBAnnotations}
-                  onChange={it => onChange({ extraLBAnnotations: it })}
+                  items={config.extraLBAnnotations ?? []}
                   editorOptions={editorOptions}
+                  onChange={it => onChange({ extraLBAnnotations: it })}
                 />
               </div>
             )}

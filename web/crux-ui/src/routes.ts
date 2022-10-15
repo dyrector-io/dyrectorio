@@ -166,6 +166,6 @@ export const notificationUrl = (id: string) => `${ROUTE_NOTIFICATIONS}/${id}`
 export const notificationApiUrl = (id: string) => `${API_NOTIFICATIONS}/${id}`
 export const notificationApiHookUrl = (id: string) => `${notificationApiUrl(id)}/hook`
 
-//image config
+// image config
 export const imageConfigUrl = (productId: string, versionId: string, imageId: string) =>
   `${versionUrl(productId, versionId)}/image/${imageId}`

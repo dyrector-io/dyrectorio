@@ -16,6 +16,7 @@ import {
   UpdateNodeRequest,
   WatchContainerStateRequest,
 } from 'src/grpc/protobuf/proto/crux'
+import { Empty } from 'src/grpc/protobuf/proto/common'
 import PrismaService from 'src/services/prisma.service'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import { BaseMessage } from 'src/domain/notification-templates'
@@ -23,7 +24,6 @@ import { PreconditionFailedException } from 'src/exception/errors'
 import AgentService from '../agent/agent.service'
 import TeamRepository from '../team/team.repository'
 import NodeMapper from './node.mapper'
-import { Empty } from 'src/grpc/protobuf/proto/common'
 
 @Injectable()
 export default class NodeService {

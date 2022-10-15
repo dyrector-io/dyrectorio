@@ -189,36 +189,36 @@ model ContainerConfig {
 
   //Common
   name            String
-  environment     Json            @default("[]")
-  secrets         Json            @default("[]")
-  capabilities    Json            @default("[]")
+  environment     Json?
+  secrets         Json?
+  capabilities    Json?
   expose          ExposeStrategy?
-  ingress         Json            @default("{}")
-  configContainer Json            @default("{}")
-  importContainer Json            @default("{}")
+  ingress         Json?
+  configContainer Json?
+  importContainer Json?
   user            Int?
   tty             Boolean?
-  ports           Json            @default("[]")
-  portRanges      Json            @default("[]")
-  volumes         Json            @default("[]")
-  commands        Json            @default("[]")
-  args            Json            @default("[]")
-  initContainers  Json            @default("[]")
+  ports           Json?
+  portRanges      Json?
+  volumes         Json?
+  commands        Json?
+  args            Json?
+  initContainers  Json?
 
   //Dagent
-  logConfig     Json           @default("{}")
+  logConfig     Json?
   restartPolicy RestartPolicy?
   networkMode   NetworkMode?
-  networks      Json           @default("[]")
+  networks      Json?
 
   //Crane
   deploymentStrategy DeploymentStrategy?
-  healthCheckConfig  Json                @default("{}")
-  resourceConfig     Json                @default("{}")
+  healthCheckConfig  Json?
+  resourceConfig     Json?
   proxyHeaders       Boolean?
   useLoadBalancer    Boolean?
-  extraLBAnnotations Json                @default("[]")
-  customHeaders      Json                @default("[]")
+  extraLBAnnotations Json?
+  customHeaders      Json?
 
   image   Image  @relation(fields: [imageId], references: [id], onDelete: Cascade)
   imageId String @unique @db.Uuid
@@ -262,36 +262,36 @@ model InstanceContainerConfig {
 
   //Common
   name            String
-  environment     Json            @default("[]")
-  secrets         Json            @default("[]")
-  capabilities    Json            @default("[]")
+  environment     Json?
+  secrets         Json?
+  capabilities    Json?
   expose          ExposeStrategy?
-  ingress         Json            @default("{}")
-  configContainer Json            @default("{}")
-  importContainer Json            @default("{}")
+  ingress         Json?
+  configContainer Json?
+  importContainer Json?
   user            Int?
   tty             Boolean?
-  ports           Json            @default("[]")
-  portRanges      Json            @default("[]")
-  volumes         Json            @default("[]")
-  commands        Json            @default("[]")
-  args            Json            @default("[]")
-  initContainers  Json            @default("[]")
+  ports           Json?
+  portRanges      Json?
+  volumes         Json?
+  commands        Json?
+  args            Json?
+  initContainers  Json?
 
   //Dagent
-  logConfig     Json           @default("{}")
+  logConfig     Json?
   restartPolicy RestartPolicy?
   networkMode   NetworkMode?
-  networks      Json           @default("[]")
+  networks      Json?
 
   //Crane
   deploymentStrategy DeploymentStrategy?
-  healthCheckConfig  Json                @default("{}")
-  resourceConfig     Json                @default("{}")
+  healthCheckConfig  Json?
+  resourceConfig     Json?
   proxyHeaders       Boolean?
   useLoadBalancer    Boolean?
-  extraLBAnnotations Json                @default("[]")
-  customHeaders      Json                @default("[]")
+  extraLBAnnotations Json?
+  customHeaders      Json?
 
   instance Instance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
 }

@@ -4,7 +4,7 @@ import KeyOnlyInput from '@app/components/shared/key-only-input'
 import KeyValueInput from '@app/components/shared/key-value-input'
 import { IMAGE_WS_REQUEST_DELAY } from '@app/const'
 import { useThrottling } from '@app/hooks/use-throttleing'
-import { ContainerConfig, UniqueKey } from '@app/models'
+import { ContainerConfig } from '@app/models'
 import { UniqueKeyValue } from '@app/models/grpc/protobuf/proto/crux'
 import { sensitiveKeyRule } from '@app/validations/container'
 import useTranslation from 'next-translate/useTranslation'
@@ -45,7 +45,7 @@ const EditImageConfig = (props: EditImageConfigProps) => {
       environments,
     })
 
-  const onSecretChange = (secrets: UniqueKey[]) => {
+  const onSecretChange = (secrets: UniqueKeyValue[]) => {
     sendPatch({
       secrets,
     })
@@ -85,7 +85,7 @@ const EditImageConfig = (props: EditImageConfigProps) => {
         items={config.secrets ?? []}
         keyPlaceholder={t('common:key')}
         description={t('common:cannotDefineSecretsHere')}
-        onChange={onSecretChange}
+        onChange={it => onSecretChange(it.map(sit => ({ ...sit, value: '' })))}
         editorOptions={editorOptions}
       />
     </>

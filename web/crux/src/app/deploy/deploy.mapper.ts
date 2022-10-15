@@ -1,4 +1,3 @@
-import { UniqueKey } from './../../../../crux-ui/src/models/container'
 import { Injectable } from '@nestjs/common'
 import {
   ContainerStateEnum,
@@ -34,17 +33,18 @@ import {
   deploymentStatusFromJSON,
   KeyValue,
 } from 'src/grpc/protobuf/proto/common'
-import { ContainerConfigData, UniqueKeyValue } from 'src/shared/model'
-import { InternalException } from 'src/exception/errors'
-import ImageMapper, { ImageDetails } from '../image/image.mapper'
-import AgentService from '../agent/agent.service'
-import { InstanceConfig, Port } from 'src/grpc/protobuf/proto/agent'
 import {
   CommonContainerConfig,
   CraneContainerConfig,
   DagentContainerConfig,
   InitContainer as AgentInitContainer,
+  InstanceConfig,
+  Port,
 } from 'src/grpc/protobuf/proto/agent'
+import { ContainerConfigData, UniqueKey, UniqueKeyValue } from 'src/shared/model'
+import { InternalException } from 'src/exception/errors'
+import ImageMapper, { ImageDetails } from '../image/image.mapper'
+import AgentService from '../agent/agent.service'
 
 @Injectable()
 export default class DeployMapper {
@@ -205,7 +205,7 @@ export default class DeployMapper {
       configContainer: config.configContainer as JsonObject,
       importContainer: {
         ...(config.importContainer as JsonObject),
-        environments: this.mapKeyValueToMap((config.importContainer as JsonObject).environments),
+        environments: this.mapKeyValueToMap((config.importContainer as JsonObject)?.environments),
       },
       ingress: config.ingress as JsonObject,
       initContainers: this.mapInitContainerToAgent(config.initContainers as JsonObject),
@@ -256,6 +256,10 @@ export default class DeployMapper {
   }
 
   private mapKeyValueToMap(list: KeyValue[]): { [key: string]: string } {
+    if (!list) {
+      return {}
+    }
+
     const result: { [key: string]: string } = {}
 
     list.forEach(it => {
@@ -266,10 +270,18 @@ export default class DeployMapper {
   }
 
   private mapUniqueKeyToStringArray(list: UniqueKey[]): string[] {
+    if (!list) {
+      return []
+    }
+
     return list.map(it => it.key)
   }
 
   private jsonToPipedFormat(environment: UniqueKeyValue[]): string[] {
+    if (!environment) {
+      return []
+    }
+
     return environment.map(it => `${it.key}|${it.value}`)
   }
 

@@ -5,6 +5,7 @@ import {
   ExposeStrategy,
   Image,
   NetworkMode,
+  Prisma,
   Registry,
   RestartPolicy,
 } from '@prisma/client'
@@ -86,38 +87,46 @@ export default class ImageMapper {
     }
   }
 
+  toPrismaJson(val) {
+    if (!val) {
+      return Prisma.JsonNull
+    }
+
+    return val as JsonObject
+  }
+
   configProtoToDb(config: ProtoContainerConfig): ContainerConfigData {
     return {
       // common
       name: config.common?.name,
       expose: this.exposeStrategyToDb(config.common?.expose),
-      ingress: config.common?.ingress as JsonObject,
-      configContainer: config.common?.configContainer as JsonObject,
-      importContainer: config.common?.importContainer as JsonObject,
+      ingress: this.toPrismaJson(config.common?.ingress),
+      configContainer: this.toPrismaJson(config.common?.configContainer),
+      importContainer: this.toPrismaJson(config.common?.importContainer),
       user: config.common?.user,
       tty: config.common?.TTY,
-      ports: config.common?.ports as JsonObject,
-      portRanges: config.common?.portRanges as JsonObject,
-      volumes: config.common?.volumes as JsonObject,
-      commands: config.common?.commands as JsonObject,
-      args: config.common?.args as JsonObject,
-      environment: config.common?.environments as JsonObject,
-      secrets: config.common?.secrets as JsonObject,
-      initContainers: config.common?.initContainers as JsonObject,
-      logConfig: config.dagent?.logConfig as JsonObject,
+      ports: this.toPrismaJson(config.common?.ports),
+      portRanges: this.toPrismaJson(config.common?.portRanges),
+      volumes: this.toPrismaJson(config.common?.volumes),
+      commands: this.toPrismaJson(config.common?.commands),
+      args: this.toPrismaJson(config.common?.args),
+      environment: this.toPrismaJson(config.common?.environments),
+      secrets: this.toPrismaJson(config.common?.secrets),
+      initContainers: this.toPrismaJson(config.common?.initContainers),
+      logConfig: this.toPrismaJson(config.dagent?.logConfig),
       // dagent
       restartPolicy: this.restartPolicyToDb(config.dagent?.restartPolicy),
       networkMode: this.networkModeToDb(config.dagent?.networkMode),
-      networks: config.dagent?.networks as JsonObject,
+      networks: this.toPrismaJson(config.dagent?.networks),
       // crane
       deploymentStrategy: this.deploymentStrategyToDb(config.crane?.deploymentStatregy),
-      healthCheckConfig: config.crane?.healthCheckConfig as JsonObject,
-      resourceConfig: config.crane?.resourceConfig as JsonObject,
+      healthCheckConfig: this.toPrismaJson(config.crane?.healthCheckConfig),
+      resourceConfig: this.toPrismaJson(config.crane?.resourceConfig),
       proxyHeaders: config.crane?.proxyHeaders,
       useLoadBalancer: config.crane?.useLoadBalancer,
-      customHeaders: config.crane?.customHeaders as JsonObject,
-      extraLBAnnotations: config.crane?.extraLBAnnotations as JsonObject,
-      capabilities: config.capabilities as JsonObject,
+      customHeaders: this.toPrismaJson(config.crane?.customHeaders),
+      extraLBAnnotations: this.toPrismaJson(config.crane?.extraLBAnnotations),
+      capabilities: this.toPrismaJson(config.capabilities),
     }
   }
 

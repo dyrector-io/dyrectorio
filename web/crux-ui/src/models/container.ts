@@ -18,6 +18,11 @@ export type UniqueKeyValue = {
   value: string
 }
 
+export type KeyValue = {
+  key: string
+  value: string
+}
+
 export type UniqueKeySecretValue = UniqueKeyValue & {
   encrypted?: boolean
 }
@@ -39,6 +44,8 @@ export type ContainerConfigPortRange = {
   external: PortRange
 }
 
+export type JsonKeyValue = { [key: string]: string }
+
 export const CONTAINER_NETWORK_MODE_VALUES = ['none', 'host', 'bridge', 'overlay', 'ipvlan', 'macvlan'] as const
 export type ContainerNetworkMode = typeof CONTAINER_NETWORK_MODE_VALUES[number]
 
@@ -51,13 +58,14 @@ export type ContainerDeploymentStrategyType = typeof CONTAINER_DEPLOYMENT_STRATE
 export const CONTAINER_EXPOSE_STRATEGY_VALUES = ['none', 'expose', 'expose_with_tls'] as const
 export type ContainerConfigExposeStrategy = typeof CONTAINER_EXPOSE_STRATEGY_VALUES[number]
 
+export const CONTAINER_VOLUME_TYPE_VALUES = ['ro', 'rw', 'rwx', 'mem', 'tmp'] as const
+export type VolumeType = typeof CONTAINER_VOLUME_TYPE_VALUES[number]
+
 export type ContainerConfigIngress = {
   name: string
   host: string
   uploadLimitInBytes?: string
 }
-export const CONTAINER_VOLUME_TYPE_VALUES = ['ro', 'rw', 'rwx', 'mem', 'tmp'] as const
-export type VolumeType = typeof CONTAINER_VOLUME_TYPE_VALUES[number]
 
 export type ContainerConfigVolume = {
   id: string
@@ -137,7 +145,7 @@ export type InitContainer = {
 }
 
 export type ContainerConfig = {
-  //common
+  // common
   name?: string
   environments?: UniqueKeyValue[]
   secrets?: UniqueKeyValue[]
@@ -155,13 +163,13 @@ export type ContainerConfig = {
   initContainers?: InitContainer[]
   capabilities: UniqueKeyValue[]
 
-  //dagent
+  // dagent
   logConfig?: ContainerConfigLog
   restartPolicy?: ContainerRestartPolicyType
   networkMode?: ContainerNetworkMode
   networks?: UniqueKey[]
 
-  //crane
+  // crane
   deploymentStrategy?: ContainerDeploymentStrategyType
   customHeaders?: UniqueKey[]
   proxyHeaders?: boolean
@@ -170,6 +178,67 @@ export type ContainerConfig = {
   healthCheckConfig?: ContainerConfigHealthCheck
   resourceConfig?: ContainerConfigResourceConfig
 }
+
+export type JsonInitContainer = {
+  name: string
+  image: string
+  command?: string[]
+  args?: string[]
+  environments?: JsonKeyValue
+  useParentConfig?: boolean
+  volumes?: JsonInitContainerVolumeLink[]
+}
+
+export type JsonContainerConfigLog = {
+  driver: ContainerLogDriverType
+  options: JsonKeyValue
+}
+
+export type JsonContainerConfigImportContainer = Omit<ContainerConfigImportContainer, 'environments'> & {
+  environments: JsonKeyValue
+}
+
+export type JsonInitContainerVolumeLink = Omit<InitContainerVolumeLink, 'id'>
+export type JsonContainerConfigPortRange = Omit<ContainerConfigPortRange, 'id'>
+export type JsonContainerConfigPort = Omit<ContainerConfigPort, 'id'>
+export type JsonContainerConfigVolume = Omit<ContainerConfigVolume, 'id'>
+
+export type JsonContainerConfig = {
+  // common
+  name?: string
+  environments?: JsonKeyValue
+  secrets?: string[]
+  ingress?: ContainerConfigIngress
+  expose?: ContainerConfigExposeStrategy
+  user?: number
+  tty?: boolean
+  importContainer?: JsonContainerConfigImportContainer
+  configContainer?: ContainerConfigContainer
+  ports?: JsonContainerConfigPort[]
+  portRanges?: JsonContainerConfigPortRange[]
+  volumes?: JsonContainerConfigVolume[]
+  commands?: string[]
+  args?: string[]
+  initContainers?: JsonInitContainer[]
+  capabilities: JsonKeyValue
+
+  // dagent
+  logConfig?: JsonContainerConfigLog
+  restartPolicy?: ContainerRestartPolicyType
+  networkMode?: ContainerNetworkMode
+  networks?: string[]
+
+  // crane
+  deploymentStrategy?: ContainerDeploymentStrategyType
+  customHeaders?: string[]
+  proxyHeaders?: boolean
+  useLoadBalancer?: boolean
+  extraLBAnnotations?: JsonKeyValue
+  healthCheckConfig?: ContainerConfigHealthCheck
+  resourceConfig?: ContainerConfigResourceConfig
+}
+
+export type InstanceJsonContainerConfig = Omit<JsonContainerConfig, 'secrets'>
 
 type DockerSpecificConfig = 'logConfig' | 'restartPolicy' | 'networkMode' | 'networks'
 type KubernetesSpecificConfig =
@@ -184,12 +253,6 @@ type KubernetesSpecificConfig =
 export type DagentConfigDetails = Pick<ContainerConfig, DockerSpecificConfig>
 export type CraneConfigDetails = Pick<ContainerConfig, KubernetesSpecificConfig>
 export type CommonConfigDetails = Omit<ContainerConfig, DockerSpecificConfig | KubernetesSpecificConfig>
-export type CompleteContainerConfig = ContainerConfig & {
-  name: string
-  environment?: Record<string, string>
-  capabilities?: Record<string, string>
-  secrets?: Record<string, string>
-}
 
 const overrideKeyValues = (weak: UniqueKeyValue[], strong: UniqueKeyValue[]): UniqueKeyValue[] => {
   const overridenKeys: Set<string> = new Set(strong?.map(it => it.key))
@@ -225,7 +288,7 @@ export const mergeConfigs = (
 
   return {
     // common
-    name: overriddenConfig.name || imageConfig.name,
+    name: instanceConfig.name || imageConfig.name,
     environments: envs,
     secrets:
       instanceConfig?.secrets && instanceConfig.secrets.length > 0

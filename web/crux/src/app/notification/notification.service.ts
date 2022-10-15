@@ -9,13 +9,13 @@ import {
   NotificationDetailsResponse,
   CreateNotificationRequest,
 } from 'src/grpc/protobuf/proto/crux'
+import { Empty } from 'src/grpc/protobuf/proto/common'
 import TeamRepository from 'src/app/team/team.repository'
 import { Injectable, Logger } from '@nestjs/common'
 import PrismaService from 'src/services/prisma.service'
 import { lastValueFrom } from 'rxjs'
 import { HttpService } from '@nestjs/axios'
 import NotificationMapper from './notification.mapper'
-import { Empty } from 'src/grpc/protobuf/proto/common'
 
 const TEST_MESSAGE = 'Its a test!'
 

@@ -58,13 +58,35 @@ export const logConfigToProto = (logConfig?: ContainerConfigLog): LogConfig => {
   if (!logConfig) {
     return null
   }
-  return { driver: driverTypeFromJSON(logConfig.driver.toUpperCase()), options: logConfig.options }
+
+  return {
+    driver: logConfig.driver ? driverTypeFromJSON(logConfig.driver.toUpperCase()) : DriverType.DRIVER_TYPE_NONE,
+    options: logConfig.options,
+  }
+}
+
+export const logDriverDto = (logDriver?: DriverType): ContainerLogDriverType => {
+  if (logDriver == null) {
+    return 'none'
+  }
+
+  switch (logDriver) {
+    case DriverType.UNKNOWN_DRIVER_TYPE:
+    case DriverType.DRIVER_TYPE_NONE:
+      return 'none'
+    default:
+      return driverTypeToJSON(logDriver).toLocaleLowerCase() as ContainerLogDriverType
+  }
 }
 
 export const logConfigToDto = (logConfig?: LogConfig): ContainerConfigLog => {
+  if (!logConfig) {
+    return null
+  }
+
   return {
     driver: logDriverDto(logConfig.driver),
-    options: logConfig?.options,
+    options: logConfig.options,
   }
 }
 
@@ -112,23 +134,13 @@ export const exposeToProto = (expose?: ContainerConfigExposeStrategy): ExposeStr
   }
 }
 
-export const logDriverDto = (logDriver?: DriverType): ContainerLogDriverType => {
-  switch (logDriver) {
-    case DriverType.UNKNOWN_DRIVER_TYPE:
-    case DriverType.DRIVER_TYPE_NONE:
-      return 'none'
-    default:
-      return driverTypeToJSON(logDriver).toLocaleLowerCase() as ContainerLogDriverType
-  }
-}
-
 export const containerConfigToDto = (config?: ProtoContainerConfig): ContainerConfig => {
   if (!config) {
     return null
   }
 
   const cfg: ContainerConfig = {
-    //common
+    // common
     name: config.common.name ?? null,
     user: config.common.user ?? null,
     tty: config.common.TTY ?? false,
@@ -146,13 +158,13 @@ export const containerConfigToDto = (config?: ProtoContainerConfig): ContainerCo
     secrets: config.common.secrets ?? [],
     capabilities: config.capabilities,
 
-    //dagent
+    // dagent
     logConfig: logConfigToDto(config.dagent?.logConfig),
     restartPolicy: restartPolicyTypeToDto(config.dagent?.restartPolicy),
     networkMode: networkModeToDto(config.dagent?.networkMode),
     networks: config.dagent?.networks ?? [],
 
-    //crane
+    // crane
     deploymentStrategy: deploymentStrategyToDto(config.crane?.deploymentStatregy),
     customHeaders: config.crane?.customHeaders ?? [],
     proxyHeaders: config.crane?.proxyHeaders ?? false,
@@ -180,7 +192,7 @@ export const containerConfigToProto = (config?: ContainerConfig | Partial<Contai
       commands: config.commands ?? [],
       args: config.args ?? [],
       expose: exposeToProto(config.expose),
-      ingress: { ...config.ingress, uploadLimit: config.ingress?.uploadLimitInBytes },
+      ingress: config.ingress ? { ...config.ingress, uploadLimit: config.ingress?.uploadLimitInBytes } : null,
       configContainer: config.configContainer,
       importContainer: config.importContainer,
       name: config.name,
@@ -225,7 +237,7 @@ export const containerConfigToProto = (config?: ContainerConfig | Partial<Contai
       deploymentStatregy: deploymentStrategyToProto(config.deploymentStrategy),
       healthCheckConfig: config.healthCheckConfig,
       resourceConfig: config.resourceConfig,
-      customHeaders: config.customHeaders ?? [],
+      customHeaders: config.customHeaders,
       proxyHeaders: config.proxyHeaders,
       useLoadBalancer: config.useLoadBalancer,
       extraLBAnnotations: config.extraLBAnnotations,

@@ -1,4 +1,4 @@
-import { ContainerConfig, ContainerConfigPort, ContainerState, UniqueKey, UniqueKeyValue } from './container'
+import { ContainerConfig, ContainerState } from './container'
 import { VersionImage } from './image'
 
 export type InstanceStatus = {

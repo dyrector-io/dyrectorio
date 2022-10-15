@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common'
-import { JsonArray } from 'prisma'
 import { Subject } from 'rxjs'
 import PrismaService from 'src/services/prisma.service'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
@@ -12,9 +11,9 @@ import {
   OrderVersionImagesRequest,
   PatchImageRequest,
 } from 'src/grpc/protobuf/proto/crux'
+import { Empty } from 'src/grpc/protobuf/proto/common'
 import { ContainerConfigData } from 'src/shared/model'
 import ImageMapper, { ImageDetails } from './image.mapper'
-import { Empty } from 'src/grpc/protobuf/proto/common'
 
 @Injectable()
 export default class ImageService {
@@ -133,6 +132,7 @@ export default class ImageService {
   @AuditLogLevel('no-data')
   async patchImage(request: PatchImageRequest): Promise<Empty> {
     let config: ContainerConfigData
+
     if (request.config) {
       config = this.mapper.configProtoToDb(request.config)
     }

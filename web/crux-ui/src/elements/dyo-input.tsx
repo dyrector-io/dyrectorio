@@ -30,31 +30,34 @@ export const DyoInput = forwardRef((props: DyoInputProps, ref: ForwardedRef<HTML
   } = props
 
   return (
-    <div className={clsx(containerClassName, inline ? 'flex flex-row' : 'flex flex-col')}>
-      {!label ? null : (
-        <DyoLabel
-          className={clsx(labelClassName ?? (inline ? 'my-auto mr-4' : 'mt-8 mb-2.5'), 'whitespace-nowrap')}
-          htmlFor={name}
-        >
-          {label}
-        </DyoLabel>
-      )}
-
-      <input
-        {...forwardedProps}
-        name={name}
-        ref={ref}
-        disabled={disabled}
-        className={clsx(
-          className,
-          'bg-medium h-11 p-4 ring-2 rounded-md focus:outline-none focus:dark',
-          grow ? 'w-full' : 'w-80',
-          disabled ? 'text-bright-muted ring-light-grey-muted' : 'text-bright ring-light-grey',
+    <>
+      <div className={clsx(containerClassName, inline ? `flex flex-row ${message ? 'mb-0' : ''}` : 'flex flex-col')}>
+        {!label ? null : (
+          <DyoLabel
+            className={clsx(labelClassName ?? (inline ? 'my-auto mr-4' : 'mt-8 mb-2.5'), 'whitespace-nowrap')}
+            htmlFor={name}
+          >
+            {label}
+          </DyoLabel>
         )}
-      />
 
-      {!message ? null : <DyoMessage message={message} messageType={messageType} />}
-    </div>
+        <input
+          {...forwardedProps}
+          name={name}
+          ref={ref}
+          disabled={disabled}
+          className={clsx(
+            className,
+            'bg-medium h-11 p-4 ring-2 rounded-md focus:outline-none focus:dark',
+            grow ? 'w-full' : 'w-80',
+            disabled ? 'text-bright-muted ring-light-grey-muted' : 'text-bright ring-light-grey',
+          )}
+        />
+
+        {message && !inline ? <DyoMessage message={message} messageType={messageType} /> : null}
+      </div>
+      {message && inline ? <DyoMessage message={message} messageType={messageType} spacing="my-2" /> : null}
+    </>
   )
 })
 

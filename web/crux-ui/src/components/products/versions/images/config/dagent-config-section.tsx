@@ -15,6 +15,7 @@ import {
   CONTAINER_RESTART_POLICY_TYPE_VALUES,
   DagentConfigDetails,
 } from '@app/models/container'
+import { nullify } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
 
@@ -66,7 +67,7 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
               className="mb-2"
               labelClassName="text-bright font-semibold tracking-wide mb-2"
               label={t('docker.networks').toUpperCase()}
-              items={config.networks}
+              items={config.networks ?? []}
               keyPlaceholder={t('docker.placeholders.network')}
               onChange={it => onChange({ networks: it })}
               unique={false}
@@ -102,14 +103,14 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
               <DyoChips
                 className="mb-2 ml-2"
                 choices={CONTAINER_LOG_DRIVER_VALUES}
-                initialSelection={config.logConfig?.driver}
+                initialSelection={config.logConfig?.driver ?? 'none'}
                 converter={(it: ContainerLogDriverType) => t(`docker.logDrivers.${it}`)}
-                onSelectionChange={it => onChange({ logConfig: { ...config.logConfig, driver: it } })}
+                onSelectionChange={it => onChange({ logConfig: nullify({ ...config.logConfig, driver: it }) })}
               />
               <KeyValueInput
                 label={t('docker.options')}
-                items={config.logConfig?.options}
-                onChange={it => onChange({ logConfig: { ...config.logConfig, options: it } })}
+                items={config.logConfig?.options ?? []}
+                onChange={it => onChange({ logConfig: nullify({ ...config.logConfig, options: it }) })}
                 editorOptions={editorOptions}
               />
             </div>

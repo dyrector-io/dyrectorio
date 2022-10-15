@@ -9,8 +9,7 @@ import (
 
 	"github.com/dyrector-io/dyrectorio/agent/internal/config"
 	"github.com/dyrector-io/dyrectorio/agent/internal/dogger"
-	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
-	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
+	common "github.com/dyrector-io/dyrectorio/protobuf/go/common"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/metadata"
 )
@@ -26,7 +25,7 @@ func (tStream *AgentTestStream) Send(message *common.DeploymentStatusMessage) er
 	return nil
 }
 
-func (tStream *AgentTestStream) CloseAndRecv() (*agent.Empty, error) {
+func (tStream *AgentTestStream) CloseAndRecv() (*common.Empty, error) {
 	return nil, nil
 }
 

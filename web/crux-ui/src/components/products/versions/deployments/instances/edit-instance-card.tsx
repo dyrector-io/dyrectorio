@@ -81,6 +81,7 @@ const EditInstanceCard = (props: EditInstanceCardProps) => {
             config={config}
             editorOptions={editorState}
             onPatch={it => actions.onPatch(instance.id, it)}
+            instanceEditor
           />
         )}
       </div>

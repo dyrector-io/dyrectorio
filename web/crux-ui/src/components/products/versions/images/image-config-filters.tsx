@@ -66,7 +66,7 @@ const ImageConfigFilters = (props: ImageConfigFitlerProps) => {
     setFilters(newFilters)
   }
 
-  useEffect(() => onChange(filters), [filters])
+  useEffect(() => onChange(filters), [filters, onChange])
 
   // Render
 
@@ -123,30 +123,24 @@ const ImageConfigFilters = (props: ImageConfigFitlerProps) => {
       </div>
       <DyoLabel className="mt-4 font-medium text-light-eased">Sub filters</DyoLabel>
       <div className="flex flex-row flex-wrap mt-2">
-        {(Object.keys(filterSet) as BaseImageConfigFilterType[]).map(base => {
-          return (
-            <div className="mb-2" key={`filter-base-${base}`}>
-              {filterSet[base].map((value, index) => {
-                return (
-                  <button
-                    key={`filter-${value}-${index}`}
-                    type="button"
-                    className={clsx(
-                      `rounded-md border-2 px-2 py-1 m-1`,
-                      getBorderColor(base),
-                      filters.indexOf(value) !== -1
-                        ? `text-white ${getBgColor(base)} bg-opacity-30`
-                        : 'text-light-eased',
-                    )}
-                    onClick={() => onFilterChanged(value)}
-                  >
-                    {t(`${base}.${value}`)}
-                  </button>
-                )
-              })}
-            </div>
-          )
-        })}
+        {(Object.keys(filterSet) as BaseImageConfigFilterType[]).map(base => (
+          <div className="mb-2" key={`filter-base-${base}`}>
+            {filterSet[base].map((value, index) => (
+              <button
+                key={`filter-${value}-${index}`}
+                type="button"
+                className={clsx(
+                  `rounded-md border-2 px-2 py-1 m-1`,
+                  getBorderColor(base),
+                  filters.indexOf(value) !== -1 ? `text-white ${getBgColor(base)} bg-opacity-30` : 'text-light-eased',
+                )}
+                onClick={() => onFilterChanged(value)}
+              >
+                {t(`${base}.${value}`)}
+              </button>
+            ))}
+          </div>
+        ))}
       </div>
     </div>
   )

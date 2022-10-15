@@ -11,11 +11,11 @@ import {
   VersionDetailsResponse,
   VersionListResponse,
 } from 'src/grpc/protobuf/proto/crux'
+import { Empty } from 'src/grpc/protobuf/proto/common'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
 import { Version } from '.prisma/client'
 import VersionMapper from './version.mapper'
-import { Empty } from 'src/grpc/protobuf/proto/common'
 
 @Injectable()
 export default class VersionService {

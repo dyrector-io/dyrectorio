@@ -13,7 +13,7 @@ import {
   WS_TYPE_IMAGE_DELETED,
   WS_TYPE_INSTANCES_ADDED,
 } from '@app/models'
-import { ListSecretsResponse } from '@app/models/grpc/protobuf/proto/common'
+import { Empty, ListSecretsResponse } from '@app/models/grpc/protobuf/proto/common'
 import {
   AccessRequest,
   CreateDeploymentRequest,
@@ -26,7 +26,6 @@ import {
   DeploymentListResponse,
   DeploymentListSecretsRequest,
   DeploymentProgressMessage,
-  Empty,
   IdRequest,
   PatchDeploymentRequest,
   ServiceIdRequest,
