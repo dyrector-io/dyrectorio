@@ -1,8 +1,9 @@
 #!/bin/sh
 
-cp ci.env .env
-cp ci.env crux/.env
-cp ci.env crux-ui/.env
+cd ..
+cp crux-ui/.env.ci .env
+cp crux-ui/.env.ci crux/.env
+cp crux-ui/.env.ci crux-ui/.env
 
 cp docker-compose.dev.yaml docker-compose.ci.yaml
 yq -i -y '.volumes."traefik-config" = null' docker-compose.ci.yaml
