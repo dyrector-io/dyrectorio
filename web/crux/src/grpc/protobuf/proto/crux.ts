@@ -1010,7 +1010,7 @@ export interface CommonContainerConfig {
   commands: UniqueKey[]
   args: UniqueKey[]
   environments: UniqueKeyValue[]
-  secrets: UniqueKey[]
+  secrets: UniqueKeyValue[]
   initContainers: InitContainer[]
 }
 
@@ -2926,7 +2926,7 @@ export const CommonContainerConfig = {
       environments: Array.isArray(object?.environments)
         ? object.environments.map((e: any) => UniqueKeyValue.fromJSON(e))
         : [],
-      secrets: Array.isArray(object?.secrets) ? object.secrets.map((e: any) => UniqueKey.fromJSON(e)) : [],
+      secrets: Array.isArray(object?.secrets) ? object.secrets.map((e: any) => UniqueKeyValue.fromJSON(e)) : [],
       initContainers: Array.isArray(object?.initContainers)
         ? object.initContainers.map((e: any) => InitContainer.fromJSON(e))
         : [],
@@ -2976,7 +2976,7 @@ export const CommonContainerConfig = {
       obj.environments = []
     }
     if (message.secrets) {
-      obj.secrets = message.secrets.map(e => (e ? UniqueKey.toJSON(e) : undefined))
+      obj.secrets = message.secrets.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
     } else {
       obj.secrets = []
     }

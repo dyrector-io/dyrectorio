@@ -157,19 +157,19 @@ message InitContainer {
   repeated VolumeLink volumes = 1000;
   repeated string command = 1001;
   repeated string args = 1002;
-  repeated common.KeyValue environments = 1003;
+  map<string, string> environments = 1003;
 }
 
 message ImportContainer {
   string volume = 100;
   string command = 101;
 
-  repeated common.KeyValue environments = 1000;
+  map<string, string> environments = 1000;
 }
 
 message LogConfig {
   common.DriverType driver = 100;
-  repeated common.KeyValue options = 1000;
+  map<string, string> options = 1000;
 }
 
 message DagentContainerConfig {
@@ -187,7 +187,7 @@ message CraneContainerConfig {
   optional bool useLoadBalancer = 104;
 
   repeated string customHeaders = 1000;
-  repeated common.KeyValue extraLBAnnotations = 1001;
+  map<string, string> extraLBAnnotations = 1001;
 }
 
 message CommonContainerConfig {
@@ -204,8 +204,8 @@ message CommonContainerConfig {
   repeated Volume volumes = 1002;
   repeated string commands = 1003;
   repeated string args = 1004;
-  repeated common.KeyValue environments = 1005;
-  repeated common.UniqueKey secrets = 1006;
+  repeated string environments = 1005;
+  map<string, string> secrets = 1006;
   repeated InitContainer initContainers = 1007;
 }
 

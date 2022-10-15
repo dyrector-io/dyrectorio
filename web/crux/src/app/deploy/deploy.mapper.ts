@@ -1,3 +1,4 @@
+import { UniqueKey } from './../../../../crux-ui/src/models/container'
 import { Injectable } from '@nestjs/common'
 import {
   ContainerStateEnum,
@@ -21,6 +22,7 @@ import {
   DeploymentEventResponse,
   DeploymentEventType,
   DeploymentResponse,
+  InitContainer,
   InstanceResponse,
   NodeConnectionStatus,
 } from 'src/grpc/protobuf/proto/crux'
@@ -30,12 +32,19 @@ import {
   containerStateToJSON,
   DeploymentStatus,
   deploymentStatusFromJSON,
+  KeyValue,
 } from 'src/grpc/protobuf/proto/common'
 import { ContainerConfigData, UniqueKeyValue } from 'src/shared/model'
 import { InternalException } from 'src/exception/errors'
 import ImageMapper, { ImageDetails } from '../image/image.mapper'
 import AgentService from '../agent/agent.service'
 import { InstanceConfig, Port } from 'src/grpc/protobuf/proto/agent'
+import {
+  CommonContainerConfig,
+  CraneContainerConfig,
+  DagentContainerConfig,
+  InitContainer as AgentInitContainer,
+} from 'src/grpc/protobuf/proto/agent'
 
 @Injectable()
 export default class DeployMapper {
@@ -182,6 +191,82 @@ export default class DeployMapper {
 
   containerStateToDb(state?: ContainerState): ContainerStateEnum {
     return state ? (containerStateToJSON(state).toLowerCase() as ContainerStateEnum) : null
+  }
+
+  configToCommonConfig(config: ContainerConfigData): CommonContainerConfig {
+    return {
+      name: config.name,
+      environments: this.jsonToPipedFormat(config.environment as JsonArray),
+      secrets: this.mapKeyValueToMap(config.secrets as JsonObject),
+      commands: this.mapUniqueKeyToStringArray(config.commands as JsonObject),
+      expose: this.imageMapper.exposeStrategyToProto(config.expose),
+      args: this.mapUniqueKeyToStringArray(config.args as JsonObject),
+      TTY: config.tty,
+      configContainer: config.configContainer as JsonObject,
+      importContainer: {
+        ...(config.importContainer as JsonObject),
+        environments: this.mapKeyValueToMap((config.importContainer as JsonObject).environments),
+      },
+      ingress: config.ingress as JsonObject,
+      initContainers: this.mapInitContainerToAgent(config.initContainers as JsonObject),
+      portRanges: config.portRanges as JsonObject,
+      ports: config.ports as JsonObject,
+      user: config.user,
+      volumes: config.volumes as JsonObject,
+    }
+  }
+
+  configToDagentConfig(config: ContainerConfigData): DagentContainerConfig {
+    return {
+      networks: this.mapUniqueKeyToStringArray(config.networks as JsonObject),
+      logConfig: {
+        ...(config.logConfig as JsonObject),
+        options: this.mapKeyValueToMap((config.logConfig as JsonObject).options),
+      },
+      networkMode: this.imageMapper.networkModeToProto(config.networkMode),
+      restartPolicy: this.imageMapper.restartPolicyToProto(config.restartPolicy),
+    }
+  }
+
+  configToCraneConfig(config: ContainerConfigData): CraneContainerConfig {
+    return {
+      customHeaders: this.mapUniqueKeyToStringArray(config.customHeaders as JsonObject),
+      extraLBAnnotations: this.mapKeyValueToMap(config.extraLBAnnotations as JsonObject),
+      deploymentStatregy: this.imageMapper.deploymentStrategyToProto(config.deploymentStrategy),
+      healthCheckConfig: config.healthCheckConfig as JsonObject,
+      proxyHeaders: config.proxyHeaders,
+      useLoadBalancer: config.useLoadBalancer,
+      resourceConfig: config.resourceConfig as JsonObject,
+    }
+  }
+
+  private mapInitContainerToAgent(list: InitContainer[]): AgentInitContainer[] {
+    const result: AgentInitContainer[] = []
+
+    list.forEach(it => {
+      result.push({
+        ...it,
+        environments: this.mapKeyValueToMap(it.environments as KeyValue[]),
+        command: it.command.map(cit => cit.key),
+        args: it.args.map(ait => ait.key),
+      })
+    })
+
+    return result
+  }
+
+  private mapKeyValueToMap(list: KeyValue[]): { [key: string]: string } {
+    const result: { [key: string]: string } = {}
+
+    list.forEach(it => {
+      result[it.key] = it.value
+    })
+
+    return result
+  }
+
+  private mapUniqueKeyToStringArray(list: UniqueKey[]): string[] {
+    return list.map(it => it.key)
   }
 
   private jsonToPipedFormat(environment: UniqueKeyValue[]): string[] {

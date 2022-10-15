@@ -17,12 +17,9 @@ import {
   RestartPolicy as ProtoRestartPolicy,
 } from 'src/grpc/protobuf/proto/common'
 import {
-  CommonContainerConfig as ProtoAgentCommonContainerConfig,
   CommonContainerConfig as ProtoCruxCommonContainerConfig,
   ContainerConfig as ProtoContainerConfig,
-  CraneContainerConfig as ProtoAgentCraneContainerConfig,
   CraneContainerConfig as ProtoCruxCraneContainerConfig,
-  DagentContainerConfig as ProtoAgentDagentContainerConfig,
   DagentContainerConfig as ProtoCruxDagentContainerConfig,
   ImageResponse,
 } from 'src/grpc/protobuf/proto/crux'
@@ -48,7 +45,7 @@ export default class ImageMapper {
     }
   }
 
-  configToCommonConfig(config: ContainerConfigData): ProtoAgentCommonContainerConfig | ProtoCruxCommonContainerConfig {
+  configToCommonConfig(config: ContainerConfigData): ProtoCruxCommonContainerConfig {
     return {
       name: config.name,
       environments: config.environment as JsonObject,
@@ -68,7 +65,7 @@ export default class ImageMapper {
     }
   }
 
-  configToDagentConfig(config: ContainerConfigData): ProtoAgentDagentContainerConfig | ProtoCruxDagentContainerConfig {
+  configToDagentConfig(config: ContainerConfigData): ProtoCruxDagentContainerConfig {
     return {
       networks: config.networks as JsonObject,
       logConfig: config.logConfig as JsonObject,
@@ -77,7 +74,7 @@ export default class ImageMapper {
     }
   }
 
-  configToCraneConfig(config: ContainerConfigData): ProtoAgentCraneContainerConfig | ProtoCruxCraneContainerConfig {
+  configToCraneConfig(config: ContainerConfigData): ProtoCruxCraneContainerConfig {
     return {
       customHeaders: config.customHeaders as JsonObject,
       extraLBAnnotations: config.extraLBAnnotations as JsonObject,
@@ -91,7 +88,7 @@ export default class ImageMapper {
 
   configProtoToDb(config: ProtoContainerConfig): ContainerConfigData {
     return {
-      //common
+      // common
       name: config.common?.name,
       expose: this.exposeStrategyToDb(config.common?.expose),
       ingress: config.common?.ingress as JsonObject,
@@ -108,11 +105,11 @@ export default class ImageMapper {
       secrets: config.common?.secrets as JsonObject,
       initContainers: config.common?.initContainers as JsonObject,
       logConfig: config.dagent?.logConfig as JsonObject,
-      //dagent
+      // dagent
       restartPolicy: this.restartPolicyToDb(config.dagent?.restartPolicy),
       networkMode: this.networkModeToDb(config.dagent?.networkMode),
       networks: config.dagent?.networks as JsonObject,
-      //crane
+      // crane
       deploymentStrategy: this.deploymentStrategyToDb(config.crane?.deploymentStatregy),
       healthCheckConfig: config.crane?.healthCheckConfig as JsonObject,
       resourceConfig: config.crane?.resourceConfig as JsonObject,

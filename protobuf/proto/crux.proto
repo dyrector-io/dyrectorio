@@ -629,7 +629,7 @@ message CommonContainerConfig {
   repeated common.UniqueKey commands = 1003;
   repeated common.UniqueKey args = 1004;
   repeated UniqueKeyValue environments = 1005;
-  repeated common.UniqueKey secrets = 1006;
+  repeated UniqueKeyValue secrets = 1006;
   repeated InitContainer initContainers = 1007;
 }
 
