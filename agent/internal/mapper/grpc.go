@@ -83,12 +83,12 @@ func mapContainerConfig(in *agent.DeployRequest) v1.ContainerConfig {
 		PortRanges:       mapPortRanges(common.PortRanges),
 		Volumes:          mapVolumes(common.Volumes),
 		User:             common.User,
-		Secrets:          MapSecrets(common.Secrets),
+		Secrets:          common.Secrets,
 		InitContainers:   mapInitContainers(common.InitContainers),
 	}
 
 	if common.Environments != nil {
-		containerConfig.Environment = mapEnvironments(common.Environments)
+		containerConfig.Environment = common.Environments
 	}
 
 	if common.TTY != nil {
@@ -147,7 +147,7 @@ func mapDagentConfig(dagent *agent.DagentContainerConfig, containerConfig *v1.Co
 
 	if dagent.LogConfig != nil {
 		containerConfig.LogConfig = &container.LogConfig{Type: dagent.LogConfig.Driver.String(),
-			Config: mapKeyValueArray(dagent.LogConfig.Options)}
+			Config: dagent.LogConfig.Options}
 	}
 }
 
@@ -171,18 +171,8 @@ func mapCraneConfig(crane *agent.CraneContainerConfig, containerConfig *v1.Conta
 	}
 
 	if crane.ExtraLBAnnotations != nil {
-		containerConfig.ExtraLBAnnotations = mapKeyValueArray(crane.ExtraLBAnnotations)
+		containerConfig.ExtraLBAnnotations = crane.ExtraLBAnnotations
 	}
-}
-
-func mapKeyValueArray(array []*common.KeyValue) map[string]string {
-	mapped := make(map[string]string)
-
-	for _, value := range array {
-		mapped[value.GetKey()] = value.Value
-	}
-
-	return mapped
 }
 
 func mapRestartPolicy(policy string) builder.RestartPolicyName {
@@ -340,7 +330,7 @@ func mapInitContainers(in []*agent.InitContainer) []v1.InitContainer {
 			Volumes:   mapVolumeLinks(ic.Volumes),
 			Args:      ic.Args,
 			UseParent: useParentConfig,
-			Envs:      mapKeyValueArray(ic.Environments),
+			Envs:      ic.Environments,
 		})
 	}
 

@@ -23,11 +23,6 @@ import {
   CraneContainerConfig as ProtoCruxCraneContainerConfig,
   DagentContainerConfig as ProtoCruxDagentContainerConfig,
 } from 'src/grpc/protobuf/proto/crux'
-import {
-  CommonContainerConfig as ProtoAgentCommonContainerConfig,
-  CraneContainerConfig as ProtoAgentCraneContainerConfig,
-  DagentContainerConfig as ProtoAgentDagentContainerConfig,
-} from 'src/grpc/protobuf/proto/crux'
 import { ContainerConfigData, UniqueKeyValue } from 'src/shared/model'
 
 @Injectable()
@@ -50,7 +45,7 @@ export default class ImageMapper {
     }
   }
 
-  configToCommonConfig(config: ContainerConfigData): ProtoAgentCommonContainerConfig | ProtoCruxCommonContainerConfig {
+  configToCommonConfig(config: ContainerConfigData): ProtoCruxCommonContainerConfig {
     return {
       name: config.name,
       environments: config.environment as JsonObject,
@@ -70,7 +65,7 @@ export default class ImageMapper {
     }
   }
 
-  configToDagentConfig(config: ContainerConfigData): ProtoAgentDagentContainerConfig | ProtoCruxDagentContainerConfig {
+  configToDagentConfig(config: ContainerConfigData): ProtoCruxDagentContainerConfig {
     return {
       networks: config.networks as JsonObject,
       logConfig: config.logConfig as JsonObject,
@@ -79,7 +74,7 @@ export default class ImageMapper {
     }
   }
 
-  configToCraneConfig(config: ContainerConfigData): ProtoAgentCraneContainerConfig | ProtoCruxCraneContainerConfig {
+  configToCraneConfig(config: ContainerConfigData): ProtoCruxCraneContainerConfig {
     return {
       customHeaders: config.customHeaders as JsonObject,
       extraLBAnnotations: config.extraLBAnnotations as JsonObject,

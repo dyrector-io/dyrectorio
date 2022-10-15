@@ -20,7 +20,6 @@ import {
   exposeStrategyToJSON,
   HealthCheckConfig,
   Ingress,
-  KeyValue,
   ListSecretsResponse,
   NetworkMode,
   networkModeFromJSON,
@@ -29,7 +28,6 @@ import {
   RestartPolicy,
   restartPolicyFromJSON,
   restartPolicyToJSON,
-  UniqueKey,
   VolumeType,
   volumeTypeFromJSON,
   volumeTypeToJSON,
@@ -163,18 +161,33 @@ export interface InitContainer {
   volumes: VolumeLink[]
   command: string[]
   args: string[]
-  environments: KeyValue[]
+  environments: { [key: string]: string }
+}
+
+export interface InitContainer_EnvironmentsEntry {
+  key: string
+  value: string
 }
 
 export interface ImportContainer {
   volume: string
   command: string
-  environments: KeyValue[]
+  environments: { [key: string]: string }
+}
+
+export interface ImportContainer_EnvironmentsEntry {
+  key: string
+  value: string
 }
 
 export interface LogConfig {
   driver: DriverType
-  options: KeyValue[]
+  options: { [key: string]: string }
+}
+
+export interface LogConfig_OptionsEntry {
+  key: string
+  value: string
 }
 
 export interface DagentContainerConfig {
@@ -191,7 +204,12 @@ export interface CraneContainerConfig {
   proxyHeaders?: boolean | undefined
   useLoadBalancer?: boolean | undefined
   customHeaders: string[]
-  extraLBAnnotations: KeyValue[]
+  extraLBAnnotations: { [key: string]: string }
+}
+
+export interface CraneContainerConfig_ExtraLBAnnotationsEntry {
+  key: string
+  value: string
 }
 
 export interface CommonContainerConfig {
@@ -207,9 +225,14 @@ export interface CommonContainerConfig {
   volumes: Volume[]
   commands: string[]
   args: string[]
-  environments: KeyValue[]
-  secrets: UniqueKey[]
+  environments: string[]
+  secrets: { [key: string]: string }
   initContainers: InitContainer[]
+}
+
+export interface CommonContainerConfig_SecretsEntry {
+  key: string
+  value: string
 }
 
 export interface DeployRequest {
@@ -627,7 +650,7 @@ export const VolumeLink = {
 }
 
 function createBaseInitContainer(): InitContainer {
-  return { name: '', image: '', volumes: [], command: [], args: [], environments: [] }
+  return { name: '', image: '', volumes: [], command: [], args: [], environments: {} }
 }
 
 export const InitContainer = {
@@ -639,9 +662,12 @@ export const InitContainer = {
       volumes: Array.isArray(object?.volumes) ? object.volumes.map((e: any) => VolumeLink.fromJSON(e)) : [],
       command: Array.isArray(object?.command) ? object.command.map((e: any) => String(e)) : [],
       args: Array.isArray(object?.args) ? object.args.map((e: any) => String(e)) : [],
-      environments: Array.isArray(object?.environments)
-        ? object.environments.map((e: any) => KeyValue.fromJSON(e))
-        : [],
+      environments: isObject(object.environments)
+        ? Object.entries(object.environments).reduce<{ [key: string]: string }>((acc, [key, value]) => {
+            acc[key] = String(value)
+            return acc
+          }, {})
+        : {},
     }
   },
 
@@ -665,17 +691,35 @@ export const InitContainer = {
     } else {
       obj.args = []
     }
+    obj.environments = {}
     if (message.environments) {
-      obj.environments = message.environments.map(e => (e ? KeyValue.toJSON(e) : undefined))
-    } else {
-      obj.environments = []
+      Object.entries(message.environments).forEach(([k, v]) => {
+        obj.environments[k] = v
+      })
     }
     return obj
   },
 }
 
+function createBaseInitContainer_EnvironmentsEntry(): InitContainer_EnvironmentsEntry {
+  return { key: '', value: '' }
+}
+
+export const InitContainer_EnvironmentsEntry = {
+  fromJSON(object: any): InitContainer_EnvironmentsEntry {
+    return { key: isSet(object.key) ? String(object.key) : '', value: isSet(object.value) ? String(object.value) : '' }
+  },
+
+  toJSON(message: InitContainer_EnvironmentsEntry): unknown {
+    const obj: any = {}
+    message.key !== undefined && (obj.key = message.key)
+    message.value !== undefined && (obj.value = message.value)
+    return obj
+  },
+}
+
 function createBaseImportContainer(): ImportContainer {
-  return { volume: '', command: '', environments: [] }
+  return { volume: '', command: '', environments: {} }
 }
 
 export const ImportContainer = {
@@ -683,9 +727,12 @@ export const ImportContainer = {
     return {
       volume: isSet(object.volume) ? String(object.volume) : '',
       command: isSet(object.command) ? String(object.command) : '',
-      environments: Array.isArray(object?.environments)
-        ? object.environments.map((e: any) => KeyValue.fromJSON(e))
-        : [],
+      environments: isObject(object.environments)
+        ? Object.entries(object.environments).reduce<{ [key: string]: string }>((acc, [key, value]) => {
+            acc[key] = String(value)
+            return acc
+          }, {})
+        : {},
     }
   },
 
@@ -693,35 +740,76 @@ export const ImportContainer = {
     const obj: any = {}
     message.volume !== undefined && (obj.volume = message.volume)
     message.command !== undefined && (obj.command = message.command)
+    obj.environments = {}
     if (message.environments) {
-      obj.environments = message.environments.map(e => (e ? KeyValue.toJSON(e) : undefined))
-    } else {
-      obj.environments = []
+      Object.entries(message.environments).forEach(([k, v]) => {
+        obj.environments[k] = v
+      })
     }
     return obj
   },
 }
 
+function createBaseImportContainer_EnvironmentsEntry(): ImportContainer_EnvironmentsEntry {
+  return { key: '', value: '' }
+}
+
+export const ImportContainer_EnvironmentsEntry = {
+  fromJSON(object: any): ImportContainer_EnvironmentsEntry {
+    return { key: isSet(object.key) ? String(object.key) : '', value: isSet(object.value) ? String(object.value) : '' }
+  },
+
+  toJSON(message: ImportContainer_EnvironmentsEntry): unknown {
+    const obj: any = {}
+    message.key !== undefined && (obj.key = message.key)
+    message.value !== undefined && (obj.value = message.value)
+    return obj
+  },
+}
+
 function createBaseLogConfig(): LogConfig {
-  return { driver: 0, options: [] }
+  return { driver: 0, options: {} }
 }
 
 export const LogConfig = {
   fromJSON(object: any): LogConfig {
     return {
       driver: isSet(object.driver) ? driverTypeFromJSON(object.driver) : 0,
-      options: Array.isArray(object?.options) ? object.options.map((e: any) => KeyValue.fromJSON(e)) : [],
+      options: isObject(object.options)
+        ? Object.entries(object.options).reduce<{ [key: string]: string }>((acc, [key, value]) => {
+            acc[key] = String(value)
+            return acc
+          }, {})
+        : {},
     }
   },
 
   toJSON(message: LogConfig): unknown {
     const obj: any = {}
     message.driver !== undefined && (obj.driver = driverTypeToJSON(message.driver))
+    obj.options = {}
     if (message.options) {
-      obj.options = message.options.map(e => (e ? KeyValue.toJSON(e) : undefined))
-    } else {
-      obj.options = []
+      Object.entries(message.options).forEach(([k, v]) => {
+        obj.options[k] = v
+      })
     }
+    return obj
+  },
+}
+
+function createBaseLogConfig_OptionsEntry(): LogConfig_OptionsEntry {
+  return { key: '', value: '' }
+}
+
+export const LogConfig_OptionsEntry = {
+  fromJSON(object: any): LogConfig_OptionsEntry {
+    return { key: isSet(object.key) ? String(object.key) : '', value: isSet(object.value) ? String(object.value) : '' }
+  },
+
+  toJSON(message: LogConfig_OptionsEntry): unknown {
+    const obj: any = {}
+    message.key !== undefined && (obj.key = message.key)
+    message.value !== undefined && (obj.value = message.value)
     return obj
   },
 }
@@ -758,7 +846,7 @@ export const DagentContainerConfig = {
 }
 
 function createBaseCraneContainerConfig(): CraneContainerConfig {
-  return { customHeaders: [], extraLBAnnotations: [] }
+  return { customHeaders: [], extraLBAnnotations: {} }
 }
 
 export const CraneContainerConfig = {
@@ -774,9 +862,12 @@ export const CraneContainerConfig = {
       proxyHeaders: isSet(object.proxyHeaders) ? Boolean(object.proxyHeaders) : undefined,
       useLoadBalancer: isSet(object.useLoadBalancer) ? Boolean(object.useLoadBalancer) : undefined,
       customHeaders: Array.isArray(object?.customHeaders) ? object.customHeaders.map((e: any) => String(e)) : [],
-      extraLBAnnotations: Array.isArray(object?.extraLBAnnotations)
-        ? object.extraLBAnnotations.map((e: any) => KeyValue.fromJSON(e))
-        : [],
+      extraLBAnnotations: isObject(object.extraLBAnnotations)
+        ? Object.entries(object.extraLBAnnotations).reduce<{ [key: string]: string }>((acc, [key, value]) => {
+            acc[key] = String(value)
+            return acc
+          }, {})
+        : {},
     }
   },
 
@@ -798,11 +889,29 @@ export const CraneContainerConfig = {
     } else {
       obj.customHeaders = []
     }
+    obj.extraLBAnnotations = {}
     if (message.extraLBAnnotations) {
-      obj.extraLBAnnotations = message.extraLBAnnotations.map(e => (e ? KeyValue.toJSON(e) : undefined))
-    } else {
-      obj.extraLBAnnotations = []
+      Object.entries(message.extraLBAnnotations).forEach(([k, v]) => {
+        obj.extraLBAnnotations[k] = v
+      })
     }
+    return obj
+  },
+}
+
+function createBaseCraneContainerConfig_ExtraLBAnnotationsEntry(): CraneContainerConfig_ExtraLBAnnotationsEntry {
+  return { key: '', value: '' }
+}
+
+export const CraneContainerConfig_ExtraLBAnnotationsEntry = {
+  fromJSON(object: any): CraneContainerConfig_ExtraLBAnnotationsEntry {
+    return { key: isSet(object.key) ? String(object.key) : '', value: isSet(object.value) ? String(object.value) : '' }
+  },
+
+  toJSON(message: CraneContainerConfig_ExtraLBAnnotationsEntry): unknown {
+    const obj: any = {}
+    message.key !== undefined && (obj.key = message.key)
+    message.value !== undefined && (obj.value = message.value)
     return obj
   },
 }
@@ -815,7 +924,7 @@ function createBaseCommonContainerConfig(): CommonContainerConfig {
     commands: [],
     args: [],
     environments: [],
-    secrets: [],
+    secrets: {},
     initContainers: [],
   }
 }
@@ -837,10 +946,13 @@ export const CommonContainerConfig = {
       volumes: Array.isArray(object?.volumes) ? object.volumes.map((e: any) => Volume.fromJSON(e)) : [],
       commands: Array.isArray(object?.commands) ? object.commands.map((e: any) => String(e)) : [],
       args: Array.isArray(object?.args) ? object.args.map((e: any) => String(e)) : [],
-      environments: Array.isArray(object?.environments)
-        ? object.environments.map((e: any) => KeyValue.fromJSON(e))
-        : [],
-      secrets: Array.isArray(object?.secrets) ? object.secrets.map((e: any) => UniqueKey.fromJSON(e)) : [],
+      environments: Array.isArray(object?.environments) ? object.environments.map((e: any) => String(e)) : [],
+      secrets: isObject(object.secrets)
+        ? Object.entries(object.secrets).reduce<{ [key: string]: string }>((acc, [key, value]) => {
+            acc[key] = String(value)
+            return acc
+          }, {})
+        : {},
       initContainers: Array.isArray(object?.initContainers)
         ? object.initContainers.map((e: any) => InitContainer.fromJSON(e))
         : [],
@@ -885,20 +997,38 @@ export const CommonContainerConfig = {
       obj.args = []
     }
     if (message.environments) {
-      obj.environments = message.environments.map(e => (e ? KeyValue.toJSON(e) : undefined))
+      obj.environments = message.environments.map(e => e)
     } else {
       obj.environments = []
     }
+    obj.secrets = {}
     if (message.secrets) {
-      obj.secrets = message.secrets.map(e => (e ? UniqueKey.toJSON(e) : undefined))
-    } else {
-      obj.secrets = []
+      Object.entries(message.secrets).forEach(([k, v]) => {
+        obj.secrets[k] = v
+      })
     }
     if (message.initContainers) {
       obj.initContainers = message.initContainers.map(e => (e ? InitContainer.toJSON(e) : undefined))
     } else {
       obj.initContainers = []
     }
+    return obj
+  },
+}
+
+function createBaseCommonContainerConfig_SecretsEntry(): CommonContainerConfig_SecretsEntry {
+  return { key: '', value: '' }
+}
+
+export const CommonContainerConfig_SecretsEntry = {
+  fromJSON(object: any): CommonContainerConfig_SecretsEntry {
+    return { key: isSet(object.key) ? String(object.key) : '', value: isSet(object.value) ? String(object.value) : '' }
+  },
+
+  toJSON(message: CommonContainerConfig_SecretsEntry): unknown {
+    const obj: any = {}
+    message.key !== undefined && (obj.key = message.key)
+    message.value !== undefined && (obj.value = message.value)
     return obj
   },
 }
@@ -1094,6 +1224,10 @@ function fromJsonTimestamp(o: any): Timestamp {
   } else {
     return Timestamp.fromJSON(o)
   }
+}
+
+function isObject(value: any): boolean {
+  return typeof value === 'object' && value !== null
 }
 
 function isSet(value: any): boolean {

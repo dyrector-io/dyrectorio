@@ -1029,7 +1029,7 @@ export interface CommonContainerConfig {
   commands: UniqueKey[]
   args: UniqueKey[]
   environments: UniqueKeyValue[]
-  secrets: UniqueKey[]
+  secrets: UniqueKeyValue[]
   initContainers: InitContainer[]
 }
 
@@ -6143,7 +6143,7 @@ export const CommonContainerConfig = {
       UniqueKeyValue.encode(v!, writer.uint32(8042).fork()).ldelim()
     }
     for (const v of message.secrets) {
-      UniqueKey.encode(v!, writer.uint32(8050).fork()).ldelim()
+      UniqueKeyValue.encode(v!, writer.uint32(8050).fork()).ldelim()
     }
     for (const v of message.initContainers) {
       InitContainer.encode(v!, writer.uint32(8058).fork()).ldelim()
@@ -6198,7 +6198,7 @@ export const CommonContainerConfig = {
           message.environments.push(UniqueKeyValue.decode(reader, reader.uint32()))
           break
         case 1006:
-          message.secrets.push(UniqueKey.decode(reader, reader.uint32()))
+          message.secrets.push(UniqueKeyValue.decode(reader, reader.uint32()))
           break
         case 1007:
           message.initContainers.push(InitContainer.decode(reader, reader.uint32()))
@@ -6230,7 +6230,7 @@ export const CommonContainerConfig = {
       environments: Array.isArray(object?.environments)
         ? object.environments.map((e: any) => UniqueKeyValue.fromJSON(e))
         : [],
-      secrets: Array.isArray(object?.secrets) ? object.secrets.map((e: any) => UniqueKey.fromJSON(e)) : [],
+      secrets: Array.isArray(object?.secrets) ? object.secrets.map((e: any) => UniqueKeyValue.fromJSON(e)) : [],
       initContainers: Array.isArray(object?.initContainers)
         ? object.initContainers.map((e: any) => InitContainer.fromJSON(e))
         : [],
@@ -6280,7 +6280,7 @@ export const CommonContainerConfig = {
       obj.environments = []
     }
     if (message.secrets) {
-      obj.secrets = message.secrets.map(e => (e ? UniqueKey.toJSON(e) : undefined))
+      obj.secrets = message.secrets.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
     } else {
       obj.secrets = []
     }
@@ -6314,7 +6314,7 @@ export const CommonContainerConfig = {
     message.commands = object.commands?.map(e => UniqueKey.fromPartial(e)) || []
     message.args = object.args?.map(e => UniqueKey.fromPartial(e)) || []
     message.environments = object.environments?.map(e => UniqueKeyValue.fromPartial(e)) || []
-    message.secrets = object.secrets?.map(e => UniqueKey.fromPartial(e)) || []
+    message.secrets = object.secrets?.map(e => UniqueKeyValue.fromPartial(e)) || []
     message.initContainers = object.initContainers?.map(e => InitContainer.fromPartial(e)) || []
     return message
   },

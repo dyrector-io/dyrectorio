@@ -140,7 +140,7 @@ export type ContainerConfig = {
   //common
   name?: string
   environments?: UniqueKeyValue[]
-  secrets?: UniqueKey[]
+  secrets?: UniqueKeyValue[]
   ingress?: ContainerConfigIngress
   expose?: ContainerConfigExposeStrategy
   user?: number
