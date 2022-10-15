@@ -44,7 +44,7 @@ interface ImageConfigFitlerProps {
 const ImageConfigFilters = (props: ImageConfigFitlerProps) => {
   const { onChange } = props
 
-  const { t } = useTranslation('images')
+  const { t } = useTranslation('container')
 
   const [filters, setFilters] = useState<ImageConfigFilterType[]>(
     IMAGE_CONFIG_FILTERS as any as ImageConfigFilterType[],

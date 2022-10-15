@@ -1,3 +1,4 @@
+import { EditorStateOptions } from '@app/components/editor/use-editor-state'
 import KeyOnlyInput from '@app/components/shared/key-only-input'
 import KeyValueInput from '@app/components/shared/key-value-input'
 import DyoChips from '@app/elements/dyo-chips'
@@ -21,11 +22,12 @@ interface DagentConfigSectionProps {
   config: DagentConfigDetails
   onChange: (config: Partial<ContainerConfig>) => void
   filters: ImageConfigFilterType[]
+  editorOptions: EditorStateOptions
 }
 
 const DagentConfigSection = (props: DagentConfigSectionProps) => {
-  const { t } = useTranslation('images')
-  const { config: propsConfig, filters, onChange: propsOnChange } = props
+  const { t } = useTranslation('container')
+  const { config: propsConfig, filters, onChange: propsOnChange, editorOptions } = props
 
   const [config, setConfig] = useState<DagentConfigDetails>(propsConfig)
 
@@ -68,6 +70,7 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
               keyPlaceholder={t('docker.placeholders.network')}
               onChange={it => onChange({ networks: it })}
               unique={false}
+              editorOptions={editorOptions}
             />
           </div>
         )}
@@ -107,6 +110,7 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
                 label={t('docker.options')}
                 items={config.logConfig?.options}
                 onChange={it => onChange({ logConfig: { ...config.logConfig, options: it } })}
+                editorOptions={editorOptions}
               />
             </div>
           </div>

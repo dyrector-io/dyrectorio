@@ -1,3 +1,4 @@
+import { EditorStateOptions } from '@app/components/editor/use-editor-state'
 import KeyOnlyInput from '@app/components/shared/key-only-input'
 import KeyValueInput from '@app/components/shared/key-value-input'
 import DyoChips from '@app/elements/dyo-chips'
@@ -19,11 +20,12 @@ interface CraneConfigSectionProps {
   config: CraneConfigDetails
   onChange: (config: Partial<ContainerConfig>) => void
   filters: ImageConfigFilterType[]
+  editorOptions: EditorStateOptions
 }
 
 const CraneConfigSection = (props: CraneConfigSectionProps) => {
-  const { t } = useTranslation('images')
-  const { config: propsConfig, filters, onChange: propsOnChange } = props
+  const { t } = useTranslation('container')
+  const { config: propsConfig, filters, onChange: propsOnChange, editorOptions } = props
 
   const [config, setConfig] = useState<CraneConfigDetails>(propsConfig)
 
@@ -75,7 +77,6 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 label={t('kubernetes.port')}
                 containerClassName="max-w-lg mb-3"
                 labelClassName="my-auto mr-4 w-20"
-                className="w-full"
                 grow
                 inline
                 value={config.healthCheckConfig?.port ?? ''}
@@ -137,6 +138,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
               items={config.customHeaders}
               keyPlaceholder={t('kubernetes.placeholders.headerName')}
               onChange={it => onChange({ customHeaders: it })}
+              editorOptions={editorOptions}
             />
           </div>
         )}
@@ -260,6 +262,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                   label={t('kubernetes.extraLBAnnotations')}
                   items={config.extraLBAnnotations}
                   onChange={it => onChange({ extraLBAnnotations: it })}
+                  editorOptions={editorOptions}
                 />
               </div>
             )}

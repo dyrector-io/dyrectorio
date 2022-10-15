@@ -1,3 +1,5 @@
+import useEditorState from '@app/components/editor/use-editor-state'
+import useItemEditorState from '@app/components/editor/use-item-editor-state'
 import { Layout } from '@app/components/layout'
 import CommonConfigSection from '@app/components/products/versions/images/config/common-config-section'
 import CraneConfigSection from '@app/components/products/versions/images/config/crane-config-section'
@@ -48,6 +50,9 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
   const router = useRouter()
   const [deleteModalConfig, confirmDelete] = useConfirmation()
   const versionSock = useWebSocket(versionWsUrl(product.id, version.id))
+
+  const editor = useEditorState(versionSock)
+  const editorState = useItemEditorState(editor, versionSock, image.id)
 
   const onChange = useCallback(
     (newConfig: Partial<ContainerConfig>) => {
@@ -103,9 +108,9 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
         <ImageConfigFilters onChange={setFilters}></ImageConfigFilters>
       </DyoCard>
       <DyoCard className="flex flex-col mt-4 px-4 w-full">
-        <CommonConfigSection filters={filters} config={config} onChange={onChange} />
-        <DagentConfigSection filters={filters} config={config} onChange={onChange} />
-        <CraneConfigSection filters={filters} config={config} onChange={onChange} />
+        <CommonConfigSection filters={filters} editorOptions={editorState} config={config} onChange={onChange} />
+        <DagentConfigSection filters={filters} editorOptions={editorState} config={config} onChange={onChange} />
+        <CraneConfigSection filters={filters} editorOptions={editorState} config={config} onChange={onChange} />
       </DyoCard>
 
       <DyoConfirmationModal
