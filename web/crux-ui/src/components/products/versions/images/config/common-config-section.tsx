@@ -57,7 +57,9 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
       [field]: value,
     }
 
-    const list = [...config[property].filter(p => p.id !== newValue.id), newValue]
+    const updatedIndex = config[property].map(it => it.id).indexOf(newValue.id)
+    const list = [...config[property]]
+    list[updatedIndex] = newValue
 
     onChange({ [property]: list })
   }
@@ -429,7 +431,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                       onClick={() => {
                         const portRanges = [...config.portRanges]
                         portRanges.splice(index, 1)
-                        setConfig({ ...config, portRanges })
+                        onChange({ portRanges: portRanges })
                       }}
                       src="/minus.svg"
                       alt={'add'}
@@ -525,7 +527,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                         onClick={() => {
                           const volumes = [...config.volumes]
                           volumes.splice(index, 1)
-                          setConfig({ ...config, volumes })
+                          onChange({ volumes })
                         }}
                         src="/minus.svg"
                         alt={'add'}

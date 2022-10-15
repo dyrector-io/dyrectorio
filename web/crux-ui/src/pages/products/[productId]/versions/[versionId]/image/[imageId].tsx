@@ -54,7 +54,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
       throttle(() => {
         versionSock.send(WS_TYPE_PATCH_IMAGE, {
           id: image.id,
-          config: newConfig,
+          config: { ...config, ...newConfig },
         } as PatchImageMessage)
 
         setConfig({ ...config, ...newConfig })
