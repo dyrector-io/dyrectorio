@@ -95,7 +95,7 @@ func DeleteNamespace(ctx context.Context, name string, cfg *config.Configuration
 }
 
 func getNamespaceClient(cfg *config.Configuration) (v1.NamespaceInterface, error) {
-	clientset, err := GetClientSet(cfg)
+	clientset, err := NewClient().GetClientSet(cfg)
 
 	if err != nil {
 		return nil, err

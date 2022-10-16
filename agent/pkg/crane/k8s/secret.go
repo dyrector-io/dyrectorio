@@ -82,7 +82,7 @@ func ListSecrets(ctx context.Context, namespace, name string, appConfig *config.
 }
 
 func getSecretClient(namespace string, cfg *config.Configuration) (v1.SecretInterface, error) {
-	clientset, err := GetClientSet(cfg)
+	clientset, err := NewClient().GetClientSet(cfg)
 
 	if err != nil {
 		return nil, err

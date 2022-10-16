@@ -140,7 +140,7 @@ func getServicePorts(portBindings []builder.PortBinding, portRanges []builder.Po
 }
 
 func getServiceClient(namespace string, cfg *config.Configuration) (typedcorev1.ServiceInterface, error) {
-	clientset, err := GetClientSet(cfg)
+	clientset, err := NewClient().GetClientSet(cfg)
 
 	if err != nil {
 		return nil, err

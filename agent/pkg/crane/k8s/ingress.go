@@ -170,7 +170,7 @@ func getAnnotations(tlsIsWanted, proxyHeaders bool,
 }
 
 func getIngressClient(namespace string, cfg *config.Configuration) (networking.IngressInterface, error) {
-	clientset, err := GetClientSet(cfg)
+	clientset, err := NewClient().GetClientSet(cfg)
 
 	if err != nil {
 		return nil, err

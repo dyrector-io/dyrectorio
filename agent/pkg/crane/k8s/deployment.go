@@ -409,7 +409,7 @@ func getContainerPorts(portList []builder.PortBinding) []*corev1.ContainerPortAp
 }
 
 func getDeploymentsClient(namespace string, cfg *config.Configuration) typedv1.DeploymentInterface {
-	client, err := GetClientSet(cfg)
+	client, err := NewClient().GetClientSet(cfg)
 	if err != nil {
 		panic(err)
 	}
@@ -478,7 +478,7 @@ func getVolumeMountsFromMap(mounts map[string]v1.Volume) []*corev1.VolumeMountAp
 }
 
 func GetDeployments(ctx context.Context, namespace string, cfg *config.Configuration) (*kappsv1.DeploymentList, error) {
-	clientset, err := GetClientSet(cfg)
+	clientset, err := NewClient().GetClientSet(cfg)
 
 	if err != nil {
 		return nil, err
