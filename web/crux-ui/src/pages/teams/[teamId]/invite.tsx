@@ -103,7 +103,7 @@ const getPageServerSideProps = async (context: NextPageContext) => {
       await cruxFromContext(context).teams.acceptInvitation(teamId)
       accepted = true
     }
-  } catch (error) {
+  } catch (err) {
     if (!isDyoApiError(err)) {
       throw err
     }

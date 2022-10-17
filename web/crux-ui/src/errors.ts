@@ -40,7 +40,7 @@ export const apiErrorHandler =
       if (setErrorValue && translation.input) {
         setErrorValue(dto.property, translation.input)
       }
-    } catch (error) {
+    } catch (e) {
       translation = translator(null, 500, null)
     }
 
