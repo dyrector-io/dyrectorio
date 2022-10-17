@@ -429,13 +429,13 @@ func CheckAndUpdatePorts(settings *Settings) *Settings {
 	return settings
 }
 
-func getAvailablePort(portMap map[string]uint, portNum uint, portDesc string, dirty *bool) uint {
+func getAvailablePort(portMap map[string]uint, portNum uint, portDesc string, changed *bool) uint {
 	for {
 		if err := portIsAvailable(portMap, portNum); err != nil {
 			fmt.Fprintf(os.Stderr, "error in binding port for %s: %s\n", portDesc, err.Error())
 			fmt.Fprintf(os.Stdout, "type another port: ")
 			portNum = scanPort(portNum)
-			*dirty = true
+			*changed = true
 			continue
 		}
 		break
