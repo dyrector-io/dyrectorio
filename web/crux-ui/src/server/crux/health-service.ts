@@ -19,8 +19,8 @@ class DyoHealthService {
         version: res.cruxVersion,
         lastMigration: res.lastMigration,
       }
-    } catch (error) {
-      this.logger.error('Health check', e)
+    } catch (err) {
+      this.logger.error('Health check', err)
       return DEFAULT_CRUX_HEALTH
     }
   }

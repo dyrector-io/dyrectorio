@@ -58,8 +58,8 @@ export default class DomainNotificationService {
       if (template) {
         await lastValueFrom(this.httpService.post(url, template))
       }
-    } catch (error) {
-      this.logger.error(err)
+    } catch (err) {
+      this.logger.error(error)
     }
   }
 

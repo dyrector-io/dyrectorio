@@ -15,8 +15,8 @@ export default class EmailService {
     try {
       await this.mailer.sendMail(mail)
       return true
-    } catch (error) {
-      this.logger.error(err)
+    } catch (err) {
+      this.logger.error(error)
       return false
     }
   }

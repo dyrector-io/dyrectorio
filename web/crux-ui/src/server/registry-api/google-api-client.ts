@@ -32,7 +32,7 @@ export class GoogleRegistryClient implements RegistryApiClient {
     let accessToken: GetAccessTokenResponse
     try {
       accessToken = await this.client.getAccessToken()
-    } catch (error) {
+    } catch (err) {
       throw unauthorizedError(`Google auth request failed`)
     }
 

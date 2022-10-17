@@ -63,9 +63,9 @@ const JsonEditorInternal = <T,>(props: JsonEditorProps<T>) => {
     try {
       const json = JSON.parse(text)
       propOnChange?.call(null, json)
-    } catch (error) {
-      const err = e as Error
-      onParseError?.call(null, err)
+    } catch (err) {
+      const error = err as Error
+      onParseError?.call(null, error)
     }
   }
 

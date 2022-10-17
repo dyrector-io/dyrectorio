@@ -5,8 +5,8 @@ export const getValidationError = (schema: yup.AnySchema, candidate: any): yup.V
   try {
     schema.validateSync(candidate)
     return null
-  } catch (error) {
-    return e
+  } catch (err) {
+    return err
   }
 }
 
