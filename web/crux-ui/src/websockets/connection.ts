@@ -4,7 +4,7 @@ import WebSocket from 'ws'
 import { WsMessage } from './common'
 
 class WsConnection {
-  data: Map<string, any> = new Map()
+  readonly data: Map<string, any> = new Map()
 
   constructor(
     public readonly token: string,

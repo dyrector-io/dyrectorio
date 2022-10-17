@@ -1,54 +1,30 @@
-import ViewModeToggle, { ViewMode } from '@app/components/shared/view-mode-toggle'
+import ViewModeToggle from '@app/components/shared/view-mode-toggle'
 import DyoButton from '@app/elements/dyo-button'
-import { VersionAddSectionState, VersionSectionsState } from '@app/models'
 import useTranslation from 'next-translate/useTranslation'
+import { RefObject } from 'react'
+import { ImagesActions, ImagesState } from './images/use-images-state'
 
 interface VersionSectionsHeadingProps {
-  viewModeVisible: boolean
-  viewMode: ViewMode
+  saveImageOrderRef: RefObject<VoidFunction>
   versionMutable: boolean
-  state: VersionSectionsState
-  onStateSelected: (state: VersionSectionsState) => void
-  onAddStateSelected: (state: VersionAddSectionState) => void
-  onSaveImageOrder: VoidFunction
-  onDiscardImageOrder: VoidFunction
-  onViewModeChanged: (mode: ViewMode) => void
+  state: ImagesState
+  actions: ImagesActions
 }
 
 const VersionSectionsHeading = (props: VersionSectionsHeadingProps) => {
-  const {
-    versionMutable,
-    state,
-    viewModeVisible,
-    viewMode,
-    onStateSelected,
-    onAddStateSelected,
-    onSaveImageOrder,
-    onDiscardImageOrder,
-    onViewModeChanged,
-  } = props
+  const { versionMutable, state, actions, saveImageOrderRef } = props
 
   const { t } = useTranslation('versions')
 
-  const saveOrder = () => {
-    onSaveImageOrder()
-    onStateSelected('images')
-  }
-
-  const discardOrder = () => {
-    onDiscardImageOrder()
-    onStateSelected('images')
-  }
-
   return (
     <div className="flex flex-row my-4">
-      {state === 'reorder' ? (
+      {state.section === 'reorder' ? (
         <>
-          <DyoButton className="ml-auto px-4" secondary onClick={discardOrder}>
+          <DyoButton className="ml-auto px-4" secondary onClick={() => actions.discardAddSection()}>
             {t('common:discard')}
           </DyoButton>
 
-          <DyoButton className="px-4 ml-4" onClick={saveOrder}>
+          <DyoButton className="px-4 ml-4" onClick={() => saveImageOrderRef.current()}>
             {t('common:save')}
           </DyoButton>
         </>
@@ -57,10 +33,10 @@ const VersionSectionsHeading = (props: VersionSectionsHeadingProps) => {
           <DyoButton
             text
             thin
-            underlined={state === 'images'}
+            underlined={state.section === 'images'}
             textColor="text-bright"
             className="mx-6"
-            onClick={() => onStateSelected('images')}
+            onClick={() => actions.setSection('images')}
           >
             {t('images')}
           </DyoButton>
@@ -68,26 +44,30 @@ const VersionSectionsHeading = (props: VersionSectionsHeadingProps) => {
           <DyoButton
             text
             thin
-            underlined={state === 'deployments'}
+            underlined={state.section === 'deployments'}
             textColor="text-bright"
             className="ml-6"
-            onClick={() => onStateSelected('deployments')}
+            onClick={() => actions.setSection('deployments')}
           >
             {t('deployments')}
           </DyoButton>
 
           <div className="flex flex-row ml-auto">
             {versionMutable ? null : (
-              <DyoButton text className="pl-10 pr-4" onClick={() => onStateSelected('reorder')}>
+              <DyoButton text className="pl-10 pr-4" onClick={() => actions.setSection('reorder')}>
                 {t('reorderImages')}
               </DyoButton>
             )}
 
-            {versionMutable ? null : <DyoButton onClick={() => onAddStateSelected('image')}>{t('addImage')}</DyoButton>}
+            {versionMutable ? null : (
+              <DyoButton onClick={() => actions.selectAddSection('image')}>{t('addImage')}</DyoButton>
+            )}
 
-            <DyoButton onClick={() => onAddStateSelected('deployment')}>{t('addDeployment')}</DyoButton>
+            <DyoButton onClick={() => actions.selectAddSection('deployment')}>{t('addDeployment')}</DyoButton>
 
-            {viewModeVisible && <ViewModeToggle viewMode={viewMode} onViewModeChanged={onViewModeChanged} />}
+            {state.section === 'images' && (
+              <ViewModeToggle viewMode={state.viewMode} onViewModeChanged={actions.selectViewMode} />
+            )}
           </div>
         </>
       )}

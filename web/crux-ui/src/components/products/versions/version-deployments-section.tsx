@@ -112,7 +112,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
 
     /* eslint-disable react/jsx-key */
     return [
-      <div className="flex">
+      <div className="flex cursor-pointer" onClick={() => onNavigateToDeployment(item)}>
         <NodeStatusIndicator className="mr-2" status={item.nodeStatus} />
         {item.nodeName}
       </div>,

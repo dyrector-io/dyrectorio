@@ -1,30 +1,21 @@
+import EditorBadge from '@app/components/editor/editor-badge'
 import { Layout } from '@app/components/layout'
 import DeploymentDetailsSection from '@app/components/products/versions/deployments/deployment-details-section'
 import EditDeploymentCard from '@app/components/products/versions/deployments/edit-deployment-card'
 import EditDeploymentInstances from '@app/components/products/versions/deployments/edit-deployment-instances'
+import useDeploymentState from '@app/components/products/versions/deployments/use-deployment-state'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
 import DyoButton from '@app/elements/dyo-button'
+import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import LoadingIndicator from '@app/elements/loading-indicator'
-import useDeploymentCopy, { DeploymentCopyModal } from '@app/hooks/use-deployment-copy'
-import useWebSocket from '@app/hooks/use-websocket'
-import {
-  DeploymentEnvUpdatedMessage,
-  deploymentIsCopyable,
-  deploymentIsMutable,
-  DeploymentRoot,
-  mergeConfigs,
-  WS_TYPE_DEPLOYMENT_ENV_UPDATED,
-  WS_TYPE_INSTANCE_UPDATED,
-  WS_TYPE_PATCH_DEPLOYMENT_ENV,
-  WS_TYPE_PATCH_INSTANCE,
-} from '@app/models'
+import { defaultApiErrorHandler } from '@app/errors'
+import { DeploymentRoot, mergeConfigs } from '@app/models'
 import {
   deploymentApiUrl,
   deploymentDeployUrl,
   deploymentUrl,
-  deploymentWsUrl,
   productUrl,
   ROUTE_PRODUCTS,
   versionUrl,
@@ -35,7 +26,7 @@ import { Crux, cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import toast from 'react-hot-toast'
 import { ValidationError } from 'yup'
 
@@ -49,42 +40,22 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
   const { t } = useTranslation('deployments')
 
   const router = useRouter()
-
-  const { product, version } = propsDeployment
-
-  const [deployment, setDeployment] = useState(propsDeployment)
-  const [editing, setEditing] = useState(false)
-  const [saving, setSaving] = useState(false)
   const submitRef = useRef<() => Promise<any>>()
 
-  const { confirmationModal: copyModal, copy: copyDeployment } = useDeploymentCopy()
+  const onApiError = defaultApiErrorHandler(t)
+  const onWsError = (error: Error) => {
+    // eslint-disable-next-line
+    console.error('ws', 'edit-deployment', error)
+    toast(t('errors:connectionLost'))
+  }
 
-  const sock = useWebSocket(deploymentWsUrl(deployment.product.id, deployment.version.id, deployment.id), {
-    onSend: message => {
-      if ([WS_TYPE_PATCH_INSTANCE, WS_TYPE_PATCH_DEPLOYMENT_ENV].includes(message.type)) {
-        setSaving(true)
-      }
-    },
-    onReceive: message => {
-      if ([WS_TYPE_INSTANCE_UPDATED, WS_TYPE_DEPLOYMENT_ENV_UPDATED].includes(message.type)) {
-        setSaving(false)
-      }
-    },
-    onError: e => {
-      // eslint-disable-next-line
-      console.error('ws', 'edit-deployment', e)
-      toast(t('errors:connectionLost'))
-    },
+  const [state, actions] = useDeploymentState({
+    deployment: propsDeployment,
+    onApiError,
+    onWsError,
   })
 
-  sock.on(WS_TYPE_DEPLOYMENT_ENV_UPDATED, (message: DeploymentEnvUpdatedMessage) => {
-    setDeployment({
-      ...deployment,
-      environment: message,
-    })
-  })
-
-  const mutable = deploymentIsMutable(deployment.status)
+  const { product, version, deployment, node } = state
 
   const pageLink: BreadcrumbLink = {
     name: t('common:deployments'),
@@ -118,10 +89,10 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
     }
   }
 
-  const onOpenLog = () => router.push(deploymentDeployUrl(product.id, version.id, deployment.id))
+  const navigateToLog = () => router.push(deploymentDeployUrl(product.id, version.id, deployment.id))
 
   const onDeploy = () => {
-    if (deployment.node.status !== 'running') {
+    if (node.status !== 'running') {
       toast.error(t('common:nodeUnreachable'))
       return
     }
@@ -143,36 +114,47 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
       return
     }
 
-    onOpenLog()
+    navigateToLog()
   }
 
-  const onDeploymentEdited = dep => {
-    setDeployment(dep)
-    setEditing(false)
+  const onCopyDeployment = async () => {
+    const url = await actions.onCopyDeployment()
+    if (!url) {
+      return
+    }
+
+    router.push(url)
   }
 
   useEffect(() => {
-    if (mutable && deployment.node.status !== 'running') {
+    if (state.mutable && node.status !== 'running') {
       toast.error(t('common:nodeUnreachable'))
     }
-  }, [deployment, mutable, t])
+  }, [node.status, state.mutable, t])
 
   return (
     <Layout
       title={t('deploysName', {
         product: product.name,
         version: version.name,
-        name: deployment.node.name,
+        name: node.name,
       })}
+      topBarContent={
+        <>
+          {state.editor.editors.map((it, index) => (
+            <EditorBadge key={index} className="mr-2" editor={it} />
+          ))}
+        </>
+      }
     >
       <PageHeading pageLink={pageLink} sublinks={sublinks}>
-        {saving ? <LoadingIndicator className="flex ml-4 my-auto" /> : null}
+        {state.saving ? <LoadingIndicator className="flex ml-4 my-auto" /> : null}
 
-        {!mutable ? null : (
+        {!state.mutable ? null : (
           <DetailsPageMenu
             onDelete={onDelete}
-            editing={editing}
-            setEditing={setEditing}
+            editing={state.editing}
+            setEditing={actions.setEditing}
             submitRef={submitRef}
             deleteModalTitle={t('common:confirmDelete', {
               name: t('common:deployment'),
@@ -183,37 +165,46 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
           />
         )}
 
-        {deploymentIsCopyable(propsDeployment.status) && (
-          <DyoButton
-            className="px-6 ml-4"
-            onClick={() => copyDeployment(propsDeployment.product.id, propsDeployment.versionId, propsDeployment.id)}
-          >
+        {!state.copyable ? null : (
+          <DyoButton className="px-6 ml-4" onClick={onCopyDeployment}>
             {t('common:copy')}
           </DyoButton>
         )}
 
-        {!mutable ? (
-          <DyoButton className="px-10 ml-4" onClick={onOpenLog}>
+        {!state.mutable ? (
+          <DyoButton className="px-10 ml-auto" onClick={navigateToLog}>
             {t('log')}
           </DyoButton>
-        ) : !editing ? (
-          <DyoButton className="px-6 ml-4" onClick={onDeploy} disabled={deployment.node.status !== 'running'}>
+        ) : !state.editing ? (
+          <DyoButton className="px-6 ml-4" onClick={onDeploy} disabled={node.status !== 'running'}>
             {t('common:deploy')}
           </DyoButton>
         ) : null}
       </PageHeading>
 
-      {editing ? (
-        <EditDeploymentCard deployment={deployment} submitRef={submitRef} onDeploymentEdited={onDeploymentEdited} />
+      {state.editing ? (
+        <EditDeploymentCard
+          productId={state.product.id}
+          deployment={state.deployment}
+          submitRef={submitRef}
+          onDeploymentEdited={actions.onDeploymentEdited}
+        />
       ) : (
         <>
-          <DeploymentDetailsSection deployment={deployment} deploySock={sock} />
+          <DeploymentDetailsSection state={state} />
 
-          <EditDeploymentInstances deployment={deployment} />
+          <EditDeploymentInstances state={state} actions={actions} />
         </>
       )}
 
-      <DeploymentCopyModal confirmationModal={copyModal} />
+      <DyoConfirmationModal
+        config={state.confirmationModal}
+        title={t('deploymentCopyConflictTitle')}
+        description={t('deploymentCopyConflictContent')}
+        confirmText={t('continue')}
+        className="w-1/4"
+        confirmColor="bg-error-red"
+      />
     </Layout>
   )
 }

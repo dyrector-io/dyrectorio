@@ -127,7 +127,7 @@ const DeployPage = (props: DeployPageProps) => {
         </DyoButton>
       </PageHeading>
 
-      <DeploymentDetailsCard className="flex flex-grow p-6" deployment={deployment}>
+      <DeploymentDetailsCard className="flex flex-grow p-6" deployment={deployment} node={deployment.node}>
         <DeploymentContainerStatusList deployment={propsDeployment} />
         <DeploymentEventsTerminal events={events} />
       </DeploymentDetailsCard>

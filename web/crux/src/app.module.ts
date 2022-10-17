@@ -19,6 +19,7 @@ import GrpcContextLogger from './interceptors/grpc-context-logger.interceptor'
 import AuditLoggerInterceptor from './interceptors/audit-logger.interceptor'
 import PrismaService from './services/prisma.service'
 import NotificationModule from './app/notification/notification.module'
+import EmailModule from './mailer/email.module'
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import NotificationModule from './app/notification/notification.module'
       isGlobal: true,
       cache: true,
     }),
+    EmailModule,
   ],
   controllers: [],
   providers: [

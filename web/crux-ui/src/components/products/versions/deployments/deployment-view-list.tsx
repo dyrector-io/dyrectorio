@@ -3,13 +3,15 @@ import { DyoList } from '@app/elements/dyo-list'
 import { Instance } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
+import { DeploymentState } from './use-deployment-state'
 
 export interface DeploymentViewListProps {
-  instances: Instance[]
+  state: DeploymentState
 }
 
 const DeploymentViewList = (props: DeploymentViewListProps) => {
-  const { instances } = props
+  const { state } = props
+  const { instances } = state
 
   const { t } = useTranslation('common')
 

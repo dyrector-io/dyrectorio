@@ -2,7 +2,7 @@ import clsx from 'clsx'
 import { highlight, languages } from 'prismjs'
 import 'prismjs/components/prism-json'
 import 'prismjs/themes/prism-tomorrow.css'
-import { useEffect, useReducer } from 'react'
+import { CSSProperties, useEffect, useReducer } from 'react'
 import Editor from 'react-simple-code-editor'
 
 const tryParseJson = (text: string): object => {
@@ -31,15 +31,19 @@ const reducer = (state: string, action: JsonEditorAction): string => {
 }
 
 interface JsonEditorProps<T> {
+  id?: string
   className?: string
   disabled?: boolean
   value?: T
   onChange?: (value?: T) => void
   onParseError?: (err: Error) => void
+  onFocus?: VoidFunction
+  onBlur?: VoidFunction
+  style?: CSSProperties
 }
 
 const JsonEditorInternal = <T,>(props: JsonEditorProps<T>) => {
-  const { className, disabled, value, onChange: propOnChange, onParseError } = props
+  const { id, className, disabled, value, onChange: propOnChange, onParseError, onFocus, onBlur, style } = props
 
   const [state, dispatch] = useReducer(reducer, JSON.stringify(value, undefined, '  '))
 
@@ -68,8 +72,10 @@ const JsonEditorInternal = <T,>(props: JsonEditorProps<T>) => {
   return (
     <div
       className={clsx('text-bright bg-gray-900 rounded-md ring-2 ring-light-grey border-dark caret-white', className)}
+      style={style}
     >
       <Editor
+        id={id}
         textareaClassName="outline-none"
         disabled={disabled}
         padding={2}
@@ -77,6 +83,8 @@ const JsonEditorInternal = <T,>(props: JsonEditorProps<T>) => {
         insertSpaces
         value={state}
         onValueChange={onChange}
+        onFocus={onFocus}
+        onBlur={onBlur}
         highlight={newValue => highlight(newValue, languages.json, 'json')}
       />
     </div>

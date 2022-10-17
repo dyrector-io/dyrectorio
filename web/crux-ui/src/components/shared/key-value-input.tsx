@@ -1,12 +1,15 @@
 import { DyoHeading } from '@app/elements/dyo-heading'
-import { DyoInput, MessageType } from '@app/elements/dyo-input'
+import { MessageType } from '@app/elements/dyo-input'
+import useRepatch from '@app/hooks/use-repatch'
 import { UniqueKeyValue } from '@app/models'
 import { getValidationError } from '@app/validations'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import { useEffect, useReducer } from 'react'
+import { useEffect } from 'react'
 import { v4 as uuid } from 'uuid'
 import BaseSchema from 'yup/lib/schema'
+import MultiInput from '../editor/multi-input'
+import { EditorStateOptions } from '../editor/use-editor-state'
 
 const EMPTY_KEY_VALUE_PAIR = {
   id: uuid(),
@@ -19,34 +22,21 @@ type KeyValueElement = UniqueKeyValue & {
   messageType: MessageType
 }
 
-type KeyValueInputActionType = 'merge-items' | 'set-items'
-
-type KeyValueInputAction = {
-  type: KeyValueInputActionType
-  items: UniqueKeyValue[]
-}
-
 const isCompletelyEmpty = (it: UniqueKeyValue) => it.key.trim().length < 1 && it.value.trim().length < 1
 
-const pushEmptyLineIfNecessary = (items: UniqueKeyValue[]) => {
-  if (items.length < 1 || (items[items.length - 1].key?.trim() ?? '') !== '') {
-    items.push({
-      ...EMPTY_KEY_VALUE_PAIR,
-      id: uuid(),
-    })
-  }
-}
+const generateEmptyLine = () => ({
+  ...EMPTY_KEY_VALUE_PAIR,
+  id: uuid(),
+})
 
-const reducer = (state: UniqueKeyValue[], action: KeyValueInputAction): UniqueKeyValue[] => {
-  const { type } = action
+const setItems = (items: UniqueKeyValue[]) => (): UniqueKeyValue[] => items
 
-  if (type === 'set-items') {
-    const result = [...action.items]
-    pushEmptyLineIfNecessary(result)
-    return result
-  }
-  if (type === 'merge-items') {
-    const updatedItems = action.items
+const mergeItems =
+  (updatedItems: UniqueKeyValue[]) =>
+  (state: UniqueKeyValue[]): UniqueKeyValue[] => {
+    const lastLine = state.length > 0 ? state[state.length - 1] : null
+    const emptyLine = !!lastLine && isCompletelyEmpty(lastLine) ? lastLine : generateEmptyLine()
+
     const result = [
       ...state.filter(old => !isCompletelyEmpty(old) && updatedItems.filter(it => old.id === it.id).length > 0),
     ]
@@ -61,11 +51,10 @@ const reducer = (state: UniqueKeyValue[], action: KeyValueInputAction): UniqueKe
       }
     })
 
-    pushEmptyLineIfNecessary(result)
+    result.push(emptyLine)
+
     return result
   }
-  throw Error(`Invalid KeyValueInput action: ${type}`)
-}
 
 interface KeyValueInputProps {
   disabled?: boolean
@@ -73,16 +62,17 @@ interface KeyValueInputProps {
   className?: string
   heading?: string
   items: UniqueKeyValue[]
+  editorOptions: EditorStateOptions
   onChange: (items: UniqueKeyValue[]) => void
   hint?: { hintValidation: BaseSchema; hintText: string }
 }
 
 const KeyValueInput = (props: KeyValueInputProps) => {
-  const { heading, disabled, className, items, valueDisabled, hint, onChange: propOnChange } = props
+  const { heading, disabled, className, items, valueDisabled, hint, editorOptions, onChange: propsOnChange } = props
 
   const { t } = useTranslation('common')
 
-  const [state, dispatch] = useReducer(reducer, items)
+  const [state, dispatch] = useRepatch(items)
 
   const stateToElements = (keyValues: UniqueKeyValue[]) => {
     const result = []
@@ -100,17 +90,10 @@ const KeyValueInput = (props: KeyValueInputProps) => {
     return result as KeyValueElement[]
   }
 
-  useEffect(
-    () =>
-      dispatch({
-        type: 'merge-items',
-        items,
-      }),
-    [items],
-  )
+  useEffect(() => dispatch(mergeItems(items)), [items, dispatch])
 
   const onChange = (index: number, key: string, value: string) => {
-    let newItems = [...state]
+    const newItems = [...state]
 
     const item = {
       id: state[index].id,
@@ -120,13 +103,10 @@ const KeyValueInput = (props: KeyValueInputProps) => {
 
     newItems[index] = item
 
-    newItems = newItems.filter(it => !isCompletelyEmpty(it))
+    const updatedItems = newItems.filter(it => !isCompletelyEmpty(it))
 
-    propOnChange(newItems)
-    dispatch({
-      type: 'set-items',
-      items: newItems,
-    })
+    propsOnChange(updatedItems)
+    dispatch(setItems(newItems))
   }
 
   const elements = stateToElements(state)
@@ -134,31 +114,38 @@ const KeyValueInput = (props: KeyValueInputProps) => {
   const renderItem = (entry: KeyValueElement, index: number) => {
     const { key, value, message, messageType } = entry
 
+    const keyId = `${entry.id}-key`
+    const valueId = `${entry.id}-value`
+
     return (
       <div key={entry.id} className="flex flex-row flex-grow p-1">
         <div className="w-5/12">
-          <DyoInput
-            key={`${entry.id}-key`}
+          <MultiInput
+            key={keyId}
+            id={keyId}
             disabled={disabled}
+            editorOptions={editorOptions}
             className="w-full mr-2"
             grow
             placeholder={t('key')}
             value={key}
             message={message}
             messageType={messageType}
-            onChange={e => onChange(index, e.target.value, value)}
+            onPatch={it => onChange(index, it, value)}
           />
         </div>
 
         <div className="w-7/12 ml-2">
-          <DyoInput
-            key={`${entry.id}-value`}
+          <MultiInput
+            key={valueId}
+            id={valueId}
             disabled={disabled || valueDisabled}
+            editorOptions={editorOptions}
             className="w-full"
             grow
             placeholder={t('value')}
             value={value}
-            onChange={e => onChange(index, key, e.target.value)}
+            onPatch={it => onChange(index, key, it)}
           />
         </div>
       </div>

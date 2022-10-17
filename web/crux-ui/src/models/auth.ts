@@ -62,5 +62,16 @@ export type IdentityTraits = {
 
 export const nameOfIdentity = (identity: Identity): string => {
   const traits = identity.traits as IdentityTraits
-  return `${traits?.name?.first ?? ''} ${traits?.name?.last ?? ''}`
+  const firstName = traits?.name?.first
+  const lastName = traits?.name?.last
+
+  if (firstName) {
+    return !lastName ? firstName : `${firstName} ${lastName}`
+  }
+
+  if (lastName) {
+    return lastName
+  }
+
+  return ''
 }
