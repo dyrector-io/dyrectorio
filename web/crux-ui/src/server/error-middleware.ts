@@ -92,7 +92,7 @@ export const useErrorMiddleware = async (
   try {
     res.setHeader('Content-Type', 'application/json')
     await next()
-  } catch (e) {
+  } catch (error) {
     if (isDyoApiError(e) && e.status < 500) {
       const error = e as DyoApiError
       res.statusCode = e.status

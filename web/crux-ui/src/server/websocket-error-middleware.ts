@@ -15,7 +15,7 @@ const useWebsocketErrorMiddleware = async (
 ): Promise<void> => {
   try {
     await next()
-  } catch (e) {
+  } catch (error) {
     if (isDyoApiError(e) && e.status < 500) {
       const error = e as DyoApiError
       connection.send(WS_TYPE_DYO_ERROR, error)

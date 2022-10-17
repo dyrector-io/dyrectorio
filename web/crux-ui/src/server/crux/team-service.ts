@@ -86,7 +86,7 @@ class DyoTeamService {
         ...res,
         users: res.users.map(userToDto),
       }
-    } catch (err) {
+    } catch (error) {
       const error = err as DyoApiError
       if (error.status === 404) {
         return null

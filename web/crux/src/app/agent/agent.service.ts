@@ -110,7 +110,7 @@ export default class AgentService {
 
     try {
       installer.verify()
-    } catch (err) {
+    } catch (error) {
       this.installers.delete(nodeId)
       throw err
     }

@@ -144,7 +144,7 @@ const getPageServerSideProps = async (context: NextPageContext) => {
         recaptchaSiteKey: captchaDisabled() ? null : process.env.RECAPTCHA_SITE_KEY,
       },
     }
-  } catch (e) {
+  } catch (error) {
     if (e?.response?.status === 403) {
       return redirectTo(`${ROUTE_INVITE}?expired=true`)
     }

@@ -135,7 +135,7 @@ async function dropDatabase() {
     for (const tableName of tableNames) {
       await prisma.$queryRawUnsafe(`TRUNCATE TABLE \"public\".\"${tableName}\" CASCADE;`)
     }
-  } catch (err) {
+  } catch (error) {
     // eslint-disable-next-line no-console
     console.error(err)
   }
