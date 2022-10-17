@@ -92,10 +92,10 @@ export const useErrorMiddleware = async (
   try {
     res.setHeader('Content-Type', 'application/json')
     await next()
-  } catch (e) {
-    if (isDyoApiError(e) && e.status < 500) {
-      const error = e as DyoApiError
-      res.statusCode = e.status
+  } catch (err) {
+    if (isDyoApiError(err) && err.status < 500) {
+      const error = err as DyoApiError
+      res.statusCode = err.status
 
       res.json({
         error: error.error,
@@ -109,7 +109,7 @@ export const useErrorMiddleware = async (
       if (process.env.NODE_ENV !== 'production') {
         res.json({
           message: 'Internal Server Error',
-          error: e,
+          error: err,
         })
       } else {
         res.end()
