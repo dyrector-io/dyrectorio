@@ -18,6 +18,7 @@ import (
 	"strings"
 
 	"github.com/docker/docker/client"
+	"github.com/ilyakaznacheev/cleanenv"
 	"gopkg.in/yaml.v3"
 )
 
@@ -55,50 +56,38 @@ type ContainerSettings struct {
 // Settings file will be read/written as this struct
 type SettingsFile struct {
 	// version as in image tag like "latest" or "stable"
-	Version        string `yaml:"version"`
-	CruxDisabled   bool   `yaml:"crux_disabled"`
-	CruxUIDisabled bool   `yaml:"crux-ui_disabled"`
-	Network        string `yaml:"network-name"`
-	Prefix         string `yaml:"prefix"`
+	Version        string `yaml:"version" env-default:"latest"`
+	CruxDisabled   bool   `yaml:"crux_disabled" env-default:"false"`
+	CruxUIDisabled bool   `yaml:"crux-ui_disabled" env-default:"false"`
+	Network        string `yaml:"network-name" env-default:"dyrectorio-stack"`
+	Prefix         string `yaml:"prefix" env-default:"dyrectorio-stack"`
 	Options
 }
 
 type Options struct {
-	TimeZone               string `yaml:"timezone"`
-	CruxAgentGrpcPort      uint   `yaml:"crux-agentgrpc-port"`
-	CruxGrpcPort           uint   `yaml:"crux-grpc-port"`
-	CruxUIPort             uint   `yaml:"crux-ui-port"`
+	TimeZone               string `yaml:"timezone" env-default:"Europe/Budapest"`
+	CruxAgentGrpcPort      uint   `yaml:"crux-agentgrpc-port" env-default:"5000"`
+	CruxGrpcPort           uint   `yaml:"crux-grpc-port" env-default:"5001"`
+	CruxUIPort             uint   `yaml:"crux-ui-port" env-default:"3000"`
 	CruxSecret             string `yaml:"crux-secret"`
-	CruxPostgresPort       uint   `yaml:"cruxPostgresPort"`
-	CruxPostgresDB         string `yaml:"cruxPostgresDB"`
-	CruxPostgresUser       string `yaml:"cruxPostgresUser"`
+	CruxPostgresPort       uint   `yaml:"cruxPostgresPort" env-default:"5432"`
+	CruxPostgresDB         string `yaml:"cruxPostgresDB" env-default:"crux"`
+	CruxPostgresUser       string `yaml:"cruxPostgresUser" env-default:"crux"`
 	CruxPostgresPassword   string `yaml:"cruxPostgresPassword"`
-	TraefikWebPort         uint   `yaml:"traefikWebPort"`
-	TraefikUIPort          uint   `yaml:"traefikUIPort"`
-	KratosAdminPort        uint   `yaml:"kratosAdminPort"`
-	KratosPublicPort       uint   `yaml:"kratosPublicPort"`
-	KratosPostgresPort     uint   `yaml:"kratosPostgresPort"`
-	KratosPostgresDB       string `yaml:"kratosPostgresDB"`
-	KratosPostgresUser     string `yaml:"kratosPostgresUser"`
+	TraefikWebPort         uint   `yaml:"traefikWebPort" env-default:"8000"`
+	TraefikUIPort          uint   `yaml:"traefikUIPort" env-default:"8080"`
+	KratosAdminPort        uint   `yaml:"kratosAdminPort" env-default:"4434"`
+	KratosPublicPort       uint   `yaml:"kratosPublicPort" env-default:"4433"`
+	KratosPostgresPort     uint   `yaml:"kratosPostgresPort" env-default:"5433"`
+	KratosPostgresDB       string `yaml:"kratosPostgresDB" env-default:"kratos"`
+	KratosPostgresUser     string `yaml:"kratosPostgresUser" env-default:"kratos"`
 	KratosPostgresPassword string `yaml:"kratosPostgresPassword"`
 	KratosSecret           string `yaml:"kratosSecret"`
-	MailSlurperPort        uint   `yaml:"mailSlurperPort"`
-	MailSlurperPort2       uint   `yaml:"mailSlurperPort2"`
+	MailSlurperPort        uint   `yaml:"mailSlurperPort" env-default:"4436"`
+	MailSlurperPort2       uint   `yaml:"mailSlurperPort2" env-default:"4437"`
 }
 
 const DefaultPostgresPort = 5432
-
-const DefaultCruxAgentGrpcPort = 5000
-const DefaultCruxGrpcPort = 5001
-const DefaultCruxUIPort = 3000
-const DefaultCruxPostgresPort = 5432
-const DefaultTraefikWebPort = 8000
-const DefaultTraefikUIPort = 8080
-const DefaultKratosPublicPort = 4433
-const DefaultKratosAdminPort = 4434
-const DefaultKratosPostgresPort = 5433
-const DefaultMailSlurperPort = 4436
-const DefaultMailSlurperPort2 = 4437
 
 const SecretLength = 32
 
@@ -158,16 +147,16 @@ func SettingsFileLocation(settingspath string) string {
 
 // Reading and parsing the settings.yaml
 func SettingsFileReadWrite(state *Settings) *Settings {
-	if !state.SettingsExists {
-		state.SettingsWrite = true
-	} else {
-		filedata, err := os.ReadFile(state.SettingsFilePath)
+	if state.SettingsExists {
+		err := cleanenv.ReadConfig(state.SettingsFilePath, &state.SettingsFile)
 		if err != nil {
-			log.Fatalf("%v", err)
+			log.Fatalf("error: failed to load configuration: %v", err)
 		}
-		err = yaml.Unmarshal(filedata, &state.SettingsFile)
+	} else {
+		state.SettingsWrite = true
+		err := cleanenv.ReadEnv(&state.SettingsFile)
 		if err != nil {
-			log.Fatalf("error: %v", err)
+			log.Fatalf("error: failed to load configuration: %v", err)
 		}
 	}
 
@@ -187,7 +176,7 @@ func SettingsFileReadWrite(state *Settings) *Settings {
 
 	// Settings Validation steps
 
-	saveSettings(settings)
+	SaveSettings(settings)
 
 	return settings
 }
@@ -303,7 +292,7 @@ func DisabledServiceSettings(settings *Settings) *Settings {
 }
 
 // Save the settings
-func saveSettings(settings *Settings) {
+func SaveSettings(settings *Settings) {
 	if settings.SettingsWrite {
 		userconfdir, _ := os.UserConfigDir()
 		settingspath := fmt.Sprintf("%s/%s/%s", userconfdir, SettingsFileDir, SettingsFileName)
@@ -329,6 +318,8 @@ func saveSettings(settings *Settings) {
 		if err != nil {
 			log.Fatalf("%v", err)
 		}
+
+		settings.SettingsWrite = false
 	}
 }
 
@@ -348,30 +339,10 @@ func LoadDefaultsOnEmpty(settings *Settings) *Settings {
 	}
 
 	// Load defaults
-	settings.SettingsFile.Version = LoadStringVal(settings.SettingsFile.Version, "latest")
-	settings.SettingsFile.Network = LoadStringVal(settings.SettingsFile.Network, "dyrectorio-stack")
-	settings.SettingsFile.Prefix = LoadStringVal(settings.SettingsFile.Prefix, "dyrectorio-stack")
-	settings.SettingsFile.TimeZone = LoadStringVal(settings.SettingsFile.TimeZone, "Europe/Budapest")
-
-	settings.SettingsFile.CruxAgentGrpcPort = LoadIntVal(settings.SettingsFile.CruxAgentGrpcPort, DefaultCruxAgentGrpcPort)
-	settings.SettingsFile.CruxGrpcPort = LoadIntVal(settings.SettingsFile.CruxGrpcPort, DefaultCruxGrpcPort)
-	settings.SettingsFile.CruxUIPort = LoadIntVal(settings.SettingsFile.CruxUIPort, DefaultCruxUIPort)
 	settings.SettingsFile.CruxSecret = LoadStringVal(settings.SettingsFile.CruxSecret, RandomChars(SecretLength))
-	settings.SettingsFile.CruxPostgresPort = LoadIntVal(settings.SettingsFile.CruxPostgresPort, DefaultCruxPostgresPort)
-	settings.SettingsFile.CruxPostgresDB = LoadStringVal(settings.SettingsFile.CruxPostgresDB, "crux")
-	settings.SettingsFile.CruxPostgresUser = LoadStringVal(settings.SettingsFile.CruxPostgresUser, "crux")
 	settings.SettingsFile.CruxPostgresPassword = LoadStringVal(settings.SettingsFile.CruxPostgresPassword, RandomChars(SecretLength))
-	settings.SettingsFile.TraefikWebPort = LoadIntVal(settings.SettingsFile.TraefikWebPort, DefaultTraefikWebPort)
-	settings.SettingsFile.TraefikUIPort = LoadIntVal(settings.SettingsFile.TraefikUIPort, DefaultTraefikUIPort)
-	settings.SettingsFile.KratosAdminPort = LoadIntVal(settings.SettingsFile.KratosAdminPort, DefaultKratosAdminPort)
-	settings.SettingsFile.KratosPublicPort = LoadIntVal(settings.SettingsFile.KratosPublicPort, DefaultKratosPublicPort)
-	settings.SettingsFile.KratosPostgresPort = LoadIntVal(settings.SettingsFile.KratosPostgresPort, DefaultKratosPostgresPort)
-	settings.SettingsFile.KratosPostgresDB = LoadStringVal(settings.SettingsFile.KratosPostgresDB, "kratos")
-	settings.SettingsFile.KratosPostgresUser = LoadStringVal(settings.SettingsFile.KratosPostgresUser, "kratos")
 	settings.SettingsFile.KratosPostgresPassword = LoadStringVal(settings.SettingsFile.KratosPostgresPassword, RandomChars(SecretLength))
 	settings.SettingsFile.KratosSecret = LoadStringVal(settings.SettingsFile.KratosSecret, RandomChars(SecretLength))
-	settings.SettingsFile.MailSlurperPort = LoadIntVal(settings.SettingsFile.MailSlurperPort, DefaultMailSlurperPort)
-	settings.SettingsFile.MailSlurperPort2 = LoadIntVal(settings.SettingsFile.MailSlurperPort2, DefaultMailSlurperPort2)
 
 	// Generate names
 	settings.Containers.Traefik.Name = fmt.Sprintf("%s_traefik", settings.SettingsFile.Prefix)
@@ -389,13 +360,6 @@ func LoadDefaultsOnEmpty(settings *Settings) *Settings {
 
 func LoadStringVal(value, def string) string {
 	if value == "" {
-		return def
-	}
-	return value
-}
-
-func LoadIntVal(value, def uint) uint {
-	if value == 0 {
 		return def
 	}
 	return value
@@ -424,42 +388,54 @@ func RandomChars(bufflength uint) string {
 func CheckAndUpdatePorts(settings *Settings) *Settings {
 	portMap := map[string]uint{}
 	if !settings.Containers.Crux.Disabled {
-		portMap[CruxAgentGrpcPort] = getAvailablePort(portMap, settings.SettingsFile.Options.CruxAgentGrpcPort, CruxAgentGrpcPort)
+		portMap[CruxAgentGrpcPort] = getAvailablePort(portMap, settings.SettingsFile.Options.CruxAgentGrpcPort,
+			CruxAgentGrpcPort, &settings.SettingsWrite)
 		settings.SettingsFile.Options.CruxAgentGrpcPort = portMap[CruxAgentGrpcPort]
-		portMap[CruxGrpcPort] = getAvailablePort(portMap, settings.SettingsFile.Options.CruxGrpcPort, CruxGrpcPort)
+		portMap[CruxGrpcPort] = getAvailablePort(portMap, settings.SettingsFile.Options.CruxGrpcPort,
+			CruxGrpcPort, &settings.SettingsWrite)
 		settings.SettingsFile.Options.CruxGrpcPort = portMap[CruxGrpcPort]
 	}
 	if !settings.Containers.CruxUI.Disabled {
-		portMap[CruxUIPort] = getAvailablePort(portMap, settings.SettingsFile.Options.CruxUIPort, CruxUIPort)
+		portMap[CruxUIPort] = getAvailablePort(portMap, settings.SettingsFile.Options.CruxUIPort,
+			CruxUIPort, &settings.SettingsWrite)
 		settings.SettingsFile.Options.CruxUIPort = portMap[CruxUIPort]
 	}
 
-	portMap[CruxPostgresPort] = getAvailablePort(portMap, settings.SettingsFile.Options.CruxPostgresPort, CruxPostgresPort)
+	portMap[CruxPostgresPort] = getAvailablePort(portMap, settings.SettingsFile.Options.CruxPostgresPort,
+		CruxPostgresPort, &settings.SettingsWrite)
 	settings.SettingsFile.Options.CruxPostgresPort = portMap[CruxPostgresPort]
-	portMap[KratosAdminPort] = getAvailablePort(portMap, settings.SettingsFile.Options.KratosAdminPort, KratosAdminPort)
+	portMap[KratosAdminPort] = getAvailablePort(portMap, settings.SettingsFile.Options.KratosAdminPort,
+		KratosAdminPort, &settings.SettingsWrite)
 	settings.SettingsFile.Options.KratosAdminPort = portMap[KratosAdminPort]
-	portMap[KratosPublicPort] = getAvailablePort(portMap, settings.SettingsFile.Options.KratosPublicPort, KratosPublicPort)
+	portMap[KratosPublicPort] = getAvailablePort(portMap, settings.SettingsFile.Options.KratosPublicPort,
+		KratosPublicPort, &settings.SettingsWrite)
 	settings.SettingsFile.Options.KratosPublicPort = portMap[KratosPublicPort]
-	portMap[KratosPostgresPort] = getAvailablePort(portMap, settings.SettingsFile.Options.KratosPostgresPort, KratosPostgresPort)
+	portMap[KratosPostgresPort] = getAvailablePort(portMap, settings.SettingsFile.Options.KratosPostgresPort,
+		KratosPostgresPort, &settings.SettingsWrite)
 	settings.SettingsFile.Options.KratosPostgresPort = portMap[KratosPostgresPort]
-	portMap[MailSlurperPort] = getAvailablePort(portMap, settings.SettingsFile.Options.MailSlurperPort, MailSlurperPort)
+	portMap[MailSlurperPort] = getAvailablePort(portMap, settings.SettingsFile.Options.MailSlurperPort,
+		MailSlurperPort, &settings.SettingsWrite)
 	settings.SettingsFile.Options.MailSlurperPort = portMap[MailSlurperPort]
-	portMap[MailSlurperPort2] = getAvailablePort(portMap, settings.SettingsFile.Options.MailSlurperPort2, MailSlurperPort2)
+	portMap[MailSlurperPort2] = getAvailablePort(portMap, settings.SettingsFile.Options.MailSlurperPort2,
+		MailSlurperPort2, &settings.SettingsWrite)
 	settings.SettingsFile.Options.MailSlurperPort2 = portMap[MailSlurperPort2]
-	portMap[TraefikWebPort] = getAvailablePort(portMap, settings.SettingsFile.Options.TraefikWebPort, TraefikWebPort)
+	portMap[TraefikWebPort] = getAvailablePort(portMap, settings.SettingsFile.Options.TraefikWebPort,
+		TraefikWebPort, &settings.SettingsWrite)
 	settings.SettingsFile.Options.TraefikWebPort = portMap[TraefikWebPort]
-	portMap[TraefikUIPort] = getAvailablePort(portMap, settings.SettingsFile.Options.TraefikUIPort, TraefikUIPort)
+	portMap[TraefikUIPort] = getAvailablePort(portMap, settings.SettingsFile.Options.TraefikUIPort,
+		TraefikUIPort, &settings.SettingsWrite)
 	settings.SettingsFile.Options.TraefikUIPort = portMap[TraefikUIPort]
 
 	return settings
 }
 
-func getAvailablePort(portMap map[string]uint, portNum uint, portDesc string) uint {
+func getAvailablePort(portMap map[string]uint, portNum uint, portDesc string, dirty *bool) uint {
 	for {
 		if err := portIsAvailable(portMap, portNum); err != nil {
 			fmt.Fprintf(os.Stderr, "error in binding port for %s: %s\n", portDesc, err.Error())
 			fmt.Fprintf(os.Stdout, "type another port: ")
 			portNum = scanPort(portNum)
+			*dirty = true
 			continue
 		}
 		break
