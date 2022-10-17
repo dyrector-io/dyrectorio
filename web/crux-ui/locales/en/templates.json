@@ -1,5 +1,5 @@
 {
   "name": "Name",
-  "applyTemplate": "Apply template: {{name}}",
+  "applyTemplate": "Create a Product from template '{{name}}'",
   "productName": "Product name"
 }

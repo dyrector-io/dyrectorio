@@ -55,7 +55,7 @@ export const Sidebar = (props: SidebarProps) => {
       link: ROUTE_NOTIFICATIONS,
     },
     {
-      icon: <Image src="/note.svg" alt={t('templates')} width={18} height={18} />,
+      icon: <Image src="/template.svg" alt={t('templates')} width={18} height={18} />,
       text: 'templates',
       link: ROUTE_TEMPLATES,
     },
