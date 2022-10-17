@@ -3,8 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
+	"net/url"
+	"os"
 
 	"github.com/docker/docker/api/types/mount"
+	"github.com/docker/docker/client"
 
 	containerbuilder "github.com/dyrector-io/dyrectorio/agent/pkg/builder/container"
 )
