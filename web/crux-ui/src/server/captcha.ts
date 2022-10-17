@@ -25,7 +25,7 @@ export const validateCaptcha = async (captcha: string): Promise<void> => {
 
     const dto = await res.json()
     success = dto.success
-  } catch (err) {
+  } catch (error) {
     throw internalError(`Failed to validate captcha: ${error}`)
   }
 

@@ -8,8 +8,8 @@ const useValidationMiddleware =
     const { body } = req
     try {
       schema.validateSync(body)
-    } catch (err) {
-      const validationError = err as ValidationError
+    } catch (error) {
+      const validationError = error as ValidationError
       throw invalidArgument(validationError.path)
     }
 

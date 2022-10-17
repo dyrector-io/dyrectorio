@@ -142,7 +142,7 @@ async function deleteDemoRelatedData() {
         },
       }),
     ])
-  } catch (err) {
+  } catch (error) {
     // eslint-disable-next-line no-console
     console.error(err)
     throw err

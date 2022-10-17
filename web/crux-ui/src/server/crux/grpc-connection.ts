@@ -156,8 +156,8 @@ export const protomisify =
       const req = serializer.fromJSON(request)
       const res = await promisify<Req, Res>(grpcCall).call(client, req)
       return res
-    } catch (err) {
-      const error = parseGrpcError(err)
+    } catch (error) {
+      const error = parseGrpcError(e)
       throw fromGrpcError(error)
     }
   }

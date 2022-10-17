@@ -8,7 +8,7 @@ const useKratosErrorMiddleware = async (
 ): Promise<void> => {
   try {
     await next()
-  } catch (err) {
+  } catch (error) {
     if (isDyoApiError(err)) {
       throw err
     } else {

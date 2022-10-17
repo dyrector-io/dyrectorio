@@ -213,8 +213,8 @@ export const deploymentSchema = yup.object({
 export const yupValidate = (schema: yup.AnySchema, candidate: any) => {
   try {
     schema.validateSync(candidate)
-  } catch (err) {
-    const validationError = err as yup.ValidationError
+  } catch (error) {
+    const validationError = error as yup.ValidationError
     throw new InvalidArgumentException({
       message: 'Validation failed',
       property: validationError.path,

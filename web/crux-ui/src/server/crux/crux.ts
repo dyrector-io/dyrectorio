@@ -110,8 +110,8 @@ if (!global.cruxClients) {
   try {
     const cert = process.env.CRUX_INSECURE === 'true' ? null : readFileSync(join(cwd(), './certs/api-public.crt'))
     global.cruxClients = new CruxClients(process.env.CRUX_API_ADDRESS, cert)
-  } catch (err) {
-    if (err.error === 'invalidArgument') {
+  } catch (error) {
+    if (error.error === 'invalidArgument') {
       throw new Error('CRUX_API_ADDRESS cannot be empty!')
     }
 

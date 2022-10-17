@@ -13,7 +13,7 @@ export default class HealthService {
     let lastMigration: string = null
     try {
       lastMigration = await this.prisma.findLastMigration()
-    } catch (err) {
+    } catch (error) {
       const error: Error = err
 
       this.logger.error(`Failed to query the last migration from the database: ${error?.message}`, error?.stack)

@@ -43,7 +43,7 @@ export const getKratosServiceStatus = async (): Promise<ServiceInfo> => {
     }
 
     return info
-  } catch (err) {
+  } catch (error) {
     console.error(err)
     return DEFAULT_SERVICE_INFO
   }

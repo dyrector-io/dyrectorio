@@ -314,7 +314,7 @@ export const withContextAuthorization =
     try {
       const props = await getServerSideProps(context as any as NextPageContext)
       return props
-    } catch (err) {
+    } catch (error) {
       if (isDyoApiError(err)) {
         if (err.status === 404 && err.property === 'team') {
           return redirectTo(ROUTE_INDEX)
