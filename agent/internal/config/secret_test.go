@@ -4,8 +4,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/dyrector-io/dyrectorio/agent/internal/config"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/dyrector-io/dyrectorio/agent/internal/config"
 )
 
 const (
@@ -50,7 +51,7 @@ func TestConfigFromFileSetValue(t *testing.T) {
 	f, err := tmpTestFile()
 	assert.NoError(t, err)
 	defer func() {
-		err := f.Close()
+		err = f.Close()
 		assert.NoError(t, err)
 		err = os.Remove(f.Name())
 		assert.NoError(t, err)
@@ -78,7 +79,7 @@ func TestConfigFromFileSetValue(t *testing.T) {
 	// non existing file: key is generated
 	err = cfg.SetValue(missingKeyFile)
 	defer func() {
-		err := os.Remove(missingKeyFile)
+		err = os.Remove(missingKeyFile)
 		assert.NoError(t, err)
 	}()
 	assert.NoError(t, err)
@@ -109,5 +110,4 @@ func TestGetPublicKey(t *testing.T) {
 	pk, err = config.GetPublicKey(testPrivateKey)
 	assert.NoError(t, err)
 	assert.Equal(t, testPublicKey, pk)
-
 }
