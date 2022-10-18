@@ -100,6 +100,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
       const newNode = {
         ...node,
         status: 'unreachable',
+        version: null,
         hasToken: false,
         install: null,
       } as DyoNodeDetails
