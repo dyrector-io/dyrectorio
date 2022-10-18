@@ -1,10 +1,8 @@
 import useEditorState, { EditorState } from '@app/components/editor/use-editor-state'
 import { ViewMode } from '@app/components/shared/view-mode-toggle'
 import { DyoConfirmationModalConfig } from '@app/elements/dyo-modal'
-import useConfirmation from '@app/hooks/use-confirmation'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
-  CopyDeploymentResponse,
   DeploymentDetails,
   DeploymentEnvUpdatedMessage,
   deploymentIsCopyable,
@@ -30,9 +28,10 @@ import {
   WS_TYPE_PATCH_DEPLOYMENT_ENV,
   WS_TYPE_PATCH_INSTANCE,
 } from '@app/models'
-import { deploymentCopyUrl, deploymentUrl, deploymentWsUrl, WS_NODES } from '@app/routes'
+import { deploymentWsUrl, WS_NODES } from '@app/routes'
 import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 import { useState } from 'react'
+import useCopyDeploymentModal from './use-copy-deployment-confirmation-modal'
 
 export type DeploymentStateOptions = {
   deployment: DeploymentRoot
@@ -81,7 +80,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
   const [editing, setEditing] = useState(false)
   const [instances, setInstances] = useState<Instance[]>(deployment.instances ?? [])
   const [viewMode, setViewMode] = useState<ViewMode>('tile')
-  const [confirmationModal, confirm] = useConfirmation()
+  const [confirmationModal, copyDeployment] = useCopyDeploymentModal(onApiError)
 
   const mutable = deploymentIsMutable(deployment.status)
 
@@ -152,40 +151,12 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
     setEditing(false)
   }
 
-  const postCopyDeployment = async (options?: { overwrite?: boolean }): Promise<[string, number]> => {
-    const res = await fetch(deploymentCopyUrl(product.id, version.id, deployment.id, options?.overwrite), {
-      method: 'POST',
+  const onCopyDeployment = () =>
+    copyDeployment({
+      productId: product.id,
+      versionId: version.id,
+      deploymentId: deployment.id,
     })
-
-    if (!res.ok) {
-      onApiError(res)
-      return null
-    }
-
-    if (res.status === 412) {
-      return [null, res.status]
-    }
-
-    const json = (await res.json()) as CopyDeploymentResponse
-    return [json.id, res.status]
-  }
-
-  const onCopyDeployment = async (): Promise<string> => {
-    let [newDeploymentId, resStatus] = await postCopyDeployment()
-
-    if (resStatus === 412) {
-      const confirmed = await confirm()
-      if (!confirmed) {
-        return null
-      }
-
-      ;[newDeploymentId, resStatus] = await postCopyDeployment({
-        overwrite: true,
-      })
-    }
-
-    return deploymentUrl(product.id, version.id, newDeploymentId)
-  }
 
   return [
     {

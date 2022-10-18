@@ -108,5 +108,6 @@ dist
 # playwright test results
 e2e_results
 
-# playwright screenshots
+# playwright
 e2e/screenshots
+storageState.json

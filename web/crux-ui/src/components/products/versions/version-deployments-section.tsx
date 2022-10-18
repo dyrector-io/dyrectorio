@@ -4,8 +4,8 @@ import { DyoCard } from '@app/elements/dyo-card'
 import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoList } from '@app/elements/dyo-list'
-import DyoModal from '@app/elements/dyo-modal'
-import useDeploymentCopy, { DeploymentCopyModal } from '@app/hooks/use-deployment-copy'
+import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
+import { defaultApiErrorHandler } from '@app/errors'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
@@ -31,6 +31,7 @@ import { useRouter } from 'next/dist/client/router'
 import Image from 'next/image'
 import { useState } from 'react'
 import DeploymentStatusTag from './deployments/deployment-status-tag'
+import useCopyDeploymentModal from './deployments/use-copy-deployment-confirmation-modal'
 
 interface VersionDeploymentsSectionProps {
   product: ProductDetails
@@ -46,7 +47,9 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
 
   const router = useRouter()
 
-  const { confirmationModal: copyModal, copy: copyDeployment } = useDeploymentCopy()
+  const handleApiError = defaultApiErrorHandler(t)
+
+  const [confirmationModal, copyDeployment] = useCopyDeploymentModal(handleApiError)
 
   const [showInfo, setShowInfo] = useState<DeploymentByVersion>(null)
 
@@ -90,9 +93,17 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
     router.push(deploymentDeployUrl(product.id, version.id, deployment.id))
 
   const onCopyDeployment = async (deployment: DeploymentByVersion) => {
-    const newId = await copyDeployment(product.id, version.id, deployment.id)
+    const url = await copyDeployment({
+      productId: product.id,
+      versionId: version.id,
+      deploymentId: deployment.id,
+    })
 
-    router.push(deploymentUrl(product.id, version.id, newId))
+    if (!url) {
+      return
+    }
+
+    router.push(url)
   }
 
   const headers = [
@@ -209,7 +220,15 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
           <p className="text-bright mt-8 break-all overflow-y-auto">{showInfo.note}</p>
         </DyoModal>
       )}
-      <DeploymentCopyModal confirmationModal={copyModal} />
+
+      <DyoConfirmationModal
+        config={confirmationModal}
+        title={t('deploymentCopyConflictTitle')}
+        description={t('deploymentCopyConflictContent')}
+        confirmText={t('continue')}
+        className="w-1/4"
+        confirmColor="bg-error-red"
+      />
     </>
   )
 }

@@ -301,13 +301,13 @@ class DyoDeploymentService {
     return new GrpcConnection(this.logger.descend('edit-events'), stream, transform, options)
   }
 
-  async copyDeployment(id: string, force: boolean): Promise<string> {
+  async copyDeployment(id: string, overwrite: boolean): Promise<string> {
     const req = {
       id,
       accessedBy: this.identity.id,
     } as IdRequest
 
-    const grpcCall = force ? this.client.copyDeploymentUnsafe : this.client.copyDeploymentSafe
+    const grpcCall = overwrite ? this.client.copyDeploymentUnsafe : this.client.copyDeploymentSafe
     const res = await protomisify<IdRequest, CreateEntityResponse>(this.client, grpcCall)(IdRequest, req)
 
     return res.id

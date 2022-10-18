@@ -5,13 +5,13 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
   const deploymentId = req.query.deploymentId as string
-  const forceCopy = req.query.force === '1'
+  const overwrite = req.query.overwrite === 'true'
 
   try {
-    const newDeployment = await crux(req).deployments.copyDeployment(deploymentId, forceCopy)
+    const newDeploymentId = await crux(req).deployments.copyDeployment(deploymentId, overwrite)
 
     const response = {
-      id: newDeployment,
+      id: newDeploymentId,
     } as CopyDeploymentResponse
 
     res.status(200).json(response)

@@ -1,5 +1,6 @@
 import { Layout } from '@app/components/layout'
 import DeploymentStatusTag from '@app/components/products/versions/deployments/deployment-status-tag'
+import useCopyDeploymentModal from '@app/components/products/versions/deployments/use-copy-deployment-confirmation-modal'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
@@ -7,8 +8,8 @@ import { DyoCard } from '@app/elements/dyo-card'
 import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoList } from '@app/elements/dyo-list'
-import DyoModal from '@app/elements/dyo-modal'
-import useDeploymentCopy, { DeploymentCopyModal } from '@app/hooks/use-deployment-copy'
+import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
+import { defaultApiErrorHandler } from '@app/errors'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import { Deployment, deploymentIsCopyable, DeploymentStatus, DEPLOYMENT_STATUS_VALUES } from '@app/models'
 import { deploymentUrl, nodeUrl, productUrl, ROUTE_DEPLOYMENTS, versionUrl } from '@app/routes'
@@ -32,9 +33,10 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
   const { t } = useTranslation('deployments')
   const router = useRouter()
 
-  const { confirmationModal: copyModal, copy: copyDeployment } = useDeploymentCopy()
-
   const [showInfo, setShowInfo] = useState<Deployment>(null)
+
+  const handleApiError = defaultApiErrorHandler(t)
+  const [confirmationModal, copyDeployment] = useCopyDeploymentModal(handleApiError)
 
   const filters = useFilters<Deployment, DeploymentFilter>({
     filters: [
@@ -66,9 +68,17 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
   ]
 
   const onCopyDeployment = async (deployment: Deployment) => {
-    const newId = await copyDeployment(deployment.productId, deployment.versionId, deployment.id)
+    const url = await copyDeployment({
+      deploymentId: deployment.id,
+      productId: deployment.productId,
+      versionId: deployment.versionId,
+    })
 
-    router.push(deploymentUrl(deployment.productId, deployment.versionId, newId))
+    if (!url) {
+      return
+    }
+
+    router.push(deploymentUrl(deployment.productId, deployment.versionId, url))
   }
 
   const itemTemplate = (item: Deployment) => /* eslint-disable react/jsx-key */ [
@@ -161,7 +171,15 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
           <p className="text-bright mt-8 break-all overflow-y-auto">{showInfo.note}</p>
         </DyoModal>
       )}
-      <DeploymentCopyModal confirmationModal={copyModal} />
+
+      <DyoConfirmationModal
+        config={confirmationModal}
+        title={t('deploymentCopyConflictTitle')}
+        description={t('deploymentCopyConflictContent')}
+        confirmText={t('continue')}
+        className="w-1/4"
+        confirmColor="bg-error-red"
+      />
     </Layout>
   )
 }

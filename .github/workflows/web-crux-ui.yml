@@ -85,6 +85,8 @@ jobs:
         cd crux
         npm run start:prod & 
         cd ../crux-ui
+        echo HUB_PROXY_URL=${{ secrets.HUB_PROXY_URL }} >> .env
+        echo HUB_PROXY_URL=${{ secrets.HUB_PROXY_TOKEN }} >> .env
         npm i
         npm run build
         npm run disable-telemetry
