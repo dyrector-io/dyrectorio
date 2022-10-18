@@ -1,7 +1,6 @@
 package config_test
 
 import (
-	"bytes"
 	"os"
 	"testing"
 
@@ -125,5 +124,5 @@ func TestGetPublicKey(t *testing.T) {
 	publicKey, err := parsedPublic.GetPublicKey()
 	assert.NoError(t, err)
 
-	assert.True(t, bytes.Equal(expectedPublic, publicKey))
+	assert.Equal(t, expectedPublic, publicKey)
 }
