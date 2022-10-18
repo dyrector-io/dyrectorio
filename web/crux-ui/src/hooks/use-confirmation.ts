@@ -1,31 +1,30 @@
 import { DyoConfirmationModalConfig } from '@app/elements/dyo-modal'
 import { useState } from 'react'
 
-type DyoConfirmationModalConfigOverride = Omit<DyoConfirmationModalConfig, 'onClose'> & {
-  onCanceled?: () => void
-}
+type DyoConfirmationModalConfigOverride = Omit<DyoConfirmationModalConfig, 'onClose'>
 
 const useConfirmation = (): [
   DyoConfirmationModalConfig,
-  (onConfirmed: () => void, overridenConfig?: DyoConfirmationModalConfigOverride) => void,
+  (onConfirmed?: VoidFunction, overridenConfig?: DyoConfirmationModalConfigOverride) => Promise<boolean>,
 ] => {
   const [config, setConfig] = useState<DyoConfirmationModalConfig>(null)
 
-  const confirm = (onConfirmed: () => void, overridenConfig?: DyoConfirmationModalConfigOverride) => {
-    const onClose = confirmed => {
-      setConfig(null)
-      if (confirmed) {
-        onConfirmed()
-      } else {
-        overridenConfig?.onCanceled?.call(null)
+  const confirm = (
+    onConfirmed?: VoidFunction,
+    overridenConfig?: DyoConfirmationModalConfigOverride,
+  ): Promise<boolean> =>
+    new Promise(resolve => {
+      const onClose = (confirmed: boolean) => {
+        setConfig(null)
+        onConfirmed?.call(null)
+        resolve(confirmed)
       }
-    }
 
-    setConfig({
-      ...overridenConfig,
-      onClose,
+      setConfig({
+        ...overridenConfig,
+        onClose,
+      })
     })
-  }
 
   return [config, confirm]
 }

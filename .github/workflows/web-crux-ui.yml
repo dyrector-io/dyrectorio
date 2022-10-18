@@ -55,7 +55,7 @@ jobs:
     container:
       image: dyrectorio/playwright:1.26.0-alpha-aug-23-2022
       volumes:
-        - /var/run/docker.sock:/var/run/docker.
+        - /var/run/docker.sock:/var/run/docker
       ports:
         - 3000:3000 # crux-ui
         - 5000:5000 # crux-agent
@@ -81,13 +81,16 @@ jobs:
 
     - name: Run tests
       working-directory: web
+      env:
+        HUB_PROXY_URL: ${{ secrets.HUB_PROXY_URL }}
+        HUB_PROXY_TOKEN: ${{ secrets.HUB_PROXY_TOKEN }}
       run: |
         cd crux
         npm run start:prod & 
         cd ../crux-ui
         npm i
-        npm run build
         npm run disable-telemetry
+        npm run build
         npx playwright install
         npm run test:e2e
 

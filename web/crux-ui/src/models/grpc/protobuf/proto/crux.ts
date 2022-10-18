@@ -9954,6 +9954,24 @@ export const CruxDeploymentService = {
     responseSerialize: (value: ListSecretsResponse) => Buffer.from(ListSecretsResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer) => ListSecretsResponse.decode(value),
   },
+  copyDeploymentSafe: {
+    path: '/crux.CruxDeployment/CopyDeploymentSafe',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: IdRequest) => Buffer.from(IdRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => IdRequest.decode(value),
+    responseSerialize: (value: CreateEntityResponse) => Buffer.from(CreateEntityResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => CreateEntityResponse.decode(value),
+  },
+  copyDeploymentUnsafe: {
+    path: '/crux.CruxDeployment/CopyDeploymentUnsafe',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: IdRequest) => Buffer.from(IdRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => IdRequest.decode(value),
+    responseSerialize: (value: CreateEntityResponse) => Buffer.from(CreateEntityResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => CreateEntityResponse.decode(value),
+  },
   startDeployment: {
     path: '/crux.CruxDeployment/StartDeployment',
     requestStream: false,
@@ -9986,6 +10004,8 @@ export interface CruxDeploymentServer extends UntypedServiceImplementation {
   getDeploymentEvents: handleUnaryCall<IdRequest, DeploymentEventListResponse>
   getDeploymentList: handleUnaryCall<AccessRequest, DeploymentListResponse>
   getDeploymentSecrets: handleUnaryCall<DeploymentListSecretsRequest, ListSecretsResponse>
+  copyDeploymentSafe: handleUnaryCall<IdRequest, CreateEntityResponse>
+  copyDeploymentUnsafe: handleUnaryCall<IdRequest, CreateEntityResponse>
   startDeployment: handleServerStreamingCall<IdRequest, DeploymentProgressMessage>
   subscribeToDeploymentEditEvents: handleServerStreamingCall<ServiceIdRequest, DeploymentEditEventMessage>
 }
@@ -10122,6 +10142,36 @@ export interface CruxDeploymentClient extends Client {
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: ListSecretsResponse) => void,
+  ): ClientUnaryCall
+  copyDeploymentSafe(
+    request: IdRequest,
+    callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
+  ): ClientUnaryCall
+  copyDeploymentSafe(
+    request: IdRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
+  ): ClientUnaryCall
+  copyDeploymentSafe(
+    request: IdRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
+  ): ClientUnaryCall
+  copyDeploymentUnsafe(
+    request: IdRequest,
+    callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
+  ): ClientUnaryCall
+  copyDeploymentUnsafe(
+    request: IdRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
+  ): ClientUnaryCall
+  copyDeploymentUnsafe(
+    request: IdRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
   ): ClientUnaryCall
   startDeployment(request: IdRequest, options?: Partial<CallOptions>): ClientReadableStream<DeploymentProgressMessage>
   startDeployment(

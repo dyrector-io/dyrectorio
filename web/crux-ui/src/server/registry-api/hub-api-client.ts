@@ -16,7 +16,14 @@ const MAX_RATE_RETRY = 3
 class HubApiClient implements RegistryApiClient {
   private logger = new Logger(HubApiClient.name)
 
-  constructor(private cache: HubApiCache, private url: string, private prefix: string) {}
+  private url: string
+
+  private proxyToken?: string
+
+  constructor(private cache: HubApiCache, url: string, private prefix: string) {
+    this.url = process.env.HUB_PROXY_URL ?? `https://${url}`
+    this.proxyToken = process.env.HUB_PROXY_TOKEN
+  }
 
   async catalog(text: string, take: number): Promise<string[]> {
     const endpoint = ''
@@ -51,13 +58,19 @@ class HubApiClient implements RegistryApiClient {
 
   private async fetch(endpoint: string, init?: RequestInit) {
     const initializer = init ?? {}
-    const fullUrl = `https://${this.url}/v2/repositories/${this.prefix}/${endpoint}`
+    const fullUrl = `${this.url}/v2/repositories/${this.prefix}/${endpoint}`
+
+    const initHeaders = initializer.headers ?? {}
+    const headers = !this.proxyToken
+      ? initHeaders
+      : {
+          ...initHeaders,
+          authorization: this.proxyToken,
+        }
 
     return await fetch(fullUrl, {
       ...initializer,
-      headers: {
-        ...(initializer.headers ?? {}),
-      },
+      headers,
     })
   }
 

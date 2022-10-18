@@ -68,6 +68,14 @@ export type UpdateDeployment = {
   prefix: string
 }
 
+export type CheckDeploymentCopyResponse = {
+  pendingDeployment?: string
+}
+
+export type CopyDeploymentResponse = {
+  id: string
+}
+
 // ws
 
 export const WS_TYPE_PATCH_DEPLOYMENT_ENV = 'patch-deployment-env'
@@ -127,3 +135,6 @@ export type DeploymentSecretListMessage = {
 }
 
 export const deploymentIsMutable = (status: DeploymentStatus) => status === 'preparing' || status === 'failed'
+
+export const deploymentIsCopyable = (status: DeploymentStatus) =>
+  status === 'failed' || status === 'successful' || status === 'preparing'

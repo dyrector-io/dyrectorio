@@ -4,11 +4,13 @@ import { DyoCard } from '@app/elements/dyo-card'
 import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoList } from '@app/elements/dyo-list'
-import DyoModal from '@app/elements/dyo-modal'
+import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
+import { defaultApiErrorHandler } from '@app/errors'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
   DeploymentByVersion,
+  deploymentIsCopyable,
   deploymentIsMutable,
   DeploymentStatus,
   DEPLOYMENT_STATUS_VALUES,
@@ -29,6 +31,7 @@ import { useRouter } from 'next/dist/client/router'
 import Image from 'next/image'
 import { useState } from 'react'
 import DeploymentStatusTag from './deployments/deployment-status-tag'
+import useCopyDeploymentModal from './deployments/use-copy-deployment-confirmation-modal'
 
 interface VersionDeploymentsSectionProps {
   product: ProductDetails
@@ -43,6 +46,10 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   const { t } = useTranslation('versions')
 
   const router = useRouter()
+
+  const handleApiError = defaultApiErrorHandler(t)
+
+  const [confirmationModal, copyDeployment] = useCopyDeploymentModal(handleApiError)
 
   const [showInfo, setShowInfo] = useState<DeploymentByVersion>(null)
 
@@ -84,6 +91,20 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
 
   const onDeploy = (deployment: DeploymentByVersion) =>
     router.push(deploymentDeployUrl(product.id, version.id, deployment.id))
+
+  const onCopyDeployment = async (deployment: DeploymentByVersion) => {
+    const url = await copyDeployment({
+      productId: product.id,
+      versionId: version.id,
+      deploymentId: deployment.id,
+    })
+
+    if (!url) {
+      return
+    }
+
+    router.push(url)
+  }
 
   const headers = [
     ...['common:node', 'common:prefix', 'common:status', 'common:date', 'common:actions'].map(it => t(it)),
@@ -132,13 +153,23 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
             />
           </div>
         )}
+        <div className="mr-2 inline-block">
+          <Image
+            src="/note.svg"
+            alt={t('common:deploy')}
+            width={24}
+            height={24}
+            className={!!item.note && item.note.length > 0 ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
+            onClick={() => !!item.note && item.note.length > 0 && setShowInfo(item)}
+          />
+        </div>
         <Image
-          src="/note.svg"
-          alt={t('common:deploy')}
+          src="/copy.svg"
+          alt={t('common:copy')}
           width={24}
           height={24}
-          className={!!item.note && item.note.length > 0 ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
-          onClick={() => !!item.note && item.note.length > 0 && setShowInfo(item)}
+          className={deploymentIsCopyable(item.status) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
+          onClick={() => deploymentIsCopyable(item.status) && onCopyDeployment(item)}
         />
       </>,
     ]
@@ -189,6 +220,15 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
           <p className="text-bright mt-8 break-all overflow-y-auto">{showInfo.note}</p>
         </DyoModal>
       )}
+
+      <DyoConfirmationModal
+        config={confirmationModal}
+        title={t('deploymentCopyConflictTitle')}
+        description={t('deploymentCopyConflictContent')}
+        confirmText={t('continue')}
+        className="w-1/4"
+        confirmColor="bg-error-red"
+      />
     </>
   )
 }

@@ -15,6 +15,8 @@ import { DyoApiError, DyoErrorDto, DyoFetchError, RegistryDetails } from './mode
 import { Timestamp } from './models/grpc/google/protobuf/timestamp'
 import { ROUTE_404, ROUTE_INDEX, ROUTE_LOGIN, ROUTE_STATUS, ROUTE_VERIFICATION } from './routes'
 
+export type AsyncVoidFunction = () => Promise<void>
+
 export const isServerSide = () => typeof window === 'undefined'
 
 // date

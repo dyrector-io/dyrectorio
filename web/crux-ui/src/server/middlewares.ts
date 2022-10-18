@@ -1,8 +1,7 @@
+import { AsyncVoidFunction } from '@app/utils'
 import { NextApiRequest, NextApiResponse } from 'next'
 import useAuthorizeApiMiddleware from './auth-middleware'
 import { useErrorMiddleware } from './error-middleware'
-
-export type AsyncVoidFunction = () => Promise<void>
 
 export type NextApiEndpoint = (req: NextApiRequest, res: NextApiResponse) => Promise<void>
 

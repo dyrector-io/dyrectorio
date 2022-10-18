@@ -1,9 +1,11 @@
 import useEditorState, { EditorState } from '@app/components/editor/use-editor-state'
 import { ViewMode } from '@app/components/shared/view-mode-toggle'
+import { DyoConfirmationModalConfig } from '@app/elements/dyo-modal'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
   DeploymentDetails,
   DeploymentEnvUpdatedMessage,
+  deploymentIsCopyable,
   deploymentIsMutable,
   DeploymentRoot,
   DyoNode,
@@ -29,9 +31,11 @@ import {
 import { deploymentWsUrl, WS_NODES } from '@app/routes'
 import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 import { useState } from 'react'
+import useCopyDeploymentModal from './use-copy-deployment-confirmation-modal'
 
 export type DeploymentStateOptions = {
   deployment: DeploymentRoot
+  onApiError: (res: Response) => void
   onWsError: (error: Error) => void
 }
 
@@ -42,16 +46,19 @@ export type DeploymentState = {
   version: VersionDetails
   instances: Instance[]
   mutable: boolean
+  copyable: boolean
   saving: boolean
   editing: boolean
   editor: EditorState
   viewMode: ViewMode
+  confirmationModal: DyoConfirmationModalConfig
   sock: WebSocketClientEndpoint
 }
 
 export type DeploymentActions = {
   setEditing: (editing: boolean) => void
   onDeploymentEdited: (editedDeployment: DeploymentDetails) => void
+  onCopyDeployment: () => Promise<string>
   setViewMode: (viewMode: ViewMode) => void
 }
 
@@ -64,7 +71,7 @@ const mergeInstancePatch = (instance: Instance, message: InstanceUpdatedMessage)
 })
 
 const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, DeploymentActions] => {
-  const { deployment: optionDeploy, onWsError } = options
+  const { deployment: optionDeploy, onWsError, onApiError } = options
   const { product, version } = optionDeploy
 
   const [deployment, setDeployment] = useState<DeploymentDetails>(optionDeploy)
@@ -73,6 +80,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
   const [editing, setEditing] = useState(false)
   const [instances, setInstances] = useState<Instance[]>(deployment.instances ?? [])
   const [viewMode, setViewMode] = useState<ViewMode>('tile')
+  const [confirmationModal, copyDeployment] = useCopyDeploymentModal(onApiError)
 
   const mutable = deploymentIsMutable(deployment.status)
 
@@ -143,6 +151,13 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
     setEditing(false)
   }
 
+  const onCopyDeployment = () =>
+    copyDeployment({
+      productId: product.id,
+      versionId: version.id,
+      deploymentId: deployment.id,
+    })
+
   return [
     {
       deployment,
@@ -150,16 +165,19 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
       version,
       node,
       instances,
-      sock,
       saving,
       editing,
       mutable,
+      copyable: deploymentIsCopyable(deployment.status),
       editor,
       viewMode,
+      confirmationModal,
+      sock,
     },
     {
       setEditing,
       onDeploymentEdited,
+      onCopyDeployment,
       setViewMode,
     },
   ]

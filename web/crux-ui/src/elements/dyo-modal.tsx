@@ -57,7 +57,7 @@ const DyoModal = (props: DyoModalProps) => {
 export default DyoModal
 
 export type DyoConfirmationModalConfig = {
-  onClose: (boolean) => void
+  onClose: (confirmed: boolean) => void
   title?: string
   description?: string
   confirmText?: string

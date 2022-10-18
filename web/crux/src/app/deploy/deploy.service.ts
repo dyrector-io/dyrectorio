@@ -1,9 +1,9 @@
-import { Injectable, Logger, PreconditionFailedException } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { DeploymentStatusEnum } from '@prisma/client'
 import { JsonArray } from 'prisma'
 import { concatAll, filter, from, lastValueFrom, map, merge, Observable, Subject } from 'rxjs'
 import Deployment from 'src/domain/deployment'
-import { InternalException } from 'src/exception/errors'
+import { InternalException, PreconditionFailedException } from 'src/exception/errors'
 import { DeployRequest } from 'src/grpc/protobuf/proto/agent'
 import { ListSecretsResponse } from 'src/grpc/protobuf/proto/common'
 import {
@@ -30,6 +30,7 @@ import AgentService from '../agent/agent.service'
 import { ImageDetails } from '../image/image.mapper'
 import ImageService from '../image/image.service'
 import DeployMapper, { InstanceDetails } from './deploy.mapper'
+import DeployCreateValidationPipe from './pipes/deploy.create.pipe'
 
 @Injectable()
 export default class DeployService {
@@ -477,6 +478,97 @@ export default class DeployService {
     const watcher = agent.getContainerSecrets(deployment.prefix, containerName)
 
     return lastValueFrom(watcher)
+  }
+
+  async copyDeployment(request: IdRequest, force: boolean): Promise<CreateEntityResponse> {
+    const oldDeployment = await this.prisma.deployment.findFirstOrThrow({
+      where: {
+        id: request.id,
+      },
+      include: {
+        instances: {
+          include: {
+            config: true,
+          },
+        },
+      },
+    })
+
+    const createRequest = {
+      accessedBy: request.accessedBy,
+      versionId: oldDeployment.versionId,
+      nodeId: oldDeployment.nodeId,
+      prefix: oldDeployment.prefix,
+    } as CreateDeploymentRequest
+
+    const preparing = await this.getPreparingDeployment(createRequest)
+
+    if (preparing && !force) {
+      throw new PreconditionFailedException({
+        message: 'The node already has a preparing deployment.',
+        property: 'id',
+        value: preparing,
+      })
+    }
+
+    const newDeployment = await this.prisma.deployment.create({
+      data: {
+        versionId: oldDeployment.versionId,
+        nodeId: oldDeployment.nodeId,
+        status: DeploymentStatusEnum.preparing,
+        note: oldDeployment.note,
+        createdBy: request.accessedBy,
+        prefix: oldDeployment.prefix,
+      },
+    })
+
+    await this.prisma.$transaction(
+      oldDeployment.instances.map(it =>
+        this.prisma.instance.create({
+          data: {
+            deploymentId: newDeployment.id,
+            imageId: it.imageId,
+            state: null,
+            config: it.config
+              ? {
+                  create: {
+                    capabilities: it.config.capabilities ? it.config.capabilities ?? [] : (undefined as JsonArray),
+                    environment: it.config.environment ? it.config.environment ?? [] : (undefined as JsonArray),
+                    config: it.config.config ?? {},
+                    secrets: it.config.secrets ? it.config.secrets ?? [] : (undefined as JsonArray),
+                  },
+                }
+              : undefined,
+          },
+        }),
+      ),
+    )
+
+    if (preparing) {
+      await this.deleteDeployment({
+        accessedBy: request.accessedBy,
+        id: preparing,
+      })
+    }
+
+    return CreateEntityResponse.fromJSON(newDeployment)
+  }
+
+  private async getPreparingDeployment(req: CreateDeploymentRequest): Promise<string | undefined> {
+    try {
+      const validation = new DeployCreateValidationPipe(this.prisma)
+
+      await validation.transform(req)
+    } catch (e) {
+      if (e.message) {
+        const message = JSON.parse(e.message)
+        if (message.details && message.details.property === 'deploymentId') {
+          return message.details.value
+        }
+      }
+    }
+
+    return undefined
   }
 }
 

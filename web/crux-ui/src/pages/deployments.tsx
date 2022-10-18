@@ -1,5 +1,6 @@
 import { Layout } from '@app/components/layout'
 import DeploymentStatusTag from '@app/components/products/versions/deployments/deployment-status-tag'
+import useCopyDeploymentModal from '@app/components/products/versions/deployments/use-copy-deployment-confirmation-modal'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
@@ -7,9 +8,10 @@ import { DyoCard } from '@app/elements/dyo-card'
 import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoList } from '@app/elements/dyo-list'
-import DyoModal from '@app/elements/dyo-modal'
+import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
+import { defaultApiErrorHandler } from '@app/errors'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
-import { Deployment, DeploymentStatus, DEPLOYMENT_STATUS_VALUES } from '@app/models'
+import { Deployment, deploymentIsCopyable, DeploymentStatus, DEPLOYMENT_STATUS_VALUES } from '@app/models'
 import { deploymentUrl, nodeUrl, productUrl, ROUTE_DEPLOYMENTS, versionUrl } from '@app/routes'
 import { utcDateToLocale, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
@@ -32,6 +34,9 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
   const router = useRouter()
 
   const [showInfo, setShowInfo] = useState<Deployment>(null)
+
+  const handleApiError = defaultApiErrorHandler(t)
+  const [confirmationModal, copyDeployment] = useCopyDeploymentModal(handleApiError)
 
   const filters = useFilters<Deployment, DeploymentFilter>({
     filters: [
@@ -62,6 +67,20 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
     clsx('rounded-tr-lg', defaultHeaderClass),
   ]
 
+  const onCopyDeployment = async (deployment: Deployment) => {
+    const url = await copyDeployment({
+      deploymentId: deployment.id,
+      productId: deployment.productId,
+      versionId: deployment.versionId,
+    })
+
+    if (!url) {
+      return
+    }
+
+    router.push(deploymentUrl(deployment.productId, deployment.versionId, url))
+  }
+
   const itemTemplate = (item: Deployment) => /* eslint-disable react/jsx-key */ [
     <a className="cursor-pointer" onClick={() => router.push(productUrl(item.productId))}>
       {item.product}
@@ -86,13 +105,23 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
           onClick={() => router.push(deploymentUrl(item.productId, item.versionId, item.id))}
         />
       </div>
+      <div className="mr-2 inline-block">
+        <Image
+          src="/note.svg"
+          alt={t('common:deploy')}
+          width={24}
+          height={24}
+          className={!!item.note && item.note.length > 0 ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
+          onClick={() => !!item.note && item.note.length > 0 && setShowInfo(item)}
+        />
+      </div>
       <Image
-        src="/note.svg"
-        alt={t('common:deploy')}
+        src="/copy.svg"
+        alt={t('common:copy')}
         width={24}
         height={24}
-        className={!!item.note && item.note.length > 0 ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
-        onClick={() => !!item.note && item.note.length > 0 && setShowInfo(item)}
+        className={deploymentIsCopyable(item.status) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
+        onClick={() => deploymentIsCopyable(item.status) && onCopyDeployment(item)}
       />
     </>,
   ]
@@ -142,6 +171,15 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
           <p className="text-bright mt-8 break-all overflow-y-auto">{showInfo.note}</p>
         </DyoModal>
       )}
+
+      <DyoConfirmationModal
+        config={confirmationModal}
+        title={t('deploymentCopyConflictTitle')}
+        description={t('deploymentCopyConflictContent')}
+        confirmText={t('continue')}
+        className="w-1/4"
+        confirmColor="bg-error-red"
+      />
     </Layout>
   )
 }
