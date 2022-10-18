@@ -1,8 +1,11 @@
 package config_test
 
 import (
+	"bytes"
 	"os"
 	"testing"
+
+	"github.com/ProtonMail/gopenpgp/v2/crypto"
 
 	"github.com/stretchr/testify/assert"
 
@@ -83,6 +86,7 @@ func TestConfigFromFileSetValue(t *testing.T) {
 		assert.NoError(t, err)
 	}()
 	assert.NoError(t, err)
+
 	// read newly generated key file and compare
 	key, err := os.ReadFile(missingKeyFile)
 	assert.NoError(t, err)
@@ -107,7 +111,19 @@ func TestGetPublicKey(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, "", pk)
 
+	// correct key
 	pk, err = config.GetPublicKey(testPrivateKey)
 	assert.NoError(t, err)
-	assert.Equal(t, testPublicKey, pk)
+
+	testPublicParsed, err := crypto.NewKeyFromArmored(testPublicKey)
+	assert.NoError(t, err)
+	expectedPublic, err := testPublicParsed.GetPublicKey()
+	assert.NoError(t, err)
+
+	parsedPublic, err := crypto.NewKeyFromArmored(pk)
+	assert.NoError(t, err)
+	publicKey, err := parsedPublic.GetPublicKey()
+	assert.NoError(t, err)
+
+	assert.True(t, bytes.Equal(expectedPublic, publicKey))
 }
