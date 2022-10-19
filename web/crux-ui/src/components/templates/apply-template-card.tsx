@@ -1,8 +1,12 @@
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
+import DyoChips from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
+import { DyoLabel } from '@app/elements/dyo-label'
+import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
+import { ProductType, PRODUCT_TYPE_VALUES } from '@app/models'
 import { CreateEntityResponse } from '@app/models/grpc/protobuf/proto/crux'
 import { ApplyTemplate, Template } from '@app/models/template'
 import { API_TEMPLATES, productUrl } from '@app/routes'
@@ -31,7 +35,9 @@ const ApplyTemplateCard = (props: ApplyTemplateCardProps) => {
   const formik = useFormik({
     validationSchema: applyTemplateSchema,
     initialValues: {
-      productName: propsTemplate.name,
+      name: propsTemplate.name,
+      description: propsTemplate.description,
+      type: 'simple' as ProductType,
     },
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
@@ -72,13 +78,33 @@ const ApplyTemplateCard = (props: ApplyTemplateCardProps) => {
         <DyoInput
           className="max-w-lg"
           grow
-          name="productName"
-          type="productName"
+          name="name"
+          type="name"
           required
           label={t('productName')}
           onChange={formik.handleChange}
-          value={formik.values.productName}
-          message={formik.errors.productName}
+          value={formik.values.name}
+          message={formik.errors.name}
+        />
+
+        <DyoTextArea
+          className="h-48"
+          grow
+          name="description"
+          label={t('description')}
+          onChange={formik.handleChange}
+          value={formik.values.description}
+        />
+
+        <DyoLabel textColor="mt-8 mb-2.5 text-light-eased">{t('type')}</DyoLabel>
+        <DyoChips
+          className="text-bright"
+          choices={PRODUCT_TYPE_VALUES}
+          initialSelection={formik.values.type}
+          converter={it => t(`products:${it}`)}
+          onSelectionChange={type => {
+            formik.setFieldValue('type', type, false)
+          }}
         />
 
         <DyoButton className="hidden" type="submit" />

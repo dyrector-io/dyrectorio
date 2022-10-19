@@ -7,7 +7,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
   const dto = req.body as ApplyTemplate
-  const product = await crux(req).templates.createProductFromTemplate(dto.id, dto.productName)
+  const product = await crux(req).templates.createProductFromTemplate(dto)
 
   res.status(201).json(product)
 }

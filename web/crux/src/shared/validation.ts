@@ -268,33 +268,19 @@ export const templateSchema = yup.object({
   name: yup.string(),
   description: yup.string(),
   registries: yup.array(templateRegistrySchema),
-  product: yup
-    .object({
-      description: descriptionRule,
-      type: yup.string().oneOf(['simple', 'complex']).required(),
-      versions: yup
-        .array(
-          yup.object({
-            name: nameRuleOptional,
-            type: yup.string().oneOf(['incremental', 'rolling']),
-            images: yup
-              .array(
-                yup.object({
-                  name: nameRuleOptional,
-                  registryName: yup.string().required(),
-                  image: yup.string().required(),
-                  tag: yup.string().required(),
-                  config: yup.object().required(),
-                  capabilities: uniqueKeyValuesSchema,
-                  environment: uniqueKeyValuesSchema,
-                  secrets: uniqueKeyValuesSchema,
-                }),
-              )
-              .required(),
-          }),
-        )
-        .required(),
-    })
+  images: yup
+    .array(
+      yup.object({
+        name: nameRuleOptional,
+        registryName: yup.string().required(),
+        image: yup.string().required(),
+        tag: yup.string().required(),
+        config: yup.object().required(),
+        capabilities: uniqueKeyValuesSchema,
+        environment: uniqueKeyValuesSchema,
+        secrets: uniqueKeyValuesSchema,
+      }),
+    )
     .required(),
 })
 

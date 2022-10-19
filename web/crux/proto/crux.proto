@@ -964,5 +964,7 @@ message CreateProductFromTemplateRequest {
   string id = 1;
   string accessedBy = 2;
 
-  string productName = 100;
+  string name = 100;
+  string description = 101;
+  ProductType type = 102;
 }

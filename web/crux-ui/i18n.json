@@ -32,6 +32,6 @@
     "/notifications/[notificationId]": ["notifications"],
     "/deployments": ["deployments"],
     "/status": ["status"],
-    "/templates": ["templates"]
+    "/templates": ["templates", "products"]
   }
 }

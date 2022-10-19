@@ -1234,7 +1234,9 @@ export interface TemplateListResponse {
 export interface CreateProductFromTemplateRequest {
   id: string
   accessedBy: string
-  productName: string
+  name: string
+  description: string
+  type: ProductType
 }
 
 export const CRUX_PACKAGE_NAME = 'crux'
@@ -3865,7 +3867,9 @@ export const TemplateListResponse = {
 const baseCreateProductFromTemplateRequest: object = {
   id: '',
   accessedBy: '',
-  productName: '',
+  name: '',
+  description: '',
+  type: 0,
 }
 
 export const CreateProductFromTemplateRequest = {
@@ -3875,8 +3879,10 @@ export const CreateProductFromTemplateRequest = {
     } as CreateProductFromTemplateRequest
     message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
     message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
-    message.productName =
-      object.productName !== undefined && object.productName !== null ? String(object.productName) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.description =
+      object.description !== undefined && object.description !== null ? String(object.description) : ''
+    message.type = object.type !== undefined && object.type !== null ? productTypeFromJSON(object.type) : 0
     return message
   },
 
@@ -3884,7 +3890,9 @@ export const CreateProductFromTemplateRequest = {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
-    message.productName !== undefined && (obj.productName = message.productName)
+    message.name !== undefined && (obj.name = message.name)
+    message.description !== undefined && (obj.description = message.description)
+    message.type !== undefined && (obj.type = productTypeToJSON(message.type))
     return obj
   },
 }

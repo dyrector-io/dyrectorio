@@ -6,9 +6,10 @@ import {
   CruxTemplateClient,
   TemplateListResponse,
 } from '@app/models/grpc/protobuf/proto/crux'
-import { Template } from '@app/models/template'
+import { ApplyTemplate, Template } from '@app/models/template'
 import { Identity } from '@ory/kratos-client'
 import { protomisify } from '@server/crux/grpc-connection'
+import { typeToProto } from './mappers/product-mappers'
 
 class DyoTemplateService {
   private logger = new Logger(DyoTemplateService.name)
@@ -28,11 +29,15 @@ class DyoTemplateService {
     return res.data
   }
 
-  async createProductFromTemplate(id: string, productName: string): Promise<CreateEntityResponse> {
+  async createProductFromTemplate(request: ApplyTemplate): Promise<CreateEntityResponse> {
+    const { id, name, description, type } = request
+
     const req: CreateProductFromTemplateRequest = {
       accessedBy: this.identity.id,
       id,
-      productName,
+      name,
+      description,
+      type: typeToProto(type),
     }
 
     const res = await protomisify<CreateProductFromTemplateRequest, CreateEntityResponse>(

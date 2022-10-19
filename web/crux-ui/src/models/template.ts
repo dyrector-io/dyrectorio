@@ -1,3 +1,5 @@
+import { ProductType } from './product'
+
 export type Template = {
   id: string
   name: string
@@ -6,5 +8,7 @@ export type Template = {
 
 export type ApplyTemplate = {
   id: string
-  productName: string
+  name: string
+  description: string
+  type: ProductType
 }

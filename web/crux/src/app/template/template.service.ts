@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { ProductTypeEnum } from '@prisma/client'
 import {
   AddImagesToVersionRequest,
   CreateEntityResponse,
@@ -7,21 +6,30 @@ import {
   CreateProductRequest,
   CreateVersionRequest,
   ImageResponse,
-  productTypeFromJSON,
-  versionTypeFromJSON,
+  ProductType,
+  VersionType,
 } from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
 import TemplateFileService, {
+  TemplateContainerConfig,
+  TemplateCraneConfig,
+  TemplateDagentConfig,
   TemplateImage,
-  TemplateProduct,
-  TemplateVersion,
 } from 'src/services/template.file.service'
 import { v4 } from 'uuid'
-import { UniqueKeyValue } from 'src/shared/model'
+import { ContainerConfigData, UniqueKeyValue } from 'src/shared/model'
+import {
+  deploymentStrategyFromJSON,
+  ExplicitContainerConfig,
+  networkModeFromJSON,
+  restartPolicyFromJSON,
+} from 'src/grpc/protobuf/proto/common'
 import ImageService from '../image/image.service'
 import ProductService from '../product/product.service'
 import RegistryService from '../registry/registry.service'
 import VersionService from '../version/version.service'
+
+const VERSION_NAME = '1.0.0'
 
 @Injectable()
 export default class TemplateService {
@@ -60,34 +68,63 @@ export default class TemplateService {
       await Promise.all(createRegistries)
     }
 
-    const templateProduct = template.product
     const createProductReq: CreateProductRequest = {
       accessedBy: req.accessedBy,
-      name: req.productName,
-      description: templateProduct.description,
-      type: productTypeFromJSON(templateProduct.type.toUpperCase()),
+      name: req.name,
+      description: req.description,
+      type: req.type,
     }
 
     const product = await this.productService.createProduct(createProductReq)
 
-    const createVersions = templateProduct.versions.map(it =>
-      this.createVersion(it, templateProduct, product, req.accessedBy),
-    )
-    await Promise.all(createVersions)
+    await this.createVersion(template.images, product, req.type, req.accessedBy)
 
     return product
   }
 
+  private mapTemplateConfig(config: TemplateContainerConfig): ExplicitContainerConfig {
+    const mapCraneConfig = (crane: TemplateCraneConfig) => {
+      if (!crane) {
+        return undefined
+      }
+
+      return {
+        ...crane,
+        deploymentStatregy: crane.deploymentStatregy
+          ? deploymentStrategyFromJSON(crane.deploymentStatregy.toUpperCase())
+          : undefined,
+      }
+    }
+
+    const mapDagentConfig = (dagent: TemplateDagentConfig) => {
+      if (!dagent) {
+        return undefined
+      }
+
+      return {
+        ...dagent,
+        restartPolicy: dagent.restartPolicy ? restartPolicyFromJSON(dagent.restartPolicy.toUpperCase()) : undefined,
+        networkMode: dagent.networkMode ? networkModeFromJSON(dagent.networkMode.toUpperCase()) : undefined,
+      }
+    }
+
+    return {
+      ...config,
+      crane: mapCraneConfig(config.crane),
+      dagent: mapDagentConfig(config.dagent),
+    }
+  }
+
   private async createVersion(
-    templateVersion: TemplateVersion,
-    templateProduct: TemplateProduct,
+    templateImages: TemplateImage[],
     product: CreateEntityResponse,
+    productType: ProductType,
     accessedBy: string,
   ): Promise<void> {
     const { id: productId } = product
 
     let version =
-      templateProduct.type === ProductTypeEnum.simple
+      productType === ProductType.COMPLEX
         ? await this.prisma.version.findFirst({
             where: {
               name: ProductService.SIMPLE_PRODUCT_VERSION_NAME,
@@ -96,7 +133,7 @@ export default class TemplateService {
           })
         : await this.prisma.version.findFirst({
             where: {
-              name: templateVersion.name,
+              name: VERSION_NAME,
               productId: product.id,
             },
           })
@@ -105,8 +142,8 @@ export default class TemplateService {
       const createReq: CreateVersionRequest = {
         accessedBy,
         productId,
-        name: templateVersion.name,
-        type: versionTypeFromJSON(templateVersion.type.toUpperCase()),
+        name: VERSION_NAME,
+        type: VersionType.INCREMENTAL,
       }
 
       const newVersion = await this.versionService.createVersion(createReq)
@@ -120,14 +157,12 @@ export default class TemplateService {
     const registryLookup = await this.prisma.registry.findMany({
       where: {
         name: {
-          in: templateVersion.images
-            .map(it => it.registryName)
-            .filter((value, index, array) => array.indexOf(value) === index),
+          in: templateImages.map(it => it.registryName).filter((value, index, array) => array.indexOf(value) === index),
         },
       },
     })
 
-    const createImages = templateVersion.images.map(it => {
+    const createImages = templateImages.map(it => {
       const registryId = registryLookup.find(reg => reg.name === it.registryName).id
 
       const addImageRequest: AddImagesToVersionRequest = {
@@ -157,12 +192,12 @@ export default class TemplateService {
             id: v4(),
           }))
 
-        const config = {
+        const config: ContainerConfigData = {
           name: imageTemplate.name,
-          config: imageTemplate.config,
+          config: this.mapTemplateConfig(imageTemplate.config),
           capabilities: mapKeyValues(imageTemplate.capabilities),
           environment: mapKeyValues(imageTemplate.environment),
-          secrets: mapKeyValues(imageTemplate.secrets),
+          secrets: [],
         }
 
         return this.prisma.image.update({

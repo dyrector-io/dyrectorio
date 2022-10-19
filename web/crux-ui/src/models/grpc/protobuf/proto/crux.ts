@@ -1245,7 +1245,9 @@ export interface TemplateListResponse {
 export interface CreateProductFromTemplateRequest {
   id: string
   accessedBy: string
-  productName: string
+  name: string
+  description: string
+  type: ProductType
 }
 
 const baseEmpty: object = {}
@@ -9102,7 +9104,9 @@ export const TemplateListResponse = {
 const baseCreateProductFromTemplateRequest: object = {
   id: '',
   accessedBy: '',
-  productName: '',
+  name: '',
+  description: '',
+  type: 0,
 }
 
 export const CreateProductFromTemplateRequest = {
@@ -9113,8 +9117,14 @@ export const CreateProductFromTemplateRequest = {
     if (message.accessedBy !== '') {
       writer.uint32(18).string(message.accessedBy)
     }
-    if (message.productName !== '') {
-      writer.uint32(802).string(message.productName)
+    if (message.name !== '') {
+      writer.uint32(802).string(message.name)
+    }
+    if (message.description !== '') {
+      writer.uint32(810).string(message.description)
+    }
+    if (message.type !== 0) {
+      writer.uint32(816).int32(message.type)
     }
     return writer
   },
@@ -9135,7 +9145,13 @@ export const CreateProductFromTemplateRequest = {
           message.accessedBy = reader.string()
           break
         case 100:
-          message.productName = reader.string()
+          message.name = reader.string()
+          break
+        case 101:
+          message.description = reader.string()
+          break
+        case 102:
+          message.type = reader.int32() as any
           break
         default:
           reader.skipType(tag & 7)
@@ -9151,8 +9167,10 @@ export const CreateProductFromTemplateRequest = {
     } as CreateProductFromTemplateRequest
     message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
     message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
-    message.productName =
-      object.productName !== undefined && object.productName !== null ? String(object.productName) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.description =
+      object.description !== undefined && object.description !== null ? String(object.description) : ''
+    message.type = object.type !== undefined && object.type !== null ? productTypeFromJSON(object.type) : 0
     return message
   },
 
@@ -9160,7 +9178,9 @@ export const CreateProductFromTemplateRequest = {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
-    message.productName !== undefined && (obj.productName = message.productName)
+    message.name !== undefined && (obj.name = message.name)
+    message.description !== undefined && (obj.description = message.description)
+    message.type !== undefined && (obj.type = productTypeToJSON(message.type))
     return obj
   },
 
@@ -9172,7 +9192,9 @@ export const CreateProductFromTemplateRequest = {
     } as CreateProductFromTemplateRequest
     message.id = object.id ?? ''
     message.accessedBy = object.accessedBy ?? ''
-    message.productName = object.productName ?? ''
+    message.name = object.name ?? ''
+    message.description = object.description ?? ''
+    message.type = object.type ?? 0
     return message
   },
 }

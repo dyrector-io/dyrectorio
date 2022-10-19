@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common'
 import { readdir, readFileSync } from 'fs'
 import { join, parse } from 'path'
 import { cwd } from 'process'
+import { CraneContainerConfig, DagentContainerConfig, ExplicitContainerConfig } from 'src/grpc/protobuf/proto/common'
 import { CreateRegistryRequest, TemplateResponse } from 'src/grpc/protobuf/proto/crux'
 import { UniqueKeyValue } from 'src/shared/model'
 import { templateSchema } from 'src/shared/validation'
@@ -13,21 +14,21 @@ export interface TemplateDetail {
   name: string
   description: string
   registries?: TemplateRegistry[]
-  product: TemplateProduct
+  images: TemplateImage[]
 }
 
 export type TemplateRegistry = Omit<CreateRegistryRequest, 'accessedBy'>
 
-export interface TemplateProduct {
-  description: string
-  type: string
-  versions: TemplateVersion[]
+export type TemplateCraneConfig = Omit<CraneContainerConfig, 'deploymentStatregy'> & {
+  deploymentStatregy: string
 }
-
-export interface TemplateVersion {
-  name?: string
-  type?: string
-  images: TemplateImage[]
+export type TemplateDagentConfig = Omit<DagentContainerConfig, 'restartPolicy' | 'networkMode'> & {
+  restartPolicy: string
+  networkMode: string
+}
+export type TemplateContainerConfig = Omit<ExplicitContainerConfig, 'crane' | 'dagent'> & {
+  crane?: TemplateCraneConfig
+  dagent?: TemplateDagentConfig
 }
 
 export interface TemplateImage {
@@ -36,9 +37,8 @@ export interface TemplateImage {
   image: string
   tag: string
   capabilities: UniqueKeyValue[]
-  config: any
+  config: TemplateContainerConfig
   environment: UniqueKeyValue[]
-  secrets: UniqueKeyValue[]
 }
 
 @Injectable()
