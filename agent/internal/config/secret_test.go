@@ -4,8 +4,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/dyrector-io/dyrectorio/agent/internal/config"
+	"github.com/ProtonMail/gopenpgp/v2/crypto"
+
 	"github.com/stretchr/testify/assert"
+
+	"github.com/dyrector-io/dyrectorio/agent/internal/config"
 )
 
 const (
@@ -50,7 +53,7 @@ func TestConfigFromFileSetValue(t *testing.T) {
 	f, err := tmpTestFile()
 	assert.NoError(t, err)
 	defer func() {
-		err := f.Close()
+		err = f.Close()
 		assert.NoError(t, err)
 		err = os.Remove(f.Name())
 		assert.NoError(t, err)
@@ -78,10 +81,11 @@ func TestConfigFromFileSetValue(t *testing.T) {
 	// non existing file: key is generated
 	err = cfg.SetValue(missingKeyFile)
 	defer func() {
-		err := os.Remove(missingKeyFile)
+		err = os.Remove(missingKeyFile)
 		assert.NoError(t, err)
 	}()
 	assert.NoError(t, err)
+
 	// read newly generated key file and compare
 	key, err := os.ReadFile(missingKeyFile)
 	assert.NoError(t, err)
@@ -106,8 +110,19 @@ func TestGetPublicKey(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, "", pk)
 
+	// correct key
 	pk, err = config.GetPublicKey(testPrivateKey)
 	assert.NoError(t, err)
-	assert.Equal(t, testPublicKey, pk)
 
+	testPublicParsed, err := crypto.NewKeyFromArmored(testPublicKey)
+	assert.NoError(t, err)
+	expectedPublic, err := testPublicParsed.GetPublicKey()
+	assert.NoError(t, err)
+
+	parsedPublic, err := crypto.NewKeyFromArmored(pk)
+	assert.NoError(t, err)
+	publicKey, err := parsedPublic.GetPublicKey()
+	assert.NoError(t, err)
+
+	assert.Equal(t, expectedPublic, publicKey)
 }
