@@ -129,7 +129,7 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
     let newItems = [...state]
 
     const item = {
-      id: state[index].id,
+      ...newItems[index],
       key,
       value,
     }
@@ -197,7 +197,7 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
   }
 
   const renderItem = (entry: KeyValueElement, index: number) => {
-    const { key, value, message, encrypted } = entry
+    const { id, key, value, message, encrypted, required } = entry
 
     return (
       <div key={entry.id} className="flex flex-row flex-grow p-1">
@@ -207,10 +207,15 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
           </div>
         )}
 
-        <div className={clsx('w-5/12', isCompletelyEmpty(entry) && 'ml-[24px]')}>
+        <div className={clsx('w-5/12 relative', isCompletelyEmpty(entry) && 'ml-[24px]')}>
+          {required && (
+            <div className='absolute right-0 h-full flex mr-2'>
+              <Image src="/asterisk.svg" width={12} height={12} />
+            </div>
+          )}
           <DyoInput
-            key={`${entry.id}-key`}
-            disabled={disabled}
+            key={`${id}-key`}
+            disabled={disabled || required}
             className="w-full mr-2"
             grow
             placeholder={t('key')}
@@ -222,7 +227,7 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
 
         <div className="w-7/12 ml-2 flex">
           <DyoInput
-            key={`${entry.id}-value`}
+            key={`${id}-value`}
             disabled={disabled || encrypted}
             className="flex-auto w-full"
             type={encrypted ? 'password' : 'text'}
@@ -232,7 +237,7 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
             onChange={e => onChange(index, key, e.target.value)}
           />
 
-          {encrypted && disabled !== true && (
+          {(encrypted && disabled !== true) && (
             <div
               onClick={() => onRemove(index)}
               className="flex-initial cursor-pointer ml-2 h-11 w-11 ring-2 rounded-md focus:outline-none focus:dark text-bright-muted ring-light-grey-muted flex justify-center"

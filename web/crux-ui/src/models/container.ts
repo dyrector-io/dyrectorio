@@ -14,6 +14,10 @@ export type UniqueKey = {
   key: string
 }
 
+export type UniqueSecretKey = UniqueKey & {
+  required?: boolean
+}
+
 export type UniqueKeyValue = {
   id: string
   key: string
@@ -26,6 +30,7 @@ export type KeyValue = {
 }
 
 export type UniqueKeySecretValue = UniqueKeyValue & {
+  required?: boolean
   encrypted?: boolean
 }
 
@@ -263,8 +268,8 @@ const overrideKeyValues = (weak: UniqueKeyValue[], strong: UniqueKeyValue[]): Un
   return [...(weak?.filter(it => !overridenKeys.has(it.key)) ?? []), ...(strong ?? [])]
 }
 
-const expandKeytoKeyValues = (weak: UniqueKey[]): UniqueKeyValue[] => [
-  ...weak.map((it): UniqueKeyValue => ({ id: it.id, key: it.key, value: '' })),
+export const expandSecretKeyToSecretKeyValues = (weak: UniqueSecretKey[]): UniqueKeySecretValue[] => [
+  ...weak.map(it => ({ id: it.id, key: it.key, value: '', required: it.required })),
 ]
 
 const overridePorts = (weak: ContainerConfigPort[], strong: ContainerConfigPort[]): ContainerConfigPort[] => {
@@ -297,7 +302,7 @@ export const mergeConfigs = (
     secrets:
       instanceConfig?.secrets && instanceConfig.secrets.length > 0
         ? instanceConfig.secrets
-        : expandKeytoKeyValues(imageConfig.secrets),
+        : expandSecretKeyToSecretKeyValues(imageConfig.secrets),
     ports: overridePorts(imageConfig?.ports, instanceConfig.ports),
     user: override(imageConfig?.user, instanceConfig.user),
     tty: override(imageConfig?.tty, instanceConfig.tty),

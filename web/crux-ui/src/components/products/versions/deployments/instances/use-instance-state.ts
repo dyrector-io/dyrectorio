@@ -3,6 +3,7 @@ import {
   DeploymentGetSecretListMessage,
   DeploymentSecretListMessage,
   Instance,
+  InstanceContainerConfig,
   mergeConfigs,
   PatchInstanceMessage,
   WS_TYPE_DEPLOYMENT_SECRETS,
@@ -67,7 +68,7 @@ const useInstanceState = (options: InstanceStateOptions) => {
 
   const errorMessage = parseError ?? getValidationError(containerConfigSchema, config)?.message
 
-  const onPatch = (id: string, newConfig: Partial<ContainerConfig>) => {
+  const onPatch = (id: string, newConfig: Partial<InstanceContainerConfig>) => {
     setParseError(null)
 
     sock.send(WS_TYPE_PATCH_INSTANCE, {

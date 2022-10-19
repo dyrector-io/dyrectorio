@@ -1,6 +1,6 @@
 import { DyoLabel } from '@app/elements/dyo-label'
 import useRepatch from '@app/hooks/use-repatch'
-import { UniqueKey } from '@app/models'
+import { UniqueSecretKey } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect } from 'react'
@@ -11,13 +11,14 @@ import { EditorStateOptions } from '../editor/use-editor-state'
 const EMPTY_KEY = {
   id: uuid(),
   key: '',
-} as UniqueKey
+  required: false,
+} as UniqueSecretKey
 
 type KeyElement = UniqueKey & {
   message?: string
 }
 
-const isCompletelyEmpty = (it: UniqueKey): boolean => !it.key || it.key.length < 1
+const isCompletelyEmpty = (it: UniqueSecretKey): boolean => !it.key || it.key.length < 1
 
 const generateEmptyLine = () => ({
   ...EMPTY_KEY,
@@ -25,11 +26,11 @@ const generateEmptyLine = () => ({
 })
 
 // actions
-const setItems = (items: UniqueKey[]) => (): UniqueKey[] => items
+const setItems = (items: UniqueSecretKey[]) => (): UniqueSecretKey[] => items
 
 const mergeItems =
-  (updatedItems: UniqueKey[]) =>
-  (state: UniqueKey[]): UniqueKey[] => {
+  (updatedItems: UniqueSecretKey[]) =>
+  (state: UniqueSecretKey[]): UniqueSecretKey[] => {
     const lastLine = state.length > 0 ? state[state.length - 1] : null
     const emptyLine = !!lastLine && isCompletelyEmpty(lastLine) ? lastLine : generateEmptyLine()
 
@@ -62,7 +63,7 @@ interface KeyInputProps {
   keyPlaceholder?: string
   unique?: boolean
   editorOptions: EditorStateOptions
-  onChange: (items: UniqueKey[]) => void
+  onChange: (items: UniqueSecretKey[]) => void
 }
 
 const KeyOnlyInput = (props: KeyInputProps) => {
@@ -98,12 +99,12 @@ const KeyOnlyInput = (props: KeyInputProps) => {
 
   useEffect(() => dispatch(mergeItems(items)), [items, dispatch])
 
-  const onChange = async (index: number, key: string) => {
+  const onChange = async (index: number, patch: { key?: string; required?: boolean }) => {
     const newItems = [...state]
 
     const item = {
-      id: state[index].id,
-      key,
+      ...newItems[index],
+      ...patch,
     }
 
     newItems[index] = item
@@ -119,7 +120,7 @@ const KeyOnlyInput = (props: KeyInputProps) => {
   const renderItem = (entry: KeyElement, index: number) => {
     const { id, key, message } = entry
 
-    const keyId = `${entry.id}-key`
+    const keyId = `${id}-key`
 
     return (
       <div key={id} className="ml-2">
