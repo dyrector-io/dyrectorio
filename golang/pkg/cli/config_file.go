@@ -65,26 +65,28 @@ type SettingsFile struct {
 }
 
 type Options struct {
-	TimeZone               string `yaml:"timezone" env-default:"Europe/Budapest"`
-	CruxAgentGrpcPort      uint   `yaml:"crux-agentgrpc-port" env-default:"5000"`
-	CruxGrpcPort           uint   `yaml:"crux-grpc-port" env-default:"5001"`
-	CruxUIPort             uint   `yaml:"crux-ui-port" env-default:"3000"`
-	CruxSecret             string `yaml:"crux-secret"`
-	CruxPostgresPort       uint   `yaml:"cruxPostgresPort" env-default:"5432"`
-	CruxPostgresDB         string `yaml:"cruxPostgresDB" env-default:"crux"`
-	CruxPostgresUser       string `yaml:"cruxPostgresUser" env-default:"crux"`
-	CruxPostgresPassword   string `yaml:"cruxPostgresPassword"`
-	TraefikWebPort         uint   `yaml:"traefikWebPort" env-default:"8000"`
-	TraefikUIPort          uint   `yaml:"traefikUIPort" env-default:"8080"`
-	KratosAdminPort        uint   `yaml:"kratosAdminPort" env-default:"4434"`
-	KratosPublicPort       uint   `yaml:"kratosPublicPort" env-default:"4433"`
-	KratosPostgresPort     uint   `yaml:"kratosPostgresPort" env-default:"5433"`
-	KratosPostgresDB       string `yaml:"kratosPostgresDB" env-default:"kratos"`
-	KratosPostgresUser     string `yaml:"kratosPostgresUser" env-default:"kratos"`
-	KratosPostgresPassword string `yaml:"kratosPostgresPassword"`
-	KratosSecret           string `yaml:"kratosSecret"`
-	MailSlurperPort        uint   `yaml:"mailSlurperPort" env-default:"4436"`
-	MailSlurperPort2       uint   `yaml:"mailSlurperPort2" env-default:"4437"`
+	TimeZone                       string `yaml:"timezone" env-default:"Europe/Budapest"`
+	CruxAgentGrpcPort              uint   `yaml:"crux-agentgrpc-port" env-default:"5000"`
+	CruxGrpcPort                   uint   `yaml:"crux-grpc-port" env-default:"5001"`
+	CruxUIPort                     uint   `yaml:"crux-ui-port" env-default:"3000"`
+	CruxSecret                     string `yaml:"crux-secret"`
+	CruxPostgresPort               uint   `yaml:"cruxPostgresPort" env-default:"5432"`
+	CruxPostgresDB                 string `yaml:"cruxPostgresDB" env-default:"crux"`
+	CruxPostgresUser               string `yaml:"cruxPostgresUser" env-default:"crux"`
+	CruxPostgresPassword           string `yaml:"cruxPostgresPassword"`
+	TraefikWebPort                 uint   `yaml:"traefikWebPort" env-default:"8000"`
+	TraefikUIPort                  uint   `yaml:"traefikUIPort" env-default:"8080"`
+	TraefikDockerSocket            string `yaml:"traefikDockerSocket" env-default:"/var/run/docker.sock"`
+	TraefikIsDockerSocketNamedPipe bool   `yaml:"traefikIsDockerSocketNamedPipe" env-default:"false"`
+	KratosAdminPort                uint   `yaml:"kratosAdminPort" env-default:"4434"`
+	KratosPublicPort               uint   `yaml:"kratosPublicPort" env-default:"4433"`
+	KratosPostgresPort             uint   `yaml:"kratosPostgresPort" env-default:"5433"`
+	KratosPostgresDB               string `yaml:"kratosPostgresDB" env-default:"kratos"`
+	KratosPostgresUser             string `yaml:"kratosPostgresUser" env-default:"kratos"`
+	KratosPostgresPassword         string `yaml:"kratosPostgresPassword"`
+	KratosSecret                   string `yaml:"kratosSecret"`
+	MailSlurperPort                uint   `yaml:"mailSlurperPort" env-default:"4436"`
+	MailSlurperPort2               uint   `yaml:"mailSlurperPort2" env-default:"4437"`
 }
 
 const DefaultPostgresPort = 5432
