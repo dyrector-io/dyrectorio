@@ -54,6 +54,7 @@ func ProcessCommand(settings *Settings) {
 	switch settings.Command {
 	case "up":
 		settings = CheckAndUpdatePorts(settings)
+		SaveSettings(settings)
 
 		containers.Traefik = GetTraefik(settings)
 		containers.Crux = GetCrux(settings)

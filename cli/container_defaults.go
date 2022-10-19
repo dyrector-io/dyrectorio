@@ -16,6 +16,16 @@ import (
 const PostgresImage = "docker.io/library/postgres:13-alpine"
 const MailSlurperImage = "docker.io/oryd/mailslurper:latest-smtps"
 
+const defaultCruxAgentGrpcPort = 5000
+const defaultCruxGrpcPort = 5001
+const defaultCruxUIPort = 3000
+const defaultTraefikWebPort = 8000
+const defaultTraefikUIPort = 8080
+const defaultKratosPublicPort = 4433
+const defaultKratosAdminPort = 4434
+const defaultMailSlurperPort = 4436
+const defaultMailSlurperPort2 = 4437
+
 // Crux services: db migrations and crux api service
 func GetCrux(settings *Settings) *containerbuilder.DockerContainerBuilder {
 	crux := containerbuilder.NewDockerBuilder(context.Background()).
@@ -50,11 +60,11 @@ func GetCrux(settings *Settings) *containerbuilder.DockerContainerBuilder {
 		}).
 		WithPortBindings([]containerbuilder.PortBinding{
 			{
-				ExposedPort: DefaultCruxAgentGrpcPort,
+				ExposedPort: defaultCruxAgentGrpcPort,
 				PortBinding: uint16(settings.SettingsFile.CruxAgentGrpcPort),
 			},
 			{
-				ExposedPort: DefaultCruxGrpcPort,
+				ExposedPort: defaultCruxGrpcPort,
 				PortBinding: uint16(settings.SettingsFile.CruxGrpcPort),
 			}}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
@@ -117,7 +127,7 @@ func GetCruxUI(settings *Settings) *containerbuilder.DockerContainerBuilder {
 		}).
 		WithPortBindings([]containerbuilder.PortBinding{
 			{
-				ExposedPort: DefaultCruxUIPort,
+				ExposedPort: defaultCruxUIPort,
 				PortBinding: uint16(settings.SettingsFile.CruxUIPort),
 			}}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
@@ -134,7 +144,7 @@ func GetCruxUI(settings *Settings) *containerbuilder.DockerContainerBuilder {
 			"traefik.enable":                                         "true",
 			"traefik.http.routers.crux-ui.rule":                      fmt.Sprintf("Host(`%s`)", "localhost"),
 			"traefik.http.routers.crux-ui.entrypoints":               "web",
-			"traefik.http.services.crux-ui.loadbalancer.server.port": fmt.Sprintf("%d", DefaultCruxUIPort),
+			"traefik.http.services.crux-ui.loadbalancer.server.port": fmt.Sprintf("%d", defaultCruxUIPort),
 		})
 
 	return cruxUI
@@ -171,11 +181,11 @@ func GetTraefik(settings *Settings) *containerbuilder.DockerContainerBuilder {
 		WithForcePullImage().
 		WithPortBindings([]containerbuilder.PortBinding{
 			{
-				ExposedPort: DefaultTraefikWebPort,
+				ExposedPort: defaultTraefikWebPort,
 				PortBinding: uint16(settings.SettingsFile.TraefikWebPort),
 			},
 			{
-				ExposedPort: DefaultTraefikUIPort,
+				ExposedPort: defaultTraefikUIPort,
 				PortBinding: uint16(settings.SettingsFile.TraefikUIPort),
 			}}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
@@ -226,11 +236,11 @@ func GetKratos(settings *Settings) *containerbuilder.DockerContainerBuilder {
 		}).
 		WithPortBindings([]containerbuilder.PortBinding{
 			{
-				ExposedPort: DefaultKratosPublicPort,
+				ExposedPort: defaultKratosPublicPort,
 				PortBinding: uint16(settings.SettingsFile.KratosPublicPort),
 			},
 			{
-				ExposedPort: DefaultKratosAdminPort,
+				ExposedPort: defaultKratosAdminPort,
 				PortBinding: uint16(settings.SettingsFile.KratosAdminPort),
 			}}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
@@ -240,7 +250,7 @@ func GetKratos(settings *Settings) *containerbuilder.DockerContainerBuilder {
 			"traefik.http.routers.kratos.rule": fmt.Sprintf("(Host(`localhost`) && PathPrefix(`/kratos`)) || (Host(`%s`) && PathPrefix(`/kratos`))",
 				settings.Containers.Traefik.Name),
 			"traefik.http.routers.kratos.entrypoints":                    "web",
-			"traefik.http.services.kratos.loadbalancer.server.port":      fmt.Sprintf("%d", DefaultKratosPublicPort),
+			"traefik.http.services.kratos.loadbalancer.server.port":      fmt.Sprintf("%d", defaultKratosPublicPort),
 			"traefik.http.middlewares.kratos-strip.stripprefix.prefixes": "/kratos",
 			"traefik.http.routers.kratos.middlewares":                    "kratos-strip",
 		})
@@ -280,11 +290,11 @@ func GetMailSlurper(settings *Settings) *containerbuilder.DockerContainerBuilder
 		WithForcePullImage().
 		WithPortBindings([]containerbuilder.PortBinding{
 			{
-				ExposedPort: DefaultMailSlurperPort,
+				ExposedPort: defaultMailSlurperPort,
 				PortBinding: uint16(settings.SettingsFile.MailSlurperPort),
 			},
 			{
-				ExposedPort: DefaultMailSlurperPort2,
+				ExposedPort: defaultMailSlurperPort2,
 				PortBinding: uint16(settings.SettingsFile.MailSlurperPort2),
 			}}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
