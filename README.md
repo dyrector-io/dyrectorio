@@ -91,21 +91,21 @@ This means you get a full-featured dyrector.io platform running locally on your 
 > The CLI is only available from the codebase at the moment. 
 
 1. Clone the repository to your local workdir with `git clone`
-2. Execute `go run ./cli up` in the project root
+2. Execute `go run ./golang/cmd/dyo up` in the project root
 3. Open the `localhost:8000` and use the platform
 
 dyrector.io's command-line interface (CLI) lets you run a complete dyrector.io development environment locally with the following services: UI Service (crux-ui), Backend Service (crux), PostgreSQL databases, Authentication, Migrations, and SMTP mail server.
 
 #### Using the platform with CLI for demonstration or testing
 
-1. Execute `go run ./cli up` in the project root
+1. Execute `go run ./golang/cmd/dyo up` in the project root
 2. After you navigated to `localhost:8000` (this is the default traefik port) you will see a Login screen
 3. Register an account with whatever e-mail address you see fit (doesn't have to be valid one)
 4. Navigate to `localhost:4436` where you will find your mail as all outgoing e-mails will land here
 5. Open your e-mail message and using the link inside you can activate your account
 6. Enjoy!
 
-#### Usint the platform with CLI for development
+#### Using the platform with CLI for development
 
 1. Read the CLI documentation first(see the end of this section)
 2. Decide which part of the project you want to work on, in this case it is crux, crux-ui or both

@@ -152,13 +152,20 @@ func GetCruxUI(settings *Settings) *containerbuilder.DockerContainerBuilder {
 
 // Return Traefik services container
 func GetTraefik(settings *Settings) *containerbuilder.DockerContainerBuilder {
-	socketEnv := os.Getenv("DOCKER_HOST")
-	if socketEnv == "" {
-		socketEnv = client.DefaultDockerHost
-	}
-	socket, err := url.ParseRequestURI(socketEnv)
+	envDockerHost := os.Getenv("DOCKER_HOST")
+
+	socket, err := url.Parse(client.DefaultDockerHost)
 	if err != nil {
-		log.Fatalf("cannot determinte socker - %v", err)
+		log.Fatalf("GetTraefik: %v", err)
+	}
+
+	// If traefik's socket is default, but we override it in the environment we prefer the environment
+	if settings.SettingsFile.TraefikDockerSocket == socket.Path && envDockerHost != "" {
+		socket, err = url.Parse(envDockerHost)
+		if err != nil {
+			log.Fatalf("GetTraefik: %v", err)
+		}
+		settings.SettingsFile.TraefikDockerSocket = socket.Path
 	}
 
 	commands := []string{
@@ -171,6 +178,11 @@ func GetTraefik(settings *Settings) *containerbuilder.DockerContainerBuilder {
 
 	if settings.SettingsFile.CruxUIDisabled {
 		commands = append(commands, "--providers.file.filename=/etc/traefik.dev.yml")
+	}
+
+	mountType := mount.TypeBind
+	if settings.SettingsFile.TraefikIsDockerSocketNamedPipe {
+		mountType = mount.TypeNamedPipe
 	}
 
 	traefik := containerbuilder.NewDockerBuilder(context.Background()).
@@ -191,8 +203,8 @@ func GetTraefik(settings *Settings) *containerbuilder.DockerContainerBuilder {
 		WithNetworks([]string{settings.SettingsFile.Network}).
 		WithNetworkAliases(settings.Containers.Traefik.Name).
 		WithMountPoints([]mount.Mount{{
-			Type:   mount.TypeBind,
-			Source: socket.Path,
+			Type:   mountType,
+			Source: settings.SettingsFile.TraefikDockerSocket,
 			Target: "/var/run/docker.sock"}}).
 		WithCmd(commands)
 
