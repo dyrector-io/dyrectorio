@@ -105,7 +105,7 @@ dyrector.io's command-line interface (CLI) lets you run a complete dyrector.io d
 5. Open your e-mail message and using the link inside you can activate your account
 6. Enjoy!
 
-#### Usint the platform with CLI for development
+#### Using the platform with CLI for development
 
 1. Read the CLI documentation first(see the end of this section)
 2. Decide which part of the project you want to work on, in this case it is crux, crux-ui or both
