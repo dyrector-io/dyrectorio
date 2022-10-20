@@ -2,8 +2,8 @@ package k8s
 
 import (
 	"context"
-	"log"
 
+	"github.com/rs/zerolog/log"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -118,7 +118,7 @@ func (p *pvc) applyVolume(client typedv1.PersistentVolumeClaimInterface,
 	}
 
 	if result != nil {
-		log.Println("PVC deployed: " + result.Name)
+		log.Info().Str("name", name).Msg("PVC deployed")
 		p.avail[fullVolumeName] = v1.Volume{
 			Name: fullVolumeName,
 			Type: volume.Type,

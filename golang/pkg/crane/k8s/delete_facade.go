@@ -2,7 +2,8 @@ package k8s
 
 import (
 	"context"
-	"log"
+
+	"github.com/rs/zerolog/log"
 
 	"github.com/dyrector-io/dyrectorio/golang/internal/grpc"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
@@ -69,27 +70,33 @@ func Delete(c context.Context, containerPreName, containerName string) error {
 	// deployments contain containers
 	err := del.DeleteDeployment()
 	if errors.IsNotFound(err) {
-		log.Fatalf("Failed to delete container (not found) %s-%s %v", containerPreName, containerName, err)
+		log.Fatal().Err(err).Stack().
+			Str("containerPreName", containerPreName).
+			Str("containerName", containerName).
+			Msg("Failed to delete container (not found)")
 		return err
 	} else if err != nil {
-		log.Fatalf("Failed to delete container %s-%s %v", containerPreName, containerName, err)
+		log.Fatal().Err(err).Stack().
+			Str("containerPreName", containerPreName).
+			Str("containerName", containerName).
+			Msg("Failed to delete container")
 		return err
 	}
 
 	// optional deletes, each deploy request overwrites/redeploys them anyway
 	err = del.DeleteServices()
 	if !errors.IsNotFound(err) && err != nil {
-		log.Println("Delete service error: " + err.Error())
+		log.Error().Err(err).Stack().Msg("Delete service error")
 	}
 
 	err = del.DeleteConfigMaps()
 	if !errors.IsNotFound(err) && err != nil {
-		log.Println("Delete configmaps error: " + err.Error())
+		log.Error().Err(err).Stack().Msg("Delete configmaps error")
 	}
 
 	err = del.DeleteIngresses()
 	if !errors.IsNotFound(err) && err != nil {
-		log.Println("Delete ingress error: " + err.Error())
+		log.Error().Err(err).Stack().Msg("Delete ingress error")
 	}
 
 	return nil

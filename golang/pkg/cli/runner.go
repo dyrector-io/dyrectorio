@@ -5,7 +5,6 @@ import (
 	"context"
 	"embed"
 	"fmt"
-	"log"
 	"strings"
 	"text/template"
 	"time"
@@ -13,6 +12,7 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
+	"github.com/rs/zerolog/log"
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
@@ -70,7 +70,7 @@ func ProcessCommand(settings *Settings) {
 	case "down":
 		StopContainers(&containers)
 	default:
-		log.Fatalln("invalid command")
+		log.Fatal().Msg("invalid command")
 	}
 }
 
@@ -78,7 +78,7 @@ func ProcessCommand(settings *Settings) {
 func StartContainers(containers *DyrectorioStack, internalHostDomain string) {
 	_, err := containers.Traefik.Create().Start()
 	if err != nil {
-		log.Fatalf("error: %v", err)
+		log.Fatal().Err(err).Stack().Msg("")
 	}
 	TraefikConfiguration(
 		containers.Containers.Traefik.Name,
@@ -88,50 +88,50 @@ func StartContainers(containers *DyrectorioStack, internalHostDomain string) {
 
 	_, err = containers.CruxPostgres.Create().Start()
 	if err != nil {
-		log.Fatalf("error: %v", err)
+		log.Fatal().Err(err).Stack().Msg("")
 	}
 
 	_, err = containers.KratosPostgres.Create().Start()
 	if err != nil {
-		log.Fatalf("error: %v", err)
+		log.Fatal().Err(err).Stack().Msg("")
 	}
 
 	log.Printf("Migration (kratos) in progress...")
 	_, err = containers.KratosMigrate.Create().StartWaitUntilExit()
 	if err != nil {
-		log.Fatalf("error: %v", err)
+		log.Fatal().Err(err).Stack().Msg("")
 	}
 	log.Printf("Migration (kratos) done!")
 
 	_, err = containers.Kratos.Create().Start()
 	if err != nil {
-		log.Fatalf("error: %v", err)
+		log.Fatal().Err(err).Stack().Msg("")
 	}
 
 	if !containers.Containers.Crux.Disabled {
 		log.Printf("Migration (crux) in progress...")
 		_, err = containers.CruxMigrate.Create().StartWaitUntilExit()
 		if err != nil {
-			log.Fatalf("error: %v", err)
+			log.Fatal().Err(err).Stack().Msg("")
 		}
 		log.Printf("Migration (crux) done!")
 
 		_, err = containers.Crux.Create().Start()
 		if err != nil {
-			log.Fatalf("error: %v", err)
+			log.Fatal().Err(err).Stack().Msg("")
 		}
 	}
 
 	if !containers.Containers.CruxUI.Disabled {
 		_, err = containers.CruxUI.Create().Start()
 		if err != nil {
-			log.Fatalf("error: %v", err)
+			log.Fatal().Err(err).Stack().Msg("")
 		}
 	}
 
 	_, err = containers.MailSlurper.Create().Start()
 	if err != nil {
-		log.Fatalf("error: %v", err)
+		log.Fatal().Err(err).Stack().Msg("")
 	}
 }
 
@@ -183,17 +183,17 @@ func TraefikConfiguration(name, internalHostDomain string, cruxuiport uint) {
 	const funct = "TraefikConfiguration"
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
-		log.Fatalf("%s: %v", funct, err)
+		log.Fatal().Err(err).Stack().Msg(funct)
 	}
 
 	traefikFileProviderTemplate, err := traefikTmpl.ReadFile("traefik.yaml.tmpl")
 	if err != nil {
-		log.Fatalf("couldn't read embedded file: %v", err)
+		log.Fatal().Err(err).Stack().Msg("couldn't read embedded file")
 	}
 
 	traefikConfig, err := template.New("traefikconfig").Parse(string(traefikFileProviderTemplate))
 	if err != nil {
-		log.Fatalf("%s: %v", funct, err)
+		log.Fatal().Err(err).Stack().Msg(funct)
 	}
 
 	var result bytes.Buffer
@@ -206,7 +206,7 @@ func TraefikConfiguration(name, internalHostDomain string, cruxuiport uint) {
 
 	err = traefikConfig.Execute(&result, traefikData)
 	if err != nil {
-		log.Fatalf("%s: %v", funct, err)
+		log.Fatal().Err(err).Stack().Msg(funct)
 	}
 
 	data := v1.UploadFileData{
@@ -226,7 +226,7 @@ func TraefikConfiguration(name, internalHostDomain string, cruxuiport uint) {
 	)
 
 	if err != nil {
-		log.Fatalf("%s: %v", funct, err)
+		log.Fatal().Err(err).Stack().Msg(funct)
 	}
 }
 
@@ -234,7 +234,7 @@ func TraefikConfiguration(name, internalHostDomain string, cruxuiport uint) {
 func GetContainerID(name string) string {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
-		log.Fatalf("error: %v", err)
+		log.Fatal().Err(err).Stack().Msg("")
 	}
 
 	filter := filters.NewArgs()
@@ -247,7 +247,7 @@ func GetContainerID(name string) string {
 			Filters: filter,
 		})
 	if err != nil {
-		log.Fatalf("error: %v", err)
+		log.Fatal().Err(err).Stack().Msg("")
 	}
 
 	switch len(containers) {
@@ -257,7 +257,7 @@ func GetContainerID(name string) string {
 	case 1:
 		return containers[0].ID
 	default:
-		log.Fatalf("error: ambigous name")
+		log.Fatal().Msg("ambigous name")
 		return ""
 	}
 }
@@ -266,29 +266,29 @@ func GetContainerID(name string) string {
 func CleanupContainer(id string) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
-		log.Fatalf("error: %v", err)
+		log.Fatal().Err(err).Stack().Msg("")
 	}
 
 	timeout, err := time.ParseDuration("10s")
 	if err != nil {
-		log.Fatalf("error: %v", err)
+		log.Fatal().Err(err).Stack().Msg("")
 	}
 
 	err = cli.ContainerStop(context.Background(), id, &timeout)
 	if err != nil {
-		log.Printf("error: %v", err)
+		log.Fatal().Err(err).Stack().Msg("")
 	}
 
 	err = cli.ContainerRemove(context.Background(), id, types.ContainerRemoveOptions{Force: true, RemoveVolumes: false})
 	if err != nil {
-		log.Printf("error: %v", err)
+		log.Fatal().Err(err).Stack().Msg("")
 	}
 }
 
 func EnsureNetworkExists(settings *Settings) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
-		log.Fatalf("error: %v", err)
+		log.Fatal().Err(err).Stack().Msg("")
 	}
 
 	filter := filters.NewArgs()
@@ -299,7 +299,7 @@ func EnsureNetworkExists(settings *Settings) {
 			Filters: filter,
 		})
 	if err != nil {
-		log.Fatalf("error: %v", err)
+		log.Fatal().Err(err).Stack().Msg("")
 	}
 
 	if len(networks) == 0 {
@@ -308,22 +308,23 @@ func EnsureNetworkExists(settings *Settings) {
 		}
 
 		resp, err := cli.NetworkCreate(context.Background(), settings.SettingsFile.Network, opts)
-		log.Println(resp.ID, resp.Warning)
+		log.Info().Interface("resp", resp).Msg("")
 		if err != nil {
-			log.Fatalf("error: %v", err)
+			log.Fatal().Err(err).Stack().Msg("")
 		}
 		return
 	}
 
 	for i := range networks {
 		if networks[i].Driver != ContainerNetDriver {
-			log.Fatalf("error: %s network exists, but doesn't have the correct driver: %s",
-				settings.SettingsFile.Network,
-				ContainerNetDriver)
+			log.Fatal().
+				Str("network", settings.SettingsFile.Network).
+				Str("driver", ContainerNetDriver).
+				Msg("network exists, but doesn't have the correct driver")
 		} else {
 			return
 		}
 	}
 
-	log.Fatalf("error: unknown network error")
+	log.Fatal().Msg("unknown network error")
 }

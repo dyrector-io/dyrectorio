@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -16,6 +15,7 @@ import (
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
+	"github.com/rs/zerolog/log"
 )
 
 // A ContainerBuilder handles the process of creating and starting containers,
@@ -315,7 +315,7 @@ func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 	policy.Name = string(dc.restartPolicy)
 	hostConfig.RestartPolicy = policy
 
-	log.Println("Provided networkMode: ", dc.networkMode)
+	log.Print("Provided networkMode: ", dc.networkMode)
 	if nw := container.NetworkMode(dc.networkMode); !nw.IsPrivate() {
 		hostConfig.NetworkMode = nw
 	} else {

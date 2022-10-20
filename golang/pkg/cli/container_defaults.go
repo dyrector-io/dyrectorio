@@ -3,12 +3,12 @@ package cli
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/url"
 	"os"
 
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
+	"github.com/rs/zerolog/log"
 
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 )
@@ -156,14 +156,14 @@ func GetTraefik(settings *Settings) *containerbuilder.DockerContainerBuilder {
 
 	socket, err := url.Parse(client.DefaultDockerHost)
 	if err != nil {
-		log.Fatalf("GetTraefik: %v", err)
+		log.Fatal().Err(err).Stack().Msg("GetTraefik")
 	}
 
 	// If traefik's socket is default, but we override it in the environment we prefer the environment
 	if settings.SettingsFile.TraefikDockerSocket == socket.Path && envDockerHost != "" {
 		socket, err = url.Parse(envDockerHost)
 		if err != nil {
-			log.Fatalf("GetTraefik: %v", err)
+			log.Fatal().Err(err).Stack().Msg("GetTraefik")
 		}
 		settings.SettingsFile.TraefikDockerSocket = socket.Path
 	}

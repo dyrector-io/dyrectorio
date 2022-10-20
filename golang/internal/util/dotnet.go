@@ -3,9 +3,9 @@ package util
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 
 	"github.com/pkg/errors"
+	"github.com/rs/zerolog/log"
 )
 
 func MapAppsettingsToEnv(in *string) (map[string]string, error) {
@@ -49,8 +49,7 @@ func parseWithPrefix(envList map[string]string, prefix string, leaf interface{})
 			case float32, float64:
 				envList[prefixToAdd+key] = fmt.Sprintf("%v", value.(float64))
 			default:
-				log.Println("Unexpected case")
-				log.Println(value)
+				log.Info().Interface("value", value).Msg("Unexpected case")
 			}
 		}
 	default:

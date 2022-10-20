@@ -2,9 +2,9 @@ package utils
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/hashicorp/go-version"
+	"github.com/rs/zerolog/log"
 
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/config"
 )
@@ -12,24 +12,23 @@ import (
 func PreflightChecks(cfg *config.Configuration) {
 	_, err := ListContainers()
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatal().Stack().Err(err).Msg("")
 	}
 
 	versions, err := GetServerInformation()
 	if err != nil {
-		log.Fatal("Version error ", err.Error())
+		log.Fatal().Stack().Err(err).Msg("Version error")
 	}
 
-	log.Println("Docker Server version: ", versions.ServerVersion)
-	log.Println("Docker Client version: ", versions.ClientVersion)
+	log.Info().Str("dockerVersion", versions.ServerVersion).Str("dockerClientVersion", versions.ClientVersion).Msg("")
 
 	serVer, err := version.NewVersion(versions.ServerVersion)
 	if err != nil {
-		log.Println("Invalid version string from server ", err.Error())
+		log.Error().Stack().Err(err).Msg("Invalid version string from server")
 	}
 	constraints, _ := version.NewConstraint(fmt.Sprintf(">=%s", cfg.MinDockerServerVersion))
 	if err != nil {
-		log.Println("Error with version constraint ", err.Error())
+		log.Error().Stack().Err(err).Msg("Error with version constraint")
 	}
 	if !constraints.Check(serVer) {
 		log.Printf("WARNING: server is behind the supported version %s < %s", serVer, cfg.MinDockerServerVersion)
