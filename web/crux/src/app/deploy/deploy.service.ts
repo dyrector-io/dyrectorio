@@ -18,6 +18,7 @@ import {
   DeploymentListSecretsRequest,
   DeploymentProgressMessage,
   IdRequest,
+  NodeConnectionStatus,
   PatchDeploymentRequest,
   ServiceIdRequest,
   UpdateDeploymentRequest,
@@ -257,16 +258,9 @@ export default class DeployService {
       })
     }
 
+    await this.preDeploymentCheck(deployment.id)
+
     const agent = this.agentService.getById(deployment.nodeId)
-    if (!agent) {
-      // Todo in the client is this just a simple internal server error
-      // please show a proper error message
-      throw new PreconditionFailedException({
-        message: 'Node is unreachable',
-        property: 'nodeId',
-        value: deployment.nodeId,
-      })
-    }
 
     await this.prisma.deployment.update({
       where: {
@@ -546,6 +540,71 @@ export default class DeployService {
     }
 
     return CreateEntityResponse.fromJSON(newDeployment)
+  }
+
+  async preDeploymentCheck(id: string): Promise<Empty> {
+    const deployment = await this.prisma.deployment.findFirstOrThrow({
+      where: {
+        id,
+      },
+    })
+
+    const node = this.agentService.getById(deployment.nodeId)
+    if (node === null || node.getConnectionStatus() !== NodeConnectionStatus.CONNECTED) {
+      throw new PreconditionFailedException({
+        message: 'Node is unreachable',
+        property: 'nodeId',
+        value: deployment.nodeId,
+      })
+    }
+
+    const secretsHaveValue = await this.requiredSecretsHaveValue(id)
+    if (!secretsHaveValue) {
+      throw new PreconditionFailedException({
+        message: 'Required secrets must have values!',
+        property: 'deploymentId',
+        value: deployment.id,
+      })
+    }
+
+    return {}
+  }
+
+  private async requiredSecretsHaveValue(deploymentId: string): Promise<boolean> {
+    const deployment = await this.prisma.deployment.findFirstOrThrow({
+      where: {
+        id: deploymentId,
+      },
+      include: {
+        instances: {
+          include: {
+            config: true,
+            image: {
+              include: {
+                config: true,
+              },
+            },
+          },
+        },
+      },
+    })
+
+    return deployment.instances.every(it => {
+      const imageSecrets = (it.image.config.secrets as UniqueSecretKey[]) ?? []
+      const requiredSecrets = imageSecrets.filter(imageSecret => imageSecret.required).map(secret => secret.key)
+
+      const instanceSecrets = (it.config?.secrets as UniqueKeySecretValue[]) ?? []
+      const hasSecrets = requiredSecrets.every(requiredSecret => {
+        const instanceSecret = instanceSecrets.find(secret => secret.key === requiredSecret)
+        if (!instanceSecret) {
+          return false
+        }
+
+        return instanceSecret.encrypted === true && instanceSecret.value.length > 0
+      })
+
+      return hasSecrets
+    })
   }
 }
 

@@ -158,6 +158,9 @@ export const deploymentDeployUrl = (productId: string, versionId: string, deploy
 export const deploymentCopyUrl = (productId: string, versionId: string, deploymentId: string, force?: boolean) =>
   `${deploymentApiUrl(productId, versionId, deploymentId)}/copy${force ? '?overwrite=true' : ''}`
 
+export const deploymentPreDeployUrl = (productId: string, versionId: string, deploymentId: string) =>
+  `${deploymentApiUrl(productId, versionId, deploymentId)}/predeploy`
+
 // team
 export const teamUrl = (id: string) => `${ROUTE_TEAMS}/${id}`
 export const teamApiUrl = (id: string) => `/api${teamUrl(id)}`

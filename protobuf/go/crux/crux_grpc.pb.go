@@ -1569,6 +1569,7 @@ type CruxDeploymentClient interface {
 	GetDeploymentSecrets(ctx context.Context, in *DeploymentListSecretsRequest, opts ...grpc.CallOption) (*common.ListSecretsResponse, error)
 	CopyDeploymentSafe(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error)
 	CopyDeploymentUnsafe(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error)
+	PreDeploymentCheck(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error)
 	StartDeployment(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (CruxDeployment_StartDeploymentClient, error)
 	SubscribeToDeploymentEditEvents(ctx context.Context, in *ServiceIdRequest, opts ...grpc.CallOption) (CruxDeployment_SubscribeToDeploymentEditEventsClient, error)
 }
@@ -1680,6 +1681,15 @@ func (c *cruxDeploymentClient) CopyDeploymentUnsafe(ctx context.Context, in *IdR
 	return out, nil
 }
 
+func (c *cruxDeploymentClient) PreDeploymentCheck(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/crux.CruxDeployment/PreDeploymentCheck", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *cruxDeploymentClient) StartDeployment(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (CruxDeployment_StartDeploymentClient, error) {
 	stream, err := c.cc.NewStream(ctx, &CruxDeployment_ServiceDesc.Streams[0], "/crux.CruxDeployment/StartDeployment", opts...)
 	if err != nil {
@@ -1759,6 +1769,7 @@ type CruxDeploymentServer interface {
 	GetDeploymentSecrets(context.Context, *DeploymentListSecretsRequest) (*common.ListSecretsResponse, error)
 	CopyDeploymentSafe(context.Context, *IdRequest) (*CreateEntityResponse, error)
 	CopyDeploymentUnsafe(context.Context, *IdRequest) (*CreateEntityResponse, error)
+	PreDeploymentCheck(context.Context, *IdRequest) (*Empty, error)
 	StartDeployment(*IdRequest, CruxDeployment_StartDeploymentServer) error
 	SubscribeToDeploymentEditEvents(*ServiceIdRequest, CruxDeployment_SubscribeToDeploymentEditEventsServer) error
 	mustEmbedUnimplementedCruxDeploymentServer()
@@ -1800,6 +1811,9 @@ func (UnimplementedCruxDeploymentServer) CopyDeploymentSafe(context.Context, *Id
 }
 func (UnimplementedCruxDeploymentServer) CopyDeploymentUnsafe(context.Context, *IdRequest) (*CreateEntityResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CopyDeploymentUnsafe not implemented")
+}
+func (UnimplementedCruxDeploymentServer) PreDeploymentCheck(context.Context, *IdRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PreDeploymentCheck not implemented")
 }
 func (UnimplementedCruxDeploymentServer) StartDeployment(*IdRequest, CruxDeployment_StartDeploymentServer) error {
 	return status.Errorf(codes.Unimplemented, "method StartDeployment not implemented")
@@ -2018,6 +2032,24 @@ func _CruxDeployment_CopyDeploymentUnsafe_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CruxDeployment_PreDeploymentCheck_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CruxDeploymentServer).PreDeploymentCheck(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crux.CruxDeployment/PreDeploymentCheck",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CruxDeploymentServer).PreDeploymentCheck(ctx, req.(*IdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _CruxDeployment_StartDeployment_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(IdRequest)
 	if err := stream.RecvMsg(m); err != nil {
@@ -2110,6 +2142,10 @@ var CruxDeployment_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CopyDeploymentUnsafe",
 			Handler:    _CruxDeployment_CopyDeploymentUnsafe_Handler,
+		},
+		{
+			MethodName: "PreDeploymentCheck",
+			Handler:    _CruxDeployment_PreDeploymentCheck_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

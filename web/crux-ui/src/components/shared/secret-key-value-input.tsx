@@ -174,10 +174,18 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
     setChanged(false)
   }
 
-  const onRemove = async (index: number) => {
+  const onRemoveOrClear = async (index: number) => {
     const newItems = [...state].filter(it => !isCompletelyEmpty(it))
 
-    newItems.splice(index, 1)
+    if (newItems[index].required) {
+      newItems[index] = {
+        ...newItems[index],
+        encrypted: false,
+        value: '',
+      }
+    } else {
+      newItems.splice(index, 1)
+    }
 
     propsOnSubmit(newItems)
     dispatch({
@@ -209,7 +217,7 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
 
         <div className={clsx('w-5/12 relative', isCompletelyEmpty(entry) && 'ml-[24px]')}>
           {required && (
-            <div className='absolute right-0 h-full flex mr-2'>
+            <div className="absolute right-0 h-full flex mr-2">
               <Image src="/asterisk.svg" width={12} height={12} />
             </div>
           )}
@@ -237,14 +245,14 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
             onChange={e => onChange(index, key, e.target.value)}
           />
 
-          {(encrypted && disabled !== true) && (
+          {encrypted && disabled !== true && (
             <div
-              onClick={() => onRemove(index)}
+              onClick={() => onRemoveOrClear(index)}
               className="flex-initial cursor-pointer ml-2 h-11 w-11 ring-2 rounded-md focus:outline-none focus:dark text-bright-muted ring-light-grey-muted flex justify-center"
             >
               <Image
                 className="text-bright-muted"
-                src="/trash-can.svg"
+                src={required ? '/clear.svg' : '/trash-can.svg'}
                 alt={t('common:clear')}
                 width={24}
                 height={24}

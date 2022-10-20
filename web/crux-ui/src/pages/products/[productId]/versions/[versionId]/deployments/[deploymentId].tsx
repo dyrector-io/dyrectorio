@@ -13,15 +13,8 @@ import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import LoadingIndicator from '@app/elements/loading-indicator'
 import { defaultApiErrorHandler } from '@app/errors'
 import { DeploymentRoot, mergeConfigs } from '@app/models'
-import {
-  deploymentApiUrl,
-  deploymentDeployUrl,
-  deploymentUrl,
-  productUrl,
-  ROUTE_PRODUCTS,
-  versionUrl,
-} from '@app/routes'
-import { withContextAuthorization } from '@app/utils'
+import { deploymentApiUrl, deploymentUrl, productUrl, ROUTE_PRODUCTS, versionUrl } from '@app/routes'
+import { startDeployment, withContextAuthorization } from '@app/utils'
 import { containerConfigSchema, getValidationError } from '@app/validations'
 import { Crux, cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
@@ -90,7 +83,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
     }
   }
 
-  const navigateToLog = () => router.push(deploymentDeployUrl(product.id, version.id, deployment.id))
+  const navigateToLog = () => startDeployment(router, product.id, version.id, deployment.id)
 
   const onDeploy = () => {
     if (node.status !== 'running') {

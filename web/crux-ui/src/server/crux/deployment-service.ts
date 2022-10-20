@@ -296,6 +296,15 @@ class DyoDeploymentService {
 
     return res.id
   }
+
+  async preDeploy(id: string): Promise<void> {
+    const req = {
+      id,
+      accessedBy: this.identity.id,
+    } as IdRequest
+
+    await protomisify<IdRequest, Empty>(this.client, this.client.preDeploymentCheck)(IdRequest, req)
+  }
 }
 
 export default DyoDeploymentService

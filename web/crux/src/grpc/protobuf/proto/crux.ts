@@ -4625,6 +4625,8 @@ export interface CruxDeploymentClient {
 
   copyDeploymentUnsafe(request: IdRequest, metadata: Metadata, ...rest: any): Observable<CreateEntityResponse>
 
+  preDeploymentCheck(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
+
   startDeployment(request: IdRequest, metadata: Metadata, ...rest: any): Observable<DeploymentProgressMessage>
 
   subscribeToDeploymentEditEvents(
@@ -4700,6 +4702,8 @@ export interface CruxDeploymentController {
     ...rest: any
   ): Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
 
+  preDeploymentCheck(request: IdRequest, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
+
   startDeployment(request: IdRequest, metadata: Metadata, ...rest: any): Observable<DeploymentProgressMessage>
 
   subscribeToDeploymentEditEvents(
@@ -4723,6 +4727,7 @@ export function CruxDeploymentControllerMethods() {
       'getDeploymentSecrets',
       'copyDeploymentSafe',
       'copyDeploymentUnsafe',
+      'preDeploymentCheck',
       'startDeployment',
       'subscribeToDeploymentEditEvents',
     ]

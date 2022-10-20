@@ -23,8 +23,8 @@ import {
   WS_TYPE_NODE_STATUS,
   WS_TYPE_NODE_STATUSES,
 } from '@app/models'
-import { deploymentDeployUrl, deploymentUrl, WS_NODES } from '@app/routes'
-import { distinct, utcDateToLocale } from '@app/utils'
+import { deploymentUrl, WS_NODES } from '@app/routes'
+import { distinct, startDeployment, utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
@@ -89,8 +89,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   const onNavigateToDeployment = (deployment: DeploymentByVersion) =>
     router.push(deploymentUrl(product.id, version.id, deployment.id))
 
-  const onDeploy = (deployment: DeploymentByVersion) =>
-    router.push(deploymentDeployUrl(product.id, version.id, deployment.id))
+  const onDeploy = (deployment: DeploymentByVersion) => startDeployment(router, product.id, version.id, deployment.id)
 
   const onCopyDeployment = async (deployment: DeploymentByVersion) => {
     const url = await copyDeployment({
