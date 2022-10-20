@@ -15,11 +15,11 @@ const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
     } as CopyDeploymentResponse
 
     res.status(200).json(response)
-  } catch (e) {
-    if (e.status === 412) {
+  } catch (err) {
+    if (err.status === 412) {
       res.status(412).end()
     } else {
-      throw e
+      throw err
     }
   }
 }

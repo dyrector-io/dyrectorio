@@ -559,9 +559,9 @@ export default class DeployService {
       const validation = new DeployCreateValidationPipe(this.prisma)
 
       await validation.transform(req)
-    } catch (e) {
-      if (e.message) {
-        const message = JSON.parse(e.message)
+    } catch (err) {
+      if (err.message) {
+        const message = JSON.parse(err.message)
         if (message.details && message.details.property === 'deploymentId') {
           return message.details.value
         }
