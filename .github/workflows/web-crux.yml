@@ -4,6 +4,10 @@ on:
     paths:
       - web/crux/**
       - .github/workflows/web-crux.yml
+  pull_request:
+    paths:
+      - web/crux/**
+      - .github/workflows/web-crux.yml
 
 env:
   # Environments
