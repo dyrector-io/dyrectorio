@@ -1,8 +1,9 @@
 package cli
 
 import (
-	"github.com/dyrector-io/dyrectorio/golang/internal/version"
 	ucli "github.com/urfave/cli/v2"
+
+	"github.com/dyrector-io/dyrectorio/golang/internal/version"
 )
 
 func InitCLI() *ucli.App {

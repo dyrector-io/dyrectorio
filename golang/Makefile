@@ -1,16 +1,17 @@
 PACKAGE := github.com/dyrector-io/dyrectorio/golang
-CONTAINER_URL := ghcr.io/dyrector-io/dyrectorio/agent/
+ORG_REGISTRY := ghcr.io/dyrector-io/dyrectorio/
+AGENT_REGISRY_URL := ${ORG_REGISTRY}agent/
 VCS_VERSION="$(shell git describe --exact-match --tags 2> /dev/null || git rev-parse --short HEAD)"
-AGENT_HASH="$(shell git rev-parse --short HEAD:../agent)"
+DYO_GOLANG_HASH="$(shell git rev-parse --short HEAD:../golang)"
 
 # UTC timestamps for builds
 BUILD_TIMESTAMP="$(shell date -u +"%Y-%m-%dT%H:%M:%SZ" | tr -d "[:blank:]")"
 
-agent_version=$(or $(VCS_VERSION),$(AGENT_HASH))
+vcs_version=$(or $(VCS_VERSION),$(DYO_GOLANG_HASH))
 
 LDFLAGS := -ldflags "-X '${PACKAGE}/pkg/version.Version=${VCS_VERSION}'\
   -X '${PACKAGE}/pkg/version.BuildTimestamp=${BUILD_TIMESTAMP}'\
-  -X '${PACKAGE}/pkg/version.CommitHash=${AGENT_HASH}'\
+  -X '${PACKAGE}/pkg/version.CommitHash=${DYO_GOLANG_HASH}'\
   -extldflags '-static'"
 
 # default tag is latest for building
@@ -33,7 +34,7 @@ up: ##
 	cd -
 
 .PHONY: down
-up: ##
+down: ##
 	cd cmd/dyo && \
 	go run . ; \
 	cd -
@@ -48,6 +49,13 @@ go-crane: ##
 go-dagent: ##
 	cd cmd/dagent && \
 	go run . ; \
+	cd -
+
+
+.PHONY: compile-cli
+compile-cli: ##
+	cd cmd/dyo && \
+	GOARCH=amd64 CGO_ENABLED=0 go build ${LDFLAGS} -o ../../build/out/dyo${OUT_EXT}; \
 	cd -
 
 .PHONY: compile-crane
@@ -79,17 +87,27 @@ security: # running gosec for static code analysis for bugs and leaks
 lint: # golangci for linting
 	golangci-lint run  ./... --timeout=3m
 
+.PHONY: build-cli
+build-cli: ##
+	cd build && \
+	docker build -t ${ORG_REGISTRY}cli:$(image_version) -f cli/Dockerfile . && \
+	cd -
+
 .PHONY: build-dagent
 build-dagent: ##
 	cd build && \
-	docker build --build-arg CO_BIN_NAME=dagent -t ${CONTAINER_URL}dagent:$(image_version) -t ${CONTAINER_URL}dagent:$(agent_version) . && \
+	docker build --build-arg CO_BIN_NAME=dagent -t ${AGENT_REGISTRY_URL}dagent:$(image_version) -t ${AGENT_REGISTRY_URL}dagent:$(vcs_version) . && \
 	cd -
 
 .PHONY: build-crane
 build-crane: ##
 	cd build && \
-	docker build --build-arg CO_BIN_NAME=crane -t ${CONTAINER_URL}crane:$(image_version) -t ${CONTAINER_URL}crane:$(agent_version) . && \
+	docker build --build-arg CO_BIN_NAME=crane -t ${AGENT_REGISTRY_URL}crane:$(image_version) -t ${AGENT_REGISTRY_URL}crane:$(vcs_version) . && \
 	cd -
+
+.PHONY: cbpcli
+cbpcli:	compile-cli build-cli push-cli
+
 
 .PHONY: build-both
 build-both: build-dagent build-crane
@@ -111,14 +129,20 @@ swagger-crane: # generate openapi docs for crane
 .PHONY: swaggen
 swaggen: | swagger-crane swagger-dagent
 
+.PHONY: push-cli
+push-cli: ##
+	docker push ${ORG_REGISTRY}cli:$(image_version)
+	docker push ${ORG_REGISTRY}cli:$(vcs_version)
+
 .PHONY: push-crane
 push-crane: ##
-	docker push ${CONTAINER_URL}crane:$(image_version)
+	docker push ${AGENT_REGISTRY_URL}crane:$(image_version)
+	docker push ${AGENT_REGISTRY_URL}crane:$(vcs_version)
 
 .PHONY: push-dagent
 push-dagent: ##
-	docker push ${CONTAINER_URL}dagent:$(image_version)
-
+	docker push ${AGENT_REGISTRY_URL}dagent:$(image_version)
+	docker push ${AGENT_REGISTRY_URL}dagent:$(vcs_version)
 .PHONY: push-both
 push-both: | push-crane push-dagent
 

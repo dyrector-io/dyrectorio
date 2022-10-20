@@ -1,13 +1,9 @@
-name: agent
+name: cli
 on:
   push:
     paths:
-      - agent/**
-      - .github/workflows/agent.yml
-  pull_request:
-    paths:
-      - agent/**
-      - .github/workflows/agent.yml
+      - golang/**
+      - .github/workflows/cli.yml
 
 permissions:
   contents: read
@@ -26,7 +22,7 @@ jobs:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16
     defaults:
       run:
-        working-directory: agent
+        working-directory: golang
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -34,14 +30,13 @@ jobs:
       run: go mod tidy
     - name: Run golangci-lint
       run: make lint
-
   security:
     runs-on: ubuntu-20.04
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16
     defaults:
       run:
-        working-directory: agent
+        working-directory: golang
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -49,7 +44,6 @@ jobs:
       run: go mod tidy
     - name: Run gosec
       run: make security
-
   test:
     runs-on: ubuntu-20.04
     needs: [security, lint]
@@ -60,13 +54,13 @@ jobs:
       version: ${{ steps.settag.outputs.version }}
     defaults:
       run:
-        working-directory: agent
+        working-directory: golang
     steps:
     - name: Checkout
       uses: actions/checkout@v3
     - name: Load go mod
       run: go mod tidy
-    
+
     # fixes: fatal: unsafe repository
     - name: Adding workspace
       run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
@@ -81,7 +75,6 @@ jobs:
       id: settag
       working-directory: .github/workflows
       run: ./pipeline_set_output_tag.sh $GITHUB_REF_TYPE ${{ github.ref_name }} ${{ github.sha }}
-
   build:
     runs-on: ubuntu-20.04
     needs: [test]
@@ -90,7 +83,7 @@ jobs:
     if: github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag'
     defaults:
       run:
-        working-directory: agent
+        working-directory: golang
     steps:
       - name: Login to GHCR
         uses: docker/login-action@v2
@@ -115,8 +108,6 @@ jobs:
 
       - name: Docker build with a fitting tag
         run: make image_version=${{ needs.test.outputs.tag }} bbpb
-
-
   sign_image:
     runs-on: ubuntu-20.04
     if: github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag'
@@ -145,3 +136,4 @@ jobs:
         cosign sign --key cosign.key ghcr.io/dyrector-io/dyrectorio/agent/crane:${{ needs.test.outputs.tag }}
       env:
         COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
+
