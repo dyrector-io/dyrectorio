@@ -30,13 +30,19 @@ endif
 .PHONY: up
 up: ##
 	cd cmd/dyo && \
-	go run . ; \
+	go run . up; \
+	cd -
+
+.PHONY: upd
+upd: ##
+	cd cmd/dyo && \
+	go run . --disable-crux --disable-crux-ui up; \
 	cd -
 
 .PHONY: down
 down: ##
 	cd cmd/dyo && \
-	go run . ; \
+	go run . down; \
 	cd -
 
 .PHONY: go-crane
