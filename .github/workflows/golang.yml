@@ -102,7 +102,7 @@ jobs:
         run: go mod tidy
 
       - name: Compile
-        run: make compile-both
+        run: make compile-agents
         env:
           VERSION: ${{ needs.test.outputs.version }}
 

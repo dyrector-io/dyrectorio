@@ -1,17 +1,17 @@
 PACKAGE := github.com/dyrector-io/dyrectorio/golang
-ORG_REGISTRY := ghcr.io/dyrector-io/dyrectorio/
-AGENT_REGISRY_URL := ${ORG_REGISTRY}agent/
+ORG_REGISTRY := ghcr.io/dyrector-io/dyrectorio
+AGENT_REGISTRY_URL := ${ORG_REGISTRY}/agent
 VCS_VERSION="$(shell git describe --exact-match --tags 2> /dev/null || git rev-parse --short HEAD)"
-DYO_GOLANG_HASH="$(shell git rev-parse --short HEAD:../golang)"
+ORG_GOLANG_HASH="$(shell git rev-parse --short HEAD:../golang)"
 
 # UTC timestamps for builds
 BUILD_TIMESTAMP="$(shell date -u +"%Y-%m-%dT%H:%M:%SZ" | tr -d "[:blank:]")"
 
-vcs_version=$(or $(VCS_VERSION),$(DYO_GOLANG_HASH))
+vcs_version=$(or $(VCS_VERSION),$(ORG_GOLANG_HASH))
 
 LDFLAGS := -ldflags "-X '${PACKAGE}/pkg/version.Version=${VCS_VERSION}'\
   -X '${PACKAGE}/pkg/version.BuildTimestamp=${BUILD_TIMESTAMP}'\
-  -X '${PACKAGE}/pkg/version.CommitHash=${DYO_GOLANG_HASH}'\
+  -X '${PACKAGE}/pkg/version.CommitHash=${ORG_GOLANG_HASH}'\
   -extldflags '-static'"
 
 # default tag is latest for building
@@ -76,8 +76,8 @@ install-go-tools: ##
 	go install github.com/swaggo/swag/cmd/swag@${GOSWAG} && \
 	go install github.com/securego/gosec/v2/cmd/gosec@${GOSEC}
 
-.PHONY: compile-both
-compile-both: compile-crane compile-dagent
+.PHONY: compile-agents
+compile-agents: compile-crane compile-dagent
 
 .PHONY: security
 security: # running gosec for static code analysis for bugs and leaks
@@ -90,31 +90,31 @@ lint: # golangci for linting
 .PHONY: build-cli
 build-cli: ##
 	cd build && \
-	docker build -t ${ORG_REGISTRY}cli:$(image_version) -f cli/Dockerfile . && \
+	docker build -t ${ORG_REGISTRY}/cli:$(image_version) -f cli/Dockerfile . && \
 	cd -
 
 .PHONY: build-dagent
 build-dagent: ##
 	cd build && \
-	docker build --build-arg CO_BIN_NAME=dagent -t ${AGENT_REGISTRY_URL}dagent:$(image_version) -t ${AGENT_REGISTRY_URL}dagent:$(vcs_version) . && \
+	docker build --build-arg CO_BIN_NAME=dagent -t ${AGENT_REGISTRY_URL}/dagent:$(image_version) -t ${AGENT_REGISTRY_URL}/dagent:$(vcs_version) . && \
 	cd -
 
 .PHONY: build-crane
 build-crane: ##
 	cd build && \
-	docker build --build-arg CO_BIN_NAME=crane -t ${AGENT_REGISTRY_URL}crane:$(image_version) -t ${AGENT_REGISTRY_URL}crane:$(vcs_version) . && \
+	docker build --build-arg CO_BIN_NAME=crane -t ${AGENT_REGISTRY_URL}/crane:$(image_version) -t ${AGENT_REGISTRY_URL}/crane:$(vcs_version) . && \
 	cd -
 
 .PHONY: cbpcli
 cbpcli:	compile-cli build-cli push-cli
 
 
-.PHONY: build-both
-build-both: build-dagent build-crane
+.PHONY: build-agents
+build-agents: build-dagent build-crane
 
 
 .PHONY: bbpb # build push both
-bbpb: build-both push-both
+bbpb: build-agents push-agents
 
 .PHONY: swagger-dagent
 swagger-dagent: # generate openapi docs for agent
@@ -131,20 +131,20 @@ swaggen: | swagger-crane swagger-dagent
 
 .PHONY: push-cli
 push-cli: ##
-	docker push ${ORG_REGISTRY}cli:$(image_version)
-	docker push ${ORG_REGISTRY}cli:$(vcs_version)
+	docker push ${ORG_REGISTRY}/cli:$(image_version)
+	docker push ${ORG_REGISTRY}/cli:$(vcs_version)
 
 .PHONY: push-crane
 push-crane: ##
-	docker push ${AGENT_REGISTRY_URL}crane:$(image_version)
-	docker push ${AGENT_REGISTRY_URL}crane:$(vcs_version)
+	docker push ${AGENT_REGISTRY_URL}/crane:$(image_version)
+	docker push ${AGENT_REGISTRY_URL}/crane:$(vcs_version)
 
 .PHONY: push-dagent
 push-dagent: ##
-	docker push ${AGENT_REGISTRY_URL}dagent:$(image_version)
-	docker push ${AGENT_REGISTRY_URL}dagent:$(vcs_version)
-.PHONY: push-both
-push-both: | push-crane push-dagent
+	docker push ${AGENT_REGISTRY_URL}/dagent:$(image_version)
+	docker push ${AGENT_REGISTRY_URL}/dagent:$(vcs_version)
+.PHONY: push-agents
+push-agents: | push-crane push-dagent
 
 
 .PHONY: k3d-start # todo: put these into use
