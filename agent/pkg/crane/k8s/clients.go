@@ -13,16 +13,29 @@ import (
 	"github.com/dyrector-io/dyrectorio/agent/pkg/crane/config"
 )
 
-func GetClientSet(cfg *config.Configuration) (*kubernetes.Clientset, error) {
+type Client struct {
+	InClusterConfig      func() (*rest.Config, error)
+	BuildConfigFromFlags func(masterUrl, kubeconfigPath string) (*rest.Config, error)
+}
+
+func NewClient() *Client {
+	client := &Client{
+		InClusterConfig:      rest.InClusterConfig,
+		BuildConfigFromFlags: clientcmd.BuildConfigFromFlags,
+	}
+	return client
+}
+
+func (c *Client) GetClientSet(cfg *config.Configuration) (*kubernetes.Clientset, error) {
 	if cfg.CraneInCluster {
-		return inClusterAuth(cfg)
+		return c.inClusterAuth(cfg)
 	} else {
-		return outClusterAuth(cfg)
+		return c.outClusterAuth(cfg)
 	}
 }
 
-func inClusterAuth(cfg *config.Configuration) (*kubernetes.Clientset, error) {
-	clusterConfig, err := rest.InClusterConfig()
+func (c *Client) inClusterAuth(cfg *config.Configuration) (*kubernetes.Clientset, error) {
+	clusterConfig, err := c.InClusterConfig()
 	if err != nil {
 		log.Println(err.Error())
 		return nil, err
@@ -32,7 +45,7 @@ func inClusterAuth(cfg *config.Configuration) (*kubernetes.Clientset, error) {
 	return clientset, err
 }
 
-func outClusterAuth(cfg *config.Configuration) (*kubernetes.Clientset, error) {
+func (c *Client) outClusterAuth(cfg *config.Configuration) (*kubernetes.Clientset, error) {
 	var kubeconfig *string
 
 	if configPathFromEnv := cfg.KubeConfig; configPathFromEnv != "" {
@@ -42,7 +55,7 @@ func outClusterAuth(cfg *config.Configuration) (*kubernetes.Clientset, error) {
 		kubeconfig = &cfgPath
 	}
 
-	configFromFlags, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+	configFromFlags, err := c.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
 		log.Panicln("Could not load config file: " + err.Error())
 	}

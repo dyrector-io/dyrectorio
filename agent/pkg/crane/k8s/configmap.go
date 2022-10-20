@@ -97,7 +97,7 @@ func (cm *configmap) deleteConfigMaps(namespace, name string) error {
 }
 
 func getConfigMapClient(namespace string, cfg *config.Configuration) (typedv1.ConfigMapInterface, error) {
-	clientSet, err := GetClientSet(cfg)
+	clientSet, err := NewClient().GetClientSet(cfg)
 	if err != nil {
 		return nil, err
 	}
