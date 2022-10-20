@@ -1,9 +1,9 @@
-name: cli
+name: golang
 on:
   push:
     paths:
       - golang/**
-      - .github/workflows/cli.yml
+      - .github/workflows/golang.yml
 
 permissions:
   contents: read
