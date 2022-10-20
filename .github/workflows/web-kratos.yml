@@ -4,6 +4,10 @@ on:
     paths:
       - web/kratos/**
       - .github/workflows/web-kratos.yml
+  pull_request:
+    paths:
+      - web/kratos/**
+      - .github/workflows/web-kratos.yml
 
 permissions:
   contents: read

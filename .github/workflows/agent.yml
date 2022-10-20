@@ -4,6 +4,10 @@ on:
     paths:
       - agent/**
       - .github/workflows/agent.yml
+  pull_request:
+    paths:
+      - agent/**
+      - .github/workflows/agent.yml
 
 permissions:
   contents: read

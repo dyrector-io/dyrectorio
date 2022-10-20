@@ -4,6 +4,11 @@ on:
     paths:
       - web/crux-ui/**
       - .github/workflows/web-crux-ui.yml
+  pull_request:
+    paths:
+      - web/crux-ui/**
+      - .github/workflows/web-crux-ui.yml
+
 
 permissions:
   contents: read
