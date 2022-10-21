@@ -301,6 +301,14 @@ func SaveSettings(settings *Settings) {
 
 		// If settingspath is default, we create the directory for it
 		if settings.SettingsFilePath == settingspath {
+			if _, err := os.Stat(userconfdir); errors.Is(err, os.ErrNotExist) {
+				err = os.Mkdir(userconfdir, DirPerms)
+				if err != nil {
+					log.Fatalf("%v", err)
+				}
+			} else if err != nil {
+				log.Fatalf("%v", err)
+			}
 			if _, err := os.Stat(filepath.Dir(settingspath)); errors.Is(err, os.ErrNotExist) {
 				err = os.Mkdir(filepath.Dir(settingspath), DirPerms)
 				if err != nil {
