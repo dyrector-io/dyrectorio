@@ -89,10 +89,10 @@ export default class AgentService {
   async install(nodeId: string, nodeType: NodeTypeEnum, rootPath: string | null): Promise<AgentInstaller> {
     let installer = this.getInstallerByNodeId(nodeId)
     if (!installer || installer.nodeType !== nodeType) {
-      const now = Math.floor(new Date().getTime() / 1000)
+      const now = new Date().getTime()
 
       const token: AgentToken = {
-        iat: now,
+        iat: Math.floor(now / 1000),
         iss: undefined,
         sub: nodeId,
       }
@@ -101,7 +101,7 @@ export default class AgentService {
         this.configService,
         nodeId,
         this.jwtService.sign(token),
-        now + AgentService.SCRIPT_EXPIRATION,
+        new Date(now + AgentService.SCRIPT_EXPIRATION),
         nodeType,
         rootPath,
       )

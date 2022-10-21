@@ -27,8 +27,8 @@ require (
 	github.com/dyrector-io/dyrectorio/protobuf v0.0.0-00010101000000-000000000000
 	github.com/golang-jwt/jwt/v4 v4.4.2
 	github.com/hashicorp/go-version v1.3.0
-	github.com/rs/zerolog v1.28.0
 	github.com/ilyakaznacheev/cleanenv v1.4.0
+	github.com/rs/zerolog v1.28.0
 	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e
 	google.golang.org/protobuf v1.28.1
 	gopkg.in/yaml.v3 v3.0.1
