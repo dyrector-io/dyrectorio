@@ -141,11 +141,11 @@ func SettingsExists(settingspath string) bool {
 // Assemble the location of the settings file
 func SettingsFileLocation(settingspath string) string {
 	if settingspath == "" {
-		userconfdir, err := os.UserConfigDir()
+		userConfDir, err := os.UserConfigDir()
 		if err != nil {
 			log.Fatal().Err(err).Stack().Msg("Couldn't determine the user's configuration dir")
 		}
-		settingspath = fmt.Sprintf("%s/%s/%s", userconfdir, SettingsFileDir, SettingsFileName)
+		settingspath = fmt.Sprintf("%s/%s/%s", userConfDir, SettingsFileDir, SettingsFileName)
 	}
 
 	return settingspath
@@ -300,13 +300,13 @@ func DisabledServiceSettings(settings *Settings) *Settings {
 // Save the settings
 func SaveSettings(settings *Settings) {
 	if settings.SettingsWrite {
-		userconfdir, _ := os.UserConfigDir()
-		settingspath := fmt.Sprintf("%s/%s/%s", userconfdir, SettingsFileDir, SettingsFileName)
+		userConfDir, _ := os.UserConfigDir()
+		settingspath := fmt.Sprintf("%s/%s/%s", userConfDir, SettingsFileDir, SettingsFileName)
 
 		// If settingspath is default, we create the directory for it
 		if settings.SettingsFilePath == settingspath {
-			if _, err := os.Stat(userconfdir); errors.Is(err, os.ErrNotExist) {
-				err = os.Mkdir(userconfdir, DirPerms)
+			if _, err := os.Stat(userConfDir); errors.Is(err, os.ErrNotExist) {
+				err = os.Mkdir(userConfDir, DirPerms)
 				if err != nil {
 					log.Fatal().Err(err).Stack().Msg("")
 				}

@@ -72,6 +72,7 @@ type DockerContainerBuilder struct {
 	networks        []string
 	registryAuth    string
 	remove          bool
+	withoutConflict bool
 	restartPolicy   RestartPolicyName
 	entrypoint      []string
 	cmd             []string
@@ -219,9 +220,8 @@ func (dc *DockerContainerBuilder) WithTTY(tty bool) *DockerContainerBuilder {
 
 // Deletes the container with the given name if already exists.
 func (dc *DockerContainerBuilder) WithoutConflict() *DockerContainerBuilder {
-	if err := deleteContainer(dc.ctx, dc.containerName); err != nil {
-		log.Printf("builder could not stop/remove container (%s) to avoid conflicts: %s", dc.containerName, err.Error())
-	}
+	dc.withoutConflict = true
+
 	return dc
 }
 
@@ -280,6 +280,13 @@ func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 	if err := prepareImage(dc); err != nil {
 		logWrite(dc, fmt.Sprintf("Failed to prepare image: %s", err.Error()))
 		return dc
+	}
+
+	if dc.withoutConflict {
+		err := deleteContainer(dc.ctx, dc.containerName)
+		if err != nil {
+			logWrite(dc, fmt.Sprintf("Failed to resolve conflict during creating the container: %v", err))
+		}
 	}
 
 	portListNat := portListToNatBinding(dc.portRanges, dc.portList)
