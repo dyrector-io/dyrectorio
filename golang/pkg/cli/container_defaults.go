@@ -117,7 +117,7 @@ func GetCruxUI(settings *Settings) *containerbuilder.DockerContainerBuilder {
 			fmt.Sprintf("TZ=%s", settings.SettingsFile.TimeZone),
 			fmt.Sprintf("KRATOS_URL=http://%s:%d/kratos",
 				settings.Containers.Traefik.Name,
-				settings.SettingsFile.TraefikWebPort),
+				defaultTraefikWebPort),
 			fmt.Sprintf("KRATOS_ADMIN_URL=http://%s:%d",
 				settings.Containers.Kratos.Name,
 				settings.SettingsFile.KratosAdminPort),
@@ -173,7 +173,7 @@ func GetTraefik(settings *Settings) *containerbuilder.DockerContainerBuilder {
 		"--api.insecure=true",
 		"--providers.docker=true",
 		"--providers.docker.exposedbydefault=false",
-		fmt.Sprintf("--entrypoints.web.address=:%d", settings.SettingsFile.TraefikWebPort),
+		fmt.Sprintf("--entrypoints.web.address=:%d", defaultTraefikWebPort),
 	}
 
 	if settings.SettingsFile.CruxUIDisabled {
