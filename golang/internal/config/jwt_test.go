@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -58,12 +59,6 @@ func TestConfigSetValueInvalid(t *testing.T) {
 func TestJWTValidation(t *testing.T) {
 	tests := []jwtTest{
 		{
-			name: "dyrectorio like token",
-			jwtTokenStringified: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2NjYxNjg2NDc1OTAsImlzcyI6IjE3Mi4xNy4wLjE6N" +
-				"TAwMCIsInN1YiI6IjYwYmJiMTZlLWE5NzktNDU1Ny1hNTA4LTJmZWJhMjIyMmQwMiJ9.vm-wJo-WmgpZk6SsMLK_7GZIrRufP05jebIUOCD1J2Q",
-			expErr: nil,
-		},
-		{
 			name: "valid HS256 token",
 			jwtTokenStringified: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaXNzIjoiSm9obiBEb2UiLCJpY" +
 				"XQiOjE1MTYyMzkwMjJ9.QIsEkshiagbAqIetkMcOtk0PJxH0i_KPGf8lKxTwZh8",
@@ -87,9 +82,16 @@ func TestJWTValidation(t *testing.T) {
 		},
 		{
 			name: "valid token used for dev",
-			jwtTokenStringified: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2NjQ4NzQxMDM5NzQsImlzcyI6IjE3Mi4xNy4wLjE6N" +
-				"TAwMCIsInN1YiI6ImIzZmYwMmU5LWU4MDUtNDhjYy1hYzNkLWRhMDVhZTEwMjNkZiJ9.qVlU38JwsLFrRf85PMhMFjZ7Jm4wyxWovDCa7nPNV0g",
+			jwtTokenStringified: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2MzgzMjQxODQsImlzcyI6IjE3Mi4xNy4wLjE6NTAwM" +
+				"CIsInN1YiI6ImIzZmYwMmU5LWU4MDUtNDhjYy1hYzNkLWRhMDVhZTEwMjNkZiJ9.EEQgUGpbfBqCtD2fL7uUj27De4FQamxEx5Ih9AkIe_U",
 			expErr: nil,
+		},
+		{
+			name: "case of robot9706, expired token",
+			jwtTokenStringified: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJsb2NhbGhvc3Q6NTAwMCIsImlhdCI6MTY2NjI3MDA5M" +
+				"CwiZXhwIjoxNjY2MjcwMDkxLCJhdWQiOiIiLCJzdWIiOiI0NjBlZjY4NS1jY2RiLTQxMmUtOWY0ZC00MDIxMGIwOTdhMDIifQ._HhRmfzIa" +
+				"_CPEJoYsCHO3E5xYGh2AmsnyggKMt9Wc_A",
+			expErr: jwt.ErrTokenExpired,
 		},
 		{
 			name: "invalid token: no issuer",

@@ -10,12 +10,12 @@ import (
 type ValidJWT struct {
 	Issuer           string
 	Subject          string
-	IssuedAt         int64
+	IssuedAt         time.Time
 	StringifiedToken string
 }
 
 type CustomClaims struct {
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 }
 
 func (config *CommonConfiguration) ParseAndSetJWT(unvalidatedToken string) error {
@@ -34,19 +34,18 @@ func (config *CommonConfiguration) ParseAndSetJWT(unvalidatedToken string) error
 
 func (c *CustomClaims) Valid() error {
 	vErr := new(jwt.ValidationError)
-	// we issue tokens using msec, the original tests
 	// https://www.rfc-editor.org/rfc/rfc7519#page-10
-	// no exact rule in spec for this
-	now := time.Now().UnixMilli()
+	// standard is to use seconds
+	now := time.Now()
 
 	if !c.VerifyExpiresAt(now, false) {
-		delta := time.Unix(now, 0).Sub(time.Unix(c.ExpiresAt, 0))
-		vErr.Inner = fmt.Errorf("%s by %s", jwt.ErrTokenExpired, delta)
+		delta := now.Sub(c.ExpiresAt.Time)
+		vErr.Inner = fmt.Errorf("%v by %v, now: %v, exp: %v", jwt.ErrTokenExpired, delta, now, c.ExpiresAt)
 		vErr.Errors |= jwt.ValidationErrorExpired
 	}
 
 	if !c.VerifyIssuedAt(now, true) {
-		vErr.Inner = jwt.ErrTokenUsedBeforeIssued
+		vErr.Inner = fmt.Errorf("now: %v, iat: %v", now, c.IssuedAt)
 		vErr.Errors |= jwt.ValidationErrorIssuedAt
 	}
 
@@ -95,7 +94,7 @@ func ValidateAndCreateJWT(unvalidatedToken string) (*ValidJWT, error) {
 	return &ValidJWT{
 		Issuer:           claims.Issuer,
 		Subject:          claims.Subject,
-		IssuedAt:         claims.IssuedAt,
+		IssuedAt:         claims.IssuedAt.Time,
 		StringifiedToken: unvalidatedToken,
 	}, nil
 }
