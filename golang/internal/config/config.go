@@ -19,7 +19,6 @@ type CommonConfiguration struct {
 	DefaultTimeout       time.Duration `yaml:"defaultTimeout"        env:"DEFAULT_TIMEOUT"         env-default:"5s"`
 	GrpcKeepalive        time.Duration `yaml:"grpcKeepalive"         env:"GRPC_KEEPALIVE"          env-default:"60s"`
 	Debug                bool          `yaml:"debug"                 env:"DEBUG"                   env-default:"false"`
-	GrpcToken            ValidJWT      `yaml:"grpcToken"             env:"GRPC_TOKEN"`
 	GrpcInsecure         bool          `yaml:"grpcInsecure"          env:"GRPC_INSECURE"           env-default:"false"`
 	ImportContainerImage string        `yaml:"importContainerImage"  env:"IMPORT_CONTAINER_IMAGE"  env-default:"rclone/rclone:1.57.0"`
 	IngressRootDomain    string        `yaml:"ingressRootDomain"     env:"INGRESS_ROOT_DOMAIN"     env-default:""`
@@ -30,4 +29,6 @@ type CommonConfiguration struct {
 	RegistryPassword  string         `yaml:"registryPassword"     env:"REGISTRY_PASSWORD"        env-default:""`
 	RegistryUsername  string         `yaml:"registryUsername"     env:"REGISTRY_USERNAME"        env-default:""`
 	SecretPrivateKey  ConfigFromFile `yaml:"secretPrivateKeyFile" env:"SECRET_PRIVATE_KEY_FILE"  env-default:"/srv/dagent/private.key"`
+	// GRPC token is set separately, because nested structures are not yet suppported in cleanenv
+	GrpcToken *ValidJWT
 }

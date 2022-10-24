@@ -25,10 +25,10 @@ require (
 require (
 	github.com/ProtonMail/gopenpgp/v2 v2.4.8
 	github.com/dyrector-io/dyrectorio/protobuf v0.0.0-00010101000000-000000000000
-	github.com/form3tech-oss/jwt-go v3.2.3+incompatible
+	github.com/golang-jwt/jwt/v4 v4.4.2
 	github.com/hashicorp/go-version v1.3.0
-	github.com/ilyakaznacheev/cleanenv v1.3.0
 	github.com/rs/zerolog v1.28.0
+	github.com/ilyakaznacheev/cleanenv v1.4.0
 	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e
 	google.golang.org/protobuf v1.28.1
 	gopkg.in/yaml.v3 v3.0.1
@@ -42,10 +42,9 @@ require (
 	github.com/Azure/go-autorest/autorest/date v0.3.0 // indirect
 	github.com/Azure/go-autorest/logger v0.2.1 // indirect
 	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
-	github.com/BurntSushi/toml v1.1.0 // indirect
+	github.com/BurntSushi/toml v1.2.0 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20220113124808-70ae35bab23f // indirect
 	github.com/ProtonMail/go-mime v0.0.0-20220302105931-303f85f7fe0f // indirect
-	github.com/golang-jwt/jwt/v4 v4.4.2
 	github.com/moby/term v0.0.0-20220808134915-39b0c02b01ae // indirect
 	github.com/onsi/ginkgo v1.16.4 // indirect
 	gotest.tools/v3 v3.3.0 // indirect
@@ -88,6 +87,7 @@ require (
 
 require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
+	github.com/form3tech-oss/jwt-go v3.2.3+incompatible // indirect
 	github.com/googleapis/gnostic v0.5.5 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect

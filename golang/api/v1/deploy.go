@@ -361,7 +361,6 @@ func (jsonConfig *Base64JSONBytes) UnmarshalJSON(b []byte) error {
 	inStr := string(b)
 	trimmed := strings.Trim(inStr, `"`)
 	decoded, err := base64.StdEncoding.DecodeString(trimmed)
-
 	if err != nil {
 		log.Error().Err(err).Stack().Msg("Instance config decoding error")
 		return err
@@ -395,7 +394,8 @@ func (vt *VolumeType) UnmarshalJSON(b []byte) error {
 // setting known defaults from constants
 func SetDeploymentDefaults(
 	deployImageRequest *DeployImageRequest,
-	appConfig *config.CommonConfiguration) {
+	appConfig *config.CommonConfiguration,
+) {
 	if deployImageRequest.Registry == nil || *deployImageRequest.Registry == "" {
 		deployImageRequest.Registry = func() *string {
 			str := appConfig.Registry

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/rs/zerolog/log"
 
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
@@ -14,7 +16,10 @@ func main() {
 	if err != nil {
 		log.Panic().Err(err).Msg("failed to load configuration")
 	}
-	log.Print("Configuration loaded.")
+	if err := cfg.ParseAndSetJWT(os.Getenv("GRPC_TOKEN")); err != nil {
+		log.Panic().Err(err).Msg("failed to parse env GRPC_TOKEN")
 
+	}
+	log.Print("Configuration loaded.")
 	crane.Serve(&cfg)
 }

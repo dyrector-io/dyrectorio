@@ -28,17 +28,10 @@ func Serve(cfg *config.Configuration) {
 	preflightChecks(cfg)
 	log.Print("Starting dyrector.io crane service.")
 
-	grpcToken := cfg.GrpcToken
-	grpcInsecure := cfg.GrpcInsecure
-
 	// TODO(robot9706): Implement updater
 	log.Print("No update was set up")
 
-	grpcParams, err := grpc.GrpcTokenToConnectionParams(grpcToken, grpcInsecure)
-	if err != nil {
-		log.Panic().Err(err).Stack().Msg("gRPC token error")
-	}
-
+	grpcParams := grpc.GrpcTokenToConnectionParams(cfg.GrpcToken, cfg.GrpcInsecure)
 	grpcContext := grpc.WithGRPCConfig(context.Background(), cfg)
 	grpc.Init(grpcContext, grpcParams, &cfg.CommonConfiguration, grpc.WorkerFunctions{
 		Deploy:     k8s.Deploy,

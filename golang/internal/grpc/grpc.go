@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/form3tech-oss/jwt-go"
 	"github.com/rs/zerolog/log"
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
@@ -41,10 +40,12 @@ type GrpcConnectionParams struct {
 	token    string
 }
 
-type DeployFunc func(context.Context, *dogger.DeploymentLogger, *v1.DeployImageRequest, *v1.VersionData) error
-type WatchFunc func(context.Context, string) []*common.ContainerStateItem
-type DeleteFunc func(context.Context, string, string) error
-type SecretListFunc func(context.Context, string, string) ([]string, error)
+type (
+	DeployFunc     func(context.Context, *dogger.DeploymentLogger, *v1.DeployImageRequest, *v1.VersionData) error
+	WatchFunc      func(context.Context, string) []*common.ContainerStateItem
+	DeleteFunc     func(context.Context, string, string) error
+	SecretListFunc func(context.Context, string, string) ([]string, error)
+)
 
 type WorkerFunctions struct {
 	Deploy     DeployFunc
@@ -57,23 +58,13 @@ type contextKey int
 
 const contextConfigKey contextKey = 0
 
-func GrpcTokenToConnectionParams(grpcToken config.ValidJWT, insecureGrpc bool) (*GrpcConnectionParams, error) {
-	claims := jwt.StandardClaims{}
-	token, err := jwt.ParseWithClaims(grpcToken.StringifiedToken, &claims, nil)
-	if token == nil {
-		log.Print("Can not parse the gRPC token")
-		if err != nil {
-			return nil, err
-		}
-		log.Print("gRPC skipped")
-	}
-
+func GrpcTokenToConnectionParams(grpcToken *config.ValidJWT, insecureGrpc bool) *GrpcConnectionParams {
 	return &GrpcConnectionParams{
-		nodeID:   claims.Subject,
-		address:  claims.Issuer,
+		nodeID:   grpcToken.Subject,
+		address:  grpcToken.Issuer,
 		insecure: insecureGrpc,
 		token:    grpcToken.StringifiedToken,
-	}, nil
+	}
 }
 
 func (g *GrpcConnection) SetClient(client agent.AgentClient) {
@@ -142,7 +133,6 @@ func Init(grpcContext context.Context,
 		} else {
 			httpAddr := fmt.Sprintf("https://%s", connParams.address)
 			certPool, err := fetchCertificatesFromURL(ctx, httpAddr)
-
 			if err != nil {
 				log.Error().Stack().Err(err).Msg("")
 			}
@@ -165,7 +155,6 @@ func Init(grpcContext context.Context,
 
 		log.Print("Dialing", connParams.address)
 		conn, err := grpc.Dial(connParams.address, opts...)
-
 		if err != nil {
 			log.Panic().Stack().Err(err).Msg("failed to dial gRPC")
 		}
@@ -193,7 +182,8 @@ func grpcLoop(
 	ctx context.Context,
 	nodeID string,
 	workerFuncs WorkerFunctions,
-	cancel context.CancelFunc, appConfig *config.CommonConfiguration) {
+	cancel context.CancelFunc, appConfig *config.CommonConfiguration,
+) {
 	var stream agent.Agent_ConnectClient
 	var err error
 	defer cancel()
@@ -257,7 +247,8 @@ func grpcLoop(
 
 func executeVersionDeployRequest(
 	ctx context.Context, req *agent.VersionDeployRequest,
-	deploy DeployFunc, appConfig *config.CommonConfiguration) {
+	deploy DeployFunc, appConfig *config.CommonConfiguration,
+) {
 	if req.Id == "" {
 		log.Print("Empty request")
 		return
@@ -266,7 +257,6 @@ func executeVersionDeployRequest(
 
 	deployCtx := metadata.AppendToOutgoingContext(ctx, "dyo-deployment-id", req.Id)
 	statusStream, err := grpcConn.Client.DeploymentStatus(deployCtx, grpc.WaitForReady(true))
-
 	if err != nil {
 		log.Error().Stack().Err(err).Str("deployment", req.Id).Msg("Status connect error")
 		return
@@ -281,7 +271,7 @@ func executeVersionDeployRequest(
 		return
 	}
 
-	var failed = false
+	failed := false
 	var deployStatus common.DeploymentStatus
 	for i := range req.Requests {
 		imageReq := mapper.MapDeployImage(req.Requests[i], appConfig)
@@ -365,7 +355,8 @@ func executeDeleteContainer(ctx context.Context, req *agent.ContainerDeleteReque
 
 func executeVersionDeployLegacyRequest(
 	ctx context.Context, req *agent.DeployRequestLegacy,
-	deploy DeployFunc, appConfig *config.CommonConfiguration) {
+	deploy DeployFunc, appConfig *config.CommonConfiguration,
+) {
 	if req.RequestId == "" {
 		log.Print("Empty request")
 		return
@@ -374,7 +365,6 @@ func executeVersionDeployLegacyRequest(
 
 	deployCtx := metadata.AppendToOutgoingContext(ctx, "dyo-deployment-id", req.RequestId)
 	statusStream, err := grpcConn.Client.DeploymentStatus(deployCtx, grpc.WaitForReady(true))
-
 	if err != nil {
 		log.Error().Stack().Err(err).Str("deployment", req.RequestId).Msg("Status connect error")
 		return
@@ -421,7 +411,8 @@ func executeSecretList(
 	ctx context.Context,
 	command *agent.ListSecretsRequest,
 	listFunc SecretListFunc,
-	appConfig *config.CommonConfiguration) {
+	appConfig *config.CommonConfiguration,
+) {
 	prefix := command.Prefix
 	name := command.Name
 

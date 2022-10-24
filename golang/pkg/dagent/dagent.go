@@ -16,9 +16,6 @@ func Serve(cfg *config.Configuration) {
 	utils.PreflightChecks(cfg)
 	log.Print("Starting dyrector.io DAgent service")
 
-	grpcToken := cfg.GrpcToken
-	grpcInsecure := cfg.GrpcInsecure
-
 	if cfg.TraefikEnabled {
 		params := model.TraefikDeployRequest{
 			LogLevel: cfg.TraefikLogLevel,
@@ -35,11 +32,7 @@ func Serve(cfg *config.Configuration) {
 
 	update.InitUpdater(cfg)
 
-	grpcParams, err := grpc.GrpcTokenToConnectionParams(grpcToken, grpcInsecure)
-	if err != nil {
-		log.Panic().Err(err).Msg("gRPC token error")
-	}
-
+	grpcParams := grpc.GrpcTokenToConnectionParams(cfg.GrpcToken, cfg.GrpcInsecure)
 	grpcContext := grpc.WithGRPCConfig(context.Background(), cfg)
 	grpc.Init(grpcContext, grpcParams, &cfg.CommonConfiguration, grpc.WorkerFunctions{
 		Deploy:     utils.DeployImage,
