@@ -9,18 +9,17 @@ import { defaultApiErrorHandler } from '@app/errors'
 import { ProductType, PRODUCT_TYPE_VALUES } from '@app/models'
 import { CreateEntityResponse } from '@app/models/grpc/protobuf/proto/crux'
 import { ApplyTemplate, Template } from '@app/models/template'
-import { API_TEMPLATES, productUrl } from '@app/routes'
+import { API_TEMPLATES } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { applyTemplateSchema } from '@app/validations'
 import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
-import { useRouter } from 'next/router'
 import { MutableRefObject } from 'react'
 
 interface ApplyTemplateCardProps {
   className?: string
   template: Template
-  onTemplateApplied: () => void
+  onTemplateApplied: (productId: string) => void
   submitRef?: MutableRefObject<() => Promise<any>>
 }
 
@@ -28,7 +27,6 @@ const ApplyTemplateCard = (props: ApplyTemplateCardProps) => {
   const { template: propsTemplate, className, onTemplateApplied, submitRef } = props
 
   const { t } = useTranslation('templates')
-  const router = useRouter()
 
   const handleApiError = defaultApiErrorHandler(t)
 
@@ -50,12 +48,10 @@ const ApplyTemplateCard = (props: ApplyTemplateCardProps) => {
       const res = await sendForm('POST', API_TEMPLATES, body)
 
       if (res.ok) {
-        onTemplateApplied()
-
         const json = await res.json()
         const result = json as CreateEntityResponse
 
-        router.push(productUrl(result.id))
+        onTemplateApplied(result.id)
       } else {
         handleApiError(res, setFieldError)
       }

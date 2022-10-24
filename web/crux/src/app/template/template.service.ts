@@ -28,6 +28,7 @@ import ImageService from '../image/image.service'
 import ProductService from '../product/product.service'
 import RegistryService from '../registry/registry.service'
 import VersionService from '../version/version.service'
+import { SIMPLE_PRODUCT_VERSION_NAME } from 'src/shared/const'
 
 const VERSION_NAME = '1.0.0'
 
@@ -127,7 +128,7 @@ export default class TemplateService {
       productType === ProductType.COMPLEX
         ? await this.prisma.version.findFirst({
             where: {
-              name: ProductService.SIMPLE_PRODUCT_VERSION_NAME,
+              name: SIMPLE_PRODUCT_VERSION_NAME,
               productId: product.id,
             },
           })

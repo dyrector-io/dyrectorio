@@ -6,9 +6,6 @@ export type Template = {
   description: string
 }
 
-export type ApplyTemplate = {
-  id: string
-  name: string
-  description: string
+export type ApplyTemplate = Template & {
   type: ProductType
 }

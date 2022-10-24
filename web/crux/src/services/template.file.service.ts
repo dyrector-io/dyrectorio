@@ -6,6 +6,7 @@ import { CraneContainerConfig, DagentContainerConfig, ExplicitContainerConfig } 
 import { CreateRegistryRequest, TemplateResponse } from 'src/grpc/protobuf/proto/crux'
 import { UniqueKeyValue } from 'src/shared/model'
 import { templateSchema } from 'src/shared/validation'
+import { promisify } from 'util'
 import * as yup from 'yup'
 
 const TEMPLATES_FOLDER = 'templates'
@@ -52,10 +53,10 @@ export default class TemplateFileService {
   }
 
   getTemplates(): Promise<TemplateResponse[]> {
-    return new Promise((resolve, reject) => {
+    return promisify<TemplateResponse[]>(callback => {
       readdir(this.templatesFolder, (err, files) => {
         if (err != null) {
-          reject(err)
+          callback(err, null)
         }
 
         const validTemplates = files
@@ -72,9 +73,9 @@ export default class TemplateFileService {
           })
           .filter(it => it != null)
 
-        resolve(validTemplates)
+        callback(undefined, validTemplates)
       })
-    })
+    })()
   }
 
   async getTemplateById(id: string): Promise<TemplateDetail> {

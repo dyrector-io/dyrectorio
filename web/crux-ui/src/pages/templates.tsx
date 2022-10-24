@@ -6,12 +6,12 @@ import TemplateCard from '@app/components/templates/template-card'
 import DyoButton from '@app/elements/dyo-button'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { Template } from '@app/models/template'
-import { ROUTE_TEMPLATES } from '@app/routes'
-
+import { productUrl, ROUTE_TEMPLATES } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
+import { useRouter } from 'next/router'
 import { useRef, useState } from 'react'
 
 interface TemplatesPageProps {
@@ -20,6 +20,8 @@ interface TemplatesPageProps {
 
 const TemplatesPage = (props: TemplatesPageProps) => {
   const { templates } = props
+
+  const router = useRouter()
 
   const { t } = useTranslation('products')
 
@@ -33,6 +35,11 @@ const TemplatesPage = (props: TemplatesPageProps) => {
 
   const onCreate = (template: Template) => {
     setApplying(template)
+  }
+
+  const onTemplateApplied = productId => {
+    setApplying(null)
+    router.push(productUrl(productId))
   }
 
   return (
@@ -52,7 +59,7 @@ const TemplatesPage = (props: TemplatesPageProps) => {
       </PageHeading>
 
       {applying && (
-        <ApplyTemplateCard template={applying} onTemplateApplied={() => setApplying(null)} submitRef={submitRef} />
+        <ApplyTemplateCard template={applying} onTemplateApplied={onTemplateApplied} submitRef={submitRef} />
       )}
 
       <DyoWrap>
