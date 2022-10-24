@@ -7,12 +7,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"time"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
+	"github.com/rs/zerolog/log"
 )
 
 const dockerClientTimeoutSeconds = 30
@@ -28,7 +28,7 @@ func registryAuthBase64(user, password string) string {
 	}
 	encodedJSON, err := json.Marshal(authConfig)
 	if err != nil {
-		log.Println(err)
+		log.Error().Stack().Err(err).Msg("")
 		return ""
 	}
 	return base64.URLEncoding.EncodeToString(encodedJSON)
@@ -111,7 +111,7 @@ func pullImage(ctx context.Context, logger io.StringWriter, fullyQualifiedImageN
 			err = nil
 			break
 		} else if err != nil {
-			log.Println("decode error: " + err.Error())
+			log.Error().Stack().Err(err).Msg("decode error")
 			break
 		}
 

@@ -6,11 +6,11 @@ package config
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"syscall"
 
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
+	"github.com/rs/zerolog/log"
 )
 
 type ConfigFromFile string

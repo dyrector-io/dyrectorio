@@ -3,9 +3,9 @@ package k8s
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"time"
 
+	"github.com/rs/zerolog/log"
 	"golang.org/x/net/context"
 	v1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -39,7 +39,7 @@ func WaitForRunningDeployment(ctx context.Context, namespace, name string, expec
 
 			err = json.Unmarshal(m, &deployment)
 			if err != nil {
-				log.Println("unmarshal error of deployment: ", err)
+				log.Error().Err(err).Stack().Msg("unmarshal error of deployment")
 			}
 			if deployment.Status.AvailableReplicas == expectedReplicaCount {
 				return nil

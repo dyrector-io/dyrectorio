@@ -2,8 +2,8 @@ package crane
 
 import (
 	"context"
-	"log"
 
+	"github.com/rs/zerolog/log"
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	"github.com/dyrector-io/dyrectorio/golang/internal/grpc"
@@ -19,28 +19,28 @@ func preflightChecks(cfg *config.Configuration) {
 	if size != "" {
 		_, err := resource.ParseQuantity(size)
 		if err != nil {
-			log.Panicf("Provided env var %s has errnous value %s\n%s", "DEFAULT_VOLUME_SIZE", size, err.Error())
+			log.Panic().Err(err).Stack().Str("DEFAULT_VOLUME_SIZE", size).Msg("Provided env var has errnous value")
 		}
 	}
 }
 
 func Serve(cfg *config.Configuration) {
 	preflightChecks(cfg)
-	log.Println("Starting dyrector.io crane service.")
+	log.Print("Starting dyrector.io crane service.")
 
 	grpcToken := cfg.GrpcToken
 	grpcInsecure := cfg.GrpcInsecure
 
 	if grpcToken == "" {
-		log.Panic("no grpc address was provided")
+		log.Panic().Msg("no grpc address was provided")
 	}
 
 	// TODO(robot9706): Implement updater
-	log.Println("No update was set up")
+	log.Print("No update was set up")
 
 	grpcParams, err := grpc.GrpcTokenToConnectionParams(grpcToken, grpcInsecure)
 	if err != nil {
-		log.Panic("gRPC token error: ", err)
+		log.Panic().Err(err).Stack().Msg("gRPC token error")
 	}
 
 	grpcContext := grpc.WithGRPCConfig(context.Background(), cfg)

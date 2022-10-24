@@ -2,7 +2,8 @@ package dagent
 
 import (
 	"context"
-	"log"
+
+	"github.com/rs/zerolog/log"
 
 	"github.com/dyrector-io/dyrectorio/golang/internal/grpc"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/config"
@@ -13,13 +14,13 @@ import (
 
 func Serve(cfg *config.Configuration) {
 	utils.PreflightChecks(cfg)
-	log.Println("Starting dyrector.io DAgent service")
+	log.Print("Starting dyrector.io DAgent service")
 
 	grpcToken := cfg.GrpcToken
 	grpcInsecure := cfg.GrpcInsecure
 
 	if grpcToken == "" {
-		log.Panic("no grpc address was provided")
+		log.Panic().Msg("no grpc address was provided")
 	}
 
 	if cfg.TraefikEnabled {
@@ -32,7 +33,7 @@ func Serve(cfg *config.Configuration) {
 		err := utils.ExecTraefik(context.Background(), params, cfg)
 		if err != nil {
 			// we wanted to start traefik, but something is not ok, thus panic!
-			log.Panic("failed to start Traefik: ", err)
+			log.Panic().Err(err).Msg("failed to start Traefik")
 		}
 	}
 
@@ -40,7 +41,7 @@ func Serve(cfg *config.Configuration) {
 
 	grpcParams, err := grpc.GrpcTokenToConnectionParams(grpcToken, grpcInsecure)
 	if err != nil {
-		log.Panic("gRPC token error: ", err)
+		log.Panic().Err(err).Msg("gRPC token error")
 	}
 
 	grpcContext := grpc.WithGRPCConfig(context.Background(), cfg)

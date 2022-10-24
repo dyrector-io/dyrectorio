@@ -3,13 +3,13 @@ package utils
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v3"
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
@@ -48,7 +48,7 @@ func DraftRelease(instance string, versionData v1.VersionData, deployResponse v1
 	content, err := yaml.Marshal(&release)
 
 	if err != nil {
-		log.Println(fmt.Sprintln("Version drafting error ", err))
+		log.Print(fmt.Sprintln("Version drafting error ", err))
 		return
 	}
 
@@ -56,24 +56,24 @@ func DraftRelease(instance string, versionData v1.VersionData, deployResponse v1
 
 	if _, err = os.Stat(filePath); err == nil {
 		// path exists -> making a backup
-		log.Println("Already existing release file, backing it up")
+		log.Print("Already existing release file, backing it up")
 
 		if errr := os.Rename(
 			filePath,
 			path.Join(releaseDirPath, fmt.Sprintf("%v-backup-%v.yml", versionData.Version, time.Now().Unix()))); errr != nil {
-			log.Println("Existing release file backup failed, overwriting existing release file", errr.Error())
+			log.Error().Stack().Err(errr).Msg("Existing release file backup failed, overwriting existing release file")
 		}
 	} else if errors.Is(err, os.ErrNotExist) {
 		// nothing on path -> creating release file
 		// no-op
 	} else {
 		// file may or may not exist - Schrodinger -> something is really-really not gud
-		log.Panic(err.Error())
+		log.Panic().Stack().Err(err).Msg("")
 	}
 
 	err = os.WriteFile(filePath, content, os.ModePerm)
 	if err != nil {
-		log.Println(fmt.Sprintln("Writing release file error ", err))
+		log.Error().Stack().Err(err).Msg("Writing release file error")
 	}
 }
 
@@ -90,7 +90,7 @@ func GetVersions(instance string, cfg *config.Configuration) ([]ReleaseDoc, erro
 		if os.IsNotExist(err) {
 			return releases, nil
 		} else {
-			log.Fatal(err)
+			log.Fatal().Stack().Err(err).Msg("")
 		}
 	}
 
@@ -108,7 +108,7 @@ func GetVersions(instance string, cfg *config.Configuration) ([]ReleaseDoc, erro
 
 			err = yaml.Unmarshal(content, &release)
 			if err != nil {
-				log.Println(err.Error())
+				log.Error().Stack().Err(err).Msg("")
 			}
 			releases = append(releases, release)
 		}

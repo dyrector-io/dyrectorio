@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"net/url"
 	"os"
@@ -19,6 +18,7 @@ import (
 
 	"github.com/docker/docker/client"
 	"github.com/ilyakaznacheev/cleanenv"
+	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v3"
 )
 
@@ -129,7 +129,7 @@ func SettingsExists(settingspath string) bool {
 	} else if errors.Is(err, os.ErrNotExist) {
 		return false
 	} else {
-		log.Fatalf("%s", err)
+		log.Fatal().Err(err).Stack().Msg("")
 		return false
 	}
 }
@@ -139,7 +139,7 @@ func SettingsFileLocation(settingspath string) string {
 	if settingspath == "" {
 		userconfdir, err := os.UserConfigDir()
 		if err != nil {
-			log.Fatalf("Couldn't determine the user's configuration dir: %s", err)
+			log.Fatal().Err(err).Stack().Msg("Couldn't determine the user's configuration dir")
 		}
 		settingspath = fmt.Sprintf("%s/%s/%s", userconfdir, SettingsFileDir, SettingsFileName)
 	}
@@ -152,13 +152,13 @@ func SettingsFileReadWrite(state *Settings) *Settings {
 	if state.SettingsExists {
 		err := cleanenv.ReadConfig(state.SettingsFilePath, &state.SettingsFile)
 		if err != nil {
-			log.Fatalf("error: failed to load configuration: %v", err)
+			log.Fatal().Err(err).Stack().Msg("failed to load configuration")
 		}
 	} else {
 		state.SettingsWrite = true
 		err := cleanenv.ReadEnv(&state.SettingsFile)
 		if err != nil {
-			log.Fatalf("error: failed to load configuration: %v", err)
+			log.Fatal().Err(err).Stack().Msg("failed to load configuration")
 		}
 	}
 
@@ -191,43 +191,43 @@ func CheckRequirements() string {
 	if envVarValue != "" {
 		socketurl, err := url.ParseRequestURI(envVarValue)
 		if err != nil {
-			log.Fatalf("error: %v", err)
+			log.Fatal().Err(err).Stack().Msg("")
 		}
 
 		if socketurl.Host != "" {
-			log.Fatalf("error: DOCKER_HOST variable shouldn't have host")
+			log.Fatal().Msg("DOCKER_HOST variable shouldn't have host")
 		}
 
 		if socketurl.Scheme != "unix" {
-			log.Fatalf("error: DOCKER_HOST variable should contain a valid unix socket")
+			log.Fatal().Msg("DOCKER_HOST variable should contain a valid unix socket")
 		}
 	} else {
 		// We cannot assume unix:///var/run/docker.sock on Mac/Win platforms, we let Docker SDK does its magic :)
-		log.Println("\033[33mwarning: DOCKER_HOST environmental variable is empty or not set.\033[0m")
-		log.Println("\033[33mUsing default socket determined by Docker SDK\033[0m")
+		log.Warn().Msg("DOCKER_HOST environmental variable is empty or not set.")
+		log.Warn().Msg("Using default socket determined by Docker SDK")
 	}
 
 	// Check socket
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
-		log.Fatalf("docker socket connection unsuccessful: %v", err)
+		log.Fatal().Err(err).Stack().Msg("docker socket connection unsuccessful")
 	}
 
 	info, err := cli.Info(context.Background())
 	if err != nil {
-		log.Fatalf("cannot get info via docker socket: %v", err)
+		log.Fatal().Err(err).Stack().Msg("cannot get info via docker socket")
 	}
 
 	switch info.InitBinary {
 	case "":
-		log.Printf("podman version: %s", info.ServerVersion)
+		log.Info().Str("podmanVersion", info.ServerVersion).Msg("")
 		PodmanInfo()
 		return PodmanHost
 	case "docker-init":
-		log.Printf("docker version: %s", info.ServerVersion)
+		log.Info().Str("dockerVersion", info.ServerVersion).Msg("")
 		return DockerHost
 	default:
-		log.Fatalf("unknown init binary")
+		log.Fatal().Msg("unknown init binary")
 		return ""
 	}
 }
@@ -237,39 +237,39 @@ func PodmanInfo() {
 
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
-		log.Fatalf("podman check stderr pipe error: %v", err)
+		log.Fatal().Err(err).Stack().Msg("podman check stderr pipe error")
 	}
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		log.Fatalf("podman check stdout pipe error: %v", err)
+		log.Fatal().Err(err).Stack().Msg("podman check stdout pipe error")
 	}
 
 	err = cmd.Start()
 	if err != nil {
-		log.Fatalf("podman command execution error: %v", err)
+		log.Fatal().Err(err).Stack().Msg("podman command execution error")
 	}
 
 	readstderr, err := io.ReadAll(stderr)
 	if err != nil {
-		log.Fatalf("podman command stderr reading error: %v", err)
+		log.Fatal().Err(err).Stack().Msg("podman command stderr reading error")
 	}
 
 	readstdout, err := io.ReadAll(stdout)
 	if err != nil {
-		log.Fatalf("podman command stderr reading error: %v", err)
+		log.Fatal().Err(err).Stack().Msg("podman command stdout reading error")
 	}
 
 	err = cmd.Wait()
 	if err != nil {
-		log.Fatalf("podman command execution error: %v", err)
+		log.Fatal().Err(err).Stack().Msg("podman command execution error")
 	}
 
 	if len(readstderr) != 0 {
-		log.Fatalf("podman command has errors: %s", string(readstderr))
+		log.Fatal().Str("errOut", string(readstderr)).Msg("podman command execution error")
 	}
 
 	if string(readstdout) != "netavark\n" {
-		log.Fatalf("podman network backend error: it should have the netavark network backend")
+		log.Fatal().Msg("podman network backend error: it should have the netavark network backend")
 	}
 }
 
@@ -304,21 +304,21 @@ func SaveSettings(settings *Settings) {
 			if _, err := os.Stat(filepath.Dir(settingspath)); errors.Is(err, os.ErrNotExist) {
 				err = os.Mkdir(filepath.Dir(settingspath), DirPerms)
 				if err != nil {
-					log.Fatalf("%v", err)
+					log.Fatal().Err(err).Stack().Msg("")
 				}
 			} else if err != nil {
-				log.Fatalf("%v", err)
+				log.Fatal().Err(err).Stack().Msg("")
 			}
 		}
 
 		filedata, err := yaml.Marshal(&settings.SettingsFile)
 		if err != nil {
-			log.Fatalf("%v", err)
+			log.Fatal().Err(err).Stack().Msg("")
 		}
 
 		err = os.WriteFile(settings.SettingsFilePath, filedata, FilePerms)
 		if err != nil {
-			log.Fatalf("%v", err)
+			log.Fatal().Err(err).Stack().Msg("")
 		}
 
 		settings.SettingsWrite = false
@@ -371,7 +371,7 @@ func RandomChars(bufflength uint) string {
 	buffer := make([]byte, bufflength*BufferMultiplier)
 	_, err := rand.Read(buffer)
 	if err != nil {
-		log.Fatalf("error: %v", err)
+		log.Error().Err(err).Stack().Msg("")
 	}
 	secureString := make([]byte, base64.StdEncoding.EncodedLen(len(buffer)))
 	base64.StdEncoding.Encode(secureString, buffer)
