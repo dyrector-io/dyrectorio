@@ -51,7 +51,6 @@ func GetServerInformation() (DockerVersion, error) {
 	}
 
 	server, err := cli.ServerVersion(ctx)
-
 	if err != nil {
 		log.Error().Stack().Err(err).Msg("Could not get server version")
 	}
@@ -76,7 +75,6 @@ func ListContainers() ([]types.Container, error) {
 func GetContainersByName(name string) []types.Container {
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-
 	if err != nil {
 		panic(err)
 	}
@@ -213,13 +211,14 @@ func CopyToContainer(ctx context.Context, name string, meta v1.UploadFileData, f
 }
 
 func WriteContainerFile(ctx context.Context, cli *client.Client,
-	container, filename string, meta v1.UploadFileData, fileSize int64, data io.Reader) error {
+	container, filename string, meta v1.UploadFileData, fileSize int64, data io.Reader,
+) error {
 	var buf bytes.Buffer
 	tarWriter := tar.NewWriter(&buf)
 
 	tarHeader := &tar.Header{
 		Name:    filename,
-		Mode:    0644,
+		Mode:    0o644,
 		Size:    fileSize,
 		Uid:     meta.UID,
 		Gid:     meta.GID,
@@ -293,7 +292,8 @@ func logDeployInfo(dog *dogger.DeploymentLogger, deployImageRequest *v1.DeployIm
 func DeployImage(ctx context.Context,
 	dog *dogger.DeploymentLogger,
 	deployImageRequest *v1.DeployImageRequest,
-	versionData *v1.VersionData) error {
+	versionData *v1.VersionData,
+) error {
 	containerName := getContainerName(deployImageRequest)
 	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
 
@@ -333,9 +333,8 @@ func DeployImage(ctx context.Context,
 		}
 	}
 
-	state, _ := CheckContainer(deployImageRequest.RequestID, containerName)
 	// err is ignored because it means no container is available
-	// nothing to stop or remove then
+	state, _ := CheckContainer(deployImageRequest.RequestID, containerName)
 
 	err = checkContainerState(dog, containerName, state)
 	if err != nil {
@@ -406,14 +405,16 @@ func setNetwork(deployImageRequest *v1.DeployImageRequest) (networkMode string, 
 }
 
 func WithImportContainer(dc *containerbuilder.DockerContainerBuilder, importConfig *v1.ImportContainer,
-	dog *dogger.DeploymentLogger, cfg *config.Configuration) {
+	dog *dogger.DeploymentLogger, cfg *config.Configuration,
+) {
 	if importConfig != nil {
 		dc.WithPreStartHooks(func(ctx context.Context,
 			client *client.Client,
 			containerName string,
 			containerId *string,
 			mountList []mount.Mount,
-			logger *io.StringWriter) error {
+			logger *io.StringWriter,
+		) error {
 			if initError := spawnInitContainer(client, ctx, containerName, mountList, importConfig, dog, cfg); initError != nil {
 				dog.WriteDeploymentStatus(common.DeploymentStatus_FAILED, "Failed to spawn init container: "+initError.Error())
 				return initError
@@ -507,7 +508,8 @@ func mountStrToDocker(mountIn []string, containerPreName, containerName string, 
 }
 
 func createRuntimeConfigFileOnHost(mounts []mount.Mount, containerName, containerPreName,
-	runtimeConfig string, cfg *config.Configuration) ([]mount.Mount, error) {
+	runtimeConfig string, cfg *config.Configuration,
+) ([]mount.Mount, error) {
 	if len(runtimeConfig) > 0 {
 		configDir := path.Join(cfg.InternalMountPath, containerPreName, containerName, "config")
 		_, err := os.Stat(configDir)
@@ -659,7 +661,6 @@ func EnvPipeSeparatedToStringMap(envIn *[]string) map[string]string {
 func GetImageLabels(fullyQualifiedImageName string) (map[string]string, error) {
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-
 	if err != nil {
 		panic(err)
 	}
@@ -768,7 +769,6 @@ func SecretList(ctx context.Context, prefix, name string) ([]string, error) {
 		All:     true,
 		Filters: filters.NewArgs(filters.KeyValuePair{Key: "name", Value: fmt.Sprintf("^/?%s-%s$", prefix, name)}),
 	})
-
 	if err != nil {
 		return nil, err
 	}

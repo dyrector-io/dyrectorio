@@ -94,13 +94,11 @@ func generateKey(secretPath string) (string, error) {
 
 func GetPublicKey(keyStr string) (string, error) {
 	key, err := crypto.NewKeyFromArmored(keyStr)
-
 	if err != nil {
 		return "", fmt.Errorf("could not get key from armored key: %w", err)
 	}
 
 	publicKey, err := key.GetArmoredPublicKey()
-
 	if err != nil {
 		return "", fmt.Errorf("could not get public key from key object: %w", err)
 	}

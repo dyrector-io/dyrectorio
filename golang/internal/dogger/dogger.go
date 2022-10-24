@@ -26,7 +26,8 @@ type DeploymentLogger struct {
 func NewDeploymentLogger(deploymentID *string,
 	stream agent.Agent_DeploymentStatusClient,
 	ctx context.Context,
-	appConfig *config.CommonConfiguration) *DeploymentLogger {
+	appConfig *config.CommonConfiguration,
+) *DeploymentLogger {
 	dog := &DeploymentLogger{
 		stream:    stream,
 		logs:      []string{},
@@ -57,7 +58,6 @@ func (dog *DeploymentLogger) Write(messages ...string) {
 		err := dog.stream.Send(&common.DeploymentStatusMessage{
 			Log: messages,
 		})
-
 		if err != nil {
 			log.Printf("Deployment - %s: Status close err: %s", dog.deploymentID, err)
 		}
@@ -99,7 +99,7 @@ func (dog *DeploymentLogger) WriteContainerState(containerState string, messages
 			},
 		}
 
-		var err = dog.stream.Send(&common.DeploymentStatusMessage{
+		err := dog.stream.Send(&common.DeploymentStatusMessage{
 			Log:  messages,
 			Data: instance,
 		})

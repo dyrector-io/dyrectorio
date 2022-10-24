@@ -45,5 +45,4 @@ func TestGetOrganizationLabel(t *testing.T) {
 	value, found = utils.GetOrganizationLabel(input, "not-found")
 	assert.Equal(t, found, false)
 	assert.Equal(t, value, "")
-
 }
