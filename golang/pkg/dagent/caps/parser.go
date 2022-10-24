@@ -2,7 +2,8 @@ package caps
 
 import (
 	"encoding/json"
-	"log"
+
+	"github.com/rs/zerolog/log"
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 	builder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
@@ -26,7 +27,7 @@ func ParseLabelsIntoContainerConfig(labels map[string]string, config *v1.Contain
 
 			err := json.Unmarshal([]byte(value), &network)
 			if err != nil {
-				log.Println(err.Error())
+				log.Error().Stack().Err(err).Msg("")
 			}
 
 			ports := []builder.PortBinding{}

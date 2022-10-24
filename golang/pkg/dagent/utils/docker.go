@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"mime/multipart"
 	"os"
 	"path"
@@ -17,6 +16,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/rs/zerolog/log"
 	"golang.org/x/exp/maps"
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
@@ -53,7 +53,7 @@ func GetServerInformation() (DockerVersion, error) {
 	server, err := cli.ServerVersion(ctx)
 
 	if err != nil {
-		log.Println("Could not get server version ", err.Error())
+		log.Error().Stack().Err(err).Msg("Could not get server version")
 	}
 
 	return DockerVersion{ClientVersion: cli.ClientVersion(), ServerVersion: server.Version}, err
@@ -260,7 +260,7 @@ func logDeployInfo(dog *dogger.DeploymentLogger, deployImageRequest *v1.DeployIm
 	reqID := deployImageRequest.RequestID
 
 	if reqID != "" {
-		log.Println("requestID: ", reqID)
+		log.Info().Str("requestID", reqID).Msg("")
 	}
 	dog.Write(
 		fmt.Sprintln("Starting container: ", containerName),
@@ -498,7 +498,7 @@ func mountStrToDocker(mountIn []string, containerPreName, containerName string, 
 				}
 				mountList = append(mountList, mount.Mount{Type: mount.TypeBind, Source: hostPath, Target: mountSplit[1]})
 			} else {
-				log.Println("Empty values in mountList")
+				log.Print("Empty values in mountList")
 			}
 		}
 	}
@@ -512,7 +512,7 @@ func createRuntimeConfigFileOnHost(mounts []mount.Mount, containerName, containe
 		configDir := path.Join(cfg.InternalMountPath, containerPreName, containerName, "config")
 		_, err := os.Stat(configDir)
 		if os.IsNotExist(err) {
-			log.Println("creating diretory: ", configDir)
+			log.Info().Str("configDir", configDir).Msg("creating directory")
 			if err := os.MkdirAll(configDir, os.ModePerm); err != nil {
 				panic(err)
 			}
@@ -528,7 +528,7 @@ func createRuntimeConfigFileOnHost(mounts []mount.Mount, containerName, containe
 func checkDockerError(err error) {
 	if err != nil {
 		if client.IsErrConnectionFailed(err) {
-			log.Println("Could not connect to docker socket/host.")
+			log.Print("Could not connect to docker socket/host.")
 		}
 	}
 }

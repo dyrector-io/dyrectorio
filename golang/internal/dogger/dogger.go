@@ -4,7 +4,8 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
+
+	"github.com/rs/zerolog/log"
 
 	"github.com/dyrector-io/dyrectorio/golang/internal/config"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
@@ -104,7 +105,7 @@ func (dog *DeploymentLogger) WriteContainerState(containerState string, messages
 		})
 
 		if err != nil {
-			log.Println("Status close err: ", err.Error())
+			log.Error().Stack().Err(err).Msg("Status close err")
 		}
 	}
 }

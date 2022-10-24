@@ -5,11 +5,11 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/pkg/errors"
+	"github.com/rs/zerolog/log"
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	"github.com/docker/docker/api/types/container"
@@ -363,7 +363,7 @@ func (jsonConfig *Base64JSONBytes) UnmarshalJSON(b []byte) error {
 	decoded, err := base64.StdEncoding.DecodeString(trimmed)
 
 	if err != nil {
-		log.Println("Instance config decoding error: ", err.Error())
+		log.Error().Err(err).Stack().Msg("Instance config decoding error")
 		return err
 	}
 

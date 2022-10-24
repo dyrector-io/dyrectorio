@@ -3,8 +3,9 @@ package k8s
 import (
 	"context"
 	"errors"
-	"log"
 	"strings"
+
+	"github.com/rs/zerolog/log"
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
@@ -88,7 +89,7 @@ func (d *deployFacade) PreDeploy() error {
 				d.params.InstanceConfig.ContainerPreName+"-shared",
 				strArrToStrMap(d.params.InstanceConfig.SharedEnvironment),
 			); err != nil {
-				log.Println("Namespace global config map error: " + err.Error())
+				log.Error().Err(err).Stack().Msg("Namespace global config map error")
 				return err
 			}
 		}
@@ -100,7 +101,7 @@ func (d *deployFacade) PreDeploy() error {
 			d.params.InstanceConfig.Name+"-common",
 			strArrToStrMap(d.params.InstanceConfig.Environment),
 		); err != nil {
-			log.Println("Common config map error: " + err.Error())
+			log.Error().Err(err).Stack().Msg("Common config map error")
 			return err
 		}
 	}
@@ -111,7 +112,7 @@ func (d *deployFacade) PreDeploy() error {
 			d.params.ContainerConfig.Container,
 			strArrToStrMap(d.params.ContainerConfig.Environment),
 		); err != nil {
-			log.Println("Container config map error: " + err.Error())
+			log.Error().Err(err).Stack().Msg("Container config map error")
 			return err
 		}
 	}
@@ -121,7 +122,7 @@ func (d *deployFacade) PreDeploy() error {
 		d.namespace.name,
 		d.params.ContainerConfig.Container,
 		d.params.RuntimeConfig); err != nil {
-		log.Println("Container configMap-runtime error: ", err.Error())
+		log.Error().Err(err).Stack().Msg("Container configMap-runtime error")
 		return err
 	}
 
@@ -131,7 +132,7 @@ func (d *deployFacade) PreDeploy() error {
 		d.params.ContainerConfig.Mounts,
 		d.params.ContainerConfig.Volumes,
 	); err != nil {
-		log.Println("PVC deployment failed: " + err.Error())
+		log.Error().Err(err).Stack().Msg("PVC deployment failed")
 		return err
 	}
 
@@ -158,7 +159,7 @@ func (d *deployFacade) Deploy() error {
 			LBAnnotations: d.params.ContainerConfig.ExtraLBAnnotations,
 		},
 	); err != nil {
-		log.Println("Error with service: " + err.Error())
+		log.Error().Err(err).Stack().Msg("Error with service")
 		return err
 	}
 
@@ -174,7 +175,7 @@ func (d *deployFacade) Deploy() error {
 		args:            d.params.ContainerConfig.Args,
 		issuer:          d.params.Issuer,
 	}); err != nil {
-		log.Println("Error with deployment: " + err.Error())
+		log.Error().Err(err).Stack().Msg("Error with deployment")
 		return err
 	}
 
@@ -192,7 +193,7 @@ func (d *deployFacade) Deploy() error {
 				customHeaders: d.params.ContainerConfig.CustomHeaders,
 			},
 		); err != nil {
-			log.Println("Error with ingress: " + err.Error())
+			log.Error().Err(err).Stack().Msg("Error with ingress")
 		}
 	}
 

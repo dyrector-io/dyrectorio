@@ -4,9 +4,9 @@
 package util_test
 
 import (
-	"log"
 	"testing"
 
+	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
@@ -20,7 +20,7 @@ func TestNameEmpty(t *testing.T) {
 
 	assert.Nil(t, res)
 	assert.ErrorIs(t, err, &util.EmptyImageError{})
-	log.Println(err.Error())
+	log.Print(err.Error())
 }
 
 func TestNameShort(t *testing.T) {
@@ -63,7 +63,7 @@ func TestNameInvalid(t *testing.T) {
 
 	assert.Nil(t, res)
 	assert.ErrorIs(t, err, &util.MultiColonRegistryURIError{})
-	log.Println(err.Error())
+	log.Print(err.Error())
 }
 
 func TestImageToStringDockerHub(t *testing.T) {
