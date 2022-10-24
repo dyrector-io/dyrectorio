@@ -220,7 +220,8 @@ func strArrToStrMap(str []string) map[string]string {
 }
 
 func Deploy(c context.Context, dog *dogger.DeploymentLogger, deployImageRequest *v1.DeployImageRequest,
-	versionData *v1.VersionData) error {
+	versionData *v1.VersionData,
+) error {
 	cfg := grpc.GetConfigFromContext(c).(*config.Configuration)
 	dog.Write(deployImageRequest.Strings(&cfg.CommonConfiguration)...)
 	dog.Write(deployImageRequest.InstanceConfig.Strings()...)

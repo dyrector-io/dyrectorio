@@ -56,7 +56,6 @@ func (cm *configmap) deployConfigMapData(namespace, name string, envList map[str
 			WithData(envList),
 		metaV1.ApplyOptions{FieldManager: cm.appConfig.FieldManagerName, Force: cm.appConfig.ForceOnConflicts},
 	)
-
 	if err != nil {
 		return err
 	}

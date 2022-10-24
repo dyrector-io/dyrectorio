@@ -4,10 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
-
-	"fmt"
 
 	"github.com/rs/zerolog/log"
 	coreV1 "k8s.io/api/core/v1"
@@ -89,7 +88,6 @@ func (d *deployment) deployDeployment(p *deploymentParams) error {
 		FieldManager: d.appConfig.FieldManagerName,
 		Force:        d.appConfig.ForceOnConflicts,
 	})
-
 	if err != nil {
 		log.Error().Err(err).Stack().Msg("Deployment error")
 		return errors.New("deployment error: " + err.Error())
@@ -118,11 +116,11 @@ func (d *deployment) restart(namespace, name string) error {
 						CraneUpdatedAnnotation: time.Now().Format(time.RFC3339),
 					},
 				},
-			}},
+			},
+		},
 	}
 
 	marshaled, err := json.Marshal(datePatch)
-
 	if err != nil {
 		return err
 	}
@@ -138,7 +136,8 @@ func (d *deployment) restart(namespace, name string) error {
 
 // builds the container using the builder interface, with healthchecks, volumes, configs, ports...
 func buildContainer(p *deploymentParams,
-	cfg *config.Configuration) (*corev1.ContainerApplyConfiguration, error) {
+	cfg *config.Configuration,
+) (*corev1.ContainerApplyConfiguration, error) {
 	healthCheckConfig := p.containerConfig.HealthCheckConfig
 	var healthCheckDelay int32 = 30
 	var healthCheckThreshold int32 = 1
@@ -204,7 +203,8 @@ func buildContainer(p *deploymentParams,
 }
 
 func getResourceManagement(resourceConfig v1.ResourceConfig,
-	cfg *config.Configuration) (*corev1.ResourceRequirementsApplyConfiguration, error) {
+	cfg *config.Configuration,
+) (*corev1.ResourceRequirementsApplyConfiguration, error) {
 	var ResourceLimitsCPU, ResourceLimitsMemory, ResourceRequestsCPU, ResourceRequestsMemory resource.Quantity
 	var err error
 
@@ -279,7 +279,8 @@ func getInitContainers(params *deploymentParams, cfg *config.Configuration) []*c
 }
 
 func addConfigContainer(initContainers []*corev1.ContainerApplyConfiguration,
-	containerConfig *v1.ContainerConfig) []*corev1.ContainerApplyConfiguration {
+	containerConfig *v1.ContainerConfig,
+) []*corev1.ContainerApplyConfiguration {
 	if containerConfig.ConfigContainer != nil {
 		initContainers = append(initContainers,
 			corev1.Container().
@@ -289,7 +290,8 @@ func addConfigContainer(initContainers []*corev1.ContainerApplyConfiguration,
 				WithCommand([]string{
 					"sh",
 					"-c",
-					fmt.Sprintf("rsync --delete -a %s /targetconfig", containerConfig.ConfigContainer.Path)}...).
+					fmt.Sprintf("rsync --delete -a %s /targetconfig", containerConfig.ConfigContainer.Path),
+				}...).
 				WithVolumeMounts(getVolumeMountsFromMap(map[string]v1.Volume{
 					util.JoinV("-", containerConfig.Container, containerConfig.ConfigContainer.Volume): {
 						Name: util.JoinV("-", containerConfig.Container, containerConfig.ConfigContainer.Volume),
@@ -303,7 +305,8 @@ func addConfigContainer(initContainers []*corev1.ContainerApplyConfiguration,
 }
 
 func addImportContainer(initContainers []*corev1.ContainerApplyConfiguration,
-	containerConfig *v1.ContainerConfig, cfg *config.Configuration) []*corev1.ContainerApplyConfiguration {
+	containerConfig *v1.ContainerConfig, cfg *config.Configuration,
+) []*corev1.ContainerApplyConfiguration {
 	if containerConfig.ImportContainer != nil {
 		importContainerVolumeName := util.JoinV("-", containerConfig.Container, containerConfig.ImportContainer.Volume)
 
@@ -328,7 +331,8 @@ func addImportContainer(initContainers []*corev1.ContainerApplyConfiguration,
 }
 
 func addInitContainers(initContainers []*corev1.ContainerApplyConfiguration,
-	params *deploymentParams) []*corev1.ContainerApplyConfiguration {
+	params *deploymentParams,
+) []*corev1.ContainerApplyConfiguration {
 	for _, iCont := range params.containerConfig.InitContainers {
 		container := corev1.Container().
 			WithName(iCont.Name).
@@ -482,7 +486,6 @@ func getVolumeMountsFromMap(mounts map[string]v1.Volume) []*corev1.VolumeMountAp
 
 func GetDeployments(ctx context.Context, namespace string, cfg *config.Configuration) (*kappsv1.DeploymentList, error) {
 	clientset, err := NewClient().GetClientSet(cfg)
-
 	if err != nil {
 		return nil, err
 	}

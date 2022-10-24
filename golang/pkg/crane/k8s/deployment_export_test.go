@@ -9,6 +9,7 @@ import (
 )
 
 func GetResourceManagementForTest(resourceConfig v1.ResourceConfig,
-	cfg *config.Configuration) (*corev1.ResourceRequirementsApplyConfiguration, error) {
+	cfg *config.Configuration,
+) (*corev1.ResourceRequirementsApplyConfiguration, error) {
 	return getResourceManagement(resourceConfig, cfg)
 }

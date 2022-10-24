@@ -95,11 +95,15 @@ const SecretLength = 32
 
 const BufferMultiplier = 2
 
-const FilePerms = 0600
-const DirPerms = 0750
+const (
+	FilePerms = 0o600
+	DirPerms  = 0o750
+)
 
-const SettingsFileName = "settings.yaml"
-const SettingsFileDir = "dyo-cli"
+const (
+	SettingsFileName = "settings.yaml"
+	SettingsFileDir  = "dyo-cli"
+)
 
 const (
 	CruxAgentGrpcPort  = "CruxAgentGrpcPort"
@@ -301,6 +305,14 @@ func SaveSettings(settings *Settings) {
 
 		// If settingspath is default, we create the directory for it
 		if settings.SettingsFilePath == settingspath {
+			if _, err := os.Stat(userconfdir); errors.Is(err, os.ErrNotExist) {
+				err = os.Mkdir(userconfdir, DirPerms)
+				if err != nil {
+					log.Fatal().Err(err).Stack().Msg("")
+				}
+			} else if err != nil {
+				log.Fatal().Err(err).Stack().Msg("")
+			}
 			if _, err := os.Stat(filepath.Dir(settingspath)); errors.Is(err, os.ErrNotExist) {
 				err = os.Mkdir(filepath.Dir(settingspath), DirPerms)
 				if err != nil {

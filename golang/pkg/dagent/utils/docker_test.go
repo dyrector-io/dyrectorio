@@ -85,6 +85,7 @@ func TestEnvPipeSeparatedToStringMap_Empty(t *testing.T) {
 
 	assert.True(t, reflect.DeepEqual(out, map[string]string{}))
 }
+
 func TestEnvPipeSeparatedToStringMap_Collision(t *testing.T) {
 	envIn := &[]string{"NAME|value", "NAME|value2"}
 

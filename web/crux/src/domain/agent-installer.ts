@@ -23,7 +23,7 @@ export default class AgentInstaller {
     readonly configService: ConfigService,
     readonly nodeId: string,
     readonly token: string,
-    readonly expireAt: number,
+    readonly expireAt: Date,
     readonly nodeType: NodeTypeEnum,
     readonly rootPath: string | null,
   ) {
@@ -31,7 +31,7 @@ export default class AgentInstaller {
   }
 
   get expired(): boolean {
-    const now = new Date().getTime()
+    const now = new Date()
     return now > this.expireAt
   }
 

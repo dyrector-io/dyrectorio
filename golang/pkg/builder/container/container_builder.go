@@ -348,7 +348,6 @@ func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 	}
 
 	containerCreateResp, err := dc.client.ContainerCreate(dc.ctx, containerConfig, hostConfig, nil, nil, name)
-
 	if err != nil {
 		logWrite(dc, fmt.Sprintln("Container create failed: ", err))
 	}
@@ -380,7 +379,6 @@ func (dc *DockerContainerBuilder) StartWaitUntilExit() (*ContainerWaitResult, er
 	containerID := *dc.GetContainerID()
 	waitC, errC := dc.client.ContainerWait(dc.ctx, containerID, container.WaitConditionNextExit)
 	_, err := dc.Start()
-
 	if err != nil {
 		return nil, fmt.Errorf("failed start-waiting container: %w", err)
 	}

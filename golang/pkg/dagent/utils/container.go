@@ -112,7 +112,6 @@ func ExecTraefik(ctx context.Context, traefikDeployReq model.TraefikDeployReques
 
 	// create treafik.yml
 	configTmpl, err := template.New("config").Parse(GetTraefikGoTemplate())
-
 	if err != nil {
 		log.Error().Stack().Err(err).Msg("could not parse template string")
 		return err
@@ -143,7 +142,8 @@ func ExecTraefik(ctx context.Context, traefikDeployReq model.TraefikDeployReques
 
 	// ports
 	ports := []containerbuilder.PortBinding{
-		{PortBinding: 80, ExposedPort: 80}}
+		{PortBinding: 80, ExposedPort: 80},
+	}
 
 	if traefikDeployReq.TLS {
 		ports = append(ports, containerbuilder.PortBinding{PortBinding: 443, ExposedPort: 443})
