@@ -16,7 +16,8 @@ import (
 
 // utility method ensuring deployment is running
 func WaitForRunningDeployment(ctx context.Context, namespace, name string, expectedReplicaCount int32,
-	timeout time.Duration, cfg *config.Configuration) error {
+	timeout time.Duration, cfg *config.Configuration,
+) error {
 	client := getDeploymentsClient(namespace, cfg)
 	nameSelector := fields.OneTermEqualSelector("metadata.name", name)
 	options := metav1.ListOptions{FieldSelector: nameSelector.String(), Watch: true, TypeMeta: metav1.TypeMeta{}}

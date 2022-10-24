@@ -202,7 +202,6 @@ func TestContainerConfigStrings(t *testing.T) {
 		"Memory limit: 512mb, CPU limit: 4.0",
 		"User: 777",
 	}, s)
-
 }
 
 func TestUnmarshalJSON(t *testing.T) {
@@ -226,5 +225,4 @@ func TestUnmarshalJSON(t *testing.T) {
 	err = j.UnmarshalJSON([]byte(base64.StdEncoding.EncodeToString([]byte(b))))
 	assert.NoError(t, err)
 	assert.Equal(t, expect, string(j))
-
 }

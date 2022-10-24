@@ -31,10 +31,10 @@ func checkIfTargetVolumeIsThere(mountList []mount.Mount, importContainer *v1.Imp
 // before application container starts, loads import container
 func spawnInitContainer(
 	cli *client.Client, ctx context.Context, name string, mountList []mount.Mount,
-	importContainer *v1.ImportContainer, dog *dogger.DeploymentLogger, cfg *config.Configuration) error {
+	importContainer *v1.ImportContainer, dog *dogger.DeploymentLogger, cfg *config.Configuration,
+) error {
 	dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Spawning importer container to load assets")
 	targetVolumeIndex, err := checkIfTargetVolumeIsThere(mountList, importContainer)
-
 	if err != nil {
 		return err
 	}
@@ -58,7 +58,6 @@ func spawnInitContainer(
 	dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Waiting for import container to finish")
 
 	exitResult, err := builder.StartWaitUntilExit()
-
 	if err != nil {
 		return fmt.Errorf("import container start failed: %w", err)
 	}

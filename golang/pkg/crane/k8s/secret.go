@@ -33,7 +33,6 @@ func (s *secret) applySecrets(namespace, name string, values map[string]string) 
 	}
 
 	decrypted, err := crypt.DecryptSecrets(values, &s.appConfig.CommonConfiguration)
-
 	if err != nil {
 		return err
 	}
@@ -83,7 +82,6 @@ func ListSecrets(ctx context.Context, namespace, name string, appConfig *config.
 
 func getSecretClient(namespace string, cfg *config.Configuration) (v1.SecretInterface, error) {
 	clientset, err := NewClient().GetClientSet(cfg)
-
 	if err != nil {
 		return nil, err
 	}

@@ -84,7 +84,8 @@ func (p *pvc) deployPVC(namespace, name string, mountList []string, volumes []v1
 }
 
 func (p *pvc) applyVolume(client typedv1.PersistentVolumeClaimInterface,
-	namespace, name string, volume *v1.Volume, volumeType coreV1.PersistentVolumeAccessMode) error {
+	namespace, name string, volume *v1.Volume, volumeType coreV1.PersistentVolumeAccessMode,
+) error {
 	fullVolumeName := util.JoinV("-", name, volume.Name)
 
 	var size resource.Quantity
@@ -112,7 +113,6 @@ func (p *pvc) applyVolume(client typedv1.PersistentVolumeClaimInterface,
 		FieldManager: p.appConfig.FieldManagerName,
 		Force:        p.appConfig.ForceOnConflicts,
 	})
-
 	if err != nil {
 		return err
 	}

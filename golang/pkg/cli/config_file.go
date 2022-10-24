@@ -95,11 +95,15 @@ const SecretLength = 32
 
 const BufferMultiplier = 2
 
-const FilePerms = 0600
-const DirPerms = 0750
+const (
+	FilePerms = 0o600
+	DirPerms  = 0o750
+)
 
-const SettingsFileName = "settings.yaml"
-const SettingsFileDir = "dyo-cli"
+const (
+	SettingsFileName = "settings.yaml"
+	SettingsFileDir  = "dyo-cli"
+)
 
 const (
 	CruxAgentGrpcPort  = "CruxAgentGrpcPort"

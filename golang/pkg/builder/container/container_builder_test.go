@@ -42,7 +42,8 @@ func assertPortBinding(t *testing.T, portMap nat.PortMap, internal, external str
 
 func hookCallback(callback func()) containerbuilder.LifecycleFunc {
 	return func(ctx context.Context, client *client.Client, containerName string,
-		containerId *string, mountList []mount.Mount, logger *io.StringWriter) error {
+		containerId *string, mountList []mount.Mount, logger *io.StringWriter,
+	) error {
 		callback()
 		return nil
 	}

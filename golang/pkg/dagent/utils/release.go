@@ -46,7 +46,6 @@ func DraftRelease(instance string, versionData v1.VersionData, deployResponse v1
 	}
 
 	content, err := yaml.Marshal(&release)
-
 	if err != nil {
 		log.Print(fmt.Sprintln("Version drafting error ", err))
 		return

@@ -117,7 +117,8 @@ func fetchCertificatesFromURL(ctx context.Context, addr string) (*x509.CertPool,
 func Init(grpcContext context.Context,
 	connParams *GrpcConnectionParams,
 	appConfig *config.CommonConfiguration,
-	workerFuncs WorkerFunctions) {
+	workerFuncs WorkerFunctions,
+) {
 	log.Print("Spinning up gRPC Agent client...")
 	if grpcConn == nil {
 		grpcConn = &GrpcConnection{}

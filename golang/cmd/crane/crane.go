@@ -18,7 +18,6 @@ func main() {
 	}
 	if err := cfg.ParseAndSetJWT(os.Getenv("GRPC_TOKEN")); err != nil {
 		log.Panic().Err(err).Msg("failed to parse env GRPC_TOKEN")
-
 	}
 	log.Print("Configuration loaded.")
 	crane.Serve(&cfg)

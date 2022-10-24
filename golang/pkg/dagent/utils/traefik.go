@@ -18,8 +18,7 @@ func GetTraefikLabels(instanceConfig *v1.InstanceConfig, containerConfig *v1.Con
 	labels["traefik.enable"] = "true"
 
 	labels["traefik.http.services."+serviceName+".loadbalancer.server.port"] = fmt.Sprint(containerConfig.Ports[0].ExposedPort)
-	labels["traefik.http.routers."+serviceName+".rule"] =
-		"Host(`" + GetServiceName(instanceConfig, containerConfig, cfg) + "`)"
+	labels["traefik.http.routers."+serviceName+".rule"] = "Host(`" + GetServiceName(instanceConfig, containerConfig, cfg) + "`)"
 	if containerConfig.ExposeTLS {
 		labels["traefik.http.routers."+serviceName+".entrypoints"] = "websecure"
 		labels["traefik.http.routers."+serviceName+".tls.certresolver"] = "le"
