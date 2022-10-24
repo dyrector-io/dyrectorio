@@ -12,9 +12,6 @@ import (
 
 const (
 	pubKey = `-----BEGIN PGP PUBLIC KEY BLOCK-----
-Version: OpenPGP.js v4.10.10
-Comment: https://openpgpjs.org
-
 xsBNBGNL+qkBCAC4YPhkCH5AX34wDbSmqZkOMHi/7zIy8lwtj0VNKQFfN3x9
 dtDmwJtWBazNruOI7zOGpLTPYaeF3S3QLSR61ak9+NB7ExxBZKFGVcbfX8x6
 4HOLIPForo+mLsuElhDJ8Tt1b3nzJ4KVM+auO7lacXwaHab2VVsD8BWUd9N1
@@ -46,9 +43,6 @@ MFkuY5T0DDLlM3fDyia8eaYy9wYBLImZ2Zgy3it+UmUHc5OpaeMM4NYhMB5V
 -----END PGP PUBLIC KEY BLOCK-----
 `
 	privKey = `-----BEGIN PGP PRIVATE KEY BLOCK-----
-Version: OpenPGP.js v4.10.10
-Comment: https://openpgpjs.org
-
 xcLYBGNL+qkBCAC4YPhkCH5AX34wDbSmqZkOMHi/7zIy8lwtj0VNKQFfN3x9
 dtDmwJtWBazNruOI7zOGpLTPYaeF3S3QLSR61ak9+NB7ExxBZKFGVcbfX8x6
 4HOLIPForo+mLsuElhDJ8Tt1b3nzJ4KVM+auO7lacXwaHab2VVsD8BWUd9N1
@@ -109,9 +103,6 @@ meR0tVQWeMpaue0VtGLPKHPGOknElgItP7cyVWJqEr6oM/x7uNrTpl3a
 -----END PGP PRIVATE KEY BLOCK-----
 `  // encrypted private key for unit test
 	pubKey1 = `-----BEGIN PGP PUBLIC KEY BLOCK-----
-Version: OpenPGP.js v4.10.10
-Comment: https://openpgpjs.org
-
 xsBNBGNL/YwBCADoeS0lcePet5BS+nCWrM8LLFR3tFXz/q/5hwaiqZTXR6So
 559uq0htGHsxP0529EZlbftHGDCZDfQ79N3uEmCSNQXpCPfSwPeAupRolA+C
 pXvbXrqC/jA3415ukNBWD7PecLcpza7n88lQpsSqsxwNAEAKt44Gzg7D8vzK
