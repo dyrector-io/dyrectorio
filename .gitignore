@@ -5,3 +5,4 @@ node_modules/
 .vscode/*.log
 
 docker-compose.ci.yaml
+.idea
