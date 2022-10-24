@@ -5,10 +5,11 @@ package caps
 
 import (
 	"encoding/json"
+	"testing"
+
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestParseLabelsIntoContainerConfig_UnrelatedValue(t *testing.T) {

@@ -13,18 +13,22 @@ import (
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 )
 
-const PostgresImage = "docker.io/library/postgres:13-alpine"
-const MailSlurperImage = "docker.io/oryd/mailslurper:latest-smtps"
+const (
+	PostgresImage    = "docker.io/library/postgres:13-alpine"
+	MailSlurperImage = "docker.io/oryd/mailslurper:latest-smtps"
+)
 
-const defaultCruxAgentGrpcPort = 5000
-const defaultCruxGrpcPort = 5001
-const defaultCruxUIPort = 3000
-const defaultTraefikWebPort = 8000
-const defaultTraefikUIPort = 8080
-const defaultKratosPublicPort = 4433
-const defaultKratosAdminPort = 4434
-const defaultMailSlurperPort = 4436
-const defaultMailSlurperPort2 = 4437
+const (
+	defaultCruxAgentGrpcPort = 5000
+	defaultCruxGrpcPort      = 5001
+	defaultCruxUIPort        = 3000
+	defaultTraefikWebPort    = 8000
+	defaultTraefikUIPort     = 8080
+	defaultKratosPublicPort  = 4433
+	defaultKratosAdminPort   = 4434
+	defaultMailSlurperPort   = 4436
+	defaultMailSlurperPort2  = 4437
+)
 
 // Crux services: db migrations and crux api service
 func GetCrux(settings *Settings) *containerbuilder.DockerContainerBuilder {
@@ -66,7 +70,8 @@ func GetCrux(settings *Settings) *containerbuilder.DockerContainerBuilder {
 			{
 				ExposedPort: defaultCruxGrpcPort,
 				PortBinding: uint16(settings.SettingsFile.CruxGrpcPort),
-			}}).
+			},
+		}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
 		WithNetworkAliases(settings.Containers.Crux.Name).
 		WithMountPoints([]mount.Mount{
@@ -93,7 +98,8 @@ func GetCruxMigrate(settings *Settings) *containerbuilder.DockerContainerBuilder
 				settings.SettingsFile.CruxPostgresPassword,
 				settings.Containers.CruxPostgres.Name,
 				DefaultPostgresPort,
-				settings.SettingsFile.CruxPostgresDB)}).
+				settings.SettingsFile.CruxPostgresDB),
+		}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
 		WithNetworkAliases(settings.Containers.CruxMigrate.Name).
 		WithCmd([]string{"migrate"})
@@ -129,7 +135,8 @@ func GetCruxUI(settings *Settings) *containerbuilder.DockerContainerBuilder {
 			{
 				ExposedPort: defaultCruxUIPort,
 				PortBinding: uint16(settings.SettingsFile.CruxUIPort),
-			}}).
+			},
+		}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
 		WithNetworkAliases(settings.Containers.CruxUI.Name).
 		WithMountPoints([]mount.Mount{
@@ -199,13 +206,15 @@ func GetTraefik(settings *Settings) *containerbuilder.DockerContainerBuilder {
 			{
 				ExposedPort: defaultTraefikUIPort,
 				PortBinding: uint16(settings.SettingsFile.TraefikUIPort),
-			}}).
+			},
+		}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
 		WithNetworkAliases(settings.Containers.Traefik.Name).
 		WithMountPoints([]mount.Mount{{
 			Type:   mountType,
 			Source: settings.SettingsFile.TraefikDockerSocket,
-			Target: "/var/run/docker.sock"}}).
+			Target: "/var/run/docker.sock",
+		}}).
 		WithCmd(commands)
 
 	return traefik
@@ -254,7 +263,8 @@ func GetKratos(settings *Settings) *containerbuilder.DockerContainerBuilder {
 			{
 				ExposedPort: defaultKratosAdminPort,
 				PortBinding: uint16(settings.SettingsFile.KratosAdminPort),
-			}}).
+			},
+		}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
 		WithNetworkAliases(settings.Containers.Kratos.Name).
 		WithLabels(map[string]string{
@@ -308,7 +318,8 @@ func GetMailSlurper(settings *Settings) *containerbuilder.DockerContainerBuilder
 			{
 				ExposedPort: defaultMailSlurperPort2,
 				PortBinding: uint16(settings.SettingsFile.MailSlurperPort2),
-			}}).
+			},
+		}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
 		WithNetworkAliases(settings.Containers.MailSlurper.Name)
 
@@ -329,11 +340,13 @@ func GetCruxPostgres(settings *Settings) *containerbuilder.DockerContainerBuilde
 			{
 				ExposedPort: DefaultPostgresPort,
 				PortBinding: uint16(settings.SettingsFile.CruxPostgresPort),
-			}}).
+			},
+		}).
 		WithMountPoints([]mount.Mount{{
 			Type:   mount.TypeVolume,
 			Source: fmt.Sprintf("%s-data", settings.Containers.CruxPostgres.Name),
-			Target: "/var/lib/postgresql/data"}})
+			Target: "/var/lib/postgresql/data",
+		}})
 
 	return cruxPostgres
 }
@@ -349,13 +362,17 @@ func GetKratosPostgres(settings *Settings) *containerbuilder.DockerContainerBuil
 			{
 				ExposedPort: DefaultPostgresPort,
 				PortBinding: uint16(settings.SettingsFile.KratosPostgresPort),
-			}}).
+			},
+		}).
 		WithName(settings.Containers.KratosPostgres.Name).
 		WithNetworkAliases(settings.Containers.KratosPostgres.Name).
 		WithMountPoints([]mount.Mount{
-			{Type: mount.TypeVolume,
+			{
+				Type:   mount.TypeVolume,
 				Source: fmt.Sprintf("%s-data", settings.Containers.KratosPostgres.Name),
-				Target: "/var/lib/postgresql/data"}})
+				Target: "/var/lib/postgresql/data",
+			},
+		})
 
 	return kratosPostgres
 }

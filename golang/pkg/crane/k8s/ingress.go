@@ -2,10 +2,9 @@ package k8s
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
-
-	"errors"
 
 	"github.com/rs/zerolog/log"
 	v1 "k8s.io/api/networking/v1"
@@ -97,13 +96,13 @@ func (ing *ingress) deployIngress(options *DeployIngressOptions) error {
 					options.uploadLimit,
 					options.customHeaders,
 				)),
-		Spec: spec}
+		Spec: spec,
+	}
 
 	ingress, err := client.Apply(ing.ctx, applyConfig, metav1.ApplyOptions{
 		FieldManager: ing.appConfig.FieldManagerName,
 		Force:        ing.appConfig.ForceOnConflicts,
 	})
-
 	if err != nil {
 		log.Printf("%v, ingress: %s", err, ingress.ObjectMeta.Name)
 	}
@@ -131,7 +130,8 @@ func getTLSConfig(ingressPath, containerName string, enabled bool) *netv1.Ingres
 }
 
 func getAnnotations(tlsIsWanted, proxyHeaders bool,
-	uploadLimit string, customHeaders []string) map[string]string {
+	uploadLimit string, customHeaders []string,
+) map[string]string {
 	corsHeaders := []string{}
 
 	annotations := map[string]string{
@@ -171,7 +171,6 @@ func getAnnotations(tlsIsWanted, proxyHeaders bool,
 
 func getIngressClient(namespace string, cfg *config.Configuration) (networking.IngressInterface, error) {
 	clientset, err := NewClient().GetClientSet(cfg)
-
 	if err != nil {
 		return nil, err
 	}

@@ -2,7 +2,6 @@ package mapper
 
 import (
 	"fmt"
-
 	"strings"
 	"time"
 
