@@ -19,10 +19,6 @@ func Serve(cfg *config.Configuration) {
 	grpcToken := cfg.GrpcToken
 	grpcInsecure := cfg.GrpcInsecure
 
-	if grpcToken == "" {
-		log.Panic().Msg("no grpc address was provided")
-	}
-
 	if cfg.TraefikEnabled {
 		params := model.TraefikDeployRequest{
 			LogLevel: cfg.TraefikLogLevel,
