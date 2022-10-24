@@ -304,10 +304,10 @@ func SaveSettings(settings *Settings) {
 			if _, err := os.Stat(userconfdir); errors.Is(err, os.ErrNotExist) {
 				err = os.Mkdir(userconfdir, DirPerms)
 				if err != nil {
-					log.Fatalf("%v", err)
+					log.Fatal().Err(err).Stack().Msg("")
 				}
 			} else if err != nil {
-				log.Fatalf("%v", err)
+				log.Fatal().Err(err).Stack().Msg("")
 			}
 			if _, err := os.Stat(filepath.Dir(settingspath)); errors.Is(err, os.ErrNotExist) {
 				err = os.Mkdir(filepath.Dir(settingspath), DirPerms)

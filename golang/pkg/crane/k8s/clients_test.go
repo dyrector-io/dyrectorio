@@ -89,5 +89,5 @@ func TestGetClientSetOutClusterError(t *testing.T) {
 	// WHEN
 
 	// THEN
-	assert.PanicsWithValue(t, "Could not load config file: OutCluster error\n", func() { client.GetClientSet(cfg) })
+	assert.PanicsWithValue(t, "Could not load config file", func() { client.GetClientSet(cfg) })
 }
