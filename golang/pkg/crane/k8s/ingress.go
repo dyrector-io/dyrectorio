@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"errors"
-	"log"
 
+	"github.com/rs/zerolog/log"
 	v1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	applymetav1 "k8s.io/client-go/applyconfigurations/meta/v1"
@@ -44,7 +44,7 @@ func (ing *ingress) deployIngress(options *DeployIngressOptions) error {
 
 	client, err := getIngressClient(options.namespace, ing.appConfig)
 	if err != nil {
-		log.Println("Error with ingress client: ", err.Error())
+		log.Error().Err(err).Stack().Msg("Error with ingress client")
 	}
 
 	if len(options.ports) == 0 {

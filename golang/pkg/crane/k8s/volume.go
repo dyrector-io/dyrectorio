@@ -1,8 +1,9 @@
 package k8s
 
 import (
-	"log"
 	"strings"
+
+	"github.com/rs/zerolog/log"
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 )
@@ -36,7 +37,7 @@ func mapShortNotationToVolumeMap(volumes []string) map[string]v1.Volume {
 				Type: string(volumeType),
 			}
 		} else {
-			log.Println("Warning: empty volume name")
+			log.Warn().Msg("empty volume name")
 		}
 	}
 
@@ -57,7 +58,7 @@ func volumeSliceToMap(volumes []v1.Volume) map[string]v1.Volume {
 func safeMergeVolumeMaps(one, other map[string]v1.Volume) map[string]v1.Volume {
 	for name := range other {
 		if _, ok := one[name]; ok {
-			log.Println("Warning: volume name collision: ", name)
+			log.Warn().Str("name", name).Msg("volume name collision")
 		}
 		one[name] = other[name]
 	}

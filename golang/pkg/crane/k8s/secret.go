@@ -2,11 +2,11 @@ package k8s
 
 import (
 	"context"
-	"log"
 
 	"github.com/dyrector-io/dyrectorio/golang/internal/crypt"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
 
+	"github.com/rs/zerolog/log"
 	v1 "k8s.io/client-go/kubernetes/typed/core/v1"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -46,7 +46,7 @@ func (s *secret) applySecrets(namespace, name string, values map[string]string) 
 	})
 
 	if result != nil {
-		log.Println("Secret updated: " + result.Name)
+		log.Info().Str("name", name).Msg("Secret updated")
 		if len(values) > 0 {
 			s.avail = append(s.avail, name)
 		}

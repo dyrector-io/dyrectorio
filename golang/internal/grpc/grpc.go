@@ -7,11 +7,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"time"
 
 	"github.com/form3tech-oss/jwt-go"
+	"github.com/rs/zerolog/log"
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 	"github.com/dyrector-io/dyrectorio/golang/internal/config"
@@ -22,13 +22,11 @@ import (
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/status"
 )
 
 type GrpcConnection struct {
@@ -63,11 +61,11 @@ func GrpcTokenToConnectionParams(grpcToken string, insecureGrpc bool) (*GrpcConn
 	claims := jwt.StandardClaims{}
 	token, err := jwt.ParseWithClaims(grpcToken, &claims, nil)
 	if token == nil {
-		log.Println("Can not parse the gRPC token")
+		log.Print("Can not parse the gRPC token")
 		if err != nil {
 			return nil, err
 		}
-		log.Println("gRPC skipped")
+		log.Print("gRPC skipped")
 	}
 
 	return &GrpcConnectionParams{
@@ -90,7 +88,7 @@ func (g *GrpcConnection) SetConn(conn *grpc.ClientConn) {
 var grpcConn *GrpcConnection
 
 func fetchCertificatesFromURL(ctx context.Context, addr string) (*x509.CertPool, error) {
-	log.Println("Retrieving certificate")
+	log.Print("Retrieving certificate")
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodHead, addr, http.NoBody)
 	if err != nil {
@@ -129,7 +127,7 @@ func Init(grpcContext context.Context,
 	connParams *GrpcConnectionParams,
 	appConfig *config.CommonConfiguration,
 	workerFuncs WorkerFunctions) {
-	log.Println("Spinning up gRPC Agent client...")
+	log.Print("Spinning up gRPC Agent client...")
 	if grpcConn == nil {
 		grpcConn = &GrpcConnection{}
 	}
@@ -146,7 +144,7 @@ func Init(grpcContext context.Context,
 			certPool, err := fetchCertificatesFromURL(ctx, httpAddr)
 
 			if err != nil {
-				log.Panic(err.Error())
+				log.Error().Stack().Err(err).Msg("")
 			}
 
 			creds = credentials.NewClientTLSFromCert(certPool, "")
@@ -165,25 +163,25 @@ func Init(grpcContext context.Context,
 				}),
 		}
 
-		log.Println("Dialing", connParams.address)
+		log.Print("Dialing", connParams.address)
 		conn, err := grpc.Dial(connParams.address, opts...)
 
 		if err != nil {
-			log.Panic("failed to dial gRPC: ", err.Error())
+			log.Panic().Stack().Err(err).Msg("failed to dial gRPC")
 		}
 
 		for {
 			state := conn.GetState()
 			if state != connectivity.Ready {
-				log.Println("Waiting for state to change: ", state)
+				log.Print("Waiting for state to change: ", state)
 				conn.WaitForStateChange(ctx, state)
-				log.Println("Changed to: ", conn.GetState())
+				log.Print("Changed to: ", conn.GetState())
 			} else {
 				break
 			}
 		}
 		if err != nil {
-			log.Println("gRPC connection error: " + err.Error())
+			log.Error().Stack().Err(err).Msg("gRPC connection error")
 		}
 		grpcConn.Conn = conn
 	}
@@ -208,8 +206,7 @@ func grpcLoop(
 			publicKey, keyErr := config.GetPublicKey(string(appConfig.SecretPrivateKey))
 
 			if keyErr != nil {
-				log.Printf("grpc public key error: %s", keyErr.Error())
-				log.Println(publicKey)
+				log.Error().Stack().Err(keyErr).Str("publicKey", publicKey).Msg("grpc public key error")
 			}
 
 			stream, err = grpcConn.Client.Connect(
@@ -217,12 +214,12 @@ func grpcLoop(
 				grpc.WaitForReady(true),
 			)
 			if err != nil {
-				log.Println(err)
+				log.Error().Stack().Err(err).Msg("")
 				time.Sleep(time.Second)
 				grpcConn.Client = nil
 				continue
 			} else {
-				log.Println("Stream connection is up")
+				log.Print("Stream connection is up")
 			}
 		}
 
@@ -235,7 +232,7 @@ func grpcLoop(
 			continue
 		}
 		if err != nil {
-			log.Println(status.Errorf(codes.Unknown, "Cannot receive stream: %v", err))
+			log.Error().Stack().Err(err).Msg("Cannot receive stream")
 			grpcConn.Client = nil
 			time.Sleep(appConfig.DefaultTimeout)
 			// TODO replace the line above with an error status code check and terminate dagent accordingly
@@ -253,7 +250,7 @@ func grpcLoop(
 		} else if command.GetListSecrets() != nil {
 			go executeSecretList(ctx, command.GetListSecrets(), workerFuncs.SecretList, appConfig)
 		} else {
-			log.Println("Unknown agent command")
+			log.Print("Unknown agent command")
 		}
 	}
 }
@@ -262,16 +259,16 @@ func executeVersionDeployRequest(
 	ctx context.Context, req *agent.VersionDeployRequest,
 	deploy DeployFunc, appConfig *config.CommonConfiguration) {
 	if req.Id == "" {
-		log.Println("Empty request")
+		log.Print("Empty request")
 		return
 	}
-	log.Println("Deployment -", req.Id, "Opening status channel.")
+	log.Print("Deployment -", req.Id, "Opening status channel.")
 
 	deployCtx := metadata.AppendToOutgoingContext(ctx, "dyo-deployment-id", req.Id)
 	statusStream, err := grpcConn.Client.DeploymentStatus(deployCtx, grpc.WaitForReady(true))
 
 	if err != nil {
-		log.Println("Deployment -", req.Id, "Status connect error: ", err.Error())
+		log.Error().Stack().Err(err).Str("deployment", req.Id).Msg("Status connect error")
 		return
 	}
 
@@ -311,7 +308,7 @@ func executeVersionDeployRequest(
 
 	err = statusStream.CloseSend()
 	if err != nil {
-		log.Println(req.Id, "Stream close err: ", err.Error())
+		log.Error().Stack().Err(err).Str("deployment", req.Id).Msg("Status close err")
 		return
 	}
 }
@@ -370,16 +367,16 @@ func executeVersionDeployLegacyRequest(
 	ctx context.Context, req *agent.DeployRequestLegacy,
 	deploy DeployFunc, appConfig *config.CommonConfiguration) {
 	if req.RequestId == "" {
-		log.Println("Empty request")
+		log.Print("Empty request")
 		return
 	}
-	log.Println("Deployment -", req.RequestId, "Opening status channel.")
+	log.Info().Str("deployment", req.RequestId).Msg("Opening status channel.")
 
 	deployCtx := metadata.AppendToOutgoingContext(ctx, "dyo-deployment-id", req.RequestId)
 	statusStream, err := grpcConn.Client.DeploymentStatus(deployCtx, grpc.WaitForReady(true))
 
 	if err != nil {
-		log.Println("Deployment -", &req.RequestId, "Status connect error: ", err.Error())
+		log.Error().Stack().Err(err).Str("deployment", req.RequestId).Msg("Status connect error")
 		return
 	}
 
@@ -412,7 +409,10 @@ func executeVersionDeployLegacyRequest(
 
 	err = statusStream.CloseSend()
 	if err != nil {
-		log.Println(deployImageRequest.RequestID, "Stream close err: ", err.Error())
+		log.Error().Stack().Err(err).
+			Str("deployment", req.RequestId).
+			Str("deployImageRequestId", deployImageRequest.RequestID).
+			Msg("Status close err")
 		return
 	}
 }
@@ -429,13 +429,13 @@ func executeSecretList(
 
 	keys, err := listFunc(ctx, prefix, name)
 	if err != nil {
-		log.Println("Secret list error: ", err.Error())
+		log.Error().Stack().Err(err).Msg("Secret list error")
 		return
 	}
 
 	publicKey, err := config.GetPublicKey(string(appConfig.SecretPrivateKey))
 	if err != nil {
-		log.Println("Failed to get public key: ", err.Error())
+		log.Error().Stack().Err(err).Msg("Failed to get public key")
 		return
 	}
 
@@ -449,7 +449,7 @@ func executeSecretList(
 
 	_, err = grpcConn.Client.SecretsList(ctx, resp)
 	if err != nil {
-		log.Println("Secret list response error: ", err.Error())
+		log.Error().Stack().Err(err).Msg("Secret list response error")
 		return
 	}
 }

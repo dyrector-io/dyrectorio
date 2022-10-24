@@ -3,8 +3,8 @@ package k8s
 import (
 	"context"
 	"fmt"
-	"log"
 
+	"github.com/rs/zerolog/log"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	corev1 "k8s.io/client-go/applyconfigurations/core/v1"
 	typedv1 "k8s.io/client-go/kubernetes/typed/core/v1"
@@ -35,7 +35,7 @@ func (cm *configmap) loadSharedConfig(namespace string) error {
 	commonConfigMapName := util.JoinV("-", namespace, "shared")
 	commonConfigMap, err := client.Get(cm.ctx, commonConfigMapName, metaV1.GetOptions{})
 	if err != nil {
-		log.Println("shared configmaps could not be loaded ns: ", namespace)
+		log.Info().Str("namespace", namespace).Msg("shared configmaps could not be loaded")
 	}
 	if commonConfigMap != nil {
 		cm.avail = append(cm.avail, commonConfigMapName)
@@ -61,7 +61,7 @@ func (cm *configmap) deployConfigMapData(namespace, name string, envList map[str
 		return err
 	}
 	if result != nil {
-		log.Println("ConfigMap updated: " + result.Name)
+		log.Info().Str("configMap", result.Name).Msg("ConfigMap updated")
 		if len(envList) > 0 {
 			cm.avail = append(cm.avail, name)
 		}

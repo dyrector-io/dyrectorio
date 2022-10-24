@@ -3,9 +3,9 @@ package k8s
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 
+	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -85,7 +85,7 @@ func (s *service) deployService(params *ServiceParams) error {
 	})
 
 	if err != nil {
-		log.Println("Service deploy error: " + err.Error())
+		log.Error().Err(err).Stack().Msg("Service deploy error")
 	} else {
 		log.Printf("Service deployed: %s", res.Name)
 	}
@@ -162,12 +162,12 @@ func genIngressMapFile(ports []*acorev1.ServicePortApplyConfiguration, namespace
 
 	bytes, err := yaml.Marshal(content)
 	if err != nil {
-		log.Println("could not unmarshal ingress map", err.Error())
+		log.Error().Err(err).Stack().Msg("could not unmarshal ingress map")
 	}
 
 	err = os.WriteFile("ingress-map.yml", bytes, os.ModePerm)
 
 	if err != nil {
-		log.Println("could not write file: ", err.Error())
+		log.Error().Err(err).Stack().Msg("could not write file")
 	}
 }

@@ -2,7 +2,8 @@ package crux
 
 import (
 	"context"
-	"log"
+
+	"github.com/rs/zerolog/log"
 
 	"github.com/dyrector-io/dyrectorio/golang/internal/grpc"
 	"github.com/dyrector-io/dyrectorio/golang/internal/mapper"
@@ -16,7 +17,7 @@ func GetDeployments(ctx context.Context, namespace string) []*common.ContainerSt
 	list, err := k8s.GetDeployments(ctx, namespace, cfg)
 
 	if err != nil {
-		log.Println(err)
+		log.Error().Err(err).Stack().Msg("")
 	}
 
 	return mapper.MapKubeDeploymentListToCruxStateItems(list)

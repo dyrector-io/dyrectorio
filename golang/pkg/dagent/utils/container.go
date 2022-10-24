@@ -3,13 +3,13 @@ package utils
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"path"
 	"path/filepath"
 	"text/template"
 
 	"github.com/docker/docker/api/types/mount"
+	"github.com/rs/zerolog/log"
 
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/model"
@@ -114,30 +114,30 @@ func ExecTraefik(ctx context.Context, traefikDeployReq model.TraefikDeployReques
 	configTmpl, err := template.New("config").Parse(GetTraefikGoTemplate())
 
 	if err != nil {
-		log.Println("could not parse template string: " + err.Error())
+		log.Error().Stack().Err(err).Msg("could not parse template string")
 		return err
 	}
 
 	//#nosec G304
 	configFile, err := os.Create(filepath.Join(configDir, "traefik.yml"))
 	if err != nil {
-		log.Println("could not create traefik.yml file: " + err.Error())
+		log.Error().Stack().Err(err).Msg("could not create traefik.yml file")
 		return err
 	}
 	// anonymized defer to swallow error, at least something is logged about it
 	defer func(configFile *os.File) {
 		if err = configFile.Close(); err != nil {
-			log.Println("closing traefik.yml failedd: ", err.Error())
+			log.Error().Stack().Err(err).Msg("closing traefik.yml failed")
 		}
 	}(configFile)
 
 	err = configTmpl.Execute(configFile, traefikDeployReq)
 	if err != nil {
-		log.Println("rendering traefik config template error: " + err.Error())
+		log.Error().Stack().Err(err).Msg("rendering traefik config template error")
 		return err
 	}
 	if err != nil {
-		log.Println("could not sync traefik.yml - flush to disk: " + err.Error())
+		log.Error().Stack().Err(err).Msg("could not sync traefik.yml - flush to disk")
 		return err
 	}
 
@@ -157,7 +157,7 @@ func ExecTraefik(ctx context.Context, traefikDeployReq model.TraefikDeployReques
 	}
 
 	if err = CreateNetwork(ctx, "traefik", "bridge"); err != nil {
-		log.Println("create traefik network error: " + err.Error())
+		log.Error().Stack().Err(err).Msg("create traefik network error")
 		return err
 	}
 

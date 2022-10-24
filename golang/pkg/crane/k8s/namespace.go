@@ -2,8 +2,8 @@ package k8s
 
 import (
 	"context"
-	"log"
 
+	"github.com/rs/zerolog/log"
 	_ "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -50,7 +50,7 @@ func (n *namespace) deployNamespace() error {
 		})
 
 	if err != nil {
-		log.Println(err.Error())
+		log.Error().Err(err).Stack().Msg("")
 		return err
 	}
 	return nil
@@ -74,7 +74,7 @@ func GetNamespaces(cfg *config.Configuration) ([]Namespace, error) {
 
 	list := extractName(rawList)
 	if err != nil {
-		log.Println(err)
+		log.Error().Err(err).Stack().Msg("")
 	}
 	return list, err
 }

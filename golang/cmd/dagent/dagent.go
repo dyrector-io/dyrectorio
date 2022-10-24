@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"github.com/rs/zerolog/log"
 
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent"
@@ -12,9 +12,9 @@ func main() {
 	var cfg config.Configuration
 	err := util.ReadConfig(&cfg)
 	if err != nil {
-		log.Panic("failed to load configuration: ", err.Error())
+		log.Panic().Err(err).Msg("failed to load configuration")
 	}
-	log.Println("Configuration loaded.")
+	log.Print("Configuration loaded.")
 
 	dagent.Serve(&cfg)
 }

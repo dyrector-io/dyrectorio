@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -16,6 +15,7 @@ import (
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
+	"github.com/rs/zerolog/log"
 )
 
 // A ContainerBuilder handles the process of creating and starting containers,
@@ -39,7 +39,7 @@ type ContainerBuilder interface {
 	WithRestartPolicy(policy RestartPolicyName) ContainerBuilder
 	WithEntrypoint(cmd []string) ContainerBuilder
 	WithCmd(cmd []string) ContainerBuilder
-	WithShell(shell *string) ContainerBuilder
+	WithShell(shell []string) ContainerBuilder
 	WithUser(uid string) ContainerBuilder
 	WithLogWriter(logger io.StringWriter) ContainerBuilder
 	WithoutConflict() ContainerBuilder
@@ -76,7 +76,7 @@ type DockerContainerBuilder struct {
 	restartPolicy   RestartPolicyName
 	entrypoint      []string
 	cmd             []string
-	shell           *string
+	shell           []string
 	tty             bool
 	user            *int64
 	forcePull       bool
@@ -214,7 +214,7 @@ func (dc *DockerContainerBuilder) WithCmd(cmd []string) *DockerContainerBuilder 
 }
 
 // Sets the SHELL of a container.
-func (dc *DockerContainerBuilder) WithShell(shell *string) *DockerContainerBuilder {
+func (dc *DockerContainerBuilder) WithShell(shell []string) *DockerContainerBuilder {
 	dc.shell = shell
 	return dc
 }
@@ -309,6 +309,7 @@ func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 		ExposedPorts: exposedPortSet,
 		Entrypoint:   dc.entrypoint,
 		Cmd:          dc.cmd,
+		Shell:        dc.shell,
 	}
 
 	if dc.user != nil {
@@ -323,7 +324,7 @@ func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 	policy.Name = string(dc.restartPolicy)
 	hostConfig.RestartPolicy = policy
 
-	log.Println("Provided networkMode: ", dc.networkMode)
+	log.Print("Provided networkMode: ", dc.networkMode)
 	if nw := container.NetworkMode(dc.networkMode); !nw.IsPrivate() {
 		hostConfig.NetworkMode = nw
 	} else {

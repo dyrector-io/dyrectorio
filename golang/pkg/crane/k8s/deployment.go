@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"fmt"
-	"log"
 
+	"github.com/rs/zerolog/log"
 	coreV1 "k8s.io/api/core/v1"
 	resource "k8s.io/apimachinery/pkg/api/resource"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -91,11 +91,11 @@ func (d *deployment) deployDeployment(p *deploymentParams) error {
 	})
 
 	if err != nil {
-		log.Println("Deployment error: " + err.Error())
+		log.Error().Err(err).Stack().Msg("Deployment error")
 		return errors.New("deployment error: " + err.Error())
 	}
 
-	log.Println("Deployment succeeded: " + result.Name)
+	log.Info().Str("name", result.Name).Msg("Deployment succeeded")
 
 	return nil
 }
@@ -431,7 +431,10 @@ func getVolumesFromMap(volumes map[string]v1.Volume, cfg *config.Configuration) 
 		if volume.Size != "" {
 			tmpStorageSize, err = resource.ParseQuantity(volume.Size)
 			if err != nil {
-				log.Println("Warning: input volume size is invalid using defaults: ", cfg.DefaultVolumeSize)
+				log.Warn().
+					Str("defaultVolumeSize", cfg.DefaultVolumeSize).
+					Str("inputVolumeSize", volume.Size).
+					Msg("Warning: input volume size is invalid using defaults")
 				tmpStorageSize = resource.MustParse(cfg.DefaultVolumeSize)
 			}
 		} else {
