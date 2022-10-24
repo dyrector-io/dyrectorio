@@ -2,11 +2,12 @@ package config
 
 import (
 	"fmt"
-	"github.com/form3tech-oss/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 type ValidJWT struct {
-	Token string
+	Token            jwt.Token
+	StringifiedToken string
 }
 
 func (field *ValidJWT) SetValue(unvalidatedToken string) error {
@@ -25,12 +26,17 @@ func (field *ValidJWT) SetValue(unvalidatedToken string) error {
 
 func ValidateAndCreateJWT(unvalidatedToken string) (ValidJWT, error) {
 
-	token := ValidJWT{
-		Token: unvalidatedToken,
-	}
+	token := ValidJWT{}
 
 	jwtParser := jwt.Parser{}
-	_, _, err := jwtParser.ParseUnverified(unvalidatedToken, &jwt.StandardClaims{})
+	parsed, _, err := jwtParser.ParseUnverified(unvalidatedToken, &jwt.RegisteredClaims{})
 
-	return token, err
+	if err != nil {
+		return token, err
+	}
+
+	token.Token = *parsed
+	token.StringifiedToken = unvalidatedToken
+
+	return token, nil
 }

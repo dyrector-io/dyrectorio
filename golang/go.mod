@@ -45,6 +45,7 @@ require (
 	github.com/BurntSushi/toml v1.1.0 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20220113124808-70ae35bab23f // indirect
 	github.com/ProtonMail/go-mime v0.0.0-20220302105931-303f85f7fe0f // indirect
+	github.com/golang-jwt/jwt/v4 v4.4.2
 	github.com/moby/term v0.0.0-20220808134915-39b0c02b01ae // indirect
 	github.com/onsi/ginkgo v1.16.4 // indirect
 	gotest.tools/v3 v3.3.0 // indirect
