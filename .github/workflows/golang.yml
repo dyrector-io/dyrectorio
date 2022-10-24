@@ -1,6 +1,13 @@
 name: golang
 on:
   push:
+    branches:
+      - develop
+      - main
+    paths:
+      - golang/**
+      - .github/workflows/golang.yml
+  pull_request:
     paths:
       - golang/**
       - .github/workflows/golang.yml
