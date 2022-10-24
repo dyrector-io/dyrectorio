@@ -56,7 +56,7 @@ func checkGenerateKeys(secretPath string) (string, error) {
 	}
 
 	if !privateKeyObj.IsExpired() {
-		keyStr, keyErr := privateKeyObj.Armor()
+		keyStr, keyErr := privateKeyObj.ArmorWithCustomHeaders("", "")
 
 		return keyStr, keyErr
 	} else {
@@ -77,7 +77,7 @@ func generateKey(secretPath string) (string, error) {
 	if keyErr != nil {
 		return "", keyErr
 	}
-	keyStr, keyErr := ecKey.Armor()
+	keyStr, keyErr := ecKey.ArmorWithCustomHeaders("", "")
 
 	if keyErr != nil {
 		return "", keyErr
@@ -98,7 +98,7 @@ func GetPublicKey(keyStr string) (string, error) {
 		return "", fmt.Errorf("could not get key from armored key: %w", err)
 	}
 
-	publicKey, err := key.GetArmoredPublicKey()
+	publicKey, err := key.GetArmoredPublicKeyWithCustomHeaders("", "")
 	if err != nil {
 		return "", fmt.Errorf("could not get public key from key object: %w", err)
 	}
