@@ -14,8 +14,6 @@ import (
 const (
 	missingKeyFile = "missing-file.key"
 	testPrivateKey = `-----BEGIN PGP PRIVATE KEY BLOCK-----
-Version: GopenPGP 2.4.8
-Comment: https://gopenpgp.org
 
 xVgEY0a/axYJKwYBBAHaRw8BAQdAYOtTwtAIPQpkekA0EGFSD8AkBQXSsyX/LjgE
 u9DbDREAAQDrm97I/otLFVS2+Hy1puy7r1TX0D0y5IWIpADhLsHOTxMxzSVkeXJl
@@ -32,8 +30,6 @@ VA6Ob1z0jQk=
 -----END PGP PRIVATE KEY BLOCK-----`
 
 	testPublicKey = `-----BEGIN PGP PUBLIC KEY BLOCK-----
-Version: GopenPGP 2.4.8
-Comment: https://gopenpgp.org
 
 xjMEY0a/axYJKwYBBAHaRw8BAQdAYOtTwtAIPQpkekA0EGFSD8AkBQXSsyX/LjgE
 u9DbDRHNJWR5cmVjdG9yLmlvIGFnZW50IDxoZWxsb0BkeXJlY3Rvci5pbz7CjAQT
