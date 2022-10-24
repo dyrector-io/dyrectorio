@@ -1,6 +1,9 @@
 name: web-kratos
 on:
   push:
+    branches:
+      - develop
+      - main
     paths:
       - web/kratos/**
       - .github/workflows/web-kratos.yml
