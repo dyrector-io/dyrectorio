@@ -1,0 +1,7 @@
+{
+  "name": "Name",
+  "applyTemplate": "Create a Product from template '{{name}}'",
+  "productName": "Product name",
+  "description": "Description",
+  "type": "Type"
+}

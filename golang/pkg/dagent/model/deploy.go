@@ -11,4 +11,8 @@ type TraefikDeployRequest struct {
 	TLS bool `json:"TLS"`
 	// the email address for expiry notifications, sent by acme
 	AcmeMail string `json:"acmeMail" binding:"required_if=TLS true"`
+	// HTTP port
+	Port uint16 `json:"port"`
+	// HTTPS port
+	TLSPort uint16 `json:"tlsPort"`
 }
