@@ -53,29 +53,21 @@ export default class TemplateFileService {
   }
 
   getTemplates(): Promise<TemplateResponse[]> {
-    return promisify<TemplateResponse[]>(callback => {
-      readdir(this.templatesFolder, (err, files) => {
-        if (err != null) {
-          callback(err, null)
-        }
-
-        const validTemplates = files
-          .map(it => parse(it))
-          .filter(it => it.ext.toLowerCase() === '.json')
-          .map(it => {
-            const template = this.readTemplate(it.name)
-            return template == null
-              ? null
-              : {
-                  id: it.name,
-                  ...template,
-                }
-          })
-          .filter(it => it != null)
-
-        callback(undefined, validTemplates)
-      })
-    })()
+    return promisify<string, string[]>(readdir)(this.templatesFolder).then(files =>
+      files
+        .map(it => parse(it))
+        .filter(it => it.ext.toLowerCase() === '.json')
+        .map(it => {
+          const template = this.readTemplate(it.name)
+          return template == null
+            ? null
+            : {
+                id: it.name,
+                ...template,
+              }
+        })
+        .filter(it => it != null),
+    )
   }
 
   async getTemplateById(id: string): Promise<TemplateDetail> {

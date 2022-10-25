@@ -12,9 +12,9 @@ import {
   UpdateEntityResponse,
   UpdateProductRequest,
 } from 'src/grpc/protobuf/proto/crux'
+import { SIMPLE_PRODUCT_VERSION_NAME } from 'src/shared/const'
 import TeamRepository from '../team/team.repository'
 import ProductMapper from './product.mapper'
-import { SIMPLE_PRODUCT_VERSION_NAME } from 'src/shared/const'
 
 @Injectable()
 export default class ProductService {

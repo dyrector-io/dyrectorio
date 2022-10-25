@@ -24,11 +24,11 @@ import {
   networkModeFromJSON,
   restartPolicyFromJSON,
 } from 'src/grpc/protobuf/proto/common'
+import { SIMPLE_PRODUCT_VERSION_NAME } from 'src/shared/const'
 import ImageService from '../image/image.service'
 import ProductService from '../product/product.service'
 import RegistryService from '../registry/registry.service'
 import VersionService from '../version/version.service'
-import { SIMPLE_PRODUCT_VERSION_NAME } from 'src/shared/const'
 
 const VERSION_NAME = '1.0.0'
 
