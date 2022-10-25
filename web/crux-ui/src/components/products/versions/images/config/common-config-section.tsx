@@ -21,7 +21,7 @@ import {
   PortRange,
   VolumeType,
 } from '@app/models/container'
-import { nullify } from '@app/utils'
+import { nullify, toNumber } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
@@ -44,20 +44,12 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
 
   const contains = (filter: ImageConfigFilterType): boolean => filters.indexOf(filter) !== -1
 
-  const toNumber = (value: string): number => {
-    if (!value) {
-      return undefined
-    }
-
-    return Number.isNaN(value) ? 0 : Number(value)
-  }
-
   const onChange = (newConfig: Partial<ContainerConfig>) => {
     setConfig({ ...config, ...newConfig })
     propsOnChange(newConfig)
   }
 
-  const onComplexValueChanged = <T,>(property: string, field: string, value: T, index: number) => {
+  const onComplexValueChange = <T,>(property: string, field: string, value: T, index: number) => {
     const newValue = {
       ...config[property][index],
       [field]: value,
@@ -73,7 +65,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
   return (
     <div className="my-4">
       <DyoHeading className="text-lg text-bright font-semibold tracking-wide bg-orange-400/50 w-40 rounded-t-lg text-center pt-[2px]">
-        {t('common').toUpperCase()}
+        {t('base.common').toUpperCase()}
       </DyoHeading>
       <div className="flex flex-col border-2 rounded-lg rounded-tl-[0px] border-solid border-orange-400/50 p-8 w-full">
         <div className="columns-1 lg:columns-2 2xl:columns-3 gap-x-20">
@@ -81,13 +73,13 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
           {contains('name') && (
             <div className="grid break-inside-avoid mb-4">
               <DyoInput
-                label={t('containerName').toUpperCase()}
+                label={t('common.containerName').toUpperCase()}
                 containerClassName="max-w-lg mb-3"
                 labelClassName="text-bright font-semibold tracking-wide mb-2 my-auto mr-4"
                 grow
                 inline
                 value={config.name ?? ''}
-                placeholder={t('containerName')}
+                placeholder={t('common.containerName')}
                 onChange={it => onChange({ name: it.target.value })}
                 message={fieldErrors.find(it => it.path?.startsWith('name'))?.message}
               />
@@ -149,7 +141,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   labelClassName="my-auto mr-4 w-40"
                   grow
                   inline
-                  value={config.configContainer?.image}
+                  value={config.configContainer?.image ?? ''}
                   onChange={it =>
                     onChange({ configContainer: nullify({ ...config.configContainer, image: it.target.value }) })
                   }
@@ -161,7 +153,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   labelClassName="my-auto mr-4 w-40"
                   grow
                   inline
-                  value={config.configContainer?.volume}
+                  value={config.configContainer?.volume ?? ''}
                   onChange={it =>
                     onChange({ configContainer: nullify({ ...config.configContainer, volume: it.target.value }) })
                   }
@@ -173,7 +165,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   labelClassName="my-auto mr-4 w-40"
                   grow
                   inline
-                  value={config.configContainer?.path}
+                  value={config.configContainer?.path ?? ''}
                   onChange={it =>
                     onChange({ configContainer: nullify({ ...config.configContainer, path: it.target.value }) })
                   }
@@ -256,7 +248,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             <div className="grid mb-8 break-inside-avoid">
               <KeyValueInput
                 labelClassName="text-bright font-semibold tracking-wide mb-2"
-                label={t('capabilities').toUpperCase()}
+                label={t('common.capabilities').toUpperCase()}
                 onChange={it => onChange({ capabilities: it })}
                 items={config.capabilities ?? []}
                 editorOptions={editorOptions}
@@ -323,7 +315,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   className="w-full"
                   grow
                   inline
-                  value={config.importContainer?.volume}
+                  value={config.importContainer?.volume ?? ''}
                   placeholder={t('common.volume')}
                   onChange={it =>
                     onChange({ importContainer: nullify({ ...config.importContainer, volume: it.target.value }) })
@@ -337,7 +329,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   className="w-full"
                   grow
                   inline
-                  value={config.importContainer?.command}
+                  value={config.importContainer?.command ?? ''}
                   placeholder={t('common.command')}
                   onChange={it =>
                     onChange({ importContainer: nullify({ ...config.importContainer, command: it.target.value }) })
@@ -362,7 +354,9 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
         {contains('ports') && (
           <div className="flex flex-col mb-2">
             <div className="flex flex-row mb-2">
-              <DyoLabel className="mr-4 ext-bright font-semibold tracking-wide">{t('ports').toUpperCase()}</DyoLabel>
+              <DyoLabel className="mr-4 ext-bright font-semibold tracking-wide">
+                {t('common.ports').toUpperCase()}
+              </DyoLabel>
               <DyoImgButton
                 onClick={() =>
                   setConfig({
@@ -387,8 +381,8 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 {config.ports?.map((item, index) => {
                   const message = fieldErrors.find(it => it.path?.startsWith(`ports[${index}]`))?.message
                   return (
-                    <div className="flex-col p-1">
-                      <div key={`port-${index}`} className="flex flex-row flex-grow">
+                    <div key={`port-${index}`} className="flex-col p-1">
+                      <div className="flex flex-row flex-grow">
                         <div className="w-6/12 ml-2">
                           <DyoInput
                             className="w-full mr-2"
@@ -396,7 +390,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                             placeholder={t('common.internal')}
                             value={item.internal ?? ''}
                             type="number"
-                            onChange={it => onComplexValueChanged('ports', 'internal', it.target.value, index)}
+                            onChange={it => onComplexValueChange('ports', 'internal', it.target.value, index)}
                           />
                         </div>
 
@@ -407,7 +401,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                             placeholder={t('common.external')}
                             value={item.external ?? ''}
                             type="number"
-                            onChange={it => onComplexValueChanged('ports', 'external', it.target.value, index)}
+                            onChange={it => onComplexValueChange('ports', 'external', it.target.value, index)}
                           />
                         </div>
                         <DyoImgButton
@@ -461,8 +455,8 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   const message = fieldErrors.find(it => it.path?.startsWith(`portRanges[${index}]`))?.message
 
                   return (
-                    <div className="flex-col ml-2">
-                      <div className="break-inside-avoid" key={`pr-${index}`}>
+                    <div className="flex-col ml-2" key={`pr-${index}`}>
+                      <div className="break-inside-avoid">
                         {/* internal part */}
                         <div className="grid">
                           <DyoLabel className="mb-2">{t('common.internal').toUpperCase()}</DyoLabel>
@@ -479,7 +473,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                                     ...config.portRanges[index].internal,
                                     from: toNumber(it.target.value),
                                   }
-                                  onComplexValueChanged('portRanges', 'internal', internal, index)
+                                  onComplexValueChange('portRanges', 'internal', internal, index)
                                 }}
                               />
                             </div>
@@ -494,7 +488,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                                     ...config.portRanges[index].internal,
                                     to: toNumber(it.target.value),
                                   }
-                                  onComplexValueChanged('portRanges', 'internal', internal, index)
+                                  onComplexValueChange('portRanges', 'internal', internal, index)
                                 }}
                               />
                             </div>
@@ -514,7 +508,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                                     ...config.portRanges[index].external,
                                     from: toNumber(it.target.value),
                                   }
-                                  onComplexValueChanged('portRanges', 'external', external, index)
+                                  onComplexValueChange('portRanges', 'external', external, index)
                                 }}
                               />
                             </div>
@@ -529,7 +523,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                                     ...config.portRanges[index].external,
                                     to: toNumber(it.target.value),
                                   }
-                                  onComplexValueChanged('portRanges', 'external', external, index)
+                                  onComplexValueChange('portRanges', 'external', external, index)
                                 }}
                               />
                             </div>
@@ -596,7 +590,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                             grow
                             inline
                             value={item.name ?? ''}
-                            onChange={it => onComplexValueChanged('volumes', 'name', it.target.value, index)}
+                            onChange={it => onComplexValueChange('volumes', 'name', it.target.value, index)}
                           />
                           <DyoInput
                             label={t('common.size')}
@@ -605,7 +599,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                             grow
                             inline
                             value={item.size ?? ''}
-                            onChange={it => onComplexValueChanged('volumes', 'size', it.target.value, index)}
+                            onChange={it => onComplexValueChange('volumes', 'size', it.target.value, index)}
                           />
                         </div>
                         <div className="flex flex-row my-4">
@@ -616,7 +610,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                             grow
                             inline
                             value={item.path ?? ''}
-                            onChange={it => onComplexValueChanged('volumes', 'path', it.target.value, index)}
+                            onChange={it => onComplexValueChange('volumes', 'path', it.target.value, index)}
                           />
                           <DyoInput
                             label={t('common.class')}
@@ -625,7 +619,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                             grow
                             inline
                             value={item.class ?? ''}
-                            onChange={it => onComplexValueChanged('volumes', 'class', it.target.value, index)}
+                            onChange={it => onComplexValueChange('volumes', 'class', it.target.value, index)}
                           />
                         </div>
                         <div className="flex flex-row justify-between">
@@ -635,7 +629,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                               choices={CONTAINER_VOLUME_TYPE_VALUES}
                               initialSelection={item.type}
                               converter={(it: VolumeType) => t(`common.volumeTypes.${it}`)}
-                              onSelectionChange={it => onComplexValueChanged('volumes', 'type', it, index)}
+                              onSelectionChange={it => onComplexValueChange('volumes', 'type', it, index)}
                             />
                           </div>
                           <DyoImgButton
@@ -708,7 +702,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                           grow
                           inline
                           value={item.name ?? ''}
-                          onChange={it => onComplexValueChanged('initContainers', 'name', it.target.value, index)}
+                          onChange={it => onComplexValueChange('initContainers', 'name', it.target.value, index)}
                         />
                         <DyoInput
                           label={t('common.image').toUpperCase()}
@@ -717,7 +711,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                           grow
                           inline
                           value={item.image ?? ''}
-                          onChange={it => onComplexValueChanged('initContainers', 'image', it.target.value, index)}
+                          onChange={it => onComplexValueChange('initContainers', 'image', it.target.value, index)}
                         />
                         <div className="flex flex-col mb-2">
                           <DyoLabel className="mb-2">{t('common.volumes').toUpperCase()}</DyoLabel>
@@ -730,7 +724,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                               const values = it.map(
                                 i => ({ id: i.id, name: i.key, path: i.value } as InitContainerVolumeLink),
                               )
-                              onComplexValueChanged('initContainers', 'volumes', values, index)
+                              onComplexValueChange('initContainers', 'volumes', values, index)
                             }}
                             editorOptions={editorOptions}
                           />
@@ -739,7 +733,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                           <DyoLabel className="mb-2">{t('common.args').toUpperCase()}</DyoLabel>
                           <KeyOnlyInput
                             keyPlaceholder={t('common.args')}
-                            onChange={it => onComplexValueChanged('initContainers', 'args', it, index)}
+                            onChange={it => onComplexValueChange('initContainers', 'args', it, index)}
                             items={item.args ?? []}
                             editorOptions={editorOptions}
                           />
@@ -748,7 +742,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                           <DyoLabel className="mb-2">{t('common.command').toUpperCase()}</DyoLabel>
                           <KeyOnlyInput
                             keyPlaceholder={t('common.command')}
-                            onChange={it => onComplexValueChanged('initContainers', 'command', it, index)}
+                            onChange={it => onComplexValueChange('initContainers', 'command', it, index)}
                             items={item.command ?? []}
                             editorOptions={editorOptions}
                           />
@@ -756,7 +750,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                         <div className="flex flex-col mb-2">
                           <DyoLabel className="mb-2">{t('common.environments').toUpperCase()}</DyoLabel>
                           <KeyValueInput
-                            onChange={it => onComplexValueChanged('initContainers', 'environments', it, index)}
+                            onChange={it => onComplexValueChange('initContainers', 'environments', it, index)}
                             items={item.environments ?? []}
                             editorOptions={editorOptions}
                           />
@@ -768,7 +762,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                             <DyoSwitch
                               checked={item.useParentConfig}
                               onCheckedChange={it =>
-                                onComplexValueChanged('initContainers', 'useParentConfig', it, index)
+                                onComplexValueChange('initContainers', 'useParentConfig', it, index)
                               }
                             />
                           </div>

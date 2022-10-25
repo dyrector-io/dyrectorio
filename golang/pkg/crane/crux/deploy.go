@@ -1,0 +1,29 @@
+package crux
+
+import (
+	"context"
+
+	"github.com/rs/zerolog/log"
+
+	"github.com/dyrector-io/dyrectorio/golang/internal/grpc"
+	"github.com/dyrector-io/dyrectorio/golang/internal/mapper"
+	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
+	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/k8s"
+	agent "github.com/dyrector-io/dyrectorio/protobuf/go/agent"
+)
+
+func GetDeployments(ctx context.Context, namespace string) []*agent.ContainerStateItem {
+	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
+	list, err := k8s.GetDeployments(ctx, namespace, cfg)
+	if err != nil {
+		log.Error().Err(err).Stack().Msg("")
+	}
+
+	return mapper.MapKubeDeploymentListToCruxStateItems(list)
+}
+
+func GetSecretsList(ctx context.Context, prefix, name string) ([]string, error) {
+	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
+
+	return k8s.ListSecrets(ctx, prefix, name, cfg)
+}

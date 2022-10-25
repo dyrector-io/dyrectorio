@@ -213,7 +213,7 @@ export interface CraneContainerConfig_ExtraLBAnnotationsEntry {
 }
 
 export interface CommonContainerConfig {
-  name?: string | undefined
+  name: string
   expose?: ExposeStrategy | undefined
   ingress?: Ingress | undefined
   configContainer?: ConfigContainer | undefined
@@ -907,6 +907,7 @@ export const CraneContainerConfig_ExtraLBAnnotationsEntry = {
 
 function createBaseCommonContainerConfig(): CommonContainerConfig {
   return {
+    name: '',
     ports: [],
     portRanges: [],
     volumes: [],
@@ -921,7 +922,7 @@ function createBaseCommonContainerConfig(): CommonContainerConfig {
 export const CommonContainerConfig = {
   fromJSON(object: any): CommonContainerConfig {
     return {
-      name: isSet(object.name) ? String(object.name) : undefined,
+      name: isSet(object.name) ? String(object.name) : '',
       expose: isSet(object.expose) ? exposeStrategyFromJSON(object.expose) : undefined,
       ingress: isSet(object.ingress) ? Ingress.fromJSON(object.ingress) : undefined,
       configContainer: isSet(object.configContainer) ? ConfigContainer.fromJSON(object.configContainer) : undefined,
@@ -1141,7 +1142,7 @@ export interface AgentClient {
 
   containerState(request: Observable<ContainerStateListMessage>, metadata: Metadata, ...rest: any): Observable<Empty>
 
-  getSecretList(request: ListSecretsResponse, metadata: Metadata, ...rest: any): Observable<Empty>
+  secretList(request: ListSecretsResponse, metadata: Metadata, ...rest: any): Observable<Empty>
 }
 
 /** Service handling deployment of containers and fetching statuses */
@@ -1169,16 +1170,12 @@ export interface AgentController {
     ...rest: any
   ): Promise<Empty> | Observable<Empty> | Empty
 
-  getSecretList(
-    request: ListSecretsResponse,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<Empty> | Observable<Empty> | Empty
+  secretList(request: ListSecretsResponse, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
 }
 
 export function AgentControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ['connect', 'getSecretList']
+    const grpcMethods: string[] = ['connect', 'secretList']
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
       GrpcMethod('Agent', method)(constructor.prototype[method], method, descriptor)

@@ -10,8 +10,8 @@ export const getValidationError = (
   try {
     schema.validateSync(candidate, options)
     return null
-  } catch (e) {
-    return e
+  } catch (err) {
+    return err
   }
 }
 

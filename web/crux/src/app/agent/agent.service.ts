@@ -96,7 +96,7 @@ export default class AgentService {
       const now = new Date().getTime()
 
       const token: AgentToken = {
-        iat: now,
+        iat: Math.floor(now / 1000),
         iss: undefined,
         sub: nodeId,
       }
@@ -105,7 +105,7 @@ export default class AgentService {
         this.configService,
         nodeId,
         this.jwtService.sign(token),
-        now + AgentService.SCRIPT_EXPIRATION,
+        new Date(now + AgentService.SCRIPT_EXPIRATION),
         nodeType,
         rootPath,
       )

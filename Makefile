@@ -1,4 +1,23 @@
 
+## shortcut to start stack
+.PHONY: up
+up:
+	cd golang && \
+	make up; \
+	cd -
+
+.PHONY: upd
+upd:
+	cd golang && \
+	make upd; \
+	cd -
+
+.PHONY: down
+down:
+	cd golang && \
+	make down; \
+	cd -
+
 ## compile docs
 .PHONY: docs
 docs:

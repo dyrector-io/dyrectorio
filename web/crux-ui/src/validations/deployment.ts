@@ -14,13 +14,3 @@ export const createDeploymentSchema = updateDeploymentSchema.concat(
     nodeId: yup.mixed().nullable().required().label('node'),
   }),
 )
-
-// export const deploymentSchema = yup.object().shape({
-//   environment: uniqueKeyValuesSchema,
-//   instances: yup.array(
-//     yup.object().shape({
-//       image: imageSchema,
-//       overriddenConfig: explicitContainerConfigSchema.nullable(),
-//     }),
-//   ),
-// })

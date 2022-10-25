@@ -81,6 +81,8 @@ service CruxDeployment {
   rpc GetDeploymentEvents(IdRequest) returns (DeploymentEventListResponse);
   rpc GetDeploymentList(AccessRequest) returns (DeploymentListResponse);
   rpc GetDeploymentSecrets(DeploymentListSecretsRequest) returns (common.ListSecretsResponse);
+  rpc CopyDeploymentSafe(IdRequest) returns (CreateEntityResponse);
+  rpc CopyDeploymentUnsafe(IdRequest) returns (CreateEntityResponse);
 
   rpc StartDeployment(IdRequest) returns (stream DeploymentProgressMessage);
   rpc SubscribeToDeploymentEditEvents(ServiceIdRequest)
@@ -615,7 +617,7 @@ message CraneContainerConfig {
 }
 
 message CommonContainerConfig {
-  optional string name = 101;
+  string name = 101;
   optional common.ExposeStrategy expose = 102;
   optional common.Ingress ingress = 103;
   optional common.ConfigContainer configContainer = 104;

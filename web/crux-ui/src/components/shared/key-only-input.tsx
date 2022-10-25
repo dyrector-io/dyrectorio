@@ -131,7 +131,7 @@ const KeyOnlyInput = (props: KeyInputProps) => {
           containerClassName="p-1"
           grow
           placeholder={keyPlaceholder}
-          value={key}
+          value={key ?? ''}
           message={message}
           onPatch={it => onChange(index, it)}
         />

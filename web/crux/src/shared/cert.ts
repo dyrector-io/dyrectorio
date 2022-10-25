@@ -16,8 +16,8 @@ export default function getServerCredentials(prefix: string, handleErr: Callable
     const privateKey = readFileSync(join(__dirname, `../../certs/${prefix}-private.key`))
     const certChain = readFileSync(join(__dirname, `../../certs/${prefix}-public.crt`))
     return [<KeyCertPair>{ private_key: privateKey, cert_chain: certChain }]
-  } catch (error) {
-    logger.error(`Error while loading TLS Cert files: ${error}`)
+  } catch (err) {
+    logger.error(`Error while loading TLS Cert files: ${err}`)
     handleErr()
     return []
   }

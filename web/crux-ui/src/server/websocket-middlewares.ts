@@ -1,8 +1,8 @@
+import { AsyncVoidFunction } from '@app/utils'
 import { WsMessage } from '@app/websockets/common'
 import WsConnection from '@app/websockets/connection'
 import WsEndpoint from '@app/websockets/endpoint'
 import { Logger } from '../logger'
-import { AsyncVoidFunction } from './middlewares'
 
 export type WsMiddleWareFunction = (
   logger: Logger,

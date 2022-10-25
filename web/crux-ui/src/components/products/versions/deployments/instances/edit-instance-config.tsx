@@ -72,7 +72,7 @@ const EditInstanceConfig = (props: EditInstanceProps) => {
         disabled={disabled}
         label={t('containerName').toUpperCase()}
         labelClassName="mt-2 mb-2.5"
-        className="mb-4"
+        className="mb-4 ml-2 w-5/12"
         editorOptions={editorOptions}
         value={config?.name}
         onPatch={onContainerNameChange}

@@ -185,6 +185,7 @@ const SelectImagesCard = (props: SelectImagesCardProps) => {
 
           <DyoInput
             className="max-w-lg"
+            name="imageName"
             grow
             label={t('imageName')}
             value={filter}

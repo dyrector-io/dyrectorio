@@ -997,7 +997,7 @@ export interface CraneContainerConfig {
 }
 
 export interface CommonContainerConfig {
-  name?: string | undefined
+  name: string
   expose?: ExposeStrategy | undefined
   ingress?: Ingress | undefined
   configContainer?: ConfigContainer | undefined
@@ -2895,6 +2895,7 @@ export const CraneContainerConfig = {
 
 function createBaseCommonContainerConfig(): CommonContainerConfig {
   return {
+    name: '',
     ports: [],
     portRanges: [],
     volumes: [],
@@ -2909,7 +2910,7 @@ function createBaseCommonContainerConfig(): CommonContainerConfig {
 export const CommonContainerConfig = {
   fromJSON(object: any): CommonContainerConfig {
     return {
-      name: isSet(object.name) ? String(object.name) : undefined,
+      name: isSet(object.name) ? String(object.name) : '',
       expose: isSet(object.expose) ? exposeStrategyFromJSON(object.expose) : undefined,
       ingress: isSet(object.ingress) ? Ingress.fromJSON(object.ingress) : undefined,
       configContainer: isSet(object.configContainer) ? ConfigContainer.fromJSON(object.configContainer) : undefined,
@@ -4621,6 +4622,10 @@ export interface CruxDeploymentClient {
     ...rest: any
   ): Observable<ListSecretsResponse>
 
+  copyDeploymentSafe(request: IdRequest, metadata: Metadata, ...rest: any): Observable<CreateEntityResponse>
+
+  copyDeploymentUnsafe(request: IdRequest, metadata: Metadata, ...rest: any): Observable<CreateEntityResponse>
+
   startDeployment(request: IdRequest, metadata: Metadata, ...rest: any): Observable<DeploymentProgressMessage>
 
   subscribeToDeploymentEditEvents(
@@ -4684,6 +4689,18 @@ export interface CruxDeploymentController {
     ...rest: any
   ): Promise<ListSecretsResponse> | Observable<ListSecretsResponse> | ListSecretsResponse
 
+  copyDeploymentSafe(
+    request: IdRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
+
+  copyDeploymentUnsafe(
+    request: IdRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
+
   startDeployment(request: IdRequest, metadata: Metadata, ...rest: any): Observable<DeploymentProgressMessage>
 
   subscribeToDeploymentEditEvents(
@@ -4705,6 +4722,8 @@ export function CruxDeploymentControllerMethods() {
       'getDeploymentEvents',
       'getDeploymentList',
       'getDeploymentSecrets',
+      'copyDeploymentSafe',
+      'copyDeploymentUnsafe',
       'startDeployment',
       'subscribeToDeploymentEditEvents',
     ]

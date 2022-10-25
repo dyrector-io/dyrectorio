@@ -31,7 +31,7 @@ export default class AgentController implements GrpcAgentController {
     return this.service.handleContainerStatus(call.connection, request)
   }
 
-  getSecretList(request: ListSecretsResponse, _: Metadata, call: NodeUnaryCall): Observable<Empty> {
+  secretList(request: ListSecretsResponse, _: Metadata, call: NodeUnaryCall): Observable<Empty> {
     return this.service.handleSecretList(call.connection, request)
   }
 }

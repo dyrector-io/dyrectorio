@@ -138,10 +138,10 @@ async function dropDatabase() {
 }
 
 main()
-  .catch(e => {
+  .catch(err => {
     dropDatabase()
     console.info('🔥 The seed command has been failed.')
-    console.error(e)
+    console.error(err)
     process.exit(1)
   })
   .finally(async () => {

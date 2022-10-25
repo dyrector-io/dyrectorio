@@ -15,12 +15,12 @@ const useWebsocketErrorMiddleware = async (
 ): Promise<void> => {
   try {
     await next()
-  } catch (e) {
-    if (isDyoApiError(e) && e.status < 500) {
-      const error = e as DyoApiError
+  } catch (err) {
+    if (isDyoApiError(err) && err.status < 500) {
+      const error = err as DyoApiError
       connection.send(WS_TYPE_DYO_ERROR, error)
     } else {
-      logger.error('Internal Server Error: ', e)
+      logger.error('Internal Server Error: ', err)
       connection.send(WS_TYPE_DYO_ERROR, internalError('Internal error.'))
     }
   }

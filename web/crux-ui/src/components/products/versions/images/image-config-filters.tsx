@@ -4,7 +4,7 @@ import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useState } from 'react'
 
-type BaseImageConfigFilterType = 'all' | 'common' | 'docker' | 'kubernetes'
+type BaseImageConfigFilterType = 'all' | 'common' | 'dagent' | 'crane'
 type FilterSet = Record<BaseImageConfigFilterType, ImageConfigFilterType[]>
 
 export const filterSet: FilterSet = {
@@ -26,22 +26,15 @@ export const filterSet: FilterSet = {
     'args',
     'initContainers',
   ],
-  kubernetes: [
-    'deploymentStrategy',
-    'customHeaders',
-    'proxyHeaders',
-    'loadBalancer',
-    'healthCheckConfig',
-    'resourceConfig',
-  ],
-  docker: ['logConfig', 'restartPolicy', 'networkMode', 'networks'],
+  crane: ['deploymentStrategy', 'customHeaders', 'proxyHeaders', 'loadBalancer', 'healthCheckConfig', 'resourceConfig'],
+  dagent: ['logConfig', 'restartPolicy', 'networkMode', 'networks'],
 }
 
-interface ImageConfigFitlerProps {
+interface ImageConfigFilterProps {
   onChange: (filters: ImageConfigFilterType[]) => void
 }
 
-const ImageConfigFilters = (props: ImageConfigFitlerProps) => {
+const ImageConfigFilters = (props: ImageConfigFilterProps) => {
   const { onChange } = props
 
   const { t } = useTranslation('container')
@@ -68,15 +61,13 @@ const ImageConfigFilters = (props: ImageConfigFitlerProps) => {
 
   useEffect(() => onChange(filters), [filters, onChange])
 
-  // Render
-
   const getBorderColor = (type: BaseImageConfigFilterType): string => {
     switch (type) {
       case 'common':
         return 'border-orange-400/50'
-      case 'kubernetes':
+      case 'crane':
         return 'border-violet-400/50'
-      case 'docker':
+      case 'dagent':
         return 'border-sky-400/50'
       default:
         return 'border-dyo-turquoise'
@@ -87,9 +78,9 @@ const ImageConfigFilters = (props: ImageConfigFitlerProps) => {
     switch (type) {
       case 'common':
         return 'bg-orange-400/50'
-      case 'kubernetes':
+      case 'crane':
         return 'bg-violet-400/50'
-      case 'docker':
+      case 'dagent':
         return 'bg-sky-400/50'
       default:
         return 'bg-dyo-turquoise'

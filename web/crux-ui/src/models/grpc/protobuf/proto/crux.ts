@@ -1010,7 +1010,7 @@ export interface CraneContainerConfig {
 }
 
 export interface CommonContainerConfig {
-  name?: string | undefined
+  name: string
   expose?: ExposeStrategy | undefined
   ingress?: Ingress | undefined
   configContainer?: ConfigContainer | undefined
@@ -6004,6 +6004,7 @@ export const CraneContainerConfig = {
 
 function createBaseCommonContainerConfig(): CommonContainerConfig {
   return {
+    name: '',
     ports: [],
     portRanges: [],
     volumes: [],
@@ -6017,7 +6018,7 @@ function createBaseCommonContainerConfig(): CommonContainerConfig {
 
 export const CommonContainerConfig = {
   encode(message: CommonContainerConfig, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.name !== undefined) {
+    if (message.name !== '') {
       writer.uint32(810).string(message.name)
     }
     if (message.expose !== undefined) {
@@ -6127,7 +6128,7 @@ export const CommonContainerConfig = {
 
   fromJSON(object: any): CommonContainerConfig {
     return {
-      name: isSet(object.name) ? String(object.name) : undefined,
+      name: isSet(object.name) ? String(object.name) : '',
       expose: isSet(object.expose) ? exposeStrategyFromJSON(object.expose) : undefined,
       ingress: isSet(object.ingress) ? Ingress.fromJSON(object.ingress) : undefined,
       configContainer: isSet(object.configContainer) ? ConfigContainer.fromJSON(object.configContainer) : undefined,
@@ -6208,7 +6209,7 @@ export const CommonContainerConfig = {
 
   fromPartial<I extends Exact<DeepPartial<CommonContainerConfig>, I>>(object: I): CommonContainerConfig {
     const message = createBaseCommonContainerConfig()
-    message.name = object.name ?? undefined
+    message.name = object.name ?? ''
     message.expose = object.expose ?? undefined
     message.ingress =
       object.ingress !== undefined && object.ingress !== null ? Ingress.fromPartial(object.ingress) : undefined
@@ -10887,6 +10888,24 @@ export const CruxDeploymentService = {
     responseSerialize: (value: ListSecretsResponse) => Buffer.from(ListSecretsResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer) => ListSecretsResponse.decode(value),
   },
+  copyDeploymentSafe: {
+    path: '/crux.CruxDeployment/CopyDeploymentSafe',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: IdRequest) => Buffer.from(IdRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => IdRequest.decode(value),
+    responseSerialize: (value: CreateEntityResponse) => Buffer.from(CreateEntityResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => CreateEntityResponse.decode(value),
+  },
+  copyDeploymentUnsafe: {
+    path: '/crux.CruxDeployment/CopyDeploymentUnsafe',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: IdRequest) => Buffer.from(IdRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => IdRequest.decode(value),
+    responseSerialize: (value: CreateEntityResponse) => Buffer.from(CreateEntityResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => CreateEntityResponse.decode(value),
+  },
   startDeployment: {
     path: '/crux.CruxDeployment/StartDeployment',
     requestStream: false,
@@ -10919,6 +10938,8 @@ export interface CruxDeploymentServer extends UntypedServiceImplementation {
   getDeploymentEvents: handleUnaryCall<IdRequest, DeploymentEventListResponse>
   getDeploymentList: handleUnaryCall<AccessRequest, DeploymentListResponse>
   getDeploymentSecrets: handleUnaryCall<DeploymentListSecretsRequest, ListSecretsResponse>
+  copyDeploymentSafe: handleUnaryCall<IdRequest, CreateEntityResponse>
+  copyDeploymentUnsafe: handleUnaryCall<IdRequest, CreateEntityResponse>
   startDeployment: handleServerStreamingCall<IdRequest, DeploymentProgressMessage>
   subscribeToDeploymentEditEvents: handleServerStreamingCall<ServiceIdRequest, DeploymentEditEventMessage>
 }
@@ -11055,6 +11076,36 @@ export interface CruxDeploymentClient extends Client {
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: ListSecretsResponse) => void,
+  ): ClientUnaryCall
+  copyDeploymentSafe(
+    request: IdRequest,
+    callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
+  ): ClientUnaryCall
+  copyDeploymentSafe(
+    request: IdRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
+  ): ClientUnaryCall
+  copyDeploymentSafe(
+    request: IdRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
+  ): ClientUnaryCall
+  copyDeploymentUnsafe(
+    request: IdRequest,
+    callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
+  ): ClientUnaryCall
+  copyDeploymentUnsafe(
+    request: IdRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
+  ): ClientUnaryCall
+  copyDeploymentUnsafe(
+    request: IdRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
   ): ClientUnaryCall
   startDeployment(request: IdRequest, options?: Partial<CallOptions>): ClientReadableStream<DeploymentProgressMessage>
   startDeployment(

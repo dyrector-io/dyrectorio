@@ -203,10 +203,12 @@ export default class DeployMapper {
       args: this.mapUniqueKeyToStringArray(config.args as JsonObject),
       TTY: config.tty,
       configContainer: config.configContainer as JsonObject,
-      importContainer: {
-        ...(config.importContainer as JsonObject),
-        environments: this.mapKeyValueToMap((config.importContainer as JsonObject)?.environments),
-      },
+      importContainer: config.importContainer
+        ? {
+            ...(config.importContainer as JsonObject),
+            environments: this.mapKeyValueToMap((config.importContainer as JsonObject)?.environments),
+          }
+        : null,
       ingress: config.ingress as JsonObject,
       initContainers: this.mapInitContainerToAgent(config.initContainers as JsonObject),
       portRanges: config.portRanges as JsonObject,
@@ -219,10 +221,12 @@ export default class DeployMapper {
   configToDagentConfig(config: ContainerConfigData): DagentContainerConfig {
     return {
       networks: this.mapUniqueKeyToStringArray(config.networks as JsonObject),
-      logConfig: {
-        ...(config.logConfig as JsonObject),
-        options: this.mapKeyValueToMap((config.logConfig as JsonObject).options),
-      },
+      logConfig: config.logConfig
+        ? {
+            ...(config.logConfig as JsonObject),
+            options: this.mapKeyValueToMap((config.logConfig as JsonObject)?.options),
+          }
+        : null,
       networkMode: this.imageMapper.networkModeToProto(config.networkMode),
       restartPolicy: this.imageMapper.restartPolicyToProto(config.restartPolicy),
     }

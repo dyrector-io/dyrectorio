@@ -93,4 +93,12 @@ export default class DeployController implements CruxDeploymentController {
   async getDeploymentList(request: AccessRequest): Promise<DeploymentListResponse> {
     return await this.service.getDeploymentList(request)
   }
+
+  async copyDeploymentSafe(request: IdRequest): Promise<CreateEntityResponse> {
+    return this.service.copyDeployment(request, false)
+  }
+
+  async copyDeploymentUnsafe(request: IdRequest): Promise<CreateEntityResponse> {
+    return this.service.copyDeployment(request, true)
+  }
 }

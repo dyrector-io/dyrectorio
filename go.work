@@ -1,7 +1,6 @@
 go 1.18
 
 use (
-	./agent
-	./cli
+	./golang
 	./protobuf
 )

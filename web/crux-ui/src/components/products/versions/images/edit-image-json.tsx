@@ -23,15 +23,8 @@ const DEFAULT_CONFIG = containerConfigSchema.getDefault() as any as ContainerCon
 
 type JsonConfig = InstanceJsonContainerConfig | JsonContainerConfig
 
-const keyValueArrayToJson = (list: UniqueKeyValue[]): JsonKeyValue => {
-  const result = {}
-
-  list?.forEach(it => {
-    result[it.key] = it.value
-  })
-
-  return result
-}
+const keyValueArrayToJson = (list: UniqueKeyValue[]): JsonKeyValue =>
+  list?.reduce((prev, it) => ({ ...prev, [it.key]: it.value }), {})
 
 const keyArrayToJson = (list: UniqueKey[]): string[] => list?.map(it => it.key)
 
@@ -90,7 +83,7 @@ const imageConfigToJsonContainerConfig = (
   return config
 }
 
-const imageConfigToInstanceJsonConfig = (
+const imageConfigToJsonInstanceConfig = (
   currentConfig: JsonContainerConfig,
   imageConfig: ContainerConfig,
 ): InstanceJsonContainerConfig => {
@@ -288,7 +281,7 @@ const EditImageJson = (props: EditImageJsonProps) => {
   const [editorState, editorActions] = useMultiInputState({
     id: EDITOR_ID,
     value: instanceEditor
-      ? imageConfigToInstanceJsonConfig(null, config)
+      ? imageConfigToJsonInstanceConfig(null, config)
       : imageConfigToJsonContainerConfig(null, config),
     editorOptions,
     onMergeValues,

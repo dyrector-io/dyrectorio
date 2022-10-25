@@ -220,7 +220,7 @@ export type JsonContainerConfig = {
   commands?: string[]
   args?: string[]
   initContainers?: JsonInitContainer[]
-  capabilities: JsonKeyValue
+  capabilities?: JsonKeyValue
 
   // dagent
   logConfig?: JsonContainerConfigLog
@@ -240,8 +240,8 @@ export type JsonContainerConfig = {
 
 export type InstanceJsonContainerConfig = Omit<JsonContainerConfig, 'secrets'>
 
-type DockerSpecificConfig = 'logConfig' | 'restartPolicy' | 'networkMode' | 'networks'
-type KubernetesSpecificConfig =
+type DagentSpecificConfig = 'logConfig' | 'restartPolicy' | 'networkMode' | 'networks'
+type CraneSpecificConfig =
   | 'deploymentStrategy'
   | 'customHeaders'
   | 'proxyHeaders'
@@ -250,9 +250,9 @@ type KubernetesSpecificConfig =
   | 'healthCheckConfig'
   | 'resourceConfig'
 
-export type DagentConfigDetails = Pick<ContainerConfig, DockerSpecificConfig>
-export type CraneConfigDetails = Pick<ContainerConfig, KubernetesSpecificConfig>
-export type CommonConfigDetails = Omit<ContainerConfig, DockerSpecificConfig | KubernetesSpecificConfig>
+export type DagentConfigDetails = Pick<ContainerConfig, DagentSpecificConfig>
+export type CraneConfigDetails = Pick<ContainerConfig, CraneSpecificConfig>
+export type CommonConfigDetails = Omit<ContainerConfig, DagentSpecificConfig | CraneSpecificConfig>
 
 const overrideKeyValues = (weak: UniqueKeyValue[], strong: UniqueKeyValue[]): UniqueKeyValue[] => {
   const overridenKeys: Set<string> = new Set(strong?.map(it => it.key))

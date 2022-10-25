@@ -1,17 +1,18 @@
 {
   "base": {
     "all": "All",
-    "docker": "Docker",
-    "kubernetes": "Kubernetes",
+    "dagent": "Docker",
+    "crane": "Kubernetes",
     "common": "Common"
   },
 
   "common": {
     "user": "User",
-    "portsAndRanges": "Ports & ranges",
+    "containerName": "Container name",
     "exposePort": "Expose port",
     "portBinding": "Port binding",
     "volumes": "Volumes",
+    "capabilities": "capabilities",
     "name": "Name",
     "size": "Size",
     "path": "Path",
@@ -58,7 +59,7 @@
     }
   },
 
-  "docker": {
+  "dagent": {
     "networkMode": "Network mode",
     "networkModes": {
       "bridge": "Bridge",
@@ -99,7 +100,7 @@
     }
   },
 
-  "kubernetes": {
+  "crane": {
     "deploymentStrategy": "Deployment strategy",
     "deploymentStrategies": { "unknown": "Unknown", "recreate": "Recreate", "rolling": "Rolling" },
     "healthCheckConfig": "Health check config",

@@ -8,7 +8,9 @@ import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
 import DyoButton from '@app/elements/dyo-button'
+import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import LoadingIndicator from '@app/elements/loading-indicator'
+import { defaultApiErrorHandler } from '@app/errors'
 import { DeploymentRoot, mergeConfigs } from '@app/models'
 import {
   deploymentApiUrl,
@@ -39,13 +41,18 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
 
   const router = useRouter()
   const submitRef = useRef<() => Promise<any>>()
+
+  const onApiError = defaultApiErrorHandler(t)
+  const onWsError = (error: Error) => {
+    // eslint-disable-next-line
+    console.error('ws', 'edit-deployment', error)
+    toast(t('errors:connectionLost'))
+  }
+
   const [state, actions] = useDeploymentState({
     deployment: propsDeployment,
-    onWsError: (error: Error) => {
-      // eslint-disable-next-line
-      console.error('ws', 'edit-deployment', error)
-      toast(t('errors:connectionLost'))
-    },
+    onApiError,
+    onWsError,
   })
 
   const { product, version, deployment, node } = state
@@ -110,6 +117,15 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
     navigateToLog()
   }
 
+  const onCopyDeployment = async () => {
+    const url = await actions.onCopyDeployment()
+    if (!url) {
+      return
+    }
+
+    router.push(url)
+  }
+
   useEffect(() => {
     if (state.mutable && node.status !== 'running') {
       toast.error(t('common:nodeUnreachable'))
@@ -149,6 +165,12 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
           />
         )}
 
+        {!state.copyable ? null : (
+          <DyoButton className="px-6 ml-4" onClick={onCopyDeployment}>
+            {t('common:copy')}
+          </DyoButton>
+        )}
+
         {!state.mutable ? (
           <DyoButton className="px-10 ml-auto" onClick={navigateToLog}>
             {t('log')}
@@ -174,6 +196,15 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
           <EditDeploymentInstances state={state} actions={actions} />
         </>
       )}
+
+      <DyoConfirmationModal
+        config={state.confirmationModal}
+        title={t('deploymentCopyConflictTitle')}
+        description={t('deploymentCopyConflictContent')}
+        confirmText={t('continue')}
+        className="w-1/4"
+        confirmColor="bg-error-red"
+      />
     </Layout>
   )
 }

@@ -42,20 +42,20 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
   return (
     <div className="my-4">
       <DyoHeading className="text-lg text-bright uppercase font-semibold tracking-wide bg-sky-400/50 w-40 rounded-t-lg text-center pt-[2px]">
-        {t('docker')}
+        {t('base.dagent')}
       </DyoHeading>
       <div className="columns-1 lg:columns-2 2xl:columns-3 gap-24 border-2 rounded-lg rounded-tl-[0px] border-solid border-sky-400/50 p-8 w-full">
         {/* networkMode */}
         {contains('networkMode') && (
           <div className="grid break-inside-avoid mb-8">
             <DyoLabel className="text-bright font-semibold tracking-wide mb-2">
-              {t('docker.networkMode').toUpperCase()}
+              {t('dagent.networkMode').toUpperCase()}
             </DyoLabel>
             <DyoChips
               className="ml-2"
               choices={CONTAINER_NETWORK_MODE_VALUES}
               initialSelection={config.networkMode}
-              converter={(it: ContainerNetworkMode) => t(`docker.networkModes.${it}`)}
+              converter={(it: ContainerNetworkMode) => t(`dagent.networkModes.${it}`)}
               onSelectionChange={it => onChange({ networkMode: it })}
             />
           </div>
@@ -66,9 +66,9 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
             <KeyOnlyInput
               className="mb-2"
               labelClassName="text-bright font-semibold tracking-wide mb-2"
-              label={t('docker.networks').toUpperCase()}
+              label={t('dagent.networks').toUpperCase()}
               items={config.networks ?? []}
-              keyPlaceholder={t('docker.placeholders.network')}
+              keyPlaceholder={t('dagent.placeholders.network')}
               onChange={it => onChange({ networks: it })}
               unique={false}
               editorOptions={editorOptions}
@@ -80,13 +80,13 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
         {contains('restartPolicy') && (
           <div className="grid break-inside-avoid mb-8">
             <DyoLabel className="text-bright font-semibold tracking-wide mb-2">
-              {t('docker.restartPolicy').toUpperCase()}
+              {t('dagent.restartPolicy').toUpperCase()}
             </DyoLabel>
             <DyoChips
               className="ml-2"
               choices={CONTAINER_RESTART_POLICY_TYPE_VALUES}
               initialSelection={config.restartPolicy}
-              converter={(it: ContainerRestartPolicyType) => t(`docker.restartPolicies.${it}`)}
+              converter={(it: ContainerRestartPolicyType) => t(`dagent.restartPolicies.${it}`)}
               onSelectionChange={it => onChange({ restartPolicy: it })}
             />
           </div>
@@ -96,19 +96,19 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
         {contains('logConfig') && (
           <div className="grid break-inside-avoid mb-8">
             <DyoLabel className="text-bright font-semibold tracking-wide mb-2">
-              {t('docker.logConfig').toUpperCase()}
+              {t('dagent.logConfig').toUpperCase()}
             </DyoLabel>
             <div className="ml-2">
-              <DyoLabel className="mr-2 my-auto">{t('docker.drivers')}</DyoLabel>
+              <DyoLabel className="mr-2 my-auto">{t('dagent.drivers')}</DyoLabel>
               <DyoChips
                 className="mb-2 ml-2"
                 choices={CONTAINER_LOG_DRIVER_VALUES}
                 initialSelection={config.logConfig?.driver ?? 'none'}
-                converter={(it: ContainerLogDriverType) => t(`docker.logDrivers.${it}`)}
+                converter={(it: ContainerLogDriverType) => t(`dagent.logDrivers.${it}`)}
                 onSelectionChange={it => onChange({ logConfig: nullify({ ...config.logConfig, driver: it }) })}
               />
               <KeyValueInput
-                label={t('docker.options')}
+                label={t('dagent.options')}
                 items={config.logConfig?.options ?? []}
                 onChange={it => onChange({ logConfig: nullify({ ...config.logConfig, options: it }) })}
                 editorOptions={editorOptions}

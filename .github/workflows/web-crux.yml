@@ -1,6 +1,13 @@
 name: web-crux
 on:
   push:
+    branches:
+      - develop
+      - main
+    paths:
+      - web/crux/**
+      - .github/workflows/web-crux.yml
+  pull_request:
     paths:
       - web/crux/**
       - .github/workflows/web-crux.yml

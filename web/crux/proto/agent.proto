@@ -27,7 +27,7 @@ service Agent {
   rpc DeploymentStatus(stream common.DeploymentStatusMessage) returns (common.Empty);
 
   rpc ContainerState(stream ContainerStateListMessage) returns (common.Empty);
-  rpc GetSecretList(common.ListSecretsResponse) returns (common.Empty);
+  rpc SecretList(common.ListSecretsResponse) returns (common.Empty);
 }
 
 /**
@@ -169,6 +169,7 @@ message ImportContainer {
 
 message LogConfig {
   common.DriverType driver = 100;
+
   map<string, string> options = 1000;
 }
 
@@ -176,6 +177,7 @@ message DagentContainerConfig {
   optional LogConfig logConfig = 100;
   optional common.RestartPolicy restartPolicy = 101;
   optional common.NetworkMode networkMode = 102;
+
   repeated string networks = 1000;
 }
 
@@ -191,7 +193,7 @@ message CraneContainerConfig {
 }
 
 message CommonContainerConfig {
-  optional string name = 101;
+  string name = 101;
   optional common.ExposeStrategy expose = 102;
   optional common.Ingress ingress = 103;
   optional common.ConfigContainer configContainer = 104;

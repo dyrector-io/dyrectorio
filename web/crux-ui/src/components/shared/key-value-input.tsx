@@ -146,7 +146,7 @@ const KeyValueInput = (props: KeyValueInputProps) => {
             className="w-full mr-2"
             grow
             placeholder={keyPlaceholder ?? t('key')}
-            value={key}
+            value={key ?? ''}
             message={message}
             type={type}
             messageType={messageType}
@@ -163,7 +163,7 @@ const KeyValueInput = (props: KeyValueInputProps) => {
             className="w-full"
             grow
             placeholder={valuePlaceholder ?? t('value')}
-            value={value}
+            value={value ?? ''}
             type={type}
             onPatch={it => onChange(index, key, it)}
           />

@@ -146,9 +146,9 @@ async function deleteDemoRelatedData() {
 }
 
 main()
-  .catch(e => {
+  .catch(err => {
     deleteDemoRelatedData()
-    console.error(e)
+    console.error(err)
     process.exit(1)
   })
   .finally(async () => {
