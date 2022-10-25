@@ -26,6 +26,7 @@ require (
 	github.com/ProtonMail/gopenpgp/v2 v2.4.8
 	github.com/dyrector-io/dyrectorio/protobuf v0.0.0-00010101000000-000000000000
 	github.com/golang-jwt/jwt/v4 v4.4.2
+	github.com/google/uuid v1.3.0
 	github.com/hashicorp/go-version v1.3.0
 	github.com/ilyakaznacheev/cleanenv v1.4.0
 	github.com/rs/zerolog v1.28.0
@@ -86,7 +87,6 @@ require (
 )
 
 require (
-	github.com/google/uuid v1.3.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/form3tech-oss/jwt-go v3.2.3+incompatible // indirect
 	github.com/googleapis/gnostic v0.5.5 // indirect
