@@ -550,7 +550,7 @@ export default class DeployService {
     })
 
     const node = this.agentService.getById(deployment.nodeId)
-    if (node === null || node.getConnectionStatus() !== NodeConnectionStatus.CONNECTED) {
+    if (!node || node.getConnectionStatus() !== NodeConnectionStatus.CONNECTED) {
       throw new PreconditionFailedException({
         message: 'Node is unreachable',
         property: 'nodeId',
