@@ -99,7 +99,7 @@ const KeyOnlyInput = (props: KeyInputProps) => {
 
   useEffect(() => dispatch(mergeItems(items)), [items, dispatch])
 
-  const onChange = async (index: number, patch: { key?: string; required?: boolean }) => {
+  const onChange = async (index: number, patch: Partial<UniqueSecretKey>) => {
     const newItems = [...state]
 
     const item = {

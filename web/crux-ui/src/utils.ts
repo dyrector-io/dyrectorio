@@ -13,15 +13,7 @@ import { NextRouter } from 'next/router'
 import toast, { ToastOptions } from 'react-hot-toast'
 import { DyoApiError, DyoErrorDto, DyoFetchError, RegistryDetails } from './models'
 import { Timestamp } from './models/grpc/google/protobuf/timestamp'
-import {
-  deploymentDeployUrl,
-  deploymentPreDeployUrl,
-  ROUTE_404,
-  ROUTE_INDEX,
-  ROUTE_LOGIN,
-  ROUTE_STATUS,
-  ROUTE_VERIFICATION,
-} from './routes'
+import { ROUTE_404, ROUTE_INDEX, ROUTE_LOGIN, ROUTE_STATUS, ROUTE_VERIFICATION } from './routes'
 
 export type AsyncVoidFunction = () => Promise<void>
 

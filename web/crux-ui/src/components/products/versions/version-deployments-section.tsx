@@ -24,7 +24,8 @@ import {
   WS_TYPE_NODE_STATUSES,
 } from '@app/models'
 import { deploymentUrl, WS_NODES } from '@app/routes'
-import { distinct, startDeployment, utcDateToLocale } from '@app/utils'
+import { distinct, utcDateToLocale } from '@app/utils'
+import { startDeployment } from '@pages/products/[productId]/versions/[versionId]/deployments/[deploymentId]'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'

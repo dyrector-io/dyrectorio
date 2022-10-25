@@ -13,16 +13,45 @@ import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import LoadingIndicator from '@app/elements/loading-indicator'
 import { defaultApiErrorHandler } from '@app/errors'
 import { DeploymentRoot, mergeConfigs } from '@app/models'
-import { deploymentApiUrl, deploymentUrl, productUrl, ROUTE_PRODUCTS, versionUrl } from '@app/routes'
-import { startDeployment, withContextAuthorization } from '@app/utils'
+import {
+  deploymentApiUrl,
+  deploymentDeployUrl,
+  deploymentPreDeployUrl,
+  deploymentUrl,
+  productUrl,
+  ROUTE_PRODUCTS,
+  versionUrl,
+} from '@app/routes'
+import { withContextAuthorization } from '@app/utils'
 import { containerConfigSchema, getValidationError } from '@app/validations'
 import { Crux, cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
-import { useRouter } from 'next/dist/client/router'
+import { NextRouter, useRouter } from 'next/dist/client/router'
 import { useEffect, useRef } from 'react'
 import toast from 'react-hot-toast'
 import { ValidationError } from 'yup'
+
+export const startDeployment = async (
+  router: NextRouter,
+  productId: string,
+  versionId: string,
+  deploymentId: string,
+) => {
+  const res = await fetch(deploymentPreDeployUrl(productId, versionId, deploymentId))
+
+  if (res.status === 412) {
+    const json = await res.json()
+    toast.error(json.description)
+    return
+  }
+
+  if (!res.ok) {
+    return
+  }
+
+  router.push(deploymentDeployUrl(productId, versionId, deploymentId))
+}
 
 interface DeploymentDetailsPageProps {
   deployment: DeploymentRoot

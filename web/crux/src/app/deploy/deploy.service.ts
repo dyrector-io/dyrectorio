@@ -600,7 +600,7 @@ export default class DeployService {
           return false
         }
 
-        return instanceSecret.encrypted === true && instanceSecret.value.length > 0
+        return instanceSecret.encrypted && instanceSecret.value.length > 0
       })
 
       return hasSecrets
