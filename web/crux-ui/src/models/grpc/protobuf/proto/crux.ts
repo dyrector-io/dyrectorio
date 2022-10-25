@@ -20,6 +20,7 @@ import {
   ConfigContainer,
   ContainerState,
   containerStateFromJSON,
+  ContainerStateListMessage,
   containerStateToJSON,
   DeploymentStatus,
   deploymentStatusFromJSON,
@@ -927,13 +928,13 @@ export interface InitContainer {
   volumes: VolumeLink[]
   command: UniqueKey[]
   args: UniqueKey[]
-  environments: UniqueKeyValue[]
+  environment: UniqueKeyValue[]
 }
 
 export interface ImportContainer {
   volume: string
   command: string
-  environments: UniqueKeyValue[]
+  environment: UniqueKeyValue[]
 }
 
 export interface LogConfig {
@@ -1022,7 +1023,7 @@ export interface CommonContainerConfig {
   volumes: Volume[]
   commands: UniqueKey[]
   args: UniqueKey[]
-  environments: UniqueKeyValue[]
+  environment: UniqueKeyValue[]
   secrets: UniqueKeyValue[]
   initContainers: InitContainer[]
 }
@@ -1147,29 +1148,6 @@ export interface WatchContainerStateRequest {
   accessedBy: string
   nodeId: string
   prefix?: string | undefined
-}
-
-export interface ContainerStateItem {
-  containerId: string
-  name: string
-  command: string
-  createdAt: Timestamp | undefined
-  /** The 'State' of the container (Created, Running, etc) */
-  state: ContainerState
-  /**
-   * The 'Status' of the container ("Created 1min ago", "Exited with code 123",
-   * etc). Unused but left here for reverse compatibility with the legacy
-   * version.
-   */
-  status: string
-  imageName: string
-  imageTag: string
-  ports: Port[]
-}
-
-export interface ContainerStateListMessage {
-  prefix?: string | undefined
-  data: ContainerStateItem[]
 }
 
 export interface DeploymentProgressMessage {
@@ -1349,6 +1327,25 @@ export interface HealthResponse {
   status: ServiceStatus
   cruxVersion: string
   lastMigration?: string | undefined
+}
+
+/** TEMPLATE */
+export interface TemplateResponse {
+  id: string
+  name: string
+  description: string
+}
+
+export interface TemplateListResponse {
+  data: TemplateResponse[]
+}
+
+export interface CreateProductFromTemplateRequest {
+  id: string
+  accessedBy: string
+  name: string
+  description: string
+  type: ProductType
 }
 
 function createBaseServiceIdRequest(): ServiceIdRequest {
@@ -4942,7 +4939,7 @@ export const VolumeLink = {
 }
 
 function createBaseInitContainer(): InitContainer {
-  return { id: '', name: '', image: '', volumes: [], command: [], args: [], environments: [] }
+  return { id: '', name: '', image: '', volumes: [], command: [], args: [], environment: [] }
 }
 
 export const InitContainer = {
@@ -4968,7 +4965,7 @@ export const InitContainer = {
     for (const v of message.args) {
       UniqueKey.encode(v!, writer.uint32(8018).fork()).ldelim()
     }
-    for (const v of message.environments) {
+    for (const v of message.environment) {
       UniqueKeyValue.encode(v!, writer.uint32(8026).fork()).ldelim()
     }
     return writer
@@ -5003,7 +5000,7 @@ export const InitContainer = {
           message.args.push(UniqueKey.decode(reader, reader.uint32()))
           break
         case 1003:
-          message.environments.push(UniqueKeyValue.decode(reader, reader.uint32()))
+          message.environment.push(UniqueKeyValue.decode(reader, reader.uint32()))
           break
         default:
           reader.skipType(tag & 7)
@@ -5022,8 +5019,8 @@ export const InitContainer = {
       volumes: Array.isArray(object?.volumes) ? object.volumes.map((e: any) => VolumeLink.fromJSON(e)) : [],
       command: Array.isArray(object?.command) ? object.command.map((e: any) => UniqueKey.fromJSON(e)) : [],
       args: Array.isArray(object?.args) ? object.args.map((e: any) => UniqueKey.fromJSON(e)) : [],
-      environments: Array.isArray(object?.environments)
-        ? object.environments.map((e: any) => UniqueKeyValue.fromJSON(e))
+      environment: Array.isArray(object?.environment)
+        ? object.environment.map((e: any) => UniqueKeyValue.fromJSON(e))
         : [],
     }
   },
@@ -5049,10 +5046,10 @@ export const InitContainer = {
     } else {
       obj.args = []
     }
-    if (message.environments) {
-      obj.environments = message.environments.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
+    if (message.environment) {
+      obj.environment = message.environment.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
     } else {
-      obj.environments = []
+      obj.environment = []
     }
     return obj
   },
@@ -5066,13 +5063,13 @@ export const InitContainer = {
     message.volumes = object.volumes?.map(e => VolumeLink.fromPartial(e)) || []
     message.command = object.command?.map(e => UniqueKey.fromPartial(e)) || []
     message.args = object.args?.map(e => UniqueKey.fromPartial(e)) || []
-    message.environments = object.environments?.map(e => UniqueKeyValue.fromPartial(e)) || []
+    message.environment = object.environment?.map(e => UniqueKeyValue.fromPartial(e)) || []
     return message
   },
 }
 
 function createBaseImportContainer(): ImportContainer {
-  return { volume: '', command: '', environments: [] }
+  return { volume: '', command: '', environment: [] }
 }
 
 export const ImportContainer = {
@@ -5083,7 +5080,7 @@ export const ImportContainer = {
     if (message.command !== '') {
       writer.uint32(810).string(message.command)
     }
-    for (const v of message.environments) {
+    for (const v of message.environment) {
       UniqueKeyValue.encode(v!, writer.uint32(8002).fork()).ldelim()
     }
     return writer
@@ -5103,7 +5100,7 @@ export const ImportContainer = {
           message.command = reader.string()
           break
         case 1000:
-          message.environments.push(UniqueKeyValue.decode(reader, reader.uint32()))
+          message.environment.push(UniqueKeyValue.decode(reader, reader.uint32()))
           break
         default:
           reader.skipType(tag & 7)
@@ -5117,8 +5114,8 @@ export const ImportContainer = {
     return {
       volume: isSet(object.volume) ? String(object.volume) : '',
       command: isSet(object.command) ? String(object.command) : '',
-      environments: Array.isArray(object?.environments)
-        ? object.environments.map((e: any) => UniqueKeyValue.fromJSON(e))
+      environment: Array.isArray(object?.environment)
+        ? object.environment.map((e: any) => UniqueKeyValue.fromJSON(e))
         : [],
     }
   },
@@ -5127,10 +5124,10 @@ export const ImportContainer = {
     const obj: any = {}
     message.volume !== undefined && (obj.volume = message.volume)
     message.command !== undefined && (obj.command = message.command)
-    if (message.environments) {
-      obj.environments = message.environments.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
+    if (message.environment) {
+      obj.environment = message.environment.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
     } else {
-      obj.environments = []
+      obj.environment = []
     }
     return obj
   },
@@ -5139,7 +5136,7 @@ export const ImportContainer = {
     const message = createBaseImportContainer()
     message.volume = object.volume ?? ''
     message.command = object.command ?? ''
-    message.environments = object.environments?.map(e => UniqueKeyValue.fromPartial(e)) || []
+    message.environment = object.environment?.map(e => UniqueKeyValue.fromPartial(e)) || []
     return message
   },
 }
@@ -6010,7 +6007,7 @@ function createBaseCommonContainerConfig(): CommonContainerConfig {
     volumes: [],
     commands: [],
     args: [],
-    environments: [],
+    environment: [],
     secrets: [],
     initContainers: [],
   }
@@ -6054,7 +6051,7 @@ export const CommonContainerConfig = {
     for (const v of message.args) {
       UniqueKey.encode(v!, writer.uint32(8034).fork()).ldelim()
     }
-    for (const v of message.environments) {
+    for (const v of message.environment) {
       UniqueKeyValue.encode(v!, writer.uint32(8042).fork()).ldelim()
     }
     for (const v of message.secrets) {
@@ -6110,7 +6107,7 @@ export const CommonContainerConfig = {
           message.args.push(UniqueKey.decode(reader, reader.uint32()))
           break
         case 1005:
-          message.environments.push(UniqueKeyValue.decode(reader, reader.uint32()))
+          message.environment.push(UniqueKeyValue.decode(reader, reader.uint32()))
           break
         case 1006:
           message.secrets.push(UniqueKeyValue.decode(reader, reader.uint32()))
@@ -6142,8 +6139,8 @@ export const CommonContainerConfig = {
       volumes: Array.isArray(object?.volumes) ? object.volumes.map((e: any) => Volume.fromJSON(e)) : [],
       commands: Array.isArray(object?.commands) ? object.commands.map((e: any) => UniqueKey.fromJSON(e)) : [],
       args: Array.isArray(object?.args) ? object.args.map((e: any) => UniqueKey.fromJSON(e)) : [],
-      environments: Array.isArray(object?.environments)
-        ? object.environments.map((e: any) => UniqueKeyValue.fromJSON(e))
+      environment: Array.isArray(object?.environment)
+        ? object.environment.map((e: any) => UniqueKeyValue.fromJSON(e))
         : [],
       secrets: Array.isArray(object?.secrets) ? object.secrets.map((e: any) => UniqueKeyValue.fromJSON(e)) : [],
       initContainers: Array.isArray(object?.initContainers)
@@ -6189,10 +6186,10 @@ export const CommonContainerConfig = {
     } else {
       obj.args = []
     }
-    if (message.environments) {
-      obj.environments = message.environments.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
+    if (message.environment) {
+      obj.environment = message.environment.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
     } else {
-      obj.environments = []
+      obj.environment = []
     }
     if (message.secrets) {
       obj.secrets = message.secrets.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
@@ -6228,7 +6225,7 @@ export const CommonContainerConfig = {
     message.volumes = object.volumes?.map(e => Volume.fromPartial(e)) || []
     message.commands = object.commands?.map(e => UniqueKey.fromPartial(e)) || []
     message.args = object.args?.map(e => UniqueKey.fromPartial(e)) || []
-    message.environments = object.environments?.map(e => UniqueKeyValue.fromPartial(e)) || []
+    message.environment = object.environment?.map(e => UniqueKeyValue.fromPartial(e)) || []
     message.secrets = object.secrets?.map(e => UniqueKeyValue.fromPartial(e)) || []
     message.initContainers = object.initContainers?.map(e => InitContainer.fromPartial(e)) || []
     return message
@@ -7606,204 +7603,6 @@ export const WatchContainerStateRequest = {
     message.accessedBy = object.accessedBy ?? ''
     message.nodeId = object.nodeId ?? ''
     message.prefix = object.prefix ?? undefined
-    return message
-  },
-}
-
-function createBaseContainerStateItem(): ContainerStateItem {
-  return {
-    containerId: '',
-    name: '',
-    command: '',
-    createdAt: undefined,
-    state: 0,
-    status: '',
-    imageName: '',
-    imageTag: '',
-    ports: [],
-  }
-}
-
-export const ContainerStateItem = {
-  encode(message: ContainerStateItem, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.containerId !== '') {
-      writer.uint32(802).string(message.containerId)
-    }
-    if (message.name !== '') {
-      writer.uint32(810).string(message.name)
-    }
-    if (message.command !== '') {
-      writer.uint32(826).string(message.command)
-    }
-    if (message.createdAt !== undefined) {
-      Timestamp.encode(message.createdAt, writer.uint32(834).fork()).ldelim()
-    }
-    if (message.state !== 0) {
-      writer.uint32(840).int32(message.state)
-    }
-    if (message.status !== '') {
-      writer.uint32(850).string(message.status)
-    }
-    if (message.imageName !== '') {
-      writer.uint32(858).string(message.imageName)
-    }
-    if (message.imageTag !== '') {
-      writer.uint32(866).string(message.imageTag)
-    }
-    for (const v of message.ports) {
-      Port.encode(v!, writer.uint32(8002).fork()).ldelim()
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): ContainerStateItem {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseContainerStateItem()
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 100:
-          message.containerId = reader.string()
-          break
-        case 101:
-          message.name = reader.string()
-          break
-        case 103:
-          message.command = reader.string()
-          break
-        case 104:
-          message.createdAt = Timestamp.decode(reader, reader.uint32())
-          break
-        case 105:
-          message.state = reader.int32() as any
-          break
-        case 106:
-          message.status = reader.string()
-          break
-        case 107:
-          message.imageName = reader.string()
-          break
-        case 108:
-          message.imageTag = reader.string()
-          break
-        case 1000:
-          message.ports.push(Port.decode(reader, reader.uint32()))
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): ContainerStateItem {
-    return {
-      containerId: isSet(object.containerId) ? String(object.containerId) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      command: isSet(object.command) ? String(object.command) : '',
-      createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
-      state: isSet(object.state) ? containerStateFromJSON(object.state) : 0,
-      status: isSet(object.status) ? String(object.status) : '',
-      imageName: isSet(object.imageName) ? String(object.imageName) : '',
-      imageTag: isSet(object.imageTag) ? String(object.imageTag) : '',
-      ports: Array.isArray(object?.ports) ? object.ports.map((e: any) => Port.fromJSON(e)) : [],
-    }
-  },
-
-  toJSON(message: ContainerStateItem): unknown {
-    const obj: any = {}
-    message.containerId !== undefined && (obj.containerId = message.containerId)
-    message.name !== undefined && (obj.name = message.name)
-    message.command !== undefined && (obj.command = message.command)
-    message.createdAt !== undefined && (obj.createdAt = fromTimestamp(message.createdAt).toISOString())
-    message.state !== undefined && (obj.state = containerStateToJSON(message.state))
-    message.status !== undefined && (obj.status = message.status)
-    message.imageName !== undefined && (obj.imageName = message.imageName)
-    message.imageTag !== undefined && (obj.imageTag = message.imageTag)
-    if (message.ports) {
-      obj.ports = message.ports.map(e => (e ? Port.toJSON(e) : undefined))
-    } else {
-      obj.ports = []
-    }
-    return obj
-  },
-
-  fromPartial<I extends Exact<DeepPartial<ContainerStateItem>, I>>(object: I): ContainerStateItem {
-    const message = createBaseContainerStateItem()
-    message.containerId = object.containerId ?? ''
-    message.name = object.name ?? ''
-    message.command = object.command ?? ''
-    message.createdAt =
-      object.createdAt !== undefined && object.createdAt !== null ? Timestamp.fromPartial(object.createdAt) : undefined
-    message.state = object.state ?? 0
-    message.status = object.status ?? ''
-    message.imageName = object.imageName ?? ''
-    message.imageTag = object.imageTag ?? ''
-    message.ports = object.ports?.map(e => Port.fromPartial(e)) || []
-    return message
-  },
-}
-
-function createBaseContainerStateListMessage(): ContainerStateListMessage {
-  return { data: [] }
-}
-
-export const ContainerStateListMessage = {
-  encode(message: ContainerStateListMessage, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.prefix !== undefined) {
-      writer.uint32(802).string(message.prefix)
-    }
-    for (const v of message.data) {
-      ContainerStateItem.encode(v!, writer.uint32(8002).fork()).ldelim()
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): ContainerStateListMessage {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseContainerStateListMessage()
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 100:
-          message.prefix = reader.string()
-          break
-        case 1000:
-          message.data.push(ContainerStateItem.decode(reader, reader.uint32()))
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): ContainerStateListMessage {
-    return {
-      prefix: isSet(object.prefix) ? String(object.prefix) : undefined,
-      data: Array.isArray(object?.data) ? object.data.map((e: any) => ContainerStateItem.fromJSON(e)) : [],
-    }
-  },
-
-  toJSON(message: ContainerStateListMessage): unknown {
-    const obj: any = {}
-    message.prefix !== undefined && (obj.prefix = message.prefix)
-    if (message.data) {
-      obj.data = message.data.map(e => (e ? ContainerStateItem.toJSON(e) : undefined))
-    } else {
-      obj.data = []
-    }
-    return obj
-  },
-
-  fromPartial<I extends Exact<DeepPartial<ContainerStateListMessage>, I>>(object: I): ContainerStateListMessage {
-    const message = createBaseContainerStateListMessage()
-    message.prefix = object.prefix ?? undefined
-    message.data = object.data?.map(e => ContainerStateItem.fromPartial(e)) || []
     return message
   },
 }
@@ -9892,6 +9691,211 @@ export const HealthResponse = {
   },
 }
 
+function createBaseTemplateResponse(): TemplateResponse {
+  return { id: '', name: '', description: '' }
+}
+
+export const TemplateResponse = {
+  encode(message: TemplateResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== '') {
+      writer.uint32(10).string(message.id)
+    }
+    if (message.name !== '') {
+      writer.uint32(802).string(message.name)
+    }
+    if (message.description !== '') {
+      writer.uint32(810).string(message.description)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): TemplateResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseTemplateResponse()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.id = reader.string()
+          break
+        case 100:
+          message.name = reader.string()
+          break
+        case 101:
+          message.description = reader.string()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): TemplateResponse {
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      description: isSet(object.description) ? String(object.description) : '',
+    }
+  },
+
+  toJSON(message: TemplateResponse): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.name !== undefined && (obj.name = message.name)
+    message.description !== undefined && (obj.description = message.description)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<TemplateResponse>, I>>(object: I): TemplateResponse {
+    const message = createBaseTemplateResponse()
+    message.id = object.id ?? ''
+    message.name = object.name ?? ''
+    message.description = object.description ?? ''
+    return message
+  },
+}
+
+function createBaseTemplateListResponse(): TemplateListResponse {
+  return { data: [] }
+}
+
+export const TemplateListResponse = {
+  encode(message: TemplateListResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    for (const v of message.data) {
+      TemplateResponse.encode(v!, writer.uint32(8002).fork()).ldelim()
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): TemplateListResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseTemplateListResponse()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1000:
+          message.data.push(TemplateResponse.decode(reader, reader.uint32()))
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): TemplateListResponse {
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => TemplateResponse.fromJSON(e)) : [] }
+  },
+
+  toJSON(message: TemplateListResponse): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? TemplateResponse.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<TemplateListResponse>, I>>(object: I): TemplateListResponse {
+    const message = createBaseTemplateListResponse()
+    message.data = object.data?.map(e => TemplateResponse.fromPartial(e)) || []
+    return message
+  },
+}
+
+function createBaseCreateProductFromTemplateRequest(): CreateProductFromTemplateRequest {
+  return { id: '', accessedBy: '', name: '', description: '', type: 0 }
+}
+
+export const CreateProductFromTemplateRequest = {
+  encode(message: CreateProductFromTemplateRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== '') {
+      writer.uint32(10).string(message.id)
+    }
+    if (message.accessedBy !== '') {
+      writer.uint32(18).string(message.accessedBy)
+    }
+    if (message.name !== '') {
+      writer.uint32(802).string(message.name)
+    }
+    if (message.description !== '') {
+      writer.uint32(810).string(message.description)
+    }
+    if (message.type !== 0) {
+      writer.uint32(816).int32(message.type)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): CreateProductFromTemplateRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseCreateProductFromTemplateRequest()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.id = reader.string()
+          break
+        case 2:
+          message.accessedBy = reader.string()
+          break
+        case 100:
+          message.name = reader.string()
+          break
+        case 101:
+          message.description = reader.string()
+          break
+        case 102:
+          message.type = reader.int32() as any
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): CreateProductFromTemplateRequest {
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      description: isSet(object.description) ? String(object.description) : '',
+      type: isSet(object.type) ? productTypeFromJSON(object.type) : 0,
+    }
+  },
+
+  toJSON(message: CreateProductFromTemplateRequest): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
+    message.name !== undefined && (obj.name = message.name)
+    message.description !== undefined && (obj.description = message.description)
+    message.type !== undefined && (obj.type = productTypeToJSON(message.type))
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<CreateProductFromTemplateRequest>, I>>(
+    object: I,
+  ): CreateProductFromTemplateRequest {
+    const message = createBaseCreateProductFromTemplateRequest()
+    message.id = object.id ?? ''
+    message.accessedBy = object.accessedBy ?? ''
+    message.name = object.name ?? ''
+    message.description = object.description ?? ''
+    message.type = object.type ?? 0
+    return message
+  },
+}
+
 /** Services */
 export type CruxProductService = typeof CruxProductService
 export const CruxProductService = {
@@ -11712,6 +11716,72 @@ export interface CruxHealthClient extends Client {
 export const CruxHealthClient = makeGenericClientConstructor(CruxHealthService, 'crux.CruxHealth') as unknown as {
   new (address: string, credentials: ChannelCredentials, options?: Partial<ChannelOptions>): CruxHealthClient
   service: typeof CruxHealthService
+}
+
+export type CruxTemplateService = typeof CruxTemplateService
+export const CruxTemplateService = {
+  getTemplates: {
+    path: '/crux.CruxTemplate/GetTemplates',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: AccessRequest) => Buffer.from(AccessRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => AccessRequest.decode(value),
+    responseSerialize: (value: TemplateListResponse) => Buffer.from(TemplateListResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => TemplateListResponse.decode(value),
+  },
+  createProductFromTemplate: {
+    path: '/crux.CruxTemplate/CreateProductFromTemplate',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: CreateProductFromTemplateRequest) =>
+      Buffer.from(CreateProductFromTemplateRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => CreateProductFromTemplateRequest.decode(value),
+    responseSerialize: (value: CreateEntityResponse) => Buffer.from(CreateEntityResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => CreateEntityResponse.decode(value),
+  },
+} as const
+
+export interface CruxTemplateServer extends UntypedServiceImplementation {
+  getTemplates: handleUnaryCall<AccessRequest, TemplateListResponse>
+  createProductFromTemplate: handleUnaryCall<CreateProductFromTemplateRequest, CreateEntityResponse>
+}
+
+export interface CruxTemplateClient extends Client {
+  getTemplates(
+    request: AccessRequest,
+    callback: (error: ServiceError | null, response: TemplateListResponse) => void,
+  ): ClientUnaryCall
+  getTemplates(
+    request: AccessRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: TemplateListResponse) => void,
+  ): ClientUnaryCall
+  getTemplates(
+    request: AccessRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: TemplateListResponse) => void,
+  ): ClientUnaryCall
+  createProductFromTemplate(
+    request: CreateProductFromTemplateRequest,
+    callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
+  ): ClientUnaryCall
+  createProductFromTemplate(
+    request: CreateProductFromTemplateRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
+  ): ClientUnaryCall
+  createProductFromTemplate(
+    request: CreateProductFromTemplateRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
+  ): ClientUnaryCall
+}
+
+export const CruxTemplateClient = makeGenericClientConstructor(CruxTemplateService, 'crux.CruxTemplate') as unknown as {
+  new (address: string, credentials: ChannelCredentials, options?: Partial<ChannelOptions>): CruxTemplateClient
+  service: typeof CruxTemplateService
 }
 
 declare var self: any | undefined

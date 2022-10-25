@@ -290,6 +290,8 @@ export default class DeployService {
               ? `${registry.url}/${registry.imageNamePrefix}`
               : registry.type === 'v2' || registry.type === 'gitlab'
               ? registry.url
+              : registry.type === 'hub'
+              ? registry.imageNamePrefix
               : ''
 
           const mergedConfig = this.mapper.mergeConfigs(

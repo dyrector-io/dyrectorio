@@ -11,7 +11,7 @@ export const filterSet: FilterSet = {
   all: [],
   common: [
     'name',
-    'environments',
+    'environment',
     'secrets',
     'ingress',
     'expose',
@@ -64,11 +64,11 @@ const ImageConfigFilters = (props: ImageConfigFilterProps) => {
   const getBorderColor = (type: BaseImageConfigFilterType): string => {
     switch (type) {
       case 'common':
-        return 'border-orange-400/50'
+        return 'border-dyo-orange/50'
       case 'crane':
-        return 'border-violet-400/50'
+        return 'border-dyo-violet/50'
       case 'dagent':
-        return 'border-sky-400/50'
+        return 'border-dyo-sky/50'
       default:
         return 'border-dyo-turquoise'
     }
@@ -77,11 +77,11 @@ const ImageConfigFilters = (props: ImageConfigFilterProps) => {
   const getBgColor = (type: BaseImageConfigFilterType): string => {
     switch (type) {
       case 'common':
-        return 'bg-orange-400/50'
+        return 'bg-dyo-orange/50'
       case 'crane':
-        return 'bg-violet-400/50'
+        return 'bg-dyo-violet/50'
       case 'dagent':
-        return 'bg-sky-400/50'
+        return 'bg-dyo-sky/50'
       default:
         return 'bg-dyo-turquoise'
     }

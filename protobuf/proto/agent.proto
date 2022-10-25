@@ -9,7 +9,6 @@ package agent;
 option go_package = "github.com/dyrector-io/dyrectorio/protobuf/go/agent";
 
 import "protobuf/proto/common.proto";
-import "google/protobuf/timestamp.proto";
 
 /**
  * Service handling deployment of containers and fetching statuses
@@ -26,7 +25,7 @@ service Agent {
 
   rpc DeploymentStatus(stream common.DeploymentStatusMessage) returns (common.Empty);
 
-  rpc ContainerState(stream ContainerStateListMessage) returns (common.Empty);
+  rpc ContainerState(stream common.ContainerStateListMessage) returns (common.Empty);
   rpc SecretList(common.ListSecretsResponse) returns (common.Empty);
 }
 
@@ -95,30 +94,6 @@ message RegistryAuth {
   string password = 4;
 }
 
-message ContainerStateItem {
-  string containerId = 100;
-  string name = 101;
-  string command = 103;
-  google.protobuf.Timestamp createdAt = 104;
-  /* The 'State' of the container (Created, Running, etc) */
-  common.ContainerState state = 105;
-  /*
-   * The 'Status' of the container ("Created 1min ago", "Exited with code 123",
-   * etc). Unused but left here for reverse compatibility with the legacy
-   * version.
-   */
-  string status = 106;
-  string imageName = 107;
-  string imageTag = 108;
-
-  repeated Port ports = 1000;
-}
-
-message ContainerStateListMessage {
-  optional string prefix = 100;
-  repeated ContainerStateItem data = 1000;
-}
-
 // Container config
 
 message Port {
@@ -157,14 +132,14 @@ message InitContainer {
   repeated VolumeLink volumes = 1000;
   repeated string command = 1001;
   repeated string args = 1002;
-  map<string, string> environments = 1003;
+  map<string, string> environment = 1003;
 }
 
 message ImportContainer {
   string volume = 100;
   string command = 101;
 
-  map<string, string> environments = 1000;
+  map<string, string> environment = 1000;
 }
 
 message LogConfig {
@@ -206,7 +181,7 @@ message CommonContainerConfig {
   repeated Volume volumes = 1002;
   repeated string commands = 1003;
   repeated string args = 1004;
-  repeated string environments = 1005;
+  repeated string environment = 1005;
   map<string, string> secrets = 1006;
   repeated InitContainer initContainers = 1007;
 }

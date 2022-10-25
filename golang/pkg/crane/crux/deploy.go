@@ -9,10 +9,10 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/internal/mapper"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/k8s"
-	agent "github.com/dyrector-io/dyrectorio/protobuf/go/agent"
+	common "github.com/dyrector-io/dyrectorio/protobuf/go/common"
 )
 
-func GetDeployments(ctx context.Context, namespace string) []*agent.ContainerStateItem {
+func GetDeployments(ctx context.Context, namespace string) []*common.ContainerStateItem {
 	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
 	list, err := k8s.GetDeployments(ctx, namespace, cfg)
 	if err != nil {

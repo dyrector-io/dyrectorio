@@ -40,9 +40,9 @@ const EditImageConfig = (props: EditImageConfigProps) => {
     })
   }
 
-  const onEnvChange = (environments: UniqueKeyValue[]) =>
+  const onEnvChange = (environment: UniqueKeyValue[]) =>
     sendPatch({
-      environments,
+      environment,
     })
 
   const onSecretChange = (secrets: UniqueKeyValue[]) => {
@@ -72,7 +72,7 @@ const EditImageConfig = (props: EditImageConfigProps) => {
       <KeyValueInput
         disabled={disabled}
         label={t('environment').toUpperCase()}
-        items={config?.environments ?? []}
+        items={config?.environment ?? []}
         editorOptions={editorOptions}
         onChange={onEnvChange}
         hint={{ hintValidation: sensitiveKeyRule, hintText: t('sensitiveKey') }}

@@ -11,6 +11,7 @@ import {
   UpdateEntityResponse,
   UpdateProductRequest,
 } from 'src/grpc/protobuf/proto/crux'
+import { SIMPLE_PRODUCT_VERSION_NAME } from 'src/shared/const'
 import PrismaService from 'src/services/prisma.service'
 import TeamRepository from '../team/team.repository'
 import ProductMapper from './product.mapper'
@@ -62,7 +63,7 @@ export default class ProductService {
           type === ProductTypeEnum.simple
             ? {
                 create: {
-                  name: ProductService.SIMPLE_PRODUCT_VERSION_NAME,
+                  name: SIMPLE_PRODUCT_VERSION_NAME,
                   createdBy: request.accessedBy,
                   type: VersionTypeEnum.rolling,
                   default: true,
@@ -138,6 +139,4 @@ export default class ProductService {
 
     return this.mapper.detailsToGrpc(product)
   }
-
-  private static SIMPLE_PRODUCT_VERSION_NAME = 'rolling'
 }

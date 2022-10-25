@@ -6,9 +6,13 @@ import {
   AgentController as GrpcAgentController,
   AgentControllerMethods,
   AgentInfo,
-  ContainerStateListMessage,
 } from 'src/grpc/protobuf/proto/agent'
-import { DeploymentStatusMessage, Empty, ListSecretsResponse } from 'src/grpc/protobuf/proto/common'
+import {
+  ContainerStateListMessage,
+  DeploymentStatusMessage,
+  Empty,
+  ListSecretsResponse,
+} from 'src/grpc/protobuf/proto/common'
 import { NodeUnaryCall } from 'src/shared/grpc-node-connection'
 import AgentService from './agent.service'
 import AgentAuthGuard from './guards/agent.auth.guard'

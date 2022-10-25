@@ -20,6 +20,7 @@ import AuditLoggerInterceptor from './interceptors/audit-logger.interceptor'
 import PrismaService from './services/prisma.service'
 import NotificationModule from './app/notification/notification.module'
 import EmailModule from './mailer/email.module'
+import TemplateModule from './app/template/template.module'
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import EmailModule from './mailer/email.module'
     AuditModule,
     HealthModule,
     NotificationModule,
+    TemplateModule,
     ConfigModule.forRoot({
       isGlobal: true,
       cache: true,

@@ -63,7 +63,7 @@ export type ImageMessage = VersionImage
 
 export const IMAGE_CONFIG_FILTERS = [
   'name',
-  'environments',
+  'environment',
   'secrets',
   'capabilities',
   'ingress',

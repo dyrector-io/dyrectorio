@@ -41,10 +41,10 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
 
   return (
     <div className="my-4">
-      <DyoHeading className="text-lg text-bright uppercase font-semibold tracking-wide bg-sky-400/50 w-40 rounded-t-lg text-center pt-[2px]">
+      <DyoHeading className="text-lg text-bright uppercase font-semibold tracking-wide bg-dyo-sky/50 w-40 rounded-t-lg text-center pt-[2px]">
         {t('base.dagent')}
       </DyoHeading>
-      <div className="columns-1 lg:columns-2 2xl:columns-3 gap-24 border-2 rounded-lg rounded-tl-[0px] border-solid border-sky-400/50 p-8 w-full">
+      <div className="columns-1 lg:columns-2 2xl:columns-3 gap-24 border-2 rounded-lg rounded-tl-[0px] border-solid border-dyo-sky/50 p-8 w-full">
         {/* networkMode */}
         {contains('networkMode') && (
           <div className="grid break-inside-avoid mb-8">

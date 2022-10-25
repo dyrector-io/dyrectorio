@@ -42,7 +42,7 @@ type GrpcConnectionParams struct {
 
 type (
 	DeployFunc     func(context.Context, *dogger.DeploymentLogger, *v1.DeployImageRequest, *v1.VersionData) error
-	WatchFunc      func(context.Context, string) []*agent.ContainerStateItem
+	WatchFunc      func(context.Context, string) []*common.ContainerStateItem
 	DeleteFunc     func(context.Context, string, string) error
 	SecretListFunc func(context.Context, string, string) ([]string, error)
 )
@@ -322,7 +322,7 @@ func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStateR
 	for {
 		containers := listFn(ctx, filterPrefix)
 
-		err = stream.Send(&agent.ContainerStateListMessage{
+		err = stream.Send(&common.ContainerStateListMessage{
 			Prefix: req.Prefix,
 			Data:   containers,
 		})

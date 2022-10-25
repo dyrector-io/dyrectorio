@@ -196,7 +196,7 @@ export default class DeployMapper {
   configToCommonConfig(config: ContainerConfigData): CommonContainerConfig {
     return {
       name: config.name,
-      environments: this.jsonToPipedFormat(config.environment as JsonArray),
+      environment: this.jsonToPipedFormat(config.environment as JsonArray),
       secrets: this.mapKeyValueToMap(config.secrets as JsonObject),
       commands: this.mapUniqueKeyToStringArray(config.commands as JsonObject),
       expose: this.imageMapper.exposeStrategyToProto(config.expose),
@@ -250,7 +250,7 @@ export default class DeployMapper {
     list.forEach(it => {
       result.push({
         ...it,
-        environments: this.mapKeyValueToMap(it.environments as KeyValue[]),
+        environment: this.mapKeyValueToMap(it.environment as KeyValue[]),
         command: it.command.map(cit => cit.key),
         args: it.args.map(ait => ait.key),
       })

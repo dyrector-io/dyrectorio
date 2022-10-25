@@ -48,7 +48,7 @@ service CruxNode {
   rpc SubscribeNodeEventChannel(ServiceIdRequest)
       returns (stream NodeEventMessage);
   rpc WatchContainerState(WatchContainerStateRequest)
-      returns (stream ContainerStateListMessage);
+      returns (stream common.ContainerStateListMessage);
 }
 
 service CruxProductVersion {
@@ -123,6 +123,11 @@ service CruxAudit {
 }
 
 service CruxHealth { rpc getHealth(common.Empty) returns (HealthResponse); }
+
+service CruxTemplate {
+  rpc GetTemplates(AccessRequest) returns (TemplateListResponse);
+  rpc CreateProductFromTemplate(CreateProductFromTemplateRequest) returns (CreateEntityResponse);
+}
 
 /**
  *
@@ -536,14 +541,14 @@ message InitContainer {
   repeated VolumeLink volumes = 1000;
   repeated common.UniqueKey command = 1001;
   repeated common.UniqueKey args = 1002;
-  repeated UniqueKeyValue environments = 1003;
+  repeated UniqueKeyValue environment = 1003;
 }
 
 message ImportContainer {
   string volume = 100;
   string command = 101;
 
-  repeated UniqueKeyValue environments = 1000;
+  repeated UniqueKeyValue environment = 1000;
 }
 
 message LogConfig {
@@ -630,7 +635,7 @@ message CommonContainerConfig {
   repeated Volume volumes = 1002;
   repeated common.UniqueKey commands = 1003;
   repeated common.UniqueKey args = 1004;
-  repeated UniqueKeyValue environments = 1005;
+  repeated UniqueKeyValue environment = 1005;
   repeated UniqueKeyValue secrets = 1006;
   repeated InitContainer initContainers = 1007;
 }
@@ -782,30 +787,6 @@ message WatchContainerStateRequest {
 
   string nodeId = 100;
   optional string prefix = 101;
-}
-
-message ContainerStateItem {
-  string containerId = 100;
-  string name = 101;
-  string command = 103;
-  google.protobuf.Timestamp createdAt = 104;
-  /* The 'State' of the container (Created, Running, etc) */
-  common.ContainerState state = 105;
-  /*
-   * The 'Status' of the container ("Created 1min ago", "Exited with code 123",
-   * etc). Unused but left here for reverse compatibility with the legacy
-   * version.
-   */
-  string status = 106;
-  string imageName = 107;
-  string imageTag = 108;
-
-  repeated Port ports = 1000;
-}
-
-message ContainerStateListMessage {
-  optional string prefix = 100;
-  repeated ContainerStateItem data = 1000;
 }
 
 // DEPLOYMENT
@@ -1036,4 +1017,25 @@ message HealthResponse {
   ServiceStatus status = 100;
   string cruxVersion = 101;
   optional string lastMigration = 102;
+}
+
+// TEMPLATE
+message TemplateResponse {
+  string id = 1;
+
+  string name = 100;
+  string description = 101;
+}
+
+message TemplateListResponse {
+  repeated TemplateResponse data = 1000;
+}
+
+message CreateProductFromTemplateRequest {
+  string id = 1;
+  string accessedBy = 2;
+
+  string name = 100;
+  string description = 101;
+  ProductType type = 102;
 }

@@ -49,7 +49,7 @@ export default class ImageMapper {
   configToCommonConfig(config: ContainerConfigData): ProtoCruxCommonContainerConfig {
     return {
       name: config.name,
-      environments: config.environment as JsonObject,
+      environment: config.environment as JsonObject,
       secrets: config.secrets as JsonObject,
       commands: config.commands as JsonObject,
       expose: this.exposeStrategyToProto(config.expose),
@@ -110,7 +110,7 @@ export default class ImageMapper {
       volumes: this.toPrismaJson(config.common?.volumes),
       commands: this.toPrismaJson(config.common?.commands),
       args: this.toPrismaJson(config.common?.args),
-      environment: this.toPrismaJson(config.common?.environments),
+      environment: this.toPrismaJson(config.common?.environment),
       secrets: this.toPrismaJson(config.common?.secrets),
       initContainers: this.toPrismaJson(config.common?.initContainers),
       logConfig: this.toPrismaJson(config.dagent?.logConfig),
@@ -156,7 +156,7 @@ export default class ImageMapper {
     switch (type) {
       case ExposeStrategy.expose:
         return ProtoExposeStrategy.EXPOSE
-      case ExposeStrategy.expose_with_tls:
+      case ExposeStrategy.exposeWithTls:
         return ProtoExposeStrategy.EXPOSE_WITH_TLS
       default:
         return ProtoExposeStrategy.NONE_ES
@@ -168,7 +168,7 @@ export default class ImageMapper {
       case ProtoExposeStrategy.EXPOSE:
         return ExposeStrategy.expose
       case ProtoExposeStrategy.EXPOSE_WITH_TLS:
-        return ExposeStrategy.expose_with_tls
+        return ExposeStrategy.exposeWithTls
       default:
         return ExposeStrategy.none
     }
@@ -180,9 +180,9 @@ export default class ImageMapper {
         return ProtoRestartPolicy.ALWAYS
       case RestartPolicy.no:
         return ProtoRestartPolicy.NO
-      case RestartPolicy.unless_stopped:
+      case RestartPolicy.unlessStopped:
         return ProtoRestartPolicy.UNLESS_STOPPED
-      case RestartPolicy.on_failure:
+      case RestartPolicy.onFailure:
         return ProtoRestartPolicy.ON_FAILURE
       default:
         return ProtoRestartPolicy.UNDEFINED
@@ -196,9 +196,9 @@ export default class ImageMapper {
       case ProtoRestartPolicy.NO:
         return RestartPolicy.no
       case ProtoRestartPolicy.UNLESS_STOPPED:
-        return RestartPolicy.unless_stopped
+        return RestartPolicy.unlessStopped
       case ProtoRestartPolicy.ON_FAILURE:
-        return RestartPolicy.on_failure
+        return RestartPolicy.onFailure
       default:
         return null
     }

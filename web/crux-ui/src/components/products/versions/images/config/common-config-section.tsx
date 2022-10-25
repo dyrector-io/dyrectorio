@@ -64,10 +64,10 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
 
   return (
     <div className="my-4">
-      <DyoHeading className="text-lg text-bright font-semibold tracking-wide bg-orange-400/50 w-40 rounded-t-lg text-center pt-[2px]">
+      <DyoHeading className="text-lg text-bright font-semibold tracking-wide bg-dyo-orange/50 w-40 rounded-t-lg text-center pt-[2px]">
         {t('base.common').toUpperCase()}
       </DyoHeading>
-      <div className="flex flex-col border-2 rounded-lg rounded-tl-[0px] border-solid border-orange-400/50 p-8 w-full">
+      <div className="flex flex-col border-2 rounded-lg rounded-tl-[0px] border-solid border-dyo-orange/50 p-8 w-full">
         <div className="columns-1 lg:columns-2 2xl:columns-3 gap-x-20">
           {/* name */}
           {contains('name') && (
@@ -230,14 +230,14 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             </div>
           )}
 
-          {/* environments */}
-          {contains('environments') && (
+          {/* environment */}
+          {contains('environment') && (
             <div className="grid mb-8 break-inside-avoid">
               <KeyValueInput
                 labelClassName="text-bright font-semibold tracking-wide mb-2"
-                label={t('common.environments').toUpperCase()}
-                onChange={it => onChange({ environments: it })}
-                items={config.environments ?? []}
+                label={t('common.environment').toUpperCase()}
+                onChange={it => onChange({ environment: it })}
+                items={config.environment ?? []}
                 editorOptions={editorOptions}
               />
             </div>
@@ -337,11 +337,11 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 />
                 <div className="flex flex-col">
                   <KeyValueInput
-                    label={t('common.environments')}
+                    label={t('common.environment')}
                     onChange={it =>
-                      onChange({ importContainer: nullify({ ...config.importContainer, environments: it }) })
+                      onChange({ importContainer: nullify({ ...config.importContainer, environment: it }) })
                     }
-                    items={config.importContainer?.environments ?? []}
+                    items={config.importContainer?.environment ?? []}
                     editorOptions={editorOptions}
                   />
                 </div>
@@ -414,7 +414,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                           alt="remove"
                         />
                       </div>
-                      {message ? <DyoMessage message={message} messageType="error" spacing="m-2" /> : null}
+                      {message ? <DyoMessage message={message} messageType="error" marginClassName="m-2" /> : null}
                     </div>
                   )
                 })}
@@ -539,7 +539,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                           </div>
                         </div>
                       </div>
-                      {message ? <DyoMessage message={message} messageType="error" spacing="m-2" /> : null}
+                      {message ? <DyoMessage message={message} messageType="error" marginClassName="m-2" /> : null}
                     </div>
                   )
                 })}
@@ -644,7 +644,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                           />
                         </div>
                       </div>
-                      {message ? <DyoMessage message={message} messageType="error" spacing="mt-2" /> : null}
+                      {message ? <DyoMessage message={message} messageType="error" marginClassName="mt-2" /> : null}
                     </div>
                   )
                 })}
@@ -672,7 +672,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                         image: undefined,
                         args: [],
                         command: [],
-                        environments: [],
+                        environment: [],
                         volumes: [],
                       },
                     ],
@@ -748,10 +748,10 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                           />
                         </div>
                         <div className="flex flex-col mb-2">
-                          <DyoLabel className="mb-2">{t('common.environments').toUpperCase()}</DyoLabel>
+                          <DyoLabel className="mb-2">{t('common.environment').toUpperCase()}</DyoLabel>
                           <KeyValueInput
-                            onChange={it => onComplexValueChange('initContainers', 'environments', it, index)}
-                            items={item.environments ?? []}
+                            onChange={it => onComplexValueChange('initContainers', 'environment', it, index)}
+                            items={item.environment ?? []}
                             editorOptions={editorOptions}
                           />
                         </div>
@@ -777,7 +777,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                           />
                         </div>
                       </div>
-                      {message ? <DyoMessage message={message} messageType="error" spacing="mt-2" /> : null}
+                      {message ? <DyoMessage message={message} messageType="error" marginClassName="mt-2" /> : null}
                     </div>
                   )
                 })}

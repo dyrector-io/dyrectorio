@@ -7,6 +7,7 @@ import {
   ConfigContainer,
   ContainerState,
   containerStateFromJSON,
+  ContainerStateListMessage,
   containerStateToJSON,
   DeploymentStatus,
   deploymentStatusFromJSON,
@@ -914,13 +915,13 @@ export interface InitContainer {
   volumes: VolumeLink[]
   command: UniqueKey[]
   args: UniqueKey[]
-  environments: UniqueKeyValue[]
+  environment: UniqueKeyValue[]
 }
 
 export interface ImportContainer {
   volume: string
   command: string
-  environments: UniqueKeyValue[]
+  environment: UniqueKeyValue[]
 }
 
 export interface LogConfig {
@@ -1009,7 +1010,7 @@ export interface CommonContainerConfig {
   volumes: Volume[]
   commands: UniqueKey[]
   args: UniqueKey[]
-  environments: UniqueKeyValue[]
+  environment: UniqueKeyValue[]
   secrets: UniqueKeyValue[]
   initContainers: InitContainer[]
 }
@@ -1134,29 +1135,6 @@ export interface WatchContainerStateRequest {
   accessedBy: string
   nodeId: string
   prefix?: string | undefined
-}
-
-export interface ContainerStateItem {
-  containerId: string
-  name: string
-  command: string
-  createdAt: Timestamp | undefined
-  /** The 'State' of the container (Created, Running, etc) */
-  state: ContainerState
-  /**
-   * The 'Status' of the container ("Created 1min ago", "Exited with code 123",
-   * etc). Unused but left here for reverse compatibility with the legacy
-   * version.
-   */
-  status: string
-  imageName: string
-  imageTag: string
-  ports: Port[]
-}
-
-export interface ContainerStateListMessage {
-  prefix?: string | undefined
-  data: ContainerStateItem[]
 }
 
 export interface DeploymentProgressMessage {
@@ -1336,6 +1314,25 @@ export interface HealthResponse {
   status: ServiceStatus
   cruxVersion: string
   lastMigration?: string | undefined
+}
+
+/** TEMPLATE */
+export interface TemplateResponse {
+  id: string
+  name: string
+  description: string
+}
+
+export interface TemplateListResponse {
+  data: TemplateResponse[]
+}
+
+export interface CreateProductFromTemplateRequest {
+  id: string
+  accessedBy: string
+  name: string
+  description: string
+  type: ProductType
 }
 
 export const CRUX_PACKAGE_NAME = 'crux'
@@ -2514,7 +2511,7 @@ export const VolumeLink = {
 }
 
 function createBaseInitContainer(): InitContainer {
-  return { id: '', name: '', image: '', volumes: [], command: [], args: [], environments: [] }
+  return { id: '', name: '', image: '', volumes: [], command: [], args: [], environment: [] }
 }
 
 export const InitContainer = {
@@ -2527,8 +2524,8 @@ export const InitContainer = {
       volumes: Array.isArray(object?.volumes) ? object.volumes.map((e: any) => VolumeLink.fromJSON(e)) : [],
       command: Array.isArray(object?.command) ? object.command.map((e: any) => UniqueKey.fromJSON(e)) : [],
       args: Array.isArray(object?.args) ? object.args.map((e: any) => UniqueKey.fromJSON(e)) : [],
-      environments: Array.isArray(object?.environments)
-        ? object.environments.map((e: any) => UniqueKeyValue.fromJSON(e))
+      environment: Array.isArray(object?.environment)
+        ? object.environment.map((e: any) => UniqueKeyValue.fromJSON(e))
         : [],
     }
   },
@@ -2554,17 +2551,17 @@ export const InitContainer = {
     } else {
       obj.args = []
     }
-    if (message.environments) {
-      obj.environments = message.environments.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
+    if (message.environment) {
+      obj.environment = message.environment.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
     } else {
-      obj.environments = []
+      obj.environment = []
     }
     return obj
   },
 }
 
 function createBaseImportContainer(): ImportContainer {
-  return { volume: '', command: '', environments: [] }
+  return { volume: '', command: '', environment: [] }
 }
 
 export const ImportContainer = {
@@ -2572,8 +2569,8 @@ export const ImportContainer = {
     return {
       volume: isSet(object.volume) ? String(object.volume) : '',
       command: isSet(object.command) ? String(object.command) : '',
-      environments: Array.isArray(object?.environments)
-        ? object.environments.map((e: any) => UniqueKeyValue.fromJSON(e))
+      environment: Array.isArray(object?.environment)
+        ? object.environment.map((e: any) => UniqueKeyValue.fromJSON(e))
         : [],
     }
   },
@@ -2582,10 +2579,10 @@ export const ImportContainer = {
     const obj: any = {}
     message.volume !== undefined && (obj.volume = message.volume)
     message.command !== undefined && (obj.command = message.command)
-    if (message.environments) {
-      obj.environments = message.environments.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
+    if (message.environment) {
+      obj.environment = message.environment.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
     } else {
-      obj.environments = []
+      obj.environment = []
     }
     return obj
   },
@@ -2901,7 +2898,7 @@ function createBaseCommonContainerConfig(): CommonContainerConfig {
     volumes: [],
     commands: [],
     args: [],
-    environments: [],
+    environment: [],
     secrets: [],
     initContainers: [],
   }
@@ -2924,8 +2921,8 @@ export const CommonContainerConfig = {
       volumes: Array.isArray(object?.volumes) ? object.volumes.map((e: any) => Volume.fromJSON(e)) : [],
       commands: Array.isArray(object?.commands) ? object.commands.map((e: any) => UniqueKey.fromJSON(e)) : [],
       args: Array.isArray(object?.args) ? object.args.map((e: any) => UniqueKey.fromJSON(e)) : [],
-      environments: Array.isArray(object?.environments)
-        ? object.environments.map((e: any) => UniqueKeyValue.fromJSON(e))
+      environment: Array.isArray(object?.environment)
+        ? object.environment.map((e: any) => UniqueKeyValue.fromJSON(e))
         : [],
       secrets: Array.isArray(object?.secrets) ? object.secrets.map((e: any) => UniqueKeyValue.fromJSON(e)) : [],
       initContainers: Array.isArray(object?.initContainers)
@@ -2971,10 +2968,10 @@ export const CommonContainerConfig = {
     } else {
       obj.args = []
     }
-    if (message.environments) {
-      obj.environments = message.environments.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
+    if (message.environment) {
+      obj.environment = message.environment.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
     } else {
-      obj.environments = []
+      obj.environment = []
     }
     if (message.secrets) {
       obj.secrets = message.secrets.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
@@ -3433,78 +3430,6 @@ export const WatchContainerStateRequest = {
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.nodeId !== undefined && (obj.nodeId = message.nodeId)
     message.prefix !== undefined && (obj.prefix = message.prefix)
-    return obj
-  },
-}
-
-function createBaseContainerStateItem(): ContainerStateItem {
-  return {
-    containerId: '',
-    name: '',
-    command: '',
-    createdAt: undefined,
-    state: 0,
-    status: '',
-    imageName: '',
-    imageTag: '',
-    ports: [],
-  }
-}
-
-export const ContainerStateItem = {
-  fromJSON(object: any): ContainerStateItem {
-    return {
-      containerId: isSet(object.containerId) ? String(object.containerId) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      command: isSet(object.command) ? String(object.command) : '',
-      createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
-      state: isSet(object.state) ? containerStateFromJSON(object.state) : 0,
-      status: isSet(object.status) ? String(object.status) : '',
-      imageName: isSet(object.imageName) ? String(object.imageName) : '',
-      imageTag: isSet(object.imageTag) ? String(object.imageTag) : '',
-      ports: Array.isArray(object?.ports) ? object.ports.map((e: any) => Port.fromJSON(e)) : [],
-    }
-  },
-
-  toJSON(message: ContainerStateItem): unknown {
-    const obj: any = {}
-    message.containerId !== undefined && (obj.containerId = message.containerId)
-    message.name !== undefined && (obj.name = message.name)
-    message.command !== undefined && (obj.command = message.command)
-    message.createdAt !== undefined && (obj.createdAt = fromTimestamp(message.createdAt).toISOString())
-    message.state !== undefined && (obj.state = containerStateToJSON(message.state))
-    message.status !== undefined && (obj.status = message.status)
-    message.imageName !== undefined && (obj.imageName = message.imageName)
-    message.imageTag !== undefined && (obj.imageTag = message.imageTag)
-    if (message.ports) {
-      obj.ports = message.ports.map(e => (e ? Port.toJSON(e) : undefined))
-    } else {
-      obj.ports = []
-    }
-    return obj
-  },
-}
-
-function createBaseContainerStateListMessage(): ContainerStateListMessage {
-  return { data: [] }
-}
-
-export const ContainerStateListMessage = {
-  fromJSON(object: any): ContainerStateListMessage {
-    return {
-      prefix: isSet(object.prefix) ? String(object.prefix) : undefined,
-      data: Array.isArray(object?.data) ? object.data.map((e: any) => ContainerStateItem.fromJSON(e)) : [],
-    }
-  },
-
-  toJSON(message: ContainerStateListMessage): unknown {
-    const obj: any = {}
-    message.prefix !== undefined && (obj.prefix = message.prefix)
-    if (message.data) {
-      obj.data = message.data.map(e => (e ? ContainerStateItem.toJSON(e) : undefined))
-    } else {
-      obj.data = []
-    }
     return obj
   },
 }
@@ -4195,6 +4120,74 @@ export const HealthResponse = {
     message.status !== undefined && (obj.status = serviceStatusToJSON(message.status))
     message.cruxVersion !== undefined && (obj.cruxVersion = message.cruxVersion)
     message.lastMigration !== undefined && (obj.lastMigration = message.lastMigration)
+    return obj
+  },
+}
+
+function createBaseTemplateResponse(): TemplateResponse {
+  return { id: '', name: '', description: '' }
+}
+
+export const TemplateResponse = {
+  fromJSON(object: any): TemplateResponse {
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      description: isSet(object.description) ? String(object.description) : '',
+    }
+  },
+
+  toJSON(message: TemplateResponse): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.name !== undefined && (obj.name = message.name)
+    message.description !== undefined && (obj.description = message.description)
+    return obj
+  },
+}
+
+function createBaseTemplateListResponse(): TemplateListResponse {
+  return { data: [] }
+}
+
+export const TemplateListResponse = {
+  fromJSON(object: any): TemplateListResponse {
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => TemplateResponse.fromJSON(e)) : [] }
+  },
+
+  toJSON(message: TemplateListResponse): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? TemplateResponse.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+}
+
+function createBaseCreateProductFromTemplateRequest(): CreateProductFromTemplateRequest {
+  return { id: '', accessedBy: '', name: '', description: '', type: 0 }
+}
+
+export const CreateProductFromTemplateRequest = {
+  fromJSON(object: any): CreateProductFromTemplateRequest {
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      description: isSet(object.description) ? String(object.description) : '',
+      type: isSet(object.type) ? productTypeFromJSON(object.type) : 0,
+    }
+  },
+
+  toJSON(message: CreateProductFromTemplateRequest): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
+    message.name !== undefined && (obj.name = message.name)
+    message.description !== undefined && (obj.description = message.description)
+    message.type !== undefined && (obj.type = productTypeToJSON(message.type))
     return obj
   },
 }
@@ -5000,6 +4993,47 @@ export function CruxHealthControllerMethods() {
 }
 
 export const CRUX_HEALTH_SERVICE_NAME = 'CruxHealth'
+
+export interface CruxTemplateClient {
+  getTemplates(request: AccessRequest, metadata: Metadata, ...rest: any): Observable<TemplateListResponse>
+
+  createProductFromTemplate(
+    request: CreateProductFromTemplateRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Observable<CreateEntityResponse>
+}
+
+export interface CruxTemplateController {
+  getTemplates(
+    request: AccessRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<TemplateListResponse> | Observable<TemplateListResponse> | TemplateListResponse
+
+  createProductFromTemplate(
+    request: CreateProductFromTemplateRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
+}
+
+export function CruxTemplateControllerMethods() {
+  return function (constructor: Function) {
+    const grpcMethods: string[] = ['getTemplates', 'createProductFromTemplate']
+    for (const method of grpcMethods) {
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
+      GrpcMethod('CruxTemplate', method)(constructor.prototype[method], method, descriptor)
+    }
+    const grpcStreamMethods: string[] = []
+    for (const method of grpcStreamMethods) {
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
+      GrpcStreamMethod('CruxTemplate', method)(constructor.prototype[method], method, descriptor)
+    }
+  }
+}
+
+export const CRUX_TEMPLATE_SERVICE_NAME = 'CruxTemplate'
 
 function toTimestamp(date: Date): Timestamp {
   const seconds = date.getTime() / 1_000

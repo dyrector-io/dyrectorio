@@ -1,4 +1,5 @@
 /* eslint-disable */
+import { Timestamp } from '../../google/protobuf/timestamp'
 
 export const protobufPackage = 'common'
 
@@ -508,6 +509,34 @@ export interface DeploymentStatusMessage {
   log: string[]
 }
 
+export interface ContainerStateItemPort {
+  internal: number
+  external: number
+}
+
+export interface ContainerStateListMessage {
+  prefix?: string | undefined
+  data: ContainerStateItem[]
+}
+
+export interface ContainerStateItem {
+  containerId: string
+  name: string
+  command: string
+  createdAt: Timestamp | undefined
+  /** The 'State' of the container (Created, Running, etc) */
+  state: ContainerState
+  /**
+   * The 'Status' of the container ("Created 1min ago", "Exited with code 123",
+   * etc). Unused but left here for reverse compatibility with the legacy
+   * version.
+   */
+  status: string
+  imageName: string
+  imageTag: string
+  ports: ContainerStateItemPort[]
+}
+
 export interface Ingress {
   name: string
   host: string
@@ -617,6 +646,98 @@ export const DeploymentStatusMessage = {
       obj.log = message.log.map(e => e)
     } else {
       obj.log = []
+    }
+    return obj
+  },
+}
+
+function createBaseContainerStateItemPort(): ContainerStateItemPort {
+  return { internal: 0, external: 0 }
+}
+
+export const ContainerStateItemPort = {
+  fromJSON(object: any): ContainerStateItemPort {
+    return {
+      internal: isSet(object.internal) ? Number(object.internal) : 0,
+      external: isSet(object.external) ? Number(object.external) : 0,
+    }
+  },
+
+  toJSON(message: ContainerStateItemPort): unknown {
+    const obj: any = {}
+    message.internal !== undefined && (obj.internal = Math.round(message.internal))
+    message.external !== undefined && (obj.external = Math.round(message.external))
+    return obj
+  },
+}
+
+function createBaseContainerStateListMessage(): ContainerStateListMessage {
+  return { data: [] }
+}
+
+export const ContainerStateListMessage = {
+  fromJSON(object: any): ContainerStateListMessage {
+    return {
+      prefix: isSet(object.prefix) ? String(object.prefix) : undefined,
+      data: Array.isArray(object?.data) ? object.data.map((e: any) => ContainerStateItem.fromJSON(e)) : [],
+    }
+  },
+
+  toJSON(message: ContainerStateListMessage): unknown {
+    const obj: any = {}
+    message.prefix !== undefined && (obj.prefix = message.prefix)
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? ContainerStateItem.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+}
+
+function createBaseContainerStateItem(): ContainerStateItem {
+  return {
+    containerId: '',
+    name: '',
+    command: '',
+    createdAt: undefined,
+    state: 0,
+    status: '',
+    imageName: '',
+    imageTag: '',
+    ports: [],
+  }
+}
+
+export const ContainerStateItem = {
+  fromJSON(object: any): ContainerStateItem {
+    return {
+      containerId: isSet(object.containerId) ? String(object.containerId) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      command: isSet(object.command) ? String(object.command) : '',
+      createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
+      state: isSet(object.state) ? containerStateFromJSON(object.state) : 0,
+      status: isSet(object.status) ? String(object.status) : '',
+      imageName: isSet(object.imageName) ? String(object.imageName) : '',
+      imageTag: isSet(object.imageTag) ? String(object.imageTag) : '',
+      ports: Array.isArray(object?.ports) ? object.ports.map((e: any) => ContainerStateItemPort.fromJSON(e)) : [],
+    }
+  },
+
+  toJSON(message: ContainerStateItem): unknown {
+    const obj: any = {}
+    message.containerId !== undefined && (obj.containerId = message.containerId)
+    message.name !== undefined && (obj.name = message.name)
+    message.command !== undefined && (obj.command = message.command)
+    message.createdAt !== undefined && (obj.createdAt = fromTimestamp(message.createdAt).toISOString())
+    message.state !== undefined && (obj.state = containerStateToJSON(message.state))
+    message.status !== undefined && (obj.status = message.status)
+    message.imageName !== undefined && (obj.imageName = message.imageName)
+    message.imageTag !== undefined && (obj.imageTag = message.imageTag)
+    if (message.ports) {
+      obj.ports = message.ports.map(e => (e ? ContainerStateItemPort.toJSON(e) : undefined))
+    } else {
+      obj.ports = []
     }
     return obj
   },
@@ -794,6 +915,28 @@ export const UniqueKey = {
     message.key !== undefined && (obj.key = message.key)
     return obj
   },
+}
+
+function toTimestamp(date: Date): Timestamp {
+  const seconds = date.getTime() / 1_000
+  const nanos = (date.getTime() % 1_000) * 1_000_000
+  return { seconds, nanos }
+}
+
+function fromTimestamp(t: Timestamp): Date {
+  let millis = t.seconds * 1_000
+  millis += t.nanos / 1_000_000
+  return new Date(millis)
+}
+
+function fromJsonTimestamp(o: any): Timestamp {
+  if (o instanceof Date) {
+    return toTimestamp(o)
+  } else if (typeof o === 'string') {
+    return toTimestamp(new Date(o))
+  } else {
+    return Timestamp.fromJSON(o)
+  }
 }
 
 function isSet(value: any): boolean {

@@ -28,7 +28,6 @@ import (
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/caps"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/config"
-	agent "github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 
 	"github.com/docker/docker/api/types"
@@ -90,7 +89,7 @@ func GetContainersByName(name string) []types.Container {
 	return containers
 }
 
-func GetContainersByNameCrux(ctx context.Context, name string) []*agent.ContainerStateItem {
+func GetContainersByNameCrux(ctx context.Context, name string) []*common.ContainerStateItem {
 	containers := GetContainersByName(name)
 
 	return mapper.MapContainerState(&containers)
@@ -398,11 +397,8 @@ func setNetwork(deployImageRequest *v1.DeployImageRequest) (networkMode string, 
 		networkMode = "traefik"
 	} else {
 		networkMode = strings.ToLower(deployImageRequest.ContainerConfig.NetworkMode)
-		if networkMode == "bridge" {
-			networks = deployImageRequest.ContainerConfig.Networks
-		}
 	}
-	return networkMode, networks
+	return networkMode, deployImageRequest.ContainerConfig.Networks
 }
 
 func WithImportContainer(dc *containerbuilder.DockerContainerBuilder, importConfig *v1.ImportContainer,

@@ -55,7 +55,7 @@ export type ContainerRestartPolicyType = typeof CONTAINER_RESTART_POLICY_TYPE_VA
 export const CONTAINER_DEPLOYMENT_STRATEGY_VALUES = ['unknown', 'recreate', 'rolling'] as const
 export type ContainerDeploymentStrategyType = typeof CONTAINER_DEPLOYMENT_STRATEGY_VALUES[number]
 
-export const CONTAINER_EXPOSE_STRATEGY_VALUES = ['none', 'expose', 'expose_with_tls'] as const
+export const CONTAINER_EXPOSE_STRATEGY_VALUES = ['none', 'expose', 'exposeWithTls'] as const
 export type ContainerConfigExposeStrategy = typeof CONTAINER_EXPOSE_STRATEGY_VALUES[number]
 
 export const CONTAINER_VOLUME_TYPE_VALUES = ['ro', 'rw', 'rwx', 'mem', 'tmp'] as const
@@ -122,7 +122,7 @@ export type ContainerConfigContainer = {
 }
 
 export type ContainerConfigImportContainer = {
-  environments: UniqueKeyValue[]
+  environment: UniqueKeyValue[]
   volume: string
   command: string
 }
@@ -139,7 +139,7 @@ export type InitContainer = {
   image: string
   command?: UniqueKey[]
   args?: UniqueKey[]
-  environments?: UniqueKeyValue[]
+  environment?: UniqueKeyValue[]
   useParentConfig?: boolean
   volumes?: InitContainerVolumeLink[]
 }
@@ -147,7 +147,7 @@ export type InitContainer = {
 export type ContainerConfig = {
   // common
   name?: string
-  environments?: UniqueKeyValue[]
+  environment?: UniqueKeyValue[]
   secrets?: UniqueKeyValue[]
   ingress?: ContainerConfigIngress
   expose?: ContainerConfigExposeStrategy
@@ -184,7 +184,7 @@ export type JsonInitContainer = {
   image: string
   command?: string[]
   args?: string[]
-  environments?: JsonKeyValue
+  environment?: JsonKeyValue
   useParentConfig?: boolean
   volumes?: JsonInitContainerVolumeLink[]
 }
@@ -194,8 +194,8 @@ export type JsonContainerConfigLog = {
   options: JsonKeyValue
 }
 
-export type JsonContainerConfigImportContainer = Omit<ContainerConfigImportContainer, 'environments'> & {
-  environments: JsonKeyValue
+export type JsonContainerConfigImportContainer = Omit<ContainerConfigImportContainer, 'environment'> & {
+  environment: JsonKeyValue
 }
 
 export type JsonInitContainerVolumeLink = Omit<InitContainerVolumeLink, 'id'>
@@ -206,7 +206,7 @@ export type JsonContainerConfigVolume = Omit<ContainerConfigVolume, 'id'>
 export type JsonContainerConfig = {
   // common
   name?: string
-  environments?: JsonKeyValue
+  environment?: JsonKeyValue
   secrets?: string[]
   ingress?: ContainerConfigIngress
   expose?: ContainerConfigExposeStrategy
@@ -283,13 +283,13 @@ export const mergeConfigs = (
 ): ContainerConfig => {
   const instanceConfig = overriddenConfig ?? {}
 
-  const envs = overrideKeyValues(imageConfig.environments, instanceConfig.environments)
+  const envs = overrideKeyValues(imageConfig.environment, instanceConfig.environment)
   const caps = overrideKeyValues(imageConfig.capabilities, instanceConfig.capabilities)
 
   return {
     // common
     name: instanceConfig.name || imageConfig.name,
-    environments: envs,
+    environment: envs,
     secrets:
       instanceConfig?.secrets && instanceConfig.secrets.length > 0
         ? instanceConfig.secrets

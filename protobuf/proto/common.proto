@@ -3,6 +3,8 @@ syntax = "proto3";
 package common;
 option go_package = "github.com/dyrector-io/dyrectorio/protobuf/go/common";
 
+import "google/protobuf/timestamp.proto";
+
 message Empty {}
 
 // Deployment
@@ -39,6 +41,35 @@ message DeploymentStatusMessage {
   }
 
   repeated string log = 1000;
+}
+
+message ContainerStateItemPort {
+  int32 internal = 100;
+  int32 external = 101;
+}
+
+message ContainerStateListMessage {
+  optional string prefix = 100;
+  repeated common.ContainerStateItem data = 1000;
+}
+
+message ContainerStateItem {
+  string containerId = 100;
+  string name = 101;
+  string command = 103;
+  google.protobuf.Timestamp createdAt = 104;
+  /* The 'State' of the container (Created, Running, etc) */
+  ContainerState state = 105;
+  /*
+   * The 'Status' of the container ("Created 1min ago", "Exited with code 123",
+   * etc). Unused but left here for reverse compatibility with the legacy
+   * version.
+   */
+  string status = 106;
+  string imageName = 107;
+  string imageTag = 108;
+
+  repeated ContainerStateItemPort ports = 1000;
 }
 
 enum NetworkMode {

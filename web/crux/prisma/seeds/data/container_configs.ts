@@ -1,4 +1,4 @@
-import { ContainerConfig, Prisma } from '@prisma/client'
+import { Prisma } from '@prisma/client'
 
 export const containerConfigs = [
   {
@@ -151,4 +151,4 @@ export const containerConfigs = [
     useLoadBalancer: null,
     imageId: '2F36558F-1357-4195-B3A4-ADBB925A7B10',
   },
-] as Omit<Prisma.ContainerConfigCreateInput, 'id'>[]
+] as Omit<Prisma.ContainerConfigUncheckedCreateInput, 'id'>[]

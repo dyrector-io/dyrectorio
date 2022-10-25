@@ -71,6 +71,7 @@
   "teams": "Teams",
   "audit": "Audit Log",
   "profile": "Profile",
+  "templates": "Templates",
   "role": {
     "owner": "Owner",
     "user": "User",

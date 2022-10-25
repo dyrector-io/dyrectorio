@@ -173,15 +173,15 @@ enum DeploymentStrategy {
 
 enum RestartPolicy {
   always
-  unless_stopped
+  unlessStopped
   no
-  on_failure
+  onFailure
 }
 
 enum ExposeStrategy {
   none
   expose
-  expose_with_tls
+  exposeWithTls
 }
 
 model ContainerConfig {

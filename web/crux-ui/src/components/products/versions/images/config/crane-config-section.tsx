@@ -39,10 +39,10 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
 
   return (
     <div className="my-4">
-      <DyoHeading className="text-lg text-bright uppercase font-semibold tracking-wide bg-violet-400/50 w-40 rounded-t-lg text-center pt-[2px]">
+      <DyoHeading className="text-lg text-bright uppercase font-semibold tracking-wide bg-dyo-violet/50 w-40 rounded-t-lg text-center pt-[2px]">
         {t('base.crane')}
       </DyoHeading>
-      <div className="columns-1 lg:columns-2 2xl:columns-3 gap-24 border-2 rounded-lg rounded-tl-[0px] border-solid border-violet-400/50 p-8 w-full">
+      <div className="columns-1 lg:columns-2 2xl:columns-3 gap-24 border-2 rounded-lg rounded-tl-[0px] border-solid border-dyo-violet/50 p-8 w-full">
         {/* deploymentStartegy */}
         {contains('deploymentStrategy') && (
           <div className="grid break-inside-avoid mb-8">

@@ -86,8 +86,8 @@ func mapContainerConfig(in *agent.DeployRequest) v1.ContainerConfig {
 		InitContainers:   mapInitContainers(cc.InitContainers),
 	}
 
-	if cc.Environments != nil {
-		containerConfig.Environment = cc.Environments
+	if cc.Environment != nil {
+		containerConfig.Environment = cc.Environment
 	}
 
 	if cc.TTY != nil {
@@ -319,7 +319,7 @@ func mapInitContainers(in []*agent.InitContainer) []v1.InitContainer {
 			Volumes:   mapVolumeLinks(ic.Volumes),
 			Args:      ic.Args,
 			UseParent: useParentConfig,
-			Envs:      ic.Environments,
+			Envs:      ic.Environment,
 		})
 	}
 
@@ -336,8 +336,8 @@ func mapVolumeLinks(in []*agent.VolumeLink) []v1.VolumeLink {
 	return volumeLinks
 }
 
-func MapContainerState(in *[]dockerTypes.Container) []*agent.ContainerStateItem {
-	list := []*agent.ContainerStateItem{}
+func MapContainerState(in *[]dockerTypes.Container) []*common.ContainerStateItem {
+	list := []*common.ContainerStateItem{}
 
 	for i := range *in {
 		it := (*in)[i]
@@ -364,7 +364,7 @@ func MapContainerState(in *[]dockerTypes.Container) []*agent.ContainerStateItem 
 			imageTag = "latest"
 		}
 
-		list = append(list, &agent.ContainerStateItem{
+		list = append(list, &common.ContainerStateItem{
 			ContainerId: it.ID,
 			Name:        name,
 			Command:     it.Command,
@@ -380,13 +380,13 @@ func MapContainerState(in *[]dockerTypes.Container) []*agent.ContainerStateItem 
 	return list
 }
 
-func mapContainerPorts(in *[]dockerTypes.Port) []*agent.Port {
-	ports := []*agent.Port{}
+func mapContainerPorts(in *[]dockerTypes.Port) []*common.ContainerStateItemPort {
+	ports := []*common.ContainerStateItemPort{}
 
 	for i := range *in {
 		it := (*in)[i]
 
-		ports = append(ports, &agent.Port{
+		ports = append(ports, &common.ContainerStateItemPort{
 			Internal: int32(it.PrivatePort),
 			External: int32(it.PublicPort),
 		})
@@ -395,13 +395,13 @@ func mapContainerPorts(in *[]dockerTypes.Port) []*agent.Port {
 	return ports
 }
 
-func MapKubeDeploymentListToCruxStateItems(deployments *appsv1.DeploymentList) []*agent.ContainerStateItem {
-	stateItems := []*agent.ContainerStateItem{}
+func MapKubeDeploymentListToCruxStateItems(deployments *appsv1.DeploymentList) []*common.ContainerStateItem {
+	stateItems := []*common.ContainerStateItem{}
 
 	for i := range deployments.Items {
 		deployment := deployments.Items[i]
 
-		stateItem := &agent.ContainerStateItem{
+		stateItem := &common.ContainerStateItem{
 			Name:  deployment.Name,
 			State: mapKubeStatusToCruxContainerState(deployment.Status),
 			CreatedAt: timestamppb.New(

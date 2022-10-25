@@ -1,0 +1,114 @@
+{
+  "name": "Strapi",
+  "description": "Strapi with a Postgres database",
+  "registries": [
+    {
+      "name": "Docker Hub Library",
+      "type": "hub",
+      "hub": {
+        "imageNamePrefix": "library"
+      }
+    },
+    {
+      "name": "Docker Hub Strapi",
+      "description": "Docker Hub Strapi images",
+      "type": "hub",
+      "hub": {
+        "imageNamePrefix": "strapi"
+      }
+    }
+  ],
+  "images": [
+    {
+      "name": "strapi-db",
+      "registryName": "Docker Hub Library",
+      "image": "postgres",
+      "tag": "latest",
+      "config": {
+        "name": "strapi-db",
+        "tty": false,
+        "volumes": [
+          {
+            "name": "strapi-db",
+            "path": "/var/lib/postgresql/data"
+          }
+        ],
+        "environment": [
+          {
+            "key": "POSTGRES_DB",
+            "value": "strapi"
+          },
+          {
+            "key": "POSTGRES_USER",
+            "value": "strapi"
+          },
+          {
+            "key": "POSTGRES_PASSWORD",
+            "value": "strapi"
+          }
+        ],
+        "networks": ["strapi-network"],
+        "networkMode": "bridge",
+        "restartPolicy": "unless_stopped",
+        "deploymentStrategy": "recreate"
+      }
+    },
+    {
+      "name": "strapi-service",
+      "registryName": "Docker Hub Strapi",
+      "image": "strapi",
+      "tag": "latest",
+      "config": {
+        "name": "strapi-service",
+        "expose": "expose",
+        "ingress": {
+          "host": "localhost",
+          "name": ""
+        },
+        "volumes": [
+          {
+            "name": "strapi-service",
+            "path": "/srv/app",
+            "type": "ro"
+          }
+        ],
+        "ports": [
+          {
+            "external": 1337,
+            "internal": 1337
+          }
+        ],
+        "environment": [
+          {
+            "key": "DATABASE_CLIENT",
+            "value": "postgres"
+          },
+          {
+            "key": "DATABASE_NAME",
+            "value": "strapi"
+          },
+          {
+            "key": "DATABASE_HOST",
+            "value": "strapi-strapi-db"
+          },
+          {
+            "key": "DATABASE_PORT",
+            "value": "5432"
+          },
+          {
+            "key": "DATABASE_USERNAME",
+            "value": "strapi"
+          },
+          {
+            "key": "DATABASE_PASSWORD",
+            "value": "strapi"
+          }
+        ],
+        "networks": ["strapi-network"],
+        "networkMode": "bridge",
+        "restartPolicy": "unless_topped",
+        "deploymentStrategy": "recreate"
+      }
+    }
+  ]
+}

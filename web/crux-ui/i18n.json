@@ -32,6 +32,7 @@
     "/notifications": ["notifications"],
     "/notifications/[notificationId]": ["notifications"],
     "/deployments": ["deployments"],
-    "/status": ["status"]
+    "/status": ["status"],
+    "/templates": ["templates", "products"]
   }
 }

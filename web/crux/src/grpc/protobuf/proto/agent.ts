@@ -2,12 +2,9 @@
 import { Metadata } from '@grpc/grpc-js'
 import { GrpcMethod, GrpcStreamMethod } from '@nestjs/microservices'
 import { Observable } from 'rxjs'
-import { Timestamp } from '../../google/protobuf/timestamp'
 import {
   ConfigContainer,
-  ContainerState,
-  containerStateFromJSON,
-  containerStateToJSON,
+  ContainerStateListMessage,
   DeploymentStatusMessage,
   DeploymentStrategy,
   deploymentStrategyFromJSON,
@@ -84,7 +81,7 @@ export interface Environment {
 
 export interface InstanceConfig {
   /**
-   * containerPreName, mapped into host folder structure,
+   * prefix mapped into host folder structure,
    * used as namespace id
    */
   prefix: string
@@ -101,29 +98,6 @@ export interface RegistryAuth {
   url: string
   user: string
   password: string
-}
-
-export interface ContainerStateItem {
-  containerId: string
-  name: string
-  command: string
-  createdAt: Timestamp | undefined
-  /** The 'State' of the container (Created, Running, etc) */
-  state: ContainerState
-  /**
-   * The 'Status' of the container ("Created 1min ago", "Exited with code 123",
-   * etc). Unused but left here for reverse compatibility with the legacy
-   * version.
-   */
-  status: string
-  imageName: string
-  imageTag: string
-  ports: Port[]
-}
-
-export interface ContainerStateListMessage {
-  prefix?: string | undefined
-  data: ContainerStateItem[]
 }
 
 export interface Port {
@@ -161,10 +135,10 @@ export interface InitContainer {
   volumes: VolumeLink[]
   command: string[]
   args: string[]
-  environments: { [key: string]: string }
+  environment: { [key: string]: string }
 }
 
-export interface InitContainer_EnvironmentsEntry {
+export interface InitContainer_EnvironmentEntry {
   key: string
   value: string
 }
@@ -172,10 +146,10 @@ export interface InitContainer_EnvironmentsEntry {
 export interface ImportContainer {
   volume: string
   command: string
-  environments: { [key: string]: string }
+  environment: { [key: string]: string }
 }
 
-export interface ImportContainer_EnvironmentsEntry {
+export interface ImportContainer_EnvironmentEntry {
   key: string
   value: string
 }
@@ -225,7 +199,7 @@ export interface CommonContainerConfig {
   volumes: Volume[]
   commands: string[]
   args: string[]
-  environments: string[]
+  environment: string[]
   secrets: { [key: string]: string }
   initContainers: InitContainer[]
 }
@@ -466,78 +440,6 @@ export const RegistryAuth = {
   },
 }
 
-function createBaseContainerStateItem(): ContainerStateItem {
-  return {
-    containerId: '',
-    name: '',
-    command: '',
-    createdAt: undefined,
-    state: 0,
-    status: '',
-    imageName: '',
-    imageTag: '',
-    ports: [],
-  }
-}
-
-export const ContainerStateItem = {
-  fromJSON(object: any): ContainerStateItem {
-    return {
-      containerId: isSet(object.containerId) ? String(object.containerId) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      command: isSet(object.command) ? String(object.command) : '',
-      createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
-      state: isSet(object.state) ? containerStateFromJSON(object.state) : 0,
-      status: isSet(object.status) ? String(object.status) : '',
-      imageName: isSet(object.imageName) ? String(object.imageName) : '',
-      imageTag: isSet(object.imageTag) ? String(object.imageTag) : '',
-      ports: Array.isArray(object?.ports) ? object.ports.map((e: any) => Port.fromJSON(e)) : [],
-    }
-  },
-
-  toJSON(message: ContainerStateItem): unknown {
-    const obj: any = {}
-    message.containerId !== undefined && (obj.containerId = message.containerId)
-    message.name !== undefined && (obj.name = message.name)
-    message.command !== undefined && (obj.command = message.command)
-    message.createdAt !== undefined && (obj.createdAt = fromTimestamp(message.createdAt).toISOString())
-    message.state !== undefined && (obj.state = containerStateToJSON(message.state))
-    message.status !== undefined && (obj.status = message.status)
-    message.imageName !== undefined && (obj.imageName = message.imageName)
-    message.imageTag !== undefined && (obj.imageTag = message.imageTag)
-    if (message.ports) {
-      obj.ports = message.ports.map(e => (e ? Port.toJSON(e) : undefined))
-    } else {
-      obj.ports = []
-    }
-    return obj
-  },
-}
-
-function createBaseContainerStateListMessage(): ContainerStateListMessage {
-  return { data: [] }
-}
-
-export const ContainerStateListMessage = {
-  fromJSON(object: any): ContainerStateListMessage {
-    return {
-      prefix: isSet(object.prefix) ? String(object.prefix) : undefined,
-      data: Array.isArray(object?.data) ? object.data.map((e: any) => ContainerStateItem.fromJSON(e)) : [],
-    }
-  },
-
-  toJSON(message: ContainerStateListMessage): unknown {
-    const obj: any = {}
-    message.prefix !== undefined && (obj.prefix = message.prefix)
-    if (message.data) {
-      obj.data = message.data.map(e => (e ? ContainerStateItem.toJSON(e) : undefined))
-    } else {
-      obj.data = []
-    }
-    return obj
-  },
-}
-
 function createBasePort(): Port {
   return { internal: 0, external: 0 }
 }
@@ -639,7 +541,7 @@ export const VolumeLink = {
 }
 
 function createBaseInitContainer(): InitContainer {
-  return { name: '', image: '', volumes: [], command: [], args: [], environments: {} }
+  return { name: '', image: '', volumes: [], command: [], args: [], environment: {} }
 }
 
 export const InitContainer = {
@@ -651,8 +553,8 @@ export const InitContainer = {
       volumes: Array.isArray(object?.volumes) ? object.volumes.map((e: any) => VolumeLink.fromJSON(e)) : [],
       command: Array.isArray(object?.command) ? object.command.map((e: any) => String(e)) : [],
       args: Array.isArray(object?.args) ? object.args.map((e: any) => String(e)) : [],
-      environments: isObject(object.environments)
-        ? Object.entries(object.environments).reduce<{ [key: string]: string }>((acc, [key, value]) => {
+      environment: isObject(object.environment)
+        ? Object.entries(object.environment).reduce<{ [key: string]: string }>((acc, [key, value]) => {
             acc[key] = String(value)
             return acc
           }, {})
@@ -680,26 +582,26 @@ export const InitContainer = {
     } else {
       obj.args = []
     }
-    obj.environments = {}
-    if (message.environments) {
-      Object.entries(message.environments).forEach(([k, v]) => {
-        obj.environments[k] = v
+    obj.environment = {}
+    if (message.environment) {
+      Object.entries(message.environment).forEach(([k, v]) => {
+        obj.environment[k] = v
       })
     }
     return obj
   },
 }
 
-function createBaseInitContainer_EnvironmentsEntry(): InitContainer_EnvironmentsEntry {
+function createBaseInitContainer_EnvironmentEntry(): InitContainer_EnvironmentEntry {
   return { key: '', value: '' }
 }
 
-export const InitContainer_EnvironmentsEntry = {
-  fromJSON(object: any): InitContainer_EnvironmentsEntry {
+export const InitContainer_EnvironmentEntry = {
+  fromJSON(object: any): InitContainer_EnvironmentEntry {
     return { key: isSet(object.key) ? String(object.key) : '', value: isSet(object.value) ? String(object.value) : '' }
   },
 
-  toJSON(message: InitContainer_EnvironmentsEntry): unknown {
+  toJSON(message: InitContainer_EnvironmentEntry): unknown {
     const obj: any = {}
     message.key !== undefined && (obj.key = message.key)
     message.value !== undefined && (obj.value = message.value)
@@ -708,7 +610,7 @@ export const InitContainer_EnvironmentsEntry = {
 }
 
 function createBaseImportContainer(): ImportContainer {
-  return { volume: '', command: '', environments: {} }
+  return { volume: '', command: '', environment: {} }
 }
 
 export const ImportContainer = {
@@ -716,8 +618,8 @@ export const ImportContainer = {
     return {
       volume: isSet(object.volume) ? String(object.volume) : '',
       command: isSet(object.command) ? String(object.command) : '',
-      environments: isObject(object.environments)
-        ? Object.entries(object.environments).reduce<{ [key: string]: string }>((acc, [key, value]) => {
+      environment: isObject(object.environment)
+        ? Object.entries(object.environment).reduce<{ [key: string]: string }>((acc, [key, value]) => {
             acc[key] = String(value)
             return acc
           }, {})
@@ -729,26 +631,26 @@ export const ImportContainer = {
     const obj: any = {}
     message.volume !== undefined && (obj.volume = message.volume)
     message.command !== undefined && (obj.command = message.command)
-    obj.environments = {}
-    if (message.environments) {
-      Object.entries(message.environments).forEach(([k, v]) => {
-        obj.environments[k] = v
+    obj.environment = {}
+    if (message.environment) {
+      Object.entries(message.environment).forEach(([k, v]) => {
+        obj.environment[k] = v
       })
     }
     return obj
   },
 }
 
-function createBaseImportContainer_EnvironmentsEntry(): ImportContainer_EnvironmentsEntry {
+function createBaseImportContainer_EnvironmentEntry(): ImportContainer_EnvironmentEntry {
   return { key: '', value: '' }
 }
 
-export const ImportContainer_EnvironmentsEntry = {
-  fromJSON(object: any): ImportContainer_EnvironmentsEntry {
+export const ImportContainer_EnvironmentEntry = {
+  fromJSON(object: any): ImportContainer_EnvironmentEntry {
     return { key: isSet(object.key) ? String(object.key) : '', value: isSet(object.value) ? String(object.value) : '' }
   },
 
-  toJSON(message: ImportContainer_EnvironmentsEntry): unknown {
+  toJSON(message: ImportContainer_EnvironmentEntry): unknown {
     const obj: any = {}
     message.key !== undefined && (obj.key = message.key)
     message.value !== undefined && (obj.value = message.value)
@@ -913,7 +815,7 @@ function createBaseCommonContainerConfig(): CommonContainerConfig {
     volumes: [],
     commands: [],
     args: [],
-    environments: [],
+    environment: [],
     secrets: {},
     initContainers: [],
   }
@@ -936,7 +838,7 @@ export const CommonContainerConfig = {
       volumes: Array.isArray(object?.volumes) ? object.volumes.map((e: any) => Volume.fromJSON(e)) : [],
       commands: Array.isArray(object?.commands) ? object.commands.map((e: any) => String(e)) : [],
       args: Array.isArray(object?.args) ? object.args.map((e: any) => String(e)) : [],
-      environments: Array.isArray(object?.environments) ? object.environments.map((e: any) => String(e)) : [],
+      environment: Array.isArray(object?.environment) ? object.environment.map((e: any) => String(e)) : [],
       secrets: isObject(object.secrets)
         ? Object.entries(object.secrets).reduce<{ [key: string]: string }>((acc, [key, value]) => {
             acc[key] = String(value)
@@ -986,10 +888,10 @@ export const CommonContainerConfig = {
     } else {
       obj.args = []
     }
-    if (message.environments) {
-      obj.environments = message.environments.map(e => e)
+    if (message.environment) {
+      obj.environment = message.environment.map(e => e)
     } else {
-      obj.environments = []
+      obj.environment = []
     }
     obj.secrets = {}
     if (message.secrets) {
@@ -1189,28 +1091,6 @@ export function AgentControllerMethods() {
 }
 
 export const AGENT_SERVICE_NAME = 'Agent'
-
-function toTimestamp(date: Date): Timestamp {
-  const seconds = date.getTime() / 1_000
-  const nanos = (date.getTime() % 1_000) * 1_000_000
-  return { seconds, nanos }
-}
-
-function fromTimestamp(t: Timestamp): Date {
-  let millis = t.seconds * 1_000
-  millis += t.nanos / 1_000_000
-  return new Date(millis)
-}
-
-function fromJsonTimestamp(o: any): Timestamp {
-  if (o instanceof Date) {
-    return toTimestamp(o)
-  } else if (typeof o === 'string') {
-    return toTimestamp(new Date(o))
-  } else {
-    return Timestamp.fromJSON(o)
-  }
-}
 
 function isObject(value: any): boolean {
   return typeof value === 'object' && value !== null

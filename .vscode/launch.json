@@ -25,8 +25,8 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/agent/cmd/dagent",
-            "cwd": "${workspaceFolder}/agent/cmd/dagent"
+            "program": "${workspaceFolder}/golang/cmd/dagent",
+            "cwd": "${workspaceFolder}/golang/cmd/dagent"
         },
 
          {
@@ -34,9 +34,9 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/agent/cmd/crane"
+            "program": "${workspaceFolder}/golang/cmd/crane"
         },
-    
+
         {
             "name": "Launch CLI",
             "type": "go",
@@ -53,8 +53,8 @@
             "type": "go",
             "request": "launch",
             "mode": "debug",
-            "program": "${workspaceFolder}/agent/cmd/dagent",
-            "cwd": "${workspaceFolder}/agent/cmd/dagent"
+            "program": "${workspaceFolder}/golang/cmd/dagent",
+            "cwd": "${workspaceFolder}/golang/cmd/dagent"
         },
 
         {
@@ -63,8 +63,8 @@
             "request": "launch",
             "buildFlags": "",
             "mode": "debug",
-            "program": "${workspaceFolder}/agent/cmd/crane",
-            "cwd": "${workspaceFolder}/agent/cmd/crane"
+            "program": "${workspaceFolder}/golang/cmd/crane",
+            "cwd": "${workspaceFolder}/golang/cmd/crane"
         },
 
         {
@@ -75,8 +75,8 @@
             "args": [
                 "up"
             ],
-            "program": "${workspaceFolder}/cli",
-            "cwd": "${workspaceFolder}/cli"
+            "program": "${workspaceFolder}/golang/cmd/dyo",
+            "cwd": "${workspaceFolder}/golang/cmd/dyo"
         },
     ]
 }

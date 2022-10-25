@@ -1,5 +1,6 @@
 /* eslint-disable */
 import _m0 from 'protobufjs/minimal'
+import { Timestamp } from '../../google/protobuf/timestamp'
 
 export const protobufPackage = 'common'
 
@@ -509,6 +510,34 @@ export interface DeploymentStatusMessage {
   log: string[]
 }
 
+export interface ContainerStateItemPort {
+  internal: number
+  external: number
+}
+
+export interface ContainerStateListMessage {
+  prefix?: string | undefined
+  data: ContainerStateItem[]
+}
+
+export interface ContainerStateItem {
+  containerId: string
+  name: string
+  command: string
+  createdAt: Timestamp | undefined
+  /** The 'State' of the container (Created, Running, etc) */
+  state: ContainerState
+  /**
+   * The 'Status' of the container ("Created 1min ago", "Exited with code 123",
+   * etc). Unused but left here for reverse compatibility with the legacy
+   * version.
+   */
+  status: string
+  imageName: string
+  imageTag: string
+  ports: ContainerStateItemPort[]
+}
+
 export interface Ingress {
   name: string
   host: string
@@ -727,6 +756,262 @@ export const DeploymentStatusMessage = {
         : undefined
     message.deploymentStatus = object.deploymentStatus ?? undefined
     message.log = object.log?.map(e => e) || []
+    return message
+  },
+}
+
+function createBaseContainerStateItemPort(): ContainerStateItemPort {
+  return { internal: 0, external: 0 }
+}
+
+export const ContainerStateItemPort = {
+  encode(message: ContainerStateItemPort, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.internal !== 0) {
+      writer.uint32(800).int32(message.internal)
+    }
+    if (message.external !== 0) {
+      writer.uint32(808).int32(message.external)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): ContainerStateItemPort {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseContainerStateItemPort()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 100:
+          message.internal = reader.int32()
+          break
+        case 101:
+          message.external = reader.int32()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): ContainerStateItemPort {
+    return {
+      internal: isSet(object.internal) ? Number(object.internal) : 0,
+      external: isSet(object.external) ? Number(object.external) : 0,
+    }
+  },
+
+  toJSON(message: ContainerStateItemPort): unknown {
+    const obj: any = {}
+    message.internal !== undefined && (obj.internal = Math.round(message.internal))
+    message.external !== undefined && (obj.external = Math.round(message.external))
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<ContainerStateItemPort>, I>>(object: I): ContainerStateItemPort {
+    const message = createBaseContainerStateItemPort()
+    message.internal = object.internal ?? 0
+    message.external = object.external ?? 0
+    return message
+  },
+}
+
+function createBaseContainerStateListMessage(): ContainerStateListMessage {
+  return { data: [] }
+}
+
+export const ContainerStateListMessage = {
+  encode(message: ContainerStateListMessage, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.prefix !== undefined) {
+      writer.uint32(802).string(message.prefix)
+    }
+    for (const v of message.data) {
+      ContainerStateItem.encode(v!, writer.uint32(8002).fork()).ldelim()
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): ContainerStateListMessage {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseContainerStateListMessage()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 100:
+          message.prefix = reader.string()
+          break
+        case 1000:
+          message.data.push(ContainerStateItem.decode(reader, reader.uint32()))
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): ContainerStateListMessage {
+    return {
+      prefix: isSet(object.prefix) ? String(object.prefix) : undefined,
+      data: Array.isArray(object?.data) ? object.data.map((e: any) => ContainerStateItem.fromJSON(e)) : [],
+    }
+  },
+
+  toJSON(message: ContainerStateListMessage): unknown {
+    const obj: any = {}
+    message.prefix !== undefined && (obj.prefix = message.prefix)
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? ContainerStateItem.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<ContainerStateListMessage>, I>>(object: I): ContainerStateListMessage {
+    const message = createBaseContainerStateListMessage()
+    message.prefix = object.prefix ?? undefined
+    message.data = object.data?.map(e => ContainerStateItem.fromPartial(e)) || []
+    return message
+  },
+}
+
+function createBaseContainerStateItem(): ContainerStateItem {
+  return {
+    containerId: '',
+    name: '',
+    command: '',
+    createdAt: undefined,
+    state: 0,
+    status: '',
+    imageName: '',
+    imageTag: '',
+    ports: [],
+  }
+}
+
+export const ContainerStateItem = {
+  encode(message: ContainerStateItem, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.containerId !== '') {
+      writer.uint32(802).string(message.containerId)
+    }
+    if (message.name !== '') {
+      writer.uint32(810).string(message.name)
+    }
+    if (message.command !== '') {
+      writer.uint32(826).string(message.command)
+    }
+    if (message.createdAt !== undefined) {
+      Timestamp.encode(message.createdAt, writer.uint32(834).fork()).ldelim()
+    }
+    if (message.state !== 0) {
+      writer.uint32(840).int32(message.state)
+    }
+    if (message.status !== '') {
+      writer.uint32(850).string(message.status)
+    }
+    if (message.imageName !== '') {
+      writer.uint32(858).string(message.imageName)
+    }
+    if (message.imageTag !== '') {
+      writer.uint32(866).string(message.imageTag)
+    }
+    for (const v of message.ports) {
+      ContainerStateItemPort.encode(v!, writer.uint32(8002).fork()).ldelim()
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): ContainerStateItem {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseContainerStateItem()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 100:
+          message.containerId = reader.string()
+          break
+        case 101:
+          message.name = reader.string()
+          break
+        case 103:
+          message.command = reader.string()
+          break
+        case 104:
+          message.createdAt = Timestamp.decode(reader, reader.uint32())
+          break
+        case 105:
+          message.state = reader.int32() as any
+          break
+        case 106:
+          message.status = reader.string()
+          break
+        case 107:
+          message.imageName = reader.string()
+          break
+        case 108:
+          message.imageTag = reader.string()
+          break
+        case 1000:
+          message.ports.push(ContainerStateItemPort.decode(reader, reader.uint32()))
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): ContainerStateItem {
+    return {
+      containerId: isSet(object.containerId) ? String(object.containerId) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      command: isSet(object.command) ? String(object.command) : '',
+      createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
+      state: isSet(object.state) ? containerStateFromJSON(object.state) : 0,
+      status: isSet(object.status) ? String(object.status) : '',
+      imageName: isSet(object.imageName) ? String(object.imageName) : '',
+      imageTag: isSet(object.imageTag) ? String(object.imageTag) : '',
+      ports: Array.isArray(object?.ports) ? object.ports.map((e: any) => ContainerStateItemPort.fromJSON(e)) : [],
+    }
+  },
+
+  toJSON(message: ContainerStateItem): unknown {
+    const obj: any = {}
+    message.containerId !== undefined && (obj.containerId = message.containerId)
+    message.name !== undefined && (obj.name = message.name)
+    message.command !== undefined && (obj.command = message.command)
+    message.createdAt !== undefined && (obj.createdAt = fromTimestamp(message.createdAt).toISOString())
+    message.state !== undefined && (obj.state = containerStateToJSON(message.state))
+    message.status !== undefined && (obj.status = message.status)
+    message.imageName !== undefined && (obj.imageName = message.imageName)
+    message.imageTag !== undefined && (obj.imageTag = message.imageTag)
+    if (message.ports) {
+      obj.ports = message.ports.map(e => (e ? ContainerStateItemPort.toJSON(e) : undefined))
+    } else {
+      obj.ports = []
+    }
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<ContainerStateItem>, I>>(object: I): ContainerStateItem {
+    const message = createBaseContainerStateItem()
+    message.containerId = object.containerId ?? ''
+    message.name = object.name ?? ''
+    message.command = object.command ?? ''
+    message.createdAt =
+      object.createdAt !== undefined && object.createdAt !== null ? Timestamp.fromPartial(object.createdAt) : undefined
+    message.state = object.state ?? 0
+    message.status = object.status ?? ''
+    message.imageName = object.imageName ?? ''
+    message.imageTag = object.imageTag ?? ''
+    message.ports = object.ports?.map(e => ContainerStateItemPort.fromPartial(e)) || []
     return message
   },
 }
@@ -1283,6 +1568,28 @@ type KeysOfUnion<T> = T extends T ? keyof T : never
 export type Exact<P, I extends P> = P extends Builtin
   ? P
   : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never }
+
+function toTimestamp(date: Date): Timestamp {
+  const seconds = date.getTime() / 1_000
+  const nanos = (date.getTime() % 1_000) * 1_000_000
+  return { seconds, nanos }
+}
+
+function fromTimestamp(t: Timestamp): Date {
+  let millis = t.seconds * 1_000
+  millis += t.nanos / 1_000_000
+  return new Date(millis)
+}
+
+function fromJsonTimestamp(o: any): Timestamp {
+  if (o instanceof Date) {
+    return toTimestamp(o)
+  } else if (typeof o === 'string') {
+    return toTimestamp(new Date(o))
+  } else {
+    return Timestamp.fromJSON(o)
+  }
+}
 
 function isSet(value: any): boolean {
   return value !== null && value !== undefined

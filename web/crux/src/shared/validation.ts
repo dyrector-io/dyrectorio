@@ -15,6 +15,10 @@ import {
   VolumeType,
 } from './model'
 
+export const nameRuleOptional = yup.string().trim().min(3).max(70)
+export const nameRule = yup.string().required().trim().min(3).max(70)
+export const descriptionRule = yup.string().optional()
+
 export const uniqueKeyValuesSchema = yup
   .array(
     yup.object().shape({
@@ -268,6 +272,76 @@ export const deploymentSchema = yup.object({
       config: configContainerRule.nullable(),
     }),
   ),
+})
+
+const templateRegistrySchema = yup.object().shape({
+  name: nameRule,
+  description: descriptionRule,
+  icon: yup.string(),
+  type: yup.string().required(),
+  hub: yup.mixed().when(['type'], {
+    is: type => type === 'hub',
+    then: yup.object({
+      imageNamePrefix: yup.string().required(),
+    }),
+  }),
+  v2: yup.mixed().when(['type'], {
+    is: type => type === 'v2',
+    then: yup.object({
+      url: yup.string().required(),
+      user: yup.string(),
+      token: yup.string(),
+    }),
+  }),
+  gitlab: yup.mixed().when(['type'], {
+    is: type => type === 'gitlab',
+    then: yup.object({
+      user: yup.string().required(),
+      token: yup.string().required(),
+      imageNamePrefix: yup.string().required(),
+      url: yup.string(),
+      apiUrl: yup.string(),
+      namespace: yup.string().required(),
+    }),
+  }),
+  github: yup.mixed().when(['type'], {
+    is: type => type === 'github',
+    then: yup.object({
+      user: yup.string().required(),
+      token: yup.string().required(),
+      imageNamePrefix: yup.string().required(),
+      namespace: yup.string().required(),
+    }),
+  }),
+  google: yup.mixed().when(['type'], {
+    is: type => type === 'google',
+    then: yup.object({
+      url: yup.string().required(),
+      user: yup.string(),
+      token: yup.string().required(),
+      imageNamePrefix: yup.string().required(),
+    }),
+  }),
+})
+
+export const templateSchema = yup.object({
+  name: yup.string(),
+  description: yup.string(),
+  registries: yup.array(templateRegistrySchema),
+  images: yup
+    .array(
+      yup.object({
+        name: nameRuleOptional,
+        registryName: yup.string().required(),
+        image: yup.string().required(),
+        tag: yup.string().required(),
+        config: yup.object().required(),
+        capabilities: uniqueKeyValuesSchema,
+        environment: uniqueKeyValuesSchema,
+        secrets: uniqueKeyValuesSchema,
+      }),
+    )
+    .required(),
 })
 
 export const yupValidate = (schema: yup.AnySchema, candidate: any) => {

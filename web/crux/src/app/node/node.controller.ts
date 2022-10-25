@@ -1,10 +1,9 @@
 import { Body, Controller, UseGuards } from '@nestjs/common'
 import { concatAll, from, Observable } from 'rxjs'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
-import { Empty } from 'src/grpc/protobuf/proto/common'
+import { ContainerStateListMessage, Empty } from 'src/grpc/protobuf/proto/common'
 import {
   AccessRequest,
-  ContainerStateListMessage,
   CreateEntityResponse,
   CreateNodeRequest,
   CruxNodeController,

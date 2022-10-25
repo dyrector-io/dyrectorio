@@ -35,23 +35,19 @@ const simplify = <T,>(item: T): Omit<T, 'id'> => {
   return newItem
 }
 
-const imageConfigToJsonContainerConfig = (
-  currentConfig: JsonContainerConfig,
-  imageConfig: ContainerConfig,
-): JsonContainerConfig => {
+const imageConfigToJsonContainerConfig = (imageConfig: ContainerConfig): JsonContainerConfig => {
   if (!imageConfig) {
     imageConfig = DEFAULT_CONFIG
   }
 
   const config: JsonContainerConfig = {
-    ...currentConfig,
     ...imageConfig,
     commands: keyArrayToJson(imageConfig.commands),
     args: keyArrayToJson(imageConfig.args),
     networks: keyArrayToJson(imageConfig.networks),
     customHeaders: keyArrayToJson(imageConfig.customHeaders),
     extraLBAnnotations: keyValueArrayToJson(imageConfig.extraLBAnnotations),
-    environments: keyValueArrayToJson(imageConfig.environments),
+    environment: keyValueArrayToJson(imageConfig.environment),
     capabilities: keyValueArrayToJson(imageConfig.capabilities),
     secrets: imageConfig.secrets?.map(it => it.key),
     portRanges: imageConfig.portRanges?.map(it => simplify(it)),
@@ -67,14 +63,14 @@ const imageConfigToJsonContainerConfig = (
         ...it,
         command: keyArrayToJson(it.command),
         args: keyArrayToJson(it.args),
-        environments: keyValueArrayToJson(it.environments),
+        environment: keyValueArrayToJson(it.environment),
         volumes: it.volumes?.map(vit => simplify(vit)),
       } as JsonInitContainer),
     ),
     importContainer: imageConfig.importContainer
       ? {
           ...imageConfig.importContainer,
-          environments: keyValueArrayToJson(imageConfig.importContainer?.environments),
+          environment: keyValueArrayToJson(imageConfig.importContainer?.environment),
         }
       : null,
     volumes: imageConfig.volumes?.map(it => simplify(it)),
@@ -83,11 +79,8 @@ const imageConfigToJsonContainerConfig = (
   return config
 }
 
-const imageConfigToJsonInstanceConfig = (
-  currentConfig: JsonContainerConfig,
-  imageConfig: ContainerConfig,
-): InstanceJsonContainerConfig => {
-  const config = imageConfigToJsonContainerConfig(currentConfig, imageConfig)
+const imageConfigToJsonInstanceConfig = (imageConfig: ContainerConfig): InstanceJsonContainerConfig => {
+  const config = imageConfigToJsonContainerConfig(imageConfig)
 
   delete config.secrets
 
@@ -179,7 +172,7 @@ const merge = (serialized: ContainerConfig, json: JsonConfig): Partial<Container
   const config = {
     ...serialized,
     ...json,
-    environments: mergeKeyValuesWithJson(serialized.environments, json.environments),
+    environment: mergeKeyValuesWithJson(serialized.environment, json.environment),
     extraLBAnnotations: mergeKeyValuesWithJson(serialized.extraLBAnnotations, json.extraLBAnnotations),
     capabilities: mergeKeyValuesWithJson(serialized.capabilities, json.capabilities),
     commands: mergeKeysWithJson(serialized.commands, json.commands),
@@ -202,7 +195,7 @@ const merge = (serialized: ContainerConfig, json: JsonConfig): Partial<Container
           ...prev,
           args: mergeKeysWithJson(prev.args, it.args),
           command: mergeKeysWithJson(prev.command, it.command),
-          environments: mergeKeyValuesWithJson(prev.environments, it.environments),
+          environment: mergeKeyValuesWithJson(prev.environment, it.environment),
           volumes: it.volumes?.map(vit => {
             const volumeIndex = prev.volumes?.map(pv => pv.name).indexOf(vit.name)
             const id = volumeIndex !== -1 ? prev.volumes[volumeIndex].id : uuid()
@@ -220,9 +213,9 @@ const merge = (serialized: ContainerConfig, json: JsonConfig): Partial<Container
         id: uuid(),
         command: it.command?.map(cit => ({ id: uuid(), key: cit })),
         args: it.args ? it.args?.map(ait => ({ id: uuid(), key: ait })) : [],
-        environments: Object.keys(it.environments ?? {}).map(eit => ({
+        environment: Object.keys(it.environment ?? {}).map(eit => ({
           key: eit,
-          value: it.environments[eit],
+          value: it.environment[eit],
           id: uuid(),
         })),
         volumes: it.volumes?.map(vit => ({ ...vit, id: uuid() })),
@@ -280,9 +273,7 @@ const EditImageJson = (props: EditImageJsonProps) => {
 
   const [editorState, editorActions] = useMultiInputState({
     id: EDITOR_ID,
-    value: instanceEditor
-      ? imageConfigToJsonInstanceConfig(null, config)
-      : imageConfigToJsonContainerConfig(null, config),
+    value: instanceEditor ? imageConfigToJsonInstanceConfig(config) : imageConfigToJsonContainerConfig(config),
     editorOptions,
     onMergeValues,
     disabled,

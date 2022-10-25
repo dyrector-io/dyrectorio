@@ -49,9 +49,9 @@ const EditInstanceConfig = (props: EditInstanceProps) => {
     })
   }
 
-  const onEnvChange = (environments: UniqueKeyValue[]) =>
+  const onEnvChange = (environment: UniqueKeyValue[]) =>
     sendPatch({
-      environments,
+      environment,
     })
 
   const onSecretSubmit = (secrets: UniqueKeyValue[]) =>
@@ -81,7 +81,7 @@ const EditInstanceConfig = (props: EditInstanceProps) => {
       <KeyValueInput
         disabled={disabled}
         label={t('environment').toUpperCase()}
-        items={config.environments ?? []}
+        items={config.environment ?? []}
         editorOptions={editorOptions}
         onChange={onEnvChange}
         hint={{ hintValidation: sensitiveKeyRule, hintText: t('sensitiveKey') }}

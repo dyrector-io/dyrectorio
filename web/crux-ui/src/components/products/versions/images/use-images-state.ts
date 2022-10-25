@@ -80,12 +80,12 @@ export const imageTagKey = (registryId: string, imageName: string) => `${registr
 const mergeImagePatch = (oldImage: VersionImage, newImage: PatchVersionImage): VersionImage => ({
   ...oldImage,
   ...newImage,
-  config: {
-    name: newImage.config?.name ?? oldImage.config.name,
-    environments: newImage.config?.environments ?? oldImage.config.environments,
-    capabilities: newImage.config?.capabilities ?? oldImage.config.capabilities,
-    secrets: newImage.config?.secrets ?? oldImage.config.secrets,
-  },
+  config: newImage.config
+    ? {
+        ...oldImage.config,
+        ...newImage.config,
+      }
+    : oldImage.config,
 })
 
 export interface ImagesStateOptions {

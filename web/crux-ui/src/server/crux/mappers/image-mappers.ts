@@ -65,12 +65,10 @@ export const logConfigToProto = (logConfig?: ContainerConfigLog): LogConfig => {
   }
 }
 
-export const logDriverDto = (logDriver?: DriverType): ContainerLogDriverType => {
-  if (logDriver == null) {
-    return 'none'
-  }
-
+export const logDriverDto = (logDriver: DriverType): ContainerLogDriverType => {
   switch (logDriver) {
+    case undefined:
+    case null:
     case DriverType.UNKNOWN_DRIVER_TYPE:
     case DriverType.DRIVER_TYPE_NONE:
       return 'none'
@@ -115,7 +113,7 @@ export const exposeToDto = (expose?: ExposeStrategy): ContainerConfigExposeStrat
     case ExposeStrategy.EXPOSE:
       return 'expose'
     case ExposeStrategy.EXPOSE_WITH_TLS:
-      return 'expose_with_tls'
+      return 'exposeWithTls'
     default:
       return 'none'
   }
@@ -127,7 +125,7 @@ export const exposeToProto = (expose?: ContainerConfigExposeStrategy): ExposeStr
       return ExposeStrategy.NONE_ES
     case 'expose':
       return ExposeStrategy.EXPOSE
-    case 'expose_with_tls':
+    case 'exposeWithTls':
       return ExposeStrategy.EXPOSE_WITH_TLS
     default:
       return null
@@ -153,7 +151,7 @@ export const containerConfigToDto = (config?: ProtoContainerConfig): ContainerCo
     commands: config.common.commands ?? [],
     args: config.common.args ?? [],
     expose: exposeToDto(config.common.expose),
-    environments: config.common.environments ?? [],
+    environment: config.common.environment ?? [],
     initContainers: config.common?.initContainers ?? [],
     secrets: config.common.secrets ?? [],
     capabilities: config.capabilities,
@@ -196,7 +194,7 @@ export const containerConfigToProto = (config?: ContainerConfig | Partial<Contai
       configContainer: config.configContainer,
       importContainer: config.importContainer,
       name: config.name,
-      environments: config.environments ?? [],
+      environment: config.environment ?? [],
       initContainers: [],
       secrets: config.secrets ?? [],
     },
@@ -210,7 +208,7 @@ export const containerConfigToProto = (config?: ContainerConfig | Partial<Contai
       it =>
         ({
           ...it,
-          environments: it.environments ?? [],
+          environment: it.environment ?? [],
         } as InitContainer),
     )
   }

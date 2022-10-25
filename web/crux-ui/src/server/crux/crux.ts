@@ -25,6 +25,7 @@ import DyoNotifcationService from './notification-service'
 import DyoProductService from './product-service'
 import DyoRegistryService from './registry-service'
 import DyoTeamService from './team-service'
+import DyoTemplateService from './template-service'
 import DyoVersionService from './version-service'
 
 export class Crux {
@@ -47,6 +48,8 @@ export class Crux {
   private _audit: DyoAuditService
 
   private _notifications: DyoNotifcationService
+
+  private _templates: DyoTemplateService
 
   private constructor(
     private clients: CruxClients,
@@ -92,6 +95,10 @@ export class Crux {
 
   get notificiations() {
     return this._notifications ?? new DyoNotifcationService(this.clients.notifications, this.identity)
+  }
+
+  get templates() {
+    return this._templates ?? new DyoTemplateService(this.clients.templates, this.identity)
   }
 
   get registryConnectionsServices(): CruxRegistryConnectionsServices {
