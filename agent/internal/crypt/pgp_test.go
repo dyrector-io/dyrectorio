@@ -1,0 +1,168 @@
+package crypt_test
+
+import (
+	"testing"
+
+	"github.com/ProtonMail/gopenpgp/v2/helper"
+	"github.com/stretchr/testify/assert"
+
+	"github.com/dyrector-io/dyrectorio/agent/internal/config"
+	"github.com/dyrector-io/dyrectorio/agent/internal/crypt"
+)
+
+const (
+	pubKey = `-----BEGIN PGP PUBLIC KEY BLOCK-----
+xsBNBGNL+qkBCAC4YPhkCH5AX34wDbSmqZkOMHi/7zIy8lwtj0VNKQFfN3x9
+dtDmwJtWBazNruOI7zOGpLTPYaeF3S3QLSR61ak9+NB7ExxBZKFGVcbfX8x6
+4HOLIPForo+mLsuElhDJ8Tt1b3nzJ4KVM+auO7lacXwaHab2VVsD8BWUd9N1
+bG8yXTEXXDqDke6cm9FLhxEXf2dyKs98uYPxugO5gtnztrL5slTz/bMz1G4I
+6hiK4jyuAAOEyua+uJurck+HdpI2aY5lp8jUABDipUbLkoTdBOJ3gdCf0Lef
+DeBUg1PBmrk+rhOJ1SVvXCtKuzaseN2TUEwhaiosINQVQoe3w/kAWWSnABEB
+AAHNFHRlc3QgPHRlc3RAdGVzdC5jb20+wsCNBBABCAAgBQJjS/qpBgsJBwgD
+AgQVCAoCBBYCAQACGQECGwMCHgEAIQkQRou5QXdtqbcWIQSfcm14mlnpQiQY
+Yk1Gi7lBd22pt55sB/wP4FMxQY4/w/KRRO5W054Ec1lD4ruGQb3voKFx7+LP
+CfX4bScsMIlOuVl1tWQDdK7YbAjw8Pn1GbiR1g4uF6cH4Eyd5rDKh+hY06ua
+rtXNim/d9ddCU7zmhs9Rd++ReB8ZYUIEtMuc4XEh8gaMLZWIfL/NY+XT3PYA
+pl7A8tm06dYFSYcIBpglETQwGk1oSEuAWowKMMkUg319zp3iAoL3bqzjJdCt
+16Tely5jEjq+k6cefnf94DVUQ7ZRvJTAuYXPQ4ZxxWVW6lNk2kOHFclIjIye
+Ep9nRyHbv6bpzAFVJd2g+XFttXtC3gRKz926vaJ3csCBWp5Leh/15x1vDy1p
+zsBNBGNL+qkBCACitEW6ydsfnccsXUxh5hIC20iuN91gqtk6L5eUWY97g5y8
+y4BuYTewJNpU3ztQHMKTindMGZX9hEx4WoBTMzB68Vh+oknq9fTmNExCDtxt
+EV4LErBUj0gvPy31mZv5XTWZQR7pk+Vom4i8mIS6uFv1DD5KICrOz9JlAZCq
+gjZwSaB6lzSwc4SJVSuStWyfxIOaNzX6hV1e5WQU1Bq9e2MYkKTC8QTw0a72
+Z4oNY0K92jV3gfAARWXoaJWk8pOWBsXL3t2/e8mvOfNhE4Fe5cbaYqNm+MJ2
+aMfhbkGpAdRChY2pYSIB2141a4jOMCByYmv5Wm6RTPi1wzkSUKGlUQiRABEB
+AAHCwHYEGAEIAAkFAmNL+qkCGwwAIQkQRou5QXdtqbcWIQSfcm14mlnpQiQY
+Yk1Gi7lBd22ptw2aCACFZP7wil0K7DhiDLnvEM0qoDNaKthINPGZ+XhBmjXt
+i6i094W84JtUYkFU8YnY6KfM9+8jjkD+U20VIfHzPiknKGMU4W4a7TRBKYpU
+e46/gacPY12Du9ygLDUEi+1FZmf0/fFifv6LsKP7PNnSMIxdSFG6kzfp42kt
+GtHlLddKexkr3xuZpxfs2ToCzxptHFklXuOQDLkqBAH7a8C62Uj/grtrh83t
+MFkuY5T0DDLlM3fDyia8eaYy9wYBLImZ2Zgy3it+UmUHc5OpaeMM4NYhMB5V
+08iwmeR0tVQWeMpaue0VtGLPKHPGOknElgItP7cyVWJqEr6oM/x7uNrTpl3a
+=GvKH
+-----END PGP PUBLIC KEY BLOCK-----
+`
+	privKey = `-----BEGIN PGP PRIVATE KEY BLOCK-----
+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
+=BqNZ
+-----END PGP PRIVATE KEY BLOCK-----
+`  // encrypted private key for unit test
+	pubKey1 = `-----BEGIN PGP PUBLIC KEY BLOCK-----
+xsBNBGNL/YwBCADoeS0lcePet5BS+nCWrM8LLFR3tFXz/q/5hwaiqZTXR6So
+559uq0htGHsxP0529EZlbftHGDCZDfQ79N3uEmCSNQXpCPfSwPeAupRolA+C
+pXvbXrqC/jA3415ukNBWD7PecLcpza7n88lQpsSqsxwNAEAKt44Gzg7D8vzK
+wcdWJkO4C6GrDELHSN5nOKSlnmZsQVbuJ6IPdb5RIq4pBwnGQjjQM1bI9IuX
+h7iM9o4kxTxQHhbZ6gFXvXsBEgbGatI0jR44fU1kxxF86wxcL4quc8pnkBjd
+zN501BZjxscjZZBzYdDjowR8H/a+3iF97OEXjU0ytf39VXXx1BECXj6bABEB
+AAHNFHRlc3QgPHRlc3RAdGVzdC5jb20+wsCNBBABCAAgBQJjS/2MBgsJBwgD
+AgQVCAoCBBYCAQACGQECGwMCHgEAIQkQT8F/790UG6kWIQQloKf3rmNF5eEz
+rYRPwX/v3RQbqTzaB/wPRhkAXgdGZ4bdS5NHDpONHHd+Kgz+2CaPg+BkTzI9
+9i/rpCtQIOWbGDObUkP16EKr7Kuqz8uaefckB+h4wadNvzlwfl2maBN4WKoO
+OaOlMme6qF0FLucvHNb4Nk1Rpq4EkZcIpKPhkrbieMDtDzsd5QAFWaGPsuJM
+D2DX3rC2LUZIjweqiaDUGsiDeYwZ7ocvB+KcK0A+j05Za28jh560MPETgghX
+N2JDV/6ijCR1r5uXDyjivGbbjG36YWwJG/PhuOxiCeeMcGoeZt4LSbG8mFOT
+ww4agYo+4BC6VOwAvIe1qHqWqS+qkux8aSG5d8JifKiLLlUWqTFm3yKlooNt
+zsBNBGNL/YwBCACtLvLwlJWwzhk1XO+ZPUkaqGTLMpds3N3/uxxunrQxMhZd
+bSeCy4Ski6+gAvwimYjoWg5xZUAt4u/TECxY08f87DjvffWN7mdUywNYWZ/S
+KuMSIfbGsbEuv10CPSbknfzGcqtgkAu1yJQhRh2am/o0EZzqbZKPYypAYgmo
+IEmTxkhRVPBTT49Jjd92KB6Ysn/vXftWhR9fqD7OhbwR82eOfbDo5dh0h6bF
+7u6zonRr5Uj7TCEgrGllnM19OpdvuVzSSK9YTCrOrFvqRjl1v77MqEa99vA5
+CqXFosfnNEDhUrLAY39SVc7AACxEDGXnfLemQflhqdmpeVRpoPt0381zABEB
+AAHCwHYEGAEIAAkFAmNL/YwCGwwAIQkQT8F/790UG6kWIQQloKf3rmNF5eEz
+rYRPwX/v3RQbqTy9B/9oUJR40+rkhwMEPblBjvbtFXJ5GSIb2gk2nfvRfnmq
+aR7npayqvuEpNE9bbgWRY85yXDhjzDMo0omlE1yH3/geQ7Dzg3X+u0SDuOEV
+dL+yz5t9m1C4Ns+xKtun2BEZ2yv8KoEBY0ccLEDKMPyySyeW1z3uB7J/klW2
+D8lPOwOlj3yhj8dZZ8ItDCOZMYOlYwS/Jdho8ZAwza5poE4GYfRYQhYR6wyS
+OkAba6Xu8xCJwZ0I+Z8321OP6Ra07NfOnmeQeEcHL66+8EEHt+Wne8sMDNL/
+m9i3nF7Bw3jnCioAbVJMpKecLMKUdCg0Cw5OnG7+1WSC+lwb2OEgY5V6hHan
+=Zkso
+-----END PGP PUBLIC KEY BLOCK-----
+`
+
+	inputText = "plain text"
+	inputKey  = "key"
+)
+
+func TestDecryptSecrets(t *testing.T) {
+	// encrypt plain text message using public key
+	armor, err := helper.EncryptMessageArmored(pubKey, inputText)
+	assert.Nil(t, err)
+
+	// test decrypt a valid secrets
+	arr := make(map[string]string)
+	arr[inputKey] = armor
+	appConfig := &config.CommonConfiguration{SecretPrivateKey: privKey}
+	check, err := crypt.DecryptSecrets(arr, appConfig)
+	assert.Nil(t, err)
+	assert.Equal(t, inputText, string(check[inputKey]))
+}
+
+func TestDecryptSecretsError(t *testing.T) {
+	// encrypt plain text message using public key
+
+	// test decrypt an invalid secrets should fail
+	armor, err := helper.EncryptMessageArmored(pubKey1, inputText)
+	assert.Nil(t, err)
+
+	arr := make(map[string]string)
+	arr[inputKey] = armor
+	appConfig := &config.CommonConfiguration{SecretPrivateKey: privKey}
+	_, err = crypt.DecryptSecrets(arr, appConfig)
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "could not process secret")
+}
