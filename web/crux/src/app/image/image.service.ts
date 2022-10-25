@@ -136,7 +136,6 @@ export default class ImageService {
     let config: ContainerConfigData
     if (request.config) {
       const { capabilities: caps, environment: envs, secrets } = request.config
-
       config = {
         name: request.config.name ?? undefined,
         capabilities: caps ? caps.data ?? [] : (undefined as JsonArray),
