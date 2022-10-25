@@ -5,3 +5,5 @@ export const REGISTRY_GITLAB_URLS = {
   apiUrl: 'gitlab.com',
   registryUrl: 'registry.gitlab.com',
 }
+
+export const SIMPLE_PRODUCT_VERSION_NAME = 'rolling'

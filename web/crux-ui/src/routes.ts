@@ -26,6 +26,7 @@ export const ROUTE_DEPLOYMENTS = '/deployments'
 export const ROUTE_NODES = '/nodes'
 export const ROUTE_REGISTRIES = '/registries'
 export const ROUTE_NOTIFICATIONS = '/notifications'
+export const ROUTE_TEMPLATES = '/templates'
 
 export const API_AUTH_REGISTER = '/api/auth/register'
 export const API_AUTH_LOGIN = '/api/auth/login'
@@ -51,6 +52,8 @@ export const API_NOTIFICATIONS = '/api/notifications'
 
 export const API_AUDIT = `/api/audit`
 export const API_AUDIT_COUNT = `${API_AUDIT}/count`
+
+export const API_TEMPLATES = `/api/templates`
 
 export const WS_NODES = `${API_NODES}/connect`
 export const WS_REGISTRIES = `${API_REGISTRIES}/connect`
