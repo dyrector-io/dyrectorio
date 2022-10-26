@@ -384,8 +384,8 @@ func GetBasePostgres(settings *Settings) *containerbuilder.DockerContainerBuilde
 		WithImage(PostgresImage).
 		WithNetworks([]string{settings.SettingsFile.Network}).
 		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
-		WithoutConflict().
-		WithForcePullImage()
+		WithForcePullImage().
+		WithoutConflict()
 
 	return basePostgres
 }
