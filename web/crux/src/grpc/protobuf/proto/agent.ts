@@ -38,11 +38,52 @@ export const protobufPackage = 'agent'
  * Logs, statuses, deployments
  */
 
+/** Connection close */
+export enum CloseReason {
+  CLOSE_REASON_UNSPECIFIED = 0,
+  CLOSE = 1,
+  SELF_DESTRUCT = 2,
+  UNRECOGNIZED = -1,
+}
+
+export function closeReasonFromJSON(object: any): CloseReason {
+  switch (object) {
+    case 0:
+    case 'CLOSE_REASON_UNSPECIFIED':
+      return CloseReason.CLOSE_REASON_UNSPECIFIED
+    case 1:
+    case 'CLOSE':
+      return CloseReason.CLOSE
+    case 2:
+    case 'SELF_DESTRUCT':
+      return CloseReason.SELF_DESTRUCT
+    case -1:
+    case 'UNRECOGNIZED':
+    default:
+      return CloseReason.UNRECOGNIZED
+  }
+}
+
+export function closeReasonToJSON(object: CloseReason): string {
+  switch (object) {
+    case CloseReason.CLOSE_REASON_UNSPECIFIED:
+      return 'CLOSE_REASON_UNSPECIFIED'
+    case CloseReason.CLOSE:
+      return 'CLOSE'
+    case CloseReason.SELF_DESTRUCT:
+      return 'SELF_DESTRUCT'
+    case CloseReason.UNRECOGNIZED:
+    default:
+      return 'UNRECOGNIZED'
+  }
+}
+
 /**  */
 export interface AgentInfo {
   id: string
   version: string
   publicKey: string
+  imageDate: string
 }
 
 export interface AgentCommand {
@@ -51,6 +92,8 @@ export interface AgentCommand {
   containerDelete: ContainerDeleteRequest | undefined
   deployLegacy: DeployRequestLegacy | undefined
   listSecrets: ListSecretsRequest | undefined
+  update: AgentUpdateRequest | undefined
+  close: CloseConnection | undefined
 }
 
 /**
@@ -271,10 +314,24 @@ export interface DeployRequestLegacy {
   json: string
 }
 
+/** Dagent update */
+export interface AgentUpdateRequest {
+  tag: string
+  timeoutSeconds: number
+}
+
+export interface AgentUpdateAborted {
+  error: string
+}
+
+export interface CloseConnection {
+  reason: CloseReason
+}
+
 export const AGENT_PACKAGE_NAME = 'agent'
 
 function createBaseAgentInfo(): AgentInfo {
-  return { id: '', version: '', publicKey: '' }
+  return { id: '', version: '', publicKey: '', imageDate: '' }
 }
 
 export const AgentInfo = {
@@ -283,6 +340,7 @@ export const AgentInfo = {
       id: isSet(object.id) ? String(object.id) : '',
       version: isSet(object.version) ? String(object.version) : '',
       publicKey: isSet(object.publicKey) ? String(object.publicKey) : '',
+      imageDate: isSet(object.imageDate) ? String(object.imageDate) : '',
     }
   },
 
@@ -291,6 +349,7 @@ export const AgentInfo = {
     message.id !== undefined && (obj.id = message.id)
     message.version !== undefined && (obj.version = message.version)
     message.publicKey !== undefined && (obj.publicKey = message.publicKey)
+    message.imageDate !== undefined && (obj.imageDate = message.imageDate)
     return obj
   },
 }
@@ -302,6 +361,8 @@ function createBaseAgentCommand(): AgentCommand {
     containerDelete: undefined,
     deployLegacy: undefined,
     listSecrets: undefined,
+    update: undefined,
+    close: undefined,
   }
 }
 
@@ -315,6 +376,8 @@ export const AgentCommand = {
         : undefined,
       deployLegacy: isSet(object.deployLegacy) ? DeployRequestLegacy.fromJSON(object.deployLegacy) : undefined,
       listSecrets: isSet(object.listSecrets) ? ListSecretsRequest.fromJSON(object.listSecrets) : undefined,
+      update: isSet(object.update) ? AgentUpdateRequest.fromJSON(object.update) : undefined,
+      close: isSet(object.close) ? CloseConnection.fromJSON(object.close) : undefined,
     }
   },
 
@@ -332,6 +395,9 @@ export const AgentCommand = {
       (obj.deployLegacy = message.deployLegacy ? DeployRequestLegacy.toJSON(message.deployLegacy) : undefined)
     message.listSecrets !== undefined &&
       (obj.listSecrets = message.listSecrets ? ListSecretsRequest.toJSON(message.listSecrets) : undefined)
+    message.update !== undefined &&
+      (obj.update = message.update ? AgentUpdateRequest.toJSON(message.update) : undefined)
+    message.close !== undefined && (obj.close = message.close ? CloseConnection.toJSON(message.close) : undefined)
     return obj
   },
 }
@@ -1193,6 +1259,58 @@ export const DeployRequestLegacy = {
   },
 }
 
+function createBaseAgentUpdateRequest(): AgentUpdateRequest {
+  return { tag: '', timeoutSeconds: 0 }
+}
+
+export const AgentUpdateRequest = {
+  fromJSON(object: any): AgentUpdateRequest {
+    return {
+      tag: isSet(object.tag) ? String(object.tag) : '',
+      timeoutSeconds: isSet(object.timeoutSeconds) ? Number(object.timeoutSeconds) : 0,
+    }
+  },
+
+  toJSON(message: AgentUpdateRequest): unknown {
+    const obj: any = {}
+    message.tag !== undefined && (obj.tag = message.tag)
+    message.timeoutSeconds !== undefined && (obj.timeoutSeconds = Math.round(message.timeoutSeconds))
+    return obj
+  },
+}
+
+function createBaseAgentUpdateAborted(): AgentUpdateAborted {
+  return { error: '' }
+}
+
+export const AgentUpdateAborted = {
+  fromJSON(object: any): AgentUpdateAborted {
+    return { error: isSet(object.error) ? String(object.error) : '' }
+  },
+
+  toJSON(message: AgentUpdateAborted): unknown {
+    const obj: any = {}
+    message.error !== undefined && (obj.error = message.error)
+    return obj
+  },
+}
+
+function createBaseCloseConnection(): CloseConnection {
+  return { reason: 0 }
+}
+
+export const CloseConnection = {
+  fromJSON(object: any): CloseConnection {
+    return { reason: isSet(object.reason) ? closeReasonFromJSON(object.reason) : 0 }
+  },
+
+  toJSON(message: CloseConnection): unknown {
+    const obj: any = {}
+    message.reason !== undefined && (obj.reason = closeReasonToJSON(message.reason))
+    return obj
+  },
+}
+
 /** Service handling deployment of containers and fetching statuses */
 
 export interface AgentClient {
@@ -1211,6 +1329,8 @@ export interface AgentClient {
   containerState(request: Observable<ContainerStateListMessage>, metadata: Metadata, ...rest: any): Observable<Empty>
 
   secretList(request: ListSecretsResponse, metadata: Metadata, ...rest: any): Observable<Empty>
+
+  updateAborted(request: AgentUpdateAborted, metadata: Metadata, ...rest: any): Observable<Empty>
 }
 
 /** Service handling deployment of containers and fetching statuses */
@@ -1239,11 +1359,17 @@ export interface AgentController {
   ): Promise<Empty> | Observable<Empty> | Empty
 
   secretList(request: ListSecretsResponse, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
+
+  updateAborted(
+    request: AgentUpdateAborted,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<Empty> | Observable<Empty> | Empty
 }
 
 export function AgentControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ['connect', 'secretList']
+    const grpcMethods: string[] = ['connect', 'secretList', 'updateAborted']
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
       GrpcMethod('Agent', method)(constructor.prototype[method], method, descriptor)

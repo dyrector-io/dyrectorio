@@ -1099,6 +1099,7 @@ export interface NodeResponse {
   connectedAt?: Timestamp | undefined
   version?: string | undefined
   type: NodeType
+  imageDate?: Timestamp | undefined
 }
 
 export interface NodeDetailsResponse {
@@ -1115,6 +1116,7 @@ export interface NodeDetailsResponse {
   script?: NodeScriptResponse | undefined
   version?: string | undefined
   type: NodeType
+  imageDate?: Timestamp | undefined
 }
 
 export interface NodeListResponse {
@@ -1158,6 +1160,7 @@ export interface NodeEventMessage {
   address?: string | undefined
   version?: string | undefined
   connectedAt?: Timestamp | undefined
+  error?: string | undefined
 }
 
 export interface WatchContainerStateRequest {
@@ -3284,6 +3287,7 @@ export const NodeResponse = {
       connectedAt: isSet(object.connectedAt) ? fromJsonTimestamp(object.connectedAt) : undefined,
       version: isSet(object.version) ? String(object.version) : undefined,
       type: isSet(object.type) ? nodeTypeFromJSON(object.type) : 0,
+      imageDate: isSet(object.imageDate) ? fromJsonTimestamp(object.imageDate) : undefined,
     }
   },
 
@@ -3299,6 +3303,7 @@ export const NodeResponse = {
     message.connectedAt !== undefined && (obj.connectedAt = fromTimestamp(message.connectedAt).toISOString())
     message.version !== undefined && (obj.version = message.version)
     message.type !== undefined && (obj.type = nodeTypeToJSON(message.type))
+    message.imageDate !== undefined && (obj.imageDate = fromTimestamp(message.imageDate).toISOString())
     return obj
   },
 }
@@ -3323,6 +3328,7 @@ export const NodeDetailsResponse = {
       script: isSet(object.script) ? NodeScriptResponse.fromJSON(object.script) : undefined,
       version: isSet(object.version) ? String(object.version) : undefined,
       type: isSet(object.type) ? nodeTypeFromJSON(object.type) : 0,
+      imageDate: isSet(object.imageDate) ? fromJsonTimestamp(object.imageDate) : undefined,
     }
   },
 
@@ -3343,6 +3349,7 @@ export const NodeDetailsResponse = {
       (obj.script = message.script ? NodeScriptResponse.toJSON(message.script) : undefined)
     message.version !== undefined && (obj.version = message.version)
     message.type !== undefined && (obj.type = nodeTypeToJSON(message.type))
+    message.imageDate !== undefined && (obj.imageDate = fromTimestamp(message.imageDate).toISOString())
     return obj
   },
 }
@@ -3489,6 +3496,7 @@ export const NodeEventMessage = {
       address: isSet(object.address) ? String(object.address) : undefined,
       version: isSet(object.version) ? String(object.version) : undefined,
       connectedAt: isSet(object.connectedAt) ? fromJsonTimestamp(object.connectedAt) : undefined,
+      error: isSet(object.error) ? String(object.error) : undefined,
     }
   },
 
@@ -3499,6 +3507,7 @@ export const NodeEventMessage = {
     message.address !== undefined && (obj.address = message.address)
     message.version !== undefined && (obj.version = message.version)
     message.connectedAt !== undefined && (obj.connectedAt = fromTimestamp(message.connectedAt).toISOString())
+    message.error !== undefined && (obj.error = message.error)
     return obj
   },
 }
@@ -4445,6 +4454,8 @@ export interface CruxNodeClient {
 
   revokeToken(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
 
+  updateNodeAgent(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
+
   subscribeNodeEventChannel(request: ServiceIdRequest, metadata: Metadata, ...rest: any): Observable<NodeEventMessage>
 
   watchContainerState(
@@ -4495,6 +4506,8 @@ export interface CruxNodeController {
 
   revokeToken(request: IdRequest, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
 
+  updateNodeAgent(request: IdRequest, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
+
   subscribeNodeEventChannel(request: ServiceIdRequest, metadata: Metadata, ...rest: any): Observable<NodeEventMessage>
 
   watchContainerState(
@@ -4516,6 +4529,7 @@ export function CruxNodeControllerMethods() {
       'getScript',
       'discardScript',
       'revokeToken',
+      'updateNodeAgent',
       'subscribeNodeEventChannel',
       'watchContainerState',
     ]

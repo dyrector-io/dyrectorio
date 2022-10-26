@@ -86,4 +86,10 @@ export default class NodeController implements CruxNodeController {
   watchContainerState(request: WatchContainerStateRequest): Observable<ContainerStateListMessage> {
     return this.service.handleWatchContainerStatus(request)
   }
+
+  async updateNodeAgent(request: IdRequest): Promise<Empty> {
+    this.service.updateNodeAgent(request)
+
+    return {}
+  }
 }

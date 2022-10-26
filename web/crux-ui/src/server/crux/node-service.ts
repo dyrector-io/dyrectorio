@@ -53,6 +53,7 @@ class DyoNodeService {
       connectedAt: timestampToUTC(it.connectedAt),
       status: nodeStatusToDto(it.status),
       type: nodeTypeGrpcToUi(it.type),
+      imageDate: timestampToUTC(it.imageDate),
     }))
   }
 
@@ -109,6 +110,7 @@ class DyoNodeService {
     return {
       ...res,
       connectedAt: timestampToUTC(res.connectedAt),
+      imageDate: timestampToUTC(res.imageDate),
       status: nodeStatusToDto(res.status),
       type: nodeTypeGrpcToUi(res.type),
       install: !res.install
@@ -184,6 +186,7 @@ class DyoNodeService {
         address: data.address,
         version: data.version,
         connectedAt: timestampToUTC(data.connectedAt),
+        error: data.error,
       } as NodeStatusMessage)
 
     const stream = () => this.client.subscribeNodeEventChannel(ServiceIdRequest.fromJSON(req))
@@ -214,6 +217,15 @@ class DyoNodeService {
 
     const stream = () => this.client.watchContainerState(WatchContainerStateRequest.fromJSON(req))
     return new GrpcConnection(this.logger.descend('container-status'), stream, transform, options)
+  }
+
+  async updateNodeAgent(id: string): Promise<void> {
+    const req: IdRequest = {
+      id,
+      accessedBy: this.identity.id,
+    }
+
+    await protomisify<IdRequest, Empty>(this.client, this.client.updateNodeAgent)(IdRequest, req)
   }
 }
 

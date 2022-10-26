@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common'
 import { finalize, Observable, Subject, throwError, timeout } from 'rxjs'
-import { AlreadyExistsException, InternalException } from 'src/exception/errors'
-import { AgentCommand, AgentInfo } from 'src/grpc/protobuf/proto/agent'
+import { AlreadyExistsException, InternalException, PreconditionFailedException } from 'src/exception/errors'
+import { AgentCommand, AgentInfo, CloseReason } from 'src/grpc/protobuf/proto/agent'
 import { ListSecretsResponse } from 'src/grpc/protobuf/proto/common'
 import { DeploymentProgressMessage, NodeConnectionStatus, NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
@@ -10,6 +10,8 @@ import Deployment from './deployment'
 import { toTimestamp } from './utils'
 
 export class Agent {
+  private static AGENT_UPDATE_TIMEOUT = 60 * 5 // seconds
+
   private commandChannel = new Subject<AgentCommand>()
 
   private deployments: Map<string, Deployment> = new Map()
@@ -18,6 +20,8 @@ export class Agent {
 
   private secretsWatchers: Map<string, Subject<ListSecretsResponse>> = new Map()
 
+  private updateStartedAt: number | undefined
+
   readonly id: string
 
   readonly address: string
@@ -25,6 +29,8 @@ export class Agent {
   readonly version: string
 
   readonly publicKey: string
+
+  readonly imageDate: Date | undefined
 
   constructor(
     private connection: GrpcNodeConnection,
@@ -35,6 +41,7 @@ export class Agent {
     this.address = connection.address
     this.version = info.version
     this.publicKey = info.publicKey
+    this.imageDate = Number.isNaN(Date.parse(info.imageDate)) ? undefined : new Date(info.imageDate)
   }
 
   getConnectionStatus(): NodeConnectionStatus {
@@ -45,7 +52,23 @@ export class Agent {
     return this.deployments.get(id)
   }
 
+  checkAgentUpdating(): boolean {
+    if (!this.updateStartedAt) {
+      return false
+    }
+
+    const now = new Date().getTime()
+    if (Math.floor(now / 1000) - this.updateStartedAt < Agent.AGENT_UPDATE_TIMEOUT) {
+      return true
+    }
+
+    this.updateStartedAt = undefined
+    return false
+  }
+
   deploy(deployment: Deployment): Observable<DeploymentProgressMessage> {
+    this.checkUpdating()
+
     if (this.deployments.has(deployment.id)) {
       throw new AlreadyExistsException({
         message: 'Deployment is already running',
@@ -59,6 +82,8 @@ export class Agent {
   }
 
   upsertContainerStatusWatcher(prefix: string): ContainerStatusWatcher {
+    this.checkUpdating()
+
     let watcher = this.statusWatchers.get(prefix)
     if (!watcher) {
       watcher = new ContainerStatusWatcher(prefix)
@@ -69,7 +94,14 @@ export class Agent {
     return watcher
   }
 
-  kick() {
+  close(reason?: CloseReason) {
+    if (reason) {
+      this.commandChannel.next({
+        close: {
+          reason,
+        },
+      } as AgentCommand)
+    }
     this.commandChannel.complete()
   }
 
@@ -121,6 +153,8 @@ export class Agent {
   }
 
   getContainerSecrets(prefix: string, name: string): Observable<ListSecretsResponse> {
+    this.checkUpdating()
+
     const key = `${prefix}-${name}`
 
     let watcher = this.secretsWatchers.get(key)
@@ -170,11 +204,45 @@ export class Agent {
     this.secretsWatchers.delete(key)
   }
 
+  update(imageTag: string) {
+    this.checkUpdating()
+
+    const now = new Date().getTime()
+    this.updateStartedAt = Math.floor(now / 1000)
+
+    this.commandChannel.next({
+      update: {
+        tag: imageTag,
+        timeoutSeconds: Agent.AGENT_UPDATE_TIMEOUT,
+      },
+    } as AgentCommand)
+  }
+
+  updateAborted(error?: string) {
+    this.updateStartedAt = undefined
+
+    this.eventChannel.next({
+      id: this.id,
+      status: NodeConnectionStatus.CONNECTED,
+      error,
+    })
+  }
+
   debugInfo(logger: Logger) {
     logger.debug(`Agent id: ${this.id}, open: ${!this.commandChannel.closed}`)
     logger.debug(`Deployments: ${this.deployments.size}`)
     logger.debug(`Watchers: ${this.statusWatchers.size}`)
     this.deployments.forEach(it => it.debugInfo(logger))
+  }
+
+  private checkUpdating() {
+    if (this.checkAgentUpdating()) {
+      throw new PreconditionFailedException({
+        message: 'Node is updating',
+        property: 'id',
+        value: this.id,
+      })
+    }
   }
 }
 

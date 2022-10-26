@@ -428,7 +428,7 @@ func (dc *DockerContainerBuilder) Start() (bool, error) {
 
 func prepareImage(dc *DockerContainerBuilder) error {
 	if pullRequired, err := needToPullImage(dc); pullRequired {
-		if err = pullImage(dc.ctx, dc.logger, dc.imageWithTag, dc.registryAuth); err != nil {
+		if err = PullImage(dc.ctx, dc.logger, dc.imageWithTag, dc.registryAuth); err != nil {
 			if err != nil && err.Error() != "EOF" {
 				return fmt.Errorf("image pull error: %s", err.Error())
 			}
@@ -502,7 +502,7 @@ func needToPullImage(dc *DockerContainerBuilder) (bool, error) {
 		return true, nil
 	}
 
-	imageExists, err := imageExists(dc.ctx, dc.logger, dc.imageWithTag)
+	imageExists, err := ImageExists(dc.ctx, dc.logger, dc.imageWithTag)
 	if err != nil {
 		return false, err
 	}

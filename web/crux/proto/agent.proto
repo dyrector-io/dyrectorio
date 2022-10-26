@@ -22,11 +22,10 @@ service Agent {
    * For prefix state reports, should be closed by the server.
    */
   rpc Connect(AgentInfo) returns (stream AgentCommand);
-
   rpc DeploymentStatus(stream common.DeploymentStatusMessage) returns (common.Empty);
-
   rpc ContainerState(stream common.ContainerStateListMessage) returns (common.Empty);
   rpc SecretList(common.ListSecretsResponse) returns (common.Empty);
+  rpc UpdateAborted(AgentUpdateAborted) returns (common.Empty);
 }
 
 /**
@@ -37,6 +36,7 @@ message AgentInfo {
   string id = 1;
   string version = 2;
   string publicKey = 3;
+  string imageDate = 4;
 }
 
 message AgentCommand {
@@ -46,6 +46,8 @@ message AgentCommand {
     ContainerDeleteRequest containerDelete = 3;
     DeployRequestLegacy deployLegacy = 4;
     ListSecretsRequest listSecrets = 5;
+    AgentUpdateRequest update = 6;
+    CloseConnection close = 7;
   }
 }
 
@@ -230,4 +232,31 @@ message ContainerDeleteRequest {
 message DeployRequestLegacy {
   string requestId = 1; // for early dogger logging
   string json = 2;
+}
+
+/*
+ * Dagent update
+ *
+ */
+message AgentUpdateRequest {
+  string tag = 1;
+  int32 timeoutSeconds = 2;
+}
+
+message AgentUpdateAborted {
+  string error = 1;
+}
+
+/*
+ * Connection close
+ *
+ */
+enum CloseReason {
+  CLOSE_REASON_UNSPECIFIED = 0;
+  CLOSE = 1;
+  SELF_DESTRUCT = 2;
+}
+
+message CloseConnection {
+  CloseReason reason = 1;
 }

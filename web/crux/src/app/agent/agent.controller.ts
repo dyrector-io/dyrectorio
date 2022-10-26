@@ -6,6 +6,7 @@ import {
   AgentController as GrpcAgentController,
   AgentControllerMethods,
   AgentInfo,
+  AgentUpdateAborted,
 } from 'src/grpc/protobuf/proto/agent'
 import {
   ContainerStateListMessage,
@@ -40,5 +41,9 @@ export default class AgentController implements GrpcAgentController {
 
   secretList(request: ListSecretsResponse, _: Metadata, call: NodeUnaryCall): Observable<Empty> {
     return this.service.handleSecretList(call.connection, request)
+  }
+
+  updateAborted(request: AgentUpdateAborted, _: Metadata, call: NodeUnaryCall): Observable<Empty> {
+    return this.service.updateAborted(call.connection, request)
   }
 }

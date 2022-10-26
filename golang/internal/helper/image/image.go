@@ -1,8 +1,15 @@
 package image
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"strings"
+
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/client"
+	"github.com/rs/zerolog/log"
 
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 
@@ -110,4 +117,24 @@ func GetRegistryURLProto(registry *string, registryAuth *agent.RegistryAuth) str
 	} else {
 		return ""
 	}
+}
+
+func GetImageByReference(ctx context.Context, reference string) (types.ImageSummary, error) {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		log.Fatal().Err(err).Send()
+	}
+
+	images, err := cli.ImageList(ctx, types.ImageListOptions{
+		Filters: filters.NewArgs(filters.KeyValuePair{Key: "reference", Value: reference}),
+	})
+	if err != nil {
+		return types.ImageSummary{}, err
+	}
+
+	if len(images) == 1 {
+		return images[0], nil
+	}
+
+	return types.ImageSummary{}, errors.New("found more than 1 image with the same reference")
 }

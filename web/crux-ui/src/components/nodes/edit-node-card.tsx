@@ -26,8 +26,10 @@ import clsx from 'clsx'
 import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
 import { MutableRefObject } from 'react'
+import toast from 'react-hot-toast'
 import DyoNodeSetup from './dyo-node-setup'
 import NodeConnectionCard from './node-connection-card'
+import NodeUpdateCard from './node-update-card'
 import useNodeState from './use-node-state'
 
 interface EditNodeCardProps {
@@ -62,6 +64,12 @@ const EditNodeCard = (props: EditNodeCardProps) => {
   socket.on(WS_TYPE_NODE_STATUS, (message: NodeStatusMessage) => {
     if (message.nodeId !== node.id) {
       return
+    }
+
+    if (message.error) {
+      toast(t('updateError', { error: message.error }), {
+        className: '!bg-warning-orange !text-white',
+      })
     }
 
     const newNode = {
@@ -220,6 +228,8 @@ const EditNodeCard = (props: EditNodeCardProps) => {
 
         <div className="flex flex-col flex-grow w-1/2">
           <NodeConnectionCard node={node} />
+
+          <NodeUpdateCard node={node} className="mt-4" />
 
           <DyoCard className="flex-grow w-full p-8 mt-4">
             <DyoHeading element="h4" className="text-lg text-bright mb-4">

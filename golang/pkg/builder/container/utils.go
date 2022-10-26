@@ -49,7 +49,7 @@ func createCli(logger io.StringWriter) (*client.Client, error) {
 	return cli, nil
 }
 
-func imageExists(ctx context.Context, logger io.StringWriter, fullyQualifiedImageName string) (bool, error) {
+func ImageExists(ctx context.Context, logger io.StringWriter, fullyQualifiedImageName string) (bool, error) {
 	cli, err := createCli(logger)
 	if cli == nil {
 		return false, err
@@ -82,7 +82,7 @@ func imageExists(ctx context.Context, logger io.StringWriter, fullyQualifiedImag
 
 // force pulls the given image name
 // todo(nandor-magyar): the output from docker is not really nice, should be improved
-func pullImage(ctx context.Context, logger io.StringWriter, fullyQualifiedImageName, authCreds string) error {
+func PullImage(ctx context.Context, logger io.StringWriter, fullyQualifiedImageName, authCreds string) error {
 	cli, err := createCli(logger)
 	if cli == nil {
 		return err

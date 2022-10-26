@@ -5,6 +5,7 @@ import { DyoLabel } from '@app/elements/dyo-label'
 import RemainingTimeLabel from '@app/elements/remaining-time-label'
 import useTicker from '@app/hooks/use-ticker'
 import { DyoNode } from '@app/models'
+import { utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import NodeStatusIndicator from './node-status-indicator'
@@ -49,6 +50,13 @@ const NodeConnectionCard = (props: NodeConnectionCardProps) => {
 
         <DyoLabel> {t('version')}</DyoLabel>
         <span className="text-light-eased">{node.version}</span>
+
+        {node.imageDate && (
+          <>
+            <DyoLabel> {t('imageDate')}</DyoLabel>
+            <span className="text-light-eased">{utcDateToLocale(node.imageDate)}</span>
+          </>
+        )}
 
         <DyoLabel>{t('status')}</DyoLabel>
         <div className="flex flex-row">

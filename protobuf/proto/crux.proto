@@ -44,6 +44,7 @@ service CruxNode {
   rpc GetScript(ServiceIdRequest) returns (NodeScriptResponse);
   rpc DiscardScript(IdRequest) returns (common.Empty);
   rpc RevokeToken(IdRequest) returns (common.Empty);
+  rpc UpdateNodeAgent(IdRequest) returns (common.Empty);
 
   rpc SubscribeNodeEventChannel(ServiceIdRequest)
       returns (stream NodeEventMessage);
@@ -724,6 +725,7 @@ message NodeResponse {
   optional google.protobuf.Timestamp connectedAt = 105;
   optional string version = 106;
   NodeType type = 107;
+  optional google.protobuf.Timestamp imageDate = 108;
 }
 
 message NodeDetailsResponse {
@@ -741,6 +743,7 @@ message NodeDetailsResponse {
   optional NodeScriptResponse script = 108;
   optional string version = 109;
   NodeType type = 110;
+  optional google.protobuf.Timestamp imageDate = 111;
 }
 
 message NodeListResponse { repeated NodeResponse data = 1000; }
@@ -803,6 +806,7 @@ message NodeEventMessage {
   optional string address = 101;
   optional string version = 102;
   optional google.protobuf.Timestamp connectedAt = 103;
+  optional string error = 104;
 }
 
 message WatchContainerStateRequest {

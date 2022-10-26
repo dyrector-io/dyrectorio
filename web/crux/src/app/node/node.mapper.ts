@@ -29,6 +29,7 @@ export default class NodeMapper {
       status,
       connectedAt: node.connectedAt ? toTimestamp(node.connectedAt) : null,
       type: node.type === NodeTypeEnum.docker ? NodeType.DOCKER : NodeType.K8S,
+      imageDate: agent?.imageDate ? toTimestamp(agent.imageDate) : null,
     }
   }
 

@@ -1112,6 +1112,7 @@ export interface NodeResponse {
   connectedAt?: Timestamp | undefined
   version?: string | undefined
   type: NodeType
+  imageDate?: Timestamp | undefined
 }
 
 export interface NodeDetailsResponse {
@@ -1128,6 +1129,7 @@ export interface NodeDetailsResponse {
   script?: NodeScriptResponse | undefined
   version?: string | undefined
   type: NodeType
+  imageDate?: Timestamp | undefined
 }
 
 export interface NodeListResponse {
@@ -1171,6 +1173,7 @@ export interface NodeEventMessage {
   address?: string | undefined
   version?: string | undefined
   connectedAt?: Timestamp | undefined
+  error?: string | undefined
 }
 
 export interface WatchContainerStateRequest {
@@ -7013,6 +7016,9 @@ export const NodeResponse = {
     if (message.type !== 0) {
       writer.uint32(856).int32(message.type)
     }
+    if (message.imageDate !== undefined) {
+      Timestamp.encode(message.imageDate, writer.uint32(866).fork()).ldelim()
+    }
     return writer
   },
 
@@ -7053,6 +7059,9 @@ export const NodeResponse = {
         case 107:
           message.type = reader.int32() as any
           break
+        case 108:
+          message.imageDate = Timestamp.decode(reader, reader.uint32())
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -7073,6 +7082,7 @@ export const NodeResponse = {
       connectedAt: isSet(object.connectedAt) ? fromJsonTimestamp(object.connectedAt) : undefined,
       version: isSet(object.version) ? String(object.version) : undefined,
       type: isSet(object.type) ? nodeTypeFromJSON(object.type) : 0,
+      imageDate: isSet(object.imageDate) ? fromJsonTimestamp(object.imageDate) : undefined,
     }
   },
 
@@ -7088,6 +7098,7 @@ export const NodeResponse = {
     message.connectedAt !== undefined && (obj.connectedAt = fromTimestamp(message.connectedAt).toISOString())
     message.version !== undefined && (obj.version = message.version)
     message.type !== undefined && (obj.type = nodeTypeToJSON(message.type))
+    message.imageDate !== undefined && (obj.imageDate = fromTimestamp(message.imageDate).toISOString())
     return obj
   },
 
@@ -7107,6 +7118,8 @@ export const NodeResponse = {
         : undefined
     message.version = object.version ?? undefined
     message.type = object.type ?? 0
+    message.imageDate =
+      object.imageDate !== undefined && object.imageDate !== null ? Timestamp.fromPartial(object.imageDate) : undefined
     return message
   },
 }
@@ -7155,6 +7168,9 @@ export const NodeDetailsResponse = {
     }
     if (message.type !== 0) {
       writer.uint32(880).int32(message.type)
+    }
+    if (message.imageDate !== undefined) {
+      Timestamp.encode(message.imageDate, writer.uint32(890).fork()).ldelim()
     }
     return writer
   },
@@ -7205,6 +7221,9 @@ export const NodeDetailsResponse = {
         case 110:
           message.type = reader.int32() as any
           break
+        case 111:
+          message.imageDate = Timestamp.decode(reader, reader.uint32())
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -7228,6 +7247,7 @@ export const NodeDetailsResponse = {
       script: isSet(object.script) ? NodeScriptResponse.fromJSON(object.script) : undefined,
       version: isSet(object.version) ? String(object.version) : undefined,
       type: isSet(object.type) ? nodeTypeFromJSON(object.type) : 0,
+      imageDate: isSet(object.imageDate) ? fromJsonTimestamp(object.imageDate) : undefined,
     }
   },
 
@@ -7248,6 +7268,7 @@ export const NodeDetailsResponse = {
       (obj.script = message.script ? NodeScriptResponse.toJSON(message.script) : undefined)
     message.version !== undefined && (obj.version = message.version)
     message.type !== undefined && (obj.type = nodeTypeToJSON(message.type))
+    message.imageDate !== undefined && (obj.imageDate = fromTimestamp(message.imageDate).toISOString())
     return obj
   },
 
@@ -7274,6 +7295,8 @@ export const NodeDetailsResponse = {
       object.script !== undefined && object.script !== null ? NodeScriptResponse.fromPartial(object.script) : undefined
     message.version = object.version ?? undefined
     message.type = object.type ?? 0
+    message.imageDate =
+      object.imageDate !== undefined && object.imageDate !== null ? Timestamp.fromPartial(object.imageDate) : undefined
     return message
   },
 }
@@ -7693,6 +7716,9 @@ export const NodeEventMessage = {
     if (message.connectedAt !== undefined) {
       Timestamp.encode(message.connectedAt, writer.uint32(826).fork()).ldelim()
     }
+    if (message.error !== undefined) {
+      writer.uint32(834).string(message.error)
+    }
     return writer
   },
 
@@ -7718,6 +7744,9 @@ export const NodeEventMessage = {
         case 103:
           message.connectedAt = Timestamp.decode(reader, reader.uint32())
           break
+        case 104:
+          message.error = reader.string()
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -7733,6 +7762,7 @@ export const NodeEventMessage = {
       address: isSet(object.address) ? String(object.address) : undefined,
       version: isSet(object.version) ? String(object.version) : undefined,
       connectedAt: isSet(object.connectedAt) ? fromJsonTimestamp(object.connectedAt) : undefined,
+      error: isSet(object.error) ? String(object.error) : undefined,
     }
   },
 
@@ -7743,6 +7773,7 @@ export const NodeEventMessage = {
     message.address !== undefined && (obj.address = message.address)
     message.version !== undefined && (obj.version = message.version)
     message.connectedAt !== undefined && (obj.connectedAt = fromTimestamp(message.connectedAt).toISOString())
+    message.error !== undefined && (obj.error = message.error)
     return obj
   },
 
@@ -7756,6 +7787,7 @@ export const NodeEventMessage = {
       object.connectedAt !== undefined && object.connectedAt !== null
         ? Timestamp.fromPartial(object.connectedAt)
         : undefined
+    message.error = object.error ?? undefined
     return message
   },
 }
@@ -10491,6 +10523,15 @@ export const CruxNodeService = {
     responseSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
     responseDeserialize: (value: Buffer) => Empty.decode(value),
   },
+  updateNodeAgent: {
+    path: '/crux.CruxNode/UpdateNodeAgent',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: IdRequest) => Buffer.from(IdRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => IdRequest.decode(value),
+    responseSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => Empty.decode(value),
+  },
   subscribeNodeEventChannel: {
     path: '/crux.CruxNode/SubscribeNodeEventChannel',
     requestStream: false,
@@ -10524,6 +10565,7 @@ export interface CruxNodeServer extends UntypedServiceImplementation {
   getScript: handleUnaryCall<ServiceIdRequest, NodeScriptResponse>
   discardScript: handleUnaryCall<IdRequest, Empty>
   revokeToken: handleUnaryCall<IdRequest, Empty>
+  updateNodeAgent: handleUnaryCall<IdRequest, Empty>
   subscribeNodeEventChannel: handleServerStreamingCall<ServiceIdRequest, NodeEventMessage>
   watchContainerState: handleServerStreamingCall<WatchContainerStateRequest, ContainerStateListMessage>
 }
@@ -10651,6 +10693,18 @@ export interface CruxNodeClient extends Client {
     callback: (error: ServiceError | null, response: Empty) => void,
   ): ClientUnaryCall
   revokeToken(
+    request: IdRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: Empty) => void,
+  ): ClientUnaryCall
+  updateNodeAgent(request: IdRequest, callback: (error: ServiceError | null, response: Empty) => void): ClientUnaryCall
+  updateNodeAgent(
+    request: IdRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: Empty) => void,
+  ): ClientUnaryCall
+  updateNodeAgent(
     request: IdRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,
