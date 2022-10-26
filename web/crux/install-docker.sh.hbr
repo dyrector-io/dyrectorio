@@ -75,14 +75,14 @@ set_environment() {
 dagent_clean() {
   echo "Installing dyrector.io agent (dagent)..."
 
-  if [ -n $($CRI_EXECUTABLE container list --filter name=^dagent$ --filter=status=running --filter=status=restarting --filter=status=paused --format '{{{{raw-helper}}}}{{ .Names }}{{{{/raw-helper}}}}' 2>/dev/null) ]; then
+  if [ -n "$($CRI_EXECUTABLE container list --filter name=^dagent$ --filter=status=running --filter=status=restarting --filter=status=paused --format '\{{ .Names }}' 2>/dev/null)" ]; then
     timeout 5 $CRI_EXECUTABLE stop dagent
     if [ $? -ne 0 ]; then
       $CRI_EXECUTABLE kill dagent
     fi
   fi
 
-  if [ -n $($CRI_EXECUTABLE container list --filter name=^dagent$ --filter=status=exited --filter=status=created --filter=status=dead --format '{{{{raw-helper}}}}{{ .Names }}{{{{/raw-helper}}}}' 2>/dev/null) ]; then
+  if [ -n "$($CRI_EXECUTABLE container list --filter name=^dagent$ --filter=status=exited --filter=status=created --filter=status=dead --format '\{{ .Names }}' 2>/dev/null)" ]; then
     timeout 5 $CRI_EXECUTABLE rm dagent
     if [ $? -ne 0 ]; then
       $CRI_EXECUTABLE rm -f dagent
