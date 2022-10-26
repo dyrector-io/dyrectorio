@@ -10,7 +10,7 @@ import (
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
 	"github.com/dyrector-io/dyrectorio/golang/internal/grpc"
-	"github.com/dyrector-io/dyrectorio/golang/internal/util"
+	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 	builder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
 )
@@ -18,7 +18,7 @@ import (
 type DeployFacade struct {
 	ctx        context.Context
 	params     *DeployFacadeParams
-	image      util.ImageURI
+	image      imageHelper.URI
 	deployment *deployment
 	namespace  *namespace
 	service    *service
@@ -31,7 +31,7 @@ type DeployFacade struct {
 
 type DeployFacadeParams struct {
 	Ctx             context.Context
-	Image           util.ImageURI
+	Image           imageHelper.URI
 	InstanceConfig  v1.InstanceConfig
 	ContainerConfig v1.ContainerConfig
 	RuntimeConfig   *string
@@ -228,8 +228,8 @@ func Deploy(c context.Context, dog *dogger.DeploymentLogger, deployImageRequest 
 	deployFacade := NewDeployFacade(
 		&DeployFacadeParams{
 			Ctx: c,
-			Image: util.ImageURI{
-				Host: util.GetRegistryURL(deployImageRequest.Registry, deployImageRequest.RegistryAuth),
+			Image: imageHelper.URI{
+				Host: imageHelper.GetRegistryURL(deployImageRequest.Registry, deployImageRequest.RegistryAuth),
 				Name: deployImageRequest.ImageName,
 				Tag:  deployImageRequest.Tag,
 			},

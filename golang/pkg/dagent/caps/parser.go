@@ -27,7 +27,7 @@ func ParseLabelsIntoContainerConfig(labels map[string]string, config *v1.Contain
 
 			err := json.Unmarshal([]byte(value), &network)
 			if err != nil {
-				log.Error().Stack().Err(err).Msg("")
+				log.Error().Stack().Err(err).Send()
 			}
 
 			ports := []builder.PortBinding{}

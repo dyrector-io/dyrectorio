@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/binary"
-	"errors"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -23,6 +22,8 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/internal/crypt"
 	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
 	"github.com/dyrector-io/dyrectorio/golang/internal/grpc"
+	dockerHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
+	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 	"github.com/dyrector-io/dyrectorio/golang/internal/mapper"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
@@ -35,8 +36,6 @@ import (
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
 )
-
-const dockerClientTimeoutSeconds = 30
 
 type DockerVersion struct {
 	ServerVersion string
@@ -58,61 +57,6 @@ func GetServerInformation() (DockerVersion, error) {
 	return DockerVersion{ClientVersion: cli.ClientVersion(), ServerVersion: server.Version}, err
 }
 
-func ListContainers() ([]types.Container, error) {
-	ctx := context.Background()
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		panic(err)
-	}
-
-	containers, err := cli.ContainerList(ctx, types.ContainerListOptions{All: true})
-
-	checkDockerError(err)
-
-	return containers, err
-}
-
-func GetContainersByName(name string) []types.Container {
-	ctx := context.Background()
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		panic(err)
-	}
-
-	containers, err := cli.ContainerList(ctx, types.ContainerListOptions{
-		All:     true,
-		Filters: filters.NewArgs(filters.KeyValuePair{Key: "name", Value: fmt.Sprintf("^/?%s-", name)}),
-	})
-
-	checkDockerError(err)
-
-	return containers
-}
-
-func GetContainersByNameCrux(ctx context.Context, name string) []*common.ContainerStateItem {
-	containers := GetContainersByName(name)
-
-	return mapper.MapContainerState(&containers)
-}
-
-func GetContainer(name string) []types.Container {
-	containers := GetContainersByName(name)
-	containers = FilterContainerByName(containers, name)
-
-	return containers
-}
-
-func FilterContainerByName(containers []types.Container, name string) (ret []types.Container) {
-	for i := range containers {
-		for j := range containers[i].Names {
-			if strings.ReplaceAll(containers[i].Names[j], "/", "") == name {
-				ret = append(ret, containers[i])
-			}
-		}
-	}
-	return ret
-}
-
 func GetContainerLogs(name string, skip, take uint) []string {
 	ctx := context.Background()
 
@@ -130,7 +74,9 @@ func GetContainerLogs(name string, skip, take uint) []string {
 	}
 
 	logs, err := cli.ContainerLogs(ctx, name, options)
-	checkDockerError(err)
+	if err != nil {
+		log.Err(err).Stack().Send()
+	}
 	defer logs.Close()
 
 	return ReadDockerLogsFromReadCloser(logs, int(skip), int(take))
@@ -250,16 +196,23 @@ func InspectContainer(name string) types.ContainerJSON {
 	}
 
 	inspection, err := cli.ContainerInspect(ctx, name)
-	checkDockerError(err)
+	if err != nil {
+		log.Err(err).Stack().Send()
+	}
 
 	return inspection
 }
 
-func logDeployInfo(dog *dogger.DeploymentLogger, deployImageRequest *v1.DeployImageRequest, image *util.ImageURI, containerName string) {
+func logDeployInfo(
+	dog *dogger.DeploymentLogger,
+	deployImageRequest *v1.DeployImageRequest,
+	image *imageHelper.URI,
+	containerName string,
+) {
 	reqID := deployImageRequest.RequestID
 
 	if reqID != "" {
-		log.Info().Str("requestID", reqID).Msg("")
+		log.Info().Str("requestID", reqID).Send()
 	}
 	dog.Write(
 		fmt.Sprintln("Starting container: ", containerName),
@@ -297,7 +250,7 @@ func DeployImage(ctx context.Context,
 	containerName := getContainerName(deployImageRequest)
 	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
 
-	image, _ := util.ImageURIFromString(
+	image, _ := imageHelper.URIFromString(
 		util.JoinV("/",
 			*deployImageRequest.Registry,
 			util.JoinV(":", deployImageRequest.ImageName, deployImageRequest.Tag)))
@@ -333,15 +286,15 @@ func DeployImage(ctx context.Context,
 		}
 	}
 
-	// err is ignored because it means no container is available
-	state, _ := CheckContainer(deployImageRequest.RequestID, containerName)
-
-	err = checkContainerState(dog, containerName, state)
+	matchedContainer, err := dockerHelper.GetContainerByName(ctx, dog, containerName)
 	if err != nil {
 		return err
 	}
-
-	dog.WriteContainerState(state)
+	err = dockerHelper.DeleteContainerByName(ctx, dog, containerName)
+	if err != nil {
+		return err
+	}
+	dog.WriteContainerState(matchedContainer.State)
 
 	networkMode, networks := setNetwork(deployImageRequest)
 
@@ -379,11 +332,11 @@ func DeployImage(ctx context.Context,
 
 	if err != nil {
 		dog.Write(err.Error())
-		dog.WriteContainerState(state, "Container start error: "+containerName)
+		dog.WriteContainerState(matchedContainer.State, "Container start error: "+containerName)
 		return err
 	}
 
-	dog.WriteContainerState(state, "Started container: "+containerName)
+	dog.WriteContainerState(matchedContainer.State, "Started container: "+containerName)
 
 	if versionData != nil {
 		DraftRelease(deployImageRequest.InstanceConfig.ContainerPreName, *versionData, v1.DeployVersionResponse{}, cfg)
@@ -459,23 +412,6 @@ func containsConfig(mounts []mount.Mount) bool {
 	return false
 }
 
-func checkContainerState(dog *dogger.DeploymentLogger, containerName, state string) error {
-	switch state {
-	case "exited", "created":
-		if err := remoteLogsDecorator(dog, removeContainer, containerName); err != nil {
-			return err
-		}
-	case "running", "restarting":
-		if err := remoteLogsDecorator(dog, stopContainer, containerName); err != nil {
-			return err
-		}
-		if err := remoteLogsDecorator(dog, removeContainer, containerName); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func mountStrToDocker(mountIn []string, containerPreName, containerName string, cfg *config.Configuration) []mount.Mount {
 	// bind mounts created this way
 	// volumes are also an option - not a bad one, host mount is not really
@@ -522,85 +458,6 @@ func createRuntimeConfigFileOnHost(mounts []mount.Mount, containerName, containe
 	}
 
 	return mounts, nil
-}
-
-func checkDockerError(err error) {
-	if err != nil {
-		if client.IsErrConnectionFailed(err) {
-			log.Print("Could not connect to docker socket/host.")
-		}
-	}
-}
-
-func CheckContainer(_, containerName string) (string, error) {
-	containers := GetContainer(containerName)
-
-	var container types.Container
-	if len(containers) > 1 {
-		// multiple containers
-		return "", errors.New("multiple match")
-	} else if len(containers) == 0 {
-		// not found
-		return "", errors.New("not found")
-	} else {
-		container = containers[0]
-	}
-
-	return container.State, nil
-}
-
-func DeleteContainer(containerName string) error {
-	if err := stopContainer(containerName); err != nil {
-		return err
-	}
-
-	if err := removeContainer(containerName); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func remoteLogsDecorator(dog *dogger.DeploymentLogger, fn func(string) error, containerName string) error {
-	dog.Write("Container request for: " + containerName)
-	if err := fn(containerName); err != nil {
-		return err
-	}
-	// not really an information
-	// dog.Write("Request for container [" + containerName + "] is finished.")
-
-	return nil
-}
-
-func stopContainer(containerName string) error {
-	ctx := context.Background()
-
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		panic(err)
-	}
-
-	timeoutValue := (time.Duration(dockerClientTimeoutSeconds) * time.Second)
-	if err := cli.ContainerStop(ctx, containerName, &timeoutValue); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func removeContainer(containerName string) error {
-	ctx := context.Background()
-
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		panic(err)
-	}
-
-	if err := cli.ContainerRemove(ctx, containerName, types.ContainerRemoveOptions{}); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 // EnvMapToSlice converts key:value map into ["key=value"] array
@@ -669,17 +526,6 @@ func GetImageLabels(fullyQualifiedImageName string) (map[string]string, error) {
 	return map[string]string{}, nil
 }
 
-func DeleteContainerByName(ctx context.Context, preName, name string) error {
-	containerName := util.JoinV("-", preName, name)
-	containers := GetContainer(containerName)
-
-	if len(containers) == 1 {
-		return DeleteContainer(containerName)
-	}
-
-	return errors.New("No or more containers found for " + containerName)
-}
-
 func setImageLabels(image string, deployImageRequest *v1.DeployImageRequest, cfg *config.Configuration) (map[string]string, error) {
 	// parse image labels
 	labels, err := GetImageLabels(image)
@@ -718,43 +564,6 @@ func setImageLabels(image string, deployImageRequest *v1.DeployImageRequest, cfg
 	maps.Copy(labels, deployImageRequest.ContainerConfig.Labels.Deployment)
 
 	return labels, nil
-}
-
-func CreateNetwork(ctx context.Context, name, driver string) error {
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		panic(err)
-	}
-
-	filter := filters.NewArgs()
-	filter.Add("name", name)
-
-	networkListOption := types.NetworkListOptions{
-		Filters: filter,
-	}
-
-	networks, err := cli.NetworkList(ctx, networkListOption)
-	if err != nil {
-		return fmt.Errorf("error list existing networks: %w", err)
-	}
-
-	if len(networks) > 0 {
-		log.Printf("Provided network name: %s is exists. Skip to create new network.", name)
-		return nil
-	}
-
-	networkCreateOptions := types.NetworkCreate{
-		CheckDuplicate: true,
-		Driver:         driver,
-	}
-
-	_, err = cli.NetworkCreate(ctx, name, networkCreateOptions)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func SecretList(ctx context.Context, prefix, name string) ([]string, error) {

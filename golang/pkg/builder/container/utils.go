@@ -15,8 +15,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-const dockerClientTimeoutSeconds = 30
-
 func registryAuthBase64(user, password string) string {
 	if user == "" || password == "" {
 		return ""
@@ -28,7 +26,7 @@ func registryAuthBase64(user, password string) string {
 	}
 	encodedJSON, err := json.Marshal(authConfig)
 	if err != nil {
-		log.Error().Stack().Err(err).Msg("")
+		log.Error().Stack().Err(err).Send()
 		return ""
 	}
 	return base64.URLEncoding.EncodeToString(encodedJSON)
@@ -139,97 +137,6 @@ func pullImage(ctx context.Context, logger io.StringWriter, fullyQualifiedImageN
 	}
 
 	return err
-}
-
-func deleteContainer(ctx context.Context, containerName string) error {
-	deletableContainer, err := getContainer(ctx, containerName)
-	if err != nil {
-		return fmt.Errorf("builder could not get container (%s) to remove: %s", containerName, err.Error())
-	}
-
-	switch deletableContainer.State {
-	case "running", "paused", "restarting":
-		if err = stopContainer(ctx, containerName); err != nil {
-			return fmt.Errorf("builder could not stop container (%s): %s", containerName, err.Error())
-		}
-		fallthrough
-	case "exited", "dead", "created":
-		if err = removeContainer(ctx, containerName); err != nil {
-			return fmt.Errorf("builder could not remove container (%s): %s", containerName, err.Error())
-		}
-		return nil
-	case "":
-		// when there's no container we just skip it
-		return nil
-	default:
-		return fmt.Errorf("builder could not determine the state (%s) of the container (%s) for deletion: %s",
-			deletableContainer.State,
-			containerName,
-			err.Error())
-	}
-}
-
-func stopContainer(ctx context.Context, containerName string) error {
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		panic(err)
-	}
-
-	timeoutValue := (time.Duration(dockerClientTimeoutSeconds) * time.Second)
-	if err := cli.ContainerStop(ctx, containerName, &timeoutValue); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func removeContainer(ctx context.Context, containerName string) error {
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		panic(err)
-	}
-
-	if err := cli.ContainerRemove(ctx, containerName, types.ContainerRemoveOptions{}); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Check the existence of a container, then return it, matches only one
-func getContainer(ctx context.Context, containerName string) (types.Container, error) {
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		panic(err)
-	}
-
-	filter := filters.NewArgs()
-	filter.Add("name", fmt.Sprintf("^%s$", containerName))
-
-	containers, err := cli.ContainerList(ctx, types.ContainerListOptions{All: true, Filters: filter})
-	if err != nil {
-		return types.Container{}, err
-	}
-
-	switch len(containers) {
-	case 0:
-		// when we didn't matched any
-		return types.Container{}, nil
-	case 1:
-		return containers[0], nil
-	default:
-		// can not happen, as there would be multiple containers under the same name
-		return types.Container{}, fmt.Errorf("unreachable error, exact matching failed")
-	}
-}
-
-func deleteNetwork(ctx context.Context, networkID string) error {
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		panic(err)
-	}
-
-	return cli.NetworkRemove(ctx, networkID)
 }
 
 type defaultLogger struct {

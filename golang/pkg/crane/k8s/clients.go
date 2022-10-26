@@ -38,7 +38,7 @@ func (c *Client) GetClientSet(cfg *config.Configuration) (*kubernetes.Clientset,
 func (c *Client) inClusterAuth(cfg *config.Configuration) (*kubernetes.Clientset, error) {
 	clusterConfig, err := c.InClusterConfig()
 	if err != nil {
-		log.Error().Err(err).Stack().Msg("")
+		log.Error().Err(err).Stack().Send()
 		return nil, err
 	}
 	clusterConfig.Timeout = cfg.DefaultKubeTimeout

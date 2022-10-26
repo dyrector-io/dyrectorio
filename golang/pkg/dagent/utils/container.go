@@ -10,6 +10,7 @@ import (
 	"github.com/docker/docker/api/types/mount"
 	"github.com/rs/zerolog/log"
 
+	dockerHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/config"
@@ -101,14 +102,12 @@ func ExecTraefik(ctx context.Context, traefikDeployReq TraefikDeployRequest, cfg
 		ports = append(ports, containerbuilder.PortBinding{PortBinding: traefikDeployReq.TLSPort, ExposedPort: 443})
 	}
 
-	container := GetContainer("traefik")
-
-	if len(container) == 1 {
-		_ = stopContainer("traefik")
-		_ = removeContainer("traefik")
+	if err = dockerHelper.DeleteContainerByName(ctx, nil, "traefik"); err != nil {
+		log.Error().Stack().Err(err).Msg("delete traefik container error")
+		return err
 	}
 
-	if err = CreateNetwork(ctx, "traefik", "bridge"); err != nil {
+	if err = dockerHelper.CreateNetwork(ctx, "traefik", "bridge"); err != nil {
 		log.Error().Stack().Err(err).Msg("create traefik network error")
 		return err
 	}

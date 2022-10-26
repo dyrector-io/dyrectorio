@@ -90,17 +90,6 @@ type Options struct {
 	MailSlurperWebPort2            uint   `yaml:"mailSlurperWebPort2" env-default:"4437"`
 }
 
-const DefaultPostgresPort = 5432
-
-const SecretLength = 32
-
-const BufferMultiplier = 2
-
-const (
-	FilePerms = 0o600
-	DirPerms  = 0o750
-)
-
 const (
 	SettingsFileName = "settings.yaml"
 	SettingsFileDir  = "dyo-cli"
@@ -122,8 +111,12 @@ const (
 )
 
 const (
-	ParseBase    = 10
-	ParseBitSize = 32
+	ParseBase        = 10
+	ParseBitSize     = 32
+	FilePerms        = 0o600
+	DirPerms         = 0o750
+	SecretLength     = 32
+	BufferMultiplier = 2
 )
 
 // Check if the settings file is exists
@@ -135,7 +128,7 @@ func SettingsExists(settingspath string) bool {
 	} else if errors.Is(err, os.ErrNotExist) {
 		return false
 	} else {
-		log.Fatal().Err(err).Stack().Msg("")
+		log.Fatal().Err(err).Stack().Send()
 		return false
 	}
 }
@@ -197,7 +190,7 @@ func CheckRequirements() string {
 	if envVarValue != "" {
 		socketurl, err := url.ParseRequestURI(envVarValue)
 		if err != nil {
-			log.Fatal().Err(err).Stack().Msg("")
+			log.Fatal().Err(err).Stack().Send()
 		}
 
 		if socketurl.Host != "" {
@@ -315,29 +308,29 @@ func SaveSettings(settings *Settings) {
 			if _, err := os.Stat(userConfDir); errors.Is(err, os.ErrNotExist) {
 				err = os.Mkdir(userConfDir, DirPerms)
 				if err != nil {
-					log.Fatal().Err(err).Stack().Msg("")
+					log.Fatal().Err(err).Stack().Send()
 				}
 			} else if err != nil {
-				log.Fatal().Err(err).Stack().Msg("")
+				log.Fatal().Err(err).Stack().Send()
 			}
 			if _, err := os.Stat(filepath.Dir(settingspath)); errors.Is(err, os.ErrNotExist) {
 				err = os.Mkdir(filepath.Dir(settingspath), DirPerms)
 				if err != nil {
-					log.Fatal().Err(err).Stack().Msg("")
+					log.Fatal().Err(err).Stack().Send()
 				}
 			} else if err != nil {
-				log.Fatal().Err(err).Stack().Msg("")
+				log.Fatal().Err(err).Stack().Send()
 			}
 		}
 
 		filedata, err := yaml.Marshal(&settings.SettingsFile)
 		if err != nil {
-			log.Fatal().Err(err).Stack().Msg("")
+			log.Fatal().Err(err).Stack().Send()
 		}
 
 		err = os.WriteFile(settings.SettingsFilePath, filedata, FilePerms)
 		if err != nil {
-			log.Fatal().Err(err).Stack().Msg("")
+			log.Fatal().Err(err).Stack().Send()
 		}
 
 		settings.SettingsWrite = false
@@ -390,7 +383,7 @@ func RandomChars(bufflength uint) string {
 	buffer := make([]byte, bufflength*BufferMultiplier)
 	_, err := rand.Read(buffer)
 	if err != nil {
-		log.Error().Err(err).Stack().Msg("")
+		log.Error().Err(err).Stack().Send()
 	}
 	secureString := make([]byte, base64.StdEncoding.EncodedLen(len(buffer)))
 	base64.StdEncoding.Encode(secureString, buffer)
@@ -457,7 +450,7 @@ func getAvailablePort(portMap map[string]uint, portNum uint, portDesc string, ch
 	for {
 		err := portIsAvailable(portMap, portNum)
 		if err != nil {
-			log.Error().Err(err).Str("Value", portDesc).Msg("")
+			log.Error().Err(err).Str("Value", portDesc).Send()
 			portNum = scanPort(portNum)
 			log.Info().Msgf("New PORT %d binded successfully for %s.", portNum, portDesc)
 			*changed = true
@@ -475,7 +468,7 @@ func scanPort(portNum uint) uint {
 	for scanner.Scan() {
 		newPort, err := strconv.ParseUint(scanner.Text(), ParseBase, ParseBitSize)
 		if err != nil || (newPort > 0 && newPort <= 1023) || newPort == 0 {
-			log.Error().Err(err).Msg("")
+			log.Error().Err(err).Send()
 			log.Info().Msg("Type another port: ")
 			continue
 		}
