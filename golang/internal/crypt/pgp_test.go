@@ -6,8 +6,8 @@ import (
 	"github.com/ProtonMail/gopenpgp/v2/helper"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/dyrector-io/dyrectorio/agent/internal/config"
-	"github.com/dyrector-io/dyrectorio/agent/internal/crypt"
+	"github.com/dyrector-io/dyrectorio/golang/internal/config"
+	"github.com/dyrector-io/dyrectorio/golang/internal/crypt"
 )
 
 const (
