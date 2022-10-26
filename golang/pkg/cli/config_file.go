@@ -85,8 +85,9 @@ type Options struct {
 	KratosPostgresUser             string `yaml:"kratosPostgresUser" env-default:"kratos"`
 	KratosPostgresPassword         string `yaml:"kratosPostgresPassword"`
 	KratosSecret                   string `yaml:"kratosSecret"`
-	MailSlurperPort                uint   `yaml:"mailSlurperPort" env-default:"4436"`
-	MailSlurperPort2               uint   `yaml:"mailSlurperPort2" env-default:"4437"`
+	MailSlurperSMTPPort            uint   `yaml:"mailSlurperSMTPPort" env-default:"1025"`
+	MailSlurperWebPort             uint   `yaml:"mailSlurperWebPort" env-default:"4436"`
+	MailSlurperWebPort2            uint   `yaml:"mailSlurperWebPort2" env-default:"4437"`
 }
 
 const DefaultPostgresPort = 5432
@@ -106,17 +107,18 @@ const (
 )
 
 const (
-	CruxAgentGrpcPort  = "CruxAgentGrpcPort"
-	CruxGrpcPort       = "CruxGrpcPort"
-	CruxUIPort         = "CruxUIPort"
-	KratosAdminPort    = "KratosAdminPort"
-	KratosPublicPort   = "KratosPublicPort"
-	KratosPostgresPort = "KratosPostgresPort"
-	MailSlurperPort    = "MailSlurperPort"
-	MailSlurperPort2   = "MailSlurperPort2"
-	CruxPostgresPort   = "CruxPostgresPort"
-	TraefikWebPort     = "TraeficWebPort"
-	TraefikUIPort      = "TraefikUIPort"
+	CruxAgentGrpcPort   = "CruxAgentGrpcPort"
+	CruxGrpcPort        = "CruxGrpcPort"
+	CruxUIPort          = "CruxUIPort"
+	KratosAdminPort     = "KratosAdminPort"
+	KratosPublicPort    = "KratosPublicPort"
+	KratosPostgresPort  = "KratosPostgresPort"
+	MailSlurperSMTPPort = "MailSlurperSMTPPort"
+	MailSlurperWebPort  = "MailSlurperWebPort"
+	MailSlurperWebPort2 = "MailSlurperWebPort2"
+	CruxPostgresPort    = "CruxPostgresPort"
+	TraefikWebPort      = "TraeficWebPort"
+	TraefikUIPort       = "TraefikUIPort"
 )
 
 const (
@@ -427,12 +429,15 @@ func CheckAndUpdatePorts(settings *Settings) *Settings {
 	portMap[KratosPostgresPort] = getAvailablePort(portMap, settings.SettingsFile.Options.KratosPostgresPort,
 		KratosPostgresPort, &settings.SettingsWrite)
 	settings.SettingsFile.Options.KratosPostgresPort = portMap[KratosPostgresPort]
-	portMap[MailSlurperPort] = getAvailablePort(portMap, settings.SettingsFile.Options.MailSlurperPort,
-		MailSlurperPort, &settings.SettingsWrite)
-	settings.SettingsFile.Options.MailSlurperPort = portMap[MailSlurperPort]
-	portMap[MailSlurperPort2] = getAvailablePort(portMap, settings.SettingsFile.Options.MailSlurperPort2,
-		MailSlurperPort2, &settings.SettingsWrite)
-	settings.SettingsFile.Options.MailSlurperPort2 = portMap[MailSlurperPort2]
+	portMap[MailSlurperSMTPPort] = getAvailablePort(portMap, settings.SettingsFile.Options.MailSlurperSMTPPort,
+		MailSlurperSMTPPort, &settings.SettingsWrite)
+	settings.SettingsFile.Options.MailSlurperSMTPPort = portMap[MailSlurperSMTPPort]
+	portMap[MailSlurperWebPort] = getAvailablePort(portMap, settings.SettingsFile.Options.MailSlurperWebPort,
+		MailSlurperWebPort, &settings.SettingsWrite)
+	settings.SettingsFile.Options.MailSlurperWebPort = portMap[MailSlurperWebPort]
+	portMap[MailSlurperWebPort2] = getAvailablePort(portMap, settings.SettingsFile.Options.MailSlurperWebPort2,
+		MailSlurperWebPort2, &settings.SettingsWrite)
+	settings.SettingsFile.Options.MailSlurperWebPort2 = portMap[MailSlurperWebPort2]
 	portMap[TraefikWebPort] = getAvailablePort(portMap, settings.SettingsFile.Options.TraefikWebPort,
 		TraefikWebPort, &settings.SettingsWrite)
 	settings.SettingsFile.Options.TraefikWebPort = portMap[TraefikWebPort]
