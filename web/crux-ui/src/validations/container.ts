@@ -11,7 +11,7 @@ import {
   CONTAINER_RESTART_POLICY_TYPE_VALUES,
   CONTAINER_VOLUME_TYPE_VALUES,
   VolumeType,
-} from '@app/models'
+} from '@app/models/container'
 import * as yup from 'yup'
 
 export const uniqueKeyValuesSchema = yup

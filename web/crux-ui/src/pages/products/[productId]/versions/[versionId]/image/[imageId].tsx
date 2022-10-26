@@ -21,6 +21,7 @@ import {
   ContainerConfig,
   DeleteImageMessage,
   ImageConfigFilterType,
+  imageConfigToJsonContainerConfig,
   PatchImageMessage,
   ProductDetails,
   VersionDetails,
@@ -35,7 +36,7 @@ import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ValidationError } from 'yup'
 
 type ViewState = 'editor' | 'json'
@@ -85,6 +86,10 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
       }
     })
   }
+
+  useEffect(() => {
+    onChange(config)
+  }, [])
 
   const onDelete = () =>
     confirmDelete(() => {
@@ -186,6 +191,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
             editorOptions={editorState}
             onPatch={onChange}
             onParseError={err => setJsonError(err?.message)}
+            convertConfigToJson={imageConfigToJsonContainerConfig}
           />
         </DyoCard>
       )}

@@ -19,15 +19,16 @@ const (
 )
 
 const (
-	defaultCruxAgentGrpcPort = 5000
-	defaultCruxGrpcPort      = 5001
-	defaultCruxUIPort        = 3000
-	defaultTraefikWebPort    = 8000
-	defaultTraefikUIPort     = 8080
-	defaultKratosPublicPort  = 4433
-	defaultKratosAdminPort   = 4434
-	defaultMailSlurperPort   = 4436
-	defaultMailSlurperPort2  = 4437
+	defaultCruxAgentGrpcPort   = 5000
+	defaultCruxGrpcPort        = 5001
+	defaultCruxUIPort          = 3000
+	defaultTraefikWebPort      = 8000
+	defaultTraefikUIPort       = 8080
+	defaultKratosPublicPort    = 4433
+	defaultKratosAdminPort     = 4434
+	defaultMailSlurperSMTPPort = 1025
+	defaultMailSlurperWebPort  = 4436
+	defaultMailSlurperWebPort2 = 4437
 )
 
 // Crux services: db migrations and crux api service
@@ -312,12 +313,16 @@ func GetMailSlurper(settings *Settings) *containerbuilder.DockerContainerBuilder
 		WithForcePullImage().
 		WithPortBindings([]containerbuilder.PortBinding{
 			{
-				ExposedPort: defaultMailSlurperPort,
-				PortBinding: uint16(settings.SettingsFile.MailSlurperPort),
+				ExposedPort: defaultMailSlurperSMTPPort,
+				PortBinding: uint16(settings.SettingsFile.MailSlurperSMTPPort),
 			},
 			{
-				ExposedPort: defaultMailSlurperPort2,
-				PortBinding: uint16(settings.SettingsFile.MailSlurperPort2),
+				ExposedPort: defaultMailSlurperWebPort,
+				PortBinding: uint16(settings.SettingsFile.MailSlurperWebPort),
+			},
+			{
+				ExposedPort: defaultMailSlurperWebPort2,
+				PortBinding: uint16(settings.SettingsFile.MailSlurperWebPort2),
 			},
 		}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
@@ -384,8 +389,8 @@ func GetBasePostgres(settings *Settings) *containerbuilder.DockerContainerBuilde
 		WithImage(PostgresImage).
 		WithNetworks([]string{settings.SettingsFile.Network}).
 		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
-		WithoutConflict().
-		WithForcePullImage()
+		WithForcePullImage().
+		WithoutConflict()
 
 	return basePostgres
 }

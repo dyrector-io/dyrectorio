@@ -2,7 +2,7 @@ import useItemEditorState from '@app/components/editor/use-item-editor-state'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoMessage from '@app/elements/dyo-message'
-import { Instance } from '@app/models'
+import { imageConfigToJsonInstanceConfig, Instance } from '@app/models'
 import useTranslation from 'next-translate/useTranslation'
 import EditImageHeading from '../../images/edit-image-heading'
 import EditImageJson from '../../images/edit-image-json'
@@ -81,7 +81,7 @@ const EditInstanceCard = (props: EditInstanceCardProps) => {
             config={config}
             editorOptions={editorState}
             onPatch={it => actions.onPatch(instance.id, it)}
-            instanceEditor
+            convertConfigToJson={imageConfigToJsonInstanceConfig}
           />
         )}
       </div>

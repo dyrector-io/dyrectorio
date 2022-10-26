@@ -39,11 +39,32 @@ import { timestampToUTC } from '@app/utils'
 export const networkModeToDto = (networkMode?: NetworkMode): ContainerNetworkMode =>
   !networkMode ? 'bridge' : (networkModeToJSON(networkMode).toLocaleLowerCase() as ContainerNetworkMode)
 
-export const deploymentStrategyToDto = (strategy?: DeploymentStrategy): ContainerDeploymentStrategyType =>
-  !strategy ? 'recreate' : (deploymentStrategyToJSON(strategy).toLocaleLowerCase() as ContainerDeploymentStrategyType)
+export const deploymentStrategyToDto = (strategy?: DeploymentStrategy): ContainerDeploymentStrategyType => {
+  switch (strategy) {
+    case null:
+    case undefined:
+      return 'recreate'
+    case DeploymentStrategy.UNKOWN_DEPLOYMENT_STRATEGY:
+      return 'unknown'
+    default:
+      return deploymentStrategyToJSON(strategy).toLocaleLowerCase() as ContainerDeploymentStrategyType
+  }
+}
 
-export const restartPolicyTypeToDto = (policy?: RestartPolicy): ContainerRestartPolicyType =>
-  !policy ? 'unlessStopped' : (restartPolicyToJSON(policy).toLocaleLowerCase() as ContainerRestartPolicyType)
+export const restartPolicyTypeToDto = (policy?: RestartPolicy): ContainerRestartPolicyType => {
+  if (!policy) {
+    return 'unlessStopped'
+  }
+
+  switch (policy) {
+    case RestartPolicy.ON_FAILURE:
+      return 'onFailure'
+    case RestartPolicy.UNLESS_STOPPED:
+      return 'unlessStopped'
+    default:
+      return restartPolicyToJSON(policy).toLocaleLowerCase() as ContainerRestartPolicyType
+  }
+}
 
 export const networkModeToProto = (networkMode?: ContainerNetworkMode): NetworkMode =>
   !networkMode ? undefined : networkModeFromJSON(networkMode.toUpperCase())

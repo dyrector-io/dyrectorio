@@ -103,7 +103,7 @@ export default class ImageMapper {
       ingress: this.toPrismaJson(config.common?.ingress),
       configContainer: this.toPrismaJson(config.common?.configContainer),
       importContainer: this.toPrismaJson(config.common?.importContainer),
-      user: config.common?.user,
+      user: config.common?.user ? config.common.user : null,
       tty: config.common?.TTY,
       ports: this.toPrismaJson(config.common?.ports),
       portRanges: this.toPrismaJson(config.common?.portRanges),

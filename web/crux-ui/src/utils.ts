@@ -385,7 +385,7 @@ export const nullify = <T>(object: T): T => {
 
 export const toNumber = (value: string): number => {
   if (!value) {
-    return undefined
+    return null
   }
 
   return Number.isNaN(value) ? 0 : Number(value)
