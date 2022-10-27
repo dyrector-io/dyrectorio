@@ -41,13 +41,13 @@ func TestMapDeployImage(t *testing.T) {
 			UseSharedEnvs:     false},
 		ContainerConfig: v1.ContainerConfig{
 			ContainerPreName:   "test-prefix",
-			Container:          "test-container",
+			Container:          "test-common-config",
 			Ports:              []builder.PortBinding{{ExposedPort: 0x4d2, PortBinding: 0x1a85}},
 			PortRanges:         []builder.PortRangeBinding{{Internal: builder.PortRange{From: 0x0, To: 0x18}, External: builder.PortRange{From: 0x40, To: 0x80}}},
 			Mounts:             []string(nil),
-			Volumes:            []v1.Volume{{Name: "test-vol", Path: "/Path/to/volume", Size: "512GB", Type: "Persistent", Class: "test-storage-class"}},
+			Volumes:            []v1.Volume{{Name: "test-vol", Path: "/Path/to/volume", Size: "512GB", Type: "666", Class: "test-storage-class"}},
 			Environment:        []string{"ENV1", "VAL1", "ENV2", "VAL2"},
-			Secrets:            map[string]string{"testKey-1": "testValue-1", "testKey-2": "testValue-2"},
+			Secrets:            map[string]string{"secret1": "value1"},
 			RuntimeConfigType:  "",
 			Expose:             true,
 			ExposeTLS:          true,
@@ -73,18 +73,18 @@ func TestMapDeployImage(t *testing.T) {
 					Envs:      map[string]string{"env1": "val1", "env2": "val2"},
 				},
 			},
-			User:    req.GetContainerConfig().User,
+			User:    req.GetCommon().User,
 			Command: []string{"make", "test"},
 			Args:    []string{"--name", "test-arg"},
 			TTY:     true,
 			LogConfig: &container.LogConfig{
-				Type:   "test-lg-driver",
+				Type:   "365",
 				Config: map[string]string{"opt1": "v1", "opt2": "v2"},
 			},
 			RestartPolicy:      "always",
 			NetworkMode:        "BRIDGE",
 			DeploymentStrategy: "RECREATE",
-			HealthCheckConfig: v1.HealthCheckConfig{Port: uint16(req.ContainerConfig.Crane.HealthCheckConfig.Port),
+			HealthCheckConfig: v1.HealthCheckConfig{Port: uint16(*req.Crane.HealthCheckConfig.Port),
 				LivenessProbe:  &v1.Probe{Path: "test-liveness"},
 				ReadinessProbe: &v1.Probe{Path: "test-readiness"},
 				StartupProbe:   &v1.Probe{Path: "test-startup"},
@@ -109,7 +109,7 @@ func TestMapDeployImage(t *testing.T) {
 }
 
 func TestMapPorts(t *testing.T) {
-	ps := []*common.Port{
+	ps := []*agent.Port{
 		{
 			Internal: 1234,
 			External: 5678,
@@ -140,8 +140,8 @@ func TestMapSecrets(t *testing.T) {
 
 	m := mapper.MapSecrets(kvl)
 	expected := map[string]string{
-		"testKey-1": "testValue-1",
-		"testKey-2": "testValue-2",
+		"testKey-1": "testID-1",
+		"testKey-2": "testID-2",
 	}
 
 	assert.Equal(t, expected, m)
@@ -154,6 +154,7 @@ func testDeployRequest() *agent.DeployRequest {
 	upLimit := "5Mi"
 	mntPath := "/path/to/mount"
 	repoPrefix := "repo-prefix"
+	strategy := common.ExposeStrategy(777)
 	b := true
 	return &agent.DeployRequest{
 		Id:            "testID",
@@ -162,33 +163,31 @@ func testDeployRequest() *agent.DeployRequest {
 		Tag:           "test-tag",
 		Registry:      &registry,
 		RuntimeConfig: &runtimeCfg,
-		ContainerConfig: &common.ExplicitContainerConfig{
-			User:         &uid,
-			Command:      []string{"make", "test"},
-			Args:         []string{"--name", "test-arg"},
-			Environments: []string{"ENV1", "VAL1", "ENV2", "VAL2"},
-			Secrets:      testKeyValueList(),
-			TTY:          &b,
-			Ports: []*common.Port{
+		Dagent:        testDagentConfig(),
+		Crane:         testCraneConfig(),
+		Common: &agent.CommonContainerConfig{
+			Name:        "test-common-config",
+			Commands:    []string{"make", "test"},
+			User:        &uid,
+			Args:        []string{"--name", "test-arg"},
+			Environment: []string{"ENV1", "VAL1", "ENV2", "VAL2"},
+			Secrets:     map[string]string{"secret1": "value1"},
+			TTY:         &b,
+			Ports: []*agent.Port{
 				{
 					Internal: 1234,
 					External: 6789,
 				},
 			},
-			PortRanges: []*common.PortRangeBinding{
+			PortRanges: []*agent.PortRangeBinding{
 				{
-					Internal: &common.PortRange{From: 0, To: 24},
-					External: &common.PortRange{From: 64, To: 128},
+					Internal: &agent.PortRange{From: 0, To: 24},
+					External: &agent.PortRange{From: 64, To: 128},
 				},
 			},
-			Volumes:        []*common.Volume{testVolume()},
-			InitContainers: []*common.InitContainer{testInitContainer()},
-			Dagent:         testDagentConfig(),
-			Crane:          testCraneConfig(),
-			Expose: &common.Expose{
-				Public: true,
-				Tls:    true,
-			},
+			Volumes:        []*agent.Volume{testVolume()},
+			InitContainers: []*agent.InitContainer{testInitContainer()},
+			Expose:         &strategy,
 			Ingress: &common.Ingress{
 				Name:        "test-ingress",
 				Host:        "test-host",
@@ -200,34 +199,34 @@ func testDeployRequest() *agent.DeployRequest {
 				Path:      "/path/to/vol",
 				KeepFiles: true,
 			},
-			ImportContainer: &common.ImportContainer{
-				Volume:       "test-volume",
-				Command:      "rm -rf /",
-				Environments: map[string]string{"env1": "val1"},
+			ImportContainer: &agent.ImportContainer{
+				Volume:      "test-volume",
+				Command:     "rm -rf /",
+				Environment: map[string]string{"env1": "val1"},
 			},
 		},
-		RegistryAuth: &agent.DeployRequest_RegistryAuth{
+		RegistryAuth: &agent.RegistryAuth{
 			Name:     "test-name",
 			User:     "test-user",
 			Password: "test-pass",
 			Url:      "https://test-url.com",
 		},
-		InstanceConfig: &agent.DeployRequest_InstanceConfig{
+		InstanceConfig: &agent.InstanceConfig{
 			Prefix:           "test-prefix",
 			MountPath:        &mntPath,
 			RepositoryPrefix: &repoPrefix,
-			Environment: &agent.DeployRequest_InstanceConfig_Environment{
+			Environment: &agent.Environment{
 				Env: []string{"Env1", "Val1", "Env2", "Val2"},
 			},
 		},
 	}
 }
 
-func testVolume() *common.Volume {
+func testVolume() *agent.Volume {
 	size := "512GB"
-	voltype := "Persistent"
+	voltype := common.VolumeType(666)
 	class := "test-storage-class"
-	return &common.Volume{
+	return &agent.Volume{
 		Name:  "test-vol",
 		Path:  "/Path/to/volume",
 		Size:  &size,
@@ -236,16 +235,16 @@ func testVolume() *common.Volume {
 	}
 }
 
-func testInitContainer() *common.InitContainer {
+func testInitContainer() *agent.InitContainer {
 	b := true
-	return &common.InitContainer{
+	return &agent.InitContainer{
 		Name:            "test-init",
 		Image:           "test-image",
 		Command:         []string{"mybin", "run"},
 		Args:            []string{"--verbose"},
-		Environments:    map[string]string{"env1": "val1", "env2": "val2"},
+		Environment:     map[string]string{"env1": "val1", "env2": "val2"},
 		UseParentConfig: &b,
-		Volumes: []*common.VolumeLink{
+		Volumes: []*agent.VolumeLink{
 			{
 				Name: "test-vol-link",
 				Path: "/path/to/mount",
@@ -254,28 +253,24 @@ func testInitContainer() *common.InitContainer {
 	}
 }
 
-func testKeyValueList() *common.KeyValueList {
-	return &common.KeyValueList{
-		Data: []*common.UniqueKeyValue{
-			{
-				Id:    "testID-1",
-				Key:   "testKey-1",
-				Value: "testValue-1",
-			},
-			{
-				Id:    "testID-2",
-				Key:   "testKey-2",
-				Value: "testValue-2",
-			},
+func testKeyValueList() []*common.UniqueKey {
+	return []*common.UniqueKey{
+		{
+			Id:  "testID-1",
+			Key: "testKey-1",
+		},
+		{
+			Id:  "testID-2",
+			Key: "testKey-2",
 		},
 	}
 }
 
-func testDagentConfig() *common.DagentContainerConfig {
-	return &common.DagentContainerConfig{
+func testDagentConfig() *agent.DagentContainerConfig {
+	return &agent.DagentContainerConfig{
 		RestartPolicy: common.RestartPolicy_ALWAYS.Enum(),
-		LogConfig: &common.LogConfig{
-			Driver:  "test-lg-driver",
+		LogConfig: &agent.LogConfig{
+			Driver:  365,
 			Options: map[string]string{"opt1": "v1", "opt2": "v2"},
 		},
 		NetworkMode: common.NetworkMode_BRIDGE.Enum(),
@@ -283,7 +278,7 @@ func testDagentConfig() *common.DagentContainerConfig {
 	}
 }
 
-func testCraneConfig() *common.CraneContainerConfig {
+func testCraneConfig() *agent.CraneContainerConfig {
 	b := true
 	cpuReq := "100m"
 	memReq := "64Mi"
@@ -293,7 +288,8 @@ func testCraneConfig() *common.CraneContainerConfig {
 	lProbe := "test-liveness"
 	rProbe := "test-readiness"
 	sProbe := "test-startup"
-	return &common.CraneContainerConfig{
+	port := int32(1234)
+	return &agent.CraneContainerConfig{
 		CustomHeaders:      []string{"header1", "value1", "header2", "value2"},
 		ExtraLBAnnotations: map[string]string{"annotation1": "value1"},
 		ProxyHeaders:       &b,
@@ -309,7 +305,7 @@ func testCraneConfig() *common.CraneContainerConfig {
 			},
 		},
 		HealthCheckConfig: &common.HealthCheckConfig{
-			Port:           1234,
+			Port:           &port,
 			LivenessProbe:  &lProbe,
 			ReadinessProbe: &rProbe,
 			StartupProbe:   &sProbe,
