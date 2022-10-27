@@ -36,6 +36,7 @@ const (
 	ContainerNetDriver = "bridge"
 	PodmanHost         = "host.containers.internal"
 	DockerHost         = "host.docker.internal"
+	UpCommand          = "up"
 )
 
 type traefikFileProviderData struct {
@@ -52,7 +53,7 @@ func ProcessCommand(settings *Settings) {
 		Containers: settings.Containers,
 	}
 	switch settings.Command {
-	case "up":
+	case UpCommand:
 		PrintInfo(settings)
 		settings = CheckAndUpdatePorts(settings)
 		SaveSettings(settings)
