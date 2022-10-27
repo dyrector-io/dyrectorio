@@ -210,11 +210,16 @@ export type JsonContainerConfigPortRange = Omit<ContainerConfigPortRange, 'id'>
 export type JsonContainerConfigPort = Omit<ContainerConfigPort, 'id'>
 export type JsonContainerConfigVolume = Omit<ContainerConfigVolume, 'id'>
 
+export type JsonContainerConfigSecret = {
+  key: string
+  required?: boolean
+}
+
 export type JsonContainerConfig = {
   // common
   name?: string
   environment?: JsonKeyValue
-  secrets?: string[]
+  secrets?: JsonContainerConfigSecret[]
   ingress?: ContainerConfigIngress
   expose?: ContainerConfigExposeStrategy
   user?: number
@@ -363,7 +368,7 @@ export const imageConfigToJsonContainerConfig = (imageConfig: ContainerConfig): 
     extraLBAnnotations: keyValueArrayToJson(imageConfig.extraLBAnnotations),
     environment: keyValueArrayToJson(imageConfig.environment),
     capabilities: keyValueArrayToJson(imageConfig.capabilities),
-    secrets: imageConfig.secrets?.map(it => it.key),
+    secrets: imageConfig.secrets?.map(it => ({ key: it.key, required: it.required })),
     portRanges: imageConfig.portRanges?.map(it => simplify(it)),
     ports: imageConfig.ports?.map(it => simplify(it)),
     logConfig: imageConfig.logConfig
@@ -550,13 +555,13 @@ export const mergeJsonConfigToContainerConfig = (
 
   if ((json as JsonContainerConfig).secrets) {
     config.secrets = (json as JsonContainerConfig).secrets.map(it => {
-      const prev = serialized.secrets?.map(sit => sit.key).indexOf(it)
+      const prev = serialized.secrets?.map(sit => sit.key).indexOf(it.key)
 
       return {
         id: prev !== -1 ? serialized.secrets[prev].id : uuid(),
-        key: it,
+        key: it.key,
         value: '',
-        required: false,
+        required: it.required ?? false,
       }
     })
   }
