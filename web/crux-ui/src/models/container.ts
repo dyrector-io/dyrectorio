@@ -14,10 +14,6 @@ export type UniqueKey = {
   key: string
 }
 
-export type UniqueSecretKey = UniqueKey & {
-  required?: boolean
-}
-
 export type UniqueKeyValue = {
   id: string
   key: string
@@ -29,8 +25,13 @@ export type KeyValue = {
   value: string
 }
 
-export type UniqueKeySecretValue = UniqueKeyValue & {
-  required?: boolean
+export type UniqueSecretKey = UniqueKeyValue & {
+  required: boolean
+}
+
+export type UniqueSecretKeyValue = UniqueKeyValue & {
+  value: string
+  required: boolean
   encrypted?: boolean
 }
 
@@ -155,7 +156,7 @@ export type ContainerConfig = {
   // common
   name?: string
   environment?: UniqueKeyValue[]
-  secrets?: UniqueKeyValue[]
+  secrets?: UniqueSecretKeyValue[]
   ingress?: ContainerConfigIngress
   expose?: ContainerConfigExposeStrategy
   user?: number
@@ -268,10 +269,6 @@ const overrideKeyValues = (weak: UniqueKeyValue[], strong: UniqueKeyValue[]): Un
   return [...(weak?.filter(it => !overridenKeys.has(it.key)) ?? []), ...(strong ?? [])]
 }
 
-export const expandSecretKeyToSecretKeyValues = (weak: UniqueSecretKey[]): UniqueKeySecretValue[] => [
-  ...weak.map(it => ({ id: it.id, key: it.key, value: '', required: it.required })),
-]
-
 const overridePorts = (weak: ContainerConfigPort[], strong: ContainerConfigPort[]): ContainerConfigPort[] => {
   const overridenPorts: Set<number> = new Set(strong?.map(it => it.internal))
   return [...(weak?.filter(it => !overridenPorts.has(it.internal)) ?? []), ...(strong ?? [])]
@@ -300,9 +297,7 @@ export const mergeConfigs = (
     name: instanceConfig.name || imageConfig.name,
     environment: envs,
     secrets:
-      instanceConfig?.secrets && instanceConfig.secrets.length > 0
-        ? instanceConfig.secrets
-        : expandSecretKeyToSecretKeyValues(imageConfig.secrets),
+      instanceConfig?.secrets && instanceConfig.secrets.length > 0 ? instanceConfig.secrets : imageConfig.secrets,
     ports: overridePorts(imageConfig?.ports, instanceConfig.ports),
     user: override(imageConfig?.user, instanceConfig.user),
     tty: override(imageConfig?.tty, instanceConfig.tty),
@@ -562,6 +557,7 @@ export const mergeJsonConfigToContainerConfig = (
         id: prev !== -1 ? serialized.secrets[prev].id : uuid(),
         key: it,
         value: '',
+        required: false,
       }
     })
   }

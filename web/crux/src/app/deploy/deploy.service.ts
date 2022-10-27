@@ -25,7 +25,7 @@ import {
   UpdateEntityResponse,
 } from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
-import { ContainerConfigData } from 'src/shared/model'
+import { ContainerConfigData, UniqueSecretKeyValue, UniqueSecretKey } from 'src/shared/model'
 import AgentService from '../agent/agent.service'
 import ImageMapper, { ImageDetails } from '../image/image.mapper'
 import ImageService from '../image/image.service'
@@ -593,7 +593,7 @@ export default class DeployService {
       const imageSecrets = (it.image.config.secrets as UniqueSecretKey[]) ?? []
       const requiredSecrets = imageSecrets.filter(imageSecret => imageSecret.required).map(secret => secret.key)
 
-      const instanceSecrets = (it.config?.secrets as UniqueKeySecretValue[]) ?? []
+      const instanceSecrets = (it.config?.secrets as UniqueSecretKeyValue[]) ?? []
       const hasSecrets = requiredSecrets.every(requiredSecret => {
         const instanceSecret = instanceSecrets.find(secret => secret.key === requiredSecret)
         if (!instanceSecret) {

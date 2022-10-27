@@ -955,19 +955,16 @@ export interface UniqueKeyValue {
   value: string
 }
 
-export interface UniqueKeySecretValue {
+export interface UniqueSecretKeyValue {
   id: string
   key: string
   value: string
+  required: boolean
   encrypted?: boolean | undefined
 }
 
 export interface KeyValueList {
   data: UniqueKeyValue[]
-}
-
-export interface SecretList {
-  data: UniqueKeySecretValue[]
 }
 
 export interface DagentContainerConfig {
@@ -1001,7 +998,7 @@ export interface CommonContainerConfig {
   commands: UniqueKey[]
   args: UniqueKey[]
   environment: UniqueKeyValue[]
-  secrets: UniqueKeyValue[]
+  secrets: UniqueSecretKeyValue[]
   initContainers: InitContainer[]
 }
 
@@ -2742,24 +2739,31 @@ export const UniqueKeyValue = {
   },
 }
 
-const baseUniqueKeySecretValue: object = { id: '', key: '', value: '' }
+const baseUniqueSecretKeyValue: object = {
+  id: '',
+  key: '',
+  value: '',
+  required: false,
+}
 
-export const UniqueKeySecretValue = {
-  fromJSON(object: any): UniqueKeySecretValue {
-    const message = { ...baseUniqueKeySecretValue } as UniqueKeySecretValue
+export const UniqueSecretKeyValue = {
+  fromJSON(object: any): UniqueSecretKeyValue {
+    const message = { ...baseUniqueSecretKeyValue } as UniqueSecretKeyValue
     message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
     message.key = object.key !== undefined && object.key !== null ? String(object.key) : ''
     message.value = object.value !== undefined && object.value !== null ? String(object.value) : ''
+    message.required = object.required !== undefined && object.required !== null ? Boolean(object.required) : false
     message.encrypted =
       object.encrypted !== undefined && object.encrypted !== null ? Boolean(object.encrypted) : undefined
     return message
   },
 
-  toJSON(message: UniqueKeySecretValue): unknown {
+  toJSON(message: UniqueSecretKeyValue): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
     message.key !== undefined && (obj.key = message.key)
     message.value !== undefined && (obj.value = message.value)
+    message.required !== undefined && (obj.required = message.required)
     message.encrypted !== undefined && (obj.encrypted = message.encrypted)
     return obj
   },
@@ -2778,26 +2782,6 @@ export const KeyValueList = {
     const obj: any = {}
     if (message.data) {
       obj.data = message.data.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
-    } else {
-      obj.data = []
-    }
-    return obj
-  },
-}
-
-const baseSecretList: object = {}
-
-export const SecretList = {
-  fromJSON(object: any): SecretList {
-    const message = { ...baseSecretList } as SecretList
-    message.data = (object.data ?? []).map((e: any) => UniqueKeySecretValue.fromJSON(e))
-    return message
-  },
-
-  toJSON(message: SecretList): unknown {
-    const obj: any = {}
-    if (message.data) {
-      obj.data = message.data.map(e => (e ? UniqueKeySecretValue.toJSON(e) : undefined))
     } else {
       obj.data = []
     }
@@ -2922,7 +2906,7 @@ export const CommonContainerConfig = {
     message.commands = (object.commands ?? []).map((e: any) => UniqueKey.fromJSON(e))
     message.args = (object.args ?? []).map((e: any) => UniqueKey.fromJSON(e))
     message.environment = (object.environment ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
-    message.secrets = (object.secrets ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
+    message.secrets = (object.secrets ?? []).map((e: any) => UniqueSecretKeyValue.fromJSON(e))
     message.initContainers = (object.initContainers ?? []).map((e: any) => InitContainer.fromJSON(e))
     return message
   },
@@ -2970,7 +2954,7 @@ export const CommonContainerConfig = {
       obj.environment = []
     }
     if (message.secrets) {
-      obj.secrets = message.secrets.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
+      obj.secrets = message.secrets.map(e => (e ? UniqueSecretKeyValue.toJSON(e) : undefined))
     } else {
       obj.secrets = []
     }

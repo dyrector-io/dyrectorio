@@ -1,6 +1,6 @@
 import { IMAGE_WS_REQUEST_DELAY } from '@app/const'
 import { useThrottling } from '@app/hooks/use-throttleing'
-import { ContainerConfig, UniqueKeyValue } from '@app/models'
+import { ContainerConfig, UniqueKeyValue, UniqueSecretKeyValue } from '@app/models'
 
 import MultiInput from '@app/components/editor/multi-input'
 import { EditorStateOptions } from '@app/components/editor/use-editor-state'
@@ -54,7 +54,7 @@ const EditInstanceConfig = (props: EditInstanceProps) => {
       environment,
     })
 
-  const onSecretSubmit = (secrets: UniqueKeyValue[]) =>
+  const onSecretSubmit = (secrets: UniqueSecretKeyValue[]) =>
     sendPatchImmediately({
       secrets,
     })
@@ -72,7 +72,9 @@ const EditInstanceConfig = (props: EditInstanceProps) => {
         disabled={disabled}
         label={t('containerName').toUpperCase()}
         labelClassName="mt-2 mb-2.5"
-        className="mb-4 ml-2 w-5/12"
+        className="mb-4 ml-2"
+        containerClassName="w-5/12"
+        grow
         editorOptions={editorOptions}
         value={config?.name}
         onPatch={onContainerNameChange}
@@ -91,7 +93,7 @@ const EditInstanceConfig = (props: EditInstanceProps) => {
         disabled={disabled || !publicKey}
         heading={t('secrets').toUpperCase()}
         publicKey={publicKey}
-        items={(config.secrets as UniqueKeyValue[]) ?? []}
+        items={(config.secrets as UniqueSecretKeyValue[]) ?? []}
         definedSecrets={definedSecrets}
         onSubmit={onSecretSubmit}
       />

@@ -390,24 +390,3 @@ export const toNumber = (value: string): number => {
 
   return Number.isNaN(value) ? 0 : Number(value)
 }
-
-export const startDeployment = async (
-  router: NextRouter,
-  productId: string,
-  versionId: string,
-  deploymentId: string,
-) => {
-  const res = await fetch(deploymentPreDeployUrl(productId, versionId, deploymentId))
-
-  if (res.status === 412) {
-    const json = await res.json()
-    toast.error(json.description)
-    return
-  }
-
-  if (!res.ok) {
-    return
-  }
-
-  router.push(deploymentDeployUrl(productId, versionId, deploymentId))
-}

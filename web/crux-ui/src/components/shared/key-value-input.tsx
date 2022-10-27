@@ -136,8 +136,8 @@ const KeyValueInput = (props: KeyValueInputProps) => {
     const valueId = `${entry.id}-value`
 
     return (
-      <div key={entry.id} className="flex flex-row flex-grow p-1">
-        <div className="w-5/12 ml-2">
+      <div key={entry.id} className="flex flex-row flex-grow p-2">
+        <div className="basis-5/12">
           <MultiInput
             key={keyId}
             id={keyId}
@@ -154,7 +154,7 @@ const KeyValueInput = (props: KeyValueInputProps) => {
           />
         </div>
 
-        <div className="w-7/12 ml-2">
+        <div className="basis-7/12 pl-2">
           <MultiInput
             key={valueId}
             id={valueId}

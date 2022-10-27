@@ -16,7 +16,7 @@ export type UniqueSecretKey = UniqueKey & {
   required: boolean
 }
 
-export type UniqueKeySecretValue = UniqueKeyValue & {
+export type UniqueSecretKeyValue = UniqueKeyValue & {
   required: boolean
   encrypted?: boolean
 }

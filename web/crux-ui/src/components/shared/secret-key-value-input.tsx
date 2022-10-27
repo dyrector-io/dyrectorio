@@ -1,7 +1,7 @@
 import DyoButton from '@app/elements/dyo-button'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
-import { UniqueKeySecretValue } from '@app/models'
+import { UniqueSecretKeyValue } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
@@ -14,18 +14,18 @@ interface SecretKeyValueInputProps {
   className?: string
   heading?: string
   publicKey?: string
-  items: UniqueKeySecretValue[]
+  items: UniqueSecretKeyValue[]
   definedSecrets?: string[]
-  onSubmit: (items: UniqueKeySecretValue[]) => void
+  onSubmit: (items: UniqueSecretKeyValue[]) => void
 }
 
 const EMPTY_SECRET_KEY_VALUE_PAIR = {
   id: uuid(),
   key: '',
   value: '',
-} as UniqueKeySecretValue
+} as UniqueSecretKeyValue
 
-type KeyValueElement = UniqueKeySecretValue & {
+type KeyValueElement = UniqueSecretKeyValue & {
   message?: string
   present?: boolean
 }
@@ -43,12 +43,12 @@ type KeyValueInputActionType = 'merge-items' | 'set-items' | 'remove-item'
 
 type KeyValueInputAction = {
   type: KeyValueInputActionType
-  items: UniqueKeySecretValue[]
+  items: UniqueSecretKeyValue[]
 }
 
-const isCompletelyEmpty = (it: UniqueKeySecretValue) => it.key.trim().length < 1 && it.value.trim().length < 1
+const isCompletelyEmpty = (it: UniqueSecretKeyValue) => it.key.trim().length < 1 && it.value.trim().length < 1
 
-const pushEmptyLineIfNecessary = (items: UniqueKeySecretValue[]) => {
+const pushEmptyLineIfNecessary = (items: UniqueSecretKeyValue[]) => {
   if (items.length < 1 || (items[items.length - 1].key?.trim() ?? '') !== '') {
     items.push({
       ...EMPTY_SECRET_KEY_VALUE_PAIR,
@@ -57,7 +57,7 @@ const pushEmptyLineIfNecessary = (items: UniqueKeySecretValue[]) => {
   }
 }
 
-const reducer = (state: UniqueKeySecretValue[], action: KeyValueInputAction): UniqueKeySecretValue[] => {
+const reducer = (state: UniqueSecretKeyValue[], action: KeyValueInputAction): UniqueSecretKeyValue[] => {
   const { type } = action
 
   if (type === 'set-items') {
@@ -102,7 +102,7 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
   const [state, dispatch] = useReducer(reducer, items)
   const [changed, setChanged] = useState<boolean>(false)
 
-  const stateToElements = (itemArray: UniqueKeySecretValue[], secrets: string[]) => {
+  const stateToElements = (itemArray: UniqueSecretKeyValue[], secrets: string[]) => {
     const result = new Array<KeyValueElement>()
 
     itemArray.forEach(item =>
@@ -158,7 +158,7 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
 
     newItems = await Promise.all(
       [...newItems].map(
-        async (it): Promise<UniqueKeySecretValue> => ({
+        async (it): Promise<UniqueSecretKeyValue> => ({
           ...it,
           value: await encryptWithPGP(it.value, publicKey),
           encrypted: true,
@@ -208,47 +208,46 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
     const { id, key, value, message, encrypted, required } = entry
 
     return (
-      <div key={entry.id} className="flex flex-row flex-grow p-1">
-        {!isCompletelyEmpty(entry) && (
-          <div className="mr-2 flex flex-row">
-            <Image className="mr-2" src={elementSecretStatus(entry.present)} width={16} height={16} />
-          </div>
-        )}
-
-        <div className={clsx('w-5/12 relative', isCompletelyEmpty(entry) && 'ml-[24px]')}>
+      <div key={id} className="flex-1 p-1 flex flex-row">
+        <div className="basis-5/12 relative">
           {required && (
             <div className="absolute right-0 h-full flex mr-2">
               <Image src="/asterisk.svg" width={12} height={12} />
             </div>
           )}
-          <DyoInput
-            key={`${id}-key`}
-            disabled={disabled || required}
-            className="w-full mr-2"
-            grow
-            placeholder={t('key')}
-            value={key}
-            message={message}
-            onChange={e => onChange(index, e.target.value, value)}
-          />
+          <div className="flex flex-row">
+            <div className="mr-2 flex flex-row basis-[16px]">
+              {!isCompletelyEmpty(entry) && (
+                <Image className="mr-2" src={elementSecretStatus(entry.present)} width={16} height={16} />
+              )}
+            </div>
+            <DyoInput
+              key={`${id}-key`}
+              containerClassName="basis-full"
+              disabled={disabled || required}
+              grow
+              placeholder={t('key')}
+              value={key}
+              message={message}
+              onChange={e => onChange(index, e.target.value, value)}
+            />
+          </div>
         </div>
-
-        <div className="w-7/12 ml-2 flex">
+        <div className="basis-7/12 flex flex-row pl-2">
           <DyoInput
             key={`${id}-value`}
             disabled={disabled || encrypted}
-            className="flex-auto w-full"
+            containerClassName="basis-full"
             type={encrypted ? 'password' : 'text'}
             grow
             placeholder={t('value')}
             value={value}
             onChange={e => onChange(index, key, e.target.value)}
           />
-
           {encrypted && disabled !== true && (
             <div
               onClick={() => onRemoveOrClear(index)}
-              className="flex-initial cursor-pointer ml-2 h-11 w-11 ring-2 rounded-md focus:outline-none focus:dark text-bright-muted ring-light-grey-muted flex justify-center"
+              className="basis-12 flex-initial cursor-pointer ml-2 w-12 ring-2 rounded-md focus:outline-none focus:dark text-bright-muted ring-light-grey-muted flex justify-center"
             >
               <Image
                 className="text-bright-muted"
@@ -267,7 +266,7 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
   return (
     <form className={clsx(className, 'flex flex-col max-h-128 overflow-y-auto')}>
       {!heading ? null : (
-        <DyoHeading element="h6" className="text-bright mt-4 mb-2">
+        <DyoHeading element="h6" className="text-bright mt-4 mb-2 text-light-eased">
           {heading}
         </DyoHeading>
       )}
