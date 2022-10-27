@@ -6,7 +6,7 @@ import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
 import { createMessage, encrypt, readKey } from 'openpgp'
-import { useEffect, useReducer, useState } from 'react'
+import { useEffect, useMemo, useReducer, useState } from 'react'
 import { v4 as uuid } from 'uuid'
 
 interface SecretKeyValueInputProps {
@@ -15,6 +15,7 @@ interface SecretKeyValueInputProps {
   heading?: string
   publicKey?: string
   items: UniqueSecretKeyValue[]
+  unique?: boolean
   definedSecrets?: string[]
   onSubmit: (items: UniqueSecretKeyValue[]) => void
 }
@@ -97,7 +98,7 @@ const reducer = (state: UniqueSecretKeyValue[], action: KeyValueInputAction): Un
 const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
   const { t } = useTranslation('common')
 
-  const { heading, disabled, publicKey, items, className, definedSecrets, onSubmit: propsOnSubmit } = props
+  const { heading, disabled, publicKey, items, className, definedSecrets, unique, onSubmit: propsOnSubmit } = props
 
   const [state, dispatch] = useReducer(reducer, items)
   const [changed, setChanged] = useState<boolean>(false)
@@ -105,14 +106,16 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
   const stateToElements = (itemArray: UniqueSecretKeyValue[], secrets: string[]) => {
     const result = new Array<KeyValueElement>()
 
-    itemArray.forEach(item =>
+    itemArray.forEach(item => {
+      const repeating = unique && result.find(it => it.key === item.key)
+
       result.push({
         ...item,
         encrypted: item.encrypted ?? false,
-        message: result.find(it => it.key === item.key) ? t('keyMustUnique') : null,
+        message: repeating && !isCompletelyEmpty(item) ? t('keyMustUnique') : null,
         present: isCompletelyEmpty(item) || secrets === undefined ? undefined : secrets.includes(item.key),
-      }),
-    )
+      })
+    })
 
     return result as KeyValueElement[]
   }
@@ -124,6 +127,12 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
     })
     setChanged(false)
   }, [items])
+
+  const duplicates = useMemo(() => {
+    const keys = state.map(it => it.key)
+
+    return keys.some((item, index) => keys.indexOf(item) !== index)
+  }, [state])
 
   const onChange = async (index: number, key: string, value: string) => {
     let newItems = [...state]
@@ -154,6 +163,10 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
   }
 
   const onSubmit = async () => {
+    if (duplicates) {
+      return
+    }
+
     let newItems = [...state].filter(it => !isCompletelyEmpty(it))
 
     newItems = await Promise.all(
@@ -187,7 +200,9 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
       newItems.splice(index, 1)
     }
 
-    propsOnSubmit(newItems)
+    if (!duplicates) {
+      propsOnSubmit(newItems)
+    }
     dispatch({
       type: 'set-items',
       items: newItems,
@@ -275,7 +290,7 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
         <DyoButton className="px-10 mr-1" disabled={!changed} secondary onClick={onDiscard}>
           {t('common:discard')}
         </DyoButton>
-        <DyoButton className="px-10 ml-1" disabled={!changed} onClick={onSubmit}>
+        <DyoButton className="px-10 ml-1" disabled={!changed || duplicates} onClick={onSubmit}>
           {t('common:save')}
         </DyoButton>
       </div>

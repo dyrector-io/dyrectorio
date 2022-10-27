@@ -88,13 +88,15 @@ const SecretKeyInput = (props: SecretKeyInputProps) => {
   const stateToElements = (itemArray: UniqueSecretKey[]) => {
     const result: SecretElement[] = []
 
-    itemArray.forEach(item =>
+    itemArray.forEach(item => {
+      const repeating = unique && result.find(it => it.key === item.key)
+
       result.push({
         ...item,
         required: item.required ?? false,
-        message: result.find(it => it.key === item.key) && unique ? t('keyMustUnique') : null,
-      }),
-    )
+        message: repeating && !isCompletelyEmpty(item) ? t('keyMustUnique') : null,
+      })
+    })
 
     return result
   }
@@ -112,8 +114,11 @@ const SecretKeyInput = (props: SecretKeyInputProps) => {
     newItems[index] = item
 
     const updatedItems = newItems.filter(it => !isCompletelyEmpty(it))
+    const keys = updatedItems.map(it => it.key)
 
-    propsOnChange(updatedItems)
+    if (keys.every((it, itIndex) => keys.indexOf(it) === itIndex)) {
+      propsOnChange(updatedItems)
+    }
     dispatch(setItems(newItems))
   }
 
@@ -133,6 +138,7 @@ const SecretKeyInput = (props: SecretKeyInputProps) => {
             disabled={disabled}
             editorOptions={editorOptions}
             grow
+            inline
             placeholder={keyPlaceholder}
             value={key ?? ''}
             message={message}

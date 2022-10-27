@@ -82,6 +82,7 @@ const EditImageConfig = (props: EditImageConfigProps) => {
 
       <SecretKeyInput
         disabled={disabled}
+        unique
         className="mt-2"
         label={t('secrets').toUpperCase()}
         items={config.secrets ?? []}
