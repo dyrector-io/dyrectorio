@@ -280,7 +280,7 @@ func PodmanInfo() {
 }
 
 func DisabledServiceSettings(settings *Settings) *Settings {
-	if settings.Containers.Crux.Disabled && settings.Command == "up" {
+	if settings.Containers.Crux.Disabled && settings.Command == UpCommand {
 		log.Info().Msg("Do not forget to add your DATABASE_URL to your crux environment.")
 		log.Info().Msgf("DATABASE_URL=postgresql://%s:%s@localhost:%d/%s?schema=public",
 			settings.SettingsFile.CruxPostgresUser,
