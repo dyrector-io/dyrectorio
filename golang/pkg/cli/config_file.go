@@ -299,7 +299,7 @@ func DisabledServiceSettings(settings *Settings) *Settings {
 }
 
 func PrintInfo(settings *Settings) {
-	log.Warn().Msg("🚫 Use the CLI tool only for NON-PRODUCTION purpose.")
+	log.Warn().Msg("🦩🦩🦩 Use the CLI tool only for NON-PRODUCTION purpose. 🦩🦩🦩")
 	log.Info().Str("path", settings.SettingsFilePath).Msg("Platform configuration file location")
 }
 
