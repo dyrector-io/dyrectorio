@@ -30,7 +30,6 @@ export type UniqueSecretKey = UniqueKeyValue & {
 }
 
 export type UniqueSecretKeyValue = UniqueKeyValue & {
-  value: string
   required: boolean
   encrypted?: boolean
 }
