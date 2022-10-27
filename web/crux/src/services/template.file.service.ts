@@ -2,9 +2,8 @@ import { Injectable, Logger } from '@nestjs/common'
 import { readdir, readFileSync } from 'fs'
 import { join, parse } from 'path'
 import { cwd } from 'process'
-import { CraneContainerConfig, DagentContainerConfig, ExplicitContainerConfig } from 'src/grpc/protobuf/proto/common'
-import { CreateRegistryRequest, TemplateResponse } from 'src/grpc/protobuf/proto/crux'
-import { UniqueKeyValue } from 'src/shared/model'
+import { CreateRegistryRequest, Port, TemplateResponse, Volume } from 'src/grpc/protobuf/proto/crux'
+import { ContainerConfigData, UniqueKeyValue } from 'src/shared/model'
 import { templateSchema } from 'src/shared/validation'
 import { promisify } from 'util'
 import * as yup from 'yup'
@@ -20,17 +19,22 @@ export interface TemplateDetail {
 
 export type TemplateRegistry = Omit<CreateRegistryRequest, 'accessedBy'>
 
-export type TemplateCraneConfig = Omit<CraneContainerConfig, 'deploymentStatregy'> & {
-  deploymentStatregy: string
+type TemplateVolume = Omit<Volume, 'type'> & {
+  type: string
 }
-export type TemplateDagentConfig = Omit<DagentContainerConfig, 'restartPolicy' | 'networkMode'> & {
+
+type TemplateConfig = {
+  deploymentStatregy: string
   restartPolicy: string
   networkMode: string
+  expose: string
+  networks: string[]
+  volumes: TemplateVolume[]
+  ports: Port[]
+  environment: UniqueKeyValue[]
 }
-export type TemplateContainerConfig = Omit<ExplicitContainerConfig, 'crane' | 'dagent'> & {
-  crane?: TemplateCraneConfig
-  dagent?: TemplateDagentConfig
-}
+
+export type TemplateContainerConfig = Omit<ContainerConfigData, keyof TemplateConfig> & TemplateConfig
 
 export interface TemplateImage {
   name: string

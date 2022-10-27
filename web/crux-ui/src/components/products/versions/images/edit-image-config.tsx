@@ -1,14 +1,14 @@
-import { IMAGE_WS_REQUEST_DELAY } from '@app/const'
-import { useThrottling } from '@app/hooks/use-throttleing'
-import { ContainerConfig, Environment, Secrets } from '@app/models'
-
 import MultiInput from '@app/components/editor/multi-input'
 import { EditorStateOptions } from '@app/components/editor/use-editor-state'
-import SecretKeyOnlyInput from '@app/components/shared/secret-key-input'
+import KeyOnlyInput from '@app/components/shared/key-only-input'
+import KeyValueInput from '@app/components/shared/key-value-input'
+import { IMAGE_WS_REQUEST_DELAY } from '@app/const'
+import { useThrottling } from '@app/hooks/use-throttleing'
+import { ContainerConfig } from '@app/models'
+import { UniqueKeyValue } from '@app/models/grpc/protobuf/proto/crux'
 import { sensitiveKeyRule } from '@app/validations/container'
 import useTranslation from 'next-translate/useTranslation'
 import { useRef } from 'react'
-import KeyValueInput from '../../../shared/key-value-input'
 
 interface EditImageConfigProps {
   disabled?: boolean
@@ -40,12 +40,12 @@ const EditImageConfig = (props: EditImageConfigProps) => {
     })
   }
 
-  const onEnvChange = (environment: Environment) =>
+  const onEnvChange = (environment: UniqueKeyValue[]) =>
     sendPatch({
       environment,
     })
 
-  const onSecretsChange = (secrets: Secrets) => {
+  const onSecretChange = (secrets: UniqueKeyValue[]) => {
     sendPatch({
       secrets,
     })
@@ -71,19 +71,22 @@ const EditImageConfig = (props: EditImageConfigProps) => {
 
       <KeyValueInput
         disabled={disabled}
-        heading={t('environment').toUpperCase()}
-        editorOptions={editorOptions}
+        label={t('environment').toUpperCase()}
         items={config?.environment ?? []}
+        editorOptions={editorOptions}
         onChange={onEnvChange}
         hint={{ hintValidation: sensitiveKeyRule, hintText: t('sensitiveKey') }}
       />
 
-      <SecretKeyOnlyInput
+      <KeyOnlyInput
         disabled={disabled}
-        heading={t('secrets').toUpperCase()}
+        className="mt-2"
+        label={t('secrets').toUpperCase()}
         items={config.secrets ?? []}
+        keyPlaceholder={t('common:key')}
+        description={t('common:cannotDefineSecretsHere')}
+        onChange={it => onSecretChange(it.map(sit => ({ ...sit, value: '' })))}
         editorOptions={editorOptions}
-        onChange={onSecretsChange}
       />
     </>
   )

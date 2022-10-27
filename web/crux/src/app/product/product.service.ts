@@ -1,11 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { ProductTypeEnum, VersionTypeEnum } from '@prisma/client'
-import PrismaService from 'src/services/prisma.service'
+import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
   AccessRequest,
   CreateEntityResponse,
   CreateProductRequest,
-  Empty,
   IdRequest,
   ProductDetailsReponse,
   ProductListResponse,
@@ -13,6 +12,7 @@ import {
   UpdateProductRequest,
 } from 'src/grpc/protobuf/proto/crux'
 import { SIMPLE_PRODUCT_VERSION_NAME } from 'src/shared/const'
+import PrismaService from 'src/services/prisma.service'
 import TeamRepository from '../team/team.repository'
 import ProductMapper from './product.mapper'
 

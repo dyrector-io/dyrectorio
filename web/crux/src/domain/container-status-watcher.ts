@@ -1,7 +1,7 @@
 import { finalize, Observable, Subject } from 'rxjs'
 import { PreconditionFailedException } from 'src/exception/errors'
 import { AgentCommand } from 'src/grpc/protobuf/proto/agent'
-import { ContainerStateListMessage } from 'src/grpc/protobuf/proto/crux'
+import { ContainerStateListMessage } from 'src/grpc/protobuf/proto/common'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 
 export type ContainerStatusStreamCompleter = Subject<unknown>

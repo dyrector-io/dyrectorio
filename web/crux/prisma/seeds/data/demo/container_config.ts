@@ -1,17 +1,14 @@
-import { ContainerConfig } from '@prisma/client'
+import { ContainerConfig, Prisma } from '@prisma/client'
 import { ImageName } from './images'
 import { v4 as uuidv4 } from 'uuid'
 
 export const buildContainerConfig = (imageId: string, name: ImageName) => {
   const imageConfig = mapConfigToImage(name)
   return {
+    ...imageConfig,
     name: name,
-    capabilities: [],
-    secrets: [],
-    config: imageConfig.config,
-    environment: imageConfig.environment,
-    imageId: imageId,
-  } as Omit<ContainerConfig, 'id'>
+    image: { connect: { id: imageId } },
+  } as Omit<Prisma.ContainerConfigCreateInput, 'id'>
 }
 
 type Environment = {
@@ -20,13 +17,7 @@ type Environment = {
   value: string
 }
 
-enum NetworkMode {
-  NONE = 1,
-  HOST = 2,
-  BRIDGE = 3,
-}
-
-const dagentNetwork = { networkMode: NetworkMode.BRIDGE, networks: ['googlemicroservicesdemo'] }
+const dagentNetwork = { networkMode: 'bridge', networks: ['googlemicroservicesdemo'] }
 
 const mapConfigToImage = (name: ImageName) => {
   const config =
@@ -37,12 +28,14 @@ const mapConfigToImage = (name: ImageName) => {
             { key: 'DISABLE_STATS', value: '1' },
             { key: 'DISABLE_TRACING', value: '1' },
           ] as Environment[],
-          config: { ports: [{ external: 9555, internal: 9555 }], dagent: dagentNetwork },
+          ports: [{ external: 9555, internal: 9555 }],
+          ...dagentNetwork,
         }
       : name == ImageName.Cartservice
       ? {
           environment: [{ key: 'REDIS_ADDR', value: 'redis:6379' }] as Environment[],
-          config: { ports: [{ external: 7070, internal: 7070 }], dagent: dagentNetwork },
+          ports: [{ external: 7070, internal: 7070 }],
+          ...dagentNetwork,
         }
       : name == ImageName.Checkoutservice
       ? {
@@ -58,7 +51,8 @@ const mapConfigToImage = (name: ImageName) => {
             { key: 'DISABLE_TRACING', value: '1' },
             { key: 'DISABLE_PROFILER', value: '1' },
           ] as Environment[],
-          config: { ports: [{ external: 5050, internal: 5050 }], dagent: dagentNetwork },
+          ports: [{ external: 5050, internal: 5050 }],
+          ...dagentNetwork,
         }
       : name == ImageName.Currencyservice
       ? {
@@ -68,7 +62,8 @@ const mapConfigToImage = (name: ImageName) => {
             { key: 'DISABLE_PROFILER', value: '1' },
             { key: 'DISABLE_DEBUGGER', value: '1' },
           ] as Environment[],
-          config: { ports: [{ external: 7000, internal: 7000 }], dagent: dagentNetwork },
+          ports: [{ external: 7000, internal: 7000 }],
+          ...dagentNetwork,
         }
       : name == ImageName.Emailservice
       ? {
@@ -77,7 +72,8 @@ const mapConfigToImage = (name: ImageName) => {
             { key: 'DISABLE_TRACING', value: '1' },
             { key: 'DISABLE_PROFILER', value: '1' },
           ] as Environment[],
-          config: { ports: [{ external: 50052, internal: 50052 }], dagent: dagentNetwork },
+          ports: [{ external: 50052, internal: 50052 }],
+          ...dagentNetwork,
         }
       : name == ImageName.Frontend
       ? {
@@ -93,7 +89,8 @@ const mapConfigToImage = (name: ImageName) => {
             { key: 'DISABLE_TRACING', value: '1' },
             { key: 'DISABLE_PROFILER', value: '1' },
           ] as Environment[],
-          config: { ports: [{ external: 65534, internal: 65534 }], dagent: dagentNetwork },
+          ports: [{ external: 65534, internal: 65534 }],
+          ...dagentNetwork,
         }
       : name == ImageName.Loadgenerator
       ? {
@@ -101,7 +98,7 @@ const mapConfigToImage = (name: ImageName) => {
             { key: 'FRONTEND_ADDR', value: 'frontend:65534' },
             { key: 'USERS', value: '10' },
           ] as Environment[],
-          config: { dagent: dagentNetwork },
+          ...dagentNetwork,
         }
       : name == ImageName.Paymentservice
       ? {
@@ -111,7 +108,8 @@ const mapConfigToImage = (name: ImageName) => {
             { key: 'DISABLE_PROFILER', value: '1' },
             { key: 'DISABLE_DEBUGGER', value: '1' },
           ] as Environment[],
-          config: { ports: [{ external: 50051, internal: 50051 }], dagent: dagentNetwork },
+          ports: [{ external: 50051, internal: 50051 }],
+          ...dagentNetwork,
         }
       : name == ImageName.Productcatalogservice
       ? {
@@ -121,7 +119,8 @@ const mapConfigToImage = (name: ImageName) => {
             { key: 'DISABLE_TRACING', value: '1' },
             { key: 'DISABLE_PROFILER', value: '1' },
           ] as Environment[],
-          config: { ports: [{ external: 3550, internal: 3550 }], dagent: dagentNetwork },
+          ports: [{ external: 3550, internal: 3550 }],
+          ...dagentNetwork,
         }
       : name == ImageName.Recommendationservice
       ? {
@@ -132,7 +131,8 @@ const mapConfigToImage = (name: ImageName) => {
             { key: 'DISABLE_PROFILER', value: '1' },
             { key: 'DISABLE_DEBUGGER', value: '1' },
           ] as Environment[],
-          config: { ports: [{ external: 50053, internal: 50053 }], dagent: dagentNetwork },
+          ports: [{ external: 50053, internal: 50053 }],
+          ...dagentNetwork,
         }
       : name == ImageName.Shippingservice
       ? {
@@ -142,14 +142,16 @@ const mapConfigToImage = (name: ImageName) => {
             { key: 'DISABLE_TRACING', value: '1' },
             { key: 'DISABLE_PROFILER', value: '1' },
           ] as Environment[],
-          config: { ports: [{ external: 50054, internal: 50054 }], dagent: dagentNetwork },
+          ports: [{ external: 50054, internal: 50054 }],
+          ...dagentNetwork,
         }
       : name == ImageName.Redis
       ? {
           environment: [] as Environment[],
-          config: { ports: [{ external: 6379, internal: 6379 }], dagent: dagentNetwork },
+          ports: [{ external: 6379, internal: 6379 }],
+          ...dagentNetwork,
         }
-      : { environment: [] as Environment[], config: {} }
+      : { environment: [] as Environment[] }
 
   // seed ids
   config.environment.map(x => (x.id = uuidv4()))

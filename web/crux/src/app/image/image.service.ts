@@ -1,18 +1,17 @@
 import { Injectable } from '@nestjs/common'
-import { JsonArray } from 'prisma'
 import { Subject } from 'rxjs'
 import PrismaService from 'src/services/prisma.service'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import { containerNameFromImageName } from 'src/domain/deployment'
 import {
   AddImagesToVersionRequest,
-  Empty,
   IdRequest,
   ImageListResponse,
   ImageResponse,
   OrderVersionImagesRequest,
   PatchImageRequest,
 } from 'src/grpc/protobuf/proto/crux'
+import { Empty } from 'src/grpc/protobuf/proto/common'
 import { ContainerConfigData } from 'src/shared/model'
 import ImageMapper, { ImageDetails } from './image.mapper'
 
@@ -93,7 +92,6 @@ export default class ImageService {
                   environment: [],
                   capabilities: [],
                   secrets: [],
-                  config: {},
                 },
               },
             },
@@ -134,15 +132,9 @@ export default class ImageService {
   @AuditLogLevel('no-data')
   async patchImage(request: PatchImageRequest): Promise<Empty> {
     let config: ContainerConfigData
+
     if (request.config) {
-      const { capabilities: caps, environment: envs, secrets } = request.config
-      config = {
-        name: request.config.name ?? undefined,
-        capabilities: caps ? caps.data ?? [] : (undefined as JsonArray),
-        environment: envs ? envs.data ?? [] : (undefined as JsonArray),
-        config: request.config?.config,
-        secrets: secrets ? secrets.data ?? [] : (undefined as JsonArray),
-      }
+      config = this.mapper.configProtoToDb(request.config)
     }
 
     const image = await this.prisma.image.update({

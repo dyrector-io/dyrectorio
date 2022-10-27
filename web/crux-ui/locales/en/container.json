@@ -1,0 +1,124 @@
+{
+  "base": {
+    "all": "All",
+    "dagent": "Docker",
+    "crane": "Kubernetes",
+    "common": "Common"
+  },
+
+  "common": {
+    "user": "User",
+    "containerName": "Container name",
+    "exposePort": "Expose port",
+    "portBinding": "Port binding",
+    "volumes": "Volumes",
+    "capabilities": "capabilities",
+    "name": "Name",
+    "size": "Size",
+    "path": "Path",
+    "class": "Class (k8s)",
+    "type": "Type",
+    "volumeTypes": { "ro": "Ro", "rw": "Rw", "rwx": "Rwx", "mem": "Mem", "tmp": "Tmp" },
+    "files": "Files",
+    "commands": "Commands",
+    "arguments": "Arguments",
+    "ttySupport": "Tty support",
+    "exposeStrategy": "Expose strategy",
+    "exposeStrategies": { "none": "None", "expose": "Expose", "exposeWithTls": "Expose with tls" },
+    "ingressName": "Name",
+    "ingressHost": "Host",
+    "ingressUploadLimit": "Upload limit",
+    "environment": "Environments",
+    "secrets": "Secrets",
+    "initContainer": "Init container",
+    "image": "Image",
+    "importContainer": "Import container",
+    "volume": "Volume",
+    "command": "Command",
+    "configContainer": "Config container",
+    "keepFiles": "Keep files",
+    "useParent": "Use parent",
+    "ingress": "Ingress",
+    "expose": "Expose",
+    "tty": "TTY",
+    "args": "Args",
+    "initContainers": "Init containers",
+    "ports": "Ports",
+    "portRanges": "Port ranges",
+    "external": "External",
+    "internal": "Internal",
+    "from": "From",
+    "to": "To",
+    "placeholders": {
+      "port": "Port",
+      "path": "Path",
+      "userIdNumber": "Id number",
+      "ingressName": "Ingress name",
+      "ingressHost": "Ingress host",
+      "ingressUploadLimit": "Ingress upload limit"
+    }
+  },
+
+  "dagent": {
+    "networkMode": "Network mode",
+    "networkModes": {
+      "bridge": "Bridge",
+      "host": "Host",
+      "overlay": "Overlay",
+      "ipvlan": "Ipvlan",
+      "macvlan": "Macvlan",
+      "none": "None"
+    },
+    "restartPolicy": "Restart policy",
+    "restartPolicies": {
+      "undefined": "Undefined",
+      "always": "Always",
+      "unlessStopped": "Unless stopped",
+      "no": "No",
+      "onFailure": "On failure"
+    },
+    "drivers": "Drivers",
+    "logDrivers": {
+      "none": "None",
+      "gcplogs": "Gcplogs",
+      "local": "Local",
+      "json-file": "Json-file",
+      "syslog": "Syslog",
+      "journald": "Journald",
+      "gelf": "Gelf",
+      "fluentd": "Fluentd",
+      "awslogs": "Awslogs",
+      "splunk": "Splunk",
+      "etwlogs": "Etwlogs",
+      "logentries": "Logentries"
+    },
+    "logConfig": "Log config",
+    "options": "Options",
+    "networks": "Networks",
+    "placeholders": {
+      "network": "Network"
+    }
+  },
+
+  "crane": {
+    "deploymentStrategy": "Deployment strategy",
+    "deploymentStrategies": { "unknown": "Unknown", "recreate": "Recreate", "rolling": "Rolling" },
+    "healthCheckConfig": "Health check config",
+    "port": "Port",
+    "livenessProbe": "Liveness probe",
+    "readinessProbe": "Readiness probe",
+    "startupProbe": "Startup probe",
+    "customHeaders": "Custom headers",
+    "resourceConfig": "Resource config",
+    "cpu": "Cpu",
+    "memory": "Mermory",
+    "limits": "Limits",
+    "requests": "Requests",
+    "proxyHeaders": "Proxy headers",
+    "loadBalancer": "Load balancer",
+    "useLoadBalancer": "Use load balancer",
+    "extraLBAnnotations": "Extra LB annotations",
+    "placeholders": { "headerName": "Header name", "cpuUsageExample": "100", "memoryUsageExample": "1m" }
+  },
+  "sensitiveKey": "Sensitive config data should be stored as secrets"
+}

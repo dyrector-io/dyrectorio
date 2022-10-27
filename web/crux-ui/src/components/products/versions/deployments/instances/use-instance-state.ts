@@ -9,7 +9,7 @@ import {
   WS_TYPE_GET_DEPLOYMENT_SECRETS,
   WS_TYPE_PATCH_INSTANCE,
 } from '@app/models'
-import { getValidationError, instanceConfigSchema } from '@app/validations'
+import { containerConfigSchema, getValidationError } from '@app/validations'
 import { useEffect, useState } from 'react'
 import { DeploymentState } from '../use-deployment-state'
 
@@ -65,7 +65,7 @@ const useInstanceState = (options: InstanceStateOptions) => {
     setDefinedSecrets(message.keys)
   })
 
-  const errorMessage = parseError ?? getValidationError(instanceConfigSchema, config)?.message
+  const errorMessage = parseError ?? getValidationError(containerConfigSchema, config)?.message
 
   const onPatch = (id: string, newConfig: Partial<ContainerConfig>) => {
     setParseError(null)

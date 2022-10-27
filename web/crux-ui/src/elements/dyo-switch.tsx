@@ -4,7 +4,7 @@ import clsx from 'clsx'
 import React from 'react'
 
 interface DyoSwitchProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'ref'> {
-  fieldName: string
+  fieldName?: string
   checked?: boolean
   setFieldValue?: FormikSetFieldValue
   onCheckedChange?: (checked: boolean) => void
@@ -14,7 +14,10 @@ const DyoSwitch = (props: DyoSwitchProps) => {
   const { fieldName, checked, setFieldValue, onCheckedChange } = props
 
   const handleCheckedChange = (isChecked: boolean) => {
-    setFieldValue?.call(this, fieldName, isChecked, false)
+    if (fieldName) {
+      setFieldValue?.call(this, fieldName, isChecked, false)
+    }
+
     onCheckedChange?.call(this, isChecked)
   }
 

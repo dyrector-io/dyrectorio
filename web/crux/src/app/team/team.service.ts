@@ -8,6 +8,7 @@ import {
   NotFoundException,
   PreconditionFailedException,
 } from 'src/exception/errors'
+import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
   AccessRequest,
   ActiveTeamDetailsResponse,
@@ -15,7 +16,6 @@ import {
   CreateEntityResponse,
   CreateTeamRequest,
   DeleteUserFromTeamRequest,
-  Empty,
   IdRequest,
   InviteUserRequest,
   TeamDetailsResponse,

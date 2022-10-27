@@ -10,13 +10,12 @@ import {
   NodeStatusMessage,
   UpdateDyoNode,
 } from '@app/models'
+import { ContainerStateListMessage, Empty } from '@app/models/grpc/protobuf/proto/common'
 import {
   AccessRequest,
-  ContainerStateListMessage,
   CreateEntityResponse,
   CreateNodeRequest,
   CruxNodeClient,
-  Empty,
   GenerateScriptRequest,
   IdRequest,
   NodeDetailsResponse,
