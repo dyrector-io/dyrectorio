@@ -210,7 +210,7 @@ func CheckRequirements() string {
 	} else {
 		// We cannot assume unix:///var/run/docker.sock on Mac/Win platforms, we let Docker SDK does its magic :)
 		log.Warn().Msg("DOCKER_HOST environmental variable is empty or not set.")
-		log.Warn().Msg("Using default socket determined by Docker SDK")
+		log.Warn().Msg("Using default socket determined by Docker SDK.")
 	}
 
 	// Check socket
@@ -226,11 +226,11 @@ func CheckRequirements() string {
 
 	switch info.InitBinary {
 	case "":
-		log.Info().Str("podmanVersion", info.ServerVersion).Msg("")
+		log.Info().Str("version", info.ServerVersion).Msg("Podman")
 		PodmanInfo()
 		return PodmanHost
 	case "docker-init":
-		log.Info().Str("dockerVersion", info.ServerVersion).Msg("")
+		log.Info().Str("version", info.ServerVersion).Msg("Docker")
 		return DockerHost
 	default:
 		log.Fatal().Msg("unknown init binary")
@@ -280,12 +280,11 @@ func PodmanInfo() {
 }
 
 func DisabledServiceSettings(settings *Settings) *Settings {
-	if settings.Containers.Crux.Disabled {
-		fmt.Printf("Do not forget to add your DATABASE_URL to your crux environment.\n\n")
-		fmt.Printf("DATABASE_URL=postgresql://%s:%s@%s_crux-postgres:%d/%s?schema=public\n\n",
+	if settings.Containers.Crux.Disabled && settings.Command == "up" {
+		log.Info().Msg("Do not forget to add your DATABASE_URL to your crux environment.")
+		log.Info().Msgf("DATABASE_URL=postgresql://%s:%s@localhost:%d/%s?schema=public",
 			settings.SettingsFile.CruxPostgresUser,
 			settings.SettingsFile.CruxPostgresPassword,
-			settings.SettingsFile.Prefix,
 			settings.SettingsFile.CruxPostgresPort,
 			settings.SettingsFile.CruxPostgresDB)
 	}
@@ -297,6 +296,11 @@ func DisabledServiceSettings(settings *Settings) *Settings {
 	}
 
 	return settings
+}
+
+func PrintInfo(settings *Settings) {
+	log.Warn().Msg("🚫 Use the CLI tool only for NON-PRODUCTION purpose.")
+	log.Info().Str("path", settings.SettingsFilePath).Msg("Platform configuration file location")
 }
 
 // Save the settings
@@ -450,9 +454,11 @@ func CheckAndUpdatePorts(settings *Settings) *Settings {
 
 func getAvailablePort(portMap map[string]uint, portNum uint, portDesc string, changed *bool) uint {
 	for {
-		if err := portIsAvailable(portMap, portNum); err != nil {
-			fmt.Fprintf(os.Stderr, "error in binding port for %s: %s\n", portDesc, err.Error())
-			fmt.Fprintf(os.Stdout, "type another port: ")
+		err := portIsAvailable(portMap, portNum)
+
+		if err != nil {
+			log.Error().Err(err).Str("Value", portDesc).Msg("")
+			log.Info().Msg("Type another port: ")
 			portNum = scanPort(portNum)
 			*changed = true
 			continue
@@ -467,8 +473,8 @@ func scanPort(portNum uint) uint {
 	for scanner.Scan() {
 		newPort, err := strconv.ParseUint(scanner.Text(), ParseBase, ParseBitSize)
 		if err != nil || (newPort > 0 && newPort <= 1023) || newPort == 0 {
-			fmt.Fprintf(os.Stderr, "you typed invalid port number:\n")
-			fmt.Fprintf(os.Stdout, "type another port: ")
+			log.Error().Err(err).Msg("")
+			log.Info().Msg("Type another port: ")
 			continue
 		}
 		return uint(newPort)

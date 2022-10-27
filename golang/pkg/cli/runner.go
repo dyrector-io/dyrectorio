@@ -53,6 +53,7 @@ func ProcessCommand(settings *Settings) {
 	}
 	switch settings.Command {
 	case "up":
+		PrintInfo(settings)
 		settings = CheckAndUpdatePorts(settings)
 		SaveSettings(settings)
 
