@@ -5,15 +5,18 @@ export type NodeType = typeof NODE_TYPE_VALUES[number]
 
 export type NodeStatus = 'connecting' | 'unreachable' | 'running'
 
-export type DyoNode = {
-  id: string
-  icon?: string
-  name: string
-  description?: string
+export type NodeConnection = {
   address?: string
   status: NodeStatus
   connectedAt?: string
   version?: string
+}
+
+export type DyoNode = NodeConnection & {
+  id: string
+  icon?: string
+  name: string
+  description?: string
   type: NodeType
 }
 

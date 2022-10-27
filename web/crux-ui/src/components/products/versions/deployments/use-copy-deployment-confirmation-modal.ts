@@ -2,6 +2,7 @@ import { DyoConfirmationModalConfig } from '@app/elements/dyo-modal'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { CopyDeploymentResponse } from '@app/models'
 import { deploymentCopyUrl, deploymentUrl } from '@app/routes'
+import useTranslation from 'next-translate/useTranslation'
 
 type CopyDeploymentOptions = {
   productId: string
@@ -41,11 +42,18 @@ const useCopyDeploymentModal = (
 ): [DyoConfirmationModalConfig, (options: CopyDeploymentOptions) => Promise<string>] => {
   const [confirmationModal, confirm] = useConfirmation()
 
+  const { t } = useTranslation('common')
+
   const onCopy = async (options: CopyDeploymentOptions) => {
     let [newDeploymentId, resStatus] = await postCopyDeployment(onApiError, options)
 
     if (resStatus === 412) {
-      const confirmed = await confirm()
+      const confirmed = await confirm(null, {
+        title: t('common:areYouSure'),
+        description: t('alreadyPreparingSureOverwrite'),
+        confirmText: t('continue'),
+      })
+
       if (!confirmed) {
         return null
       }

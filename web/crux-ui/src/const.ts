@@ -1,3 +1,4 @@
+export const SECOND_IN_MILLIS = 1000
 export const NODE_SETUP_SCRIPT_TIMEOUT = 600 // 10 min in seconds
 export const GRPC_STREAM_RECONNECT_TIMEOUT = 5_000 // millis
 export const IMAGE_FILTER_MIN_LENGTH = 1 // characters
