@@ -83,7 +83,7 @@ service CruxDeployment {
   rpc GetDeploymentSecrets(DeploymentListSecretsRequest) returns (common.ListSecretsResponse);
   rpc CopyDeploymentSafe(IdRequest) returns (CreateEntityResponse);
   rpc CopyDeploymentUnsafe(IdRequest) returns (CreateEntityResponse);
-  rpc PreDeploymentCheck(IdRequest) returns (Empty);
+  rpc PreDeploymentCheck(IdRequest) returns (common.Empty);
 
   rpc StartDeployment(IdRequest) returns (stream DeploymentProgressMessage);
   rpc SubscribeToDeploymentEditEvents(ServiceIdRequest)

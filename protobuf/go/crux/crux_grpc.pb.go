@@ -1569,7 +1569,7 @@ type CruxDeploymentClient interface {
 	GetDeploymentSecrets(ctx context.Context, in *DeploymentListSecretsRequest, opts ...grpc.CallOption) (*common.ListSecretsResponse, error)
 	CopyDeploymentSafe(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error)
 	CopyDeploymentUnsafe(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error)
-	PreDeploymentCheck(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error)
+	PreDeploymentCheck(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
 	StartDeployment(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (CruxDeployment_StartDeploymentClient, error)
 	SubscribeToDeploymentEditEvents(ctx context.Context, in *ServiceIdRequest, opts ...grpc.CallOption) (CruxDeployment_SubscribeToDeploymentEditEventsClient, error)
 }
@@ -1681,8 +1681,8 @@ func (c *cruxDeploymentClient) CopyDeploymentUnsafe(ctx context.Context, in *IdR
 	return out, nil
 }
 
-func (c *cruxDeploymentClient) PreDeploymentCheck(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
+func (c *cruxDeploymentClient) PreDeploymentCheck(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
 	err := c.cc.Invoke(ctx, "/crux.CruxDeployment/PreDeploymentCheck", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -1769,7 +1769,7 @@ type CruxDeploymentServer interface {
 	GetDeploymentSecrets(context.Context, *DeploymentListSecretsRequest) (*common.ListSecretsResponse, error)
 	CopyDeploymentSafe(context.Context, *IdRequest) (*CreateEntityResponse, error)
 	CopyDeploymentUnsafe(context.Context, *IdRequest) (*CreateEntityResponse, error)
-	PreDeploymentCheck(context.Context, *IdRequest) (*Empty, error)
+	PreDeploymentCheck(context.Context, *IdRequest) (*common.Empty, error)
 	StartDeployment(*IdRequest, CruxDeployment_StartDeploymentServer) error
 	SubscribeToDeploymentEditEvents(*ServiceIdRequest, CruxDeployment_SubscribeToDeploymentEditEventsServer) error
 	mustEmbedUnimplementedCruxDeploymentServer()
@@ -1812,7 +1812,7 @@ func (UnimplementedCruxDeploymentServer) CopyDeploymentSafe(context.Context, *Id
 func (UnimplementedCruxDeploymentServer) CopyDeploymentUnsafe(context.Context, *IdRequest) (*CreateEntityResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CopyDeploymentUnsafe not implemented")
 }
-func (UnimplementedCruxDeploymentServer) PreDeploymentCheck(context.Context, *IdRequest) (*Empty, error) {
+func (UnimplementedCruxDeploymentServer) PreDeploymentCheck(context.Context, *IdRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PreDeploymentCheck not implemented")
 }
 func (UnimplementedCruxDeploymentServer) StartDeployment(*IdRequest, CruxDeployment_StartDeploymentServer) error {
