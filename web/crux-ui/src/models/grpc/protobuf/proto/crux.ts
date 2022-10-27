@@ -966,19 +966,16 @@ export interface UniqueKeyValue {
   value: string
 }
 
-export interface UniqueKeySecretValue {
+export interface UniqueSecretKeyValue {
   id: string
   key: string
   value: string
+  required: boolean
   encrypted?: boolean | undefined
 }
 
 export interface KeyValueList {
   data: UniqueKeyValue[]
-}
-
-export interface SecretList {
-  data: UniqueKeySecretValue[]
 }
 
 export interface DagentContainerConfig {
@@ -1012,7 +1009,7 @@ export interface CommonContainerConfig {
   commands: UniqueKey[]
   args: UniqueKey[]
   environment: UniqueKeyValue[]
-  secrets: UniqueKeyValue[]
+  secrets: UniqueSecretKeyValue[]
   initContainers: InitContainer[]
 }
 
@@ -5642,10 +5639,15 @@ export const UniqueKeyValue = {
   },
 }
 
-const baseUniqueKeySecretValue: object = { id: '', key: '', value: '' }
+const baseUniqueSecretKeyValue: object = {
+  id: '',
+  key: '',
+  value: '',
+  required: false,
+}
 
-export const UniqueKeySecretValue = {
-  encode(message: UniqueKeySecretValue, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+export const UniqueSecretKeyValue = {
+  encode(message: UniqueSecretKeyValue, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== '') {
       writer.uint32(802).string(message.id)
     }
@@ -5655,16 +5657,19 @@ export const UniqueKeySecretValue = {
     if (message.value !== '') {
       writer.uint32(826).string(message.value)
     }
+    if (message.required === true) {
+      writer.uint32(832).bool(message.required)
+    }
     if (message.encrypted !== undefined) {
-      writer.uint32(832).bool(message.encrypted)
+      writer.uint32(840).bool(message.encrypted)
     }
     return writer
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): UniqueKeySecretValue {
+  decode(input: _m0.Reader | Uint8Array, length?: number): UniqueSecretKeyValue {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = { ...baseUniqueKeySecretValue } as UniqueKeySecretValue
+    const message = { ...baseUniqueSecretKeyValue } as UniqueSecretKeyValue
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -5678,6 +5683,9 @@ export const UniqueKeySecretValue = {
           message.value = reader.string()
           break
         case 104:
+          message.required = reader.bool()
+          break
+        case 105:
           message.encrypted = reader.bool()
           break
         default:
@@ -5688,30 +5696,33 @@ export const UniqueKeySecretValue = {
     return message
   },
 
-  fromJSON(object: any): UniqueKeySecretValue {
-    const message = { ...baseUniqueKeySecretValue } as UniqueKeySecretValue
+  fromJSON(object: any): UniqueSecretKeyValue {
+    const message = { ...baseUniqueSecretKeyValue } as UniqueSecretKeyValue
     message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
     message.key = object.key !== undefined && object.key !== null ? String(object.key) : ''
     message.value = object.value !== undefined && object.value !== null ? String(object.value) : ''
+    message.required = object.required !== undefined && object.required !== null ? Boolean(object.required) : false
     message.encrypted =
       object.encrypted !== undefined && object.encrypted !== null ? Boolean(object.encrypted) : undefined
     return message
   },
 
-  toJSON(message: UniqueKeySecretValue): unknown {
+  toJSON(message: UniqueSecretKeyValue): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
     message.key !== undefined && (obj.key = message.key)
     message.value !== undefined && (obj.value = message.value)
+    message.required !== undefined && (obj.required = message.required)
     message.encrypted !== undefined && (obj.encrypted = message.encrypted)
     return obj
   },
 
-  fromPartial<I extends Exact<DeepPartial<UniqueKeySecretValue>, I>>(object: I): UniqueKeySecretValue {
-    const message = { ...baseUniqueKeySecretValue } as UniqueKeySecretValue
+  fromPartial<I extends Exact<DeepPartial<UniqueSecretKeyValue>, I>>(object: I): UniqueSecretKeyValue {
+    const message = { ...baseUniqueSecretKeyValue } as UniqueSecretKeyValue
     message.id = object.id ?? ''
     message.key = object.key ?? ''
     message.value = object.value ?? ''
+    message.required = object.required ?? false
     message.encrypted = object.encrypted ?? undefined
     return message
   },
@@ -5765,58 +5776,6 @@ export const KeyValueList = {
   fromPartial<I extends Exact<DeepPartial<KeyValueList>, I>>(object: I): KeyValueList {
     const message = { ...baseKeyValueList } as KeyValueList
     message.data = object.data?.map(e => UniqueKeyValue.fromPartial(e)) || []
-    return message
-  },
-}
-
-const baseSecretList: object = {}
-
-export const SecretList = {
-  encode(message: SecretList, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    for (const v of message.data) {
-      UniqueKeySecretValue.encode(v!, writer.uint32(8002).fork()).ldelim()
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): SecretList {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = { ...baseSecretList } as SecretList
-    message.data = []
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 1000:
-          message.data.push(UniqueKeySecretValue.decode(reader, reader.uint32()))
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): SecretList {
-    const message = { ...baseSecretList } as SecretList
-    message.data = (object.data ?? []).map((e: any) => UniqueKeySecretValue.fromJSON(e))
-    return message
-  },
-
-  toJSON(message: SecretList): unknown {
-    const obj: any = {}
-    if (message.data) {
-      obj.data = message.data.map(e => (e ? UniqueKeySecretValue.toJSON(e) : undefined))
-    } else {
-      obj.data = []
-    }
-    return obj
-  },
-
-  fromPartial<I extends Exact<DeepPartial<SecretList>, I>>(object: I): SecretList {
-    const message = { ...baseSecretList } as SecretList
-    message.data = object.data?.map(e => UniqueKeySecretValue.fromPartial(e)) || []
     return message
   },
 }
@@ -6091,7 +6050,7 @@ export const CommonContainerConfig = {
       UniqueKeyValue.encode(v!, writer.uint32(8042).fork()).ldelim()
     }
     for (const v of message.secrets) {
-      UniqueKeyValue.encode(v!, writer.uint32(8050).fork()).ldelim()
+      UniqueSecretKeyValue.encode(v!, writer.uint32(8050).fork()).ldelim()
     }
     for (const v of message.initContainers) {
       InitContainer.encode(v!, writer.uint32(8058).fork()).ldelim()
@@ -6154,7 +6113,7 @@ export const CommonContainerConfig = {
           message.environment.push(UniqueKeyValue.decode(reader, reader.uint32()))
           break
         case 1006:
-          message.secrets.push(UniqueKeyValue.decode(reader, reader.uint32()))
+          message.secrets.push(UniqueSecretKeyValue.decode(reader, reader.uint32()))
           break
         case 1007:
           message.initContainers.push(InitContainer.decode(reader, reader.uint32()))
@@ -6190,7 +6149,7 @@ export const CommonContainerConfig = {
     message.commands = (object.commands ?? []).map((e: any) => UniqueKey.fromJSON(e))
     message.args = (object.args ?? []).map((e: any) => UniqueKey.fromJSON(e))
     message.environment = (object.environment ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
-    message.secrets = (object.secrets ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
+    message.secrets = (object.secrets ?? []).map((e: any) => UniqueSecretKeyValue.fromJSON(e))
     message.initContainers = (object.initContainers ?? []).map((e: any) => InitContainer.fromJSON(e))
     return message
   },
@@ -6238,7 +6197,7 @@ export const CommonContainerConfig = {
       obj.environment = []
     }
     if (message.secrets) {
-      obj.secrets = message.secrets.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
+      obj.secrets = message.secrets.map(e => (e ? UniqueSecretKeyValue.toJSON(e) : undefined))
     } else {
       obj.secrets = []
     }
@@ -6272,7 +6231,7 @@ export const CommonContainerConfig = {
     message.commands = object.commands?.map(e => UniqueKey.fromPartial(e)) || []
     message.args = object.args?.map(e => UniqueKey.fromPartial(e)) || []
     message.environment = object.environment?.map(e => UniqueKeyValue.fromPartial(e)) || []
-    message.secrets = object.secrets?.map(e => UniqueKeyValue.fromPartial(e)) || []
+    message.secrets = object.secrets?.map(e => UniqueSecretKeyValue.fromPartial(e)) || []
     message.initContainers = object.initContainers?.map(e => InitContainer.fromPartial(e)) || []
     return message
   },
