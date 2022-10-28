@@ -1,6 +1,6 @@
 import { internalError, preconditionFailedError } from '@app/error-responses'
 import { DeploymentEvent } from '@app/models'
-import { DeploymentProgressMessage } from '@app/models/grpc/protobuf/proto/crux'
+import { DeploymentProgressMessage, Empty } from '@app/models/grpc/protobuf/proto/crux'
 import { Status } from '@grpc/grpc-js/build/src/constants'
 import crux, { Crux } from '@server/crux/crux'
 import { GrpcConnection, ProtoSubscriptionOptions } from '@server/crux/grpc-connection'
@@ -8,14 +8,14 @@ import { withMiddlewares } from '@server/middlewares'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { promisify } from 'util'
 
-const startDeploymentPromise = promisify<string, Crux, void>((deploymentId, cruxInstance, callback) => {
+const startDeploymentPromise = promisify<string, Crux, Empty>((deploymentId, cruxInstance, callback) => {
   let connection: GrpcConnection<DeploymentProgressMessage, DeploymentEvent[]> = null
   const opts: ProtoSubscriptionOptions<DeploymentEvent[]> = {
     onMessage: () => {
       if (connection == null) {
         return
       }
-      callback(undefined, null)
+      callback(undefined, {})
       connection.cancel()
       connection = null
     },
