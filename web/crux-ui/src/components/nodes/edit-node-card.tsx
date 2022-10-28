@@ -25,9 +25,10 @@ import { nodeSchema } from '@app/validations'
 import clsx from 'clsx'
 import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject, useState } from 'react'
+import { MutableRefObject } from 'react'
 import DyoNodeSetup from './dyo-node-setup'
 import NodeConnectionCard from './node-connection-card'
+import useNodeState from './use-node-state'
 
 interface EditNodeCardProps {
   className?: string
@@ -43,7 +44,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
 
   const [revokeModalConfig, confirmTokenRevoke] = useConfirmation()
 
-  const [node, setNode] = useState(
+  const [node, setNode] = useNodeState(
     propsNode ??
       ({
         name: '',
@@ -180,7 +181,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
   return (
     <>
       <div className={clsx(className, 'flex flex-row gap-4')}>
-        <DyoCard className="w-full p-8">
+        <DyoCard className="w-1/2 p-8">
           <DyoHeading element="h4" className="text-lg text-bright">
             {editing ? t('common:editName', { name: node.name }) : t('new')}
           </DyoHeading>
@@ -217,7 +218,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
           </form>
         </DyoCard>
 
-        <div className="flex flex-col flex-grow w-full">
+        <div className="flex flex-col flex-grow w-1/2">
           <NodeConnectionCard node={node} />
 
           <DyoCard className="flex-grow w-full p-8 mt-4">

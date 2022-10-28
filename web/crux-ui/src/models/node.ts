@@ -20,6 +20,13 @@ export type DyoNode = NodeConnection & {
   type: NodeType
 }
 
+export const nodeConnectionOf = (node: DyoNode | DyoNodeDetails): NodeConnection => ({
+  address: node.address,
+  status: node.status,
+  connectedAt: node.connectedAt,
+  version: node.version,
+})
+
 export type DyoNodeInstall = {
   command: string
   expireAt: string
