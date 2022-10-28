@@ -4684,9 +4684,7 @@ export interface CruxDeploymentClient {
 
   copyDeploymentUnsafe(request: IdRequest, metadata: Metadata, ...rest: any): Observable<CreateEntityResponse>
 
-  startDeployment(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
-
-  startDeploymentStreaming(request: IdRequest, metadata: Metadata, ...rest: any): Observable<DeploymentProgressMessage>
+  startDeployment(request: IdRequest, metadata: Metadata, ...rest: any): Observable<DeploymentProgressMessage>
 
   subscribeToDeploymentEditEvents(
     request: ServiceIdRequest,
@@ -4761,9 +4759,7 @@ export interface CruxDeploymentController {
     ...rest: any
   ): Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
 
-  startDeployment(request: IdRequest, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
-
-  startDeploymentStreaming(request: IdRequest, metadata: Metadata, ...rest: any): Observable<DeploymentProgressMessage>
+  startDeployment(request: IdRequest, metadata: Metadata, ...rest: any): Observable<DeploymentProgressMessage>
 
   subscribeToDeploymentEditEvents(
     request: ServiceIdRequest,
@@ -4787,7 +4783,6 @@ export function CruxDeploymentControllerMethods() {
       'copyDeploymentSafe',
       'copyDeploymentUnsafe',
       'startDeployment',
-      'startDeploymentStreaming',
       'subscribeToDeploymentEditEvents',
     ]
     for (const method of grpcMethods) {

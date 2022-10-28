@@ -11101,15 +11101,6 @@ export const CruxDeploymentService = {
   startDeployment: {
     path: '/crux.CruxDeployment/StartDeployment',
     requestStream: false,
-    responseStream: false,
-    requestSerialize: (value: IdRequest) => Buffer.from(IdRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => IdRequest.decode(value),
-    responseSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
-    responseDeserialize: (value: Buffer) => Empty.decode(value),
-  },
-  startDeploymentStreaming: {
-    path: '/crux.CruxDeployment/StartDeploymentStreaming',
-    requestStream: false,
     responseStream: true,
     requestSerialize: (value: IdRequest) => Buffer.from(IdRequest.encode(value).finish()),
     requestDeserialize: (value: Buffer) => IdRequest.decode(value),
@@ -11141,8 +11132,7 @@ export interface CruxDeploymentServer extends UntypedServiceImplementation {
   getDeploymentSecrets: handleUnaryCall<DeploymentListSecretsRequest, ListSecretsResponse>
   copyDeploymentSafe: handleUnaryCall<IdRequest, CreateEntityResponse>
   copyDeploymentUnsafe: handleUnaryCall<IdRequest, CreateEntityResponse>
-  startDeployment: handleUnaryCall<IdRequest, Empty>
-  startDeploymentStreaming: handleServerStreamingCall<IdRequest, DeploymentProgressMessage>
+  startDeployment: handleServerStreamingCall<IdRequest, DeploymentProgressMessage>
   subscribeToDeploymentEditEvents: handleServerStreamingCall<ServiceIdRequest, DeploymentEditEventMessage>
 }
 
@@ -11309,23 +11299,8 @@ export interface CruxDeploymentClient extends Client {
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
   ): ClientUnaryCall
-  startDeployment(request: IdRequest, callback: (error: ServiceError | null, response: Empty) => void): ClientUnaryCall
+  startDeployment(request: IdRequest, options?: Partial<CallOptions>): ClientReadableStream<DeploymentProgressMessage>
   startDeployment(
-    request: IdRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: Empty) => void,
-  ): ClientUnaryCall
-  startDeployment(
-    request: IdRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: Empty) => void,
-  ): ClientUnaryCall
-  startDeploymentStreaming(
-    request: IdRequest,
-    options?: Partial<CallOptions>,
-  ): ClientReadableStream<DeploymentProgressMessage>
-  startDeploymentStreaming(
     request: IdRequest,
     metadata?: Metadata,
     options?: Partial<CallOptions>,

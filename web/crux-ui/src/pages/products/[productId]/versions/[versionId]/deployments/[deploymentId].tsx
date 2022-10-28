@@ -39,7 +39,7 @@ export const startDeployment = async (
   deploymentId: string,
 ) => {
   const res = await fetch(deploymentStartUrl(productId, versionId, deploymentId), {
-    method: "POST"
+    method: 'POST',
   })
 
   if (res.status === 412) {
@@ -52,7 +52,7 @@ export const startDeployment = async (
     return
   }
 
-  //router.push(deploymentDeployUrl(productId, versionId, deploymentId))
+  router.push(deploymentDeployUrl(productId, versionId, deploymentId))
 }
 
 interface DeploymentDetailsPageProps {
