@@ -1,0 +1,433 @@
+{
+  "name": "Google Microservices Demo",
+  "description": "Google uses this application to demonstrate use of technologies like Kubernetes/GKE, Istio, Stackdriver, gRPC and OpenCensus.",
+  "registries": [
+    {
+      "name": "Docker Hub Library",
+      "type": "hub",
+      "hub": {
+        "imageNamePrefix": "library"
+      }
+    },
+    {
+      "name": "Google Microservices Demo",
+      "description": "Google uses this application to demonstrate use of technologies like Kubernetes/GKE, Istio, Stackdriver, gRPC and OpenCensus.",
+      "type": "google",
+      "google": {
+        "url": "gcr.io",
+        "imageNamePrefix": "google-samples/microservices-demo"
+      }
+    }
+  ],
+  "images": [
+    {
+      "name": "adservice",
+      "registryName": "Google Microservices Demo",
+      "image": "adservice",
+      "tag": "v0.4.1",
+      "config": {
+        "name": "adservice",
+        "ports": [
+          {
+            "external": 9555,
+            "internal": 9555
+          }
+        ],
+        "environment": [
+          {
+            "key": "PORT",
+            "value": "9555"
+          },
+          {
+            "key": "DISABLE_STATS",
+            "value": "1"
+          },
+          {
+            "key": "DISABLE_TRACING",
+            "value": "1"
+          }
+        ],
+        "networks": ["google-microservices-demo-network"]
+      }
+    },
+    {
+      "name": "cartservice",
+      "registryName": "Google Microservices Demo",
+      "image": "cartservice",
+      "tag": "v0.4.1",
+      "config": {
+        "name": "cartservice",
+        "ports": [
+          {
+            "external": 7070,
+            "internal": 7070
+          }
+        ],
+        "environment": [
+          {
+            "key": "REDIS_ADDR",
+            "value": "redis:6379"
+          }
+        ],
+        "networks": ["google-microservices-demo-network"]
+      }
+    },
+    {
+      "name": "checkoutservice",
+      "registryName": "Google Microservices Demo",
+      "image": "checkoutservice",
+      "tag": "v0.4.1",
+      "config": {
+        "name": "checkoutservice",
+        "ports": [
+          {
+            "external": 5050,
+            "internal": 5050
+          }
+        ],
+        "environment": [
+          {
+            "key": "PORT",
+            "value": "5050"
+          },
+          {
+            "key": "PRODUCT_CATALOG_SERVICE_ADDR",
+            "value": "productcatalogservice:3550"
+          },
+          {
+            "key": "SHIPPING_SERVICE_ADDR",
+            "value": "shippingservice:50054"
+          },
+          {
+            "key": "PAYMENT_SERVICE_ADDR",
+            "value": "paymentservice:50051"
+          },
+          {
+            "key": "EMAIL_SERVICE_ADDR",
+            "value": "emailservice:50052"
+          },
+          {
+            "key": "CURRENCY_SERVICE_ADDR",
+            "value": "currencyservice:7000"
+          },
+          {
+            "key": "CART_SERVICE_ADDR",
+            "value": "cartservice:7070"
+          },
+          {
+            "key": "DISABLE_STATS",
+            "value": "1"
+          },
+          {
+            "key": "DISABLE_TRACING",
+            "value": "1"
+          },
+          {
+            "key": "DISABLE_PROFILER",
+            "value": "1"
+          }
+        ],
+        "networks": ["google-microservices-demo-network"]
+      }
+    },
+    {
+      "name": "currencyservice",
+      "registryName": "Google Microservices Demo",
+      "image": "currencyservice",
+      "tag": "v0.4.1",
+      "config": {
+        "name": "currencyservice",
+        "ports": [
+          {
+            "external": 7000,
+            "internal": 7000
+          }
+        ],
+        "environment": [
+          {
+            "key": "PORT",
+            "value": "7000"
+          },
+          {
+            "key": "DISABLE_TRACING",
+            "value": "1"
+          },
+          {
+            "key": "DISABLE_PROFILER",
+            "value": "1"
+          },
+          {
+            "key": "DISABLE_DEBUGGER",
+            "value": "1"
+          }
+        ],
+        "networks": ["google-microservices-demo-network"]
+      }
+    },
+    {
+      "name": "emailservice",
+      "registryName": "Google Microservices Demo",
+      "image": "emailservice",
+      "tag": "v0.4.1",
+      "config": {
+        "name": "emailservice",
+        "ports": [
+          {
+            "external": 50052,
+            "internal": 50052
+          }
+        ],
+        "environment": [
+          {
+            "key": "PORT",
+            "value": "50052"
+          },
+          {
+            "key": "DISABLE_TRACING",
+            "value": "1"
+          },
+          {
+            "key": "DISABLE_PROFILER",
+            "value": "1"
+          }
+        ],
+        "networks": ["google-microservices-demo-network"]
+      }
+    },
+    {
+      "name": "frontend",
+      "registryName": "Google Microservices Demo",
+      "image": "frontend",
+      "tag": "v0.4.1",
+      "config": {
+        "name": "frontend",
+        "ports": [
+          {
+            "external": 65534,
+            "internal": 65534
+          }
+        ],
+        "environment": [
+          {
+            "key": "PORT",
+            "value": "65534"
+          },
+          {
+            "key": "PRODUCT_CATALOG_SERVICE_ADDR",
+            "value": "productcatalogservice:3550"
+          },
+          {
+            "key": "CURRENCY_SERVICE_ADDR",
+            "value": "currencyservice:7000"
+          },
+          {
+            "key": "CART_SERVICE_ADDR",
+            "value": "cartservice:7070"
+          },
+          {
+            "key": "RECOMMENDATION_SERVICE_ADDR",
+            "value": "recommendationservice:50053"
+          },
+          {
+            "key": "SHIPPING_SERVICE_ADDR",
+            "value": "shippingservice:50054"
+          },
+          {
+            "key": "CHECKOUT_SERVICE_ADDR",
+            "value": "checkoutservice:5050"
+          },
+          {
+            "key": "AD_SERVICE_ADDR",
+            "value": "adservice:9555"
+          },
+          {
+            "key": "DISABLE_TRACING",
+            "value": "1"
+          },
+          {
+            "key": "DISABLE_PROFILER",
+            "value": "1"
+          }
+        ],
+        "networks": ["google-microservices-demo-network"]
+      }
+    },
+    {
+      "name": "loadgenerator",
+      "registryName": "Google Microservices Demo",
+      "image": "loadgenerator",
+      "tag": "v0.4.1",
+      "config": {
+        "name": "loadgenerator",
+        "environment": [
+          {
+            "key": "FRONTEND_ADDR",
+            "value": "frontend:65534"
+          },
+          {
+            "key": "USERS",
+            "value": "10"
+          }
+        ],
+        "networks": ["google-microservices-demo-network"]
+      }
+    },
+    {
+      "name": "paymentservice",
+      "registryName": "Google Microservices Demo",
+      "image": "paymentservice",
+      "tag": "v0.4.1",
+      "config": {
+        "name": "paymentservice",
+        "ports": [
+          {
+            "external": 50051,
+            "internal": 50051
+          }
+        ],
+        "environment": [
+          {
+            "key": "PORT",
+            "value": "50051"
+          },
+          {
+            "key": "DISABLE_TRACING",
+            "value": "1"
+          },
+          {
+            "key": "DISABLE_PROFILER",
+            "value": "1"
+          },
+          {
+            "key": "DISABLE_DEBUGGER",
+            "value": "1"
+          }
+        ],
+        "networks": ["google-microservices-demo-network"]
+      }
+    },
+    {
+      "name": "productcatalogservice",
+      "registryName": "Google Microservices Demo",
+      "image": "productcatalogservice",
+      "tag": "v0.4.1",
+      "config": {
+        "name": "productcatalogservice",
+        "ports": [
+          {
+            "external": 3550,
+            "internal": 3550
+          }
+        ],
+        "environment": [
+          {
+            "key": "PORT",
+            "value": "3550"
+          },
+          {
+            "key": "DISABLE_STATS",
+            "value": "1"
+          },
+          {
+            "key": "DISABLE_TRACING",
+            "value": "1"
+          },
+          {
+            "key": "DISABLE_PROFILER",
+            "value": "1"
+          }
+        ],
+        "networks": ["google-microservices-demo-network"]
+      }
+    },
+    {
+      "name": "recommendationservice",
+      "registryName": "Google Microservices Demo",
+      "image": "recommendationservice",
+      "tag": "v0.4.1",
+      "config": {
+        "name": "recommendationservice",
+        "ports": [
+          {
+            "external": 50053,
+            "internal": 50053
+          }
+        ],
+        "environment": [
+          {
+            "key": "PORT",
+            "value": "50053"
+          },
+          {
+            "key": "PRODUCT_CATALOG_SERVICE_ADDR",
+            "value": "productcatalogservice:3550"
+          },
+          {
+            "key": "DISABLE_TRACING",
+            "value": "1"
+          },
+          {
+            "key": "DISABLE_PROFILER",
+            "value": "1"
+          },
+          {
+            "key": "DISABLE_DEBUGGER",
+            "value": "1"
+          }
+        ],
+        "networks": ["google-microservices-demo-network"]
+      }
+    },
+    {
+      "name": "shippingservice",
+      "registryName": "Google Microservices Demo",
+      "image": "shippingservice",
+      "tag": "v0.4.1",
+      "config": {
+        "name": "shippingservice",
+        "ports": [
+          {
+            "external": 50054,
+            "internal": 50054
+          }
+        ],
+        "environment": [
+          {
+            "key": "PORT",
+            "value": "50054"
+          },
+          {
+            "key": "DISABLE_STATS",
+            "value": "1"
+          },
+          {
+            "key": "DISABLE_TRACING",
+            "value": "1"
+          },
+          {
+            "key": "DISABLE_PROFILER",
+            "value": "1"
+          }
+        ],
+        "networks": ["google-microservices-demo-network"]
+      }
+    },
+    {
+      "name": "redis",
+      "registryName": "Docker Hub Library",
+      "image": "redis",
+      "tag": "alpine",
+      "config": {
+        "name": "redis",
+        "ports": [
+          {
+            "external": 6379,
+            "internal": 6379
+          }
+        ],
+        "environment": [],
+        "networks": ["google-microservices-demo-network"]
+      }
+    }
+  ]
+}

@@ -302,7 +302,7 @@ export default class DeployService {
           return {
             common: this.mapper.configToCommonConfig(mergedConfig),
             crane: this.mapper.configToCraneConfig(mergedConfig),
-            agent: this.mapper.configToDagentConfig(mergedConfig),
+            dagent: this.mapper.configToDagentConfig(mergedConfig),
             id: it.id,
             containerName: it.image.config.name,
             imageName: it.image.name,
