@@ -780,6 +780,8 @@ message NodeEventMessage {
   string id = 1;
   NodeConnectionStatus status = 100;
   optional string address = 101;
+  optional string version = 102;
+  optional google.protobuf.Timestamp connectedAt = 103;
 }
 
 message WatchContainerStateRequest {

@@ -1129,6 +1129,8 @@ export interface NodeEventMessage {
   id: string
   status: NodeConnectionStatus
   address?: string | undefined
+  version?: string | undefined
+  connectedAt?: Timestamp | undefined
 }
 
 export interface WatchContainerStateRequest {
@@ -3400,6 +3402,8 @@ export const NodeEventMessage = {
       id: isSet(object.id) ? String(object.id) : '',
       status: isSet(object.status) ? nodeConnectionStatusFromJSON(object.status) : 0,
       address: isSet(object.address) ? String(object.address) : undefined,
+      version: isSet(object.version) ? String(object.version) : undefined,
+      connectedAt: isSet(object.connectedAt) ? fromJsonTimestamp(object.connectedAt) : undefined,
     }
   },
 
@@ -3408,6 +3412,8 @@ export const NodeEventMessage = {
     message.id !== undefined && (obj.id = message.id)
     message.status !== undefined && (obj.status = nodeConnectionStatusToJSON(message.status))
     message.address !== undefined && (obj.address = message.address)
+    message.version !== undefined && (obj.version = message.version)
+    message.connectedAt !== undefined && (obj.connectedAt = fromTimestamp(message.connectedAt).toISOString())
     return obj
   },
 }

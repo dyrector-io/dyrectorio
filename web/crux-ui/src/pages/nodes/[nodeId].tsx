@@ -81,10 +81,10 @@ const NodeDetails = (props: NodeDetailsProps) => {
       </PageHeading>
 
       {!editing ? (
-        <div className="flex flex-row">
+        <div className="flex flex-row gap-4">
           <DyoNodeCard className="w-2/3 p-6" node={node} hideConnectionInfo />
 
-          <NodeConnectionCard className="w-1/3 px-6 py-4 ml-4" node={node} />
+          <NodeConnectionCard className="w-1/3 px-6 py-4" node={node} />
         </div>
       ) : (
         <EditNodeCard node={node} onNodeEdited={onNodeEdited} submitRef={submitRef} />

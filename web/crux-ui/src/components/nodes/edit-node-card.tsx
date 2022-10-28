@@ -6,7 +6,6 @@ import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import DyoTextArea from '@app/elements/dyo-text-area'
-import DyoWrap from '@app/elements/dyo-wrap'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
 import useWebSocket from '@app/hooks/use-websocket'
@@ -180,8 +179,8 @@ const EditNodeCard = (props: EditNodeCardProps) => {
 
   return (
     <>
-      <DyoWrap className={clsx(className, 'flex flex-row')}>
-        <DyoCard className="w-full p-8 mr-1">
+      <div className={clsx(className, 'flex flex-row gap-4')}>
+        <DyoCard className="w-full p-8">
           <DyoHeading element="h4" className="text-lg text-bright">
             {editing ? t('common:editName', { name: node.name }) : t('new')}
           </DyoHeading>
@@ -217,7 +216,8 @@ const EditNodeCard = (props: EditNodeCardProps) => {
             <DyoButton className="hidden" type="submit" />
           </form>
         </DyoCard>
-        <div className="flex flex-col flex-grow w-full ml-1">
+
+        <div className="flex flex-col flex-grow w-full">
           <NodeConnectionCard node={node} />
 
           <DyoCard className="flex-grow w-full p-8 mt-4">
@@ -262,7 +262,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
             )}
           </DyoCard>
         </div>
-      </DyoWrap>
+      </div>
 
       <DyoConfirmationModal
         config={revokeModalConfig}

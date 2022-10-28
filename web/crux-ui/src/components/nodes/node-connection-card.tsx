@@ -5,13 +5,12 @@ import { DyoLabel } from '@app/elements/dyo-label'
 import RemainingTimeLabel from '@app/elements/remaining-time-label'
 import useTicker from '@app/hooks/use-ticker'
 import useWebSocket from '@app/hooks/use-websocket'
-import { DyoNode, NodeConnection, NodeStatusMessage, WS_TYPE_NODE_STATUS } from '@app/models'
+import { DyoNode, NodeConnection, WS_TYPE_NODE_STATUS } from '@app/models'
 import { WS_NODES } from '@app/routes'
 import { WsMessage } from '@app/websockets/common'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
-import DyoNodeVersionText from './dyo-node-version-text'
 import NodeStatusIndicator from './node-status-indicator'
 
 interface NodeConnectionCardProps {
@@ -42,22 +41,15 @@ const NodeConnectionCard = (props: NodeConnectionCardProps) => {
     transformReceive: filterWsNodeId(node.id),
   })
 
-  sock.on(WS_TYPE_NODE_STATUS, (msg: NodeStatusMessage) =>
-    setConnection({
-      status: msg.status,
-      address: msg.address,
-      connectedAt: msg.status === 'running' ? new Date().toLocaleString() : null,
-      version: null,
-    }),
-  )
+  sock.on(WS_TYPE_NODE_STATUS, setConnection)
 
   const runningSince =
-    node.status !== 'running'
+    connection.status !== 'running'
       ? null
       : () => {
           const now = new Date().getTime()
-          const secondsSinceConnected = node.connectedAt
-            ? (now - new Date(node.connectedAt).getTime()) / SECOND_IN_MILLIS
+          const secondsSinceConnected = connection.connectedAt
+            ? (now - new Date(connection.connectedAt).getTime()) / SECOND_IN_MILLIS
             : null
           return secondsSinceConnected
         }
@@ -75,14 +67,12 @@ const NodeConnectionCard = (props: NodeConnectionCardProps) => {
 
       <div className="grid grid-cols-2 justify-between items-center">
         <DyoLabel>{t('address')}</DyoLabel>
-
         <span className="text-light-eased">{connection.address}</span>
 
         <DyoLabel> {t('version')}</DyoLabel>
-        <DyoNodeVersionText className="text-light-eased" version={connection.version} />
+        <span className="text-light-eased">{connection.version}</span>
 
         <DyoLabel>{t('status')}</DyoLabel>
-
         <div className="flex flex-row">
           <NodeStatusIndicator className="my-auto mr-4" status={connection.status} />
 
@@ -90,7 +80,6 @@ const NodeConnectionCard = (props: NodeConnectionCardProps) => {
         </div>
 
         <DyoLabel>{t('uptime')}</DyoLabel>
-
         {runningSince ? <RemainingTimeLabel textColor="text-dyo-turquoise" seconds={runningSince()} /> : null}
       </div>
     </DyoCard>

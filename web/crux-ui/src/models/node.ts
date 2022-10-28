@@ -57,6 +57,8 @@ export type NodeStatusMessage = {
   nodeId: string
   status: NodeStatus
   address?: string
+  version?: string
+  connectedAt?: string
 }
 
 export const WS_TYPE_NODE_STATUSES = 'node-status-list'
