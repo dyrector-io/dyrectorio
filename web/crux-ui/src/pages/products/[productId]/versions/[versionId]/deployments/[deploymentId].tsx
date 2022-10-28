@@ -1,5 +1,6 @@
 import EditorBadge from '@app/components/editor/editor-badge'
 import { Layout } from '@app/components/layout'
+import NodeConnectionCard from '@app/components/nodes/node-connection-card'
 import DeploymentDetailsSection from '@app/components/products/versions/deployments/deployment-details-section'
 import EditDeploymentCard from '@app/components/products/versions/deployments/edit-deployment-card'
 import EditDeploymentInstances from '@app/components/products/versions/deployments/edit-deployment-instances'
@@ -191,20 +192,17 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
         />
       ) : (
         <>
-          <DeploymentDetailsSection state={state} />
+          <div className="flex flex-row">
+            <NodeConnectionCard className="w-1/3 p-6" node={state.node} showName />
+
+            <DeploymentDetailsSection state={state} className="w-2/3 p-6 ml-2" />
+          </div>
 
           <EditDeploymentInstances state={state} actions={actions} />
         </>
       )}
 
-      <DyoConfirmationModal
-        config={state.confirmationModal}
-        title={t('deploymentCopyConflictTitle')}
-        description={t('deploymentCopyConflictContent')}
-        confirmText={t('continue')}
-        className="w-1/4"
-        confirmColor="bg-error-red"
-      />
+      <DyoConfirmationModal config={state.confirmationModal} className="w-1/4" confirmColor="bg-error-red" />
     </Layout>
   )
 }

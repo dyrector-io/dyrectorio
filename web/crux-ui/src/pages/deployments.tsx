@@ -172,14 +172,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
         </DyoModal>
       )}
 
-      <DyoConfirmationModal
-        config={confirmationModal}
-        title={t('deploymentCopyConflictTitle')}
-        description={t('deploymentCopyConflictContent')}
-        confirmText={t('continue')}
-        className="w-1/4"
-        confirmColor="bg-error-red"
-      />
+      <DyoConfirmationModal config={confirmationModal} className="w-1/4" confirmColor="bg-error-red" />
     </Layout>
   )
 }

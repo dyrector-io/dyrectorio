@@ -182,6 +182,8 @@ class DyoNodeService {
         nodeId: data.id,
         status: nodeStatusToDto(data.status),
         address: data.address,
+        version: data.version,
+        connectedAt: timestampToUTC(data.connectedAt),
       } as NodeStatusMessage)
 
     const stream = () => this.client.subscribeNodeEventChannel(ServiceIdRequest.fromJSON(req))

@@ -36,8 +36,13 @@ import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { ValidationError } from 'yup'
+
+const getContainerConfigFieldErrors = (newConfig: ContainerConfig): ValidationError[] =>
+  getValidationError(containerConfigSchema, newConfig, { abortEarly: false })?.inner ?? []
+
+const jsonErrorOf = (fieldErrors: ValidationError[]) => (fieldErrors.length > 0 ? fieldErrors[0].message : null)
 
 type ViewState = 'editor' | 'json'
 
@@ -54,8 +59,8 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
   const [filters, setFilters] = useState<ImageConfigFilterType[]>([])
   const [config, setConfig] = useState<ContainerConfig>(image.config)
   const [viewState, setViewState] = useState<ViewState>('editor')
-  const [jsonError, setJsonError] = useState<string>(null)
-  const [fieldErrors, setFieldErrors] = useState<ValidationError[]>([])
+  const [fieldErrors, setFieldErrors] = useState<ValidationError[]>(() => getContainerConfigFieldErrors(image.config))
+  const [jsonError, setJsonError] = useState(jsonErrorOf(fieldErrors))
 
   const throttle = useThrottling(IMAGE_WS_REQUEST_DELAY)
   const router = useRouter()
@@ -71,25 +76,18 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
 
       setConfig(value)
 
-      const error = getValidationError(containerConfigSchema, value, { abortEarly: false })
+      const errors = getContainerConfigFieldErrors(value)
+      setFieldErrors(errors)
+      setJsonError(jsonErrorOf(errors))
 
-      if (!error) {
-        setJsonError(null)
-        setFieldErrors([])
+      if (errors.length < 1) {
         versionSock.send(WS_TYPE_PATCH_IMAGE, {
           id: image.id,
           config: value,
         } as PatchImageMessage)
-      } else {
-        setJsonError(error.inner[0].message)
-        setFieldErrors(error.inner)
       }
     })
   }
-
-  useEffect(() => {
-    onChange(config)
-  }, [])
 
   const onDelete = () =>
     confirmDelete(() => {

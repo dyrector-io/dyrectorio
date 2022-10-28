@@ -1,3 +1,4 @@
+import { SECOND_IN_MILLIS } from '@app/const'
 import { useEffect, useRef, useState } from 'react'
 
 const useTimer = (
@@ -12,7 +13,7 @@ const useTimer = (
 
   useEffect(() => {
     if (remaining > 0) {
-      timer.current = setTimeout(() => setRemaining(remaining - 1), 1000)
+      timer.current = setTimeout(() => setRemaining(remaining - 1), SECOND_IN_MILLIS)
     } else {
       timer.current = null
       if (timer !== null) {

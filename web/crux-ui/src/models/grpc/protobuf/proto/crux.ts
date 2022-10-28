@@ -1142,6 +1142,8 @@ export interface NodeEventMessage {
   id: string
   status: NodeConnectionStatus
   address?: string | undefined
+  version?: string | undefined
+  connectedAt?: Timestamp | undefined
 }
 
 export interface WatchContainerStateRequest {
@@ -7488,6 +7490,12 @@ export const NodeEventMessage = {
     if (message.address !== undefined) {
       writer.uint32(810).string(message.address)
     }
+    if (message.version !== undefined) {
+      writer.uint32(818).string(message.version)
+    }
+    if (message.connectedAt !== undefined) {
+      Timestamp.encode(message.connectedAt, writer.uint32(826).fork()).ldelim()
+    }
     return writer
   },
 
@@ -7507,6 +7515,12 @@ export const NodeEventMessage = {
         case 101:
           message.address = reader.string()
           break
+        case 102:
+          message.version = reader.string()
+          break
+        case 103:
+          message.connectedAt = Timestamp.decode(reader, reader.uint32())
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -7520,6 +7534,8 @@ export const NodeEventMessage = {
       id: isSet(object.id) ? String(object.id) : '',
       status: isSet(object.status) ? nodeConnectionStatusFromJSON(object.status) : 0,
       address: isSet(object.address) ? String(object.address) : undefined,
+      version: isSet(object.version) ? String(object.version) : undefined,
+      connectedAt: isSet(object.connectedAt) ? fromJsonTimestamp(object.connectedAt) : undefined,
     }
   },
 
@@ -7528,6 +7544,8 @@ export const NodeEventMessage = {
     message.id !== undefined && (obj.id = message.id)
     message.status !== undefined && (obj.status = nodeConnectionStatusToJSON(message.status))
     message.address !== undefined && (obj.address = message.address)
+    message.version !== undefined && (obj.version = message.version)
+    message.connectedAt !== undefined && (obj.connectedAt = fromTimestamp(message.connectedAt).toISOString())
     return obj
   },
 
@@ -7536,6 +7554,11 @@ export const NodeEventMessage = {
     message.id = object.id ?? ''
     message.status = object.status ?? 0
     message.address = object.address ?? undefined
+    message.version = object.version ?? undefined
+    message.connectedAt =
+      object.connectedAt !== undefined && object.connectedAt !== null
+        ? Timestamp.fromPartial(object.connectedAt)
+        : undefined
     return message
   },
 }

@@ -6,7 +6,6 @@ import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import DyoTextArea from '@app/elements/dyo-text-area'
-import DyoWrap from '@app/elements/dyo-wrap'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
 import useWebSocket from '@app/hooks/use-websocket'
@@ -26,9 +25,10 @@ import { nodeSchema } from '@app/validations'
 import clsx from 'clsx'
 import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
-import { MutableRefObject, useState } from 'react'
-import DyoNodeConnectionInfo from './dyo-node-connection-info'
+import { MutableRefObject } from 'react'
 import DyoNodeSetup from './dyo-node-setup'
+import NodeConnectionCard from './node-connection-card'
+import useNodeState from './use-node-state'
 
 interface EditNodeCardProps {
   className?: string
@@ -44,7 +44,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
 
   const [revokeModalConfig, confirmTokenRevoke] = useConfirmation()
 
-  const [node, setNode] = useState(
+  const [node, setNode] = useNodeState(
     propsNode ??
       ({
         name: '',
@@ -180,8 +180,8 @@ const EditNodeCard = (props: EditNodeCardProps) => {
 
   return (
     <>
-      <DyoWrap className={clsx(className, 'flex flex-row')}>
-        <DyoCard className="w-full p-8">
+      <div className={clsx(className, 'flex flex-row gap-4')}>
+        <DyoCard className="w-1/2 p-8">
           <DyoHeading element="h4" className="text-lg text-bright">
             {editing ? t('common:editName', { name: node.name }) : t('new')}
           </DyoHeading>
@@ -217,51 +217,53 @@ const EditNodeCard = (props: EditNodeCardProps) => {
             <DyoButton className="hidden" type="submit" />
           </form>
         </DyoCard>
-        <DyoCard className="w-full p-8">
-          <DyoHeading element="h4" className="text-lg text-bright mb-4">
-            {t('setup')}
-          </DyoHeading>
 
-          <div className="text-bright mb-4">
-            <DyoHeading element="h4" className="text-md">
-              {t('whatScriptDoesHeader')}
+        <div className="flex flex-col flex-grow w-1/2">
+          <NodeConnectionCard node={node} />
+
+          <DyoCard className="flex-grow w-full p-8 mt-4">
+            <DyoHeading element="h4" className="text-lg text-bright mb-4">
+              {t('setup')}
             </DyoHeading>
 
-            <p className="text-light-eased ml-4">{t('scriptExplanation')}</p>
-          </div>
-
-          {node.install ? (
             <div className="text-bright mb-4">
-              <DyoHeading element="h5" className="text-md">
-                {t('requirementsHeader')}
+              <DyoHeading element="h4" className="text-md">
+                {t('whatScriptDoesHeader')}
               </DyoHeading>
 
-              {(t(`requirements.${node.type}`, null, { returnObjects: true }) as string[]).map((requirement, index) => (
-                <p className="text-light-eased max-w-lg ml-4" key={index}>
-                  - {requirement}
-                </p>
-              ))}
+              <p className="text-light-eased ml-4">{t('scriptExplanation')}</p>
             </div>
-          ) : null}
 
-          {!editing ? (
-            <div className="text-bright font-bold mt-4">{t('saveYourNode')}</div>
-          ) : node.hasToken && !node.install ? (
-            <>
-              <DyoNodeConnectionInfo node={node} />
+            {node.install ? (
+              <div className="text-bright mb-4">
+                <DyoHeading element="h5" className="text-md">
+                  {t('requirements')}
+                </DyoHeading>
+
+                {(t(`installReq.${node.type}`, null, { returnObjects: true }) as string[]).map((it, index) => (
+                  <p key={`install-req-${index}`} className="text-light-eased max-w-lg ml-4">
+                    - {it}
+                  </p>
+                ))}
+              </div>
+            ) : null}
+
+            {!editing ? (
+              <div className="text-bright font-bold mt-2">{t('saveYourNode')}</div>
+            ) : node.hasToken && !node.install ? (
               <DyoButton className="px-6 mt-4 mr-auto" secondary onClick={onRevokeToken}>
                 {t('revoke')}
               </DyoButton>
-            </>
-          ) : (
-            <DyoNodeSetup
-              node={node}
-              onNodeTypeChanged={onNodeTypeChanged}
-              onNodeInstallChanged={onNodeInstallChanged}
-            />
-          )}
-        </DyoCard>
-      </DyoWrap>
+            ) : (
+              <DyoNodeSetup
+                node={node}
+                onNodeTypeChanged={onNodeTypeChanged}
+                onNodeInstallChanged={onNodeInstallChanged}
+              />
+            )}
+          </DyoCard>
+        </div>
+      </div>
 
       <DyoConfirmationModal
         config={revokeModalConfig}
