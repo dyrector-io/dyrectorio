@@ -300,8 +300,7 @@ export const mergeConfigs = (
     // common
     name: instanceConfig.name || imageConfig.name,
     environment: envs,
-    secrets:
-      instanceConfig?.secrets && instanceConfig.secrets.length > 0 ? instanceConfig.secrets : imageConfig.secrets,
+    secrets: instanceConfig?.secrets ? instanceConfig.secrets : imageConfig.secrets,
     ports: overridePorts(imageConfig?.ports, instanceConfig.ports),
     user: override(imageConfig?.user, instanceConfig.user),
     tty: override(imageConfig?.tty, instanceConfig.tty),

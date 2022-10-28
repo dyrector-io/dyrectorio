@@ -119,6 +119,5 @@
     "useLoadBalancer": "Use load balancer",
     "extraLBAnnotations": "Extra LB annotations",
     "placeholders": { "headerName": "Header name", "cpuUsageExample": "100", "memoryUsageExample": "1m" }
-  },
-  "sensitiveKey": "Sensitive config data should be stored as secrets"
+  }
 }
