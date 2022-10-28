@@ -36,7 +36,11 @@ const (
 	ContainerNetDriver = "bridge"
 	PodmanHost         = "host.containers.internal"
 	DockerHost         = "host.docker.internal"
-	UpCommand          = "up"
+)
+
+const (
+	UpCommand   = "up"
+	DownCommand = "down"
 )
 
 type traefikFileProviderData struct {
@@ -69,7 +73,7 @@ func ProcessCommand(settings *Settings) {
 		containers.MailSlurper = GetMailSlurper(settings)
 
 		StartContainers(&containers, settings.InternalHostDomain)
-	case "down":
+	case DownCommand:
 		StopContainers(&containers)
 	default:
 		log.Fatal().Msg("invalid command")

@@ -458,8 +458,8 @@ func getAvailablePort(portMap map[string]uint, portNum uint, portDesc string, ch
 
 		if err != nil {
 			log.Error().Err(err).Str("Value", portDesc).Msg("")
-			log.Info().Msg("Type another port: ")
 			portNum = scanPort(portNum)
+			log.Info().Msgf("New PORT %d binded successfully for %s.", portNum, portDesc)
 			*changed = true
 			continue
 		}
@@ -469,6 +469,8 @@ func getAvailablePort(portMap map[string]uint, portNum uint, portDesc string, ch
 }
 
 func scanPort(portNum uint) uint {
+	log.Info().Msg("Type another port: ")
+
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		newPort, err := strconv.ParseUint(scanner.Text(), ParseBase, ParseBitSize)
