@@ -88,3 +88,40 @@ func getSecretClient(namespace string, cfg *config.Configuration) (v1.SecretInte
 
 	return clientset.CoreV1().Secrets(namespace), nil
 }
+
+func ApplyOpaqueSecret(ctx context.Context, namespace, name string, values map[string][]byte, appConfig *config.Configuration) (
+	version string, err error,
+) {
+	cli, err := getSecretClient(namespace, appConfig)
+	if err != nil {
+		return "", err
+	}
+
+	secrets := corev1.Secret(name, namespace).WithData(values)
+
+	result, err := cli.Apply(ctx, secrets, metav1.ApplyOptions{
+		FieldManager: appConfig.FieldManagerName,
+		Force:        appConfig.ForceOnConflicts,
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	return result.ResourceVersion, nil
+}
+
+func GetSecret(ctx context.Context, namespace, name string, appConfig *config.Configuration) (
+	secretFiles map[string][]byte, version string, err error,
+) {
+	cli, err := getSecretClient(namespace, appConfig)
+	if err != nil {
+		return nil, "", err
+	}
+
+	item, err := cli.Get(ctx, name, metav1.GetOptions{})
+	if err != nil {
+		return nil, "", err
+	}
+	return item.Data, item.ResourceVersion, nil
+}

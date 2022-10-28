@@ -50,6 +50,12 @@ down: ##
 go-crane: ##
 	air --build.cmd "" --build.bin "cd cmd/crane && go run ."
 
+.PHONY: go-crane-init
+go-crane-init: ##
+	cd cmd/crane && \
+	go run . init ; \
+	cd -
+
 .PHONY: go-dagent
 go-dagent: ##
 	air --build.cmd "" --build.bin "cd cmd/dagent && go run ."

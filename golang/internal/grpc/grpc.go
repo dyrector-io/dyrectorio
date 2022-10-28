@@ -194,7 +194,7 @@ func grpcLoop(
 			client := agent.NewAgentClient(grpcConn.Conn)
 			grpcConn.SetClient(client)
 
-			publicKey, keyErr := config.GetPublicKey(string(appConfig.SecretPrivateKey))
+			publicKey, keyErr := config.GetPublicKey(appConfig.SecretPrivateKey)
 
 			if keyErr != nil {
 				log.Error().Stack().Err(keyErr).Str("publicKey", publicKey).Msg("grpc public key error")
@@ -425,7 +425,7 @@ func executeSecretList(
 		return
 	}
 
-	publicKey, err := config.GetPublicKey(string(appConfig.SecretPrivateKey))
+	publicKey, err := config.GetPublicKey(appConfig.SecretPrivateKey)
 	if err != nil {
 		log.Error().Stack().Err(err).Msg("Failed to get public key")
 		return
