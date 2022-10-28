@@ -15,13 +15,13 @@ func InitCLI() *ucli.App {
 
 		Commands: []*ucli.Command{
 			{
-				Name:    "up",
+				Name:    UpCommand,
 				Aliases: []string{"u"},
 				Usage:   "Run the stack",
 				Action:  run,
 			},
 			{
-				Name:    "down",
+				Name:    DownCommand,
 				Aliases: []string{"d"},
 				Usage:   "Stop the stack",
 				Action:  run,

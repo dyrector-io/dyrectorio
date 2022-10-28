@@ -73,7 +73,7 @@ npm run disable-telemetry
   service:
 
 ```
-SERVE_ADMIN_BASE_URL=http://172.17.0.1:9434
+SERVE_ADMIN_BASE_URL=http://172.17.0.1:4434
 ```
 
 and of course add to `kratos.yml` the next line:
@@ -97,13 +97,7 @@ npm run dev
 ## Create an Identity
 
 To add new user in the Kratos serice you have to expose the admin port, for this
-comment out the port forwarding "`9434:4434`" line in `kratos.yaml`
-
-- Generate recovery link in sh:
-
-```
-sh create_default_user.sh <your_custom_email@email.com>
-```
+comment out the port forwarding "`4434:4434`" line in `kratos.yaml`
 
 ## MacOS dependencies
 
