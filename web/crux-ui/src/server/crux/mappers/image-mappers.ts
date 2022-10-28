@@ -1,88 +1,189 @@
 import {
   ContainerConfig,
-  ExplicitContainerConfig,
-  ExplicitContainerConfigLog,
-  ExplicitContainerDeploymentStrategyType,
-  ExplicitContainerNetworkMode,
-  ExplicitContainerRestartPolicyType,
+  ContainerConfigExposeStrategy,
+  ContainerConfigLog,
+  ContainerConfigVolume,
+  ContainerDeploymentStrategyType,
+  ContainerLogDriverType,
+  ContainerNetworkMode,
+  ContainerRestartPolicyType,
   VersionImage,
 } from '@app/models'
 import {
   DeploymentStrategy,
   deploymentStrategyFromJSON,
   deploymentStrategyToJSON,
-  ExplicitContainerConfig as ProtoExplicitContainerConfig,
-  InitContainer,
-  LogConfig,
+  DriverType,
+  driverTypeFromJSON,
+  driverTypeToJSON,
+  ExposeStrategy,
   NetworkMode,
   networkModeFromJSON,
   networkModeToJSON,
   RestartPolicy,
   restartPolicyFromJSON,
   restartPolicyToJSON,
-  Volume,
+  volumeTypeFromJSON,
+  volumeTypeToJSON,
 } from '@app/models/grpc/protobuf/proto/common'
 
-import { ContainerConfig as ProtoContainerConfig, ImageResponse } from '@app/models/grpc/protobuf/proto/crux'
+import {
+  ContainerConfig as ProtoContainerConfig,
+  ImageResponse,
+  InitContainer,
+  LogConfig,
+  Volume,
+} from '@app/models/grpc/protobuf/proto/crux'
 import { timestampToUTC } from '@app/utils'
 
-export const networkModeToDto = (networkMode?: NetworkMode): ExplicitContainerNetworkMode =>
-  !networkMode ? 'bridge' : (networkModeToJSON(networkMode).toLocaleLowerCase() as ExplicitContainerNetworkMode)
+export const networkModeToDto = (networkMode?: NetworkMode): ContainerNetworkMode =>
+  !networkMode ? 'bridge' : (networkModeToJSON(networkMode).toLocaleLowerCase() as ContainerNetworkMode)
 
-export const deploymentStrategyToDto = (strategy?: DeploymentStrategy): ExplicitContainerDeploymentStrategyType =>
-  !strategy
-    ? 'recreate'
-    : (deploymentStrategyToJSON(strategy).toLocaleLowerCase() as ExplicitContainerDeploymentStrategyType)
+export const deploymentStrategyToDto = (strategy?: DeploymentStrategy): ContainerDeploymentStrategyType => {
+  switch (strategy) {
+    case null:
+    case undefined:
+      return 'recreate'
+    case DeploymentStrategy.UNKOWN_DEPLOYMENT_STRATEGY:
+      return 'unknown'
+    default:
+      return deploymentStrategyToJSON(strategy).toLocaleLowerCase() as ContainerDeploymentStrategyType
+  }
+}
 
-export const restartPolicyTypeToDto = (policy?: RestartPolicy): ExplicitContainerRestartPolicyType =>
-  !policy ? 'unless_stopped' : (restartPolicyToJSON(policy).toLocaleLowerCase() as ExplicitContainerRestartPolicyType)
+export const restartPolicyTypeToDto = (policy?: RestartPolicy): ContainerRestartPolicyType => {
+  if (!policy) {
+    return 'unlessStopped'
+  }
 
-export const networkModeToProto = (networkMode?: ExplicitContainerNetworkMode): NetworkMode =>
+  switch (policy) {
+    case RestartPolicy.ON_FAILURE:
+      return 'onFailure'
+    case RestartPolicy.UNLESS_STOPPED:
+      return 'unlessStopped'
+    default:
+      return restartPolicyToJSON(policy).toLocaleLowerCase() as ContainerRestartPolicyType
+  }
+}
+
+export const networkModeToProto = (networkMode?: ContainerNetworkMode): NetworkMode =>
   !networkMode ? undefined : networkModeFromJSON(networkMode.toUpperCase())
 
-export const restartPolicyTypeToProto = (policy?: ExplicitContainerRestartPolicyType): RestartPolicy =>
+export const restartPolicyTypeToProto = (policy?: ContainerRestartPolicyType): RestartPolicy =>
   !policy ? undefined : restartPolicyFromJSON(policy.toUpperCase())
 
-export const deploymentStrategyToProto = (strategy?: ExplicitContainerDeploymentStrategyType): DeploymentStrategy =>
+export const deploymentStrategyToProto = (strategy?: ContainerDeploymentStrategyType): DeploymentStrategy =>
   !strategy ? undefined : deploymentStrategyFromJSON(strategy.toUpperCase())
 
-export const logConfigToProto = (logConfig?: ExplicitContainerConfigLog): LogConfig => {
+export const logConfigToProto = (logConfig?: ContainerConfigLog): LogConfig => {
   if (!logConfig) {
     return null
   }
 
-  return { driver: logConfig.type, options: logConfig.config }
+  return {
+    driver: logConfig.driver ? driverTypeFromJSON(logConfig.driver.toUpperCase()) : DriverType.DRIVER_TYPE_NONE,
+    options: logConfig.options,
+  }
 }
 
-export const logConfigToDto = (logConfig?: LogConfig): ExplicitContainerConfigLog => {
+export const logDriverDto = (logDriver: DriverType): ContainerLogDriverType => {
+  switch (logDriver) {
+    case undefined:
+    case null:
+    case DriverType.UNKNOWN_DRIVER_TYPE:
+    case DriverType.DRIVER_TYPE_NONE:
+      return 'none'
+    default:
+      return driverTypeToJSON(logDriver).toLocaleLowerCase() as ContainerLogDriverType
+  }
+}
+
+export const logConfigToDto = (logConfig?: LogConfig): ContainerConfigLog => {
   if (!logConfig) {
     return null
   }
 
-  return { type: logConfig.driver, config: logConfig.options }
+  return {
+    driver: logDriverDto(logConfig.driver),
+    options: logConfig.options,
+  }
 }
 
-export const explicitContainerConfigToDto = (config?: ProtoExplicitContainerConfig): ExplicitContainerConfig => {
+export const volumesToProto = (volumes?: ContainerConfigVolume[]): Volume[] => {
+  if (!volumes) {
+    return []
+  }
+
+  return volumes.map(volume => ({ ...volume, type: volumeTypeFromJSON(volume.type.toUpperCase()) } as Volume))
+}
+
+export const volumesToDto = (volumes?: Volume[]): ContainerConfigVolume[] => {
+  if (!volumes) {
+    return []
+  }
+
+  return volumes.map(
+    volume => ({ ...volume, type: volumeTypeToJSON(volume.type).toLocaleLowerCase() } as ContainerConfigVolume),
+  )
+}
+
+export const exposeToDto = (expose?: ExposeStrategy): ContainerConfigExposeStrategy => {
+  switch (expose) {
+    case ExposeStrategy.NONE_ES:
+      return 'none'
+    case ExposeStrategy.EXPOSE:
+      return 'expose'
+    case ExposeStrategy.EXPOSE_WITH_TLS:
+      return 'exposeWithTls'
+    default:
+      return 'none'
+  }
+}
+
+export const exposeToProto = (expose?: ContainerConfigExposeStrategy): ExposeStrategy => {
+  switch (expose) {
+    case 'none':
+      return ExposeStrategy.NONE_ES
+    case 'expose':
+      return ExposeStrategy.EXPOSE
+    case 'exposeWithTls':
+      return ExposeStrategy.EXPOSE_WITH_TLS
+    default:
+      return null
+  }
+}
+
+export const containerConfigToDto = (config?: ProtoContainerConfig): ContainerConfig => {
   if (!config) {
     return null
   }
 
-  const explicit: ExplicitContainerConfig = {
-    user: config.user ?? null,
-    tty: config.TTY ?? false,
-    ports: config.ports ?? [],
-    portRanges: config.portRanges ?? [],
-    volumes: config.volumes ?? [],
-    commands: config.command ?? [],
-    args: config.args ?? [],
-    expose: config.expose ?? null,
-    ingress: config.ingress ?? null,
-    configContainer: config.configContainer ?? null,
-    importContainer: config.importContainer ?? null,
+  const cfg: ContainerConfig = {
+    // common
+    name: config.common.name ?? null,
+    user: config.common.user ?? null,
+    tty: config.common.TTY ?? false,
+    ingress: config.common.ingress ?? null,
+    configContainer: config.common.configContainer ?? null,
+    importContainer: config.common.importContainer ?? null,
+    ports: config.common.ports ?? [],
+    portRanges: config.common.portRanges ?? [],
+    volumes: volumesToDto(config.common.volumes),
+    commands: config.common.commands ?? [],
+    args: config.common.args ?? [],
+    expose: exposeToDto(config.common.expose),
+    environment: config.common.environment ?? [],
+    initContainers: config.common?.initContainers ?? [],
+    secrets: config.common.secrets ?? [],
+    capabilities: config.capabilities,
+
+    // dagent
     logConfig: logConfigToDto(config.dagent?.logConfig),
     restartPolicy: restartPolicyTypeToDto(config.dagent?.restartPolicy),
     networkMode: networkModeToDto(config.dagent?.networkMode),
     networks: config.dagent?.networks ?? [],
+
+    // crane
     deploymentStrategy: deploymentStrategyToDto(config.crane?.deploymentStatregy),
     customHeaders: config.crane?.customHeaders ?? [],
     proxyHeaders: config.crane?.proxyHeaders ?? false,
@@ -90,56 +191,50 @@ export const explicitContainerConfigToDto = (config?: ProtoExplicitContainerConf
     extraLBAnnotations: config.crane?.extraLBAnnotations ?? null,
     healthCheckConfig: config.crane?.healthCheckConfig ?? null,
     resourceConfig: config.crane?.resourceConfig ?? null,
-    initContainers: config.initContainers ?? [],
   }
 
-  return explicit
+  return cfg
 }
 
-export const explicitContainerConfigToProto = (config?: ExplicitContainerConfig): ProtoExplicitContainerConfig => {
+export const containerConfigToProto = (config?: ContainerConfig | Partial<ContainerConfig>): ProtoContainerConfig => {
   if (!config) {
     return null
   }
 
-  const protoConfig: ProtoExplicitContainerConfig = {
-    user: config.user,
-    TTY: config.tty,
-    ports: config.ports ?? [],
-    portRanges: config.portRanges ?? [],
-    volumes: (config.volumes ?? []) as Volume[],
-    command: config.commands ?? [],
-    args: config.args ?? [],
-    importContainer: config.importContainer,
-    configContainer: config.configContainer,
+  const protoConfig: ProtoContainerConfig = {
+    common: {
+      user: config.user,
+      TTY: config.tty,
+      ports: config.ports,
+      portRanges: config.portRanges ?? [],
+      volumes: volumesToProto(config.volumes),
+      commands: config.commands ?? [],
+      args: config.args ?? [],
+      expose: exposeToProto(config.expose),
+      ingress: config.ingress ? { ...config.ingress, uploadLimit: config.ingress?.uploadLimitInBytes } : null,
+      configContainer: config.configContainer,
+      importContainer: config.importContainer,
+      name: config.name,
+      environment: config.environment ?? [],
+      initContainers: [],
+      secrets: config.secrets ?? [],
+    },
     dagent: undefined,
     crane: undefined,
-    environments: [],
-    initContainers: [],
+    capabilities: config.capabilities,
   }
 
   if (config.initContainers) {
-    protoConfig.initContainers = config.initContainers.map(
+    protoConfig.common.initContainers = config.initContainers.map(
       it =>
         ({
           ...it,
-          environments: it.environments ?? [],
+          environment: it.environment ?? [],
         } as InitContainer),
     )
   }
 
-  if (config.expose) {
-    protoConfig.expose = { public: config.expose.public, tls: config.expose.tls }
-  }
-
-  if (config.ingress) {
-    protoConfig.ingress = {
-      name: config.ingress.name,
-      host: config.ingress.host,
-      uploadLimit: config.ingress.uploadLimitInBytes,
-    }
-  }
-
-  if (config.logConfig || config.restartPolicy || config.networkMode) {
+  if (config.logConfig || config.restartPolicy || config.networkMode || config.networks) {
     protoConfig.dagent = {
       logConfig: logConfigToProto(config.logConfig),
       restartPolicy: restartPolicyTypeToProto(config.restartPolicy),
@@ -161,7 +256,7 @@ export const explicitContainerConfigToProto = (config?: ExplicitContainerConfig)
       deploymentStatregy: deploymentStrategyToProto(config.deploymentStrategy),
       healthCheckConfig: config.healthCheckConfig,
       resourceConfig: config.resourceConfig,
-      customHeaders: config.customHeaders ?? [],
+      customHeaders: config.customHeaders,
       proxyHeaders: config.proxyHeaders,
       useLoadBalancer: config.useLoadBalancer,
       extraLBAnnotations: config.extraLBAnnotations,
@@ -170,14 +265,6 @@ export const explicitContainerConfigToProto = (config?: ExplicitContainerConfig)
 
   return protoConfig
 }
-
-export const containerConfigToDto = (config?: ProtoContainerConfig): ContainerConfig =>
-  !config
-    ? null
-    : {
-        ...config,
-        config: explicitContainerConfigToDto(config.config),
-      }
 
 export const imageToDto = (image: ImageResponse): VersionImage => ({
   ...image,

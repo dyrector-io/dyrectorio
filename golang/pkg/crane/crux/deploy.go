@@ -9,7 +9,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/internal/mapper"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/k8s"
-	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
+	common "github.com/dyrector-io/dyrectorio/protobuf/go/common"
 )
 
 func GetDeployments(ctx context.Context, namespace string) []*common.ContainerStateItem {

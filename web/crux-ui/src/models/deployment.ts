@@ -1,7 +1,8 @@
 import { DeploymentStatus } from './common'
-import { Environment } from './container'
+import { ContainerConfig } from './container'
+import { UniqueKeyValue } from './grpc/protobuf/proto/crux'
 import { ImageDeletedMessage } from './image'
-import { Instance, InstanceContainerConfig, InstanceStatus, PatchInstance } from './instance'
+import { Instance, InstanceStatus, PatchInstance } from './instance'
 import { DyoNode } from './node'
 import { ProductDetails } from './product'
 import { VersionDetails } from './version'
@@ -13,7 +14,7 @@ export type DeploymentDetails = {
   note?: string | undefined
   prefix: string
   updatedAt: string
-  environment: Environment
+  environment: UniqueKeyValue[]
   status: DeploymentStatus
   publicKey?: string
   instances: Instance[]
@@ -59,7 +60,7 @@ export type DeploymentCreated = {
 
 export type PatchDeployment = {
   id: string
-  environment?: Environment
+  environment?: UniqueKeyValue[]
   instance?: PatchInstance
 }
 
@@ -79,18 +80,18 @@ export type CopyDeploymentResponse = {
 // ws
 
 export const WS_TYPE_PATCH_DEPLOYMENT_ENV = 'patch-deployment-env'
-export type PatchDeploymentEnvMessage = Environment
+export type PatchDeploymentEnvMessage = UniqueKeyValue[]
 
 export const WS_TYPE_DEPLOYMENT_ENV_UPDATED = 'deployment-env-updated'
-export type DeploymentEnvUpdatedMessage = Environment
+export type DeploymentEnvUpdatedMessage = UniqueKeyValue[]
 
 export const WS_TYPE_PATCH_INSTANCE = 'patch-instance'
-export type PatchInstanceMessage = Partial<InstanceContainerConfig> & {
+export type PatchInstanceMessage = Partial<ContainerConfig> & {
   instanceId: string
 }
 
 export const WS_TYPE_INSTANCE_UPDATED = 'instance-updated'
-export type InstanceUpdatedMessage = InstanceContainerConfig & {
+export type InstanceUpdatedMessage = ContainerConfig & {
   instanceId: string
 }
 

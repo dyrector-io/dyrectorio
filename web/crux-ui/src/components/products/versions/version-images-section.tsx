@@ -11,12 +11,6 @@ interface VersionImagesSectionProps {
   actions: ImagesActions
 }
 
-interface VersionImagesSectionProps {
-  disabled?: boolean
-  state: ImagesState
-  actions: ImagesActions
-}
-
 const VersionImagesSection = (props: VersionImagesSectionProps) => {
   const { state, actions, disabled } = props
   const { images, viewMode } = state
@@ -42,10 +36,7 @@ export const mergeImagePatch = (oldImage: VersionImage, newImage: PatchVersionIm
   ...oldImage,
   ...newImage,
   config: {
-    name: newImage.config?.name ?? oldImage.config.name,
-    environment: newImage.config?.environment ?? oldImage.config.environment,
-    capabilities: newImage.config?.capabilities ?? oldImage.config.capabilities,
-    config: newImage.config?.config ?? oldImage.config.config,
-    secrets: newImage.config?.secrets ?? oldImage.config.secrets,
+    ...oldImage.config,
+    ...newImage.config,
   },
 })

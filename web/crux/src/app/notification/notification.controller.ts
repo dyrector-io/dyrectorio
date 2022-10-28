@@ -1,11 +1,11 @@
 import { Controller, UseGuards } from '@nestjs/common'
+import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
   AccessRequest,
   CreateNotificationRequest,
   CreateNotificationResponse,
   CruxNotificationController,
   CruxNotificationControllerMethods,
-  Empty,
   IdRequest,
   NotificationDetailsResponse,
   NotificationListResponse,

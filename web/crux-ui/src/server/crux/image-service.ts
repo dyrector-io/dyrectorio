@@ -1,9 +1,9 @@
 import { Logger } from '@app/logger'
 import { PatchVersionImage, RegistryImages, VersionImage } from '@app/models'
+import { Empty } from '@app/models/grpc/protobuf/proto/common'
 import {
   AddImagesToVersionRequest,
   CruxImageClient,
-  Empty,
   IdRequest,
   ImageListResponse,
   ImageResponse,
@@ -12,7 +12,7 @@ import {
 } from '@app/models/grpc/protobuf/proto/crux'
 import { Identity } from '@ory/kratos-client'
 import { protomisify } from '@server/crux/grpc-connection'
-import { explicitContainerConfigToProto, imageToDto } from './mappers/image-mappers'
+import { containerConfigToProto, imageToDto } from './mappers/image-mappers'
 
 class DyoImageService {
   private logger = new Logger(DyoImageService.name)
@@ -80,27 +80,7 @@ class DyoImageService {
       ...image,
       accessedBy: this.identity.id,
       id,
-      config: !image.config
-        ? null
-        : {
-            config: explicitContainerConfigToProto(image.config?.config),
-            name: image.config?.name,
-            capabilities: !image.config?.capabilities
-              ? undefined
-              : {
-                  data: image.config.capabilities,
-                },
-            environment: !image.config?.environment
-              ? undefined
-              : {
-                  data: image.config.environment,
-                },
-            secrets: !image.config?.secrets
-              ? undefined
-              : {
-                  data: image.config.secrets,
-                },
-          },
+      config: containerConfigToProto(image.config),
     } as PatchImageRequest
 
     await protomisify<PatchImageRequest, Empty>(this.client, this.client.patchImage)(PatchImageRequest, req)

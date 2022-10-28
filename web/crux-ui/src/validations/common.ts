@@ -1,9 +1,14 @@
 import * as yup from 'yup'
+import { ValidateOptions } from 'yup/lib/types'
 import { DYO_ICONS } from '../elements/dyo-icon-picker'
 
-export const getValidationError = (schema: yup.AnySchema, candidate: any): yup.ValidationError => {
+export const getValidationError = (
+  schema: yup.AnySchema,
+  candidate: any,
+  options?: ValidateOptions,
+): yup.ValidationError => {
   try {
-    schema.validateSync(candidate)
+    schema.validateSync(candidate, options)
     return null
   } catch (err) {
     return err
@@ -11,6 +16,10 @@ export const getValidationError = (schema: yup.AnySchema, candidate: any): yup.V
 }
 
 export const stringStringMapRule = yup.object().test(it => {
+  if (!it) {
+    return true
+  }
+
   const entries = Object.entries(it)
   const strings = entries.filter(entry => {
     const [key, value] = entry

@@ -6,9 +6,13 @@ import {
   AgentController as GrpcAgentController,
   AgentControllerMethods,
   AgentInfo,
-  Empty,
 } from 'src/grpc/protobuf/proto/agent'
-import { ContainerStateListMessage, DeploymentStatusMessage, ListSecretsResponse } from 'src/grpc/protobuf/proto/common'
+import {
+  ContainerStateListMessage,
+  DeploymentStatusMessage,
+  Empty,
+  ListSecretsResponse,
+} from 'src/grpc/protobuf/proto/common'
 import { NodeUnaryCall } from 'src/shared/grpc-node-connection'
 import AgentService from './agent.service'
 import AgentAuthGuard from './guards/agent.auth.guard'
@@ -31,11 +35,7 @@ export default class AgentController implements GrpcAgentController {
     return this.service.handleContainerStatus(call.connection, request)
   }
 
-  secretsList(
-    request: ListSecretsResponse,
-    _: Metadata,
-    call: NodeUnaryCall,
-  ): Empty | Promise<Empty> | Observable<Empty> {
+  secretList(request: ListSecretsResponse, _: Metadata, call: NodeUnaryCall): Observable<Empty> {
     return this.service.handleSecretList(call.connection, request)
   }
 }

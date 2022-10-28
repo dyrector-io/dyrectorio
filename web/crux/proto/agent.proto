@@ -23,12 +23,11 @@ service Agent {
    */
   rpc Connect(AgentInfo) returns (stream AgentCommand);
 
-  rpc DeploymentStatus(stream common.DeploymentStatusMessage) returns (Empty);
-  rpc ContainerState(stream common.ContainerStateListMessage) returns (Empty);
-  rpc SecretsList(common.ListSecretsResponse) returns (Empty);
-}
+  rpc DeploymentStatus(stream common.DeploymentStatusMessage) returns (common.Empty);
 
-message Empty {}
+  rpc ContainerState(stream common.ContainerStateListMessage) returns (common.Empty);
+  rpc SecretList(common.ListSecretsResponse) returns (common.Empty);
+}
 
 /**
  *
@@ -75,38 +74,137 @@ message ListSecretsRequest {
  * Deploys a single container
  *
  */
-message DeployRequest {
+message Environment { repeated string env = 1; }
 
+message InstanceConfig {
+  /*
+  prefix mapped into host folder structure,
+  used as namespace id
+  */
+  string prefix = 1;
+  optional string mountPath = 2; // mount path of instance (docker only)
+  optional Environment environment = 3; // environment variable map (piped)
+  optional string repositoryPrefix = 4; // registry repo prefix
+}
+
+message RegistryAuth {
+  string name = 1;
+  string url = 2;
+  string user = 3;
+  string password = 4;
+}
+
+// Container config
+
+message Port {
+  int32 internal = 100;
+  int32 external = 101;
+}
+
+message PortRange {
+  int32 from = 100;
+  int32 to = 101;
+}
+
+message PortRangeBinding {
+  PortRange internal = 100;
+  PortRange external = 101;
+}
+
+message Volume {
+  string name = 100;
+  string path = 101;
+  optional string size = 102;
+  optional common.VolumeType type = 103;
+  optional string class = 104;
+}
+
+message VolumeLink {
+  string name = 100;
+  string path = 101;
+}
+
+message InitContainer {
+  string name = 100;
+  string image = 101;
+  optional bool useParentConfig = 102;
+
+  repeated VolumeLink volumes = 1000;
+  repeated string command = 1001;
+  repeated string args = 1002;
+  map<string, string> environment = 1003;
+}
+
+message ImportContainer {
+  string volume = 100;
+  string command = 101;
+
+  map<string, string> environment = 1000;
+}
+
+message LogConfig {
+  common.DriverType driver = 100;
+
+  map<string, string> options = 1000;
+}
+
+message DagentContainerConfig {
+  optional LogConfig logConfig = 100;
+  optional common.RestartPolicy restartPolicy = 101;
+  optional common.NetworkMode networkMode = 102;
+
+  repeated string networks = 1000;
+}
+
+message CraneContainerConfig {
+  optional common.DeploymentStrategy deploymentStatregy = 100;
+  optional common.HealthCheckConfig healthCheckConfig = 101;
+  optional common.ResourceConfig resourceConfig = 102;
+  optional bool proxyHeaders = 103;
+  optional bool useLoadBalancer = 104;
+
+  repeated string customHeaders = 1000;
+  map<string, string> extraLBAnnotations = 1001;
+}
+
+message CommonContainerConfig {
+  string name = 101;
+  optional common.ExposeStrategy expose = 102;
+  optional common.Ingress ingress = 103;
+  optional common.ConfigContainer configContainer = 104;
+  optional ImportContainer importContainer = 105;
+  optional int64 user = 106;
+  optional bool TTY = 107;
+
+  repeated Port ports = 1000;
+  repeated PortRangeBinding portRanges = 1001;
+  repeated Volume volumes = 1002;
+  repeated string commands = 1003;
+  repeated string args = 1004;
+  repeated string environment = 1005;
+  map<string, string> secrets = 1006;
+  repeated InitContainer initContainers = 1007;
+}
+
+message DeployRequest {
   string id = 1;
   string containerName = 2;
 
-  message InstanceConfig {
-    /*
-    containerPreName, mapped into host folder structure,
-    used as namespace id
-    */
-    string prefix = 1;
-    optional string mountPath = 2; // mount path of instance (docker only)
-    message Environment { repeated string env = 1; }
-    optional Environment environment = 3; // environment variable map (piped)
-    optional string repositoryPrefix = 4; // registry repo prefix
-  }
   /* InstanceConfig is set for multiple containers */
   InstanceConfig instanceConfig = 3;
 
+  /* ContainerConfigs */
+  optional CommonContainerConfig common = 4;
+  optional DagentContainerConfig dagent = 5;
+  optional CraneContainerConfig crane = 6;
+
   /* Runtime info and requirements of a container */
-  common.ExplicitContainerConfig containerConfig = 4;
-  optional string runtimeConfig = 5;
-  optional string registry = 6;
-  string imageName = 7;
-  string tag = 8;
-  message RegistryAuth {
-    string name = 1;
-    string url = 2;
-    string user = 3;
-    string password = 4;
-  }
-  optional RegistryAuth registryAuth = 9;
+  optional string runtimeConfig = 7;
+  optional string registry = 8;
+  string imageName = 9;
+  string tag = 10;
+
+  optional RegistryAuth registryAuth = 11;
 }
 
 message ContainerStateRequest {

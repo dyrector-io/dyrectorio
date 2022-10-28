@@ -1,11 +1,9 @@
 import { Injectable } from '@nestjs/common'
 import { DeploymentStatusEnum } from '@prisma/client'
-import { containerNameFromImageName } from 'src/domain/deployment'
 import { VersionMessage } from 'src/domain/notification-templates'
 import {
   CreateEntityResponse,
   CreateVersionRequest,
-  Empty,
   IdRequest,
   IncreaseVersionRequest,
   UpdateEntityResponse,
@@ -13,6 +11,7 @@ import {
   VersionDetailsResponse,
   VersionListResponse,
 } from 'src/grpc/protobuf/proto/crux'
+import { Empty } from 'src/grpc/protobuf/proto/common'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
 import { Version } from '.prisma/client'
@@ -118,11 +117,7 @@ export default class VersionService {
                 versionId: newVersion.id,
                 config: {
                   create: {
-                    name: containerNameFromImageName(image.name),
-                    environment: image.config.environment,
-                    capabilities: image.config.capabilities,
-                    config: image.config.config,
-                    secrets: image.config.secrets,
+                    ...image,
                   },
                 },
               },

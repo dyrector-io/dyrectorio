@@ -439,7 +439,7 @@ func executeSecretList(
 		Keys:      keys,
 	}
 
-	_, err = grpcConn.Client.SecretsList(ctx, resp)
+	_, err = grpcConn.Client.SecretList(ctx, resp)
 	if err != nil {
 		log.Error().Stack().Err(err).Msg("Secret list response error")
 		return

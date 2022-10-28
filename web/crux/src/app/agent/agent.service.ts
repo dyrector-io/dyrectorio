@@ -9,8 +9,14 @@ import { DeployMessage, NotificationMessageType } from 'src/domain/notification-
 import { collectChildVersionIds, collectParentVersionIds } from 'src/domain/utils'
 import { AlreadyExistsException, NotFoundException, UnauthenticatedException } from 'src/exception/errors'
 import { AgentCommand, AgentInfo } from 'src/grpc/protobuf/proto/agent'
-import { ContainerStateListMessage, Empty, NodeConnectionStatus, NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
-import { DeploymentStatus, DeploymentStatusMessage, ListSecretsResponse } from 'src/grpc/protobuf/proto/common'
+import { NodeConnectionStatus, NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
+import {
+  ContainerStateListMessage,
+  DeploymentStatus,
+  DeploymentStatusMessage,
+  Empty,
+  ListSecretsResponse,
+} from 'src/grpc/protobuf/proto/common'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'

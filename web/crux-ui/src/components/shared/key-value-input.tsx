@@ -1,13 +1,14 @@
-import { DyoHeading } from '@app/elements/dyo-heading'
 import { MessageType } from '@app/elements/dyo-input'
+import { DyoLabel } from '@app/elements/dyo-label'
 import useRepatch from '@app/hooks/use-repatch'
+
 import { UniqueKeyValue } from '@app/models'
 import { getValidationError } from '@app/validations'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import { useEffect } from 'react'
+import { HTMLInputTypeAttribute, useEffect } from 'react'
 import { v4 as uuid } from 'uuid'
-import BaseSchema from 'yup/lib/schema'
+import yup from 'yup'
 import MultiInput from '../editor/multi-input'
 import { EditorStateOptions } from '../editor/use-editor-state'
 
@@ -60,15 +61,32 @@ interface KeyValueInputProps {
   disabled?: boolean
   valueDisabled?: boolean
   className?: string
-  heading?: string
+  label?: string
+  labelClassName?: string
   items: UniqueKeyValue[]
-  editorOptions: EditorStateOptions
+  keyPlaceholder?: string
+  valuePlaceholder?: string
   onChange: (items: UniqueKeyValue[]) => void
-  hint?: { hintValidation: BaseSchema; hintText: string }
+  type?: HTMLInputTypeAttribute | undefined
+  editorOptions: EditorStateOptions
+  hint?: { hintValidation: yup.BaseSchema; hintText: string }
 }
 
 const KeyValueInput = (props: KeyValueInputProps) => {
-  const { heading, disabled, className, items, valueDisabled, hint, editorOptions, onChange: propsOnChange } = props
+  const {
+    label,
+    labelClassName,
+    disabled,
+    className,
+    items,
+    valueDisabled,
+    hint,
+    editorOptions,
+    onChange: propsOnChange,
+    keyPlaceholder,
+    valuePlaceholder,
+    type,
+  } = props
 
   const { t } = useTranslation('common')
 
@@ -119,7 +137,7 @@ const KeyValueInput = (props: KeyValueInputProps) => {
 
     return (
       <div key={entry.id} className="flex flex-row flex-grow p-1">
-        <div className="w-5/12">
+        <div className="w-5/12 ml-2">
           <MultiInput
             key={keyId}
             id={keyId}
@@ -127,9 +145,10 @@ const KeyValueInput = (props: KeyValueInputProps) => {
             editorOptions={editorOptions}
             className="w-full mr-2"
             grow
-            placeholder={t('key')}
-            value={key}
+            placeholder={keyPlaceholder ?? t('key')}
+            value={key ?? ''}
             message={message}
+            type={type}
             messageType={messageType}
             onPatch={it => onChange(index, it, value)}
           />
@@ -143,8 +162,9 @@ const KeyValueInput = (props: KeyValueInputProps) => {
             editorOptions={editorOptions}
             className="w-full"
             grow
-            placeholder={t('value')}
-            value={value}
+            placeholder={valuePlaceholder ?? t('value')}
+            value={value ?? ''}
+            type={type}
             onPatch={it => onChange(index, key, it)}
           />
         </div>
@@ -153,15 +173,13 @@ const KeyValueInput = (props: KeyValueInputProps) => {
   }
 
   return (
-    <form className={clsx(className, 'flex flex-col max-h-128 overflow-y-auto')}>
-      {!heading ? null : (
-        <DyoHeading element="h6" className="text-bright mt-4 mb-2">
-          {heading}
-        </DyoHeading>
+    <div className={clsx(className, 'flex flex-col max-h-128 overflow-y-auto')}>
+      {!label ? null : (
+        <DyoLabel className={clsx(labelClassName ?? 'text-bright mb-2 whitespace-nowrap')}>{label}</DyoLabel>
       )}
 
       {elements.map((it, index) => renderItem(it, index))}
-    </form>
+    </div>
   )
 }
 

@@ -8,35 +8,55 @@ export interface DyoInputProps extends React.InputHTMLAttributes<HTMLInputElemen
   grow?: boolean
   label?: string
   labelClassName?: string
+  containerClassName?: string
   message?: string
   messageType?: MessageType
+  inline?: boolean
 }
 
 export const DyoInput = forwardRef((props: DyoInputProps, ref: ForwardedRef<HTMLInputElement>) => {
-  const { label, labelClassName, message, messageType, grow, name, className, disabled, ...forwardedProps } = props
+  const {
+    label,
+    labelClassName,
+    message,
+    messageType,
+    grow,
+    name,
+    className,
+    containerClassName,
+    disabled,
+    inline,
+    ...forwardedProps
+  } = props
 
   return (
     <>
-      {!label ? null : (
-        <DyoLabel className={clsx(labelClassName ?? 'mt-8 mb-2.5')} htmlFor={name}>
-          {label}
-        </DyoLabel>
-      )}
-
-      <input
-        {...forwardedProps}
-        name={name}
-        ref={ref}
-        disabled={disabled}
-        className={clsx(
-          className,
-          'bg-medium h-11 p-4 ring-2 rounded-md focus:outline-none focus:dark',
-          grow ? null : 'w-80',
-          disabled ? 'text-bright-muted ring-light-grey-muted' : 'text-bright ring-light-grey',
+      <div className={clsx(containerClassName, inline ? `flex flex-row ${message ? 'mb-0' : ''}` : 'flex flex-col')}>
+        {!label ? null : (
+          <DyoLabel
+            className={clsx(labelClassName ?? (inline ? 'my-auto mr-4' : 'mt-8 mb-2.5'), 'whitespace-nowrap')}
+            htmlFor={name}
+          >
+            {label}
+          </DyoLabel>
         )}
-      />
 
-      {!message ? null : <DyoMessage message={message} messageType={messageType} />}
+        <input
+          {...forwardedProps}
+          name={name}
+          ref={ref}
+          disabled={disabled}
+          className={clsx(
+            className,
+            'bg-medium h-11 p-4 ring-2 rounded-md focus:outline-none focus:dark',
+            grow ? 'w-full' : 'w-80',
+            disabled ? 'text-bright-muted ring-light-grey-muted' : 'text-bright ring-light-grey',
+          )}
+        />
+
+        {message && !inline ? <DyoMessage message={message} messageType={messageType} /> : null}
+      </div>
+      {message && inline ? <DyoMessage message={message} messageType={messageType} marginClassName="my-2" /> : null}
     </>
   )
 })

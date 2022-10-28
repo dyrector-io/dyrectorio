@@ -365,3 +365,28 @@ export const toTimestamp = (date: Date): Timestamp => {
   const nanos = (date.getTime() % 1_000) * 1_000_000
   return { seconds, nanos }
 }
+
+export const nullify = <T>(object: T): T => {
+  let empty = true
+
+  const keys = Object.keys(object)
+
+  // eslint-disable-next-line no-restricted-syntax
+  for (const key of keys) {
+    const obj = object[key]
+    if (obj) {
+      empty = typeof obj === 'object' ? !nullify(obj) : false
+      break
+    }
+  }
+
+  return !empty ? object : null
+}
+
+export const toNumber = (value: string): number => {
+  if (!value) {
+    return null
+  }
+
+  return Number.isNaN(value) ? 0 : Number(value)
+}

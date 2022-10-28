@@ -1,6 +1,7 @@
 import { Logger } from '@app/logger'
 import { CruxHealth, DEFAULT_CRUX_HEALTH } from '@app/models'
-import { CruxHealthClient, Empty, HealthResponse } from '@app/models/grpc/protobuf/proto/crux'
+import { Empty } from '@app/models/grpc/protobuf/proto/common'
+import { CruxHealthClient, HealthResponse } from '@app/models/grpc/protobuf/proto/crux'
 import { protomisify } from '@server/crux/grpc-connection'
 import serviceStatusToDto from './mappers/health-mappers'
 

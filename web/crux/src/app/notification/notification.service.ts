@@ -7,9 +7,9 @@ import {
   NotificationListResponse,
   CreateNotificationResponse,
   NotificationDetailsResponse,
-  Empty,
   CreateNotificationRequest,
 } from 'src/grpc/protobuf/proto/crux'
+import { Empty } from 'src/grpc/protobuf/proto/common'
 import TeamRepository from 'src/app/team/team.repository'
 import { Injectable, Logger } from '@nestjs/common'
 import PrismaService from 'src/services/prisma.service'

@@ -1,9 +1,9 @@
 import { CreateVersion, IncreaseVersion, UpdateVersion, Version, VersionDetails } from '@app/models'
+import { Empty } from '@app/models/grpc/protobuf/proto/common'
 import {
   CreateEntityResponse,
   CreateVersionRequest,
   CruxProductVersionClient,
-  Empty,
   IdRequest,
   IncreaseVersionRequest,
   UpdateEntityResponse,

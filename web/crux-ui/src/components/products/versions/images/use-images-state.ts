@@ -51,6 +51,8 @@ const ADD_SECTION_TO_SECTION: Record<VersionAddSection, VersionSection> = {
 }
 
 export type ImagesState = {
+  productId: string
+  versionId: string
   saving: boolean
   addSection: VersionAddSection
   section: VersionSection
@@ -78,13 +80,12 @@ export const imageTagKey = (registryId: string, imageName: string) => `${registr
 const mergeImagePatch = (oldImage: VersionImage, newImage: PatchVersionImage): VersionImage => ({
   ...oldImage,
   ...newImage,
-  config: {
-    name: newImage.config?.name ?? oldImage.config.name,
-    environment: newImage.config?.environment ?? oldImage.config.environment,
-    capabilities: newImage.config?.capabilities ?? oldImage.config.capabilities,
-    config: newImage.config?.config ?? oldImage.config.config,
-    secrets: newImage.config?.secrets ?? oldImage.config.secrets,
-  },
+  config: newImage.config
+    ? {
+        ...oldImage.config,
+        ...newImage.config,
+      }
+    : oldImage.config,
 })
 
 export interface ImagesStateOptions {
@@ -278,7 +279,7 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
   }
 
   return [
-    { addSection, section, images, editor, saving, tags, viewMode, versionSock },
+    { productId, versionId: version.id, addSection, section, images, editor, saving, tags, viewMode, versionSock },
     {
       selectAddSection,
       discardAddSection,
