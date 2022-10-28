@@ -318,7 +318,7 @@ const templateRegistrySchema = yup.object().shape({
     then: yup.object({
       url: yup.string().required(),
       user: yup.string(),
-      token: yup.string().required(),
+      token: yup.string(),
       imageNamePrefix: yup.string().required(),
     }),
   }),

@@ -247,7 +247,7 @@ export default class DeployMapper {
   private mapInitContainerToAgent(list: InitContainer[]): AgentInitContainer[] {
     const result: AgentInitContainer[] = []
 
-    list.forEach(it => {
+    list?.forEach(it => {
       result.push({
         ...it,
         environment: this.mapKeyValueToMap(it.environment as KeyValue[]),
@@ -266,7 +266,7 @@ export default class DeployMapper {
 
     const result: { [key: string]: string } = {}
 
-    list.forEach(it => {
+    list?.forEach(it => {
       result[it.key] = it.value
     })
 

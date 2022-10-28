@@ -198,6 +198,7 @@ export default class TemplateService {
             config: {
               update: config,
             },
+            tag: imageTemplate.tag,
             updatedBy: accessedBy,
           },
           where: {
