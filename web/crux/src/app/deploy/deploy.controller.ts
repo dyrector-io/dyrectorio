@@ -1,5 +1,5 @@
 import { Body, Controller, UseGuards } from '@nestjs/common'
-import { concatAll, from, Observable } from 'rxjs'
+import { concatAll, first, from, lastValueFrom, Observable } from 'rxjs'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import { ListSecretsResponse, Empty } from 'src/grpc/protobuf/proto/common'
 import {
@@ -81,8 +81,14 @@ export default class DeployController implements CruxDeploymentController {
     return await this.service.deleteDeployment(request)
   }
 
-  startDeployment(@Body(DeployStartValidationPipe) request: IdRequest): Observable<DeploymentProgressMessage> {
+  startDeploymentStreaming(@Body(DeployStartValidationPipe) request: IdRequest): Observable<DeploymentProgressMessage> {
     return from(this.service.startDeployment(request)).pipe(concatAll())
+  }
+
+  async startDeployment(@Body(DeployStartValidationPipe) request: IdRequest): Promise<Empty> {
+    await lastValueFrom(from(this.service.startDeployment(request)).pipe(first()))
+
+    return {}
   }
 
   @DisableTeamAccessCheck()
@@ -101,9 +107,5 @@ export default class DeployController implements CruxDeploymentController {
 
   async copyDeploymentUnsafe(request: IdRequest): Promise<CreateEntityResponse> {
     return this.service.copyDeployment(request)
-  }
-
-  async preDeploymentCheck(request: IdRequest): Promise<Empty> {
-    return this.service.preDeploymentCheck(request.id)
   }
 }

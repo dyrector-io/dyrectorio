@@ -16,7 +16,7 @@ import { DeploymentRoot, mergeConfigs } from '@app/models'
 import {
   deploymentApiUrl,
   deploymentDeployUrl,
-  deploymentPreDeployUrl,
+  deploymentStartUrl,
   deploymentUrl,
   productUrl,
   ROUTE_PRODUCTS,
@@ -38,7 +38,9 @@ export const startDeployment = async (
   versionId: string,
   deploymentId: string,
 ) => {
-  const res = await fetch(deploymentPreDeployUrl(productId, versionId, deploymentId))
+  const res = await fetch(deploymentStartUrl(productId, versionId, deploymentId), {
+    method: "POST"
+  })
 
   if (res.status === 412) {
     const json = await res.json()
@@ -50,7 +52,7 @@ export const startDeployment = async (
     return
   }
 
-  router.push(deploymentDeployUrl(productId, versionId, deploymentId))
+  //router.push(deploymentDeployUrl(productId, versionId, deploymentId))
 }
 
 interface DeploymentDetailsPageProps {

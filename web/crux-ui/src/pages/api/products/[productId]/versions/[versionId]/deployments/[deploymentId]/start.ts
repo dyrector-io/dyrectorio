@@ -3,10 +3,10 @@ import crux from '@server/crux/crux'
 import { withMiddlewares } from '@server/middlewares'
 import { NextApiRequest, NextApiResponse } from 'next'
 
-const onGet = async (req: NextApiRequest, res: NextApiResponse) => {
+const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
   const deploymentId = req.query.deploymentId as string
   try {
-    await crux(req).deployments.preDeploy(deploymentId)
+    await crux(req).deployments.startDeployment(deploymentId)
 
     res.status(200).end()
   } catch (err) {
@@ -19,5 +19,5 @@ const onGet = async (req: NextApiRequest, res: NextApiResponse) => {
 }
 
 export default withMiddlewares({
-  onGet,
+  onPost,
 })

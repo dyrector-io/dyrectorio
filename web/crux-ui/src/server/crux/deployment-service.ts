@@ -209,10 +209,10 @@ class DyoDeploymentService {
     await protomisify<IdRequest, Empty>(this.client, this.client.deleteDeployment)(IdRequest, req)
   }
 
-  startDeployment(
+  async startDeployment(
     id: string,
-    options: ProtoSubscriptionOptions<DeploymentEvent[]>,
-  ): GrpcConnection<DeploymentProgressMessage, DeploymentEvent[]> {
+    options?: ProtoSubscriptionOptions<DeploymentEvent[]>,
+  ): Promise<GrpcConnection<DeploymentProgressMessage, DeploymentEvent[]>> {
     const req: IdRequest = {
       id,
       accessedBy: this.identity.id,
@@ -248,7 +248,13 @@ class DyoDeploymentService {
       return events
     }
 
-    const stream = () => this.client.startDeployment(IdRequest.fromJSON(req))
+    if (!options) {
+      await protomisify<IdRequest, Empty>(this.client, this.client.startDeployment)(IdRequest, req)
+
+      return null
+    }
+
+    const stream = () => this.client.startDeploymentStreaming(IdRequest.fromJSON(req))
     return new GrpcConnection(this.logger.descend('status'), stream, transform, options)
   }
 
@@ -295,15 +301,6 @@ class DyoDeploymentService {
     const res = await protomisify<IdRequest, CreateEntityResponse>(this.client, grpcCall)(IdRequest, req)
 
     return res.id
-  }
-
-  async preDeploy(id: string): Promise<void> {
-    const req = {
-      id,
-      accessedBy: this.identity.id,
-    } as IdRequest
-
-    await protomisify<IdRequest, Empty>(this.client, this.client.preDeploymentCheck)(IdRequest, req)
   }
 }
 
