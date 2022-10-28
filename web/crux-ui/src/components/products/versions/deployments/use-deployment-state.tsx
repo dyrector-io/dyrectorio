@@ -1,10 +1,12 @@
 import useEditorState, { EditorState } from '@app/components/editor/use-editor-state'
+import useNodeState from '@app/components/nodes/use-node-state'
 import { ViewMode } from '@app/components/shared/view-mode-toggle'
 import { DyoConfirmationModalConfig } from '@app/elements/dyo-modal'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
   DeploymentDetails,
   DeploymentEnvUpdatedMessage,
+  DeploymentInvalidatedSecrets,
   deploymentIsCopyable,
   deploymentIsMutable,
   DeploymentRoot,
@@ -60,6 +62,7 @@ export type DeploymentActions = {
   onDeploymentEdited: (editedDeployment: DeploymentDetails) => void
   onCopyDeployment: () => Promise<string>
   setViewMode: (viewMode: ViewMode) => void
+  onInvalidateSecrets: (secrets: DeploymentInvalidatedSecrets[]) => void
 }
 
 const mergeInstancePatch = (instance: Instance, message: InstanceUpdatedMessage): Instance => ({
@@ -75,7 +78,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
   const { product, version } = optionDeploy
 
   const [deployment, setDeployment] = useState<DeploymentDetails>(optionDeploy)
-  const [node, setNode] = useState(optionDeploy.node)
+  const [node, setNode] = useNodeState(optionDeploy.node)
   const [saving, setSaving] = useState(false)
   const [editing, setEditing] = useState(false)
   const [instances, setInstances] = useState<Instance[]>(deployment.instances ?? [])
@@ -158,6 +161,36 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
       deploymentId: deployment.id,
     })
 
+  const onInvalidateSecrets = (secrets: DeploymentInvalidatedSecrets[]) => {
+    const newInstances = instances.map(it => {
+      const invalidated = secrets.find(sec => sec.instanceId === it.id)
+      if (!invalidated) {
+        return it
+      }
+
+      return {
+        ...it,
+        overriddenConfig: {
+          ...(it.overriddenConfig ?? {}),
+          secrets: (it.overriddenConfig?.secrets ?? []).map(secret => {
+            if (invalidated.invalid.includes(secret.id)) {
+              return {
+                ...secret,
+                encrypted: false,
+                publicKey: '',
+                value: '',
+              }
+            }
+
+            return secret
+          }),
+        },
+      }
+    })
+
+    setInstances(newInstances)
+  }
+
   return [
     {
       deployment,
@@ -179,6 +212,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
       onDeploymentEdited,
       onCopyDeployment,
       setViewMode,
+      onInvalidateSecrets,
     },
   ]
 }

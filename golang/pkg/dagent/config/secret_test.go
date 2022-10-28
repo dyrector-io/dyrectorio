@@ -8,7 +8,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/dyrector-io/dyrectorio/golang/internal/config"
+	internalConfig "github.com/dyrector-io/dyrectorio/golang/internal/config"
+	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/config"
 )
 
 const (
@@ -102,12 +103,12 @@ func tmpTestFile() (*os.File, error) {
 
 func TestGetPublicKey(t *testing.T) {
 	// empty or wrong key
-	pk, err := config.GetPublicKey("")
+	pk, err := internalConfig.GetPublicKey("")
 	assert.Error(t, err)
 	assert.Equal(t, "", pk)
 
 	// correct key
-	pk, err = config.GetPublicKey(testPrivateKey)
+	pk, err = internalConfig.GetPublicKey(testPrivateKey)
 	assert.NoError(t, err)
 
 	testPublicParsed, err := crypto.NewKeyFromArmored(testPublicKey)

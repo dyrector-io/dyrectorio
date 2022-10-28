@@ -38,6 +38,11 @@ const (
 	DockerHost         = "host.docker.internal"
 )
 
+const (
+	UpCommand   = "up"
+	DownCommand = "down"
+)
+
 type traefikFileProviderData struct {
 	Service string
 	Port    uint
@@ -52,7 +57,8 @@ func ProcessCommand(settings *Settings) {
 		Containers: settings.Containers,
 	}
 	switch settings.Command {
-	case "up":
+	case UpCommand:
+		PrintInfo(settings)
 		settings = CheckAndUpdatePorts(settings)
 		SaveSettings(settings)
 
@@ -67,7 +73,7 @@ func ProcessCommand(settings *Settings) {
 		containers.MailSlurper = GetMailSlurper(settings)
 
 		StartContainers(&containers, settings.InternalHostDomain)
-	case "down":
+	case DownCommand:
 		StopContainers(&containers)
 	default:
 		log.Fatal().Msg("invalid command")
@@ -76,15 +82,19 @@ func ProcessCommand(settings *Settings) {
 
 // Create and Start containers
 func StartContainers(containers *DyrectorioStack, internalHostDomain string) {
-	_, err := containers.Traefik.Create().Start()
-	if err != nil {
-		log.Fatal().Err(err).Stack().Msg("")
-	}
+	traefik := containers.Traefik.Create()
+
 	TraefikConfiguration(
 		containers.Containers.Traefik.Name,
 		internalHostDomain,
 		containers.Containers.CruxUI.CruxUIPort,
 	)
+
+	_, err := traefik.Start()
+
+	if err != nil {
+		log.Fatal().Err(err).Stack().Msg("")
+	}
 
 	_, err = containers.CruxPostgres.Create().Start()
 	if err != nil {
@@ -219,7 +229,7 @@ func TraefikConfiguration(name, internalHostDomain string, cruxuiport uint) {
 		context.Background(),
 		cli,
 		name,
-		"traefik.dev.yml",
+		"traefik/dynamic_conf.yml",
 		data,
 		int64(len([]rune(result.String()))),
 		strings.NewReader(result.String()),
@@ -308,7 +318,7 @@ func EnsureNetworkExists(settings *Settings) {
 		}
 
 		resp, err := cli.NetworkCreate(context.Background(), settings.SettingsFile.Network, opts)
-		log.Info().Interface("resp", resp).Msg("")
+		log.Info().Str("responseId", resp.ID).Msg("Nework created with ")
 		if err != nil {
 			log.Fatal().Err(err).Stack().Msg("")
 		}

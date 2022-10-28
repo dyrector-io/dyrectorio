@@ -1,16 +1,16 @@
 import { Body, Controller, UseGuards } from '@nestjs/common'
+import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
+import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
   AddImagesToVersionRequest,
   CruxImageController,
   CruxImageControllerMethods,
-  Empty,
   IdRequest,
   ImageListResponse,
   ImageResponse,
   OrderVersionImagesRequest,
   PatchImageRequest,
 } from 'src/grpc/protobuf/proto/crux'
-import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import ImageAddToVersionTeamAccessGuard from './guards/image.add-to-version.team-access.guard'
 import ImageOrderImagesTeamAccessGuard from './guards/image.order-images.team-access.guard'
 import ImageTeamAccessGuard from './guards/image.team-access.guard'

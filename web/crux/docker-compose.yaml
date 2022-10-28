@@ -26,18 +26,12 @@ services:
     environment:
       - TZ=Europe/Budapest
       - DATABASE_URL=postgresql://crux:${POSTGRES_PASSWORD}@crux-postgres:5432/crux?schema=public
-      - CRUX_DOMAIN=$CRUX_DOMAIN
-      - CRUX_DOMAIN_ALTS=$CRUX_DOMAIN_ALTS
       - SMTP_URI=$SMTP_URI
       - FROM_EMAIL=$FROM_EMAIL
       - FROM_NAME=$FROM_NAME
       - KRATOS_ADMIN_URL=$KRATOS_ADMIN_URL
       - CRUX_UI_URL=$CRUX_UI_URL
       - CRUX_AGENT_ADDRESS=$CRUX_AGENT_ADDRESS
-      - GRPC_API_INSECURE=$GRPC_API_INSECURE
-      - GRPC_AGENT_INSECURE=$GRPC_AGENT_INSECURE
-    volumes:
-      - crux-certs:/app/certs
     restart: unless-stopped
     command: serve
     networks:

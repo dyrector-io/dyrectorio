@@ -3,10 +3,12 @@ import { DyoList } from '@app/elements/dyo-list'
 import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { DeleteImageMessage, VersionImage, WS_TYPE_DELETE_IMAGE } from '@app/models'
+import { imageConfigUrl } from '@app/routes'
 import { utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
+import { useRouter } from 'next/router'
 import { useState } from 'react'
 import EditImageTags from './images/edit-image-tags'
 import { ImagesActions, ImagesState, selectTagsOfImage } from './images/use-images-state'
@@ -20,6 +22,7 @@ const VersionViewList = (props: VersionViewListProps) => {
   const { state, actions } = props
 
   const { t } = useTranslation('images')
+  const router = useRouter()
 
   const [deleteModal, confirmDelete] = useConfirmation()
   const [tagsModalTarget, setTagsModalTarget] = useState<VersionImage>(null)
@@ -56,6 +59,8 @@ const VersionViewList = (props: VersionViewListProps) => {
     actions.fetchImageTags(it)
   }
 
+  const onImageSettings = (item: VersionImage) => router.push(imageConfigUrl(state.productId, state.versionId, item.id))
+
   const itemTemplate = (item: VersionImage) => [
     <a>{item.config.name}</a>,
     <a>{item.registryName}</a>,
@@ -76,7 +81,18 @@ const VersionViewList = (props: VersionViewListProps) => {
           onClick={() => onOpenTagsDialog(item)}
         />
       </div>
-      <Image className="cursor-pointer" src="/trash-can.svg" width={24} height={24} onClick={() => onDelete(item)} />
+      <div className="mr-2 inline-block">
+        <Image className="cursor-pointer" src="/trash-can.svg" width={24} height={24} onClick={() => onDelete(item)} />
+      </div>
+      <div className="inline-block">
+        <Image
+          className="cursor-pointer"
+          src="/settings.svg"
+          width={24}
+          height={24}
+          onClick={() => onImageSettings(item)}
+        />
+      </div>
     </div>,
   ]
 

@@ -160,13 +160,68 @@ model Image {
   version  Version  @relation(fields: [versionId], references: [id], onDelete: Cascade)
 }
 
+enum NetworkMode {
+  none
+  host
+  bridge
+}
+
+enum DeploymentStrategy {
+  recreate
+  rolling
+}
+
+enum RestartPolicy {
+  always
+  unlessStopped
+  no
+  onFailure
+}
+
+enum ExposeStrategy {
+  none
+  expose
+  exposeWithTls
+}
+
 model ContainerConfig {
-  id           String @id @default(uuid()) @db.Uuid
-  name         String
-  environment  Json   @default("[]")
-  secrets      Json   @default("[]")
-  capabilities Json   @default("[]")
-  config       Json   @default("{}")
+  id String @id @default(uuid()) @db.Uuid
+
+  //Common
+  name            String
+  environment     Json?
+  secrets         Json?
+  capabilities    Json?
+  expose          ExposeStrategy?
+  ingress         Json?
+  configContainer Json?
+  importContainer Json?
+  user            Int?
+  tty             Boolean?
+  ports           Json?
+  portRanges      Json?
+  volumes         Json?
+  commands        Json?
+  args            Json?
+  initContainers  Json?
+
+  //Dagent
+  logConfig     Json?
+  restartPolicy RestartPolicy?
+  networkMode   NetworkMode?
+  networks      Json?
+  dockerLabels  Json?
+
+  //Crane
+  deploymentStrategy DeploymentStrategy?
+  healthCheckConfig  Json?
+  resourceConfig     Json?
+  proxyHeaders       Boolean?
+  useLoadBalancer    Boolean?
+  extraLBAnnotations Json?
+  customHeaders      Json?
+  annotations        Json?
+  labels             Json?
 
   image   Image  @relation(fields: [imageId], references: [id], onDelete: Cascade)
   imageId String @unique @db.Uuid
@@ -205,12 +260,44 @@ model Instance {
 }
 
 model InstanceContainerConfig {
-  id           String @id @default(uuid()) @db.Uuid
-  capabilities Json?
-  config       Json?
-  secrets      Json?
-  environment  Json?
-  instanceId   String @unique @db.Uuid
+  id         String @id @default(uuid()) @db.Uuid
+  instanceId String @unique @db.Uuid
+
+  //Common
+  name            String
+  environment     Json?
+  secrets         Json?
+  capabilities    Json?
+  expose          ExposeStrategy?
+  ingress         Json?
+  configContainer Json?
+  importContainer Json?
+  user            Int?
+  tty             Boolean?
+  ports           Json?
+  portRanges      Json?
+  volumes         Json?
+  commands        Json?
+  args            Json?
+  initContainers  Json?
+
+  //Dagent
+  logConfig     Json?
+  restartPolicy RestartPolicy?
+  networkMode   NetworkMode?
+  networks      Json?
+  dockerLabels  Json?
+
+  //Crane
+  deploymentStrategy DeploymentStrategy?
+  healthCheckConfig  Json?
+  resourceConfig     Json?
+  proxyHeaders       Boolean?
+  useLoadBalancer    Boolean?
+  extraLBAnnotations Json?
+  customHeaders      Json?
+  annotations        Json?
+  labels             Json?
 
   instance Instance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
 }

@@ -1,72 +1,133 @@
 #!/bin/sh
 
-set -e
-
-if [ $(id -u) -ne 0 ]; then
-  echo "Installation process needs root privileges" 1>&2
-  sudo -s
+ROOTLESS="${ROOTLESS:-false}"
+if [ $ROOTLESS != "true" ]; then
+  if [ $(id -u) -ne 0 ]; then
+    echo "Installation process needs root privileges" 1>&2
+    sudo -s
+  fi
 fi
 
-# Setup the default root folder for volumes
-if [ $(uname -s) = 'Darwin' ]; then
-  echo "Detected: Mac OS X"
-  ROOT_FOLDER={{#if rootPath}}'{{{rootPath}}}'{{else}}$HOME'/Library/Dyrectorio/srv/dagent'{{/if}}
-elif [ $(uname -s) = 'Linux' ]; then
-  echo "Detected: Linux"
-  ROOT_FOLDER='{{#if rootPath}}{{{rootPath}}}{{else}}/srv/dagent{{/if}}'
-else
-  echo "Not supported OS!"
-fi
+set -euo pipefail
 
-if [ -z "$(which docker)" ]; then
-  echo "Docker is required, make sure it is installed and available in PATH!"
-  exit 1
-fi
+set_environment() {
+  MSYS_NO_PATHCONV=1
 
-echo "Installing dyrector.io agent (dagent)..."
+# Set folder for persisting data
+  PERSISTENCE_FOLDER_FROM_CRUX="{{#if rootPath}}{{{rootPath}}}{{/if}}"
+  if [ -z ${PERSISTENCE_FOLDER:-} ]; then
+    if [ -z ${PERSISTENCE_FOLDER_FROM_CRUX:-} ]; then
+      case $(uname -s) in
+      'Darwin')
+        echo "Detected: Mac OS X"
+        PERSISTENCE_FOLDER=$HOME/Library/Dyrectorio/srv/dagent
+        ;;
+      'Linux')
+        echo "Detected: Linux"
+        PERSISTENCE_FOLDER=/srv/dagent
+        ;;
+      *)
+        echo "Not supported OS and PERSISTENCE_FOLDER is not set!"
+        exit 1
+        ;;
+      esac
+    else
+      PERSISTENCE_FOLDER=$PERSISTENCE_FOLDER_FROM_CRUX
+    fi
+  fi
 
-if [ $(docker ps --no-trunc --filter name=^/dagent$ | tail -n +2 | wc -l) -eq 1 ]; then
-  echo "DAgent is is running already, terminating"
-  docker stop dagent
-fi
+  mkdir -p $PERSISTENCE_FOLDER
 
-if [ $(docker ps -a --no-trunc --filter name=^/dagent$ | tail -n +2 | wc -l) -eq 1 ]; then
-  docker rm dagent
-else
-  echo "DAgent not running, installing..."
-fi
+  if [ -z ${CRI_EXECUTABLE:-} ]; then
+    if [ -z "$(which docker)" ]; then
+      if [ -z "$(which podman)" ]; then
+        echo "Docker is required, make sure it is installed and available in PATH!"
+        exit 1
+      else
+        CRI_EXECUTABLE="podman"
+      fi
+    fi
+    CRI_EXECUTABLE="docker"
+  fi
 
-mkdir -p $ROOT_FOLDER
-docker pull ghcr.io/dyrector-io/dyrectorio/agent/dagent:latest
+  if [ -z ${HOST_DOCKER_SOCK_PATH:-} ]; then
+    if [ -z ${DOCKER_HOST:-} ]; then
+      HOST_DOCKER_SOCK_PATH="/var/run/docker.sock"
+    else
+      if [ ${DOCKER_HOST:0:7} = "unix://" ]; then
+        HOST_DOCKER_SOCK_PATH=${DOCKER_HOST:7}
+      else
+        echo "Invalid DOCKER_HOST variable please set HOST_DOCKER_SOCK_PATH if your socket is in a custom location otherwise unset DOCKER_HOST!"
+        exit 1
+      fi
+    fi
+  fi
 
-MSYS_NO_PATHCONV=1
+  if [ -z ${HOSTNAME:-} ]; then
+    if [ -z ${HOST:-} ]; then
+      HOSTNAME='{{name}}'
+    else
+      HOSTNAME=$HOST
+    fi
+  fi
+}
 
-docker run \
-  --restart unless-stopped \
-  -e GRPC_TOKEN='{{token}}' \
-  -e HOSTNAME="$HOSTNAME || $HOST || '{{name}}'" \
-  {{#if traefik}}
-    -e TRAEFIK= 'true' \
-  {{/if}}
-  -e DATA_MOUNT_PATH=$ROOT_FOLDER \
-  -e UPDATE_METHOD='off' \
-  -e UPDATE_POLL_INTERVAL='600s' \
-  {{#if insecure}}
-  -e GRPC_INSECURE='true' \
-  {{/if}}
-  -e DAGENT_IMAGE='ghcr.io/dyrector-io/dyrectorio/agent/dagent' \
-  -e DAGENT_TAG='stable' \
-  -e DAGENT_NAME='{{name}}' \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  {{#if network}}
-  --network {{networkName}} \
-  {{/if}}
-  --name 'dagent' \
-  {{! -e UPDATE_REGISTRY_USER='' \ }}
-  {{! -e UPDATE_REGISTRY_PASSWORD='' \ }}
-  {{! -e UPDATER_CONTAINER_NAME ='' \ }}
-  {{! -e UPDATE_HOST_TIMEZONE='' \ }}
-  {{! -e HOST_DOCKER_SOCK_PATH='' \ }}
-  {{! -e WEBHOOK_TOKEN='' \ }}
-  {{! -e DISCORD_WEBHOOK_URL='' \ }}
-  -v $ROOT_FOLDER/:/srv/dagent -d ghcr.io/dyrector-io/dyrectorio/agent/dagent:latest
+dagent_clean() {
+  echo "Installing dyrector.io agent (dagent)..."
+
+  if [ -n "$($CRI_EXECUTABLE container list --filter name=^dagent$ --filter=status=running --filter=status=restarting --filter=status=paused --format '\{{ .Names }}' 2>/dev/null)" ]; then
+    timeout 5 $CRI_EXECUTABLE stop dagent
+    if [ $? -ne 0 ]; then
+      $CRI_EXECUTABLE kill dagent
+    fi
+  fi
+
+  if [ -n "$($CRI_EXECUTABLE container list --filter name=^dagent$ --filter=status=exited --filter=status=created --filter=status=dead --format '\{{ .Names }}' 2>/dev/null)" ]; then
+    timeout 5 $CRI_EXECUTABLE rm dagent
+    if [ $? -ne 0 ]; then
+      $CRI_EXECUTABLE rm -f dagent
+    fi
+  fi
+}
+
+dagent_install() {
+  $CRI_EXECUTABLE pull ghcr.io/dyrector-io/dyrectorio/agent/dagent:latest
+
+  $CRI_EXECUTABLE run \
+    --restart unless-stopped \
+    {{#if network}}
+    --network {{networkName}} \
+    {{/if}}
+    -e GRPC_TOKEN='{{token}}' \
+    -e HOSTNAME=$HOSTNAME \
+    {{#if traefik}}
+    -e TRAEFIK='true' \
+    {{/if}}
+    -e DATA_MOUNT_PATH=$PERSISTENCE_FOLDER \
+    -e UPDATE_METHOD='off' \
+    -e UPDATE_POLL_INTERVAL='600s' \
+    -e DAGENT_IMAGE='ghcr.io/dyrector-io/dyrectorio/agent/dagent' \
+    -e DAGENT_TAG='stable' \
+    -e DAGENT_NAME='{{name}}' \
+    {{#if debugMode}}
+    -e DEBUG='true' \
+    {{/if}}
+    -e HOST_DOCKER_SOCK_PATH=$HOST_DOCKER_SOCK_PATH \
+    --add-host=host.docker.internal:host-gateway \
+    --name 'dagent' \
+    {{! -e UPDATE_REGISTRY_USER='' \ }}
+    {{! -e UPDATE_REGISTRY_PASSWORD='' \ }}
+    {{! -e UPDATER_CONTAINER_NAME ='' \ }}
+    {{! -e UPDATE_HOST_TIMEZONE='' \ }}
+    {{! -e WEBHOOK_TOKEN='' \ }}
+    {{! -e DISCORD_WEBHOOK_URL='' \ }}
+    -v $PERSISTENCE_FOLDER/:/srv/dagent \
+    -v $HOST_DOCKER_SOCK_PATH:/var/run/docker.sock \
+    -d ghcr.io/dyrector-io/dyrectorio/agent/dagent:latest
+}
+
+set_environment
+
+dagent_clean
+
+dagent_install

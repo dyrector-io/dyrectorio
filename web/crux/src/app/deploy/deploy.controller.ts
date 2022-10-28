@@ -1,8 +1,7 @@
 import { Body, Controller, UseGuards } from '@nestjs/common'
 import { concatAll, from, Observable } from 'rxjs'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
-import { Empty } from 'src/grpc/protobuf/proto/agent'
-import { ListSecretsResponse } from 'src/grpc/protobuf/proto/common'
+import { ListSecretsResponse, Empty } from 'src/grpc/protobuf/proto/common'
 import {
   AccessRequest,
   CreateDeploymentRequest,
@@ -27,6 +26,7 @@ import DeployService from './deploy.service'
 import DeployCreateTeamAccessGuard from './guards/deploy.create.team-access.guard'
 import DeployGetByVersionTeamAccessGuard from './guards/deploy.get-by-version.team-access.guard'
 import DeployTeamAccessGuard from './guards/deploy.team-access.guard'
+import DeployCopyValidationPipe from './pipes/deploy.copy.pipe'
 import DeployCreateValidationPipe from './pipes/deploy.create.pipe'
 import DeleteDeploymentValidationPipe from './pipes/deploy.delete.pipe'
 import DeployPatchValidationPipe from './pipes/deploy.patch.pipe'
@@ -95,11 +95,11 @@ export default class DeployController implements CruxDeploymentController {
     return await this.service.getDeploymentList(request)
   }
 
-  async copyDeploymentSafe(request: IdRequest): Promise<CreateEntityResponse> {
-    return this.service.copyDeployment(request, false)
+  async copyDeploymentSafe(@Body(DeployCopyValidationPipe) request: IdRequest): Promise<CreateEntityResponse> {
+    return this.service.copyDeployment(request)
   }
 
   async copyDeploymentUnsafe(request: IdRequest): Promise<CreateEntityResponse> {
-    return this.service.copyDeployment(request, true)
+    return this.service.copyDeployment(request)
   }
 }

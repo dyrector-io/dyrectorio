@@ -1,11 +1,11 @@
 import { Body, Controller, UseGuards } from '@nestjs/common'
+import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
   AccessRequest,
   CreateEntityResponse,
   CreateProductRequest,
   CruxProductController,
   CruxProductControllerMethods,
-  Empty,
   IdRequest,
   ProductDetailsReponse,
   ProductListResponse,

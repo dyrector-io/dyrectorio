@@ -34,10 +34,9 @@ type GrpcConnection struct {
 }
 
 type GrpcConnectionParams struct {
-	nodeID   string
-	address  string
-	insecure bool
-	token    string
+	nodeID  string
+	address string
+	token   string
 }
 
 type (
@@ -58,12 +57,11 @@ type contextKey int
 
 const contextConfigKey contextKey = 0
 
-func GrpcTokenToConnectionParams(grpcToken *config.ValidJWT, insecureGrpc bool) *GrpcConnectionParams {
+func GrpcTokenToConnectionParams(grpcToken *config.ValidJWT) *GrpcConnectionParams {
 	return &GrpcConnectionParams{
-		nodeID:   grpcToken.Subject,
-		address:  grpcToken.Issuer,
-		insecure: insecureGrpc,
-		token:    grpcToken.StringifiedToken,
+		nodeID:  grpcToken.Subject,
+		address: grpcToken.Issuer,
+		token:   grpcToken.StringifiedToken,
 	}
 }
 
@@ -129,15 +127,17 @@ func Init(grpcContext context.Context,
 
 	if grpcConn.Conn == nil {
 		var creds credentials.TransportCredentials
-		if connParams.insecure {
-			creds = insecure.NewCredentials()
-		} else {
-			httpAddr := fmt.Sprintf("https://%s", connParams.address)
-			certPool, err := fetchCertificatesFromURL(ctx, httpAddr)
-			if err != nil {
-				log.Error().Stack().Err(err).Msg("")
-			}
 
+		httpAddr := fmt.Sprintf("https://%s", connParams.address)
+		certPool, err := fetchCertificatesFromURL(ctx, httpAddr)
+		if err != nil {
+			if appConfig.Debug {
+				log.Warn().Err(err).Msg("Secure mode is disabled in demo/dev environment, falling back to plain-text gRPC")
+				creds = insecure.NewCredentials()
+			} else {
+				log.Panic().Err(err).Msg("Could not fetch valid certificate")
+			}
+		} else {
 			creds = credentials.NewClientTLSFromCert(certPool, "")
 		}
 
@@ -154,7 +154,7 @@ func Init(grpcContext context.Context,
 				}),
 		}
 
-		log.Print("Dialing", connParams.address)
+		log.Info().Str("address", connParams.address).Msg("Dialing to address.")
 		conn, err := grpc.Dial(connParams.address, opts...)
 		if err != nil {
 			log.Panic().Stack().Err(err).Msg("failed to dial gRPC")
@@ -194,7 +194,7 @@ func grpcLoop(
 			client := agent.NewAgentClient(grpcConn.Conn)
 			grpcConn.SetClient(client)
 
-			publicKey, keyErr := config.GetPublicKey(string(appConfig.SecretPrivateKey))
+			publicKey, keyErr := config.GetPublicKey(appConfig.SecretPrivateKey)
 
 			if keyErr != nil {
 				log.Error().Stack().Err(keyErr).Str("publicKey", publicKey).Msg("grpc public key error")
@@ -425,7 +425,7 @@ func executeSecretList(
 		return
 	}
 
-	publicKey, err := config.GetPublicKey(string(appConfig.SecretPrivateKey))
+	publicKey, err := config.GetPublicKey(appConfig.SecretPrivateKey)
 	if err != nil {
 		log.Error().Stack().Err(err).Msg("Failed to get public key")
 		return
@@ -439,7 +439,7 @@ func executeSecretList(
 		Keys:      keys,
 	}
 
-	_, err = grpcConn.Client.SecretsList(ctx, resp)
+	_, err = grpcConn.Client.SecretList(ctx, resp)
 	if err != nil {
 		log.Error().Stack().Err(err).Msg("Secret list response error")
 		return

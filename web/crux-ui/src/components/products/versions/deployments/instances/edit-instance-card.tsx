@@ -2,7 +2,7 @@ import useItemEditorState from '@app/components/editor/use-item-editor-state'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoMessage from '@app/elements/dyo-message'
-import { Instance } from '@app/models'
+import { imageConfigToJsonInstanceConfig, Instance } from '@app/models'
 import useTranslation from 'next-translate/useTranslation'
 import EditImageHeading from '../../images/edit-image-heading'
 import EditImageJson from '../../images/edit-image-json'
@@ -26,10 +26,9 @@ const EditInstanceCard = (props: EditInstanceCardProps) => {
   })
 
   const { config } = state
+  const { selection, errorMessage } = state
 
   const editorState = useItemEditorState(editor, sock, instance.id)
-
-  const { selection, errorMessage } = state
 
   return (
     <DyoCard className="flex flex-col flex-grow px-6 pb-6 pt-4">
@@ -70,6 +69,7 @@ const EditInstanceCard = (props: EditInstanceCardProps) => {
       <div className="flex flex-col mt-2 h-128">
         {selection === 'config' ? (
           <EditInstanceConfig
+            disabled={!deploymentState.mutable}
             config={config}
             publicKey={deploymentState.deployment.publicKey}
             definedSecrets={state.definedSecrets}
@@ -82,6 +82,7 @@ const EditInstanceCard = (props: EditInstanceCardProps) => {
             config={config}
             editorOptions={editorState}
             onPatch={it => actions.onPatch(instance.id, it)}
+            convertConfigToJson={imageConfigToJsonInstanceConfig}
           />
         )}
       </div>

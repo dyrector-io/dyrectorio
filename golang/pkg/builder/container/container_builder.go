@@ -39,6 +39,7 @@ type ContainerBuilder interface {
 	WithRestartPolicy(policy RestartPolicyName) ContainerBuilder
 	WithEntrypoint(cmd []string) ContainerBuilder
 	WithCmd(cmd []string) ContainerBuilder
+	WithShell(shell []string) ContainerBuilder
 	WithUser(uid string) ContainerBuilder
 	WithLogWriter(logger io.StringWriter) ContainerBuilder
 	WithoutConflict() ContainerBuilder
@@ -72,9 +73,11 @@ type DockerContainerBuilder struct {
 	networks        []string
 	registryAuth    string
 	remove          bool
+	withoutConflict bool
 	restartPolicy   RestartPolicyName
 	entrypoint      []string
 	cmd             []string
+	shell           []string
 	tty             bool
 	user            *int64
 	forcePull       bool
@@ -211,6 +214,12 @@ func (dc *DockerContainerBuilder) WithCmd(cmd []string) *DockerContainerBuilder 
 	return dc
 }
 
+// Sets the SHELL of a container.
+func (dc *DockerContainerBuilder) WithShell(shell []string) *DockerContainerBuilder {
+	dc.shell = shell
+	return dc
+}
+
 // Sets if standard streams should be attached to a tty.
 func (dc *DockerContainerBuilder) WithTTY(tty bool) *DockerContainerBuilder {
 	dc.tty = tty
@@ -219,9 +228,8 @@ func (dc *DockerContainerBuilder) WithTTY(tty bool) *DockerContainerBuilder {
 
 // Deletes the container with the given name if already exists.
 func (dc *DockerContainerBuilder) WithoutConflict() *DockerContainerBuilder {
-	if err := deleteContainer(dc.ctx, dc.containerName); err != nil {
-		log.Printf("builder could not stop/remove container (%s) to avoid conflicts: %s", dc.containerName, err.Error())
-	}
+	dc.withoutConflict = true
+
 	return dc
 }
 
@@ -282,6 +290,13 @@ func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 		return dc
 	}
 
+	if dc.withoutConflict {
+		err := deleteContainer(dc.ctx, dc.containerName)
+		if err != nil {
+			logWrite(dc, fmt.Sprintf("Failed to resolve conflict during creating the container: %v", err))
+		}
+	}
+
 	portListNat := portListToNatBinding(dc.portRanges, dc.portList)
 	exposedPortSet := getPortSet(portListNat)
 	hostConfig := &container.HostConfig{
@@ -301,6 +316,7 @@ func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 		ExposedPorts: exposedPortSet,
 		Entrypoint:   dc.entrypoint,
 		Cmd:          dc.cmd,
+		Shell:        dc.shell,
 	}
 
 	if dc.user != nil {

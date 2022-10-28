@@ -49,11 +49,11 @@ services:
         condition: service_completed_successfully
     platform: linux/amd64
     ports:
-      - 9433:4433 # public
+      - 4433:4433 # public
       # WARNING: Do NOT expose the admin port in production!
-      - 9434:4434 # admin
+      - 4434:4434 # admin
     environment:
-      - KRATOS_ADMIN_URL=${KRATOS_ADMIN_URL:-http://172.17.0.1:9434}
+      - KRATOS_ADMIN_URL=${KRATOS_ADMIN_URL:-http://172.17.0.1:4434}
       - KRATOS_URL=${KRATOS_URL:-http://172.17.0.1:8000/kratos}
       - CRUX_UI_URL=${CRUX_UI_URL:-http://172.17.0.1:8000}
       - DEV=${KRATOS_DEV:-false}

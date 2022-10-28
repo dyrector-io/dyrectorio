@@ -23,15 +23,41 @@ import {
   WS_TYPE_NODE_STATUS,
   WS_TYPE_NODE_STATUSES,
 } from '@app/models'
-import { deploymentDeployUrl, deploymentUrl, WS_NODES } from '@app/routes'
+import { deploymentDeployUrl, deploymentStartUrl, deploymentUrl, WS_NODES } from '@app/routes'
 import { distinct, utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import { useRouter } from 'next/dist/client/router'
+import { NextRouter, useRouter } from 'next/dist/client/router'
 import Image from 'next/image'
 import { useState } from 'react'
+import toast from 'react-hot-toast'
 import DeploymentStatusTag from './deployments/deployment-status-tag'
 import useCopyDeploymentModal from './deployments/use-copy-deployment-confirmation-modal'
+
+export const startDeployment = async (
+  router: NextRouter,
+  productId: string,
+  versionId: string,
+  deploymentId: string,
+) => {
+  const res = await fetch(deploymentStartUrl(productId, versionId, deploymentId), {
+    method: 'POST',
+  })
+
+  if (res.status === 412) {
+    const json = await res.json()
+    toast.error(json.description)
+    return json
+  }
+
+  if (!res.ok) {
+    return null
+  }
+
+  router.push(deploymentDeployUrl(productId, versionId, deploymentId))
+
+  return null
+}
 
 interface VersionDeploymentsSectionProps {
   product: ProductDetails
@@ -89,8 +115,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   const onNavigateToDeployment = (deployment: DeploymentByVersion) =>
     router.push(deploymentUrl(product.id, version.id, deployment.id))
 
-  const onDeploy = (deployment: DeploymentByVersion) =>
-    router.push(deploymentDeployUrl(product.id, version.id, deployment.id))
+  const onDeploy = (deployment: DeploymentByVersion) => startDeployment(router, product.id, version.id, deployment.id)
 
   const onCopyDeployment = async (deployment: DeploymentByVersion) => {
     const url = await copyDeployment({
@@ -124,7 +149,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
     /* eslint-disable react/jsx-key */
     return [
       <div className="flex cursor-pointer" onClick={() => onNavigateToDeployment(item)}>
-        <NodeStatusIndicator className="mr-2" status={item.nodeStatus} />
+        <NodeStatusIndicator className="mr-2 place-items-center" status={item.nodeStatus} />
         {item.nodeName}
       </div>,
       <div>{item.prefix}</div>,
@@ -221,14 +246,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
         </DyoModal>
       )}
 
-      <DyoConfirmationModal
-        config={confirmationModal}
-        title={t('deploymentCopyConflictTitle')}
-        description={t('deploymentCopyConflictContent')}
-        confirmText={t('continue')}
-        className="w-1/4"
-        confirmColor="bg-error-red"
-      />
+      <DyoConfirmationModal config={confirmationModal} className="w-1/4" confirmColor="bg-error-red" />
     </>
   )
 }

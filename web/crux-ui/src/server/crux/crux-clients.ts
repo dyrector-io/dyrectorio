@@ -37,8 +37,9 @@ class CruxClients {
 
   templates: CruxTemplateClient
 
-  constructor(address: string, publicKey: Buffer) {
-    const creds = publicKey ? credentials.createSsl(publicKey) : credentials.createInsecure()
+  constructor(address: string) {
+    // tls must be terminated by the reverse proxy
+    const creds = credentials.createInsecure()
 
     if (address === undefined || address === '') {
       throw invalidArgument('address', 'address cannot be empty!')

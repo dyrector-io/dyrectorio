@@ -1,6 +1,7 @@
-import { DyoHeading } from '@app/elements/dyo-heading'
+import { DyoLabel } from '@app/elements/dyo-label'
+import DyoToggle from '@app/elements/dyo-toggle'
 import useRepatch from '@app/hooks/use-repatch'
-import { UniqueKey } from '@app/models'
+import { UniqueSecretKey } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect } from 'react'
@@ -8,28 +9,29 @@ import { v4 as uuid } from 'uuid'
 import MultiInput from '../editor/multi-input'
 import { EditorStateOptions } from '../editor/use-editor-state'
 
-const EMPTY_SECRET_KEY = {
+const EMPTY_KEY = {
   id: uuid(),
   key: '',
-} as UniqueKey
+  required: false,
+} as UniqueSecretKey
 
-type KeyValueElement = UniqueKey & {
+type SecretElement = UniqueSecretKey & {
   message?: string
 }
 
-const isCompletelyEmpty = (it: UniqueKey): boolean => !it.key || it.key.length < 1
+const isCompletelyEmpty = (it: UniqueSecretKey): boolean => !it.key || it.key.length < 1
 
 const generateEmptyLine = () => ({
-  ...EMPTY_SECRET_KEY,
+  ...EMPTY_KEY,
   id: uuid(),
 })
 
 // actions
-const setItems = (items: UniqueKey[]) => (): UniqueKey[] => items
+const setItems = (items: UniqueSecretKey[]) => (): UniqueSecretKey[] => items
 
 const mergeItems =
-  (updatedItems: UniqueKey[]) =>
-  (state: UniqueKey[]): UniqueKey[] => {
+  (updatedItems: UniqueSecretKey[]) =>
+  (state: UniqueSecretKey[]): UniqueSecretKey[] => {
     const lastLine = state.length > 0 ? state[state.length - 1] : null
     const emptyLine = !!lastLine && isCompletelyEmpty(lastLine) ? lastLine : generateEmptyLine()
 
@@ -55,90 +57,124 @@ const mergeItems =
 interface SecretKeyInputProps {
   disabled?: boolean
   className?: string
-  heading?: string
-  items: UniqueKey[]
+  label?: string
+  labelClassName?: string
+  description?: string
+  items: UniqueSecretKey[]
+  keyPlaceholder?: string
+  unique?: boolean
   editorOptions: EditorStateOptions
-  onChange: (items: UniqueKey[]) => void
+  onChange: (items: UniqueSecretKey[]) => void
 }
 
-const SecretKeyOnlyInput = (props: SecretKeyInputProps) => {
+const SecretKeyInput = (props: SecretKeyInputProps) => {
   const { t } = useTranslation('common')
 
-  const { heading, disabled, items, className, editorOptions, onChange: propsOnChange } = props
+  const {
+    label,
+    labelClassName,
+    description,
+    disabled,
+    items,
+    className,
+    editorOptions,
+    unique,
+    keyPlaceholder,
+    onChange: propsOnChange,
+  } = props
 
   const [state, dispatch] = useRepatch(items)
 
-  const stateToElements = (itemArray: UniqueKey[]) => {
-    const result: KeyValueElement[] = []
+  const stateToElements = (itemArray: UniqueSecretKey[]) => {
+    const result: SecretElement[] = []
 
-    itemArray.forEach(item =>
+    itemArray.forEach(item => {
+      const repeating = unique && result.find(it => it.key === item.key)
+
       result.push({
         ...item,
-        message: result.find(it => it.key === item.key) ? t('keyMustUnique') : null,
-      }),
-    )
+        required: item.required ?? false,
+        message: repeating && !isCompletelyEmpty(item) ? t('keyMustUnique') : null,
+      })
+    })
 
     return result
   }
 
   useEffect(() => dispatch(mergeItems(items)), [items, dispatch])
 
-  const onChange = async (index: number, key: string) => {
+  const onChange = async (index: number, patch: Partial<UniqueSecretKey>) => {
     const newItems = [...state]
 
     const item = {
-      id: state[index].id,
-      key,
+      ...newItems[index],
+      ...patch,
     }
 
     newItems[index] = item
 
     const updatedItems = newItems.filter(it => !isCompletelyEmpty(it))
+    const keys = updatedItems.map(it => it.key)
 
-    propsOnChange(updatedItems)
+    if (keys.every((it, itIndex) => keys.indexOf(it) === itIndex)) {
+      propsOnChange(updatedItems)
+    }
     dispatch(setItems(newItems))
   }
 
   const elements = stateToElements(state)
 
-  const renderItem = (entry: KeyValueElement, index: number) => {
-    const { id, key, message } = entry
+  const renderItem = (entry: SecretElement, index: number) => {
+    const { id, key, message, required } = entry
 
-    const keyId = `${entry.id}-key`
+    const keyId = `${id}-key`
 
     return (
-      <div key={id} className="flex flex-row flex-grow p-1">
-        <div className="w-5/12">
+      <div key={keyId} className="flex flex-row flex-grow mb-2 ml-1">
+        <div className="basis-5/12">
           <MultiInput
             key={keyId}
             id={keyId}
             disabled={disabled}
             editorOptions={editorOptions}
-            className="w-full mr-2"
             grow
-            placeholder={t('key')}
-            value={key}
+            inline
+            placeholder={keyPlaceholder}
+            value={key ?? ''}
             message={message}
-            onPatch={it => onChange(index, it)}
+            onPatch={it => onChange(index, { key: it })}
           />
+        </div>
+        <div className="basis-7/12 flex items-center justify-end">
+          {!isCompletelyEmpty(entry) && (
+            <div className="flex-0">
+              <DyoToggle
+                id="required"
+                nameChecked={t('required')}
+                nameUnchecked={t('notRequired')}
+                checked={required}
+                onCheckedChange={it => onChange(index, { required: it })}
+              />
+            </div>
+          )}
         </div>
       </div>
     )
   }
 
   return (
-    <form className={clsx(className, 'flex flex-col max-h-128 overflow-y-auto')}>
-      {!heading ? null : (
-        <DyoHeading element="h6" className="text-bright mt-5">
-          {heading}
-        </DyoHeading>
+    <div className={clsx(className, 'flex flex-col max-h-128 overflow-y-auto')}>
+      {!label ? null : (
+        <DyoLabel className={clsx(labelClassName ?? 'text-bright mb-2 whitespace-nowrap text-light-eased')}>
+          {label}
+        </DyoLabel>
       )}
 
-      <div className="text-light-eased mb-2 ml-1">{t('cannotDefineSecretsHere')}</div>
+      {!description ? null : <div className="text-light-eased mb-2 ml-1">{description}</div>}
 
       {elements.map((it, index) => renderItem(it, index))}
-    </form>
+    </div>
   )
 }
 
-export default SecretKeyOnlyInput
+export default SecretKeyInput

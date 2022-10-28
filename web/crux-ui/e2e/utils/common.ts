@@ -41,7 +41,7 @@ export const extractKratosLinkFromMail = (body: string): string => {
 }
 
 export const kratosFromBaseURL = (baseURL: string) => {
-  const url = replacePort(baseURL, '9434')
+  const url = replacePort(baseURL, '4434')
 
   const kratosConfig = new Configuration({
     basePath: url,

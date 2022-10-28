@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/rs/zerolog/log"
+	"golang.org/x/exp/maps"
 	"gopkg.in/yaml.v3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -47,6 +48,8 @@ type ServiceParams struct {
 	portRanges    []builder.PortRangeBinding
 	useLB         bool
 	LBAnnotations map[string]string
+	labels        map[string]string
+	annotations   map[string]string
 }
 
 func (s *service) deployService(params *ServiceParams) error {
@@ -75,9 +78,16 @@ func (s *service) deployService(params *ServiceParams) error {
 	svc := acorev1.Service(params.name, params.namespace).
 		WithSpec(svcSpec)
 
+	annot := map[string]string{}
 	if params.useLB {
-		svc.WithAnnotations(params.LBAnnotations)
+		maps.Copy(annot, params.LBAnnotations)
 	}
+	maps.Copy(annot, params.annotations)
+	svc.WithAnnotations(annot)
+
+	labels := map[string]string{}
+	maps.Copy(labels, params.labels)
+	svc.WithLabels(labels)
 
 	res, err := client.Apply(s.ctx, svc, metav1.ApplyOptions{
 		FieldManager: s.appConfig.FieldManagerName,

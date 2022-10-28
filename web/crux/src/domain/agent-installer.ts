@@ -51,17 +51,17 @@ export default class AgentInstaller {
   getScript(name: string): string {
     this.verify()
 
-    const configGrpcInsecure = this.configService.get<string>('GRPC_AGENT_INSTALL_SCRIPT_INSECURE')
     const configLocalDeployment = this.configService.get<string>('LOCAL_DEPLOYMENT')
     const configLocalDeploymentNetwork = this.configService.get<string>('LOCAL_DEPLOYMENT_NETWORK')
     const configK8sLocalManifest = this.configService.get<string>('K8S_LOCAL_MANIFEST')
+    const debugMode = process.env.NODE_ENV !== 'production'
 
-    let installScriptParams = {
+    let installScriptParams: InstallScriptConfig = {
       name: name.toLowerCase().replace(/\s/g, ''),
       token: this.token,
-      insecure: configGrpcInsecure === 'true',
       network: configLocalDeployment,
       networkName: configLocalDeploymentNetwork,
+      debugMode,
       rootPath: this.rootPath,
     }
 
@@ -92,8 +92,10 @@ export default class AgentInstaller {
 export type InstallScriptConfig = {
   name: string
   token: string
-  insecure: boolean
-  dataPath?: string
+  network: string
+  networkName: string
+  debugMode: boolean
+  rootPath?: string
   update?: boolean
   traefik?: boolean
   hostname?: string

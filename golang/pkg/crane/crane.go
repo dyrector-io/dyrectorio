@@ -31,7 +31,7 @@ func Serve(cfg *config.Configuration) {
 	// TODO(robot9706): Implement updater
 	log.Print("No update was set up")
 
-	grpcParams := grpc.GrpcTokenToConnectionParams(cfg.GrpcToken, cfg.GrpcInsecure)
+	grpcParams := grpc.GrpcTokenToConnectionParams(cfg.GrpcToken)
 	grpcContext := grpc.WithGRPCConfig(context.Background(), cfg)
 	grpc.Init(grpcContext, grpcParams, &cfg.CommonConfiguration, grpc.WorkerFunctions{
 		Deploy:     k8s.Deploy,

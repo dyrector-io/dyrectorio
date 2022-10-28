@@ -36,7 +36,7 @@ const DyoChips = <T,>(props: DyoChipsProps<T>) => {
             key={`${key}-${index}`}
             type="button"
             className={clsx(
-              'rounded-md border-2 px-2 py-1 m-1',
+              'rounded-md border-2 px-2 py-1 my-1 mr-2',
               selection === it
                 ? 'text-white font-medium border-dyo-turquoise bg-dyo-turquoise bg-opacity-30'
                 : 'text-light-eased border-light-eased',

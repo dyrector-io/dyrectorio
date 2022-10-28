@@ -17,7 +17,8 @@ LDFLAGS := -ldflags "-X '${PACKAGE}/pkg/version.Version=${VCS_VERSION}'\
 # default tag is latest for building
 image_version ?= latest
 
-GOSEC=v2.12.0
+GOAIR=v1.40.4
+GOSEC=v2.14.0
 GOLANGCI=v1.46.2
 GOSWAG=v1.8.3
 
@@ -47,15 +48,17 @@ down: ##
 
 .PHONY: go-crane
 go-crane: ##
+	air --build.cmd "" --build.bin "cd cmd/crane && go run ."
+
+.PHONY: go-crane-init
+go-crane-init: ##
 	cd cmd/crane && \
-	go run . ; \
+	go run . init ; \
 	cd -
 
 .PHONY: go-dagent
 go-dagent: ##
-	cd cmd/dagent && \
-	go run . ; \
-	cd -
+	air --build.cmd "" --build.bin "cd cmd/dagent && go run ."
 
 
 .PHONY: compile-cli
@@ -78,6 +81,7 @@ compile-dagent: ##
 
 .PHONY: install-go-tools
 install-go-tools: ##
+	go install github.com/cosmtrek/air@${GOAIR} && \
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@${GOLANGCI} && \
 	go install github.com/swaggo/swag/cmd/swag@${GOSWAG} && \
 	go install github.com/securego/gosec/v2/cmd/gosec@${GOSEC}

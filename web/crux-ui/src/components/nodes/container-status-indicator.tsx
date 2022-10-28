@@ -32,7 +32,7 @@ const ContainerStatusIndicator = (props: ContainerStatusIndicatorProps) => {
     <div className={clsx(className, 'flex')}>
       <Image
         src={status ? `/${statusToAssetName(status)}.svg` : `/circle-bright.svg`}
-        alt={status ? t(`containerStatuses.${status}`) : t('notFound')}
+        alt={status ? t(`containerStatuses.${status}`) : t('errors:notFound')}
         width={16}
         height={16}
       />

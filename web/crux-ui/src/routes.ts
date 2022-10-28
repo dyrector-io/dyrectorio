@@ -158,6 +158,9 @@ export const deploymentDeployUrl = (productId: string, versionId: string, deploy
 export const deploymentCopyUrl = (productId: string, versionId: string, deploymentId: string, force?: boolean) =>
   `${deploymentApiUrl(productId, versionId, deploymentId)}/copy${force ? '?overwrite=true' : ''}`
 
+export const deploymentStartUrl = (productId: string, versionId: string, deploymentId: string) =>
+  `${deploymentApiUrl(productId, versionId, deploymentId)}/start`
+
 // team
 export const teamUrl = (id: string) => `${ROUTE_TEAMS}/${id}`
 export const teamApiUrl = (id: string) => `/api${teamUrl(id)}`
@@ -171,3 +174,7 @@ export const teamAcceptInviteApiUrl = (teamId: string) => `${teamApiUrl(teamId)}
 export const notificationUrl = (id: string) => `${ROUTE_NOTIFICATIONS}/${id}`
 export const notificationApiUrl = (id: string) => `${API_NOTIFICATIONS}/${id}`
 export const notificationApiHookUrl = (id: string) => `${notificationApiUrl(id)}/hook`
+
+// image config
+export const imageConfigUrl = (productId: string, versionId: string, imageId: string) =>
+  `${versionUrl(productId, versionId)}/image/${imageId}`

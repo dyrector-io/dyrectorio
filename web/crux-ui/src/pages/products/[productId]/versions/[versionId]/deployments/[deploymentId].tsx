@@ -1,9 +1,11 @@
 import EditorBadge from '@app/components/editor/editor-badge'
 import { Layout } from '@app/components/layout'
+import NodeConnectionCard from '@app/components/nodes/node-connection-card'
 import DeploymentDetailsSection from '@app/components/products/versions/deployments/deployment-details-section'
 import EditDeploymentCard from '@app/components/products/versions/deployments/edit-deployment-card'
 import EditDeploymentInstances from '@app/components/products/versions/deployments/edit-deployment-instances'
 import useDeploymentState from '@app/components/products/versions/deployments/use-deployment-state'
+import { startDeployment } from '@app/components/products/versions/version-deployments-section'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
@@ -11,7 +13,8 @@ import DyoButton from '@app/elements/dyo-button'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import LoadingIndicator from '@app/elements/loading-indicator'
 import { defaultApiErrorHandler } from '@app/errors'
-import { DeploymentRoot, mergeConfigs } from '@app/models'
+import useWebsocketTranslate from '@app/hooks/use-websocket-translation'
+import { DeploymentInvalidatedSecrets, DeploymentRoot, mergeConfigs } from '@app/models'
 import {
   deploymentApiUrl,
   deploymentDeployUrl,
@@ -26,7 +29,7 @@ import { Crux, cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import toast from 'react-hot-toast'
 import { ValidationError } from 'yup'
 
@@ -54,6 +57,8 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
     onApiError,
     onWsError,
   })
+
+  useWebsocketTranslate(t)
 
   const { product, version, deployment, node } = state
 
@@ -91,9 +96,9 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
 
   const navigateToLog = () => router.push(deploymentDeployUrl(product.id, version.id, deployment.id))
 
-  const onDeploy = () => {
+  const onDeploy = async () => {
     if (node.status !== 'running') {
-      toast.error(t('common:nodeUnreachable'))
+      toast.error(t('errors.preconditionFailed'))
       return
     }
 
@@ -114,7 +119,12 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
       return
     }
 
-    navigateToLog()
+    const result = await startDeployment(router, product.id, version.id, deployment.id)
+    if (result?.property === 'secrets') {
+      const invalidSecrets = result.value as DeploymentInvalidatedSecrets[]
+
+      actions.onInvalidateSecrets(invalidSecrets)
+    }
   }
 
   const onCopyDeployment = async () => {
@@ -125,12 +135,6 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
 
     router.push(url)
   }
-
-  useEffect(() => {
-    if (state.mutable && node.status !== 'running') {
-      toast.error(t('common:nodeUnreachable'))
-    }
-  }, [node.status, state.mutable, t])
 
   return (
     <Layout
@@ -172,7 +176,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
         )}
 
         {!state.mutable ? (
-          <DyoButton className="px-10 ml-auto" onClick={navigateToLog}>
+          <DyoButton className="px-6 ml-4" onClick={navigateToLog}>
             {t('log')}
           </DyoButton>
         ) : !state.editing ? (
@@ -191,20 +195,17 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
         />
       ) : (
         <>
-          <DeploymentDetailsSection state={state} />
+          <div className="flex flex-row">
+            <NodeConnectionCard className="w-1/3 p-6" node={state.node} showName />
+
+            <DeploymentDetailsSection state={state} className="w-2/3 p-6 ml-2" />
+          </div>
 
           <EditDeploymentInstances state={state} actions={actions} />
         </>
       )}
 
-      <DyoConfirmationModal
-        config={state.confirmationModal}
-        title={t('deploymentCopyConflictTitle')}
-        description={t('deploymentCopyConflictContent')}
-        confirmText={t('continue')}
-        className="w-1/4"
-        confirmColor="bg-error-red"
-      />
+      <DyoConfirmationModal config={state.confirmationModal} className="w-1/4" confirmColor="bg-error-red" />
     </Layout>
   )
 }

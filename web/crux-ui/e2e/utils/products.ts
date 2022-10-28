@@ -1,7 +1,7 @@
-import { productUrl, ROUTE_PRODUCTS } from '@app/routes'
+import { productUrl, ROUTE_PRODUCTS, versionUrl } from '@app/routes'
 import { expect, Page } from '@playwright/test'
 
-export const createProduct = async (page: Page, name: string, type: string) => {
+export const createProduct = async (page: Page, name: string, type: 'Simple' | 'Complex') => {
   await page.goto(ROUTE_PRODUCTS)
 
   await page.locator('button:has-text("Add")').click()
@@ -16,8 +16,60 @@ export const createProduct = async (page: Page, name: string, type: string) => {
 
   await item.click()
 
-  await page.waitForSelector(`span:has-text("Changelog")`)
-  await page.waitForSelector(`h5:has-text("${name}")`)
+  if (type === 'Simple') {
+    await page.waitForSelector(`span:has-text("Changelog")`)
+  }
+
+  if (type === 'Complex') {
+    await page.waitForNavigation()
+
+    const productItem = await page.locator(`h5:has-text("${name}")`)
+    await productItem.click()
+    await page.waitForSelector(`button:has-text("Add version")`)
+  }
+
+  return page.url().split('/').pop()
+}
+
+export const createVersion = async (page: Page, productId: string, name: string, type: string) => {
+  await page.goto(productUrl(productId))
+  await page.waitForSelector(`button:has-text("Add version")`)
+
+  await page.locator('button:has-text("Add version")').click()
+
+  await page.locator('input[name=name] >> visible=true').fill(name)
+  await page.locator(`form >> text=${type}`).click()
+
+  await page.locator('button:has-text("Save")').click()
+
+  const item = await page.waitForSelector(`h5:has-text("${name}")`)
+
+  await item.click()
+
+  await page.waitForSelector('button:has-text("Add image")')
+
+  return page.url().split('/').pop()
+}
+
+export const createImage = async (page: Page, productId: string, versionId: string, image: string) => {
+  await page.goto(versionUrl(productId, versionId))
+  await page.waitForSelector('button:has-text("Add image")')
+
+  await page.locator('button:has-text("Add image")').click()
+  await page.locator('input[name=imageName] >> visible=true').type(image)
+
+  const imageItem = await page.waitForSelector(`label:has-text("${image}")`)
+  await imageItem.click()
+
+  const addButton = await page.waitForSelector('button:has-text("Add")')
+  await addButton.click()
+
+  await page.waitForSelector('button:has-text("Add image")')
+
+  const settingsButton = await page.waitForSelector(`[src="/settings.svg"]:right-of(:text("${image}"))`)
+  await settingsButton.click()
+
+  await page.waitForSelector(`h2:has-text("Image")`)
 
   return page.url().split('/').pop()
 }

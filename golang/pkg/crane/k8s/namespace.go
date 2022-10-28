@@ -32,21 +32,26 @@ func newNamespace(ctx context.Context, name string, cfg *config.Configuration) *
 }
 
 func (n *namespace) deployNamespace() error {
-	client, err := getNamespaceClient(n.appConfig)
+	// Add default namespace if not found
+	name := n.name
+	if n.name == "" {
+		name = "default"
+	}
+
+	return DeployNamespace(n.ctx, name, n.appConfig)
+}
+
+func DeployNamespace(ctx context.Context, name string, cfg *config.Configuration) error {
+	client, err := getNamespaceClient(cfg)
 	if err != nil {
 		return err
 	}
 
-	// Add default namespace if not found
-	if n.name == "" {
-		n.name = "default"
-	}
-
-	_, err = client.Apply(n.ctx,
-		corev1.Namespace(n.name),
+	_, err = client.Apply(ctx,
+		corev1.Namespace(name),
 		metav1.ApplyOptions{
-			FieldManager: n.appConfig.FieldManagerName,
-			Force:        n.appConfig.ForceOnConflicts,
+			FieldManager: cfg.FieldManagerName,
+			Force:        cfg.ForceOnConflicts,
 		})
 
 	if err != nil {

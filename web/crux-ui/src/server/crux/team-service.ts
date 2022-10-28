@@ -14,6 +14,7 @@ import {
   UserMeta,
   UserRole,
 } from '@app/models'
+import { Empty } from '@app/models/grpc/protobuf/proto/common'
 import {
   AccessRequest,
   ActiveTeamDetailsResponse,
@@ -22,7 +23,6 @@ import {
   CreateTeamRequest,
   CruxTeamClient,
   DeleteUserFromTeamRequest,
-  Empty,
   IdRequest,
   InviteUserRequest,
   TeamDetailsResponse,

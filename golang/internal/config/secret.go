@@ -13,23 +13,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type ConfigFromFile string
-
-func (field *ConfigFromFile) SetValue(secretPath string) error {
-	if secretPath == "" {
-		return fmt.Errorf("env private key file value can't be empty")
-	}
-
-	key, err := checkGenerateKeys(secretPath)
-	if err != nil {
-		return err
-	}
-
-	*field = ConfigFromFile(key)
-	return nil
-}
-
-func checkGenerateKeys(secretPath string) (string, error) {
+func CheckGenerateKeys(secretPath string) (string, error) {
 	log.Printf("Checking key file: %v\n", secretPath)
 	fileContent, err := os.ReadFile(secretPath) //#nosec G304 -- secret path comes from an env
 
@@ -65,7 +49,7 @@ func checkGenerateKeys(secretPath string) (string, error) {
 	}
 }
 
-func generateKey(secretPath string) (string, error) {
+func GenerateKeyString() (string, error) {
 	log.Printf("Generating new key file...")
 	const (
 		name  = "dyrector.io agent"
@@ -79,6 +63,14 @@ func generateKey(secretPath string) (string, error) {
 	}
 	keyStr, keyErr := ecKey.ArmorWithCustomHeaders("", "")
 
+	if keyErr != nil {
+		return "", keyErr
+	}
+	return keyStr, nil
+}
+
+func generateKey(secretPath string) (string, error) {
+	keyStr, keyErr := GenerateKeyString()
 	if keyErr != nil {
 		return "", keyErr
 	}
@@ -104,4 +96,18 @@ func GetPublicKey(keyStr string) (string, error) {
 	}
 
 	return publicKey, nil
+}
+
+func IsExpiredKey(fileContent string) (bool, error) {
+	privateKeyObj, keyErr := crypto.NewKeyFromArmored(fileContent)
+
+	if keyErr != nil {
+		return false, keyErr
+	}
+
+	if privateKeyObj == nil {
+		return false, fmt.Errorf("key content is nil")
+	}
+
+	return privateKeyObj.IsExpired(), nil
 }

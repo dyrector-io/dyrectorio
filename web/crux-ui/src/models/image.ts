@@ -60,3 +60,36 @@ export type GetImageMessage = {
 
 export const WS_TYPE_IMAGE = 'image'
 export type ImageMessage = VersionImage
+
+export const IMAGE_CONFIG_FILTERS = [
+  'name',
+  'environment',
+  'secrets',
+  'capabilities',
+  'ingress',
+  'expose',
+  'user',
+  'tty',
+  'importContainer',
+  'configContainer',
+  'ports',
+  'portRanges',
+  'volumes',
+  'commands',
+  'args',
+  'initContainers',
+  'logConfig',
+  'restartPolicy',
+  'networkMode',
+  'networks',
+  'deploymentStrategy',
+  'customHeaders',
+  'proxyHeaders',
+  'loadBalancer',
+  'healthCheckConfig',
+  'resourceConfig',
+  'dockerLabels',
+  'labels',
+  'annotations',
+] as const
+export type ImageConfigFilterType = typeof IMAGE_CONFIG_FILTERS[number]

@@ -13,7 +13,7 @@ import {
   WS_TYPE_IMAGE_DELETED,
   WS_TYPE_INSTANCES_ADDED,
 } from '@app/models'
-import { ListSecretsResponse } from '@app/models/grpc/protobuf/proto/common'
+import { Empty, ListSecretsResponse } from '@app/models/grpc/protobuf/proto/common'
 import {
   AccessRequest,
   CreateDeploymentRequest,
@@ -26,7 +26,6 @@ import {
   DeploymentListResponse,
   DeploymentListSecretsRequest,
   DeploymentProgressMessage,
-  Empty,
   IdRequest,
   PatchDeploymentRequest,
   ServiceIdRequest,
@@ -35,10 +34,12 @@ import {
 } from '@app/models/grpc/protobuf/proto/crux'
 import { timestampToUTC } from '@app/utils'
 import { WsMessage } from '@app/websockets/common'
+import { ServiceError } from '@grpc/grpc-js'
 import { Identity } from '@ory/kratos-client'
+import { fromGrpcError, parseGrpcError } from '@server/error-middleware'
 import { GrpcConnection, protomisify, ProtoSubscriptionOptions } from './grpc-connection'
 import { deploymentEventTypeToDto, deploymentStatusToDto, instanceToDto } from './mappers/deployment-mappers'
-import { explicitContainerConfigToProto } from './mappers/image-mappers'
+import { containerConfigToProto } from './mappers/image-mappers'
 import { containerStateToDto, nodeStatusToDto } from './mappers/node-mappers'
 
 class DyoDeploymentService {
@@ -191,22 +192,7 @@ class DyoDeploymentService {
         : {
             id: dto.instance.instanceId,
             accessedBy: this.identity.id,
-            config: explicitContainerConfigToProto(dto.instance.config?.config),
-            capabilities: !dto.instance.config?.capabilities
-              ? undefined
-              : {
-                  data: dto.instance.config.capabilities,
-                },
-            environment: !dto.instance.config?.environment
-              ? undefined
-              : {
-                  data: dto.instance.config.environment,
-                },
-            secrets: !dto.instance.config?.secrets
-              ? undefined
-              : {
-                  data: dto.instance.config.secrets,
-                },
+            config: containerConfigToProto(dto.instance.config),
           },
     }
 
@@ -225,9 +211,25 @@ class DyoDeploymentService {
     await protomisify<IdRequest, Empty>(this.client, this.client.deleteDeployment)(IdRequest, req)
   }
 
-  startDeployment(
+  async startDeployment(id: string): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      const connection = this.startDeploymentStream(id, {
+        onMessage: () => {
+          connection.cancel()
+          resolve()
+        },
+        onError: (err: ServiceError) => {
+          connection.cancel()
+          const error = parseGrpcError(err)
+          reject(fromGrpcError(error))
+        },
+      })
+    })
+  }
+
+  startDeploymentStream(
     id: string,
-    options: ProtoSubscriptionOptions<DeploymentEvent[]>,
+    options?: ProtoSubscriptionOptions<DeploymentEvent[]>,
   ): GrpcConnection<DeploymentProgressMessage, DeploymentEvent[]> {
     const req: IdRequest = {
       id,
@@ -294,7 +296,7 @@ class DyoDeploymentService {
       }
 
       this.logger.error('Invalid DeploymentEditEventMessage')
-      return undefined
+      return null
     }
 
     const stream = () => this.client.subscribeToDeploymentEditEvents(IdRequest.fromJSON(req))

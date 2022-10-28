@@ -10,13 +10,12 @@ import {
   NodeStatusMessage,
   UpdateDyoNode,
 } from '@app/models'
+import { ContainerStateListMessage, Empty } from '@app/models/grpc/protobuf/proto/common'
 import {
   AccessRequest,
-  ContainerStateListMessage,
   CreateEntityResponse,
   CreateNodeRequest,
   CruxNodeClient,
-  Empty,
   GenerateScriptRequest,
   IdRequest,
   NodeDetailsResponse,
@@ -183,6 +182,8 @@ class DyoNodeService {
         nodeId: data.id,
         status: nodeStatusToDto(data.status),
         address: data.address,
+        version: data.version,
+        connectedAt: timestampToUTC(data.connectedAt),
       } as NodeStatusMessage)
 
     const stream = () => this.client.subscribeNodeEventChannel(ServiceIdRequest.fromJSON(req))

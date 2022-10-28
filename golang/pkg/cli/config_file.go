@@ -85,8 +85,9 @@ type Options struct {
 	KratosPostgresUser             string `yaml:"kratosPostgresUser" env-default:"kratos"`
 	KratosPostgresPassword         string `yaml:"kratosPostgresPassword"`
 	KratosSecret                   string `yaml:"kratosSecret"`
-	MailSlurperPort                uint   `yaml:"mailSlurperPort" env-default:"4436"`
-	MailSlurperPort2               uint   `yaml:"mailSlurperPort2" env-default:"4437"`
+	MailSlurperSMTPPort            uint   `yaml:"mailSlurperSMTPPort" env-default:"1025"`
+	MailSlurperWebPort             uint   `yaml:"mailSlurperWebPort" env-default:"4436"`
+	MailSlurperWebPort2            uint   `yaml:"mailSlurperWebPort2" env-default:"4437"`
 }
 
 const DefaultPostgresPort = 5432
@@ -106,17 +107,18 @@ const (
 )
 
 const (
-	CruxAgentGrpcPort  = "CruxAgentGrpcPort"
-	CruxGrpcPort       = "CruxGrpcPort"
-	CruxUIPort         = "CruxUIPort"
-	KratosAdminPort    = "KratosAdminPort"
-	KratosPublicPort   = "KratosPublicPort"
-	KratosPostgresPort = "KratosPostgresPort"
-	MailSlurperPort    = "MailSlurperPort"
-	MailSlurperPort2   = "MailSlurperPort2"
-	CruxPostgresPort   = "CruxPostgresPort"
-	TraefikWebPort     = "TraeficWebPort"
-	TraefikUIPort      = "TraefikUIPort"
+	CruxAgentGrpcPort   = "CruxAgentGrpcPort"
+	CruxGrpcPort        = "CruxGrpcPort"
+	CruxUIPort          = "CruxUIPort"
+	KratosAdminPort     = "KratosAdminPort"
+	KratosPublicPort    = "KratosPublicPort"
+	KratosPostgresPort  = "KratosPostgresPort"
+	MailSlurperSMTPPort = "MailSlurperSMTPPort"
+	MailSlurperWebPort  = "MailSlurperWebPort"
+	MailSlurperWebPort2 = "MailSlurperWebPort2"
+	CruxPostgresPort    = "CruxPostgresPort"
+	TraefikWebPort      = "TraeficWebPort"
+	TraefikUIPort       = "TraefikUIPort"
 )
 
 const (
@@ -141,11 +143,11 @@ func SettingsExists(settingspath string) bool {
 // Assemble the location of the settings file
 func SettingsFileLocation(settingspath string) string {
 	if settingspath == "" {
-		userconfdir, err := os.UserConfigDir()
+		userConfDir, err := os.UserConfigDir()
 		if err != nil {
 			log.Fatal().Err(err).Stack().Msg("Couldn't determine the user's configuration dir")
 		}
-		settingspath = fmt.Sprintf("%s/%s/%s", userconfdir, SettingsFileDir, SettingsFileName)
+		settingspath = fmt.Sprintf("%s/%s/%s", userConfDir, SettingsFileDir, SettingsFileName)
 	}
 
 	return settingspath
@@ -208,7 +210,7 @@ func CheckRequirements() string {
 	} else {
 		// We cannot assume unix:///var/run/docker.sock on Mac/Win platforms, we let Docker SDK does its magic :)
 		log.Warn().Msg("DOCKER_HOST environmental variable is empty or not set.")
-		log.Warn().Msg("Using default socket determined by Docker SDK")
+		log.Warn().Msg("Using default socket determined by Docker SDK.")
 	}
 
 	// Check socket
@@ -224,11 +226,11 @@ func CheckRequirements() string {
 
 	switch info.InitBinary {
 	case "":
-		log.Info().Str("podmanVersion", info.ServerVersion).Msg("")
+		log.Info().Str("version", info.ServerVersion).Msg("Podman")
 		PodmanInfo()
 		return PodmanHost
 	case "docker-init":
-		log.Info().Str("dockerVersion", info.ServerVersion).Msg("")
+		log.Info().Str("version", info.ServerVersion).Msg("Docker")
 		return DockerHost
 	default:
 		log.Fatal().Msg("unknown init binary")
@@ -278,12 +280,11 @@ func PodmanInfo() {
 }
 
 func DisabledServiceSettings(settings *Settings) *Settings {
-	if settings.Containers.Crux.Disabled {
-		fmt.Printf("Do not forget to add your DATABASE_URL to your crux environment.\n\n")
-		fmt.Printf("DATABASE_URL=postgresql://%s:%s@%s_crux-postgres:%d/%s?schema=public\n\n",
+	if settings.Containers.Crux.Disabled && settings.Command == UpCommand {
+		log.Info().Msg("Do not forget to add your DATABASE_URL to your crux environment.")
+		log.Info().Msgf("DATABASE_URL=postgresql://%s:%s@localhost:%d/%s?schema=public",
 			settings.SettingsFile.CruxPostgresUser,
 			settings.SettingsFile.CruxPostgresPassword,
-			settings.SettingsFile.Prefix,
 			settings.SettingsFile.CruxPostgresPort,
 			settings.SettingsFile.CruxPostgresDB)
 	}
@@ -297,16 +298,21 @@ func DisabledServiceSettings(settings *Settings) *Settings {
 	return settings
 }
 
+func PrintInfo(settings *Settings) {
+	log.Warn().Msg("🦩🦩🦩 Use the CLI tool only for NON-PRODUCTION purpose. 🦩🦩🦩")
+	log.Info().Str("path", settings.SettingsFilePath).Msg("Platform configuration file location")
+}
+
 // Save the settings
 func SaveSettings(settings *Settings) {
 	if settings.SettingsWrite {
-		userconfdir, _ := os.UserConfigDir()
-		settingspath := fmt.Sprintf("%s/%s/%s", userconfdir, SettingsFileDir, SettingsFileName)
+		userConfDir, _ := os.UserConfigDir()
+		settingspath := fmt.Sprintf("%s/%s/%s", userConfDir, SettingsFileDir, SettingsFileName)
 
 		// If settingspath is default, we create the directory for it
 		if settings.SettingsFilePath == settingspath {
-			if _, err := os.Stat(userconfdir); errors.Is(err, os.ErrNotExist) {
-				err = os.Mkdir(userconfdir, DirPerms)
+			if _, err := os.Stat(userConfDir); errors.Is(err, os.ErrNotExist) {
+				err = os.Mkdir(userConfDir, DirPerms)
 				if err != nil {
 					log.Fatal().Err(err).Stack().Msg("")
 				}
@@ -427,12 +433,15 @@ func CheckAndUpdatePorts(settings *Settings) *Settings {
 	portMap[KratosPostgresPort] = getAvailablePort(portMap, settings.SettingsFile.Options.KratosPostgresPort,
 		KratosPostgresPort, &settings.SettingsWrite)
 	settings.SettingsFile.Options.KratosPostgresPort = portMap[KratosPostgresPort]
-	portMap[MailSlurperPort] = getAvailablePort(portMap, settings.SettingsFile.Options.MailSlurperPort,
-		MailSlurperPort, &settings.SettingsWrite)
-	settings.SettingsFile.Options.MailSlurperPort = portMap[MailSlurperPort]
-	portMap[MailSlurperPort2] = getAvailablePort(portMap, settings.SettingsFile.Options.MailSlurperPort2,
-		MailSlurperPort2, &settings.SettingsWrite)
-	settings.SettingsFile.Options.MailSlurperPort2 = portMap[MailSlurperPort2]
+	portMap[MailSlurperSMTPPort] = getAvailablePort(portMap, settings.SettingsFile.Options.MailSlurperSMTPPort,
+		MailSlurperSMTPPort, &settings.SettingsWrite)
+	settings.SettingsFile.Options.MailSlurperSMTPPort = portMap[MailSlurperSMTPPort]
+	portMap[MailSlurperWebPort] = getAvailablePort(portMap, settings.SettingsFile.Options.MailSlurperWebPort,
+		MailSlurperWebPort, &settings.SettingsWrite)
+	settings.SettingsFile.Options.MailSlurperWebPort = portMap[MailSlurperWebPort]
+	portMap[MailSlurperWebPort2] = getAvailablePort(portMap, settings.SettingsFile.Options.MailSlurperWebPort2,
+		MailSlurperWebPort2, &settings.SettingsWrite)
+	settings.SettingsFile.Options.MailSlurperWebPort2 = portMap[MailSlurperWebPort2]
 	portMap[TraefikWebPort] = getAvailablePort(portMap, settings.SettingsFile.Options.TraefikWebPort,
 		TraefikWebPort, &settings.SettingsWrite)
 	settings.SettingsFile.Options.TraefikWebPort = portMap[TraefikWebPort]
@@ -445,10 +454,11 @@ func CheckAndUpdatePorts(settings *Settings) *Settings {
 
 func getAvailablePort(portMap map[string]uint, portNum uint, portDesc string, changed *bool) uint {
 	for {
-		if err := portIsAvailable(portMap, portNum); err != nil {
-			fmt.Fprintf(os.Stderr, "error in binding port for %s: %s\n", portDesc, err.Error())
-			fmt.Fprintf(os.Stdout, "type another port: ")
+		err := portIsAvailable(portMap, portNum)
+		if err != nil {
+			log.Error().Err(err).Str("Value", portDesc).Msg("")
 			portNum = scanPort(portNum)
+			log.Info().Msgf("New PORT %d binded successfully for %s.", portNum, portDesc)
 			*changed = true
 			continue
 		}
@@ -458,12 +468,14 @@ func getAvailablePort(portMap map[string]uint, portNum uint, portDesc string, ch
 }
 
 func scanPort(portNum uint) uint {
+	log.Info().Msg("Type another port: ")
+
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		newPort, err := strconv.ParseUint(scanner.Text(), ParseBase, ParseBitSize)
 		if err != nil || (newPort > 0 && newPort <= 1023) || newPort == 0 {
-			fmt.Fprintf(os.Stderr, "you typed invalid port number:\n")
-			fmt.Fprintf(os.Stdout, "type another port: ")
+			log.Error().Err(err).Msg("")
+			log.Info().Msg("Type another port: ")
 			continue
 		}
 		return uint(newPort)
