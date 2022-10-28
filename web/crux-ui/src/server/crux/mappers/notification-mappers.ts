@@ -24,7 +24,7 @@ export const notificationEventTypeToGrpc = (type: NotificationEventType): ProtoN
     case 'user-invited':
       return ProtoNotificationEventType.USER_INVITED
     default:
-      return ProtoNotificationEventType.UNKNOWN_NOTIFICATION_EVENT_TYPE
+      return ProtoNotificationEventType.NOTIFICATION_EVENT_TYPE_UNSPECIFIED
   }
 }
 
@@ -38,7 +38,7 @@ export const notificationEventTypeToDto = (type: ProtoNotificationEventType): No
       return 'node-added'
     case ProtoNotificationEventType.USER_INVITED:
       return 'user-invited'
-    case ProtoNotificationEventType.UNKNOWN_NOTIFICATION_EVENT_TYPE:
+    case ProtoNotificationEventType.NOTIFICATION_EVENT_TYPE_UNSPECIFIED:
     default:
       throw internalError(`Unknown ProtoNotificationEventType '${type}'`)
   }

@@ -439,5 +439,5 @@ func mapKubeStatusToCruxContainerState(status appsv1.DeploymentStatus) common.Co
 	case 0:
 		return common.ContainerState_DEAD
 	}
-	return common.ContainerState_UNKNOWN_CONTAINER_STATE
+	return common.ContainerState_CONTAINER_STATE_UNSPECIFIED
 }

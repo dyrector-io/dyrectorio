@@ -9,7 +9,7 @@ message Empty {}
 
 // Deployment
 enum ContainerState {
-  UNKNOWN_CONTAINER_STATE = 0;
+  CONTAINER_STATE_UNSPECIFIED = 0;
   CREATED = 1;
   RESTARTING = 2;
   RUNNING = 3;
@@ -20,7 +20,7 @@ enum ContainerState {
 }
 
 enum DeploymentStatus {
-  UNKNOWN_DEPLOYMENT_STATUS = 0;
+  DEPLOYMENT_STATUS_UNSPECIFIED = 0;
   PREPARING = 1;
   IN_PROGRESS = 2;
   SUCCESSFUL = 3;
@@ -73,7 +73,7 @@ message ContainerStateItem {
 }
 
 enum NetworkMode {
-  UNKNOWN_NETWORK_MODE = 0;
+  NETWORK_MODE_UNSPECIFIED = 0;
   BRIDGE = 1;
   HOST = 2;
   OVERLAY = 3;
@@ -83,7 +83,7 @@ enum NetworkMode {
 }
 
 enum RestartPolicy {
-  UNKNOWN_POLICY = 0;
+  POLICY_UNSPECIFIED = 0;
   UNDEFINED = 1;
   NO = 2;
   ON_FAILURE = 3;
@@ -92,13 +92,13 @@ enum RestartPolicy {
 }
 
 enum DeploymentStrategy {
-  UNKOWN_DEPLOYMENT_STRATEGY = 0;
+  DEPLOYMENT_STRATEGY_UNSPECIFIED = 0;
   RECREATE = 1;
   ROLLING = 2;
 }
 
 enum VolumeType {
-  UNKNOWN_VOLUME_TYPE = 0;
+  VOLUME_TYPE_UNSPECIFIED = 0;
   RO = 1;
   RW = 2;
   RWX = 3;
@@ -107,7 +107,7 @@ enum VolumeType {
 }
 
 enum DriverType {
-  UNKNOWN_DRIVER_TYPE = 0;
+  DRIVER_TYPE_UNSPECIFIED = 0;
   DRIVER_TYPE_NONE = 1;
   GCPLOGS = 2;
   LOCAL = 3;
@@ -123,7 +123,7 @@ enum DriverType {
 }
 
 enum ExposeStrategy {
-  UNKNOWN_EXPOSE_STRATEGY = 0;
+  EXPOSE_STRATEGY_UNSPECIFIED = 0;
   NONE_ES = 1;
   EXPOSE = 2;
   EXPOSE_WITH_TLS = 3;
