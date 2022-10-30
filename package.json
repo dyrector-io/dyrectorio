@@ -1,0 +1,22 @@
+{
+  "name": "dyrectorio",
+  "version": "1.0.0",
+  "description": "<p align=\"center\">\r   <a href=\"http://docs.dyrector.io/\" target=\"blank\">\r     <picture>\r       <source media=\"(prefers-color-scheme: dark)\" srcset=\"docs/dyrectorio-dark.png\">\r       <source media=\"(prefers-color-scheme: light)\" srcset=\"docs/dyrectorio-light.png\">\r       <img alt=\"dyrector.io official logo\" src=\"docs/dyrectorio-dark.png\" width=\"400\">\r     </picture>\r   </a>\r </p>",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Swap-Nova/dyrectorio.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Swap-Nova/dyrectorio/issues"
+  },
+  "homepage": "https://github.com/Swap-Nova/dyrectorio#readme"
+}

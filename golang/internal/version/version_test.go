@@ -12,7 +12,7 @@ import (
 )
 
 // Version text format "<agent-version>-<commit-hash> (<build-date>)" where <build-date> is an ISO 8601 UTC date string
-const VersionFormatRegex = "^(\\w*)\\-(\\w*)\\ \\(\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d(\\.\\d+)?(([+-]\\d\\d:\\d\\d)|Z)?\\)$"
+const VersionFormatRegex = "^(\\w*)\\-(\\w*)\\ \\(\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d(\\.\\d+)?(([+-]\\d\\d:\\d\\d)|Z)?\\-\\)$"
 
 func TestDefaults(t *testing.T) {
 	version.Version = "dev"
