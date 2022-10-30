@@ -9,6 +9,7 @@ export interface DyoFileUploadProps {
   handleFile: Function
   accept: string
   label?: string
+  placeholder?: string
 }
 
 export const DyoFileUploadInput = (props: DyoFileUploadProps) => {
@@ -42,11 +43,11 @@ export const DyoFileUploadInput = (props: DyoFileUploadProps) => {
 
       <input
         type="file"
+        className="hidden"
         accept={accept}
         multiple={multiple}
         ref={hiddenFileInput}
         onChange={handleChange}
-        style={{ display: 'none' }}
       />
     </>
   )

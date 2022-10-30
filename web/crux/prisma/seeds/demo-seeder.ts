@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from '@prisma/client'
+import { PrismaClient } from '@prisma/client'
 import { buildVersion } from './data/demo/version'
 import { buildProduct } from './data/demo/product'
 import { buildRegistry } from './data/demo/registry'
@@ -53,7 +53,7 @@ async function main() {
   await Promise.all(
     images.map(async it => {
       const image = await prisma.image.create({
-        data: it,
+        data: { ...it, createdBy: userId },
       })
 
       // Container config seed
@@ -61,10 +61,6 @@ async function main() {
       await prisma.containerConfig.create({
         data: {
           ...containerConfig,
-          environment: containerConfig.environment as Prisma.InputJsonArray,
-          secrets: containerConfig.secrets as Prisma.InputJsonArray,
-          capabilities: containerConfig.capabilities as Prisma.InputJsonArray,
-          config: containerConfig.config as Prisma.InputJsonValue,
         },
       })
     }),

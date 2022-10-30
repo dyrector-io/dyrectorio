@@ -1,6 +1,8 @@
 import { Layout } from '@app/components/layout'
 import DyoNodeCard from '@app/components/nodes/dyo-node-card'
 import EditNodeCard from '@app/components/nodes/edit-node-card'
+import NodeConnectionCard from '@app/components/nodes/node-connection-card'
+import useNodeState from '@app/components/nodes/use-node-state'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
@@ -25,7 +27,7 @@ const NodeDetails = (props: NodeDetailsProps) => {
 
   const router = useRouter()
 
-  const [node, setNode] = useState(propsNode)
+  const [node, setNode] = useNodeState(propsNode)
   const [editing, setEditing] = useState(false)
   const submitRef = useRef<() => Promise<any>>()
 
@@ -80,7 +82,11 @@ const NodeDetails = (props: NodeDetailsProps) => {
       </PageHeading>
 
       {!editing ? (
-        <DyoNodeCard node={node} />
+        <div className="flex flex-row gap-4">
+          <DyoNodeCard className="w-2/3 p-6" node={node} hideConnectionInfo />
+
+          <NodeConnectionCard className="w-1/3 px-6 py-4" node={node} />
+        </div>
       ) : (
         <EditNodeCard node={node} onNodeEdited={onNodeEdited} submitRef={submitRef} />
       )}

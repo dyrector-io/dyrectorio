@@ -10,25 +10,23 @@ import {
   VersionType,
 } from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
-import TemplateFileService, {
-  TemplateContainerConfig,
-  TemplateCraneConfig,
-  TemplateDagentConfig,
-  TemplateImage,
-} from 'src/services/template.file.service'
+import TemplateFileService, { TemplateContainerConfig, TemplateImage } from 'src/services/template.file.service'
 import { v4 } from 'uuid'
-import { ContainerConfigData, UniqueKeyValue } from 'src/shared/model'
+import { ContainerConfigData } from 'src/shared/model'
 import {
   deploymentStrategyFromJSON,
-  ExplicitContainerConfig,
+  exposeStrategyFromJSON,
   networkModeFromJSON,
   restartPolicyFromJSON,
+  VolumeType,
+  volumeTypeFromJSON,
 } from 'src/grpc/protobuf/proto/common'
 import { SIMPLE_PRODUCT_VERSION_NAME } from 'src/shared/const'
 import ImageService from '../image/image.service'
 import ProductService from '../product/product.service'
 import RegistryService from '../registry/registry.service'
 import VersionService from '../version/version.service'
+import ImageMapper from '../image/image.mapper'
 
 const VERSION_NAME = '1.0.0'
 
@@ -43,6 +41,7 @@ export default class TemplateService {
     private registryService: RegistryService,
     private versionService: VersionService,
     private imageService: ImageService,
+    private imageMapper: ImageMapper,
   ) {}
 
   async createProductFromTemplate(req: CreateProductFromTemplateRequest): Promise<CreateEntityResponse> {
@@ -83,36 +82,38 @@ export default class TemplateService {
     return product
   }
 
-  private mapTemplateConfig(config: TemplateContainerConfig): ExplicitContainerConfig {
-    const mapCraneConfig = (crane: TemplateCraneConfig) => {
-      if (!crane) {
-        return undefined
-      }
+  private idify<T extends { id: string }>(object: T): T {
+    return { ...object, id: v4() }
+  }
 
-      return {
-        ...crane,
-        deploymentStatregy: crane.deploymentStatregy
-          ? deploymentStrategyFromJSON(crane.deploymentStatregy.toUpperCase())
-          : undefined,
-      }
-    }
-
-    const mapDagentConfig = (dagent: TemplateDagentConfig) => {
-      if (!dagent) {
-        return undefined
-      }
-
-      return {
-        ...dagent,
-        restartPolicy: dagent.restartPolicy ? restartPolicyFromJSON(dagent.restartPolicy.toUpperCase()) : undefined,
-        networkMode: dagent.networkMode ? networkModeFromJSON(dagent.networkMode.toUpperCase()) : undefined,
-      }
-    }
-
+  private mapTemplateConfig(config: TemplateContainerConfig): ContainerConfigData {
     return {
       ...config,
-      crane: mapCraneConfig(config.crane),
-      dagent: mapDagentConfig(config.dagent),
+      deploymentStrategy: config.deploymentStatregy
+        ? this.imageMapper.deploymentStrategyToDb(
+            deploymentStrategyFromJSON(config.deploymentStatregy.toLocaleUpperCase()),
+          )
+        : 'recreate',
+      restartPolicy: config.restartPolicy
+        ? this.imageMapper.restartPolicyToDb(restartPolicyFromJSON(config.restartPolicy.toLocaleUpperCase()))
+        : 'no',
+      networkMode: config.networkMode
+        ? this.imageMapper.networkModeToDb(networkModeFromJSON(config.networkMode.toLocaleUpperCase()))
+        : 'bridge',
+      expose: config.expose
+        ? this.imageMapper.exposeStrategyToDb(exposeStrategyFromJSON(config.expose.toLocaleUpperCase()))
+        : 'none',
+      networks: config.networks ? config.networks.map(it => ({ id: v4(), key: it })) : [],
+      ports: config.ports ? this.imageMapper.toPrismaJson(config.ports.map(it => this.idify(it))) : [],
+      environment: config.environment ? config.environment.map(it => this.idify(it)) : [],
+      volumes: config.volumes
+        ? this.imageMapper.toPrismaJson(
+            config.volumes.map(it => ({
+              ...this.idify(it),
+              type: it.type ? volumeTypeFromJSON(it.type.toUpperCase()) : VolumeType.RO,
+            })),
+          )
+        : [],
     }
   }
 
@@ -187,19 +188,7 @@ export default class TemplateService {
         const imageTemplate = it[0] as TemplateImage
         const dbImage = it[1] as ImageResponse
 
-        const mapKeyValues = (array: UniqueKeyValue[]) =>
-          array.map(kv => ({
-            ...kv,
-            id: v4(),
-          }))
-
-        const config: ContainerConfigData = {
-          name: imageTemplate.name,
-          config: this.mapTemplateConfig(imageTemplate.config),
-          capabilities: mapKeyValues(imageTemplate.capabilities),
-          environment: mapKeyValues(imageTemplate.environment),
-          secrets: [],
-        }
+        const config: ContainerConfigData = this.mapTemplateConfig(imageTemplate.config)
 
         return this.prisma.image.update({
           include: {
@@ -209,6 +198,7 @@ export default class TemplateService {
             config: {
               update: config,
             },
+            tag: imageTemplate.tag,
             updatedBy: accessedBy,
           },
           where: {

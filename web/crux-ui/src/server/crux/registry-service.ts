@@ -1,10 +1,10 @@
 import { CreateRegistry, Registry, RegistryDetails, UpdateRegistry } from '@app/models'
+import { Empty } from '@app/models/grpc/protobuf/proto/common'
 import {
   AccessRequest,
   CreateEntityResponse,
   CreateRegistryRequest,
   CruxRegistryClient,
-  Empty,
   IdRequest,
   RegistryDetailsResponse,
   RegistryListResponse,

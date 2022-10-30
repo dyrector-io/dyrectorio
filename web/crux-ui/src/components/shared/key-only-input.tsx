@@ -1,4 +1,4 @@
-import { DyoHeading } from '@app/elements/dyo-heading'
+import { DyoLabel } from '@app/elements/dyo-label'
 import useRepatch from '@app/hooks/use-repatch'
 import { UniqueKey } from '@app/models'
 import clsx from 'clsx'
@@ -8,19 +8,19 @@ import { v4 as uuid } from 'uuid'
 import MultiInput from '../editor/multi-input'
 import { EditorStateOptions } from '../editor/use-editor-state'
 
-const EMPTY_SECRET_KEY = {
+const EMPTY_KEY = {
   id: uuid(),
   key: '',
 } as UniqueKey
 
-type KeyValueElement = UniqueKey & {
+type KeyElement = UniqueKey & {
   message?: string
 }
 
 const isCompletelyEmpty = (it: UniqueKey): boolean => !it.key || it.key.length < 1
 
 const generateEmptyLine = () => ({
-  ...EMPTY_SECRET_KEY,
+  ...EMPTY_KEY,
   id: uuid(),
 })
 
@@ -52,29 +52,44 @@ const mergeItems =
     return result
   }
 
-interface SecretKeyInputProps {
+interface KeyInputProps {
   disabled?: boolean
   className?: string
-  heading?: string
+  label?: string
+  labelClassName?: string
+  description?: string
   items: UniqueKey[]
+  keyPlaceholder?: string
+  unique?: boolean
   editorOptions: EditorStateOptions
   onChange: (items: UniqueKey[]) => void
 }
 
-const SecretKeyOnlyInput = (props: SecretKeyInputProps) => {
+const KeyOnlyInput = (props: KeyInputProps) => {
   const { t } = useTranslation('common')
 
-  const { heading, disabled, items, className, editorOptions, onChange: propsOnChange } = props
+  const {
+    label,
+    labelClassName,
+    description,
+    disabled,
+    items,
+    className,
+    editorOptions,
+    unique,
+    keyPlaceholder,
+    onChange: propsOnChange,
+  } = props
 
   const [state, dispatch] = useRepatch(items)
 
   const stateToElements = (itemArray: UniqueKey[]) => {
-    const result: KeyValueElement[] = []
+    const result: KeyElement[] = []
 
     itemArray.forEach(item =>
       result.push({
         ...item,
-        message: result.find(it => it.key === item.key) ? t('keyMustUnique') : null,
+        message: result.find(it => it.key === item.key) && unique ? t('keyMustUnique') : null,
       }),
     )
 
@@ -101,44 +116,40 @@ const SecretKeyOnlyInput = (props: SecretKeyInputProps) => {
 
   const elements = stateToElements(state)
 
-  const renderItem = (entry: KeyValueElement, index: number) => {
+  const renderItem = (entry: KeyElement, index: number) => {
     const { id, key, message } = entry
 
     const keyId = `${entry.id}-key`
 
     return (
-      <div key={id} className="flex flex-row flex-grow p-1">
-        <div className="w-5/12">
-          <MultiInput
-            key={keyId}
-            id={keyId}
-            disabled={disabled}
-            editorOptions={editorOptions}
-            className="w-full mr-2"
-            grow
-            placeholder={t('key')}
-            value={key}
-            message={message}
-            onPatch={it => onChange(index, it)}
-          />
-        </div>
+      <div key={id} className="ml-2">
+        <MultiInput
+          key={keyId}
+          id={keyId}
+          disabled={disabled}
+          editorOptions={editorOptions}
+          containerClassName="p-1"
+          grow
+          placeholder={keyPlaceholder}
+          value={key ?? ''}
+          message={message}
+          onPatch={it => onChange(index, it)}
+        />
       </div>
     )
   }
 
   return (
-    <form className={clsx(className, 'flex flex-col max-h-128 overflow-y-auto')}>
-      {!heading ? null : (
-        <DyoHeading element="h6" className="text-bright mt-5">
-          {heading}
-        </DyoHeading>
+    <div className={clsx(className, 'flex flex-col max-h-128 overflow-y-auto')}>
+      {!label ? null : (
+        <DyoLabel className={clsx(labelClassName ?? 'text-bright mb-2 whitespace-nowrap')}>{label}</DyoLabel>
       )}
 
-      <div className="text-light-eased mb-2 ml-1">{t('cannotDefineSecretsHere')}</div>
+      {!description ? null : <div className="text-light-eased mb-2 ml-1">{description}</div>}
 
       {elements.map((it, index) => renderItem(it, index))}
-    </form>
+    </div>
   )
 }
 
-export default SecretKeyOnlyInput
+export default KeyOnlyInput

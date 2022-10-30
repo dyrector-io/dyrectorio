@@ -1,10 +1,10 @@
 import { CreateNotification, NotificationDetails, UpdateNotification } from '@app/models'
+import { Empty } from '@app/models/grpc/protobuf/proto/common'
 import {
   AccessRequest,
   CreateNotificationRequest,
   CreateNotificationResponse,
   CruxNotificationClient,
-  Empty,
   IdRequest,
   NotificationDetailsResponse,
   NotificationListResponse,

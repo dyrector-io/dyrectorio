@@ -21,7 +21,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 )
 
-func mapInstanceConfig(in *agent.DeployRequest_InstanceConfig) v1.InstanceConfig {
+func mapInstanceConfig(in *agent.InstanceConfig) v1.InstanceConfig {
 	instanceConfig := v1.InstanceConfig{
 		ContainerPreName: in.Prefix,
 	}
@@ -73,21 +73,21 @@ func MapDeployImage(req *agent.DeployRequest, appConfig *config.CommonConfigurat
 }
 
 func mapContainerConfig(in *agent.DeployRequest) v1.ContainerConfig {
-	cc := in.ContainerConfig
+	cc := in.Common
 
 	containerConfig := v1.ContainerConfig{
-		Container:        in.ContainerName,
+		Container:        cc.Name,
 		ContainerPreName: in.InstanceConfig.Prefix,
 		Ports:            MapPorts(cc.Ports),
 		PortRanges:       mapPortRanges(cc.PortRanges),
 		Volumes:          mapVolumes(cc.Volumes),
 		User:             cc.User,
-		Secrets:          MapSecrets(cc.Secrets),
+		Secrets:          cc.Secrets,
 		InitContainers:   mapInitContainers(cc.InitContainers),
 	}
 
-	if cc.Environments != nil {
-		containerConfig.Environment = cc.Environments
+	if cc.Environment != nil {
+		containerConfig.Environment = cc.Environment
 	}
 
 	if cc.TTY != nil {
@@ -98,13 +98,13 @@ func mapContainerConfig(in *agent.DeployRequest) v1.ContainerConfig {
 		containerConfig.Args = cc.Args
 	}
 
-	if cc.Command != nil {
-		containerConfig.Command = cc.Command
+	if cc.Commands != nil {
+		containerConfig.Command = cc.Commands
 	}
 
 	if cc.Expose != nil {
-		containerConfig.Expose = cc.Expose.Public
-		containerConfig.ExposeTLS = cc.Expose.Tls
+		containerConfig.Expose = *cc.Expose > 1
+		containerConfig.ExposeTLS = *cc.Expose > 2
 	}
 
 	if cc.Ingress != nil {
@@ -120,18 +120,18 @@ func mapContainerConfig(in *agent.DeployRequest) v1.ContainerConfig {
 		containerConfig.ConfigContainer = mapConfigContainer(cc.ConfigContainer)
 	}
 
-	if cc.Dagent != nil {
-		mapDagentConfig(cc.Dagent, &containerConfig)
+	if in.Dagent != nil {
+		mapDagentConfig(in.Dagent, &containerConfig)
 	}
 
-	if cc.Crane != nil {
-		mapCraneConfig(cc.Crane, &containerConfig)
+	if in.Crane != nil {
+		mapCraneConfig(in.Crane, &containerConfig)
 	}
 
 	return containerConfig
 }
 
-func mapDagentConfig(dagent *common.DagentContainerConfig, containerConfig *v1.ContainerConfig) {
+func mapDagentConfig(dagent *agent.DagentContainerConfig, containerConfig *v1.ContainerConfig) {
 	if dagent.NetworkMode != nil {
 		containerConfig.NetworkMode = dagent.NetworkMode.String()
 	}
@@ -145,11 +145,12 @@ func mapDagentConfig(dagent *common.DagentContainerConfig, containerConfig *v1.C
 	}
 
 	if dagent.LogConfig != nil {
-		containerConfig.LogConfig = &container.LogConfig{Type: dagent.LogConfig.Driver, Config: dagent.LogConfig.Options}
+		containerConfig.LogConfig = &container.LogConfig{Type: dagent.LogConfig.Driver.String(),
+			Config: dagent.LogConfig.Options}
 	}
 }
 
-func mapCraneConfig(crane *common.CraneContainerConfig, containerConfig *v1.ContainerConfig) {
+func mapCraneConfig(crane *agent.CraneContainerConfig, containerConfig *v1.ContainerConfig) {
 	containerConfig.DeploymentStrategy = crane.DeploymentStatregy.String()
 
 	if crane.ProxyHeaders != nil {
@@ -210,8 +211,10 @@ func mapResourceConfig(resourceConfig *common.ResourceConfig) v1.ResourceConfig 
 }
 
 func mapHealthCheckConfig(healthCheckConfig *common.HealthCheckConfig) v1.HealthCheckConfig {
-	mappedConfig := v1.HealthCheckConfig{
-		Port: uint16(healthCheckConfig.Port),
+	mappedConfig := v1.HealthCheckConfig{}
+
+	if healthCheckConfig.Port != nil {
+		mappedConfig.Port = uint16(*healthCheckConfig.Port)
 	}
 
 	if healthCheckConfig.LivenessProbe != nil {
@@ -229,7 +232,7 @@ func mapHealthCheckConfig(healthCheckConfig *common.HealthCheckConfig) v1.Health
 	return mappedConfig
 }
 
-func mapVolumes(in []*common.Volume) []v1.Volume {
+func mapVolumes(in []*agent.Volume) []v1.Volume {
 	volumes := []v1.Volume{}
 
 	for i := range in {
@@ -247,7 +250,7 @@ func mapVolumes(in []*common.Volume) []v1.Volume {
 		}
 
 		if in[i].Type != nil {
-			volume.Type = *in[i].Type
+			volume.Type = in[i].Type.String()
 		}
 
 		volumes = append(volumes, volume)
@@ -256,7 +259,7 @@ func mapVolumes(in []*common.Volume) []v1.Volume {
 	return volumes
 }
 
-func mapPortRanges(in []*common.PortRangeBinding) []builder.PortRangeBinding {
+func mapPortRanges(in []*agent.PortRangeBinding) []builder.PortRangeBinding {
 	portRanges := []builder.PortRangeBinding{}
 
 	for i := range in {
@@ -269,17 +272,17 @@ func mapPortRanges(in []*common.PortRangeBinding) []builder.PortRangeBinding {
 	return portRanges
 }
 
-func MapSecrets(in *common.KeyValueList) map[string]string {
+func MapSecrets(in []*common.UniqueKey) map[string]string {
 	res := map[string]string{}
 
-	for _, value := range in.GetData() {
-		res[value.GetKey()] = value.GetValue()
+	for _, value := range in {
+		res[value.GetKey()] = value.Id
 	}
 
 	return res
 }
 
-func MapPorts(in []*common.Port) []builder.PortBinding {
+func MapPorts(in []*agent.Port) []builder.PortBinding {
 	ports := []builder.PortBinding{}
 
 	for i := range in {
@@ -301,7 +304,7 @@ func mapConfigContainer(in *common.ConfigContainer) *v1.ConfigContainer {
 	}
 }
 
-func mapInitContainers(in []*common.InitContainer) []v1.InitContainer {
+func mapInitContainers(in []*agent.InitContainer) []v1.InitContainer {
 	containers := []v1.InitContainer{}
 
 	for _, ic := range in {
@@ -316,14 +319,14 @@ func mapInitContainers(in []*common.InitContainer) []v1.InitContainer {
 			Volumes:   mapVolumeLinks(ic.Volumes),
 			Args:      ic.Args,
 			UseParent: useParentConfig,
-			Envs:      ic.Environments,
+			Envs:      ic.Environment,
 		})
 	}
 
 	return containers
 }
 
-func mapVolumeLinks(in []*common.VolumeLink) []v1.VolumeLink {
+func mapVolumeLinks(in []*agent.VolumeLink) []v1.VolumeLink {
 	volumeLinks := []v1.VolumeLink{}
 
 	for _, vl := range in {
@@ -377,13 +380,13 @@ func MapContainerState(in *[]dockerTypes.Container) []*common.ContainerStateItem
 	return list
 }
 
-func mapContainerPorts(in *[]dockerTypes.Port) []*common.Port {
-	ports := []*common.Port{}
+func mapContainerPorts(in *[]dockerTypes.Port) []*common.ContainerStateItemPort {
+	ports := []*common.ContainerStateItemPort{}
 
 	for i := range *in {
 		it := (*in)[i]
 
-		ports = append(ports, &common.Port{
+		ports = append(ports, &common.ContainerStateItemPort{
 			Internal: int32(it.PrivatePort),
 			External: int32(it.PublicPort),
 		})

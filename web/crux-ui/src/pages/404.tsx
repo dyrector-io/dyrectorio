@@ -16,7 +16,7 @@ const Page404 = () => {
       <div className="flex flex-row min-h-screen bg-dark">
         <div className="flex flex-col items-center w-full my-auto">
           <div>
-            <Image src="/404.svg" alt={t('notFound')} width={500} height={346.833} />
+            <Image src="/404.svg" alt={t('errors:notFound')} width={500} height={346.833} />
           </div>
 
           <DyoHeading element="h2" className="text-4xl text-white font-extrabold mt-16">

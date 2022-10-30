@@ -1,9 +1,11 @@
 syntax = "proto3";
 
-import "google/protobuf/timestamp.proto";
-
 package common;
 option go_package = "github.com/dyrector-io/dyrectorio/protobuf/go/common";
+
+import "google/protobuf/timestamp.proto";
+
+message Empty {}
 
 // Deployment
 enum ContainerState {
@@ -15,30 +17,6 @@ enum ContainerState {
   PAUSED = 5;
   EXITED = 6;
   DEAD = 7;
-}
-
-message ContainerStateItem {
-  string containerId = 100;
-  string name = 101;
-  string command = 103;
-  google.protobuf.Timestamp createdAt = 104;
-  /* The 'State' of the container (Created, Running, etc) */
-  ContainerState state = 105;
-  /*
-   * The 'Status' of the container ("Created 1min ago", "Exited with code 123",
-   * etc). Unused but left here for reverse compatibility with the legacy
-   * version.
-   */
-  string status = 106;
-  string imageName = 107;
-  string imageTag = 108;
-
-  repeated Port ports = 1000;
-}
-
-message ContainerStateListMessage {
-  optional string prefix = 100;
-  repeated ContainerStateItem data = 1000;
 }
 
 enum DeploymentStatus {
@@ -65,20 +43,52 @@ message DeploymentStatusMessage {
   repeated string log = 1000;
 }
 
+message ContainerStateItemPort {
+  int32 internal = 100;
+  int32 external = 101;
+}
+
+message ContainerStateListMessage {
+  optional string prefix = 100;
+  repeated common.ContainerStateItem data = 1000;
+}
+
+message ContainerStateItem {
+  string containerId = 100;
+  string name = 101;
+  string command = 103;
+  google.protobuf.Timestamp createdAt = 104;
+  /* The 'State' of the container (Created, Running, etc) */
+  ContainerState state = 105;
+  /*
+   * The 'Status' of the container ("Created 1min ago", "Exited with code 123",
+   * etc). Unused but left here for reverse compatibility with the legacy
+   * version.
+   */
+  string status = 106;
+  string imageName = 107;
+  string imageTag = 108;
+
+  repeated ContainerStateItemPort ports = 1000;
+}
+
 enum NetworkMode {
   UNKNOWN_NETWORK_MODE = 0;
-  NONE = 1;
+  BRIDGE = 1;
   HOST = 2;
-  BRIDGE = 3;
+  OVERLAY = 3;
+  IPVLAN = 4;
+  MACVLAN = 5;
+  NONE = 6;
 }
 
 enum RestartPolicy {
   UNKNOWN_POLICY = 0;
-  EMPTY = 1;
-  ALWAYS = 2;
-  UNLESS_STOPPED = 3;
-  NO = 4;
-  ON_FAILURE = 5;
+  UNDEFINED = 1;
+  NO = 2;
+  ON_FAILURE = 3;
+  ALWAYS = 4;
+  UNLESS_STOPPED = 5;
 }
 
 enum DeploymentStrategy {
@@ -87,32 +97,36 @@ enum DeploymentStrategy {
   ROLLING = 2;
 }
 
-message Port {
-  int32 internal = 1;
-  int32 external = 2;
+enum VolumeType {
+  UNKNOWN_VOLUME_TYPE = 0;
+  RO = 1;
+  RW = 2;
+  RWX = 3;
+  MEM = 4;
+  TMP = 5;
 }
 
-message PortRange {
-  int32 from = 1;
-  int32 to = 2;
+enum DriverType {
+  UNKNOWN_DRIVER_TYPE = 0;
+  DRIVER_TYPE_NONE = 1;
+  GCPLOGS = 2;
+  LOCAL = 3;
+  JSON_FILE = 4;
+  SYSLOG = 5;
+  JOURNALD = 6;
+  GELF = 7;
+  FLUENTD = 8;
+  AWSLOGS = 9;
+  SPLUNK = 10;
+  ETWLOGS = 11;
+  LOGENTRIES = 12;
 }
 
-message PortRangeBinding {
-  PortRange internal = 1;
-  PortRange external = 2;
-}
-
-message Volume {
-  string name = 100;
-  string path = 101;
-  optional string size = 102;
-  optional string type = 103;
-  optional string class = 104;
-}
-
-message Expose {
-  bool public = 100; // if expose is needed
-  bool tls = 101;    // if tls is needed
+enum ExposeStrategy {
+  UNKNOWN_EXPOSE_STRATEGY = 0;
+  NONE_ES = 1;
+  EXPOSE = 2;
+  EXPOSE_WITH_TLS = 3;
 }
 
 message Ingress {
@@ -128,44 +142,8 @@ message ConfigContainer {
   bool keepFiles = 103;
 }
 
-message ImportContainer {
-  map<string, string> environments = 100;
-  string volume = 101;
-  string command = 102;
-}
-
-message LogConfig {
-  string driver = 100;
-  map<string, string> options = 101;
-}
-
-// volumes referred as VolumeLink
-// they won't get created if non-existent
-message VolumeLink {
-  string name = 100;
-  string path = 101;
-}
-
-message InitContainer {
-  string name = 100;
-  string image = 101;
-  map<string, string> environments = 102;
-  optional bool useParentConfig = 103;
-
-  repeated VolumeLink volumes = 1000;
-  repeated string command = 1001;
-  repeated string args = 1002;
-}
-
-message DagentContainerConfig {
-  optional LogConfig logConfig = 100;
-  optional RestartPolicy restartPolicy = 101;
-  optional NetworkMode networkMode = 102;
-  repeated string networks = 1000;
-}
-
 message HealthCheckConfig {
-  int32 port = 100;
+  optional int32 port = 100;
   optional string livenessProbe = 101;
   optional string readinessProbe = 102;
   optional string startupProbe = 103;
@@ -181,60 +159,10 @@ message ResourceConfig {
   optional Resource requests = 101;
 }
 
-message CraneContainerConfig {
-  optional DeploymentStrategy deploymentStatregy = 100;
-  optional HealthCheckConfig healthCheckConfig = 101;
-  optional ResourceConfig resourceConfig = 102;
-  optional bool proxyHeaders = 103;
-  optional bool useLoadBalancer = 104;
-  map<string, string> extraLBAnnotations = 105;
-
-  repeated string customHeaders = 1000;
+message KeyValue {
+  string key = 100;
+  string value = 101;
 }
-
-message ExplicitContainerConfig {
-  optional DagentContainerConfig dagent = 100;
-  optional CraneContainerConfig crane = 101;
-  optional Expose expose = 102;
-  optional Ingress ingress = 103;
-  optional ConfigContainer configContainer = 104;
-  optional ImportContainer importContainer = 105;
-  optional int64 user = 106;
-  optional bool TTY = 107;
-
-  repeated Port ports = 1000;
-  repeated PortRangeBinding portRanges = 1001;
-  repeated Volume volumes = 1002;
-  repeated string command = 1003;
-  repeated string args = 1004;
-  repeated string environments = 1005;
-  optional KeyValueList secrets = 1006;
-  repeated InitContainer initContainers = 1007;
-}
-
-message UniqueKey {
-  string id = 100;
-  string key = 101;
-}
-
-message KeyList { repeated UniqueKey data = 1000; }
-
-message UniqueKeyValue {
-  string id = 100;
-  string key = 101;
-  string value = 102;
-}
-
-message UniqueKeySecretValue {
-  string id = 100;
-  string key = 101;
-  string value = 103;
-  optional bool encrypted = 104;
-}
-
-message KeyValueList { repeated UniqueKeyValue data = 1000; }
-
-message SecretList { repeated UniqueKeySecretValue data = 1000; }
 
 message ListSecretsResponse {
   string prefix = 1;
@@ -242,4 +170,9 @@ message ListSecretsResponse {
   string publicKey = 3;
   bool hasKeys = 4;
   repeated string keys = 5;
+}
+
+message UniqueKey {
+  string id = 100;
+  string key = 101;
 }

@@ -1,6 +1,6 @@
 import { IMAGE_WS_REQUEST_DELAY } from '@app/const'
 import { useThrottling } from '@app/hooks/use-throttleing'
-import { Environment, InstanceContainerConfig, UniqueKeyValue } from '@app/models'
+import { ContainerConfig, UniqueKeyValue } from '@app/models'
 
 import MultiInput from '@app/components/editor/multi-input'
 import { EditorStateOptions } from '@app/components/editor/use-editor-state'
@@ -13,10 +13,10 @@ import { useRef } from 'react'
 interface EditInstanceProps {
   disabled?: boolean
   publicKey: string
-  config: InstanceContainerConfig
-  definedSecrets?: string[]
+  definedSecrets: string[]
+  config: ContainerConfig
+  onPatch: (config: Partial<ContainerConfig>) => void
   editorOptions: EditorStateOptions
-  onPatch: (config: Partial<InstanceContainerConfig>) => void
 }
 
 const EditInstanceConfig = (props: EditInstanceProps) => {
@@ -24,11 +24,11 @@ const EditInstanceConfig = (props: EditInstanceProps) => {
 
   const { t } = useTranslation('images')
 
-  const patch = useRef<Partial<InstanceContainerConfig>>({})
+  const patch = useRef<Partial<ContainerConfig>>({})
 
   const throttle = useThrottling(IMAGE_WS_REQUEST_DELAY)
 
-  const sendPatchImmediately = (newConfig: Partial<InstanceContainerConfig>) => {
+  const sendPatchImmediately = (newConfig: Partial<ContainerConfig>) => {
     onPatch({
       ...patch.current,
       ...newConfig,
@@ -36,7 +36,7 @@ const EditInstanceConfig = (props: EditInstanceProps) => {
     patch.current = {}
   }
 
-  const sendPatch = (newConfig: Partial<InstanceContainerConfig>) => {
+  const sendPatch = (newConfig: Partial<ContainerConfig>) => {
     const newPatch = {
       ...patch.current,
       ...newConfig,
@@ -49,7 +49,7 @@ const EditInstanceConfig = (props: EditInstanceProps) => {
     })
   }
 
-  const onEnvChange = (environment: Environment) =>
+  const onEnvChange = (environment: UniqueKeyValue[]) =>
     sendPatch({
       environment,
     })
@@ -61,6 +61,7 @@ const EditInstanceConfig = (props: EditInstanceProps) => {
 
   const onContainerNameChange = (name: string) =>
     sendPatch({
+      ...patch.current,
       name,
     })
 
@@ -71,7 +72,7 @@ const EditInstanceConfig = (props: EditInstanceProps) => {
         disabled={disabled}
         label={t('containerName').toUpperCase()}
         labelClassName="mt-2 mb-2.5"
-        className="mb-4"
+        className="mb-4 ml-2 w-5/12"
         editorOptions={editorOptions}
         value={config?.name}
         onPatch={onContainerNameChange}
@@ -79,8 +80,8 @@ const EditInstanceConfig = (props: EditInstanceProps) => {
 
       <KeyValueInput
         disabled={disabled}
-        heading={t('environment').toUpperCase()}
-        items={config?.environment ?? []}
+        label={t('environment').toUpperCase()}
+        items={config.environment ?? []}
         editorOptions={editorOptions}
         onChange={onEnvChange}
         hint={{ hintValidation: sensitiveKeyRule, hintText: t('sensitiveKey') }}
@@ -90,7 +91,7 @@ const EditInstanceConfig = (props: EditInstanceProps) => {
         disabled={disabled || !publicKey}
         heading={t('secrets').toUpperCase()}
         publicKey={publicKey}
-        items={config.secrets ?? []}
+        items={(config.secrets as UniqueKeyValue[]) ?? []}
         definedSecrets={definedSecrets}
         onSubmit={onSecretSubmit}
       />

@@ -37,7 +37,7 @@ const MultiInput = (props: MultiInputProps) => {
     <DyoInput
       id={id}
       disabled={disabled}
-      value={state.value}
+      value={state.value ?? ''}
       onFocus={actions.onFocus}
       onBlur={actions.onBlur}
       onChange={ev => onChange(ev.target.value)}

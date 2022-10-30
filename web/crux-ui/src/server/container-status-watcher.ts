@@ -1,5 +1,5 @@
 import { ContainerListMessage, WS_TYPE_CONTAINER_STATUS_LIST } from '@app/models'
-import { ContainerStateListMessage } from '@app/models/grpc/protobuf/proto/crux'
+import { ContainerStateListMessage } from '@app/models/grpc/protobuf/proto/common'
 import WsConnection from '@app/websockets/connection'
 import { GrpcConnection } from './crux/grpc-connection'
 import DyoNodeService from './crux/node-service'

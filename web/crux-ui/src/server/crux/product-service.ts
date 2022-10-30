@@ -1,10 +1,10 @@
 import { CreateProduct, Product, ProductDetails, UpdateProduct, Version } from '@app/models'
+import { Empty } from '@app/models/grpc/protobuf/proto/common'
 import {
   AccessRequest,
   CreateEntityResponse,
   CreateProductRequest,
   CruxProductClient,
-  Empty,
   IdRequest,
   ProductDetailsReponse,
   ProductListResponse,

@@ -5,7 +5,7 @@ import { concatAll, filter, from, lastValueFrom, map, merge, Observable, Subject
 import Deployment from 'src/domain/deployment'
 import { InternalException, PreconditionFailedException } from 'src/exception/errors'
 import { DeployRequest } from 'src/grpc/protobuf/proto/agent'
-import { ListSecretsResponse } from 'src/grpc/protobuf/proto/common'
+import { Empty, ListSecretsResponse } from 'src/grpc/protobuf/proto/common'
 import {
   AccessRequest,
   CreateDeploymentRequest,
@@ -17,7 +17,6 @@ import {
   DeploymentListResponse,
   DeploymentListSecretsRequest,
   DeploymentProgressMessage,
-  Empty,
   IdRequest,
   PatchDeploymentRequest,
   ServiceIdRequest,
@@ -25,9 +24,9 @@ import {
   UpdateEntityResponse,
 } from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
-import { InstanceContainerConfigData } from 'src/shared/model'
+import { ContainerConfigData } from 'src/shared/model'
 import AgentService from '../agent/agent.service'
-import { ImageDetails } from '../image/image.mapper'
+import ImageMapper, { ImageDetails } from '../image/image.mapper'
 import ImageService from '../image/image.service'
 import DeployMapper, { InstanceDetails } from './deploy.mapper'
 import DeployCreateValidationPipe from './pipes/deploy.create.pipe'
@@ -45,6 +44,7 @@ export default class DeployService {
     private agentService: AgentService,
     imageService: ImageService,
     private mapper: DeployMapper,
+    private imageMapper: ImageMapper,
   ) {
     imageService.imagesAddedToVersionEvent
       .pipe(
@@ -165,16 +165,11 @@ export default class DeployService {
 
   async patchDeployment(request: PatchDeploymentRequest): Promise<UpdateEntityResponse> {
     const reqInstance = request.instance
-    let instanceConfigPatchSet: InstanceContainerConfigData = null
+    let instanceConfigPatchSet: ContainerConfigData = null
 
     if (reqInstance) {
-      const { capabilities: caps, environment: envs, secrets } = request.instance
-
-      instanceConfigPatchSet = {
-        capabilities: caps ? caps.data ?? [] : (undefined as JsonArray),
-        environment: envs ? envs.data ?? [] : (undefined as JsonArray),
-        config: request.instance.config,
-        secrets: secrets ? secrets.data ?? [] : (undefined as JsonArray),
+      if (reqInstance.config) {
+        instanceConfigPatchSet = this.imageMapper.configProtoToDb(reqInstance.config)
       }
     }
 
@@ -299,12 +294,19 @@ export default class DeployService {
               ? registry.imageNamePrefix
               : ''
 
+          const mergedConfig = this.mapper.mergeConfigs(
+            (it.image.config ?? {}) as ContainerConfigData,
+            (it.config ?? {}) as ContainerConfigData,
+          )
+
           return {
+            common: this.mapper.configToCommonConfig(mergedConfig),
+            crane: this.mapper.configToCraneConfig(mergedConfig),
+            dagent: this.mapper.configToDagentConfig(mergedConfig),
             id: it.id,
             containerName: it.image.config.name,
             imageName: it.image.name,
             tag: it.image.tag,
-            containerConfig: this.mapper.instanceToAgentContainerConfig(it),
             instanceConfig: this.mapper.deploymentToAgentInstanceConfig(deployment),
             registry: registryUrl,
             registryAuth: !registry.token
@@ -534,10 +536,7 @@ export default class DeployService {
             config: it.config
               ? {
                   create: {
-                    capabilities: it.config.capabilities ? it.config.capabilities ?? [] : (undefined as JsonArray),
-                    environment: it.config.environment ? it.config.environment ?? [] : (undefined as JsonArray),
-                    config: it.config.config ?? {},
-                    secrets: it.config.secrets ? it.config.secrets ?? [] : (undefined as JsonArray),
+                    ...it.config,
                   },
                 }
               : undefined,

@@ -1,17 +1,17 @@
 #!/bin/sh
 
+ROOTLESS="${ROOTLESS:-false}"
+if [ $ROOTLESS != "true" ]; then
+  if [ $(id -u) -ne 0 ]; then
+    echo "Installation process needs root privileges" 1>&2
+    sudo -s
+  fi
+fi
+
 set -euo pipefail
 
 set_environment() {
   MSYS_NO_PATHCONV=1
-
-  ROOTLESS="${ROOTLESS:-false}"
-  if [ $ROOTLESS != "true" ]; then
-    if [ $(id -u) -ne 0 ]; then
-      echo "Installation process needs root privileges" 1>&2
-      sudo -s
-    fi
-  fi
 
 # Set folder for persisting data
   PERSISTENCE_FOLDER_FROM_CRUX="{{#if rootPath}}{{{rootPath}}}{{/if}}"

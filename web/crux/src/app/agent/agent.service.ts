@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import { DeploymentEventTypeEnum, DeploymentStatusEnum, NodeTypeEnum } from '@prisma/client'
 import { concatAll, concatMap, finalize, from, map, Observable, of, Subject, takeUntil } from 'rxjs'
@@ -9,12 +10,17 @@ import { DeployMessage, NotificationMessageType } from 'src/domain/notification-
 import { collectChildVersionIds, collectParentVersionIds } from 'src/domain/utils'
 import { AlreadyExistsException, NotFoundException, UnauthenticatedException } from 'src/exception/errors'
 import { AgentCommand, AgentInfo } from 'src/grpc/protobuf/proto/agent'
-import { ContainerStateListMessage, Empty, NodeConnectionStatus, NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
-import { DeploymentStatus, DeploymentStatusMessage, ListSecretsResponse } from 'src/grpc/protobuf/proto/common'
+import {
+  ContainerStateListMessage,
+  DeploymentStatus,
+  DeploymentStatusMessage,
+  Empty,
+  ListSecretsResponse,
+} from 'src/grpc/protobuf/proto/common'
+import { NodeConnectionStatus, NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
-import { ConfigService } from '@nestjs/config'
 
 @Injectable()
 export default class AgentService {
@@ -226,6 +232,7 @@ export default class AgentService {
     if (status === NodeConnectionStatus.UNREACHABLE) {
       this.logger.log(`Left: ${agent.id}`)
       this.agents.delete(agent.id)
+      agent.onDisconnected()
     } else if (status === NodeConnectionStatus.CONNECTED) {
       agent.onConnected()
     }
@@ -250,7 +257,7 @@ export default class AgentService {
         },
       })
 
-      const now = new Date()
+      const { connectedAt } = connection
       const eventChannel = await this.getNodeEventsByTeam(node.teamId)
       const installer = this.installers.get(node.id)
       if (installer) {
@@ -268,7 +275,7 @@ export default class AgentService {
           data: {
             token: installer.token,
             address: connection.address,
-            connectedAt: now,
+            connectedAt,
           },
         })
       } else {
@@ -283,7 +290,7 @@ export default class AgentService {
           where: { id: node.id },
           data: {
             address: connection.address,
-            connectedAt: now,
+            connectedAt,
           },
         })
       }

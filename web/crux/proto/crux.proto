@@ -20,7 +20,7 @@ service CruxProduct {
   rpc GetProducts(AccessRequest) returns (ProductListResponse);
   rpc CreateProduct(CreateProductRequest) returns (CreateEntityResponse);
   rpc UpdateProduct(UpdateProductRequest) returns (UpdateEntityResponse);
-  rpc DeleteProduct(IdRequest) returns (Empty);
+  rpc DeleteProduct(IdRequest) returns (common.Empty);
   rpc GetProductDetails(IdRequest) returns (ProductDetailsReponse);
 }
 
@@ -29,7 +29,7 @@ service CruxRegistry {
   rpc GetRegistries(AccessRequest) returns (RegistryListResponse);
   rpc CreateRegistry(CreateRegistryRequest) returns (CreateEntityResponse);
   rpc UpdateRegistry(UpdateRegistryRequest) returns (UpdateEntityResponse);
-  rpc DeleteRegistry(IdRequest) returns (Empty);
+  rpc DeleteRegistry(IdRequest) returns (common.Empty);
   rpc GetRegistryDetails(IdRequest) returns (RegistryDetailsResponse);
 }
 
@@ -37,26 +37,26 @@ service CruxNode {
   // CRUD
   rpc GetNodes(AccessRequest) returns (NodeListResponse);
   rpc CreateNode(CreateNodeRequest) returns (CreateEntityResponse);
-  rpc UpdateNode(UpdateNodeRequest) returns (Empty);
-  rpc DeleteNode(IdRequest) returns (Empty);
+  rpc UpdateNode(UpdateNodeRequest) returns (common.Empty);
+  rpc DeleteNode(IdRequest) returns (common.Empty);
   rpc GetNodeDetails(IdRequest) returns (NodeDetailsResponse);
   rpc GenerateScript(GenerateScriptRequest) returns (NodeInstallResponse);
   rpc GetScript(ServiceIdRequest) returns (NodeScriptResponse);
-  rpc DiscardScript(IdRequest) returns (Empty);
-  rpc RevokeToken(IdRequest) returns (Empty);
+  rpc DiscardScript(IdRequest) returns (common.Empty);
+  rpc RevokeToken(IdRequest) returns (common.Empty);
 
   rpc SubscribeNodeEventChannel(ServiceIdRequest)
       returns (stream NodeEventMessage);
   rpc WatchContainerState(WatchContainerStateRequest)
-      returns (stream ContainerStateListMessage);
+      returns (stream common.ContainerStateListMessage);
 }
 
 service CruxProductVersion {
   rpc GetVersionsByProductId(IdRequest) returns (VersionListResponse);
   rpc CreateVersion(CreateVersionRequest) returns (CreateEntityResponse);
   rpc UpdateVersion(UpdateVersionRequest) returns (UpdateEntityResponse);
-  rpc DeleteVersion(IdRequest) returns (Empty);
-  rpc SetDefaultVersion(IdRequest) returns (Empty);
+  rpc DeleteVersion(IdRequest) returns (common.Empty);
+  rpc SetDefaultVersion(IdRequest) returns (common.Empty);
   rpc GetVersionDetails(IdRequest) returns (VersionDetailsResponse);
   rpc IncreaseVersion(IncreaseVersionRequest) returns (CreateEntityResponse);
 }
@@ -64,9 +64,9 @@ service CruxProductVersion {
 service CruxImage {
   rpc GetImagesByVersionId(IdRequest) returns (ImageListResponse);
   rpc AddImagesToVersion(AddImagesToVersionRequest) returns (ImageListResponse);
-  rpc OrderImages(OrderVersionImagesRequest) returns (Empty);
-  rpc PatchImage(PatchImageRequest) returns (Empty);
-  rpc DeleteImage(IdRequest) returns (Empty);
+  rpc OrderImages(OrderVersionImagesRequest) returns (common.Empty);
+  rpc PatchImage(PatchImageRequest) returns (common.Empty);
+  rpc DeleteImage(IdRequest) returns (common.Empty);
   rpc GetImageDetails(IdRequest) returns (ImageResponse);
 }
 
@@ -76,7 +76,7 @@ service CruxDeployment {
   rpc CreateDeployment(CreateDeploymentRequest) returns (CreateEntityResponse);
   rpc UpdateDeployment(UpdateDeploymentRequest) returns (UpdateEntityResponse);
   rpc PatchDeployment(PatchDeploymentRequest) returns (UpdateEntityResponse);
-  rpc DeleteDeployment(IdRequest) returns (Empty);
+  rpc DeleteDeployment(IdRequest) returns (common.Empty);
   rpc GetDeploymentDetails(IdRequest) returns (DeploymentDetailsResponse);
   rpc GetDeploymentEvents(IdRequest) returns (DeploymentEventListResponse);
   rpc GetDeploymentList(AccessRequest) returns (DeploymentListResponse);
@@ -92,14 +92,14 @@ service CruxDeployment {
 service CruxTeam {
   rpc CreateTeam(CreateTeamRequest) returns (CreateEntityResponse);
   rpc GetActiveTeamByUser(AccessRequest) returns (ActiveTeamDetailsResponse);
-  rpc UpdateTeam(UpdateTeamRequest) returns (Empty);
-  rpc DeleteTeam(IdRequest) returns (Empty);
-  rpc UpdateUserRole(UpdateUserRoleInTeamRequest) returns (Empty);
+  rpc UpdateTeam(UpdateTeamRequest) returns (common.Empty);
+  rpc DeleteTeam(IdRequest) returns (common.Empty);
+  rpc UpdateUserRole(UpdateUserRoleInTeamRequest) returns (common.Empty);
 
   rpc InviteUserToTeam(InviteUserRequest) returns (CreateEntityResponse);
-  rpc DeleteUserFromTeam(DeleteUserFromTeamRequest) returns (Empty);
-  rpc AcceptTeamInvite(IdRequest) returns (Empty);
-  rpc SelectTeam(IdRequest) returns (Empty);
+  rpc DeleteUserFromTeam(DeleteUserFromTeamRequest) returns (common.Empty);
+  rpc AcceptTeamInvite(IdRequest) returns (common.Empty);
+  rpc SelectTeam(IdRequest) returns (common.Empty);
 
   rpc GetUserMeta(AccessRequest) returns (UserMetaResponse);
   rpc GetAllTeams(AccessRequest) returns (AllTeamsResponse);
@@ -111,10 +111,10 @@ service CruxNotification {
       returns (CreateNotificationResponse);
   rpc UpdateNotification(UpdateNotificationRequest)
       returns (UpdateEntityResponse);
-  rpc DeleteNotification(IdRequest) returns (Empty);
+  rpc DeleteNotification(IdRequest) returns (common.Empty);
   rpc GetNotificationList(AccessRequest) returns (NotificationListResponse);
   rpc GetNotificationDetails(IdRequest) returns (NotificationDetailsResponse);
-  rpc TestNotification(IdRequest) returns (Empty);
+  rpc TestNotification(IdRequest) returns (common.Empty);
 }
 
 service CruxAudit {
@@ -122,7 +122,7 @@ service CruxAudit {
   rpc GetAuditLogListCount(AuditLogListRequest) returns (AuditLogListCountResponse);
 }
 
-service CruxHealth { rpc getHealth(Empty) returns (HealthResponse); }
+service CruxHealth { rpc getHealth(common.Empty) returns (HealthResponse); }
 
 service CruxTemplate {
   rpc GetTemplates(AccessRequest) returns (TemplateListResponse);
@@ -134,7 +134,6 @@ service CruxTemplate {
  * Common messages
  *
  */
-message Empty {}
 
 message ServiceIdRequest { string id = 1; }
 
@@ -525,13 +524,128 @@ message IncreaseVersionRequest {
   optional string changelog = 101;
 }
 
-message ContainerConfig {
-  common.ExplicitContainerConfig config = 100;
-  string name = 101;
+// Container 
 
-  repeated common.UniqueKeyValue capabilities = 1000;
-  repeated common.UniqueKeyValue environment = 1001;
-  repeated common.UniqueKey secrets = 1002;
+message VolumeLink {
+  string id = 100;
+  string name = 101;
+  string path = 102;
+}
+
+message InitContainer {
+  string id = 100;
+  string name = 101;
+  string image = 102;
+  optional bool useParentConfig = 103;
+
+  repeated VolumeLink volumes = 1000;
+  repeated common.UniqueKey command = 1001;
+  repeated common.UniqueKey args = 1002;
+  repeated UniqueKeyValue environment = 1003;
+}
+
+message ImportContainer {
+  string volume = 100;
+  string command = 101;
+
+  repeated UniqueKeyValue environment = 1000;
+}
+
+message LogConfig {
+  common.DriverType driver = 100;
+  repeated UniqueKeyValue options = 1000;
+}
+
+
+message Port {
+  string id = 100;
+  int32 internal = 101;
+  int32 external = 102;
+}
+
+message PortRange {
+  int32 from = 100;
+  int32 to = 101;
+}
+
+message PortRangeBinding {
+  string id = 100;
+  PortRange internal = 101;
+  PortRange external = 102;
+}
+
+message Volume {
+  string id = 100;
+  string name = 101;
+  string path = 102;
+  optional string size = 103;
+  optional common.VolumeType type = 104;
+  optional string class = 105;
+}
+
+message KeyList { repeated common.UniqueKey data = 1000; }
+
+message UniqueKeyValue {
+  string id = 100;
+  string key = 101;
+  string value = 102;
+}
+
+message UniqueKeySecretValue {
+  string id = 100;
+  string key = 101;
+  string value = 103;
+  optional bool encrypted = 104;
+}
+
+message KeyValueList { repeated UniqueKeyValue data = 1000; }
+
+message SecretList { repeated UniqueKeySecretValue data = 1000; }
+
+message DagentContainerConfig {
+  optional LogConfig logConfig = 100;
+  optional common.RestartPolicy restartPolicy = 101;
+  optional common.NetworkMode networkMode = 102;
+
+  repeated common.UniqueKey networks = 1000;
+}
+
+message CraneContainerConfig {
+  optional common.DeploymentStrategy deploymentStatregy = 100;
+  optional common.HealthCheckConfig healthCheckConfig = 101;
+  optional common.ResourceConfig resourceConfig = 102;
+  optional bool proxyHeaders = 103;
+  optional bool useLoadBalancer = 104;
+
+  repeated common.UniqueKey customHeaders = 1000;
+  repeated UniqueKeyValue extraLBAnnotations = 1001;
+}
+
+message CommonContainerConfig {
+  string name = 101;
+  optional common.ExposeStrategy expose = 102;
+  optional common.Ingress ingress = 103;
+  optional common.ConfigContainer configContainer = 104;
+  optional ImportContainer importContainer = 105;
+  optional int64 user = 106;
+  optional bool TTY = 107;
+
+  repeated Port ports = 1000;
+  repeated PortRangeBinding portRanges = 1001;
+  repeated Volume volumes = 1002;
+  repeated common.UniqueKey commands = 1003;
+  repeated common.UniqueKey args = 1004;
+  repeated UniqueKeyValue environment = 1005;
+  repeated UniqueKeyValue secrets = 1006;
+  repeated InitContainer initContainers = 1007;
+}
+
+message ContainerConfig {
+  optional CommonContainerConfig common = 100;
+  optional DagentContainerConfig dagent = 101;
+  optional CraneContainerConfig crane = 102;
+
+  repeated UniqueKeyValue capabilities = 1000;
 }
 
 message ImageResponse {
@@ -567,20 +681,12 @@ message AddImagesToVersionRequest {
   repeated RegistryImages images = 101;
 }
 
-message PatchContainerConfig {
-  optional common.KeyValueList capabilities = 100;
-  optional common.KeyValueList environment = 101;
-  optional common.KeyList secrets = 102;
-  optional common.ExplicitContainerConfig config = 103;
-  optional string name = 104;
-}
-
 message PatchImageRequest {
   string id = 1;
   string accessedBy = 2;
 
   optional string tag = 101;
-  optional PatchContainerConfig config = 102;
+  optional ContainerConfig config = 102;
 }
 
 // NODE
@@ -674,6 +780,8 @@ message NodeEventMessage {
   string id = 1;
   NodeConnectionStatus status = 100;
   optional string address = 101;
+  optional string version = 102;
+  optional google.protobuf.Timestamp connectedAt = 103;
 }
 
 message WatchContainerStateRequest {
@@ -681,30 +789,6 @@ message WatchContainerStateRequest {
 
   string nodeId = 100;
   optional string prefix = 101;
-}
-
-message ContainerStateItem {
-  string containerId = 100;
-  string name = 101;
-  string command = 103;
-  google.protobuf.Timestamp createdAt = 104;
-  /* The 'State' of the container (Created, Running, etc) */
-  common.ContainerState state = 105;
-  /*
-   * The 'Status' of the container ("Created 1min ago", "Exited with code 123",
-   * etc). Unused but left here for reverse compatibility with the legacy
-   * version.
-   */
-  string status = 106;
-  string imageName = 107;
-  string imageTag = 108;
-
-  repeated common.Port ports = 1000;
-}
-
-message ContainerStateListMessage {
-  optional string prefix = 100;
-  repeated ContainerStateItem data = 1000;
 }
 
 // DEPLOYMENT
@@ -748,16 +832,8 @@ message PatchDeploymentRequest {
   string id = 1;
   string accessedBy = 2;
 
-  optional common.KeyValueList environment = 100;
+  optional KeyValueList environment = 100;
   optional PatchInstanceRequest instance = 1001;
-}
-
-message InstanceContainerConfig {
-  common.ExplicitContainerConfig config = 100;
-
-  repeated common.UniqueKeyValue capabilities = 1000;
-  repeated common.UniqueKeyValue environment = 1001;
-  repeated common.UniqueKeySecretValue secrets = 1002;
 }
 
 message InstanceResponse {
@@ -766,17 +842,14 @@ message InstanceResponse {
 
   ImageResponse image = 100;
   optional common.ContainerState state = 101;
-  optional InstanceContainerConfig config = 102;
+  optional ContainerConfig config = 102;
 }
 
 message PatchInstanceRequest {
   string id = 1;
   string accessedBy = 2;
-
-  optional common.KeyValueList environment = 100;
-  optional common.KeyValueList capabilities = 101;
-  optional common.ExplicitContainerConfig config = 102;
-  optional common.SecretList secrets = 103;
+  
+  optional ContainerConfig config = 102;
 }
 
 message DeploymentListResponse { repeated DeploymentResponse data = 1000; }
@@ -820,7 +893,7 @@ message DeploymentDetailsResponse {
   string nodeId = 101;
   optional string note = 102;
   string prefix = 103;
-  repeated common.UniqueKeyValue environment = 104;
+  repeated UniqueKeyValue environment = 104;
   common.DeploymentStatus status = 105;
   optional string publicKey = 106;
 

@@ -1,15 +1,35 @@
 /* eslint-disable */
+import { Metadata } from '@grpc/grpc-js'
 import { GrpcMethod, GrpcStreamMethod } from '@nestjs/microservices'
-import { util, configure } from 'protobufjs/minimal'
-import * as Long from 'long'
 import { Observable } from 'rxjs'
 import {
-  ExplicitContainerConfig,
-  ListSecretsResponse,
-  DeploymentStatusMessage,
+  ConfigContainer,
   ContainerStateListMessage,
+  DeploymentStatusMessage,
+  DeploymentStrategy,
+  deploymentStrategyFromJSON,
+  deploymentStrategyToJSON,
+  DriverType,
+  driverTypeFromJSON,
+  driverTypeToJSON,
+  Empty,
+  ExposeStrategy,
+  exposeStrategyFromJSON,
+  exposeStrategyToJSON,
+  HealthCheckConfig,
+  Ingress,
+  ListSecretsResponse,
+  NetworkMode,
+  networkModeFromJSON,
+  networkModeToJSON,
+  ResourceConfig,
+  RestartPolicy,
+  restartPolicyFromJSON,
+  restartPolicyToJSON,
+  VolumeType,
+  volumeTypeFromJSON,
+  volumeTypeToJSON,
 } from './common'
-import { Metadata } from '@grpc/grpc-js'
 
 export const protobufPackage = 'agent'
 
@@ -17,8 +37,6 @@ export const protobufPackage = 'agent'
  * Container agent interface messages and service definitions
  * Logs, statuses, deployments
  */
-
-export interface Empty {}
 
 /**  */
 export interface AgentInfo {
@@ -57,43 +75,155 @@ export interface ListSecretsRequest {
 }
 
 /** Deploys a single container */
-export interface DeployRequest {
-  id: string
-  containerName: string
-  /** InstanceConfig is set for multiple containers */
-  instanceConfig: DeployRequest_InstanceConfig | undefined
-  /** Runtime info and requirements of a container */
-  containerConfig: ExplicitContainerConfig | undefined
-  runtimeConfig?: string | undefined
-  registry?: string | undefined
-  imageName: string
-  tag: string
-  registryAuth?: DeployRequest_RegistryAuth | undefined
+export interface Environment {
+  env: string[]
 }
 
-export interface DeployRequest_InstanceConfig {
+export interface InstanceConfig {
   /**
-   * containerPreName, mapped into host folder structure,
+   * prefix mapped into host folder structure,
    * used as namespace id
    */
   prefix: string
   /** mount path of instance (docker only) */
   mountPath?: string | undefined
   /** environment variable map (piped) */
-  environment?: DeployRequest_InstanceConfig_Environment | undefined
+  environment?: Environment | undefined
   /** registry repo prefix */
   repositoryPrefix?: string | undefined
 }
 
-export interface DeployRequest_InstanceConfig_Environment {
-  env: string[]
-}
-
-export interface DeployRequest_RegistryAuth {
+export interface RegistryAuth {
   name: string
   url: string
   user: string
   password: string
+}
+
+export interface Port {
+  internal: number
+  external: number
+}
+
+export interface PortRange {
+  from: number
+  to: number
+}
+
+export interface PortRangeBinding {
+  internal: PortRange | undefined
+  external: PortRange | undefined
+}
+
+export interface Volume {
+  name: string
+  path: string
+  size?: string | undefined
+  type?: VolumeType | undefined
+  class?: string | undefined
+}
+
+export interface VolumeLink {
+  name: string
+  path: string
+}
+
+export interface InitContainer {
+  name: string
+  image: string
+  useParentConfig?: boolean | undefined
+  volumes: VolumeLink[]
+  command: string[]
+  args: string[]
+  environment: { [key: string]: string }
+}
+
+export interface InitContainer_EnvironmentEntry {
+  key: string
+  value: string
+}
+
+export interface ImportContainer {
+  volume: string
+  command: string
+  environment: { [key: string]: string }
+}
+
+export interface ImportContainer_EnvironmentEntry {
+  key: string
+  value: string
+}
+
+export interface LogConfig {
+  driver: DriverType
+  options: { [key: string]: string }
+}
+
+export interface LogConfig_OptionsEntry {
+  key: string
+  value: string
+}
+
+export interface DagentContainerConfig {
+  logConfig?: LogConfig | undefined
+  restartPolicy?: RestartPolicy | undefined
+  networkMode?: NetworkMode | undefined
+  networks: string[]
+}
+
+export interface CraneContainerConfig {
+  deploymentStatregy?: DeploymentStrategy | undefined
+  healthCheckConfig?: HealthCheckConfig | undefined
+  resourceConfig?: ResourceConfig | undefined
+  proxyHeaders?: boolean | undefined
+  useLoadBalancer?: boolean | undefined
+  customHeaders: string[]
+  extraLBAnnotations: { [key: string]: string }
+}
+
+export interface CraneContainerConfig_ExtraLBAnnotationsEntry {
+  key: string
+  value: string
+}
+
+export interface CommonContainerConfig {
+  name: string
+  expose?: ExposeStrategy | undefined
+  ingress?: Ingress | undefined
+  configContainer?: ConfigContainer | undefined
+  importContainer?: ImportContainer | undefined
+  user?: number | undefined
+  TTY?: boolean | undefined
+  ports: Port[]
+  portRanges: PortRangeBinding[]
+  volumes: Volume[]
+  commands: string[]
+  args: string[]
+  environment: string[]
+  secrets: { [key: string]: string }
+  initContainers: InitContainer[]
+}
+
+export interface CommonContainerConfig_SecretsEntry {
+  key: string
+  value: string
+}
+
+export interface DeployRequest {
+  id: string
+  containerName: string
+  /** InstanceConfig is set for multiple containers */
+  instanceConfig: InstanceConfig | undefined
+  /** ContainerConfigs */
+  common?: CommonContainerConfig | undefined
+  dagent?: DagentContainerConfig | undefined
+  crane?: CraneContainerConfig | undefined
+  /** Runtime info and requirements of a container */
+  runtimeConfig?: string | undefined
+  registry?: string | undefined
+  imageName: string
+  tag: string
+  registryAuth?: RegistryAuth | undefined
 }
 
 export interface ContainerStateRequest {
@@ -114,29 +244,17 @@ export interface DeployRequestLegacy {
 
 export const AGENT_PACKAGE_NAME = 'agent'
 
-const baseEmpty: object = {}
-
-export const Empty = {
-  fromJSON(_: any): Empty {
-    const message = { ...baseEmpty } as Empty
-    return message
-  },
-
-  toJSON(_: Empty): unknown {
-    const obj: any = {}
-    return obj
-  },
+function createBaseAgentInfo(): AgentInfo {
+  return { id: '', version: '', publicKey: '' }
 }
-
-const baseAgentInfo: object = { id: '', version: '', publicKey: '' }
 
 export const AgentInfo = {
   fromJSON(object: any): AgentInfo {
-    const message = { ...baseAgentInfo } as AgentInfo
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.version = object.version !== undefined && object.version !== null ? String(object.version) : ''
-    message.publicKey = object.publicKey !== undefined && object.publicKey !== null ? String(object.publicKey) : ''
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      version: isSet(object.version) ? String(object.version) : '',
+      publicKey: isSet(object.publicKey) ? String(object.publicKey) : '',
+    }
   },
 
   toJSON(message: AgentInfo): unknown {
@@ -148,30 +266,27 @@ export const AgentInfo = {
   },
 }
 
-const baseAgentCommand: object = {}
+function createBaseAgentCommand(): AgentCommand {
+  return {
+    deploy: undefined,
+    containerState: undefined,
+    containerDelete: undefined,
+    deployLegacy: undefined,
+    listSecrets: undefined,
+  }
+}
 
 export const AgentCommand = {
   fromJSON(object: any): AgentCommand {
-    const message = { ...baseAgentCommand } as AgentCommand
-    message.deploy =
-      object.deploy !== undefined && object.deploy !== null ? VersionDeployRequest.fromJSON(object.deploy) : undefined
-    message.containerState =
-      object.containerState !== undefined && object.containerState !== null
-        ? ContainerStateRequest.fromJSON(object.containerState)
-        : undefined
-    message.containerDelete =
-      object.containerDelete !== undefined && object.containerDelete !== null
+    return {
+      deploy: isSet(object.deploy) ? VersionDeployRequest.fromJSON(object.deploy) : undefined,
+      containerState: isSet(object.containerState) ? ContainerStateRequest.fromJSON(object.containerState) : undefined,
+      containerDelete: isSet(object.containerDelete)
         ? ContainerDeleteRequest.fromJSON(object.containerDelete)
-        : undefined
-    message.deployLegacy =
-      object.deployLegacy !== undefined && object.deployLegacy !== null
-        ? DeployRequestLegacy.fromJSON(object.deployLegacy)
-        : undefined
-    message.listSecrets =
-      object.listSecrets !== undefined && object.listSecrets !== null
-        ? ListSecretsRequest.fromJSON(object.listSecrets)
-        : undefined
-    return message
+        : undefined,
+      deployLegacy: isSet(object.deployLegacy) ? DeployRequestLegacy.fromJSON(object.deployLegacy) : undefined,
+      listSecrets: isSet(object.listSecrets) ? ListSecretsRequest.fromJSON(object.listSecrets) : undefined,
+    }
   },
 
   toJSON(message: AgentCommand): unknown {
@@ -192,13 +307,13 @@ export const AgentCommand = {
   },
 }
 
-const baseDeployResponse: object = { started: false }
+function createBaseDeployResponse(): DeployResponse {
+  return { started: false }
+}
 
 export const DeployResponse = {
   fromJSON(object: any): DeployResponse {
-    const message = { ...baseDeployResponse } as DeployResponse
-    message.started = object.started !== undefined && object.started !== null ? Boolean(object.started) : false
-    return message
+    return { started: isSet(object.started) ? Boolean(object.started) : false }
   },
 
   toJSON(message: DeployResponse): unknown {
@@ -208,22 +323,18 @@ export const DeployResponse = {
   },
 }
 
-const baseVersionDeployRequest: object = {
-  id: '',
-  versionName: '',
-  releaseNotes: '',
+function createBaseVersionDeployRequest(): VersionDeployRequest {
+  return { id: '', versionName: '', releaseNotes: '', requests: [] }
 }
 
 export const VersionDeployRequest = {
   fromJSON(object: any): VersionDeployRequest {
-    const message = { ...baseVersionDeployRequest } as VersionDeployRequest
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.versionName =
-      object.versionName !== undefined && object.versionName !== null ? String(object.versionName) : ''
-    message.releaseNotes =
-      object.releaseNotes !== undefined && object.releaseNotes !== null ? String(object.releaseNotes) : ''
-    message.requests = (object.requests ?? []).map((e: any) => DeployRequest.fromJSON(e))
-    return message
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      versionName: isSet(object.versionName) ? String(object.versionName) : '',
+      releaseNotes: isSet(object.releaseNotes) ? String(object.releaseNotes) : '',
+      requests: Array.isArray(object?.requests) ? object.requests.map((e: any) => DeployRequest.fromJSON(e)) : [],
+    }
   },
 
   toJSON(message: VersionDeployRequest): unknown {
@@ -240,14 +351,16 @@ export const VersionDeployRequest = {
   },
 }
 
-const baseListSecretsRequest: object = { prefix: '', name: '' }
+function createBaseListSecretsRequest(): ListSecretsRequest {
+  return { prefix: '', name: '' }
+}
 
 export const ListSecretsRequest = {
   fromJSON(object: any): ListSecretsRequest {
-    const message = { ...baseListSecretsRequest } as ListSecretsRequest
-    message.prefix = object.prefix !== undefined && object.prefix !== null ? String(object.prefix) : ''
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    return message
+    return {
+      prefix: isSet(object.prefix) ? String(object.prefix) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+    }
   },
 
   toJSON(message: ListSecretsRequest): unknown {
@@ -258,107 +371,16 @@ export const ListSecretsRequest = {
   },
 }
 
-const baseDeployRequest: object = {
-  id: '',
-  containerName: '',
-  imageName: '',
-  tag: '',
+function createBaseEnvironment(): Environment {
+  return { env: [] }
 }
 
-export const DeployRequest = {
-  fromJSON(object: any): DeployRequest {
-    const message = { ...baseDeployRequest } as DeployRequest
-    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
-    message.containerName =
-      object.containerName !== undefined && object.containerName !== null ? String(object.containerName) : ''
-    message.instanceConfig =
-      object.instanceConfig !== undefined && object.instanceConfig !== null
-        ? DeployRequest_InstanceConfig.fromJSON(object.instanceConfig)
-        : undefined
-    message.containerConfig =
-      object.containerConfig !== undefined && object.containerConfig !== null
-        ? ExplicitContainerConfig.fromJSON(object.containerConfig)
-        : undefined
-    message.runtimeConfig =
-      object.runtimeConfig !== undefined && object.runtimeConfig !== null ? String(object.runtimeConfig) : undefined
-    message.registry = object.registry !== undefined && object.registry !== null ? String(object.registry) : undefined
-    message.imageName = object.imageName !== undefined && object.imageName !== null ? String(object.imageName) : ''
-    message.tag = object.tag !== undefined && object.tag !== null ? String(object.tag) : ''
-    message.registryAuth =
-      object.registryAuth !== undefined && object.registryAuth !== null
-        ? DeployRequest_RegistryAuth.fromJSON(object.registryAuth)
-        : undefined
-    return message
+export const Environment = {
+  fromJSON(object: any): Environment {
+    return { env: Array.isArray(object?.env) ? object.env.map((e: any) => String(e)) : [] }
   },
 
-  toJSON(message: DeployRequest): unknown {
-    const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.containerName !== undefined && (obj.containerName = message.containerName)
-    message.instanceConfig !== undefined &&
-      (obj.instanceConfig = message.instanceConfig
-        ? DeployRequest_InstanceConfig.toJSON(message.instanceConfig)
-        : undefined)
-    message.containerConfig !== undefined &&
-      (obj.containerConfig = message.containerConfig
-        ? ExplicitContainerConfig.toJSON(message.containerConfig)
-        : undefined)
-    message.runtimeConfig !== undefined && (obj.runtimeConfig = message.runtimeConfig)
-    message.registry !== undefined && (obj.registry = message.registry)
-    message.imageName !== undefined && (obj.imageName = message.imageName)
-    message.tag !== undefined && (obj.tag = message.tag)
-    message.registryAuth !== undefined &&
-      (obj.registryAuth = message.registryAuth ? DeployRequest_RegistryAuth.toJSON(message.registryAuth) : undefined)
-    return obj
-  },
-}
-
-const baseDeployRequest_InstanceConfig: object = { prefix: '' }
-
-export const DeployRequest_InstanceConfig = {
-  fromJSON(object: any): DeployRequest_InstanceConfig {
-    const message = {
-      ...baseDeployRequest_InstanceConfig,
-    } as DeployRequest_InstanceConfig
-    message.prefix = object.prefix !== undefined && object.prefix !== null ? String(object.prefix) : ''
-    message.mountPath =
-      object.mountPath !== undefined && object.mountPath !== null ? String(object.mountPath) : undefined
-    message.environment =
-      object.environment !== undefined && object.environment !== null
-        ? DeployRequest_InstanceConfig_Environment.fromJSON(object.environment)
-        : undefined
-    message.repositoryPrefix =
-      object.repositoryPrefix !== undefined && object.repositoryPrefix !== null
-        ? String(object.repositoryPrefix)
-        : undefined
-    return message
-  },
-
-  toJSON(message: DeployRequest_InstanceConfig): unknown {
-    const obj: any = {}
-    message.prefix !== undefined && (obj.prefix = message.prefix)
-    message.mountPath !== undefined && (obj.mountPath = message.mountPath)
-    message.environment !== undefined &&
-      (obj.environment = message.environment
-        ? DeployRequest_InstanceConfig_Environment.toJSON(message.environment)
-        : undefined)
-    message.repositoryPrefix !== undefined && (obj.repositoryPrefix = message.repositoryPrefix)
-    return obj
-  },
-}
-
-const baseDeployRequest_InstanceConfig_Environment: object = { env: '' }
-
-export const DeployRequest_InstanceConfig_Environment = {
-  fromJSON(object: any): DeployRequest_InstanceConfig_Environment {
-    const message = {
-      ...baseDeployRequest_InstanceConfig_Environment,
-    } as DeployRequest_InstanceConfig_Environment
-    message.env = (object.env ?? []).map((e: any) => String(e))
-    return message
-  },
-
-  toJSON(message: DeployRequest_InstanceConfig_Environment): unknown {
+  toJSON(message: Environment): unknown {
     const obj: any = {}
     if (message.env) {
       obj.env = message.env.map(e => e)
@@ -369,26 +391,46 @@ export const DeployRequest_InstanceConfig_Environment = {
   },
 }
 
-const baseDeployRequest_RegistryAuth: object = {
-  name: '',
-  url: '',
-  user: '',
-  password: '',
+function createBaseInstanceConfig(): InstanceConfig {
+  return { prefix: '' }
 }
 
-export const DeployRequest_RegistryAuth = {
-  fromJSON(object: any): DeployRequest_RegistryAuth {
-    const message = {
-      ...baseDeployRequest_RegistryAuth,
-    } as DeployRequest_RegistryAuth
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
-    message.user = object.user !== undefined && object.user !== null ? String(object.user) : ''
-    message.password = object.password !== undefined && object.password !== null ? String(object.password) : ''
-    return message
+export const InstanceConfig = {
+  fromJSON(object: any): InstanceConfig {
+    return {
+      prefix: isSet(object.prefix) ? String(object.prefix) : '',
+      mountPath: isSet(object.mountPath) ? String(object.mountPath) : undefined,
+      environment: isSet(object.environment) ? Environment.fromJSON(object.environment) : undefined,
+      repositoryPrefix: isSet(object.repositoryPrefix) ? String(object.repositoryPrefix) : undefined,
+    }
   },
 
-  toJSON(message: DeployRequest_RegistryAuth): unknown {
+  toJSON(message: InstanceConfig): unknown {
+    const obj: any = {}
+    message.prefix !== undefined && (obj.prefix = message.prefix)
+    message.mountPath !== undefined && (obj.mountPath = message.mountPath)
+    message.environment !== undefined &&
+      (obj.environment = message.environment ? Environment.toJSON(message.environment) : undefined)
+    message.repositoryPrefix !== undefined && (obj.repositoryPrefix = message.repositoryPrefix)
+    return obj
+  },
+}
+
+function createBaseRegistryAuth(): RegistryAuth {
+  return { name: '', url: '', user: '', password: '' }
+}
+
+export const RegistryAuth = {
+  fromJSON(object: any): RegistryAuth {
+    return {
+      name: isSet(object.name) ? String(object.name) : '',
+      url: isSet(object.url) ? String(object.url) : '',
+      user: isSet(object.user) ? String(object.user) : '',
+      password: isSet(object.password) ? String(object.password) : '',
+    }
+  },
+
+  toJSON(message: RegistryAuth): unknown {
     const obj: any = {}
     message.name !== undefined && (obj.name = message.name)
     message.url !== undefined && (obj.url = message.url)
@@ -398,14 +440,543 @@ export const DeployRequest_RegistryAuth = {
   },
 }
 
-const baseContainerStateRequest: object = {}
+function createBasePort(): Port {
+  return { internal: 0, external: 0 }
+}
+
+export const Port = {
+  fromJSON(object: any): Port {
+    return {
+      internal: isSet(object.internal) ? Number(object.internal) : 0,
+      external: isSet(object.external) ? Number(object.external) : 0,
+    }
+  },
+
+  toJSON(message: Port): unknown {
+    const obj: any = {}
+    message.internal !== undefined && (obj.internal = Math.round(message.internal))
+    message.external !== undefined && (obj.external = Math.round(message.external))
+    return obj
+  },
+}
+
+function createBasePortRange(): PortRange {
+  return { from: 0, to: 0 }
+}
+
+export const PortRange = {
+  fromJSON(object: any): PortRange {
+    return { from: isSet(object.from) ? Number(object.from) : 0, to: isSet(object.to) ? Number(object.to) : 0 }
+  },
+
+  toJSON(message: PortRange): unknown {
+    const obj: any = {}
+    message.from !== undefined && (obj.from = Math.round(message.from))
+    message.to !== undefined && (obj.to = Math.round(message.to))
+    return obj
+  },
+}
+
+function createBasePortRangeBinding(): PortRangeBinding {
+  return { internal: undefined, external: undefined }
+}
+
+export const PortRangeBinding = {
+  fromJSON(object: any): PortRangeBinding {
+    return {
+      internal: isSet(object.internal) ? PortRange.fromJSON(object.internal) : undefined,
+      external: isSet(object.external) ? PortRange.fromJSON(object.external) : undefined,
+    }
+  },
+
+  toJSON(message: PortRangeBinding): unknown {
+    const obj: any = {}
+    message.internal !== undefined && (obj.internal = message.internal ? PortRange.toJSON(message.internal) : undefined)
+    message.external !== undefined && (obj.external = message.external ? PortRange.toJSON(message.external) : undefined)
+    return obj
+  },
+}
+
+function createBaseVolume(): Volume {
+  return { name: '', path: '' }
+}
+
+export const Volume = {
+  fromJSON(object: any): Volume {
+    return {
+      name: isSet(object.name) ? String(object.name) : '',
+      path: isSet(object.path) ? String(object.path) : '',
+      size: isSet(object.size) ? String(object.size) : undefined,
+      type: isSet(object.type) ? volumeTypeFromJSON(object.type) : undefined,
+      class: isSet(object.class) ? String(object.class) : undefined,
+    }
+  },
+
+  toJSON(message: Volume): unknown {
+    const obj: any = {}
+    message.name !== undefined && (obj.name = message.name)
+    message.path !== undefined && (obj.path = message.path)
+    message.size !== undefined && (obj.size = message.size)
+    message.type !== undefined && (obj.type = message.type !== undefined ? volumeTypeToJSON(message.type) : undefined)
+    message.class !== undefined && (obj.class = message.class)
+    return obj
+  },
+}
+
+function createBaseVolumeLink(): VolumeLink {
+  return { name: '', path: '' }
+}
+
+export const VolumeLink = {
+  fromJSON(object: any): VolumeLink {
+    return { name: isSet(object.name) ? String(object.name) : '', path: isSet(object.path) ? String(object.path) : '' }
+  },
+
+  toJSON(message: VolumeLink): unknown {
+    const obj: any = {}
+    message.name !== undefined && (obj.name = message.name)
+    message.path !== undefined && (obj.path = message.path)
+    return obj
+  },
+}
+
+function createBaseInitContainer(): InitContainer {
+  return { name: '', image: '', volumes: [], command: [], args: [], environment: {} }
+}
+
+export const InitContainer = {
+  fromJSON(object: any): InitContainer {
+    return {
+      name: isSet(object.name) ? String(object.name) : '',
+      image: isSet(object.image) ? String(object.image) : '',
+      useParentConfig: isSet(object.useParentConfig) ? Boolean(object.useParentConfig) : undefined,
+      volumes: Array.isArray(object?.volumes) ? object.volumes.map((e: any) => VolumeLink.fromJSON(e)) : [],
+      command: Array.isArray(object?.command) ? object.command.map((e: any) => String(e)) : [],
+      args: Array.isArray(object?.args) ? object.args.map((e: any) => String(e)) : [],
+      environment: isObject(object.environment)
+        ? Object.entries(object.environment).reduce<{ [key: string]: string }>((acc, [key, value]) => {
+            acc[key] = String(value)
+            return acc
+          }, {})
+        : {},
+    }
+  },
+
+  toJSON(message: InitContainer): unknown {
+    const obj: any = {}
+    message.name !== undefined && (obj.name = message.name)
+    message.image !== undefined && (obj.image = message.image)
+    message.useParentConfig !== undefined && (obj.useParentConfig = message.useParentConfig)
+    if (message.volumes) {
+      obj.volumes = message.volumes.map(e => (e ? VolumeLink.toJSON(e) : undefined))
+    } else {
+      obj.volumes = []
+    }
+    if (message.command) {
+      obj.command = message.command.map(e => e)
+    } else {
+      obj.command = []
+    }
+    if (message.args) {
+      obj.args = message.args.map(e => e)
+    } else {
+      obj.args = []
+    }
+    obj.environment = {}
+    if (message.environment) {
+      Object.entries(message.environment).forEach(([k, v]) => {
+        obj.environment[k] = v
+      })
+    }
+    return obj
+  },
+}
+
+function createBaseInitContainer_EnvironmentEntry(): InitContainer_EnvironmentEntry {
+  return { key: '', value: '' }
+}
+
+export const InitContainer_EnvironmentEntry = {
+  fromJSON(object: any): InitContainer_EnvironmentEntry {
+    return { key: isSet(object.key) ? String(object.key) : '', value: isSet(object.value) ? String(object.value) : '' }
+  },
+
+  toJSON(message: InitContainer_EnvironmentEntry): unknown {
+    const obj: any = {}
+    message.key !== undefined && (obj.key = message.key)
+    message.value !== undefined && (obj.value = message.value)
+    return obj
+  },
+}
+
+function createBaseImportContainer(): ImportContainer {
+  return { volume: '', command: '', environment: {} }
+}
+
+export const ImportContainer = {
+  fromJSON(object: any): ImportContainer {
+    return {
+      volume: isSet(object.volume) ? String(object.volume) : '',
+      command: isSet(object.command) ? String(object.command) : '',
+      environment: isObject(object.environment)
+        ? Object.entries(object.environment).reduce<{ [key: string]: string }>((acc, [key, value]) => {
+            acc[key] = String(value)
+            return acc
+          }, {})
+        : {},
+    }
+  },
+
+  toJSON(message: ImportContainer): unknown {
+    const obj: any = {}
+    message.volume !== undefined && (obj.volume = message.volume)
+    message.command !== undefined && (obj.command = message.command)
+    obj.environment = {}
+    if (message.environment) {
+      Object.entries(message.environment).forEach(([k, v]) => {
+        obj.environment[k] = v
+      })
+    }
+    return obj
+  },
+}
+
+function createBaseImportContainer_EnvironmentEntry(): ImportContainer_EnvironmentEntry {
+  return { key: '', value: '' }
+}
+
+export const ImportContainer_EnvironmentEntry = {
+  fromJSON(object: any): ImportContainer_EnvironmentEntry {
+    return { key: isSet(object.key) ? String(object.key) : '', value: isSet(object.value) ? String(object.value) : '' }
+  },
+
+  toJSON(message: ImportContainer_EnvironmentEntry): unknown {
+    const obj: any = {}
+    message.key !== undefined && (obj.key = message.key)
+    message.value !== undefined && (obj.value = message.value)
+    return obj
+  },
+}
+
+function createBaseLogConfig(): LogConfig {
+  return { driver: 0, options: {} }
+}
+
+export const LogConfig = {
+  fromJSON(object: any): LogConfig {
+    return {
+      driver: isSet(object.driver) ? driverTypeFromJSON(object.driver) : 0,
+      options: isObject(object.options)
+        ? Object.entries(object.options).reduce<{ [key: string]: string }>((acc, [key, value]) => {
+            acc[key] = String(value)
+            return acc
+          }, {})
+        : {},
+    }
+  },
+
+  toJSON(message: LogConfig): unknown {
+    const obj: any = {}
+    message.driver !== undefined && (obj.driver = driverTypeToJSON(message.driver))
+    obj.options = {}
+    if (message.options) {
+      Object.entries(message.options).forEach(([k, v]) => {
+        obj.options[k] = v
+      })
+    }
+    return obj
+  },
+}
+
+function createBaseLogConfig_OptionsEntry(): LogConfig_OptionsEntry {
+  return { key: '', value: '' }
+}
+
+export const LogConfig_OptionsEntry = {
+  fromJSON(object: any): LogConfig_OptionsEntry {
+    return { key: isSet(object.key) ? String(object.key) : '', value: isSet(object.value) ? String(object.value) : '' }
+  },
+
+  toJSON(message: LogConfig_OptionsEntry): unknown {
+    const obj: any = {}
+    message.key !== undefined && (obj.key = message.key)
+    message.value !== undefined && (obj.value = message.value)
+    return obj
+  },
+}
+
+function createBaseDagentContainerConfig(): DagentContainerConfig {
+  return { networks: [] }
+}
+
+export const DagentContainerConfig = {
+  fromJSON(object: any): DagentContainerConfig {
+    return {
+      logConfig: isSet(object.logConfig) ? LogConfig.fromJSON(object.logConfig) : undefined,
+      restartPolicy: isSet(object.restartPolicy) ? restartPolicyFromJSON(object.restartPolicy) : undefined,
+      networkMode: isSet(object.networkMode) ? networkModeFromJSON(object.networkMode) : undefined,
+      networks: Array.isArray(object?.networks) ? object.networks.map((e: any) => String(e)) : [],
+    }
+  },
+
+  toJSON(message: DagentContainerConfig): unknown {
+    const obj: any = {}
+    message.logConfig !== undefined &&
+      (obj.logConfig = message.logConfig ? LogConfig.toJSON(message.logConfig) : undefined)
+    message.restartPolicy !== undefined &&
+      (obj.restartPolicy = message.restartPolicy !== undefined ? restartPolicyToJSON(message.restartPolicy) : undefined)
+    message.networkMode !== undefined &&
+      (obj.networkMode = message.networkMode !== undefined ? networkModeToJSON(message.networkMode) : undefined)
+    if (message.networks) {
+      obj.networks = message.networks.map(e => e)
+    } else {
+      obj.networks = []
+    }
+    return obj
+  },
+}
+
+function createBaseCraneContainerConfig(): CraneContainerConfig {
+  return { customHeaders: [], extraLBAnnotations: {} }
+}
+
+export const CraneContainerConfig = {
+  fromJSON(object: any): CraneContainerConfig {
+    return {
+      deploymentStatregy: isSet(object.deploymentStatregy)
+        ? deploymentStrategyFromJSON(object.deploymentStatregy)
+        : undefined,
+      healthCheckConfig: isSet(object.healthCheckConfig)
+        ? HealthCheckConfig.fromJSON(object.healthCheckConfig)
+        : undefined,
+      resourceConfig: isSet(object.resourceConfig) ? ResourceConfig.fromJSON(object.resourceConfig) : undefined,
+      proxyHeaders: isSet(object.proxyHeaders) ? Boolean(object.proxyHeaders) : undefined,
+      useLoadBalancer: isSet(object.useLoadBalancer) ? Boolean(object.useLoadBalancer) : undefined,
+      customHeaders: Array.isArray(object?.customHeaders) ? object.customHeaders.map((e: any) => String(e)) : [],
+      extraLBAnnotations: isObject(object.extraLBAnnotations)
+        ? Object.entries(object.extraLBAnnotations).reduce<{ [key: string]: string }>((acc, [key, value]) => {
+            acc[key] = String(value)
+            return acc
+          }, {})
+        : {},
+    }
+  },
+
+  toJSON(message: CraneContainerConfig): unknown {
+    const obj: any = {}
+    message.deploymentStatregy !== undefined &&
+      (obj.deploymentStatregy =
+        message.deploymentStatregy !== undefined ? deploymentStrategyToJSON(message.deploymentStatregy) : undefined)
+    message.healthCheckConfig !== undefined &&
+      (obj.healthCheckConfig = message.healthCheckConfig
+        ? HealthCheckConfig.toJSON(message.healthCheckConfig)
+        : undefined)
+    message.resourceConfig !== undefined &&
+      (obj.resourceConfig = message.resourceConfig ? ResourceConfig.toJSON(message.resourceConfig) : undefined)
+    message.proxyHeaders !== undefined && (obj.proxyHeaders = message.proxyHeaders)
+    message.useLoadBalancer !== undefined && (obj.useLoadBalancer = message.useLoadBalancer)
+    if (message.customHeaders) {
+      obj.customHeaders = message.customHeaders.map(e => e)
+    } else {
+      obj.customHeaders = []
+    }
+    obj.extraLBAnnotations = {}
+    if (message.extraLBAnnotations) {
+      Object.entries(message.extraLBAnnotations).forEach(([k, v]) => {
+        obj.extraLBAnnotations[k] = v
+      })
+    }
+    return obj
+  },
+}
+
+function createBaseCraneContainerConfig_ExtraLBAnnotationsEntry(): CraneContainerConfig_ExtraLBAnnotationsEntry {
+  return { key: '', value: '' }
+}
+
+export const CraneContainerConfig_ExtraLBAnnotationsEntry = {
+  fromJSON(object: any): CraneContainerConfig_ExtraLBAnnotationsEntry {
+    return { key: isSet(object.key) ? String(object.key) : '', value: isSet(object.value) ? String(object.value) : '' }
+  },
+
+  toJSON(message: CraneContainerConfig_ExtraLBAnnotationsEntry): unknown {
+    const obj: any = {}
+    message.key !== undefined && (obj.key = message.key)
+    message.value !== undefined && (obj.value = message.value)
+    return obj
+  },
+}
+
+function createBaseCommonContainerConfig(): CommonContainerConfig {
+  return {
+    name: '',
+    ports: [],
+    portRanges: [],
+    volumes: [],
+    commands: [],
+    args: [],
+    environment: [],
+    secrets: {},
+    initContainers: [],
+  }
+}
+
+export const CommonContainerConfig = {
+  fromJSON(object: any): CommonContainerConfig {
+    return {
+      name: isSet(object.name) ? String(object.name) : '',
+      expose: isSet(object.expose) ? exposeStrategyFromJSON(object.expose) : undefined,
+      ingress: isSet(object.ingress) ? Ingress.fromJSON(object.ingress) : undefined,
+      configContainer: isSet(object.configContainer) ? ConfigContainer.fromJSON(object.configContainer) : undefined,
+      importContainer: isSet(object.importContainer) ? ImportContainer.fromJSON(object.importContainer) : undefined,
+      user: isSet(object.user) ? Number(object.user) : undefined,
+      TTY: isSet(object.TTY) ? Boolean(object.TTY) : undefined,
+      ports: Array.isArray(object?.ports) ? object.ports.map((e: any) => Port.fromJSON(e)) : [],
+      portRanges: Array.isArray(object?.portRanges)
+        ? object.portRanges.map((e: any) => PortRangeBinding.fromJSON(e))
+        : [],
+      volumes: Array.isArray(object?.volumes) ? object.volumes.map((e: any) => Volume.fromJSON(e)) : [],
+      commands: Array.isArray(object?.commands) ? object.commands.map((e: any) => String(e)) : [],
+      args: Array.isArray(object?.args) ? object.args.map((e: any) => String(e)) : [],
+      environment: Array.isArray(object?.environment) ? object.environment.map((e: any) => String(e)) : [],
+      secrets: isObject(object.secrets)
+        ? Object.entries(object.secrets).reduce<{ [key: string]: string }>((acc, [key, value]) => {
+            acc[key] = String(value)
+            return acc
+          }, {})
+        : {},
+      initContainers: Array.isArray(object?.initContainers)
+        ? object.initContainers.map((e: any) => InitContainer.fromJSON(e))
+        : [],
+    }
+  },
+
+  toJSON(message: CommonContainerConfig): unknown {
+    const obj: any = {}
+    message.name !== undefined && (obj.name = message.name)
+    message.expose !== undefined &&
+      (obj.expose = message.expose !== undefined ? exposeStrategyToJSON(message.expose) : undefined)
+    message.ingress !== undefined && (obj.ingress = message.ingress ? Ingress.toJSON(message.ingress) : undefined)
+    message.configContainer !== undefined &&
+      (obj.configContainer = message.configContainer ? ConfigContainer.toJSON(message.configContainer) : undefined)
+    message.importContainer !== undefined &&
+      (obj.importContainer = message.importContainer ? ImportContainer.toJSON(message.importContainer) : undefined)
+    message.user !== undefined && (obj.user = Math.round(message.user))
+    message.TTY !== undefined && (obj.TTY = message.TTY)
+    if (message.ports) {
+      obj.ports = message.ports.map(e => (e ? Port.toJSON(e) : undefined))
+    } else {
+      obj.ports = []
+    }
+    if (message.portRanges) {
+      obj.portRanges = message.portRanges.map(e => (e ? PortRangeBinding.toJSON(e) : undefined))
+    } else {
+      obj.portRanges = []
+    }
+    if (message.volumes) {
+      obj.volumes = message.volumes.map(e => (e ? Volume.toJSON(e) : undefined))
+    } else {
+      obj.volumes = []
+    }
+    if (message.commands) {
+      obj.commands = message.commands.map(e => e)
+    } else {
+      obj.commands = []
+    }
+    if (message.args) {
+      obj.args = message.args.map(e => e)
+    } else {
+      obj.args = []
+    }
+    if (message.environment) {
+      obj.environment = message.environment.map(e => e)
+    } else {
+      obj.environment = []
+    }
+    obj.secrets = {}
+    if (message.secrets) {
+      Object.entries(message.secrets).forEach(([k, v]) => {
+        obj.secrets[k] = v
+      })
+    }
+    if (message.initContainers) {
+      obj.initContainers = message.initContainers.map(e => (e ? InitContainer.toJSON(e) : undefined))
+    } else {
+      obj.initContainers = []
+    }
+    return obj
+  },
+}
+
+function createBaseCommonContainerConfig_SecretsEntry(): CommonContainerConfig_SecretsEntry {
+  return { key: '', value: '' }
+}
+
+export const CommonContainerConfig_SecretsEntry = {
+  fromJSON(object: any): CommonContainerConfig_SecretsEntry {
+    return { key: isSet(object.key) ? String(object.key) : '', value: isSet(object.value) ? String(object.value) : '' }
+  },
+
+  toJSON(message: CommonContainerConfig_SecretsEntry): unknown {
+    const obj: any = {}
+    message.key !== undefined && (obj.key = message.key)
+    message.value !== undefined && (obj.value = message.value)
+    return obj
+  },
+}
+
+function createBaseDeployRequest(): DeployRequest {
+  return { id: '', containerName: '', instanceConfig: undefined, imageName: '', tag: '' }
+}
+
+export const DeployRequest = {
+  fromJSON(object: any): DeployRequest {
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      containerName: isSet(object.containerName) ? String(object.containerName) : '',
+      instanceConfig: isSet(object.instanceConfig) ? InstanceConfig.fromJSON(object.instanceConfig) : undefined,
+      common: isSet(object.common) ? CommonContainerConfig.fromJSON(object.common) : undefined,
+      dagent: isSet(object.dagent) ? DagentContainerConfig.fromJSON(object.dagent) : undefined,
+      crane: isSet(object.crane) ? CraneContainerConfig.fromJSON(object.crane) : undefined,
+      runtimeConfig: isSet(object.runtimeConfig) ? String(object.runtimeConfig) : undefined,
+      registry: isSet(object.registry) ? String(object.registry) : undefined,
+      imageName: isSet(object.imageName) ? String(object.imageName) : '',
+      tag: isSet(object.tag) ? String(object.tag) : '',
+      registryAuth: isSet(object.registryAuth) ? RegistryAuth.fromJSON(object.registryAuth) : undefined,
+    }
+  },
+
+  toJSON(message: DeployRequest): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.containerName !== undefined && (obj.containerName = message.containerName)
+    message.instanceConfig !== undefined &&
+      (obj.instanceConfig = message.instanceConfig ? InstanceConfig.toJSON(message.instanceConfig) : undefined)
+    message.common !== undefined &&
+      (obj.common = message.common ? CommonContainerConfig.toJSON(message.common) : undefined)
+    message.dagent !== undefined &&
+      (obj.dagent = message.dagent ? DagentContainerConfig.toJSON(message.dagent) : undefined)
+    message.crane !== undefined && (obj.crane = message.crane ? CraneContainerConfig.toJSON(message.crane) : undefined)
+    message.runtimeConfig !== undefined && (obj.runtimeConfig = message.runtimeConfig)
+    message.registry !== undefined && (obj.registry = message.registry)
+    message.imageName !== undefined && (obj.imageName = message.imageName)
+    message.tag !== undefined && (obj.tag = message.tag)
+    message.registryAuth !== undefined &&
+      (obj.registryAuth = message.registryAuth ? RegistryAuth.toJSON(message.registryAuth) : undefined)
+    return obj
+  },
+}
+
+function createBaseContainerStateRequest(): ContainerStateRequest {
+  return {}
+}
 
 export const ContainerStateRequest = {
   fromJSON(object: any): ContainerStateRequest {
-    const message = { ...baseContainerStateRequest } as ContainerStateRequest
-    message.prefix = object.prefix !== undefined && object.prefix !== null ? String(object.prefix) : undefined
-    message.oneShot = object.oneShot !== undefined && object.oneShot !== null ? Boolean(object.oneShot) : undefined
-    return message
+    return {
+      prefix: isSet(object.prefix) ? String(object.prefix) : undefined,
+      oneShot: isSet(object.oneShot) ? Boolean(object.oneShot) : undefined,
+    }
   },
 
   toJSON(message: ContainerStateRequest): unknown {
@@ -416,14 +987,16 @@ export const ContainerStateRequest = {
   },
 }
 
-const baseContainerDeleteRequest: object = { prefix: '', name: '' }
+function createBaseContainerDeleteRequest(): ContainerDeleteRequest {
+  return { prefix: '', name: '' }
+}
 
 export const ContainerDeleteRequest = {
   fromJSON(object: any): ContainerDeleteRequest {
-    const message = { ...baseContainerDeleteRequest } as ContainerDeleteRequest
-    message.prefix = object.prefix !== undefined && object.prefix !== null ? String(object.prefix) : ''
-    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
-    return message
+    return {
+      prefix: isSet(object.prefix) ? String(object.prefix) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+    }
   },
 
   toJSON(message: ContainerDeleteRequest): unknown {
@@ -434,14 +1007,16 @@ export const ContainerDeleteRequest = {
   },
 }
 
-const baseDeployRequestLegacy: object = { requestId: '', json: '' }
+function createBaseDeployRequestLegacy(): DeployRequestLegacy {
+  return { requestId: '', json: '' }
+}
 
 export const DeployRequestLegacy = {
   fromJSON(object: any): DeployRequestLegacy {
-    const message = { ...baseDeployRequestLegacy } as DeployRequestLegacy
-    message.requestId = object.requestId !== undefined && object.requestId !== null ? String(object.requestId) : ''
-    message.json = object.json !== undefined && object.json !== null ? String(object.json) : ''
-    return message
+    return {
+      requestId: isSet(object.requestId) ? String(object.requestId) : '',
+      json: isSet(object.json) ? String(object.json) : '',
+    }
   },
 
   toJSON(message: DeployRequestLegacy): unknown {
@@ -469,7 +1044,7 @@ export interface AgentClient {
 
   containerState(request: Observable<ContainerStateListMessage>, metadata: Metadata, ...rest: any): Observable<Empty>
 
-  secretsList(request: ListSecretsResponse, metadata: Metadata, ...rest: any): Observable<Empty>
+  secretList(request: ListSecretsResponse, metadata: Metadata, ...rest: any): Observable<Empty>
 }
 
 /** Service handling deployment of containers and fetching statuses */
@@ -497,16 +1072,12 @@ export interface AgentController {
     ...rest: any
   ): Promise<Empty> | Observable<Empty> | Empty
 
-  secretsList(
-    request: ListSecretsResponse,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<Empty> | Observable<Empty> | Empty
+  secretList(request: ListSecretsResponse, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
 }
 
 export function AgentControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ['connect', 'secretsList']
+    const grpcMethods: string[] = ['connect', 'secretList']
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
       GrpcMethod('Agent', method)(constructor.prototype[method], method, descriptor)
@@ -521,9 +1092,10 @@ export function AgentControllerMethods() {
 
 export const AGENT_SERVICE_NAME = 'Agent'
 
-// If you get a compile-error about 'Constructor<Long> and ... have no overlap',
-// add '--ts_proto_opt=esModuleInterop=true' as a flag when calling 'protoc'.
-if (util.Long !== Long) {
-  util.Long = Long as any
-  configure()
+function isObject(value: any): boolean {
+  return typeof value === 'object' && value !== null
+}
+
+function isSet(value: any): boolean {
+  return value !== null && value !== undefined
 }

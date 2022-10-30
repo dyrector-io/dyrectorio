@@ -4,16 +4,18 @@ interface DyoMessageProps {
   message?: string
   messageType?: 'error' | 'info'
   className?: string
+  marginClassName?: string
 }
 
 const DyoMessage = (props: DyoMessageProps) => {
-  const { message, messageType, className } = props
+  const { message, messageType, className, marginClassName } = props
 
   return !message ? null : (
     <p
       className={clsx(
-        className ?? 'mt-1 text-xs italic w-80',
+        className ?? 'text-xs italic w-80',
         !messageType ? 'text-error-red' : messageType === 'error' ? 'text-error-red' : 'text-warning-orange',
+        marginClassName ?? 'mt-1',
       )}
     >
       {message}
