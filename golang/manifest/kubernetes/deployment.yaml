@@ -15,6 +15,26 @@ spec:
       labels:
         app: dyrectorio-k8s-agent
     spec:
+      initContainers:
+        - name: crane-init
+          image: ghcr.io/dyrector-io/dyrectorio/agent/crane:latest
+          command:
+            - crane
+            - init
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: 64m
+              memory: 128Mi
+            limits:
+              cpu: 1000m
+              memory: 512Mi
+          envFrom:
+            - configMapRef:
+                name: crane-config
+          volumeMounts:
+            - name: agent-data
+              mountPath: /srv/dagent
       containers:
         - name: crane
           image: ghcr.io/dyrector-io/dyrectorio/agent/crane:latest
