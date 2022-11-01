@@ -148,6 +148,10 @@ func mapDagentConfig(dagent *agent.DagentContainerConfig, containerConfig *v1.Co
 		containerConfig.LogConfig = &container.LogConfig{Type: dagent.LogConfig.Driver.String(),
 			Config: dagent.LogConfig.Options}
 	}
+
+	if dagent.Labels != nil {
+		containerConfig.Labels.Deployment = dagent.Labels
+	}
 }
 
 func mapCraneConfig(crane *agent.CraneContainerConfig, containerConfig *v1.ContainerConfig) {
@@ -171,6 +175,20 @@ func mapCraneConfig(crane *agent.CraneContainerConfig, containerConfig *v1.Conta
 
 	if crane.ExtraLBAnnotations != nil {
 		containerConfig.ExtraLBAnnotations = crane.ExtraLBAnnotations
+	}
+
+	if crane.Labels != nil {
+		containerConfig.Labels = v1.Markers{
+			Deployment: crane.Labels.Deployment,
+			Service:    crane.Labels.Service,
+			Ingress:    crane.Labels.Ingress,
+		}
+
+		containerConfig.Annotations = v1.Markers{
+			Deployment: crane.Annotations.Deployment,
+			Service:    crane.Annotations.Service,
+			Ingress:    crane.Annotations.Ingress,
+		}
 	}
 }
 

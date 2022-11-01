@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/rs/zerolog/log"
+	"golang.org/x/exp/maps"
 	v1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	applymetav1 "k8s.io/client-go/applyconfigurations/meta/v1"
@@ -30,6 +31,8 @@ type DeployIngressOptions struct {
 	ports                                                           []int32
 	tls, proxyHeaders                                               bool
 	customHeaders                                                   []string
+	labels                                                          map[string]string
+	annotations                                                     map[string]string
 }
 
 func newIngress(ctx context.Context, cfg *config.Configuration) *ingress {
@@ -86,16 +89,21 @@ func (ing *ingress) deployIngress(options *DeployIngressOptions) error {
 		spec.WithTLS(tlsConf)
 	}
 
+	annot := getIngressAnnotations(options.tls,
+		options.proxyHeaders,
+		options.uploadLimit,
+		options.customHeaders,
+	)
+	maps.Copy(annot, options.annotations)
+
+	labels := map[string]string{}
+	maps.Copy(labels, options.labels)
+
 	applyConfig := &netv1.IngressApplyConfiguration{
 		TypeMetaApplyConfiguration: *applymetav1.TypeMeta().WithKind("Ingress").WithAPIVersion("networking.k8s.io/v1"),
 		ObjectMetaApplyConfiguration: applymetav1.ObjectMeta().
 			WithName(options.containerName).
-			WithAnnotations(
-				getAnnotations(options.tls,
-					options.proxyHeaders,
-					options.uploadLimit,
-					options.customHeaders,
-				)),
+			WithAnnotations(annot).WithLabels(labels),
 		Spec: spec,
 	}
 
@@ -129,7 +137,7 @@ func getTLSConfig(ingressPath, containerName string, enabled bool) *netv1.Ingres
 	}
 }
 
-func getAnnotations(tlsIsWanted, proxyHeaders bool,
+func getIngressAnnotations(tlsIsWanted, proxyHeaders bool,
 	uploadLimit string, customHeaders []string,
 ) map[string]string {
 	corsHeaders := []string{}
