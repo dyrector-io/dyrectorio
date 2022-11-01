@@ -3,6 +3,7 @@ tmp/
 .env
 *.env
 __debug_bin
+*_bin
 k3s.yml
 k3s.yaml
 coverage.cov

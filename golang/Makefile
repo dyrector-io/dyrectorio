@@ -18,7 +18,7 @@ LDFLAGS := -ldflags "-X '${PACKAGE}/pkg/version.Version=${VCS_VERSION}'\
 image_version ?= latest
 
 GOAIR=v1.40.4
-GOSEC=v2.12.0
+GOSEC=v2.14.0
 GOLANGCI=v1.46.2
 GOSWAG=v1.8.3
 
@@ -48,11 +48,11 @@ down: ##
 
 .PHONY: go-crane
 go-crane: ##
-	air --build.cmd "cd cmd/crane; go run ."
+	air --build.cmd "cd cmd/crane; go build -o crane_bin ." --build.bin "cd cmd/crane; ./crane_bin"
 
 .PHONY: go-dagent
 go-dagent: ##
-	air --build.cmd "cd cmd/dagent; go run ."
+	air --build.cmd "cd cmd/dagent; go build -o dagent_bin ." --build.bin "cd cmd/dagent; ./dagent_bin"
 
 
 .PHONY: compile-cli
