@@ -340,7 +340,7 @@ export default class DeployMapper {
       importContainer: this.override(imageConfig?.importContainer, instanceConfig.importContainer),
       initContainers: this.override(imageConfig?.initContainers, instanceConfig.initContainers),
       capabilities: caps,
-      ports: ports,
+      ports,
 
       // crane
       customHeaders: this.overrideArrays(

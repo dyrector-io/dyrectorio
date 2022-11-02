@@ -542,7 +542,7 @@ export default class DeployService {
     return CreateEntityResponse.fromJSON(newDeployment)
   }
 
-  async preDeploymentCheck(id: string): Promise<Empty> {
+  async preDeploymentCheck(id: string): Promise<void> {
     const deployment = await this.prisma.deployment.findFirstOrThrow({
       where: {
         id,
@@ -566,8 +566,6 @@ export default class DeployService {
         value: deployment.id,
       })
     }
-
-    return {}
   }
 
   private async requiredSecretsHaveValue(deploymentId: string): Promise<boolean> {
