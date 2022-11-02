@@ -29,7 +29,6 @@ import AgentService from '../agent/agent.service'
 import ImageMapper, { ImageDetails } from '../image/image.mapper'
 import ImageService from '../image/image.service'
 import DeployMapper, { InstanceDetails } from './deploy.mapper'
-import DeployCreateValidationPipe from './pipes/deploy.create.pipe'
 
 @Injectable()
 export default class DeployService {
@@ -484,7 +483,7 @@ export default class DeployService {
     return lastValueFrom(watcher)
   }
 
-  async copyDeployment(request: IdRequest, force: boolean): Promise<CreateEntityResponse> {
+  async copyDeployment(request: IdRequest): Promise<CreateEntityResponse> {
     const oldDeployment = await this.prisma.deployment.findFirstOrThrow({
       where: {
         id: request.id,
@@ -498,22 +497,16 @@ export default class DeployService {
       },
     })
 
-    const createRequest = {
-      accessedBy: request.accessedBy,
-      versionId: oldDeployment.versionId,
-      nodeId: oldDeployment.nodeId,
-      prefix: oldDeployment.prefix,
-    } as CreateDeploymentRequest
-
-    const preparing = await this.getPreparingDeployment(createRequest)
-
-    if (preparing && !force) {
-      throw new PreconditionFailedException({
-        message: 'The node already has a preparing deployment.',
-        property: 'id',
-        value: preparing,
-      })
-    }
+    const preparingDeployment = await this.prisma.deployment.findFirst({
+      where: {
+        nodeId: oldDeployment.nodeId,
+        versionId: oldDeployment.versionId,
+        status: 'preparing',
+      },
+      select: {
+        id: true,
+      },
+    })
 
     const newDeployment = await this.prisma.deployment.create({
       data: {
@@ -545,31 +538,14 @@ export default class DeployService {
       ),
     )
 
-    if (preparing) {
+    if (preparingDeployment) {
       await this.deleteDeployment({
         accessedBy: request.accessedBy,
-        id: preparing,
+        id: preparingDeployment.id,
       })
     }
 
     return CreateEntityResponse.fromJSON(newDeployment)
-  }
-
-  private async getPreparingDeployment(req: CreateDeploymentRequest): Promise<string | undefined> {
-    try {
-      const validation = new DeployCreateValidationPipe(this.prisma)
-
-      await validation.transform(req)
-    } catch (err) {
-      if (err.message) {
-        const message = JSON.parse(err.message)
-        if (message.details && message.details.property === 'deploymentId') {
-          return message.details.value
-        }
-      }
-    }
-
-    return undefined
   }
 }
 

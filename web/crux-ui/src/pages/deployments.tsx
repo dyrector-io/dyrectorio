@@ -78,7 +78,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
       return
     }
 
-    router.push(deploymentUrl(deployment.productId, deployment.versionId, url))
+    router.push(url)
   }
 
   const itemTemplate = (item: Deployment) => /* eslint-disable react/jsx-key */ [

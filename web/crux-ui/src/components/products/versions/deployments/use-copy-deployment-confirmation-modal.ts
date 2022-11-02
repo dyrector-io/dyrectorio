@@ -24,13 +24,13 @@ const postCopyDeployment = async (
     method: 'POST',
   })
 
+  if (res.status === 412) {
+    return [null, res.status]
+  }
+
   if (!res.ok) {
     onApiError(res)
     return null
-  }
-
-  if (res.status === 412) {
-    return [null, res.status]
   }
 
   const json = (await res.json()) as CopyDeploymentResponse
