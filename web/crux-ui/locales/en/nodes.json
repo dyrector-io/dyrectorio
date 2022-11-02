@@ -15,7 +15,7 @@
   "address": "Address",
   "status": "Status",
   "whatScriptDoesHeader": "What does this script do?",
-  "scriptExplanation": "The following 'Generate scipt' button will create a one-liner and script that will install our agent to the target host with the selected technology.",
+  "scriptExplanation": "The following 'Generate script' button will create a one-liner and script that will install our agent to the target host with the selected technology.",
   "requirements": "Requirements",
   "installReq": {
     "k8s": ["A kubernetes cluster", "kubectl authenticated, active context selected", "Ability to run these commands"],

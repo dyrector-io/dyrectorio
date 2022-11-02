@@ -18,14 +18,13 @@ import {
   DeploymentListSecretsRequest,
   DeploymentProgressMessage,
   IdRequest,
-  NodeConnectionStatus,
   PatchDeploymentRequest,
   ServiceIdRequest,
   UpdateDeploymentRequest,
   UpdateEntityResponse,
 } from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
-import { ContainerConfigData, UniqueSecretKeyValue, UniqueSecretKey } from 'src/shared/model'
+import { ContainerConfigData } from 'src/shared/model'
 import AgentService from '../agent/agent.service'
 import ImageMapper, { ImageDetails } from '../image/image.mapper'
 import ImageService from '../image/image.service'
@@ -258,8 +257,6 @@ export default class DeployService {
       })
     }
 
-    await this.preDeploymentCheck(deployment.id)
-
     const agent = this.agentService.getById(deployment.nodeId)
 
     await this.prisma.deployment.update({
@@ -393,52 +390,6 @@ export default class DeployService {
     }
   }
 
-  private async onImagesAddedToVersion(images: ImageDetails[]): Promise<InstancesCreatedEvent> {
-    const versionId = images?.length > 0 ? images[0].versionId : null
-    if (!versionId) {
-      throw new InternalException({
-        message: 'ImagesAddedToVersionEvent generated with empty array',
-      })
-    }
-
-    const deployments = await this.prisma.deployment.findMany({
-      select: {
-        id: true,
-      },
-      where: {
-        versionId,
-      },
-    })
-
-    const instances = await Promise.all(
-      deployments.flatMap(deployment =>
-        images.map(it =>
-          this.prisma.instance.create({
-            include: {
-              config: true,
-              image: {
-                include: {
-                  config: true,
-                  registry: true,
-                },
-              },
-            },
-            data: {
-              deploymentId: deployment.id,
-              imageId: it.id,
-              state: null,
-            },
-          }),
-        ),
-      ),
-    )
-
-    return {
-      deploymentIds: deployments.map(it => it.id),
-      instances,
-    }
-  }
-
   async getDeploymentSecrets(request: DeploymentListSecretsRequest): Promise<ListSecretsResponse> {
     const deployment = await this.prisma.deployment.findFirstOrThrow({
       where: {
@@ -542,67 +493,50 @@ export default class DeployService {
     return CreateEntityResponse.fromJSON(newDeployment)
   }
 
-  async preDeploymentCheck(id: string): Promise<void> {
-    const deployment = await this.prisma.deployment.findFirstOrThrow({
+  private async onImagesAddedToVersion(images: ImageDetails[]): Promise<InstancesCreatedEvent> {
+    const versionId = images?.length > 0 ? images[0].versionId : null
+    if (!versionId) {
+      throw new InternalException({
+        message: 'ImagesAddedToVersionEvent generated with empty array',
+      })
+    }
+
+    const deployments = await this.prisma.deployment.findMany({
+      select: {
+        id: true,
+      },
       where: {
-        id,
+        versionId,
       },
     })
 
-    const node = this.agentService.getById(deployment.nodeId)
-    if (!node || node.getConnectionStatus() !== NodeConnectionStatus.CONNECTED) {
-      throw new PreconditionFailedException({
-        message: 'Node is unreachable',
-        property: 'nodeId',
-        value: deployment.nodeId,
-      })
-    }
-
-    const secretsHaveValue = await this.requiredSecretsHaveValue(id)
-    if (!secretsHaveValue) {
-      throw new PreconditionFailedException({
-        message: 'Required secrets must have values!',
-        property: 'deploymentId',
-        value: deployment.id,
-      })
-    }
-  }
-
-  private async requiredSecretsHaveValue(deploymentId: string): Promise<boolean> {
-    const deployment = await this.prisma.deployment.findFirstOrThrow({
-      where: {
-        id: deploymentId,
-      },
-      include: {
-        instances: {
-          include: {
-            config: true,
-            image: {
-              include: {
-                config: true,
+    const instances = await Promise.all(
+      deployments.flatMap(deployment =>
+        images.map(it =>
+          this.prisma.instance.create({
+            include: {
+              config: true,
+              image: {
+                include: {
+                  config: true,
+                  registry: true,
+                },
               },
             },
-          },
-        },
-      },
-    })
+            data: {
+              deploymentId: deployment.id,
+              imageId: it.id,
+              state: null,
+            },
+          }),
+        ),
+      ),
+    )
 
-    return deployment.instances.every(it => {
-      const imageSecrets = (it.image.config.secrets as UniqueSecretKey[]) ?? []
-      const requiredSecrets = imageSecrets.filter(imageSecret => imageSecret.required).map(secret => secret.key)
-
-      const instanceSecrets = (it.config?.secrets as UniqueSecretKeyValue[]) ?? []
-      const hasSecrets = requiredSecrets.every(requiredSecret => {
-        const instanceSecret = instanceSecrets.find(secret => secret.key === requiredSecret)
-        if (!instanceSecret) {
-          return false
-        }
-
-        return instanceSecret.encrypted && instanceSecret.value.length > 0
-      })
-
-      return hasSecrets
-    })
+    return {
+      deploymentIds: deployments.map(it => it.id),
+      instances,
+    }
   }
 }
 

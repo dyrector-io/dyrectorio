@@ -34,7 +34,9 @@ import {
 } from '@app/models/grpc/protobuf/proto/crux'
 import { timestampToUTC } from '@app/utils'
 import { WsMessage } from '@app/websockets/common'
+import { ServiceError } from '@grpc/grpc-js'
 import { Identity } from '@ory/kratos-client'
+import { fromGrpcError, parseGrpcError } from '@server/error-middleware'
 import { GrpcConnection, protomisify, ProtoSubscriptionOptions } from './grpc-connection'
 import { deploymentEventTypeToDto, deploymentStatusToDto, instanceToDto } from './mappers/deployment-mappers'
 import { containerConfigToProto } from './mappers/image-mappers'
@@ -209,7 +211,23 @@ class DyoDeploymentService {
     await protomisify<IdRequest, Empty>(this.client, this.client.deleteDeployment)(IdRequest, req)
   }
 
-  startDeployment(
+  async startDeployment(id: string): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      const connection = this.startDeploymentStream(id, {
+        onMessage: () => {
+          connection.cancel()
+          resolve()
+        },
+        onError: (err: ServiceError) => {
+          connection.cancel()
+          const error = parseGrpcError(err)
+          reject(fromGrpcError(error))
+        },
+      })
+    })
+  }
+
+  startDeploymentStream(
     id: string,
     options?: ProtoSubscriptionOptions<DeploymentEvent[]>,
   ): GrpcConnection<DeploymentProgressMessage, DeploymentEvent[]> {
@@ -278,7 +296,7 @@ class DyoDeploymentService {
       }
 
       this.logger.error('Invalid DeploymentEditEventMessage')
-      return undefined
+      return null
     }
 
     const stream = () => this.client.subscribeToDeploymentEditEvents(IdRequest.fromJSON(req))

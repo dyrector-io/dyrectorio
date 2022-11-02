@@ -221,14 +221,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
         </DyoModal>
       )}
 
-      <DyoConfirmationModal
-        config={confirmationModal}
-        title={t('deployments:deploymentCopyConflictTitle')}
-        description={t('deployments:deploymentCopyConflictContent')}
-        confirmText={t('common:continue')}
-        className="w-1/4"
-        confirmColor="bg-error-red"
-      />
+      <DyoConfirmationModal config={confirmationModal} className="w-1/4" confirmColor="bg-error-red" />
     </>
   )
 }
