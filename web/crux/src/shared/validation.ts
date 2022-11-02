@@ -265,11 +265,45 @@ export const containerConfigSchema = yup.object().shape({
   resourceConfig: resourceConfigRule,
 })
 
+export const instanceContainerConfigSchema = yup.object().shape({
+  name: yup.string().nullable(),
+  environments: uniqueKeyValuesSchema.default([]).nullable(),
+  secrets: uniqueKeyValuesSchema.default([]).nullable(),
+  ingress: ingressRule,
+  expose: exposeRule,
+  user: yup.number().default(null).nullable(),
+  tty: yup.boolean().default(false).nullable(),
+  importContainer: importContainerRule,
+  configContainer: configContainerRule,
+  ports: portConfigRule,
+  portRanges: portRangeConfigRule,
+  volumes: volumeConfigRule,
+  commands: uniqueKeysOnlySchema.default([]).nullable(),
+  args: uniqueKeysOnlySchema.default([]).nullable(),
+  initContainers: initContainerRule,
+  capabilities: uniqueKeyValuesSchema.default([]).nullable(),
+
+  // dagent:
+  logConfig: logConfigRule,
+  restartPolicy: restartPolicyRule,
+  networkMode: networkModeRule,
+  networks: uniqueKeysOnlySchema.default([]).nullable(),
+
+  // crane
+  deploymentStrategy: deploymentStrategyRule,
+  customHeaders: uniqueKeysOnlySchema.default([]).nullable(),
+  proxyHeaders: yup.boolean().default(false).nullable(),
+  useLoadBalancer: yup.boolean().default(false).nullable(),
+  extraLBAnnotations: uniqueKeyValuesSchema.default([]).nullable(),
+  healthCheckConfig: healthCheckConfigRule,
+  resourceConfig: resourceConfigRule,
+})
+
 export const deploymentSchema = yup.object({
   environment: uniqueKeyValuesSchema,
   instances: yup.array(
     yup.object({
-      config: configContainerRule.nullable(),
+      config: instanceContainerConfigSchema.nullable(),
     }),
   ),
 })
@@ -318,7 +352,7 @@ const templateRegistrySchema = yup.object().shape({
     then: yup.object({
       url: yup.string().required(),
       user: yup.string(),
-      token: yup.string().required(),
+      token: yup.string(),
       imageNamePrefix: yup.string().required(),
     }),
   }),

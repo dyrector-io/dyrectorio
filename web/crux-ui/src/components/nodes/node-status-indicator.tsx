@@ -26,7 +26,13 @@ const NodeStatusIndicator = (props: NodeStatusStatusIndicatorProps) => {
 
   return (
     <div className={clsx(className, 'flex')}>
-      <Image src={`/${statusToAssetName(status)}.svg`} alt={t(`nodeStatuses.${status}`)} width={16} height={16} />
+      <Image
+        src={`/${statusToAssetName(status)}.svg`}
+        alt={t(`nodeStatuses.${status}`)}
+        width={16}
+        height={16}
+        layout="fixed"
+      />
     </div>
   )
 }

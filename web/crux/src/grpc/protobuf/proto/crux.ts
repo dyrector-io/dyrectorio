@@ -965,19 +965,16 @@ export interface UniqueKeyValue {
   value: string
 }
 
-export interface UniqueKeySecretValue {
+export interface UniqueSecretKeyValue {
   id: string
   key: string
   value: string
+  required: boolean
   encrypted?: boolean | undefined
 }
 
 export interface KeyValueList {
   data: UniqueKeyValue[]
-}
-
-export interface SecretList {
-  data: UniqueKeySecretValue[]
 }
 
 export interface DagentContainerConfig {
@@ -1011,7 +1008,7 @@ export interface CommonContainerConfig {
   commands: UniqueKey[]
   args: UniqueKey[]
   environment: UniqueKeyValue[]
-  secrets: UniqueKeyValue[]
+  secrets: UniqueSecretKeyValue[]
   initContainers: InitContainer[]
 }
 
@@ -1129,6 +1126,8 @@ export interface NodeEventMessage {
   id: string
   status: NodeConnectionStatus
   address?: string | undefined
+  version?: string | undefined
+  connectedAt?: Timestamp | undefined
 }
 
 export interface WatchContainerStateRequest {
@@ -2743,25 +2742,27 @@ export const UniqueKeyValue = {
   },
 }
 
-function createBaseUniqueKeySecretValue(): UniqueKeySecretValue {
-  return { id: '', key: '', value: '' }
+function createBaseUniqueSecretKeyValue(): UniqueSecretKeyValue {
+  return { id: '', key: '', value: '', required: false }
 }
 
-export const UniqueKeySecretValue = {
-  fromJSON(object: any): UniqueKeySecretValue {
+export const UniqueSecretKeyValue = {
+  fromJSON(object: any): UniqueSecretKeyValue {
     return {
       id: isSet(object.id) ? String(object.id) : '',
       key: isSet(object.key) ? String(object.key) : '',
       value: isSet(object.value) ? String(object.value) : '',
+      required: isSet(object.required) ? Boolean(object.required) : false,
       encrypted: isSet(object.encrypted) ? Boolean(object.encrypted) : undefined,
     }
   },
 
-  toJSON(message: UniqueKeySecretValue): unknown {
+  toJSON(message: UniqueSecretKeyValue): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
     message.key !== undefined && (obj.key = message.key)
     message.value !== undefined && (obj.value = message.value)
+    message.required !== undefined && (obj.required = message.required)
     message.encrypted !== undefined && (obj.encrypted = message.encrypted)
     return obj
   },
@@ -2780,26 +2781,6 @@ export const KeyValueList = {
     const obj: any = {}
     if (message.data) {
       obj.data = message.data.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
-    } else {
-      obj.data = []
-    }
-    return obj
-  },
-}
-
-function createBaseSecretList(): SecretList {
-  return { data: [] }
-}
-
-export const SecretList = {
-  fromJSON(object: any): SecretList {
-    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => UniqueKeySecretValue.fromJSON(e)) : [] }
-  },
-
-  toJSON(message: SecretList): unknown {
-    const obj: any = {}
-    if (message.data) {
-      obj.data = message.data.map(e => (e ? UniqueKeySecretValue.toJSON(e) : undefined))
     } else {
       obj.data = []
     }
@@ -2924,7 +2905,7 @@ export const CommonContainerConfig = {
       environment: Array.isArray(object?.environment)
         ? object.environment.map((e: any) => UniqueKeyValue.fromJSON(e))
         : [],
-      secrets: Array.isArray(object?.secrets) ? object.secrets.map((e: any) => UniqueKeyValue.fromJSON(e)) : [],
+      secrets: Array.isArray(object?.secrets) ? object.secrets.map((e: any) => UniqueSecretKeyValue.fromJSON(e)) : [],
       initContainers: Array.isArray(object?.initContainers)
         ? object.initContainers.map((e: any) => InitContainer.fromJSON(e))
         : [],
@@ -2974,7 +2955,7 @@ export const CommonContainerConfig = {
       obj.environment = []
     }
     if (message.secrets) {
-      obj.secrets = message.secrets.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
+      obj.secrets = message.secrets.map(e => (e ? UniqueSecretKeyValue.toJSON(e) : undefined))
     } else {
       obj.secrets = []
     }
@@ -3400,6 +3381,8 @@ export const NodeEventMessage = {
       id: isSet(object.id) ? String(object.id) : '',
       status: isSet(object.status) ? nodeConnectionStatusFromJSON(object.status) : 0,
       address: isSet(object.address) ? String(object.address) : undefined,
+      version: isSet(object.version) ? String(object.version) : undefined,
+      connectedAt: isSet(object.connectedAt) ? fromJsonTimestamp(object.connectedAt) : undefined,
     }
   },
 
@@ -3408,6 +3391,8 @@ export const NodeEventMessage = {
     message.id !== undefined && (obj.id = message.id)
     message.status !== undefined && (obj.status = nodeConnectionStatusToJSON(message.status))
     message.address !== undefined && (obj.address = message.address)
+    message.version !== undefined && (obj.version = message.version)
+    message.connectedAt !== undefined && (obj.connectedAt = fromTimestamp(message.connectedAt).toISOString())
     return obj
   },
 }

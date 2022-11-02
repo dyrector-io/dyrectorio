@@ -15,7 +15,7 @@ const RemainingTimeLabel = (props: RemainingTimeLabelProps) => {
     seconds: Math.trunc(seconds % 60),
   }
 
-  return <DyoLabel {...forwardedProps}>{t(time.minutes > 1 ? 'minutesSeconds' : 'seconds', time)}</DyoLabel>
+  return <DyoLabel {...forwardedProps}>{t(time.minutes >= 1 ? 'minutesSeconds' : 'seconds', time)}</DyoLabel>
 }
 
 export default RemainingTimeLabel

@@ -11,10 +11,11 @@ import NodeStatusIndicator from './node-status-indicator'
 interface DyoNodeCardProps extends Omit<DyoCardProps, 'children'> {
   node: DyoNode
   onNameClick?: () => void
+  hideConnectionInfo?: boolean
 }
 
 const DyoNodeCard = (props: DyoNodeCardProps) => {
-  const { node, onNameClick, className } = props
+  const { node, onNameClick, className, hideConnectionInfo } = props
   const { t } = useTranslation('common')
 
   return (
@@ -29,14 +30,15 @@ const DyoNodeCard = (props: DyoNodeCardProps) => {
           {node.name}
         </DyoHeading>
 
-        <NodeStatusIndicator status={node.status} />
+        {!hideConnectionInfo ? <NodeStatusIndicator status={node.status} /> : null}
       </div>
 
-      {node.address && (
+      {!hideConnectionInfo && node.address && (
         <DyoLabel className="mr-auto mt-6">
           {t(`address`)}: {node.address}
         </DyoLabel>
       )}
+
       <DyoExpandableText
         text={node.description}
         lineClamp={node.address ? 4 : 6}

@@ -5,17 +5,27 @@ export type NodeType = typeof NODE_TYPE_VALUES[number]
 
 export type NodeStatus = 'connecting' | 'unreachable' | 'running'
 
-export type DyoNode = {
-  id: string
-  icon?: string
-  name: string
-  description?: string
+export type NodeConnection = {
   address?: string
   status: NodeStatus
   connectedAt?: string
   version?: string
+}
+
+export type DyoNode = NodeConnection & {
+  id: string
+  icon?: string
+  name: string
+  description?: string
   type: NodeType
 }
+
+export const nodeConnectionOf = (node: DyoNode | DyoNodeDetails): NodeConnection => ({
+  address: node.address,
+  status: node.status,
+  connectedAt: node.connectedAt,
+  version: node.version,
+})
 
 export type DyoNodeInstall = {
   command: string
@@ -54,6 +64,8 @@ export type NodeStatusMessage = {
   nodeId: string
   status: NodeStatus
   address?: string
+  version?: string
+  connectedAt?: string
 }
 
 export const WS_TYPE_NODE_STATUSES = 'node-status-list'

@@ -7,6 +7,7 @@ import { DeploymentProgressMessage, NodeConnectionStatus, NodeEventMessage } fro
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import ContainerStatusWatcher, { ContainerStatusStreamCompleter } from './container-status-watcher'
 import Deployment from './deployment'
+import { toTimestamp } from './utils'
 
 export class Agent {
   private commandChannel = new Subject<AgentCommand>()
@@ -26,7 +27,7 @@ export class Agent {
   readonly publicKey: string
 
   constructor(
-    connection: GrpcNodeConnection,
+    private connection: GrpcNodeConnection,
     info: AgentInfo,
     private readonly eventChannel: Subject<NodeEventMessage>,
   ) {
@@ -77,6 +78,8 @@ export class Agent {
       id: this.id,
       address: this.address,
       status: NodeConnectionStatus.CONNECTED,
+      version: this.version,
+      connectedAt: toTimestamp(this.connection.connectedAt),
     })
 
     return this.commandChannel.asObservable()
@@ -90,7 +93,6 @@ export class Agent {
 
     this.eventChannel.next({
       id: this.id,
-      address: this.address,
       status: NodeConnectionStatus.UNREACHABLE,
     })
   }

@@ -168,8 +168,7 @@
   "showingItems": "Showing {{pageFrom}} to {{pageTo}} of {{total}} entries",
   "openSource": "is an Open Source project",
   "cannotDefineSecretsHere": "Secret keys can be provided here, values can be set in deployments.",
-  "notFound": "Not Found",
-
-  "deploymentCopyConflictTitle": "Are you sure want to overwrite?",
-  "deploymentCopyConflictContent": "There is already a preparing deployment on the selected node. Are you sure want to overwrite?"
+  "required": "Required",
+  "notRequired": "Not required",
+  "alreadyPreparingSureOverwrite": "There is already a preparing deployment on the selected node. Are you sure want to overwrite?"
 }

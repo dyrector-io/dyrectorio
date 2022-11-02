@@ -109,7 +109,7 @@ const onStartDeployment = async (
 ) => {
   const req = message.payload
 
-  cruxFromConnection(connection).deployments.startDeployment(req.id, {
+  cruxFromConnection(connection).deployments.startDeploymentStream(req.id, {
     onMessage: events => events.forEach(it => endpoint.sendAll(WS_TYPE_DEPLOYMENT_EVENT, it as DeploymentEventMessage)),
     onError: err => {
       const error = parseGrpcError(err)

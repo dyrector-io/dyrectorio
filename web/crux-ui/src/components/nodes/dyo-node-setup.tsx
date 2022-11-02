@@ -1,5 +1,6 @@
 import DyoButton from '@app/elements/dyo-button'
 import DyoChips from '@app/elements/dyo-chips'
+import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import RemainingTimeLabel from '@app/elements/remaining-time-label'
@@ -11,7 +12,6 @@ import { sendForm, writeToClipboard } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
 import ShEditor from '../shared/sh-editor'
-import DyoNodeConnectionInfo from './dyo-node-connection-info'
 
 const expiresIn = (expireAt: Date): number => {
   const now = new Date().getTime()
@@ -77,76 +77,71 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
 
   const onCopyScript = () => writeToClipboard(t, node.install.command)
 
-  return (
-    <>
-      {!node.install ? (
-        <div className="mb-4">
-          <div className="flex flex-wrap mt-4">
-            <DyoLabel className="mr-2 my-auto">{t('technology')}</DyoLabel>
+  return !node.install ? (
+    <div className="mb-4">
+      <DyoHeading element="h4" className="text-lg text-bright mb-2">
+        {t('technology')}
+      </DyoHeading>
 
-            <DyoChips
-              choices={NODE_TYPE_VALUES}
-              initialSelection={node.type}
-              converter={(it: NodeType) => t(`technologies.${it}`)}
-              onSelectionChange={it => onNodeTypeChanged(it)}
-            />
-          </div>
+      <DyoChips
+        className="mb-2 ml-2"
+        choices={NODE_TYPE_VALUES}
+        initialSelection={node.type}
+        converter={(it: NodeType) => t(`technologies.${it}`)}
+        onSelectionChange={it => onNodeTypeChanged(it)}
+      />
 
-          {node.type === 'docker' && (
-            <div className="flex flex-col">
-              <DyoLabel className="text-light mb-2.5">{t('rootPath')}</DyoLabel>
-              <DyoInput
-                placeholder={t('rootPathHint')}
-                className="max-w-lg"
-                grow
-                value={rootPath}
-                onChange={e => setRootPath(e.target.value)}
-              />
-            </div>
-          )}
-
-          <DyoButton className="px-4 py-2 mt-4 mr-auto" onClick={onGenerateInstallScript}>
-            {t('generateScript')}
-          </DyoButton>
+      {node.type === 'docker' && (
+        <div className="flex flex-col">
+          <DyoLabel className="text-light mb-2.5">{t('rootPath')}</DyoLabel>
+          <DyoInput
+            placeholder={t('rootPathHint')}
+            className="max-w-lg"
+            grow
+            value={rootPath}
+            onChange={e => setRootPath(e.target.value)}
+          />
         </div>
-      ) : (
-        <>
-          <div className="flex flex-col">
-            <DyoInput
-              label={t('command')}
-              className="bg-gray-900"
-              disabled
-              grow
-              defaultValue={node.install.command}
-              onFocus={ev => ev.target.select()}
-            />
-
-            <div className="flex flex-row">
-              <DyoLabel className="text-white mr-2">{t('scriptExpiresIn')}</DyoLabel>
-
-              <RemainingTimeLabel textColor="text-dyo-turquoise" seconds={remaining} />
-            </div>
-          </div>
-
-          <div className="flex flex-row mt-4 mb-4">
-            <DyoButton className="px-4 py-2 mr-4" secondary onClick={onDiscard}>
-              {t('common:discard')}
-            </DyoButton>
-
-            <DyoButton className="px-4 py-2 mr-auto" outlined onClick={onCopyScript}>
-              {t('common:copy')}
-            </DyoButton>
-          </div>
-
-          <div className="flex flex-col">
-            <DyoLabel className="mb-2.5">{t('script')}</DyoLabel>
-
-            <ShEditor className="h-48 mb-4 w-full overflow-x-auto" readOnly value={node.install.script} />
-          </div>
-        </>
       )}
 
-      <DyoNodeConnectionInfo node={node} />
+      <DyoButton className="px-4 py-2 mt-4 mr-auto" onClick={onGenerateInstallScript}>
+        {t('generateScript')}
+      </DyoButton>
+    </div>
+  ) : (
+    <>
+      <div className="flex flex-col">
+        <DyoInput
+          label={t('command')}
+          className="bg-gray-900"
+          readOnly
+          grow
+          defaultValue={node.install.command}
+          onFocus={ev => ev.target.select()}
+        />
+
+        <div className="flex flex-row">
+          <DyoLabel className="text-white mr-2">{t('scriptExpiresIn')}</DyoLabel>
+
+          <RemainingTimeLabel textColor="text-dyo-turquoise" seconds={remaining} />
+        </div>
+      </div>
+
+      <div className="flex flex-row mt-4 mb-4">
+        <DyoButton className="px-4 py-2 mr-4" secondary onClick={onDiscard}>
+          {t('common:discard')}
+        </DyoButton>
+
+        <DyoButton className="px-4 py-2 mr-auto" outlined onClick={onCopyScript}>
+          {t('common:copy')}
+        </DyoButton>
+      </div>
+
+      <div className="flex flex-col">
+        <DyoLabel className="mb-2.5">{t('script')}</DyoLabel>
+
+        <ShEditor className="h-48 mb-4 w-full overflow-x-auto" readOnly value={node.install.script} />
+      </div>
     </>
   )
 }

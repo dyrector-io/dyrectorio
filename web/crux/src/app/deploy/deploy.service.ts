@@ -29,7 +29,6 @@ import AgentService from '../agent/agent.service'
 import ImageMapper, { ImageDetails } from '../image/image.mapper'
 import ImageService from '../image/image.service'
 import DeployMapper, { InstanceDetails } from './deploy.mapper'
-import DeployCreateValidationPipe from './pipes/deploy.create.pipe'
 
 @Injectable()
 export default class DeployService {
@@ -259,15 +258,6 @@ export default class DeployService {
     }
 
     const agent = this.agentService.getById(deployment.nodeId)
-    if (!agent) {
-      // Todo in the client is this just a simple internal server error
-      // please show a proper error message
-      throw new PreconditionFailedException({
-        message: 'Node is unreachable',
-        property: 'nodeId',
-        value: deployment.nodeId,
-      })
-    }
 
     await this.prisma.deployment.update({
       where: {
@@ -302,7 +292,7 @@ export default class DeployService {
           return {
             common: this.mapper.configToCommonConfig(mergedConfig),
             crane: this.mapper.configToCraneConfig(mergedConfig),
-            agent: this.mapper.configToDagentConfig(mergedConfig),
+            dagent: this.mapper.configToDagentConfig(mergedConfig),
             id: it.id,
             containerName: it.image.config.name,
             imageName: it.image.name,
@@ -400,6 +390,135 @@ export default class DeployService {
     }
   }
 
+  async getDeploymentSecrets(request: DeploymentListSecretsRequest): Promise<ListSecretsResponse> {
+    const deployment = await this.prisma.deployment.findFirstOrThrow({
+      where: {
+        id: request.id,
+      },
+    })
+
+    const instanceWithImageAndConfig = await this.prisma.instance.findFirstOrThrow({
+      where: {
+        id: request.instanceId,
+      },
+      include: {
+        image: {
+          include: {
+            config: true,
+          },
+        },
+      },
+    })
+
+    const containerName = instanceWithImageAndConfig.image.config.name
+
+    const agent = this.agentService.getById(deployment.nodeId)
+    if (!agent) {
+      // Todo in the client is this just a simple internal server error
+      // please show a proper error message
+      throw new PreconditionFailedException({
+        message: 'Node is unreachable',
+        property: 'nodeId',
+        value: deployment.nodeId,
+      })
+    }
+
+    const watcher = agent.getContainerSecrets(deployment.prefix, containerName)
+
+    return lastValueFrom(watcher)
+  }
+
+  async copyDeployment(request: IdRequest): Promise<CreateEntityResponse> {
+    const oldDeployment = await this.prisma.deployment.findFirstOrThrow({
+      where: {
+        id: request.id,
+      },
+      include: {
+        instances: {
+          include: {
+            config: true,
+          },
+        },
+      },
+    })
+
+    const preparingDeployment = await this.prisma.deployment.findFirst({
+      where: {
+        nodeId: oldDeployment.nodeId,
+        versionId: oldDeployment.versionId,
+        status: 'preparing',
+      },
+      select: {
+        id: true,
+      },
+    })
+
+    const newDeployment = await this.prisma.deployment.create({
+      data: {
+        versionId: oldDeployment.versionId,
+        nodeId: oldDeployment.nodeId,
+        status: DeploymentStatusEnum.preparing,
+        note: oldDeployment.note,
+        createdBy: request.accessedBy,
+        prefix: oldDeployment.prefix,
+      },
+    })
+
+    await this.prisma.$transaction(
+      oldDeployment.instances.map(it =>
+        this.prisma.instance.create({
+          data: {
+            deploymentId: newDeployment.id,
+            imageId: it.imageId,
+            state: null,
+            config: it.config
+              ? {
+                  create: {
+                    name: it.config.name,
+                    expose: it.config.expose,
+                    ingress: this.imageMapper.toPrismaJson(it.config.ingress),
+                    configContainer: this.imageMapper.toPrismaJson(it.config.configContainer),
+                    importContainer: this.imageMapper.toPrismaJson(it.config.importContainer),
+                    user: it.config.user,
+                    tty: it.config.tty,
+                    ports: this.imageMapper.toPrismaJson(it.config.ports),
+                    portRanges: this.imageMapper.toPrismaJson(it.config.portRanges),
+                    volumes: this.imageMapper.toPrismaJson(it.config.volumes),
+                    commands: this.imageMapper.toPrismaJson(it.config.commands),
+                    args: this.imageMapper.toPrismaJson(it.config.args),
+                    environment: this.imageMapper.toPrismaJson(it.config.environment),
+                    secrets: this.imageMapper.toPrismaJson(it.config.secrets),
+                    initContainers: this.imageMapper.toPrismaJson(it.config.initContainers),
+                    logConfig: this.imageMapper.toPrismaJson(it.config.logConfig),
+                    restartPolicy: it.config.restartPolicy,
+                    networkMode: it.config.networkMode,
+                    networks: this.imageMapper.toPrismaJson(it.config.networks),
+                    deploymentStrategy: it.config.deploymentStrategy,
+                    healthCheckConfig: this.imageMapper.toPrismaJson(it.config.healthCheckConfig),
+                    resourceConfig: this.imageMapper.toPrismaJson(it.config.resourceConfig),
+                    proxyHeaders: it.config.proxyHeaders ?? false,
+                    useLoadBalancer: it.config.useLoadBalancer ?? false,
+                    customHeaders: this.imageMapper.toPrismaJson(it.config.customHeaders),
+                    extraLBAnnotations: this.imageMapper.toPrismaJson(it.config.extraLBAnnotations),
+                    capabilities: this.imageMapper.toPrismaJson(it.config.capabilities),
+                  },
+                }
+              : undefined,
+          },
+        }),
+      ),
+    )
+
+    if (preparingDeployment) {
+      await this.deleteDeployment({
+        accessedBy: request.accessedBy,
+        id: preparingDeployment.id,
+      })
+    }
+
+    return CreateEntityResponse.fromJSON(newDeployment)
+  }
+
   private async onImagesAddedToVersion(images: ImageDetails[]): Promise<InstancesCreatedEvent> {
     const versionId = images?.length > 0 ? images[0].versionId : null
     if (!versionId) {
@@ -444,132 +563,6 @@ export default class DeployService {
       deploymentIds: deployments.map(it => it.id),
       instances,
     }
-  }
-
-  async getDeploymentSecrets(request: DeploymentListSecretsRequest): Promise<ListSecretsResponse> {
-    const deployment = await this.prisma.deployment.findFirstOrThrow({
-      where: {
-        id: request.id,
-      },
-    })
-
-    const instanceWithImageAndConfig = await this.prisma.instance.findFirstOrThrow({
-      where: {
-        id: request.instanceId,
-      },
-      include: {
-        image: {
-          include: {
-            config: true,
-          },
-        },
-      },
-    })
-
-    const containerName = instanceWithImageAndConfig.image.config.name
-
-    const agent = this.agentService.getById(deployment.nodeId)
-    if (!agent) {
-      // Todo in the client is this just a simple internal server error
-      // please show a proper error message
-      throw new PreconditionFailedException({
-        message: 'Node is unreachable',
-        property: 'nodeId',
-        value: deployment.nodeId,
-      })
-    }
-
-    const watcher = agent.getContainerSecrets(deployment.prefix, containerName)
-
-    return lastValueFrom(watcher)
-  }
-
-  async copyDeployment(request: IdRequest, force: boolean): Promise<CreateEntityResponse> {
-    const oldDeployment = await this.prisma.deployment.findFirstOrThrow({
-      where: {
-        id: request.id,
-      },
-      include: {
-        instances: {
-          include: {
-            config: true,
-          },
-        },
-      },
-    })
-
-    const createRequest = {
-      accessedBy: request.accessedBy,
-      versionId: oldDeployment.versionId,
-      nodeId: oldDeployment.nodeId,
-      prefix: oldDeployment.prefix,
-    } as CreateDeploymentRequest
-
-    const preparing = await this.getPreparingDeployment(createRequest)
-
-    if (preparing && !force) {
-      throw new PreconditionFailedException({
-        message: 'The node already has a preparing deployment.',
-        property: 'id',
-        value: preparing,
-      })
-    }
-
-    const newDeployment = await this.prisma.deployment.create({
-      data: {
-        versionId: oldDeployment.versionId,
-        nodeId: oldDeployment.nodeId,
-        status: DeploymentStatusEnum.preparing,
-        note: oldDeployment.note,
-        createdBy: request.accessedBy,
-        prefix: oldDeployment.prefix,
-      },
-    })
-
-    await this.prisma.$transaction(
-      oldDeployment.instances.map(it =>
-        this.prisma.instance.create({
-          data: {
-            deploymentId: newDeployment.id,
-            imageId: it.imageId,
-            state: null,
-            config: it.config
-              ? {
-                  create: {
-                    ...it.config,
-                  },
-                }
-              : undefined,
-          },
-        }),
-      ),
-    )
-
-    if (preparing) {
-      await this.deleteDeployment({
-        accessedBy: request.accessedBy,
-        id: preparing,
-      })
-    }
-
-    return CreateEntityResponse.fromJSON(newDeployment)
-  }
-
-  private async getPreparingDeployment(req: CreateDeploymentRequest): Promise<string | undefined> {
-    try {
-      const validation = new DeployCreateValidationPipe(this.prisma)
-
-      await validation.transform(req)
-    } catch (err) {
-      if (err.message) {
-        const message = JSON.parse(err.message)
-        if (message.details && message.details.property === 'deploymentId') {
-          return message.details.value
-        }
-      }
-    }
-
-    return undefined
   }
 }
 
