@@ -1,6 +1,7 @@
 import { internalError, preconditionFailedError } from '@app/error-responses'
 import { DeploymentEvent } from '@app/models'
-import { DeploymentProgressMessage, Empty } from '@app/models/grpc/protobuf/proto/crux'
+import { Empty } from '@app/models/grpc/protobuf/proto/common'
+import { DeploymentProgressMessage } from '@app/models/grpc/protobuf/proto/crux'
 import { Status } from '@grpc/grpc-js/build/src/constants'
 import crux, { Crux } from '@server/crux/crux'
 import { GrpcConnection, ProtoSubscriptionOptions } from '@server/crux/grpc-connection'
