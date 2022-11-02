@@ -1,6 +1,7 @@
 import { EditorStateOptions } from '@app/components/editor/use-editor-state'
 import KeyOnlyInput from '@app/components/shared/key-only-input'
 import KeyValueInput from '@app/components/shared/key-value-input'
+import SecretKeyInput from '@app/components/shared/secret-key-input'
 import DyoChips from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoImgButton from '@app/elements/dyo-img-button'
@@ -259,7 +260,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
           {/* secrets */}
           {contains('secrets') && (
             <div className="grid break-inside-avoid mb-8 max-w-lg">
-              <KeyOnlyInput
+              <SecretKeyInput
                 className="mb-2"
                 keyPlaceholder={t('common.secrets').toUpperCase()}
                 labelClassName="text-bright font-semibold tracking-wide mb-2"
@@ -267,6 +268,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 onChange={it => onChange({ secrets: it.map(sit => ({ ...sit, value: '' })) })}
                 items={config.secrets ?? []}
                 editorOptions={editorOptions}
+                unique
               />
             </div>
           )}

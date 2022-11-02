@@ -104,7 +104,7 @@ export default class ImageMapper {
       configContainer: this.toPrismaJson(config.common?.configContainer),
       importContainer: this.toPrismaJson(config.common?.importContainer),
       user: config.common?.user ? config.common.user : null,
-      tty: config.common?.TTY,
+      tty: config.common?.TTY ?? false,
       ports: this.toPrismaJson(config.common?.ports),
       portRanges: this.toPrismaJson(config.common?.portRanges),
       volumes: this.toPrismaJson(config.common?.volumes),
@@ -122,8 +122,8 @@ export default class ImageMapper {
       deploymentStrategy: this.deploymentStrategyToDb(config.crane?.deploymentStatregy),
       healthCheckConfig: this.toPrismaJson(config.crane?.healthCheckConfig),
       resourceConfig: this.toPrismaJson(config.crane?.resourceConfig),
-      proxyHeaders: config.crane?.proxyHeaders,
-      useLoadBalancer: config.crane?.useLoadBalancer,
+      proxyHeaders: config.crane?.proxyHeaders ?? false,
+      useLoadBalancer: config.crane?.useLoadBalancer ?? false,
       customHeaders: this.toPrismaJson(config.crane?.customHeaders),
       extraLBAnnotations: this.toPrismaJson(config.crane?.extraLBAnnotations),
       capabilities: this.toPrismaJson(config.capabilities),
@@ -148,7 +148,7 @@ export default class ImageMapper {
       case ProtoDeploymentStrategy.ROLLING:
         return DeploymentStrategy.rolling
       default:
-        return null
+        return DeploymentStrategy.recreate
     }
   }
 
@@ -200,7 +200,7 @@ export default class ImageMapper {
       case ProtoRestartPolicy.ON_FAILURE:
         return RestartPolicy.onFailure
       default:
-        return null
+        return RestartPolicy.no
     }
   }
 

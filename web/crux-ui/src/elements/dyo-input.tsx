@@ -54,9 +54,18 @@ export const DyoInput = forwardRef((props: DyoInputProps, ref: ForwardedRef<HTML
           )}
         />
 
-        {message && !inline ? <DyoMessage message={message} messageType={messageType} /> : null}
+        {message && !inline ? (
+          <DyoMessage message={message} messageType={messageType} className={grow && 'text-xs italic'} />
+        ) : null}
       </div>
-      {message && inline ? <DyoMessage message={message} messageType={messageType} marginClassName="my-2" /> : null}
+      {message && inline ? (
+        <DyoMessage
+          message={message}
+          messageType={messageType}
+          marginClassName="my-2"
+          className={grow && 'text-xs italic'}
+        />
+      ) : null}
     </>
   )
 })

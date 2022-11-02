@@ -1,10 +1,10 @@
 import MultiInput from '@app/components/editor/multi-input'
 import { EditorStateOptions } from '@app/components/editor/use-editor-state'
-import KeyOnlyInput from '@app/components/shared/key-only-input'
 import KeyValueInput from '@app/components/shared/key-value-input'
+import SecretKeyInput from '@app/components/shared/secret-key-input'
 import { IMAGE_WS_REQUEST_DELAY } from '@app/const'
 import { useThrottling } from '@app/hooks/use-throttleing'
-import { ContainerConfig } from '@app/models'
+import { ContainerConfig, UniqueSecretKeyValue } from '@app/models'
 import { UniqueKeyValue } from '@app/models/grpc/protobuf/proto/crux'
 import { sensitiveKeyRule } from '@app/validations/container'
 import useTranslation from 'next-translate/useTranslation'
@@ -28,6 +28,7 @@ const EditImageConfig = (props: EditImageConfigProps) => {
 
   const sendPatch = (cfg: Partial<ContainerConfig>) => {
     const newPatch = {
+      ...config,
       ...patch.current,
       ...cfg,
     }
@@ -45,7 +46,7 @@ const EditImageConfig = (props: EditImageConfigProps) => {
       environment,
     })
 
-  const onSecretChange = (secrets: UniqueKeyValue[]) => {
+  const onSecretChange = (secrets: UniqueSecretKeyValue[]) => {
     sendPatch({
       secrets,
     })
@@ -62,8 +63,9 @@ const EditImageConfig = (props: EditImageConfigProps) => {
         id="name"
         disabled={disabled}
         label={t('containerName').toUpperCase()}
-        labelClassName="mt-2 mb-2.5"
-        className="mb-4"
+        className="mb-4 ml-2"
+        containerClassName="w-5/12"
+        grow
         editorOptions={editorOptions}
         value={config?.name}
         onPatch={onContainerNameChange}
@@ -78,8 +80,9 @@ const EditImageConfig = (props: EditImageConfigProps) => {
         hint={{ hintValidation: sensitiveKeyRule, hintText: t('sensitiveKey') }}
       />
 
-      <KeyOnlyInput
+      <SecretKeyInput
         disabled={disabled}
+        unique
         className="mt-2"
         label={t('secrets').toUpperCase()}
         items={config.secrets ?? []}

@@ -1,19 +1,24 @@
 import { Identity } from '@ory/kratos-client'
 import { ContainerConfig } from '@prisma/client'
 
+export type UniqueKey = {
+  id: string
+  key: string
+}
+
 export type UniqueKeyValue = {
   id: string
   key: string
   value: string
 }
 
-export type UniqueKey = {
-  id: string
-  key: string
+export type UniqueSecretKey = UniqueKey & {
+  required: boolean
 }
 
-export type UniqueKeySecretValue = UniqueKeyValue & {
-  encrypted: boolean
+export type UniqueSecretKeyValue = UniqueKeyValue & {
+  required: boolean
+  encrypted?: boolean
 }
 
 export const CONTAINER_NETWORK_MODE_VALUES = ['none', 'host', 'bridge', 'overlay', 'ipvlan', 'macvlan'] as const

@@ -258,15 +258,6 @@ export default class DeployService {
     }
 
     const agent = this.agentService.getById(deployment.nodeId)
-    if (!agent) {
-      // Todo in the client is this just a simple internal server error
-      // please show a proper error message
-      throw new PreconditionFailedException({
-        message: 'Node is unreachable',
-        property: 'nodeId',
-        value: deployment.nodeId,
-      })
-    }
 
     await this.prisma.deployment.update({
       where: {
@@ -399,52 +390,6 @@ export default class DeployService {
     }
   }
 
-  private async onImagesAddedToVersion(images: ImageDetails[]): Promise<InstancesCreatedEvent> {
-    const versionId = images?.length > 0 ? images[0].versionId : null
-    if (!versionId) {
-      throw new InternalException({
-        message: 'ImagesAddedToVersionEvent generated with empty array',
-      })
-    }
-
-    const deployments = await this.prisma.deployment.findMany({
-      select: {
-        id: true,
-      },
-      where: {
-        versionId,
-      },
-    })
-
-    const instances = await Promise.all(
-      deployments.flatMap(deployment =>
-        images.map(it =>
-          this.prisma.instance.create({
-            include: {
-              config: true,
-              image: {
-                include: {
-                  config: true,
-                  registry: true,
-                },
-              },
-            },
-            data: {
-              deploymentId: deployment.id,
-              imageId: it.id,
-              state: null,
-            },
-          }),
-        ),
-      ),
-    )
-
-    return {
-      deploymentIds: deployments.map(it => it.id),
-      instances,
-    }
-  }
-
   async getDeploymentSecrets(request: DeploymentListSecretsRequest): Promise<ListSecretsResponse> {
     const deployment = await this.prisma.deployment.findFirstOrThrow({
       where: {
@@ -546,6 +491,52 @@ export default class DeployService {
     }
 
     return CreateEntityResponse.fromJSON(newDeployment)
+  }
+
+  private async onImagesAddedToVersion(images: ImageDetails[]): Promise<InstancesCreatedEvent> {
+    const versionId = images?.length > 0 ? images[0].versionId : null
+    if (!versionId) {
+      throw new InternalException({
+        message: 'ImagesAddedToVersionEvent generated with empty array',
+      })
+    }
+
+    const deployments = await this.prisma.deployment.findMany({
+      select: {
+        id: true,
+      },
+      where: {
+        versionId,
+      },
+    })
+
+    const instances = await Promise.all(
+      deployments.flatMap(deployment =>
+        images.map(it =>
+          this.prisma.instance.create({
+            include: {
+              config: true,
+              image: {
+                include: {
+                  config: true,
+                  registry: true,
+                },
+              },
+            },
+            data: {
+              deploymentId: deployment.id,
+              imageId: it.id,
+              state: null,
+            },
+          }),
+        ),
+      ),
+    )
+
+    return {
+      deploymentIds: deployments.map(it => it.id),
+      instances,
+    }
   }
 }
 

@@ -591,16 +591,15 @@ message UniqueKeyValue {
   string value = 102;
 }
 
-message UniqueKeySecretValue {
+message UniqueSecretKeyValue {
   string id = 100;
   string key = 101;
   string value = 103;
-  optional bool encrypted = 104;
+  bool required = 104;
+  optional bool encrypted = 105;
 }
 
 message KeyValueList { repeated UniqueKeyValue data = 1000; }
-
-message SecretList { repeated UniqueKeySecretValue data = 1000; }
 
 message DagentContainerConfig {
   optional LogConfig logConfig = 100;
@@ -636,7 +635,7 @@ message CommonContainerConfig {
   repeated common.UniqueKey commands = 1003;
   repeated common.UniqueKey args = 1004;
   repeated UniqueKeyValue environment = 1005;
-  repeated UniqueKeyValue secrets = 1006;
+  repeated UniqueSecretKeyValue secrets = 1006;
   repeated InitContainer initContainers = 1007;
 }
 
