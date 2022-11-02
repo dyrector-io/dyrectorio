@@ -63,7 +63,7 @@
         "expose": "expose",
         "ingress": {
           "host": "localhost",
-          "name": "sti"
+          "name": "strapi"
         },
         "volumes": [
           {
