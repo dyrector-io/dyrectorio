@@ -268,6 +268,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 onChange={it => onChange({ secrets: it.map(sit => ({ ...sit, value: '' })) })}
                 items={config.secrets ?? []}
                 editorOptions={editorOptions}
+                unique
               />
             </div>
           )}
