@@ -137,7 +137,7 @@ export default class ImageMapper {
       case DeploymentStrategy.rolling:
         return ProtoDeploymentStrategy.ROLLING
       default:
-        return ProtoDeploymentStrategy.UNKOWN_DEPLOYMENT_STRATEGY
+        return ProtoDeploymentStrategy.DEPLOYMENT_STRATEGY_UNSPECIFIED
     }
   }
 

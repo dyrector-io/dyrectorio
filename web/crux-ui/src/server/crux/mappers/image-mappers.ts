@@ -44,7 +44,7 @@ export const deploymentStrategyToDto = (strategy?: DeploymentStrategy): Containe
     case null:
     case undefined:
       return 'recreate'
-    case DeploymentStrategy.UNKOWN_DEPLOYMENT_STRATEGY:
+    case DeploymentStrategy.DEPLOYMENT_STRATEGY_UNSPECIFIED:
       return 'unknown'
     default:
       return deploymentStrategyToJSON(strategy).toLocaleLowerCase() as ContainerDeploymentStrategyType
@@ -90,7 +90,7 @@ export const logDriverDto = (logDriver: DriverType): ContainerLogDriverType => {
   switch (logDriver) {
     case undefined:
     case null:
-    case DriverType.UNKNOWN_DRIVER_TYPE:
+    case DriverType.DRIVER_TYPE_UNSPECIFIED:
     case DriverType.DRIVER_TYPE_NONE:
       return 'none'
     default:

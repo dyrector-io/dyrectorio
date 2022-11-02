@@ -279,14 +279,14 @@ message TeamDetailsResponse {
 message AllTeamsResponse { repeated TeamWithStatsResponse data = 1000; }
 
 enum UserRole {
-  UNKNOWN_USER_ROLE = 0;
+  USER_ROLE_UNSPECIFIED = 0;
   USER = 1;
   OWNER = 2;
   ADMIN = 3;
 }
 
 enum UserStatus {
-  UNKNOWN_USER_STATUS = 0;
+  USER_STATUS_UNSPECIFIED = 0;
   PENDING = 1;
   VERIFIED = 2;
 }
@@ -303,13 +303,13 @@ message UserResponse {
 
 // PRODUCT
 enum ProductType {
-  UNKNOWN_PRODUCT_TYPE = 0;
+  PRODUCT_TYPE_UNSPECIFIED = 0;
   SIMPLE = 1;
   COMPLEX = 2;
 }
 
 enum VersionType {
-  UNKNOWN_VERSION_TYPE = 0;
+  VERSION_TYPE_UNSPECIFIED = 0;
   INCREMENTAL = 1;
   ROLLING = 2;
 }
@@ -453,7 +453,7 @@ message RegistryDetailsResponse {
 }
 
 enum RegistryType {
-  UNKNOWN_REGISTRY_TYPE = 0;
+  REGISTRY_TYPE_UNSPECIFIED = 0;
   V2 = 1;
   HUB = 2;
   GITLAB = 3;
@@ -462,7 +462,7 @@ enum RegistryType {
 }
 
 enum RegistryNamespace {
-  UNKNOWN_REGISTRY_NAMESPACE = 0;
+  REGISTRY_NAMESPACE_UNSPECIFIED = 0;
   RNS_ORGANIZATION = 1;
   RNS_USER = 2;
   RNS_GROUP = 3;
@@ -762,7 +762,7 @@ When a node created, it is UNREACHEABLE until the user completes
 the install process.
 */
 enum NodeConnectionStatus {
-  UNKNOWN_CONNECTION_STATUS = 0;
+  CONNECTION_STATUS_UNSPECIFIED = 0;
   // Node was not yet connected or became unreachable
   UNREACHABLE = 1;
   // Node is running and connected
@@ -770,7 +770,7 @@ enum NodeConnectionStatus {
 }
 
 enum NodeType {
-  UNKNOWN_NODE_TYPE = 0;
+  NODE_TYPE_UNSPECIFIED = 0;
   DOCKER = 1;
   K8S = 2;
 }
@@ -900,7 +900,7 @@ message DeploymentDetailsResponse {
 }
 
 enum DeploymentEventType {
-  UNKNOWN_DEPLOYMENT_EVENT_TYPE = 0;
+  DEPLOYMENT_EVENT_TYPE_UNSPECIFIED = 0;
   DEPLOYMENT_LOG = 1;
   DEPLOYMENT_STATUS = 2;
   CONTAINER_STATUS = 3;
@@ -936,14 +936,14 @@ message DeploymentListSecretsRequest {
 // NOTIFICATION
 
 enum NotificationType {
-  UNKNOWN_NOTIFICATION_TYPE = 0;
+  NOTIFICATION_TYPE_UNSPECIFIED = 0;
   DISCORD = 1;
   SLACK = 2;
   TEAMS = 3;
 }
 
 enum NotificationEventType {
-  UNKNOWN_NOTIFICATION_EVENT_TYPE = 0;
+  NOTIFICATION_EVENT_TYPE_UNSPECIFIED = 0;
   DEPLOYMENT_CREATED = 1;
   VERSION_CREATED = 2;
   NODE_ADDED = 3;
@@ -1008,7 +1008,7 @@ message NotificationListResponse { repeated NotificationResponse data = 1000; }
 // HEALTH
 
 enum ServiceStatus {
-  UNKNOWN_SERVICE_STATUS = 0;
+  SERVICE_STATUS_UNSPECIFIED = 0;
   UNAVAILABLE = 1;
   DISRUPTED = 2;
   OPERATIONAL = 3;

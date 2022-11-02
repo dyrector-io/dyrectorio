@@ -137,6 +137,6 @@ func MapContainerState(state string) common.ContainerState {
 	case "dead":
 		return common.ContainerState_DEAD
 	default:
-		return common.ContainerState_UNKNOWN_CONTAINER_STATE
+		return common.ContainerState_CONTAINER_STATE_UNSPECIFIED
 	}
 }
