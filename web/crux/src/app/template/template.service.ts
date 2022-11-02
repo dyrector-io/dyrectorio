@@ -89,6 +89,9 @@ export default class TemplateService {
   private mapTemplateConfig(config: TemplateContainerConfig): ContainerConfigData {
     return {
       ...config,
+      tty: config.tty ?? false,
+      useLoadBalancer: config.useLoadBalancer ?? false,
+      proxyHeaders: config.proxyHeaders ?? false,
       deploymentStrategy: config.deploymentStatregy
         ? this.imageMapper.deploymentStrategyToDb(
             deploymentStrategyFromJSON(config.deploymentStatregy.toLocaleUpperCase()),
