@@ -16,7 +16,6 @@ import { DeploymentRoot, mergeConfigs } from '@app/models'
 import {
   deploymentApiUrl,
   deploymentDeployUrl,
-  deploymentStartUrl,
   deploymentUrl,
   productUrl,
   ROUTE_PRODUCTS,
@@ -27,33 +26,10 @@ import { containerConfigSchema, getValidationError } from '@app/validations'
 import { Crux, cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
-import { NextRouter, useRouter } from 'next/dist/client/router'
+import { useRouter } from 'next/dist/client/router'
 import { useEffect, useRef } from 'react'
 import toast from 'react-hot-toast'
 import { ValidationError } from 'yup'
-
-export const startDeployment = async (
-  router: NextRouter,
-  productId: string,
-  versionId: string,
-  deploymentId: string,
-) => {
-  const res = await fetch(deploymentStartUrl(productId, versionId, deploymentId), {
-    method: 'POST',
-  })
-
-  if (res.status === 412) {
-    const json = await res.json()
-    toast.error(json.description)
-    return
-  }
-
-  if (!res.ok) {
-    return
-  }
-
-  router.push(deploymentDeployUrl(productId, versionId, deploymentId))
-}
 
 interface DeploymentDetailsPageProps {
   deployment: DeploymentRoot
@@ -114,7 +90,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
     }
   }
 
-  const navigateToLog = () => startDeployment(router, product.id, version.id, deployment.id)
+  const navigateToLog = () => router.push(deploymentDeployUrl(product.id, version.id, deployment.id))
 
   const onDeploy = () => {
     if (node.status !== 'running') {
