@@ -25,7 +25,12 @@ export type KeyValue = {
   value: string
 }
 
-export type UniqueKeySecretValue = UniqueKeyValue & {
+export type UniqueSecretKey = UniqueKeyValue & {
+  required: boolean
+}
+
+export type UniqueSecretKeyValue = UniqueKeyValue & {
+  required: boolean
   encrypted?: boolean
 }
 
@@ -150,7 +155,7 @@ export type ContainerConfig = {
   // common
   name?: string
   environment?: UniqueKeyValue[]
-  secrets?: UniqueKeyValue[]
+  secrets?: UniqueSecretKeyValue[]
   ingress?: ContainerConfigIngress
   expose?: ContainerConfigExposeStrategy
   user?: number
@@ -205,11 +210,16 @@ export type JsonContainerConfigPortRange = Omit<ContainerConfigPortRange, 'id'>
 export type JsonContainerConfigPort = Omit<ContainerConfigPort, 'id'>
 export type JsonContainerConfigVolume = Omit<ContainerConfigVolume, 'id'>
 
+export type JsonContainerConfigSecret = {
+  key: string
+  required?: boolean
+}
+
 export type JsonContainerConfig = {
   // common
   name?: string
   environment?: JsonKeyValue
-  secrets?: string[]
+  secrets?: JsonContainerConfigSecret[]
   ingress?: ContainerConfigIngress
   expose?: ContainerConfigExposeStrategy
   user?: number
@@ -263,10 +273,6 @@ const overrideKeyValues = (weak: UniqueKeyValue[], strong: UniqueKeyValue[]): Un
   return [...(weak?.filter(it => !overridenKeys.has(it.key)) ?? []), ...(strong ?? [])]
 }
 
-const expandKeytoKeyValues = (weak: UniqueKey[]): UniqueKeyValue[] => [
-  ...weak.map((it): UniqueKeyValue => ({ id: it.id, key: it.key, value: '' })),
-]
-
 const overridePorts = (weak: ContainerConfigPort[], strong: ContainerConfigPort[]): ContainerConfigPort[] => {
   const overridenPorts: Set<number> = new Set(strong?.map(it => it.internal))
   return [...(weak?.filter(it => !overridenPorts.has(it.internal)) ?? []), ...(strong ?? [])]
@@ -294,10 +300,7 @@ export const mergeConfigs = (
     // common
     name: instanceConfig.name || imageConfig.name,
     environment: envs,
-    secrets:
-      instanceConfig?.secrets && instanceConfig.secrets.length > 0
-        ? instanceConfig.secrets
-        : expandKeytoKeyValues(imageConfig.secrets),
+    secrets: instanceConfig?.secrets ? instanceConfig.secrets : imageConfig.secrets,
     ports: overridePorts(imageConfig?.ports, instanceConfig.ports),
     user: override(imageConfig?.user, instanceConfig.user),
     tty: override(imageConfig?.tty, instanceConfig.tty),
@@ -364,7 +367,7 @@ export const imageConfigToJsonContainerConfig = (imageConfig: ContainerConfig): 
     extraLBAnnotations: keyValueArrayToJson(imageConfig.extraLBAnnotations),
     environment: keyValueArrayToJson(imageConfig.environment),
     capabilities: keyValueArrayToJson(imageConfig.capabilities),
-    secrets: imageConfig.secrets?.map(it => it.key),
+    secrets: imageConfig.secrets?.map(it => ({ key: it.key, required: it.required })),
     portRanges: imageConfig.portRanges?.map(it => simplify(it)),
     ports: imageConfig.ports?.map(it => simplify(it)),
     logConfig: imageConfig.logConfig
@@ -551,12 +554,13 @@ export const mergeJsonConfigToContainerConfig = (
 
   if ((json as JsonContainerConfig).secrets) {
     config.secrets = (json as JsonContainerConfig).secrets.map(it => {
-      const prev = serialized.secrets?.map(sit => sit.key).indexOf(it)
+      const prev = serialized.secrets?.map(sit => sit.key).indexOf(it.key)
 
       return {
         id: prev !== -1 ? serialized.secrets[prev].id : uuid(),
-        key: it,
+        key: it.key,
         value: '',
+        required: it.required ?? false,
       }
     })
   }

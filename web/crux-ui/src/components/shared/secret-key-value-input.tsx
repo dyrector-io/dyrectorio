@@ -1,12 +1,12 @@
 import DyoButton from '@app/elements/dyo-button'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
-import { UniqueKeySecretValue } from '@app/models'
+import { UniqueSecretKeyValue } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
 import { createMessage, encrypt, readKey } from 'openpgp'
-import { useEffect, useReducer, useState } from 'react'
+import { useEffect, useMemo, useReducer, useState } from 'react'
 import { v4 as uuid } from 'uuid'
 
 interface SecretKeyValueInputProps {
@@ -14,18 +14,19 @@ interface SecretKeyValueInputProps {
   className?: string
   heading?: string
   publicKey?: string
-  items: UniqueKeySecretValue[]
+  items: UniqueSecretKeyValue[]
+  unique?: boolean
   definedSecrets?: string[]
-  onSubmit: (items: UniqueKeySecretValue[]) => void
+  onSubmit: (items: UniqueSecretKeyValue[]) => void
 }
 
 const EMPTY_SECRET_KEY_VALUE_PAIR = {
   id: uuid(),
   key: '',
   value: '',
-} as UniqueKeySecretValue
+} as UniqueSecretKeyValue
 
-type KeyValueElement = UniqueKeySecretValue & {
+type KeyValueElement = UniqueSecretKeyValue & {
   message?: string
   present?: boolean
 }
@@ -43,12 +44,12 @@ type KeyValueInputActionType = 'merge-items' | 'set-items' | 'remove-item'
 
 type KeyValueInputAction = {
   type: KeyValueInputActionType
-  items: UniqueKeySecretValue[]
+  items: UniqueSecretKeyValue[]
 }
 
-const isCompletelyEmpty = (it: UniqueKeySecretValue) => it.key.trim().length < 1 && it.value.trim().length < 1
+const isCompletelyEmpty = (it: UniqueSecretKeyValue) => it.key.trim().length < 1 && it.value.trim().length < 1
 
-const pushEmptyLineIfNecessary = (items: UniqueKeySecretValue[]) => {
+const pushEmptyLineIfNecessary = (items: UniqueSecretKeyValue[]) => {
   if (items.length < 1 || (items[items.length - 1].key?.trim() ?? '') !== '') {
     items.push({
       ...EMPTY_SECRET_KEY_VALUE_PAIR,
@@ -57,7 +58,7 @@ const pushEmptyLineIfNecessary = (items: UniqueKeySecretValue[]) => {
   }
 }
 
-const reducer = (state: UniqueKeySecretValue[], action: KeyValueInputAction): UniqueKeySecretValue[] => {
+const reducer = (state: UniqueSecretKeyValue[], action: KeyValueInputAction): UniqueSecretKeyValue[] => {
   const { type } = action
 
   if (type === 'set-items') {
@@ -97,22 +98,24 @@ const reducer = (state: UniqueKeySecretValue[], action: KeyValueInputAction): Un
 const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
   const { t } = useTranslation('common')
 
-  const { heading, disabled, publicKey, items, className, definedSecrets, onSubmit: propsOnSubmit } = props
+  const { heading, disabled, publicKey, items, className, definedSecrets, unique, onSubmit: propsOnSubmit } = props
 
   const [state, dispatch] = useReducer(reducer, items)
   const [changed, setChanged] = useState<boolean>(false)
 
-  const stateToElements = (itemArray: UniqueKeySecretValue[], secrets: string[]) => {
+  const stateToElements = (itemArray: UniqueSecretKeyValue[], secrets: string[]) => {
     const result = new Array<KeyValueElement>()
 
-    itemArray.forEach(item =>
+    itemArray.forEach(item => {
+      const repeating = unique && result.find(it => it.key === item.key)
+
       result.push({
         ...item,
         encrypted: item.encrypted ?? false,
-        message: result.find(it => it.key === item.key) ? t('keyMustUnique') : null,
+        message: repeating && !isCompletelyEmpty(item) ? t('keyMustUnique') : null,
         present: isCompletelyEmpty(item) || secrets === undefined ? undefined : secrets.includes(item.key),
-      }),
-    )
+      })
+    })
 
     return result as KeyValueElement[]
   }
@@ -125,11 +128,17 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
     setChanged(false)
   }, [items])
 
+  const duplicates = useMemo(() => {
+    const keys = state.map(it => it.key)
+
+    return keys.some((item, index) => keys.indexOf(item) !== index)
+  }, [state])
+
   const onChange = async (index: number, key: string, value: string) => {
     let newItems = [...state]
 
     const item = {
-      id: state[index].id,
+      ...newItems[index],
       key,
       value,
     }
@@ -154,11 +163,15 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
   }
 
   const onSubmit = async () => {
+    if (duplicates) {
+      return
+    }
+
     let newItems = [...state].filter(it => !isCompletelyEmpty(it))
 
     newItems = await Promise.all(
       [...newItems].map(
-        async (it): Promise<UniqueKeySecretValue> => ({
+        async (it): Promise<UniqueSecretKeyValue> => ({
           ...it,
           value: await encryptWithPGP(it.value, publicKey),
           encrypted: true,
@@ -174,12 +187,22 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
     setChanged(false)
   }
 
-  const onRemove = async (index: number) => {
+  const onRemoveOrClear = async (index: number) => {
     const newItems = [...state].filter(it => !isCompletelyEmpty(it))
 
-    newItems.splice(index, 1)
+    if (newItems[index].required) {
+      newItems[index] = {
+        ...newItems[index],
+        encrypted: false,
+        value: '',
+      }
+    } else {
+      newItems.splice(index, 1)
+    }
 
-    propsOnSubmit(newItems)
+    if (!duplicates) {
+      propsOnSubmit(newItems)
+    }
     dispatch({
       type: 'set-items',
       items: newItems,
@@ -197,49 +220,53 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
   }
 
   const renderItem = (entry: KeyValueElement, index: number) => {
-    const { key, value, message, encrypted } = entry
+    const { id, key, value, message, encrypted, required } = entry
 
     return (
-      <div key={entry.id} className="flex flex-row flex-grow p-1">
-        {!isCompletelyEmpty(entry) && (
-          <div className="mr-2 flex flex-row">
-            <Image className="mr-2" src={elementSecretStatus(entry.present)} width={16} height={16} />
+      <div key={id} className="flex-1 p-1 flex flex-row">
+        <div className="basis-5/12 relative">
+          {required && (
+            <div className="absolute right-0 h-full flex mr-2">
+              <Image src="/asterisk.svg" width={12} height={12} />
+            </div>
+          )}
+          <div className="flex flex-row">
+            <div className="mr-2 flex flex-row basis-[16px]">
+              {!isCompletelyEmpty(entry) && (
+                <Image className="mr-2" src={elementSecretStatus(entry.present)} width={16} height={16} />
+              )}
+            </div>
+            <DyoInput
+              key={`${id}-key`}
+              containerClassName="basis-full"
+              disabled={disabled || required}
+              grow
+              placeholder={t('key')}
+              value={key}
+              message={message}
+              onChange={e => onChange(index, e.target.value, value)}
+            />
           </div>
-        )}
-
-        <div className={clsx('w-5/12', isCompletelyEmpty(entry) && 'ml-[24px]')}>
-          <DyoInput
-            key={`${entry.id}-key`}
-            disabled={disabled}
-            className="w-full mr-2"
-            grow
-            placeholder={t('key')}
-            value={key}
-            message={message}
-            onChange={e => onChange(index, e.target.value, value)}
-          />
         </div>
-
-        <div className="w-7/12 ml-2 flex">
+        <div className="basis-7/12 flex flex-row pl-2">
           <DyoInput
-            key={`${entry.id}-value`}
+            key={`${id}-value`}
             disabled={disabled || encrypted}
-            className="flex-auto w-full"
+            containerClassName="basis-full"
             type={encrypted ? 'password' : 'text'}
             grow
             placeholder={t('value')}
             value={value}
             onChange={e => onChange(index, key, e.target.value)}
           />
-
           {encrypted && disabled !== true && (
             <div
-              onClick={() => onRemove(index)}
-              className="flex-initial cursor-pointer ml-2 h-11 w-11 ring-2 rounded-md focus:outline-none focus:dark text-bright-muted ring-light-grey-muted flex justify-center"
+              onClick={() => onRemoveOrClear(index)}
+              className="basis-12 flex-initial cursor-pointer ml-2 w-12 ring-2 rounded-md focus:outline-none focus:dark text-bright-muted ring-light-grey-muted flex justify-center"
             >
               <Image
                 className="text-bright-muted"
-                src="/trash-can.svg"
+                src={required ? '/clear.svg' : '/trash-can.svg'}
                 alt={t('common:clear')}
                 width={24}
                 height={24}
@@ -254,7 +281,7 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
   return (
     <form className={clsx(className, 'flex flex-col max-h-128 overflow-y-auto')}>
       {!heading ? null : (
-        <DyoHeading element="h6" className="text-bright mt-4 mb-2">
+        <DyoHeading element="h6" className="text-bright mt-4 mb-2 text-light-eased">
           {heading}
         </DyoHeading>
       )}
@@ -263,7 +290,7 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
         <DyoButton className="px-10 mr-1" disabled={!changed} secondary onClick={onDiscard}>
           {t('common:discard')}
         </DyoButton>
-        <DyoButton className="px-10 ml-1" disabled={!changed} onClick={onSubmit}>
+        <DyoButton className="px-10 ml-1" disabled={!changed || duplicates} onClick={onSubmit}>
           {t('common:save')}
         </DyoButton>
       </div>

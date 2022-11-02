@@ -102,7 +102,7 @@ const KeyOnlyInput = (props: KeyInputProps) => {
     const newItems = [...state]
 
     const item = {
-      id: state[index].id,
+      ...newItems[index],
       key,
     }
 
@@ -119,7 +119,7 @@ const KeyOnlyInput = (props: KeyInputProps) => {
   const renderItem = (entry: KeyElement, index: number) => {
     const { id, key, message } = entry
 
-    const keyId = `${entry.id}-key`
+    const keyId = `${id}-key`
 
     return (
       <div key={id} className="ml-2">

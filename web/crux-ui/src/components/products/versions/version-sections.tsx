@@ -69,6 +69,7 @@ const VersionSections = (props: VersionSectionsProps) => {
         <SelectImagesCard onImagesSelected={actions.addImages} onDiscard={actions.discardAddSection} />
       ) : (
         <AddDeploymentCard
+          className="mb-4 p-8"
           productId={product.id}
           productName={product.name}
           versionId={version.id}

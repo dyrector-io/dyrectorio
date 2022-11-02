@@ -44,7 +44,7 @@ export const protobufPackage = 'crux'
 /** CRUX Protobuf definitions */
 
 export enum UserRole {
-  UNKNOWN_USER_ROLE = 0,
+  USER_ROLE_UNSPECIFIED = 0,
   USER = 1,
   OWNER = 2,
   ADMIN = 3,
@@ -54,8 +54,8 @@ export enum UserRole {
 export function userRoleFromJSON(object: any): UserRole {
   switch (object) {
     case 0:
-    case 'UNKNOWN_USER_ROLE':
-      return UserRole.UNKNOWN_USER_ROLE
+    case 'USER_ROLE_UNSPECIFIED':
+      return UserRole.USER_ROLE_UNSPECIFIED
     case 1:
     case 'USER':
       return UserRole.USER
@@ -74,8 +74,8 @@ export function userRoleFromJSON(object: any): UserRole {
 
 export function userRoleToJSON(object: UserRole): string {
   switch (object) {
-    case UserRole.UNKNOWN_USER_ROLE:
-      return 'UNKNOWN_USER_ROLE'
+    case UserRole.USER_ROLE_UNSPECIFIED:
+      return 'USER_ROLE_UNSPECIFIED'
     case UserRole.USER:
       return 'USER'
     case UserRole.OWNER:
@@ -89,7 +89,7 @@ export function userRoleToJSON(object: UserRole): string {
 }
 
 export enum UserStatus {
-  UNKNOWN_USER_STATUS = 0,
+  USER_STATUS_UNSPECIFIED = 0,
   PENDING = 1,
   VERIFIED = 2,
   UNRECOGNIZED = -1,
@@ -98,8 +98,8 @@ export enum UserStatus {
 export function userStatusFromJSON(object: any): UserStatus {
   switch (object) {
     case 0:
-    case 'UNKNOWN_USER_STATUS':
-      return UserStatus.UNKNOWN_USER_STATUS
+    case 'USER_STATUS_UNSPECIFIED':
+      return UserStatus.USER_STATUS_UNSPECIFIED
     case 1:
     case 'PENDING':
       return UserStatus.PENDING
@@ -115,8 +115,8 @@ export function userStatusFromJSON(object: any): UserStatus {
 
 export function userStatusToJSON(object: UserStatus): string {
   switch (object) {
-    case UserStatus.UNKNOWN_USER_STATUS:
-      return 'UNKNOWN_USER_STATUS'
+    case UserStatus.USER_STATUS_UNSPECIFIED:
+      return 'USER_STATUS_UNSPECIFIED'
     case UserStatus.PENDING:
       return 'PENDING'
     case UserStatus.VERIFIED:
@@ -129,7 +129,7 @@ export function userStatusToJSON(object: UserStatus): string {
 
 /** PRODUCT */
 export enum ProductType {
-  UNKNOWN_PRODUCT_TYPE = 0,
+  PRODUCT_TYPE_UNSPECIFIED = 0,
   SIMPLE = 1,
   COMPLEX = 2,
   UNRECOGNIZED = -1,
@@ -138,8 +138,8 @@ export enum ProductType {
 export function productTypeFromJSON(object: any): ProductType {
   switch (object) {
     case 0:
-    case 'UNKNOWN_PRODUCT_TYPE':
-      return ProductType.UNKNOWN_PRODUCT_TYPE
+    case 'PRODUCT_TYPE_UNSPECIFIED':
+      return ProductType.PRODUCT_TYPE_UNSPECIFIED
     case 1:
     case 'SIMPLE':
       return ProductType.SIMPLE
@@ -155,8 +155,8 @@ export function productTypeFromJSON(object: any): ProductType {
 
 export function productTypeToJSON(object: ProductType): string {
   switch (object) {
-    case ProductType.UNKNOWN_PRODUCT_TYPE:
-      return 'UNKNOWN_PRODUCT_TYPE'
+    case ProductType.PRODUCT_TYPE_UNSPECIFIED:
+      return 'PRODUCT_TYPE_UNSPECIFIED'
     case ProductType.SIMPLE:
       return 'SIMPLE'
     case ProductType.COMPLEX:
@@ -168,7 +168,7 @@ export function productTypeToJSON(object: ProductType): string {
 }
 
 export enum VersionType {
-  UNKNOWN_VERSION_TYPE = 0,
+  VERSION_TYPE_UNSPECIFIED = 0,
   INCREMENTAL = 1,
   ROLLING = 2,
   UNRECOGNIZED = -1,
@@ -177,8 +177,8 @@ export enum VersionType {
 export function versionTypeFromJSON(object: any): VersionType {
   switch (object) {
     case 0:
-    case 'UNKNOWN_VERSION_TYPE':
-      return VersionType.UNKNOWN_VERSION_TYPE
+    case 'VERSION_TYPE_UNSPECIFIED':
+      return VersionType.VERSION_TYPE_UNSPECIFIED
     case 1:
     case 'INCREMENTAL':
       return VersionType.INCREMENTAL
@@ -194,8 +194,8 @@ export function versionTypeFromJSON(object: any): VersionType {
 
 export function versionTypeToJSON(object: VersionType): string {
   switch (object) {
-    case VersionType.UNKNOWN_VERSION_TYPE:
-      return 'UNKNOWN_VERSION_TYPE'
+    case VersionType.VERSION_TYPE_UNSPECIFIED:
+      return 'VERSION_TYPE_UNSPECIFIED'
     case VersionType.INCREMENTAL:
       return 'INCREMENTAL'
     case VersionType.ROLLING:
@@ -207,7 +207,7 @@ export function versionTypeToJSON(object: VersionType): string {
 }
 
 export enum RegistryType {
-  UNKNOWN_REGISTRY_TYPE = 0,
+  REGISTRY_TYPE_UNSPECIFIED = 0,
   V2 = 1,
   HUB = 2,
   GITLAB = 3,
@@ -219,8 +219,8 @@ export enum RegistryType {
 export function registryTypeFromJSON(object: any): RegistryType {
   switch (object) {
     case 0:
-    case 'UNKNOWN_REGISTRY_TYPE':
-      return RegistryType.UNKNOWN_REGISTRY_TYPE
+    case 'REGISTRY_TYPE_UNSPECIFIED':
+      return RegistryType.REGISTRY_TYPE_UNSPECIFIED
     case 1:
     case 'V2':
       return RegistryType.V2
@@ -245,8 +245,8 @@ export function registryTypeFromJSON(object: any): RegistryType {
 
 export function registryTypeToJSON(object: RegistryType): string {
   switch (object) {
-    case RegistryType.UNKNOWN_REGISTRY_TYPE:
-      return 'UNKNOWN_REGISTRY_TYPE'
+    case RegistryType.REGISTRY_TYPE_UNSPECIFIED:
+      return 'REGISTRY_TYPE_UNSPECIFIED'
     case RegistryType.V2:
       return 'V2'
     case RegistryType.HUB:
@@ -264,7 +264,7 @@ export function registryTypeToJSON(object: RegistryType): string {
 }
 
 export enum RegistryNamespace {
-  UNKNOWN_REGISTRY_NAMESPACE = 0,
+  REGISTRY_NAMESPACE_UNSPECIFIED = 0,
   RNS_ORGANIZATION = 1,
   RNS_USER = 2,
   RNS_GROUP = 3,
@@ -275,8 +275,8 @@ export enum RegistryNamespace {
 export function registryNamespaceFromJSON(object: any): RegistryNamespace {
   switch (object) {
     case 0:
-    case 'UNKNOWN_REGISTRY_NAMESPACE':
-      return RegistryNamespace.UNKNOWN_REGISTRY_NAMESPACE
+    case 'REGISTRY_NAMESPACE_UNSPECIFIED':
+      return RegistryNamespace.REGISTRY_NAMESPACE_UNSPECIFIED
     case 1:
     case 'RNS_ORGANIZATION':
       return RegistryNamespace.RNS_ORGANIZATION
@@ -298,8 +298,8 @@ export function registryNamespaceFromJSON(object: any): RegistryNamespace {
 
 export function registryNamespaceToJSON(object: RegistryNamespace): string {
   switch (object) {
-    case RegistryNamespace.UNKNOWN_REGISTRY_NAMESPACE:
-      return 'UNKNOWN_REGISTRY_NAMESPACE'
+    case RegistryNamespace.REGISTRY_NAMESPACE_UNSPECIFIED:
+      return 'REGISTRY_NAMESPACE_UNSPECIFIED'
     case RegistryNamespace.RNS_ORGANIZATION:
       return 'RNS_ORGANIZATION'
     case RegistryNamespace.RNS_USER:
@@ -322,7 +322,7 @@ export function registryNamespaceToJSON(object: RegistryNamespace): string {
  * the install process.
  */
 export enum NodeConnectionStatus {
-  UNKNOWN_CONNECTION_STATUS = 0,
+  CONNECTION_STATUS_UNSPECIFIED = 0,
   /** UNREACHABLE - Node was not yet connected or became unreachable */
   UNREACHABLE = 1,
   /** CONNECTED - Node is running and connected */
@@ -333,8 +333,8 @@ export enum NodeConnectionStatus {
 export function nodeConnectionStatusFromJSON(object: any): NodeConnectionStatus {
   switch (object) {
     case 0:
-    case 'UNKNOWN_CONNECTION_STATUS':
-      return NodeConnectionStatus.UNKNOWN_CONNECTION_STATUS
+    case 'CONNECTION_STATUS_UNSPECIFIED':
+      return NodeConnectionStatus.CONNECTION_STATUS_UNSPECIFIED
     case 1:
     case 'UNREACHABLE':
       return NodeConnectionStatus.UNREACHABLE
@@ -350,8 +350,8 @@ export function nodeConnectionStatusFromJSON(object: any): NodeConnectionStatus 
 
 export function nodeConnectionStatusToJSON(object: NodeConnectionStatus): string {
   switch (object) {
-    case NodeConnectionStatus.UNKNOWN_CONNECTION_STATUS:
-      return 'UNKNOWN_CONNECTION_STATUS'
+    case NodeConnectionStatus.CONNECTION_STATUS_UNSPECIFIED:
+      return 'CONNECTION_STATUS_UNSPECIFIED'
     case NodeConnectionStatus.UNREACHABLE:
       return 'UNREACHABLE'
     case NodeConnectionStatus.CONNECTED:
@@ -363,7 +363,7 @@ export function nodeConnectionStatusToJSON(object: NodeConnectionStatus): string
 }
 
 export enum NodeType {
-  UNKNOWN_NODE_TYPE = 0,
+  NODE_TYPE_UNSPECIFIED = 0,
   DOCKER = 1,
   K8S = 2,
   UNRECOGNIZED = -1,
@@ -372,8 +372,8 @@ export enum NodeType {
 export function nodeTypeFromJSON(object: any): NodeType {
   switch (object) {
     case 0:
-    case 'UNKNOWN_NODE_TYPE':
-      return NodeType.UNKNOWN_NODE_TYPE
+    case 'NODE_TYPE_UNSPECIFIED':
+      return NodeType.NODE_TYPE_UNSPECIFIED
     case 1:
     case 'DOCKER':
       return NodeType.DOCKER
@@ -389,8 +389,8 @@ export function nodeTypeFromJSON(object: any): NodeType {
 
 export function nodeTypeToJSON(object: NodeType): string {
   switch (object) {
-    case NodeType.UNKNOWN_NODE_TYPE:
-      return 'UNKNOWN_NODE_TYPE'
+    case NodeType.NODE_TYPE_UNSPECIFIED:
+      return 'NODE_TYPE_UNSPECIFIED'
     case NodeType.DOCKER:
       return 'DOCKER'
     case NodeType.K8S:
@@ -402,7 +402,7 @@ export function nodeTypeToJSON(object: NodeType): string {
 }
 
 export enum DeploymentEventType {
-  UNKNOWN_DEPLOYMENT_EVENT_TYPE = 0,
+  DEPLOYMENT_EVENT_TYPE_UNSPECIFIED = 0,
   DEPLOYMENT_LOG = 1,
   DEPLOYMENT_STATUS = 2,
   CONTAINER_STATUS = 3,
@@ -412,8 +412,8 @@ export enum DeploymentEventType {
 export function deploymentEventTypeFromJSON(object: any): DeploymentEventType {
   switch (object) {
     case 0:
-    case 'UNKNOWN_DEPLOYMENT_EVENT_TYPE':
-      return DeploymentEventType.UNKNOWN_DEPLOYMENT_EVENT_TYPE
+    case 'DEPLOYMENT_EVENT_TYPE_UNSPECIFIED':
+      return DeploymentEventType.DEPLOYMENT_EVENT_TYPE_UNSPECIFIED
     case 1:
     case 'DEPLOYMENT_LOG':
       return DeploymentEventType.DEPLOYMENT_LOG
@@ -432,8 +432,8 @@ export function deploymentEventTypeFromJSON(object: any): DeploymentEventType {
 
 export function deploymentEventTypeToJSON(object: DeploymentEventType): string {
   switch (object) {
-    case DeploymentEventType.UNKNOWN_DEPLOYMENT_EVENT_TYPE:
-      return 'UNKNOWN_DEPLOYMENT_EVENT_TYPE'
+    case DeploymentEventType.DEPLOYMENT_EVENT_TYPE_UNSPECIFIED:
+      return 'DEPLOYMENT_EVENT_TYPE_UNSPECIFIED'
     case DeploymentEventType.DEPLOYMENT_LOG:
       return 'DEPLOYMENT_LOG'
     case DeploymentEventType.DEPLOYMENT_STATUS:
@@ -447,7 +447,7 @@ export function deploymentEventTypeToJSON(object: DeploymentEventType): string {
 }
 
 export enum NotificationType {
-  UNKNOWN_NOTIFICATION_TYPE = 0,
+  NOTIFICATION_TYPE_UNSPECIFIED = 0,
   DISCORD = 1,
   SLACK = 2,
   TEAMS = 3,
@@ -457,8 +457,8 @@ export enum NotificationType {
 export function notificationTypeFromJSON(object: any): NotificationType {
   switch (object) {
     case 0:
-    case 'UNKNOWN_NOTIFICATION_TYPE':
-      return NotificationType.UNKNOWN_NOTIFICATION_TYPE
+    case 'NOTIFICATION_TYPE_UNSPECIFIED':
+      return NotificationType.NOTIFICATION_TYPE_UNSPECIFIED
     case 1:
     case 'DISCORD':
       return NotificationType.DISCORD
@@ -477,8 +477,8 @@ export function notificationTypeFromJSON(object: any): NotificationType {
 
 export function notificationTypeToJSON(object: NotificationType): string {
   switch (object) {
-    case NotificationType.UNKNOWN_NOTIFICATION_TYPE:
-      return 'UNKNOWN_NOTIFICATION_TYPE'
+    case NotificationType.NOTIFICATION_TYPE_UNSPECIFIED:
+      return 'NOTIFICATION_TYPE_UNSPECIFIED'
     case NotificationType.DISCORD:
       return 'DISCORD'
     case NotificationType.SLACK:
@@ -492,7 +492,7 @@ export function notificationTypeToJSON(object: NotificationType): string {
 }
 
 export enum NotificationEventType {
-  UNKNOWN_NOTIFICATION_EVENT_TYPE = 0,
+  NOTIFICATION_EVENT_TYPE_UNSPECIFIED = 0,
   DEPLOYMENT_CREATED = 1,
   VERSION_CREATED = 2,
   NODE_ADDED = 3,
@@ -503,8 +503,8 @@ export enum NotificationEventType {
 export function notificationEventTypeFromJSON(object: any): NotificationEventType {
   switch (object) {
     case 0:
-    case 'UNKNOWN_NOTIFICATION_EVENT_TYPE':
-      return NotificationEventType.UNKNOWN_NOTIFICATION_EVENT_TYPE
+    case 'NOTIFICATION_EVENT_TYPE_UNSPECIFIED':
+      return NotificationEventType.NOTIFICATION_EVENT_TYPE_UNSPECIFIED
     case 1:
     case 'DEPLOYMENT_CREATED':
       return NotificationEventType.DEPLOYMENT_CREATED
@@ -526,8 +526,8 @@ export function notificationEventTypeFromJSON(object: any): NotificationEventTyp
 
 export function notificationEventTypeToJSON(object: NotificationEventType): string {
   switch (object) {
-    case NotificationEventType.UNKNOWN_NOTIFICATION_EVENT_TYPE:
-      return 'UNKNOWN_NOTIFICATION_EVENT_TYPE'
+    case NotificationEventType.NOTIFICATION_EVENT_TYPE_UNSPECIFIED:
+      return 'NOTIFICATION_EVENT_TYPE_UNSPECIFIED'
     case NotificationEventType.DEPLOYMENT_CREATED:
       return 'DEPLOYMENT_CREATED'
     case NotificationEventType.VERSION_CREATED:
@@ -543,7 +543,7 @@ export function notificationEventTypeToJSON(object: NotificationEventType): stri
 }
 
 export enum ServiceStatus {
-  UNKNOWN_SERVICE_STATUS = 0,
+  SERVICE_STATUS_UNSPECIFIED = 0,
   UNAVAILABLE = 1,
   DISRUPTED = 2,
   OPERATIONAL = 3,
@@ -553,8 +553,8 @@ export enum ServiceStatus {
 export function serviceStatusFromJSON(object: any): ServiceStatus {
   switch (object) {
     case 0:
-    case 'UNKNOWN_SERVICE_STATUS':
-      return ServiceStatus.UNKNOWN_SERVICE_STATUS
+    case 'SERVICE_STATUS_UNSPECIFIED':
+      return ServiceStatus.SERVICE_STATUS_UNSPECIFIED
     case 1:
     case 'UNAVAILABLE':
       return ServiceStatus.UNAVAILABLE
@@ -573,8 +573,8 @@ export function serviceStatusFromJSON(object: any): ServiceStatus {
 
 export function serviceStatusToJSON(object: ServiceStatus): string {
   switch (object) {
-    case ServiceStatus.UNKNOWN_SERVICE_STATUS:
-      return 'UNKNOWN_SERVICE_STATUS'
+    case ServiceStatus.SERVICE_STATUS_UNSPECIFIED:
+      return 'SERVICE_STATUS_UNSPECIFIED'
     case ServiceStatus.UNAVAILABLE:
       return 'UNAVAILABLE'
     case ServiceStatus.DISRUPTED:
@@ -965,19 +965,16 @@ export interface UniqueKeyValue {
   value: string
 }
 
-export interface UniqueKeySecretValue {
+export interface UniqueSecretKeyValue {
   id: string
   key: string
   value: string
+  required: boolean
   encrypted?: boolean | undefined
 }
 
 export interface KeyValueList {
   data: UniqueKeyValue[]
-}
-
-export interface SecretList {
-  data: UniqueKeySecretValue[]
 }
 
 export interface DagentContainerConfig {
@@ -1011,7 +1008,7 @@ export interface CommonContainerConfig {
   commands: UniqueKey[]
   args: UniqueKey[]
   environment: UniqueKeyValue[]
-  secrets: UniqueKeyValue[]
+  secrets: UniqueSecretKeyValue[]
   initContainers: InitContainer[]
 }
 
@@ -1129,6 +1126,8 @@ export interface NodeEventMessage {
   id: string
   status: NodeConnectionStatus
   address?: string | undefined
+  version?: string | undefined
+  connectedAt?: Timestamp | undefined
 }
 
 export interface WatchContainerStateRequest {
@@ -2743,25 +2742,27 @@ export const UniqueKeyValue = {
   },
 }
 
-function createBaseUniqueKeySecretValue(): UniqueKeySecretValue {
-  return { id: '', key: '', value: '' }
+function createBaseUniqueSecretKeyValue(): UniqueSecretKeyValue {
+  return { id: '', key: '', value: '', required: false }
 }
 
-export const UniqueKeySecretValue = {
-  fromJSON(object: any): UniqueKeySecretValue {
+export const UniqueSecretKeyValue = {
+  fromJSON(object: any): UniqueSecretKeyValue {
     return {
       id: isSet(object.id) ? String(object.id) : '',
       key: isSet(object.key) ? String(object.key) : '',
       value: isSet(object.value) ? String(object.value) : '',
+      required: isSet(object.required) ? Boolean(object.required) : false,
       encrypted: isSet(object.encrypted) ? Boolean(object.encrypted) : undefined,
     }
   },
 
-  toJSON(message: UniqueKeySecretValue): unknown {
+  toJSON(message: UniqueSecretKeyValue): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
     message.key !== undefined && (obj.key = message.key)
     message.value !== undefined && (obj.value = message.value)
+    message.required !== undefined && (obj.required = message.required)
     message.encrypted !== undefined && (obj.encrypted = message.encrypted)
     return obj
   },
@@ -2780,26 +2781,6 @@ export const KeyValueList = {
     const obj: any = {}
     if (message.data) {
       obj.data = message.data.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
-    } else {
-      obj.data = []
-    }
-    return obj
-  },
-}
-
-function createBaseSecretList(): SecretList {
-  return { data: [] }
-}
-
-export const SecretList = {
-  fromJSON(object: any): SecretList {
-    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => UniqueKeySecretValue.fromJSON(e)) : [] }
-  },
-
-  toJSON(message: SecretList): unknown {
-    const obj: any = {}
-    if (message.data) {
-      obj.data = message.data.map(e => (e ? UniqueKeySecretValue.toJSON(e) : undefined))
     } else {
       obj.data = []
     }
@@ -2924,7 +2905,7 @@ export const CommonContainerConfig = {
       environment: Array.isArray(object?.environment)
         ? object.environment.map((e: any) => UniqueKeyValue.fromJSON(e))
         : [],
-      secrets: Array.isArray(object?.secrets) ? object.secrets.map((e: any) => UniqueKeyValue.fromJSON(e)) : [],
+      secrets: Array.isArray(object?.secrets) ? object.secrets.map((e: any) => UniqueSecretKeyValue.fromJSON(e)) : [],
       initContainers: Array.isArray(object?.initContainers)
         ? object.initContainers.map((e: any) => InitContainer.fromJSON(e))
         : [],
@@ -2974,7 +2955,7 @@ export const CommonContainerConfig = {
       obj.environment = []
     }
     if (message.secrets) {
-      obj.secrets = message.secrets.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
+      obj.secrets = message.secrets.map(e => (e ? UniqueSecretKeyValue.toJSON(e) : undefined))
     } else {
       obj.secrets = []
     }
@@ -3400,6 +3381,8 @@ export const NodeEventMessage = {
       id: isSet(object.id) ? String(object.id) : '',
       status: isSet(object.status) ? nodeConnectionStatusFromJSON(object.status) : 0,
       address: isSet(object.address) ? String(object.address) : undefined,
+      version: isSet(object.version) ? String(object.version) : undefined,
+      connectedAt: isSet(object.connectedAt) ? fromJsonTimestamp(object.connectedAt) : undefined,
     }
   },
 
@@ -3408,6 +3391,8 @@ export const NodeEventMessage = {
     message.id !== undefined && (obj.id = message.id)
     message.status !== undefined && (obj.status = nodeConnectionStatusToJSON(message.status))
     message.address !== undefined && (obj.address = message.address)
+    message.version !== undefined && (obj.version = message.version)
+    message.connectedAt !== undefined && (obj.connectedAt = fromTimestamp(message.connectedAt).toISOString())
     return obj
   },
 }

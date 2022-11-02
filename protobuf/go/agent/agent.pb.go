@@ -821,7 +821,7 @@ func (x *Volume) GetType() common.VolumeType {
 	if x != nil && x.Type != nil {
 		return *x.Type
 	}
-	return common.VolumeType_UNKNOWN_VOLUME_TYPE
+	return common.VolumeType_VOLUME_TYPE_UNSPECIFIED
 }
 
 func (x *Volume) GetClass() string {
@@ -1089,7 +1089,7 @@ func (x *LogConfig) GetDriver() common.DriverType {
 	if x != nil {
 		return x.Driver
 	}
-	return common.DriverType_UNKNOWN_DRIVER_TYPE
+	return common.DriverType_DRIVER_TYPE_UNSPECIFIED
 }
 
 func (x *LogConfig) GetOptions() map[string]string {
@@ -1153,14 +1153,14 @@ func (x *DagentContainerConfig) GetRestartPolicy() common.RestartPolicy {
 	if x != nil && x.RestartPolicy != nil {
 		return *x.RestartPolicy
 	}
-	return common.RestartPolicy_UNKNOWN_POLICY
+	return common.RestartPolicy_POLICY_UNSPECIFIED
 }
 
 func (x *DagentContainerConfig) GetNetworkMode() common.NetworkMode {
 	if x != nil && x.NetworkMode != nil {
 		return *x.NetworkMode
 	}
-	return common.NetworkMode_UNKNOWN_NETWORK_MODE
+	return common.NetworkMode_NETWORK_MODE_UNSPECIFIED
 }
 
 func (x *DagentContainerConfig) GetNetworks() []string {
@@ -1220,7 +1220,7 @@ func (x *CraneContainerConfig) GetDeploymentStatregy() common.DeploymentStrategy
 	if x != nil && x.DeploymentStatregy != nil {
 		return *x.DeploymentStatregy
 	}
-	return common.DeploymentStrategy_UNKOWN_DEPLOYMENT_STRATEGY
+	return common.DeploymentStrategy_DEPLOYMENT_STRATEGY_UNSPECIFIED
 }
 
 func (x *CraneContainerConfig) GetHealthCheckConfig() *common.HealthCheckConfig {
@@ -1330,7 +1330,7 @@ func (x *CommonContainerConfig) GetExpose() common.ExposeStrategy {
 	if x != nil && x.Expose != nil {
 		return *x.Expose
 	}
-	return common.ExposeStrategy_UNKNOWN_EXPOSE_STRATEGY
+	return common.ExposeStrategy_EXPOSE_STRATEGY_UNSPECIFIED
 }
 
 func (x *CommonContainerConfig) GetIngress() *common.Ingress {

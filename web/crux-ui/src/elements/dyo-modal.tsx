@@ -64,8 +64,9 @@ export type DyoConfirmationModalConfig = {
   cancelText?: string
 }
 
-export type DyoConfirmationModalProps = Omit<DyoModalProps, 'buttons' | 'children' | 'onClose' | 'open'> & {
+export type DyoConfirmationModalProps = Omit<DyoModalProps, 'buttons' | 'children' | 'onClose' | 'open' | 'title'> & {
   config: DyoConfirmationModalConfig
+  title?: string
   confirmText?: string
   cancelText?: string
   confirmColor?: string

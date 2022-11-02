@@ -1,4 +1,5 @@
 import useEditorState, { EditorState } from '@app/components/editor/use-editor-state'
+import useNodeState from '@app/components/nodes/use-node-state'
 import { ViewMode } from '@app/components/shared/view-mode-toggle'
 import { DyoConfirmationModalConfig } from '@app/elements/dyo-modal'
 import useWebSocket from '@app/hooks/use-websocket'
@@ -75,7 +76,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
   const { product, version } = optionDeploy
 
   const [deployment, setDeployment] = useState<DeploymentDetails>(optionDeploy)
-  const [node, setNode] = useState(optionDeploy.node)
+  const [node, setNode] = useNodeState(optionDeploy.node)
   const [saving, setSaving] = useState(false)
   const [editing, setEditing] = useState(false)
   const [instances, setInstances] = useState<Instance[]>(deployment.instances ?? [])

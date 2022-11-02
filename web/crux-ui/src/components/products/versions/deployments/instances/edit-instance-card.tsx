@@ -69,6 +69,7 @@ const EditInstanceCard = (props: EditInstanceCardProps) => {
       <div className="flex flex-col mt-2 h-128">
         {selection === 'config' ? (
           <EditInstanceConfig
+            disabled={!deploymentState.mutable}
             config={config}
             publicKey={deploymentState.deployment.publicKey}
             definedSecrets={state.definedSecrets}

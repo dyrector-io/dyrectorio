@@ -1,4 +1,5 @@
 build/out
+tmp/
 .env
 *.env
 __debug_bin

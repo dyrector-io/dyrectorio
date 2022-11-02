@@ -6,7 +6,7 @@ export const protobufPackage = 'common'
 
 /** Deployment */
 export enum ContainerState {
-  UNKNOWN_CONTAINER_STATE = 0,
+  CONTAINER_STATE_UNSPECIFIED = 0,
   CREATED = 1,
   RESTARTING = 2,
   RUNNING = 3,
@@ -20,8 +20,8 @@ export enum ContainerState {
 export function containerStateFromJSON(object: any): ContainerState {
   switch (object) {
     case 0:
-    case 'UNKNOWN_CONTAINER_STATE':
-      return ContainerState.UNKNOWN_CONTAINER_STATE
+    case 'CONTAINER_STATE_UNSPECIFIED':
+      return ContainerState.CONTAINER_STATE_UNSPECIFIED
     case 1:
     case 'CREATED':
       return ContainerState.CREATED
@@ -52,8 +52,8 @@ export function containerStateFromJSON(object: any): ContainerState {
 
 export function containerStateToJSON(object: ContainerState): string {
   switch (object) {
-    case ContainerState.UNKNOWN_CONTAINER_STATE:
-      return 'UNKNOWN_CONTAINER_STATE'
+    case ContainerState.CONTAINER_STATE_UNSPECIFIED:
+      return 'CONTAINER_STATE_UNSPECIFIED'
     case ContainerState.CREATED:
       return 'CREATED'
     case ContainerState.RESTARTING:
@@ -75,7 +75,7 @@ export function containerStateToJSON(object: ContainerState): string {
 }
 
 export enum DeploymentStatus {
-  UNKNOWN_DEPLOYMENT_STATUS = 0,
+  DEPLOYMENT_STATUS_UNSPECIFIED = 0,
   PREPARING = 1,
   IN_PROGRESS = 2,
   SUCCESSFUL = 3,
@@ -88,8 +88,8 @@ export enum DeploymentStatus {
 export function deploymentStatusFromJSON(object: any): DeploymentStatus {
   switch (object) {
     case 0:
-    case 'UNKNOWN_DEPLOYMENT_STATUS':
-      return DeploymentStatus.UNKNOWN_DEPLOYMENT_STATUS
+    case 'DEPLOYMENT_STATUS_UNSPECIFIED':
+      return DeploymentStatus.DEPLOYMENT_STATUS_UNSPECIFIED
     case 1:
     case 'PREPARING':
       return DeploymentStatus.PREPARING
@@ -117,8 +117,8 @@ export function deploymentStatusFromJSON(object: any): DeploymentStatus {
 
 export function deploymentStatusToJSON(object: DeploymentStatus): string {
   switch (object) {
-    case DeploymentStatus.UNKNOWN_DEPLOYMENT_STATUS:
-      return 'UNKNOWN_DEPLOYMENT_STATUS'
+    case DeploymentStatus.DEPLOYMENT_STATUS_UNSPECIFIED:
+      return 'DEPLOYMENT_STATUS_UNSPECIFIED'
     case DeploymentStatus.PREPARING:
       return 'PREPARING'
     case DeploymentStatus.IN_PROGRESS:
@@ -138,7 +138,7 @@ export function deploymentStatusToJSON(object: DeploymentStatus): string {
 }
 
 export enum NetworkMode {
-  UNKNOWN_NETWORK_MODE = 0,
+  NETWORK_MODE_UNSPECIFIED = 0,
   BRIDGE = 1,
   HOST = 2,
   OVERLAY = 3,
@@ -151,8 +151,8 @@ export enum NetworkMode {
 export function networkModeFromJSON(object: any): NetworkMode {
   switch (object) {
     case 0:
-    case 'UNKNOWN_NETWORK_MODE':
-      return NetworkMode.UNKNOWN_NETWORK_MODE
+    case 'NETWORK_MODE_UNSPECIFIED':
+      return NetworkMode.NETWORK_MODE_UNSPECIFIED
     case 1:
     case 'BRIDGE':
       return NetworkMode.BRIDGE
@@ -180,8 +180,8 @@ export function networkModeFromJSON(object: any): NetworkMode {
 
 export function networkModeToJSON(object: NetworkMode): string {
   switch (object) {
-    case NetworkMode.UNKNOWN_NETWORK_MODE:
-      return 'UNKNOWN_NETWORK_MODE'
+    case NetworkMode.NETWORK_MODE_UNSPECIFIED:
+      return 'NETWORK_MODE_UNSPECIFIED'
     case NetworkMode.BRIDGE:
       return 'BRIDGE'
     case NetworkMode.HOST:
@@ -201,7 +201,7 @@ export function networkModeToJSON(object: NetworkMode): string {
 }
 
 export enum RestartPolicy {
-  UNKNOWN_POLICY = 0,
+  POLICY_UNSPECIFIED = 0,
   UNDEFINED = 1,
   NO = 2,
   ON_FAILURE = 3,
@@ -213,8 +213,8 @@ export enum RestartPolicy {
 export function restartPolicyFromJSON(object: any): RestartPolicy {
   switch (object) {
     case 0:
-    case 'UNKNOWN_POLICY':
-      return RestartPolicy.UNKNOWN_POLICY
+    case 'POLICY_UNSPECIFIED':
+      return RestartPolicy.POLICY_UNSPECIFIED
     case 1:
     case 'UNDEFINED':
       return RestartPolicy.UNDEFINED
@@ -239,8 +239,8 @@ export function restartPolicyFromJSON(object: any): RestartPolicy {
 
 export function restartPolicyToJSON(object: RestartPolicy): string {
   switch (object) {
-    case RestartPolicy.UNKNOWN_POLICY:
-      return 'UNKNOWN_POLICY'
+    case RestartPolicy.POLICY_UNSPECIFIED:
+      return 'POLICY_UNSPECIFIED'
     case RestartPolicy.UNDEFINED:
       return 'UNDEFINED'
     case RestartPolicy.NO:
@@ -258,7 +258,7 @@ export function restartPolicyToJSON(object: RestartPolicy): string {
 }
 
 export enum DeploymentStrategy {
-  UNKOWN_DEPLOYMENT_STRATEGY = 0,
+  DEPLOYMENT_STRATEGY_UNSPECIFIED = 0,
   RECREATE = 1,
   ROLLING = 2,
   UNRECOGNIZED = -1,
@@ -267,8 +267,8 @@ export enum DeploymentStrategy {
 export function deploymentStrategyFromJSON(object: any): DeploymentStrategy {
   switch (object) {
     case 0:
-    case 'UNKOWN_DEPLOYMENT_STRATEGY':
-      return DeploymentStrategy.UNKOWN_DEPLOYMENT_STRATEGY
+    case 'DEPLOYMENT_STRATEGY_UNSPECIFIED':
+      return DeploymentStrategy.DEPLOYMENT_STRATEGY_UNSPECIFIED
     case 1:
     case 'RECREATE':
       return DeploymentStrategy.RECREATE
@@ -284,8 +284,8 @@ export function deploymentStrategyFromJSON(object: any): DeploymentStrategy {
 
 export function deploymentStrategyToJSON(object: DeploymentStrategy): string {
   switch (object) {
-    case DeploymentStrategy.UNKOWN_DEPLOYMENT_STRATEGY:
-      return 'UNKOWN_DEPLOYMENT_STRATEGY'
+    case DeploymentStrategy.DEPLOYMENT_STRATEGY_UNSPECIFIED:
+      return 'DEPLOYMENT_STRATEGY_UNSPECIFIED'
     case DeploymentStrategy.RECREATE:
       return 'RECREATE'
     case DeploymentStrategy.ROLLING:
@@ -297,7 +297,7 @@ export function deploymentStrategyToJSON(object: DeploymentStrategy): string {
 }
 
 export enum VolumeType {
-  UNKNOWN_VOLUME_TYPE = 0,
+  VOLUME_TYPE_UNSPECIFIED = 0,
   RO = 1,
   RW = 2,
   RWX = 3,
@@ -309,8 +309,8 @@ export enum VolumeType {
 export function volumeTypeFromJSON(object: any): VolumeType {
   switch (object) {
     case 0:
-    case 'UNKNOWN_VOLUME_TYPE':
-      return VolumeType.UNKNOWN_VOLUME_TYPE
+    case 'VOLUME_TYPE_UNSPECIFIED':
+      return VolumeType.VOLUME_TYPE_UNSPECIFIED
     case 1:
     case 'RO':
       return VolumeType.RO
@@ -335,8 +335,8 @@ export function volumeTypeFromJSON(object: any): VolumeType {
 
 export function volumeTypeToJSON(object: VolumeType): string {
   switch (object) {
-    case VolumeType.UNKNOWN_VOLUME_TYPE:
-      return 'UNKNOWN_VOLUME_TYPE'
+    case VolumeType.VOLUME_TYPE_UNSPECIFIED:
+      return 'VOLUME_TYPE_UNSPECIFIED'
     case VolumeType.RO:
       return 'RO'
     case VolumeType.RW:
@@ -354,7 +354,7 @@ export function volumeTypeToJSON(object: VolumeType): string {
 }
 
 export enum DriverType {
-  UNKNOWN_DRIVER_TYPE = 0,
+  DRIVER_TYPE_UNSPECIFIED = 0,
   DRIVER_TYPE_NONE = 1,
   GCPLOGS = 2,
   LOCAL = 3,
@@ -373,8 +373,8 @@ export enum DriverType {
 export function driverTypeFromJSON(object: any): DriverType {
   switch (object) {
     case 0:
-    case 'UNKNOWN_DRIVER_TYPE':
-      return DriverType.UNKNOWN_DRIVER_TYPE
+    case 'DRIVER_TYPE_UNSPECIFIED':
+      return DriverType.DRIVER_TYPE_UNSPECIFIED
     case 1:
     case 'DRIVER_TYPE_NONE':
       return DriverType.DRIVER_TYPE_NONE
@@ -420,8 +420,8 @@ export function driverTypeFromJSON(object: any): DriverType {
 
 export function driverTypeToJSON(object: DriverType): string {
   switch (object) {
-    case DriverType.UNKNOWN_DRIVER_TYPE:
-      return 'UNKNOWN_DRIVER_TYPE'
+    case DriverType.DRIVER_TYPE_UNSPECIFIED:
+      return 'DRIVER_TYPE_UNSPECIFIED'
     case DriverType.DRIVER_TYPE_NONE:
       return 'DRIVER_TYPE_NONE'
     case DriverType.GCPLOGS:
@@ -453,7 +453,7 @@ export function driverTypeToJSON(object: DriverType): string {
 }
 
 export enum ExposeStrategy {
-  UNKNOWN_EXPOSE_STRATEGY = 0,
+  EXPOSE_STRATEGY_UNSPECIFIED = 0,
   NONE_ES = 1,
   EXPOSE = 2,
   EXPOSE_WITH_TLS = 3,
@@ -463,8 +463,8 @@ export enum ExposeStrategy {
 export function exposeStrategyFromJSON(object: any): ExposeStrategy {
   switch (object) {
     case 0:
-    case 'UNKNOWN_EXPOSE_STRATEGY':
-      return ExposeStrategy.UNKNOWN_EXPOSE_STRATEGY
+    case 'EXPOSE_STRATEGY_UNSPECIFIED':
+      return ExposeStrategy.EXPOSE_STRATEGY_UNSPECIFIED
     case 1:
     case 'NONE_ES':
       return ExposeStrategy.NONE_ES
@@ -483,8 +483,8 @@ export function exposeStrategyFromJSON(object: any): ExposeStrategy {
 
 export function exposeStrategyToJSON(object: ExposeStrategy): string {
   switch (object) {
-    case ExposeStrategy.UNKNOWN_EXPOSE_STRATEGY:
-      return 'UNKNOWN_EXPOSE_STRATEGY'
+    case ExposeStrategy.EXPOSE_STRATEGY_UNSPECIFIED:
+      return 'EXPOSE_STRATEGY_UNSPECIFIED'
     case ExposeStrategy.NONE_ES:
       return 'NONE_ES'
     case ExposeStrategy.EXPOSE:

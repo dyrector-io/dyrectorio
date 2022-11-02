@@ -14,11 +14,13 @@ export default class GrpcNodeConnection {
 
   private statusChannel = new Subject<NodeConnectionStatus>()
 
+  private token: AgentToken
+
   readonly jwt: string
 
   readonly address: string
 
-  private token: AgentToken
+  readonly connectedAt = new Date()
 
   get nodeId() {
     return this.token.sub

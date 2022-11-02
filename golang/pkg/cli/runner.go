@@ -38,6 +38,11 @@ const (
 	DockerHost         = "host.docker.internal"
 )
 
+const (
+	UpCommand   = "up"
+	DownCommand = "down"
+)
+
 type traefikFileProviderData struct {
 	Service string
 	Port    uint
@@ -52,7 +57,8 @@ func ProcessCommand(settings *Settings) {
 		Containers: settings.Containers,
 	}
 	switch settings.Command {
-	case "up":
+	case UpCommand:
+		PrintInfo(settings)
 		settings = CheckAndUpdatePorts(settings)
 		SaveSettings(settings)
 
@@ -67,7 +73,7 @@ func ProcessCommand(settings *Settings) {
 		containers.MailSlurper = GetMailSlurper(settings)
 
 		StartContainers(&containers, settings.InternalHostDomain)
-	case "down":
+	case DownCommand:
 		StopContainers(&containers)
 	default:
 		log.Fatal().Msg("invalid command")
