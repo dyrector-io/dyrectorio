@@ -299,6 +299,13 @@ export default class DeployMapper {
     return [...(weak?.filter(it => !overridenPorts.has(it.internal)) ?? []), ...(strong ?? [])]
   }
 
+  private override = <T>(weak: T, strong: T): T => strong ?? weak
+
+  private overrideArrays = <T>(weak: T[], strong: T[]): T[] => {
+    const strongs: Set<T> = new Set(strong?.map(it => it))
+    return [...(weak?.filter(it => !strongs.has(it)) ?? []), ...(strong ?? [])]
+  }
+
   public mergeConfigs(
     imageConfig: ContainerConfigData,
     instanceConfig: ContainerConfigData,
@@ -311,16 +318,47 @@ export default class DeployMapper {
       imageConfig?.capabilities as UniqueKeyValue[],
       instanceConfig?.capabilities as UniqueKeyValue[],
     )
+    const ports = this.overridePorts(
+      imageConfig?.ports as JsonObject as Port[],
+      instanceConfig?.ports as JsonObject as Port[],
+    ) as JsonObject
+
     return {
-      ...imageConfig,
-      ...instanceConfig,
-      name: imageConfig.name,
+      // common
+      name: instanceConfig.name || imageConfig.name,
       environment: envs,
+      secrets: instanceConfig?.secrets ? instanceConfig.secrets : imageConfig.secrets,
+      user: this.override(imageConfig?.user, instanceConfig.user),
+      tty: this.override(imageConfig?.tty, instanceConfig.tty),
+      portRanges: this.override(imageConfig?.portRanges, instanceConfig.portRanges),
+      args: this.overrideArrays(imageConfig?.args as UniqueKey[], instanceConfig.args as UniqueKey[]),
+      commands: this.overrideArrays(imageConfig?.commands as UniqueKey[], instanceConfig.commands as UniqueKey[]),
+      expose: this.override(imageConfig?.expose, instanceConfig.expose),
+      configContainer: this.override(imageConfig?.configContainer, instanceConfig.configContainer),
+      ingress: this.override(imageConfig?.ingress, instanceConfig.ingress),
+      volumes: this.override(imageConfig?.volumes, instanceConfig.volumes),
+      importContainer: this.override(imageConfig?.importContainer, instanceConfig.importContainer),
+      initContainers: this.override(imageConfig?.initContainers, instanceConfig.initContainers),
       capabilities: caps,
-      ports: this.overridePorts(
-        imageConfig?.ports as JsonObject as Port[],
-        instanceConfig?.ports as JsonObject as Port[],
-      ) as JsonObject,
+      ports: ports,
+
+      // crane
+      customHeaders: this.overrideArrays(
+        imageConfig?.customHeaders as UniqueKey[],
+        instanceConfig?.customHeaders as UniqueKey[],
+      ),
+      proxyHeaders: this.override(imageConfig?.proxyHeaders, instanceConfig?.proxyHeaders),
+      extraLBAnnotations: this.override(imageConfig?.extraLBAnnotations, instanceConfig?.extraLBAnnotations),
+      healthCheckConfig: this.override(imageConfig?.healthCheckConfig, instanceConfig?.healthCheckConfig),
+      resourceConfig: this.override(imageConfig?.resourceConfig, instanceConfig?.resourceConfig),
+      useLoadBalancer: this.override(imageConfig?.useLoadBalancer, instanceConfig?.useLoadBalancer),
+      deploymentStrategy: this.override(imageConfig?.deploymentStrategy, instanceConfig?.deploymentStrategy),
+
+      // dagent
+      logConfig: this.override(imageConfig?.logConfig, instanceConfig?.logConfig),
+      networkMode: this.override(imageConfig?.networkMode, instanceConfig?.networkMode),
+      restartPolicy: this.override(imageConfig?.restartPolicy, instanceConfig?.restartPolicy),
+      networks: this.overrideArrays(imageConfig?.networks as UniqueKey[], instanceConfig?.networks as UniqueKey[]),
     }
   }
 }
