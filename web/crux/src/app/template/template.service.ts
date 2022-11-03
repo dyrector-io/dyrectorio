@@ -117,6 +117,7 @@ export default class TemplateService {
             })),
           )
         : [],
+      secrets: config.secrets ? config.secrets.map(it => this.idify(it)) : [],
     }
   }
 
