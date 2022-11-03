@@ -30,6 +30,7 @@ import DeployCopyValidationPipe from './pipes/deploy.copy.pipe'
 import DeployCreateValidationPipe from './pipes/deploy.create.pipe'
 import DeleteDeploymentValidationPipe from './pipes/deploy.delete.pipe'
 import DeployPatchValidationPipe from './pipes/deploy.patch.pipe'
+import DeploySecretsValidationPipe from './pipes/deploy.secrets.pipe'
 import DeployStartValidationPipe from './pipes/deploy.start.pipe'
 import DeployUpdateValidationPipe from './pipes/deploy.update.pipe'
 
@@ -45,7 +46,9 @@ export default class DeployController implements CruxDeploymentController {
     return await this.service.getDeploymentsByVersionId(request)
   }
 
-  async getDeploymentDetails(request: IdRequest): Promise<DeploymentDetailsResponse> {
+  async getDeploymentDetails(
+    @Body(DeploySecretsValidationPipe) request: IdRequest,
+  ): Promise<DeploymentDetailsResponse> {
     return await this.service.getDeploymentDetails(request)
   }
 
