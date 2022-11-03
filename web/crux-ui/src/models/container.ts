@@ -562,6 +562,7 @@ export const mergeJsonConfigToContainerConfig = (
         key: it.key,
         value: '',
         required: it.required ?? false,
+        publicKey: '',
       }
     })
   }
