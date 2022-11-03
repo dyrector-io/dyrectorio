@@ -39,6 +39,7 @@ type ContainerBuilder interface {
 	WithRestartPolicy(policy RestartPolicyName) ContainerBuilder
 	WithEntrypoint(cmd []string) ContainerBuilder
 	WithCmd(cmd []string) ContainerBuilder
+	WithShell(shell []string) ContainerBuilder
 	WithUser(uid string) ContainerBuilder
 	WithLogWriter(logger io.StringWriter) ContainerBuilder
 	WithoutConflict() ContainerBuilder
@@ -76,6 +77,7 @@ type DockerContainerBuilder struct {
 	restartPolicy   RestartPolicyName
 	entrypoint      []string
 	cmd             []string
+	shell           []string
 	tty             bool
 	user            *int64
 	forcePull       bool
@@ -212,6 +214,12 @@ func (dc *DockerContainerBuilder) WithCmd(cmd []string) *DockerContainerBuilder 
 	return dc
 }
 
+// Sets the SHELL of a container.
+func (dc *DockerContainerBuilder) WithShell(shell []string) *DockerContainerBuilder {
+	dc.shell = shell
+	return dc
+}
+
 // Sets if standard streams should be attached to a tty.
 func (dc *DockerContainerBuilder) WithTTY(tty bool) *DockerContainerBuilder {
 	dc.tty = tty
@@ -308,6 +316,7 @@ func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 		ExposedPorts: exposedPortSet,
 		Entrypoint:   dc.entrypoint,
 		Cmd:          dc.cmd,
+		Shell:        dc.shell,
 	}
 
 	if dc.user != nil {
