@@ -41,10 +41,12 @@
           {
             "key": "POSTGRES_USER",
             "value": "strapi"
-          },
+          }
+        ],
+        "secrets": [
           {
             "key": "POSTGRES_PASSWORD",
-            "value": "strapi"
+            "required": true
           }
         ],
         "networks": ["strapi-network"],
@@ -98,10 +100,12 @@
           {
             "key": "DATABASE_USERNAME",
             "value": "strapi"
-          },
+          }
+        ],
+        "secrets": [
           {
             "key": "DATABASE_PASSWORD",
-            "value": "strapi"
+            "required": true
           }
         ],
         "networks": ["strapi-network"],
