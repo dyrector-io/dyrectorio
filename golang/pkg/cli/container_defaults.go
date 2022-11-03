@@ -51,7 +51,7 @@ func GetCrux(settings *Settings) *containerbuilder.DockerContainerBuilder {
 				settings.Containers.Kratos.Name,
 				settings.SettingsFile.KratosAdminPort),
 			fmt.Sprintf("CRUX_UI_URL=localhost:%d", settings.SettingsFile.TraefikWebPort),
-			fmt.Sprintf("CRUX_AGENT_ADDRESS=%s:%d", settings.Containers.Crux.Name, settings.SettingsFile.CruxAgentGrpcPort),
+			fmt.Sprintf("CRUX_AGENT_ADDRESS=localhost:%d", settings.SettingsFile.CruxAgentGrpcPort),
 			"GRPC_API_INSECURE=true",
 			"GRPC_AGENT_INSECURE=true",
 			"GRPC_AGENT_INSTALL_SCRIPT_INSECURE=true",
@@ -185,7 +185,7 @@ func GetTraefik(settings *Settings) *containerbuilder.DockerContainerBuilder {
 	}
 
 	if settings.SettingsFile.CruxUIDisabled {
-		commands = append(commands, "--providers.file.filename=/etc/traefik.dev.yml")
+		commands = append(commands, "--providers.file.directory=/etc/traefik", "--providers.file.watch=true")
 	}
 
 	mountType := mount.TypeBind

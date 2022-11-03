@@ -154,7 +154,7 @@ func Init(grpcContext context.Context,
 				}),
 		}
 
-		log.Print("Dialing", connParams.address)
+		log.Info().Str("address", connParams.address).Msg("Dialing to address.")
 		conn, err := grpc.Dial(connParams.address, opts...)
 		if err != nil {
 			log.Panic().Stack().Err(err).Msg("failed to dial gRPC")
