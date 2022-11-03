@@ -14,7 +14,7 @@ import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import LoadingIndicator from '@app/elements/loading-indicator'
 import { defaultApiErrorHandler } from '@app/errors'
 import useWebsocketTranslate from '@app/hooks/use-websocket-translation'
-import { DeploymentRoot, mergeConfigs } from '@app/models'
+import { DeploymentInvalidatedSecrets, DeploymentRoot, mergeConfigs } from '@app/models'
 import {
   deploymentApiUrl,
   deploymentDeployUrl,
@@ -96,7 +96,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
 
   const navigateToLog = () => router.push(deploymentDeployUrl(product.id, version.id, deployment.id))
 
-  const onDeploy = () => {
+  const onDeploy = async () => {
     if (node.status !== 'running') {
       toast.error(t('errors.preconditionFailed'))
       return
@@ -119,7 +119,12 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
       return
     }
 
-    startDeployment(router, product.id, version.id, deployment.id)
+    const result = await startDeployment(router, product.id, version.id, deployment.id)
+    if (result?.property === 'secrets') {
+      const invalidSecrets = result.value as DeploymentInvalidatedSecrets[]
+
+      actions.onInvalidateSecrets(invalidSecrets)
+    }
   }
 
   const onCopyDeployment = async () => {

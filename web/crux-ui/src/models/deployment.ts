@@ -77,6 +77,11 @@ export type CopyDeploymentResponse = {
   id: string
 }
 
+export type DeploymentInvalidatedSecrets = {
+  instanceId: string
+  invalid: string[]
+}
+
 // ws
 
 export const WS_TYPE_PATCH_DEPLOYMENT_ENV = 'patch-deployment-env'

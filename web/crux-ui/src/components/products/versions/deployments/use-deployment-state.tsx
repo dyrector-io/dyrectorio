@@ -6,6 +6,7 @@ import useWebSocket from '@app/hooks/use-websocket'
 import {
   DeploymentDetails,
   DeploymentEnvUpdatedMessage,
+  DeploymentInvalidatedSecrets,
   deploymentIsCopyable,
   deploymentIsMutable,
   DeploymentRoot,
@@ -61,6 +62,7 @@ export type DeploymentActions = {
   onDeploymentEdited: (editedDeployment: DeploymentDetails) => void
   onCopyDeployment: () => Promise<string>
   setViewMode: (viewMode: ViewMode) => void
+  onInvalidateSecrets: (secrets: DeploymentInvalidatedSecrets[]) => void
 }
 
 const mergeInstancePatch = (instance: Instance, message: InstanceUpdatedMessage): Instance => ({
@@ -159,6 +161,36 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
       deploymentId: deployment.id,
     })
 
+  const onInvalidateSecrets = (secrets: DeploymentInvalidatedSecrets[]) => {
+    const newInstances = instances.map(it => {
+      const invalidated = secrets.find(sec => sec.instanceId === it.id)
+      if (!invalidated) {
+        return it
+      }
+
+      return {
+        ...it,
+        overriddenConfig: {
+          ...(it.overriddenConfig ?? {}),
+          secrets: (it.overriddenConfig?.secrets ?? []).map(secret => {
+            if (invalidated.invalid.includes(secret.id)) {
+              return {
+                ...secret,
+                encrypted: false,
+                publicKey: '',
+                value: '',
+              }
+            }
+
+            return secret
+          }),
+        },
+      }
+    })
+
+    setInstances(newInstances)
+  }
+
   return [
     {
       deployment,
@@ -180,6 +212,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
       onDeploymentEdited,
       onCopyDeployment,
       setViewMode,
+      onInvalidateSecrets,
     },
   ]
 }
