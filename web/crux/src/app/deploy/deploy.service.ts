@@ -414,8 +414,6 @@ export default class DeployService {
 
     const agent = this.agentService.getById(deployment.nodeId)
     if (!agent) {
-      // Todo in the client is this just a simple internal server error
-      // please show a proper error message
       throw new PreconditionFailedException({
         message: 'Node is unreachable',
         property: 'nodeId',
