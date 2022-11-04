@@ -191,7 +191,7 @@ export default class ImageMapper {
       case RestartPolicy.onFailure:
         return ProtoRestartPolicy.ON_FAILURE
       default:
-        return ProtoRestartPolicy.UNDEFINED
+        return ProtoRestartPolicy.NO
     }
   }
 
