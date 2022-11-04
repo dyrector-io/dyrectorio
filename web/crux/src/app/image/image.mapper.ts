@@ -85,6 +85,8 @@ export default class ImageMapper {
       proxyHeaders: config.proxyHeaders,
       useLoadBalancer: config.useLoadBalancer,
       resourceConfig: config.resourceConfig as JsonObject,
+      labels: config.labels as JsonObject,
+      annotations: config.annotations as JsonObject,
     }
   }
 
