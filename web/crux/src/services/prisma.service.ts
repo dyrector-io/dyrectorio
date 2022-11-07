@@ -9,15 +9,9 @@ export default class PrismaService extends PrismaClient<Prisma.PrismaClientOptio
     super({
       rejectOnNotFound: false,
       log: [
-        { emit: 'event', level: 'query' },
-        { emit: 'stdout', level: 'info' },
         { emit: 'stdout', level: 'warn' },
         { emit: 'stdout', level: 'error' },
       ],
-    })
-
-    this.$on('query', (event: Prisma.QueryEvent) => {
-      this.logger.debug(`${event.query}`)
     })
   }
 
