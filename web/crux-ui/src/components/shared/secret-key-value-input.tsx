@@ -175,6 +175,7 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
           ...it,
           value: await encryptWithPGP(it.value, publicKey),
           encrypted: true,
+          publicKey,
         }),
       ),
     )

@@ -47,14 +47,16 @@ export const startDeployment = async (
   if (res.status === 412) {
     const json = await res.json()
     toast.error(json.description)
-    return
+    return json
   }
 
   if (!res.ok) {
-    return
+    return null
   }
 
   router.push(deploymentDeployUrl(productId, versionId, deploymentId))
+
+  return null
 }
 
 interface VersionDeploymentsSectionProps {

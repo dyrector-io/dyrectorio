@@ -595,8 +595,9 @@ message UniqueSecretKeyValue {
   string id = 100;
   string key = 101;
   string value = 103;
-  bool required = 104;
-  optional bool encrypted = 105;
+  string publicKey = 104;
+  bool required = 105;
+  optional bool encrypted = 106;
 }
 
 message KeyValueList { repeated UniqueKeyValue data = 1000; }
