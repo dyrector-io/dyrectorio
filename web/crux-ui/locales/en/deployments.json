@@ -7,5 +7,9 @@
   "actions": "Actions",
   "noItems": "You haven't made a deployment.",
   "prefixName": "Prefix: {{name}}",
-  "deploymentCopyConflictContent": "There is already a preparing deployment on the selected node. Are you sure want to overwrite?"
+  "deploymentCopyConflictContent": "There is already a preparing deployment on the selected node. Are you sure want to overwrite?",
+
+  "errors": {
+    "preconditionFailed": "Node is unreachable!"
+  }
 }

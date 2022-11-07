@@ -5,6 +5,7 @@ import DeploymentDetailsSection from '@app/components/products/versions/deployme
 import EditDeploymentCard from '@app/components/products/versions/deployments/edit-deployment-card'
 import EditDeploymentInstances from '@app/components/products/versions/deployments/edit-deployment-instances'
 import useDeploymentState from '@app/components/products/versions/deployments/use-deployment-state'
+import { startDeployment } from '@app/components/products/versions/version-deployments-section'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
@@ -12,6 +13,7 @@ import DyoButton from '@app/elements/dyo-button'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import LoadingIndicator from '@app/elements/loading-indicator'
 import { defaultApiErrorHandler } from '@app/errors'
+import useWebsocketTranslate from '@app/hooks/use-websocket-translation'
 import { DeploymentRoot, mergeConfigs } from '@app/models'
 import {
   deploymentApiUrl,
@@ -27,7 +29,7 @@ import { Crux, cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import toast from 'react-hot-toast'
 import { ValidationError } from 'yup'
 
@@ -55,6 +57,8 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
     onApiError,
     onWsError,
   })
+
+  useWebsocketTranslate(t)
 
   const { product, version, deployment, node } = state
 
@@ -94,7 +98,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
 
   const onDeploy = () => {
     if (node.status !== 'running') {
-      toast.error(t('common:nodeUnreachable'))
+      toast.error(t('errors.preconditionFailed'))
       return
     }
 
@@ -115,7 +119,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
       return
     }
 
-    navigateToLog()
+    startDeployment(router, product.id, version.id, deployment.id)
   }
 
   const onCopyDeployment = async () => {
@@ -126,12 +130,6 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
 
     router.push(url)
   }
-
-  useEffect(() => {
-    if (state.mutable && node.status !== 'running') {
-      toast.error(t('common:nodeUnreachable'))
-    }
-  }, [node.status, state.mutable, t])
 
   return (
     <Layout
@@ -173,7 +171,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
         )}
 
         {!state.mutable ? (
-          <DyoButton className="px-10 ml-auto" onClick={navigateToLog}>
+          <DyoButton className="px-6 ml-4" onClick={navigateToLog}>
             {t('log')}
           </DyoButton>
         ) : !state.editing ? (
