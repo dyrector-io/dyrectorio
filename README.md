@@ -8,7 +8,7 @@
   </a>
 </p>
 
-<p align="center">Open-source IDP for developers and non-specialists to manage multi-instance deployments, microservices and configurations in Kubernetes & Docker.</p>
+<p align="center">Open-source Internal Developer Platform (IDP) for developers and non-specialists to manage multi-instance deployments, microservices and configurations in Kubernetes & Docker.</p>
 
 <p align="center">
   <a href="https://github.com/dyrector-io/dyrectorio/tags" target="_blank"><img src="https://img.shields.io/github/v/tag/dyrector-io/dyrectorio" alt="GitHub tag (latest by date)"/></a>
