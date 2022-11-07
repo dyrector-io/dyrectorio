@@ -24,7 +24,7 @@ import {
   UpdateEntityResponse,
 } from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
-import { ContainerConfigData } from 'src/shared/model'
+import { ContainerConfigData, UniqueSecretKeyValue } from 'src/shared/model'
 import AgentService from '../agent/agent.service'
 import ImageMapper, { ImageDetails } from '../image/image.mapper'
 import ImageService from '../image/image.service'
@@ -258,6 +258,74 @@ export default class DeployService {
     }
 
     const agent = this.agentService.getById(deployment.nodeId)
+
+    const publicKey = agent?.publicKey
+
+    if (!publicKey) {
+      throw new PreconditionFailedException({
+        message: 'Agent has no public key',
+        property: 'publicKey',
+        value: deployment.nodeId,
+      })
+    }
+
+    const invalidSecrets = deployment.instances
+      .map(it => {
+        if (!it.config) {
+          return null
+        }
+
+        const secrets = it.config.secrets as UniqueSecretKeyValue[]
+
+        if (secrets.every(secret => secret.publicKey === publicKey)) {
+          return null
+        }
+
+        return {
+          instanceId: it.id,
+          invalid: secrets.filter(secret => secret.publicKey !== publicKey).map(secret => secret.id),
+          secrets: secrets.map(secret => {
+            if (secret.publicKey === publicKey) {
+              return secret
+            }
+
+            return {
+              ...secret,
+              value: '',
+              encrypted: false,
+              publicKey,
+            }
+          }),
+        }
+      })
+      .filter(it => it !== null)
+
+    const invalidSecretsUpdates = invalidSecrets
+      .map(it =>
+        this.prisma.instance.update({
+          where: {
+            id: it.instanceId,
+          },
+          data: {
+            config: {
+              update: {
+                secrets: it.secrets,
+              },
+            },
+          },
+        }),
+      )
+      .filter(it => it != null)
+
+    if (invalidSecretsUpdates.length > 0) {
+      await this.prisma.$transaction(invalidSecretsUpdates)
+
+      throw new PreconditionFailedException({
+        message: 'Some secrets are invalid',
+        property: 'secrets',
+        value: invalidSecrets.map(it => ({ ...it, secrets: undefined })),
+      })
+    }
 
     await this.prisma.deployment.update({
       where: {

@@ -95,9 +95,8 @@ export function userRoleToJSON(object: UserRole): string {
       return 'OWNER'
     case UserRole.ADMIN:
       return 'ADMIN'
-    case UserRole.UNRECOGNIZED:
     default:
-      return 'UNRECOGNIZED'
+      return 'UNKNOWN'
   }
 }
 
@@ -134,9 +133,8 @@ export function userStatusToJSON(object: UserStatus): string {
       return 'PENDING'
     case UserStatus.VERIFIED:
       return 'VERIFIED'
-    case UserStatus.UNRECOGNIZED:
     default:
-      return 'UNRECOGNIZED'
+      return 'UNKNOWN'
   }
 }
 
@@ -174,9 +172,8 @@ export function productTypeToJSON(object: ProductType): string {
       return 'SIMPLE'
     case ProductType.COMPLEX:
       return 'COMPLEX'
-    case ProductType.UNRECOGNIZED:
     default:
-      return 'UNRECOGNIZED'
+      return 'UNKNOWN'
   }
 }
 
@@ -213,9 +210,8 @@ export function versionTypeToJSON(object: VersionType): string {
       return 'INCREMENTAL'
     case VersionType.ROLLING:
       return 'ROLLING'
-    case VersionType.UNRECOGNIZED:
     default:
-      return 'UNRECOGNIZED'
+      return 'UNKNOWN'
   }
 }
 
@@ -270,9 +266,8 @@ export function registryTypeToJSON(object: RegistryType): string {
       return 'GITHUB'
     case RegistryType.GOOGLE:
       return 'GOOGLE'
-    case RegistryType.UNRECOGNIZED:
     default:
-      return 'UNRECOGNIZED'
+      return 'UNKNOWN'
   }
 }
 
@@ -321,9 +316,8 @@ export function registryNamespaceToJSON(object: RegistryNamespace): string {
       return 'RNS_GROUP'
     case RegistryNamespace.RNS_PROJECT:
       return 'RNS_PROJECT'
-    case RegistryNamespace.UNRECOGNIZED:
     default:
-      return 'UNRECOGNIZED'
+      return 'UNKNOWN'
   }
 }
 
@@ -369,9 +363,8 @@ export function nodeConnectionStatusToJSON(object: NodeConnectionStatus): string
       return 'UNREACHABLE'
     case NodeConnectionStatus.CONNECTED:
       return 'CONNECTED'
-    case NodeConnectionStatus.UNRECOGNIZED:
     default:
-      return 'UNRECOGNIZED'
+      return 'UNKNOWN'
   }
 }
 
@@ -408,9 +401,8 @@ export function nodeTypeToJSON(object: NodeType): string {
       return 'DOCKER'
     case NodeType.K8S:
       return 'K8S'
-    case NodeType.UNRECOGNIZED:
     default:
-      return 'UNRECOGNIZED'
+      return 'UNKNOWN'
   }
 }
 
@@ -453,9 +445,8 @@ export function deploymentEventTypeToJSON(object: DeploymentEventType): string {
       return 'DEPLOYMENT_STATUS'
     case DeploymentEventType.CONTAINER_STATUS:
       return 'CONTAINER_STATUS'
-    case DeploymentEventType.UNRECOGNIZED:
     default:
-      return 'UNRECOGNIZED'
+      return 'UNKNOWN'
   }
 }
 
@@ -498,9 +489,8 @@ export function notificationTypeToJSON(object: NotificationType): string {
       return 'SLACK'
     case NotificationType.TEAMS:
       return 'TEAMS'
-    case NotificationType.UNRECOGNIZED:
     default:
-      return 'UNRECOGNIZED'
+      return 'UNKNOWN'
   }
 }
 
@@ -549,9 +539,8 @@ export function notificationEventTypeToJSON(object: NotificationEventType): stri
       return 'NODE_ADDED'
     case NotificationEventType.USER_INVITED:
       return 'USER_INVITED'
-    case NotificationEventType.UNRECOGNIZED:
     default:
-      return 'UNRECOGNIZED'
+      return 'UNKNOWN'
   }
 }
 
@@ -594,9 +583,8 @@ export function serviceStatusToJSON(object: ServiceStatus): string {
       return 'DISRUPTED'
     case ServiceStatus.OPERATIONAL:
       return 'OPERATIONAL'
-    case ServiceStatus.UNRECOGNIZED:
     default:
-      return 'UNRECOGNIZED'
+      return 'UNKNOWN'
   }
 }
 
@@ -982,6 +970,7 @@ export interface UniqueSecretKeyValue {
   id: string
   key: string
   value: string
+  publicKey: string
   required: boolean
   encrypted?: boolean | undefined
 }
@@ -1347,9 +1336,7 @@ export interface CreateProductFromTemplateRequest {
   type: ProductType
 }
 
-function createBaseServiceIdRequest(): ServiceIdRequest {
-  return { id: '' }
-}
+const baseServiceIdRequest: object = { id: '' }
 
 export const ServiceIdRequest = {
   encode(message: ServiceIdRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -1362,7 +1349,7 @@ export const ServiceIdRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): ServiceIdRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseServiceIdRequest()
+    const message = { ...baseServiceIdRequest } as ServiceIdRequest
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -1378,7 +1365,9 @@ export const ServiceIdRequest = {
   },
 
   fromJSON(object: any): ServiceIdRequest {
-    return { id: isSet(object.id) ? String(object.id) : '' }
+    const message = { ...baseServiceIdRequest } as ServiceIdRequest
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    return message
   },
 
   toJSON(message: ServiceIdRequest): unknown {
@@ -1388,15 +1377,13 @@ export const ServiceIdRequest = {
   },
 
   fromPartial<I extends Exact<DeepPartial<ServiceIdRequest>, I>>(object: I): ServiceIdRequest {
-    const message = createBaseServiceIdRequest()
+    const message = { ...baseServiceIdRequest } as ServiceIdRequest
     message.id = object.id ?? ''
     return message
   },
 }
 
-function createBaseIdRequest(): IdRequest {
-  return { id: '', accessedBy: '' }
-}
+const baseIdRequest: object = { id: '', accessedBy: '' }
 
 export const IdRequest = {
   encode(message: IdRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -1412,7 +1399,7 @@ export const IdRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): IdRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseIdRequest()
+    const message = { ...baseIdRequest } as IdRequest
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -1431,10 +1418,10 @@ export const IdRequest = {
   },
 
   fromJSON(object: any): IdRequest {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-    }
+    const message = { ...baseIdRequest } as IdRequest
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    return message
   },
 
   toJSON(message: IdRequest): unknown {
@@ -1445,16 +1432,14 @@ export const IdRequest = {
   },
 
   fromPartial<I extends Exact<DeepPartial<IdRequest>, I>>(object: I): IdRequest {
-    const message = createBaseIdRequest()
+    const message = { ...baseIdRequest } as IdRequest
     message.id = object.id ?? ''
     message.accessedBy = object.accessedBy ?? ''
     return message
   },
 }
 
-function createBaseAuditResponse(): AuditResponse {
-  return { createdBy: '', createdAt: undefined }
-}
+const baseAuditResponse: object = { createdBy: '' }
 
 export const AuditResponse = {
   encode(message: AuditResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -1476,7 +1461,7 @@ export const AuditResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): AuditResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseAuditResponse()
+    const message = { ...baseAuditResponse } as AuditResponse
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -1501,12 +1486,15 @@ export const AuditResponse = {
   },
 
   fromJSON(object: any): AuditResponse {
-    return {
-      createdBy: isSet(object.createdBy) ? String(object.createdBy) : '',
-      createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
-      updatedBy: isSet(object.updatedBy) ? String(object.updatedBy) : undefined,
-      updatedAt: isSet(object.updatedAt) ? fromJsonTimestamp(object.updatedAt) : undefined,
-    }
+    const message = { ...baseAuditResponse } as AuditResponse
+    message.createdBy = object.createdBy !== undefined && object.createdBy !== null ? String(object.createdBy) : ''
+    message.createdAt =
+      object.createdAt !== undefined && object.createdAt !== null ? fromJsonTimestamp(object.createdAt) : undefined
+    message.updatedBy =
+      object.updatedBy !== undefined && object.updatedBy !== null ? String(object.updatedBy) : undefined
+    message.updatedAt =
+      object.updatedAt !== undefined && object.updatedAt !== null ? fromJsonTimestamp(object.updatedAt) : undefined
+    return message
   },
 
   toJSON(message: AuditResponse): unknown {
@@ -1519,7 +1507,7 @@ export const AuditResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<AuditResponse>, I>>(object: I): AuditResponse {
-    const message = createBaseAuditResponse()
+    const message = { ...baseAuditResponse } as AuditResponse
     message.createdBy = object.createdBy ?? ''
     message.createdAt =
       object.createdAt !== undefined && object.createdAt !== null ? Timestamp.fromPartial(object.createdAt) : undefined
@@ -1530,9 +1518,7 @@ export const AuditResponse = {
   },
 }
 
-function createBaseCreateEntityResponse(): CreateEntityResponse {
-  return { id: '', createdAt: undefined }
-}
+const baseCreateEntityResponse: object = { id: '' }
 
 export const CreateEntityResponse = {
   encode(message: CreateEntityResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -1548,7 +1534,7 @@ export const CreateEntityResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): CreateEntityResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseCreateEntityResponse()
+    const message = { ...baseCreateEntityResponse } as CreateEntityResponse
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -1567,10 +1553,11 @@ export const CreateEntityResponse = {
   },
 
   fromJSON(object: any): CreateEntityResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
-    }
+    const message = { ...baseCreateEntityResponse } as CreateEntityResponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.createdAt =
+      object.createdAt !== undefined && object.createdAt !== null ? fromJsonTimestamp(object.createdAt) : undefined
+    return message
   },
 
   toJSON(message: CreateEntityResponse): unknown {
@@ -1581,7 +1568,7 @@ export const CreateEntityResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<CreateEntityResponse>, I>>(object: I): CreateEntityResponse {
-    const message = createBaseCreateEntityResponse()
+    const message = { ...baseCreateEntityResponse } as CreateEntityResponse
     message.id = object.id ?? ''
     message.createdAt =
       object.createdAt !== undefined && object.createdAt !== null ? Timestamp.fromPartial(object.createdAt) : undefined
@@ -1589,9 +1576,7 @@ export const CreateEntityResponse = {
   },
 }
 
-function createBaseUpdateEntityResponse(): UpdateEntityResponse {
-  return { updatedAt: undefined }
-}
+const baseUpdateEntityResponse: object = {}
 
 export const UpdateEntityResponse = {
   encode(message: UpdateEntityResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -1604,7 +1589,7 @@ export const UpdateEntityResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): UpdateEntityResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseUpdateEntityResponse()
+    const message = { ...baseUpdateEntityResponse } as UpdateEntityResponse
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -1620,7 +1605,10 @@ export const UpdateEntityResponse = {
   },
 
   fromJSON(object: any): UpdateEntityResponse {
-    return { updatedAt: isSet(object.updatedAt) ? fromJsonTimestamp(object.updatedAt) : undefined }
+    const message = { ...baseUpdateEntityResponse } as UpdateEntityResponse
+    message.updatedAt =
+      object.updatedAt !== undefined && object.updatedAt !== null ? fromJsonTimestamp(object.updatedAt) : undefined
+    return message
   },
 
   toJSON(message: UpdateEntityResponse): unknown {
@@ -1630,15 +1618,17 @@ export const UpdateEntityResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<UpdateEntityResponse>, I>>(object: I): UpdateEntityResponse {
-    const message = createBaseUpdateEntityResponse()
+    const message = { ...baseUpdateEntityResponse } as UpdateEntityResponse
     message.updatedAt =
       object.updatedAt !== undefined && object.updatedAt !== null ? Timestamp.fromPartial(object.updatedAt) : undefined
     return message
   },
 }
 
-function createBaseAuditLogListRequest(): AuditLogListRequest {
-  return { accessedBy: '', pageSize: 0, pageNumber: 0, createdTo: undefined }
+const baseAuditLogListRequest: object = {
+  accessedBy: '',
+  pageSize: 0,
+  pageNumber: 0,
 }
 
 export const AuditLogListRequest = {
@@ -1667,7 +1657,7 @@ export const AuditLogListRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): AuditLogListRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseAuditLogListRequest()
+    const message = { ...baseAuditLogListRequest } as AuditLogListRequest
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -1698,14 +1688,18 @@ export const AuditLogListRequest = {
   },
 
   fromJSON(object: any): AuditLogListRequest {
-    return {
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      pageSize: isSet(object.pageSize) ? Number(object.pageSize) : 0,
-      pageNumber: isSet(object.pageNumber) ? Number(object.pageNumber) : 0,
-      keyword: isSet(object.keyword) ? String(object.keyword) : undefined,
-      createdFrom: isSet(object.createdFrom) ? fromJsonTimestamp(object.createdFrom) : undefined,
-      createdTo: isSet(object.createdTo) ? fromJsonTimestamp(object.createdTo) : undefined,
-    }
+    const message = { ...baseAuditLogListRequest } as AuditLogListRequest
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.pageSize = object.pageSize !== undefined && object.pageSize !== null ? Number(object.pageSize) : 0
+    message.pageNumber = object.pageNumber !== undefined && object.pageNumber !== null ? Number(object.pageNumber) : 0
+    message.keyword = object.keyword !== undefined && object.keyword !== null ? String(object.keyword) : undefined
+    message.createdFrom =
+      object.createdFrom !== undefined && object.createdFrom !== null
+        ? fromJsonTimestamp(object.createdFrom)
+        : undefined
+    message.createdTo =
+      object.createdTo !== undefined && object.createdTo !== null ? fromJsonTimestamp(object.createdTo) : undefined
+    return message
   },
 
   toJSON(message: AuditLogListRequest): unknown {
@@ -1720,7 +1714,7 @@ export const AuditLogListRequest = {
   },
 
   fromPartial<I extends Exact<DeepPartial<AuditLogListRequest>, I>>(object: I): AuditLogListRequest {
-    const message = createBaseAuditLogListRequest()
+    const message = { ...baseAuditLogListRequest } as AuditLogListRequest
     message.accessedBy = object.accessedBy ?? ''
     message.pageSize = object.pageSize ?? 0
     message.pageNumber = object.pageNumber ?? 0
@@ -1735,9 +1729,7 @@ export const AuditLogListRequest = {
   },
 }
 
-function createBaseAuditLogListCountResponse(): AuditLogListCountResponse {
-  return { count: 0 }
-}
+const baseAuditLogListCountResponse: object = { count: 0 }
 
 export const AuditLogListCountResponse = {
   encode(message: AuditLogListCountResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -1750,7 +1742,9 @@ export const AuditLogListCountResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): AuditLogListCountResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseAuditLogListCountResponse()
+    const message = {
+      ...baseAuditLogListCountResponse,
+    } as AuditLogListCountResponse
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -1766,7 +1760,11 @@ export const AuditLogListCountResponse = {
   },
 
   fromJSON(object: any): AuditLogListCountResponse {
-    return { count: isSet(object.count) ? Number(object.count) : 0 }
+    const message = {
+      ...baseAuditLogListCountResponse,
+    } as AuditLogListCountResponse
+    message.count = object.count !== undefined && object.count !== null ? Number(object.count) : 0
+    return message
   },
 
   toJSON(message: AuditLogListCountResponse): unknown {
@@ -1776,14 +1774,18 @@ export const AuditLogListCountResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<AuditLogListCountResponse>, I>>(object: I): AuditLogListCountResponse {
-    const message = createBaseAuditLogListCountResponse()
+    const message = {
+      ...baseAuditLogListCountResponse,
+    } as AuditLogListCountResponse
     message.count = object.count ?? 0
     return message
   },
 }
 
-function createBaseAuditLogResponse(): AuditLogResponse {
-  return { createdAt: undefined, userId: '', identityEmail: '', serviceCall: '' }
+const baseAuditLogResponse: object = {
+  userId: '',
+  identityEmail: '',
+  serviceCall: '',
 }
 
 export const AuditLogResponse = {
@@ -1809,7 +1811,7 @@ export const AuditLogResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): AuditLogResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseAuditLogResponse()
+    const message = { ...baseAuditLogResponse } as AuditLogResponse
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -1837,13 +1839,16 @@ export const AuditLogResponse = {
   },
 
   fromJSON(object: any): AuditLogResponse {
-    return {
-      createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
-      userId: isSet(object.userId) ? String(object.userId) : '',
-      identityEmail: isSet(object.identityEmail) ? String(object.identityEmail) : '',
-      serviceCall: isSet(object.serviceCall) ? String(object.serviceCall) : '',
-      data: isSet(object.data) ? String(object.data) : undefined,
-    }
+    const message = { ...baseAuditLogResponse } as AuditLogResponse
+    message.createdAt =
+      object.createdAt !== undefined && object.createdAt !== null ? fromJsonTimestamp(object.createdAt) : undefined
+    message.userId = object.userId !== undefined && object.userId !== null ? String(object.userId) : ''
+    message.identityEmail =
+      object.identityEmail !== undefined && object.identityEmail !== null ? String(object.identityEmail) : ''
+    message.serviceCall =
+      object.serviceCall !== undefined && object.serviceCall !== null ? String(object.serviceCall) : ''
+    message.data = object.data !== undefined && object.data !== null ? String(object.data) : undefined
+    return message
   },
 
   toJSON(message: AuditLogResponse): unknown {
@@ -1857,7 +1862,7 @@ export const AuditLogResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<AuditLogResponse>, I>>(object: I): AuditLogResponse {
-    const message = createBaseAuditLogResponse()
+    const message = { ...baseAuditLogResponse } as AuditLogResponse
     message.createdAt =
       object.createdAt !== undefined && object.createdAt !== null ? Timestamp.fromPartial(object.createdAt) : undefined
     message.userId = object.userId ?? ''
@@ -1868,9 +1873,7 @@ export const AuditLogResponse = {
   },
 }
 
-function createBaseAuditLogListResponse(): AuditLogListResponse {
-  return { data: [] }
-}
+const baseAuditLogListResponse: object = {}
 
 export const AuditLogListResponse = {
   encode(message: AuditLogListResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -1883,7 +1886,8 @@ export const AuditLogListResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): AuditLogListResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseAuditLogListResponse()
+    const message = { ...baseAuditLogListResponse } as AuditLogListResponse
+    message.data = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -1899,7 +1903,9 @@ export const AuditLogListResponse = {
   },
 
   fromJSON(object: any): AuditLogListResponse {
-    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => AuditLogResponse.fromJSON(e)) : [] }
+    const message = { ...baseAuditLogListResponse } as AuditLogListResponse
+    message.data = (object.data ?? []).map((e: any) => AuditLogResponse.fromJSON(e))
+    return message
   },
 
   toJSON(message: AuditLogListResponse): unknown {
@@ -1913,15 +1919,13 @@ export const AuditLogListResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<AuditLogListResponse>, I>>(object: I): AuditLogListResponse {
-    const message = createBaseAuditLogListResponse()
+    const message = { ...baseAuditLogListResponse } as AuditLogListResponse
     message.data = object.data?.map(e => AuditLogResponse.fromPartial(e)) || []
     return message
   },
 }
 
-function createBaseCreateTeamRequest(): CreateTeamRequest {
-  return { accessedBy: '', name: '' }
-}
+const baseCreateTeamRequest: object = { accessedBy: '', name: '' }
 
 export const CreateTeamRequest = {
   encode(message: CreateTeamRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -1937,7 +1941,7 @@ export const CreateTeamRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): CreateTeamRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseCreateTeamRequest()
+    const message = { ...baseCreateTeamRequest } as CreateTeamRequest
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -1956,10 +1960,10 @@ export const CreateTeamRequest = {
   },
 
   fromJSON(object: any): CreateTeamRequest {
-    return {
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-    }
+    const message = { ...baseCreateTeamRequest } as CreateTeamRequest
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    return message
   },
 
   toJSON(message: CreateTeamRequest): unknown {
@@ -1970,16 +1974,14 @@ export const CreateTeamRequest = {
   },
 
   fromPartial<I extends Exact<DeepPartial<CreateTeamRequest>, I>>(object: I): CreateTeamRequest {
-    const message = createBaseCreateTeamRequest()
+    const message = { ...baseCreateTeamRequest } as CreateTeamRequest
     message.accessedBy = object.accessedBy ?? ''
     message.name = object.name ?? ''
     return message
   },
 }
 
-function createBaseUpdateTeamRequest(): UpdateTeamRequest {
-  return { id: '', accessedBy: '', name: '' }
-}
+const baseUpdateTeamRequest: object = { id: '', accessedBy: '', name: '' }
 
 export const UpdateTeamRequest = {
   encode(message: UpdateTeamRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -1998,7 +2000,7 @@ export const UpdateTeamRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): UpdateTeamRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseUpdateTeamRequest()
+    const message = { ...baseUpdateTeamRequest } as UpdateTeamRequest
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -2020,11 +2022,11 @@ export const UpdateTeamRequest = {
   },
 
   fromJSON(object: any): UpdateTeamRequest {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-    }
+    const message = { ...baseUpdateTeamRequest } as UpdateTeamRequest
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    return message
   },
 
   toJSON(message: UpdateTeamRequest): unknown {
@@ -2036,7 +2038,7 @@ export const UpdateTeamRequest = {
   },
 
   fromPartial<I extends Exact<DeepPartial<UpdateTeamRequest>, I>>(object: I): UpdateTeamRequest {
-    const message = createBaseUpdateTeamRequest()
+    const message = { ...baseUpdateTeamRequest } as UpdateTeamRequest
     message.id = object.id ?? ''
     message.accessedBy = object.accessedBy ?? ''
     message.name = object.name ?? ''
@@ -2044,8 +2046,11 @@ export const UpdateTeamRequest = {
   },
 }
 
-function createBaseUpdateUserRoleInTeamRequest(): UpdateUserRoleInTeamRequest {
-  return { id: '', accessedBy: '', userId: '', role: 0 }
+const baseUpdateUserRoleInTeamRequest: object = {
+  id: '',
+  accessedBy: '',
+  userId: '',
+  role: 0,
 }
 
 export const UpdateUserRoleInTeamRequest = {
@@ -2068,7 +2073,9 @@ export const UpdateUserRoleInTeamRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): UpdateUserRoleInTeamRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseUpdateUserRoleInTeamRequest()
+    const message = {
+      ...baseUpdateUserRoleInTeamRequest,
+    } as UpdateUserRoleInTeamRequest
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -2093,12 +2100,14 @@ export const UpdateUserRoleInTeamRequest = {
   },
 
   fromJSON(object: any): UpdateUserRoleInTeamRequest {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      userId: isSet(object.userId) ? String(object.userId) : '',
-      role: isSet(object.role) ? userRoleFromJSON(object.role) : 0,
-    }
+    const message = {
+      ...baseUpdateUserRoleInTeamRequest,
+    } as UpdateUserRoleInTeamRequest
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.userId = object.userId !== undefined && object.userId !== null ? String(object.userId) : ''
+    message.role = object.role !== undefined && object.role !== null ? userRoleFromJSON(object.role) : 0
+    return message
   },
 
   toJSON(message: UpdateUserRoleInTeamRequest): unknown {
@@ -2111,7 +2120,9 @@ export const UpdateUserRoleInTeamRequest = {
   },
 
   fromPartial<I extends Exact<DeepPartial<UpdateUserRoleInTeamRequest>, I>>(object: I): UpdateUserRoleInTeamRequest {
-    const message = createBaseUpdateUserRoleInTeamRequest()
+    const message = {
+      ...baseUpdateUserRoleInTeamRequest,
+    } as UpdateUserRoleInTeamRequest
     message.id = object.id ?? ''
     message.accessedBy = object.accessedBy ?? ''
     message.userId = object.userId ?? ''
@@ -2120,9 +2131,7 @@ export const UpdateUserRoleInTeamRequest = {
   },
 }
 
-function createBaseInviteUserRequest(): InviteUserRequest {
-  return { id: '', accessedBy: '', email: '' }
-}
+const baseInviteUserRequest: object = { id: '', accessedBy: '', email: '' }
 
 export const InviteUserRequest = {
   encode(message: InviteUserRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -2141,7 +2150,7 @@ export const InviteUserRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): InviteUserRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseInviteUserRequest()
+    const message = { ...baseInviteUserRequest } as InviteUserRequest
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -2163,11 +2172,11 @@ export const InviteUserRequest = {
   },
 
   fromJSON(object: any): InviteUserRequest {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      email: isSet(object.email) ? String(object.email) : '',
-    }
+    const message = { ...baseInviteUserRequest } as InviteUserRequest
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.email = object.email !== undefined && object.email !== null ? String(object.email) : ''
+    return message
   },
 
   toJSON(message: InviteUserRequest): unknown {
@@ -2179,7 +2188,7 @@ export const InviteUserRequest = {
   },
 
   fromPartial<I extends Exact<DeepPartial<InviteUserRequest>, I>>(object: I): InviteUserRequest {
-    const message = createBaseInviteUserRequest()
+    const message = { ...baseInviteUserRequest } as InviteUserRequest
     message.id = object.id ?? ''
     message.accessedBy = object.accessedBy ?? ''
     message.email = object.email ?? ''
@@ -2187,8 +2196,10 @@ export const InviteUserRequest = {
   },
 }
 
-function createBaseDeleteUserFromTeamRequest(): DeleteUserFromTeamRequest {
-  return { id: '', accessedBy: '', userId: '' }
+const baseDeleteUserFromTeamRequest: object = {
+  id: '',
+  accessedBy: '',
+  userId: '',
 }
 
 export const DeleteUserFromTeamRequest = {
@@ -2208,7 +2219,9 @@ export const DeleteUserFromTeamRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): DeleteUserFromTeamRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseDeleteUserFromTeamRequest()
+    const message = {
+      ...baseDeleteUserFromTeamRequest,
+    } as DeleteUserFromTeamRequest
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -2230,11 +2243,13 @@ export const DeleteUserFromTeamRequest = {
   },
 
   fromJSON(object: any): DeleteUserFromTeamRequest {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      userId: isSet(object.userId) ? String(object.userId) : '',
-    }
+    const message = {
+      ...baseDeleteUserFromTeamRequest,
+    } as DeleteUserFromTeamRequest
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.userId = object.userId !== undefined && object.userId !== null ? String(object.userId) : ''
+    return message
   },
 
   toJSON(message: DeleteUserFromTeamRequest): unknown {
@@ -2246,7 +2261,9 @@ export const DeleteUserFromTeamRequest = {
   },
 
   fromPartial<I extends Exact<DeepPartial<DeleteUserFromTeamRequest>, I>>(object: I): DeleteUserFromTeamRequest {
-    const message = createBaseDeleteUserFromTeamRequest()
+    const message = {
+      ...baseDeleteUserFromTeamRequest,
+    } as DeleteUserFromTeamRequest
     message.id = object.id ?? ''
     message.accessedBy = object.accessedBy ?? ''
     message.userId = object.userId ?? ''
@@ -2254,9 +2271,7 @@ export const DeleteUserFromTeamRequest = {
   },
 }
 
-function createBaseAccessRequest(): AccessRequest {
-  return { accessedBy: '' }
-}
+const baseAccessRequest: object = { accessedBy: '' }
 
 export const AccessRequest = {
   encode(message: AccessRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -2269,7 +2284,7 @@ export const AccessRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): AccessRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseAccessRequest()
+    const message = { ...baseAccessRequest } as AccessRequest
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -2285,7 +2300,9 @@ export const AccessRequest = {
   },
 
   fromJSON(object: any): AccessRequest {
-    return { accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '' }
+    const message = { ...baseAccessRequest } as AccessRequest
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    return message
   },
 
   toJSON(message: AccessRequest): unknown {
@@ -2295,15 +2312,13 @@ export const AccessRequest = {
   },
 
   fromPartial<I extends Exact<DeepPartial<AccessRequest>, I>>(object: I): AccessRequest {
-    const message = createBaseAccessRequest()
+    const message = { ...baseAccessRequest } as AccessRequest
     message.accessedBy = object.accessedBy ?? ''
     return message
   },
 }
 
-function createBaseUserMetaResponse(): UserMetaResponse {
-  return { user: undefined, teams: [], invitations: [] }
-}
+const baseUserMetaResponse: object = {}
 
 export const UserMetaResponse = {
   encode(message: UserMetaResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -2322,7 +2337,9 @@ export const UserMetaResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): UserMetaResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseUserMetaResponse()
+    const message = { ...baseUserMetaResponse } as UserMetaResponse
+    message.teams = []
+    message.invitations = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -2344,13 +2361,11 @@ export const UserMetaResponse = {
   },
 
   fromJSON(object: any): UserMetaResponse {
-    return {
-      user: isSet(object.user) ? ActiveTeamUser.fromJSON(object.user) : undefined,
-      teams: Array.isArray(object?.teams) ? object.teams.map((e: any) => TeamResponse.fromJSON(e)) : [],
-      invitations: Array.isArray(object?.invitations)
-        ? object.invitations.map((e: any) => TeamResponse.fromJSON(e))
-        : [],
-    }
+    const message = { ...baseUserMetaResponse } as UserMetaResponse
+    message.user = object.user !== undefined && object.user !== null ? ActiveTeamUser.fromJSON(object.user) : undefined
+    message.teams = (object.teams ?? []).map((e: any) => TeamResponse.fromJSON(e))
+    message.invitations = (object.invitations ?? []).map((e: any) => TeamResponse.fromJSON(e))
+    return message
   },
 
   toJSON(message: UserMetaResponse): unknown {
@@ -2370,7 +2385,7 @@ export const UserMetaResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<UserMetaResponse>, I>>(object: I): UserMetaResponse {
-    const message = createBaseUserMetaResponse()
+    const message = { ...baseUserMetaResponse } as UserMetaResponse
     message.user =
       object.user !== undefined && object.user !== null ? ActiveTeamUser.fromPartial(object.user) : undefined
     message.teams = object.teams?.map(e => TeamResponse.fromPartial(e)) || []
@@ -2379,9 +2394,7 @@ export const UserMetaResponse = {
   },
 }
 
-function createBaseActiveTeamUser(): ActiveTeamUser {
-  return { activeTeamId: '', role: 0, status: 0 }
-}
+const baseActiveTeamUser: object = { activeTeamId: '', role: 0, status: 0 }
 
 export const ActiveTeamUser = {
   encode(message: ActiveTeamUser, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -2400,7 +2413,7 @@ export const ActiveTeamUser = {
   decode(input: _m0.Reader | Uint8Array, length?: number): ActiveTeamUser {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseActiveTeamUser()
+    const message = { ...baseActiveTeamUser } as ActiveTeamUser
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -2422,11 +2435,12 @@ export const ActiveTeamUser = {
   },
 
   fromJSON(object: any): ActiveTeamUser {
-    return {
-      activeTeamId: isSet(object.activeTeamId) ? String(object.activeTeamId) : '',
-      role: isSet(object.role) ? userRoleFromJSON(object.role) : 0,
-      status: isSet(object.status) ? userStatusFromJSON(object.status) : 0,
-    }
+    const message = { ...baseActiveTeamUser } as ActiveTeamUser
+    message.activeTeamId =
+      object.activeTeamId !== undefined && object.activeTeamId !== null ? String(object.activeTeamId) : ''
+    message.role = object.role !== undefined && object.role !== null ? userRoleFromJSON(object.role) : 0
+    message.status = object.status !== undefined && object.status !== null ? userStatusFromJSON(object.status) : 0
+    return message
   },
 
   toJSON(message: ActiveTeamUser): unknown {
@@ -2438,7 +2452,7 @@ export const ActiveTeamUser = {
   },
 
   fromPartial<I extends Exact<DeepPartial<ActiveTeamUser>, I>>(object: I): ActiveTeamUser {
-    const message = createBaseActiveTeamUser()
+    const message = { ...baseActiveTeamUser } as ActiveTeamUser
     message.activeTeamId = object.activeTeamId ?? ''
     message.role = object.role ?? 0
     message.status = object.status ?? 0
@@ -2446,9 +2460,7 @@ export const ActiveTeamUser = {
   },
 }
 
-function createBaseTeamResponse(): TeamResponse {
-  return { id: '', name: '' }
-}
+const baseTeamResponse: object = { id: '', name: '' }
 
 export const TeamResponse = {
   encode(message: TeamResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -2464,7 +2476,7 @@ export const TeamResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): TeamResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseTeamResponse()
+    const message = { ...baseTeamResponse } as TeamResponse
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -2483,7 +2495,10 @@ export const TeamResponse = {
   },
 
   fromJSON(object: any): TeamResponse {
-    return { id: isSet(object.id) ? String(object.id) : '', name: isSet(object.name) ? String(object.name) : '' }
+    const message = { ...baseTeamResponse } as TeamResponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    return message
   },
 
   toJSON(message: TeamResponse): unknown {
@@ -2494,16 +2509,14 @@ export const TeamResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<TeamResponse>, I>>(object: I): TeamResponse {
-    const message = createBaseTeamResponse()
+    const message = { ...baseTeamResponse } as TeamResponse
     message.id = object.id ?? ''
     message.name = object.name ?? ''
     return message
   },
 }
 
-function createBaseActiveTeamDetailsResponse(): ActiveTeamDetailsResponse {
-  return { id: '', name: '', users: [] }
-}
+const baseActiveTeamDetailsResponse: object = { id: '', name: '' }
 
 export const ActiveTeamDetailsResponse = {
   encode(message: ActiveTeamDetailsResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -2522,7 +2535,10 @@ export const ActiveTeamDetailsResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): ActiveTeamDetailsResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseActiveTeamDetailsResponse()
+    const message = {
+      ...baseActiveTeamDetailsResponse,
+    } as ActiveTeamDetailsResponse
+    message.users = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -2544,11 +2560,13 @@ export const ActiveTeamDetailsResponse = {
   },
 
   fromJSON(object: any): ActiveTeamDetailsResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      users: Array.isArray(object?.users) ? object.users.map((e: any) => UserResponse.fromJSON(e)) : [],
-    }
+    const message = {
+      ...baseActiveTeamDetailsResponse,
+    } as ActiveTeamDetailsResponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.users = (object.users ?? []).map((e: any) => UserResponse.fromJSON(e))
+    return message
   },
 
   toJSON(message: ActiveTeamDetailsResponse): unknown {
@@ -2564,7 +2582,9 @@ export const ActiveTeamDetailsResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<ActiveTeamDetailsResponse>, I>>(object: I): ActiveTeamDetailsResponse {
-    const message = createBaseActiveTeamDetailsResponse()
+    const message = {
+      ...baseActiveTeamDetailsResponse,
+    } as ActiveTeamDetailsResponse
     message.id = object.id ?? ''
     message.name = object.name ?? ''
     message.users = object.users?.map(e => UserResponse.fromPartial(e)) || []
@@ -2572,8 +2592,12 @@ export const ActiveTeamDetailsResponse = {
   },
 }
 
-function createBaseTeamStatistics(): TeamStatistics {
-  return { users: 0, products: 0, nodes: 0, versions: 0, deployments: 0 }
+const baseTeamStatistics: object = {
+  users: 0,
+  products: 0,
+  nodes: 0,
+  versions: 0,
+  deployments: 0,
 }
 
 export const TeamStatistics = {
@@ -2599,7 +2623,7 @@ export const TeamStatistics = {
   decode(input: _m0.Reader | Uint8Array, length?: number): TeamStatistics {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseTeamStatistics()
+    const message = { ...baseTeamStatistics } as TeamStatistics
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -2627,13 +2651,14 @@ export const TeamStatistics = {
   },
 
   fromJSON(object: any): TeamStatistics {
-    return {
-      users: isSet(object.users) ? Number(object.users) : 0,
-      products: isSet(object.products) ? Number(object.products) : 0,
-      nodes: isSet(object.nodes) ? Number(object.nodes) : 0,
-      versions: isSet(object.versions) ? Number(object.versions) : 0,
-      deployments: isSet(object.deployments) ? Number(object.deployments) : 0,
-    }
+    const message = { ...baseTeamStatistics } as TeamStatistics
+    message.users = object.users !== undefined && object.users !== null ? Number(object.users) : 0
+    message.products = object.products !== undefined && object.products !== null ? Number(object.products) : 0
+    message.nodes = object.nodes !== undefined && object.nodes !== null ? Number(object.nodes) : 0
+    message.versions = object.versions !== undefined && object.versions !== null ? Number(object.versions) : 0
+    message.deployments =
+      object.deployments !== undefined && object.deployments !== null ? Number(object.deployments) : 0
+    return message
   },
 
   toJSON(message: TeamStatistics): unknown {
@@ -2647,7 +2672,7 @@ export const TeamStatistics = {
   },
 
   fromPartial<I extends Exact<DeepPartial<TeamStatistics>, I>>(object: I): TeamStatistics {
-    const message = createBaseTeamStatistics()
+    const message = { ...baseTeamStatistics } as TeamStatistics
     message.users = object.users ?? 0
     message.products = object.products ?? 0
     message.nodes = object.nodes ?? 0
@@ -2657,9 +2682,7 @@ export const TeamStatistics = {
   },
 }
 
-function createBaseTeamWithStatsResponse(): TeamWithStatsResponse {
-  return { id: '', name: '', statistics: undefined }
-}
+const baseTeamWithStatsResponse: object = { id: '', name: '' }
 
 export const TeamWithStatsResponse = {
   encode(message: TeamWithStatsResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -2678,7 +2701,7 @@ export const TeamWithStatsResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): TeamWithStatsResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseTeamWithStatsResponse()
+    const message = { ...baseTeamWithStatsResponse } as TeamWithStatsResponse
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -2700,11 +2723,14 @@ export const TeamWithStatsResponse = {
   },
 
   fromJSON(object: any): TeamWithStatsResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      statistics: isSet(object.statistics) ? TeamStatistics.fromJSON(object.statistics) : undefined,
-    }
+    const message = { ...baseTeamWithStatsResponse } as TeamWithStatsResponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.statistics =
+      object.statistics !== undefined && object.statistics !== null
+        ? TeamStatistics.fromJSON(object.statistics)
+        : undefined
+    return message
   },
 
   toJSON(message: TeamWithStatsResponse): unknown {
@@ -2717,7 +2743,7 @@ export const TeamWithStatsResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<TeamWithStatsResponse>, I>>(object: I): TeamWithStatsResponse {
-    const message = createBaseTeamWithStatsResponse()
+    const message = { ...baseTeamWithStatsResponse } as TeamWithStatsResponse
     message.id = object.id ?? ''
     message.name = object.name ?? ''
     message.statistics =
@@ -2728,9 +2754,7 @@ export const TeamWithStatsResponse = {
   },
 }
 
-function createBaseTeamDetailsResponse(): TeamDetailsResponse {
-  return { id: '', name: '', statistics: undefined, users: [] }
-}
+const baseTeamDetailsResponse: object = { id: '', name: '' }
 
 export const TeamDetailsResponse = {
   encode(message: TeamDetailsResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -2752,7 +2776,8 @@ export const TeamDetailsResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): TeamDetailsResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseTeamDetailsResponse()
+    const message = { ...baseTeamDetailsResponse } as TeamDetailsResponse
+    message.users = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -2777,12 +2802,15 @@ export const TeamDetailsResponse = {
   },
 
   fromJSON(object: any): TeamDetailsResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      statistics: isSet(object.statistics) ? TeamStatistics.fromJSON(object.statistics) : undefined,
-      users: Array.isArray(object?.users) ? object.users.map((e: any) => UserResponse.fromJSON(e)) : [],
-    }
+    const message = { ...baseTeamDetailsResponse } as TeamDetailsResponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.statistics =
+      object.statistics !== undefined && object.statistics !== null
+        ? TeamStatistics.fromJSON(object.statistics)
+        : undefined
+    message.users = (object.users ?? []).map((e: any) => UserResponse.fromJSON(e))
+    return message
   },
 
   toJSON(message: TeamDetailsResponse): unknown {
@@ -2800,7 +2828,7 @@ export const TeamDetailsResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<TeamDetailsResponse>, I>>(object: I): TeamDetailsResponse {
-    const message = createBaseTeamDetailsResponse()
+    const message = { ...baseTeamDetailsResponse } as TeamDetailsResponse
     message.id = object.id ?? ''
     message.name = object.name ?? ''
     message.statistics =
@@ -2812,9 +2840,7 @@ export const TeamDetailsResponse = {
   },
 }
 
-function createBaseAllTeamsResponse(): AllTeamsResponse {
-  return { data: [] }
-}
+const baseAllTeamsResponse: object = {}
 
 export const AllTeamsResponse = {
   encode(message: AllTeamsResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -2827,7 +2853,8 @@ export const AllTeamsResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): AllTeamsResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseAllTeamsResponse()
+    const message = { ...baseAllTeamsResponse } as AllTeamsResponse
+    message.data = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -2843,7 +2870,9 @@ export const AllTeamsResponse = {
   },
 
   fromJSON(object: any): AllTeamsResponse {
-    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => TeamWithStatsResponse.fromJSON(e)) : [] }
+    const message = { ...baseAllTeamsResponse } as AllTeamsResponse
+    message.data = (object.data ?? []).map((e: any) => TeamWithStatsResponse.fromJSON(e))
+    return message
   },
 
   toJSON(message: AllTeamsResponse): unknown {
@@ -2857,14 +2886,18 @@ export const AllTeamsResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<AllTeamsResponse>, I>>(object: I): AllTeamsResponse {
-    const message = createBaseAllTeamsResponse()
+    const message = { ...baseAllTeamsResponse } as AllTeamsResponse
     message.data = object.data?.map(e => TeamWithStatsResponse.fromPartial(e)) || []
     return message
   },
 }
 
-function createBaseUserResponse(): UserResponse {
-  return { id: '', name: '', email: '', role: 0, status: 0 }
+const baseUserResponse: object = {
+  id: '',
+  name: '',
+  email: '',
+  role: 0,
+  status: 0,
 }
 
 export const UserResponse = {
@@ -2893,7 +2926,7 @@ export const UserResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): UserResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseUserResponse()
+    const message = { ...baseUserResponse } as UserResponse
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -2924,14 +2957,15 @@ export const UserResponse = {
   },
 
   fromJSON(object: any): UserResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      email: isSet(object.email) ? String(object.email) : '',
-      role: isSet(object.role) ? userRoleFromJSON(object.role) : 0,
-      status: isSet(object.status) ? userStatusFromJSON(object.status) : 0,
-      lastLogin: isSet(object.lastLogin) ? fromJsonTimestamp(object.lastLogin) : undefined,
-    }
+    const message = { ...baseUserResponse } as UserResponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.email = object.email !== undefined && object.email !== null ? String(object.email) : ''
+    message.role = object.role !== undefined && object.role !== null ? userRoleFromJSON(object.role) : 0
+    message.status = object.status !== undefined && object.status !== null ? userStatusFromJSON(object.status) : 0
+    message.lastLogin =
+      object.lastLogin !== undefined && object.lastLogin !== null ? fromJsonTimestamp(object.lastLogin) : undefined
+    return message
   },
 
   toJSON(message: UserResponse): unknown {
@@ -2946,7 +2980,7 @@ export const UserResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<UserResponse>, I>>(object: I): UserResponse {
-    const message = createBaseUserResponse()
+    const message = { ...baseUserResponse } as UserResponse
     message.id = object.id ?? ''
     message.name = object.name ?? ''
     message.email = object.email ?? ''
@@ -2958,9 +2992,7 @@ export const UserResponse = {
   },
 }
 
-function createBaseProductDetailsReponse(): ProductDetailsReponse {
-  return { id: '', audit: undefined, name: '', type: 0, versions: [] }
-}
+const baseProductDetailsReponse: object = { id: '', name: '', type: 0 }
 
 export const ProductDetailsReponse = {
   encode(message: ProductDetailsReponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -2988,7 +3020,8 @@ export const ProductDetailsReponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): ProductDetailsReponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseProductDetailsReponse()
+    const message = { ...baseProductDetailsReponse } as ProductDetailsReponse
+    message.versions = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -3019,14 +3052,16 @@ export const ProductDetailsReponse = {
   },
 
   fromJSON(object: any): ProductDetailsReponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
-      name: isSet(object.name) ? String(object.name) : '',
-      description: isSet(object.description) ? String(object.description) : undefined,
-      type: isSet(object.type) ? productTypeFromJSON(object.type) : 0,
-      versions: Array.isArray(object?.versions) ? object.versions.map((e: any) => VersionResponse.fromJSON(e)) : [],
-    }
+    const message = { ...baseProductDetailsReponse } as ProductDetailsReponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.audit =
+      object.audit !== undefined && object.audit !== null ? AuditResponse.fromJSON(object.audit) : undefined
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.description =
+      object.description !== undefined && object.description !== null ? String(object.description) : undefined
+    message.type = object.type !== undefined && object.type !== null ? productTypeFromJSON(object.type) : 0
+    message.versions = (object.versions ?? []).map((e: any) => VersionResponse.fromJSON(e))
+    return message
   },
 
   toJSON(message: ProductDetailsReponse): unknown {
@@ -3045,7 +3080,7 @@ export const ProductDetailsReponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<ProductDetailsReponse>, I>>(object: I): ProductDetailsReponse {
-    const message = createBaseProductDetailsReponse()
+    const message = { ...baseProductDetailsReponse } as ProductDetailsReponse
     message.id = object.id ?? ''
     message.audit =
       object.audit !== undefined && object.audit !== null ? AuditResponse.fromPartial(object.audit) : undefined
@@ -3057,8 +3092,11 @@ export const ProductDetailsReponse = {
   },
 }
 
-function createBaseProductReponse(): ProductReponse {
-  return { id: '', audit: undefined, name: '', type: 0, versionCount: 0 }
+const baseProductReponse: object = {
+  id: '',
+  name: '',
+  type: 0,
+  versionCount: 0,
 }
 
 export const ProductReponse = {
@@ -3087,7 +3125,7 @@ export const ProductReponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): ProductReponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseProductReponse()
+    const message = { ...baseProductReponse } as ProductReponse
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -3118,14 +3156,17 @@ export const ProductReponse = {
   },
 
   fromJSON(object: any): ProductReponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
-      name: isSet(object.name) ? String(object.name) : '',
-      description: isSet(object.description) ? String(object.description) : undefined,
-      type: isSet(object.type) ? productTypeFromJSON(object.type) : 0,
-      versionCount: isSet(object.versionCount) ? Number(object.versionCount) : 0,
-    }
+    const message = { ...baseProductReponse } as ProductReponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.audit =
+      object.audit !== undefined && object.audit !== null ? AuditResponse.fromJSON(object.audit) : undefined
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.description =
+      object.description !== undefined && object.description !== null ? String(object.description) : undefined
+    message.type = object.type !== undefined && object.type !== null ? productTypeFromJSON(object.type) : 0
+    message.versionCount =
+      object.versionCount !== undefined && object.versionCount !== null ? Number(object.versionCount) : 0
+    return message
   },
 
   toJSON(message: ProductReponse): unknown {
@@ -3140,7 +3181,7 @@ export const ProductReponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<ProductReponse>, I>>(object: I): ProductReponse {
-    const message = createBaseProductReponse()
+    const message = { ...baseProductReponse } as ProductReponse
     message.id = object.id ?? ''
     message.audit =
       object.audit !== undefined && object.audit !== null ? AuditResponse.fromPartial(object.audit) : undefined
@@ -3152,9 +3193,7 @@ export const ProductReponse = {
   },
 }
 
-function createBaseProductListResponse(): ProductListResponse {
-  return { data: [] }
-}
+const baseProductListResponse: object = {}
 
 export const ProductListResponse = {
   encode(message: ProductListResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -3167,7 +3206,8 @@ export const ProductListResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): ProductListResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseProductListResponse()
+    const message = { ...baseProductListResponse } as ProductListResponse
+    message.data = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -3183,7 +3223,9 @@ export const ProductListResponse = {
   },
 
   fromJSON(object: any): ProductListResponse {
-    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => ProductReponse.fromJSON(e)) : [] }
+    const message = { ...baseProductListResponse } as ProductListResponse
+    message.data = (object.data ?? []).map((e: any) => ProductReponse.fromJSON(e))
+    return message
   },
 
   toJSON(message: ProductListResponse): unknown {
@@ -3197,15 +3239,13 @@ export const ProductListResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<ProductListResponse>, I>>(object: I): ProductListResponse {
-    const message = createBaseProductListResponse()
+    const message = { ...baseProductListResponse } as ProductListResponse
     message.data = object.data?.map(e => ProductReponse.fromPartial(e)) || []
     return message
   },
 }
 
-function createBaseCreateProductRequest(): CreateProductRequest {
-  return { accessedBy: '', name: '', type: 0 }
-}
+const baseCreateProductRequest: object = { accessedBy: '', name: '', type: 0 }
 
 export const CreateProductRequest = {
   encode(message: CreateProductRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -3227,7 +3267,7 @@ export const CreateProductRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): CreateProductRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseCreateProductRequest()
+    const message = { ...baseCreateProductRequest } as CreateProductRequest
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -3252,12 +3292,13 @@ export const CreateProductRequest = {
   },
 
   fromJSON(object: any): CreateProductRequest {
-    return {
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      description: isSet(object.description) ? String(object.description) : undefined,
-      type: isSet(object.type) ? productTypeFromJSON(object.type) : 0,
-    }
+    const message = { ...baseCreateProductRequest } as CreateProductRequest
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.description =
+      object.description !== undefined && object.description !== null ? String(object.description) : undefined
+    message.type = object.type !== undefined && object.type !== null ? productTypeFromJSON(object.type) : 0
+    return message
   },
 
   toJSON(message: CreateProductRequest): unknown {
@@ -3270,7 +3311,7 @@ export const CreateProductRequest = {
   },
 
   fromPartial<I extends Exact<DeepPartial<CreateProductRequest>, I>>(object: I): CreateProductRequest {
-    const message = createBaseCreateProductRequest()
+    const message = { ...baseCreateProductRequest } as CreateProductRequest
     message.accessedBy = object.accessedBy ?? ''
     message.name = object.name ?? ''
     message.description = object.description ?? undefined
@@ -3279,9 +3320,7 @@ export const CreateProductRequest = {
   },
 }
 
-function createBaseUpdateProductRequest(): UpdateProductRequest {
-  return { id: '', accessedBy: '', name: '' }
-}
+const baseUpdateProductRequest: object = { id: '', accessedBy: '', name: '' }
 
 export const UpdateProductRequest = {
   encode(message: UpdateProductRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -3306,7 +3345,7 @@ export const UpdateProductRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): UpdateProductRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseUpdateProductRequest()
+    const message = { ...baseUpdateProductRequest } as UpdateProductRequest
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -3334,13 +3373,15 @@ export const UpdateProductRequest = {
   },
 
   fromJSON(object: any): UpdateProductRequest {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      description: isSet(object.description) ? String(object.description) : undefined,
-      changelog: isSet(object.changelog) ? String(object.changelog) : undefined,
-    }
+    const message = { ...baseUpdateProductRequest } as UpdateProductRequest
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.description =
+      object.description !== undefined && object.description !== null ? String(object.description) : undefined
+    message.changelog =
+      object.changelog !== undefined && object.changelog !== null ? String(object.changelog) : undefined
+    return message
   },
 
   toJSON(message: UpdateProductRequest): unknown {
@@ -3354,7 +3395,7 @@ export const UpdateProductRequest = {
   },
 
   fromPartial<I extends Exact<DeepPartial<UpdateProductRequest>, I>>(object: I): UpdateProductRequest {
-    const message = createBaseUpdateProductRequest()
+    const message = { ...baseUpdateProductRequest } as UpdateProductRequest
     message.id = object.id ?? ''
     message.accessedBy = object.accessedBy ?? ''
     message.name = object.name ?? ''
@@ -3364,9 +3405,7 @@ export const UpdateProductRequest = {
   },
 }
 
-function createBaseRegistryResponse(): RegistryResponse {
-  return { id: '', audit: undefined, name: '', url: '', type: 0 }
-}
+const baseRegistryResponse: object = { id: '', name: '', url: '', type: 0 }
 
 export const RegistryResponse = {
   encode(message: RegistryResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -3397,7 +3436,7 @@ export const RegistryResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): RegistryResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseRegistryResponse()
+    const message = { ...baseRegistryResponse } as RegistryResponse
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -3431,15 +3470,17 @@ export const RegistryResponse = {
   },
 
   fromJSON(object: any): RegistryResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
-      name: isSet(object.name) ? String(object.name) : '',
-      description: isSet(object.description) ? String(object.description) : undefined,
-      icon: isSet(object.icon) ? String(object.icon) : undefined,
-      url: isSet(object.url) ? String(object.url) : '',
-      type: isSet(object.type) ? registryTypeFromJSON(object.type) : 0,
-    }
+    const message = { ...baseRegistryResponse } as RegistryResponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.audit =
+      object.audit !== undefined && object.audit !== null ? AuditResponse.fromJSON(object.audit) : undefined
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.description =
+      object.description !== undefined && object.description !== null ? String(object.description) : undefined
+    message.icon = object.icon !== undefined && object.icon !== null ? String(object.icon) : undefined
+    message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
+    message.type = object.type !== undefined && object.type !== null ? registryTypeFromJSON(object.type) : 0
+    return message
   },
 
   toJSON(message: RegistryResponse): unknown {
@@ -3455,7 +3496,7 @@ export const RegistryResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<RegistryResponse>, I>>(object: I): RegistryResponse {
-    const message = createBaseRegistryResponse()
+    const message = { ...baseRegistryResponse } as RegistryResponse
     message.id = object.id ?? ''
     message.audit =
       object.audit !== undefined && object.audit !== null ? AuditResponse.fromPartial(object.audit) : undefined
@@ -3468,9 +3509,7 @@ export const RegistryResponse = {
   },
 }
 
-function createBaseRegistryListResponse(): RegistryListResponse {
-  return { data: [] }
-}
+const baseRegistryListResponse: object = {}
 
 export const RegistryListResponse = {
   encode(message: RegistryListResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -3483,7 +3522,8 @@ export const RegistryListResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): RegistryListResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseRegistryListResponse()
+    const message = { ...baseRegistryListResponse } as RegistryListResponse
+    message.data = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -3499,7 +3539,9 @@ export const RegistryListResponse = {
   },
 
   fromJSON(object: any): RegistryListResponse {
-    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => RegistryResponse.fromJSON(e)) : [] }
+    const message = { ...baseRegistryListResponse } as RegistryListResponse
+    message.data = (object.data ?? []).map((e: any) => RegistryResponse.fromJSON(e))
+    return message
   },
 
   toJSON(message: RegistryListResponse): unknown {
@@ -3513,15 +3555,13 @@ export const RegistryListResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<RegistryListResponse>, I>>(object: I): RegistryListResponse {
-    const message = createBaseRegistryListResponse()
+    const message = { ...baseRegistryListResponse } as RegistryListResponse
     message.data = object.data?.map(e => RegistryResponse.fromPartial(e)) || []
     return message
   },
 }
 
-function createBaseHubRegistryDetails(): HubRegistryDetails {
-  return { imageNamePrefix: '' }
-}
+const baseHubRegistryDetails: object = { imageNamePrefix: '' }
 
 export const HubRegistryDetails = {
   encode(message: HubRegistryDetails, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -3534,7 +3574,7 @@ export const HubRegistryDetails = {
   decode(input: _m0.Reader | Uint8Array, length?: number): HubRegistryDetails {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseHubRegistryDetails()
+    const message = { ...baseHubRegistryDetails } as HubRegistryDetails
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -3550,7 +3590,10 @@ export const HubRegistryDetails = {
   },
 
   fromJSON(object: any): HubRegistryDetails {
-    return { imageNamePrefix: isSet(object.imageNamePrefix) ? String(object.imageNamePrefix) : '' }
+    const message = { ...baseHubRegistryDetails } as HubRegistryDetails
+    message.imageNamePrefix =
+      object.imageNamePrefix !== undefined && object.imageNamePrefix !== null ? String(object.imageNamePrefix) : ''
+    return message
   },
 
   toJSON(message: HubRegistryDetails): unknown {
@@ -3560,15 +3603,13 @@ export const HubRegistryDetails = {
   },
 
   fromPartial<I extends Exact<DeepPartial<HubRegistryDetails>, I>>(object: I): HubRegistryDetails {
-    const message = createBaseHubRegistryDetails()
+    const message = { ...baseHubRegistryDetails } as HubRegistryDetails
     message.imageNamePrefix = object.imageNamePrefix ?? ''
     return message
   },
 }
 
-function createBaseV2RegistryDetails(): V2RegistryDetails {
-  return { url: '' }
-}
+const baseV2RegistryDetails: object = { url: '' }
 
 export const V2RegistryDetails = {
   encode(message: V2RegistryDetails, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -3587,7 +3628,7 @@ export const V2RegistryDetails = {
   decode(input: _m0.Reader | Uint8Array, length?: number): V2RegistryDetails {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseV2RegistryDetails()
+    const message = { ...baseV2RegistryDetails } as V2RegistryDetails
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -3609,11 +3650,11 @@ export const V2RegistryDetails = {
   },
 
   fromJSON(object: any): V2RegistryDetails {
-    return {
-      url: isSet(object.url) ? String(object.url) : '',
-      user: isSet(object.user) ? String(object.user) : undefined,
-      token: isSet(object.token) ? String(object.token) : undefined,
-    }
+    const message = { ...baseV2RegistryDetails } as V2RegistryDetails
+    message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
+    message.user = object.user !== undefined && object.user !== null ? String(object.user) : undefined
+    message.token = object.token !== undefined && object.token !== null ? String(object.token) : undefined
+    return message
   },
 
   toJSON(message: V2RegistryDetails): unknown {
@@ -3625,7 +3666,7 @@ export const V2RegistryDetails = {
   },
 
   fromPartial<I extends Exact<DeepPartial<V2RegistryDetails>, I>>(object: I): V2RegistryDetails {
-    const message = createBaseV2RegistryDetails()
+    const message = { ...baseV2RegistryDetails } as V2RegistryDetails
     message.url = object.url ?? ''
     message.user = object.user ?? undefined
     message.token = object.token ?? undefined
@@ -3633,8 +3674,11 @@ export const V2RegistryDetails = {
   },
 }
 
-function createBaseGitlabRegistryDetails(): GitlabRegistryDetails {
-  return { user: '', token: '', imageNamePrefix: '', namespace: 0 }
+const baseGitlabRegistryDetails: object = {
+  user: '',
+  token: '',
+  imageNamePrefix: '',
+  namespace: 0,
 }
 
 export const GitlabRegistryDetails = {
@@ -3663,7 +3707,7 @@ export const GitlabRegistryDetails = {
   decode(input: _m0.Reader | Uint8Array, length?: number): GitlabRegistryDetails {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseGitlabRegistryDetails()
+    const message = { ...baseGitlabRegistryDetails } as GitlabRegistryDetails
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -3694,14 +3738,16 @@ export const GitlabRegistryDetails = {
   },
 
   fromJSON(object: any): GitlabRegistryDetails {
-    return {
-      user: isSet(object.user) ? String(object.user) : '',
-      token: isSet(object.token) ? String(object.token) : '',
-      imageNamePrefix: isSet(object.imageNamePrefix) ? String(object.imageNamePrefix) : '',
-      url: isSet(object.url) ? String(object.url) : undefined,
-      apiUrl: isSet(object.apiUrl) ? String(object.apiUrl) : undefined,
-      namespace: isSet(object.namespace) ? registryNamespaceFromJSON(object.namespace) : 0,
-    }
+    const message = { ...baseGitlabRegistryDetails } as GitlabRegistryDetails
+    message.user = object.user !== undefined && object.user !== null ? String(object.user) : ''
+    message.token = object.token !== undefined && object.token !== null ? String(object.token) : ''
+    message.imageNamePrefix =
+      object.imageNamePrefix !== undefined && object.imageNamePrefix !== null ? String(object.imageNamePrefix) : ''
+    message.url = object.url !== undefined && object.url !== null ? String(object.url) : undefined
+    message.apiUrl = object.apiUrl !== undefined && object.apiUrl !== null ? String(object.apiUrl) : undefined
+    message.namespace =
+      object.namespace !== undefined && object.namespace !== null ? registryNamespaceFromJSON(object.namespace) : 0
+    return message
   },
 
   toJSON(message: GitlabRegistryDetails): unknown {
@@ -3716,7 +3762,7 @@ export const GitlabRegistryDetails = {
   },
 
   fromPartial<I extends Exact<DeepPartial<GitlabRegistryDetails>, I>>(object: I): GitlabRegistryDetails {
-    const message = createBaseGitlabRegistryDetails()
+    const message = { ...baseGitlabRegistryDetails } as GitlabRegistryDetails
     message.user = object.user ?? ''
     message.token = object.token ?? ''
     message.imageNamePrefix = object.imageNamePrefix ?? ''
@@ -3727,8 +3773,11 @@ export const GitlabRegistryDetails = {
   },
 }
 
-function createBaseGithubRegistryDetails(): GithubRegistryDetails {
-  return { user: '', token: '', imageNamePrefix: '', namespace: 0 }
+const baseGithubRegistryDetails: object = {
+  user: '',
+  token: '',
+  imageNamePrefix: '',
+  namespace: 0,
 }
 
 export const GithubRegistryDetails = {
@@ -3751,7 +3800,7 @@ export const GithubRegistryDetails = {
   decode(input: _m0.Reader | Uint8Array, length?: number): GithubRegistryDetails {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseGithubRegistryDetails()
+    const message = { ...baseGithubRegistryDetails } as GithubRegistryDetails
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -3776,12 +3825,14 @@ export const GithubRegistryDetails = {
   },
 
   fromJSON(object: any): GithubRegistryDetails {
-    return {
-      user: isSet(object.user) ? String(object.user) : '',
-      token: isSet(object.token) ? String(object.token) : '',
-      imageNamePrefix: isSet(object.imageNamePrefix) ? String(object.imageNamePrefix) : '',
-      namespace: isSet(object.namespace) ? registryNamespaceFromJSON(object.namespace) : 0,
-    }
+    const message = { ...baseGithubRegistryDetails } as GithubRegistryDetails
+    message.user = object.user !== undefined && object.user !== null ? String(object.user) : ''
+    message.token = object.token !== undefined && object.token !== null ? String(object.token) : ''
+    message.imageNamePrefix =
+      object.imageNamePrefix !== undefined && object.imageNamePrefix !== null ? String(object.imageNamePrefix) : ''
+    message.namespace =
+      object.namespace !== undefined && object.namespace !== null ? registryNamespaceFromJSON(object.namespace) : 0
+    return message
   },
 
   toJSON(message: GithubRegistryDetails): unknown {
@@ -3794,7 +3845,7 @@ export const GithubRegistryDetails = {
   },
 
   fromPartial<I extends Exact<DeepPartial<GithubRegistryDetails>, I>>(object: I): GithubRegistryDetails {
-    const message = createBaseGithubRegistryDetails()
+    const message = { ...baseGithubRegistryDetails } as GithubRegistryDetails
     message.user = object.user ?? ''
     message.token = object.token ?? ''
     message.imageNamePrefix = object.imageNamePrefix ?? ''
@@ -3803,9 +3854,7 @@ export const GithubRegistryDetails = {
   },
 }
 
-function createBaseGoogleRegistryDetails(): GoogleRegistryDetails {
-  return { url: '', imageNamePrefix: '' }
-}
+const baseGoogleRegistryDetails: object = { url: '', imageNamePrefix: '' }
 
 export const GoogleRegistryDetails = {
   encode(message: GoogleRegistryDetails, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -3827,7 +3876,7 @@ export const GoogleRegistryDetails = {
   decode(input: _m0.Reader | Uint8Array, length?: number): GoogleRegistryDetails {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseGoogleRegistryDetails()
+    const message = { ...baseGoogleRegistryDetails } as GoogleRegistryDetails
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -3852,12 +3901,13 @@ export const GoogleRegistryDetails = {
   },
 
   fromJSON(object: any): GoogleRegistryDetails {
-    return {
-      url: isSet(object.url) ? String(object.url) : '',
-      user: isSet(object.user) ? String(object.user) : undefined,
-      token: isSet(object.token) ? String(object.token) : undefined,
-      imageNamePrefix: isSet(object.imageNamePrefix) ? String(object.imageNamePrefix) : '',
-    }
+    const message = { ...baseGoogleRegistryDetails } as GoogleRegistryDetails
+    message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
+    message.user = object.user !== undefined && object.user !== null ? String(object.user) : undefined
+    message.token = object.token !== undefined && object.token !== null ? String(object.token) : undefined
+    message.imageNamePrefix =
+      object.imageNamePrefix !== undefined && object.imageNamePrefix !== null ? String(object.imageNamePrefix) : ''
+    return message
   },
 
   toJSON(message: GoogleRegistryDetails): unknown {
@@ -3870,7 +3920,7 @@ export const GoogleRegistryDetails = {
   },
 
   fromPartial<I extends Exact<DeepPartial<GoogleRegistryDetails>, I>>(object: I): GoogleRegistryDetails {
-    const message = createBaseGoogleRegistryDetails()
+    const message = { ...baseGoogleRegistryDetails } as GoogleRegistryDetails
     message.url = object.url ?? ''
     message.user = object.user ?? undefined
     message.token = object.token ?? undefined
@@ -3879,17 +3929,7 @@ export const GoogleRegistryDetails = {
   },
 }
 
-function createBaseCreateRegistryRequest(): CreateRegistryRequest {
-  return {
-    accessedBy: '',
-    name: '',
-    hub: undefined,
-    v2: undefined,
-    gitlab: undefined,
-    github: undefined,
-    google: undefined,
-  }
-}
+const baseCreateRegistryRequest: object = { accessedBy: '', name: '' }
 
 export const CreateRegistryRequest = {
   encode(message: CreateRegistryRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -3926,7 +3966,7 @@ export const CreateRegistryRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): CreateRegistryRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseCreateRegistryRequest()
+    const message = { ...baseCreateRegistryRequest } as CreateRegistryRequest
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -3966,17 +4006,21 @@ export const CreateRegistryRequest = {
   },
 
   fromJSON(object: any): CreateRegistryRequest {
-    return {
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      description: isSet(object.description) ? String(object.description) : undefined,
-      icon: isSet(object.icon) ? String(object.icon) : undefined,
-      hub: isSet(object.hub) ? HubRegistryDetails.fromJSON(object.hub) : undefined,
-      v2: isSet(object.v2) ? V2RegistryDetails.fromJSON(object.v2) : undefined,
-      gitlab: isSet(object.gitlab) ? GitlabRegistryDetails.fromJSON(object.gitlab) : undefined,
-      github: isSet(object.github) ? GithubRegistryDetails.fromJSON(object.github) : undefined,
-      google: isSet(object.google) ? GoogleRegistryDetails.fromJSON(object.google) : undefined,
-    }
+    const message = { ...baseCreateRegistryRequest } as CreateRegistryRequest
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.description =
+      object.description !== undefined && object.description !== null ? String(object.description) : undefined
+    message.icon = object.icon !== undefined && object.icon !== null ? String(object.icon) : undefined
+    message.hub = object.hub !== undefined && object.hub !== null ? HubRegistryDetails.fromJSON(object.hub) : undefined
+    message.v2 = object.v2 !== undefined && object.v2 !== null ? V2RegistryDetails.fromJSON(object.v2) : undefined
+    message.gitlab =
+      object.gitlab !== undefined && object.gitlab !== null ? GitlabRegistryDetails.fromJSON(object.gitlab) : undefined
+    message.github =
+      object.github !== undefined && object.github !== null ? GithubRegistryDetails.fromJSON(object.github) : undefined
+    message.google =
+      object.google !== undefined && object.google !== null ? GoogleRegistryDetails.fromJSON(object.google) : undefined
+    return message
   },
 
   toJSON(message: CreateRegistryRequest): unknown {
@@ -3997,7 +4041,7 @@ export const CreateRegistryRequest = {
   },
 
   fromPartial<I extends Exact<DeepPartial<CreateRegistryRequest>, I>>(object: I): CreateRegistryRequest {
-    const message = createBaseCreateRegistryRequest()
+    const message = { ...baseCreateRegistryRequest } as CreateRegistryRequest
     message.accessedBy = object.accessedBy ?? ''
     message.name = object.name ?? ''
     message.description = object.description ?? undefined
@@ -4021,18 +4065,7 @@ export const CreateRegistryRequest = {
   },
 }
 
-function createBaseUpdateRegistryRequest(): UpdateRegistryRequest {
-  return {
-    id: '',
-    accessedBy: '',
-    name: '',
-    hub: undefined,
-    v2: undefined,
-    gitlab: undefined,
-    github: undefined,
-    google: undefined,
-  }
-}
+const baseUpdateRegistryRequest: object = { id: '', accessedBy: '', name: '' }
 
 export const UpdateRegistryRequest = {
   encode(message: UpdateRegistryRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -4072,7 +4105,7 @@ export const UpdateRegistryRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): UpdateRegistryRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseUpdateRegistryRequest()
+    const message = { ...baseUpdateRegistryRequest } as UpdateRegistryRequest
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -4115,18 +4148,22 @@ export const UpdateRegistryRequest = {
   },
 
   fromJSON(object: any): UpdateRegistryRequest {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      description: isSet(object.description) ? String(object.description) : undefined,
-      icon: isSet(object.icon) ? String(object.icon) : undefined,
-      hub: isSet(object.hub) ? HubRegistryDetails.fromJSON(object.hub) : undefined,
-      v2: isSet(object.v2) ? V2RegistryDetails.fromJSON(object.v2) : undefined,
-      gitlab: isSet(object.gitlab) ? GitlabRegistryDetails.fromJSON(object.gitlab) : undefined,
-      github: isSet(object.github) ? GithubRegistryDetails.fromJSON(object.github) : undefined,
-      google: isSet(object.google) ? GoogleRegistryDetails.fromJSON(object.google) : undefined,
-    }
+    const message = { ...baseUpdateRegistryRequest } as UpdateRegistryRequest
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.description =
+      object.description !== undefined && object.description !== null ? String(object.description) : undefined
+    message.icon = object.icon !== undefined && object.icon !== null ? String(object.icon) : undefined
+    message.hub = object.hub !== undefined && object.hub !== null ? HubRegistryDetails.fromJSON(object.hub) : undefined
+    message.v2 = object.v2 !== undefined && object.v2 !== null ? V2RegistryDetails.fromJSON(object.v2) : undefined
+    message.gitlab =
+      object.gitlab !== undefined && object.gitlab !== null ? GitlabRegistryDetails.fromJSON(object.gitlab) : undefined
+    message.github =
+      object.github !== undefined && object.github !== null ? GithubRegistryDetails.fromJSON(object.github) : undefined
+    message.google =
+      object.google !== undefined && object.google !== null ? GoogleRegistryDetails.fromJSON(object.google) : undefined
+    return message
   },
 
   toJSON(message: UpdateRegistryRequest): unknown {
@@ -4148,7 +4185,7 @@ export const UpdateRegistryRequest = {
   },
 
   fromPartial<I extends Exact<DeepPartial<UpdateRegistryRequest>, I>>(object: I): UpdateRegistryRequest {
-    const message = createBaseUpdateRegistryRequest()
+    const message = { ...baseUpdateRegistryRequest } as UpdateRegistryRequest
     message.id = object.id ?? ''
     message.accessedBy = object.accessedBy ?? ''
     message.name = object.name ?? ''
@@ -4173,18 +4210,7 @@ export const UpdateRegistryRequest = {
   },
 }
 
-function createBaseRegistryDetailsResponse(): RegistryDetailsResponse {
-  return {
-    id: '',
-    audit: undefined,
-    name: '',
-    hub: undefined,
-    v2: undefined,
-    gitlab: undefined,
-    github: undefined,
-    google: undefined,
-  }
-}
+const baseRegistryDetailsResponse: object = { id: '', name: '' }
 
 export const RegistryDetailsResponse = {
   encode(message: RegistryDetailsResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -4224,7 +4250,9 @@ export const RegistryDetailsResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): RegistryDetailsResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseRegistryDetailsResponse()
+    const message = {
+      ...baseRegistryDetailsResponse,
+    } as RegistryDetailsResponse
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -4267,18 +4295,25 @@ export const RegistryDetailsResponse = {
   },
 
   fromJSON(object: any): RegistryDetailsResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
-      name: isSet(object.name) ? String(object.name) : '',
-      description: isSet(object.description) ? String(object.description) : undefined,
-      icon: isSet(object.icon) ? String(object.icon) : undefined,
-      hub: isSet(object.hub) ? HubRegistryDetails.fromJSON(object.hub) : undefined,
-      v2: isSet(object.v2) ? V2RegistryDetails.fromJSON(object.v2) : undefined,
-      gitlab: isSet(object.gitlab) ? GitlabRegistryDetails.fromJSON(object.gitlab) : undefined,
-      github: isSet(object.github) ? GithubRegistryDetails.fromJSON(object.github) : undefined,
-      google: isSet(object.google) ? GoogleRegistryDetails.fromJSON(object.google) : undefined,
-    }
+    const message = {
+      ...baseRegistryDetailsResponse,
+    } as RegistryDetailsResponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.audit =
+      object.audit !== undefined && object.audit !== null ? AuditResponse.fromJSON(object.audit) : undefined
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.description =
+      object.description !== undefined && object.description !== null ? String(object.description) : undefined
+    message.icon = object.icon !== undefined && object.icon !== null ? String(object.icon) : undefined
+    message.hub = object.hub !== undefined && object.hub !== null ? HubRegistryDetails.fromJSON(object.hub) : undefined
+    message.v2 = object.v2 !== undefined && object.v2 !== null ? V2RegistryDetails.fromJSON(object.v2) : undefined
+    message.gitlab =
+      object.gitlab !== undefined && object.gitlab !== null ? GitlabRegistryDetails.fromJSON(object.gitlab) : undefined
+    message.github =
+      object.github !== undefined && object.github !== null ? GithubRegistryDetails.fromJSON(object.github) : undefined
+    message.google =
+      object.google !== undefined && object.google !== null ? GoogleRegistryDetails.fromJSON(object.google) : undefined
+    return message
   },
 
   toJSON(message: RegistryDetailsResponse): unknown {
@@ -4300,7 +4335,9 @@ export const RegistryDetailsResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<RegistryDetailsResponse>, I>>(object: I): RegistryDetailsResponse {
-    const message = createBaseRegistryDetailsResponse()
+    const message = {
+      ...baseRegistryDetailsResponse,
+    } as RegistryDetailsResponse
     message.id = object.id ?? ''
     message.audit =
       object.audit !== undefined && object.audit !== null ? AuditResponse.fromPartial(object.audit) : undefined
@@ -4326,8 +4363,11 @@ export const RegistryDetailsResponse = {
   },
 }
 
-function createBaseCreateVersionRequest(): CreateVersionRequest {
-  return { accessedBy: '', productId: '', name: '', type: 0 }
+const baseCreateVersionRequest: object = {
+  accessedBy: '',
+  productId: '',
+  name: '',
+  type: 0,
 }
 
 export const CreateVersionRequest = {
@@ -4353,7 +4393,7 @@ export const CreateVersionRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): CreateVersionRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseCreateVersionRequest()
+    const message = { ...baseCreateVersionRequest } as CreateVersionRequest
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -4381,13 +4421,14 @@ export const CreateVersionRequest = {
   },
 
   fromJSON(object: any): CreateVersionRequest {
-    return {
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      productId: isSet(object.productId) ? String(object.productId) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      changelog: isSet(object.changelog) ? String(object.changelog) : undefined,
-      type: isSet(object.type) ? versionTypeFromJSON(object.type) : 0,
-    }
+    const message = { ...baseCreateVersionRequest } as CreateVersionRequest
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.productId = object.productId !== undefined && object.productId !== null ? String(object.productId) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.changelog =
+      object.changelog !== undefined && object.changelog !== null ? String(object.changelog) : undefined
+    message.type = object.type !== undefined && object.type !== null ? versionTypeFromJSON(object.type) : 0
+    return message
   },
 
   toJSON(message: CreateVersionRequest): unknown {
@@ -4401,7 +4442,7 @@ export const CreateVersionRequest = {
   },
 
   fromPartial<I extends Exact<DeepPartial<CreateVersionRequest>, I>>(object: I): CreateVersionRequest {
-    const message = createBaseCreateVersionRequest()
+    const message = { ...baseCreateVersionRequest } as CreateVersionRequest
     message.accessedBy = object.accessedBy ?? ''
     message.productId = object.productId ?? ''
     message.name = object.name ?? ''
@@ -4411,9 +4452,7 @@ export const CreateVersionRequest = {
   },
 }
 
-function createBaseUpdateVersionRequest(): UpdateVersionRequest {
-  return { id: '', accessedBy: '', name: '' }
-}
+const baseUpdateVersionRequest: object = { id: '', accessedBy: '', name: '' }
 
 export const UpdateVersionRequest = {
   encode(message: UpdateVersionRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -4435,7 +4474,7 @@ export const UpdateVersionRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): UpdateVersionRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseUpdateVersionRequest()
+    const message = { ...baseUpdateVersionRequest } as UpdateVersionRequest
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -4460,12 +4499,13 @@ export const UpdateVersionRequest = {
   },
 
   fromJSON(object: any): UpdateVersionRequest {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      changelog: isSet(object.changelog) ? String(object.changelog) : undefined,
-    }
+    const message = { ...baseUpdateVersionRequest } as UpdateVersionRequest
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.changelog =
+      object.changelog !== undefined && object.changelog !== null ? String(object.changelog) : undefined
+    return message
   },
 
   toJSON(message: UpdateVersionRequest): unknown {
@@ -4478,7 +4518,7 @@ export const UpdateVersionRequest = {
   },
 
   fromPartial<I extends Exact<DeepPartial<UpdateVersionRequest>, I>>(object: I): UpdateVersionRequest {
-    const message = createBaseUpdateVersionRequest()
+    const message = { ...baseUpdateVersionRequest } as UpdateVersionRequest
     message.id = object.id ?? ''
     message.accessedBy = object.accessedBy ?? ''
     message.name = object.name ?? ''
@@ -4487,8 +4527,13 @@ export const UpdateVersionRequest = {
   },
 }
 
-function createBaseVersionResponse(): VersionResponse {
-  return { id: '', audit: undefined, name: '', changelog: '', default: false, type: 0, increasable: false }
+const baseVersionResponse: object = {
+  id: '',
+  name: '',
+  changelog: '',
+  default: false,
+  type: 0,
+  increasable: false,
 }
 
 export const VersionResponse = {
@@ -4520,7 +4565,7 @@ export const VersionResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): VersionResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseVersionResponse()
+    const message = { ...baseVersionResponse } as VersionResponse
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -4554,15 +4599,17 @@ export const VersionResponse = {
   },
 
   fromJSON(object: any): VersionResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
-      name: isSet(object.name) ? String(object.name) : '',
-      changelog: isSet(object.changelog) ? String(object.changelog) : '',
-      default: isSet(object.default) ? Boolean(object.default) : false,
-      type: isSet(object.type) ? versionTypeFromJSON(object.type) : 0,
-      increasable: isSet(object.increasable) ? Boolean(object.increasable) : false,
-    }
+    const message = { ...baseVersionResponse } as VersionResponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.audit =
+      object.audit !== undefined && object.audit !== null ? AuditResponse.fromJSON(object.audit) : undefined
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.changelog = object.changelog !== undefined && object.changelog !== null ? String(object.changelog) : ''
+    message.default = object.default !== undefined && object.default !== null ? Boolean(object.default) : false
+    message.type = object.type !== undefined && object.type !== null ? versionTypeFromJSON(object.type) : 0
+    message.increasable =
+      object.increasable !== undefined && object.increasable !== null ? Boolean(object.increasable) : false
+    return message
   },
 
   toJSON(message: VersionResponse): unknown {
@@ -4578,7 +4625,7 @@ export const VersionResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<VersionResponse>, I>>(object: I): VersionResponse {
-    const message = createBaseVersionResponse()
+    const message = { ...baseVersionResponse } as VersionResponse
     message.id = object.id ?? ''
     message.audit =
       object.audit !== undefined && object.audit !== null ? AuditResponse.fromPartial(object.audit) : undefined
@@ -4591,9 +4638,7 @@ export const VersionResponse = {
   },
 }
 
-function createBaseVersionListResponse(): VersionListResponse {
-  return { data: [] }
-}
+const baseVersionListResponse: object = {}
 
 export const VersionListResponse = {
   encode(message: VersionListResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -4606,7 +4651,8 @@ export const VersionListResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): VersionListResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseVersionListResponse()
+    const message = { ...baseVersionListResponse } as VersionListResponse
+    message.data = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -4622,7 +4668,9 @@ export const VersionListResponse = {
   },
 
   fromJSON(object: any): VersionListResponse {
-    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => VersionResponse.fromJSON(e)) : [] }
+    const message = { ...baseVersionListResponse } as VersionListResponse
+    message.data = (object.data ?? []).map((e: any) => VersionResponse.fromJSON(e))
+    return message
   },
 
   toJSON(message: VersionListResponse): unknown {
@@ -4636,25 +4684,20 @@ export const VersionListResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<VersionListResponse>, I>>(object: I): VersionListResponse {
-    const message = createBaseVersionListResponse()
+    const message = { ...baseVersionListResponse } as VersionListResponse
     message.data = object.data?.map(e => VersionResponse.fromPartial(e)) || []
     return message
   },
 }
 
-function createBaseVersionDetailsResponse(): VersionDetailsResponse {
-  return {
-    id: '',
-    audit: undefined,
-    name: '',
-    changelog: '',
-    default: false,
-    type: 0,
-    mutable: false,
-    increasable: false,
-    images: [],
-    deployments: [],
-  }
+const baseVersionDetailsResponse: object = {
+  id: '',
+  name: '',
+  changelog: '',
+  default: false,
+  type: 0,
+  mutable: false,
+  increasable: false,
 }
 
 export const VersionDetailsResponse = {
@@ -4695,7 +4738,9 @@ export const VersionDetailsResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): VersionDetailsResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseVersionDetailsResponse()
+    const message = { ...baseVersionDetailsResponse } as VersionDetailsResponse
+    message.images = []
+    message.deployments = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -4738,20 +4783,20 @@ export const VersionDetailsResponse = {
   },
 
   fromJSON(object: any): VersionDetailsResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
-      name: isSet(object.name) ? String(object.name) : '',
-      changelog: isSet(object.changelog) ? String(object.changelog) : '',
-      default: isSet(object.default) ? Boolean(object.default) : false,
-      type: isSet(object.type) ? versionTypeFromJSON(object.type) : 0,
-      mutable: isSet(object.mutable) ? Boolean(object.mutable) : false,
-      increasable: isSet(object.increasable) ? Boolean(object.increasable) : false,
-      images: Array.isArray(object?.images) ? object.images.map((e: any) => ImageResponse.fromJSON(e)) : [],
-      deployments: Array.isArray(object?.deployments)
-        ? object.deployments.map((e: any) => DeploymentByVersionResponse.fromJSON(e))
-        : [],
-    }
+    const message = { ...baseVersionDetailsResponse } as VersionDetailsResponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.audit =
+      object.audit !== undefined && object.audit !== null ? AuditResponse.fromJSON(object.audit) : undefined
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.changelog = object.changelog !== undefined && object.changelog !== null ? String(object.changelog) : ''
+    message.default = object.default !== undefined && object.default !== null ? Boolean(object.default) : false
+    message.type = object.type !== undefined && object.type !== null ? versionTypeFromJSON(object.type) : 0
+    message.mutable = object.mutable !== undefined && object.mutable !== null ? Boolean(object.mutable) : false
+    message.increasable =
+      object.increasable !== undefined && object.increasable !== null ? Boolean(object.increasable) : false
+    message.images = (object.images ?? []).map((e: any) => ImageResponse.fromJSON(e))
+    message.deployments = (object.deployments ?? []).map((e: any) => DeploymentByVersionResponse.fromJSON(e))
+    return message
   },
 
   toJSON(message: VersionDetailsResponse): unknown {
@@ -4778,7 +4823,7 @@ export const VersionDetailsResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<VersionDetailsResponse>, I>>(object: I): VersionDetailsResponse {
-    const message = createBaseVersionDetailsResponse()
+    const message = { ...baseVersionDetailsResponse } as VersionDetailsResponse
     message.id = object.id ?? ''
     message.audit =
       object.audit !== undefined && object.audit !== null ? AuditResponse.fromPartial(object.audit) : undefined
@@ -4794,9 +4839,7 @@ export const VersionDetailsResponse = {
   },
 }
 
-function createBaseIncreaseVersionRequest(): IncreaseVersionRequest {
-  return { id: '', accessedBy: '', name: '' }
-}
+const baseIncreaseVersionRequest: object = { id: '', accessedBy: '', name: '' }
 
 export const IncreaseVersionRequest = {
   encode(message: IncreaseVersionRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -4818,7 +4861,7 @@ export const IncreaseVersionRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): IncreaseVersionRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseIncreaseVersionRequest()
+    const message = { ...baseIncreaseVersionRequest } as IncreaseVersionRequest
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -4843,12 +4886,13 @@ export const IncreaseVersionRequest = {
   },
 
   fromJSON(object: any): IncreaseVersionRequest {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      changelog: isSet(object.changelog) ? String(object.changelog) : undefined,
-    }
+    const message = { ...baseIncreaseVersionRequest } as IncreaseVersionRequest
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.changelog =
+      object.changelog !== undefined && object.changelog !== null ? String(object.changelog) : undefined
+    return message
   },
 
   toJSON(message: IncreaseVersionRequest): unknown {
@@ -4861,7 +4905,7 @@ export const IncreaseVersionRequest = {
   },
 
   fromPartial<I extends Exact<DeepPartial<IncreaseVersionRequest>, I>>(object: I): IncreaseVersionRequest {
-    const message = createBaseIncreaseVersionRequest()
+    const message = { ...baseIncreaseVersionRequest } as IncreaseVersionRequest
     message.id = object.id ?? ''
     message.accessedBy = object.accessedBy ?? ''
     message.name = object.name ?? ''
@@ -4870,9 +4914,7 @@ export const IncreaseVersionRequest = {
   },
 }
 
-function createBaseVolumeLink(): VolumeLink {
-  return { id: '', name: '', path: '' }
-}
+const baseVolumeLink: object = { id: '', name: '', path: '' }
 
 export const VolumeLink = {
   encode(message: VolumeLink, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -4891,7 +4933,7 @@ export const VolumeLink = {
   decode(input: _m0.Reader | Uint8Array, length?: number): VolumeLink {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseVolumeLink()
+    const message = { ...baseVolumeLink } as VolumeLink
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -4913,11 +4955,11 @@ export const VolumeLink = {
   },
 
   fromJSON(object: any): VolumeLink {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      path: isSet(object.path) ? String(object.path) : '',
-    }
+    const message = { ...baseVolumeLink } as VolumeLink
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.path = object.path !== undefined && object.path !== null ? String(object.path) : ''
+    return message
   },
 
   toJSON(message: VolumeLink): unknown {
@@ -4929,7 +4971,7 @@ export const VolumeLink = {
   },
 
   fromPartial<I extends Exact<DeepPartial<VolumeLink>, I>>(object: I): VolumeLink {
-    const message = createBaseVolumeLink()
+    const message = { ...baseVolumeLink } as VolumeLink
     message.id = object.id ?? ''
     message.name = object.name ?? ''
     message.path = object.path ?? ''
@@ -4937,9 +4979,7 @@ export const VolumeLink = {
   },
 }
 
-function createBaseInitContainer(): InitContainer {
-  return { id: '', name: '', image: '', volumes: [], command: [], args: [], environment: [] }
-}
+const baseInitContainer: object = { id: '', name: '', image: '' }
 
 export const InitContainer = {
   encode(message: InitContainer, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -4973,7 +5013,11 @@ export const InitContainer = {
   decode(input: _m0.Reader | Uint8Array, length?: number): InitContainer {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseInitContainer()
+    const message = { ...baseInitContainer } as InitContainer
+    message.volumes = []
+    message.command = []
+    message.args = []
+    message.environment = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -5010,18 +5054,19 @@ export const InitContainer = {
   },
 
   fromJSON(object: any): InitContainer {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      image: isSet(object.image) ? String(object.image) : '',
-      useParentConfig: isSet(object.useParentConfig) ? Boolean(object.useParentConfig) : undefined,
-      volumes: Array.isArray(object?.volumes) ? object.volumes.map((e: any) => VolumeLink.fromJSON(e)) : [],
-      command: Array.isArray(object?.command) ? object.command.map((e: any) => UniqueKey.fromJSON(e)) : [],
-      args: Array.isArray(object?.args) ? object.args.map((e: any) => UniqueKey.fromJSON(e)) : [],
-      environment: Array.isArray(object?.environment)
-        ? object.environment.map((e: any) => UniqueKeyValue.fromJSON(e))
-        : [],
-    }
+    const message = { ...baseInitContainer } as InitContainer
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.image = object.image !== undefined && object.image !== null ? String(object.image) : ''
+    message.useParentConfig =
+      object.useParentConfig !== undefined && object.useParentConfig !== null
+        ? Boolean(object.useParentConfig)
+        : undefined
+    message.volumes = (object.volumes ?? []).map((e: any) => VolumeLink.fromJSON(e))
+    message.command = (object.command ?? []).map((e: any) => UniqueKey.fromJSON(e))
+    message.args = (object.args ?? []).map((e: any) => UniqueKey.fromJSON(e))
+    message.environment = (object.environment ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
+    return message
   },
 
   toJSON(message: InitContainer): unknown {
@@ -5054,7 +5099,7 @@ export const InitContainer = {
   },
 
   fromPartial<I extends Exact<DeepPartial<InitContainer>, I>>(object: I): InitContainer {
-    const message = createBaseInitContainer()
+    const message = { ...baseInitContainer } as InitContainer
     message.id = object.id ?? ''
     message.name = object.name ?? ''
     message.image = object.image ?? ''
@@ -5067,9 +5112,7 @@ export const InitContainer = {
   },
 }
 
-function createBaseImportContainer(): ImportContainer {
-  return { volume: '', command: '', environment: [] }
-}
+const baseImportContainer: object = { volume: '', command: '' }
 
 export const ImportContainer = {
   encode(message: ImportContainer, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -5088,7 +5131,8 @@ export const ImportContainer = {
   decode(input: _m0.Reader | Uint8Array, length?: number): ImportContainer {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseImportContainer()
+    const message = { ...baseImportContainer } as ImportContainer
+    message.environment = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -5110,13 +5154,11 @@ export const ImportContainer = {
   },
 
   fromJSON(object: any): ImportContainer {
-    return {
-      volume: isSet(object.volume) ? String(object.volume) : '',
-      command: isSet(object.command) ? String(object.command) : '',
-      environment: Array.isArray(object?.environment)
-        ? object.environment.map((e: any) => UniqueKeyValue.fromJSON(e))
-        : [],
-    }
+    const message = { ...baseImportContainer } as ImportContainer
+    message.volume = object.volume !== undefined && object.volume !== null ? String(object.volume) : ''
+    message.command = object.command !== undefined && object.command !== null ? String(object.command) : ''
+    message.environment = (object.environment ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
+    return message
   },
 
   toJSON(message: ImportContainer): unknown {
@@ -5132,7 +5174,7 @@ export const ImportContainer = {
   },
 
   fromPartial<I extends Exact<DeepPartial<ImportContainer>, I>>(object: I): ImportContainer {
-    const message = createBaseImportContainer()
+    const message = { ...baseImportContainer } as ImportContainer
     message.volume = object.volume ?? ''
     message.command = object.command ?? ''
     message.environment = object.environment?.map(e => UniqueKeyValue.fromPartial(e)) || []
@@ -5140,9 +5182,7 @@ export const ImportContainer = {
   },
 }
 
-function createBaseLogConfig(): LogConfig {
-  return { driver: 0, options: [] }
-}
+const baseLogConfig: object = { driver: 0 }
 
 export const LogConfig = {
   encode(message: LogConfig, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -5158,7 +5198,8 @@ export const LogConfig = {
   decode(input: _m0.Reader | Uint8Array, length?: number): LogConfig {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseLogConfig()
+    const message = { ...baseLogConfig } as LogConfig
+    message.options = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -5177,10 +5218,10 @@ export const LogConfig = {
   },
 
   fromJSON(object: any): LogConfig {
-    return {
-      driver: isSet(object.driver) ? driverTypeFromJSON(object.driver) : 0,
-      options: Array.isArray(object?.options) ? object.options.map((e: any) => UniqueKeyValue.fromJSON(e)) : [],
-    }
+    const message = { ...baseLogConfig } as LogConfig
+    message.driver = object.driver !== undefined && object.driver !== null ? driverTypeFromJSON(object.driver) : 0
+    message.options = (object.options ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
+    return message
   },
 
   toJSON(message: LogConfig): unknown {
@@ -5195,16 +5236,14 @@ export const LogConfig = {
   },
 
   fromPartial<I extends Exact<DeepPartial<LogConfig>, I>>(object: I): LogConfig {
-    const message = createBaseLogConfig()
+    const message = { ...baseLogConfig } as LogConfig
     message.driver = object.driver ?? 0
     message.options = object.options?.map(e => UniqueKeyValue.fromPartial(e)) || []
     return message
   },
 }
 
-function createBasePort(): Port {
-  return { id: '', internal: 0, external: 0 }
-}
+const basePort: object = { id: '', internal: 0, external: 0 }
 
 export const Port = {
   encode(message: Port, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -5223,7 +5262,7 @@ export const Port = {
   decode(input: _m0.Reader | Uint8Array, length?: number): Port {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBasePort()
+    const message = { ...basePort } as Port
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -5245,11 +5284,11 @@ export const Port = {
   },
 
   fromJSON(object: any): Port {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      internal: isSet(object.internal) ? Number(object.internal) : 0,
-      external: isSet(object.external) ? Number(object.external) : 0,
-    }
+    const message = { ...basePort } as Port
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.internal = object.internal !== undefined && object.internal !== null ? Number(object.internal) : 0
+    message.external = object.external !== undefined && object.external !== null ? Number(object.external) : 0
+    return message
   },
 
   toJSON(message: Port): unknown {
@@ -5261,7 +5300,7 @@ export const Port = {
   },
 
   fromPartial<I extends Exact<DeepPartial<Port>, I>>(object: I): Port {
-    const message = createBasePort()
+    const message = { ...basePort } as Port
     message.id = object.id ?? ''
     message.internal = object.internal ?? 0
     message.external = object.external ?? 0
@@ -5269,9 +5308,7 @@ export const Port = {
   },
 }
 
-function createBasePortRange(): PortRange {
-  return { from: 0, to: 0 }
-}
+const basePortRange: object = { from: 0, to: 0 }
 
 export const PortRange = {
   encode(message: PortRange, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -5287,7 +5324,7 @@ export const PortRange = {
   decode(input: _m0.Reader | Uint8Array, length?: number): PortRange {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBasePortRange()
+    const message = { ...basePortRange } as PortRange
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -5306,7 +5343,10 @@ export const PortRange = {
   },
 
   fromJSON(object: any): PortRange {
-    return { from: isSet(object.from) ? Number(object.from) : 0, to: isSet(object.to) ? Number(object.to) : 0 }
+    const message = { ...basePortRange } as PortRange
+    message.from = object.from !== undefined && object.from !== null ? Number(object.from) : 0
+    message.to = object.to !== undefined && object.to !== null ? Number(object.to) : 0
+    return message
   },
 
   toJSON(message: PortRange): unknown {
@@ -5317,16 +5357,14 @@ export const PortRange = {
   },
 
   fromPartial<I extends Exact<DeepPartial<PortRange>, I>>(object: I): PortRange {
-    const message = createBasePortRange()
+    const message = { ...basePortRange } as PortRange
     message.from = object.from ?? 0
     message.to = object.to ?? 0
     return message
   },
 }
 
-function createBasePortRangeBinding(): PortRangeBinding {
-  return { id: '', internal: undefined, external: undefined }
-}
+const basePortRangeBinding: object = { id: '' }
 
 export const PortRangeBinding = {
   encode(message: PortRangeBinding, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -5345,7 +5383,7 @@ export const PortRangeBinding = {
   decode(input: _m0.Reader | Uint8Array, length?: number): PortRangeBinding {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBasePortRangeBinding()
+    const message = { ...basePortRangeBinding } as PortRangeBinding
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -5367,11 +5405,13 @@ export const PortRangeBinding = {
   },
 
   fromJSON(object: any): PortRangeBinding {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      internal: isSet(object.internal) ? PortRange.fromJSON(object.internal) : undefined,
-      external: isSet(object.external) ? PortRange.fromJSON(object.external) : undefined,
-    }
+    const message = { ...basePortRangeBinding } as PortRangeBinding
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.internal =
+      object.internal !== undefined && object.internal !== null ? PortRange.fromJSON(object.internal) : undefined
+    message.external =
+      object.external !== undefined && object.external !== null ? PortRange.fromJSON(object.external) : undefined
+    return message
   },
 
   toJSON(message: PortRangeBinding): unknown {
@@ -5383,7 +5423,7 @@ export const PortRangeBinding = {
   },
 
   fromPartial<I extends Exact<DeepPartial<PortRangeBinding>, I>>(object: I): PortRangeBinding {
-    const message = createBasePortRangeBinding()
+    const message = { ...basePortRangeBinding } as PortRangeBinding
     message.id = object.id ?? ''
     message.internal =
       object.internal !== undefined && object.internal !== null ? PortRange.fromPartial(object.internal) : undefined
@@ -5393,9 +5433,7 @@ export const PortRangeBinding = {
   },
 }
 
-function createBaseVolume(): Volume {
-  return { id: '', name: '', path: '' }
-}
+const baseVolume: object = { id: '', name: '', path: '' }
 
 export const Volume = {
   encode(message: Volume, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -5423,7 +5461,7 @@ export const Volume = {
   decode(input: _m0.Reader | Uint8Array, length?: number): Volume {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseVolume()
+    const message = { ...baseVolume } as Volume
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -5454,14 +5492,14 @@ export const Volume = {
   },
 
   fromJSON(object: any): Volume {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      path: isSet(object.path) ? String(object.path) : '',
-      size: isSet(object.size) ? String(object.size) : undefined,
-      type: isSet(object.type) ? volumeTypeFromJSON(object.type) : undefined,
-      class: isSet(object.class) ? String(object.class) : undefined,
-    }
+    const message = { ...baseVolume } as Volume
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.path = object.path !== undefined && object.path !== null ? String(object.path) : ''
+    message.size = object.size !== undefined && object.size !== null ? String(object.size) : undefined
+    message.type = object.type !== undefined && object.type !== null ? volumeTypeFromJSON(object.type) : undefined
+    message.class = object.class !== undefined && object.class !== null ? String(object.class) : undefined
+    return message
   },
 
   toJSON(message: Volume): unknown {
@@ -5476,7 +5514,7 @@ export const Volume = {
   },
 
   fromPartial<I extends Exact<DeepPartial<Volume>, I>>(object: I): Volume {
-    const message = createBaseVolume()
+    const message = { ...baseVolume } as Volume
     message.id = object.id ?? ''
     message.name = object.name ?? ''
     message.path = object.path ?? ''
@@ -5487,9 +5525,7 @@ export const Volume = {
   },
 }
 
-function createBaseKeyList(): KeyList {
-  return { data: [] }
-}
+const baseKeyList: object = {}
 
 export const KeyList = {
   encode(message: KeyList, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -5502,7 +5538,8 @@ export const KeyList = {
   decode(input: _m0.Reader | Uint8Array, length?: number): KeyList {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseKeyList()
+    const message = { ...baseKeyList } as KeyList
+    message.data = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -5518,7 +5555,9 @@ export const KeyList = {
   },
 
   fromJSON(object: any): KeyList {
-    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => UniqueKey.fromJSON(e)) : [] }
+    const message = { ...baseKeyList } as KeyList
+    message.data = (object.data ?? []).map((e: any) => UniqueKey.fromJSON(e))
+    return message
   },
 
   toJSON(message: KeyList): unknown {
@@ -5532,15 +5571,13 @@ export const KeyList = {
   },
 
   fromPartial<I extends Exact<DeepPartial<KeyList>, I>>(object: I): KeyList {
-    const message = createBaseKeyList()
+    const message = { ...baseKeyList } as KeyList
     message.data = object.data?.map(e => UniqueKey.fromPartial(e)) || []
     return message
   },
 }
 
-function createBaseUniqueKeyValue(): UniqueKeyValue {
-  return { id: '', key: '', value: '' }
-}
+const baseUniqueKeyValue: object = { id: '', key: '', value: '' }
 
 export const UniqueKeyValue = {
   encode(message: UniqueKeyValue, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -5559,7 +5596,7 @@ export const UniqueKeyValue = {
   decode(input: _m0.Reader | Uint8Array, length?: number): UniqueKeyValue {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseUniqueKeyValue()
+    const message = { ...baseUniqueKeyValue } as UniqueKeyValue
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -5581,11 +5618,11 @@ export const UniqueKeyValue = {
   },
 
   fromJSON(object: any): UniqueKeyValue {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      key: isSet(object.key) ? String(object.key) : '',
-      value: isSet(object.value) ? String(object.value) : '',
-    }
+    const message = { ...baseUniqueKeyValue } as UniqueKeyValue
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.key = object.key !== undefined && object.key !== null ? String(object.key) : ''
+    message.value = object.value !== undefined && object.value !== null ? String(object.value) : ''
+    return message
   },
 
   toJSON(message: UniqueKeyValue): unknown {
@@ -5597,7 +5634,7 @@ export const UniqueKeyValue = {
   },
 
   fromPartial<I extends Exact<DeepPartial<UniqueKeyValue>, I>>(object: I): UniqueKeyValue {
-    const message = createBaseUniqueKeyValue()
+    const message = { ...baseUniqueKeyValue } as UniqueKeyValue
     message.id = object.id ?? ''
     message.key = object.key ?? ''
     message.value = object.value ?? ''
@@ -5605,8 +5642,12 @@ export const UniqueKeyValue = {
   },
 }
 
-function createBaseUniqueSecretKeyValue(): UniqueSecretKeyValue {
-  return { id: '', key: '', value: '', required: false }
+const baseUniqueSecretKeyValue: object = {
+  id: '',
+  key: '',
+  value: '',
+  publicKey: '',
+  required: false,
 }
 
 export const UniqueSecretKeyValue = {
@@ -5620,11 +5661,14 @@ export const UniqueSecretKeyValue = {
     if (message.value !== '') {
       writer.uint32(826).string(message.value)
     }
+    if (message.publicKey !== '') {
+      writer.uint32(834).string(message.publicKey)
+    }
     if (message.required === true) {
-      writer.uint32(832).bool(message.required)
+      writer.uint32(840).bool(message.required)
     }
     if (message.encrypted !== undefined) {
-      writer.uint32(840).bool(message.encrypted)
+      writer.uint32(848).bool(message.encrypted)
     }
     return writer
   },
@@ -5632,7 +5676,7 @@ export const UniqueSecretKeyValue = {
   decode(input: _m0.Reader | Uint8Array, length?: number): UniqueSecretKeyValue {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseUniqueSecretKeyValue()
+    const message = { ...baseUniqueSecretKeyValue } as UniqueSecretKeyValue
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -5646,9 +5690,12 @@ export const UniqueSecretKeyValue = {
           message.value = reader.string()
           break
         case 104:
-          message.required = reader.bool()
+          message.publicKey = reader.string()
           break
         case 105:
+          message.required = reader.bool()
+          break
+        case 106:
           message.encrypted = reader.bool()
           break
         default:
@@ -5660,13 +5707,15 @@ export const UniqueSecretKeyValue = {
   },
 
   fromJSON(object: any): UniqueSecretKeyValue {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      key: isSet(object.key) ? String(object.key) : '',
-      value: isSet(object.value) ? String(object.value) : '',
-      required: isSet(object.required) ? Boolean(object.required) : false,
-      encrypted: isSet(object.encrypted) ? Boolean(object.encrypted) : undefined,
-    }
+    const message = { ...baseUniqueSecretKeyValue } as UniqueSecretKeyValue
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.key = object.key !== undefined && object.key !== null ? String(object.key) : ''
+    message.value = object.value !== undefined && object.value !== null ? String(object.value) : ''
+    message.publicKey = object.publicKey !== undefined && object.publicKey !== null ? String(object.publicKey) : ''
+    message.required = object.required !== undefined && object.required !== null ? Boolean(object.required) : false
+    message.encrypted =
+      object.encrypted !== undefined && object.encrypted !== null ? Boolean(object.encrypted) : undefined
+    return message
   },
 
   toJSON(message: UniqueSecretKeyValue): unknown {
@@ -5674,25 +5723,25 @@ export const UniqueSecretKeyValue = {
     message.id !== undefined && (obj.id = message.id)
     message.key !== undefined && (obj.key = message.key)
     message.value !== undefined && (obj.value = message.value)
+    message.publicKey !== undefined && (obj.publicKey = message.publicKey)
     message.required !== undefined && (obj.required = message.required)
     message.encrypted !== undefined && (obj.encrypted = message.encrypted)
     return obj
   },
 
   fromPartial<I extends Exact<DeepPartial<UniqueSecretKeyValue>, I>>(object: I): UniqueSecretKeyValue {
-    const message = createBaseUniqueSecretKeyValue()
+    const message = { ...baseUniqueSecretKeyValue } as UniqueSecretKeyValue
     message.id = object.id ?? ''
     message.key = object.key ?? ''
     message.value = object.value ?? ''
+    message.publicKey = object.publicKey ?? ''
     message.required = object.required ?? false
     message.encrypted = object.encrypted ?? undefined
     return message
   },
 }
 
-function createBaseKeyValueList(): KeyValueList {
-  return { data: [] }
-}
+const baseKeyValueList: object = {}
 
 export const KeyValueList = {
   encode(message: KeyValueList, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -5705,7 +5754,8 @@ export const KeyValueList = {
   decode(input: _m0.Reader | Uint8Array, length?: number): KeyValueList {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseKeyValueList()
+    const message = { ...baseKeyValueList } as KeyValueList
+    message.data = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -5721,7 +5771,9 @@ export const KeyValueList = {
   },
 
   fromJSON(object: any): KeyValueList {
-    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => UniqueKeyValue.fromJSON(e)) : [] }
+    const message = { ...baseKeyValueList } as KeyValueList
+    message.data = (object.data ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
+    return message
   },
 
   toJSON(message: KeyValueList): unknown {
@@ -5735,15 +5787,13 @@ export const KeyValueList = {
   },
 
   fromPartial<I extends Exact<DeepPartial<KeyValueList>, I>>(object: I): KeyValueList {
-    const message = createBaseKeyValueList()
+    const message = { ...baseKeyValueList } as KeyValueList
     message.data = object.data?.map(e => UniqueKeyValue.fromPartial(e)) || []
     return message
   },
 }
 
-function createBaseDagentContainerConfig(): DagentContainerConfig {
-  return { networks: [] }
-}
+const baseDagentContainerConfig: object = {}
 
 export const DagentContainerConfig = {
   encode(message: DagentContainerConfig, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -5765,7 +5815,8 @@ export const DagentContainerConfig = {
   decode(input: _m0.Reader | Uint8Array, length?: number): DagentContainerConfig {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseDagentContainerConfig()
+    const message = { ...baseDagentContainerConfig } as DagentContainerConfig
+    message.networks = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -5790,12 +5841,19 @@ export const DagentContainerConfig = {
   },
 
   fromJSON(object: any): DagentContainerConfig {
-    return {
-      logConfig: isSet(object.logConfig) ? LogConfig.fromJSON(object.logConfig) : undefined,
-      restartPolicy: isSet(object.restartPolicy) ? restartPolicyFromJSON(object.restartPolicy) : undefined,
-      networkMode: isSet(object.networkMode) ? networkModeFromJSON(object.networkMode) : undefined,
-      networks: Array.isArray(object?.networks) ? object.networks.map((e: any) => UniqueKey.fromJSON(e)) : [],
-    }
+    const message = { ...baseDagentContainerConfig } as DagentContainerConfig
+    message.logConfig =
+      object.logConfig !== undefined && object.logConfig !== null ? LogConfig.fromJSON(object.logConfig) : undefined
+    message.restartPolicy =
+      object.restartPolicy !== undefined && object.restartPolicy !== null
+        ? restartPolicyFromJSON(object.restartPolicy)
+        : undefined
+    message.networkMode =
+      object.networkMode !== undefined && object.networkMode !== null
+        ? networkModeFromJSON(object.networkMode)
+        : undefined
+    message.networks = (object.networks ?? []).map((e: any) => UniqueKey.fromJSON(e))
+    return message
   },
 
   toJSON(message: DagentContainerConfig): unknown {
@@ -5815,7 +5873,7 @@ export const DagentContainerConfig = {
   },
 
   fromPartial<I extends Exact<DeepPartial<DagentContainerConfig>, I>>(object: I): DagentContainerConfig {
-    const message = createBaseDagentContainerConfig()
+    const message = { ...baseDagentContainerConfig } as DagentContainerConfig
     message.logConfig =
       object.logConfig !== undefined && object.logConfig !== null ? LogConfig.fromPartial(object.logConfig) : undefined
     message.restartPolicy = object.restartPolicy ?? undefined
@@ -5825,9 +5883,7 @@ export const DagentContainerConfig = {
   },
 }
 
-function createBaseCraneContainerConfig(): CraneContainerConfig {
-  return { customHeaders: [], extraLBAnnotations: [] }
-}
+const baseCraneContainerConfig: object = {}
 
 export const CraneContainerConfig = {
   encode(message: CraneContainerConfig, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -5858,7 +5914,9 @@ export const CraneContainerConfig = {
   decode(input: _m0.Reader | Uint8Array, length?: number): CraneContainerConfig {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseCraneContainerConfig()
+    const message = { ...baseCraneContainerConfig } as CraneContainerConfig
+    message.customHeaders = []
+    message.extraLBAnnotations = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -5892,23 +5950,28 @@ export const CraneContainerConfig = {
   },
 
   fromJSON(object: any): CraneContainerConfig {
-    return {
-      deploymentStatregy: isSet(object.deploymentStatregy)
+    const message = { ...baseCraneContainerConfig } as CraneContainerConfig
+    message.deploymentStatregy =
+      object.deploymentStatregy !== undefined && object.deploymentStatregy !== null
         ? deploymentStrategyFromJSON(object.deploymentStatregy)
-        : undefined,
-      healthCheckConfig: isSet(object.healthCheckConfig)
+        : undefined
+    message.healthCheckConfig =
+      object.healthCheckConfig !== undefined && object.healthCheckConfig !== null
         ? HealthCheckConfig.fromJSON(object.healthCheckConfig)
-        : undefined,
-      resourceConfig: isSet(object.resourceConfig) ? ResourceConfig.fromJSON(object.resourceConfig) : undefined,
-      proxyHeaders: isSet(object.proxyHeaders) ? Boolean(object.proxyHeaders) : undefined,
-      useLoadBalancer: isSet(object.useLoadBalancer) ? Boolean(object.useLoadBalancer) : undefined,
-      customHeaders: Array.isArray(object?.customHeaders)
-        ? object.customHeaders.map((e: any) => UniqueKey.fromJSON(e))
-        : [],
-      extraLBAnnotations: Array.isArray(object?.extraLBAnnotations)
-        ? object.extraLBAnnotations.map((e: any) => UniqueKeyValue.fromJSON(e))
-        : [],
-    }
+        : undefined
+    message.resourceConfig =
+      object.resourceConfig !== undefined && object.resourceConfig !== null
+        ? ResourceConfig.fromJSON(object.resourceConfig)
+        : undefined
+    message.proxyHeaders =
+      object.proxyHeaders !== undefined && object.proxyHeaders !== null ? Boolean(object.proxyHeaders) : undefined
+    message.useLoadBalancer =
+      object.useLoadBalancer !== undefined && object.useLoadBalancer !== null
+        ? Boolean(object.useLoadBalancer)
+        : undefined
+    message.customHeaders = (object.customHeaders ?? []).map((e: any) => UniqueKey.fromJSON(e))
+    message.extraLBAnnotations = (object.extraLBAnnotations ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
+    return message
   },
 
   toJSON(message: CraneContainerConfig): unknown {
@@ -5938,7 +6001,7 @@ export const CraneContainerConfig = {
   },
 
   fromPartial<I extends Exact<DeepPartial<CraneContainerConfig>, I>>(object: I): CraneContainerConfig {
-    const message = createBaseCraneContainerConfig()
+    const message = { ...baseCraneContainerConfig } as CraneContainerConfig
     message.deploymentStatregy = object.deploymentStatregy ?? undefined
     message.healthCheckConfig =
       object.healthCheckConfig !== undefined && object.healthCheckConfig !== null
@@ -5956,19 +6019,7 @@ export const CraneContainerConfig = {
   },
 }
 
-function createBaseCommonContainerConfig(): CommonContainerConfig {
-  return {
-    name: '',
-    ports: [],
-    portRanges: [],
-    volumes: [],
-    commands: [],
-    args: [],
-    environment: [],
-    secrets: [],
-    initContainers: [],
-  }
-}
+const baseCommonContainerConfig: object = { name: '' }
 
 export const CommonContainerConfig = {
   encode(message: CommonContainerConfig, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -6023,7 +6074,15 @@ export const CommonContainerConfig = {
   decode(input: _m0.Reader | Uint8Array, length?: number): CommonContainerConfig {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseCommonContainerConfig()
+    const message = { ...baseCommonContainerConfig } as CommonContainerConfig
+    message.ports = []
+    message.portRanges = []
+    message.volumes = []
+    message.commands = []
+    message.args = []
+    message.environment = []
+    message.secrets = []
+    message.initContainers = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -6081,29 +6140,31 @@ export const CommonContainerConfig = {
   },
 
   fromJSON(object: any): CommonContainerConfig {
-    return {
-      name: isSet(object.name) ? String(object.name) : '',
-      expose: isSet(object.expose) ? exposeStrategyFromJSON(object.expose) : undefined,
-      ingress: isSet(object.ingress) ? Ingress.fromJSON(object.ingress) : undefined,
-      configContainer: isSet(object.configContainer) ? ConfigContainer.fromJSON(object.configContainer) : undefined,
-      importContainer: isSet(object.importContainer) ? ImportContainer.fromJSON(object.importContainer) : undefined,
-      user: isSet(object.user) ? Number(object.user) : undefined,
-      TTY: isSet(object.TTY) ? Boolean(object.TTY) : undefined,
-      ports: Array.isArray(object?.ports) ? object.ports.map((e: any) => Port.fromJSON(e)) : [],
-      portRanges: Array.isArray(object?.portRanges)
-        ? object.portRanges.map((e: any) => PortRangeBinding.fromJSON(e))
-        : [],
-      volumes: Array.isArray(object?.volumes) ? object.volumes.map((e: any) => Volume.fromJSON(e)) : [],
-      commands: Array.isArray(object?.commands) ? object.commands.map((e: any) => UniqueKey.fromJSON(e)) : [],
-      args: Array.isArray(object?.args) ? object.args.map((e: any) => UniqueKey.fromJSON(e)) : [],
-      environment: Array.isArray(object?.environment)
-        ? object.environment.map((e: any) => UniqueKeyValue.fromJSON(e))
-        : [],
-      secrets: Array.isArray(object?.secrets) ? object.secrets.map((e: any) => UniqueSecretKeyValue.fromJSON(e)) : [],
-      initContainers: Array.isArray(object?.initContainers)
-        ? object.initContainers.map((e: any) => InitContainer.fromJSON(e))
-        : [],
-    }
+    const message = { ...baseCommonContainerConfig } as CommonContainerConfig
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.expose =
+      object.expose !== undefined && object.expose !== null ? exposeStrategyFromJSON(object.expose) : undefined
+    message.ingress =
+      object.ingress !== undefined && object.ingress !== null ? Ingress.fromJSON(object.ingress) : undefined
+    message.configContainer =
+      object.configContainer !== undefined && object.configContainer !== null
+        ? ConfigContainer.fromJSON(object.configContainer)
+        : undefined
+    message.importContainer =
+      object.importContainer !== undefined && object.importContainer !== null
+        ? ImportContainer.fromJSON(object.importContainer)
+        : undefined
+    message.user = object.user !== undefined && object.user !== null ? Number(object.user) : undefined
+    message.TTY = object.TTY !== undefined && object.TTY !== null ? Boolean(object.TTY) : undefined
+    message.ports = (object.ports ?? []).map((e: any) => Port.fromJSON(e))
+    message.portRanges = (object.portRanges ?? []).map((e: any) => PortRangeBinding.fromJSON(e))
+    message.volumes = (object.volumes ?? []).map((e: any) => Volume.fromJSON(e))
+    message.commands = (object.commands ?? []).map((e: any) => UniqueKey.fromJSON(e))
+    message.args = (object.args ?? []).map((e: any) => UniqueKey.fromJSON(e))
+    message.environment = (object.environment ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
+    message.secrets = (object.secrets ?? []).map((e: any) => UniqueSecretKeyValue.fromJSON(e))
+    message.initContainers = (object.initContainers ?? []).map((e: any) => InitContainer.fromJSON(e))
+    return message
   },
 
   toJSON(message: CommonContainerConfig): unknown {
@@ -6162,7 +6223,7 @@ export const CommonContainerConfig = {
   },
 
   fromPartial<I extends Exact<DeepPartial<CommonContainerConfig>, I>>(object: I): CommonContainerConfig {
-    const message = createBaseCommonContainerConfig()
+    const message = { ...baseCommonContainerConfig } as CommonContainerConfig
     message.name = object.name ?? ''
     message.expose = object.expose ?? undefined
     message.ingress =
@@ -6189,9 +6250,7 @@ export const CommonContainerConfig = {
   },
 }
 
-function createBaseContainerConfig(): ContainerConfig {
-  return { capabilities: [] }
-}
+const baseContainerConfig: object = {}
 
 export const ContainerConfig = {
   encode(message: ContainerConfig, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -6213,7 +6272,8 @@ export const ContainerConfig = {
   decode(input: _m0.Reader | Uint8Array, length?: number): ContainerConfig {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseContainerConfig()
+    const message = { ...baseContainerConfig } as ContainerConfig
+    message.capabilities = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -6238,14 +6298,15 @@ export const ContainerConfig = {
   },
 
   fromJSON(object: any): ContainerConfig {
-    return {
-      common: isSet(object.common) ? CommonContainerConfig.fromJSON(object.common) : undefined,
-      dagent: isSet(object.dagent) ? DagentContainerConfig.fromJSON(object.dagent) : undefined,
-      crane: isSet(object.crane) ? CraneContainerConfig.fromJSON(object.crane) : undefined,
-      capabilities: Array.isArray(object?.capabilities)
-        ? object.capabilities.map((e: any) => UniqueKeyValue.fromJSON(e))
-        : [],
-    }
+    const message = { ...baseContainerConfig } as ContainerConfig
+    message.common =
+      object.common !== undefined && object.common !== null ? CommonContainerConfig.fromJSON(object.common) : undefined
+    message.dagent =
+      object.dagent !== undefined && object.dagent !== null ? DagentContainerConfig.fromJSON(object.dagent) : undefined
+    message.crane =
+      object.crane !== undefined && object.crane !== null ? CraneContainerConfig.fromJSON(object.crane) : undefined
+    message.capabilities = (object.capabilities ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
+    return message
   },
 
   toJSON(message: ContainerConfig): unknown {
@@ -6264,7 +6325,7 @@ export const ContainerConfig = {
   },
 
   fromPartial<I extends Exact<DeepPartial<ContainerConfig>, I>>(object: I): ContainerConfig {
-    const message = createBaseContainerConfig()
+    const message = { ...baseContainerConfig } as ContainerConfig
     message.common =
       object.common !== undefined && object.common !== null
         ? CommonContainerConfig.fromPartial(object.common)
@@ -6280,17 +6341,13 @@ export const ContainerConfig = {
   },
 }
 
-function createBaseImageResponse(): ImageResponse {
-  return {
-    id: '',
-    name: '',
-    tag: '',
-    order: 0,
-    registryId: '',
-    config: undefined,
-    createdAt: undefined,
-    registryName: '',
-  }
+const baseImageResponse: object = {
+  id: '',
+  name: '',
+  tag: '',
+  order: 0,
+  registryId: '',
+  registryName: '',
 }
 
 export const ImageResponse = {
@@ -6325,7 +6382,7 @@ export const ImageResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): ImageResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseImageResponse()
+    const message = { ...baseImageResponse } as ImageResponse
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -6362,16 +6419,19 @@ export const ImageResponse = {
   },
 
   fromJSON(object: any): ImageResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      tag: isSet(object.tag) ? String(object.tag) : '',
-      order: isSet(object.order) ? Number(object.order) : 0,
-      registryId: isSet(object.registryId) ? String(object.registryId) : '',
-      config: isSet(object.config) ? ContainerConfig.fromJSON(object.config) : undefined,
-      createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
-      registryName: isSet(object.registryName) ? String(object.registryName) : '',
-    }
+    const message = { ...baseImageResponse } as ImageResponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.tag = object.tag !== undefined && object.tag !== null ? String(object.tag) : ''
+    message.order = object.order !== undefined && object.order !== null ? Number(object.order) : 0
+    message.registryId = object.registryId !== undefined && object.registryId !== null ? String(object.registryId) : ''
+    message.config =
+      object.config !== undefined && object.config !== null ? ContainerConfig.fromJSON(object.config) : undefined
+    message.createdAt =
+      object.createdAt !== undefined && object.createdAt !== null ? fromJsonTimestamp(object.createdAt) : undefined
+    message.registryName =
+      object.registryName !== undefined && object.registryName !== null ? String(object.registryName) : ''
+    return message
   },
 
   toJSON(message: ImageResponse): unknown {
@@ -6388,7 +6448,7 @@ export const ImageResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<ImageResponse>, I>>(object: I): ImageResponse {
-    const message = createBaseImageResponse()
+    const message = { ...baseImageResponse } as ImageResponse
     message.id = object.id ?? ''
     message.name = object.name ?? ''
     message.tag = object.tag ?? ''
@@ -6403,9 +6463,7 @@ export const ImageResponse = {
   },
 }
 
-function createBaseImageListResponse(): ImageListResponse {
-  return { data: [] }
-}
+const baseImageListResponse: object = {}
 
 export const ImageListResponse = {
   encode(message: ImageListResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -6418,7 +6476,8 @@ export const ImageListResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): ImageListResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseImageListResponse()
+    const message = { ...baseImageListResponse } as ImageListResponse
+    message.data = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -6434,7 +6493,9 @@ export const ImageListResponse = {
   },
 
   fromJSON(object: any): ImageListResponse {
-    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => ImageResponse.fromJSON(e)) : [] }
+    const message = { ...baseImageListResponse } as ImageListResponse
+    message.data = (object.data ?? []).map((e: any) => ImageResponse.fromJSON(e))
+    return message
   },
 
   toJSON(message: ImageListResponse): unknown {
@@ -6448,14 +6509,16 @@ export const ImageListResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<ImageListResponse>, I>>(object: I): ImageListResponse {
-    const message = createBaseImageListResponse()
+    const message = { ...baseImageListResponse } as ImageListResponse
     message.data = object.data?.map(e => ImageResponse.fromPartial(e)) || []
     return message
   },
 }
 
-function createBaseOrderVersionImagesRequest(): OrderVersionImagesRequest {
-  return { accessedBy: '', versionId: '', imageIds: [] }
+const baseOrderVersionImagesRequest: object = {
+  accessedBy: '',
+  versionId: '',
+  imageIds: '',
 }
 
 export const OrderVersionImagesRequest = {
@@ -6475,7 +6538,10 @@ export const OrderVersionImagesRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): OrderVersionImagesRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseOrderVersionImagesRequest()
+    const message = {
+      ...baseOrderVersionImagesRequest,
+    } as OrderVersionImagesRequest
+    message.imageIds = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -6497,11 +6563,13 @@ export const OrderVersionImagesRequest = {
   },
 
   fromJSON(object: any): OrderVersionImagesRequest {
-    return {
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      versionId: isSet(object.versionId) ? String(object.versionId) : '',
-      imageIds: Array.isArray(object?.imageIds) ? object.imageIds.map((e: any) => String(e)) : [],
-    }
+    const message = {
+      ...baseOrderVersionImagesRequest,
+    } as OrderVersionImagesRequest
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.versionId = object.versionId !== undefined && object.versionId !== null ? String(object.versionId) : ''
+    message.imageIds = (object.imageIds ?? []).map((e: any) => String(e))
+    return message
   },
 
   toJSON(message: OrderVersionImagesRequest): unknown {
@@ -6517,7 +6585,9 @@ export const OrderVersionImagesRequest = {
   },
 
   fromPartial<I extends Exact<DeepPartial<OrderVersionImagesRequest>, I>>(object: I): OrderVersionImagesRequest {
-    const message = createBaseOrderVersionImagesRequest()
+    const message = {
+      ...baseOrderVersionImagesRequest,
+    } as OrderVersionImagesRequest
     message.accessedBy = object.accessedBy ?? ''
     message.versionId = object.versionId ?? ''
     message.imageIds = object.imageIds?.map(e => e) || []
@@ -6525,9 +6595,7 @@ export const OrderVersionImagesRequest = {
   },
 }
 
-function createBaseRegistryImages(): RegistryImages {
-  return { registryId: '', imageNames: [] }
-}
+const baseRegistryImages: object = { registryId: '', imageNames: '' }
 
 export const RegistryImages = {
   encode(message: RegistryImages, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -6543,7 +6611,8 @@ export const RegistryImages = {
   decode(input: _m0.Reader | Uint8Array, length?: number): RegistryImages {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseRegistryImages()
+    const message = { ...baseRegistryImages } as RegistryImages
+    message.imageNames = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -6562,10 +6631,10 @@ export const RegistryImages = {
   },
 
   fromJSON(object: any): RegistryImages {
-    return {
-      registryId: isSet(object.registryId) ? String(object.registryId) : '',
-      imageNames: Array.isArray(object?.imageNames) ? object.imageNames.map((e: any) => String(e)) : [],
-    }
+    const message = { ...baseRegistryImages } as RegistryImages
+    message.registryId = object.registryId !== undefined && object.registryId !== null ? String(object.registryId) : ''
+    message.imageNames = (object.imageNames ?? []).map((e: any) => String(e))
+    return message
   },
 
   toJSON(message: RegistryImages): unknown {
@@ -6580,16 +6649,14 @@ export const RegistryImages = {
   },
 
   fromPartial<I extends Exact<DeepPartial<RegistryImages>, I>>(object: I): RegistryImages {
-    const message = createBaseRegistryImages()
+    const message = { ...baseRegistryImages } as RegistryImages
     message.registryId = object.registryId ?? ''
     message.imageNames = object.imageNames?.map(e => e) || []
     return message
   },
 }
 
-function createBaseAddImagesToVersionRequest(): AddImagesToVersionRequest {
-  return { accessedBy: '', versionId: '', images: [] }
-}
+const baseAddImagesToVersionRequest: object = { accessedBy: '', versionId: '' }
 
 export const AddImagesToVersionRequest = {
   encode(message: AddImagesToVersionRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -6608,7 +6675,10 @@ export const AddImagesToVersionRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): AddImagesToVersionRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseAddImagesToVersionRequest()
+    const message = {
+      ...baseAddImagesToVersionRequest,
+    } as AddImagesToVersionRequest
+    message.images = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -6630,11 +6700,13 @@ export const AddImagesToVersionRequest = {
   },
 
   fromJSON(object: any): AddImagesToVersionRequest {
-    return {
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      versionId: isSet(object.versionId) ? String(object.versionId) : '',
-      images: Array.isArray(object?.images) ? object.images.map((e: any) => RegistryImages.fromJSON(e)) : [],
-    }
+    const message = {
+      ...baseAddImagesToVersionRequest,
+    } as AddImagesToVersionRequest
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.versionId = object.versionId !== undefined && object.versionId !== null ? String(object.versionId) : ''
+    message.images = (object.images ?? []).map((e: any) => RegistryImages.fromJSON(e))
+    return message
   },
 
   toJSON(message: AddImagesToVersionRequest): unknown {
@@ -6650,7 +6722,9 @@ export const AddImagesToVersionRequest = {
   },
 
   fromPartial<I extends Exact<DeepPartial<AddImagesToVersionRequest>, I>>(object: I): AddImagesToVersionRequest {
-    const message = createBaseAddImagesToVersionRequest()
+    const message = {
+      ...baseAddImagesToVersionRequest,
+    } as AddImagesToVersionRequest
     message.accessedBy = object.accessedBy ?? ''
     message.versionId = object.versionId ?? ''
     message.images = object.images?.map(e => RegistryImages.fromPartial(e)) || []
@@ -6658,9 +6732,7 @@ export const AddImagesToVersionRequest = {
   },
 }
 
-function createBasePatchImageRequest(): PatchImageRequest {
-  return { id: '', accessedBy: '' }
-}
+const basePatchImageRequest: object = { id: '', accessedBy: '' }
 
 export const PatchImageRequest = {
   encode(message: PatchImageRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -6682,7 +6754,7 @@ export const PatchImageRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): PatchImageRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBasePatchImageRequest()
+    const message = { ...basePatchImageRequest } as PatchImageRequest
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -6707,12 +6779,13 @@ export const PatchImageRequest = {
   },
 
   fromJSON(object: any): PatchImageRequest {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      tag: isSet(object.tag) ? String(object.tag) : undefined,
-      config: isSet(object.config) ? ContainerConfig.fromJSON(object.config) : undefined,
-    }
+    const message = { ...basePatchImageRequest } as PatchImageRequest
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.tag = object.tag !== undefined && object.tag !== null ? String(object.tag) : undefined
+    message.config =
+      object.config !== undefined && object.config !== null ? ContainerConfig.fromJSON(object.config) : undefined
+    return message
   },
 
   toJSON(message: PatchImageRequest): unknown {
@@ -6725,7 +6798,7 @@ export const PatchImageRequest = {
   },
 
   fromPartial<I extends Exact<DeepPartial<PatchImageRequest>, I>>(object: I): PatchImageRequest {
-    const message = createBasePatchImageRequest()
+    const message = { ...basePatchImageRequest } as PatchImageRequest
     message.id = object.id ?? ''
     message.accessedBy = object.accessedBy ?? ''
     message.tag = object.tag ?? undefined
@@ -6735,9 +6808,7 @@ export const PatchImageRequest = {
   },
 }
 
-function createBaseNodeResponse(): NodeResponse {
-  return { id: '', audit: undefined, name: '', status: 0, type: 0 }
-}
+const baseNodeResponse: object = { id: '', name: '', status: 0, type: 0 }
 
 export const NodeResponse = {
   encode(message: NodeResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -6777,7 +6848,7 @@ export const NodeResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): NodeResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseNodeResponse()
+    const message = { ...baseNodeResponse } as NodeResponse
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -6820,18 +6891,24 @@ export const NodeResponse = {
   },
 
   fromJSON(object: any): NodeResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
-      name: isSet(object.name) ? String(object.name) : '',
-      description: isSet(object.description) ? String(object.description) : undefined,
-      icon: isSet(object.icon) ? String(object.icon) : undefined,
-      address: isSet(object.address) ? String(object.address) : undefined,
-      status: isSet(object.status) ? nodeConnectionStatusFromJSON(object.status) : 0,
-      connectedAt: isSet(object.connectedAt) ? fromJsonTimestamp(object.connectedAt) : undefined,
-      version: isSet(object.version) ? String(object.version) : undefined,
-      type: isSet(object.type) ? nodeTypeFromJSON(object.type) : 0,
-    }
+    const message = { ...baseNodeResponse } as NodeResponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.audit =
+      object.audit !== undefined && object.audit !== null ? AuditResponse.fromJSON(object.audit) : undefined
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.description =
+      object.description !== undefined && object.description !== null ? String(object.description) : undefined
+    message.icon = object.icon !== undefined && object.icon !== null ? String(object.icon) : undefined
+    message.address = object.address !== undefined && object.address !== null ? String(object.address) : undefined
+    message.status =
+      object.status !== undefined && object.status !== null ? nodeConnectionStatusFromJSON(object.status) : 0
+    message.connectedAt =
+      object.connectedAt !== undefined && object.connectedAt !== null
+        ? fromJsonTimestamp(object.connectedAt)
+        : undefined
+    message.version = object.version !== undefined && object.version !== null ? String(object.version) : undefined
+    message.type = object.type !== undefined && object.type !== null ? nodeTypeFromJSON(object.type) : 0
+    return message
   },
 
   toJSON(message: NodeResponse): unknown {
@@ -6850,7 +6927,7 @@ export const NodeResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<NodeResponse>, I>>(object: I): NodeResponse {
-    const message = createBaseNodeResponse()
+    const message = { ...baseNodeResponse } as NodeResponse
     message.id = object.id ?? ''
     message.audit =
       object.audit !== undefined && object.audit !== null ? AuditResponse.fromPartial(object.audit) : undefined
@@ -6869,8 +6946,12 @@ export const NodeResponse = {
   },
 }
 
-function createBaseNodeDetailsResponse(): NodeDetailsResponse {
-  return { id: '', audit: undefined, name: '', status: 0, hasToken: false, type: 0 }
+const baseNodeDetailsResponse: object = {
+  id: '',
+  name: '',
+  status: 0,
+  hasToken: false,
+  type: 0,
 }
 
 export const NodeDetailsResponse = {
@@ -6920,7 +7001,7 @@ export const NodeDetailsResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): NodeDetailsResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseNodeDetailsResponse()
+    const message = { ...baseNodeDetailsResponse } as NodeDetailsResponse
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -6972,21 +7053,29 @@ export const NodeDetailsResponse = {
   },
 
   fromJSON(object: any): NodeDetailsResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
-      name: isSet(object.name) ? String(object.name) : '',
-      description: isSet(object.description) ? String(object.description) : undefined,
-      icon: isSet(object.icon) ? String(object.icon) : undefined,
-      address: isSet(object.address) ? String(object.address) : undefined,
-      status: isSet(object.status) ? nodeConnectionStatusFromJSON(object.status) : 0,
-      hasToken: isSet(object.hasToken) ? Boolean(object.hasToken) : false,
-      connectedAt: isSet(object.connectedAt) ? fromJsonTimestamp(object.connectedAt) : undefined,
-      install: isSet(object.install) ? NodeInstallResponse.fromJSON(object.install) : undefined,
-      script: isSet(object.script) ? NodeScriptResponse.fromJSON(object.script) : undefined,
-      version: isSet(object.version) ? String(object.version) : undefined,
-      type: isSet(object.type) ? nodeTypeFromJSON(object.type) : 0,
-    }
+    const message = { ...baseNodeDetailsResponse } as NodeDetailsResponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.audit =
+      object.audit !== undefined && object.audit !== null ? AuditResponse.fromJSON(object.audit) : undefined
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.description =
+      object.description !== undefined && object.description !== null ? String(object.description) : undefined
+    message.icon = object.icon !== undefined && object.icon !== null ? String(object.icon) : undefined
+    message.address = object.address !== undefined && object.address !== null ? String(object.address) : undefined
+    message.status =
+      object.status !== undefined && object.status !== null ? nodeConnectionStatusFromJSON(object.status) : 0
+    message.hasToken = object.hasToken !== undefined && object.hasToken !== null ? Boolean(object.hasToken) : false
+    message.connectedAt =
+      object.connectedAt !== undefined && object.connectedAt !== null
+        ? fromJsonTimestamp(object.connectedAt)
+        : undefined
+    message.install =
+      object.install !== undefined && object.install !== null ? NodeInstallResponse.fromJSON(object.install) : undefined
+    message.script =
+      object.script !== undefined && object.script !== null ? NodeScriptResponse.fromJSON(object.script) : undefined
+    message.version = object.version !== undefined && object.version !== null ? String(object.version) : undefined
+    message.type = object.type !== undefined && object.type !== null ? nodeTypeFromJSON(object.type) : 0
+    return message
   },
 
   toJSON(message: NodeDetailsResponse): unknown {
@@ -7010,7 +7099,7 @@ export const NodeDetailsResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<NodeDetailsResponse>, I>>(object: I): NodeDetailsResponse {
-    const message = createBaseNodeDetailsResponse()
+    const message = { ...baseNodeDetailsResponse } as NodeDetailsResponse
     message.id = object.id ?? ''
     message.audit =
       object.audit !== undefined && object.audit !== null ? AuditResponse.fromPartial(object.audit) : undefined
@@ -7036,9 +7125,7 @@ export const NodeDetailsResponse = {
   },
 }
 
-function createBaseNodeListResponse(): NodeListResponse {
-  return { data: [] }
-}
+const baseNodeListResponse: object = {}
 
 export const NodeListResponse = {
   encode(message: NodeListResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -7051,7 +7138,8 @@ export const NodeListResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): NodeListResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseNodeListResponse()
+    const message = { ...baseNodeListResponse } as NodeListResponse
+    message.data = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -7067,7 +7155,9 @@ export const NodeListResponse = {
   },
 
   fromJSON(object: any): NodeListResponse {
-    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => NodeResponse.fromJSON(e)) : [] }
+    const message = { ...baseNodeListResponse } as NodeListResponse
+    message.data = (object.data ?? []).map((e: any) => NodeResponse.fromJSON(e))
+    return message
   },
 
   toJSON(message: NodeListResponse): unknown {
@@ -7081,15 +7171,13 @@ export const NodeListResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<NodeListResponse>, I>>(object: I): NodeListResponse {
-    const message = createBaseNodeListResponse()
+    const message = { ...baseNodeListResponse } as NodeListResponse
     message.data = object.data?.map(e => NodeResponse.fromPartial(e)) || []
     return message
   },
 }
 
-function createBaseCreateNodeRequest(): CreateNodeRequest {
-  return { accessedBy: '', name: '' }
-}
+const baseCreateNodeRequest: object = { accessedBy: '', name: '' }
 
 export const CreateNodeRequest = {
   encode(message: CreateNodeRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -7111,7 +7199,7 @@ export const CreateNodeRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): CreateNodeRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseCreateNodeRequest()
+    const message = { ...baseCreateNodeRequest } as CreateNodeRequest
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -7136,12 +7224,13 @@ export const CreateNodeRequest = {
   },
 
   fromJSON(object: any): CreateNodeRequest {
-    return {
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      description: isSet(object.description) ? String(object.description) : undefined,
-      icon: isSet(object.icon) ? String(object.icon) : undefined,
-    }
+    const message = { ...baseCreateNodeRequest } as CreateNodeRequest
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.description =
+      object.description !== undefined && object.description !== null ? String(object.description) : undefined
+    message.icon = object.icon !== undefined && object.icon !== null ? String(object.icon) : undefined
+    return message
   },
 
   toJSON(message: CreateNodeRequest): unknown {
@@ -7154,7 +7243,7 @@ export const CreateNodeRequest = {
   },
 
   fromPartial<I extends Exact<DeepPartial<CreateNodeRequest>, I>>(object: I): CreateNodeRequest {
-    const message = createBaseCreateNodeRequest()
+    const message = { ...baseCreateNodeRequest } as CreateNodeRequest
     message.accessedBy = object.accessedBy ?? ''
     message.name = object.name ?? ''
     message.description = object.description ?? undefined
@@ -7163,9 +7252,7 @@ export const CreateNodeRequest = {
   },
 }
 
-function createBaseUpdateNodeRequest(): UpdateNodeRequest {
-  return { id: '', accessedBy: '', name: '' }
-}
+const baseUpdateNodeRequest: object = { id: '', accessedBy: '', name: '' }
 
 export const UpdateNodeRequest = {
   encode(message: UpdateNodeRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -7190,7 +7277,7 @@ export const UpdateNodeRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): UpdateNodeRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseUpdateNodeRequest()
+    const message = { ...baseUpdateNodeRequest } as UpdateNodeRequest
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -7218,13 +7305,14 @@ export const UpdateNodeRequest = {
   },
 
   fromJSON(object: any): UpdateNodeRequest {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      description: isSet(object.description) ? String(object.description) : undefined,
-      icon: isSet(object.icon) ? String(object.icon) : undefined,
-    }
+    const message = { ...baseUpdateNodeRequest } as UpdateNodeRequest
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.description =
+      object.description !== undefined && object.description !== null ? String(object.description) : undefined
+    message.icon = object.icon !== undefined && object.icon !== null ? String(object.icon) : undefined
+    return message
   },
 
   toJSON(message: UpdateNodeRequest): unknown {
@@ -7238,7 +7326,7 @@ export const UpdateNodeRequest = {
   },
 
   fromPartial<I extends Exact<DeepPartial<UpdateNodeRequest>, I>>(object: I): UpdateNodeRequest {
-    const message = createBaseUpdateNodeRequest()
+    const message = { ...baseUpdateNodeRequest } as UpdateNodeRequest
     message.id = object.id ?? ''
     message.accessedBy = object.accessedBy ?? ''
     message.name = object.name ?? ''
@@ -7248,9 +7336,7 @@ export const UpdateNodeRequest = {
   },
 }
 
-function createBaseGenerateScriptRequest(): GenerateScriptRequest {
-  return { id: '', accessedBy: '', type: 0 }
-}
+const baseGenerateScriptRequest: object = { id: '', accessedBy: '', type: 0 }
 
 export const GenerateScriptRequest = {
   encode(message: GenerateScriptRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -7272,7 +7358,7 @@ export const GenerateScriptRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): GenerateScriptRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseGenerateScriptRequest()
+    const message = { ...baseGenerateScriptRequest } as GenerateScriptRequest
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -7297,12 +7383,12 @@ export const GenerateScriptRequest = {
   },
 
   fromJSON(object: any): GenerateScriptRequest {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      type: isSet(object.type) ? nodeTypeFromJSON(object.type) : 0,
-      rootPath: isSet(object.rootPath) ? String(object.rootPath) : undefined,
-    }
+    const message = { ...baseGenerateScriptRequest } as GenerateScriptRequest
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.type = object.type !== undefined && object.type !== null ? nodeTypeFromJSON(object.type) : 0
+    message.rootPath = object.rootPath !== undefined && object.rootPath !== null ? String(object.rootPath) : undefined
+    return message
   },
 
   toJSON(message: GenerateScriptRequest): unknown {
@@ -7315,7 +7401,7 @@ export const GenerateScriptRequest = {
   },
 
   fromPartial<I extends Exact<DeepPartial<GenerateScriptRequest>, I>>(object: I): GenerateScriptRequest {
-    const message = createBaseGenerateScriptRequest()
+    const message = { ...baseGenerateScriptRequest } as GenerateScriptRequest
     message.id = object.id ?? ''
     message.accessedBy = object.accessedBy ?? ''
     message.type = object.type ?? 0
@@ -7324,9 +7410,7 @@ export const GenerateScriptRequest = {
   },
 }
 
-function createBaseNodeInstallResponse(): NodeInstallResponse {
-  return { command: '', expireAt: undefined }
-}
+const baseNodeInstallResponse: object = { command: '' }
 
 export const NodeInstallResponse = {
   encode(message: NodeInstallResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -7342,7 +7426,7 @@ export const NodeInstallResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): NodeInstallResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseNodeInstallResponse()
+    const message = { ...baseNodeInstallResponse } as NodeInstallResponse
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -7361,10 +7445,11 @@ export const NodeInstallResponse = {
   },
 
   fromJSON(object: any): NodeInstallResponse {
-    return {
-      command: isSet(object.command) ? String(object.command) : '',
-      expireAt: isSet(object.expireAt) ? fromJsonTimestamp(object.expireAt) : undefined,
-    }
+    const message = { ...baseNodeInstallResponse } as NodeInstallResponse
+    message.command = object.command !== undefined && object.command !== null ? String(object.command) : ''
+    message.expireAt =
+      object.expireAt !== undefined && object.expireAt !== null ? fromJsonTimestamp(object.expireAt) : undefined
+    return message
   },
 
   toJSON(message: NodeInstallResponse): unknown {
@@ -7375,7 +7460,7 @@ export const NodeInstallResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<NodeInstallResponse>, I>>(object: I): NodeInstallResponse {
-    const message = createBaseNodeInstallResponse()
+    const message = { ...baseNodeInstallResponse } as NodeInstallResponse
     message.command = object.command ?? ''
     message.expireAt =
       object.expireAt !== undefined && object.expireAt !== null ? Timestamp.fromPartial(object.expireAt) : undefined
@@ -7383,9 +7468,7 @@ export const NodeInstallResponse = {
   },
 }
 
-function createBaseNodeScriptResponse(): NodeScriptResponse {
-  return { content: '' }
-}
+const baseNodeScriptResponse: object = { content: '' }
 
 export const NodeScriptResponse = {
   encode(message: NodeScriptResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -7398,7 +7481,7 @@ export const NodeScriptResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): NodeScriptResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseNodeScriptResponse()
+    const message = { ...baseNodeScriptResponse } as NodeScriptResponse
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -7414,7 +7497,9 @@ export const NodeScriptResponse = {
   },
 
   fromJSON(object: any): NodeScriptResponse {
-    return { content: isSet(object.content) ? String(object.content) : '' }
+    const message = { ...baseNodeScriptResponse } as NodeScriptResponse
+    message.content = object.content !== undefined && object.content !== null ? String(object.content) : ''
+    return message
   },
 
   toJSON(message: NodeScriptResponse): unknown {
@@ -7424,15 +7509,13 @@ export const NodeScriptResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<NodeScriptResponse>, I>>(object: I): NodeScriptResponse {
-    const message = createBaseNodeScriptResponse()
+    const message = { ...baseNodeScriptResponse } as NodeScriptResponse
     message.content = object.content ?? ''
     return message
   },
 }
 
-function createBaseNodeEventMessage(): NodeEventMessage {
-  return { id: '', status: 0 }
-}
+const baseNodeEventMessage: object = { id: '', status: 0 }
 
 export const NodeEventMessage = {
   encode(message: NodeEventMessage, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -7457,7 +7540,7 @@ export const NodeEventMessage = {
   decode(input: _m0.Reader | Uint8Array, length?: number): NodeEventMessage {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseNodeEventMessage()
+    const message = { ...baseNodeEventMessage } as NodeEventMessage
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -7485,13 +7568,17 @@ export const NodeEventMessage = {
   },
 
   fromJSON(object: any): NodeEventMessage {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      status: isSet(object.status) ? nodeConnectionStatusFromJSON(object.status) : 0,
-      address: isSet(object.address) ? String(object.address) : undefined,
-      version: isSet(object.version) ? String(object.version) : undefined,
-      connectedAt: isSet(object.connectedAt) ? fromJsonTimestamp(object.connectedAt) : undefined,
-    }
+    const message = { ...baseNodeEventMessage } as NodeEventMessage
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.status =
+      object.status !== undefined && object.status !== null ? nodeConnectionStatusFromJSON(object.status) : 0
+    message.address = object.address !== undefined && object.address !== null ? String(object.address) : undefined
+    message.version = object.version !== undefined && object.version !== null ? String(object.version) : undefined
+    message.connectedAt =
+      object.connectedAt !== undefined && object.connectedAt !== null
+        ? fromJsonTimestamp(object.connectedAt)
+        : undefined
+    return message
   },
 
   toJSON(message: NodeEventMessage): unknown {
@@ -7505,7 +7592,7 @@ export const NodeEventMessage = {
   },
 
   fromPartial<I extends Exact<DeepPartial<NodeEventMessage>, I>>(object: I): NodeEventMessage {
-    const message = createBaseNodeEventMessage()
+    const message = { ...baseNodeEventMessage } as NodeEventMessage
     message.id = object.id ?? ''
     message.status = object.status ?? 0
     message.address = object.address ?? undefined
@@ -7518,9 +7605,7 @@ export const NodeEventMessage = {
   },
 }
 
-function createBaseWatchContainerStateRequest(): WatchContainerStateRequest {
-  return { accessedBy: '', nodeId: '' }
-}
+const baseWatchContainerStateRequest: object = { accessedBy: '', nodeId: '' }
 
 export const WatchContainerStateRequest = {
   encode(message: WatchContainerStateRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -7539,7 +7624,9 @@ export const WatchContainerStateRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): WatchContainerStateRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseWatchContainerStateRequest()
+    const message = {
+      ...baseWatchContainerStateRequest,
+    } as WatchContainerStateRequest
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -7561,11 +7648,13 @@ export const WatchContainerStateRequest = {
   },
 
   fromJSON(object: any): WatchContainerStateRequest {
-    return {
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
-      prefix: isSet(object.prefix) ? String(object.prefix) : undefined,
-    }
+    const message = {
+      ...baseWatchContainerStateRequest,
+    } as WatchContainerStateRequest
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.nodeId = object.nodeId !== undefined && object.nodeId !== null ? String(object.nodeId) : ''
+    message.prefix = object.prefix !== undefined && object.prefix !== null ? String(object.prefix) : undefined
+    return message
   },
 
   toJSON(message: WatchContainerStateRequest): unknown {
@@ -7577,7 +7666,9 @@ export const WatchContainerStateRequest = {
   },
 
   fromPartial<I extends Exact<DeepPartial<WatchContainerStateRequest>, I>>(object: I): WatchContainerStateRequest {
-    const message = createBaseWatchContainerStateRequest()
+    const message = {
+      ...baseWatchContainerStateRequest,
+    } as WatchContainerStateRequest
     message.accessedBy = object.accessedBy ?? ''
     message.nodeId = object.nodeId ?? ''
     message.prefix = object.prefix ?? undefined
@@ -7585,9 +7676,7 @@ export const WatchContainerStateRequest = {
   },
 }
 
-function createBaseDeploymentProgressMessage(): DeploymentProgressMessage {
-  return { id: '', log: [] }
-}
+const baseDeploymentProgressMessage: object = { id: '', log: '' }
 
 export const DeploymentProgressMessage = {
   encode(message: DeploymentProgressMessage, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -7609,7 +7698,10 @@ export const DeploymentProgressMessage = {
   decode(input: _m0.Reader | Uint8Array, length?: number): DeploymentProgressMessage {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseDeploymentProgressMessage()
+    const message = {
+      ...baseDeploymentProgressMessage,
+    } as DeploymentProgressMessage
+    message.log = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -7634,12 +7726,18 @@ export const DeploymentProgressMessage = {
   },
 
   fromJSON(object: any): DeploymentProgressMessage {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      status: isSet(object.status) ? deploymentStatusFromJSON(object.status) : undefined,
-      instance: isSet(object.instance) ? InstanceDeploymentItem.fromJSON(object.instance) : undefined,
-      log: Array.isArray(object?.log) ? object.log.map((e: any) => String(e)) : [],
-    }
+    const message = {
+      ...baseDeploymentProgressMessage,
+    } as DeploymentProgressMessage
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.status =
+      object.status !== undefined && object.status !== null ? deploymentStatusFromJSON(object.status) : undefined
+    message.instance =
+      object.instance !== undefined && object.instance !== null
+        ? InstanceDeploymentItem.fromJSON(object.instance)
+        : undefined
+    message.log = (object.log ?? []).map((e: any) => String(e))
+    return message
   },
 
   toJSON(message: DeploymentProgressMessage): unknown {
@@ -7658,7 +7756,9 @@ export const DeploymentProgressMessage = {
   },
 
   fromPartial<I extends Exact<DeepPartial<DeploymentProgressMessage>, I>>(object: I): DeploymentProgressMessage {
-    const message = createBaseDeploymentProgressMessage()
+    const message = {
+      ...baseDeploymentProgressMessage,
+    } as DeploymentProgressMessage
     message.id = object.id ?? ''
     message.status = object.status ?? undefined
     message.instance =
@@ -7670,9 +7770,7 @@ export const DeploymentProgressMessage = {
   },
 }
 
-function createBaseInstancesCreatedEventList(): InstancesCreatedEventList {
-  return { data: [] }
-}
+const baseInstancesCreatedEventList: object = {}
 
 export const InstancesCreatedEventList = {
   encode(message: InstancesCreatedEventList, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -7685,7 +7783,10 @@ export const InstancesCreatedEventList = {
   decode(input: _m0.Reader | Uint8Array, length?: number): InstancesCreatedEventList {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseInstancesCreatedEventList()
+    const message = {
+      ...baseInstancesCreatedEventList,
+    } as InstancesCreatedEventList
+    message.data = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -7701,7 +7802,11 @@ export const InstancesCreatedEventList = {
   },
 
   fromJSON(object: any): InstancesCreatedEventList {
-    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => InstanceResponse.fromJSON(e)) : [] }
+    const message = {
+      ...baseInstancesCreatedEventList,
+    } as InstancesCreatedEventList
+    message.data = (object.data ?? []).map((e: any) => InstanceResponse.fromJSON(e))
+    return message
   },
 
   toJSON(message: InstancesCreatedEventList): unknown {
@@ -7715,15 +7820,15 @@ export const InstancesCreatedEventList = {
   },
 
   fromPartial<I extends Exact<DeepPartial<InstancesCreatedEventList>, I>>(object: I): InstancesCreatedEventList {
-    const message = createBaseInstancesCreatedEventList()
+    const message = {
+      ...baseInstancesCreatedEventList,
+    } as InstancesCreatedEventList
     message.data = object.data?.map(e => InstanceResponse.fromPartial(e)) || []
     return message
   },
 }
 
-function createBaseDeploymentEditEventMessage(): DeploymentEditEventMessage {
-  return { instancesCreated: undefined, imageIdDeleted: undefined }
-}
+const baseDeploymentEditEventMessage: object = {}
 
 export const DeploymentEditEventMessage = {
   encode(message: DeploymentEditEventMessage, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -7739,7 +7844,9 @@ export const DeploymentEditEventMessage = {
   decode(input: _m0.Reader | Uint8Array, length?: number): DeploymentEditEventMessage {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseDeploymentEditEventMessage()
+    const message = {
+      ...baseDeploymentEditEventMessage,
+    } as DeploymentEditEventMessage
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -7758,12 +7865,16 @@ export const DeploymentEditEventMessage = {
   },
 
   fromJSON(object: any): DeploymentEditEventMessage {
-    return {
-      instancesCreated: isSet(object.instancesCreated)
+    const message = {
+      ...baseDeploymentEditEventMessage,
+    } as DeploymentEditEventMessage
+    message.instancesCreated =
+      object.instancesCreated !== undefined && object.instancesCreated !== null
         ? InstancesCreatedEventList.fromJSON(object.instancesCreated)
-        : undefined,
-      imageIdDeleted: isSet(object.imageIdDeleted) ? String(object.imageIdDeleted) : undefined,
-    }
+        : undefined
+    message.imageIdDeleted =
+      object.imageIdDeleted !== undefined && object.imageIdDeleted !== null ? String(object.imageIdDeleted) : undefined
+    return message
   },
 
   toJSON(message: DeploymentEditEventMessage): unknown {
@@ -7777,7 +7888,9 @@ export const DeploymentEditEventMessage = {
   },
 
   fromPartial<I extends Exact<DeepPartial<DeploymentEditEventMessage>, I>>(object: I): DeploymentEditEventMessage {
-    const message = createBaseDeploymentEditEventMessage()
+    const message = {
+      ...baseDeploymentEditEventMessage,
+    } as DeploymentEditEventMessage
     message.instancesCreated =
       object.instancesCreated !== undefined && object.instancesCreated !== null
         ? InstancesCreatedEventList.fromPartial(object.instancesCreated)
@@ -7787,8 +7900,11 @@ export const DeploymentEditEventMessage = {
   },
 }
 
-function createBaseCreateDeploymentRequest(): CreateDeploymentRequest {
-  return { accessedBy: '', versionId: '', nodeId: '', prefix: '' }
+const baseCreateDeploymentRequest: object = {
+  accessedBy: '',
+  versionId: '',
+  nodeId: '',
+  prefix: '',
 }
 
 export const CreateDeploymentRequest = {
@@ -7814,7 +7930,9 @@ export const CreateDeploymentRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): CreateDeploymentRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseCreateDeploymentRequest()
+    const message = {
+      ...baseCreateDeploymentRequest,
+    } as CreateDeploymentRequest
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -7842,13 +7960,15 @@ export const CreateDeploymentRequest = {
   },
 
   fromJSON(object: any): CreateDeploymentRequest {
-    return {
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      versionId: isSet(object.versionId) ? String(object.versionId) : '',
-      nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
-      note: isSet(object.note) ? String(object.note) : undefined,
-      prefix: isSet(object.prefix) ? String(object.prefix) : '',
-    }
+    const message = {
+      ...baseCreateDeploymentRequest,
+    } as CreateDeploymentRequest
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.versionId = object.versionId !== undefined && object.versionId !== null ? String(object.versionId) : ''
+    message.nodeId = object.nodeId !== undefined && object.nodeId !== null ? String(object.nodeId) : ''
+    message.note = object.note !== undefined && object.note !== null ? String(object.note) : undefined
+    message.prefix = object.prefix !== undefined && object.prefix !== null ? String(object.prefix) : ''
+    return message
   },
 
   toJSON(message: CreateDeploymentRequest): unknown {
@@ -7862,7 +7982,9 @@ export const CreateDeploymentRequest = {
   },
 
   fromPartial<I extends Exact<DeepPartial<CreateDeploymentRequest>, I>>(object: I): CreateDeploymentRequest {
-    const message = createBaseCreateDeploymentRequest()
+    const message = {
+      ...baseCreateDeploymentRequest,
+    } as CreateDeploymentRequest
     message.accessedBy = object.accessedBy ?? ''
     message.versionId = object.versionId ?? ''
     message.nodeId = object.nodeId ?? ''
@@ -7872,8 +7994,10 @@ export const CreateDeploymentRequest = {
   },
 }
 
-function createBaseUpdateDeploymentRequest(): UpdateDeploymentRequest {
-  return { id: '', accessedBy: '', prefix: '' }
+const baseUpdateDeploymentRequest: object = {
+  id: '',
+  accessedBy: '',
+  prefix: '',
 }
 
 export const UpdateDeploymentRequest = {
@@ -7896,7 +8020,9 @@ export const UpdateDeploymentRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): UpdateDeploymentRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseUpdateDeploymentRequest()
+    const message = {
+      ...baseUpdateDeploymentRequest,
+    } as UpdateDeploymentRequest
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -7921,12 +8047,14 @@ export const UpdateDeploymentRequest = {
   },
 
   fromJSON(object: any): UpdateDeploymentRequest {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      note: isSet(object.note) ? String(object.note) : undefined,
-      prefix: isSet(object.prefix) ? String(object.prefix) : '',
-    }
+    const message = {
+      ...baseUpdateDeploymentRequest,
+    } as UpdateDeploymentRequest
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.note = object.note !== undefined && object.note !== null ? String(object.note) : undefined
+    message.prefix = object.prefix !== undefined && object.prefix !== null ? String(object.prefix) : ''
+    return message
   },
 
   toJSON(message: UpdateDeploymentRequest): unknown {
@@ -7939,7 +8067,9 @@ export const UpdateDeploymentRequest = {
   },
 
   fromPartial<I extends Exact<DeepPartial<UpdateDeploymentRequest>, I>>(object: I): UpdateDeploymentRequest {
-    const message = createBaseUpdateDeploymentRequest()
+    const message = {
+      ...baseUpdateDeploymentRequest,
+    } as UpdateDeploymentRequest
     message.id = object.id ?? ''
     message.accessedBy = object.accessedBy ?? ''
     message.note = object.note ?? undefined
@@ -7948,9 +8078,7 @@ export const UpdateDeploymentRequest = {
   },
 }
 
-function createBasePatchDeploymentRequest(): PatchDeploymentRequest {
-  return { id: '', accessedBy: '' }
-}
+const basePatchDeploymentRequest: object = { id: '', accessedBy: '' }
 
 export const PatchDeploymentRequest = {
   encode(message: PatchDeploymentRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -7972,7 +8100,7 @@ export const PatchDeploymentRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): PatchDeploymentRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBasePatchDeploymentRequest()
+    const message = { ...basePatchDeploymentRequest } as PatchDeploymentRequest
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -7997,12 +8125,18 @@ export const PatchDeploymentRequest = {
   },
 
   fromJSON(object: any): PatchDeploymentRequest {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      environment: isSet(object.environment) ? KeyValueList.fromJSON(object.environment) : undefined,
-      instance: isSet(object.instance) ? PatchInstanceRequest.fromJSON(object.instance) : undefined,
-    }
+    const message = { ...basePatchDeploymentRequest } as PatchDeploymentRequest
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.environment =
+      object.environment !== undefined && object.environment !== null
+        ? KeyValueList.fromJSON(object.environment)
+        : undefined
+    message.instance =
+      object.instance !== undefined && object.instance !== null
+        ? PatchInstanceRequest.fromJSON(object.instance)
+        : undefined
+    return message
   },
 
   toJSON(message: PatchDeploymentRequest): unknown {
@@ -8017,7 +8151,7 @@ export const PatchDeploymentRequest = {
   },
 
   fromPartial<I extends Exact<DeepPartial<PatchDeploymentRequest>, I>>(object: I): PatchDeploymentRequest {
-    const message = createBasePatchDeploymentRequest()
+    const message = { ...basePatchDeploymentRequest } as PatchDeploymentRequest
     message.id = object.id ?? ''
     message.accessedBy = object.accessedBy ?? ''
     message.environment =
@@ -8032,9 +8166,7 @@ export const PatchDeploymentRequest = {
   },
 }
 
-function createBaseInstanceResponse(): InstanceResponse {
-  return { id: '', audit: undefined, image: undefined }
-}
+const baseInstanceResponse: object = { id: '' }
 
 export const InstanceResponse = {
   encode(message: InstanceResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -8059,7 +8191,7 @@ export const InstanceResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): InstanceResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseInstanceResponse()
+    const message = { ...baseInstanceResponse } as InstanceResponse
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -8087,13 +8219,17 @@ export const InstanceResponse = {
   },
 
   fromJSON(object: any): InstanceResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
-      image: isSet(object.image) ? ImageResponse.fromJSON(object.image) : undefined,
-      state: isSet(object.state) ? containerStateFromJSON(object.state) : undefined,
-      config: isSet(object.config) ? ContainerConfig.fromJSON(object.config) : undefined,
-    }
+    const message = { ...baseInstanceResponse } as InstanceResponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.audit =
+      object.audit !== undefined && object.audit !== null ? AuditResponse.fromJSON(object.audit) : undefined
+    message.image =
+      object.image !== undefined && object.image !== null ? ImageResponse.fromJSON(object.image) : undefined
+    message.state =
+      object.state !== undefined && object.state !== null ? containerStateFromJSON(object.state) : undefined
+    message.config =
+      object.config !== undefined && object.config !== null ? ContainerConfig.fromJSON(object.config) : undefined
+    return message
   },
 
   toJSON(message: InstanceResponse): unknown {
@@ -8108,7 +8244,7 @@ export const InstanceResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<InstanceResponse>, I>>(object: I): InstanceResponse {
-    const message = createBaseInstanceResponse()
+    const message = { ...baseInstanceResponse } as InstanceResponse
     message.id = object.id ?? ''
     message.audit =
       object.audit !== undefined && object.audit !== null ? AuditResponse.fromPartial(object.audit) : undefined
@@ -8121,9 +8257,7 @@ export const InstanceResponse = {
   },
 }
 
-function createBasePatchInstanceRequest(): PatchInstanceRequest {
-  return { id: '', accessedBy: '' }
-}
+const basePatchInstanceRequest: object = { id: '', accessedBy: '' }
 
 export const PatchInstanceRequest = {
   encode(message: PatchInstanceRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -8142,7 +8276,7 @@ export const PatchInstanceRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): PatchInstanceRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBasePatchInstanceRequest()
+    const message = { ...basePatchInstanceRequest } as PatchInstanceRequest
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -8164,11 +8298,12 @@ export const PatchInstanceRequest = {
   },
 
   fromJSON(object: any): PatchInstanceRequest {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      config: isSet(object.config) ? ContainerConfig.fromJSON(object.config) : undefined,
-    }
+    const message = { ...basePatchInstanceRequest } as PatchInstanceRequest
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.config =
+      object.config !== undefined && object.config !== null ? ContainerConfig.fromJSON(object.config) : undefined
+    return message
   },
 
   toJSON(message: PatchInstanceRequest): unknown {
@@ -8180,7 +8315,7 @@ export const PatchInstanceRequest = {
   },
 
   fromPartial<I extends Exact<DeepPartial<PatchInstanceRequest>, I>>(object: I): PatchInstanceRequest {
-    const message = createBasePatchInstanceRequest()
+    const message = { ...basePatchInstanceRequest } as PatchInstanceRequest
     message.id = object.id ?? ''
     message.accessedBy = object.accessedBy ?? ''
     message.config =
@@ -8189,9 +8324,7 @@ export const PatchInstanceRequest = {
   },
 }
 
-function createBaseDeploymentListResponse(): DeploymentListResponse {
-  return { data: [] }
-}
+const baseDeploymentListResponse: object = {}
 
 export const DeploymentListResponse = {
   encode(message: DeploymentListResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -8204,7 +8337,8 @@ export const DeploymentListResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): DeploymentListResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseDeploymentListResponse()
+    const message = { ...baseDeploymentListResponse } as DeploymentListResponse
+    message.data = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -8220,7 +8354,9 @@ export const DeploymentListResponse = {
   },
 
   fromJSON(object: any): DeploymentListResponse {
-    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => DeploymentResponse.fromJSON(e)) : [] }
+    const message = { ...baseDeploymentListResponse } as DeploymentListResponse
+    message.data = (object.data ?? []).map((e: any) => DeploymentResponse.fromJSON(e))
+    return message
   },
 
   toJSON(message: DeploymentListResponse): unknown {
@@ -8234,24 +8370,22 @@ export const DeploymentListResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<DeploymentListResponse>, I>>(object: I): DeploymentListResponse {
-    const message = createBaseDeploymentListResponse()
+    const message = { ...baseDeploymentListResponse } as DeploymentListResponse
     message.data = object.data?.map(e => DeploymentResponse.fromPartial(e)) || []
     return message
   },
 }
 
-function createBaseDeploymentResponse(): DeploymentResponse {
-  return {
-    id: '',
-    product: '',
-    productId: '',
-    version: '',
-    versionId: '',
-    node: '',
-    status: 0,
-    nodeId: '',
-    prefix: '',
-  }
+const baseDeploymentResponse: object = {
+  id: '',
+  product: '',
+  productId: '',
+  version: '',
+  versionId: '',
+  node: '',
+  status: 0,
+  nodeId: '',
+  prefix: '',
 }
 
 export const DeploymentResponse = {
@@ -8295,7 +8429,7 @@ export const DeploymentResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): DeploymentResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseDeploymentResponse()
+    const message = { ...baseDeploymentResponse } as DeploymentResponse
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -8341,19 +8475,20 @@ export const DeploymentResponse = {
   },
 
   fromJSON(object: any): DeploymentResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      product: isSet(object.product) ? String(object.product) : '',
-      productId: isSet(object.productId) ? String(object.productId) : '',
-      version: isSet(object.version) ? String(object.version) : '',
-      versionId: isSet(object.versionId) ? String(object.versionId) : '',
-      node: isSet(object.node) ? String(object.node) : '',
-      status: isSet(object.status) ? deploymentStatusFromJSON(object.status) : 0,
-      nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
-      note: isSet(object.note) ? String(object.note) : undefined,
-      prefix: isSet(object.prefix) ? String(object.prefix) : '',
-      updatedAt: isSet(object.updatedAt) ? fromJsonTimestamp(object.updatedAt) : undefined,
-    }
+    const message = { ...baseDeploymentResponse } as DeploymentResponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.product = object.product !== undefined && object.product !== null ? String(object.product) : ''
+    message.productId = object.productId !== undefined && object.productId !== null ? String(object.productId) : ''
+    message.version = object.version !== undefined && object.version !== null ? String(object.version) : ''
+    message.versionId = object.versionId !== undefined && object.versionId !== null ? String(object.versionId) : ''
+    message.node = object.node !== undefined && object.node !== null ? String(object.node) : ''
+    message.status = object.status !== undefined && object.status !== null ? deploymentStatusFromJSON(object.status) : 0
+    message.nodeId = object.nodeId !== undefined && object.nodeId !== null ? String(object.nodeId) : ''
+    message.note = object.note !== undefined && object.note !== null ? String(object.note) : undefined
+    message.prefix = object.prefix !== undefined && object.prefix !== null ? String(object.prefix) : ''
+    message.updatedAt =
+      object.updatedAt !== undefined && object.updatedAt !== null ? fromJsonTimestamp(object.updatedAt) : undefined
+    return message
   },
 
   toJSON(message: DeploymentResponse): unknown {
@@ -8373,7 +8508,7 @@ export const DeploymentResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<DeploymentResponse>, I>>(object: I): DeploymentResponse {
-    const message = createBaseDeploymentResponse()
+    const message = { ...baseDeploymentResponse } as DeploymentResponse
     message.id = object.id ?? ''
     message.product = object.product ?? ''
     message.productId = object.productId ?? ''
@@ -8390,9 +8525,7 @@ export const DeploymentResponse = {
   },
 }
 
-function createBaseDeploymentListByVersionResponse(): DeploymentListByVersionResponse {
-  return { data: [] }
-}
+const baseDeploymentListByVersionResponse: object = {}
 
 export const DeploymentListByVersionResponse = {
   encode(message: DeploymentListByVersionResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -8405,7 +8538,10 @@ export const DeploymentListByVersionResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): DeploymentListByVersionResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseDeploymentListByVersionResponse()
+    const message = {
+      ...baseDeploymentListByVersionResponse,
+    } as DeploymentListByVersionResponse
+    message.data = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -8421,9 +8557,11 @@ export const DeploymentListByVersionResponse = {
   },
 
   fromJSON(object: any): DeploymentListByVersionResponse {
-    return {
-      data: Array.isArray(object?.data) ? object.data.map((e: any) => DeploymentByVersionResponse.fromJSON(e)) : [],
-    }
+    const message = {
+      ...baseDeploymentListByVersionResponse,
+    } as DeploymentListByVersionResponse
+    message.data = (object.data ?? []).map((e: any) => DeploymentByVersionResponse.fromJSON(e))
+    return message
   },
 
   toJSON(message: DeploymentListByVersionResponse): unknown {
@@ -8439,14 +8577,21 @@ export const DeploymentListByVersionResponse = {
   fromPartial<I extends Exact<DeepPartial<DeploymentListByVersionResponse>, I>>(
     object: I,
   ): DeploymentListByVersionResponse {
-    const message = createBaseDeploymentListByVersionResponse()
+    const message = {
+      ...baseDeploymentListByVersionResponse,
+    } as DeploymentListByVersionResponse
     message.data = object.data?.map(e => DeploymentByVersionResponse.fromPartial(e)) || []
     return message
   },
 }
 
-function createBaseDeploymentByVersionResponse(): DeploymentByVersionResponse {
-  return { id: '', audit: undefined, prefix: '', nodeId: '', nodeName: '', status: 0, nodeStatus: 0 }
+const baseDeploymentByVersionResponse: object = {
+  id: '',
+  prefix: '',
+  nodeId: '',
+  nodeName: '',
+  status: 0,
+  nodeStatus: 0,
 }
 
 export const DeploymentByVersionResponse = {
@@ -8481,7 +8626,9 @@ export const DeploymentByVersionResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): DeploymentByVersionResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseDeploymentByVersionResponse()
+    const message = {
+      ...baseDeploymentByVersionResponse,
+    } as DeploymentByVersionResponse
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -8518,16 +8665,22 @@ export const DeploymentByVersionResponse = {
   },
 
   fromJSON(object: any): DeploymentByVersionResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
-      prefix: isSet(object.prefix) ? String(object.prefix) : '',
-      nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
-      nodeName: isSet(object.nodeName) ? String(object.nodeName) : '',
-      status: isSet(object.status) ? deploymentStatusFromJSON(object.status) : 0,
-      nodeStatus: isSet(object.nodeStatus) ? nodeConnectionStatusFromJSON(object.nodeStatus) : 0,
-      note: isSet(object.note) ? String(object.note) : undefined,
-    }
+    const message = {
+      ...baseDeploymentByVersionResponse,
+    } as DeploymentByVersionResponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.audit =
+      object.audit !== undefined && object.audit !== null ? AuditResponse.fromJSON(object.audit) : undefined
+    message.prefix = object.prefix !== undefined && object.prefix !== null ? String(object.prefix) : ''
+    message.nodeId = object.nodeId !== undefined && object.nodeId !== null ? String(object.nodeId) : ''
+    message.nodeName = object.nodeName !== undefined && object.nodeName !== null ? String(object.nodeName) : ''
+    message.status = object.status !== undefined && object.status !== null ? deploymentStatusFromJSON(object.status) : 0
+    message.nodeStatus =
+      object.nodeStatus !== undefined && object.nodeStatus !== null
+        ? nodeConnectionStatusFromJSON(object.nodeStatus)
+        : 0
+    message.note = object.note !== undefined && object.note !== null ? String(object.note) : undefined
+    return message
   },
 
   toJSON(message: DeploymentByVersionResponse): unknown {
@@ -8544,7 +8697,9 @@ export const DeploymentByVersionResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<DeploymentByVersionResponse>, I>>(object: I): DeploymentByVersionResponse {
-    const message = createBaseDeploymentByVersionResponse()
+    const message = {
+      ...baseDeploymentByVersionResponse,
+    } as DeploymentByVersionResponse
     message.id = object.id ?? ''
     message.audit =
       object.audit !== undefined && object.audit !== null ? AuditResponse.fromPartial(object.audit) : undefined
@@ -8558,17 +8713,12 @@ export const DeploymentByVersionResponse = {
   },
 }
 
-function createBaseDeploymentDetailsResponse(): DeploymentDetailsResponse {
-  return {
-    id: '',
-    audit: undefined,
-    productVersionId: '',
-    nodeId: '',
-    prefix: '',
-    environment: [],
-    status: 0,
-    instances: [],
-  }
+const baseDeploymentDetailsResponse: object = {
+  id: '',
+  productVersionId: '',
+  nodeId: '',
+  prefix: '',
+  status: 0,
 }
 
 export const DeploymentDetailsResponse = {
@@ -8609,7 +8759,11 @@ export const DeploymentDetailsResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): DeploymentDetailsResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseDeploymentDetailsResponse()
+    const message = {
+      ...baseDeploymentDetailsResponse,
+    } as DeploymentDetailsResponse
+    message.environment = []
+    message.instances = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -8652,20 +8806,23 @@ export const DeploymentDetailsResponse = {
   },
 
   fromJSON(object: any): DeploymentDetailsResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
-      productVersionId: isSet(object.productVersionId) ? String(object.productVersionId) : '',
-      nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
-      note: isSet(object.note) ? String(object.note) : undefined,
-      prefix: isSet(object.prefix) ? String(object.prefix) : '',
-      environment: Array.isArray(object?.environment)
-        ? object.environment.map((e: any) => UniqueKeyValue.fromJSON(e))
-        : [],
-      status: isSet(object.status) ? deploymentStatusFromJSON(object.status) : 0,
-      publicKey: isSet(object.publicKey) ? String(object.publicKey) : undefined,
-      instances: Array.isArray(object?.instances) ? object.instances.map((e: any) => InstanceResponse.fromJSON(e)) : [],
-    }
+    const message = {
+      ...baseDeploymentDetailsResponse,
+    } as DeploymentDetailsResponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.audit =
+      object.audit !== undefined && object.audit !== null ? AuditResponse.fromJSON(object.audit) : undefined
+    message.productVersionId =
+      object.productVersionId !== undefined && object.productVersionId !== null ? String(object.productVersionId) : ''
+    message.nodeId = object.nodeId !== undefined && object.nodeId !== null ? String(object.nodeId) : ''
+    message.note = object.note !== undefined && object.note !== null ? String(object.note) : undefined
+    message.prefix = object.prefix !== undefined && object.prefix !== null ? String(object.prefix) : ''
+    message.environment = (object.environment ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
+    message.status = object.status !== undefined && object.status !== null ? deploymentStatusFromJSON(object.status) : 0
+    message.publicKey =
+      object.publicKey !== undefined && object.publicKey !== null ? String(object.publicKey) : undefined
+    message.instances = (object.instances ?? []).map((e: any) => InstanceResponse.fromJSON(e))
+    return message
   },
 
   toJSON(message: DeploymentDetailsResponse): unknown {
@@ -8692,7 +8849,9 @@ export const DeploymentDetailsResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<DeploymentDetailsResponse>, I>>(object: I): DeploymentDetailsResponse {
-    const message = createBaseDeploymentDetailsResponse()
+    const message = {
+      ...baseDeploymentDetailsResponse,
+    } as DeploymentDetailsResponse
     message.id = object.id ?? ''
     message.audit =
       object.audit !== undefined && object.audit !== null ? AuditResponse.fromPartial(object.audit) : undefined
@@ -8708,9 +8867,7 @@ export const DeploymentDetailsResponse = {
   },
 }
 
-function createBaseDeploymentEventContainerState(): DeploymentEventContainerState {
-  return { instanceId: '', state: 0 }
-}
+const baseDeploymentEventContainerState: object = { instanceId: '', state: 0 }
 
 export const DeploymentEventContainerState = {
   encode(message: DeploymentEventContainerState, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -8726,7 +8883,9 @@ export const DeploymentEventContainerState = {
   decode(input: _m0.Reader | Uint8Array, length?: number): DeploymentEventContainerState {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseDeploymentEventContainerState()
+    const message = {
+      ...baseDeploymentEventContainerState,
+    } as DeploymentEventContainerState
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -8745,10 +8904,12 @@ export const DeploymentEventContainerState = {
   },
 
   fromJSON(object: any): DeploymentEventContainerState {
-    return {
-      instanceId: isSet(object.instanceId) ? String(object.instanceId) : '',
-      state: isSet(object.state) ? containerStateFromJSON(object.state) : 0,
-    }
+    const message = {
+      ...baseDeploymentEventContainerState,
+    } as DeploymentEventContainerState
+    message.instanceId = object.instanceId !== undefined && object.instanceId !== null ? String(object.instanceId) : ''
+    message.state = object.state !== undefined && object.state !== null ? containerStateFromJSON(object.state) : 0
+    return message
   },
 
   toJSON(message: DeploymentEventContainerState): unknown {
@@ -8761,16 +8922,16 @@ export const DeploymentEventContainerState = {
   fromPartial<I extends Exact<DeepPartial<DeploymentEventContainerState>, I>>(
     object: I,
   ): DeploymentEventContainerState {
-    const message = createBaseDeploymentEventContainerState()
+    const message = {
+      ...baseDeploymentEventContainerState,
+    } as DeploymentEventContainerState
     message.instanceId = object.instanceId ?? ''
     message.state = object.state ?? 0
     return message
   },
 }
 
-function createBaseDeploymentEventLog(): DeploymentEventLog {
-  return { log: [] }
-}
+const baseDeploymentEventLog: object = { log: '' }
 
 export const DeploymentEventLog = {
   encode(message: DeploymentEventLog, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -8783,7 +8944,8 @@ export const DeploymentEventLog = {
   decode(input: _m0.Reader | Uint8Array, length?: number): DeploymentEventLog {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseDeploymentEventLog()
+    const message = { ...baseDeploymentEventLog } as DeploymentEventLog
+    message.log = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -8799,7 +8961,9 @@ export const DeploymentEventLog = {
   },
 
   fromJSON(object: any): DeploymentEventLog {
-    return { log: Array.isArray(object?.log) ? object.log.map((e: any) => String(e)) : [] }
+    const message = { ...baseDeploymentEventLog } as DeploymentEventLog
+    message.log = (object.log ?? []).map((e: any) => String(e))
+    return message
   },
 
   toJSON(message: DeploymentEventLog): unknown {
@@ -8813,15 +8977,13 @@ export const DeploymentEventLog = {
   },
 
   fromPartial<I extends Exact<DeepPartial<DeploymentEventLog>, I>>(object: I): DeploymentEventLog {
-    const message = createBaseDeploymentEventLog()
+    const message = { ...baseDeploymentEventLog } as DeploymentEventLog
     message.log = object.log?.map(e => e) || []
     return message
   },
 }
 
-function createBaseDeploymentEventResponse(): DeploymentEventResponse {
-  return { type: 0, createdAt: undefined, log: undefined, deploymentStatus: undefined, containerStatus: undefined }
-}
+const baseDeploymentEventResponse: object = { type: 0 }
 
 export const DeploymentEventResponse = {
   encode(message: DeploymentEventResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -8846,7 +9008,9 @@ export const DeploymentEventResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): DeploymentEventResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseDeploymentEventResponse()
+    const message = {
+      ...baseDeploymentEventResponse,
+    } as DeploymentEventResponse
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -8874,15 +9038,22 @@ export const DeploymentEventResponse = {
   },
 
   fromJSON(object: any): DeploymentEventResponse {
-    return {
-      type: isSet(object.type) ? deploymentEventTypeFromJSON(object.type) : 0,
-      createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
-      log: isSet(object.log) ? DeploymentEventLog.fromJSON(object.log) : undefined,
-      deploymentStatus: isSet(object.deploymentStatus) ? deploymentStatusFromJSON(object.deploymentStatus) : undefined,
-      containerStatus: isSet(object.containerStatus)
+    const message = {
+      ...baseDeploymentEventResponse,
+    } as DeploymentEventResponse
+    message.type = object.type !== undefined && object.type !== null ? deploymentEventTypeFromJSON(object.type) : 0
+    message.createdAt =
+      object.createdAt !== undefined && object.createdAt !== null ? fromJsonTimestamp(object.createdAt) : undefined
+    message.log = object.log !== undefined && object.log !== null ? DeploymentEventLog.fromJSON(object.log) : undefined
+    message.deploymentStatus =
+      object.deploymentStatus !== undefined && object.deploymentStatus !== null
+        ? deploymentStatusFromJSON(object.deploymentStatus)
+        : undefined
+    message.containerStatus =
+      object.containerStatus !== undefined && object.containerStatus !== null
         ? DeploymentEventContainerState.fromJSON(object.containerStatus)
-        : undefined,
-    }
+        : undefined
+    return message
   },
 
   toJSON(message: DeploymentEventResponse): unknown {
@@ -8901,7 +9072,9 @@ export const DeploymentEventResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<DeploymentEventResponse>, I>>(object: I): DeploymentEventResponse {
-    const message = createBaseDeploymentEventResponse()
+    const message = {
+      ...baseDeploymentEventResponse,
+    } as DeploymentEventResponse
     message.type = object.type ?? 0
     message.createdAt =
       object.createdAt !== undefined && object.createdAt !== null ? Timestamp.fromPartial(object.createdAt) : undefined
@@ -8916,9 +9089,7 @@ export const DeploymentEventResponse = {
   },
 }
 
-function createBaseDeploymentEventListResponse(): DeploymentEventListResponse {
-  return { data: [] }
-}
+const baseDeploymentEventListResponse: object = {}
 
 export const DeploymentEventListResponse = {
   encode(message: DeploymentEventListResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -8931,7 +9102,10 @@ export const DeploymentEventListResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): DeploymentEventListResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseDeploymentEventListResponse()
+    const message = {
+      ...baseDeploymentEventListResponse,
+    } as DeploymentEventListResponse
+    message.data = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -8947,9 +9121,11 @@ export const DeploymentEventListResponse = {
   },
 
   fromJSON(object: any): DeploymentEventListResponse {
-    return {
-      data: Array.isArray(object?.data) ? object.data.map((e: any) => DeploymentEventResponse.fromJSON(e)) : [],
-    }
+    const message = {
+      ...baseDeploymentEventListResponse,
+    } as DeploymentEventListResponse
+    message.data = (object.data ?? []).map((e: any) => DeploymentEventResponse.fromJSON(e))
+    return message
   },
 
   toJSON(message: DeploymentEventListResponse): unknown {
@@ -8963,14 +9139,18 @@ export const DeploymentEventListResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<DeploymentEventListResponse>, I>>(object: I): DeploymentEventListResponse {
-    const message = createBaseDeploymentEventListResponse()
+    const message = {
+      ...baseDeploymentEventListResponse,
+    } as DeploymentEventListResponse
     message.data = object.data?.map(e => DeploymentEventResponse.fromPartial(e)) || []
     return message
   },
 }
 
-function createBaseDeploymentListSecretsRequest(): DeploymentListSecretsRequest {
-  return { id: '', accessedBy: '', instanceId: '' }
+const baseDeploymentListSecretsRequest: object = {
+  id: '',
+  accessedBy: '',
+  instanceId: '',
 }
 
 export const DeploymentListSecretsRequest = {
@@ -8990,7 +9170,9 @@ export const DeploymentListSecretsRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): DeploymentListSecretsRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseDeploymentListSecretsRequest()
+    const message = {
+      ...baseDeploymentListSecretsRequest,
+    } as DeploymentListSecretsRequest
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -9012,11 +9194,13 @@ export const DeploymentListSecretsRequest = {
   },
 
   fromJSON(object: any): DeploymentListSecretsRequest {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      instanceId: isSet(object.instanceId) ? String(object.instanceId) : '',
-    }
+    const message = {
+      ...baseDeploymentListSecretsRequest,
+    } as DeploymentListSecretsRequest
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.instanceId = object.instanceId !== undefined && object.instanceId !== null ? String(object.instanceId) : ''
+    return message
   },
 
   toJSON(message: DeploymentListSecretsRequest): unknown {
@@ -9028,7 +9212,9 @@ export const DeploymentListSecretsRequest = {
   },
 
   fromPartial<I extends Exact<DeepPartial<DeploymentListSecretsRequest>, I>>(object: I): DeploymentListSecretsRequest {
-    const message = createBaseDeploymentListSecretsRequest()
+    const message = {
+      ...baseDeploymentListSecretsRequest,
+    } as DeploymentListSecretsRequest
     message.id = object.id ?? ''
     message.accessedBy = object.accessedBy ?? ''
     message.instanceId = object.instanceId ?? ''
@@ -9036,8 +9222,13 @@ export const DeploymentListSecretsRequest = {
   },
 }
 
-function createBaseCreateNotificationRequest(): CreateNotificationRequest {
-  return { accessedBy: '', name: '', url: '', type: 0, active: false, events: [] }
+const baseCreateNotificationRequest: object = {
+  accessedBy: '',
+  name: '',
+  url: '',
+  type: 0,
+  active: false,
+  events: 0,
 }
 
 export const CreateNotificationRequest = {
@@ -9068,7 +9259,10 @@ export const CreateNotificationRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): CreateNotificationRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseCreateNotificationRequest()
+    const message = {
+      ...baseCreateNotificationRequest,
+    } as CreateNotificationRequest
+    message.events = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -9106,14 +9300,16 @@ export const CreateNotificationRequest = {
   },
 
   fromJSON(object: any): CreateNotificationRequest {
-    return {
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      url: isSet(object.url) ? String(object.url) : '',
-      type: isSet(object.type) ? notificationTypeFromJSON(object.type) : 0,
-      active: isSet(object.active) ? Boolean(object.active) : false,
-      events: Array.isArray(object?.events) ? object.events.map((e: any) => notificationEventTypeFromJSON(e)) : [],
-    }
+    const message = {
+      ...baseCreateNotificationRequest,
+    } as CreateNotificationRequest
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
+    message.type = object.type !== undefined && object.type !== null ? notificationTypeFromJSON(object.type) : 0
+    message.active = object.active !== undefined && object.active !== null ? Boolean(object.active) : false
+    message.events = (object.events ?? []).map((e: any) => notificationEventTypeFromJSON(e))
+    return message
   },
 
   toJSON(message: CreateNotificationRequest): unknown {
@@ -9132,7 +9328,9 @@ export const CreateNotificationRequest = {
   },
 
   fromPartial<I extends Exact<DeepPartial<CreateNotificationRequest>, I>>(object: I): CreateNotificationRequest {
-    const message = createBaseCreateNotificationRequest()
+    const message = {
+      ...baseCreateNotificationRequest,
+    } as CreateNotificationRequest
     message.accessedBy = object.accessedBy ?? ''
     message.name = object.name ?? ''
     message.url = object.url ?? ''
@@ -9143,9 +9341,7 @@ export const CreateNotificationRequest = {
   },
 }
 
-function createBaseCreateNotificationResponse(): CreateNotificationResponse {
-  return { id: '', creator: '' }
-}
+const baseCreateNotificationResponse: object = { id: '', creator: '' }
 
 export const CreateNotificationResponse = {
   encode(message: CreateNotificationResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -9161,7 +9357,9 @@ export const CreateNotificationResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): CreateNotificationResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseCreateNotificationResponse()
+    const message = {
+      ...baseCreateNotificationResponse,
+    } as CreateNotificationResponse
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -9180,10 +9378,12 @@ export const CreateNotificationResponse = {
   },
 
   fromJSON(object: any): CreateNotificationResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      creator: isSet(object.creator) ? String(object.creator) : '',
-    }
+    const message = {
+      ...baseCreateNotificationResponse,
+    } as CreateNotificationResponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.creator = object.creator !== undefined && object.creator !== null ? String(object.creator) : ''
+    return message
   },
 
   toJSON(message: CreateNotificationResponse): unknown {
@@ -9194,15 +9394,23 @@ export const CreateNotificationResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<CreateNotificationResponse>, I>>(object: I): CreateNotificationResponse {
-    const message = createBaseCreateNotificationResponse()
+    const message = {
+      ...baseCreateNotificationResponse,
+    } as CreateNotificationResponse
     message.id = object.id ?? ''
     message.creator = object.creator ?? ''
     return message
   },
 }
 
-function createBaseUpdateNotificationRequest(): UpdateNotificationRequest {
-  return { id: '', accessedBy: '', name: '', url: '', type: 0, active: false, events: [] }
+const baseUpdateNotificationRequest: object = {
+  id: '',
+  accessedBy: '',
+  name: '',
+  url: '',
+  type: 0,
+  active: false,
+  events: 0,
 }
 
 export const UpdateNotificationRequest = {
@@ -9236,7 +9444,10 @@ export const UpdateNotificationRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): UpdateNotificationRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseUpdateNotificationRequest()
+    const message = {
+      ...baseUpdateNotificationRequest,
+    } as UpdateNotificationRequest
+    message.events = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -9277,15 +9488,17 @@ export const UpdateNotificationRequest = {
   },
 
   fromJSON(object: any): UpdateNotificationRequest {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      url: isSet(object.url) ? String(object.url) : '',
-      type: isSet(object.type) ? notificationTypeFromJSON(object.type) : 0,
-      active: isSet(object.active) ? Boolean(object.active) : false,
-      events: Array.isArray(object?.events) ? object.events.map((e: any) => notificationEventTypeFromJSON(e)) : [],
-    }
+    const message = {
+      ...baseUpdateNotificationRequest,
+    } as UpdateNotificationRequest
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
+    message.type = object.type !== undefined && object.type !== null ? notificationTypeFromJSON(object.type) : 0
+    message.active = object.active !== undefined && object.active !== null ? Boolean(object.active) : false
+    message.events = (object.events ?? []).map((e: any) => notificationEventTypeFromJSON(e))
+    return message
   },
 
   toJSON(message: UpdateNotificationRequest): unknown {
@@ -9305,7 +9518,9 @@ export const UpdateNotificationRequest = {
   },
 
   fromPartial<I extends Exact<DeepPartial<UpdateNotificationRequest>, I>>(object: I): UpdateNotificationRequest {
-    const message = createBaseUpdateNotificationRequest()
+    const message = {
+      ...baseUpdateNotificationRequest,
+    } as UpdateNotificationRequest
     message.id = object.id ?? ''
     message.accessedBy = object.accessedBy ?? ''
     message.name = object.name ?? ''
@@ -9317,8 +9532,13 @@ export const UpdateNotificationRequest = {
   },
 }
 
-function createBaseNotificationDetailsResponse(): NotificationDetailsResponse {
-  return { id: '', audit: undefined, name: '', url: '', type: 0, active: false, events: [] }
+const baseNotificationDetailsResponse: object = {
+  id: '',
+  name: '',
+  url: '',
+  type: 0,
+  active: false,
+  events: 0,
 }
 
 export const NotificationDetailsResponse = {
@@ -9352,7 +9572,10 @@ export const NotificationDetailsResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): NotificationDetailsResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseNotificationDetailsResponse()
+    const message = {
+      ...baseNotificationDetailsResponse,
+    } as NotificationDetailsResponse
+    message.events = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -9393,15 +9616,18 @@ export const NotificationDetailsResponse = {
   },
 
   fromJSON(object: any): NotificationDetailsResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
-      name: isSet(object.name) ? String(object.name) : '',
-      url: isSet(object.url) ? String(object.url) : '',
-      type: isSet(object.type) ? notificationTypeFromJSON(object.type) : 0,
-      active: isSet(object.active) ? Boolean(object.active) : false,
-      events: Array.isArray(object?.events) ? object.events.map((e: any) => notificationEventTypeFromJSON(e)) : [],
-    }
+    const message = {
+      ...baseNotificationDetailsResponse,
+    } as NotificationDetailsResponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.audit =
+      object.audit !== undefined && object.audit !== null ? AuditResponse.fromJSON(object.audit) : undefined
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
+    message.type = object.type !== undefined && object.type !== null ? notificationTypeFromJSON(object.type) : 0
+    message.active = object.active !== undefined && object.active !== null ? Boolean(object.active) : false
+    message.events = (object.events ?? []).map((e: any) => notificationEventTypeFromJSON(e))
+    return message
   },
 
   toJSON(message: NotificationDetailsResponse): unknown {
@@ -9421,7 +9647,9 @@ export const NotificationDetailsResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<NotificationDetailsResponse>, I>>(object: I): NotificationDetailsResponse {
-    const message = createBaseNotificationDetailsResponse()
+    const message = {
+      ...baseNotificationDetailsResponse,
+    } as NotificationDetailsResponse
     message.id = object.id ?? ''
     message.audit =
       object.audit !== undefined && object.audit !== null ? AuditResponse.fromPartial(object.audit) : undefined
@@ -9434,8 +9662,13 @@ export const NotificationDetailsResponse = {
   },
 }
 
-function createBaseNotificationResponse(): NotificationResponse {
-  return { id: '', audit: undefined, name: '', url: '', type: 0, active: false, events: [] }
+const baseNotificationResponse: object = {
+  id: '',
+  name: '',
+  url: '',
+  type: 0,
+  active: false,
+  events: 0,
 }
 
 export const NotificationResponse = {
@@ -9469,7 +9702,8 @@ export const NotificationResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): NotificationResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseNotificationResponse()
+    const message = { ...baseNotificationResponse } as NotificationResponse
+    message.events = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -9510,15 +9744,16 @@ export const NotificationResponse = {
   },
 
   fromJSON(object: any): NotificationResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
-      name: isSet(object.name) ? String(object.name) : '',
-      url: isSet(object.url) ? String(object.url) : '',
-      type: isSet(object.type) ? notificationTypeFromJSON(object.type) : 0,
-      active: isSet(object.active) ? Boolean(object.active) : false,
-      events: Array.isArray(object?.events) ? object.events.map((e: any) => notificationEventTypeFromJSON(e)) : [],
-    }
+    const message = { ...baseNotificationResponse } as NotificationResponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.audit =
+      object.audit !== undefined && object.audit !== null ? AuditResponse.fromJSON(object.audit) : undefined
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.url = object.url !== undefined && object.url !== null ? String(object.url) : ''
+    message.type = object.type !== undefined && object.type !== null ? notificationTypeFromJSON(object.type) : 0
+    message.active = object.active !== undefined && object.active !== null ? Boolean(object.active) : false
+    message.events = (object.events ?? []).map((e: any) => notificationEventTypeFromJSON(e))
+    return message
   },
 
   toJSON(message: NotificationResponse): unknown {
@@ -9538,7 +9773,7 @@ export const NotificationResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<NotificationResponse>, I>>(object: I): NotificationResponse {
-    const message = createBaseNotificationResponse()
+    const message = { ...baseNotificationResponse } as NotificationResponse
     message.id = object.id ?? ''
     message.audit =
       object.audit !== undefined && object.audit !== null ? AuditResponse.fromPartial(object.audit) : undefined
@@ -9551,9 +9786,7 @@ export const NotificationResponse = {
   },
 }
 
-function createBaseNotificationListResponse(): NotificationListResponse {
-  return { data: [] }
-}
+const baseNotificationListResponse: object = {}
 
 export const NotificationListResponse = {
   encode(message: NotificationListResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -9566,7 +9799,10 @@ export const NotificationListResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): NotificationListResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseNotificationListResponse()
+    const message = {
+      ...baseNotificationListResponse,
+    } as NotificationListResponse
+    message.data = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -9582,7 +9818,11 @@ export const NotificationListResponse = {
   },
 
   fromJSON(object: any): NotificationListResponse {
-    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => NotificationResponse.fromJSON(e)) : [] }
+    const message = {
+      ...baseNotificationListResponse,
+    } as NotificationListResponse
+    message.data = (object.data ?? []).map((e: any) => NotificationResponse.fromJSON(e))
+    return message
   },
 
   toJSON(message: NotificationListResponse): unknown {
@@ -9596,15 +9836,15 @@ export const NotificationListResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<NotificationListResponse>, I>>(object: I): NotificationListResponse {
-    const message = createBaseNotificationListResponse()
+    const message = {
+      ...baseNotificationListResponse,
+    } as NotificationListResponse
     message.data = object.data?.map(e => NotificationResponse.fromPartial(e)) || []
     return message
   },
 }
 
-function createBaseHealthResponse(): HealthResponse {
-  return { status: 0, cruxVersion: '' }
-}
+const baseHealthResponse: object = { status: 0, cruxVersion: '' }
 
 export const HealthResponse = {
   encode(message: HealthResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -9623,7 +9863,7 @@ export const HealthResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): HealthResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseHealthResponse()
+    const message = { ...baseHealthResponse } as HealthResponse
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -9645,11 +9885,13 @@ export const HealthResponse = {
   },
 
   fromJSON(object: any): HealthResponse {
-    return {
-      status: isSet(object.status) ? serviceStatusFromJSON(object.status) : 0,
-      cruxVersion: isSet(object.cruxVersion) ? String(object.cruxVersion) : '',
-      lastMigration: isSet(object.lastMigration) ? String(object.lastMigration) : undefined,
-    }
+    const message = { ...baseHealthResponse } as HealthResponse
+    message.status = object.status !== undefined && object.status !== null ? serviceStatusFromJSON(object.status) : 0
+    message.cruxVersion =
+      object.cruxVersion !== undefined && object.cruxVersion !== null ? String(object.cruxVersion) : ''
+    message.lastMigration =
+      object.lastMigration !== undefined && object.lastMigration !== null ? String(object.lastMigration) : undefined
+    return message
   },
 
   toJSON(message: HealthResponse): unknown {
@@ -9661,7 +9903,7 @@ export const HealthResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<HealthResponse>, I>>(object: I): HealthResponse {
-    const message = createBaseHealthResponse()
+    const message = { ...baseHealthResponse } as HealthResponse
     message.status = object.status ?? 0
     message.cruxVersion = object.cruxVersion ?? ''
     message.lastMigration = object.lastMigration ?? undefined
@@ -9669,9 +9911,7 @@ export const HealthResponse = {
   },
 }
 
-function createBaseTemplateResponse(): TemplateResponse {
-  return { id: '', name: '', description: '' }
-}
+const baseTemplateResponse: object = { id: '', name: '', description: '' }
 
 export const TemplateResponse = {
   encode(message: TemplateResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -9690,7 +9930,7 @@ export const TemplateResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): TemplateResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseTemplateResponse()
+    const message = { ...baseTemplateResponse } as TemplateResponse
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -9712,11 +9952,12 @@ export const TemplateResponse = {
   },
 
   fromJSON(object: any): TemplateResponse {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      description: isSet(object.description) ? String(object.description) : '',
-    }
+    const message = { ...baseTemplateResponse } as TemplateResponse
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.description =
+      object.description !== undefined && object.description !== null ? String(object.description) : ''
+    return message
   },
 
   toJSON(message: TemplateResponse): unknown {
@@ -9728,7 +9969,7 @@ export const TemplateResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<TemplateResponse>, I>>(object: I): TemplateResponse {
-    const message = createBaseTemplateResponse()
+    const message = { ...baseTemplateResponse } as TemplateResponse
     message.id = object.id ?? ''
     message.name = object.name ?? ''
     message.description = object.description ?? ''
@@ -9736,9 +9977,7 @@ export const TemplateResponse = {
   },
 }
 
-function createBaseTemplateListResponse(): TemplateListResponse {
-  return { data: [] }
-}
+const baseTemplateListResponse: object = {}
 
 export const TemplateListResponse = {
   encode(message: TemplateListResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -9751,7 +9990,8 @@ export const TemplateListResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): TemplateListResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseTemplateListResponse()
+    const message = { ...baseTemplateListResponse } as TemplateListResponse
+    message.data = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -9767,7 +10007,9 @@ export const TemplateListResponse = {
   },
 
   fromJSON(object: any): TemplateListResponse {
-    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => TemplateResponse.fromJSON(e)) : [] }
+    const message = { ...baseTemplateListResponse } as TemplateListResponse
+    message.data = (object.data ?? []).map((e: any) => TemplateResponse.fromJSON(e))
+    return message
   },
 
   toJSON(message: TemplateListResponse): unknown {
@@ -9781,14 +10023,18 @@ export const TemplateListResponse = {
   },
 
   fromPartial<I extends Exact<DeepPartial<TemplateListResponse>, I>>(object: I): TemplateListResponse {
-    const message = createBaseTemplateListResponse()
+    const message = { ...baseTemplateListResponse } as TemplateListResponse
     message.data = object.data?.map(e => TemplateResponse.fromPartial(e)) || []
     return message
   },
 }
 
-function createBaseCreateProductFromTemplateRequest(): CreateProductFromTemplateRequest {
-  return { id: '', accessedBy: '', name: '', description: '', type: 0 }
+const baseCreateProductFromTemplateRequest: object = {
+  id: '',
+  accessedBy: '',
+  name: '',
+  description: '',
+  type: 0,
 }
 
 export const CreateProductFromTemplateRequest = {
@@ -9814,7 +10060,9 @@ export const CreateProductFromTemplateRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): CreateProductFromTemplateRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseCreateProductFromTemplateRequest()
+    const message = {
+      ...baseCreateProductFromTemplateRequest,
+    } as CreateProductFromTemplateRequest
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -9842,13 +10090,16 @@ export const CreateProductFromTemplateRequest = {
   },
 
   fromJSON(object: any): CreateProductFromTemplateRequest {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-      description: isSet(object.description) ? String(object.description) : '',
-      type: isSet(object.type) ? productTypeFromJSON(object.type) : 0,
-    }
+    const message = {
+      ...baseCreateProductFromTemplateRequest,
+    } as CreateProductFromTemplateRequest
+    message.id = object.id !== undefined && object.id !== null ? String(object.id) : ''
+    message.accessedBy = object.accessedBy !== undefined && object.accessedBy !== null ? String(object.accessedBy) : ''
+    message.name = object.name !== undefined && object.name !== null ? String(object.name) : ''
+    message.description =
+      object.description !== undefined && object.description !== null ? String(object.description) : ''
+    message.type = object.type !== undefined && object.type !== null ? productTypeFromJSON(object.type) : 0
+    return message
   },
 
   toJSON(message: CreateProductFromTemplateRequest): unknown {
@@ -9864,7 +10115,9 @@ export const CreateProductFromTemplateRequest = {
   fromPartial<I extends Exact<DeepPartial<CreateProductFromTemplateRequest>, I>>(
     object: I,
   ): CreateProductFromTemplateRequest {
-    const message = createBaseCreateProductFromTemplateRequest()
+    const message = {
+      ...baseCreateProductFromTemplateRequest,
+    } as CreateProductFromTemplateRequest
     message.id = object.id ?? ''
     message.accessedBy = object.accessedBy ?? ''
     message.name = object.name ?? ''
@@ -9875,7 +10128,6 @@ export const CreateProductFromTemplateRequest = {
 }
 
 /** Services */
-export type CruxProductService = typeof CruxProductService
 export const CruxProductService = {
   /** CRUD */
   getProducts: {
@@ -10015,7 +10267,6 @@ export const CruxProductClient = makeGenericClientConstructor(CruxProductService
   service: typeof CruxProductService
 }
 
-export type CruxRegistryService = typeof CruxRegistryService
 export const CruxRegistryService = {
   /** CRUD */
   getRegistries: {
@@ -10155,7 +10406,6 @@ export const CruxRegistryClient = makeGenericClientConstructor(CruxRegistryServi
   service: typeof CruxRegistryService
 }
 
-export type CruxNodeService = typeof CruxNodeService
 export const CruxNodeService = {
   /** CRUD */
   getNodes: {
@@ -10429,7 +10679,6 @@ export const CruxNodeClient = makeGenericClientConstructor(CruxNodeService, 'cru
   service: typeof CruxNodeService
 }
 
-export type CruxProductVersionService = typeof CruxProductVersionService
 export const CruxProductVersionService = {
   getVersionsByProductId: {
     path: '/crux.CruxProductVersion/GetVersionsByProductId',
@@ -10619,7 +10868,6 @@ export const CruxProductVersionClient = makeGenericClientConstructor(
   service: typeof CruxProductVersionService
 }
 
-export type CruxImageService = typeof CruxImageService
 export const CruxImageService = {
   getImagesByVersionId: {
     path: '/crux.CruxImage/GetImagesByVersionId',
@@ -10783,7 +11031,6 @@ export const CruxImageClient = makeGenericClientConstructor(CruxImageService, 'c
   service: typeof CruxImageService
 }
 
-export type CruxDeploymentService = typeof CruxDeploymentService
 export const CruxDeploymentService = {
   getDeploymentsByVersionId: {
     path: '/crux.CruxDeployment/GetDeploymentsByVersionId',
@@ -11114,7 +11361,6 @@ export const CruxDeploymentClient = makeGenericClientConstructor(
   service: typeof CruxDeploymentService
 }
 
-export type CruxTeamService = typeof CruxTeamService
 export const CruxTeamService = {
   createTeam: {
     path: '/crux.CruxTeam/CreateTeam',
@@ -11423,7 +11669,6 @@ export const CruxTeamClient = makeGenericClientConstructor(CruxTeamService, 'cru
   service: typeof CruxTeamService
 }
 
-export type CruxNotificationService = typeof CruxNotificationService
 export const CruxNotificationService = {
   createNotification: {
     path: '/crux.CruxNotification/CreateNotification',
@@ -11593,7 +11838,6 @@ export const CruxNotificationClient = makeGenericClientConstructor(
   service: typeof CruxNotificationService
 }
 
-export type CruxAuditService = typeof CruxAuditService
 export const CruxAuditService = {
   getAuditLog: {
     path: '/crux.CruxAudit/GetAuditLog',
@@ -11659,7 +11903,6 @@ export const CruxAuditClient = makeGenericClientConstructor(CruxAuditService, 'c
   service: typeof CruxAuditService
 }
 
-export type CruxHealthService = typeof CruxHealthService
 export const CruxHealthService = {
   getHealth: {
     path: '/crux.CruxHealth/getHealth',
@@ -11696,7 +11939,6 @@ export const CruxHealthClient = makeGenericClientConstructor(CruxHealthService, 
   service: typeof CruxHealthService
 }
 
-export type CruxTemplateService = typeof CruxTemplateService
 export const CruxTemplateService = {
   getTemplates: {
     path: '/crux.CruxTemplate/GetTemplates',
@@ -11766,18 +12008,10 @@ declare var self: any | undefined
 declare var window: any | undefined
 declare var global: any | undefined
 var globalThis: any = (() => {
-  if (typeof globalThis !== 'undefined') {
-    return globalThis
-  }
-  if (typeof self !== 'undefined') {
-    return self
-  }
-  if (typeof window !== 'undefined') {
-    return window
-  }
-  if (typeof global !== 'undefined') {
-    return global
-  }
+  if (typeof globalThis !== 'undefined') return globalThis
+  if (typeof self !== 'undefined') return self
+  if (typeof window !== 'undefined') return window
+  if (typeof global !== 'undefined') return global
   throw 'Unable to locate global object'
 })()
 
@@ -11796,7 +12030,7 @@ export type DeepPartial<T> = T extends Builtin
 type KeysOfUnion<T> = T extends T ? keyof T : never
 export type Exact<P, I extends P> = P extends Builtin
   ? P
-  : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never }
+  : P & { [K in keyof P]: Exact<P[K], I[K]> } & Record<Exclude<keyof I, KeysOfUnion<P>>, never>
 
 function toTimestamp(date: Date): Timestamp {
   const seconds = date.getTime() / 1_000
@@ -11830,8 +12064,4 @@ function longToNumber(long: Long): number {
 if (_m0.util.Long !== Long) {
   _m0.util.Long = Long as any
   _m0.configure()
-}
-
-function isSet(value: any): boolean {
-  return value !== null && value !== undefined
 }

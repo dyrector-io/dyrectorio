@@ -265,7 +265,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 keyPlaceholder={t('common.secrets').toUpperCase()}
                 labelClassName="text-bright font-semibold tracking-wide mb-2"
                 label={t('common.secrets').toUpperCase()}
-                onChange={it => onChange({ secrets: it.map(sit => ({ ...sit, value: '' })) })}
+                onChange={it => onChange({ secrets: it.map(sit => ({ ...sit, value: '', publicKey: '' })) })}
                 items={config.secrets ?? []}
                 editorOptions={editorOptions}
                 unique

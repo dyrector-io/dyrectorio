@@ -30,6 +30,7 @@ export type UniqueSecretKey = UniqueKeyValue & {
 }
 
 export type UniqueSecretKeyValue = UniqueKeyValue & {
+  publicKey: string
   required: boolean
   encrypted?: boolean
 }
@@ -561,6 +562,7 @@ export const mergeJsonConfigToContainerConfig = (
         key: it.key,
         value: '',
         required: it.required ?? false,
+        publicKey: '',
       }
     })
   }
