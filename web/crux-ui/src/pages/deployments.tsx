@@ -4,12 +4,14 @@ import useCopyDeploymentModal from '@app/components/products/versions/deployment
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
+import AnchorAction from '@app/elements/dyo-anchor-action'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoList } from '@app/elements/dyo-list'
 import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
+import useAnchorActions from '@app/hooks/use-anchor-actions'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import { Deployment, deploymentIsCopyable, DeploymentStatus, DEPLOYMENT_STATUS_VALUES } from '@app/models'
 import { deploymentUrl, nodeUrl, productUrl, ROUTE_DEPLOYMENTS, versionUrl } from '@app/routes'
@@ -19,6 +21,7 @@ import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
 
@@ -37,6 +40,25 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
   const [confirmationModal, copyDeployment] = useCopyDeploymentModal(handleApiError)
+
+  const onCopyDeployment = async (deploymentId: string) => {
+    const deployment = deployments.find(d => d.id === deploymentId)
+    const url = await copyDeployment({
+      deploymentId: deployment.id,
+      productId: deployment.productId,
+      versionId: deployment.versionId,
+    })
+
+    if (!url) {
+      return
+    }
+
+    router.push(url)
+  }
+
+  const anchors = useAnchorActions(
+    Object.fromEntries(deployments.map(it => [`copyDeployment-${it.id}`, () => onCopyDeployment(it.id)])),
+  )
 
   const filters = useFilters<Deployment, DeploymentFilter>({
     filters: [
@@ -67,43 +89,26 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
     clsx('rounded-tr-lg', defaultHeaderClass),
   ]
 
-  const onCopyDeployment = async (deployment: Deployment) => {
-    const url = await copyDeployment({
-      deploymentId: deployment.id,
-      productId: deployment.productId,
-      versionId: deployment.versionId,
-    })
-
-    if (!url) {
-      return
-    }
-
-    router.push(url)
-  }
-
   const itemTemplate = (item: Deployment) => /* eslint-disable react/jsx-key */ [
-    <a className="cursor-pointer" onClick={() => router.push(productUrl(item.productId))}>
-      {item.product}
-    </a>,
-    <a className="cursor-pointer" onClick={() => router.push(versionUrl(item.productId, item.versionId))}>
-      {item.version}
-    </a>,
-    <a className="cursor-pointer" onClick={() => router.push(nodeUrl(item.nodeId))}>
-      {item.node}
-    </a>,
+    <Link href={productUrl(item.productId)}>
+      <a className="cursor-pointer">{item.product}</a>
+    </Link>,
+    <Link href={versionUrl(item.productId, item.versionId)}>
+      <a className="cursor-pointer">{item.version}</a>
+    </Link>,
+    <Link href={nodeUrl(item.nodeId)}>
+      <a className="cursor-pointer">{item.node}</a>
+    </Link>,
     <a>{item.prefix}</a>,
     <a>{utcDateToLocale(item.updatedAt)}</a>,
     <DeploymentStatusTag status={item.status} className="w-fit mx-auto" />,
     <>
       <div className="mr-2 inline-block">
-        <Image
-          src="/eye.svg"
-          alt={t('common:deploy')}
-          width={24}
-          height={24}
-          className="cursor-pointer"
-          onClick={() => router.push(deploymentUrl(item.productId, item.versionId, item.id))}
-        />
+        <Link href={deploymentUrl(item.productId, item.versionId, item.id)}>
+          <a>
+            <Image src="/eye.svg" alt={t('common:deploy')} width={24} height={24} className="cursor-pointer" />
+          </a>
+        </Link>
       </div>
       <div className="mr-2 inline-block">
         <Image
@@ -115,14 +120,16 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
           onClick={() => !!item.note && item.note.length > 0 && setShowInfo(item)}
         />
       </div>
-      <Image
-        src="/copy.svg"
-        alt={t('common:copy')}
-        width={24}
-        height={24}
-        className={deploymentIsCopyable(item.status) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
-        onClick={() => deploymentIsCopyable(item.status) && onCopyDeployment(item)}
-      />
+
+      <AnchorAction href={`copyDeployment-${item.id}`} anchors={anchors} disabled={!deploymentIsCopyable(item.status)}>
+        <Image
+          src="/copy.svg"
+          alt={t('common:copy')}
+          width={24}
+          height={24}
+          className={deploymentIsCopyable(item.status) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
+        />
+      </AnchorAction>
     </>,
   ]
   /* eslint-enable react/jsx-key */

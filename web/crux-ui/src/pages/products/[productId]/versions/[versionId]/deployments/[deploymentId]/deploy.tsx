@@ -105,8 +105,6 @@ const DeployPage = (props: DeployPageProps) => {
     },
   ]
 
-  const onInspect = () => router.push(nodeInspectUrl(deployment.nodeId, deployment.prefix))
-
   const onBack = () => router.back()
 
   return (
@@ -118,7 +116,7 @@ const DeployPage = (props: DeployPageProps) => {
       })}
     >
       <PageHeading pageLink={pageLink} sublinks={sublinks}>
-        <DyoButton className="px-6 ml-auto" onClick={onInspect}>
+        <DyoButton className="px-6 ml-auto" href={nodeInspectUrl(deployment.nodeId, deployment.prefix)}>
           {t('common:inspect')}
         </DyoButton>
 

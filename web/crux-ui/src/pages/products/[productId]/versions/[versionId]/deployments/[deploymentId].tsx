@@ -9,10 +9,12 @@ import { startDeployment } from '@app/components/products/versions/version-deplo
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
+import AnchorAction from '@app/elements/dyo-anchor-action'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import LoadingIndicator from '@app/elements/loading-indicator'
 import { defaultApiErrorHandler } from '@app/errors'
+import useAnchorActions from '@app/hooks/use-anchor-actions'
 import useWebsocketTranslate from '@app/hooks/use-websocket-translation'
 import { DeploymentInvalidatedSecrets, DeploymentRoot, mergeConfigs } from '@app/models'
 import {
@@ -58,6 +60,19 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
     onWsError,
   })
 
+  const copyDeployment = async () => {
+    const url = await actions.onCopyDeployment()
+    if (!url) {
+      return
+    }
+
+    router.push(url)
+  }
+
+  const anchors = useAnchorActions({
+    copyDeployment,
+  })
+
   useWebsocketTranslate(t)
 
   const { product, version, deployment, node } = state
@@ -94,8 +109,6 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
     }
   }
 
-  const navigateToLog = () => router.push(deploymentDeployUrl(product.id, version.id, deployment.id))
-
   const onDeploy = async () => {
     if (node.status !== 'running') {
       toast.error(t('errors.preconditionFailed'))
@@ -125,15 +138,6 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
 
       actions.onInvalidateSecrets(invalidSecrets)
     }
-  }
-
-  const onCopyDeployment = async () => {
-    const url = await actions.onCopyDeployment()
-    if (!url) {
-      return
-    }
-
-    router.push(url)
   }
 
   return (
@@ -170,13 +174,13 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
         )}
 
         {!state.copyable ? null : (
-          <DyoButton className="px-6 ml-4" onClick={onCopyDeployment}>
-            {t('common:copy')}
-          </DyoButton>
+          <AnchorAction href="copyDeployment" anchors={anchors}>
+            <DyoButton className="px-6 ml-4">{t('common:copy')}</DyoButton>
+          </AnchorAction>
         )}
 
         {!state.mutable ? (
-          <DyoButton className="px-6 ml-4" onClick={navigateToLog}>
+          <DyoButton className="px-6 ml-4" href={deploymentDeployUrl(product.id, version.id, deployment.id)}>
             {t('log')}
           </DyoButton>
         ) : !state.editing ? (

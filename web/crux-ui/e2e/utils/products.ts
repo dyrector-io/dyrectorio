@@ -12,7 +12,7 @@ export const createProduct = async (page: Page, name: string, type: 'Simple' | '
 
   await page.locator('button:has-text("Save")').click()
 
-  const item = await page.waitForSelector(`h5:has-text("${name}")`)
+  const item = await page.waitForSelector(`a:has-text("${name}")`)
 
   await item.click()
 

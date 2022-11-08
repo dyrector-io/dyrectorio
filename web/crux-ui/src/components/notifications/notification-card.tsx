@@ -5,16 +5,17 @@ import { NotificationDetails } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
+import Link from 'next/link'
 import NotificationStatusTag from './notification-status-tag'
 import NotificationTypeTag from './notification-type-tag'
 
 interface NotificationCardProps extends Omit<DyoCardProps, 'children'> {
   notification: NotificationDetails
-  onClick?: () => void
+  titleHref?: string
 }
 
 const NotificationCard = (props: NotificationCardProps) => {
-  const { notification, onClick, className } = props
+  const { notification, titleHref, className } = props
 
   const { t } = useTranslation('notifications')
 
@@ -22,15 +23,19 @@ const NotificationCard = (props: NotificationCardProps) => {
     <Image src="/notification.svg" width={18} height={20} alt={t('altNotificationPicture')} layout="fixed" />
   )
 
+  const title = (
+    <a className="flex flex-row">
+      <div className="flex items-center mb-2">{getDefaultImage}</div>
+
+      <DyoHeading className="text-xl text-bright ml-2 my-auto mr-auto truncate" element="h3">
+        {notification.name}
+      </DyoHeading>
+    </a>
+  )
+
   return (
     <DyoCard className={clsx(className ?? 'p-6', 'flex flex-col')}>
-      <div className={clsx('flex flex-row flex-grow mb-2', onClick ? 'cursor-pointer' : null)}>
-        <div className="flex items-center">{getDefaultImage}</div>
-
-        <DyoHeading className="text-xl text-bright ml-2 my-auto mr-auto truncate" element="h3" onClick={onClick}>
-          {notification.name}
-        </DyoHeading>
-      </div>
+      {titleHref ? <Link href={titleHref}>{title}</Link> : title}
 
       <div className="flex wrap my-2">
         <p className="text-light break-all truncate">{notification.url}</p>

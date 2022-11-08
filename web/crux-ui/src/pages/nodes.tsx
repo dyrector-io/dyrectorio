@@ -17,7 +17,6 @@ import { cruxFromContext } from '@server/crux/crux'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
-import { useRouter } from 'next/dist/client/router'
 import { useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 
@@ -31,8 +30,6 @@ type NodeFilter = TextFilter & EnumFilter<NodeStatus>
 
 const NodesPage = (props: NodesPageProps) => {
   const { nodes } = props
-
-  const router = useRouter()
 
   const { t } = useTranslation('nodes')
 
@@ -92,8 +89,6 @@ const NodesPage = (props: NodesPageProps) => {
     url: ROUTE_NODES,
   }
 
-  const onNavigateToDetails = (id: string) => router.push(nodeUrl(id))
-
   return (
     <Layout title={t('common:nodes')}>
       <PageHeading pageLink={pageLink}>
@@ -126,7 +121,7 @@ const NodesPage = (props: NodesPageProps) => {
                   className={clsx('max-h-72 w-full p-8 my-2', modulo3Class, modulo2Class)}
                   key={`node-${index}`}
                   node={it}
-                  onNameClick={() => onNavigateToDetails(it.id)}
+                  titleHref={nodeUrl(it.id)}
                 />
               )
             })}

@@ -6,32 +6,37 @@ import { DyoLabel } from '@app/elements/dyo-label'
 import { DyoNode } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
+import Link from 'next/link'
 import NodeStatusIndicator from './node-status-indicator'
 
 interface DyoNodeCardProps extends Omit<DyoCardProps, 'children'> {
   node: DyoNode
-  onNameClick?: () => void
+  titleHref?: string
   hideConnectionInfo?: boolean
 }
 
 const DyoNodeCard = (props: DyoNodeCardProps) => {
-  const { node, onNameClick, className, hideConnectionInfo } = props
+  const { node, titleHref, className, hideConnectionInfo } = props
   const { t } = useTranslation('common')
+
+  const title = (
+    <a className="flex flex-row">
+      {node.icon ? <DyoBadge icon={node.icon} /> : null}
+
+      <DyoHeading
+        className={clsx('text-xl text-bright font-semibold my-auto mr-auto', node.icon ? 'ml-4' : null)}
+        element="h3"
+      >
+        {node.name}
+      </DyoHeading>
+
+      {!hideConnectionInfo ? <NodeStatusIndicator status={node.status} /> : null}
+    </a>
+  )
 
   return (
     <DyoCard className={clsx(className ?? 'p-6', 'flex flex-col')}>
-      <div className={clsx(onNameClick ? 'cursor-pointer' : null, 'flex flex-row')} onClick={onNameClick}>
-        {node.icon ? <DyoBadge icon={node.icon} /> : null}
-
-        <DyoHeading
-          className={clsx('text-xl text-bright font-semibold my-auto mr-auto', node.icon ? 'ml-4' : null)}
-          element="h3"
-        >
-          {node.name}
-        </DyoHeading>
-
-        {!hideConnectionInfo ? <NodeStatusIndicator status={node.status} /> : null}
-      </div>
+      {titleHref ? <Link href={titleHref}>{title}</Link> : title}
 
       {!hideConnectionInfo && node.address && (
         <DyoLabel className="mr-auto mt-6">
