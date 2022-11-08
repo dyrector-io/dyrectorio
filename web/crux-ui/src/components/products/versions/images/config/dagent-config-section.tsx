@@ -76,6 +76,19 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
           </div>
         )}
 
+        {/* dockerLabels */}
+        {contains('dockerLabels') && (
+          <div className="grid mb-8 break-inside-avoid">
+            <KeyValueInput
+              labelClassName="text-bright font-semibold tracking-wide mb-2"
+              label={t('dagent.dockerLabels').toUpperCase()}
+              onChange={it => onChange({ dockerLabels: it })}
+              items={config.dockerLabels ?? []}
+              editorOptions={editorOptions}
+            />
+          </div>
+        )}
+
         {/* restartPolicy */}
         {contains('restartPolicy') && (
           <div className="grid break-inside-avoid mb-8">

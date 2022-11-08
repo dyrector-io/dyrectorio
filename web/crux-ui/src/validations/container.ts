@@ -235,6 +235,17 @@ const logConfigRule = yup
   .nullable()
   .optional()
 
+const markerRule = yup
+  .object()
+  .shape({
+    deployment: uniqueKeyValuesSchema.default([]).nullable(),
+    service: uniqueKeyValuesSchema.default([]).nullable(),
+    ingress: uniqueKeyValuesSchema.default([]).nullable(),
+  })
+  .default({})
+  .nullable()
+  .optional()
+
 export const containerConfigSchema = yup.object().shape({
   name: yup.string().required(),
   environments: uniqueKeyValuesSchema.default([]).nullable(),
@@ -258,6 +269,7 @@ export const containerConfigSchema = yup.object().shape({
   restartPolicy: restartPolicyRule,
   networkMode: networkModeRule,
   networks: uniqueKeysOnlySchema.default([]).nullable(),
+  dockerLabels: uniqueKeyValuesSchema.default([]).nullable(),
 
   // crane
   deploymentStrategy: deploymentStrategyRule,
@@ -267,4 +279,6 @@ export const containerConfigSchema = yup.object().shape({
   extraLBAnnotations: uniqueKeyValuesSchema.default([]).nullable(),
   healthCheckConfig: healthCheckConfigRule,
   resourceConfig: resourceConfigRule,
+  labels: markerRule,
+  annotations: markerRule,
 })

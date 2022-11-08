@@ -80,7 +80,8 @@ service CruxDeployment {
   rpc GetDeploymentDetails(IdRequest) returns (DeploymentDetailsResponse);
   rpc GetDeploymentEvents(IdRequest) returns (DeploymentEventListResponse);
   rpc GetDeploymentList(AccessRequest) returns (DeploymentListResponse);
-  rpc GetDeploymentSecrets(DeploymentListSecretsRequest) returns (common.ListSecretsResponse);
+  rpc GetDeploymentSecrets(DeploymentListSecretsRequest)
+      returns (common.ListSecretsResponse);
   rpc CopyDeploymentSafe(IdRequest) returns (CreateEntityResponse);
   rpc CopyDeploymentUnsafe(IdRequest) returns (CreateEntityResponse);
 
@@ -119,14 +120,16 @@ service CruxNotification {
 
 service CruxAudit {
   rpc GetAuditLog(AuditLogListRequest) returns (AuditLogListResponse);
-  rpc GetAuditLogListCount(AuditLogListRequest) returns (AuditLogListCountResponse);
+  rpc GetAuditLogListCount(AuditLogListRequest)
+      returns (AuditLogListCountResponse);
 }
 
 service CruxHealth { rpc getHealth(common.Empty) returns (HealthResponse); }
 
 service CruxTemplate {
   rpc GetTemplates(AccessRequest) returns (TemplateListResponse);
-  rpc CreateProductFromTemplate(CreateProductFromTemplateRequest) returns (CreateEntityResponse);
+  rpc CreateProductFromTemplate(CreateProductFromTemplateRequest)
+      returns (CreateEntityResponse);
 }
 
 /**
@@ -173,9 +176,7 @@ message AuditLogListRequest {
   google.protobuf.Timestamp createdTo = 105;
 }
 
-message AuditLogListCountResponse {
-  uint32 count = 100;
-}
+message AuditLogListCountResponse { uint32 count = 100; }
 
 message AuditLogResponse {
   google.protobuf.Timestamp createdAt = 100;
@@ -369,9 +370,7 @@ message RegistryResponse {
 
 message RegistryListResponse { repeated RegistryResponse data = 1000; }
 
-message HubRegistryDetails { 
-  string imageNamePrefix = 100;
-}
+message HubRegistryDetails { string imageNamePrefix = 100; }
 
 message V2RegistryDetails {
   string url = 100;
@@ -524,7 +523,7 @@ message IncreaseVersionRequest {
   optional string changelog = 101;
 }
 
-// Container 
+// Container
 
 message VolumeLink {
   string id = 100;
@@ -555,7 +554,6 @@ message LogConfig {
   common.DriverType driver = 100;
   repeated UniqueKeyValue options = 1000;
 }
-
 
 message Port {
   string id = 100;
@@ -602,12 +600,21 @@ message UniqueSecretKeyValue {
 
 message KeyValueList { repeated UniqueKeyValue data = 1000; }
 
+message SecretList { repeated UniqueSecretKeyValue data = 1000; }
+
+message Marker {
+  repeated UniqueKeyValue deployment = 1000;
+  repeated UniqueKeyValue service = 1001;
+  repeated UniqueKeyValue ingress = 1002;
+}
+
 message DagentContainerConfig {
   optional LogConfig logConfig = 100;
   optional common.RestartPolicy restartPolicy = 101;
   optional common.NetworkMode networkMode = 102;
 
   repeated common.UniqueKey networks = 1000;
+  repeated UniqueKeyValue labels = 1001;
 }
 
 message CraneContainerConfig {
@@ -616,6 +623,8 @@ message CraneContainerConfig {
   optional common.ResourceConfig resourceConfig = 102;
   optional bool proxyHeaders = 103;
   optional bool useLoadBalancer = 104;
+  optional Marker annotations = 105;
+  optional Marker labels = 106;
 
   repeated common.UniqueKey customHeaders = 1000;
   repeated UniqueKeyValue extraLBAnnotations = 1001;
@@ -848,7 +857,7 @@ message InstanceResponse {
 message PatchInstanceRequest {
   string id = 1;
   string accessedBy = 2;
-  
+
   optional ContainerConfig config = 102;
 }
 
@@ -976,8 +985,8 @@ message UpdateNotificationRequest {
   string url = 101;
   NotificationType type = 102;
   bool active = 103;
-  
-  repeated NotificationEventType events = 1000; 
+
+  repeated NotificationEventType events = 1000;
 }
 
 message NotificationDetailsResponse {
@@ -989,7 +998,7 @@ message NotificationDetailsResponse {
   NotificationType type = 102;
   bool active = 103;
 
-  repeated NotificationEventType events = 1000; 
+  repeated NotificationEventType events = 1000;
 }
 
 message NotificationResponse {
@@ -1001,7 +1010,7 @@ message NotificationResponse {
   NotificationType type = 103;
   bool active = 104;
 
-  repeated NotificationEventType events = 1000; 
+  repeated NotificationEventType events = 1000;
 }
 
 message NotificationListResponse { repeated NotificationResponse data = 1000; }
@@ -1029,9 +1038,7 @@ message TemplateResponse {
   string description = 101;
 }
 
-message TemplateListResponse {
-  repeated TemplateResponse data = 1000;
-}
+message TemplateListResponse { repeated TemplateResponse data = 1000; }
 
 message CreateProductFromTemplateRequest {
   string id = 1;

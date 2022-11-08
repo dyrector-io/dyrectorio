@@ -166,11 +166,38 @@ export interface LogConfig_OptionsEntry {
   value: string
 }
 
+export interface Marker {
+  deployment: { [key: string]: string }
+  service: { [key: string]: string }
+  ingress: { [key: string]: string }
+}
+
+export interface Marker_DeploymentEntry {
+  key: string
+  value: string
+}
+
+export interface Marker_ServiceEntry {
+  key: string
+  value: string
+}
+
+export interface Marker_IngressEntry {
+  key: string
+  value: string
+}
+
 export interface DagentContainerConfig {
   logConfig?: LogConfig | undefined
   restartPolicy?: RestartPolicy | undefined
   networkMode?: NetworkMode | undefined
   networks: string[]
+  labels: { [key: string]: string }
+}
+
+export interface DagentContainerConfig_LabelsEntry {
+  key: string
+  value: string
 }
 
 export interface CraneContainerConfig {
@@ -179,6 +206,8 @@ export interface CraneContainerConfig {
   resourceConfig?: ResourceConfig | undefined
   proxyHeaders?: boolean | undefined
   useLoadBalancer?: boolean | undefined
+  annotations?: Marker | undefined
+  labels?: Marker | undefined
   customHeaders: string[]
   extraLBAnnotations: { [key: string]: string }
 }
@@ -720,6 +749,110 @@ export const LogConfig_OptionsEntry = {
   },
 }
 
+const baseMarker: object = {}
+
+export const Marker = {
+  fromJSON(object: any): Marker {
+    const message = { ...baseMarker } as Marker
+    message.deployment = Object.entries(object.deployment ?? {}).reduce<{
+      [key: string]: string
+    }>((acc, [key, value]) => {
+      acc[key] = String(value)
+      return acc
+    }, {})
+    message.service = Object.entries(object.service ?? {}).reduce<{
+      [key: string]: string
+    }>((acc, [key, value]) => {
+      acc[key] = String(value)
+      return acc
+    }, {})
+    message.ingress = Object.entries(object.ingress ?? {}).reduce<{
+      [key: string]: string
+    }>((acc, [key, value]) => {
+      acc[key] = String(value)
+      return acc
+    }, {})
+    return message
+  },
+
+  toJSON(message: Marker): unknown {
+    const obj: any = {}
+    obj.deployment = {}
+    if (message.deployment) {
+      Object.entries(message.deployment).forEach(([k, v]) => {
+        obj.deployment[k] = v
+      })
+    }
+    obj.service = {}
+    if (message.service) {
+      Object.entries(message.service).forEach(([k, v]) => {
+        obj.service[k] = v
+      })
+    }
+    obj.ingress = {}
+    if (message.ingress) {
+      Object.entries(message.ingress).forEach(([k, v]) => {
+        obj.ingress[k] = v
+      })
+    }
+    return obj
+  },
+}
+
+const baseMarker_DeploymentEntry: object = { key: '', value: '' }
+
+export const Marker_DeploymentEntry = {
+  fromJSON(object: any): Marker_DeploymentEntry {
+    const message = { ...baseMarker_DeploymentEntry } as Marker_DeploymentEntry
+    message.key = object.key !== undefined && object.key !== null ? String(object.key) : ''
+    message.value = object.value !== undefined && object.value !== null ? String(object.value) : ''
+    return message
+  },
+
+  toJSON(message: Marker_DeploymentEntry): unknown {
+    const obj: any = {}
+    message.key !== undefined && (obj.key = message.key)
+    message.value !== undefined && (obj.value = message.value)
+    return obj
+  },
+}
+
+const baseMarker_ServiceEntry: object = { key: '', value: '' }
+
+export const Marker_ServiceEntry = {
+  fromJSON(object: any): Marker_ServiceEntry {
+    const message = { ...baseMarker_ServiceEntry } as Marker_ServiceEntry
+    message.key = object.key !== undefined && object.key !== null ? String(object.key) : ''
+    message.value = object.value !== undefined && object.value !== null ? String(object.value) : ''
+    return message
+  },
+
+  toJSON(message: Marker_ServiceEntry): unknown {
+    const obj: any = {}
+    message.key !== undefined && (obj.key = message.key)
+    message.value !== undefined && (obj.value = message.value)
+    return obj
+  },
+}
+
+const baseMarker_IngressEntry: object = { key: '', value: '' }
+
+export const Marker_IngressEntry = {
+  fromJSON(object: any): Marker_IngressEntry {
+    const message = { ...baseMarker_IngressEntry } as Marker_IngressEntry
+    message.key = object.key !== undefined && object.key !== null ? String(object.key) : ''
+    message.value = object.value !== undefined && object.value !== null ? String(object.value) : ''
+    return message
+  },
+
+  toJSON(message: Marker_IngressEntry): unknown {
+    const obj: any = {}
+    message.key !== undefined && (obj.key = message.key)
+    message.value !== undefined && (obj.value = message.value)
+    return obj
+  },
+}
+
 const baseDagentContainerConfig: object = { networks: '' }
 
 export const DagentContainerConfig = {
@@ -736,6 +869,12 @@ export const DagentContainerConfig = {
         ? networkModeFromJSON(object.networkMode)
         : undefined
     message.networks = (object.networks ?? []).map((e: any) => String(e))
+    message.labels = Object.entries(object.labels ?? {}).reduce<{
+      [key: string]: string
+    }>((acc, [key, value]) => {
+      acc[key] = String(value)
+      return acc
+    }, {})
     return message
   },
 
@@ -752,6 +891,32 @@ export const DagentContainerConfig = {
     } else {
       obj.networks = []
     }
+    obj.labels = {}
+    if (message.labels) {
+      Object.entries(message.labels).forEach(([k, v]) => {
+        obj.labels[k] = v
+      })
+    }
+    return obj
+  },
+}
+
+const baseDagentContainerConfig_LabelsEntry: object = { key: '', value: '' }
+
+export const DagentContainerConfig_LabelsEntry = {
+  fromJSON(object: any): DagentContainerConfig_LabelsEntry {
+    const message = {
+      ...baseDagentContainerConfig_LabelsEntry,
+    } as DagentContainerConfig_LabelsEntry
+    message.key = object.key !== undefined && object.key !== null ? String(object.key) : ''
+    message.value = object.value !== undefined && object.value !== null ? String(object.value) : ''
+    return message
+  },
+
+  toJSON(message: DagentContainerConfig_LabelsEntry): unknown {
+    const obj: any = {}
+    message.key !== undefined && (obj.key = message.key)
+    message.value !== undefined && (obj.value = message.value)
     return obj
   },
 }
@@ -779,6 +944,9 @@ export const CraneContainerConfig = {
       object.useLoadBalancer !== undefined && object.useLoadBalancer !== null
         ? Boolean(object.useLoadBalancer)
         : undefined
+    message.annotations =
+      object.annotations !== undefined && object.annotations !== null ? Marker.fromJSON(object.annotations) : undefined
+    message.labels = object.labels !== undefined && object.labels !== null ? Marker.fromJSON(object.labels) : undefined
     message.customHeaders = (object.customHeaders ?? []).map((e: any) => String(e))
     message.extraLBAnnotations = Object.entries(object.extraLBAnnotations ?? {}).reduce<{ [key: string]: string }>(
       (acc, [key, value]) => {
@@ -803,6 +971,9 @@ export const CraneContainerConfig = {
       (obj.resourceConfig = message.resourceConfig ? ResourceConfig.toJSON(message.resourceConfig) : undefined)
     message.proxyHeaders !== undefined && (obj.proxyHeaders = message.proxyHeaders)
     message.useLoadBalancer !== undefined && (obj.useLoadBalancer = message.useLoadBalancer)
+    message.annotations !== undefined &&
+      (obj.annotations = message.annotations ? Marker.toJSON(message.annotations) : undefined)
+    message.labels !== undefined && (obj.labels = message.labels ? Marker.toJSON(message.labels) : undefined)
     if (message.customHeaders) {
       obj.customHeaders = message.customHeaders.map(e => e)
     } else {

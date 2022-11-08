@@ -269,6 +269,72 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
             )}
           </div>
         )}
+
+        {/* Labels */}
+        {contains('labels') && (
+          <>
+            <div className="grid mb-8 break-inside-avoid">
+              <KeyValueInput
+                labelClassName="text-bright font-semibold tracking-wide mb-2"
+                label={t('crane.deploymentLabels').toUpperCase()}
+                onChange={it => onChange({ labels: nullify({ ...config.labels, deployment: it }) })}
+                items={config.labels?.deployment ?? []}
+                editorOptions={editorOptions}
+              />
+            </div>
+            <div className="grid mb-8 break-inside-avoid">
+              <KeyValueInput
+                labelClassName="text-bright font-semibold tracking-wide mb-2"
+                label={t('crane.serviceLabels').toUpperCase()}
+                onChange={it => onChange({ labels: nullify({ ...config.labels, service: it }) })}
+                items={config.labels?.service ?? []}
+                editorOptions={editorOptions}
+              />
+            </div>
+            <div className="grid mb-8 break-inside-avoid">
+              <KeyValueInput
+                labelClassName="text-bright font-semibold tracking-wide mb-2"
+                label={t('crane.ingressLabels').toUpperCase()}
+                onChange={it => onChange({ labels: nullify({ ...config.labels, ingress: it }) })}
+                items={config.labels?.ingress ?? []}
+                editorOptions={editorOptions}
+              />
+            </div>
+          </>
+        )}
+
+        {/* Labels */}
+        {contains('annotations') && (
+          <>
+            <div className="grid mb-8 break-inside-avoid">
+              <KeyValueInput
+                labelClassName="text-bright font-semibold tracking-wide mb-2"
+                label={t('crane.deploymentAnnotations').toUpperCase()}
+                onChange={it => onChange({ annotations: nullify({ ...config.annotations, deployment: it }) })}
+                items={config.annotations?.deployment ?? []}
+                editorOptions={editorOptions}
+              />
+            </div>
+            <div className="grid mb-8 break-inside-avoid">
+              <KeyValueInput
+                labelClassName="text-bright font-semibold tracking-wide mb-2"
+                label={t('crane.serviceAnnotations').toUpperCase()}
+                onChange={it => onChange({ annotations: nullify({ ...config.annotations, service: it }) })}
+                items={config.annotations?.service ?? []}
+                editorOptions={editorOptions}
+              />
+            </div>
+            <div className="grid mb-8 break-inside-avoid">
+              <KeyValueInput
+                labelClassName="text-bright font-semibold tracking-wide mb-2"
+                label={t('crane.ingressAnnotations').toUpperCase()}
+                onChange={it => onChange({ annotations: nullify({ ...config.annotations, ingress: it }) })}
+                items={config.annotations?.ingress ?? []}
+                editorOptions={editorOptions}
+              />
+            </div>
+          </>
+        )}
       </div>
     </div>
   )

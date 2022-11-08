@@ -229,6 +229,7 @@ export default class DeployMapper {
         : null,
       networkMode: this.imageMapper.networkModeToProto(config.networkMode),
       restartPolicy: this.imageMapper.restartPolicyToProto(config.restartPolicy),
+      labels: this.mapKeyValueToMap(config.labels as JsonObject),
     }
   }
 
@@ -241,6 +242,20 @@ export default class DeployMapper {
       proxyHeaders: config.proxyHeaders,
       useLoadBalancer: config.useLoadBalancer,
       resourceConfig: config.resourceConfig as JsonObject,
+      labels: config.labels
+        ? {
+            deployment: this.mapKeyValueToMap((config.labels as JsonObject)?.deployment),
+            ingress: this.mapKeyValueToMap((config.labels as JsonObject)?.ingress),
+            service: this.mapKeyValueToMap((config.labels as JsonObject)?.service),
+          }
+        : null,
+      annotations: config.annotations
+        ? {
+            deployment: this.mapKeyValueToMap((config.annotations as JsonObject)?.deployment),
+            ingress: this.mapKeyValueToMap((config.annotations as JsonObject)?.ingress),
+            service: this.mapKeyValueToMap((config.annotations as JsonObject)?.service),
+          }
+        : null,
     }
   }
 

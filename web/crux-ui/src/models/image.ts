@@ -88,5 +88,8 @@ export const IMAGE_CONFIG_FILTERS = [
   'loadBalancer',
   'healthCheckConfig',
   'resourceConfig',
+  'dockerLabels',
+  'labels',
+  'annotations',
 ] as const
 export type ImageConfigFilterType = typeof IMAGE_CONFIG_FILTERS[number]

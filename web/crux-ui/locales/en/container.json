@@ -97,7 +97,8 @@
     "networks": "Networks",
     "placeholders": {
       "network": "Network"
-    }
+    },
+    "dockerLabels": "Docker labels"
   },
 
   "crane": {
@@ -118,6 +119,15 @@
     "loadBalancer": "Load balancer",
     "useLoadBalancer": "Use load balancer",
     "extraLBAnnotations": "Extra LB annotations",
-    "placeholders": { "headerName": "Header name", "cpuUsageExample": "100", "memoryUsageExample": "1m" }
-  }
+    "placeholders": { "headerName": "Header name", "cpuUsageExample": "100", "memoryUsageExample": "1m" },
+    "labels": "Labels",
+    "annotations": "Annotations",
+    "serviceLabels": "Service labels",
+    "deploymentLabels": "Deployment labels",
+    "ingressLabels": "Ingress labels",
+    "serviceAnnotations": "Service annotations",
+    "deploymentAnnotations": "Deployment annotations",
+    "ingressAnnotations": "Ingress annotations"
+  },
+  "sensitiveKey": "Sensitive config data should be stored as secrets"
 }
