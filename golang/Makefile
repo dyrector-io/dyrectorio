@@ -48,11 +48,11 @@ down: ##
 
 .PHONY: go-crane
 go-crane: ##
-	air --build.cmd "cd cmd/crane; go build -o crane_bin ." --build.bin "cd cmd/crane; ./crane_bin"
+	air --build.cmd "" --build.bin "cd cmd/crane && go run ."
 
 .PHONY: go-dagent
 go-dagent: ##
-	air --build.cmd "cd cmd/dagent; go build -o dagent_bin ." --build.bin "cd cmd/dagent; ./dagent_bin"
+	air --build.cmd "" --build.bin "cd cmd/dagent && go run ."
 
 
 .PHONY: compile-cli
