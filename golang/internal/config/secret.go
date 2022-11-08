@@ -30,7 +30,7 @@ func (field *ConfigFromFile) SetValue(secretPath string) error {
 }
 
 func checkGenerateKeys(secretPath string) (string, error) {
-	log.Printf("Checking key file: %v\n", secretPath)
+	log.Printf("Checking key file: %v", secretPath)
 	fileContent, err := os.ReadFile(secretPath) //#nosec G304 -- secret path comes from an env
 
 	if errors.Is(err, syscall.EISDIR) {
