@@ -180,3 +180,7 @@ export const notificationApiHookUrl = (id: string) => `${notificationApiUrl(id)}
 // image config
 export const imageConfigUrl = (productId: string, versionId: string, imageId: string) =>
   `${versionUrl(productId, versionId)}/image/${imageId}`
+
+// instance config
+export const instanceConfigUrl = (productId: string, versionId: string, deploymentId: string, instanceId: string) =>
+  `${deploymentUrl(productId, versionId, deploymentId)}/instance/${instanceId}`
