@@ -72,6 +72,7 @@ export default class ImageMapper {
       logConfig: config.logConfig as JsonObject,
       networkMode: this.networkModeToProto(config.networkMode),
       restartPolicy: this.restartPolicyToProto(config.restartPolicy),
+      labels: config.dockerLabels as JsonObject,
     }
   }
 
@@ -84,6 +85,8 @@ export default class ImageMapper {
       proxyHeaders: config.proxyHeaders,
       useLoadBalancer: config.useLoadBalancer,
       resourceConfig: config.resourceConfig as JsonObject,
+      labels: config.labels as JsonObject,
+      annotations: config.annotations as JsonObject,
     }
   }
 
@@ -114,10 +117,13 @@ export default class ImageMapper {
       secrets: this.toPrismaJson(config.common?.secrets),
       initContainers: this.toPrismaJson(config.common?.initContainers),
       logConfig: this.toPrismaJson(config.dagent?.logConfig),
+
       // dagent
       restartPolicy: this.restartPolicyToDb(config.dagent?.restartPolicy),
       networkMode: this.networkModeToDb(config.dagent?.networkMode),
       networks: this.toPrismaJson(config.dagent?.networks),
+      dockerLabels: this.toPrismaJson(config.dagent?.labels),
+
       // crane
       deploymentStrategy: this.deploymentStrategyToDb(config.crane?.deploymentStatregy),
       healthCheckConfig: this.toPrismaJson(config.crane?.healthCheckConfig),
@@ -127,6 +133,8 @@ export default class ImageMapper {
       customHeaders: this.toPrismaJson(config.crane?.customHeaders),
       extraLBAnnotations: this.toPrismaJson(config.crane?.extraLBAnnotations),
       capabilities: this.toPrismaJson(config.capabilities),
+      annotations: this.toPrismaJson(config.crane?.annotations),
+      labels: this.toPrismaJson(config.crane?.labels),
     }
   }
 
@@ -185,7 +193,7 @@ export default class ImageMapper {
       case RestartPolicy.onFailure:
         return ProtoRestartPolicy.ON_FAILURE
       default:
-        return ProtoRestartPolicy.UNDEFINED
+        return ProtoRestartPolicy.NO
     }
   }
 

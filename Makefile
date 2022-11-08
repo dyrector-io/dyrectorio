@@ -6,11 +6,18 @@ up:
 	make up; \
 	cd -
 
+# shortcut to start stack with local development
 .PHONY: upd
 upd:
 	cd golang && \
 	make upd; \
 	cd -
+
+# shortcut for cli
+.PHONY: cli
+cli:
+	cd golang/cmd/dyo && \
+	go run .
 
 .PHONY: down
 down:

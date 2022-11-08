@@ -118,6 +118,16 @@ type ResourceConfig struct {
 	Requests Resources `json:"requests"`
 }
 
+// key-value pairs passed to workload
+type Markers struct {
+	// Deployment used in both cases
+	Deployment map[string]string `json:"deployment"`
+	// k8s-only, service annonations
+	Service map[string]string `json:"service"`
+	// k8s-only ingress annotations
+	Ingress map[string]string `json:"ingress"`
+}
+
 type ContainerConfig struct {
 	// ContainerPreName identifies namespace to be used
 	ContainerPreName string `json:"containerPreName"`
@@ -133,6 +143,8 @@ type ContainerConfig struct {
 	Volumes []Volume `json:"volumes,omitempty" binding:"dive"`
 	// environment variables list
 	Environment []string `json:"environment"`
+	// labels is shared, both docker and k8s have labels
+	Labels Markers `json:"labels"`
 	// Secrets
 	Secrets map[string]string `json:"secrets,omitempty"`
 	// the type of the runtime text provided eg. dotnet-appsettings
@@ -191,10 +203,13 @@ type ContainerConfig struct {
 	// Expose service using external IP
 	// also sets the externalTrafficPolcy to "local"
 	UseLoadBalancer bool `json:"useLoadBalancer"`
-	// ExtraLBAnnotations
+	// ExtraLBAnnotations, this is legacy
+	// Annotations.Service does the same, keeping it for compat
 	// lots of cloud provider specific configs can be put into annotations
 	// they vary enough to have it exposed like this
 	ExtraLBAnnotations map[string]string `json:"extraLBAnnotations,omitempty"`
+	// Annotations
+	Annotations Markers `json:"annotations"`
 }
 
 func (c *ContainerConfig) Strings(appConfig *config.CommonConfiguration) []string {

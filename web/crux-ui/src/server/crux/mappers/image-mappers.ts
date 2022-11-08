@@ -182,6 +182,7 @@ export const containerConfigToDto = (config?: ProtoContainerConfig): ContainerCo
     restartPolicy: restartPolicyTypeToDto(config.dagent?.restartPolicy),
     networkMode: networkModeToDto(config.dagent?.networkMode),
     networks: config.dagent?.networks ?? [],
+    dockerLabels: config.dagent?.labels ?? [],
 
     // crane
     deploymentStrategy: deploymentStrategyToDto(config.crane?.deploymentStatregy),
@@ -191,6 +192,8 @@ export const containerConfigToDto = (config?: ProtoContainerConfig): ContainerCo
     extraLBAnnotations: config.crane?.extraLBAnnotations ?? null,
     healthCheckConfig: config.crane?.healthCheckConfig ?? null,
     resourceConfig: config.crane?.resourceConfig ?? null,
+    labels: config.crane?.labels ?? null,
+    annotations: config.crane?.annotations ?? null,
   }
 
   return cfg
@@ -240,6 +243,7 @@ export const containerConfigToProto = (config?: ContainerConfig | Partial<Contai
       restartPolicy: restartPolicyTypeToProto(config.restartPolicy),
       networkMode: networkModeToProto(config.networkMode),
       networks: config.networks,
+      labels: config.dockerLabels,
     }
   }
 
@@ -250,7 +254,9 @@ export const containerConfigToProto = (config?: ContainerConfig | Partial<Contai
     config.useLoadBalancer ||
     config.healthCheckConfig ||
     config.resourceConfig ||
-    config.extraLBAnnotations
+    config.extraLBAnnotations ||
+    config.annotations ||
+    config.labels
   ) {
     protoConfig.crane = {
       deploymentStatregy: deploymentStrategyToProto(config.deploymentStrategy),
@@ -260,6 +266,20 @@ export const containerConfigToProto = (config?: ContainerConfig | Partial<Contai
       proxyHeaders: config.proxyHeaders,
       useLoadBalancer: config.useLoadBalancer,
       extraLBAnnotations: config.extraLBAnnotations,
+      annotations: config.annotations
+        ? {
+            deployment: config.annotations.deployment ?? [],
+            service: config.annotations.service ?? [],
+            ingress: config.annotations.ingress ?? [],
+          }
+        : null,
+      labels: config.labels
+        ? {
+            deployment: config.labels.deployment ?? [],
+            service: config.labels.service ?? [],
+            ingress: config.labels.ingress ?? [],
+          }
+        : null,
     }
   }
 

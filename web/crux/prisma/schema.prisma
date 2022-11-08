@@ -210,6 +210,7 @@ model ContainerConfig {
   restartPolicy RestartPolicy?
   networkMode   NetworkMode?
   networks      Json?
+  dockerLabels  Json?
 
   //Crane
   deploymentStrategy DeploymentStrategy?
@@ -219,6 +220,8 @@ model ContainerConfig {
   useLoadBalancer    Boolean?
   extraLBAnnotations Json?
   customHeaders      Json?
+  annotations        Json?
+  labels             Json?
 
   image   Image  @relation(fields: [imageId], references: [id], onDelete: Cascade)
   imageId String @unique @db.Uuid
@@ -283,6 +286,7 @@ model InstanceContainerConfig {
   restartPolicy RestartPolicy?
   networkMode   NetworkMode?
   networks      Json?
+  dockerLabels  Json?
 
   //Crane
   deploymentStrategy DeploymentStrategy?
@@ -292,6 +296,8 @@ model InstanceContainerConfig {
   useLoadBalancer    Boolean?
   extraLBAnnotations Json?
   customHeaders      Json?
+  annotations        Json?
+  labels             Json?
 
   instance Instance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
 }

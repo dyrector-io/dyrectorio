@@ -229,6 +229,7 @@ export default class DeployMapper {
         : null,
       networkMode: this.imageMapper.networkModeToProto(config.networkMode),
       restartPolicy: this.imageMapper.restartPolicyToProto(config.restartPolicy),
+      labels: this.mapKeyValueToMap(config.dockerLabels as JsonObject),
     }
   }
 
@@ -241,6 +242,20 @@ export default class DeployMapper {
       proxyHeaders: config.proxyHeaders,
       useLoadBalancer: config.useLoadBalancer,
       resourceConfig: config.resourceConfig as JsonObject,
+      labels: config.labels
+        ? {
+            deployment: this.mapKeyValueToMap((config.labels as JsonObject)?.deployment),
+            ingress: this.mapKeyValueToMap((config.labels as JsonObject)?.ingress),
+            service: this.mapKeyValueToMap((config.labels as JsonObject)?.service),
+          }
+        : null,
+      annotations: config.annotations
+        ? {
+            deployment: this.mapKeyValueToMap((config.annotations as JsonObject)?.deployment),
+            ingress: this.mapKeyValueToMap((config.annotations as JsonObject)?.ingress),
+            service: this.mapKeyValueToMap((config.annotations as JsonObject)?.service),
+          }
+        : null,
     }
   }
 
@@ -353,12 +368,15 @@ export default class DeployMapper {
       resourceConfig: this.override(imageConfig?.resourceConfig, instanceConfig?.resourceConfig),
       useLoadBalancer: this.override(imageConfig?.useLoadBalancer, instanceConfig?.useLoadBalancer),
       deploymentStrategy: this.override(imageConfig?.deploymentStrategy, instanceConfig?.deploymentStrategy),
+      labels: this.override(imageConfig?.labels, instanceConfig?.labels),
+      annotations: this.override(imageConfig?.annotations, instanceConfig?.annotations),
 
       // dagent
       logConfig: this.override(imageConfig?.logConfig, instanceConfig?.logConfig),
       networkMode: this.override(imageConfig?.networkMode, instanceConfig?.networkMode),
       restartPolicy: this.override(imageConfig?.restartPolicy, instanceConfig?.restartPolicy),
       networks: this.overrideArrays(imageConfig?.networks as UniqueKey[], instanceConfig?.networks as UniqueKey[]),
+      dockerLabels: this.override(imageConfig?.dockerLabels, instanceConfig?.dockerLabels),
     }
   }
 }

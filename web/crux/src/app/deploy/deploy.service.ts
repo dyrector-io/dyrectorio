@@ -567,6 +567,9 @@ export default class DeployService {
                     customHeaders: this.imageMapper.toPrismaJson(it.config.customHeaders),
                     extraLBAnnotations: this.imageMapper.toPrismaJson(it.config.extraLBAnnotations),
                     capabilities: this.imageMapper.toPrismaJson(it.config.capabilities),
+                    annotations: this.imageMapper.toPrismaJson(it.config.annotations),
+                    labels: this.imageMapper.toPrismaJson(it.config.labels),
+                    dockerLabels: this.imageMapper.toPrismaJson(it.config.dockerLabels),
                   },
                 }
               : undefined,

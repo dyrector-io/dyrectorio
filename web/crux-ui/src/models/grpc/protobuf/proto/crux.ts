@@ -979,11 +979,18 @@ export interface KeyValueList {
   data: UniqueKeyValue[]
 }
 
+export interface Marker {
+  deployment: UniqueKeyValue[]
+  service: UniqueKeyValue[]
+  ingress: UniqueKeyValue[]
+}
+
 export interface DagentContainerConfig {
   logConfig?: LogConfig | undefined
   restartPolicy?: RestartPolicy | undefined
   networkMode?: NetworkMode | undefined
   networks: UniqueKey[]
+  labels: UniqueKeyValue[]
 }
 
 export interface CraneContainerConfig {
@@ -992,6 +999,8 @@ export interface CraneContainerConfig {
   resourceConfig?: ResourceConfig | undefined
   proxyHeaders?: boolean | undefined
   useLoadBalancer?: boolean | undefined
+  annotations?: Marker | undefined
+  labels?: Marker | undefined
   customHeaders: UniqueKey[]
   extraLBAnnotations: UniqueKeyValue[]
 }
@@ -5793,6 +5802,86 @@ export const KeyValueList = {
   },
 }
 
+const baseMarker: object = {}
+
+export const Marker = {
+  encode(message: Marker, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    for (const v of message.deployment) {
+      UniqueKeyValue.encode(v!, writer.uint32(8002).fork()).ldelim()
+    }
+    for (const v of message.service) {
+      UniqueKeyValue.encode(v!, writer.uint32(8010).fork()).ldelim()
+    }
+    for (const v of message.ingress) {
+      UniqueKeyValue.encode(v!, writer.uint32(8018).fork()).ldelim()
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): Marker {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = { ...baseMarker } as Marker
+    message.deployment = []
+    message.service = []
+    message.ingress = []
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1000:
+          message.deployment.push(UniqueKeyValue.decode(reader, reader.uint32()))
+          break
+        case 1001:
+          message.service.push(UniqueKeyValue.decode(reader, reader.uint32()))
+          break
+        case 1002:
+          message.ingress.push(UniqueKeyValue.decode(reader, reader.uint32()))
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): Marker {
+    const message = { ...baseMarker } as Marker
+    message.deployment = (object.deployment ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
+    message.service = (object.service ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
+    message.ingress = (object.ingress ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
+    return message
+  },
+
+  toJSON(message: Marker): unknown {
+    const obj: any = {}
+    if (message.deployment) {
+      obj.deployment = message.deployment.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
+    } else {
+      obj.deployment = []
+    }
+    if (message.service) {
+      obj.service = message.service.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
+    } else {
+      obj.service = []
+    }
+    if (message.ingress) {
+      obj.ingress = message.ingress.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
+    } else {
+      obj.ingress = []
+    }
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<Marker>, I>>(object: I): Marker {
+    const message = { ...baseMarker } as Marker
+    message.deployment = object.deployment?.map(e => UniqueKeyValue.fromPartial(e)) || []
+    message.service = object.service?.map(e => UniqueKeyValue.fromPartial(e)) || []
+    message.ingress = object.ingress?.map(e => UniqueKeyValue.fromPartial(e)) || []
+    return message
+  },
+}
+
 const baseDagentContainerConfig: object = {}
 
 export const DagentContainerConfig = {
@@ -5809,6 +5898,9 @@ export const DagentContainerConfig = {
     for (const v of message.networks) {
       UniqueKey.encode(v!, writer.uint32(8002).fork()).ldelim()
     }
+    for (const v of message.labels) {
+      UniqueKeyValue.encode(v!, writer.uint32(8010).fork()).ldelim()
+    }
     return writer
   },
 
@@ -5817,6 +5909,7 @@ export const DagentContainerConfig = {
     let end = length === undefined ? reader.len : reader.pos + length
     const message = { ...baseDagentContainerConfig } as DagentContainerConfig
     message.networks = []
+    message.labels = []
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -5831,6 +5924,9 @@ export const DagentContainerConfig = {
           break
         case 1000:
           message.networks.push(UniqueKey.decode(reader, reader.uint32()))
+          break
+        case 1001:
+          message.labels.push(UniqueKeyValue.decode(reader, reader.uint32()))
           break
         default:
           reader.skipType(tag & 7)
@@ -5853,6 +5949,7 @@ export const DagentContainerConfig = {
         ? networkModeFromJSON(object.networkMode)
         : undefined
     message.networks = (object.networks ?? []).map((e: any) => UniqueKey.fromJSON(e))
+    message.labels = (object.labels ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
     return message
   },
 
@@ -5869,6 +5966,11 @@ export const DagentContainerConfig = {
     } else {
       obj.networks = []
     }
+    if (message.labels) {
+      obj.labels = message.labels.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
+    } else {
+      obj.labels = []
+    }
     return obj
   },
 
@@ -5879,6 +5981,7 @@ export const DagentContainerConfig = {
     message.restartPolicy = object.restartPolicy ?? undefined
     message.networkMode = object.networkMode ?? undefined
     message.networks = object.networks?.map(e => UniqueKey.fromPartial(e)) || []
+    message.labels = object.labels?.map(e => UniqueKeyValue.fromPartial(e)) || []
     return message
   },
 }
@@ -5901,6 +6004,12 @@ export const CraneContainerConfig = {
     }
     if (message.useLoadBalancer !== undefined) {
       writer.uint32(832).bool(message.useLoadBalancer)
+    }
+    if (message.annotations !== undefined) {
+      Marker.encode(message.annotations, writer.uint32(842).fork()).ldelim()
+    }
+    if (message.labels !== undefined) {
+      Marker.encode(message.labels, writer.uint32(850).fork()).ldelim()
     }
     for (const v of message.customHeaders) {
       UniqueKey.encode(v!, writer.uint32(8002).fork()).ldelim()
@@ -5934,6 +6043,12 @@ export const CraneContainerConfig = {
           break
         case 104:
           message.useLoadBalancer = reader.bool()
+          break
+        case 105:
+          message.annotations = Marker.decode(reader, reader.uint32())
+          break
+        case 106:
+          message.labels = Marker.decode(reader, reader.uint32())
           break
         case 1000:
           message.customHeaders.push(UniqueKey.decode(reader, reader.uint32()))
@@ -5969,6 +6084,9 @@ export const CraneContainerConfig = {
       object.useLoadBalancer !== undefined && object.useLoadBalancer !== null
         ? Boolean(object.useLoadBalancer)
         : undefined
+    message.annotations =
+      object.annotations !== undefined && object.annotations !== null ? Marker.fromJSON(object.annotations) : undefined
+    message.labels = object.labels !== undefined && object.labels !== null ? Marker.fromJSON(object.labels) : undefined
     message.customHeaders = (object.customHeaders ?? []).map((e: any) => UniqueKey.fromJSON(e))
     message.extraLBAnnotations = (object.extraLBAnnotations ?? []).map((e: any) => UniqueKeyValue.fromJSON(e))
     return message
@@ -5987,6 +6105,9 @@ export const CraneContainerConfig = {
       (obj.resourceConfig = message.resourceConfig ? ResourceConfig.toJSON(message.resourceConfig) : undefined)
     message.proxyHeaders !== undefined && (obj.proxyHeaders = message.proxyHeaders)
     message.useLoadBalancer !== undefined && (obj.useLoadBalancer = message.useLoadBalancer)
+    message.annotations !== undefined &&
+      (obj.annotations = message.annotations ? Marker.toJSON(message.annotations) : undefined)
+    message.labels !== undefined && (obj.labels = message.labels ? Marker.toJSON(message.labels) : undefined)
     if (message.customHeaders) {
       obj.customHeaders = message.customHeaders.map(e => (e ? UniqueKey.toJSON(e) : undefined))
     } else {
@@ -6013,6 +6134,12 @@ export const CraneContainerConfig = {
         : undefined
     message.proxyHeaders = object.proxyHeaders ?? undefined
     message.useLoadBalancer = object.useLoadBalancer ?? undefined
+    message.annotations =
+      object.annotations !== undefined && object.annotations !== null
+        ? Marker.fromPartial(object.annotations)
+        : undefined
+    message.labels =
+      object.labels !== undefined && object.labels !== null ? Marker.fromPartial(object.labels) : undefined
     message.customHeaders = object.customHeaders?.map(e => UniqueKey.fromPartial(e)) || []
     message.extraLBAnnotations = object.extraLBAnnotations?.map(e => UniqueKeyValue.fromPartial(e)) || []
     return message

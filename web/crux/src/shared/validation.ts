@@ -231,38 +231,70 @@ const logConfigRule = yup
   .nullable()
   .optional()
 
+const markerRule = yup
+  .object()
+  .shape({
+    deployment: uniqueKeyValuesSchema.default([]).nullable(),
+    service: uniqueKeyValuesSchema.default([]).nullable(),
+    ingress: uniqueKeyValuesSchema.default([]).nullable(),
+  })
+  .default({})
+  .nullable()
+  .optional()
+
 export const containerConfigSchema = yup.object().shape({
-  name: yup.string().required(),
-  environments: uniqueKeyValuesSchema.default([]).nullable(),
-  secrets: uniqueKeyValuesSchema.default([]).nullable(),
-  ingress: ingressRule,
-  expose: exposeRule,
-  user: yup.number().default(null).nullable(),
-  tty: yup.boolean().default(false).required(),
-  importContainer: importContainerRule,
-  configContainer: configContainerRule,
-  ports: portConfigRule,
-  portRanges: portRangeConfigRule,
-  volumes: volumeConfigRule,
-  commands: uniqueKeysOnlySchema.default([]).nullable(),
-  args: uniqueKeysOnlySchema.default([]).nullable(),
-  initContainers: initContainerRule,
-  capabilities: uniqueKeyValuesSchema.default([]).nullable(),
+  common: yup
+    .object()
+    .shape({
+      name: yup.string().required(),
+      environments: uniqueKeyValuesSchema.default([]).nullable(),
+      secrets: uniqueKeyValuesSchema.default([]).nullable(),
+      ingress: ingressRule,
+      expose: exposeRule,
+      user: yup.number().default(null).nullable(),
+      tty: yup.boolean().default(false).required(),
+      importContainer: importContainerRule,
+      configContainer: configContainerRule,
+      ports: portConfigRule,
+      portRanges: portRangeConfigRule,
+      volumes: volumeConfigRule,
+      commands: uniqueKeysOnlySchema.default([]).nullable(),
+      args: uniqueKeysOnlySchema.default([]).nullable(),
+      initContainers: initContainerRule,
+      capabilities: uniqueKeyValuesSchema.default([]).nullable(),
+    })
+    .default({})
+    .nullable(),
 
   // dagent:
-  logConfig: logConfigRule,
-  restartPolicy: restartPolicyRule,
-  networkMode: networkModeRule,
-  networks: uniqueKeysOnlySchema.default([]).nullable(),
+  dagent: yup
+    .object()
+    .shape({
+      logConfig: logConfigRule,
+      restartPolicy: restartPolicyRule,
+      networkMode: networkModeRule,
+      networks: uniqueKeysOnlySchema.default([]).nullable(),
+      labels: uniqueKeyValuesSchema.default([]).nullable(),
+    })
+    .default({})
+    .nullable(),
 
   // crane
-  deploymentStrategy: deploymentStrategyRule,
-  customHeaders: uniqueKeysOnlySchema.default([]).nullable(),
-  proxyHeaders: yup.boolean().default(false).required(),
-  useLoadBalancer: yup.boolean().default(false).required(),
-  extraLBAnnotations: uniqueKeyValuesSchema.default([]).nullable(),
-  healthCheckConfig: healthCheckConfigRule,
-  resourceConfig: resourceConfigRule,
+  crane: yup
+    .object()
+    .shape({
+      deploymentStrategy: deploymentStrategyRule,
+      customHeaders: uniqueKeysOnlySchema.default([]).nullable(),
+      proxyHeaders: yup.boolean().default(false).required(),
+      useLoadBalancer: yup.boolean().default(false).required(),
+      extraLBAnnotations: uniqueKeyValuesSchema.default([]).nullable(),
+      healthCheckConfig: healthCheckConfigRule,
+      resourceConfig: resourceConfigRule,
+      annotations: markerRule,
+      labels: markerRule,
+    })
+    .default({})
+    .nullable(),
 })
 
 export const instanceContainerConfigSchema = yup.object().shape({

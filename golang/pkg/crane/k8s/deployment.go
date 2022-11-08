@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
+	"golang.org/x/exp/maps"
 	coreV1 "k8s.io/api/core/v1"
 	resource "k8s.io/apimachinery/pkg/api/resource"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -54,6 +55,8 @@ type deploymentParams struct {
 	portList        []builder.PortBinding
 	command         []string
 	args            []string
+	labels          map[string]string
+	annotations     map[string]string
 	issuer          string
 }
 
@@ -64,8 +67,22 @@ func (d *deployment) deployDeployment(p *deploymentParams) error {
 	if err != nil {
 		return err
 	}
-
 	name := p.containerConfig.Container
+
+	annot := map[string]string{}
+
+	if len(p.issuer) > 0 {
+		annot[d.appConfig.KeyIssuer] = p.issuer
+	}
+
+	annot[CraneUpdatedAnnotation] = time.Now().Format(time.RFC3339)
+	maps.Copy(annot, p.annotations)
+
+	labels := map[string]string{
+		"app": name,
+	}
+	maps.Copy(labels, p.labels)
+
 	deployment := appsv1.Deployment(name, p.namespace).
 		WithSpec(
 			appsv1.DeploymentSpec().
@@ -73,12 +90,7 @@ func (d *deployment) deployDeployment(p *deploymentParams) error {
 				WithSelector(metav1.LabelSelector().WithMatchLabels(map[string]string{
 					"app": name,
 				})).
-				WithTemplate(corev1.PodTemplateSpec().WithLabels(map[string]string{
-					"app": name,
-				}).WithAnnotations(map[string]string{
-					CraneUpdatedAnnotation: time.Now().Format(time.RFC3339),
-					d.appConfig.KeyIssuer:  p.issuer,
-				}).WithSpec(
+				WithTemplate(corev1.PodTemplateSpec().WithLabels(labels).WithAnnotations(annot).WithSpec(
 					corev1.PodSpec().WithContainers(containerConfig).
 						WithInitContainers(getInitContainers(p, d.appConfig)...).
 						WithVolumes(getVolumesFromMap(p.volumes, d.appConfig)...),

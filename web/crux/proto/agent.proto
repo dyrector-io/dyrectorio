@@ -148,12 +148,20 @@ message LogConfig {
   map<string, string> options = 1000;
 }
 
+message Marker {
+  map<string, string> deployment = 1000;
+  map<string, string> service = 1001;
+  map<string, string> ingress = 1002;
+}
+
+
 message DagentContainerConfig {
   optional LogConfig logConfig = 100;
   optional common.RestartPolicy restartPolicy = 101;
   optional common.NetworkMode networkMode = 102;
 
   repeated string networks = 1000;
+  map<string, string> labels = 1001;
 }
 
 message CraneContainerConfig {
@@ -162,6 +170,8 @@ message CraneContainerConfig {
   optional common.ResourceConfig resourceConfig = 102;
   optional bool proxyHeaders = 103;
   optional bool useLoadBalancer = 104;
+  optional Marker annotations = 105;
+  optional Marker labels = 106;
 
   repeated string customHeaders = 1000;
   map<string, string> extraLBAnnotations = 1001;

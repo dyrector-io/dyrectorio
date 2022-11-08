@@ -157,6 +157,8 @@ func (d *deployFacade) Deploy() error {
 			portRanges:    d.params.ContainerConfig.PortRanges,
 			useLB:         d.params.ContainerConfig.UseLoadBalancer,
 			LBAnnotations: d.params.ContainerConfig.ExtraLBAnnotations,
+			annotations:   d.params.ContainerConfig.Annotations.Service,
+			labels:        d.params.ContainerConfig.Labels.Service,
 		},
 	); err != nil {
 		log.Error().Err(err).Stack().Msg("Error with service")
@@ -174,6 +176,8 @@ func (d *deployFacade) Deploy() error {
 		command:         d.params.ContainerConfig.Command,
 		args:            d.params.ContainerConfig.Args,
 		issuer:          d.params.Issuer,
+		annotations:     d.params.ContainerConfig.Annotations.Deployment,
+		labels:          d.params.ContainerConfig.Labels.Deployment,
 	}); err != nil {
 		log.Error().Err(err).Stack().Msg("Error with deployment")
 		return err
@@ -191,6 +195,8 @@ func (d *deployFacade) Deploy() error {
 				tls:           d.params.ContainerConfig.ExposeTLS,
 				proxyHeaders:  d.params.ContainerConfig.ProxyHeaders,
 				customHeaders: d.params.ContainerConfig.CustomHeaders,
+				annotations:   d.params.ContainerConfig.Annotations.Ingress,
+				labels:        d.params.ContainerConfig.Labels.Ingress,
 			},
 		); err != nil {
 			log.Error().Err(err).Stack().Msg("Error with ingress")

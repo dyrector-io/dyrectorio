@@ -103,7 +103,6 @@ func (dog *DeploymentLogger) WriteContainerState(containerState string, messages
 			Log:  messages,
 			Data: instance,
 		})
-
 		if err != nil {
 			log.Error().Stack().Err(err).Msg("Status close err")
 		}

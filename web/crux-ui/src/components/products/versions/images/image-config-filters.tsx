@@ -26,8 +26,17 @@ export const filterSet: FilterSet = {
     'args',
     'initContainers',
   ],
-  crane: ['deploymentStrategy', 'customHeaders', 'proxyHeaders', 'loadBalancer', 'healthCheckConfig', 'resourceConfig'],
-  dagent: ['logConfig', 'restartPolicy', 'networkMode', 'networks'],
+  crane: [
+    'deploymentStrategy',
+    'customHeaders',
+    'proxyHeaders',
+    'loadBalancer',
+    'healthCheckConfig',
+    'resourceConfig',
+    'annotations',
+    'labels',
+  ],
+  dagent: ['logConfig', 'restartPolicy', 'networkMode', 'networks', 'dockerLabels'],
 }
 
 interface ImageConfigFilterProps {
