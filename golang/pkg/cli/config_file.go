@@ -455,7 +455,6 @@ func CheckAndUpdatePorts(settings *Settings) *Settings {
 func getAvailablePort(portMap map[string]uint, portNum uint, portDesc string, changed *bool) uint {
 	for {
 		err := portIsAvailable(portMap, portNum)
-
 		if err != nil {
 			log.Error().Err(err).Str("Value", portDesc).Msg("")
 			portNum = scanPort(portNum)

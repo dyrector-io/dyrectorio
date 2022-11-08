@@ -968,10 +968,6 @@ export interface KeyValueList {
   data: UniqueKeyValue[]
 }
 
-export interface SecretList {
-  data: UniqueSecretKeyValue[]
-}
-
 export interface Marker {
   deployment: UniqueKeyValue[]
   service: UniqueKeyValue[]
@@ -2801,26 +2797,6 @@ export const KeyValueList = {
     const obj: any = {}
     if (message.data) {
       obj.data = message.data.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
-    } else {
-      obj.data = []
-    }
-    return obj
-  },
-}
-
-const baseSecretList: object = {}
-
-export const SecretList = {
-  fromJSON(object: any): SecretList {
-    const message = { ...baseSecretList } as SecretList
-    message.data = (object.data ?? []).map((e: any) => UniqueSecretKeyValue.fromJSON(e))
-    return message
-  },
-
-  toJSON(message: SecretList): unknown {
-    const obj: any = {}
-    if (message.data) {
-      obj.data = message.data.map(e => (e ? UniqueSecretKeyValue.toJSON(e) : undefined))
     } else {
       obj.data = []
     }

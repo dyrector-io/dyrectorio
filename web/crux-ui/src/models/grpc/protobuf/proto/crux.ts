@@ -979,10 +979,6 @@ export interface KeyValueList {
   data: UniqueKeyValue[]
 }
 
-export interface SecretList {
-  data: UniqueSecretKeyValue[]
-}
-
 export interface Marker {
   deployment: UniqueKeyValue[]
   service: UniqueKeyValue[]
@@ -5802,58 +5798,6 @@ export const KeyValueList = {
   fromPartial<I extends Exact<DeepPartial<KeyValueList>, I>>(object: I): KeyValueList {
     const message = { ...baseKeyValueList } as KeyValueList
     message.data = object.data?.map(e => UniqueKeyValue.fromPartial(e)) || []
-    return message
-  },
-}
-
-const baseSecretList: object = {}
-
-export const SecretList = {
-  encode(message: SecretList, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    for (const v of message.data) {
-      UniqueSecretKeyValue.encode(v!, writer.uint32(8002).fork()).ldelim()
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): SecretList {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = { ...baseSecretList } as SecretList
-    message.data = []
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 1000:
-          message.data.push(UniqueSecretKeyValue.decode(reader, reader.uint32()))
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): SecretList {
-    const message = { ...baseSecretList } as SecretList
-    message.data = (object.data ?? []).map((e: any) => UniqueSecretKeyValue.fromJSON(e))
-    return message
-  },
-
-  toJSON(message: SecretList): unknown {
-    const obj: any = {}
-    if (message.data) {
-      obj.data = message.data.map(e => (e ? UniqueSecretKeyValue.toJSON(e) : undefined))
-    } else {
-      obj.data = []
-    }
-    return obj
-  },
-
-  fromPartial<I extends Exact<DeepPartial<SecretList>, I>>(object: I): SecretList {
-    const message = { ...baseSecretList } as SecretList
-    message.data = object.data?.map(e => UniqueSecretKeyValue.fromPartial(e)) || []
     return message
   },
 }

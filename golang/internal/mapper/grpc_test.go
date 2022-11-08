@@ -17,12 +17,58 @@ import (
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 )
 
-func TestMapDeployImage(t *testing.T) {
+func TestMapDeployImageDagent(t *testing.T) {
+	req := testDeployRequest()
+	cfg := testAppConfig()
+
+	req.Crane = nil
+	res := mapper.MapDeployImage(req, cfg)
+	expected := testExpectedCommon(req)
+
+	assert.Equal(t, expected, res)
+}
+func TestMapDeployImageCrane(t *testing.T) {
 	req := testDeployRequest()
 	cfg := testAppConfig()
 
 	res := mapper.MapDeployImage(req, cfg)
-	expected := &v1.DeployImageRequest{
+	req.Dagent = nil
+	expected := testExpectedCommon(req)
+	expected.ContainerConfig.Annotations = v1.Markers{
+		Deployment: map[string]string{"annot1": "value1"},
+		Service:    map[string]string{"annot2": "value2"},
+		Ingress:    map[string]string{"annot3": "value3"},
+	}
+
+	expected.ContainerConfig.DeploymentStrategy = "RECREATE"
+
+	expected.ContainerConfig.Labels = v1.Markers{
+		Deployment: map[string]string{"label1": "value1"},
+		Service:    map[string]string{"label2": "value2"},
+		Ingress:    map[string]string{"label3": "value3"},
+	}
+
+	expected.ContainerConfig.HealthCheckConfig = v1.HealthCheckConfig{
+		Port:           uint16(*req.Crane.HealthCheckConfig.Port),
+		LivenessProbe:  &v1.Probe{Path: "test-liveness"},
+		ReadinessProbe: &v1.Probe{Path: "test-readiness"},
+		StartupProbe:   &v1.Probe{Path: "test-startup"},
+	}
+	expected.ContainerConfig.ResourceConfig = v1.ResourceConfig{
+		Limits:   v1.Resources{CPU: "250m", Memory: "512Mi"},
+		Requests: v1.Resources{CPU: "100m", Memory: "64Mi"},
+	}
+
+	expected.ContainerConfig.ProxyHeaders = true
+	// expected.ContainerConfig.Networks = []string{"n1", "n2"}
+	expected.ContainerConfig.UseLoadBalancer = true
+	expected.ContainerConfig.ExtraLBAnnotations = map[string]string{"annotation1": "value1"}
+
+	assert.Equal(t, expected, res)
+}
+
+func testExpectedCommon(req *agent.DeployRequest) *v1.DeployImageRequest {
+	return &v1.DeployImageRequest{
 		RequestID: "testID",
 		RegistryAuth: &builder.RegistryAuth{
 			Name:     "test-name",
@@ -38,7 +84,8 @@ func TestMapDeployImage(t *testing.T) {
 			Registry:          "",
 			RepositoryPreName: "repo-prefix",
 			SharedEnvironment: []string(nil),
-			UseSharedEnvs:     false},
+			UseSharedEnvs:     false,
+		},
 		ContainerConfig: v1.ContainerConfig{
 			ContainerPreName:   "test-prefix",
 			Container:          "test-common-config",
@@ -61,6 +108,7 @@ func TestMapDeployImage(t *testing.T) {
 				Path:      "/path/to/vol",
 				KeepFiles: true,
 			},
+			Labels:          v1.Markers{Deployment: map[string]string{"label1": "value1"}},
 			ImportContainer: nil,
 			InitContainers: []v1.InitContainer{
 				{
@@ -81,22 +129,10 @@ func TestMapDeployImage(t *testing.T) {
 				Type:   "365",
 				Config: map[string]string{"opt1": "v1", "opt2": "v2"},
 			},
-			RestartPolicy:      "always",
-			NetworkMode:        "BRIDGE",
-			DeploymentStrategy: "RECREATE",
-			HealthCheckConfig: v1.HealthCheckConfig{Port: uint16(*req.Crane.HealthCheckConfig.Port),
-				LivenessProbe:  &v1.Probe{Path: "test-liveness"},
-				ReadinessProbe: &v1.Probe{Path: "test-readiness"},
-				StartupProbe:   &v1.Probe{Path: "test-startup"},
-			},
+			RestartPolicy: "always",
+			Networks:      []string{"n1", "n2"},
+			NetworkMode:   "BRIDGE",
 			CustomHeaders: []string(nil),
-			ResourceConfig: v1.ResourceConfig{
-				Limits:   v1.Resources{CPU: "250m", Memory: "512Mi"},
-				Requests: v1.Resources{CPU: "100m", Memory: "64Mi"},
-			},
-			ProxyHeaders: true, Networks: []string{"n1", "n2"},
-			UseLoadBalancer:    true,
-			ExtraLBAnnotations: map[string]string{"annotation1": "value1"},
 		},
 		RuntimeConfig: v1.Base64JSONBytes{0x6b, 0x65, 0x79, 0x31, 0x3d, 0x76, 0x61, 0x6c, 0x31, 0x2c, 0x6b, 0x65, 0x79, 0x32, 0x3d, 0x76, 0x61, 0x6c, 0x32}, // encoded string: a2V5MT12YWwxLGtleTI9dmFsMg==
 		Registry:      req.Registry,
@@ -104,8 +140,6 @@ func TestMapDeployImage(t *testing.T) {
 		Tag:           "test-tag",
 		Issuer:        "",
 	}
-
-	assert.Equal(t, expected, res)
 }
 
 func TestMapPorts(t *testing.T) {
@@ -273,6 +307,7 @@ func testDagentConfig() *agent.DagentContainerConfig {
 			Driver:  365,
 			Options: map[string]string{"opt1": "v1", "opt2": "v2"},
 		},
+		Labels:      map[string]string{"label1": "value1"},
 		NetworkMode: common.NetworkMode_BRIDGE.Enum(),
 		Networks:    []string{"n1", "n2"},
 	}
@@ -294,6 +329,16 @@ func testCraneConfig() *agent.CraneContainerConfig {
 		ExtraLBAnnotations: map[string]string{"annotation1": "value1"},
 		ProxyHeaders:       &b,
 		UseLoadBalancer:    &b,
+		Labels: &agent.Marker{
+			Deployment: map[string]string{"label1": "value1"},
+			Service:    map[string]string{"label2": "value2"},
+			Ingress:    map[string]string{"label3": "value3"},
+		},
+		Annotations: &agent.Marker{
+			Deployment: map[string]string{"annot1": "value1"},
+			Service:    map[string]string{"annot2": "value2"},
+			Ingress:    map[string]string{"annot3": "value3"},
+		},
 		ResourceConfig: &common.ResourceConfig{
 			Requests: &common.Resource{
 				Cpu:    &cpuReq,
