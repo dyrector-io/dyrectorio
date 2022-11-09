@@ -17,6 +17,9 @@ data:
   CRANE_IN_CLUSTER: "true"
   GRPC_TOKEN: "{{token}}"
   HOSTNAME: "{{name}}"
+{{#if debugMode}}
+  DEBUG: 'true'
+{{/if}}
 EOF
 
 {{#if localManifests }}

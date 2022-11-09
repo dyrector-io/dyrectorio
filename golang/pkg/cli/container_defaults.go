@@ -41,6 +41,7 @@ func GetCrux(settings *Settings) *containerbuilder.DockerContainerBuilder {
 		WithForcePullImage().
 		WithEnv([]string{
 			fmt.Sprintf("TZ=%s", settings.SettingsFile.TimeZone),
+			fmt.Sprintf("NODE_ENV=%s", "development"),
 			fmt.Sprintf("DATABASE_URL=postgresql://%s:%s@%s:%d/%s?schema=public",
 				settings.SettingsFile.CruxPostgresUser,
 				settings.SettingsFile.CruxPostgresPassword,
@@ -52,13 +53,9 @@ func GetCrux(settings *Settings) *containerbuilder.DockerContainerBuilder {
 				settings.SettingsFile.KratosAdminPort),
 			fmt.Sprintf("CRUX_UI_URL=localhost:%d", settings.SettingsFile.TraefikWebPort),
 			fmt.Sprintf("CRUX_AGENT_ADDRESS=localhost:%d", settings.SettingsFile.CruxAgentGrpcPort),
-			"GRPC_API_INSECURE=true",
-			"GRPC_AGENT_INSECURE=true",
-			"GRPC_AGENT_INSTALL_SCRIPT_INSECURE=true",
 			"LOCAL_DEPLOYMENT=true",
 			fmt.Sprintf("LOCAL_DEPLOYMENT_NETWORK=%s", settings.SettingsFile.Network),
 			fmt.Sprintf("JWT_SECRET=%s", settings.SettingsFile.CruxSecret),
-			"CRUX_DOMAIN=DNS:localhost",
 			"FROM_NAME=dyrector.io",
 			"FROM_EMAIL=mail@example.com",
 			fmt.Sprintf("SMTP_URI=%s:1025/?skip_ssl_verify=true&legacy_ssl=true", settings.Containers.MailSlurper.Name),
@@ -75,13 +72,6 @@ func GetCrux(settings *Settings) *containerbuilder.DockerContainerBuilder {
 		}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
 		WithNetworkAliases(settings.Containers.Crux.Name).
-		WithMountPoints([]mount.Mount{
-			{
-				Type:   mount.TypeVolume,
-				Source: fmt.Sprintf("%s-certs", settings.Containers.Crux.Name),
-				Target: "/app/certs",
-			},
-		}).
 		WithCmd([]string{"serve"})
 	return crux
 }
@@ -129,7 +119,6 @@ func GetCruxUI(settings *Settings) *containerbuilder.DockerContainerBuilder {
 				settings.Containers.Kratos.Name,
 				settings.SettingsFile.KratosAdminPort),
 			cruxAPIAddress,
-			"CRUX_INSECURE=true",
 			"DISABLE_RECAPTCHA=true",
 		}).
 		WithPortBindings([]containerbuilder.PortBinding{
@@ -140,14 +129,6 @@ func GetCruxUI(settings *Settings) *containerbuilder.DockerContainerBuilder {
 		}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
 		WithNetworkAliases(settings.Containers.CruxUI.Name).
-		WithMountPoints([]mount.Mount{
-			{
-				Type:     mount.TypeVolume,
-				Source:   fmt.Sprintf("%s-certs", settings.Containers.Crux.Name),
-				Target:   "/app/certs",
-				ReadOnly: true,
-			},
-		}).
 		WithLabels(map[string]string{
 			"traefik.enable":                                         "true",
 			"traefik.http.routers.crux-ui.rule":                      fmt.Sprintf("Host(`%s`)", "localhost"),

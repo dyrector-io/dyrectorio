@@ -34,10 +34,9 @@ type GrpcConnection struct {
 }
 
 type GrpcConnectionParams struct {
-	nodeID   string
-	address  string
-	insecure bool
-	token    string
+	nodeID  string
+	address string
+	token   string
 }
 
 type (
@@ -58,12 +57,11 @@ type contextKey int
 
 const contextConfigKey contextKey = 0
 
-func GrpcTokenToConnectionParams(grpcToken *config.ValidJWT, insecureGrpc bool) *GrpcConnectionParams {
+func GrpcTokenToConnectionParams(grpcToken *config.ValidJWT) *GrpcConnectionParams {
 	return &GrpcConnectionParams{
-		nodeID:   grpcToken.Subject,
-		address:  grpcToken.Issuer,
-		insecure: insecureGrpc,
-		token:    grpcToken.StringifiedToken,
+		nodeID:  grpcToken.Subject,
+		address: grpcToken.Issuer,
+		token:   grpcToken.StringifiedToken,
 	}
 }
 
@@ -129,15 +127,17 @@ func Init(grpcContext context.Context,
 
 	if grpcConn.Conn == nil {
 		var creds credentials.TransportCredentials
-		if connParams.insecure {
-			creds = insecure.NewCredentials()
-		} else {
-			httpAddr := fmt.Sprintf("https://%s", connParams.address)
-			certPool, err := fetchCertificatesFromURL(ctx, httpAddr)
-			if err != nil {
-				log.Error().Stack().Err(err).Msg("")
-			}
 
+		httpAddr := fmt.Sprintf("https://%s", connParams.address)
+		certPool, err := fetchCertificatesFromURL(ctx, httpAddr)
+		if err != nil {
+			if appConfig.Debug {
+				log.Warn().Err(err).Msg("Secure mode is disabled in demo/dev environment, falling back to plain-text gRPC")
+				creds = insecure.NewCredentials()
+			} else {
+				log.Panic().Err(err).Msg("Could not fetch valid certificate")
+			}
+		} else {
 			creds = credentials.NewClientTLSFromCert(certPool, "")
 		}
 

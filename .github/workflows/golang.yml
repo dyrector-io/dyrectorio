@@ -26,7 +26,7 @@ jobs:
   lint:
     runs-on: ubuntu-20.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-2
     defaults:
       run:
         working-directory: golang
@@ -40,7 +40,7 @@ jobs:
   security:
     runs-on: ubuntu-20.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-2
     defaults:
       run:
         working-directory: golang
@@ -55,7 +55,7 @@ jobs:
     runs-on: ubuntu-20.04
     needs: [security, lint]
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-2
     outputs:
       tag: ${{ steps.settag.outputs.tag }}
       version: ${{ steps.settag.outputs.version }}
@@ -86,7 +86,7 @@ jobs:
     runs-on: ubuntu-20.04
     needs: [test]
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-2
     if: github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag'
     defaults:
       run:
@@ -119,7 +119,7 @@ jobs:
     runs-on: ubuntu-20.04
     if: github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag'
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-2
     needs: [build,test]
     environment: Workflow - Protected
     steps:

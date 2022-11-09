@@ -111,3 +111,6 @@ e2e_results
 # playwright
 e2e/screenshots
 storageState.json
+
+# proto
+src/models/grpc/**
