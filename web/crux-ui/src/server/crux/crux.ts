@@ -114,11 +114,11 @@ if (!global.cruxClients) {
   try {
     global.cruxClients = new CruxClients(process.env.CRUX_API_ADDRESS)
   } catch (err) {
-    if (err.error === 'invalidArgument') {
-      throw new Error('CRUX_API_ADDRESS cannot be empty!')
-    }
-
     if (process.env.NEXT_PHASE !== 'phase-production-build') {
+      if (err.error === 'invalidArgument') {
+        throw new Error('CRUX_API_ADDRESS cannot be empty!')
+      }
+
       const msg = 'could not load public cert file'
       throw Error(msg)
     }
