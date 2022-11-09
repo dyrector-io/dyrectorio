@@ -43,7 +43,7 @@ protogen:| proto-agent proto-crux proto-crux-ui
 ## Generate agent grpc files
 .PHONY: proto-agent
 proto-agent:
-	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v "${PWD}":/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-2 ash -c "\
+	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-2 ash -c "\
 		mkdir -p protobuf/go && \
 		protoc -I. \
 			--go_out protobuf/go \
@@ -55,9 +55,9 @@ proto-agent:
 # Generate API grpc files
 .PHONY: proto-crux
 proto-crux:
-	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v "${PWD}":/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-2 ash -c "\
+	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-2 ash -c "\
 		mkdir -p ./web/crux/src/grpc && \
-		protoc -I. \
+		protoc \
 			--experimental_allow_proto3_optional \
 			--plugin=/usr/local/lib/node_modules/ts-proto/protoc-gen-ts_proto \
 			--ts_proto_opt=nestJs=true \
@@ -66,16 +66,16 @@ proto-crux:
 			--ts_proto_opt=addGrpcMetadata=true \
 			--ts_proto_out=./web/crux/src/grpc \
 			protobuf/proto/*.proto && \
-		cp -r protobuf/proto web/crux/" && \
-	cd ./web/crux && \
-	npx prettier -w "./src/grpc/**/*.ts"
+		cp -r protobuf/proto web/crux/ && \
+		cd ./web/crux/src/grpc && \
+		find . -type f -name '*.ts' -exec npx prettier -w {} \;"
 
 # Generate UI grpc files, note the single file
 .PHONY:  proto-crux-ui
 proto-crux-ui:
-	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v "${PWD}":/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-2 ash -c "\
+	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-2 ash -c "\
 		mkdir -p ./web/crux-ui/src/models/grpc && \
-		protoc -I. \
+		protoc \
 			--experimental_allow_proto3_optional \
 			--plugin=/usr/local/lib/node_modules/ts-proto/protoc-gen-ts_proto \
 			--ts_proto_opt=esModuleInterop=true \
@@ -84,9 +84,9 @@ proto-crux-ui:
 			--ts_proto_opt=outputServices=grpc-js \
 			--ts_proto_out=./web/crux-ui/src/models/grpc \
 			--ts_proto_opt=initializeFieldsAsUndefined=false \
-			protobuf/proto/crux.proto" && \
-		cd ./web/crux-ui && \
-		npx prettier -w "./src/models/grpc/**/*.ts"
+			protobuf/proto/crux.proto && \
+		cd ./web/crux-ui/src/models/grpc && \
+		find . -type f -name '*.ts' -exec npx prettier -w {} \;"
 
 ## make wonders happen - build everything -  !!!  token `|` is for parallel execution
 .PHONY: all

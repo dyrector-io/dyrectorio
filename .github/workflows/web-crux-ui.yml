@@ -28,7 +28,9 @@ jobs:
   check:
     runs-on: ubuntu-20.04
     container:
-      image: node:18.0-alpine
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-2
+      volumes:
+        - /var/run/docker.sock:/var/run/docker
     outputs:
       tag: ${{ steps.settag.outputs.tag }}
       version: ${{ steps.settag.outputs.version }}
@@ -42,6 +44,11 @@ jobs:
     - name: Install dependencies
       run: |
         npm ci --arch=x64 --platform=linuxmusl --cache .npm --prefer-offline --no-fund
+
+    - name: Protogen
+      working-directory: ./
+      run: |
+        make proto-crux-ui
 
     - name: Lint and Build
       run: |
