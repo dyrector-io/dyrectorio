@@ -79,7 +79,7 @@ test.describe('Filters', () => {
 
     await page.goto(imageConfigUrl(productId, versionId, imageId))
 
-    await page.locator(`button:has-text("${randomFilter().base}")`).click()
+    await page.locator(`button:has-text("${randomFilter().base}")`).first().click()
 
     const allButton = await page.locator('button:has-text("All")')
 
@@ -96,7 +96,7 @@ test.describe('Filters', () => {
 
     await subFilter.click()
 
-    const mainFilter = await page.locator(`button:has-text("${filter.base}")`)
+    const mainFilter = await page.locator(`button:has-text("${filter.base}")`).first()
 
     await expect(mainFilter).not.toHaveClass(/bg-/)
   })

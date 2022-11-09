@@ -103,7 +103,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
     })
 
     if (res.ok) {
-      router.replace(ROUTE_PRODUCTS)
+      router.replace(productUrl(product.id, { section: 'deployments' }))
     } else {
       toast(t('errors:oops'))
     }

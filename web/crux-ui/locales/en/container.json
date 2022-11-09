@@ -3,7 +3,9 @@
     "all": "All",
     "dagent": "Docker",
     "crane": "Kubernetes",
-    "common": "Common"
+    "common": "Common",
+    "filters": "Filters",
+    "subFilters": "Sub filters"
   },
 
   "common": {
@@ -12,7 +14,7 @@
     "exposePort": "Expose port",
     "portBinding": "Port binding",
     "volumes": "Volumes",
-    "capabilities": "capabilities",
+    "capabilities": "Capabilities",
     "name": "Name",
     "size": "Size",
     "path": "Path",

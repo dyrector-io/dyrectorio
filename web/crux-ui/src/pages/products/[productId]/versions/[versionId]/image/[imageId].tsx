@@ -148,6 +148,8 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
   return (
     <Layout title={t('common:image')}>
       <PageHeading pageLink={pageLink} sublinks={sublinks}>
+        <DyoButton href={versionUrl(product.id, version.id, { section: 'images' })}>{t('common:back')}</DyoButton>
+
         <DyoButton className="ml-2 px-6" color="bg-error-red" onClick={onDelete}>
           {t('common:delete')}
         </DyoButton>
@@ -168,14 +170,24 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
       {viewState === 'editor' && (
         <DyoCard className="flex flex-col mt-4 px-4 w-full">
           <CommonConfigSection
-            filters={filters}
+            selectedFilters={filters}
             config={config}
             onChange={onChange}
             editorOptions={editorState}
             fieldErrors={fieldErrors}
           />
-          <DagentConfigSection filters={filters} config={config} onChange={onChange} editorOptions={editorState} />
-          <CraneConfigSection filters={filters} config={config} onChange={onChange} editorOptions={editorState} />
+          <CraneConfigSection
+            selectedFilters={filters}
+            config={config}
+            onChange={onChange}
+            editorOptions={editorState}
+          />
+          <DagentConfigSection
+            selectedFilters={filters}
+            config={config}
+            onChange={onChange}
+            editorOptions={editorState}
+          />
         </DyoCard>
       )}
 

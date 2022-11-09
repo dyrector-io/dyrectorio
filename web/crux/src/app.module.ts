@@ -21,6 +21,7 @@ import PrismaService from './services/prisma.service'
 import NotificationModule from './app/notification/notification.module'
 import EmailModule from './mailer/email.module'
 import TemplateModule from './app/template/template.module'
+import CommonErrorInterceptor from './interceptors/common-error-interceptor'
 
 @Module({
   imports: [
@@ -59,6 +60,10 @@ import TemplateModule from './app/template/template.module'
     {
       provide: APP_INTERCEPTOR,
       useClass: AuditLoggerInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: CommonErrorInterceptor,
     },
   ],
 })

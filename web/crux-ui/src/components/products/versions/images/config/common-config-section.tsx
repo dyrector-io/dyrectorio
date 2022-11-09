@@ -9,7 +9,7 @@ import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoMessage from '@app/elements/dyo-message'
 import DyoSwitch from '@app/elements/dyo-switch'
-import { ImageConfigFilterType } from '@app/models'
+import { COMMON_CONFIG_FILTERS, filterContains, filterEmpty, ImageConfigFilterType } from '@app/models'
 import {
   CommonConfigDetails,
   ContainerConfig,
@@ -32,18 +32,16 @@ import { ValidationError } from 'yup'
 interface CommonConfigSectionProps {
   config: CommonConfigDetails
   onChange: (config: Partial<ContainerConfig>) => void
-  filters: ImageConfigFilterType[]
+  selectedFilters: ImageConfigFilterType[]
   editorOptions: EditorStateOptions
   fieldErrors: ValidationError[]
 }
 
 const CommonConfigSection = (props: CommonConfigSectionProps) => {
   const { t } = useTranslation('container')
-  const { config: propsConfig, onChange: propsOnChange, filters, editorOptions, fieldErrors } = props
+  const { config: propsConfig, onChange: propsOnChange, selectedFilters, editorOptions, fieldErrors } = props
 
   const [config, setConfig] = useState<CommonConfigDetails>(propsConfig)
-
-  const contains = (filter: ImageConfigFilterType): boolean => filters.indexOf(filter) !== -1
 
   const onChange = (newConfig: Partial<ContainerConfig>) => {
     setConfig({ ...config, ...newConfig })
@@ -63,7 +61,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
     onChange({ [property]: list })
   }
 
-  return (
+  return !filterEmpty([...COMMON_CONFIG_FILTERS], selectedFilters) ? null : (
     <div className="my-4">
       <DyoHeading className="text-lg text-bright font-semibold tracking-wide bg-dyo-orange/50 w-40 rounded-t-lg text-center pt-[2px]">
         {t('base.common').toUpperCase()}
@@ -71,7 +69,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
       <div className="flex flex-col border-2 rounded-lg rounded-tl-[0px] border-solid border-dyo-orange/50 p-8 w-full">
         <div className="columns-1 lg:columns-2 2xl:columns-3 gap-x-20">
           {/* name */}
-          {contains('name') && (
+          {filterContains('name', selectedFilters) && (
             <div className="grid break-inside-avoid mb-4">
               <DyoInput
                 label={t('common.containerName').toUpperCase()}
@@ -88,7 +86,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
           )}
 
           {/* user */}
-          {contains('user') && (
+          {filterContains('user', selectedFilters) && (
             <div className="grid break-inside-avoid mb-8">
               <DyoInput
                 label={t('common.user').toUpperCase()}
@@ -104,7 +102,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
           )}
 
           {/* expose */}
-          {contains('expose') && (
+          {filterContains('expose', selectedFilters) && (
             <div className="grid break-inside-avoid mb-8">
               <DyoLabel className="text-bright font-semibold tracking-wide mb-2">
                 {t('common.exposeStrategy').toUpperCase()}
@@ -120,7 +118,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
           )}
 
           {/* tty */}
-          {contains('tty') && (
+          {filterContains('tty', selectedFilters) && (
             <div className="flex flex-row break-inside-avoid mb-8">
               <DyoLabel className="text-bright font-semibold tracking-wide mb-2 mr-2">
                 {t('common.tty').toUpperCase()}
@@ -130,7 +128,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
           )}
 
           {/* configContainer */}
-          {contains('configContainer') && (
+          {filterContains('configContainer', selectedFilters) && (
             <div className="grid break-inside-avoid mb-8">
               <DyoLabel className="text-bright font-semibold tracking-wide mb-2">
                 {t('common.configContainer').toUpperCase()}
@@ -187,7 +185,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
           )}
 
           {/* ingress */}
-          {contains('ingress') && (
+          {filterContains('ingress', selectedFilters) && (
             <div className="grid break-inside-avoid mb-8">
               <DyoLabel className="text-bright font-semibold tracking-wide mb-2">
                 {t('common.ingress').toUpperCase()}
@@ -232,7 +230,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
           )}
 
           {/* environment */}
-          {contains('environment') && (
+          {filterContains('environment', selectedFilters) && (
             <div className="grid mb-8 break-inside-avoid">
               <KeyValueInput
                 labelClassName="text-bright font-semibold tracking-wide mb-2"
@@ -245,7 +243,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
           )}
 
           {/* capabilities */}
-          {contains('capabilities') && (
+          {filterContains('capabilities', selectedFilters) && (
             <div className="grid mb-8 break-inside-avoid">
               <KeyValueInput
                 labelClassName="text-bright font-semibold tracking-wide mb-2"
@@ -258,7 +256,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
           )}
 
           {/* secrets */}
-          {contains('secrets') && (
+          {filterContains('secrets', selectedFilters) && (
             <div className="grid break-inside-avoid mb-8 max-w-lg">
               <SecretKeyInput
                 className="mb-2"
@@ -274,7 +272,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
           )}
 
           {/* args */}
-          {contains('args') && (
+          {filterContains('args', selectedFilters) && (
             <div className="grid break-inside-avoid mb-8 max-w-lg">
               <KeyOnlyInput
                 className="mb-2"
@@ -289,7 +287,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
           )}
 
           {/* commands */}
-          {contains('commands') && (
+          {filterContains('commands', selectedFilters) && (
             <div className="grid break-inside-avoid mb-8 max-w-lg">
               <KeyOnlyInput
                 className="mb-2"
@@ -304,7 +302,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
           )}
 
           {/* importContainer */}
-          {contains('importContainer') && (
+          {filterContains('importContainer', selectedFilters) && (
             <div className="grid mb-8 break-inside-avoid">
               <DyoLabel className="text-bright font-semibold tracking-wide mb-2">
                 {t('common.importContainer').toUpperCase()}
@@ -353,7 +351,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
         </div>
 
         {/* ports */}
-        {contains('ports') && (
+        {filterContains('ports', selectedFilters) && (
           <div className="flex flex-col mb-2">
             <div className="flex flex-row mb-2">
               <DyoLabel className="mr-4 ext-bright font-semibold tracking-wide">
@@ -426,7 +424,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
         )}
 
         {/* portRanges */}
-        {contains('portRanges') && (
+        {filterContains('portRanges', selectedFilters) && (
           <div className="flex flex-col mb-2">
             <div className="flex flex-row mb-2">
               <DyoLabel className="mr-4 ext-bright font-semibold tracking-wide">
@@ -551,7 +549,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
         )}
 
         {/* volumes */}
-        {contains('volumes') && (
+        {filterContains('volumes', selectedFilters) && (
           <div className="flex flex-col">
             <div className="flex flex-row mb-4">
               <DyoLabel className="mr-4 ext-bright font-semibold tracking-wide">
@@ -656,7 +654,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
         )}
 
         {/* initContainers */}
-        {contains('initContainers') && (
+        {filterContains('initContainers', selectedFilters) && (
           <div className="flex flex-col">
             <div className="flex flex-row mb-4">
               <DyoLabel className="mr-4 ext-bright font-semibold tracking-wide">

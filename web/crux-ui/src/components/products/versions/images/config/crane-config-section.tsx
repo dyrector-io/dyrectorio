@@ -6,7 +6,7 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoSwitch from '@app/elements/dyo-switch'
-import { ImageConfigFilterType } from '@app/models'
+import { CRANE_CONFIG_FILTERS, filterContains, filterEmpty, ImageConfigFilterType } from '@app/models'
 import {
   ContainerConfig,
   ContainerDeploymentStrategyType,
@@ -20,13 +20,13 @@ import { useState } from 'react'
 interface CraneConfigSectionProps {
   config: CraneConfigDetails
   onChange: (config: Partial<ContainerConfig>) => void
-  filters: ImageConfigFilterType[]
+  selectedFilters: ImageConfigFilterType[]
   editorOptions: EditorStateOptions
 }
 
 const CraneConfigSection = (props: CraneConfigSectionProps) => {
   const { t } = useTranslation('container')
-  const { config: propsConfig, filters, onChange: propsOnChange, editorOptions } = props
+  const { config: propsConfig, selectedFilters, onChange: propsOnChange, editorOptions } = props
 
   const [config, setConfig] = useState<CraneConfigDetails>(propsConfig)
 
@@ -35,16 +35,14 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
     propsOnChange(newConfig)
   }
 
-  const contains = (filter: ImageConfigFilterType): boolean => filters.indexOf(filter) !== -1
-
-  return (
+  return !filterEmpty([...CRANE_CONFIG_FILTERS], selectedFilters) ? null : (
     <div className="my-4">
       <DyoHeading className="text-lg text-bright uppercase font-semibold tracking-wide bg-dyo-violet/50 w-40 rounded-t-lg text-center pt-[2px]">
         {t('base.crane')}
       </DyoHeading>
       <div className="columns-1 lg:columns-2 2xl:columns-3 gap-24 border-2 rounded-lg rounded-tl-[0px] border-solid border-dyo-violet/50 p-8 w-full">
         {/* deploymentStartegy */}
-        {contains('deploymentStrategy') && (
+        {filterContains('deploymentStrategy', selectedFilters) && (
           <div className="grid break-inside-avoid mb-8">
             <DyoLabel className="text-bright font-semibold tracking-wide mb-2">
               {t('crane.deploymentStrategy').toUpperCase()}
@@ -60,7 +58,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
         )}
 
         {/* healthCheckConfig */}
-        {contains('healthCheckConfig') && (
+        {filterContains('healthCheckConfig', selectedFilters) && (
           <div className="grid break-inside-avoid mb-8">
             <DyoLabel className="text-bright font-semibold tracking-wide mb-2">
               {t('crane.healthCheckConfig').toUpperCase()}
@@ -130,7 +128,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
         )}
 
         {/* customHeaders */}
-        {contains('customHeaders') && (
+        {filterContains('customHeaders', selectedFilters) && (
           <div className="grid break-inside-avoid mb-8 max-w-lg">
             <KeyOnlyInput
               className="mb-2"
@@ -145,7 +143,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
         )}
 
         {/* resourceConfig */}
-        {contains('resourceConfig') && (
+        {filterContains('resourceConfig', selectedFilters) && (
           <div className="grid break-inside-avoid mb-8">
             <DyoLabel className="text-bright font-semibold tracking-wide mb-2">
               {t('crane.resourceConfig').toUpperCase()}
@@ -230,7 +228,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
         )}
 
         {/* proxyHeaders */}
-        {contains('proxyHeaders') && (
+        {filterContains('proxyHeaders', selectedFilters) && (
           <div className="flex flex-row mb-8">
             <DyoLabel className="text-bright font-semibold tracking-wide mb-2 mr-4">
               {t('crane.proxyHeaders').toUpperCase()}
@@ -244,7 +242,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
         )}
 
         {/* LoadBalancer */}
-        {contains('loadBalancer') && (
+        {filterContains('loadBalancer', selectedFilters) && (
           <div className="grid break-inside-avoid mb-8">
             <div className="flex flex-row mb-2.5">
               <DyoLabel className="text-bright font-semibold tracking-wide mb-2 mr-4">
@@ -271,7 +269,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
         )}
 
         {/* Labels */}
-        {contains('labels') && (
+        {filterContains('labels', selectedFilters) && (
           <>
             <div className="grid mb-8 break-inside-avoid">
               <KeyValueInput
@@ -304,7 +302,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
         )}
 
         {/* Labels */}
-        {contains('annotations') && (
+        {filterContains('annotations', selectedFilters) && (
           <>
             <div className="grid mb-8 break-inside-avoid">
               <KeyValueInput

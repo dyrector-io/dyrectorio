@@ -12,6 +12,7 @@ export const filterSet: FilterSet = {
   common: [
     'name',
     'environment',
+    'capabilities',
     'secrets',
     'ingress',
     'expose',
@@ -98,8 +99,8 @@ const ImageConfigFilters = (props: ImageConfigFilterProps) => {
 
   return (
     <div className="flex flex-col">
-      <DyoLabel className="font-medium text-light-eased">Filters</DyoLabel>
-      <div className="flex mt-2">
+      <DyoLabel className="font-medium text-light-eased">{t('base.filters')}</DyoLabel>
+      <div className="flex my-2">
         {(Object.keys(filterSet) as BaseImageConfigFilterType[]).map((base, index) => {
           const selected =
             base === 'all'
@@ -121,26 +122,28 @@ const ImageConfigFilters = (props: ImageConfigFilterProps) => {
           )
         })}
       </div>
-      <DyoLabel className="mt-4 font-medium text-light-eased">Sub filters</DyoLabel>
-      <div className="flex flex-row flex-wrap mt-2">
-        {(Object.keys(filterSet) as BaseImageConfigFilterType[]).map(base => (
-          <div className="mb-2" key={`filter-base-${base}`}>
-            {filterSet[base].map((value, index) => (
-              <button
-                key={`filter-${value}-${index}`}
-                type="button"
-                className={clsx(
-                  `rounded-md border-2 px-2 py-1 m-1`,
-                  getBorderColor(base),
-                  filters.indexOf(value) !== -1 ? `text-white ${getBgColor(base)} bg-opacity-30` : 'text-light-eased',
-                )}
-                onClick={() => onFilterChanged(value)}
-              >
-                {t(`${base}.${value}`)}
-              </button>
-            ))}
-          </div>
-        ))}
+      <DyoLabel className="my-2 font-medium text-light-eased">{t('base.subFilters')}</DyoLabel>
+      <div className="flex flex-wrap">
+        {(Object.keys(filterSet) as BaseImageConfigFilterType[]).map(base =>
+          base === 'all' ? null : (
+            <div className="flex flex-wrap" key={`filter-base-${base}`}>
+              {filterSet[base].map((value, index) => (
+                <button
+                  key={`filter-${value}-${index}`}
+                  type="button"
+                  className={clsx(
+                    `rounded-md border-2 px-2 py-1 m-1`,
+                    getBorderColor(base),
+                    filters.indexOf(value) !== -1 ? `text-white ${getBgColor(base)} bg-opacity-30` : 'text-light-eased',
+                  )}
+                  onClick={() => onFilterChanged(value)}
+                >
+                  {t(`${base}.${value}`)}
+                </button>
+              ))}
+            </div>
+          ),
+        )}
       </div>
     </div>
   )

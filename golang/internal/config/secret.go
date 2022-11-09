@@ -14,7 +14,7 @@ import (
 )
 
 func CheckGenerateKeys(secretPath string) (string, error) {
-	log.Printf("Checking key file: %v\n", secretPath)
+	log.Printf("Checking key file: %v", secretPath)
 	fileContent, err := os.ReadFile(secretPath) //#nosec G304 -- secret path comes from an env
 
 	if errors.Is(err, syscall.EISDIR) {
@@ -22,7 +22,7 @@ func CheckGenerateKeys(secretPath string) (string, error) {
 	}
 
 	if errors.Is(err, os.ErrNotExist) {
-		log.Printf("Key file does not exist: %v\n", secretPath)
+		log.Printf("Key file does not exist: %v", secretPath)
 		return generateKey(secretPath)
 	} else if err != nil {
 		return "", fmt.Errorf("key file can't be read: %w", err)
@@ -110,4 +110,8 @@ func IsExpiredKey(fileContent string) (bool, error) {
 	}
 
 	return privateKeyObj.IsExpired(), nil
+}
+
+func InjectSecret(secret string, appConfig *CommonConfiguration) {
+	appConfig.SecretPrivateKey = secret
 }

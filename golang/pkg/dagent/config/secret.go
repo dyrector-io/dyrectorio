@@ -3,12 +3,15 @@ package config
 import (
 	"fmt"
 
+	"github.com/rs/zerolog/log"
+
 	config "github.com/dyrector-io/dyrectorio/golang/internal/config"
 )
 
 type ConfigFromFile string
 
 func (field *ConfigFromFile) SetValue(secretPath string) error {
+	log.Debug().Str("secretPath", secretPath).Msg("Loading config from file")
 	if secretPath == "" {
 		return fmt.Errorf("env private key file value can't be empty")
 	}
@@ -19,13 +22,5 @@ func (field *ConfigFromFile) SetValue(secretPath string) error {
 	}
 
 	*field = ConfigFromFile(key)
-	return nil
-}
-
-func (c *Configuration) Update() error {
-	if c.SecretPrivateKeyFile != "" {
-		// NOTE(minhoryang@gmail.com): propagate the value to the core.
-		c.CommonConfiguration.SecretPrivateKey = string(c.SecretPrivateKeyFile)
-	}
 	return nil
 }

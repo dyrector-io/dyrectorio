@@ -92,7 +92,3 @@ func ensureNamespaceExisted(ctx context.Context, namespace string, appConfig *cr
 	}
 	return nil
 }
-
-func InjectSecret(secret string, appConfig *craneConfig.Configuration) {
-	appConfig.CommonConfiguration.SecretPrivateKey = secret
-}

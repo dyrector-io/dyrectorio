@@ -26,19 +26,19 @@ const VersionViewList = (props: VersionViewListProps) => {
   const [deleteModal, confirmDelete] = useConfirmation()
   const [tagsModalTarget, setTagsModalTarget] = useState<VersionImage>(null)
 
-  const columnWidths = ['w-3/12', 'w-3/12', 'w-2/12', 'w-3/12', 'w-1/12']
+  const columnWidths = ['', 'w-3/12', 'w-2/12', 'w-3/12', 'w-28']
   const headers = ['containerName', 'common:registry', 'imageTag', 'common:createdAt', 'common:actions']
   const defaultHeaderClass = 'uppercase text-bright text-sm font-semibold bg-medium-eased pl-2 py-3 h-11'
   const headerClasses = [
     clsx('rounded-tl-lg pl-6', defaultHeaderClass),
     ...Array.from({ length: headers.length - 2 }).map(() => defaultHeaderClass),
-    clsx('rounded-tr-lg text-right pr-4', defaultHeaderClass),
+    clsx('rounded-tr-lg text-center', defaultHeaderClass),
   ]
   const defaultItemClass = 'h-12 min-h-min text-light-eased p-2'
   const itemClasses = [
     clsx('pl-6', defaultItemClass),
     ...Array.from({ length: headers.length - 2 }).map(() => defaultItemClass),
-    clsx('text-right pr-4', defaultItemClass),
+    clsx(defaultItemClass),
   ]
 
   const onDelete = (item: VersionImage) =>
@@ -68,8 +68,8 @@ const VersionViewList = (props: VersionViewListProps) => {
       </a>
     </div>,
     item.createdAt ? utcDateToLocale(item.createdAt) : 'new',
-    <div>
-      <div className="mr-2 inline-block">
+    <div className="flex flex-wrap justify-center">
+      <div className="inline-block">
         <Image
           className="cursor-pointer"
           src="/archive.svg"
@@ -78,7 +78,7 @@ const VersionViewList = (props: VersionViewListProps) => {
           onClick={() => onOpenTagsDialog(item)}
         />
       </div>
-      <div className="mr-2 inline-block">
+      <div className="inline-block">
         <Image className="cursor-pointer" src="/trash-can.svg" width={24} height={24} onClick={() => onDelete(item)} />
       </div>
       <div className="inline-block">
@@ -95,7 +95,7 @@ const VersionViewList = (props: VersionViewListProps) => {
     <>
       <DyoCard className="relative mt-4">
         <DyoList
-          headers={[...headers.map(h => t(h)), '']}
+          headers={[...headers.map(h => t(h))]}
           headerClassName={headerClasses}
           columnWidths={columnWidths}
           itemClassName={itemClasses}
