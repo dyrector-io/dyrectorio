@@ -32,4 +32,6 @@ type Configuration struct {
 	UpdateMethod         string        `yaml:"updateMethod"         env:"UPDATE_METHOD"          env-default:"off"`
 	UpdatePollInterval   time.Duration `yaml:"updatePollInterval"   env:"UPDATE_POLL_INTERVAL"   env-default:"600s"`
 	WebhookToken         string        `yaml:"webhookToken"         env:"WEBHOOK_TOKEN"          env-default:""`
+	// for injecting SecretPrivateKey,
+	SecretPrivateKeyFile ConfigFromFile `yaml:"secretPrivateKeyFile" env:"SECRET_PRIVATE_KEY_FILE"  env-default:"/srv/dagent/private.key"`
 }
