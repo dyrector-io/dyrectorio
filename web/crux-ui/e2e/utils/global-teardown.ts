@@ -12,7 +12,7 @@ const globalTeardown = async (config: FullConfig) => {
   }
 
   const cruxAddress = cruxAddressFromConfig(config)
-  const clients = new CruxClients(cruxAddress, undefined)
+  const clients = new CruxClients(cruxAddress)
   const teams = new DyoTeamService(clients.teams, identity, null)
   const team = await teams.getActiveTeam()
   if (team) {

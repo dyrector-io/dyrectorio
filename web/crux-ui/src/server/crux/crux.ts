@@ -112,8 +112,7 @@ export class Crux {
 
 if (!global.cruxClients) {
   try {
-    // certs is null, tls must be terminated by the reverse proxy
-    global.cruxClients = new CruxClients(process.env.CRUX_API_ADDRESS, null)
+    global.cruxClients = new CruxClients(process.env.CRUX_API_ADDRESS)
   } catch (err) {
     if (err.error === 'invalidArgument') {
       throw new Error('CRUX_API_ADDRESS cannot be empty!')
