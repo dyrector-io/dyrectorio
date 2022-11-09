@@ -34,6 +34,7 @@ const config: PlaywrightTestConfig = {
     //   ignoreHTTPSErrors: true,
     // },
     storageState: 'storageState.json',
+    viewport: { width: 1920, height: 1080 },
   },
   projects: [
     {
