@@ -11,10 +11,7 @@ import registryConnections, {
   CruxRegistryConnectionsServices,
   RegistryConnections,
 } from '@server/registry-api/registry-connections'
-import { readFileSync } from 'fs'
 import { NextApiRequest, NextPageContext } from 'next'
-import { join } from 'path'
-import { cwd } from 'process'
 import DyoAuditService from './audit-service'
 import CruxClients from './crux-clients'
 import DyoDeploymentService from './deployment-service'
@@ -115,14 +112,13 @@ export class Crux {
 
 if (!global.cruxClients) {
   try {
-    const cert = process.env.CRUX_INSECURE === 'true' ? null : readFileSync(join(cwd(), './certs/api-public.crt'))
-    global.cruxClients = new CruxClients(process.env.CRUX_API_ADDRESS, cert)
+    global.cruxClients = new CruxClients(process.env.CRUX_API_ADDRESS)
   } catch (err) {
-    if (err.error === 'invalidArgument') {
-      throw new Error('CRUX_API_ADDRESS cannot be empty!')
-    }
-
     if (process.env.NEXT_PHASE !== 'phase-production-build') {
+      if (err.error === 'invalidArgument') {
+        throw new Error('CRUX_API_ADDRESS cannot be empty!')
+      }
+
       const msg = 'could not load public cert file'
       throw Error(msg)
     }

@@ -34,7 +34,7 @@ func Serve(cfg *config.Configuration) {
 
 	update.InitUpdater(cfg)
 
-	grpcParams := grpc.GrpcTokenToConnectionParams(cfg.GrpcToken, cfg.GrpcInsecure)
+	grpcParams := grpc.GrpcTokenToConnectionParams(cfg.GrpcToken)
 	grpcContext := grpc.WithGRPCConfig(context.Background(), cfg)
 	grpc.Init(grpcContext, grpcParams, &cfg.CommonConfiguration, grpc.WorkerFunctions{
 		Deploy:     utils.DeployImage,

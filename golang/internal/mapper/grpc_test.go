@@ -370,7 +370,6 @@ func testAppConfig() *config.CommonConfiguration {
 		DefaultTimeout:       30 * time.Second,
 		GrpcKeepalive:        30 * time.Second,
 		Debug:                false,
-		GrpcInsecure:         true,
 		ImportContainerImage: "",
 		IngressRootDomain:    "",
 		NodeID:               "",

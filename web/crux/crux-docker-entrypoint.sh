@@ -1,8 +1,5 @@
 #!/bin/sh
-
 export NODE_ENV=production
-
-/app/cert-gen.sh || exit 1
 
 case $1 in
     "serve")
@@ -15,6 +12,6 @@ case $1 in
         echo "Invalid argument: $1"
         echo "Usage:"
         echo "migrate   Run migrations"
-        echo "serve     Start GRCP services"
+        echo "serve     Start GRPC services"
         exit 1
 esac

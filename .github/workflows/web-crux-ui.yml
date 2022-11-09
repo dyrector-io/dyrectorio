@@ -28,7 +28,9 @@ jobs:
   check:
     runs-on: ubuntu-20.04
     container:
-      image: node:18.0-alpine
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-2
+      volumes:
+        - /var/run/docker.sock:/var/run/docker
     outputs:
       tag: ${{ steps.settag.outputs.tag }}
       version: ${{ steps.settag.outputs.version }}
@@ -94,7 +96,7 @@ jobs:
         HUB_PROXY_TOKEN: ${{ secrets.HUB_PROXY_TOKEN }}
       run: |
         cd crux
-        npm run start:prod & 
+        npm run start:prod &
         cd ../crux-ui
         npm i
         npm run disable-telemetry
@@ -154,7 +156,7 @@ jobs:
   sign_image:
     runs-on: ubuntu-20.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-2
     needs: [build_image,check]
     environment: Workflow - Protected
     steps:

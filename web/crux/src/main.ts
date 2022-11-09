@@ -1,12 +1,10 @@
 import { ServerCredentials } from '@grpc/grpc-js'
-import { INestApplication, Logger, LogLevel } from '@nestjs/common'
+import { Logger, LogLevel } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { NestFactory } from '@nestjs/core'
 import { MicroserviceOptions, Transport } from '@nestjs/microservices'
 import { join } from 'path'
 import AppModule from './app.module'
-import ShutdownService from './application.shutdown.service'
-import getServerCredentials from './shared/cert'
 
 const HOUR_IN_MS: number = 60 * 60 * 1000
 
@@ -17,23 +15,12 @@ type GrpcOptions = {
 
 type GrpcCertPrefix = 'api' | 'agent'
 
-const loadGrpcOptions = (
-  app: INestApplication,
-  certPrefix: GrpcCertPrefix,
-  portEnv: string,
-  insecureEnv: string,
-): GrpcOptions => {
+const loadGrpcOptions = (certPrefix: GrpcCertPrefix, portEnv: string): GrpcOptions => {
   const port = portEnv ? Number(portEnv) : certPrefix === 'agent' ? 5000 : 5001
 
-  const certPairs =
-    insecureEnv === 'true'
-      ? null
-      : getServerCredentials(certPrefix, () => {
-          app.get(ShutdownService).subscribeToShutdown(() => app.close())
-        })
-
   return {
-    credentials: certPairs ? ServerCredentials.createSsl(null, certPairs, false) : ServerCredentials.createInsecure(),
+    // tls termination occurs at the reverse proxy
+    credentials: ServerCredentials.createInsecure(),
     url: `0.0.0.0:${port}`,
   }
 }
@@ -58,18 +45,8 @@ const bootstrap = async () => {
 
   const configService = app.get(ConfigService)
 
-  const agentOptions = loadGrpcOptions(
-    app,
-    'agent',
-    configService.get<string>('GRPC_AGENT_PORT'),
-    configService.get<string>('GRPC_AGENT_INSECURE'),
-  )
-  const apiOptions = loadGrpcOptions(
-    app,
-    'api',
-    configService.get<string>('GRPC_API_PORT'),
-    configService.get<string>('GRPC_API_INSECURE'),
-  )
+  const agentOptions = loadGrpcOptions('agent', configService.get<string>('GRPC_AGENT_PORT'))
+  const apiOptions = loadGrpcOptions('api', configService.get<string>('GRPC_API_PORT'))
 
   // agent
   app.connectMicroservice<MicroserviceOptions>({

@@ -18,14 +18,10 @@ env:
   IMAGE_NAME: dyrector-io/dyrectorio/web/crux
   WORKING_DIRECTORY: web/crux
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
-  CRUX_DOMAIN: DNS:localhost
-  CRUX_DOMAIN_ALTS: IP:192.168.1.30
   KRATOS_URL: http://192.168.1.30:8000/kratos
   CRUX_UI_URL: http://172.17.0.1:8000
   TIME_ZONE: Europe/Budapest
   SMTP_URI: smtps://test:test@172.17.0.1:1025/?skip_ssl_verify=true&legacy_ssl=true
-  GRPC_API_INSECURE: true
-  GRPC_AGENT_INSECURE: true
   # Default GitHub variables
   CRUX_VERSION: ${{ github.sha }}
   CRUX_IMAGE_TAG: ${{ github.ref_name }}
@@ -49,7 +45,9 @@ jobs:
       run:
         working-directory: ${{ env.WORKING_DIRECTORY }}
     container:
-      image: node:17.1-alpine
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-2
+      volumes:
+        - /var/run/docker.sock:/var/run/docker
     outputs:
       tag: ${{ steps.settag.outputs.tag }}
       version: ${{ steps.settag.outputs.version }}
@@ -119,7 +117,7 @@ jobs:
   sign_image:
     runs-on: ubuntu-20.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-2
     needs: [build_image,prerequirements]
     environment: Workflow - Protected
     steps:

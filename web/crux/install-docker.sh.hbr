@@ -53,7 +53,7 @@ set_environment() {
   if [ -z ${HOST_DOCKER_SOCK_PATH:-} ]; then
     if [ -z ${DOCKER_HOST:-} ]; then
       HOST_DOCKER_SOCK_PATH="/var/run/docker.sock"
-    else 
+    else
       if [ ${DOCKER_HOST:0:7} = "unix://" ]; then
         HOST_DOCKER_SOCK_PATH=${DOCKER_HOST:7}
       else
@@ -101,18 +101,19 @@ dagent_install() {
     -e GRPC_TOKEN='{{token}}' \
     -e HOSTNAME=$HOSTNAME \
     {{#if traefik}}
-    -e TRAEFIK= 'true' \
+    -e TRAEFIK='true' \
     {{/if}}
     -e DATA_MOUNT_PATH=$PERSISTENCE_FOLDER \
     -e UPDATE_METHOD='off' \
     -e UPDATE_POLL_INTERVAL='600s' \
-    {{#if insecure}}
-    -e GRPC_INSECURE='true' \
-    {{/if}}
     -e DAGENT_IMAGE='ghcr.io/dyrector-io/dyrectorio/agent/dagent' \
     -e DAGENT_TAG='stable' \
     -e DAGENT_NAME='{{name}}' \
+    {{#if debugMode}}
+    -e DEBUG='true' \
+    {{/if}}
     -e HOST_DOCKER_SOCK_PATH=$HOST_DOCKER_SOCK_PATH \
+    --add-host=host.docker.internal:host-gateway \
     --name 'dagent' \
     {{! -e UPDATE_REGISTRY_USER='' \ }}
     {{! -e UPDATE_REGISTRY_PASSWORD='' \ }}
