@@ -45,11 +45,6 @@ jobs:
       run: |
         npm ci --arch=x64 --platform=linuxmusl --cache .npm --prefer-offline --no-fund
 
-    - name: Protogen
-      working-directory: ./
-      run: |
-        make proto-crux-ui
-
     - name: Lint and Build
       run: |
         npm run lint

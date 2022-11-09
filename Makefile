@@ -65,10 +65,10 @@ proto-crux:
 			--ts_proto_opt=outputJsonMethods=true \
 			--ts_proto_opt=addGrpcMetadata=true \
 			--ts_proto_out=./web/crux/src/grpc \
-			protobuf/proto/*.proto && \
-		cp -r protobuf/proto web/crux/ && \
-		cd ./web/crux/src/grpc && \
-		find . -type f -name '*.ts' -exec npx prettier -w {} \;"
+			protobuf/proto/*.proto" && \
+	cp -r protobuf/proto web/crux/ && \
+	cd ./web/crux/src/grpc && \
+	npx prettier -w "./**.ts"
 
 # Generate UI grpc files, note the single file
 .PHONY:  proto-crux-ui
@@ -84,9 +84,9 @@ proto-crux-ui:
 			--ts_proto_opt=outputServices=grpc-js \
 			--ts_proto_out=./web/crux-ui/src/models/grpc \
 			--ts_proto_opt=initializeFieldsAsUndefined=false \
-			protobuf/proto/crux.proto && \
-		cd ./web/crux-ui/src/models/grpc && \
-		find . -type f -name '*.ts' -exec npx prettier -w {} \;"
+			protobuf/proto/crux.proto" && \
+	cd ./web/crux-ui/src/models/grpc && \
+	npx prettier -w "**.ts"
 
 ## make wonders happen - build everything -  !!!  token `|` is for parallel execution
 .PHONY: all

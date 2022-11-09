@@ -55,14 +55,8 @@ jobs:
     - name: Checkout the repository
       uses: actions/checkout@v3
 
-
     - name: Install dependencies
       run: npm ci --arch=x64 --platform=linuxmusl --cache .npm --prefer-offline --no-fund
-
-    - name: Protogen
-      working-directory: ./
-      run: |
-        ls -l protobuf/proto && make proto-crux
 
     - name: Linting the code
       run: npm run lint

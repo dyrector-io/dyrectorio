@@ -41,5 +41,3 @@ lerna-debug.log*
 ormconfig.json
 certs
 
-# Proto is ignored, it is generated, used locally either way
-src/grpc/**
