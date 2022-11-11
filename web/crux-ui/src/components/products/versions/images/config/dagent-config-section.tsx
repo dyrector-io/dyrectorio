@@ -4,7 +4,7 @@ import KeyValueInput from '@app/components/shared/key-value-input'
 import DyoChips from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
-import { ImageConfigFilterType } from '@app/models'
+import { DAGENT_CONFIG_FILTERS, filterContains, filterEmpty, ImageConfigFilterType } from '@app/models'
 import {
   ContainerConfig,
   ContainerLogDriverType,
@@ -22,13 +22,13 @@ import { useState } from 'react'
 interface DagentConfigSectionProps {
   config: DagentConfigDetails
   onChange: (config: Partial<ContainerConfig>) => void
-  filters: ImageConfigFilterType[]
+  selectedFilters: ImageConfigFilterType[]
   editorOptions: EditorStateOptions
 }
 
 const DagentConfigSection = (props: DagentConfigSectionProps) => {
   const { t } = useTranslation('container')
-  const { config: propsConfig, filters, onChange: propsOnChange, editorOptions } = props
+  const { config: propsConfig, selectedFilters, onChange: propsOnChange, editorOptions } = props
 
   const [config, setConfig] = useState<DagentConfigDetails>(propsConfig)
 
@@ -37,16 +37,14 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
     propsOnChange(newConfig)
   }
 
-  const contains = (filter: ImageConfigFilterType): boolean => filters.indexOf(filter) !== -1
-
-  return (
+  return !filterEmpty([...DAGENT_CONFIG_FILTERS], selectedFilters) ? null : (
     <div className="my-4">
       <DyoHeading className="text-lg text-bright uppercase font-semibold tracking-wide bg-dyo-sky/50 w-40 rounded-t-lg text-center pt-[2px]">
         {t('base.dagent')}
       </DyoHeading>
       <div className="columns-1 lg:columns-2 2xl:columns-3 gap-24 border-2 rounded-lg rounded-tl-[0px] border-solid border-dyo-sky/50 p-8 w-full">
         {/* networkMode */}
-        {contains('networkMode') && (
+        {filterContains('networkMode', selectedFilters) && (
           <div className="grid break-inside-avoid mb-8">
             <DyoLabel className="text-bright font-semibold tracking-wide mb-2">
               {t('dagent.networkMode').toUpperCase()}
@@ -61,7 +59,7 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
           </div>
         )}
 
-        {contains('networks') && (
+        {filterContains('networks', selectedFilters) && (
           <div className="grid break-inside-avoid mb-8 max-w-lg">
             <KeyOnlyInput
               className="mb-2"
@@ -77,7 +75,7 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
         )}
 
         {/* dockerLabels */}
-        {contains('dockerLabels') && (
+        {filterContains('dockerLabels', selectedFilters) && (
           <div className="grid mb-8 break-inside-avoid">
             <KeyValueInput
               labelClassName="text-bright font-semibold tracking-wide mb-2"
@@ -90,7 +88,7 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
         )}
 
         {/* restartPolicy */}
-        {contains('restartPolicy') && (
+        {filterContains('restartPolicy', selectedFilters) && (
           <div className="grid break-inside-avoid mb-8">
             <DyoLabel className="text-bright font-semibold tracking-wide mb-2">
               {t('dagent.restartPolicy').toUpperCase()}
@@ -106,7 +104,7 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
         )}
 
         {/* logConfig */}
-        {contains('logConfig') && (
+        {filterContains('logConfig', selectedFilters) && (
           <div className="grid break-inside-avoid mb-8">
             <DyoLabel className="text-bright font-semibold tracking-wide mb-2">
               {t('dagent.logConfig').toUpperCase()}

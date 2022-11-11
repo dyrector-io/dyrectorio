@@ -30,7 +30,7 @@ const DyoNodeCard = (props: DyoNodeCardProps) => {
         {node.name}
       </DyoHeading>
 
-      {!hideConnectionInfo ? <NodeStatusIndicator status={node.status} /> : null}
+      {!hideConnectionInfo ? <NodeStatusIndicator className="place-items-center" status={node.status} /> : null}
     </a>
   )
 

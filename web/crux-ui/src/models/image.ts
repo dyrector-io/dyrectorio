@@ -61,7 +61,7 @@ export type GetImageMessage = {
 export const WS_TYPE_IMAGE = 'image'
 export type ImageMessage = VersionImage
 
-export const IMAGE_CONFIG_FILTERS = [
+export const COMMON_CONFIG_FILTERS = [
   'name',
   'environment',
   'secrets',
@@ -78,18 +78,36 @@ export const IMAGE_CONFIG_FILTERS = [
   'commands',
   'args',
   'initContainers',
-  'logConfig',
-  'restartPolicy',
-  'networkMode',
-  'networks',
+] as const
+
+export const CRANE_CONFIG_FILTERS = [
   'deploymentStrategy',
   'customHeaders',
   'proxyHeaders',
   'loadBalancer',
   'healthCheckConfig',
   'resourceConfig',
-  'dockerLabels',
   'labels',
   'annotations',
 ] as const
+
+export const DAGENT_CONFIG_FILTERS = ['logConfig', 'restartPolicy', 'networkMode', 'networks', 'dockerLabels'] as const
+
+export const IMAGE_CONFIG_FILTERS = [
+  ...COMMON_CONFIG_FILTERS,
+  ...CRANE_CONFIG_FILTERS,
+  ...DAGENT_CONFIG_FILTERS,
+] as const
+
+export type CommonConfigFilterType = typeof COMMON_CONFIG_FILTERS[number]
+export type CraneConfigFilterType = typeof CRANE_CONFIG_FILTERS[number]
+export type DagentConfigFilterType = typeof DAGENT_CONFIG_FILTERS[number]
 export type ImageConfigFilterType = typeof IMAGE_CONFIG_FILTERS[number]
+
+export const filterContains = (
+  filter: CommonConfigFilterType | CraneConfigFilterType | DagentConfigFilterType,
+  filters: ImageConfigFilterType[],
+): boolean => filters.indexOf(filter) !== -1
+
+export const filterEmpty = (filterValues: string[], filters: ImageConfigFilterType[]): boolean =>
+  filterValues.filter(x => filters.includes(x as ImageConfigFilterType)).length > 0

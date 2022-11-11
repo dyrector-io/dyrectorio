@@ -6,6 +6,7 @@ import (
 
 	"github.com/rs/zerolog/log"
 
+	commonConfig "github.com/dyrector-io/dyrectorio/golang/internal/config"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	"github.com/dyrector-io/dyrectorio/golang/internal/version"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane"
@@ -59,7 +60,7 @@ func serve(cCtx *cli.Context) error {
 		return err
 	}
 
-	k8sconfig.InjectSecret(secret, &cfg)
+	commonConfig.InjectSecret(secret, &cfg.CommonConfiguration)
 
 	crane.Serve(&cfg)
 	return nil

@@ -24,9 +24,6 @@ export default class DomainNotificationService {
       },
     })
 
-    const identity = await this.kratos.getIdentityById(template.identityId)
-    template.message.owner = nameOrEmailOfIdentity(identity)
-
     if (userOnTeam) {
       const notifications = await this.prisma.notification.findMany({
         include: {
@@ -47,7 +44,17 @@ export default class DomainNotificationService {
         },
       })
 
-      await Promise.all(notifications.map(it => this.send(it.url, it.type, template)))
+      if (notifications.length > 0) {
+        try {
+          const identity = await this.kratos.getIdentityById(template.identityId)
+          template.message.owner = nameOrEmailOfIdentity(identity)
+        } catch {
+          this.logger.error(`Identity: "${template.identityId}" not found, can't set template message owner!`)
+          template.message.owner = 'Unknown'
+        }
+
+        await Promise.all(notifications.map(it => this.send(it.url, it.type, template)))
+      }
     }
   }
 

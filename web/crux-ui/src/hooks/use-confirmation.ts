@@ -16,7 +16,7 @@ const useConfirmation = (): [
     new Promise(resolve => {
       const onClose = (confirmed: boolean) => {
         setConfig(null)
-        onConfirmed?.call(null)
+        if (confirmed) onConfirmed?.call(null)
         resolve(confirmed)
       }
 
