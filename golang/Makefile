@@ -19,7 +19,7 @@ image_version ?= latest
 
 GOAIR=v1.40.4
 GOSEC=v2.14.0
-GOLANGCI=v1.46.2
+GOLANGCI=v1.50.1
 GOSWAG=v1.8.3
 GOFUMPT=v0.4.0
 

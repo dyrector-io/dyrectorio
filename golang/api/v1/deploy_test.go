@@ -21,8 +21,8 @@ func TestSetDeploymentDefaults(t *testing.T) {
 	defaultTag := "coleslaw"
 
 	v1.SetDeploymentDefaults(&req, &config.CommonConfiguration{
-		Registry:   fakeRegistry,
-		DefaultTag: defaultTag,
+		DefaultRegistry: fakeRegistry,
+		DefaultTag:      defaultTag,
 	})
 
 	assert.Equal(t, fakeRegistry, *req.Registry)

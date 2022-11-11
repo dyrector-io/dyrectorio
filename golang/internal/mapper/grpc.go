@@ -1,10 +1,10 @@
 package mapper
 
 import (
-	"fmt"
 	"strings"
 	"time"
 
+	"github.com/rs/zerolog/log"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
@@ -442,7 +442,7 @@ func MapKubeDeploymentListToCruxStateItems(deployments *appsv1.DeploymentList) [
 					stateItem.ImageName = image.StringNoTag()
 					stateItem.ImageTag = image.Tag
 				} else {
-					fmt.Println("Failed to get k8s container image info: ", err)
+					log.Err(err).Msg("Failed to get k8s container image info")
 				}
 			}
 		}

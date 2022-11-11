@@ -28,7 +28,7 @@ jobs:
   check:
     runs-on: ubuntu-20.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-2
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-3
       volumes:
         - /var/run/docker.sock:/var/run/docker
     outputs:
@@ -155,7 +155,7 @@ jobs:
   sign_image:
     runs-on: ubuntu-20.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-2
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-3
     needs: [build_image,check]
     environment: Workflow - Protected
     steps:

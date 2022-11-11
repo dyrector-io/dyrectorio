@@ -553,10 +553,10 @@ func getPortSet(natPortBindings map[nat.Port][]nat.PortBinding) nat.PortSet {
 }
 
 func logWrite(dc *DockerContainerBuilder, message string) {
-	fmt.Println(message)
 	if dc.logger != nil {
 		_, err := (*dc.logger).WriteString(message)
 		if err != nil {
+			//nolint
 			fmt.Printf("Failed to write log: %s", err.Error())
 		}
 	}

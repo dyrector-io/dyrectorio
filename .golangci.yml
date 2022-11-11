@@ -1,20 +1,21 @@
 run:
   timeout: 3m
   skip-dirs:
-    - test/
     - internal/cache
 
 linters-settings:
   depguard:
     list-type: blacklist
     packages:
-      # logging is allowed only by logutils.Log, logrus
-      # is allowed to use only in logutils package
-      - github.com/sirupsen/logrus
+      # logging is allowed zerolog only
+      # is allowed to use only package
+      - log
     packages-with-error-message:
-      - github.com/sirupsen/logrus: "logging is allowed only by logutils.Log"
+      - log: "logging is allowed only by github.com/rs/zerolog"
   dupl:
     threshold: 100
+  forbidigo:
+    exclude_godoc_examples: true
   funlen:
     lines: 100
     statements: 50
@@ -50,13 +51,6 @@ linters-settings:
      - return
   govet:
     check-shadowing: true
-    settings:
-      printf:
-        funcs:
-          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Infof
-          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Warnf
-          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Errorf
-          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Fatalf
   lll:
     line-length: 140
   maligned:
@@ -85,7 +79,6 @@ linters:
     - bodyclose
     # todo(nandor-magyar): refactor golang code to comply
     # - containedctx
-    - deadcode
     - depguard
     - dogsled
     - durationcheck
@@ -94,6 +87,7 @@ linters:
     - errname
     - exportloopref
     - exhaustive
+    - forbidigo
     - funlen
     - gochecknoinits
     - goconst
@@ -117,7 +111,6 @@ linters:
     - revive
     - rowserrcheck
     - staticcheck
-    - structcheck
     - stylecheck
     - tenv
     - thelper
@@ -125,7 +118,6 @@ linters:
     - unconvert
     - unparam
     - unused
-    - varcheck
     - whitespace
 
 issues:

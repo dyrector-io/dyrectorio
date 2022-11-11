@@ -17,15 +17,7 @@ RUN npm i -g \
     @grpc/grpc-js \
     prettier
 
-ENV GOSEC v2.14.0
-ENV GOLANGCI v1.46.2
-ENV GOSWAG v1.8.3
-
-
-RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.26 && \
-    go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2 && \
-    go install github.com/golangci/golangci-lint/cmd/golangci-lint@$GOLANGCI && \
-	go install github.com/swaggo/swag/cmd/swag@$GOSWAG && \
-	go install github.com/securego/gosec/v2/cmd/gosec@$GOSEC
+COPY ./golang/Makefile /tmp/
+RUN cd /tmp && make install-go-tools && rm Makefile
 
 WORKDIR /usr/work

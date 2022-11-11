@@ -126,7 +126,7 @@ func GetContainerLogs(name string, skip, take uint) []string {
 	options := types.ContainerLogsOptions{
 		ShowStderr: true,
 		ShowStdout: true,
-		Tail:       strconv.FormatUint(uint64(tail), 10), //nolint:gomnd
+		Tail:       strconv.FormatUint(uint64(tail), 10),
 	}
 
 	logs, err := cli.ContainerLogs(ctx, name, options)

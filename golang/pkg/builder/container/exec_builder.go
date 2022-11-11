@@ -156,6 +156,7 @@ func (de *DockerExecBuilder) Create() (Exec, error) {
 	response, err := de.client.ContainerExecCreate(de.ctx, *de.containerID, execConfig)
 	if err != nil {
 		if _, logErr := (*de.logger).WriteString(fmt.Sprintln("Exec create failed: ", err)); logErr != nil {
+			//nolint
 			fmt.Printf("Failed to write log: %s", logErr.Error())
 		}
 		return Exec{}, err

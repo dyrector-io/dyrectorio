@@ -374,7 +374,7 @@ func testAppConfig() *config.CommonConfiguration {
 		ImportContainerImage: "",
 		IngressRootDomain:    "",
 		ReadHeaderTimeout:    30 * time.Second,
-		Registry:             "",
+		DefaultRegistry:      "",
 		SecretPrivateKey:     "",
 		GrpcToken: &config.ValidJWT{
 			Issuer:           "test-issuer",
