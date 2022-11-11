@@ -23,9 +23,8 @@ type DeploymentLogger struct {
 	io.StringWriter
 }
 
-func NewDeploymentLogger(deploymentID *string,
+func NewDeploymentLogger(ctx context.Context, deploymentID *string,
 	stream agent.Agent_DeploymentStatusClient,
-	ctx context.Context,
 	appConfig *config.CommonConfiguration,
 ) *DeploymentLogger {
 	dog := &DeploymentLogger{

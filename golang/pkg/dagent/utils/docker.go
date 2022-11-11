@@ -126,7 +126,7 @@ func GetContainerLogs(name string, skip, take uint) []string {
 	options := types.ContainerLogsOptions{
 		ShowStderr: true,
 		ShowStdout: true,
-		Tail:       strconv.FormatUint(uint64(tail), 10), //nolint:gomnd
+		Tail:       strconv.FormatUint(uint64(tail), 10),
 	}
 
 	logs, err := cli.ContainerLogs(ctx, name, options)
@@ -412,7 +412,7 @@ func WithImportContainer(dc *containerbuilder.DockerContainerBuilder, importConf
 			mountList []mount.Mount,
 			logger *io.StringWriter,
 		) error {
-			if initError := spawnInitContainer(client, ctx, containerName, mountList, importConfig, dog, cfg); initError != nil {
+			if initError := spawnInitContainer(ctx, client, containerName, mountList, importConfig, dog, cfg); initError != nil {
 				dog.WriteDeploymentStatus(common.DeploymentStatus_FAILED, "Failed to spawn init container: "+initError.Error())
 				return initError
 			}
@@ -665,9 +665,8 @@ func GetImageLabels(fullyQualifiedImageName string) (map[string]string, error) {
 	res, _, err := cli.ImageInspectWithRaw(ctx, fullyQualifiedImageName)
 	if res.Config != nil && res.Config.Labels != nil {
 		return res.Config.Labels, err
-	} else {
-		return map[string]string{}, nil
 	}
+	return map[string]string{}, nil
 }
 
 func DeleteContainerByName(ctx context.Context, preName, name string) error {

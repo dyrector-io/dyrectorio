@@ -15,11 +15,10 @@ func ReadConfig[T craneConfig.Configuration | dagentConfig.Configuration](cfg *T
 
 	if err != nil && !os.IsNotExist(err) {
 		return err
-	} else {
-		err = cleanenv.ReadEnv(cfg)
-		if err != nil {
-			return err
-		}
+	}
+	err = cleanenv.ReadEnv(cfg)
+	if err != nil {
+		return err
 	}
 
 	return nil

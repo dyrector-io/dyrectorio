@@ -14,7 +14,10 @@ import (
 
 const SecretFileName = "private.key"
 
-func GetValidSecret(ctx context.Context, namespace, name string, appConfig *craneConfig.Configuration) (string, error) {
+func GetValidSecret(ctx context.Context, appConfig *craneConfig.Configuration) (string, error) {
+	namespace := appConfig.Namespace
+	name := appConfig.SecretName
+
 	if namespace == "" || name == "" {
 		return "", fmt.Errorf("secret name or namespace can't be empty")
 	}

@@ -21,7 +21,7 @@ func main() {
 		Name:     "crane",
 		Version:  version.BuildVersion(),
 		HelpName: "crane",
-		Usage:    "crane - cli tool for serving a k8s agent of dyrector.io!",
+		Usage:    "cli tool for serving a k8s agent of dyrector.io!",
 		Action:   serve,
 
 		Commands: []*cli.Command{
@@ -39,37 +39,43 @@ func main() {
 	}
 }
 
-func loadConfiguration() config.Configuration {
-	var cfg config.Configuration
-	err := util.ReadConfig(&cfg)
+func loadConfiguration() (*config.Configuration, error) {
+	var cfg *config.Configuration
+	err := util.ReadConfig(cfg)
 	if err != nil {
 		log.Panic().Err(err).Msg("failed to load configuration")
 	}
-	if err := cfg.ParseAndSetJWT(os.Getenv("GRPC_TOKEN")); err != nil {
+	if err = cfg.ParseAndSetJWT(os.Getenv("GRPC_TOKEN")); err != nil {
 		log.Panic().Err(err).Msg("failed to parse env GRPC_TOKEN")
 	}
-	log.Print("Configuration loaded.")
-	return cfg
-}
-
-func serve(cCtx *cli.Context) error {
-	cfg := loadConfiguration()
-
-	secret, err := k8sconfig.GetValidSecret(context.Background(), cfg.Namespace, cfg.SecretName, &cfg)
+	secret, err := k8sconfig.GetValidSecret(context.Background(), cfg)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	commonConfig.InjectSecret(secret, &cfg.CommonConfiguration)
 
-	crane.Serve(&cfg)
+	log.Print("Configuration loaded.")
+	return cfg, nil
+}
+
+func serve(cCtx *cli.Context) error {
+	cfg, err := loadConfiguration()
+	if err != nil {
+		return err
+	}
+
+	crane.Serve(cfg)
 	return nil
 }
 
 func initKey(cCtx *cli.Context) error {
-	cfg := loadConfiguration()
+	cfg, err := loadConfiguration()
+	if err != nil {
+		return err
+	}
 
-	_, err := k8sconfig.GetValidSecret(context.Background(), cfg.Namespace, cfg.SecretName, &cfg)
+	_, err = k8sconfig.GetValidSecret(context.Background(), cfg)
 	if err != nil {
 		return err
 	}

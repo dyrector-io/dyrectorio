@@ -39,7 +39,6 @@ services:
 
 volumes:
   crux-db:
-  crux-certs:
 
 networks:
   crux-intranet:

@@ -30,7 +30,7 @@ func checkIfTargetVolumeIsThere(mountList []mount.Mount, importContainer *v1.Imp
 
 // before application container starts, loads import container
 func spawnInitContainer(
-	cli *client.Client, ctx context.Context, name string, mountList []mount.Mount,
+	ctx context.Context, cli *client.Client, name string, mountList []mount.Mount,
 	importContainer *v1.ImportContainer, dog *dogger.DeploymentLogger, cfg *config.Configuration,
 ) error {
 	dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Spawning importer container to load assets")

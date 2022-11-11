@@ -1,0 +1,21 @@
+ignoreGeneratedHeader = false
+severity = "error"
+confidence = 0.8
+errorCode = 0
+warningCode = 0
+
+[rule.blank-imports]
+[rule.context-as-argument]
+[rule.dot-imports]
+[rule.error-return]
+[rule.error-strings]
+[rule.error-naming]
+[rule.exported]
+[rule.if-return]
+[rule.var-naming]
+[rule.package-comments]
+[rule.range]
+[rule.receiver-naming]
+[rule.indent-error-flow]
+[rule.superfluous-else]
+[rule.modifies-parameter]

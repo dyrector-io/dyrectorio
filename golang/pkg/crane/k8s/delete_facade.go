@@ -11,7 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 )
 
-type deleteFacade struct {
+type DeleteFacade struct {
 	ctx        context.Context
 	name       string
 	deployment *deployment
@@ -23,12 +23,8 @@ type deleteFacade struct {
 	appConfig  *config.Configuration
 }
 
-type DeleteFacade interface {
-	Delete(namespace, name string) error
-}
-
-func NewDeleteFacade(ctx context.Context, namespace, name string, cfg *config.Configuration) *deleteFacade {
-	return &deleteFacade{
+func NewDeleteFacade(ctx context.Context, namespace, name string, cfg *config.Configuration) *DeleteFacade {
+	return &DeleteFacade{
 		ctx:        ctx,
 		name:       name,
 		namespace:  newNamespace(ctx, namespace, cfg),
@@ -41,23 +37,23 @@ func NewDeleteFacade(ctx context.Context, namespace, name string, cfg *config.Co
 	}
 }
 
-func (d *deleteFacade) DeleteNamespace(namespace string) error {
+func (d *DeleteFacade) DeleteNamespace(namespace string) error {
 	return DeleteNamespace(d.ctx, namespace, d.appConfig)
 }
 
-func (d *deleteFacade) DeleteDeployment() error {
+func (d *DeleteFacade) DeleteDeployment() error {
 	return d.deployment.deleteDeployment(d.namespace.name, d.name)
 }
 
-func (d *deleteFacade) DeleteConfigMaps() error {
+func (d *DeleteFacade) DeleteConfigMaps() error {
 	return d.configmap.deleteConfigMaps(d.namespace.name, d.name)
 }
 
-func (d *deleteFacade) DeleteServices() error {
+func (d *DeleteFacade) DeleteServices() error {
 	return d.service.deleteServices(d.namespace.name, d.name)
 }
 
-func (d *deleteFacade) DeleteIngresses() error {
+func (d *DeleteFacade) DeleteIngresses() error {
 	return d.ingress.deleteIngress(d.namespace.name, d.name)
 }
 

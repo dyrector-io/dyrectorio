@@ -22,9 +22,8 @@ type CommonConfiguration struct {
 	ImportContainerImage string        `yaml:"importContainerImage"  env:"IMPORT_CONTAINER_IMAGE"  env-default:"rclone/rclone:1.57.0"`
 	IngressRootDomain    string        `yaml:"ingressRootDomain"     env:"INGRESS_ROOT_DOMAIN"     env-default:""`
 	ReadHeaderTimeout    time.Duration `yaml:"readHeaderTimeout"     env:"READ_HEADER_TIMEOUT"     env-default:"15s"`
-	Registry             string        `yaml:"registry"              env:"REGISTRY"                env-default:"index.docker.io"`
-	RegistryPassword     string        `yaml:"registryPassword"      env:"REGISTRY_PASSWORD"       env-default:""`
-	RegistryUsername     string        `yaml:"registryUsername"      env:"REGISTRY_USERNAME"       env-default:""`
+	// DefaultRegistry container registry used for container name expansion
+	DefaultRegistry string `yaml:"registry"             env:"DEFAULT_REGISTRY"                 env-default:"index.docker.io"`
 	// GRPC token is set separately, because nested structures are not yet suppported in cleanenv
 	GrpcToken *ValidJWT
 	// injected from crane/dagent

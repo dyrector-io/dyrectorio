@@ -40,6 +40,7 @@ func createCli(logger io.StringWriter) (*client.Client, error) {
 		if logger != nil && client.IsErrConnectionFailed(err) {
 			_, err = logger.WriteString("Could not connect to docker socket/host.")
 			if err != nil {
+				//nolint
 				fmt.Printf("Failed to write log: %s", err.Error())
 			}
 		}
@@ -64,6 +65,7 @@ func imageExists(ctx context.Context, logger io.StringWriter, fullyQualifiedImag
 		if logger != nil {
 			_, err = logger.WriteString("Failed to list images")
 			if err != nil {
+				//nolint
 				fmt.Printf("Failed to write log: %s", err.Error())
 			}
 		}
@@ -91,6 +93,7 @@ func pullImage(ctx context.Context, logger io.StringWriter, fullyQualifiedImageN
 	if logger != nil {
 		_, err = logger.WriteString("Pulling image: " + fullyQualifiedImageName)
 		if err != nil {
+			//nolint
 			fmt.Printf("Failed to write log: %s", err.Error())
 		}
 	}
@@ -129,6 +132,7 @@ func pullImage(ctx context.Context, logger io.StringWriter, fullyQualifiedImageN
 				lastLog = time.Now()
 			}
 			if logErr != nil {
+				//nolint
 				fmt.Printf("Failed to write log: %s", logErr.Error())
 			}
 		}
@@ -233,6 +237,7 @@ type defaultLogger struct {
 }
 
 func (logger *defaultLogger) WriteString(s string) (int, error) {
+	//nolint
 	fmt.Println(s)
 	return len(s), nil
 }

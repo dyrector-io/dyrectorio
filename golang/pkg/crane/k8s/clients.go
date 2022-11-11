@@ -5,6 +5,8 @@ import (
 
 	"github.com/rs/zerolog/log"
 	"k8s.io/client-go/kubernetes"
+
+	// enable all authentication methods
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -29,9 +31,8 @@ func NewClient() *Client {
 func (c *Client) GetClientSet(cfg *config.Configuration) (*kubernetes.Clientset, error) {
 	if cfg.CraneInCluster {
 		return c.inClusterAuth(cfg)
-	} else {
-		return c.outClusterAuth(cfg)
 	}
+	return c.outClusterAuth(cfg)
 }
 
 func (c *Client) inClusterAuth(cfg *config.Configuration) (*kubernetes.Clientset, error) {

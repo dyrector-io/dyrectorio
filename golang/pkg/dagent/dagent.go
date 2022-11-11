@@ -7,8 +7,6 @@ import (
 
 	"github.com/dyrector-io/dyrectorio/golang/internal/grpc"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/config"
-	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/model"
-	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/update"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/utils"
 )
 
@@ -17,7 +15,7 @@ func Serve(cfg *config.Configuration) {
 	log.Print("Starting dyrector.io DAgent service")
 
 	if cfg.TraefikEnabled {
-		params := model.TraefikDeployRequest{
+		params := utils.TraefikDeployRequest{
 			LogLevel: cfg.TraefikLogLevel,
 			TLS:      cfg.TraefikTLS,
 			AcmeMail: cfg.TraefikAcmeMail,
@@ -32,9 +30,7 @@ func Serve(cfg *config.Configuration) {
 		}
 	}
 
-	update.InitUpdater(cfg)
-
-	grpcParams := grpc.GrpcTokenToConnectionParams(cfg.GrpcToken)
+	grpcParams := grpc.TokenToConnectionParams(cfg.GrpcToken)
 	grpcContext := grpc.WithGRPCConfig(context.Background(), cfg)
 	grpc.Init(grpcContext, grpcParams, &cfg.CommonConfiguration, grpc.WorkerFunctions{
 		Deploy:     utils.DeployImage,

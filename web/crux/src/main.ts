@@ -13,9 +13,9 @@ type GrpcOptions = {
   credentials: ServerCredentials
 }
 
-type GrpcCertPrefix = 'api' | 'agent'
+type GrpcClient = 'api' | 'agent'
 
-const loadGrpcOptions = (certPrefix: GrpcCertPrefix, portEnv: string): GrpcOptions => {
+const loadGrpcOptions = (certPrefix: GrpcClient, portEnv: string): GrpcOptions => {
   const port = portEnv ? Number(portEnv) : certPrefix === 'agent' ? 5000 : 5001
 
   return {

@@ -413,7 +413,7 @@ func SetDeploymentDefaults(
 ) {
 	if deployImageRequest.Registry == nil || *deployImageRequest.Registry == "" {
 		deployImageRequest.Registry = func() *string {
-			str := appConfig.Registry
+			str := appConfig.DefaultRegistry
 			return &str
 		}()
 	}

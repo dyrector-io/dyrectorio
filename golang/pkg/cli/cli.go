@@ -11,7 +11,7 @@ func InitCLI() *ucli.App {
 		Name:     "dyo",
 		Version:  version.BuildVersion(),
 		HelpName: "dyo",
-		Usage:    "dyo - cli tool for deploying a complete dyrector.io stack locally, for demonstration, testing, or development purposes",
+		Usage:    "cli tool for deploying a complete dyrector.io stack locally, for demonstration, testing, or development purposes",
 
 		Commands: []*ucli.Command{
 			{

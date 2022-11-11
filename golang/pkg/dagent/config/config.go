@@ -1,8 +1,6 @@
 package config
 
 import (
-	"time"
-
 	"github.com/dyrector-io/dyrectorio/golang/internal/config"
 )
 
@@ -26,12 +24,7 @@ type Configuration struct {
 	TraefikTLS             bool   `yaml:"traefikTLS"           env:"TRAEFIK_TLS"            env-default:"false"`
 	TraefikPort            uint16 `yaml:"traefikPort"          env:"TRAEFIK_PORT"           env-default:"80"`
 	TraefikTLSPort         uint16 `yaml:"traefikTLSPort"       env:"TRAEFIK_TLS_PORT"       env-default:"443"`
-	// TODO(nandor-magyar): do we still need this?
-	UpdaterContainerName string        `yaml:"updaterContainerName" env:"UPDATER_CONTAINER_NAME" env-default:"dagent-updater"`
-	UpdateHostTimezone   bool          `yaml:"updateHostTimezone"   env:"UPDATE_HOST_TIMEZONE"   env-default:"true"`
-	UpdateMethod         string        `yaml:"updateMethod"         env:"UPDATE_METHOD"          env-default:"off"`
-	UpdatePollInterval   time.Duration `yaml:"updatePollInterval"   env:"UPDATE_POLL_INTERVAL"   env-default:"600s"`
-	WebhookToken         string        `yaml:"webhookToken"         env:"WEBHOOK_TOKEN"          env-default:""`
+	WebhookToken           string `yaml:"webhookToken"         env:"WEBHOOK_TOKEN"          env-default:""`
 	// for injecting SecretPrivateKey,
-	SecretPrivateKeyFile ConfigFromFile `yaml:"secretPrivateKeyFile" env:"SECRET_PRIVATE_KEY_FILE"  env-default:"/srv/dagent/private.key"`
+	SecretPrivateKeyFile KeyFromFile `yaml:"secretPrivateKeyFile" env:"SECRET_PRIVATE_KEY_FILE"  env-default:"/srv/dagent/private.key"`
 }

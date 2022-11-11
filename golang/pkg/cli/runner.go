@@ -91,7 +91,6 @@ func StartContainers(containers *DyrectorioStack, internalHostDomain string) {
 	)
 
 	_, err := traefik.Start()
-
 	if err != nil {
 		log.Fatal().Err(err).Stack().Msg("")
 	}

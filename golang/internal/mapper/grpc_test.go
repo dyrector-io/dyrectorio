@@ -27,6 +27,7 @@ func TestMapDeployImageDagent(t *testing.T) {
 
 	assert.Equal(t, expected, res)
 }
+
 func TestMapDeployImageCrane(t *testing.T) {
 	req := testDeployRequest()
 	cfg := testAppConfig()
@@ -373,9 +374,7 @@ func testAppConfig() *config.CommonConfiguration {
 		ImportContainerImage: "",
 		IngressRootDomain:    "",
 		ReadHeaderTimeout:    30 * time.Second,
-		Registry:             "",
-		RegistryPassword:     "",
-		RegistryUsername:     "",
+		DefaultRegistry:      "",
 		SecretPrivateKey:     "",
 		GrpcToken: &config.ValidJWT{
 			Issuer:           "test-issuer",

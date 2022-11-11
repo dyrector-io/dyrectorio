@@ -132,9 +132,8 @@ func getTLSConfig(ingressPath, containerName string, enabled bool) *netv1.Ingres
 		return netv1.IngressTLS().
 			WithHosts(ingressPath).
 			WithSecretName(util.JoinV("-", containerName, "tls"))
-	} else {
-		return nil
 	}
+	return nil
 }
 
 func getIngressAnnotations(tlsIsWanted, proxyHeaders bool,

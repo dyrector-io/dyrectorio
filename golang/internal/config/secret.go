@@ -43,10 +43,9 @@ func CheckGenerateKeys(secretPath string) (string, error) {
 		keyStr, keyErr := privateKeyObj.ArmorWithCustomHeaders("", "")
 
 		return keyStr, keyErr
-	} else {
-		log.Printf("Key file is expired: %v\n", secretPath)
-		return generateKey(secretPath)
 	}
+	log.Printf("Key file is expired: %v", secretPath)
+	return generateKey(secretPath)
 }
 
 func GenerateKeyString() (string, error) {

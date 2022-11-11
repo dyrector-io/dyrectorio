@@ -18,41 +18,41 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// A ContainerBuilder handles the process of creating and starting containers,
+// A Builder handles the process of creating and starting containers,
 // it can be configured using 'With...' methods.
-// A ContainerBuilder can be created using the NewDockerBuilder method.
-type ContainerBuilder interface {
-	WithClient(client *client.Client) ContainerBuilder
-	WithImage(imageName string) ContainerBuilder
-	WithEnv(env []string) ContainerBuilder
-	WithPortBindings(portList []PortBinding) ContainerBuilder
-	WithPortRange(portRanges []PortRange) ContainerBuilder
-	WithMountPoints(mounts []mount.Mount) ContainerBuilder
-	WithName(name string) ContainerBuilder
-	WithNetworkAliases(aliases ...string) ContainerBuilder
-	WithNetworkMode(networkMode string) ContainerBuilder
-	WithNetworks(networks []string) ContainerBuilder
-	WithLabels(labels map[string]string) ContainerBuilder
+// A Builder can be created using the NewDockerBuilder method.
+type Builder interface {
+	WithClient(client *client.Client) Builder
+	WithImage(imageName string) Builder
+	WithEnv(env []string) Builder
+	WithPortBindings(portList []PortBinding) Builder
+	WithPortRange(portRanges []PortRange) Builder
+	WithMountPoints(mounts []mount.Mount) Builder
+	WithName(name string) Builder
+	WithNetworkAliases(aliases ...string) Builder
+	WithNetworkMode(networkMode string) Builder
+	WithNetworks(networks []string) Builder
+	WithLabels(labels map[string]string) Builder
 	WithLogConfig(config container.LogConfig)
-	WithRegistryAuth(auth RegistryAuth) ContainerBuilder
-	WithAutoRemove(remove bool) ContainerBuilder
-	WithRestartPolicy(policy RestartPolicyName) ContainerBuilder
-	WithEntrypoint(cmd []string) ContainerBuilder
-	WithCmd(cmd []string) ContainerBuilder
-	WithShell(shell []string) ContainerBuilder
-	WithUser(uid string) ContainerBuilder
-	WithLogWriter(logger io.StringWriter) ContainerBuilder
-	WithoutConflict() ContainerBuilder
-	WithForcePullImage() ContainerBuilder
-	WithPreCreateHooks(hooks ...LifecycleFunc) ContainerBuilder
-	WithPostCreateHooks(hooks ...LifecycleFunc) ContainerBuilder
-	WithPreStartHooks(hooks ...LifecycleFunc) ContainerBuilder
-	WithPostStartHooks(hooks ...LifecycleFunc) ContainerBuilder
-	Create() ContainerBuilder
+	WithRegistryAuth(auth RegistryAuth) Builder
+	WithAutoRemove(remove bool) Builder
+	WithRestartPolicy(policy RestartPolicyName) Builder
+	WithEntrypoint(cmd []string) Builder
+	WithCmd(cmd []string) Builder
+	WithShell(shell []string) Builder
+	WithUser(uid string) Builder
+	WithLogWriter(logger io.StringWriter) Builder
+	WithoutConflict() Builder
+	WithForcePullImage() Builder
+	WithPreCreateHooks(hooks ...LifecycleFunc) Builder
+	WithPostCreateHooks(hooks ...LifecycleFunc) Builder
+	WithPreStartHooks(hooks ...LifecycleFunc) Builder
+	WithPostStartHooks(hooks ...LifecycleFunc) Builder
+	Create() Builder
 	GetContainerID() *string
 	GetNetworkID() *string
 	Start() (bool, error)
-	StartWaitUntilExit() (ContainerWaitResult, error)
+	StartWaitUntilExit() (WaitResult, error)
 }
 
 type DockerContainerBuilder struct {
@@ -382,7 +382,7 @@ func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 }
 
 // Starts the container and waits until the first exit to happen then returns
-func (dc *DockerContainerBuilder) StartWaitUntilExit() (*ContainerWaitResult, error) {
+func (dc *DockerContainerBuilder) StartWaitUntilExit() (*WaitResult, error) {
 	containerID := *dc.GetContainerID()
 	waitC, errC := dc.client.ContainerWait(dc.ctx, containerID, container.WaitConditionNextExit)
 	_, err := dc.Start()
@@ -392,7 +392,7 @@ func (dc *DockerContainerBuilder) StartWaitUntilExit() (*ContainerWaitResult, er
 
 	select {
 	case result := <-waitC:
-		return &ContainerWaitResult{StatusCode: result.StatusCode}, nil
+		return &WaitResult{StatusCode: result.StatusCode}, nil
 
 	case err = <-errC:
 		return nil, fmt.Errorf("error container waiting: %w", err)
@@ -420,10 +420,9 @@ func (dc *DockerContainerBuilder) Start() (bool, error) {
 	if err != nil {
 		logWrite(dc, err.Error())
 		return false, err
-	} else {
-		logWrite(dc, fmt.Sprintf("Started container: %s", *dc.containerID))
-		return true, nil
 	}
+	logWrite(dc, fmt.Sprintf("Started container: %s", *dc.containerID))
+	return true, nil
 }
 
 func prepareImage(dc *DockerContainerBuilder) error {
@@ -554,10 +553,10 @@ func getPortSet(natPortBindings map[nat.Port][]nat.PortBinding) nat.PortSet {
 }
 
 func logWrite(dc *DockerContainerBuilder, message string) {
-	fmt.Println(message)
 	if dc.logger != nil {
 		_, err := (*dc.logger).WriteString(message)
 		if err != nil {
+			//nolint
 			fmt.Printf("Failed to write log: %s", err.Error())
 		}
 	}
