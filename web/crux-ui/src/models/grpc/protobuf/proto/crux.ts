@@ -105,6 +105,8 @@ export enum UserStatus {
   USER_STATUS_UNSPECIFIED = 0,
   PENDING = 1,
   VERIFIED = 2,
+  EXPIRED = 3,
+  DECLINED = 4,
   UNRECOGNIZED = -1,
 }
 
@@ -119,6 +121,12 @@ export function userStatusFromJSON(object: any): UserStatus {
     case 2:
     case 'VERIFIED':
       return UserStatus.VERIFIED
+    case 3:
+    case 'EXPIRED':
+      return UserStatus.EXPIRED
+    case 4:
+    case 'DECLINED':
+      return UserStatus.DECLINED
     case -1:
     case 'UNRECOGNIZED':
     default:
@@ -134,6 +142,10 @@ export function userStatusToJSON(object: UserStatus): string {
       return 'PENDING'
     case UserStatus.VERIFIED:
       return 'VERIFIED'
+    case UserStatus.EXPIRED:
+      return 'EXPIRED'
+    case UserStatus.DECLINED:
+      return 'DECLINED'
     case UserStatus.UNRECOGNIZED:
     default:
       return 'UNRECOGNIZED'
@@ -674,6 +686,14 @@ export interface InviteUserRequest {
   id: string
   accessedBy: string
   email: string
+  firstName: string
+  lastName?: string | undefined
+}
+
+export interface ReinviteUserRequest {
+  id: string
+  accessedBy: string
+  userId: string
 }
 
 export interface DeleteUserFromTeamRequest {
@@ -2131,7 +2151,7 @@ export const UpdateUserRoleInTeamRequest = {
 }
 
 function createBaseInviteUserRequest(): InviteUserRequest {
-  return { id: '', accessedBy: '', email: '' }
+  return { id: '', accessedBy: '', email: '', firstName: '' }
 }
 
 export const InviteUserRequest = {
@@ -2144,6 +2164,12 @@ export const InviteUserRequest = {
     }
     if (message.email !== '') {
       writer.uint32(802).string(message.email)
+    }
+    if (message.firstName !== '') {
+      writer.uint32(810).string(message.firstName)
+    }
+    if (message.lastName !== undefined) {
+      writer.uint32(818).string(message.lastName)
     }
     return writer
   },
@@ -2164,6 +2190,12 @@ export const InviteUserRequest = {
         case 100:
           message.email = reader.string()
           break
+        case 101:
+          message.firstName = reader.string()
+          break
+        case 102:
+          message.lastName = reader.string()
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -2177,6 +2209,8 @@ export const InviteUserRequest = {
       id: isSet(object.id) ? String(object.id) : '',
       accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       email: isSet(object.email) ? String(object.email) : '',
+      firstName: isSet(object.firstName) ? String(object.firstName) : '',
+      lastName: isSet(object.lastName) ? String(object.lastName) : undefined,
     }
   },
 
@@ -2185,6 +2219,8 @@ export const InviteUserRequest = {
     message.id !== undefined && (obj.id = message.id)
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.email !== undefined && (obj.email = message.email)
+    message.firstName !== undefined && (obj.firstName = message.firstName)
+    message.lastName !== undefined && (obj.lastName = message.lastName)
     return obj
   },
 
@@ -2193,6 +2229,75 @@ export const InviteUserRequest = {
     message.id = object.id ?? ''
     message.accessedBy = object.accessedBy ?? ''
     message.email = object.email ?? ''
+    message.firstName = object.firstName ?? ''
+    message.lastName = object.lastName ?? undefined
+    return message
+  },
+}
+
+function createBaseReinviteUserRequest(): ReinviteUserRequest {
+  return { id: '', accessedBy: '', userId: '' }
+}
+
+export const ReinviteUserRequest = {
+  encode(message: ReinviteUserRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== '') {
+      writer.uint32(10).string(message.id)
+    }
+    if (message.accessedBy !== '') {
+      writer.uint32(18).string(message.accessedBy)
+    }
+    if (message.userId !== '') {
+      writer.uint32(802).string(message.userId)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): ReinviteUserRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseReinviteUserRequest()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.id = reader.string()
+          break
+        case 2:
+          message.accessedBy = reader.string()
+          break
+        case 100:
+          message.userId = reader.string()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): ReinviteUserRequest {
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      userId: isSet(object.userId) ? String(object.userId) : '',
+    }
+  },
+
+  toJSON(message: ReinviteUserRequest): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
+    message.userId !== undefined && (obj.userId = message.userId)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<ReinviteUserRequest>, I>>(object: I): ReinviteUserRequest {
+    const message = createBaseReinviteUserRequest()
+    message.id = object.id ?? ''
+    message.accessedBy = object.accessedBy ?? ''
+    message.userId = object.userId ?? ''
     return message
   },
 }
@@ -11308,6 +11413,15 @@ export const CruxTeamService = {
     responseSerialize: (value: CreateEntityResponse) => Buffer.from(CreateEntityResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer) => CreateEntityResponse.decode(value),
   },
+  reinviteUserToTeam: {
+    path: '/crux.CruxTeam/ReinviteUserToTeam',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: ReinviteUserRequest) => Buffer.from(ReinviteUserRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => ReinviteUserRequest.decode(value),
+    responseSerialize: (value: CreateEntityResponse) => Buffer.from(CreateEntityResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => CreateEntityResponse.decode(value),
+  },
   deleteUserFromTeam: {
     path: '/crux.CruxTeam/DeleteUserFromTeam',
     requestStream: false,
@@ -11318,8 +11432,17 @@ export const CruxTeamService = {
     responseSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
     responseDeserialize: (value: Buffer) => Empty.decode(value),
   },
-  acceptTeamInvite: {
-    path: '/crux.CruxTeam/AcceptTeamInvite',
+  acceptTeamInvitation: {
+    path: '/crux.CruxTeam/AcceptTeamInvitation',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: IdRequest) => Buffer.from(IdRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => IdRequest.decode(value),
+    responseSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => Empty.decode(value),
+  },
+  declineTeamInvitation: {
+    path: '/crux.CruxTeam/DeclineTeamInvitation',
     requestStream: false,
     responseStream: false,
     requestSerialize: (value: IdRequest) => Buffer.from(IdRequest.encode(value).finish()),
@@ -11372,8 +11495,10 @@ export interface CruxTeamServer extends UntypedServiceImplementation {
   deleteTeam: handleUnaryCall<IdRequest, Empty>
   updateUserRole: handleUnaryCall<UpdateUserRoleInTeamRequest, Empty>
   inviteUserToTeam: handleUnaryCall<InviteUserRequest, CreateEntityResponse>
+  reinviteUserToTeam: handleUnaryCall<ReinviteUserRequest, CreateEntityResponse>
   deleteUserFromTeam: handleUnaryCall<DeleteUserFromTeamRequest, Empty>
-  acceptTeamInvite: handleUnaryCall<IdRequest, Empty>
+  acceptTeamInvitation: handleUnaryCall<IdRequest, Empty>
+  declineTeamInvitation: handleUnaryCall<IdRequest, Empty>
   selectTeam: handleUnaryCall<IdRequest, Empty>
   getUserMeta: handleUnaryCall<AccessRequest, UserMetaResponse>
   getAllTeams: handleUnaryCall<AccessRequest, AllTeamsResponse>
@@ -11468,6 +11593,21 @@ export interface CruxTeamClient extends Client {
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
   ): ClientUnaryCall
+  reinviteUserToTeam(
+    request: ReinviteUserRequest,
+    callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
+  ): ClientUnaryCall
+  reinviteUserToTeam(
+    request: ReinviteUserRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
+  ): ClientUnaryCall
+  reinviteUserToTeam(
+    request: ReinviteUserRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
+  ): ClientUnaryCall
   deleteUserFromTeam(
     request: DeleteUserFromTeamRequest,
     callback: (error: ServiceError | null, response: Empty) => void,
@@ -11483,13 +11623,31 @@ export interface CruxTeamClient extends Client {
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: Empty) => void,
   ): ClientUnaryCall
-  acceptTeamInvite(request: IdRequest, callback: (error: ServiceError | null, response: Empty) => void): ClientUnaryCall
-  acceptTeamInvite(
+  acceptTeamInvitation(
+    request: IdRequest,
+    callback: (error: ServiceError | null, response: Empty) => void,
+  ): ClientUnaryCall
+  acceptTeamInvitation(
     request: IdRequest,
     metadata: Metadata,
     callback: (error: ServiceError | null, response: Empty) => void,
   ): ClientUnaryCall
-  acceptTeamInvite(
+  acceptTeamInvitation(
+    request: IdRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: Empty) => void,
+  ): ClientUnaryCall
+  declineTeamInvitation(
+    request: IdRequest,
+    callback: (error: ServiceError | null, response: Empty) => void,
+  ): ClientUnaryCall
+  declineTeamInvitation(
+    request: IdRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: Empty) => void,
+  ): ClientUnaryCall
+  declineTeamInvitation(
     request: IdRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,

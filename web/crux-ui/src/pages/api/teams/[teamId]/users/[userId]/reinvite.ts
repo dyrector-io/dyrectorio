@@ -4,7 +4,9 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
   const teamId = req.query.teamId as string
-  await crux(req).teams.acceptInvitation(teamId)
+  const userId = req.query.userId as string
+
+  await crux(req).teams.reinviteUser(teamId, userId)
 
   res.status(204).end()
 }

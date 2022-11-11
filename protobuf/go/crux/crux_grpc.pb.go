@@ -2137,8 +2137,10 @@ type CruxTeamClient interface {
 	DeleteTeam(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
 	UpdateUserRole(ctx context.Context, in *UpdateUserRoleInTeamRequest, opts ...grpc.CallOption) (*common.Empty, error)
 	InviteUserToTeam(ctx context.Context, in *InviteUserRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error)
+	ReinviteUserToTeam(ctx context.Context, in *ReinviteUserRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error)
 	DeleteUserFromTeam(ctx context.Context, in *DeleteUserFromTeamRequest, opts ...grpc.CallOption) (*common.Empty, error)
-	AcceptTeamInvite(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
+	AcceptTeamInvitation(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
+	DeclineTeamInvitation(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
 	SelectTeam(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
 	GetUserMeta(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*UserMetaResponse, error)
 	GetAllTeams(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*AllTeamsResponse, error)
@@ -2207,6 +2209,15 @@ func (c *cruxTeamClient) InviteUserToTeam(ctx context.Context, in *InviteUserReq
 	return out, nil
 }
 
+func (c *cruxTeamClient) ReinviteUserToTeam(ctx context.Context, in *ReinviteUserRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error) {
+	out := new(CreateEntityResponse)
+	err := c.cc.Invoke(ctx, "/crux.CruxTeam/ReinviteUserToTeam", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *cruxTeamClient) DeleteUserFromTeam(ctx context.Context, in *DeleteUserFromTeamRequest, opts ...grpc.CallOption) (*common.Empty, error) {
 	out := new(common.Empty)
 	err := c.cc.Invoke(ctx, "/crux.CruxTeam/DeleteUserFromTeam", in, out, opts...)
@@ -2216,9 +2227,18 @@ func (c *cruxTeamClient) DeleteUserFromTeam(ctx context.Context, in *DeleteUserF
 	return out, nil
 }
 
-func (c *cruxTeamClient) AcceptTeamInvite(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+func (c *cruxTeamClient) AcceptTeamInvitation(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error) {
 	out := new(common.Empty)
-	err := c.cc.Invoke(ctx, "/crux.CruxTeam/AcceptTeamInvite", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/crux.CruxTeam/AcceptTeamInvitation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cruxTeamClient) DeclineTeamInvitation(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
+	err := c.cc.Invoke(ctx, "/crux.CruxTeam/DeclineTeamInvitation", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2271,8 +2291,10 @@ type CruxTeamServer interface {
 	DeleteTeam(context.Context, *IdRequest) (*common.Empty, error)
 	UpdateUserRole(context.Context, *UpdateUserRoleInTeamRequest) (*common.Empty, error)
 	InviteUserToTeam(context.Context, *InviteUserRequest) (*CreateEntityResponse, error)
+	ReinviteUserToTeam(context.Context, *ReinviteUserRequest) (*CreateEntityResponse, error)
 	DeleteUserFromTeam(context.Context, *DeleteUserFromTeamRequest) (*common.Empty, error)
-	AcceptTeamInvite(context.Context, *IdRequest) (*common.Empty, error)
+	AcceptTeamInvitation(context.Context, *IdRequest) (*common.Empty, error)
+	DeclineTeamInvitation(context.Context, *IdRequest) (*common.Empty, error)
 	SelectTeam(context.Context, *IdRequest) (*common.Empty, error)
 	GetUserMeta(context.Context, *AccessRequest) (*UserMetaResponse, error)
 	GetAllTeams(context.Context, *AccessRequest) (*AllTeamsResponse, error)
@@ -2302,11 +2324,17 @@ func (UnimplementedCruxTeamServer) UpdateUserRole(context.Context, *UpdateUserRo
 func (UnimplementedCruxTeamServer) InviteUserToTeam(context.Context, *InviteUserRequest) (*CreateEntityResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InviteUserToTeam not implemented")
 }
+func (UnimplementedCruxTeamServer) ReinviteUserToTeam(context.Context, *ReinviteUserRequest) (*CreateEntityResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReinviteUserToTeam not implemented")
+}
 func (UnimplementedCruxTeamServer) DeleteUserFromTeam(context.Context, *DeleteUserFromTeamRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteUserFromTeam not implemented")
 }
-func (UnimplementedCruxTeamServer) AcceptTeamInvite(context.Context, *IdRequest) (*common.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AcceptTeamInvite not implemented")
+func (UnimplementedCruxTeamServer) AcceptTeamInvitation(context.Context, *IdRequest) (*common.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AcceptTeamInvitation not implemented")
+}
+func (UnimplementedCruxTeamServer) DeclineTeamInvitation(context.Context, *IdRequest) (*common.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeclineTeamInvitation not implemented")
 }
 func (UnimplementedCruxTeamServer) SelectTeam(context.Context, *IdRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SelectTeam not implemented")
@@ -2441,6 +2469,24 @@ func _CruxTeam_InviteUserToTeam_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CruxTeam_ReinviteUserToTeam_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReinviteUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CruxTeamServer).ReinviteUserToTeam(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crux.CruxTeam/ReinviteUserToTeam",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CruxTeamServer).ReinviteUserToTeam(ctx, req.(*ReinviteUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _CruxTeam_DeleteUserFromTeam_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteUserFromTeamRequest)
 	if err := dec(in); err != nil {
@@ -2459,20 +2505,38 @@ func _CruxTeam_DeleteUserFromTeam_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _CruxTeam_AcceptTeamInvite_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _CruxTeam_AcceptTeamInvitation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(IdRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CruxTeamServer).AcceptTeamInvite(ctx, in)
+		return srv.(CruxTeamServer).AcceptTeamInvitation(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/crux.CruxTeam/AcceptTeamInvite",
+		FullMethod: "/crux.CruxTeam/AcceptTeamInvitation",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CruxTeamServer).AcceptTeamInvite(ctx, req.(*IdRequest))
+		return srv.(CruxTeamServer).AcceptTeamInvitation(ctx, req.(*IdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CruxTeam_DeclineTeamInvitation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CruxTeamServer).DeclineTeamInvitation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crux.CruxTeam/DeclineTeamInvitation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CruxTeamServer).DeclineTeamInvitation(ctx, req.(*IdRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -2581,12 +2645,20 @@ var CruxTeam_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _CruxTeam_InviteUserToTeam_Handler,
 		},
 		{
+			MethodName: "ReinviteUserToTeam",
+			Handler:    _CruxTeam_ReinviteUserToTeam_Handler,
+		},
+		{
 			MethodName: "DeleteUserFromTeam",
 			Handler:    _CruxTeam_DeleteUserFromTeam_Handler,
 		},
 		{
-			MethodName: "AcceptTeamInvite",
-			Handler:    _CruxTeam_AcceptTeamInvite_Handler,
+			MethodName: "AcceptTeamInvitation",
+			Handler:    _CruxTeam_AcceptTeamInvitation_Handler,
+		},
+		{
+			MethodName: "DeclineTeamInvitation",
+			Handler:    _CruxTeam_DeclineTeamInvitation_Handler,
 		},
 		{
 			MethodName: "SelectTeam",

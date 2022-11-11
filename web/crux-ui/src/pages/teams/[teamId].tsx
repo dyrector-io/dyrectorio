@@ -12,7 +12,7 @@ import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { roleToText, Team, TeamDetails, User, userIsAdmin, userIsOwner, UserRole } from '@app/models'
-import { ROUTE_TEAMS, teamApiUrl, teamUrl, userApiUrl } from '@app/routes'
+import { ROUTE_TEAMS, teamApiUrl, teamReinviteUrl, teamUrl, userApiUrl } from '@app/routes'
 import { redirectTo, utcDateToLocale, withContextAuthorization } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
 import { cruxFromContext } from '@server/crux/crux'
@@ -23,6 +23,7 @@ import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
 import { useRef, useState } from 'react'
+import toast from 'react-hot-toast'
 
 interface TeamDetailsPageProps {
   me: Identity
@@ -84,6 +85,30 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
   }
 
   const onInviteUser = () => setDetailsState('inviting')
+
+  const onReinviteUser = async (user: User) => {
+    const res = await fetch(teamReinviteUrl(team.id, user.id), {
+      method: 'POST',
+    })
+
+    if (res.ok) {
+      const users = [...team.users]
+      const index = users.indexOf(user)
+      users[index] = {
+        ...user,
+        status: 'pending',
+      }
+
+      setTeam({
+        ...team,
+        users,
+      })
+    } else if (res.status === 412) {
+      toast.error(t('invitationNotExpired'))
+    } else {
+      handleApiError(res)
+    }
+  }
 
   const onUserInvited = (user: User) => {
     setDetailsState('none')
@@ -154,16 +179,31 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
     </div>,
     <div>{it.lastLogin ? utcDateToLocale(it.lastLogin) : t('never')}</div>,
     <UserStatusTag className="my-auto w-fit" status={it.status} />,
-    detailsState !== 'none' || !canEdit || it.role === 'owner' ? null : (
-      <Image
-        className="cursor-pointer mr-16"
-        src="/trash-can.svg"
-        alt={t('common:delete')}
-        width={24}
-        height={24}
-        onClick={() => onDeleteUser(it)}
-      />
-    ),
+    <div>
+      {it.status !== 'expired' ? null : (
+        <Image
+          className="cursor-pointer mr-16"
+          src="/restart.svg"
+          alt={t('common:delete')}
+          width={24}
+          height={24}
+          layout="fixed"
+          onClick={() => onReinviteUser(it)}
+        />
+      )}
+
+      {detailsState !== 'none' || !canEdit || it.role === 'owner' ? null : (
+        <Image
+          className="cursor-pointer mr-16"
+          src="/trash-can.svg"
+          alt={t('common:delete')}
+          width={24}
+          height={24}
+          layout="fixed"
+          onClick={() => onDeleteUser(it)}
+        />
+      )}
+    </div>,
   ]
   /* eslint-enable react/jsx-key */
 

@@ -7,7 +7,7 @@ import DyoMessage from '@app/elements/dyo-message'
 import DyoSingleFormHeading from '@app/elements/dyo-single-form-heading'
 import useTimer from '@app/hooks/use-timer'
 import { DyoErrorDto, RecoverEmail } from '@app/models'
-import { API_RECOVERY, ROUTE_INDEX, ROUTE_INVITE, ROUTE_RECOVERY } from '@app/routes'
+import { API_RECOVERY, ROUTE_INDEX, ROUTE_RECOVERY, ROUTE_RECOVERY_EXPIRED } from '@app/routes'
 import { findAttributes, findError, findMessage, isDyoError, redirectTo, upsertDyoError } from '@app/utils'
 import { SelfServiceRecoveryFlow } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'
@@ -146,7 +146,7 @@ const getPageServerSideProps = async (context: NextPageContext) => {
     }
   } catch (err) {
     if (err?.response?.status === 403) {
-      return redirectTo(`${ROUTE_INVITE}?expired=true`)
+      return redirectTo(ROUTE_RECOVERY_EXPIRED)
     }
     return redirectTo(ROUTE_RECOVERY)
   }

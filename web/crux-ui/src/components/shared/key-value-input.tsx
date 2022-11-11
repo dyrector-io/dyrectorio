@@ -8,7 +8,7 @@ import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { HTMLInputTypeAttribute, useEffect } from 'react'
 import { v4 as uuid } from 'uuid'
-import yup from 'yup'
+import * as yup from 'yup'
 import MultiInput from '../editor/multi-input'
 import { EditorStateOptions } from '../editor/use-editor-state'
 

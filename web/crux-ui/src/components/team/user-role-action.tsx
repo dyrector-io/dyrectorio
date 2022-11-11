@@ -28,28 +28,30 @@ const UserRoleAction = (props: UserRoleActionProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const onUpdateUserRole = (updatedRole: UserRole, promote: boolean) =>
-    confirmRoleUpdate(
-      async () => {
-        setUpdating(true)
+  const onUpdateUserRole = async (updatedRole: UserRole, promote: boolean) => {
+    const confirmed = await confirmRoleUpdate(null, {
+      description: t('confirmRoleAction', {
+        action: t(promote ? 'promote' : 'demote'),
+        user: user.name !== '' ? user.name : user.email,
+        role: t(`common:role.${updatedRole}`),
+      }),
+    })
 
-        const res = await sendForm('PUT', userRoleApiUrl(teamId, user.id), updatedRole)
-        if (res.ok) {
-          onRoleUpdated(updatedRole)
-        } else {
-          handleApiError(res)
-        }
+    if (!confirmed) {
+      return
+    }
 
-        setUpdating(false)
-      },
-      {
-        description: t('confirmRoleAction', {
-          action: t(promote ? 'promote' : 'demote'),
-          user: user.name !== '' ? user.name : user.email,
-          role: t(`common:role.${updatedRole}`),
-        }),
-      },
-    )
+    setUpdating(true)
+
+    const res = await sendForm('PUT', userRoleApiUrl(teamId, user.id), updatedRole)
+    if (res.ok) {
+      onRoleUpdated(updatedRole)
+    } else {
+      handleApiError(res)
+    }
+
+    setUpdating(false)
+  }
 
   return (
     <div className={className}>
@@ -57,6 +59,7 @@ const UserRoleAction = (props: UserRoleActionProps) => {
         <LoadingIndicator />
       ) : role === 'admin' ? (
         <Image
+          className="cursor-pointer"
           src="/arrow_down.svg"
           alt={t('demote')}
           width={16}
@@ -65,6 +68,7 @@ const UserRoleAction = (props: UserRoleActionProps) => {
         />
       ) : role === 'user' ? (
         <Image
+          className="cursor-pointer"
           src="/arrow_up.svg"
           alt={t('promote')}
           width={16}

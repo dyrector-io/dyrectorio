@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { Configuration, Identity, Session, V0alpha2Api } from '@ory/kratos-client'
+import { randomUUID } from 'crypto'
+import { IdentityAdminMetadata, IdentityTraits, KRATOS_IDENTITY_SCHEMA } from 'src/shared/model'
 
 const EMAIL = 'email'
 
@@ -37,12 +39,24 @@ export default class KratosService {
     return new Map(data)
   }
 
-  async createUser(email: string): Promise<Identity> {
+  async createUser(traits: IdentityTraits): Promise<Identity> {
+    const adminMetadata: IdentityAdminMetadata = {
+      noPassword: true,
+    }
+
     const res = await this.kratos.adminCreateIdentity({
-      schema_id: 'default',
-      traits: {
-        email,
-      },
+      schema_id: KRATOS_IDENTITY_SCHEMA,
+      metadata_admin: adminMetadata,
+      traits,
+      verifiable_addresses: [
+        {
+          id: randomUUID(),
+          status: 'completed',
+          value: traits.email,
+          verified: true,
+          via: 'email',
+        },
+      ],
     })
 
     return res.data

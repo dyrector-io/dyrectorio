@@ -18,6 +18,7 @@ import {
   DeleteUserFromTeamRequest,
   IdRequest,
   InviteUserRequest,
+  ReinviteUserRequest,
   TeamDetailsResponse,
   UpdateTeamRequest,
   UpdateUserRoleInTeamRequest,
@@ -29,13 +30,10 @@ import EmailService from 'src/mailer/email.service'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
-import { REGISTRY_HUB_URL } from 'src/shared/const'
-import EmailBuilder from '../../builders/email.builder'
+import { REGISTRY_HUB_URL, TEAM_INVITATION_EXPIRATION } from 'src/shared/const'
+import EmailBuilder, { InviteTemplateOptions } from '../../builders/email.builder'
 import TeamMapper from './team.mapper'
 import TeamRepository from './team.repository'
-
-const VALIDITY_DAY = 1
-const EPOCH_TIME = 24 * 60 * 60 * 1000 // 1 day in millis
 
 @Injectable()
 export default class TeamService {
@@ -72,6 +70,7 @@ export default class TeamService {
     const invitations = await this.prisma.userInvitation.findMany({
       where: {
         userId: request.accessedBy,
+        status: 'pending',
       },
       select: {
         team: {
@@ -249,19 +248,19 @@ export default class TeamService {
     return Empty
   }
 
-  async updateUserRole(request: UpdateUserRoleInTeamRequest): Promise<Empty> {
+  async updateUserRole(req: UpdateUserRoleInTeamRequest): Promise<Empty> {
     await this.prisma.usersOnTeams.update({
       where: {
         userId_teamId: {
-          teamId: request.id,
-          userId: request.userId,
+          teamId: req.id,
+          userId: req.userId,
         },
       },
       data: {
-        role: this.mapper.roleToDb(request.role),
+        role: this.mapper.roleToDb(req.role),
         team: {
           update: {
-            updatedBy: request.accessedBy,
+            updatedBy: req.accessedBy,
           },
         },
       },
@@ -289,7 +288,13 @@ export default class TeamService {
     let hasSession = false
 
     if (!user) {
-      user = await this.kratos.createUser(request.email)
+      user = await this.kratos.createUser({
+        email: request.email,
+        name: {
+          first: request.firstName,
+          last: request.lastName ?? undefined,
+        },
+      })
     } else {
       // Check if User is already in the Team
       const userOnTeam = team.users.find(it => it.userId === user.id)
@@ -307,9 +312,14 @@ export default class TeamService {
     }
 
     // Build emailItem
-    const teamId = hasSession ? team.id : null
     const recoveryLink = !hasSession ? await this.kratos.createRecoveryLink(user) : null
-    const emailItem = this.emailBuilder.buildInviteEmail(request.email, team.name, teamId, recoveryLink)
+    const inviteTemplate: InviteTemplateOptions = {
+      teamId: team.id,
+      teamName: team.name,
+      kratosRecoveryLink: recoveryLink,
+    }
+
+    const emailItem = this.emailBuilder.buildInviteEmail(request.email, inviteTemplate)
 
     // Send email
     const mailSent = await this.emailService.sendEmail(emailItem)
@@ -319,17 +329,41 @@ export default class TeamService {
       throw new MailServiceException()
     }
 
+    const invite = await this.prisma.userInvitation.create({
+      data: {
+        userId: user.id,
+        teamId: team.id,
+        email: request.email,
+      },
+    })
+
     await this.notificationService.sendNotification({
       identityId: request.accessedBy,
       messageType: 'invite',
       message: { subject: request.email, team: team.name } as InviteMessage,
     })
 
-    const invite = await this.prisma.userInvitation.create({
+    return CreateEntityResponse.fromJSON({
+      id: invite.userId,
+      createdAt: invite.createdAt,
+    })
+  }
+
+  async reinviteUserToTeam(request: ReinviteUserRequest): Promise<CreateEntityResponse> {
+    const invite = await this.prisma.userInvitation.update({
+      where: {
+        userId_teamId: {
+          userId: request.userId,
+          teamId: request.id,
+        },
+      },
       data: {
-        userId: user.id,
-        teamId: team.id,
-        email: request.email,
+        status: 'pending',
+        createdAt: new Date(),
+      },
+      select: {
+        userId: true,
+        createdAt: true,
       },
     })
 
@@ -339,9 +373,8 @@ export default class TeamService {
     })
   }
 
-  async acceptTeamInvite(request: IdRequest, call: ServerUnaryCall<IdRequest, Promise<void>>): Promise<void> {
-    // Check User invite is valid
-    const userInvite = await this.prisma.userInvitation.findUniqueOrThrow({
+  async acceptTeamInvitation(request: IdRequest, call: ServerUnaryCall<IdRequest, Promise<void>>): Promise<void> {
+    const invite = await this.prisma.userInvitation.findUniqueOrThrow({
       where: {
         userId_teamId: {
           userId: request.accessedBy,
@@ -350,12 +383,23 @@ export default class TeamService {
       },
     })
 
-    // Add one extra day to CreatedAt
-    const validUntil = new Date(userInvite.createdAt.getTime() + VALIDITY_DAY * EPOCH_TIME)
-    const rightNowTime = new Date().getTime()
+    const validUntil = new Date(invite.createdAt.getTime() + TEAM_INVITATION_EXPIRATION)
+    const now = new Date().getTime()
 
     // TECHDEBT Outsource the Date checker function
-    if (rightNowTime >= validUntil.getTime()) {
+    if (now >= validUntil.getTime()) {
+      await this.prisma.userInvitation.update({
+        where: {
+          userId_teamId: {
+            userId: request.accessedBy,
+            teamId: request.id,
+          },
+        },
+        data: {
+          status: 'expired',
+        },
+      })
+
       throw new PreconditionFailedException({
         message: 'Invitation link is expired. ',
         property: 'teamId',
@@ -368,8 +412,8 @@ export default class TeamService {
     await this.prisma.$transaction(async prisma => {
       await prisma.usersOnTeams.create({
         data: {
-          userId: userInvite.userId,
-          teamId: userInvite.teamId,
+          userId: invite.userId,
+          teamId: invite.teamId,
           active: !userHasTeam,
           role: 'user',
         },
@@ -378,9 +422,9 @@ export default class TeamService {
       await prisma.userInvitation.delete({
         where: {
           userId_teamId_email: {
-            userId: userInvite.userId,
-            teamId: userInvite.teamId,
-            email: userInvite.email,
+            userId: invite.userId,
+            teamId: invite.teamId,
+            email: invite.email,
           },
         },
       })
@@ -392,6 +436,29 @@ export default class TeamService {
           teamId: request.id,
         },
       })
+    })
+  }
+
+  async declineTeamInvitation(request: IdRequest): Promise<void> {
+    const invitation = await this.prisma.userInvitation.findUniqueOrThrow({
+      where: {
+        userId_teamId: {
+          userId: request.accessedBy,
+          teamId: request.id,
+        },
+      },
+    })
+
+    await this.prisma.userInvitation.update({
+      where: {
+        userId_teamId: {
+          userId: invitation.userId,
+          teamId: invitation.teamId,
+        },
+      },
+      data: {
+        status: 'declined',
+      },
     })
   }
 

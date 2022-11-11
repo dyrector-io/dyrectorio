@@ -55,6 +55,8 @@ export type ContainerLogDriverType = typeof CONTAINER_LOG_DRIVER_VALUES[number]
 
 export type ContainerConfigData = Omit<ContainerConfig, 'id' | 'imageId'>
 
+export const KRATOS_IDENTITY_SCHEMA = 'default'
+
 export type IdentityTraits = {
   email: string
   name?: IdentityTraitsName
@@ -63,6 +65,10 @@ export type IdentityTraits = {
 export type IdentityTraitsName = {
   first?: string
   last?: string
+}
+
+export type IdentityAdminMetadata = {
+  noPassword: boolean
 }
 
 export const nameOfIdentity = (identity: Identity) => {

@@ -18,6 +18,8 @@ export type Register = {
   captcha?: string
   email: string
   password: string
+  firstName: string
+  lastName?: string
 }
 
 export type RecoverEmail = {
@@ -48,6 +50,10 @@ export type ChangePassword = {
   flow: string
   csrfToken: string
   password: string
+}
+
+export type IdentityAdminMetadata = {
+  noPassword: boolean
 }
 
 export type IdentityTraitsName = {

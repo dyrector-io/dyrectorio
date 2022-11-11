@@ -25,6 +25,7 @@ import {
   DeleteUserFromTeamRequest,
   IdRequest,
   InviteUserRequest,
+  ReinviteUserRequest,
   TeamDetailsResponse,
   UpdateTeamRequest,
   UpdateUserRoleInTeamRequest,
@@ -159,8 +160,8 @@ class DyoTeamService {
   async inviteUser(teamId: string, dto: InviteUser): Promise<User> {
     const req: InviteUserRequest = {
       id: teamId,
-      email: dto.email,
       accessedBy: this.identity.id,
+      ...dto,
     }
 
     const res = await protomisify<InviteUserRequest, CreateEntityResponse>(this.client, this.client.inviteUserToTeam)(
@@ -168,10 +169,15 @@ class DyoTeamService {
       req,
     )
 
+    let name = dto.firstName
+    if (dto.lastName) {
+      name += ` ${dto.lastName}`
+    }
+
     return {
       id: res.id,
       email: dto.email,
-      name: null,
+      name,
       role: 'user',
       status: 'pending',
     }
@@ -192,13 +198,32 @@ class DyoTeamService {
     this.registryConnections.resetAuthorization(this.identity)
   }
 
+  async reinviteUser(teamId: string, userId: string): Promise<void> {
+    const req: ReinviteUserRequest = {
+      id: teamId,
+      accessedBy: this.identity.id,
+      userId,
+    }
+
+    await protomisify<ReinviteUserRequest, Empty>(this.client, this.client.reinviteUserToTeam)(ReinviteUserRequest, req)
+  }
+
   async acceptInvitation(teamId: string): Promise<void> {
     const req: IdRequest = {
       id: teamId,
       accessedBy: this.identity.id,
     }
 
-    await protomisify<IdRequest, Empty>(this.client, this.client.acceptTeamInvite)(IdRequest, req)
+    await protomisify<IdRequest, Empty>(this.client, this.client.acceptTeamInvitation)(IdRequest, req)
+  }
+
+  async declineInvitation(teamId: string): Promise<void> {
+    const req: IdRequest = {
+      id: teamId,
+      accessedBy: this.identity.id,
+    }
+
+    await protomisify<IdRequest, Empty>(this.client, this.client.declineTeamInvitation)(IdRequest, req)
   }
 
   async getAllTeams(): Promise<Team[]> {

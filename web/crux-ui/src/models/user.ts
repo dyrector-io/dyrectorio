@@ -1,7 +1,7 @@
 export const USER_ROLE_VALUES = ['owner', 'admin', 'user'] as const
 export type UserRole = typeof USER_ROLE_VALUES[number]
 
-export type UserStatus = 'pending' | 'verified'
+export type UserStatus = 'pending' | 'verified' | 'expired' | 'declined'
 
 export type User = {
   id: string
@@ -14,6 +14,8 @@ export type User = {
 
 export type InviteUser = {
   email: string
+  firstName: string
+  lastName?: string
 }
 
 export type UserMeta = {

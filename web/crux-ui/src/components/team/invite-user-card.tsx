@@ -30,6 +30,8 @@ const InviteUserCard = (props: InviteUserCardProps) => {
     validationSchema: inviteUserSchema,
     initialValues: {
       email: '',
+      firstName: '',
+      lastName: '',
     },
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
@@ -61,9 +63,9 @@ const InviteUserCard = (props: InviteUserCardProps) => {
 
       <DyoLabel textColor="text-bright-muted">{t('tips')}</DyoLabel>
 
-      <form className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
+      <form className="flex flex-row gap-4" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
         <DyoInput
-          className="max-w-lg"
+          containerClassName="w-2/4 max-w-lg"
           grow
           name="email"
           type="email"
@@ -72,6 +74,28 @@ const InviteUserCard = (props: InviteUserCardProps) => {
           onChange={formik.handleChange}
           value={formik.values.email}
           message={formik.errors.email}
+        />
+
+        <DyoInput
+          containerClassName="w-1/4"
+          grow
+          label={t('common:firstName')}
+          name="firstName"
+          onChange={formik.handleChange}
+          value={formik.values.firstName}
+          message={formik.errors.firstName}
+          messageType="error"
+        />
+
+        <DyoInput
+          containerClassName="w-1/4"
+          grow
+          label={t('common:lastName')}
+          name="lastName"
+          onChange={formik.handleChange}
+          value={formik.values.lastName}
+          message={formik.errors.lastName}
+          messageType="error"
         />
 
         <DyoButton className="hidden" type="submit" />

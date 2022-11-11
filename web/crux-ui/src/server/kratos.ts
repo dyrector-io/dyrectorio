@@ -1,6 +1,6 @@
 import { HEADER_SET_COOKIE } from '@app/const'
 import { missingParameter } from '@app/error-responses'
-import { DEFAULT_SERVICE_INFO, ServiceInfo } from '@app/models'
+import { DEFAULT_SERVICE_INFO, IdentityAdminMetadata, ServiceInfo } from '@app/models'
 import { Configuration, Identity, MetadataApi, Session, V0alpha2Api } from '@ory/kratos-client'
 import { AxiosResponse } from 'axios'
 import http from 'http'
@@ -8,11 +8,53 @@ import { NextApiRequest, NextPageContext } from 'next'
 
 const config = new Configuration({ basePath: process.env.KRATOS_URL })
 const kratos = new V0alpha2Api(config)
-const meta = new MetadataApi(
+
+const kratosAdmin = new V0alpha2Api(
   new Configuration({
-    basePath: process.env.KRATOS_ADMIN_URL ?? process.env.KRATOS_URL,
+    basePath: process.env.KRATOS_ADMIN_URL,
   }),
 )
+
+const meta = new MetadataApi(
+  new Configuration({
+    basePath: process.env.KRATOS_ADMIN_URL,
+  }),
+)
+
+export const identityHasNoPassword = async (session: Session): Promise<boolean> => {
+  const authenticatedWithRecovery = session.authentication_methods?.filter(it => it.method === 'link_recovery')
+  if (!authenticatedWithRecovery) {
+    return false
+  }
+
+  const identity = await (await kratosAdmin.adminGetIdentity(session.identity.id)).data
+  const { password: passwordCredentials } = identity.credentials
+  if (!passwordCredentials) {
+    return false
+  }
+
+  const metadata = identity.metadata_admin as IdentityAdminMetadata
+
+  return !!metadata?.noPassword
+}
+
+export const identityPasswordSet = async (session: Session): Promise<void> => {
+  const identity = (await kratosAdmin.adminGetIdentity(session.identity.id)).data
+  const metadata = identity.metadata_admin as IdentityAdminMetadata
+
+  if (metadata) {
+    kratosAdmin.adminUpdateIdentity(identity.id, {
+      schema_id: identity.schema_id,
+      state: identity.state,
+      traits: identity.traits,
+      metadata_admin: {
+        ...metadata,
+        noPassword: false,
+      },
+      metadata_public: identity.metadata_public,
+    })
+  }
+}
 
 export const getKratosServiceStatus = async (): Promise<ServiceInfo> => {
   try {

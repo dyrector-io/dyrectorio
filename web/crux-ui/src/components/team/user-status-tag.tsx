@@ -13,6 +13,10 @@ const UserStatusTag = (props: UserStatusTagProps) => {
     switch (status) {
       case 'pending':
         return 'bg-warning-orange'
+      case 'expired':
+        return 'bg-dyo-sky'
+      case 'declined':
+        return 'bg-error-red'
       case 'verified':
         return 'bg-dyo-green'
       default:
@@ -24,6 +28,10 @@ const UserStatusTag = (props: UserStatusTagProps) => {
     switch (status) {
       case 'pending':
         return 'text-warning-orange'
+      case 'expired':
+        return 'text-dyo-sky'
+      case 'declined':
+        return 'text-error-red'
       case 'verified':
         return 'text-dyo-green'
       default:

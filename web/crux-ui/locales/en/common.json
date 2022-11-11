@@ -4,6 +4,8 @@
   "signUp": "Sign up",
   "email": "E-mail",
   "name": "Name",
+  "firstName": "First name",
+  "lastName": "Last name",
   "password": "Password",
   "confirmPass": "Confirm password",
   "send": "Send",

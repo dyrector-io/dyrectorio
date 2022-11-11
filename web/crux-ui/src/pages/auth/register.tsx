@@ -18,6 +18,7 @@ import {
   upsertDyoError,
   upsertError,
 } from '@app/utils'
+import { registerSchema } from '@app/validations'
 import { SelfServiceRegistrationFlow } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'
 import kratos, { forwardCookie, obtainKratosSession } from '@server/kratos'
@@ -46,10 +47,13 @@ const RegisterPage = (props: RegisterPageProps) => {
 
   const recaptcha = useRef<ReCAPTCHA>()
   const formik = useFormik({
+    validationSchema: registerSchema,
     initialValues: {
       email: '',
       password: '',
       confirmPassword: '',
+      firstName: '',
+      lastName: '',
     },
     onSubmit: async values => {
       if (values.password !== values.confirmPassword) {
@@ -67,6 +71,8 @@ const RegisterPage = (props: RegisterPageProps) => {
         captcha,
         email: values.email,
         password: values.password,
+        firstName: values.firstName,
+        lastName: values.lastName,
       }
 
       const res = await fetch(API_AUTH_REGISTER, {
@@ -103,39 +109,67 @@ const RegisterPage = (props: RegisterPageProps) => {
         <form className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
           <DyoSingleFormHeading>{t('signUp')}</DyoSingleFormHeading>
 
-          <DyoInput
-            label={t('common:email')}
-            name="email"
-            type="email"
-            onChange={formik.handleChange}
-            value={formik.values.email}
-            message={findMessage(ui, 'traits.email')}
-          />
+          <div className="grid grid-cols-2 gap-x-4">
+            <DyoInput
+              containerClassName="order-1"
+              label={t('common:email')}
+              name="email"
+              type="email"
+              onChange={formik.handleChange}
+              value={formik.values.email}
+              message={formik.errors.email ?? findMessage(ui, 'traits.email')}
+            />
 
-          <DyoInput
-            label={t('common:password')}
-            name="password"
-            type="password"
-            onChange={formik.handleChange}
-            value={formik.values.password}
-            message={findMessage(ui, 'password')}
-          />
+            <DyoInput
+              containerClassName="order-3"
+              label={t('common:password')}
+              name="password"
+              type="password"
+              onChange={formik.handleChange}
+              value={formik.values.password}
+              message={formik.errors.password ?? findMessage(ui, 'password')}
+            />
 
-          <DyoInput
-            label={t('common:confirmPass')}
-            name="confirmPassword"
-            type="password"
-            onChange={formik.handleChange}
-            value={formik.values.confirmPassword}
-            message={findError(errors, 'confirmPassword', it => t(`errors:${it.error}`))}
-            messageType="error"
-          />
+            <DyoInput
+              containerClassName="order-5"
+              label={t('common:confirmPass')}
+              name="confirmPassword"
+              type="password"
+              onChange={formik.handleChange}
+              value={formik.values.confirmPassword}
+              message={
+                formik.errors.confirmPassword ?? findError(errors, 'confirmPassword', it => t(`errors:${it.error}`))
+              }
+              messageType="error"
+            />
+
+            <DyoInput
+              containerClassName="order-2"
+              label={t('common:firstName')}
+              name="firstName"
+              onChange={formik.handleChange}
+              value={formik.values.firstName}
+              message={formik.errors.firstName}
+              messageType="error"
+            />
+
+            <DyoInput
+              containerClassName="order-4"
+              label={t('common:lastName')}
+              name="lastName"
+              onChange={formik.handleChange}
+              value={formik.values.lastName}
+              message={formik.errors.lastName}
+              messageType="error"
+            />
+          </div>
 
           {ui.messages?.map((it, index) => (
-            <DyoMessage key={`error-${index}`} message={it.text} />
+            <DyoMessage className="text-xs italic max-w-xl mt-2" key={`error-${index}`} message={it.text} />
           ))}
 
           <DyoMessage
+            className="text-xs italic max-w-xl mt-2"
             message={findError(errors, 'captcha', it =>
               t(`errors:${it.error}`, {
                 name: it.value,
@@ -144,7 +178,7 @@ const RegisterPage = (props: RegisterPageProps) => {
             messageType="error"
           />
 
-          <DyoButton className="mt-8" type="submit">
+          <DyoButton className="mx-40 mt-8" type="submit">
             {t('createAcc')}
           </DyoButton>
 

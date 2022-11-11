@@ -36,6 +36,7 @@ const SettingsPage = (props: Identity) => {
           <Link href={ROUTE_SETTINGS_EDIT_PROFILE} passHref>
             <DyoButton>{t('editProfile')}</DyoButton>
           </Link>
+
           <Link href={ROUTE_SETTINGS_CHANGE_PASSWORD} passHref>
             <DyoButton>{t('changePass')}</DyoButton>
           </Link>
@@ -49,14 +50,23 @@ const SettingsPage = (props: Identity) => {
         <DyoLabel textColor="text-bright-muted">{t('tips')}</DyoLabel>
         <div className="flex flex-col w-1/2">
           <DyoInput
-            label={t('firstName')}
+            label={t('common:firstName')}
             name="firstName"
             type="text"
             defaultValue={traits.name?.first}
             disabled
             grow
           />
-          <DyoInput label={t('lastName')} name="lastName" type="text" defaultValue={traits.name?.last} disabled grow />
+
+          <DyoInput
+            label={t('common:lastName')}
+            name="lastName"
+            type="text"
+            defaultValue={traits.name?.last}
+            disabled
+            grow
+          />
+
           <DyoInput label={t('common:email')} name="email" type="email" defaultValue={traits.email} disabled grow />
         </div>
       </DyoCard>

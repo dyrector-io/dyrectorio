@@ -1,5 +1,5 @@
 import { UiContainer, UiNodeInputAttributes } from '@ory/kratos-client'
-import { IncomingMessageWithSession, obtainKratosSession, userVerified } from '@server/kratos'
+import { identityHasNoPassword, IncomingMessageWithSession, obtainKratosSession, userVerified } from '@server/kratos'
 import { FormikErrors, FormikHandlers, FormikState } from 'formik'
 import {
   GetServerSideProps,
@@ -13,7 +13,7 @@ import { NextRouter } from 'next/router'
 import toast, { ToastOptions } from 'react-hot-toast'
 import { DyoApiError, DyoErrorDto, DyoFetchError, RegistryDetails } from './models'
 import { Timestamp } from './models/grpc/google/protobuf/timestamp'
-import { ROUTE_404, ROUTE_INDEX, ROUTE_LOGIN, ROUTE_STATUS, ROUTE_VERIFICATION } from './routes'
+import { ROUTE_404, ROUTE_INDEX, ROUTE_LOGIN, ROUTE_NO_PASSWORD, ROUTE_STATUS, ROUTE_VERIFICATION } from './routes'
 
 export type AsyncVoidFunction = () => Promise<void>
 
@@ -298,21 +298,9 @@ const dyoApiErrorStatusToRedirectUrl = (status: number): string => {
   }
 }
 
-export const withContextAuthorization =
+export const withContextErrorHandling =
   <T>(getServerSideProps: CruxGetServerSideProps<T>): GetServerSideProps<T> =>
   async (context: GetServerSidePropsContext) => {
-    const req = context.req as IncomingMessageWithSession
-
-    const session = await obtainKratosSession(req)
-    if (!session) {
-      return redirectTo(ROUTE_LOGIN)
-    }
-    if (!userVerified(session.identity)) {
-      return redirectTo(ROUTE_VERIFICATION)
-    }
-
-    req.session = session
-
     try {
       const props = await getServerSideProps(context as any as NextPageContext)
       return props
@@ -327,6 +315,30 @@ export const withContextAuthorization =
       }
       throw err
     }
+  }
+
+export const withContextAuthorization =
+  <T>(getServerSideProps: CruxGetServerSideProps<T>): GetServerSideProps<T> =>
+  async (context: GetServerSidePropsContext) => {
+    const req = context.req as IncomingMessageWithSession
+
+    const session = await obtainKratosSession(req)
+    if (!session) {
+      return redirectTo(ROUTE_LOGIN)
+    }
+
+    const hasNoPassword = await identityHasNoPassword(session)
+    if (hasNoPassword) {
+      return redirectTo(ROUTE_NO_PASSWORD)
+    }
+
+    if (!userVerified(session.identity)) {
+      return redirectTo(ROUTE_VERIFICATION)
+    }
+
+    req.session = session
+
+    return withContextErrorHandling(getServerSideProps)(context)
   }
 
 export const parseStringUnionType = <T>(value: string, fallback: T, validValues: ReadonlyArray<T>): T => {

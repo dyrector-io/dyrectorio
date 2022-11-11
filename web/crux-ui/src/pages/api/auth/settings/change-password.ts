@@ -1,5 +1,5 @@
 import { ChangePassword } from '@app/models'
-import kratos, { cookieOf } from '@server/kratos'
+import kratos, { cookieOf, identityPasswordSet, sessionOf } from '@server/kratos'
 import useKratosErrorMiddleware from '@server/kratos-error-middleware'
 import { withMiddlewares } from '@server/middlewares'
 import { NextApiRequest, NextApiResponse } from 'next'
@@ -19,7 +19,12 @@ const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
     cookie,
   )
 
-  res.status(kratosRes.status).end()
+  if (kratosRes.status === 200) {
+    const session = sessionOf(req)
+    await identityPasswordSet(session)
+  }
+
+  res.status(kratosRes.status).json(kratosRes.data)
 }
 
 export default withMiddlewares(

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { Identity, Session } from '@ory/kratos-client'
-import { Team, UserInvitation, UserRoleEnum, UsersOnTeams } from '@prisma/client'
+import { Team, UserInvitation, UserInvitationStatusEnum, UserRoleEnum, UsersOnTeams } from '@prisma/client'
 import { toTimestamp } from 'src/domain/utils'
 import {
   ActiveTeamDetailsResponse,
@@ -9,6 +9,7 @@ import {
   UserRole,
   UserStatus,
 } from 'src/grpc/protobuf/proto/crux'
+import { TEAM_INVITATION_EXPIRATION } from 'src/shared/const'
 import { IdentityTraits, nameOfIdentity } from 'src/shared/model'
 
 @Injectable()
@@ -47,12 +48,16 @@ export default class TeamMapper {
   private invitationToUserGrpc(inv: UserInvitation, identities: Map<string, Identity>): UserResponse {
     const identity = identities.get(inv.userId)
 
+    const now = new Date().getTime()
     return {
       id: inv.userId,
       email: inv.email,
       name: nameOfIdentity(identity),
       role: UserRole.USER,
-      status: UserStatus.PENDING,
+      status:
+        inv.status === 'pending' && now >= inv.createdAt.getTime() + TEAM_INVITATION_EXPIRATION
+          ? UserStatus.EXPIRED
+          : this.invitationStatusToGrpc(inv.status),
     }
   }
 
@@ -119,6 +124,17 @@ export default class TeamMapper {
         return 'admin'
       default:
         return 'user'
+    }
+  }
+
+  invitationStatusToGrpc(status: UserInvitationStatusEnum): UserStatus {
+    switch (status) {
+      case 'pending':
+        return UserStatus.PENDING
+      case 'declined':
+        return UserStatus.DECLINED
+      default:
+        return UserStatus.EXPIRED
     }
   }
 }
