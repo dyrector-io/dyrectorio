@@ -1,6 +1,14 @@
 #!/bin/sh
 
-ROOTLESS="${ROOTLESS:-false}"
+set -euo pipefail
+
+PLATFORM=$(uname -s)
+if [ ${PLATFORM:0:7} == "MINGW64" ]; then 
+  ROOTLESS="${ROOTLESS:-true}"
+else
+  ROOTLESS="${ROOTLESS:-false}"
+fi
+
 if [ $ROOTLESS != "true" ]; then
   if [ $(id -u) -ne 0 ]; then
     echo "Installation process needs root privileges" 1>&2
@@ -8,7 +16,6 @@ if [ $ROOTLESS != "true" ]; then
   fi
 fi
 
-set -euo pipefail
 
 set_environment() {
   MSYS_NO_PATHCONV=1
@@ -17,7 +24,7 @@ set_environment() {
   PERSISTENCE_FOLDER_FROM_CRUX="{{#if rootPath}}{{{rootPath}}}{{/if}}"
   if [ -z ${PERSISTENCE_FOLDER:-} ]; then
     if [ -z ${PERSISTENCE_FOLDER_FROM_CRUX:-} ]; then
-      case $(uname -s) in
+      case ${PLATFORM:0:7} in
       'Darwin')
         echo "Detected: Mac OS X"
         PERSISTENCE_FOLDER=$HOME/Library/Dyrectorio/srv/dagent
@@ -25,6 +32,10 @@ set_environment() {
       'Linux')
         echo "Detected: Linux"
         PERSISTENCE_FOLDER=/srv/dagent
+        ;;
+      'MINGW64')
+        echo "Detected: Windows(mingw64)"
+        PERSISTENCE_FOLDER="c:/srv/dagent"
         ;;
       *)
         echo "Not supported OS and PERSISTENCE_FOLDER is not set!"
@@ -48,6 +59,10 @@ set_environment() {
       fi
     fi
     CRI_EXECUTABLE="docker"
+  fi
+
+  if [ ${PLATFORM:0:7} == "MINGW64" ]; then 
+    HOST_DOCKER_SOCK_PATH="${HOST_DOCKER_SOCK_PATH:-//var/run/docker.sock}"
   fi
 
   if [ -z ${HOST_DOCKER_SOCK_PATH:-} ]; then
@@ -76,17 +91,23 @@ dagent_clean() {
   echo "Installing dyrector.io agent (dagent)..."
 
   if [ -n "$($CRI_EXECUTABLE container list --filter name=^dagent$ --filter=status=running --filter=status=restarting --filter=status=paused --format '\{{ .Names }}' 2>/dev/null)" ]; then
-    timeout 5 $CRI_EXECUTABLE stop dagent
+    set +e
+    $CRI_EXECUTABLE stop dagent
     if [ $? -ne 0 ]; then
+      set -e
       $CRI_EXECUTABLE kill dagent
     fi
+    set -e
   fi
 
   if [ -n "$($CRI_EXECUTABLE container list --filter name=^dagent$ --filter=status=exited --filter=status=created --filter=status=dead --format '\{{ .Names }}' 2>/dev/null)" ]; then
-    timeout 5 $CRI_EXECUTABLE rm dagent
+    set +e
+    $CRI_EXECUTABLE rm dagent
     if [ $? -ne 0 ]; then
+      set -e
       $CRI_EXECUTABLE rm -f dagent
     fi
+    set -e
   fi
 }
 
