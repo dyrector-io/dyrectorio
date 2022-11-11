@@ -6,7 +6,7 @@ import { utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
-import { useRouter } from 'next/router'
+import Link from 'next/link'
 import { DeploymentState } from './use-deployment-state'
 
 export interface DeploymentViewListProps {
@@ -18,7 +18,6 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
   const { instances } = state
 
   const { t } = useTranslation('common')
-  const router = useRouter()
 
   const columnWidths = ['w-3/12', 'w-3/12', 'w-2/12', 'w-3/12', 'w-1/12']
   const headers = ['containerName', 'common:registry', 'imageTag', 'common:createdAt', 'common:actions']
@@ -35,30 +34,21 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
     clsx('text-right pr-4', defaultItemClass),
   ]
 
-  const onInstanceSettings = (item: Instance) =>
-    router.push(instanceConfigUrl(state.product.id, state.version.id, state.deployment.id, item.id))
-
   const itemTemplate = (item: Instance) => [
-    <a>{item.image.name}</a>,
-    <a>{item.image.registryName}</a>,
+    item.image.name,
+    item.image.registryName,
     <div className="flex items-center">
       <a>
         {item.image.name}
         {item.image.tag ? `:${item.image.tag}` : null}
       </a>
     </div>,
-    <a>{item.image.createdAt ? utcDateToLocale(item.image.createdAt) : 'new'}</a>,
-    <div>
-      <div className="inline-block">
-        <Image
-          className="cursor-pointer"
-          src="/settings.svg"
-          width={24}
-          height={24}
-          onClick={() => onInstanceSettings(item)}
-        />
-      </div>
-    </div>,
+    item.image.createdAt ? utcDateToLocale(item.image.createdAt) : 'new',
+    <Link href={instanceConfigUrl(state.product.id, state.version.id, state.deployment.id, item.id)}>
+      <a>
+        <Image src="/settings.svg" width={24} height={24} />
+      </a>
+    </Link>,
   ]
 
   return (

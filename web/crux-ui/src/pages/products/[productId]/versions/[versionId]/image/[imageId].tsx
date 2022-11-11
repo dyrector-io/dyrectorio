@@ -26,25 +26,19 @@ import {
   ProductDetails,
   VersionDetails,
   VersionImage,
+  ViewState,
   WS_TYPE_DELETE_IMAGE,
   WS_TYPE_PATCH_IMAGE,
 } from '@app/models'
 import { imageConfigUrl, productUrl, ROUTE_PRODUCTS, versionUrl, versionWsUrl } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
-import { containerConfigSchema, getValidationError } from '@app/validations'
+import { getContainerConfigFieldErrors, jsonErrorOf } from '@app/validations/image'
 import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
 import { ValidationError } from 'yup'
-
-export const getContainerConfigFieldErrors = (newConfig: ContainerConfig): ValidationError[] =>
-  getValidationError(containerConfigSchema, newConfig, { abortEarly: false })?.inner ?? []
-
-export const jsonErrorOf = (fieldErrors: ValidationError[]) => (fieldErrors.length > 0 ? fieldErrors[0].message : null)
-
-export type ViewState = 'editor' | 'json'
 
 interface ImageDetailsPageProps {
   product: ProductDetails

@@ -17,16 +17,22 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoMessage from '@app/elements/dyo-message'
 import { defaultApiErrorHandler } from '@app/errors'
 import { useThrottling } from '@app/hooks/use-throttleing'
-import { ContainerConfig, DeploymentRoot, ImageConfigFilterType, imageConfigToJsonContainerConfig } from '@app/models'
+import {
+  ContainerConfig,
+  DeploymentRoot,
+  ImageConfigFilterType,
+  imageConfigToJsonContainerConfig,
+  ViewState,
+} from '@app/models'
 import { deploymentUrl, instanceConfigUrl, productUrl, ROUTE_PRODUCTS, versionUrl } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
+import { getContainerConfigFieldErrors, jsonErrorOf } from '@app/validations/image'
 import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 import { ValidationError } from 'yup'
-import { getContainerConfigFieldErrors, jsonErrorOf, ViewState } from '../../../image/[imageId]'
 
 interface InstanceDetailsPageProps {
   deployment: DeploymentRoot
@@ -151,7 +157,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
         <DyoCard className="flex flex-col mt-4 px-4 w-full">
           <CommonConfigSection
             disabled={!deploymentState.mutable}
-            filters={filters}
+            selectedFilters={filters}
             config={state.config}
             onChange={onChange}
             editorOptions={editorState}
@@ -160,16 +166,16 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
             definedSecrets={state.definedSecrets}
             publicKey={deployment.publicKey}
           />
-          <DagentConfigSection
+          <CraneConfigSection
             disabled={!deploymentState.mutable}
-            filters={filters}
+            selectedFilters={filters}
             config={state.config}
             onChange={onChange}
             editorOptions={editorState}
           />
-          <CraneConfigSection
+          <DagentConfigSection
             disabled={!deploymentState.mutable}
-            filters={filters}
+            selectedFilters={filters}
             config={state.config}
             onChange={onChange}
             editorOptions={editorState}

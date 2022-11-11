@@ -17,6 +17,8 @@ export type PatchVersionImage = {
   config?: Partial<ContainerConfig>
 }
 
+export type ViewState = 'editor' | 'json'
+
 // ws
 
 export const WS_TYPE_ADD_IMAGES = 'add-images'
