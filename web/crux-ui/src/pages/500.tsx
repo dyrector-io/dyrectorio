@@ -11,8 +11,6 @@ const Page500 = () => {
 
   const goBack = () => router.back()
 
-  const checkStatus = () => router.push(ROUTE_STATUS)
-
   return (
     <SingleFormLayout title={t('errors:internalError')}>
       <DyoHeading element="h2" className="self-center text-lg lg:text-2xl text-white font-extrabold mt-auto">
@@ -24,7 +22,7 @@ const Page500 = () => {
           {t('common:goBack')}
         </DyoButton>
 
-        <DyoButton className="ml-2 mr-auto px-12" onClick={checkStatus}>
+        <DyoButton className="ml-2 mr-auto px-12" href={ROUTE_STATUS}>
           {t('common:status')}
         </DyoButton>
       </div>

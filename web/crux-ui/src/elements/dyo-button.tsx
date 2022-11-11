@@ -1,4 +1,5 @@
 import clsx from 'clsx'
+import Link from 'next/link'
 import React from 'react'
 
 export interface DyoButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'ref'> {
@@ -10,6 +11,7 @@ export interface DyoButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButt
   text?: boolean
   color?: string
   textColor?: string
+  href?: string
 }
 
 const DyoButton = (props: DyoButtonProps) => {
@@ -23,6 +25,7 @@ const DyoButton = (props: DyoButtonProps) => {
     heightClassName,
     color: colorClassName,
     textColor: textColorClassName,
+    href,
     disabled,
     children,
     type,
@@ -50,7 +53,7 @@ const DyoButton = (props: DyoButtonProps) => {
   const font = !thin && (text || !outlined) ? 'font-semibold' : null
   const cursor = disabled ? 'cursor-not-allowed' : 'cursor-pointer'
 
-  return (
+  const button = (
     <button
       {...forwaredProps}
       disabled={disabled}
@@ -70,6 +73,14 @@ const DyoButton = (props: DyoButtonProps) => {
     >
       {children}
     </button>
+  )
+
+  return href ? (
+    <Link href={href}>
+      <a>{button}</a>
+    </Link>
+  ) : (
+    button
   )
 }
 

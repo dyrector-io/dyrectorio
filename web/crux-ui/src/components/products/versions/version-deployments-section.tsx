@@ -1,11 +1,13 @@
 import NodeStatusIndicator from '@app/components/nodes/node-status-indicator'
 import Filters from '@app/components/shared/filters'
+import AnchorAction from '@app/elements/dyo-anchor-action'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoList } from '@app/elements/dyo-list'
 import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
+import useAnchorActions from '@app/hooks/use-anchor-actions'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
@@ -29,6 +31,7 @@ import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { NextRouter, useRouter } from 'next/dist/client/router'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 import DeploymentStatusTag from './deployments/deployment-status-tag'
@@ -49,11 +52,9 @@ export const startDeployment = async (
     toast.error(json.description)
     return json
   }
-
   if (!res.ok) {
     return null
   }
-
   router.push(deploymentDeployUrl(productId, versionId, deploymentId))
 
   return null
@@ -78,6 +79,30 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   const [confirmationModal, copyDeployment] = useCopyDeploymentModal(handleApiError)
 
   const [showInfo, setShowInfo] = useState<DeploymentByVersion>(null)
+
+  const onDeploy = (deploymentId: string) => startDeployment(router, product.id, version.id, deploymentId)
+
+  const onCopyDeployment = async (deploymentId: string) => {
+    const url = await copyDeployment({
+      productId: product.id,
+      versionId: version.id,
+      deploymentId,
+    })
+
+    if (!url) {
+      return
+    }
+
+    router.push(url)
+  }
+
+  const anchors = useAnchorActions(
+    Object.fromEntries(
+      version.deployments
+        .map(it => [`startDeployment-${it.id}`, () => onDeploy(it.id)])
+        .concat(version.deployments.map(it => [`copyDeployment-${it.id}`, () => onCopyDeployment(it.id)])),
+    ),
+  )
 
   const filters = useFilters<DeploymentByVersion, DeploymentFilter>({
     filters: [
@@ -112,25 +137,6 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
 
   nodeSock.on(WS_TYPE_NODE_STATUS, (message: NodeStatusMessage) => updateNodeStatuses([message]))
 
-  const onNavigateToDeployment = (deployment: DeploymentByVersion) =>
-    router.push(deploymentUrl(product.id, version.id, deployment.id))
-
-  const onDeploy = (deployment: DeploymentByVersion) => startDeployment(router, product.id, version.id, deployment.id)
-
-  const onCopyDeployment = async (deployment: DeploymentByVersion) => {
-    const url = await copyDeployment({
-      productId: product.id,
-      versionId: version.id,
-      deploymentId: deployment.id,
-    })
-
-    if (!url) {
-      return
-    }
-
-    router.push(url)
-  }
-
   const headers = [
     ...['common:node', 'common:prefix', 'common:status', 'common:date', 'common:actions'].map(it => t(it)),
   ]
@@ -148,34 +154,35 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
 
     /* eslint-disable react/jsx-key */
     return [
-      <div className="flex cursor-pointer" onClick={() => onNavigateToDeployment(item)}>
-        <NodeStatusIndicator className="mr-2 place-items-center" status={item.nodeStatus} />
-        {item.nodeName}
-      </div>,
-      <div>{item.prefix}</div>,
+      <Link href={deploymentUrl(product.id, version.id, item.id)}>
+        <a className="flex place-items-center cursor-pointer">
+          <NodeStatusIndicator className="mr-2" status={item.nodeStatus} />
+          {item.nodeName}
+        </a>
+      </Link>,
+      item.prefix,
       <DeploymentStatusTag className="w-fit m-auto" status={item.status} />,
-      <div>{utcDateToLocale(item.date)}</div>,
+      <>{utcDateToLocale(item.date)}</>,
       <>
-        <div className="mr-2 inline-block">
-          <Image
-            src="/eye.svg"
-            alt={t('common:deploy')}
-            width={24}
-            height={24}
-            className="cursor-pointer"
-            onClick={() => onNavigateToDeployment(item)}
-          />
-        </div>
+        <Link href={deploymentUrl(product.id, version.id, item.id)}>
+          <a className="mr-2 inline-block cursor-pointer">
+            <Image src="/eye.svg" alt={t('common:deploy')} width={24} height={24} />
+          </a>
+        </Link>
         {mutable && (
-          <div className="mr-2 inline-block">
-            <Image
-              src="/deploy.svg"
-              alt={t('common:deploy')}
-              className={item.nodeStatus === 'running' ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
-              onClick={() => item.nodeStatus === 'running' && onDeploy(item)}
-              width={24}
-              height={24}
-            />
+          <div
+            className={clsx(
+              'mr-2 inline-block',
+              item.nodeStatus === 'running' ? 'cursor-pointer' : 'cursor-not-allowed opacity-30',
+            )}
+          >
+            <AnchorAction
+              href={`startDeployment-${item.id}`}
+              anchors={anchors}
+              disabled={item.nodeStatus !== 'running'}
+            >
+              <Image src="/deploy.svg" alt={t('common:deploy')} width={24} height={24} />
+            </AnchorAction>
           </div>
         )}
         <div className="mr-2 inline-block">
@@ -188,14 +195,20 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
             onClick={() => !!item.note && item.note.length > 0 && setShowInfo(item)}
           />
         </div>
-        <Image
-          src="/copy.svg"
-          alt={t('common:copy')}
-          width={24}
-          height={24}
-          className={deploymentIsCopyable(item.status) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
-          onClick={() => deploymentIsCopyable(item.status) && onCopyDeployment(item)}
-        />
+
+        <AnchorAction
+          href={`copyDeployment-${item.id}`}
+          anchors={anchors}
+          disabled={!deploymentIsCopyable(item.status)}
+        >
+          <Image
+            src="/copy.svg"
+            alt={t('common:copy')}
+            width={24}
+            height={24}
+            className={deploymentIsCopyable(item.status) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
+          />
+        </AnchorAction>
       </>,
     ]
     /* eslint-enable react/jsx-key */

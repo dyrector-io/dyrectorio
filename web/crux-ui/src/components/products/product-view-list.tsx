@@ -6,7 +6,7 @@ import { utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
-import { useRouter } from 'next/router'
+import Link from 'next/link'
 import ProductTypeTag from './product-type-tag'
 
 export interface ProductViewListProps {
@@ -17,9 +17,6 @@ const ProductViewList = (props: ProductViewListProps) => {
   const { products } = props
 
   const { t } = useTranslation('products')
-  const router = useRouter()
-
-  const onNavigateToDetails = (id: string) => router.push(productUrl(id))
 
   const columnWidths = ['w-6/12', 'w-1/12', 'w-2/12', 'w-2/12', 'w-1/12']
   const headers = ['name', 'versions', 'common:updatedAt', 'type', 'common:actions']
@@ -45,13 +42,11 @@ const ProductViewList = (props: ProductViewListProps) => {
     <div>
       <ProductTypeTag className="w-fit m-auto" type={item.type} />
     </div>,
-    <Image
-      className="cursor-pointer"
-      src="/eye.svg"
-      width={24}
-      height={24}
-      onClick={() => onNavigateToDetails(item.id)}
-    />,
+    <Link href={productUrl(item.id)}>
+      <a>
+        <Image src="/eye.svg" width={24} height={24} />
+      </a>
+    </Link>,
   ]
 
   return (

@@ -10,7 +10,6 @@ import { utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
-import { useRouter } from 'next/router'
 import VersionTypeTag from './version-type-tag'
 
 interface VersionCardProps {
@@ -19,30 +18,15 @@ interface VersionCardProps {
   productId: string
   version: Version
   onClick?: VoidFunction
+  href?: string
   onIncreaseClick?: VoidFunction
   onSetAsDefaultClick?: VoidFunction
 }
 
 const VersionCard = (props: VersionCardProps) => {
-  const { className, productId, version, onClick, disabled, onIncreaseClick, onSetAsDefaultClick } = props
+  const { className, productId, version, onClick, href, disabled, onIncreaseClick, onSetAsDefaultClick } = props
 
   const { t } = useTranslation('versions')
-
-  const router = useRouter()
-
-  const onImagesClick = () =>
-    router.push(
-      versionUrl(productId, version.id, {
-        section: 'images',
-      }),
-    )
-
-  const onDeploymentsClick = () =>
-    router.push(
-      `${versionUrl(productId, version.id, {
-        section: 'deployments',
-      })}`,
-    )
 
   return (
     <DyoCard className={clsx(className ?? 'p-6', 'flex flex-col flex-grow w-full')}>
@@ -52,6 +36,7 @@ const VersionCard = (props: VersionCardProps) => {
             element="h5"
             className={clsx('text-xl text-bright', onClick ? 'cursor-pointer' : null)}
             onClick={onClick}
+            href={href}
           >
             {version.name}
           </DyoHeading>
@@ -114,18 +99,20 @@ const VersionCard = (props: VersionCardProps) => {
 
       {disabled ? null : (
         <div className="flex flex-row ml-auto mt-auto">
-          <DyoButton className="px-4 mx-2" outlined onClick={onImagesClick}>
+          <DyoButton className="px-4 mx-2" outlined href={versionUrl(productId, version.id, { section: 'images' })}>
             <div className="flex flex-row items-center gap-2">
               <Image src="/images.svg" alt={t('images')} width={20} height={20} layout="fixed" />
-
               {t('images')}
             </div>
           </DyoButton>
 
-          <DyoButton className="px-4 mx-2" outlined onClick={onDeploymentsClick}>
+          <DyoButton
+            className="px-4 mx-2"
+            outlined
+            href={versionUrl(productId, version.id, { section: 'deployments' })}
+          >
             <div className="flex flex-row items-center gap-2">
               <Image src="/deployments.svg" alt={t('deployments')} width={20} height={20} layout="fixed" />
-
               {t('deployments')}
             </div>
           </DyoButton>

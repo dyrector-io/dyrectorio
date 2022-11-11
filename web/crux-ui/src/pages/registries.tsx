@@ -16,7 +16,6 @@ import { cruxFromContext } from '@server/crux/crux'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
-import { useRouter } from 'next/dist/client/router'
 import { useRef, useState } from 'react'
 
 interface RegistriesPageProps {
@@ -29,8 +28,6 @@ const RegistriesPage = (props: RegistriesPageProps) => {
   const { registries } = props
 
   const { t } = useTranslation('registries')
-
-  const router = useRouter()
 
   const filters = useFilters<Registry, RegistryFilter>({
     filters: [
@@ -47,8 +44,6 @@ const RegistriesPage = (props: RegistriesPageProps) => {
     setCreating(false)
     filters.setItems([...filters.items, registry])
   }
-
-  const onNavigateToDetails = (id: string) => router.push(registryUrl(id))
 
   const selfLink: BreadcrumbLink = {
     name: t('common:registries'),
@@ -89,7 +84,7 @@ const RegistriesPage = (props: RegistriesPageProps) => {
                   className={clsx('max-h-72 w-full p-8 my-2', modulo3Class, modulo2Class)}
                   key={`registry-${index}`}
                   registry={it}
-                  onClick={() => onNavigateToDetails(it.id)}
+                  titleHref={registryUrl(it.id)}
                 />
               )
             })}

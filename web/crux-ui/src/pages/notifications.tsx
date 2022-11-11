@@ -14,7 +14,6 @@ import { cruxFromContext } from '@server/crux/crux'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
-import { useRouter } from 'next/router'
 import { useRef, useState } from 'react'
 
 interface NotificationsPageProps {
@@ -25,7 +24,6 @@ const NotificationsPage = (props: NotificationsPageProps) => {
   const { notifications: propsNotifications } = props
 
   const { t } = useTranslation('notifications')
-  const router = useRouter()
 
   const [creating, setCreating] = useState<boolean>(false)
   const [notifications, setNotifications] = useState<NotificationDetails[]>(propsNotifications)
@@ -59,7 +57,7 @@ const NotificationsPage = (props: NotificationsPageProps) => {
                 className={clsx('max-h-64 w-full p-6')}
                 key={`notification-${index}`}
                 notification={it}
-                onClick={() => router.push(notificationUrl(it.id))}
+                titleHref={notificationUrl(it.id)}
               />
             ))}
           </DyoWrap>

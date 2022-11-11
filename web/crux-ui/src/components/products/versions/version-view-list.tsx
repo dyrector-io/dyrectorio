@@ -8,7 +8,7 @@ import { utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
-import { useRouter } from 'next/router'
+import Link from 'next/link'
 import { useState } from 'react'
 import EditImageTags from './images/edit-image-tags'
 import { ImagesActions, ImagesState, selectTagsOfImage } from './images/use-images-state'
@@ -22,7 +22,6 @@ const VersionViewList = (props: VersionViewListProps) => {
   const { state, actions } = props
 
   const { t } = useTranslation('images')
-  const router = useRouter()
 
   const [deleteModal, confirmDelete] = useConfirmation()
   const [tagsModalTarget, setTagsModalTarget] = useState<VersionImage>(null)
@@ -59,18 +58,16 @@ const VersionViewList = (props: VersionViewListProps) => {
     actions.fetchImageTags(it)
   }
 
-  const onImageSettings = (item: VersionImage) => router.push(imageConfigUrl(state.productId, state.versionId, item.id))
-
   const itemTemplate = (item: VersionImage) => [
-    <a>{item.config.name}</a>,
-    <a>{item.registryName}</a>,
+    item.config.name,
+    item.registryName,
     <div className="flex items-center">
       <a>
         {item.name}
         {item.tag ? `:${item.tag}` : null}
       </a>
     </div>,
-    <a>{item.createdAt ? utcDateToLocale(item.createdAt) : 'new'}</a>,
+    item.createdAt ? utcDateToLocale(item.createdAt) : 'new',
     <div>
       <div className="mr-2 inline-block">
         <Image
@@ -85,13 +82,11 @@ const VersionViewList = (props: VersionViewListProps) => {
         <Image className="cursor-pointer" src="/trash-can.svg" width={24} height={24} onClick={() => onDelete(item)} />
       </div>
       <div className="inline-block">
-        <Image
-          className="cursor-pointer"
-          src="/settings.svg"
-          width={24}
-          height={24}
-          onClick={() => onImageSettings(item)}
-        />
+        <Link href={imageConfigUrl(state.productId, state.versionId, item.id)}>
+          <a>
+            <Image src="/settings.svg" width={24} height={24} />
+          </a>
+        </Link>
       </div>
     </div>,
   ]
