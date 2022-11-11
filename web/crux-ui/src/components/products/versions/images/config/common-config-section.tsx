@@ -2,6 +2,7 @@ import { EditorStateOptions } from '@app/components/editor/use-editor-state'
 import KeyOnlyInput from '@app/components/shared/key-only-input'
 import KeyValueInput from '@app/components/shared/key-value-input'
 import SecretKeyInput from '@app/components/shared/secret-key-input'
+import SecretKeyValInput from '@app/components/shared/secret-key-value-input'
 import DyoChips from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoImgButton from '@app/elements/dyo-img-button'
@@ -30,16 +31,30 @@ import { v4 as uuid } from 'uuid'
 import { ValidationError } from 'yup'
 
 interface CommonConfigSectionProps {
+  disabled?: boolean
   config: CommonConfigDetails
   onChange: (config: Partial<ContainerConfig>) => void
   selectedFilters: ImageConfigFilterType[]
   editorOptions: EditorStateOptions
   fieldErrors: ValidationError[]
+  secrets?: 'key' | 'value'
+  definedSecrets?: string[]
+  publicKey?: string
 }
 
 const CommonConfigSection = (props: CommonConfigSectionProps) => {
   const { t } = useTranslation('container')
-  const { config: propsConfig, onChange: propsOnChange, selectedFilters, editorOptions, fieldErrors } = props
+  const {
+    disabled,
+    config: propsConfig,
+    onChange: propsOnChange,
+    selectedFilters,
+    editorOptions,
+    fieldErrors,
+    secrets,
+    definedSecrets,
+    publicKey,
+  } = props
 
   const [config, setConfig] = useState<CommonConfigDetails>(propsConfig)
 
@@ -81,6 +96,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 placeholder={t('common.containerName')}
                 onChange={it => onChange({ name: it.target.value })}
                 message={fieldErrors.find(it => it.path?.startsWith('name'))?.message}
+                disabled={disabled}
               />
             </div>
           )}
@@ -97,6 +113,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 value={config.user ?? ''}
                 placeholder={t('common.placeholders.userIdNumber')}
                 onChange={it => onChange({ user: toNumber(it.target.value) })}
+                disabled={disabled}
               />
             </div>
           )}
@@ -113,6 +130,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 initialSelection={config.expose}
                 converter={(it: ContainerConfigExposeStrategy) => t(`common.exposeStrategies.${it}`)}
                 onSelectionChange={it => onChange({ expose: it })}
+                disabled={disabled}
               />
             </div>
           )}
@@ -123,7 +141,12 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
               <DyoLabel className="text-bright font-semibold tracking-wide mb-2 mr-2">
                 {t('common.tty').toUpperCase()}
               </DyoLabel>
-              <DyoSwitch fieldName="tty" checked={config.tty} onCheckedChange={it => onChange({ tty: it })} />
+              <DyoSwitch
+                fieldName="tty"
+                checked={config.tty}
+                disabled={disabled}
+                onCheckedChange={it => onChange({ tty: it })}
+              />
             </div>
           )}
 
@@ -145,6 +168,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                     onChange({ configContainer: nullify({ ...config.configContainer, image: it.target.value }) })
                   }
                   message={fieldErrors.find(it => it.path?.startsWith('configContainer.image'))?.message}
+                  disabled={disabled}
                 />
                 <DyoInput
                   label={t('common.volume')}
@@ -157,6 +181,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                     onChange({ configContainer: nullify({ ...config.configContainer, volume: it.target.value }) })
                   }
                   message={fieldErrors.find(it => it.path?.startsWith('configContainer.volume'))?.message}
+                  disabled={disabled}
                 />
                 <DyoInput
                   label={t('common.path')}
@@ -169,6 +194,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                     onChange({ configContainer: nullify({ ...config.configContainer, path: it.target.value }) })
                   }
                   message={fieldErrors.find(it => it.path?.startsWith('configContainer.path'))?.message}
+                  disabled={disabled}
                 />
                 <div className="flex flex-row break-inside-avoid mb-8">
                   <DyoLabel className="my-auto mr-12">{t('common.keepFiles')}</DyoLabel>
@@ -178,6 +204,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                     onCheckedChange={it =>
                       onChange({ configContainer: nullify({ ...config.configContainer, keepFiles: it }) })
                     }
+                    disabled={disabled}
                   />
                 </div>
               </div>
@@ -201,6 +228,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   placeholder={t('common.placeholders.ingressName')}
                   onChange={it => onChange({ ingress: nullify({ ...config.ingress, name: it.target.value }) })}
                   message={fieldErrors.find(it => it.path?.startsWith('ingress.name'))?.message}
+                  disabled={disabled}
                 />
                 <DyoInput
                   label={t('common.ingressHost')}
@@ -212,6 +240,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   placeholder={t('common.placeholders.ingressHost')}
                   onChange={it => onChange({ ingress: nullify({ ...config.ingress, host: it.target.value }) })}
                   message={fieldErrors.find(it => it.path?.startsWith('ingress.host'))?.message}
+                  disabled={disabled}
                 />
                 <DyoInput
                   label={t('common.ingressUploadLimit')}
@@ -224,6 +253,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   onChange={it =>
                     onChange({ ingress: nullify({ ...config.ingress, uploadLimitInBytes: it.target.value }) })
                   }
+                  disabled={disabled}
                 />
               </div>
             </div>
@@ -238,6 +268,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 onChange={it => onChange({ environment: it })}
                 items={config.environment ?? []}
                 editorOptions={editorOptions}
+                disabled={disabled}
               />
             </div>
           )}
@@ -251,6 +282,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 onChange={it => onChange({ capabilities: it })}
                 items={config.capabilities ?? []}
                 editorOptions={editorOptions}
+                disabled={disabled}
               />
             </div>
           )}
@@ -258,16 +290,33 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
           {/* secrets */}
           {filterContains('secrets', selectedFilters) && (
             <div className="grid break-inside-avoid mb-8 max-w-lg">
-              <SecretKeyInput
-                className="mb-2"
-                keyPlaceholder={t('common.secrets').toUpperCase()}
-                labelClassName="text-bright font-semibold tracking-wide mb-2"
-                label={t('common.secrets').toUpperCase()}
-                onChange={it => onChange({ secrets: it.map(sit => ({ ...sit, value: '', publicKey: '' })) })}
-                items={config.secrets ?? []}
-                editorOptions={editorOptions}
-                unique
-              />
+              {secrets === 'value' ? (
+                <SecretKeyValInput
+                  className="mb-2"
+                  keyPlaceholder={t('common.secrets').toUpperCase()}
+                  labelClassName="text-bright font-semibold tracking-wide mb-2"
+                  label={t('common.secrets').toUpperCase()}
+                  onSubmit={it => onChange({ secrets: it })}
+                  items={config.secrets ?? []}
+                  editorOptions={editorOptions}
+                  definedSecrets={definedSecrets}
+                  publicKey={publicKey}
+                  unique
+                  disabled={disabled}
+                />
+              ) : (
+                <SecretKeyInput
+                  className="mb-2"
+                  keyPlaceholder={t('common.secrets').toUpperCase()}
+                  labelClassName="text-bright font-semibold tracking-wide mb-2"
+                  label={t('common.secrets').toUpperCase()}
+                  onChange={it => onChange({ secrets: it.map(sit => ({ ...sit, value: '', publicKey: '' })) })}
+                  items={config.secrets ?? []}
+                  editorOptions={editorOptions}
+                  unique
+                  disabled={disabled}
+                />
+              )}
             </div>
           )}
 
@@ -282,6 +331,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 onChange={it => onChange({ args: it })}
                 items={config.args}
                 editorOptions={editorOptions}
+                disabled={disabled}
               />
             </div>
           )}
@@ -297,6 +347,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 onChange={it => onChange({ commands: it })}
                 items={config.commands ?? []}
                 editorOptions={editorOptions}
+                disabled={disabled}
               />
             </div>
           )}
@@ -321,6 +372,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                     onChange({ importContainer: nullify({ ...config.importContainer, volume: it.target.value }) })
                   }
                   message={fieldErrors.find(it => it.path?.startsWith('importContainer.volume'))?.message}
+                  disabled={disabled}
                 />
                 <DyoInput
                   label={t('common.command')}
@@ -334,6 +386,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   onChange={it =>
                     onChange({ importContainer: nullify({ ...config.importContainer, command: it.target.value }) })
                   }
+                  disabled={disabled}
                 />
                 <div className="flex flex-col">
                   <KeyValueInput
@@ -343,6 +396,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                     }
                     items={config.importContainer?.environment ?? []}
                     editorOptions={editorOptions}
+                    disabled={disabled}
                   />
                 </div>
               </div>
@@ -357,23 +411,25 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
               <DyoLabel className="mr-4 ext-bright font-semibold tracking-wide">
                 {t('common.ports').toUpperCase()}
               </DyoLabel>
-              <DyoImgButton
-                onClick={() =>
-                  setConfig({
-                    ...config,
-                    ports: [
-                      ...config.ports,
-                      {
-                        id: uuid(),
-                        external: undefined,
-                        internal: undefined,
-                      },
-                    ],
-                  })
-                }
-                src="/plus.svg"
-                alt="add"
-              />
+              {!disabled && (
+                <DyoImgButton
+                  onClick={() =>
+                    setConfig({
+                      ...config,
+                      ports: [
+                        ...config.ports,
+                        {
+                          id: uuid(),
+                          external: undefined,
+                          internal: undefined,
+                        },
+                      ],
+                    })
+                  }
+                  src="/plus.svg"
+                  alt="add"
+                />
+              )}
             </div>
             {/* port ranges fields */}
             {config.ports?.length < 1 ? null : (
@@ -391,6 +447,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                             value={item.internal ?? ''}
                             type="number"
                             onChange={it => onComplexValueChange('ports', 'internal', it.target.value, index)}
+                            disabled={disabled}
                           />
                         </div>
 
@@ -402,17 +459,21 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                             value={item.external ?? ''}
                             type="number"
                             onChange={it => onComplexValueChange('ports', 'external', it.target.value, index)}
+                            disabled={disabled}
                           />
                         </div>
-                        <DyoImgButton
-                          onClick={() => {
-                            const ports = [...config.ports]
-                            ports.splice(index, 1)
-                            onChange({ ports })
-                          }}
-                          src="/minus.svg"
-                          alt="remove"
-                        />
+                        {!disabled && (
+                          <DyoImgButton
+                            onClick={() => {
+                              const ports = [...config.ports]
+                              ports.splice(index, 1)
+                              onChange({ ports })
+                            }}
+                            src="/minus.svg"
+                            alt="remove"
+                            disabled={disabled}
+                          />
+                        )}
                       </div>
                       {message ? <DyoMessage message={message} messageType="error" marginClassName="m-2" /> : null}
                     </div>
@@ -430,23 +491,26 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
               <DyoLabel className="mr-4 ext-bright font-semibold tracking-wide">
                 {t('common.portRanges').toUpperCase()}
               </DyoLabel>
-              <DyoImgButton
-                onClick={() =>
-                  setConfig({
-                    ...config,
-                    portRanges: [
-                      ...config.portRanges,
-                      {
-                        id: uuid(),
-                        external: { from: undefined, to: undefined },
-                        internal: { from: undefined, to: undefined },
-                      },
-                    ],
-                  })
-                }
-                src="/plus.svg"
-                alt="add"
-              />
+              {!disabled && (
+                <DyoImgButton
+                  onClick={() =>
+                    setConfig({
+                      ...config,
+                      portRanges: [
+                        ...config.portRanges,
+                        {
+                          id: uuid(),
+                          external: { from: undefined, to: undefined },
+                          internal: { from: undefined, to: undefined },
+                        },
+                      ],
+                    })
+                  }
+                  src="/plus.svg"
+                  alt="add"
+                  disabled={disabled}
+                />
+              )}
             </div>
             {/* port ranges fields */}
             {config.portRanges?.length < 1 ? null : (
@@ -475,6 +539,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                                   }
                                   onComplexValueChange('portRanges', 'internal', internal, index)
                                 }}
+                                disabled={disabled}
                               />
                             </div>
                             <div className="w-7/12 ml-2 mr-8">
@@ -490,6 +555,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                                   }
                                   onComplexValueChange('portRanges', 'internal', internal, index)
                                 }}
+                                disabled={disabled}
                               />
                             </div>
                           </div>
@@ -510,6 +576,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                                   }
                                   onComplexValueChange('portRanges', 'external', external, index)
                                 }}
+                                disabled={disabled}
                               />
                             </div>
                             <div className="w-7/12 ml-2 mr-2">
@@ -525,17 +592,21 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                                   }
                                   onComplexValueChange('portRanges', 'external', external, index)
                                 }}
+                                disabled={disabled}
                               />
                             </div>
-                            <DyoImgButton
-                              onClick={() => {
-                                const portRanges = [...config.portRanges]
-                                portRanges.splice(index, 1)
-                                onChange({ portRanges })
-                              }}
-                              src="/minus.svg"
-                              alt="remove"
-                            />
+                            {!disabled && (
+                              <DyoImgButton
+                                onClick={() => {
+                                  const portRanges = [...config.portRanges]
+                                  portRanges.splice(index, 1)
+                                  onChange({ portRanges })
+                                }}
+                                src="/minus.svg"
+                                alt="remove"
+                                disabled={disabled}
+                              />
+                            )}
                           </div>
                         </div>
                       </div>
@@ -555,24 +626,27 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
               <DyoLabel className="mr-4 ext-bright font-semibold tracking-wide">
                 {t('common.volumes').toUpperCase()}
               </DyoLabel>
-              <DyoImgButton
-                onClick={() =>
-                  setConfig({
-                    ...config,
-                    volumes: [
-                      ...config.volumes,
-                      {
-                        id: uuid(),
-                        name: undefined,
-                        path: undefined,
-                        type: 'ro',
-                      },
-                    ],
-                  })
-                }
-                src="/plus.svg"
-                alt="add"
-              />
+              {!disabled && (
+                <DyoImgButton
+                  onClick={() =>
+                    setConfig({
+                      ...config,
+                      volumes: [
+                        ...config.volumes,
+                        {
+                          id: uuid(),
+                          name: undefined,
+                          path: undefined,
+                          type: 'ro',
+                        },
+                      ],
+                    })
+                  }
+                  src="/plus.svg"
+                  alt="add"
+                  disabled={disabled}
+                />
+              )}
             </div>
             {/* volume fields */}
             {config.volumes?.length < 1 ? null : (
@@ -591,6 +665,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                             inline
                             value={item.name ?? ''}
                             onChange={it => onComplexValueChange('volumes', 'name', it.target.value, index)}
+                            disabled={disabled}
                           />
                           <DyoInput
                             label={t('common.size')}
@@ -600,6 +675,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                             inline
                             value={item.size ?? ''}
                             onChange={it => onComplexValueChange('volumes', 'size', it.target.value, index)}
+                            disabled={disabled}
                           />
                         </div>
                         <div className="flex flex-row my-4">
@@ -611,6 +687,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                             inline
                             value={item.path ?? ''}
                             onChange={it => onComplexValueChange('volumes', 'path', it.target.value, index)}
+                            disabled={disabled}
                           />
                           <DyoInput
                             label={t('common.class')}
@@ -620,6 +697,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                             inline
                             value={item.class ?? ''}
                             onChange={it => onComplexValueChange('volumes', 'class', it.target.value, index)}
+                            disabled={disabled}
                           />
                         </div>
                         <div className="flex flex-row justify-between">
@@ -630,18 +708,22 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                               initialSelection={item.type}
                               converter={(it: VolumeType) => t(`common.volumeTypes.${it}`)}
                               onSelectionChange={it => onComplexValueChange('volumes', 'type', it, index)}
+                              disabled={disabled}
                             />
                           </div>
-                          <DyoImgButton
-                            className="!items-end pb-2"
-                            onClick={() => {
-                              const volumes = [...config.volumes]
-                              volumes.splice(index, 1)
-                              onChange({ volumes })
-                            }}
-                            src="/minus.svg"
-                            alt="remove"
-                          />
+                          {!disabled && (
+                            <DyoImgButton
+                              className="!items-end pb-2"
+                              onClick={() => {
+                                const volumes = [...config.volumes]
+                                volumes.splice(index, 1)
+                                onChange({ volumes })
+                              }}
+                              src="/minus.svg"
+                              alt="remove"
+                              disabled={disabled}
+                            />
+                          )}
                         </div>
                       </div>
                       {message ? <DyoMessage message={message} messageType="error" marginClassName="mt-2" /> : null}
@@ -660,27 +742,30 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
               <DyoLabel className="mr-4 ext-bright font-semibold tracking-wide">
                 {t('common.initContainers').toUpperCase()}
               </DyoLabel>
-              <DyoImgButton
-                onClick={() =>
-                  setConfig({
-                    ...config,
-                    initContainers: [
-                      ...config.initContainers,
-                      {
-                        id: uuid(),
-                        name: undefined,
-                        image: undefined,
-                        args: [],
-                        command: [],
-                        environment: [],
-                        volumes: [],
-                      },
-                    ],
-                  })
-                }
-                src="/plus.svg"
-                alt="add"
-              />
+              {!disabled && (
+                <DyoImgButton
+                  onClick={() =>
+                    setConfig({
+                      ...config,
+                      initContainers: [
+                        ...config.initContainers,
+                        {
+                          id: uuid(),
+                          name: undefined,
+                          image: undefined,
+                          args: [],
+                          command: [],
+                          environment: [],
+                          volumes: [],
+                        },
+                      ],
+                    })
+                  }
+                  src="/plus.svg"
+                  alt="add"
+                  disabled={disabled}
+                />
+              )}
             </div>
             {/* init container fields */}
             {config.initContainers?.length < 1 ? null : (
@@ -703,6 +788,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                           inline
                           value={item.name ?? ''}
                           onChange={it => onComplexValueChange('initContainers', 'name', it.target.value, index)}
+                          disabled={disabled}
                         />
                         <DyoInput
                           label={t('common.image').toUpperCase()}
@@ -712,6 +798,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                           inline
                           value={item.image ?? ''}
                           onChange={it => onComplexValueChange('initContainers', 'image', it.target.value, index)}
+                          disabled={disabled}
                         />
                         <div className="flex flex-col mb-2">
                           <DyoLabel className="mb-2">{t('common.volumes').toUpperCase()}</DyoLabel>
@@ -727,6 +814,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                               onComplexValueChange('initContainers', 'volumes', values, index)
                             }}
                             editorOptions={editorOptions}
+                            disabled={disabled}
                           />
                         </div>
                         <div className="flex flex-col mb-2">
@@ -736,6 +824,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                             onChange={it => onComplexValueChange('initContainers', 'args', it, index)}
                             items={item.args ?? []}
                             editorOptions={editorOptions}
+                            disabled={disabled}
                           />
                         </div>
                         <div className="flex flex-col mb-2">
@@ -745,6 +834,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                             onChange={it => onComplexValueChange('initContainers', 'command', it, index)}
                             items={item.command ?? []}
                             editorOptions={editorOptions}
+                            disabled={disabled}
                           />
                         </div>
                         <div className="flex flex-col mb-2">
@@ -753,6 +843,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                             onChange={it => onComplexValueChange('initContainers', 'environment', it, index)}
                             items={item.environment ?? []}
                             editorOptions={editorOptions}
+                            disabled={disabled}
                           />
                         </div>
                         <div className="flex flex-row justify-between">
@@ -764,17 +855,21 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                               onCheckedChange={it =>
                                 onComplexValueChange('initContainers', 'useParentConfig', it, index)
                               }
+                              disabled={disabled}
                             />
                           </div>
-                          <DyoImgButton
-                            onClick={() => {
-                              const initContainers = [...config.initContainers]
-                              initContainers.splice(index, 1)
-                              onChange({ initContainers })
-                            }}
-                            src="/minus.svg"
-                            alt="remove"
-                          />
+                          {!disabled && (
+                            <DyoImgButton
+                              onClick={() => {
+                                const initContainers = [...config.initContainers]
+                                initContainers.splice(index, 1)
+                                onChange({ initContainers })
+                              }}
+                              src="/minus.svg"
+                              alt="remove"
+                              disabled={disabled}
+                            />
+                          )}
                         </div>
                       </div>
                       {message ? <DyoMessage message={message} messageType="error" marginClassName="mt-2" /> : null}

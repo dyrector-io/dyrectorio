@@ -5,6 +5,7 @@ import { useState } from 'react'
 export interface DyoChipsProps<T> {
   className?: string
   key?: React.Key
+  disabled?: boolean
   choices: readonly T[]
   initialSelection?: T
   converter?: (choice: T) => string
@@ -12,7 +13,7 @@ export interface DyoChipsProps<T> {
 }
 
 const DyoChips = <T,>(props: DyoChipsProps<T>) => {
-  const { choices, converter, onSelectionChange, key: propsKey, className, initialSelection } = props
+  const { choices, converter, onSelectionChange, key: propsKey, className, initialSelection, disabled } = props
 
   assert(
     converter || choices.length < 1 || typeof choices[0] === 'string',
@@ -35,6 +36,7 @@ const DyoChips = <T,>(props: DyoChipsProps<T>) => {
           <button
             key={`${key}-${index}`}
             type="button"
+            disabled={disabled}
             className={clsx(
               'rounded-md border-2 px-2 py-1 my-1 mr-2',
               selection === it

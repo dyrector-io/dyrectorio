@@ -153,6 +153,7 @@ const SecretKeyInput = (props: SecretKeyInputProps) => {
                 nameChecked={t('required')}
                 nameUnchecked={t('notRequired')}
                 checked={required}
+                disabled={disabled}
                 onCheckedChange={it => onChange(index, { required: it })}
               />
             </div>

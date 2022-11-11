@@ -39,12 +39,12 @@ import { useRouter } from 'next/router'
 import { useState } from 'react'
 import { ValidationError } from 'yup'
 
-const getContainerConfigFieldErrors = (newConfig: ContainerConfig): ValidationError[] =>
+export const getContainerConfigFieldErrors = (newConfig: ContainerConfig): ValidationError[] =>
   getValidationError(containerConfigSchema, newConfig, { abortEarly: false })?.inner ?? []
 
-const jsonErrorOf = (fieldErrors: ValidationError[]) => (fieldErrors.length > 0 ? fieldErrors[0].message : null)
+export const jsonErrorOf = (fieldErrors: ValidationError[]) => (fieldErrors.length > 0 ? fieldErrors[0].message : null)
 
-type ViewState = 'editor' | 'json'
+export type ViewState = 'editor' | 'json'
 
 interface ImageDetailsPageProps {
   product: ProductDetails
@@ -171,6 +171,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
         <DyoCard className="flex flex-col mt-4 px-4 w-full">
           <CommonConfigSection
             selectedFilters={filters}
+            disabled={!version.mutable}
             config={config}
             onChange={onChange}
             editorOptions={editorState}
@@ -178,12 +179,14 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
           />
           <CraneConfigSection
             selectedFilters={filters}
+            disabled={!version.mutable}
             config={config}
             onChange={onChange}
             editorOptions={editorState}
           />
           <DagentConfigSection
             selectedFilters={filters}
+            disabled={!version.mutable}
             config={config}
             onChange={onChange}
             editorOptions={editorState}

@@ -18,22 +18,15 @@ import DyoMessage from '@app/elements/dyo-message'
 import { defaultApiErrorHandler } from '@app/errors'
 import { useThrottling } from '@app/hooks/use-throttleing'
 import { ContainerConfig, DeploymentRoot, ImageConfigFilterType, imageConfigToJsonContainerConfig } from '@app/models'
-import { deploymentUrl, productUrl, ROUTE_PRODUCTS, versionUrl } from '@app/routes'
+import { deploymentUrl, instanceConfigUrl, productUrl, ROUTE_PRODUCTS, versionUrl } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
-import { containerConfigSchema, getValidationError } from '@app/validations'
 import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 import { ValidationError } from 'yup'
-
-const getContainerConfigFieldErrors = (newConfig: ContainerConfig): ValidationError[] =>
-  getValidationError(containerConfigSchema, newConfig, { abortEarly: false })?.inner ?? []
-
-const jsonErrorOf = (fieldErrors: ValidationError[]) => (fieldErrors.length > 0 ? fieldErrors[0].message : null)
-
-type ViewState = 'editor' | 'json'
+import { getContainerConfigFieldErrors, jsonErrorOf, ViewState } from '../../../image/[imageId]'
 
 interface InstanceDetailsPageProps {
   deployment: DeploymentRoot
@@ -41,7 +34,7 @@ interface InstanceDetailsPageProps {
 }
 
 const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
-  const { t } = useTranslation('deployments')
+  const { t } = useTranslation('images')
   const { deployment, instanceId } = props
   const { product, version } = deployment
 
@@ -88,7 +81,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
   }
 
   const pageLink: BreadcrumbLink = {
-    name: t('common:instance'),
+    name: t('common:container'),
     url: ROUTE_PRODUCTS,
   }
 
@@ -104,6 +97,10 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
     {
       name: t('common:deployment'),
       url: deploymentUrl(product.id, version.id, deployment.id),
+    },
+    {
+      name: instance.image.name,
+      url: instanceConfigUrl(product.id, version.id, deployment.id, instance.id),
     },
   ]
 
@@ -153,19 +150,30 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
       {viewState === 'editor' && (
         <DyoCard className="flex flex-col mt-4 px-4 w-full">
           <CommonConfigSection
+            disabled={!deploymentState.mutable}
             filters={filters}
             config={state.config}
             onChange={onChange}
             editorOptions={editorState}
             fieldErrors={fieldErrors}
+            secrets="value"
+            definedSecrets={state.definedSecrets}
+            publicKey={deployment.publicKey}
           />
           <DagentConfigSection
+            disabled={!deploymentState.mutable}
             filters={filters}
             config={state.config}
             onChange={onChange}
             editorOptions={editorState}
           />
-          <CraneConfigSection filters={filters} config={state.config} onChange={onChange} editorOptions={editorState} />
+          <CraneConfigSection
+            disabled={!deploymentState.mutable}
+            filters={filters}
+            config={state.config}
+            onChange={onChange}
+            editorOptions={editorState}
+          />
         </DyoCard>
       )}
 
