@@ -372,7 +372,6 @@ func testAppConfig() *config.CommonConfiguration {
 		Debug:                false,
 		ImportContainerImage: "",
 		IngressRootDomain:    "",
-		NodeID:               "",
 		ReadHeaderTimeout:    30 * time.Second,
 		Registry:             "",
 		RegistryPassword:     "",
