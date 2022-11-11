@@ -1,9 +1,25 @@
 #!/bin/sh
 
-set -euo pipefail
+set -eu
 
-PLATFORM=$(uname -s)
-if [ ${PLATFORM:0:5} == "MINGW" ]; then 
+case $(uname) in
+  Darwin*)
+    PLATFORM="OSX"
+    ;;
+  Linux*)
+    PLATFORM="LINUX"
+    ;;
+  MINGW*)
+    PLATFORM="WINDOWS"
+    ;;
+  *)
+    echo "unsuppported OS"
+    exit 1
+    ;;
+esac
+
+
+if [ "$PLATFORM" == "WINDOWS" ]; then 
   ROOTLESS="${ROOTLESS:-true}"
 else
   ROOTLESS="${ROOTLESS:-false}"
@@ -24,16 +40,16 @@ set_environment() {
   PERSISTENCE_FOLDER_FROM_CRUX="{{#if rootPath}}{{{rootPath}}}{{/if}}"
   if [ -z ${PERSISTENCE_FOLDER:-} ]; then
     if [ -z ${PERSISTENCE_FOLDER_FROM_CRUX:-} ]; then
-      case ${PLATFORM:0:5} in
-      'Darwi')
+      case $PLATFORM in
+      'OSX')
         echo "Detected: Mac OS X"
         PERSISTENCE_FOLDER=$HOME/Library/Dyrectorio/srv/dagent
         ;;
-      'Linux')
+      'LINUX')
         echo "Detected: Linux"
         PERSISTENCE_FOLDER=/srv/dagent
         ;;
-      'MINGW')
+      'WINDOWS')
         echo "Detected: Windows(mingw64)"
         PERSISTENCE_FOLDER="c:/srv/dagent"
         ;;
@@ -61,7 +77,7 @@ set_environment() {
     CRI_EXECUTABLE="docker"
   fi
 
-  if [ ${PLATFORM:0:5} == "MINGW" ]; then 
+  if [ $PLATFORM == "WINDOWS" ]; then 
     HOST_DOCKER_SOCK_PATH="${HOST_DOCKER_SOCK_PATH:-//var/run/docker.sock}"
   fi
 
