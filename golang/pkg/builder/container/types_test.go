@@ -52,5 +52,5 @@ func TestRestartPolicyNameUnmarshalError(t *testing.T) {
 	var parsed container.RestartPolicyName
 	err := json.Unmarshal([]byte("\"not-valid-policy-name\""), &parsed)
 
-	assert.ErrorIs(t, err, &container.ErrRestartPolicyUnmarshalInvalid{})
+	assert.ErrorIs(t, err, &container.RestartPolicyUnmarshalInvalidError{})
 }

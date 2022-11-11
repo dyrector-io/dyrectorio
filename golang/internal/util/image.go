@@ -16,7 +16,7 @@ type ImageURI struct {
 type EmptyImageError struct{}
 
 func (e *EmptyImageError) Error() string {
-	return "Empty image name is not valid"
+	return "empty image name is not valid"
 }
 
 type MultiColonRegistryURIError struct{}
@@ -30,7 +30,7 @@ type InvalidImageURIError struct {
 }
 
 func (e *InvalidImageURIError) Error() string {
-	return "No colons in registry URI: " + e.Image
+	return "no colons in registry URI: " + e.Image
 }
 
 const PartCountAfterSplitByColon = 2

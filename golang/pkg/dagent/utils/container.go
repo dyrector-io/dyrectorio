@@ -2,7 +2,6 @@ package utils
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"path"
 	"path/filepath"
@@ -12,71 +11,24 @@ import (
 	"github.com/rs/zerolog/log"
 
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
-	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/model"
 
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/config"
 )
 
-func ExecWatchtowerOneShot(ctx context.Context, cfg *config.Configuration) error {
-	b := initDagentUpdaterBuilder(ctx, cfg)
-
-	_, err := b.WithCmd([]string{"--run-once", cfg.AgentContainerName}).
-		Create().
-		Start()
-
-	return err
+type TraefikDeployRequest struct {
+	// LogLevel defaults to INFO
+	LogLevel string `json:"logLevel"`
+	// if services exposed with certs, default: false
+	TLS bool `json:"TLS"`
+	// the email address for expiry notifications, sent by acme
+	AcmeMail string `json:"acmeMail" binding:"required_if=TLS true"`
+	// HTTP port
+	Port uint16 `json:"port"`
+	// HTTPS port
+	TLSPort uint16 `json:"tlsPort"`
 }
 
-func ExecWatchtowerPoll(ctx context.Context, cfg *config.Configuration) error {
-	// TODO(nandor-magyar): do we need this updater? IIRC dagent can update itself
-	container := GetContainer(cfg.UpdaterContainerName)
-	var err error
-
-	if len(container) < 1 {
-		b := initDagentUpdaterBuilder(ctx, cfg)
-		_, err = b.WithCmd([]string{
-			"--interval",
-			fmt.Sprintf("%d", int(cfg.UpdatePollInterval.Seconds())),
-			cfg.AgentContainerName,
-		}).
-			Create().
-			Start()
-	}
-
-	return err
-}
-
-func initDagentUpdaterBuilder(ctx context.Context, cfg *config.Configuration) *containerbuilder.DockerContainerBuilder {
-	return containerbuilder.NewDockerBuilder(ctx).WithImage("index.docker.io/containrrr/watchtower:latest").
-		WithAutoRemove(true).
-		WithName(cfg.UpdaterContainerName).
-		WithMountPoints(getUpdaterMounts(cfg)).
-		WithEnv([]string{
-			fmt.Sprintf("REPO_USER=%s", cfg.RegistryUsername),
-			fmt.Sprintf("REPO_PASS=%s", cfg.RegistryPassword),
-			"WATCHTOWER_LIFECYCLE_HOOKS=true",
-		})
-}
-
-func getUpdaterMounts(cfg *config.Configuration) []mount.Mount {
-	mounts := []mount.Mount{}
-
-	mounts = append(mounts, mount.Mount{
-		Type: mount.TypeBind, Source: cfg.HostDockerSockPath, Target: "/var/run/docker.sock",
-	})
-
-	if cfg.UpdateHostTimezone {
-		mounts = append(mounts, mount.Mount{
-			Type:     mount.TypeBind,
-			Source:   "/etc/localtime",
-			Target:   "/etc/localtime",
-			ReadOnly: true,
-		})
-	}
-	return mounts
-}
-
-func ExecTraefik(ctx context.Context, traefikDeployReq model.TraefikDeployRequest, cfg *config.Configuration) error {
+func ExecTraefik(ctx context.Context, traefikDeployReq TraefikDeployRequest, cfg *config.Configuration) error {
 	mounts := []mount.Mount{}
 
 	// dagent/traefik/config

@@ -21,6 +21,7 @@ GOAIR=v1.40.4
 GOSEC=v2.14.0
 GOLANGCI=v1.46.2
 GOSWAG=v1.8.3
+GOFUMPT=v0.4.0
 
 GOOS?=linux
 
@@ -85,6 +86,7 @@ install-go-tools: ##
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@${GOLANGCI} && \
 	go install github.com/swaggo/swag/cmd/swag@${GOSWAG} && \
 	go install github.com/securego/gosec/v2/cmd/gosec@${GOSEC}
+	go install mvdan.cc/gofumpt@${GOFUMPT}
 
 .PHONY: compile-agents
 compile-agents: compile-crane compile-dagent
@@ -95,7 +97,7 @@ security: # running gosec for static code analysis for bugs and leaks
 
 .PHONY: lint
 lint: # golangci for linting
-	golangci-lint run  ./... --timeout=3m
+	golangci-lint run  ./...
 
 .PHONY: build-cli
 build-cli: ##

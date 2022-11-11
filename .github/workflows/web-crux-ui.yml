@@ -140,7 +140,6 @@ jobs:
       run: |
         docker build . -t ${REGISTRY}/${IMAGE_NAME}:${{ needs.check.outputs.tag }}
       env:
-        NEXT_PUBLIC_RECAPTCHA_SITE_KEY: 6LeSBegfAAAAAGMnFacsTivlw4PdF2LBMi8g5tZ-
         CRUX_UI_IMAGE_TAG: ${{ needs.check.outputs.tag }}
         CRUX_VERSION: ${{ needs.check.outputs.version }}
 

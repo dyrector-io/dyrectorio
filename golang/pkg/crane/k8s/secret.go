@@ -103,7 +103,6 @@ func ApplyOpaqueSecret(ctx context.Context, namespace, name string, values map[s
 		FieldManager: appConfig.FieldManagerName,
 		Force:        appConfig.ForceOnConflicts,
 	})
-
 	if err != nil {
 		return "", err
 	}

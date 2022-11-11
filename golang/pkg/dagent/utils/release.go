@@ -88,9 +88,8 @@ func GetVersions(instance string, cfg *config.Configuration) ([]ReleaseDoc, erro
 	if err != nil {
 		if os.IsNotExist(err) {
 			return releases, nil
-		} else {
-			log.Fatal().Stack().Err(err).Msg("")
 		}
+		log.Fatal().Stack().Err(err).Msg("")
 	}
 
 	for i := range files {

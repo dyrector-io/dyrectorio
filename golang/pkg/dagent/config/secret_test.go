@@ -55,25 +55,25 @@ func TestConfigFromFileSetValue(t *testing.T) {
 		err = os.Remove(f.Name())
 		assert.NoError(t, err)
 	}()
-	cfg := config.ConfigFromFile("")
+	cfg := config.KeyFromFile("")
 
 	// empty path
 	err = cfg.SetValue("")
 	assert.Error(t, err)
 	assert.Equal(t, "env private key file value can't be empty", err.Error())
-	assert.Equal(t, config.ConfigFromFile(""), cfg)
+	assert.Equal(t, config.KeyFromFile(""), cfg)
 
 	// empty file
 	err = cfg.SetValue(f.Name())
 	assert.Error(t, err)
 	assert.Equal(t, "gopenpgp: error in reading key ring: openpgp: invalid argument: no armored data found", err.Error())
-	assert.Equal(t, config.ConfigFromFile(""), cfg)
+	assert.Equal(t, config.KeyFromFile(""), cfg)
 
 	// with a dir
 	err = cfg.SetValue("./")
 	assert.Error(t, err)
 	assert.Equal(t, "key path is a directory: read ./: is a directory", err.Error())
-	assert.Equal(t, config.ConfigFromFile(""), cfg)
+	assert.Equal(t, config.KeyFromFile(""), cfg)
 
 	// non existing file: key is generated
 	err = cfg.SetValue(missingKeyFile)
@@ -86,7 +86,7 @@ func TestConfigFromFileSetValue(t *testing.T) {
 	// read newly generated key file and compare
 	key, err := os.ReadFile(missingKeyFile)
 	assert.NoError(t, err)
-	assert.Equal(t, config.ConfigFromFile(key), cfg)
+	assert.Equal(t, config.KeyFromFile(key), cfg)
 
 	// valid key
 	_, err = f.WriteString(testPrivateKey)
@@ -94,7 +94,7 @@ func TestConfigFromFileSetValue(t *testing.T) {
 
 	err = cfg.SetValue(f.Name())
 	assert.NoError(t, err)
-	assert.Equal(t, config.ConfigFromFile(testPrivateKey), cfg)
+	assert.Equal(t, config.KeyFromFile(testPrivateKey), cfg)
 }
 
 func tmpTestFile() (*os.File, error) {

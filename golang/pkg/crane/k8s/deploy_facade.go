@@ -15,7 +15,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
 )
 
-type deployFacade struct {
+type DeployFacade struct {
 	ctx        context.Context
 	params     *DeployFacadeParams
 	image      util.ImageURI
@@ -29,14 +29,6 @@ type deployFacade struct {
 	appConfig  *config.Configuration
 }
 
-type DeployFacade interface {
-	CheckPreConditions() error
-	PreDeploy() error
-	Deploy() error
-	PostDeploy() error
-	Clear() error
-}
-
 type DeployFacadeParams struct {
 	Ctx             context.Context
 	Image           util.ImageURI
@@ -46,8 +38,8 @@ type DeployFacadeParams struct {
 	Issuer          string
 }
 
-func NewDeployFacade(params *DeployFacadeParams, cfg *config.Configuration) *deployFacade {
-	return &deployFacade{
+func NewDeployFacade(params *DeployFacadeParams, cfg *config.Configuration) *DeployFacade {
+	return &DeployFacade{
 		ctx:        params.Ctx,
 		params:     params,
 		image:      params.Image,
@@ -63,7 +55,7 @@ func NewDeployFacade(params *DeployFacadeParams, cfg *config.Configuration) *dep
 	}
 }
 
-func (d *deployFacade) CheckPreConditions() error {
+func (d *DeployFacade) CheckPreConditions() error {
 	if err := d.namespace.deployNamespace(); err != nil {
 		return err
 	}
@@ -77,7 +69,7 @@ func (d *deployFacade) CheckPreConditions() error {
 }
 
 // TODO docs
-func (d *deployFacade) PreDeploy() error {
+func (d *DeployFacade) PreDeploy() error {
 	if d.params.InstanceConfig.UseSharedEnvs {
 		if err := d.configmap.loadSharedConfig(d.namespace.name); err != nil {
 			return err
@@ -143,7 +135,7 @@ func (d *deployFacade) PreDeploy() error {
 	return nil
 }
 
-func (d *deployFacade) Deploy() error {
+func (d *DeployFacade) Deploy() error {
 	var portList []builder.PortBinding
 	if d.params.ContainerConfig.Ports != nil {
 		portList = append(portList, d.params.ContainerConfig.Ports...)
@@ -206,11 +198,11 @@ func (d *deployFacade) Deploy() error {
 	return nil
 }
 
-func (d *deployFacade) PostDeploy() error {
+func (d *DeployFacade) PostDeploy() error {
 	return nil
 }
 
-func (d *deployFacade) Clear() error {
+func (d *DeployFacade) Clear() error {
 	return nil
 }
 

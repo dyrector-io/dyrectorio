@@ -53,9 +53,9 @@ const (
 )
 
 // RestartPolicyUnmarshalInvalidError represents custom error regarding restart policy
-type ErrRestartPolicyUnmarshalInvalid struct{}
+type RestartPolicyUnmarshalInvalidError struct{}
 
-func (e *ErrRestartPolicyUnmarshalInvalid) Error() string {
+func (e *RestartPolicyUnmarshalInvalidError) Error() string {
 	return "restart policy invalid value provided"
 }
 
@@ -81,7 +81,7 @@ var policyToID = map[string]RestartPolicyName{
 func (policy RestartPolicyName) MarshalJSON() ([]byte, error) {
 	str, ok := policyToString[policy]
 	if !ok {
-		return nil, &ErrRestartPolicyUnmarshalInvalid{}
+		return nil, &RestartPolicyUnmarshalInvalidError{}
 	}
 	return []byte(fmt.Sprintf(`%q`, str)), nil
 }
@@ -98,7 +98,7 @@ func (policy *RestartPolicyName) UnmarshalJSON(b []byte) error {
 		*policy = policyToID[j]
 	} else {
 		*policy = RestartPolicyName("")
-		err = &ErrRestartPolicyUnmarshalInvalid{}
+		err = &RestartPolicyUnmarshalInvalidError{}
 	}
 	return err
 }
@@ -119,7 +119,7 @@ type ImagePullResponse struct {
 type LifecycleFunc func(ctx context.Context, client *client.Client, containerName string,
 	containerId *string, mountList []mount.Mount, logger *io.StringWriter) error
 
-// ContainerWaitResult with the status code from the container
-type ContainerWaitResult struct {
+// WaitResult with the status code from the container
+type WaitResult struct {
 	StatusCode int64
 }

@@ -8,9 +8,9 @@ import (
 	config "github.com/dyrector-io/dyrectorio/golang/internal/config"
 )
 
-type ConfigFromFile string
+type KeyFromFile string
 
-func (field *ConfigFromFile) SetValue(secretPath string) error {
+func (field *KeyFromFile) SetValue(secretPath string) error {
 	log.Debug().Str("secretPath", secretPath).Msg("Loading config from file")
 	if secretPath == "" {
 		return fmt.Errorf("env private key file value can't be empty")
@@ -21,6 +21,6 @@ func (field *ConfigFromFile) SetValue(secretPath string) error {
 		return err
 	}
 
-	*field = ConfigFromFile(key)
+	*field = KeyFromFile(key)
 	return nil
 }

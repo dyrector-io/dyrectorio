@@ -28,12 +28,12 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-type GrpcConnection struct {
+type Connection struct {
 	Conn   *grpc.ClientConn
 	Client agent.AgentClient
 }
 
-type GrpcConnectionParams struct {
+type ConnectionParams struct {
 	nodeID  string
 	address string
 	token   string
@@ -57,24 +57,24 @@ type contextKey int
 
 const contextConfigKey contextKey = 0
 
-func GrpcTokenToConnectionParams(grpcToken *config.ValidJWT) *GrpcConnectionParams {
-	return &GrpcConnectionParams{
+func TokenToConnectionParams(grpcToken *config.ValidJWT) *ConnectionParams {
+	return &ConnectionParams{
 		nodeID:  grpcToken.Subject,
 		address: grpcToken.Issuer,
 		token:   grpcToken.StringifiedToken,
 	}
 }
 
-func (g *GrpcConnection) SetClient(client agent.AgentClient) {
+func (g *Connection) SetClient(client agent.AgentClient) {
 	g.Client = client
 }
 
-func (g *GrpcConnection) SetConn(conn *grpc.ClientConn) {
+func (g *Connection) SetConn(conn *grpc.ClientConn) {
 	g.Conn = conn
 }
 
 // Singleton instance
-var grpcConn *GrpcConnection
+var grpcConn *Connection
 
 func fetchCertificatesFromURL(ctx context.Context, addr string) (*x509.CertPool, error) {
 	log.Print("Retrieving certificate")
@@ -113,13 +113,13 @@ func fetchCertificatesFromURL(ctx context.Context, addr string) (*x509.CertPool,
 }
 
 func Init(grpcContext context.Context,
-	connParams *GrpcConnectionParams,
+	connParams *ConnectionParams,
 	appConfig *config.CommonConfiguration,
 	workerFuncs WorkerFunctions,
 ) {
 	log.Print("Spinning up gRPC Agent client...")
 	if grpcConn == nil {
-		grpcConn = &GrpcConnection{}
+		grpcConn = &Connection{}
 	}
 
 	ctx, cancel := context.WithCancel(grpcContext)
@@ -263,7 +263,7 @@ func executeVersionDeployRequest(
 		return
 	}
 
-	dog := dogger.NewDeploymentLogger(&req.Id, statusStream, ctx, appConfig)
+	dog := dogger.NewDeploymentLogger(ctx, &req.Id, statusStream, appConfig)
 
 	dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Started.")
 
@@ -371,7 +371,7 @@ func executeVersionDeployLegacyRequest(
 		return
 	}
 
-	dog := dogger.NewDeploymentLogger(&req.RequestId, statusStream, ctx, appConfig)
+	dog := dogger.NewDeploymentLogger(ctx, &req.RequestId, statusStream, appConfig)
 	dog.SetRequestID(req.RequestId)
 
 	deployImageRequest := v1.DeployImageRequest{}

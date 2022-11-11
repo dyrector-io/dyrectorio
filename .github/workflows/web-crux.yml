@@ -17,20 +17,8 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: dyrector-io/dyrectorio/web/crux
   WORKING_DIRECTORY: web/crux
-  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
-  KRATOS_URL: http://192.168.1.30:8000/kratos
-  CRUX_UI_URL: http://172.17.0.1:8000
-  TIME_ZONE: Europe/Budapest
-  SMTP_URI: smtps://test:test@172.17.0.1:1025/?skip_ssl_verify=true&legacy_ssl=true
   # Default GitHub variables
   CRUX_VERSION: ${{ github.sha }}
-  CRUX_IMAGE_TAG: ${{ github.ref_name }}
-  # Secrets
-  POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-  POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-  POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-  FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
-  FROM_NAME: ${{ secrets.FROM_NAME }}
 
 permissions:
   contents: read
