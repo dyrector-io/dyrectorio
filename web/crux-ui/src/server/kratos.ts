@@ -27,7 +27,8 @@ export const identityHasNoPassword = async (session: Session): Promise<boolean> 
     return false
   }
 
-  const identity = await (await kratosAdmin.adminGetIdentity(session.identity.id)).data
+  const kratosRes = await kratosAdmin.adminGetIdentity(session.identity.id)
+  const identity = kratosRes.data
   const { password: passwordCredentials } = identity.credentials
   if (!passwordCredentials) {
     return false

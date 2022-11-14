@@ -21,7 +21,7 @@ export default class TeamReinviteUserValidationPipe implements PipeTransform {
     const now = new Date().getTime()
     if (invite.status !== 'expired' && now < invite.createdAt.getTime() + TEAM_INVITATION_EXPIRATION) {
       throw new PreconditionFailedException({
-        message: 'Invitation link is not expired. ',
+        message: 'Invitation link is not expired.',
         property: 'userId',
         value: value.userId,
       })
