@@ -1,4 +1,4 @@
-import { Body, Controller, UseGuards } from '@nestjs/common'
+import { Body, Controller, UseGuards, UseInterceptors } from '@nestjs/common'
 import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
   AccessRequest,
@@ -12,6 +12,8 @@ import {
   UpdateEntityResponse,
   UpdateProductRequest,
 } from 'src/grpc/protobuf/proto/crux'
+import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
+import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
 import ProductTeamAccessGuard from './guards/product.team-access.guard'
 import ProductUpdateValidationPipe from './pipes/product.update.pipe'
 import ProductService from './product.service'
@@ -19,6 +21,7 @@ import ProductService from './product.service'
 @Controller()
 @CruxProductControllerMethods()
 @UseGuards(ProductTeamAccessGuard)
+@UseInterceptors(GrpcLoggerInterceptor, GrpcErrorInterceptor)
 export default class ProductController implements CruxProductController {
   constructor(private service: ProductService) {}
 
