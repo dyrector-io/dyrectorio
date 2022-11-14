@@ -77,7 +77,7 @@ const DyoButton = (props: DyoButtonProps) => {
 
   return href ? (
     <Link href={href}>
-      <a className="flex flex-grow">{button}</a>
+      <a>{button}</a>
     </Link>
   ) : (
     button
