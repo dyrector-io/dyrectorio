@@ -12,10 +12,14 @@ RUN mkdir -p "$GOPATH/{src,bin,cache}" && chmod -R 777 "$GOPATH"
 
 RUN apk add nodejs npm alpine-sdk go protoc protobuf-dev rsync docker git cosign
 
+
 RUN npm i -g \
-    ts-proto@1.125.0 \
-    @grpc/grpc-js \
-    prettier
+        ts-proto@1.125.0 \
+        @grpc/grpc-js \
+        prettier
+
+RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.26 && \
+    go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
 
 COPY ./golang/Makefile /tmp/
 RUN cd /tmp && make install-go-tools && rm Makefile

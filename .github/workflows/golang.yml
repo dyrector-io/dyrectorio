@@ -22,40 +22,39 @@ env:
   GOFLAGS: "-buildvcs=false"
 
 jobs:
-
   lint:
     runs-on: ubuntu-20.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-3
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
     defaults:
       run:
         working-directory: golang
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-    - name: Load go mod
-      run: go mod tidy
-    - name: Run golangci-lint
-      run: make lint
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Load go mod
+        run: go mod tidy
+      - name: Run golangci-lint
+        run: make lint
   security:
     runs-on: ubuntu-20.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-3
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
     defaults:
       run:
         working-directory: golang
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-    - name: Load go mod
-      run: go mod tidy
-    - name: Run gosec
-      run: make security
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Load go mod
+        run: go mod tidy
+      - name: Run gosec
+        run: make security
   test:
     runs-on: ubuntu-20.04
     needs: [security, lint]
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-3
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
     outputs:
       tag: ${{ steps.settag.outputs.tag }}
       version: ${{ steps.settag.outputs.version }}
@@ -63,30 +62,30 @@ jobs:
       run:
         working-directory: golang
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-    - name: Load go mod
-      run: go mod tidy
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Load go mod
+        run: go mod tidy
 
-    # fixes: fatal: unsafe repository
-    - name: Adding workspace
-      run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      # fixes: fatal: unsafe repository
+      - name: Adding workspace
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
-    - name: Run unit tests with coverage
-      run: make test-unit-with-coverage
+      - name: Run unit tests with coverage
+        run: make test-unit-with-coverage
 
-    - name: Upload coverage reports to Codecov with GitHub Action
-      uses: codecov/codecov-action@v3
+      - name: Upload coverage reports to Codecov with GitHub Action
+        uses: codecov/codecov-action@v3
 
-    - name: Setting a buildtag
-      id: settag
-      working-directory: .github/workflows
-      run: ./pipeline_set_output_tag.sh $GITHUB_REF_TYPE ${{ github.ref_name }} ${{ github.sha }}
+      - name: Setting a buildtag
+        id: settag
+        working-directory: .github/workflows
+        run: ./pipeline_set_output_tag.sh $GITHUB_REF_TYPE ${{ github.ref_name }} ${{ github.sha }}
   build:
     runs-on: ubuntu-20.04
     needs: [test]
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-3
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
     if: github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag'
     defaults:
       run:
@@ -119,28 +118,27 @@ jobs:
     runs-on: ubuntu-20.04
     if: github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag'
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-3
-    needs: [build,test]
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+    needs: [build, test]
     environment: Workflow - Protected
     steps:
-    - name: Write signing key to disk
-      run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
+      - name: Write signing key to disk
+        run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
 
-    - name: Login to GHCR
-      uses: docker/login-action@v2
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.GHCR_PAT }}
+      - name: Login to GHCR
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_PAT }}
 
-    - name: Sign container image dagent
-      run: |
-        cosign sign --key cosign.key ghcr.io/dyrector-io/dyrectorio/agent/dagent:${{ needs.test.outputs.tag }}
-      env:
-        COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
-    - name: Sign container image crane
-      run: |
-        cosign sign --key cosign.key ghcr.io/dyrector-io/dyrectorio/agent/crane:${{ needs.test.outputs.tag }}
-      env:
-        COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
-
+      - name: Sign container image dagent
+        run: |
+          cosign sign --key cosign.key ghcr.io/dyrector-io/dyrectorio/agent/dagent:${{ needs.test.outputs.tag }}
+        env:
+          COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
+      - name: Sign container image crane
+        run: |
+          cosign sign --key cosign.key ghcr.io/dyrector-io/dyrectorio/agent/crane:${{ needs.test.outputs.tag }}
+        env:
+          COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
