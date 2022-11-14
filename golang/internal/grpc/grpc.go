@@ -205,7 +205,7 @@ func grpcLoop(
 				grpc.WaitForReady(true),
 			)
 			if err != nil {
-				log.Error().Stack().Err(err).Msg("")
+				log.Error().Stack().Err(err).Send()
 				time.Sleep(time.Second)
 				grpcConn.Client = nil
 				continue

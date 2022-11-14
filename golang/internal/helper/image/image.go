@@ -1,21 +1,24 @@
-package util
+package image
 
 import (
+	"fmt"
 	"strings"
 
-	builder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
+
+	"github.com/dyrector-io/dyrectorio/golang/internal/util"
+	builder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 )
 
-type ImageURI struct {
+type URI struct {
 	Host string
 	Name string
 	Tag  string
 }
 
-type EmptyImageError struct{}
+type EmptyError struct{}
 
-func (e *EmptyImageError) Error() string {
+func (e *EmptyError) Error() string {
 	return "empty image name is not valid"
 }
 
@@ -25,11 +28,11 @@ func (e *MultiColonRegistryURIError) Error() string {
 	return "multiple colons in registry URI"
 }
 
-type InvalidImageURIError struct {
+type InvalidURIError struct {
 	Image string
 }
 
-func (e *InvalidImageURIError) Error() string {
+func (e *InvalidURIError) Error() string {
 	return "no colons in registry URI: " + e.Image
 }
 
@@ -37,17 +40,17 @@ const PartCountAfterSplitByColon = 2
 
 // ImageURIFromString results in an image that is split respectively
 // imageName can be fully qualified or dockerhub image name plus tag
-func ImageURIFromString(imageName string) (*ImageURI, error) {
+func URIFromString(imageName string) (*URI, error) {
 	if imageName == "" {
-		return nil, &EmptyImageError{}
+		return nil, &EmptyError{}
 	}
 
-	image := &ImageURI{}
+	image := &URI{}
 
 	nameArr := strings.Split(imageName, ":")
 
 	if len(nameArr) == 1 {
-		return nil, &InvalidImageURIError{Image: imageName}
+		return nil, &InvalidURIError{Image: imageName}
 	} else if len(nameArr) > PartCountAfterSplitByColon {
 		return nil, &MultiColonRegistryURIError{}
 	} else if len(nameArr) == PartCountAfterSplitByColon {
@@ -62,7 +65,7 @@ func ImageURIFromString(imageName string) (*ImageURI, error) {
 		// removing the last element
 		repoArr = repoArr[:len(repoArr)-1]
 		// conjoining the remaining into the result
-		image.Host = JoinV("/", repoArr...)
+		image.Host = util.JoinV("/", repoArr...)
 	} else {
 		image.Name = nameArr[0]
 	}
@@ -70,17 +73,17 @@ func ImageURIFromString(imageName string) (*ImageURI, error) {
 	return image, nil
 }
 
-func (image *ImageURI) String() string {
+func (image *URI) String() string {
 	setDefaults(image)
-	return JoinV("/", image.Host, image.Name+":"+image.Tag)
+	return fmt.Sprintf("%s/%s", image.Host, image.Name+":"+image.Tag)
 }
 
-func (image *ImageURI) StringNoTag() string {
+func (image *URI) StringNoTag() string {
 	setDefaults(image)
-	return JoinV("/", image.Host, image.Name)
+	return fmt.Sprintf("%s/%s", image.Host, image.Name)
 }
 
-func setDefaults(image *ImageURI) {
+func setDefaults(image *URI) {
 	if image.Host == "" {
 		image.Host = "docker.io/library"
 	}

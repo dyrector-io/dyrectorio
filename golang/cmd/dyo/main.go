@@ -15,6 +15,6 @@ func main() {
 	app := cli.InitCLI()
 
 	if err := app.Run(os.Args); err != nil {
-		log.Fatal().Err(err).Msg("")
+		log.Fatal().Err(err).Send()
 	}
 }

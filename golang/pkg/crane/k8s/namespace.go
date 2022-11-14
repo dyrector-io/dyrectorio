@@ -54,7 +54,7 @@ func DeployNamespace(ctx context.Context, name string, cfg *config.Configuration
 		})
 
 	if err != nil {
-		log.Error().Err(err).Stack().Msg("")
+		log.Error().Err(err).Stack().Send()
 		return err
 	}
 	return nil
@@ -78,7 +78,7 @@ func GetNamespaces(cfg *config.Configuration) ([]Namespace, error) {
 
 	list := extractName(rawList)
 	if err != nil {
-		log.Error().Err(err).Stack().Msg("")
+		log.Error().Err(err).Stack().Send()
 	}
 	return list, err
 }

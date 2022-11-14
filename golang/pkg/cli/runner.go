@@ -92,55 +92,55 @@ func StartContainers(containers *DyrectorioStack, internalHostDomain string) {
 
 	_, err := traefik.Start()
 	if err != nil {
-		log.Fatal().Err(err).Stack().Msg("")
+		log.Fatal().Err(err).Stack().Send()
 	}
 
 	_, err = containers.CruxPostgres.Create().Start()
 	if err != nil {
-		log.Fatal().Err(err).Stack().Msg("")
+		log.Fatal().Err(err).Stack().Send()
 	}
 
 	_, err = containers.KratosPostgres.Create().Start()
 	if err != nil {
-		log.Fatal().Err(err).Stack().Msg("")
+		log.Fatal().Err(err).Stack().Send()
 	}
 
 	log.Printf("Migration (kratos) in progress...")
 	_, err = containers.KratosMigrate.Create().StartWaitUntilExit()
 	if err != nil {
-		log.Fatal().Err(err).Stack().Msg("")
+		log.Fatal().Err(err).Stack().Send()
 	}
 	log.Printf("Migration (kratos) done!")
 
 	_, err = containers.Kratos.Create().Start()
 	if err != nil {
-		log.Fatal().Err(err).Stack().Msg("")
+		log.Fatal().Err(err).Stack().Send()
 	}
 
 	if !containers.Containers.Crux.Disabled {
 		log.Printf("Migration (crux) in progress...")
 		_, err = containers.CruxMigrate.Create().StartWaitUntilExit()
 		if err != nil {
-			log.Fatal().Err(err).Stack().Msg("")
+			log.Fatal().Err(err).Stack().Send()
 		}
 		log.Printf("Migration (crux) done!")
 
 		_, err = containers.Crux.Create().Start()
 		if err != nil {
-			log.Fatal().Err(err).Stack().Msg("")
+			log.Fatal().Err(err).Stack().Send()
 		}
 	}
 
 	if !containers.Containers.CruxUI.Disabled {
 		_, err = containers.CruxUI.Create().Start()
 		if err != nil {
-			log.Fatal().Err(err).Stack().Msg("")
+			log.Fatal().Err(err).Stack().Send()
 		}
 	}
 
 	_, err = containers.MailSlurper.Create().Start()
 	if err != nil {
-		log.Fatal().Err(err).Stack().Msg("")
+		log.Fatal().Err(err).Stack().Send()
 	}
 }
 
@@ -243,7 +243,7 @@ func TraefikConfiguration(name, internalHostDomain string, cruxuiport uint) {
 func GetContainerID(name string) string {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
-		log.Fatal().Err(err).Stack().Msg("")
+		log.Fatal().Err(err).Stack().Send()
 	}
 
 	filter := filters.NewArgs()
@@ -256,7 +256,7 @@ func GetContainerID(name string) string {
 			Filters: filter,
 		})
 	if err != nil {
-		log.Fatal().Err(err).Stack().Msg("")
+		log.Fatal().Err(err).Stack().Send()
 	}
 
 	switch len(containers) {
@@ -275,29 +275,29 @@ func GetContainerID(name string) string {
 func CleanupContainer(id string) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
-		log.Fatal().Err(err).Stack().Msg("")
+		log.Fatal().Err(err).Stack().Send()
 	}
 
 	timeout, err := time.ParseDuration("10s")
 	if err != nil {
-		log.Fatal().Err(err).Stack().Msg("")
+		log.Fatal().Err(err).Stack().Send()
 	}
 
 	err = cli.ContainerStop(context.Background(), id, &timeout)
 	if err != nil {
-		log.Fatal().Err(err).Stack().Msg("")
+		log.Fatal().Err(err).Stack().Send()
 	}
 
 	err = cli.ContainerRemove(context.Background(), id, types.ContainerRemoveOptions{Force: true, RemoveVolumes: false})
 	if err != nil {
-		log.Fatal().Err(err).Stack().Msg("")
+		log.Fatal().Err(err).Stack().Send()
 	}
 }
 
 func EnsureNetworkExists(settings *Settings) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
-		log.Fatal().Err(err).Stack().Msg("")
+		log.Fatal().Err(err).Stack().Send()
 	}
 
 	filter := filters.NewArgs()
@@ -308,7 +308,7 @@ func EnsureNetworkExists(settings *Settings) {
 			Filters: filter,
 		})
 	if err != nil {
-		log.Fatal().Err(err).Stack().Msg("")
+		log.Fatal().Err(err).Stack().Send()
 	}
 
 	if len(networks) == 0 {
@@ -319,7 +319,7 @@ func EnsureNetworkExists(settings *Settings) {
 		resp, err := cli.NetworkCreate(context.Background(), settings.SettingsFile.Network, opts)
 		log.Info().Str("responseId", resp.ID).Msg("Nework created with ")
 		if err != nil {
-			log.Fatal().Err(err).Stack().Msg("")
+			log.Fatal().Err(err).Stack().Send()
 		}
 		return
 	}

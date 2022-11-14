@@ -10,7 +10,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/docker/docker/api/types"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/utils"
@@ -240,61 +239,4 @@ func TestReadDockerLogsFromReadCloser_SkipAndTake(t *testing.T) {
 	actual := utils.ReadDockerLogsFromReadCloser(reader, skip, take)
 
 	assert.EqualValues(t, expected, actual)
-}
-
-func TestDockerFilterByNameEmptyList(t *testing.T) {
-	inputContainers := []types.Container{}
-	name := "test-empty"
-
-	outputContainers := utils.FilterContainerByName(inputContainers, name)
-	expectedContainers := []types.Container{}
-
-	assert.ElementsMatch(t, outputContainers, expectedContainers)
-}
-
-func TestDockerFilterByNameEmptyName(t *testing.T) {
-	inputContainers := []types.Container{
-		{Names: []string{"mysql-example-1"}},
-		{Names: []string{"mysql-example-2"}},
-		{Names: []string{"mysql-example-3"}},
-	}
-
-	name := ""
-
-	outputContainers := utils.FilterContainerByName(inputContainers, name)
-	expectedContainers := []types.Container{}
-
-	assert.ElementsMatch(t, outputContainers, expectedContainers)
-}
-
-func TestDockerFilterByNameNoMatch(t *testing.T) {
-	inputContainers := []types.Container{
-		{Names: []string{"mysql-example-1"}},
-		{Names: []string{"mysql-example-2"}},
-		{Names: []string{"mysql-example-3"}},
-	}
-
-	name := "mysql"
-
-	outputContainers := utils.FilterContainerByName(inputContainers, name)
-	expectedContainers := []types.Container{}
-
-	assert.ElementsMatch(t, outputContainers, expectedContainers)
-}
-
-func TestDockerFilterByNameFilterOneMatch(t *testing.T) {
-	inputContainers := []types.Container{
-		{Names: []string{"mysql-example-1"}},
-		{Names: []string{"mysql-example-2"}},
-		{Names: []string{"mysql-example-3"}},
-	}
-
-	name := "mysql-example-1"
-
-	outputContainers := utils.FilterContainerByName(inputContainers, name)
-	expectedContainers := []types.Container{
-		{Names: []string{"mysql-example-1"}},
-	}
-
-	assert.ElementsMatch(t, outputContainers, expectedContainers)
 }

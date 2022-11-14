@@ -16,7 +16,7 @@ func GetDeployments(ctx context.Context, namespace string) []*common.ContainerSt
 	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
 	list, err := k8s.GetDeployments(ctx, namespace, cfg)
 	if err != nil {
-		log.Error().Err(err).Stack().Msg("")
+		log.Error().Err(err).Stack().Send()
 	}
 
 	return mapper.MapKubeDeploymentListToCruxStateItems(list)

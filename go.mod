@@ -13,6 +13,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.28.0
 	github.com/stretchr/testify v1.8.0
+	github.com/thanhpk/randstr v1.0.4
 	github.com/urfave/cli/v2 v2.20.3
 	golang.org/x/exp v0.0.0-20221026153819-32f3d567a233
 	golang.org/x/net v0.1.0

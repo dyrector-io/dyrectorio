@@ -12,6 +12,7 @@ import (
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
+	dockerHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/config"
@@ -64,7 +65,7 @@ func spawnInitContainer(
 
 	if exitResult.StatusCode == 0 {
 		containerID := *builder.GetContainerID()
-		err = DeleteContainer(containerID)
+		err = dockerHelper.DeleteContainerByName(ctx, dog, containerID)
 		if err != nil {
 			log.Warn().Msg("failed to delete import container after completion")
 		}

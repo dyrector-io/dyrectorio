@@ -14,18 +14,24 @@ import (
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
+	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
 
+	dockerHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 )
 
 func builderCleanup(builder *containerbuilder.DockerContainerBuilder) {
+	ctx := context.Background()
 	if builder.GetContainerID() != nil {
-		containerbuilder.DeleteContainer(context.Background(), *builder.GetContainerID())
+		dockerHelper.DeleteContainerByID(ctx, nil, *builder.GetContainerID())
 	}
 	if networks := builder.GetNetworkIDs(); networks != nil {
 		for _, network := range networks {
-			containerbuilder.DeleteNetwork(context.Background(), network)
+			err := dockerHelper.DeleteNetworkByID(ctx, network)
+			if err != nil {
+				log.Error().Str("name", network).Msg("Removing network was not successful.")
+			}
 		}
 	}
 }

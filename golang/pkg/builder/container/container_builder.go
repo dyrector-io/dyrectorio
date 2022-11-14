@@ -16,6 +16,8 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
 	"github.com/rs/zerolog/log"
+
+	dockerHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
 )
 
 // A Builder handles the process of creating and starting containers,
@@ -291,7 +293,7 @@ func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 	}
 
 	if dc.withoutConflict {
-		err := deleteContainer(dc.ctx, dc.containerName)
+		err := dockerHelper.DeleteContainerByName(dc.ctx, nil, dc.containerName)
 		if err != nil {
 			logWrite(dc, fmt.Sprintf("Failed to resolve conflict during creating the container: %v", err))
 		}

@@ -67,7 +67,7 @@ func DraftRelease(instance string, versionData v1.VersionData, deployResponse v1
 		// no-op
 	} else {
 		// file may or may not exist - Schrodinger -> something is really-really not gud
-		log.Panic().Stack().Err(err).Msg("")
+		log.Panic().Stack().Err(err).Send()
 	}
 
 	err = os.WriteFile(filePath, content, os.ModePerm)
@@ -89,7 +89,7 @@ func GetVersions(instance string, cfg *config.Configuration) ([]ReleaseDoc, erro
 		if os.IsNotExist(err) {
 			return releases, nil
 		}
-		log.Fatal().Stack().Err(err).Msg("")
+		log.Fatal().Stack().Err(err).Send()
 	}
 
 	for i := range files {
@@ -106,7 +106,7 @@ func GetVersions(instance string, cfg *config.Configuration) ([]ReleaseDoc, erro
 
 			err = yaml.Unmarshal(content, &release)
 			if err != nil {
-				log.Error().Stack().Err(err).Msg("")
+				log.Error().Stack().Err(err).Send()
 			}
 			releases = append(releases, release)
 		}

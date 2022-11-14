@@ -10,7 +10,7 @@ import (
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 	"github.com/dyrector-io/dyrectorio/golang/internal/config"
 	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
-	"github.com/dyrector-io/dyrectorio/golang/internal/util"
+	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 
 	builder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
@@ -437,7 +437,7 @@ func MapKubeDeploymentListToCruxStateItems(deployments *appsv1.DeploymentList) [
 					// this move was suggested by golangci
 					continue
 				}
-				image, err := util.ImageURIFromString(containers[i].Image)
+				image, err := imageHelper.URIFromString(containers[i].Image)
 				if err == nil {
 					stateItem.ImageName = image.StringNoTag()
 					stateItem.ImageTag = image.Tag
