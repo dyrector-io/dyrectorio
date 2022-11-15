@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -15,7 +16,6 @@ import (
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
-	"github.com/rs/zerolog/log"
 
 	dockerHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
 )
@@ -481,7 +481,8 @@ func attachNetworks(dc *DockerContainerBuilder) {
 				Aliases: dc.networkAliases,
 			}
 
-			if err := dc.client.NetworkConnect(dc.ctx, networkID, *dc.containerID, endpointSettings); err != nil {
+			err := dc.client.NetworkConnect(dc.ctx, networkID, *dc.containerID, endpointSettings)
+			if err != nil {
 				logWrite(dc, fmt.Sprintln("Container network attach error: ", err))
 			}
 		}

@@ -14,7 +14,7 @@ import (
 )
 
 func CheckGenerateKeys(secretPath string) (string, error) {
-	log.Printf("Checking key file: %v", secretPath)
+	log.Info().Msgf("Checking key file: %v", secretPath)
 	fileContent, err := os.ReadFile(secretPath) //#nosec G304 -- secret path comes from an env
 
 	if errors.Is(err, syscall.EISDIR) {
@@ -22,7 +22,7 @@ func CheckGenerateKeys(secretPath string) (string, error) {
 	}
 
 	if errors.Is(err, os.ErrNotExist) {
-		log.Printf("Key file does not exist: %v", secretPath)
+		log.Debug().Msgf("Key file does not exist: %v", secretPath)
 		return generateKey(secretPath)
 	} else if err != nil {
 		return "", fmt.Errorf("key file can't be read: %w", err)
@@ -44,12 +44,12 @@ func CheckGenerateKeys(secretPath string) (string, error) {
 
 		return keyStr, keyErr
 	}
-	log.Printf("Key file is expired: %v", secretPath)
+	log.Debug().Msgf("Key file is expired: %v", secretPath)
 	return generateKey(secretPath)
 }
 
 func GenerateKeyString() (string, error) {
-	log.Printf("Generating new key file...")
+	log.Info().Msgf("Generating new key file...")
 	const (
 		name  = "dyrector.io agent"
 		email = "hello@dyrector.io"
@@ -78,7 +78,7 @@ func generateKey(secretPath string) (string, error) {
 	if fileErr != nil {
 		return "", fileErr
 	}
-	log.Printf("New key is generated and saved")
+	log.Info().Msgf("New key is generated and saved")
 
 	return keyStr, nil
 }

@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"github.com/rs/zerolog"
 	ucli "github.com/urfave/cli/v2"
 
 	"github.com/dyrector-io/dyrectorio/golang/internal/version"
@@ -51,6 +52,12 @@ func InitCLI() *ucli.App {
 				Usage:    "enables writing configuration, storing current state",
 				Required: false,
 			},
+			&ucli.BoolFlag{
+				Name:     "debug",
+				Value:    false,
+				Usage:    "enables debug messages",
+				Required: false,
+			},
 			&ucli.StringFlag{
 				Name:     "config",
 				Aliases:  []string{"c"},
@@ -64,6 +71,11 @@ func InitCLI() *ucli.App {
 }
 
 func run(cCtx *ucli.Context) error {
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	if cCtx.Bool("debug") {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	}
+
 	state := Settings{
 		SettingsWrite:    cCtx.Bool("write"),
 		SettingsFilePath: SettingsFileLocation(cCtx.String("config")),

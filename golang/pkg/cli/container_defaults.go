@@ -36,6 +36,7 @@ const (
 func GetCrux(settings *Settings) *containerbuilder.DockerContainerBuilder {
 	crux := containerbuilder.NewDockerBuilder(context.Background()).
 		WithImage(fmt.Sprintf("%s:%s", settings.Crux.Image, settings.SettingsFile.Version)).
+		WithLogWriter(nil).
 		WithName(settings.Containers.Crux.Name).
 		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
 		WithoutConflict().
@@ -80,6 +81,7 @@ func GetCrux(settings *Settings) *containerbuilder.DockerContainerBuilder {
 func GetCruxMigrate(settings *Settings) *containerbuilder.DockerContainerBuilder {
 	cruxMigrate := containerbuilder.NewDockerBuilder(context.Background()).
 		WithImage(fmt.Sprintf("%s:%s", settings.Crux.Image, settings.SettingsFile.Version)).
+		WithLogWriter(nil).
 		WithName(settings.Containers.CruxMigrate.Name).
 		WithoutConflict().
 		WithForcePullImage().
@@ -107,6 +109,7 @@ func GetCruxUI(settings *Settings) *containerbuilder.DockerContainerBuilder {
 
 	cruxUI := containerbuilder.NewDockerBuilder(context.Background()).
 		WithImage(fmt.Sprintf("%s:%s", settings.CruxUI.Image, settings.SettingsFile.Version)).
+		WithLogWriter(nil).
 		WithName(settings.Containers.CruxUI.Name).
 		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
 		WithoutConflict().
@@ -177,6 +180,7 @@ func GetTraefik(settings *Settings) *containerbuilder.DockerContainerBuilder {
 
 	traefik := containerbuilder.NewDockerBuilder(context.Background()).
 		WithImage("docker.io/library/traefik:v2.8.8").
+		WithLogWriter(nil).
 		WithName(settings.Containers.Traefik.Name).
 		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
 		WithoutConflict().
@@ -206,6 +210,7 @@ func GetTraefik(settings *Settings) *containerbuilder.DockerContainerBuilder {
 func GetKratos(settings *Settings) *containerbuilder.DockerContainerBuilder {
 	kratos := containerbuilder.NewDockerBuilder(context.Background()).
 		WithImage(fmt.Sprintf("%s:%s", settings.Kratos.Image, settings.SettingsFile.Version)).
+		WithLogWriter(nil).
 		WithName(settings.Containers.Kratos.Name).
 		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
 		WithoutConflict().
@@ -265,6 +270,7 @@ func GetKratos(settings *Settings) *containerbuilder.DockerContainerBuilder {
 func GetKratosMigrate(settings *Settings) *containerbuilder.DockerContainerBuilder {
 	kratosMigrate := containerbuilder.NewDockerBuilder(context.Background()).
 		WithImage(fmt.Sprintf("%s:%s", settings.Kratos.Image, settings.SettingsFile.Version)).
+		WithLogWriter(nil).
 		WithName(settings.Containers.KratosMigrate.Name).
 		WithoutConflict().
 		WithForcePullImage().
@@ -288,6 +294,7 @@ func GetKratosMigrate(settings *Settings) *containerbuilder.DockerContainerBuild
 func GetMailSlurper(settings *Settings) *containerbuilder.DockerContainerBuilder {
 	mailslurper := containerbuilder.NewDockerBuilder(context.Background()).
 		WithImage(MailSlurperImage).
+		WithLogWriter(nil).
 		WithName(settings.Containers.MailSlurper.Name).
 		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
 		WithoutConflict().
@@ -367,6 +374,7 @@ func GetKratosPostgres(settings *Settings) *containerbuilder.DockerContainerBuil
 func GetBasePostgres(settings *Settings) *containerbuilder.DockerContainerBuilder {
 	basePostgres := containerbuilder.
 		NewDockerBuilder(context.Background()).
+		WithLogWriter(nil).
 		WithImage(PostgresImage).
 		WithNetworks([]string{settings.SettingsFile.Network}).
 		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
