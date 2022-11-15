@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 const useTimer = (
   initialTimeout?: number,
   onExpire?: VoidFunction,
-): [number, (timeout?: number) => void, VoidFunction] => {
+): [number, (timeout: number) => void, VoidFunction] => {
   const [remaining, setRemaining] = useState(initialTimeout ?? -1)
   const expireCallback = useRef<VoidFunction>(null)
   const timer = useRef<NodeJS.Timeout>(null)

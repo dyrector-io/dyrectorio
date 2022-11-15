@@ -6,12 +6,14 @@ import EditTeamCard from '@app/components/team/edit-team-card'
 import InviteUserCard from '@app/components/team/invite-user-card'
 import UserRoleAction from '@app/components/team/user-role-action'
 import UserStatusTag from '@app/components/team/user-status-tag'
+import { AUTH_RESEND_DELAY } from '@app/const'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoList } from '@app/elements/dyo-list'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
-import { roleToText, Team, TeamDetails, User, userIsAdmin, userIsOwner, UserRole } from '@app/models'
+import useTimer from '@app/hooks/use-timer'
+import { roleToText, Team, TeamDetails, User, userIsAdmin, userIsOwner, UserRole, userStatusReinvitable } from '@app/models'
 import { ROUTE_TEAMS, teamApiUrl, teamReinviteUrl, teamUrl, userApiUrl } from '@app/routes'
 import { redirectTo, utcDateToLocale, withContextAuthorization } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
@@ -36,6 +38,8 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
   const router = useRouter()
 
   const { me, team: propsTeam } = props
+
+  const [countdown, startCountdown] = useTimer(-1)
 
   const [team, setTeam] = useState(propsTeam)
   const [detailsState, setDetailsState] = useState<TeamDetailsState>('none')
@@ -87,6 +91,8 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
   const onInviteUser = () => setDetailsState('inviting')
 
   const onReinviteUser = async (user: User) => {
+    startCountdown(AUTH_RESEND_DELAY)
+
     const res = await fetch(teamReinviteUrl(team.id, user.id), {
       method: 'POST',
     })
@@ -180,7 +186,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
     <div>{it.lastLogin ? utcDateToLocale(it.lastLogin) : t('never')}</div>,
     <UserStatusTag className="my-auto w-fit" status={it.status} />,
     <div>
-      {it.status !== 'expired' ? null : (
+      {!userStatusReinvitable(it.status) || countdown > 0 ? null : (
         <Image
           className="cursor-pointer mr-16"
           src="/restart.svg"

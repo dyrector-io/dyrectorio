@@ -325,8 +325,8 @@ export default class TeamService {
     return await this.inviteUserToTeam({
       id: request.id,
       email: traits.email,
-      firstName: traits.name.first,
-      lastName: traits.name.last,
+      firstName: traits.name?.first ?? '',
+      lastName: traits.name?.last,
       accessedBy: request.accessedBy,
     })
   }

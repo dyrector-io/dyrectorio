@@ -52,3 +52,4 @@ export const selectedTeamOf = (meta: UserMeta): UserMetaTeam => {
 
 export const userIsAdmin = (user: User): boolean => user.role === 'owner' || user.role === 'admin'
 export const userIsOwner = (user: User): boolean => user.role === 'owner'
+export const userStatusReinvitable = (status: UserStatus) => status !== 'declined' && status !== 'verified'
