@@ -11,21 +11,23 @@ case $(uname) in
     ;;
   MINGW*)
     PLATFORM="WINDOWS"
+    HOST_DOCKER_SOCK_PATH="${HOST_DOCKER_SOCK_PATH:-//var/run/docker.sock}"
     ;;
   *)
-    echo "unsuppported OS"
+    echo "Not Suppported OS"
     exit 1
     ;;
 esac
 
 
-if [ "$PLATFORM" == "WINDOWS" ]; then 
+
+if [ "$PLATFORM" == "WINDOWS" ] || [ "$PLATFORM" == "OSX" ]; then
   ROOTLESS="${ROOTLESS:-true}"
 else
   ROOTLESS="${ROOTLESS:-false}"
 fi
 
-if [ $ROOTLESS != "true" ]; then
+if [ $ROOTLESS == "false" ]; then
   if [ $(id -u) -ne 0 ]; then
     echo "Installation process needs root privileges" 1>&2
     sudo -s
@@ -41,17 +43,21 @@ set_environment() {
   if [ -z ${PERSISTENCE_FOLDER:-} ]; then
     if [ -z ${PERSISTENCE_FOLDER_FROM_CRUX:-} ]; then
       case $PLATFORM in
-      'OSX')
+      OSX*)
         echo "Detected: Mac OS X"
-        PERSISTENCE_FOLDER=$HOME/Library/Dyrectorio/srv/dagent
+        PERSISTENCE_FOLDER=~/.dyrectorio-persistence/
         ;;
-      'LINUX')
+      LINUX*)
         echo "Detected: Linux"
-        PERSISTENCE_FOLDER=/srv/dagent
+        if [ $ROOTLESS == "false" ]; then
+          PERSISTENCE_FOLDER=/srv/dyrectorio-persistence/
+        else
+          PERSISTENCE_FOLDER=~/.dyrectorio-persistence/
+        fi
         ;;
-      'WINDOWS')
+      WINDOWS*)
         echo "Detected: Windows(mingw64)"
-        PERSISTENCE_FOLDER="c:/srv/dagent"
+        PERSISTENCE_FOLDER=C:/.dyrectorio-persistence
         ;;
       *)
         echo "Not supported OS and PERSISTENCE_FOLDER is not set!"
@@ -77,10 +83,6 @@ set_environment() {
     CRI_EXECUTABLE="docker"
   fi
 
-  if [ $PLATFORM == "WINDOWS" ]; then 
-    HOST_DOCKER_SOCK_PATH="${HOST_DOCKER_SOCK_PATH:-//var/run/docker.sock}"
-  fi
-
   if [ -z ${HOST_DOCKER_SOCK_PATH:-} ]; then
     if [ -z ${DOCKER_HOST:-} ]; then
       HOST_DOCKER_SOCK_PATH="/var/run/docker.sock"
@@ -104,10 +106,9 @@ set_environment() {
 }
 
 dagent_clean() {
-  echo "Installing dyrector.io agent (dagent)..."
-
   if [ -n "$($CRI_EXECUTABLE container list --filter name=^dagent$ --filter=status=running --filter=status=restarting --filter=status=paused --format '\{{ .Names }}' 2>/dev/null)" ]; then
     set +e
+    echo "Stopping existing dyrector.io agent (dagent)..."
     $CRI_EXECUTABLE stop dagent
     if [ $? -ne 0 ]; then
       set -e
@@ -118,6 +119,7 @@ dagent_clean() {
 
   if [ -n "$($CRI_EXECUTABLE container list --filter name=^dagent$ --filter=status=exited --filter=status=created --filter=status=dead --format '\{{ .Names }}' 2>/dev/null)" ]; then
     set +e
+    echo "Removing existing dyrector.io agent (dagent)..."
     $CRI_EXECUTABLE rm dagent
     if [ $? -ne 0 ]; then
       set -e
@@ -128,6 +130,8 @@ dagent_clean() {
 }
 
 dagent_install() {
+  echo "Installing dyrector.io agent (dagent)..."
+
   $CRI_EXECUTABLE pull ghcr.io/dyrector-io/dyrectorio/agent/dagent:latest
 
   $CRI_EXECUTABLE run \

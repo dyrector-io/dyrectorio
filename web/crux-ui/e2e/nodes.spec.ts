@@ -116,15 +116,6 @@ test('Install dagent should be successful', async ({ page }) => {
 
   await page.waitForSelector('h4:has-text("Technology")')
 
-  const rootPath = await page.locator('input[placeholder="Optional, leave empty for default paths"]')
-
-  if (process.platform === 'win32') {
-    await rootPath.fill('c:/srv/e2edagent')
-  } else if (process.platform === 'darwin') {
-    //TODO @polaroi8d find a common path
-    await rootPath.fill('/Users/orbanl/Work/dyrector.io/repos/dyrectorio-srv')
-  }
-
   const generateScriptButton = await page.locator('button:has-text("Generate script")')
   await generateScriptButton.click()
 
