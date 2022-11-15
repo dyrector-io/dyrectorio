@@ -12,7 +12,7 @@ import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { roleToText, Team, TeamDetails, User, userIsAdmin, userIsOwner, UserRole } from '@app/models'
-import { ROUTE_TEAMS, teamApiUrl, teamUrl, userApiUrl } from '@app/routes'
+import { API_WHOAMI, ROUTE_TEAMS, teamApiUrl, teamUrl, userApiUrl } from '@app/routes'
 import { redirectTo, utcDateToLocale, withContextAuthorization } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
 import { cruxFromContext } from '@server/crux/crux'
@@ -23,6 +23,7 @@ import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
 import { useRef, useState } from 'react'
+import { useSWRConfig } from 'swr'
 
 interface TeamDetailsPageProps {
   me: Identity
@@ -37,6 +38,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
   const { me, team: propsTeam } = props
 
   const [team, setTeam] = useState(propsTeam)
+  const { mutate } = useSWRConfig()
   const [detailsState, setDetailsState] = useState<TeamDetailsState>('none')
   const [deleteModalConfig, confirmDelete] = useConfirmation()
 
@@ -69,6 +71,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
       ...team,
       ...newTeam,
     })
+    mutate(API_WHOAMI)
   }
 
   const onDeleteTeam = async () => {
