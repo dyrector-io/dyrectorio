@@ -9,8 +9,7 @@ import {
   UserRole,
   UserStatus,
 } from 'src/grpc/protobuf/proto/crux'
-import { TEAM_INVITATION_EXPIRATION } from 'src/shared/const'
-import { IdentityTraits, nameOfIdentity } from 'src/shared/model'
+import { IdentityTraits, invitationExpired, nameOfIdentity } from 'src/shared/model'
 
 @Injectable()
 export default class TeamMapper {
@@ -55,7 +54,7 @@ export default class TeamMapper {
       name: nameOfIdentity(identity),
       role: UserRole.USER,
       status:
-        inv.status === 'pending' && now >= inv.createdAt.getTime() + TEAM_INVITATION_EXPIRATION
+        inv.status === 'pending' && invitationExpired(inv.createdAt, now)
           ? UserStatus.EXPIRED
           : this.invitationStatusToGrpc(inv.status),
     }
@@ -139,8 +138,11 @@ export default class TeamMapper {
   }
 }
 
-type TeamWithUsersAndInvitations = Team & {
+export type TeamWithUsers = Team & {
   users: UsersOnTeams[]
+}
+
+type TeamWithUsersAndInvitations = TeamWithUsers & {
   invitations: UserInvitation[]
 }
 

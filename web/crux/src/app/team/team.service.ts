@@ -1,5 +1,6 @@
 import { ServerUnaryCall } from '@grpc/grpc-js'
 import { Injectable, Logger } from '@nestjs/common'
+import { Identity } from '@ory/kratos-client'
 import { RegistryTypeEnum } from '@prisma/client'
 import { InviteMessage } from 'src/domain/notification-templates'
 import {
@@ -30,9 +31,10 @@ import EmailService from 'src/mailer/email.service'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
-import { REGISTRY_HUB_URL, TEAM_INVITATION_EXPIRATION } from 'src/shared/const'
+import { REGISTRY_HUB_URL } from 'src/shared/const'
+import { IdentityTraits, invitationExpired } from 'src/shared/model'
 import EmailBuilder, { InviteTemplateOptions } from '../../builders/email.builder'
-import TeamMapper from './team.mapper'
+import TeamMapper, { TeamWithUsers } from './team.mapper'
 import TeamRepository from './team.repository'
 
 @Injectable()
@@ -275,59 +277,17 @@ export default class TeamService {
         id: request.id,
       },
       include: {
-        users: {
-          select: {
-            userId: true,
-          },
-        },
+        users: true,
       },
     })
 
-    // Check if User exists
-    let user = await this.kratos.getIdentityByEmail(request.email)
-    let hasSession = false
-
-    if (!user) {
-      user = await this.kratos.createUser({
-        email: request.email,
-        name: {
-          first: request.firstName,
-          last: request.lastName ?? undefined,
-        },
-      })
-    } else {
-      // Check if User is already in the Team
-      const userOnTeam = team.users.find(it => it.userId === user.id)
-
-      if (userOnTeam) {
-        throw new AlreadyExistsException({
-          message: 'User is already in the team',
-          property: 'email',
-        })
-      }
-
-      // Check if the user was ever logged in
-      const sessions = await this.kratos.getSessionsById(user.id)
-      hasSession = sessions.length > 0
-    }
-
-    // Build emailItem
-    const recoveryLink = !hasSession ? await this.kratos.createRecoveryLink(user) : null
-    const inviteTemplate: InviteTemplateOptions = {
-      teamId: team.id,
-      teamName: team.name,
-      kratosRecoveryLink: recoveryLink,
-    }
-
-    const emailItem = this.emailBuilder.buildInviteEmail(request.email, inviteTemplate)
-
-    // Send email
-    const mailSent = await this.emailService.sendEmail(emailItem)
-
-    // Result
-    if (!mailSent) {
-      throw new MailServiceException()
-    }
+    const user = await this.getOrCreateIdentityAndSendInvite(team, {
+      email: request.email,
+      name: {
+        first: request.firstName,
+        last: request.lastName ?? undefined,
+      },
+    })
 
     const invite = await this.prisma.userInvitation.create({
       data: {
@@ -350,26 +310,24 @@ export default class TeamService {
   }
 
   async reinviteUserToTeam(request: ReinviteUserRequest): Promise<CreateEntityResponse> {
-    const invite = await this.prisma.userInvitation.update({
+    const user = await this.kratos.getIdentityById(request.userId)
+    const traits = user.traits as IdentityTraits
+
+    await this.prisma.userInvitation.delete({
       where: {
         userId_teamId: {
           userId: request.userId,
           teamId: request.id,
         },
       },
-      data: {
-        status: 'pending',
-        createdAt: new Date(),
-      },
-      select: {
-        userId: true,
-        createdAt: true,
-      },
     })
 
-    return CreateEntityResponse.fromJSON({
-      id: invite.userId,
-      createdAt: invite.createdAt,
+    return await this.inviteUserToTeam({
+      id: request.id,
+      email: traits.email,
+      firstName: traits.name.first,
+      lastName: traits.name.last,
+      accessedBy: request.accessedBy,
     })
   }
 
@@ -383,11 +341,8 @@ export default class TeamService {
       },
     })
 
-    const validUntil = new Date(invite.createdAt.getTime() + TEAM_INVITATION_EXPIRATION)
     const now = new Date().getTime()
-
-    // TECHDEBT Outsource the Date checker function
-    if (now >= validUntil.getTime()) {
+    if (invitationExpired(invite.createdAt, now)) {
       await this.prisma.userInvitation.update({
         where: {
           userId_teamId: {
@@ -564,5 +519,49 @@ export default class TeamService {
     const sessions = await this.kratos.getSessionsByIds(userIds)
 
     return this.mapper.teamDetailsToGrpc(team, identities, sessions)
+  }
+
+  private async getOrCreateIdentityAndSendInvite(team: TeamWithUsers, traits: IdentityTraits): Promise<Identity> {
+    // Check if User exists
+    let user = await this.kratos.getIdentityByEmail(traits.email)
+    let hasSession = false
+
+    if (!user) {
+      user = await this.kratos.createUser(traits)
+    } else {
+      // Check if User is already in the Team
+      const userOnTeam = team.users.find(it => it.userId === user.id)
+
+      if (userOnTeam) {
+        throw new AlreadyExistsException({
+          message: 'User is already in the team',
+          property: 'email',
+        })
+      }
+
+      // Check if the user was ever logged in
+      const sessions = await this.kratos.getSessionsById(user.id)
+      hasSession = sessions.length > 0
+    }
+
+    // Build emailItem
+    const recoveryLink = !hasSession ? await this.kratos.createRecoveryLink(user) : null
+    const inviteTemplate: InviteTemplateOptions = {
+      teamId: team.id,
+      teamName: team.name,
+      kratosRecoveryLink: recoveryLink,
+    }
+
+    const emailItem = this.emailBuilder.buildInviteEmail(traits.email, inviteTemplate)
+
+    // Send email
+    const mailSent = await this.emailService.sendEmail(emailItem)
+
+    // Result
+    if (!mailSent) {
+      throw new MailServiceException()
+    }
+
+    return user
   }
 }

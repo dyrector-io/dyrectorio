@@ -1,5 +1,6 @@
 import { Identity } from '@ory/kratos-client'
 import { ContainerConfig } from '@prisma/client'
+import { TEAM_INVITATION_EXPIRATION } from './const'
 
 export type UniqueKey = {
   id: string
@@ -95,3 +96,6 @@ export const emailOfIdentity = (identity: Identity) => {
 
   return traits.email
 }
+
+export const invitationExpired = (inviteCreatedAt: Date, nowInMillis: number): boolean =>
+  nowInMillis >= inviteCreatedAt.getTime() + TEAM_INVITATION_EXPIRATION
