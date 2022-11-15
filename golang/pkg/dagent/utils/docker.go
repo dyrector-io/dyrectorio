@@ -289,13 +289,19 @@ func DeployImage(ctx context.Context,
 
 	matchedContainer, err := dockerHelper.GetContainerByName(ctx, dog, containerName)
 	if err != nil {
+		dog.WriteContainerState("", fmt.Sprintf("Failed to find container: %s", containerName))
 		return err
 	}
-	err = dockerHelper.DeleteContainerByName(ctx, dog, containerName)
-	if err != nil {
-		return err
+	if matchedContainer == nil {
+		dog.WriteContainerState("")
+	} else {
+		err = dockerHelper.DeleteContainerByName(ctx, dog, containerName)
+		if err != nil {
+			dog.WriteContainerState("", fmt.Sprintf("Failed to delete container (%s): %s", containerName, err.Error()))
+			return err
+		}
+		dog.WriteContainerState(matchedContainer.State)
 	}
-	dog.WriteContainerState(matchedContainer.State)
 
 	networkMode, networks := setNetwork(deployImageRequest)
 
@@ -330,10 +336,14 @@ func DeployImage(ctx context.Context,
 	builder.Create()
 
 	_, err = builder.Start()
-
 	if err != nil {
-		dog.Write(err.Error())
-		dog.WriteContainerState(matchedContainer.State, "Container start error: "+containerName)
+		dog.WriteContainerState("", fmt.Sprintf("Failed to start container (%s): %s", containerName, err.Error()))
+		return err
+	}
+
+	matchedContainer, err = dockerHelper.GetContainerByID(ctx, dog, *builder.GetContainerID())
+	if err != nil {
+		dog.WriteContainerState("", fmt.Sprintf("Failed to find container (%s): %s", containerName, err.Error()))
 		return err
 	}
 
