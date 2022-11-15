@@ -73,6 +73,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Install curl
+        run: |
+          apt-get install -y curl
+
       - name: Setup containers
         working-directory: web/crux-ui
         run: |
