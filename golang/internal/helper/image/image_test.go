@@ -75,10 +75,10 @@ func TestImageToStringDockerHub(t *testing.T) {
 }
 
 func TestImageToStringPrivateRegistry(t *testing.T) {
-	image := &imageHelper.URI{Host: "reg.sunilium.com", Name: "helios/platform-iam", Tag: "1.0.0.sta-20210721.1"}
+	image := &imageHelper.URI{Host: "reg.example.com", Name: "example-project/service-api", Tag: "latest"}
 
-	assert.Equal(t, "reg.sunilium.com/helios/platform-iam:1.0.0.sta-20210721.1", image.String())
-	assert.Equal(t, "reg.sunilium.com/helios/platform-iam", image.StringNoTag())
+	assert.Equal(t, "reg.example.com/example-project/service-api:latest", image.String())
+	assert.Equal(t, "reg.example.com/example-project/service-api", image.StringNoTag())
 }
 
 func TestImageToStringWithoutTag(t *testing.T) {
