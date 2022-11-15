@@ -1,5 +1,5 @@
 import { Metadata } from '@grpc/grpc-js'
-import { Controller, UseGuards } from '@nestjs/common'
+import { Controller, UseGuards, UseInterceptors } from '@nestjs/common'
 import { Observable } from 'rxjs'
 import {
   AgentCommand,
@@ -13,6 +13,8 @@ import {
   Empty,
   ListSecretsResponse,
 } from 'src/grpc/protobuf/proto/common'
+import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
+import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
 import { NodeUnaryCall } from 'src/shared/grpc-node-connection'
 import AgentService from './agent.service'
 import AgentAuthGuard from './guards/agent.auth.guard'
@@ -20,6 +22,7 @@ import AgentAuthGuard from './guards/agent.auth.guard'
 @Controller()
 @AgentControllerMethods()
 @UseGuards(AgentAuthGuard)
+@UseInterceptors(GrpcLoggerInterceptor, GrpcErrorInterceptor)
 export default class AgentController implements GrpcAgentController {
   constructor(private service: AgentService) {}
 

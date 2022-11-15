@@ -22,30 +22,40 @@ const testCreateNotification = async (page: Page, typeChipText: string, hookUrl:
 }
 
 test('adding a new discord notification should work', async ({ page }) => {
-  await testCreateNotification(page, 'Discord', 'https://discord.com/api/webhooks/test')
+  await testCreateNotification(
+    page,
+    'Discord',
+    'https://discord.com/api/webhooks/0000000000000000000/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+  )
 })
 
 test('adding a new slack notification should work', async ({ page }) => {
-  await testCreateNotification(page, 'slack', 'https://hooks.slack.com/services/test')
+  await testCreateNotification(
+    page,
+    'slack',
+    'https://hooks.slack.com/services/T0000000000/B0000000000/XXXXXXXXXXXXXXXXXXXXXXXX',
+  )
 })
 
 test('adding a new teams notification should work', async ({ page }) => {
-  await testCreateNotification(page, 'teams', 'https://test.webhook.office.com/test')
+  await testCreateNotification(
+    page,
+    'teams',
+    'https://xxxxxxxx.webhook.office.com/webhookb2/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa@aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/IncomingWebhook/',
+  )
 })
 
 test('using an incorrect discord webhook url should give an error', async ({ page }) => {
   await testCreateNotification(page, 'Discord', 'https://discord.com/invalid/webhook')
 
-  await expect(await page.locator('p.text-error-red')).toContainText(
-    'url must match the following: "/^https:\\/\\/(discord|discordapp).com\\/api\\/webhooks/"',
-  )
+  await expect(await page.locator('p.text-error-red')).toContainText('https://discord(app).com/api/webhooks/ID/TOKEN')
 })
 
 test('using an incorrect slack webhook url should give an error', async ({ page }) => {
   await testCreateNotification(page, 'slack', 'https://hooks.slack.com/invalid/test')
 
   await expect(await page.locator('p.text-error-red')).toContainText(
-    'url must match the following: "/^https:\\/\\/hooks.slack.com\\/services/"',
+    'https://hooks.slack.com/services/T0000000000/B0000000000/XXXXXXXXXXXXXXXXXXXXXXXX/',
   )
 })
 
@@ -53,6 +63,6 @@ test('using an incorrect teams webhook url should give an error', async ({ page 
   await testCreateNotification(page, 'teams', 'https://test.invalid.office.com/test')
 
   await expect(await page.locator('p.text-error-red')).toContainText(
-    'url must match the following: "/^https:\\/\\/[a-zA-Z]+.webhook.office.com/"',
+    'https://subdomain.webhook.office.com/webhookb2/GUID/IncomingWebhook/',
   )
 })

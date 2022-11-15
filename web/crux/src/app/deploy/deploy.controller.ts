@@ -1,4 +1,4 @@
-import { Body, Controller, UseGuards } from '@nestjs/common'
+import { Body, Controller, UseGuards, UseInterceptors } from '@nestjs/common'
 import { concatAll, from, Observable } from 'rxjs'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import { ListSecretsResponse, Empty } from 'src/grpc/protobuf/proto/common'
@@ -21,6 +21,8 @@ import {
   UpdateDeploymentRequest,
   UpdateEntityResponse,
 } from 'src/grpc/protobuf/proto/crux'
+import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
+import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
 import { DisableTeamAccessCheck } from 'src/shared/team-access.guard'
 import DeployService from './deploy.service'
 import DeployCreateTeamAccessGuard from './guards/deploy.create.team-access.guard'
@@ -36,6 +38,7 @@ import DeployUpdateValidationPipe from './pipes/deploy.update.pipe'
 @Controller()
 @CruxDeploymentControllerMethods()
 @UseGuards(DeployTeamAccessGuard)
+@UseInterceptors(GrpcLoggerInterceptor, GrpcErrorInterceptor)
 export default class DeployController implements CruxDeploymentController {
   constructor(private service: DeployService) {}
 

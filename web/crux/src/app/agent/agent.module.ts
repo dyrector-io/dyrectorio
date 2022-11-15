@@ -6,6 +6,7 @@ import { HttpModule } from '@nestjs/axios'
 import KratosService from 'src/services/kratos.service'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import { ConfigModule, ConfigService } from '@nestjs/config'
+import { makeCounterProvider } from '@willsoto/nestjs-prometheus'
 import TeamRepository from '../team/team.repository'
 import AgentController from './agent.controller'
 import AgentService from './agent.service'
@@ -36,6 +37,10 @@ import AgentService from './agent.service'
     TeamRepository,
     DomainNotificationService,
     KratosService,
+    makeCounterProvider({
+      name: 'agent_counter',
+      help: 'Agent connection counter',
+    }),
   ],
 })
 export default class AgentModule {}

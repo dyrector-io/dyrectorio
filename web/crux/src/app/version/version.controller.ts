@@ -1,4 +1,4 @@
-import { Body, Controller, UseGuards } from '@nestjs/common'
+import { Body, Controller, UseGuards, UseInterceptors } from '@nestjs/common'
 import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
   CreateEntityResponse,
@@ -12,6 +12,8 @@ import {
   VersionDetailsResponse,
   VersionListResponse,
 } from 'src/grpc/protobuf/proto/crux'
+import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
+import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
 import VersionCreateTeamAccessGuard from './guards/version.create.team-access.guard'
 import VersionTeamAccessGuard from './guards/version.team-access.guard'
 import VersionCreateValidationPipe from './pipes/version.create.pipe'
@@ -23,6 +25,7 @@ import VersionService from './version.service'
 @Controller()
 @CruxProductVersionControllerMethods()
 @UseGuards(VersionTeamAccessGuard)
+@UseInterceptors(GrpcLoggerInterceptor, GrpcErrorInterceptor)
 export default class VersionController implements CruxProductVersionController {
   constructor(private service: VersionService) {}
 

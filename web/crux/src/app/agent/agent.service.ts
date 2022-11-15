@@ -2,6 +2,8 @@ import { Injectable, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import { DeploymentEventTypeEnum, DeploymentStatusEnum, NodeTypeEnum } from '@prisma/client'
+import { InjectMetric } from '@willsoto/nestjs-prometheus'
+import { Counter } from 'prom-client'
 import { concatAll, concatMap, finalize, from, map, Observable, of, Subject, takeUntil } from 'rxjs'
 import { Agent, AgentToken } from 'src/domain/agent'
 import AgentInstaller from 'src/domain/agent-installer'
@@ -35,6 +37,7 @@ export default class AgentService {
   private static SCRIPT_EXPIRATION = 10 * 60 * 1000 // millis
 
   constructor(
+    @InjectMetric('agent_counter') private agent_counter: Counter<string>,
     private prisma: PrismaService,
     private jwtService: JwtService,
     private notificationService: DomainNotificationService,
@@ -302,6 +305,7 @@ export default class AgentService {
     connection.status().subscribe(it => this.onAgentConnectionStatusChange(agent, it))
 
     this.logger.log(`Agent joined with id: ${request.id}, key: ${!!agent.publicKey}`)
+    this.agent_counter.inc()
     this.logServiceInfo()
 
     return agent.onConnected()

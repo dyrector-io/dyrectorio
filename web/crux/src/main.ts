@@ -47,6 +47,7 @@ const bootstrap = async () => {
 
   const agentOptions = loadGrpcOptions('agent', configService.get<string>('GRPC_AGENT_PORT'))
   const apiOptions = loadGrpcOptions('api', configService.get<string>('GRPC_API_PORT'))
+  const httpOptions = configService.get<string>('HTTP_API_PORT')
 
   // agent
   app.connectMicroservice<MicroserviceOptions>({
@@ -82,6 +83,9 @@ const bootstrap = async () => {
 
   logger.log(`gRPC agent services are running on: ${agentOptions.url}`)
   logger.log(`gRPC API services are running on: ${apiOptions.url}`)
+
+  await app.listen(httpOptions)
+  logger.log(`HTTP API service is running on PORT: ${httpOptions}`)
 }
 
 bootstrap()

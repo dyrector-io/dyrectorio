@@ -13,7 +13,16 @@ import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
 import useTimer from '@app/hooks/use-timer'
-import { roleToText, Team, TeamDetails, User, userIsAdmin, userIsOwner, UserRole, userStatusReinvitable } from '@app/models'
+import {
+  roleToText,
+  Team,
+  TeamDetails,
+  User,
+  userIsAdmin,
+  userIsOwner,
+  UserRole,
+  userStatusReinvitable,
+} from '@app/models'
 import { ROUTE_TEAMS, teamApiUrl, teamReinviteUrl, teamUrl, userApiUrl } from '@app/routes'
 import { redirectTo, utcDateToLocale, withContextAuthorization } from '@app/utils'
 import { Identity } from '@ory/kratos-client'

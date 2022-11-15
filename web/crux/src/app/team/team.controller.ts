@@ -1,5 +1,5 @@
 import { Metadata, ServerUnaryCall } from '@grpc/grpc-js'
-import { Body, Controller, UseGuards } from '@nestjs/common'
+import { Body, Controller, UseGuards, UseInterceptors } from '@nestjs/common'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
@@ -19,6 +19,8 @@ import {
   UpdateUserRoleInTeamRequest,
   UserMetaResponse,
 } from 'src/grpc/protobuf/proto/crux'
+import CommonGrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
+import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
 import TeamRoleGuard, { TeamRoleRequired } from './guards/team.role.guard'
 import TeamSelectGuard from './guards/team.select.guard'
 import TeamReinviteUserValidationPipe from './pipes/team.reinvite-pipe'
@@ -28,6 +30,7 @@ import TeamService from './team.service'
 @Controller()
 @CruxTeamControllerMethods()
 @UseGuards(TeamRoleGuard)
+@UseInterceptors(GrpcLoggerInterceptor, CommonGrpcErrorInterceptor)
 export default class TeamController implements CruxTeamController {
   constructor(private service: TeamService) {}
 

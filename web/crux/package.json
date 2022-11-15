@@ -62,7 +62,7 @@
     "handlebars": "^4.7.7",
     "nodemailer": "^6.8.0",
     "pg": "^8.7.3",
-    "prom-client": "^14.0.1",
+    "prom-client": "^14.1.0",
     "protobufjs": "^7.0.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
