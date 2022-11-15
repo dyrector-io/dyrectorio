@@ -20,12 +20,13 @@ export default class AuditLoggerInterceptor implements NestInterceptor {
   ) {}
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
-    const result = this.helper.mapToGrpcObject(context)
     const level = this.reflector.get<AuditLogLevelOption>(AUDIT_LOGGER_LEVEL, context.getHandler()) ?? 'all'
 
     if (level === 'disabled') {
       return next.handle()
     }
+
+    const result = this.helper.mapToGrpcObject(context)
 
     // Check the team is existing with the given accessedBy Id
     const activeTeam = await this.teamRepository.getActiveTeamByUserId(result.userId)

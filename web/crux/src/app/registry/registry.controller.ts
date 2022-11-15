@@ -1,4 +1,4 @@
-import { Body, Controller, UseGuards } from '@nestjs/common'
+import { Body, Controller, UseGuards, UseInterceptors } from '@nestjs/common'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import {
   AccessRequest,
@@ -12,6 +12,8 @@ import {
   UpdateEntityResponse,
   UpdateRegistryRequest,
 } from 'src/grpc/protobuf/proto/crux'
+import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
+import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
 import RegistryAccessValidationGuard from './guards/registry.auth.validation.guard'
 import RegistryTeamAccessGuard from './guards/registry.team-access.guart'
 import DeleteRegistryValidationPipe from './pipes/registry.delete.pipe'
@@ -20,6 +22,7 @@ import RegistryService from './registry.service'
 @Controller()
 @CruxRegistryControllerMethods()
 @UseGuards(RegistryTeamAccessGuard)
+@UseInterceptors(GrpcLoggerInterceptor, GrpcErrorInterceptor)
 export default class RegistryController implements CruxRegistryController {
   constructor(private service: RegistryService) {}
 

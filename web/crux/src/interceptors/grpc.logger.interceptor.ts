@@ -9,8 +9,8 @@ import InterceptorGrpcHelperProvider from './helper.interceptor'
  * Disclaimer: Works only with gRPC controllers.
  */
 @Injectable()
-export default class GrpcContextLogger implements NestInterceptor {
-  private readonly logger = new Logger(GrpcContextLogger.name)
+export default class GrpcLoggerInterceptor implements NestInterceptor {
+  private readonly logger = new Logger(GrpcLoggerInterceptor.name)
 
   constructor(private readonly helper: InterceptorGrpcHelperProvider) {}
 

@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common'
 import { APP_INTERCEPTOR } from '@nestjs/core'
 import { ConfigModule } from '@nestjs/config'
-import TeamRepository from './app/team/team.repository'
+import { PrometheusModule } from '@willsoto/nestjs-prometheus'
 import AgentModule from './app/agent/agent.module'
 import AuditModule from './app/audit/audit.module'
 import DeployModule from './app/deploy/deploy.module'
@@ -15,13 +15,12 @@ import VersionModule from './app/version/version.module'
 import ShutdownService from './application.shutdown.service'
 import InterceptorGrpcHelperProvider from './interceptors/helper.interceptor'
 import PrismaErrorInterceptor from './interceptors/prisma-error-interceptor'
-import GrpcContextLogger from './interceptors/grpc-context-logger.interceptor'
 import AuditLoggerInterceptor from './interceptors/audit-logger.interceptor'
 import PrismaService from './services/prisma.service'
 import NotificationModule from './app/notification/notification.module'
 import EmailModule from './mailer/email.module'
 import TemplateModule from './app/template/template.module'
-import CommonErrorInterceptor from './interceptors/common-error-interceptor'
+import MetricsController from './app/metrics/metrics.controller'
 
 @Module({
   imports: [
@@ -42,11 +41,13 @@ import CommonErrorInterceptor from './interceptors/common-error-interceptor'
       cache: true,
     }),
     EmailModule,
+    PrometheusModule.register({
+      controller: MetricsController,
+    }),
   ],
   controllers: [],
   providers: [
     PrismaService,
-    TeamRepository,
     ShutdownService,
     InterceptorGrpcHelperProvider,
     {
@@ -55,15 +56,7 @@ import CommonErrorInterceptor from './interceptors/common-error-interceptor'
     },
     {
       provide: APP_INTERCEPTOR,
-      useClass: GrpcContextLogger,
-    },
-    {
-      provide: APP_INTERCEPTOR,
       useClass: AuditLoggerInterceptor,
-    },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: CommonErrorInterceptor,
     },
   ],
 })

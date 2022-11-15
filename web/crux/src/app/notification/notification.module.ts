@@ -4,6 +4,7 @@ import TeamModule from 'src/app/team/team.module'
 import { HttpModule } from '@nestjs/axios'
 import { Module } from '@nestjs/common'
 import PrismaService from 'src/services/prisma.service'
+import InterceptorGrpcHelperProvider from 'src/interceptors/helper.interceptor'
 import NotificationController from './notification.controller'
 import NotificationService from './notification.service'
 import NotificationMapper from './notification.mapper'
@@ -12,6 +13,13 @@ import NotificationMapper from './notification.mapper'
   imports: [HttpModule, TeamModule],
   exports: [],
   controllers: [NotificationController],
-  providers: [NotificationService, NotificationMapper, PrismaService, TeamRepository, KratosService],
+  providers: [
+    NotificationService,
+    NotificationMapper,
+    PrismaService,
+    TeamRepository,
+    KratosService,
+    InterceptorGrpcHelperProvider,
+  ],
 })
 export default class NotificationModule {}

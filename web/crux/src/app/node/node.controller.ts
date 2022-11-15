@@ -1,4 +1,4 @@
-import { Body, Controller, UseGuards } from '@nestjs/common'
+import { Body, Controller, UseGuards, UseInterceptors } from '@nestjs/common'
 import { concatAll, from, Observable } from 'rxjs'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import { ContainerStateListMessage, Empty } from 'src/grpc/protobuf/proto/common'
@@ -19,6 +19,8 @@ import {
   UpdateNodeRequest,
   WatchContainerStateRequest,
 } from 'src/grpc/protobuf/proto/crux'
+import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
+import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
 import { DisableTeamAccessCheck } from 'src/shared/team-access.guard'
 import NodeTeamAccessGuard from './guards/node.team-access.guard'
 import NodeService from './node.service'
@@ -28,6 +30,7 @@ import NodeGetScriptValidationPipe from './pipes/node.get-script.pipe'
 @Controller()
 @CruxNodeControllerMethods()
 @UseGuards(NodeTeamAccessGuard)
+@UseInterceptors(GrpcLoggerInterceptor, GrpcErrorInterceptor)
 export default class NodeController implements CruxNodeController {
   constructor(private service: NodeService) {}
 

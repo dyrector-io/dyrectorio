@@ -7,7 +7,7 @@ import { AlreadyExistsException, NotFoundException } from '../exception/errors'
 const UNIQUE_CONSTRAINT_FAILED = 'P2002'
 
 export default class PrismaErrorInterceptor implements NestInterceptor {
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(_: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(catchError(err => this.onError(err)))
   }
 
