@@ -237,7 +237,12 @@ class DyoDeploymentService {
     }
 
     const stream = () => this.client.startDeployment(IdRequest.fromJSON(req))
-    return new GrpcConnection(this.logger.descend('status'), stream, this.transformDeploymentEvents, options)
+    return new GrpcConnection(
+      this.logger.descend('status'),
+      stream,
+      DyoDeploymentService.transformDeploymentEvents,
+      options,
+    )
   }
 
   subscribeToDeploymentEvents(
@@ -250,7 +255,12 @@ class DyoDeploymentService {
     }
 
     const stream = () => this.client.subscribeToDeploymentEvents(IdRequest.fromJSON(req))
-    return new GrpcConnection(this.logger.descend('status'), stream, this.transformDeploymentEvents, options)
+    return new GrpcConnection(
+      this.logger.descend('status'),
+      stream,
+      DyoDeploymentService.transformDeploymentEvents,
+      options,
+    )
   }
 
   subscribeToDeploymentEditEvents(
@@ -298,7 +308,7 @@ class DyoDeploymentService {
     return res.id
   }
 
-  private transformDeploymentEvents(data: DeploymentProgressMessage) {
+  static transformDeploymentEvents(data: DeploymentProgressMessage): DeploymentEvent[] {
     const createdAt = new Date().toUTCString()
 
     const events: DeploymentEvent[] = []

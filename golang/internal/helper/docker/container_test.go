@@ -126,8 +126,8 @@ func (testSuite *DockerContainerHelperTestSuite) TestGetContainerbyNameNotFound(
 	matched, err := dockerHelper.GetContainerByName(testSuite.ctx, nil, fmt.Sprintf("%s-nginx1", randstr.Hex(prefixLength)))
 
 	assert.NoError(testSuite.T(), err, "%s", err)
-	assert.Equal(testSuite.T(), "", matched.ID,
-		"should return empty string")
+	assert.Equal(testSuite.T(), nil, matched,
+		"should return nil pointer")
 }
 
 func (testSuite *DockerContainerHelperTestSuite) TestStopAndRemoveContainer() {
