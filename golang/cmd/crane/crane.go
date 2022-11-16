@@ -40,7 +40,7 @@ func main() {
 }
 
 func loadConfiguration() (*config.Configuration, error) {
-	var cfg *config.Configuration
+	cfg := &config.Configuration{}
 	err := util.ReadConfig(cfg)
 	if err != nil {
 		log.Panic().Err(err).Msg("failed to load configuration")
