@@ -121,13 +121,17 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
         />
       </div>
 
-      <AnchorAction href={`copyDeployment-${item.id}`} anchors={anchors} disabled={!deploymentIsCopyable(item.status)}>
+      <AnchorAction
+        href={`copyDeployment-${item.id}`}
+        anchors={anchors}
+        disabled={!deploymentIsCopyable(item.status, item.type)}
+      >
         <Image
           src="/copy.svg"
           alt={t('common:copy')}
           width={24}
           height={24}
-          className={deploymentIsCopyable(item.status) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
+          className={deploymentIsCopyable(item.status, item.type) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
         />
       </AnchorAction>
     </>,

@@ -14,6 +14,7 @@ export default class DeployStartValidationPipe implements PipeTransform {
   async transform(value: IdRequest) {
     const deployment = await this.prisma.deployment.findUniqueOrThrow({
       include: {
+        version: true,
         instances: {
           include: {
             config: true,
@@ -30,7 +31,13 @@ export default class DeployStartValidationPipe implements PipeTransform {
       },
     })
 
-    checkDeploymentMutability(deployment)
+    if (!checkDeploymentMutability(deployment.status, deployment.version.type)) {
+      throw new PreconditionFailedException({
+        message: 'Invalid deployment status.',
+        property: 'status',
+        value: deployment.status,
+      })
+    }
 
     yupValidate(deploymentSchema, deployment)
 

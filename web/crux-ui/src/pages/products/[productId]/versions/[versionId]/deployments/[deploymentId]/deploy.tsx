@@ -57,7 +57,7 @@ const DeployPage = (props: DeployPageProps) => {
     status,
   }
   const { product, version } = deployment
-  const mutable = deploymentIsMutable(deployment.status)
+  const mutable = deploymentIsMutable(deployment.status, deployment.version.type)
 
   const sock = useWebSocket(deploymentWsUrl(deployment.product.id, deployment.versionId, deployment.id), {
     onOpen: () => {

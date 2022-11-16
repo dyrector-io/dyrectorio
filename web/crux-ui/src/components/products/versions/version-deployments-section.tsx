@@ -150,7 +150,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   ]
 
   const itemTemplate = (item: DeploymentByVersion) => {
-    const mutable = deploymentIsMutable(item.status)
+    const mutable = deploymentIsMutable(item.status, version.type)
 
     /* eslint-disable react/jsx-key */
     return [
@@ -199,14 +199,16 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
         <AnchorAction
           href={`copyDeployment-${item.id}`}
           anchors={anchors}
-          disabled={!deploymentIsCopyable(item.status)}
+          disabled={!deploymentIsCopyable(item.status, version.type)}
         >
           <Image
             src="/copy.svg"
             alt={t('common:copy')}
             width={24}
             height={24}
-            className={deploymentIsCopyable(item.status) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
+            className={
+              deploymentIsCopyable(item.status, version.type) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'
+            }
           />
         </AnchorAction>
       </>,

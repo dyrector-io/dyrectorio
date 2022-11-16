@@ -8,6 +8,7 @@ import {
   DeploymentEnvUpdatedMessage,
   DeploymentInvalidatedSecrets,
   deploymentIsCopyable,
+  deploymentIsDeletable,
   deploymentIsMutable,
   DeploymentRoot,
   DyoNode,
@@ -49,6 +50,7 @@ export type DeploymentState = {
   instances: Instance[]
   mutable: boolean
   copyable: boolean
+  deletable: boolean
   saving: boolean
   editing: boolean
   editor: EditorState
@@ -85,7 +87,9 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
   const [viewMode, setViewMode] = useState<ViewMode>('tile')
   const [confirmationModal, copyDeployment] = useCopyDeploymentModal(onApiError)
 
-  const mutable = deploymentIsMutable(deployment.status)
+  const mutable = deploymentIsMutable(deployment.status, version.type)
+  const deletable = deploymentIsDeletable(deployment.status)
+  const copyable = deploymentIsCopyable(deployment.status, version.type)
 
   const nodesSock = useWebSocket(WS_NODES)
   nodesSock.on(WS_TYPE_NODE_STATUS, (message: NodeStatusMessage) => {
@@ -201,7 +205,8 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
       saving,
       editing,
       mutable,
-      copyable: deploymentIsCopyable(deployment.status),
+      deletable,
+      copyable,
       editor,
       viewMode,
       confirmationModal,

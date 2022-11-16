@@ -8,6 +8,7 @@ import {
   Instance,
   InstanceContainerConfig,
   Node,
+  VersionTypeEnum,
 } from '@prisma/client'
 import { JsonArray, JsonObject } from 'prisma'
 import { deploymentStatusToDb } from 'src/domain/deployment'
@@ -24,6 +25,8 @@ import {
   InitContainer,
   InstanceResponse,
   NodeConnectionStatus,
+  VersionType,
+  versionTypeFromJSON,
 } from 'src/grpc/protobuf/proto/crux'
 import {
   ContainerState,
@@ -61,6 +64,7 @@ export default class DeployMapper {
       versionId: deployment.version.id,
       nodeId: deployment.node.id,
       updatedAt: toTimestamp(deployment.updatedAt),
+      versionType: this.versionTypeToGrpc(deployment.version.type),
     }
   }
 
@@ -259,6 +263,10 @@ export default class DeployMapper {
     }
   }
 
+  private versionTypeToGrpc(type: VersionTypeEnum): VersionType {
+    return versionTypeFromJSON(type.toUpperCase())
+  }
+
   private mapInitContainerToAgent(list: InitContainer[]): AgentInitContainer[] {
     const result: AgentInitContainer[] = []
 
@@ -396,5 +404,5 @@ export type DeploymentDetails = DeploymentWithNode & {
 
 type DeploymentListItem = Deployment & {
   node: { id: string; name: string }
-  version: { id: string; name: string; product: { id: string; name: string } }
+  version: { id: string; name: string; product: { id: string; name: string }; type: VersionTypeEnum }
 }

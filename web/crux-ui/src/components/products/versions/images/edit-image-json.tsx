@@ -61,7 +61,9 @@ const EditImageJson = (props: EditImageJsonProps) => {
     (err: Error) => {
       throttle(CANCEL_THROTTLE)
 
-      propOnParseError(err)
+      if (propOnParseError) {
+        propOnParseError(err)
+      }
     },
     [throttle, propOnParseError],
   )

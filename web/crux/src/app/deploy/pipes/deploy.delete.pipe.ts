@@ -1,7 +1,8 @@
 import { Injectable, PipeTransform } from '@nestjs/common'
 import PrismaService from 'src/services/prisma.service'
-import { checkDeploymentMutability } from 'src/domain/deployment'
+import { checkDeploymentDeletability } from 'src/domain/deployment'
 import { IdRequest } from 'src/grpc/protobuf/proto/crux'
+import { PreconditionFailedException } from 'src/exception/errors'
 
 @Injectable()
 export default class DeleteDeploymentValidationPipe implements PipeTransform {
@@ -14,7 +15,13 @@ export default class DeleteDeploymentValidationPipe implements PipeTransform {
       },
     })
 
-    checkDeploymentMutability(deployment)
+    if (!checkDeploymentDeletability(deployment.status)) {
+      throw new PreconditionFailedException({
+        message: 'Invalid deployment status.',
+        property: 'status',
+        value: deployment.status,
+      })
+    }
 
     return value
   }

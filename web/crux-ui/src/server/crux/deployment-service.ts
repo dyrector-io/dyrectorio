@@ -41,6 +41,7 @@ import { GrpcConnection, protomisify, ProtoSubscriptionOptions } from './grpc-co
 import { deploymentEventTypeToDto, deploymentStatusToDto, instanceToDto } from './mappers/deployment-mappers'
 import { containerConfigToProto } from './mappers/image-mappers'
 import { containerStateToDto, nodeStatusToDto } from './mappers/node-mappers'
+import { versionTypeToDyo } from './mappers/version-mappers'
 
 class DyoDeploymentService {
   private logger = new Logger(DyoDeploymentService.name)
@@ -61,6 +62,7 @@ class DyoDeploymentService {
       ...it,
       status: deploymentStatusToDto(it.status),
       updatedAt: timestampToUTC(it.updatedAt),
+      type: versionTypeToDyo(it.versionType),
     }))
   }
 

@@ -133,13 +133,13 @@ export default class TemplateService {
       productType === ProductType.COMPLEX
         ? await this.prisma.version.findFirst({
             where: {
-              name: SIMPLE_PRODUCT_VERSION_NAME,
+              name: VERSION_NAME,
               productId: product.id,
             },
           })
         : await this.prisma.version.findFirst({
             where: {
-              name: VERSION_NAME,
+              name: SIMPLE_PRODUCT_VERSION_NAME,
               productId: product.id,
             },
           })

@@ -1247,6 +1247,7 @@ export interface DeploymentResponse {
   note?: string | undefined
   prefix: string
   updatedAt?: Timestamp | undefined
+  versionType: VersionType
 }
 
 export interface DeploymentListByVersionResponse {
@@ -8492,6 +8493,7 @@ function createBaseDeploymentResponse(): DeploymentResponse {
     status: 0,
     nodeId: '',
     prefix: '',
+    versionType: 0,
   }
 }
 
@@ -8529,6 +8531,9 @@ export const DeploymentResponse = {
     }
     if (message.updatedAt !== undefined) {
       Timestamp.encode(message.updatedAt, writer.uint32(874).fork()).ldelim()
+    }
+    if (message.versionType !== 0) {
+      writer.uint32(880).int32(message.versionType)
     }
     return writer
   },
@@ -8573,6 +8578,9 @@ export const DeploymentResponse = {
         case 109:
           message.updatedAt = Timestamp.decode(reader, reader.uint32())
           break
+        case 110:
+          message.versionType = reader.int32() as any
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -8594,6 +8602,7 @@ export const DeploymentResponse = {
       note: isSet(object.note) ? String(object.note) : undefined,
       prefix: isSet(object.prefix) ? String(object.prefix) : '',
       updatedAt: isSet(object.updatedAt) ? fromJsonTimestamp(object.updatedAt) : undefined,
+      versionType: isSet(object.versionType) ? versionTypeFromJSON(object.versionType) : 0,
     }
   },
 
@@ -8610,6 +8619,7 @@ export const DeploymentResponse = {
     message.note !== undefined && (obj.note = message.note)
     message.prefix !== undefined && (obj.prefix = message.prefix)
     message.updatedAt !== undefined && (obj.updatedAt = fromTimestamp(message.updatedAt).toISOString())
+    message.versionType !== undefined && (obj.versionType = versionTypeToJSON(message.versionType))
     return obj
   },
 
@@ -8627,6 +8637,7 @@ export const DeploymentResponse = {
     message.prefix = object.prefix ?? ''
     message.updatedAt =
       object.updatedAt !== undefined && object.updatedAt !== null ? Timestamp.fromPartial(object.updatedAt) : undefined
+    message.versionType = object.versionType ?? 0
     return message
   },
 }
