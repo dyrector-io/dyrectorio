@@ -2,6 +2,19 @@
 
 set -eu
 
+if [ "$(uname)" == MINGW* ] || [ "$(uname)" == Darwin* ]; then 
+  ROOTLESS="${ROOTLESS:-true}"
+else
+  ROOTLESS="${ROOTLESS:-false}"
+fi
+
+if [ $ROOTLESS == "false" ]; then
+  if [ $(id -u) -ne 0 ]; then
+    echo "Installation process needs root privileges" 1>&2
+    sudo -s /bin/sh
+  fi
+fi
+
 case $(uname) in
   Darwin*)
     PLATFORM="OSX"
@@ -18,22 +31,6 @@ case $(uname) in
     exit 1
     ;;
 esac
-
-
-
-if [ "$PLATFORM" == "WINDOWS" ] || [ "$PLATFORM" == "OSX" ]; then
-  ROOTLESS="${ROOTLESS:-true}"
-else
-  ROOTLESS="${ROOTLESS:-false}"
-fi
-
-if [ $ROOTLESS == "false" ]; then
-  if [ $(id -u) -ne 0 ]; then
-    echo "Installation process needs root privileges" 1>&2
-    sudo -s
-  fi
-fi
-
 
 set_environment() {
   MSYS_NO_PATHCONV=1
@@ -87,7 +84,7 @@ set_environment() {
     if [ -z ${DOCKER_HOST:-} ]; then
       HOST_DOCKER_SOCK_PATH="/var/run/docker.sock"
     else
-      if [ ${DOCKER_HOST:0:7} = "unix://" ]; then
+      if [ ${DOCKER_HOST:0:7} == "unix://" ]; then
         HOST_DOCKER_SOCK_PATH=${DOCKER_HOST:7}
       else
         echo "Invalid DOCKER_HOST variable please set HOST_DOCKER_SOCK_PATH if your socket is in a custom location otherwise unset DOCKER_HOST!"
@@ -158,7 +155,7 @@ dagent_install() {
     --name 'dagent' \
     {{! -e UPDATE_REGISTRY_USER='' \ }}
     {{! -e UPDATE_REGISTRY_PASSWORD='' \ }}
-    {{! -e UPDATER_CONTAINER_NAME ='' \ }}
+    {{! -e UPDATER_CONTAINER_NAME='' \ }}
     {{! -e UPDATE_HOST_TIMEZONE='' \ }}
     {{! -e WEBHOOK_TOKEN='' \ }}
     {{! -e DISCORD_WEBHOOK_URL='' \ }}
