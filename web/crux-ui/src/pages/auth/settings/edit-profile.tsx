@@ -82,7 +82,7 @@ const SettingsPage = (props: SelfServiceSettingsFlow) => {
           </DyoHeading>
           <DyoLabel textColor="text-bright-muted">{t('tips')}</DyoLabel>
           <DyoInput
-            label={t('firstName')}
+            label={t('common:firstName')}
             name="firstName"
             type="text"
             onChange={formik.handleChange}
@@ -91,7 +91,7 @@ const SettingsPage = (props: SelfServiceSettingsFlow) => {
             grow
           />
           <DyoInput
-            label={t('lastName')}
+            label={t('common:lastName')}
             name="lastName"
             type="text"
             onChange={formik.handleChange}

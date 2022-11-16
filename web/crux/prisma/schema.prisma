@@ -27,12 +27,19 @@ model Team {
   notifications Notification[]
 }
 
+enum UserInvitationStatusEnum {
+  pending
+  expired
+  declined
+}
+
 model UserInvitation {
-  userId    String   @db.Uuid
-  email     String
-  teamId    String   @db.Uuid
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  userId          String                   @db.Uuid
+  teamId          String                   @db.Uuid
+  email           String
+  status          UserInvitationStatusEnum @default(pending)
+  createdAt       DateTime                 @default(now()) @db.Timestamptz(6)
+  team            Team                     @relation(fields: [teamId], references: [id], onDelete: Cascade)
 
   @@id([userId, teamId])
   @@unique([userId, teamId, email])

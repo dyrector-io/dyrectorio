@@ -13,6 +13,7 @@ import {
   DeleteUserFromTeamRequest,
   IdRequest,
   InviteUserRequest,
+  ReinviteUserRequest,
   TeamDetailsResponse,
   UpdateTeamRequest,
   UpdateUserRoleInTeamRequest,
@@ -22,6 +23,7 @@ import CommonGrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
 import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
 import TeamRoleGuard, { TeamRoleRequired } from './guards/team.role.guard'
 import TeamSelectGuard from './guards/team.select.guard'
+import TeamReinviteUserValidationPipe from './pipes/team.reinvite-pipe'
 import TeamUpdateUserRoleValidationPipe from './pipes/team.update-user-role.pipe'
 import TeamService from './team.service'
 
@@ -63,14 +65,27 @@ export default class TeamController implements CruxTeamController {
     return await this.service.inviteUserToTeam(request)
   }
 
+  @TeamRoleRequired('admin')
+  async reinviteUserToTeam(
+    @Body(TeamReinviteUserValidationPipe) request: ReinviteUserRequest,
+  ): Promise<CreateEntityResponse> {
+    return await this.service.reinviteUserToTeam(request)
+  }
+
   @TeamRoleRequired('none')
   @AuditLogLevel('disabled')
-  async acceptTeamInvite(
+  async acceptTeamInvitation(
     request: IdRequest,
     _: Metadata,
     rest: ServerUnaryCall<IdRequest, Promise<void>>,
   ): Promise<void> {
-    return await this.service.acceptTeamInvite(request, rest)
+    return await this.service.acceptTeamInvitation(request, rest)
+  }
+
+  @TeamRoleRequired('none')
+  @AuditLogLevel('disabled')
+  async declineTeamInvitation(request: IdRequest): Promise<void> {
+    return await this.service.declineTeamInvitation(request)
   }
 
   @AuditLogLevel('disabled')

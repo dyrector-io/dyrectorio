@@ -10,6 +10,12 @@ type InviteTemaple = {
   html: string
 }
 
+export type InviteTemplateOptions = {
+  teamId: string
+  teamName: string
+  kratosRecoveryLink?: string
+}
+
 @Injectable()
 export default class EmailBuilder {
   private host: string
@@ -18,12 +24,8 @@ export default class EmailBuilder {
     this.host = configService.get<string>('CRUX_UI_URL')
   }
 
-  buildInviteEmail(to: string, teamName: string, teamId?: string, kratosRecoveryLink?: string): ISendMailOptions {
-    if (!teamId && !kratosRecoveryLink) {
-      throw new EmailBuilderException()
-    }
-
-    const inviteTemplate = this.getInviteTemplate(teamName, teamId, kratosRecoveryLink)
+  buildInviteEmail(to: string, options: InviteTemplateOptions): ISendMailOptions {
+    const inviteTemplate = this.getInviteTemplate(options)
 
     const emailItem: ISendMailOptions = {
       to,
@@ -35,13 +37,21 @@ export default class EmailBuilder {
     return emailItem
   }
 
-  private getInviteTemplate(teamName: string, teamId?: string, kratosRecoveryLink?: string): InviteTemaple {
-    let link = `${this.host}/teams/${teamId}/invite`
+  private getInviteTemplate(options: InviteTemplateOptions): InviteTemaple {
+    const { teamId, teamName, kratosRecoveryLink } = options
+
+    if (!teamId && !kratosRecoveryLink) {
+      throw new EmailBuilderException()
+    }
+
+    let link = `${this.host}/teams/${teamId}/invitation`
     let mode = 'to accept'
     let button = 'Accept'
 
     if (kratosRecoveryLink) {
-      link = disassembleKratosRecoveryUrl(this.host, kratosRecoveryLink)
+      const [flow, token] = disassembleKratosRecoveryUrl(kratosRecoveryLink)
+
+      link = `${this.host}/auth/invitation?flow=${flow}&token=${token}`
       mode = 'to accept and create a dyrector.io account,'
       button = 'Create account'
     }

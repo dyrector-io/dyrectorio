@@ -4,6 +4,7 @@ import { deleteUserByEmail, kratosFromBaseURL, screenshotPath, USER_EMAIL, USER_
 
 const REGISTERED_USER_EMAIL = `r.${USER_EMAIL}`
 const REGISTERED_USER_PASSWORD = `r.${USER_PASSWORD}`
+const REGISTERED_USER_FIRST_NAME = 'r.John'
 
 test.use({
   storageState: {
@@ -31,6 +32,7 @@ test('should register with eligible credentials', async ({ page }) => {
   await page.locator('input[name=email]').fill(REGISTERED_USER_EMAIL)
   await page.locator('input[name=password]').fill(REGISTERED_USER_PASSWORD)
   await page.locator('input[name=confirmPassword]').fill(REGISTERED_USER_PASSWORD)
+  await page.locator('input[name=firstName]').fill(REGISTERED_USER_FIRST_NAME)
 
   await page.locator('button[type=submit]').click()
 

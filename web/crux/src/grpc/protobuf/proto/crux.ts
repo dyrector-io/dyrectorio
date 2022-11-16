@@ -92,6 +92,8 @@ export enum UserStatus {
   USER_STATUS_UNSPECIFIED = 0,
   PENDING = 1,
   VERIFIED = 2,
+  EXPIRED = 3,
+  DECLINED = 4,
   UNRECOGNIZED = -1,
 }
 
@@ -106,6 +108,12 @@ export function userStatusFromJSON(object: any): UserStatus {
     case 2:
     case 'VERIFIED':
       return UserStatus.VERIFIED
+    case 3:
+    case 'EXPIRED':
+      return UserStatus.EXPIRED
+    case 4:
+    case 'DECLINED':
+      return UserStatus.DECLINED
     case -1:
     case 'UNRECOGNIZED':
     default:
@@ -121,6 +129,10 @@ export function userStatusToJSON(object: UserStatus): string {
       return 'PENDING'
     case UserStatus.VERIFIED:
       return 'VERIFIED'
+    case UserStatus.EXPIRED:
+      return 'EXPIRED'
+    case UserStatus.DECLINED:
+      return 'DECLINED'
     case UserStatus.UNRECOGNIZED:
     default:
       return 'UNRECOGNIZED'
@@ -661,6 +673,14 @@ export interface InviteUserRequest {
   id: string
   accessedBy: string
   email: string
+  firstName: string
+  lastName?: string | undefined
+}
+
+export interface ReinviteUserRequest {
+  id: string
+  accessedBy: string
+  userId: string
 }
 
 export interface DeleteUserFromTeamRequest {
@@ -1599,7 +1619,7 @@ export const UpdateUserRoleInTeamRequest = {
 }
 
 function createBaseInviteUserRequest(): InviteUserRequest {
-  return { id: '', accessedBy: '', email: '' }
+  return { id: '', accessedBy: '', email: '', firstName: '' }
 }
 
 export const InviteUserRequest = {
@@ -1608,6 +1628,8 @@ export const InviteUserRequest = {
       id: isSet(object.id) ? String(object.id) : '',
       accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       email: isSet(object.email) ? String(object.email) : '',
+      firstName: isSet(object.firstName) ? String(object.firstName) : '',
+      lastName: isSet(object.lastName) ? String(object.lastName) : undefined,
     }
   },
 
@@ -1616,6 +1638,30 @@ export const InviteUserRequest = {
     message.id !== undefined && (obj.id = message.id)
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.email !== undefined && (obj.email = message.email)
+    message.firstName !== undefined && (obj.firstName = message.firstName)
+    message.lastName !== undefined && (obj.lastName = message.lastName)
+    return obj
+  },
+}
+
+function createBaseReinviteUserRequest(): ReinviteUserRequest {
+  return { id: '', accessedBy: '', userId: '' }
+}
+
+export const ReinviteUserRequest = {
+  fromJSON(object: any): ReinviteUserRequest {
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      userId: isSet(object.userId) ? String(object.userId) : '',
+    }
+  },
+
+  toJSON(message: ReinviteUserRequest): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
+    message.userId !== undefined && (obj.userId = message.userId)
     return obj
   },
 }
@@ -4791,9 +4837,13 @@ export interface CruxTeamClient {
 
   inviteUserToTeam(request: InviteUserRequest, metadata: Metadata, ...rest: any): Observable<CreateEntityResponse>
 
+  reinviteUserToTeam(request: ReinviteUserRequest, metadata: Metadata, ...rest: any): Observable<CreateEntityResponse>
+
   deleteUserFromTeam(request: DeleteUserFromTeamRequest, metadata: Metadata, ...rest: any): Observable<Empty>
 
-  acceptTeamInvite(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
+  acceptTeamInvitation(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
+
+  declineTeamInvitation(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
 
   selectTeam(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
 
@@ -4833,13 +4883,25 @@ export interface CruxTeamController {
     ...rest: any
   ): Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
 
+  reinviteUserToTeam(
+    request: ReinviteUserRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
+
   deleteUserFromTeam(
     request: DeleteUserFromTeamRequest,
     metadata: Metadata,
     ...rest: any
   ): Promise<Empty> | Observable<Empty> | Empty
 
-  acceptTeamInvite(request: IdRequest, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
+  acceptTeamInvitation(request: IdRequest, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
+
+  declineTeamInvitation(
+    request: IdRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<Empty> | Observable<Empty> | Empty
 
   selectTeam(request: IdRequest, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
 
@@ -4871,8 +4933,10 @@ export function CruxTeamControllerMethods() {
       'deleteTeam',
       'updateUserRole',
       'inviteUserToTeam',
+      'reinviteUserToTeam',
       'deleteUserFromTeam',
-      'acceptTeamInvite',
+      'acceptTeamInvitation',
+      'declineTeamInvitation',
       'selectTeam',
       'getUserMeta',
       'getAllTeams',

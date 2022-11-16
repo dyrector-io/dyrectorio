@@ -98,8 +98,10 @@ service CruxTeam {
   rpc UpdateUserRole(UpdateUserRoleInTeamRequest) returns (common.Empty);
 
   rpc InviteUserToTeam(InviteUserRequest) returns (CreateEntityResponse);
+  rpc ReinviteUserToTeam(ReinviteUserRequest) returns (CreateEntityResponse);
   rpc DeleteUserFromTeam(DeleteUserFromTeamRequest) returns (common.Empty);
-  rpc AcceptTeamInvite(IdRequest) returns (common.Empty);
+  rpc AcceptTeamInvitation(IdRequest) returns (common.Empty);
+  rpc DeclineTeamInvitation(IdRequest) returns (common.Empty);
   rpc SelectTeam(IdRequest) returns (common.Empty);
 
   rpc GetUserMeta(AccessRequest) returns (UserMetaResponse);
@@ -215,6 +217,15 @@ message InviteUserRequest {
   string accessedBy = 2;
 
   string email = 100;
+  string firstName = 101;
+  optional string lastName = 102;
+}
+
+message ReinviteUserRequest {
+  string id = 1;
+  string accessedBy = 2;
+
+  string userId = 100;
 }
 
 message DeleteUserFromTeamRequest {
@@ -290,6 +301,8 @@ enum UserStatus {
   USER_STATUS_UNSPECIFIED = 0;
   PENDING = 1;
   VERIFIED = 2;
+  EXPIRED = 3;
+  DECLINED = 4;
 }
 
 message UserResponse {

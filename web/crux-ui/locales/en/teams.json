@@ -12,14 +12,17 @@
   "never": "Never",
 
   "accept": "Accept",
+  "decline": "Decline",
   "createTeam": "Create new team",
   "youHaveBeenInvited": "You have been invited to team {{name}}",
   "acceptSuccess": "You have successfully accepted the invitation to team {{name}}",
+  "expired": "Invitation expired",
 
   "promote": "promote",
   "demote": "demote",
 
   "confirmRoleAction": "You are going to {{action}} {{user}} to {{role}}.",
+  "invitationNotExpired": "The invitation is not expired yet.",
 
   "errors": {
     "preconditionFailed": "Invitation link expired"

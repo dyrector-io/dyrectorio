@@ -56,11 +56,15 @@ export const collectChildVersionIds = async (prisma: PrismaService, versionId: s
   }
 }
 
-export const disassembleKratosRecoveryUrl = (host: string, recoveryLink: string): string => {
+/**
+ * @param recoveryLink
+ * @returns [flow, token]
+ */
+export const disassembleKratosRecoveryUrl = (recoveryLink: string): [string, string] => {
   const url = new URL(recoveryLink)
   const flow = url.searchParams.get('flow')
   const token = url.searchParams.get('token')
-  return `${host}/auth/invite?flow=${flow}&token=${token}`
+  return [flow, token]
 }
 
 export const toTimestamp = (date: Date): Timestamp => {

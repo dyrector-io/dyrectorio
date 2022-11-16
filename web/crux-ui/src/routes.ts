@@ -5,15 +5,16 @@ export const ROUTE_INDEX = '/'
 export const ROUTE_STATUS = '/status'
 export const ROUTE_404 = '/404'
 export const ROUTE_PROFILE = '/auth/settings'
+export const ROUTE_NO_PASSWORD = '/auth/settings/no-password'
 export const ROUTE_LOGIN = '/auth/login'
 export const ROUTE_LOGOUT = '/auth/logout'
 export const ROUTE_REGISTER = '/auth/register'
 
-export const ROUTE_INVITE = '/auth/invite'
 export const ROUTE_SETTINGS = '/auth/settings'
 export const ROUTE_SETTINGS_EDIT_PROFILE = '/auth/settings/edit-profile'
 export const ROUTE_SETTINGS_CHANGE_PASSWORD = '/auth/settings/change-password'
 export const ROUTE_RECOVERY = '/auth/recovery'
+export const ROUTE_RECOVERY_EXPIRED = `${ROUTE_RECOVERY}/expired`
 export const ROUTE_VERIFICATION = '/auth/verify'
 
 export const ROUTE_TEAMS = '/teams'
@@ -164,11 +165,12 @@ export const deploymentStartUrl = (productId: string, versionId: string, deploym
 // team
 export const teamUrl = (id: string) => `${ROUTE_TEAMS}/${id}`
 export const teamApiUrl = (id: string) => `/api${teamUrl(id)}`
-export const teamInviteUrl = (teamId: string) => `${ROUTE_TEAMS}/${teamId}/invite`
+export const teamInviteUrl = (teamId: string) => `${ROUTE_TEAMS}/${teamId}/invitation`
 export const teamUsersApiUrl = (teamId: string) => `${teamApiUrl(teamId)}/users`
 export const userApiUrl = (teamId: string, userId: string) => `${teamUsersApiUrl(teamId)}/${userId}`
 export const userRoleApiUrl = (teamId: string, userId: string) => `${userApiUrl(teamId, userId)}/role`
-export const teamAcceptInviteApiUrl = (teamId: string) => `${teamApiUrl(teamId)}/accept`
+export const teamReinviteUrl = (teamId: string, userId: string) => `${userApiUrl(teamId, userId)}/reinvite`
+export const teamInvitationApiUrl = (teamId: string) => `${teamApiUrl(teamId)}/invitation`
 
 // notification
 export const notificationUrl = (id: string) => `${ROUTE_NOTIFICATIONS}/${id}`
