@@ -50,6 +50,7 @@ type deploymentParams struct {
 	namespace       string
 	image           imageHelper.URI
 	containerConfig *v1.ContainerConfig
+	pullSecretName  string
 	configMapsEnv   []string
 	secrets         []string
 	volumes         map[string]v1.Volume
@@ -84,6 +85,14 @@ func (d *deployment) deployDeployment(p *deploymentParams) error {
 	}
 	maps.Copy(labels, p.labels)
 
+	podSpec := corev1.PodSpec().WithContainers(containerConfig).
+		WithInitContainers(getInitContainers(p, d.appConfig)...).
+		WithVolumes(getVolumesFromMap(p.volumes, d.appConfig)...)
+
+	if p.pullSecretName != "" {
+		podSpec.WithImagePullSecrets(corev1.LocalObjectReference().WithName(p.pullSecretName))
+	}
+
 	deployment := appsv1.Deployment(name, p.namespace).
 		WithSpec(
 			appsv1.DeploymentSpec().
@@ -91,11 +100,10 @@ func (d *deployment) deployDeployment(p *deploymentParams) error {
 				WithSelector(metav1.LabelSelector().WithMatchLabels(map[string]string{
 					"app": name,
 				})).
-				WithTemplate(corev1.PodTemplateSpec().WithLabels(labels).WithAnnotations(annot).WithSpec(
-					corev1.PodSpec().WithContainers(containerConfig).
-						WithInitContainers(getInitContainers(p, d.appConfig)...).
-						WithVolumes(getVolumesFromMap(p.volumes, d.appConfig)...),
-				)),
+				WithTemplate(corev1.PodTemplateSpec().
+					WithLabels(labels).
+					WithAnnotations(annot).
+					WithSpec(podSpec)),
 		)
 	result, err := client.Apply(d.ctx, deployment, metaV1.ApplyOptions{
 		FieldManager: d.appConfig.FieldManagerName,
