@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -83,7 +82,7 @@ type DockerContainerBuilder struct {
 	tty             bool
 	user            *int64
 	forcePull       bool
-	logger          *io.StringWriter
+	logger          io.StringWriter
 	hooksPreCreate  []LifecycleFunc
 	hooksPostCreate []LifecycleFunc
 	hooksPreStart   []LifecycleFunc
@@ -94,10 +93,10 @@ type DockerContainerBuilder struct {
 // Creates a default Docker client which can be overwritten using 'WithClient'.
 // Creates a default logger which logs using the 'fmt' package.
 func NewDockerBuilder(ctx context.Context) *DockerContainerBuilder {
-	var logger io.StringWriter = &defaultLogger{}
+	var logger io.StringWriter = defaultLogger{}
 	b := DockerContainerBuilder{
 		ctx:    ctx,
-		logger: &logger,
+		logger: logger,
 	}
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
@@ -243,7 +242,7 @@ func (dc *DockerContainerBuilder) WithUser(user *int64) *DockerContainerBuilder 
 
 // Sets the logger which logs messages releated to the builder (and not the container).
 func (dc *DockerContainerBuilder) WithLogWriter(logger io.StringWriter) *DockerContainerBuilder {
-	dc.logger = &logger
+	dc.logger = logger
 	return dc
 }
 
@@ -288,14 +287,14 @@ func (dc *DockerContainerBuilder) GetNetworkIDs() []string {
 // Creates the container using the configuration given by 'With...' functions.
 func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 	if err := prepareImage(dc); err != nil {
-		logWrite(dc, fmt.Sprintf("Failed to prepare image: %s", err.Error()))
+		dc.logWrite(fmt.Sprintf("Failed to prepare image: %s", err.Error()))
 		return dc
 	}
 
 	if dc.withoutConflict {
-		err := dockerHelper.DeleteContainerByName(dc.ctx, nil, dc.containerName)
+		err := dockerHelper.DeleteContainerByName(dc.ctx, nil, dc.containerName, false)
 		if err != nil {
-			logWrite(dc, fmt.Sprintf("Failed to resolve conflict during creating the container: %v", err))
+			dc.logWrite(fmt.Sprintf("Failed to resolve conflict during creating the container: %v", err))
 		}
 	}
 
@@ -333,7 +332,7 @@ func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 	policy.Name = string(dc.restartPolicy)
 	hostConfig.RestartPolicy = policy
 
-	log.Print("Provided networkMode: ", dc.networkMode)
+	dc.logWrite(fmt.Sprintf("Provided networkMode: %s", dc.networkMode))
 	if nw := container.NetworkMode(dc.networkMode); !nw.IsPrivate() {
 		hostConfig.NetworkMode = nw
 	} else {
@@ -343,7 +342,7 @@ func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 		}
 
 		dc.networkIDs = networkIDs
-		logWrite(dc, fmt.Sprintln("Container network: ", dc.networkIDs))
+		dc.logWrite(fmt.Sprintln("Container network: ", dc.networkIDs))
 	}
 
 	var name string
@@ -353,12 +352,12 @@ func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 	}
 
 	if hookError := execHooks(dc, dc.hooksPreCreate); hookError != nil {
-		logWrite(dc, fmt.Sprintln("Container pre-create hook error: ", hookError))
+		dc.logWrite(fmt.Sprintln("Container pre-create hook error: ", hookError))
 	}
 
 	containerCreateResp, err := dc.client.ContainerCreate(dc.ctx, containerConfig, hostConfig, nil, nil, name)
 	if err != nil {
-		logWrite(dc, fmt.Sprintln("Container create failed: ", err))
+		dc.logWrite(fmt.Sprintln("Container create failed: ", err))
 	}
 	containers, err := dc.client.ContainerList(dc.ctx, types.ContainerListOptions{
 		All:     true,
@@ -366,15 +365,15 @@ func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 	})
 
 	if hookError := execHooks(dc, dc.hooksPostCreate); hookError != nil {
-		logWrite(dc, fmt.Sprintln("Container post-create hook error: ", err))
+		dc.logWrite(fmt.Sprintln("Container post-create hook error: ", err))
 	}
 
 	if err != nil {
-		logWrite(dc, fmt.Sprintf("Container list failed: %s", err.Error()))
+		dc.logWrite(fmt.Sprintf("Container list failed: %s", err.Error()))
 	}
 
 	if len(containers) != 1 {
-		logWrite(dc, "Container was not created.")
+		dc.logWrite("Container was not created.")
 	} else {
 		dc.containerID = &containers[0].ID
 		attachNetworks(dc)
@@ -405,31 +404,31 @@ func (dc *DockerContainerBuilder) StartWaitUntilExit() (*WaitResult, error) {
 // Returns true if successful, false and an error if not.
 func (dc *DockerContainerBuilder) Start() (bool, error) {
 	if hookError := execHooks(dc, dc.hooksPreStart); hookError != nil {
-		logWrite(dc, fmt.Sprintln("Container pre-start hook error: ", hookError))
+		dc.logWrite(fmt.Sprintln("Container pre-start hook error: ", hookError))
 	}
 
 	if dc.containerID == nil {
-		logWrite(dc, "Unable to start non-existent container")
+		dc.logWrite("Unable to start non-existent container")
 		return false, errors.New("container does not exist")
 	}
 
 	err := dc.client.ContainerStart(dc.ctx, *dc.containerID, types.ContainerStartOptions{})
 
 	if hookError := execHooks(dc, dc.hooksPostStart); hookError != nil {
-		logWrite(dc, fmt.Sprintln("Container post-start hook error: ", hookError))
+		dc.logWrite(fmt.Sprintln("Container post-start hook error: ", hookError))
 	}
 
 	if err != nil {
-		logWrite(dc, err.Error())
+		dc.logWrite(err.Error())
 		return false, err
 	}
-	logWrite(dc, fmt.Sprintf("Started container: %s", *dc.containerID))
+	dc.logWrite(fmt.Sprintf("Started container: %s", *dc.containerID))
 	return true, nil
 }
 
 func prepareImage(dc *DockerContainerBuilder) error {
 	if pullRequired, err := needToPullImage(dc); pullRequired {
-		if err = pullImage(dc.ctx, *dc.logger, dc.imageWithTag, dc.registryAuth); err != nil {
+		if err = pullImage(dc.ctx, dc.logger, dc.imageWithTag, dc.registryAuth); err != nil {
 			if err != nil && err.Error() != "EOF" {
 				return fmt.Errorf("image pull error: %s", err.Error())
 			}
@@ -449,7 +448,7 @@ func createNetworks(dc *DockerContainerBuilder) []string {
 		filter.Add("name", fmt.Sprintf("^%s$", networkName))
 		networks, err := dc.client.NetworkList(dc.ctx, types.NetworkListOptions{Filters: filter})
 		if err != nil {
-			logWrite(dc, fmt.Sprintln("Failed to create network: ", err.Error()))
+			dc.logWrite(fmt.Sprintln("Failed to create network: ", err.Error()))
 			return nil
 		}
 
@@ -464,7 +463,7 @@ func createNetworks(dc *DockerContainerBuilder) []string {
 
 		networkResult, err := dc.client.NetworkCreate(dc.ctx, networkName, networkOpts)
 		if err != nil {
-			logWrite(dc, fmt.Sprintln("Failed to create network: ", err.Error()))
+			dc.logWrite(fmt.Sprintln("Failed to create network: ", err.Error()))
 			return nil
 		}
 
@@ -483,7 +482,7 @@ func attachNetworks(dc *DockerContainerBuilder) {
 
 			err := dc.client.NetworkConnect(dc.ctx, networkID, *dc.containerID, endpointSettings)
 			if err != nil {
-				logWrite(dc, fmt.Sprintln("Container network attach error: ", err))
+				dc.logWrite(fmt.Sprintln("Container network attach error: ", err))
 			}
 		}
 	}
@@ -491,7 +490,7 @@ func attachNetworks(dc *DockerContainerBuilder) {
 
 func execHooks(dc *DockerContainerBuilder, hooks []LifecycleFunc) error {
 	for _, hook := range hooks {
-		if err := hook(dc.ctx, dc.client, dc.containerName, dc.containerID, dc.mountList, dc.logger); err != nil {
+		if err := hook(dc.ctx, dc.client, dc.containerName, dc.containerID, dc.mountList, &dc.logger); err != nil {
 			return err
 		}
 	}
@@ -503,7 +502,7 @@ func needToPullImage(dc *DockerContainerBuilder) (bool, error) {
 		return true, nil
 	}
 
-	imageExists, err := imageExists(dc.ctx, *dc.logger, dc.imageWithTag)
+	imageExists, err := imageExists(dc.ctx, dc.logger, dc.imageWithTag)
 	if err != nil {
 		return false, err
 	}
@@ -555,9 +554,9 @@ func getPortSet(natPortBindings map[nat.Port][]nat.PortBinding) nat.PortSet {
 	return portSet
 }
 
-func logWrite(dc *DockerContainerBuilder, message string) {
+func (dc *DockerContainerBuilder) logWrite(message string) {
 	if dc.logger != nil {
-		_, err := (*dc.logger).WriteString(message)
+		_, err := dc.logger.WriteString(message)
 		if err != nil {
 			//nolint
 			fmt.Printf("Failed to write log: %s", err.Error())

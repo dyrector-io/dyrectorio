@@ -65,7 +65,7 @@ func spawnInitContainer(
 
 	if exitResult.StatusCode == 0 {
 		containerID := *builder.GetContainerID()
-		err = dockerHelper.DeleteContainerByName(ctx, dog, containerID)
+		err = dockerHelper.DeleteContainerByName(ctx, dog, containerID, false)
 		if err != nil {
 			log.Warn().Msg("failed to delete import container after completion")
 		}
