@@ -243,6 +243,31 @@ func logDeployInfo(
 	}
 }
 
+func buildMountList(cfg *config.Configuration, dog *dogger.DeploymentLogger, deployImageRequest *v1.DeployImageRequest) []mount.Mount {
+	mountList := mountStrToDocker(
+		// volumes are mapped into the legacy format, until further support of different types is needed
+		append(deployImageRequest.ContainerConfig.Mounts, volumesToMounts(deployImageRequest.ContainerConfig.Volumes)...),
+		deployImageRequest.InstanceConfig.ContainerPreName,
+		deployImageRequest.ContainerConfig.Container,
+		cfg)
+	// dotnet specific magic
+	if containsConfig(mountList) {
+		var err error
+		mountList, err = createRuntimeConfigFileOnHost(
+			mountList,
+			deployImageRequest.ContainerConfig.Container,
+			deployImageRequest.InstanceConfig.ContainerPreName,
+			string(deployImageRequest.RuntimeConfig),
+			cfg,
+		)
+		if err != nil {
+			dog.Write("could not create config file\n", err.Error())
+		}
+	}
+
+	return mountList
+}
+
 func DeployImage(ctx context.Context,
 	dog *dogger.DeploymentLogger,
 	deployImageRequest *v1.DeployImageRequest,
@@ -267,25 +292,7 @@ func DeployImage(ctx context.Context,
 	envMap = MergeStringMapUnique(envMap, mapper.ByteMapToStringMap(secret))
 	envList := EnvMapToSlice(envMap)
 
-	mountList := mountStrToDocker(
-		// volumes are mapped into the legacy format, until further support of different types is needed
-		append(deployImageRequest.ContainerConfig.Mounts, volumesToMounts(deployImageRequest.ContainerConfig.Volumes)...),
-		deployImageRequest.InstanceConfig.ContainerPreName,
-		deployImageRequest.ContainerConfig.Container,
-		cfg)
-	// dotnet specific magic
-	if containsConfig(mountList) {
-		mountList, err = createRuntimeConfigFileOnHost(
-			mountList,
-			deployImageRequest.ContainerConfig.Container,
-			deployImageRequest.InstanceConfig.ContainerPreName,
-			string(deployImageRequest.RuntimeConfig),
-			cfg,
-		)
-		if err != nil {
-			dog.Write("could not create config file\n", err.Error())
-		}
-	}
+	mountList := buildMountList(cfg, dog, deployImageRequest)
 
 	matchedContainer, err := dockerHelper.GetContainerByName(ctx, dog, containerName)
 	if err != nil {

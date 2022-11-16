@@ -141,6 +141,10 @@ export default class Deployment {
     this.statusChannel.complete()
   }
 
+  watchStatus(): Observable<DeploymentProgressMessage> {
+    return this.statusChannel.asObservable()
+  }
+
   debugInfo(logger: Logger): void {
     logger.debug(`> ${this.id}, open: ${!this.statusChannel.closed}`)
   }

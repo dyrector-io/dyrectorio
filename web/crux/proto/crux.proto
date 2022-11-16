@@ -86,6 +86,7 @@ service CruxDeployment {
   rpc CopyDeploymentUnsafe(IdRequest) returns (CreateEntityResponse);
 
   rpc StartDeployment(IdRequest) returns (stream DeploymentProgressMessage);
+  rpc SubscribeToDeploymentEvents(IdRequest) returns (stream DeploymentProgressMessage);
   rpc SubscribeToDeploymentEditEvents(ServiceIdRequest)
       returns (stream DeploymentEditEventMessage);
 }
