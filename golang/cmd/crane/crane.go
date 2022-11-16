@@ -55,7 +55,7 @@ func loadConfiguration() (*config.Configuration, error) {
 
 	commonConfig.InjectSecret(secret, &cfg.CommonConfiguration)
 
-	log.Print("Configuration loaded.")
+	log.Info().Msg("Configuration loaded.")
 	return cfg, nil
 }
 

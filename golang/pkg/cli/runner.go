@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"strings"
 	"text/template"
-	"time"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
@@ -15,6 +14,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
+	dockerhelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	dagentutils "github.com/dyrector-io/dyrectorio/golang/pkg/dagent/utils"
 )
@@ -58,7 +58,6 @@ func ProcessCommand(settings *Settings) {
 	}
 	switch settings.Command {
 	case UpCommand:
-		PrintInfo(settings)
 		settings = CheckAndUpdatePorts(settings)
 		SaveSettings(settings)
 
@@ -73,8 +72,10 @@ func ProcessCommand(settings *Settings) {
 		containers.MailSlurper = GetMailSlurper(settings)
 
 		StartContainers(&containers, settings.InternalHostDomain)
+		PrintInfo(settings)
 	case DownCommand:
 		StopContainers(&containers)
+		log.Info().Msg("Stack is stopped. Hope you had fun! 🎬")
 	default:
 		log.Fatal().Msg("invalid command")
 	}
@@ -89,6 +90,7 @@ func StartContainers(containers *DyrectorioStack, internalHostDomain string) {
 		internalHostDomain,
 		containers.Containers.CruxUI.CruxUIPort,
 	)
+	log.Info().Str("container", containers.Containers.Traefik.Name).Msg("started:")
 
 	_, err := traefik.Start()
 	if err != nil {
@@ -99,36 +101,40 @@ func StartContainers(containers *DyrectorioStack, internalHostDomain string) {
 	if err != nil {
 		log.Fatal().Err(err).Stack().Send()
 	}
+	log.Info().Str("container", containers.Containers.CruxPostgres.Name).Msg("started:")
 
 	_, err = containers.KratosPostgres.Create().Start()
 	if err != nil {
 		log.Fatal().Err(err).Stack().Send()
 	}
+	log.Info().Str("container", containers.Containers.KratosPostgres.Name).Msg("started:")
 
-	log.Printf("Migration (kratos) in progress...")
+	log.Info().Str("container", containers.Containers.KratosPostgres.Name).Msg("migration started:")
 	_, err = containers.KratosMigrate.Create().StartWaitUntilExit()
 	if err != nil {
 		log.Fatal().Err(err).Stack().Send()
 	}
-	log.Printf("Migration (kratos) done!")
+	log.Info().Str("container", containers.Containers.KratosPostgres.Name).Msg("migration done:")
 
 	_, err = containers.Kratos.Create().Start()
 	if err != nil {
 		log.Fatal().Err(err).Stack().Send()
 	}
+	log.Info().Str("container", containers.Containers.Kratos.Name).Msg("started:")
 
 	if !containers.Containers.Crux.Disabled {
-		log.Printf("Migration (crux) in progress...")
+		log.Info().Str("container", containers.Containers.CruxPostgres.Name).Msg("migration started:")
 		_, err = containers.CruxMigrate.Create().StartWaitUntilExit()
 		if err != nil {
 			log.Fatal().Err(err).Stack().Send()
 		}
-		log.Printf("Migration (crux) done!")
+		log.Info().Str("container", containers.Containers.CruxPostgres.Name).Msg("migration done:")
 
 		_, err = containers.Crux.Create().Start()
 		if err != nil {
 			log.Fatal().Err(err).Stack().Send()
 		}
+		log.Info().Str("container", containers.Containers.Crux.Name).Msg("started:")
 	}
 
 	if !containers.Containers.CruxUI.Disabled {
@@ -136,54 +142,46 @@ func StartContainers(containers *DyrectorioStack, internalHostDomain string) {
 		if err != nil {
 			log.Fatal().Err(err).Stack().Send()
 		}
+		log.Info().Str("container", containers.Containers.CruxUI.Name).Msg("started:")
 	}
 
 	_, err = containers.MailSlurper.Create().Start()
 	if err != nil {
 		log.Fatal().Err(err).Stack().Send()
 	}
+	log.Info().Str("container", containers.Containers.MailSlurper.Name).Msg("started:")
 }
 
 // Cleanup for "down" command
 func StopContainers(containers *DyrectorioStack) {
-	if containerID := containers.Containers.MailSlurper.Name; GetContainerID(containerID) != "" {
-		CleanupContainer(containerID)
+	ctx := context.Background()
+
+	containernames := []string{
+		containers.Containers.MailSlurper.Name,
 	}
 
 	if !containers.Containers.CruxUI.Disabled {
-		if containerID := containers.Containers.CruxUI.Name; GetContainerID(containerID) != "" {
-			CleanupContainer(containerID)
-		}
+		containernames = append(containernames, containers.Containers.CruxUI.Name)
 	}
 
 	if !containers.Containers.Crux.Disabled {
-		if containerID := containers.Containers.Crux.Name; GetContainerID(containerID) != "" {
-			CleanupContainer(containerID)
+		containernames = append(containernames,
+			containers.Containers.Crux.Name,
+			containers.Containers.CruxMigrate.Name)
+	}
+
+	containernames = append(containernames,
+		containers.Containers.KratosMigrate.Name,
+		containers.Containers.Kratos.Name,
+		containers.Containers.CruxPostgres.Name,
+		containers.Containers.KratosPostgres.Name,
+		containers.Containers.Traefik.Name)
+
+	for i := range containernames {
+		err := dockerhelper.DeleteContainerByName(ctx, nil, containernames[i])
+		if err != nil {
+			log.Debug().Err(err).Send()
 		}
-
-		if containerID := containers.Containers.CruxMigrate.Name; GetContainerID(containerID) != "" {
-			CleanupContainer(containerID)
-		}
-	}
-
-	if containerID := containers.Containers.KratosMigrate.Name; GetContainerID(containerID) != "" {
-		CleanupContainer(containerID)
-	}
-
-	if containerID := containers.Containers.Kratos.Name; GetContainerID(containerID) != "" {
-		CleanupContainer(containerID)
-	}
-
-	if containerID := containers.Containers.CruxPostgres.Name; GetContainerID(containerID) != "" {
-		CleanupContainer(containerID)
-	}
-
-	if containerID := containers.Containers.KratosPostgres.Name; GetContainerID(containerID) != "" {
-		CleanupContainer(containerID)
-	}
-
-	if containerID := containers.Containers.Traefik.Name; GetContainerID(containerID) != "" {
-		CleanupContainer(containerID)
 	}
 }
 
@@ -236,61 +234,6 @@ func TraefikConfiguration(name, internalHostDomain string, cruxuiport uint) {
 
 	if err != nil {
 		log.Fatal().Err(err).Stack().Msg(funct)
-	}
-}
-
-// Helper function to get the container's ID from name
-func GetContainerID(name string) string {
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		log.Fatal().Err(err).Stack().Send()
-	}
-
-	filter := filters.NewArgs()
-	filter.Add("name", fmt.Sprintf("^%s$", name))
-
-	containers, err := cli.ContainerList(
-		context.Background(),
-		types.ContainerListOptions{
-			All:     true,
-			Filters: filter,
-		})
-	if err != nil {
-		log.Fatal().Err(err).Stack().Send()
-	}
-
-	switch len(containers) {
-	case 0:
-		log.Printf("no such container found with name: %s", name)
-		return ""
-	case 1:
-		return containers[0].ID
-	default:
-		log.Fatal().Msg("ambigous name")
-		return ""
-	}
-}
-
-// Stop and Delete container
-func CleanupContainer(id string) {
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		log.Fatal().Err(err).Stack().Send()
-	}
-
-	timeout, err := time.ParseDuration("10s")
-	if err != nil {
-		log.Fatal().Err(err).Stack().Send()
-	}
-
-	err = cli.ContainerStop(context.Background(), id, &timeout)
-	if err != nil {
-		log.Fatal().Err(err).Stack().Send()
-	}
-
-	err = cli.ContainerRemove(context.Background(), id, types.ContainerRemoveOptions{Force: true, RemoveVolumes: false})
-	if err != nil {
-		log.Fatal().Err(err).Stack().Send()
 	}
 }
 

@@ -22,6 +22,6 @@ func main() {
 		log.Panic().Err(err).Msg("failed to parse env GRPC_TOKEN")
 	}
 	commonConfig.InjectSecret(string(cfg.SecretPrivateKeyFile), &cfg.CommonConfiguration)
-	log.Print("Configuration loaded.")
+	log.Info().Msg("Configuration loaded.")
 	dagent.Serve(&cfg)
 }
