@@ -23,7 +23,7 @@ import {
   UserRole,
   userStatusReinvitable,
 } from '@app/models'
-import { ROUTE_TEAMS, teamApiUrl, teamReinviteUrl, teamUrl, userApiUrl } from '@app/routes'
+import { API_WHOAMI, ROUTE_TEAMS, teamApiUrl, teamReinviteUrl, teamUrl, userApiUrl } from '@app/routes'
 import { redirectTo, utcDateToLocale, withContextAuthorization } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
 import { cruxFromContext } from '@server/crux/crux'
@@ -35,6 +35,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/router'
 import { useRef, useState } from 'react'
 import toast from 'react-hot-toast'
+import { useSWRConfig } from 'swr'
 
 interface TeamDetailsPageProps {
   me: Identity
@@ -47,6 +48,8 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
   const router = useRouter()
 
   const { me, team: propsTeam } = props
+
+  const { mutate } = useSWRConfig()
 
   const [countdown, startCountdown] = useTimer(-1)
 
@@ -83,6 +86,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
       ...team,
       ...newTeam,
     })
+    mutate(API_WHOAMI)
   }
 
   const onDeleteTeam = async () => {
