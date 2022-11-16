@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { DeploymentStatusEnum } from '@prisma/client'
 import { JsonArray } from 'prisma'
-import { concatAll, filter, from, lastValueFrom, map, merge, Observable, Subject } from 'rxjs'
+import { concatAll, EMPTY, filter, from, lastValueFrom, map, merge, Observable, Subject } from 'rxjs'
 import Deployment from 'src/domain/deployment'
 import { InternalException, PreconditionFailedException } from 'src/exception/errors'
 import { DeployRequest } from 'src/grpc/protobuf/proto/agent'
@@ -389,6 +389,28 @@ export default class DeployService {
     this.logger.debug(`Starting deployment: ${deploy.id}`)
 
     return agent.deploy(deploy)
+  }
+
+  async startDeploymentEvents(request: IdRequest): Promise<Observable<DeploymentProgressMessage>> {
+    const deployment = await this.prisma.deployment.findUniqueOrThrow({
+      where: {
+        id: request.id,
+      },
+      select: {
+        nodeId: true,
+      },
+    })
+
+    const agent = this.agentService.getById(deployment.nodeId)
+
+    const deploymentInstance = agent.getDeployment(request.id)
+    if (!deploymentInstance) {
+      return EMPTY
+    }
+
+    this.logger.debug(`Starting deployment event stream: ${request.id}`)
+
+    return deploymentInstance.watchStatus()
   }
 
   subscribeToDeploymentEditEvents(request: ServiceIdRequest): Observable<DeploymentEditEventMessage> {

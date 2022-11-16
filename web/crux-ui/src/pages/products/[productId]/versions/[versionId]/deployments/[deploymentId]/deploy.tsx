@@ -13,11 +13,13 @@ import {
   DeploymentRoot,
   DeploymentStatus,
   FetchDeploymentEventsMessage,
+  StartDeploymentEventsMessage,
   StartDeploymentMessage,
   WS_TYPE_DEPLOYMENT_EVENT,
   WS_TYPE_DEPLOYMENT_EVENT_LIST,
   WS_TYPE_FETCH_DEPLOYMENT_EVENTS,
   WS_TYPE_START_DEPLOYMENT,
+  WS_TYPE_START_DEPLOYMENT_EVENTS,
 } from '@app/models'
 import {
   deploymentDeployUrl,
@@ -67,6 +69,9 @@ const DeployPage = (props: DeployPageProps) => {
         sock.send(WS_TYPE_FETCH_DEPLOYMENT_EVENTS, {
           id: deployment.id,
         } as FetchDeploymentEventsMessage)
+        sock.send(WS_TYPE_START_DEPLOYMENT_EVENTS, {
+          id: deployment.id,
+        } as StartDeploymentEventsMessage)
       }
     },
   })

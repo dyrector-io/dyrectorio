@@ -20,6 +20,9 @@ func DeleteContainerByName(ctx context.Context, dog *dogger.DeploymentLogger, na
 	if err != nil {
 		return fmt.Errorf("builder could not get container (%s) to remove: %s", nameFilter, err.Error())
 	}
+	if matchedContainer == nil {
+		return nil
+	}
 
 	return deleteContainerByState(ctx, dog, nameFilter, matchedContainer.State)
 }
@@ -28,6 +31,9 @@ func DeleteContainerByID(ctx context.Context, dog *dogger.DeploymentLogger, name
 	matchedContainer, err := GetContainerByID(ctx, nil, nameFilter)
 	if err != nil {
 		return fmt.Errorf("builder could not get container (%s) to remove: %s", nameFilter, err.Error())
+	}
+	if matchedContainer == nil {
+		return nil
 	}
 
 	return deleteContainerByState(ctx, dog, nameFilter, matchedContainer.State)
@@ -136,39 +142,39 @@ func GetAllContainers(ctx context.Context, dog *dogger.DeploymentLogger) ([]type
 }
 
 // Using exact match!
-func GetContainerByName(ctx context.Context, dog *dogger.DeploymentLogger, nameFilter string) (types.Container, error) {
+func GetContainerByName(ctx context.Context, dog *dogger.DeploymentLogger, nameFilter string) (*types.Container, error) {
 	containers, err := GetAllContainersByName(ctx, nil, fmt.Sprintf("^%s$", nameFilter))
 	if err != nil {
-		return types.Container{}, err
+		return nil, err
 	}
 
 	return CheckOneContainer(containers)
 }
 
-func GetContainerByID(ctx context.Context, dog *dogger.DeploymentLogger, nameFilter string) (types.Container, error) {
+func GetContainerByID(ctx context.Context, dog *dogger.DeploymentLogger, nameFilter string) (*types.Container, error) {
 	containers, err := GetAllContainersByID(ctx, nil, nameFilter)
 	if err != nil {
-		return types.Container{}, err
+		return nil, err
 	}
 
 	return CheckOneContainer(containers)
 }
 
 // Making sure there's only one
-func CheckOnlyOneContainer(containers []types.Container) (types.Container, error) {
+func CheckOnlyOneContainer(containers []types.Container) (*types.Container, error) {
 	switch len(containers) {
 	case 1:
-		return containers[0], nil
+		return &containers[0], nil
 	default:
-		return types.Container{}, fmt.Errorf("more than one matching container")
+		return nil, fmt.Errorf("more than one matching container")
 	}
 }
 
 // Making sure there's only one, tops
-func CheckOneContainer(containers []types.Container) (types.Container, error) {
+func CheckOneContainer(containers []types.Container) (*types.Container, error) {
 	switch len(containers) {
 	case 0:
-		return types.Container{}, nil
+		return nil, nil
 	default:
 		return CheckOnlyOneContainer(containers)
 	}

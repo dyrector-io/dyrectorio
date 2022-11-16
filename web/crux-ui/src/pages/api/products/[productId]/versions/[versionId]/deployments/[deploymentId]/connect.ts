@@ -9,6 +9,7 @@ import {
   InputFocusMessage,
   PatchDeploymentEnvMessage,
   PatchInstanceMessage,
+  StartDeploymentEventsMessage,
   StartDeploymentMessage,
   WS_TYPE_ALL_ITEM_EDITORS,
   WS_TYPE_BLUR_INPUT,
@@ -32,6 +33,7 @@ import {
   WS_TYPE_PATCH_DEPLOYMENT_ENV,
   WS_TYPE_PATCH_INSTANCE,
   WS_TYPE_START_DEPLOYMENT,
+  WS_TYPE_START_DEPLOYMENT_EVENTS,
 } from '@app/models'
 import { WsMessage } from '@app/websockets/common'
 import WsConnection from '@app/websockets/connection'
@@ -110,6 +112,23 @@ const onStartDeployment = async (
   const req = message.payload
 
   cruxFromConnection(connection).deployments.startDeploymentStream(req.id, {
+    onMessage: events => events.forEach(it => endpoint.sendAll(WS_TYPE_DEPLOYMENT_EVENT, it as DeploymentEventMessage)),
+    onError: err => {
+      const error = parseGrpcError(err)
+      endpoint.sendAll(WS_TYPE_DYO_ERROR, fromGrpcError(error))
+    },
+    onClose: () => endpoint.sendAll(WS_TYPE_DEPLOYMENT_FINISHED, {}),
+  })
+}
+
+const onDeploymentEvents = async (
+  endpoint: WsEndpoint,
+  connection: WsConnection,
+  message: WsMessage<StartDeploymentEventsMessage>,
+) => {
+  const req = message.payload
+
+  cruxFromConnection(connection).deployments.subscribeToDeploymentEvents(req.id, {
     onMessage: events => events.forEach(it => endpoint.sendAll(WS_TYPE_DEPLOYMENT_EVENT, it as DeploymentEventMessage)),
     onError: err => {
       const error = parseGrpcError(err)
@@ -230,6 +249,7 @@ export default routedWebSocketEndpoint(
     [WS_TYPE_GET_DEPLOYMENT_SECRETS, onGetSecrets],
     [WS_TYPE_FOCUS_INPUT, onFocusInput],
     [WS_TYPE_BLUR_INPUT, onBlurInput],
+    [WS_TYPE_START_DEPLOYMENT_EVENTS, onDeploymentEvents],
   ],
   [useWebsocketErrorMiddleware],
   {

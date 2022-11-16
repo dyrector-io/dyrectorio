@@ -4711,6 +4711,12 @@ export interface CruxDeploymentClient {
 
   startDeployment(request: IdRequest, metadata: Metadata, ...rest: any): Observable<DeploymentProgressMessage>
 
+  subscribeToDeploymentEvents(
+    request: IdRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Observable<DeploymentProgressMessage>
+
   subscribeToDeploymentEditEvents(
     request: ServiceIdRequest,
     metadata: Metadata,
@@ -4786,6 +4792,12 @@ export interface CruxDeploymentController {
 
   startDeployment(request: IdRequest, metadata: Metadata, ...rest: any): Observable<DeploymentProgressMessage>
 
+  subscribeToDeploymentEvents(
+    request: IdRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Observable<DeploymentProgressMessage>
+
   subscribeToDeploymentEditEvents(
     request: ServiceIdRequest,
     metadata: Metadata,
@@ -4808,6 +4820,7 @@ export function CruxDeploymentControllerMethods() {
       'copyDeploymentSafe',
       'copyDeploymentUnsafe',
       'startDeployment',
+      'subscribeToDeploymentEvents',
       'subscribeToDeploymentEditEvents',
     ]
     for (const method of grpcMethods) {

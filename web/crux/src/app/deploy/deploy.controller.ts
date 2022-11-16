@@ -88,6 +88,10 @@ export default class DeployController implements CruxDeploymentController {
     return from(this.service.startDeployment(request)).pipe(concatAll())
   }
 
+  subscribeToDeploymentEvents(request: IdRequest): Observable<DeploymentProgressMessage> {
+    return from(this.service.startDeploymentEvents(request)).pipe(concatAll())
+  }
+
   @DisableTeamAccessCheck()
   @AuditLogLevel('disabled')
   subscribeToDeploymentEditEvents(request: ServiceIdRequest): Observable<DeploymentEditEventMessage> {
