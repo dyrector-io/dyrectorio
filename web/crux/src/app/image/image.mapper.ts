@@ -24,6 +24,7 @@ import {
   DagentContainerConfig as ProtoCruxDagentContainerConfig,
   ImageResponse,
 } from 'src/grpc/protobuf/proto/crux'
+import { toPrismaJson } from 'src/shared/mapper'
 import { ContainerConfigData, UniqueKeyValue } from 'src/shared/model'
 
 @Injectable()
@@ -90,51 +91,43 @@ export default class ImageMapper {
     }
   }
 
-  toPrismaJson(val) {
-    if (!val) {
-      return Prisma.JsonNull
-    }
-
-    return val as JsonObject
-  }
-
   configProtoToDb(config: ProtoContainerConfig): ContainerConfigData {
     return {
       // common
       name: config.common?.name,
       expose: this.exposeStrategyToDb(config.common?.expose),
-      ingress: this.toPrismaJson(config.common?.ingress),
-      configContainer: this.toPrismaJson(config.common?.configContainer),
-      importContainer: this.toPrismaJson(config.common?.importContainer),
+      ingress: toPrismaJson(config.common?.ingress),
+      configContainer: toPrismaJson(config.common?.configContainer),
+      importContainer: toPrismaJson(config.common?.importContainer),
       user: config.common?.user ? config.common.user : null,
       tty: config.common?.TTY ?? false,
-      ports: this.toPrismaJson(config.common?.ports),
-      portRanges: this.toPrismaJson(config.common?.portRanges),
-      volumes: this.toPrismaJson(config.common?.volumes),
-      commands: this.toPrismaJson(config.common?.commands),
-      args: this.toPrismaJson(config.common?.args),
-      environment: this.toPrismaJson(config.common?.environment),
-      secrets: this.toPrismaJson(config.common?.secrets),
-      initContainers: this.toPrismaJson(config.common?.initContainers),
-      logConfig: this.toPrismaJson(config.dagent?.logConfig),
+      ports: toPrismaJson(config.common?.ports),
+      portRanges: toPrismaJson(config.common?.portRanges),
+      volumes: toPrismaJson(config.common?.volumes),
+      commands: toPrismaJson(config.common?.commands),
+      args: toPrismaJson(config.common?.args),
+      environment: toPrismaJson(config.common?.environment),
+      secrets: toPrismaJson(config.common?.secrets),
+      initContainers: toPrismaJson(config.common?.initContainers),
+      logConfig: toPrismaJson(config.dagent?.logConfig),
 
       // dagent
       restartPolicy: this.restartPolicyToDb(config.dagent?.restartPolicy),
       networkMode: this.networkModeToDb(config.dagent?.networkMode),
-      networks: this.toPrismaJson(config.dagent?.networks),
-      dockerLabels: this.toPrismaJson(config.dagent?.labels),
+      networks: toPrismaJson(config.dagent?.networks),
+      dockerLabels: toPrismaJson(config.dagent?.labels),
 
       // crane
       deploymentStrategy: this.deploymentStrategyToDb(config.crane?.deploymentStatregy),
-      healthCheckConfig: this.toPrismaJson(config.crane?.healthCheckConfig),
-      resourceConfig: this.toPrismaJson(config.crane?.resourceConfig),
+      healthCheckConfig: toPrismaJson(config.crane?.healthCheckConfig),
+      resourceConfig: toPrismaJson(config.crane?.resourceConfig),
       proxyHeaders: config.crane?.proxyHeaders ?? false,
       useLoadBalancer: config.crane?.useLoadBalancer ?? false,
-      customHeaders: this.toPrismaJson(config.crane?.customHeaders),
-      extraLBAnnotations: this.toPrismaJson(config.crane?.extraLBAnnotations),
-      capabilities: this.toPrismaJson(config.capabilities),
-      annotations: this.toPrismaJson(config.crane?.annotations),
-      labels: this.toPrismaJson(config.crane?.labels),
+      customHeaders: toPrismaJson(config.crane?.customHeaders),
+      extraLBAnnotations: toPrismaJson(config.crane?.extraLBAnnotations),
+      capabilities: toPrismaJson(config.capabilities),
+      annotations: toPrismaJson(config.crane?.annotations),
+      labels: toPrismaJson(config.crane?.labels),
     }
   }
 

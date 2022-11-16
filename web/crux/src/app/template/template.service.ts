@@ -27,6 +27,7 @@ import ProductService from '../product/product.service'
 import RegistryService from '../registry/registry.service'
 import VersionService from '../version/version.service'
 import ImageMapper from '../image/image.mapper'
+import { toPrismaJson } from 'src/shared/mapper'
 
 const VERSION_NAME = '1.0.0'
 
@@ -107,10 +108,10 @@ export default class TemplateService {
         ? this.imageMapper.exposeStrategyToDb(exposeStrategyFromJSON(config.expose.toLocaleUpperCase()))
         : 'none',
       networks: config.networks ? config.networks.map(it => ({ id: v4(), key: it })) : [],
-      ports: config.ports ? this.imageMapper.toPrismaJson(config.ports.map(it => this.idify(it))) : [],
+      ports: config.ports ? toPrismaJson(config.ports.map(it => this.idify(it))) : [],
       environment: config.environment ? config.environment.map(it => this.idify(it)) : [],
       volumes: config.volumes
-        ? this.imageMapper.toPrismaJson(
+        ? toPrismaJson(
             config.volumes.map(it => ({
               ...this.idify(it),
               type: it.type ? volumeTypeFromJSON(it.type.toUpperCase()) : VolumeType.RO,

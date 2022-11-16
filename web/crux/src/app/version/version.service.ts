@@ -16,6 +16,7 @@ import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
 import { Version } from '.prisma/client'
 import VersionMapper from './version.mapper'
+import { toPrismaJson } from 'src/shared/mapper'
 
 @Injectable()
 export default class VersionService {
@@ -271,9 +272,43 @@ export default class VersionService {
 
           await prisma.containerConfig.create({
             data: {
-              ...image.config,
               id: undefined,
               imageId: createdImage.id,
+              // common
+              name: image.config?.name,
+              expose: image.config?.expose,
+              ingress: toPrismaJson(image.config?.ingress),
+              configContainer: toPrismaJson(image.config?.configContainer),
+              importContainer: toPrismaJson(image.config?.importContainer),
+              user: image.config?.user ? image.config.user : null,
+              tty: image.config?.tty ?? false,
+              ports: toPrismaJson(image.config?.ports),
+              portRanges: toPrismaJson(image.config?.portRanges),
+              volumes: toPrismaJson(image.config?.volumes),
+              commands: toPrismaJson(image.config?.commands),
+              args: toPrismaJson(image.config?.args),
+              environment: toPrismaJson(image.config?.environment),
+              secrets: toPrismaJson(image.config?.secrets),
+              initContainers: toPrismaJson(image.config?.initContainers),
+              logConfig: toPrismaJson(image.config?.logConfig),
+
+              // dagent
+              restartPolicy: image.config?.restartPolicy,
+              networkMode: image.config?.networkMode,
+              networks: toPrismaJson(image.config?.networks),
+              dockerLabels: toPrismaJson(image.config?.labels),
+
+              // crane
+              deploymentStrategy: image.config?.deploymentStrategy,
+              healthCheckConfig: toPrismaJson(image.config?.healthCheckConfig),
+              resourceConfig: toPrismaJson(image.config?.resourceConfig),
+              proxyHeaders: image.config?.proxyHeaders ?? false,
+              useLoadBalancer: image.config?.useLoadBalancer ?? false,
+              customHeaders: toPrismaJson(image.config?.customHeaders),
+              extraLBAnnotations: toPrismaJson(image.config?.extraLBAnnotations),
+              capabilities: toPrismaJson(image.config.capabilities),
+              annotations: toPrismaJson(image.config?.annotations),
+              labels: toPrismaJson(image.config?.labels),
             },
           })
         }),
