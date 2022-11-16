@@ -17,6 +17,7 @@ import (
 	"github.com/docker/go-connections/nat"
 
 	dockerHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
+	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 )
 
 // A Builder handles the process of creating and starting containers,
@@ -35,7 +36,7 @@ type Builder interface {
 	WithNetworks(networks []string) Builder
 	WithLabels(labels map[string]string) Builder
 	WithLogConfig(config container.LogConfig)
-	WithRegistryAuth(auth RegistryAuth) Builder
+	WithRegistryAuth(auth imageHelper.RegistryAuth) Builder
 	WithAutoRemove(remove bool) Builder
 	WithRestartPolicy(policy RestartPolicyName) Builder
 	WithEntrypoint(cmd []string) Builder
@@ -184,7 +185,7 @@ func (dc *DockerContainerBuilder) WithNetworks(networks []string) *DockerContain
 }
 
 // Sets the registry and authentication for the given image.
-func (dc *DockerContainerBuilder) WithRegistryAuth(auth *RegistryAuth) *DockerContainerBuilder {
+func (dc *DockerContainerBuilder) WithRegistryAuth(auth *imageHelper.RegistryAuth) *DockerContainerBuilder {
 	if auth != nil {
 		dc.registryAuth = registryAuthBase64(auth.User, auth.Password)
 	}
@@ -428,7 +429,7 @@ func (dc *DockerContainerBuilder) Start() (bool, error) {
 
 func prepareImage(dc *DockerContainerBuilder) error {
 	if pullRequired, err := needToPullImage(dc); pullRequired {
-		if err = PullImage(dc.ctx, dc.logger, dc.imageWithTag, dc.registryAuth); err != nil {
+		if err = imageHelper.Pull(dc.ctx, dc.logger, dc.imageWithTag, dc.registryAuth); err != nil {
 			if err != nil && err.Error() != "EOF" {
 				return fmt.Errorf("image pull error: %s", err.Error())
 			}
@@ -502,7 +503,7 @@ func needToPullImage(dc *DockerContainerBuilder) (bool, error) {
 		return true, nil
 	}
 
-	imageExists, err := ImageExists(dc.ctx, dc.logger, dc.imageWithTag)
+	imageExists, err := imageHelper.Exists(dc.ctx, dc.logger, dc.imageWithTag)
 	if err != nil {
 		return false, err
 	}

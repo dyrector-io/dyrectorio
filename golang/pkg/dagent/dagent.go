@@ -2,7 +2,6 @@ package dagent
 
 import (
 	"context"
-	"errors"
 
 	"github.com/rs/zerolog/log"
 
@@ -33,29 +32,16 @@ func Serve(cfg *config.Configuration) {
 		}
 	}
 
-	grpcParams := grpc.TokenToConnectionParams(cfg.GrpcToken, getAgentImageDate())
+	grpcParams := grpc.TokenToConnectionParams(cfg.GrpcToken)
 	grpcContext := grpc.WithGRPCConfig(context.Background(), cfg)
 	grpc.Init(grpcContext, grpcParams, &cfg.CommonConfiguration, grpc.WorkerFunctions{
 		Deploy:     utils.DeployImage,
 		Watch:      utils.GetContainersByName,
 		Delete:     utils.DeleteContainerByName,
 		SecretList: utils.SecretList,
-		Update:     update.SelfUpdate,
+		SelfUpdate: update.SelfUpdate,
 		Close:      grpcClose,
 	})
-}
-
-func getAgentImageDate() string {
-	image, err := utils.GetOwnContainerImage()
-	if err != nil {
-		if errors.Is(err, &utils.UnknownContainerError{}) {
-			return "-"
-		}
-
-		log.Panic().Err(err).Msg("Failed to get own container")
-	}
-
-	return image.Created
 }
 
 func grpcClose(ctx context.Context, reason agent.CloseReason) error {

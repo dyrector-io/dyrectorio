@@ -53,7 +53,6 @@ class DyoNodeService {
       connectedAt: timestampToUTC(it.connectedAt),
       status: nodeStatusToDto(it.status),
       type: nodeTypeGrpcToUi(it.type),
-      imageDate: timestampToUTC(it.imageDate),
     }))
   }
 
@@ -110,7 +109,6 @@ class DyoNodeService {
     return {
       ...res,
       connectedAt: timestampToUTC(res.connectedAt),
-      imageDate: timestampToUTC(res.imageDate),
       status: nodeStatusToDto(res.status),
       type: nodeTypeGrpcToUi(res.type),
       install: !res.install

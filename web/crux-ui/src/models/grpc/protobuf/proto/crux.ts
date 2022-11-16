@@ -1112,7 +1112,6 @@ export interface NodeResponse {
   connectedAt?: Timestamp | undefined
   version?: string | undefined
   type: NodeType
-  imageDate?: Timestamp | undefined
 }
 
 export interface NodeDetailsResponse {
@@ -1129,7 +1128,6 @@ export interface NodeDetailsResponse {
   script?: NodeScriptResponse | undefined
   version?: string | undefined
   type: NodeType
-  imageDate?: Timestamp | undefined
 }
 
 export interface NodeListResponse {
@@ -7016,9 +7014,6 @@ export const NodeResponse = {
     if (message.type !== 0) {
       writer.uint32(856).int32(message.type)
     }
-    if (message.imageDate !== undefined) {
-      Timestamp.encode(message.imageDate, writer.uint32(866).fork()).ldelim()
-    }
     return writer
   },
 
@@ -7059,9 +7054,6 @@ export const NodeResponse = {
         case 107:
           message.type = reader.int32() as any
           break
-        case 108:
-          message.imageDate = Timestamp.decode(reader, reader.uint32())
-          break
         default:
           reader.skipType(tag & 7)
           break
@@ -7082,7 +7074,6 @@ export const NodeResponse = {
       connectedAt: isSet(object.connectedAt) ? fromJsonTimestamp(object.connectedAt) : undefined,
       version: isSet(object.version) ? String(object.version) : undefined,
       type: isSet(object.type) ? nodeTypeFromJSON(object.type) : 0,
-      imageDate: isSet(object.imageDate) ? fromJsonTimestamp(object.imageDate) : undefined,
     }
   },
 
@@ -7098,7 +7089,6 @@ export const NodeResponse = {
     message.connectedAt !== undefined && (obj.connectedAt = fromTimestamp(message.connectedAt).toISOString())
     message.version !== undefined && (obj.version = message.version)
     message.type !== undefined && (obj.type = nodeTypeToJSON(message.type))
-    message.imageDate !== undefined && (obj.imageDate = fromTimestamp(message.imageDate).toISOString())
     return obj
   },
 
@@ -7118,8 +7108,6 @@ export const NodeResponse = {
         : undefined
     message.version = object.version ?? undefined
     message.type = object.type ?? 0
-    message.imageDate =
-      object.imageDate !== undefined && object.imageDate !== null ? Timestamp.fromPartial(object.imageDate) : undefined
     return message
   },
 }
@@ -7168,9 +7156,6 @@ export const NodeDetailsResponse = {
     }
     if (message.type !== 0) {
       writer.uint32(880).int32(message.type)
-    }
-    if (message.imageDate !== undefined) {
-      Timestamp.encode(message.imageDate, writer.uint32(890).fork()).ldelim()
     }
     return writer
   },
@@ -7221,9 +7206,6 @@ export const NodeDetailsResponse = {
         case 110:
           message.type = reader.int32() as any
           break
-        case 111:
-          message.imageDate = Timestamp.decode(reader, reader.uint32())
-          break
         default:
           reader.skipType(tag & 7)
           break
@@ -7247,7 +7229,6 @@ export const NodeDetailsResponse = {
       script: isSet(object.script) ? NodeScriptResponse.fromJSON(object.script) : undefined,
       version: isSet(object.version) ? String(object.version) : undefined,
       type: isSet(object.type) ? nodeTypeFromJSON(object.type) : 0,
-      imageDate: isSet(object.imageDate) ? fromJsonTimestamp(object.imageDate) : undefined,
     }
   },
 
@@ -7268,7 +7249,6 @@ export const NodeDetailsResponse = {
       (obj.script = message.script ? NodeScriptResponse.toJSON(message.script) : undefined)
     message.version !== undefined && (obj.version = message.version)
     message.type !== undefined && (obj.type = nodeTypeToJSON(message.type))
-    message.imageDate !== undefined && (obj.imageDate = fromTimestamp(message.imageDate).toISOString())
     return obj
   },
 
@@ -7295,8 +7275,6 @@ export const NodeDetailsResponse = {
       object.script !== undefined && object.script !== null ? NodeScriptResponse.fromPartial(object.script) : undefined
     message.version = object.version ?? undefined
     message.type = object.type ?? 0
-    message.imageDate =
-      object.imageDate !== undefined && object.imageDate !== null ? Timestamp.fromPartial(object.imageDate) : undefined
     return message
   },
 }

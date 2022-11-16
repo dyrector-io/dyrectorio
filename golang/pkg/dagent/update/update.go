@@ -13,7 +13,6 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/utils"
 
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
 
@@ -22,7 +21,7 @@ import (
 
 var _selfUpdateDeadline *int64
 
-func getContainerName(ctx context.Context, base string) (string, error) {
+func getUniqueContainerName(ctx context.Context, base string) (string, error) {
 	name := base
 	count := 0
 
@@ -31,7 +30,7 @@ func getContainerName(ctx context.Context, base string) (string, error) {
 		if err != nil {
 			return base, err
 		}
-		if len(container.Names) == 0 {
+		if container == nil {
 			return name, nil
 		}
 
@@ -40,14 +39,15 @@ func getContainerName(ctx context.Context, base string) (string, error) {
 	}
 }
 
+// TODO(robot9706): move to utils
 func findImageAndPull(ctx context.Context, imageName string) (string, error) {
-	exists, err := containerbuilder.ImageExists(ctx, nil, imageName)
+	exists, err := image.Exists(ctx, nil, imageName)
 	if err != nil {
 		return "", err
 	}
 
 	if !exists {
-		err = containerbuilder.PullImage(ctx, nil, imageName, "")
+		err = image.Pull(ctx, nil, imageName, "")
 		if err != nil {
 			return "", err
 		}
@@ -59,6 +59,41 @@ func findImageAndPull(ctx context.Context, imageName string) (string, error) {
 	}
 
 	return findImage.ID, nil
+}
+
+func createNewDAgentContainer(ctx context.Context, cli *client.Client, oldContainerID, name, imageWithTag string) error {
+	inspect, err := cli.ContainerInspect(ctx, oldContainerID)
+	if err != nil {
+		return err
+	}
+
+	mounts := []mount.Mount{}
+	for _, elem := range inspect.Mounts {
+		mounts = append(mounts, mount.Mount{
+			Type:   elem.Type,
+			Source: elem.Source,
+			Target: elem.Destination,
+		})
+	}
+
+	log.Debug().Msg("Creating new DAgent")
+
+	builder := containerbuilder.NewDockerBuilder(ctx).
+		WithClient(cli).
+		WithImage(imageWithTag).
+		WithRestartPolicy(containerbuilder.RestartPolicyName(inspect.HostConfig.RestartPolicy.Name)).
+		WithName(name).
+		WithEnv(inspect.Config.Env).
+		WithMountPoints(mounts)
+
+	ok, err := builder.Create().Start()
+	if !ok {
+		return err
+	}
+
+	log.Debug().Str("containerID", *builder.GetContainerID()).Msg("Created new DAgent")
+
+	return nil
 }
 
 func SelfUpdate(ctx context.Context, tag string, timeoutSeconds int32) error {
@@ -99,51 +134,32 @@ func SelfUpdate(ctx context.Context, tag string, timeoutSeconds int32) error {
 
 	originalName := container.Names[0]
 
-	rename, err := getContainerName(ctx, originalName+"-update")
+	rename, err := getUniqueContainerName(ctx, originalName+"-update")
 	if err != nil {
 		return err
 	}
+
+	log.Debug().Str("oldName", originalName).Str("newName", rename).Msg("Renaming DAgent container")
 
 	err = cli.ContainerRename(ctx, container.ID, rename)
 	if err != nil {
 		return err
 	}
 
-	inspect, err := cli.ContainerInspect(ctx, container.ID)
+	err = createNewDAgentContainer(ctx, cli, container.ID, originalName, newImage)
 	if err != nil {
-		return err
-	}
+		renameErr := cli.ContainerRename(ctx, container.ID, originalName)
+		if renameErr != nil {
+			return fmt.Errorf("%s (%s)", err.Error(), renameErr.Error())
+		}
 
-	mounts := []mount.Mount{}
-	for _, elem := range inspect.Mounts {
-		mounts = append(mounts, mount.Mount{
-			Type:   elem.Type,
-			Source: elem.Source,
-			Target: elem.Destination,
-		})
-	}
-
-	log.Debug().Str("rename", rename).Msg("Creating new DAgent")
-
-	builder := containerbuilder.NewDockerBuilder(ctx).
-		WithClient(cli).
-		WithImage(newImage).
-		WithRestartPolicy(containerbuilder.RestartPolicyName(inspect.HostConfig.RestartPolicy.Name)).
-		WithName(originalName).
-		WithEnv(inspect.Config.Env).
-		WithMountPoints(mounts)
-
-	ok, err := builder.Create().Start()
-	if !ok {
 		return err
 	}
 
 	unixTime := time.Now().Unix() + int64(timeoutSeconds)
 	_selfUpdateDeadline = &unixTime
 
-	log.Debug().Str("containerID", *builder.GetContainerID()).Msg("Created new DAgent")
-
-	return nil
+	return err
 }
 
 func RemoveSelf(ctx context.Context) error {
@@ -164,17 +180,7 @@ func RemoveSelf(ctx context.Context) error {
 		return errors.New("unable to get own container ID")
 	}
 
-	removeOptions := types.ContainerRemoveOptions{
-		RemoveVolumes: true,
-		Force:         true,
-	}
-
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		return err
-	}
-
-	err = cli.ContainerRemove(ctx, containerID, removeOptions)
+	err := docker.DeleteContainerByID(ctx, nil, containerID)
 	if err != nil {
 		return err
 	}

@@ -30,8 +30,6 @@ export class Agent {
 
   readonly publicKey: string
 
-  readonly imageDate: Date | undefined
-
   constructor(
     private connection: GrpcNodeConnection,
     info: AgentInfo,
@@ -41,7 +39,6 @@ export class Agent {
     this.address = connection.address
     this.version = info.version
     this.publicKey = info.publicKey
-    this.imageDate = Number.isNaN(Date.parse(info.imageDate)) ? undefined : new Date(info.imageDate)
   }
 
   getConnectionStatus(): NodeConnectionStatus {

@@ -18,7 +18,6 @@ export type DyoNode = NodeConnection & {
   name: string
   description?: string
   type: NodeType
-  imageDate?: string
 }
 
 export const nodeConnectionOf = (node: DyoNode | DyoNodeDetails): NodeConnection => ({

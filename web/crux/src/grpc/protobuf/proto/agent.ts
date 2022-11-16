@@ -83,7 +83,6 @@ export interface AgentInfo {
   id: string
   version: string
   publicKey: string
-  imageDate: string
 }
 
 export interface AgentCommand {
@@ -331,7 +330,7 @@ export interface CloseConnection {
 export const AGENT_PACKAGE_NAME = 'agent'
 
 function createBaseAgentInfo(): AgentInfo {
-  return { id: '', version: '', publicKey: '', imageDate: '' }
+  return { id: '', version: '', publicKey: '' }
 }
 
 export const AgentInfo = {
@@ -340,7 +339,6 @@ export const AgentInfo = {
       id: isSet(object.id) ? String(object.id) : '',
       version: isSet(object.version) ? String(object.version) : '',
       publicKey: isSet(object.publicKey) ? String(object.publicKey) : '',
-      imageDate: isSet(object.imageDate) ? String(object.imageDate) : '',
     }
   },
 
@@ -349,7 +347,6 @@ export const AgentInfo = {
     message.id !== undefined && (obj.id = message.id)
     message.version !== undefined && (obj.version = message.version)
     message.publicKey !== undefined && (obj.publicKey = message.publicKey)
-    message.imageDate !== undefined && (obj.imageDate = message.imageDate)
     return obj
   },
 }

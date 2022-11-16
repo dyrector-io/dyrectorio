@@ -35,10 +35,9 @@ type Connection struct {
 }
 
 type ConnectionParams struct {
-	nodeID    string
-	address   string
-	token     string
-	imageDate string
+	nodeID  string
+	address string
+	token   string
 }
 
 type (
@@ -46,7 +45,7 @@ type (
 	WatchFunc      func(context.Context, string) []*common.ContainerStateItem
 	DeleteFunc     func(context.Context, string, string) error
 	SecretListFunc func(context.Context, string, string) ([]string, error)
-	UpdateFunc     func(context.Context, string, int32) error
+	SelfUpdateFunc func(context.Context, string, int32) error
 	CloseFunc      func(context.Context, agent.CloseReason) error
 )
 
@@ -55,7 +54,7 @@ type WorkerFunctions struct {
 	Watch      WatchFunc
 	Delete     DeleteFunc
 	SecretList SecretListFunc
-	Update     UpdateFunc
+	SelfUpdate SelfUpdateFunc
 	Close      CloseFunc
 }
 
@@ -63,12 +62,11 @@ type contextKey int
 
 const contextConfigKey contextKey = 0
 
-func TokenToConnectionParams(grpcToken *config.ValidJWT, agentImageDate string) *ConnectionParams {
+func TokenToConnectionParams(grpcToken *config.ValidJWT) *ConnectionParams {
 	return &ConnectionParams{
-		nodeID:    grpcToken.Subject,
-		address:   grpcToken.Issuer,
-		token:     grpcToken.StringifiedToken,
-		imageDate: agentImageDate,
+		nodeID:  grpcToken.Subject,
+		address: grpcToken.Issuer,
+		token:   grpcToken.StringifiedToken,
 	}
 }
 
@@ -204,7 +202,7 @@ func grpcProcessCommand(
 	case command.GetListSecrets() != nil:
 		go executeSecretList(ctx, command.GetListSecrets(), workerFuncs.SecretList, appConfig)
 	case command.GetUpdate() != nil:
-		go executeUpdate(ctx, command.GetUpdate(), workerFuncs.Update)
+		go executeUpdate(ctx, command.GetUpdate(), workerFuncs.SelfUpdate)
 	case command.GetClose() != nil:
 		go executeClose(ctx, command.GetClose(), workerFuncs.Close)
 	default:
@@ -235,7 +233,7 @@ func grpcLoop(
 			}
 
 			stream, err = grpcConn.Client.Connect(
-				ctx, &agent.AgentInfo{Id: connParams.nodeID, Version: version.BuildVersion(), PublicKey: publicKey, ImageDate: connParams.imageDate},
+				ctx, &agent.AgentInfo{Id: connParams.nodeID, Version: version.BuildVersion(), PublicKey: publicKey},
 				grpc.WaitForReady(true),
 			)
 			if err != nil {
@@ -469,7 +467,7 @@ func executeSecretList(
 	}
 }
 
-func executeUpdate(ctx context.Context, command *agent.AgentUpdateRequest, updateFunc UpdateFunc) {
+func executeUpdate(ctx context.Context, command *agent.AgentUpdateRequest, updateFunc SelfUpdateFunc) {
 	if updateFunc == nil {
 		log.Warn().Stack().Msg("gRPC self update is not implemented")
 		return

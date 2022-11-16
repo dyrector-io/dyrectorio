@@ -1,12 +1,10 @@
 package utils
 
 import (
-	"bufio"
 	"context"
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
 	"text/template"
 
 	"github.com/docker/docker/api/types"
@@ -32,8 +30,6 @@ type TraefikDeployRequest struct {
 	// HTTPS port
 	TLSPort uint16 `json:"tlsPort"`
 }
-
-const CGroupFile = "/proc/self/cgroup"
 
 type UnknownContainerError struct{}
 
@@ -141,34 +137,8 @@ func ExecTraefik(ctx context.Context, traefikDeployReq TraefikDeployRequest, cfg
 	return err
 }
 
-func parseCGroupFile() (string, error) {
-	cgroupFile, err := os.Open(CGroupFile)
-	if err != nil {
-		return "", err
-	}
-
-	defer func() {
-		err := cgroupFile.Close()
-		if err != nil {
-			log.Error().Err(err).Stack().Msg("Failed to close CGroup file")
-		}
-	}()
-
-	scanner := bufio.NewScanner(cgroupFile)
-	if scanner.Scan() {
-		group := scanner.Text()
-		lastSlash := strings.LastIndex(group, "/")
-		if lastSlash < 0 {
-			return group, nil
-		}
-		return group[lastSlash+1:], nil
-	}
-
-	return "", scanner.Err()
-}
-
 func GetOwnContainerID() string {
-	cgroup, err := parseCGroupFile()
+	cgroup, err := ParseCGroupFile()
 	if err != nil {
 		return os.Getenv("HOSTNAME")
 	}
@@ -190,7 +160,7 @@ func GetOwnContainer(ctx context.Context) (*types.Container, error) {
 		return nil, &UnknownContainerError{}
 	}
 
-	return &container, nil
+	return container, nil
 }
 
 func GetOwnContainerImage() (*types.ImageInspect, error) {

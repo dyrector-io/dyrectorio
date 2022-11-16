@@ -2,19 +2,20 @@ package image
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"strings"
+	"time"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/rs/zerolog/log"
 
-	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
-
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
-	builder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
+	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 )
 
 type URI struct {
@@ -99,7 +100,7 @@ func setDefaults(image *URI) {
 	}
 }
 
-func GetRegistryURL(registry *string, registryAuth *builder.RegistryAuth) string {
+func GetRegistryURL(registry *string, registryAuth *RegistryAuth) string {
 	if registryAuth != nil {
 		return registryAuth.URL
 	} else if registry != nil {
@@ -137,4 +138,104 @@ func GetImageByReference(ctx context.Context, reference string) (types.ImageSumm
 	}
 
 	return types.ImageSummary{}, errors.New("found more than 1 image with the same reference")
+}
+
+// PullResponse is not explicit
+type PullResponse struct {
+	ID             string `json:"id"`
+	Status         string `json:"status"`
+	ProgressDetail struct {
+		Current int64 `json:"current"`
+		Total   int64 `json:"total"`
+	} `json:"progressDetail"`
+	Progress string `json:"progress"`
+}
+
+func Exists(ctx context.Context, logger io.StringWriter, fullyQualifiedImageName string) (bool, error) {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return false, err
+	}
+
+	images, err := cli.ImageList(ctx, types.ImageListOptions{
+		Filters: filters.NewArgs(filters.KeyValuePair{Key: "reference", Value: fullyQualifiedImageName}),
+	})
+	if err != nil {
+		if logger != nil {
+			_, err = logger.WriteString("Failed to list images")
+			if err != nil {
+				//nolint
+				fmt.Printf("Failed to write log: %s", err.Error())
+			}
+		}
+
+		return false, err
+	}
+
+	if count := len(images); count == 1 {
+		return true, nil
+	} else if count > 1 {
+		return false, errors.New("unexpected image count")
+	}
+
+	return false, nil
+}
+
+// force pulls the given image name
+// todo(nandor-magyar): the output from docker is not really nice, should be improved
+func Pull(ctx context.Context, logger io.StringWriter, fullyQualifiedImageName, authCreds string) error {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return err
+	}
+
+	if logger != nil {
+		_, err = logger.WriteString("Pulling image: " + fullyQualifiedImageName)
+		if err != nil {
+			//nolint
+			fmt.Printf("Failed to write log: %s", err.Error())
+		}
+	}
+
+	reader, err := cli.ImagePull(ctx, fullyQualifiedImageName, types.ImagePullOptions{RegistryAuth: authCreds})
+	if err != nil {
+		return err
+	}
+	defer reader.Close()
+
+	d := json.NewDecoder(reader)
+
+	var lastLog time.Time
+	for {
+		pullResult := PullResponse{}
+		err = d.Decode(&pullResult)
+		if err == io.EOF {
+			err = nil
+			break
+		} else if err != nil {
+			log.Error().Err(err).Msg("decode error: " + err.Error())
+			break
+		}
+
+		if logger != nil && time.Since(lastLog) > time.Second {
+			var logErr error
+			if pullResult.ProgressDetail.Current != 0 && pullResult.ProgressDetail.Total != 0 {
+				_, logErr = logger.WriteString(
+					fmt.Sprintf("Image: %s %s  %0.2f%%",
+						pullResult.ID,
+						pullResult.Status,
+						float64(pullResult.ProgressDetail.Current)/float64(pullResult.ProgressDetail.Total)*100)) //nolint:gomnd
+				lastLog = time.Now()
+			} else {
+				_, logErr = logger.WriteString(fmt.Sprintf("Image: %s %s", pullResult.ID, pullResult.Status))
+				lastLog = time.Now()
+			}
+			if logErr != nil {
+				//nolint
+				fmt.Printf("Failed to write log: %s", logErr.Error())
+			}
+		}
+	}
+
+	return err
 }
