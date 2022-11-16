@@ -92,6 +92,7 @@ func (d *deployment) deployDeployment(p *deploymentParams) error {
 	if p.pullSecretName != "" {
 		podSpec.WithImagePullSecrets(corev1.LocalObjectReference().WithName(p.pullSecretName))
 	}
+
 	deployment := appsv1.Deployment(name, p.namespace).
 		WithSpec(
 			appsv1.DeploymentSpec().
