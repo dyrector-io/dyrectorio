@@ -22,12 +22,12 @@ import {
   volumeTypeFromJSON,
 } from 'src/grpc/protobuf/proto/common'
 import { SIMPLE_PRODUCT_VERSION_NAME } from 'src/shared/const'
+import { toPrismaJson } from 'src/shared/mapper'
 import ImageService from '../image/image.service'
 import ProductService from '../product/product.service'
 import RegistryService from '../registry/registry.service'
 import VersionService from '../version/version.service'
 import ImageMapper from '../image/image.mapper'
-import { toPrismaJson } from 'src/shared/mapper'
 
 const VERSION_NAME = '1.0.0'
 

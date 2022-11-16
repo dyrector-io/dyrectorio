@@ -5,7 +5,6 @@ import {
   ExposeStrategy,
   Image,
   NetworkMode,
-  Prisma,
   Registry,
   RestartPolicy,
 } from '@prisma/client'
