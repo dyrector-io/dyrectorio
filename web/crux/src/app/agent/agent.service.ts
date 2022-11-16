@@ -337,6 +337,7 @@ export default class AgentService {
     const deployment = await this.prisma.deployment.findUniqueOrThrow({
       select: {
         status: true,
+        prefix: true,
         version: {
           select: {
             id: true,
@@ -370,6 +371,7 @@ export default class AgentService {
         },
         versionId: deployment.version.id,
         nodeId,
+        prefix: deployment.prefix,
       },
     })
 
@@ -383,6 +385,7 @@ export default class AgentService {
           in: parentVersionIds,
         },
         nodeId,
+        prefix: deployment.prefix,
       },
     })
 
@@ -396,6 +399,7 @@ export default class AgentService {
           in: childVersionIds,
         },
         nodeId,
+        prefix: deployment.prefix,
       },
     })
   }
