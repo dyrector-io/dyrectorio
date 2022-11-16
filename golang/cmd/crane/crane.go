@@ -21,7 +21,7 @@ func main() {
 		Name:     "crane",
 		Version:  version.BuildVersion(),
 		HelpName: "crane",
-		Usage:    "cli tool for serving a k8s agent of dyrector.io!",
+		Usage:    "cli tool for serving a k8s agent of dyrector.io",
 		Action:   serve,
 
 		Commands: []*cli.Command{

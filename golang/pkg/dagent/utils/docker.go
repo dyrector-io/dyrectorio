@@ -65,12 +65,13 @@ func GetContainerLogs(name string, skip, take uint) []string {
 		panic(err)
 	}
 
+	const BASE = 10
 	tail := skip + take
 
 	options := types.ContainerLogsOptions{
 		ShowStderr: true,
 		ShowStdout: true,
-		Tail:       strconv.FormatUint(uint64(tail), 10),
+		Tail:       strconv.FormatUint(uint64(tail), BASE),
 	}
 
 	logs, err := cli.ContainerLogs(ctx, name, options)
