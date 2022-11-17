@@ -2,11 +2,16 @@
 
 set -eu
 
-if [ "$(uname)" == MINGW* ] || [ "$(uname)" == Darwin* ]; then 
-  ROOTLESS="${ROOTLESS:-true}"
-else
-  ROOTLESS="${ROOTLESS:-false}"
-fi
+case $(uname) in
+  Darwin*)
+    ;&
+  MINGW*)
+    ROOTLESS="${ROOTLESS:-true}"
+    ;;
+  *)
+    ROOTLESS="${ROOTLESS:-false}"
+    ;;
+esac
 
 if [ $ROOTLESS == "false" ]; then
   if [ $(id -u) -ne 0 ]; then
