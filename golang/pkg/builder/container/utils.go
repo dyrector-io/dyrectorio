@@ -143,7 +143,7 @@ type defaultLogger struct {
 	io.StringWriter
 }
 
-func (logger *defaultLogger) WriteString(s string) (int, error) {
+func (logger defaultLogger) WriteString(s string) (int, error) {
 	fmt.Println(s) //nolint
 	return len(s), nil
 }
