@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { DeploymentStatusEnum } from '@prisma/client'
+import { DeploymentStatusEnum, Version } from '@prisma/client'
 import { VersionMessage } from 'src/domain/notification-templates'
 import {
   CreateEntityResponse,
@@ -14,14 +14,15 @@ import {
 import { Empty } from 'src/grpc/protobuf/proto/common'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
-import { Version } from '.prisma/client'
 import VersionMapper from './version.mapper'
+import ImageMapper from '../image/image.mapper'
 
 @Injectable()
 export default class VersionService {
   constructor(
     private prisma: PrismaService,
     private mapper: VersionMapper,
+    private imageMapper: ImageMapper,
     private notificationService: DomainNotificationService,
   ) {}
 
@@ -117,7 +118,7 @@ export default class VersionService {
                 versionId: newVersion.id,
                 config: {
                   create: {
-                    ...image,
+                    ...this.imageMapper.configDetailsToDb(image.config),
                   },
                 },
               },
@@ -271,9 +272,9 @@ export default class VersionService {
 
           await prisma.containerConfig.create({
             data: {
-              ...image.config,
               id: undefined,
               imageId: createdImage.id,
+              ...this.imageMapper.configDetailsToDb(image.config),
             },
           })
         }),
