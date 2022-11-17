@@ -130,6 +130,46 @@ export default class ImageMapper {
     }
   }
 
+  configDetailsToDb(config: ContainerConfig): ContainerConfigData {
+    return {
+      // common
+      name: config.name,
+      expose: config.expose,
+      ingress: toPrismaJson(config.ingress),
+      configContainer: toPrismaJson(config.configContainer),
+      importContainer: toPrismaJson(config.importContainer),
+      user: config.user ? config.user : null,
+      tty: config.tty ?? false,
+      ports: toPrismaJson(config.ports),
+      portRanges: toPrismaJson(config.portRanges),
+      volumes: toPrismaJson(config.volumes),
+      commands: toPrismaJson(config.commands),
+      args: toPrismaJson(config.args),
+      environment: toPrismaJson(config.environment),
+      secrets: toPrismaJson(config.secrets),
+      initContainers: toPrismaJson(config.initContainers),
+      logConfig: toPrismaJson(config.logConfig),
+
+      // dagent
+      restartPolicy: config.restartPolicy,
+      networkMode: config.networkMode,
+      networks: toPrismaJson(config.networks),
+      dockerLabels: toPrismaJson(config.labels),
+
+      // crane
+      deploymentStrategy: config.deploymentStrategy,
+      healthCheckConfig: toPrismaJson(config.healthCheckConfig),
+      resourceConfig: toPrismaJson(config.resourceConfig),
+      proxyHeaders: config.proxyHeaders ?? false,
+      useLoadBalancer: config.useLoadBalancer ?? false,
+      customHeaders: toPrismaJson(config.customHeaders),
+      extraLBAnnotations: toPrismaJson(config.extraLBAnnotations),
+      capabilities: toPrismaJson(config.capabilities),
+      annotations: toPrismaJson(config.annotations),
+      labels: toPrismaJson(config.labels),
+    }
+  }
+
   deploymentStrategyToProto(type: DeploymentStrategy): ProtoDeploymentStrategy {
     switch (type) {
       case DeploymentStrategy.recreate:
