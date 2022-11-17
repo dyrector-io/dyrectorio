@@ -289,31 +289,28 @@ func DeployImage(ctx context.Context,
 	if err != nil {
 		return fmt.Errorf("deployment failed, secret error: %w", err)
 	}
+
 	envMap = MergeStringMapUnique(envMap, mapper.ByteMapToStringMap(secret))
 	envList := EnvMapToSlice(envMap)
-
 	mountList := buildMountList(cfg, dog, deployImageRequest)
 
-	matchedContainer, err := dockerHelper.GetContainerByName(ctx, dog, containerName)
+	matchedContainer, err := dockerHelper.GetContainerByName(ctx, dog, containerName, false)
 	if err != nil {
 		dog.WriteContainerState("", fmt.Sprintf("Failed to find container: %s", containerName))
 		return err
 	}
-	if matchedContainer == nil {
-		dog.WriteContainerState("")
-	} else {
-		err = dockerHelper.DeleteContainerByName(ctx, dog, containerName)
-		if err != nil {
-			dog.WriteContainerState("", fmt.Sprintf("Failed to delete container (%s): %s", containerName, err.Error()))
-			return err
-		}
+	if matchedContainer != nil {
 		dog.WriteContainerState(matchedContainer.State)
 	}
 
-	networkMode, networks := setNetwork(deployImageRequest)
+	err = dockerHelper.DeleteContainerByName(ctx, dog, containerName, false)
+	if err != nil {
+		dog.WriteContainerState("", fmt.Sprintf("Failed to delete container (%s): %s", containerName, err.Error()))
+		return err
+	}
 
 	builder := containerbuilder.NewDockerBuilder(ctx)
-
+	networkMode, networks := setNetwork(deployImageRequest)
 	labels, err := setImageLabels(image.String(), deployImageRequest, cfg)
 	if err != nil {
 		return fmt.Errorf("error building lables: %w", err)
@@ -348,7 +345,7 @@ func DeployImage(ctx context.Context,
 		return err
 	}
 
-	matchedContainer, err = dockerHelper.GetContainerByID(ctx, dog, *builder.GetContainerID())
+	matchedContainer, err = dockerHelper.GetContainerByID(ctx, dog, *builder.GetContainerID(), true)
 	if err != nil {
 		dog.WriteContainerState("", fmt.Sprintf("Failed to find container (%s): %s", containerName, err.Error()))
 		return err
