@@ -12,6 +12,7 @@ export default class DeployCreateValidationPipe implements PipeTransform {
       where: {
         nodeId: value.nodeId,
         versionId: value.versionId,
+        prefix: value.prefix,
         status: 'preparing',
       },
     })

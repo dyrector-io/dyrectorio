@@ -28,7 +28,7 @@
   "addImage": "Add image",
 
   "deploymentName": "Deployment name",
-  "alreadyHavePreparing": "You already have one preparing deployment!",
+  "alreadyHavePreparing": "You already have one preparing deployment with the same prefix!",
   "nodeRequired": "You can't create deployment without having at least one node!",
   "versionSemanticHint": "Version is not in semantic format.",
   "emptyChangelog": "You have not provided any changes",
