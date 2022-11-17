@@ -16,7 +16,7 @@ const shouldResetMetaData = { reset: true }
 const registryCredentialRole = yup
   .mixed()
   .meta(shouldResetMetaData)
-  .when(['type', '_private'], {
+  .when(['type', 'private'], {
     is: (type, _private) =>
       type === 'gitlab' || type === 'github' || ((type === 'v2' || type === 'google') && _private),
     then: yup.string().required(),
@@ -54,7 +54,7 @@ export const registrySchema = yup.object().shape({
       then: yup.string().required(),
     }),
   selfManaged: yup.mixed().meta(shouldResetMetaData),
-  _private: yup.mixed().meta(shouldResetMetaData),
+  private: yup.mixed().meta(shouldResetMetaData),
   namespace: yup
     .mixed<RegistryNamespace>()
     .when(['type'], {

@@ -115,7 +115,7 @@ func (testSuite *DockerContainerHelperTestSuite) TestGetAllContainersbyName() {
 }
 
 func (testSuite *DockerContainerHelperTestSuite) TestGetContainerbyNameFound() {
-	matched, err := dockerHelper.GetContainerByName(testSuite.ctx, nil, fmt.Sprintf("%s-nginx1", testSuite.prefix))
+	matched, err := dockerHelper.GetContainerByName(testSuite.ctx, nil, fmt.Sprintf("%s-nginx1", testSuite.prefix), true)
 
 	assert.NoError(testSuite.T(), err, "%s", err)
 	assert.Equal(testSuite.T(), fmt.Sprintf("/%s-nginx1", testSuite.prefix), matched.Names[0],
@@ -123,7 +123,7 @@ func (testSuite *DockerContainerHelperTestSuite) TestGetContainerbyNameFound() {
 }
 
 func (testSuite *DockerContainerHelperTestSuite) TestGetContainerbyNameNotFound() {
-	matched, err := dockerHelper.GetContainerByName(testSuite.ctx, nil, fmt.Sprintf("%s-nginx1", randstr.Hex(prefixLength)))
+	matched, err := dockerHelper.GetContainerByName(testSuite.ctx, nil, fmt.Sprintf("%s-nginx1", randstr.Hex(prefixLength)), false)
 
 	assert.NoError(testSuite.T(), err, "%s", err)
 	assert.Nil(testSuite.T(), matched, "should return nil pointer")
@@ -131,7 +131,7 @@ func (testSuite *DockerContainerHelperTestSuite) TestGetContainerbyNameNotFound(
 
 func (testSuite *DockerContainerHelperTestSuite) TestStopAndRemoveContainer() {
 	contName := fmt.Sprintf("%s-%s", testSuite.prefix, testSuite.containerNames[0])
-	matched, err := dockerHelper.GetContainerByName(testSuite.ctx, nil, contName)
+	matched, err := dockerHelper.GetContainerByName(testSuite.ctx, nil, contName, true)
 	assert.NoError(testSuite.T(), err, "%s", err)
 	assert.Equal(testSuite.T(), "running", matched.State,
 		"should return a running container")
@@ -139,7 +139,7 @@ func (testSuite *DockerContainerHelperTestSuite) TestStopAndRemoveContainer() {
 	err = dockerHelper.StopContainer(testSuite.ctx, nil, contName)
 	assert.NoError(testSuite.T(), err, "%s", err)
 
-	matched, err = dockerHelper.GetContainerByName(testSuite.ctx, nil, contName)
+	matched, err = dockerHelper.GetContainerByName(testSuite.ctx, nil, contName, true)
 	assert.NoError(testSuite.T(), err, "%s", err)
 	assert.Equal(testSuite.T(), "exited", matched.State,
 		"should return a stopped container")
@@ -147,7 +147,7 @@ func (testSuite *DockerContainerHelperTestSuite) TestStopAndRemoveContainer() {
 	err = dockerHelper.RemoveContainer(testSuite.ctx, nil, contName)
 	assert.NoError(testSuite.T(), err, "%s", err)
 
-	matched, err = dockerHelper.GetContainerByName(testSuite.ctx, nil, contName)
+	matched, err = dockerHelper.GetContainerByName(testSuite.ctx, nil, contName, false)
 	assert.NoError(testSuite.T(), err, "%s", err)
 	assert.Nil(testSuite.T(), matched, "should return nil pointer")
 }
@@ -160,7 +160,7 @@ func (testSuite *DockerContainerHelperTestSuite) TestDeleteContainer() {
 		"should return number of original containers")
 
 	for i := range testSuite.containerNames {
-		err = dockerHelper.DeleteContainerByName(testSuite.ctx, nil, fmt.Sprintf("%s-%s", testSuite.prefix, testSuite.containerNames[i]))
+		err = dockerHelper.DeleteContainerByName(testSuite.ctx, nil, fmt.Sprintf("%s-%s", testSuite.prefix, testSuite.containerNames[i]), true)
 		assert.NoError(testSuite.T(), err, "%s", err)
 	}
 

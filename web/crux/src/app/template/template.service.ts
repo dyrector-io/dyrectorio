@@ -22,6 +22,7 @@ import {
   volumeTypeFromJSON,
 } from 'src/grpc/protobuf/proto/common'
 import { SIMPLE_PRODUCT_VERSION_NAME } from 'src/shared/const'
+import { toPrismaJson } from 'src/shared/mapper'
 import ImageService from '../image/image.service'
 import ProductService from '../product/product.service'
 import RegistryService from '../registry/registry.service'
@@ -107,10 +108,10 @@ export default class TemplateService {
         ? this.imageMapper.exposeStrategyToDb(exposeStrategyFromJSON(config.expose.toLocaleUpperCase()))
         : 'none',
       networks: config.networks ? config.networks.map(it => ({ id: v4(), key: it })) : [],
-      ports: config.ports ? this.imageMapper.toPrismaJson(config.ports.map(it => this.idify(it))) : [],
+      ports: config.ports ? toPrismaJson(config.ports.map(it => this.idify(it))) : [],
       environment: config.environment ? config.environment.map(it => this.idify(it)) : [],
       volumes: config.volumes
-        ? this.imageMapper.toPrismaJson(
+        ? toPrismaJson(
             config.volumes.map(it => ({
               ...this.idify(it),
               type: it.type ? volumeTypeFromJSON(it.type.toUpperCase()) : VolumeType.RO,
