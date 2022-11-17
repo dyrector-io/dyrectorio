@@ -44,6 +44,17 @@ func (e *InvalidURIError) Error() string {
 	return "no colons in registry URI: " + e.Image
 }
 
+// PullResponse is not explicit
+type PullResponse struct {
+	ID             string `json:"id"`
+	Status         string `json:"status"`
+	ProgressDetail struct {
+		Current int64 `json:"current"`
+		Total   int64 `json:"total"`
+	} `json:"progressDetail"`
+	Progress string `json:"progress"`
+}
+
 const PartCountAfterSplitByColon = 2
 
 // ImageURIFromString results in an image that is split respectively
@@ -120,35 +131,24 @@ func GetRegistryURLProto(registry *string, registryAuth *agent.RegistryAuth) str
 	}
 }
 
-func GetImageByReference(ctx context.Context, reference string) (types.ImageSummary, error) {
+func GetImageByReference(ctx context.Context, reference string) (*types.ImageSummary, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
-		log.Fatal().Err(err).Send()
+		return nil, err
 	}
 
 	images, err := cli.ImageList(ctx, types.ImageListOptions{
 		Filters: filters.NewArgs(filters.KeyValuePair{Key: "reference", Value: reference}),
 	})
 	if err != nil {
-		return types.ImageSummary{}, err
+		return nil, err
 	}
 
 	if len(images) == 1 {
-		return images[0], nil
+		return &images[0], nil
 	}
 
-	return types.ImageSummary{}, errors.New("found more than 1 image with the same reference")
-}
-
-// PullResponse is not explicit
-type PullResponse struct {
-	ID             string `json:"id"`
-	Status         string `json:"status"`
-	ProgressDetail struct {
-		Current int64 `json:"current"`
-		Total   int64 `json:"total"`
-	} `json:"progressDetail"`
-	Progress string `json:"progress"`
+	return nil, errors.New("found more than 1 image with the same reference")
 }
 
 func Exists(ctx context.Context, logger io.StringWriter, fullyQualifiedImageName string) (bool, error) {

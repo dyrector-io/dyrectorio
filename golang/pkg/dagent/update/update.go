@@ -13,6 +13,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/utils"
 
+	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
 
@@ -26,7 +27,7 @@ func getUniqueContainerName(ctx context.Context, base string) (string, error) {
 	count := 0
 
 	for {
-		container, err := docker.GetContainerByName(ctx, nil, name)
+		container, err := docker.GetContainerByName(ctx, nil, name, false)
 		if err != nil {
 			return base, err
 		}
@@ -173,14 +174,21 @@ func RemoveSelf(ctx context.Context) error {
 		return nil
 	}
 
-	log.Debug().Msg("Update finished, shutting down - 2")
+	log.Debug().Msg("Update finished, shutting down")
 
 	containerID := utils.GetOwnContainerID()
 	if containerID == "" {
 		return errors.New("unable to get own container ID")
 	}
 
-	err := docker.DeleteContainerByID(ctx, nil, containerID)
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return err
+	}
+
+	err = cli.ContainerRemove(ctx, containerID, types.ContainerRemoveOptions{
+		Force: true,
+	})
 	if err != nil {
 		return err
 	}

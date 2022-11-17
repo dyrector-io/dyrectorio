@@ -152,11 +152,11 @@ func GetOwnContainer(ctx context.Context) (*types.Container, error) {
 		return nil, &UnknownContainerError{}
 	}
 
-	container, err := dockerHelper.GetContainerByID(ctx, nil, containerID)
+	container, err := dockerHelper.GetContainerByID(ctx, nil, containerID, false)
 	if err != nil {
 		return nil, err
 	}
-	if container.ID != containerID {
+	if container == nil {
 		return nil, &UnknownContainerError{}
 	}
 
