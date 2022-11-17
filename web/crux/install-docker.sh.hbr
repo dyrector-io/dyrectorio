@@ -3,13 +3,11 @@
 set -eu
 
 case $(uname) in
-  Darwin*)
-    ;&
-  MINGW*)
-    ROOTLESS="${ROOTLESS:-true}"
+  Linux*)
+    ROOTLESS="${ROOTLESS:-false}"
     ;;
   *)
-    ROOTLESS="${ROOTLESS:-false}"
+    ROOTLESS="${ROOTLESS:-true}"
     ;;
 esac
 

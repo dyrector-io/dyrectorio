@@ -3,6 +3,7 @@ import { expect, test } from '@playwright/test'
 import { exec, ExecOptions } from 'child_process'
 import { screenshotPath } from './utils/common'
 
+// eslint-disable-next-line import/prefer-default-export
 export const deleteContainer = () => {
   const settings: ExecOptions =
     process.platform === 'win32'
@@ -14,18 +15,34 @@ export const deleteContainer = () => {
   exec('docker rm -f dagent', settings)
 }
 
+const logCmdOutput = (err: Error, stdOut: string, stdErr: string, logStdOut?: boolean) => {
+  if (logStdOut) {
+    console.info(stdOut)
+  }
+
+  if (err) {
+    console.error(err)
+  }
+
+  if (stdErr) {
+    console.error(stdErr)
+  }
+}
+
 const getInstallScriptExecSettings = (): ExecOptions => {
   switch (process.platform) {
     case 'darwin':
       return {
-        env: { ...process.env, ROOTLESS: 'true' },
+        env: { ...process.env },
       }
     case 'win32':
       return {
         shell: 'C:\\Program Files\\git\\git-bash.exe',
       }
     default:
-      return null
+      return {
+        env: { ...process.env, ROOTLESS: 'true', PERSISTENCE_FOLDER: `${__dirname}/dagent` },
+      }
   }
 }
 
@@ -121,12 +138,12 @@ test('Install dagent should be successful', async ({ page }) => {
 
   await page.waitForSelector('input[readonly]')
 
-  await page.screenshot({ path: screenshotPath('node-crane-script'), fullPage: true })
+  await page.screenshot({ path: screenshotPath('node-dagent-script'), fullPage: true })
 
   const commandInput = await page.locator('input[readonly]')
   const curl = await commandInput.inputValue()
 
-  exec(curl, getInstallScriptExecSettings())
+  exec(curl, getInstallScriptExecSettings(), logCmdOutput)
 
   await page.waitForSelector('img[src="/circle-green.svg"]')
 
