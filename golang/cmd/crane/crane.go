@@ -21,7 +21,7 @@ func main() {
 		Name:     "crane",
 		Version:  version.BuildVersion(),
 		HelpName: "crane",
-		Usage:    "cli tool for serving a k8s agent of dyrector.io!",
+		Usage:    "cli tool for serving a k8s agent of dyrector.io",
 		Action:   serve,
 
 		Commands: []*cli.Command{
@@ -40,7 +40,7 @@ func main() {
 }
 
 func loadConfiguration() (*config.Configuration, error) {
-	var cfg *config.Configuration
+	cfg := &config.Configuration{}
 	err := util.ReadConfig(cfg)
 	if err != nil {
 		log.Panic().Err(err).Msg("failed to load configuration")
@@ -55,7 +55,7 @@ func loadConfiguration() (*config.Configuration, error) {
 
 	commonConfig.InjectSecret(secret, &cfg.CommonConfiguration)
 
-	log.Print("Configuration loaded.")
+	log.Info().Msg("Configuration loaded.")
 	return cfg, nil
 }
 

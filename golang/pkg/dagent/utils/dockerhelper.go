@@ -15,7 +15,7 @@ import (
 )
 
 func DeleteContainerByName(ctx context.Context, prefix, name string) error {
-	return dockerHelper.DeleteContainerByName(context.Background(), nil, fmt.Sprintf("%s-%s", prefix, name))
+	return dockerHelper.DeleteContainerByName(context.Background(), nil, fmt.Sprintf("%s-%s", prefix, name), false)
 }
 
 func GetContainersByName(ctx context.Context, nameFilter string) []*common.ContainerStateItem {

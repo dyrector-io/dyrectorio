@@ -6,7 +6,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/internal/config"
 )
 
-// Add Crane-specific configuration options
+// Crane(kubernetes)-specific configuration options
 type Configuration struct {
 	config.CommonConfiguration
 	CraneGenTCPIngressMap string        `yaml:"craneGenTcpIngressMap" env:"CRANE_GEN_TCP_INGRESS_MAP" env-default:""`

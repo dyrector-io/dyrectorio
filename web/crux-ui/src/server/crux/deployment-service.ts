@@ -236,38 +236,31 @@ class DyoDeploymentService {
       accessedBy: this.identity.id,
     }
 
-    const transform = (data: DeploymentProgressMessage) => {
-      const createdAt = new Date().toUTCString()
+    const stream = () => this.client.startDeployment(IdRequest.fromJSON(req))
+    return new GrpcConnection(
+      this.logger.descend('status'),
+      stream,
+      DyoDeploymentService.transformDeploymentEvents,
+      options,
+    )
+  }
 
-      const events: DeploymentEvent[] = []
-      events.push({
-        type: 'log',
-        createdAt,
-        value: data.log,
-      })
-
-      if (data.instance) {
-        events.push({
-          type: 'containerStatus',
-          createdAt,
-          value: {
-            instanceId: data.instance.instanceId,
-            state: containerStateToDto(data.instance.state),
-          },
-        })
-      } else if (data.status) {
-        events.push({
-          type: 'deploymentStatus',
-          createdAt,
-          value: deploymentStatusToDto(data.status),
-        })
-      }
-
-      return events
+  subscribeToDeploymentEvents(
+    id: string,
+    options?: ProtoSubscriptionOptions<DeploymentEvent[]>,
+  ): GrpcConnection<DeploymentProgressMessage, DeploymentEvent[]> {
+    const req: IdRequest = {
+      id,
+      accessedBy: this.identity.id,
     }
 
-    const stream = () => this.client.startDeployment(IdRequest.fromJSON(req))
-    return new GrpcConnection(this.logger.descend('status'), stream, transform, options)
+    const stream = () => this.client.subscribeToDeploymentEvents(IdRequest.fromJSON(req))
+    return new GrpcConnection(
+      this.logger.descend('status'),
+      stream,
+      DyoDeploymentService.transformDeploymentEvents,
+      options,
+    )
   }
 
   subscribeToDeploymentEditEvents(
@@ -313,6 +306,36 @@ class DyoDeploymentService {
     const res = await protomisify<IdRequest, CreateEntityResponse>(this.client, grpcCall)(IdRequest, req)
 
     return res.id
+  }
+
+  static transformDeploymentEvents(data: DeploymentProgressMessage): DeploymentEvent[] {
+    const createdAt = new Date().toUTCString()
+
+    const events: DeploymentEvent[] = []
+    events.push({
+      type: 'log',
+      createdAt,
+      value: data.log,
+    })
+
+    if (data.instance) {
+      events.push({
+        type: 'containerStatus',
+        createdAt,
+        value: {
+          instanceId: data.instance.instanceId,
+          state: containerStateToDto(data.instance.state),
+        },
+      })
+    } else if (data.status) {
+      events.push({
+        type: 'deploymentStatus',
+        createdAt,
+        value: deploymentStatusToDto(data.status),
+      })
+    }
+
+    return events
   }
 }
 

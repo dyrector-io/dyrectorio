@@ -102,7 +102,7 @@ func ExecTraefik(ctx context.Context, traefikDeployReq TraefikDeployRequest, cfg
 		ports = append(ports, containerbuilder.PortBinding{PortBinding: traefikDeployReq.TLSPort, ExposedPort: 443})
 	}
 
-	if err = dockerHelper.DeleteContainerByName(ctx, nil, "traefik"); err != nil {
+	if err = dockerHelper.DeleteContainerByName(ctx, nil, "traefik", true); err != nil {
 		log.Error().Stack().Err(err).Msg("delete traefik container error")
 		return err
 	}

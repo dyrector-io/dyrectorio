@@ -4,6 +4,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/internal/config"
 )
 
+// Dagent(docker)-specific configuration options
 type Configuration struct {
 	config.CommonConfiguration
 	AgentContainerName string `yaml:"agentContainerName"     env:"AGENT_CONTAINER_NAME" env-default:"dagent"`

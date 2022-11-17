@@ -11139,6 +11139,16 @@ export const CruxDeploymentService = {
       Buffer.from(DeploymentProgressMessage.encode(value).finish()),
     responseDeserialize: (value: Buffer) => DeploymentProgressMessage.decode(value),
   },
+  subscribeToDeploymentEvents: {
+    path: '/crux.CruxDeployment/SubscribeToDeploymentEvents',
+    requestStream: false,
+    responseStream: true,
+    requestSerialize: (value: IdRequest) => Buffer.from(IdRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => IdRequest.decode(value),
+    responseSerialize: (value: DeploymentProgressMessage) =>
+      Buffer.from(DeploymentProgressMessage.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => DeploymentProgressMessage.decode(value),
+  },
   subscribeToDeploymentEditEvents: {
     path: '/crux.CruxDeployment/SubscribeToDeploymentEditEvents',
     requestStream: false,
@@ -11164,6 +11174,7 @@ export interface CruxDeploymentServer extends UntypedServiceImplementation {
   copyDeploymentSafe: handleUnaryCall<IdRequest, CreateEntityResponse>
   copyDeploymentUnsafe: handleUnaryCall<IdRequest, CreateEntityResponse>
   startDeployment: handleServerStreamingCall<IdRequest, DeploymentProgressMessage>
+  subscribeToDeploymentEvents: handleServerStreamingCall<IdRequest, DeploymentProgressMessage>
   subscribeToDeploymentEditEvents: handleServerStreamingCall<ServiceIdRequest, DeploymentEditEventMessage>
 }
 
@@ -11332,6 +11343,15 @@ export interface CruxDeploymentClient extends Client {
   ): ClientUnaryCall
   startDeployment(request: IdRequest, options?: Partial<CallOptions>): ClientReadableStream<DeploymentProgressMessage>
   startDeployment(
+    request: IdRequest,
+    metadata?: Metadata,
+    options?: Partial<CallOptions>,
+  ): ClientReadableStream<DeploymentProgressMessage>
+  subscribeToDeploymentEvents(
+    request: IdRequest,
+    options?: Partial<CallOptions>,
+  ): ClientReadableStream<DeploymentProgressMessage>
+  subscribeToDeploymentEvents(
     request: IdRequest,
     metadata?: Metadata,
     options?: Partial<CallOptions>,

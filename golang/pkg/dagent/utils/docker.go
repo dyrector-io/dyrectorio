@@ -65,12 +65,13 @@ func GetContainerLogs(name string, skip, take uint) []string {
 		panic(err)
 	}
 
+	const BASE = 10
 	tail := skip + take
 
 	options := types.ContainerLogsOptions{
 		ShowStderr: true,
 		ShowStdout: true,
-		Tail:       strconv.FormatUint(uint64(tail), 10),
+		Tail:       strconv.FormatUint(uint64(tail), BASE),
 	}
 
 	logs, err := cli.ContainerLogs(ctx, name, options)
@@ -242,6 +243,31 @@ func logDeployInfo(
 	}
 }
 
+func buildMountList(cfg *config.Configuration, dog *dogger.DeploymentLogger, deployImageRequest *v1.DeployImageRequest) []mount.Mount {
+	mountList := mountStrToDocker(
+		// volumes are mapped into the legacy format, until further support of different types is needed
+		append(deployImageRequest.ContainerConfig.Mounts, volumesToMounts(deployImageRequest.ContainerConfig.Volumes)...),
+		deployImageRequest.InstanceConfig.ContainerPreName,
+		deployImageRequest.ContainerConfig.Container,
+		cfg)
+	// dotnet specific magic
+	if containsConfig(mountList) {
+		var err error
+		mountList, err = createRuntimeConfigFileOnHost(
+			mountList,
+			deployImageRequest.ContainerConfig.Container,
+			deployImageRequest.InstanceConfig.ContainerPreName,
+			string(deployImageRequest.RuntimeConfig),
+			cfg,
+		)
+		if err != nil {
+			dog.Write("could not create config file\n", err.Error())
+		}
+	}
+
+	return mountList
+}
+
 func DeployImage(ctx context.Context,
 	dog *dogger.DeploymentLogger,
 	deployImageRequest *v1.DeployImageRequest,
@@ -263,43 +289,28 @@ func DeployImage(ctx context.Context,
 	if err != nil {
 		return fmt.Errorf("deployment failed, secret error: %w", err)
 	}
+
 	envMap = MergeStringMapUnique(envMap, mapper.ByteMapToStringMap(secret))
 	envList := EnvMapToSlice(envMap)
+	mountList := buildMountList(cfg, dog, deployImageRequest)
 
-	mountList := mountStrToDocker(
-		// volumes are mapped into the legacy format, until further support of different types is needed
-		append(deployImageRequest.ContainerConfig.Mounts, volumesToMounts(deployImageRequest.ContainerConfig.Volumes)...),
-		deployImageRequest.InstanceConfig.ContainerPreName,
-		deployImageRequest.ContainerConfig.Container,
-		cfg)
-	// dotnet specific magic
-	if containsConfig(mountList) {
-		mountList, err = createRuntimeConfigFileOnHost(
-			mountList,
-			deployImageRequest.ContainerConfig.Container,
-			deployImageRequest.InstanceConfig.ContainerPreName,
-			string(deployImageRequest.RuntimeConfig),
-			cfg,
-		)
-		if err != nil {
-			dog.Write("could not create config file\n", err.Error())
-		}
-	}
-
-	matchedContainer, err := dockerHelper.GetContainerByName(ctx, dog, containerName)
+	matchedContainer, err := dockerHelper.GetContainerByName(ctx, dog, containerName, false)
 	if err != nil {
+		dog.WriteContainerState("", fmt.Sprintf("Failed to find container: %s", containerName))
 		return err
 	}
-	err = dockerHelper.DeleteContainerByName(ctx, dog, containerName)
+	if matchedContainer != nil {
+		dog.WriteContainerState(matchedContainer.State)
+	}
+
+	err = dockerHelper.DeleteContainerByName(ctx, dog, containerName, false)
 	if err != nil {
+		dog.WriteContainerState("", fmt.Sprintf("Failed to delete container (%s): %s", containerName, err.Error()))
 		return err
 	}
-	dog.WriteContainerState(matchedContainer.State)
-
-	networkMode, networks := setNetwork(deployImageRequest)
 
 	builder := containerbuilder.NewDockerBuilder(ctx)
-
+	networkMode, networks := setNetwork(deployImageRequest)
 	labels, err := setImageLabels(image.String(), deployImageRequest, cfg)
 	if err != nil {
 		return fmt.Errorf("error building lables: %w", err)
@@ -329,10 +340,14 @@ func DeployImage(ctx context.Context,
 	builder.Create()
 
 	_, err = builder.Start()
-
 	if err != nil {
-		dog.Write(err.Error())
-		dog.WriteContainerState(matchedContainer.State, "Container start error: "+containerName)
+		dog.WriteContainerState("", fmt.Sprintf("Failed to start container (%s): %s", containerName, err.Error()))
+		return err
+	}
+
+	matchedContainer, err = dockerHelper.GetContainerByID(ctx, dog, *builder.GetContainerID(), true)
+	if err != nil {
+		dog.WriteContainerState("", fmt.Sprintf("Failed to find container (%s): %s", containerName, err.Error()))
 		return err
 	}
 

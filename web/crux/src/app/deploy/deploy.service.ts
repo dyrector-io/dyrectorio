@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { DeploymentStatusEnum } from '@prisma/client'
 import { JsonArray } from 'prisma'
-import { concatAll, filter, from, lastValueFrom, map, merge, Observable, Subject } from 'rxjs'
+import { concatAll, EMPTY, filter, from, lastValueFrom, map, merge, Observable, Subject } from 'rxjs'
 import Deployment from 'src/domain/deployment'
 import { InternalException, PreconditionFailedException } from 'src/exception/errors'
 import { DeployRequest } from 'src/grpc/protobuf/proto/agent'
@@ -24,6 +24,7 @@ import {
   UpdateEntityResponse,
 } from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
+import { toPrismaJson } from 'src/shared/mapper'
 import { ContainerConfigData, UniqueSecretKeyValue } from 'src/shared/model'
 import AgentService from '../agent/agent.service'
 import ImageMapper, { ImageDetails } from '../image/image.mapper'
@@ -391,6 +392,28 @@ export default class DeployService {
     return agent.deploy(deploy)
   }
 
+  async startDeploymentEvents(request: IdRequest): Promise<Observable<DeploymentProgressMessage>> {
+    const deployment = await this.prisma.deployment.findUniqueOrThrow({
+      where: {
+        id: request.id,
+      },
+      select: {
+        nodeId: true,
+      },
+    })
+
+    const agent = this.agentService.getById(deployment.nodeId)
+
+    const deploymentInstance = agent.getDeployment(request.id)
+    if (!deploymentInstance) {
+      return EMPTY
+    }
+
+    this.logger.debug(`Starting deployment event stream: ${request.id}`)
+
+    return deploymentInstance.watchStatus()
+  }
+
   subscribeToDeploymentEditEvents(request: ServiceIdRequest): Observable<DeploymentEditEventMessage> {
     return merge(
       this.instancesCreatedEvent.pipe(
@@ -542,34 +565,34 @@ export default class DeployService {
                   create: {
                     name: it.config.name,
                     expose: it.config.expose,
-                    ingress: this.imageMapper.toPrismaJson(it.config.ingress),
-                    configContainer: this.imageMapper.toPrismaJson(it.config.configContainer),
-                    importContainer: this.imageMapper.toPrismaJson(it.config.importContainer),
+                    ingress: toPrismaJson(it.config.ingress),
+                    configContainer: toPrismaJson(it.config.configContainer),
+                    importContainer: toPrismaJson(it.config.importContainer),
                     user: it.config.user,
                     tty: it.config.tty,
-                    ports: this.imageMapper.toPrismaJson(it.config.ports),
-                    portRanges: this.imageMapper.toPrismaJson(it.config.portRanges),
-                    volumes: this.imageMapper.toPrismaJson(it.config.volumes),
-                    commands: this.imageMapper.toPrismaJson(it.config.commands),
-                    args: this.imageMapper.toPrismaJson(it.config.args),
-                    environment: this.imageMapper.toPrismaJson(it.config.environment),
-                    secrets: this.imageMapper.toPrismaJson(it.config.secrets),
-                    initContainers: this.imageMapper.toPrismaJson(it.config.initContainers),
-                    logConfig: this.imageMapper.toPrismaJson(it.config.logConfig),
+                    ports: toPrismaJson(it.config.ports),
+                    portRanges: toPrismaJson(it.config.portRanges),
+                    volumes: toPrismaJson(it.config.volumes),
+                    commands: toPrismaJson(it.config.commands),
+                    args: toPrismaJson(it.config.args),
+                    environment: toPrismaJson(it.config.environment),
+                    secrets: toPrismaJson(it.config.secrets),
+                    initContainers: toPrismaJson(it.config.initContainers),
+                    logConfig: toPrismaJson(it.config.logConfig),
                     restartPolicy: it.config.restartPolicy,
                     networkMode: it.config.networkMode,
-                    networks: this.imageMapper.toPrismaJson(it.config.networks),
+                    networks: toPrismaJson(it.config.networks),
                     deploymentStrategy: it.config.deploymentStrategy,
-                    healthCheckConfig: this.imageMapper.toPrismaJson(it.config.healthCheckConfig),
-                    resourceConfig: this.imageMapper.toPrismaJson(it.config.resourceConfig),
+                    healthCheckConfig: toPrismaJson(it.config.healthCheckConfig),
+                    resourceConfig: toPrismaJson(it.config.resourceConfig),
                     proxyHeaders: it.config.proxyHeaders ?? false,
                     useLoadBalancer: it.config.useLoadBalancer ?? false,
-                    customHeaders: this.imageMapper.toPrismaJson(it.config.customHeaders),
-                    extraLBAnnotations: this.imageMapper.toPrismaJson(it.config.extraLBAnnotations),
-                    capabilities: this.imageMapper.toPrismaJson(it.config.capabilities),
-                    annotations: this.imageMapper.toPrismaJson(it.config.annotations),
-                    labels: this.imageMapper.toPrismaJson(it.config.labels),
-                    dockerLabels: this.imageMapper.toPrismaJson(it.config.dockerLabels),
+                    customHeaders: toPrismaJson(it.config.customHeaders),
+                    extraLBAnnotations: toPrismaJson(it.config.extraLBAnnotations),
+                    capabilities: toPrismaJson(it.config.capabilities),
+                    annotations: toPrismaJson(it.config.annotations),
+                    labels: toPrismaJson(it.config.labels),
+                    dockerLabels: toPrismaJson(it.config.dockerLabels),
                   },
                 }
               : undefined,

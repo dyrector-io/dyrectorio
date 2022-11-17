@@ -3,6 +3,7 @@ package k8s
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/rs/zerolog/log"
@@ -30,12 +31,13 @@ type DeployFacade struct {
 }
 
 type DeployFacadeParams struct {
-	Ctx             context.Context
-	Image           imageHelper.URI
-	InstanceConfig  v1.InstanceConfig
-	ContainerConfig v1.ContainerConfig
-	RuntimeConfig   *string
-	Issuer          string
+	Ctx              context.Context
+	Image            imageHelper.URI
+	InstanceConfig   v1.InstanceConfig
+	ContainerConfig  v1.ContainerConfig
+	RuntimeConfig    *string
+	imagePullSecrets *builder.RegistryAuth
+	Issuer           string
 }
 
 func NewDeployFacade(params *DeployFacadeParams, cfg *config.Configuration) *DeployFacade {
@@ -128,7 +130,10 @@ func (d *DeployFacade) PreDeploy() error {
 		return err
 	}
 
-	if err := d.secret.applySecrets(d.namespace.name, d.params.ContainerConfig.Container, d.params.ContainerConfig.Secrets); err != nil {
+	if err := d.secret.applySecrets(
+		d.namespace.name,
+		d.params.ContainerConfig.Container,
+		d.params.ContainerConfig.Secrets); err != nil {
 		return err
 	}
 
@@ -157,6 +162,19 @@ func (d *DeployFacade) Deploy() error {
 		return err
 	}
 
+	imagePullSecretName := ""
+
+	if d.params.imagePullSecrets != nil {
+		imagePullSecretName = fmt.Sprintf("%s-reg", d.params.ContainerConfig.Container)
+		if err := ApplyRegistryAuthSecret(d.ctx,
+			d.params.InstanceConfig.ContainerPreName,
+			imagePullSecretName,
+			d.params.imagePullSecrets,
+			d.appConfig); err != nil {
+			return err
+		}
+	}
+
 	if err := d.deployment.deployDeployment(&deploymentParams{
 		image:           d.params.Image,
 		namespace:       d.params.InstanceConfig.ContainerPreName,
@@ -170,6 +188,7 @@ func (d *DeployFacade) Deploy() error {
 		issuer:          d.params.Issuer,
 		annotations:     d.params.ContainerConfig.Annotations.Deployment,
 		labels:          d.params.ContainerConfig.Labels.Deployment,
+		pullSecretName:  imagePullSecretName,
 	}); err != nil {
 		log.Error().Err(err).Stack().Msg("Error with deployment")
 		return err
@@ -233,9 +252,10 @@ func Deploy(c context.Context, dog *dogger.DeploymentLogger, deployImageRequest 
 				Name: deployImageRequest.ImageName,
 				Tag:  deployImageRequest.Tag,
 			},
-			InstanceConfig:  deployImageRequest.InstanceConfig,
-			ContainerConfig: deployImageRequest.ContainerConfig,
-			Issuer:          deployImageRequest.Issuer,
+			InstanceConfig:   deployImageRequest.InstanceConfig,
+			ContainerConfig:  deployImageRequest.ContainerConfig,
+			Issuer:           deployImageRequest.Issuer,
+			imagePullSecrets: deployImageRequest.RegistryAuth,
 		},
 		cfg,
 	)

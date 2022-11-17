@@ -4,11 +4,22 @@ import (
 	"time"
 )
 
-// configuration defaults
-// convention is we have ALL the options here, but where defaults should be
+// Configuration defaults
+//
+// Convention is we have all the options here, but where defaults should be
 // different we handle it on application level, every time we need a parameter
 // we call into a function in a package which calls here, then we populate the
-// options which should be different if not defined otherwise
+// options which should be different if not defined otherwise.
+//
+// Using custom types allows to set the value from the environment variable
+// you need to implement the Setter interface on the field level.
+//
+// Similar to JSON/YAML deserializing
+// application startup -> load Configuration (read environment variables) -> unwrap variables (custom type)
+// the last step is a public SetValue function defined on the custom type
+//
+// Example: ValidJWT
+// Link: https://github.com/ilyakaznacheev/cleanenv#custom-value-setter
 type CommonConfiguration struct {
 	DefaultLimitsCPU     string        `yaml:"defaultLimitsCPU"      env:"DEFAULT_LIMITS_CPU"      env-default:"100m"`
 	DefaultLimitsMemory  string        `yaml:"defaultLimitsMemory"   env:"DEFAULT_LIMITS_MEMORY"   env-default:"128Mi"`

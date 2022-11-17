@@ -102,9 +102,10 @@ export const addDeploymentToSimpleProduct = async (
   await expect(page.locator('h4:has-text("Add deployment")')).toHaveCount(1)
 
   if (prefix) {
-    await page.locator('input[name=name] >> visible=true').fill(prefix)
+    await page.locator('input[name=prefix] >> visible=true').fill(prefix)
   }
-  await page.locator(`text=${nodeName}`).click()
+
+  await page.locator(`button:has-text("${nodeName}")`).click()
 
   await page.locator('button:has-text("Add")').click()
 

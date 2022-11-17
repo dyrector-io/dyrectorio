@@ -15,25 +15,31 @@ import (
 
 const DockerClientTimeoutSeconds = 30
 
-func DeleteContainerByName(ctx context.Context, dog *dogger.DeploymentLogger, nameFilter string) error {
-	matchedContainer, err := GetContainerByName(ctx, nil, nameFilter)
+func DeleteContainerByName(ctx context.Context, dog *dogger.DeploymentLogger, nameFilter string, errorReport bool) error {
+	matchedContainer, err := GetContainerByName(ctx, nil, nameFilter, errorReport)
 	if err != nil {
 		return fmt.Errorf("builder could not get container (%s) to remove: %s", nameFilter, err.Error())
 	}
+	if matchedContainer == nil {
+		return nil
+	}
 
-	return deleteContainerByState(ctx, dog, nameFilter, matchedContainer.State)
+	return deleteContainerByState(ctx, dog, nameFilter, matchedContainer.State, errorReport)
 }
 
-func DeleteContainerByID(ctx context.Context, dog *dogger.DeploymentLogger, nameFilter string) error {
-	matchedContainer, err := GetContainerByID(ctx, nil, nameFilter)
+func DeleteContainerByID(ctx context.Context, dog *dogger.DeploymentLogger, nameFilter string, errorReport bool) error {
+	matchedContainer, err := GetContainerByID(ctx, nil, nameFilter, errorReport)
 	if err != nil {
 		return fmt.Errorf("builder could not get container (%s) to remove: %s", nameFilter, err.Error())
 	}
+	if matchedContainer == nil {
+		return nil
+	}
 
-	return deleteContainerByState(ctx, dog, nameFilter, matchedContainer.State)
+	return deleteContainerByState(ctx, dog, nameFilter, matchedContainer.State, errorReport)
 }
 
-func deleteContainerByState(ctx context.Context, dog *dogger.DeploymentLogger, filter, state string) error {
+func deleteContainerByState(ctx context.Context, dog *dogger.DeploymentLogger, filter, state string, errorReport bool) error {
 	switch state {
 	case "running", "paused", "restarting":
 		err := StopContainer(ctx, dog, filter)
@@ -48,9 +54,12 @@ func deleteContainerByState(ctx context.Context, dog *dogger.DeploymentLogger, f
 		}
 		return nil
 	case "":
-		return fmt.Errorf(
-			"builder could not determine the state of the container (%s) for deletion, possible theres no container matching the search criteria",
-			filter)
+		if errorReport {
+			return fmt.Errorf(
+				"builder could not determine the state of the container (%s) for deletion, possible there's no container matching the search criteria",
+				filter)
+		}
+		return nil
 	default:
 		return fmt.Errorf("builder could not determine the state (%s) of the container (%s) for deletion",
 			state,
@@ -136,41 +145,36 @@ func GetAllContainers(ctx context.Context, dog *dogger.DeploymentLogger) ([]type
 }
 
 // Using exact match!
-func GetContainerByName(ctx context.Context, dog *dogger.DeploymentLogger, nameFilter string) (types.Container, error) {
+func GetContainerByName(ctx context.Context, dog *dogger.DeploymentLogger, nameFilter string, errorReport bool) (*types.Container, error) {
 	containers, err := GetAllContainersByName(ctx, nil, fmt.Sprintf("^%s$", nameFilter))
 	if err != nil {
-		return types.Container{}, err
+		return nil, err
 	}
 
-	return CheckOneContainer(containers)
+	return checkOneContainer(containers, errorReport)
 }
 
-func GetContainerByID(ctx context.Context, dog *dogger.DeploymentLogger, nameFilter string) (types.Container, error) {
+func GetContainerByID(ctx context.Context, dog *dogger.DeploymentLogger, nameFilter string, errorReport bool) (*types.Container, error) {
 	containers, err := GetAllContainersByID(ctx, nil, nameFilter)
 	if err != nil {
-		return types.Container{}, err
+		return nil, err
 	}
 
-	return CheckOneContainer(containers)
-}
-
-// Making sure there's only one
-func CheckOnlyOneContainer(containers []types.Container) (types.Container, error) {
-	switch len(containers) {
-	case 1:
-		return containers[0], nil
-	default:
-		return types.Container{}, fmt.Errorf("more than one matching container")
-	}
+	return checkOneContainer(containers, errorReport)
 }
 
 // Making sure there's only one, tops
-func CheckOneContainer(containers []types.Container) (types.Container, error) {
+func checkOneContainer(containers []types.Container, errorReport bool) (*types.Container, error) {
 	switch len(containers) {
 	case 0:
-		return types.Container{}, nil
+		if errorReport {
+			return nil, fmt.Errorf("there's no matching container")
+		}
+		return nil, nil
+	case 1:
+		return &containers[0], nil
 	default:
-		return CheckOnlyOneContainer(containers)
+		return nil, fmt.Errorf("more than one matching container")
 	}
 }
 

@@ -273,16 +273,6 @@ func PodmanInfo() {
 }
 
 func DisabledServiceSettings(settings *Settings) *Settings {
-	if settings.Containers.Crux.Disabled && settings.Command == UpCommand {
-		// TODO(c3ppc3pp): log these at the end of the executable. also we should print out the mailslurper address
-		log.Info().Msg("Do not forget to add your DATABASE_URL to your crux environment.")
-		log.Info().Msgf("DATABASE_URL=postgresql://%s:%s@localhost:%d/%s?schema=public",
-			settings.SettingsFile.CruxPostgresUser,
-			settings.SettingsFile.CruxPostgresPassword,
-			settings.SettingsFile.CruxPostgresPort,
-			settings.SettingsFile.CruxPostgresDB)
-	}
-
 	if settings.Containers.CruxUI.Disabled {
 		settings.CruxUI.CruxAddr = "localhost"
 	} else {
@@ -294,18 +284,35 @@ func DisabledServiceSettings(settings *Settings) *Settings {
 
 func PrintInfo(settings *Settings) {
 	log.Warn().Msg("🦩🦩🦩 Use the CLI tool only for NON-PRODUCTION purpose. 🦩🦩🦩")
-	log.Info().Str("path", settings.SettingsFilePath).Msg("Platform configuration file location")
+
+	if settings.Containers.Crux.Disabled {
+		log.Info().Msg("Do not forget to add your environmental variables to your .env files or export them!")
+		log.Info().Msgf("DATABASE_URL=postgresql://%s:%s@localhost:%d/%s?schema=public",
+			settings.SettingsFile.CruxPostgresUser,
+			settings.SettingsFile.CruxPostgresPassword,
+			settings.SettingsFile.CruxPostgresPort,
+			settings.SettingsFile.CruxPostgresDB)
+	}
+
+	log.Info().Msgf("Stack is ready. The UI should be available at http://localhost:%d location.",
+		settings.SettingsFile.Options.TraefikWebPort)
+	log.Info().Msgf("The e-mail service should be available at http://localhost:%d location.",
+		settings.SettingsFile.Options.MailSlurperWebPort)
+	log.Info().Msg("Happy deploying! 🎬")
 }
 
 // Save the settings
 func SaveSettings(settings *Settings) {
 	if settings.SettingsWrite {
-		userConfDir, _ := os.UserConfigDir()
+		userConfDir, err := os.UserConfigDir()
+		if err != nil {
+			log.Fatal().Err(err).Stack().Send()
+		}
 		settingspath := fmt.Sprintf("%s/%s/%s", userConfDir, SettingsFileDir, SettingsFileName)
 
 		// If settingspath is default, we create the directory for it
 		if settings.SettingsFilePath == settingspath {
-			if _, err := os.Stat(userConfDir); errors.Is(err, os.ErrNotExist) {
+			if _, err = os.Stat(userConfDir); errors.Is(err, os.ErrNotExist) {
 				err = os.Mkdir(userConfDir, DirPerms)
 				if err != nil {
 					log.Fatal().Err(err).Stack().Send()
@@ -313,7 +320,7 @@ func SaveSettings(settings *Settings) {
 			} else if err != nil {
 				log.Fatal().Err(err).Stack().Send()
 			}
-			if _, err := os.Stat(filepath.Dir(settingspath)); errors.Is(err, os.ErrNotExist) {
+			if _, err = os.Stat(filepath.Dir(settingspath)); errors.Is(err, os.ErrNotExist) {
 				err = os.Mkdir(filepath.Dir(settingspath), DirPerms)
 				if err != nil {
 					log.Fatal().Err(err).Stack().Send()
