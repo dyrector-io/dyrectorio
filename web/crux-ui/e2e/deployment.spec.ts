@@ -26,7 +26,7 @@ const setup = async (
 }
 
 test.describe('Simple product', () => {
-  test('preparing deployment should be not copyable on deployment list', async ({ page }) => {
+  test('preparing deployment should be not copiable on deployment list', async ({ page }) => {
     const nodeName = 'NODE-TEST1'
     const productName = 'PRODUCT-TEST1'
 
@@ -40,7 +40,7 @@ test.describe('Simple product', () => {
     await expect(copyButton).toHaveClass(/cursor-not-allowed/)
   })
 
-  test('preparing deployment should be not copyable on deployment list in product', async ({ page }) => {
+  test('preparing deployment should be not copiable on deployment list in product', async ({ page }) => {
     const nodeName = 'NODE-TEST2'
     const productName = 'PRODUCT-TEST2'
 
@@ -57,7 +57,7 @@ test.describe('Simple product', () => {
     await expect(await page.locator('[alt="Copy"]')).toHaveClass(/cursor-not-allowed/)
   })
 
-  test('preparing deployment should be not copyable on deployment detail page', async ({ page }) => {
+  test('preparing deployment should be not copiable on deployment detail page', async ({ page }) => {
     const nodeName = 'NODE-TEST3'
     const productName = 'PRODUCT-TEST3'
 
@@ -74,7 +74,7 @@ test.describe('Simple product', () => {
 })
 
 test.describe('Complex product', () => {
-  test('preparing deployment should be not copyable on deployment list', async ({ page }) => {
+  test('preparing deployment should be not copiable on deployment list', async ({ page }) => {
     const nodeName = 'NODE-TEST4'
     const productName = 'PRODUCT-TEST4-COMPLEX'
 
@@ -89,7 +89,7 @@ test.describe('Complex product', () => {
     await expect(copyButton).toHaveClass(/cursor-not-allowed/)
   })
 
-  test('preparing deployment should be not copyable on deployment list in product', async ({ page }) => {
+  test('preparing deployment should be not copiable on deployment list in product', async ({ page }) => {
     const nodeName = 'NODE-TEST5'
     const productName = 'PRODUCT-TEST5-COMPLEX'
 
@@ -105,7 +105,7 @@ test.describe('Complex product', () => {
     await expect(await page.locator('[alt="Copy"]')).toHaveClass(/cursor-not-allowed/)
   })
 
-  test('preparing deployment should be not copyable on deployment detail page', async ({ page }) => {
+  test('preparing deployment should be not copiable on deployment detail page', async ({ page }) => {
     const nodeName = 'NODE-TEST6'
     const productName = 'PRODUCT-TEST6-COMPLEX'
 

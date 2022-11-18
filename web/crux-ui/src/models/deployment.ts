@@ -161,5 +161,5 @@ export const deploymentIsMutable = (status: DeploymentStatus, type: VersionType)
 
 export const deploymentIsDeletable = (status: DeploymentStatus): boolean => status !== 'in_progress'
 
-export const deploymentIsCopyable = (status: DeploymentStatus, type: VersionType) =>
+export const deploymentIsCopiable = (status: DeploymentStatus, type: VersionType) =>
   type !== 'rolling' && status !== 'in_progress' && status !== 'preparing'

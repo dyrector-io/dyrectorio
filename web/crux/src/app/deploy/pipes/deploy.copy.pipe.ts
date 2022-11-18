@@ -2,7 +2,7 @@ import { Injectable, PipeTransform } from '@nestjs/common'
 import PrismaService from 'src/services/prisma.service'
 import { IdRequest } from 'src/grpc/protobuf/proto/crux'
 import { PreconditionFailedException } from 'src/exception/errors'
-import { checkDeploymentCopyability } from 'src/domain/deployment'
+import { checkDeploymentCopiability } from 'src/domain/deployment'
 
 @Injectable()
 export default class DeployCopyValidationPipe implements PipeTransform {
@@ -25,7 +25,7 @@ export default class DeployCopyValidationPipe implements PipeTransform {
       },
     })
 
-    if (!checkDeploymentCopyability(deployment.status, deployment.version.type)) {
+    if (!checkDeploymentCopiability(deployment.status, deployment.version.type)) {
       throw new PreconditionFailedException({
         message: 'Invalid deployment status.',
         property: 'status',

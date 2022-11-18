@@ -12,7 +12,7 @@ import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from
 import useWebSocket from '@app/hooks/use-websocket'
 import {
   DeploymentByVersion,
-  deploymentIsCopyable,
+  deploymentIsCopiable,
   deploymentIsMutable,
   DeploymentStatus,
   DEPLOYMENT_STATUS_VALUES,
@@ -199,7 +199,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
         <AnchorAction
           href={`copyDeployment-${item.id}`}
           anchors={anchors}
-          disabled={!deploymentIsCopyable(item.status, version.type)}
+          disabled={!deploymentIsCopiable(item.status, version.type)}
         >
           <Image
             src="/copy.svg"
@@ -207,7 +207,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
             width={24}
             height={24}
             className={
-              deploymentIsCopyable(item.status, version.type) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'
+              deploymentIsCopiable(item.status, version.type) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'
             }
           />
         </AnchorAction>

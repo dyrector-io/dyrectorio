@@ -7,7 +7,7 @@ import {
   DeploymentDetails,
   DeploymentEnvUpdatedMessage,
   DeploymentInvalidatedSecrets,
-  deploymentIsCopyable,
+  deploymentIsCopiable,
   deploymentIsDeletable,
   deploymentIsMutable,
   DeploymentRoot,
@@ -49,7 +49,7 @@ export type DeploymentState = {
   version: VersionDetails
   instances: Instance[]
   mutable: boolean
-  copyable: boolean
+  copiable: boolean
   deletable: boolean
   saving: boolean
   editing: boolean
@@ -89,7 +89,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
 
   const mutable = deploymentIsMutable(deployment.status, version.type)
   const deletable = deploymentIsDeletable(deployment.status)
-  const copyable = deploymentIsCopyable(deployment.status, version.type)
+  const copiable = deploymentIsCopiable(deployment.status, version.type)
 
   const nodesSock = useWebSocket(WS_NODES)
   nodesSock.on(WS_TYPE_NODE_STATUS, (message: NodeStatusMessage) => {
@@ -206,7 +206,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
       editing,
       mutable,
       deletable,
-      copyable,
+      copiable,
       editor,
       viewMode,
       confirmationModal,

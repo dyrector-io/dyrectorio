@@ -42,7 +42,7 @@ export const containerNameFromImageName = (imageName: string): string => {
   return imageName.substring(index + 1)
 }
 
-export const checkDeploymentCopyability = (status: DeploymentStatusEnum, type: VersionTypeEnum): boolean =>
+export const checkDeploymentCopiability = (status: DeploymentStatusEnum, type: VersionTypeEnum): boolean =>
   type !== 'rolling' && status !== 'inProgress' && status !== 'preparing'
 
 export const checkDeploymentDeletability = (status: DeploymentStatusEnum): boolean => status !== 'inProgress'

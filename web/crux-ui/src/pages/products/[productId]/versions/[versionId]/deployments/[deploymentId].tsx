@@ -174,7 +174,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
           />
         )}
 
-        {!state.copyable ? null : (
+        {!state.copiable ? null : (
           <AnchorAction href="copyDeployment" anchors={anchors}>
             <DyoButton className="px-6 ml-4">{t('common:copy')}</DyoButton>
           </AnchorAction>

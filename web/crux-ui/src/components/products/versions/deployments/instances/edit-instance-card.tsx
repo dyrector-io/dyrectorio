@@ -82,6 +82,7 @@ const EditInstanceCard = (props: EditInstanceCardProps) => {
             config={config}
             editorOptions={editorState}
             onPatch={it => actions.onPatch(instance.id, it)}
+            onParseError={actions.onParseError}
             convertConfigToJson={imageConfigToJsonInstanceConfig}
           />
         )}

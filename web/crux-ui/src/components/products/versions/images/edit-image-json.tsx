@@ -13,7 +13,7 @@ interface EditImageJsonProps {
   config: ContainerConfig
   editorOptions: EditorStateOptions
   onPatch: (config: Partial<ContainerConfig>) => void
-  onParseError?: (err: Error) => void
+  onParseError: (err: Error) => void
   convertConfigToJson: (config: ContainerConfig) => JsonConfig
 }
 
@@ -61,9 +61,7 @@ const EditImageJson = (props: EditImageJsonProps) => {
     (err: Error) => {
       throttle(CANCEL_THROTTLE)
 
-      if (propOnParseError) {
-        propOnParseError(err)
-      }
+      propOnParseError(err)
     },
     [throttle, propOnParseError],
   )
