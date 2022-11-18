@@ -78,7 +78,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
     throttle(() => {
       const value = { ...state.config, ...newConfig }
 
-      actions.onPatch(instance.id, newConfig)
+      actions.onPatch(instance.id, value)
 
       const errors = getContainerConfigFieldErrors(value)
       setFieldErrors(errors)

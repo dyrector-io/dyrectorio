@@ -295,6 +295,11 @@ export type CommonConfigDetails = Omit<ContainerConfig, DagentSpecificConfig | C
 
 export type JsonConfig = InstanceJsonContainerConfig | JsonContainerConfig
 
+const overrideKeys = (weak: UniqueKey[], strong: UniqueKey[]): UniqueKey[] => {
+  const overridenKeys: Set<string> = new Set(strong?.map(it => it.key))
+  return [...(weak?.filter(it => !overridenKeys.has(it.key)) ?? []), ...(strong ?? [])]
+}
+
 const overrideKeyValues = (weak: UniqueKeyValue[], strong: UniqueKeyValue[]): UniqueKeyValue[] => {
   const overridenKeys: Set<string> = new Set(strong?.map(it => it.key))
   return [...(weak?.filter(it => !overridenKeys.has(it.key)) ?? []), ...(strong ?? [])]
@@ -308,11 +313,6 @@ const overridePorts = (weak: ContainerConfigPort[], strong: ContainerConfigPort[
 const override = <T>(weak: T, strong: T): T => strong ?? weak
 
 const overrideWithDefaultValue = <T>(weak: T, strong: T, defaultValue: T): T => override(weak, strong) ?? defaultValue
-
-const overrideArrays = <T>(weak: T[], strong: T[]): T[] => {
-  const strongs: Set<T> = new Set(strong)
-  return [...(weak?.filter(it => !strongs.has(it)) ?? []), ...(strong ?? [])]
-}
 
 export const mergeConfigs = (
   imageConfig: ContainerConfig,
@@ -332,8 +332,8 @@ export const mergeConfigs = (
     user: override(imageConfig?.user, instanceConfig.user),
     tty: override(imageConfig?.tty, instanceConfig.tty),
     portRanges: override(imageConfig?.portRanges, instanceConfig.portRanges),
-    args: overrideArrays(imageConfig?.args, instanceConfig.args),
-    commands: overrideArrays(imageConfig?.commands, instanceConfig.commands),
+    args: overrideKeys(imageConfig?.args, instanceConfig.args),
+    commands: overrideKeys(imageConfig?.commands, instanceConfig.commands),
     expose: override(imageConfig?.expose, instanceConfig.expose),
     configContainer: override(imageConfig?.configContainer, instanceConfig.configContainer),
     ingress: override(imageConfig?.ingress, instanceConfig.ingress),
@@ -343,7 +343,7 @@ export const mergeConfigs = (
     capabilities: caps,
 
     // crane
-    customHeaders: overrideArrays(imageConfig?.customHeaders, instanceConfig?.customHeaders),
+    customHeaders: overrideKeys(imageConfig?.customHeaders, instanceConfig?.customHeaders),
     proxyHeaders: override(imageConfig?.proxyHeaders, instanceConfig?.proxyHeaders),
     extraLBAnnotations: override(imageConfig?.extraLBAnnotations, instanceConfig?.extraLBAnnotations),
     healthCheckConfig: override(imageConfig?.healthCheckConfig, instanceConfig?.healthCheckConfig),
@@ -354,12 +354,23 @@ export const mergeConfigs = (
       instanceConfig?.deploymentStrategy,
       'recreate',
     ),
+    labels: {
+      service: overrideKeyValues(imageConfig?.labels?.service, instanceConfig?.labels?.service),
+      deployment: overrideKeyValues(imageConfig?.labels?.deployment, instanceConfig?.labels?.deployment),
+      ingress: overrideKeyValues(imageConfig?.labels?.ingress, instanceConfig?.labels?.ingress),
+    },
+    annotations: {
+      service: overrideKeyValues(imageConfig?.annotations?.service, instanceConfig?.annotations?.service),
+      deployment: overrideKeyValues(imageConfig?.annotations?.deployment, instanceConfig?.annotations?.deployment),
+      ingress: overrideKeyValues(imageConfig?.annotations?.ingress, instanceConfig?.annotations?.ingress),
+    },
 
     // dagent
     logConfig: override(imageConfig?.logConfig, instanceConfig?.logConfig),
     networkMode: overrideWithDefaultValue(imageConfig?.networkMode, instanceConfig?.networkMode, 'none'),
     restartPolicy: overrideWithDefaultValue(imageConfig?.restartPolicy, instanceConfig?.restartPolicy, 'unlessStopped'),
     networks: instanceConfig?.networks ?? imageConfig?.networks ?? [],
+    dockerLabels: overrideKeyValues(imageConfig?.dockerLabels, instanceConfig?.dockerLabels),
   }
 }
 

@@ -387,8 +387,10 @@ export const nullify = <T>(object: T): T => {
   for (const key of keys) {
     const obj = object[key]
     if (obj) {
-      empty = typeof obj === 'object' ? !nullify(obj) : false
-      break
+      empty = Array.isArray(obj) ? obj.length === 0 : typeof obj === 'object' ? !nullify(obj) : false
+      if (!empty) {
+        break
+      }
     }
   }
 
