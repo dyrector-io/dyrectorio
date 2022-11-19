@@ -5,7 +5,7 @@ import { ImageDeletedMessage } from './image'
 import { Instance, InstanceStatus, PatchInstance } from './instance'
 import { DyoNode } from './node'
 import { ProductDetails } from './product'
-import { VersionDetails } from './version'
+import { VersionDetails, VersionType } from './version'
 
 export type DeploymentDetails = {
   id: string
@@ -32,6 +32,7 @@ export type Deployment = {
   note?: string
   prefix: string
   updatedAt: string
+  type: VersionType
 }
 
 export type DeploymentRoot = DeploymentDetails & {
@@ -145,7 +146,20 @@ export type DeploymentSecretListMessage = {
   keys: string[]
 }
 
-export const deploymentIsMutable = (status: DeploymentStatus) => status === 'preparing' || status === 'failed'
+export const deploymentIsMutable = (status: DeploymentStatus, type: VersionType): boolean => {
+  switch (status) {
+    case 'preparing':
+      return true
+    case 'successful':
+      return type === 'rolling'
+    case 'failed':
+      return type === 'rolling'
+    default:
+      return false
+  }
+}
 
-export const deploymentIsCopyable = (status: DeploymentStatus) =>
-  status === 'failed' || status === 'successful' || status === 'preparing'
+export const deploymentIsDeletable = (status: DeploymentStatus): boolean => status !== 'in_progress'
+
+export const deploymentIsCopiable = (status: DeploymentStatus, type: VersionType) =>
+  type !== 'rolling' && status !== 'in_progress' && status !== 'preparing'

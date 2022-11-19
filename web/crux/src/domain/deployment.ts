@@ -1,4 +1,4 @@
-import { Logger, PreconditionFailedException } from '@nestjs/common'
+import { Logger } from '@nestjs/common'
 import { Observable, Subject } from 'rxjs'
 import { AgentCommand, VersionDeployRequest } from 'src/grpc/protobuf/proto/agent'
 import { DeploymentProgressMessage } from 'src/grpc/protobuf/proto/crux'
@@ -9,7 +9,7 @@ import {
   DeploymentStatusMessage,
   deploymentStatusToJSON,
 } from 'src/grpc/protobuf/proto/common'
-import { ContainerStateEnum, DeploymentEventTypeEnum, DeploymentStatusEnum } from '.prisma/client'
+import { ContainerStateEnum, DeploymentEventTypeEnum, DeploymentStatusEnum, VersionTypeEnum } from '.prisma/client'
 
 export type DeploymentProgressContainerEvent = {
   instanceId: string
@@ -42,22 +42,21 @@ export const containerNameFromImageName = (imageName: string): string => {
   return imageName.substring(index + 1)
 }
 
-export type DeploymentMutabilityCheckDao = {
-  status: DeploymentStatusEnum
-}
+export const checkDeploymentCopiability = (status: DeploymentStatusEnum, type: VersionTypeEnum): boolean =>
+  type !== 'rolling' && status !== 'inProgress' && status !== 'preparing'
 
-export const MUTABLE_DEPLOYMENT_STATUSES = [
-  DeploymentStatusEnum.preparing,
-  DeploymentStatusEnum.failed,
-] as DeploymentStatusEnum[]
+export const checkDeploymentDeletability = (status: DeploymentStatusEnum): boolean => status !== 'inProgress'
 
-export const checkDeploymentMutability = (deployment: DeploymentMutabilityCheckDao) => {
-  if (!MUTABLE_DEPLOYMENT_STATUSES.includes(deployment.status)) {
-    throw new PreconditionFailedException({
-      message: 'Invalid deployment status.',
-      property: 'status',
-      value: deployment.status,
-    })
+export const checkDeploymentMutability = (status: DeploymentStatusEnum, type: VersionTypeEnum): boolean => {
+  switch (status) {
+    case 'preparing':
+      return true
+    case 'successful':
+      return type === 'rolling'
+    case 'failed':
+      return type === 'rolling'
+    default:
+      return false
   }
 }
 

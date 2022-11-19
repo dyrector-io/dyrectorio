@@ -8,10 +8,28 @@ import {
   Instance,
   InstanceContainerConfig,
   Node,
+  VersionTypeEnum,
 } from '@prisma/client'
 import { JsonArray, JsonObject } from 'prisma'
 import { deploymentStatusToDb } from 'src/domain/deployment'
 import { toTimestamp } from 'src/domain/utils'
+import { InternalException } from 'src/exception/errors'
+import {
+  CommonContainerConfig,
+  CraneContainerConfig,
+  DagentContainerConfig,
+  InitContainer as AgentInitContainer,
+  InstanceConfig,
+  Port,
+} from 'src/grpc/protobuf/proto/agent'
+import {
+  ContainerState,
+  containerStateFromJSON,
+  containerStateToJSON,
+  DeploymentStatus,
+  deploymentStatusFromJSON,
+  KeyValue,
+} from 'src/grpc/protobuf/proto/common'
 import {
   AuditResponse,
   DeploymentByVersionResponse,
@@ -25,26 +43,10 @@ import {
   InstanceResponse,
   NodeConnectionStatus,
 } from 'src/grpc/protobuf/proto/crux'
-import {
-  ContainerState,
-  containerStateFromJSON,
-  containerStateToJSON,
-  DeploymentStatus,
-  deploymentStatusFromJSON,
-  KeyValue,
-} from 'src/grpc/protobuf/proto/common'
-import {
-  CommonContainerConfig,
-  CraneContainerConfig,
-  DagentContainerConfig,
-  InitContainer as AgentInitContainer,
-  InstanceConfig,
-  Port,
-} from 'src/grpc/protobuf/proto/agent'
+import { versionTypeToGrpc } from 'src/shared/mapper'
 import { ContainerConfigData, UniqueKey, UniqueKeyValue } from 'src/shared/model'
-import { InternalException } from 'src/exception/errors'
-import ImageMapper, { ImageDetails } from '../image/image.mapper'
 import AgentService from '../agent/agent.service'
+import ImageMapper, { ImageDetails } from '../image/image.mapper'
 
 @Injectable()
 export default class DeployMapper {
@@ -61,6 +63,7 @@ export default class DeployMapper {
       versionId: deployment.version.id,
       nodeId: deployment.node.id,
       updatedAt: toTimestamp(deployment.updatedAt),
+      versionType: versionTypeToGrpc(deployment.version.type),
     }
   }
 
@@ -396,5 +399,5 @@ export type DeploymentDetails = DeploymentWithNode & {
 
 type DeploymentListItem = Deployment & {
   node: { id: string; name: string }
-  version: { id: string; name: string; product: { id: string; name: string } }
+  version: { id: string; name: string; product: { id: string; name: string }; type: VersionTypeEnum }
 }

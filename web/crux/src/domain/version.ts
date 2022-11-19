@@ -1,6 +1,6 @@
 import { PreconditionFailedException } from '@nestjs/common'
 import { DeploymentStatusEnum, VersionTypeEnum } from '@prisma/client'
-import { MUTABLE_DEPLOYMENT_STATUSES } from './deployment'
+import { checkDeploymentMutability } from './deployment'
 
 export type VersionMutabilityCheckDao = {
   type: VersionTypeEnum
@@ -13,7 +13,7 @@ export type VersionIncreasabilityCheckDao = {
 }
 
 export const versionHasImmutableDeployments = (version: VersionMutabilityCheckDao): boolean =>
-  version.deployments.filter(it => !MUTABLE_DEPLOYMENT_STATUSES.includes(it.status)).length > 0
+  version.deployments.filter(it => !checkDeploymentMutability(it.status, version.type)).length > 0
 
 export const versionIsMutable = (version: VersionMutabilityCheckDao): boolean =>
   version.type === 'rolling' || !versionHasImmutableDeployments(version)

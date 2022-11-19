@@ -5,9 +5,9 @@ import {
   VersionDetailsResponse,
   VersionResponse,
   VersionType,
-  versionTypeFromJSON,
   versionTypeToJSON,
 } from 'src/grpc/protobuf/proto/crux'
+import { versionTypeToGrpc } from 'src/shared/mapper'
 import { Version, VersionTypeEnum } from '.prisma/client'
 import DeployMapper, { DeploymentWithNode } from '../deploy/deploy.mapper'
 import ImageMapper, { ImageDetails } from '../image/image.mapper'
@@ -20,7 +20,7 @@ export default class VersionMapper {
     return {
       ...version,
       audit: AuditResponse.fromJSON(version),
-      type: this.typeToGrpc(version.type),
+      type: versionTypeToGrpc(version.type),
       increasable: versionIsIncreasable(version),
     }
   }
@@ -29,16 +29,12 @@ export default class VersionMapper {
     return {
       ...version,
       audit: AuditResponse.fromJSON(version),
-      type: this.typeToGrpc(version.type),
+      type: versionTypeToGrpc(version.type),
       mutable: versionIsMutable(version),
       increasable: versionIsIncreasable(version),
       images: version.images.map(it => this.imageMapper.toGrpc(it)),
       deployments: version.deployments.map(it => this.deployMapper.deploymentByVersionToGrpc(it)),
     }
-  }
-
-  typeToGrpc(type: VersionTypeEnum): VersionType {
-    return versionTypeFromJSON(type.toUpperCase())
   }
 
   typeToDb(type: VersionType): VersionTypeEnum {

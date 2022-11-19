@@ -888,6 +888,7 @@ message DeploymentResponse {
   optional string note = 107;
   string prefix = 108;
   optional google.protobuf.Timestamp updatedAt = 109;
+  VersionType versionType = 110;
 }
 
 message DeploymentListByVersionResponse {

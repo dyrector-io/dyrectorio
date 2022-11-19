@@ -1234,6 +1234,7 @@ export interface DeploymentResponse {
   note?: string | undefined
   prefix: string
   updatedAt?: Timestamp | undefined
+  versionType: VersionType
 }
 
 export interface DeploymentListByVersionResponse {
@@ -3755,6 +3756,7 @@ function createBaseDeploymentResponse(): DeploymentResponse {
     status: 0,
     nodeId: '',
     prefix: '',
+    versionType: 0,
   }
 }
 
@@ -3772,6 +3774,7 @@ export const DeploymentResponse = {
       note: isSet(object.note) ? String(object.note) : undefined,
       prefix: isSet(object.prefix) ? String(object.prefix) : '',
       updatedAt: isSet(object.updatedAt) ? fromJsonTimestamp(object.updatedAt) : undefined,
+      versionType: isSet(object.versionType) ? versionTypeFromJSON(object.versionType) : 0,
     }
   },
 
@@ -3788,6 +3791,7 @@ export const DeploymentResponse = {
     message.note !== undefined && (obj.note = message.note)
     message.prefix !== undefined && (obj.prefix = message.prefix)
     message.updatedAt !== undefined && (obj.updatedAt = fromTimestamp(message.updatedAt).toISOString())
+    message.versionType !== undefined && (obj.versionType = versionTypeToJSON(message.versionType))
     return obj
   },
 }
