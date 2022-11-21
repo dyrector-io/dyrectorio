@@ -20,10 +20,10 @@ import PrismaService from 'src/services/prisma.service'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import { BaseMessage } from 'src/domain/notification-templates'
 import { PreconditionFailedException } from 'src/exception/errors'
+import { Status } from '@grpc/grpc-js/build/src/constants'
 import AgentService from '../agent/agent.service'
 import TeamRepository from '../team/team.repository'
 import NodeMapper from './node.mapper'
-import { Status } from '@grpc/grpc-js/build/src/constants'
 
 @Injectable()
 export default class NodeService {
