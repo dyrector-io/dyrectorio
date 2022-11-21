@@ -23,6 +23,7 @@ import { PreconditionFailedException } from 'src/exception/errors'
 import AgentService from '../agent/agent.service'
 import TeamRepository from '../team/team.repository'
 import NodeMapper from './node.mapper'
+import { Status } from '@grpc/grpc-js/build/src/constants'
 
 @Injectable()
 export default class NodeService {
@@ -163,7 +164,13 @@ export default class NodeService {
       },
     })
 
-    this.agentService.kick(request.id)
+    try {
+      this.agentService.kick(request.id)
+    } catch (err) {
+      if (err.error.code !== Status.NOT_FOUND) {
+        throw err
+      }
+    }
     return Empty
   }
 
