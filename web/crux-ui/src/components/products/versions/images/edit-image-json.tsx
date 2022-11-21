@@ -13,7 +13,7 @@ interface EditImageJsonProps {
   config: ContainerConfig
   editorOptions: EditorStateOptions
   onPatch: (config: Partial<ContainerConfig>) => void
-  onParseError?: (err: Error) => void
+  onParseError: (err: Error) => void
   convertConfigToJson: (config: ContainerConfig) => JsonConfig
 }
 

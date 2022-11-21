@@ -158,11 +158,12 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
       <PageHeading pageLink={pageLink} sublinks={sublinks}>
         {state.saving ? <LoadingIndicator className="flex ml-4 my-auto" /> : null}
 
-        {!state.mutable ? null : (
+        {!state.deletable ? null : (
           <DetailsPageMenu
             onDelete={onDelete}
             editing={state.editing}
             setEditing={actions.setEditing}
+            disableEditing={!state.mutable}
             submitRef={submitRef}
             deleteModalTitle={t('common:confirmDelete', {
               name: t('common:deployment'),
@@ -173,7 +174,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
           />
         )}
 
-        {!state.copyable ? null : (
+        {!state.copiable ? null : (
           <AnchorAction href="copyDeployment" anchors={anchors}>
             <DyoButton className="px-6 ml-4">{t('common:copy')}</DyoButton>
           </AnchorAction>

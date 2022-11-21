@@ -116,3 +116,30 @@ export const addDeploymentToSimpleProduct = async (
     url: page.url(),
   }
 }
+
+export const addDeploymentToVersion = async (
+  page: Page,
+  productId: string,
+  versionId: string,
+  nodeName: string,
+  prefix: string = null,
+): Promise<{ id: string; url: string }> => {
+  await page.goto(versionUrl(productId, versionId))
+
+  await page.locator('button:has-text("Add deployment")').click()
+  await expect(page.locator('h4:has-text("Add deployment")')).toHaveCount(1)
+
+  if (prefix) {
+    await page.locator('input[name=name] >> visible=true').fill(prefix)
+  }
+
+  await page.locator(`button:has-text("${nodeName}")`).click()
+  await page.locator('button:has-text("Add")').click()
+
+  await page.waitForNavigation()
+
+  return {
+    id: page.url().split('/').pop(),
+    url: page.url(),
+  }
+}

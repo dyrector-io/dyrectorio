@@ -13,7 +13,7 @@ import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
 import useAnchorActions from '@app/hooks/use-anchor-actions'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
-import { Deployment, deploymentIsCopyable, DeploymentStatus, DEPLOYMENT_STATUS_VALUES } from '@app/models'
+import { Deployment, deploymentIsCopiable, DeploymentStatus, DEPLOYMENT_STATUS_VALUES } from '@app/models'
 import { deploymentUrl, nodeUrl, productUrl, ROUTE_DEPLOYMENTS, versionUrl } from '@app/routes'
 import { utcDateToLocale, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
@@ -121,13 +121,17 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
         />
       </div>
 
-      <AnchorAction href={`copyDeployment-${item.id}`} anchors={anchors} disabled={!deploymentIsCopyable(item.status)}>
+      <AnchorAction
+        href={`copyDeployment-${item.id}`}
+        anchors={anchors}
+        disabled={!deploymentIsCopiable(item.status, item.type)}
+      >
         <Image
           src="/copy.svg"
           alt={t('common:copy')}
           width={24}
           height={24}
-          className={deploymentIsCopyable(item.status) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
+          className={deploymentIsCopiable(item.status, item.type) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
         />
       </AnchorAction>
     </>,
