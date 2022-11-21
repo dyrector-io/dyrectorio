@@ -54,7 +54,7 @@ func GetCrux(settings *Settings) *containerbuilder.DockerContainerBuilder {
 				settings.Containers.Kratos.Name,
 				settings.SettingsFile.KratosAdminPort),
 			fmt.Sprintf("CRUX_UI_URL=localhost:%d", settings.SettingsFile.TraefikWebPort),
-			fmt.Sprintf("CRUX_AGENT_ADDRESS=localhost:%d", settings.SettingsFile.CruxAgentGrpcPort),
+			fmt.Sprintf("CRUX_AGENT_ADDRESS=%s:%d", settings.InternalHostDomain, settings.SettingsFile.CruxAgentGrpcPort),
 			"LOCAL_DEPLOYMENT=true",
 			fmt.Sprintf("LOCAL_DEPLOYMENT_NETWORK=%s", settings.SettingsFile.Network),
 			fmt.Sprintf("JWT_SECRET=%s", settings.SettingsFile.CruxSecret),
@@ -135,7 +135,7 @@ func GetCruxUI(settings *Settings) *containerbuilder.DockerContainerBuilder {
 		WithNetworkAliases(settings.Containers.CruxUI.Name).
 		WithLabels(map[string]string{
 			"traefik.enable":                                         "true",
-			"traefik.http.routers.crux-ui.rule":                      fmt.Sprintf("Host(`%s`)", "localhost"),
+			"traefik.http.routers.crux-ui.rule":                      fmt.Sprintf("Host(`localhost`) || Host(`%s`)", settings.InternalHostDomain),
 			"traefik.http.routers.crux-ui.entrypoints":               "web",
 			"traefik.http.services.crux-ui.loadbalancer.server.port": fmt.Sprintf("%d", defaultCruxUIPort),
 		})
@@ -208,6 +208,11 @@ func GetTraefik(settings *Settings) *containerbuilder.DockerContainerBuilder {
 
 // Return Kratos services' containers
 func GetKratos(settings *Settings) *containerbuilder.DockerContainerBuilder {
+	traefikLabel := fmt.Sprintf("(Host(`localhost`) && PathPrefix(`/kratos`)) || "+
+		"(Host(`%s`) && PathPrefix(`/kratos`)) || "+
+		"(Host(`%s`) && PathPrefix(`/kratos`))",
+		settings.Containers.Traefik.Name, settings.InternalHostDomain)
+
 	kratos := containerbuilder.NewDockerBuilder(context.Background()).
 		WithImage(fmt.Sprintf("%s:%s", settings.Kratos.Image, settings.SettingsFile.Version)).
 		WithLogWriter(nil).
@@ -228,11 +233,9 @@ func GetKratos(settings *Settings) *containerbuilder.DockerContainerBuilder {
 			fmt.Sprintf("KRATOS_ADMIN_URL=http://%s:%d",
 				settings.Containers.Kratos.Name,
 				settings.SettingsFile.KratosAdminPort),
-			fmt.Sprintf("AUTH_URL=http://%s:%d/auth",
-				"localhost",
+			fmt.Sprintf("AUTH_URL=http://localhost:%d/auth",
 				settings.SettingsFile.TraefikWebPort),
-			fmt.Sprintf("CRUX_UI_URL=http://%s:%d",
-				"localhost",
+			fmt.Sprintf("CRUX_UI_URL=http://localhost:%d",
 				settings.SettingsFile.TraefikWebPort),
 			"DEV=false",
 			"LOG_LEVEL=info",
@@ -255,9 +258,8 @@ func GetKratos(settings *Settings) *containerbuilder.DockerContainerBuilder {
 		WithNetworks([]string{settings.SettingsFile.Network}).
 		WithNetworkAliases(settings.Containers.Kratos.Name).
 		WithLabels(map[string]string{
-			"traefik.enable": "true",
-			"traefik.http.routers.kratos.rule": fmt.Sprintf("(Host(`localhost`) && PathPrefix(`/kratos`)) || (Host(`%s`) && PathPrefix(`/kratos`))",
-				settings.Containers.Traefik.Name),
+			"traefik.enable":                                             "true",
+			"traefik.http.routers.kratos.rule":                           traefikLabel,
 			"traefik.http.routers.kratos.entrypoints":                    "web",
 			"traefik.http.services.kratos.loadbalancer.server.port":      fmt.Sprintf("%d", defaultKratosPublicPort),
 			"traefik.http.middlewares.kratos-strip.stripprefix.prefixes": "/kratos",
