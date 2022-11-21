@@ -372,6 +372,9 @@ export default class AgentService {
         versionId: deployment.version.id,
         nodeId,
         prefix: deployment.prefix,
+        status: {
+          not: DeploymentStatusEnum.preparing,
+        },
       },
     })
 
@@ -386,6 +389,9 @@ export default class AgentService {
         },
         nodeId,
         prefix: deployment.prefix,
+        status: {
+          not: DeploymentStatusEnum.preparing,
+        },
       },
     })
 
