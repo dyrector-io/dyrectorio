@@ -250,14 +250,6 @@ export default class DeployService {
       },
     })
 
-    if (deployment.status !== DeploymentStatusEnum.preparing && deployment.status !== DeploymentStatusEnum.failed) {
-      throw new PreconditionFailedException({
-        message: 'Invalid deployment state',
-        property: 'status',
-        value: deployment.nodeId,
-      })
-    }
-
     const agent = this.agentService.getById(deployment.nodeId)
 
     const publicKey = agent?.publicKey
