@@ -1,4 +1,4 @@
-import { ROUTE_NODES, versionUrl } from '@app/routes'
+import { productUrl, ROUTE_NODES, versionUrl } from '@app/routes'
 import { Page } from '@playwright/test'
 import { exec, ExecOptions } from 'child_process'
 import { DAGENT_NODE, screenshotPath } from './common'
@@ -31,8 +31,12 @@ export const installDagent = async (page: Page) => {
   await page.screenshot({ path: screenshotPath('node-dagent-install-succesful'), fullPage: true })
 }
 
-export const deployWithDagent = async (page: Page, productId: string, versionId: string, prefix: string) => {
-  await page.goto(versionUrl(productId, versionId))
+export const deployWithDagent = async (page: Page, prefix: string, productId: string, versionId?: string) => {
+  if (versionId) {
+    await page.goto(versionUrl(productId, versionId))
+  } else {
+    await page.goto(productUrl(productId))
+  }
 
   await page.locator('button:has-text("Add deployment")').click()
 
@@ -50,7 +54,7 @@ export const deployWithDagent = async (page: Page, productId: string, versionId:
 
   await page.waitForNavigation()
 
-  await page.waitForSelector('div:has-text("Successful")')
+  await page.waitForSelector('div.bg-dyo-green:has-text("Successful")')
 }
 
 const logCmdOutput = (err: Error, stdOut: string, stdErr: string, logStdOut?: boolean) => {
