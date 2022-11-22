@@ -46,6 +46,15 @@ func InitCLI() *ucli.App {
 				EnvVars:  []string{"DISABLE_CRUXUI"},
 			},
 			&ucli.BoolFlag{
+				Name:    "local-agent",
+				Aliases: []string{"la"},
+				Value:   false,
+				Usage: "will set crux env to make dagent connect to localhost instead of container network," +
+					" it's useful when you use a non-containerized agent",
+				Required: false,
+				EnvVars:  []string{"LOCAL_AGENT"},
+			},
+			&ucli.BoolFlag{
 				Name:     "write",
 				Aliases:  []string{"w"},
 				Value:    false,
@@ -85,7 +94,8 @@ func run(cCtx *ucli.Context) error {
 				Disabled: cCtx.Bool("disable-crux-ui"),
 			},
 			Crux: ContainerSettings{
-				Disabled: cCtx.Bool("disable-crux"),
+				Disabled:   cCtx.Bool("disable-crux"),
+				LocalAgent: cCtx.Bool("local-agent"),
 			},
 		},
 		Command: cCtx.Command.Name,
