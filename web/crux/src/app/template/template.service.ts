@@ -188,29 +188,30 @@ export default class TemplateService {
 
     const images = await Promise.all(createImages)
 
-    await this.prisma.$transaction(async tx => {
-      const updates = images.map(it => {
-        const imageTemplate = it[0] as TemplateImage
-        const dbImage = it[1] as ImageResponse
+    await this.prisma.$transaction(
+      async tx => {
+        const updates = images.map(it => {
+          const imageTemplate = it[0] as TemplateImage
+          const dbImage = it[1] as ImageResponse
 
-        const config: ContainerConfigData = this.mapTemplateConfig(imageTemplate.config)
+          const config: ContainerConfigData = this.mapTemplateConfig(imageTemplate.config)
 
-        return tx.image.update({
-          include: {
-            config: true,
-          },
-          data: {
-            config: {
-              update: config,
+          return tx.image.update({
+            include: {
+              config: true,
             },
-            tag: imageTemplate.tag,
-            updatedBy: accessedBy,
-          },
-          where: {
-            id: dbImage.id,
-          },
+            data: {
+              config: {
+                update: config,
+              },
+              tag: imageTemplate.tag,
+              updatedBy: accessedBy,
+            },
+            where: {
+              id: dbImage.id,
+            },
+          })
         })
-      })
 
         await Promise.all(updates)
       },
