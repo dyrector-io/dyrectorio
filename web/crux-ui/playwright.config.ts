@@ -8,9 +8,8 @@ const baseURL = process.env.E2E_BASE_URL || 'http://172.17.0.1:8000'
 const config: PlaywrightTestConfig = {
   globalSetup: path.join(__dirname, 'e2e', 'utils', 'global-setup.ts'),
   globalTeardown: path.join(__dirname, 'e2e', 'utils', 'global-teardown.ts'),
-  timeout: 30 * 1000, // 30 sec
+  timeout: 120 * 1000, // 2 min
   testDir: path.join(__dirname, 'e2e'),
-  // If a test fails, retry it additional 2 times
   retries: 0,
   // Artifacts folder where screenshots, videos, and traces are stored.
   outputDir: path.join(__dirname, 'e2e_results/'),

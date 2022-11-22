@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { DeploymentStatusEnum } from '@prisma/client'
 import { JsonArray } from 'prisma'
-import { concatAll, EMPTY, filter, from, lastValueFrom, map, merge, Observable, Subject, tap } from 'rxjs'
+import { concatAll, EMPTY, filter, from, lastValueFrom, map, merge, Observable, Subject } from 'rxjs'
 import Deployment from 'src/domain/deployment'
 import { InternalException, PreconditionFailedException } from 'src/exception/errors'
 import { DeployRequest } from 'src/grpc/protobuf/proto/agent'

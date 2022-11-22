@@ -11,6 +11,7 @@ import {
   USER_TEAM,
 } from './common'
 import globalTeardown from './global-teardown'
+import { installDagent } from './node-helper'
 
 const globalSetup = async (config: FullConfig) => {
   await globalTeardown(config)
@@ -48,6 +49,9 @@ const globalSetup = async (config: FullConfig) => {
   await page.waitForURL(ROUTE_PRODUCTS)
 
   await page.context().storageState({ path: storageState as string })
+
+  //setup a deployable node
+  await installDagent(page)
 
   await browser.close()
 }

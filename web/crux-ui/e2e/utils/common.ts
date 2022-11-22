@@ -9,6 +9,7 @@ export const USER_EMAIL = 'john.doe@example.com'
 export const USER_PASSWORD = 'TestPw23233'
 export const USER_TEAM = "John's Team"
 
+export const DAGENT_NODE = 'dagent-deployable'
 export const SCREENSHOTS_FOLDER = 'screenshots'
 
 const replacePort = (address: string, port: string): string => {
