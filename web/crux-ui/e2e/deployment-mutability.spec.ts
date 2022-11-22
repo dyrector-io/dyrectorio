@@ -97,8 +97,6 @@ test.describe('Complex product incremental version', () => {
 
     await page.goto(deploymentUrl(productId, versionId, deploymentId))
 
-    await page.screenshot({ path: screenshotPath('anyad'), fullPage: true })
-
     await expect(await page.locator('button:has-text("Edit")')).toHaveCount(0)
     await expect(await page.locator('input[id=name]')).toBeDisabled()
   })
