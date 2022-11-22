@@ -34,7 +34,7 @@ type TraefikDeployRequest struct {
 type UnknownContainerError struct{}
 
 func (err *UnknownContainerError) Error() string {
-	return "own container ID unknown"
+	return "unknown container ID"
 }
 
 func ExecTraefik(ctx context.Context, traefikDeployReq TraefikDeployRequest, cfg *config.Configuration) error {
