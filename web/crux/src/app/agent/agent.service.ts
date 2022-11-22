@@ -11,7 +11,7 @@ import { DeploymentProgressEvent } from 'src/domain/deployment'
 import { DeployMessage, NotificationMessageType } from 'src/domain/notification-templates'
 import { collectChildVersionIds, collectParentVersionIds } from 'src/domain/utils'
 import { AlreadyExistsException, NotFoundException, UnauthenticatedException } from 'src/exception/errors'
-import { AgentCommand, AgentInfo, AgentUpdateAborted, CloseReason } from 'src/grpc/protobuf/proto/agent'
+import { AgentAbortUpdate, AgentCommand, AgentInfo, CloseReason } from 'src/grpc/protobuf/proto/agent'
 import {
   ContainerStateListMessage,
   DeploymentStatus,
@@ -237,14 +237,14 @@ export default class AgentService {
     agent.update(this.configService.get<string>('CRUX_AGENT_IMAGE') ?? 'stable')
   }
 
-  updateAborted(connection: GrpcNodeConnection, request: AgentUpdateAborted): Observable<Empty> {
+  async updateAborted(connection: GrpcNodeConnection, request: AgentAbortUpdate): Promise<Empty> {
     this.logger.warn(`Agent updated aborted for '${connection.nodeId}' with error: '${request.error}'`)
 
     const agent = this.getByIdOrThrow(connection.nodeId)
 
-    agent.updateAborted(request.error)
+    agent.onUpdateAborted(request.error)
 
-    return of(Empty)
+    return Empty
   }
 
   private onAgentConnectionStatusChange(agent: Agent, status: NodeConnectionStatus) {

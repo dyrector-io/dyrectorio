@@ -10,7 +10,7 @@ import Deployment from './deployment'
 import { toTimestamp } from './utils'
 
 export class Agent {
-  private static AGENT_UPDATE_TIMEOUT = 60 * 5 // seconds
+  private static AGENT_UPDATE_TIMEOUT = 60 * 5 * 1000 // seconds
 
   private commandChannel = new Subject<AgentCommand>()
 
@@ -20,7 +20,7 @@ export class Agent {
 
   private secretsWatchers: Map<string, Subject<ListSecretsResponse>> = new Map()
 
-  private updateStartedAt: number | undefined
+  private updateStartedAt: number | null = null
 
   readonly id: string
 
@@ -55,16 +55,16 @@ export class Agent {
     }
 
     const now = new Date().getTime()
-    if (Math.floor(now / 1000) - this.updateStartedAt < Agent.AGENT_UPDATE_TIMEOUT) {
+    if (now - this.updateStartedAt < Agent.AGENT_UPDATE_TIMEOUT) {
       return true
     }
 
-    this.updateStartedAt = undefined
+    this.updateStartedAt = null
     return false
   }
 
   deploy(deployment: Deployment): Observable<DeploymentProgressMessage> {
-    this.checkUpdating()
+    this.throwWhenUpdating()
 
     if (this.deployments.has(deployment.id)) {
       throw new AlreadyExistsException({
@@ -79,7 +79,7 @@ export class Agent {
   }
 
   upsertContainerStatusWatcher(prefix: string): ContainerStatusWatcher {
-    this.checkUpdating()
+    this.throwWhenUpdating()
 
     let watcher = this.statusWatchers.get(prefix)
     if (!watcher) {
@@ -150,7 +150,7 @@ export class Agent {
   }
 
   getContainerSecrets(prefix: string, name: string): Observable<ListSecretsResponse> {
-    this.checkUpdating()
+    this.throwWhenUpdating()
 
     const key = `${prefix}-${name}`
 
@@ -202,10 +202,9 @@ export class Agent {
   }
 
   update(imageTag: string) {
-    this.checkUpdating()
+    this.throwWhenUpdating()
 
-    const now = new Date().getTime()
-    this.updateStartedAt = Math.floor(now / 1000)
+    this.updateStartedAt = new Date().getTime()
 
     this.commandChannel.next({
       update: {
@@ -215,8 +214,8 @@ export class Agent {
     } as AgentCommand)
   }
 
-  updateAborted(error?: string) {
-    this.updateStartedAt = undefined
+  onUpdateAborted(error?: string) {
+    this.updateStartedAt = null
 
     this.eventChannel.next({
       id: this.id,
@@ -232,7 +231,7 @@ export class Agent {
     this.deployments.forEach(it => it.debugInfo(logger))
   }
 
-  private checkUpdating() {
+  private throwWhenUpdating() {
     if (this.checkAgentUpdating()) {
       throw new PreconditionFailedException({
         message: 'Node is updating',

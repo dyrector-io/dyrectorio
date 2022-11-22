@@ -319,7 +319,7 @@ export interface AgentUpdateRequest {
   timeoutSeconds: number
 }
 
-export interface AgentUpdateAborted {
+export interface AgentAbortUpdate {
   error: string
 }
 
@@ -1276,16 +1276,16 @@ export const AgentUpdateRequest = {
   },
 }
 
-function createBaseAgentUpdateAborted(): AgentUpdateAborted {
+function createBaseAgentAbortUpdate(): AgentAbortUpdate {
   return { error: '' }
 }
 
-export const AgentUpdateAborted = {
-  fromJSON(object: any): AgentUpdateAborted {
+export const AgentAbortUpdate = {
+  fromJSON(object: any): AgentAbortUpdate {
     return { error: isSet(object.error) ? String(object.error) : '' }
   },
 
-  toJSON(message: AgentUpdateAborted): unknown {
+  toJSON(message: AgentAbortUpdate): unknown {
     const obj: any = {}
     message.error !== undefined && (obj.error = message.error)
     return obj
@@ -1327,7 +1327,7 @@ export interface AgentClient {
 
   secretList(request: ListSecretsResponse, metadata: Metadata, ...rest: any): Observable<Empty>
 
-  updateAborted(request: AgentUpdateAborted, metadata: Metadata, ...rest: any): Observable<Empty>
+  abortUpdate(request: AgentAbortUpdate, metadata: Metadata, ...rest: any): Observable<Empty>
 }
 
 /** Service handling deployment of containers and fetching statuses */
@@ -1357,16 +1357,12 @@ export interface AgentController {
 
   secretList(request: ListSecretsResponse, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
 
-  updateAborted(
-    request: AgentUpdateAborted,
-    metadata: Metadata,
-    ...rest: any
-  ): Promise<Empty> | Observable<Empty> | Empty
+  abortUpdate(request: AgentAbortUpdate, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
 }
 
 export function AgentControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ['connect', 'secretList', 'updateAborted']
+    const grpcMethods: string[] = ['connect', 'secretList', 'abortUpdate']
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
       GrpcMethod('Agent', method)(constructor.prototype[method], method, descriptor)

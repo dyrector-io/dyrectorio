@@ -2,9 +2,11 @@ import { Logger } from '@app/logger'
 import {
   GetNodeStatusListMessage,
   NodeStatusMessage,
+  UpdateNodeAgentMessage,
   WS_TYPE_GET_NODE_STATUS_LIST,
   WS_TYPE_NODE_STATUS,
   WS_TYPE_NODE_STATUSES,
+  WS_TYPE_UPDATE_NODE_AGENT,
 } from '@app/models'
 import { WsMessage } from '@app/websockets/common'
 import WsConnection from '@app/websockets/connection'
@@ -57,7 +59,23 @@ const onGetNodeStatuses = async (
   connection.send(WS_TYPE_NODE_STATUSES, res as NodeStatusMessage[])
 }
 
-export default routedWebSocketEndpoint(logger, [[WS_TYPE_GET_NODE_STATUS_LIST, onGetNodeStatuses]], [], {
-  onReady,
-  onAuthorize,
-})
+const onUpdateNodeAgent = async (
+  endpoint: WsEndpoint,
+  connection: WsConnection,
+  message: WsMessage<UpdateNodeAgentMessage>,
+) => {
+  await cruxFromConnection(connection).nodes.updateNodeAgent(message.payload.id)
+}
+
+export default routedWebSocketEndpoint(
+  logger,
+  [
+    [WS_TYPE_GET_NODE_STATUS_LIST, onGetNodeStatuses],
+    [WS_TYPE_UPDATE_NODE_AGENT, onUpdateNodeAgent],
+  ],
+  [],
+  {
+    onReady,
+    onAuthorize,
+  },
+)

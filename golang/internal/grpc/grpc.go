@@ -478,11 +478,11 @@ func executeUpdate(ctx context.Context, command *agent.AgentUpdateRequest, updat
 		log.Error().Stack().Err(err).Msg("Update error")
 
 		errorString := err.Error()
-		resp := &agent.AgentUpdateAborted{
+		resp := &agent.AgentAbortUpdate{
 			Error: strings.ToUpper(errorString[0:1]) + errorString[1:],
 		}
 
-		_, err := grpcConn.Client.UpdateAborted(ctx, resp)
+		_, err := grpcConn.Client.AbortUpdate(ctx, resp)
 		if err != nil {
 			log.Error().Stack().Err(err).Msg("Update error response")
 		}

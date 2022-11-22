@@ -25,7 +25,7 @@ service Agent {
   rpc DeploymentStatus(stream common.DeploymentStatusMessage) returns (common.Empty);
   rpc ContainerState(stream common.ContainerStateListMessage) returns (common.Empty);
   rpc SecretList(common.ListSecretsResponse) returns (common.Empty);
-  rpc UpdateAborted(AgentUpdateAborted) returns (common.Empty);
+  rpc AbortUpdate(AgentAbortUpdate) returns (common.Empty);
 }
 
 /**
@@ -242,7 +242,7 @@ message AgentUpdateRequest {
   int32 timeoutSeconds = 2;
 }
 
-message AgentUpdateAborted {
+message AgentAbortUpdate {
   string error = 1;
 }
 

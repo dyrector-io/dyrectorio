@@ -2,11 +2,11 @@ import { Metadata } from '@grpc/grpc-js'
 import { Controller, UseGuards, UseInterceptors } from '@nestjs/common'
 import { Observable } from 'rxjs'
 import {
+  AgentAbortUpdate,
   AgentCommand,
   AgentController as GrpcAgentController,
   AgentControllerMethods,
   AgentInfo,
-  AgentUpdateAborted,
 } from 'src/grpc/protobuf/proto/agent'
 import {
   ContainerStateListMessage,
@@ -43,7 +43,7 @@ export default class AgentController implements GrpcAgentController {
     return this.service.handleSecretList(call.connection, request)
   }
 
-  updateAborted(request: AgentUpdateAborted, _: Metadata, call: NodeUnaryCall): Observable<Empty> {
+  abortUpdate(request: AgentAbortUpdate, _: Metadata, call: NodeUnaryCall): Promise<Empty> {
     return this.service.updateAborted(call.connection, request)
   }
 }

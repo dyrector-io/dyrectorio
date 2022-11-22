@@ -17,7 +17,9 @@ import {
   NodeStatusMessage,
   NodeType,
   UpdateDyoNode,
+  UpdateNodeAgentMessage,
   WS_TYPE_NODE_STATUS,
+  WS_TYPE_UPDATE_NODE_AGENT,
 } from '@app/models'
 import { API_NODES, nodeApiUrl, nodeTokenApiUrl, WS_NODES } from '@app/routes'
 import { sendForm } from '@app/utils'
@@ -29,7 +31,6 @@ import { MutableRefObject } from 'react'
 import toast from 'react-hot-toast'
 import DyoNodeSetup from './dyo-node-setup'
 import NodeConnectionCard from './node-connection-card'
-import NodeUpdateCard from './node-update-card'
 import useNodeState from './use-node-state'
 
 interface EditNodeCardProps {
@@ -122,6 +123,12 @@ const EditNodeCard = (props: EditNodeCardProps) => {
       ...node,
       type,
     })
+  }
+
+  const onUpdateNode = () => {
+    socket.send(WS_TYPE_UPDATE_NODE_AGENT, {
+      id: node.id,
+    } as UpdateNodeAgentMessage)
   }
 
   const formik = useFormik({
@@ -229,8 +236,6 @@ const EditNodeCard = (props: EditNodeCardProps) => {
         <div className="flex flex-col flex-grow w-1/2">
           <NodeConnectionCard node={node} />
 
-          <NodeUpdateCard node={node} className="mt-4" />
-
           <DyoCard className="flex-grow w-full p-8 mt-4">
             <DyoHeading element="h4" className="text-lg text-bright mb-4">
               {t('setup')}
@@ -261,9 +266,19 @@ const EditNodeCard = (props: EditNodeCardProps) => {
             {!editing ? (
               <div className="text-bright font-bold mt-2">{t('saveYourNode')}</div>
             ) : node.hasToken && !node.install ? (
-              <DyoButton className="px-6 mt-4 mr-auto" secondary onClick={onRevokeToken}>
-                {t('revoke')}
-              </DyoButton>
+              <>
+                <DyoButton className="px-6 mt-4 mr-auto" secondary onClick={onRevokeToken}>
+                  {t('revoke')}
+                </DyoButton>
+                <DyoButton
+                  className="px-6 mt-4 ml-4 mr-auto"
+                  secondary
+                  onClick={onUpdateNode}
+                  disabled={node.status !== 'running'}
+                >
+                  {t('update')}
+                </DyoButton>
+              </>
             ) : (
               <DyoNodeSetup
                 node={node}
