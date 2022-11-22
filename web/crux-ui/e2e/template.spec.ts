@@ -29,18 +29,18 @@ const testComplexTemplate = async (page: Page, templateName: string, productName
   return productId
 }
 
-test('creating a simple product from a template should work (Strapi)', async ({ page }) => {
-  await testSimpleTemplate(page, 'Strapi', 'Strapi-simple', 2)
-})
-
-test('creating a complex product from a template should work (Strapi)', async ({ page }) => {
-  await testComplexTemplate(page, 'Strapi', 'Strapi-complex', 2)
-})
-
 test('creating a simple product from a template should work (Google)', async ({ page }) => {
   await testSimpleTemplate(page, 'Google Microservices Demo', 'Google-simple', 12)
 })
 
 test('creating a complex product from a template should work (Google)', async ({ page }) => {
   await testComplexTemplate(page, 'Google Microservices Demo', 'Google-complex', 12)
+})
+
+test('creating a simple product from a template should work (Strapi)', async ({ page }) => {
+  await testSimpleTemplate(page, 'Strapi', 'Strapi-simple', 2)
+})
+
+test('creating a complex product from a template should work (Strapi)', async ({ page }) => {
+  await testComplexTemplate(page, 'Strapi', 'Strapi-complex', 2)
 })
