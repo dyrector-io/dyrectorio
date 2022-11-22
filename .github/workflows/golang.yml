@@ -81,61 +81,6 @@ jobs:
         id: settag
         working-directory: .github/workflows
         run: ./pipeline_set_output_tag.sh $GITHUB_REF_TYPE ${{ github.ref_name }} ${{ github.sha }}
-
-  # job: Test e2e
-  test_e2e:
-    runs-on: ubuntu-20.04
-    needs: test
-    container:
-      image: dyrectorio/playwright:1.26.0-alpha-aug-23-2022
-      volumes:
-        - /var/run/docker.sock:/var/run/docker
-      ports:
-        - 3000:3000 # crux-ui
-        - 5000:5000 # crux-agent
-        - 5001:5001 # crux-api
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Install curl
-        run: |
-          apt-get install -y curl
-
-      - name: Setup containers
-        working-directory: web/crux-ui
-        run: |
-          docker network create crux-intranet
-          ./setup_e2e_env.sh
-
-      - name: Setup crux
-        working-directory: web/crux
-        run: |
-          npm i
-          npx prisma generate
-          npx prisma migrate deploy
-          npm run build
-
-      - name: Run tests
-        working-directory: web
-        env:
-          HUB_PROXY_URL: ${{ secrets.HUB_PROXY_URL }}
-          HUB_PROXY_TOKEN: ${{ secrets.HUB_PROXY_TOKEN }}
-        run: |
-          cd crux
-          npm run start:prod &
-          cd ../crux-ui
-          npm i
-          npm run disable-telemetry
-          npm run build
-          npx playwright install
-          npm run test:e2e
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: e2e-screenshots
-          path: web/crux-ui/e2e/screenshots/
-
   build:
     runs-on: ubuntu-20.04
     needs: [test]
