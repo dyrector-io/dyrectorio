@@ -188,14 +188,14 @@ export default class TemplateService {
 
     const images = await Promise.all(createImages)
 
-    await this.prisma.$transaction(
-      images.map(it => {
+    await this.prisma.$transaction(async tx => {
+      const updates = images.map(it => {
         const imageTemplate = it[0] as TemplateImage
         const dbImage = it[1] as ImageResponse
 
         const config: ContainerConfigData = this.mapTemplateConfig(imageTemplate.config)
 
-        return this.prisma.image.update({
+        return tx.image.update({
           include: {
             config: true,
           },
@@ -210,7 +210,14 @@ export default class TemplateService {
             id: dbImage.id,
           },
         })
-      }),
+      })
+
+        await Promise.all(updates)
+      },
+      {
+        maxWait: 120 * 1000,
+        timeout: 120 * 1000,
+      },
     )
   }
 }
