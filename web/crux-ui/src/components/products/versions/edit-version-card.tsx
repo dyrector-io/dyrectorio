@@ -69,12 +69,12 @@ const EditVersionCard = (props: EditVersionCardProps) => {
         }
 
         setVersion(result)
+        setSubmitting(false)
         onVersionEdited(result)
       } else {
+        setSubmitting(false)
         handleApiError(res, setFieldError)
       }
-
-      setSubmitting(false)
     },
   })
 

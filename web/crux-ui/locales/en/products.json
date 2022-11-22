@@ -11,6 +11,7 @@
   "altPicture": "Picture of {{name}}",
   "type": "Type",
   "versions": "Versions",
+  "changelog": "Changelog",
 
   "simple": "Simple",
   "complex": "Complex",

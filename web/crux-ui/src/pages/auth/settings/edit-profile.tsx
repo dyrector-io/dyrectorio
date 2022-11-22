@@ -31,8 +31,8 @@ const SettingsPage = (props: SelfServiceSettingsFlow) => {
   const formik = useFormik({
     initialValues: {
       email: findAttributes(ui, 'traits.email').value,
-      firstName: findAttributes(ui, 'traits.name.first').value,
-      lastName: findAttributes(ui, 'traits.name.last').value,
+      firstName: findAttributes(ui, 'traits.name.first').value ?? '',
+      lastName: findAttributes(ui, 'traits.name.last').value ?? '',
     },
     onSubmit: async values => {
       const data: EditProfile = {
