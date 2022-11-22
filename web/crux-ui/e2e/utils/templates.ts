@@ -1,17 +1,17 @@
-import { productUrl, ROUTE_PRODUCTS, ROUTE_TEMPLATES, versionUrl } from '@app/routes'
-import { expect, Page } from '@playwright/test'
+import { ROUTE_TEMPLATES } from '@app/routes'
+import { Page } from '@playwright/test'
 
 export const createProductFromTemplate = async (
   page: Page,
   templateName: string,
   productName: string,
-  productType: 'Simple' | 'Complex'
+  productType: 'Simple' | 'Complex',
 ): Promise<string> => {
   await page.goto(ROUTE_TEMPLATES)
   await page.waitForURL(ROUTE_TEMPLATES)
 
   const templateTitle = await page.waitForSelector(`h5:has-text("${templateName}")`)
-  const templateCard = await templateTitle.$("xpath=../..")
+  const templateCard = await templateTitle.$('xpath=../..')
   const addButton = await templateCard.$('button:has-text("Add")')
 
   await addButton.click()

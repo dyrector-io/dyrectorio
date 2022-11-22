@@ -2,7 +2,12 @@ import { productUrl } from '@app/routes'
 import { expect, Page, test } from '@playwright/test'
 import { createProductFromTemplate } from './utils/templates'
 
-const testSimpleTemplate = async (page: Page, templateName: string, productName: string, expectedImages: number): Promise<string> => {
+const testSimpleTemplate = async (
+  page: Page,
+  templateName: string,
+  productName: string,
+  expectedImages: number,
+): Promise<string> => {
   const productId = await createProductFromTemplate(page, templateName, productName, 'Simple')
 
   await expect(page).toHaveURL(productUrl(productId))
@@ -14,7 +19,12 @@ const testSimpleTemplate = async (page: Page, templateName: string, productName:
   return productId
 }
 
-const testComplexTemplate = async (page: Page, templateName: string, productName: string, expectedImages: number): Promise<string> => {
+const testComplexTemplate = async (
+  page: Page,
+  templateName: string,
+  productName: string,
+  expectedImages: number,
+): Promise<string> => {
   const productId = await createProductFromTemplate(page, templateName, productName, 'Complex')
 
   await expect(page).toHaveURL(productUrl(productId))
