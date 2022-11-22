@@ -13,7 +13,7 @@ test('Deploy to node should be successful', async ({ page }) => {
   const versionId = await createVersion(page, productId, '0.1.0', 'Incremental')
   await createImage(page, productId, versionId, image)
 
-  await deployWithDagent(page, productId, versionId, prefix)
+  await deployWithDagent(page, prefix, productId, versionId)
 
   await page.screenshot({ path: screenshotPath('successful-deployment'), fullPage: true })
 
@@ -25,11 +25,11 @@ test('Second successful deployment should make the first deployment obsolete', a
   const versionId = await createVersion(page, productId, '1.0.0', 'Incremental')
   await createImage(page, productId, versionId, image)
 
-  await deployWithDagent(page, productId, versionId, prefixTwo)
+  await deployWithDagent(page, prefixTwo, productId, versionId)
 
   await expect(await page.locator('.bg-dyo-green').first()).toContainText('Successful')
 
-  await deployWithDagent(page, productId, versionId, prefixTwo)
+  await deployWithDagent(page, prefixTwo, productId, versionId)
 
   await expect(await page.locator('.bg-dyo-green').first()).toContainText('Successful')
 
