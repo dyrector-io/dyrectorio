@@ -106,7 +106,7 @@ test('Deploy to node should be successful', async ({ page }) => {
 
 test('Second successful deployment should make the first deployment obsolete', async ({ page }) => {
   const productId = await createProduct(page, 'PW-OBSOLETE', 'Complex')
-  const versionId = await createVersion(page, productId, '0.1.0', 'Incremental')
+  const versionId = await createVersion(page, productId, '1.0.0', 'Incremental')
   await createImage(page, productId, versionId, imageName)
 
   await deploy(page, productId, versionId, prefixTwo)
