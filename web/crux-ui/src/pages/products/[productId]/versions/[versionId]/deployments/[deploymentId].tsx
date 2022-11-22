@@ -20,6 +20,7 @@ import { DeploymentInvalidatedSecrets, DeploymentRoot, mergeConfigs } from '@app
 import {
   deploymentApiUrl,
   deploymentDeployUrl,
+  deploymentStartUrl,
   deploymentUrl,
   productUrl,
   ROUTE_PRODUCTS,
@@ -60,6 +61,8 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
     onWsError,
   })
 
+  const { product, version, deployment, node } = state
+
   const copyDeployment = async () => {
     const url = await actions.onCopyDeployment()
     if (!url) {
@@ -69,13 +72,21 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
     router.push(url)
   }
 
+  const deploy = async () => {
+    fetch(deploymentStartUrl(product.id, version.id, deployment.id), {
+      method: 'POST',
+    })
+
+    const url = deploymentDeployUrl(product.id, version.id, deployment.id)
+    router.push(url)
+  }
+
   const anchors = useAnchorActions({
     copyDeployment,
+    deploy,
   })
 
   useWebsocketTranslate(t)
-
-  const { product, version, deployment, node } = state
 
   const pageLink: BreadcrumbLink = {
     name: t('common:deployments'),
@@ -181,9 +192,9 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
         )}
 
         {!state.mutable ? (
-          <DyoButton className="px-6 ml-4" href={deploymentDeployUrl(product.id, version.id, deployment.id)}>
-            {t('log')}
-          </DyoButton>
+          <AnchorAction anchors={anchors} href="deploy">
+            <DyoButton className="px-6 ml-4">{t('log')}</DyoButton>
+          </AnchorAction>
         ) : !state.editing ? (
           <DyoButton className="px-6 ml-4" onClick={onDeploy} disabled={node.status !== 'running'}>
             {t('common:deploy')}

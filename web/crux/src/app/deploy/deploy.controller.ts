@@ -1,3 +1,4 @@
+import { Metadata } from '@grpc/grpc-js'
 import { Body, Controller, UseGuards, UseInterceptors } from '@nestjs/common'
 import { concatAll, from, Observable } from 'rxjs'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
@@ -84,12 +85,12 @@ export default class DeployController implements CruxDeploymentController {
     return await this.service.deleteDeployment(request)
   }
 
-  startDeployment(@Body(DeployStartValidationPipe) request: IdRequest): Observable<DeploymentProgressMessage> {
-    return from(this.service.startDeployment(request)).pipe(concatAll())
+  async startDeployment(@Body(DeployStartValidationPipe) request: IdRequest): Promise<Empty> {
+    return await this.service.startDeployment(request)
   }
 
   subscribeToDeploymentEvents(request: IdRequest): Observable<DeploymentProgressMessage> {
-    return from(this.service.startDeploymentEvents(request)).pipe(concatAll())
+    return from(this.service.subscribeToDeploymentEvents(request)).pipe(concatAll())
   }
 
   @DisableTeamAccessCheck()

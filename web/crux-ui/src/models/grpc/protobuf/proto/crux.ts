@@ -1296,6 +1296,7 @@ export interface DeploymentEventResponse {
 }
 
 export interface DeploymentEventListResponse {
+  status: DeploymentStatus
   data: DeploymentEventResponse[]
 }
 
@@ -9169,11 +9170,14 @@ export const DeploymentEventResponse = {
 }
 
 function createBaseDeploymentEventListResponse(): DeploymentEventListResponse {
-  return { data: [] }
+  return { status: 0, data: [] }
 }
 
 export const DeploymentEventListResponse = {
   encode(message: DeploymentEventListResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.status !== 0) {
+      writer.uint32(800).int32(message.status)
+    }
     for (const v of message.data) {
       DeploymentEventResponse.encode(v!, writer.uint32(8002).fork()).ldelim()
     }
@@ -9187,6 +9191,9 @@ export const DeploymentEventListResponse = {
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
+        case 100:
+          message.status = reader.int32() as any
+          break
         case 1000:
           message.data.push(DeploymentEventResponse.decode(reader, reader.uint32()))
           break
@@ -9200,12 +9207,14 @@ export const DeploymentEventListResponse = {
 
   fromJSON(object: any): DeploymentEventListResponse {
     return {
+      status: isSet(object.status) ? deploymentStatusFromJSON(object.status) : 0,
       data: Array.isArray(object?.data) ? object.data.map((e: any) => DeploymentEventResponse.fromJSON(e)) : [],
     }
   },
 
   toJSON(message: DeploymentEventListResponse): unknown {
     const obj: any = {}
+    message.status !== undefined && (obj.status = deploymentStatusToJSON(message.status))
     if (message.data) {
       obj.data = message.data.map(e => (e ? DeploymentEventResponse.toJSON(e) : undefined))
     } else {
@@ -9216,6 +9225,7 @@ export const DeploymentEventListResponse = {
 
   fromPartial<I extends Exact<DeepPartial<DeploymentEventListResponse>, I>>(object: I): DeploymentEventListResponse {
     const message = createBaseDeploymentEventListResponse()
+    message.status = object.status ?? 0
     message.data = object.data?.map(e => DeploymentEventResponse.fromPartial(e)) || []
     return message
   },
@@ -11143,12 +11153,11 @@ export const CruxDeploymentService = {
   startDeployment: {
     path: '/crux.CruxDeployment/StartDeployment',
     requestStream: false,
-    responseStream: true,
+    responseStream: false,
     requestSerialize: (value: IdRequest) => Buffer.from(IdRequest.encode(value).finish()),
     requestDeserialize: (value: Buffer) => IdRequest.decode(value),
-    responseSerialize: (value: DeploymentProgressMessage) =>
-      Buffer.from(DeploymentProgressMessage.encode(value).finish()),
-    responseDeserialize: (value: Buffer) => DeploymentProgressMessage.decode(value),
+    responseSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => Empty.decode(value),
   },
   subscribeToDeploymentEvents: {
     path: '/crux.CruxDeployment/SubscribeToDeploymentEvents',
@@ -11184,7 +11193,7 @@ export interface CruxDeploymentServer extends UntypedServiceImplementation {
   getDeploymentSecrets: handleUnaryCall<DeploymentListSecretsRequest, ListSecretsResponse>
   copyDeploymentSafe: handleUnaryCall<IdRequest, CreateEntityResponse>
   copyDeploymentUnsafe: handleUnaryCall<IdRequest, CreateEntityResponse>
-  startDeployment: handleServerStreamingCall<IdRequest, DeploymentProgressMessage>
+  startDeployment: handleUnaryCall<IdRequest, Empty>
   subscribeToDeploymentEvents: handleServerStreamingCall<IdRequest, DeploymentProgressMessage>
   subscribeToDeploymentEditEvents: handleServerStreamingCall<ServiceIdRequest, DeploymentEditEventMessage>
 }
@@ -11352,12 +11361,18 @@ export interface CruxDeploymentClient extends Client {
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
   ): ClientUnaryCall
-  startDeployment(request: IdRequest, options?: Partial<CallOptions>): ClientReadableStream<DeploymentProgressMessage>
+  startDeployment(request: IdRequest, callback: (error: ServiceError | null, response: Empty) => void): ClientUnaryCall
   startDeployment(
     request: IdRequest,
-    metadata?: Metadata,
-    options?: Partial<CallOptions>,
-  ): ClientReadableStream<DeploymentProgressMessage>
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: Empty) => void,
+  ): ClientUnaryCall
+  startDeployment(
+    request: IdRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: Empty) => void,
+  ): ClientUnaryCall
   subscribeToDeploymentEvents(
     request: IdRequest,
     options?: Partial<CallOptions>,

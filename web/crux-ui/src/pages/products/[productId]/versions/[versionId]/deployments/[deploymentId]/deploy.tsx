@@ -9,17 +9,11 @@ import useWebSocket from '@app/hooks/use-websocket'
 import {
   DeploymentEvent,
   DeploymentEventMessage,
-  deploymentIsMutable,
   DeploymentRoot,
   DeploymentStatus,
-  FetchDeploymentEventsMessage,
-  StartDeploymentEventsMessage,
-  StartDeploymentMessage,
   WS_TYPE_DEPLOYMENT_EVENT,
   WS_TYPE_DEPLOYMENT_EVENT_LIST,
   WS_TYPE_FETCH_DEPLOYMENT_EVENTS,
-  WS_TYPE_START_DEPLOYMENT,
-  WS_TYPE_START_DEPLOYMENT_EVENTS,
 } from '@app/models'
 import {
   deploymentDeployUrl,
@@ -57,23 +51,9 @@ const DeployPage = (props: DeployPageProps) => {
     status,
   }
   const { product, version } = deployment
-  const mutable = deploymentIsMutable(deployment.status, version.type)
 
   const sock = useWebSocket(deploymentWsUrl(product.id, deployment.versionId, deployment.id), {
-    onOpen: () => {
-      if (mutable) {
-        sock.send(WS_TYPE_START_DEPLOYMENT, {
-          id: deployment.id,
-        } as StartDeploymentMessage)
-      } else {
-        sock.send(WS_TYPE_FETCH_DEPLOYMENT_EVENTS, {
-          id: deployment.id,
-        } as FetchDeploymentEventsMessage)
-        sock.send(WS_TYPE_START_DEPLOYMENT_EVENTS, {
-          id: deployment.id,
-        } as StartDeploymentEventsMessage)
-      }
-    },
+    onOpen: () => sock.send(WS_TYPE_FETCH_DEPLOYMENT_EVENTS, {}),
   })
 
   sock.on(WS_TYPE_DEPLOYMENT_EVENT_LIST, (message: DeploymentEventMessage[]) => setEvents(message))
@@ -85,6 +65,8 @@ const DeployPage = (props: DeployPageProps) => {
       setStatus(message.value as DeploymentStatus)
     }
   })
+
+  // sock.on(WS_TYPE_DEPLOYMENT_FINISHED)
 
   const pageLink: BreadcrumbLink = {
     name: t('common:deployments'),

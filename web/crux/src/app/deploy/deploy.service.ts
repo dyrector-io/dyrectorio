@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { DeploymentStatusEnum } from '@prisma/client'
 import { JsonArray } from 'prisma'
-import { concatAll, EMPTY, filter, from, lastValueFrom, map, merge, Observable, Subject } from 'rxjs'
+import { concatAll, EMPTY, filter, from, lastValueFrom, map, merge, Observable, Subject, tap } from 'rxjs'
 import Deployment from 'src/domain/deployment'
 import { InternalException, PreconditionFailedException } from 'src/exception/errors'
 import { DeployRequest } from 'src/grpc/protobuf/proto/agent'
@@ -98,17 +98,23 @@ export default class DeployService {
   }
 
   async getDeploymentEvents(request: IdRequest): Promise<DeploymentEventListResponse> {
-    const events = await this.prisma.deploymentEvent.findMany({
+    const deployment = await this.prisma.deployment.findUniqueOrThrow({
       where: {
-        deploymentId: request.id,
+        id: request.id,
       },
-      orderBy: {
-        createdAt: 'desc',
+      select: {
+        status: true,
+        events: {
+          orderBy: {
+            createdAt: 'desc',
+          },
+        },
       },
     })
 
     return {
-      data: events.map(it => this.mapper.eventToGrpc(it)),
+      status: this.mapper.statusToGrpc(deployment.status),
+      data: deployment.events.map(it => this.mapper.eventToGrpc(it)),
     }
   }
 
@@ -216,7 +222,7 @@ export default class DeployService {
     return Empty
   }
 
-  async startDeployment(request: IdRequest): Promise<Observable<DeploymentProgressMessage>> {
+  async startDeployment(request: IdRequest): Promise<Empty> {
     const deployment = await this.prisma.deployment.findUniqueOrThrow({
       where: {
         id: request.id,
@@ -251,7 +257,6 @@ export default class DeployService {
     })
 
     const agent = this.agentService.getById(deployment.nodeId)
-
     const publicKey = agent?.publicKey
 
     if (!publicKey) {
@@ -320,6 +325,52 @@ export default class DeployService {
       })
     }
 
+    const deploy = new Deployment({
+      id: deployment.id,
+      releaseNotes: deployment.version.changelog,
+      versionName: deployment.version.name,
+      requests: deployment.instances.map(it => {
+        const { registry } = it.image
+        const registryUrl =
+          registry.type === 'google' || registry.type === 'github'
+            ? `${registry.url}/${registry.imageNamePrefix}`
+            : registry.type === 'v2' || registry.type === 'gitlab'
+            ? registry.url
+            : registry.type === 'hub'
+            ? registry.imageNamePrefix
+            : ''
+
+        const mergedConfig = this.mapper.mergeConfigs(
+          (it.image.config ?? {}) as ContainerConfigData,
+          (it.config ?? {}) as ContainerConfigData,
+        )
+
+        return {
+          common: this.mapper.configToCommonConfig(mergedConfig),
+          crane: this.mapper.configToCraneConfig(mergedConfig),
+          dagent: this.mapper.configToDagentConfig(mergedConfig),
+          id: it.id,
+          containerName: it.image.config.name,
+          imageName: it.image.name,
+          tag: it.image.tag,
+          instanceConfig: this.mapper.deploymentToAgentInstanceConfig(deployment),
+          registry: registryUrl,
+          registryAuth: !registry.token
+            ? undefined
+            : {
+                name: registry.name,
+                url: registryUrl,
+                user: registry.user,
+                password: registry.token,
+              },
+        } as DeployRequest
+      }),
+    })
+
+    this.logger.debug(`Starting deployment: ${deploy.id}`)
+
+    agent.deploy(deploy)
+
     await this.prisma.deployment.update({
       where: {
         id: deployment.id,
@@ -329,81 +380,31 @@ export default class DeployService {
       },
     })
 
-    const deploy = new Deployment(
-      {
-        id: deployment.id,
-        releaseNotes: deployment.version.changelog,
-        versionName: deployment.version.name,
-        requests: deployment.instances.map(it => {
-          const { registry } = it.image
-          const registryUrl =
-            registry.type === 'google' || registry.type === 'github'
-              ? `${registry.url}/${registry.imageNamePrefix}`
-              : registry.type === 'v2' || registry.type === 'gitlab'
-              ? registry.url
-              : registry.type === 'hub'
-              ? registry.imageNamePrefix
-              : ''
-
-          const mergedConfig = this.mapper.mergeConfigs(
-            (it.image.config ?? {}) as ContainerConfigData,
-            (it.config ?? {}) as ContainerConfigData,
-          )
-
-          return {
-            common: this.mapper.configToCommonConfig(mergedConfig),
-            crane: this.mapper.configToCraneConfig(mergedConfig),
-            dagent: this.mapper.configToDagentConfig(mergedConfig),
-            id: it.id,
-            containerName: it.image.config.name,
-            imageName: it.image.name,
-            tag: it.image.tag,
-            instanceConfig: this.mapper.deploymentToAgentInstanceConfig(deployment),
-            registry: registryUrl,
-            registryAuth: !registry.token
-              ? undefined
-              : {
-                  name: registry.name,
-                  url: registryUrl,
-                  user: registry.user,
-                  password: registry.token,
-                },
-          } as DeployRequest
-        }),
-      },
-      {
-        accessedBy: request.accessedBy,
-        productName: deployment.version.product.name,
-        versionName: deployment.version.name,
-        nodeName: deployment.node.name,
-      },
-    )
-
-    this.logger.debug(`Starting deployment: ${deploy.id}`)
-
-    return agent.deploy(deploy)
+    return Empty
   }
 
-  async startDeploymentEvents(request: IdRequest): Promise<Observable<DeploymentProgressMessage>> {
+  async subscribeToDeploymentEvents(request: IdRequest): Promise<Observable<DeploymentProgressMessage>> {
     const deployment = await this.prisma.deployment.findUniqueOrThrow({
       where: {
         id: request.id,
       },
       select: {
+        id: true,
         nodeId: true,
       },
     })
 
     const agent = this.agentService.getById(deployment.nodeId)
-
-    const deploymentInstance = agent.getDeployment(request.id)
-    if (!deploymentInstance) {
+    if (!agent) {
       return EMPTY
     }
 
-    this.logger.debug(`Starting deployment event stream: ${request.id}`)
+    const runningDeployment = agent.getDeployment(deployment.id)
+    if (!runningDeployment) {
+      return EMPTY
+    }
 
-    return deploymentInstance.watchStatus()
+    return runningDeployment.watchStatus()
   }
 
   subscribeToDeploymentEditEvents(request: ServiceIdRequest): Observable<DeploymentEditEventMessage> {
