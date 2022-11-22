@@ -1,6 +1,16 @@
 import { ROUTE_NODES } from '@app/routes'
 import { expect, test } from '@playwright/test'
-import { screenshotPath } from './utils/common'
+import { DAGENT_NODE, screenshotPath } from './utils/common'
+
+test('Install dagent should be successful', async ({ page }) => {
+  await page.goto(ROUTE_NODES)
+
+  await page.locator(`h3:has-text("${DAGENT_NODE}")`).click()
+
+  await page.waitForNavigation()
+
+  await expect(await page.locator('span:has-text("Running")')).toHaveCount(1)
+})
 
 test('After adding a new node the setup process should be shown', async ({ page }) => {
   await page.goto(ROUTE_NODES)
