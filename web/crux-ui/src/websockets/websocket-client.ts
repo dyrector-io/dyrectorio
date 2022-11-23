@@ -27,12 +27,12 @@ class WebSocketClient {
 
     let route = this.routes.get(url)
     if (!route) {
-      route = new WebSocketClientRoute(this.logger, url)
+      route = new WebSocketClientRoute(this.logger, (msg, it) => this.sendWsMessage(msg, it), url)
       this.routes.set(url, route)
     }
 
     const connected = await this.connect(route)
-    route.addEndpoint(endpoint, msg => this.sendWsMessage(msg, route), this.token)
+    route.addEndpoint(endpoint, this.token)
     return connected
   }
 
@@ -103,7 +103,7 @@ class WebSocketClient {
 
       this.unsubscribe?.call(this)
 
-      const [token, url] = await route.subscribe(msg => this.sendWsMessage(msg, route), this.token)
+      const [token, url] = await route.subscribe(this.token)
       if (!token) {
         return false
       }
@@ -120,7 +120,7 @@ class WebSocketClient {
           }
 
           this.logger.info('Connected')
-          this.routes.forEach(it => it.onOpen(msg => this.sendWsMessage(msg, it), this.token))
+          this.routes.forEach(it => it.onOpen(this.token))
         }
 
         const onClose = () => {
@@ -178,7 +178,7 @@ class WebSocketClient {
 
   private reconnect() {
     if (this.routes.size < 1) {
-      this.logger.debug('Reconnect skipped: there is no endpoints')
+      this.logger.debug('Reconnect skipped: there are no endpoints')
       return
     }
 

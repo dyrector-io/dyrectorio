@@ -1,5 +1,5 @@
 import { Logger } from '@app/logger'
-import { WebSocketClientSendMessage, WsConnectDto } from './common'
+import { WebSocketClientSendMessage, WsConnectDto, WsMessage } from './common'
 import Mutex from './mutex'
 import WebSocketClientEndpoint from './websocket-client-endpoint'
 
@@ -7,6 +7,8 @@ type WebSocketClientRouteState = 'subscribed' | 'unsubscribed' | 'subscribing' |
 
 class WebSocketClientRoute {
   private logger: Logger
+
+  private sendClientMessage: WebSocketClientSendMessage
 
   private lock = new Mutex()
 
@@ -20,22 +22,27 @@ class WebSocketClientRoute {
     return this.state === 'subscribed'
   }
 
-  constructor(logger: Logger, public url: string) {
+  constructor(
+    logger: Logger,
+    wsSendMessage: (message: WsMessage<object>, route: WebSocketClientRoute) => boolean,
+    public url: string,
+  ) {
     this.logger = logger.descend(`Route - ${url}`)
+    this.sendClientMessage = msg => wsSendMessage(msg, this)
   }
 
   forEachEndpoint(callback: (it: WebSocketClientEndpoint) => void) {
     this.endpoints.forEach(callback)
   }
 
-  addEndpoint(endpoint: WebSocketClientEndpoint, sendClientMessage: WebSocketClientSendMessage, token: string) {
+  addEndpoint(endpoint: WebSocketClientEndpoint, token: string) {
     if (!this.endpoints.includes(endpoint)) {
       this.endpoints.push(endpoint)
 
       if (this.subscribed) {
-        endpoint.onOpen(sendClientMessage)
+        endpoint.onOpen(this.sendClientMessage)
       } else {
-        this.subscribe(sendClientMessage, token)
+        this.subscribe(token)
       }
     }
   }
@@ -49,7 +56,7 @@ class WebSocketClientRoute {
    * @param token existing token
    * @returns [newToken, connectUrl] or null
    */
-  async subscribe(sendClientMessage: WebSocketClientSendMessage, token: string): Promise<[string, string] | null> {
+  async subscribe(token: string): Promise<[string, string] | null> {
     if (this.state === 'subscribed') {
       return [token, null]
     }
@@ -79,6 +86,8 @@ class WebSocketClientRoute {
     }
 
     if (res.status === 200) {
+      // this is the first subscription
+
       const dto = (await res.json()) as WsConnectDto
       this.freeLock = free
       token = dto.token
@@ -90,8 +99,10 @@ class WebSocketClientRoute {
     }
 
     if (!this.freeLock) {
+      // it's not the first subscription so there is no need to ws connect
+
       this.state = 'subscribed'
-      await this.onOpen(sendClientMessage, token)
+      await this.onOpen(token)
       free()
     }
 
@@ -133,19 +144,21 @@ class WebSocketClientRoute {
     return this.endpoints.length < 1
   }
 
-  async onOpen(sendClientMessage: WebSocketClientSendMessage, token: string) {
+  async onOpen(token: string) {
     if (this.freeLock) {
+      // the route was used as the first connection
+
       this.state = 'subscribed'
       this.logger.debug('Subscribed')
+
       this.freeLock()
       this.freeLock = null
-    } else if (!this.subscribed) {
-      if (!(await this.subscribe(sendClientMessage, token))) {
-        return
-      }
+    } else if (!this.subscribed && !(await this.subscribe(token))) {
+      // when the socket is open but can't subscribe
+      return
     }
 
-    this.endpoints.forEach(it => it.onOpen(sendClientMessage))
+    this.endpoints.forEach(it => it.onOpen(this.sendClientMessage))
   }
 
   onClose() {
