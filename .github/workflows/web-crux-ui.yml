@@ -6,6 +6,8 @@ on:
       - main
   pull_request:
 
+runs-on: self-hosted
+
 permissions:
   contents: read
   pull-requests: read
