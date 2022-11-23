@@ -20,7 +20,7 @@ import { DeploymentInvalidatedSecrets, DeploymentRoot, mergeConfigs } from '@app
 import {
   deploymentApiUrl,
   deploymentDeployUrl,
-  deploymentStartUrl,
+  deploymentStartApiUrl,
   deploymentUrl,
   productUrl,
   ROUTE_PRODUCTS,
@@ -73,7 +73,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
   }
 
   const deploy = async () => {
-    fetch(deploymentStartUrl(product.id, version.id, deployment.id), {
+    fetch(deploymentStartApiUrl(product.id, version.id, deployment.id), {
       method: 'POST',
     })
 

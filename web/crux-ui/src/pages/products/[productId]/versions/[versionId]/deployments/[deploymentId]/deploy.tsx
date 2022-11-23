@@ -53,7 +53,9 @@ const DeployPage = (props: DeployPageProps) => {
   const { product, version } = deployment
 
   const sock = useWebSocket(deploymentWsUrl(product.id, deployment.versionId, deployment.id), {
-    onOpen: () => sock.send(WS_TYPE_FETCH_DEPLOYMENT_EVENTS, {}),
+    onOpen: () => {
+      sock.send(WS_TYPE_FETCH_DEPLOYMENT_EVENTS, {})
+    },
   })
 
   sock.on(WS_TYPE_DEPLOYMENT_EVENT_LIST, (message: DeploymentEventMessage[]) => setEvents(message))
@@ -65,8 +67,6 @@ const DeployPage = (props: DeployPageProps) => {
       setStatus(message.value as DeploymentStatus)
     }
   })
-
-  // sock.on(WS_TYPE_DEPLOYMENT_FINISHED)
 
   const pageLink: BreadcrumbLink = {
     name: t('common:deployments'),
