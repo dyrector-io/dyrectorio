@@ -1,7 +1,7 @@
 import { productUrl } from '@app/routes'
 import { expect, test } from '@playwright/test'
 import { versionUrl } from './../src/routes'
-import { DAGENT_NODE, screenshotPath } from './utils/common'
+import { DAGENT_NODE } from './utils/common'
 import { addDeploymentToVersion, createImage, createProduct, createVersion } from './utils/products'
 
 test('Add incremental version should work', async ({ page }) => {
@@ -90,8 +90,6 @@ test('Increase version should work', async ({ page }) => {
   await page.locator('input[name=name]').fill('2.0.0')
   await page.locator('button:has-text("Save")').click()
   await page.waitForNavigation()
-
-  await page.screenshot({ path: screenshotPath('hete'), fullPage: true })
 
   const imagesTableBody = await page.locator('.table-row-group')
   const imagesRows = await imagesTableBody.locator('.table-row')

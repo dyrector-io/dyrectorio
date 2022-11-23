@@ -66,7 +66,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
       return
     }
 
-    router.push(url)
+    router.push(url).then(() => router.reload())
   }
 
   const anchors = useAnchorActions({

@@ -1,6 +1,6 @@
 import { deploymentUrl } from '@app/routes'
 import { expect, test } from '@playwright/test'
-import { DAGENT_NODE, screenshotPath } from './utils/common'
+import { DAGENT_NODE, extractDeploymentUrl, screenshotPath } from './utils/common'
 import { deployWithDagent } from './utils/node-helper'
 import {
   addDeploymentToSimpleProduct,
@@ -12,19 +12,6 @@ import {
 } from './utils/products'
 
 const image = 'nginx'
-
-const extractDeploymentUrl = (url: string): { versionId: string; deploymentId: string } => {
-  const urlParts = url.split('/')
-  urlParts.pop()
-  const deploymentId = urlParts.pop()
-  urlParts.pop()
-  const versionId = urlParts.pop()
-
-  return {
-    versionId,
-    deploymentId,
-  }
-}
 
 test.describe('Simple product', () => {
   test('preparing deployment should be mutable', async ({ page }) => {
@@ -89,11 +76,11 @@ test.describe('Complex product incremental version', () => {
     const versionId = await createVersion(page, productId, '0.1.0', 'Incremental')
     await createImage(page, productId, versionId, image)
 
-    await deployWithDagent(page, 'pw-complex-mutability-obsolote', productId, versionId)
+    await deployWithDagent(page, 'pw-complex-mutability-obsolete', productId, versionId)
 
     const { deploymentId } = extractDeploymentUrl(page.url())
 
-    await deployWithDagent(page, 'pw-complex-mutability-obsolote', productId, versionId)
+    await deployWithDagent(page, 'pw-complex-mutability-obsolete', productId, versionId)
 
     await page.goto(deploymentUrl(productId, versionId, deploymentId))
 
