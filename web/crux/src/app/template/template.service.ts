@@ -43,7 +43,7 @@ export default class TemplateService {
     private versionService: VersionService,
     private imageService: ImageService,
     private imageMapper: ImageMapper,
-  ) { }
+  ) {}
 
   async createProductFromTemplate(req: CreateProductFromTemplateRequest): Promise<CreateEntityResponse> {
     const template = await this.templateFileService.getTemplateById(req.id)
@@ -95,8 +95,8 @@ export default class TemplateService {
       proxyHeaders: config.proxyHeaders ?? false,
       deploymentStrategy: config.deploymentStatregy
         ? this.imageMapper.deploymentStrategyToDb(
-          deploymentStrategyFromJSON(config.deploymentStatregy.toLocaleUpperCase()),
-        )
+            deploymentStrategyFromJSON(config.deploymentStatregy.toLocaleUpperCase()),
+          )
         : 'recreate',
       restartPolicy: config.restartPolicy
         ? this.imageMapper.restartPolicyToDb(restartPolicyFromJSON(config.restartPolicy.toLocaleUpperCase()))
@@ -112,11 +112,11 @@ export default class TemplateService {
       environment: config.environment ? config.environment.map(it => this.idify(it)) : [],
       volumes: config.volumes
         ? toPrismaJson(
-          config.volumes.map(it => ({
-            ...this.idify(it),
-            type: it.type ? volumeTypeFromJSON(it.type.toUpperCase()) : VolumeType.RO,
-          })),
-        )
+            config.volumes.map(it => ({
+              ...this.idify(it),
+              type: it.type ? volumeTypeFromJSON(it.type.toUpperCase()) : VolumeType.RO,
+            })),
+          )
         : [],
       secrets: config.secrets ? config.secrets.map(it => this.idify(it)) : [],
     }
@@ -133,17 +133,17 @@ export default class TemplateService {
     let version =
       productType === ProductType.COMPLEX
         ? await this.prisma.version.findFirst({
-          where: {
-            name: VERSION_NAME,
-            productId: product.id,
-          },
-        })
+            where: {
+              name: VERSION_NAME,
+              productId: product.id,
+            },
+          })
         : await this.prisma.version.findFirst({
-          where: {
-            name: SIMPLE_PRODUCT_VERSION_NAME,
-            productId: product.id,
-          },
-        })
+            where: {
+              name: SIMPLE_PRODUCT_VERSION_NAME,
+              productId: product.id,
+            },
+          })
 
     if (version == null) {
       const createReq: CreateVersionRequest = {
