@@ -18,7 +18,7 @@ export default class GrpcLoggerInterceptor implements NestInterceptor {
     const result = this.helper.mapToGrpcObject(context)
     const data = JSON.stringify(result.data)
 
-    // this.logger.debug(`gRPC ${result.serviceCall} called with the following object: ${data}`)
+    this.logger.verbose(`gRPC ${result.serviceCall} called with the following object: ${data}`)
 
     return next.handle().pipe(
       catchError((err: Error) => {
