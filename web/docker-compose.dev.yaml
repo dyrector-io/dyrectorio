@@ -13,6 +13,7 @@ services:
     restart: unless-stopped
     networks:
       - crux-intranet
+    command: ["postgres", "-c", "log_statement=all"]
 
   kratos-postgres:
     container_name: crux-kratos-postgres
@@ -80,7 +81,7 @@ services:
     restart: unless-stopped
     image: oryd/mailslurper:latest-smtps
     ports:
-      - 1025:1025 
+      - 1025:1025
       - 4436:4436
       - 4437:4437
     networks:
