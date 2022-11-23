@@ -6,8 +6,6 @@ on:
       - main
   pull_request:
 
-runs-on: self-hosted
-
 permissions:
   contents: read
   pull-requests: read
@@ -21,7 +19,7 @@ env:
 
 jobs:
   check:
-    runs-on: ubuntu-20.04
+    runs-on: self-hosted
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
       volumes:
@@ -55,7 +53,7 @@ jobs:
 
   # job: Test e2e
   test_e2e:
-    runs-on: ubuntu-20.04
+    runs-on: self-hosted
     needs: check
     container:
       image: dyrectorio/playwright:1.26.0-alpha-aug-23-2022
@@ -114,7 +112,7 @@ jobs:
 
   # job: Build image
   build_image:
-    runs-on: ubuntu-20.04
+    runs-on: self-hosted
     needs: [test_e2e, check]
     container: docker:latest
     if: github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag'
@@ -155,7 +153,7 @@ jobs:
           docker image push -a ${REGISTRY}/${IMAGE_NAME}
 
   sign_image:
-    runs-on: ubuntu-20.04
+    runs-on: self-hosted
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
     needs: [build_image, check]
