@@ -106,6 +106,7 @@ jobs:
           path: web/crux-ui/e2e/screenshots/
 
       - name: DB log
+        if: always()
         run:
           docker logs crux-postgres
 
