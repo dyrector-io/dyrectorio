@@ -105,6 +105,10 @@ jobs:
           name: e2e-screenshots
           path: web/crux-ui/e2e/screenshots/
 
+      - name: DB log
+        run:
+          docker logs crux-postgres
+
   # job: Build image
   build_image:
     runs-on: ubuntu-20.04
