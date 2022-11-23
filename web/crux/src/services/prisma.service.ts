@@ -13,6 +13,8 @@ export default class PrismaService extends PrismaClient<Prisma.PrismaClientOptio
         { emit: 'stdout', level: 'error' },
       ],
     })
+
+    this.logger.warn('Prisma created!')
   }
 
   async onModuleInit() {

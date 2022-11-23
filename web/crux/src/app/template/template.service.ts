@@ -188,13 +188,13 @@ export default class TemplateService {
 
     const images = await Promise.all(createImages)
 
-    for (const it of images) {
+    const tasks = images.map(it => {
       const imageTemplate = it[0] as TemplateImage
       const dbImage = it[1] as ImageResponse
 
       const config: ContainerConfigData = this.mapTemplateConfig(imageTemplate.config)
 
-      await this.prisma.image.update({
+      return this.prisma.image.update({
         include: {
           config: true,
         },
@@ -209,6 +209,15 @@ export default class TemplateService {
           id: dbImage.id,
         },
       })
+    })
+
+    const runTask = (index: number) => {
+      if (index >= tasks.length) {
+        return
+      }
+
+      tasks[index].then(() => runTask(index + 1))
     }
+    runTask(0)
   }
 }
