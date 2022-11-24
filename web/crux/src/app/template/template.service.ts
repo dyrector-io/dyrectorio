@@ -1,19 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
 import {
-  AddImagesToVersionRequest,
-  CreateEntityResponse,
-  CreateProductFromTemplateRequest,
-  CreateProductRequest,
-  CreateVersionRequest,
-  ImageResponse,
-  ProductType,
-  VersionType,
-} from 'src/grpc/protobuf/proto/crux'
-import PrismaService from 'src/services/prisma.service'
-import TemplateFileService, { TemplateContainerConfig, TemplateImage } from 'src/services/template.file.service'
-import { v4 } from 'uuid'
-import { ContainerConfigData } from 'src/shared/model'
-import {
   deploymentStrategyFromJSON,
   exposeStrategyFromJSON,
   networkModeFromJSON,
@@ -21,13 +7,25 @@ import {
   VolumeType,
   volumeTypeFromJSON,
 } from 'src/grpc/protobuf/proto/common'
+import {
+  CreateEntityResponse,
+  CreateProductFromTemplateRequest,
+  CreateProductRequest,
+  CreateVersionRequest,
+  ProductType,
+  VersionType,
+} from 'src/grpc/protobuf/proto/crux'
+import PrismaService from 'src/services/prisma.service'
+import TemplateFileService, { TemplateContainerConfig, TemplateImage } from 'src/services/template.file.service'
 import { SIMPLE_PRODUCT_VERSION_NAME } from 'src/shared/const'
 import { toPrismaJson } from 'src/shared/mapper'
+import { ContainerConfigData } from 'src/shared/model'
+import { v4 } from 'uuid'
+import ImageMapper from '../image/image.mapper'
 import ImageService from '../image/image.service'
 import ProductService from '../product/product.service'
 import RegistryService from '../registry/registry.service'
 import VersionService from '../version/version.service'
-import ImageMapper from '../image/image.mapper'
 
 const VERSION_NAME = '1.0.0'
 

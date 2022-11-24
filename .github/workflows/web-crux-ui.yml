@@ -19,7 +19,7 @@ env:
 
 jobs:
   check:
-    runs-on: self-hosted
+    runs-on: ubuntu-20.04
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
       volumes:
@@ -74,7 +74,7 @@ jobs:
       - name: Setup containers
         working-directory: web/crux-ui
         run: |
-          docker network create crux-intranet
+          docker network create crux-intranet || true
           ./setup_e2e_env.sh
 
       - name: Setup crux
@@ -107,7 +107,7 @@ jobs:
 
   # job: Build image
   build_image:
-    runs-on: self-hosted
+    runs-on: ubuntu-20.04
     needs: [test_e2e, check]
     container: docker:latest
     if: github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag'
@@ -148,7 +148,7 @@ jobs:
           docker image push -a ${REGISTRY}/${IMAGE_NAME}
 
   sign_image:
-    runs-on: self-hosted
+    runs-on: ubuntu-20.04
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
     needs: [build_image, check]
