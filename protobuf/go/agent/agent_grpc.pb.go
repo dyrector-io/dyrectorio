@@ -33,6 +33,7 @@ type AgentClient interface {
 	DeploymentStatus(ctx context.Context, opts ...grpc.CallOption) (Agent_DeploymentStatusClient, error)
 	ContainerState(ctx context.Context, opts ...grpc.CallOption) (Agent_ContainerStateClient, error)
 	SecretList(ctx context.Context, in *common.ListSecretsResponse, opts ...grpc.CallOption) (*common.Empty, error)
+	AbortUpdate(ctx context.Context, in *AgentAbortUpdate, opts ...grpc.CallOption) (*common.Empty, error)
 }
 
 type agentClient struct {
@@ -152,6 +153,15 @@ func (c *agentClient) SecretList(ctx context.Context, in *common.ListSecretsResp
 	return out, nil
 }
 
+func (c *agentClient) AbortUpdate(ctx context.Context, in *AgentAbortUpdate, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
+	err := c.cc.Invoke(ctx, "/agent.Agent/AbortUpdate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AgentServer is the server API for Agent service.
 // All implementations must embed UnimplementedAgentServer
 // for forward compatibility
@@ -166,6 +176,7 @@ type AgentServer interface {
 	DeploymentStatus(Agent_DeploymentStatusServer) error
 	ContainerState(Agent_ContainerStateServer) error
 	SecretList(context.Context, *common.ListSecretsResponse) (*common.Empty, error)
+	AbortUpdate(context.Context, *AgentAbortUpdate) (*common.Empty, error)
 	mustEmbedUnimplementedAgentServer()
 }
 
@@ -184,6 +195,9 @@ func (UnimplementedAgentServer) ContainerState(Agent_ContainerStateServer) error
 }
 func (UnimplementedAgentServer) SecretList(context.Context, *common.ListSecretsResponse) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SecretList not implemented")
+}
+func (UnimplementedAgentServer) AbortUpdate(context.Context, *AgentAbortUpdate) (*common.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AbortUpdate not implemented")
 }
 func (UnimplementedAgentServer) mustEmbedUnimplementedAgentServer() {}
 
@@ -289,6 +303,24 @@ func _Agent_SecretList_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Agent_AbortUpdate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AgentAbortUpdate)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AgentServer).AbortUpdate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/agent.Agent/AbortUpdate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AgentServer).AbortUpdate(ctx, req.(*AgentAbortUpdate))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Agent_ServiceDesc is the grpc.ServiceDesc for Agent service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -299,6 +331,10 @@ var Agent_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SecretList",
 			Handler:    _Agent_SecretList_Handler,
+		},
+		{
+			MethodName: "AbortUpdate",
+			Handler:    _Agent_AbortUpdate_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

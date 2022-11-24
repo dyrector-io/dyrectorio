@@ -94,12 +94,12 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
         }
 
         setRegistry(result)
+        setSubmitting(false)
         onRegistryEdited(registryDetailsToRegistry(result))
       } else {
+        setSubmitting(false)
         handleApiError(res, setFieldError)
       }
-
-      setSubmitting(false)
     },
   })
 

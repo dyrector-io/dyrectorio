@@ -1158,6 +1158,7 @@ export interface NodeEventMessage {
   address?: string | undefined
   version?: string | undefined
   connectedAt?: Timestamp | undefined
+  error?: string | undefined
 }
 
 export interface WatchContainerStateRequest {
@@ -1283,6 +1284,7 @@ export interface DeploymentEventResponse {
 }
 
 export interface DeploymentEventListResponse {
+  status: DeploymentStatus
   data: DeploymentEventResponse[]
 }
 
@@ -3489,6 +3491,7 @@ export const NodeEventMessage = {
       address: isSet(object.address) ? String(object.address) : undefined,
       version: isSet(object.version) ? String(object.version) : undefined,
       connectedAt: isSet(object.connectedAt) ? fromJsonTimestamp(object.connectedAt) : undefined,
+      error: isSet(object.error) ? String(object.error) : undefined,
     }
   },
 
@@ -3499,6 +3502,7 @@ export const NodeEventMessage = {
     message.address !== undefined && (obj.address = message.address)
     message.version !== undefined && (obj.version = message.version)
     message.connectedAt !== undefined && (obj.connectedAt = fromTimestamp(message.connectedAt).toISOString())
+    message.error !== undefined && (obj.error = message.error)
     return obj
   },
 }
@@ -3979,18 +3983,20 @@ export const DeploymentEventResponse = {
 }
 
 function createBaseDeploymentEventListResponse(): DeploymentEventListResponse {
-  return { data: [] }
+  return { status: 0, data: [] }
 }
 
 export const DeploymentEventListResponse = {
   fromJSON(object: any): DeploymentEventListResponse {
     return {
+      status: isSet(object.status) ? deploymentStatusFromJSON(object.status) : 0,
       data: Array.isArray(object?.data) ? object.data.map((e: any) => DeploymentEventResponse.fromJSON(e)) : [],
     }
   },
 
   toJSON(message: DeploymentEventListResponse): unknown {
     const obj: any = {}
+    message.status !== undefined && (obj.status = deploymentStatusToJSON(message.status))
     if (message.data) {
       obj.data = message.data.map(e => (e ? DeploymentEventResponse.toJSON(e) : undefined))
     } else {
@@ -4445,6 +4451,8 @@ export interface CruxNodeClient {
 
   revokeToken(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
 
+  updateNodeAgent(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
+
   subscribeNodeEventChannel(request: ServiceIdRequest, metadata: Metadata, ...rest: any): Observable<NodeEventMessage>
 
   watchContainerState(
@@ -4495,6 +4503,8 @@ export interface CruxNodeController {
 
   revokeToken(request: IdRequest, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
 
+  updateNodeAgent(request: IdRequest, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
+
   subscribeNodeEventChannel(request: ServiceIdRequest, metadata: Metadata, ...rest: any): Observable<NodeEventMessage>
 
   watchContainerState(
@@ -4516,6 +4526,7 @@ export function CruxNodeControllerMethods() {
       'getScript',
       'discardScript',
       'revokeToken',
+      'updateNodeAgent',
       'subscribeNodeEventChannel',
       'watchContainerState',
     ]
@@ -4713,7 +4724,7 @@ export interface CruxDeploymentClient {
 
   copyDeploymentUnsafe(request: IdRequest, metadata: Metadata, ...rest: any): Observable<CreateEntityResponse>
 
-  startDeployment(request: IdRequest, metadata: Metadata, ...rest: any): Observable<DeploymentProgressMessage>
+  startDeployment(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
 
   subscribeToDeploymentEvents(
     request: IdRequest,
@@ -4794,7 +4805,7 @@ export interface CruxDeploymentController {
     ...rest: any
   ): Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
 
-  startDeployment(request: IdRequest, metadata: Metadata, ...rest: any): Observable<DeploymentProgressMessage>
+  startDeployment(request: IdRequest, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
 
   subscribeToDeploymentEvents(
     request: IdRequest,

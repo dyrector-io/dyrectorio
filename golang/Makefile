@@ -24,6 +24,7 @@ GOSWAG=v1.8.3
 GOFUMPT=v0.4.0
 
 GOOS?=linux
+GOARCH?=amd64
 
 ifeq ($(GOOS),windows)
 	OUT_EXT=.exe
@@ -38,7 +39,7 @@ up: ##
 .PHONY: upd
 upd: ##
 	cd cmd/dyo && \
-	go run . --disable-crux --disable-crux-ui up; \
+	go run . --disable-crux --disable-crux-ui --local-agent up; \
 	cd -
 
 .PHONY: down
@@ -65,19 +66,19 @@ go-dagent: ##
 .PHONY: compile-cli
 compile-cli: ##
 	cd cmd/dyo && \
-	GOARCH=amd64 CGO_ENABLED=0 go build ${LDFLAGS} -o ../../build/out/dyo${OUT_EXT}; \
+	GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 go build ${LDFLAGS} -o ../../build/out/dyo${OUT_EXT}; \
 	cd -
 
 .PHONY: compile-crane
 compile-crane: ##
 	cd cmd/crane && \
-	GOARCH=amd64 CGO_ENABLED=0 go build ${LDFLAGS} -o ../../build/out/crane${OUT_EXT}; \
+	GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 go build ${LDFLAGS} -o ../../build/out/crane${OUT_EXT}; \
 	cd -
 
 .PHONY: compile-dagent
 compile-dagent: ##
 	cd cmd/dagent && \
-	GOARCH=amd64 CGO_ENABLED=0 go build ${LDFLAGS} -o ../../build/out/dagent${OUT_EXT}; \
+	GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 go build ${LDFLAGS} -o ../../build/out/dagent${OUT_EXT}; \
 	cd -
 
 .PHONY: install-go-tools

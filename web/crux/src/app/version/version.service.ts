@@ -229,15 +229,22 @@ export default class VersionService {
           },
         },
         deployments: {
+          distinct: ['nodeId', 'prefix'],
+          where: {
+            OR: [
+              { status: DeploymentStatusEnum.successful },
+              { status: DeploymentStatusEnum.preparing },
+              { status: DeploymentStatusEnum.failed },
+            ],
+          },
           include: {
-            node: false,
-            events: false,
             instances: {
               include: {
                 config: true,
               },
             },
           },
+          orderBy: { updatedAt: 'desc' },
         },
       },
     })
@@ -309,7 +316,7 @@ export default class VersionService {
               if (instance.config) {
                 await prisma.instanceContainerConfig.create({
                   data: {
-                    ...instance.config,
+                    ...this.imageMapper.configDetailsToDb(instance.config),
                     id: undefined,
                     instanceId: createdInstance.id,
                   },

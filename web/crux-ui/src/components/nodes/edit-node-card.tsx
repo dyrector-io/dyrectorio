@@ -17,7 +17,9 @@ import {
   NodeStatusMessage,
   NodeType,
   UpdateDyoNode,
+  UpdateNodeAgentMessage,
   WS_TYPE_NODE_STATUS,
+  WS_TYPE_UPDATE_NODE_AGENT,
 } from '@app/models'
 import { API_NODES, nodeApiUrl, nodeTokenApiUrl, WS_NODES } from '@app/routes'
 import { sendForm } from '@app/utils'
@@ -26,6 +28,7 @@ import clsx from 'clsx'
 import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
 import { MutableRefObject } from 'react'
+import toast from 'react-hot-toast'
 import DyoNodeSetup from './dyo-node-setup'
 import NodeConnectionCard from './node-connection-card'
 import useNodeState from './use-node-state'
@@ -62,6 +65,12 @@ const EditNodeCard = (props: EditNodeCardProps) => {
   socket.on(WS_TYPE_NODE_STATUS, (message: NodeStatusMessage) => {
     if (message.nodeId !== node.id) {
       return
+    }
+
+    if (message.error) {
+      toast(t('updateError', { error: message.error }), {
+        className: '!bg-warning-orange !text-white',
+      })
     }
 
     const newNode = {
@@ -116,6 +125,12 @@ const EditNodeCard = (props: EditNodeCardProps) => {
     })
   }
 
+  const onUpdateNode = () => {
+    socket.send(WS_TYPE_UPDATE_NODE_AGENT, {
+      id: node.id,
+    } as UpdateNodeAgentMessage)
+  }
+
   const formik = useFormik({
     validationSchema: nodeSchema,
     initialValues: node,
@@ -163,12 +178,12 @@ const EditNodeCard = (props: EditNodeCardProps) => {
         }
 
         setNode(result)
+        setSubmitting(false)
         onNodeEdited(result, editing)
       } else {
+        setSubmitting(false)
         handleApiError(res, setFieldError)
       }
-
-      setSubmitting(false)
     },
   })
 
@@ -251,9 +266,19 @@ const EditNodeCard = (props: EditNodeCardProps) => {
             {!editing ? (
               <div className="text-bright font-bold mt-2">{t('saveYourNode')}</div>
             ) : node.hasToken && !node.install ? (
-              <DyoButton className="px-6 mt-4 mr-auto" secondary onClick={onRevokeToken}>
-                {t('revoke')}
-              </DyoButton>
+              <>
+                <DyoButton className="px-6 mt-4 mr-auto" secondary onClick={onRevokeToken}>
+                  {t('revoke')}
+                </DyoButton>
+                <DyoButton
+                  className="px-6 mt-4 ml-4 mr-auto"
+                  secondary
+                  onClick={onUpdateNode}
+                  disabled={node.status !== 'running'}
+                >
+                  {t('update')}
+                </DyoButton>
+              </>
             ) : (
               <DyoNodeSetup
                 node={node}

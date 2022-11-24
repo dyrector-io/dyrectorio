@@ -87,7 +87,7 @@ const VersionDetailsPage = (props: VersionDetailsPageProps) => {
 
         {!version.mutable ? null : (
           <DetailsPageMenu
-            onDelete={version.increasable ? onDelete : null}
+            onDelete={!version.default ? (version.increasable ? onDelete : null) : null}
             editing={editing}
             setEditing={setEditing}
             submitRef={submitRef}

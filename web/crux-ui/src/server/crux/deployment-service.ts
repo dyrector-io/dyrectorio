@@ -6,6 +6,7 @@ import {
   DeploymentDetails,
   DeploymentEditEventMessage,
   DeploymentEvent,
+  DeploymentStatus,
   ImageDeletedMessage,
   InstancesAddedMessage,
   PatchDeployment,
@@ -34,9 +35,7 @@ import {
 } from '@app/models/grpc/protobuf/proto/crux'
 import { timestampToUTC } from '@app/utils'
 import { WsMessage } from '@app/websockets/common'
-import { ServiceError } from '@grpc/grpc-js'
 import { Identity } from '@ory/kratos-client'
-import { fromGrpcError, parseGrpcError } from '@server/error-middleware'
 import { GrpcConnection, protomisify, ProtoSubscriptionOptions } from './grpc-connection'
 import { deploymentEventTypeToDto, deploymentStatusToDto, instanceToDto } from './mappers/deployment-mappers'
 import { containerConfigToProto } from './mappers/image-mappers'
@@ -106,7 +105,7 @@ class DyoDeploymentService {
     }
   }
 
-  async getEvents(id: string): Promise<DeploymentEvent[]> {
+  async getEvents(id: string): Promise<[DeploymentStatus, DeploymentEvent[]]> {
     const req: IdRequest = {
       id,
       accessedBy: this.identity.id,
@@ -117,8 +116,9 @@ class DyoDeploymentService {
       req,
     )
 
-    return res.data.map(it => {
+    const data = res.data.map(it => {
       const type = deploymentEventTypeToDto(it.type)
+
       return {
         type,
         createdAt: timestampToUTC(it.createdAt),
@@ -135,6 +135,7 @@ class DyoDeploymentService {
             : null,
       }
     })
+    return [deploymentStatusToDto(res.status), data]
   }
 
   async getSecretsList(deploymentId: string, instanceId: string): Promise<ListSecretsResponse> {
@@ -214,43 +215,15 @@ class DyoDeploymentService {
   }
 
   async startDeployment(id: string): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      const connection = this.startDeploymentStream(id, {
-        onMessage: () => {
-          connection.cancel()
-          resolve()
-        },
-        onError: (err: ServiceError) => {
-          connection.cancel()
-          const error = parseGrpcError(err)
-          reject(fromGrpcError(error))
-        },
-      })
-    })
-  }
-
-  startDeploymentStream(
-    id: string,
-    options?: ProtoSubscriptionOptions<DeploymentEvent[]>,
-  ): GrpcConnection<DeploymentProgressMessage, DeploymentEvent[]> {
     const req: IdRequest = {
       id,
       accessedBy: this.identity.id,
     }
 
-    const stream = () => this.client.startDeployment(IdRequest.fromJSON(req))
-    return new GrpcConnection(
-      this.logger.descend('status'),
-      stream,
-      DyoDeploymentService.transformDeploymentEvents,
-      options,
-    )
+    await protomisify<IdRequest, Empty>(this.client, this.client.startDeployment)(IdRequest, req)
   }
 
-  subscribeToDeploymentEvents(
-    id: string,
-    options?: ProtoSubscriptionOptions<DeploymentEvent[]>,
-  ): GrpcConnection<DeploymentProgressMessage, DeploymentEvent[]> {
+  subscribeToDeploymentEvents(id: string, options?: ProtoSubscriptionOptions<DeploymentEvent[]>) {
     const req: IdRequest = {
       id,
       accessedBy: this.identity.id,

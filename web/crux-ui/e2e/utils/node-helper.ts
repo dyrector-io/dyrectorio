@@ -31,7 +31,13 @@ export const installDagent = async (page: Page) => {
   await page.screenshot({ path: screenshotPath('node-dagent-install-succesful'), fullPage: true })
 }
 
-export const deployWithDagent = async (page: Page, prefix: string, productId: string, versionId?: string) => {
+export const deployWithDagent = async (
+  page: Page,
+  prefix: string,
+  productId: string,
+  versionId?: string,
+  ignoreResult?: boolean,
+) => {
   if (versionId) {
     await page.goto(versionUrl(productId, versionId))
   } else {
@@ -54,7 +60,9 @@ export const deployWithDagent = async (page: Page, prefix: string, productId: st
 
   await page.waitForNavigation()
 
-  await page.waitForSelector('div.bg-dyo-green:has-text("Successful")')
+  if (!ignoreResult) {
+    await page.waitForSelector('div.bg-dyo-green:has-text("Successful")')
+  }
 }
 
 const logCmdOutput = (err: Error, stdOut: string, stdErr: string, logStdOut?: boolean) => {
