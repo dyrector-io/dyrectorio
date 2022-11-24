@@ -95,3 +95,16 @@ export const deleteUserByEmail = async (kratos: V0alpha2Api, email: string) => {
 }
 
 export const screenshotPath = (name: string) => path.join(__dirname, '..', SCREENSHOTS_FOLDER, `${name}.png`)
+
+export const extractDeploymentUrl = (url: string): { versionId: string; deploymentId: string } => {
+  const urlParts = url.split('/')
+  urlParts.pop()
+  const deploymentId = urlParts.pop()
+  urlParts.pop()
+  const versionId = urlParts.pop()
+
+  return {
+    versionId,
+    deploymentId,
+  }
+}
