@@ -169,48 +169,30 @@ export default class TemplateService {
       },
     })
 
-    const createImages = templateImages.map(it => {
+    const images = templateImages.map((it, index) => {
       const registryId = registryLookup.find(reg => reg.name === it.registryName).id
+      const config: ContainerConfigData = this.mapTemplateConfig(it.config)
 
-      const addImageRequest: AddImagesToVersionRequest = {
-        accessedBy,
-        versionId: version.id,
-        images: [
-          {
-            registryId,
-            imageNames: [it.image],
+      return this.prisma.image.create({
+        include: {
+          config: true,
+          registry: true,
+        },
+        data: {
+          registryId: registryId,
+          versionId: version.id,
+          createdBy: accessedBy,
+          name: it.image,
+          order: index++,
+          config: {
+            create: {
+              ...config,
+            },
           },
-        ],
-      }
-
-      return this.imageService.addImagesToVersion(addImageRequest).then(result => [it, result.data[0]])
+        },
+      })
     })
 
-    const images = await Promise.all(createImages)
-
-    await this.prisma.$transaction(
-      images.map(it => {
-        const imageTemplate = it[0] as TemplateImage
-        const dbImage = it[1] as ImageResponse
-
-        const config: ContainerConfigData = this.mapTemplateConfig(imageTemplate.config)
-
-        return this.prisma.image.update({
-          include: {
-            config: true,
-          },
-          data: {
-            config: {
-              update: config,
-            },
-            tag: imageTemplate.tag,
-            updatedBy: accessedBy,
-          },
-          where: {
-            id: dbImage.id,
-          },
-        })
-      }),
-    )
+    await this.prisma.$transaction(images)
   }
 }
