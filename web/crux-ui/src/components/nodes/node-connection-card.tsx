@@ -3,10 +3,10 @@ import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
 import RemainingTimeLabel from '@app/elements/remaining-time-label'
-import useTicker from '@app/hooks/use-ticker'
 import { DyoNode } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
+import { useEffect, useState } from 'react'
 import NodeStatusIndicator from './node-status-indicator'
 
 interface NodeConnectionCardProps {
@@ -19,18 +19,27 @@ const NodeConnectionCard = (props: NodeConnectionCardProps) => {
   const { t } = useTranslation('nodes')
 
   const { node, className, showName } = props
-  useTicker(SECOND_IN_MILLIS)
 
-  const runningSince =
-    node.status !== 'running'
-      ? null
-      : () => {
-          const now = new Date().getTime()
-          const secondsSinceConnected = node.connectedAt
-            ? (now - new Date(node.connectedAt).getTime()) / SECOND_IN_MILLIS
-            : null
-          return secondsSinceConnected
-        }
+  const [runningSince, setRunningSince] = useState(null)
+
+  const updateRunningSince = () =>
+    setRunningSince(
+      node.status !== 'running'
+        ? null
+        : () => {
+            const now = new Date().getTime()
+            const secondsSinceConnected = node.connectedAt
+              ? (now - new Date(node.connectedAt).getTime()) / SECOND_IN_MILLIS
+              : null
+            return secondsSinceConnected
+          },
+    )
+
+  useEffect(() => {
+    updateRunningSince()
+    const timer = setInterval(updateRunningSince, 1000)
+    return () => clearInterval(timer)
+  }, [])
 
   return (
     <DyoCard className={clsx(className ?? 'p-6')}>
@@ -58,7 +67,7 @@ const NodeConnectionCard = (props: NodeConnectionCardProps) => {
         </div>
 
         <DyoLabel>{t('uptime')}</DyoLabel>
-        {runningSince ? <RemainingTimeLabel textColor="text-dyo-turquoise" seconds={runningSince()} /> : null}
+        {runningSince ? <RemainingTimeLabel textColor="text-dyo-turquoise" seconds={runningSince} /> : null}
       </div>
     </DyoCard>
   )

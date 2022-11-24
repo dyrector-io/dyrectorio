@@ -65,12 +65,12 @@ const EditTeamCard = (props: EditTeamCardProps) => {
         }
 
         setTeam(result)
+        setSubmitting(false)
         onTeamEdited(result)
       } else {
+        setSubmitting(false)
         handleApiError(res, setFieldError)
       }
-
-      setSubmitting(false)
     },
   })
 

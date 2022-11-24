@@ -15,7 +15,7 @@ export const useThrottling = (delay: number): Throttling => {
 
   useEffect(() => {
     if (!action) {
-      return
+      return () => {}
     }
 
     if (schedule.current) {
@@ -25,6 +25,7 @@ export const useThrottling = (delay: number): Throttling => {
     schedule.current = action.resetTimer
       ? setTimeout(() => action.trigger())
       : setTimeout(() => action.trigger(), delay)
+    return () => clearTimeout(schedule.current)
   }, [action, delay, schedule])
 
   return (trigger, resetTimer = false) =>

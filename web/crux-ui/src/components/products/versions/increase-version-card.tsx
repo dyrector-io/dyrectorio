@@ -44,12 +44,12 @@ const IncreaseVersionCard = (props: IncreaseVersionCardProps) => {
 
       if (res.ok) {
         const result = (await res.json()) as Version
+        setSubmitting(false)
         onVersionIncreased(result)
       } else {
+        setSubmitting(false)
         handleApiError(res, setFieldError)
       }
-
-      setSubmitting(false)
     },
   })
 
