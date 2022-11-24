@@ -42,12 +42,12 @@ const InviteUserCard = (props: InviteUserCardProps) => {
         const json = await res.json()
         const user = json as User
 
+        setSubmitting(false)
         onUserInvited(user)
       } else {
+        setSubmitting(false)
         handleApiError(res, setFieldError)
       }
-
-      setSubmitting(false)
     },
   })
 

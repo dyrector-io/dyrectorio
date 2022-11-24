@@ -37,12 +37,12 @@ const CreateTeamCard = (props: CreateTeamCardProps) => {
         const json = await res.json()
         const team = json as ActiveTeamDetails
 
+        setSubmitting(false)
         onTeamCreated(team)
       } else {
+        setSubmitting(false)
         handleApiError(res, setFieldError)
       }
-
-      setSubmitting(false)
     },
   })
 

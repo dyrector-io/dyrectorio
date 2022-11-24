@@ -68,12 +68,12 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
       if (response.ok) {
         const result = response.status === 200 ? ((await response.json()) as NotificationDetails) : { ...values }
         setNotification(result)
+        setSubmitting(false)
         onSubmitted(result as NotificationDetails)
       } else {
+        setSubmitting(false)
         handleApiError(response, setFieldError)
       }
-
-      setSubmitting(false)
     },
   })
 
