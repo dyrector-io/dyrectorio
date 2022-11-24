@@ -66,6 +66,7 @@ export type NodeStatusMessage = {
   address?: string
   version?: string
   connectedAt?: string
+  error?: string
 }
 
 export const WS_TYPE_NODE_STATUSES = 'node-status-list'
@@ -78,3 +79,8 @@ export type WatchContainerStatusMessage = {
 
 export const WS_TYPE_CONTAINER_STATUS_LIST = 'container-status-list'
 export type ContainerListMessage = Container[]
+
+export const WS_TYPE_UPDATE_NODE_AGENT = 'update-node-agent'
+export type UpdateNodeAgentMessage = {
+  id: string
+}

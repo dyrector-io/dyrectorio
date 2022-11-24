@@ -17,7 +17,6 @@ import { Identity } from '@ory/kratos-client'
 import { sessionOfContext } from '@server/kratos'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
-import Link from 'next/link'
 
 const SettingsPage = (props: Identity) => {
   const { traits } = props
@@ -33,13 +32,8 @@ const SettingsPage = (props: Identity) => {
     <Layout title={t('common:profile')}>
       <PageHeading pageLink={pageLink}>
         <div className="ml-auto">
-          <Link href={ROUTE_SETTINGS_EDIT_PROFILE} passHref>
-            <DyoButton>{t('editProfile')}</DyoButton>
-          </Link>
-
-          <Link href={ROUTE_SETTINGS_CHANGE_PASSWORD} passHref>
-            <DyoButton>{t('changePass')}</DyoButton>
-          </Link>
+          <DyoButton href={ROUTE_SETTINGS_EDIT_PROFILE}>{t('editProfile')}</DyoButton>
+          <DyoButton href={ROUTE_SETTINGS_CHANGE_PASSWORD}>{t('changePass')}</DyoButton>
         </div>
       </PageHeading>
 

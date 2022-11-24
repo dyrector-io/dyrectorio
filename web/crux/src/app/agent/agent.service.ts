@@ -4,14 +4,13 @@ import { JwtService } from '@nestjs/jwt'
 import { DeploymentEventTypeEnum, DeploymentStatusEnum, NodeTypeEnum } from '@prisma/client'
 import { InjectMetric } from '@willsoto/nestjs-prometheus'
 import { Counter } from 'prom-client'
-import { concatAll, concatMap, finalize, from, map, Observable, of, Subject, takeUntil } from 'rxjs'
+import { catchError, concatAll, concatMap, EMPTY, finalize, from, map, Observable, of, Subject, takeUntil } from 'rxjs'
 import { Agent, AgentToken } from 'src/domain/agent'
 import AgentInstaller from 'src/domain/agent-installer'
 import { DeploymentProgressEvent } from 'src/domain/deployment'
-import { DeployMessage, NotificationMessageType } from 'src/domain/notification-templates'
 import { collectChildVersionIds, collectParentVersionIds } from 'src/domain/utils'
 import { AlreadyExistsException, NotFoundException, UnauthenticatedException } from 'src/exception/errors'
-import { AgentCommand, AgentInfo } from 'src/grpc/protobuf/proto/agent'
+import { AgentAbortUpdate, AgentCommand, AgentInfo, CloseReason } from 'src/grpc/protobuf/proto/agent'
 import {
   ContainerStateListMessage,
   DeploymentStatus,
@@ -20,7 +19,6 @@ import {
   ListSecretsResponse,
 } from 'src/grpc/protobuf/proto/common'
 import { NodeConnectionStatus, NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
-import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 
@@ -40,7 +38,6 @@ export default class AgentService {
     @InjectMetric('agent_counter') private agent_counter: Counter<string>,
     private prisma: PrismaService,
     private jwtService: JwtService,
-    private notificationService: DomainNotificationService,
     private configService: ConfigService,
   ) {}
 
@@ -143,7 +140,7 @@ export default class AgentService {
 
   kick(nodeId: string) {
     const agent = this.getByIdOrThrow(nodeId)
-    agent.kick()
+    agent.close()
   }
 
   handleConnect(connection: GrpcNodeConnection, request: AgentInfo): Observable<AgentCommand> {
@@ -171,22 +168,13 @@ export default class AgentService {
         const events = deployment.onUpdate(it)
         return from(this.createDeploymentEvents(deployment.id, events)).pipe(map(() => Empty))
       }),
+      catchError(async (err: Error) => {
+        this.logger.error(`Error during deployment: ${err.message}`, err.stack)
+        return EMPTY
+      }),
       finalize(async () => {
-        agent.onDeploymentFinished(deployment)
-        this.updateDeploymentStatuses(agent.id, deployment.id)
-
-        const messageType: NotificationMessageType =
-          deployment.getStatus() === DeploymentStatus.SUCCESSFUL ? 'successfulDeploy' : 'failedDeploy'
-
-        await this.notificationService.sendNotification({
-          identityId: deployment.notification.accessedBy,
-          messageType,
-          message: {
-            subject: deployment.notification.productName,
-            version: deployment.notification.versionName,
-            node: deployment.notification.nodeName,
-          } as DeployMessage,
-        })
+        const status = agent.onDeploymentFinished(deployment)
+        this.updateDeploymentStatuses(agent.id, deployment.id, status)
 
         this.logger.debug(`Deployment finished: ${deployment.id}`)
       }),
@@ -231,6 +219,22 @@ export default class AgentService {
     return of(Empty)
   }
 
+  updateAgent(id: string) {
+    const agent = this.getByIdOrThrow(id)
+
+    agent.update(this.configService.get<string>('CRUX_AGENT_IMAGE') ?? 'stable')
+  }
+
+  async updateAborted(connection: GrpcNodeConnection, request: AgentAbortUpdate): Promise<Empty> {
+    this.logger.warn(`Agent updated aborted for '${connection.nodeId}' with error: '${request.error}'`)
+
+    const agent = this.getByIdOrThrow(connection.nodeId)
+
+    agent.onUpdateAborted(request.error)
+
+    return Empty
+  }
+
   private onAgentConnectionStatusChange(agent: Agent, status: NodeConnectionStatus) {
     if (status === NodeConnectionStatus.UNREACHABLE) {
       this.logger.log(`Left: ${agent.id}`)
@@ -246,10 +250,18 @@ export default class AgentService {
     request: AgentInfo,
   ): Promise<Observable<AgentCommand>> {
     if (this.agents.has(request.id)) {
-      throw new AlreadyExistsException({
-        message: 'Agent is already connected.',
-        property: 'id',
-      })
+      const agent = this.agents.get(request.id)
+      if (!agent.checkAgentUpdating()) {
+        throw new AlreadyExistsException({
+          message: 'Agent is already connected.',
+          property: 'id',
+        })
+      }
+
+      this.logger.verbose(`Updated agent connected for '${request.id}'`)
+
+      agent.close(CloseReason.SELF_DESTRUCT)
+      this.agents.delete(request.id)
     }
 
     let agent: Agent
@@ -333,7 +345,7 @@ export default class AgentService {
     })
   }
 
-  private async updateDeploymentStatuses(nodeId: string, deploymentId: string) {
+  private async updateDeploymentStatuses(nodeId: string, deploymentId: string, status: DeploymentStatus) {
     const deployment = await this.prisma.deployment.findUniqueOrThrow({
       select: {
         status: true,
@@ -357,7 +369,22 @@ export default class AgentService {
       },
     })
 
-    if (deployment.status !== 'successful') {
+    const finalStatus: DeploymentStatusEnum = status === DeploymentStatus.SUCCESSFUL ? 'successful' : 'failed'
+
+    if (deployment.status !== finalStatus) {
+      await this.prisma.deployment.update({
+        where: {
+          id: deploymentId,
+        },
+        data: {
+          status: finalStatus,
+        },
+      })
+
+      deployment.status = finalStatus
+    }
+
+    if (finalStatus !== 'successful') {
       return
     }
 

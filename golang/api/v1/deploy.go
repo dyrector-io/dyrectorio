@@ -15,20 +15,21 @@ import (
 	"github.com/docker/docker/api/types/container"
 
 	"github.com/dyrector-io/dyrectorio/golang/internal/config"
+	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	builder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 )
 
 type DeployImageRequest struct {
-	RequestID       string                `json:"RequestId" binding:"required"`
-	RegistryAuth    *builder.RegistryAuth `json:"RegistryAuth,omitempty"`
-	InstanceConfig  InstanceConfig        `json:"InstanceConfig" binding:"required"`
-	ContainerConfig ContainerConfig       `json:"ContainerConfig" binding:"required"`
-	RuntimeConfig   Base64JSONBytes       `json:"RuntimeConfig,omitempty"`
-	Registry        *string               `json:"Registry,omitempty"`
-	ImageName       string                `json:"ImageName" binding:"required"`
-	Tag             string                `json:"Tag" binding:"required"`
-	Issuer          string                `json:"Issuer"`
+	RequestID       string                    `json:"RequestId" binding:"required"`
+	RegistryAuth    *imageHelper.RegistryAuth `json:"RegistryAuth,omitempty"`
+	InstanceConfig  InstanceConfig            `json:"InstanceConfig" binding:"required"`
+	ContainerConfig ContainerConfig           `json:"ContainerConfig" binding:"required"`
+	RuntimeConfig   Base64JSONBytes           `json:"RuntimeConfig,omitempty"`
+	Registry        *string                   `json:"Registry,omitempty"`
+	ImageName       string                    `json:"ImageName" binding:"required"`
+	Tag             string                    `json:"Tag" binding:"required"`
+	Issuer          string                    `json:"Issuer"`
 }
 type VersionData struct {
 	Version      string `json:"version" binding:"required"`

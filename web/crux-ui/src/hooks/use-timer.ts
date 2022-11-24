@@ -20,6 +20,7 @@ const useTimer = (
         expireCallback.current?.call(null)
       }
     }
+    return () => clearTimeout(timer.current)
   }, [remaining])
 
   return [remaining, (timeout: number) => setRemaining(timeout), () => clearTimeout(timer.current)]

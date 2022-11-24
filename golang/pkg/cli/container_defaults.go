@@ -34,6 +34,11 @@ const (
 
 // Crux services: db migrations and crux api service
 func GetCrux(settings *Settings) *containerbuilder.DockerContainerBuilder {
+	cruxAgentAddr := fmt.Sprintf("%s:%d", settings.Containers.Crux.Name, defaultCruxAgentGrpcPort)
+	if settings.Containers.Crux.LocalAgent {
+		cruxAgentAddr = fmt.Sprintf("%s:%d", localhost, settings.SettingsFile.CruxAgentGrpcPort)
+	}
+
 	crux := containerbuilder.NewDockerBuilder(context.Background()).
 		WithImage(fmt.Sprintf("%s:%s", settings.Crux.Image, settings.SettingsFile.Version)).
 		WithLogWriter(nil).
@@ -54,7 +59,7 @@ func GetCrux(settings *Settings) *containerbuilder.DockerContainerBuilder {
 				settings.Containers.Kratos.Name,
 				settings.SettingsFile.KratosAdminPort),
 			fmt.Sprintf("CRUX_UI_URL=localhost:%d", settings.SettingsFile.TraefikWebPort),
-			fmt.Sprintf("CRUX_AGENT_ADDRESS=%s:%d", settings.InternalHostDomain, settings.SettingsFile.CruxAgentGrpcPort),
+			fmt.Sprintf("CRUX_AGENT_ADDRESS=%s", cruxAgentAddr),
 			"LOCAL_DEPLOYMENT=true",
 			fmt.Sprintf("LOCAL_DEPLOYMENT_NETWORK=%s", settings.SettingsFile.Network),
 			fmt.Sprintf("JWT_SECRET=%s", settings.SettingsFile.CruxSecret),

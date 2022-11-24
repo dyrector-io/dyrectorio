@@ -7,7 +7,9 @@ import (
 	"path/filepath"
 	"text/template"
 
+	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/mount"
+	"github.com/docker/docker/client"
 	"github.com/rs/zerolog/log"
 
 	dockerHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
@@ -27,6 +29,12 @@ type TraefikDeployRequest struct {
 	Port uint16 `json:"port"`
 	// HTTPS port
 	TLSPort uint16 `json:"tlsPort"`
+}
+
+type UnknownContainerError struct{}
+
+func (err *UnknownContainerError) Error() string {
+	return "unknown container ID"
 }
 
 func ExecTraefik(ctx context.Context, traefikDeployReq TraefikDeployRequest, cfg *config.Configuration) error {
@@ -127,4 +135,49 @@ func ExecTraefik(ctx context.Context, traefikDeployReq TraefikDeployRequest, cfg
 	_, err = builder.Start()
 
 	return err
+}
+
+func GetOwnContainerID() string {
+	cgroup, err := ParseCGroupFile()
+	if err != nil {
+		return os.Getenv("HOSTNAME")
+	}
+
+	return cgroup
+}
+
+func GetOwnContainer(ctx context.Context) (*types.Container, error) {
+	containerID := GetOwnContainerID()
+	if containerID == "" {
+		return nil, &UnknownContainerError{}
+	}
+
+	container, err := dockerHelper.GetContainerByID(ctx, nil, containerID, false)
+	if err != nil {
+		return nil, err
+	}
+	if container == nil {
+		return nil, &UnknownContainerError{}
+	}
+
+	return container, nil
+}
+
+func GetOwnContainerImage() (*types.ImageInspect, error) {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return nil, err
+	}
+
+	container, err := GetOwnContainer(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
+	image, _, err := cli.ImageInspectWithRaw(context.Background(), container.ImageID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &image, nil
 }

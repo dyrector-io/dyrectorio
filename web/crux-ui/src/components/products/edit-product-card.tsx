@@ -33,7 +33,7 @@ const EditProductCard = (props: EditProductCardProps) => {
       description: '',
       updatedAt: null,
       type: 'complex',
-      changelog: null,
+      changelog: '',
     },
   )
 
@@ -71,12 +71,12 @@ const EditProductCard = (props: EditProductCardProps) => {
         }
 
         setProduct(result)
+        setSubmitting(false)
         onProductEdited(result)
       } else {
+        setSubmitting(false)
         handleApiError(res, setFieldError)
       }
-
-      setSubmitting(false)
     },
   })
 
@@ -134,7 +134,7 @@ const EditProductCard = (props: EditProductCardProps) => {
             className="h-48"
             grow
             name="changelog"
-            label={t('versions:changelog')}
+            label={t('changelog')}
             onChange={formik.handleChange}
             value={formik.values.changelog}
           />

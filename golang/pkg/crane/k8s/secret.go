@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 
 	"github.com/dyrector-io/dyrectorio/golang/internal/crypt"
-	builder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
+	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
 
 	"github.com/rs/zerolog/log"
@@ -136,7 +136,7 @@ func ApplyOpaqueSecret(ctx context.Context, namespace, name string, values map[s
 func ApplyRegistryAuthSecret(ctx context.Context,
 	namespace,
 	name string,
-	credentials *builder.RegistryAuth,
+	credentials *imageHelper.RegistryAuth,
 	appConfig *config.Configuration,
 ) error {
 	cli, err := getSecretClient(namespace, appConfig)
