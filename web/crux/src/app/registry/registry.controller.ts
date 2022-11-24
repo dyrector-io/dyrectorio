@@ -15,7 +15,7 @@ import {
 import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
 import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
 import RegistryAccessValidationGuard from './guards/registry.auth.validation.guard'
-import RegistryTeamAccessGuard from './guards/registry.team-access.guart'
+import RegistryTeamAccessGuard from './guards/registry.team-access.guard'
 import DeleteRegistryValidationPipe from './pipes/registry.delete.pipe'
 import RegistryService from './registry.service'
 

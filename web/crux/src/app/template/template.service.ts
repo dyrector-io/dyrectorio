@@ -51,9 +51,23 @@ export default class TemplateService {
     if (template.registries && template.registries.length > 0) {
       const counts = await this.prisma.registry.findMany({
         where: {
-          name: {
-            in: template.registries.map(it => it.name),
-          },
+          AND: [
+            {
+              name: {
+                in: template.registries.map(it => it.name),
+              },
+            },
+            {
+              team: {
+                users: {
+                  some: {
+                    userId: req.accessedBy,
+                    active: true,
+                  },
+                },
+              },
+            },
+          ],
         },
       })
 
@@ -163,9 +177,25 @@ export default class TemplateService {
 
     const registryLookup = await this.prisma.registry.findMany({
       where: {
-        name: {
-          in: templateImages.map(it => it.registryName).filter((value, index, array) => array.indexOf(value) === index),
-        },
+        AND: [
+          {
+            name: {
+              in: templateImages
+                .map(it => it.registryName)
+                .filter((value, index, array) => array.indexOf(value) === index),
+            },
+          },
+          {
+            team: {
+              users: {
+                some: {
+                  userId: accessedBy,
+                  active: true,
+                },
+              },
+            },
+          },
+        ],
       },
     })
 
