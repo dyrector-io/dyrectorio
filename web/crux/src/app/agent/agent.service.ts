@@ -10,7 +10,7 @@ import AgentInstaller from 'src/domain/agent-installer'
 import { DeploymentProgressEvent } from 'src/domain/deployment'
 import { collectChildVersionIds, collectParentVersionIds } from 'src/domain/utils'
 import { AlreadyExistsException, NotFoundException, UnauthenticatedException } from 'src/exception/errors'
-import { AgentCommand, AgentInfo } from 'src/grpc/protobuf/proto/agent'
+import { AgentAbortUpdate, AgentCommand, AgentInfo, CloseReason } from 'src/grpc/protobuf/proto/agent'
 import {
   ContainerStateListMessage,
   DeploymentStatus,
@@ -140,7 +140,7 @@ export default class AgentService {
 
   kick(nodeId: string) {
     const agent = this.getByIdOrThrow(nodeId)
-    agent.kick()
+    agent.close()
   }
 
   handleConnect(connection: GrpcNodeConnection, request: AgentInfo): Observable<AgentCommand> {
@@ -219,6 +219,22 @@ export default class AgentService {
     return of(Empty)
   }
 
+  updateAgent(id: string) {
+    const agent = this.getByIdOrThrow(id)
+
+    agent.update(this.configService.get<string>('CRUX_AGENT_IMAGE') ?? 'stable')
+  }
+
+  async updateAborted(connection: GrpcNodeConnection, request: AgentAbortUpdate): Promise<Empty> {
+    this.logger.warn(`Agent updated aborted for '${connection.nodeId}' with error: '${request.error}'`)
+
+    const agent = this.getByIdOrThrow(connection.nodeId)
+
+    agent.onUpdateAborted(request.error)
+
+    return Empty
+  }
+
   private onAgentConnectionStatusChange(agent: Agent, status: NodeConnectionStatus) {
     if (status === NodeConnectionStatus.UNREACHABLE) {
       this.logger.log(`Left: ${agent.id}`)
@@ -234,10 +250,18 @@ export default class AgentService {
     request: AgentInfo,
   ): Promise<Observable<AgentCommand>> {
     if (this.agents.has(request.id)) {
-      throw new AlreadyExistsException({
-        message: 'Agent is already connected.',
-        property: 'id',
-      })
+      const agent = this.agents.get(request.id)
+      if (!agent.checkAgentUpdating()) {
+        throw new AlreadyExistsException({
+          message: 'Agent is already connected.',
+          property: 'id',
+        })
+      }
+
+      this.logger.verbose(`Updated agent connected for '${request.id}'`)
+
+      agent.close(CloseReason.SELF_DESTRUCT)
+      this.agents.delete(request.id)
     }
 
     let agent: Agent

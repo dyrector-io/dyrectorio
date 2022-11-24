@@ -39,5 +39,7 @@
     "unreachable": "Unreachable"
   },
   "rootPath": "Root path",
-  "rootPathHint": "Optional, leave empty for default paths"
+  "rootPathOptional": "Optional, leave empty for default paths",
+  "update": "Update",
+  "updateError": "Failed to update agent: {{error}}"
 }

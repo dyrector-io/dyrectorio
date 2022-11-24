@@ -8,6 +8,7 @@ import (
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/dyrector-io/dyrectorio/golang/internal/config"
+	"github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 	"github.com/dyrector-io/dyrectorio/golang/internal/mapper"
 	builder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
@@ -71,7 +72,7 @@ func TestMapDeployImageCrane(t *testing.T) {
 func testExpectedCommon(req *agent.DeployRequest) *v1.DeployImageRequest {
 	return &v1.DeployImageRequest{
 		RequestID: "testID",
-		RegistryAuth: &builder.RegistryAuth{
+		RegistryAuth: &image.RegistryAuth{
 			Name:     "test-name",
 			URL:      "https://test-url.com",
 			User:     "test-user",

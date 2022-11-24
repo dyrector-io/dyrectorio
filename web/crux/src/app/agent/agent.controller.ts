@@ -2,6 +2,7 @@ import { Metadata } from '@grpc/grpc-js'
 import { Controller, UseGuards, UseInterceptors } from '@nestjs/common'
 import { Observable } from 'rxjs'
 import {
+  AgentAbortUpdate,
   AgentCommand,
   AgentController as GrpcAgentController,
   AgentControllerMethods,
@@ -40,5 +41,9 @@ export default class AgentController implements GrpcAgentController {
 
   secretList(request: ListSecretsResponse, _: Metadata, call: NodeUnaryCall): Observable<Empty> {
     return this.service.handleSecretList(call.connection, request)
+  }
+
+  abortUpdate(request: AgentAbortUpdate, _: Metadata, call: NodeUnaryCall): Promise<Empty> {
+    return this.service.updateAborted(call.connection, request)
   }
 }

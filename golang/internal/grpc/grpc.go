@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -44,6 +45,8 @@ type (
 	WatchFunc      func(context.Context, string) []*common.ContainerStateItem
 	DeleteFunc     func(context.Context, string, string) error
 	SecretListFunc func(context.Context, string, string) ([]string, error)
+	SelfUpdateFunc func(context.Context, string, int32) error
+	CloseFunc      func(context.Context, agent.CloseReason) error
 )
 
 type WorkerFunctions struct {
@@ -51,6 +54,8 @@ type WorkerFunctions struct {
 	Watch      WatchFunc
 	Delete     DeleteFunc
 	SecretList SecretListFunc
+	SelfUpdate SelfUpdateFunc
+	Close      CloseFunc
 }
 
 type contextKey int
@@ -176,14 +181,41 @@ func Init(grpcContext context.Context,
 		grpcConn.Conn = conn
 	}
 
-	grpcLoop(ctx, connParams.nodeID, workerFuncs, cancel, appConfig)
+	grpcLoop(ctx, connParams, workerFuncs, cancel, appConfig)
+}
+
+func grpcProcessCommand(
+	ctx context.Context,
+	workerFuncs WorkerFunctions,
+	command *agent.AgentCommand,
+	appConfig *config.CommonConfiguration,
+) {
+	switch {
+	case command.GetDeploy() != nil:
+		go executeVersionDeployRequest(ctx, command.GetDeploy(), workerFuncs.Deploy, appConfig)
+	case command.GetContainerState() != nil:
+		go executeWatchContainerStatus(ctx, command.GetContainerState(), workerFuncs.Watch)
+	case command.GetContainerDelete() != nil:
+		go executeDeleteContainer(ctx, command.GetContainerDelete(), workerFuncs.Delete)
+	case command.GetDeployLegacy() != nil:
+		go executeVersionDeployLegacyRequest(ctx, command.GetDeployLegacy(), workerFuncs.Deploy, appConfig)
+	case command.GetListSecrets() != nil:
+		go executeSecretList(ctx, command.GetListSecrets(), workerFuncs.SecretList, appConfig)
+	case command.GetUpdate() != nil:
+		go executeUpdate(ctx, command.GetUpdate(), workerFuncs.SelfUpdate)
+	case command.GetClose() != nil:
+		go executeClose(ctx, command.GetClose(), workerFuncs.Close)
+	default:
+		log.Warn().Msg("Unknown agent command")
+	}
 }
 
 func grpcLoop(
 	ctx context.Context,
-	nodeID string,
+	connParams *ConnectionParams,
 	workerFuncs WorkerFunctions,
-	cancel context.CancelFunc, appConfig *config.CommonConfiguration,
+	cancel context.CancelFunc,
+	appConfig *config.CommonConfiguration,
 ) {
 	var stream agent.Agent_ConnectClient
 	var err error
@@ -201,7 +233,7 @@ func grpcLoop(
 			}
 
 			stream, err = grpcConn.Client.Connect(
-				ctx, &agent.AgentInfo{Id: nodeID, Version: version.BuildVersion(), PublicKey: publicKey},
+				ctx, &agent.AgentInfo{Id: connParams.nodeID, Version: version.BuildVersion(), PublicKey: publicKey},
 				grpc.WaitForReady(true),
 			)
 			if err != nil {
@@ -230,19 +262,7 @@ func grpcLoop(
 			continue
 		}
 
-		if command.GetDeploy() != nil {
-			go executeVersionDeployRequest(ctx, command.GetDeploy(), workerFuncs.Deploy, appConfig)
-		} else if command.GetContainerState() != nil {
-			go executeWatchContainerStatus(ctx, command.GetContainerState(), workerFuncs.Watch)
-		} else if command.GetContainerDelete() != nil {
-			go executeDeleteContainer(ctx, command.GetContainerDelete(), workerFuncs.Delete)
-		} else if command.GetDeployLegacy() != nil {
-			go executeVersionDeployLegacyRequest(ctx, command.GetDeployLegacy(), workerFuncs.Deploy, appConfig)
-		} else if command.GetListSecrets() != nil {
-			go executeSecretList(ctx, command.GetListSecrets(), workerFuncs.SecretList, appConfig)
-		} else {
-			log.Print("Unknown agent command")
-		}
+		grpcProcessCommand(ctx, workerFuncs, command, appConfig)
 	}
 }
 
@@ -333,7 +353,8 @@ func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStateR
 		}
 
 		if req.OneShot != nil && *req.OneShot {
-			if err := stream.CloseSend(); err == nil {
+			err := stream.CloseSend()
+			if err == nil {
 				log.Printf("Closed container status channel for prefix: %s", filterPrefix)
 			} else {
 				log.Printf("Failed to close container status channel for prefix: %s %v", filterPrefix, err)
@@ -443,6 +464,41 @@ func executeSecretList(
 	if err != nil {
 		log.Error().Stack().Err(err).Msg("Secret list response error")
 		return
+	}
+}
+
+func executeUpdate(ctx context.Context, command *agent.AgentUpdateRequest, updateFunc SelfUpdateFunc) {
+	if updateFunc == nil {
+		log.Warn().Stack().Msg("gRPC self update is not implemented")
+		return
+	}
+
+	err := updateFunc(ctx, command.Tag, command.TimeoutSeconds)
+	if err != nil {
+		log.Error().Stack().Err(err).Msg("Update error")
+
+		errorString := err.Error()
+		resp := &agent.AgentAbortUpdate{
+			Error: strings.ToUpper(errorString[0:1]) + errorString[1:],
+		}
+
+		_, err := grpcConn.Client.AbortUpdate(ctx, resp)
+		if err != nil {
+			log.Error().Stack().Err(err).Msg("Update error response")
+		}
+	}
+}
+
+func executeClose(ctx context.Context, command *agent.CloseConnection, closeFunc CloseFunc) {
+	log.Debug().Str("reason", agent.CloseReason_name[int32(command.GetReason())]).Msg("gRPC connection remotely closed")
+
+	if closeFunc == nil {
+		return
+	}
+
+	err := closeFunc(ctx, command.Reason)
+	if err != nil {
+		log.Error().Stack().Err(err).Msg("Close handler error")
 	}
 }
 

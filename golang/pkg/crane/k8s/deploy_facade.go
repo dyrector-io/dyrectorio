@@ -36,7 +36,7 @@ type DeployFacadeParams struct {
 	InstanceConfig   v1.InstanceConfig
 	ContainerConfig  v1.ContainerConfig
 	RuntimeConfig    *string
-	imagePullSecrets *builder.RegistryAuth
+	imagePullSecrets *imageHelper.RegistryAuth
 	Issuer           string
 }
 
