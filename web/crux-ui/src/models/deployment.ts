@@ -123,16 +123,6 @@ export const WS_TYPE_DEPLOYMENT_EVENT = 'deployment-event'
 export const WS_TYPE_DEPLOYMENT_EVENT_LIST = 'deployment-event-list'
 export type DeploymentEventMessage = DeploymentEvent
 
-export const WS_TYPE_START_DEPLOYMENT = 'start-deployment'
-export type StartDeploymentMessage = {
-  id: string
-}
-
-export const WS_TYPE_START_DEPLOYMENT_EVENTS = 'start-deployment-events'
-export type StartDeploymentEventsMessage = {
-  id: string
-}
-
 export const WS_TYPE_DEPLOYMENT_FINISHED = 'deployment-finished'
 
 export const WS_TYPE_GET_DEPLOYMENT_SECRETS = 'deployment-secret-list'

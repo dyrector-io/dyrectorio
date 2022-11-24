@@ -110,5 +110,5 @@ e2e_results
 
 # playwright
 e2e/screenshots
-e2e/dagent
+e2e/utils/dagent
 storageState.json

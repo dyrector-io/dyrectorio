@@ -60,13 +60,6 @@ export const checkDeploymentMutability = (status: DeploymentStatusEnum, type: Ve
   }
 }
 
-export type DeploymentNotification = {
-  accessedBy: string
-  productName: string
-  versionName: string
-  nodeName: string
-}
-
 export default class Deployment {
   private statusChannel = new Subject<DeploymentProgressMessage>()
 
@@ -74,7 +67,7 @@ export default class Deployment {
 
   readonly id: string
 
-  constructor(private readonly request: VersionDeployRequest, public notification: DeploymentNotification) {
+  constructor(private readonly request: VersionDeployRequest) {
     this.id = request.id
   }
 
@@ -100,7 +93,8 @@ export default class Deployment {
   onUpdate(progress: DeploymentStatusMessage): DeploymentProgressEvent[] {
     const events: DeploymentProgressEvent[] = []
 
-    if (progress.deploymentStatus && this.status !== progress.deploymentStatus) {
+    if (progress.deploymentStatus) {
+      this.status = progress.deploymentStatus
       events.push({
         type: DeploymentEventTypeEnum.deploymentStatus,
         value: deploymentStatusToDb(progress.deploymentStatus),

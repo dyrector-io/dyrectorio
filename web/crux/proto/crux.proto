@@ -86,8 +86,9 @@ service CruxDeployment {
   rpc CopyDeploymentSafe(IdRequest) returns (CreateEntityResponse);
   rpc CopyDeploymentUnsafe(IdRequest) returns (CreateEntityResponse);
 
-  rpc StartDeployment(IdRequest) returns (stream DeploymentProgressMessage);
-  rpc SubscribeToDeploymentEvents(IdRequest) returns (stream DeploymentProgressMessage);
+  rpc StartDeployment(IdRequest) returns (common.Empty);
+  rpc SubscribeToDeploymentEvents(IdRequest)
+      returns (stream DeploymentProgressMessage);
   rpc SubscribeToDeploymentEditEvents(ServiceIdRequest)
       returns (stream DeploymentEditEventMessage);
 }
@@ -949,6 +950,7 @@ message DeploymentEventResponse {
 }
 
 message DeploymentEventListResponse {
+  common.DeploymentStatus status = 100;
   repeated DeploymentEventResponse data = 1000;
 }
 

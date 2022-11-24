@@ -2,7 +2,7 @@ import { Logger } from '@nestjs/common'
 import { finalize, Observable, Subject, throwError, timeout } from 'rxjs'
 import { AlreadyExistsException, InternalException, PreconditionFailedException } from 'src/exception/errors'
 import { AgentCommand, AgentInfo, CloseReason } from 'src/grpc/protobuf/proto/agent'
-import { ListSecretsResponse } from 'src/grpc/protobuf/proto/common'
+import { DeploymentStatus, ListSecretsResponse } from 'src/grpc/protobuf/proto/common'
 import { DeploymentProgressMessage, NodeConnectionStatus, NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import ContainerStatusWatcher, { ContainerStatusStreamCompleter } from './container-status-watcher'
@@ -126,8 +126,9 @@ export class Agent {
     })
   }
 
-  onDeploymentFinished(deployment: Deployment) {
+  onDeploymentFinished(deployment: Deployment): DeploymentStatus {
     this.deployments.delete(deployment.id)
+    return deployment.getStatus()
   }
 
   onContainerStatusStreamStarted(prefix: string): [ContainerStatusWatcher, ContainerStatusStreamCompleter] {

@@ -1284,6 +1284,7 @@ export interface DeploymentEventResponse {
 }
 
 export interface DeploymentEventListResponse {
+  status: DeploymentStatus
   data: DeploymentEventResponse[]
 }
 
@@ -3982,18 +3983,20 @@ export const DeploymentEventResponse = {
 }
 
 function createBaseDeploymentEventListResponse(): DeploymentEventListResponse {
-  return { data: [] }
+  return { status: 0, data: [] }
 }
 
 export const DeploymentEventListResponse = {
   fromJSON(object: any): DeploymentEventListResponse {
     return {
+      status: isSet(object.status) ? deploymentStatusFromJSON(object.status) : 0,
       data: Array.isArray(object?.data) ? object.data.map((e: any) => DeploymentEventResponse.fromJSON(e)) : [],
     }
   },
 
   toJSON(message: DeploymentEventListResponse): unknown {
     const obj: any = {}
+    message.status !== undefined && (obj.status = deploymentStatusToJSON(message.status))
     if (message.data) {
       obj.data = message.data.map(e => (e ? DeploymentEventResponse.toJSON(e) : undefined))
     } else {
@@ -4721,7 +4724,7 @@ export interface CruxDeploymentClient {
 
   copyDeploymentUnsafe(request: IdRequest, metadata: Metadata, ...rest: any): Observable<CreateEntityResponse>
 
-  startDeployment(request: IdRequest, metadata: Metadata, ...rest: any): Observable<DeploymentProgressMessage>
+  startDeployment(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
 
   subscribeToDeploymentEvents(
     request: IdRequest,
@@ -4802,7 +4805,7 @@ export interface CruxDeploymentController {
     ...rest: any
   ): Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
 
-  startDeployment(request: IdRequest, metadata: Metadata, ...rest: any): Observable<DeploymentProgressMessage>
+  startDeployment(request: IdRequest, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
 
   subscribeToDeploymentEvents(
     request: IdRequest,
