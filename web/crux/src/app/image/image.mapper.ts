@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import {
   ContainerConfig,
+  InstanceContainerConfig,
   DeploymentStrategy,
   ExposeStrategy,
   Image,
@@ -130,7 +131,7 @@ export default class ImageMapper {
     }
   }
 
-  configDetailsToDb(config: ContainerConfig): ContainerConfigData {
+  configDetailsToDb(config: ContainerConfig | InstanceContainerConfig): ContainerConfigData {
     return {
       // common
       name: config.name,
