@@ -21,5 +21,5 @@ if [ $github_ref_type == "tag" ]; then
   VERSION=$github_ref_name
 fi
 
-echo "::set-output name=tag::$DOCKERIMAGETAG"
-echo "::set-output name=version::$VERSION"
+echo "{tag}={$DOCKERIMAGETAG}" >> $GITHUB_OUTPUT
+echo "{version}={$VERSION}" >> $GITHUB_OUTPUT
