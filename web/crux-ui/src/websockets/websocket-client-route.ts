@@ -54,9 +54,9 @@ class WebSocketClientRoute {
 
   /**
    * @param token existing token
-   * @returns [newToken, connectUrl] or null
+   * @returns [newToken, connectUrl]
    */
-  async subscribe(token: string): Promise<[string, string] | null> {
+  async subscribe(token: string): Promise<[string, string]> {
     if (this.state === 'subscribed') {
       return [token, null]
     }
@@ -82,7 +82,7 @@ class WebSocketClientRoute {
       this.logger.debug('Failed to subscribe')
       this.state = 'unsubscribed'
       free()
-      return null
+      return [null, null]
     }
 
     if (res.status === 200) {
@@ -153,9 +153,12 @@ class WebSocketClientRoute {
 
       this.freeLock()
       this.freeLock = null
-    } else if (!this.subscribed && !(await this.subscribe(token))) {
+    } else if (!this.subscribed) {
       // when the socket is open but can't subscribe
-      return
+      const [newToken] = await this.subscribe(token)
+      if (!newToken) {
+        return
+      }
     }
 
     this.endpoints.forEach(it => it.onOpen(this.sendClientMessage))

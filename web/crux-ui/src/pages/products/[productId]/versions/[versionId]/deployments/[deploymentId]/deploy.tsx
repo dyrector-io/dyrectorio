@@ -58,7 +58,7 @@ const DeployPage = (props: DeployPageProps) => {
     },
   })
 
-  sock.on(WS_TYPE_DEPLOYMENT_EVENT_LIST, (message: DeploymentEventMessage[]) => setEvents(message))
+  sock.on(WS_TYPE_DEPLOYMENT_EVENT_LIST, (message: DeploymentEventMessage[]) => setEvents([...message, ...events]))
   sock.on(WS_TYPE_DEPLOYMENT_EVENT, (message: DeploymentEventMessage) => {
     const newEvents = [...events, message]
     setEvents(newEvents)
