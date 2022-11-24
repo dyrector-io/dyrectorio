@@ -51,12 +51,12 @@ const ApplyTemplateCard = (props: ApplyTemplateCardProps) => {
         const json = await res.json()
         const result = json as CreateEntityResponse
 
+        setSubmitting(false)
         onTemplateApplied(result.id)
       } else {
+        setSubmitting(false)
         handleApiError(res, setFieldError)
       }
-
-      setSubmitting(false)
     },
   })
 
