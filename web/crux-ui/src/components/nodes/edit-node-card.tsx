@@ -178,12 +178,12 @@ const EditNodeCard = (props: EditNodeCardProps) => {
         }
 
         setNode(result)
+        setSubmitting(false)
         onNodeEdited(result, editing)
       } else {
+        setSubmitting(false)
         handleApiError(res, setFieldError)
       }
-
-      setSubmitting(false)
     },
   })
 

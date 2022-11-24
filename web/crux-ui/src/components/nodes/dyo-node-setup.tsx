@@ -33,7 +33,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
     node.install ? expiresIn(new Date(node.install.expireAt)) : null,
     () => onNodeInstallChanged(null),
   )
-  const [rootPath, setRootPath] = useState<string>(null)
+  const [rootPath, setRootPath] = useState<string>('')
 
   const handleApiError = defaultApiErrorHandler(t)
 
