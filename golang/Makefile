@@ -39,7 +39,7 @@ up: ##
 .PHONY: upd
 upd: ##
 	cd cmd/dyo && \
-	go run . --disable-crux --disable-crux-ui up; \
+	go run . --disable-crux --disable-crux-ui --local-agent up; \
 	cd -
 
 .PHONY: down

@@ -51,6 +51,7 @@ type ContainerSettings struct {
 	Disabled   bool
 	CruxAddr   string
 	CruxUIPort uint
+	LocalAgent bool
 }
 
 // Settings file will be read/written as this struct
@@ -117,6 +118,7 @@ const (
 	DirPerms         = 0o750
 	SecretLength     = 32
 	BufferMultiplier = 2
+	localhost        = "localhost"
 )
 
 // Check if the settings file is exists
@@ -274,7 +276,7 @@ func PodmanInfo() {
 
 func DisabledServiceSettings(settings *Settings) *Settings {
 	if settings.Containers.CruxUI.Disabled {
-		settings.CruxUI.CruxAddr = "localhost"
+		settings.CruxUI.CruxAddr = localhost
 	} else {
 		settings.CruxUI.CruxAddr = fmt.Sprintf("%s_crux", settings.SettingsFile.Prefix)
 	}
