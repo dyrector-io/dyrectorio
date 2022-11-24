@@ -69,7 +69,8 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
       return
     }
 
-    router.push(url)
+    await router.push(url)
+    router.reload()
   }
 
   const deploy = async () => {
