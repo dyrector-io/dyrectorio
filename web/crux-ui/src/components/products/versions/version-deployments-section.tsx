@@ -25,7 +25,7 @@ import {
   WS_TYPE_NODE_STATUS,
   WS_TYPE_NODE_STATUSES,
 } from '@app/models'
-import { deploymentDeployUrl, deploymentStartUrl, deploymentUrl, WS_NODES } from '@app/routes'
+import { deploymentDeployUrl, deploymentStartApiUrl, deploymentUrl, WS_NODES } from '@app/routes'
 import { distinct, utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
@@ -43,7 +43,7 @@ export const startDeployment = async (
   versionId: string,
   deploymentId: string,
 ) => {
-  const res = await fetch(deploymentStartUrl(productId, versionId, deploymentId), {
+  const res = await fetch(deploymentStartApiUrl(productId, versionId, deploymentId), {
     method: 'POST',
   })
 

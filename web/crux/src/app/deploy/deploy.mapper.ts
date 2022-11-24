@@ -11,7 +11,6 @@ import {
   VersionTypeEnum,
 } from '@prisma/client'
 import { JsonArray, JsonObject } from 'prisma'
-import { deploymentStatusToDb } from 'src/domain/deployment'
 import { toTimestamp } from 'src/domain/utils'
 import { InternalException } from 'src/exception/errors'
 import {
@@ -110,7 +109,6 @@ export default class DeployMapper {
     let log: DeploymentEventLog
     let deploymentStatus: DeploymentStatus
     let containerStatus: DeploymentEventContainerState
-
     switch (event.type) {
       case DeploymentEventTypeEnum.log: {
         log = DeploymentEventLog.fromJSON({
@@ -119,7 +117,7 @@ export default class DeployMapper {
         break
       }
       case DeploymentEventTypeEnum.deploymentStatus: {
-        deploymentStatus = deploymentStatusFromJSON(event.value)
+        deploymentStatus = this.statusToGrpc(event.value as DeploymentStatusEnum)
         break
       }
       case DeploymentEventTypeEnum.containerStatus: {
@@ -176,15 +174,6 @@ export default class DeployMapper {
         return DeploymentStatus.IN_PROGRESS
       default:
         return deploymentStatusFromJSON(status.toUpperCase())
-    }
-  }
-
-  statusToDb(status: DeploymentStatus): DeploymentStatusEnum {
-    switch (status) {
-      case DeploymentStatus.IN_PROGRESS:
-        return DeploymentStatusEnum.inProgress
-      default:
-        return deploymentStatusToDb(status)
     }
   }
 

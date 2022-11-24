@@ -1569,7 +1569,7 @@ type CruxDeploymentClient interface {
 	GetDeploymentSecrets(ctx context.Context, in *DeploymentListSecretsRequest, opts ...grpc.CallOption) (*common.ListSecretsResponse, error)
 	CopyDeploymentSafe(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error)
 	CopyDeploymentUnsafe(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error)
-	StartDeployment(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (CruxDeployment_StartDeploymentClient, error)
+	StartDeployment(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
 	SubscribeToDeploymentEvents(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (CruxDeployment_SubscribeToDeploymentEventsClient, error)
 	SubscribeToDeploymentEditEvents(ctx context.Context, in *ServiceIdRequest, opts ...grpc.CallOption) (CruxDeployment_SubscribeToDeploymentEditEventsClient, error)
 }
@@ -1681,40 +1681,17 @@ func (c *cruxDeploymentClient) CopyDeploymentUnsafe(ctx context.Context, in *IdR
 	return out, nil
 }
 
-func (c *cruxDeploymentClient) StartDeployment(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (CruxDeployment_StartDeploymentClient, error) {
-	stream, err := c.cc.NewStream(ctx, &CruxDeployment_ServiceDesc.Streams[0], "/crux.CruxDeployment/StartDeployment", opts...)
+func (c *cruxDeploymentClient) StartDeployment(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
+	err := c.cc.Invoke(ctx, "/crux.CruxDeployment/StartDeployment", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &cruxDeploymentStartDeploymentClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type CruxDeployment_StartDeploymentClient interface {
-	Recv() (*DeploymentProgressMessage, error)
-	grpc.ClientStream
-}
-
-type cruxDeploymentStartDeploymentClient struct {
-	grpc.ClientStream
-}
-
-func (x *cruxDeploymentStartDeploymentClient) Recv() (*DeploymentProgressMessage, error) {
-	m := new(DeploymentProgressMessage)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
+	return out, nil
 }
 
 func (c *cruxDeploymentClient) SubscribeToDeploymentEvents(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (CruxDeployment_SubscribeToDeploymentEventsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &CruxDeployment_ServiceDesc.Streams[1], "/crux.CruxDeployment/SubscribeToDeploymentEvents", opts...)
+	stream, err := c.cc.NewStream(ctx, &CruxDeployment_ServiceDesc.Streams[0], "/crux.CruxDeployment/SubscribeToDeploymentEvents", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1746,7 +1723,7 @@ func (x *cruxDeploymentSubscribeToDeploymentEventsClient) Recv() (*DeploymentPro
 }
 
 func (c *cruxDeploymentClient) SubscribeToDeploymentEditEvents(ctx context.Context, in *ServiceIdRequest, opts ...grpc.CallOption) (CruxDeployment_SubscribeToDeploymentEditEventsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &CruxDeployment_ServiceDesc.Streams[2], "/crux.CruxDeployment/SubscribeToDeploymentEditEvents", opts...)
+	stream, err := c.cc.NewStream(ctx, &CruxDeployment_ServiceDesc.Streams[1], "/crux.CruxDeployment/SubscribeToDeploymentEditEvents", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1792,7 +1769,7 @@ type CruxDeploymentServer interface {
 	GetDeploymentSecrets(context.Context, *DeploymentListSecretsRequest) (*common.ListSecretsResponse, error)
 	CopyDeploymentSafe(context.Context, *IdRequest) (*CreateEntityResponse, error)
 	CopyDeploymentUnsafe(context.Context, *IdRequest) (*CreateEntityResponse, error)
-	StartDeployment(*IdRequest, CruxDeployment_StartDeploymentServer) error
+	StartDeployment(context.Context, *IdRequest) (*common.Empty, error)
 	SubscribeToDeploymentEvents(*IdRequest, CruxDeployment_SubscribeToDeploymentEventsServer) error
 	SubscribeToDeploymentEditEvents(*ServiceIdRequest, CruxDeployment_SubscribeToDeploymentEditEventsServer) error
 	mustEmbedUnimplementedCruxDeploymentServer()
@@ -1835,8 +1812,8 @@ func (UnimplementedCruxDeploymentServer) CopyDeploymentSafe(context.Context, *Id
 func (UnimplementedCruxDeploymentServer) CopyDeploymentUnsafe(context.Context, *IdRequest) (*CreateEntityResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CopyDeploymentUnsafe not implemented")
 }
-func (UnimplementedCruxDeploymentServer) StartDeployment(*IdRequest, CruxDeployment_StartDeploymentServer) error {
-	return status.Errorf(codes.Unimplemented, "method StartDeployment not implemented")
+func (UnimplementedCruxDeploymentServer) StartDeployment(context.Context, *IdRequest) (*common.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StartDeployment not implemented")
 }
 func (UnimplementedCruxDeploymentServer) SubscribeToDeploymentEvents(*IdRequest, CruxDeployment_SubscribeToDeploymentEventsServer) error {
 	return status.Errorf(codes.Unimplemented, "method SubscribeToDeploymentEvents not implemented")
@@ -2055,25 +2032,22 @@ func _CruxDeployment_CopyDeploymentUnsafe_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
-func _CruxDeployment_StartDeployment_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(IdRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
+func _CruxDeployment_StartDeployment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
 	}
-	return srv.(CruxDeploymentServer).StartDeployment(m, &cruxDeploymentStartDeploymentServer{stream})
-}
-
-type CruxDeployment_StartDeploymentServer interface {
-	Send(*DeploymentProgressMessage) error
-	grpc.ServerStream
-}
-
-type cruxDeploymentStartDeploymentServer struct {
-	grpc.ServerStream
-}
-
-func (x *cruxDeploymentStartDeploymentServer) Send(m *DeploymentProgressMessage) error {
-	return x.ServerStream.SendMsg(m)
+	if interceptor == nil {
+		return srv.(CruxDeploymentServer).StartDeployment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crux.CruxDeployment/StartDeployment",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CruxDeploymentServer).StartDeployment(ctx, req.(*IdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _CruxDeployment_SubscribeToDeploymentEvents_Handler(srv interface{}, stream grpc.ServerStream) error {
@@ -2169,13 +2143,12 @@ var CruxDeployment_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "CopyDeploymentUnsafe",
 			Handler:    _CruxDeployment_CopyDeploymentUnsafe_Handler,
 		},
+		{
+			MethodName: "StartDeployment",
+			Handler:    _CruxDeployment_StartDeployment_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
-		{
-			StreamName:    "StartDeployment",
-			Handler:       _CruxDeployment_StartDeployment_Handler,
-			ServerStreams: true,
-		},
 		{
 			StreamName:    "SubscribeToDeploymentEvents",
 			Handler:       _CruxDeployment_SubscribeToDeploymentEvents_Handler,

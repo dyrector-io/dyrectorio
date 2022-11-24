@@ -4,21 +4,15 @@ import {
   DeploymentGetSecretListMessage,
   DeploymentSecretListMessage,
   EditorJoinedMessage,
-  FetchDeploymentEventsMessage,
   GetInstanceMessage,
   InputFocusMessage,
   PatchDeploymentEnvMessage,
   PatchInstanceMessage,
-  StartDeploymentEventsMessage,
-  StartDeploymentMessage,
   WS_TYPE_ALL_ITEM_EDITORS,
   WS_TYPE_BLUR_INPUT,
   WS_TYPE_DEPLOYMENT_ENV_UPDATED,
-  WS_TYPE_DEPLOYMENT_EVENT,
   WS_TYPE_DEPLOYMENT_EVENT_LIST,
-  WS_TYPE_DEPLOYMENT_FINISHED,
   WS_TYPE_DEPLOYMENT_SECRETS,
-  WS_TYPE_DYO_ERROR,
   WS_TYPE_EDITOR_IDENTITY,
   WS_TYPE_EDITOR_JOINED,
   WS_TYPE_EDITOR_LEFT,
@@ -32,15 +26,13 @@ import {
   WS_TYPE_INSTANCE_UPDATED,
   WS_TYPE_PATCH_DEPLOYMENT_ENV,
   WS_TYPE_PATCH_INSTANCE,
-  WS_TYPE_START_DEPLOYMENT,
-  WS_TYPE_START_DEPLOYMENT_EVENTS,
 } from '@app/models'
 import { WsMessage } from '@app/websockets/common'
 import WsConnection from '@app/websockets/connection'
 import WsEndpoint from '@app/websockets/endpoint'
 import crux, { Crux, cruxFromConnection } from '@server/crux/crux'
+import DeploymentEventsService from '@server/deployment-event-service'
 import EditorService from '@server/editing/editor-service'
-import { fromGrpcError, parseGrpcError } from '@server/error-middleware'
 import { routedWebSocketEndpoint } from '@server/websocket-endpoint'
 import useWebsocketErrorMiddleware from '@server/websocket-error-middleware'
 import { NextApiRequest } from 'next'
@@ -53,6 +45,10 @@ const onReady = async (endpoint: WsEndpoint) => {
   const deploymentId = endpoint.query.deploymentId as string
 
   services.register(EditorService, () => new EditorService())
+  services.register(
+    DeploymentEventsService,
+    () => new DeploymentEventsService(endpoint, endpoint.query.deploymentId as string),
+  )
 
   Crux.withIdentity(null).deployments.subscribeToDeploymentEditEvents(deploymentId, {
     onClose: () => logger.debug(`Crux disconnected for: ${deploymentId}`),
@@ -93,49 +89,12 @@ const onDisconnect = (endpoint: WsEndpoint, connection: WsConnection) => {
   endpoint.sendAll(WS_TYPE_EDITOR_LEFT, disconnectMessage)
 }
 
-const onFetchEvents = async (
-  endpoint: WsEndpoint,
-  connection: WsConnection,
-  message: WsMessage<FetchDeploymentEventsMessage>,
-) => {
-  const req = message.payload
+const onFetchEvents = async (endpoint: WsEndpoint, connection: WsConnection) => {
+  const eventService = endpoint.services.get(DeploymentEventsService)
 
-  const events = await cruxFromConnection(connection).deployments.getEvents(req.id)
+  const events = await eventService.fetchEvents(cruxFromConnection(connection))
+
   connection.send(WS_TYPE_DEPLOYMENT_EVENT_LIST, events as DeploymentEventMessage[])
-}
-
-const onStartDeployment = async (
-  endpoint: WsEndpoint,
-  connection: WsConnection,
-  message: WsMessage<StartDeploymentMessage>,
-) => {
-  const req = message.payload
-
-  cruxFromConnection(connection).deployments.startDeploymentStream(req.id, {
-    onMessage: events => events.forEach(it => endpoint.sendAll(WS_TYPE_DEPLOYMENT_EVENT, it as DeploymentEventMessage)),
-    onError: err => {
-      const error = parseGrpcError(err)
-      endpoint.sendAll(WS_TYPE_DYO_ERROR, fromGrpcError(error))
-    },
-    onClose: () => endpoint.sendAll(WS_TYPE_DEPLOYMENT_FINISHED, {}),
-  })
-}
-
-const onDeploymentEvents = async (
-  endpoint: WsEndpoint,
-  connection: WsConnection,
-  message: WsMessage<StartDeploymentEventsMessage>,
-) => {
-  const req = message.payload
-
-  cruxFromConnection(connection).deployments.subscribeToDeploymentEvents(req.id, {
-    onMessage: events => events.forEach(it => endpoint.sendAll(WS_TYPE_DEPLOYMENT_EVENT, it as DeploymentEventMessage)),
-    onError: err => {
-      const error = parseGrpcError(err)
-      endpoint.sendAll(WS_TYPE_DYO_ERROR, fromGrpcError(error))
-    },
-    onClose: () => endpoint.sendAll(WS_TYPE_DEPLOYMENT_FINISHED, {}),
-  })
 }
 
 export const onPatchInstance = async (
@@ -242,14 +201,12 @@ export default routedWebSocketEndpoint(
   logger,
   [
     [WS_TYPE_FETCH_DEPLOYMENT_EVENTS, onFetchEvents],
-    [WS_TYPE_START_DEPLOYMENT, onStartDeployment],
     [WS_TYPE_PATCH_INSTANCE, onPatchInstance],
     [WS_TYPE_PATCH_DEPLOYMENT_ENV, onPatchDeploymentEnvironment],
     [WS_TYPE_GET_INSTANCE, onGetInstance],
     [WS_TYPE_GET_DEPLOYMENT_SECRETS, onGetSecrets],
     [WS_TYPE_FOCUS_INPUT, onFocusInput],
     [WS_TYPE_BLUR_INPUT, onBlurInput],
-    [WS_TYPE_START_DEPLOYMENT_EVENTS, onDeploymentEvents],
   ],
   [useWebsocketErrorMiddleware],
   {
