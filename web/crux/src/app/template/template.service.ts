@@ -207,11 +207,11 @@ export default class TemplateService {
           registry: true,
         },
         data: {
-          registryId: registryId,
+          registryId,
           versionId: version.id,
           createdBy: accessedBy,
           name: it.image,
-          order: index++,
+          order: index,
           config: {
             create: {
               ...config,
