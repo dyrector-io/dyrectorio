@@ -95,7 +95,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
         <div className="flex flex-col">
           <DyoLabel className="text-light mb-2.5">{t('rootPath')}</DyoLabel>
           <DyoInput
-            placeholder={t('rootPathHint')}
+            placeholder={t('rootPathOptional')}
             className="max-w-lg"
             grow
             value={rootPath}

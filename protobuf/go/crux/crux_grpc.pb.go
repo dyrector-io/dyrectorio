@@ -497,6 +497,7 @@ type CruxNodeClient interface {
 	GetScript(ctx context.Context, in *ServiceIdRequest, opts ...grpc.CallOption) (*NodeScriptResponse, error)
 	DiscardScript(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
 	RevokeToken(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
+	UpdateNodeAgent(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
 	SubscribeNodeEventChannel(ctx context.Context, in *ServiceIdRequest, opts ...grpc.CallOption) (CruxNode_SubscribeNodeEventChannelClient, error)
 	WatchContainerState(ctx context.Context, in *WatchContainerStateRequest, opts ...grpc.CallOption) (CruxNode_WatchContainerStateClient, error)
 }
@@ -590,6 +591,15 @@ func (c *cruxNodeClient) RevokeToken(ctx context.Context, in *IdRequest, opts ..
 	return out, nil
 }
 
+func (c *cruxNodeClient) UpdateNodeAgent(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
+	err := c.cc.Invoke(ctx, "/crux.CruxNode/UpdateNodeAgent", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *cruxNodeClient) SubscribeNodeEventChannel(ctx context.Context, in *ServiceIdRequest, opts ...grpc.CallOption) (CruxNode_SubscribeNodeEventChannelClient, error) {
 	stream, err := c.cc.NewStream(ctx, &CruxNode_ServiceDesc.Streams[0], "/crux.CruxNode/SubscribeNodeEventChannel", opts...)
 	if err != nil {
@@ -668,6 +678,7 @@ type CruxNodeServer interface {
 	GetScript(context.Context, *ServiceIdRequest) (*NodeScriptResponse, error)
 	DiscardScript(context.Context, *IdRequest) (*common.Empty, error)
 	RevokeToken(context.Context, *IdRequest) (*common.Empty, error)
+	UpdateNodeAgent(context.Context, *IdRequest) (*common.Empty, error)
 	SubscribeNodeEventChannel(*ServiceIdRequest, CruxNode_SubscribeNodeEventChannelServer) error
 	WatchContainerState(*WatchContainerStateRequest, CruxNode_WatchContainerStateServer) error
 	mustEmbedUnimplementedCruxNodeServer()
@@ -703,6 +714,9 @@ func (UnimplementedCruxNodeServer) DiscardScript(context.Context, *IdRequest) (*
 }
 func (UnimplementedCruxNodeServer) RevokeToken(context.Context, *IdRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RevokeToken not implemented")
+}
+func (UnimplementedCruxNodeServer) UpdateNodeAgent(context.Context, *IdRequest) (*common.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateNodeAgent not implemented")
 }
 func (UnimplementedCruxNodeServer) SubscribeNodeEventChannel(*ServiceIdRequest, CruxNode_SubscribeNodeEventChannelServer) error {
 	return status.Errorf(codes.Unimplemented, "method SubscribeNodeEventChannel not implemented")
@@ -885,6 +899,24 @@ func _CruxNode_RevokeToken_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CruxNode_UpdateNodeAgent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CruxNodeServer).UpdateNodeAgent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crux.CruxNode/UpdateNodeAgent",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CruxNodeServer).UpdateNodeAgent(ctx, req.(*IdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _CruxNode_SubscribeNodeEventChannel_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(ServiceIdRequest)
 	if err := stream.RecvMsg(m); err != nil {
@@ -969,6 +1001,10 @@ var CruxNode_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RevokeToken",
 			Handler:    _CruxNode_RevokeToken_Handler,
+		},
+		{
+			MethodName: "UpdateNodeAgent",
+			Handler:    _CruxNode_UpdateNodeAgent_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

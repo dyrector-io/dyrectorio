@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common'
 import { finalize, Observable, Subject, throwError, timeout } from 'rxjs'
-import { AlreadyExistsException, InternalException } from 'src/exception/errors'
-import { AgentCommand, AgentInfo } from 'src/grpc/protobuf/proto/agent'
+import { AlreadyExistsException, InternalException, PreconditionFailedException } from 'src/exception/errors'
+import { AgentCommand, AgentInfo, CloseReason } from 'src/grpc/protobuf/proto/agent'
 import { DeploymentStatus, ListSecretsResponse } from 'src/grpc/protobuf/proto/common'
 import { DeploymentProgressMessage, NodeConnectionStatus, NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
@@ -10,6 +10,8 @@ import Deployment from './deployment'
 import { toTimestamp } from './utils'
 
 export class Agent {
+  private static AGENT_UPDATE_TIMEOUT = 60 * 5 * 1000 // seconds
+
   private commandChannel = new Subject<AgentCommand>()
 
   private deployments: Map<string, Deployment> = new Map()
@@ -17,6 +19,8 @@ export class Agent {
   private statusWatchers: Map<string, ContainerStatusWatcher> = new Map()
 
   private secretsWatchers: Map<string, Subject<ListSecretsResponse>> = new Map()
+
+  private updateStartedAt: number | null = null
 
   readonly id: string
 
@@ -45,7 +49,23 @@ export class Agent {
     return this.deployments.get(id)
   }
 
+  checkAgentUpdating(): boolean {
+    if (!this.updateStartedAt) {
+      return false
+    }
+
+    const now = new Date().getTime()
+    if (now - this.updateStartedAt < Agent.AGENT_UPDATE_TIMEOUT) {
+      return true
+    }
+
+    this.updateStartedAt = null
+    return false
+  }
+
   deploy(deployment: Deployment): Observable<DeploymentProgressMessage> {
+    this.throwWhenUpdating()
+
     if (this.deployments.has(deployment.id)) {
       throw new AlreadyExistsException({
         message: 'Deployment is already running',
@@ -59,6 +79,8 @@ export class Agent {
   }
 
   upsertContainerStatusWatcher(prefix: string): ContainerStatusWatcher {
+    this.throwWhenUpdating()
+
     let watcher = this.statusWatchers.get(prefix)
     if (!watcher) {
       watcher = new ContainerStatusWatcher(prefix)
@@ -69,7 +91,14 @@ export class Agent {
     return watcher
   }
 
-  kick() {
+  close(reason?: CloseReason) {
+    if (reason) {
+      this.commandChannel.next({
+        close: {
+          reason,
+        },
+      } as AgentCommand)
+    }
     this.commandChannel.complete()
   }
 
@@ -122,6 +151,8 @@ export class Agent {
   }
 
   getContainerSecrets(prefix: string, name: string): Observable<ListSecretsResponse> {
+    this.throwWhenUpdating()
+
     const key = `${prefix}-${name}`
 
     let watcher = this.secretsWatchers.get(key)
@@ -171,11 +202,44 @@ export class Agent {
     this.secretsWatchers.delete(key)
   }
 
+  update(imageTag: string) {
+    this.throwWhenUpdating()
+
+    this.updateStartedAt = new Date().getTime()
+
+    this.commandChannel.next({
+      update: {
+        tag: imageTag,
+        timeoutSeconds: Agent.AGENT_UPDATE_TIMEOUT,
+      },
+    } as AgentCommand)
+  }
+
+  onUpdateAborted(error?: string) {
+    this.updateStartedAt = null
+
+    this.eventChannel.next({
+      id: this.id,
+      status: NodeConnectionStatus.CONNECTED,
+      error,
+    })
+  }
+
   debugInfo(logger: Logger) {
     logger.debug(`Agent id: ${this.id}, open: ${!this.commandChannel.closed}`)
     logger.debug(`Deployments: ${this.deployments.size}`)
     logger.debug(`Watchers: ${this.statusWatchers.size}`)
     this.deployments.forEach(it => it.debugInfo(logger))
+  }
+
+  private throwWhenUpdating() {
+    if (this.checkAgentUpdating()) {
+      throw new PreconditionFailedException({
+        message: 'Node is updating',
+        property: 'id',
+        value: this.id,
+      })
+    }
   }
 }
 

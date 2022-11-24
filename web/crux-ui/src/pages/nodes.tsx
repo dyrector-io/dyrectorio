@@ -95,7 +95,7 @@ const NodesPage = (props: NodesPageProps) => {
         <ListPageMenu creating={creating} setCreating={setCreating} submitRef={submitRef} />
       </PageHeading>
 
-      {!creating ? null : <EditNodeCard className="mb-2" submitRef={submitRef} onNodeEdited={onCreated} />}
+      {!creating ? null : <EditNodeCard className="mb-4" submitRef={submitRef} onNodeEdited={onCreated} />}
       {filters.items.length ? (
         <>
           <Filters setTextFilter={it => filters.setFilter({ text: it })}>

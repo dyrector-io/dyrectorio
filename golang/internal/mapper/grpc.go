@@ -52,7 +52,7 @@ func MapDeployImage(req *agent.DeployRequest, appConfig *config.CommonConfigurat
 	}
 
 	if req.RegistryAuth != nil {
-		res.RegistryAuth = &builder.RegistryAuth{
+		res.RegistryAuth = &imageHelper.RegistryAuth{
 			Name:     req.RegistryAuth.Name,
 			URL:      req.RegistryAuth.Url,
 			User:     req.RegistryAuth.User,

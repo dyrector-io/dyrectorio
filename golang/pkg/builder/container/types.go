@@ -32,15 +32,6 @@ type PortRangeBinding struct {
 	External PortRange `json:"external" binding:"required"`
 }
 
-// RegistryAuth defines an image registry and the authentication information
-// associated with it.
-type RegistryAuth struct {
-	Name     string `json:"name" binding:"required"`
-	URL      string `json:"url" binding:"required"`
-	User     string `json:"user" binding:"required"`
-	Password string `json:"password" binding:"required"`
-}
-
 // RestartPolicyName defines the restart policy used by a container.
 type RestartPolicyName string
 
@@ -101,17 +92,6 @@ func (policy *RestartPolicyName) UnmarshalJSON(b []byte) error {
 		err = &RestartPolicyUnmarshalInvalidError{}
 	}
 	return err
-}
-
-// ImagePullResponse is not explicit
-type ImagePullResponse struct {
-	ID             string `json:"id"`
-	Status         string `json:"status"`
-	ProgressDetail struct {
-		Current int64 `json:"current"`
-		Total   int64 `json:"total"`
-	} `json:"progressDetail"`
-	Progress string `json:"progress"`
 }
 
 // Hook function  which can be used to add custom logic before and after events of the lifecycle of a container.

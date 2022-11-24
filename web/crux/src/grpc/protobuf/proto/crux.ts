@@ -1158,6 +1158,7 @@ export interface NodeEventMessage {
   address?: string | undefined
   version?: string | undefined
   connectedAt?: Timestamp | undefined
+  error?: string | undefined
 }
 
 export interface WatchContainerStateRequest {
@@ -3490,6 +3491,7 @@ export const NodeEventMessage = {
       address: isSet(object.address) ? String(object.address) : undefined,
       version: isSet(object.version) ? String(object.version) : undefined,
       connectedAt: isSet(object.connectedAt) ? fromJsonTimestamp(object.connectedAt) : undefined,
+      error: isSet(object.error) ? String(object.error) : undefined,
     }
   },
 
@@ -3500,6 +3502,7 @@ export const NodeEventMessage = {
     message.address !== undefined && (obj.address = message.address)
     message.version !== undefined && (obj.version = message.version)
     message.connectedAt !== undefined && (obj.connectedAt = fromTimestamp(message.connectedAt).toISOString())
+    message.error !== undefined && (obj.error = message.error)
     return obj
   },
 }
@@ -4448,6 +4451,8 @@ export interface CruxNodeClient {
 
   revokeToken(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
 
+  updateNodeAgent(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
+
   subscribeNodeEventChannel(request: ServiceIdRequest, metadata: Metadata, ...rest: any): Observable<NodeEventMessage>
 
   watchContainerState(
@@ -4498,6 +4503,8 @@ export interface CruxNodeController {
 
   revokeToken(request: IdRequest, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
 
+  updateNodeAgent(request: IdRequest, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
+
   subscribeNodeEventChannel(request: ServiceIdRequest, metadata: Metadata, ...rest: any): Observable<NodeEventMessage>
 
   watchContainerState(
@@ -4519,6 +4526,7 @@ export function CruxNodeControllerMethods() {
       'getScript',
       'discardScript',
       'revokeToken',
+      'updateNodeAgent',
       'subscribeNodeEventChannel',
       'watchContainerState',
     ]

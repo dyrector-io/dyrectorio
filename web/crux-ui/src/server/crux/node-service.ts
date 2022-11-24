@@ -184,6 +184,7 @@ class DyoNodeService {
         address: data.address,
         version: data.version,
         connectedAt: timestampToUTC(data.connectedAt),
+        error: data.error,
       } as NodeStatusMessage)
 
     const stream = () => this.client.subscribeNodeEventChannel(ServiceIdRequest.fromJSON(req))
@@ -214,6 +215,15 @@ class DyoNodeService {
 
     const stream = () => this.client.watchContainerState(WatchContainerStateRequest.fromJSON(req))
     return new GrpcConnection(this.logger.descend('container-status'), stream, transform, options)
+  }
+
+  async updateNodeAgent(id: string): Promise<void> {
+    const req: IdRequest = {
+      id,
+      accessedBy: this.identity.id,
+    }
+
+    await protomisify<IdRequest, Empty>(this.client, this.client.updateNodeAgent)(IdRequest, req)
   }
 }
 
