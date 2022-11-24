@@ -112,7 +112,7 @@ const setEditors =
 const focusInput =
   <T>(me: Editor) =>
   (state: InternalState<T>): InternalState<T> => {
-    const newState = addUser(me.id)(state)
+    const newState = !me ? state : addUser(me.id)(state)
 
     return {
       ...newState,
@@ -124,7 +124,7 @@ const focusInput =
 const blurInput =
   <T>(me: Editor, newValue: T) =>
   (state: InternalState<T>): InternalState<T> => {
-    const newState = removeUser(me.id)(state)
+    const newState = !me ? state : removeUser(me.id)(state)
 
     return {
       ...newState,
@@ -132,6 +132,16 @@ const blurInput =
       local: null,
       remote: newValue,
     }
+  }
+
+const identityReceived =
+  <T>(me: Editor) =>
+  (state: InternalState<T>): InternalState<T> => {
+    if (!me || !state.focused || !state.local) {
+      return state
+    }
+
+    return addUser(me.id)(state)
   }
 
 const setLocal =
@@ -156,7 +166,7 @@ const setRemote =
 
 // selectors
 const selectHighlightColor = (state: string[], allEditors: Editor[], me: Editor): string => {
-  const otherEditors = state.filter(it => it !== me.id)
+  const otherEditors = state.filter(it => it !== me?.id)
   if (otherEditors.length < 0) {
     return null
   }
@@ -196,6 +206,7 @@ const useMultiInputState = <T>(options: MultiInputStateOptions<T>): [MultiInputS
   // https://github.com/facebook/react/issues/16873
   useEffect(() => dispatch(setEditors(editorIds)), [editorIds, dispatch])
   useEffect(() => dispatch(setRemote(value, compareValues)), [value, compareValues, dispatch])
+  useEffect(() => dispatch(identityReceived(me)), [me, dispatch])
 
   let onFocus: VoidFunction = null
   let onBlur: VoidFunction = null
