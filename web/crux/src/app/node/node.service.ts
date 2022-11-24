@@ -1,5 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Observable } from 'rxjs'
+import { BaseMessage } from 'src/domain/notification-templates'
+import { PreconditionFailedException } from 'src/exception/errors'
+import { ContainerStateListMessage, Empty } from 'src/grpc/protobuf/proto/common'
 import {
   AccessRequest,
   CreateEntityResponse,
@@ -15,11 +18,8 @@ import {
   UpdateNodeRequest,
   WatchContainerStateRequest,
 } from 'src/grpc/protobuf/proto/crux'
-import { ContainerStateListMessage, Empty } from 'src/grpc/protobuf/proto/common'
-import PrismaService from 'src/services/prisma.service'
 import DomainNotificationService from 'src/services/domain.notification.service'
-import { BaseMessage } from 'src/domain/notification-templates'
-import { PreconditionFailedException } from 'src/exception/errors'
+import PrismaService from 'src/services/prisma.service'
 import AgentService from '../agent/agent.service'
 import TeamRepository from '../team/team.repository'
 import NodeMapper from './node.mapper'

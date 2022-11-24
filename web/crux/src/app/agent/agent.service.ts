@@ -139,8 +139,8 @@ export default class AgentService {
   }
 
   kick(nodeId: string) {
-    const agent = this.getByIdOrThrow(nodeId)
-    agent.close()
+    const agent = this.getById(nodeId)
+    agent?.close()
   }
 
   handleConnect(connection: GrpcNodeConnection, request: AgentInfo): Observable<AgentCommand> {
