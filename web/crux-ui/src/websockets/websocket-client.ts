@@ -76,8 +76,7 @@ class WebSocketClient {
       return false
     }
 
-    this.logger.verbose('Sending message:', message.type)
-    this.logger.verbose('Content:', message.payload)
+    this.logger.verbose('Sending message:', message.type, message.payload)
 
     const json = JSON.stringify(message)
     this.socket.send(json)
