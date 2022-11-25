@@ -1,0 +1,599 @@
+name: full pipeline
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: read
+  packages: read
+
+env:
+  REGISTRY: ghcr.io
+  CRUX_IMAGE_NAME: dyrector-io/dyrectorio/web/crux
+  CRUX_UI_IMAGE_NAME: dyrector-io/dyrectorio/web/crux-ui
+  DAGENT_IMAGE_NAME: dyrector-io/dyrectorio/agent/dagent
+  CRANE_IMAGE_NAME: dyrector-io/dyrectorio/agent/crane
+  CLI_IMAGE_NAME: dyrector-io/dyrectorio/cli/dyo
+  KRATOS_IMAGE_NAME: dyrector-io/dyrectorio/web/kratos
+  CRUX_WORKING_DIRECTORY: web/crux
+  CRUX_UI_WORKING_DIRECTORY: web/crux-ui
+  KRATOS_WORKING_DIRECTORY: web/kratos
+  GOLANG_WORKING_DIRECTORY: golang
+
+jobs:
+  conventional_commits:
+    name: Conventional commits validation
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup node
+        uses: actions/setup-node@v2
+      - name: Run validation
+        uses: beemojs/conventional-pr-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          config-preset: conventionalcommits
+
+  changes:
+    name: Gather changes and export variables
+    runs-on: ubuntu-22.04
+    needs: conventional_commits
+    outputs:
+      agents: ${{ steps.filter.outputs.agents }}
+      crux: ${{ steps.filter.outputs.crux }}
+      cruxui: ${{ steps.filter.outputs.cruxui }}
+      kratos: ${{ steps.filter.outputs.kratos }}
+      tag: ${{ steps.settag.outputs.tag }}
+      version: ${{ steps.settag.outputs.version }}
+      fallbacktag: ${{ steps.settag.outputs.fallbacktag }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            agents:
+              - '${{ env.GOLANG_WORKING_DIRECTORY }}/**'
+              - '.github/workflows/**'
+            crux:
+              - '${{ env.CRUX_WORKING_DIRECTORY }}/**'
+              - '.github/workflows/**'
+            cruxui:
+              - '${{ env.CRUX_UI_WORKING_DIRECTORY }}/**'
+              - '.github/workflows/**'
+            kratos:
+              - '${{ env.KRATOS_WORKING_DIRECTORY }}/**'
+              - '.github/workflows/**'
+      - name: Setting a buildtag
+        id: settag
+        working-directory: .github/workflows
+        run: ./pipeline_set_output_tag.sh $GITHUB_REF_TYPE ${{ github.ref_name }} ${{ github.sha }} $GITHUB_BASE_REF
+
+        # if tag isn't the version set in package.json, job will fail
+      - name: Check tag version correctness
+        if: github.ref_type == 'tag'
+        working-directory: .github/workflows
+        run: |
+          ./check_version.sh ${{ steps.settag.outputs.version }} ../../${{ env.CRUX_WORKING_DIRECTORY }}
+          ./check_version.sh ${{ steps.settag.outputs.version }} ../../${{ env.CRUX_UI_WORKING_DIRECTORY }}
+
+# agents scope
+  go_lint:
+    runs-on: ubuntu-22.04
+    needs: changes
+    container:
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+    defaults:
+      run:
+        working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
+    if: ${{ needs.changes.outputs.agents == 'true' }}
+    steps: 
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Load go mod
+        run: go mod tidy
+      # fixes: fatal: unsafe repository
+      - name: Adding workspace
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Run golangci-lint
+        run: make lint
+
+  go_security:
+    runs-on: ubuntu-22.04
+    needs: changes
+    container:
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+    defaults:
+      run:
+        working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
+    if: ${{ needs.changes.outputs.agents == 'true' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Load go mod
+        run: go mod tidy
+      - name: Run gosec
+        run: make security
+
+  go_test:
+    runs-on: ubuntu-22.04
+    needs: changes
+    container:
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+    defaults:
+      run:
+        working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
+    if: ${{ needs.changes.outputs.agents == 'true' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Load go mod
+        run: go mod tidy
+      # fixes: fatal: unsafe repository
+      - name: Adding workspace
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Run unit tests with coverage
+        run: make test-unit-with-coverage
+      - name: Upload coverage reports to Codecov with GitHub Action
+        uses: codecov/codecov-action@v3
+
+  go_build:
+    runs-on: ubuntu-22.04
+    needs: [go_security, go_lint, go_test, changes]
+    container:
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+    defaults:
+      run:
+        working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      # fixes: fatal: unsafe repository
+      - name: Adding workspace
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Load go mod
+        run: go mod tidy
+      - name: Compile
+        run: |
+          make compile-agents
+          make build-agents
+        env:
+          VERSION: ${{ needs.changes.outputs.version }}
+          image_version: ${{ needs.changes.outputs.fallbacktag }}
+      - name: Docker save
+        run: |
+          docker save ${REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }} | gzip -f > crane.zstd
+          docker save ${REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }} | gzip -f > dagent.zstd
+      - name: artifact upload
+        uses: actions/upload-artifact@v3
+        with:
+          name: crane
+          path: ${{ env.GOLANG_WORKING_DIRECTORY }}/crane.zstd
+      - name: artifact upload
+        uses: actions/upload-artifact@v3
+        with:
+          name: dagent
+          path: ${{ env.GOLANG_WORKING_DIRECTORY }}/dagent.zstd
+
+  go_cli_build:
+    runs-on: ubuntu-22.04
+    needs: [go_security, go_lint, go_test, changes]
+    container:
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+    defaults:
+      run:
+        working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      # fixes: fatal: unsafe repository
+      - name: Adding workspace
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Load go mod
+        run: go mod tidy
+      - name: Compile
+        run: |
+          make compile-cli
+          make build-cli
+        env:
+          VERSION: ${{ needs.changes.outputs.version }}
+          image_version: ${{ needs.changes.outputs.fallbacktag }}
+      - name: Docker save
+        run: |
+          docker save ${REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }} | gzip -f > cli.zstd
+      - name: artifact upload
+        uses: actions/upload-artifact@v3
+        with:
+          name: cli
+          path: ${{ env.GOLANG_WORKING_DIRECTORY }}/cli.zstd
+
+
+# crux scope
+  crux_lint:
+    runs-on: ubuntu-22.04
+    needs: changes
+    defaults:
+      run:
+        working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
+    container:
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+    if: ${{ needs.changes.outputs.crux == 'true' }}
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+      - name: Install dependencies
+        run: npm ci --arch=x64 --platform=linuxmusl --cache .npm --prefer-offline --no-fund
+      - name: Linting the code
+        run: npm run lint
+      - name: Generate prisma & build the application
+        run: |
+          npx prisma generate
+          npm run build --if-present
+          npm prune --production
+
+  crux_build:
+    runs-on: ubuntu-22.04
+    needs: [crux_lint,changes]
+    container:
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+    defaults:
+      run:
+        working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Docker build
+        run: docker build . -t ${REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }}
+      - name: Docker save
+        run: docker save ${REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }} | gzip -f > crux.zstd
+      - name: artifact upload
+        uses: actions/upload-artifact@v3
+        with:
+          name: crux
+          path: ${{ env.CRUX_WORKING_DIRECTORY }}/crux.zstd
+
+# crux-ui scope
+  crux-ui_lint:
+    runs-on: ubuntu-22.04
+    needs: changes
+    container:
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+    defaults:
+      run:
+        working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
+    if: ${{ needs.changes.outputs.cruxui == 'true' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install dependencies
+        run: npm ci --arch=x64 --platform=linuxmusl --cache .npm --prefer-offline --no-fund
+      - name: Lint
+        run: npm run lint
+
+  crux-ui_build:
+    runs-on: ubuntu-22.04
+    needs: [crux-ui_lint,changes]
+    container:
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+    defaults:
+      run:
+        working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Docker build
+        run: docker build . -t ${REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }}
+      - name: Docker save
+        run: docker save ${REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }} | gzip -f > crux-ui.zstd
+      - name: artifact upload
+        uses: actions/upload-artifact@v3
+        with:
+          name: crux-ui
+          path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/crux-ui.zstd
+
+#kratos scope
+  kratos_build:
+    runs-on: ubuntu-22.04
+    needs: changes
+    container:
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+    defaults:
+      run:
+        working-directory: ${{ env.KRATOS_WORKING_DIRECTORY }}
+    if: ${{ needs.changes.outputs.kratos == 'true' }}
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+      - name: Docker build
+        run: docker build . -t ${REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }}
+      - name: Docker save
+        run: docker save ${REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }} | gzip -f > kratos.zstd
+      - name: artifact upload
+        uses: actions/upload-artifact@v3
+        with:
+          name: kratos
+          path: ${{ env.KRATOS_WORKING_DIRECTORY }}/kratos.zstd
+
+# e2e scope
+  e2e:
+    runs-on: ubuntu-22.04
+    # runs-on: self-hosted
+    container:
+      image: docker.io/dyrectorio/playwright:1.28.1
+      volumes:
+        - /var/run/docker.sock:/var/run/docker
+    needs: [go_build, go_cli_build, crux_build, crux-ui_build, kratos_build, changes, conventional_commits]
+    if: |
+      always() &&
+      (needs.go_build.result == 'success' || needs.go_build.result == 'skipped') &&
+      (needs.crux_build.result == 'success' || needs.crux_build.result == 'skipped') &&
+      (needs.crux-ui_build.result == 'success' || needs.crux-ui_build.result == 'skipped') &&
+      (needs.kratos_build.result == 'success' || needs.kratos_build.result == 'skipped') &&
+      (needs.go_cli_build.result == 'success' || needs.go_cli_build.result == 'skipped') &&
+      needs.conventional_commits.result == 'success' &&
+      needs.changes.result == 'success'
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+      # - name: crane - artifact download
+      #   if: needs.changes.outputs.agents == 'true'
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: crane
+      #     path: artifacts
+      - name: dagent - artifact download
+        if: needs.changes.outputs.agents == 'true'
+        uses: actions/download-artifact@v3
+        with:
+          name: dagent
+          path: artifacts
+      - name: agents - docker load
+        if: needs.changes.outputs.agents == 'true'
+        run: |
+          zcat artifacts/dagent.zstd | docker load
+        # zcat artifacts/crane.zstd | docker load
+      - name: crux - artifact download
+        if: needs.changes.outputs.crux == 'true'
+        uses: actions/download-artifact@v3
+        with:
+          name: crux
+          path: artifacts
+      - name: crux - docker load
+        if: needs.changes.outputs.crux == 'true'
+        run: zcat artifacts/crux.zstd | docker load
+      - name: crux-ui - artifact download
+        if: needs.changes.outputs.cruxui == 'true'
+        uses: actions/download-artifact@v3
+        with:
+          name: crux-ui
+          path: artifacts
+      - name: crux-ui - docker load
+        if: needs.changes.outputs.cruxui == 'true'
+        run: zcat artifacts/crux-ui.zstd | docker load
+      - name: kratos - artifact download
+        if: needs.changes.outputs.kratos == 'true'
+        uses: actions/download-artifact@v3
+        with:
+          name: kratos
+          path: artifacts
+      - name: kratos - docker load
+        if: needs.changes.outputs.kratos == 'true'
+        run: zcat artifacts/kratos.zstd | docker load
+      - name: cli - artifact download
+        if: needs.changes.outputs.agents == 'true'
+        uses: actions/download-artifact@v3
+        with:
+          name: cli
+          path: artifacts
+      - name: cli - docker load
+        if: needs.changes.outputs.agents == 'true'
+        run: zcat artifacts/cli.zstd | docker load
+      - name: Setup using cli
+        run: docker run -v /var/run/docker.sock:/var/run/docker.sock ${REGISTRY}/${CLI_IMAGE_NAME}:latest --disable-forcepull --imagetag ${{ needs.changes.outputs.fallbacktag }} --network $(docker network ls -f name=github_network --format {{.Name}}) --expect-container-env --debug up
+      - name: Run tests
+        working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
+        env:
+          # DEBUG: pw:api
+          HUB_PROXY_URL: ${{ secrets.HUB_PROXY_URL }}
+          HUB_PROXY_TOKEN: ${{ secrets.HUB_PROXY_TOKEN }}
+          E2E_BASE_URL: "http://dyrectorio-stack_traefik:8000"
+          MAILSLURPER_URL: "http://dyrectorio-stack_mailslurper:4437"
+          CRUX_URL: "dyrectorio-stack_crux:5001"
+          KRATOS_ADMIN_URL: "http://dyrectorio-stack_kratos:4434"
+          CI: true
+        run: |
+          npm ci --include=dev
+          npm run disable-telemetry
+          npm run build
+          npx playwright install
+          npm run test:e2e
+      - uses: actions/upload-artifact@v3
+        with:
+          name: e2e-screenshots
+          path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/e2e/screenshots/
+      - name: Teardown using cli
+        run: docker run -v /var/run/docker.sock:/var/run/docker.sock ${REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }} --debug down
+
+  go_push:
+    permissions:
+      packages: write
+    runs-on: ubuntu-22.04
+    container:
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+    needs: [go_build, go_cli_build, e2e, changes]
+    if: |
+      github.ref_name == 'develop' ||
+      github.ref_name == 'main' ||
+      github.ref_type == 'tag'
+    environment: Workflow - Protected
+    steps: 
+      - name: artifact download
+        uses: actions/download-artifact@v3
+        with:
+          name: crane
+          path: artifacts
+      - name: artifact download
+        uses: actions/download-artifact@v3
+        with:
+          name: dagent
+          path: artifacts
+      - name: artifact download
+        uses: actions/download-artifact@v3
+        with:
+          name: cli
+          path: artifacts
+      - name: Docker load
+        run: |
+          artifacts/dagent.zstd | docker load
+          artifacts/crane.zstd | docker load
+          artifacts/cli.zstd | docker load
+      - name: Add tag on version
+        if: github.ref_type == 'tag'
+        run: |
+          docker tag ${REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.changes.outputs.version }}
+          docker tag ${REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.changes.outputs.version }}
+          docker tag ${REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.version }}
+      - name: Write signing key to disk
+        run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
+      - name: Login to GHCR
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_PAT }}
+      - name: Sign container image
+        run: |
+          cosign sign --key cosign.key ${REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }}
+          cosign sign --key cosign.key ${REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }}
+          cosign sign --key cosign.key ${REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }}
+        env:
+          COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
+      - name: Docker push
+        run: |
+          docker push ${REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }}
+          docker push ${REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }}
+          docker push ${REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }}
+
+  crux_push:
+    permissions:
+      packages: write
+    runs-on: ubuntu-22.04
+    container:
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+    needs: [crux_build, e2e, changes]
+    if: |
+      github.ref_name == 'develop' ||
+      github.ref_name == 'main' ||
+      github.ref_type == 'tag'
+    environment: Workflow - Protected
+    steps: 
+      - name: artifact download
+        uses: actions/download-artifact@v3
+        with:
+          name: crux
+          path: artifacts
+      - name: Docker load
+        run: zcat artifacts/crux.zstd | docker load
+      - name: Add tag on version
+        if: github.ref_type == 'tag'
+        run: |
+          docker tag ${REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.changes.outputs.version }}
+      - name: Write signing key to disk
+        run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
+      - name: Login to GHCR
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_PAT }}
+      - name: Sign container image
+        run: cosign sign --key cosign.key ${REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }}
+        env:
+          COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
+      - name: Docker push
+        run: docker push ${REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }}
+
+  crux-ui_push:
+    permissions:
+      packages: write
+    runs-on: ubuntu-22.04
+    container:
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+    needs: [crux-ui_build, e2e, changes]
+    if: |
+      github.ref_name == 'develop' ||
+      github.ref_name == 'main' ||
+      github.ref_type == 'tag'
+    environment: Workflow - Protected
+    steps: 
+      - name: artifact download
+        uses: actions/download-artifact@v3
+        with:
+          name: crux-ui
+          path: artifacts
+      - name: Docker load
+        run: zcat artifacts/crux-ui.zstd |docker load
+      - name: Add tag on version
+        if: github.ref_type == 'tag'
+        run: |
+          docker tag ${REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.changes.outputs.version }}
+      - name: Write signing key to disk
+        run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
+      - name: Login to GHCR
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_PAT }}
+      - name: Sign container image
+        run: cosign sign --key cosign.key ${REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }}
+        env:
+          COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
+      - name: Docker push
+        run: docker push ${REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }}
+
+  kratos_push:
+    permissions:
+      packages: write
+    runs-on: ubuntu-22.04
+    container:
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+    needs: [kratos_build, e2e, changes]
+    if: |
+      github.ref_name == 'develop' ||
+      github.ref_name == 'main' ||
+      github.ref_type == 'tag'
+    environment: Workflow - Protected
+    steps: 
+      - name: artifact download
+        uses: actions/download-artifact@v3
+        with:
+          name: kratos
+          path: artifacts
+      - name: Docker load
+        run: zcat artifacts/kratos.zstd | docker load
+      - name: Add tag on version
+        if: github.ref_type == 'tag'
+        run: |
+          docker tag ${REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.version }}
+      - name: Write signing key to disk
+        run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
+      - name: Login to GHCR
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_PAT }}
+      - name: Sign container image
+        run: cosign sign --key cosign.key ${REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }}
+        env:
+          COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
+      - name: Docker push
+        run: docker push ${REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }}

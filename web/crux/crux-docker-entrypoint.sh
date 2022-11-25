@@ -1,5 +1,4 @@
 #!/bin/sh
-export NODE_ENV=production
 
 case $1 in
     "serve")

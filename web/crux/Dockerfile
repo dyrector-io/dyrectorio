@@ -4,6 +4,8 @@ FROM node:19.2-alpine3.16 AS BUILDER
 ENV NODE_ENV production
 WORKDIR /app
 
+RUN apk --update add openssl
+
 COPY ./package.json ./package-lock.json ./tsconfig.build.json ./tsconfig.json ./
 COPY ./prisma ./prisma
 COPY ./templates ./templates
@@ -30,6 +32,8 @@ COPY ./crux-docker-entrypoint.sh ./install-docker.sh.hbr ./install-docker.ps1.hb
 COPY ./proto ./proto
 
 USER node
+
+EXPOSE 5000-5001
 
 # Start
 ENTRYPOINT ["./crux-docker-entrypoint.sh"]

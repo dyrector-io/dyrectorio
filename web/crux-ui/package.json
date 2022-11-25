@@ -25,6 +25,7 @@
     "build:proto": "find proto -name '*.proto' -exec protoc --experimental_allow_proto3_optional --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_opt=esModuleInterop=true --ts_proto_opt=outputJsonMethods=true --ts_proto_opt=useDate=false --ts_proto_opt=outputServices=grpc-js --ts_proto_out=./src/models/ {} \\;",
     "start": "npm run dev",
     "test:e2e": "playwright test",
+    "test:e2e-debug": "playwright test --debug",
     "install:x64": "npm install --target_arch=x64"
   },
   "dependencies": {

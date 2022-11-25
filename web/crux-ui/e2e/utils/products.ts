@@ -1,5 +1,6 @@
 import { productUrl, ROUTE_PRODUCTS, versionUrl } from '@app/routes'
 import { expect, Page } from '@playwright/test'
+import { screenshotPath } from './common'
 
 export const createProduct = async (page: Page, name: string, type: 'Simple' | 'Complex') => {
   await page.goto(ROUTE_PRODUCTS)
@@ -21,6 +22,8 @@ export const createProduct = async (page: Page, name: string, type: 'Simple' | '
   }
 
   if (type === 'Complex') {
+    const timestamp = Date.now()
+    await page.screenshot({ path: screenshotPath('complexproduct' + timestamp), fullPage: true })
     await page.waitForNavigation()
 
     const productItem = await page.locator(`h5:has-text("${name}")`)

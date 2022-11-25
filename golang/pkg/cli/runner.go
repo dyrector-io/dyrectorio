@@ -90,12 +90,12 @@ func StartContainers(containers *DyrectorioStack, internalHostDomain string) {
 		internalHostDomain,
 		containers.Containers.CruxUI.CruxUIPort,
 	)
-	log.Info().Str("container", containers.Containers.Traefik.Name).Msg("started:")
 
 	_, err := traefik.Start()
 	if err != nil {
 		log.Fatal().Err(err).Stack().Send()
 	}
+	log.Info().Str("container", containers.Containers.Traefik.Name).Msg("started:")
 
 	_, err = containers.CruxPostgres.Create().Start()
 	if err != nil {
@@ -109,12 +109,12 @@ func StartContainers(containers *DyrectorioStack, internalHostDomain string) {
 	}
 	log.Info().Str("container", containers.Containers.KratosPostgres.Name).Msg("started:")
 
-	log.Info().Str("container", containers.Containers.KratosPostgres.Name).Msg("migration started:")
+	log.Info().Str("container", containers.Containers.KratosMigrate.Name).Msg("migration started:")
 	_, err = containers.KratosMigrate.Create().StartWaitUntilExit()
 	if err != nil {
 		log.Fatal().Err(err).Stack().Send()
 	}
-	log.Info().Str("container", containers.Containers.KratosPostgres.Name).Msg("migration done:")
+	log.Info().Str("container", containers.Containers.KratosMigrate.Name).Msg("migration done:")
 
 	_, err = containers.Kratos.Create().Start()
 	if err != nil {
@@ -123,12 +123,12 @@ func StartContainers(containers *DyrectorioStack, internalHostDomain string) {
 	log.Info().Str("container", containers.Containers.Kratos.Name).Msg("started:")
 
 	if !containers.Containers.Crux.Disabled {
-		log.Info().Str("container", containers.Containers.CruxPostgres.Name).Msg("migration started:")
+		log.Info().Str("container", containers.Containers.CruxMigrate.Name).Msg("migration started:")
 		_, err = containers.CruxMigrate.Create().StartWaitUntilExit()
 		if err != nil {
 			log.Fatal().Err(err).Stack().Send()
 		}
-		log.Info().Str("container", containers.Containers.CruxPostgres.Name).Msg("migration done:")
+		log.Info().Str("container", containers.Containers.CruxMigrate.Name).Msg("migration done:")
 
 		_, err = containers.Crux.Create().Start()
 		if err != nil {
