@@ -139,7 +139,9 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
 
   return (
     <Layout title={t('common:image')}>
-      <PageHeading pageLink={pageLink} sublinks={sublinks} />
+      <PageHeading pageLink={pageLink} sublinks={sublinks}>
+        <DyoButton href={deploymentUrl(product.id, version.id, deployment.id)}>{t('common:back')}</DyoButton>
+      </PageHeading>
 
       <DyoCard className="p-4">
         <div className="flex mb-4 justify-between items-start">
@@ -150,7 +152,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
 
           {getViewStateButtons()}
         </div>
-        {viewState === 'editor' && <ImageConfigFilters onChange={setFilters} />}
+        {viewState === 'editor' && <ImageConfigFilters onChange={setFilters} initialBaseFilter={'common'} />}
       </DyoCard>
 
       {viewState === 'editor' && (
