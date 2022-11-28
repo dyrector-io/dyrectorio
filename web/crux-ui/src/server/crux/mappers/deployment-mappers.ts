@@ -9,7 +9,7 @@ import { containerConfigToDto, imageToDto } from './image-mappers'
 import { containerStateToDto } from './node-mappers'
 
 export const deploymentStatusToDto = (status: ProtoDeploymentStatus): DeploymentStatus =>
-  deploymentStatusToJSON(status).toLocaleLowerCase() as DeploymentStatus
+  deploymentStatusToJSON(status).toLowerCase() as DeploymentStatus
 
 export const deploymentEventTypeToDto = (type: ProtoDeploymentEventType): DeploymentEventType => {
   switch (type) {

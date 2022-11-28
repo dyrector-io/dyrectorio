@@ -37,7 +37,7 @@ import {
 import { timestampToUTC } from '@app/utils'
 
 export const networkModeToDto = (networkMode?: NetworkMode): ContainerNetworkMode =>
-  !networkMode ? 'bridge' : (networkModeToJSON(networkMode).toLocaleLowerCase() as ContainerNetworkMode)
+  !networkMode ? 'bridge' : (networkModeToJSON(networkMode).toLowerCase() as ContainerNetworkMode)
 
 export const deploymentStrategyToDto = (strategy?: DeploymentStrategy): ContainerDeploymentStrategyType => {
   switch (strategy) {
@@ -47,7 +47,7 @@ export const deploymentStrategyToDto = (strategy?: DeploymentStrategy): Containe
     case DeploymentStrategy.DEPLOYMENT_STRATEGY_UNSPECIFIED:
       return 'unknown'
     default:
-      return deploymentStrategyToJSON(strategy).toLocaleLowerCase() as ContainerDeploymentStrategyType
+      return deploymentStrategyToJSON(strategy).toLowerCase() as ContainerDeploymentStrategyType
   }
 }
 
@@ -62,7 +62,7 @@ export const restartPolicyTypeToDto = (policy?: RestartPolicy): ContainerRestart
     case RestartPolicy.UNLESS_STOPPED:
       return 'unlessStopped'
     default:
-      return restartPolicyToJSON(policy).toLocaleLowerCase() as ContainerRestartPolicyType
+      return restartPolicyToJSON(policy).toLowerCase() as ContainerRestartPolicyType
   }
 }
 
@@ -94,7 +94,7 @@ export const logDriverDto = (logDriver: DriverType): ContainerLogDriverType => {
     case DriverType.DRIVER_TYPE_NONE:
       return 'none'
     default:
-      return driverTypeToJSON(logDriver).toLocaleLowerCase() as ContainerLogDriverType
+      return driverTypeToJSON(logDriver).toLowerCase() as ContainerLogDriverType
   }
 }
 
@@ -123,7 +123,7 @@ export const volumesToDto = (volumes?: Volume[]): ContainerConfigVolume[] => {
   }
 
   return volumes.map(
-    volume => ({ ...volume, type: volumeTypeToJSON(volume.type).toLocaleLowerCase() } as ContainerConfigVolume),
+    volume => ({ ...volume, type: volumeTypeToJSON(volume.type).toLowerCase() } as ContainerConfigVolume),
   )
 }
 

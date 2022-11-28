@@ -3,7 +3,7 @@ import { ContainerState as ProtoContainerState, containerStateToJSON } from '@ap
 import { NodeConnectionStatus, NodeType as GrpcNodeType } from '@app/models/grpc/protobuf/proto/crux'
 
 export const containerStateToDto = (state: ProtoContainerState): ContainerState =>
-  containerStateToJSON(state).toLocaleLowerCase() as ContainerState
+  containerStateToJSON(state).toLowerCase() as ContainerState
 
 export const nodeTypeUiToGrpc = (type: NodeType): GrpcNodeType =>
   type === NODE_TYPE_VALUES[0] ? GrpcNodeType.DOCKER : GrpcNodeType.K8S

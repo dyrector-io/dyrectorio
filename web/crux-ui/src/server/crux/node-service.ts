@@ -210,6 +210,7 @@ class DyoNodeService {
             name: it.name,
             date: timestampToUTC(it.createdAt),
             state: containerStateToDto(it.state),
+            ports: it.ports,
           } as Container),
       ) as ContainerListMessage
 

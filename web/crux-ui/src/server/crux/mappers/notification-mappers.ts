@@ -11,7 +11,7 @@ export const notificationTypeToGrpc = (type: NotificationType): ProtoNotificatio
   notificationTypeFromJSON(type.toUpperCase())
 
 export const notificationTypeToDto = (type: ProtoNotificationType): NotificationType =>
-  notificationTypeToJSON(type).toLocaleLowerCase() as NotificationType
+  notificationTypeToJSON(type).toLowerCase() as NotificationType
 
 export const notificationEventTypeToGrpc = (type: NotificationEventType): ProtoNotificationEventType => {
   switch (type) {

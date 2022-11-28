@@ -16,5 +16,5 @@ export type Instance = {
 
 export type PatchInstance = {
   instanceId: string
-  config: Partial<ContainerConfig>
+  config: ContainerConfig
 }

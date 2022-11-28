@@ -53,7 +53,7 @@ jobs:
 
   # job: Test e2e
   test_e2e:
-    runs-on: self-hosted
+    runs-on: ubuntu-20.04
     needs: check
     container:
       image: dyrectorio/playwright:1.26.0-alpha-aug-23-2022

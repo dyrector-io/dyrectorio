@@ -12,7 +12,7 @@ import {
   PatchImageRequest,
 } from 'src/grpc/protobuf/proto/crux'
 import { Empty } from 'src/grpc/protobuf/proto/common'
-import { ContainerConfigData } from 'src/shared/model'
+import { ContainerConfigData } from 'src/shared/models'
 import ImageMapper, { ImageDetails } from './image.mapper'
 
 @Injectable()

@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import {
   ContainerConfig,
-  InstanceContainerConfig,
   DeploymentStrategy,
   ExposeStrategy,
   Image,
@@ -13,9 +12,16 @@ import { JsonObject } from 'prisma'
 import { toTimestamp } from 'src/domain/utils'
 import {
   DeploymentStrategy as ProtoDeploymentStrategy,
+  DriverType,
+  driverTypeFromJSON,
+  driverTypeToJSON,
   ExposeStrategy as ProtoExposeStrategy,
   NetworkMode as ProtoNetworkMode,
+  networkModeFromJSON,
+  networkModeToJSON,
   RestartPolicy as ProtoRestartPolicy,
+  volumeTypeFromJSON,
+  volumeTypeToJSON,
 } from 'src/grpc/protobuf/proto/common'
 import {
   CommonContainerConfig as ProtoCruxCommonContainerConfig,
@@ -23,9 +29,22 @@ import {
   CraneContainerConfig as ProtoCruxCraneContainerConfig,
   DagentContainerConfig as ProtoCruxDagentContainerConfig,
   ImageResponse,
+  LogConfig,
+  UniqueSecretKeyValue as ProtoUniqueSecretKeyValue,
+  Volume,
 } from 'src/grpc/protobuf/proto/crux'
 import { toPrismaJson } from 'src/shared/mapper'
-import { ContainerConfigData, UniqueKeyValue } from 'src/shared/model'
+import {
+  ContainerConfigData,
+  ContainerConfigLog,
+  ContainerConfigVolume,
+  ContainerLogDriverType,
+  InstanceContainerConfigData,
+  UniqueKeyValue,
+  UniqueSecretKey,
+  UniqueSecretKeyValue,
+  XOR,
+} from 'src/shared/models'
 
 @Injectable()
 export default class ImageMapper {
@@ -38,42 +57,57 @@ export default class ImageMapper {
     }
   }
 
-  configToGrpc(config: ContainerConfigData): ProtoContainerConfig {
+  configToGrpc(containerConfig: ContainerConfig): ProtoContainerConfig {
+    const config = containerConfig as any as ContainerConfigData
+
     return {
       capabilities: config.capabilities as UniqueKeyValue[],
-      common: this.configToCommonConfig(config),
+      common: this.configToCommonConfig(config, (it: UniqueSecretKey) => ({
+        ...it,
+        publicKey: '',
+        value: '',
+      })),
       dagent: this.configToDagentConfig(config),
       crane: this.configToCraneConfig(config),
     }
   }
 
-  configToCommonConfig(config: ContainerConfigData): ProtoCruxCommonContainerConfig {
+  configToCommonConfig(
+    config: ContainerConfigData,
+    secretMapper: (secret: XOR<UniqueSecretKey, UniqueSecretKeyValue>) => ProtoUniqueSecretKeyValue,
+  ): ProtoCruxCommonContainerConfig {
     return {
       name: config.name,
-      environment: config.environment as JsonObject,
-      secrets: config.secrets as JsonObject,
-      commands: config.commands as JsonObject,
-      expose: this.exposeStrategyToProto(config.expose),
-      args: config.args as JsonObject,
+      environment: config.environment,
+      secrets: config.secrets.map(secretMapper),
+      commands: config.commands,
+      expose: this.exposeStrategyToGrpc(config.expose),
+      args: config.args,
       TTY: config.tty,
-      configContainer: config.configContainer as JsonObject,
-      importContainer: config.importContainer as JsonObject,
-      ingress: config.ingress as JsonObject,
-      initContainers: config.initContainers as JsonObject,
-      portRanges: config.portRanges as JsonObject,
-      ports: config.ports as JsonObject,
+      configContainer: config.configContainer,
+      importContainer: config.importContainer,
+      ingress: config.ingress ? { ...config.ingress, uploadLimit: config.ingress?.uploadLimitInBytes } : null,
+      initContainers: config.initContainers?.map(it => ({
+        ...it,
+        environment: it.environment ?? [],
+        volumes: it.volumes ?? [],
+        command: it.command ?? [],
+        args: it.args ?? [],
+      })),
+      portRanges: config.portRanges,
+      ports: config.ports,
       user: config.user,
-      volumes: config.volumes as JsonObject,
+      volumes: this.volumesToGrpc(config.volumes),
     }
   }
 
   configToDagentConfig(config: ContainerConfigData): ProtoCruxDagentContainerConfig {
     return {
-      networks: config.networks as JsonObject,
-      logConfig: config.logConfig as JsonObject,
+      networks: config.networks,
+      logConfig: this.logConfigToProto(config.logConfig),
       networkMode: this.networkModeToProto(config.networkMode),
       restartPolicy: this.restartPolicyToProto(config.restartPolicy),
-      labels: config.dockerLabels as JsonObject,
+      labels: config.dockerLabels,
     }
   }
 
@@ -86,12 +120,24 @@ export default class ImageMapper {
       proxyHeaders: config.proxyHeaders,
       useLoadBalancer: config.useLoadBalancer,
       resourceConfig: config.resourceConfig as JsonObject,
-      labels: config.labels as JsonObject,
-      annotations: config.annotations as JsonObject,
+      labels: !config.labels
+        ? null
+        : {
+            deployment: config.labels.deployment ?? [],
+            service: config.labels.service ?? [],
+            ingress: config.labels.ingress ?? [],
+          },
+      annotations: !config.annotations
+        ? null
+        : {
+            deployment: config.annotations.deployment ?? [],
+            service: config.annotations.service ?? [],
+            ingress: config.annotations.ingress ?? [],
+          },
     }
   }
 
-  configProtoToDb(config: ProtoContainerConfig): ContainerConfigData {
+  configProtoToDb(config: ProtoContainerConfig): InstanceContainerConfigData {
     return {
       // common
       name: config.common?.name,
@@ -103,15 +149,15 @@ export default class ImageMapper {
       tty: config.common?.TTY ?? false,
       ports: toPrismaJson(config.common?.ports),
       portRanges: toPrismaJson(config.common?.portRanges),
-      volumes: toPrismaJson(config.common?.volumes),
+      volumes: toPrismaJson(this.volumesToDb(config.common?.volumes ?? [])),
       commands: toPrismaJson(config.common?.commands),
       args: toPrismaJson(config.common?.args),
       environment: toPrismaJson(config.common?.environment),
       secrets: toPrismaJson(config.common?.secrets),
       initContainers: toPrismaJson(config.common?.initContainers),
-      logConfig: toPrismaJson(config.dagent?.logConfig),
 
       // dagent
+      logConfig: toPrismaJson(this.logConfigToDb(config.dagent?.logConfig)),
       restartPolicy: this.restartPolicyToDb(config.dagent?.restartPolicy),
       networkMode: this.networkModeToDb(config.dagent?.networkMode),
       networks: toPrismaJson(config.dagent?.networks),
@@ -131,7 +177,7 @@ export default class ImageMapper {
     }
   }
 
-  configDetailsToDb(config: ContainerConfig | InstanceContainerConfig): ContainerConfigData {
+  configDetailsToDb(config: ContainerConfig): ContainerConfigData {
     return {
       // common
       name: config.name,
@@ -193,7 +239,7 @@ export default class ImageMapper {
     }
   }
 
-  exposeStrategyToProto(type: ExposeStrategy): ProtoExposeStrategy {
+  exposeStrategyToGrpc(type: ExposeStrategy): ProtoExposeStrategy {
     switch (type) {
       case ExposeStrategy.expose:
         return ProtoExposeStrategy.EXPOSE
@@ -245,25 +291,93 @@ export default class ImageMapper {
     }
   }
 
-  networkModeToProto(type: NetworkMode): ProtoNetworkMode {
-    switch (type) {
-      case NetworkMode.bridge:
-        return ProtoNetworkMode.BRIDGE
-      case NetworkMode.host:
-        return ProtoNetworkMode.HOST
-      default:
-        return ProtoNetworkMode.NONE
+  networkModeToProto(it: NetworkMode): ProtoNetworkMode {
+    return networkModeFromJSON(it?.toUpperCase())
+  }
+
+  networkModeToDb(it: ProtoNetworkMode): NetworkMode {
+    if (it === ProtoNetworkMode.UNRECOGNIZED || it === ProtoNetworkMode.NETWORK_MODE_UNSPECIFIED || !it) {
+      return 'bridge'
+    }
+
+    return networkModeToJSON(it).toLowerCase() as NetworkMode
+  }
+
+  logConfigToProto(logConfig?: ContainerConfigLog): LogConfig {
+    if (!logConfig) {
+      return null
+    }
+
+    return {
+      driver: logConfig.driver ? driverTypeFromJSON(logConfig.driver.toUpperCase()) : DriverType.DRIVER_TYPE_NONE,
+      options: logConfig.options,
     }
   }
 
-  networkModeToDb(type: ProtoNetworkMode): NetworkMode {
-    switch (type) {
-      case ProtoNetworkMode.BRIDGE:
-        return NetworkMode.bridge
-      case ProtoNetworkMode.HOST:
-        return NetworkMode.host
+  logConfigToDb(logConfig?: LogConfig): ContainerConfigLog {
+    if (!logConfig) {
+      return null
+    }
+
+    return {
+      driver: this.logDriverToDb(logConfig.driver),
+      options: logConfig.options,
+    }
+  }
+
+  logDriverToDb(logDriver: DriverType): ContainerLogDriverType {
+    switch (logDriver) {
+      case undefined:
+      case null:
+      case DriverType.DRIVER_TYPE_UNSPECIFIED:
+      case DriverType.DRIVER_TYPE_NONE:
+        return 'none'
       default:
-        return NetworkMode.none
+        return driverTypeToJSON(logDriver).toLowerCase() as ContainerLogDriverType
+    }
+  }
+
+  volumesToGrpc(volumes?: ContainerConfigVolume[]): Volume[] {
+    if (!volumes) {
+      return []
+    }
+
+    return volumes.map(volume => ({ ...volume, type: volumeTypeFromJSON(volume.type?.toUpperCase()) } as Volume))
+  }
+
+  volumesToDb(volumes?: Volume[]): ContainerConfigVolume[] {
+    if (!volumes) {
+      return []
+    }
+
+    return volumes.map(
+      volume => ({ ...volume, type: volumeTypeToJSON(volume.type).toLowerCase() } as ContainerConfigVolume),
+    )
+  }
+
+  exposeToDb(expose?: ProtoExposeStrategy): ExposeStrategy {
+    switch (expose) {
+      case ProtoExposeStrategy.NONE_ES:
+        return 'none'
+      case ProtoExposeStrategy.EXPOSE:
+        return 'expose'
+      case ProtoExposeStrategy.EXPOSE_WITH_TLS:
+        return 'exposeWithTls'
+      default:
+        return 'none'
+    }
+  }
+
+  exposeToProto(expose?: ExposeStrategy): ProtoExposeStrategy {
+    switch (expose) {
+      case 'none':
+        return ProtoExposeStrategy.NONE_ES
+      case 'expose':
+        return ProtoExposeStrategy.EXPOSE
+      case 'exposeWithTls':
+        return ProtoExposeStrategy.EXPOSE_WITH_TLS
+      default:
+        return null
     }
   }
 }

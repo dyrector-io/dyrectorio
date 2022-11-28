@@ -4,7 +4,7 @@ import { NotificationEventTypeEnum, NotificationTypeEnum } from '@prisma/client'
 import { lastValueFrom } from 'rxjs'
 import { getTemplate, NotificationMessageType, NotificationTemplate } from 'src/domain/notification-templates'
 import { InvalidArgumentException } from 'src/exception/errors'
-import { nameOrEmailOfIdentity } from '../shared/model'
+import { nameOrEmailOfIdentity } from '../shared/models'
 import KratosService from './kratos.service'
 import PrismaService from './prisma.service'
 

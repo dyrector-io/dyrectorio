@@ -8,7 +8,7 @@ import EmailService from './email.service'
 const smtpUriToTransport = (uri: string): TransportType => {
   const transport = parseConnectionUrl(uri)
 
-  if (uri.toLocaleLowerCase().includes('skip_ssl_verify=true')) {
+  if (uri.toLowerCase().includes('skip_ssl_verify=true')) {
     transport.tls = {
       rejectUnauthorized: false,
     }

@@ -92,7 +92,7 @@ export const WS_TYPE_DEPLOYMENT_ENV_UPDATED = 'deployment-env-updated'
 export type DeploymentEnvUpdatedMessage = UniqueKeyValue[]
 
 export const WS_TYPE_PATCH_INSTANCE = 'patch-instance'
-export type PatchInstanceMessage = Partial<ContainerConfig> & {
+export type PatchInstanceMessage = ContainerConfig & {
   instanceId: string
 }
 

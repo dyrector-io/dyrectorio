@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { Configuration, Identity, Session, V0alpha2Api } from '@ory/kratos-client'
 import { randomUUID } from 'crypto'
-import { IdentityAdminMetadata, IdentityTraits, KRATOS_IDENTITY_SCHEMA } from 'src/shared/model'
+import { IdentityAdminMetadata, IdentityTraits, KRATOS_IDENTITY_SCHEMA } from 'src/shared/models'
 
 const EMAIL = 'email'
 

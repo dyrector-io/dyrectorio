@@ -31,6 +31,7 @@ import {
 } from 'src/grpc/protobuf/proto/common'
 import {
   AuditResponse,
+  ContainerConfig as ProtoContainerConfig,
   DeploymentByVersionResponse,
   DeploymentDetailsResponse,
   DeploymentEventContainerState,
@@ -43,7 +44,13 @@ import {
   NodeConnectionStatus,
 } from 'src/grpc/protobuf/proto/crux'
 import { versionTypeToGrpc } from 'src/shared/mapper'
-import { ContainerConfigData, UniqueKey, UniqueKeyValue } from 'src/shared/model'
+import {
+  ContainerConfigData,
+  InstanceContainerConfigData,
+  UniqueKey,
+  UniqueKeyValue,
+  UniqueSecretKeyValue,
+} from 'src/shared/models'
 import AgentService from '../agent/agent.service'
 import ImageMapper, { ImageDetails } from '../image/image.mapper'
 
@@ -101,8 +108,23 @@ export default class DeployMapper {
       audit: AuditResponse.fromJSON(instance),
       image: this.imageMapper.toGrpc(instance.image),
       state: this.containerStateToGrpc(instance.state),
-      config: instance.config ? this.imageMapper.configToGrpc(instance.config as ContainerConfigData) : null,
+      config: instance.config ? this.instanceConfigToGrpc(instance.config) : null,
     }
+  }
+
+  instanceConfigToGrpc(instanceConfig: InstanceContainerConfig): ProtoContainerConfig {
+    const config = instanceConfig as any as InstanceContainerConfigData
+
+    return {
+      capabilities: config.capabilities as UniqueKeyValue[],
+      common: this.imageMapper.configToCommonConfig(config, (it: UniqueSecretKeyValue) => it),
+      dagent: this.imageMapper.configToDagentConfig(config),
+      crane: this.imageMapper.configToCraneConfig(config),
+    }
+  }
+
+  instanceConfigToDb(config: ProtoContainerConfig): InstanceContainerConfigData {
+    return this.imageMapper.configProtoToDb(config)
   }
 
   eventToGrpc(event: DeploymentEvent): DeploymentEventResponse {
@@ -191,7 +213,7 @@ export default class DeployMapper {
       environment: this.jsonToPipedFormat(config.environment as JsonArray),
       secrets: this.mapKeyValueToMap(config.secrets as JsonObject),
       commands: this.mapUniqueKeyToStringArray(config.commands as JsonObject),
-      expose: this.imageMapper.exposeStrategyToProto(config.expose),
+      expose: this.imageMapper.exposeStrategyToGrpc(config.expose),
       args: this.mapUniqueKeyToStringArray(config.args as JsonObject),
       TTY: config.tty,
       configContainer: config.configContainer as JsonObject,
