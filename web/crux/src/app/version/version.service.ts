@@ -118,16 +118,10 @@ export default class VersionService {
                 versionId: newVersion.id,
                 config: {
                   create: {
-                    ...image.config,
+                    ...this.imageMapper.dbContainerConfigToCreateImageStatement(image.config),
                     id: undefined,
                   },
                 },
-                // TODO TEST FOR MAPPING
-                // config: {
-                //   create: {
-                //     ...this.imageMapper.configDetailsToDb(image.config),
-                //   },
-                // },
               },
             }),
         )
@@ -286,9 +280,7 @@ export default class VersionService {
 
           await prisma.containerConfig.create({
             data: {
-              // TODO TEST FOR MAPPING
-              // ...this.imageMapper.configDetailsToDb(image.config),
-              ...image.config,
+              ...this.imageMapper.dbContainerConfigToCreateImageStatement(image.config),
               id: undefined,
               imageId: createdImage.id,
             },
@@ -325,9 +317,7 @@ export default class VersionService {
               if (instance.config) {
                 await prisma.instanceContainerConfig.create({
                   data: {
-                    // TODO TEST FOR MAPPING
-                    // ...this.imageMapper.configDetailsToDb(instance.config),
-                    ...instance.config,
+                    ...this.imageMapper.dbContainerConfigToCreateImageStatement(instance.config),
                     id: undefined,
                     instanceId: createdInstance.id,
                   },

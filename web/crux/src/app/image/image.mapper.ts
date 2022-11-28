@@ -4,6 +4,7 @@ import {
   DeploymentStrategy,
   ExposeStrategy,
   Image,
+  InstanceContainerConfig,
   NetworkMode,
   Registry,
   RestartPolicy,
@@ -20,7 +21,7 @@ import {
   networkModeFromJSON,
   networkModeToJSON,
   RestartPolicy as ProtoRestartPolicy,
-  volumeTypeFromJSON,
+  VolumeType as ProtoVolumeType,
   volumeTypeToJSON,
 } from 'src/grpc/protobuf/proto/common'
 import {
@@ -31,7 +32,7 @@ import {
   ImageResponse,
   LogConfig,
   UniqueSecretKeyValue as ProtoUniqueSecretKeyValue,
-  Volume,
+  Volume as ProtoVolume,
 } from 'src/grpc/protobuf/proto/crux'
 import { toPrismaJson } from 'src/shared/mapper'
 import {
@@ -43,6 +44,7 @@ import {
   UniqueKeyValue,
   UniqueSecretKey,
   UniqueSecretKeyValue,
+  VolumeType,
   XOR,
 } from 'src/shared/models'
 
@@ -177,7 +179,7 @@ export default class ImageMapper {
     }
   }
 
-  configDetailsToDb(config: ContainerConfig): ContainerConfigData {
+  dbContainerConfigToCreateImageStatement(config: ContainerConfig | InstanceContainerConfig): ContainerConfigData {
     return {
       // common
       name: config.name,
@@ -337,22 +339,42 @@ export default class ImageMapper {
     }
   }
 
-  volumesToGrpc(volumes?: ContainerConfigVolume[]): Volume[] {
+  volumesToGrpc(volumes?: ContainerConfigVolume[]): ProtoVolume[] {
     if (!volumes) {
       return []
     }
 
-    return volumes.map(volume => ({ ...volume, type: volumeTypeFromJSON(volume.type?.toUpperCase()) } as Volume))
+    return volumes.map(volume => ({ ...volume, type: this.volumeTypeToGrpc(volume.type) } as ProtoVolume))
   }
 
-  volumesToDb(volumes?: Volume[]): ContainerConfigVolume[] {
+  volumesToDb(volumes?: ProtoVolume[]): ContainerConfigVolume[] {
     if (!volumes) {
       return []
     }
 
-    return volumes.map(
-      volume => ({ ...volume, type: volumeTypeToJSON(volume.type).toLowerCase() } as ContainerConfigVolume),
-    )
+    return volumes.map(it => ({ ...it, type: this.volumeTypeToDb(it.type) } as ContainerConfigVolume))
+  }
+
+  volumeTypeToDb(it: ProtoVolumeType): VolumeType {
+    switch (it) {
+      case null:
+      case undefined:
+      case ProtoVolumeType.UNRECOGNIZED:
+      case ProtoVolumeType.VOLUME_TYPE_UNSPECIFIED:
+        return 'ro'
+      default: {
+        return volumeTypeToJSON(it).toLowerCase() as VolumeType
+      }
+    }
+  }
+
+  volumeTypeToGrpc(it?: VolumeType): ProtoVolumeType {
+    if (!it) {
+      return ProtoVolumeType.RO
+    }
+
+    // return volumeTypeFromJSON(it.toUpperCase())
+    return it as any as ProtoVolumeType
   }
 
   exposeToDb(expose?: ProtoExposeStrategy): ExposeStrategy {

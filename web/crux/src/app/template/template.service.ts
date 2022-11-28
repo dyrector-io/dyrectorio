@@ -4,8 +4,6 @@ import {
   exposeStrategyFromJSON,
   networkModeFromJSON,
   restartPolicyFromJSON,
-  VolumeType,
-  volumeTypeFromJSON,
 } from 'src/grpc/protobuf/proto/common'
 import {
   CreateEntityResponse,
@@ -19,7 +17,7 @@ import PrismaService from 'src/services/prisma.service'
 import TemplateFileService, { TemplateContainerConfig, TemplateImage } from 'src/services/template.file.service'
 import { SIMPLE_PRODUCT_VERSION_NAME } from 'src/shared/const'
 import { toPrismaJson } from 'src/shared/mapper'
-import { ContainerConfigData } from 'src/shared/models'
+import { ContainerConfigData, VolumeType } from 'src/shared/models'
 import { v4 } from 'uuid'
 import ImageMapper from '../image/image.mapper'
 import ImageService from '../image/image.service'
@@ -100,6 +98,8 @@ export default class TemplateService {
   }
 
   private mapTemplateConfig(config: TemplateContainerConfig): ContainerConfigData {
+    // TODO (@m8vago): validate containerConfigData
+
     return {
       ...config,
       tty: config.tty ?? false,
@@ -126,7 +126,7 @@ export default class TemplateService {
         ? toPrismaJson(
             config.volumes.map(it => ({
               ...this.idify(it),
-              type: it.type ? volumeTypeFromJSON(it.type.toUpperCase()) : VolumeType.RO,
+              type: it.type as VolumeType,
             })),
           )
         : [],
