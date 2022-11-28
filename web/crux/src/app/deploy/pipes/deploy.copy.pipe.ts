@@ -17,6 +17,7 @@ export default class DeployCopyValidationPipe implements PipeTransform {
         nodeId: true,
         versionId: true,
         status: true,
+        prefix: true,
         version: {
           select: {
             type: true,
@@ -37,6 +38,7 @@ export default class DeployCopyValidationPipe implements PipeTransform {
       where: {
         nodeId: deployment.nodeId,
         versionId: deployment.versionId,
+        prefix: deployment.prefix,
         status: 'preparing',
       },
       select: {

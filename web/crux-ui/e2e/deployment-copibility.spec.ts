@@ -199,4 +199,34 @@ test.describe('Complex product', () => {
     await expect(await page.locator('div.bg-warning-orange:has-text("In progress")')).toHaveCount(1)
     await expect(await page.locator('button:has-text("Copy")')).toHaveCount(0)
   })
+
+  test('Can copy deployment while there is a preparing deployment on the same node with different prefix and should not overwrite it', async ({
+    page,
+  }) => {
+    const productName = 'PRODUCT-COPY-TEST11'
+    const productId = await createProduct(page, productName, 'Complex')
+    const versionId = await createVersion(page, productId, '0.1.0', 'Incremental')
+
+    await createImage(page, productId, versionId, 'nginx')
+
+    await addDeploymentToVersion(page, productId, versionId, DAGENT_NODE, 'pw-complex-first')
+
+    await deployWithDagent(page, 'pw-complex-second', productId, versionId)
+
+    await page.goto(versionUrl(productId, versionId))
+
+    await page.locator('button:has-text("Deployments")').click()
+
+    const copyButton = await page.locator(`[alt="Copy"]:right-of(div:has-text("pw-complex-second"))`).first()
+
+    await copyButton.click()
+
+    await page.waitForNavigation()
+
+    await page.goto(versionUrl(productId, versionId))
+
+    await page.locator('button:has-text("Deployments")').click()
+
+    await expect(await page.locator('div.bg-dyo-turquoise:has-text("Preparing")')).toHaveCount(2)
+  })
 })

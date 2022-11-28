@@ -66,7 +66,7 @@ export default class TemplateFileService {
       .filter(it => it.ext.toLowerCase() === '.json')
       .map(it => {
         const template = this.readTemplate(it.name)
-        return template == null
+        return !template
           ? null
           : {
               id: it.name,
