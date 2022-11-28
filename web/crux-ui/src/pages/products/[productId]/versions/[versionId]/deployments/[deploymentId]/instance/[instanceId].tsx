@@ -152,7 +152,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
 
           {getViewStateButtons()}
         </div>
-        {viewState === 'editor' && <ImageConfigFilters onChange={setFilters} initialBaseFilter={'common'} />}
+        {viewState === 'editor' && <ImageConfigFilters onChange={setFilters} initialBaseFilter="common" />}
       </DyoCard>
 
       {viewState === 'editor' && (
