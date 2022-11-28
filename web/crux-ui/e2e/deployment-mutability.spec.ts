@@ -20,6 +20,9 @@ test.describe('Simple product', () => {
     await addDeploymentToSimpleProduct(page, productId, DAGENT_NODE, 'pw-simple-preparing')
 
     await expect(await page.locator('button:has-text("Edit")')).toHaveCount(1)
+    await page.locator("img[src='/view_tile.svg']").click()
+
+    await page.waitForSelector('input[id=name]')
     await expect(await page.locator('input[id=name]')).toBeEditable()
   })
 
@@ -38,6 +41,9 @@ test.describe('Simple product', () => {
     await page.screenshot({ path: screenshotPath('simple-prod-successful-deployment'), fullPage: true })
 
     await expect(await page.locator('button:has-text("Edit")')).toHaveCount(1)
+    await page.locator("img[src='/view_tile.svg']").click()
+
+    await page.waitForSelector('input[id=name]')
     await expect(await page.locator('input[id=name]')).toBeEditable()
   })
 })
@@ -53,6 +59,9 @@ test.describe('Complex product incremental version', () => {
     await page.goto(deploymentUrl(productId, versionId, id))
 
     await expect(await page.locator('button:has-text("Edit")')).toHaveCount(1)
+    await page.locator("img[src='/view_tile.svg']").click()
+
+    await page.waitForSelector('input[id=name]')
     await expect(await page.locator('input[id=name]')).toBeEditable()
   })
 
@@ -68,6 +77,9 @@ test.describe('Complex product incremental version', () => {
     await page.goto(deploymentUrl(productId, versionId, deploymentId))
 
     await expect(await page.locator('button:has-text("Edit")')).toHaveCount(0)
+    await page.locator("img[src='/view_tile.svg']").click()
+
+    await page.waitForSelector('input[id=name]')
     await expect(await page.locator('input[id=name]')).toBeDisabled()
   })
 
@@ -85,6 +97,9 @@ test.describe('Complex product incremental version', () => {
     await page.goto(deploymentUrl(productId, versionId, deploymentId))
 
     await expect(await page.locator('button:has-text("Edit")')).toHaveCount(0)
+    await page.locator("img[src='/view_tile.svg']").click()
+
+    await page.waitForSelector('input[id=name]')
     await expect(await page.locator('input[id=name]')).toBeDisabled()
   })
 })
