@@ -17,7 +17,7 @@ const setup = async (
   }
 }
 
-test('can create multiple preparings to the same node with different prefixes', async ({ page }) => {
+test('Can create multiple preparings to the same node with different prefixes', async ({ page }) => {
   const nodeName = 'NodeMultiPrefixes'
   const productName = 'MultiPrefixesProduct'
   const prefixOne = 'prefix-one'
@@ -37,7 +37,7 @@ test('can create multiple preparings to the same node with different prefixes', 
   await expect(await page.locator(`label:has-text("Prefix: ${prefixOther}")`)).toHaveCount(1)
 })
 
-test('can not create multiple preparings to the same node with the same prefix', async ({ page }) => {
+test('Can not create multiple preparings to the same node with the same prefix', async ({ page }) => {
   const nodeName = 'NodePrefixCollision'
   const productName = 'NodePrefixCollision'
   const prefixOne = 'prefix-one'

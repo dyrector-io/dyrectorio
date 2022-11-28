@@ -529,6 +529,7 @@ export default class DeployService {
       where: {
         nodeId: oldDeployment.nodeId,
         versionId: oldDeployment.versionId,
+        prefix: oldDeployment.prefix,
         status: 'preparing',
       },
       select: {
