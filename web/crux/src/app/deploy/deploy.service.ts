@@ -25,9 +25,9 @@ import {
 } from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
 import { toPrismaJson } from 'src/shared/mapper'
-import { ContainerConfigData, UniqueSecretKeyValue } from 'src/shared/model'
+import { ContainerConfigData, InstanceContainerConfigData, UniqueSecretKeyValue } from 'src/shared/models'
 import AgentService from '../agent/agent.service'
-import ImageMapper, { ImageDetails } from '../image/image.mapper'
+import { ImageDetails } from '../image/image.mapper'
 import ImageService from '../image/image.service'
 import DeployMapper, { InstanceDetails } from './deploy.mapper'
 
@@ -44,7 +44,6 @@ export default class DeployService {
     private agentService: AgentService,
     imageService: ImageService,
     private mapper: DeployMapper,
-    private imageMapper: ImageMapper,
   ) {
     imageService.imagesAddedToVersionEvent
       .pipe(
@@ -171,12 +170,10 @@ export default class DeployService {
 
   async patchDeployment(request: PatchDeploymentRequest): Promise<UpdateEntityResponse> {
     const reqInstance = request.instance
-    let instanceConfigPatchSet: ContainerConfigData = null
+    let instanceConfigPatchSet: InstanceContainerConfigData = null
 
-    if (reqInstance) {
-      if (reqInstance.config) {
-        instanceConfigPatchSet = this.imageMapper.configProtoToDb(reqInstance.config)
-      }
+    if (reqInstance && reqInstance.config) {
+      instanceConfigPatchSet = this.mapper.instanceConfigToDb(reqInstance.config)
     }
 
     const deployment = await this.prisma.deployment.update({

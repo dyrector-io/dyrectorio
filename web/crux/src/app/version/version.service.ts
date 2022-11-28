@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { DeploymentStatusEnum, Version } from '@prisma/client'
 import { VersionMessage } from 'src/domain/notification-templates'
+import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
   CreateEntityResponse,
   CreateVersionRequest,
@@ -11,11 +12,10 @@ import {
   VersionDetailsResponse,
   VersionListResponse,
 } from 'src/grpc/protobuf/proto/crux'
-import { Empty } from 'src/grpc/protobuf/proto/common'
 import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
-import VersionMapper from './version.mapper'
 import ImageMapper from '../image/image.mapper'
+import VersionMapper from './version.mapper'
 
 @Injectable()
 export default class VersionService {
@@ -118,7 +118,8 @@ export default class VersionService {
                 versionId: newVersion.id,
                 config: {
                   create: {
-                    ...this.imageMapper.configDetailsToDb(image.config),
+                    ...this.imageMapper.dbContainerConfigToCreateImageStatement(image.config),
+                    id: undefined,
                   },
                 },
               },
@@ -279,9 +280,9 @@ export default class VersionService {
 
           await prisma.containerConfig.create({
             data: {
+              ...this.imageMapper.dbContainerConfigToCreateImageStatement(image.config),
               id: undefined,
               imageId: createdImage.id,
-              ...this.imageMapper.configDetailsToDb(image.config),
             },
           })
         }),
@@ -316,7 +317,7 @@ export default class VersionService {
               if (instance.config) {
                 await prisma.instanceContainerConfig.create({
                   data: {
-                    ...this.imageMapper.configDetailsToDb(instance.config),
+                    ...this.imageMapper.dbContainerConfigToCreateImageStatement(instance.config),
                     id: undefined,
                     instanceId: createdInstance.id,
                   },

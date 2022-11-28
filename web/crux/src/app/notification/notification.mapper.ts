@@ -1,4 +1,4 @@
-import { nameOrEmailOfIdentity } from 'src/shared/model'
+import { nameOrEmailOfIdentity } from 'src/shared/models'
 import { Injectable } from '@nestjs/common'
 import { NotificationTypeEnum, Notification, NotificationEvent, NotificationEventTypeEnum } from '@prisma/client'
 import {

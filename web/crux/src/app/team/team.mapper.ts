@@ -9,7 +9,7 @@ import {
   UserRole,
   UserStatus,
 } from 'src/grpc/protobuf/proto/crux'
-import { IdentityTraits, invitationExpired, nameOfIdentity } from 'src/shared/model'
+import { IdentityTraits, invitationExpired, nameOfIdentity } from 'src/shared/models'
 
 @Injectable()
 export default class TeamMapper {

@@ -6,7 +6,7 @@ import {
 } from '@app/models/grpc/protobuf/proto/crux'
 
 export const registryTypeProtoToDto = (type: ProtoRegistryType): RegistryType =>
-  registryTypeToJSON(type).toLocaleLowerCase() as RegistryType
+  registryTypeToJSON(type).toLowerCase() as RegistryType
 
 export const registryNamespaceToGrpc = (type: RegistryNamespace): ProtoRegistryNamespace => {
   switch (type) {

@@ -71,7 +71,7 @@ const useInstanceState = (options: InstanceStateOptions) => {
     setParseError(null)
 
     sock.send(WS_TYPE_PATCH_INSTANCE, {
-      ...newConfig,
+      ...mergeConfigs(config, newConfig),
       instanceId: id,
     } as PatchInstanceMessage)
   }

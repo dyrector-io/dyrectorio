@@ -24,6 +24,7 @@
 
   "logout": "Log out",
 
+  "new": "New",
   "filters": "Filters",
   "search": "Search",
   "all": "All",
@@ -36,6 +37,7 @@
   "date": "Date",
   "type": "Type",
   "status": "Status",
+  "state": "State",
   "loading": "Loading...",
   "noNameFound": "No {{name}} found",
   "yourTeams": "Your teams",

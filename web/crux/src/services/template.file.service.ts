@@ -3,7 +3,7 @@ import { readdir, readFileSync } from 'fs'
 import { join, parse } from 'path'
 import { cwd } from 'process'
 import { CreateRegistryRequest, Port, TemplateResponse, Volume } from 'src/grpc/protobuf/proto/crux'
-import { ContainerConfigData, UniqueKeyValue, UniqueSecretKey } from 'src/shared/model'
+import { ContainerConfigData, UniqueKeyValue, UniqueSecretKey } from 'src/shared/models'
 import { templateSchema } from 'src/shared/validation'
 import { promisify } from 'util'
 import * as yup from 'yup'
@@ -66,7 +66,7 @@ export default class TemplateFileService {
       .filter(it => it.ext.toLowerCase() === '.json')
       .map(it => {
         const template = this.readTemplate(it.name)
-        return template == null
+        return !template
           ? null
           : {
               id: it.name,

@@ -4,7 +4,7 @@ import { checkDeploymentMutability } from 'src/domain/deployment'
 import { PreconditionFailedException } from 'src/exception/errors'
 import { IdRequest, NodeConnectionStatus } from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
-import { UniqueSecretKey, UniqueSecretKeyValue } from 'src/shared/model'
+import { UniqueSecretKey, UniqueSecretKeyValue } from 'src/shared/models'
 import { deploymentSchema, yupValidate } from 'src/shared/validation'
 
 @Injectable()

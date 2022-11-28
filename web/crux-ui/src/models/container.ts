@@ -2,11 +2,17 @@ import { v4 as uuid } from 'uuid'
 
 export type ContainerState = 'created' | 'restarting' | 'running' | 'removing' | 'paused' | 'exited' | 'dead'
 
+export type ContainerPort = {
+  internal: number
+  external: number
+}
+
 export type Container = {
   id: string
   name: string
   date: string
   state: ContainerState
+  ports: ContainerPort[]
 }
 
 export type UniqueKey = {
@@ -304,7 +310,7 @@ const override = <T>(weak: T, strong: T): T => strong ?? weak
 const overrideWithDefaultValue = <T>(weak: T, strong: T, defaultValue: T): T => override(weak, strong) ?? defaultValue
 
 const overrideArrays = <T>(weak: T[], strong: T[]): T[] => {
-  const strongs: Set<T> = new Set(strong?.map(it => it))
+  const strongs: Set<T> = new Set(strong)
   return [...(weak?.filter(it => !strongs.has(it)) ?? []), ...(strong ?? [])]
 }
 
@@ -353,7 +359,7 @@ export const mergeConfigs = (
     logConfig: override(imageConfig?.logConfig, instanceConfig?.logConfig),
     networkMode: overrideWithDefaultValue(imageConfig?.networkMode, instanceConfig?.networkMode, 'none'),
     restartPolicy: overrideWithDefaultValue(imageConfig?.restartPolicy, instanceConfig?.restartPolicy, 'unlessStopped'),
-    networks: overrideArrays(imageConfig?.networks, instanceConfig?.networks),
+    networks: instanceConfig?.networks ?? imageConfig?.networks ?? [],
   }
 }
 
@@ -619,4 +625,41 @@ export const mergeJsonConfigToContainerConfig = (
   }
 
   return config
+}
+
+const portToString = (port: ContainerPort): string => `${port.internal}->${port.external}`
+
+export const containerPortsToString = (ports: ContainerPort[], truncateAfter: number = 2): string => {
+  ports = ports.sort((one, other) => one.internal - other.internal)
+
+  const result: string[] = []
+
+  truncateAfter = Math.min(ports.length, truncateAfter + 1)
+
+  let start: ContainerPort = null
+  let end: ContainerPort = null
+  let next: string = null
+  for (let index = 0; index < truncateAfter && result.length < truncateAfter; index++) {
+    const port = ports[index]
+
+    if (!start) {
+      start = port
+      end = port
+      next = portToString(start)
+    } else if (port.internal - 1 === end.internal) {
+      end = port
+      next = `${portToString(start)}-${portToString(end)}`
+    } else {
+      result.push(next)
+      next = null
+      start = null
+      end = null
+    }
+  }
+
+  if (next && result.length < truncateAfter) {
+    result.push(next)
+  }
+
+  return result.join(', ')
 }

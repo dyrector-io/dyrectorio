@@ -41,7 +41,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const nameToPrefix = (name: string) => name.replaceAll(' ', '-').toLocaleLowerCase()
+  const nameToPrefix = (name: string) => name.replaceAll(' ', '-').toLowerCase()
 
   const formik = useFormik({
     validationSchema: createDeploymentSchema,
