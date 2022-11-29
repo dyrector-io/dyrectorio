@@ -14,6 +14,14 @@ export default class GrpcLoggerInterceptor implements NestInterceptor {
 
   constructor(private readonly helper: InterceptorGrpcHelperProvider) {}
 
+  getLoggerFunction(err: Error) {
+    if (err.name === 'NotFoundError') {
+      return this.logger.warn
+    }
+
+    return this.logger.error
+  }
+
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const result = this.helper.mapToGrpcObject(context)
     const data = JSON.stringify(result.data)
@@ -22,7 +30,7 @@ export default class GrpcLoggerInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       catchError((err: Error) => {
-        this.logger.error(`gRPC ${result.serviceCall} failed with: ${data}`, err.stack)
+        this.getLoggerFunction(err).call(this.logger, `gRPC ${result.serviceCall} failed with: ${data}`, err.stack)
         throw err
       }),
     )
