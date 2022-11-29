@@ -1,5 +1,7 @@
+import { Status } from '@grpc/grpc-js/build/src/constants'
 import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from '@nestjs/common'
 import { catchError, Observable } from 'rxjs'
+import BaseGrpcException from 'src/exception/crux-exception'
 import InterceptorGrpcHelperProvider from './helper.interceptor'
 
 /**
@@ -14,12 +16,12 @@ export default class GrpcLoggerInterceptor implements NestInterceptor {
 
   constructor(private readonly helper: InterceptorGrpcHelperProvider) {}
 
-  getLoggerFunction(err: Error) {
-    if (err.name === 'NotFoundError') {
-      return this.logger.warn
+  shouldLogStack(err: Error) {
+    const grpcErr = err as BaseGrpcException
+    if (grpcErr.getError && (grpcErr.getError() as GrpcError).code !== Status.INTERNAL) {
+      return false
     }
-
-    return this.logger.error
+    return true
   }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
@@ -29,10 +31,19 @@ export default class GrpcLoggerInterceptor implements NestInterceptor {
     this.logger.verbose(`gRPC ${result.serviceCall} called with the following object: ${data}`)
 
     return next.handle().pipe(
-      catchError((err: Error) => {
-        this.getLoggerFunction(err).call(this.logger, `gRPC ${result.serviceCall} failed with: ${data}`, err.stack)
+      catchError((err: Error | BaseGrpcException) => {
+        const message = `gRPC ${result.serviceCall} failed with: ${data}`
+        if (this.shouldLogStack(err)) {
+          this.logger.error(message, err.stack)
+        } else {
+          this.logger.error(message)
+        }
         throw err
       }),
     )
   }
+}
+
+interface GrpcError {
+  code?: number
 }

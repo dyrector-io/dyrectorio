@@ -14,6 +14,7 @@ import {
 } from 'src/grpc/protobuf/proto/crux'
 import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
 import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
+import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import ProductTeamAccessGuard from './guards/product.team-access.guard'
 import ProductUpdateValidationPipe from './pipes/product.update.pipe'
 import ProductService from './product.service'
@@ -21,7 +22,7 @@ import ProductService from './product.service'
 @Controller()
 @CruxProductControllerMethods()
 @UseGuards(ProductTeamAccessGuard)
-@UseInterceptors(GrpcLoggerInterceptor, GrpcErrorInterceptor)
+@UseInterceptors(GrpcLoggerInterceptor, GrpcErrorInterceptor, PrismaErrorInterceptor)
 export default class ProductController implements CruxProductController {
   constructor(private service: ProductService) {}
 

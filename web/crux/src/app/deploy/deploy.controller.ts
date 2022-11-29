@@ -23,6 +23,7 @@ import {
 } from 'src/grpc/protobuf/proto/crux'
 import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
 import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
+import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import { DisableTeamAccessCheck } from 'src/shared/team-access.guard'
 import DeployService from './deploy.service'
 import DeployCreateTeamAccessGuard from './guards/deploy.create.team-access.guard'
@@ -38,7 +39,7 @@ import DeployUpdateValidationPipe from './pipes/deploy.update.pipe'
 @Controller()
 @CruxDeploymentControllerMethods()
 @UseGuards(DeployTeamAccessGuard)
-@UseInterceptors(GrpcLoggerInterceptor, GrpcErrorInterceptor)
+@UseInterceptors(GrpcLoggerInterceptor, GrpcErrorInterceptor, PrismaErrorInterceptor)
 export default class DeployController implements CruxDeploymentController {
   constructor(private service: DeployService) {}
 

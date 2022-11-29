@@ -8,12 +8,13 @@ import {
 } from 'src/grpc/protobuf/proto/crux'
 import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
 import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
+import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import TemplateFileService from 'src/services/template.file.service'
 import TemplateService from './template.service'
 
 @Controller()
 @CruxTemplateControllerMethods()
-@UseInterceptors(GrpcLoggerInterceptor, GrpcErrorInterceptor)
+@UseInterceptors(GrpcLoggerInterceptor, GrpcErrorInterceptor, PrismaErrorInterceptor)
 export default class TemplateController implements CruxTemplateController {
   constructor(private service: TemplateService, private templateFileService: TemplateFileService) {}
 

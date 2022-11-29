@@ -3,11 +3,12 @@ import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import { CruxHealthController, CruxHealthControllerMethods, HealthResponse } from 'src/grpc/protobuf/proto/crux'
 import CommonGrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
 import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
+import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import HealthService from './health.service'
 
 @Controller()
 @CruxHealthControllerMethods()
-@UseInterceptors(GrpcLoggerInterceptor, CommonGrpcErrorInterceptor)
+@UseInterceptors(GrpcLoggerInterceptor, CommonGrpcErrorInterceptor, PrismaErrorInterceptor)
 export default class HealthController implements CruxHealthController {
   constructor(private readonly service: HealthService) {}
 

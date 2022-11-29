@@ -14,6 +14,7 @@ import {
 } from 'src/grpc/protobuf/proto/crux'
 import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
 import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
+import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import VersionCreateTeamAccessGuard from './guards/version.create.team-access.guard'
 import VersionTeamAccessGuard from './guards/version.team-access.guard'
 import VersionCreateValidationPipe from './pipes/version.create.pipe'
@@ -25,7 +26,7 @@ import VersionService from './version.service'
 @Controller()
 @CruxProductVersionControllerMethods()
 @UseGuards(VersionTeamAccessGuard)
-@UseInterceptors(GrpcLoggerInterceptor, GrpcErrorInterceptor)
+@UseInterceptors(GrpcLoggerInterceptor, GrpcErrorInterceptor, PrismaErrorInterceptor)
 export default class VersionController implements CruxProductVersionController {
   constructor(private service: VersionService) {}
 
