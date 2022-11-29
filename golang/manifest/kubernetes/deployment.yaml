@@ -17,7 +17,7 @@ spec:
     spec:
       initContainers:
         - name: crane-init
-          image: ghcr.io/dyrector-io/dyrectorio/agent/crane:latest
+          image: ghcr.io/dyrector-io/dyrectorio/agent/crane:0-3-prometheus
           command:
             - crane
             - init
@@ -33,7 +33,7 @@ spec:
                 name: crane-config
       containers:
         - name: crane
-          image: ghcr.io/dyrector-io/dyrectorio/agent/crane:latest
+          image: ghcr.io/dyrector-io/dyrectorio/agent/crane:0-3-prometheus
           imagePullPolicy: Always
           resources:
             requests:

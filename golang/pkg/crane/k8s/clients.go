@@ -87,7 +87,7 @@ func (c *Client) outClusterAuth() (*kubernetes.Clientset, error) {
 	return clientset, err
 }
 
-func (c *Client) VerifyAPIResourceExists(group, kind string) bool {
+func (c *Client) VerifyAPIResourceExists(targetGroup, targetKind string) bool {
 	found := false
 	clientSet, err := c.GetClientSet()
 	if err != nil {
@@ -100,8 +100,12 @@ func (c *Client) VerifyAPIResourceExists(group, kind string) bool {
 	}
 
 	for _, res := range apiResources {
-		if res.GroupVersion == group && res.Kind == kind {
-			return true
+		if res.GroupVersion == targetGroup {
+			for i := range res.APIResources {
+				if res.APIResources[i].Kind == targetKind {
+					return true
+				}
+			}
 		}
 	}
 

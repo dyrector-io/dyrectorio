@@ -239,7 +239,7 @@ func (d *DeployFacade) PostDeploy() error {
 		if err != nil {
 			return err
 		}
-	} else {
+	} else if d.ServiceMonitor != nil {
 		d.ServiceMonitor.Cleanup(d.namespace.name, d.params.ContainerConfig.Container)
 	}
 

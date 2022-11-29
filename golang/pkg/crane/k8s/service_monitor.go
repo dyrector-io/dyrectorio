@@ -2,6 +2,7 @@ package k8s
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/rs/zerolog/log"
 
@@ -29,6 +30,7 @@ const (
 // service monitor is spawned per deployment
 func NewServiceMonitor(ctx context.Context, cli *Client) *ServiceMonitor {
 	if !cli.VerifyAPIResourceExists(ServiceMonitorVersion, ServiceMonitorKind) {
+		log.Warn().Msg("service monitor could not be spawned")
 		return nil
 	}
 
@@ -38,7 +40,8 @@ func NewServiceMonitor(ctx context.Context, cli *Client) *ServiceMonitor {
 	}
 
 	// todo(nandor-magyar): fix error handling here, and with every sub-component
-	smClient, _ := NewServiceMonitorClient(restConf)
+	smClient, err := NewServiceMonitorClient(restConf)
+	log.Warn().AnErr("Monitor spawn error", err).Send()
 
 	return &ServiceMonitor{
 		Ctx:       ctx,
@@ -49,6 +52,9 @@ func NewServiceMonitor(ctx context.Context, cli *Client) *ServiceMonitor {
 
 // Deploy firstPort is used as a fallback if only path is provided, the first port is used
 func (sm *ServiceMonitor) Deploy(namespace, serviceName string, metricParams v1.Metrics, firstPort string) error {
+	if sm == nil || sm.Client == nil {
+		return fmt.Errorf("service monitor client uninitialized")
+	}
 	newMonitor := createServiceMonitorSpec(serviceName, metricParams, firstPort)
 	clientSet := sm.Client.ServiceMonitors(namespace)
 
@@ -77,8 +83,10 @@ func (sm *ServiceMonitor) Deploy(namespace, serviceName string, metricParams v1.
 
 // cleanup ignores errors, expected to run if no metrics is were defined
 func (sm *ServiceMonitor) Cleanup(namespace, serviceName string) {
-	clientSet := sm.Client.ServiceMonitors(namespace)
-	_ = clientSet.Delete(sm.Ctx, serviceName, metav1.DeleteOptions{})
+	if sm.Client != nil {
+		clientSet := sm.Client.ServiceMonitors(namespace)
+		_ = clientSet.Delete(sm.Ctx, serviceName, metav1.DeleteOptions{})
+	}
 }
 
 func createServiceMonitorSpec(name string,
