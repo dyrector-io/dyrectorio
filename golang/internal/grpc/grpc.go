@@ -82,7 +82,7 @@ func (g *Connection) SetConn(conn *grpc.ClientConn) {
 var grpcConn *Connection
 
 func fetchCertificatesFromURL(ctx context.Context, addr string) (*x509.CertPool, error) {
-	log.Print("Retrieving certificate")
+	log.Info().Msg("Retrieving certificate")
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodHead, addr, http.NoBody)
 	if err != nil {
@@ -122,7 +122,7 @@ func Init(grpcContext context.Context,
 	appConfig *config.CommonConfiguration,
 	workerFuncs WorkerFunctions,
 ) {
-	log.Print("Spinning up gRPC Agent client...")
+	log.Info().Msg("Spinning up gRPC Agent client...")
 	if grpcConn == nil {
 		grpcConn = &Connection{}
 	}
@@ -168,9 +168,9 @@ func Init(grpcContext context.Context,
 		for {
 			state := conn.GetState()
 			if state != connectivity.Ready {
-				log.Print("Waiting for state to change: ", state)
+				log.Debug().Msgf("Waiting for state to change: %d", state)
 				conn.WaitForStateChange(ctx, state)
-				log.Print("Changed to: ", conn.GetState())
+				log.Debug().Msgf("State Changed to: %d", conn.GetState())
 			} else {
 				break
 			}
@@ -229,7 +229,7 @@ func grpcLoop(
 			publicKey, keyErr := config.GetPublicKey(appConfig.SecretPrivateKey)
 
 			if keyErr != nil {
-				log.Error().Stack().Err(keyErr).Str("publicKey", publicKey).Msg("grpc public key error")
+				log.Panic().Stack().Err(keyErr).Str("publicKey", publicKey).Msg("grpc public key error")
 			}
 
 			stream, err = grpcConn.Client.Connect(
@@ -242,14 +242,14 @@ func grpcLoop(
 				grpcConn.Client = nil
 				continue
 			} else {
-				log.Print("Stream connection is up")
+				log.Info().Msg("Stream connection is up")
 			}
 		}
 
 		command := new(agent.AgentCommand)
 		err = stream.RecvMsg(command)
 		if err == io.EOF {
-			log.Print("End of receiving")
+			log.Info().Msg("End of stream")
 			grpcConn.Client = nil
 			time.Sleep(appConfig.DefaultTimeout)
 			continue
@@ -271,10 +271,10 @@ func executeVersionDeployRequest(
 	deploy DeployFunc, appConfig *config.CommonConfiguration,
 ) {
 	if req.Id == "" {
-		log.Print("Empty request")
+		log.Warn().Msg("Empty request id for deployment")
 		return
 	}
-	log.Print("Deployment -", req.Id, "Opening status channel.")
+	log.Info().Str("deployment", req.Id).Msg("Opening status channel")
 
 	deployCtx := metadata.AppendToOutgoingContext(ctx, "dyo-deployment-id", req.Id)
 	statusStream, err := grpcConn.Client.DeploymentStatus(deployCtx, grpc.WaitForReady(true))
@@ -330,12 +330,12 @@ func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStateR
 		filterPrefix = *req.Prefix
 	}
 
-	log.Printf("Opening container status channel for prefix: %s", filterPrefix)
+	log.Info().Str("prefix", filterPrefix).Msg("Opening container status channel")
 
 	streamCtx := metadata.AppendToOutgoingContext(ctx, "dyo-filter-prefix", filterPrefix)
 	stream, err := grpcConn.Client.ContainerState(streamCtx, grpc.WaitForReady(true))
 	if err != nil {
-		log.Printf("Failed to open container status channel: %s", err.Error())
+		log.Error().Err(err).Msg("Failed to open container status channel")
 		return
 	}
 
@@ -348,16 +348,16 @@ func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStateR
 		})
 
 		if err != nil {
-			log.Printf("Container status channel error: %s", err.Error())
+			log.Error().Err(err).Msg("Container status channel error")
 			break
 		}
 
 		if req.OneShot != nil && *req.OneShot {
 			err := stream.CloseSend()
 			if err == nil {
-				log.Printf("Closed container status channel for prefix: %s", filterPrefix)
+				log.Info().Str("prefix", filterPrefix).Msg("Closed container status channel")
 			} else {
-				log.Printf("Failed to close container status channel for prefix: %s %v", filterPrefix, err)
+				log.Error().Err(err).Str("prefix", filterPrefix).Msg("Failed to close container status channel")
 			}
 			return
 		}
@@ -367,11 +367,11 @@ func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStateR
 }
 
 func executeDeleteContainer(ctx context.Context, req *agent.ContainerDeleteRequest, deleteFn DeleteFunc) {
-	log.Printf("Deleting container: %s-%s", req.Prefix, req.Name)
+	log.Info().Str("prefix", req.Prefix).Str("name", req.Name).Msg("Deleting container")
 
 	err := deleteFn(ctx, req.Prefix, req.Name)
 	if err != nil {
-		log.Printf("Failed to delete container: %v", err)
+		log.Error().Err(err).Msg("Failed to delete container")
 	}
 }
 
@@ -380,7 +380,7 @@ func executeVersionDeployLegacyRequest(
 	deploy DeployFunc, appConfig *config.CommonConfiguration,
 ) {
 	if req.RequestId == "" {
-		log.Print("Empty request")
+		log.Warn().Msg("Empty request id for legacy deployment")
 		return
 	}
 	log.Info().Str("deployment", req.RequestId).Msg("Opening status channel.")
@@ -397,7 +397,7 @@ func executeVersionDeployLegacyRequest(
 
 	deployImageRequest := v1.DeployImageRequest{}
 	if err = json.Unmarshal([]byte(req.Json), &deployImageRequest); err != nil {
-		log.Printf("Failed to parse deploy request JSON! %v", err)
+		log.Error().Err(err).Msg("Failed to parse deploy request JSON!")
 
 		errorText := fmt.Sprintf("JSON parse error: %v", err)
 		dog.WriteDeploymentStatus(common.DeploymentStatus_FAILED, errorText)
@@ -438,7 +438,7 @@ func executeSecretList(
 	prefix := command.Prefix
 	name := command.Name
 
-	log.Printf("Getting secrets for prefix-name: '%s-%s'", prefix, name)
+	log.Info().Str("prefix", prefix).Str("name", name).Msg("Getting secrets")
 
 	keys, err := listFunc(ctx, prefix, name)
 	if err != nil {

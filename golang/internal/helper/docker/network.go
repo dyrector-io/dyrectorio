@@ -36,7 +36,7 @@ func CreateNetwork(ctx context.Context, name, driver string) error {
 	}
 
 	if len(networks) > 0 {
-		log.Debug().Str("Name", name).Msg("Provided network name exists. Skip to create new network.")
+		log.Debug().Str("name", name).Msg("Provided network name exists. Skip to create new network.")
 		return nil
 	}
 
