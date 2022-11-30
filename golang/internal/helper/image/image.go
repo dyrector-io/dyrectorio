@@ -213,7 +213,7 @@ func Pull(ctx context.Context, logger io.StringWriter, fullyQualifiedImageName, 
 			err = nil
 			break
 		} else if err != nil {
-			log.Error().Err(err).Msg("Decode error")
+			log.Error().Stack().Err(err).Msg("Decode error")
 			break
 		}
 

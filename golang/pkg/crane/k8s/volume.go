@@ -37,7 +37,7 @@ func mapShortNotationToVolumeMap(volumes []string) map[string]v1.Volume {
 				Type: string(volumeType),
 			}
 		} else {
-			log.Warn().Msg("empty volume name")
+			log.Warn().Msg("Empty volume name")
 		}
 	}
 
@@ -58,7 +58,7 @@ func volumeSliceToMap(volumes []v1.Volume) map[string]v1.Volume {
 func safeMergeVolumeMaps(one, other map[string]v1.Volume) map[string]v1.Volume {
 	for name := range other {
 		if _, ok := one[name]; ok {
-			log.Warn().Str("name", name).Msg("volume name collision")
+			log.Warn().Str("name", name).Msg("Volume name collision")
 		}
 		one[name] = other[name]
 	}

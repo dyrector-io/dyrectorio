@@ -162,7 +162,7 @@ func Init(grpcContext context.Context,
 		log.Info().Str("address", connParams.address).Msg("Dialing to address.")
 		conn, err := grpc.Dial(connParams.address, opts...)
 		if err != nil {
-			log.Panic().Stack().Err(err).Msg("failed to dial gRPC")
+			log.Panic().Stack().Err(err).Msg("Failed to dial gRPC")
 		}
 
 		for {
@@ -229,7 +229,7 @@ func grpcLoop(
 			publicKey, keyErr := config.GetPublicKey(appConfig.SecretPrivateKey)
 
 			if keyErr != nil {
-				log.Panic().Stack().Err(keyErr).Str("publicKey", publicKey).Msg("grpc public key error")
+				log.Panic().Stack().Err(keyErr).Str("publicKey", publicKey).Msg("gRPC public key error")
 			}
 
 			stream, err = grpcConn.Client.Connect(

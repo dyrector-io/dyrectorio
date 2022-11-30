@@ -49,7 +49,7 @@ func (dog *DeploymentLogger) SetRequestID(requestID string) {
 // Writes to all available streams: std.out and grpc streams
 func (dog *DeploymentLogger) Write(messages ...string) {
 	for i := range messages {
-		log.Printf("Deployment - %s: %s", dog.deploymentID, messages[i])
+		log.Debug().Str("deployment", dog.deploymentID).Msg(messages[i])
 		dog.logs = append(dog.logs, messages...)
 	}
 
@@ -58,14 +58,14 @@ func (dog *DeploymentLogger) Write(messages ...string) {
 			Log: messages,
 		})
 		if err != nil {
-			log.Printf("Deployment - %s: Status close err: %s", dog.deploymentID, err)
+			log.Error().Err(err).Stack().Str("deployment", dog.deploymentID).Msg("Write error")
 		}
 	}
 }
 
 func (dog *DeploymentLogger) WriteDeploymentStatus(status common.DeploymentStatus, messages ...string) {
 	for i := range messages {
-		log.Printf("Deployment - %s - %s: %s", dog.deploymentID, status, messages[i])
+		log.Debug().Str("deployment", dog.deploymentID).Msg(messages[i])
 		dog.logs = append(dog.logs, messages...)
 	}
 
@@ -77,7 +77,7 @@ func (dog *DeploymentLogger) WriteDeploymentStatus(status common.DeploymentStatu
 			},
 		})
 		if err != nil {
-			log.Printf("Deployment - %s: Status close err: %s", dog.deploymentID, err)
+			log.Error().Err(err).Stack().Str("deployment", dog.deploymentID).Msg("Write deployment status error")
 		}
 	}
 }
@@ -86,7 +86,7 @@ func (dog *DeploymentLogger) WriteContainerState(containerState string, messages
 	prefix := fmt.Sprintf("%s - %s", dog.requestID, containerState)
 
 	for i := range messages {
-		log.Printf("%s: %s", prefix, messages[i])
+		log.Debug().Str("prefix", prefix).Msg(messages[i])
 		dog.logs = append(dog.logs, messages...)
 	}
 
@@ -103,7 +103,12 @@ func (dog *DeploymentLogger) WriteContainerState(containerState string, messages
 			Data: instance,
 		})
 		if err != nil {
-			log.Error().Stack().Err(err).Msg("Status close err")
+			log.Error().
+				Err(err).
+				Stack().
+				Str("deployment", dog.deploymentID).
+				Str("prefix", prefix).
+				Msg("Write container state error")
 		}
 	}
 }

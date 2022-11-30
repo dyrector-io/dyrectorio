@@ -35,7 +35,7 @@ type ReleaseContainer struct {
 func DraftRelease(instance string, versionData v1.VersionData, deployResponse v1.DeployVersionResponse, cfg *config.Configuration) {
 	releaseDirPath := path.Join(cfg.InternalMountPath, instance, "@release")
 	if err := os.MkdirAll(releaseDirPath, os.ModePerm); err != nil {
-		log.Printf("Failed to create release folder: %v", err)
+		log.Error().Err(err).Str("path", releaseDirPath).Msg("Failed to create release folder")
 		return
 	}
 	release := ReleaseDoc{
@@ -47,7 +47,7 @@ func DraftRelease(instance string, versionData v1.VersionData, deployResponse v1
 
 	content, err := yaml.Marshal(&release)
 	if err != nil {
-		log.Print(fmt.Sprintln("Version drafting error ", err))
+		log.Error().Err(err).Msg("Version drafting failed")
 		return
 	}
 
@@ -55,12 +55,19 @@ func DraftRelease(instance string, versionData v1.VersionData, deployResponse v1
 
 	if _, err = os.Stat(filePath); err == nil {
 		// path exists -> making a backup
-		log.Print("Already existing release file, backing it up")
+		log.Info().Msg("Already existing release file, backing it up")
+
+		backupFilePath := path.Join(releaseDirPath, fmt.Sprintf("%v-backup-%v.yml", versionData.Version, time.Now().Unix()))
 
 		if errr := os.Rename(
 			filePath,
-			path.Join(releaseDirPath, fmt.Sprintf("%v-backup-%v.yml", versionData.Version, time.Now().Unix()))); errr != nil {
-			log.Error().Stack().Err(errr).Msg("Existing release file backup failed, overwriting existing release file")
+			backupFilePath); errr != nil {
+			log.Error().
+				Stack().
+				Err(errr).
+				Str("path", filePath).
+				Str("newPath", backupFilePath).
+				Msg("Existing release file backup failed, overwriting existing release file")
 		}
 	} else if errors.Is(err, os.ErrNotExist) {
 		// nothing on path -> creating release file
@@ -98,7 +105,7 @@ func GetVersions(instance string, cfg *config.Configuration) ([]ReleaseDoc, erro
 		} else {
 			content, err := os.ReadFile(filepath.Clean(path.Join(releaseDirPath, files[i].Name())))
 			if err != nil {
-				log.Printf("Release read error for instance: %v, file: %v\n%v", instance, files[i].Name(), err)
+				log.Error().Stack().Err(err).Str("instance", instance).Str("path", files[i].Name()).Msg("Release read error")
 				continue
 			}
 

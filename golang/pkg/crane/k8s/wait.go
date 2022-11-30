@@ -40,7 +40,7 @@ func WaitForRunningDeployment(ctx context.Context, namespace, name string, expec
 
 			err = json.Unmarshal(m, &deployment)
 			if err != nil {
-				log.Error().Err(err).Stack().Msg("unmarshal error of deployment")
+				log.Error().Err(err).Stack().Msg("Unmarshal error of deployment")
 			}
 			if deployment.Status.AvailableReplicas == expectedReplicaCount {
 				return nil

@@ -35,7 +35,7 @@ func (cm *configmap) loadSharedConfig(namespace string) error {
 	commonConfigMapName := util.JoinV("-", namespace, "shared")
 	commonConfigMap, err := client.Get(cm.ctx, commonConfigMapName, metaV1.GetOptions{})
 	if err != nil {
-		log.Info().Str("namespace", namespace).Msg("shared configmaps could not be loaded")
+		log.Info().Str("namespace", namespace).Msg("Shared configmaps could not be loaded")
 	}
 	if commonConfigMap != nil {
 		cm.avail = append(cm.avail, commonConfigMapName)
