@@ -154,14 +154,14 @@ func GetTraefik(settings *Settings) *containerbuilder.DockerContainerBuilder {
 
 	socket, err := url.Parse(client.DefaultDockerHost)
 	if err != nil {
-		log.Fatal().Err(err).Stack().Msg("GetTraefik")
+		log.Fatal().Err(err).Stack().Str("host", client.DefaultDockerHost).Msg("Failed to parse Docker host")
 	}
 
 	// If traefik's socket is default, but we override it in the environment we prefer the environment
 	if settings.SettingsFile.TraefikDockerSocket == socket.Path && envDockerHost != "" {
 		socket, err = url.Parse(envDockerHost)
 		if err != nil {
-			log.Fatal().Err(err).Stack().Msg("GetTraefik")
+			log.Fatal().Err(err).Stack().Str("host", envDockerHost).Msg("Failed to parse Dcker host from environment")
 		}
 		settings.SettingsFile.TraefikDockerSocket = socket.Path
 	}
