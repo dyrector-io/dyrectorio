@@ -38,7 +38,7 @@ export type VolumeType = typeof CONTAINER_VOLUME_TYPE_VALUES[number]
 export type ContainerConfigIngress = {
   name: string
   host: string
-  uploadLimitInBytes?: string
+  uploadLimit?: string
 }
 
 export type ContainerConfigVolume = {

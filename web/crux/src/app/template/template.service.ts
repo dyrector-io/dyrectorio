@@ -126,7 +126,7 @@ export default class TemplateService {
         ? toPrismaJson(
             config.volumes.map(it => ({
               ...this.idify(it),
-              type: it.type as VolumeType,
+              type: it.type ? (it.type as VolumeType) : 'ro',
             })),
           )
         : [],
@@ -212,6 +212,7 @@ export default class TemplateService {
           createdBy: accessedBy,
           name: it.image,
           order: index,
+          tag: it.tag,
           config: {
             create: {
               ...config,
