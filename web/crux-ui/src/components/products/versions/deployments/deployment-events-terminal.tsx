@@ -12,7 +12,7 @@ const DeploymentEventsTerminal = (props: DeploymentEventsTerminalProps) => {
   const containerRef = createRef<HTMLDivElement>()
 
   useEffect(() => {
-    if (containerRef.current == null) {
+    if (containerRef.current === null) {
       return
     }
 

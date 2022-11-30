@@ -16,7 +16,7 @@ export default class GrpcLoggerInterceptor implements NestInterceptor {
 
   constructor(private readonly helper: InterceptorGrpcHelperProvider) {}
 
-  shouldLogStack(err: Error) {
+  private shouldLogStack(err: Error) {
     const grpcErr = err as BaseGrpcException
     if (grpcErr.getError && (grpcErr.getError() as GrpcError).code !== Status.INTERNAL) {
       return false
