@@ -1,6 +1,9 @@
 import { DeploymentEvent } from '@app/models'
 import { terminalDateFormat } from '@app/utils'
-import { createRef, useEffect } from 'react'
+import Image from 'next/image'
+import { useEffect, useRef, useState } from 'react'
+
+const SCROLL_LOCK_MARGIN = 10
 
 interface DeploymentEventsTerminalProps {
   events: DeploymentEvent[]
@@ -9,15 +12,37 @@ interface DeploymentEventsTerminalProps {
 const DeploymentEventsTerminal = (props: DeploymentEventsTerminalProps) => {
   const { events: propsEvents } = props
 
-  const containerRef = createRef<HTMLDivElement>()
+  const containerRef = useRef<HTMLDivElement>(undefined)
+  const preventScrollEvent = useRef<boolean>(false)
+  const [autoScroll, setAutoScroll] = useState<boolean>(true)
 
-  useEffect(() => {
-    if (containerRef.current === null) {
+  const onScroll = () => {
+    if (preventScrollEvent.current) {
+      preventScrollEvent.current = false
       return
     }
 
+    const container = containerRef.current
+    setAutoScroll(
+      container && container.scrollTop >= container.scrollHeight - container.clientHeight - SCROLL_LOCK_MARGIN,
+    )
+  }
+
+  const enableAutoScroll = () => {
+    setAutoScroll(true)
+
+    preventScrollEvent.current = true
     containerRef.current.scrollTop = containerRef.current.scrollHeight
-  }, [propsEvents, containerRef])
+  }
+
+  useEffect(() => {
+    if (!autoScroll || containerRef.current === null) {
+      return
+    }
+
+    preventScrollEvent.current = true
+    containerRef.current.scrollTop = containerRef.current.scrollHeight
+  }, [propsEvents, containerRef, autoScroll])
 
   const events = propsEvents.sort((one, other) => {
     const oneDate = new Date(one.createdAt)
@@ -38,15 +63,26 @@ const DeploymentEventsTerminal = (props: DeploymentEventsTerminalProps) => {
   const eventStrings: string[] = events.flatMap(it => eventToString(it))
 
   return (
-    <div
-      ref={containerRef}
-      className="flex flex-col h-full overflow-y-auto bg-gray-900 rounded-md ring-2 ring-light-grey border-dark px-2 py-1 mt-4 h-96"
-    >
-      {eventStrings.map((it, index) => (
-        <span className="text-bright tracking-widest" key={`event-${index}`}>
-          {it}
-        </span>
-      ))}
+    <div className="relative">
+      <div
+        ref={containerRef}
+        onScroll={onScroll}
+        className="flex flex-col h-full overflow-y-auto bg-gray-900 rounded-md ring-2 ring-light-grey border-dark px-2 py-1 mt-4 h-96"
+      >
+        {eventStrings.map((it, index) => (
+          <span className="text-bright tracking-widest" key={`event-${index}`}>
+            {it}
+          </span>
+        ))}
+      </div>
+      {!autoScroll && (
+        <div
+          onClick={enableAutoScroll}
+          className="absolute right-0 bottom-0 mr-4 mb-1 cursor-pointer animate-bounce bg-slate-800 p-2 w-10 h-10 ring-2 ring-light-grey shadow-lg rounded-full flex items-center justify-center"
+        >
+          <Image src="/arrow_down.svg" width="24" height="24" />
+        </div>
+      )}
     </div>
   )
 }
