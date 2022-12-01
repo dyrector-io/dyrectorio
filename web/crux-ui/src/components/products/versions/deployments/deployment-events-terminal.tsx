@@ -78,7 +78,7 @@ const DeploymentEventsTerminal = (props: DeploymentEventsTerminalProps) => {
       {!autoScroll && (
         <div
           onClick={scrollToBottom}
-          className="absolute right-0 bottom-0 mr-4 mb-1 cursor-pointer animate-bounce bg-slate-800 p-2 w-10 h-10 ring-2 ring-light-grey shadow-lg rounded-full flex items-center justify-center"
+          className="absolute right-0 bottom-0 mr-6 mb-3 cursor-pointer animate-bounce flex items-center justify-center"
         >
           <Image src="/arrow_down.svg" width="24" height="24" />
         </div>
