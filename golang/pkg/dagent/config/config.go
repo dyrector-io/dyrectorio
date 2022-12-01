@@ -8,9 +8,7 @@ import (
 type Configuration struct {
 	config.CommonConfiguration
 	AgentContainerName string `yaml:"agentContainerName"     env:"AGENT_CONTAINER_NAME" env-default:"dagent"`
-	DagentImage        string `yaml:"dagentImage" env:"DAGENT_IMAGE" env-default:"ghcr.io/dyrector-io/dyrectorio/dagent"`
 	DagentName         string `yaml:"dagentName"             env:"DAGENT_NAME"           env-default:"dagent-go"`
-	DagentTag          string `yaml:"dagentTag"              env:"DAGENT_TAG"            env-default:"latest"`
 	DataMountPath      string `yaml:"dataMountPath"          env:"DATA_MOUNT_PATH"       env-default:"/srv/dagent"`
 	HostDockerSockPath string `yaml:"hostDockerSockPath"     env:"HOST_DOCKER_SOCK_PATH" env-default:"/var/run/docker.sock"`
 	HostMountPath      string `yaml:"hostMountPath"          env:"HOST_MOUNT_PATH"       env-default:"/srv/dagent"`

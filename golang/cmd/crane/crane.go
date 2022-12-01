@@ -80,7 +80,8 @@ func initKey(cCtx *cli.Context) error {
 	client := k8s.NewClient(cfg)
 	namespace := cfg.Namespace
 	namespaceHandler := k8s.NewNamespace(cCtx.Context, namespace, client)
-	if err := namespaceHandler.EnsureExists(namespace); err != nil {
+	err = namespaceHandler.EnsureExists(namespace)
+	if err != nil {
 		return err
 	}
 

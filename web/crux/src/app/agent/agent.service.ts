@@ -51,7 +51,7 @@ export default class AgentService {
   private static SCRIPT_EXPIRATION = 10 * 60 * 1000 // millis
 
   constructor(
-    @InjectMetric('agent_online_count') private agent_count: Gauge<string>,
+    @InjectMetric('agent_online_count') private agentCount: Gauge<string>,
     private prisma: PrismaService,
     private jwtService: JwtService,
     private configService: ConfigService,
@@ -282,7 +282,7 @@ export default class AgentService {
     if (status === NodeConnectionStatus.UNREACHABLE) {
       this.logger.log(`Left: ${agent.id}`)
       this.agents.delete(agent.id)
-      this.agent_count.dec()
+      this.agentCount.dec()
       agent.onDisconnected()
     } else if (status === NodeConnectionStatus.CONNECTED) {
       agent.onConnected()
@@ -361,7 +361,7 @@ export default class AgentService {
     connection.status().subscribe(it => this.onAgentConnectionStatusChange(agent, it))
 
     this.logger.log(`Agent joined with id: ${request.id}, key: ${!!agent.publicKey}`)
-    this.agent_count.inc()
+    this.agentCount.inc()
     this.logServiceInfo()
 
     return agent.onConnected()

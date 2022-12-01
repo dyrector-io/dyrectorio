@@ -70,19 +70,19 @@ compile: | compile-cli compile-crane compile-dagent
 .PHONY: compile-cli
 compile-cli: ##
 	cd cmd/dyo && \
-	$(GOFLAGS) go build ${LDFLAGS} -o ../../build/out/dyo${OUT_EXT}; \
+	${GOFLAGS} go build ${LDFLAGS} -o ../../build/out/dyo${OUT_EXT}; \
 	cd -
 
 .PHONY: compile-crane
 compile-crane: ##
 	cd cmd/crane && \
-	$(GOFLAGS) go build ${LDFLAGS} -o ../../build/out/crane${OUT_EXT}; \
+	${GOFLAGS} go build ${LDFLAGS} -o ../../build/out/crane${OUT_EXT}; \
 	cd -
 
 .PHONY: compile-dagent
 compile-dagent: ##
 	cd cmd/dagent && \
-	$(GOFLAGS) go build ${LDFLAGS} -o ../../build/out/dagent${OUT_EXT}; \
+	${GOFLAGS} go build ${LDFLAGS} -o ../../build/out/dagent${OUT_EXT}; \
 	cd -
 
 .PHONY: install-go-tools
