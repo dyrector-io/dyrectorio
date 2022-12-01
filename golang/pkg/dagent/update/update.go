@@ -174,7 +174,7 @@ func RemoveSelf(ctx context.Context) error {
 		return nil
 	}
 
-	log.Debug().Msg("Update finished, shutting down")
+	log.Info().Msg("Update finished, shutting down")
 
 	containerID := utils.GetOwnContainerID()
 	if containerID == "" {

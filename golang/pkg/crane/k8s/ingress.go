@@ -112,7 +112,7 @@ func (ing *ingress) deployIngress(options *DeployIngressOptions) error {
 		Force:        ing.appConfig.ForceOnConflicts,
 	})
 	if err != nil {
-		log.Printf("%v, ingress: %s", err, ingress.ObjectMeta.Name)
+		log.Error().Err(err).Str("ingress", ingress.ObjectMeta.Name).Send()
 	}
 
 	return err

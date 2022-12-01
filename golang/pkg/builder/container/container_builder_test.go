@@ -30,7 +30,7 @@ func builderCleanup(builder *containerbuilder.DockerContainerBuilder) {
 		for _, network := range networks {
 			err := dockerHelper.DeleteNetworkByID(ctx, network)
 			if err != nil {
-				log.Error().Str("name", network).Msg("Removing network was not successful.")
+				log.Error().Str("name", network).Msg("Failed to remove network.")
 			}
 		}
 	}

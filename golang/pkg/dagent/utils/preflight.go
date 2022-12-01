@@ -33,6 +33,9 @@ func PreflightChecks(cfg *config.Configuration) {
 		log.Error().Stack().Err(err).Msg("Error with version constraint")
 	}
 	if !constraints.Check(serVer) {
-		log.Printf("WARNING: server is behind the supported version %s < %s", serVer, cfg.MinDockerServerVersion)
+		log.Warn().
+			Str("serverVersion", serVer.String()).
+			Str("minVersion", cfg.MinDockerServerVersion).
+			Msg("Server is behind the supported version")
 	}
 }

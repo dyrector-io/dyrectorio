@@ -50,14 +50,18 @@ func GetValidSecret(ctx context.Context, appConfig *craneConfig.Configuration) (
 		return "", fmt.Errorf("handling k8s stored secret %s/%s was on error: %w", namespace, name, err)
 	}
 	if isExpired {
-		log.Printf("k8s stored secret %s/%s was expired (resourceVersion: %s), so renewing...", namespace, name, version)
+		log.Info().
+			Str("namespace", namespace).
+			Str("name", name).
+			Str("version", version).
+			Msgf("k8s stored secret %s/%s was expired (resourceVersion: %s), renewing", namespace, name, version)
 		return addValidSecret(ctx, namespace, name, appConfig)
 	}
 	return secretContent, nil
 }
 
 func addValidSecret(ctx context.Context, namespace, name string, appConfig *craneConfig.Configuration) (string, error) {
-	log.Printf("storing k8s secret at %s/%s", namespace, name)
+	log.Info().Str("namespace", namespace).Str("name", name).Msg("Storing k8s secret")
 
 	keyStr, keyErr := config.GenerateKeyString()
 	if keyErr != nil {
@@ -72,7 +76,11 @@ func addValidSecret(ctx context.Context, namespace, name string, appConfig *cran
 		return "", storingErr
 	}
 
-	log.Printf("k8s secret at %s/%s is updated (resourceVersion: %s)", namespace, name, storedVersion)
+	log.Info().
+		Str("namespace", namespace).
+		Str("name", name).
+		Str("resourceVersion", storedVersion).
+		Msgf("k8s secret at %s/%s is updated (resourceVersion: %s)", namespace, name, storedVersion)
 
 	return keyStr, nil
 }

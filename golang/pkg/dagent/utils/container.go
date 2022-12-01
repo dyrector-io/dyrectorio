@@ -74,30 +74,30 @@ func ExecTraefik(ctx context.Context, traefikDeployReq TraefikDeployRequest, cfg
 	// create treafik.yml
 	configTmpl, err := template.New("config").Parse(GetTraefikGoTemplate())
 	if err != nil {
-		log.Error().Stack().Err(err).Msg("could not parse template string")
+		log.Error().Stack().Err(err).Msg("Could not parse template string")
 		return err
 	}
 
 	//#nosec G304
 	configFile, err := os.Create(filepath.Join(configDir, "traefik.yml"))
 	if err != nil {
-		log.Error().Stack().Err(err).Msg("could not create traefik.yml file")
+		log.Error().Stack().Err(err).Msg("Could not create traefik.yml file")
 		return err
 	}
 	// anonymized defer to swallow error, at least something is logged about it
 	defer func(configFile *os.File) {
 		if err = configFile.Close(); err != nil {
-			log.Error().Stack().Err(err).Msg("closing traefik.yml failed")
+			log.Error().Stack().Err(err).Msg("Closing traefik.yml failed")
 		}
 	}(configFile)
 
 	err = configTmpl.Execute(configFile, traefikDeployReq)
 	if err != nil {
-		log.Error().Stack().Err(err).Msg("rendering traefik config template error")
+		log.Error().Stack().Err(err).Msg("Rendering traefik config template error")
 		return err
 	}
 	if err != nil {
-		log.Error().Stack().Err(err).Msg("could not sync traefik.yml - flush to disk")
+		log.Error().Stack().Err(err).Msg("Could not sync traefik.yml - flush to disk")
 		return err
 	}
 
@@ -111,12 +111,12 @@ func ExecTraefik(ctx context.Context, traefikDeployReq TraefikDeployRequest, cfg
 	}
 
 	if err = dockerHelper.DeleteContainerByName(ctx, nil, "traefik", true); err != nil {
-		log.Error().Stack().Err(err).Msg("delete traefik container error")
+		log.Error().Stack().Err(err).Msg("Delete traefik container error")
 		return err
 	}
 
 	if err = dockerHelper.CreateNetwork(ctx, "traefik", "bridge"); err != nil {
-		log.Error().Stack().Err(err).Msg("create traefik network error")
+		log.Error().Stack().Err(err).Msg("Create traefik network error")
 		return err
 	}
 
