@@ -83,13 +83,8 @@ func TestGetClientSetOutClusterError(t *testing.T) {
 		KubeConfig:         "test_kubeconfig",
 	}
 	client := k8s.NewClient(cfg)
-	client.BuildConfigFromFlags = func(_, _ string) (*rest.Config, error) {
-		return nil, errors.New("OutCluster error")
-	}
-
 	// WHEN
-
-	// THEN
 	_, err := client.GetClientSet()
+	// THEN
 	assert.ErrorIsf(t, err, fs.ErrNotExist, "nonexistent kubeconfig file should trigger no such file error")
 }
