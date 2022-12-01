@@ -3,6 +3,7 @@ export const NODE_SETUP_SCRIPT_TIMEOUT = 600 // 10 min in seconds
 export const GRPC_STREAM_RECONNECT_TIMEOUT = 5_000 // millis
 export const IMAGE_FILTER_MIN_LENGTH = 1 // characters
 export const IMAGE_WS_REQUEST_DELAY = 500 // millis
+export const INSTANCE_WS_REQUEST_DELAY = IMAGE_WS_REQUEST_DELAY // millis
 export const DEPLOYMENT_EDIT_WS_REQUEST_DELAY = 500 // millis
 export const IMAGE_FILTER_TAKE = 6 // number of images
 export const WS_RECONNECT_TIMEOUT = 5_000 // millis

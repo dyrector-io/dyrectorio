@@ -22,11 +22,12 @@ interface CraneConfigSectionProps {
   onChange: (config: Partial<ContainerConfig>) => void
   selectedFilters: ImageConfigFilterType[]
   editorOptions: EditorStateOptions
+  disabled?: boolean
 }
 
 const CraneConfigSection = (props: CraneConfigSectionProps) => {
   const { t } = useTranslation('container')
-  const { config: propsConfig, selectedFilters, onChange: propsOnChange, editorOptions } = props
+  const { config: propsConfig, selectedFilters, onChange: propsOnChange, editorOptions, disabled } = props
 
   const [config, setConfig] = useState<CraneConfigDetails>(propsConfig)
 
@@ -53,6 +54,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
               initialSelection={config.deploymentStrategy}
               converter={(it: ContainerDeploymentStrategyType) => t(`crane.deploymentStrategies.${it}`)}
               onSelectionChange={it => onChange({ deploymentStrategy: it })}
+              disabled={disabled}
             />
           </div>
         )}
@@ -77,6 +79,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                     healthCheckConfig: nullify({ ...config.healthCheckConfig, port: toNumber(it.target.value) }),
                   })
                 }
+                disabled={disabled}
               />
               <DyoInput
                 label={t('crane.livenessProbe')}
@@ -92,6 +95,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                     healthCheckConfig: nullify({ ...config.healthCheckConfig, livenessProbe: it.target.value }),
                   })
                 }
+                disabled={disabled}
               />
               <DyoInput
                 label={t('crane.readinessProbe')}
@@ -107,6 +111,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                     healthCheckConfig: nullify({ ...config.healthCheckConfig, readinessProbe: it.target.value }),
                   })
                 }
+                disabled={disabled}
               />
               <DyoInput
                 label={t('crane.startupProbe')}
@@ -122,6 +127,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                     healthCheckConfig: nullify({ ...config.healthCheckConfig, startupProbe: it.target.value }),
                   })
                 }
+                disabled={disabled}
               />
             </div>
           </div>
@@ -138,6 +144,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
               keyPlaceholder={t('crane.placeholders.headerName')}
               onChange={it => onChange({ customHeaders: it })}
               editorOptions={editorOptions}
+              disabled={disabled}
             />
           </div>
         )}
@@ -167,6 +174,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                     }),
                   })
                 }
+                disabled={disabled}
               />
               <DyoInput
                 label={t('crane.memory')}
@@ -185,6 +193,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                     }),
                   })
                 }
+                disabled={disabled}
               />
               <DyoLabel className="max-w-lg w-full text-right mb-1">{t('crane.requests')}</DyoLabel>
               <DyoInput
@@ -204,6 +213,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                     }),
                   })
                 }
+                disabled={disabled}
               />
               <DyoInput
                 label={t('crane.memory')}
@@ -222,6 +232,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                     }),
                   })
                 }
+                disabled={disabled}
               />
             </div>
           </div>
@@ -237,6 +248,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
               fieldName="proxyHeaders"
               checked={config.proxyHeaders}
               onCheckedChange={it => onChange({ proxyHeaders: it })}
+              disabled={disabled}
             />
           </div>
         )}
@@ -253,6 +265,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 fieldName="useLoadBalancer"
                 checked={config.useLoadBalancer}
                 onCheckedChange={it => onChange({ useLoadBalancer: it })}
+                disabled={disabled}
               />
             </div>
             {!config.useLoadBalancer ? null : (
@@ -262,6 +275,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                   items={config.extraLBAnnotations ?? []}
                   editorOptions={editorOptions}
                   onChange={it => onChange({ extraLBAnnotations: it })}
+                  disabled={disabled}
                 />
               </div>
             )}
@@ -278,6 +292,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 onChange={it => onChange({ labels: nullify({ ...config.labels, deployment: it }) })}
                 items={config.labels?.deployment ?? []}
                 editorOptions={editorOptions}
+                disabled={disabled}
               />
             </div>
             <div className="grid mb-8 break-inside-avoid">
@@ -287,6 +302,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 onChange={it => onChange({ labels: nullify({ ...config.labels, service: it }) })}
                 items={config.labels?.service ?? []}
                 editorOptions={editorOptions}
+                disabled={disabled}
               />
             </div>
             <div className="grid mb-8 break-inside-avoid">
@@ -296,6 +312,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 onChange={it => onChange({ labels: nullify({ ...config.labels, ingress: it }) })}
                 items={config.labels?.ingress ?? []}
                 editorOptions={editorOptions}
+                disabled={disabled}
               />
             </div>
           </>
@@ -311,6 +328,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 onChange={it => onChange({ annotations: nullify({ ...config.annotations, deployment: it }) })}
                 items={config.annotations?.deployment ?? []}
                 editorOptions={editorOptions}
+                disabled={disabled}
               />
             </div>
             <div className="grid mb-8 break-inside-avoid">
@@ -320,6 +338,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 onChange={it => onChange({ annotations: nullify({ ...config.annotations, service: it }) })}
                 items={config.annotations?.service ?? []}
                 editorOptions={editorOptions}
+                disabled={disabled}
               />
             </div>
             <div className="grid mb-8 break-inside-avoid">
@@ -329,6 +348,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 onChange={it => onChange({ annotations: nullify({ ...config.annotations, ingress: it }) })}
                 items={config.annotations?.ingress ?? []}
                 editorOptions={editorOptions}
+                disabled={disabled}
               />
             </div>
           </>

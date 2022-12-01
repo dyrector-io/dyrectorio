@@ -24,11 +24,12 @@ interface DagentConfigSectionProps {
   onChange: (config: Partial<ContainerConfig>) => void
   selectedFilters: ImageConfigFilterType[]
   editorOptions: EditorStateOptions
+  disabled?: boolean
 }
 
 const DagentConfigSection = (props: DagentConfigSectionProps) => {
   const { t } = useTranslation('container')
-  const { config: propsConfig, selectedFilters, onChange: propsOnChange, editorOptions } = props
+  const { config: propsConfig, selectedFilters, onChange: propsOnChange, editorOptions, disabled } = props
 
   const [config, setConfig] = useState<DagentConfigDetails>(propsConfig)
 
@@ -55,6 +56,7 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
               initialSelection={config.networkMode}
               converter={(it: ContainerNetworkMode) => t(`dagent.networkModes.${it}`)}
               onSelectionChange={it => onChange({ networkMode: it })}
+              disabled={disabled}
             />
           </div>
         )}
@@ -70,6 +72,7 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
               onChange={it => onChange({ networks: it })}
               unique={false}
               editorOptions={editorOptions}
+              disabled={disabled}
             />
           </div>
         )}
@@ -83,6 +86,7 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
               onChange={it => onChange({ dockerLabels: it })}
               items={config.dockerLabels ?? []}
               editorOptions={editorOptions}
+              disabled={disabled}
             />
           </div>
         )}
@@ -99,6 +103,7 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
               initialSelection={config.restartPolicy}
               converter={(it: ContainerRestartPolicyType) => t(`dagent.restartPolicies.${it}`)}
               onSelectionChange={it => onChange({ restartPolicy: it })}
+              disabled={disabled}
             />
           </div>
         )}
@@ -117,12 +122,14 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
                 initialSelection={config.logConfig?.driver ?? 'none'}
                 converter={(it: ContainerLogDriverType) => t(`dagent.logDrivers.${it}`)}
                 onSelectionChange={it => onChange({ logConfig: nullify({ ...config.logConfig, driver: it }) })}
+                disabled={disabled}
               />
               <KeyValueInput
                 label={t('dagent.options')}
                 items={config.logConfig?.options ?? []}
                 onChange={it => onChange({ logConfig: nullify({ ...config.logConfig, options: it }) })}
                 editorOptions={editorOptions}
+                disabled={disabled}
               />
             </div>
           </div>

@@ -1,6 +1,5 @@
 import DyoButton from '@app/elements/dyo-button'
-import { DyoHeading } from '@app/elements/dyo-heading'
-import { DyoInput } from '@app/elements/dyo-input'
+import { DyoLabel } from '@app/elements/dyo-label'
 import { UniqueSecretKeyValue } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
@@ -8,14 +7,20 @@ import Image from 'next/image'
 import { createMessage, encrypt, readKey } from 'openpgp'
 import { useEffect, useMemo, useReducer, useState } from 'react'
 import { v4 as uuid } from 'uuid'
+import MultiInput from '../editor/multi-input'
+import { EditorStateOptions } from '../editor/use-editor-state'
 
 interface SecretKeyValueInputProps {
   disabled?: boolean
   className?: string
-  heading?: string
-  publicKey?: string
+  label?: string
+  labelClassName?: string
+  description?: string
   items: UniqueSecretKeyValue[]
+  keyPlaceholder?: string
   unique?: boolean
+  editorOptions: EditorStateOptions
+  publicKey: string
   definedSecrets?: string[]
   onSubmit: (items: UniqueSecretKeyValue[]) => void
 }
@@ -98,7 +103,20 @@ const reducer = (state: UniqueSecretKeyValue[], action: KeyValueInputAction): Un
 const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
   const { t } = useTranslation('common')
 
-  const { heading, disabled, publicKey, items, className, definedSecrets, unique, onSubmit: propsOnSubmit } = props
+  const {
+    disabled,
+    className,
+    label,
+    labelClassName,
+    description,
+    items,
+    keyPlaceholder,
+    unique,
+    editorOptions,
+    publicKey,
+    definedSecrets,
+    onSubmit: propsOnSubmit,
+  } = props
 
   const [state, dispatch] = useReducer(reducer, items)
   const [changed, setChanged] = useState<boolean>(false)
@@ -223,6 +241,9 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
   const renderItem = (entry: KeyValueElement, index: number) => {
     const { id, key, value, message, encrypted, required } = entry
 
+    const keyId = `${id}-key`
+    const valueId = `${id}-value`
+
     return (
       <div key={id} className="flex-1 p-1 flex flex-row">
         <div className="basis-5/12 relative">
@@ -237,28 +258,32 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
                 <Image className="mr-2" src={elementSecretStatus(entry.present)} width={16} height={16} />
               )}
             </div>
-            <DyoInput
-              key={`${id}-key`}
+            <MultiInput
+              key={keyId}
+              id={keyId}
               containerClassName="basis-full"
               disabled={disabled || required}
               grow
-              placeholder={t('key')}
+              placeholder={t('key') ?? keyPlaceholder}
               value={key}
               message={message}
-              onChange={e => onChange(index, e.target.value, value)}
+              editorOptions={editorOptions}
+              onPatch={it => onChange(index, it, value)}
             />
           </div>
         </div>
         <div className="basis-7/12 flex flex-row pl-2">
-          <DyoInput
-            key={`${id}-value`}
+          <MultiInput
+            key={valueId}
+            id={valueId}
             disabled={disabled || encrypted}
             containerClassName="basis-full"
             type={encrypted ? 'password' : 'text'}
             grow
             placeholder={t('value')}
             value={value}
-            onChange={e => onChange(index, key, e.target.value)}
+            editorOptions={editorOptions}
+            onPatch={it => onChange(index, key, it)}
           />
           {encrypted && disabled !== true && (
             <div
@@ -281,20 +306,26 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
 
   return (
     <form className={clsx(className, 'flex flex-col max-h-128 overflow-y-auto')}>
-      {!heading ? null : (
-        <DyoHeading element="h6" className="text-bright mt-4 mb-2 text-light-eased">
-          {heading}
-        </DyoHeading>
+      {!label ? null : (
+        <DyoLabel className={clsx(labelClassName ?? 'text-bright mb-2 whitespace-nowrap text-light-eased')}>
+          {label}
+        </DyoLabel>
       )}
+
+      {!description ? null : <div className="text-light-eased mb-2 ml-1">{description}</div>}
+
       {elements.map((it, index) => renderItem(it, index))}
-      <div className="flex flex-row flex-grow p-1 justify-end">
-        <DyoButton className="px-10 mr-1" disabled={!changed} secondary onClick={onDiscard}>
-          {t('common:discard')}
-        </DyoButton>
-        <DyoButton className="px-10 ml-1" disabled={!changed || duplicates} onClick={onSubmit}>
-          {t('common:save')}
-        </DyoButton>
-      </div>
+
+      {!disabled && (
+        <div className="flex flex-row flex-grow p-1 justify-end">
+          <DyoButton className="px-10 mr-1" disabled={!changed} secondary onClick={onDiscard}>
+            {t('common:discard')}
+          </DyoButton>
+          <DyoButton className="px-10 ml-1" disabled={!changed || duplicates} onClick={onSubmit}>
+            {t('common:save')}
+          </DyoButton>
+        </div>
+      )}
     </form>
   )
 }

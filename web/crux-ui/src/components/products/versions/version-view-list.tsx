@@ -81,13 +81,11 @@ const VersionViewList = (props: VersionViewListProps) => {
       <div className="inline-block">
         <Image className="cursor-pointer" src="/trash-can.svg" width={24} height={24} onClick={() => onDelete(item)} />
       </div>
-      <div className="inline-block">
-        <Link href={imageConfigUrl(state.productId, state.versionId, item.id)}>
-          <a>
-            <Image src="/settings.svg" width={24} height={24} />
-          </a>
-        </Link>
-      </div>
+      <Link href={imageConfigUrl(state.productId, state.versionId, item.id)}>
+        <a>
+          <Image src="/settings.svg" width={24} height={24} />
+        </a>
+      </Link>
     </div>,
   ]
 

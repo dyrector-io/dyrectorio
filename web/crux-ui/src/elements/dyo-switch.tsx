@@ -11,7 +11,7 @@ interface DyoSwitchProps extends Omit<React.InputHTMLAttributes<HTMLInputElement
 }
 
 const DyoSwitch = (props: DyoSwitchProps) => {
-  const { fieldName, checked, setFieldValue, onCheckedChange } = props
+  const { fieldName, checked, disabled, setFieldValue, onCheckedChange } = props
 
   const handleCheckedChange = (isChecked: boolean) => {
     if (fieldName) {
@@ -25,6 +25,7 @@ const DyoSwitch = (props: DyoSwitchProps) => {
     <Switch
       checked={checked}
       onChange={handleCheckedChange}
+      disabled={disabled}
       className={clsx(
         checked ? 'bg-dyo-turquoise' : 'bg-light',
         'relative inline-flex items-center h-6 rounded-full w-11 outline-none',

@@ -42,15 +42,16 @@ export const filterSet: FilterSet = {
 
 interface ImageConfigFilterProps {
   onChange: (filters: ImageConfigFilterType[]) => void
+  initialBaseFilter?: BaseImageConfigFilterType
 }
 
 const ImageConfigFilters = (props: ImageConfigFilterProps) => {
-  const { onChange } = props
+  const { onChange, initialBaseFilter } = props
 
   const { t } = useTranslation('container')
 
   const [filters, setFilters] = useState<ImageConfigFilterType[]>(
-    IMAGE_CONFIG_FILTERS as any as ImageConfigFilterType[],
+    initialBaseFilter ? filterSet[initialBaseFilter] : (IMAGE_CONFIG_FILTERS as any as ImageConfigFilterType[]),
   )
 
   const onBaseFilterChanged = (value: BaseImageConfigFilterType) => {
