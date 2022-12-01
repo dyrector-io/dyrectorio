@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 
 interface DragAndDropListProps<T> {
   items: T[]
-  itemBuilder: (T) => React.ReactNode
+  itemBuilder: (T, index) => React.ReactNode
   onItemsChange?: (items: T[]) => void
 }
 
@@ -91,7 +91,7 @@ const DragAndDropList = <T,>(props: DragAndDropListProps<T>) => {
         if (it === dragging) {
           return (
             <div key={index} className="opacity-50">
-              {itemBuilder(it)}
+              {itemBuilder(it, index)}
             </div>
           )
         }
@@ -107,7 +107,7 @@ const DragAndDropList = <T,>(props: DragAndDropListProps<T>) => {
             onDragEnter={onDragEnter}
             onDragLeave={onDragLeave}
           >
-            {itemBuilder(it)}
+            {itemBuilder(it, index)}
           </div>
         )
       })}

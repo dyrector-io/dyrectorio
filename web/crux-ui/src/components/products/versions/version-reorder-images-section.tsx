@@ -1,6 +1,8 @@
 import DragAndDropList from '@app/components/shared/drag-and-drop-list'
 import { DyoCard } from '@app/elements/dyo-card'
 import { VersionImage } from '@app/models'
+import clsx from 'clsx'
+import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
 
 interface VersionReorderImagesSectionProps {
@@ -13,6 +15,8 @@ const VersionReorderImagesSection = (props: VersionReorderImagesSectionProps) =>
   const { images, saveRef, onSave } = props
 
   const [items, setItems] = useState(images)
+
+  const { t } = useTranslation('images')
 
   saveRef.current = () => {
     const currentImages = images
@@ -34,10 +38,21 @@ const VersionReorderImagesSection = (props: VersionReorderImagesSectionProps) =>
     onSave(sorted)
   }
 
-  const itemTemplate = img => (
-    <DyoCard key={img.id} className="flex text-bright m-2 p-4">
-      <span className="mr-2">{`#${img.order}`}</span>
-      <span className="mx-auto">{img.name}</span>
+  const getImageWithTag = (img: VersionImage) => (
+    <div className="flex items-center">
+      <span className="text-md text-light-eased">{`${img.name}:`}</span>
+      <span className={clsx('text-md', img.tag ? 'text-light-eased' : 'text-warning-orange/75')}>{`${
+        img.tag ? img.tag : t('unknownTag')
+      }`}</span>
+    </div>
+  )
+
+  const itemTemplate = (img: VersionImage, index: number) => (
+    <DyoCard key={img.id} className="grid grid-cols-4 items-center text-bright m-2 p-4">
+      <span className="mx-4 text-dyo-turquoise">{`#${++index}`}</span>
+      <span className="text-bright">{img.config?.name ?? img.name}</span>
+      <span className="text-sm text-bright-muted">{img.registryName}</span>
+      {getImageWithTag(img)}
     </DyoCard>
   )
 
