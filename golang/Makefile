@@ -30,7 +30,7 @@ ifeq ($(GOOS),windows)
 	OUT_EXT=.exe
 endif
 
-GOFLAGS := GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0
+GOENVS := GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0
 
 .PHONY: up
 up: ##
@@ -70,19 +70,19 @@ compile: | compile-cli compile-crane compile-dagent
 .PHONY: compile-cli
 compile-cli: ##
 	cd cmd/dyo && \
-	${GOFLAGS} go build ${LDFLAGS} -o ../../build/out/dyo${OUT_EXT}; \
+	${GOENVS} go build ${LDFLAGS} -o ../../build/out/dyo${OUT_EXT}; \
 	cd -
 
 .PHONY: compile-crane
 compile-crane: ##
 	cd cmd/crane && \
-	${GOFLAGS} go build ${LDFLAGS} -o ../../build/out/crane${OUT_EXT}; \
+	${GOENVS} go build ${LDFLAGS} -o ../../build/out/crane${OUT_EXT}; \
 	cd -
 
 .PHONY: compile-dagent
 compile-dagent: ##
 	cd cmd/dagent && \
-	${GOFLAGS} go build ${LDFLAGS} -o ../../build/out/dagent${OUT_EXT}; \
+	${GOENVS} go build ${LDFLAGS} -o ../../build/out/dagent${OUT_EXT}; \
 	cd -
 
 .PHONY: install-go-tools
