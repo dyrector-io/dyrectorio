@@ -30,7 +30,7 @@ func NewClient(cfg *config.Configuration) *Client {
 	return client
 }
 
-func (c *Client) GetRestConf() (*rest.Config, error) {
+func (c *Client) GetRestConfig() (*rest.Config, error) {
 	if c.appConfig.CraneInCluster {
 		return rest.InClusterConfig()
 	}

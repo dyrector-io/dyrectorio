@@ -34,7 +34,7 @@ func NewServiceMonitor(ctx context.Context, cli *Client) *ServiceMonitor {
 		return nil
 	}
 
-	restConf, err := cli.GetRestConf()
+	restConf, err := cli.GetRestConfig()
 	if err != nil {
 		log.Panic().Err(err).Stack().Send()
 	}
@@ -81,7 +81,7 @@ func (sm *ServiceMonitor) Deploy(namespace, serviceName string, metricParams v1.
 	return nil
 }
 
-// cleanup ignores errors, expected to run if no metrics is were defined
+// cleanup ignores errors, expected to run if no metrics were defined
 func (sm *ServiceMonitor) Cleanup(namespace, serviceName string) {
 	if sm.Client != nil {
 		clientSet := sm.Client.ServiceMonitors(namespace)
