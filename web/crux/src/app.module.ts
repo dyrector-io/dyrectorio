@@ -14,7 +14,6 @@ import TeamModule from './app/team/team.module'
 import VersionModule from './app/version/version.module'
 import ShutdownService from './application.shutdown.service'
 import InterceptorGrpcHelperProvider from './interceptors/helper.interceptor'
-import PrismaErrorInterceptor from './interceptors/prisma-error-interceptor'
 import AuditLoggerInterceptor from './interceptors/audit-logger.interceptor'
 import PrismaService from './services/prisma.service'
 import NotificationModule from './app/notification/notification.module'
@@ -50,10 +49,6 @@ import MetricsController from './app/metrics/metrics.controller'
     PrismaService,
     ShutdownService,
     InterceptorGrpcHelperProvider,
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: PrismaErrorInterceptor,
-    },
     {
       provide: APP_INTERCEPTOR,
       useClass: AuditLoggerInterceptor,
