@@ -260,7 +260,7 @@ func EnsureNetworkExists(settings *Settings) {
 		}
 
 		resp, err := cli.NetworkCreate(context.Background(), settings.SettingsFile.Network, opts)
-		log.Info().Str("responseId", resp.ID).Msg("Nework created with ")
+		log.Info().Str("responseId", resp.ID).Msg("Network created with ")
 		if err != nil {
 			log.Fatal().Err(err).Stack().Send()
 		}

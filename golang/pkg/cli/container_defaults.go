@@ -161,7 +161,7 @@ func GetTraefik(settings *Settings) *containerbuilder.DockerContainerBuilder {
 	if settings.SettingsFile.TraefikDockerSocket == socket.Path && envDockerHost != "" {
 		socket, err = url.Parse(envDockerHost)
 		if err != nil {
-			log.Fatal().Err(err).Stack().Str("host", envDockerHost).Msg("Failed to parse Dcker host from environment")
+			log.Fatal().Err(err).Stack().Str("host", envDockerHost).Msg("Failed to parse Docker host from environment")
 		}
 		settings.SettingsFile.TraefikDockerSocket = socket.Path
 	}

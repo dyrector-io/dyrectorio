@@ -49,7 +49,7 @@ func (dog *DeploymentLogger) SetRequestID(requestID string) {
 // Writes to all available streams: std.out and grpc streams
 func (dog *DeploymentLogger) Write(messages ...string) {
 	for i := range messages {
-		log.Debug().Str("deployment", dog.deploymentID).Msg(messages[i])
+		log.Info().Str("deployment", dog.deploymentID).Msg(messages[i])
 		dog.logs = append(dog.logs, messages...)
 	}
 
@@ -65,7 +65,7 @@ func (dog *DeploymentLogger) Write(messages ...string) {
 
 func (dog *DeploymentLogger) WriteDeploymentStatus(status common.DeploymentStatus, messages ...string) {
 	for i := range messages {
-		log.Debug().Str("deployment", dog.deploymentID).Msg(messages[i])
+		log.Info().Str("deployment", dog.deploymentID).Msg(messages[i])
 		dog.logs = append(dog.logs, messages...)
 	}
 
@@ -86,7 +86,7 @@ func (dog *DeploymentLogger) WriteContainerState(containerState string, messages
 	prefix := fmt.Sprintf("%s - %s", dog.requestID, containerState)
 
 	for i := range messages {
-		log.Debug().Str("prefix", prefix).Msg(messages[i])
+		log.Info().Str("prefix", prefix).Msg(messages[i])
 		dog.logs = append(dog.logs, messages...)
 	}
 

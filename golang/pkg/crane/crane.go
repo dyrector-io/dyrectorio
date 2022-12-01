@@ -29,7 +29,7 @@ func Serve(cfg *config.Configuration) {
 	log.Info().Msg("Starting dyrector.io crane service.")
 
 	// TODO(robot9706): Implement updater
-	log.Info().Msg("No update was set up")
+	log.Debug().Msg("No update was set up")
 
 	grpcParams := grpc.TokenToConnectionParams(cfg.GrpcToken)
 	grpcContext := grpc.WithGRPCConfig(context.Background(), cfg)

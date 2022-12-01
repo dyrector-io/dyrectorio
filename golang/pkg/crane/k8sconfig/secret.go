@@ -54,7 +54,7 @@ func GetValidSecret(ctx context.Context, appConfig *craneConfig.Configuration) (
 			Str("namespace", namespace).
 			Str("name", name).
 			Str("version", version).
-			Msgf("k8s stored secret %s/%s was expired (resourceVersion: %s), so renewing...", namespace, name, version)
+			Msgf("k8s stored secret %s/%s was expired (resourceVersion: %s), renewing", namespace, name, version)
 		return addValidSecret(ctx, namespace, name, appConfig)
 	}
 	return secretContent, nil

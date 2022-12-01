@@ -319,7 +319,7 @@ func executeVersionDeployRequest(
 
 	err = statusStream.CloseSend()
 	if err != nil {
-		log.Error().Stack().Err(err).Str("deployment", req.Id).Msg("Status close err")
+		log.Error().Stack().Err(err).Str("deployment", req.Id).Msg("Status close error")
 		return
 	}
 }
@@ -484,7 +484,7 @@ func executeUpdate(ctx context.Context, command *agent.AgentUpdateRequest, updat
 
 		_, err := grpcConn.Client.AbortUpdate(ctx, resp)
 		if err != nil {
-			log.Error().Stack().Err(err).Msg("Update error response")
+			log.Error().Stack().Err(err).Msg("Update abort request error")
 		}
 	}
 }
