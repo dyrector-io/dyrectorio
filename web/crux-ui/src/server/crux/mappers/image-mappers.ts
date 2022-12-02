@@ -163,7 +163,12 @@ export const containerConfigToDto = (config?: ProtoContainerConfig): ContainerCo
     name: config.common.name ?? null,
     user: config.common.user ?? null,
     tty: config.common.TTY ?? false,
-    ingress: config.common.ingress ?? null,
+    ingress: config.common.ingress
+      ? {
+          ...config.common.ingress,
+          uploadLimitInBytes: config.common.ingress.uploadLimit ?? null,
+        }
+      : null,
     configContainer: config.common.configContainer ?? null,
     importContainer: config.common.importContainer ?? null,
     ports: config.common.ports ?? [],

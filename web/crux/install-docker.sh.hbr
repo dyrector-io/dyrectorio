@@ -27,6 +27,11 @@ case $(uname) in
     ;;
   MINGW*)
     PLATFORM="WINDOWS"
+    if ! [ -z ${MSYS_NO_PATHCONV+x} ]; then 
+        ORIGINAL_PATHCONV_CONFIG=$MSYS_NO_PATHCONV
+    fi
+    
+    export MSYS_NO_PATHCONV=1
     HOST_DOCKER_SOCK_PATH="${HOST_DOCKER_SOCK_PATH:-//var/run/docker.sock}"
     ;;
   *)
@@ -36,8 +41,6 @@ case $(uname) in
 esac
 
 set_environment() {
-  MSYS_NO_PATHCONV=1
-
 # Set folder for persisting data
   PERSISTENCE_FOLDER_FROM_CRUX="{{#if rootPath}}{{{rootPath}}}{{/if}}"
   if [ -z ${PERSISTENCE_FOLDER:-} ]; then
@@ -70,6 +73,11 @@ set_environment() {
   fi
 
   mkdir -p $PERSISTENCE_FOLDER
+
+  if [ $PLATFORM == "WINDOWS" ]; then
+    PERSISTENCE_FOLDER_TMP=${PERSISTENCE_FOLDER,}
+    PERSISTENCE_FOLDER="/run/desktop/mnt/host/${PERSISTENCE_FOLDER_TMP//:/''}"
+  fi
 
   if [ -z ${CRI_EXECUTABLE:-} ]; then
     if [ -z "$(which docker)" ]; then
@@ -165,6 +173,12 @@ dagent_install() {
     -v $PERSISTENCE_FOLDER/:/srv/dagent \
     -v $HOST_DOCKER_SOCK_PATH:/var/run/docker.sock \
     -d ghcr.io/dyrector-io/dyrectorio/agent/dagent:latest
+
+  if [ -z ${ORIGINAL_PATHCONV_CONFIG+x} ]; then
+    unset MSYS_NO_PATHCONV
+  else 
+    export MSYS_NO_PATHCONV=$ORIGINAL_PATHCONV_CONFIG
+  fi
 }
 
 set_environment
