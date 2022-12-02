@@ -19,7 +19,6 @@ import {
   DagentContainerConfig,
   InitContainer as AgentInitContainer,
   InstanceConfig,
-  Port,
 } from 'src/grpc/protobuf/proto/agent'
 import {
   ContainerState,
@@ -46,6 +45,7 @@ import {
 import { versionTypeToGrpc } from 'src/shared/mapper'
 import {
   ContainerConfigData,
+  ContainerConfigPort,
   InstanceContainerConfigData,
   UniqueKey,
   UniqueKeyValue,
@@ -116,7 +116,7 @@ export default class DeployMapper {
     const config = instanceConfig as any as InstanceContainerConfigData
 
     return {
-      capabilities: config.capabilities as UniqueKeyValue[],
+      capabilities: config.capabilities,
       common: this.imageMapper.configToCommonConfig(config, (it: UniqueSecretKeyValue) => it),
       dagent: this.imageMapper.configToDagentConfig(config),
       crane: this.imageMapper.configToCraneConfig(config),
@@ -249,7 +249,7 @@ export default class DeployMapper {
         : null,
       networkMode: this.imageMapper.networkModeToProto(config.networkMode),
       restartPolicy: this.imageMapper.restartPolicyToProto(config.restartPolicy),
-      labels: this.mapKeyValueToMap(config.dockerLabels as JsonObject),
+      labels: this.mapKeyValueToMap(config.dockerLabels),
     }
   }
 
@@ -329,7 +329,7 @@ export default class DeployMapper {
     return [...(weak?.filter(it => !overriddenKeys.has(it.key)) ?? []), ...(strong ?? [])]
   }
 
-  private overridePorts(weak: Port[], strong: Port[]): Port[] {
+  private overridePorts(weak: ContainerConfigPort[], strong: ContainerConfigPort[]): ContainerConfigPort[] {
     const overridenPorts: Set<number> = new Set(strong?.map(it => it.internal))
     return [...(weak?.filter(it => !overridenPorts.has(it.internal)) ?? []), ...(strong ?? [])]
   }
@@ -343,26 +343,19 @@ export default class DeployMapper {
 
   public mergeConfigs(
     imageConfig: ContainerConfigData,
-    instanceConfig: ContainerConfigData,
-  ): ContainerConfigData | ContainerConfigData {
-    const envs = this.overrideKeyValues(
-      imageConfig?.environment as UniqueKeyValue[],
-      instanceConfig?.environment as UniqueKeyValue[],
-    )
-    const caps = this.overrideKeyValues(
-      imageConfig?.capabilities as UniqueKeyValue[],
-      instanceConfig?.capabilities as UniqueKeyValue[],
-    )
-    const ports = this.overridePorts(
-      imageConfig?.ports as JsonObject as Port[],
-      instanceConfig?.ports as JsonObject as Port[],
-    ) as JsonObject
+    instanceConfig: InstanceContainerConfigData,
+  ): InstanceContainerConfigData {
+    const envs = this.overrideKeyValues(imageConfig?.environment, instanceConfig?.environment)
+    const caps = this.overrideKeyValues(imageConfig?.capabilities, instanceConfig?.capabilities)
+    const ports = this.overridePorts(imageConfig?.ports, instanceConfig?.ports)
 
     return {
       // common
       name: instanceConfig.name || imageConfig.name,
       environment: envs,
-      secrets: instanceConfig?.secrets ? instanceConfig.secrets : imageConfig.secrets,
+      secrets: instanceConfig?.secrets
+        ? instanceConfig.secrets
+        : imageConfig.secrets.map(it => ({ ...it, value: '', publicKey: '' })),
       user: this.override(imageConfig?.user, instanceConfig.user),
       tty: this.override(imageConfig?.tty, instanceConfig.tty),
       portRanges: this.override(imageConfig?.portRanges, instanceConfig.portRanges),
@@ -378,10 +371,7 @@ export default class DeployMapper {
       ports,
 
       // crane
-      customHeaders: this.overrideArrays(
-        imageConfig?.customHeaders as UniqueKey[],
-        instanceConfig?.customHeaders as UniqueKey[],
-      ),
+      customHeaders: this.overrideArrays(imageConfig?.customHeaders, instanceConfig?.customHeaders),
       proxyHeaders: this.override(imageConfig?.proxyHeaders, instanceConfig?.proxyHeaders),
       extraLBAnnotations: this.override(imageConfig?.extraLBAnnotations, instanceConfig?.extraLBAnnotations),
       healthCheckConfig: this.override(imageConfig?.healthCheckConfig, instanceConfig?.healthCheckConfig),
@@ -395,8 +385,8 @@ export default class DeployMapper {
       logConfig: this.override(imageConfig?.logConfig, instanceConfig?.logConfig),
       networkMode: this.override(imageConfig?.networkMode, instanceConfig?.networkMode),
       restartPolicy: this.override(imageConfig?.restartPolicy, instanceConfig?.restartPolicy),
-      networks: this.overrideArrays(imageConfig?.networks as UniqueKey[], instanceConfig?.networks as UniqueKey[]),
-      dockerLabels: this.override(imageConfig?.dockerLabels, instanceConfig?.dockerLabels),
+      networks: this.overrideArrays(imageConfig?.networks, instanceConfig?.networks),
+      dockerLabels: this.overrideArrays(imageConfig?.dockerLabels, instanceConfig?.dockerLabels),
     }
   }
 }

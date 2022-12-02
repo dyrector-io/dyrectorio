@@ -340,7 +340,7 @@ export default class DeployService {
 
         const mergedConfig = this.mapper.mergeConfigs(
           (it.image.config ?? {}) as ContainerConfigData,
-          (it.config ?? {}) as ContainerConfigData,
+          (it.config ?? {}) as InstanceContainerConfigData,
         )
 
         return {

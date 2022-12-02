@@ -9,7 +9,6 @@ import {
   Registry,
   RestartPolicy,
 } from '@prisma/client'
-import { JsonObject } from 'prisma'
 import { toTimestamp } from 'src/domain/utils'
 import {
   DeploymentStrategy as ProtoDeploymentStrategy,
@@ -116,13 +115,13 @@ export default class ImageMapper {
 
   configToCraneConfig(config: ContainerConfigData): ProtoCruxCraneContainerConfig {
     return {
-      customHeaders: config.customHeaders as JsonObject,
-      extraLBAnnotations: config.extraLBAnnotations as JsonObject,
+      customHeaders: config.customHeaders,
+      extraLBAnnotations: config.extraLBAnnotations,
       deploymentStatregy: this.deploymentStrategyToProto(config.deploymentStrategy),
-      healthCheckConfig: config.healthCheckConfig as JsonObject,
+      healthCheckConfig: config.healthCheckConfig,
       proxyHeaders: config.proxyHeaders,
       useLoadBalancer: config.useLoadBalancer,
-      resourceConfig: config.resourceConfig as JsonObject,
+      resourceConfig: config.resourceConfig,
       labels: !config.labels
         ? null
         : {
@@ -203,7 +202,7 @@ export default class ImageMapper {
       restartPolicy: config.restartPolicy,
       networkMode: config.networkMode,
       networks: toPrismaJson(config.networks),
-      dockerLabels: toPrismaJson(config.labels),
+      dockerLabels: toPrismaJson(config.dockerLabels),
 
       // crane
       deploymentStrategy: config.deploymentStrategy,
@@ -245,7 +244,7 @@ export default class ImageMapper {
       restartPolicy: config.restartPolicy,
       networkMode: config.networkMode,
       networks: toPrismaJson(config.networks),
-      dockerLabels: toPrismaJson(config.labels),
+      dockerLabels: toPrismaJson(config.dockerLabels),
 
       // crane
       deploymentStrategy: config.deploymentStrategy,
