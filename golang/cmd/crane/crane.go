@@ -43,10 +43,10 @@ func loadConfiguration() (*config.Configuration, error) {
 	cfg := &config.Configuration{}
 	err := util.ReadConfig(cfg)
 	if err != nil {
-		log.Panic().Err(err).Msg("failed to load configuration")
+		log.Panic().Err(err).Msg("Failed to load configuration")
 	}
 	if err = cfg.ParseAndSetJWT(os.Getenv("GRPC_TOKEN")); err != nil {
-		log.Panic().Err(err).Msg("failed to parse env GRPC_TOKEN")
+		log.Panic().Err(err).Msg("Failed to parse env GRPC_TOKEN")
 	}
 	secret, err := k8sconfig.GetValidSecret(context.Background(), cfg)
 	if err != nil {

@@ -92,7 +92,8 @@ const EditInstanceConfig = (props: EditInstanceProps) => {
       <SecretKeyValInput
         disabled={disabled || !publicKey}
         unique
-        heading={t('secrets').toUpperCase()}
+        editorOptions={editorOptions}
+        label={t('secrets').toUpperCase()}
         publicKey={publicKey}
         items={(config.secrets as UniqueSecretKeyValue[]) ?? []}
         definedSecrets={definedSecrets}

@@ -14,13 +14,14 @@ import {
 } from 'src/grpc/protobuf/proto/crux'
 import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
 import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
+import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import NotificationTeamAccessGuard from './guards/notification.team-access.guard'
 import NotificationService from './notification.service'
 
 @Controller()
 @CruxNotificationControllerMethods()
 @UseGuards(NotificationTeamAccessGuard)
-@UseInterceptors(GrpcLoggerInterceptor, GrpcErrorInterceptor)
+@UseInterceptors(GrpcLoggerInterceptor, GrpcErrorInterceptor, PrismaErrorInterceptor)
 export default class NotificationController implements CruxNotificationController {
   constructor(private notificationService: NotificationService) {}
 

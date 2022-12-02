@@ -181,7 +181,7 @@ func WriteContainerFile(ctx context.Context, cli *client.Client,
 		return err
 	}
 
-	log.Printf("Writing %d bytes to %s", tarHeader.Size, filepath.Join(meta.FilePath, filename))
+	log.Debug().Int64("bytes", tarHeader.Size).Str("path", filepath.Join(meta.FilePath, filename)).Msg("Writing file")
 	reader := bytes.NewReader(buf.Bytes())
 
 	err := cli.CopyToContainer(ctx, container, meta.FilePath, reader, types.CopyToContainerOptions{})
@@ -447,7 +447,7 @@ func mountStrToDocker(mountIn []string, containerPreName, containerName string, 
 				}
 				mountList = append(mountList, mount.Mount{Type: mount.TypeBind, Source: hostPath, Target: mountSplit[1]})
 			} else {
-				log.Print("Empty values in mountList")
+				log.Warn().Msg("Empty values in mountList")
 			}
 		}
 	}
@@ -462,7 +462,7 @@ func createRuntimeConfigFileOnHost(mounts []mount.Mount, containerName, containe
 		configDir := path.Join(cfg.InternalMountPath, containerPreName, containerName, "config")
 		_, err := os.Stat(configDir)
 		if os.IsNotExist(err) {
-			log.Info().Str("configDir", configDir).Msg("creating directory")
+			log.Info().Str("configDir", configDir).Msg("Creating directory")
 			if err := os.MkdirAll(configDir, os.ModePerm); err != nil {
 				panic(err)
 			}
@@ -596,7 +596,7 @@ func SecretList(ctx context.Context, prefix, name string) ([]string, error) {
 	}
 
 	if len(containers) != 1 {
-		log.Printf("Container does not exist for prefix-name: '%s-%s'", prefix, name)
+		log.Info().Str("prefix", prefix).Str("name", name).Msgf("Container does not exist for prefix-name: '%s-%s'", prefix, name)
 		return nil, nil
 	}
 

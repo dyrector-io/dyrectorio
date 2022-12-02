@@ -442,7 +442,7 @@ func MapKubeDeploymentListToCruxStateItems(deployments *appsv1.DeploymentList) [
 					stateItem.ImageName = image.StringNoTag()
 					stateItem.ImageTag = image.Tag
 				} else {
-					log.Err(err).Msg("Failed to get k8s container image info")
+					log.Error().Stack().Err(err).Msg("Failed to get k8s container image info")
 				}
 			}
 		}

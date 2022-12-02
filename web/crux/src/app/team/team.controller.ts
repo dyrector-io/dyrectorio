@@ -21,6 +21,7 @@ import {
 } from 'src/grpc/protobuf/proto/crux'
 import CommonGrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
 import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
+import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import TeamRoleGuard, { TeamRoleRequired } from './guards/team.role.guard'
 import TeamSelectGuard from './guards/team.select.guard'
 import TeamReinviteUserValidationPipe from './pipes/team.reinvite-pipe'
@@ -30,7 +31,7 @@ import TeamService from './team.service'
 @Controller()
 @CruxTeamControllerMethods()
 @UseGuards(TeamRoleGuard)
-@UseInterceptors(GrpcLoggerInterceptor, CommonGrpcErrorInterceptor)
+@UseInterceptors(GrpcLoggerInterceptor, CommonGrpcErrorInterceptor, PrismaErrorInterceptor)
 export default class TeamController implements CruxTeamController {
   constructor(private service: TeamService) {}
 

@@ -12,7 +12,7 @@ interface DyoToggleProps extends Omit<React.InputHTMLAttributes<HTMLInputElement
 }
 
 const DyoToggle = (props: DyoToggleProps) => {
-  const { name, checked, setFieldValue, onCheckedChange, className, nameUnchecked, nameChecked } = props
+  const { name, checked, setFieldValue, onCheckedChange, className, nameUnchecked, nameChecked, disabled } = props
 
   const handleCheckedChange = (isChecked: boolean) => {
     setFieldValue?.call(this, name, isChecked, false)
@@ -27,6 +27,7 @@ const DyoToggle = (props: DyoToggleProps) => {
 
       <Switch
         checked={checked}
+        disabled={disabled}
         onChange={handleCheckedChange}
         className={`${
           checked ? 'bg-dyo-turquoise' : 'bg-light'

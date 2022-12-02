@@ -84,7 +84,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
   const [saving, setSaving] = useState(false)
   const [editing, setEditing] = useState(false)
   const [instances, setInstances] = useState<Instance[]>(deployment.instances ?? [])
-  const [viewMode, setViewMode] = useState<ViewMode>('tile')
+  const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [confirmationModal, copyDeployment] = useCopyDeploymentModal(onApiError)
 
   const mutable = deploymentIsMutable(deployment.status, version.type)

@@ -16,6 +16,7 @@ import {
 } from 'src/grpc/protobuf/proto/common'
 import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
 import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
+import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import { NodeUnaryCall } from 'src/shared/grpc-node-connection'
 import AgentService from './agent.service'
 import AgentAuthGuard from './guards/agent.auth.guard'
@@ -23,7 +24,7 @@ import AgentAuthGuard from './guards/agent.auth.guard'
 @Controller()
 @AgentControllerMethods()
 @UseGuards(AgentAuthGuard)
-@UseInterceptors(GrpcLoggerInterceptor, GrpcErrorInterceptor)
+@UseInterceptors(GrpcLoggerInterceptor, GrpcErrorInterceptor, PrismaErrorInterceptor)
 export default class AgentController implements GrpcAgentController {
   constructor(private service: AgentService) {}
 

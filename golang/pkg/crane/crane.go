@@ -26,10 +26,10 @@ func preflightChecks(cfg *config.Configuration) {
 
 func Serve(cfg *config.Configuration) {
 	preflightChecks(cfg)
-	log.Print("Starting dyrector.io crane service.")
+	log.Info().Msg("Starting dyrector.io crane service.")
 
 	// TODO(robot9706): Implement updater
-	log.Print("No update was set up")
+	log.Debug().Msg("No update was set up")
 
 	grpcParams := grpc.TokenToConnectionParams(cfg.GrpcToken)
 	grpcContext := grpc.WithGRPCConfig(context.Background(), cfg)

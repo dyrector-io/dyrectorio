@@ -153,13 +153,13 @@ func SettingsFileReadWrite(state *Settings) *Settings {
 	if state.SettingsExists {
 		err := cleanenv.ReadConfig(state.SettingsFilePath, &state.SettingsFile)
 		if err != nil {
-			log.Fatal().Err(err).Stack().Msg("failed to load configuration")
+			log.Fatal().Err(err).Stack().Msg("Failed to load configuration")
 		}
 	} else {
 		state.SettingsWrite = true
 		err := cleanenv.ReadEnv(&state.SettingsFile)
 		if err != nil {
-			log.Fatal().Err(err).Stack().Msg("failed to load configuration")
+			log.Fatal().Err(err).Stack().Msg("Failed to load configuration")
 		}
 	}
 
@@ -211,12 +211,12 @@ func CheckRequirements() string {
 	// Check socket
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
-		log.Fatal().Err(err).Stack().Msg("docker socket connection unsuccessful")
+		log.Fatal().Err(err).Stack().Msg("Docker socket connection unsuccessful")
 	}
 
 	info, err := cli.Info(context.Background())
 	if err != nil {
-		log.Fatal().Err(err).Stack().Msg("cannot get info via docker socket")
+		log.Fatal().Err(err).Stack().Msg("Cannot get info via docker socket")
 	}
 
 	switch info.InitBinary {
@@ -228,7 +228,7 @@ func CheckRequirements() string {
 		log.Info().Str("version", info.ServerVersion).Msg("Docker")
 		return DockerHost
 	default:
-		log.Fatal().Msg("unknown init binary")
+		log.Fatal().Msg("Unknown init binary")
 		return ""
 	}
 }
@@ -238,39 +238,39 @@ func PodmanInfo() {
 
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
-		log.Fatal().Err(err).Stack().Msg("podman check stderr pipe error")
+		log.Fatal().Err(err).Stack().Msg("Podman check stderr pipe error")
 	}
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		log.Fatal().Err(err).Stack().Msg("podman check stdout pipe error")
+		log.Fatal().Err(err).Stack().Msg("Podman check stdout pipe error")
 	}
 
 	err = cmd.Start()
 	if err != nil {
-		log.Fatal().Err(err).Stack().Msg("podman command execution error")
+		log.Fatal().Err(err).Stack().Msg("Podman command execution error")
 	}
 
 	readstderr, err := io.ReadAll(stderr)
 	if err != nil {
-		log.Fatal().Err(err).Stack().Msg("podman command stderr reading error")
+		log.Fatal().Err(err).Stack().Msg("Podman command stderr reading error")
 	}
 
 	readstdout, err := io.ReadAll(stdout)
 	if err != nil {
-		log.Fatal().Err(err).Stack().Msg("podman command stdout reading error")
+		log.Fatal().Err(err).Stack().Msg("Podman command stdout reading error")
 	}
 
 	err = cmd.Wait()
 	if err != nil {
-		log.Fatal().Err(err).Stack().Msg("podman command execution error")
+		log.Fatal().Err(err).Stack().Msg("Podman command execution error")
 	}
 
 	if len(readstderr) != 0 {
-		log.Fatal().Str("errOut", string(readstderr)).Msg("podman command execution error")
+		log.Fatal().Str("errOut", string(readstderr)).Msg("Podman command execution error")
 	}
 
 	if string(readstdout) != "netavark\n" {
-		log.Fatal().Msg("podman network backend error: it should have the netavark network backend")
+		log.Fatal().Msg("Podman network backend error: it should have the netavark network backend")
 	}
 }
 
@@ -459,7 +459,7 @@ func getAvailablePort(portMap map[string]uint, portNum uint, portDesc string, ch
 	for {
 		err := portIsAvailable(portMap, portNum)
 		if err != nil {
-			log.Error().Err(err).Str("Value", portDesc).Send()
+			log.Error().Err(err).Str("value", portDesc).Send()
 			portNum = scanPort(portNum)
 			log.Info().Msgf("New PORT %d binded successfully for %s.", portNum, portDesc)
 			*changed = true

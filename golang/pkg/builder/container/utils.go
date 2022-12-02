@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 
 	"github.com/docker/docker/api/types"
+
+	"github.com/rs/zerolog/log"
 )
 
 func registryAuthBase64(user, password string) string {
@@ -21,7 +22,7 @@ func registryAuthBase64(user, password string) string {
 	}
 	encodedJSON, err := json.Marshal(authConfig)
 	if err != nil {
-		log.Println(err)
+		log.Error().Err(err).Msg("Failed to encode json")
 		return ""
 	}
 	return base64.URLEncoding.EncodeToString(encodedJSON)

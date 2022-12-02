@@ -16,5 +16,8 @@
   "imageTag": "Image:Tag",
   "imageTagsFor": "Image tags for {{name}}",
   "sensitiveKey": "Sensitive config data should be stored as secrets",
+  "errors": {
+    "preconditionFailed": "Node is unreachable"
+  },
   "unknownTag": "unknown"
 }

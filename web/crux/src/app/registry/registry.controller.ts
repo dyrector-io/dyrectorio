@@ -14,6 +14,7 @@ import {
 } from 'src/grpc/protobuf/proto/crux'
 import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
 import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
+import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import RegistryAccessValidationGuard from './guards/registry.auth.validation.guard'
 import RegistryTeamAccessGuard from './guards/registry.team-access.guard'
 import DeleteRegistryValidationPipe from './pipes/registry.delete.pipe'
@@ -22,7 +23,7 @@ import RegistryService from './registry.service'
 @Controller()
 @CruxRegistryControllerMethods()
 @UseGuards(RegistryTeamAccessGuard)
-@UseInterceptors(GrpcLoggerInterceptor, GrpcErrorInterceptor)
+@UseInterceptors(GrpcLoggerInterceptor, GrpcErrorInterceptor, PrismaErrorInterceptor)
 export default class RegistryController implements CruxRegistryController {
   constructor(private service: RegistryService) {}
 

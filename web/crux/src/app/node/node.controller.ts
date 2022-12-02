@@ -21,6 +21,7 @@ import {
 } from 'src/grpc/protobuf/proto/crux'
 import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
 import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
+import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import { DisableTeamAccessCheck } from 'src/shared/team-access.guard'
 import NodeTeamAccessGuard from './guards/node.team-access.guard'
 import NodeService from './node.service'
@@ -30,7 +31,7 @@ import NodeGetScriptValidationPipe from './pipes/node.get-script.pipe'
 @Controller()
 @CruxNodeControllerMethods()
 @UseGuards(NodeTeamAccessGuard)
-@UseInterceptors(GrpcLoggerInterceptor, GrpcErrorInterceptor)
+@UseInterceptors(GrpcLoggerInterceptor, GrpcErrorInterceptor, PrismaErrorInterceptor)
 export default class NodeController implements CruxNodeController {
   constructor(private service: NodeService) {}
 

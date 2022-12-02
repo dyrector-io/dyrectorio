@@ -459,7 +459,7 @@ func getVolumesFromMap(volumes map[string]v1.Volume, cfg *config.Configuration) 
 				log.Warn().
 					Str("defaultVolumeSize", cfg.DefaultVolumeSize).
 					Str("inputVolumeSize", volume.Size).
-					Msg("Warning: input volume size is invalid using defaults")
+					Msg("Input volume size is invalid, using defaults")
 				tmpStorageSize = resource.MustParse(cfg.DefaultVolumeSize)
 			}
 		} else {
