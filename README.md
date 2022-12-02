@@ -8,7 +8,10 @@
   </a>
 </p>
 
-<p align="center">Open-source Internal Developer Platform (IDP) for developers and non-specialists to manage multi-instance deployments, microservices and configurations in Kubernetes & Docker.</p>
+<p align="center">Open-source Internal Developer Platform (IDP) for developers and non-specialists to manage multi-instance deployments, microservices and configurations in Kubernetes & Docker.
+
+<img src="docs/dyrectorio-readme-demo.gif" alt="dyrector.io demo GIF"/>
+</p>
 
 <p align="center">
   <a href="https://github.com/dyrector-io/dyrectorio/tags" target="_blank"><img src="https://img.shields.io/github/v/tag/dyrector-io/dyrectorio" alt="GitHub tag (latest by date)"/></a>
@@ -25,13 +28,19 @@
 dyrector.io is an open-source deployment platform that helps software teams manage releases & deployments easily and efficiently. While non-specialists are enabled to manage these processes in a simplified, self-service manner, specialists can deploy and manage containerized apps faster through the platform.
 
 Our product is a platform for:
-- **DevOps & System Engineers** can build and manage robust cloud infrastructure
-- **Engineers** can focus more on developing the product because self-service deployments are faster
-- **Stakeholders** can deliver new functions and products with a higher velocity
-- **CTOs & Technical Managers** can reduce time-to-market, manage cloud costs more efficiently and maintain team productivity.
+
+-   **DevOps & System Engineers** can build and manage robust cloud infrastructure
+-   **Engineers** can focus more on developing the product because self-service deployments are faster
+-   **Stakeholders** can deliver new functions and products with a higher velocity
+-   **CTOs & Technical Managers** can reduce time-to-market, manage cloud costs more efficiently and maintain team productivity.
 
 > **Warning**
 > dyrector.io platform is under development, please treat as such. Expect bugs here and there. Early adopters welcome.
+
+
+Join our Discord and connect with other members to share and learn together. If you like the project, give us a Star.
+
+<a href="https://codecov.io/gh/dyrector-io/dyrectorio" target="_blank"><img src="https://discordapp.com/api/guilds/797082431902449694/widget.png?style=banner2" alt="dyrectorio Discord server Banner"/></a>
 
 ## Key features
 
@@ -82,13 +91,13 @@ This means you get a full-featured dyrector.io platform running locally on your 
 
 ### Prerequirements
 
-- Docker installed on your system (Podman works, too).
-- Go Compiler to run the CLI from its source code. (Precompiled binaries are planned)
+-   Docker installed on your system (Podman works, too).
+-   Go Compiler to run the CLI from its source code. (Precompiled binaries are planned)
 
 ### With CLI
 
 > **Note**
-> The CLI is only available from the codebase at the moment. 
+> The CLI is only available from the codebase at the moment.
 
 1. Clone the repository to your local workdir with `git clone`
 2. Execute `go run ./golang/cmd/dyo up` in the project root
