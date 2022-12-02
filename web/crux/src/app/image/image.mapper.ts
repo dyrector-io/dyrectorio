@@ -22,6 +22,7 @@ import {
   networkModeToJSON,
   RestartPolicy as ProtoRestartPolicy,
   VolumeType as ProtoVolumeType,
+  volumeTypeFromJSON,
   volumeTypeToJSON,
 } from 'src/grpc/protobuf/proto/common'
 import {
@@ -88,7 +89,7 @@ export default class ImageMapper {
       TTY: config.tty,
       configContainer: config.configContainer,
       importContainer: config.importContainer,
-      ingress: config.ingress ? { ...config.ingress, uploadLimit: config.ingress?.uploadLimitInBytes } : null,
+      ingress: config.ingress,
       initContainers: config.initContainers?.map(it => ({
         ...it,
         environment: it.environment ?? [],
@@ -373,8 +374,7 @@ export default class ImageMapper {
       return ProtoVolumeType.RO
     }
 
-    // return volumeTypeFromJSON(it.toUpperCase())
-    return it as any as ProtoVolumeType
+    return volumeTypeFromJSON(it.toUpperCase())
   }
 
   exposeToDb(expose?: ProtoExposeStrategy): ExposeStrategy {
