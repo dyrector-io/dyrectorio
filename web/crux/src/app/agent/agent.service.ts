@@ -13,6 +13,7 @@ import { AlreadyExistsException, NotFoundException, UnauthenticatedException } f
 import { AgentAbortUpdate, AgentCommand, AgentInfo, CloseReason } from 'src/grpc/protobuf/proto/agent'
 import {
   ContainerStateListMessage,
+  DeleteContainersRequest,
   DeploymentStatus,
   DeploymentStatusMessage,
   Empty,
@@ -225,12 +226,21 @@ export default class AgentService {
     agent.update(this.configService.get<string>('CRUX_AGENT_IMAGE') ?? 'stable')
   }
 
-  async updateAborted(connection: GrpcNodeConnection, request: AgentAbortUpdate): Promise<Empty> {
+  updateAborted(connection: GrpcNodeConnection, request: AgentAbortUpdate): Empty {
     this.logger.warn(`Agent updated aborted for '${connection.nodeId}' with error: '${request.error}'`)
 
     const agent = this.getByIdOrThrow(connection.nodeId)
 
     agent.onUpdateAborted(request.error)
+
+    return Empty
+  }
+
+  containersDeleted(connection: GrpcNodeConnection, request: DeleteContainersRequest): Empty {
+    this.logger.log(`Containers deleted on '${connection.nodeId}'`)
+
+    const agent = this.getByIdOrThrow(connection.nodeId)
+    agent.onContainerDeleted(request)
 
     return Empty
   }

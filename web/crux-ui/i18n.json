@@ -25,7 +25,7 @@
     "/products/[productId]/versions/[versionId]/deployments/[deploymentId]/instance/[instanceId]": ["images", "deployments", "container"],
     "/products/[productId]/versions/[versionId]/image/[imageId]": ["images", "container"],
     "/nodes": ["nodes"],
-    "/nodes/[nodeId]": ["nodes"],
+    "/nodes/[nodeId]": ["nodes", "images"],
     "/registries": ["registries"],
     "/registries/[registryId]": ["registries"],
     "/teams": ["teams"],

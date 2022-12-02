@@ -177,12 +177,16 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
             setEditing={actions.setEditing}
             disableEditing={!state.mutable}
             submitRef={submitRef}
-            deleteModalTitle={t('common:confirmDelete', {
+            deleteModalTitle={t('common:areYouSureDeleteName', {
               name: t('common:deployment'),
             })}
-            deleteModalDescription={t('common:deleteDescription', {
-              name: t('common:deployment'),
-            })}
+            deleteModalDescription={
+              node.status === 'running' && state.deployment.status === 'successful'
+                ? t('proceedYouDeletePrefix')
+                : t('common:proceedYouLoseAllDataToName', {
+                    name: state.deployment.prefix,
+                  })
+            }
           />
         )}
 

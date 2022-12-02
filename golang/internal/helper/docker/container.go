@@ -27,16 +27,33 @@ func DeleteContainerByName(ctx context.Context, dog *dogger.DeploymentLogger, na
 	return deleteContainerByState(ctx, dog, nameFilter, matchedContainer.State, errorReport)
 }
 
-func DeleteContainerByID(ctx context.Context, dog *dogger.DeploymentLogger, nameFilter string, errorReport bool) error {
-	matchedContainer, err := GetContainerByID(ctx, nil, nameFilter, errorReport)
+func DeleteContainerByID(ctx context.Context, dog *dogger.DeploymentLogger, idFilter string, errorReport bool) error {
+	matchedContainer, err := GetContainerByID(ctx, nil, idFilter, errorReport)
 	if err != nil {
-		return fmt.Errorf("builder could not get container (%s) to remove: %s", nameFilter, err.Error())
+		return fmt.Errorf("builder could not get container (%s) to remove: %s", idFilter, err.Error())
 	}
 	if matchedContainer == nil {
 		return nil
 	}
 
-	return deleteContainerByState(ctx, dog, nameFilter, matchedContainer.State, errorReport)
+	return deleteContainerByState(ctx, dog, idFilter, matchedContainer.State, errorReport)
+}
+
+func DeletePrefix(ctx context.Context, prefix string) error {
+	containers, err := GetAllContainersByName(ctx, nil, prefix)
+
+	if err != nil {
+		return fmt.Errorf("builder could not get containers for prefix (%s) to remove: %s", prefix, err.Error())
+	}
+
+	for _, container := range containers {
+		containerDeleteErr := deleteContainerByState(ctx, nil, container.ID, container.State, false)
+		if err == nil {
+			err = containerDeleteErr
+		}
+	}
+
+	return err
 }
 
 func deleteContainerByState(ctx context.Context, dog *dogger.DeploymentLogger, filter, state string, errorReport bool) error {
@@ -154,8 +171,8 @@ func GetContainerByName(ctx context.Context, dog *dogger.DeploymentLogger, nameF
 	return checkOneContainer(containers, errorReport)
 }
 
-func GetContainerByID(ctx context.Context, dog *dogger.DeploymentLogger, nameFilter string, errorReport bool) (*types.Container, error) {
-	containers, err := GetAllContainersByID(ctx, nil, nameFilter)
+func GetContainerByID(ctx context.Context, dog *dogger.DeploymentLogger, idFilter string, errorReport bool) (*types.Container, error) {
+	containers, err := GetAllContainersByID(ctx, nil, idFilter)
 	if err != nil {
 		return nil, err
 	}

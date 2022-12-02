@@ -1,4 +1,5 @@
 import { v4 as uuid } from 'uuid'
+import { XOR } from './common'
 
 export type ContainerState = 'created' | 'restarting' | 'running' | 'removing' | 'paused' | 'exited' | 'dead'
 
@@ -7,12 +8,32 @@ export type ContainerPort = {
   external: number
 }
 
-export type Container = {
+export type ContainerIdentifier = {
+  prefix: string
+  name: string
+}
+
+type DockerContainer = {
   id: string
   name: string
+  imageName: string
+  imageTag: string
   date: string
   state: ContainerState
   ports: ContainerPort[]
+}
+
+type KubeContainer = Omit<DockerContainer, 'id'> & {
+  prefix: string
+}
+
+export type Container = XOR<DockerContainer, KubeContainer>
+
+export type ContainerOperation = 'start' | 'stop' | 'restart'
+
+export type ContainerCommand = {
+  container: string | ContainerIdentifier
+  operation: ContainerOperation
 }
 
 export type UniqueKey = {
@@ -674,3 +695,15 @@ export const containerPortsToString = (ports: ContainerPort[], truncateAfter: nu
 
   return result.join(', ')
 }
+
+export const containerIdOf = (container: Container): string | ContainerIdentifier =>
+  !container.prefix
+    ? container.id
+    : {
+        prefix: container.prefix,
+        name: container.name,
+      }
+
+export const containerIsStartable = (state: ContainerState) => state !== 'running' && state !== 'removing'
+export const containerIsStopable = (state: ContainerState) => state === 'running' || state === 'paused'
+export const containerIsRestartable = (state: ContainerState) => state === 'running'

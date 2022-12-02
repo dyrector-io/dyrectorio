@@ -65,6 +65,8 @@ export default class ContainerStatusWatcher {
     }
 
     this.stream.complete()
+    this.completer?.next(undefined)
+    this.completer = null
   }
 
   private onWatcherDisconnected() {

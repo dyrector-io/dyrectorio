@@ -45,6 +45,8 @@ service CruxNode {
   rpc DiscardScript(IdRequest) returns (common.Empty);
   rpc RevokeToken(IdRequest) returns (common.Empty);
   rpc UpdateNodeAgent(IdRequest) returns (common.Empty);
+  rpc SendContainerCommand(NodeContainerCommandRequest) returns (common.Empty);
+  rpc DeleteContainers(NodeDeleteContainersRequest) returns (common.Empty);
 
   rpc SubscribeNodeEventChannel(ServiceIdRequest)
       returns (stream NodeEventMessage);
@@ -777,6 +779,25 @@ message NodeInstallResponse {
 }
 
 message NodeScriptResponse { string content = 100; }
+
+message NodeContainerCommandRequest {
+  string id = 1;
+  string accessedBy = 2;
+
+  common.ContainerCommandRequest command = 100;
+}
+
+message NodeDeleteContainersRequest {
+  string id = 1;
+  string accessedBy = 2;
+  
+  common.DeleteContainersRequest containers = 100;
+}
+
+message ContainerDeleteRequest {
+  string prefix = 1;
+  optional string name = 2;
+}
 
 /*
 Lifecycle:

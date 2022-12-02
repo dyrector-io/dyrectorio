@@ -4,7 +4,9 @@ import { GrpcMethod, GrpcStreamMethod } from '@nestjs/microservices'
 import { Observable } from 'rxjs'
 import {
   ConfigContainer,
+  ContainerCommandRequest,
   ContainerStateListMessage,
+  DeleteContainersRequest,
   DeploymentStatusMessage,
   DeploymentStrategy,
   deploymentStrategyFromJSON,
@@ -92,7 +94,9 @@ export interface AgentCommand {
   deployLegacy: DeployRequestLegacy | undefined
   listSecrets: ListSecretsRequest | undefined
   update: AgentUpdateRequest | undefined
-  close: CloseConnection | undefined
+  close: CloseConnectionRequest | undefined
+  containerCommand: ContainerCommandRequest | undefined
+  deleteContainers: DeleteContainersRequest | undefined
 }
 
 /**
@@ -323,7 +327,7 @@ export interface AgentAbortUpdate {
   error: string
 }
 
-export interface CloseConnection {
+export interface CloseConnectionRequest {
   reason: CloseReason
 }
 
@@ -360,6 +364,8 @@ function createBaseAgentCommand(): AgentCommand {
     listSecrets: undefined,
     update: undefined,
     close: undefined,
+    containerCommand: undefined,
+    deleteContainers: undefined,
   }
 }
 
@@ -374,7 +380,13 @@ export const AgentCommand = {
       deployLegacy: isSet(object.deployLegacy) ? DeployRequestLegacy.fromJSON(object.deployLegacy) : undefined,
       listSecrets: isSet(object.listSecrets) ? ListSecretsRequest.fromJSON(object.listSecrets) : undefined,
       update: isSet(object.update) ? AgentUpdateRequest.fromJSON(object.update) : undefined,
-      close: isSet(object.close) ? CloseConnection.fromJSON(object.close) : undefined,
+      close: isSet(object.close) ? CloseConnectionRequest.fromJSON(object.close) : undefined,
+      containerCommand: isSet(object.containerCommand)
+        ? ContainerCommandRequest.fromJSON(object.containerCommand)
+        : undefined,
+      deleteContainers: isSet(object.deleteContainers)
+        ? DeleteContainersRequest.fromJSON(object.deleteContainers)
+        : undefined,
     }
   },
 
@@ -394,7 +406,16 @@ export const AgentCommand = {
       (obj.listSecrets = message.listSecrets ? ListSecretsRequest.toJSON(message.listSecrets) : undefined)
     message.update !== undefined &&
       (obj.update = message.update ? AgentUpdateRequest.toJSON(message.update) : undefined)
-    message.close !== undefined && (obj.close = message.close ? CloseConnection.toJSON(message.close) : undefined)
+    message.close !== undefined &&
+      (obj.close = message.close ? CloseConnectionRequest.toJSON(message.close) : undefined)
+    message.containerCommand !== undefined &&
+      (obj.containerCommand = message.containerCommand
+        ? ContainerCommandRequest.toJSON(message.containerCommand)
+        : undefined)
+    message.deleteContainers !== undefined &&
+      (obj.deleteContainers = message.deleteContainers
+        ? DeleteContainersRequest.toJSON(message.deleteContainers)
+        : undefined)
     return obj
   },
 }
@@ -1292,16 +1313,16 @@ export const AgentAbortUpdate = {
   },
 }
 
-function createBaseCloseConnection(): CloseConnection {
+function createBaseCloseConnectionRequest(): CloseConnectionRequest {
   return { reason: 0 }
 }
 
-export const CloseConnection = {
-  fromJSON(object: any): CloseConnection {
+export const CloseConnectionRequest = {
+  fromJSON(object: any): CloseConnectionRequest {
     return { reason: isSet(object.reason) ? closeReasonFromJSON(object.reason) : 0 }
   },
 
-  toJSON(message: CloseConnection): unknown {
+  toJSON(message: CloseConnectionRequest): unknown {
     const obj: any = {}
     message.reason !== undefined && (obj.reason = closeReasonToJSON(message.reason))
     return obj
@@ -1328,6 +1349,8 @@ export interface AgentClient {
   secretList(request: ListSecretsResponse, metadata: Metadata, ...rest: any): Observable<Empty>
 
   abortUpdate(request: AgentAbortUpdate, metadata: Metadata, ...rest: any): Observable<Empty>
+
+  deleteContainers(request: DeleteContainersRequest, metadata: Metadata, ...rest: any): Observable<Empty>
 }
 
 /** Service handling deployment of containers and fetching statuses */
@@ -1358,11 +1381,17 @@ export interface AgentController {
   secretList(request: ListSecretsResponse, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
 
   abortUpdate(request: AgentAbortUpdate, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
+
+  deleteContainers(
+    request: DeleteContainersRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<Empty> | Observable<Empty> | Empty
 }
 
 export function AgentControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ['connect', 'secretList', 'abortUpdate']
+    const grpcMethods: string[] = ['connect', 'secretList', 'abortUpdate', 'deleteContainers']
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
       GrpcMethod('Agent', method)(constructor.prototype[method], method, descriptor)

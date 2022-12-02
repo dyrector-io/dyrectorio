@@ -91,7 +91,7 @@ const VersionDetailsPage = (props: VersionDetailsPageProps) => {
             editing={editing}
             setEditing={setEditing}
             submitRef={submitRef}
-            deleteModalTitle={t('common:confirmDelete', { name: version.name })}
+            deleteModalTitle={t('common:areYouSureDeleteName', { name: version.name })}
             deleteModalDescription={t('deleteDescription', {
               name: version.name,
             })}

@@ -134,7 +134,7 @@ export default class ImageService {
     let config: ContainerConfigData
 
     if (request.config) {
-      config = this.mapper.configProtoToDb(request.config)
+      config = this.mapper.configProtoToContainerConfigData(request.config)
     }
 
     const image = await this.prisma.image.update({
@@ -145,7 +145,7 @@ export default class ImageService {
       data: {
         tag: request.tag,
         config: {
-          update: config,
+          update: this.mapper.containerConfigDataToDb(config),
         },
         updatedBy: request.accessedBy,
       },

@@ -48,8 +48,8 @@ const VersionViewList = (props: VersionViewListProps) => {
           imageId: item.id,
         } as DeleteImageMessage),
       {
-        title: t('common:confirmDelete', { name: item.config.name }),
-        description: t('common:deleteDescription', { name: item.config.name }),
+        title: t('common:areYouSureDeleteName', { name: item.config.name }),
+        description: t('common:proceedYouLoseAllDataToName', { name: item.config.name }),
       },
     )
 
@@ -105,8 +105,8 @@ const VersionViewList = (props: VersionViewListProps) => {
 
       <DyoConfirmationModal
         config={deleteModal}
-        title={t('common:confirmDelete')}
-        description={t('common:deleteDescription')}
+        title={t('common:areYouSureDeleteName')}
+        description={t('common:proceedYouLoseAllDataToName')}
         confirmText={t('common:delete')}
         className="w-1/4"
         confirmColor="bg-error-red"

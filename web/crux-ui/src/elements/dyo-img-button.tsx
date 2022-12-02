@@ -25,7 +25,11 @@ const DyoImgButton = (props: DyoImgButtonProps) => {
 
   return (
     /* eslint-disable-next-line react/button-has-type */
-    <button className={clsx(color, ring, className, 'rounded grid items-center')} disabled={disabled} onClick={onClick}>
+    <button
+      className={clsx(color, ring, className, 'rounded grid items-center', disabled ? 'opacity-40' : null)}
+      disabled={disabled}
+      onClick={onClick}
+    >
       <Image layout="fixed" src={src} width={width} height={height} alt={alt} />
     </button>
   )

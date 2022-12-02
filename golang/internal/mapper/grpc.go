@@ -387,15 +387,17 @@ func MapContainerState(in *[]dockerTypes.Container) []*common.ContainerStateItem
 		}
 
 		list = append(list, &common.ContainerStateItem{
-			ContainerId: it.ID,
-			Name:        name,
-			Command:     it.Command,
-			CreatedAt:   timestamppb.New(time.UnixMilli(it.Created * int64(time.Microsecond)).UTC()),
-			State:       dogger.MapContainerState(it.State),
-			Status:      it.Status,
-			Ports:       mapContainerPorts(&it.Ports),
-			ImageName:   imageName[0],
-			ImageTag:    imageTag,
+			Container: &common.ContainerStateItem_Id{
+				Id: it.ID,
+			},
+			Name:      name,
+			Command:   it.Command,
+			CreatedAt: timestamppb.New(time.UnixMilli(it.Created * int64(time.Microsecond)).UTC()),
+			State:     dogger.MapContainerState(it.State),
+			Status:    it.Status,
+			Ports:     mapContainerPorts(&it.Ports),
+			ImageName: imageName[0],
+			ImageTag:  imageTag,
 		})
 	}
 
@@ -424,6 +426,9 @@ func MapKubeDeploymentListToCruxStateItems(deployments *appsv1.DeploymentList) [
 		deployment := deployments.Items[i]
 
 		stateItem := &common.ContainerStateItem{
+			Container: &common.ContainerStateItem_Prefix{
+				Prefix: deployment.Namespace,
+			},
 			Name:  deployment.Name,
 			State: mapKubeStatusToCruxContainerState(deployment.Status),
 			CreatedAt: timestamppb.New(

@@ -26,6 +26,7 @@ service Agent {
   rpc ContainerState(stream common.ContainerStateListMessage) returns (common.Empty);
   rpc SecretList(common.ListSecretsResponse) returns (common.Empty);
   rpc AbortUpdate(AgentAbortUpdate) returns (common.Empty);
+  rpc DeleteContainers(common.DeleteContainersRequest) returns (common.Empty);
 }
 
 /**
@@ -46,7 +47,9 @@ message AgentCommand {
     DeployRequestLegacy deployLegacy = 4;
     ListSecretsRequest listSecrets = 5;
     AgentUpdateRequest update = 6;
-    CloseConnection close = 7;
+    CloseConnectionRequest close = 7;
+    common.ContainerCommandRequest containerCommand = 8;
+    common.DeleteContainersRequest deleteContainers = 9;
   }
 }
 
@@ -256,6 +259,6 @@ enum CloseReason {
   SELF_DESTRUCT = 2;
 }
 
-message CloseConnection {
+message CloseConnectionRequest {
   CloseReason reason = 1;
 }
