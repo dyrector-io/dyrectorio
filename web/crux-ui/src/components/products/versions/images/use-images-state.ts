@@ -239,6 +239,7 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
 
     setImages(newImages)
     setAddSection('none')
+    setSection('images')
   }
 
   const fetchImageTags = (image: VersionImage): RegistryImageTags => {
