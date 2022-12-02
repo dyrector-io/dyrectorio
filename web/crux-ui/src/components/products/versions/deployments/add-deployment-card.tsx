@@ -106,7 +106,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
           <DyoLabel className="mt-8 mb-2.5">{t('common:nodes')}</DyoLabel>
 
           <DyoChips
-            choices={nodes}
+            choices={nodes ?? []}
             converter={(it: DyoNode) => it.name}
             onSelectionChange={it => formik.setFieldValue('nodeId', it.id)}
           />

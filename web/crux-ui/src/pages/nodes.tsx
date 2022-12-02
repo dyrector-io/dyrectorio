@@ -11,7 +11,7 @@ import DyoWrap from '@app/elements/dyo-wrap'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useWebSocket from '@app/hooks/use-websocket'
 import { DyoNode, NodeStatus, NodeStatusMessage, WS_TYPE_NODE_STATUS } from '@app/models'
-import { nodeUrl, ROUTE_NODES, WS_NODES } from '@app/routes'
+import { API_NODES, nodeUrl, ROUTE_NODES, WS_NODES } from '@app/routes'
 import { upsertById, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import clsx from 'clsx'
@@ -19,6 +19,7 @@ import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRef, useState } from 'react'
 import toast from 'react-hot-toast'
+import { useSWRConfig } from 'swr'
 
 interface NodesPageProps {
   nodes: DyoNode[]
@@ -32,6 +33,8 @@ const NodesPage = (props: NodesPageProps) => {
   const { nodes } = props
 
   const { t } = useTranslation('nodes')
+
+  const { mutate } = useSWRConfig()
 
   const filters = useFilters<DyoNode, NodeFilter>({
     filters: [
@@ -72,7 +75,7 @@ const NodesPage = (props: NodesPageProps) => {
     filters.setItems(newNodes)
   })
 
-  const onCreated = (item: DyoNode) => {
+  const onCreated = async (item: DyoNode) => {
     const newNodes = upsertById(filters.items, item, {
       onUpdate: old => ({
         ...item,
@@ -82,8 +85,8 @@ const NodesPage = (props: NodesPageProps) => {
     })
 
     filters.setItems(newNodes)
+    await mutate(API_NODES, null)
   }
-
   const pageLink: BreadcrumbLink = {
     name: t('common:nodes'),
     url: ROUTE_NODES,

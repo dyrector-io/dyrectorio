@@ -8,13 +8,14 @@ import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
 import { defaultApiErrorHandler } from '@app/errors'
 import { DyoNodeDetails } from '@app/models'
-import { nodeApiUrl, nodeUrl, ROUTE_NODES } from '@app/routes'
+import { API_NODES, nodeApiUrl, nodeUrl, ROUTE_NODES } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import { useRef, useState } from 'react'
+import { useSWRConfig } from 'swr'
 
 interface NodeDetailsProps {
   node: DyoNodeDetails
@@ -24,6 +25,8 @@ const NodeDetails = (props: NodeDetailsProps) => {
   const { node: propsNode } = props
 
   const { t } = useTranslation('nodes')
+
+  const { mutate } = useSWRConfig()
 
   const router = useRouter()
 
@@ -50,6 +53,7 @@ const NodeDetails = (props: NodeDetailsProps) => {
       return
     }
 
+    await mutate(API_NODES, null)
     router.back()
   }
 
