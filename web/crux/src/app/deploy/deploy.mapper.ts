@@ -123,8 +123,14 @@ export default class DeployMapper {
     }
   }
 
-  instanceConfigToDb(config: ProtoContainerConfig): InstanceContainerConfigData {
-    return this.imageMapper.configProtoToDb(config)
+  instanceConfigToInstanceContainerConfigData(config: ProtoContainerConfig): InstanceContainerConfigData {
+    return this.imageMapper.configProtoToContainerConfigData(config)
+  }
+
+  instanceContainerConfigDataToDb(
+    config: InstanceContainerConfigData,
+  ): Omit<InstanceContainerConfig, 'id' | 'instanceId'> {
+    return this.imageMapper.containerConfigDataToDb(config)
   }
 
   eventToGrpc(event: DeploymentEvent): DeploymentEventResponse {
