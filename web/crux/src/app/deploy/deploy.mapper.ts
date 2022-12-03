@@ -356,7 +356,7 @@ export default class DeployMapper {
       environment: envs,
       secrets: instanceConfig?.secrets
         ? instanceConfig.secrets
-        : imageConfig.secrets.map(it => ({ ...it, value: '', publicKey: '' })),
+        : imageConfig.secrets?.map(it => ({ ...it, value: '', publicKey: '' })) ?? [],
       user: this.override(imageConfig?.user, instanceConfig.user),
       tty: this.override(imageConfig?.tty, instanceConfig.tty),
       portRanges: this.override(imageConfig?.portRanges, instanceConfig.portRanges),

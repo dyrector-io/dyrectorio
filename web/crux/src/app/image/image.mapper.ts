@@ -81,7 +81,7 @@ export default class ImageMapper {
     return {
       name: config.name,
       environment: config.environment,
-      secrets: config.secrets.map(secretMapper),
+      secrets: config.secrets?.map(secretMapper),
       commands: config.commands,
       expose: this.exposeStrategyToGrpc(config.expose),
       args: config.args,
