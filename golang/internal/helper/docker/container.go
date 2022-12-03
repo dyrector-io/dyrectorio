@@ -41,7 +41,6 @@ func DeleteContainerByID(ctx context.Context, dog *dogger.DeploymentLogger, idFi
 
 func DeletePrefix(ctx context.Context, prefix string) error {
 	containers, err := GetAllContainersByName(ctx, nil, prefix)
-
 	if err != nil {
 		return fmt.Errorf("could not get containers for prefix (%s) to remove: %s", prefix, err.Error())
 	}
@@ -130,12 +129,8 @@ func GetAllContainersByName(ctx context.Context, dog *dogger.DeploymentLogger, n
 		return []*types.Container{}, err
 	}
 
-	containers := make([]*types.Container, len(containerList))
-	for i := 0; i < len(containerList); i++ {
-		containers[i] = &containerList[i]
-	}
-
-	return containers, nil
+	containers := containerListToPtrList(&containerList)
+	return *containers, nil
 }
 
 func GetAllContainersByID(ctx context.Context, dog *dogger.DeploymentLogger, idFilter string) ([]*types.Container, error) {
@@ -149,12 +144,8 @@ func GetAllContainersByID(ctx context.Context, dog *dogger.DeploymentLogger, idF
 		return []*types.Container{}, err
 	}
 
-	containers := make([]*types.Container, len(containerList))
-	for i := 0; i < len(containerList); i++ {
-		containers[i] = &containerList[i]
-	}
-
-	return containers, nil
+	containers := containerListToPtrList(&containerList)
+	return *containers, nil
 }
 
 func GetAllContainers(ctx context.Context, dog *dogger.DeploymentLogger) ([]types.Container, error) {
@@ -214,4 +205,15 @@ func containerListOptionsfilter(filtertype, filter string) types.ContainerListOp
 				Value: filter,
 			}),
 	}
+}
+
+func containerListToPtrList(containerList *[]types.Container) *[]*types.Container {
+	length := len(*containerList)
+
+	containers := make([]*types.Container, length)
+	for i := 0; i < length; i++ {
+		containers[i] = &(*containerList)[i]
+	}
+
+	return &containers
 }

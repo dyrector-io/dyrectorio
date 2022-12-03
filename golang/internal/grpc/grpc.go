@@ -520,7 +520,7 @@ func executeClose(ctx context.Context, command *agent.CloseConnectionRequest, cl
 }
 
 func executeContainerCommand(ctx context.Context, command *common.ContainerCommandRequest, containerCommandFunc ContainerCommandFunc) {
-	log.Info().Str("operation", command.Operation.String()).Str("containerID", command.GetId()).Msgf("Executing container command %s on %s", command.Operation.String(), command.GetId())
+	log.Info().Str("operation", command.Operation.String()).Str("containerID", command.GetId()).Msg("Executing")
 
 	err := containerCommandFunc(ctx, command)
 	if err != nil {

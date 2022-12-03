@@ -625,7 +625,7 @@ func ContainerCommand(ctx context.Context, command *common.ContainerCommandReque
 	} else if operation == common.ContainerOperation_RESTART_CONTAINER {
 		err = cli.ContainerRestart(ctx, containerID, nil)
 	} else {
-		log.Error().Str("operation", operation.String()).Str("containerID", containerID).Msgf("Unknown container operation %s on containerID %s", operation.String(), containerID)
+		log.Error().Str("operation", operation.String()).Str("containerID", containerID).Msg("Unknown operation")
 	}
 
 	return err
