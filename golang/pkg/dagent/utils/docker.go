@@ -632,7 +632,7 @@ func ContainerCommand(ctx context.Context, command *common.ContainerCommandReque
 }
 
 func DeleteContainers(ctx context.Context, request *common.DeleteContainersRequest) error {
-	var err error = nil
+	var err error
 	if request.GetContainerId() != "" {
 		err = dockerHelper.DeleteContainerByID(ctx, nil, request.GetContainerId(), false)
 	} else if request.GetPrefixName() != nil {

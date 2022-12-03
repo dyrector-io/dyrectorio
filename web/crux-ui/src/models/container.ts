@@ -683,9 +683,10 @@ export const containerPortsToString = (ports: ContainerPort[], truncateAfter: nu
       next = `${portToString(start)}-${portToString(end)}`
     } else {
       result.push(next)
-      next = null
-      start = null
-      end = null
+
+      start = port
+      end = port
+      next = portToString(start)
     }
   }
 

@@ -358,7 +358,7 @@ func mapVolumeLinks(in []*agent.VolumeLink) []v1.VolumeLink {
 	return volumeLinks
 }
 
-func MapContainerState(in *[]dockerTypes.Container) []*common.ContainerStateItem {
+func MapContainerState(in *[]*dockerTypes.Container) []*common.ContainerStateItem {
 	list := []*common.ContainerStateItem{}
 
 	for i := range *in {

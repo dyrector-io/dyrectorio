@@ -30,7 +30,8 @@ func GetSecretsList(ctx context.Context, prefix, name string) ([]string, error) 
 }
 
 func DeploymentCommand(ctx context.Context, command *common.ContainerCommandRequest) error {
+	// TODO(@m8vago): implement container (deployment?) start, stop, restart for kube
 	// operation := command.Operation
 	// prefixName := command.GetPrefixName()
-	return errors.New("Deployment commands are not implemented")
+	return errors.New("deployment commands are not implemented")
 }
