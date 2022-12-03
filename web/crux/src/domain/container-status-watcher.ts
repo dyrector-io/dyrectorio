@@ -1,4 +1,4 @@
-import { finalize, Observable, Subject } from 'rxjs'
+import { finalize, Observable, startWith, Subject } from 'rxjs'
 import { PreconditionFailedException } from 'src/exception/errors'
 import { AgentCommand } from 'src/grpc/protobuf/proto/agent'
 import { ContainerStateListMessage } from 'src/grpc/protobuf/proto/common'
@@ -44,7 +44,19 @@ export default class ContainerStatusWatcher {
   }
 
   watch(): Observable<ContainerStateListMessage> {
-    return this.stream.pipe(finalize(() => this.onWatcherDisconnected()))
+    this.stream.next({
+      prefix: this.prefix,
+      data: [],
+    })
+
+    return this.stream.pipe(
+      // necessary, because of: https://github.com/nestjs/nest/issues/8111
+      startWith({
+        prefix: this.prefix,
+        data: [],
+      }),
+      finalize(() => this.onWatcherDisconnected()),
+    )
   }
 
   onNodeStreamStarted(): ContainerStatusStreamCompleter {

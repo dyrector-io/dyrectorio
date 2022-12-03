@@ -4,7 +4,20 @@ import { JwtService } from '@nestjs/jwt'
 import { DeploymentEventTypeEnum, DeploymentStatusEnum, NodeTypeEnum } from '@prisma/client'
 import { InjectMetric } from '@willsoto/nestjs-prometheus'
 import { Counter } from 'prom-client'
-import { catchError, concatAll, concatMap, EMPTY, finalize, from, map, Observable, of, Subject, takeUntil } from 'rxjs'
+import {
+  catchError,
+  concatAll,
+  concatMap,
+  EMPTY,
+  finalize,
+  from,
+  map,
+  Observable,
+  of,
+  startWith,
+  Subject,
+  takeUntil,
+} from 'rxjs'
 import { Agent, AgentToken } from 'src/domain/agent'
 import AgentInstaller from 'src/domain/agent-installer'
 import { DeploymentProgressEvent } from 'src/domain/deployment'
@@ -198,6 +211,11 @@ export default class AgentService {
     }
 
     return request.pipe(
+      // necessary, because of: https://github.com/nestjs/nest/issues/8111
+      startWith({
+        prefix,
+        data: [],
+      }),
       map(it => {
         this.logger.verbose(`${agent.id} - Container status update - ${prefix}`)
 
