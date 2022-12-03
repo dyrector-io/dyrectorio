@@ -243,10 +243,24 @@ const markerRule = yup
   .nullable()
   .optional()
 
+const uniqueSecretKeyValuesSchema = yup
+  .array(
+    yup.object().shape({
+      key: yup.string().required().ensure().matches(/^\S+$/g), // all characters are non-whitespaces
+      value: yup.string().when('encrypt', {
+        is: encrypt => !!encrypt,
+        then: yup.string().ensure(),
+        otherwise: yup.string().nullable(),
+      }),
+    }),
+  )
+  .ensure()
+  .test('keysAreUnique', 'Keys must be unique', arr => new Set(arr.map(it => it.key)).size === arr.length)
+
 export const containerConfigSchema = yup.object().shape({
   name: yup.string().required(),
   environments: uniqueKeyValuesSchema.default([]).nullable(),
-  secrets: uniqueKeyValuesSchema.default([]).nullable(),
+  secrets: uniqueSecretKeyValuesSchema.default([]).nullable(),
   ingress: ingressRule,
   expose: exposeRule,
   user: yup.number().default(null).nullable(),
