@@ -47,6 +47,7 @@ import {
   ContainerConfigData,
   ContainerConfigPort,
   InstanceContainerConfigData,
+  MergedContainerConfigData,
   UniqueKey,
   UniqueKeyValue,
   UniqueSecretKeyValue,
@@ -344,7 +345,7 @@ export default class DeployMapper {
   public mergeConfigs(
     imageConfig: ContainerConfigData,
     instanceConfig: InstanceContainerConfigData,
-  ): InstanceContainerConfigData {
+  ): MergedContainerConfigData {
     const envs = this.overrideKeyValues(imageConfig?.environment, instanceConfig?.environment)
     const caps = this.overrideKeyValues(imageConfig?.capabilities, instanceConfig?.capabilities)
     const ports = this.overridePorts(imageConfig?.ports, instanceConfig?.ports)

@@ -75,7 +75,7 @@ export default class ImageMapper {
   }
 
   configToCommonConfig(
-    config: ContainerConfigData,
+    config: Partial<ContainerConfigData>,
     secretMapper: (secret: XOR<UniqueSecretKey, UniqueSecretKeyValue>) => ProtoUniqueSecretKeyValue,
   ): ProtoCruxCommonContainerConfig {
     return {
@@ -103,7 +103,7 @@ export default class ImageMapper {
     }
   }
 
-  configToDagentConfig(config: ContainerConfigData): ProtoCruxDagentContainerConfig {
+  configToDagentConfig(config: Partial<ContainerConfigData>): ProtoCruxDagentContainerConfig {
     return {
       networks: config.networks,
       logConfig: this.logConfigToProto(config.logConfig),
@@ -113,7 +113,7 @@ export default class ImageMapper {
     }
   }
 
-  configToCraneConfig(config: ContainerConfigData): ProtoCruxCraneContainerConfig {
+  configToCraneConfig(config: Partial<ContainerConfigData>): ProtoCruxCraneContainerConfig {
     return {
       customHeaders: config.customHeaders,
       extraLBAnnotations: config.extraLBAnnotations,
@@ -179,7 +179,7 @@ export default class ImageMapper {
     }
   }
 
-  containerConfigDataToDb(config: ContainerConfigData): Omit<ContainerConfig, 'id' | 'imageId'> {
+  containerConfigDataToDb(config: Partial<ContainerConfigData>): Omit<ContainerConfig, 'id' | 'imageId'> {
     return {
       name: config.name,
       expose: config.expose,

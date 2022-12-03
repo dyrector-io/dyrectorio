@@ -89,9 +89,13 @@ export default class ImageService {
               config: {
                 create: {
                   name: containerNameFromImageName(it),
-                  environment: [],
-                  capabilities: [],
-                  secrets: [],
+                  deploymentStrategy: 'recreate',
+                  expose: 'none',
+                  networkMode: 'bridge',
+                  proxyHeaders: false,
+                  restartPolicy: 'no',
+                  tty: false,
+                  useLoadBalancer: false,
                 },
               },
             },
@@ -131,7 +135,7 @@ export default class ImageService {
 
   @AuditLogLevel('no-data')
   async patchImage(request: PatchImageRequest): Promise<Empty> {
-    let config: ContainerConfigData
+    let config: Partial<ContainerConfigData>
 
     if (request.config) {
       config = this.mapper.configProtoToContainerConfigData(request.config)
