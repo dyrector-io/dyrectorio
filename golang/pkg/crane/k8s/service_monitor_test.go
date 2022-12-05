@@ -15,7 +15,7 @@ import (
 
 func Test(t *testing.T) {
 	testAppConf := config.Configuration{CraneInCluster: false}
-	m := k8s.NewServiceMonitor(context.Background(), &testAppConf)
+	m := k8s.NewServiceMonitor(context.Background(), k8s.NewClient(&testAppConf))
 	err := m.Deploy("dyo-crux", "crux-api", v1.Metrics{Path: "/metrics", Port: "tcp-metrics"}, "")
 	assert.Nil(t, err, "no errors expected with default parameters")
 }

@@ -16,47 +16,49 @@ import (
 )
 
 type Client struct {
+	appConfig            *config.Configuration
 	InClusterConfig      func() (*rest.Config, error)
 	BuildConfigFromFlags func(masterUrl, kubeconfigPath string) (*rest.Config, error)
 }
 
-func NewClient() *Client {
+func NewClient(cfg *config.Configuration) *Client {
 	client := &Client{
+		appConfig:            cfg,
 		InClusterConfig:      rest.InClusterConfig,
 		BuildConfigFromFlags: clientcmd.BuildConfigFromFlags,
 	}
 	return client
 }
 
-func (c *Client) GetRestConf(cfg *config.Configuration) (*rest.Config, error) {
-	if cfg.CraneInCluster {
+func (c *Client) GetRestConf() (*rest.Config, error) {
+	if c.appConfig.CraneInCluster {
 		return rest.InClusterConfig()
 	}
-	return getLocalKubeConf(cfg)
+	return c.getLocalKubeConf()
 }
 
-func (c *Client) GetClientSet(cfg *config.Configuration) (*kubernetes.Clientset, error) {
-	if cfg.CraneInCluster {
-		return c.inClusterAuth(cfg)
+func (c *Client) GetClientSet() (*kubernetes.Clientset, error) {
+	if c.appConfig.CraneInCluster {
+		return c.inClusterAuth()
 	}
-	return c.outClusterAuth(cfg)
+	return c.outClusterAuth()
 }
 
-func (c *Client) inClusterAuth(cfg *config.Configuration) (*kubernetes.Clientset, error) {
+func (c *Client) inClusterAuth() (*kubernetes.Clientset, error) {
 	clusterConfig, err := c.InClusterConfig()
 	if err != nil {
 		log.Error().Err(err).Stack().Send()
 		return nil, err
 	}
-	clusterConfig.Timeout = cfg.DefaultKubeTimeout
+	clusterConfig.Timeout = c.appConfig.DefaultKubeTimeout
 	clientset, err := kubernetes.NewForConfig(clusterConfig)
 	return clientset, err
 }
 
-func getLocalKubeConf(cfg *config.Configuration) (*rest.Config, error) {
+func (c *Client) getLocalKubeConf() (*rest.Config, error) {
 	var kubeconfig *string
 
-	if configPathFromEnv := cfg.KubeConfig; configPathFromEnv != "" {
+	if configPathFromEnv := c.appConfig.KubeConfig; configPathFromEnv != "" {
 		kubeconfig = &configPathFromEnv
 	} else if home := homedir.HomeDir(); home != "" {
 		cfgPath := filepath.Join(home, ".kube", "config")
@@ -65,14 +67,14 @@ func getLocalKubeConf(cfg *config.Configuration) (*rest.Config, error) {
 
 	configFromFlags, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if configFromFlags != nil {
-		configFromFlags.Timeout = cfg.DefaultKubeTimeout
+		configFromFlags.Timeout = c.appConfig.DefaultKubeTimeout
 	}
 
 	return configFromFlags, err
 }
 
-func (c *Client) outClusterAuth(cfg *config.Configuration) (*kubernetes.Clientset, error) {
-	localConfig, err := getLocalKubeConf(cfg)
+func (c *Client) outClusterAuth() (*kubernetes.Clientset, error) {
+	localConfig, err := c.getLocalKubeConf()
 	if err != nil {
 		return nil, err
 	}
@@ -83,4 +85,25 @@ func (c *Client) outClusterAuth(cfg *config.Configuration) (*kubernetes.Clientse
 	}
 
 	return clientset, err
+}
+
+func (c *Client) VerifyAPIResourceExists(group, kind string) bool {
+	found := false
+	clientSet, err := c.GetClientSet()
+	if err != nil {
+		log.Err(err)
+	}
+
+	_, apiResources, err := clientSet.ServerGroupsAndResources()
+	if err != nil {
+		log.Err(err)
+	}
+
+	for _, res := range apiResources {
+		if res.GroupVersion == group && res.Kind == kind {
+			return true
+		}
+	}
+
+	return found
 }

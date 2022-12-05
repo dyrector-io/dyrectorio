@@ -11,7 +11,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/internal/version"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
-	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/k8sconfig"
+	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/k8s"
 
 	cli "github.com/urfave/cli/v2"
 )
@@ -48,7 +48,9 @@ func loadConfiguration() (*config.Configuration, error) {
 	if err = cfg.ParseAndSetJWT(os.Getenv("GRPC_TOKEN")); err != nil {
 		log.Panic().Err(err).Msg("Failed to parse env GRPC_TOKEN")
 	}
-	secret, err := k8sconfig.GetValidSecret(context.Background(), cfg)
+	client := k8s.NewClient(cfg)
+	secretHandler := k8s.NewSecret(context.Background(), client)
+	secret, err := secretHandler.GetValidSecret()
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +77,15 @@ func initKey(cCtx *cli.Context) error {
 		return err
 	}
 
-	_, err = k8sconfig.GetValidSecret(context.Background(), cfg)
+	client := k8s.NewClient(cfg)
+	namespace := cfg.Namespace
+	namespaceHandler := k8s.NewNamespace(cCtx.Context, namespace, client)
+	if err := namespaceHandler.EnsureExists(namespace); err != nil {
+		return err
+	}
+
+	secretHandler := k8s.NewSecret(context.Background(), client)
+	_, err = secretHandler.GetValidSecret()
 	if err != nil {
 		return err
 	}

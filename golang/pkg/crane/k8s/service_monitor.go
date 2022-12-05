@@ -27,19 +27,23 @@ const (
 )
 
 // service monitor is spawned per deployment
-func NewServiceMonitor(ctx context.Context, appConfig *config.Configuration) *ServiceMonitor {
-	restConf, err := NewClient().GetRestConf(appConfig)
+func NewServiceMonitor(ctx context.Context, cli *Client) *ServiceMonitor {
+	if !cli.VerifyAPIResourceExists(ServiceMonitorVersion, ServiceMonitorKind) {
+		return nil
+	}
+
+	restConf, err := cli.GetRestConf()
 	if err != nil {
 		log.Panic().Err(err).Stack().Send()
 	}
 
 	// todo(nandor-magyar): fix error handling here, and with every sub-component
-	cli, _ := NewServiceMonitorClient(restConf)
+	smClient, _ := NewServiceMonitorClient(restConf)
 
 	return &ServiceMonitor{
 		Ctx:       ctx,
-		Client:    cli,
-		appConfig: appConfig,
+		Client:    smClient,
+		appConfig: cli.appConfig,
 	}
 }
 

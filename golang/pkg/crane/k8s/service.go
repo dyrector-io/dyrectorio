@@ -26,17 +26,18 @@ type IngressPortMap struct {
 	Ports map[string]int    `yaml:"ports"`
 }
 
-// facade object for service management
-type service struct {
+// facade object for Service management
+type Service struct {
 	ctx        context.Context
+	client     *Client
 	status     string
 	portsBound []int32
 	portNames  []string
 	appConfig  *config.Configuration
 }
 
-func newService(ctx context.Context, cfg *config.Configuration) *service {
-	return &service{status: "", ctx: ctx, appConfig: cfg}
+func NewService(ctx context.Context, client *Client) *Service {
+	return &Service{status: "", ctx: ctx, client: client, appConfig: client.appConfig}
 }
 
 type ServiceParams struct {
@@ -51,8 +52,8 @@ type ServiceParams struct {
 	annotations   map[string]string
 }
 
-func (s *service) deployService(params *ServiceParams) error {
-	client, err := getServiceClient(params.namespace, s.appConfig)
+func (s *Service) deployService(params *ServiceParams) error {
+	client, err := s.getServiceClient(params.namespace)
 	if err != nil {
 		return err
 	}
@@ -108,8 +109,8 @@ func (s *service) deployService(params *ServiceParams) error {
 	return nil
 }
 
-func (s *service) deleteServices(namespace, name string) error {
-	client, err := getServiceClient(namespace, s.appConfig)
+func (s *Service) deleteServices(namespace, name string) error {
+	client, err := s.getServiceClient(namespace)
 	if err != nil {
 		return err
 	}
@@ -148,8 +149,8 @@ func getServicePorts(portBindings []builder.PortBinding, portRanges []builder.Po
 	return ports
 }
 
-func getServiceClient(namespace string, cfg *config.Configuration) (typedcorev1.ServiceInterface, error) {
-	clientset, err := NewClient().GetClientSet(cfg)
+func (s *Service) getServiceClient(namespace string) (typedcorev1.ServiceInterface, error) {
+	clientset, err := s.client.GetClientSet()
 	if err != nil {
 		return nil, err
 	}

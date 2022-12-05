@@ -23,6 +23,7 @@ import (
 type ingress struct {
 	ctx       context.Context
 	status    string
+	client    *Client
 	appConfig *config.Configuration
 }
 
@@ -35,8 +36,8 @@ type DeployIngressOptions struct {
 	annotations                                                     map[string]string
 }
 
-func newIngress(ctx context.Context, cfg *config.Configuration) *ingress {
-	return &ingress{ctx: ctx, status: "", appConfig: cfg}
+func newIngress(ctx context.Context, client *Client) *ingress {
+	return &ingress{ctx: ctx, status: "", client: client, appConfig: client.appConfig}
 }
 
 func (ing *ingress) deployIngress(options *DeployIngressOptions) error {
@@ -44,7 +45,7 @@ func (ing *ingress) deployIngress(options *DeployIngressOptions) error {
 		return errors.New("ingress deployment is nil")
 	}
 
-	client, err := getIngressClient(options.namespace, ing.appConfig)
+	client, err := ing.getIngressClient(options.namespace)
 	if err != nil {
 		log.Error().Err(err).Stack().Msg("Error with ingress client")
 	}
@@ -119,7 +120,7 @@ func (ing *ingress) deployIngress(options *DeployIngressOptions) error {
 }
 
 func (ing *ingress) deleteIngress(namespace, name string) error {
-	client, err := getIngressClient(namespace, ing.appConfig)
+	client, err := ing.getIngressClient(namespace)
 	if err != nil {
 		panic(err)
 	}
@@ -176,8 +177,8 @@ func getIngressAnnotations(tlsIsWanted, proxyHeaders bool,
 	return annotations
 }
 
-func getIngressClient(namespace string, cfg *config.Configuration) (networking.IngressInterface, error) {
-	clientset, err := NewClient().GetClientSet(cfg)
+func (ing *ingress) getIngressClient(namespace string) (networking.IngressInterface, error) {
+	clientset, err := ing.client.GetClientSet()
 	if err != nil {
 		return nil, err
 	}
