@@ -137,6 +137,21 @@ export default class ProductService {
       },
     })
 
-    return this.mapper.detailsToGrpc(product)
+    const productInProgressDeployments = await this.prisma.product.count({
+      where: {
+        id: request.id,
+        versions: {
+          some: {
+            deployments: {
+              some: {
+                status: 'inProgress',
+              },
+            },
+          },
+        },
+      },
+    })
+
+    return this.mapper.detailsToGrpc({ ...product, deletable: productInProgressDeployments === 0 })
   }
 }

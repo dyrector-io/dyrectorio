@@ -85,11 +85,12 @@ const VersionDetailsPage = (props: VersionDetailsPageProps) => {
       <PageHeading pageLink={pageLink} sublinks={sublinks}>
         {saving ? <LoadingIndicator className="flex ml-4 my-auto" /> : null}
 
-        {!version.mutable ? null : (
+        {!version.deletable && !version.mutable ? null : (
           <DetailsPageMenu
-            onDelete={!version.default ? (version.increasable ? onDelete : null) : null}
+            onDelete={!version.default ? (version.deletable ? onDelete : null) : null}
             editing={editing}
             setEditing={setEditing}
+            disableEditing={!version.mutable}
             submitRef={submitRef}
             deleteModalTitle={t('common:confirmDelete', { name: version.name })}
             deleteModalDescription={t('deleteDescription', {

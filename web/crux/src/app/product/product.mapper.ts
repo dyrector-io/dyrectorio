@@ -28,6 +28,7 @@ export default class ProductMapper {
       ...product,
       audit: AuditResponse.fromJSON(product),
       type: this.typeToGrpc(product.type),
+      deletable: product.deletable,
       versions: product.versions.map(it => this.versionMapper.toGrpc(it)),
     }
   }
@@ -43,6 +44,7 @@ export default class ProductMapper {
 
 type ProductWithVersions = Product & {
   versions: VersionWithChildren[]
+  deletable: boolean
 }
 
 export type ProductWithCounts = Product & {

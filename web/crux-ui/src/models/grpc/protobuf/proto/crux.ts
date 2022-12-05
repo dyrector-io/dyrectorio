@@ -769,6 +769,7 @@ export interface ProductDetailsReponse {
   name: string
   description?: string | undefined
   type: ProductType
+  deletable: boolean
   versions: VersionResponse[]
 }
 
@@ -923,6 +924,7 @@ export interface VersionDetailsResponse {
   type: VersionType
   mutable: boolean
   increasable: boolean
+  deletable: boolean
   images: ImageResponse[]
   deployments: DeploymentByVersionResponse[]
 }
@@ -3077,7 +3079,7 @@ export const UserResponse = {
 }
 
 function createBaseProductDetailsReponse(): ProductDetailsReponse {
-  return { id: '', audit: undefined, name: '', type: 0, versions: [] }
+  return { id: '', audit: undefined, name: '', type: 0, deletable: false, versions: [] }
 }
 
 export const ProductDetailsReponse = {
@@ -3096,6 +3098,9 @@ export const ProductDetailsReponse = {
     }
     if (message.type !== 0) {
       writer.uint32(816).int32(message.type)
+    }
+    if (message.deletable === true) {
+      writer.uint32(824).bool(message.deletable)
     }
     for (const v of message.versions) {
       VersionResponse.encode(v!, writer.uint32(8002).fork()).ldelim()
@@ -3125,6 +3130,9 @@ export const ProductDetailsReponse = {
         case 102:
           message.type = reader.int32() as any
           break
+        case 103:
+          message.deletable = reader.bool()
+          break
         case 1000:
           message.versions.push(VersionResponse.decode(reader, reader.uint32()))
           break
@@ -3143,6 +3151,7 @@ export const ProductDetailsReponse = {
       name: isSet(object.name) ? String(object.name) : '',
       description: isSet(object.description) ? String(object.description) : undefined,
       type: isSet(object.type) ? productTypeFromJSON(object.type) : 0,
+      deletable: isSet(object.deletable) ? Boolean(object.deletable) : false,
       versions: Array.isArray(object?.versions) ? object.versions.map((e: any) => VersionResponse.fromJSON(e)) : [],
     }
   },
@@ -3154,6 +3163,7 @@ export const ProductDetailsReponse = {
     message.name !== undefined && (obj.name = message.name)
     message.description !== undefined && (obj.description = message.description)
     message.type !== undefined && (obj.type = productTypeToJSON(message.type))
+    message.deletable !== undefined && (obj.deletable = message.deletable)
     if (message.versions) {
       obj.versions = message.versions.map(e => (e ? VersionResponse.toJSON(e) : undefined))
     } else {
@@ -3170,6 +3180,7 @@ export const ProductDetailsReponse = {
     message.name = object.name ?? ''
     message.description = object.description ?? undefined
     message.type = object.type ?? 0
+    message.deletable = object.deletable ?? false
     message.versions = object.versions?.map(e => VersionResponse.fromPartial(e)) || []
     return message
   },
@@ -4770,6 +4781,7 @@ function createBaseVersionDetailsResponse(): VersionDetailsResponse {
     type: 0,
     mutable: false,
     increasable: false,
+    deletable: false,
     images: [],
     deployments: [],
   }
@@ -4800,6 +4812,9 @@ export const VersionDetailsResponse = {
     }
     if (message.increasable === true) {
       writer.uint32(840).bool(message.increasable)
+    }
+    if (message.deletable === true) {
+      writer.uint32(848).bool(message.deletable)
     }
     for (const v of message.images) {
       ImageResponse.encode(v!, writer.uint32(8002).fork()).ldelim()
@@ -4841,6 +4856,9 @@ export const VersionDetailsResponse = {
         case 105:
           message.increasable = reader.bool()
           break
+        case 106:
+          message.deletable = reader.bool()
+          break
         case 1000:
           message.images.push(ImageResponse.decode(reader, reader.uint32()))
           break
@@ -4865,6 +4883,7 @@ export const VersionDetailsResponse = {
       type: isSet(object.type) ? versionTypeFromJSON(object.type) : 0,
       mutable: isSet(object.mutable) ? Boolean(object.mutable) : false,
       increasable: isSet(object.increasable) ? Boolean(object.increasable) : false,
+      deletable: isSet(object.deletable) ? Boolean(object.deletable) : false,
       images: Array.isArray(object?.images) ? object.images.map((e: any) => ImageResponse.fromJSON(e)) : [],
       deployments: Array.isArray(object?.deployments)
         ? object.deployments.map((e: any) => DeploymentByVersionResponse.fromJSON(e))
@@ -4882,6 +4901,7 @@ export const VersionDetailsResponse = {
     message.type !== undefined && (obj.type = versionTypeToJSON(message.type))
     message.mutable !== undefined && (obj.mutable = message.mutable)
     message.increasable !== undefined && (obj.increasable = message.increasable)
+    message.deletable !== undefined && (obj.deletable = message.deletable)
     if (message.images) {
       obj.images = message.images.map(e => (e ? ImageResponse.toJSON(e) : undefined))
     } else {
@@ -4906,6 +4926,7 @@ export const VersionDetailsResponse = {
     message.type = object.type ?? 0
     message.mutable = object.mutable ?? false
     message.increasable = object.increasable ?? false
+    message.deletable = object.deletable ?? false
     message.images = object.images?.map(e => ImageResponse.fromPartial(e)) || []
     message.deployments = object.deployments?.map(e => DeploymentByVersionResponse.fromPartial(e)) || []
     return message

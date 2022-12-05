@@ -41,6 +41,7 @@ export type DeploymentByVersion = {
 
 export type VersionDetails = Version & {
   mutable: boolean
+  deletable: boolean
   images: VersionImage[]
   deployments: DeploymentByVersion[]
 }
