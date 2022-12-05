@@ -18,10 +18,12 @@ import _m0 from 'protobufjs/minimal'
 import { Timestamp } from '../../google/protobuf/timestamp'
 import {
   ConfigContainer,
+  ContainerCommandRequest,
   ContainerState,
   containerStateFromJSON,
   ContainerStateListMessage,
   containerStateToJSON,
+  DeleteContainersRequest,
   DeploymentStatus,
   deploymentStatusFromJSON,
   deploymentStatusToJSON,
@@ -1163,6 +1165,23 @@ export interface NodeInstallResponse {
 
 export interface NodeScriptResponse {
   content: string
+}
+
+export interface NodeContainerCommandRequest {
+  id: string
+  accessedBy: string
+  command: ContainerCommandRequest | undefined
+}
+
+export interface NodeDeleteContainersRequest {
+  id: string
+  accessedBy: string
+  containers: DeleteContainersRequest | undefined
+}
+
+export interface ContainerDeleteRequest {
+  prefix: string
+  name?: string | undefined
 }
 
 export interface NodeEventMessage {
@@ -7674,6 +7693,206 @@ export const NodeScriptResponse = {
   },
 }
 
+function createBaseNodeContainerCommandRequest(): NodeContainerCommandRequest {
+  return { id: '', accessedBy: '', command: undefined }
+}
+
+export const NodeContainerCommandRequest = {
+  encode(message: NodeContainerCommandRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== '') {
+      writer.uint32(10).string(message.id)
+    }
+    if (message.accessedBy !== '') {
+      writer.uint32(18).string(message.accessedBy)
+    }
+    if (message.command !== undefined) {
+      ContainerCommandRequest.encode(message.command, writer.uint32(802).fork()).ldelim()
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): NodeContainerCommandRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseNodeContainerCommandRequest()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.id = reader.string()
+          break
+        case 2:
+          message.accessedBy = reader.string()
+          break
+        case 100:
+          message.command = ContainerCommandRequest.decode(reader, reader.uint32())
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): NodeContainerCommandRequest {
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      command: isSet(object.command) ? ContainerCommandRequest.fromJSON(object.command) : undefined,
+    }
+  },
+
+  toJSON(message: NodeContainerCommandRequest): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
+    message.command !== undefined &&
+      (obj.command = message.command ? ContainerCommandRequest.toJSON(message.command) : undefined)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<NodeContainerCommandRequest>, I>>(object: I): NodeContainerCommandRequest {
+    const message = createBaseNodeContainerCommandRequest()
+    message.id = object.id ?? ''
+    message.accessedBy = object.accessedBy ?? ''
+    message.command =
+      object.command !== undefined && object.command !== null
+        ? ContainerCommandRequest.fromPartial(object.command)
+        : undefined
+    return message
+  },
+}
+
+function createBaseNodeDeleteContainersRequest(): NodeDeleteContainersRequest {
+  return { id: '', accessedBy: '', containers: undefined }
+}
+
+export const NodeDeleteContainersRequest = {
+  encode(message: NodeDeleteContainersRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== '') {
+      writer.uint32(10).string(message.id)
+    }
+    if (message.accessedBy !== '') {
+      writer.uint32(18).string(message.accessedBy)
+    }
+    if (message.containers !== undefined) {
+      DeleteContainersRequest.encode(message.containers, writer.uint32(802).fork()).ldelim()
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): NodeDeleteContainersRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseNodeDeleteContainersRequest()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.id = reader.string()
+          break
+        case 2:
+          message.accessedBy = reader.string()
+          break
+        case 100:
+          message.containers = DeleteContainersRequest.decode(reader, reader.uint32())
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): NodeDeleteContainersRequest {
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      containers: isSet(object.containers) ? DeleteContainersRequest.fromJSON(object.containers) : undefined,
+    }
+  },
+
+  toJSON(message: NodeDeleteContainersRequest): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
+    message.containers !== undefined &&
+      (obj.containers = message.containers ? DeleteContainersRequest.toJSON(message.containers) : undefined)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<NodeDeleteContainersRequest>, I>>(object: I): NodeDeleteContainersRequest {
+    const message = createBaseNodeDeleteContainersRequest()
+    message.id = object.id ?? ''
+    message.accessedBy = object.accessedBy ?? ''
+    message.containers =
+      object.containers !== undefined && object.containers !== null
+        ? DeleteContainersRequest.fromPartial(object.containers)
+        : undefined
+    return message
+  },
+}
+
+function createBaseContainerDeleteRequest(): ContainerDeleteRequest {
+  return { prefix: '' }
+}
+
+export const ContainerDeleteRequest = {
+  encode(message: ContainerDeleteRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.prefix !== '') {
+      writer.uint32(10).string(message.prefix)
+    }
+    if (message.name !== undefined) {
+      writer.uint32(18).string(message.name)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): ContainerDeleteRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseContainerDeleteRequest()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.prefix = reader.string()
+          break
+        case 2:
+          message.name = reader.string()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): ContainerDeleteRequest {
+    return {
+      prefix: isSet(object.prefix) ? String(object.prefix) : '',
+      name: isSet(object.name) ? String(object.name) : undefined,
+    }
+  },
+
+  toJSON(message: ContainerDeleteRequest): unknown {
+    const obj: any = {}
+    message.prefix !== undefined && (obj.prefix = message.prefix)
+    message.name !== undefined && (obj.name = message.name)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<ContainerDeleteRequest>, I>>(object: I): ContainerDeleteRequest {
+    const message = createBaseContainerDeleteRequest()
+    message.prefix = object.prefix ?? ''
+    message.name = object.name ?? undefined
+    return message
+  },
+}
+
 function createBaseNodeEventMessage(): NodeEventMessage {
   return { id: '', status: 0 }
 }
@@ -10520,6 +10739,26 @@ export const CruxNodeService = {
     responseSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
     responseDeserialize: (value: Buffer) => Empty.decode(value),
   },
+  sendContainerCommand: {
+    path: '/crux.CruxNode/SendContainerCommand',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: NodeContainerCommandRequest) =>
+      Buffer.from(NodeContainerCommandRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => NodeContainerCommandRequest.decode(value),
+    responseSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => Empty.decode(value),
+  },
+  deleteContainers: {
+    path: '/crux.CruxNode/DeleteContainers',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: NodeDeleteContainersRequest) =>
+      Buffer.from(NodeDeleteContainersRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => NodeDeleteContainersRequest.decode(value),
+    responseSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => Empty.decode(value),
+  },
   subscribeNodeEventChannel: {
     path: '/crux.CruxNode/SubscribeNodeEventChannel',
     requestStream: false,
@@ -10554,6 +10793,8 @@ export interface CruxNodeServer extends UntypedServiceImplementation {
   discardScript: handleUnaryCall<IdRequest, Empty>
   revokeToken: handleUnaryCall<IdRequest, Empty>
   updateNodeAgent: handleUnaryCall<IdRequest, Empty>
+  sendContainerCommand: handleUnaryCall<NodeContainerCommandRequest, Empty>
+  deleteContainers: handleUnaryCall<NodeDeleteContainersRequest, Empty>
   subscribeNodeEventChannel: handleServerStreamingCall<ServiceIdRequest, NodeEventMessage>
   watchContainerState: handleServerStreamingCall<WatchContainerStateRequest, ContainerStateListMessage>
 }
@@ -10694,6 +10935,36 @@ export interface CruxNodeClient extends Client {
   ): ClientUnaryCall
   updateNodeAgent(
     request: IdRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: Empty) => void,
+  ): ClientUnaryCall
+  sendContainerCommand(
+    request: NodeContainerCommandRequest,
+    callback: (error: ServiceError | null, response: Empty) => void,
+  ): ClientUnaryCall
+  sendContainerCommand(
+    request: NodeContainerCommandRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: Empty) => void,
+  ): ClientUnaryCall
+  sendContainerCommand(
+    request: NodeContainerCommandRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: Empty) => void,
+  ): ClientUnaryCall
+  deleteContainers(
+    request: NodeDeleteContainersRequest,
+    callback: (error: ServiceError | null, response: Empty) => void,
+  ): ClientUnaryCall
+  deleteContainers(
+    request: NodeDeleteContainersRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: Empty) => void,
+  ): ClientUnaryCall
+  deleteContainers(
+    request: NodeDeleteContainersRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: Empty) => void,

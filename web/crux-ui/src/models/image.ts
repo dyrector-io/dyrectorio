@@ -113,3 +113,11 @@ export const filterContains = (
 
 export const filterEmpty = (filterValues: string[], filters: ImageConfigFilterType[]): boolean =>
   filterValues.filter(x => filters.includes(x as ImageConfigFilterType)).length > 0
+
+export const imageName = (name: string, tag?: string): string => {
+  if (!tag) {
+    return name
+  }
+
+  return `${name}:${tag}`
+}

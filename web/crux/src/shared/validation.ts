@@ -243,59 +243,55 @@ const markerRule = yup
   .nullable()
   .optional()
 
+const uniqueSecretKeyValuesSchema = yup
+  .array(
+    yup.object().shape({
+      key: yup.string().required().ensure().matches(/^\S+$/g), // all characters are non-whitespaces
+      value: yup.string().when('encrypt', {
+        is: encrypt => !!encrypt,
+        then: yup.string().ensure(),
+        otherwise: yup.string().nullable(),
+      }),
+    }),
+  )
+  .ensure()
+  .test('keysAreUnique', 'Keys must be unique', arr => new Set(arr.map(it => it.key)).size === arr.length)
+
 export const containerConfigSchema = yup.object().shape({
-  common: yup
-    .object()
-    .shape({
-      name: yup.string().required(),
-      environments: uniqueKeyValuesSchema.default([]).nullable(),
-      secrets: uniqueKeyValuesSchema.default([]).nullable(),
-      ingress: ingressRule,
-      expose: exposeRule,
-      user: yup.number().default(null).nullable(),
-      tty: yup.boolean().default(false).required(),
-      importContainer: importContainerRule,
-      configContainer: configContainerRule,
-      ports: portConfigRule,
-      portRanges: portRangeConfigRule,
-      volumes: volumeConfigRule,
-      commands: uniqueKeysOnlySchema.default([]).nullable(),
-      args: uniqueKeysOnlySchema.default([]).nullable(),
-      initContainers: initContainerRule,
-      capabilities: uniqueKeyValuesSchema.default([]).nullable(),
-    })
-    .default({})
-    .nullable(),
+  name: yup.string().required(),
+  environments: uniqueKeyValuesSchema.default([]).nullable(),
+  secrets: uniqueSecretKeyValuesSchema.default([]).nullable(),
+  ingress: ingressRule,
+  expose: exposeRule,
+  user: yup.number().default(null).nullable(),
+  tty: yup.boolean().default(false).required(),
+  importContainer: importContainerRule,
+  configContainer: configContainerRule,
+  ports: portConfigRule,
+  portRanges: portRangeConfigRule,
+  volumes: volumeConfigRule,
+  commands: uniqueKeysOnlySchema.default([]).nullable(),
+  args: uniqueKeysOnlySchema.default([]).nullable(),
+  initContainers: initContainerRule,
+  capabilities: uniqueKeyValuesSchema.default([]).nullable(),
 
   // dagent:
-  dagent: yup
-    .object()
-    .shape({
-      logConfig: logConfigRule,
-      restartPolicy: restartPolicyRule,
-      networkMode: networkModeRule,
-      networks: uniqueKeysOnlySchema.default([]).nullable(),
-      labels: uniqueKeyValuesSchema.default([]).nullable(),
-    })
-    .default({})
-    .nullable(),
+  logConfig: logConfigRule,
+  restartPolicy: restartPolicyRule,
+  networkMode: networkModeRule,
+  networks: uniqueKeysOnlySchema.default([]).nullable(),
+  dockerLabels: uniqueKeyValuesSchema.default([]).nullable(),
 
   // crane
-  crane: yup
-    .object()
-    .shape({
-      deploymentStrategy: deploymentStrategyRule,
-      customHeaders: uniqueKeysOnlySchema.default([]).nullable(),
-      proxyHeaders: yup.boolean().default(false).required(),
-      useLoadBalancer: yup.boolean().default(false).required(),
-      extraLBAnnotations: uniqueKeyValuesSchema.default([]).nullable(),
-      healthCheckConfig: healthCheckConfigRule,
-      resourceConfig: resourceConfigRule,
-      annotations: markerRule,
-      labels: markerRule,
-    })
-    .default({})
-    .nullable(),
+  deploymentStrategy: deploymentStrategyRule,
+  customHeaders: uniqueKeysOnlySchema.default([]).nullable(),
+  proxyHeaders: yup.boolean().default(false).required(),
+  useLoadBalancer: yup.boolean().default(false).required(),
+  extraLBAnnotations: uniqueKeyValuesSchema.default([]).nullable(),
+  healthCheckConfig: healthCheckConfigRule,
+  resourceConfig: resourceConfigRule,
+  annotations: markerRule,
+  labels: markerRule,
 })
 
 export const instanceContainerConfigSchema = yup.object().shape({
@@ -336,6 +332,9 @@ export const deploymentSchema = yup.object({
   environment: uniqueKeyValuesSchema,
   instances: yup.array(
     yup.object({
+      image: yup.object({
+        config: containerConfigSchema,
+      }),
       config: instanceContainerConfigSchema.nullable(),
     }),
   ),

@@ -1,6 +1,10 @@
 import { Logger } from '@app/logger'
 import {
+  ContainerCommandMessage,
+  DeleteContainerMessage,
   WatchContainerStatusMessage,
+  WS_TYPE_CONTAINER_COMMAND,
+  WS_TYPE_DELETE_CONTAINER,
   WS_TYPE_STOP_WATCHING_CONTAINER_STATUS,
   WS_TYPE_WATCH_CONTAINER_STATUS,
 } from '@app/models'
@@ -15,7 +19,10 @@ import { NextApiRequest } from 'next'
 
 const logger = new Logger('ws-nodes/nodeId')
 
-const watcherServices: Map<string, ContainerStatusWatcherService> = new Map()
+const onReady = async (endpoint: WsEndpoint) => {
+  const nodeId = endpoint.query.nodeId as string
+  endpoint.services.register(ContainerStatusWatcherService, () => new ContainerStatusWatcherService(nodeId))
+}
 
 const onAuthorize = async (endpoint: WsEndpoint, req: NextApiRequest): Promise<boolean> => {
   const nodeId = endpoint.query.nodeId as string
@@ -28,24 +35,29 @@ const onAuthorize = async (endpoint: WsEndpoint, req: NextApiRequest): Promise<b
   }
 }
 
-const onConnect = (endpoint: WsEndpoint) => {
-  const nodeId = endpoint.query.nodeId as string
-
-  const watchers = watcherServices.get(nodeId)
-  if (!watchers) {
-    watcherServices.set(nodeId, new ContainerStatusWatcherService(nodeId))
-  }
+const onDisconnect = (endpoint: WsEndpoint, connection: WsConnection) => {
+  const watchers = endpoint.services.get(ContainerStatusWatcherService)
+  watchers.onWebSocketDisconnected(connection)
 }
 
-const onDisconnect = (endpoint: WsEndpoint, connection: WsConnection) => {
+const onContainerCommand = async (
+  endpoint: WsEndpoint,
+  connection: WsConnection,
+  message: WsMessage<ContainerCommandMessage>,
+) => {
   const nodeId = endpoint.query.nodeId as string
 
-  const watchers = watcherServices.get(nodeId)
-  if (!watchers) {
-    return
-  }
+  cruxFromConnection(connection).nodes.sendContainerCommand(nodeId, message.payload)
+}
 
-  watchers.onWebSocketDisconnected(connection)
+const onDeleteContainer = async (
+  endpoint: WsEndpoint,
+  connection: WsConnection,
+  message: WsMessage<DeleteContainerMessage>,
+) => {
+  const nodeId = endpoint.query.nodeId as string
+
+  cruxFromConnection(connection).nodes.deleteContainer(nodeId, message.payload)
 }
 
 const onWatchContainerStatus = async (
@@ -53,9 +65,7 @@ const onWatchContainerStatus = async (
   connection: WsConnection,
   message: WsMessage<WatchContainerStatusMessage>,
 ) => {
-  const nodeId = endpoint.query.nodeId as string
-  const watchers = watcherServices.get(nodeId)
-
+  const watchers = endpoint.services.get(ContainerStatusWatcherService)
   watchers.startWatching(connection, message.payload.prefix ?? '', cruxFromConnection(connection).nodes)
 }
 
@@ -64,9 +74,7 @@ const onStopWatchingContainerStatus = async (
   connection: WsConnection,
   message: WsMessage<WatchContainerStatusMessage>,
 ) => {
-  const nodeId = endpoint.query.nodeId as string
-  const watchers = watcherServices.get(nodeId)
-
+  const watchers = endpoint.services.get(ContainerStatusWatcherService)
   watchers.stopWatching(connection, message.payload.prefix ?? '')
 }
 
@@ -75,11 +83,13 @@ export default routedWebSocketEndpoint(
   [
     [WS_TYPE_WATCH_CONTAINER_STATUS, onWatchContainerStatus],
     [WS_TYPE_STOP_WATCHING_CONTAINER_STATUS, onStopWatchingContainerStatus],
+    [WS_TYPE_CONTAINER_COMMAND, onContainerCommand],
+    [WS_TYPE_DELETE_CONTAINER, onDeleteContainer],
   ],
   [useWebsocketErrorMiddleware],
   {
+    onReady,
     onAuthorize,
-    onConnect,
     onDisconnect,
   },
 )

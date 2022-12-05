@@ -2,6 +2,7 @@ package crux
 
 import (
 	"context"
+	"errors"
 
 	"github.com/rs/zerolog/log"
 
@@ -26,4 +27,11 @@ func GetSecretsList(ctx context.Context, prefix, name string) ([]string, error) 
 	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
 
 	return k8s.ListSecrets(ctx, prefix, name, cfg)
+}
+
+func DeploymentCommand(ctx context.Context, command *common.ContainerCommandRequest) error {
+	// TODO(@m8vago): implement container (deployment?) start, stop, restart for kube
+	// operation := command.Operation
+	// prefixName := command.GetPrefixName()
+	return errors.New("deployment commands are not implemented")
 }

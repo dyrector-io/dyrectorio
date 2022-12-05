@@ -6356,6 +6356,187 @@ func (x *NodeScriptResponse) GetContent() string {
 	return ""
 }
 
+type NodeContainerCommandRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id         string                          `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	AccessedBy string                          `protobuf:"bytes,2,opt,name=accessedBy,proto3" json:"accessedBy,omitempty"`
+	Command    *common.ContainerCommandRequest `protobuf:"bytes,100,opt,name=command,proto3" json:"command,omitempty"`
+}
+
+func (x *NodeContainerCommandRequest) Reset() {
+	*x = NodeContainerCommandRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_protobuf_proto_crux_proto_msgTypes[77]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *NodeContainerCommandRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*NodeContainerCommandRequest) ProtoMessage() {}
+
+func (x *NodeContainerCommandRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_protobuf_proto_crux_proto_msgTypes[77]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use NodeContainerCommandRequest.ProtoReflect.Descriptor instead.
+func (*NodeContainerCommandRequest) Descriptor() ([]byte, []int) {
+	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{77}
+}
+
+func (x *NodeContainerCommandRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *NodeContainerCommandRequest) GetAccessedBy() string {
+	if x != nil {
+		return x.AccessedBy
+	}
+	return ""
+}
+
+func (x *NodeContainerCommandRequest) GetCommand() *common.ContainerCommandRequest {
+	if x != nil {
+		return x.Command
+	}
+	return nil
+}
+
+type NodeDeleteContainersRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id         string                          `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	AccessedBy string                          `protobuf:"bytes,2,opt,name=accessedBy,proto3" json:"accessedBy,omitempty"`
+	Containers *common.DeleteContainersRequest `protobuf:"bytes,100,opt,name=containers,proto3" json:"containers,omitempty"`
+}
+
+func (x *NodeDeleteContainersRequest) Reset() {
+	*x = NodeDeleteContainersRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_protobuf_proto_crux_proto_msgTypes[78]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *NodeDeleteContainersRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*NodeDeleteContainersRequest) ProtoMessage() {}
+
+func (x *NodeDeleteContainersRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_protobuf_proto_crux_proto_msgTypes[78]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use NodeDeleteContainersRequest.ProtoReflect.Descriptor instead.
+func (*NodeDeleteContainersRequest) Descriptor() ([]byte, []int) {
+	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{78}
+}
+
+func (x *NodeDeleteContainersRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *NodeDeleteContainersRequest) GetAccessedBy() string {
+	if x != nil {
+		return x.AccessedBy
+	}
+	return ""
+}
+
+func (x *NodeDeleteContainersRequest) GetContainers() *common.DeleteContainersRequest {
+	if x != nil {
+		return x.Containers
+	}
+	return nil
+}
+
+type ContainerDeleteRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Prefix string  `protobuf:"bytes,1,opt,name=prefix,proto3" json:"prefix,omitempty"`
+	Name   *string `protobuf:"bytes,2,opt,name=name,proto3,oneof" json:"name,omitempty"`
+}
+
+func (x *ContainerDeleteRequest) Reset() {
+	*x = ContainerDeleteRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_protobuf_proto_crux_proto_msgTypes[79]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ContainerDeleteRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ContainerDeleteRequest) ProtoMessage() {}
+
+func (x *ContainerDeleteRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_protobuf_proto_crux_proto_msgTypes[79]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ContainerDeleteRequest.ProtoReflect.Descriptor instead.
+func (*ContainerDeleteRequest) Descriptor() ([]byte, []int) {
+	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{79}
+}
+
+func (x *ContainerDeleteRequest) GetPrefix() string {
+	if x != nil {
+		return x.Prefix
+	}
+	return ""
+}
+
+func (x *ContainerDeleteRequest) GetName() string {
+	if x != nil && x.Name != nil {
+		return *x.Name
+	}
+	return ""
+}
+
 type NodeEventMessage struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -6372,7 +6553,7 @@ type NodeEventMessage struct {
 func (x *NodeEventMessage) Reset() {
 	*x = NodeEventMessage{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[77]
+		mi := &file_protobuf_proto_crux_proto_msgTypes[80]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6385,7 +6566,7 @@ func (x *NodeEventMessage) String() string {
 func (*NodeEventMessage) ProtoMessage() {}
 
 func (x *NodeEventMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[77]
+	mi := &file_protobuf_proto_crux_proto_msgTypes[80]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6398,7 +6579,7 @@ func (x *NodeEventMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NodeEventMessage.ProtoReflect.Descriptor instead.
 func (*NodeEventMessage) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{77}
+	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{80}
 }
 
 func (x *NodeEventMessage) GetId() string {
@@ -6456,7 +6637,7 @@ type WatchContainerStateRequest struct {
 func (x *WatchContainerStateRequest) Reset() {
 	*x = WatchContainerStateRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[78]
+		mi := &file_protobuf_proto_crux_proto_msgTypes[81]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6469,7 +6650,7 @@ func (x *WatchContainerStateRequest) String() string {
 func (*WatchContainerStateRequest) ProtoMessage() {}
 
 func (x *WatchContainerStateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[78]
+	mi := &file_protobuf_proto_crux_proto_msgTypes[81]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6482,7 +6663,7 @@ func (x *WatchContainerStateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WatchContainerStateRequest.ProtoReflect.Descriptor instead.
 func (*WatchContainerStateRequest) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{78}
+	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{81}
 }
 
 func (x *WatchContainerStateRequest) GetAccessedBy() string {
@@ -6520,7 +6701,7 @@ type DeploymentProgressMessage struct {
 func (x *DeploymentProgressMessage) Reset() {
 	*x = DeploymentProgressMessage{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[79]
+		mi := &file_protobuf_proto_crux_proto_msgTypes[82]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6533,7 +6714,7 @@ func (x *DeploymentProgressMessage) String() string {
 func (*DeploymentProgressMessage) ProtoMessage() {}
 
 func (x *DeploymentProgressMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[79]
+	mi := &file_protobuf_proto_crux_proto_msgTypes[82]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6546,7 +6727,7 @@ func (x *DeploymentProgressMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeploymentProgressMessage.ProtoReflect.Descriptor instead.
 func (*DeploymentProgressMessage) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{79}
+	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{82}
 }
 
 func (x *DeploymentProgressMessage) GetId() string {
@@ -6588,7 +6769,7 @@ type InstancesCreatedEventList struct {
 func (x *InstancesCreatedEventList) Reset() {
 	*x = InstancesCreatedEventList{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[80]
+		mi := &file_protobuf_proto_crux_proto_msgTypes[83]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6601,7 +6782,7 @@ func (x *InstancesCreatedEventList) String() string {
 func (*InstancesCreatedEventList) ProtoMessage() {}
 
 func (x *InstancesCreatedEventList) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[80]
+	mi := &file_protobuf_proto_crux_proto_msgTypes[83]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6614,7 +6795,7 @@ func (x *InstancesCreatedEventList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InstancesCreatedEventList.ProtoReflect.Descriptor instead.
 func (*InstancesCreatedEventList) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{80}
+	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{83}
 }
 
 func (x *InstancesCreatedEventList) GetData() []*InstanceResponse {
@@ -6638,7 +6819,7 @@ type DeploymentEditEventMessage struct {
 func (x *DeploymentEditEventMessage) Reset() {
 	*x = DeploymentEditEventMessage{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[81]
+		mi := &file_protobuf_proto_crux_proto_msgTypes[84]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6651,7 +6832,7 @@ func (x *DeploymentEditEventMessage) String() string {
 func (*DeploymentEditEventMessage) ProtoMessage() {}
 
 func (x *DeploymentEditEventMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[81]
+	mi := &file_protobuf_proto_crux_proto_msgTypes[84]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6664,7 +6845,7 @@ func (x *DeploymentEditEventMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeploymentEditEventMessage.ProtoReflect.Descriptor instead.
 func (*DeploymentEditEventMessage) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{81}
+	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{84}
 }
 
 func (m *DeploymentEditEventMessage) GetData() isDeploymentEditEventMessage_Data {
@@ -6719,7 +6900,7 @@ type CreateDeploymentRequest struct {
 func (x *CreateDeploymentRequest) Reset() {
 	*x = CreateDeploymentRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[82]
+		mi := &file_protobuf_proto_crux_proto_msgTypes[85]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6732,7 +6913,7 @@ func (x *CreateDeploymentRequest) String() string {
 func (*CreateDeploymentRequest) ProtoMessage() {}
 
 func (x *CreateDeploymentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[82]
+	mi := &file_protobuf_proto_crux_proto_msgTypes[85]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6745,7 +6926,7 @@ func (x *CreateDeploymentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateDeploymentRequest.ProtoReflect.Descriptor instead.
 func (*CreateDeploymentRequest) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{82}
+	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{85}
 }
 
 func (x *CreateDeploymentRequest) GetAccessedBy() string {
@@ -6797,7 +6978,7 @@ type UpdateDeploymentRequest struct {
 func (x *UpdateDeploymentRequest) Reset() {
 	*x = UpdateDeploymentRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[83]
+		mi := &file_protobuf_proto_crux_proto_msgTypes[86]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6810,7 +6991,7 @@ func (x *UpdateDeploymentRequest) String() string {
 func (*UpdateDeploymentRequest) ProtoMessage() {}
 
 func (x *UpdateDeploymentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[83]
+	mi := &file_protobuf_proto_crux_proto_msgTypes[86]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6823,7 +7004,7 @@ func (x *UpdateDeploymentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateDeploymentRequest.ProtoReflect.Descriptor instead.
 func (*UpdateDeploymentRequest) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{83}
+	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{86}
 }
 
 func (x *UpdateDeploymentRequest) GetId() string {
@@ -6868,7 +7049,7 @@ type PatchDeploymentRequest struct {
 func (x *PatchDeploymentRequest) Reset() {
 	*x = PatchDeploymentRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[84]
+		mi := &file_protobuf_proto_crux_proto_msgTypes[87]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6881,7 +7062,7 @@ func (x *PatchDeploymentRequest) String() string {
 func (*PatchDeploymentRequest) ProtoMessage() {}
 
 func (x *PatchDeploymentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[84]
+	mi := &file_protobuf_proto_crux_proto_msgTypes[87]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6894,7 +7075,7 @@ func (x *PatchDeploymentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PatchDeploymentRequest.ProtoReflect.Descriptor instead.
 func (*PatchDeploymentRequest) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{84}
+	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{87}
 }
 
 func (x *PatchDeploymentRequest) GetId() string {
@@ -6940,7 +7121,7 @@ type InstanceResponse struct {
 func (x *InstanceResponse) Reset() {
 	*x = InstanceResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[85]
+		mi := &file_protobuf_proto_crux_proto_msgTypes[88]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6953,7 +7134,7 @@ func (x *InstanceResponse) String() string {
 func (*InstanceResponse) ProtoMessage() {}
 
 func (x *InstanceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[85]
+	mi := &file_protobuf_proto_crux_proto_msgTypes[88]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6966,7 +7147,7 @@ func (x *InstanceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InstanceResponse.ProtoReflect.Descriptor instead.
 func (*InstanceResponse) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{85}
+	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{88}
 }
 
 func (x *InstanceResponse) GetId() string {
@@ -7017,7 +7198,7 @@ type PatchInstanceRequest struct {
 func (x *PatchInstanceRequest) Reset() {
 	*x = PatchInstanceRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[86]
+		mi := &file_protobuf_proto_crux_proto_msgTypes[89]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -7030,7 +7211,7 @@ func (x *PatchInstanceRequest) String() string {
 func (*PatchInstanceRequest) ProtoMessage() {}
 
 func (x *PatchInstanceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[86]
+	mi := &file_protobuf_proto_crux_proto_msgTypes[89]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7043,7 +7224,7 @@ func (x *PatchInstanceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PatchInstanceRequest.ProtoReflect.Descriptor instead.
 func (*PatchInstanceRequest) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{86}
+	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{89}
 }
 
 func (x *PatchInstanceRequest) GetId() string {
@@ -7078,7 +7259,7 @@ type DeploymentListResponse struct {
 func (x *DeploymentListResponse) Reset() {
 	*x = DeploymentListResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[87]
+		mi := &file_protobuf_proto_crux_proto_msgTypes[90]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -7091,7 +7272,7 @@ func (x *DeploymentListResponse) String() string {
 func (*DeploymentListResponse) ProtoMessage() {}
 
 func (x *DeploymentListResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[87]
+	mi := &file_protobuf_proto_crux_proto_msgTypes[90]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7104,7 +7285,7 @@ func (x *DeploymentListResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeploymentListResponse.ProtoReflect.Descriptor instead.
 func (*DeploymentListResponse) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{87}
+	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{90}
 }
 
 func (x *DeploymentListResponse) GetData() []*DeploymentResponse {
@@ -7136,7 +7317,7 @@ type DeploymentResponse struct {
 func (x *DeploymentResponse) Reset() {
 	*x = DeploymentResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[88]
+		mi := &file_protobuf_proto_crux_proto_msgTypes[91]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -7149,7 +7330,7 @@ func (x *DeploymentResponse) String() string {
 func (*DeploymentResponse) ProtoMessage() {}
 
 func (x *DeploymentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[88]
+	mi := &file_protobuf_proto_crux_proto_msgTypes[91]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7162,7 +7343,7 @@ func (x *DeploymentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeploymentResponse.ProtoReflect.Descriptor instead.
 func (*DeploymentResponse) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{88}
+	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{91}
 }
 
 func (x *DeploymentResponse) GetId() string {
@@ -7260,7 +7441,7 @@ type DeploymentListByVersionResponse struct {
 func (x *DeploymentListByVersionResponse) Reset() {
 	*x = DeploymentListByVersionResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[89]
+		mi := &file_protobuf_proto_crux_proto_msgTypes[92]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -7273,7 +7454,7 @@ func (x *DeploymentListByVersionResponse) String() string {
 func (*DeploymentListByVersionResponse) ProtoMessage() {}
 
 func (x *DeploymentListByVersionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[89]
+	mi := &file_protobuf_proto_crux_proto_msgTypes[92]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7286,7 +7467,7 @@ func (x *DeploymentListByVersionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeploymentListByVersionResponse.ProtoReflect.Descriptor instead.
 func (*DeploymentListByVersionResponse) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{89}
+	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{92}
 }
 
 func (x *DeploymentListByVersionResponse) GetData() []*DeploymentByVersionResponse {
@@ -7314,7 +7495,7 @@ type DeploymentByVersionResponse struct {
 func (x *DeploymentByVersionResponse) Reset() {
 	*x = DeploymentByVersionResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[90]
+		mi := &file_protobuf_proto_crux_proto_msgTypes[93]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -7327,7 +7508,7 @@ func (x *DeploymentByVersionResponse) String() string {
 func (*DeploymentByVersionResponse) ProtoMessage() {}
 
 func (x *DeploymentByVersionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[90]
+	mi := &file_protobuf_proto_crux_proto_msgTypes[93]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7340,7 +7521,7 @@ func (x *DeploymentByVersionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeploymentByVersionResponse.ProtoReflect.Descriptor instead.
 func (*DeploymentByVersionResponse) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{90}
+	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{93}
 }
 
 func (x *DeploymentByVersionResponse) GetId() string {
@@ -7419,7 +7600,7 @@ type DeploymentDetailsResponse struct {
 func (x *DeploymentDetailsResponse) Reset() {
 	*x = DeploymentDetailsResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[91]
+		mi := &file_protobuf_proto_crux_proto_msgTypes[94]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -7432,7 +7613,7 @@ func (x *DeploymentDetailsResponse) String() string {
 func (*DeploymentDetailsResponse) ProtoMessage() {}
 
 func (x *DeploymentDetailsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[91]
+	mi := &file_protobuf_proto_crux_proto_msgTypes[94]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7445,7 +7626,7 @@ func (x *DeploymentDetailsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeploymentDetailsResponse.ProtoReflect.Descriptor instead.
 func (*DeploymentDetailsResponse) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{91}
+	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{94}
 }
 
 func (x *DeploymentDetailsResponse) GetId() string {
@@ -7530,7 +7711,7 @@ type DeploymentEventContainerState struct {
 func (x *DeploymentEventContainerState) Reset() {
 	*x = DeploymentEventContainerState{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[92]
+		mi := &file_protobuf_proto_crux_proto_msgTypes[95]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -7543,7 +7724,7 @@ func (x *DeploymentEventContainerState) String() string {
 func (*DeploymentEventContainerState) ProtoMessage() {}
 
 func (x *DeploymentEventContainerState) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[92]
+	mi := &file_protobuf_proto_crux_proto_msgTypes[95]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7556,7 +7737,7 @@ func (x *DeploymentEventContainerState) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeploymentEventContainerState.ProtoReflect.Descriptor instead.
 func (*DeploymentEventContainerState) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{92}
+	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{95}
 }
 
 func (x *DeploymentEventContainerState) GetInstanceId() string {
@@ -7584,7 +7765,7 @@ type DeploymentEventLog struct {
 func (x *DeploymentEventLog) Reset() {
 	*x = DeploymentEventLog{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[93]
+		mi := &file_protobuf_proto_crux_proto_msgTypes[96]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -7597,7 +7778,7 @@ func (x *DeploymentEventLog) String() string {
 func (*DeploymentEventLog) ProtoMessage() {}
 
 func (x *DeploymentEventLog) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[93]
+	mi := &file_protobuf_proto_crux_proto_msgTypes[96]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7610,7 +7791,7 @@ func (x *DeploymentEventLog) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeploymentEventLog.ProtoReflect.Descriptor instead.
 func (*DeploymentEventLog) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{93}
+	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{96}
 }
 
 func (x *DeploymentEventLog) GetLog() []string {
@@ -7637,7 +7818,7 @@ type DeploymentEventResponse struct {
 func (x *DeploymentEventResponse) Reset() {
 	*x = DeploymentEventResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[94]
+		mi := &file_protobuf_proto_crux_proto_msgTypes[97]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -7650,7 +7831,7 @@ func (x *DeploymentEventResponse) String() string {
 func (*DeploymentEventResponse) ProtoMessage() {}
 
 func (x *DeploymentEventResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[94]
+	mi := &file_protobuf_proto_crux_proto_msgTypes[97]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7663,7 +7844,7 @@ func (x *DeploymentEventResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeploymentEventResponse.ProtoReflect.Descriptor instead.
 func (*DeploymentEventResponse) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{94}
+	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{97}
 }
 
 func (x *DeploymentEventResponse) GetType() DeploymentEventType {
@@ -7742,7 +7923,7 @@ type DeploymentEventListResponse struct {
 func (x *DeploymentEventListResponse) Reset() {
 	*x = DeploymentEventListResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[95]
+		mi := &file_protobuf_proto_crux_proto_msgTypes[98]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -7755,7 +7936,7 @@ func (x *DeploymentEventListResponse) String() string {
 func (*DeploymentEventListResponse) ProtoMessage() {}
 
 func (x *DeploymentEventListResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[95]
+	mi := &file_protobuf_proto_crux_proto_msgTypes[98]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7768,7 +7949,7 @@ func (x *DeploymentEventListResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeploymentEventListResponse.ProtoReflect.Descriptor instead.
 func (*DeploymentEventListResponse) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{95}
+	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{98}
 }
 
 func (x *DeploymentEventListResponse) GetStatus() common.DeploymentStatus {
@@ -7798,7 +7979,7 @@ type DeploymentListSecretsRequest struct {
 func (x *DeploymentListSecretsRequest) Reset() {
 	*x = DeploymentListSecretsRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[96]
+		mi := &file_protobuf_proto_crux_proto_msgTypes[99]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -7811,7 +7992,7 @@ func (x *DeploymentListSecretsRequest) String() string {
 func (*DeploymentListSecretsRequest) ProtoMessage() {}
 
 func (x *DeploymentListSecretsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[96]
+	mi := &file_protobuf_proto_crux_proto_msgTypes[99]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7824,7 +8005,7 @@ func (x *DeploymentListSecretsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeploymentListSecretsRequest.ProtoReflect.Descriptor instead.
 func (*DeploymentListSecretsRequest) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{96}
+	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{99}
 }
 
 func (x *DeploymentListSecretsRequest) GetId() string {
@@ -7864,7 +8045,7 @@ type CreateNotificationRequest struct {
 func (x *CreateNotificationRequest) Reset() {
 	*x = CreateNotificationRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[97]
+		mi := &file_protobuf_proto_crux_proto_msgTypes[100]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -7877,7 +8058,7 @@ func (x *CreateNotificationRequest) String() string {
 func (*CreateNotificationRequest) ProtoMessage() {}
 
 func (x *CreateNotificationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[97]
+	mi := &file_protobuf_proto_crux_proto_msgTypes[100]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7890,7 +8071,7 @@ func (x *CreateNotificationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateNotificationRequest.ProtoReflect.Descriptor instead.
 func (*CreateNotificationRequest) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{97}
+	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{100}
 }
 
 func (x *CreateNotificationRequest) GetAccessedBy() string {
@@ -7947,7 +8128,7 @@ type CreateNotificationResponse struct {
 func (x *CreateNotificationResponse) Reset() {
 	*x = CreateNotificationResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[98]
+		mi := &file_protobuf_proto_crux_proto_msgTypes[101]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -7960,7 +8141,7 @@ func (x *CreateNotificationResponse) String() string {
 func (*CreateNotificationResponse) ProtoMessage() {}
 
 func (x *CreateNotificationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[98]
+	mi := &file_protobuf_proto_crux_proto_msgTypes[101]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7973,7 +8154,7 @@ func (x *CreateNotificationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateNotificationResponse.ProtoReflect.Descriptor instead.
 func (*CreateNotificationResponse) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{98}
+	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{101}
 }
 
 func (x *CreateNotificationResponse) GetId() string {
@@ -8007,7 +8188,7 @@ type UpdateNotificationRequest struct {
 func (x *UpdateNotificationRequest) Reset() {
 	*x = UpdateNotificationRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[99]
+		mi := &file_protobuf_proto_crux_proto_msgTypes[102]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -8020,7 +8201,7 @@ func (x *UpdateNotificationRequest) String() string {
 func (*UpdateNotificationRequest) ProtoMessage() {}
 
 func (x *UpdateNotificationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[99]
+	mi := &file_protobuf_proto_crux_proto_msgTypes[102]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8033,7 +8214,7 @@ func (x *UpdateNotificationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateNotificationRequest.ProtoReflect.Descriptor instead.
 func (*UpdateNotificationRequest) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{99}
+	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{102}
 }
 
 func (x *UpdateNotificationRequest) GetId() string {
@@ -8102,7 +8283,7 @@ type NotificationDetailsResponse struct {
 func (x *NotificationDetailsResponse) Reset() {
 	*x = NotificationDetailsResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[100]
+		mi := &file_protobuf_proto_crux_proto_msgTypes[103]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -8115,7 +8296,7 @@ func (x *NotificationDetailsResponse) String() string {
 func (*NotificationDetailsResponse) ProtoMessage() {}
 
 func (x *NotificationDetailsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[100]
+	mi := &file_protobuf_proto_crux_proto_msgTypes[103]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8128,7 +8309,7 @@ func (x *NotificationDetailsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NotificationDetailsResponse.ProtoReflect.Descriptor instead.
 func (*NotificationDetailsResponse) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{100}
+	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{103}
 }
 
 func (x *NotificationDetailsResponse) GetId() string {
@@ -8197,7 +8378,7 @@ type NotificationResponse struct {
 func (x *NotificationResponse) Reset() {
 	*x = NotificationResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[101]
+		mi := &file_protobuf_proto_crux_proto_msgTypes[104]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -8210,7 +8391,7 @@ func (x *NotificationResponse) String() string {
 func (*NotificationResponse) ProtoMessage() {}
 
 func (x *NotificationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[101]
+	mi := &file_protobuf_proto_crux_proto_msgTypes[104]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8223,7 +8404,7 @@ func (x *NotificationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NotificationResponse.ProtoReflect.Descriptor instead.
 func (*NotificationResponse) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{101}
+	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{104}
 }
 
 func (x *NotificationResponse) GetId() string {
@@ -8286,7 +8467,7 @@ type NotificationListResponse struct {
 func (x *NotificationListResponse) Reset() {
 	*x = NotificationListResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[102]
+		mi := &file_protobuf_proto_crux_proto_msgTypes[105]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -8299,7 +8480,7 @@ func (x *NotificationListResponse) String() string {
 func (*NotificationListResponse) ProtoMessage() {}
 
 func (x *NotificationListResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[102]
+	mi := &file_protobuf_proto_crux_proto_msgTypes[105]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8312,7 +8493,7 @@ func (x *NotificationListResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NotificationListResponse.ProtoReflect.Descriptor instead.
 func (*NotificationListResponse) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{102}
+	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{105}
 }
 
 func (x *NotificationListResponse) GetData() []*NotificationResponse {
@@ -8335,7 +8516,7 @@ type HealthResponse struct {
 func (x *HealthResponse) Reset() {
 	*x = HealthResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[103]
+		mi := &file_protobuf_proto_crux_proto_msgTypes[106]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -8348,7 +8529,7 @@ func (x *HealthResponse) String() string {
 func (*HealthResponse) ProtoMessage() {}
 
 func (x *HealthResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[103]
+	mi := &file_protobuf_proto_crux_proto_msgTypes[106]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8361,7 +8542,7 @@ func (x *HealthResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HealthResponse.ProtoReflect.Descriptor instead.
 func (*HealthResponse) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{103}
+	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{106}
 }
 
 func (x *HealthResponse) GetStatus() ServiceStatus {
@@ -8399,7 +8580,7 @@ type TemplateResponse struct {
 func (x *TemplateResponse) Reset() {
 	*x = TemplateResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[104]
+		mi := &file_protobuf_proto_crux_proto_msgTypes[107]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -8412,7 +8593,7 @@ func (x *TemplateResponse) String() string {
 func (*TemplateResponse) ProtoMessage() {}
 
 func (x *TemplateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[104]
+	mi := &file_protobuf_proto_crux_proto_msgTypes[107]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8425,7 +8606,7 @@ func (x *TemplateResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TemplateResponse.ProtoReflect.Descriptor instead.
 func (*TemplateResponse) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{104}
+	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{107}
 }
 
 func (x *TemplateResponse) GetId() string {
@@ -8460,7 +8641,7 @@ type TemplateListResponse struct {
 func (x *TemplateListResponse) Reset() {
 	*x = TemplateListResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[105]
+		mi := &file_protobuf_proto_crux_proto_msgTypes[108]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -8473,7 +8654,7 @@ func (x *TemplateListResponse) String() string {
 func (*TemplateListResponse) ProtoMessage() {}
 
 func (x *TemplateListResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[105]
+	mi := &file_protobuf_proto_crux_proto_msgTypes[108]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8486,7 +8667,7 @@ func (x *TemplateListResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TemplateListResponse.ProtoReflect.Descriptor instead.
 func (*TemplateListResponse) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{105}
+	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{108}
 }
 
 func (x *TemplateListResponse) GetData() []*TemplateResponse {
@@ -8511,7 +8692,7 @@ type CreateProductFromTemplateRequest struct {
 func (x *CreateProductFromTemplateRequest) Reset() {
 	*x = CreateProductFromTemplateRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_protobuf_proto_crux_proto_msgTypes[106]
+		mi := &file_protobuf_proto_crux_proto_msgTypes[109]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -8524,7 +8705,7 @@ func (x *CreateProductFromTemplateRequest) String() string {
 func (*CreateProductFromTemplateRequest) ProtoMessage() {}
 
 func (x *CreateProductFromTemplateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_protobuf_proto_crux_proto_msgTypes[106]
+	mi := &file_protobuf_proto_crux_proto_msgTypes[109]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8537,7 +8718,7 @@ func (x *CreateProductFromTemplateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateProductFromTemplateRequest.ProtoReflect.Descriptor instead.
 func (*CreateProductFromTemplateRequest) Descriptor() ([]byte, []int) {
-	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{106}
+	return file_protobuf_proto_crux_proto_rawDescGZIP(), []int{109}
 }
 
 func (x *CreateProductFromTemplateRequest) GetId() string {
@@ -9449,7 +9630,30 @@ var file_protobuf_proto_crux_proto_rawDesc = []byte{
 	0x70, 0x52, 0x08, 0x65, 0x78, 0x70, 0x69, 0x72, 0x65, 0x41, 0x74, 0x22, 0x2e, 0x0a, 0x12, 0x4e,
 	0x6f, 0x64, 0x65, 0x53, 0x63, 0x72, 0x69, 0x70, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
 	0x65, 0x12, 0x18, 0x0a, 0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x18, 0x64, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x22, 0xa4, 0x02, 0x0a, 0x10,
+	0x28, 0x09, 0x52, 0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x22, 0x88, 0x01, 0x0a, 0x1b,
+	0x4e, 0x6f, 0x64, 0x65, 0x43, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x43, 0x6f, 0x6d,
+	0x6d, 0x61, 0x6e, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x0e, 0x0a, 0x02, 0x69,
+	0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12, 0x1e, 0x0a, 0x0a, 0x61,
+	0x63, 0x63, 0x65, 0x73, 0x73, 0x65, 0x64, 0x42, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x0a, 0x61, 0x63, 0x63, 0x65, 0x73, 0x73, 0x65, 0x64, 0x42, 0x79, 0x12, 0x39, 0x0a, 0x07, 0x63,
+	0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x18, 0x64, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1f, 0x2e, 0x63,
+	0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x43, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x43,
+	0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x52, 0x07, 0x63,
+	0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x22, 0x8e, 0x01, 0x0a, 0x1b, 0x4e, 0x6f, 0x64, 0x65, 0x44,
+	0x65, 0x6c, 0x65, 0x74, 0x65, 0x43, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x73, 0x52,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12, 0x1e, 0x0a, 0x0a, 0x61, 0x63, 0x63, 0x65, 0x73, 0x73,
+	0x65, 0x64, 0x42, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x61, 0x63, 0x63, 0x65,
+	0x73, 0x73, 0x65, 0x64, 0x42, 0x79, 0x12, 0x3f, 0x0a, 0x0a, 0x63, 0x6f, 0x6e, 0x74, 0x61, 0x69,
+	0x6e, 0x65, 0x72, 0x73, 0x18, 0x64, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1f, 0x2e, 0x63, 0x6f, 0x6d,
+	0x6d, 0x6f, 0x6e, 0x2e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x43, 0x6f, 0x6e, 0x74, 0x61, 0x69,
+	0x6e, 0x65, 0x72, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x52, 0x0a, 0x63, 0x6f, 0x6e,
+	0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x73, 0x22, 0x52, 0x0a, 0x16, 0x43, 0x6f, 0x6e, 0x74, 0x61,
+	0x69, 0x6e, 0x65, 0x72, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
+	0x74, 0x12, 0x16, 0x0a, 0x06, 0x70, 0x72, 0x65, 0x66, 0x69, 0x78, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x06, 0x70, 0x72, 0x65, 0x66, 0x69, 0x78, 0x12, 0x17, 0x0a, 0x04, 0x6e, 0x61, 0x6d,
+	0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x48, 0x00, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x88,
+	0x01, 0x01, 0x42, 0x07, 0x0a, 0x05, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0xa4, 0x02, 0x0a, 0x10,
 	0x4e, 0x6f, 0x64, 0x65, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
 	0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64,
 	0x12, 0x32, 0x0a, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x18, 0x64, 0x20, 0x01, 0x28, 0x0e,
@@ -9906,7 +10110,7 @@ var file_protobuf_proto_crux_proto_rawDesc = []byte{
 	0x12, 0x0f, 0x2e, 0x63, 0x72, 0x75, 0x78, 0x2e, 0x49, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
 	0x74, 0x1a, 0x1d, 0x2e, 0x63, 0x72, 0x75, 0x78, 0x2e, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72,
 	0x79, 0x44, 0x65, 0x74, 0x61, 0x69, 0x6c, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
-	0x32, 0xf1, 0x05, 0x0a, 0x08, 0x43, 0x72, 0x75, 0x78, 0x4e, 0x6f, 0x64, 0x65, 0x12, 0x37, 0x0a,
+	0x32, 0x81, 0x07, 0x0a, 0x08, 0x43, 0x72, 0x75, 0x78, 0x4e, 0x6f, 0x64, 0x65, 0x12, 0x37, 0x0a,
 	0x08, 0x47, 0x65, 0x74, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x12, 0x13, 0x2e, 0x63, 0x72, 0x75, 0x78,
 	0x2e, 0x41, 0x63, 0x63, 0x65, 0x73, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16,
 	0x2e, 0x63, 0x72, 0x75, 0x78, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x65,
@@ -9942,6 +10146,15 @@ var file_protobuf_proto_crux_proto_rawDesc = []byte{
 	0x6d, 0x70, 0x74, 0x79, 0x12, 0x31, 0x0a, 0x0f, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x4e, 0x6f,
 	0x64, 0x65, 0x41, 0x67, 0x65, 0x6e, 0x74, 0x12, 0x0f, 0x2e, 0x63, 0x72, 0x75, 0x78, 0x2e, 0x49,
 	0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0d, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f,
+	0x6e, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x12, 0x48, 0x0a, 0x14, 0x53, 0x65, 0x6e, 0x64, 0x43,
+	0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x12,
+	0x21, 0x2e, 0x63, 0x72, 0x75, 0x78, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x43, 0x6f, 0x6e, 0x74, 0x61,
+	0x69, 0x6e, 0x65, 0x72, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x1a, 0x0d, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x45, 0x6d, 0x70, 0x74,
+	0x79, 0x12, 0x44, 0x0a, 0x10, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x43, 0x6f, 0x6e, 0x74, 0x61,
+	0x69, 0x6e, 0x65, 0x72, 0x73, 0x12, 0x21, 0x2e, 0x63, 0x72, 0x75, 0x78, 0x2e, 0x4e, 0x6f, 0x64,
+	0x65, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x43, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72,
+	0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0d, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f,
 	0x6e, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x12, 0x4d, 0x0a, 0x19, 0x53, 0x75, 0x62, 0x73, 0x63,
 	0x72, 0x69, 0x62, 0x65, 0x4e, 0x6f, 0x64, 0x65, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x43, 0x68, 0x61,
 	0x6e, 0x6e, 0x65, 0x6c, 0x12, 0x16, 0x2e, 0x63, 0x72, 0x75, 0x78, 0x2e, 0x53, 0x65, 0x72, 0x76,
@@ -10203,7 +10416,7 @@ func file_protobuf_proto_crux_proto_rawDescGZIP() []byte {
 }
 
 var file_protobuf_proto_crux_proto_enumTypes = make([]protoimpl.EnumInfo, 12)
-var file_protobuf_proto_crux_proto_msgTypes = make([]protoimpl.MessageInfo, 107)
+var file_protobuf_proto_crux_proto_msgTypes = make([]protoimpl.MessageInfo, 110)
 var file_protobuf_proto_crux_proto_goTypes = []interface{}{
 	(UserRole)(0),                            // 0: crux.UserRole
 	(UserStatus)(0),                          // 1: crux.UserStatus
@@ -10294,63 +10507,68 @@ var file_protobuf_proto_crux_proto_goTypes = []interface{}{
 	(*GenerateScriptRequest)(nil),            // 86: crux.GenerateScriptRequest
 	(*NodeInstallResponse)(nil),              // 87: crux.NodeInstallResponse
 	(*NodeScriptResponse)(nil),               // 88: crux.NodeScriptResponse
-	(*NodeEventMessage)(nil),                 // 89: crux.NodeEventMessage
-	(*WatchContainerStateRequest)(nil),       // 90: crux.WatchContainerStateRequest
-	(*DeploymentProgressMessage)(nil),        // 91: crux.DeploymentProgressMessage
-	(*InstancesCreatedEventList)(nil),        // 92: crux.InstancesCreatedEventList
-	(*DeploymentEditEventMessage)(nil),       // 93: crux.DeploymentEditEventMessage
-	(*CreateDeploymentRequest)(nil),          // 94: crux.CreateDeploymentRequest
-	(*UpdateDeploymentRequest)(nil),          // 95: crux.UpdateDeploymentRequest
-	(*PatchDeploymentRequest)(nil),           // 96: crux.PatchDeploymentRequest
-	(*InstanceResponse)(nil),                 // 97: crux.InstanceResponse
-	(*PatchInstanceRequest)(nil),             // 98: crux.PatchInstanceRequest
-	(*DeploymentListResponse)(nil),           // 99: crux.DeploymentListResponse
-	(*DeploymentResponse)(nil),               // 100: crux.DeploymentResponse
-	(*DeploymentListByVersionResponse)(nil),  // 101: crux.DeploymentListByVersionResponse
-	(*DeploymentByVersionResponse)(nil),      // 102: crux.DeploymentByVersionResponse
-	(*DeploymentDetailsResponse)(nil),        // 103: crux.DeploymentDetailsResponse
-	(*DeploymentEventContainerState)(nil),    // 104: crux.DeploymentEventContainerState
-	(*DeploymentEventLog)(nil),               // 105: crux.DeploymentEventLog
-	(*DeploymentEventResponse)(nil),          // 106: crux.DeploymentEventResponse
-	(*DeploymentEventListResponse)(nil),      // 107: crux.DeploymentEventListResponse
-	(*DeploymentListSecretsRequest)(nil),     // 108: crux.DeploymentListSecretsRequest
-	(*CreateNotificationRequest)(nil),        // 109: crux.CreateNotificationRequest
-	(*CreateNotificationResponse)(nil),       // 110: crux.CreateNotificationResponse
-	(*UpdateNotificationRequest)(nil),        // 111: crux.UpdateNotificationRequest
-	(*NotificationDetailsResponse)(nil),      // 112: crux.NotificationDetailsResponse
-	(*NotificationResponse)(nil),             // 113: crux.NotificationResponse
-	(*NotificationListResponse)(nil),         // 114: crux.NotificationListResponse
-	(*HealthResponse)(nil),                   // 115: crux.HealthResponse
-	(*TemplateResponse)(nil),                 // 116: crux.TemplateResponse
-	(*TemplateListResponse)(nil),             // 117: crux.TemplateListResponse
-	(*CreateProductFromTemplateRequest)(nil), // 118: crux.CreateProductFromTemplateRequest
-	(*timestamppb.Timestamp)(nil),            // 119: google.protobuf.Timestamp
-	(*common.UniqueKey)(nil),                 // 120: common.UniqueKey
-	(common.DriverType)(0),                   // 121: common.DriverType
-	(common.VolumeType)(0),                   // 122: common.VolumeType
-	(common.RestartPolicy)(0),                // 123: common.RestartPolicy
-	(common.NetworkMode)(0),                  // 124: common.NetworkMode
-	(common.DeploymentStrategy)(0),           // 125: common.DeploymentStrategy
-	(*common.HealthCheckConfig)(nil),         // 126: common.HealthCheckConfig
-	(*common.ResourceConfig)(nil),            // 127: common.ResourceConfig
-	(common.ExposeStrategy)(0),               // 128: common.ExposeStrategy
-	(*common.Ingress)(nil),                   // 129: common.Ingress
-	(*common.ConfigContainer)(nil),           // 130: common.ConfigContainer
-	(common.DeploymentStatus)(0),             // 131: common.DeploymentStatus
-	(*common.InstanceDeploymentItem)(nil),    // 132: common.InstanceDeploymentItem
-	(common.ContainerState)(0),               // 133: common.ContainerState
-	(*common.Empty)(nil),                     // 134: common.Empty
-	(*common.ContainerStateListMessage)(nil), // 135: common.ContainerStateListMessage
-	(*common.ListSecretsResponse)(nil),       // 136: common.ListSecretsResponse
+	(*NodeContainerCommandRequest)(nil),      // 89: crux.NodeContainerCommandRequest
+	(*NodeDeleteContainersRequest)(nil),      // 90: crux.NodeDeleteContainersRequest
+	(*ContainerDeleteRequest)(nil),           // 91: crux.ContainerDeleteRequest
+	(*NodeEventMessage)(nil),                 // 92: crux.NodeEventMessage
+	(*WatchContainerStateRequest)(nil),       // 93: crux.WatchContainerStateRequest
+	(*DeploymentProgressMessage)(nil),        // 94: crux.DeploymentProgressMessage
+	(*InstancesCreatedEventList)(nil),        // 95: crux.InstancesCreatedEventList
+	(*DeploymentEditEventMessage)(nil),       // 96: crux.DeploymentEditEventMessage
+	(*CreateDeploymentRequest)(nil),          // 97: crux.CreateDeploymentRequest
+	(*UpdateDeploymentRequest)(nil),          // 98: crux.UpdateDeploymentRequest
+	(*PatchDeploymentRequest)(nil),           // 99: crux.PatchDeploymentRequest
+	(*InstanceResponse)(nil),                 // 100: crux.InstanceResponse
+	(*PatchInstanceRequest)(nil),             // 101: crux.PatchInstanceRequest
+	(*DeploymentListResponse)(nil),           // 102: crux.DeploymentListResponse
+	(*DeploymentResponse)(nil),               // 103: crux.DeploymentResponse
+	(*DeploymentListByVersionResponse)(nil),  // 104: crux.DeploymentListByVersionResponse
+	(*DeploymentByVersionResponse)(nil),      // 105: crux.DeploymentByVersionResponse
+	(*DeploymentDetailsResponse)(nil),        // 106: crux.DeploymentDetailsResponse
+	(*DeploymentEventContainerState)(nil),    // 107: crux.DeploymentEventContainerState
+	(*DeploymentEventLog)(nil),               // 108: crux.DeploymentEventLog
+	(*DeploymentEventResponse)(nil),          // 109: crux.DeploymentEventResponse
+	(*DeploymentEventListResponse)(nil),      // 110: crux.DeploymentEventListResponse
+	(*DeploymentListSecretsRequest)(nil),     // 111: crux.DeploymentListSecretsRequest
+	(*CreateNotificationRequest)(nil),        // 112: crux.CreateNotificationRequest
+	(*CreateNotificationResponse)(nil),       // 113: crux.CreateNotificationResponse
+	(*UpdateNotificationRequest)(nil),        // 114: crux.UpdateNotificationRequest
+	(*NotificationDetailsResponse)(nil),      // 115: crux.NotificationDetailsResponse
+	(*NotificationResponse)(nil),             // 116: crux.NotificationResponse
+	(*NotificationListResponse)(nil),         // 117: crux.NotificationListResponse
+	(*HealthResponse)(nil),                   // 118: crux.HealthResponse
+	(*TemplateResponse)(nil),                 // 119: crux.TemplateResponse
+	(*TemplateListResponse)(nil),             // 120: crux.TemplateListResponse
+	(*CreateProductFromTemplateRequest)(nil), // 121: crux.CreateProductFromTemplateRequest
+	(*timestamppb.Timestamp)(nil),            // 122: google.protobuf.Timestamp
+	(*common.UniqueKey)(nil),                 // 123: common.UniqueKey
+	(common.DriverType)(0),                   // 124: common.DriverType
+	(common.VolumeType)(0),                   // 125: common.VolumeType
+	(common.RestartPolicy)(0),                // 126: common.RestartPolicy
+	(common.NetworkMode)(0),                  // 127: common.NetworkMode
+	(common.DeploymentStrategy)(0),           // 128: common.DeploymentStrategy
+	(*common.HealthCheckConfig)(nil),         // 129: common.HealthCheckConfig
+	(*common.ResourceConfig)(nil),            // 130: common.ResourceConfig
+	(common.ExposeStrategy)(0),               // 131: common.ExposeStrategy
+	(*common.Ingress)(nil),                   // 132: common.Ingress
+	(*common.ConfigContainer)(nil),           // 133: common.ConfigContainer
+	(*common.ContainerCommandRequest)(nil),   // 134: common.ContainerCommandRequest
+	(*common.DeleteContainersRequest)(nil),   // 135: common.DeleteContainersRequest
+	(common.DeploymentStatus)(0),             // 136: common.DeploymentStatus
+	(*common.InstanceDeploymentItem)(nil),    // 137: common.InstanceDeploymentItem
+	(common.ContainerState)(0),               // 138: common.ContainerState
+	(*common.Empty)(nil),                     // 139: common.Empty
+	(*common.ContainerStateListMessage)(nil), // 140: common.ContainerStateListMessage
+	(*common.ListSecretsResponse)(nil),       // 141: common.ListSecretsResponse
 }
 var file_protobuf_proto_crux_proto_depIdxs = []int32{
-	119, // 0: crux.AuditResponse.createdAt:type_name -> google.protobuf.Timestamp
-	119, // 1: crux.AuditResponse.updatedAt:type_name -> google.protobuf.Timestamp
-	119, // 2: crux.CreateEntityResponse.createdAt:type_name -> google.protobuf.Timestamp
-	119, // 3: crux.UpdateEntityResponse.updatedAt:type_name -> google.protobuf.Timestamp
-	119, // 4: crux.AuditLogListRequest.createdFrom:type_name -> google.protobuf.Timestamp
-	119, // 5: crux.AuditLogListRequest.createdTo:type_name -> google.protobuf.Timestamp
-	119, // 6: crux.AuditLogResponse.createdAt:type_name -> google.protobuf.Timestamp
+	122, // 0: crux.AuditResponse.createdAt:type_name -> google.protobuf.Timestamp
+	122, // 1: crux.AuditResponse.updatedAt:type_name -> google.protobuf.Timestamp
+	122, // 2: crux.CreateEntityResponse.createdAt:type_name -> google.protobuf.Timestamp
+	122, // 3: crux.UpdateEntityResponse.updatedAt:type_name -> google.protobuf.Timestamp
+	122, // 4: crux.AuditLogListRequest.createdFrom:type_name -> google.protobuf.Timestamp
+	122, // 5: crux.AuditLogListRequest.createdTo:type_name -> google.protobuf.Timestamp
+	122, // 6: crux.AuditLogResponse.createdAt:type_name -> google.protobuf.Timestamp
 	19,  // 7: crux.AuditLogListResponse.data:type_name -> crux.AuditLogResponse
 	0,   // 8: crux.UpdateUserRoleInTeamRequest.role:type_name -> crux.UserRole
 	29,  // 9: crux.UserMetaResponse.user:type_name -> crux.ActiveTeamUser
@@ -10365,7 +10583,7 @@ var file_protobuf_proto_crux_proto_depIdxs = []int32{
 	33,  // 18: crux.AllTeamsResponse.data:type_name -> crux.TeamWithStatsResponse
 	0,   // 19: crux.UserResponse.role:type_name -> crux.UserRole
 	1,   // 20: crux.UserResponse.status:type_name -> crux.UserStatus
-	119, // 21: crux.UserResponse.lastLogin:type_name -> google.protobuf.Timestamp
+	122, // 21: crux.UserResponse.lastLogin:type_name -> google.protobuf.Timestamp
 	14,  // 22: crux.ProductDetailsReponse.audit:type_name -> crux.AuditResponse
 	2,   // 23: crux.ProductDetailsReponse.type:type_name -> crux.ProductType
 	54,  // 24: crux.ProductDetailsReponse.versions:type_name -> crux.VersionResponse
@@ -10401,43 +10619,43 @@ var file_protobuf_proto_crux_proto_depIdxs = []int32{
 	14,  // 54: crux.VersionDetailsResponse.audit:type_name -> crux.AuditResponse
 	3,   // 55: crux.VersionDetailsResponse.type:type_name -> crux.VersionType
 	75,  // 56: crux.VersionDetailsResponse.images:type_name -> crux.ImageResponse
-	102, // 57: crux.VersionDetailsResponse.deployments:type_name -> crux.DeploymentByVersionResponse
+	105, // 57: crux.VersionDetailsResponse.deployments:type_name -> crux.DeploymentByVersionResponse
 	58,  // 58: crux.InitContainer.volumes:type_name -> crux.VolumeLink
-	120, // 59: crux.InitContainer.command:type_name -> common.UniqueKey
-	120, // 60: crux.InitContainer.args:type_name -> common.UniqueKey
+	123, // 59: crux.InitContainer.command:type_name -> common.UniqueKey
+	123, // 60: crux.InitContainer.args:type_name -> common.UniqueKey
 	67,  // 61: crux.InitContainer.environment:type_name -> crux.UniqueKeyValue
 	67,  // 62: crux.ImportContainer.environment:type_name -> crux.UniqueKeyValue
-	121, // 63: crux.LogConfig.driver:type_name -> common.DriverType
+	124, // 63: crux.LogConfig.driver:type_name -> common.DriverType
 	67,  // 64: crux.LogConfig.options:type_name -> crux.UniqueKeyValue
 	63,  // 65: crux.PortRangeBinding.internal:type_name -> crux.PortRange
 	63,  // 66: crux.PortRangeBinding.external:type_name -> crux.PortRange
-	122, // 67: crux.Volume.type:type_name -> common.VolumeType
-	120, // 68: crux.KeyList.data:type_name -> common.UniqueKey
+	125, // 67: crux.Volume.type:type_name -> common.VolumeType
+	123, // 68: crux.KeyList.data:type_name -> common.UniqueKey
 	67,  // 69: crux.KeyValueList.data:type_name -> crux.UniqueKeyValue
 	67,  // 70: crux.Marker.deployment:type_name -> crux.UniqueKeyValue
 	67,  // 71: crux.Marker.service:type_name -> crux.UniqueKeyValue
 	67,  // 72: crux.Marker.ingress:type_name -> crux.UniqueKeyValue
 	61,  // 73: crux.DagentContainerConfig.logConfig:type_name -> crux.LogConfig
-	123, // 74: crux.DagentContainerConfig.restartPolicy:type_name -> common.RestartPolicy
-	124, // 75: crux.DagentContainerConfig.networkMode:type_name -> common.NetworkMode
-	120, // 76: crux.DagentContainerConfig.networks:type_name -> common.UniqueKey
+	126, // 74: crux.DagentContainerConfig.restartPolicy:type_name -> common.RestartPolicy
+	127, // 75: crux.DagentContainerConfig.networkMode:type_name -> common.NetworkMode
+	123, // 76: crux.DagentContainerConfig.networks:type_name -> common.UniqueKey
 	67,  // 77: crux.DagentContainerConfig.labels:type_name -> crux.UniqueKeyValue
-	125, // 78: crux.CraneContainerConfig.deploymentStatregy:type_name -> common.DeploymentStrategy
-	126, // 79: crux.CraneContainerConfig.healthCheckConfig:type_name -> common.HealthCheckConfig
-	127, // 80: crux.CraneContainerConfig.resourceConfig:type_name -> common.ResourceConfig
+	128, // 78: crux.CraneContainerConfig.deploymentStatregy:type_name -> common.DeploymentStrategy
+	129, // 79: crux.CraneContainerConfig.healthCheckConfig:type_name -> common.HealthCheckConfig
+	130, // 80: crux.CraneContainerConfig.resourceConfig:type_name -> common.ResourceConfig
 	70,  // 81: crux.CraneContainerConfig.annotations:type_name -> crux.Marker
 	70,  // 82: crux.CraneContainerConfig.labels:type_name -> crux.Marker
-	120, // 83: crux.CraneContainerConfig.customHeaders:type_name -> common.UniqueKey
+	123, // 83: crux.CraneContainerConfig.customHeaders:type_name -> common.UniqueKey
 	67,  // 84: crux.CraneContainerConfig.extraLBAnnotations:type_name -> crux.UniqueKeyValue
-	128, // 85: crux.CommonContainerConfig.expose:type_name -> common.ExposeStrategy
-	129, // 86: crux.CommonContainerConfig.ingress:type_name -> common.Ingress
-	130, // 87: crux.CommonContainerConfig.configContainer:type_name -> common.ConfigContainer
+	131, // 85: crux.CommonContainerConfig.expose:type_name -> common.ExposeStrategy
+	132, // 86: crux.CommonContainerConfig.ingress:type_name -> common.Ingress
+	133, // 87: crux.CommonContainerConfig.configContainer:type_name -> common.ConfigContainer
 	60,  // 88: crux.CommonContainerConfig.importContainer:type_name -> crux.ImportContainer
 	62,  // 89: crux.CommonContainerConfig.ports:type_name -> crux.Port
 	64,  // 90: crux.CommonContainerConfig.portRanges:type_name -> crux.PortRangeBinding
 	65,  // 91: crux.CommonContainerConfig.volumes:type_name -> crux.Volume
-	120, // 92: crux.CommonContainerConfig.commands:type_name -> common.UniqueKey
-	120, // 93: crux.CommonContainerConfig.args:type_name -> common.UniqueKey
+	123, // 92: crux.CommonContainerConfig.commands:type_name -> common.UniqueKey
+	123, // 93: crux.CommonContainerConfig.args:type_name -> common.UniqueKey
 	67,  // 94: crux.CommonContainerConfig.environment:type_name -> crux.UniqueKeyValue
 	68,  // 95: crux.CommonContainerConfig.secrets:type_name -> crux.UniqueSecretKeyValue
 	59,  // 96: crux.CommonContainerConfig.initContainers:type_name -> crux.InitContainer
@@ -10446,223 +10664,229 @@ var file_protobuf_proto_crux_proto_depIdxs = []int32{
 	72,  // 99: crux.ContainerConfig.crane:type_name -> crux.CraneContainerConfig
 	67,  // 100: crux.ContainerConfig.capabilities:type_name -> crux.UniqueKeyValue
 	74,  // 101: crux.ImageResponse.config:type_name -> crux.ContainerConfig
-	119, // 102: crux.ImageResponse.createdAt:type_name -> google.protobuf.Timestamp
+	122, // 102: crux.ImageResponse.createdAt:type_name -> google.protobuf.Timestamp
 	75,  // 103: crux.ImageListResponse.data:type_name -> crux.ImageResponse
 	78,  // 104: crux.AddImagesToVersionRequest.images:type_name -> crux.RegistryImages
 	74,  // 105: crux.PatchImageRequest.config:type_name -> crux.ContainerConfig
 	14,  // 106: crux.NodeResponse.audit:type_name -> crux.AuditResponse
 	6,   // 107: crux.NodeResponse.status:type_name -> crux.NodeConnectionStatus
-	119, // 108: crux.NodeResponse.connectedAt:type_name -> google.protobuf.Timestamp
+	122, // 108: crux.NodeResponse.connectedAt:type_name -> google.protobuf.Timestamp
 	7,   // 109: crux.NodeResponse.type:type_name -> crux.NodeType
 	14,  // 110: crux.NodeDetailsResponse.audit:type_name -> crux.AuditResponse
 	6,   // 111: crux.NodeDetailsResponse.status:type_name -> crux.NodeConnectionStatus
-	119, // 112: crux.NodeDetailsResponse.connectedAt:type_name -> google.protobuf.Timestamp
+	122, // 112: crux.NodeDetailsResponse.connectedAt:type_name -> google.protobuf.Timestamp
 	87,  // 113: crux.NodeDetailsResponse.install:type_name -> crux.NodeInstallResponse
 	88,  // 114: crux.NodeDetailsResponse.script:type_name -> crux.NodeScriptResponse
 	7,   // 115: crux.NodeDetailsResponse.type:type_name -> crux.NodeType
 	81,  // 116: crux.NodeListResponse.data:type_name -> crux.NodeResponse
 	7,   // 117: crux.GenerateScriptRequest.type:type_name -> crux.NodeType
-	119, // 118: crux.NodeInstallResponse.expireAt:type_name -> google.protobuf.Timestamp
-	6,   // 119: crux.NodeEventMessage.status:type_name -> crux.NodeConnectionStatus
-	119, // 120: crux.NodeEventMessage.connectedAt:type_name -> google.protobuf.Timestamp
-	131, // 121: crux.DeploymentProgressMessage.status:type_name -> common.DeploymentStatus
-	132, // 122: crux.DeploymentProgressMessage.instance:type_name -> common.InstanceDeploymentItem
-	97,  // 123: crux.InstancesCreatedEventList.data:type_name -> crux.InstanceResponse
-	92,  // 124: crux.DeploymentEditEventMessage.instancesCreated:type_name -> crux.InstancesCreatedEventList
-	69,  // 125: crux.PatchDeploymentRequest.environment:type_name -> crux.KeyValueList
-	98,  // 126: crux.PatchDeploymentRequest.instance:type_name -> crux.PatchInstanceRequest
-	14,  // 127: crux.InstanceResponse.audit:type_name -> crux.AuditResponse
-	75,  // 128: crux.InstanceResponse.image:type_name -> crux.ImageResponse
-	133, // 129: crux.InstanceResponse.state:type_name -> common.ContainerState
-	74,  // 130: crux.InstanceResponse.config:type_name -> crux.ContainerConfig
-	74,  // 131: crux.PatchInstanceRequest.config:type_name -> crux.ContainerConfig
-	100, // 132: crux.DeploymentListResponse.data:type_name -> crux.DeploymentResponse
-	131, // 133: crux.DeploymentResponse.status:type_name -> common.DeploymentStatus
-	119, // 134: crux.DeploymentResponse.updatedAt:type_name -> google.protobuf.Timestamp
-	3,   // 135: crux.DeploymentResponse.versionType:type_name -> crux.VersionType
-	102, // 136: crux.DeploymentListByVersionResponse.data:type_name -> crux.DeploymentByVersionResponse
-	14,  // 137: crux.DeploymentByVersionResponse.audit:type_name -> crux.AuditResponse
-	131, // 138: crux.DeploymentByVersionResponse.status:type_name -> common.DeploymentStatus
-	6,   // 139: crux.DeploymentByVersionResponse.nodeStatus:type_name -> crux.NodeConnectionStatus
-	14,  // 140: crux.DeploymentDetailsResponse.audit:type_name -> crux.AuditResponse
-	67,  // 141: crux.DeploymentDetailsResponse.environment:type_name -> crux.UniqueKeyValue
-	131, // 142: crux.DeploymentDetailsResponse.status:type_name -> common.DeploymentStatus
-	97,  // 143: crux.DeploymentDetailsResponse.instances:type_name -> crux.InstanceResponse
-	133, // 144: crux.DeploymentEventContainerState.state:type_name -> common.ContainerState
-	8,   // 145: crux.DeploymentEventResponse.type:type_name -> crux.DeploymentEventType
-	119, // 146: crux.DeploymentEventResponse.createdAt:type_name -> google.protobuf.Timestamp
-	105, // 147: crux.DeploymentEventResponse.log:type_name -> crux.DeploymentEventLog
-	131, // 148: crux.DeploymentEventResponse.deploymentStatus:type_name -> common.DeploymentStatus
-	104, // 149: crux.DeploymentEventResponse.containerStatus:type_name -> crux.DeploymentEventContainerState
-	131, // 150: crux.DeploymentEventListResponse.status:type_name -> common.DeploymentStatus
-	106, // 151: crux.DeploymentEventListResponse.data:type_name -> crux.DeploymentEventResponse
-	9,   // 152: crux.CreateNotificationRequest.type:type_name -> crux.NotificationType
-	10,  // 153: crux.CreateNotificationRequest.events:type_name -> crux.NotificationEventType
-	9,   // 154: crux.UpdateNotificationRequest.type:type_name -> crux.NotificationType
-	10,  // 155: crux.UpdateNotificationRequest.events:type_name -> crux.NotificationEventType
-	14,  // 156: crux.NotificationDetailsResponse.audit:type_name -> crux.AuditResponse
-	9,   // 157: crux.NotificationDetailsResponse.type:type_name -> crux.NotificationType
-	10,  // 158: crux.NotificationDetailsResponse.events:type_name -> crux.NotificationEventType
-	14,  // 159: crux.NotificationResponse.audit:type_name -> crux.AuditResponse
-	9,   // 160: crux.NotificationResponse.type:type_name -> crux.NotificationType
-	10,  // 161: crux.NotificationResponse.events:type_name -> crux.NotificationEventType
-	113, // 162: crux.NotificationListResponse.data:type_name -> crux.NotificationResponse
-	11,  // 163: crux.HealthResponse.status:type_name -> crux.ServiceStatus
-	116, // 164: crux.TemplateListResponse.data:type_name -> crux.TemplateResponse
-	2,   // 165: crux.CreateProductFromTemplateRequest.type:type_name -> crux.ProductType
-	27,  // 166: crux.CruxProduct.GetProducts:input_type -> crux.AccessRequest
-	40,  // 167: crux.CruxProduct.CreateProduct:input_type -> crux.CreateProductRequest
-	41,  // 168: crux.CruxProduct.UpdateProduct:input_type -> crux.UpdateProductRequest
-	13,  // 169: crux.CruxProduct.DeleteProduct:input_type -> crux.IdRequest
-	13,  // 170: crux.CruxProduct.GetProductDetails:input_type -> crux.IdRequest
-	27,  // 171: crux.CruxRegistry.GetRegistries:input_type -> crux.AccessRequest
-	49,  // 172: crux.CruxRegistry.CreateRegistry:input_type -> crux.CreateRegistryRequest
-	50,  // 173: crux.CruxRegistry.UpdateRegistry:input_type -> crux.UpdateRegistryRequest
-	13,  // 174: crux.CruxRegistry.DeleteRegistry:input_type -> crux.IdRequest
-	13,  // 175: crux.CruxRegistry.GetRegistryDetails:input_type -> crux.IdRequest
-	27,  // 176: crux.CruxNode.GetNodes:input_type -> crux.AccessRequest
-	84,  // 177: crux.CruxNode.CreateNode:input_type -> crux.CreateNodeRequest
-	85,  // 178: crux.CruxNode.UpdateNode:input_type -> crux.UpdateNodeRequest
-	13,  // 179: crux.CruxNode.DeleteNode:input_type -> crux.IdRequest
-	13,  // 180: crux.CruxNode.GetNodeDetails:input_type -> crux.IdRequest
-	86,  // 181: crux.CruxNode.GenerateScript:input_type -> crux.GenerateScriptRequest
-	12,  // 182: crux.CruxNode.GetScript:input_type -> crux.ServiceIdRequest
-	13,  // 183: crux.CruxNode.DiscardScript:input_type -> crux.IdRequest
-	13,  // 184: crux.CruxNode.RevokeToken:input_type -> crux.IdRequest
-	13,  // 185: crux.CruxNode.UpdateNodeAgent:input_type -> crux.IdRequest
-	12,  // 186: crux.CruxNode.SubscribeNodeEventChannel:input_type -> crux.ServiceIdRequest
-	90,  // 187: crux.CruxNode.WatchContainerState:input_type -> crux.WatchContainerStateRequest
-	13,  // 188: crux.CruxProductVersion.GetVersionsByProductId:input_type -> crux.IdRequest
-	52,  // 189: crux.CruxProductVersion.CreateVersion:input_type -> crux.CreateVersionRequest
-	53,  // 190: crux.CruxProductVersion.UpdateVersion:input_type -> crux.UpdateVersionRequest
-	13,  // 191: crux.CruxProductVersion.DeleteVersion:input_type -> crux.IdRequest
-	13,  // 192: crux.CruxProductVersion.SetDefaultVersion:input_type -> crux.IdRequest
-	13,  // 193: crux.CruxProductVersion.GetVersionDetails:input_type -> crux.IdRequest
-	57,  // 194: crux.CruxProductVersion.IncreaseVersion:input_type -> crux.IncreaseVersionRequest
-	13,  // 195: crux.CruxImage.GetImagesByVersionId:input_type -> crux.IdRequest
-	79,  // 196: crux.CruxImage.AddImagesToVersion:input_type -> crux.AddImagesToVersionRequest
-	77,  // 197: crux.CruxImage.OrderImages:input_type -> crux.OrderVersionImagesRequest
-	80,  // 198: crux.CruxImage.PatchImage:input_type -> crux.PatchImageRequest
-	13,  // 199: crux.CruxImage.DeleteImage:input_type -> crux.IdRequest
-	13,  // 200: crux.CruxImage.GetImageDetails:input_type -> crux.IdRequest
-	13,  // 201: crux.CruxDeployment.GetDeploymentsByVersionId:input_type -> crux.IdRequest
-	94,  // 202: crux.CruxDeployment.CreateDeployment:input_type -> crux.CreateDeploymentRequest
-	95,  // 203: crux.CruxDeployment.UpdateDeployment:input_type -> crux.UpdateDeploymentRequest
-	96,  // 204: crux.CruxDeployment.PatchDeployment:input_type -> crux.PatchDeploymentRequest
-	13,  // 205: crux.CruxDeployment.DeleteDeployment:input_type -> crux.IdRequest
-	13,  // 206: crux.CruxDeployment.GetDeploymentDetails:input_type -> crux.IdRequest
-	13,  // 207: crux.CruxDeployment.GetDeploymentEvents:input_type -> crux.IdRequest
-	27,  // 208: crux.CruxDeployment.GetDeploymentList:input_type -> crux.AccessRequest
-	108, // 209: crux.CruxDeployment.GetDeploymentSecrets:input_type -> crux.DeploymentListSecretsRequest
-	13,  // 210: crux.CruxDeployment.CopyDeploymentSafe:input_type -> crux.IdRequest
-	13,  // 211: crux.CruxDeployment.CopyDeploymentUnsafe:input_type -> crux.IdRequest
-	13,  // 212: crux.CruxDeployment.StartDeployment:input_type -> crux.IdRequest
-	13,  // 213: crux.CruxDeployment.SubscribeToDeploymentEvents:input_type -> crux.IdRequest
-	12,  // 214: crux.CruxDeployment.SubscribeToDeploymentEditEvents:input_type -> crux.ServiceIdRequest
-	21,  // 215: crux.CruxTeam.CreateTeam:input_type -> crux.CreateTeamRequest
-	27,  // 216: crux.CruxTeam.GetActiveTeamByUser:input_type -> crux.AccessRequest
-	22,  // 217: crux.CruxTeam.UpdateTeam:input_type -> crux.UpdateTeamRequest
-	13,  // 218: crux.CruxTeam.DeleteTeam:input_type -> crux.IdRequest
-	23,  // 219: crux.CruxTeam.UpdateUserRole:input_type -> crux.UpdateUserRoleInTeamRequest
-	24,  // 220: crux.CruxTeam.InviteUserToTeam:input_type -> crux.InviteUserRequest
-	25,  // 221: crux.CruxTeam.ReinviteUserToTeam:input_type -> crux.ReinviteUserRequest
-	26,  // 222: crux.CruxTeam.DeleteUserFromTeam:input_type -> crux.DeleteUserFromTeamRequest
-	13,  // 223: crux.CruxTeam.AcceptTeamInvitation:input_type -> crux.IdRequest
-	13,  // 224: crux.CruxTeam.DeclineTeamInvitation:input_type -> crux.IdRequest
-	13,  // 225: crux.CruxTeam.SelectTeam:input_type -> crux.IdRequest
-	27,  // 226: crux.CruxTeam.GetUserMeta:input_type -> crux.AccessRequest
-	27,  // 227: crux.CruxTeam.GetAllTeams:input_type -> crux.AccessRequest
-	13,  // 228: crux.CruxTeam.GetTeamById:input_type -> crux.IdRequest
-	109, // 229: crux.CruxNotification.CreateNotification:input_type -> crux.CreateNotificationRequest
-	111, // 230: crux.CruxNotification.UpdateNotification:input_type -> crux.UpdateNotificationRequest
-	13,  // 231: crux.CruxNotification.DeleteNotification:input_type -> crux.IdRequest
-	27,  // 232: crux.CruxNotification.GetNotificationList:input_type -> crux.AccessRequest
-	13,  // 233: crux.CruxNotification.GetNotificationDetails:input_type -> crux.IdRequest
-	13,  // 234: crux.CruxNotification.TestNotification:input_type -> crux.IdRequest
-	17,  // 235: crux.CruxAudit.GetAuditLog:input_type -> crux.AuditLogListRequest
-	17,  // 236: crux.CruxAudit.GetAuditLogListCount:input_type -> crux.AuditLogListRequest
-	134, // 237: crux.CruxHealth.getHealth:input_type -> common.Empty
-	27,  // 238: crux.CruxTemplate.GetTemplates:input_type -> crux.AccessRequest
-	118, // 239: crux.CruxTemplate.CreateProductFromTemplate:input_type -> crux.CreateProductFromTemplateRequest
-	39,  // 240: crux.CruxProduct.GetProducts:output_type -> crux.ProductListResponse
-	15,  // 241: crux.CruxProduct.CreateProduct:output_type -> crux.CreateEntityResponse
-	16,  // 242: crux.CruxProduct.UpdateProduct:output_type -> crux.UpdateEntityResponse
-	134, // 243: crux.CruxProduct.DeleteProduct:output_type -> common.Empty
-	37,  // 244: crux.CruxProduct.GetProductDetails:output_type -> crux.ProductDetailsReponse
-	43,  // 245: crux.CruxRegistry.GetRegistries:output_type -> crux.RegistryListResponse
-	15,  // 246: crux.CruxRegistry.CreateRegistry:output_type -> crux.CreateEntityResponse
-	16,  // 247: crux.CruxRegistry.UpdateRegistry:output_type -> crux.UpdateEntityResponse
-	134, // 248: crux.CruxRegistry.DeleteRegistry:output_type -> common.Empty
-	51,  // 249: crux.CruxRegistry.GetRegistryDetails:output_type -> crux.RegistryDetailsResponse
-	83,  // 250: crux.CruxNode.GetNodes:output_type -> crux.NodeListResponse
-	15,  // 251: crux.CruxNode.CreateNode:output_type -> crux.CreateEntityResponse
-	134, // 252: crux.CruxNode.UpdateNode:output_type -> common.Empty
-	134, // 253: crux.CruxNode.DeleteNode:output_type -> common.Empty
-	82,  // 254: crux.CruxNode.GetNodeDetails:output_type -> crux.NodeDetailsResponse
-	87,  // 255: crux.CruxNode.GenerateScript:output_type -> crux.NodeInstallResponse
-	88,  // 256: crux.CruxNode.GetScript:output_type -> crux.NodeScriptResponse
-	134, // 257: crux.CruxNode.DiscardScript:output_type -> common.Empty
-	134, // 258: crux.CruxNode.RevokeToken:output_type -> common.Empty
-	134, // 259: crux.CruxNode.UpdateNodeAgent:output_type -> common.Empty
-	89,  // 260: crux.CruxNode.SubscribeNodeEventChannel:output_type -> crux.NodeEventMessage
-	135, // 261: crux.CruxNode.WatchContainerState:output_type -> common.ContainerStateListMessage
-	55,  // 262: crux.CruxProductVersion.GetVersionsByProductId:output_type -> crux.VersionListResponse
-	15,  // 263: crux.CruxProductVersion.CreateVersion:output_type -> crux.CreateEntityResponse
-	16,  // 264: crux.CruxProductVersion.UpdateVersion:output_type -> crux.UpdateEntityResponse
-	134, // 265: crux.CruxProductVersion.DeleteVersion:output_type -> common.Empty
-	134, // 266: crux.CruxProductVersion.SetDefaultVersion:output_type -> common.Empty
-	56,  // 267: crux.CruxProductVersion.GetVersionDetails:output_type -> crux.VersionDetailsResponse
-	15,  // 268: crux.CruxProductVersion.IncreaseVersion:output_type -> crux.CreateEntityResponse
-	76,  // 269: crux.CruxImage.GetImagesByVersionId:output_type -> crux.ImageListResponse
-	76,  // 270: crux.CruxImage.AddImagesToVersion:output_type -> crux.ImageListResponse
-	134, // 271: crux.CruxImage.OrderImages:output_type -> common.Empty
-	134, // 272: crux.CruxImage.PatchImage:output_type -> common.Empty
-	134, // 273: crux.CruxImage.DeleteImage:output_type -> common.Empty
-	75,  // 274: crux.CruxImage.GetImageDetails:output_type -> crux.ImageResponse
-	101, // 275: crux.CruxDeployment.GetDeploymentsByVersionId:output_type -> crux.DeploymentListByVersionResponse
-	15,  // 276: crux.CruxDeployment.CreateDeployment:output_type -> crux.CreateEntityResponse
-	16,  // 277: crux.CruxDeployment.UpdateDeployment:output_type -> crux.UpdateEntityResponse
-	16,  // 278: crux.CruxDeployment.PatchDeployment:output_type -> crux.UpdateEntityResponse
-	134, // 279: crux.CruxDeployment.DeleteDeployment:output_type -> common.Empty
-	103, // 280: crux.CruxDeployment.GetDeploymentDetails:output_type -> crux.DeploymentDetailsResponse
-	107, // 281: crux.CruxDeployment.GetDeploymentEvents:output_type -> crux.DeploymentEventListResponse
-	99,  // 282: crux.CruxDeployment.GetDeploymentList:output_type -> crux.DeploymentListResponse
-	136, // 283: crux.CruxDeployment.GetDeploymentSecrets:output_type -> common.ListSecretsResponse
-	15,  // 284: crux.CruxDeployment.CopyDeploymentSafe:output_type -> crux.CreateEntityResponse
-	15,  // 285: crux.CruxDeployment.CopyDeploymentUnsafe:output_type -> crux.CreateEntityResponse
-	134, // 286: crux.CruxDeployment.StartDeployment:output_type -> common.Empty
-	91,  // 287: crux.CruxDeployment.SubscribeToDeploymentEvents:output_type -> crux.DeploymentProgressMessage
-	93,  // 288: crux.CruxDeployment.SubscribeToDeploymentEditEvents:output_type -> crux.DeploymentEditEventMessage
-	15,  // 289: crux.CruxTeam.CreateTeam:output_type -> crux.CreateEntityResponse
-	31,  // 290: crux.CruxTeam.GetActiveTeamByUser:output_type -> crux.ActiveTeamDetailsResponse
-	134, // 291: crux.CruxTeam.UpdateTeam:output_type -> common.Empty
-	134, // 292: crux.CruxTeam.DeleteTeam:output_type -> common.Empty
-	134, // 293: crux.CruxTeam.UpdateUserRole:output_type -> common.Empty
-	15,  // 294: crux.CruxTeam.InviteUserToTeam:output_type -> crux.CreateEntityResponse
-	15,  // 295: crux.CruxTeam.ReinviteUserToTeam:output_type -> crux.CreateEntityResponse
-	134, // 296: crux.CruxTeam.DeleteUserFromTeam:output_type -> common.Empty
-	134, // 297: crux.CruxTeam.AcceptTeamInvitation:output_type -> common.Empty
-	134, // 298: crux.CruxTeam.DeclineTeamInvitation:output_type -> common.Empty
-	134, // 299: crux.CruxTeam.SelectTeam:output_type -> common.Empty
-	28,  // 300: crux.CruxTeam.GetUserMeta:output_type -> crux.UserMetaResponse
-	35,  // 301: crux.CruxTeam.GetAllTeams:output_type -> crux.AllTeamsResponse
-	34,  // 302: crux.CruxTeam.GetTeamById:output_type -> crux.TeamDetailsResponse
-	110, // 303: crux.CruxNotification.CreateNotification:output_type -> crux.CreateNotificationResponse
-	16,  // 304: crux.CruxNotification.UpdateNotification:output_type -> crux.UpdateEntityResponse
-	134, // 305: crux.CruxNotification.DeleteNotification:output_type -> common.Empty
-	114, // 306: crux.CruxNotification.GetNotificationList:output_type -> crux.NotificationListResponse
-	112, // 307: crux.CruxNotification.GetNotificationDetails:output_type -> crux.NotificationDetailsResponse
-	134, // 308: crux.CruxNotification.TestNotification:output_type -> common.Empty
-	20,  // 309: crux.CruxAudit.GetAuditLog:output_type -> crux.AuditLogListResponse
-	18,  // 310: crux.CruxAudit.GetAuditLogListCount:output_type -> crux.AuditLogListCountResponse
-	115, // 311: crux.CruxHealth.getHealth:output_type -> crux.HealthResponse
-	117, // 312: crux.CruxTemplate.GetTemplates:output_type -> crux.TemplateListResponse
-	15,  // 313: crux.CruxTemplate.CreateProductFromTemplate:output_type -> crux.CreateEntityResponse
-	240, // [240:314] is the sub-list for method output_type
-	166, // [166:240] is the sub-list for method input_type
-	166, // [166:166] is the sub-list for extension type_name
-	166, // [166:166] is the sub-list for extension extendee
-	0,   // [0:166] is the sub-list for field type_name
+	122, // 118: crux.NodeInstallResponse.expireAt:type_name -> google.protobuf.Timestamp
+	134, // 119: crux.NodeContainerCommandRequest.command:type_name -> common.ContainerCommandRequest
+	135, // 120: crux.NodeDeleteContainersRequest.containers:type_name -> common.DeleteContainersRequest
+	6,   // 121: crux.NodeEventMessage.status:type_name -> crux.NodeConnectionStatus
+	122, // 122: crux.NodeEventMessage.connectedAt:type_name -> google.protobuf.Timestamp
+	136, // 123: crux.DeploymentProgressMessage.status:type_name -> common.DeploymentStatus
+	137, // 124: crux.DeploymentProgressMessage.instance:type_name -> common.InstanceDeploymentItem
+	100, // 125: crux.InstancesCreatedEventList.data:type_name -> crux.InstanceResponse
+	95,  // 126: crux.DeploymentEditEventMessage.instancesCreated:type_name -> crux.InstancesCreatedEventList
+	69,  // 127: crux.PatchDeploymentRequest.environment:type_name -> crux.KeyValueList
+	101, // 128: crux.PatchDeploymentRequest.instance:type_name -> crux.PatchInstanceRequest
+	14,  // 129: crux.InstanceResponse.audit:type_name -> crux.AuditResponse
+	75,  // 130: crux.InstanceResponse.image:type_name -> crux.ImageResponse
+	138, // 131: crux.InstanceResponse.state:type_name -> common.ContainerState
+	74,  // 132: crux.InstanceResponse.config:type_name -> crux.ContainerConfig
+	74,  // 133: crux.PatchInstanceRequest.config:type_name -> crux.ContainerConfig
+	103, // 134: crux.DeploymentListResponse.data:type_name -> crux.DeploymentResponse
+	136, // 135: crux.DeploymentResponse.status:type_name -> common.DeploymentStatus
+	122, // 136: crux.DeploymentResponse.updatedAt:type_name -> google.protobuf.Timestamp
+	3,   // 137: crux.DeploymentResponse.versionType:type_name -> crux.VersionType
+	105, // 138: crux.DeploymentListByVersionResponse.data:type_name -> crux.DeploymentByVersionResponse
+	14,  // 139: crux.DeploymentByVersionResponse.audit:type_name -> crux.AuditResponse
+	136, // 140: crux.DeploymentByVersionResponse.status:type_name -> common.DeploymentStatus
+	6,   // 141: crux.DeploymentByVersionResponse.nodeStatus:type_name -> crux.NodeConnectionStatus
+	14,  // 142: crux.DeploymentDetailsResponse.audit:type_name -> crux.AuditResponse
+	67,  // 143: crux.DeploymentDetailsResponse.environment:type_name -> crux.UniqueKeyValue
+	136, // 144: crux.DeploymentDetailsResponse.status:type_name -> common.DeploymentStatus
+	100, // 145: crux.DeploymentDetailsResponse.instances:type_name -> crux.InstanceResponse
+	138, // 146: crux.DeploymentEventContainerState.state:type_name -> common.ContainerState
+	8,   // 147: crux.DeploymentEventResponse.type:type_name -> crux.DeploymentEventType
+	122, // 148: crux.DeploymentEventResponse.createdAt:type_name -> google.protobuf.Timestamp
+	108, // 149: crux.DeploymentEventResponse.log:type_name -> crux.DeploymentEventLog
+	136, // 150: crux.DeploymentEventResponse.deploymentStatus:type_name -> common.DeploymentStatus
+	107, // 151: crux.DeploymentEventResponse.containerStatus:type_name -> crux.DeploymentEventContainerState
+	136, // 152: crux.DeploymentEventListResponse.status:type_name -> common.DeploymentStatus
+	109, // 153: crux.DeploymentEventListResponse.data:type_name -> crux.DeploymentEventResponse
+	9,   // 154: crux.CreateNotificationRequest.type:type_name -> crux.NotificationType
+	10,  // 155: crux.CreateNotificationRequest.events:type_name -> crux.NotificationEventType
+	9,   // 156: crux.UpdateNotificationRequest.type:type_name -> crux.NotificationType
+	10,  // 157: crux.UpdateNotificationRequest.events:type_name -> crux.NotificationEventType
+	14,  // 158: crux.NotificationDetailsResponse.audit:type_name -> crux.AuditResponse
+	9,   // 159: crux.NotificationDetailsResponse.type:type_name -> crux.NotificationType
+	10,  // 160: crux.NotificationDetailsResponse.events:type_name -> crux.NotificationEventType
+	14,  // 161: crux.NotificationResponse.audit:type_name -> crux.AuditResponse
+	9,   // 162: crux.NotificationResponse.type:type_name -> crux.NotificationType
+	10,  // 163: crux.NotificationResponse.events:type_name -> crux.NotificationEventType
+	116, // 164: crux.NotificationListResponse.data:type_name -> crux.NotificationResponse
+	11,  // 165: crux.HealthResponse.status:type_name -> crux.ServiceStatus
+	119, // 166: crux.TemplateListResponse.data:type_name -> crux.TemplateResponse
+	2,   // 167: crux.CreateProductFromTemplateRequest.type:type_name -> crux.ProductType
+	27,  // 168: crux.CruxProduct.GetProducts:input_type -> crux.AccessRequest
+	40,  // 169: crux.CruxProduct.CreateProduct:input_type -> crux.CreateProductRequest
+	41,  // 170: crux.CruxProduct.UpdateProduct:input_type -> crux.UpdateProductRequest
+	13,  // 171: crux.CruxProduct.DeleteProduct:input_type -> crux.IdRequest
+	13,  // 172: crux.CruxProduct.GetProductDetails:input_type -> crux.IdRequest
+	27,  // 173: crux.CruxRegistry.GetRegistries:input_type -> crux.AccessRequest
+	49,  // 174: crux.CruxRegistry.CreateRegistry:input_type -> crux.CreateRegistryRequest
+	50,  // 175: crux.CruxRegistry.UpdateRegistry:input_type -> crux.UpdateRegistryRequest
+	13,  // 176: crux.CruxRegistry.DeleteRegistry:input_type -> crux.IdRequest
+	13,  // 177: crux.CruxRegistry.GetRegistryDetails:input_type -> crux.IdRequest
+	27,  // 178: crux.CruxNode.GetNodes:input_type -> crux.AccessRequest
+	84,  // 179: crux.CruxNode.CreateNode:input_type -> crux.CreateNodeRequest
+	85,  // 180: crux.CruxNode.UpdateNode:input_type -> crux.UpdateNodeRequest
+	13,  // 181: crux.CruxNode.DeleteNode:input_type -> crux.IdRequest
+	13,  // 182: crux.CruxNode.GetNodeDetails:input_type -> crux.IdRequest
+	86,  // 183: crux.CruxNode.GenerateScript:input_type -> crux.GenerateScriptRequest
+	12,  // 184: crux.CruxNode.GetScript:input_type -> crux.ServiceIdRequest
+	13,  // 185: crux.CruxNode.DiscardScript:input_type -> crux.IdRequest
+	13,  // 186: crux.CruxNode.RevokeToken:input_type -> crux.IdRequest
+	13,  // 187: crux.CruxNode.UpdateNodeAgent:input_type -> crux.IdRequest
+	89,  // 188: crux.CruxNode.SendContainerCommand:input_type -> crux.NodeContainerCommandRequest
+	90,  // 189: crux.CruxNode.DeleteContainers:input_type -> crux.NodeDeleteContainersRequest
+	12,  // 190: crux.CruxNode.SubscribeNodeEventChannel:input_type -> crux.ServiceIdRequest
+	93,  // 191: crux.CruxNode.WatchContainerState:input_type -> crux.WatchContainerStateRequest
+	13,  // 192: crux.CruxProductVersion.GetVersionsByProductId:input_type -> crux.IdRequest
+	52,  // 193: crux.CruxProductVersion.CreateVersion:input_type -> crux.CreateVersionRequest
+	53,  // 194: crux.CruxProductVersion.UpdateVersion:input_type -> crux.UpdateVersionRequest
+	13,  // 195: crux.CruxProductVersion.DeleteVersion:input_type -> crux.IdRequest
+	13,  // 196: crux.CruxProductVersion.SetDefaultVersion:input_type -> crux.IdRequest
+	13,  // 197: crux.CruxProductVersion.GetVersionDetails:input_type -> crux.IdRequest
+	57,  // 198: crux.CruxProductVersion.IncreaseVersion:input_type -> crux.IncreaseVersionRequest
+	13,  // 199: crux.CruxImage.GetImagesByVersionId:input_type -> crux.IdRequest
+	79,  // 200: crux.CruxImage.AddImagesToVersion:input_type -> crux.AddImagesToVersionRequest
+	77,  // 201: crux.CruxImage.OrderImages:input_type -> crux.OrderVersionImagesRequest
+	80,  // 202: crux.CruxImage.PatchImage:input_type -> crux.PatchImageRequest
+	13,  // 203: crux.CruxImage.DeleteImage:input_type -> crux.IdRequest
+	13,  // 204: crux.CruxImage.GetImageDetails:input_type -> crux.IdRequest
+	13,  // 205: crux.CruxDeployment.GetDeploymentsByVersionId:input_type -> crux.IdRequest
+	97,  // 206: crux.CruxDeployment.CreateDeployment:input_type -> crux.CreateDeploymentRequest
+	98,  // 207: crux.CruxDeployment.UpdateDeployment:input_type -> crux.UpdateDeploymentRequest
+	99,  // 208: crux.CruxDeployment.PatchDeployment:input_type -> crux.PatchDeploymentRequest
+	13,  // 209: crux.CruxDeployment.DeleteDeployment:input_type -> crux.IdRequest
+	13,  // 210: crux.CruxDeployment.GetDeploymentDetails:input_type -> crux.IdRequest
+	13,  // 211: crux.CruxDeployment.GetDeploymentEvents:input_type -> crux.IdRequest
+	27,  // 212: crux.CruxDeployment.GetDeploymentList:input_type -> crux.AccessRequest
+	111, // 213: crux.CruxDeployment.GetDeploymentSecrets:input_type -> crux.DeploymentListSecretsRequest
+	13,  // 214: crux.CruxDeployment.CopyDeploymentSafe:input_type -> crux.IdRequest
+	13,  // 215: crux.CruxDeployment.CopyDeploymentUnsafe:input_type -> crux.IdRequest
+	13,  // 216: crux.CruxDeployment.StartDeployment:input_type -> crux.IdRequest
+	13,  // 217: crux.CruxDeployment.SubscribeToDeploymentEvents:input_type -> crux.IdRequest
+	12,  // 218: crux.CruxDeployment.SubscribeToDeploymentEditEvents:input_type -> crux.ServiceIdRequest
+	21,  // 219: crux.CruxTeam.CreateTeam:input_type -> crux.CreateTeamRequest
+	27,  // 220: crux.CruxTeam.GetActiveTeamByUser:input_type -> crux.AccessRequest
+	22,  // 221: crux.CruxTeam.UpdateTeam:input_type -> crux.UpdateTeamRequest
+	13,  // 222: crux.CruxTeam.DeleteTeam:input_type -> crux.IdRequest
+	23,  // 223: crux.CruxTeam.UpdateUserRole:input_type -> crux.UpdateUserRoleInTeamRequest
+	24,  // 224: crux.CruxTeam.InviteUserToTeam:input_type -> crux.InviteUserRequest
+	25,  // 225: crux.CruxTeam.ReinviteUserToTeam:input_type -> crux.ReinviteUserRequest
+	26,  // 226: crux.CruxTeam.DeleteUserFromTeam:input_type -> crux.DeleteUserFromTeamRequest
+	13,  // 227: crux.CruxTeam.AcceptTeamInvitation:input_type -> crux.IdRequest
+	13,  // 228: crux.CruxTeam.DeclineTeamInvitation:input_type -> crux.IdRequest
+	13,  // 229: crux.CruxTeam.SelectTeam:input_type -> crux.IdRequest
+	27,  // 230: crux.CruxTeam.GetUserMeta:input_type -> crux.AccessRequest
+	27,  // 231: crux.CruxTeam.GetAllTeams:input_type -> crux.AccessRequest
+	13,  // 232: crux.CruxTeam.GetTeamById:input_type -> crux.IdRequest
+	112, // 233: crux.CruxNotification.CreateNotification:input_type -> crux.CreateNotificationRequest
+	114, // 234: crux.CruxNotification.UpdateNotification:input_type -> crux.UpdateNotificationRequest
+	13,  // 235: crux.CruxNotification.DeleteNotification:input_type -> crux.IdRequest
+	27,  // 236: crux.CruxNotification.GetNotificationList:input_type -> crux.AccessRequest
+	13,  // 237: crux.CruxNotification.GetNotificationDetails:input_type -> crux.IdRequest
+	13,  // 238: crux.CruxNotification.TestNotification:input_type -> crux.IdRequest
+	17,  // 239: crux.CruxAudit.GetAuditLog:input_type -> crux.AuditLogListRequest
+	17,  // 240: crux.CruxAudit.GetAuditLogListCount:input_type -> crux.AuditLogListRequest
+	139, // 241: crux.CruxHealth.getHealth:input_type -> common.Empty
+	27,  // 242: crux.CruxTemplate.GetTemplates:input_type -> crux.AccessRequest
+	121, // 243: crux.CruxTemplate.CreateProductFromTemplate:input_type -> crux.CreateProductFromTemplateRequest
+	39,  // 244: crux.CruxProduct.GetProducts:output_type -> crux.ProductListResponse
+	15,  // 245: crux.CruxProduct.CreateProduct:output_type -> crux.CreateEntityResponse
+	16,  // 246: crux.CruxProduct.UpdateProduct:output_type -> crux.UpdateEntityResponse
+	139, // 247: crux.CruxProduct.DeleteProduct:output_type -> common.Empty
+	37,  // 248: crux.CruxProduct.GetProductDetails:output_type -> crux.ProductDetailsReponse
+	43,  // 249: crux.CruxRegistry.GetRegistries:output_type -> crux.RegistryListResponse
+	15,  // 250: crux.CruxRegistry.CreateRegistry:output_type -> crux.CreateEntityResponse
+	16,  // 251: crux.CruxRegistry.UpdateRegistry:output_type -> crux.UpdateEntityResponse
+	139, // 252: crux.CruxRegistry.DeleteRegistry:output_type -> common.Empty
+	51,  // 253: crux.CruxRegistry.GetRegistryDetails:output_type -> crux.RegistryDetailsResponse
+	83,  // 254: crux.CruxNode.GetNodes:output_type -> crux.NodeListResponse
+	15,  // 255: crux.CruxNode.CreateNode:output_type -> crux.CreateEntityResponse
+	139, // 256: crux.CruxNode.UpdateNode:output_type -> common.Empty
+	139, // 257: crux.CruxNode.DeleteNode:output_type -> common.Empty
+	82,  // 258: crux.CruxNode.GetNodeDetails:output_type -> crux.NodeDetailsResponse
+	87,  // 259: crux.CruxNode.GenerateScript:output_type -> crux.NodeInstallResponse
+	88,  // 260: crux.CruxNode.GetScript:output_type -> crux.NodeScriptResponse
+	139, // 261: crux.CruxNode.DiscardScript:output_type -> common.Empty
+	139, // 262: crux.CruxNode.RevokeToken:output_type -> common.Empty
+	139, // 263: crux.CruxNode.UpdateNodeAgent:output_type -> common.Empty
+	139, // 264: crux.CruxNode.SendContainerCommand:output_type -> common.Empty
+	139, // 265: crux.CruxNode.DeleteContainers:output_type -> common.Empty
+	92,  // 266: crux.CruxNode.SubscribeNodeEventChannel:output_type -> crux.NodeEventMessage
+	140, // 267: crux.CruxNode.WatchContainerState:output_type -> common.ContainerStateListMessage
+	55,  // 268: crux.CruxProductVersion.GetVersionsByProductId:output_type -> crux.VersionListResponse
+	15,  // 269: crux.CruxProductVersion.CreateVersion:output_type -> crux.CreateEntityResponse
+	16,  // 270: crux.CruxProductVersion.UpdateVersion:output_type -> crux.UpdateEntityResponse
+	139, // 271: crux.CruxProductVersion.DeleteVersion:output_type -> common.Empty
+	139, // 272: crux.CruxProductVersion.SetDefaultVersion:output_type -> common.Empty
+	56,  // 273: crux.CruxProductVersion.GetVersionDetails:output_type -> crux.VersionDetailsResponse
+	15,  // 274: crux.CruxProductVersion.IncreaseVersion:output_type -> crux.CreateEntityResponse
+	76,  // 275: crux.CruxImage.GetImagesByVersionId:output_type -> crux.ImageListResponse
+	76,  // 276: crux.CruxImage.AddImagesToVersion:output_type -> crux.ImageListResponse
+	139, // 277: crux.CruxImage.OrderImages:output_type -> common.Empty
+	139, // 278: crux.CruxImage.PatchImage:output_type -> common.Empty
+	139, // 279: crux.CruxImage.DeleteImage:output_type -> common.Empty
+	75,  // 280: crux.CruxImage.GetImageDetails:output_type -> crux.ImageResponse
+	104, // 281: crux.CruxDeployment.GetDeploymentsByVersionId:output_type -> crux.DeploymentListByVersionResponse
+	15,  // 282: crux.CruxDeployment.CreateDeployment:output_type -> crux.CreateEntityResponse
+	16,  // 283: crux.CruxDeployment.UpdateDeployment:output_type -> crux.UpdateEntityResponse
+	16,  // 284: crux.CruxDeployment.PatchDeployment:output_type -> crux.UpdateEntityResponse
+	139, // 285: crux.CruxDeployment.DeleteDeployment:output_type -> common.Empty
+	106, // 286: crux.CruxDeployment.GetDeploymentDetails:output_type -> crux.DeploymentDetailsResponse
+	110, // 287: crux.CruxDeployment.GetDeploymentEvents:output_type -> crux.DeploymentEventListResponse
+	102, // 288: crux.CruxDeployment.GetDeploymentList:output_type -> crux.DeploymentListResponse
+	141, // 289: crux.CruxDeployment.GetDeploymentSecrets:output_type -> common.ListSecretsResponse
+	15,  // 290: crux.CruxDeployment.CopyDeploymentSafe:output_type -> crux.CreateEntityResponse
+	15,  // 291: crux.CruxDeployment.CopyDeploymentUnsafe:output_type -> crux.CreateEntityResponse
+	139, // 292: crux.CruxDeployment.StartDeployment:output_type -> common.Empty
+	94,  // 293: crux.CruxDeployment.SubscribeToDeploymentEvents:output_type -> crux.DeploymentProgressMessage
+	96,  // 294: crux.CruxDeployment.SubscribeToDeploymentEditEvents:output_type -> crux.DeploymentEditEventMessage
+	15,  // 295: crux.CruxTeam.CreateTeam:output_type -> crux.CreateEntityResponse
+	31,  // 296: crux.CruxTeam.GetActiveTeamByUser:output_type -> crux.ActiveTeamDetailsResponse
+	139, // 297: crux.CruxTeam.UpdateTeam:output_type -> common.Empty
+	139, // 298: crux.CruxTeam.DeleteTeam:output_type -> common.Empty
+	139, // 299: crux.CruxTeam.UpdateUserRole:output_type -> common.Empty
+	15,  // 300: crux.CruxTeam.InviteUserToTeam:output_type -> crux.CreateEntityResponse
+	15,  // 301: crux.CruxTeam.ReinviteUserToTeam:output_type -> crux.CreateEntityResponse
+	139, // 302: crux.CruxTeam.DeleteUserFromTeam:output_type -> common.Empty
+	139, // 303: crux.CruxTeam.AcceptTeamInvitation:output_type -> common.Empty
+	139, // 304: crux.CruxTeam.DeclineTeamInvitation:output_type -> common.Empty
+	139, // 305: crux.CruxTeam.SelectTeam:output_type -> common.Empty
+	28,  // 306: crux.CruxTeam.GetUserMeta:output_type -> crux.UserMetaResponse
+	35,  // 307: crux.CruxTeam.GetAllTeams:output_type -> crux.AllTeamsResponse
+	34,  // 308: crux.CruxTeam.GetTeamById:output_type -> crux.TeamDetailsResponse
+	113, // 309: crux.CruxNotification.CreateNotification:output_type -> crux.CreateNotificationResponse
+	16,  // 310: crux.CruxNotification.UpdateNotification:output_type -> crux.UpdateEntityResponse
+	139, // 311: crux.CruxNotification.DeleteNotification:output_type -> common.Empty
+	117, // 312: crux.CruxNotification.GetNotificationList:output_type -> crux.NotificationListResponse
+	115, // 313: crux.CruxNotification.GetNotificationDetails:output_type -> crux.NotificationDetailsResponse
+	139, // 314: crux.CruxNotification.TestNotification:output_type -> common.Empty
+	20,  // 315: crux.CruxAudit.GetAuditLog:output_type -> crux.AuditLogListResponse
+	18,  // 316: crux.CruxAudit.GetAuditLogListCount:output_type -> crux.AuditLogListCountResponse
+	118, // 317: crux.CruxHealth.getHealth:output_type -> crux.HealthResponse
+	120, // 318: crux.CruxTemplate.GetTemplates:output_type -> crux.TemplateListResponse
+	15,  // 319: crux.CruxTemplate.CreateProductFromTemplate:output_type -> crux.CreateEntityResponse
+	244, // [244:320] is the sub-list for method output_type
+	168, // [168:244] is the sub-list for method input_type
+	168, // [168:168] is the sub-list for extension type_name
+	168, // [168:168] is the sub-list for extension extendee
+	0,   // [0:168] is the sub-list for field type_name
 }
 
 func init() { file_protobuf_proto_crux_proto_init() }
@@ -11596,7 +11820,7 @@ func file_protobuf_proto_crux_proto_init() {
 			}
 		}
 		file_protobuf_proto_crux_proto_msgTypes[77].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*NodeEventMessage); i {
+			switch v := v.(*NodeContainerCommandRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11608,7 +11832,7 @@ func file_protobuf_proto_crux_proto_init() {
 			}
 		}
 		file_protobuf_proto_crux_proto_msgTypes[78].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*WatchContainerStateRequest); i {
+			switch v := v.(*NodeDeleteContainersRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11620,7 +11844,7 @@ func file_protobuf_proto_crux_proto_init() {
 			}
 		}
 		file_protobuf_proto_crux_proto_msgTypes[79].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeploymentProgressMessage); i {
+			switch v := v.(*ContainerDeleteRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11632,7 +11856,7 @@ func file_protobuf_proto_crux_proto_init() {
 			}
 		}
 		file_protobuf_proto_crux_proto_msgTypes[80].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*InstancesCreatedEventList); i {
+			switch v := v.(*NodeEventMessage); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11644,7 +11868,7 @@ func file_protobuf_proto_crux_proto_init() {
 			}
 		}
 		file_protobuf_proto_crux_proto_msgTypes[81].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeploymentEditEventMessage); i {
+			switch v := v.(*WatchContainerStateRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11656,7 +11880,7 @@ func file_protobuf_proto_crux_proto_init() {
 			}
 		}
 		file_protobuf_proto_crux_proto_msgTypes[82].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*CreateDeploymentRequest); i {
+			switch v := v.(*DeploymentProgressMessage); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11668,7 +11892,7 @@ func file_protobuf_proto_crux_proto_init() {
 			}
 		}
 		file_protobuf_proto_crux_proto_msgTypes[83].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UpdateDeploymentRequest); i {
+			switch v := v.(*InstancesCreatedEventList); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11680,7 +11904,7 @@ func file_protobuf_proto_crux_proto_init() {
 			}
 		}
 		file_protobuf_proto_crux_proto_msgTypes[84].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*PatchDeploymentRequest); i {
+			switch v := v.(*DeploymentEditEventMessage); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11692,7 +11916,7 @@ func file_protobuf_proto_crux_proto_init() {
 			}
 		}
 		file_protobuf_proto_crux_proto_msgTypes[85].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*InstanceResponse); i {
+			switch v := v.(*CreateDeploymentRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11704,7 +11928,7 @@ func file_protobuf_proto_crux_proto_init() {
 			}
 		}
 		file_protobuf_proto_crux_proto_msgTypes[86].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*PatchInstanceRequest); i {
+			switch v := v.(*UpdateDeploymentRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11716,7 +11940,7 @@ func file_protobuf_proto_crux_proto_init() {
 			}
 		}
 		file_protobuf_proto_crux_proto_msgTypes[87].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeploymentListResponse); i {
+			switch v := v.(*PatchDeploymentRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11728,7 +11952,7 @@ func file_protobuf_proto_crux_proto_init() {
 			}
 		}
 		file_protobuf_proto_crux_proto_msgTypes[88].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeploymentResponse); i {
+			switch v := v.(*InstanceResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11740,7 +11964,7 @@ func file_protobuf_proto_crux_proto_init() {
 			}
 		}
 		file_protobuf_proto_crux_proto_msgTypes[89].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeploymentListByVersionResponse); i {
+			switch v := v.(*PatchInstanceRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11752,7 +11976,7 @@ func file_protobuf_proto_crux_proto_init() {
 			}
 		}
 		file_protobuf_proto_crux_proto_msgTypes[90].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeploymentByVersionResponse); i {
+			switch v := v.(*DeploymentListResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11764,7 +11988,7 @@ func file_protobuf_proto_crux_proto_init() {
 			}
 		}
 		file_protobuf_proto_crux_proto_msgTypes[91].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeploymentDetailsResponse); i {
+			switch v := v.(*DeploymentResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11776,7 +12000,7 @@ func file_protobuf_proto_crux_proto_init() {
 			}
 		}
 		file_protobuf_proto_crux_proto_msgTypes[92].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeploymentEventContainerState); i {
+			switch v := v.(*DeploymentListByVersionResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11788,7 +12012,7 @@ func file_protobuf_proto_crux_proto_init() {
 			}
 		}
 		file_protobuf_proto_crux_proto_msgTypes[93].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeploymentEventLog); i {
+			switch v := v.(*DeploymentByVersionResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11800,7 +12024,7 @@ func file_protobuf_proto_crux_proto_init() {
 			}
 		}
 		file_protobuf_proto_crux_proto_msgTypes[94].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeploymentEventResponse); i {
+			switch v := v.(*DeploymentDetailsResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11812,7 +12036,7 @@ func file_protobuf_proto_crux_proto_init() {
 			}
 		}
 		file_protobuf_proto_crux_proto_msgTypes[95].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeploymentEventListResponse); i {
+			switch v := v.(*DeploymentEventContainerState); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11824,7 +12048,7 @@ func file_protobuf_proto_crux_proto_init() {
 			}
 		}
 		file_protobuf_proto_crux_proto_msgTypes[96].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeploymentListSecretsRequest); i {
+			switch v := v.(*DeploymentEventLog); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11836,7 +12060,7 @@ func file_protobuf_proto_crux_proto_init() {
 			}
 		}
 		file_protobuf_proto_crux_proto_msgTypes[97].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*CreateNotificationRequest); i {
+			switch v := v.(*DeploymentEventResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11848,7 +12072,7 @@ func file_protobuf_proto_crux_proto_init() {
 			}
 		}
 		file_protobuf_proto_crux_proto_msgTypes[98].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*CreateNotificationResponse); i {
+			switch v := v.(*DeploymentEventListResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11860,7 +12084,7 @@ func file_protobuf_proto_crux_proto_init() {
 			}
 		}
 		file_protobuf_proto_crux_proto_msgTypes[99].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UpdateNotificationRequest); i {
+			switch v := v.(*DeploymentListSecretsRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11872,7 +12096,7 @@ func file_protobuf_proto_crux_proto_init() {
 			}
 		}
 		file_protobuf_proto_crux_proto_msgTypes[100].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*NotificationDetailsResponse); i {
+			switch v := v.(*CreateNotificationRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11884,7 +12108,7 @@ func file_protobuf_proto_crux_proto_init() {
 			}
 		}
 		file_protobuf_proto_crux_proto_msgTypes[101].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*NotificationResponse); i {
+			switch v := v.(*CreateNotificationResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11896,7 +12120,7 @@ func file_protobuf_proto_crux_proto_init() {
 			}
 		}
 		file_protobuf_proto_crux_proto_msgTypes[102].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*NotificationListResponse); i {
+			switch v := v.(*UpdateNotificationRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11908,7 +12132,7 @@ func file_protobuf_proto_crux_proto_init() {
 			}
 		}
 		file_protobuf_proto_crux_proto_msgTypes[103].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*HealthResponse); i {
+			switch v := v.(*NotificationDetailsResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11920,7 +12144,7 @@ func file_protobuf_proto_crux_proto_init() {
 			}
 		}
 		file_protobuf_proto_crux_proto_msgTypes[104].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TemplateResponse); i {
+			switch v := v.(*NotificationResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11932,7 +12156,7 @@ func file_protobuf_proto_crux_proto_init() {
 			}
 		}
 		file_protobuf_proto_crux_proto_msgTypes[105].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TemplateListResponse); i {
+			switch v := v.(*NotificationListResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11944,6 +12168,42 @@ func file_protobuf_proto_crux_proto_init() {
 			}
 		}
 		file_protobuf_proto_crux_proto_msgTypes[106].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*HealthResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_protobuf_proto_crux_proto_msgTypes[107].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*TemplateResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_protobuf_proto_crux_proto_msgTypes[108].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*TemplateListResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_protobuf_proto_crux_proto_msgTypes[109].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*CreateProductFromTemplateRequest); i {
 			case 0:
 				return &v.state
@@ -12006,34 +12266,35 @@ func file_protobuf_proto_crux_proto_init() {
 	file_protobuf_proto_crux_proto_msgTypes[72].OneofWrappers = []interface{}{}
 	file_protobuf_proto_crux_proto_msgTypes[73].OneofWrappers = []interface{}{}
 	file_protobuf_proto_crux_proto_msgTypes[74].OneofWrappers = []interface{}{}
-	file_protobuf_proto_crux_proto_msgTypes[77].OneofWrappers = []interface{}{}
-	file_protobuf_proto_crux_proto_msgTypes[78].OneofWrappers = []interface{}{}
 	file_protobuf_proto_crux_proto_msgTypes[79].OneofWrappers = []interface{}{}
-	file_protobuf_proto_crux_proto_msgTypes[81].OneofWrappers = []interface{}{
+	file_protobuf_proto_crux_proto_msgTypes[80].OneofWrappers = []interface{}{}
+	file_protobuf_proto_crux_proto_msgTypes[81].OneofWrappers = []interface{}{}
+	file_protobuf_proto_crux_proto_msgTypes[82].OneofWrappers = []interface{}{}
+	file_protobuf_proto_crux_proto_msgTypes[84].OneofWrappers = []interface{}{
 		(*DeploymentEditEventMessage_InstancesCreated)(nil),
 		(*DeploymentEditEventMessage_ImageIdDeleted)(nil),
 	}
-	file_protobuf_proto_crux_proto_msgTypes[82].OneofWrappers = []interface{}{}
-	file_protobuf_proto_crux_proto_msgTypes[83].OneofWrappers = []interface{}{}
-	file_protobuf_proto_crux_proto_msgTypes[84].OneofWrappers = []interface{}{}
 	file_protobuf_proto_crux_proto_msgTypes[85].OneofWrappers = []interface{}{}
 	file_protobuf_proto_crux_proto_msgTypes[86].OneofWrappers = []interface{}{}
+	file_protobuf_proto_crux_proto_msgTypes[87].OneofWrappers = []interface{}{}
 	file_protobuf_proto_crux_proto_msgTypes[88].OneofWrappers = []interface{}{}
-	file_protobuf_proto_crux_proto_msgTypes[90].OneofWrappers = []interface{}{}
+	file_protobuf_proto_crux_proto_msgTypes[89].OneofWrappers = []interface{}{}
 	file_protobuf_proto_crux_proto_msgTypes[91].OneofWrappers = []interface{}{}
-	file_protobuf_proto_crux_proto_msgTypes[94].OneofWrappers = []interface{}{
+	file_protobuf_proto_crux_proto_msgTypes[93].OneofWrappers = []interface{}{}
+	file_protobuf_proto_crux_proto_msgTypes[94].OneofWrappers = []interface{}{}
+	file_protobuf_proto_crux_proto_msgTypes[97].OneofWrappers = []interface{}{
 		(*DeploymentEventResponse_Log)(nil),
 		(*DeploymentEventResponse_DeploymentStatus)(nil),
 		(*DeploymentEventResponse_ContainerStatus)(nil),
 	}
-	file_protobuf_proto_crux_proto_msgTypes[103].OneofWrappers = []interface{}{}
+	file_protobuf_proto_crux_proto_msgTypes[106].OneofWrappers = []interface{}{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_protobuf_proto_crux_proto_rawDesc,
 			NumEnums:      12,
-			NumMessages:   107,
+			NumMessages:   110,
 			NumExtensions: 0,
 			NumServices:   11,
 		},

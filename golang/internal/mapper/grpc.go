@@ -358,11 +358,12 @@ func mapVolumeLinks(in []*agent.VolumeLink) []v1.VolumeLink {
 	return volumeLinks
 }
 
-func MapContainerState(in *[]dockerTypes.Container) []*common.ContainerStateItem {
+func MapContainerState(in []dockerTypes.Container) []*common.ContainerStateItem {
 	list := []*common.ContainerStateItem{}
 
-	for i := range *in {
-		it := (*in)[i]
+	for i := range in {
+		// TODO (@m8Vago): get rid of it :)
+		it := in[i]
 
 		name := ""
 		if len(it.Names) > 0 {
@@ -387,15 +388,17 @@ func MapContainerState(in *[]dockerTypes.Container) []*common.ContainerStateItem
 		}
 
 		list = append(list, &common.ContainerStateItem{
-			ContainerId: it.ID,
-			Name:        name,
-			Command:     it.Command,
-			CreatedAt:   timestamppb.New(time.UnixMilli(it.Created * int64(time.Microsecond)).UTC()),
-			State:       dogger.MapContainerState(it.State),
-			Status:      it.Status,
-			Ports:       mapContainerPorts(&it.Ports),
-			ImageName:   imageName[0],
-			ImageTag:    imageTag,
+			Container: &common.ContainerStateItem_Id{
+				Id: it.ID,
+			},
+			Name:      name,
+			Command:   it.Command,
+			CreatedAt: timestamppb.New(time.UnixMilli(it.Created * int64(time.Microsecond)).UTC()),
+			State:     dogger.MapContainerState(it.State),
+			Status:    it.Status,
+			Ports:     mapContainerPorts(&it.Ports),
+			ImageName: imageName[0],
+			ImageTag:  imageTag,
 		})
 	}
 
@@ -424,6 +427,9 @@ func MapKubeDeploymentListToCruxStateItems(deployments *appsv1.DeploymentList) [
 		deployment := deployments.Items[i]
 
 		stateItem := &common.ContainerStateItem{
+			Container: &common.ContainerStateItem_Prefix{
+				Prefix: deployment.Namespace,
+			},
 			Name:  deployment.Name,
 			State: mapKubeStatusToCruxContainerState(deployment.Status),
 			CreatedAt: timestamppb.New(

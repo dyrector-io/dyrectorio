@@ -63,19 +63,19 @@ const exposeRule = yup
 const restartPolicyRule = yup
   .mixed<ContainerRestartPolicyType>()
   .oneOf([...CONTAINER_RESTART_POLICY_TYPE_VALUES])
-  .default('undefined')
+  .default('no')
   .required()
 
 const networkModeRule = yup
   .mixed<ContainerNetworkMode>()
   .oneOf([...CONTAINER_NETWORK_MODE_VALUES])
-  .default('none')
+  .default('bridge')
   .required()
 
 const deploymentStrategyRule = yup
   .mixed<ContainerDeploymentStrategyType>()
   .oneOf([...CONTAINER_DEPLOYMENT_STRATEGY_VALUES])
-  .default('unknown')
+  .default('recreate')
   .required()
 
 const logDriverRule = yup

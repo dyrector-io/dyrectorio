@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { DeploymentStatusEnum } from '@prisma/client'
+import { DeploymentStatusEnum, InstanceContainerConfig } from '@prisma/client'
 import { JsonArray } from 'prisma'
 import { concatAll, EMPTY, filter, from, lastValueFrom, map, merge, Observable, Subject } from 'rxjs'
 import Deployment from 'src/domain/deployment'
@@ -170,10 +170,11 @@ export default class DeployService {
 
   async patchDeployment(request: PatchDeploymentRequest): Promise<UpdateEntityResponse> {
     const reqInstance = request.instance
-    let instanceConfigPatchSet: InstanceContainerConfigData = null
+    let instanceConfigPatchSet: Omit<InstanceContainerConfig, 'id' | 'instanceId'> = null
 
     if (reqInstance && reqInstance.config) {
-      instanceConfigPatchSet = this.mapper.instanceConfigToDb(reqInstance.config)
+      const config = this.mapper.instanceConfigToInstanceContainerConfigData(reqInstance.config)
+      instanceConfigPatchSet = this.mapper.instanceContainerConfigDataToDb(config)
     }
 
     const deployment = await this.prisma.deployment.update({
@@ -209,12 +210,24 @@ export default class DeployService {
   }
 
   async deleteDeployment(request: IdRequest): Promise<Empty> {
-    // TODO: delete it from the node if neccessary
-    await this.prisma.deployment.delete({
+    const deployment = await this.prisma.deployment.delete({
       where: {
         id: request.id,
       },
+      select: {
+        prefix: true,
+        nodeId: true,
+      },
     })
+
+    const agent = this.agentService.getById(deployment.nodeId)
+    if (agent) {
+      agent.deleteContainers({
+        prefix: deployment.prefix,
+        containerId: undefined,
+        prefixName: undefined,
+      })
+    }
 
     return Empty
   }
@@ -339,7 +352,7 @@ export default class DeployService {
 
         const mergedConfig = this.mapper.mergeConfigs(
           (it.image.config ?? {}) as ContainerConfigData,
-          (it.config ?? {}) as ContainerConfigData,
+          (it.config ?? {}) as InstanceContainerConfigData,
         )
 
         return {

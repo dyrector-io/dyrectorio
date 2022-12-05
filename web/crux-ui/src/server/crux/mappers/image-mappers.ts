@@ -43,9 +43,9 @@ export const deploymentStrategyToDto = (strategy?: DeploymentStrategy): Containe
   switch (strategy) {
     case null:
     case undefined:
-      return 'recreate'
     case DeploymentStrategy.DEPLOYMENT_STRATEGY_UNSPECIFIED:
-      return 'unknown'
+    case DeploymentStrategy.UNRECOGNIZED:
+      return 'recreate'
     default:
       return deploymentStrategyToJSON(strategy).toLowerCase() as ContainerDeploymentStrategyType
   }

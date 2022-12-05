@@ -9,7 +9,6 @@ import {
   Registry,
   RestartPolicy,
 } from '@prisma/client'
-import { JsonObject } from 'prisma'
 import { toTimestamp } from 'src/domain/utils'
 import {
   DeploymentStrategy as ProtoDeploymentStrategy,
@@ -76,13 +75,13 @@ export default class ImageMapper {
   }
 
   configToCommonConfig(
-    config: ContainerConfigData,
+    config: Partial<ContainerConfigData>,
     secretMapper: (secret: XOR<UniqueSecretKey, UniqueSecretKeyValue>) => ProtoUniqueSecretKeyValue,
   ): ProtoCruxCommonContainerConfig {
     return {
       name: config.name,
       environment: config.environment,
-      secrets: config.secrets.map(secretMapper),
+      secrets: config.secrets?.map(secretMapper),
       commands: config.commands,
       expose: this.exposeStrategyToGrpc(config.expose),
       args: config.args,
@@ -104,7 +103,7 @@ export default class ImageMapper {
     }
   }
 
-  configToDagentConfig(config: ContainerConfigData): ProtoCruxDagentContainerConfig {
+  configToDagentConfig(config: Partial<ContainerConfigData>): ProtoCruxDagentContainerConfig {
     return {
       networks: config.networks,
       logConfig: this.logConfigToProto(config.logConfig),
@@ -114,15 +113,15 @@ export default class ImageMapper {
     }
   }
 
-  configToCraneConfig(config: ContainerConfigData): ProtoCruxCraneContainerConfig {
+  configToCraneConfig(config: Partial<ContainerConfigData>): ProtoCruxCraneContainerConfig {
     return {
-      customHeaders: config.customHeaders as JsonObject,
-      extraLBAnnotations: config.extraLBAnnotations as JsonObject,
+      customHeaders: config.customHeaders,
+      extraLBAnnotations: config.extraLBAnnotations,
       deploymentStatregy: this.deploymentStrategyToProto(config.deploymentStrategy),
-      healthCheckConfig: config.healthCheckConfig as JsonObject,
+      healthCheckConfig: config.healthCheckConfig,
       proxyHeaders: config.proxyHeaders,
       useLoadBalancer: config.useLoadBalancer,
-      resourceConfig: config.resourceConfig as JsonObject,
+      resourceConfig: config.resourceConfig,
       labels: !config.labels
         ? null
         : {
@@ -140,47 +139,88 @@ export default class ImageMapper {
     }
   }
 
-  configProtoToDb(config: ProtoContainerConfig): InstanceContainerConfigData {
+  configProtoToContainerConfigData(config: ProtoContainerConfig): InstanceContainerConfigData {
     return {
       // common
       name: config.common?.name,
       expose: this.exposeStrategyToDb(config.common?.expose),
-      ingress: toPrismaJson(config.common?.ingress),
-      configContainer: toPrismaJson(config.common?.configContainer),
-      importContainer: toPrismaJson(config.common?.importContainer),
+      ingress: config.common?.ingress,
+      configContainer: config.common?.configContainer,
+      importContainer: config.common?.importContainer,
       user: config.common?.user ? config.common.user : null,
       tty: config.common?.TTY ?? false,
-      ports: toPrismaJson(config.common?.ports),
-      portRanges: toPrismaJson(config.common?.portRanges),
-      volumes: toPrismaJson(this.volumesToDb(config.common?.volumes ?? [])),
-      commands: toPrismaJson(config.common?.commands),
-      args: toPrismaJson(config.common?.args),
-      environment: toPrismaJson(config.common?.environment),
-      secrets: toPrismaJson(config.common?.secrets),
-      initContainers: toPrismaJson(config.common?.initContainers),
+      ports: config.common?.ports,
+      portRanges: config.common?.portRanges,
+      volumes: this.volumesToDb(config.common?.volumes ?? []),
+      commands: config.common?.commands,
+      args: config.common?.args,
+      environment: config.common?.environment,
+      secrets: config.common?.secrets,
+      initContainers: config.common?.initContainers,
 
       // dagent
-      logConfig: toPrismaJson(this.logConfigToDb(config.dagent?.logConfig)),
+      logConfig: this.logConfigToDb(config.dagent?.logConfig),
       restartPolicy: this.restartPolicyToDb(config.dagent?.restartPolicy),
       networkMode: this.networkModeToDb(config.dagent?.networkMode),
-      networks: toPrismaJson(config.dagent?.networks),
-      dockerLabels: toPrismaJson(config.dagent?.labels),
+      networks: config.dagent?.networks,
+      dockerLabels: config.dagent?.labels,
 
       // crane
       deploymentStrategy: this.deploymentStrategyToDb(config.crane?.deploymentStatregy),
-      healthCheckConfig: toPrismaJson(config.crane?.healthCheckConfig),
-      resourceConfig: toPrismaJson(config.crane?.resourceConfig),
+      healthCheckConfig: config.crane?.healthCheckConfig,
+      resourceConfig: config.crane?.resourceConfig,
       proxyHeaders: config.crane?.proxyHeaders ?? false,
       useLoadBalancer: config.crane?.useLoadBalancer ?? false,
-      customHeaders: toPrismaJson(config.crane?.customHeaders),
-      extraLBAnnotations: toPrismaJson(config.crane?.extraLBAnnotations),
-      capabilities: toPrismaJson(config.capabilities),
-      annotations: toPrismaJson(config.crane?.annotations),
-      labels: toPrismaJson(config.crane?.labels),
+      customHeaders: config.crane?.customHeaders,
+      extraLBAnnotations: config.crane?.extraLBAnnotations,
+      capabilities: config.capabilities,
+      annotations: config.crane?.annotations,
+      labels: config.crane?.labels,
     }
   }
 
-  dbContainerConfigToCreateImageStatement(config: ContainerConfig | InstanceContainerConfig): ContainerConfigData {
+  containerConfigDataToDb(config: Partial<ContainerConfigData>): Omit<ContainerConfig, 'id' | 'imageId'> {
+    return {
+      name: config.name,
+      expose: config.expose,
+      ingress: toPrismaJson(config.ingress),
+      configContainer: toPrismaJson(config.configContainer),
+      importContainer: toPrismaJson(config.importContainer),
+      user: config.user ? config.user : null,
+      tty: config.tty ?? false,
+      ports: toPrismaJson(config.ports),
+      portRanges: toPrismaJson(config.portRanges),
+      volumes: toPrismaJson(config.volumes),
+      commands: toPrismaJson(config.commands),
+      args: toPrismaJson(config.args),
+      environment: toPrismaJson(config.environment),
+      secrets: toPrismaJson(config.secrets),
+      initContainers: toPrismaJson(config.initContainers),
+      logConfig: toPrismaJson(config.logConfig),
+
+      // dagent
+      restartPolicy: config.restartPolicy,
+      networkMode: config.networkMode,
+      networks: toPrismaJson(config.networks),
+      dockerLabels: toPrismaJson(config.dockerLabels),
+
+      // crane
+      deploymentStrategy: config.deploymentStrategy,
+      healthCheckConfig: toPrismaJson(config.healthCheckConfig),
+      resourceConfig: toPrismaJson(config.resourceConfig),
+      proxyHeaders: config.proxyHeaders ?? false,
+      useLoadBalancer: config.useLoadBalancer ?? false,
+      customHeaders: toPrismaJson(config.customHeaders),
+      extraLBAnnotations: toPrismaJson(config.extraLBAnnotations),
+      capabilities: toPrismaJson(config.capabilities),
+      annotations: toPrismaJson(config.annotations),
+      labels: toPrismaJson(config.labels),
+    }
+  }
+
+  dbContainerConfigToCreateImageStatement(
+    config: ContainerConfig | InstanceContainerConfig,
+  ): Omit<ContainerConfig, 'id' | 'imageId'> {
     return {
       // common
       name: config.name,
@@ -204,7 +244,7 @@ export default class ImageMapper {
       restartPolicy: config.restartPolicy,
       networkMode: config.networkMode,
       networks: toPrismaJson(config.networks),
-      dockerLabels: toPrismaJson(config.labels),
+      dockerLabels: toPrismaJson(config.dockerLabels),
 
       // crane
       deploymentStrategy: config.deploymentStrategy,

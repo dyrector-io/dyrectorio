@@ -53,7 +53,7 @@ export class GrpcConnection<I, O extends object> {
     this.stream.on('end', onEnd)
 
     // There is no onOpen event on the stream
-    // TODO: remove this hack and find a better solution, check nest.js's implementation
+    // TODO (@m8vago): remove this hack and find a better solution, check nest.js's implementation
     setTimeout(() => {
       if (this.stream && !this.stream.destroyed) {
         if (!this.connecting) {
@@ -97,9 +97,10 @@ export class GrpcConnection<I, O extends object> {
   }
 
   private onEnd() {
-    this.logger.verbose('Grpc closed')
+    this.logger.debug('Grpc closed')
 
     this.options.onClose?.call(null)
+    this.onDisconnected()
   }
 
   private onDisconnected() {

@@ -45,7 +45,7 @@ class EditorService {
   }
 
   onDeleteItem(itemId: string): void {
-    const editors = Array.from(this.editors.entries()).map(entry => {
+    const editors: [string, Editor][] = Array.from(this.editors.entries()).map(entry => {
       // eslint-disable-next-line prefer-const
       let [token, user] = entry
       if (user.focusedItemId === itemId) {
@@ -59,7 +59,7 @@ class EditorService {
       return [token, user]
     })
 
-    this.editors = new Map(Object.fromEntries(editors))
+    this.editors = new Map(editors)
   }
 
   onWebSocketConnected(token: string, user: Identity): Editor {

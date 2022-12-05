@@ -4,7 +4,20 @@ import { JwtService } from '@nestjs/jwt'
 import { DeploymentEventTypeEnum, DeploymentStatusEnum, NodeTypeEnum } from '@prisma/client'
 import { InjectMetric } from '@willsoto/nestjs-prometheus'
 import { Counter } from 'prom-client'
-import { catchError, concatAll, concatMap, EMPTY, finalize, from, map, Observable, of, Subject, takeUntil } from 'rxjs'
+import {
+  catchError,
+  concatAll,
+  concatMap,
+  EMPTY,
+  finalize,
+  from,
+  map,
+  Observable,
+  of,
+  startWith,
+  Subject,
+  takeUntil,
+} from 'rxjs'
 import { Agent, AgentToken } from 'src/domain/agent'
 import AgentInstaller from 'src/domain/agent-installer'
 import { DeploymentProgressEvent } from 'src/domain/deployment'
@@ -13,6 +26,7 @@ import { AlreadyExistsException, NotFoundException, UnauthenticatedException } f
 import { AgentAbortUpdate, AgentCommand, AgentInfo, CloseReason } from 'src/grpc/protobuf/proto/agent'
 import {
   ContainerStateListMessage,
+  DeleteContainersRequest,
   DeploymentStatus,
   DeploymentStatusMessage,
   Empty,
@@ -197,6 +211,11 @@ export default class AgentService {
     }
 
     return request.pipe(
+      // necessary, because of: https://github.com/nestjs/nest/issues/8111
+      startWith({
+        prefix,
+        data: [],
+      }),
       map(it => {
         this.logger.verbose(`${agent.id} - Container status update - ${prefix}`)
 
@@ -225,12 +244,21 @@ export default class AgentService {
     agent.update(this.configService.get<string>('CRUX_AGENT_IMAGE') ?? 'stable')
   }
 
-  async updateAborted(connection: GrpcNodeConnection, request: AgentAbortUpdate): Promise<Empty> {
+  updateAborted(connection: GrpcNodeConnection, request: AgentAbortUpdate): Empty {
     this.logger.warn(`Agent updated aborted for '${connection.nodeId}' with error: '${request.error}'`)
 
     const agent = this.getByIdOrThrow(connection.nodeId)
 
     agent.onUpdateAborted(request.error)
+
+    return Empty
+  }
+
+  containersDeleted(connection: GrpcNodeConnection, request: DeleteContainersRequest): Empty {
+    this.logger.log(`Containers deleted on '${connection.nodeId}'`)
+
+    const agent = this.getByIdOrThrow(connection.nodeId)
+    agent.onContainerDeleted(request)
 
     return Empty
   }
