@@ -1,3 +1,4 @@
+import DomainNotificationService from 'src/services/domain.notification.service'
 import { Injectable, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
@@ -21,6 +22,7 @@ import {
 import { Agent, AgentToken } from 'src/domain/agent'
 import AgentInstaller from 'src/domain/agent-installer'
 import { DeploymentProgressEvent } from 'src/domain/deployment'
+import { DeployMessage, NotificationMessageType } from 'src/domain/notification-templates'
 import { collectChildVersionIds, collectParentVersionIds } from 'src/domain/utils'
 import { AlreadyExistsException, NotFoundException, UnauthenticatedException } from 'src/exception/errors'
 import { AgentAbortUpdate, AgentCommand, AgentInfo, CloseReason } from 'src/grpc/protobuf/proto/agent'
@@ -53,6 +55,7 @@ export default class AgentService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private notificationService: DomainNotificationService,
   ) {}
 
   getById(id: string): Agent {
@@ -189,6 +192,18 @@ export default class AgentService {
       finalize(async () => {
         const status = agent.onDeploymentFinished(deployment)
         this.updateDeploymentStatuses(agent.id, deployment.id, status)
+
+        const messageType: NotificationMessageType =
+          deployment.getStatus() === DeploymentStatus.SUCCESSFUL ? 'successfulDeploy' : 'failedDeploy'
+        await this.notificationService.sendNotification({
+          identityId: deployment.notification.accessedBy,
+          messageType,
+          message: {
+            subject: deployment.notification.productName,
+            version: deployment.notification.versionName,
+            node: deployment.notification.nodeName,
+          } as DeployMessage,
+        })
 
         this.logger.debug(`Deployment finished: ${deployment.id}`)
       }),

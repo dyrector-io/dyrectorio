@@ -1166,11 +1166,6 @@ export interface NodeDeleteContainersRequest {
   containers: DeleteContainersRequest | undefined
 }
 
-export interface ContainerDeleteRequest {
-  prefix: string
-  name?: string | undefined
-}
-
 export interface NodeEventMessage {
   id: string
   status: NodeConnectionStatus
@@ -3540,26 +3535,6 @@ export const NodeDeleteContainersRequest = {
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.containers !== undefined &&
       (obj.containers = message.containers ? DeleteContainersRequest.toJSON(message.containers) : undefined)
-    return obj
-  },
-}
-
-function createBaseContainerDeleteRequest(): ContainerDeleteRequest {
-  return { prefix: '' }
-}
-
-export const ContainerDeleteRequest = {
-  fromJSON(object: any): ContainerDeleteRequest {
-    return {
-      prefix: isSet(object.prefix) ? String(object.prefix) : '',
-      name: isSet(object.name) ? String(object.name) : undefined,
-    }
-  },
-
-  toJSON(message: ContainerDeleteRequest): unknown {
-    const obj: any = {}
-    message.prefix !== undefined && (obj.prefix = message.prefix)
-    message.name !== undefined && (obj.name = message.name)
     return obj
   },
 }

@@ -794,11 +794,6 @@ message NodeDeleteContainersRequest {
   common.DeleteContainersRequest containers = 100;
 }
 
-message ContainerDeleteRequest {
-  string prefix = 1;
-  optional string name = 2;
-}
-
 /*
 Lifecycle:
 When a node connection is alive, the status is CONNECTED.
