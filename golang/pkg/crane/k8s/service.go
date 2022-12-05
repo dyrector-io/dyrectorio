@@ -3,11 +3,9 @@ package k8s
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/rs/zerolog/log"
 	"golang.org/x/exp/maps"
-	"gopkg.in/yaml.v3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
@@ -28,16 +26,18 @@ type IngressPortMap struct {
 	Ports map[string]int    `yaml:"ports"`
 }
 
-// facade object for service management
-type service struct {
+// facade object for Service management
+type Service struct {
 	ctx        context.Context
+	client     *Client
 	status     string
 	portsBound []int32
+	portNames  []string
 	appConfig  *config.Configuration
 }
 
-func newService(ctx context.Context, cfg *config.Configuration) *service {
-	return &service{status: "", ctx: ctx, appConfig: cfg}
+func NewService(ctx context.Context, client *Client) *Service {
+	return &Service{status: "", ctx: ctx, client: client, appConfig: client.appConfig}
 }
 
 type ServiceParams struct {
@@ -52,8 +52,8 @@ type ServiceParams struct {
 	annotations   map[string]string
 }
 
-func (s *service) deployService(params *ServiceParams) error {
-	client, err := getServiceClient(params.namespace, s.appConfig)
+func (s *Service) deployService(params *ServiceParams) error {
+	client, err := s.getServiceClient(params.namespace)
 	if err != nil {
 		return err
 	}
@@ -85,7 +85,9 @@ func (s *service) deployService(params *ServiceParams) error {
 	maps.Copy(annot, params.annotations)
 	svc.WithAnnotations(annot)
 
-	labels := map[string]string{}
+	labels := map[string]string{
+		"app": params.name,
+	}
 	maps.Copy(labels, params.labels)
 	svc.WithLabels(labels)
 
@@ -100,19 +102,15 @@ func (s *service) deployService(params *ServiceParams) error {
 		log.Info().Str("name", res.Name).Msg("Service deployed")
 	}
 
-	if s.appConfig.CraneGenTCPIngressMap != "" {
-		genIngressMapFile(ports, params.namespace, params.name)
-	}
-
-	// this might actually not reflect the objects present in the cluster
-	for _, servicePort := range getServicePorts(params.portBindings, params.portRanges) {
-		s.portsBound = append(s.portsBound, *servicePort.Port)
+	for _, servicePort := range res.Spec.Ports {
+		s.portsBound = append(s.portsBound, servicePort.Port)
+		s.portNames = append(s.portNames, servicePort.Name)
 	}
 	return nil
 }
 
-func (s *service) deleteServices(namespace, name string) error {
-	client, err := getServiceClient(namespace, s.appConfig)
+func (s *Service) deleteServices(namespace, name string) error {
+	client, err := s.getServiceClient(namespace)
 	if err != nil {
 		return err
 	}
@@ -124,11 +122,12 @@ func getServicePorts(portBindings []builder.PortBinding, portRanges []builder.Po
 	ports := []*acorev1.ServicePortApplyConfiguration{}
 
 	for i := range portBindings {
+		portNum := int32(portBindings[i].PortBinding)
 		ports = append(ports,
 			acorev1.ServicePort().
-				WithName(fmt.Sprintf("tcp-%v", i)).
+				WithName(fmt.Sprintf("tcp-%v", portNum)).
 				WithProtocol(corev1.ProtocolTCP).
-				WithPort(int32(portBindings[i].PortBinding)).
+				WithPort(portNum).
 				WithTargetPort(intstr.FromInt(int(portBindings[i].ExposedPort))))
 	}
 
@@ -137,11 +136,12 @@ func getServicePorts(portBindings []builder.PortBinding, portRanges []builder.Po
 		externalFrom := int(portRanges[i].External.From)
 		internalTo := int(portRanges[i].Internal.To)
 		for j := 0; internalFrom+j < internalTo; j++ {
+			portNum := int32(internalFrom + j)
 			ports = append(ports,
 				acorev1.ServicePort().
-					WithName(fmt.Sprintf("tcp-%v", internalFrom+j)).
+					WithName(fmt.Sprintf("tcp-%v", portNum)).
 					WithProtocol(corev1.ProtocolTCP).
-					WithPort(int32(internalFrom+j)).
+					WithPort(portNum).
 					WithTargetPort(intstr.FromInt(externalFrom+j)))
 		}
 	}
@@ -149,8 +149,8 @@ func getServicePorts(portBindings []builder.PortBinding, portRanges []builder.Po
 	return ports
 }
 
-func getServiceClient(namespace string, cfg *config.Configuration) (typedcorev1.ServiceInterface, error) {
-	clientset, err := NewClient().GetClientSet(cfg)
+func (s *Service) getServiceClient(namespace string) (typedcorev1.ServiceInterface, error) {
+	clientset, err := s.client.GetClientSet()
 	if err != nil {
 		return nil, err
 	}
@@ -158,25 +158,4 @@ func getServiceClient(namespace string, cfg *config.Configuration) (typedcorev1.
 	client := clientset.CoreV1().Services(namespace)
 
 	return client, nil
-}
-
-func genIngressMapFile(ports []*acorev1.ServicePortApplyConfiguration, namespace, serviceName string) {
-	content := IngressPortMap{}
-	content.TCP = make(map[uint16]string)
-	content.Ports = make(map[string]int)
-	for i := range ports {
-		content.TCP[uint16(ports[i].TargetPort.IntVal)] = fmt.Sprintf("%s/%s:%v", namespace, serviceName, *ports[i].Port)
-		content.Ports["tcp-"+fmt.Sprint(ports[i].TargetPort.IntVal)] = int(ports[i].TargetPort.IntVal)
-	}
-
-	bytes, err := yaml.Marshal(content)
-	if err != nil {
-		log.Error().Err(err).Stack().Msg("Could not unmarshal ingress map")
-	}
-
-	err = os.WriteFile("ingress-map.yml", bytes, os.ModePerm)
-
-	if err != nil {
-		log.Error().Err(err).Stack().Msg("Could not write file")
-	}
 }

@@ -14,31 +14,33 @@ import (
 type DeleteFacade struct {
 	ctx        context.Context
 	name       string
-	deployment *deployment
-	namespace  *namespace
-	service    *service
+	deployment *Deployment
+	namespace  *Namespace
+	service    *Service
 	configmap  *configmap
 	ingress    *ingress
-	pvc        *pvc
+	pvc        *PVC
 	appConfig  *config.Configuration
 }
 
 func NewDeleteFacade(ctx context.Context, namespace, name string, cfg *config.Configuration) *DeleteFacade {
+	k8sClient := NewClient(cfg)
+
 	return &DeleteFacade{
 		ctx:        ctx,
 		name:       name,
-		namespace:  newNamespace(ctx, namespace, cfg),
-		deployment: newDeployment(ctx, cfg),
+		namespace:  NewNamespace(ctx, namespace, k8sClient),
+		deployment: NewDeployment(ctx, cfg),
 		configmap:  newConfigmap(ctx, cfg),
-		service:    newService(ctx, cfg),
-		ingress:    newIngress(ctx, cfg),
-		pvc:        newPvc(ctx, cfg),
+		service:    NewService(ctx, k8sClient),
+		ingress:    newIngress(ctx, k8sClient),
+		pvc:        NewPVC(ctx, k8sClient),
 		appConfig:  cfg,
 	}
 }
 
 func (d *DeleteFacade) DeleteNamespace(namespace string) error {
-	return DeleteNamespace(d.ctx, namespace, d.appConfig)
+	return d.namespace.DeleteNamespace(namespace)
 }
 
 func (d *DeleteFacade) DeleteDeployment() error {

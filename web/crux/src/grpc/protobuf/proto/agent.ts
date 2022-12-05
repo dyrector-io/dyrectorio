@@ -244,6 +244,11 @@ export interface DagentContainerConfig_LabelsEntry {
   value: string
 }
 
+export interface Metrics {
+  port: string
+  path: string
+}
+
 export interface CraneContainerConfig {
   deploymentStatregy?: DeploymentStrategy | undefined
   healthCheckConfig?: HealthCheckConfig | undefined
@@ -252,6 +257,7 @@ export interface CraneContainerConfig {
   useLoadBalancer?: boolean | undefined
   annotations?: Marker | undefined
   labels?: Marker | undefined
+  metrics?: Metrics | undefined
   customHeaders: string[]
   extraLBAnnotations: { [key: string]: string }
 }
@@ -981,6 +987,23 @@ export const DagentContainerConfig_LabelsEntry = {
   },
 }
 
+function createBaseMetrics(): Metrics {
+  return { port: '', path: '' }
+}
+
+export const Metrics = {
+  fromJSON(object: any): Metrics {
+    return { port: isSet(object.port) ? String(object.port) : '', path: isSet(object.path) ? String(object.path) : '' }
+  },
+
+  toJSON(message: Metrics): unknown {
+    const obj: any = {}
+    message.port !== undefined && (obj.port = message.port)
+    message.path !== undefined && (obj.path = message.path)
+    return obj
+  },
+}
+
 function createBaseCraneContainerConfig(): CraneContainerConfig {
   return { customHeaders: [], extraLBAnnotations: {} }
 }
@@ -999,6 +1022,7 @@ export const CraneContainerConfig = {
       useLoadBalancer: isSet(object.useLoadBalancer) ? Boolean(object.useLoadBalancer) : undefined,
       annotations: isSet(object.annotations) ? Marker.fromJSON(object.annotations) : undefined,
       labels: isSet(object.labels) ? Marker.fromJSON(object.labels) : undefined,
+      metrics: isSet(object.metrics) ? Metrics.fromJSON(object.metrics) : undefined,
       customHeaders: Array.isArray(object?.customHeaders) ? object.customHeaders.map((e: any) => String(e)) : [],
       extraLBAnnotations: isObject(object.extraLBAnnotations)
         ? Object.entries(object.extraLBAnnotations).reduce<{ [key: string]: string }>((acc, [key, value]) => {
@@ -1025,6 +1049,7 @@ export const CraneContainerConfig = {
     message.annotations !== undefined &&
       (obj.annotations = message.annotations ? Marker.toJSON(message.annotations) : undefined)
     message.labels !== undefined && (obj.labels = message.labels ? Marker.toJSON(message.labels) : undefined)
+    message.metrics !== undefined && (obj.metrics = message.metrics ? Metrics.toJSON(message.metrics) : undefined)
     if (message.customHeaders) {
       obj.customHeaders = message.customHeaders.map(e => e)
     } else {
