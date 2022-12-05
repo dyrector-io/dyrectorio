@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { DeploymentStatusEnum, Version } from '@prisma/client'
 import { VersionMessage } from 'src/domain/notification-templates'
+import { NotFoundException } from 'src/exception/errors'
 import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
   CreateEntityResponse,
@@ -264,9 +265,9 @@ export default class VersionService {
         },
       })
 
-      await Promise.all(
+      const images = await Promise.all(
         // Iterate through the version images
-        parentVersion.images.map(async image => {
+        parentVersion.images.map<Promise<[string, string]>>(async image => {
           const createdImage = await prisma.image.create({
             data: {
               name: image.name,
@@ -285,9 +286,12 @@ export default class VersionService {
               imageId: createdImage.id,
             },
           })
+
+          return [image.id, createdImage.id]
         }),
       )
 
+      const imageMap = new Map(images)
       await Promise.all(
         // Iterate through the deployments images
         parentVersion.deployments.map(async deployment => {
@@ -306,11 +310,20 @@ export default class VersionService {
 
           await Promise.all(
             deployment.instances.map(async instance => {
+              const imageId = imageMap.get(instance.imageId)
+              if (!imageId) {
+                throw new NotFoundException({
+                  message: `New image id not found for image '${instance.imageId}'`,
+                  property: 'imageId',
+                  value: instance.imageId,
+                })
+              }
+
               const createdInstance = await prisma.instance.create({
                 data: {
                   state: instance.state,
                   deploymentId: createdDeploy.id,
-                  imageId: instance.imageId,
+                  imageId,
                 },
               })
 
