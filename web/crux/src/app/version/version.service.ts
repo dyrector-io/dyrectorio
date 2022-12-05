@@ -264,7 +264,7 @@ export default class VersionService {
         },
       })
 
-      await Promise.all(
+      const images: [string, string][] = await Promise.all(
         // Iterate through the version images
         parentVersion.images.map(async image => {
           const createdImage = await prisma.image.create({
@@ -285,9 +285,12 @@ export default class VersionService {
               imageId: createdImage.id,
             },
           })
+
+          return [image.id, createdImage.id]
         }),
       )
 
+      const imageMap = new Map(images)
       await Promise.all(
         // Iterate through the deployments images
         parentVersion.deployments.map(async deployment => {
@@ -306,11 +309,13 @@ export default class VersionService {
 
           await Promise.all(
             deployment.instances.map(async instance => {
+              const imageId = imageMap.get(instance.imageId)
+
               const createdInstance = await prisma.instance.create({
                 data: {
                   state: instance.state,
                   deploymentId: createdDeploy.id,
-                  imageId: instance.imageId,
+                  imageId,
                 },
               })
 
