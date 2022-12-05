@@ -25,15 +25,15 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
   const { t } = useTranslation('deployments')
 
   const [containers, setContainers] = useState<Container[]>(() =>
-    deployment.instances.map(
-      it =>
-        ({
-          id: it.id,
-          date: it.image.createdAt,
-          state: null,
-          name: it.image.config.name,
-        } as Container),
-    ),
+    deployment.instances.map(it => ({
+      date: it.image.createdAt,
+      state: null,
+      prefix: deployment.prefix,
+      name: it.image.config.name,
+      imageName: it.image.name,
+      imageTag: it.image.tag,
+      ports: [],
+    })),
   )
 
   const sock = useWebSocket(nodeWsUrl(deployment.nodeId), {
@@ -49,30 +49,28 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
       return weak
     }
 
-    const result = []
     const prefix = `${deployment.prefix}-`
-    const mapped = strong.map(it => {
-      if (it.name.startsWith(prefix)) {
+    const containerNames = strong.map(it => {
+      if (it.id && it.name.startsWith(prefix)) {
+        // came from docker
         return it.name.substring(prefix.length, it.name.length)
       }
 
       return it.name
     })
 
-    weak.forEach(it => {
-      const index = mapped.indexOf(it.name)
+    const result = weak.map(it => {
+      const index = containerNames.indexOf(it.name)
       if (index !== -1) {
-        const item = {
+        return {
           ...strong[index],
-          name: mapped[index],
+          name: containerNames[index],
         }
-        result.push(item)
-      } else {
-        result.push(it)
       }
+      return it
     })
 
-    return result.length !== 0 ? result : strong
+    return result.length > 0 ? result : strong
   }
 
   sock.on(WS_TYPE_CONTAINER_STATUS_LIST, (message: ContainerListMessage) => setContainers(merge(containers, message)))
