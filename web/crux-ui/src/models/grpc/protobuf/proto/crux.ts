@@ -1179,11 +1179,6 @@ export interface NodeDeleteContainersRequest {
   containers: DeleteContainersRequest | undefined
 }
 
-export interface ContainerDeleteRequest {
-  prefix: string
-  name?: string | undefined
-}
-
 export interface NodeEventMessage {
   id: string
   status: NodeConnectionStatus
@@ -7831,64 +7826,6 @@ export const NodeDeleteContainersRequest = {
       object.containers !== undefined && object.containers !== null
         ? DeleteContainersRequest.fromPartial(object.containers)
         : undefined
-    return message
-  },
-}
-
-function createBaseContainerDeleteRequest(): ContainerDeleteRequest {
-  return { prefix: '' }
-}
-
-export const ContainerDeleteRequest = {
-  encode(message: ContainerDeleteRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.prefix !== '') {
-      writer.uint32(10).string(message.prefix)
-    }
-    if (message.name !== undefined) {
-      writer.uint32(18).string(message.name)
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): ContainerDeleteRequest {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseContainerDeleteRequest()
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 1:
-          message.prefix = reader.string()
-          break
-        case 2:
-          message.name = reader.string()
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): ContainerDeleteRequest {
-    return {
-      prefix: isSet(object.prefix) ? String(object.prefix) : '',
-      name: isSet(object.name) ? String(object.name) : undefined,
-    }
-  },
-
-  toJSON(message: ContainerDeleteRequest): unknown {
-    const obj: any = {}
-    message.prefix !== undefined && (obj.prefix = message.prefix)
-    message.name !== undefined && (obj.name = message.name)
-    return obj
-  },
-
-  fromPartial<I extends Exact<DeepPartial<ContainerDeleteRequest>, I>>(object: I): ContainerDeleteRequest {
-    const message = createBaseContainerDeleteRequest()
-    message.prefix = object.prefix ?? ''
-    message.name = object.name ?? undefined
     return message
   },
 }
