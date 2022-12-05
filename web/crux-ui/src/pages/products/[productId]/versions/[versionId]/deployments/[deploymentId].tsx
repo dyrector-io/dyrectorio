@@ -182,7 +182,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
             })}
             deleteModalDescription={
               node.status === 'running' && state.deployment.status === 'successful'
-                ? t('proceedYouDeletePrefix')
+                ? t('proceedYouDeletePrefix', state.deployment)
                 : t('common:proceedYouLoseAllDataToName', {
                     name: state.deployment.prefix,
                   })

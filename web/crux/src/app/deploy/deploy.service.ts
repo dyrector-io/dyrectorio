@@ -210,12 +210,24 @@ export default class DeployService {
   }
 
   async deleteDeployment(request: IdRequest): Promise<Empty> {
-    // TODO: delete it from the node if neccessary
-    await this.prisma.deployment.delete({
+    const deployment = await this.prisma.deployment.delete({
       where: {
         id: request.id,
       },
+      select: {
+        prefix: true,
+        nodeId: true,
+      },
     })
+
+    const agent = this.agentService.getById(deployment.nodeId)
+    if (agent) {
+      agent.deleteContainers({
+        prefix: deployment.prefix,
+        containerId: undefined,
+        prefixName: undefined,
+      })
+    }
 
     return Empty
   }

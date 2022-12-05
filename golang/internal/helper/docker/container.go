@@ -45,9 +45,10 @@ func DeletePrefix(ctx context.Context, prefix string) error {
 		return fmt.Errorf("could not get containers for prefix (%s) to remove: %s", prefix, err.Error())
 	}
 
-	for _, container := range containers {
-		containerDeleteErr := deleteContainerByState(ctx, nil, container.ID, container.State, false)
+	for i := range containers {
+		containerDeleteErr := deleteContainerByState(ctx, nil, containers[i].ID, containers[i].State, false)
 		if err == nil {
+			log.Error().Err(containerDeleteErr).Stack().Send()
 			err = containerDeleteErr
 		}
 	}
@@ -118,34 +119,32 @@ func RemoveContainer(ctx context.Context, dog *dogger.DeploymentLogger, nameFilt
 }
 
 // Check the existence of containers, then return it
-func GetAllContainersByName(ctx context.Context, dog *dogger.DeploymentLogger, nameFilter string) ([]*types.Container, error) {
+func GetAllContainersByName(ctx context.Context, dog *dogger.DeploymentLogger, nameFilter string) ([]types.Container, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		log.Fatal().Err(err).Send()
 	}
 
-	containerList, err := cli.ContainerList(ctx, containerListOptionsfilter("name", nameFilter))
+	containers, err := cli.ContainerList(ctx, containerListOptionsfilter("name", nameFilter))
 	if err != nil {
-		return []*types.Container{}, err
+		return []types.Container{}, err
 	}
 
-	containers := containerListToPtrList(&containerList)
-	return *containers, nil
+	return containers, nil
 }
 
-func GetAllContainersByID(ctx context.Context, dog *dogger.DeploymentLogger, idFilter string) ([]*types.Container, error) {
+func GetAllContainersByID(ctx context.Context, dog *dogger.DeploymentLogger, idFilter string) ([]types.Container, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		log.Fatal().Err(err).Send()
 	}
 
-	containerList, err := cli.ContainerList(ctx, containerListOptionsfilter("id", idFilter))
+	containers, err := cli.ContainerList(ctx, containerListOptionsfilter("id", idFilter))
 	if err != nil {
-		return []*types.Container{}, err
+		return []types.Container{}, err
 	}
 
-	containers := containerListToPtrList(&containerList)
-	return *containers, nil
+	return containers, nil
 }
 
 func GetAllContainers(ctx context.Context, dog *dogger.DeploymentLogger) ([]types.Container, error) {
@@ -182,7 +181,7 @@ func GetContainerByID(ctx context.Context, dog *dogger.DeploymentLogger, idFilte
 }
 
 // Making sure there's only one, tops
-func checkOneContainer(containers []*types.Container, errorReport bool) (*types.Container, error) {
+func checkOneContainer(containers []types.Container, errorReport bool) (*types.Container, error) {
 	switch len(containers) {
 	case 0:
 		if errorReport {
@@ -190,7 +189,7 @@ func checkOneContainer(containers []*types.Container, errorReport bool) (*types.
 		}
 		return nil, nil
 	case 1:
-		return containers[0], nil
+		return &containers[0], nil
 	default:
 		return nil, fmt.Errorf("more than one matching container")
 	}
@@ -205,15 +204,4 @@ func containerListOptionsfilter(filtertype, filter string) types.ContainerListOp
 				Value: filter,
 			}),
 	}
-}
-
-func containerListToPtrList(containerList *[]types.Container) *[]*types.Container {
-	length := len(*containerList)
-
-	containers := make([]*types.Container, length)
-	for i := 0; i < length; i++ {
-		containers[i] = &(*containerList)[i]
-	}
-
-	return &containers
 }
