@@ -38,8 +38,8 @@ import AgentService from './agent.service'
     DomainNotificationService,
     KratosService,
     makeCounterProvider({
-      name: 'agent_counter',
-      help: 'Agent connection counter',
+      name: 'agent_online_count',
+      help: 'Agent connection count',
     }),
   ],
 })

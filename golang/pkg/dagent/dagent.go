@@ -35,12 +35,14 @@ func Serve(cfg *config.Configuration) {
 	grpcParams := grpc.TokenToConnectionParams(cfg.GrpcToken)
 	grpcContext := grpc.WithGRPCConfig(context.Background(), cfg)
 	grpc.Init(grpcContext, grpcParams, &cfg.CommonConfiguration, grpc.WorkerFunctions{
-		Deploy:     utils.DeployImage,
-		Watch:      utils.GetContainersByName,
-		Delete:     utils.DeleteContainerByName,
-		SecretList: utils.SecretList,
-		SelfUpdate: update.SelfUpdate,
-		Close:      grpcClose,
+		Deploy:           utils.DeployImage,
+		Watch:            utils.GetContainersByName,
+		Delete:           utils.DeleteContainerByName,
+		SecretList:       utils.SecretList,
+		SelfUpdate:       update.SelfUpdate,
+		Close:            grpcClose,
+		ContainerCommand: utils.ContainerCommand,
+		DeleteContainers: utils.DeleteContainers,
 	})
 }
 

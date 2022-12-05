@@ -24,5 +24,5 @@ func GetContainersByName(ctx context.Context, nameFilter string) []*common.Conta
 		log.Error().Stack().Err(err).Send()
 	}
 
-	return mapper.MapContainerState(&containers)
+	return mapper.MapContainerState(containers)
 }

@@ -145,8 +145,8 @@ const ProductDetailsPage = (props: ProductDetailsPageProps) => {
           editing={editState !== 'version-list'}
           setEditing={editing => setEditState(editing ? 'edit-product' : 'version-list')}
           submitRef={submitRef}
-          deleteModalTitle={t('common:confirmDelete', { name: product.name })}
-          deleteModalDescription={t('deleteDescription', {
+          deleteModalTitle={t('common:areYouSureDeleteName', { name: product.name })}
+          deleteModalDescription={t('proceedYouLoseAllDataToName', {
             name: product.name,
           })}
         />

@@ -139,7 +139,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
 
   const onDeleteUser = (user: User) =>
     confirmDelete(() => sendDeleteUserRequest(user), {
-      title: t('common:confirmDelete', { name: user.name }),
+      title: t('common:areYouSureDeleteName', { name: user.name }),
     })
 
   const onUserRoleUpdated = (userId: string, role: UserRole) => {
@@ -234,7 +234,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
             texts={pageMenuTexts}
             editing={detailsState !== 'none'}
             setEditing={it => setDetailsState(it ? 'editing' : 'none')}
-            deleteModalTitle={t('common:confirmDelete', { name: team.name })}
+            deleteModalTitle={t('common:areYouSureDeleteName', { name: team.name })}
             onDelete={canDelete ? onDeleteTeam : null}
             submitRef={submitRef}
             onAdd={canEdit ? onInviteUser : null}
@@ -260,7 +260,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
 
         <DyoConfirmationModal
           config={deleteModalConfig}
-          title={t('common:confirmDelete')}
+          title={t('common:areYouSureDeleteName')}
           confirmText={t('common:delete')}
           className="w-1/4"
           confirmColor="bg-error-red"

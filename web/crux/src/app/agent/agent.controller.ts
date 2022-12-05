@@ -10,6 +10,7 @@ import {
 } from 'src/grpc/protobuf/proto/agent'
 import {
   ContainerStateListMessage,
+  DeleteContainersRequest,
   DeploymentStatusMessage,
   Empty,
   ListSecretsResponse,
@@ -44,7 +45,11 @@ export default class AgentController implements GrpcAgentController {
     return this.service.handleSecretList(call.connection, request)
   }
 
-  abortUpdate(request: AgentAbortUpdate, _: Metadata, call: NodeUnaryCall): Promise<Empty> {
+  abortUpdate(request: AgentAbortUpdate, _: Metadata, call: NodeUnaryCall): Empty {
     return this.service.updateAborted(call.connection, request)
+  }
+
+  deleteContainers(request: DeleteContainersRequest, _: Metadata, call: NodeUnaryCall): Empty {
+    return this.service.containersDeleted(call.connection, request)
   }
 }

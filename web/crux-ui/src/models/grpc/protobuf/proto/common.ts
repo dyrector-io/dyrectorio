@@ -497,6 +497,51 @@ export function exposeStrategyToJSON(object: ExposeStrategy): string {
   }
 }
 
+export enum ContainerOperation {
+  CONTAINER_OPERATION_UNSPECIFIED = 0,
+  START_CONTAINER = 1,
+  STOP_CONTAINER = 2,
+  RESTART_CONTAINER = 3,
+  UNRECOGNIZED = -1,
+}
+
+export function containerOperationFromJSON(object: any): ContainerOperation {
+  switch (object) {
+    case 0:
+    case 'CONTAINER_OPERATION_UNSPECIFIED':
+      return ContainerOperation.CONTAINER_OPERATION_UNSPECIFIED
+    case 1:
+    case 'START_CONTAINER':
+      return ContainerOperation.START_CONTAINER
+    case 2:
+    case 'STOP_CONTAINER':
+      return ContainerOperation.STOP_CONTAINER
+    case 3:
+    case 'RESTART_CONTAINER':
+      return ContainerOperation.RESTART_CONTAINER
+    case -1:
+    case 'UNRECOGNIZED':
+    default:
+      return ContainerOperation.UNRECOGNIZED
+  }
+}
+
+export function containerOperationToJSON(object: ContainerOperation): string {
+  switch (object) {
+    case ContainerOperation.CONTAINER_OPERATION_UNSPECIFIED:
+      return 'CONTAINER_OPERATION_UNSPECIFIED'
+    case ContainerOperation.START_CONTAINER:
+      return 'START_CONTAINER'
+    case ContainerOperation.STOP_CONTAINER:
+      return 'STOP_CONTAINER'
+    case ContainerOperation.RESTART_CONTAINER:
+      return 'RESTART_CONTAINER'
+    case ContainerOperation.UNRECOGNIZED:
+    default:
+      return 'UNRECOGNIZED'
+  }
+}
+
 export interface Empty {}
 
 export interface InstanceDeploymentItem {
@@ -521,7 +566,8 @@ export interface ContainerStateListMessage {
 }
 
 export interface ContainerStateItem {
-  containerId: string
+  id: string | undefined
+  prefix: string | undefined
   name: string
   command: string
   createdAt: Timestamp | undefined
@@ -584,6 +630,23 @@ export interface ListSecretsResponse {
 export interface UniqueKey {
   id: string
   key: string
+}
+
+export interface ContainerIdentifier {
+  prefix: string
+  name: string
+}
+
+export interface ContainerCommandRequest {
+  id: string | undefined
+  prefixName: ContainerIdentifier | undefined
+  operation: ContainerOperation
+}
+
+export interface DeleteContainersRequest {
+  containerId: string | undefined
+  prefixName: ContainerIdentifier | undefined
+  prefix: string | undefined
 }
 
 function createBaseEmpty(): Empty {
@@ -882,7 +945,8 @@ export const ContainerStateListMessage = {
 
 function createBaseContainerStateItem(): ContainerStateItem {
   return {
-    containerId: '',
+    id: undefined,
+    prefix: undefined,
     name: '',
     command: '',
     createdAt: undefined,
@@ -896,8 +960,11 @@ function createBaseContainerStateItem(): ContainerStateItem {
 
 export const ContainerStateItem = {
   encode(message: ContainerStateItem, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.containerId !== '') {
-      writer.uint32(802).string(message.containerId)
+    if (message.id !== undefined) {
+      writer.uint32(1602).string(message.id)
+    }
+    if (message.prefix !== undefined) {
+      writer.uint32(1610).string(message.prefix)
     }
     if (message.name !== '') {
       writer.uint32(810).string(message.name)
@@ -933,8 +1000,11 @@ export const ContainerStateItem = {
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
-        case 100:
-          message.containerId = reader.string()
+        case 200:
+          message.id = reader.string()
+          break
+        case 201:
+          message.prefix = reader.string()
           break
         case 101:
           message.name = reader.string()
@@ -970,7 +1040,8 @@ export const ContainerStateItem = {
 
   fromJSON(object: any): ContainerStateItem {
     return {
-      containerId: isSet(object.containerId) ? String(object.containerId) : '',
+      id: isSet(object.id) ? String(object.id) : undefined,
+      prefix: isSet(object.prefix) ? String(object.prefix) : undefined,
       name: isSet(object.name) ? String(object.name) : '',
       command: isSet(object.command) ? String(object.command) : '',
       createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
@@ -984,7 +1055,8 @@ export const ContainerStateItem = {
 
   toJSON(message: ContainerStateItem): unknown {
     const obj: any = {}
-    message.containerId !== undefined && (obj.containerId = message.containerId)
+    message.id !== undefined && (obj.id = message.id)
+    message.prefix !== undefined && (obj.prefix = message.prefix)
     message.name !== undefined && (obj.name = message.name)
     message.command !== undefined && (obj.command = message.command)
     message.createdAt !== undefined && (obj.createdAt = fromTimestamp(message.createdAt).toISOString())
@@ -1002,7 +1074,8 @@ export const ContainerStateItem = {
 
   fromPartial<I extends Exact<DeepPartial<ContainerStateItem>, I>>(object: I): ContainerStateItem {
     const message = createBaseContainerStateItem()
-    message.containerId = object.containerId ?? ''
+    message.id = object.id ?? undefined
+    message.prefix = object.prefix ?? undefined
     message.name = object.name ?? ''
     message.command = object.command ?? ''
     message.createdAt =
@@ -1548,6 +1621,206 @@ export const UniqueKey = {
     const message = createBaseUniqueKey()
     message.id = object.id ?? ''
     message.key = object.key ?? ''
+    return message
+  },
+}
+
+function createBaseContainerIdentifier(): ContainerIdentifier {
+  return { prefix: '', name: '' }
+}
+
+export const ContainerIdentifier = {
+  encode(message: ContainerIdentifier, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.prefix !== '') {
+      writer.uint32(10).string(message.prefix)
+    }
+    if (message.name !== '') {
+      writer.uint32(18).string(message.name)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): ContainerIdentifier {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseContainerIdentifier()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.prefix = reader.string()
+          break
+        case 2:
+          message.name = reader.string()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): ContainerIdentifier {
+    return {
+      prefix: isSet(object.prefix) ? String(object.prefix) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+    }
+  },
+
+  toJSON(message: ContainerIdentifier): unknown {
+    const obj: any = {}
+    message.prefix !== undefined && (obj.prefix = message.prefix)
+    message.name !== undefined && (obj.name = message.name)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<ContainerIdentifier>, I>>(object: I): ContainerIdentifier {
+    const message = createBaseContainerIdentifier()
+    message.prefix = object.prefix ?? ''
+    message.name = object.name ?? ''
+    return message
+  },
+}
+
+function createBaseContainerCommandRequest(): ContainerCommandRequest {
+  return { id: undefined, prefixName: undefined, operation: 0 }
+}
+
+export const ContainerCommandRequest = {
+  encode(message: ContainerCommandRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== undefined) {
+      writer.uint32(1602).string(message.id)
+    }
+    if (message.prefixName !== undefined) {
+      ContainerIdentifier.encode(message.prefixName, writer.uint32(1610).fork()).ldelim()
+    }
+    if (message.operation !== 0) {
+      writer.uint32(800).int32(message.operation)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): ContainerCommandRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseContainerCommandRequest()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 200:
+          message.id = reader.string()
+          break
+        case 201:
+          message.prefixName = ContainerIdentifier.decode(reader, reader.uint32())
+          break
+        case 100:
+          message.operation = reader.int32() as any
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): ContainerCommandRequest {
+    return {
+      id: isSet(object.id) ? String(object.id) : undefined,
+      prefixName: isSet(object.prefixName) ? ContainerIdentifier.fromJSON(object.prefixName) : undefined,
+      operation: isSet(object.operation) ? containerOperationFromJSON(object.operation) : 0,
+    }
+  },
+
+  toJSON(message: ContainerCommandRequest): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.prefixName !== undefined &&
+      (obj.prefixName = message.prefixName ? ContainerIdentifier.toJSON(message.prefixName) : undefined)
+    message.operation !== undefined && (obj.operation = containerOperationToJSON(message.operation))
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<ContainerCommandRequest>, I>>(object: I): ContainerCommandRequest {
+    const message = createBaseContainerCommandRequest()
+    message.id = object.id ?? undefined
+    message.prefixName =
+      object.prefixName !== undefined && object.prefixName !== null
+        ? ContainerIdentifier.fromPartial(object.prefixName)
+        : undefined
+    message.operation = object.operation ?? 0
+    return message
+  },
+}
+
+function createBaseDeleteContainersRequest(): DeleteContainersRequest {
+  return { containerId: undefined, prefixName: undefined, prefix: undefined }
+}
+
+export const DeleteContainersRequest = {
+  encode(message: DeleteContainersRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.containerId !== undefined) {
+      writer.uint32(1602).string(message.containerId)
+    }
+    if (message.prefixName !== undefined) {
+      ContainerIdentifier.encode(message.prefixName, writer.uint32(1610).fork()).ldelim()
+    }
+    if (message.prefix !== undefined) {
+      writer.uint32(1618).string(message.prefix)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): DeleteContainersRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseDeleteContainersRequest()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 200:
+          message.containerId = reader.string()
+          break
+        case 201:
+          message.prefixName = ContainerIdentifier.decode(reader, reader.uint32())
+          break
+        case 202:
+          message.prefix = reader.string()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): DeleteContainersRequest {
+    return {
+      containerId: isSet(object.containerId) ? String(object.containerId) : undefined,
+      prefixName: isSet(object.prefixName) ? ContainerIdentifier.fromJSON(object.prefixName) : undefined,
+      prefix: isSet(object.prefix) ? String(object.prefix) : undefined,
+    }
+  },
+
+  toJSON(message: DeleteContainersRequest): unknown {
+    const obj: any = {}
+    message.containerId !== undefined && (obj.containerId = message.containerId)
+    message.prefixName !== undefined &&
+      (obj.prefixName = message.prefixName ? ContainerIdentifier.toJSON(message.prefixName) : undefined)
+    message.prefix !== undefined && (obj.prefix = message.prefix)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<DeleteContainersRequest>, I>>(object: I): DeleteContainersRequest {
+    const message = createBaseDeleteContainersRequest()
+    message.containerId = object.containerId ?? undefined
+    message.prefixName =
+      object.prefixName !== undefined && object.prefixName !== null
+        ? ContainerIdentifier.fromPartial(object.prefixName)
+        : undefined
+    message.prefix = object.prefix ?? undefined
     return message
   },
 }

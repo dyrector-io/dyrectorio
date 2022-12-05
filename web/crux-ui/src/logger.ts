@@ -81,6 +81,6 @@ export class Logger {
 
   static logLevelFromString(level: string): LogLevel {
     const key = level?.toUpperCase() as LogLevelKey
-    return LogLevel[key] ?? process.env.NODE_ENV === 'production' ? LogLevel.INFO : LogLevel.VERBOSE
+    return LogLevel[key] ?? (process.env.NODE_ENV === 'production' ? LogLevel.INFO : LogLevel.VERBOSE)
   }
 }

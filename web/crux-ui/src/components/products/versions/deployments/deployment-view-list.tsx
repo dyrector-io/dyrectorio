@@ -17,7 +17,7 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
   const { state } = props
   const { instances } = state
 
-  const { t } = useTranslation('common')
+  const { t } = useTranslation('images')
 
   const columnWidths = ['w-3/12', 'w-3/12', 'w-2/12', 'w-3/12', 'w-1/12']
   const headers = ['containerName', 'common:registry', 'imageTag', 'common:createdAt', 'common:actions']

@@ -24,36 +24,26 @@ spec:
           imagePullPolicy: Always
           resources:
             requests:
-              cpu: 64m
               memory: 128Mi
             limits:
-              cpu: 1000m
-              memory: 512Mi
+              cpu: 1
+              memory: 256Mi
           envFrom:
             - configMapRef:
                 name: crane-config
-          volumeMounts:
-            - name: agent-data
-              mountPath: /srv/dagent
       containers:
         - name: crane
           image: ghcr.io/dyrector-io/dyrectorio/agent/crane:latest
           imagePullPolicy: Always
           resources:
             requests:
-              cpu: 64m
               memory: 128Mi
             limits:
-              cpu: 1000m
-              memory: 512Mi
+              cpu: 1
+              memory: 256Mi
           envFrom:
             - configMapRef:
                 name: crane-config
-          volumeMounts:
-            - name: agent-data
-              mountPath: /srv/dagent
-      volumes:
-      - name: agent-data
-        persistentVolumeClaim:
-          claimName: agent-data
+            - secretRef:
+                name: dyrectorio-secret
 

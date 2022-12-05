@@ -1,3 +1,5 @@
+SHELL = /bin/sh
+ 
 PACKAGE := github.com/dyrector-io/dyrectorio/golang
 ORG_REGISTRY := ghcr.io/dyrector-io/dyrectorio
 AGENT_REGISTRY_URL := ${ORG_REGISTRY}/agent
@@ -29,6 +31,8 @@ GOARCH?=amd64
 ifeq ($(GOOS),windows)
 	OUT_EXT=.exe
 endif
+
+GOENVS := GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0
 
 .PHONY: up
 up: ##
@@ -62,23 +66,25 @@ go-crane-init: ##
 go-dagent: ##
 	air --build.cmd "" --build.bin "cd cmd/dagent && go run ."
 
+.PHONY: compile
+compile: | compile-cli compile-crane compile-dagent
 
 .PHONY: compile-cli
 compile-cli: ##
 	cd cmd/dyo && \
-	GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 go build ${LDFLAGS} -o ../../build/out/dyo${OUT_EXT}; \
+	${GOENVS} go build ${LDFLAGS} -o ../../build/out/dyo${OUT_EXT}; \
 	cd -
 
 .PHONY: compile-crane
 compile-crane: ##
 	cd cmd/crane && \
-	GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 go build ${LDFLAGS} -o ../../build/out/crane${OUT_EXT}; \
+	${GOENVS} go build ${LDFLAGS} -o ../../build/out/crane${OUT_EXT}; \
 	cd -
 
 .PHONY: compile-dagent
 compile-dagent: ##
 	cd cmd/dagent && \
-	GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 go build ${LDFLAGS} -o ../../build/out/dagent${OUT_EXT}; \
+	${GOENVS} go build ${LDFLAGS} -o ../../build/out/dagent${OUT_EXT}; \
 	cd -
 
 .PHONY: install-go-tools

@@ -2,6 +2,7 @@ package crux
 
 import (
 	"context"
+	"errors"
 
 	"github.com/rs/zerolog/log"
 
@@ -14,7 +15,8 @@ import (
 
 func GetDeployments(ctx context.Context, namespace string) []*common.ContainerStateItem {
 	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
-	list, err := k8s.GetDeployments(ctx, namespace, cfg)
+	deploymentHandler := k8s.NewDeployment(ctx, cfg)
+	list, err := deploymentHandler.GetDeployments(ctx, namespace, cfg)
 	if err != nil {
 		log.Error().Err(err).Stack().Send()
 	}
@@ -24,6 +26,14 @@ func GetDeployments(ctx context.Context, namespace string) []*common.ContainerSt
 
 func GetSecretsList(ctx context.Context, prefix, name string) ([]string, error) {
 	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
+	secretHandler := k8s.NewSecret(ctx, k8s.NewClient(cfg))
 
-	return k8s.ListSecrets(ctx, prefix, name, cfg)
+	return secretHandler.ListSecrets(prefix, name)
+}
+
+func DeploymentCommand(ctx context.Context, command *common.ContainerCommandRequest) error {
+	// TODO(@m8vago): implement container (deployment?) start, stop, restart for kube
+	// operation := command.Operation
+	// prefixName := command.GetPrefixName()
+	return errors.New("deployment commands are not implemented")
 }

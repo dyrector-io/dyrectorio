@@ -60,6 +60,13 @@ export const checkDeploymentMutability = (status: DeploymentStatusEnum, type: Ve
   }
 }
 
+export type DeploymentNotification = {
+  accessedBy: string
+  productName: string
+  versionName: string
+  nodeName: string
+}
+
 export default class Deployment {
   private statusChannel = new Subject<DeploymentProgressMessage>()
 
@@ -67,7 +74,7 @@ export default class Deployment {
 
   readonly id: string
 
-  constructor(private readonly request: VersionDeployRequest) {
+  constructor(private readonly request: VersionDeployRequest, public notification: DeploymentNotification) {
     this.id = request.id
   }
 

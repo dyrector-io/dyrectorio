@@ -9,6 +9,8 @@ import {
   CreateNodeRequest,
   GenerateScriptRequest,
   IdRequest,
+  NodeContainerCommandRequest,
+  NodeDeleteContainersRequest,
   NodeDetailsResponse,
   NodeEventMessage,
   NodeInstallResponse,
@@ -191,5 +193,17 @@ export default class NodeService {
 
   async updateNodeAgent(request: IdRequest): Promise<void> {
     this.agentService.updateAgent(request.id)
+  }
+
+  sendContainerCommand(request: NodeContainerCommandRequest): Empty {
+    const agent = this.agentService.getByIdOrThrow(request.id)
+    agent.sendContainerCommand(request.command)
+
+    return Empty
+  }
+
+  deleteContainers(request: NodeDeleteContainersRequest): Observable<Empty> {
+    const agent = this.agentService.getByIdOrThrow(request.id)
+    return agent.deleteContainers(request.containers)
   }
 }

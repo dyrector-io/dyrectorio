@@ -22,10 +22,13 @@ service Agent {
    * For prefix state reports, should be closed by the server.
    */
   rpc Connect(AgentInfo) returns (stream AgentCommand);
-  rpc DeploymentStatus(stream common.DeploymentStatusMessage) returns (common.Empty);
-  rpc ContainerState(stream common.ContainerStateListMessage) returns (common.Empty);
+  rpc DeploymentStatus(stream common.DeploymentStatusMessage)
+      returns (common.Empty);
+  rpc ContainerState(stream common.ContainerStateListMessage)
+      returns (common.Empty);
   rpc SecretList(common.ListSecretsResponse) returns (common.Empty);
   rpc AbortUpdate(AgentAbortUpdate) returns (common.Empty);
+  rpc DeleteContainers(common.DeleteContainersRequest) returns (common.Empty);
 }
 
 /**
@@ -46,7 +49,9 @@ message AgentCommand {
     DeployRequestLegacy deployLegacy = 4;
     ListSecretsRequest listSecrets = 5;
     AgentUpdateRequest update = 6;
-    CloseConnection close = 7;
+    CloseConnectionRequest close = 7;
+    common.ContainerCommandRequest containerCommand = 8;
+    common.DeleteContainersRequest deleteContainers = 9;
   }
 }
 
@@ -66,7 +71,7 @@ message VersionDeployRequest {
 /*
  * Request for a keys of existing secrets in a prefix, eg. namespace
  */
-message ListSecretsRequest { 
+message ListSecretsRequest {
   string prefix = 1;
   string name = 2;
 }
@@ -83,7 +88,7 @@ message InstanceConfig {
   used as namespace id
   */
   string prefix = 1;
-  optional string mountPath = 2; // mount path of instance (docker only)
+  optional string mountPath = 2;        // mount path of instance (docker only)
   optional Environment environment = 3; // environment variable map (piped)
   optional string repositoryPrefix = 4; // registry repo prefix
 }
@@ -155,7 +160,6 @@ message Marker {
   map<string, string> ingress = 1002;
 }
 
-
 message DagentContainerConfig {
   optional LogConfig logConfig = 100;
   optional common.RestartPolicy restartPolicy = 101;
@@ -163,6 +167,11 @@ message DagentContainerConfig {
 
   repeated string networks = 1000;
   map<string, string> labels = 1001;
+}
+
+message Metrics {
+  string port = 1;
+  string path = 2;
 }
 
 message CraneContainerConfig {
@@ -173,6 +182,7 @@ message CraneContainerConfig {
   optional bool useLoadBalancer = 104;
   optional Marker annotations = 105;
   optional Marker labels = 106;
+  optional Metrics metrics = 107;
 
   repeated string customHeaders = 1000;
   map<string, string> extraLBAnnotations = 1001;
@@ -242,9 +252,7 @@ message AgentUpdateRequest {
   int32 timeoutSeconds = 2;
 }
 
-message AgentAbortUpdate {
-  string error = 1;
-}
+message AgentAbortUpdate { string error = 1; }
 
 /*
  * Connection close
@@ -256,6 +264,4 @@ enum CloseReason {
   SELF_DESTRUCT = 2;
 }
 
-message CloseConnection {
-  CloseReason reason = 1;
-}
+message CloseConnectionRequest { CloseReason reason = 1; }

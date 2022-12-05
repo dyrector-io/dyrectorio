@@ -1,9 +1,16 @@
 import { Logger } from '@nestjs/common'
-import { finalize, Observable, Subject, throwError, timeout } from 'rxjs'
+import { catchError, finalize, Observable, of, Subject, throwError, timeout, TimeoutError } from 'rxjs'
 import { AlreadyExistsException, InternalException, PreconditionFailedException } from 'src/exception/errors'
 import { AgentCommand, AgentInfo, CloseReason } from 'src/grpc/protobuf/proto/agent'
-import { DeploymentStatus, ListSecretsResponse } from 'src/grpc/protobuf/proto/common'
+import {
+  ContainerCommandRequest,
+  DeleteContainersRequest,
+  DeploymentStatus,
+  Empty,
+  ListSecretsResponse,
+} from 'src/grpc/protobuf/proto/common'
 import { DeploymentProgressMessage, NodeConnectionStatus, NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
+import { CONTAINER_DELETE_TIMEOUT } from 'src/shared/const'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import ContainerStatusWatcher, { ContainerStatusStreamCompleter } from './container-status-watcher'
 import Deployment from './deployment'
@@ -19,6 +26,8 @@ export class Agent {
   private statusWatchers: Map<string, ContainerStatusWatcher> = new Map()
 
   private secretsWatchers: Map<string, Subject<ListSecretsResponse>> = new Map()
+
+  private deleteContainersRequests: Map<string, Subject<Empty>> = new Map()
 
   private updateStartedAt: number | null = null
 
@@ -100,6 +109,39 @@ export class Agent {
       } as AgentCommand)
     }
     this.commandChannel.complete()
+  }
+
+  sendContainerCommand(command: ContainerCommandRequest) {
+    this.throwWhenUpdating()
+
+    this.commandChannel.next({
+      containerCommand: command,
+    } as AgentCommand)
+  }
+
+  deleteContainers(request: DeleteContainersRequest): Observable<Empty> {
+    this.throwWhenUpdating()
+
+    const reqId = Agent.containerDeleteRequestToRequestId(request)
+    const result = new Subject<Empty>()
+    this.deleteContainersRequests.set(reqId, result)
+
+    this.commandChannel.next({
+      deleteContainers: request,
+    } as AgentCommand)
+
+    return result.pipe(
+      timeout(CONTAINER_DELETE_TIMEOUT),
+      catchError(err => {
+        if (err instanceof TimeoutError) {
+          result.complete()
+          this.deleteContainersRequests.delete(reqId)
+          return of(Empty)
+        }
+
+        throw err
+      }),
+    )
   }
 
   onConnected(): Observable<AgentCommand> {
@@ -225,6 +267,15 @@ export class Agent {
     })
   }
 
+  onContainerDeleted(request: DeleteContainersRequest) {
+    const reqId = Agent.containerDeleteRequestToRequestId(request)
+    const result = this.deleteContainersRequests.get(reqId)
+    if (result) {
+      this.deleteContainersRequests.delete(reqId)
+      result.complete()
+    }
+  }
+
   debugInfo(logger: Logger) {
     logger.debug(`Agent id: ${this.id}, open: ${!this.commandChannel.closed}`)
     logger.debug(`Deployments: ${this.deployments.size}`)
@@ -240,6 +291,18 @@ export class Agent {
         value: this.id,
       })
     }
+  }
+
+  private static containerDeleteRequestToRequestId(request: DeleteContainersRequest): string {
+    if (request.containerId) {
+      return request.containerId
+    }
+
+    if (request.prefixName) {
+      return `${request.prefixName.prefix}-${request.prefixName.name}`
+    }
+
+    return request.prefix
   }
 }
 

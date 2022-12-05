@@ -15,21 +15,29 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
 )
 
-// facade object for pvc management
-type pvc struct {
+// facade object for PVC management
+type PVC struct {
 	ctx       context.Context
+	client    *Client
 	status    string
 	requested map[string]v1.Volume
 	avail     map[string]v1.Volume
 	appConfig *config.Configuration
 }
 
-func newPvc(ctx context.Context, cfg *config.Configuration) *pvc {
-	return &pvc{ctx: ctx, status: "", avail: map[string]v1.Volume{}, requested: map[string]v1.Volume{}, appConfig: cfg}
+func NewPVC(ctx context.Context, client *Client) *PVC {
+	return &PVC{
+		ctx:       ctx,
+		client:    client,
+		status:    "",
+		avail:     map[string]v1.Volume{},
+		requested: map[string]v1.Volume{},
+		appConfig: client.appConfig,
+	}
 }
 
-func (p *pvc) deployPVC(namespace, name string, mountList []string, volumes []v1.Volume) error {
-	client, err := getPVCClient(namespace, p.appConfig)
+func (p *PVC) DeployPVC(namespace, name string, mountList []string, volumes []v1.Volume) error {
+	client, err := p.getPVCClient(namespace)
 	if err != nil {
 		return err
 	}
@@ -42,21 +50,21 @@ func (p *pvc) deployPVC(namespace, name string, mountList []string, volumes []v1
 		switch p.requested[i].Type {
 		// VOLUME
 		case string(v1.ReadOnlyVolumeType):
-			if err := p.applyVolume(client, namespace,
+			if err := p.ApplyVolume(client, namespace,
 				name, &volume,
 				coreV1.ReadOnlyMany); err != nil {
 				return err
 			}
 
 		case string(v1.ReadWriteOnceVolumeType), "":
-			if err := p.applyVolume(client, namespace,
+			if err := p.ApplyVolume(client, namespace,
 				name, &volume,
 				coreV1.ReadWriteOnce); err != nil {
 				return err
 			}
 
 		case string(v1.ReadWriteManyVolumeType):
-			if err := p.applyVolume(client, namespace,
+			if err := p.ApplyVolume(client, namespace,
 				name, &volume,
 				coreV1.ReadWriteMany); err != nil {
 				return err
@@ -83,7 +91,7 @@ func (p *pvc) deployPVC(namespace, name string, mountList []string, volumes []v1
 	return nil
 }
 
-func (p *pvc) applyVolume(client typedv1.PersistentVolumeClaimInterface,
+func (p *PVC) ApplyVolume(client typedv1.PersistentVolumeClaimInterface,
 	namespace, name string, volume *v1.Volume, volumeType coreV1.PersistentVolumeAccessMode,
 ) error {
 	fullVolumeName := util.JoinV("-", name, volume.Name)
@@ -130,8 +138,8 @@ func (p *pvc) applyVolume(client typedv1.PersistentVolumeClaimInterface,
 	return nil
 }
 
-func getPVCClient(namespace string, cfg *config.Configuration) (typedv1.PersistentVolumeClaimInterface, error) {
-	clientSet, err := NewClient().GetClientSet(cfg)
+func (p *PVC) getPVCClient(namespace string) (typedv1.PersistentVolumeClaimInterface, error) {
+	clientSet, err := NewClient(p.appConfig).GetClientSet()
 	if err != nil {
 		return nil, err
 	}

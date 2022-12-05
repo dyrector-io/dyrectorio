@@ -5,10 +5,12 @@ import { Observable } from 'rxjs'
 import { Timestamp } from '../../google/protobuf/timestamp'
 import {
   ConfigContainer,
+  ContainerCommandRequest,
   ContainerState,
   containerStateFromJSON,
   ContainerStateListMessage,
   containerStateToJSON,
+  DeleteContainersRequest,
   DeploymentStatus,
   deploymentStatusFromJSON,
   deploymentStatusToJSON,
@@ -1152,6 +1154,18 @@ export interface NodeInstallResponse {
 
 export interface NodeScriptResponse {
   content: string
+}
+
+export interface NodeContainerCommandRequest {
+  id: string
+  accessedBy: string
+  command: ContainerCommandRequest | undefined
+}
+
+export interface NodeDeleteContainersRequest {
+  id: string
+  accessedBy: string
+  containers: DeleteContainersRequest | undefined
 }
 
 export interface NodeEventMessage {
@@ -3486,6 +3500,52 @@ export const NodeScriptResponse = {
   },
 }
 
+function createBaseNodeContainerCommandRequest(): NodeContainerCommandRequest {
+  return { id: '', accessedBy: '', command: undefined }
+}
+
+export const NodeContainerCommandRequest = {
+  fromJSON(object: any): NodeContainerCommandRequest {
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      command: isSet(object.command) ? ContainerCommandRequest.fromJSON(object.command) : undefined,
+    }
+  },
+
+  toJSON(message: NodeContainerCommandRequest): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
+    message.command !== undefined &&
+      (obj.command = message.command ? ContainerCommandRequest.toJSON(message.command) : undefined)
+    return obj
+  },
+}
+
+function createBaseNodeDeleteContainersRequest(): NodeDeleteContainersRequest {
+  return { id: '', accessedBy: '', containers: undefined }
+}
+
+export const NodeDeleteContainersRequest = {
+  fromJSON(object: any): NodeDeleteContainersRequest {
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      containers: isSet(object.containers) ? DeleteContainersRequest.fromJSON(object.containers) : undefined,
+    }
+  },
+
+  toJSON(message: NodeDeleteContainersRequest): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
+    message.containers !== undefined &&
+      (obj.containers = message.containers ? DeleteContainersRequest.toJSON(message.containers) : undefined)
+    return obj
+  },
+}
+
 function createBaseNodeEventMessage(): NodeEventMessage {
   return { id: '', status: 0 }
 }
@@ -4460,6 +4520,10 @@ export interface CruxNodeClient {
 
   updateNodeAgent(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
 
+  sendContainerCommand(request: NodeContainerCommandRequest, metadata: Metadata, ...rest: any): Observable<Empty>
+
+  deleteContainers(request: NodeDeleteContainersRequest, metadata: Metadata, ...rest: any): Observable<Empty>
+
   subscribeNodeEventChannel(request: ServiceIdRequest, metadata: Metadata, ...rest: any): Observable<NodeEventMessage>
 
   watchContainerState(
@@ -4512,6 +4576,18 @@ export interface CruxNodeController {
 
   updateNodeAgent(request: IdRequest, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
 
+  sendContainerCommand(
+    request: NodeContainerCommandRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<Empty> | Observable<Empty> | Empty
+
+  deleteContainers(
+    request: NodeDeleteContainersRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<Empty> | Observable<Empty> | Empty
+
   subscribeNodeEventChannel(request: ServiceIdRequest, metadata: Metadata, ...rest: any): Observable<NodeEventMessage>
 
   watchContainerState(
@@ -4534,6 +4610,8 @@ export function CruxNodeControllerMethods() {
       'discardScript',
       'revokeToken',
       'updateNodeAgent',
+      'sendContainerCommand',
+      'deleteContainers',
       'subscribeNodeEventChannel',
       'watchContainerState',
     ]

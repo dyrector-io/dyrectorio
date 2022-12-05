@@ -1,8 +1,10 @@
 import { Logger } from '@app/logger'
 import {
   Container,
+  ContainerCommand,
   ContainerListMessage,
   CreateDyoNode,
+  DeleteContainers,
   DyoNode,
   DyoNodeDetails,
   DyoNodeInstall,
@@ -10,7 +12,7 @@ import {
   NodeStatusMessage,
   UpdateDyoNode,
 } from '@app/models'
-import { ContainerStateListMessage, Empty } from '@app/models/grpc/protobuf/proto/common'
+import { ContainerIdentifier, ContainerStateListMessage, Empty } from '@app/models/grpc/protobuf/proto/common'
 import {
   AccessRequest,
   CreateEntityResponse,
@@ -18,6 +20,8 @@ import {
   CruxNodeClient,
   GenerateScriptRequest,
   IdRequest,
+  NodeContainerCommandRequest,
+  NodeDeleteContainersRequest,
   NodeDetailsResponse,
   NodeEventMessage,
   NodeInstallResponse,
@@ -31,7 +35,12 @@ import {
 import { timestampToUTC } from '@app/utils'
 import { Identity } from '@ory/kratos-client'
 import { GrpcConnection, protomisify, ProtoSubscriptionOptions } from './grpc-connection'
-import { containerStateToDto, nodeStatusToDto, nodeTypeGrpcToUi } from './mappers/node-mappers'
+import {
+  containerOperationToProto,
+  containerStateToDto,
+  nodeStatusToDto,
+  nodeTypeGrpcToUi,
+} from './mappers/node-mappers'
 
 class DyoNodeService {
   private logger = new Logger(DyoNodeService.name)
@@ -169,6 +178,63 @@ class DyoNodeService {
     return await protomisify<IdRequest, Empty>(this.client, this.client.revokeToken)(IdRequest, req)
   }
 
+  async updateNodeAgent(id: string): Promise<void> {
+    const req: IdRequest = {
+      id,
+      accessedBy: this.identity.id,
+    }
+
+    await protomisify<IdRequest, Empty>(this.client, this.client.updateNodeAgent)(IdRequest, req)
+  }
+
+  async sendContainerCommand(id: string, command: ContainerCommand) {
+    const containerId = typeof command.container === 'string' ? command.container : null
+
+    const req: NodeContainerCommandRequest = {
+      id,
+      accessedBy: this.identity.id,
+      command: {
+        id: containerId,
+        prefixName: containerId ? null : (command.container as ContainerIdentifier),
+        operation: containerOperationToProto(command.operation),
+      },
+    }
+
+    await protomisify<NodeContainerCommandRequest, Empty>(this.client, this.client.sendContainerCommand)(
+      NodeContainerCommandRequest,
+      req,
+    )
+  }
+
+  async deleteContainer(id: string, containers: DeleteContainers) {
+    let containerId: string = null
+    let prefixName: ContainerIdentifier = null
+    let prefix: string = null
+
+    if (containers.prefix) {
+      prefix = containers.prefix
+    } else if (typeof containers.id === 'string') {
+      containerId = containers.id
+    } else {
+      prefixName = containers.id
+    }
+
+    const req: NodeDeleteContainersRequest = {
+      id,
+      accessedBy: this.identity.id,
+      containers: {
+        containerId,
+        prefixName,
+        prefix,
+      },
+    }
+
+    await protomisify<NodeDeleteContainersRequest, Empty>(this.client, this.client.deleteContainers)(
+      NodeDeleteContainersRequest,
+      req,
+    )
+  }
+
   subscribeToNodeEvents(
     teamId: string,
     options: ProtoSubscriptionOptions<NodeStatusMessage>,
@@ -206,25 +272,19 @@ class DyoNodeService {
       data.data.map(
         it =>
           ({
-            id: it.containerId,
+            id: it.id,
+            prefix: it.prefix,
             name: it.name,
             date: timestampToUTC(it.createdAt),
             state: containerStateToDto(it.state),
             ports: it.ports,
+            imageName: it.imageName,
+            imageTag: it.imageTag,
           } as Container),
       ) as ContainerListMessage
 
     const stream = () => this.client.watchContainerState(WatchContainerStateRequest.fromJSON(req))
     return new GrpcConnection(this.logger.descend('container-status'), stream, transform, options)
-  }
-
-  async updateNodeAgent(id: string): Promise<void> {
-    const req: IdRequest = {
-      id,
-      accessedBy: this.identity.id,
-    }
-
-    await protomisify<IdRequest, Empty>(this.client, this.client.updateNodeAgent)(IdRequest, req)
   }
 }
 

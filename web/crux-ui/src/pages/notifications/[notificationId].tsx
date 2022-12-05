@@ -87,8 +87,8 @@ const NotificationDetailsPage = (props: NotificationDetailsPageProps) => {
           editing={editing}
           setEditing={setEditing}
           submitRef={submitRef}
-          deleteModalTitle={t('common:confirmDelete', { name: notification.name })}
-          deleteModalDescription={t('common:deleteDescription', {
+          deleteModalTitle={t('common:areYouSureDeleteName', { name: notification.name })}
+          deleteModalDescription={t('common:proceedYouLoseAllDataToName', {
             name: notification.name,
           })}
         />

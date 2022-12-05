@@ -12,7 +12,7 @@
   "noItems": "You haven't added a version to this product yet. Click on 'Add Version'.",
   "noDeployments": "You haven't added a deployment to this version. Click 'Add deployment' to browse images you can add.",
 
-  "deleteDescription": "If you proceed, you will lose all your data related to {{name}}, all configurations, all verison history, all deployments. This action is not revocable.",
+  "proceedYouLoseAllDataToName": "If you proceed, you will lose all your data related to {{name}}, all configurations, all verison history, all deployments. This action is not revocable.",
 
   "deployments": "Deployments",
   "images": "Images",

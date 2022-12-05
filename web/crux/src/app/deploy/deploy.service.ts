@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { DeploymentStatusEnum } from '@prisma/client'
+import { DeploymentStatusEnum, InstanceContainerConfig } from '@prisma/client'
 import { JsonArray } from 'prisma'
 import { concatAll, EMPTY, filter, from, lastValueFrom, map, merge, Observable, Subject } from 'rxjs'
 import Deployment from 'src/domain/deployment'
@@ -170,10 +170,11 @@ export default class DeployService {
 
   async patchDeployment(request: PatchDeploymentRequest): Promise<UpdateEntityResponse> {
     const reqInstance = request.instance
-    let instanceConfigPatchSet: InstanceContainerConfigData = null
+    let instanceConfigPatchSet: Omit<InstanceContainerConfig, 'id' | 'instanceId'> = null
 
     if (reqInstance && reqInstance.config) {
-      instanceConfigPatchSet = this.mapper.instanceConfigToDb(reqInstance.config)
+      const config = this.mapper.instanceConfigToInstanceContainerConfigData(reqInstance.config)
+      instanceConfigPatchSet = this.mapper.instanceContainerConfigDataToDb(config)
     }
 
     const deployment = await this.prisma.deployment.update({
@@ -209,12 +210,24 @@ export default class DeployService {
   }
 
   async deleteDeployment(request: IdRequest): Promise<Empty> {
-    // TODO: delete it from the node if neccessary
-    await this.prisma.deployment.delete({
+    const deployment = await this.prisma.deployment.delete({
       where: {
         id: request.id,
       },
+      select: {
+        prefix: true,
+        nodeId: true,
+      },
     })
+
+    const agent = this.agentService.getById(deployment.nodeId)
+    if (agent) {
+      agent.deleteContainers({
+        prefix: deployment.prefix,
+        containerId: undefined,
+        prefixName: undefined,
+      })
+    }
 
     return Empty
   }
@@ -322,47 +335,55 @@ export default class DeployService {
       })
     }
 
-    const deploy = new Deployment({
-      id: deployment.id,
-      releaseNotes: deployment.version.changelog,
-      versionName: deployment.version.name,
-      requests: deployment.instances.map(it => {
-        const { registry } = it.image
-        const registryUrl =
-          registry.type === 'google' || registry.type === 'github'
-            ? `${registry.url}/${registry.imageNamePrefix}`
-            : registry.type === 'v2' || registry.type === 'gitlab'
-            ? registry.url
-            : registry.type === 'hub'
-            ? registry.imageNamePrefix
-            : ''
+    const deploy = new Deployment(
+      {
+        id: deployment.id,
+        releaseNotes: deployment.version.changelog,
+        versionName: deployment.version.name,
+        requests: deployment.instances.map(it => {
+          const { registry } = it.image
+          const registryUrl =
+            registry.type === 'google' || registry.type === 'github'
+              ? `${registry.url}/${registry.imageNamePrefix}`
+              : registry.type === 'v2' || registry.type === 'gitlab'
+              ? registry.url
+              : registry.type === 'hub'
+              ? registry.imageNamePrefix
+              : ''
 
-        const mergedConfig = this.mapper.mergeConfigs(
-          (it.image.config ?? {}) as ContainerConfigData,
-          (it.config ?? {}) as ContainerConfigData,
-        )
+          const mergedConfig = this.mapper.mergeConfigs(
+            (it.image.config ?? {}) as ContainerConfigData,
+            (it.config ?? {}) as InstanceContainerConfigData,
+          )
 
-        return {
-          common: this.mapper.configToCommonConfig(mergedConfig),
-          crane: this.mapper.configToCraneConfig(mergedConfig),
-          dagent: this.mapper.configToDagentConfig(mergedConfig),
-          id: it.id,
-          containerName: it.image.config.name,
-          imageName: it.image.name,
-          tag: it.image.tag,
-          instanceConfig: this.mapper.deploymentToAgentInstanceConfig(deployment),
-          registry: registryUrl,
-          registryAuth: !registry.token
-            ? undefined
-            : {
-                name: registry.name,
-                url: registryUrl,
-                user: registry.user,
-                password: registry.token,
-              },
-        } as DeployRequest
-      }),
-    })
+          return {
+            common: this.mapper.configToCommonConfig(mergedConfig),
+            crane: this.mapper.configToCraneConfig(mergedConfig),
+            dagent: this.mapper.configToDagentConfig(mergedConfig),
+            id: it.id,
+            containerName: it.image.config.name,
+            imageName: it.image.name,
+            tag: it.image.tag,
+            instanceConfig: this.mapper.deploymentToAgentInstanceConfig(deployment),
+            registry: registryUrl,
+            registryAuth: !registry.token
+              ? undefined
+              : {
+                  name: registry.name,
+                  url: registryUrl,
+                  user: registry.user,
+                  password: registry.token,
+                },
+          } as DeployRequest
+        }),
+      },
+      {
+        accessedBy: request.accessedBy,
+        productName: deployment.version.product.name,
+        versionName: deployment.version.name,
+        nodeName: deployment.node.name,
+      },
+    )
 
     this.logger.debug(`Starting deployment: ${deploy.id}`)
 

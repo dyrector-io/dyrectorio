@@ -608,3 +608,40 @@ func SecretList(ctx context.Context, prefix, name string) ([]string, error) {
 
 	return []string{}, nil
 }
+
+func ContainerCommand(ctx context.Context, command *common.ContainerCommandRequest) error {
+	operation := command.Operation
+	containerID := command.GetId()
+
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return err
+	}
+
+	if operation == common.ContainerOperation_START_CONTAINER {
+		err = cli.ContainerStart(ctx, containerID, types.ContainerStartOptions{})
+	} else if operation == common.ContainerOperation_STOP_CONTAINER {
+		err = cli.ContainerStop(ctx, containerID, nil)
+	} else if operation == common.ContainerOperation_RESTART_CONTAINER {
+		err = cli.ContainerRestart(ctx, containerID, nil)
+	} else {
+		log.Error().Str("operation", operation.String()).Str("containerID", containerID).Msg("Unknown operation")
+	}
+
+	return err
+}
+
+func DeleteContainers(ctx context.Context, request *common.DeleteContainersRequest) error {
+	var err error
+	if request.GetContainerId() != "" {
+		err = dockerHelper.DeleteContainerByID(ctx, nil, request.GetContainerId(), false)
+	} else if request.GetPrefixName() != nil {
+		err = DeleteContainerByName(ctx, request.GetPrefixName().Prefix, request.GetPrefixName().Name)
+	} else if request.GetPrefix() != "" {
+		err = dockerHelper.DeletePrefix(ctx, request.GetPrefix())
+	} else {
+		log.Error().Msg("Unknown DeleteContainers request")
+	}
+
+	return err
+}

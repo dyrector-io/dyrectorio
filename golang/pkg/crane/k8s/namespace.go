@@ -2,6 +2,7 @@ package k8s
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/rs/zerolog/log"
 	apiv1 "k8s.io/api/core/v1"
@@ -13,44 +14,71 @@ import (
 	corev1 "k8s.io/client-go/applyconfigurations/core/v1"
 )
 
-// namespace wrapper for the facade
-type namespace struct {
+// Namespace wrapper for the facade
+type Namespace struct {
 	ctx       context.Context
+	client    *Client
 	name      string
 	appConfig *config.Configuration
 }
 
 // namespace entity
-type Namespace struct {
+type NamespaceResponse struct {
 	Name string `json:"name" binding:"required"`
 }
 
-func newNamespace(ctx context.Context, name string, cfg *config.Configuration) *namespace {
-	ns := namespace{ctx: ctx, name: name, appConfig: cfg}
+func NewNamespace(ctx context.Context, name string, client *Client) *Namespace {
+	ns := Namespace{ctx: ctx, name: name, client: client, appConfig: client.appConfig}
 	return &ns
 }
 
-func (n *namespace) deployNamespace() error {
-	// Add default namespace if not found
-	name := n.name
-	if n.name == "" {
-		name = "default"
+func (n *Namespace) getNamespaceClient() (v1.NamespaceInterface, error) {
+	clientset, err := NewClient(n.appConfig).GetClientSet()
+	if err != nil {
+		return nil, err
 	}
 
-	return DeployNamespace(n.ctx, name, n.appConfig)
+	client := clientset.CoreV1().Namespaces()
+
+	return client,
+
+		nil
 }
 
-func DeployNamespace(ctx context.Context, name string, cfg *config.Configuration) error {
-	client, err := getNamespaceClient(cfg)
+func (n *Namespace) EnsureExists(namespace string) error {
+	namespaces, err := n.GetNamespaces()
+	if err != nil {
+		return fmt.Errorf("namespace fetching error in ensure: %w", err)
+	}
+
+	namespaceFound := false
+	for _, item := range namespaces {
+		if item.Name == namespace {
+			namespaceFound = true
+			break
+		}
+	}
+	if !namespaceFound {
+		return n.DeployNamespace(namespace)
+	}
+	return nil
+}
+
+func (n *Namespace) DeployNamespace(name string) error {
+	clientSet, err := n.getNamespaceClient()
 	if err != nil {
 		return err
 	}
 
-	_, err = client.Apply(ctx,
+	if n.name == "" {
+		n.name = "default"
+	}
+
+	_, err = clientSet.Apply(n.ctx,
 		corev1.Namespace(name),
 		metav1.ApplyOptions{
-			FieldManager: cfg.FieldManagerName,
-			Force:        cfg.ForceOnConflicts,
+			FieldManager: n.appConfig.FieldManagerName,
+			Force:        n.appConfig.ForceOnConflicts,
 		})
 
 	if err != nil {
@@ -60,20 +88,12 @@ func DeployNamespace(ctx context.Context, name string, cfg *config.Configuration
 	return nil
 }
 
-func extractName(in *apiv1.NamespaceList) []Namespace {
-	out := []Namespace{}
-
-	for i := range in.Items {
-		out = append(out, Namespace{Name: in.Items[i].Name})
-	}
-	return out
-}
-
-func GetNamespaces(cfg *config.Configuration) ([]Namespace, error) {
-	client, err := getNamespaceClient(cfg)
+func (n *Namespace) GetNamespaces() ([]NamespaceResponse, error) {
+	client, err := n.getNamespaceClient()
 	if err != nil {
 		return nil, err
 	}
+
 	rawList, err := client.List(context.Background(), metav1.ListOptions{})
 
 	list := extractName(rawList)
@@ -83,14 +103,14 @@ func GetNamespaces(cfg *config.Configuration) ([]Namespace, error) {
 	return list, err
 }
 
-func DeleteNamespace(ctx context.Context, name string, cfg *config.Configuration) error {
-	client, err := getNamespaceClient(cfg)
+func (n *Namespace) DeleteNamespace(name string) error {
+	client, err := n.getNamespaceClient()
 	if err != nil {
 		return err
 	}
 
 	err = client.Delete(
-		ctx,
+		n.ctx,
 		name,
 		metav1.DeleteOptions{},
 	)
@@ -98,13 +118,11 @@ func DeleteNamespace(ctx context.Context, name string, cfg *config.Configuration
 	return err
 }
 
-func getNamespaceClient(cfg *config.Configuration) (v1.NamespaceInterface, error) {
-	clientset, err := NewClient().GetClientSet(cfg)
-	if err != nil {
-		return nil, err
+func extractName(in *apiv1.NamespaceList) []NamespaceResponse {
+	out := []NamespaceResponse{}
+
+	for i := range in.Items {
+		out = append(out, NamespaceResponse{Name: in.Items[i].Name})
 	}
-
-	client := clientset.CoreV1().Namespaces()
-
-	return client, nil
+	return out
 }

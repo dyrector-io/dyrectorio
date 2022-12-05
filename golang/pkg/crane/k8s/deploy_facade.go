@@ -17,17 +17,19 @@ import (
 )
 
 type DeployFacade struct {
-	ctx        context.Context
-	params     *DeployFacadeParams
-	image      imageHelper.URI
-	deployment *deployment
-	namespace  *namespace
-	service    *service
-	configmap  *configmap
-	ingress    *ingress
-	secret     *secret
-	pvc        *pvc
-	appConfig  *config.Configuration
+	ctx            context.Context
+	params         *DeployFacadeParams
+	client         *Client
+	image          imageHelper.URI
+	deployment     *Deployment
+	namespace      *Namespace
+	service        *Service
+	configmap      *configmap
+	ingress        *ingress
+	secret         *Secret
+	pvc            *PVC
+	ServiceMonitor *ServiceMonitor
+	appConfig      *config.Configuration
 }
 
 type DeployFacadeParams struct {
@@ -41,25 +43,35 @@ type DeployFacadeParams struct {
 }
 
 func NewDeployFacade(params *DeployFacadeParams, cfg *config.Configuration) *DeployFacade {
-	return &DeployFacade{
-		ctx:        params.Ctx,
-		params:     params,
-		image:      params.Image,
-		namespace:  newNamespace(params.Ctx, params.InstanceConfig.ContainerPreName, cfg),
-		deployment: newDeployment(params.Ctx, cfg),
-		configmap:  newConfigmap(params.Ctx, cfg),
-		service:    newService(params.Ctx, cfg),
-		ingress:    newIngress(params.Ctx, cfg),
-		secret:     newSecret(params.Ctx, cfg),
-		appConfig:  cfg,
+	k8sClient := NewClient(cfg)
 
-		pvc: newPvc(params.Ctx, cfg),
+	return &DeployFacade{
+		ctx:            params.Ctx,
+		params:         params,
+		image:          params.Image,
+		client:         k8sClient,
+		namespace:      NewNamespace(params.Ctx, params.InstanceConfig.ContainerPreName, k8sClient),
+		deployment:     NewDeployment(params.Ctx, cfg),
+		configmap:      newConfigmap(params.Ctx, cfg),
+		service:        NewService(params.Ctx, k8sClient),
+		ingress:        newIngress(params.Ctx, k8sClient),
+		secret:         NewSecret(params.Ctx, k8sClient),
+		ServiceMonitor: NewServiceMonitor(params.Ctx, k8sClient),
+		appConfig:      cfg,
+
+		pvc: NewPVC(params.Ctx, k8sClient),
 	}
 }
 
 func (d *DeployFacade) CheckPreConditions() error {
-	if err := d.namespace.deployNamespace(); err != nil {
-		return err
+	clientSet, err := d.client.GetClientSet()
+	if err != nil {
+		return fmt.Errorf("connection check error: %w", err)
+	}
+
+	_, _, err = clientSet.ServerGroupsAndResources()
+	if err != nil {
+		return fmt.Errorf("connection & auth check error: %w", err)
 	}
 
 	// additional k8s specific validation here
@@ -120,7 +132,7 @@ func (d *DeployFacade) PreDeploy() error {
 		return err
 	}
 
-	if err := d.pvc.deployPVC(
+	if err := d.pvc.DeployPVC(
 		d.namespace.name,
 		d.params.ContainerConfig.Container,
 		d.params.ContainerConfig.Mounts,
@@ -166,7 +178,7 @@ func (d *DeployFacade) Deploy() error {
 
 	if d.params.imagePullSecrets != nil {
 		imagePullSecretName = fmt.Sprintf("%s-reg", d.params.ContainerConfig.Container)
-		if err := ApplyRegistryAuthSecret(d.ctx,
+		if err := d.secret.ApplyRegistryAuthSecret(d.ctx,
 			d.params.InstanceConfig.ContainerPreName,
 			imagePullSecretName,
 			d.params.imagePullSecrets,
@@ -175,7 +187,7 @@ func (d *DeployFacade) Deploy() error {
 		}
 	}
 
-	if err := d.deployment.deployDeployment(&deploymentParams{
+	if err := d.deployment.DeployDeployment(&deploymentParams{
 		image:           d.params.Image,
 		namespace:       d.params.InstanceConfig.ContainerPreName,
 		containerConfig: &d.params.ContainerConfig,
@@ -218,6 +230,19 @@ func (d *DeployFacade) Deploy() error {
 }
 
 func (d *DeployFacade) PostDeploy() error {
+	if d.params.ContainerConfig.Metrics != nil && len(d.service.portNames) != 0 {
+		err := d.ServiceMonitor.Deploy(d.namespace.name,
+			d.params.ContainerConfig.Container,
+			*d.params.ContainerConfig.Metrics,
+			d.service.portNames[0],
+		)
+		if err != nil {
+			return err
+		}
+	} else if d.ServiceMonitor != nil {
+		d.ServiceMonitor.Cleanup(d.namespace.name, d.params.ContainerConfig.Container)
+	}
+
 	return nil
 }
 

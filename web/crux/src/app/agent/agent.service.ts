@@ -1,18 +1,34 @@
+import DomainNotificationService from 'src/services/domain.notification.service'
 import { Injectable, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import { DeploymentEventTypeEnum, DeploymentStatusEnum, NodeTypeEnum } from '@prisma/client'
 import { InjectMetric } from '@willsoto/nestjs-prometheus'
-import { Counter } from 'prom-client'
-import { catchError, concatAll, concatMap, EMPTY, finalize, from, map, Observable, of, Subject, takeUntil } from 'rxjs'
+import {
+  catchError,
+  concatAll,
+  concatMap,
+  EMPTY,
+  finalize,
+  from,
+  map,
+  Observable,
+  of,
+  startWith,
+  Subject,
+  takeUntil,
+} from 'rxjs'
+import { Gauge } from 'prom-client'
 import { Agent, AgentToken } from 'src/domain/agent'
 import AgentInstaller from 'src/domain/agent-installer'
 import { DeploymentProgressEvent } from 'src/domain/deployment'
+import { DeployMessage, NotificationMessageType } from 'src/domain/notification-templates'
 import { collectChildVersionIds, collectParentVersionIds } from 'src/domain/utils'
 import { AlreadyExistsException, NotFoundException, UnauthenticatedException } from 'src/exception/errors'
 import { AgentAbortUpdate, AgentCommand, AgentInfo, CloseReason } from 'src/grpc/protobuf/proto/agent'
 import {
   ContainerStateListMessage,
+  DeleteContainersRequest,
   DeploymentStatus,
   DeploymentStatusMessage,
   Empty,
@@ -35,10 +51,11 @@ export default class AgentService {
   private static SCRIPT_EXPIRATION = 10 * 60 * 1000 // millis
 
   constructor(
-    @InjectMetric('agent_counter') private agent_counter: Counter<string>,
+    @InjectMetric('agent_online_count') private agentCount: Gauge<string>,
     private prisma: PrismaService,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private notificationService: DomainNotificationService,
   ) {}
 
   getById(id: string): Agent {
@@ -176,6 +193,18 @@ export default class AgentService {
         const status = agent.onDeploymentFinished(deployment)
         this.updateDeploymentStatuses(agent.id, deployment.id, status)
 
+        const messageType: NotificationMessageType =
+          deployment.getStatus() === DeploymentStatus.SUCCESSFUL ? 'successfulDeploy' : 'failedDeploy'
+        await this.notificationService.sendNotification({
+          identityId: deployment.notification.accessedBy,
+          messageType,
+          message: {
+            subject: deployment.notification.productName,
+            version: deployment.notification.versionName,
+            node: deployment.notification.nodeName,
+          } as DeployMessage,
+        })
+
         this.logger.debug(`Deployment finished: ${deployment.id}`)
       }),
     )
@@ -197,6 +226,11 @@ export default class AgentService {
     }
 
     return request.pipe(
+      // necessary, because of: https://github.com/nestjs/nest/issues/8111
+      startWith({
+        prefix,
+        data: [],
+      }),
       map(it => {
         this.logger.verbose(`${agent.id} - Container status update - ${prefix}`)
 
@@ -225,7 +259,7 @@ export default class AgentService {
     agent.update(this.configService.get<string>('CRUX_AGENT_IMAGE') ?? 'stable')
   }
 
-  async updateAborted(connection: GrpcNodeConnection, request: AgentAbortUpdate): Promise<Empty> {
+  updateAborted(connection: GrpcNodeConnection, request: AgentAbortUpdate): Empty {
     this.logger.warn(`Agent updated aborted for '${connection.nodeId}' with error: '${request.error}'`)
 
     const agent = this.getByIdOrThrow(connection.nodeId)
@@ -235,10 +269,20 @@ export default class AgentService {
     return Empty
   }
 
+  containersDeleted(connection: GrpcNodeConnection, request: DeleteContainersRequest): Empty {
+    this.logger.log(`Containers deleted on '${connection.nodeId}'`)
+
+    const agent = this.getByIdOrThrow(connection.nodeId)
+    agent.onContainerDeleted(request)
+
+    return Empty
+  }
+
   private onAgentConnectionStatusChange(agent: Agent, status: NodeConnectionStatus) {
     if (status === NodeConnectionStatus.UNREACHABLE) {
       this.logger.log(`Left: ${agent.id}`)
       this.agents.delete(agent.id)
+      this.agentCount.dec()
       agent.onDisconnected()
     } else if (status === NodeConnectionStatus.CONNECTED) {
       agent.onConnected()
@@ -317,7 +361,7 @@ export default class AgentService {
     connection.status().subscribe(it => this.onAgentConnectionStatusChange(agent, it))
 
     this.logger.log(`Agent joined with id: ${request.id}, key: ${!!agent.publicKey}`)
-    this.agent_counter.inc()
+    this.agentCount.inc()
     this.logServiceInfo()
 
     return agent.onConnected()
