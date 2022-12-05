@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE "Image" ALTER COLUMN "tag" DROP NOT NULL;
