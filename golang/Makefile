@@ -1,3 +1,5 @@
+SHELL = /bin/sh
+ 
 PACKAGE := github.com/dyrector-io/dyrectorio/golang
 ORG_REGISTRY := ghcr.io/dyrector-io/dyrectorio
 AGENT_REGISTRY_URL := ${ORG_REGISTRY}/agent
