@@ -4,7 +4,6 @@ import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import { DeploymentEventTypeEnum, DeploymentStatusEnum, NodeTypeEnum } from '@prisma/client'
 import { InjectMetric } from '@willsoto/nestjs-prometheus'
-import { Counter } from 'prom-client'
 import {
   catchError,
   concatAll,
@@ -19,6 +18,7 @@ import {
   Subject,
   takeUntil,
 } from 'rxjs'
+import { Gauge } from 'prom-client'
 import { Agent, AgentToken } from 'src/domain/agent'
 import AgentInstaller from 'src/domain/agent-installer'
 import { DeploymentProgressEvent } from 'src/domain/deployment'
@@ -51,7 +51,7 @@ export default class AgentService {
   private static SCRIPT_EXPIRATION = 10 * 60 * 1000 // millis
 
   constructor(
-    @InjectMetric('agent_counter') private agent_counter: Counter<string>,
+    @InjectMetric('agent_online_count') private agent_count: Gauge<string>,
     private prisma: PrismaService,
     private jwtService: JwtService,
     private configService: ConfigService,
@@ -282,6 +282,7 @@ export default class AgentService {
     if (status === NodeConnectionStatus.UNREACHABLE) {
       this.logger.log(`Left: ${agent.id}`)
       this.agents.delete(agent.id)
+      this.agent_count.dec()
       agent.onDisconnected()
     } else if (status === NodeConnectionStatus.CONNECTED) {
       agent.onConnected()
@@ -360,7 +361,7 @@ export default class AgentService {
     connection.status().subscribe(it => this.onAgentConnectionStatusChange(agent, it))
 
     this.logger.log(`Agent joined with id: ${request.id}, key: ${!!agent.publicKey}`)
-    this.agent_counter.inc()
+    this.agent_count.inc()
     this.logServiceInfo()
 
     return agent.onConnected()

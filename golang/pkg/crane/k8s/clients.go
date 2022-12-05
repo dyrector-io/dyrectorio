@@ -28,6 +28,13 @@ func NewClient() *Client {
 	return client
 }
 
+func (c *Client) GetRestConf(cfg *config.Configuration) (*rest.Config, error) {
+	if cfg.CraneInCluster {
+		return rest.InClusterConfig()
+	}
+	return getLocalKubeConf(cfg)
+}
+
 func (c *Client) GetClientSet(cfg *config.Configuration) (*kubernetes.Clientset, error) {
 	if cfg.CraneInCluster {
 		return c.inClusterAuth(cfg)
@@ -46,7 +53,7 @@ func (c *Client) inClusterAuth(cfg *config.Configuration) (*kubernetes.Clientset
 	return clientset, err
 }
 
-func (c *Client) outClusterAuth(cfg *config.Configuration) (*kubernetes.Clientset, error) {
+func getLocalKubeConf(cfg *config.Configuration) (*rest.Config, error) {
 	var kubeconfig *string
 
 	if configPathFromEnv := cfg.KubeConfig; configPathFromEnv != "" {
@@ -56,14 +63,21 @@ func (c *Client) outClusterAuth(cfg *config.Configuration) (*kubernetes.Clientse
 		kubeconfig = &cfgPath
 	}
 
-	configFromFlags, err := c.BuildConfigFromFlags("", *kubeconfig)
-	if err != nil {
-		log.Panic().Err(err).Stack().Msg("Could not load config file")
+	configFromFlags, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+	if configFromFlags != nil {
+		configFromFlags.Timeout = cfg.DefaultKubeTimeout
 	}
-	configFromFlags.Timeout = cfg.DefaultKubeTimeout
 
+	return configFromFlags, err
+}
+
+func (c *Client) outClusterAuth(cfg *config.Configuration) (*kubernetes.Clientset, error) {
+	localConfig, err := getLocalKubeConf(cfg)
+	if err != nil {
+		return nil, err
+	}
 	// create the clientset
-	clientset, err := kubernetes.NewForConfig(configFromFlags)
+	clientset, err := kubernetes.NewForConfig(localConfig)
 	if err != nil {
 		log.Error().Err(err).Stack().Msg("Could not create client set")
 	}

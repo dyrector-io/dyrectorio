@@ -17,17 +17,18 @@ import (
 )
 
 type DeployFacade struct {
-	ctx        context.Context
-	params     *DeployFacadeParams
-	image      imageHelper.URI
-	deployment *deployment
-	namespace  *namespace
-	service    *service
-	configmap  *configmap
-	ingress    *ingress
-	secret     *secret
-	pvc        *pvc
-	appConfig  *config.Configuration
+	ctx            context.Context
+	params         *DeployFacadeParams
+	image          imageHelper.URI
+	deployment     *deployment
+	namespace      *namespace
+	service        *service
+	configmap      *configmap
+	ingress        *ingress
+	secret         *secret
+	pvc            *pvc
+	ServiceMonitor *ServiceMonitor
+	appConfig      *config.Configuration
 }
 
 type DeployFacadeParams struct {
@@ -42,16 +43,17 @@ type DeployFacadeParams struct {
 
 func NewDeployFacade(params *DeployFacadeParams, cfg *config.Configuration) *DeployFacade {
 	return &DeployFacade{
-		ctx:        params.Ctx,
-		params:     params,
-		image:      params.Image,
-		namespace:  newNamespace(params.Ctx, params.InstanceConfig.ContainerPreName, cfg),
-		deployment: newDeployment(params.Ctx, cfg),
-		configmap:  newConfigmap(params.Ctx, cfg),
-		service:    newService(params.Ctx, cfg),
-		ingress:    newIngress(params.Ctx, cfg),
-		secret:     newSecret(params.Ctx, cfg),
-		appConfig:  cfg,
+		ctx:            params.Ctx,
+		params:         params,
+		image:          params.Image,
+		namespace:      newNamespace(params.Ctx, params.InstanceConfig.ContainerPreName, cfg),
+		deployment:     newDeployment(params.Ctx, cfg),
+		configmap:      newConfigmap(params.Ctx, cfg),
+		service:        newService(params.Ctx, cfg),
+		ingress:        newIngress(params.Ctx, cfg),
+		secret:         newSecret(params.Ctx, cfg),
+		ServiceMonitor: NewServiceMonitor(params.Ctx, cfg),
+		appConfig:      cfg,
 
 		pvc: newPvc(params.Ctx, cfg),
 	}
@@ -218,6 +220,19 @@ func (d *DeployFacade) Deploy() error {
 }
 
 func (d *DeployFacade) PostDeploy() error {
+	if d.params.ContainerConfig.Metrics != nil && len(d.service.portNames) != 0 {
+		err := d.ServiceMonitor.Deploy(d.namespace.name,
+			d.params.ContainerConfig.Container,
+			*d.params.ContainerConfig.Metrics,
+			d.service.portNames[0],
+		)
+		if err != nil {
+			return err
+		}
+	} else {
+		d.ServiceMonitor.Cleanup(d.namespace.name, d.params.ContainerConfig.Container)
+	}
+
 	return nil
 }
 
