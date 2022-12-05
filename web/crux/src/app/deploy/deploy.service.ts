@@ -335,47 +335,55 @@ export default class DeployService {
       })
     }
 
-    const deploy = new Deployment({
-      id: deployment.id,
-      releaseNotes: deployment.version.changelog,
-      versionName: deployment.version.name,
-      requests: deployment.instances.map(it => {
-        const { registry } = it.image
-        const registryUrl =
-          registry.type === 'google' || registry.type === 'github'
-            ? `${registry.url}/${registry.imageNamePrefix}`
-            : registry.type === 'v2' || registry.type === 'gitlab'
-            ? registry.url
-            : registry.type === 'hub'
-            ? registry.imageNamePrefix
-            : ''
+    const deploy = new Deployment(
+      {
+        id: deployment.id,
+        releaseNotes: deployment.version.changelog,
+        versionName: deployment.version.name,
+        requests: deployment.instances.map(it => {
+          const { registry } = it.image
+          const registryUrl =
+            registry.type === 'google' || registry.type === 'github'
+              ? `${registry.url}/${registry.imageNamePrefix}`
+              : registry.type === 'v2' || registry.type === 'gitlab'
+              ? registry.url
+              : registry.type === 'hub'
+              ? registry.imageNamePrefix
+              : ''
 
-        const mergedConfig = this.mapper.mergeConfigs(
-          (it.image.config ?? {}) as ContainerConfigData,
-          (it.config ?? {}) as InstanceContainerConfigData,
-        )
+          const mergedConfig = this.mapper.mergeConfigs(
+            (it.image.config ?? {}) as ContainerConfigData,
+            (it.config ?? {}) as InstanceContainerConfigData,
+          )
 
-        return {
-          common: this.mapper.configToCommonConfig(mergedConfig),
-          crane: this.mapper.configToCraneConfig(mergedConfig),
-          dagent: this.mapper.configToDagentConfig(mergedConfig),
-          id: it.id,
-          containerName: it.image.config.name,
-          imageName: it.image.name,
-          tag: it.image.tag,
-          instanceConfig: this.mapper.deploymentToAgentInstanceConfig(deployment),
-          registry: registryUrl,
-          registryAuth: !registry.token
-            ? undefined
-            : {
-                name: registry.name,
-                url: registryUrl,
-                user: registry.user,
-                password: registry.token,
-              },
-        } as DeployRequest
-      }),
-    })
+          return {
+            common: this.mapper.configToCommonConfig(mergedConfig),
+            crane: this.mapper.configToCraneConfig(mergedConfig),
+            dagent: this.mapper.configToDagentConfig(mergedConfig),
+            id: it.id,
+            containerName: it.image.config.name,
+            imageName: it.image.name,
+            tag: it.image.tag,
+            instanceConfig: this.mapper.deploymentToAgentInstanceConfig(deployment),
+            registry: registryUrl,
+            registryAuth: !registry.token
+              ? undefined
+              : {
+                  name: registry.name,
+                  url: registryUrl,
+                  user: registry.user,
+                  password: registry.token,
+                },
+          } as DeployRequest
+        }),
+      },
+      {
+        accessedBy: request.accessedBy,
+        productName: deployment.version.product.name,
+        versionName: deployment.version.name,
+        nodeName: deployment.node.name,
+      },
+    )
 
     this.logger.debug(`Starting deployment: ${deploy.id}`)
 
