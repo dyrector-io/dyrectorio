@@ -65,7 +65,7 @@ func (c *Client) getLocalKubeConf() (*rest.Config, error) {
 		kubeconfig = &cfgPath
 	}
 
-	configFromFlags, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+	configFromFlags, err := c.BuildConfigFromFlags("", *kubeconfig)
 	if configFromFlags != nil {
 		configFromFlags.Timeout = c.appConfig.DefaultKubeTimeout
 	}
