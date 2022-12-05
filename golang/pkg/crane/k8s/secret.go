@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 
+	commonConfig "github.com/dyrector-io/dyrectorio/golang/internal/config"
 	"github.com/dyrector-io/dyrectorio/golang/internal/crypt"
 	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
@@ -14,9 +16,12 @@ import (
 
 	apicorev1 "k8s.io/api/core/v1"
 
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	corev1 "k8s.io/client-go/applyconfigurations/core/v1"
 )
+
+const SecretFileName = "private.key"
 
 // types from kubectl
 // DockerConfigJSON represents a local docker auth config file
@@ -37,20 +42,20 @@ type DockerConfigEntry struct {
 }
 
 // namespace wrapper for the facade
-type secret struct {
-	ctx context.Context
-
+type Secret struct {
+	ctx       context.Context
+	client    *Client
 	avail     []string
 	appConfig *config.Configuration
 }
 
-func newSecret(ctx context.Context, cfg *config.Configuration) *secret {
-	secr := secret{ctx: ctx, appConfig: cfg, avail: []string{}}
+func NewSecret(ctx context.Context, client *Client) *Secret {
+	secr := Secret{ctx: ctx, client: client, appConfig: client.appConfig, avail: []string{}}
 	return &secr
 }
 
-func (s *secret) applySecrets(namespace, name string, values map[string]string) error {
-	cli, err := getSecretClient(namespace, s.appConfig)
+func (s *Secret) applySecrets(namespace, name string, values map[string]string) error {
+	cli, err := s.getSecretClient(namespace)
 	if err != nil {
 		return err
 	}
@@ -77,13 +82,13 @@ func (s *secret) applySecrets(namespace, name string, values map[string]string) 
 	return err
 }
 
-func ListSecrets(ctx context.Context, namespace, name string, appConfig *config.Configuration) ([]string, error) {
-	cli, err := getSecretClient(namespace, appConfig)
+func (s *Secret) ListSecrets(namespace, name string) ([]string, error) {
+	cli, err := s.getSecretClient(namespace)
 	if err != nil {
 		return nil, err
 	}
 
-	list, err := cli.List(ctx, metav1.ListOptions{})
+	list, err := cli.List(s.ctx, metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -103,8 +108,8 @@ func ListSecrets(ctx context.Context, namespace, name string, appConfig *config.
 	return names, nil
 }
 
-func getSecretClient(namespace string, cfg *config.Configuration) (v1.SecretInterface, error) {
-	clientset, err := NewClient().GetClientSet(cfg)
+func (s *Secret) getSecretClient(namespace string) (v1.SecretInterface, error) {
+	clientset, err := s.client.GetClientSet()
 	if err != nil {
 		return nil, err
 	}
@@ -112,10 +117,10 @@ func getSecretClient(namespace string, cfg *config.Configuration) (v1.SecretInte
 	return clientset.CoreV1().Secrets(namespace), nil
 }
 
-func ApplyOpaqueSecret(ctx context.Context, namespace, name string, values map[string][]byte, appConfig *config.Configuration) (
+func (s *Secret) ApplyOpaqueSecret(ctx context.Context, namespace, name string, values map[string][]byte) (
 	version string, err error,
 ) {
-	cli, err := getSecretClient(namespace, appConfig)
+	cli, err := s.getSecretClient(namespace)
 	if err != nil {
 		return "", err
 	}
@@ -123,8 +128,8 @@ func ApplyOpaqueSecret(ctx context.Context, namespace, name string, values map[s
 	secrets := corev1.Secret(name, namespace).WithData(values)
 
 	result, err := cli.Apply(ctx, secrets, metav1.ApplyOptions{
-		FieldManager: appConfig.FieldManagerName,
-		Force:        appConfig.ForceOnConflicts,
+		FieldManager: s.appConfig.FieldManagerName,
+		Force:        s.appConfig.ForceOnConflicts,
 	})
 	if err != nil {
 		return "", err
@@ -133,13 +138,13 @@ func ApplyOpaqueSecret(ctx context.Context, namespace, name string, values map[s
 	return result.ResourceVersion, nil
 }
 
-func ApplyRegistryAuthSecret(ctx context.Context,
+func (s *Secret) ApplyRegistryAuthSecret(ctx context.Context,
 	namespace,
 	name string,
 	credentials *imageHelper.RegistryAuth,
 	appConfig *config.Configuration,
 ) error {
-	cli, err := getSecretClient(namespace, appConfig)
+	cli, err := s.getSecretClient(namespace)
 	if err != nil {
 		return err
 	}
@@ -166,6 +171,66 @@ func ApplyRegistryAuthSecret(ctx context.Context,
 	return nil
 }
 
+func (s *Secret) GetValidSecret() (string, error) {
+	namespace := s.appConfig.Namespace
+	name := s.appConfig.SecretName
+
+	if namespace == "" || name == "" {
+		return "", fmt.Errorf("secret name or namespace can't be empty")
+	}
+
+	objects, version, err := s.GetSecret(namespace, name)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return addValidSecret(s.ctx, s.client, namespace, name)
+		}
+		return "", fmt.Errorf("k8s stored secret %s/%s was on error: %w", namespace, name, err)
+	}
+
+	secretContent := ""
+	for secretFileName, secretFileContent := range objects {
+		if secretFileName == SecretFileName {
+			secretContent = string(secretFileContent)
+			break
+		}
+	}
+	if secretContent == "" {
+		return "", fmt.Errorf("k8s stored secret %s/%s was empty (resourceVersion: %s)", namespace, name, version)
+	}
+
+	isExpired, err := commonConfig.IsExpiredKey(secretContent)
+	if err != nil {
+		return "", fmt.Errorf("handling k8s stored secret %s/%s was on error: %w", namespace, name, err)
+	}
+	if isExpired {
+		log.Printf("k8s stored secret %s/%s was expired (resourceVersion: %s), so renewing...", namespace, name, version)
+		return addValidSecret(s.ctx, s.client, namespace, name)
+	}
+	return secretContent, nil
+}
+
+func addValidSecret(ctx context.Context, client *Client, namespace, name string) (string, error) {
+	log.Printf("storing k8s secret at %s/%s", namespace, name)
+
+	keyStr, keyErr := commonConfig.GenerateKeyString()
+	if keyErr != nil {
+		return "", keyErr
+	}
+
+	secret := map[string][]byte{}
+	secret[SecretFileName] = []byte(keyStr)
+
+	secretHandler := NewSecret(ctx, client)
+	storedVersion, storingErr := secretHandler.ApplyOpaqueSecret(ctx, namespace, name, secret)
+	if storingErr != nil {
+		return "", storingErr
+	}
+
+	log.Printf("k8s secret at %s/%s is updated (resourceVersion: %s)", namespace, name, storedVersion)
+
+	return keyStr, nil
+}
+
 // handleDockerCfgJSONContent serializes a ~/.docker/config.json file
 func handleDockerCfgJSONContent(username, password, email, server string) ([]byte, error) {
 	dockerConfigAuth := DockerConfigEntry{
@@ -187,15 +252,15 @@ func encodeDockerConfigFieldAuth(username, password string) string {
 	return base64.StdEncoding.EncodeToString([]byte(fieldValue))
 }
 
-func GetSecret(ctx context.Context, namespace, name string, appConfig *config.Configuration) (
+func (s *Secret) GetSecret(namespace, name string) (
 	secretFiles map[string][]byte, version string, err error,
 ) {
-	cli, err := getSecretClient(namespace, appConfig)
+	cli, err := s.getSecretClient(namespace)
 	if err != nil {
 		return nil, "", err
 	}
 
-	item, err := cli.Get(ctx, name, metav1.GetOptions{})
+	item, err := cli.Get(s.ctx, name, metav1.GetOptions{})
 	if err != nil {
 		return nil, "", err
 	}

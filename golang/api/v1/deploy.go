@@ -211,6 +211,13 @@ type ContainerConfig struct {
 	ExtraLBAnnotations map[string]string `json:"extraLBAnnotations,omitempty"`
 	// Annotations
 	Annotations Markers `json:"annotations"`
+	// Metrics
+	Metrics *Metrics `json:"metrics,omitempty"`
+}
+
+type Metrics struct {
+	Path string `json:"path"`
+	Port string `json:"port"`
 }
 
 func (c *ContainerConfig) Strings(appConfig *config.CommonConfiguration) []string {

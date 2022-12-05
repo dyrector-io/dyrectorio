@@ -35,15 +35,15 @@ import (
 
 const CraneUpdatedAnnotation = "crane.dyrector.io/restartedAt"
 
-// facade object for deployment management
-type deployment struct {
+// facade object for Deployment management
+type Deployment struct {
 	ctx       context.Context
 	status    string
 	appConfig *config.Configuration
 }
 
-func newDeployment(ctx context.Context, cfg *config.Configuration) *deployment {
-	return &deployment{status: "", ctx: ctx, appConfig: cfg}
+func NewDeployment(ctx context.Context, cfg *config.Configuration) *Deployment {
+	return &Deployment{status: "", ctx: ctx, appConfig: cfg}
 }
 
 type deploymentParams struct {
@@ -62,7 +62,7 @@ type deploymentParams struct {
 	issuer          string
 }
 
-func (d *deployment) deployDeployment(p *deploymentParams) error {
+func (d *Deployment) DeployDeployment(p *deploymentParams) error {
 	client := getDeploymentsClient(p.namespace, d.appConfig)
 
 	containerConfig, err := buildContainer(p, d.appConfig)
@@ -119,14 +119,29 @@ func (d *deployment) deployDeployment(p *deploymentParams) error {
 	return nil
 }
 
-func (d *deployment) deleteDeployment(namespace, name string) error {
+func (d *Deployment) deleteDeployment(namespace, name string) error {
 	client := getDeploymentsClient(namespace, d.appConfig)
 
 	return client.Delete(d.ctx, name, metaV1.DeleteOptions{})
 }
 
+func (d *Deployment) GetDeployments(ctx context.Context, namespace string, cfg *config.Configuration) (*kappsv1.DeploymentList, error) {
+	clientset, err := NewClient(cfg).GetClientSet()
+	if err != nil {
+		return nil, err
+	}
+
+	deploymentsClient := clientset.AppsV1().Deployments(util.Fallback(namespace, coreV1.NamespaceDefault))
+
+	list, err := deploymentsClient.List(ctx, metaV1.ListOptions{})
+	if err != nil {
+		panic(err)
+	}
+	return list, nil
+}
+
 //nolint:unused
-func (d *deployment) restart(namespace, name string) error {
+func (d *Deployment) restart(namespace, name string) error {
 	client := getDeploymentsClient(namespace, d.appConfig)
 
 	datePatch := map[string]interface{}{
@@ -434,7 +449,7 @@ func getContainerPorts(portList []builder.PortBinding) []*corev1.ContainerPortAp
 }
 
 func getDeploymentsClient(namespace string, cfg *config.Configuration) typedv1.DeploymentInterface {
-	client, err := NewClient().GetClientSet(cfg)
+	client, err := NewClient(cfg).GetClientSet()
 	if err != nil {
 		panic(err)
 	}
@@ -503,19 +518,4 @@ func getVolumeMountsFromMap(mounts map[string]v1.Volume) []*corev1.VolumeMountAp
 	}
 
 	return volumes
-}
-
-func GetDeployments(ctx context.Context, namespace string, cfg *config.Configuration) (*kappsv1.DeploymentList, error) {
-	clientset, err := NewClient().GetClientSet(cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	deploymentsClient := clientset.AppsV1().Deployments(util.Fallback(namespace, coreV1.NamespaceDefault))
-
-	list, err := deploymentsClient.List(ctx, metaV1.ListOptions{})
-	if err != nil {
-		panic(err)
-	}
-	return list, nil
 }

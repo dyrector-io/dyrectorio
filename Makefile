@@ -1,4 +1,6 @@
 
+SHELL = /bin/sh
+
 ## shortcut to start stack
 .PHONY: up
 up:
