@@ -18,6 +18,7 @@ export type EditableProduct = Product & {
 
 export type ProductDetails = Product & {
   createdAt: string
+  deletable: boolean
   versions: Version[]
 }
 

@@ -141,7 +141,7 @@ const ProductDetailsPage = (props: ProductDetailsPageProps) => {
         <DetailsPageMenu
           texts={pageMenuTexts}
           onAdd={simpleProduct ? null : onAddVersion}
-          onDelete={onDelete}
+          onDelete={product.deletable ? onDelete : null}
           editing={editState !== 'version-list'}
           setEditing={editing => setEditState(editing ? 'edit-product' : 'version-list')}
           submitRef={submitRef}

@@ -340,6 +340,7 @@ message ProductDetailsReponse {
   string name = 100;
   optional string description = 101;
   ProductType type = 102;
+  bool deletable = 103;
 
   repeated VersionResponse versions = 1000;
 }
@@ -528,6 +529,7 @@ message VersionDetailsResponse {
   VersionType type = 103;
   bool mutable = 104;
   bool increasable = 105;
+  bool deletable = 106;
 
   repeated ImageResponse images = 1000;
   repeated DeploymentByVersionResponse deployments = 1001;

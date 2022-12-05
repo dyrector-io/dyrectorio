@@ -12,6 +12,8 @@ export type VersionIncreasabilityCheckDao = {
   children: { versionId: string }[]
 }
 
+export type VersionDeletabilityCheckDao = VersionMutabilityCheckDao & VersionIncreasabilityCheckDao
+
 export const versionHasImmutableDeployments = (version: VersionMutabilityCheckDao): boolean =>
   version.deployments.filter(it => !checkDeploymentMutability(it.status, version.type)).length > 0
 
@@ -20,6 +22,10 @@ export const versionIsMutable = (version: VersionMutabilityCheckDao): boolean =>
 
 export const versionIsIncreasable = (version: VersionIncreasabilityCheckDao): boolean =>
   version.type === 'incremental' ? version.children.length < 1 : false
+
+export const versionIsDeletable = (version: VersionDeletabilityCheckDao): boolean =>
+  version.deployments.filter(it => it.status === DeploymentStatusEnum.inProgress).length === 0 &&
+  versionIsIncreasable(version)
 
 export const checkVersionMutability = (version: VersionMutabilityCheckDao) => {
   if (!version) {

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { versionIsIncreasable, versionIsMutable } from 'src/domain/version'
+import { versionIsDeletable, versionIsIncreasable, versionIsMutable } from 'src/domain/version'
 import {
   AuditResponse,
   VersionDetailsResponse,
@@ -31,6 +31,7 @@ export default class VersionMapper {
       audit: AuditResponse.fromJSON(version),
       type: versionTypeToGrpc(version.type),
       mutable: versionIsMutable(version),
+      deletable: versionIsDeletable(version),
       increasable: versionIsIncreasable(version),
       images: version.images.map(it => this.imageMapper.toGrpc(it)),
       deployments: version.deployments.map(it => this.deployMapper.deploymentByVersionToGrpc(it)),
