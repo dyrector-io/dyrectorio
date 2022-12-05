@@ -10,8 +10,10 @@
 
 <p align="center">Open-source Internal Developer Platform (IDP) for developers and non-specialists to manage multi-instance deployments, microservices and configurations in Kubernetes & Docker.
 
+<br>
 <img src="docs/dyrectorio-readme-demo.gif" alt="dyrector.io demo GIF"/>
 </p>
+<br>
 
 <p align="center">
   <a href="https://github.com/dyrector-io/dyrectorio/tags" target="_blank"><img src="https://img.shields.io/github/v/tag/dyrector-io/dyrectorio" alt="GitHub tag (latest by date)"/></a>
