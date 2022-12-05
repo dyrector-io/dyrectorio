@@ -1,12 +1,12 @@
-import { Module } from '@nestjs/common'
-import { JwtModule } from '@nestjs/jwt'
-import PrismaService from 'src/services/prisma.service'
-import InterceptorGrpcHelperProvider from 'src/interceptors/helper.interceptor'
 import { HttpModule } from '@nestjs/axios'
-import KratosService from 'src/services/kratos.service'
-import DomainNotificationService from 'src/services/domain.notification.service'
+import { Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
-import { makeCounterProvider } from '@willsoto/nestjs-prometheus'
+import { JwtModule } from '@nestjs/jwt'
+import { makeGaugeProvider } from '@willsoto/nestjs-prometheus'
+import InterceptorGrpcHelperProvider from 'src/interceptors/helper.interceptor'
+import DomainNotificationService from 'src/services/domain.notification.service'
+import KratosService from 'src/services/kratos.service'
+import PrismaService from 'src/services/prisma.service'
 import TeamRepository from '../team/team.repository'
 import AgentController from './agent.controller'
 import AgentService from './agent.service'
@@ -37,7 +37,7 @@ import AgentService from './agent.service'
     TeamRepository,
     DomainNotificationService,
     KratosService,
-    makeCounterProvider({
+    makeGaugeProvider({
       name: 'agent_online_count',
       help: 'Agent connection count',
     }),
