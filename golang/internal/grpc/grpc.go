@@ -41,21 +41,25 @@ type ConnectionParams struct {
 }
 
 type (
-	DeployFunc     func(context.Context, *dogger.DeploymentLogger, *v1.DeployImageRequest, *v1.VersionData) error
-	WatchFunc      func(context.Context, string) []*common.ContainerStateItem
-	DeleteFunc     func(context.Context, string, string) error
-	SecretListFunc func(context.Context, string, string) ([]string, error)
-	SelfUpdateFunc func(context.Context, string, int32) error
-	CloseFunc      func(context.Context, agent.CloseReason) error
+	DeployFunc           func(context.Context, *dogger.DeploymentLogger, *v1.DeployImageRequest, *v1.VersionData) error
+	WatchFunc            func(context.Context, string) []*common.ContainerStateItem
+	DeleteFunc           func(context.Context, string, string) error
+	SecretListFunc       func(context.Context, string, string) ([]string, error)
+	SelfUpdateFunc       func(context.Context, string, int32) error
+	CloseFunc            func(context.Context, agent.CloseReason) error
+	ContainerCommandFunc func(context.Context, *common.ContainerCommandRequest) error
+	DeleteContainersFunc func(context.Context, *common.DeleteContainersRequest) error
 )
 
 type WorkerFunctions struct {
-	Deploy     DeployFunc
-	Watch      WatchFunc
-	Delete     DeleteFunc
-	SecretList SecretListFunc
-	SelfUpdate SelfUpdateFunc
-	Close      CloseFunc
+	Deploy           DeployFunc
+	Watch            WatchFunc
+	Delete           DeleteFunc
+	SecretList       SecretListFunc
+	SelfUpdate       SelfUpdateFunc
+	Close            CloseFunc
+	ContainerCommand ContainerCommandFunc
+	DeleteContainers DeleteContainersFunc
 }
 
 type contextKey int
@@ -205,6 +209,10 @@ func grpcProcessCommand(
 		go executeUpdate(ctx, command.GetUpdate(), workerFuncs.SelfUpdate)
 	case command.GetClose() != nil:
 		go executeClose(ctx, command.GetClose(), workerFuncs.Close)
+	case command.GetContainerCommand() != nil:
+		go executeContainerCommand(ctx, command.GetContainerCommand(), workerFuncs.ContainerCommand)
+	case command.GetDeleteContainers() != nil:
+		go executeDeleteMultipleContainers(ctx, command.GetDeleteContainers(), workerFuncs.DeleteContainers)
 	default:
 		log.Warn().Msg("Unknown agent command")
 	}
@@ -375,6 +383,15 @@ func executeDeleteContainer(ctx context.Context, req *agent.ContainerDeleteReque
 	}
 }
 
+func executeDeleteMultipleContainers(ctx context.Context, req *common.DeleteContainersRequest, deleteFn DeleteContainersFunc) {
+	log.Info().Msg("Deleting multiple containers")
+
+	err := deleteFn(ctx, req)
+	if err != nil {
+		log.Error().Stack().Err(err).Msg("Failed to delete multiple containers")
+	}
+}
+
 func executeVersionDeployLegacyRequest(
 	ctx context.Context, req *agent.DeployRequestLegacy,
 	deploy DeployFunc, appConfig *config.CommonConfiguration,
@@ -489,7 +506,7 @@ func executeUpdate(ctx context.Context, command *agent.AgentUpdateRequest, updat
 	}
 }
 
-func executeClose(ctx context.Context, command *agent.CloseConnection, closeFunc CloseFunc) {
+func executeClose(ctx context.Context, command *agent.CloseConnectionRequest, closeFunc CloseFunc) {
 	log.Debug().Str("reason", agent.CloseReason_name[int32(command.GetReason())]).Msg("gRPC connection remotely closed")
 
 	if closeFunc == nil {
@@ -499,6 +516,15 @@ func executeClose(ctx context.Context, command *agent.CloseConnection, closeFunc
 	err := closeFunc(ctx, command.Reason)
 	if err != nil {
 		log.Error().Stack().Err(err).Msg("Close handler error")
+	}
+}
+
+func executeContainerCommand(ctx context.Context, command *common.ContainerCommandRequest, containerCommandFunc ContainerCommandFunc) {
+	log.Info().Str("operation", command.Operation.String()).Str("containerID", command.GetId()).Msg("Executing")
+
+	err := containerCommandFunc(ctx, command)
+	if err != nil {
+		log.Error().Stack().Err(err).Msg("Container Command error")
 	}
 }
 

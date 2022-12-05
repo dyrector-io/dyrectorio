@@ -10,6 +10,8 @@ import {
   CruxNodeControllerMethods,
   GenerateScriptRequest,
   IdRequest,
+  NodeContainerCommandRequest,
+  NodeDeleteContainersRequest,
   NodeDetailsResponse,
   NodeEventMessage,
   NodeInstallResponse,
@@ -92,5 +94,13 @@ export default class NodeController implements CruxNodeController {
     this.service.updateNodeAgent(request)
 
     return {}
+  }
+
+  sendContainerCommand(request: NodeContainerCommandRequest): Empty {
+    return this.service.sendContainerCommand(request)
+  }
+
+  deleteContainers(request: NodeDeleteContainersRequest): Observable<Empty> {
+    return this.service.deleteContainers(request)
   }
 }

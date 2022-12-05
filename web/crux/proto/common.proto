@@ -54,7 +54,10 @@ message ContainerStateListMessage {
 }
 
 message ContainerStateItem {
-  string containerId = 100;
+  oneof container {
+    string id = 200;
+    string prefix = 201;
+  }
   string name = 101;
   string command = 103;
   google.protobuf.Timestamp createdAt = 104;
@@ -175,4 +178,32 @@ message ListSecretsResponse {
 message UniqueKey {
   string id = 100;
   string key = 101;
+}
+
+message ContainerIdentifier {
+  string prefix = 1;
+  string name = 2;
+}
+
+enum ContainerOperation {
+  CONTAINER_OPERATION_UNSPECIFIED = 0;
+  START_CONTAINER = 1;
+  STOP_CONTAINER = 2;
+  RESTART_CONTAINER = 3;
+}
+
+message ContainerCommandRequest {
+  oneof container {
+    string id = 200;
+    common.ContainerIdentifier prefixName = 201;
+  };
+  common.ContainerOperation operation = 100;
+}
+
+message DeleteContainersRequest {
+  oneof target {
+    string containerId = 200;
+    common.ContainerIdentifier prefixName = 201;
+    string prefix = 202;
+  }
 }

@@ -130,9 +130,9 @@ export type ContainerConfigData = {
   environment?: UniqueKeyValue[]
   secrets?: UniqueSecretKey[]
   ingress?: ContainerConfigIngress
-  expose?: ContainerConfigExposeStrategy
+  expose: ContainerConfigExposeStrategy
   user?: number
-  tty?: boolean
+  tty: boolean
   importContainer?: ContainerConfigImportContainer
   configContainer?: ContainerConfigContainer
   ports?: ContainerConfigPort[]
@@ -145,16 +145,16 @@ export type ContainerConfigData = {
 
   // dagent
   logConfig?: ContainerConfigLog
-  restartPolicy?: ContainerRestartPolicyType
-  networkMode?: NetworkMode
+  restartPolicy: ContainerRestartPolicyType
+  networkMode: NetworkMode
   networks?: UniqueKey[]
   dockerLabels?: UniqueKeyValue[]
 
   // crane
-  deploymentStrategy?: ContainerDeploymentStrategyType
+  deploymentStrategy: ContainerDeploymentStrategyType
   customHeaders?: UniqueKey[]
-  proxyHeaders?: boolean
-  useLoadBalancer?: boolean
+  proxyHeaders: boolean
+  useLoadBalancer: boolean
   extraLBAnnotations?: UniqueKeyValue[]
   healthCheckConfig?: ContainerConfigHealthCheck
   resourceConfig?: ContainerConfigResourceConfig
@@ -178,6 +178,8 @@ export type DagentConfigDetails = Pick<ContainerConfigData, DagentSpecificConfig
 export type CraneConfigDetails = Pick<ContainerConfigData, CraneSpecificConfig>
 export type CommonConfigDetails = Omit<ContainerConfigData, DagentSpecificConfig | CraneSpecificConfig>
 
-export type InstanceContainerConfigData = Omit<ContainerConfigData, 'secrets'> & {
-  secrets?: UniqueSecretKeyValue[]
+export type MergedContainerConfigData = Omit<ContainerConfigData, 'secrets'> & {
+  secrets: UniqueSecretKeyValue[]
 }
+
+export type InstanceContainerConfigData = Partial<MergedContainerConfigData>

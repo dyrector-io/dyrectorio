@@ -2,10 +2,13 @@ import { Layout } from '@app/components/layout'
 import DyoNodeCard from '@app/components/nodes/dyo-node-card'
 import EditNodeCard from '@app/components/nodes/edit-node-card'
 import NodeConnectionCard from '@app/components/nodes/node-connection-card'
-import useNodeState from '@app/components/nodes/use-node-state'
+import NodeContainersList from '@app/components/nodes/node-containers-list'
+import useNodeDetailsState from '@app/components/nodes/use-node-details-state'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
+import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
+import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
 import { DyoNodeDetails } from '@app/models'
 import { API_NODES, nodeApiUrl, nodeUrl, ROUTE_NODES } from '@app/routes'
@@ -14,7 +17,7 @@ import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 import { useSWRConfig } from 'swr'
 
 interface NodeDetailsProps {
@@ -30,18 +33,14 @@ const NodeDetails = (props: NodeDetailsProps) => {
 
   const router = useRouter()
 
-  const [node, setNode] = useNodeState(propsNode)
-  const [editing, setEditing] = useState(false)
+  const [state, actions] = useNodeDetailsState({
+    node: propsNode,
+  })
   const submitRef = useRef<() => Promise<any>>()
 
-  const handleApiError = defaultApiErrorHandler(t)
+  const { node } = state
 
-  const onNodeEdited = (item: DyoNodeDetails, shouldClose?: boolean) => {
-    if (shouldClose) {
-      setEditing(false)
-    }
-    setNode(item)
-  }
+  const handleApiError = defaultApiErrorHandler(t)
 
   const onDelete = async () => {
     const res = await fetch(nodeApiUrl(node.id), {
@@ -75,24 +74,34 @@ const NodeDetails = (props: NodeDetailsProps) => {
       >
         <DetailsPageMenu
           onDelete={onDelete}
-          editing={editing}
-          setEditing={setEditing}
+          editing={state.section === 'editing'}
+          setEditing={actions.setEditing}
           submitRef={submitRef}
-          deleteModalTitle={t('common:confirmDelete', { name: node.name })}
-          deleteModalDescription={t('common:deleteDescription', {
+          deleteModalTitle={t('common:areYouSureDeleteName', { name: node.name })}
+          deleteModalDescription={t('common:proceedYouLoseAllDataToName', {
             name: node.name,
           })}
         />
       </PageHeading>
 
-      {!editing ? (
-        <div className="flex flex-row gap-4">
-          <DyoNodeCard className="w-2/3 p-6" node={node} hideConnectionInfo />
-
-          <NodeConnectionCard className="w-1/3 px-6 py-4" node={node} />
-        </div>
+      {state.section === 'editing' ? (
+        <EditNodeCard node={node} onNodeEdited={actions.onNodeEdited} submitRef={submitRef} />
       ) : (
-        <EditNodeCard node={node} onNodeEdited={onNodeEdited} submitRef={submitRef} />
+        <>
+          <div className="flex flex-row gap-4 mb-4">
+            <DyoNodeCard className="w-2/3 p-6" node={node} hideConnectionInfo />
+
+            <NodeConnectionCard className="w-1/3 px-6 py-4" node={node} />
+          </div>
+
+          <Filters setTextFilter={it => state.filters.setFilter({ text: it })} />
+
+          <NodeContainersList state={state} actions={actions} />
+        </>
+      )}
+
+      {!state.confirmationModal ? null : (
+        <DyoConfirmationModal config={state.confirmationModal} confirmColor="bg-error-red" />
       )}
     </Layout>
   )

@@ -498,6 +498,8 @@ type CruxNodeClient interface {
 	DiscardScript(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
 	RevokeToken(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
 	UpdateNodeAgent(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
+	SendContainerCommand(ctx context.Context, in *NodeContainerCommandRequest, opts ...grpc.CallOption) (*common.Empty, error)
+	DeleteContainers(ctx context.Context, in *NodeDeleteContainersRequest, opts ...grpc.CallOption) (*common.Empty, error)
 	SubscribeNodeEventChannel(ctx context.Context, in *ServiceIdRequest, opts ...grpc.CallOption) (CruxNode_SubscribeNodeEventChannelClient, error)
 	WatchContainerState(ctx context.Context, in *WatchContainerStateRequest, opts ...grpc.CallOption) (CruxNode_WatchContainerStateClient, error)
 }
@@ -600,6 +602,24 @@ func (c *cruxNodeClient) UpdateNodeAgent(ctx context.Context, in *IdRequest, opt
 	return out, nil
 }
 
+func (c *cruxNodeClient) SendContainerCommand(ctx context.Context, in *NodeContainerCommandRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
+	err := c.cc.Invoke(ctx, "/crux.CruxNode/SendContainerCommand", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cruxNodeClient) DeleteContainers(ctx context.Context, in *NodeDeleteContainersRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
+	err := c.cc.Invoke(ctx, "/crux.CruxNode/DeleteContainers", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *cruxNodeClient) SubscribeNodeEventChannel(ctx context.Context, in *ServiceIdRequest, opts ...grpc.CallOption) (CruxNode_SubscribeNodeEventChannelClient, error) {
 	stream, err := c.cc.NewStream(ctx, &CruxNode_ServiceDesc.Streams[0], "/crux.CruxNode/SubscribeNodeEventChannel", opts...)
 	if err != nil {
@@ -679,6 +699,8 @@ type CruxNodeServer interface {
 	DiscardScript(context.Context, *IdRequest) (*common.Empty, error)
 	RevokeToken(context.Context, *IdRequest) (*common.Empty, error)
 	UpdateNodeAgent(context.Context, *IdRequest) (*common.Empty, error)
+	SendContainerCommand(context.Context, *NodeContainerCommandRequest) (*common.Empty, error)
+	DeleteContainers(context.Context, *NodeDeleteContainersRequest) (*common.Empty, error)
 	SubscribeNodeEventChannel(*ServiceIdRequest, CruxNode_SubscribeNodeEventChannelServer) error
 	WatchContainerState(*WatchContainerStateRequest, CruxNode_WatchContainerStateServer) error
 	mustEmbedUnimplementedCruxNodeServer()
@@ -717,6 +739,12 @@ func (UnimplementedCruxNodeServer) RevokeToken(context.Context, *IdRequest) (*co
 }
 func (UnimplementedCruxNodeServer) UpdateNodeAgent(context.Context, *IdRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateNodeAgent not implemented")
+}
+func (UnimplementedCruxNodeServer) SendContainerCommand(context.Context, *NodeContainerCommandRequest) (*common.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendContainerCommand not implemented")
+}
+func (UnimplementedCruxNodeServer) DeleteContainers(context.Context, *NodeDeleteContainersRequest) (*common.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteContainers not implemented")
 }
 func (UnimplementedCruxNodeServer) SubscribeNodeEventChannel(*ServiceIdRequest, CruxNode_SubscribeNodeEventChannelServer) error {
 	return status.Errorf(codes.Unimplemented, "method SubscribeNodeEventChannel not implemented")
@@ -917,6 +945,42 @@ func _CruxNode_UpdateNodeAgent_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CruxNode_SendContainerCommand_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NodeContainerCommandRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CruxNodeServer).SendContainerCommand(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crux.CruxNode/SendContainerCommand",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CruxNodeServer).SendContainerCommand(ctx, req.(*NodeContainerCommandRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CruxNode_DeleteContainers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NodeDeleteContainersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CruxNodeServer).DeleteContainers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crux.CruxNode/DeleteContainers",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CruxNodeServer).DeleteContainers(ctx, req.(*NodeDeleteContainersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _CruxNode_SubscribeNodeEventChannel_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(ServiceIdRequest)
 	if err := stream.RecvMsg(m); err != nil {
@@ -1005,6 +1069,14 @@ var CruxNode_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateNodeAgent",
 			Handler:    _CruxNode_UpdateNodeAgent_Handler,
+		},
+		{
+			MethodName: "SendContainerCommand",
+			Handler:    _CruxNode_SendContainerCommand_Handler,
+		},
+		{
+			MethodName: "DeleteContainers",
+			Handler:    _CruxNode_DeleteContainers_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

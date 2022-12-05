@@ -310,6 +310,7 @@ export const withContextErrorHandling =
           return redirectTo(ROUTE_INDEX)
         }
 
+        console.error(`[ERROR]: ${err.status} - prop: ${err.property}: ${err.value} - ${err.description}`)
         const url = dyoApiErrorStatusToRedirectUrl(err.status)
         return redirectTo(url)
       }

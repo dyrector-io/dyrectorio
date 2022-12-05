@@ -202,12 +202,12 @@ model ContainerConfig {
   environment     Json?
   secrets         Json?
   capabilities    Json?
-  expose          ExposeStrategy?
+  expose          ExposeStrategy
   ingress         Json?
   configContainer Json?
   importContainer Json?
   user            Int?
-  tty             Boolean?
+  tty             Boolean
   ports           Json?
   portRanges      Json?
   volumes         Json?
@@ -217,17 +217,17 @@ model ContainerConfig {
 
   //Dagent
   logConfig     Json?
-  restartPolicy RestartPolicy?
-  networkMode   NetworkMode?
+  restartPolicy RestartPolicy
+  networkMode   NetworkMode
   networks      Json?
   dockerLabels  Json?
 
   //Crane
-  deploymentStrategy DeploymentStrategy?
+  deploymentStrategy DeploymentStrategy
   healthCheckConfig  Json?
   resourceConfig     Json?
-  proxyHeaders       Boolean?
-  useLoadBalancer    Boolean?
+  proxyHeaders       Boolean
+  useLoadBalancer    Boolean
   extraLBAnnotations Json?
   customHeaders      Json?
   annotations        Json?
@@ -274,7 +274,7 @@ model InstanceContainerConfig {
   instanceId String @unique @db.Uuid
 
   //Common
-  name            String
+  name            String?
   environment     Json?
   secrets         Json?
   capabilities    Json?

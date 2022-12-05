@@ -60,7 +60,7 @@
   "view": "View",
 
   "confirm": "Confirm",
-  "confirmDelete": "Are you sure you want to delete {{name}}?",
+  "areYouSureDeleteName": "Are you sure you want to delete {{name}}?",
   "areYouSure": "Are you sure?",
 
   "products": "Products",
@@ -164,7 +164,7 @@
 
   "upload": "Upload",
 
-  "deleteDescription": "If you proceed, you will lose all your data related to {{name}}. This action is not revocable.",
+  "proceedYouLoseAllDataToName": "If you proceed, you will lose all your data related to {{name}}. This action is not revocable.",
 
   "itemsPerPage": "Items per page",
   "showingItems": "Showing {{pageFrom}} to {{pageTo}} of {{total}} entries",

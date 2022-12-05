@@ -1,5 +1,9 @@
-import { ContainerState, NodeStatus, NodeType, NODE_TYPE_VALUES } from '@app/models'
-import { ContainerState as ProtoContainerState, containerStateToJSON } from '@app/models/grpc/protobuf/proto/common'
+import { ContainerOperation, ContainerState, NodeStatus, NodeType, NODE_TYPE_VALUES } from '@app/models'
+import {
+  ContainerOperation as ProtoContainerOperation,
+  ContainerState as ProtoContainerState,
+  containerStateToJSON,
+} from '@app/models/grpc/protobuf/proto/common'
 import { NodeConnectionStatus, NodeType as GrpcNodeType } from '@app/models/grpc/protobuf/proto/crux'
 
 export const containerStateToDto = (state: ProtoContainerState): ContainerState =>
@@ -19,5 +23,18 @@ export const nodeStatusToDto = (status: NodeConnectionStatus): NodeStatus => {
       return 'unreachable'
     default:
       return 'unreachable'
+  }
+}
+
+export const containerOperationToProto = (it: ContainerOperation): ProtoContainerOperation => {
+  switch (it) {
+    case 'start':
+      return ProtoContainerOperation.START_CONTAINER
+    case 'stop':
+      return ProtoContainerOperation.STOP_CONTAINER
+    case 'restart':
+      return ProtoContainerOperation.RESTART_CONTAINER
+    default:
+      return ProtoContainerOperation.UNRECOGNIZED
   }
 }

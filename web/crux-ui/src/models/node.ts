@@ -1,4 +1,5 @@
-import { Container } from './container'
+import { XOR } from './common'
+import { Container, ContainerCommand, ContainerIdentifier } from './container'
 
 export const NODE_TYPE_VALUES = ['docker', 'k8s'] as const
 export type NodeType = typeof NODE_TYPE_VALUES[number]
@@ -52,6 +53,16 @@ export type DyoNodeScript = {
   content: string
 }
 
+type DeleteContainersByPrefix = {
+  prefix: string
+}
+
+type DeleteContainerById = {
+  id: string | ContainerIdentifier
+}
+
+export type DeleteContainers = XOR<DeleteContainersByPrefix, DeleteContainerById>
+
 // ws
 
 export const WS_TYPE_GET_NODE_STATUS_LIST = 'get-node-status-list'
@@ -80,7 +91,15 @@ export type WatchContainerStatusMessage = {
 export const WS_TYPE_CONTAINER_STATUS_LIST = 'container-status-list'
 export type ContainerListMessage = Container[]
 
+export const WS_TYPE_DELETE_CONTAINER = 'delete-containers'
+export type DeleteContainerMessage = {
+  id: string | ContainerIdentifier
+}
+
 export const WS_TYPE_UPDATE_NODE_AGENT = 'update-node-agent'
 export type UpdateNodeAgentMessage = {
   id: string
 }
+
+export const WS_TYPE_CONTAINER_COMMAND = 'container-command'
+export type ContainerCommandMessage = ContainerCommand
