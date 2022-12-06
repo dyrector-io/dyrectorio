@@ -27,7 +27,7 @@ type NamespaceResponse struct {
 	Name string `json:"name" binding:"required"`
 }
 
-func NewNamespace(ctx context.Context, name string, client *Client) *Namespace {
+func NewNamespaceClient(ctx context.Context, name string, client *Client) *Namespace {
 	ns := Namespace{ctx: ctx, name: name, client: client, appConfig: client.appConfig}
 	return &ns
 }
@@ -82,7 +82,6 @@ func (n *Namespace) DeployNamespace(name string) error {
 		})
 
 	if err != nil {
-		log.Error().Err(err).Stack().Send()
 		return err
 	}
 	return nil

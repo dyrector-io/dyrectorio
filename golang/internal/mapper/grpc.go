@@ -11,6 +11,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/internal/config"
 	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
 	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
+	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 
 	builder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
@@ -19,6 +20,7 @@ import (
 	dockerTypes "github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 func mapInstanceConfig(in *agent.InstanceConfig) v1.InstanceConfig {
@@ -420,8 +422,9 @@ func mapContainerPorts(in *[]dockerTypes.Port) []*common.ContainerStateItemPort 
 	return ports
 }
 
-func MapKubeDeploymentListToCruxStateItems(deployments *appsv1.DeploymentList) []*common.ContainerStateItem {
+func MapKubeDeploymentListToCruxStateItems(deployments *appsv1.DeploymentList, svc *corev1.ServiceList) []*common.ContainerStateItem {
 	stateItems := []*common.ContainerStateItem{}
+	svcMap := createServiceMap(svc)
 
 	for i := range deployments.Items {
 		deployment := deployments.Items[i]
@@ -435,6 +438,7 @@ func MapKubeDeploymentListToCruxStateItems(deployments *appsv1.DeploymentList) [
 			CreatedAt: timestamppb.New(
 				time.UnixMilli(deployment.GetCreationTimestamp().Unix() * int64(time.Microsecond)).UTC(),
 			),
+			Ports: mapServicePorts(svcMap[deployment.Namespace][deployment.Name]),
 		}
 
 		if containers := deployment.Spec.Template.Spec.Containers; containers != nil {
@@ -443,6 +447,7 @@ func MapKubeDeploymentListToCruxStateItems(deployments *appsv1.DeploymentList) [
 					// this move was suggested by golangci
 					continue
 				}
+				stateItem.Command = util.JoinV(" ", containers[i].Command...)
 				image, err := imageHelper.URIFromString(containers[i].Image)
 				if err == nil {
 					stateItem.ImageName = image.StringNoTag()
@@ -457,6 +462,35 @@ func MapKubeDeploymentListToCruxStateItems(deployments *appsv1.DeploymentList) [
 	}
 
 	return stateItems
+}
+
+func createServiceMap(svc *corev1.ServiceList) map[string]map[string]*corev1.Service {
+	res := map[string]map[string]*corev1.Service{}
+
+	for i := range svc.Items {
+		if res[svc.Items[i].Namespace] == nil {
+			res[svc.Items[i].Namespace] = map[string]*corev1.Service{}
+		}
+		res[svc.Items[i].Namespace][svc.Items[i].Annotations["app"]] = &svc.Items[i]
+	}
+	return res
+}
+
+func mapServicePorts(svc *corev1.Service) []*common.ContainerStateItemPort {
+	res := []*common.ContainerStateItemPort{}
+
+	if svc == nil {
+		return res
+	}
+
+	for _, port := range svc.Spec.Ports {
+		res = append(res, &common.ContainerStateItemPort{
+			Internal: port.TargetPort.IntVal,
+			External: port.Port,
+		})
+	}
+
+	return res
 }
 
 // do better mapping this is quick something

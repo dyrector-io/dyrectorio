@@ -2,7 +2,6 @@ package k8s
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 
@@ -14,6 +13,8 @@ import (
 	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 	builder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
+
+	"k8s.io/apimachinery/pkg/api/errors"
 )
 
 type DeployFacade struct {
@@ -50,7 +51,7 @@ func NewDeployFacade(params *DeployFacadeParams, cfg *config.Configuration) *Dep
 		params:         params,
 		image:          params.Image,
 		client:         k8sClient,
-		namespace:      NewNamespace(params.Ctx, params.InstanceConfig.ContainerPreName, k8sClient),
+		namespace:      NewNamespaceClient(params.Ctx, params.InstanceConfig.ContainerPreName, k8sClient),
 		deployment:     NewDeployment(params.Ctx, cfg),
 		configmap:      newConfigmap(params.Ctx, cfg),
 		service:        NewService(params.Ctx, k8sClient),
@@ -76,7 +77,12 @@ func (d *DeployFacade) CheckPreConditions() error {
 
 	// additional k8s specific validation here
 	if d.params.InstanceConfig.Name == "" && len(d.params.InstanceConfig.Environment) > 0 {
-		return errors.New("instance config name must be provided with environments")
+		return fmt.Errorf("instance config name must be provided with environments")
+	}
+
+	err = d.namespace.DeployNamespace(d.params.InstanceConfig.Name)
+	if err != nil && !errors.IsNotFound(err) {
+		return fmt.Errorf("pre-deployment failure: %w", err)
 	}
 
 	return nil
@@ -157,7 +163,7 @@ func (d *DeployFacade) Deploy() error {
 	if d.params.ContainerConfig.Ports != nil {
 		portList = append(portList, d.params.ContainerConfig.Ports...)
 	}
-	if err := d.service.deployService(
+	if err := d.service.DeployService(
 		&ServiceParams{
 			namespace:     d.params.InstanceConfig.ContainerPreName,
 			name:          d.params.ContainerConfig.Container,
