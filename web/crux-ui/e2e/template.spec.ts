@@ -54,3 +54,11 @@ test('creating a simple product from a template should work (Strapi)', async ({ 
 test('creating a complex product from a template should work (Strapi)', async ({ page }) => {
   await testComplexTemplate(page, 'Strapi', 'Strapi-complex', 2)
 })
+
+test('creating a simple product from a template should work (WordPress)', async ({ page }) => {
+  await testSimpleTemplate(page, 'WordPress', 'WordPress-simple', 2)
+})
+
+test('creating a complex product from a template should work (WordPress)', async ({ page }) => {
+  await testComplexTemplate(page, 'WordPress', 'WordPress-complex', 2)
+})

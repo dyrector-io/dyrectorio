@@ -1,0 +1,105 @@
+{
+  "name": "WordPress",
+  "description": "WordPress is a free and open source blogging tool and a content management system (CMS) based on PHP and MySQL.",
+  "registries": [
+    {
+      "name": "Docker Hub Library",
+      "type": "hub",
+      "hub": {
+        "imageNamePrefix": "library"
+      }
+    }
+  ],
+  "images": [
+    {
+      "name": "wordpress-mysql",
+      "registryName": "Docker Hub Library",
+      "image": "mysql",
+      "tag": "latest",
+      "config": {
+        "name": "wordpress-mysql",
+        "volumes": [
+          {
+            "name": "wordpress-mysql",
+            "path": "/var/lib/mysql"
+          }
+        ],
+        "environment": [
+          {
+            "key": "MYSQL_DATABASE",
+            "value": "wordpress"
+          },
+          {
+            "key": "MYSQL_USER",
+            "value": "wpuser"
+          },
+          {
+            "key": "MYSQL_RANDOM_ROOT_PASSWORD",
+            "value": "1"
+          }
+        ],
+        "secrets": [
+          {
+            "key": "MYSQL_PASSWORD",
+            "required": true
+          }
+        ],
+        "networks": ["wordpress-network"],
+        "networkMode": "bridge",
+        "restartPolicy": "always",
+        "deploymentStrategy": "recreate"
+      }
+    },
+    {
+      "name": "wordpress",
+      "registryName": "Docker Hub Library",
+      "image": "wordpress",
+      "tag": "latest",
+      "config": {
+        "name": "wordpress",
+        "tty": false,
+        "expose": "expose",
+        "ingress": {
+          "host": "localhost",
+          "name": "wordpress"
+        },
+        "volumes": [
+          {
+            "name": "wordpress",
+            "path": "/var/www/html"
+          }
+        ],
+        "ports": [
+          {
+            "external": 4444,
+            "internal": 80
+          }
+        ],
+        "environment": [
+          {
+            "key": "WORDPRESS_DB_HOST",
+            "value": "wordpress-mysql"
+          },
+          {
+            "key": "WORDPRESS_DB_USER",
+            "value": "wpuser"
+          },
+          {
+            "key": "WORDPRESS_DB_NAME",
+            "value": "wordpress"
+          }
+        ],
+        "secrets": [
+          {
+            "key": "WORDPRESS_DB_PASSWORD",
+            "required": true
+          }
+        ],
+        "networks": ["wordpress-network"],
+        "networkMode": "bridge",
+        "restartPolicy": "always",
+        "deploymentStrategy": "recreate"
+      }
+    }
+  ]
+}
