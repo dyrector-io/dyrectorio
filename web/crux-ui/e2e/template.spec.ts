@@ -54,3 +54,11 @@ test('creating a simple product from a template should work (Strapi)', async ({ 
 test('creating a complex product from a template should work (Strapi)', async ({ page }) => {
   await testComplexTemplate(page, 'Strapi', 'Strapi-complex', 2)
 })
+
+test('creating a simple product from a template should work (Gitlab)', async ({ page }) => {
+  await testSimpleTemplate(page, 'Self-managed GitLab', 'Gitlab-simple', 1)
+})
+
+test('creating a complex product from a template should work (Gitlab)', async ({ page }) => {
+  await testComplexTemplate(page, 'Self-managed GitLab', 'Gitlab-complex', 1)
+})

@@ -1,0 +1,53 @@
+{
+  "name": "Self-managed GitLab",
+  "description": "This template contains Self-managed GitLab, deploy and maintain your own GitLab instance.",
+  "registries": [
+    {
+      "name": "Docker Hub Gitlab",
+      "type": "hub",
+      "hub": {
+        "imageNamePrefix": "gitlab"
+      }
+    }
+  ],
+  "images": [
+    {
+      "name": "Gitlab self-managed",
+      "registryName": "Docker Hub Gitlab",
+      "image": "gitlab-ce",
+      "tag": "latest",
+      "config": {
+        "name": "gitlab-self-managed",
+        "ports": [
+          {
+            "external": 21443,
+            "internal": 443
+          },
+          {
+            "external": 21022,
+            "internal": 22
+          },
+          {
+            "external": 21080,
+            "internal": 80
+          }
+        ],
+        "volumes": [
+          {
+            "name": "gitlab",
+            "path": "/etc/gitlab"
+          },
+          {
+            "name": "gitlab-log",
+            "path": "/var/log/gitlab"
+          },
+          {
+            "name": "gitlab-opt",
+            "path": "/var/opt/gitlab"
+          }
+        ],
+        "restartPolicy": "always"
+      }
+    }
+  ]
+}
