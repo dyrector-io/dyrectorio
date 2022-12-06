@@ -42,7 +42,7 @@ Our product is a platform for:
 
 Join our Discord and connect with other members to share and learn together. If you like the project, give us a Star.
 
-<a href="https://codecov.io/gh/dyrector-io/dyrectorio" target="_blank"><img src="https://discordapp.com/api/guilds/797082431902449694/widget.png?style=banner2" alt="dyrectorio Discord server Banner"/></a>
+<a href="https://discord.gg/pZWbd4fxga" target="_blank"><img src="https://discordapp.com/api/guilds/797082431902449694/widget.png?style=banner2" alt="dyrectorio Discord server Banner"/></a>
 
 ## Key features
 
