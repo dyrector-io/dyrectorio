@@ -1,6 +1,141 @@
 # CHANGELOG
 
 
+<a name="0.3.0"></a>
+## [0.3.0](https://github.com/dyrector-io/dyrectorio/compare/0.2.2...0.3.0) (2022-12-06)
+
+### Chore
+
+* **(ci):** fix deprecated commands ([#365](https://github.com/dyrector-io/dyrectorio/issues/365))
+* **(agent):** add missing setValue() docs ([#343](https://github.com/dyrector-io/dyrectorio/issues/343))
+* **(agent):** change test variable to mock registry ([#338](https://github.com/dyrector-io/dyrectorio/issues/338))
+* dead code and linter updates ([#333](https://github.com/dyrector-io/dyrectorio/issues/333))
+* **(agent):** remove NodeID ([#328](https://github.com/dyrector-io/dyrectorio/issues/328))
+* remove old flags small refactor ([#323](https://github.com/dyrector-io/dyrectorio/issues/323))
+* goair for new watch tool and makefile modified ([#155](https://github.com/dyrector-io/dyrectorio/issues/155)) ([#309](https://github.com/dyrector-io/dyrectorio/issues/309))
+* actualize vscode debug paths ([#298](https://github.com/dyrector-io/dyrectorio/issues/298))
+* replaced all try-catch's with catch (err) ([#281](https://github.com/dyrector-io/dyrectorio/issues/281))
+* fix broken CI - lint/security @ b5abab4 ([#252](https://github.com/dyrector-io/dyrectorio/issues/252))
+* add codeowners to repository ([#255](https://github.com/dyrector-io/dyrectorio/issues/255))
+* **(crux):** upgrade prisma client version to 4.4.0 ([#226](https://github.com/dyrector-io/dyrectorio/issues/226))
+* remove outdated descriptions from README.mds ([#223](https://github.com/dyrector-io/dyrectorio/issues/223))
+
+### Feat
+
+* **(web):** prevent product and version delete ([#384](https://github.com/dyrector-io/dyrectorio/issues/384))
+* **(agent):** add service monitor spawning ([#364](https://github.com/dyrector-io/dyrectorio/issues/364))
+* container management ([#380](https://github.com/dyrector-io/dyrectorio/issues/380))
+* **(crux-ui):** image reorder improvements ([#375](https://github.com/dyrector-io/dyrectorio/issues/375))
+* added config editor to deployments page ([#329](https://github.com/dyrector-io/dyrectorio/issues/329))
+* **(cli):** add ability to switch to localhost in the agent address environmental variable in crux ([#356](https://github.com/dyrector-io/dyrectorio/issues/356))
+* **(agent):** dagent self update ([#321](https://github.com/dyrector-io/dyrectorio/issues/321))
+* **(agent):** add registry authentication to crane ([#345](https://github.com/dyrector-io/dyrectorio/issues/345))
+* **(web):** invite flow revamp ([#332](https://github.com/dyrector-io/dyrectorio/issues/332))
+* **(crux):** add Prometheus basics ([#337](https://github.com/dyrector-io/dyrectorio/issues/337))
+* **(crux-ui):** use next-link ([#324](https://github.com/dyrector-io/dyrectorio/issues/324))
+* **(crux):** mingw64 support for dagent install script ([#325](https://github.com/dyrector-io/dyrectorio/issues/325))
+* **(agent):** [#244](https://github.com/dyrector-io/dyrectorio/issues/244), crane init for private-key generate on k8s ([#293](https://github.com/dyrector-io/dyrectorio/issues/293))
+* impelement labels & annotations ([#317](https://github.com/dyrector-io/dyrectorio/issues/317))
+* **(web):** invalidate secrets ([#296](https://github.com/dyrector-io/dyrectorio/issues/296))
+* **(crux-ui):** add websocket translation ([#316](https://github.com/dyrector-io/dyrectorio/issues/316))
+* **(agent):** add new docker container builder attribute: shell ([#290](https://github.com/dyrector-io/dyrectorio/issues/290))
+* **(crux):** add secrets to template ([#314](https://github.com/dyrector-io/dyrectorio/issues/314))
+* **(web):** option to mark secrets as required ([#286](https://github.com/dyrector-io/dyrectorio/issues/286))
+* **(agent):** [#245](https://github.com/dyrector-io/dyrectorio/issues/245), crane init at k8s deployment for shared secret ([#307](https://github.com/dyrector-io/dyrectorio/issues/307))
+* go package single module for simplicity ([#305](https://github.com/dyrector-io/dyrectorio/issues/305))
+* **(web):** create grc microservices template ([#308](https://github.com/dyrector-io/dyrectorio/issues/308))
+* **(crux-ui):** add node connection card ([#304](https://github.com/dyrector-io/dyrectorio/issues/304))
+* add container config page ([#297](https://github.com/dyrector-io/dyrectorio/issues/297))
+* **(agent):** rework installscript to respect rootless/podman or otherwise different hosts; expose mailslurper smtpport ([#299](https://github.com/dyrector-io/dyrectorio/issues/299))
+* **(agent):** silence containerbuilder's WithoutConflict func when container doesnt exists or running, only real errors will be printed ([#291](https://github.com/dyrector-io/dyrectorio/issues/291))
+* product templates ([#243](https://github.com/dyrector-io/dyrectorio/issues/243))
+* **(web):** copy deployment ([#259](https://github.com/dyrector-io/dyrectorio/issues/259))
+* **(cli):** traefik port check ([#262](https://github.com/dyrector-io/dyrectorio/issues/262))
+* **(crux-ui):** editor highlighting ([#260](https://github.com/dyrector-io/dyrectorio/issues/260))
+* **(cli):** add traefik to cli ([#248](https://github.com/dyrector-io/dyrectorio/issues/248))
+* **(crux-ui):** display never logged in ([#247](https://github.com/dyrector-io/dyrectorio/issues/247))
+* introduce container exec builder to run exec command on container ([#230](https://github.com/dyrector-io/dyrectorio/issues/230))
+* **(cli):** check open/duplicate port when fire up dyrectorio stack with cli ([#238](https://github.com/dyrector-io/dyrectorio/issues/238))
+* **(crux-ui):** sensitive image config hint ([#212](https://github.com/dyrector-io/dyrectorio/issues/212))
+* show secret status on deployment screen ([#198](https://github.com/dyrector-io/dyrectorio/issues/198))
+* **(crux):** added config module ([#210](https://github.com/dyrector-io/dyrectorio/issues/210))
+* **(web):** user default container list on deployment screen ([#211](https://github.com/dyrector-io/dyrectorio/issues/211))
+* **(web):** handle different registry namespace ([#201](https://github.com/dyrector-io/dyrectorio/issues/201))
+* **(crux-ui):** prettier format on windows ([#215](https://github.com/dyrector-io/dyrectorio/issues/215))
+* **(cli):** check docker (and podman) requirements ([#197](https://github.com/dyrector-io/dyrectorio/issues/197))
+
+### Fix
+
+* increase playwright timeouts
+* **(agent):** add crane deployment list all namespaces ([#386](https://github.com/dyrector-io/dyrectorio/issues/386))
+* **(crux):** map deployment instance imageIds to new images when increasing version ([#382](https://github.com/dyrector-io/dyrectorio/issues/382))
+* **(crux):** readd deploy notifications ([#383](https://github.com/dyrector-io/dyrectorio/issues/383))
+* image mapper and docker install script ([#376](https://github.com/dyrector-io/dyrectorio/issues/376))
+* **(crux-ui):** mutate swr cached node data ([#377](https://github.com/dyrector-io/dyrectorio/issues/377))
+* **(web):** config mapping in deployment and version editing ([#371](https://github.com/dyrector-io/dyrectorio/issues/371))
+* **(ci):** tag and version setting fix ([#369](https://github.com/dyrector-io/dyrectorio/issues/369))
+* **(web):** multi prefix preparing deployment copy ([#370](https://github.com/dyrector-io/dyrectorio/issues/370))
+* nullpointer while focusing an input without editor identity ([#367](https://github.com/dyrector-io/dyrectorio/issues/367))
+* **(crux-ui):** revoke node script error & added template test ([#354](https://github.com/dyrector-io/dyrectorio/issues/354))
+* **(crux):** active team template filter ([#366](https://github.com/dyrector-io/dyrectorio/issues/366))
+* **(crux):** increase version fix ([#362](https://github.com/dyrector-io/dyrectorio/issues/362))
+* **(crux-ui):** uncontrolled reacts errors ([#357](https://github.com/dyrector-io/dyrectorio/issues/357))
+* **(web):** websocket routes ([#360](https://github.com/dyrector-io/dyrectorio/issues/360))
+* **(cli):** crux agent address env var ([#353](https://github.com/dyrector-io/dyrectorio/issues/353))
+* **(crux):** respect prefix after successful deployment ([#344](https://github.com/dyrector-io/dyrectorio/issues/344))
+* **(web):** fix deployment mutability ([#350](https://github.com/dyrector-io/dyrectorio/issues/350))
+* **(crux-ui):** registry field validator ([#349](https://github.com/dyrector-io/dyrectorio/issues/349))
+* **(web):** create multiple preparing deployments to the same node with different prefixes ([#352](https://github.com/dyrector-io/dyrectorio/issues/352))
+* **(crux):** move platform detection after priviledge escalation in install.docker.hbr ([#348](https://github.com/dyrector-io/dyrectorio/issues/348))
+* **(crux):** increase version mapper fix ([#347](https://github.com/dyrector-io/dyrectorio/issues/347))
+* dagent deployment and status streaming ([#346](https://github.com/dyrector-io/dyrectorio/issues/346))
+* **(agent):** path updates ([#340](https://github.com/dyrector-io/dyrectorio/issues/340))
+* **(crux-ui):** team name not refreshed on save ([#342](https://github.com/dyrector-io/dyrectorio/issues/342))
+* **(crux-ui):** notification webhook regex ([#339](https://github.com/dyrector-io/dyrectorio/issues/339))
+* add proto image missing binaries ([#335](https://github.com/dyrector-io/dyrectorio/issues/335))
+* **(crux):** dagent install script on Ubuntu ([#334](https://github.com/dyrector-io/dyrectorio/issues/334))
+* minor web fixes ([#330](https://github.com/dyrector-io/dyrectorio/issues/330))
+* **(crux):** remove cert related code from Dockerfile ([#327](https://github.com/dyrector-io/dyrectorio/issues/327))
+* traefik container start function ([#315](https://github.com/dyrector-io/dyrectorio/issues/315))
+* **(crux):** fix copy deployment ([#312](https://github.com/dyrector-io/dyrectorio/issues/312))
+* **(web):** copy deployment url & api ([#311](https://github.com/dyrector-io/dyrectorio/issues/311))
+* **(crux):** image build
+* port changes in webb and cli log improvement ([#303](https://github.com/dyrector-io/dyrectorio/issues/303))
+* **(crux):** dagent install script container checks ([#301](https://github.com/dyrector-io/dyrectorio/issues/301))
+* move pgp test into the correct folder ([#300](https://github.com/dyrector-io/dyrectorio/issues/300))
+* **(agent):** remove comment and version strings from pgp keys, so tests will become deterministic
+* **(ci):** missing PR trigger in golang.yml
+* **(cli):** fix config dir creation
+* **(cli):** traefik custom port
+* **(cli):** add socket to configuration
+* **(ci):** add pullrequest trigger to workflows
+* **(crux-ui):** npm install target script ([#227](https://github.com/dyrector-io/dyrectorio/issues/227))
+* **(agent):** lint errors ([#275](https://github.com/dyrector-io/dyrectorio/issues/275))
+* **(crux-ui):** reset agent version after revoke ([#278](https://github.com/dyrector-io/dyrectorio/issues/278))
+* **(crux-ui):** crux-ui pipeline ([#266](https://github.com/dyrector-io/dyrectorio/issues/266))
+* update readme with cli changes, add addintional instructions ([#250](https://github.com/dyrector-io/dyrectorio/issues/250))
+* **(crux-ui):** redirect to 404 when invalid invite ([#256](https://github.com/dyrector-io/dyrectorio/issues/256))
+* setting secret value in newly installed node ([#253](https://github.com/dyrector-io/dyrectorio/issues/253))
+* **(crux):** missing secrets from db seeder ([#231](https://github.com/dyrector-io/dyrectorio/issues/231))
+* changelog generation regexp pattern ([#216](https://github.com/dyrector-io/dyrectorio/issues/216))
+* container config path must be string instead of path ([#214](https://github.com/dyrector-io/dyrectorio/issues/214))
+* prisma segfault ([#254](https://github.com/dyrector-io/dyrectorio/issues/254))
+
+### Refactor
+
+* changed grpc logging level (crux) and scroll deployment list (crux-ui) ([#372](https://github.com/dyrector-io/dyrectorio/issues/372))
+* **(crux-ui):** refactor node management in e2e tests ([#358](https://github.com/dyrector-io/dyrectorio/issues/358))
+* **(cli):** silence containercreation and rework logging ([#341](https://github.com/dyrector-io/dyrectorio/issues/341))
+* **(crux):** remove db data seeders ([#336](https://github.com/dyrector-io/dyrectorio/issues/336))
+* update proto default enum values ([#306](https://github.com/dyrector-io/dyrectorio/issues/306))
+* **(agent):** JWT parsing & custom validation ([#280](https://github.com/dyrector-io/dyrectorio/issues/280))
+* move go packages into one, extract CLI cmd ([#267](https://github.com/dyrector-io/dyrectorio/issues/267))
+* **(cli):** use cleanenv for config ([#271](https://github.com/dyrector-io/dyrectorio/issues/271))
+* **(crux-ui):** added registry & notifications tests ([#222](https://github.com/dyrector-io/dyrectorio/issues/222))
+* **(crux):** use [@updatedAt](https://github.com/updatedAt) in prisma schema ([#225](https://github.com/dyrector-io/dyrectorio/issues/225))
+* **(agent):** adding tests to agent ([#213](https://github.com/dyrector-io/dyrectorio/issues/213))
+
+
 <a name="0.2.2"></a>
 ## [0.2.2](https://github.com/dyrector-io/dyrectorio/compare/0.2.1...0.2.2) (2022-10-10)
 
