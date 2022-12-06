@@ -285,6 +285,7 @@ export default class AgentService {
       this.agentCount.dec()
       agent.onDisconnected()
     } else if (status === NodeConnectionStatus.CONNECTED) {
+      this.agentCount.inc()
       agent.onConnected()
     }
   }

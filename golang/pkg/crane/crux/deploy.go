@@ -10,18 +10,28 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/internal/mapper"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/k8s"
+
 	common "github.com/dyrector-io/dyrectorio/protobuf/go/common"
 )
 
 func GetDeployments(ctx context.Context, namespace string) []*common.ContainerStateItem {
 	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
+	client := k8s.NewClient(cfg)
+
 	deploymentHandler := k8s.NewDeployment(ctx, cfg)
 	list, err := deploymentHandler.GetDeployments(ctx, namespace, cfg)
 	if err != nil {
 		log.Error().Err(err).Stack().Send()
+		return nil
 	}
 
-	return mapper.MapKubeDeploymentListToCruxStateItems(list)
+	svcHandler := k8s.NewService(ctx, client)
+	svc, err := svcHandler.GetServices(namespace)
+	if err != nil {
+		log.Error().Err(err).Stack().Send()
+	}
+
+	return mapper.MapKubeDeploymentListToCruxStateItems(list, svc)
 }
 
 func GetSecretsList(ctx context.Context, prefix, name string) ([]string, error) {

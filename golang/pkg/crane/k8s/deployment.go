@@ -126,16 +126,17 @@ func (d *Deployment) deleteDeployment(namespace, name string) error {
 }
 
 func (d *Deployment) GetDeployments(ctx context.Context, namespace string, cfg *config.Configuration) (*kappsv1.DeploymentList, error) {
-	clientset, err := NewClient(cfg).GetClientSet()
+	client := NewClient(cfg)
+	clientset, err := client.GetClientSet()
 	if err != nil {
 		return nil, err
 	}
 
-	deploymentsClient := clientset.AppsV1().Deployments(util.Fallback(namespace, coreV1.NamespaceDefault))
+	deploymentsClient := clientset.AppsV1().Deployments(util.Fallback(namespace, coreV1.NamespaceAll))
 
 	list, err := deploymentsClient.List(ctx, metaV1.ListOptions{})
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	return list, nil
 }
@@ -453,8 +454,10 @@ func getDeploymentsClient(namespace string, cfg *config.Configuration) typedv1.D
 	if err != nil {
 		panic(err)
 	}
-
-	return client.AppsV1().Deployments(namespace)
+	if namespace != "" {
+		return client.AppsV1().Deployments(namespace)
+	}
+	return client.AppsV1().Deployments(coreV1.NamespaceAll)
 }
 
 func getVolumeMountFromLink(containerName string, volume v1.VolumeLink) *corev1.VolumeMountApplyConfiguration {

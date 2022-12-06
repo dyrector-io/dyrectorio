@@ -9,6 +9,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
+	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	builder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
 
@@ -18,13 +19,6 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 )
-
-// 9000: "default/example-go:8080"
-// this is/was needed to expose ancient ports - passive ftp
-type IngressPortMap struct {
-	TCP   map[uint16]string `yaml:"tcp"`
-	Ports map[string]int    `yaml:"ports"`
-}
 
 // facade object for Service management
 type Service struct {
@@ -52,7 +46,7 @@ type ServiceParams struct {
 	annotations   map[string]string
 }
 
-func (s *Service) deployService(params *ServiceParams) error {
+func (s *Service) DeployService(params *ServiceParams) error {
 	client, err := s.getServiceClient(params.namespace)
 	if err != nil {
 		return err
@@ -109,6 +103,15 @@ func (s *Service) deployService(params *ServiceParams) error {
 	return nil
 }
 
+func (s *Service) GetServices(namespace string) (*corev1.ServiceList, error) {
+	client, err := s.getServiceClient(namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	return client.List(s.ctx, metav1.ListOptions{})
+}
+
 func (s *Service) deleteServices(namespace, name string) error {
 	client, err := s.getServiceClient(namespace)
 	if err != nil {
@@ -155,7 +158,7 @@ func (s *Service) getServiceClient(namespace string) (typedcorev1.ServiceInterfa
 		return nil, err
 	}
 
-	client := clientset.CoreV1().Services(namespace)
+	client := clientset.CoreV1().Services(util.Fallback(namespace, corev1.NamespaceAll))
 
 	return client, nil
 }

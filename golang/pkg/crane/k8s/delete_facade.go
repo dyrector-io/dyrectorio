@@ -29,7 +29,7 @@ func NewDeleteFacade(ctx context.Context, namespace, name string, cfg *config.Co
 	return &DeleteFacade{
 		ctx:        ctx,
 		name:       name,
-		namespace:  NewNamespace(ctx, namespace, k8sClient),
+		namespace:  NewNamespaceClient(ctx, namespace, k8sClient),
 		deployment: NewDeployment(ctx, cfg),
 		configmap:  newConfigmap(ctx, cfg),
 		service:    NewService(ctx, k8sClient),

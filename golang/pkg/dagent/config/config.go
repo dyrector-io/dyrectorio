@@ -11,7 +11,6 @@ type Configuration struct {
 	DagentName         string `yaml:"dagentName"             env:"DAGENT_NAME"           env-default:"dagent-go"`
 	DataMountPath      string `yaml:"dataMountPath"          env:"DATA_MOUNT_PATH"       env-default:"/srv/dagent"`
 	HostDockerSockPath string `yaml:"hostDockerSockPath"     env:"HOST_DOCKER_SOCK_PATH" env-default:"/var/run/docker.sock"`
-	HostMountPath      string `yaml:"hostMountPath"          env:"HOST_MOUNT_PATH"       env-default:"/srv/dagent"`
 	InternalMountPath  string `yaml:"internalMountPath"      env:"INTERNAL_MOUNT_PATH"   env-default:"/srv/dagent"`
 	LogDefaultSkip     uint64 `yaml:"logDefaultSkip"         env:"LOG_DEFAULT_SKIP"      env-default:"0"`
 	LogDefaultTake     uint64 `yaml:"logDefaultTake"         env:"LOG_DEFAULT_TAKE"      env-default:"100"`
