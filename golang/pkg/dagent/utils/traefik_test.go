@@ -35,7 +35,8 @@ func TestGetTraefikLabels(t *testing.T) {
 		"traefik.http.routers.pre-name.tls.certresolver":               "le",
 	}
 
-	labels := GetTraefikLabels(istanceConfig, containerConfig, cfg)
+	labels, err := GetTraefikLabels(istanceConfig, containerConfig, cfg)
+	assert.NoError(t, err)
 	assert.Equal(t, expected, labels)
 }
 
