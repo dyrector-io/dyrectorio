@@ -153,3 +153,14 @@ export const deploymentIsDeletable = (status: DeploymentStatus): boolean => stat
 
 export const deploymentIsCopiable = (status: DeploymentStatus, type: VersionType) =>
   type !== 'rolling' && status !== 'in_progress' && status !== 'preparing'
+
+export const deploymentLogVisible = (status: DeploymentStatus) => {
+  switch (status) {
+    case 'failed':
+    case 'successful':
+    case 'in_progress':
+      return true
+    default:
+      return false
+  }
+}
