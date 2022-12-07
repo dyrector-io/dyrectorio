@@ -1,5 +1,5 @@
 # stage 1, dep install
-FROM node:17.1.0-alpine AS DEPS
+FROM node:19.2-alpine AS DEPS
 WORKDIR /app
 
 RUN apk add --no-cache libc6-compat nasm autoconf automake bash libltdl libtool gcc make g++ zlib-dev
@@ -7,7 +7,7 @@ COPY package.json package-lock.json ./
 RUN npm ci --no-fund
 
 # stage 2, build app
-FROM node:17.1.0-alpine AS BUILDER
+FROM node:19.2-alpine AS BUILDER
 WORKDIR /app
 
 ENV NODE_ENV production
@@ -18,7 +18,7 @@ COPY . .
 RUN npm run build
 
 # stage 3, run the app
-FROM node:17.1.0-alpine AS RUNNER
+FROM node:19.2-alpine AS RUNNER
 WORKDIR /app
 
 ENV NODE_ENV production
