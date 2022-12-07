@@ -93,14 +93,17 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
 
       {node.type === 'docker' && (
         <div className="flex flex-col">
-          <DyoLabel className="text-light mb-2.5">{t('rootPath')}</DyoLabel>
+          <DyoLabel className="text-lg mb-2.5" textColor="text-bright">
+            {t('persistentDataPath')}
+          </DyoLabel>
           <DyoInput
-            placeholder={t('rootPathOptional')}
-            className="max-w-lg"
+            placeholder={t('optionalLeaveEmptyForDefaults')}
+            className="max-w-lg ml-2 mb-2.5"
             grow
             value={rootPath}
             onChange={e => setRootPath(e.target.value)}
           />
+          <p className="text-sm text-light-eased ml-4 mb-2.5">{t('persistentDataExplanation')}</p>
         </div>
       )}
 

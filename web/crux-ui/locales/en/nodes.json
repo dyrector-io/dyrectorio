@@ -38,8 +38,9 @@
     "running": "Running",
     "unreachable": "Unreachable"
   },
-  "rootPath": "Root path",
-  "rootPathOptional": "Optional, leave empty for default paths",
+  "persistentDataPath": "Persistent data path",
+  "persistentDataExplanation": "This is where agent will create and store some files required to work as well as create persistent storage for containers.",
+  "optionalLeaveEmptyForDefaults": "Optional, leave empty for default paths",
   "update": "Update",
   "updateError": "Failed to update agent: {{error}}",
   "ports": "Ports"
