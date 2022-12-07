@@ -5,6 +5,8 @@ import {
   CreateProductFromTemplateRequest,
   CruxTemplateController,
   CruxTemplateControllerMethods,
+  TemplateImageResponse,
+  IdRequest,
 } from 'src/grpc/protobuf/proto/crux'
 import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
 import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
@@ -26,5 +28,9 @@ export default class TemplateController implements CruxTemplateController {
 
   createProductFromTemplate(request: CreateProductFromTemplateRequest): Promise<CreateEntityResponse> {
     return this.service.createProductFromTemplate(request)
+  }
+
+  getImage(request: IdRequest): Promise<TemplateImageResponse> {
+    return this.service.getImage(request.id)
   }
 }

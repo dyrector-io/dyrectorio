@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
+import { NotFoundError } from '@prisma/client/runtime'
 import {
   deploymentStrategyFromJSON,
   exposeStrategyFromJSON,
@@ -11,6 +12,7 @@ import {
   CreateProductRequest,
   CreateVersionRequest,
   ProductType,
+  TemplateImageResponse,
   VersionType,
 } from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
@@ -91,6 +93,17 @@ export default class TemplateService {
     await this.createVersion(template.images, product, req.type, req.accessedBy)
 
     return product
+  }
+
+  async getImage(id: string): Promise<TemplateImageResponse> {
+    try {
+      const buffer = await this.templateFileService.getTemplateImageById(id)
+      return {
+        data: new Uint8Array(buffer),
+      }
+    } catch (err) {
+      throw new NotFoundError(`Template image not found for ${id}`)
+    }
   }
 
   private idify<T extends { id: string }>(object: T): T {

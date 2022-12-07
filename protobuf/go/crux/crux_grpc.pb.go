@@ -3305,6 +3305,7 @@ var CruxHealth_ServiceDesc = grpc.ServiceDesc{
 type CruxTemplateClient interface {
 	GetTemplates(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*TemplateListResponse, error)
 	CreateProductFromTemplate(ctx context.Context, in *CreateProductFromTemplateRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error)
+	GetImage(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*TemplateImageResponse, error)
 }
 
 type cruxTemplateClient struct {
@@ -3333,12 +3334,22 @@ func (c *cruxTemplateClient) CreateProductFromTemplate(ctx context.Context, in *
 	return out, nil
 }
 
+func (c *cruxTemplateClient) GetImage(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*TemplateImageResponse, error) {
+	out := new(TemplateImageResponse)
+	err := c.cc.Invoke(ctx, "/crux.CruxTemplate/GetImage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CruxTemplateServer is the server API for CruxTemplate service.
 // All implementations must embed UnimplementedCruxTemplateServer
 // for forward compatibility
 type CruxTemplateServer interface {
 	GetTemplates(context.Context, *AccessRequest) (*TemplateListResponse, error)
 	CreateProductFromTemplate(context.Context, *CreateProductFromTemplateRequest) (*CreateEntityResponse, error)
+	GetImage(context.Context, *IdRequest) (*TemplateImageResponse, error)
 	mustEmbedUnimplementedCruxTemplateServer()
 }
 
@@ -3351,6 +3362,9 @@ func (UnimplementedCruxTemplateServer) GetTemplates(context.Context, *AccessRequ
 }
 func (UnimplementedCruxTemplateServer) CreateProductFromTemplate(context.Context, *CreateProductFromTemplateRequest) (*CreateEntityResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateProductFromTemplate not implemented")
+}
+func (UnimplementedCruxTemplateServer) GetImage(context.Context, *IdRequest) (*TemplateImageResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetImage not implemented")
 }
 func (UnimplementedCruxTemplateServer) mustEmbedUnimplementedCruxTemplateServer() {}
 
@@ -3401,6 +3415,24 @@ func _CruxTemplate_CreateProductFromTemplate_Handler(srv interface{}, ctx contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CruxTemplate_GetImage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CruxTemplateServer).GetImage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crux.CruxTemplate/GetImage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CruxTemplateServer).GetImage(ctx, req.(*IdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CruxTemplate_ServiceDesc is the grpc.ServiceDesc for CruxTemplate service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -3415,6 +3447,10 @@ var CruxTemplate_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateProductFromTemplate",
 			Handler:    _CruxTemplate_CreateProductFromTemplate_Handler,
+		},
+		{
+			MethodName: "GetImage",
+			Handler:    _CruxTemplate_GetImage_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
