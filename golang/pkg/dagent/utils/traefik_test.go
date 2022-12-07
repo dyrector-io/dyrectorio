@@ -40,6 +40,22 @@ func TestGetTraefikLabels(t *testing.T) {
 	assert.Equal(t, expected, labels)
 }
 
+func TestGetTraefikLabelsNoPorts(t *testing.T) {
+	istanceConfig := &v1.InstanceConfig{
+		ContainerPreName: "pre",
+	}
+	containerConfig := &v1.ContainerConfig{
+		Container:          "name",
+		Ports:              []container.PortBinding{},
+		ExposeTLS:          true,
+		IngressUploadLimit: "16k",
+	}
+	cfg := &config.Configuration{}
+
+	_, err := GetTraefikLabels(istanceConfig, containerConfig, cfg)
+	assert.Error(t, err)
+}
+
 func TestGetTraefikGoTemplate(t *testing.T) {
 	expected := `
 log:
