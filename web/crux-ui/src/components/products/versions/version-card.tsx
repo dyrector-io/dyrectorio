@@ -44,7 +44,7 @@ const VersionCard = (props: VersionCardProps) => {
           <div className="flex flex-row ml-auto">
             {!version.default ? null : (
               <DyoTag className="ml-6" color="bg-error-red" textColor="text-error-red">
-                {t('default').toUpperCase()}
+                {t('common:default').toUpperCase()}
               </DyoTag>
             )}
 
@@ -78,7 +78,7 @@ const VersionCard = (props: VersionCardProps) => {
             className="px-2 h-6"
             disabled={disabled}
             src="/home_bold.svg"
-            alt={t('default')}
+            alt={t('common:default')}
             width={18}
             height={18}
             outlined

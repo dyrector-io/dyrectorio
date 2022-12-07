@@ -46,7 +46,7 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
     item.image.createdAt ? utcDateToLocale(item.image.createdAt) : 'new',
     <Link href={instanceConfigUrl(state.product.id, state.version.id, state.deployment.id, item.id)}>
       <a>
-        <Image src="/settings.svg" width={24} height={24} />
+        <Image src="/settings.svg" alt={t('common:settings')} width={24} height={24} />
       </a>
     </Link>,
   ]

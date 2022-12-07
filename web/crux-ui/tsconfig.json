@@ -29,7 +29,8 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
-    "incremental": true
+    "incremental": true,
+    "typeRoots": ["node_modules/yup"]
   },
   "exclude": [
     "node_modules"

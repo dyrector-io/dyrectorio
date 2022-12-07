@@ -44,7 +44,7 @@ const ProductViewList = (props: ProductViewListProps) => {
     </div>,
     <Link href={productUrl(item.id)}>
       <a>
-        <Image src="/eye.svg" width={24} height={24} />
+        <Image src="/eye.svg" alt={t('common:view')} width={24} height={24} />
       </a>
     </Link>,
   ]

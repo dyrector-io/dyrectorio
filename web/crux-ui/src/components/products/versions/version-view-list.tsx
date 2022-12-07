@@ -73,17 +73,25 @@ const VersionViewList = (props: VersionViewListProps) => {
         <Image
           className="cursor-pointer"
           src="/archive.svg"
+          alt={t('tag')}
           width={24}
           height={24}
           onClick={() => onOpenTagsDialog(item)}
         />
       </div>
       <div className="inline-block">
-        <Image className="cursor-pointer" src="/trash-can.svg" width={24} height={24} onClick={() => onDelete(item)} />
+        <Image
+          className="cursor-pointer"
+          alt={t('common:delete')}
+          src="/trash-can.svg"
+          width={24}
+          height={24}
+          onClick={() => onDelete(item)}
+        />
       </div>
       <Link href={imageConfigUrl(state.productId, state.versionId, item.id)}>
         <a>
-          <Image src="/settings.svg" width={24} height={24} />
+          <Image src="/settings.svg" alt={t('common:settings')} width={24} height={24} />
         </a>
       </Link>
     </div>,

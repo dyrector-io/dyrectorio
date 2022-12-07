@@ -9,6 +9,7 @@ import { useEffect, useMemo, useReducer, useState } from 'react'
 import { v4 as uuid } from 'uuid'
 import MultiInput from '../editor/multi-input'
 import { EditorStateOptions } from '../editor/use-editor-state'
+import SecretStatus from './secret-status'
 
 interface SecretKeyValueInputProps {
   disabled?: boolean
@@ -101,7 +102,7 @@ const reducer = (state: UniqueSecretKeyValue[], action: KeyValueInputAction): Un
 }
 
 const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation()
 
   const {
     disabled,
@@ -230,14 +231,6 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
 
   const elements = stateToElements(state, definedSecrets)
 
-  const elementSecretStatus = (present?: boolean) => {
-    if (present === undefined) {
-      return '/circle-gray.svg'
-    }
-
-    return present ? '/circle-green.svg' : '/circle-red.svg'
-  }
-
   const renderItem = (entry: KeyValueElement, index: number) => {
     const { id, key, value, message, encrypted, required } = entry
 
@@ -249,14 +242,12 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
         <div className="basis-5/12 relative">
           {required && (
             <div className="absolute right-0 h-full flex mr-2">
-              <Image src="/asterisk.svg" width={12} height={12} />
+              <Image src="/asterisk.svg" alt={t('required')} width={12} height={12} />
             </div>
           )}
           <div className="flex flex-row">
             <div className="mr-2 flex flex-row basis-[16px]">
-              {!isCompletelyEmpty(entry) && (
-                <Image className="mr-2" src={elementSecretStatus(entry.present)} width={16} height={16} />
-              )}
+              {!isCompletelyEmpty(entry) && <SecretStatus className="mr-2" present={entry.present} />}
             </div>
             <MultiInput
               key={keyId}
@@ -293,7 +284,7 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
               <Image
                 className="text-bright-muted"
                 src={required ? '/clear.svg' : '/trash-can.svg'}
-                alt={t('common:clear')}
+                alt={t('clear')}
                 width={24}
                 height={24}
               />
@@ -319,10 +310,10 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
       {!disabled && (
         <div className="flex flex-row flex-grow p-1 justify-end">
           <DyoButton className="px-10 mr-1" disabled={!changed} secondary onClick={onDiscard}>
-            {t('common:discard')}
+            {t('discard')}
           </DyoButton>
           <DyoButton className="px-10 ml-1" disabled={!changed || duplicates} onClick={onSubmit}>
-            {t('common:save')}
+            {t('save')}
           </DyoButton>
         </div>
       )}

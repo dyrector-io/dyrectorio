@@ -1,5 +1,6 @@
 import { DeploymentEvent } from '@app/models'
 import { terminalDateFormat } from '@app/utils'
+import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
 
@@ -11,6 +12,8 @@ interface DeploymentEventsTerminalProps {
 
 const DeploymentEventsTerminal = (props: DeploymentEventsTerminalProps) => {
   const { events: propsEvents } = props
+
+  const { t } = useTranslation()
 
   const containerRef = useRef<HTMLDivElement>(undefined)
   const preventScrollEvent = useRef<boolean>(false)
@@ -80,7 +83,7 @@ const DeploymentEventsTerminal = (props: DeploymentEventsTerminalProps) => {
           onClick={scrollToBottom}
           className="absolute right-0 bottom-0 mr-6 mb-3 cursor-pointer animate-bounce flex items-center justify-center"
         >
-          <Image src="/arrow_down.svg" width="24" height="24" />
+          <Image src="/arrow_down.svg" alt={t('down')} width="24" height="24" />
         </div>
       )}
     </div>

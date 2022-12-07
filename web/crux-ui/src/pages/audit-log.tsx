@@ -125,7 +125,7 @@ const AuditLogPage = () => {
 
   const itemTemplate = (log: AuditLog) => /* eslint-disable react/jsx-key */ [
     <div className="w-10 ml-auto">
-      <Image src="/default_avatar.svg" width={38} height={38} layout="fixed" />
+      <Image src="/default_avatar.svg" alt={t('common:userAvatar')} width={38} height={38} layout="fixed" />
     </div>,
     <div className="font-semibold min-w-max">{log.identityEmail}</div>,
     <div className="min-w-max">{utcDateToLocale(log.date)}</div>,
