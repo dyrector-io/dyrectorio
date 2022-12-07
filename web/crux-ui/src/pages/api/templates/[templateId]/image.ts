@@ -7,7 +7,7 @@ const onGet = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const data = await crux(req).templates.getImage(templateId)
 
-  res.status(200).setHeader('Content-Type', 'image/png').send(data.data)
+  res.status(200).setHeader('Content-Type', 'image/jpeg').send(data.data)
 }
 
 export default withMiddlewares({

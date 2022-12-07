@@ -83,7 +83,7 @@ export default class TemplateFileService {
   }
 
   async getTemplateImageById(id: string): Promise<Buffer> {
-    return readFileSync(this.getTemplatePath(id, 'png'))
+    return readFileSync(this.getTemplatePath(id, 'jpg'))
   }
 
   getTemplatePath(id: string, ext?: string): string {
