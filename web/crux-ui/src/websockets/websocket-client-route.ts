@@ -79,9 +79,12 @@ class WebSocketClientRoute {
     })
 
     if (!res.ok) {
-      this.logger.debug('Failed to subscribe')
       this.state = 'unsubscribed'
       free()
+
+      this.logger.error('Failed to subscribe')
+      this.logger.error(await res.json())
+
       return [null, null]
     }
 

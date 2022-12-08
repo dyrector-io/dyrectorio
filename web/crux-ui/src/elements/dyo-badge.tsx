@@ -1,5 +1,5 @@
 import useTranslation from 'next-translate/useTranslation'
-import Image from 'next/image'
+import DyoIcon from './dyo-icon'
 
 interface DyoBadgeProps {
   icon: string
@@ -9,11 +9,9 @@ interface DyoBadgeProps {
 const DyoBadge = (props: DyoBadgeProps) => {
   const { icon, large } = props
 
-  const size = large ? 32 : 24
-
   const { t } = useTranslation('badges')
 
-  return <Image src={`/badges/${icon}.svg`} alt={t(`${icon}`)} width={size} height={size} />
+  return <DyoIcon src={`/badges/${icon}.svg`} alt={t(`${icon}`)} size={large ? 'lg' : 'md'} />
 }
 
 export default DyoBadge

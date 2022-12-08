@@ -201,24 +201,22 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
     <div>
       {!userStatusReinvitable(it.status) || countdown > 0 ? null : (
         <Image
-          className="cursor-pointer mr-16"
+          className="aspect-square cursor-pointer mr-16"
           src="/restart.svg"
           alt={t('common:delete')}
           width={24}
           height={24}
-          layout="fixed"
           onClick={() => onReinviteUser(it)}
         />
       )}
 
       {detailsState !== 'none' || !canEdit || it.role === 'owner' ? null : (
         <Image
-          className="cursor-pointer mr-16"
+          className="aspect-square cursor-pointer mr-16"
           src="/trash-can.svg"
           alt={t('common:delete')}
           width={24}
           height={24}
-          layout="fixed"
           onClick={() => onDeleteUser(it)}
         />
       )}

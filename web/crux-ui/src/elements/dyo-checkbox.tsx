@@ -27,7 +27,7 @@ const DyoCheckbox = (props: DyoCheckboxProps) => {
       )}
       onClick={() => handleCheckedChange(!checked)}
     >
-      {!checked ? null : <Image src="/check-white.svg" alt="check" layout="fixed" width={20} height={20} />}
+      {!checked ? null : <Image className="aspect-square" src="/check-white.svg" alt="check" width={20} height={20} />}
 
       <input type="checkbox" checked={checked} onChange={() => handleCheckedChange(!checked)} className="hidden" />
     </div>

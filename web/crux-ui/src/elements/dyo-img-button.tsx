@@ -4,6 +4,7 @@ import Image from 'next/image'
 interface DyoImgButtonProps {
   className?: string
   colorClassName?: string
+  imageClassName?: string
   disabled?: boolean
   src: string
   alt: string
@@ -15,7 +16,19 @@ interface DyoImgButtonProps {
 }
 
 const DyoImgButton = (props: DyoImgButtonProps) => {
-  const { outlined, secondary, disabled, colorClassName, className, onClick, alt, width = 24, height = 24, src } = props
+  const {
+    outlined,
+    secondary,
+    disabled,
+    colorClassName,
+    imageClassName,
+    className,
+    onClick,
+    alt,
+    width = 24,
+    height = 24,
+    src,
+  } = props
 
   const defaultColor = outlined ? (secondary ? 'ring-warning-orange' : 'ring-dyo-turquoise') : null
   const disabledColor = outlined ? 'ring-light-grey' : null
@@ -30,7 +43,7 @@ const DyoImgButton = (props: DyoImgButtonProps) => {
       disabled={disabled}
       onClick={onClick}
     >
-      <Image layout="fixed" src={src} width={width} height={height} alt={alt} />
+      <Image className={imageClassName} src={src} width={width} height={height} alt={alt} />
     </button>
   )
 }

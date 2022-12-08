@@ -13,7 +13,7 @@ interface DeploymentEventsTerminalProps {
 const DeploymentEventsTerminal = (props: DeploymentEventsTerminalProps) => {
   const { events: propsEvents } = props
 
-  const { t } = useTranslation()
+  const { t } = useTranslation('common')
 
   const containerRef = useRef<HTMLDivElement>(undefined)
   const preventScrollEvent = useRef<boolean>(false)

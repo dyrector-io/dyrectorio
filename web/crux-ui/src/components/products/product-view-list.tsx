@@ -42,10 +42,8 @@ const ProductViewList = (props: ProductViewListProps) => {
     <div>
       <ProductTypeTag className="w-fit m-auto" type={item.type} />
     </div>,
-    <Link href={productUrl(item.id)}>
-      <a>
-        <Image src="/eye.svg" alt={t('common:view')} width={24} height={24} />
-      </a>
+    <Link href={productUrl(item.id)} passHref>
+      <Image src="/eye.svg" alt={t('common:view')} width={24} height={24} />
     </Link>,
   ]
 

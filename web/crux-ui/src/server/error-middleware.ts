@@ -31,7 +31,7 @@ export const parseGrpcError = (error: ServiceError): CruxGrpcError => {
     const json = JSON.parse(error.details)
     message = json.message
     details = json.details
-    // TODO
+    // TODO(@m8vago)
     // eslint-disable-next-line
   } catch {}
 
@@ -104,6 +104,7 @@ export const useErrorMiddleware = async (
         description: error.description,
       })
     } else {
+      console.error('[ERROR]: ', req.url, err)
       res.statusCode = 500
 
       if (process.env.NODE_ENV !== 'production') {

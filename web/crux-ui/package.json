@@ -66,7 +66,6 @@
     "@types/react-datepicker": "^4.8.0",
     "@types/react-google-recaptcha": "^2.1.5",
     "@types/uuid": "^9.0.0",
-    "@types/yup": "^0.32.0",
     "@typescript-eslint/eslint-plugin": "^5.45.1",
     "@typescript-eslint/parser": "^5.45.1",
     "autoprefixer": "^10.4.13",

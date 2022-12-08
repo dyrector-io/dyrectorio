@@ -102,7 +102,7 @@ const reducer = (state: UniqueSecretKeyValue[], action: KeyValueInputAction): Un
 }
 
 const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation('common')
 
   const {
     disabled,

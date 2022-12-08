@@ -89,10 +89,8 @@ const VersionViewList = (props: VersionViewListProps) => {
           onClick={() => onDelete(item)}
         />
       </div>
-      <Link href={imageConfigUrl(state.productId, state.versionId, item.id)}>
-        <a>
-          <Image src="/settings.svg" alt={t('common:settings')} width={24} height={24} />
-        </a>
+      <Link href={imageConfigUrl(state.productId, state.versionId, item.id)} passHref>
+        <Image src="/settings.svg" alt={t('common:settings')} width={24} height={24} />
       </Link>
     </div>,
   ]

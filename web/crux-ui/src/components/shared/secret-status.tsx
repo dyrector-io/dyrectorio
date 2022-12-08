@@ -1,5 +1,5 @@
+import DyoIcon from '@app/elements/dyo-icon'
 import useTranslation from 'next-translate/useTranslation'
-import Image from 'next/image'
 
 const assetOfStatus = (present?: boolean) => {
   switch (present) {
@@ -29,12 +29,10 @@ interface SecretStatusProps {
 }
 
 const SecretStatus = (props: SecretStatusProps) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation('common')
   const { className, present } = props
 
-  return (
-    <Image className={className} alt={t(altOfStatus(present))} src={assetOfStatus(present)} width={16} height={16} />
-  )
+  return <DyoIcon className={className} alt={t(altOfStatus(present))} src={assetOfStatus(present)} />
 }
 
 export default SecretStatus

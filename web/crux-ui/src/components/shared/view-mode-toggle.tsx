@@ -11,7 +11,7 @@ export interface ViewModeToggleProps {
 }
 
 const ViewModeToggle = (props: ViewModeToggleProps) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation('common')
   const { className, viewMode, onViewModeChanged } = props
 
   return (

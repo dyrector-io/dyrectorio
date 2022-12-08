@@ -154,20 +154,24 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
 
     /* eslint-disable react/jsx-key */
     return [
-      <Link href={deploymentUrl(product.id, version.id, item.id)}>
-        <a className="flex place-items-center cursor-pointer">
-          <NodeStatusIndicator className="mr-2" status={item.nodeStatus} />
-          {item.nodeName}
-        </a>
+      <Link
+        className="flex place-items-center cursor-pointer"
+        href={deploymentUrl(product.id, version.id, item.id)}
+        passHref
+      >
+        <NodeStatusIndicator className="mr-2" status={item.nodeStatus} />
+        {item.nodeName}
       </Link>,
       item.prefix,
       <DeploymentStatusTag className="w-fit m-auto" status={item.status} />,
       <>{utcDateToLocale(item.date)}</>,
       <>
-        <Link href={deploymentUrl(product.id, version.id, item.id)}>
-          <a className="mr-2 inline-block cursor-pointer">
-            <Image src="/eye.svg" alt={t('common:deploy')} width={24} height={24} />
-          </a>
+        <Link
+          className="mr-2 inline-block cursor-pointer"
+          href={deploymentUrl(product.id, version.id, item.id)}
+          passHref
+        >
+          <Image src="/eye.svg" alt={t('common:deploy')} width={24} height={24} />
         </Link>
         {mutable && (
           <div

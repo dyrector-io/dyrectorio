@@ -9,7 +9,7 @@ options:
   commit_groups:
     title_maps:
   header:
-    pattern: "^(fix|feat|chore|doc|techdebt|refactor)(\\(web\\)|\\(agent\\)|\\(crux\\)|\\(crux-ui\\)|\\(ci\\)|\\(cli\\))?\\:\\s?([\\S ]*)$"
+    pattern: "^(fix|feat|chore|doc|techdebt|refactor|build)(\\(web\\)|\\(agent\\)|\\(crux\\)|\\(crux-ui\\)|\\(ci\\)|\\(cli\\))?\\:\\s?([\\S ]*)$"
     pattern_maps:
       - Type
       - Scope
