@@ -28,7 +28,7 @@ const ViewModeToggle = (props: ViewModeToggleProps) => {
         className={clsx('px-2 py-1.5 my-1 mr-0.5', viewMode === 'list' && 'bg-dyo-turquoise rounded')}
         onClick={() => onViewModeChanged('list')}
       >
-        <Image src="/view_table.svg" alt={t('viewMode.list')} width={18} height={18} />
+        <Image className="aspect-square" src="/view_table.svg" alt={t('viewMode.list')} width={18} height={18} />
       </div>
     </div>
   )

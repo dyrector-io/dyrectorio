@@ -38,6 +38,8 @@ export const deployWithDagent = async (
   versionId?: string,
   ignoreResult?: boolean,
 ) => {
+  page.on('console', msg => console.log(prefix, msg))
+
   if (versionId) {
     await page.goto(versionUrl(productId, versionId))
   } else {
@@ -61,7 +63,7 @@ export const deployWithDagent = async (
   await page.waitForNavigation()
 
   if (!ignoreResult) {
-    await page.waitForSelector('div.bg-dyo-green:has-text("Successful")')
+    await page.waitForSelector('div:has-text("Successful")')
   }
 }
 
