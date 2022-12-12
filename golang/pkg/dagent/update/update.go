@@ -8,10 +8,10 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	"github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
-	"github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/utils"
+	"github.com/dyrector-io/dyrectorio/golang/pkg/helper/docker"
+	"github.com/dyrector-io/dyrectorio/golang/pkg/helper/image"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/mount"

@@ -16,8 +16,8 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
 
-	dockerHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
-	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
+	dockerHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/docker"
+	imageHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/image"
 )
 
 // A Builder handles the process of creating and starting containers,

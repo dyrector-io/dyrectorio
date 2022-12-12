@@ -12,8 +12,8 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/rs/zerolog/log"
 
-	dockerHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
+	dockerHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/docker"
 
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/config"
 )

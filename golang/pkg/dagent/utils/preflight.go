@@ -7,8 +7,8 @@ import (
 	"github.com/hashicorp/go-version"
 	"github.com/rs/zerolog/log"
 
-	dockerHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/config"
+	dockerHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/docker"
 )
 
 func PreflightChecks(cfg *config.Configuration) {
