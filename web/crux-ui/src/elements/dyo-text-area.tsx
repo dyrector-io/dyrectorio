@@ -24,6 +24,7 @@ const DyoTextArea = (props: DyoTextAreaProps) => {
       <textarea
         {...forwardedProps}
         name={name}
+        id={name}
         className={clsx(
           className,
           'bg-medium p-4 ring-2 rounded-md text-bright ring-light-grey focus:outline-none focus:dark',

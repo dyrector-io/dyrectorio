@@ -43,6 +43,7 @@ export const DyoFileUploadInput = (props: DyoFileUploadProps) => {
       <input
         type="file"
         className="hidden"
+        id={name}
         accept={accept}
         multiple={multiple}
         ref={hiddenFileInput}

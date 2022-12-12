@@ -46,6 +46,7 @@ export const DyoInput = forwardRef((props: DyoInputProps, ref: ForwardedRef<HTML
           name={name}
           ref={ref}
           disabled={disabled}
+          id={name}
           className={clsx(
             className,
             'bg-medium h-11 p-4 ring-2 rounded-md focus:outline-none focus:dark',

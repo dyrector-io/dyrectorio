@@ -1,6 +1,7 @@
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoChips from '@app/elements/dyo-chips'
+import DyoForm from '@app/elements/dyo-form'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
@@ -70,7 +71,7 @@ const ApplyTemplateCard = (props: ApplyTemplateCardProps) => {
         {t('applyTemplate', { name: propsTemplate.name })}
       </DyoHeading>
 
-      <form className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
+      <DyoForm className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
         <DyoInput
           className="max-w-lg"
           grow
@@ -104,7 +105,7 @@ const ApplyTemplateCard = (props: ApplyTemplateCardProps) => {
         />
 
         <DyoButton className="hidden" type="submit" />
-      </form>
+      </DyoForm>
     </DyoCard>
   )
 }

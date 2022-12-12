@@ -2,6 +2,7 @@ import { SingleFormLayout } from '@app/components/layout'
 import { ATTRIB_CSRF, AUTH_RESEND_DELAY } from '@app/const'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
+import DyoForm from '@app/elements/dyo-form'
 import { DyoInput } from '@app/elements/dyo-input'
 import DyoMessage from '@app/elements/dyo-message'
 import DyoSingleFormHeading from '@app/elements/dyo-single-form-heading'
@@ -87,7 +88,7 @@ const RecoveryPage = (props: RecoveryPageProps) => {
   return (
     <SingleFormLayout title={t('recovery')}>
       <DyoCard className="text-bright p-8 m-auto">
-        <form className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
+        <DyoForm className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
           <DyoSingleFormHeading>{t('recovery')}</DyoSingleFormHeading>
 
           <DyoInput
@@ -115,7 +116,7 @@ const RecoveryPage = (props: RecoveryPageProps) => {
           </DyoButton>
 
           {recaptchaSiteKey ? <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={recaptchaSiteKey} /> : null}
-        </form>
+        </DyoForm>
       </DyoCard>
     </SingleFormLayout>
   )

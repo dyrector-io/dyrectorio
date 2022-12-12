@@ -2,6 +2,7 @@ import { SingleFormLayout } from '@app/components/layout'
 import { ATTRIB_CSRF } from '@app/const'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
+import DyoForm from '@app/elements/dyo-form'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoMessage from '@app/elements/dyo-message'
@@ -66,7 +67,7 @@ const NoPasswordPage = (props: NoPasswordPageProps) => {
   return (
     <SingleFormLayout title={t('changePass')}>
       <DyoCard className="p-8 mx-auto my-auto">
-        <form className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
+        <DyoForm className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
           <DyoSingleFormHeading>{t('changePass')}</DyoSingleFormHeading>
 
           {priviledgedSession ? (
@@ -109,7 +110,7 @@ const NoPasswordPage = (props: NoPasswordPageProps) => {
               <DyoButton onClick={onLogout}>{t('clickToLogout')}</DyoButton>
             </>
           )}
-        </form>
+        </DyoForm>
       </DyoCard>
     </SingleFormLayout>
   )
