@@ -219,6 +219,7 @@ func logDeployInfo(
 		fmt.Sprintln("Starting container: ", containerName),
 		fmt.Sprintln("Using image: ", image.String()),
 	)
+	log.Debug().Str("host", image.Host).Str("name", image.Name).Str("tag", image.Tag).Msg("Parsed image URI")
 
 	labels, _ := GetImageLabels(image.String())
 	if len(labels) > 0 {
@@ -276,10 +277,14 @@ func DeployImage(ctx context.Context,
 	containerName := getContainerName(deployImageRequest)
 	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
 
-	image, _ := imageHelper.URIFromString(
-		util.JoinV("/",
-			*deployImageRequest.Registry,
-			util.JoinV(":", deployImageRequest.ImageName, deployImageRequest.Tag)))
+	imageURI := util.JoinV("/",
+		*deployImageRequest.Registry,
+		util.JoinV(":", deployImageRequest.ImageName, deployImageRequest.Tag))
+	log.Debug().Str("image", imageURI).Msg("Parsing image URI")
+	image, imageError := imageHelper.URIFromString(imageURI)
+	if imageError != nil {
+		return imageError
+	}
 	logDeployInfo(dog, deployImageRequest, image, containerName)
 
 	envMap := MergeStringMapUnique(

@@ -14,7 +14,6 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/rs/zerolog/log"
 
-	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 )
 
@@ -55,7 +54,7 @@ type PullResponse struct {
 	Progress string `json:"progress"`
 }
 
-const PartCountAfterSplitByColon = 2
+const MaxColonsInURI = 2
 
 // ImageURIFromString results in an image that is split respectively
 // imageName can be fully qualified or dockerhub image name plus tag
@@ -66,28 +65,23 @@ func URIFromString(imageName string) (*URI, error) {
 
 	image := &URI{}
 
-	nameArr := strings.Split(imageName, ":")
-
-	if len(nameArr) == 1 {
-		return nil, &InvalidURIError{Image: imageName}
-	} else if len(nameArr) > PartCountAfterSplitByColon {
+	if strings.Count(imageName, ":") > MaxColonsInURI {
 		return nil, &MultiColonRegistryURIError{}
-	} else if len(nameArr) == PartCountAfterSplitByColon {
-		image.Tag = nameArr[1]
 	}
 
-	if strings.ContainsRune(nameArr[0], '/') {
-		// split by / tokens
-		repoArr := strings.Split(nameArr[0], "/")
-		// taking the last element into the result
-		image.Name = repoArr[len(repoArr)-1]
-		// removing the last element
-		repoArr = repoArr[:len(repoArr)-1]
-		// conjoining the remaining into the result
-		image.Host = util.JoinV("/", repoArr...)
-	} else {
-		image.Name = nameArr[0]
+	lastColon := strings.LastIndex(imageName, ":")
+	if lastColon == -1 {
+		return nil, &InvalidURIError{Image: imageName}
 	}
+
+	image.Tag = imageName[lastColon+1:]
+
+	firstSlash := strings.Index(imageName, "/")
+	if firstSlash != -1 {
+		image.Host = imageName[0:firstSlash]
+	}
+
+	image.Name = imageName[firstSlash+1 : lastColon]
 
 	return image, nil
 }
