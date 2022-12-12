@@ -35,8 +35,25 @@ func TestGetTraefikLabels(t *testing.T) {
 		"traefik.http.routers.pre-name.tls.certresolver":               "le",
 	}
 
-	labels := GetTraefikLabels(istanceConfig, containerConfig, cfg)
+	labels, err := GetTraefikLabels(istanceConfig, containerConfig, cfg)
+	assert.NoError(t, err)
 	assert.Equal(t, expected, labels)
+}
+
+func TestGetTraefikLabelsNoPorts(t *testing.T) {
+	istanceConfig := &v1.InstanceConfig{
+		ContainerPreName: "pre",
+	}
+	containerConfig := &v1.ContainerConfig{
+		Container:          "name",
+		Ports:              []container.PortBinding{},
+		ExposeTLS:          true,
+		IngressUploadLimit: "16k",
+	}
+	cfg := &config.Configuration{}
+
+	_, err := GetTraefikLabels(istanceConfig, containerConfig, cfg)
+	assert.Error(t, err)
 }
 
 func TestGetTraefikGoTemplate(t *testing.T) {

@@ -2,7 +2,10 @@
 package utils
 
 import (
+	"errors"
 	"fmt"
+
+	"github.com/rs/zerolog/log"
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
@@ -11,8 +14,17 @@ import (
 
 // generating container labels for traefik
 // if Expose is provided we bind 80 and the given ingressName + ingressHost
-func GetTraefikLabels(instanceConfig *v1.InstanceConfig, containerConfig *v1.ContainerConfig, cfg *config.Configuration) map[string]string {
+func GetTraefikLabels(
+	instanceConfig *v1.InstanceConfig,
+	containerConfig *v1.ContainerConfig,
+	cfg *config.Configuration,
+) (map[string]string, error) {
 	labels := map[string]string{}
+
+	if len(containerConfig.Ports) == 0 {
+		log.Warn().Msg("Expose is enabled but no exposed ports are provided!")
+		return labels, errors.New("no exposed ports provided")
+	}
 
 	serviceName := util.JoinV("-", instanceConfig.ContainerPreName, containerConfig.Container)
 	labels["traefik.enable"] = "true"
@@ -28,7 +40,7 @@ func GetTraefikLabels(instanceConfig *v1.InstanceConfig, containerConfig *v1.Con
 		labels["traefik.http.middlewares.limit.buffering.maxRequestBodyBytes"] = containerConfig.IngressUploadLimit
 	}
 
-	return labels
+	return labels, nil
 }
 
 // serviceName container-name.container-pre-name.ingress.host is default
