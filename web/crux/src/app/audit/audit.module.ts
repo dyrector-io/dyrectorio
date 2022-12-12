@@ -9,7 +9,7 @@ import AuditService from './audit.service'
 
 @Module({
   imports: [],
-  exports: [],
+  exports: [AuditService],
   controllers: [AuditController],
   providers: [AuditService, AuditMapper, PrismaService, InterceptorGrpcHelperProvider, TeamRepository, KratosService],
 })

@@ -1396,6 +1396,37 @@ export interface CreateProductFromTemplateRequest {
   type: ProductType
 }
 
+/** DASHBOARD */
+export interface DashboardActiveNodes {
+  id: string
+  name: string
+  address: string
+  version: string
+}
+
+export interface DashboardDeployment {
+  id: string
+  product: string
+  version: string
+  node: string
+  changelog: string
+  deployedAt?: Timestamp | undefined
+  productId: string
+  versionId: string
+}
+
+export interface DashboardResponse {
+  users: number
+  auditLogEntries: number
+  products: number
+  versions: number
+  deployments: number
+  failedDeployments: number
+  nodes: DashboardActiveNodes[]
+  latestDeployments: DashboardDeployment[]
+  auditLog: AuditLogResponse[]
+}
+
 function createBaseServiceIdRequest(): ServiceIdRequest {
   return { id: '' }
 }
@@ -10323,6 +10354,342 @@ export const CreateProductFromTemplateRequest = {
   },
 }
 
+function createBaseDashboardActiveNodes(): DashboardActiveNodes {
+  return { id: '', name: '', address: '', version: '' }
+}
+
+export const DashboardActiveNodes = {
+  encode(message: DashboardActiveNodes, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== '') {
+      writer.uint32(10).string(message.id)
+    }
+    if (message.name !== '') {
+      writer.uint32(802).string(message.name)
+    }
+    if (message.address !== '') {
+      writer.uint32(810).string(message.address)
+    }
+    if (message.version !== '') {
+      writer.uint32(818).string(message.version)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): DashboardActiveNodes {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseDashboardActiveNodes()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.id = reader.string()
+          break
+        case 100:
+          message.name = reader.string()
+          break
+        case 101:
+          message.address = reader.string()
+          break
+        case 102:
+          message.version = reader.string()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): DashboardActiveNodes {
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      address: isSet(object.address) ? String(object.address) : '',
+      version: isSet(object.version) ? String(object.version) : '',
+    }
+  },
+
+  toJSON(message: DashboardActiveNodes): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.name !== undefined && (obj.name = message.name)
+    message.address !== undefined && (obj.address = message.address)
+    message.version !== undefined && (obj.version = message.version)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<DashboardActiveNodes>, I>>(object: I): DashboardActiveNodes {
+    const message = createBaseDashboardActiveNodes()
+    message.id = object.id ?? ''
+    message.name = object.name ?? ''
+    message.address = object.address ?? ''
+    message.version = object.version ?? ''
+    return message
+  },
+}
+
+function createBaseDashboardDeployment(): DashboardDeployment {
+  return { id: '', product: '', version: '', node: '', changelog: '', productId: '', versionId: '' }
+}
+
+export const DashboardDeployment = {
+  encode(message: DashboardDeployment, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== '') {
+      writer.uint32(10).string(message.id)
+    }
+    if (message.product !== '') {
+      writer.uint32(802).string(message.product)
+    }
+    if (message.version !== '') {
+      writer.uint32(810).string(message.version)
+    }
+    if (message.node !== '') {
+      writer.uint32(818).string(message.node)
+    }
+    if (message.changelog !== '') {
+      writer.uint32(826).string(message.changelog)
+    }
+    if (message.deployedAt !== undefined) {
+      Timestamp.encode(message.deployedAt, writer.uint32(834).fork()).ldelim()
+    }
+    if (message.productId !== '') {
+      writer.uint32(842).string(message.productId)
+    }
+    if (message.versionId !== '') {
+      writer.uint32(850).string(message.versionId)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): DashboardDeployment {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseDashboardDeployment()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.id = reader.string()
+          break
+        case 100:
+          message.product = reader.string()
+          break
+        case 101:
+          message.version = reader.string()
+          break
+        case 102:
+          message.node = reader.string()
+          break
+        case 103:
+          message.changelog = reader.string()
+          break
+        case 104:
+          message.deployedAt = Timestamp.decode(reader, reader.uint32())
+          break
+        case 105:
+          message.productId = reader.string()
+          break
+        case 106:
+          message.versionId = reader.string()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): DashboardDeployment {
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      product: isSet(object.product) ? String(object.product) : '',
+      version: isSet(object.version) ? String(object.version) : '',
+      node: isSet(object.node) ? String(object.node) : '',
+      changelog: isSet(object.changelog) ? String(object.changelog) : '',
+      deployedAt: isSet(object.deployedAt) ? fromJsonTimestamp(object.deployedAt) : undefined,
+      productId: isSet(object.productId) ? String(object.productId) : '',
+      versionId: isSet(object.versionId) ? String(object.versionId) : '',
+    }
+  },
+
+  toJSON(message: DashboardDeployment): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.product !== undefined && (obj.product = message.product)
+    message.version !== undefined && (obj.version = message.version)
+    message.node !== undefined && (obj.node = message.node)
+    message.changelog !== undefined && (obj.changelog = message.changelog)
+    message.deployedAt !== undefined && (obj.deployedAt = fromTimestamp(message.deployedAt).toISOString())
+    message.productId !== undefined && (obj.productId = message.productId)
+    message.versionId !== undefined && (obj.versionId = message.versionId)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<DashboardDeployment>, I>>(object: I): DashboardDeployment {
+    const message = createBaseDashboardDeployment()
+    message.id = object.id ?? ''
+    message.product = object.product ?? ''
+    message.version = object.version ?? ''
+    message.node = object.node ?? ''
+    message.changelog = object.changelog ?? ''
+    message.deployedAt =
+      object.deployedAt !== undefined && object.deployedAt !== null
+        ? Timestamp.fromPartial(object.deployedAt)
+        : undefined
+    message.productId = object.productId ?? ''
+    message.versionId = object.versionId ?? ''
+    return message
+  },
+}
+
+function createBaseDashboardResponse(): DashboardResponse {
+  return {
+    users: 0,
+    auditLogEntries: 0,
+    products: 0,
+    versions: 0,
+    deployments: 0,
+    failedDeployments: 0,
+    nodes: [],
+    latestDeployments: [],
+    auditLog: [],
+  }
+}
+
+export const DashboardResponse = {
+  encode(message: DashboardResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.users !== 0) {
+      writer.uint32(800).uint32(message.users)
+    }
+    if (message.auditLogEntries !== 0) {
+      writer.uint32(808).uint32(message.auditLogEntries)
+    }
+    if (message.products !== 0) {
+      writer.uint32(816).uint32(message.products)
+    }
+    if (message.versions !== 0) {
+      writer.uint32(824).uint32(message.versions)
+    }
+    if (message.deployments !== 0) {
+      writer.uint32(832).uint32(message.deployments)
+    }
+    if (message.failedDeployments !== 0) {
+      writer.uint32(840).uint32(message.failedDeployments)
+    }
+    for (const v of message.nodes) {
+      DashboardActiveNodes.encode(v!, writer.uint32(8002).fork()).ldelim()
+    }
+    for (const v of message.latestDeployments) {
+      DashboardDeployment.encode(v!, writer.uint32(8010).fork()).ldelim()
+    }
+    for (const v of message.auditLog) {
+      AuditLogResponse.encode(v!, writer.uint32(8018).fork()).ldelim()
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): DashboardResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseDashboardResponse()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 100:
+          message.users = reader.uint32()
+          break
+        case 101:
+          message.auditLogEntries = reader.uint32()
+          break
+        case 102:
+          message.products = reader.uint32()
+          break
+        case 103:
+          message.versions = reader.uint32()
+          break
+        case 104:
+          message.deployments = reader.uint32()
+          break
+        case 105:
+          message.failedDeployments = reader.uint32()
+          break
+        case 1000:
+          message.nodes.push(DashboardActiveNodes.decode(reader, reader.uint32()))
+          break
+        case 1001:
+          message.latestDeployments.push(DashboardDeployment.decode(reader, reader.uint32()))
+          break
+        case 1002:
+          message.auditLog.push(AuditLogResponse.decode(reader, reader.uint32()))
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): DashboardResponse {
+    return {
+      users: isSet(object.users) ? Number(object.users) : 0,
+      auditLogEntries: isSet(object.auditLogEntries) ? Number(object.auditLogEntries) : 0,
+      products: isSet(object.products) ? Number(object.products) : 0,
+      versions: isSet(object.versions) ? Number(object.versions) : 0,
+      deployments: isSet(object.deployments) ? Number(object.deployments) : 0,
+      failedDeployments: isSet(object.failedDeployments) ? Number(object.failedDeployments) : 0,
+      nodes: Array.isArray(object?.nodes) ? object.nodes.map((e: any) => DashboardActiveNodes.fromJSON(e)) : [],
+      latestDeployments: Array.isArray(object?.latestDeployments)
+        ? object.latestDeployments.map((e: any) => DashboardDeployment.fromJSON(e))
+        : [],
+      auditLog: Array.isArray(object?.auditLog) ? object.auditLog.map((e: any) => AuditLogResponse.fromJSON(e)) : [],
+    }
+  },
+
+  toJSON(message: DashboardResponse): unknown {
+    const obj: any = {}
+    message.users !== undefined && (obj.users = Math.round(message.users))
+    message.auditLogEntries !== undefined && (obj.auditLogEntries = Math.round(message.auditLogEntries))
+    message.products !== undefined && (obj.products = Math.round(message.products))
+    message.versions !== undefined && (obj.versions = Math.round(message.versions))
+    message.deployments !== undefined && (obj.deployments = Math.round(message.deployments))
+    message.failedDeployments !== undefined && (obj.failedDeployments = Math.round(message.failedDeployments))
+    if (message.nodes) {
+      obj.nodes = message.nodes.map(e => (e ? DashboardActiveNodes.toJSON(e) : undefined))
+    } else {
+      obj.nodes = []
+    }
+    if (message.latestDeployments) {
+      obj.latestDeployments = message.latestDeployments.map(e => (e ? DashboardDeployment.toJSON(e) : undefined))
+    } else {
+      obj.latestDeployments = []
+    }
+    if (message.auditLog) {
+      obj.auditLog = message.auditLog.map(e => (e ? AuditLogResponse.toJSON(e) : undefined))
+    } else {
+      obj.auditLog = []
+    }
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<DashboardResponse>, I>>(object: I): DashboardResponse {
+    const message = createBaseDashboardResponse()
+    message.users = object.users ?? 0
+    message.auditLogEntries = object.auditLogEntries ?? 0
+    message.products = object.products ?? 0
+    message.versions = object.versions ?? 0
+    message.deployments = object.deployments ?? 0
+    message.failedDeployments = object.failedDeployments ?? 0
+    message.nodes = object.nodes?.map(e => DashboardActiveNodes.fromPartial(e)) || []
+    message.latestDeployments = object.latestDeployments?.map(e => DashboardDeployment.fromPartial(e)) || []
+    message.auditLog = object.auditLog?.map(e => AuditLogResponse.fromPartial(e)) || []
+    return message
+  },
+}
+
 /** Services */
 export type CruxProductService = typeof CruxProductService
 export const CruxProductService = {
@@ -12361,6 +12728,49 @@ export interface CruxTemplateClient extends Client {
 export const CruxTemplateClient = makeGenericClientConstructor(CruxTemplateService, 'crux.CruxTemplate') as unknown as {
   new (address: string, credentials: ChannelCredentials, options?: Partial<ChannelOptions>): CruxTemplateClient
   service: typeof CruxTemplateService
+}
+
+export type CruxDashboardService = typeof CruxDashboardService
+export const CruxDashboardService = {
+  getDashboard: {
+    path: '/crux.CruxDashboard/GetDashboard',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: AccessRequest) => Buffer.from(AccessRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => AccessRequest.decode(value),
+    responseSerialize: (value: DashboardResponse) => Buffer.from(DashboardResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => DashboardResponse.decode(value),
+  },
+} as const
+
+export interface CruxDashboardServer extends UntypedServiceImplementation {
+  getDashboard: handleUnaryCall<AccessRequest, DashboardResponse>
+}
+
+export interface CruxDashboardClient extends Client {
+  getDashboard(
+    request: AccessRequest,
+    callback: (error: ServiceError | null, response: DashboardResponse) => void,
+  ): ClientUnaryCall
+  getDashboard(
+    request: AccessRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: DashboardResponse) => void,
+  ): ClientUnaryCall
+  getDashboard(
+    request: AccessRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: DashboardResponse) => void,
+  ): ClientUnaryCall
+}
+
+export const CruxDashboardClient = makeGenericClientConstructor(
+  CruxDashboardService,
+  'crux.CruxDashboard',
+) as unknown as {
+  new (address: string, credentials: ChannelCredentials, options?: Partial<ChannelOptions>): CruxDashboardClient
+  service: typeof CruxDashboardService
 }
 
 declare var self: any | undefined

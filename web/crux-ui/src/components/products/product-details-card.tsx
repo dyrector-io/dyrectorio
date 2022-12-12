@@ -59,14 +59,14 @@ const ProductDetailsCard = (props: ProductDetailsCardProps) => {
 
       {!version ? null : (
         <>
-          <span className="text-bright font-bold mt-2">{t('versions:changelog')}</span>
+          <span className="text-bright font-bold mt-2">{t('common:changelog')}</span>
 
           <DyoExpandableText
             text={version.changelog}
             lineClamp={6}
             className="text-md text-bright mt-2 max-h-44"
             buttonClassName="ml-auto my-2"
-            modalTitle={t('changelogName', { name: version.name })}
+            modalTitle={t('common:changelogName', { name: version.name })}
           />
         </>
       )}

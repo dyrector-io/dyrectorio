@@ -1383,6 +1383,37 @@ export interface CreateProductFromTemplateRequest {
   type: ProductType
 }
 
+/** DASHBOARD */
+export interface DashboardActiveNodes {
+  id: string
+  name: string
+  address: string
+  version: string
+}
+
+export interface DashboardDeployment {
+  id: string
+  product: string
+  version: string
+  node: string
+  changelog: string
+  deployedAt?: Timestamp | undefined
+  productId: string
+  versionId: string
+}
+
+export interface DashboardResponse {
+  users: number
+  auditLogEntries: number
+  products: number
+  versions: number
+  deployments: number
+  failedDeployments: number
+  nodes: DashboardActiveNodes[]
+  latestDeployments: DashboardDeployment[]
+  auditLog: AuditLogResponse[]
+}
+
 export const CRUX_PACKAGE_NAME = 'crux'
 
 function createBaseServiceIdRequest(): ServiceIdRequest {
@@ -4359,6 +4390,120 @@ export const CreateProductFromTemplateRequest = {
   },
 }
 
+function createBaseDashboardActiveNodes(): DashboardActiveNodes {
+  return { id: '', name: '', address: '', version: '' }
+}
+
+export const DashboardActiveNodes = {
+  fromJSON(object: any): DashboardActiveNodes {
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      address: isSet(object.address) ? String(object.address) : '',
+      version: isSet(object.version) ? String(object.version) : '',
+    }
+  },
+
+  toJSON(message: DashboardActiveNodes): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.name !== undefined && (obj.name = message.name)
+    message.address !== undefined && (obj.address = message.address)
+    message.version !== undefined && (obj.version = message.version)
+    return obj
+  },
+}
+
+function createBaseDashboardDeployment(): DashboardDeployment {
+  return { id: '', product: '', version: '', node: '', changelog: '', productId: '', versionId: '' }
+}
+
+export const DashboardDeployment = {
+  fromJSON(object: any): DashboardDeployment {
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      product: isSet(object.product) ? String(object.product) : '',
+      version: isSet(object.version) ? String(object.version) : '',
+      node: isSet(object.node) ? String(object.node) : '',
+      changelog: isSet(object.changelog) ? String(object.changelog) : '',
+      deployedAt: isSet(object.deployedAt) ? fromJsonTimestamp(object.deployedAt) : undefined,
+      productId: isSet(object.productId) ? String(object.productId) : '',
+      versionId: isSet(object.versionId) ? String(object.versionId) : '',
+    }
+  },
+
+  toJSON(message: DashboardDeployment): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.product !== undefined && (obj.product = message.product)
+    message.version !== undefined && (obj.version = message.version)
+    message.node !== undefined && (obj.node = message.node)
+    message.changelog !== undefined && (obj.changelog = message.changelog)
+    message.deployedAt !== undefined && (obj.deployedAt = fromTimestamp(message.deployedAt).toISOString())
+    message.productId !== undefined && (obj.productId = message.productId)
+    message.versionId !== undefined && (obj.versionId = message.versionId)
+    return obj
+  },
+}
+
+function createBaseDashboardResponse(): DashboardResponse {
+  return {
+    users: 0,
+    auditLogEntries: 0,
+    products: 0,
+    versions: 0,
+    deployments: 0,
+    failedDeployments: 0,
+    nodes: [],
+    latestDeployments: [],
+    auditLog: [],
+  }
+}
+
+export const DashboardResponse = {
+  fromJSON(object: any): DashboardResponse {
+    return {
+      users: isSet(object.users) ? Number(object.users) : 0,
+      auditLogEntries: isSet(object.auditLogEntries) ? Number(object.auditLogEntries) : 0,
+      products: isSet(object.products) ? Number(object.products) : 0,
+      versions: isSet(object.versions) ? Number(object.versions) : 0,
+      deployments: isSet(object.deployments) ? Number(object.deployments) : 0,
+      failedDeployments: isSet(object.failedDeployments) ? Number(object.failedDeployments) : 0,
+      nodes: Array.isArray(object?.nodes) ? object.nodes.map((e: any) => DashboardActiveNodes.fromJSON(e)) : [],
+      latestDeployments: Array.isArray(object?.latestDeployments)
+        ? object.latestDeployments.map((e: any) => DashboardDeployment.fromJSON(e))
+        : [],
+      auditLog: Array.isArray(object?.auditLog) ? object.auditLog.map((e: any) => AuditLogResponse.fromJSON(e)) : [],
+    }
+  },
+
+  toJSON(message: DashboardResponse): unknown {
+    const obj: any = {}
+    message.users !== undefined && (obj.users = Math.round(message.users))
+    message.auditLogEntries !== undefined && (obj.auditLogEntries = Math.round(message.auditLogEntries))
+    message.products !== undefined && (obj.products = Math.round(message.products))
+    message.versions !== undefined && (obj.versions = Math.round(message.versions))
+    message.deployments !== undefined && (obj.deployments = Math.round(message.deployments))
+    message.failedDeployments !== undefined && (obj.failedDeployments = Math.round(message.failedDeployments))
+    if (message.nodes) {
+      obj.nodes = message.nodes.map(e => (e ? DashboardActiveNodes.toJSON(e) : undefined))
+    } else {
+      obj.nodes = []
+    }
+    if (message.latestDeployments) {
+      obj.latestDeployments = message.latestDeployments.map(e => (e ? DashboardDeployment.toJSON(e) : undefined))
+    } else {
+      obj.latestDeployments = []
+    }
+    if (message.auditLog) {
+      obj.auditLog = message.auditLog.map(e => (e ? AuditLogResponse.toJSON(e) : undefined))
+    } else {
+      obj.auditLog = []
+    }
+    return obj
+  },
+}
+
 /** Services */
 
 export interface CruxProductClient {
@@ -5255,6 +5400,35 @@ export function CruxTemplateControllerMethods() {
 }
 
 export const CRUX_TEMPLATE_SERVICE_NAME = 'CruxTemplate'
+
+export interface CruxDashboardClient {
+  getDashboard(request: AccessRequest, metadata: Metadata, ...rest: any): Observable<DashboardResponse>
+}
+
+export interface CruxDashboardController {
+  getDashboard(
+    request: AccessRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<DashboardResponse> | Observable<DashboardResponse> | DashboardResponse
+}
+
+export function CruxDashboardControllerMethods() {
+  return function (constructor: Function) {
+    const grpcMethods: string[] = ['getDashboard']
+    for (const method of grpcMethods) {
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
+      GrpcMethod('CruxDashboard', method)(constructor.prototype[method], method, descriptor)
+    }
+    const grpcStreamMethods: string[] = []
+    for (const method of grpcStreamMethods) {
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
+      GrpcStreamMethod('CruxDashboard', method)(constructor.prototype[method], method, descriptor)
+    }
+  }
+}
+
+export const CRUX_DASHBOARD_SERVICE_NAME = 'CruxDashboard'
 
 function toTimestamp(date: Date): Timestamp {
   const seconds = date.getTime() / 1_000

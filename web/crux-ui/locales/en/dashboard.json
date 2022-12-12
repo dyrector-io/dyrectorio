@@ -1,0 +1,10 @@
+{
+  "statistics": "Statistics",
+  "auditLogEntries": "Audit log entries",
+  "products": "Products",
+  "versions": "Versions",
+  "failedDeployments": "Failed deployments",
+  "activeNodes": "Active nodes",
+  "lastDeploys": "Last 2 deploys",
+  "lastAuditLogs": "Last 10 audit log entries"
+}

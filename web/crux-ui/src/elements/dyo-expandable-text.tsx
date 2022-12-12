@@ -12,12 +12,21 @@ interface DyoExpandableTextProps {
   modalClassName?: string
   lineClamp: 1 | 2 | 3 | 4 | 5 | 6
   modalTitle: string
+  marginClassName?: string
 }
 
 const lineClamp = ['line-clamp-1', 'line-clamp-2', 'line-clamp-3', 'line-clamp-4', 'line-clamp-5', 'line-clamp-6'] // We need to have these for the treeshaking
 
 const DyoExpandableText = (props: DyoExpandableTextProps) => {
-  const { text, className, buttonClassName, modalClassName, lineClamp: propsLineClamp, modalTitle } = props
+  const {
+    text,
+    className,
+    buttonClassName,
+    modalClassName,
+    lineClamp: propsLineClamp,
+    modalTitle,
+    marginClassName,
+  } = props
 
   const { t } = useTranslation('common')
 
@@ -28,7 +37,12 @@ const DyoExpandableText = (props: DyoExpandableTextProps) => {
     <>
       <p
         ref={overflowRef}
-        className={clsx(className, lineClamp[propsLineClamp - 1], 'break-all', overflow ? null : 'mb-8')}
+        className={clsx(
+          className,
+          lineClamp[propsLineClamp - 1],
+          'break-all',
+          overflow ? null : marginClassName ?? 'mb-8',
+        )}
       >
         {text}
       </p>

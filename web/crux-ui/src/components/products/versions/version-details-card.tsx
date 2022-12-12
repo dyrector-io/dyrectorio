@@ -30,7 +30,7 @@ const VersionDetailsCard = (props: VersionDetailsCardProps) => {
             lineClamp={6}
             className="text-md text-light mt-4"
             buttonClassName="w-fit"
-            modalTitle={t('changelogName', { name: version.name })}
+            modalTitle={t('common:changelogName', { name: version.name })}
           />
         </div>
 

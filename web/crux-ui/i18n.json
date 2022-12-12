@@ -22,7 +22,11 @@
 
     "/products/[productId]/versions/[versionId]/deployments/[deploymentId]": ["images", "deployments", "nodes"],
     "/products/[productId]/versions/[versionId]/deployments/[deploymentId]/deploy": ["deployments"],
-    "/products/[productId]/versions/[versionId]/deployments/[deploymentId]/instance/[instanceId]": ["images", "deployments", "container"],
+    "/products/[productId]/versions/[versionId]/deployments/[deploymentId]/instance/[instanceId]": [
+      "images",
+      "deployments",
+      "container"
+    ],
     "/products/[productId]/versions/[versionId]/image/[imageId]": ["images", "container"],
     "/nodes": ["nodes"],
     "/nodes/[nodeId]": ["nodes", "images"],
@@ -37,6 +41,7 @@
     "/notifications/[notificationId]": ["notifications"],
     "/deployments": ["deployments"],
     "/status": ["status"],
-    "/templates": ["templates", "products"]
+    "/templates": ["templates", "products"],
+    "/dashboard": ["dashboard"]
   }
 }

@@ -121,7 +121,10 @@ const AuditLogPage = () => {
     url: ROUTE_AUDIT,
   }
 
-  const listHeaders = ['', ...['common:email', 'common:date', 'event', 'data', 'common:actions'].map(it => t(it))]
+  const listHeaders = [
+    '',
+    ...['common:email', 'common:date', 'common:event', 'common:data', 'common:actions'].map(it => t(it)),
+  ]
 
   const itemTemplate = (log: AuditLog) => /* eslint-disable react/jsx-key */ [
     <div className="w-10 ml-auto">

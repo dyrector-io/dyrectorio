@@ -1,4 +1,4 @@
-import { ROUTE_PRODUCTS, ROUTE_TEAMS_CREATE, teamInviteUrl } from '@app/routes'
+import { ROUTE_DASHBOARD, ROUTE_TEAMS_CREATE, teamInviteUrl } from '@app/routes'
 import { redirectTo, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
@@ -16,7 +16,7 @@ const getPageServerSideProps = async (context: NextPageContext) => {
     return redirectTo(inv ? teamInviteUrl(inv.id) : ROUTE_TEAMS_CREATE)
   }
 
-  return redirectTo(ROUTE_PRODUCTS)
+  return redirectTo(ROUTE_DASHBOARD)
 }
 
 export const getServerSideProps = withContextAuthorization(getPageServerSideProps)
