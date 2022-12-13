@@ -4,7 +4,7 @@ import { IncomingMessage, Server as HTTPServer } from 'http'
 import { Server as HTTPSServer } from 'https'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { parse } from 'url'
-import WebSocket from 'ws'
+import WebSocket, { WebSocketServer as WsServer } from 'ws'
 import WsAuthorizer from './authorizer'
 import { WsConnectDto, WsMessage } from './common'
 import WsConnection from './connection'
@@ -27,7 +27,7 @@ class WebSocketServer {
 
   private authorizer = new WsAuthorizer()
 
-  private server: WebSocket.Server
+  private server: WsServer
 
   private endpoints: Map<string, WsEndpoint> = new Map()
 
@@ -40,7 +40,7 @@ class WebSocketServer {
       // eslint-disable-next-line no-underscore-dangle
       const hmrUpgrade = httpServer._events.upgrade
 
-      const server = new WebSocket.Server({
+      const server = new WsServer({
         noServer: true,
       })
       this.server = server
@@ -58,7 +58,7 @@ class WebSocketServer {
         }
       }
     } else {
-      this.server = new WebSocket.Server({
+      this.server = new WsServer({
         server: httpServer,
       })
     }
@@ -105,6 +105,7 @@ class WebSocketServer {
 
     const token = req.headers.authorization
     const connEntry = this.connectionsByToken.get(token)
+
     if (!connEntry) {
       const session = sessionOf(req)
 

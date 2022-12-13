@@ -28,10 +28,8 @@ const Breadcrumb = (props: BreadcrumbProps) => {
 
       <div className="bg-bright w-px h-8 mx-6" />
 
-      <Link href={pageUrl}>
-        <a>
-          <Image className="cursor-pointer" src="/breadcrumb_home.svg" alt={t('home')} width={16} height={16} />
-        </a>
+      <Link href={pageUrl} passHref>
+        <Image className="cursor-pointer" src="/breadcrumb_home.svg" alt={t('home')} width={16} height={16} />
       </Link>
 
       {links?.map((it, index) => {
@@ -40,18 +38,22 @@ const Breadcrumb = (props: BreadcrumbProps) => {
         return (
           <div key={`breadcrumb-link-${index}`} className="flex flex-row max-w-lg">
             <div className="mx-4 mt-1">
-              <Image src="/breadcrumb_next.svg" alt={t('rightArrowIcon')} width={16} height={16} layout="fixed" />
+              <Image
+                className="aspect-square"
+                src="/breadcrumb_next.svg"
+                alt={t('rightArrowIcon')}
+                width={16}
+                height={16}
+              />
             </div>
 
             {last ? (
               <DyoLabel className="my-auto truncate">{it.name}</DyoLabel>
             ) : (
-              <Link key={`breadcrumb-link-${index}-link`} href={it.url}>
-                <a>
-                  <DyoLabel className="cursor-pointer my-auto" textColor="text-dyo-turquoise">
-                    {it.name}
-                  </DyoLabel>
-                </a>
+              <Link key={`breadcrumb-link-${index}-link`} href={it.url} passHref>
+                <DyoLabel className="cursor-pointer my-auto" textColor="text-dyo-turquoise">
+                  {it.name}
+                </DyoLabel>
               </Link>
             )}
           </div>

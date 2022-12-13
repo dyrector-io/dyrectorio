@@ -5,6 +5,7 @@
   "increaseTips": "By increasing the version of your Product, you're able to create new releases of your already existing Product with new images or substitute included ones with a different tag.",
   "new": "New version",
   "default": "Default",
+  "changelog": "Changelog",
   "type": "Type",
   "incremental": "Incremental",
   "rolling": "Rolling",

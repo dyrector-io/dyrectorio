@@ -21,7 +21,7 @@ const RegistryCard = (props: RegistryCardProps) => {
   const { registry, titleHref, className } = props
 
   const title = (
-    <a className="flex flex-row">
+    <div className="flex flex-row">
       {!registry.icon ? (
         <Image src="/default_registry.svg" width={17} height={21} alt={t('altDefaultRegistryPicture')} />
       ) : (
@@ -31,7 +31,7 @@ const RegistryCard = (props: RegistryCardProps) => {
       <DyoHeading className="text-xl text-bright font-semibold ml-2 my-auto mr-auto" element="h3">
         {registry.name}
       </DyoHeading>
-    </a>
+    </div>
   )
 
   return (

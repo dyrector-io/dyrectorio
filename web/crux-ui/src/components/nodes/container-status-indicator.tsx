@@ -1,7 +1,6 @@
+import DyoIcon from '@app/elements/dyo-icon'
 import { ContainerState } from '@app/models'
-import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import Image from 'next/image'
 
 const statusToAssetName = (status: ContainerState) => {
   switch (status) {
@@ -24,19 +23,16 @@ interface ContainerStatusIndicatorProps {
 }
 
 const ContainerStatusIndicator = (props: ContainerStatusIndicatorProps) => {
-  const { state: status, className } = props
+  const { state, className } = props
 
   const { t } = useTranslation('common')
 
   return (
-    <div className={clsx(className, 'flex')}>
-      <Image
-        src={status ? `/${statusToAssetName(status)}.svg` : `/circle-bright.svg`}
-        alt={status ? t(`containerStatuses.${status}`) : t('errors:notFound')}
-        width={16}
-        height={16}
-      />
-    </div>
+    <DyoIcon
+      className={className}
+      src={state ? `/${statusToAssetName(state)}.svg` : `/circle-bright.svg`}
+      alt={state ? t(`containerStatuses.${state}`) : t('errors:notFound')}
+    />
   )
 }
 

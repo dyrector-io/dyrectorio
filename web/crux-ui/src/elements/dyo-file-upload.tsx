@@ -9,7 +9,6 @@ export interface DyoFileUploadProps {
   handleFile: Function
   accept: string
   label?: string
-  placeholder?: string
 }
 
 export const DyoFileUploadInput = (props: DyoFileUploadProps) => {

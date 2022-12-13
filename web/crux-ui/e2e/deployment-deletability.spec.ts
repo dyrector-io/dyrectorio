@@ -16,7 +16,7 @@ test('Inprogress deployment should be not deletable', async ({ page }) => {
   const { deploymentId } = extractDeploymentUrl(page.url())
   await page.goto(deploymentUrl(productId, versionId, deploymentId))
 
-  await expect(await page.locator('div.bg-warning-orange:has-text("In progress")')).toHaveCount(1)
+  await expect(await page.getByText('In progress')).toHaveCount(1)
   await expect(await page.locator('button:has-text("Delete")')).toHaveCount(0)
 })
 

@@ -71,3 +71,12 @@ export const DyoInput = forwardRef((props: DyoInputProps, ref: ForwardedRef<HTML
 })
 
 DyoInput.displayName = 'DyoInput'
+DyoInput.defaultProps = {
+  grow: false,
+  label: null,
+  labelClassName: null,
+  containerClassName: null,
+  message: null,
+  messageType: 'error',
+  inline: false,
+}

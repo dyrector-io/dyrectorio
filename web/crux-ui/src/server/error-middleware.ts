@@ -31,7 +31,7 @@ export const parseGrpcError = (error: ServiceError): CruxGrpcError => {
     const json = JSON.parse(error.details)
     message = json.message
     details = json.details
-    // TODO
+    // TODO(@m8vago)
     // eslint-disable-next-line
   } catch {}
 

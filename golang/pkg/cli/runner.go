@@ -14,9 +14,9 @@ import (
 	"github.com/rs/zerolog/log"
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
-	dockerhelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	dagentutils "github.com/dyrector-io/dyrectorio/golang/pkg/dagent/utils"
+	dockerhelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/docker"
 )
 
 type DyrectorioStack struct {
@@ -156,29 +156,29 @@ func StartContainers(containers *DyrectorioStack, internalHostDomain string) {
 func StopContainers(containers *DyrectorioStack) {
 	ctx := context.Background()
 
-	containernames := []string{
+	containerNames := []string{
 		containers.Containers.MailSlurper.Name,
 	}
 
 	if !containers.Containers.CruxUI.Disabled {
-		containernames = append(containernames, containers.Containers.CruxUI.Name)
+		containerNames = append(containerNames, containers.Containers.CruxUI.Name)
 	}
 
 	if !containers.Containers.Crux.Disabled {
-		containernames = append(containernames,
+		containerNames = append(containerNames,
 			containers.Containers.Crux.Name,
 			containers.Containers.CruxMigrate.Name)
 	}
 
-	containernames = append(containernames,
+	containerNames = append(containerNames,
 		containers.Containers.KratosMigrate.Name,
 		containers.Containers.Kratos.Name,
 		containers.Containers.CruxPostgres.Name,
 		containers.Containers.KratosPostgres.Name,
 		containers.Containers.Traefik.Name)
 
-	for i := range containernames {
-		err := dockerhelper.DeleteContainerByName(ctx, nil, containernames[i], false)
+	for i := range containerNames {
+		err := dockerhelper.DeleteContainerByName(ctx, nil, containerNames[i], false)
 		if err != nil {
 			log.Debug().Err(err).Send()
 		}

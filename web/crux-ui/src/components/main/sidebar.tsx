@@ -1,3 +1,4 @@
+import DyoIcon from '@app/elements/dyo-icon'
 import {
   ROUTE_AUDIT,
   ROUTE_DASHBOARD,
@@ -29,12 +30,12 @@ export const Sidebar = (props: SidebarProps) => {
 
   const productOptions = [
     {
-      icon: <Image src="/products.svg" alt={t('products')} width={18} height={18} />,
+      icon: <DyoIcon src="/products.svg" alt={t('products')} />,
       text: 'products',
       link: ROUTE_PRODUCTS,
     },
     {
-      icon: <Image src="/deploy.svg" alt={t('deployments')} width={18} height={18} />,
+      icon: <DyoIcon src="/deploy.svg" alt={t('deployments')} />,
       text: 'deployments',
       link: ROUTE_DEPLOYMENTS,
     },
@@ -42,22 +43,22 @@ export const Sidebar = (props: SidebarProps) => {
 
   const componentOptions = [
     {
-      icon: <Image src="/servers.svg" alt={t('nodes')} width={18} height={18} />,
+      icon: <DyoIcon src="/servers.svg" alt={t('nodes')} />,
       text: 'nodes',
       link: ROUTE_NODES,
     },
     {
-      icon: <Image src="/copy.svg" alt={t('registries')} width={18} height={18} />,
+      icon: <DyoIcon src="/copy.svg" alt={t('registries')} />,
       text: 'registries',
       link: ROUTE_REGISTRIES,
     },
     {
-      icon: <Image src="/notification.svg" alt={t('notifications')} width={18} height={18} />,
+      icon: <DyoIcon src="/notification.svg" alt={t('notifications')} />,
       text: 'notifications',
       link: ROUTE_NOTIFICATIONS,
     },
     {
-      icon: <Image src="/template.svg" alt={t('templates')} width={18} height={18} />,
+      icon: <DyoIcon src="/template.svg" alt={t('templates')} />,
       text: 'templates',
       link: ROUTE_TEMPLATES,
     },
@@ -65,22 +66,22 @@ export const Sidebar = (props: SidebarProps) => {
 
   const settingsOptions = [
     {
-      icon: <Image src="/audit.svg" alt={t('audit')} width={18} height={18} />,
+      icon: <DyoIcon src="/audit.svg" alt={t('audit')} />,
       text: 'audit',
       link: ROUTE_AUDIT,
     },
     {
-      icon: <Image src="/team.svg" alt={t('teams')} width={18} height={18} />,
+      icon: <DyoIcon src="/team.svg" alt={t('teams')} />,
       text: 'teams',
       link: ROUTE_TEAMS,
     },
     {
-      icon: <Image src="/profile.svg" alt={t('profile')} width={18} height={18} />,
+      icon: <DyoIcon src="/profile.svg" alt={t('profile')} />,
       text: 'profile',
       link: ROUTE_PROFILE,
     },
     {
-      icon: <Image src="/logout.svg" alt={t('logout')} width={18} height={18} />,
+      icon: <DyoIcon src="/logout.svg" alt={t('logout')} />,
       text: 'logout',
       link: ROUTE_LOGOUT,
     },
@@ -89,16 +90,14 @@ export const Sidebar = (props: SidebarProps) => {
   return (
     <div className={className}>
       <div className="mx-12">
-        <Link href={ROUTE_INDEX}>
-          <a>
-            <Image
-              className="cursor-pointer"
-              src="/dyrector_io_logo_white.svg"
-              alt={t('dyoWhiteLogo')}
-              width={160}
-              height={64}
-            />
-          </a>
+        <Link href={ROUTE_INDEX} passHref>
+          <Image
+            className="cursor-pointer mt-4"
+            src="/dyrector_io_logo_white.svg"
+            alt={t('dyoWhiteLogo')}
+            width={160}
+            height={27}
+          />
         </Link>
       </div>
 

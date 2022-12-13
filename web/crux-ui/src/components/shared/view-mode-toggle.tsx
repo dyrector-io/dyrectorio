@@ -1,4 +1,5 @@
 import clsx from 'clsx'
+import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
 
 export type ViewMode = 'tile' | 'list'
@@ -10,6 +11,7 @@ export interface ViewModeToggleProps {
 }
 
 const ViewModeToggle = (props: ViewModeToggleProps) => {
+  const { t } = useTranslation('common')
   const { className, viewMode, onViewModeChanged } = props
 
   return (
@@ -20,13 +22,13 @@ const ViewModeToggle = (props: ViewModeToggleProps) => {
         className={clsx('px-2 py-1.5 my-1 mr-0.5', viewMode === 'tile' && 'bg-dyo-turquoise rounded')}
         onClick={() => onViewModeChanged('tile')}
       >
-        <Image src="/view_tile.svg" width={18} height={18} />
+        <Image src="/view_tile.svg" alt={t('viewMode.tiles')} width={18} height={18} />
       </div>
       <div
         className={clsx('px-2 py-1.5 my-1 mr-0.5', viewMode === 'list' && 'bg-dyo-turquoise rounded')}
         onClick={() => onViewModeChanged('list')}
       >
-        <Image src="/view_table.svg" width={18} height={18} />
+        <Image className="aspect-square" src="/view_table.svg" alt={t('viewMode.list')} width={18} height={18} />
       </div>
     </div>
   )

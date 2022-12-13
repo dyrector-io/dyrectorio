@@ -44,11 +44,9 @@ const TeamCard = (props: TeamCardProps) => {
   return (
     <DyoCard className={clsx('p-8', highlighted ? 'border border-dyo-turquoise' : null, className)}>
       <Link href={teamUrl(team.id)} passHref>
-        <a>
-          <DyoHeading element="h4" className="text-xl text-bright mb-4">
-            {team.name}
-          </DyoHeading>
-        </a>
+        <DyoHeading element="h4" className="text-xl text-bright mb-4">
+          {team.name}
+        </DyoHeading>
       </Link>
 
       <div className="flex flex-row">

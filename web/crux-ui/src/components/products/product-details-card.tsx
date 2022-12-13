@@ -25,11 +25,11 @@ const ProductDetailsCard = (props: ProductDetailsCardProps) => {
       <div className="flex flex-row">
         <div>
           <Image
+            className="aspect-square"
             src="/product_default.svg"
             alt={t('altPicture', { name: product.name })}
             width={100}
             height={100}
-            layout="fixed"
           />
         </div>
 

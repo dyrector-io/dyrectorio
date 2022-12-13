@@ -40,7 +40,7 @@ const VersionDetailsCard = (props: VersionDetailsCardProps) => {
           <div className="flex flex-row ml-auto mt-auto">
             {!version.default ? null : (
               <DyoTag color="bg-error-red" textColor="text-error-red">
-                {t('default').toUpperCase()}
+                {t('common:default').toUpperCase()}
               </DyoTag>
             )}
 

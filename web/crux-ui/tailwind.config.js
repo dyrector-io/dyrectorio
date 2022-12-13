@@ -8,6 +8,7 @@ module.exports = {
     theme: {
         extend: {
             colors: {
+                'dyo-light-turquoise': '#80e7df',
                 'dyo-turquoise': '#00d0bf',
                 'dyo-green': '#28c76f',
                 'dyo-purple': '#540ba7',

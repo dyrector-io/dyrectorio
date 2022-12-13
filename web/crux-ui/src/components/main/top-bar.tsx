@@ -4,8 +4,8 @@ import LoadingIndicator from '@app/elements/loading-indicator'
 import { roleToText, selectedTeamOf, UserMeta } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import Image from 'next/image'
 import { useState } from 'react'
+import UserDefaultAvatar from '../team/user-default-avatar'
 import TeamSelectionCard from './team-selection-card'
 
 interface TopbarProps {
@@ -40,14 +40,7 @@ const Topbar = (props: TopbarProps) => {
             }`}</DyoLabel>
           </div>
 
-          <Image
-            className="cursor-pointer"
-            src="/default_avatar.svg"
-            alt={t('teamAvatar')}
-            width={38}
-            height={38}
-            onClick={toggleTeamSelection}
-          />
+          <UserDefaultAvatar className="my-auto" onClick={toggleTeamSelection} />
 
           {!teamSelectionVisible ? null : (
             <>

@@ -13,7 +13,7 @@ export const WebSocketContext = React.createContext<WebSocketContextInterface>({
 export const WebSocketProvider = (props: React.PropsWithChildren<{}>) => {
   const { children } = props
 
-  const { t } = useTranslation()
+  const { t } = useTranslation('common')
 
   const [wsClient] = useState(() => {
     if (isServerSide()) {

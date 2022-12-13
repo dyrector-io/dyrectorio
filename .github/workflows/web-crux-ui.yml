@@ -56,7 +56,7 @@ jobs:
     runs-on: self-hosted
     needs: check
     container:
-      image: dyrectorio/playwright:1.26.0-alpha-aug-23-2022
+      image: dyrectorio/playwright:1.28.1
       volumes:
         - /var/run/docker.sock:/var/run/docker
       ports:

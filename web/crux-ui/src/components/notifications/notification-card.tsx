@@ -20,17 +20,17 @@ const NotificationCard = (props: NotificationCardProps) => {
   const { t } = useTranslation('notifications')
 
   const getDefaultImage = (
-    <Image src="/notification.svg" width={18} height={20} alt={t('altNotificationPicture')} layout="fixed" />
+    <Image className="aspect-square" src="/notification.svg" width={18} height={20} alt={t('altNotificationPicture')} />
   )
 
   const title = (
-    <a className="flex flex-row">
+    <div className="flex flex-row">
       <div className="flex items-center mb-2">{getDefaultImage}</div>
 
       <DyoHeading className="text-xl text-bright ml-2 my-auto mr-auto truncate" element="h3">
         {notification.name}
       </DyoHeading>
-    </a>
+    </div>
   )
 
   return (

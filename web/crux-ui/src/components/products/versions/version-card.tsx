@@ -44,7 +44,7 @@ const VersionCard = (props: VersionCardProps) => {
           <div className="flex flex-row ml-auto">
             {!version.default ? null : (
               <DyoTag className="ml-6" color="bg-error-red" textColor="text-error-red">
-                {t('default').toUpperCase()}
+                {t('common:default').toUpperCase()}
               </DyoTag>
             )}
 
@@ -78,7 +78,7 @@ const VersionCard = (props: VersionCardProps) => {
             className="px-2 h-6"
             disabled={disabled}
             src="/home_bold.svg"
-            alt={t('default')}
+            alt={t('common:default')}
             width={18}
             height={18}
             outlined
@@ -101,7 +101,7 @@ const VersionCard = (props: VersionCardProps) => {
         <div className="flex flex-row ml-auto mt-auto">
           <DyoButton className="px-4 mx-2" outlined href={versionUrl(productId, version.id, { section: 'images' })}>
             <div className="flex flex-row items-center gap-2">
-              <Image src="/images.svg" alt={t('images')} width={20} height={20} layout="fixed" />
+              <Image className="aspect-square" src="/images.svg" alt={t('images')} width={20} height={20} />
               {t('images')}
             </div>
           </DyoButton>
@@ -112,7 +112,7 @@ const VersionCard = (props: VersionCardProps) => {
             href={versionUrl(productId, version.id, { section: 'deployments' })}
           >
             <div className="flex flex-row items-center gap-2">
-              <Image src="/deployments.svg" alt={t('deployments')} width={20} height={20} layout="fixed" />
+              <Image className="aspect-square" src="/deployments.svg" alt={t('deployments')} width={20} height={20} />
               {t('deployments')}
             </div>
           </DyoButton>

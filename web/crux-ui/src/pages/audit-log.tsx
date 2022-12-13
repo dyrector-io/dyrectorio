@@ -4,6 +4,7 @@ import Filters from '@app/components/shared/filters'
 import JsonEditor from '@app/components/shared/json-editor-dynamic-module'
 import PageHeading from '@app/components/shared/page-heading'
 import Paginator, { PaginationSettings } from '@app/components/shared/paginator'
+import UserDefaultAvatar from '@app/components/team/user-default-avatar'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoDatePicker from '@app/elements/dyo-date-picker'
 import { DyoList } from '@app/elements/dyo-list'
@@ -128,7 +129,7 @@ const AuditLogPage = () => {
 
   const itemTemplate = (log: AuditLog) => /* eslint-disable react/jsx-key */ [
     <div className="w-10 ml-auto">
-      <Image src="/default_avatar.svg" width={38} height={38} layout="fixed" />
+      <UserDefaultAvatar />
     </div>,
     <div className="font-semibold min-w-max">{log.identityEmail}</div>,
     <div className="min-w-max">{utcDateToLocale(log.date)}</div>,
@@ -138,12 +139,11 @@ const AuditLogPage = () => {
     </div>,
     <div className="text-center">
       <Image
+        className="aspect-square cursor-pointer"
         src="/eye.svg"
         alt={t('common:view')}
         width={24}
         height={24}
-        className="cursor-pointer"
-        layout="fixed"
         onClick={() => onShowInfoClick(log)}
       />
     </div>,
