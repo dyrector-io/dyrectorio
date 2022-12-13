@@ -195,12 +195,14 @@ func CheckRequirements() string {
 			log.Fatal().Err(err).Stack().Send()
 		}
 
-		if socketurl.Host != "" {
-			log.Fatal().Msg("DOCKER_HOST variable shouldn't have host")
+		if socketurl.Scheme == "unix" {
+			if socketurl.Host != "" {
+				log.Fatal().Msg("DOCKER_HOST variable shouldn't have host")
+			}
 		}
 
-		if socketurl.Scheme != "unix" {
-			log.Fatal().Msg("DOCKER_HOST variable should contain a valid unix socket")
+		if socketurl.Scheme == "tcp" && socketurl.Host == "" {
+			log.Fatal().Msg("DOCKER_HOST tcp scheme is without host")
 		}
 	} else {
 		// We cannot assume unix:///var/run/docker.sock on Mac/Win platforms, we let Docker SDK does its magic :)

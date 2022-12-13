@@ -13,8 +13,8 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
 
-	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
+	imageHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/image"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 )
 

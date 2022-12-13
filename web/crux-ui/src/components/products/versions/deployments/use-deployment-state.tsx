@@ -10,6 +10,7 @@ import {
   deploymentIsCopiable,
   deploymentIsDeletable,
   deploymentIsMutable,
+  deploymentLogVisible,
   DeploymentRoot,
   DyoNode,
   GetInstanceMessage,
@@ -57,6 +58,7 @@ export type DeploymentState = {
   viewMode: ViewMode
   confirmationModal: DyoConfirmationModalConfig
   sock: WebSocketClientEndpoint
+  showDeploymentLog: boolean
 }
 
 export type DeploymentActions = {
@@ -90,6 +92,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
   const mutable = deploymentIsMutable(deployment.status, version.type)
   const deletable = deploymentIsDeletable(deployment.status)
   const copiable = deploymentIsCopiable(deployment.status, version.type)
+  const showDeploymentLog = deploymentLogVisible(deployment.status)
 
   const nodesSock = useWebSocket(WS_NODES)
   nodesSock.on(WS_TYPE_NODE_STATUS, (message: NodeStatusMessage) => {
@@ -211,6 +214,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
       viewMode,
       confirmationModal,
       sock,
+      showDeploymentLog,
     },
     {
       setEditing,

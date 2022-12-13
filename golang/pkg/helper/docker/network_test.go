@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/thanhpk/randstr"
 
-	dockerHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
+	dockerHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/docker"
 )
 
 type DockerNetworkHelperTestSuite struct {

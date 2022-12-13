@@ -20,7 +20,6 @@ import { DeploymentInvalidatedSecrets, DeploymentRoot, mergeConfigs } from '@app
 import {
   deploymentApiUrl,
   deploymentDeployUrl,
-  deploymentStartApiUrl,
   deploymentUrl,
   productUrl,
   ROUTE_PRODUCTS,
@@ -73,18 +72,39 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
     router.reload()
   }
 
-  const deploy = async () => {
-    fetch(deploymentStartApiUrl(product.id, version.id, deployment.id), {
-      method: 'POST',
-    })
+  const onDeploy = async () => {
+    if (node.status !== 'running') {
+      toast.error(t('errors.preconditionFailed'))
+      return
+    }
 
-    const url = deploymentDeployUrl(product.id, version.id, deployment.id)
-    router.push(url)
+    let error: ValidationError
+
+    let i = 0
+
+    while (!error && i < deployment.instances.length) {
+      const instance = deployment.instances[i]
+      const mergedConfig = mergeConfigs(instance.image.config, instance.overriddenConfig)
+      error = getValidationError(containerConfigSchema, mergedConfig)
+      i++
+    }
+
+    if (error) {
+      console.error(error)
+      toast.error(t('errors:invalid'))
+      return
+    }
+
+    const result = await startDeployment(router, product.id, version.id, deployment.id)
+    if (result?.property === 'secrets') {
+      const invalidSecrets = result.value as DeploymentInvalidatedSecrets[]
+
+      actions.onInvalidateSecrets(invalidSecrets)
+    }
   }
 
   const anchors = useAnchorActions({
     copyDeployment,
-    deploy,
   })
 
   useWebsocketTranslate(t)
@@ -118,37 +138,6 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
       router.replace(productUrl(product.id, { section: 'deployments' }))
     } else {
       toast(t('errors:oops'))
-    }
-  }
-
-  const onDeploy = async () => {
-    if (node.status !== 'running') {
-      toast.error(t('errors.preconditionFailed'))
-      return
-    }
-
-    let error: ValidationError
-
-    let i = 0
-
-    while (!error && i < deployment.instances.length) {
-      const instance = deployment.instances[i]
-      const mergedConfig = mergeConfigs(instance.image.config, instance.overriddenConfig)
-      error = getValidationError(containerConfigSchema, mergedConfig)
-      i++
-    }
-
-    if (error) {
-      console.error(error)
-      toast.error(t('errors:invalid'))
-      return
-    }
-
-    const result = await startDeployment(router, product.id, version.id, deployment.id)
-    if (result?.property === 'secrets') {
-      const invalidSecrets = result.value as DeploymentInvalidatedSecrets[]
-
-      actions.onInvalidateSecrets(invalidSecrets)
     }
   }
 
@@ -196,11 +185,13 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
           </AnchorAction>
         )}
 
-        {!state.mutable ? (
-          <AnchorAction anchors={anchors} href="deploy">
-            <DyoButton className="px-6 ml-4">{t('log')}</DyoButton>
-          </AnchorAction>
-        ) : !state.editing ? (
+        {state.showDeploymentLog ? (
+          <DyoButton className="px-6 ml-4" href={deploymentDeployUrl(product.id, version.id, deployment.id)}>
+            {t('log')}
+          </DyoButton>
+        ) : null}
+
+        {state.mutable && !state.editing ? (
           <DyoButton className="px-6 ml-4" onClick={onDeploy} disabled={node.status !== 'running'}>
             {t('common:deploy')}
           </DyoButton>

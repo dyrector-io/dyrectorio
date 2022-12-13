@@ -22,13 +22,13 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/internal/crypt"
 	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
 	"github.com/dyrector-io/dyrectorio/golang/internal/grpc"
-	dockerHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/docker"
-	imageHelper "github.com/dyrector-io/dyrectorio/golang/internal/helper/image"
 	"github.com/dyrector-io/dyrectorio/golang/internal/mapper"
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/caps"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/config"
+	dockerHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/docker"
+	imageHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/image"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 
 	"github.com/docker/docker/api/types"
@@ -552,7 +552,12 @@ func setImageLabels(image string, deployImageRequest *v1.DeployImageRequest, cfg
 
 	// add traefik related labels to the container if expose true
 	if deployImageRequest.ContainerConfig.Expose {
-		maps.Copy(labels, GetTraefikLabels(&deployImageRequest.InstanceConfig, &deployImageRequest.ContainerConfig, cfg))
+		traefikLabels, labelErr := GetTraefikLabels(&deployImageRequest.InstanceConfig,
+			&deployImageRequest.ContainerConfig, cfg)
+		if labelErr != nil {
+			return nil, labelErr
+		}
+		maps.Copy(labels, traefikLabels)
 	}
 
 	// set organization labels to the container
