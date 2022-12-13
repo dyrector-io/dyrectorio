@@ -96,7 +96,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
     <span>{item.prefix}</span>,
     <span>{utcDateToLocale(item.updatedAt)}</span>,
     <DeploymentStatusTag status={item.status} className="w-fit mx-auto" />,
-    <>
+    <div className="flex flex-row">
       <div className="mr-2 inline-block">
         <Link href={deploymentUrl(item.productId, item.versionId, item.id)} passHref>
           <Image src="/eye.svg" alt={t('common:deploy')} width={24} height={24} className="cursor-pointer" />
@@ -126,7 +126,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
           className={deploymentIsCopiable(item.status, item.type) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
         />
       </AnchorAction>
-    </>,
+    </div>,
   ]
   /* eslint-enable react/jsx-key */
 

@@ -165,7 +165,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
       item.prefix,
       <DeploymentStatusTag className="w-fit m-auto" status={item.status} />,
       <>{utcDateToLocale(item.date)}</>,
-      <>
+      <div className="flex flex-row">
         <Link
           className="mr-2 inline-block cursor-pointer"
           href={deploymentUrl(product.id, version.id, item.id)}
@@ -215,7 +215,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
             }
           />
         </AnchorAction>
-      </>,
+      </div>,
     ]
     /* eslint-enable react/jsx-key */
   }
