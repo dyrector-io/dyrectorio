@@ -46,6 +46,7 @@ type Builder interface {
 	WithLogWriter(logger io.StringWriter) Builder
 	WithoutConflict() Builder
 	WithForcePullImage() Builder
+	WithExtraHosts(hosts []string) Builder
 	WithPreCreateHooks(hooks ...LifecycleFunc) Builder
 	WithPostCreateHooks(hooks ...LifecycleFunc) Builder
 	WithPreStartHooks(hooks ...LifecycleFunc) Builder
@@ -84,6 +85,7 @@ type DockerContainerBuilder struct {
 	user            *int64
 	forcePull       bool
 	logger          io.StringWriter
+	extraHosts      []string
 	hooksPreCreate  []LifecycleFunc
 	hooksPostCreate []LifecycleFunc
 	hooksPreStart   []LifecycleFunc
@@ -105,7 +107,7 @@ func NewDockerBuilder(ctx context.Context) *DockerContainerBuilder {
 		panic(err)
 	}
 
-	return b.WithClient(cli)
+	return b.WithClient(cli).WithExtraHosts([]string{"host.docker.internal:host-gateway"})
 }
 
 // Sets the Docker client of the ContainerBuilder. By default NewDockerBuilder creates a client.
@@ -253,6 +255,13 @@ func (dc *DockerContainerBuilder) WithForcePullImage() *DockerContainerBuilder {
 	return dc
 }
 
+// Sets the builder to use extra hosts when creating the container.
+// Hosts must be defined in a colon separated format.
+func (dc *DockerContainerBuilder) WithExtraHosts(hosts []string) *DockerContainerBuilder {
+	dc.extraHosts = hosts
+	return dc
+}
+
 // Sets an array of hooks which runs before the container is created. ContainerID is nil in these hooks.
 func (dc *DockerContainerBuilder) WithPreCreateHooks(hooks ...LifecycleFunc) *DockerContainerBuilder {
 	dc.hooksPreCreate = hooks
@@ -305,9 +314,7 @@ func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 		Mounts:       dc.mountList,
 		PortBindings: portListNat,
 		AutoRemove:   dc.remove,
-		// TODO(c3ppc3pp): implement a WithExtraHosts function in the builder which takes care of this function
-		// where the default is given below, but can be overridden with any given value
-		ExtraHosts: []string{"host.docker.internal:host-gateway"},
+		ExtraHosts:   dc.extraHosts,
 	}
 
 	containerConfig := &container.Config{
