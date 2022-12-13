@@ -24,7 +24,7 @@ const VersionDetailsCard = (props: VersionDetailsCardProps) => {
       </DyoHeading>
 
       <div className="flex flex-row">
-        <div className="flex flex-col">
+        <div className="flex flex-col w-full overflow-auto">
           <DyoExpandableText
             text={version.changelog}
             lineClamp={6}
