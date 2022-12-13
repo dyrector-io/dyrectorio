@@ -191,12 +191,12 @@ test.describe('Complex product', () => {
     const versionId = await createVersion(page, productId, '0.1.0', 'Incremental')
     await createImage(page, productId, versionId, 'nginx')
 
-    await deployWithDagent(page, 'pw-complex-copibility', productId, versionId, true)
+    await deployWithDagent(page, 'pw-complex-copibility-inprogress', productId, versionId, true)
 
     const { deploymentId } = extractDeploymentUrl(page.url())
     await page.goto(deploymentUrl(productId, versionId, deploymentId))
 
-    await expect(await page.locator('div:has-text("In progress")')).toHaveCount(1)
+    await expect(await page.getByText('In progress')).toHaveCount(1)
     await expect(await page.locator('button:has-text("Copy")')).toHaveCount(0)
   })
 
@@ -217,8 +217,7 @@ test.describe('Complex product', () => {
 
     await page.locator('button:has-text("Deployments")').click()
 
-    const copyButton = await page.locator(`[alt="Copy"]:right-of(div:has-text("pw-complex-second"))`).first()
-
+    const copyButton = await page.locator(`[alt="Copy"]:right-of(:text("pw-complex-second"))`).first()
     await copyButton.click()
 
     await page.waitForNavigation()

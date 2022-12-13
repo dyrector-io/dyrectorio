@@ -38,8 +38,6 @@ export const deployWithDagent = async (
   versionId?: string,
   ignoreResult?: boolean,
 ) => {
-  page.on('console', msg => console.log(prefix, msg))
-
   if (versionId) {
     await page.goto(versionUrl(productId, versionId))
   } else {
@@ -58,12 +56,15 @@ export const deployWithDagent = async (
 
   await page.waitForNavigation()
 
-  await page.locator('button:has-text("Deploy")').click()
+  const deploy = page.getByText('Deploy', {
+    exact: true,
+  })
+  await deploy.click()
 
   await page.waitForNavigation()
 
   if (!ignoreResult) {
-    await page.waitForSelector('div:has-text("Successful")')
+    await page.getByText('Successful').waitFor()
   }
 }
 

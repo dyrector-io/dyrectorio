@@ -34,7 +34,6 @@
     "@ory/kratos-client": "^0.10.1",
     "@tailwindcss/line-clamp": "^0.4.2",
     "@types/ws": "^8.5.3",
-    "axios": "^1.2.1",
     "clsx": "^1.2.1",
     "formik": "^2.2.9",
     "google-auth-library": "^8.7.0",

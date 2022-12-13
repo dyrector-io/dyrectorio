@@ -38,7 +38,7 @@ const VerifyPage = (props: VerifyProps) => {
 
   const formik = useFormik({
     initialValues: {
-      email,
+      email: email ?? '',
     },
     onSubmit: async values => {
       const captcha = await recaptcha.current?.executeAsync()

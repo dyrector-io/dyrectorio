@@ -106,8 +106,6 @@ class WebSocketServer {
     const token = req.headers.authorization
     const connEntry = this.connectionsByToken.get(token)
 
-    this.logger.debug('Authorized:', token)
-
     if (!connEntry) {
       const session = sessionOf(req)
 

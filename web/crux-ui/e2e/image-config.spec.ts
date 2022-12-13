@@ -117,7 +117,7 @@ test.describe('Filters', () => {
   })
 })
 
-export const configureImagePort = async (page: Page, internal: string, external: string) => {
+const configureImagePort = async (page: Page, internal: string, external: string) => {
   const addPortsButton = await page.locator(`[src="/plus.svg"]:right-of(label:has-text("Ports"))`).first()
 
   await addPortsButton.click()

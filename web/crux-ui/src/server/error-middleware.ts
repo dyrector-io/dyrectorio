@@ -104,7 +104,6 @@ export const useErrorMiddleware = async (
         description: error.description,
       })
     } else {
-      console.error('[ERROR]: ', req.url, err)
       res.statusCode = 500
 
       if (process.env.NODE_ENV !== 'production') {
