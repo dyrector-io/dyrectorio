@@ -256,7 +256,7 @@ func (dc *DockerContainerBuilder) WithForcePullImage() *DockerContainerBuilder {
 }
 
 // Sets the builder to use extra hosts when creating the container.
-// Hosts must be defined in a colon separated format.
+// Hosts must be defined in a "HOSTNAME:IP" format.
 func (dc *DockerContainerBuilder) WithExtraHosts(hosts []string) *DockerContainerBuilder {
 	dc.extraHosts = hosts
 	return dc
