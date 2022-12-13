@@ -20,7 +20,7 @@ const TemplateCard = (props: TemplateCardProps) => {
     <DyoCard className="p-6 flex flex-col flex-grow w-full">
       <div className="flex flex-col w-full">
         <div className="flex flex-row">
-          <Image src="/default_template.svg" width={100} height={100} />
+          <Image src="/default_template.svg" alt={t('common:default')} width={100} height={100} />
 
           <div className="flex flex-col flex-grow">
             <DyoHeading element="h5" className="text-lg text-bright ml-4">

@@ -6,7 +6,7 @@ import { useContext, useEffect } from 'react'
 
 const useWebsocketTranslate = (t: Translate) => {
   const wsContext = useContext(WebSocketContext)
-  const { t: defaultTranslate } = useTranslation()
+  const { t: defaultTranslate } = useTranslation('common')
 
   useEffect(() => {
     wsContext.client.setErrorHandler(msg => defaultWsErrorHandler(t)(msg))

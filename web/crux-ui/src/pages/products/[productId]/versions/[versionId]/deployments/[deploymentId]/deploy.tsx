@@ -58,7 +58,16 @@ const DeployPage = (props: DeployPageProps) => {
     },
   })
 
-  sock.on(WS_TYPE_DEPLOYMENT_EVENT_LIST, (message: DeploymentEventMessage[]) => setEvents([...message, ...events]))
+  sock.on(WS_TYPE_DEPLOYMENT_EVENT_LIST, (message: DeploymentEventMessage[]) => {
+    let newEvents = [...message, ...events]
+    newEvents = newEvents.sort((one, other) => new Date(other.createdAt).getTime() - new Date(one.createdAt).getTime())
+    setEvents(newEvents)
+
+    const deploymentStatuses = newEvents.filter(it => it.type === 'deploymentStatus')
+    if (deploymentStatuses.length > 0) {
+      setStatus(deploymentStatuses[deploymentStatuses.length - 1].value as DeploymentStatus)
+    }
+  })
   sock.on(WS_TYPE_DEPLOYMENT_EVENT, (message: DeploymentEventMessage) => {
     const newEvents = [...events, message]
     setEvents(newEvents)

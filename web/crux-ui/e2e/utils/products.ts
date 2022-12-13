@@ -53,9 +53,13 @@ export const createVersion = async (page: Page, productId: string, name: string,
 
 export const createImage = async (page: Page, productId: string, versionId: string, image: string) => {
   await page.goto(versionUrl(productId, versionId))
-  await page.waitForSelector('button:has-text("Add image")')
 
-  await page.locator('button:has-text("Add image")').click()
+  const addImage = await page.waitForSelector('button:has-text("Add image")')
+  await addImage.click()
+
+  const registry = await page.waitForSelector(`button:has-text("Docker Hub Library")`)
+  await registry.click()
+
   await page.locator('input[name=imageName] >> visible=true').type(image)
 
   const imageItem = await page.waitForSelector(`label:has-text("${image}")`)

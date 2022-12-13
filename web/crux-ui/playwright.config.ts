@@ -34,6 +34,13 @@ const config: PlaywrightTestConfig = {
     // },
     storageState: 'storageState.json',
     viewport: { width: 1920, height: 1080 },
+    // video: {
+    //   mode: 'retain-on-failure',
+    //   size: {
+    //     width: 1920,
+    //     height: 1080,
+    //   },
+    // },
   },
   projects: [
     {

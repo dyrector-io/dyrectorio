@@ -20,12 +20,10 @@ const NavButton = (props: NavButtonProps) => {
     <>
       <div className={clsx('pl-8 py-3', active ? 'bg-dark w-full' : null)}>
         <Link href={href} passHref={passHref}>
-          <a>
-            <div className="flex flex-row">
-              <div className="flex items-center mr-2 text-bright text-sm font-semibold">{icon}</div>
-              {children}
-            </div>
-          </a>
+          <div className="flex flex-row">
+            <div className="flex items-center mr-2 text-bright text-sm font-semibold">{icon}</div>
+            {children}
+          </div>
         </Link>
       </div>
 

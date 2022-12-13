@@ -77,28 +77,29 @@ export const timestampToUTC = (timestamp: Timestamp): string => {
   return new Date(millis).toUTCString()
 }
 
-export const utcDateToLocale = (date: string) => new Date(date).toLocaleString()
+// TODO(@m8vago): check after react and update if there is still a hydration error with narrow spaces
+export const utcDateToLocale = (date: string) => new Date(date).toLocaleString().replace(/\u202f/g, ' ')
 
 export const getUserDateFormat = (fallback: string) => {
   let dateFormat: string
   if (!isServerSide()) {
     dateFormat = new Intl.DateTimeFormat(window.navigator.language)
-      .formatToParts(new Date('1970.01.01.'))
+      .formatToParts(new Date(0))
       .map(o => {
         switch (o.type) {
           case 'day':
-            return o.value.length > 1 ? 'dd' : 'd' // Checking if there is a leading zero to single digits
+            return o.value.length > 1 ? 'dd' : 'd' // checking if there is a leading zero to single digits
           case 'month':
             return o.value.length > 1 ? 'MM' : 'M'
           case 'year':
             return 'yyyy'
-          default: // Separator character(s)
+          default: // separator character(s)
             return o.value
         }
       })
       .join('')
   }
-  return dateFormat?.indexOf('yyyy') > -1 ? dateFormat : fallback // If the format is invalid, use fallback
+  return dateFormat?.indexOf('yyyy') > -1 ? dateFormat : fallback // if the format is invalid, use fallback
 }
 
 // array

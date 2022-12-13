@@ -1,7 +1,6 @@
+import DyoIcon from '@app/elements/dyo-icon'
 import { NodeStatus } from '@app/models'
-import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import Image from 'next/image'
 
 const statusToAssetName = (status: NodeStatus) => {
   switch (status) {
@@ -24,17 +23,7 @@ const NodeStatusIndicator = (props: NodeStatusStatusIndicatorProps) => {
 
   const { t } = useTranslation('common')
 
-  return (
-    <div className={clsx(className, 'flex')}>
-      <Image
-        src={`/${statusToAssetName(status)}.svg`}
-        alt={t(`nodeStatuses.${status}`)}
-        width={16}
-        height={16}
-        layout="fixed"
-      />
-    </div>
-  )
+  return <DyoIcon className={className} src={`/${statusToAssetName(status)}.svg`} alt={t(`nodeStatuses.${status}`)} />
 }
 
 export default NodeStatusIndicator

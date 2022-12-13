@@ -98,14 +98,7 @@ const Paginator = (props: PaginatorProps) => {
           thin
           disabled={disabled}
         >
-          <Image
-            src="/carets_left.svg"
-            width={24}
-            height={24}
-            layout="fixed"
-            className="h-6 m-auto"
-            alt="carets left"
-          />
+          <Image className="aspect-square h-6 m-auto" src="/carets_left.svg" width={24} height={24} alt="carets left" />
         </DyoButton>
         <DyoButton
           className="w-8 text-xl"
@@ -114,7 +107,7 @@ const Paginator = (props: PaginatorProps) => {
           thin
           disabled={disabled}
         >
-          <Image src="/caret_left.svg" width={24} height={24} layout="fixed" className="h-6 m-auto" alt="caret left" />
+          <Image className="aspect-square h-6 m-auto" src="/caret_left.svg" width={24} height={24} alt="caret left" />
         </DyoButton>
         {pagination.pageNumber - 2 >= 0 && (
           <DyoButton
@@ -174,14 +167,7 @@ const Paginator = (props: PaginatorProps) => {
           thin
           disabled={disabled}
         >
-          <Image
-            src="/caret_right.svg"
-            width={24}
-            height={24}
-            layout="fixed"
-            className="h-6 m-auto"
-            alt="caret right"
-          />
+          <Image className="aspect-square h-6 m-auto" src="/caret_right.svg" width={24} height={24} alt="caret right" />
         </DyoButton>
         <DyoButton
           className="w-8 text-xl"
@@ -191,11 +177,10 @@ const Paginator = (props: PaginatorProps) => {
           disabled={disabled}
         >
           <Image
+            className="aspect-square h-6 m-auto"
             src="/carets_right.svg"
             width={24}
             height={24}
-            layout="fixed"
-            className="h-6 m-auto"
             alt="carets right"
           />
         </DyoButton>

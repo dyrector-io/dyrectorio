@@ -58,6 +58,7 @@
   "inspect": "Inspect",
   "deploy": "Deploy",
   "view": "View",
+  "down": "Down",
 
   "confirm": "Confirm",
   "areYouSureDeleteName": "Are you sure you want to delete {{name}}?",
@@ -138,6 +139,17 @@
     "dead": "Dead"
   },
 
+  "secretStatuses": {
+    "unknown": "Unknown",
+    "present": "Present",
+    "missing": "Missing"
+  },
+
+  "viewMode": {
+    "tiles": "Tiles",
+    "list": "List"
+  },
+
   "dyoWhiteLogo": "dyrector.io's white logo",
   "dyoLogo": "dyrector.io's logo",
   "heart": "Heart",
@@ -171,6 +183,7 @@
   "openSource": "is an Open Source project",
   "cannotDefineSecretsHere": "Secret keys can be provided here, values can be set in deployments.",
   "required": "Required",
+  "default": "Default",
   "notRequired": "Not required",
   "alreadyPreparingSureOverwrite": "There is already a preparing deployment on the selected node. Are you sure want to overwrite?"
 }

@@ -2,7 +2,6 @@ import { HEADER_SET_COOKIE } from '@app/const'
 import { missingParameter } from '@app/error-responses'
 import { DEFAULT_SERVICE_INFO, IdentityAdminMetadata, ServiceInfo } from '@app/models'
 import { Configuration, Identity, MetadataApi, Session, V0alpha2Api } from '@ory/kratos-client'
-import { AxiosResponse } from 'axios'
 import http from 'http'
 import { NextApiRequest, NextPageContext } from 'next'
 
@@ -137,7 +136,10 @@ export const sessionOfContext = (context: NextPageContext): Session => {
   return cruxContext.session
 }
 
-export const forwardCookieToResponse = (res: http.OutgoingMessage, resOrCookie: AxiosResponse | string | undefined) => {
+export const forwardCookieToResponse = (
+  res: http.OutgoingMessage,
+  resOrCookie: { headers: any } | string | undefined,
+) => {
   const cookie =
     typeof resOrCookie === 'string' || undefined ? (resOrCookie as string) : resOrCookie.headers[HEADER_SET_COOKIE]
   if (cookie) {
@@ -147,7 +149,7 @@ export const forwardCookieToResponse = (res: http.OutgoingMessage, resOrCookie: 
   }
 }
 
-export const forwardCookie = (context: NextPageContext, resOrCookie: AxiosResponse | string | undefined) =>
+export const forwardCookie = (context: NextPageContext, resOrCookie: { headers: any } | string | undefined) =>
   forwardCookieToResponse(context.res, resOrCookie)
 
 export type IncomingMessageWithSession = http.IncomingMessage & {

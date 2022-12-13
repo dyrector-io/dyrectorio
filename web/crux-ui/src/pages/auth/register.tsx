@@ -189,8 +189,8 @@ const RegisterPage = (props: RegisterPageProps) => {
       <div className="flex justify-center text-bright mt-8 mb-auto">
         <p className="mr-2">{t('alreadyUser')}</p>
 
-        <Link href={ROUTE_LOGIN}>
-          <a className="font-bold underline">{t('common:logIn')}</a>
+        <Link className="font-bold underline" href={ROUTE_LOGIN}>
+          {t('common:logIn')}
         </Link>
       </div>
     </SingleFormLayout>

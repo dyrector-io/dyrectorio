@@ -1,4 +1,5 @@
 import clsx from 'clsx'
+import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
 import React, { ForwardedRef, forwardRef } from 'react'
 import DyoMessage from './dyo-message'
@@ -13,6 +14,7 @@ export interface DyoSelectProps extends React.InputHTMLAttributes<HTMLSelectElem
 }
 
 export const DyoSelect = forwardRef((props: DyoSelectProps, ref: ForwardedRef<HTMLSelectElement>) => {
+  const { t } = useTranslation('common')
   const { message, messageType, grow, ...forwaredProps } = props
 
   return (
@@ -27,7 +29,7 @@ export const DyoSelect = forwardRef((props: DyoSelectProps, ref: ForwardedRef<HT
           )}
         />
         <div className="pointer-events-none pr-2 absolute h-[24px] right-0 top-1/2 transform -translate-y-1/2">
-          <Image src="/chevron_down.svg" aria-hidden width={24} height={24} />
+          <Image src="/chevron_down.svg" alt={t('common:down')} aria-hidden width={24} height={24} />
         </div>
       </div>
 
@@ -37,3 +39,10 @@ export const DyoSelect = forwardRef((props: DyoSelectProps, ref: ForwardedRef<HT
 })
 
 DyoSelect.displayName = 'DyoSelect'
+DyoSelect.defaultProps = {
+  className: null,
+  disabled: false,
+  grow: false,
+  message: null,
+  messageType: 'error',
+}

@@ -38,16 +38,14 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
     item.image.name,
     item.image.registryName,
     <div className="flex items-center">
-      <a>
+      <span>
         {item.image.name}
         {item.image.tag ? `:${item.image.tag}` : null}
-      </a>
+      </span>
     </div>,
     item.image.createdAt ? utcDateToLocale(item.image.createdAt) : 'new',
-    <Link href={instanceConfigUrl(state.product.id, state.version.id, state.deployment.id, item.id)}>
-      <a>
-        <Image src="/settings.svg" width={24} height={24} />
-      </a>
+    <Link href={instanceConfigUrl(state.product.id, state.version.id, state.deployment.id, item.id)} passHref>
+      <Image src="/settings.svg" alt={t('common:settings')} width={24} height={24} />
     </Link>,
   ]
 

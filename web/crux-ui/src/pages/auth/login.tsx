@@ -136,17 +136,15 @@ const LoginPage = (props: LoginPageProps) => {
         </form>
 
         <div className="flex justify-center mt-10">
-          <Link href={ROUTE_RECOVERY}>
-            <a>{t('forgotPassword')}</a>
-          </Link>
+          <Link href={ROUTE_RECOVERY}>{t('forgotPassword')}</Link>
         </div>
       </DyoCard>
 
       <div className="flex justify-center  text-bright mt-8 mb-auto">
         <p className="mr-2">{t('dontHaveAnAccount')}</p>
 
-        <Link href={ROUTE_REGISTER}>
-          <a className="font-bold underline">{t('common:signUp')}</a>
+        <Link className="font-bold underline" href={ROUTE_REGISTER}>
+          {t('common:signUp')}
         </Link>
       </div>
     </SingleFormLayout>

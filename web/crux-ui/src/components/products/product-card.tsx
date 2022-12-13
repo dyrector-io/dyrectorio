@@ -27,13 +27,7 @@ const ProductCard = (props: ProductCardProps) => {
     <DyoCard className={clsx(className ?? 'p-6', 'flex flex-col flex-grow w-full')}>
       <div className="flex flex-col w-full">
         <div className="flex flex-row">
-          {titleHref ? (
-            <Link href={titleHref}>
-              <a>{image}</a>
-            </Link>
-          ) : (
-            image
-          )}
+          {titleHref ? <Link href={titleHref}>{image}</Link> : image}
 
           <div className="flex flex-col flex-grow">
             <DyoHeading element="h5" className="text-lg text-bright ml-4" href={titleHref}>

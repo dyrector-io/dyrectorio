@@ -17,7 +17,10 @@ test('Deploy to node should be successful', async ({ page }) => {
 
   await page.screenshot({ path: screenshotPath('successful-deployment'), fullPage: true })
 
-  await expect(await page.locator('.bg-dyo-green').first()).toContainText('Successful')
+  const deployStatus = page.getByText('Successful')
+  await deployStatus.waitFor()
+
+  await expect(deployStatus).toHaveCount(1)
 })
 
 test('Second successful deployment should make the first deployment obsolete', async ({ page }) => {
@@ -27,11 +30,13 @@ test('Second successful deployment should make the first deployment obsolete', a
 
   await deployWithDagent(page, prefixTwo, productId, versionId)
 
-  await expect(await page.locator('.bg-dyo-green').first()).toContainText('Successful')
+  const firstDeployStatus = await page.getByText('Successful')
+  await expect(firstDeployStatus).toHaveCount(1)
 
   await deployWithDagent(page, prefixTwo, productId, versionId)
 
-  await expect(await page.locator('.bg-dyo-green').first()).toContainText('Successful')
+  const secondDeployStatus = await page.getByText('Successful')
+  await expect(secondDeployStatus).toHaveCount(1)
 
   await page.goto(versionUrl(productId, versionId, { section: 'deployments' }))
   await page.screenshot({ path: screenshotPath('deployment-should-be-obsolete'), fullPage: true })
@@ -40,6 +45,11 @@ test('Second successful deployment should make the first deployment obsolete', a
   const deploymentsRows = await deploymentsTableBody.locator('.table-row')
 
   await expect(deploymentsRows).toHaveCount(2)
-  await expect(await page.locator('.bg-dyo-purple')).toHaveCount(1)
-  await expect(await page.locator('.bg-dyo-green')).toHaveCount(1)
+
+  const successfulDeployment = await deploymentsRows.getByText('Successful', { exact: true })
+  const obsolateDeployment = await deploymentsRows.getByText('Obsolate', { exact: true })
+
+  await page.screenshot({ path: screenshotPath('deployment-should-be-obsolete-2'), fullPage: true })
+  await expect(successfulDeployment).toHaveCount(1)
+  await expect(obsolateDeployment).toHaveCount(1)
 })

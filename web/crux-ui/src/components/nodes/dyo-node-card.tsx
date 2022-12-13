@@ -20,7 +20,7 @@ const DyoNodeCard = (props: DyoNodeCardProps) => {
   const { t } = useTranslation('common')
 
   const title = (
-    <a className="flex flex-row">
+    <div className="flex flex-row">
       {node.icon ? <DyoBadge icon={node.icon} /> : null}
 
       <DyoHeading
@@ -31,7 +31,7 @@ const DyoNodeCard = (props: DyoNodeCardProps) => {
       </DyoHeading>
 
       {!hideConnectionInfo ? <NodeStatusIndicator className="place-items-center" status={node.status} /> : null}
-    </a>
+    </div>
   )
 
   return (

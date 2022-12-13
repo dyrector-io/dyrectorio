@@ -9,7 +9,7 @@ export interface DyoChipsProps<T> {
   choices: readonly T[]
   initialSelection?: T
   converter?: (choice: T) => string
-  onSelectionChange: (choices: T) => void
+  onSelectionChange: (choice: T) => void
 }
 
 const DyoChips = <T,>(props: DyoChipsProps<T>) => {
@@ -31,7 +31,8 @@ const DyoChips = <T,>(props: DyoChipsProps<T>) => {
   return (
     <div className={className}>
       {choices.map((it, index) => {
-        const text = converter ? converter(it) : it
+        const text: string = converter ? converter(it) : (it as string)
+
         return (
           <button
             key={`${key}-${index}`}

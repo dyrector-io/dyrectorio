@@ -90,24 +90,16 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
   ]
 
   const itemTemplate = (item: Deployment) => /* eslint-disable react/jsx-key */ [
-    <Link href={productUrl(item.productId)}>
-      <a className="cursor-pointer">{item.product}</a>
-    </Link>,
-    <Link href={versionUrl(item.productId, item.versionId)}>
-      <a className="cursor-pointer">{item.version}</a>
-    </Link>,
-    <Link href={nodeUrl(item.nodeId)}>
-      <a className="cursor-pointer">{item.node}</a>
-    </Link>,
-    <a>{item.prefix}</a>,
-    <a>{utcDateToLocale(item.updatedAt)}</a>,
+    <Link href={productUrl(item.productId)}>{item.product}</Link>,
+    <Link href={versionUrl(item.productId, item.versionId)}>{item.version}</Link>,
+    <Link href={nodeUrl(item.nodeId)}>{item.node}</Link>,
+    <span>{item.prefix}</span>,
+    <span>{utcDateToLocale(item.updatedAt)}</span>,
     <DeploymentStatusTag status={item.status} className="w-fit mx-auto" />,
-    <>
+    <div className="flex flex-row">
       <div className="mr-2 inline-block">
-        <Link href={deploymentUrl(item.productId, item.versionId, item.id)}>
-          <a>
-            <Image src="/eye.svg" alt={t('common:deploy')} width={24} height={24} className="cursor-pointer" />
-          </a>
+        <Link href={deploymentUrl(item.productId, item.versionId, item.id)} passHref>
+          <Image src="/eye.svg" alt={t('common:deploy')} width={24} height={24} className="cursor-pointer" />
         </Link>
       </div>
       <div className="mr-2 inline-block">
@@ -134,7 +126,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
           className={deploymentIsCopiable(item.status, item.type) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
         />
       </AnchorAction>
-    </>,
+    </div>,
   ]
   /* eslint-enable react/jsx-key */
 

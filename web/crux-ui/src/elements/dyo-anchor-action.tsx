@@ -1,13 +1,15 @@
 import { AnchorActions, ANCHOR_ACTION_PREFIX } from '@app/hooks/use-anchor-actions'
+import clsx from 'clsx'
 import Link from 'next/link'
-import React, { HTMLProps } from 'react'
+import React from 'react'
 
 const anchorActionLink = (href: string) => {
   const anchor = href.startsWith('#') ? href.substring(1) : href
   return `${ANCHOR_ACTION_PREFIX}${anchor}`
 }
 
-interface AnchorActionProps extends Omit<HTMLProps<HTMLAnchorElement>, 'href' | 'onClick' | 'children'> {
+interface AnchorActionProps {
+  className?: string
   href: string
   anchors: AnchorActions
   children: React.ReactNode
@@ -15,7 +17,7 @@ interface AnchorActionProps extends Omit<HTMLProps<HTMLAnchorElement>, 'href' | 
 }
 
 const AnchorAction = (props: AnchorActionProps) => {
-  const { anchors, href: propsHref, children, disabled, ...forwardedProps } = props
+  const { anchors, href: propsHref, children, disabled, className } = props
 
   // eslint-disable-next-line no-console
   console.assert(Object.keys(anchors).includes(propsHref), 'AnchorAction not found for', propsHref)
@@ -24,10 +26,8 @@ const AnchorAction = (props: AnchorActionProps) => {
   const onClick = anchors[href]
 
   return (
-    <Link href={href} onClick={onClick}>
-      <a className={disabled ? 'pointer-events-none' : ''} {...forwardedProps}>
-        {children}
-      </a>
+    <Link className={clsx(disabled ? 'pointer-events-none' : '', className)} href={href} onClick={onClick}>
+      {children}
     </Link>
   )
 }
