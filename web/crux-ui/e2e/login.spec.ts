@@ -47,5 +47,5 @@ test('should log in with valid credentials', async ({ page }) => {
 
   await page.screenshot({ path: screenshotPath('login-successful'), fullPage: true })
 
-  await expect(page).toHaveURL(`/products`)
+  await expect(page).toHaveURL(`/dashboard`)
 })

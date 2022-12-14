@@ -53,7 +53,12 @@ const DashboardPage = () => {
 
   const statisticItem = (property: string, count: number) => (
     <DyoCard className="flex flex-col p-4 justify-items-center items-center mb-4 break-inside-avoid" key={property}>
-      <Image src={`/dashboard/${getStatisticIcon(property)}.svg`} width={46} height={46} />
+      <Image
+        src={`/dashboard/${getStatisticIcon(property)}.svg`}
+        width={46}
+        height={46}
+        alt={t(getStatisticLabel(property))}
+      />
       <DyoLabel className="text-lg font-semibold my-2" textColor="text-bright">
         {formatCount(count)}
       </DyoLabel>
@@ -67,7 +72,7 @@ const DashboardPage = () => {
 
   const itemTemplate = (log: AuditLog) => /* eslint-disable react/jsx-key */ [
     <div className="w-10 ml-auto">
-      <Image src="/default_avatar.svg" width={38} height={38} layout="fixed" />
+      <Image src="/default_avatar.svg" width={38} height={38} layout="fixed" alt={t('')} />
     </div>,
     <div className="font-semibold min-w-max">{log.identityEmail}</div>,
     <div className="min-w-max">{utcDateToLocale(log.date)}</div>,
@@ -88,7 +93,7 @@ const DashboardPage = () => {
               {t('statistics')}
             </DyoLabel>
 
-            <div className="columns-1 lg:columns-3 2xl:columns-6 gap-4">
+            <div className="columns-1 md:columns-2 lg:columns-3 2xl:columns-6 gap-4">
               {Object.keys(data)
                 .filter(it => typeof data[it] === 'number')
                 .map(it => statisticItem(it, data[it]))}
