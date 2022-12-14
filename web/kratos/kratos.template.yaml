@@ -20,7 +20,7 @@ selfservice:
 
   flows:
     error:
-      ui_url: ${CRUX_UI_URL}/auth/error
+      ui_url: ${CRUX_UI_URL}/error
 
     settings:
       ui_url: ${CRUX_UI_URL}/auth/settings

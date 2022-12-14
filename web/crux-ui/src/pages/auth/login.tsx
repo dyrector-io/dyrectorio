@@ -16,7 +16,7 @@ import {
   verificationUrl,
 } from '@app/routes'
 import { findAttributes, findError, findMessage, isDyoError, redirectTo, sendForm, upsertDyoError } from '@app/utils'
-import { SelfServiceLoginFlow, UiContainer } from '@ory/kratos-client'
+import { LoginFlow, UiContainer } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'
 import kratos, { cookieOf, forwardCookie, obtainKratosSession, userVerified } from '@server/kratos'
 import { useFormik } from 'formik'
@@ -29,7 +29,7 @@ import ReCAPTCHA from 'react-google-recaptcha'
 import toast from 'react-hot-toast'
 
 interface LoginPageProps {
-  flow: SelfServiceLoginFlow
+  flow: LoginFlow
   recaptchaSiteKey?: string
 }
 
@@ -165,18 +165,10 @@ const getPageServerSideProps = async (context: NextPageContext) => {
     return redirectTo(ROUTE_INDEX)
   }
 
-  const flow = await kratos.initializeSelfServiceLoginFlowForBrowsers(
-    !!refresh,
-    undefined,
-    undefined,
-    !refresh
-      ? undefined
-      : {
-          headers: {
-            Cookie: cookieOf(context.req),
-          },
-        },
-  )
+  const flow = await kratos.createBrowserLoginFlow({
+    refresh: !!refresh,
+    cookie: !refresh ? undefined : cookieOf(context.req),
+  })
 
   forwardCookie(context, flow)
 

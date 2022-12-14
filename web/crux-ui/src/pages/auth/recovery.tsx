@@ -9,7 +9,7 @@ import useTimer from '@app/hooks/use-timer'
 import { DyoErrorDto, RecoverEmail } from '@app/models'
 import { API_RECOVERY, ROUTE_INDEX, ROUTE_RECOVERY, ROUTE_RECOVERY_EXPIRED } from '@app/routes'
 import { findAttributes, findError, findMessage, isDyoError, redirectTo, upsertDyoError } from '@app/utils'
-import { SelfServiceRecoveryFlow } from '@ory/kratos-client'
+import { RecoveryFlow } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'
 import kratos, { forwardCookie, obtainKratosSession } from '@server/kratos'
 import { useFormik } from 'formik'
@@ -21,7 +21,7 @@ import ReCAPTCHA from 'react-google-recaptcha'
 import toast from 'react-hot-toast'
 
 interface RecoveryPageProps {
-  flow: SelfServiceRecoveryFlow
+  flow: RecoveryFlow
   recaptchaSiteKey?: string
 }
 
@@ -134,8 +134,12 @@ const getPageServerSideProps = async (context: NextPageContext) => {
   const { cookie } = context.req.headers
   try {
     const flow = flowId
-      ? await kratos.getSelfServiceRecoveryFlow(flowId, cookie)
-      : await kratos.initializeSelfServiceRecoveryFlowForBrowsers()
+      ? await kratos.getRecoveryFlow({
+          id: flowId,
+          cookie,
+        })
+      : await kratos.createBrowserRecoveryFlow()
+
     forwardCookie(context, flow)
 
     return {

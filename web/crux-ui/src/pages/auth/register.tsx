@@ -19,7 +19,7 @@ import {
   upsertError,
 } from '@app/utils'
 import { registerSchema } from '@app/validations'
-import { SelfServiceRegistrationFlow } from '@ory/kratos-client'
+import { RegistrationFlow } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'
 import kratos, { forwardCookie, obtainKratosSession } from '@server/kratos'
 import { useFormik } from 'formik'
@@ -32,7 +32,7 @@ import ReCAPTCHA from 'react-google-recaptcha'
 import toast from 'react-hot-toast'
 
 interface RegisterPageProps {
-  flow: SelfServiceRegistrationFlow
+  flow: RegistrationFlow
   recaptchaSiteKey?: string
 }
 
@@ -205,7 +205,7 @@ const getPageServerSideProps = async (context: NextPageContext) => {
     return redirectTo(ROUTE_SETTINGS)
   }
 
-  const flow = await kratos.initializeSelfServiceRegistrationFlowForBrowsers()
+  const flow = await kratos.createBrowserRegistrationFlow()
   forwardCookie(context, flow)
 
   return {

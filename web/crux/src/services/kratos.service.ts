@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { Configuration, Identity, Session, V0alpha2Api } from '@ory/kratos-client'
+import { Configuration, Identity, IdentityApi, Session } from '@ory/kratos-client'
 import { randomUUID } from 'crypto'
 import { IdentityAdminMetadata, IdentityTraits, KRATOS_IDENTITY_SCHEMA } from 'src/shared/models'
 
@@ -8,24 +8,27 @@ const EMAIL = 'email'
 
 @Injectable()
 export default class KratosService {
-  private kratos: V0alpha2Api
+  private kratos: IdentityApi
 
   constructor(private configService: ConfigService) {
-    this.kratos = new V0alpha2Api(new Configuration({ basePath: configService.get<string>('KRATOS_ADMIN_URL') }))
+    this.kratos = new IdentityApi(new Configuration({ basePath: configService.get<string>('KRATOS_ADMIN_URL') }))
   }
 
   async getIdentityByEmail(email: string): Promise<Identity> {
-    const identities = await this.kratos.adminListIdentities()
+    const identities = await this.kratos.listIdentities()
     return identities.data.find(user => user.traits[EMAIL] === email)
   }
 
   async getIdentitiesByIds(ids: string[]): Promise<Map<string, Identity>> {
-    const identities = await this.kratos.adminListIdentities()
+    const identities = await this.kratos.listIdentities()
     return new Map(identities.data.filter(it => ids.includes(it.id)).map(it => [it.id, it]))
   }
 
   async getSessionsById(id: string, activeOnly?: boolean): Promise<Session[]> {
-    const sessions = await this.kratos.adminListIdentitySessions(id, undefined, undefined, activeOnly)
+    const sessions = await this.kratos.listIdentitySessions({
+      id,
+      active: activeOnly,
+    })
     return sessions.data ?? []
   }
 
@@ -44,40 +47,46 @@ export default class KratosService {
       noPassword: true,
     }
 
-    const res = await this.kratos.adminCreateIdentity({
-      schema_id: KRATOS_IDENTITY_SCHEMA,
-      metadata_admin: adminMetadata,
-      traits,
-      verifiable_addresses: [
-        {
-          id: randomUUID(),
-          status: 'completed',
-          value: traits.email,
-          verified: true,
-          via: 'email',
-        },
-      ],
+    const res = await this.kratos.createIdentity({
+      createIdentityBody: {
+        schema_id: KRATOS_IDENTITY_SCHEMA,
+        metadata_admin: adminMetadata,
+        traits,
+        verifiable_addresses: [
+          {
+            id: randomUUID(),
+            status: 'completed',
+            value: traits.email,
+            verified: true,
+            via: 'email',
+          },
+        ],
+      },
     })
 
     return res.data
   }
 
   async createRecoveryLink(identity: Identity): Promise<string> {
-    const res = await this.kratos.adminCreateSelfServiceRecoveryLink({
-      identity_id: identity.id,
-      expires_in: '12h',
+    const res = await this.kratos.createRecoveryLinkForIdentity({
+      createRecoveryLinkForIdentityBody: {
+        identity_id: identity.id,
+        expires_in: '12h',
+      },
     })
 
     return res.data.recovery_link
   }
 
   async getIdentityById(id: string): Promise<Identity> {
-    const res = await this.kratos.adminGetIdentity(id)
+    const res = await this.kratos.getIdentity({
+      id,
+    })
 
     return res.data
   }
 
   async getIdentityIdsByEmail(mail: string): Promise<string[]> {
-    return (await this.kratos.adminListIdentities()).data.filter(r => r.traits[EMAIL] === mail).map(r => r.id)
+    return (await this.kratos.listIdentities()).data.filter(r => r.traits[EMAIL] === mail).map(r => r.id)
   }
 }

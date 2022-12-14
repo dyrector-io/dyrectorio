@@ -9,7 +9,7 @@ import DyoSingleFormHeading from '@app/elements/dyo-single-form-heading'
 import { ChangePassword } from '@app/models'
 import { API_SETTINGS_CHANGE_PASSWORD, ROUTE_INDEX, ROUTE_LOGIN, ROUTE_LOGOUT } from '@app/routes'
 import { findAttributes, findMessage, redirectTo, sendForm, withContextErrorHandling } from '@app/utils'
-import { SelfServiceSettingsFlow } from '@ory/kratos-client'
+import { SettingsFlow } from '@ory/kratos-client'
 import kratos, { identityHasNoPassword, obtainKratosSession } from '@server/kratos'
 import { useFormik } from 'formik'
 import { NextPageContext } from 'next'
@@ -17,7 +17,7 @@ import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import { useState } from 'react'
 
-type NoPasswordPageProps = SelfServiceSettingsFlow
+type NoPasswordPageProps = SettingsFlow
 
 const NoPasswordPage = (props: NoPasswordPageProps) => {
   const { ui: propsUi, id } = props
@@ -130,10 +130,8 @@ const getPageServerSideProps = async (context: NextPageContext) => {
     return redirectTo(ROUTE_INDEX)
   }
 
-  const flow = await kratos.initializeSelfServiceSettingsFlowForBrowsers(undefined, {
-    headers: {
-      Cookie: cookie,
-    },
+  const flow = await kratos.createBrowserSettingsFlow({
+    cookie,
   })
 
   return {

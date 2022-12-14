@@ -1,5 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import { Configuration, Identity, V0alpha2Api } from '@ory/kratos-client'
+import { Configuration, Identity, IdentityApi } from '@ory/kratos-client'
 import { FullConfig } from '@playwright/test'
 import path from 'path'
 import MailSlurper from './mail-slurper'
@@ -48,7 +48,7 @@ export const kratosFromBaseURL = (baseURL: string) => {
     basePath: url,
   })
 
-  return new V0alpha2Api(kratosConfig)
+  return new IdentityApi(kratosConfig)
 }
 
 export const kratosFromConfig = (config: FullConfig) => {
@@ -56,21 +56,23 @@ export const kratosFromConfig = (config: FullConfig) => {
   return kratosFromBaseURL(baseURL)
 }
 
-export const createUser = async (kratos: V0alpha2Api, email: string, password: string): Promise<Identity> => {
-  const res = await kratos.adminCreateIdentity({
-    schema_id: 'default',
-    state: 'active',
-    traits: {
-      email,
-      name: {
-        first: 'John',
-        last: 'Doe',
+export const createUser = async (kratos: IdentityApi, email: string, password: string): Promise<Identity> => {
+  const res = await kratos.createIdentity({
+    createIdentityBody: {
+      schema_id: 'default',
+      state: 'active',
+      traits: {
+        email,
+        name: {
+          first: 'John',
+          last: 'Doe',
+        },
       },
-    },
-    credentials: {
-      password: {
-        config: {
-          password,
+      credentials: {
+        password: {
+          config: {
+            password,
+          },
         },
       },
     },
@@ -79,19 +81,21 @@ export const createUser = async (kratos: V0alpha2Api, email: string, password: s
   return res.data
 }
 
-export const getUserByEmail = async (kratos: V0alpha2Api, email: string) => {
-  const identitites = (await kratos.adminListIdentities()).data
+export const getUserByEmail = async (kratos: IdentityApi, email: string) => {
+  const identitites = (await kratos.listIdentities()).data
   const identity = identitites.find(it => it.traits.email === email)
   return identity
 }
 
-export const deleteUserByEmail = async (kratos: V0alpha2Api, email: string) => {
+export const deleteUserByEmail = async (kratos: IdentityApi, email: string) => {
   const identity = await getUserByEmail(kratos, email)
   if (!identity) {
     return
   }
 
-  await kratos.adminDeleteIdentity(identity.id)
+  await kratos.deleteIdentity({
+    id: identity.id,
+  })
 }
 
 export const screenshotPath = (name: string) => path.join(__dirname, '..', SCREENSHOTS_FOLDER, `${name}.png`)

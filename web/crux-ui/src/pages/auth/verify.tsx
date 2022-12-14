@@ -9,7 +9,7 @@ import useTimer from '@app/hooks/use-timer'
 import { DyoErrorDto, VerifyEmail } from '@app/models'
 import { API_VERIFICATION, ROUTE_SETTINGS } from '@app/routes'
 import { findAttributes, findError, findMessage, isDyoError, redirectTo, sendForm, upsertDyoError } from '@app/utils'
-import { SelfServiceVerificationFlow } from '@ory/kratos-client'
+import { VerificationFlow } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'
 import kratos, { forwardCookie, obtainKratosSession, userVerified } from '@server/kratos'
 import { useFormik } from 'formik'
@@ -21,7 +21,7 @@ import toast from 'react-hot-toast'
 
 interface VerifyProps {
   email: string
-  flow: SelfServiceVerificationFlow
+  flow: VerificationFlow
   recaptchaSiteKey?: string
 }
 
@@ -125,8 +125,11 @@ const getPageServerSideProps = async (context: NextPageContext) => {
 
   const { cookie } = context.req.headers
   const flow = flowId
-    ? await kratos.getSelfServiceVerificationFlow(flowId, cookie)
-    : await kratos.initializeSelfServiceVerificationFlowForBrowsers()
+    ? await kratos.getVerificationFlow({
+        id: flowId,
+        cookie,
+      })
+    : await kratos.createBrowserVerificationFlow()
 
   forwardCookie(context, flow)
 

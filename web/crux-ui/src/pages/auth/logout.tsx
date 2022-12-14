@@ -16,7 +16,9 @@ export const getPageServerSideProps = async (context: NextPageContext) => {
     return redirectTo(ROUTE_LOGIN)
   }
 
-  const kratosRes = await kratos.createSelfServiceLogoutFlowUrlForBrowsers(cookie)
+  const kratosRes = await kratos.createBrowserLogoutFlow({
+    cookie,
+  })
 
   return redirectTo(kratosRes.data.logout_url)
 }

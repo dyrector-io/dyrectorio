@@ -1,5 +1,6 @@
 import { IdentityTraits, Register } from '@app/models'
 import { registerSchema } from '@app/validations'
+import { UpdateRegistrationFlowWithPasswordMethod } from '@ory/kratos-client'
 import { validateCaptcha } from '@server/captcha'
 import { useErrorMiddleware } from '@server/error-middleware'
 import kratos, { forwardCookieToResponse } from '@server/kratos'
@@ -22,16 +23,18 @@ const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
     },
   }
 
-  const kratosRes = await kratos.submitSelfServiceRegistrationFlow(
-    dto.flow,
-    {
-      csrf_token: dto.csrfToken,
-      method: 'password',
-      password: dto.password,
-      traits,
-    },
+  const body: UpdateRegistrationFlowWithPasswordMethod = {
+    csrf_token: dto.csrfToken,
+    method: 'password',
+    password: dto.password,
+    traits,
+  }
+
+  const kratosRes = await kratos.updateRegistrationFlow({
+    flow: dto.flow,
+    updateRegistrationFlowBody: body,
     cookie,
-  )
+  })
 
   forwardCookieToResponse(res, kratosRes)
 

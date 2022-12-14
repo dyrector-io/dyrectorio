@@ -1,14 +1,14 @@
 import { HEADER_SET_COOKIE } from '@app/const'
 import { missingParameter } from '@app/error-responses'
 import { DEFAULT_SERVICE_INFO, IdentityAdminMetadata, ServiceInfo } from '@app/models'
-import { Configuration, Identity, MetadataApi, Session, V0alpha2Api } from '@ory/kratos-client'
+import { Configuration, FrontendApi, Identity, IdentityApi, MetadataApi, Session } from '@ory/kratos-client'
 import http from 'http'
 import { NextApiRequest, NextPageContext } from 'next'
 
 const config = new Configuration({ basePath: process.env.KRATOS_URL })
-const kratos = new V0alpha2Api(config)
+const kratos = new FrontendApi(config)
 
-const kratosAdmin = new V0alpha2Api(
+const kratosIdentitites = new IdentityApi(
   new Configuration({
     basePath: process.env.KRATOS_ADMIN_URL,
   }),
@@ -26,7 +26,9 @@ export const identityHasNoPassword = async (session: Session): Promise<boolean> 
     return false
   }
 
-  const kratosRes = await kratosAdmin.adminGetIdentity(session.identity.id)
+  const kratosRes = await kratosIdentitites.getIdentity({
+    id: session.identity.id,
+  })
   const identity = kratosRes.data
   const { password: passwordCredentials } = identity.credentials
   if (!passwordCredentials) {
@@ -39,19 +41,26 @@ export const identityHasNoPassword = async (session: Session): Promise<boolean> 
 }
 
 export const identityPasswordSet = async (session: Session): Promise<void> => {
-  const identity = (await kratosAdmin.adminGetIdentity(session.identity.id)).data
+  const identity = (
+    await kratosIdentitites.getIdentity({
+      id: session.identity.id,
+    })
+  ).data
   const metadata = identity.metadata_admin as IdentityAdminMetadata
 
   if (metadata) {
-    kratosAdmin.adminUpdateIdentity(identity.id, {
-      schema_id: identity.schema_id,
-      state: identity.state,
-      traits: identity.traits,
-      metadata_admin: {
-        ...metadata,
-        noPassword: false,
+    kratosIdentitites.updateIdentity({
+      id: identity.id,
+      updateIdentityBody: {
+        schema_id: identity.schema_id,
+        state: identity.state,
+        traits: identity.traits,
+        metadata_admin: {
+          ...metadata,
+          noPassword: false,
+        },
+        metadata_public: identity.metadata_public,
       },
-      metadata_public: identity.metadata_public,
     })
   }
 }
@@ -114,7 +123,9 @@ export const obtainKratosSession = async (request: http.IncomingMessage): Promis
       return null
     }
 
-    const res = await kratos.toSession(undefined, cookie)
+    const res = await kratos.toSession({
+      cookie,
+    })
     return res.data
   } catch {
     return null

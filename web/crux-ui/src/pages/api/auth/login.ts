@@ -1,4 +1,5 @@
 import { Login } from '@app/models'
+import { UpdateLoginFlowWithPasswordMethod } from '@ory/kratos-client'
 import { validateCaptcha } from '@server/captcha'
 import { useErrorMiddleware } from '@server/error-middleware'
 import kratos, { cookieOf, forwardCookieToResponse } from '@server/kratos'
@@ -11,17 +12,18 @@ const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
   await validateCaptcha(dto.captcha)
   const cookie = cookieOf(req)
 
-  const kratosRes = await kratos.submitSelfServiceLoginFlow(
-    dto.flow,
-    {
-      method: 'password',
-      csrf_token: dto.csrfToken,
-      identifier: dto.email,
-      password: dto.password,
-    },
-    undefined,
+  const body: UpdateLoginFlowWithPasswordMethod = {
+    method: 'password',
+    csrf_token: dto.csrfToken,
+    identifier: dto.email,
+    password: dto.password,
+  }
+
+  const kratosRes = await kratos.updateLoginFlow({
+    flow: dto.flow,
+    updateLoginFlowBody: body,
     cookie,
-  )
+  })
 
   forwardCookieToResponse(res, kratosRes)
 
