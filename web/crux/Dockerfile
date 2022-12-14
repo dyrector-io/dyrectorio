@@ -26,7 +26,7 @@ COPY --from=BUILDER /app/package.json ./
 COPY --from=BUILDER /app/node_modules ./node_modules
 COPY --from=BUILDER /app/prisma ./prisma
 COPY --from=BUILDER /app/templates ./templates
-COPY ./crux-docker-entrypoint.sh ./install-docker.sh.hbr ./install-k8s.sh.hbr ./
+COPY ./crux-docker-entrypoint.sh ./install-docker.sh.hbr ./install-docker.ps1.hbr ./install-k8s.sh.hbr ./
 COPY ./proto ./proto
 
 USER node
