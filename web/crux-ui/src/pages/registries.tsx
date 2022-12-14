@@ -9,7 +9,7 @@ import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoWrap from '@app/elements/dyo-wrap'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
-import { Registry, RegistryType, REGISTRY_TYPE_VALUES } from '@app/models'
+import { Registry, RegistryListItem, RegistryType, REGISTRY_TYPE_VALUES } from '@app/models'
 import { registryUrl, ROUTE_REGISTRIES } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
@@ -19,7 +19,7 @@ import useTranslation from 'next-translate/useTranslation'
 import { useRef, useState } from 'react'
 
 interface RegistriesPageProps {
-  registries: Registry[]
+  registries: RegistryListItem[]
 }
 
 type RegistryFilter = TextFilter & EnumFilter<RegistryType>
@@ -29,7 +29,7 @@ const RegistriesPage = (props: RegistriesPageProps) => {
 
   const { t } = useTranslation('registries')
 
-  const filters = useFilters<Registry, RegistryFilter>({
+  const filters = useFilters<RegistryListItem, RegistryFilter>({
     filters: [
       textFilterFor<Registry>(it => [it.name, it.url, it.description, it.icon]),
       enumFilterFor<Registry, RegistryType>(it => [it.type]),

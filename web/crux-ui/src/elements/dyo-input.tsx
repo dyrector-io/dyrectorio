@@ -50,7 +50,7 @@ export const DyoInput = forwardRef((props: DyoInputProps, ref: ForwardedRef<HTML
             className,
             'bg-medium h-11 p-4 ring-2 rounded-md focus:outline-none focus:dark',
             grow ? 'w-full' : 'w-80',
-            disabled ? 'text-bright-muted ring-light-grey-muted' : 'text-bright ring-light-grey',
+            disabled ? 'text-bright-muted ring-light-grey-muted cursor-not-allowed' : 'text-bright ring-light-grey',
           )}
         />
 

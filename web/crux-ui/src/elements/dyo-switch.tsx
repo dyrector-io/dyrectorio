@@ -29,6 +29,7 @@ const DyoSwitch = (props: DyoSwitchProps) => {
       className={clsx(
         checked ? 'bg-dyo-turquoise' : 'bg-light',
         'relative inline-flex items-center h-6 rounded-full w-11 outline-none',
+        disabled ? 'cursor-not-allowed' : null,
       )}
     >
       <span

@@ -463,6 +463,7 @@ message RegistryDetailsResponse {
   string name = 100;
   optional string description = 101;
   optional string icon = 102;
+  bool inUse = 103;
 
   oneof details {
     HubRegistryDetails hub = 200;
