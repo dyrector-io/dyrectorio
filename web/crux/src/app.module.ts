@@ -20,6 +20,7 @@ import NotificationModule from './app/notification/notification.module'
 import EmailModule from './mailer/email.module'
 import TemplateModule from './app/template/template.module'
 import MetricsController from './app/metrics/metrics.controller'
+import DashboardModule from './app/dashboard/dashboard.module'
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import MetricsController from './app/metrics/metrics.controller'
     HealthModule,
     NotificationModule,
     TemplateModule,
+    DashboardModule,
     ConfigModule.forRoot({
       isGlobal: true,
       cache: true,

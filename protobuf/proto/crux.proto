@@ -139,6 +139,9 @@ service CruxTemplate {
       returns (CreateEntityResponse);
 }
 
+service CruxDashboard {
+  rpc GetDashboard(AccessRequest) returns (DashboardResponse);
+}
 /**
  *
  * Common messages
@@ -1082,4 +1085,38 @@ message CreateProductFromTemplateRequest {
   string name = 100;
   string description = 101;
   ProductType type = 102;
+}
+
+// DASHBOARD
+message DashboardActiveNodes {
+  string id = 1;
+
+  string name = 100;
+  string address = 101;
+  string version = 102;
+}
+
+message DashboardDeployment {
+  string id = 1;
+
+  string product = 100;
+  string version = 101;
+  string node = 102;
+  string changelog = 103;
+  optional google.protobuf.Timestamp deployedAt = 104;
+  string productId = 105;
+  string versionId = 106;
+}
+
+message DashboardResponse {
+  uint32 users = 100;
+  uint32 auditLogEntries = 101;
+  uint32 products = 102;
+  uint32 versions = 103;
+  uint32 deployments = 104;
+  uint32 failedDeployments = 105;
+
+  repeated DashboardActiveNodes nodes = 1000;
+  repeated DashboardDeployment latestDeployments = 1001;
+  repeated AuditLogResponse auditLog = 1002;
 }

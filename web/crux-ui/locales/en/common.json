@@ -185,5 +185,11 @@
   "required": "Required",
   "default": "Default",
   "notRequired": "Not required",
-  "alreadyPreparingSureOverwrite": "There is already a preparing deployment on the selected node. Are you sure want to overwrite?"
+  "alreadyPreparingSureOverwrite": "There is already a preparing deployment on the selected node. Are you sure want to overwrite?",
+  "dashboard": "Dashboard",
+  "changelog": "Changelog",
+  "changelogName": "Changelog: {{name}}",
+  "emptyChangelog": "You have not provided any changes",
+  "event": "Event",
+  "data": "Data"
 }

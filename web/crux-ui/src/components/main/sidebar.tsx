@@ -1,6 +1,7 @@
 import DyoIcon from '@app/elements/dyo-icon'
 import {
   ROUTE_AUDIT,
+  ROUTE_DASHBOARD,
   ROUTE_DEPLOYMENTS,
   ROUTE_INDEX,
   ROUTE_LOGOUT,
@@ -15,6 +16,7 @@ import {
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
 import Link from 'next/link'
+import NavButton from './nav-button'
 import { NavSection } from './nav-section'
 
 export interface SidebarProps {
@@ -100,7 +102,16 @@ export const Sidebar = (props: SidebarProps) => {
       </div>
 
       <div className="flex flex-col flex-grow pb-4">
-        <NavSection className="mt-12" title={t('product')} options={productOptions} />
+        <div className="mt-12 flex text-bright">
+          <NavButton
+            href={ROUTE_DASHBOARD}
+            icon={<Image src="/dashboard.svg" alt={t('dashboard')} width={18} height={18} />}
+          >
+            {t('dashboard')}
+          </NavButton>
+        </div>
+
+        <NavSection className="mt-6" title={t('product')} options={productOptions} />
 
         <NavSection className="mt-12" title={t('components')} options={componentOptions} />
 

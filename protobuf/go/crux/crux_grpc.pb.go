@@ -3420,3 +3420,89 @@ var CruxTemplate_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "protobuf/proto/crux.proto",
 }
+
+// CruxDashboardClient is the client API for CruxDashboard service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type CruxDashboardClient interface {
+	GetDashboard(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*DashboardResponse, error)
+}
+
+type cruxDashboardClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewCruxDashboardClient(cc grpc.ClientConnInterface) CruxDashboardClient {
+	return &cruxDashboardClient{cc}
+}
+
+func (c *cruxDashboardClient) GetDashboard(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*DashboardResponse, error) {
+	out := new(DashboardResponse)
+	err := c.cc.Invoke(ctx, "/crux.CruxDashboard/GetDashboard", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// CruxDashboardServer is the server API for CruxDashboard service.
+// All implementations must embed UnimplementedCruxDashboardServer
+// for forward compatibility
+type CruxDashboardServer interface {
+	GetDashboard(context.Context, *AccessRequest) (*DashboardResponse, error)
+	mustEmbedUnimplementedCruxDashboardServer()
+}
+
+// UnimplementedCruxDashboardServer must be embedded to have forward compatible implementations.
+type UnimplementedCruxDashboardServer struct {
+}
+
+func (UnimplementedCruxDashboardServer) GetDashboard(context.Context, *AccessRequest) (*DashboardResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDashboard not implemented")
+}
+func (UnimplementedCruxDashboardServer) mustEmbedUnimplementedCruxDashboardServer() {}
+
+// UnsafeCruxDashboardServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to CruxDashboardServer will
+// result in compilation errors.
+type UnsafeCruxDashboardServer interface {
+	mustEmbedUnimplementedCruxDashboardServer()
+}
+
+func RegisterCruxDashboardServer(s grpc.ServiceRegistrar, srv CruxDashboardServer) {
+	s.RegisterService(&CruxDashboard_ServiceDesc, srv)
+}
+
+func _CruxDashboard_GetDashboard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AccessRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CruxDashboardServer).GetDashboard(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crux.CruxDashboard/GetDashboard",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CruxDashboardServer).GetDashboard(ctx, req.(*AccessRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// CruxDashboard_ServiceDesc is the grpc.ServiceDesc for CruxDashboard service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var CruxDashboard_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "crux.CruxDashboard",
+	HandlerType: (*CruxDashboardServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetDashboard",
+			Handler:    _CruxDashboard_GetDashboard_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "protobuf/proto/crux.proto",
+}

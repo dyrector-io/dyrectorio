@@ -4,6 +4,7 @@
   "tips": "Create a new version for your product. You can select a default version, from which other versions will inherit images and configuration. dyrector.io is the most suitable for semantic versioning, since it's the de facto way of version control. We recommend using that.",
   "increaseTips": "By increasing the version of your Product, you're able to create new releases of your already existing Product with new images or substitute included ones with a different tag.",
   "new": "New version",
+  "default": "Default",
   "changelog": "Changelog",
   "type": "Type",
   "incremental": "Incremental",
@@ -19,7 +20,6 @@
   "increaseName": "Increase {{name}}",
 
   "showAll": "Show all",
-  "changelogName": "Changelog: {{name}}",
 
   "reorderImages": "Reorder images",
   "saveOrder": "Save image order",
@@ -30,7 +30,6 @@
   "alreadyHavePreparing": "You already have one preparing deployment with the same prefix!",
   "nodeRequired": "You can't create deployment without having at least one node!",
   "versionSemanticHint": "Version is not in semantic format.",
-  "emptyChangelog": "You have not provided any changes",
   "errors": {
     "preconditionFailed": "You can't create a deployment without having atleast one image"
   }

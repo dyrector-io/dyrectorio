@@ -1,6 +1,7 @@
 import { invalidArgument } from '@app/error-responses'
 import {
   CruxAuditClient,
+  CruxDashboardClient,
   CruxDeploymentClient,
   CruxHealthClient,
   CruxImageClient,
@@ -37,6 +38,8 @@ class CruxClients {
 
   templates: CruxTemplateClient
 
+  dashboard: CruxDashboardClient
+
   constructor(address: string) {
     // tls must be terminated by the reverse proxy
     const creds = credentials.createInsecure()
@@ -56,6 +59,7 @@ class CruxClients {
     this.audit = new CruxAuditClient(address, creds)
     this.notifications = new CruxNotificationClient(address, creds)
     this.templates = new CruxTemplateClient(address, creds)
+    this.dashboard = new CruxDashboardClient(address, creds)
   }
 }
 

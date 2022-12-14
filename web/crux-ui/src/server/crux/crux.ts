@@ -14,6 +14,7 @@ import registryConnections, {
 import { NextApiRequest, NextPageContext } from 'next'
 import DyoAuditService from './audit-service'
 import CruxClients from './crux-clients'
+import DyoDashboardService from './dashboard-service'
 import DyoDeploymentService from './deployment-service'
 import DyoHealthService from './health-service'
 import DyoImageService from './image-service'
@@ -47,6 +48,8 @@ export class Crux {
   private _notifications: DyoNotifcationService
 
   private _templates: DyoTemplateService
+
+  private _dashboard: DyoDashboardService
 
   private constructor(
     private clients: CruxClients,
@@ -96,6 +99,10 @@ export class Crux {
 
   get templates() {
     return this._templates ?? new DyoTemplateService(this.clients.templates, this.identity)
+  }
+
+  get dashboard() {
+    return this._dashboard ?? new DyoDashboardService(this.clients.dashboard, this.identity)
   }
 
   get registryConnectionsServices(): CruxRegistryConnectionsServices {

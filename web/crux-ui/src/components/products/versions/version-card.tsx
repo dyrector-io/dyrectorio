@@ -87,14 +87,14 @@ const VersionCard = (props: VersionCardProps) => {
         )}
       </div>
 
-      <span className="text-bright font-semibold">{t('changelog')}</span>
+      <span className="text-bright font-semibold">{t('common:changelog')}</span>
 
       <DyoExpandableText
-        text={version.changelog ? version.changelog : t('emptyChangelog')}
+        text={version.changelog ? version.changelog : t('common:emptyChangelog')}
         lineClamp={6}
         className="text-md text-bright mt-2 max-h-44"
         buttonClassName="w-fit mb-8"
-        modalTitle={t('changelogName', { name: version.name })}
+        modalTitle={t('common:changelogName', { name: version.name })}
       />
 
       {disabled ? null : (

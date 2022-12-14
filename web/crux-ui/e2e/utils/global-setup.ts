@@ -1,5 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import { ROUTE_LOGIN, ROUTE_PRODUCTS, ROUTE_TEAMS_CREATE, verificationUrl } from '@app/routes'
+import { ROUTE_DASHBOARD, ROUTE_LOGIN, ROUTE_TEAMS_CREATE, verificationUrl } from '@app/routes'
 import { chromium, FullConfig } from '@playwright/test'
 import {
   createUser,
@@ -46,7 +46,7 @@ const globalSetup = async (config: FullConfig) => {
   await page.locator('input[name=name]').fill(USER_TEAM)
   await page.locator('button[type=submit]').click()
 
-  await page.waitForURL(ROUTE_PRODUCTS)
+  await page.waitForURL(ROUTE_DASHBOARD)
 
   await page.context().storageState({ path: storageState as string })
 
