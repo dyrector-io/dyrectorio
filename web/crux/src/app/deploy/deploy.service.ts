@@ -1,5 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { DeploymentStatusEnum, InstanceContainerConfig } from '@prisma/client'
+import {
+  DeploymentStatusEnum,
+  DeploymentStrategy,
+  ExposeStrategy,
+  InstanceContainerConfig,
+  NetworkMode,
+  Prisma,
+  RestartPolicy,
+} from '@prisma/client'
 import { JsonArray } from 'prisma'
 import { concatAll, EMPTY, filter, from, lastValueFrom, map, merge, Observable, Subject } from 'rxjs'
 import Deployment from 'src/domain/deployment'
@@ -147,6 +155,87 @@ export default class DeployService {
         },
       },
     })
+
+    const instanceIds = await this.prisma.instance.findMany({
+      where: {
+        deploymentId: deployment.id,
+      },
+      select: {
+        id: true,
+        imageId: true,
+        image: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    })
+
+    const previousInstances = await this.prisma.deployment.findFirst({
+      where: {
+        prefix: request.prefix,
+        nodeId: request.nodeId,
+        versionId: request.versionId,
+      },
+      include: {
+        instances: {
+          select: {
+            imageId: true,
+            config: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
+
+    if (previousInstances && previousInstances.instances) {
+      instanceIds.forEach(async it => {
+        await this.prisma.instance.update({
+          where: {
+            id: it.id,
+          },
+          data: {
+            config: {
+              create: {
+                name: it.image.name,
+                secrets:
+                  previousInstances.instances.find(instance => instance.imageId === it.imageId).config?.secrets ?? [],
+                environment: Prisma.JsonNull,
+                capabilities: [],
+                expose: ExposeStrategy.none,
+                ingress: Prisma.JsonNull,
+                configContainer: Prisma.JsonNull,
+                importContainer: Prisma.JsonNull,
+                user: null,
+                tty: false,
+                ports: [],
+                portRanges: [],
+                volumes: [],
+                commands: [],
+                args: [],
+                initContainers: [],
+                logConfig: Prisma.JsonNull,
+                restartPolicy: RestartPolicy.no,
+                networkMode: NetworkMode.bridge,
+                networks: [],
+                dockerLabels: [],
+                deploymentStrategy: DeploymentStrategy.recreate,
+                resourceConfig: Prisma.JsonNull,
+                healthCheckConfig: Prisma.JsonNull,
+                proxyHeaders: false,
+                useLoadBalancer: false,
+                extraLBAnnotations: [],
+                customHeaders: [],
+                annotations: [],
+                labels: [],
+              },
+            },
+          },
+        })
+      })
+    }
 
     return CreateEntityResponse.fromJSON(deployment)
   }
