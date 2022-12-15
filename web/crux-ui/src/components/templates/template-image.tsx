@@ -1,7 +1,7 @@
 import { templateImageUrl } from '@app/routes'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 export interface TemplateImageProps {
   templateId: string
@@ -11,35 +11,22 @@ const TemplateImage = (props: TemplateImageProps) => {
   const { templateId } = props
 
   const { t } = useTranslation('templates')
-
-  const ref = useRef<HTMLImageElement>(null)
   const [error, setError] = useState<boolean>(false)
 
   const onError = useCallback(() => {
     setError(true)
   }, [])
 
-  useEffect(() => {
-    if (ref && ref.current) {
-      const { complete, naturalHeight } = ref.current
-      const errorLoadingImgBeforeHydration = complete && naturalHeight === 0
+  const loader = () => (error ? '/default_template.svg' : templateImageUrl(templateId))
 
-      if (errorLoadingImgBeforeHydration) {
-        setError(true)
-      }
-    }
-  }, [])
-
-  return error ? (
-    <Image src="/default_template.svg" width={100} height={100} />
-  ) : (
-    <img
+  return (
+    <Image
       className="rounded"
-      src={templateImageUrl(templateId)}
-      alt={t('imageAlt')}
+      alt={t('templateImage')}
+      src="/default_template.svg"
       width={100}
       height={100}
-      ref={ref}
+      loader={loader}
       onError={onError}
     />
   )

@@ -4,5 +4,5 @@
   "productName": "Product name",
   "description": "Description",
   "type": "Type",
-  "imageAlt": "Template image"
+  "templateImage": "Template image"
 }
