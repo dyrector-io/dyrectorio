@@ -26,6 +26,7 @@ export const DyoInput = forwardRef((props: DyoInputProps, ref: ForwardedRef<HTML
     containerClassName,
     disabled,
     inline,
+    id,
     ...forwardedProps
   } = props
 
@@ -35,7 +36,7 @@ export const DyoInput = forwardRef((props: DyoInputProps, ref: ForwardedRef<HTML
         {!label ? null : (
           <DyoLabel
             className={clsx(labelClassName ?? (inline ? 'my-auto mr-4' : 'mt-8 mb-2.5'), 'whitespace-nowrap')}
-            htmlFor={name}
+            htmlFor={id ?? name}
           >
             {label}
           </DyoLabel>
@@ -46,7 +47,7 @@ export const DyoInput = forwardRef((props: DyoInputProps, ref: ForwardedRef<HTML
           name={name}
           ref={ref}
           disabled={disabled}
-          id={name}
+          id={id ?? name}
           className={clsx(
             className,
             'bg-medium h-11 p-4 ring-2 rounded-md focus:outline-none focus:dark',

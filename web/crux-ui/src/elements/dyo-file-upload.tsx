@@ -9,11 +9,12 @@ export interface DyoFileUploadProps {
   handleFile: Function
   accept: string
   label?: string
+  id?: string
 }
 
 export const DyoFileUploadInput = (props: DyoFileUploadProps) => {
   const { t } = useTranslation('common')
-  const { name, multiple, handleFile, accept, label } = props
+  const { name, multiple, handleFile, accept, label, id } = props
 
   const hiddenFileInput = React.useRef(null)
 
@@ -31,7 +32,7 @@ export const DyoFileUploadInput = (props: DyoFileUploadProps) => {
   return (
     <>
       {!label ? null : (
-        <DyoLabel className="mt-8 mb-2.5" htmlFor={name}>
+        <DyoLabel className="mt-8 mb-2.5" htmlFor={id ?? name}>
           {label}
         </DyoLabel>
       )}
@@ -43,7 +44,7 @@ export const DyoFileUploadInput = (props: DyoFileUploadProps) => {
       <input
         type="file"
         className="hidden"
-        id={name}
+        id={id ?? name}
         accept={accept}
         multiple={multiple}
         ref={hiddenFileInput}
