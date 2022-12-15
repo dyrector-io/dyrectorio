@@ -438,7 +438,12 @@ func mountStrToDocker(mountIn []string, containerPreName, containerName string, 
 			mountSplit := strings.Split(mountStr, "|")
 			if len(mountSplit[0]) > 0 && len(mountSplit[1]) > 0 {
 				containerPath := path.Join(cfg.InternalMountPath, containerPreName, containerName, mountSplit[0])
-				hostPath := path.Join(cfg.DataMountPath, containerPreName, containerName, mountSplit[0])
+				hostPath := ""
+				if strings.HasPrefix(mountSplit[0], "/") {
+					hostPath = mountSplit[0]
+				} else {
+					hostPath = path.Join(cfg.DataMountPath, containerPreName, containerName, mountSplit[0])
+				}
 				_, err := os.Stat(containerPath)
 				if os.IsNotExist(err) {
 					if err := os.MkdirAll(containerPath, os.ModePerm); err != nil {
