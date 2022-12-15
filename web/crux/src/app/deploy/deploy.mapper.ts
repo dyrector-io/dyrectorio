@@ -337,10 +337,10 @@ export default class DeployMapper {
 
   private override = <T>(weak: T, strong: T): T => strong ?? weak
 
-  private overrideArrays = <T>(weak: T[], strong: T[]): T[] => {
-    const strongs: Set<T> = new Set(strong?.map(it => it))
-    return [...(weak?.filter(it => !strongs.has(it)) ?? []), ...(strong ?? [])]
-  }
+  private combineArrays = <T>(weak: T[], strong: T[]): T[] => [
+    ...(weak?.filter(it => !strong.indexOf(it)) ?? []),
+    ...(strong ?? []),
+  ]
 
   public mergeConfigs(
     imageConfig: ContainerConfigData,
@@ -360,8 +360,8 @@ export default class DeployMapper {
       user: this.override(imageConfig?.user, instanceConfig.user),
       tty: this.override(imageConfig?.tty, instanceConfig.tty),
       portRanges: this.override(imageConfig?.portRanges, instanceConfig.portRanges),
-      args: this.overrideArrays(imageConfig?.args as UniqueKey[], instanceConfig.args as UniqueKey[]),
-      commands: this.overrideArrays(imageConfig?.commands as UniqueKey[], instanceConfig.commands as UniqueKey[]),
+      args: this.override(imageConfig?.args, instanceConfig.args),
+      commands: this.override(imageConfig?.commands, instanceConfig.commands),
       expose: this.override(imageConfig?.expose, instanceConfig.expose),
       configContainer: this.override(imageConfig?.configContainer, instanceConfig.configContainer),
       ingress: this.override(imageConfig?.ingress, instanceConfig.ingress),
@@ -372,7 +372,7 @@ export default class DeployMapper {
       ports,
 
       // crane
-      customHeaders: this.overrideArrays(imageConfig?.customHeaders, instanceConfig?.customHeaders),
+      customHeaders: this.combineArrays(imageConfig?.customHeaders, instanceConfig?.customHeaders),
       proxyHeaders: this.override(imageConfig?.proxyHeaders, instanceConfig?.proxyHeaders),
       extraLBAnnotations: this.override(imageConfig?.extraLBAnnotations, instanceConfig?.extraLBAnnotations),
       healthCheckConfig: this.override(imageConfig?.healthCheckConfig, instanceConfig?.healthCheckConfig),
@@ -386,8 +386,8 @@ export default class DeployMapper {
       logConfig: this.override(imageConfig?.logConfig, instanceConfig?.logConfig),
       networkMode: this.override(imageConfig?.networkMode, instanceConfig?.networkMode),
       restartPolicy: this.override(imageConfig?.restartPolicy, instanceConfig?.restartPolicy),
-      networks: this.overrideArrays(imageConfig?.networks, instanceConfig?.networks),
-      dockerLabels: this.overrideArrays(imageConfig?.dockerLabels, instanceConfig?.dockerLabels),
+      networks: this.combineArrays(imageConfig?.networks, instanceConfig?.networks),
+      dockerLabels: this.combineArrays(imageConfig?.dockerLabels, instanceConfig?.dockerLabels),
     }
   }
 }

@@ -19,6 +19,19 @@ export const nameRuleOptional = yup.string().trim().min(3).max(70)
 export const nameRule = yup.string().required().trim().min(3).max(70)
 export const descriptionRule = yup.string().optional()
 
+export const shellCommandSchema = yup
+  .array(
+    yup.object().shape({
+      key: yup
+        .string()
+        .required()
+        .ensure()
+        .matches(/^\S.*\S$/g), // any characters but no trailing whitespaces
+      value: yup.string().ensure(),
+    }),
+  )
+  .ensure()
+
 export const uniqueKeyValuesSchema = yup
   .array(
     yup.object().shape({
@@ -270,8 +283,8 @@ export const containerConfigSchema = yup.object().shape({
   ports: portConfigRule,
   portRanges: portRangeConfigRule,
   volumes: volumeConfigRule,
-  commands: uniqueKeysOnlySchema.default([]).nullable(),
-  args: uniqueKeysOnlySchema.default([]).nullable(),
+  commands: shellCommandSchema.default([]).nullable(),
+  args: shellCommandSchema.default([]).nullable(),
   initContainers: initContainerRule,
   capabilities: uniqueKeyValuesSchema.default([]).nullable(),
 
@@ -307,8 +320,8 @@ export const instanceContainerConfigSchema = yup.object().shape({
   ports: portConfigRule,
   portRanges: portRangeConfigRule,
   volumes: volumeConfigRule,
-  commands: uniqueKeysOnlySchema.default([]).nullable(),
-  args: uniqueKeysOnlySchema.default([]).nullable(),
+  commands: shellCommandSchema.default([]).nullable(),
+  args: shellCommandSchema.default([]).nullable(),
   initContainers: initContainerRule,
   capabilities: uniqueKeyValuesSchema.default([]).nullable(),
 

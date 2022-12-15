@@ -122,6 +122,7 @@ export default class TemplateService {
       networks: config.networks ? config.networks.map(it => ({ id: v4(), key: it })) : [],
       ports: config.ports ? toPrismaJson(config.ports.map(it => this.idify(it))) : [],
       environment: config.environment ? config.environment.map(it => this.idify(it)) : [],
+      args: config.args ? config.args.map(it => this.idify(it)) : [],
       volumes: config.volumes
         ? toPrismaJson(
             config.volumes.map(it => ({
