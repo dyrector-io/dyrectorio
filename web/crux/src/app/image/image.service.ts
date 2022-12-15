@@ -149,7 +149,7 @@ export default class ImageService {
       data: {
         tag: request.tag,
         config: {
-          update: this.mapper.containerConfigDataToDb(config),
+          update: config ? this.mapper.containerConfigDataToDb(config) : undefined,
         },
         updatedBy: request.accessedBy,
       },
