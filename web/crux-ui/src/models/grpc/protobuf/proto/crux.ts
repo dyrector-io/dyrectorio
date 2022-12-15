@@ -1397,6 +1397,10 @@ export interface CreateProductFromTemplateRequest {
   type: ProductType
 }
 
+export interface TemplateImageResponse {
+  data: Uint8Array
+}
+
 /** DASHBOARD */
 export interface DashboardActiveNodes {
   id: string
@@ -10365,6 +10369,54 @@ export const CreateProductFromTemplateRequest = {
   },
 }
 
+function createBaseTemplateImageResponse(): TemplateImageResponse {
+  return { data: new Uint8Array() }
+}
+
+export const TemplateImageResponse = {
+  encode(message: TemplateImageResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.data.length !== 0) {
+      writer.uint32(10).bytes(message.data)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): TemplateImageResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseTemplateImageResponse()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.data = reader.bytes()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): TemplateImageResponse {
+    return { data: isSet(object.data) ? bytesFromBase64(object.data) : new Uint8Array() }
+  },
+
+  toJSON(message: TemplateImageResponse): unknown {
+    const obj: any = {}
+    message.data !== undefined &&
+      (obj.data = base64FromBytes(message.data !== undefined ? message.data : new Uint8Array()))
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<TemplateImageResponse>, I>>(object: I): TemplateImageResponse {
+    const message = createBaseTemplateImageResponse()
+    message.data = object.data ?? new Uint8Array()
+    return message
+  },
+}
+
 function createBaseDashboardActiveNodes(): DashboardActiveNodes {
   return { id: '', name: '', address: '', version: '' }
 }
@@ -12696,11 +12748,21 @@ export const CruxTemplateService = {
     responseSerialize: (value: CreateEntityResponse) => Buffer.from(CreateEntityResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer) => CreateEntityResponse.decode(value),
   },
+  getImage: {
+    path: '/crux.CruxTemplate/GetImage',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: IdRequest) => Buffer.from(IdRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => IdRequest.decode(value),
+    responseSerialize: (value: TemplateImageResponse) => Buffer.from(TemplateImageResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => TemplateImageResponse.decode(value),
+  },
 } as const
 
 export interface CruxTemplateServer extends UntypedServiceImplementation {
   getTemplates: handleUnaryCall<AccessRequest, TemplateListResponse>
   createProductFromTemplate: handleUnaryCall<CreateProductFromTemplateRequest, CreateEntityResponse>
+  getImage: handleUnaryCall<IdRequest, TemplateImageResponse>
 }
 
 export interface CruxTemplateClient extends Client {
@@ -12733,6 +12795,21 @@ export interface CruxTemplateClient extends Client {
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
+  ): ClientUnaryCall
+  getImage(
+    request: IdRequest,
+    callback: (error: ServiceError | null, response: TemplateImageResponse) => void,
+  ): ClientUnaryCall
+  getImage(
+    request: IdRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: TemplateImageResponse) => void,
+  ): ClientUnaryCall
+  getImage(
+    request: IdRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: TemplateImageResponse) => void,
   ): ClientUnaryCall
 }
 
@@ -12802,6 +12879,31 @@ var globalThis: any = (() => {
   }
   throw 'Unable to locate global object'
 })()
+
+function bytesFromBase64(b64: string): Uint8Array {
+  if (globalThis.Buffer) {
+    return Uint8Array.from(globalThis.Buffer.from(b64, 'base64'))
+  } else {
+    const bin = globalThis.atob(b64)
+    const arr = new Uint8Array(bin.length)
+    for (let i = 0; i < bin.length; ++i) {
+      arr[i] = bin.charCodeAt(i)
+    }
+    return arr
+  }
+}
+
+function base64FromBytes(arr: Uint8Array): string {
+  if (globalThis.Buffer) {
+    return globalThis.Buffer.from(arr).toString('base64')
+  } else {
+    const bin: string[] = []
+    arr.forEach(byte => {
+      bin.push(String.fromCharCode(byte))
+    })
+    return globalThis.btoa(bin.join(''))
+  }
+}
 
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined
 
