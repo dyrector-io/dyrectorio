@@ -868,6 +868,7 @@ export interface RegistryDetailsResponse {
   name: string
   description?: string | undefined
   icon?: string | undefined
+  inUse: boolean
   hub: HubRegistryDetails | undefined
   v2: V2RegistryDetails | undefined
   gitlab: GitlabRegistryDetails | undefined
@@ -2371,6 +2372,7 @@ function createBaseRegistryDetailsResponse(): RegistryDetailsResponse {
     id: '',
     audit: undefined,
     name: '',
+    inUse: false,
     hub: undefined,
     v2: undefined,
     gitlab: undefined,
@@ -2387,6 +2389,7 @@ export const RegistryDetailsResponse = {
       name: isSet(object.name) ? String(object.name) : '',
       description: isSet(object.description) ? String(object.description) : undefined,
       icon: isSet(object.icon) ? String(object.icon) : undefined,
+      inUse: isSet(object.inUse) ? Boolean(object.inUse) : false,
       hub: isSet(object.hub) ? HubRegistryDetails.fromJSON(object.hub) : undefined,
       v2: isSet(object.v2) ? V2RegistryDetails.fromJSON(object.v2) : undefined,
       gitlab: isSet(object.gitlab) ? GitlabRegistryDetails.fromJSON(object.gitlab) : undefined,
@@ -2402,6 +2405,7 @@ export const RegistryDetailsResponse = {
     message.name !== undefined && (obj.name = message.name)
     message.description !== undefined && (obj.description = message.description)
     message.icon !== undefined && (obj.icon = message.icon)
+    message.inUse !== undefined && (obj.inUse = message.inUse)
     message.hub !== undefined && (obj.hub = message.hub ? HubRegistryDetails.toJSON(message.hub) : undefined)
     message.v2 !== undefined && (obj.v2 = message.v2 ? V2RegistryDetails.toJSON(message.v2) : undefined)
     message.gitlab !== undefined &&

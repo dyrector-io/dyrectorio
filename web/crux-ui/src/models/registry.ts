@@ -16,14 +16,21 @@ export type Registry = {
   description?: string
   url: string
   type: RegistryType
+  inUse: boolean
 }
 
-export type HubRegistryDetails = {
+export type RegistryListItem = Omit<Registry, 'inUse'>
+
+export type RegistryDetailsBase = {
+  inUse: boolean
+}
+
+export type HubRegistryDetails = RegistryDetailsBase & {
   type: 'hub'
   imageNamePrefix: string
 }
 
-export type V2RegistryDetails = {
+export type V2RegistryDetails = RegistryDetailsBase & {
   type: 'v2'
   url: string
   private: boolean
@@ -31,7 +38,7 @@ export type V2RegistryDetails = {
   token?: string
 }
 
-export type GitlabRegistryDetails = {
+export type GitlabRegistryDetails = RegistryDetailsBase & {
   type: 'gitlab'
   imageNamePrefix: string
   user: string
@@ -42,7 +49,7 @@ export type GitlabRegistryDetails = {
   apiUrl?: string
 }
 
-export type GithubRegistryDetails = {
+export type GithubRegistryDetails = RegistryDetailsBase & {
   type: 'github'
   imageNamePrefix: string
   user: string
@@ -50,7 +57,7 @@ export type GithubRegistryDetails = {
   namespace: RegistryNamespace
 }
 
-export type GoogleRegistryDetails = {
+export type GoogleRegistryDetails = RegistryDetailsBase & {
   type: 'google'
   url: string
   imageNamePrefix: string

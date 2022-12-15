@@ -35,6 +35,7 @@ const GoogleRegistryFields = (props: EditRegistryTypeProps<GoogleRegistryDetails
         onChange={formik.handleChange}
         value={formik.values.url}
         message={formik.errors.url}
+        disabled={formik.values.inUse}
       />
 
       <DyoInput
@@ -46,6 +47,7 @@ const GoogleRegistryFields = (props: EditRegistryTypeProps<GoogleRegistryDetails
         onChange={formik.handleChange}
         value={formik.values.imageNamePrefix}
         message={formik.errors.imageNamePrefix}
+        disabled={formik.values.inUse}
       />
 
       <div className="flex mt-8">
@@ -54,6 +56,7 @@ const GoogleRegistryFields = (props: EditRegistryTypeProps<GoogleRegistryDetails
         <DyoSwitch
           fieldName="private"
           checked={formik.values.private}
+          disabled={formik.values.inUse}
           setFieldValue={(field: string, value: boolean, shouldValidate?: boolean | undefined) => {
             if (!value) {
               formik.setFieldValue('user', '', false)
@@ -83,6 +86,7 @@ const GoogleRegistryFields = (props: EditRegistryTypeProps<GoogleRegistryDetails
             onChange={formik.handleChange}
             value={formik.values.user}
             message={formik.errors.user}
+            disabled={formik.values.inUse}
           />
 
           <DyoTextArea

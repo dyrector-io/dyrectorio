@@ -23,6 +23,7 @@ const GithubRegistryFields = (props: EditRegistryTypeProps<GithubRegistryDetails
         onChange={formik.handleChange}
         value={formik.values.user}
         message={formik.errors.user}
+        disabled={formik.values.inUse}
       />
 
       <DyoInput
@@ -44,6 +45,7 @@ const GithubRegistryFields = (props: EditRegistryTypeProps<GithubRegistryDetails
           initialSelection={formik.values.namespace}
           converter={(it: RegistryNamespace) => t(`namespace.${it}`)}
           onSelectionChange={it => formik.setFieldValue('namespace', it, true)}
+          disabled={formik.values.inUse}
         />
       </div>
 
@@ -56,6 +58,7 @@ const GithubRegistryFields = (props: EditRegistryTypeProps<GithubRegistryDetails
         onChange={formik.handleChange}
         value={formik.values.imageNamePrefix}
         message={formik.errors.imageNamePrefix}
+        disabled={formik.values.inUse}
       />
     </>
   )

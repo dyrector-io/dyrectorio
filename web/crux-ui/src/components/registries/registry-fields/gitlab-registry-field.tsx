@@ -24,6 +24,7 @@ const GitlabRegistryFields = (props: EditRegistryTypeProps<GitlabRegistryDetails
         onChange={formik.handleChange}
         value={formik.values.user}
         message={formik.errors.user}
+        disabled={formik.values.inUse}
       />
 
       <DyoInput
@@ -45,6 +46,7 @@ const GitlabRegistryFields = (props: EditRegistryTypeProps<GitlabRegistryDetails
           initialSelection={formik.values.namespace}
           converter={(it: RegistryNamespace) => t(`namespace.${it}`)}
           onSelectionChange={it => formik.setFieldValue('namespace', it, true)}
+          disabled={formik.values.inUse}
         />
       </div>
 
@@ -57,6 +59,7 @@ const GitlabRegistryFields = (props: EditRegistryTypeProps<GitlabRegistryDetails
         onChange={formik.handleChange}
         value={formik.values.imageNamePrefix}
         message={formik.errors.imageNamePrefix}
+        disabled={formik.values.inUse}
       />
 
       <div className="flex mt-8">
@@ -65,6 +68,7 @@ const GitlabRegistryFields = (props: EditRegistryTypeProps<GitlabRegistryDetails
         <DyoSwitch
           fieldName="selfManaged"
           checked={formik.values.selfManaged}
+          disabled={formik.values.inUse}
           setFieldValue={(field: string, value: boolean, shouldValidate?: boolean | undefined) => {
             if (!value) {
               formik.setFieldValue('url', '', false)
@@ -86,6 +90,7 @@ const GitlabRegistryFields = (props: EditRegistryTypeProps<GitlabRegistryDetails
             onChange={formik.handleChange}
             value={formik.values.url}
             message={formik.errors.url}
+            disabled={formik.values.inUse}
           />
 
           <DyoInput
@@ -97,6 +102,7 @@ const GitlabRegistryFields = (props: EditRegistryTypeProps<GitlabRegistryDetails
             onChange={formik.handleChange}
             value={formik.values.apiUrl}
             message={formik.errors.apiUrl}
+            disabled={formik.values.inUse}
           />
         </>
       )}
