@@ -1,0 +1,127 @@
+{
+  "name": "LinkAce",
+  "description": "LinkAce is a self-hosted archive to collect links of your favorite websites.\nREQUIREMENTS:\n1) APP_KEY environment variable must be 32 characters long\n2) After deployment, exec in the linkace-app container and add 'chmod 777' privileges to the \\app\\.env file.",
+  "registries": [
+    {
+      "name": "Docker Hub Library",
+      "type": "hub",
+      "hub": {
+        "imageNamePrefix": "library"
+      }
+    },
+    {
+      "name": "Docker Hub Linkace",
+      "type": "hub",
+      "hub": {
+        "imageNamePrefix": "linkace"
+      }
+    }
+  ],
+  "images": [
+    {
+      "name": "linkace-db",
+      "registryName": "Docker Hub Library",
+      "image": "mariadb",
+      "tag": "10.7",
+      "config": {
+        "name": "linkace-db",
+        "volumes": [
+          {
+            "name": "db",
+            "path": "/var/lib/mysql",
+            "type": "rw"
+          }
+        ],
+        "environment": [
+          {
+            "key": "MYSQL_RANDOM_ROOT_PASSWORD",
+            "value": "1"
+          },
+          {
+            "key": "MYSQL_USER",
+            "value": "user"
+          },
+          {
+            "key": "MYSQL_DATABASE",
+            "value": "linkacedb"
+          }
+        ],
+        "secrets": [
+          {
+            "key": "MYSQL_PASSWORD",
+            "required": true
+          }
+        ],
+        "networks": ["linkace-network"],
+        "networkMode": "bridge",
+        "restartPolicy": "unless_stopped",
+        "deploymentStrategy": "recreate"
+      }
+    },
+    {
+      "name": "linkace-app",
+      "registryName": "Docker Hub Linkace",
+      "image": "linkace",
+      "tag": "simple",
+      "user": 0,
+      "config": {
+        "expose": "expose",
+        "ingress": {
+          "host": "localhost",
+          "name": "linkace"
+        },
+        "name": "linkace-app",
+        "ports": [
+          {
+            "external": 6780,
+            "internal": 80
+          }
+        ],
+        "environment": [
+          {
+            "key": "DB_HOST",
+            "value": "linkace-linkace-db"
+          },
+          {
+            "key": "DB_DATABASE",
+            "value": "linkacedb"
+          },
+          {
+            "key": "DB_USERNAME",
+            "value": "user"
+          },
+          {
+            "key": "DB_CONNECTION",
+            "value": "mysql"
+          },
+          {
+            "key": "DB_PORT",
+            "value": "3306"
+          },
+          {
+            "key": "APP_DEBUG",
+            "value": true
+          },
+          {
+            "key": "LOG_CHANNEL",
+            "value": "stderr"
+          }
+        ],
+        "secrets": [
+          {
+            "key": "DB_PASSWORD",
+            "required": true
+          },
+          {
+            "key": "APP_KEY",
+            "required": true
+          }
+        ],
+        "networks": ["linkace-network"],
+        "networkMode": "bridge",
+        "restartPolicy": "unless_stopped",
+        "deploymentStrategy": "recreate"
+      }
+    }
+  ]
+}

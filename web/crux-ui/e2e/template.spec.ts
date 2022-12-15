@@ -70,3 +70,11 @@ test('creating a simple product from a template should work (WordPress)', async 
 test('creating a complex product from a template should work (WordPress)', async ({ page }) => {
   await testComplexTemplate(page, 'WordPress', 'WordPress-complex', 2)
 })
+
+test('creating a simple product from a template should work (LinkAce)', async ({ page }) => {
+  await testSimpleTemplate(page, 'LinkAce', 'LinkAce-simple', 2)
+})
+
+test('creating a complex product from a template should work (LinkAce)', async ({ page }) => {
+  await testComplexTemplate(page, 'LinkAce', 'LinkAce-complex', 2)
+})
