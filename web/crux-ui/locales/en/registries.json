@@ -51,6 +51,9 @@
 
   "altDefaultRegistryPicture": "Picture of registry",
   "errors": {
-    "invalidArgument": "Registry with the given URL doesn't exist"
-  }
+    "invalidArgument": "Registry with the given URL does not exist",
+    "preconditionFailed": "This registry is already in use"
+  },
+  "unknownRegistryType": "Unknown registry type: {{registryType}}",
+  "registryAlreadyInUse": "This registry is already in use. You may not be able to edit some of its properties."
 }

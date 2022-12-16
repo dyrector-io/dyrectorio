@@ -18,6 +18,7 @@ import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import RegistryAccessValidationGuard from './guards/registry.auth.validation.guard'
 import RegistryTeamAccessGuard from './guards/registry.team-access.guard'
 import DeleteRegistryValidationPipe from './pipes/registry.delete.pipe'
+import UpdateRegistryValidationPipe from './pipes/registry.update.pipe'
 import RegistryService from './registry.service'
 
 @Controller()
@@ -42,7 +43,9 @@ export default class RegistryController implements CruxRegistryController {
 
   @UseGuards(RegistryAccessValidationGuard)
   @AuditLogLevel('no-data')
-  async updateRegistry(request: UpdateRegistryRequest): Promise<UpdateEntityResponse> {
+  async updateRegistry(
+    @Body(UpdateRegistryValidationPipe) request: UpdateRegistryRequest,
+  ): Promise<UpdateEntityResponse> {
     return this.service.updateRegistry(request)
   }
 

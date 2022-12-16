@@ -128,7 +128,8 @@ export default class RegistryAccessValidationGuard implements CanActivate {
       password: req.token,
     }
 
-    const { apiUrl, registryUrl } = REGISTRY_GITLAB_URLS
+    const apiUrl = req.apiUrl ?? REGISTRY_GITLAB_URLS.apiUrl
+    const registryUrl = req.url ?? REGISTRY_GITLAB_URLS.registryUrl
 
     const namespace = req.namespace === RegistryNamespace.RNS_GROUP ? 'groups' : 'projects'
 

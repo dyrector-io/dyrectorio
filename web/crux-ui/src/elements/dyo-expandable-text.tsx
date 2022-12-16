@@ -40,7 +40,7 @@ const DyoExpandableText = (props: DyoExpandableTextProps) => {
         className={clsx(
           className,
           lineClamp[propsLineClamp - 1],
-          'break-all',
+          'break-words whitespace-pre-line',
           overflow ? null : marginClassName ?? 'mb-8',
         )}
       >
@@ -53,12 +53,12 @@ const DyoExpandableText = (props: DyoExpandableTextProps) => {
       )}
       {!show ? null : (
         <DyoModal
-          className={modalClassName ?? 'w-1/2 h-1/2'}
+          className={modalClassName ?? 'w-1/2 h-1/2 overflow-auto'}
           title={modalTitle}
           open={show}
           onClose={() => setShow(false)}
         >
-          <p className="text-bright mt-8 break-all overflow-y-auto">{text}</p>
+          <p className="text-bright mt-8 break-words whitespace-pre-line overflow-y-auto">{text}</p>
         </DyoModal>
       )}
     </>

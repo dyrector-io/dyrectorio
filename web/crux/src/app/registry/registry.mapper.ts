@@ -26,9 +26,10 @@ export default class RegistryMapper {
     }
   }
 
-  detailsToGrpc(registry: Registry): RegistryDetailsResponse {
+  detailsToGrpc(registry: RegistryWithCount): RegistryDetailsResponse {
     return {
       ...registry,
+      inUse: registry._count.images > 0,
       icon: registry.icon ?? null,
       audit: AuditResponse.fromJSON(registry),
       hub:
@@ -179,5 +180,11 @@ export default class RegistryMapper {
           message: `Unknown RegistryNamespace '${type}'`,
         })
     }
+  }
+}
+
+type RegistryWithCount = Registry & {
+  _count: {
+    images: number
   }
 }

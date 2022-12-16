@@ -1,4 +1,4 @@
-import { CreateRegistry, Registry, RegistryDetails, UpdateRegistry } from '@app/models'
+import { CreateRegistry, RegistryDetails, RegistryListItem, UpdateRegistry } from '@app/models'
 import { Empty } from '@app/models/grpc/protobuf/proto/common'
 import {
   AccessRequest,
@@ -25,7 +25,7 @@ class DyoRegistryService {
     private connections: RegistryConnections,
   ) {}
 
-  async getAll(): Promise<Registry[]> {
+  async getAll(): Promise<RegistryListItem[]> {
     const req: AccessRequest = {
       accessedBy: this.identity.id,
     }
@@ -95,6 +95,7 @@ class DyoRegistryService {
 
     return {
       id: res.id,
+      inUse: res.inUse,
       name: res.name,
       description: res.description,
       icon: res.icon ?? null,

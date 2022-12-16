@@ -57,6 +57,7 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
       private: false,
       token: '',
       user: '',
+      inUse: false,
     },
   )
 
@@ -144,16 +145,23 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
 
       <form className="grid grid-cols-2 gap-8" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
         <div className="flex flex-col">
-          <DyoInput
-            className="max-w-lg"
-            grow
-            name="name"
-            type="name"
-            label={t('common:name')}
-            onChange={formik.handleChange}
-            value={formik.values.name}
-            message={formik.errors.name}
-          />
+          <div className="flex flex-col">
+            <DyoInput
+              className="max-w-lg"
+              grow
+              name="name"
+              type="name"
+              label={t('common:name')}
+              onChange={formik.handleChange}
+              value={formik.values.name}
+              message={formik.errors.name}
+            />
+            {formik.values.inUse && (
+              <DyoLabel className="mt-2" textColor="text-sm text-warning-orange">
+                {t('registryAlreadyInUse')}
+              </DyoLabel>
+            )}
+          </div>
 
           <div className="w-full mt-2">
             <DyoLabel>{t('common:icon')}</DyoLabel>
@@ -177,6 +185,7 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
 
             <DyoChips
               choices={REGISTRY_TYPE_VALUES}
+              disabled={formik.values.inUse}
               initialSelection={formik.values.type}
               converter={(it: RegistryType) => t(`type.${it}`)}
               onSelectionChange={it => onRegistryTypeChange(it)}
@@ -194,7 +203,7 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
           ) : registryType === 'google' ? (
             <GoogleRegistryFields formik={formik as FormikProps<GoogleRegistryDetails>} />
           ) : (
-            <div className="bg-red-500">Unknown registry type: ${registryType}</div>
+            <div className="bg-red-500">{t('unknownRegistryType', { registryType })}</div>
           )}
         </div>
 

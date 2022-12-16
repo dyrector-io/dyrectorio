@@ -82,6 +82,13 @@ export default class RegistryService {
 
   async getRegistryDetails(req: IdRequest): Promise<RegistryDetailsResponse> {
     const registry = await this.prisma.registry.findUniqueOrThrow({
+      include: {
+        _count: {
+          select: {
+            images: true,
+          },
+        },
+      },
       where: {
         id: req.id,
       },

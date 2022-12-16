@@ -1,5 +1,5 @@
 SHELL = /bin/sh
- 
+
 PACKAGE := github.com/dyrector-io/dyrectorio/golang
 ORG_REGISTRY := ghcr.io/dyrector-io/dyrectorio
 AGENT_REGISTRY_URL := ${ORG_REGISTRY}/agent
@@ -115,13 +115,15 @@ build-cli: ##
 .PHONY: build-dagent
 build-dagent: ##
 	cd build && \
-	docker build --build-arg CO_BIN_NAME=dagent -t ${AGENT_REGISTRY_URL}/dagent:$(image_version) -t ${AGENT_REGISTRY_URL}/dagent:$(vcs_version) . && \
+	cp out/dagent out/agent && \
+	docker build -t ${AGENT_REGISTRY_URL}/dagent:$(image_version) -t ${AGENT_REGISTRY_URL}/dagent:$(vcs_version) . && \
 	cd -
 
 .PHONY: build-crane
 build-crane: ##
 	cd build && \
-	docker build --build-arg CO_BIN_NAME=crane -t ${AGENT_REGISTRY_URL}/crane:$(image_version) -t ${AGENT_REGISTRY_URL}/crane:$(vcs_version) . && \
+	cp out/crane out/agent && \
+	docker build -t ${AGENT_REGISTRY_URL}/crane:$(image_version) -t ${AGENT_REGISTRY_URL}/crane:$(vcs_version) . && \
 	cd -
 
 .PHONY: cbpcli

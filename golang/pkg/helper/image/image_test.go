@@ -53,8 +53,8 @@ func TestNameFullyQualified(t *testing.T) {
 
 	res, err := imageHelper.URIFromString(util.JoinV(":", image, tag))
 
-	assert.Equal(t, res.Host, "reg.dyrector.io/library")
-	assert.Equal(t, res.Name, "nginx")
+	assert.Equal(t, res.Host, "reg.dyrector.io")
+	assert.Equal(t, res.Name, "library/nginx")
 	assert.Equal(t, res.Tag, tag)
 	assert.Nil(t, err)
 }
