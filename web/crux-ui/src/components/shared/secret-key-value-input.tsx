@@ -246,7 +246,7 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
             </div>
           )}
           <div className="flex flex-row">
-            <div className="mr-2 flex flex-row basis-[16px]">
+            <div className="mr-2 flex flex-row basis-[16px] my-auto">
               {!isCompletelyEmpty(entry) && <SecretStatus className="mr-2" present={entry.present} />}
             </div>
             <MultiInput
