@@ -12,6 +12,7 @@ import {
 import { DeploymentProgressMessage, NodeConnectionStatus, NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
 import { CONTAINER_DELETE_TIMEOUT } from 'src/shared/const'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
+import ContainerLogStream, { ContainerLogStreamCompleter } from './container-log-stream'
 import ContainerStatusWatcher, { ContainerStatusStreamCompleter } from './container-status-watcher'
 import Deployment from './deployment'
 import { toTimestamp } from './utils'
@@ -28,6 +29,8 @@ export class Agent {
   private secretsWatchers: Map<string, Subject<ListSecretsResponse>> = new Map()
 
   private deleteContainersRequests: Map<string, Subject<Empty>> = new Map()
+
+  private logStreams: Map<string, ContainerLogStream> = new Map()
 
   private updateStartedAt: number | null = null
 
@@ -100,6 +103,20 @@ export class Agent {
     return watcher
   }
 
+  upsertContainerLogStream(prefix: string, name: string): ContainerLogStream {
+    this.throwWhenUpdating()
+
+    const container = `${prefix}-${name}`
+    let stream = this.logStreams.get(container)
+    if (!stream) {
+      stream = new ContainerLogStream(prefix, name)
+      this.logStreams.set(container, stream)
+      stream.start(this.commandChannel)
+    }
+
+    return stream
+  }
+
   close(reason?: CloseReason) {
     if (reason) {
       this.commandChannel.next({
@@ -160,6 +177,7 @@ export class Agent {
     this.deployments.forEach(it => it.onDisconnected())
     this.statusWatchers.forEach(it => it.stop())
     this.secretsWatchers.forEach(it => it.complete())
+    this.logStreams.forEach(it => it.stop())
     this.commandChannel.complete()
 
     this.eventChannel.next({
@@ -189,6 +207,25 @@ export class Agent {
     }
 
     this.statusWatchers.delete(prefix)
+    watcher.onNodeStreamFinished()
+  }
+
+  onContainerLogStreamStarted(container: string): [ContainerLogStream, ContainerLogStreamCompleter] {
+    const stream = this.logStreams.get(container)
+    if (!stream) {
+      return [null, null]
+    }
+
+    return [stream, stream.onNodeStreamStarted()]
+  }
+
+  onContainerLogStreamFinished(container: string) {
+    const watcher = this.logStreams.get(container)
+    if (!watcher) {
+      return
+    }
+
+    this.logStreams.delete(container)
     watcher.onNodeStreamFinished()
   }
 
@@ -280,6 +317,7 @@ export class Agent {
     logger.debug(`Agent id: ${this.id}, open: ${!this.commandChannel.closed}`)
     logger.debug(`Deployments: ${this.deployments.size}`)
     logger.debug(`Watchers: ${this.statusWatchers.size}`)
+    logger.debug(`Log streams: ${this.logStreams.size}`)
     this.deployments.forEach(it => it.debugInfo(logger))
   }
 

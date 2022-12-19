@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -14,6 +15,10 @@ html,
 body {
   font-family: 'Poppins', sans-serif;
   background-color: #161d31;
+}
+
+.font-terminal {
+  font-family: 'Roboto Mono', sans-serif;
 }
 
 * {

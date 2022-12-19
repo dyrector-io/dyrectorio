@@ -19,6 +19,8 @@ import { Timestamp } from '../../google/protobuf/timestamp'
 import {
   ConfigContainer,
   ContainerCommandRequest,
+  ContainerIdentifier,
+  ContainerLogMessage,
   ContainerState,
   containerStateFromJSON,
   ContainerStateListMessage,
@@ -1235,6 +1237,12 @@ export interface WatchContainerStateRequest {
   accessedBy: string
   nodeId: string
   prefix?: string | undefined
+}
+
+export interface WatchContainerLogRequest {
+  accessedBy: string
+  nodeId: string
+  prefixName: ContainerIdentifier | undefined
 }
 
 export interface DeploymentProgressMessage {
@@ -8110,6 +8118,77 @@ export const WatchContainerStateRequest = {
   },
 }
 
+function createBaseWatchContainerLogRequest(): WatchContainerLogRequest {
+  return { accessedBy: '', nodeId: '', prefixName: undefined }
+}
+
+export const WatchContainerLogRequest = {
+  encode(message: WatchContainerLogRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.accessedBy !== '') {
+      writer.uint32(18).string(message.accessedBy)
+    }
+    if (message.nodeId !== '') {
+      writer.uint32(802).string(message.nodeId)
+    }
+    if (message.prefixName !== undefined) {
+      ContainerIdentifier.encode(message.prefixName, writer.uint32(810).fork()).ldelim()
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): WatchContainerLogRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseWatchContainerLogRequest()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 2:
+          message.accessedBy = reader.string()
+          break
+        case 100:
+          message.nodeId = reader.string()
+          break
+        case 101:
+          message.prefixName = ContainerIdentifier.decode(reader, reader.uint32())
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): WatchContainerLogRequest {
+    return {
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
+      prefixName: isSet(object.prefixName) ? ContainerIdentifier.fromJSON(object.prefixName) : undefined,
+    }
+  },
+
+  toJSON(message: WatchContainerLogRequest): unknown {
+    const obj: any = {}
+    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
+    message.nodeId !== undefined && (obj.nodeId = message.nodeId)
+    message.prefixName !== undefined &&
+      (obj.prefixName = message.prefixName ? ContainerIdentifier.toJSON(message.prefixName) : undefined)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<WatchContainerLogRequest>, I>>(object: I): WatchContainerLogRequest {
+    const message = createBaseWatchContainerLogRequest()
+    message.accessedBy = object.accessedBy ?? ''
+    message.nodeId = object.nodeId ?? ''
+    message.prefixName =
+      object.prefixName !== undefined && object.prefixName !== null
+        ? ContainerIdentifier.fromPartial(object.prefixName)
+        : undefined
+    return message
+  },
+}
+
 function createBaseDeploymentProgressMessage(): DeploymentProgressMessage {
   return { id: '', log: [] }
 }
@@ -11216,6 +11295,15 @@ export const CruxNodeService = {
       Buffer.from(ContainerStateListMessage.encode(value).finish()),
     responseDeserialize: (value: Buffer) => ContainerStateListMessage.decode(value),
   },
+  subscribeContainerLogChannel: {
+    path: '/crux.CruxNode/SubscribeContainerLogChannel',
+    requestStream: false,
+    responseStream: true,
+    requestSerialize: (value: WatchContainerLogRequest) => Buffer.from(WatchContainerLogRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => WatchContainerLogRequest.decode(value),
+    responseSerialize: (value: ContainerLogMessage) => Buffer.from(ContainerLogMessage.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => ContainerLogMessage.decode(value),
+  },
 } as const
 
 export interface CruxNodeServer extends UntypedServiceImplementation {
@@ -11234,6 +11322,7 @@ export interface CruxNodeServer extends UntypedServiceImplementation {
   deleteContainers: handleUnaryCall<NodeDeleteContainersRequest, Empty>
   subscribeNodeEventChannel: handleServerStreamingCall<ServiceIdRequest, NodeEventMessage>
   watchContainerState: handleServerStreamingCall<WatchContainerStateRequest, ContainerStateListMessage>
+  subscribeContainerLogChannel: handleServerStreamingCall<WatchContainerLogRequest, ContainerLogMessage>
 }
 
 export interface CruxNodeClient extends Client {
@@ -11424,6 +11513,15 @@ export interface CruxNodeClient extends Client {
     metadata?: Metadata,
     options?: Partial<CallOptions>,
   ): ClientReadableStream<ContainerStateListMessage>
+  subscribeContainerLogChannel(
+    request: WatchContainerLogRequest,
+    options?: Partial<CallOptions>,
+  ): ClientReadableStream<ContainerLogMessage>
+  subscribeContainerLogChannel(
+    request: WatchContainerLogRequest,
+    metadata?: Metadata,
+    options?: Partial<CallOptions>,
+  ): ClientReadableStream<ContainerLogMessage>
 }
 
 export const CruxNodeClient = makeGenericClientConstructor(CruxNodeService, 'crux.CruxNode') as unknown as {

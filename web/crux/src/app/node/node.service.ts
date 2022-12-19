@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common'
 import { Observable } from 'rxjs'
 import { BaseMessage } from 'src/domain/notification-templates'
 import { PreconditionFailedException } from 'src/exception/errors'
-import { ContainerStateListMessage, Empty } from 'src/grpc/protobuf/proto/common'
+import { ContainerLogMessage, ContainerStateListMessage, Empty } from 'src/grpc/protobuf/proto/common'
 import {
   AccessRequest,
   CreateEntityResponse,
@@ -18,6 +18,7 @@ import {
   NodeScriptResponse,
   ServiceIdRequest,
   UpdateNodeRequest,
+  WatchContainerLogRequest,
   WatchContainerStateRequest,
 } from 'src/grpc/protobuf/proto/crux'
 import DomainNotificationService from 'src/services/domain.notification.service'
@@ -189,6 +190,25 @@ export default class NodeService {
     const prefix = request.prefix ?? ''
     const watcher = agent.upsertContainerStatusWatcher(prefix)
     return watcher.watch()
+  }
+
+  handleContainerLogStream(request: WatchContainerLogRequest): Observable<ContainerLogMessage> {
+    this.logger.debug(
+      `Opening container log stream for container: ${request.nodeId} - '${request.prefixName.prefix}-${request.prefixName.name}'`,
+    )
+
+    const agent = this.agentService.getById(request.nodeId)
+
+    if (!agent) {
+      throw new PreconditionFailedException({
+        message: 'Node is unreachable',
+        property: 'nodeId',
+        value: request.nodeId,
+      })
+    }
+
+    const stream = agent.upsertContainerLogStream(request.prefixName.prefix, request.prefixName.name)
+    return stream.watch()
   }
 
   async updateNodeAgent(request: IdRequest): Promise<void> {

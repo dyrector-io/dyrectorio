@@ -9,6 +9,7 @@ import {
   AgentInfo,
 } from 'src/grpc/protobuf/proto/agent'
 import {
+  ContainerLogMessage,
   ContainerStateListMessage,
   DeleteContainersRequest,
   DeploymentStatusMessage,
@@ -51,5 +52,9 @@ export default class AgentController implements GrpcAgentController {
 
   deleteContainers(request: DeleteContainersRequest, _: Metadata, call: NodeUnaryCall): Empty {
     return this.service.containersDeleted(call.connection, request)
+  }
+
+  containerLog(request: Observable<ContainerLogMessage>, _: Metadata, call: NodeUnaryCall): Observable<Empty> {
+    return this.service.handleContainerLog(call.connection, request)
   }
 }

@@ -186,9 +186,12 @@ export const notificationApiHookUrl = (id: string) => `${notificationApiUrl(id)}
 export const imageConfigUrl = (productId: string, versionId: string, imageId: string) =>
   `${versionUrl(productId, versionId)}/image/${imageId}`
 
-// instance config
+// instance
 export const instanceConfigUrl = (productId: string, versionId: string, deploymentId: string, instanceId: string) =>
   `${deploymentUrl(productId, versionId, deploymentId)}/instance/${instanceId}`
+
+export const instanceLogUrl = (productId: string, versionId: string, deploymentId: string, instanceId: string) =>
+  `${deploymentUrl(productId, versionId, deploymentId)}/instance/${instanceId}/log`
 
 // template
 export const templateImageUrl = (templateId: string) => `${API_TEMPLATES}/${templateId}/image`

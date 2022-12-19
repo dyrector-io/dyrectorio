@@ -35,6 +35,7 @@ type AgentClient interface {
 	SecretList(ctx context.Context, in *common.ListSecretsResponse, opts ...grpc.CallOption) (*common.Empty, error)
 	AbortUpdate(ctx context.Context, in *AgentAbortUpdate, opts ...grpc.CallOption) (*common.Empty, error)
 	DeleteContainers(ctx context.Context, in *common.DeleteContainersRequest, opts ...grpc.CallOption) (*common.Empty, error)
+	ContainerLog(ctx context.Context, opts ...grpc.CallOption) (Agent_ContainerLogClient, error)
 }
 
 type agentClient struct {
@@ -172,6 +173,40 @@ func (c *agentClient) DeleteContainers(ctx context.Context, in *common.DeleteCon
 	return out, nil
 }
 
+func (c *agentClient) ContainerLog(ctx context.Context, opts ...grpc.CallOption) (Agent_ContainerLogClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Agent_ServiceDesc.Streams[3], "/agent.Agent/ContainerLog", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &agentContainerLogClient{stream}
+	return x, nil
+}
+
+type Agent_ContainerLogClient interface {
+	Send(*common.ContainerLogMessage) error
+	CloseAndRecv() (*common.Empty, error)
+	grpc.ClientStream
+}
+
+type agentContainerLogClient struct {
+	grpc.ClientStream
+}
+
+func (x *agentContainerLogClient) Send(m *common.ContainerLogMessage) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *agentContainerLogClient) CloseAndRecv() (*common.Empty, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(common.Empty)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // AgentServer is the server API for Agent service.
 // All implementations must embed UnimplementedAgentServer
 // for forward compatibility
@@ -188,6 +223,7 @@ type AgentServer interface {
 	SecretList(context.Context, *common.ListSecretsResponse) (*common.Empty, error)
 	AbortUpdate(context.Context, *AgentAbortUpdate) (*common.Empty, error)
 	DeleteContainers(context.Context, *common.DeleteContainersRequest) (*common.Empty, error)
+	ContainerLog(Agent_ContainerLogServer) error
 	mustEmbedUnimplementedAgentServer()
 }
 
@@ -212,6 +248,9 @@ func (UnimplementedAgentServer) AbortUpdate(context.Context, *AgentAbortUpdate) 
 }
 func (UnimplementedAgentServer) DeleteContainers(context.Context, *common.DeleteContainersRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteContainers not implemented")
+}
+func (UnimplementedAgentServer) ContainerLog(Agent_ContainerLogServer) error {
+	return status.Errorf(codes.Unimplemented, "method ContainerLog not implemented")
 }
 func (UnimplementedAgentServer) mustEmbedUnimplementedAgentServer() {}
 
@@ -353,6 +392,32 @@ func _Agent_DeleteContainers_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Agent_ContainerLog_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(AgentServer).ContainerLog(&agentContainerLogServer{stream})
+}
+
+type Agent_ContainerLogServer interface {
+	SendAndClose(*common.Empty) error
+	Recv() (*common.ContainerLogMessage, error)
+	grpc.ServerStream
+}
+
+type agentContainerLogServer struct {
+	grpc.ServerStream
+}
+
+func (x *agentContainerLogServer) SendAndClose(m *common.Empty) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *agentContainerLogServer) Recv() (*common.ContainerLogMessage, error) {
+	m := new(common.ContainerLogMessage)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // Agent_ServiceDesc is the grpc.ServiceDesc for Agent service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -387,6 +452,11 @@ var Agent_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "ContainerState",
 			Handler:       _Agent_ContainerState_Handler,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "ContainerLog",
+			Handler:       _Agent_ContainerLog_Handler,
 			ClientStreams: true,
 		},
 	},

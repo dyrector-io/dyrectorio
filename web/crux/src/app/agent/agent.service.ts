@@ -27,6 +27,7 @@ import { collectChildVersionIds, collectParentVersionIds } from 'src/domain/util
 import { AlreadyExistsException, NotFoundException, UnauthenticatedException } from 'src/exception/errors'
 import { AgentAbortUpdate, AgentCommand, AgentInfo, CloseReason } from 'src/grpc/protobuf/proto/agent'
 import {
+  ContainerLogMessage,
   ContainerStateListMessage,
   DeleteContainersRequest,
   DeploymentStatus,
@@ -282,6 +283,40 @@ export default class AgentService {
     agent.onContainerDeleted(request)
 
     return Empty
+  }
+
+  handleContainerLog(connection: GrpcNodeConnection, request: Observable<ContainerLogMessage>): Observable<Empty> {
+    const agent = this.getByIdOrThrow(connection.nodeId)
+    const container = connection.getMetaData(GrpcNodeConnection.META_FILTER_PREFIX)
+
+    const [stream, completer] = agent.onContainerLogStreamStarted(container)
+    if (!stream) {
+      this.logger.warn(`${agent.id} - There was no stream for ${container}`)
+
+      completer.next(undefined)
+      return completer
+    }
+
+    return request.pipe(
+      // necessary, because of: https://github.com/nestjs/nest/issues/8111
+      startWith({
+        prefixName: undefined,
+        log: '',
+      }),
+      map(it => {
+        this.logger.verbose(`${agent.id} - Container log - '${container}' -> '${it.log}'`)
+
+        if (it.prefixName) {
+          stream.update(it)
+        }
+        return Empty
+      }),
+      finalize(() => {
+        agent.onContainerLogStreamFinished(container)
+        this.logger.debug(`${agent.id} - Container log listening finished: ${container}`)
+      }),
+      takeUntil(completer),
+    )
   }
 
   private onAgentConnectionStatusChange(agent: Agent, status: NodeConnectionStatus) {

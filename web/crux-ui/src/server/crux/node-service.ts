@@ -3,6 +3,7 @@ import {
   Container,
   ContainerCommand,
   ContainerListMessage,
+  ContainerLogMessage,
   CreateDyoNode,
   DeleteContainers,
   DyoNode,
@@ -12,7 +13,12 @@ import {
   NodeStatusMessage,
   UpdateDyoNode,
 } from '@app/models'
-import { ContainerIdentifier, ContainerStateListMessage, Empty } from '@app/models/grpc/protobuf/proto/common'
+import {
+  ContainerIdentifier,
+  ContainerLogMessage as GrpcContainerLogMessage,
+  ContainerStateListMessage,
+  Empty,
+} from '@app/models/grpc/protobuf/proto/common'
 import {
   AccessRequest,
   CreateEntityResponse,
@@ -31,6 +37,7 @@ import {
   NodeType as ProtoNodeType,
   ServiceIdRequest,
   UpdateNodeRequest,
+  WatchContainerLogRequest,
   WatchContainerStateRequest,
 } from '@app/models/grpc/protobuf/proto/crux'
 import { timestampToUTC } from '@app/utils'
@@ -292,6 +299,32 @@ class DyoNodeService {
 
     const stream = () => this.client.watchContainerState(WatchContainerStateRequest.fromJSON(req))
     return new GrpcConnection(this.logger.descend('container-status'), stream, transform, options)
+  }
+
+  watchContainerLog(
+    nodeId: string,
+    prefix: string,
+    name: string,
+    options: ProtoSubscriptionOptions<ContainerLogMessage>,
+  ): GrpcConnection<GrpcContainerLogMessage, ContainerLogMessage> {
+    const req: WatchContainerLogRequest = {
+      nodeId,
+      accessedBy: this.identity.id,
+      prefixName: {
+        prefix,
+        name,
+      },
+    }
+
+    const transform = (data: GrpcContainerLogMessage) =>
+      ({
+        prefix: data.prefixName.prefix,
+        name: data.prefixName.name,
+        log: data.log,
+      } as ContainerLogMessage)
+
+    const stream = () => this.client.subscribeContainerLogChannel(WatchContainerLogRequest.fromJSON(req))
+    return new GrpcConnection(this.logger.descend('container-log'), stream, transform, options)
   }
 }
 

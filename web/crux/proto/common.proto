@@ -75,6 +75,11 @@ message ContainerStateItem {
   repeated ContainerStateItemPort ports = 1000;
 }
 
+message ContainerLogMessage {
+  common.ContainerIdentifier prefixName = 100;
+  string log = 101;
+}
+
 enum NetworkMode {
   NETWORK_MODE_UNSPECIFIED = 0;
   BRIDGE = 1;
@@ -190,6 +195,7 @@ enum ContainerOperation {
   START_CONTAINER = 1;
   STOP_CONTAINER = 2;
   RESTART_CONTAINER = 3;
+  GET_LOGS = 4;
 }
 
 message ContainerCommandRequest {

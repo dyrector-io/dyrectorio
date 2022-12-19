@@ -502,6 +502,7 @@ type CruxNodeClient interface {
 	DeleteContainers(ctx context.Context, in *NodeDeleteContainersRequest, opts ...grpc.CallOption) (*common.Empty, error)
 	SubscribeNodeEventChannel(ctx context.Context, in *ServiceIdRequest, opts ...grpc.CallOption) (CruxNode_SubscribeNodeEventChannelClient, error)
 	WatchContainerState(ctx context.Context, in *WatchContainerStateRequest, opts ...grpc.CallOption) (CruxNode_WatchContainerStateClient, error)
+	SubscribeContainerLogChannel(ctx context.Context, in *WatchContainerLogRequest, opts ...grpc.CallOption) (CruxNode_SubscribeContainerLogChannelClient, error)
 }
 
 type cruxNodeClient struct {
@@ -684,6 +685,38 @@ func (x *cruxNodeWatchContainerStateClient) Recv() (*common.ContainerStateListMe
 	return m, nil
 }
 
+func (c *cruxNodeClient) SubscribeContainerLogChannel(ctx context.Context, in *WatchContainerLogRequest, opts ...grpc.CallOption) (CruxNode_SubscribeContainerLogChannelClient, error) {
+	stream, err := c.cc.NewStream(ctx, &CruxNode_ServiceDesc.Streams[2], "/crux.CruxNode/SubscribeContainerLogChannel", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &cruxNodeSubscribeContainerLogChannelClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type CruxNode_SubscribeContainerLogChannelClient interface {
+	Recv() (*common.ContainerLogMessage, error)
+	grpc.ClientStream
+}
+
+type cruxNodeSubscribeContainerLogChannelClient struct {
+	grpc.ClientStream
+}
+
+func (x *cruxNodeSubscribeContainerLogChannelClient) Recv() (*common.ContainerLogMessage, error) {
+	m := new(common.ContainerLogMessage)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // CruxNodeServer is the server API for CruxNode service.
 // All implementations must embed UnimplementedCruxNodeServer
 // for forward compatibility
@@ -703,6 +736,7 @@ type CruxNodeServer interface {
 	DeleteContainers(context.Context, *NodeDeleteContainersRequest) (*common.Empty, error)
 	SubscribeNodeEventChannel(*ServiceIdRequest, CruxNode_SubscribeNodeEventChannelServer) error
 	WatchContainerState(*WatchContainerStateRequest, CruxNode_WatchContainerStateServer) error
+	SubscribeContainerLogChannel(*WatchContainerLogRequest, CruxNode_SubscribeContainerLogChannelServer) error
 	mustEmbedUnimplementedCruxNodeServer()
 }
 
@@ -751,6 +785,9 @@ func (UnimplementedCruxNodeServer) SubscribeNodeEventChannel(*ServiceIdRequest, 
 }
 func (UnimplementedCruxNodeServer) WatchContainerState(*WatchContainerStateRequest, CruxNode_WatchContainerStateServer) error {
 	return status.Errorf(codes.Unimplemented, "method WatchContainerState not implemented")
+}
+func (UnimplementedCruxNodeServer) SubscribeContainerLogChannel(*WatchContainerLogRequest, CruxNode_SubscribeContainerLogChannelServer) error {
+	return status.Errorf(codes.Unimplemented, "method SubscribeContainerLogChannel not implemented")
 }
 func (UnimplementedCruxNodeServer) mustEmbedUnimplementedCruxNodeServer() {}
 
@@ -1023,6 +1060,27 @@ func (x *cruxNodeWatchContainerStateServer) Send(m *common.ContainerStateListMes
 	return x.ServerStream.SendMsg(m)
 }
 
+func _CruxNode_SubscribeContainerLogChannel_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(WatchContainerLogRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(CruxNodeServer).SubscribeContainerLogChannel(m, &cruxNodeSubscribeContainerLogChannelServer{stream})
+}
+
+type CruxNode_SubscribeContainerLogChannelServer interface {
+	Send(*common.ContainerLogMessage) error
+	grpc.ServerStream
+}
+
+type cruxNodeSubscribeContainerLogChannelServer struct {
+	grpc.ServerStream
+}
+
+func (x *cruxNodeSubscribeContainerLogChannelServer) Send(m *common.ContainerLogMessage) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // CruxNode_ServiceDesc is the grpc.ServiceDesc for CruxNode service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1088,6 +1146,11 @@ var CruxNode_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "WatchContainerState",
 			Handler:       _CruxNode_WatchContainerState_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "SubscribeContainerLogChannel",
+			Handler:       _CruxNode_SubscribeContainerLogChannel_Handler,
 			ServerStreams: true,
 		},
 	},

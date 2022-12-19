@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -29,6 +30,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/config"
 	dockerHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/docker"
 	imageHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/image"
+	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 
 	"github.com/docker/docker/api/types"
@@ -659,4 +661,93 @@ func DeleteContainers(ctx context.Context, request *common.DeleteContainersReque
 	}
 
 	return err
+}
+
+type DockerContainerLogReader struct {
+	Reader io.ReadCloser
+	TTY    bool
+
+	grpc.ContainerLogReader
+}
+
+func (dockerReader *DockerContainerLogReader) Next() (string, error) {
+	reader := dockerReader.Reader
+
+	if dockerReader.TTY {
+		// TODO (robot9706): implement
+		return "", errors.New("TTY not implemented")
+	} else {
+		header := make([]byte, 8)
+
+		_, err := reader.Read(header)
+		if err != nil {
+			return "", err
+		}
+
+		payloadSize := int(binary.BigEndian.Uint32(header[4:]))
+		buffer := make([]byte, payloadSize)
+
+		read := 0
+		for read < payloadSize {
+			count, err := reader.Read(buffer[read:])
+			read += count
+
+			if err != nil {
+				return "", err
+			}
+		}
+
+		log := string(buffer[0:read])
+
+		return log, nil
+	}
+}
+
+func (dockerReader *DockerContainerLogReader) Close() error {
+	reader := dockerReader.Reader
+
+	return reader.Close()
+}
+
+func ContainerLog(ctx context.Context, request *agent.ContainerLogRequest) (grpc.ContainerLogReader, error) {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return nil, err
+	}
+
+	prefixName := request.GetPrefixName()
+	containerName := fmt.Sprintf("%s-%s", prefixName.GetPrefix(), prefixName.GetName())
+
+	container, err := dockerHelper.GetContainerByName(ctx, nil, containerName, true)
+	if err != nil {
+		return nil, err
+	}
+
+	inspect, err := cli.ContainerInspect(ctx, container.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	tty := inspect.Config.Tty
+
+	streaming := request.GetStreaming()
+	tail := fmt.Sprintf("%d", request.GetTail())
+
+	reader, err := cli.ContainerLogs(ctx, container.ID, types.ContainerLogsOptions{
+		ShowStderr: true,
+		ShowStdout: true,
+		Follow:     streaming,
+		Tail:       tail,
+		Timestamps: true,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	logReader := &DockerContainerLogReader{
+		Reader: reader,
+		TTY:    tty,
+	}
+
+	return logReader, nil
 }

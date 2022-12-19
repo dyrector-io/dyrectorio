@@ -502,6 +502,7 @@ export enum ContainerOperation {
   START_CONTAINER = 1,
   STOP_CONTAINER = 2,
   RESTART_CONTAINER = 3,
+  GET_LOGS = 4,
   UNRECOGNIZED = -1,
 }
 
@@ -519,6 +520,9 @@ export function containerOperationFromJSON(object: any): ContainerOperation {
     case 3:
     case 'RESTART_CONTAINER':
       return ContainerOperation.RESTART_CONTAINER
+    case 4:
+    case 'GET_LOGS':
+      return ContainerOperation.GET_LOGS
     case -1:
     case 'UNRECOGNIZED':
     default:
@@ -536,6 +540,8 @@ export function containerOperationToJSON(object: ContainerOperation): string {
       return 'STOP_CONTAINER'
     case ContainerOperation.RESTART_CONTAINER:
       return 'RESTART_CONTAINER'
+    case ContainerOperation.GET_LOGS:
+      return 'GET_LOGS'
     case ContainerOperation.UNRECOGNIZED:
     default:
       return 'UNRECOGNIZED'
@@ -582,6 +588,11 @@ export interface ContainerStateItem {
   imageName: string
   imageTag: string
   ports: ContainerStateItemPort[]
+}
+
+export interface ContainerLogMessage {
+  prefixName: ContainerIdentifier | undefined
+  log: string
 }
 
 export interface Ingress {
@@ -1085,6 +1096,68 @@ export const ContainerStateItem = {
     message.imageName = object.imageName ?? ''
     message.imageTag = object.imageTag ?? ''
     message.ports = object.ports?.map(e => ContainerStateItemPort.fromPartial(e)) || []
+    return message
+  },
+}
+
+function createBaseContainerLogMessage(): ContainerLogMessage {
+  return { prefixName: undefined, log: '' }
+}
+
+export const ContainerLogMessage = {
+  encode(message: ContainerLogMessage, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.prefixName !== undefined) {
+      ContainerIdentifier.encode(message.prefixName, writer.uint32(802).fork()).ldelim()
+    }
+    if (message.log !== '') {
+      writer.uint32(810).string(message.log)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): ContainerLogMessage {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseContainerLogMessage()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 100:
+          message.prefixName = ContainerIdentifier.decode(reader, reader.uint32())
+          break
+        case 101:
+          message.log = reader.string()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): ContainerLogMessage {
+    return {
+      prefixName: isSet(object.prefixName) ? ContainerIdentifier.fromJSON(object.prefixName) : undefined,
+      log: isSet(object.log) ? String(object.log) : '',
+    }
+  },
+
+  toJSON(message: ContainerLogMessage): unknown {
+    const obj: any = {}
+    message.prefixName !== undefined &&
+      (obj.prefixName = message.prefixName ? ContainerIdentifier.toJSON(message.prefixName) : undefined)
+    message.log !== undefined && (obj.log = message.log)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<ContainerLogMessage>, I>>(object: I): ContainerLogMessage {
+    const message = createBaseContainerLogMessage()
+    message.prefixName =
+      object.prefixName !== undefined && object.prefixName !== null
+        ? ContainerIdentifier.fromPartial(object.prefixName)
+        : undefined
+    message.log = object.log ?? ''
     return message
   },
 }

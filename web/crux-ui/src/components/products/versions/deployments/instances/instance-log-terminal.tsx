@@ -1,17 +1,16 @@
-import { DeploymentEvent } from '@app/models'
-import { terminalDateFormat } from '@app/utils'
+import { ContainerLogMessage } from '@app/models'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
 
 const SCROLL_LOCK_MARGIN = 10
 
-interface DeploymentEventsTerminalProps {
-  events: DeploymentEvent[]
+interface InstanceLogTerminalProps {
+  events: ContainerLogMessage[]
 }
 
-const DeploymentEventsTerminal = (props: DeploymentEventsTerminalProps) => {
-  const { events } = props
+const InstanceLogTerminal = (props: InstanceLogTerminalProps) => {
+  const { events: propsEvents } = props
 
   const { t } = useTranslation('common')
 
@@ -45,19 +44,13 @@ const DeploymentEventsTerminal = (props: DeploymentEventsTerminalProps) => {
 
     preventScrollEvent.current = true
     containerRef.current.scrollTop = containerRef.current.scrollHeight
-  }, [events, containerRef, autoScroll])
+  }, [propsEvents, containerRef, autoScroll])
 
-  const eventToString = (event: DeploymentEvent): string[] => {
-    if (event.type !== 'log') {
-      return []
-    }
-
-    const date = new Date(event.createdAt)
-    const value = event.value as string[]
-    return value.map(it => `${terminalDateFormat(date)}\xa0\xa0\xa0\xa0${it}`)
+  const eventToString = (event: ContainerLogMessage): string => {
+    return event.log
   }
 
-  const eventStrings: string[] = events.flatMap(it => eventToString(it))
+  const eventStrings: string[] = propsEvents.map(it => eventToString(it))
 
   return (
     <div className="relative">
@@ -84,4 +77,4 @@ const DeploymentEventsTerminal = (props: DeploymentEventsTerminalProps) => {
   )
 }
 
-export default DeploymentEventsTerminal
+export default InstanceLogTerminal

@@ -29,6 +29,7 @@ service Agent {
   rpc SecretList(common.ListSecretsResponse) returns (common.Empty);
   rpc AbortUpdate(AgentAbortUpdate) returns (common.Empty);
   rpc DeleteContainers(common.DeleteContainersRequest) returns (common.Empty);
+  rpc ContainerLog(stream common.ContainerLogMessage) returns (common.Empty);
 }
 
 /**
@@ -52,6 +53,7 @@ message AgentCommand {
     CloseConnectionRequest close = 7;
     common.ContainerCommandRequest containerCommand = 8;
     common.DeleteContainersRequest deleteContainers = 9;
+    ContainerLogRequest containerLog = 10; 
   }
 }
 
@@ -253,6 +255,16 @@ message AgentUpdateRequest {
 }
 
 message AgentAbortUpdate { string error = 1; }
+
+/*
+ * Container log
+ *
+ */
+message ContainerLogRequest {
+  common.ContainerIdentifier prefixName = 1;
+  bool streaming = 3;
+  uint32 tail = 4;
+}
 
 /*
  * Connection close

@@ -40,6 +40,11 @@ type ConnectionParams struct {
 	token   string
 }
 
+type ContainerLogReader interface {
+	Next() (string, error)
+	Close() error
+}
+
 type (
 	DeployFunc           func(context.Context, *dogger.DeploymentLogger, *v1.DeployImageRequest, *v1.VersionData) error
 	WatchFunc            func(context.Context, string) []*common.ContainerStateItem
@@ -49,6 +54,7 @@ type (
 	CloseFunc            func(context.Context, agent.CloseReason) error
 	ContainerCommandFunc func(context.Context, *common.ContainerCommandRequest) error
 	DeleteContainersFunc func(context.Context, *common.DeleteContainersRequest) error
+	ContainerLogFunc     func(context.Context, *agent.ContainerLogRequest) (ContainerLogReader, error)
 )
 
 type WorkerFunctions struct {
@@ -60,6 +66,7 @@ type WorkerFunctions struct {
 	Close            CloseFunc
 	ContainerCommand ContainerCommandFunc
 	DeleteContainers DeleteContainersFunc
+	ContainerLog     ContainerLogFunc
 }
 
 type contextKey int
@@ -213,6 +220,8 @@ func grpcProcessCommand(
 		go executeContainerCommand(ctx, command.GetContainerCommand(), workerFuncs.ContainerCommand)
 	case command.GetDeleteContainers() != nil:
 		go executeDeleteMultipleContainers(ctx, command.GetDeleteContainers(), workerFuncs.DeleteContainers)
+	case command.GetContainerLog() != nil:
+		go executeContainerLog(ctx, command.GetContainerLog(), workerFuncs.ContainerLog)
 	default:
 		log.Warn().Msg("Unknown agent command")
 	}
@@ -525,6 +534,66 @@ func executeContainerCommand(ctx context.Context, command *common.ContainerComma
 	err := containerCommandFunc(ctx, command)
 	if err != nil {
 		log.Error().Stack().Err(err).Msg("Container Command error")
+	}
+}
+
+func executeContainerLog(ctx context.Context, command *agent.ContainerLogRequest, logFunc ContainerLogFunc) {
+	prefixName := command.GetPrefixName()
+
+	log.Debug().Str("prefix", prefixName.GetPrefix()).Str("name", prefixName.GetName()).
+		Uint32("tail", command.GetTail()).Bool("stream", command.GetStreaming()).
+		Msg("Getting container logs")
+
+	container := fmt.Sprintf("%s-%s", prefixName.GetPrefix(), prefixName.GetName())
+
+	reader, err := logFunc(ctx, command)
+	if err != nil {
+		log.Error().Err(err).Str("container", container).Msg("Failed to open container log reader")
+		return
+	}
+
+	defer func() {
+		err := reader.Close()
+		if err != nil {
+			log.Error().Err(err).Str("container", container).Msg("Failed to close container log reader")
+		}
+	}()
+
+	streamCtx := metadata.AppendToOutgoingContext(ctx, "dyo-filter-prefix", container)
+	stream, err := grpcConn.Client.ContainerLog(streamCtx, grpc.WaitForReady(true))
+	if err != nil {
+		log.Error().Err(err).Str("container", container).Msg("Failed to open container log channel")
+		return
+	}
+
+	defer func() {
+		err = stream.CloseSend()
+		if err != nil {
+			log.Error().Err(err).Stack().Str("container", container).Msg("Failed to close container log stream")
+		}
+	}()
+
+	for {
+		message, err := reader.Next()
+		if err != nil {
+			if err == io.EOF && !command.GetStreaming() {
+				break
+			}
+
+			log.Error().Err(err).Stack().Str("container", container).Msg("Failed to read container log")
+			break
+		}
+
+		log.Debug().Str("container", container).Str("log", message).Msg("Container log")
+
+		err = stream.Send(&common.ContainerLogMessage{
+			PrefixName: prefixName,
+			Log:        message,
+		})
+		if err != nil {
+			log.Error().Err(err).Stack().Str("container", container).Msg("Container log channel error")
+			break
+		}
 	}
 }
 

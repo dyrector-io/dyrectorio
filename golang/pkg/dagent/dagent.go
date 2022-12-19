@@ -43,6 +43,7 @@ func Serve(cfg *config.Configuration) {
 		Close:            grpcClose,
 		ContainerCommand: utils.ContainerCommand,
 		DeleteContainers: utils.DeleteContainers,
+		ContainerLog:     utils.ContainerLog,
 	})
 }
 
