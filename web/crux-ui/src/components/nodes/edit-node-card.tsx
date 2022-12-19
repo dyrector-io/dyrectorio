@@ -1,5 +1,6 @@
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
+import DyoForm from '@app/elements/dyo-form'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIconPicker from '@app/elements/dyo-icon-picker'
 import { DyoInput } from '@app/elements/dyo-input'
@@ -203,7 +204,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
 
           <DyoLabel textColor="text-bright-muted">{t('tips')}</DyoLabel>
 
-          <form className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
+          <DyoForm className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
             <DyoInput
               name="name"
               label={t('common:name')}
@@ -230,7 +231,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
             />
 
             <DyoButton className="hidden" type="submit" />
-          </form>
+          </DyoForm>
         </DyoCard>
 
         <div className="flex flex-col flex-grow w-1/2">

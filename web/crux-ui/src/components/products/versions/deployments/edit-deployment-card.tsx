@@ -1,5 +1,6 @@
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
+import DyoForm from '@app/elements/dyo-form'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import DyoTextArea from '@app/elements/dyo-text-area'
@@ -64,7 +65,7 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
         {t('common:editName', { name: t('common:deployment') })}
       </DyoHeading>
 
-      <form className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
+      <DyoForm className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
         <DyoInput
           className="max-w-lg"
           grow
@@ -86,7 +87,7 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
         />
 
         <DyoButton className="hidden" type="submit" />
-      </form>
+      </DyoForm>
     </DyoCard>
   )
 }

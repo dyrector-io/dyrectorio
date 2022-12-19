@@ -2,6 +2,7 @@ import { SingleFormLayout } from '@app/components/layout'
 import { ATTRIB_CSRF, AUTH_RESEND_DELAY } from '@app/const'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
+import DyoForm from '@app/elements/dyo-form'
 import { DyoInput } from '@app/elements/dyo-input'
 import DyoMessage from '@app/elements/dyo-message'
 import DyoSingleFormHeading from '@app/elements/dyo-single-form-heading'
@@ -77,7 +78,7 @@ const VerifyPage = (props: VerifyProps) => {
   return (
     <SingleFormLayout title={t('verification')}>
       <DyoCard className="p-8 m-auto">
-        <form className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
+        <DyoForm className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
           <DyoSingleFormHeading className="max-w-xs">{t('verification')}</DyoSingleFormHeading>
 
           <DyoInput
@@ -106,7 +107,7 @@ const VerifyPage = (props: VerifyProps) => {
           </DyoButton>
 
           {recaptchaSiteKey ? <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={recaptchaSiteKey} /> : null}
-        </form>
+        </DyoForm>
       </DyoCard>
     </SingleFormLayout>
   )

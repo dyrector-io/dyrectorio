@@ -1,6 +1,7 @@
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoChips from '@app/elements/dyo-chips'
+import DyoForm from '@app/elements/dyo-form'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import DyoIconPicker from '@app/elements/dyo-icon-picker'
 import { DyoInput } from '@app/elements/dyo-input'
@@ -143,7 +144,7 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
 
       <DyoLabel className="text-light">{t('tips.common')}</DyoLabel>
 
-      <form className="grid grid-cols-2 gap-8" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
+      <DyoForm className="grid grid-cols-2 gap-8" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
         <div className="flex flex-col">
           <div className="flex flex-col">
             <DyoInput
@@ -208,7 +209,7 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
         </div>
 
         <DyoButton className="hidden" type="submit" />
-      </form>
+      </DyoForm>
     </DyoCard>
   )
 }

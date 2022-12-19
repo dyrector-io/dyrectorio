@@ -298,9 +298,7 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
   return (
     <form className={clsx(className, 'flex flex-col max-h-128 overflow-y-auto')}>
       {!label ? null : (
-        <DyoLabel className={clsx(labelClassName ?? 'text-bright mb-2 whitespace-nowrap text-light-eased')}>
-          {label}
-        </DyoLabel>
+        <DyoLabel className={clsx(labelClassName ?? 'mb-2 whitespace-nowrap text-light-eased')}>{label}</DyoLabel>
       )}
 
       {!description ? null : <div className="text-light-eased mb-2 ml-1">{description}</div>}

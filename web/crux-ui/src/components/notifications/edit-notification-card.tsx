@@ -1,5 +1,6 @@
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoChips from '@app/elements/dyo-chips'
+import DyoForm from '@app/elements/dyo-form'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
@@ -89,7 +90,7 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
 
       <DyoLabel className="text-light">{t('description')}</DyoLabel>
 
-      <form className="grid grid-cols-2 gap-8" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
+      <DyoForm className="grid grid-cols-2 gap-8" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
         <div className="flex flex-col">
           <DyoInput
             className="max-w-lg"
@@ -140,7 +141,7 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
             onChanged={value => formik.setFieldValue('events', value, false)}
           />
         </div>
-      </form>
+      </DyoForm>
     </DyoCard>
   )
 }
