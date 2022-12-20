@@ -1,13 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
-import {
-  DeploymentStatusEnum,
-  DeploymentStrategy,
-  ExposeStrategy,
-  InstanceContainerConfig,
-  NetworkMode,
-  Prisma,
-  RestartPolicy,
-} from '@prisma/client'
+import { DeploymentStatusEnum, InstanceContainerConfig, Prisma } from '@prisma/client'
 import { JsonArray } from 'prisma'
 import { concatAll, EMPTY, filter, from, lastValueFrom, map, merge, Observable, Subject } from 'rxjs'
 import Deployment from 'src/domain/deployment'
@@ -176,6 +168,9 @@ export default class DeployService {
         prefix: request.prefix,
         nodeId: request.nodeId,
         versionId: request.versionId,
+        id: {
+          not: deployment.id,
+        },
       },
       include: {
         instances: {
@@ -199,37 +194,9 @@ export default class DeployService {
           data: {
             config: {
               create: {
-                name: it.image.name,
                 secrets:
-                  previousInstances.instances.find(instance => instance.imageId === it.imageId).config?.secrets ?? [],
-                environment: Prisma.JsonNull,
-                capabilities: [],
-                expose: ExposeStrategy.none,
-                ingress: Prisma.JsonNull,
-                configContainer: Prisma.JsonNull,
-                importContainer: Prisma.JsonNull,
-                user: null,
-                tty: false,
-                ports: [],
-                portRanges: [],
-                volumes: [],
-                commands: [],
-                args: [],
-                initContainers: [],
-                logConfig: Prisma.JsonNull,
-                restartPolicy: RestartPolicy.no,
-                networkMode: NetworkMode.bridge,
-                networks: [],
-                dockerLabels: [],
-                deploymentStrategy: DeploymentStrategy.recreate,
-                resourceConfig: Prisma.JsonNull,
-                healthCheckConfig: Prisma.JsonNull,
-                proxyHeaders: false,
-                useLoadBalancer: false,
-                extraLBAnnotations: [],
-                customHeaders: [],
-                annotations: [],
-                labels: [],
+                  previousInstances.instances.find(instance => instance.imageId === it.imageId).config?.secrets ??
+                  Prisma.JsonNull,
               },
             },
           },
