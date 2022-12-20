@@ -1384,6 +1384,10 @@ export interface CreateProductFromTemplateRequest {
   type: ProductType
 }
 
+export interface TemplateImageResponse {
+  data: Uint8Array
+}
+
 /** DASHBOARD */
 export interface DashboardActiveNodes {
   id: string
@@ -4394,6 +4398,23 @@ export const CreateProductFromTemplateRequest = {
   },
 }
 
+function createBaseTemplateImageResponse(): TemplateImageResponse {
+  return { data: new Uint8Array() }
+}
+
+export const TemplateImageResponse = {
+  fromJSON(object: any): TemplateImageResponse {
+    return { data: isSet(object.data) ? bytesFromBase64(object.data) : new Uint8Array() }
+  },
+
+  toJSON(message: TemplateImageResponse): unknown {
+    const obj: any = {}
+    message.data !== undefined &&
+      (obj.data = base64FromBytes(message.data !== undefined ? message.data : new Uint8Array()))
+    return obj
+  },
+}
+
 function createBaseDashboardActiveNodes(): DashboardActiveNodes {
   return { id: '', name: '', address: '', version: '' }
 }
@@ -5372,6 +5393,8 @@ export interface CruxTemplateClient {
     metadata: Metadata,
     ...rest: any
   ): Observable<CreateEntityResponse>
+
+  getImage(request: IdRequest, metadata: Metadata, ...rest: any): Observable<TemplateImageResponse>
 }
 
 export interface CruxTemplateController {
@@ -5386,11 +5409,17 @@ export interface CruxTemplateController {
     metadata: Metadata,
     ...rest: any
   ): Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
+
+  getImage(
+    request: IdRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<TemplateImageResponse> | Observable<TemplateImageResponse> | TemplateImageResponse
 }
 
 export function CruxTemplateControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ['getTemplates', 'createProductFromTemplate']
+    const grpcMethods: string[] = ['getTemplates', 'createProductFromTemplate', 'getImage']
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
       GrpcMethod('CruxTemplate', method)(constructor.prototype[method], method, descriptor)
@@ -5433,6 +5462,50 @@ export function CruxDashboardControllerMethods() {
 }
 
 export const CRUX_DASHBOARD_SERVICE_NAME = 'CruxDashboard'
+
+declare var self: any | undefined
+declare var window: any | undefined
+declare var global: any | undefined
+var globalThis: any = (() => {
+  if (typeof globalThis !== 'undefined') {
+    return globalThis
+  }
+  if (typeof self !== 'undefined') {
+    return self
+  }
+  if (typeof window !== 'undefined') {
+    return window
+  }
+  if (typeof global !== 'undefined') {
+    return global
+  }
+  throw 'Unable to locate global object'
+})()
+
+function bytesFromBase64(b64: string): Uint8Array {
+  if (globalThis.Buffer) {
+    return Uint8Array.from(globalThis.Buffer.from(b64, 'base64'))
+  } else {
+    const bin = globalThis.atob(b64)
+    const arr = new Uint8Array(bin.length)
+    for (let i = 0; i < bin.length; ++i) {
+      arr[i] = bin.charCodeAt(i)
+    }
+    return arr
+  }
+}
+
+function base64FromBytes(arr: Uint8Array): string {
+  if (globalThis.Buffer) {
+    return globalThis.Buffer.from(arr).toString('base64')
+  } else {
+    const bin: string[] = []
+    arr.forEach(byte => {
+      bin.push(String.fromCharCode(byte))
+    })
+    return globalThis.btoa(bin.join(''))
+  }
+}
 
 function toTimestamp(date: Date): Timestamp {
   const seconds = date.getTime() / 1_000

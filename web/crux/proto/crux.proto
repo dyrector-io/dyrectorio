@@ -137,6 +137,7 @@ service CruxTemplate {
   rpc GetTemplates(AccessRequest) returns (TemplateListResponse);
   rpc CreateProductFromTemplate(CreateProductFromTemplateRequest)
       returns (CreateEntityResponse);
+  rpc GetImage(IdRequest) returns (TemplateImageResponse);
 }
 
 service CruxDashboard {
@@ -1086,6 +1087,10 @@ message CreateProductFromTemplateRequest {
   string name = 100;
   string description = 101;
   ProductType type = 102;
+}
+
+message TemplateImageResponse {
+  bytes data = 1;
 }
 
 // DASHBOARD

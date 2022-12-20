@@ -4,6 +4,8 @@ import {
   CreateEntityResponse,
   CreateProductFromTemplateRequest,
   CruxTemplateClient,
+  IdRequest,
+  TemplateImageResponse,
   TemplateListResponse,
 } from '@app/models/grpc/protobuf/proto/crux'
 import { ApplyTemplate, Template } from '@app/models/template'
@@ -44,6 +46,17 @@ class DyoTemplateService {
       this.client,
       this.client.createProductFromTemplate,
     )(CreateProductFromTemplateRequest, req)
+
+    return res
+  }
+
+  async getImage(id: string): Promise<TemplateImageResponse> {
+    const req: IdRequest = {
+      id,
+      accessedBy: this.identity.id,
+    }
+
+    const res = await protomisify<IdRequest, TemplateImageResponse>(this.client, this.client.getImage)(IdRequest, req)
 
     return res
   }
