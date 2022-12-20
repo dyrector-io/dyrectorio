@@ -45,7 +45,6 @@ import {
 import { versionTypeToGrpc } from 'src/shared/mapper'
 import {
   ContainerConfigData,
-  ContainerConfigPort,
   InstanceContainerConfigData,
   MergedContainerConfigData,
   UniqueKey,
@@ -104,16 +103,21 @@ export default class DeployMapper {
   }
 
   instanceToGrpc(instance: InstanceDetails): InstanceResponse {
+    const config = this.mergeConfigs(
+      (instance.image.config ?? {}) as ContainerConfigData,
+      (instance.config ?? {}) as InstanceContainerConfigData,
+    )
+
     return {
       ...instance,
       audit: AuditResponse.fromJSON(instance),
       image: this.imageMapper.toGrpc(instance.image),
       state: this.containerStateToGrpc(instance.state),
-      config: instance.config ? this.instanceConfigToGrpc(instance.config) : null,
+      config: this.instanceConfigToGrpc(config),
     }
   }
 
-  instanceConfigToGrpc(instanceConfig: InstanceContainerConfig): ProtoContainerConfig {
+  instanceConfigToGrpc(instanceConfig: MergedContainerConfigData): ProtoContainerConfig {
     const config = instanceConfig as any as InstanceContainerConfigData
 
     return {
@@ -325,69 +329,81 @@ export default class DeployMapper {
     return environment.map(it => `${it.key}|${it.value}`)
   }
 
-  private overrideKeyValues(weak: UniqueKeyValue[], strong: UniqueKeyValue[]): UniqueKeyValue[] {
+  private mergeKeyValues(weak: UniqueKeyValue[], strong: UniqueKeyValue[]): UniqueKeyValue[] {
     const overriddenKeys: Set<string> = new Set(strong?.map(it => it.key))
     return [...(weak?.filter(it => !overriddenKeys.has(it.key)) ?? []), ...(strong ?? [])]
   }
 
-  private overridePorts(weak: ContainerConfigPort[], strong: ContainerConfigPort[]): ContainerConfigPort[] {
-    const overridenPorts: Set<number> = new Set(strong?.map(it => it.internal))
-    return [...(weak?.filter(it => !overridenPorts.has(it.internal)) ?? []), ...(strong ?? [])]
+  private mergeSecrets(weak: UniqueSecretKeyValue[], strong: UniqueSecretKeyValue[]): UniqueSecretKeyValue[] {
+    const overriddenKeys: Set<string> = new Set(strong?.map(it => it.key))
+    return [...(weak?.filter(it => !overriddenKeys.has(it.key)) ?? []), ...(strong ?? [])]
   }
 
   private override = <T>(weak: T, strong: T): T => strong ?? weak
-
-  private combineArrays = <T>(weak: T[], strong: T[]): T[] => [
-    ...(weak?.filter(it => !strong.indexOf(it)) ?? []),
-    ...(strong ?? []),
-  ]
 
   public mergeConfigs(
     imageConfig: ContainerConfigData,
     instanceConfig: InstanceContainerConfigData,
   ): MergedContainerConfigData {
-    const envs = this.overrideKeyValues(imageConfig?.environment, instanceConfig?.environment)
-    const caps = this.overrideKeyValues(imageConfig?.capabilities, instanceConfig?.capabilities)
-    const ports = this.overridePorts(imageConfig?.ports, instanceConfig?.ports)
-
     return {
       // common
-      name: instanceConfig.name || imageConfig.name,
-      environment: envs,
-      secrets: instanceConfig?.secrets
-        ? instanceConfig.secrets
-        : imageConfig.secrets?.map(it => ({ ...it, value: '', publicKey: '' })) ?? [],
-      user: this.override(imageConfig?.user, instanceConfig.user),
-      tty: this.override(imageConfig?.tty, instanceConfig.tty),
-      portRanges: this.override(imageConfig?.portRanges, instanceConfig.portRanges),
-      args: this.override(imageConfig?.args, instanceConfig.args),
-      commands: this.override(imageConfig?.commands, instanceConfig.commands),
-      expose: this.override(imageConfig?.expose, instanceConfig.expose),
-      configContainer: this.override(imageConfig?.configContainer, instanceConfig.configContainer),
-      ingress: this.override(imageConfig?.ingress, instanceConfig.ingress),
-      volumes: this.override(imageConfig?.volumes, instanceConfig.volumes),
-      importContainer: this.override(imageConfig?.importContainer, instanceConfig.importContainer),
-      initContainers: this.override(imageConfig?.initContainers, instanceConfig.initContainers),
-      capabilities: caps,
-      ports,
+      name: this.override(imageConfig.name, instanceConfig.name),
+      environment: this.mergeKeyValues(imageConfig.environment, instanceConfig?.environment),
+      secrets: this.mergeSecrets(
+        imageConfig.secrets?.map(it => ({ ...it, value: '' } as UniqueSecretKeyValue)),
+        instanceConfig?.secrets,
+      ),
+      user: this.override(imageConfig.user, instanceConfig?.user),
+      tty: this.override(imageConfig.tty, instanceConfig?.tty),
+      portRanges: this.override(imageConfig.portRanges, instanceConfig?.portRanges),
+      args: this.override(imageConfig.args, instanceConfig?.args),
+      commands: this.override(imageConfig.commands, instanceConfig?.commands),
+      expose: this.override(imageConfig.expose, instanceConfig?.expose),
+      configContainer: this.override(imageConfig.configContainer, instanceConfig?.configContainer),
+      ingress: this.override(imageConfig.ingress, instanceConfig?.ingress),
+      volumes: this.override(imageConfig.volumes, instanceConfig?.volumes),
+      importContainer: this.override(imageConfig.importContainer, instanceConfig?.importContainer),
+      initContainers: this.override(imageConfig.initContainers, instanceConfig?.initContainers),
+      capabilities: this.mergeKeyValues(imageConfig.capabilities, instanceConfig?.capabilities),
+      ports: this.override(imageConfig.ports, instanceConfig?.ports),
 
       // crane
-      customHeaders: this.combineArrays(imageConfig?.customHeaders, instanceConfig?.customHeaders),
-      proxyHeaders: this.override(imageConfig?.proxyHeaders, instanceConfig?.proxyHeaders),
-      extraLBAnnotations: this.override(imageConfig?.extraLBAnnotations, instanceConfig?.extraLBAnnotations),
-      healthCheckConfig: this.override(imageConfig?.healthCheckConfig, instanceConfig?.healthCheckConfig),
-      resourceConfig: this.override(imageConfig?.resourceConfig, instanceConfig?.resourceConfig),
-      useLoadBalancer: this.override(imageConfig?.useLoadBalancer, instanceConfig?.useLoadBalancer),
-      deploymentStrategy: this.override(imageConfig?.deploymentStrategy, instanceConfig?.deploymentStrategy),
-      labels: this.override(imageConfig?.labels, instanceConfig?.labels),
-      annotations: this.override(imageConfig?.annotations, instanceConfig?.annotations),
+      customHeaders: this.override(imageConfig.customHeaders, instanceConfig?.customHeaders),
+      proxyHeaders: this.override(imageConfig.proxyHeaders, instanceConfig?.proxyHeaders),
+      extraLBAnnotations: this.override(imageConfig.extraLBAnnotations, instanceConfig?.extraLBAnnotations),
+      healthCheckConfig: this.override(imageConfig.healthCheckConfig, instanceConfig?.healthCheckConfig),
+      resourceConfig: this.override(imageConfig.resourceConfig, instanceConfig?.resourceConfig),
+      useLoadBalancer: this.override(imageConfig.useLoadBalancer, instanceConfig?.useLoadBalancer),
+      deploymentStrategy: this.override(imageConfig.deploymentStrategy, instanceConfig?.deploymentStrategy),
+      labels:
+        imageConfig.labels || instanceConfig?.labels
+          ? {
+              deployment: this.mergeKeyValues(
+                imageConfig.labels?.deployment ?? [],
+                instanceConfig?.labels?.deployment ?? [],
+              ),
+              service: this.mergeKeyValues(imageConfig.labels?.service ?? [], instanceConfig?.labels?.service ?? []),
+              ingress: this.mergeKeyValues(imageConfig.labels?.ingress ?? [], instanceConfig?.labels?.ingress ?? []),
+            }
+          : null,
+      annotations:
+        imageConfig.annotations || instanceConfig?.annotations
+          ? {
+              deployment: this.mergeKeyValues(
+                imageConfig.annotations?.deployment,
+                instanceConfig?.annotations?.deployment,
+              ),
+              service: this.mergeKeyValues(imageConfig.annotations?.service, instanceConfig?.annotations?.service),
+              ingress: this.mergeKeyValues(imageConfig.annotations?.ingress, instanceConfig?.annotations?.ingress),
+            }
+          : null,
 
       // dagent
-      logConfig: this.override(imageConfig?.logConfig, instanceConfig?.logConfig),
-      networkMode: this.override(imageConfig?.networkMode, instanceConfig?.networkMode),
-      restartPolicy: this.override(imageConfig?.restartPolicy, instanceConfig?.restartPolicy),
-      networks: this.combineArrays(imageConfig?.networks, instanceConfig?.networks),
-      dockerLabels: this.combineArrays(imageConfig?.dockerLabels, instanceConfig?.dockerLabels),
+      logConfig: this.override(imageConfig.logConfig, instanceConfig?.logConfig),
+      networkMode: this.override(imageConfig.networkMode, instanceConfig?.networkMode),
+      restartPolicy: this.override(imageConfig.restartPolicy, instanceConfig?.restartPolicy),
+      networks: this.override(imageConfig.networks, instanceConfig?.networks),
+      dockerLabels: this.mergeKeyValues(imageConfig.dockerLabels, instanceConfig?.dockerLabels),
     }
   }
 }

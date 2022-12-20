@@ -69,11 +69,20 @@ const exposeRule = yup
   .default('none')
   .required()
 
+const instanceExposeRule = yup
+  .mixed<ContainerConfigExposeStrategy>()
+  .oneOf([...CONTAINER_EXPOSE_STRATEGY_VALUES, null])
+  .nullable()
+
 const restartPolicyRule = yup
   .mixed<ContainerRestartPolicyType>()
   .oneOf([...CONTAINER_RESTART_POLICY_TYPE_VALUES])
   .default('no')
-  .required()
+
+const instanceRestartPolicyRule = yup
+  .mixed<ContainerRestartPolicyType>()
+  .oneOf([...CONTAINER_RESTART_POLICY_TYPE_VALUES, null])
+  .nullable()
 
 const networkModeRule = yup
   .mixed<ContainerNetworkMode>()
@@ -81,24 +90,30 @@ const networkModeRule = yup
   .default('bridge')
   .required()
 
+const instanceNetworkModeRule = yup
+  .mixed<ContainerNetworkMode>()
+  .oneOf([...CONTAINER_NETWORK_MODE_VALUES, null])
+  .nullable()
+
 const deploymentStrategyRule = yup
   .mixed<ContainerDeploymentStrategyType>()
   .oneOf([...CONTAINER_DEPLOYMENT_STRATEGY_VALUES])
-  .nullable()
-  .default(null)
   .required()
+
+const instanceDeploymentStrategyRule = yup
+  .mixed<ContainerDeploymentStrategyType>()
+  .oneOf([...CONTAINER_DEPLOYMENT_STRATEGY_VALUES, null])
+  .nullable()
 
 const logDriverRule = yup
   .mixed<ContainerLogDriverType>()
   .oneOf([...CONTAINER_LOG_DRIVER_VALUES])
   .default('none')
-  .required()
 
 const volumeTypeRule = yup
   .mixed<VolumeType>()
   .oneOf([...CONTAINER_VOLUME_TYPE_VALUES])
   .default('ro')
-  .required()
 
 const configContainerRule = yup
   .object()
@@ -311,34 +326,37 @@ export const instanceContainerConfigSchema = yup.object().shape({
   name: yup.string().nullable(),
   environments: uniqueKeyValuesSchema.default([]).nullable(),
   secrets: uniqueKeyValuesSchema.default([]).nullable(),
-  ingress: ingressRule,
-  expose: exposeRule,
+  ingress: ingressRule.nullable(),
+  expose: instanceExposeRule,
   user: yup.number().default(null).nullable(),
   tty: yup.boolean().default(false).nullable(),
-  importContainer: importContainerRule,
-  configContainer: configContainerRule,
-  ports: portConfigRule,
-  portRanges: portRangeConfigRule,
-  volumes: volumeConfigRule,
+  importContainer: importContainerRule.nullable(),
+  configContainer: configContainerRule.nullable(),
+  ports: portConfigRule.nullable(),
+  portRanges: portRangeConfigRule.nullable(),
+  volumes: volumeConfigRule.nullable(),
   commands: shellCommandSchema.default([]).nullable(),
   args: shellCommandSchema.default([]).nullable(),
-  initContainers: initContainerRule,
+  initContainers: initContainerRule.nullable(),
   capabilities: uniqueKeyValuesSchema.default([]).nullable(),
 
   // dagent:
-  logConfig: logConfigRule,
-  restartPolicy: restartPolicyRule,
-  networkMode: networkModeRule,
+  logConfig: logConfigRule.nullable(),
+  restartPolicy: instanceRestartPolicyRule,
+  networkMode: instanceNetworkModeRule,
   networks: uniqueKeysOnlySchema.default([]).nullable(),
+  dockerLabels: uniqueKeyValuesSchema.default([]).nullable(),
 
   // crane
-  deploymentStrategy: deploymentStrategyRule,
+  deploymentStrategy: instanceDeploymentStrategyRule,
   customHeaders: uniqueKeysOnlySchema.default([]).nullable(),
   proxyHeaders: yup.boolean().default(false).nullable(),
   useLoadBalancer: yup.boolean().default(false).nullable(),
   extraLBAnnotations: uniqueKeyValuesSchema.default([]).nullable(),
-  healthCheckConfig: healthCheckConfigRule,
-  resourceConfig: resourceConfigRule,
+  healthCheckConfig: healthCheckConfigRule.nullable(),
+  resourceConfig: resourceConfigRule.nullable(),
+  annotations: markerRule.nullable(),
+  labels: markerRule.nullable(),
 })
 
 export const deploymentSchema = yup.object({
