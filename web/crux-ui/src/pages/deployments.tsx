@@ -4,14 +4,12 @@ import useCopyDeploymentModal from '@app/components/products/versions/deployment
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import Filters from '@app/components/shared/filters'
 import PageHeading from '@app/components/shared/page-heading'
-import AnchorAction from '@app/elements/dyo-anchor-action'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoList } from '@app/elements/dyo-list'
 import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
-import useAnchorActions from '@app/hooks/use-anchor-actions'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import { Deployment, deploymentIsCopiable, DeploymentStatus, DEPLOYMENT_STATUS_VALUES } from '@app/models'
 import { deploymentUrl, nodeUrl, productUrl, ROUTE_DEPLOYMENTS, versionUrl } from '@app/routes'
@@ -55,10 +53,6 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
 
     router.push(url)
   }
-
-  const anchors = useAnchorActions(
-    Object.fromEntries(deployments.map(it => [`copyDeployment-${it.id}`, () => onCopyDeployment(it.id)])),
-  )
 
   const filters = useFilters<Deployment, DeploymentFilter>({
     filters: [
@@ -113,19 +107,14 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
         />
       </div>
 
-      <AnchorAction
-        href={`copyDeployment-${item.id}`}
-        anchors={anchors}
-        disabled={!deploymentIsCopiable(item.status, item.type)}
-      >
-        <Image
-          src="/copy.svg"
-          alt={t('common:copy')}
-          width={24}
-          height={24}
-          className={deploymentIsCopiable(item.status, item.type) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
-        />
-      </AnchorAction>
+      <Image
+        src="/copy.svg"
+        alt={t('common:copy')}
+        width={24}
+        height={24}
+        className={deploymentIsCopiable(item.status, item.type) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
+        onClick={() => deploymentIsCopiable(item.status, item.type) && onCopyDeployment(item.id)}
+      />
     </div>,
   ]
   /* eslint-enable react/jsx-key */

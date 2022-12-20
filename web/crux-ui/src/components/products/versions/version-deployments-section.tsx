@@ -1,13 +1,11 @@
 import NodeStatusIndicator from '@app/components/nodes/node-status-indicator'
 import Filters from '@app/components/shared/filters'
-import AnchorAction from '@app/elements/dyo-anchor-action'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoFilterChips from '@app/elements/dyo-filter-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoList } from '@app/elements/dyo-list'
 import DyoModal, { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import { defaultApiErrorHandler } from '@app/errors'
-import useAnchorActions from '@app/hooks/use-anchor-actions'
 import { EnumFilter, enumFilterFor, TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
@@ -96,14 +94,6 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
     router.push(url)
   }
 
-  const anchors = useAnchorActions(
-    Object.fromEntries(
-      version.deployments
-        .map(it => [`startDeployment-${it.id}`, () => onDeploy(it.id)])
-        .concat(version.deployments.map(it => [`copyDeployment-${it.id}`, () => onCopyDeployment(it.id)])),
-    ),
-  )
-
   const filters = useFilters<DeploymentByVersion, DeploymentFilter>({
     filters: [
       textFilterFor<DeploymentByVersion>(it => [it.nodeName, it.prefix, it.date]),
@@ -180,13 +170,14 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
               item.nodeStatus === 'running' ? 'cursor-pointer' : 'cursor-not-allowed opacity-30',
             )}
           >
-            <AnchorAction
-              href={`startDeployment-${item.id}`}
-              anchors={anchors}
-              disabled={item.nodeStatus !== 'running'}
-            >
-              <Image src="/deploy.svg" alt={t('common:deploy')} width={24} height={24} />
-            </AnchorAction>
+            <Image
+              src="/deploy.svg"
+              alt={t('common:deploy')}
+              className={item.nodeStatus === 'running' ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'}
+              width={24}
+              height={24}
+              onClick={() => item.nodeStatus === 'running' && onDeploy(item.id)}
+            />
           </div>
         )}
         <div className="mr-2 inline-block">
@@ -200,21 +191,16 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
           />
         </div>
 
-        <AnchorAction
-          href={`copyDeployment-${item.id}`}
-          anchors={anchors}
-          disabled={!deploymentIsCopiable(item.status, version.type)}
-        >
-          <Image
-            src="/copy.svg"
-            alt={t('common:copy')}
-            width={24}
-            height={24}
-            className={
-              deploymentIsCopiable(item.status, version.type) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'
-            }
-          />
-        </AnchorAction>
+        <Image
+          src="/copy.svg"
+          alt={t('common:copy')}
+          width={24}
+          height={24}
+          className={
+            deploymentIsCopiable(item.status, version.type) ? 'cursor-pointer' : 'cursor-not-allowed opacity-30'
+          }
+          onClick={() => deploymentIsCopiable(item.status, version.type) && onCopyDeployment(item.id)}
+        />
       </div>,
     ]
     /* eslint-enable react/jsx-key */
