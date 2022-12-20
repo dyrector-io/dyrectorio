@@ -13,7 +13,7 @@ export default class ContainerLogStream {
 
   private completer: ContainerLogStreamCompleter = null
 
-  constructor(private prefix: string, private name: string) {}
+  constructor(private id: string, private prefix: string) {}
 
   start(commandChannel: Subject<AgentCommand>) {
     if (this.started) {
@@ -22,10 +22,8 @@ export default class ContainerLogStream {
 
     commandChannel.next({
       containerLog: {
-        prefixName: {
-          prefix: this.prefix,
-          name: this.name,
-        },
+        containerId: this.id,
+        prefix: this.prefix,
         streaming: true,
         tail: 40,
       },
@@ -52,12 +50,8 @@ export default class ContainerLogStream {
     return this.stream.pipe(
       // necessary, because of: https://github.com/nestjs/nest/issues/8111
       startWith({
-        prefixName: {
-          prefix: this.prefix,
-          name: this.name,
-        },
         log: '',
-      }),
+      } as ContainerLogMessage),
       finalize(() => this.onWatcherDisconnected()),
     )
   }

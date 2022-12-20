@@ -851,7 +851,10 @@ message WatchContainerLogRequest {
   string accessedBy = 2;
 
   string nodeId = 100;
-  common.ContainerIdentifier prefixName = 101;
+  oneof target {
+    string containerId = 200;
+    string prefix = 201;
+  }
 }
 
 // DEPLOYMENT

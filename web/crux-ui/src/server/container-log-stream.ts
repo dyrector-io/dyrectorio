@@ -9,14 +9,14 @@ class ContainerLogStream {
 
   private connections: Set<WsConnection> = new Set()
 
-  constructor(public prefix: string, public name: string) {}
+  constructor(public id: string, public prefix: string) {}
 
   start(connection: WsConnection, nodeId: string, nodeService: DyoNodeService) {
     this.addConnection(connection)
 
-    this.grpc = nodeService.watchContainerLog(nodeId, this.prefix, this.name, {
+    this.grpc = nodeService.watchContainerLog(nodeId, this.id, this.prefix, {
       onMessage: message => {
-        if (message.log.length == 0) {
+        if (message.log.length === 0) {
           return
         }
         this.connections.forEach(it => it.send(WS_TYPE_CONTAINER_LOG, message))

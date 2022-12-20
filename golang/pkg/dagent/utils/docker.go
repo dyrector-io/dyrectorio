@@ -39,6 +39,8 @@ import (
 	"github.com/docker/docker/client"
 )
 
+const DockerLogHeaderLength = 8
+
 type DockerVersion struct {
 	ServerVersion string
 	ClientVersion string
@@ -674,33 +676,33 @@ func (dockerReader *DockerContainerLogReader) Next() (string, error) {
 	reader := dockerReader.Reader
 
 	if dockerReader.TTY {
-		// TODO (robot9706): implement
+		// TODO (robot9706): implement TTY method
 		return "", errors.New("TTY not implemented")
-	} else {
-		header := make([]byte, 8)
+	}
 
-		_, err := reader.Read(header)
+	header := make([]byte, DockerLogHeaderLength)
+
+	_, err := reader.Read(header)
+	if err != nil {
+		return "", err
+	}
+
+	payloadSize := int(binary.BigEndian.Uint32(header[4:]))
+	buffer := make([]byte, payloadSize)
+
+	read := 0
+	for read < payloadSize {
+		count, err := reader.Read(buffer[read:])
+		read += count
+
 		if err != nil {
 			return "", err
 		}
-
-		payloadSize := int(binary.BigEndian.Uint32(header[4:]))
-		buffer := make([]byte, payloadSize)
-
-		read := 0
-		for read < payloadSize {
-			count, err := reader.Read(buffer[read:])
-			read += count
-
-			if err != nil {
-				return "", err
-			}
-		}
-
-		log := string(buffer[0:read])
-
-		return log, nil
 	}
+
+	logMessage := string(buffer[0:read])
+
+	return logMessage, nil
 }
 
 func (dockerReader *DockerContainerLogReader) Close() error {
@@ -715,15 +717,9 @@ func ContainerLog(ctx context.Context, request *agent.ContainerLogRequest) (grpc
 		return nil, err
 	}
 
-	prefixName := request.GetPrefixName()
-	containerName := fmt.Sprintf("%s-%s", prefixName.GetPrefix(), prefixName.GetName())
+	containerID := request.GetContainerId()
 
-	container, err := dockerHelper.GetContainerByName(ctx, nil, containerName, true)
-	if err != nil {
-		return nil, err
-	}
-
-	inspect, err := cli.ContainerInspect(ctx, container.ID)
+	inspect, err := cli.ContainerInspect(ctx, containerID)
 	if err != nil {
 		return nil, err
 	}
@@ -733,7 +729,7 @@ func ContainerLog(ctx context.Context, request *agent.ContainerLogRequest) (grpc
 	streaming := request.GetStreaming()
 	tail := fmt.Sprintf("%d", request.GetTail())
 
-	reader, err := cli.ContainerLogs(ctx, container.ID, types.ContainerLogsOptions{
+	reader, err := cli.ContainerLogs(ctx, containerID, types.ContainerLogsOptions{
 		ShowStderr: true,
 		ShowStdout: true,
 		Follow:     streaming,

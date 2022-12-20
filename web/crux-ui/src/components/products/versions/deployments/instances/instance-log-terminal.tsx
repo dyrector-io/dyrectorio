@@ -46,9 +46,7 @@ const InstanceLogTerminal = (props: InstanceLogTerminalProps) => {
     containerRef.current.scrollTop = containerRef.current.scrollHeight
   }, [propsEvents, containerRef, autoScroll])
 
-  const eventToString = (event: ContainerLogMessage): string => {
-    return event.log
-  }
+  const eventToString = (event: ContainerLogMessage): string => event.log
 
   const eventStrings: string[] = propsEvents.map(it => eventToString(it))
 

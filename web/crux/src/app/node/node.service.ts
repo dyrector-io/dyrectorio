@@ -194,7 +194,7 @@ export default class NodeService {
 
   handleContainerLogStream(request: WatchContainerLogRequest): Observable<ContainerLogMessage> {
     this.logger.debug(
-      `Opening container log stream for container: ${request.nodeId} - '${request.prefixName.prefix}-${request.prefixName.name}'`,
+      `Opening container log stream for container: ${request.nodeId} - '${request.containerId ?? request.prefix}'`,
     )
 
     const agent = this.agentService.getById(request.nodeId)
@@ -207,7 +207,7 @@ export default class NodeService {
       })
     }
 
-    const stream = agent.upsertContainerLogStream(request.prefixName.prefix, request.prefixName.name)
+    const stream = agent.upsertContainerLogStream(request.containerId, request.prefix)
     return stream.watch()
   }
 

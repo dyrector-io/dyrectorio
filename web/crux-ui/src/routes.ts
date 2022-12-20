@@ -76,14 +76,16 @@ export const appendUrlParams = <T extends CruxUrlParams>(url: string, params: T)
   if (params) {
     delete params.anchor
 
-    Object.entries(params).map(entry => {
-      const [key, value] = entry
-      if (key) {
-        paramMap.set(key, value)
-      }
+    Object.entries(params)
+      .filter(it => it[1])
+      .map(entry => {
+        const [key, value] = entry
+        if (key) {
+          paramMap.set(key, value)
+        }
 
-      return entry
-    })
+        return entry
+      })
   }
 
   if (paramMap.size > 0) {
@@ -190,8 +192,16 @@ export const imageConfigUrl = (productId: string, versionId: string, imageId: st
 export const instanceConfigUrl = (productId: string, versionId: string, deploymentId: string, instanceId: string) =>
   `${deploymentUrl(productId, versionId, deploymentId)}/instance/${instanceId}`
 
-export const instanceLogUrl = (productId: string, versionId: string, deploymentId: string, instanceId: string) =>
-  `${deploymentUrl(productId, versionId, deploymentId)}/instance/${instanceId}/log`
 
 // template
 export const templateImageUrl = (templateId: string) => `${API_TEMPLATES}/${templateId}/image`
+
+// log
+export type ContainerLogParams = {
+  anchor?: VersionUrlAnchor
+  id?: string
+  prefix?: string
+}
+
+export const containerLogUrl = (nodeId: string, dockerId?: string, kubernetesPrefix?: string) =>
+  appendUrlParams(`${nodeUrl(nodeId)}/log`, { id: dockerId, prefix: kubernetesPrefix } as ContainerLogParams)

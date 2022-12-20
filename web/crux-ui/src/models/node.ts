@@ -110,13 +110,13 @@ export type ContainerCommandMessage = ContainerCommand
 export const WS_TYPE_WATCH_CONTAINER_LOG = 'container-log-watch'
 export const WS_TYPE_STOP_WATCHING_CONTAINER_LOG = 'stop-container-log-watch'
 export type WatchContainerLogMessage = {
-  prefix: string
-  name: string
+  id?: string
+  prefix?: string
 }
 
 export const WS_TYPE_CONTAINER_LOG = 'container-log'
 export type ContainerLogMessage = {
-  prefix: string
-  name: string
+  containerId?: string
+  prefix?: string
   log: string
 }

@@ -7,42 +7,39 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
   ContainerLogMessage,
-  DeploymentRoot,
   WatchContainerLogMessage,
   WS_TYPE_CONTAINER_LOG,
   WS_TYPE_WATCH_CONTAINER_LOG,
 } from '@app/models'
 import { nodeWsUrl, ROUTE_PRODUCTS } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
-import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useState } from 'react'
-import { getDeploymentRoot } from '../../../[deploymentId]'
 
 interface InstanceLogPageProps {
-  deployment: DeploymentRoot
-  instanceId: string
+  nodeId: string
+  dockerId: string
+  kubernetesPrefix: string
 }
 
 const InstanceLogPage = (props: InstanceLogPageProps) => {
-  const { deployment, instanceId } = props
-  const instance = deployment.instances.find(it => it.id === instanceId)
+  const { nodeId, dockerId, kubernetesPrefix } = props
 
   const { t } = useTranslation('deployments')
 
   const [log, setLog] = useState<ContainerLogMessage[]>([])
 
-  const sock = useWebSocket(nodeWsUrl(deployment.nodeId), {
+  const sock = useWebSocket(nodeWsUrl(nodeId), {
     onOpen: () =>
       sock.send(WS_TYPE_WATCH_CONTAINER_LOG, {
-        prefix: deployment.prefix,
-        name: instance.image.name,
+        id: dockerId,
+        prefix: kubernetesPrefix,
       } as WatchContainerLogMessage),
   })
 
   sock.on(WS_TYPE_CONTAINER_LOG, (message: ContainerLogMessage) => {
-    setLog(prevLog => [ ...prevLog, message ])
+    setLog(prevLog => [...prevLog, message])
   })
 
   const pageLink: BreadcrumbLink = {
@@ -59,7 +56,7 @@ const InstanceLogPage = (props: InstanceLogPageProps) => {
       <DyoCard className="p-4">
         <div className="flex mb-4 justify-between items-start">
           <DyoHeading element="h4" className="text-xl text-bright">
-            {instance.image.name}
+            instance.image.name
           </DyoHeading>
         </div>
 
@@ -72,15 +69,13 @@ const InstanceLogPage = (props: InstanceLogPageProps) => {
 export default InstanceLogPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
-  const { instanceId } = context.query
-
-  const crux = cruxFromContext(context)
-  const deployment = await getDeploymentRoot(context, crux)
+  const { nodeId, id, prefix } = context.query
 
   return {
     props: {
-      deployment,
-      instanceId,
+      nodeId,
+      dockerId: id ?? null,
+      kubernetesPrefix: prefix ?? null,
     },
   }
 }

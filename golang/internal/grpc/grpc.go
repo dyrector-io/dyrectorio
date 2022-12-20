@@ -538,38 +538,35 @@ func executeContainerCommand(ctx context.Context, command *common.ContainerComma
 }
 
 func executeContainerLog(ctx context.Context, command *agent.ContainerLogRequest, logFunc ContainerLogFunc) {
-	prefixName := command.GetPrefixName()
+	containerID := command.GetContainerId()
 
-	log.Debug().Str("prefix", prefixName.GetPrefix()).Str("name", prefixName.GetName()).
-		Uint32("tail", command.GetTail()).Bool("stream", command.GetStreaming()).
-		Msg("Getting container logs")
-
-	container := fmt.Sprintf("%s-%s", prefixName.GetPrefix(), prefixName.GetName())
+	log.Debug().Str("container", containerID).Uint32("tail", command.GetTail()).
+		Bool("stream", command.GetStreaming()).Msg("Getting container logs")
 
 	reader, err := logFunc(ctx, command)
 	if err != nil {
-		log.Error().Err(err).Str("container", container).Msg("Failed to open container log reader")
+		log.Error().Err(err).Str("container", containerID).Msg("Failed to open container log reader")
 		return
 	}
 
 	defer func() {
-		err := reader.Close()
+		err = reader.Close()
 		if err != nil {
-			log.Error().Err(err).Str("container", container).Msg("Failed to close container log reader")
+			log.Error().Err(err).Str("container", containerID).Msg("Failed to close container log reader")
 		}
 	}()
 
-	streamCtx := metadata.AppendToOutgoingContext(ctx, "dyo-filter-prefix", container)
+	streamCtx := metadata.AppendToOutgoingContext(ctx, "dyo-container-id", containerID)
 	stream, err := grpcConn.Client.ContainerLog(streamCtx, grpc.WaitForReady(true))
 	if err != nil {
-		log.Error().Err(err).Str("container", container).Msg("Failed to open container log channel")
+		log.Error().Err(err).Str("container", containerID).Msg("Failed to open container log channel")
 		return
 	}
 
 	defer func() {
 		err = stream.CloseSend()
 		if err != nil {
-			log.Error().Err(err).Stack().Str("container", container).Msg("Failed to close container log stream")
+			log.Error().Err(err).Stack().Str("container", containerID).Msg("Failed to close container log stream")
 		}
 	}()
 
@@ -580,18 +577,20 @@ func executeContainerLog(ctx context.Context, command *agent.ContainerLogRequest
 				break
 			}
 
-			log.Error().Err(err).Stack().Str("container", container).Msg("Failed to read container log")
+			log.Error().Err(err).Stack().Str("container", containerID).Msg("Failed to read container log")
 			break
 		}
 
-		log.Debug().Str("container", container).Str("log", message).Msg("Container log")
+		log.Debug().Str("container", containerID).Str("log", message).Msg("Container log")
 
 		err = stream.Send(&common.ContainerLogMessage{
-			PrefixName: prefixName,
-			Log:        message,
+			Target: &common.ContainerLogMessage_ContainerId{
+				ContainerId: containerID,
+			},
+			Log: message,
 		})
 		if err != nil {
-			log.Error().Err(err).Stack().Str("container", container).Msg("Container log channel error")
+			log.Error().Err(err).Stack().Str("container", containerID).Msg("Container log channel error")
 			break
 		}
 	}

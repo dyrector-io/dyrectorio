@@ -9,14 +9,14 @@ class ContainerLogStreamService {
 
   constructor(private nodeId: string) {}
 
-  startWatching(connection: WsConnection, prefix: string, name: string, nodeService: DyoNodeService) {
-    const container = `${prefix}-${name}`
+  startWatching(connection: WsConnection, nodeService: DyoNodeService, id?: string, prefix?: string) {
+    const key = id ?? prefix
 
-    let stream = this.streams.get(container)
+    let stream = this.streams.get(key)
     if (!stream) {
-      stream = new ContainerLogStream(prefix, name)
+      stream = new ContainerLogStream(id, prefix)
       stream.start(connection, this.nodeId, nodeService)
-      this.streams.set(container, stream)
+      this.streams.set(key, stream)
     } else {
       stream.addConnection(connection)
     }
@@ -27,19 +27,19 @@ class ContainerLogStreamService {
       this.connectionToContainers.set(connection, containers)
     }
 
-    containers.add(container)
+    containers.add(key)
   }
 
-  stopWatching(connection: WsConnection, prefix: string, name: string) {
-    const container = `${prefix}-${name}`
-    this.removeConnectionFromWatcher(connection, container)
+  stopWatching(connection: WsConnection, id?: string, prefix?: string) {
+    const key = id ?? prefix
+    this.removeConnectionFromWatcher(connection, key)
 
     const containers = this.connectionToContainers.get(connection)
     if (!containers) {
       return
     }
 
-    containers.delete(container)
+    containers.delete(key)
     if (containers.size < 1) {
       this.connectionToContainers.delete(connection)
     }

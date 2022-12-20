@@ -19,7 +19,6 @@ import { Timestamp } from '../../google/protobuf/timestamp'
 import {
   ConfigContainer,
   ContainerCommandRequest,
-  ContainerIdentifier,
   ContainerLogMessage,
   ContainerState,
   containerStateFromJSON,
@@ -1242,7 +1241,8 @@ export interface WatchContainerStateRequest {
 export interface WatchContainerLogRequest {
   accessedBy: string
   nodeId: string
-  prefixName: ContainerIdentifier | undefined
+  containerId: string | undefined
+  prefix: string | undefined
 }
 
 export interface DeploymentProgressMessage {
@@ -8119,7 +8119,7 @@ export const WatchContainerStateRequest = {
 }
 
 function createBaseWatchContainerLogRequest(): WatchContainerLogRequest {
-  return { accessedBy: '', nodeId: '', prefixName: undefined }
+  return { accessedBy: '', nodeId: '', containerId: undefined, prefix: undefined }
 }
 
 export const WatchContainerLogRequest = {
@@ -8130,8 +8130,11 @@ export const WatchContainerLogRequest = {
     if (message.nodeId !== '') {
       writer.uint32(802).string(message.nodeId)
     }
-    if (message.prefixName !== undefined) {
-      ContainerIdentifier.encode(message.prefixName, writer.uint32(810).fork()).ldelim()
+    if (message.containerId !== undefined) {
+      writer.uint32(1602).string(message.containerId)
+    }
+    if (message.prefix !== undefined) {
+      writer.uint32(1610).string(message.prefix)
     }
     return writer
   },
@@ -8149,8 +8152,11 @@ export const WatchContainerLogRequest = {
         case 100:
           message.nodeId = reader.string()
           break
-        case 101:
-          message.prefixName = ContainerIdentifier.decode(reader, reader.uint32())
+        case 200:
+          message.containerId = reader.string()
+          break
+        case 201:
+          message.prefix = reader.string()
           break
         default:
           reader.skipType(tag & 7)
@@ -8164,7 +8170,8 @@ export const WatchContainerLogRequest = {
     return {
       accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
-      prefixName: isSet(object.prefixName) ? ContainerIdentifier.fromJSON(object.prefixName) : undefined,
+      containerId: isSet(object.containerId) ? String(object.containerId) : undefined,
+      prefix: isSet(object.prefix) ? String(object.prefix) : undefined,
     }
   },
 
@@ -8172,8 +8179,8 @@ export const WatchContainerLogRequest = {
     const obj: any = {}
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.nodeId !== undefined && (obj.nodeId = message.nodeId)
-    message.prefixName !== undefined &&
-      (obj.prefixName = message.prefixName ? ContainerIdentifier.toJSON(message.prefixName) : undefined)
+    message.containerId !== undefined && (obj.containerId = message.containerId)
+    message.prefix !== undefined && (obj.prefix = message.prefix)
     return obj
   },
 
@@ -8181,10 +8188,8 @@ export const WatchContainerLogRequest = {
     const message = createBaseWatchContainerLogRequest()
     message.accessedBy = object.accessedBy ?? ''
     message.nodeId = object.nodeId ?? ''
-    message.prefixName =
-      object.prefixName !== undefined && object.prefixName !== null
-        ? ContainerIdentifier.fromPartial(object.prefixName)
-        : undefined
+    message.containerId = object.containerId ?? undefined
+    message.prefix = object.prefix ?? undefined
     return message
   },
 }

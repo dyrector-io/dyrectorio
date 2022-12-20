@@ -92,7 +92,7 @@ const onWatchContainerLog = async (
   message: WsMessage<WatchContainerLogMessage>,
 ) => {
   const service = endpoint.services.get(ContainerLogStreamService)
-  service.startWatching(connection, message.payload.prefix, message.payload.name, cruxFromConnection(connection).nodes)
+  service.startWatching(connection, cruxFromConnection(connection).nodes, message.payload.id, message.payload.prefix)
 }
 
 const onStopWatchingContainerLog = async (
@@ -101,7 +101,7 @@ const onStopWatchingContainerLog = async (
   message: WsMessage<WatchContainerLogMessage>,
 ) => {
   const service = endpoint.services.get(ContainerLogStreamService)
-  service.stopWatching(connection, message.payload.prefix, message.payload.name)
+  service.stopWatching(connection, message.payload.id, message.payload.prefix)
 }
 
 export default routedWebSocketEndpoint(

@@ -591,7 +591,8 @@ export interface ContainerStateItem {
 }
 
 export interface ContainerLogMessage {
-  prefixName: ContainerIdentifier | undefined
+  containerId: string | undefined
+  prefix: string | undefined
   log: string
 }
 
@@ -1101,13 +1102,16 @@ export const ContainerStateItem = {
 }
 
 function createBaseContainerLogMessage(): ContainerLogMessage {
-  return { prefixName: undefined, log: '' }
+  return { containerId: undefined, prefix: undefined, log: '' }
 }
 
 export const ContainerLogMessage = {
   encode(message: ContainerLogMessage, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.prefixName !== undefined) {
-      ContainerIdentifier.encode(message.prefixName, writer.uint32(802).fork()).ldelim()
+    if (message.containerId !== undefined) {
+      writer.uint32(1602).string(message.containerId)
+    }
+    if (message.prefix !== undefined) {
+      writer.uint32(1610).string(message.prefix)
     }
     if (message.log !== '') {
       writer.uint32(810).string(message.log)
@@ -1122,8 +1126,11 @@ export const ContainerLogMessage = {
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
-        case 100:
-          message.prefixName = ContainerIdentifier.decode(reader, reader.uint32())
+        case 200:
+          message.containerId = reader.string()
+          break
+        case 201:
+          message.prefix = reader.string()
           break
         case 101:
           message.log = reader.string()
@@ -1138,25 +1145,24 @@ export const ContainerLogMessage = {
 
   fromJSON(object: any): ContainerLogMessage {
     return {
-      prefixName: isSet(object.prefixName) ? ContainerIdentifier.fromJSON(object.prefixName) : undefined,
+      containerId: isSet(object.containerId) ? String(object.containerId) : undefined,
+      prefix: isSet(object.prefix) ? String(object.prefix) : undefined,
       log: isSet(object.log) ? String(object.log) : '',
     }
   },
 
   toJSON(message: ContainerLogMessage): unknown {
     const obj: any = {}
-    message.prefixName !== undefined &&
-      (obj.prefixName = message.prefixName ? ContainerIdentifier.toJSON(message.prefixName) : undefined)
+    message.containerId !== undefined && (obj.containerId = message.containerId)
+    message.prefix !== undefined && (obj.prefix = message.prefix)
     message.log !== undefined && (obj.log = message.log)
     return obj
   },
 
   fromPartial<I extends Exact<DeepPartial<ContainerLogMessage>, I>>(object: I): ContainerLogMessage {
     const message = createBaseContainerLogMessage()
-    message.prefixName =
-      object.prefixName !== undefined && object.prefixName !== null
-        ? ContainerIdentifier.fromPartial(object.prefixName)
-        : undefined
+    message.containerId = object.containerId ?? undefined
+    message.prefix = object.prefix ?? undefined
     message.log = object.log ?? ''
     return message
   },

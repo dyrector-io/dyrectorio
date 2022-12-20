@@ -5,7 +5,6 @@ import { Observable } from 'rxjs'
 import {
   ConfigContainer,
   ContainerCommandRequest,
-  ContainerIdentifier,
   ContainerLogMessage,
   ContainerStateListMessage,
   DeleteContainersRequest,
@@ -338,7 +337,8 @@ export interface AgentAbortUpdate {
 
 /** Container log */
 export interface ContainerLogRequest {
-  prefixName: ContainerIdentifier | undefined
+  containerId: string | undefined
+  prefix: string | undefined
   streaming: boolean
   tail: number
 }
@@ -1353,13 +1353,14 @@ export const AgentAbortUpdate = {
 }
 
 function createBaseContainerLogRequest(): ContainerLogRequest {
-  return { prefixName: undefined, streaming: false, tail: 0 }
+  return { containerId: undefined, prefix: undefined, streaming: false, tail: 0 }
 }
 
 export const ContainerLogRequest = {
   fromJSON(object: any): ContainerLogRequest {
     return {
-      prefixName: isSet(object.prefixName) ? ContainerIdentifier.fromJSON(object.prefixName) : undefined,
+      containerId: isSet(object.containerId) ? String(object.containerId) : undefined,
+      prefix: isSet(object.prefix) ? String(object.prefix) : undefined,
       streaming: isSet(object.streaming) ? Boolean(object.streaming) : false,
       tail: isSet(object.tail) ? Number(object.tail) : 0,
     }
@@ -1367,8 +1368,8 @@ export const ContainerLogRequest = {
 
   toJSON(message: ContainerLogRequest): unknown {
     const obj: any = {}
-    message.prefixName !== undefined &&
-      (obj.prefixName = message.prefixName ? ContainerIdentifier.toJSON(message.prefixName) : undefined)
+    message.containerId !== undefined && (obj.containerId = message.containerId)
+    message.prefix !== undefined && (obj.prefix = message.prefix)
     message.streaming !== undefined && (obj.streaming = message.streaming)
     message.tail !== undefined && (obj.tail = Math.round(message.tail))
     return obj

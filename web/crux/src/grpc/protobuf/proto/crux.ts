@@ -6,7 +6,6 @@ import { Timestamp } from '../../google/protobuf/timestamp'
 import {
   ConfigContainer,
   ContainerCommandRequest,
-  ContainerIdentifier,
   ContainerLogMessage,
   ContainerState,
   containerStateFromJSON,
@@ -1229,7 +1228,8 @@ export interface WatchContainerStateRequest {
 export interface WatchContainerLogRequest {
   accessedBy: string
   nodeId: string
-  prefixName: ContainerIdentifier | undefined
+  containerId: string | undefined
+  prefix: string | undefined
 }
 
 export interface DeploymentProgressMessage {
@@ -3686,7 +3686,7 @@ export const WatchContainerStateRequest = {
 }
 
 function createBaseWatchContainerLogRequest(): WatchContainerLogRequest {
-  return { accessedBy: '', nodeId: '', prefixName: undefined }
+  return { accessedBy: '', nodeId: '', containerId: undefined, prefix: undefined }
 }
 
 export const WatchContainerLogRequest = {
@@ -3694,7 +3694,8 @@ export const WatchContainerLogRequest = {
     return {
       accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
-      prefixName: isSet(object.prefixName) ? ContainerIdentifier.fromJSON(object.prefixName) : undefined,
+      containerId: isSet(object.containerId) ? String(object.containerId) : undefined,
+      prefix: isSet(object.prefix) ? String(object.prefix) : undefined,
     }
   },
 
@@ -3702,8 +3703,8 @@ export const WatchContainerLogRequest = {
     const obj: any = {}
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.nodeId !== undefined && (obj.nodeId = message.nodeId)
-    message.prefixName !== undefined &&
-      (obj.prefixName = message.prefixName ? ContainerIdentifier.toJSON(message.prefixName) : undefined)
+    message.containerId !== undefined && (obj.containerId = message.containerId)
+    message.prefix !== undefined && (obj.prefix = message.prefix)
     return obj
   },
 }

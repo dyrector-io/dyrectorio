@@ -13,9 +13,11 @@ import {
   containerPortsToString,
   imageName,
 } from '@app/models'
+import { containerLogUrl } from '@app/routes'
 import { utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
+import { useRouter } from 'next/router'
 
 interface NodeContainersListProps {
   state: NodeDetailsState
@@ -27,9 +29,14 @@ const NodeContainersList = (props: NodeContainersListProps) => {
   const { pagination } = state
   const containers = state.filters.filtered
 
+  const router = useRouter()
+
   const { t } = useTranslation('nodes')
 
   const headers = ['common:name', 'images:imageTag', 'common:state', 'common:createdAt', 'ports', 'common:actions']
+
+  const navigateToLog = (container: Container) =>
+    router.push(containerLogUrl(state.node.id, container.id, container.prefix))
 
   const itemBuilder = (container: Container) => {
     const targetState = state.containerTargetStates[container.name]
@@ -42,9 +49,7 @@ const NodeContainersList = (props: NodeContainersListProps) => {
       !container.ports ? null : (
         <span className="block overflow-hidden truncate">{containerPortsToString(container.ports)}</span>
       ),
-      <div className="flex flex-wrap justify-end items-center gap-0.5">
-        {/* TODO (@m8vago): get logs  */}
-        {/* <Image className="cursor-pointer" src="/book.svg" layout="fixed" width={24} height={24} onClick={null} /> */}
+      <div className="flex flex-wrap gap-1 justify-center items-center">
         {targetState ? (
           <LoadingIndicator />
         ) : (
@@ -64,6 +69,10 @@ const NodeContainersList = (props: NodeContainersListProps) => {
                 height={24}
                 onClick={() => actions.onStartContainer(container)}
               />
+            )}
+
+            {container.state && (
+              <DyoImgButton src="/book.svg" alt="log" width={24} height={24} onClick={() => navigateToLog(container)} />
             )}
 
             <DyoImgButton

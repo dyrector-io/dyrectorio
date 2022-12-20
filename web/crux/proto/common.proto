@@ -76,7 +76,10 @@ message ContainerStateItem {
 }
 
 message ContainerLogMessage {
-  common.ContainerIdentifier prefixName = 100;
+  oneof target {
+    string containerId = 200;
+    string prefix = 201;
+  }
   string log = 101;
 }
 

@@ -103,14 +103,14 @@ export class Agent {
     return watcher
   }
 
-  upsertContainerLogStream(prefix: string, name: string): ContainerLogStream {
+  upsertContainerLogStream(id?: string, prefix?: string): ContainerLogStream {
     this.throwWhenUpdating()
 
-    const container = `${prefix}-${name}`
-    let stream = this.logStreams.get(container)
+    const key = id ?? prefix
+    let stream = this.logStreams.get(key)
     if (!stream) {
-      stream = new ContainerLogStream(prefix, name)
-      this.logStreams.set(container, stream)
+      stream = new ContainerLogStream(id, prefix)
+      this.logStreams.set(key, stream)
       stream.start(this.commandChannel)
     }
 
@@ -210,8 +210,9 @@ export class Agent {
     watcher.onNodeStreamFinished()
   }
 
-  onContainerLogStreamStarted(container: string): [ContainerLogStream, ContainerLogStreamCompleter] {
-    const stream = this.logStreams.get(container)
+  onContainerLogStreamStarted(id?: string, prefix?: string): [ContainerLogStream, ContainerLogStreamCompleter] {
+    const key = id ?? prefix
+    const stream = this.logStreams.get(key)
     if (!stream) {
       return [null, null]
     }
@@ -219,13 +220,14 @@ export class Agent {
     return [stream, stream.onNodeStreamStarted()]
   }
 
-  onContainerLogStreamFinished(container: string) {
-    const watcher = this.logStreams.get(container)
+  onContainerLogStreamFinished(id?: string, prefix?: string) {
+    const key = id ?? prefix
+    const watcher = this.logStreams.get(key)
     if (!watcher) {
       return
     }
 
-    this.logStreams.delete(container)
+    this.logStreams.delete(key)
     watcher.onNodeStreamFinished()
   }
 

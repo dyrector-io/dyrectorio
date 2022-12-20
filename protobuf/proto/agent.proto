@@ -261,7 +261,10 @@ message AgentAbortUpdate { string error = 1; }
  *
  */
 message ContainerLogRequest {
-  common.ContainerIdentifier prefixName = 1;
+  oneof target {
+    string containerId = 1;
+    string prefix = 2;
+  }
   bool streaming = 3;
   uint32 tail = 4;
 }
