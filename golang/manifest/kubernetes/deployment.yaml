@@ -19,7 +19,8 @@ spec:
         - name: crane-init
           image: ghcr.io/dyrector-io/dyrectorio/agent/crane:latest
           command:
-            - crane
+            - /agent
+          args:
             - init
           imagePullPolicy: Always
           resources:
@@ -38,6 +39,7 @@ spec:
           resources:
             requests:
               memory: 128Mi
+              cpu: 84m
             limits:
               cpu: 1
               memory: 256Mi
