@@ -1,0 +1,108 @@
+{
+  "name": "backdrop",
+  "description": "The comprehensive CMS for small to medium sized businesses and non-profits.",
+  "registries": [
+    {
+      "name": "Docker Hub Library",
+      "type": "hub",
+      "hub": {
+        "imageNamePrefix": "library"
+      }
+    }
+  ],
+  "images": [
+    {
+      "name": "backdrop-db",
+      "registryName": "Docker Hub Library",
+      "image": "mariadb",
+      "tag": "1.23",
+      "config": {
+        "name": "backdrop-db",
+        "volumes": [
+          {
+            "name": "db",
+            "path": "/var/lib/mysql",
+            "type": "rw"
+          }
+        ],
+        "environment": [
+          {
+            "key": "MYSQL_ROOT_PASSWORD",
+            "value": "someDbPassword"
+          },
+          {
+            "key": "MYSQL_USER",
+            "value": "root"
+          },
+          {
+            "key": "MYSQL_DATABASE",
+            "value": "backdrop"
+          }
+        ],
+        "secrets": [
+          {
+            "key": "MYSQL_PASSWORD",
+            "required": true
+          }
+        ],
+        "networks": ["backdrop-network"],
+        "networkMode": "bridge",
+        "restartPolicy": "unless_stopped",
+        "deploymentStrategy": "recreate"
+      }
+    },
+    {
+      "name": "backdrop-app",
+      "registryName": "Docker Hub Library",
+      "image": "backdrop",
+      "tag": "latest",
+      "user": 0,
+      "config": {
+        "expose": "expose",
+        "ingress": {
+          "host": "localhost",
+          "name": "backdrop"
+        },
+        "name": "backdrop-app",
+        "ports": [
+          {
+            "external": 8081,
+            "internal": 80
+          }
+        ],
+        "environment": [
+          {
+            "key": "BACKDROP_DB_HOST",
+            "value": "backdrop-backdrop-db"
+          },
+          {
+            "key": "BACKDROP_DB_USER",
+            "value": "root"
+          },
+          {
+            "key": "BACKDROP_DB_NAME",
+            "value": "backdrop"
+          },
+          {
+            "key": "BACKDROP_DB_PORT",
+            "value": 3306
+          },
+          {
+            "key": "BACKDROP_DB_DRIVER",
+            "value": "mysql"
+          }
+        ],
+        "secrets": [
+          {
+            "key": "BACKDROP_DB_PASSWORD",
+            "required": true
+          }
+        ],
+        "networks": ["backdrop-network"],
+        "networkMode": "bridge",
+        "restartPolicy": "unless_stopped",
+        "deploymentStrategy": "recreate"
+      }
+    }
+  ]
+}
