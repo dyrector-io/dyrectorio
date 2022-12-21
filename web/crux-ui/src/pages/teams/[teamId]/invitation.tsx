@@ -1,10 +1,8 @@
 import { SingleFormLayout } from '@app/components/layout'
-import AnchorAction from '@app/elements/dyo-anchor-action'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { defaultApiErrorHandler } from '@app/errors'
-import useAnchorActions from '@app/hooks/use-anchor-actions'
 import { UserMetaTeam } from '@app/models'
 import { ROUTE_404, ROUTE_INDEX, teamInvitationApiUrl } from '@app/routes'
 import { redirectTo, withContextAuthorization } from '@app/utils'
@@ -46,13 +44,8 @@ const AcceptInvitationPage = (props: AcceptInvitationPageProps) => {
     }
   }
 
-  const acceptInvitation = () => sendInvitationRequest('PUT')
-  const declineInvitation = () => sendInvitationRequest('DELETE')
-
-  const anchors = useAnchorActions({
-    acceptInvitation,
-    declineInvitation,
-  })
+  const onAcceptInvitation = () => sendInvitationRequest('PUT')
+  const onDeclineInvitation = () => sendInvitationRequest('DELETE')
 
   return (
     <SingleFormLayout title={t('teamsNameInvite', team)}>
@@ -70,15 +63,13 @@ const AcceptInvitationPage = (props: AcceptInvitationPageProps) => {
             <DyoLabel className="mt-4">{t('youHaveBeenInvited', { name: team.name })}</DyoLabel>
 
             <div className="flex flex-row">
-              <AnchorAction className="mx-auto  mt-16" href="acceptInvitation" anchors={anchors}>
-                <DyoButton>{t('accept')}</DyoButton>
-              </AnchorAction>
+              <DyoButton className="mx-auto  mt-16 px-4" onClick={onAcceptInvitation}>
+                {t('accept')}
+              </DyoButton>
 
-              <AnchorAction className="mx-auto  mt-16" href="declineInvitation" anchors={anchors}>
-                <DyoButton className="px-4" color="bg-error-red">
-                  {t('decline')}
-                </DyoButton>
-              </AnchorAction>
+              <DyoButton className="mx-auto  mt-16 px-4" onClick={onDeclineInvitation} color="bg-error-red">
+                {t('decline')}
+              </DyoButton>
             </div>
           </>
         ) : (
