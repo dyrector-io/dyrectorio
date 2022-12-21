@@ -3,7 +3,7 @@ import DyoChips from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
-import RemainingTimeLabel from '@app/elements/remaining-time-label'
+import TimeLabel from '@app/elements/time-label'
 import { defaultApiErrorHandler } from '@app/errors'
 import useTimer from '@app/hooks/use-timer'
 import { DyoNodeDetails, DyoNodeInstall, NodeType, NODE_TYPE_VALUES } from '@app/models'
@@ -126,7 +126,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
         <div className="flex flex-row">
           <DyoLabel className="text-white mr-2">{t('scriptExpiresIn')}</DyoLabel>
 
-          <RemainingTimeLabel textColor="text-dyo-turquoise" seconds={remaining} />
+          <TimeLabel textColor="text-dyo-turquoise" seconds={remaining} />
         </div>
       </div>
 
