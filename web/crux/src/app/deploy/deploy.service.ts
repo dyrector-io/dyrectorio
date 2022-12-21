@@ -341,7 +341,7 @@ export default class DeployService {
 
         const secrets = it.config.secrets as UniqueSecretKeyValue[]
 
-        if (secrets.every(secret => secret.publicKey === publicKey)) {
+        if (!secrets || secrets.every(secret => secret.publicKey === publicKey)) {
           return null
         }
 
