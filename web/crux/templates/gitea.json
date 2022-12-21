@@ -1,0 +1,140 @@
+{
+  "name": "Gitea",
+  "description": "Gitea is a painless self-hosted Git service. It is similar to GitHub, Bitbucket, and GitLab.",
+  "registries": [
+    {
+      "name": "Docker Hub Gitea Database",
+      "type": "hub",
+      "hub": {
+        "imageNamePrefix": "library"
+      }
+    },
+    {
+      "name": "Docker Hub Gitea",
+      "type": "hub",
+      "hub": {
+        "imageNamePrefix": "gitea"
+      }
+    }
+  ],
+  "images": [
+    {
+      "name": "gitea-mysql",
+      "registryName": "Docker Hub Gitea Database",
+      "image": "mysql",
+      "tag": "latest",
+      "config": {
+        "name": "gitea-mysql",
+        "volumes": [
+          {
+            "name": "mysql",
+            "path": "/var/lib/mysql"
+          }
+        ],
+        "environment": [
+          {
+            "key": "MYSQL_RANDOM_ROOT_PASSWORD",
+            "value": "1"
+          },
+          {
+            "key": "MYSQL_USER",
+            "value": "giteauser"
+          },
+          {
+            "key": "MYSQL_DATABASE",
+            "value": "gitea"
+          },
+          {
+            "key": "MYSQL_PORT",
+            "value": "3306"
+          }
+        ],
+        "secrets": [
+          {
+            "key": "MYSQL_PASSWORD",
+            "required": true
+          }
+        ],
+        "networks": ["gitea"],
+        "networkMode": "bridge",
+        "restartPolicy": "unless_stopped",
+        "deploymentStrategy": "recreate"
+      }
+    },
+    {
+      "name": "gitea-server",
+      "registryName": "Docker Hub Gitea",
+      "image": "gitea",
+      "tag": "latest",
+      "config": {
+        "name": "gitea-server",
+        "volumes": [
+          {
+            "name": "data",
+            "path": "/data"
+          },
+          {
+            "name": "ssh",
+            "path": "/data/git/.ssh"
+          },
+          {
+            "name": "timezone",
+            "path": "/etc/timezone",
+            "type": "ro"
+          },
+          {
+            "name": "localtime",
+            "path": "/etc/localtime",
+            "type": "ro"
+          }
+        ],
+        "ports": [
+          {
+            "external": 3000,
+            "internal": 3000
+          },
+          {
+            "external": 2222,
+            "internal": 22
+          }
+        ],
+        "environment": [
+          {
+            "key": "USER_UID",
+            "value": "1000"
+          },
+          {
+            "key": "USER_GID",
+            "value": "1000"
+          },
+          {
+            "key": "GITEA__database__DB_TYPE",
+            "value": "mysql"
+          },
+          {
+            "key": "GITEA__database__HOST",
+            "value": "gitea-gitea-mysql:3306"
+          },
+          {
+            "key": "GITEA__database__NAME",
+            "value": "gitea"
+          },
+          {
+            "key": "GITEA__database__USER",
+            "value": "giteauser"
+          }
+        ],
+        "secrets": [
+          {
+            "key": "GITEA__database__PASSWD",
+            "required": true
+          }
+        ],
+        "networks": ["gitea"],
+        "networkMode": "bridge",
+        "restartPolicy": "unless-stopped",
+        "deploymentStrategy": "recreate"
+      }
+    }
+  ]
+}
