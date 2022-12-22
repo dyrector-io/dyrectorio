@@ -1,12 +1,12 @@
-import { SECOND_IN_MILLIS } from '@app/const'
+import { HOUR_IN_SECONDS, SECOND_IN_MILLIS } from '@app/const'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
-import RemainingTimeLabel from '@app/elements/remaining-time-label'
+import TimeLabel from '@app/elements/time-label'
 import { DyoNode } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import NodeStatusIndicator from './node-status-indicator'
 
 interface NodeConnectionCardProps {
@@ -22,23 +22,31 @@ const NodeConnectionCard = (props: NodeConnectionCardProps) => {
 
   const [runningSince, setRunningSince] = useState(null)
 
-  const updateRunningSince = () =>
-    setRunningSince(
-      node.status !== 'running'
-        ? null
-        : () => {
-            const now = new Date().getTime()
-            const secondsSinceConnected = node.connectedAt
-              ? (now - new Date(node.connectedAt).getTime()) / SECOND_IN_MILLIS
-              : null
-            return secondsSinceConnected
-          },
-    )
+  const timer = useRef(null)
+  const interval = useRef(SECOND_IN_MILLIS)
+
+  const updateRunningSince = () => {
+    if (node.status !== 'running') {
+      setRunningSince(null)
+    } else {
+      const now = new Date().getTime()
+      const secondsSinceConnected = node.connectedAt
+        ? (now - new Date(node.connectedAt).getTime()) / SECOND_IN_MILLIS
+        : null
+
+      if (secondsSinceConnected > HOUR_IN_SECONDS && interval.current === SECOND_IN_MILLIS) {
+        clearInterval(timer.current)
+        timer.current = setInterval(updateRunningSince, (interval.current = SECOND_IN_MILLIS * 60))
+      }
+
+      setRunningSince(secondsSinceConnected)
+    }
+  }
 
   useEffect(() => {
+    timer.current = setInterval(updateRunningSince, interval.current)
     updateRunningSince()
-    const timer = setInterval(updateRunningSince, 1000)
-    return () => clearInterval(timer)
+    return () => clearInterval(timer.current)
   }, [])
 
   return (
@@ -67,7 +75,7 @@ const NodeConnectionCard = (props: NodeConnectionCardProps) => {
         </div>
 
         <DyoLabel>{t('uptime')}</DyoLabel>
-        {runningSince ? <RemainingTimeLabel textColor="text-dyo-turquoise" seconds={runningSince} /> : null}
+        {runningSince ? <TimeLabel textColor="text-dyo-turquoise" seconds={runningSince} /> : null}
       </div>
     </DyoCard>
   )
