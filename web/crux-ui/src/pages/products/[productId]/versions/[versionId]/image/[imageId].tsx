@@ -22,12 +22,14 @@ import {
   DeleteImageMessage,
   ImageConfigFilterType,
   imageConfigToJsonContainerConfig,
+  ImageUpdateMessage,
   PatchImageMessage,
   ProductDetails,
   VersionDetails,
   VersionImage,
   ViewState,
   WS_TYPE_DELETE_IMAGE,
+  WS_TYPE_IMAGE_UPDATED,
   WS_TYPE_PATCH_IMAGE,
 } from '@app/models'
 import { imageConfigUrl, productUrl, ROUTE_PRODUCTS, versionUrl, versionWsUrl } from '@app/routes'
@@ -82,6 +84,17 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
       }
     })
   }
+
+  versionSock.on(WS_TYPE_IMAGE_UPDATED, (message: ImageUpdateMessage) => {
+    if (message.id !== image.id) {
+      return
+    }
+
+    setConfig({
+      ...config,
+      ...message.config,
+    })
+  })
 
   const onDelete = () =>
     confirmDelete(() => {
