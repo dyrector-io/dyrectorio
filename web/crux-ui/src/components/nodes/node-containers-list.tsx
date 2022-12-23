@@ -42,7 +42,7 @@ const NodeContainersList = (props: NodeContainersListProps) => {
       !container.ports ? null : (
         <span className="block overflow-hidden truncate">{containerPortsToString(container.ports)}</span>
       ),
-      <div className="flex flex-wrap gap-1 justify-center items-center">
+      <div className="flex flex-wrap justify-end items-center gap-0.5">
         {/* TODO (@m8vago): get logs  */}
         {/* <Image className="cursor-pointer" src="/book.svg" layout="fixed" width={24} height={24} onClick={null} /> */}
         {targetState ? (
@@ -53,7 +53,6 @@ const NodeContainersList = (props: NodeContainersListProps) => {
               <DyoImgButton
                 src="/restart.svg"
                 alt="restart"
-                width={24}
                 height={24}
                 onClick={() => actions.onRestartContainer(container)}
               />
@@ -62,7 +61,6 @@ const NodeContainersList = (props: NodeContainersListProps) => {
                 disabled={!containerIsStartable(container.state)}
                 src="/start.svg"
                 alt="start"
-                width={24}
                 height={24}
                 onClick={() => actions.onStartContainer(container)}
               />
@@ -72,7 +70,6 @@ const NodeContainersList = (props: NodeContainersListProps) => {
               disabled={!containerIsStopable(container.state)}
               src="/stop.svg"
               alt="stop"
-              width={24}
               height={24}
               onClick={() => actions.onStopContainer(container)}
             />
@@ -80,7 +77,6 @@ const NodeContainersList = (props: NodeContainersListProps) => {
             <DyoImgButton
               src="/trash-can.svg"
               alt="delete"
-              width={24}
               height={24}
               onClick={() => actions.onDeleteContainer(container)}
             />
@@ -90,18 +86,18 @@ const NodeContainersList = (props: NodeContainersListProps) => {
     ]
   }
 
-  const columnWidths = ['w-2/12', 'w-4/12', 'w-1/12', '', '', '']
+  const columnWidths = ['w-2/12', 'w-4/12', 'w-1/12', '', '', 'w-1/12']
   const defaultHeaderClass = 'uppercase text-bright text-sm font-semibold bg-medium-eased pl-2 py-3 h-11'
   const headerClasses = [
     clsx('rounded-tl-lg pl-6', defaultHeaderClass),
     ...Array.from({ length: headers.length - 2 }).map(() => defaultHeaderClass),
-    clsx('rounded-tr-lg text-center', defaultHeaderClass),
+    clsx('rounded-tr-lg text-right pr-6', defaultHeaderClass),
   ]
   const defaultItemClass = 'h-12 min-h-min text-light-eased p-2'
   const itemClasses = [
     clsx('pl-6', defaultItemClass),
     ...Array.from({ length: headers.length - 2 }).map(() => defaultItemClass),
-    clsx(defaultItemClass),
+    clsx('pr-6', defaultItemClass),
   ]
 
   return (
