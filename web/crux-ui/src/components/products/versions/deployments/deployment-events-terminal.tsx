@@ -11,7 +11,7 @@ interface DeploymentEventsTerminalProps {
 }
 
 const DeploymentEventsTerminal = (props: DeploymentEventsTerminalProps) => {
-  const { events: propsEvents } = props
+  const { events } = props
 
   const { t } = useTranslation('common')
 
@@ -45,13 +45,7 @@ const DeploymentEventsTerminal = (props: DeploymentEventsTerminalProps) => {
 
     preventScrollEvent.current = true
     containerRef.current.scrollTop = containerRef.current.scrollHeight
-  }, [propsEvents, containerRef, autoScroll])
-
-  const events = propsEvents.sort((one, other) => {
-    const oneDate = new Date(one.createdAt)
-    const otherDate = new Date(other.createdAt)
-    return oneDate.getTime() - otherDate.getTime()
-  })
+  }, [events, containerRef, autoScroll])
 
   const eventToString = (event: DeploymentEvent): string[] => {
     if (event.type !== 'log') {

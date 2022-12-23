@@ -105,7 +105,7 @@ export default class DeployService {
         status: true,
         events: {
           orderBy: {
-            createdAt: 'desc',
+            createdAt: 'asc',
           },
         },
       },
