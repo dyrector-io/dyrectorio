@@ -15,36 +15,35 @@
       "name": "backdrop-db",
       "registryName": "Docker Hub Library",
       "image": "mariadb",
-      "tag": "1.23",
+      "tag": "latest",
       "config": {
         "name": "backdrop-db",
         "volumes": [
           {
-            "name": "db",
+            "name": "mariadb",
             "path": "/var/lib/mysql",
             "type": "rw"
           }
         ],
         "environment": [
           {
-            "key": "MYSQL_ROOT_PASSWORD",
-            "value": "someDbPassword"
+            "key": "MYSQL_RANDOM_ROOT_PASSWORD",
+            "value": "1"
           },
           {
             "key": "MYSQL_USER",
-            "value": "root"
+            "value": "backdropuser"
           },
           {
             "key": "MYSQL_DATABASE",
             "value": "backdrop"
-          }
-        ],
-        "secrets": [
+          },
           {
             "key": "MYSQL_PASSWORD",
-            "required": true
+            "value": "1234"
           }
         ],
+        "secrets": [],
         "networks": ["backdrop-network"],
         "networkMode": "bridge",
         "restartPolicy": "unless_stopped",
@@ -55,18 +54,35 @@
       "name": "backdrop-app",
       "registryName": "Docker Hub Library",
       "image": "backdrop",
-      "tag": "latest",
-      "user": 0,
+      "tag": "apache",
       "config": {
-        "expose": "expose",
-        "ingress": {
-          "host": "localhost",
-          "name": "backdrop"
-        },
         "name": "backdrop-app",
+        "volumes": [
+          {
+            "name": "files",
+            "path": "/var/www/html/files",
+            "type": "rw"
+          },
+          {
+            "name": "sites",
+            "path": "/var/www/html/sites"
+          },
+          {
+            "name": "layouts",
+            "path": "/var/www/html/layouts"
+          },
+          {
+            "name": "modules",
+            "path": "/var/www/html/modules"
+          },
+          {
+            "name": "themes",
+            "path": "/var/www/html/themes"
+          }
+        ],
         "ports": [
           {
-            "external": 8081,
+            "external": 6701,
             "internal": 80
           }
         ],
@@ -76,28 +92,27 @@
             "value": "backdrop-backdrop-db"
           },
           {
-            "key": "BACKDROP_DB_USER",
-            "value": "root"
+            "key": "BACKDROP_DB_PORT",
+            "value": 3306
           },
           {
             "key": "BACKDROP_DB_NAME",
             "value": "backdrop"
           },
           {
-            "key": "BACKDROP_DB_PORT",
-            "value": 3306
+            "key": "BACKDROP_DB_USER",
+            "value": "backdropuser"
           },
           {
             "key": "BACKDROP_DB_DRIVER",
             "value": "mysql"
-          }
-        ],
-        "secrets": [
+          },
           {
             "key": "BACKDROP_DB_PASSWORD",
-            "required": true
+            "value": "1234"
           }
         ],
+        "secrets": [],
         "networks": ["backdrop-network"],
         "networkMode": "bridge",
         "restartPolicy": "unless_stopped",
