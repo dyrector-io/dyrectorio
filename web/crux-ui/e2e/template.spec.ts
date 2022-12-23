@@ -78,3 +78,11 @@ test('creating a simple product from a template should work (LinkAce)', async ({
 test('creating a complex product from a template should work (LinkAce)', async ({ page }) => {
   await testComplexTemplate(page, 'LinkAce', 'LinkAce-complex', 2)
 })
+
+test('creating a simple product from a template should work (Gitea)', async ({ page }) => {
+  await testSimpleTemplate(page, 'Gitea', 'Gitea-simple', 2)
+})
+
+test('creating a complex product from a template should work (Gitea)', async ({ page }) => {
+  await testComplexTemplate(page, 'Gitea', 'Gitea-complex', 2)
+})
