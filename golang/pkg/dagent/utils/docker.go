@@ -340,7 +340,7 @@ func DeployImage(ctx context.Context,
 		WithoutConflict().
 		WithLogWriter(dog)
 
-	WithImportContainer(builder, deployImageRequest.ContainerConfig.ImportContainer, dog, cfg)
+	WithInitContainers(builder, &deployImageRequest.ContainerConfig, dog, cfg)
 
 	builder.Create()
 
@@ -374,25 +374,25 @@ func setNetwork(deployImageRequest *v1.DeployImageRequest) (networkMode string, 
 	return networkMode, deployImageRequest.ContainerConfig.Networks
 }
 
-func WithImportContainer(dc *containerbuilder.DockerContainerBuilder, importConfig *v1.ImportContainer,
+func WithInitContainers(dc *containerbuilder.DockerContainerBuilder, containerConfig *v1.ContainerConfig,
 	dog *dogger.DeploymentLogger, cfg *config.Configuration,
 ) {
-	if importConfig != nil {
-		dc.WithPreStartHooks(func(ctx context.Context,
-			client *client.Client,
-			containerName string,
-			containerId *string,
-			mountList []mount.Mount,
-			logger *io.StringWriter,
-		) error {
-			if initError := spawnInitContainer(ctx, client, containerName, mountList, importConfig, dog, cfg); initError != nil {
-				dog.WriteDeploymentStatus(common.DeploymentStatus_FAILED, "Failed to spawn init container: "+initError.Error())
-				return initError
-			}
-			dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Loading assets was successful.")
-			return nil
-		})
+	initFuncs := []containerbuilder.LifecycleFunc{}
+	if containerConfig.ImportContainer != nil {
+		initFuncs = append(initFuncs,
+			func(ctx context.Context, client *client.Client,
+				containerName string, containerId *string,
+				mountList []mount.Mount, logger *io.StringWriter,
+			) error {
+				if initError := spawnInitContainer(ctx, client, containerName, mountList, containerConfig.ImportContainer, dog, cfg); initError != nil {
+					dog.WriteDeploymentStatus(common.DeploymentStatus_FAILED, "Failed to spawn init container: "+initError.Error())
+					return initError
+				}
+				dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Loading assets was successful.")
+				return nil
+			})
 	}
+	dc.WithPreStartHooks(initFuncs...)
 }
 
 func volumesToMounts(volumes []v1.Volume) []string {
