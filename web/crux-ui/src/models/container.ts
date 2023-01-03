@@ -565,50 +565,56 @@ export const mergeJsonConfigToContainerConfig = (
           options: mergeKeyValuesWithJson(serialized.logConfig?.options, json.logConfig?.options),
         }
       : null,
-    initContainers: json.initContainers?.map(it => {
-      const index = serialized.initContainers?.map(iit => iit.name).indexOf(it.name)
+    initContainers: !json.initContainers
+      ? []
+      : json.initContainers.map(it => {
+          const index = serialized.initContainers?.map(iit => iit.name).indexOf(it.name)
 
-      if (index !== -1) {
-        const prev = serialized.initContainers[index]
-
-        return {
-          ...prev,
-          args: mergeKeysWithJson(prev.args, it.args),
-          command: mergeKeysWithJson(prev.command, it.command),
-          environment: mergeKeyValuesWithJson(prev.environment, it.environment),
-          volumes: it.volumes?.map(vit => {
-            const volumeIndex = prev.volumes?.map(pv => pv.name).indexOf(vit.name)
-            const id = volumeIndex !== -1 ? prev.volumes[volumeIndex].id : uuid()
+          if (index !== -1) {
+            const prev = serialized.initContainers[index]
 
             return {
-              ...vit,
-              id,
-            } as InitContainerVolumeLink
-          }),
-        } as InitContainer
-      }
+              ...prev,
+              args: mergeKeysWithJson(prev.args, it.args),
+              command: mergeKeysWithJson(prev.command, it.command),
+              environment: mergeKeyValuesWithJson(prev.environment, it.environment),
+              volumes: it.volumes?.map(vit => {
+                const volumeIndex = prev.volumes?.map(pv => pv.name).indexOf(vit.name)
+                const id = volumeIndex > -1 ? prev.volumes[volumeIndex].id : uuid()
 
-      return {
-        ...it,
-        id: uuid(),
-        command: it.command?.map(cit => ({ id: uuid(), key: cit })),
-        args: it.args ? it.args?.map(ait => ({ id: uuid(), key: ait })) : [],
-        environment: Object.keys(it.environment ?? {}).map(eit => ({
-          key: eit,
-          value: it.environment[eit],
+                return {
+                  ...vit,
+                  id,
+                } as InitContainerVolumeLink
+              }),
+            } as InitContainer
+          }
+
+          return {
+            ...it,
+            id: uuid(),
+            command: it.command?.map(cit => ({ id: uuid(), key: cit })),
+            args: it.args ? it.args?.map(ait => ({ id: uuid(), key: ait })) : [],
+            environment: Object.keys(it.environment ?? {}).map(eit => ({
+              key: eit,
+              value: it.environment[eit],
+              id: uuid(),
+            })),
+            volumes: it.volumes?.map(vit => ({ ...vit, id: uuid() })),
+          } as InitContainer
+        }),
+    ports: !json.ports
+      ? []
+      : json.ports.map(it => ({
+          ...it,
           id: uuid(),
         })),
-        volumes: it.volumes?.map(vit => ({ ...vit, id: uuid() })),
-      } as InitContainer
-    }),
-    ports: json.ports?.map(it => ({
-      ...it,
-      id: uuid(),
-    })),
-    portRanges: json.portRanges?.map(it => ({
-      ...it,
-      id: uuid(),
-    })),
+    portRanges: !json.portRanges
+      ? []
+      : json.portRanges.map(it => ({
+          ...it,
+          id: uuid(),
+        })),
     dockerLabels: mergeKeyValuesWithJson(serialized.dockerLabels, json.dockerLabels),
     labels: json.labels
       ? {
