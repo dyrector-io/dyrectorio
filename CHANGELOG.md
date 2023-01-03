@@ -1,6 +1,21 @@
 # CHANGELOG
 
 
+<a name="0.3.2"></a>
+## [0.3.2](https://github.com/dyrector-io/dyrectorio/compare/0.3.1...0.3.2) (2023-01-03)
+
+### Feat
+
+* add minecraft server template ([#414](https://github.com/dyrector-io/dyrectorio/issues/414))
+* **(agent):** add multi arch build targets ([#418](https://github.com/dyrector-io/dyrectorio/issues/418))
+* **(web):** add gitea template ([#412](https://github.com/dyrector-io/dyrectorio/issues/412))
+
+### Fix
+
+* **(crux-ui):** json editor and mapper ([#413](https://github.com/dyrector-io/dyrectorio/issues/413))
+* **(web):** deployment event order ([#416](https://github.com/dyrector-io/dyrectorio/issues/416))
+
+
 <a name="0.3.1"></a>
 ## [0.3.1](https://github.com/dyrector-io/dyrectorio/compare/0.3.0...0.3.1) (2022-12-22)
 
