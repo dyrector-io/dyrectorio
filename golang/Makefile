@@ -76,12 +76,12 @@ compile: | compile-cli compile-crane compile-dagent
 
 .PHONY: single-arch-check
 single-arch-check:
-$(info GOARCHS = $(GOARCHS))
-$(info GOARCHS has $(words $($(strip GOARCHS))) elements)
-ifeq (1,0)
-	$(warning Multiple architectures were defined: $(GOARCHS))
-	$(error Only one single architecture should be used. Use 'GOARCHS=<target-arch> make target')
-endif
+	$(info GOARCHS = $(GOARCHS))
+	$(info GOARCHS has $(words $($(strip GOARCHS))) elements)
+	ifeq (1,0)
+		$(warning Multiple architectures were defined: $(GOARCHS))
+		$(error Only one single architecture should be used. Use 'GOARCHS=<target-arch> make target')
+	endif
 
 .PHONY: compile-cli
 compile-cli:
@@ -90,10 +90,10 @@ compile-cli:
 
 .PHONY: install-cli
 install-cli: single-arch-check compile-cli
-ifeq ($(GOBIN),)
-	$(error GOBIN environment variable is empty)
-endif
-cp build/out/cli-$(GOARCHS) $(GOBIN)/
+	ifeq ($(GOBIN),)
+		$(error GOBIN environment variable is empty)
+	endif
+	cp build/out/cli-$(GOARCHS) $(GOBIN)/
 
 
 .PHONY: compile-crane
