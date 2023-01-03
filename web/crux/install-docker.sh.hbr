@@ -11,10 +11,11 @@ case $(uname) in
     ;;
 esac
 
-if [ $ROOTLESS == "false" ]; then
+if [ $ROOTLESS = "false" ]; then
   if [ $(id -u) -ne 0 ]; then
     echo "Installation process needs root privileges" 1>&2
-    sudo -s /bin/sh
+{{!-- this will quit the non-root script & restart the script as root --}}
+    exec sudo -s "$0"
   fi
 fi
 
@@ -27,10 +28,10 @@ case $(uname) in
     ;;
   MINGW*)
     PLATFORM="WINDOWS"
-    if ! [ -z ${MSYS_NO_PATHCONV+x} ]; then 
+    if ! [ -z ${MSYS_NO_PATHCONV+x} ]; then
         ORIGINAL_PATHCONV_CONFIG=$MSYS_NO_PATHCONV
     fi
-    
+
     export MSYS_NO_PATHCONV=1
     HOST_DOCKER_SOCK_PATH="${HOST_DOCKER_SOCK_PATH:-//var/run/docker.sock}"
     ;;
@@ -52,7 +53,7 @@ set_environment() {
         ;;
       LINUX*)
         echo "Detected: Linux"
-        if [ $ROOTLESS == "false" ]; then
+        if [ $ROOTLESS = "false" ]; then
           PERSISTENCE_FOLDER=/srv/dyrectorio-persistence/
         else
           PERSISTENCE_FOLDER=~/.dyrectorio-persistence/
@@ -74,7 +75,7 @@ set_environment() {
 
   mkdir -p $PERSISTENCE_FOLDER
 
-  if [ $PLATFORM == "WINDOWS" ]; then
+  if [ $PLATFORM = "WINDOWS" ]; then
     PERSISTENCE_FOLDER_TMP=${PERSISTENCE_FOLDER,}
     PERSISTENCE_FOLDER="/run/desktop/mnt/host/${PERSISTENCE_FOLDER_TMP//:/''}"
   fi
@@ -95,7 +96,7 @@ set_environment() {
     if [ -z ${DOCKER_HOST:-} ]; then
       HOST_DOCKER_SOCK_PATH="/var/run/docker.sock"
     else
-      if [ ${DOCKER_HOST:0:7} == "unix://" ]; then
+      if [ ${DOCKER_HOST:0:7} = "unix://" ]; then
         HOST_DOCKER_SOCK_PATH=${DOCKER_HOST:7}
       else
         echo "Invalid DOCKER_HOST variable please set HOST_DOCKER_SOCK_PATH if your socket is in a custom location otherwise unset DOCKER_HOST!"
@@ -170,7 +171,7 @@ dagent_install() {
 
   if [ -z ${ORIGINAL_PATHCONV_CONFIG+x} ]; then
     unset MSYS_NO_PATHCONV
-  else 
+  else
     export MSYS_NO_PATHCONV=$ORIGINAL_PATHCONV_CONFIG
   fi
 }
