@@ -38,6 +38,7 @@ const ApplyTemplateCard = (props: ApplyTemplateCardProps) => {
       description: propsTemplate.description,
       type: 'simple' as ProductType,
     },
+    enableReinitialize: true,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 
@@ -70,7 +71,6 @@ const ApplyTemplateCard = (props: ApplyTemplateCardProps) => {
       <DyoHeading element="h4" className="text-lg text-bright">
         {t('applyTemplate', { name: propsTemplate.name })}
       </DyoHeading>
-
       <DyoForm className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
         <DyoInput
           className="max-w-lg"

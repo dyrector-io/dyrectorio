@@ -45,7 +45,7 @@
     "@nestjs/axios": "^1.0.0",
     "@nestjs/cli": "^9.1.5",
     "@nestjs/config": "^2.2.0",
-    "@nestjs/jwt": "^9.0.0",
+    "@nestjs/jwt": "^10.0.1",
     "@nestjs/microservices": "^9.2.1",
     "@nestjs/platform-express": "^9.2.1",
     "@ory/kratos-client": "^0.10.1",
