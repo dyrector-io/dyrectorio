@@ -35,6 +35,9 @@ const TemplatesPage = (props: TemplatesPageProps) => {
 
   const onCreate = (template: Template) => {
     setApplying(template)
+
+    // Scroll to the top of the page after selected a template
+    window.scrollTo(0, 0)
   }
 
   const onTemplateApplied = productId => {
