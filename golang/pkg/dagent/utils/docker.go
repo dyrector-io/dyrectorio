@@ -666,49 +666,18 @@ func DeleteContainers(ctx context.Context, request *common.DeleteContainersReque
 }
 
 type DockerContainerLogReader struct {
-	Reader io.ReadCloser
-	TTY    bool
+	EventChannel chan grpc.ContainerLogEvent
+	Reader       io.ReadCloser
 
 	grpc.ContainerLogReader
 }
 
-func (dockerReader *DockerContainerLogReader) Next() (string, error) {
-	reader := dockerReader.Reader
-
-	if dockerReader.TTY {
-		// TODO (robot9706): implement TTY method
-		return "", errors.New("TTY not implemented")
-	}
-
-	header := make([]byte, DockerLogHeaderLength)
-
-	_, err := reader.Read(header)
-	if err != nil {
-		return "", err
-	}
-
-	payloadSize := int(binary.BigEndian.Uint32(header[4:]))
-	buffer := make([]byte, payloadSize)
-
-	read := 0
-	for read < payloadSize {
-		count, err := reader.Read(buffer[read:])
-		read += count
-
-		if err != nil {
-			return "", err
-		}
-	}
-
-	logMessage := string(buffer[0:read])
-
-	return logMessage, nil
+func (dockerReader *DockerContainerLogReader) Next() <-chan grpc.ContainerLogEvent {
+	return dockerReader.EventChannel
 }
 
 func (dockerReader *DockerContainerLogReader) Close() error {
-	reader := dockerReader.Reader
-
-	return reader.Close()
+	return dockerReader.Reader.Close()
 }
 
 func ContainerLog(ctx context.Context, request *agent.ContainerLogRequest) (grpc.ContainerLogReader, error) {
@@ -717,7 +686,7 @@ func ContainerLog(ctx context.Context, request *agent.ContainerLogRequest) (grpc
 		return nil, err
 	}
 
-	containerID := request.GetContainerId()
+	containerID := request.GetId()
 
 	inspect, err := cli.ContainerInspect(ctx, containerID)
 	if err != nil {
@@ -726,8 +695,15 @@ func ContainerLog(ctx context.Context, request *agent.ContainerLogRequest) (grpc
 
 	tty := inspect.Config.Tty
 
+	if tty {
+		// TODO (robot9706): implement TTY method
+		return nil, errors.New("tty not implemented")
+	}
+
 	streaming := request.GetStreaming()
 	tail := fmt.Sprintf("%d", request.GetTail())
+
+	eventChannel := make(chan grpc.ContainerLogEvent)
 
 	reader, err := cli.ContainerLogs(ctx, containerID, types.ContainerLogsOptions{
 		ShowStderr: true,
@@ -740,9 +716,46 @@ func ContainerLog(ctx context.Context, request *agent.ContainerLogRequest) (grpc
 		return nil, err
 	}
 
+	go func() {
+		for {
+			header := make([]byte, DockerLogHeaderLength)
+
+			_, err := reader.Read(header)
+			if err != nil {
+				eventChannel <- grpc.ContainerLogEvent{
+					Message: "",
+					Error:   err,
+				}
+				break
+			}
+
+			payloadSize := int(binary.BigEndian.Uint32(header[4:]))
+			buffer := make([]byte, payloadSize)
+
+			read := 0
+			for read < payloadSize {
+				count, err := reader.Read(buffer[read:])
+				read += count
+
+				if err != nil {
+					eventChannel <- grpc.ContainerLogEvent{
+						Message: "",
+						Error:   err,
+					}
+					break
+				}
+			}
+
+			eventChannel <- grpc.ContainerLogEvent{
+				Message: string(buffer[0:read]),
+				Error:   nil,
+			}
+		}
+	}()
+
 	logReader := &DockerContainerLogReader{
-		Reader: reader,
-		TTY:    tty,
+		EventChannel: eventChannel,
+		Reader:       reader,
 	}
 
 	return logReader, nil

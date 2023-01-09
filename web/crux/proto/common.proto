@@ -76,11 +76,7 @@ message ContainerStateItem {
 }
 
 message ContainerLogMessage {
-  oneof target {
-    string containerId = 200;
-    string prefix = 201;
-  }
-  string log = 101;
+  string log = 100;
 }
 
 enum NetworkMode {

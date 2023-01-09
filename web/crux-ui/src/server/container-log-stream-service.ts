@@ -1,3 +1,4 @@
+import { ContainerIdentifier } from '@app/models/grpc/protobuf/proto/common'
 import WsConnection from '@app/websockets/connection'
 import ContainerLogStream from './container-log-stream'
 import DyoNodeService from './crux/node-service'
@@ -9,12 +10,12 @@ class ContainerLogStreamService {
 
   constructor(private nodeId: string) {}
 
-  startWatching(connection: WsConnection, nodeService: DyoNodeService, id?: string, prefix?: string) {
-    const key = id ?? prefix
+  startWatching(connection: WsConnection, nodeService: DyoNodeService, id?: string, prefixName?: ContainerIdentifier) {
+    const key = id ?? `${prefixName.prefix}-${prefixName.name}`
 
     let stream = this.streams.get(key)
     if (!stream) {
-      stream = new ContainerLogStream(id, prefix)
+      stream = new ContainerLogStream(id, prefixName)
       stream.start(connection, this.nodeId, nodeService)
       this.streams.set(key, stream)
     } else {
@@ -30,8 +31,8 @@ class ContainerLogStreamService {
     containers.add(key)
   }
 
-  stopWatching(connection: WsConnection, id?: string, prefix?: string) {
-    const key = id ?? prefix
+  stopWatching(connection: WsConnection, id?: string, prefixName?: ContainerIdentifier) {
+    const key = id ?? `${prefixName.prefix}-${prefixName.name}`
     this.removeConnectionFromWatcher(connection, key)
 
     const containers = this.connectionToContainers.get(connection)

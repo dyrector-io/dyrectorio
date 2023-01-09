@@ -194,20 +194,22 @@ export default class NodeService {
 
   handleContainerLogStream(request: WatchContainerLogRequest): Observable<ContainerLogMessage> {
     this.logger.debug(
-      `Opening container log stream for container: ${request.nodeId} - '${request.containerId ?? request.prefix}'`,
+      `Opening container log stream for container: ${request.id} - '${
+        request.id ?? `${request.prefixName.prefix}-${request.prefixName.name}`
+      }'`,
     )
 
-    const agent = this.agentService.getById(request.nodeId)
+    const agent = this.agentService.getById(request.id)
 
     if (!agent) {
       throw new PreconditionFailedException({
         message: 'Node is unreachable',
         property: 'nodeId',
-        value: request.nodeId,
+        value: request.id,
       })
     }
 
-    const stream = agent.upsertContainerLogStream(request.containerId, request.prefix)
+    const stream = agent.upsertContainerLogStream(request.dockerId, request.prefixName)
     return stream.watch()
   }
 

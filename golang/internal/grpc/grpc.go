@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -40,8 +41,13 @@ type ConnectionParams struct {
 	token   string
 }
 
+type ContainerLogEvent struct {
+	Message string
+	Error   error
+}
+
 type ContainerLogReader interface {
-	Next() (string, error)
+	Next() <-chan ContainerLogEvent
 	Close() error
 }
 
@@ -537,26 +543,55 @@ func executeContainerCommand(ctx context.Context, command *common.ContainerComma
 	}
 }
 
+func streamContainerLog(reader ContainerLogReader, client agent.Agent_ContainerLogClient, containerID string, streaming bool) {
+	for {
+		event := <-reader.Next()
+		if event.Error != nil {
+			if event.Error == io.EOF && !streaming {
+				log.Trace().Str("container", containerID).Msg("Container log finished non streaming (EOF)")
+				break
+			}
+
+			if event.Error == context.Canceled {
+				log.Trace().Str("container", containerID).Msg("Container log finished context cancel (server close)")
+				break
+			}
+
+			log.Error().Err(event.Error).Stack().Str("container", containerID).Msg("Container log reader error")
+			break
+		}
+
+		log.Debug().Str("container", containerID).Str("log", event.Message).Msg("Container log")
+
+		err := client.Send(&common.ContainerLogMessage{
+			Log: event.Message,
+		})
+		if err != nil {
+			log.Error().Err(err).Stack().Str("container", containerID).Msg("Container log channel error")
+			break
+		}
+	}
+}
+
 func executeContainerLog(ctx context.Context, command *agent.ContainerLogRequest, logFunc ContainerLogFunc) {
-	containerID := command.GetContainerId()
+	containerID := ""
+	if command.GetPrefixName() != nil {
+		containerID = fmt.Sprintf("%s-%s", command.GetPrefixName().Prefix, command.GetPrefixName().Name)
+	} else {
+		containerID = command.GetId()
+	}
 
 	log.Debug().Str("container", containerID).Uint32("tail", command.GetTail()).
 		Bool("stream", command.GetStreaming()).Msg("Getting container logs")
 
-	reader, err := logFunc(ctx, command)
-	if err != nil {
-		log.Error().Err(err).Str("container", containerID).Msg("Failed to open container log reader")
-		return
+	var streamCtx context.Context
+	if command.GetPrefixName() != nil {
+		prefixCtx := metadata.AppendToOutgoingContext(ctx, "dyo-container-prefix", command.GetPrefixName().Prefix)
+		streamCtx = metadata.AppendToOutgoingContext(prefixCtx, "dyo-container-name", command.GetPrefixName().Name)
+	} else {
+		streamCtx = metadata.AppendToOutgoingContext(ctx, "dyo-container-id", command.GetId())
 	}
 
-	defer func() {
-		err = reader.Close()
-		if err != nil {
-			log.Error().Err(err).Str("container", containerID).Msg("Failed to close container log reader")
-		}
-	}()
-
-	streamCtx := metadata.AppendToOutgoingContext(ctx, "dyo-container-id", containerID)
 	stream, err := grpcConn.Client.ContainerLog(streamCtx, grpc.WaitForReady(true))
 	if err != nil {
 		log.Error().Err(err).Str("container", containerID).Msg("Failed to open container log channel")
@@ -570,30 +605,46 @@ func executeContainerLog(ctx context.Context, command *agent.ContainerLogRequest
 		}
 	}()
 
-	for {
-		message, err := reader.Next()
+	log.Info().Msg("gRPC stream context STARTED")
+
+	streamCtx = stream.Context()
+
+	reader, err := logFunc(streamCtx, command)
+	if err != nil {
+		log.Error().Err(err).Str("container", containerID).Msg("Failed to open container log reader")
+		return
+	}
+
+	defer func() {
+		err = reader.Close()
 		if err != nil {
-			if err == io.EOF && !command.GetStreaming() {
+			log.Error().Err(err).Str("container", containerID).Msg("Failed to close container log reader")
+		}
+	}()
+
+	var waitGroup sync.WaitGroup
+
+	waitGroup.Add(1)
+	go streamContainerLog(reader, stream, containerID, command.GetStreaming())
+
+	go func() {
+		for {
+			var msg interface{}
+			err := stream.RecvMsg(&msg)
+			if err != nil {
 				break
 			}
-
-			log.Error().Err(err).Stack().Str("container", containerID).Msg("Failed to read container log")
-			break
 		}
 
-		log.Debug().Str("container", containerID).Str("log", message).Msg("Container log")
+		log.Trace().Str("container", containerID).Msg("Container log waiting for context done")
 
-		err = stream.Send(&common.ContainerLogMessage{
-			Target: &common.ContainerLogMessage_ContainerId{
-				ContainerId: containerID,
-			},
-			Log: message,
-		})
-		if err != nil {
-			log.Error().Err(err).Stack().Str("container", containerID).Msg("Container log channel error")
-			break
-		}
-	}
+		<-streamCtx.Done()
+		waitGroup.Done()
+	}()
+
+	waitGroup.Wait()
+
+	log.Trace().Str("container", containerID).Msg("Container log exited")
 }
 
 func WithGRPCConfig(parentContext context.Context, cfg any) context.Context {

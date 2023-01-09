@@ -304,20 +304,18 @@ class DyoNodeService {
   watchContainerLog(
     nodeId: string,
     id: string | undefined,
-    prefix: string | undefined,
+    prefixName: ContainerIdentifier | undefined,
     options: ProtoSubscriptionOptions<ContainerLogMessage>,
   ): GrpcConnection<GrpcContainerLogMessage, ContainerLogMessage> {
     const req: WatchContainerLogRequest = {
       accessedBy: this.identity.id,
-      nodeId,
-      containerId: id,
-      prefix,
+      id: nodeId,
+      dockerId: id,
+      prefixName,
     }
 
     const transform = (data: GrpcContainerLogMessage) =>
       ({
-        containerId: data.containerId,
-        prefix: data.prefix,
         log: data.log,
       } as ContainerLogMessage)
 

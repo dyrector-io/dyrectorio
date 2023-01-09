@@ -33,8 +33,11 @@ const InstanceLogPage = (props: InstanceLogPageProps) => {
   const sock = useWebSocket(nodeWsUrl(nodeId), {
     onOpen: () =>
       sock.send(WS_TYPE_WATCH_CONTAINER_LOG, {
-        id: dockerId,
-        prefix: kubernetesPrefix,
+        id: undefined,
+        prefixName: {
+          prefix: 'localk8s',
+          name: 'nginx',
+        },
       } as WatchContainerLogMessage),
   })
 
@@ -69,12 +72,12 @@ const InstanceLogPage = (props: InstanceLogPageProps) => {
 export default InstanceLogPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
-  const { nodeId, id, prefix } = context.query
+  const { nodeId, dockerId, prefix } = context.query
 
   return {
     props: {
       nodeId,
-      dockerId: id ?? null,
+      dockerId: dockerId ?? null,
       kubernetesPrefix: prefix ?? null,
     },
   }

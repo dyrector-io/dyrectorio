@@ -14,7 +14,9 @@ export default class GrpcNodeConnection {
 
   public static META_CONTAINER_ID = 'dyo-container-id'
 
-  public static META_PREFIX = 'dyo-prefix'
+  public static META_CONTAINER_PREFIX = 'dyo-container-prefix'
+
+  public static META_CONTAINER_NAME = 'dyo-container-name'
 
   private statusChannel = new Subject<NodeConnectionStatus>()
 

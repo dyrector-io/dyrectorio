@@ -192,7 +192,6 @@ export const imageConfigUrl = (productId: string, versionId: string, imageId: st
 export const instanceConfigUrl = (productId: string, versionId: string, deploymentId: string, instanceId: string) =>
   `${deploymentUrl(productId, versionId, deploymentId)}/instance/${instanceId}`
 
-
 // template
 export const templateImageUrl = (templateId: string) => `${API_TEMPLATES}/${templateId}/image`
 

@@ -4,6 +4,7 @@ import { AlreadyExistsException, InternalException, PreconditionFailedException 
 import { AgentCommand, AgentInfo, CloseReason } from 'src/grpc/protobuf/proto/agent'
 import {
   ContainerCommandRequest,
+  ContainerIdentifier,
   DeleteContainersRequest,
   DeploymentStatus,
   Empty,
@@ -103,13 +104,13 @@ export class Agent {
     return watcher
   }
 
-  upsertContainerLogStream(id?: string, prefix?: string): ContainerLogStream {
+  upsertContainerLogStream(id?: string, prefixName?: ContainerIdentifier): ContainerLogStream {
     this.throwWhenUpdating()
 
-    const key = id ?? prefix
+    const key = id ?? `${prefixName.prefix}-${prefixName.name}`
     let stream = this.logStreams.get(key)
     if (!stream) {
-      stream = new ContainerLogStream(id, prefix)
+      stream = new ContainerLogStream(id, prefixName)
       this.logStreams.set(key, stream)
       stream.start(this.commandChannel)
     }
@@ -210,8 +211,11 @@ export class Agent {
     watcher.onNodeStreamFinished()
   }
 
-  onContainerLogStreamStarted(id?: string, prefix?: string): [ContainerLogStream, ContainerLogStreamCompleter] {
-    const key = id ?? prefix
+  onContainerLogStreamStarted(
+    dockerId?: string,
+    pod?: ContainerIdentifier,
+  ): [ContainerLogStream, ContainerLogStreamCompleter] {
+    const key = dockerId ?? `${pod.prefix}-${pod.name}`
     const stream = this.logStreams.get(key)
     if (!stream) {
       return [null, null]
@@ -220,8 +224,8 @@ export class Agent {
     return [stream, stream.onNodeStreamStarted()]
   }
 
-  onContainerLogStreamFinished(id?: string, prefix?: string) {
-    const key = id ?? prefix
+  onContainerLogStreamFinished(dockerId?: string, pod?: ContainerIdentifier) {
+    const key = dockerId ?? `${pod.prefix}-${pod.name}`
     const watcher = this.logStreams.get(key)
     if (!watcher) {
       return

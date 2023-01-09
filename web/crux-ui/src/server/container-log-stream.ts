@@ -1,5 +1,8 @@
 import { ContainerLogMessage, WS_TYPE_CONTAINER_LOG } from '@app/models'
-import { ContainerLogMessage as GrpcContainerLogMessage } from '@app/models/grpc/protobuf/proto/common'
+import {
+  ContainerIdentifier,
+  ContainerLogMessage as GrpcContainerLogMessage,
+} from '@app/models/grpc/protobuf/proto/common'
 import WsConnection from '@app/websockets/connection'
 import { GrpcConnection } from './crux/grpc-connection'
 import DyoNodeService from './crux/node-service'
@@ -9,12 +12,12 @@ class ContainerLogStream {
 
   private connections: Set<WsConnection> = new Set()
 
-  constructor(public id: string, public prefix: string) {}
+  constructor(public id: string, public prefixName: ContainerIdentifier) {}
 
   start(connection: WsConnection, nodeId: string, nodeService: DyoNodeService) {
     this.addConnection(connection)
 
-    this.grpc = nodeService.watchContainerLog(nodeId, this.id, this.prefix, {
+    this.grpc = nodeService.watchContainerLog(nodeId, this.id, this.prefixName, {
       onMessage: message => {
         if (message.log.length === 0) {
           return

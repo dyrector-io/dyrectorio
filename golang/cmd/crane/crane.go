@@ -64,6 +64,7 @@ func loadConfiguration() (*config.Configuration, error) {
 func serve(cCtx *cli.Context) error {
 	cfg, err := loadConfiguration()
 	if err != nil {
+		log.Error().Err(err).Msg("Startup error")
 		return err
 	}
 
@@ -82,12 +83,14 @@ func initKey(cCtx *cli.Context) error {
 	namespaceHandler := k8s.NewNamespaceClient(cCtx.Context, namespace, client)
 	err = namespaceHandler.EnsureExists(namespace)
 	if err != nil {
+		log.Error().Err(err).Send()
 		return err
 	}
 
 	secretHandler := k8s.NewSecret(context.Background(), client)
 	_, err = secretHandler.GetValidSecret()
 	if err != nil {
+		log.Error().Err(err).Send()
 		return err
 	}
 

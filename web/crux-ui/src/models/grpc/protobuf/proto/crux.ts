@@ -19,6 +19,7 @@ import { Timestamp } from '../../google/protobuf/timestamp'
 import {
   ConfigContainer,
   ContainerCommandRequest,
+  ContainerIdentifier,
   ContainerLogMessage,
   ContainerState,
   containerStateFromJSON,
@@ -1240,9 +1241,9 @@ export interface WatchContainerStateRequest {
 
 export interface WatchContainerLogRequest {
   accessedBy: string
-  nodeId: string
-  containerId: string | undefined
-  prefix: string | undefined
+  id: string
+  dockerId: string | undefined
+  prefixName: ContainerIdentifier | undefined
 }
 
 export interface DeploymentProgressMessage {
@@ -8119,7 +8120,7 @@ export const WatchContainerStateRequest = {
 }
 
 function createBaseWatchContainerLogRequest(): WatchContainerLogRequest {
-  return { accessedBy: '', nodeId: '', containerId: undefined, prefix: undefined }
+  return { accessedBy: '', id: '', dockerId: undefined, prefixName: undefined }
 }
 
 export const WatchContainerLogRequest = {
@@ -8127,14 +8128,14 @@ export const WatchContainerLogRequest = {
     if (message.accessedBy !== '') {
       writer.uint32(18).string(message.accessedBy)
     }
-    if (message.nodeId !== '') {
-      writer.uint32(802).string(message.nodeId)
+    if (message.id !== '') {
+      writer.uint32(802).string(message.id)
     }
-    if (message.containerId !== undefined) {
-      writer.uint32(1602).string(message.containerId)
+    if (message.dockerId !== undefined) {
+      writer.uint32(1602).string(message.dockerId)
     }
-    if (message.prefix !== undefined) {
-      writer.uint32(1610).string(message.prefix)
+    if (message.prefixName !== undefined) {
+      ContainerIdentifier.encode(message.prefixName, writer.uint32(1610).fork()).ldelim()
     }
     return writer
   },
@@ -8150,13 +8151,13 @@ export const WatchContainerLogRequest = {
           message.accessedBy = reader.string()
           break
         case 100:
-          message.nodeId = reader.string()
+          message.id = reader.string()
           break
         case 200:
-          message.containerId = reader.string()
+          message.dockerId = reader.string()
           break
         case 201:
-          message.prefix = reader.string()
+          message.prefixName = ContainerIdentifier.decode(reader, reader.uint32())
           break
         default:
           reader.skipType(tag & 7)
@@ -8169,27 +8170,31 @@ export const WatchContainerLogRequest = {
   fromJSON(object: any): WatchContainerLogRequest {
     return {
       accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
-      containerId: isSet(object.containerId) ? String(object.containerId) : undefined,
-      prefix: isSet(object.prefix) ? String(object.prefix) : undefined,
+      id: isSet(object.id) ? String(object.id) : '',
+      dockerId: isSet(object.dockerId) ? String(object.dockerId) : undefined,
+      prefixName: isSet(object.prefixName) ? ContainerIdentifier.fromJSON(object.prefixName) : undefined,
     }
   },
 
   toJSON(message: WatchContainerLogRequest): unknown {
     const obj: any = {}
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
-    message.nodeId !== undefined && (obj.nodeId = message.nodeId)
-    message.containerId !== undefined && (obj.containerId = message.containerId)
-    message.prefix !== undefined && (obj.prefix = message.prefix)
+    message.id !== undefined && (obj.id = message.id)
+    message.dockerId !== undefined && (obj.dockerId = message.dockerId)
+    message.prefixName !== undefined &&
+      (obj.prefixName = message.prefixName ? ContainerIdentifier.toJSON(message.prefixName) : undefined)
     return obj
   },
 
   fromPartial<I extends Exact<DeepPartial<WatchContainerLogRequest>, I>>(object: I): WatchContainerLogRequest {
     const message = createBaseWatchContainerLogRequest()
     message.accessedBy = object.accessedBy ?? ''
-    message.nodeId = object.nodeId ?? ''
-    message.containerId = object.containerId ?? undefined
-    message.prefix = object.prefix ?? undefined
+    message.id = object.id ?? ''
+    message.dockerId = object.dockerId ?? undefined
+    message.prefixName =
+      object.prefixName !== undefined && object.prefixName !== null
+        ? ContainerIdentifier.fromPartial(object.prefixName)
+        : undefined
     return message
   },
 }

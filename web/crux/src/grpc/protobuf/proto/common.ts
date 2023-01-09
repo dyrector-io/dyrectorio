@@ -590,8 +590,6 @@ export interface ContainerStateItem {
 }
 
 export interface ContainerLogMessage {
-  containerId: string | undefined
-  prefix: string | undefined
   log: string
 }
 
@@ -822,22 +820,16 @@ export const ContainerStateItem = {
 }
 
 function createBaseContainerLogMessage(): ContainerLogMessage {
-  return { containerId: undefined, prefix: undefined, log: '' }
+  return { log: '' }
 }
 
 export const ContainerLogMessage = {
   fromJSON(object: any): ContainerLogMessage {
-    return {
-      containerId: isSet(object.containerId) ? String(object.containerId) : undefined,
-      prefix: isSet(object.prefix) ? String(object.prefix) : undefined,
-      log: isSet(object.log) ? String(object.log) : '',
-    }
+    return { log: isSet(object.log) ? String(object.log) : '' }
   },
 
   toJSON(message: ContainerLogMessage): unknown {
     const obj: any = {}
-    message.containerId !== undefined && (obj.containerId = message.containerId)
-    message.prefix !== undefined && (obj.prefix = message.prefix)
     message.log !== undefined && (obj.log = message.log)
     return obj
   },

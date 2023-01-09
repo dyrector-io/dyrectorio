@@ -34,6 +34,7 @@ import {
   DeploymentStatusMessage,
   Empty,
   ListSecretsResponse,
+  ContainerIdentifier,
 } from 'src/grpc/protobuf/proto/common'
 import { NodeConnectionStatus, NodeEventMessage, NodeScriptType } from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
@@ -287,10 +288,20 @@ export default class AgentService {
 
   handleContainerLog(connection: GrpcNodeConnection, request: Observable<ContainerLogMessage>): Observable<Empty> {
     const agent = this.getByIdOrThrow(connection.nodeId)
-    const containerId = connection.getMetaDataOrDefault(GrpcNodeConnection.META_CONTAINER_ID)
-    const prefix = connection.getMetaDataOrDefault(GrpcNodeConnection.META_PREFIX)
 
-    const [stream, completer] = agent.onContainerLogStreamStarted(containerId, prefix)
+    const containerId = connection.getMetaDataOrDefault(GrpcNodeConnection.META_CONTAINER_ID)
+    const containerPrefix = connection.getMetaDataOrDefault(GrpcNodeConnection.META_CONTAINER_PREFIX)
+    const containerName = connection.getMetaDataOrDefault(GrpcNodeConnection.META_CONTAINER_NAME)
+
+    const pod =
+      containerPrefix && containerName
+        ? {
+            prefix: containerPrefix,
+            name: containerName,
+          }
+        : undefined
+
+    const [stream, completer] = agent.onContainerLogStreamStarted(containerId, pod)
     if (!stream) {
       this.logger.warn(`${agent.id} - There was no stream for ${containerId}`)
 
@@ -298,7 +309,7 @@ export default class AgentService {
       return completer
     }
 
-    const key = containerId ?? prefix
+    const key = containerId ?? `${pod.prefix}-${pod.name}`
     return request.pipe(
       // necessary, because of: https://github.com/nestjs/nest/issues/8111
       startWith({
@@ -311,7 +322,7 @@ export default class AgentService {
         return Empty
       }),
       finalize(() => {
-        agent.onContainerLogStreamFinished(containerId, prefix)
+        agent.onContainerLogStreamFinished(containerId, pod)
         this.logger.debug(`${agent.id} - Container log listening finished: ${key}`)
       }),
       takeUntil(completer),

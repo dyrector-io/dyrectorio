@@ -591,8 +591,6 @@ export interface ContainerStateItem {
 }
 
 export interface ContainerLogMessage {
-  containerId: string | undefined
-  prefix: string | undefined
   log: string
 }
 
@@ -1102,19 +1100,13 @@ export const ContainerStateItem = {
 }
 
 function createBaseContainerLogMessage(): ContainerLogMessage {
-  return { containerId: undefined, prefix: undefined, log: '' }
+  return { log: '' }
 }
 
 export const ContainerLogMessage = {
   encode(message: ContainerLogMessage, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.containerId !== undefined) {
-      writer.uint32(1602).string(message.containerId)
-    }
-    if (message.prefix !== undefined) {
-      writer.uint32(1610).string(message.prefix)
-    }
     if (message.log !== '') {
-      writer.uint32(810).string(message.log)
+      writer.uint32(802).string(message.log)
     }
     return writer
   },
@@ -1126,13 +1118,7 @@ export const ContainerLogMessage = {
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
-        case 200:
-          message.containerId = reader.string()
-          break
-        case 201:
-          message.prefix = reader.string()
-          break
-        case 101:
+        case 100:
           message.log = reader.string()
           break
         default:
@@ -1144,25 +1130,17 @@ export const ContainerLogMessage = {
   },
 
   fromJSON(object: any): ContainerLogMessage {
-    return {
-      containerId: isSet(object.containerId) ? String(object.containerId) : undefined,
-      prefix: isSet(object.prefix) ? String(object.prefix) : undefined,
-      log: isSet(object.log) ? String(object.log) : '',
-    }
+    return { log: isSet(object.log) ? String(object.log) : '' }
   },
 
   toJSON(message: ContainerLogMessage): unknown {
     const obj: any = {}
-    message.containerId !== undefined && (obj.containerId = message.containerId)
-    message.prefix !== undefined && (obj.prefix = message.prefix)
     message.log !== undefined && (obj.log = message.log)
     return obj
   },
 
   fromPartial<I extends Exact<DeepPartial<ContainerLogMessage>, I>>(object: I): ContainerLogMessage {
     const message = createBaseContainerLogMessage()
-    message.containerId = object.containerId ?? undefined
-    message.prefix = object.prefix ?? undefined
     message.log = object.log ?? ''
     return message
   },

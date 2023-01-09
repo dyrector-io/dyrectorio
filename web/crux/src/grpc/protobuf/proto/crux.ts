@@ -6,6 +6,7 @@ import { Timestamp } from '../../google/protobuf/timestamp'
 import {
   ConfigContainer,
   ContainerCommandRequest,
+  ContainerIdentifier,
   ContainerLogMessage,
   ContainerState,
   containerStateFromJSON,
@@ -1227,9 +1228,9 @@ export interface WatchContainerStateRequest {
 
 export interface WatchContainerLogRequest {
   accessedBy: string
-  nodeId: string
-  containerId: string | undefined
-  prefix: string | undefined
+  id: string
+  dockerId: string | undefined
+  prefixName: ContainerIdentifier | undefined
 }
 
 export interface DeploymentProgressMessage {
@@ -3686,25 +3687,26 @@ export const WatchContainerStateRequest = {
 }
 
 function createBaseWatchContainerLogRequest(): WatchContainerLogRequest {
-  return { accessedBy: '', nodeId: '', containerId: undefined, prefix: undefined }
+  return { accessedBy: '', id: '', dockerId: undefined, prefixName: undefined }
 }
 
 export const WatchContainerLogRequest = {
   fromJSON(object: any): WatchContainerLogRequest {
     return {
       accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
-      containerId: isSet(object.containerId) ? String(object.containerId) : undefined,
-      prefix: isSet(object.prefix) ? String(object.prefix) : undefined,
+      id: isSet(object.id) ? String(object.id) : '',
+      dockerId: isSet(object.dockerId) ? String(object.dockerId) : undefined,
+      prefixName: isSet(object.prefixName) ? ContainerIdentifier.fromJSON(object.prefixName) : undefined,
     }
   },
 
   toJSON(message: WatchContainerLogRequest): unknown {
     const obj: any = {}
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
-    message.nodeId !== undefined && (obj.nodeId = message.nodeId)
-    message.containerId !== undefined && (obj.containerId = message.containerId)
-    message.prefix !== undefined && (obj.prefix = message.prefix)
+    message.id !== undefined && (obj.id = message.id)
+    message.dockerId !== undefined && (obj.dockerId = message.dockerId)
+    message.prefixName !== undefined &&
+      (obj.prefixName = message.prefixName ? ContainerIdentifier.toJSON(message.prefixName) : undefined)
     return obj
   },
 }

@@ -850,11 +850,11 @@ message WatchContainerStateRequest {
 message WatchContainerLogRequest {
   string accessedBy = 2;
 
-  string nodeId = 100;
-  oneof target {
-    string containerId = 200;
-    string prefix = 201;
-  }
+  string id = 100;
+  oneof container {
+    string dockerId = 200;
+    common.ContainerIdentifier prefixName = 201;
+  };
 }
 
 // DEPLOYMENT
