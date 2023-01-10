@@ -89,7 +89,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
       <span>{timeAgo(t, seconds)}</span>,
       <ContainerStatusTag className="inline-block" state={item.state} />,
       item.state && (
-        <Link href={containerLogUrl(deployment.nodeId, item.id, item.prefix)} passHref>
+        <Link href={containerLogUrl(deployment.nodeId, item.id, item.prefix, item.name)} passHref>
           <span className="cursor-pointer text-dyo-blue">{t('showLogs')}</span>
         </Link>
       ),

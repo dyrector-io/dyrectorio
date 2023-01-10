@@ -36,7 +36,7 @@ const NodeContainersList = (props: NodeContainersListProps) => {
   const headers = ['common:name', 'images:imageTag', 'common:state', 'common:createdAt', 'ports', 'common:actions']
 
   const navigateToLog = (container: Container) =>
-    router.push(containerLogUrl(state.node.id, container.id, container.prefix))
+    router.push(containerLogUrl(state.node.id, container.id, container.prefix, container.name))
 
   const itemBuilder = (container: Container) => {
     const targetState = state.containerTargetStates[container.name]

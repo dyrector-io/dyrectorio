@@ -30,6 +30,7 @@
     "/products/[productId]/versions/[versionId]/image/[imageId]": ["images", "container"],
     "/nodes": ["nodes"],
     "/nodes/[nodeId]": ["nodes", "images"],
+    "/nodes/[nodeId]/log": ["nodes"],
     "/registries": ["registries"],
     "/registries/[registryId]": ["registries"],
     "/teams": ["teams"],

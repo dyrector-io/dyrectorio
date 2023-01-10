@@ -198,9 +198,20 @@ export const templateImageUrl = (templateId: string) => `${API_TEMPLATES}/${temp
 // log
 export type ContainerLogParams = {
   anchor?: VersionUrlAnchor
-  id?: string
-  prefix?: string
+  dockerId?: string
+  kubePrefix?: string
+  kubeName?: string
 }
 
-export const containerLogUrl = (nodeId: string, dockerId?: string, kubernetesPrefix?: string) =>
-  appendUrlParams(`${nodeUrl(nodeId)}/log`, { id: dockerId, prefix: kubernetesPrefix } as ContainerLogParams)
+export const containerLogUrl = (nodeId: string, dockerId?: string, kubePrefix?: string, kubeName?: string) => {
+  const params = dockerId
+    ? {
+        dockerId,
+      }
+    : {
+        kubePrefix,
+        kubeName,
+      }
+
+  return appendUrlParams(`${nodeUrl(nodeId)}/log`, params as ContainerLogParams)
+}

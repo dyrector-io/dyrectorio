@@ -5,12 +5,7 @@ import PageHeading from '@app/components/shared/page-heading'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import useWebSocket from '@app/hooks/use-websocket'
-import {
-  ContainerLogMessage,
-  WatchContainerLogMessage,
-  WS_TYPE_CONTAINER_LOG,
-  WS_TYPE_WATCH_CONTAINER_LOG,
-} from '@app/models'
+import { ContainerLogMessage, WS_TYPE_CONTAINER_LOG, WS_TYPE_WATCH_CONTAINER_LOG } from '@app/models'
 import { nodeWsUrl, ROUTE_PRODUCTS } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { NextPageContext } from 'next'
@@ -20,25 +15,32 @@ import { useState } from 'react'
 interface InstanceLogPageProps {
   nodeId: string
   dockerId: string
-  kubernetesPrefix: string
+  kubePrefix: string
+  kubeName: string
 }
 
 const InstanceLogPage = (props: InstanceLogPageProps) => {
-  const { nodeId, dockerId, kubernetesPrefix } = props
+  const { nodeId, dockerId, kubePrefix, kubeName } = props
 
-  const { t } = useTranslation('deployments')
+  const { t } = useTranslation('nodes')
 
   const [log, setLog] = useState<ContainerLogMessage[]>([])
 
   const sock = useWebSocket(nodeWsUrl(nodeId), {
-    onOpen: () =>
-      sock.send(WS_TYPE_WATCH_CONTAINER_LOG, {
-        id: undefined,
-        prefixName: {
-          prefix: 'localk8s',
-          name: 'nginx',
-        },
-      } as WatchContainerLogMessage),
+    onOpen: () => {
+      const request = dockerId
+        ? {
+            id: dockerId,
+          }
+        : {
+            prefixName: {
+              prefix: kubePrefix,
+              name: kubeName,
+            },
+          }
+
+      sock.send(WS_TYPE_WATCH_CONTAINER_LOG, request)
+    },
   })
 
   sock.on(WS_TYPE_CONTAINER_LOG, (message: ContainerLogMessage) => {
@@ -59,7 +61,7 @@ const InstanceLogPage = (props: InstanceLogPageProps) => {
       <DyoCard className="p-4">
         <div className="flex mb-4 justify-between items-start">
           <DyoHeading element="h4" className="text-xl text-bright">
-            instance.image.name
+            {t('log')}
           </DyoHeading>
         </div>
 
@@ -72,13 +74,14 @@ const InstanceLogPage = (props: InstanceLogPageProps) => {
 export default InstanceLogPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
-  const { nodeId, dockerId, prefix } = context.query
+  const { nodeId, dockerId, kubePrefix, kubeName } = context.query
 
   return {
     props: {
       nodeId,
       dockerId: dockerId ?? null,
-      kubernetesPrefix: prefix ?? null,
+      kubePrefix: kubePrefix ?? null,
+      kubeName: kubeName ?? null,
     },
   }
 }
