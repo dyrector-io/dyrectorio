@@ -1,16 +1,31 @@
-import { ContainerOperation, ContainerState, NodeStatus, NodeType, NODE_TYPE_VALUES } from '@app/models'
+import {
+  ContainerOperation,
+  ContainerState,
+  NodeInstallScriptType,
+  NodeStatus,
+  NodeType,
+  NODE_INSTALL_SCRIPT_TYPE_VALUES,
+  NODE_TYPE_VALUES,
+} from '@app/models'
 import {
   ContainerOperation as ProtoContainerOperation,
   ContainerState as ProtoContainerState,
   containerStateToJSON,
 } from '@app/models/grpc/protobuf/proto/common'
-import { NodeConnectionStatus, NodeType as GrpcNodeType } from '@app/models/grpc/protobuf/proto/crux'
+import {
+  NodeConnectionStatus,
+  NodeScriptType as GrpcNodeScriptType,
+  NodeType as GrpcNodeType,
+} from '@app/models/grpc/protobuf/proto/crux'
 
 export const containerStateToDto = (state: ProtoContainerState): ContainerState =>
   containerStateToJSON(state).toLowerCase() as ContainerState
 
 export const nodeTypeUiToGrpc = (type: NodeType): GrpcNodeType =>
   type === NODE_TYPE_VALUES[0] ? GrpcNodeType.DOCKER : GrpcNodeType.K8S
+
+export const nodeScriptTypeUiToGrpc = (type: NodeInstallScriptType): GrpcNodeScriptType =>
+  type === NODE_INSTALL_SCRIPT_TYPE_VALUES[0] ? GrpcNodeScriptType.SHELL : GrpcNodeScriptType.POWERSHELL
 
 export const nodeTypeGrpcToUi = (type: GrpcNodeType): NodeType =>
   type === GrpcNodeType.DOCKER ? NODE_TYPE_VALUES[0] : NODE_TYPE_VALUES[1]

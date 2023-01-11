@@ -415,6 +415,45 @@ export function nodeTypeToJSON(object: NodeType): string {
   }
 }
 
+export enum NodeScriptType {
+  NODE_SCRIPT_TYPE_UNSPECIFIED = 0,
+  SHELL = 1,
+  POWERSHELL = 2,
+  UNRECOGNIZED = -1,
+}
+
+export function nodeScriptTypeFromJSON(object: any): NodeScriptType {
+  switch (object) {
+    case 0:
+    case 'NODE_SCRIPT_TYPE_UNSPECIFIED':
+      return NodeScriptType.NODE_SCRIPT_TYPE_UNSPECIFIED
+    case 1:
+    case 'SHELL':
+      return NodeScriptType.SHELL
+    case 2:
+    case 'POWERSHELL':
+      return NodeScriptType.POWERSHELL
+    case -1:
+    case 'UNRECOGNIZED':
+    default:
+      return NodeScriptType.UNRECOGNIZED
+  }
+}
+
+export function nodeScriptTypeToJSON(object: NodeScriptType): string {
+  switch (object) {
+    case NodeScriptType.NODE_SCRIPT_TYPE_UNSPECIFIED:
+      return 'NODE_SCRIPT_TYPE_UNSPECIFIED'
+    case NodeScriptType.SHELL:
+      return 'SHELL'
+    case NodeScriptType.POWERSHELL:
+      return 'POWERSHELL'
+    case NodeScriptType.UNRECOGNIZED:
+    default:
+      return 'UNRECOGNIZED'
+  }
+}
+
 export enum DeploymentEventType {
   DEPLOYMENT_EVENT_TYPE_UNSPECIFIED = 0,
   DEPLOYMENT_LOG = 1,
@@ -1146,6 +1185,7 @@ export interface GenerateScriptRequest {
   accessedBy: string
   type: NodeType
   rootPath?: string | undefined
+  scriptType: NodeScriptType
 }
 
 export interface NodeInstallResponse {
@@ -3480,7 +3520,7 @@ export const UpdateNodeRequest = {
 }
 
 function createBaseGenerateScriptRequest(): GenerateScriptRequest {
-  return { id: '', accessedBy: '', type: 0 }
+  return { id: '', accessedBy: '', type: 0, scriptType: 0 }
 }
 
 export const GenerateScriptRequest = {
@@ -3490,6 +3530,7 @@ export const GenerateScriptRequest = {
       accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       type: isSet(object.type) ? nodeTypeFromJSON(object.type) : 0,
       rootPath: isSet(object.rootPath) ? String(object.rootPath) : undefined,
+      scriptType: isSet(object.scriptType) ? nodeScriptTypeFromJSON(object.scriptType) : 0,
     }
   },
 
@@ -3499,6 +3540,7 @@ export const GenerateScriptRequest = {
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.type !== undefined && (obj.type = nodeTypeToJSON(message.type))
     message.rootPath !== undefined && (obj.rootPath = message.rootPath)
+    message.scriptType !== undefined && (obj.scriptType = nodeScriptTypeToJSON(message.scriptType))
     return obj
   },
 }

@@ -778,6 +778,7 @@ message GenerateScriptRequest {
   string accessedBy = 2;
   NodeType type = 100;
   optional string rootPath = 101;
+  NodeScriptType scriptType = 102;
 }
 
 message NodeInstallResponse {
@@ -820,6 +821,12 @@ enum NodeType {
   NODE_TYPE_UNSPECIFIED = 0;
   DOCKER = 1;
   K8S = 2;
+}
+
+enum NodeScriptType {
+  NODE_SCRIPT_TYPE_UNSPECIFIED = 0;
+  SHELL = 1;
+  POWERSHELL = 2;
 }
 
 message NodeEventMessage {
