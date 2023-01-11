@@ -22,6 +22,7 @@
 
     "/products/[productId]/versions/[versionId]/deployments/[deploymentId]": ["images", "deployments", "nodes"],
     "/products/[productId]/versions/[versionId]/deployments/[deploymentId]/deploy": ["deployments"],
+    "/products/[productId]/versions/[versionId]/deployments/[deploymentId]/log": [],
     "/products/[productId]/versions/[versionId]/deployments/[deploymentId]/instance/[instanceId]": [
       "images",
       "deployments",

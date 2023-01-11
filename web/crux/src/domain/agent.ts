@@ -11,7 +11,7 @@ import {
   ListSecretsResponse,
 } from 'src/grpc/protobuf/proto/common'
 import { DeploymentProgressMessage, NodeConnectionStatus, NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
-import { CONTAINER_DELETE_TIMEOUT } from 'src/shared/const'
+import { CONTAINER_DELETE_TIMEOUT, DEFAULT_CONTAINER_LOG_TAIL } from 'src/shared/const'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import ContainerLogStream, { ContainerLogStreamCompleter } from './container-log-stream'
 import ContainerStatusWatcher, { ContainerStatusStreamCompleter } from './container-status-watcher'
@@ -110,7 +110,7 @@ export class Agent {
     const key = id ?? `${prefixName.prefix}-${prefixName.name}`
     let stream = this.logStreams.get(key)
     if (!stream) {
-      stream = new ContainerLogStream(id, prefixName)
+      stream = new ContainerLogStream(id, prefixName, DEFAULT_CONTAINER_LOG_TAIL)
       this.logStreams.set(key, stream)
       stream.start(this.commandChannel)
     }

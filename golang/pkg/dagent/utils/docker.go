@@ -2,10 +2,10 @@ package utils
 
 import (
 	"archive/tar"
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/binary"
-	"errors"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -680,6 +680,71 @@ func (dockerReader *DockerContainerLogReader) Close() error {
 	return dockerReader.Reader.Close()
 }
 
+func streamDockerLog(reader io.ReadCloser, eventChannel chan grpc.ContainerLogEvent) {
+	header := make([]byte, DockerLogHeaderLength)
+
+	bufferSize := 2048
+	buffer := make([]byte, bufferSize)
+
+	for {
+		_, err := reader.Read(header)
+		if err != nil {
+			eventChannel <- grpc.ContainerLogEvent{
+				Message: "",
+				Error:   err,
+			}
+			break
+		}
+
+		payloadSize := int(binary.BigEndian.Uint32(header[4:]))
+		if payloadSize > bufferSize {
+			buffer = make([]byte, payloadSize)
+			bufferSize = payloadSize
+		}
+
+		read := 0
+		for read < payloadSize {
+			count, err := reader.Read(buffer[read:payloadSize])
+			read += count
+
+			if err != nil {
+				eventChannel <- grpc.ContainerLogEvent{
+					Message: "",
+					Error:   err,
+				}
+				break
+			}
+		}
+
+		if read > 0 {
+			eventChannel <- grpc.ContainerLogEvent{
+				Message: string(buffer[0:read]),
+				Error:   nil,
+			}
+		}
+	}
+}
+
+func streamDockerLogTTY(reader io.ReadCloser, eventChannel chan grpc.ContainerLogEvent) {
+	buffer := bufio.NewReader(reader)
+
+	for {
+		message, err := buffer.ReadString('\n')
+		if err != nil {
+			eventChannel <- grpc.ContainerLogEvent{
+				Message: "",
+				Error:   err,
+			}
+			break
+		}
+
+		eventChannel <- grpc.ContainerLogEvent{
+			Message: message,
+			Error:   nil,
+		}
+	}
+}
+
 func ContainerLog(ctx context.Context, request *agent.ContainerLogRequest) (grpc.ContainerLogReader, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
@@ -694,11 +759,6 @@ func ContainerLog(ctx context.Context, request *agent.ContainerLogRequest) (grpc
 	}
 
 	tty := inspect.Config.Tty
-
-	if tty {
-		// TODO (robot9706): implement TTY method
-		return nil, errors.New("tty not implemented")
-	}
 
 	streaming := request.GetStreaming()
 	tail := fmt.Sprintf("%d", request.GetTail())
@@ -716,42 +776,11 @@ func ContainerLog(ctx context.Context, request *agent.ContainerLogRequest) (grpc
 		return nil, err
 	}
 
-	go func() {
-		for {
-			header := make([]byte, DockerLogHeaderLength)
-
-			_, err := reader.Read(header)
-			if err != nil {
-				eventChannel <- grpc.ContainerLogEvent{
-					Message: "",
-					Error:   err,
-				}
-				break
-			}
-
-			payloadSize := int(binary.BigEndian.Uint32(header[4:]))
-			buffer := make([]byte, payloadSize)
-
-			read := 0
-			for read < payloadSize {
-				count, err := reader.Read(buffer[read:])
-				read += count
-
-				if err != nil {
-					eventChannel <- grpc.ContainerLogEvent{
-						Message: "",
-						Error:   err,
-					}
-					break
-				}
-			}
-
-			eventChannel <- grpc.ContainerLogEvent{
-				Message: string(buffer[0:read]),
-				Error:   nil,
-			}
-		}
-	}()
+	if tty {
+		go streamDockerLogTTY(reader, eventChannel)
+	} else {
+		go streamDockerLog(reader, eventChannel)
+	}
 
 	logReader := &DockerContainerLogReader{
 		EventChannel: eventChannel,

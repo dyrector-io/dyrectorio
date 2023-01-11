@@ -20,7 +20,7 @@ interface InstanceLogPageProps {
   kubeName: string
 }
 
-const InstanceLogPage = (props: InstanceLogPageProps) => {
+const NodeContainerLogPage = (props: InstanceLogPageProps) => {
   const { node, dockerId, kubePrefix, kubeName } = props
 
   const { t } = useTranslation('common')
@@ -81,7 +81,7 @@ const InstanceLogPage = (props: InstanceLogPageProps) => {
   )
 }
 
-export default InstanceLogPage
+export default NodeContainerLogPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
   const { nodeId, dockerId, kubePrefix, kubeName } = context.query

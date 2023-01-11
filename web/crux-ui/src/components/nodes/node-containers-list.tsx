@@ -71,10 +71,6 @@ const NodeContainersList = (props: NodeContainersListProps) => {
               />
             )}
 
-            {container.state && (
-              <DyoImgButton src="/book.svg" alt="log" width={24} height={24} onClick={() => navigateToLog(container)} />
-            )}
-
             <DyoImgButton
               disabled={!containerIsStopable(container.state)}
               src="/stop.svg"
@@ -82,6 +78,16 @@ const NodeContainersList = (props: NodeContainersListProps) => {
               height={24}
               onClick={() => actions.onStopContainer(container)}
             />
+
+            {container.state && (
+              <DyoImgButton
+                src="/note-text-outline.svg"
+                alt="log"
+                width={24}
+                height={24}
+                onClick={() => navigateToLog(container)}
+              />
+            )}
 
             <DyoImgButton
               src="/trash-can.svg"
@@ -106,7 +112,7 @@ const NodeContainersList = (props: NodeContainersListProps) => {
   const itemClasses = [
     clsx('pl-6', defaultItemClass),
     ...Array.from({ length: headers.length - 2 }).map(() => defaultItemClass),
-    clsx('pr-6', defaultItemClass),
+    clsx('pr-2', defaultItemClass),
   ]
 
   return (

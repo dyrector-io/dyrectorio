@@ -13,20 +13,23 @@ export default class ContainerLogStream {
 
   private completer: ContainerLogStreamCompleter = null
 
-  constructor(private id: string | undefined, private prefixName: ContainerIdentifier | undefined) {}
+  constructor(
+    private id: string | undefined,
+    private prefixName: ContainerIdentifier | undefined,
+    private tail: number,
+  ) {}
 
   start(commandChannel: Subject<AgentCommand>) {
     if (this.started) {
       return
     }
 
-    // TODO(robot9706): tail const
     commandChannel.next({
       containerLog: {
         id: this.id,
         prefixName: this.prefixName,
         streaming: true,
-        tail: 40,
+        tail: this.tail,
       },
     } as AgentCommand)
     this.started = true

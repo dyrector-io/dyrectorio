@@ -502,7 +502,6 @@ export enum ContainerOperation {
   START_CONTAINER = 1,
   STOP_CONTAINER = 2,
   RESTART_CONTAINER = 3,
-  GET_LOGS = 4,
   UNRECOGNIZED = -1,
 }
 
@@ -520,9 +519,6 @@ export function containerOperationFromJSON(object: any): ContainerOperation {
     case 3:
     case 'RESTART_CONTAINER':
       return ContainerOperation.RESTART_CONTAINER
-    case 4:
-    case 'GET_LOGS':
-      return ContainerOperation.GET_LOGS
     case -1:
     case 'UNRECOGNIZED':
     default:
@@ -540,8 +536,6 @@ export function containerOperationToJSON(object: ContainerOperation): string {
       return 'STOP_CONTAINER'
     case ContainerOperation.RESTART_CONTAINER:
       return 'RESTART_CONTAINER'
-    case ContainerOperation.GET_LOGS:
-      return 'GET_LOGS'
     case ContainerOperation.UNRECOGNIZED:
     default:
       return 'UNRECOGNIZED'

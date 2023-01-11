@@ -194,7 +194,6 @@ enum ContainerOperation {
   START_CONTAINER = 1;
   STOP_CONTAINER = 2;
   RESTART_CONTAINER = 3;
-  GET_LOGS = 4;
 }
 
 message ContainerCommandRequest {

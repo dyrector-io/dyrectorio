@@ -9,7 +9,6 @@ import (
 	"io"
 	"net/http"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -558,6 +557,14 @@ func streamContainerLog(reader ContainerLogReader, client agent.Agent_ContainerL
 			}
 
 			log.Error().Err(event.Error).Stack().Str("container", containerID).Msg("Container log reader error")
+
+			if client.Context().Err() == nil {
+				err := client.CloseSend()
+				if err != nil {
+					log.Error().Err(err).Stack().Str("container", containerID).Msg("Failed to close client")
+				}
+			}
+
 			break
 		}
 
@@ -605,8 +612,6 @@ func executeContainerLog(ctx context.Context, command *agent.ContainerLogRequest
 		}
 	}()
 
-	log.Info().Msg("gRPC stream context STARTED")
-
 	streamCtx = stream.Context()
 
 	reader, err := logFunc(streamCtx, command)
@@ -622,27 +627,17 @@ func executeContainerLog(ctx context.Context, command *agent.ContainerLogRequest
 		}
 	}()
 
-	var waitGroup sync.WaitGroup
-
-	waitGroup.Add(1)
 	go streamContainerLog(reader, stream, containerID, command.GetStreaming())
 
-	go func() {
-		for {
-			var msg interface{}
-			err := stream.RecvMsg(&msg)
-			if err != nil {
-				break
-			}
+	for {
+		var msg interface{}
+		err := stream.RecvMsg(&msg)
+		if err != nil {
+			break
 		}
+	}
 
-		log.Trace().Str("container", containerID).Msg("Container log stream closed")
-
-		<-streamCtx.Done()
-		waitGroup.Done()
-	}()
-
-	waitGroup.Wait()
+	<-streamCtx.Done()
 
 	log.Trace().Str("container", containerID).Msg("Container log exited")
 }
