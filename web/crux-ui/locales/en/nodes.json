@@ -48,6 +48,5 @@
   "optionalLeaveEmptyForDefaults": "Optional, leave empty for default paths",
   "update": "Update",
   "updateError": "Failed to update agent: {{error}}",
-  "ports": "Ports",
-  "log": "Log"
+  "ports": "Ports"
 }

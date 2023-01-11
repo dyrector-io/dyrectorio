@@ -10,7 +10,7 @@ import {
   WS_TYPE_CONTAINER_STATUS_LIST,
   WS_TYPE_WATCH_CONTAINER_STATUS,
 } from '@app/models'
-import { containerLogUrl, nodeWsUrl } from '@app/routes'
+import { deploymentContainerLogUrl, nodeWsUrl } from '@app/routes'
 import { timeAgo, utcNow } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import Link from 'next/link'
@@ -81,6 +81,15 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
     const created = new Date(item.date).getTime()
     const seconds = Math.floor((now - created) / 1000)
 
+    const logUrl = deploymentContainerLogUrl(
+      deployment.product.id,
+      deployment.versionId,
+      deployment.id,
+      item.id,
+      item.prefix,
+      item.name,
+    )
+
     /* eslint-disable react/jsx-key */
     return [
       <ContainerStatusIndicator state={item.state} />,
@@ -89,7 +98,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
       <span>{timeAgo(t, seconds)}</span>,
       <ContainerStatusTag className="inline-block" state={item.state} />,
       item.state && (
-        <Link href={containerLogUrl(deployment.nodeId, item.id, item.prefix, item.name)} passHref>
+        <Link href={logUrl} passHref>
           <span className="cursor-pointer text-dyo-blue">{t('showLogs')}</span>
         </Link>
       ),

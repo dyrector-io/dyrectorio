@@ -194,5 +194,6 @@
   "changelogName": "Changelog: {{name}}",
   "emptyChangelog": "You have not provided any changes",
   "event": "Event",
-  "data": "Data"
+  "data": "Data",
+  "log": "Log"
 }

@@ -13,7 +13,7 @@ import {
   containerPortsToString,
   imageName,
 } from '@app/models'
-import { containerLogUrl } from '@app/routes'
+import { nodeContainerLogUrl } from '@app/routes'
 import { utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
@@ -36,7 +36,7 @@ const NodeContainersList = (props: NodeContainersListProps) => {
   const headers = ['common:name', 'images:imageTag', 'common:state', 'common:createdAt', 'ports', 'common:actions']
 
   const navigateToLog = (container: Container) =>
-    router.push(containerLogUrl(state.node.id, container.id, container.prefix, container.name))
+    router.push(nodeContainerLogUrl(state.node.id, container.id, container.prefix, container.name))
 
   const itemBuilder = (container: Container) => {
     const targetState = state.containerTargetStates[container.name]

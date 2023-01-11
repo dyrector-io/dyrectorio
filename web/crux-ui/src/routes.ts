@@ -203,7 +203,7 @@ export type ContainerLogParams = {
   kubeName?: string
 }
 
-export const containerLogUrl = (nodeId: string, dockerId?: string, kubePrefix?: string, kubeName?: string) => {
+const logUrl = (baseUrl: string, dockerId?: string, kubePrefix?: string, kubeName?: string) => {
   const params = dockerId
     ? {
         dockerId,
@@ -213,5 +213,17 @@ export const containerLogUrl = (nodeId: string, dockerId?: string, kubePrefix?: 
         kubeName,
       }
 
-  return appendUrlParams(`${nodeUrl(nodeId)}/log`, params as ContainerLogParams)
+  return appendUrlParams(baseUrl, params as ContainerLogParams)
 }
+
+export const nodeContainerLogUrl = (nodeId: string, dockerId?: string, kubePrefix?: string, kubeName?: string) =>
+  logUrl(`${nodeUrl(nodeId)}/log`, dockerId, kubePrefix, kubeName)
+
+export const deploymentContainerLogUrl = (
+  productId: string,
+  versionId: string,
+  deploymentId: string,
+  dockerId?: string,
+  kubePrefix?: string,
+  kubeName?: string,
+) => logUrl(`${deploymentUrl(productId, versionId, deploymentId)}/log`, dockerId, kubePrefix, kubeName)
