@@ -82,12 +82,11 @@ func PodLog(ctx context.Context, request *agent.ContainerLogRequest) (grpc.Conta
 
 		log.Info().Msgf("Starting to log pod %s-%s", prefixName.Prefix, pod.Name)
 
-		req := client.CoreV1().Pods(prefixName.Prefix).GetLogs(pod.Name, podLogOpts)
-		stream, err := req.Stream(ctx)
+		stream, err := client.CoreV1().Pods(prefixName.Prefix).GetLogs(pod.Name, podLogOpts).Stream(ctx)
 		if err != nil {
 			if len(logStreams) > 0 {
 				for _, closeStream := range logStreams {
-					err := closeStream.Close()
+					err = closeStream.Close()
 					if err != nil {
 						log.Error().Err(err).Stack().Msg("Failed to close pod log stream")
 					}

@@ -20,6 +20,7 @@ export default class ContainerLogStream {
       return
     }
 
+    // TODO(robot9706): tail const
     commandChannel.next({
       containerLog: {
         id: this.id,

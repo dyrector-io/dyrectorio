@@ -34,7 +34,6 @@ import {
   DeploymentStatusMessage,
   Empty,
   ListSecretsResponse,
-  ContainerIdentifier,
 } from 'src/grpc/protobuf/proto/common'
 import { NodeConnectionStatus, NodeEventMessage, NodeScriptType } from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'

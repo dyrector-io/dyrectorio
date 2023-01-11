@@ -636,7 +636,7 @@ func executeContainerLog(ctx context.Context, command *agent.ContainerLogRequest
 			}
 		}
 
-		log.Trace().Str("container", containerID).Msg("Container log waiting for context done")
+		log.Trace().Str("container", containerID).Msg("Container log stream closed")
 
 		<-streamCtx.Done()
 		waitGroup.Done()
