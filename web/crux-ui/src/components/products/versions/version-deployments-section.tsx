@@ -130,13 +130,13 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   const headers = [
     ...['common:node', 'common:prefix', 'common:status', 'common:date', 'common:actions'].map(it => t(it)),
   ]
-  const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-3 pl-4 font-semibold'
+  const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-2 font-semibold'
   const headerClasses = [
-    clsx('rounded-tl-lg', defaultHeaderClass),
+    clsx('rounded-tl-lg pl-6', defaultHeaderClass),
     defaultHeaderClass,
     clsx('text-center', defaultHeaderClass),
     defaultHeaderClass,
-    clsx('rounded-tr-lg', defaultHeaderClass),
+    clsx('rounded-tr-lg text-right pr-6', defaultHeaderClass),
   ]
 
   const itemTemplate = (item: DeploymentByVersion) => {
