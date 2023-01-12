@@ -211,6 +211,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
               onChange={formik.handleChange}
               value={formik.values.name}
               required
+              disabled
               grow
               message={formik.errors.name}
             />

@@ -103,7 +103,8 @@ export default class NodeService {
         id: req.id,
       },
       data: {
-        name: req.name,
+        // TODO(polaroi8d): renaming the node destroy the connection between the agent and the platform
+        // name: req.name,
         description: req.description,
         icon: req.icon ?? null,
         updatedBy: req.accessedBy,

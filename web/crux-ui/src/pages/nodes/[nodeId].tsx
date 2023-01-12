@@ -93,9 +93,7 @@ const NodeDetails = (props: NodeDetailsProps) => {
 
             <NodeConnectionCard className="w-1/3 px-6 py-4" node={node} />
           </div>
-
           <Filters setTextFilter={it => state.filters.setFilter({ text: it })} />
-
           <NodeContainersList state={state} actions={actions} />
         </>
       )}
