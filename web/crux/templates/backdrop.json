@@ -1,5 +1,5 @@
 {
-  "name": "backdrop",
+  "name": "Backdrop",
   "description": "The comprehensive CMS for small to medium sized businesses and non-profits.",
   "registries": [
     {
@@ -54,7 +54,7 @@
       "name": "backdrop-app",
       "registryName": "Docker Hub Library",
       "image": "backdrop",
-      "tag": "apache",
+      "tag": "latest",
       "config": {
         "name": "backdrop-app",
         "volumes": [
