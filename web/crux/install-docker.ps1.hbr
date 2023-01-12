@@ -3,15 +3,24 @@ Set-StrictMode -version latest
 $ErrorActionPreference = 'Stop'
 
 try { docker stop dagent }
-catch {
+catch { Write-Output "dagent couldn't be found or stopped" }
+finally {
   try { docker rm dagent }
   catch { Write-Output "dagent couldn't be found or removed" }
 }
 
-If ( $env:PERSISTENCE_FOLDER -eq "" ) {
-  $PERSISTENCE_FOLDER = {{#if rootPath}}"{{{rootPath}}}"{{else}}"C:/.dyrectorio-persistence"{{/if}}
-} else {
+If ( $env:PERSISTENCE_FOLDER ) {
   $PERSISTENCE_FOLDER = $env:PERSISTENCE_FOLDER
+} else {
+  $PERSISTENCE_FOLDER = {{#if rootPath}}"{{{rootPath}}}"{{else}}"C:/.dyrectorio-persistence"{{/if}}
+}
+
+if ( $env:HOSTNAME ) {
+  $HOSTNAME = $env:HOSTNAME
+} elseif ( $env:COMPUTERNAME) {
+  $HOSTNAME = $env:COMPUTERNAME
+} else {
+  Write-Output "HOSTNAME couldn't be determined"
 }
 
 If ( -not (Test-Path $PERSISTENCE_FOLDER -PathType Container) ) {

@@ -81,14 +81,28 @@ export default class AgentInstaller {
   }
 
   loadScriptAndCompiler(nodeType: NodeTypeEnum, scriptType: NodeScriptType): void {
-    const agentFilename = `install-${nodeType}${
-      scriptType === NodeScriptType.POWERSHELL ? '-powershell.ps1' : '.sh'
-    }.hbr`
+    const extension = this.getInstallScriptExtension(scriptType)
+    const agentFilename = `install-${nodeType}${extension}.hbr`
     const scriptFile = readFileSync(join(cwd(), agentFilename), 'utf8')
     this.scriptCompiler = {
       compile: Handlebars.compile(scriptFile),
       file: scriptFile,
     }
+  }
+
+  private getInstallScriptExtension(scriptType: NodeScriptType): string {
+    switch (scriptType) {
+      case NodeScriptType.SHELL:
+        return '.sh'
+      case NodeScriptType.POWERSHELL:
+        return '.ps1'
+    }
+
+    throw new InvalidArgumentException({
+      message: 'Unknown script type',
+      property: 'scriptType',
+      value: scriptType,
+    })
   }
 }
 
