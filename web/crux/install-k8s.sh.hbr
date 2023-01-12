@@ -2,9 +2,9 @@
 set -e
 
 {{#if localManifests }}
-kubectl apply -f ./agent/manifest/kubernetes/namespace.yaml
+kubectl apply -f ./golang/manifest/kubernetes/namespace.yaml
 {{else}}
-kubectl apply -f https://raw.githubusercontent.com/dyrector-io/dyrectorio/main/agent/manifest/kubernetes/namespace.yaml
+kubectl apply -f https://raw.githubusercontent.com/dyrector-io/dyrectorio/main/golang/manifest/kubernetes/namespace.yaml
 {{/if }}
 
 cat <<EOF | kubectl apply -f -
@@ -23,11 +23,11 @@ data:
 EOF
 
 {{#if localManifests }}
-kubectl apply -f ./agent/manifest/kubernetes/rolebinding.yaml
-kubectl apply -f ./agent/manifest/kubernetes/volume.yaml
-kubectl apply -f ./agent/manifest/kubernetes/deployment.yaml
+kubectl apply -f ./golang/manifest/kubernetes/rolebinding.yaml
+kubectl apply -f ./golang/manifest/kubernetes/volume.yaml
+kubectl apply -f ./golang/manifest/kubernetes/deployment.yaml
 {{else}}
-kubectl apply -f https://raw.githubusercontent.com/dyrector-io/dyrectorio/main/agent/manifest/kubernetes/rolebinding.yaml
-kubectl apply -f https://raw.githubusercontent.com/dyrector-io/dyrectorio/main/agent/manifest/kubernetes/volume.yaml
-kubectl apply -f https://raw.githubusercontent.com/dyrector-io/dyrectorio/main/agent/manifest/kubernetes/deployment.yaml
+kubectl apply -f https://raw.githubusercontent.com/dyrector-io/dyrectorio/main/golang/manifest/kubernetes/rolebinding.yaml
+kubectl apply -f https://raw.githubusercontent.com/dyrector-io/dyrectorio/main/golang/manifest/kubernetes/volume.yaml
+kubectl apply -f https://raw.githubusercontent.com/dyrector-io/dyrectorio/main/golang/manifest/kubernetes/deployment.yaml
 {{/if }}
