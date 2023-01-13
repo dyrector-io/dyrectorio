@@ -40,7 +40,9 @@ const ProductDetailsCard = (props: ProductDetailsCardProps) => {
             </DyoHeading>
 
             <div className="flex flex-col ml-auto">
-              <span className="text-bright whitespace-nowrap">{utcDateToLocale(product.createdAt)}</span>
+              <span className="text-bright whitespace-nowrap" suppressHydrationWarning>
+                {utcDateToLocale(product.createdAt)}
+              </span>
 
               <ProductTypeTag className="mt-2 ml-auto" type={product.type} />
             </div>

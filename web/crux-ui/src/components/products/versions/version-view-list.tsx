@@ -67,7 +67,7 @@ const VersionViewList = (props: VersionViewListProps) => {
         {item.tag ? `:${item.tag}` : null}
       </a>
     </div>,
-    item.createdAt ? utcDateToLocale(item.createdAt) : t('common:new'),
+    <span suppressHydrationWarning>{item.createdAt ? utcDateToLocale(item.createdAt) : t('common:new')}</span>,
     <div className="flex flex-wrap justify-center">
       <div className="inline-block">
         <Image
