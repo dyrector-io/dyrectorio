@@ -34,7 +34,7 @@ import {
   Empty,
   ListSecretsResponse,
 } from 'src/grpc/protobuf/proto/common'
-import { NodeConnectionStatus, NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
+import { NodeConnectionStatus, NodeEventMessage, NodeScriptType } from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 
@@ -109,7 +109,12 @@ export default class AgentService {
     channel.next(event)
   }
 
-  async install(nodeId: string, nodeType: NodeTypeEnum, rootPath: string | null): Promise<AgentInstaller> {
+  async install(
+    nodeId: string,
+    nodeType: NodeTypeEnum,
+    rootPath: string | null,
+    scriptType: NodeScriptType,
+  ): Promise<AgentInstaller> {
     let installer = this.getInstallerByNodeId(nodeId)
     if (!installer || installer.nodeType !== nodeType) {
       const now = new Date().getTime()
@@ -127,6 +132,7 @@ export default class AgentService {
         new Date(now + AgentService.SCRIPT_EXPIRATION),
         nodeType,
         rootPath,
+        scriptType,
       )
       this.installers.set(nodeId, installer)
     }

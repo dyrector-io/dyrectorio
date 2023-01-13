@@ -154,10 +154,6 @@ dagent_install() {
     -e TRAEFIK='true' \
     {{/if}}
     -e DATA_MOUNT_PATH=$PERSISTENCE_FOLDER \
-    -e UPDATE_METHOD='off' \
-    -e UPDATE_POLL_INTERVAL='600s' \
-    -e DAGENT_IMAGE='ghcr.io/dyrector-io/dyrectorio/agent/dagent' \
-    -e DAGENT_TAG='stable' \
     -e DAGENT_NAME='{{name}}' \
     {{#if debugMode}}
     -e DEBUG='true' \
