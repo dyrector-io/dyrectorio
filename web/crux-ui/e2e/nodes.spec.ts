@@ -87,3 +87,24 @@ test('Generate script should show the curl command and the script ', async ({ pa
   await expect(discardButton).toBeVisible()
   await expect(copyButton).toBeVisible()
 })
+
+test('Generate script should show script type selector for Docker', async ({ page }) => {
+  await page.goto(ROUTE_NODES)
+
+  await page.locator('button:has-text("Add")').click()
+
+  await page.locator('input[name=name]').fill('PW_DAGENT_DOCKER_SCRIPT')
+
+  await page.locator('button:has-text("Save")').click()
+
+  await page.waitForSelector('h4:has-text("Technology")')
+
+  const dockerHost = await page.locator('button:has-text("Docker Host")')
+  await dockerHost.click()
+
+  const rootPath = await page.locator('input[placeholder="Optional, leave empty for default paths"]')
+  await expect(rootPath).toBeVisible()
+
+  await expect(await page.locator('button:text-is("Shell")')).toBeVisible()
+  await expect(await page.locator('button:text-is("PowerShell")')).toBeVisible()
+})

@@ -34,7 +34,7 @@
     "docker": "Docker Host",
     "k8s": "Kubernetes Cluster"
   },
-  "shellType": "Shell type",
+  "type": "Type",
   "installScript": {
     "shell": "Shell",
     "powershell": "PowerShell"

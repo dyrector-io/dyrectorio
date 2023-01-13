@@ -12,8 +12,6 @@ import { NodeEventMessage, NodeScriptType } from 'src/grpc/protobuf/proto/crux'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import { Agent } from './agent'
 
-const agentFileTemplate = 'install-{{nodeType}}-{{scriptType}}.sh.hbr'
-
 export default class AgentInstaller {
   private readonly logger = new Logger(AgentInstaller.name)
 
@@ -96,13 +94,13 @@ export default class AgentInstaller {
         return '.sh'
       case NodeScriptType.POWERSHELL:
         return '.ps1'
+      default:
+        throw new InvalidArgumentException({
+          message: 'Unknown script type',
+          property: 'scriptType',
+          value: scriptType,
+        })
     }
-
-    throw new InvalidArgumentException({
-      message: 'Unknown script type',
-      property: 'scriptType',
-      value: scriptType,
-    })
   }
 }
 

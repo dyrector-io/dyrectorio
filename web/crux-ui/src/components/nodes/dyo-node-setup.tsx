@@ -104,7 +104,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
       {node.type === 'docker' && (
         <div className="flex flex-col">
           <DyoHeading element="h4" className="text-lg text-bright mb-2">
-            {t('shellType')}
+            {t('type')}
           </DyoHeading>
           <DyoChips
             className="mb-2 ml-2"
