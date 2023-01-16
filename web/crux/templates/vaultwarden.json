@@ -22,6 +22,10 @@
           {
             "external": 80,
             "internal": 80
+          },
+          {
+            "external": 3012,
+            "internal": 3012
           }
         ],
         "volumes": [
@@ -30,7 +34,12 @@
             "path": "/data"
           }
         ],
-        "environment": [],
+        "environment": [
+          {
+            "key": "DOMAIN",
+            "value": "https://vault.example.com/"
+          }
+        ],
         "secrets": [],
         "networks": ["vaultwarden-network"],
         "networkMode": "bridge",
