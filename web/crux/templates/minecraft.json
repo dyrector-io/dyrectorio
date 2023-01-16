@@ -1,0 +1,41 @@
+{
+  "name": "Minecraft",
+  "description": "Minecraft server with select-able version.",
+  "registries": [
+    {
+      "name": "Docker Hub Minecraft",
+      "type": "hub",
+      "hub": {
+        "imageNamePrefix": "itzg"
+      }
+    }
+  ],
+  "images": [
+    {
+      "name": "minecraft-server",
+      "registryName": "Docker Hub Minecraft",
+      "image": "minecraft-server",
+      "tag": "latest",
+      "config": {
+        "name": "minecraft-server",
+        "tty": true,
+        "ports": [
+          {
+            "external": 25565,
+            "internal": 25565
+          }
+        ],
+        "environment": [
+          {
+            "key": "EULA",
+            "value": true
+          }
+        ],
+        "networks": ["minecraft"],
+        "networkMode": "bridge",
+        "restartPolicy": "unless-stopped",
+        "deploymentStrategy": "recreate"
+      }
+    }
+  ]
+}

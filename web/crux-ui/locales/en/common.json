@@ -94,8 +94,10 @@
 
   "prefix": "Prefix",
 
-  "minutesSeconds": "{{minutes}} min {{seconds}} s",
-  "seconds": "{{seconds}}s",
+  "days": "{{days}} days",
+  "hours": "{{hours}} hours",
+  "minutes": "{{minutes}} minutes",
+  "seconds": "{{seconds}} seconds",
   "secondsAgo": "{{seconds}} seconds ago",
   "minutesAgo": "{{minutes}} minutes ago",
   "hoursAgo": "{{hours}} hours ago",

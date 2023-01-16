@@ -316,19 +316,14 @@ export type CommonConfigDetails = Omit<ContainerConfig, DagentSpecificConfig | C
 
 export type JsonConfig = InstanceJsonContainerConfig | JsonContainerConfig
 
-const overrideKeys = (weak: UniqueKey[], strong: UniqueKey[]): UniqueKey[] => {
+const mergeKeyValues = (weak: UniqueKeyValue[], strong: UniqueKeyValue[]): UniqueKeyValue[] => {
   const overridenKeys: Set<string> = new Set(strong?.map(it => it.key))
   return [...(weak?.filter(it => !overridenKeys.has(it.key)) ?? []), ...(strong ?? [])]
 }
 
-const overrideKeyValues = (weak: UniqueKeyValue[], strong: UniqueKeyValue[]): UniqueKeyValue[] => {
+const mergeSecrets = (weak: UniqueSecretKeyValue[], strong: UniqueSecretKeyValue[]): UniqueSecretKeyValue[] => {
   const overridenKeys: Set<string> = new Set(strong?.map(it => it.key))
   return [...(weak?.filter(it => !overridenKeys.has(it.key)) ?? []), ...(strong ?? [])]
-}
-
-const overridePorts = (weak: ContainerConfigPort[], strong: ContainerConfigPort[]): ContainerConfigPort[] => {
-  const overridenPorts: Set<number> = new Set(strong?.map(it => it.internal))
-  return [...(weak?.filter(it => !overridenPorts.has(it.internal)) ?? []), ...(strong ?? [])]
 }
 
 const override = <T>(weak: T, strong: T): T => strong ?? weak
@@ -341,67 +336,56 @@ export const mergeConfigs = (
 ): ContainerConfig => {
   const instanceConfig = overriddenConfig ?? {}
 
-  const envs = overrideKeyValues(imageConfig.environment, instanceConfig.environment)
-  const caps = overrideKeyValues(imageConfig.capabilities, instanceConfig.capabilities)
-
   return {
-    // common
-    name: instanceConfig.name || imageConfig.name,
-    environment: envs,
-    secrets: instanceConfig?.secrets ? instanceConfig.secrets : imageConfig.secrets,
-    ports: overridePorts(imageConfig?.ports, instanceConfig.ports),
-    user: override(imageConfig?.user, instanceConfig.user),
-    tty: override(imageConfig?.tty, instanceConfig.tty),
-    portRanges: override(imageConfig?.portRanges, instanceConfig.portRanges),
-    args: overrideKeys(imageConfig?.args, instanceConfig.args),
-    commands: overrideKeys(imageConfig?.commands, instanceConfig.commands),
-    expose: override(imageConfig?.expose, instanceConfig.expose),
-    configContainer: override(imageConfig?.configContainer, instanceConfig.configContainer),
-    ingress: override(imageConfig?.ingress, instanceConfig.ingress),
-    volumes: override(imageConfig?.volumes, instanceConfig.volumes),
-    importContainer: override(imageConfig?.importContainer, instanceConfig.importContainer),
-    initContainers: override(imageConfig?.initContainers, instanceConfig.initContainers),
-    capabilities: caps,
+    // Default: override
+    // UniqueKeyValues/KeyValues: merge
+    name: override(imageConfig.name, instanceConfig.name),
+    environment: mergeKeyValues(imageConfig.environment, instanceConfig.environment),
+    secrets: mergeSecrets(imageConfig.secrets, instanceConfig.secrets),
+    ports: override(imageConfig.ports, instanceConfig.ports),
+    user: override(imageConfig.user, instanceConfig.user),
+    tty: override(imageConfig.tty, instanceConfig.tty),
+    portRanges: override(imageConfig.portRanges, instanceConfig.portRanges),
+    args: override(imageConfig.args, instanceConfig.args),
+    commands: override(imageConfig.commands, instanceConfig.commands),
+    expose: override(imageConfig.expose, instanceConfig.expose),
+    configContainer: override(imageConfig.configContainer, instanceConfig.configContainer),
+    ingress: override(imageConfig.ingress, instanceConfig.ingress),
+    volumes: override(imageConfig.volumes, instanceConfig.volumes),
+    importContainer: override(imageConfig.importContainer, instanceConfig.importContainer),
+    initContainers: override(imageConfig.initContainers, instanceConfig.initContainers),
+    capabilities: mergeKeyValues(imageConfig.capabilities, instanceConfig.capabilities),
 
     // crane
-    customHeaders: overrideKeys(imageConfig?.customHeaders, instanceConfig?.customHeaders),
-    proxyHeaders: override(imageConfig?.proxyHeaders, instanceConfig?.proxyHeaders),
-    extraLBAnnotations: override(imageConfig?.extraLBAnnotations, instanceConfig?.extraLBAnnotations),
-    healthCheckConfig: override(imageConfig?.healthCheckConfig, instanceConfig?.healthCheckConfig),
-    resourceConfig: override(imageConfig?.resourceConfig, instanceConfig?.resourceConfig),
-    useLoadBalancer: override(imageConfig?.useLoadBalancer, instanceConfig?.useLoadBalancer),
+    customHeaders: override(imageConfig.customHeaders, instanceConfig?.customHeaders),
+    proxyHeaders: override(imageConfig.proxyHeaders, instanceConfig?.proxyHeaders),
+    extraLBAnnotations: mergeKeyValues(imageConfig.extraLBAnnotations, instanceConfig?.extraLBAnnotations),
+    healthCheckConfig: override(imageConfig.healthCheckConfig, instanceConfig?.healthCheckConfig),
+    resourceConfig: override(imageConfig.resourceConfig, instanceConfig?.resourceConfig),
+    useLoadBalancer: override(imageConfig.useLoadBalancer, instanceConfig?.useLoadBalancer),
     deploymentStrategy: overrideWithDefaultValue(
-      imageConfig?.deploymentStrategy,
+      imageConfig.deploymentStrategy,
       instanceConfig?.deploymentStrategy,
       'recreate',
     ),
     labels: {
-      service: overrideKeyValues(imageConfig?.labels?.service, instanceConfig?.labels?.service),
-      deployment: overrideKeyValues(imageConfig?.labels?.deployment, instanceConfig?.labels?.deployment),
-      ingress: overrideKeyValues(imageConfig?.labels?.ingress, instanceConfig?.labels?.ingress),
+      service: mergeKeyValues(imageConfig.labels?.service, instanceConfig?.labels?.service),
+      deployment: mergeKeyValues(imageConfig.labels?.deployment, instanceConfig?.labels?.deployment),
+      ingress: mergeKeyValues(imageConfig.labels?.ingress, instanceConfig?.labels?.ingress),
     },
     annotations: {
-      service: overrideKeyValues(imageConfig?.annotations?.service, instanceConfig?.annotations?.service),
-      deployment: overrideKeyValues(imageConfig?.annotations?.deployment, instanceConfig?.annotations?.deployment),
-      ingress: overrideKeyValues(imageConfig?.annotations?.ingress, instanceConfig?.annotations?.ingress),
+      service: mergeKeyValues(imageConfig.annotations?.service, instanceConfig?.annotations?.service),
+      deployment: mergeKeyValues(imageConfig.annotations?.deployment, instanceConfig?.annotations?.deployment),
+      ingress: mergeKeyValues(imageConfig.annotations?.ingress, instanceConfig?.annotations?.ingress),
     },
 
     // dagent
-    logConfig: override(imageConfig?.logConfig, instanceConfig?.logConfig),
-    networkMode: overrideWithDefaultValue(imageConfig?.networkMode, instanceConfig?.networkMode, 'none'),
-    restartPolicy: overrideWithDefaultValue(imageConfig?.restartPolicy, instanceConfig?.restartPolicy, 'unlessStopped'),
-    networks: instanceConfig?.networks ?? imageConfig?.networks ?? [],
-    dockerLabels: overrideKeyValues(imageConfig?.dockerLabels, instanceConfig?.dockerLabels),
+    logConfig: override(imageConfig.logConfig, instanceConfig?.logConfig),
+    networkMode: overrideWithDefaultValue(imageConfig.networkMode, instanceConfig?.networkMode, 'none'),
+    restartPolicy: overrideWithDefaultValue(imageConfig.restartPolicy, instanceConfig?.restartPolicy, 'unlessStopped'),
+    networks: override(imageConfig.networks, instanceConfig.networks),
+    dockerLabels: mergeKeyValues(imageConfig.dockerLabels, instanceConfig?.dockerLabels),
   }
-}
-
-export const mergeContainerConfig = (
-  imageConfig: ContainerConfig,
-  overriddenConfig: Partial<ContainerConfig>,
-): ContainerConfig => {
-  const result = mergeConfigs(imageConfig, overriddenConfig)
-
-  return result as ContainerConfig
 }
 
 const keyValueArrayToJson = (list: UniqueKeyValue[]): JsonKeyValue =>
@@ -581,50 +565,56 @@ export const mergeJsonConfigToContainerConfig = (
           options: mergeKeyValuesWithJson(serialized.logConfig?.options, json.logConfig?.options),
         }
       : null,
-    initContainers: json.initContainers?.map(it => {
-      const index = serialized.initContainers?.map(iit => iit.name).indexOf(it.name)
+    initContainers: !json.initContainers
+      ? []
+      : json.initContainers.map(it => {
+          const index = serialized.initContainers?.map(iit => iit.name).indexOf(it.name)
 
-      if (index !== -1) {
-        const prev = serialized.initContainers[index]
-
-        return {
-          ...prev,
-          args: mergeKeysWithJson(prev.args, it.args),
-          command: mergeKeysWithJson(prev.command, it.command),
-          environment: mergeKeyValuesWithJson(prev.environment, it.environment),
-          volumes: it.volumes?.map(vit => {
-            const volumeIndex = prev.volumes?.map(pv => pv.name).indexOf(vit.name)
-            const id = volumeIndex !== -1 ? prev.volumes[volumeIndex].id : uuid()
+          if (index !== -1) {
+            const prev = serialized.initContainers[index]
 
             return {
-              ...vit,
-              id,
-            } as InitContainerVolumeLink
-          }),
-        } as InitContainer
-      }
+              ...prev,
+              args: mergeKeysWithJson(prev.args, it.args),
+              command: mergeKeysWithJson(prev.command, it.command),
+              environment: mergeKeyValuesWithJson(prev.environment, it.environment),
+              volumes: it.volumes?.map(vit => {
+                const volumeIndex = prev.volumes?.map(pv => pv.name).indexOf(vit.name)
+                const id = volumeIndex > -1 ? prev.volumes[volumeIndex].id : uuid()
 
-      return {
-        ...it,
-        id: uuid(),
-        command: it.command?.map(cit => ({ id: uuid(), key: cit })),
-        args: it.args ? it.args?.map(ait => ({ id: uuid(), key: ait })) : [],
-        environment: Object.keys(it.environment ?? {}).map(eit => ({
-          key: eit,
-          value: it.environment[eit],
+                return {
+                  ...vit,
+                  id,
+                } as InitContainerVolumeLink
+              }),
+            } as InitContainer
+          }
+
+          return {
+            ...it,
+            id: uuid(),
+            command: it.command?.map(cit => ({ id: uuid(), key: cit })),
+            args: it.args ? it.args?.map(ait => ({ id: uuid(), key: ait })) : [],
+            environment: Object.keys(it.environment ?? {}).map(eit => ({
+              key: eit,
+              value: it.environment[eit],
+              id: uuid(),
+            })),
+            volumes: it.volumes?.map(vit => ({ ...vit, id: uuid() })),
+          } as InitContainer
+        }),
+    ports: !json.ports
+      ? []
+      : json.ports.map(it => ({
+          ...it,
           id: uuid(),
         })),
-        volumes: it.volumes?.map(vit => ({ ...vit, id: uuid() })),
-      } as InitContainer
-    }),
-    ports: json.ports?.map(it => ({
-      ...it,
-      id: uuid(),
-    })),
-    portRanges: json.portRanges?.map(it => ({
-      ...it,
-      id: uuid(),
-    })),
+    portRanges: !json.portRanges
+      ? []
+      : json.portRanges.map(it => ({
+          ...it,
+          id: uuid(),
+        })),
     dockerLabels: mergeKeyValuesWithJson(serialized.dockerLabels, json.dockerLabels),
     labels: json.labels
       ? {

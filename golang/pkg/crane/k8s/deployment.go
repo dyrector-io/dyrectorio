@@ -243,12 +243,15 @@ func getResourceManagement(resourceConfig v1.ResourceConfig,
 	cfg *config.Configuration,
 ) (*corev1.ResourceRequirementsApplyConfiguration, error) {
 	var ResourceLimitsCPU, ResourceLimitsMemory, ResourceRequestsCPU, ResourceRequestsMemory resource.Quantity
+	var limits coreV1.ResourceList
 	var err error
 
 	// Resource Limits CPU
 	if resourceConfig.Limits.CPU != "" {
-		if ResourceLimitsCPU, err = resource.ParseQuantity(resourceConfig.Limits.CPU); err != nil {
-			return nil, NewResourceError(FieldCPU, GroupLimits, false)
+		if resourceConfig.Limits.CPU != "0" {
+			if ResourceLimitsCPU, err = resource.ParseQuantity(resourceConfig.Limits.CPU); err != nil {
+				return nil, NewResourceError(FieldCPU, GroupLimits, false)
+			}
 		}
 	} else {
 		if ResourceLimitsCPU, err = resource.ParseQuantity(cfg.DefaultLimitsCPU); err != nil {
@@ -289,16 +292,25 @@ func getResourceManagement(resourceConfig v1.ResourceConfig,
 		}
 	}
 
-	return corev1.ResourceRequirements().WithLimits(
-		coreV1.ResourceList{
-			coreV1.ResourceCPU:    ResourceLimitsCPU,
+	if resourceConfig.Limits.CPU != "0" {
+		limits = coreV1.ResourceList{
 			coreV1.ResourceMemory: ResourceLimitsMemory,
-		}).WithRequests(
-		coreV1.ResourceList{
-			coreV1.ResourceCPU:    ResourceRequestsCPU,
-			coreV1.ResourceMemory: ResourceRequestsMemory,
-		},
-	), nil
+			coreV1.ResourceCPU:    ResourceLimitsCPU,
+		}
+	} else {
+		limits = coreV1.ResourceList{
+			coreV1.ResourceMemory: ResourceLimitsMemory,
+		}
+	}
+
+	requests := coreV1.ResourceList{
+		coreV1.ResourceCPU:    ResourceRequestsCPU,
+		coreV1.ResourceMemory: ResourceRequestsMemory,
+	}
+
+	return corev1.ResourceRequirements().
+		WithLimits(limits).
+		WithRequests(requests), nil
 }
 
 // getInitContainers returns every init container specific(import/config) or custom ones

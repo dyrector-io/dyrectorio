@@ -9,12 +9,10 @@ import { startDeployment } from '@app/components/products/versions/version-deplo
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
 import PageHeading from '@app/components/shared/page-heading'
 import { DetailsPageMenu } from '@app/components/shared/page-menu'
-import AnchorAction from '@app/elements/dyo-anchor-action'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import LoadingIndicator from '@app/elements/loading-indicator'
 import { defaultApiErrorHandler } from '@app/errors'
-import useAnchorActions from '@app/hooks/use-anchor-actions'
 import useWebsocketTranslate from '@app/hooks/use-websocket-translation'
 import { DeploymentInvalidatedSecrets, DeploymentRoot, mergeConfigs } from '@app/models'
 import {
@@ -62,7 +60,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
 
   const { product, version, deployment, node } = state
 
-  const copyDeployment = async () => {
+  const onCopyDeployment = async () => {
     const url = await actions.onCopyDeployment()
     if (!url) {
       return
@@ -102,10 +100,6 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
       actions.onInvalidateSecrets(invalidSecrets)
     }
   }
-
-  const anchors = useAnchorActions({
-    copyDeployment,
-  })
 
   useWebsocketTranslate(t)
 
@@ -180,9 +174,9 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
         )}
 
         {!state.copiable ? null : (
-          <AnchorAction href="copyDeployment" anchors={anchors}>
-            <DyoButton className="px-6 ml-4">{t('common:copy')}</DyoButton>
-          </AnchorAction>
+          <DyoButton className="px-6 ml-4" onClick={onCopyDeployment}>
+            {t('common:copy')}
+          </DyoButton>
         )}
 
         {state.showDeploymentLog ? (

@@ -30,11 +30,7 @@ export const DyoFileUploadInput = (props: DyoFileUploadProps) => {
 
   return (
     <>
-      {!label ? null : (
-        <DyoLabel className="mt-8 mb-2.5" htmlFor={name}>
-          {label}
-        </DyoLabel>
-      )}
+      {!label ? null : <DyoLabel className="mt-8 mb-2.5">{label}</DyoLabel>}
 
       <DyoButton className="px-6 w-28" outlined type="button" onClick={handleClick}>
         {t('upload')}
@@ -43,6 +39,7 @@ export const DyoFileUploadInput = (props: DyoFileUploadProps) => {
       <input
         type="file"
         className="hidden"
+        name={name}
         accept={accept}
         multiple={multiple}
         ref={hiddenFileInput}

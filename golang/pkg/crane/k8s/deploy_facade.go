@@ -80,7 +80,7 @@ func (d *DeployFacade) CheckPreConditions() error {
 		return fmt.Errorf("instance config name must be provided with environments")
 	}
 
-	err = d.namespace.DeployNamespace(d.params.InstanceConfig.Name)
+	err = d.namespace.DeployNamespace(d.params.InstanceConfig.ContainerPreName)
 	if err != nil && !errors.IsNotFound(err) {
 		return fmt.Errorf("pre-deployment failure: %w", err)
 	}

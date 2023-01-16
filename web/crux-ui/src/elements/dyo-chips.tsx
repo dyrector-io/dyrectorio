@@ -43,6 +43,7 @@ const DyoChips = <T,>(props: DyoChipsProps<T>) => {
               selection === it
                 ? 'text-white font-medium border-dyo-turquoise bg-dyo-turquoise bg-opacity-30'
                 : 'text-light-eased border-light-eased',
+              disabled ? 'cursor-not-allowed' : null,
             )}
             onClick={() => onToggle(it)}
           >

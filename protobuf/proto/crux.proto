@@ -137,6 +137,7 @@ service CruxTemplate {
   rpc GetTemplates(AccessRequest) returns (TemplateListResponse);
   rpc CreateProductFromTemplate(CreateProductFromTemplateRequest)
       returns (CreateEntityResponse);
+  rpc GetImage(IdRequest) returns (TemplateImageResponse);
 }
 
 service CruxDashboard {
@@ -463,6 +464,7 @@ message RegistryDetailsResponse {
   string name = 100;
   optional string description = 101;
   optional string icon = 102;
+  bool inUse = 103;
 
   oneof details {
     HubRegistryDetails hub = 200;
@@ -776,6 +778,7 @@ message GenerateScriptRequest {
   string accessedBy = 2;
   NodeType type = 100;
   optional string rootPath = 101;
+  NodeScriptType scriptType = 102;
 }
 
 message NodeInstallResponse {
@@ -818,6 +821,12 @@ enum NodeType {
   NODE_TYPE_UNSPECIFIED = 0;
   DOCKER = 1;
   K8S = 2;
+}
+
+enum NodeScriptType {
+  NODE_SCRIPT_TYPE_UNSPECIFIED = 0;
+  SHELL = 1;
+  POWERSHELL = 2;
 }
 
 message NodeEventMessage {
@@ -1085,6 +1094,10 @@ message CreateProductFromTemplateRequest {
   string name = 100;
   string description = 101;
   ProductType type = 102;
+}
+
+message TemplateImageResponse {
+  bytes data = 1;
 }
 
 // DASHBOARD

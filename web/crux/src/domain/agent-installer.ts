@@ -6,13 +6,11 @@ import Handlebars from 'handlebars'
 import { join } from 'path'
 import { cwd } from 'process'
 import { Subject } from 'rxjs'
-import { PreconditionFailedException } from 'src/exception/errors'
+import { InvalidArgumentException, PreconditionFailedException } from 'src/exception/errors'
 import { AgentInfo } from 'src/grpc/protobuf/proto/agent'
-import { NodeEventMessage } from 'src/grpc/protobuf/proto/crux'
+import { NodeEventMessage, NodeScriptType } from 'src/grpc/protobuf/proto/crux'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import { Agent } from './agent'
-
-const agentFileTemplate = 'install-{{nodeType}}.sh.hbr'
 
 export default class AgentInstaller {
   private readonly logger = new Logger(AgentInstaller.name)
@@ -26,8 +24,9 @@ export default class AgentInstaller {
     readonly expireAt: Date,
     readonly nodeType: NodeTypeEnum,
     readonly rootPath: string | null,
+    readonly scriptType: NodeScriptType,
   ) {
-    this.loadScriptAndCompiler(nodeType)
+    this.loadScriptAndCompiler(nodeType, scriptType)
   }
 
   get expired(): boolean {
@@ -79,12 +78,28 @@ export default class AgentInstaller {
     return new Agent(connection, info, eventChannel)
   }
 
-  loadScriptAndCompiler(nodeType: NodeTypeEnum): void {
-    const agentFilename = Handlebars.compile(agentFileTemplate)({ nodeType })
+  loadScriptAndCompiler(nodeType: NodeTypeEnum, scriptType: NodeScriptType): void {
+    const extension = this.getInstallScriptExtension(scriptType)
+    const agentFilename = `install-${nodeType}${extension}.hbr`
     const scriptFile = readFileSync(join(cwd(), agentFilename), 'utf8')
     this.scriptCompiler = {
       compile: Handlebars.compile(scriptFile),
       file: scriptFile,
+    }
+  }
+
+  private getInstallScriptExtension(scriptType: NodeScriptType): string {
+    switch (scriptType) {
+      case NodeScriptType.SHELL:
+        return '.sh'
+      case NodeScriptType.POWERSHELL:
+        return '.ps1'
+      default:
+        throw new InvalidArgumentException({
+          message: 'Unknown script type',
+          property: 'scriptType',
+          value: scriptType,
+        })
     }
   }
 }

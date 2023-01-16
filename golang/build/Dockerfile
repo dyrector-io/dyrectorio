@@ -1,18 +1,21 @@
-FROM docker.io/library/golang:1.18-alpine
+FROM busybox:uclibc as busybox
 
-ARG CO_BIN_NAME
+FROM gcr.io/distroless/static
 
-ENV CO_BIN_NAME=$CO_BIN_NAME
 
-COPY ./scripts/pre-update.sh /
-COPY ./scripts/post-update.sh /
+LABEL company=dyrector.io
+LABEL maintainer=nandor-magyar
 
-LABEL com.centurylinklabs.watchtower.lifecycle.pre-update="/pre-update.sh"
-LABEL com.centurylinklabs.watchtower.lifecycle.post-update="/post-update.sh"
+COPY --from=busybox /bin/sh  /bin/sh
+COPY --from=busybox /bin/arch  /bin/arch
+COPY --from=busybox /bin/echo  /bin/echo
 
-RUN  apk add -U --no-cache ca-certificates curl
+ARG AGENT_BINARY=dagent
 
-RUN mkdir -p /etc/dyrectorio
-COPY ./out/$CO_BIN_NAME /usr/bin/
+COPY ./scripts/start-agent.sh /
 
-ENTRYPOINT "$CO_BIN_NAME"
+COPY ./out/$AGENT_BINARY-amd64 /agent-amd64
+COPY ./out/$AGENT_BINARY-arm64 /agent-arm64
+
+
+ENTRYPOINT ["/start-agent.sh"]

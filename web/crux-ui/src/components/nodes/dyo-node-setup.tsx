@@ -3,10 +3,17 @@ import DyoChips from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
-import RemainingTimeLabel from '@app/elements/remaining-time-label'
+import TimeLabel from '@app/elements/time-label'
 import { defaultApiErrorHandler } from '@app/errors'
 import useTimer from '@app/hooks/use-timer'
-import { DyoNodeDetails, DyoNodeInstall, NodeType, NODE_TYPE_VALUES } from '@app/models'
+import {
+  DyoNodeDetails,
+  DyoNodeInstall,
+  NodeInstallScriptType,
+  NodeType,
+  NODE_INSTALL_SCRIPT_TYPE_VALUES,
+  NODE_TYPE_VALUES,
+} from '@app/models'
 import { nodeSetupApiUrl } from '@app/routes'
 import { sendForm, writeToClipboard } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
@@ -33,6 +40,8 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
     node.install ? expiresIn(new Date(node.install.expireAt)) : null,
     () => onNodeInstallChanged(null),
   )
+
+  const [scriptType, setScriptType] = useState<NodeInstallScriptType>('shell')
   const [rootPath, setRootPath] = useState<string>('')
 
   const handleApiError = defaultApiErrorHandler(t)
@@ -45,6 +54,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
     const body = {
       type: node.type,
       rootPath: rootPath || undefined,
+      scriptType,
     }
 
     const res = await sendForm('POST', nodeSetupApiUrl(node.id), body)
@@ -93,6 +103,16 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
 
       {node.type === 'docker' && (
         <div className="flex flex-col">
+          <DyoHeading element="h4" className="text-lg text-bright mb-2">
+            {t('type')}
+          </DyoHeading>
+          <DyoChips
+            className="mb-2 ml-2"
+            choices={NODE_INSTALL_SCRIPT_TYPE_VALUES}
+            initialSelection={scriptType}
+            converter={(it: NodeInstallScriptType) => t(`installScript.${it}`)}
+            onSelectionChange={it => setScriptType(it)}
+          />
           <DyoLabel className="text-lg mb-2.5" textColor="text-bright">
             {t('persistentDataPath')}
           </DyoLabel>
@@ -126,7 +146,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
         <div className="flex flex-row">
           <DyoLabel className="text-white mr-2">{t('scriptExpiresIn')}</DyoLabel>
 
-          <RemainingTimeLabel textColor="text-dyo-turquoise" seconds={remaining} />
+          <TimeLabel textColor="text-dyo-turquoise" seconds={remaining} />
         </div>
       </div>
 

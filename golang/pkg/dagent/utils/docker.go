@@ -219,6 +219,7 @@ func logDeployInfo(
 		fmt.Sprintln("Starting container: ", containerName),
 		fmt.Sprintln("Using image: ", image.String()),
 	)
+	log.Debug().Str("host", image.Host).Str("name", image.Name).Str("tag", image.Tag).Msg("Parsed image URI")
 
 	labels, _ := GetImageLabels(image.String())
 	if len(labels) > 0 {
@@ -276,10 +277,14 @@ func DeployImage(ctx context.Context,
 	containerName := getContainerName(deployImageRequest)
 	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
 
-	image, _ := imageHelper.URIFromString(
-		util.JoinV("/",
-			*deployImageRequest.Registry,
-			util.JoinV(":", deployImageRequest.ImageName, deployImageRequest.Tag)))
+	imageURI := util.JoinV("/",
+		*deployImageRequest.Registry,
+		util.JoinV(":", deployImageRequest.ImageName, deployImageRequest.Tag))
+	log.Debug().Str("image", imageURI).Msg("Parsing image URI")
+	image, imageError := imageHelper.URIFromString(imageURI)
+	if imageError != nil {
+		return imageError
+	}
 	logDeployInfo(dog, deployImageRequest, image, containerName)
 
 	envMap := MergeStringMapUnique(
@@ -335,7 +340,7 @@ func DeployImage(ctx context.Context,
 		WithoutConflict().
 		WithLogWriter(dog)
 
-	WithImportContainer(builder, deployImageRequest.ContainerConfig.ImportContainer, dog, cfg)
+	WithInitContainers(builder, &deployImageRequest.ContainerConfig, dog, cfg)
 
 	builder.Create()
 
@@ -369,25 +374,25 @@ func setNetwork(deployImageRequest *v1.DeployImageRequest) (networkMode string, 
 	return networkMode, deployImageRequest.ContainerConfig.Networks
 }
 
-func WithImportContainer(dc *containerbuilder.DockerContainerBuilder, importConfig *v1.ImportContainer,
+func WithInitContainers(dc *containerbuilder.DockerContainerBuilder, containerConfig *v1.ContainerConfig,
 	dog *dogger.DeploymentLogger, cfg *config.Configuration,
 ) {
-	if importConfig != nil {
-		dc.WithPreStartHooks(func(ctx context.Context,
-			client *client.Client,
-			containerName string,
-			containerId *string,
-			mountList []mount.Mount,
-			logger *io.StringWriter,
-		) error {
-			if initError := spawnInitContainer(ctx, client, containerName, mountList, importConfig, dog, cfg); initError != nil {
-				dog.WriteDeploymentStatus(common.DeploymentStatus_FAILED, "Failed to spawn init container: "+initError.Error())
-				return initError
-			}
-			dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Loading assets was successful.")
-			return nil
-		})
+	initFuncs := []containerbuilder.LifecycleFunc{}
+	if containerConfig.ImportContainer != nil {
+		initFuncs = append(initFuncs,
+			func(ctx context.Context, client *client.Client,
+				containerName string, containerId *string,
+				mountList []mount.Mount, logger *io.StringWriter,
+			) error {
+				if initError := spawnInitContainer(ctx, client, containerName, mountList, containerConfig.ImportContainer, dog, cfg); initError != nil {
+					dog.WriteDeploymentStatus(common.DeploymentStatus_FAILED, "Failed to spawn init container: "+initError.Error())
+					return initError
+				}
+				dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Loading assets was successful.")
+				return nil
+			})
 	}
+	dc.WithPreStartHooks(initFuncs...)
 }
 
 func volumesToMounts(volumes []v1.Volume) []string {
@@ -438,7 +443,12 @@ func mountStrToDocker(mountIn []string, containerPreName, containerName string, 
 			mountSplit := strings.Split(mountStr, "|")
 			if len(mountSplit[0]) > 0 && len(mountSplit[1]) > 0 {
 				containerPath := path.Join(cfg.InternalMountPath, containerPreName, containerName, mountSplit[0])
-				hostPath := path.Join(cfg.DataMountPath, containerPreName, containerName, mountSplit[0])
+				hostPath := ""
+				if strings.HasPrefix(mountSplit[0], "/") {
+					hostPath = mountSplit[0]
+				} else {
+					hostPath = path.Join(cfg.DataMountPath, containerPreName, containerName, mountSplit[0])
+				}
 				_, err := os.Stat(containerPath)
 				if os.IsNotExist(err) {
 					if err := os.MkdirAll(containerPath, os.ModePerm); err != nil {

@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { DeploymentStatusEnum, InstanceContainerConfig } from '@prisma/client'
+import { DeploymentStatusEnum, InstanceContainerConfig, Prisma } from '@prisma/client'
 import { JsonArray } from 'prisma'
 import { concatAll, EMPTY, filter, from, lastValueFrom, map, merge, Observable, Subject } from 'rxjs'
 import Deployment from 'src/domain/deployment'
@@ -105,7 +105,7 @@ export default class DeployService {
         status: true,
         events: {
           orderBy: {
-            createdAt: 'desc',
+            createdAt: 'asc',
           },
         },
       },
@@ -147,6 +147,62 @@ export default class DeployService {
         },
       },
     })
+
+    const instanceIds = await this.prisma.instance.findMany({
+      where: {
+        deploymentId: deployment.id,
+      },
+      select: {
+        id: true,
+        imageId: true,
+        image: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    })
+
+    const previousInstances = await this.prisma.deployment.findFirst({
+      where: {
+        prefix: request.prefix,
+        nodeId: request.nodeId,
+        versionId: request.versionId,
+        id: {
+          not: deployment.id,
+        },
+      },
+      include: {
+        instances: {
+          select: {
+            imageId: true,
+            config: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
+
+    if (previousInstances && previousInstances.instances) {
+      instanceIds.forEach(async it => {
+        await this.prisma.instance.update({
+          where: {
+            id: it.id,
+          },
+          data: {
+            config: {
+              create: {
+                secrets:
+                  previousInstances.instances.find(instance => instance.imageId === it.imageId).config?.secrets ??
+                  Prisma.JsonNull,
+              },
+            },
+          },
+        })
+      })
+    }
 
     return CreateEntityResponse.fromJSON(deployment)
   }
@@ -285,7 +341,7 @@ export default class DeployService {
 
         const secrets = it.config.secrets as UniqueSecretKeyValue[]
 
-        if (secrets.every(secret => secret.publicKey === publicKey)) {
+        if (!secrets || secrets.every(secret => secret.publicKey === publicKey)) {
           return null
         }
 

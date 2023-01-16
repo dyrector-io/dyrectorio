@@ -1,0 +1,52 @@
+Set-PSDebug -strict
+Set-StrictMode -version latest
+$ErrorActionPreference = 'Stop'
+
+try { docker stop dagent }
+catch { Write-Output "dagent couldn't be found or stopped" }
+finally {
+  try { docker rm dagent }
+  catch { Write-Output "dagent couldn't be found or removed" }
+}
+
+If ( $env:PERSISTENCE_FOLDER ) {
+  $PERSISTENCE_FOLDER = $env:PERSISTENCE_FOLDER
+} else {
+  $PERSISTENCE_FOLDER = {{#if rootPath}}"{{{rootPath}}}"{{else}}"C:/.dyrectorio-persistence"{{/if}}
+}
+
+if ( $env:HOSTNAME ) {
+  $HOSTNAME = $env:HOSTNAME
+} elseif ( $env:COMPUTERNAME) {
+  $HOSTNAME = $env:COMPUTERNAME
+} else {
+  Write-Output "HOSTNAME couldn't be determined"
+}
+
+If ( -not (Test-Path $PERSISTENCE_FOLDER -PathType Container) ) {
+  New-Item -ItemType Directory -Path $PERSISTENCE_FOLDER
+}
+
+docker pull ghcr.io/dyrector-io/dyrectorio/agent/dagent:latest
+
+docker run `
+  --restart unless-stopped `
+  {{#if network}}
+  --network {{networkName}} `
+  {{/if}}
+  -e GRPC_TOKEN='{{token}}' `
+  -e HOSTNAME=$HOSTNAME `
+  {{#if traefik}}
+  -e TRAEFIK='true' `
+  {{/if}}
+  -e DATA_MOUNT_PATH=$PERSISTENCE_FOLDER `
+  -e DAGENT_NAME='{{name}}' `
+  {{#if debugMode}}
+  -e DEBUG='true' `
+  {{/if}}
+  -e HOST_DOCKER_SOCK_PATH=//var/run/docker.sock `
+  --add-host=host.docker.internal:host-gateway `
+  --name 'dagent' `
+  -v $PERSISTENCE_FOLDER/:/srv/dagent `
+  -v //var/run/docker.sock:/var/run/docker.sock `
+  -d ghcr.io/dyrector-io/dyrectorio/agent/dagent:latest

@@ -1,6 +1,61 @@
 # CHANGELOG
 
 
+<a name="0.3.2"></a>
+## [0.3.2](https://github.com/dyrector-io/dyrectorio/compare/0.3.1...0.3.2) (2023-01-03)
+
+### Feat
+
+* add minecraft server template ([#414](https://github.com/dyrector-io/dyrectorio/issues/414))
+* **(agent):** add multi arch build targets ([#418](https://github.com/dyrector-io/dyrectorio/issues/418))
+* **(web):** add gitea template ([#412](https://github.com/dyrector-io/dyrectorio/issues/412))
+
+### Fix
+
+* **(crux-ui):** json editor and mapper ([#413](https://github.com/dyrector-io/dyrectorio/issues/413))
+* **(web):** deployment event order ([#416](https://github.com/dyrector-io/dyrectorio/issues/416))
+
+
+<a name="0.3.1"></a>
+## [0.3.1](https://github.com/dyrector-io/dyrectorio/compare/0.3.0...0.3.1) (2022-12-22)
+
+### Build
+
+* **(web):** update web deps ([#393](https://github.com/dyrector-io/dyrectorio/issues/393))
+
+### Feat
+
+* **(crux-ui):** expand time label ([#411](https://github.com/dyrector-io/dyrectorio/issues/411))
+* **(web):** template images ([#391](https://github.com/dyrector-io/dyrectorio/issues/391))
+* **(crux-ui):** add form submit to ctrl+enter ([#395](https://github.com/dyrector-io/dyrectorio/issues/395))
+* add LinkAce template ([#404](https://github.com/dyrector-io/dyrectorio/issues/404))
+* **(crux):** reuse previous secrets ([#400](https://github.com/dyrector-io/dyrectorio/issues/400))
+* **(agent):** distroless image, abs path support for mounts ([#402](https://github.com/dyrector-io/dyrectorio/issues/402))
+* **(web):** prevent users from editing registry details ([#399](https://github.com/dyrector-io/dyrectorio/issues/399))
+* **(agent):** container builder extra hosts ([#398](https://github.com/dyrector-io/dyrectorio/issues/398))
+* **(web):** add dashboard ([#396](https://github.com/dyrector-io/dyrectorio/issues/396))
+* **(web):** add wordpress template ([#388](https://github.com/dyrector-io/dyrectorio/issues/388))
+* add self managed gitlab template ([#387](https://github.com/dyrector-io/dyrectorio/issues/387))
+
+### Fix
+
+* **(crux):** add missing secrets checl ([#410](https://github.com/dyrector-io/dyrectorio/issues/410))
+* **(crux):** fix secret disappearance ([#407](https://github.com/dyrector-io/dyrectorio/issues/407))
+* **(agent):** correct crane path manifests with distroless image ([#409](https://github.com/dyrector-io/dyrectorio/issues/409))
+* openssl apline ([#406](https://github.com/dyrector-io/dyrectorio/issues/406))
+* remove deprecated Prisma 'interactiveTransactions' ([#405](https://github.com/dyrector-io/dyrectorio/issues/405))
+* **(web):** deployment and template fix ([#403](https://github.com/dyrector-io/dyrectorio/issues/403))
+* self hosted gitlab releated issues ([#394](https://github.com/dyrector-io/dyrectorio/issues/394))
+* **(crux-ui):** deployment deploy and log ([#392](https://github.com/dyrector-io/dyrectorio/issues/392))
+* actualize readme, move helper package, fix small cli error ([#397](https://github.com/dyrector-io/dyrectorio/issues/397))
+* **(agent):** handle expose with no ports ([#389](https://github.com/dyrector-io/dyrectorio/issues/389))
+
+### Refactor
+
+* anchor action remove ([#408](https://github.com/dyrector-io/dyrectorio/issues/408))
+* **(crux-ui):** node persistent path ([#390](https://github.com/dyrector-io/dyrectorio/issues/390))
+
+
 <a name="0.3.0"></a>
 ## [0.3.0](https://github.com/dyrector-io/dyrectorio/compare/0.2.2...0.3.0) (2022-12-06)
 

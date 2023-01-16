@@ -5,7 +5,7 @@ import { IMAGE_WS_REQUEST_DELAY } from '@app/const'
 import { CANCEL_THROTTLE, useThrottling } from '@app/hooks/use-throttleing'
 import { ContainerConfig, JsonConfig, mergeJsonConfigToContainerConfig } from '@app/models'
 import clsx from 'clsx'
-import { CSSProperties, useCallback } from 'react'
+import { CSSProperties, useCallback, useState } from 'react'
 
 interface EditImageJsonProps {
   disabled?: boolean
@@ -34,8 +34,12 @@ const EditImageJson = (props: EditImageJsonProps) => {
 
   const throttle = useThrottling(IMAGE_WS_REQUEST_DELAY)
 
+  const [jsonError, setJsonError] = useState<boolean>(false)
+
   const onMergeValues = (_: JsonConfig, local: JsonConfig): JsonConfig => {
-    onPatch(mergeJsonConfigToContainerConfig(config, local))
+    if (!jsonError) {
+      onPatch(mergeJsonConfigToContainerConfig(config, local))
+    }
 
     return local
   }
@@ -50,6 +54,7 @@ const EditImageJson = (props: EditImageJsonProps) => {
   })
 
   const onChange = (newConfig: JsonConfig) => {
+    setJsonError(false)
     throttle(() => {
       onPatch(mergeJsonConfigToContainerConfig(config, newConfig))
     })
@@ -59,6 +64,8 @@ const EditImageJson = (props: EditImageJsonProps) => {
 
   const onParseError = useCallback(
     (err: Error) => {
+      setJsonError(true)
+
       throttle(CANCEL_THROTTLE)
 
       propOnParseError(err)

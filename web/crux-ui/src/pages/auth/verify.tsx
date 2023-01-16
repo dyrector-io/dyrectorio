@@ -2,6 +2,7 @@ import { SingleFormLayout } from '@app/components/layout'
 import { ATTRIB_CSRF, AUTH_RESEND_DELAY } from '@app/const'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
+import DyoForm from '@app/elements/dyo-form'
 import { DyoInput } from '@app/elements/dyo-input'
 import DyoMessage from '@app/elements/dyo-message'
 import DyoSingleFormHeading from '@app/elements/dyo-single-form-heading'
@@ -116,7 +117,7 @@ const VerifyPage = (props: VerifyProps) => {
       <DyoCard className="text-bright p-8 m-auto">
         <DyoSingleFormHeading className="max-w-xs">{t('verification')}</DyoSingleFormHeading>
 
-        <form className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
+        <DyoForm className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
           <DyoInput
             hidden={sent}
             label={t('common:email')}
@@ -161,7 +162,7 @@ const VerifyPage = (props: VerifyProps) => {
               {`${t('common:resend')} ${countdown > 0 ? countdown : ''}`.trim()}
             </DyoButton>
           )}
-        </form>
+        </DyoForm>
 
         {uiMessage ? <DyoMessage message={uiMessage} messageType="error" /> : null}
 

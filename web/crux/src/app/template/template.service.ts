@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
+import { NotFoundError } from '@prisma/client/runtime'
 import {
   deploymentStrategyFromJSON,
   exposeStrategyFromJSON,
@@ -11,6 +12,7 @@ import {
   CreateProductRequest,
   CreateVersionRequest,
   ProductType,
+  TemplateImageResponse,
   VersionType,
 } from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
@@ -93,6 +95,17 @@ export default class TemplateService {
     return product
   }
 
+  async getImage(id: string): Promise<TemplateImageResponse> {
+    try {
+      const buffer = await this.templateFileService.getTemplateImageById(id)
+      return {
+        data: new Uint8Array(buffer),
+      }
+    } catch (err) {
+      throw new NotFoundError(`Template image not found for ${id}`)
+    }
+  }
+
   private idify<T extends { id: string }>(object: T): T {
     return { ...object, id: v4() }
   }
@@ -122,6 +135,7 @@ export default class TemplateService {
       networks: config.networks ? config.networks.map(it => ({ id: v4(), key: it })) : [],
       ports: config.ports ? toPrismaJson(config.ports.map(it => this.idify(it))) : [],
       environment: config.environment ? config.environment.map(it => this.idify(it)) : [],
+      args: config.args ? config.args.map(it => this.idify(it)) : [],
       volumes: config.volumes
         ? toPrismaJson(
             config.volumes.map(it => ({

@@ -77,17 +77,21 @@ export default class TemplateFileService {
   }
 
   async getTemplateById(id: string): Promise<TemplateDetail> {
-    const templateContent = readFileSync(this.getTemplatePath(id), 'utf8')
+    const templateContent = readFileSync(this.getTemplatePath(id, 'json'), 'utf8')
 
     return JSON.parse(templateContent) as TemplateDetail
   }
 
-  getTemplatePath(id: string): string {
-    return `${join(this.templatesFolder, id)}.json`
+  async getTemplateImageById(id: string): Promise<Buffer> {
+    return readFileSync(this.getTemplatePath(id, 'jpg'))
+  }
+
+  getTemplatePath(id: string, extension: string): string {
+    return `${join(this.templatesFolder, id)}.${extension}`
   }
 
   readTemplate(id: string): TemplateDetail | null {
-    const templateContent = readFileSync(this.getTemplatePath(id), 'utf8')
+    const templateContent = readFileSync(this.getTemplatePath(id, 'json'), 'utf8')
     const template = JSON.parse(templateContent) as TemplateDetail
 
     try {

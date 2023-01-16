@@ -60,10 +60,11 @@ const DeployPage = (props: DeployPageProps) => {
 
   sock.on(WS_TYPE_DEPLOYMENT_EVENT_LIST, (message: DeploymentEventMessage[]) => {
     let newEvents = [...message, ...events]
-    newEvents = newEvents.sort((one, other) => new Date(other.createdAt).getTime() - new Date(one.createdAt).getTime())
+    newEvents = newEvents.sort((one, other) => new Date(one.createdAt).getTime() - new Date(other.createdAt).getTime())
     setEvents(newEvents)
 
     const deploymentStatuses = newEvents.filter(it => it.type === 'deploymentStatus')
+
     if (deploymentStatuses.length > 0) {
       setStatus(deploymentStatuses[deploymentStatuses.length - 1].value as DeploymentStatus)
     }

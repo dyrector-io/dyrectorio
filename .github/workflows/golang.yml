@@ -101,6 +101,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      -
+        # Add support for more platforms with QEMU (optional)
+        # https://github.com/docker/setup-qemu-action
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
       # fixes: fatal: unsafe repository
       - name: Adding workspace
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
@@ -114,7 +123,7 @@ jobs:
           VERSION: ${{ needs.test.outputs.version }}
 
       - name: Docker build with a fitting tag
-        run: make image_version=${{ needs.test.outputs.tag }} bbpb
+        run: make image_version=${{ needs.test.outputs.tag }} build-agents-multi
   sign_image:
     runs-on: ubuntu-20.04
     if: github.ref_name == 'develop' || github.ref_name == 'main' || github.ref_type == 'tag'

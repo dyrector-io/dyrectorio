@@ -1,5 +1,5 @@
 # Stage 1
-FROM node:19.2-alpine AS BUILDER
+FROM node:19.2-alpine3.16 AS BUILDER
 
 ENV NODE_ENV production
 WORKDIR /app
@@ -13,7 +13,7 @@ RUN npm ci --no-fund && npm run prismagen
 RUN npm run build
 
 # Stage 2
-FROM node:19.2-alpine AS RUNNER
+FROM node:19.2-alpine3.16 AS RUNNER
 ENV NODE_ENV production
 ENV TZ Europe/Budapest
 
@@ -26,7 +26,7 @@ COPY --from=BUILDER /app/package.json ./
 COPY --from=BUILDER /app/node_modules ./node_modules
 COPY --from=BUILDER /app/prisma ./prisma
 COPY --from=BUILDER /app/templates ./templates
-COPY ./crux-docker-entrypoint.sh ./install-docker.sh.hbr ./install-k8s.sh.hbr ./
+COPY ./crux-docker-entrypoint.sh ./install-docker.sh.hbr ./install-docker.ps1.hbr ./install-k8s.sh.hbr ./
 COPY ./proto ./proto
 
 USER node

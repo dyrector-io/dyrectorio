@@ -1,9 +1,9 @@
-SHELL = /bin/sh
- 
+SHELL=/bin/sh
+
 PACKAGE := github.com/dyrector-io/dyrectorio/golang
 ORG_REGISTRY := ghcr.io/dyrector-io/dyrectorio
 AGENT_REGISTRY_URL := ${ORG_REGISTRY}/agent
-VCS_VERSION="$(shell git describe --exact-match --tags 2> /dev/null || git rev-parse --short HEAD)"
+VCS_VERSION=$(shell git describe --exact-match --tags 2> /dev/null || git rev-parse --short HEAD)
 ORG_GOLANG_HASH="$(shell git rev-parse --short HEAD:../golang)"
 
 # UTC timestamps for builds
@@ -22,146 +22,170 @@ image_version ?= latest
 GOAIR=v1.40.4
 GOSEC=v2.14.0
 GOLANGCI=v1.50.1
-GOSWAG=v1.8.3
 GOFUMPT=v0.4.0
 
 GOOS?=linux
-GOARCH?=amd64
+
+# all linux architectures
+GOARCHS?=amd64 arm64
 
 ifeq ($(GOOS),windows)
 	OUT_EXT=.exe
 endif
 
-GOENVS := GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0
+ifdef $(GRPC_DEBUG)
+	GRPC_DEBUG_FLAGS=GRPC_GO_LOG_VERBOSITY_LEVEL=99 GRPC_GO_LOG_SEVERITY_LEVEL=info
+endif
+
+GOPARAMS:=GOOS=$(GOOS) CGO_ENABLED=0 $(GRPC_DEBUG_FLAGS)
 
 .PHONY: up
-up: ##
+up:
 	cd cmd/dyo && \
 	go run . up; \
 	cd -
 
 .PHONY: upd
-upd: ##
+upd:
 	cd cmd/dyo && \
 	go run . --disable-crux --disable-crux-ui --local-agent up; \
 	cd -
 
 .PHONY: down
-down: ##
+down:
 	cd cmd/dyo && \
 	go run . down; \
 	cd -
 
 .PHONY: go-crane
-go-crane: ##
+go-crane:
 	air --build.cmd "" --build.bin "cd cmd/crane && go run ."
 
 .PHONY: go-crane-init
-go-crane-init: ##
+go-crane-init:
 	cd cmd/crane && \
 	go run . init ; \
 	cd -
 
 .PHONY: go-dagent
-go-dagent: ##
+go-dagent:
 	air --build.cmd "" --build.bin "cd cmd/dagent && go run ."
 
 .PHONY: compile
 compile: | compile-cli compile-crane compile-dagent
 
+.PHONY: single-arch-check
+single-arch-check:
+	$(info GOARCHS = $(GOARCHS))
+	$(info GOARCHS has $(words $($(strip GOARCHS))) elements)
+	ifeq (1,0)
+		$(warning Multiple architectures were defined: $(GOARCHS))
+		$(error Only one single architecture should be used. Use 'GOARCHS=<target-arch> make target')
+	endif
+
 .PHONY: compile-cli
-compile-cli: ##
+compile-cli:
 	cd cmd/dyo && \
-	${GOENVS} go build ${LDFLAGS} -o ../../build/out/dyo${OUT_EXT}; \
-	cd -
+	$(foreach arch, $(GOARCHS), ${GOPARAMS} GOARCH=$(arch) go build ${LDFLAGS} -o ../../build/out/cli-${arch}${OUT_EXT};)
+
+.PHONY: install-cli
+install-cli: single-arch-check compile-cli
+	ifeq ($(GOBIN),)
+		$(error GOBIN environment variable is empty)
+	endif
+	cp build/out/cli-$(GOARCHS) $(GOBIN)/
+
 
 .PHONY: compile-crane
-compile-crane: ##
+compile-crane:
 	cd cmd/crane && \
-	${GOENVS} go build ${LDFLAGS} -o ../../build/out/crane${OUT_EXT}; \
-	cd -
+	$(foreach arch, $(GOARCHS), ${GOPARAMS} GOARCH=$(arch) go build ${LDFLAGS} -o ../../build/out/crane-${arch}${OUT_EXT};)
 
 .PHONY: compile-dagent
-compile-dagent: ##
+compile-dagent:
 	cd cmd/dagent && \
-	${GOENVS} go build ${LDFLAGS} -o ../../build/out/dagent${OUT_EXT}; \
-	cd -
+	$(foreach arch, $(GOARCHS), ${GOPARAMS} GOARCH=$(arch) go build ${LDFLAGS} -o ../../build/out/dagent-${arch}${OUT_EXT};)
 
 .PHONY: install-go-tools
-install-go-tools: ##
+install-go-tools:
 	go install github.com/cosmtrek/air@${GOAIR} && \
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@${GOLANGCI} && \
-	go install github.com/swaggo/swag/cmd/swag@${GOSWAG} && \
 	go install github.com/securego/gosec/v2/cmd/gosec@${GOSEC}
 	go install mvdan.cc/gofumpt@${GOFUMPT}
 
 .PHONY: compile-agents
 compile-agents: compile-crane compile-dagent
 
+# running gosec for static code analysis for bugs and leaks
 .PHONY: security
-security: # running gosec for static code analysis for bugs and leaks
+security:
 	gosec ./...
 
+# golangci for linting
 .PHONY: lint
-lint: # golangci for linting
+lint:
 	golangci-lint run  ./...
 
 .PHONY: build-cli
-build-cli: ##
+build-cli:
 	cd build && \
-	docker build -t ${ORG_REGISTRY}/cli:$(image_version) -f cli/Dockerfile . && \
-	cd -
+	docker build -t ${ORG_REGISTRY}/cli:$(image_version) -f cli/Dockerfile .
 
 .PHONY: build-dagent
-build-dagent: ##
+build-dagent:
 	cd build && \
-	docker build --build-arg CO_BIN_NAME=dagent -t ${AGENT_REGISTRY_URL}/dagent:$(image_version) -t ${AGENT_REGISTRY_URL}/dagent:$(vcs_version) . && \
-	cd -
+	docker build --build-arg AGENT_BINARY=crane --platform=linux/amd64 -t ${AGENT_REGISTRY_URL}/dagent:$(image_version) -t ${AGENT_REGISTRY_URL}/dagent:$(vcs_version) .
 
 .PHONY: build-crane
-build-crane: ##
+build-crane:
 	cd build && \
-	docker build --build-arg CO_BIN_NAME=crane -t ${AGENT_REGISTRY_URL}/crane:$(image_version) -t ${AGENT_REGISTRY_URL}/crane:$(vcs_version) . && \
-	cd -
+	docker build --build-arg AGENT_BINARY=dagent --platform=linux/amd64 -t ${AGENT_REGISTRY_URL}/crane:$(image_version) -t ${AGENT_REGISTRY_URL}/crane:$(vcs_version) .
 
-.PHONY: cbpcli
+.PHONY: build-dagent
+build-multi-dagent: compile-dagent
+	cd build && \
+	docker buildx build --build-arg AGENT_BINARY=dagent --platform=linux/amd64,linux/arm64 --push -t ${AGENT_REGISTRY_URL}/dagent:$(image_version) -t ${AGENT_REGISTRY_URL}/dagent:$(vcs_version) .
+
+.PHONY: build-crane
+build-multi-crane: compile-crane
+	cd build && \
+	docker buildx build  --build-arg AGENT_BINARY=crane --platform=linux/amd64,linux/arm64 --push -t ${AGENT_REGISTRY_URL}/crane:$(image_version) -t ${AGENT_REGISTRY_URL}/crane:$(vcs_version) .
+
+.PHONY: cli-compile-build-push
 cbpcli:	compile-cli build-cli push-cli
 
+# short alias for the previous target
+.PHONY: cbpcli
+cbpcli:	cli-compile-build-push
 
 .PHONY: build-agents
 build-agents: build-dagent build-crane
 
+.PHONY: build-agents-multi
+build-agents-multi: build-multi-dagent build-multi-crane
 
-.PHONY: bbpb # build push both
-bbpb: build-agents push-agents
+.PHONY: build-both-push-both
+build-both-push-both: build-agents-multi push-agents
 
-.PHONY: swagger-dagent
-swagger-dagent: # generate openapi docs for agent
-	cd pkg/dagent && swag init --instanceName Dagent -g dagent.go --parseDependency --parseInternal --parseVendor && \
-	cd -
-
-.PHONY: swagger-crane
-swagger-crane: # generate openapi docs for crane
-	cd pkg/crane && swag init --instanceName Crane -g crane.go --parseDependency --parseInternal --parseVendor && \
-	cd -
-
-.PHONY: swaggen
-swaggen: | swagger-crane swagger-dagent
+# short alias for the previous target
+.PHONY: bbpb
+bbpb: build-both-push-both
 
 .PHONY: push-cli
-push-cli: ##
+push-cli:
 	docker push ${ORG_REGISTRY}/cli:$(image_version)
 	docker push ${ORG_REGISTRY}/cli:$(vcs_version)
 
 .PHONY: push-crane
-push-crane: ##
+push-crane:
 	docker push ${AGENT_REGISTRY_URL}/crane:$(image_version)
 	docker push ${AGENT_REGISTRY_URL}/crane:$(vcs_version)
 
 .PHONY: push-dagent
-push-dagent: ##
+push-dagent:
 	docker push ${AGENT_REGISTRY_URL}/dagent:$(image_version)
 	docker push ${AGENT_REGISTRY_URL}/dagent:$(vcs_version)
+
 .PHONY: push-agents
 push-agents: | push-crane push-dagent
 
@@ -213,12 +237,3 @@ test-dagent-docker:
 .PHONY: coverage
 coverage:
 	go tool cover -func ./coverage.cov
-
-# ==== what is below is still under refactor ====
-
-docs: # generate godocs markdown
-	gomarkdoc . ./controller ./k8s ./model ./route ./util > docs/godoc.md
-
-
-debug-grpc: # this can be used to print all gRPC connection info
-	GRPC_GO_LOG_VERBOSITY_LEVEL=99 GRPC_GO_LOG_SEVERITY_LEVEL=info go run .

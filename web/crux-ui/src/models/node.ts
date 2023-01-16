@@ -4,6 +4,9 @@ import { Container, ContainerCommand, ContainerIdentifier } from './container'
 export const NODE_TYPE_VALUES = ['docker', 'k8s'] as const
 export type NodeType = typeof NODE_TYPE_VALUES[number]
 
+export const NODE_INSTALL_SCRIPT_TYPE_VALUES = ['shell', 'powershell'] as const
+export type NodeInstallScriptType = typeof NODE_INSTALL_SCRIPT_TYPE_VALUES[number]
+
 export type NodeStatus = 'connecting' | 'unreachable' | 'running'
 
 export type NodeConnection = {

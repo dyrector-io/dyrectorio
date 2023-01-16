@@ -415,6 +415,45 @@ export function nodeTypeToJSON(object: NodeType): string {
   }
 }
 
+export enum NodeScriptType {
+  NODE_SCRIPT_TYPE_UNSPECIFIED = 0,
+  SHELL = 1,
+  POWERSHELL = 2,
+  UNRECOGNIZED = -1,
+}
+
+export function nodeScriptTypeFromJSON(object: any): NodeScriptType {
+  switch (object) {
+    case 0:
+    case 'NODE_SCRIPT_TYPE_UNSPECIFIED':
+      return NodeScriptType.NODE_SCRIPT_TYPE_UNSPECIFIED
+    case 1:
+    case 'SHELL':
+      return NodeScriptType.SHELL
+    case 2:
+    case 'POWERSHELL':
+      return NodeScriptType.POWERSHELL
+    case -1:
+    case 'UNRECOGNIZED':
+    default:
+      return NodeScriptType.UNRECOGNIZED
+  }
+}
+
+export function nodeScriptTypeToJSON(object: NodeScriptType): string {
+  switch (object) {
+    case NodeScriptType.NODE_SCRIPT_TYPE_UNSPECIFIED:
+      return 'NODE_SCRIPT_TYPE_UNSPECIFIED'
+    case NodeScriptType.SHELL:
+      return 'SHELL'
+    case NodeScriptType.POWERSHELL:
+      return 'POWERSHELL'
+    case NodeScriptType.UNRECOGNIZED:
+    default:
+      return 'UNRECOGNIZED'
+  }
+}
+
 export enum DeploymentEventType {
   DEPLOYMENT_EVENT_TYPE_UNSPECIFIED = 0,
   DEPLOYMENT_LOG = 1,
@@ -868,6 +907,7 @@ export interface RegistryDetailsResponse {
   name: string
   description?: string | undefined
   icon?: string | undefined
+  inUse: boolean
   hub: HubRegistryDetails | undefined
   v2: V2RegistryDetails | undefined
   gitlab: GitlabRegistryDetails | undefined
@@ -1145,6 +1185,7 @@ export interface GenerateScriptRequest {
   accessedBy: string
   type: NodeType
   rootPath?: string | undefined
+  scriptType: NodeScriptType
 }
 
 export interface NodeInstallResponse {
@@ -1381,6 +1422,10 @@ export interface CreateProductFromTemplateRequest {
   name: string
   description: string
   type: ProductType
+}
+
+export interface TemplateImageResponse {
+  data: Uint8Array
 }
 
 /** DASHBOARD */
@@ -2371,6 +2416,7 @@ function createBaseRegistryDetailsResponse(): RegistryDetailsResponse {
     id: '',
     audit: undefined,
     name: '',
+    inUse: false,
     hub: undefined,
     v2: undefined,
     gitlab: undefined,
@@ -2387,6 +2433,7 @@ export const RegistryDetailsResponse = {
       name: isSet(object.name) ? String(object.name) : '',
       description: isSet(object.description) ? String(object.description) : undefined,
       icon: isSet(object.icon) ? String(object.icon) : undefined,
+      inUse: isSet(object.inUse) ? Boolean(object.inUse) : false,
       hub: isSet(object.hub) ? HubRegistryDetails.fromJSON(object.hub) : undefined,
       v2: isSet(object.v2) ? V2RegistryDetails.fromJSON(object.v2) : undefined,
       gitlab: isSet(object.gitlab) ? GitlabRegistryDetails.fromJSON(object.gitlab) : undefined,
@@ -2402,6 +2449,7 @@ export const RegistryDetailsResponse = {
     message.name !== undefined && (obj.name = message.name)
     message.description !== undefined && (obj.description = message.description)
     message.icon !== undefined && (obj.icon = message.icon)
+    message.inUse !== undefined && (obj.inUse = message.inUse)
     message.hub !== undefined && (obj.hub = message.hub ? HubRegistryDetails.toJSON(message.hub) : undefined)
     message.v2 !== undefined && (obj.v2 = message.v2 ? V2RegistryDetails.toJSON(message.v2) : undefined)
     message.gitlab !== undefined &&
@@ -3472,7 +3520,7 @@ export const UpdateNodeRequest = {
 }
 
 function createBaseGenerateScriptRequest(): GenerateScriptRequest {
-  return { id: '', accessedBy: '', type: 0 }
+  return { id: '', accessedBy: '', type: 0, scriptType: 0 }
 }
 
 export const GenerateScriptRequest = {
@@ -3482,6 +3530,7 @@ export const GenerateScriptRequest = {
       accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       type: isSet(object.type) ? nodeTypeFromJSON(object.type) : 0,
       rootPath: isSet(object.rootPath) ? String(object.rootPath) : undefined,
+      scriptType: isSet(object.scriptType) ? nodeScriptTypeFromJSON(object.scriptType) : 0,
     }
   },
 
@@ -3491,6 +3540,7 @@ export const GenerateScriptRequest = {
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.type !== undefined && (obj.type = nodeTypeToJSON(message.type))
     message.rootPath !== undefined && (obj.rootPath = message.rootPath)
+    message.scriptType !== undefined && (obj.scriptType = nodeScriptTypeToJSON(message.scriptType))
     return obj
   },
 }
@@ -4386,6 +4436,23 @@ export const CreateProductFromTemplateRequest = {
     message.name !== undefined && (obj.name = message.name)
     message.description !== undefined && (obj.description = message.description)
     message.type !== undefined && (obj.type = productTypeToJSON(message.type))
+    return obj
+  },
+}
+
+function createBaseTemplateImageResponse(): TemplateImageResponse {
+  return { data: new Uint8Array() }
+}
+
+export const TemplateImageResponse = {
+  fromJSON(object: any): TemplateImageResponse {
+    return { data: isSet(object.data) ? bytesFromBase64(object.data) : new Uint8Array() }
+  },
+
+  toJSON(message: TemplateImageResponse): unknown {
+    const obj: any = {}
+    message.data !== undefined &&
+      (obj.data = base64FromBytes(message.data !== undefined ? message.data : new Uint8Array()))
     return obj
   },
 }
@@ -5368,6 +5435,8 @@ export interface CruxTemplateClient {
     metadata: Metadata,
     ...rest: any
   ): Observable<CreateEntityResponse>
+
+  getImage(request: IdRequest, metadata: Metadata, ...rest: any): Observable<TemplateImageResponse>
 }
 
 export interface CruxTemplateController {
@@ -5382,11 +5451,17 @@ export interface CruxTemplateController {
     metadata: Metadata,
     ...rest: any
   ): Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
+
+  getImage(
+    request: IdRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<TemplateImageResponse> | Observable<TemplateImageResponse> | TemplateImageResponse
 }
 
 export function CruxTemplateControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ['getTemplates', 'createProductFromTemplate']
+    const grpcMethods: string[] = ['getTemplates', 'createProductFromTemplate', 'getImage']
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
       GrpcMethod('CruxTemplate', method)(constructor.prototype[method], method, descriptor)
@@ -5429,6 +5504,50 @@ export function CruxDashboardControllerMethods() {
 }
 
 export const CRUX_DASHBOARD_SERVICE_NAME = 'CruxDashboard'
+
+declare var self: any | undefined
+declare var window: any | undefined
+declare var global: any | undefined
+var globalThis: any = (() => {
+  if (typeof globalThis !== 'undefined') {
+    return globalThis
+  }
+  if (typeof self !== 'undefined') {
+    return self
+  }
+  if (typeof window !== 'undefined') {
+    return window
+  }
+  if (typeof global !== 'undefined') {
+    return global
+  }
+  throw 'Unable to locate global object'
+})()
+
+function bytesFromBase64(b64: string): Uint8Array {
+  if (globalThis.Buffer) {
+    return Uint8Array.from(globalThis.Buffer.from(b64, 'base64'))
+  } else {
+    const bin = globalThis.atob(b64)
+    const arr = new Uint8Array(bin.length)
+    for (let i = 0; i < bin.length; ++i) {
+      arr[i] = bin.charCodeAt(i)
+    }
+    return arr
+  }
+}
+
+function base64FromBytes(arr: Uint8Array): string {
+  if (globalThis.Buffer) {
+    return globalThis.Buffer.from(arr).toString('base64')
+  } else {
+    const bin: string[] = []
+    arr.forEach(byte => {
+      bin.push(String.fromCharCode(byte))
+    })
+    return globalThis.btoa(bin.join(''))
+  }
+}
 
 function toTimestamp(date: Date): Timestamp {
   const seconds = date.getTime() / 1_000

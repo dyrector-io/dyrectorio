@@ -1,5 +1,6 @@
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
+import DyoForm from '@app/elements/dyo-form'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
@@ -63,7 +64,7 @@ const InviteUserCard = (props: InviteUserCardProps) => {
 
       <DyoLabel textColor="text-bright-muted">{t('tips')}</DyoLabel>
 
-      <form className="flex flex-row gap-4" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
+      <DyoForm className="flex flex-row gap-4" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
         <DyoInput
           containerClassName="w-2/4 max-w-lg"
           grow
@@ -99,7 +100,7 @@ const InviteUserCard = (props: InviteUserCardProps) => {
         />
 
         <DyoButton className="hidden" type="submit" />
-      </form>
+      </DyoForm>
     </DyoCard>
   )
 }

@@ -26,6 +26,19 @@ export const uniqueKeyValuesSchema = yup
     arr ? new Set(arr.map(it => it.key)).size === arr.length : true,
   )
 
+export const shellCommandSchema = yup
+  .array(
+    yup.object().shape({
+      key: yup
+        .string()
+        .required()
+        .ensure()
+        .matches(/^\S.*\S$/g), // any characters but no trailing whitespaces
+      value: yup.string().ensure(),
+    }),
+  )
+  .ensure()
+
 export const uniqueKeysOnlySchema = yup
   .array(
     yup.object().shape({
@@ -259,8 +272,8 @@ export const containerConfigSchema = yup.object().shape({
   ports: portConfigRule,
   portRanges: portRangeConfigRule,
   volumes: volumeConfigRule,
-  commands: uniqueKeysOnlySchema.default([]).nullable(),
-  args: uniqueKeysOnlySchema.default([]).nullable(),
+  commands: shellCommandSchema.default([]).nullable(),
+  args: shellCommandSchema.default([]).nullable(),
   initContainers: initContainerRule,
   capabilities: uniqueKeyValuesSchema.default([]).nullable(),
 

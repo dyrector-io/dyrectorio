@@ -5,6 +5,7 @@ import { SaveDiscardPageMenu } from '@app/components/shared/page-menu'
 import { ATTRIB_CSRF } from '@app/const'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
+import DyoForm from '@app/elements/dyo-form'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
@@ -83,7 +84,7 @@ const SettingsPage = (props: SettingsFlow) => {
       </PageHeading>
 
       <DyoCard className="text-bright p-8">
-        <form className="flex flex-col w-1/2" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
+        <DyoForm className="flex flex-col w-1/2" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
           <DyoHeading element="h2" className="text-2xl">
             {t('changePass')}
           </DyoHeading>
@@ -115,7 +116,7 @@ const SettingsPage = (props: SettingsFlow) => {
           ))}
 
           <DyoButton className="hidden" type="submit" />
-        </form>
+        </DyoForm>
       </DyoCard>
     </Layout>
   )
