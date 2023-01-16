@@ -55,7 +55,7 @@ export default class EmailBuilder {
       subject: "You're invited to a Team in dyrector.io",
       text: `Hi, You are invited to join the Team ${teamName}, to accept click the following link: {link}`,
       html: `<h2>Hi</h2>
-            <p>You are invited to join the Team ${teamName}, ${mode} click the button below.</p>
+            <p>You are invited to join the Team ${teamName}, ${mode} click the button below. Your invitiation will expire in 1 week.</p>
             <a href="${link}" target="_blank">
             <button style="text-align:center; margin: 10px; padding: 10px 30px; background-color: #02D0BF; border-radius: 4px; border: none; font-weight: 700; box-shadow: 1px 1px 10px #888888;">${button}</button></a><br>
             <p>If you can't open copy this to your browser: ${link}</p>`,
