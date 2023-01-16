@@ -545,11 +545,11 @@ export default class TeamService {
     }
 
     // Build emailItem
-    const recoveryLink = !hasSession ? await this.kratos.createRecoveryLink(user) : null
+    const invitation = !hasSession ? await this.kratos.createInvitation(user) : null
     const inviteTemplate: InviteTemplateOptions = {
       teamId: team.id,
       teamName: team.name,
-      kratosRecoveryLink: recoveryLink,
+      invitation,
     }
 
     const emailItem = this.emailBuilder.buildInviteEmail(traits.email, inviteTemplate)

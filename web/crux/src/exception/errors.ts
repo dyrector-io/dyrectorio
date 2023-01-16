@@ -119,16 +119,6 @@ export class MailServiceException extends InternalException {
   }
 }
 
-export class EmailBuilderException extends InternalException {
-  constructor(
-    options: InternalExceptionOptions = {
-      message: 'Failed to create email item',
-    },
-  ) {
-    super(options)
-  }
-}
-
 export const mapNotFoundError = (property: string) => () =>
   new NotFoundException({
     message: `${property} not found`,

@@ -1,4 +1,5 @@
 import { VerifyEmail } from '@app/models'
+import { UpdateVerificationFlowBody, UpdateVerificationFlowWithCodeMethodBody } from '@ory/kratos-client'
 import { validateCaptcha } from '@server/captcha'
 import { useErrorMiddleware } from '@server/error-middleware'
 import kratos, { cookieOf } from '@server/kratos'
@@ -12,18 +13,22 @@ const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const cookie = cookieOf(req)
 
-  const kratosRes = await kratos.submitSelfServiceVerificationFlow(
-    dto.flow,
-    {
-      csrf_token: dto.csrfToken,
-      method: 'link',
-      email: dto.email,
-    },
-    dto.token,
-    cookie,
-  )
+  const { code } = dto
 
-  res.status(kratosRes.status).end()
+  const body: UpdateVerificationFlowWithCodeMethodBody = {
+    csrf_token: dto.csrfToken,
+    method: 'code',
+    email: !code ? dto.email : null,
+    code,
+  }
+
+  const kratosRes = await kratos.updateVerificationFlow({
+    flow: dto.flow,
+    cookie,
+    updateVerificationFlowBody: body as UpdateVerificationFlowBody,
+  })
+
+  res.status(kratosRes.status).json(kratosRes.data)
 }
 
 export default withMiddlewares(

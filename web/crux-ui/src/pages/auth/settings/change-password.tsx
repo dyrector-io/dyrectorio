@@ -13,7 +13,7 @@ import DyoMessage from '@app/elements/dyo-message'
 import { ChangePassword } from '@app/models'
 import { API_SETTINGS_CHANGE_PASSWORD, ROUTE_LOGIN, ROUTE_SETTINGS, ROUTE_SETTINGS_CHANGE_PASSWORD } from '@app/routes'
 import { findAttributes, findMessage, sendForm, withContextAuthorization } from '@app/utils'
-import { SelfServiceSettingsFlow } from '@ory/kratos-client'
+import { SettingsFlow } from '@ory/kratos-client'
 import kratos from '@server/kratos'
 import { useFormik } from 'formik'
 import { NextPageContext } from 'next'
@@ -21,7 +21,7 @@ import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import { useRef, useState } from 'react'
 
-const SettingsPage = (props: SelfServiceSettingsFlow) => {
+const SettingsPage = (props: SettingsFlow) => {
   const { ui: propsUi, id, identity } = props
 
   const { t } = useTranslation('settings')
@@ -127,10 +127,8 @@ export default SettingsPage
 const getPageServerSideProps = async (context: NextPageContext) => {
   const { cookie } = context.req.headers
 
-  const flow = await kratos.initializeSelfServiceSettingsFlowForBrowsers(undefined, {
-    headers: {
-      Cookie: cookie,
-    },
+  const flow = await kratos.createBrowserSettingsFlow({
+    cookie,
   })
 
   return {

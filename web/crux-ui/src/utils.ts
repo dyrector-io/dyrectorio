@@ -1,5 +1,10 @@
-import { UiContainer, UiNodeInputAttributes } from '@ory/kratos-client'
-import { identityHasNoPassword, IncomingMessageWithSession, obtainKratosSession, userVerified } from '@server/kratos'
+import { Session, UiContainer, UiNodeInputAttributes } from '@ory/kratos-client'
+import {
+  identityWasRecovered,
+  IncomingMessageWithSession,
+  obtainSessionFromRequest,
+  userVerified,
+} from '@server/kratos'
 import { FormikErrors, FormikHandlers, FormikState } from 'formik'
 import {
   GetServerSideProps,
@@ -11,9 +16,10 @@ import {
 import { Translate } from 'next-translate'
 import { NextRouter } from 'next/router'
 import toast, { ToastOptions } from 'react-hot-toast'
-import { DyoApiError, DyoErrorDto, DyoFetchError, RegistryDetails } from './models'
+import { MessageType } from './elements/dyo-input'
+import { AxiosError, DyoApiError, DyoErrorDto, DyoFetchError, RegistryDetails } from './models'
 import { Timestamp } from './models/grpc/google/protobuf/timestamp'
-import { ROUTE_404, ROUTE_INDEX, ROUTE_LOGIN, ROUTE_NO_PASSWORD, ROUTE_STATUS, ROUTE_VERIFICATION } from './routes'
+import { ROUTE_404, ROUTE_INDEX, ROUTE_LOGIN, ROUTE_NEW_PASSWORD, ROUTE_STATUS, ROUTE_VERIFICATION } from './routes'
 
 export type AsyncVoidFunction = () => Promise<void>
 
@@ -130,6 +136,11 @@ export const findMessage = (ui: UiContainer, name: string): string => {
 
   const text = errors.length > 0 ? errors[0] : infos.length > 0 ? infos[0] : null
   return text?.text
+}
+
+export const findUiMessage = (ui: UiContainer, type: MessageType): string => {
+  const message = ui?.messages?.find(it => it.type === type)
+  return message?.text
 }
 
 // errors
@@ -299,6 +310,27 @@ const dyoApiErrorStatusToRedirectUrl = (status: number): string => {
   }
 }
 
+export const setupContextSession = async (context: GetServerSidePropsContext | NextPageContext, session: Session) => {
+  const req = context.req as IncomingMessageWithSession
+
+  if (!session) {
+    return redirectTo(ROUTE_LOGIN)
+  }
+
+  const recovered = await identityWasRecovered(session)
+  if (recovered) {
+    return redirectTo(ROUTE_NEW_PASSWORD)
+  }
+
+  if (!userVerified(session.identity)) {
+    return redirectTo(ROUTE_VERIFICATION)
+  }
+
+  req.session = session
+
+  return null
+}
+
 export const withContextErrorHandling =
   <T>(getServerSideProps: CruxGetServerSideProps<T>): GetServerSideProps<T> =>
   async (context: GetServerSidePropsContext) => {
@@ -315,6 +347,13 @@ export const withContextErrorHandling =
         const url = dyoApiErrorStatusToRedirectUrl(err.status)
         return redirectTo(url)
       }
+
+      if (err.response) {
+        const error = err as AxiosError<any>
+        const res = error.response
+        console.error(`[ERROR]: ${res.status}`, res.data)
+        return redirectTo(ROUTE_INDEX)
+      }
       throw err
     }
   }
@@ -322,23 +361,11 @@ export const withContextErrorHandling =
 export const withContextAuthorization =
   <T>(getServerSideProps: CruxGetServerSideProps<T>): GetServerSideProps<T> =>
   async (context: GetServerSidePropsContext) => {
-    const req = context.req as IncomingMessageWithSession
-
-    const session = await obtainKratosSession(req)
-    if (!session) {
-      return redirectTo(ROUTE_LOGIN)
+    const session = await obtainSessionFromRequest(context.req)
+    const redirect = await setupContextSession(context, session)
+    if (redirect) {
+      return redirect
     }
-
-    const hasNoPassword = await identityHasNoPassword(session)
-    if (hasNoPassword) {
-      return redirectTo(ROUTE_NO_PASSWORD)
-    }
-
-    if (!userVerified(session.identity)) {
-      return redirectTo(ROUTE_VERIFICATION)
-    }
-
-    req.session = session
 
     return withContextErrorHandling(getServerSideProps)(context)
   }

@@ -5,7 +5,10 @@ import { withMiddlewares } from '@server/middlewares'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
-  const kratosRes = await kratos.createSelfServiceLogoutFlowUrlForBrowsers(req.headers.cookie)
+  const kratosRes = await kratos.createBrowserLogoutFlow({
+    cookie: req.headers.cookie,
+  })
+
   const dto: Logout = {
     url: kratosRes.data.logout_url,
   }

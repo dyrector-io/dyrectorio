@@ -1,4 +1,5 @@
 import { EditProfile } from '@app/models'
+import { UpdateSettingsFlowWithProfileMethod } from '@ory/kratos-client'
 import kratos, { cookieOf } from '@server/kratos'
 import useKratosErrorMiddleware from '@server/kratos-error-middleware'
 import { withMiddlewares } from '@server/middlewares'
@@ -9,22 +10,23 @@ const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const cookie = cookieOf(req)
 
-  const kratosRes = await kratos.submitSelfServiceSettingsFlow(
-    dto.flow,
-    {
-      method: 'profile',
-      csrf_token: dto.csrfToken,
-      traits: {
-        email: dto.email,
-        name: {
-          first: dto.firstName,
-          last: dto.lastName,
-        },
+  const body: UpdateSettingsFlowWithProfileMethod = {
+    method: 'profile',
+    csrf_token: dto.csrfToken,
+    traits: {
+      email: dto.email,
+      name: {
+        first: dto.firstName,
+        last: dto.lastName,
       },
     },
-    undefined,
+  }
+
+  const kratosRes = await kratos.updateSettingsFlow({
+    flow: dto.flow,
     cookie,
-  )
+    updateSettingsFlowBody: body,
+  })
 
   res.status(kratosRes.status).end()
 }

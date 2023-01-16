@@ -1,15 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import { ROUTE_DASHBOARD, ROUTE_LOGIN, ROUTE_TEAMS_CREATE, verificationUrl } from '@app/routes'
+import { ROUTE_DASHBOARD, ROUTE_LOGIN, ROUTE_TEAMS_CREATE } from '@app/routes'
 import { chromium, FullConfig } from '@playwright/test'
-import {
-  createUser,
-  extractKratosLinkFromMail,
-  kratosFromConfig,
-  mailslurperFromConfig,
-  USER_EMAIL,
-  USER_PASSWORD,
-  USER_TEAM,
-} from './common'
+import { createUser, kratosFromConfig, USER_EMAIL, USER_PASSWORD, USER_TEAM } from './common'
 import globalTeardown from './global-teardown'
 import { installDagent } from './node-helper'
 
@@ -17,7 +9,9 @@ const globalSetup = async (config: FullConfig) => {
   await globalTeardown(config)
 
   const kratos = kratosFromConfig(config)
-  await createUser(kratos, USER_EMAIL, USER_PASSWORD)
+  await createUser(kratos, USER_EMAIL, USER_PASSWORD, {
+    verified: true,
+  })
 
   const project = config.projects[0].use
   const { baseURL, storageState } = project
@@ -26,18 +20,7 @@ const globalSetup = async (config: FullConfig) => {
     baseURL,
   })
 
-  await page.goto(verificationUrl(USER_EMAIL))
-  await page.locator('button[type=submit]').click()
-
-  await page.waitForTimeout(1000)
-  const mailSlurper = mailslurperFromConfig(config)
-  const mail = await mailSlurper.getMail({
-    toAddress: USER_EMAIL,
-  })
-  const verificationLink = extractKratosLinkFromMail(mail.body)
-
-  await page.goto(verificationLink)
-  await page.waitForURL(ROUTE_LOGIN)
+  await page.goto(ROUTE_LOGIN)
   await page.locator('input[name=email]').fill(USER_EMAIL)
   await page.locator('input[name=password]').fill(USER_PASSWORD)
   await page.locator('button[type=submit]').click()
@@ -50,7 +33,7 @@ const globalSetup = async (config: FullConfig) => {
 
   await page.context().storageState({ path: storageState as string })
 
-  //setup a deployable node
+  // setup a deployable node
   await installDagent(page)
 
   await browser.close()

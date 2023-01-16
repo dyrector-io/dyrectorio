@@ -198,7 +198,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
     </div>,
     <div>{it.lastLogin ? utcDateToLocale(it.lastLogin) : t('never')}</div>,
     <UserStatusTag className="my-auto w-fit" status={it.status} />,
-    <div>
+    <div className="flex flex-row">
       {!userStatusReinvitable(it.status) || countdown > 0 ? null : (
         <Image
           className="aspect-square cursor-pointer mr-16"

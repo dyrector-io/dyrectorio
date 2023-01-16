@@ -1,8 +1,8 @@
 import { SingleFormLayout } from '@app/components/layout'
 import DyoButton from '@app/elements/dyo-button'
 import { ROUTE_INDEX } from '@app/routes'
-import { redirectTo, withContextAuthorization } from '@app/utils'
-import { SelfServiceError } from '@ory/kratos-client'
+import { redirectTo, withContextErrorHandling } from '@app/utils'
+import { FlowError } from '@ory/kratos-client'
 import kratos from '@server/kratos'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
@@ -12,7 +12,7 @@ interface Error {
   message?: string
 }
 
-const ErrorPage = (props: SelfServiceError) => {
+const ErrorPage = (props: FlowError) => {
   const { error: propsError } = props
 
   const { t } = useTranslation('errors')
@@ -45,11 +45,13 @@ const getPageServerSideProps = async (context: NextPageContext) => {
     return redirectTo(ROUTE_INDEX)
   }
 
-  const res = await kratos.getSelfServiceError(id)
+  const res = await kratos.getFlowError({
+    id,
+  })
 
   return {
     props: res.data,
   }
 }
 
-export const getServerSideProps = withContextAuthorization(getPageServerSideProps)
+export const getServerSideProps = withContextErrorHandling(getPageServerSideProps)

@@ -103,10 +103,7 @@ export const Sidebar = (props: SidebarProps) => {
 
       <div className="flex flex-col flex-grow pb-4">
         <div className="mt-12 flex text-bright">
-          <NavButton
-            href={ROUTE_DASHBOARD}
-            icon={<Image src="/dashboard.svg" alt={t('dashboard')} width={18} height={18} />}
-          >
+          <NavButton href={ROUTE_DASHBOARD} icon={<DyoIcon src="/dashboard.svg" alt={t('dashboard')} />}>
             {t('dashboard')}
           </NavButton>
         </div>

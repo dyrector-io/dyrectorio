@@ -8,38 +8,59 @@ import DyoMessage from '@app/elements/dyo-message'
 import DyoSingleFormHeading from '@app/elements/dyo-single-form-heading'
 import useTimer from '@app/hooks/use-timer'
 import { DyoErrorDto, VerifyEmail } from '@app/models'
-import { API_VERIFICATION, ROUTE_SETTINGS } from '@app/routes'
-import { findAttributes, findError, findMessage, isDyoError, redirectTo, sendForm, upsertDyoError } from '@app/utils'
-import { SelfServiceVerificationFlow } from '@ory/kratos-client'
+import { API_VERIFICATION, ROUTE_INDEX, ROUTE_SETTINGS } from '@app/routes'
+import {
+  findAttributes,
+  findError,
+  findMessage,
+  findUiMessage,
+  isDyoError,
+  redirectTo,
+  sendForm,
+  upsertDyoError,
+  withContextErrorHandling,
+} from '@app/utils'
+import { VerificationFlow } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'
-import kratos, { forwardCookie, obtainKratosSession, userVerified } from '@server/kratos'
+import kratos, { forwardCookie, obtainSessionFromRequest, userVerified } from '@server/kratos'
 import { useFormik } from 'formik'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
-import { useRef, useState } from 'react'
+import { useRouter } from 'next/router'
+import { useEffect, useRef, useState } from 'react'
 import ReCAPTCHA from 'react-google-recaptcha'
 import toast from 'react-hot-toast'
 
 interface VerifyProps {
   email: string
-  flow: SelfServiceVerificationFlow
+  flow: VerificationFlow
   recaptchaSiteKey?: string
 }
 
 const VerifyPage = (props: VerifyProps) => {
   const { t } = useTranslation('verify')
+  const router = useRouter()
 
-  const { flow, email, recaptchaSiteKey } = props
+  const { flow: propsFlow, email, recaptchaSiteKey } = props
 
   const recaptcha = useRef<ReCAPTCHA>()
-  const [ui, setUi] = useState(flow.ui)
-  const [sent, setSent] = useState(false)
+  const [flow, setFlow] = useState(propsFlow)
   const [errors, setErrors] = useState<DyoErrorDto[]>([])
   const [countdown, startCountdown] = useTimer(-1, recaptchaSiteKey ? () => recaptcha.current.reset() : null)
+
+  useEffect(() => {
+    if (flow.state === 'passed_challenge') {
+      router.push(ROUTE_INDEX)
+    }
+  }, [flow.state, router])
+
+  const sent = flow.state === 'sent_email'
+  const { ui } = flow
 
   const formik = useFormik({
     initialValues: {
       email: email ?? '',
+      code: '',
     },
     onSubmit: async values => {
       const captcha = await recaptcha.current?.executeAsync()
@@ -48,15 +69,18 @@ const VerifyPage = (props: VerifyProps) => {
         flow: flow.id,
         csrfToken: findAttributes(ui, ATTRIB_CSRF).value,
         captcha,
-        email: values.email,
+        email: !sent ? values.email : null,
+        code: sent ? values.code : null,
       }
 
       const res = await sendForm('POST', API_VERIFICATION, data)
 
-      setSent(res.ok)
       if (res.ok) {
-        startCountdown(AUTH_RESEND_DELAY)
-        setUi(flow.ui)
+        if (!sent) {
+          startCountdown(AUTH_RESEND_DELAY)
+        }
+
+        setFlow(await res.json())
       } else {
         recaptcha.current?.reset()
 
@@ -65,7 +89,7 @@ const VerifyPage = (props: VerifyProps) => {
         if (isDyoError(result)) {
           setErrors(upsertDyoError(errors, result as DyoErrorDto))
         } else if (result?.ui) {
-          setUi(result.ui)
+          setFlow(result)
         } else {
           toast(t('errors:internalError'))
         }
@@ -73,16 +97,29 @@ const VerifyPage = (props: VerifyProps) => {
     },
   })
 
+  const resendEmail = () => {
+    setFlow({
+      ...flow,
+      state: null,
+    })
+
+    startCountdown(AUTH_RESEND_DELAY)
+
+    formik.submitForm()
+  }
+
   const submitDisabled = countdown > 0
+
+  const uiMessage = findUiMessage(ui, 'error')
 
   return (
     <SingleFormLayout title={t('verification')}>
-      <DyoCard className="p-8 m-auto">
-        <DyoForm className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
-          <DyoSingleFormHeading className="max-w-xs">{t('verification')}</DyoSingleFormHeading>
+      <DyoCard className="text-bright p-8 m-auto">
+        <DyoSingleFormHeading className="max-w-xs">{t('verification')}</DyoSingleFormHeading>
 
+        <DyoForm className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
           <DyoInput
-            disabled
+            hidden={sent}
             label={t('common:email')}
             name="email"
             type="email"
@@ -91,23 +128,54 @@ const VerifyPage = (props: VerifyProps) => {
             message={findMessage(ui, 'email')}
           />
 
-          {sent ? <p className="w-80 text-bright text-center mt-8">{t('linkSent')}</p> : null}
+          {!sent ? null : (
+            <>
+              <p className="w-80 mx-auto mt-4">{t('codeSentToEmail', formik.values)}</p>
 
-          <DyoMessage
-            message={findError(errors, 'captcha', it =>
-              t(`errors:${it.error}`, {
-                name: it.value,
-              }),
-            )}
-            messageType="error"
-          />
+              <DyoInput
+                label={t('common:code')}
+                name="code"
+                type="text"
+                onChange={formik.handleChange}
+                value={formik.values.code}
+                message={findMessage(ui, 'code')}
+              />
 
-          <DyoButton className="mt-8" type="submit" disabled={submitDisabled}>
-            {sent ? `${t('common:resend')} ${countdown > 0 ? countdown : ''}`.trim() : t('common:send')}
-          </DyoButton>
+              <DyoButton className="mt-8" type="submit">
+                {t('verify')}
+              </DyoButton>
+            </>
+          )}
 
-          {recaptchaSiteKey ? <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={recaptchaSiteKey} /> : null}
+          {!sent ? (
+            <DyoButton className="mt-8" disabled={submitDisabled} type="submit">
+              {t('common:send')}
+            </DyoButton>
+          ) : (
+            <DyoButton
+              className="mt-8"
+              color="bg-warning-orange"
+              disabled={submitDisabled}
+              type="button"
+              onClick={resendEmail}
+            >
+              {`${t('common:resend')} ${countdown > 0 ? countdown : ''}`.trim()}
+            </DyoButton>
+          )}
         </DyoForm>
+
+        {uiMessage ? <DyoMessage message={uiMessage} messageType="error" /> : null}
+
+        <DyoMessage
+          message={findError(errors, 'captcha', it =>
+            t(`errors:${it.error}`, {
+              name: it.value,
+            }),
+          )}
+          messageType="error"
+        />
+
+        {recaptchaSiteKey ? <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={recaptchaSiteKey} /> : null}
       </DyoCard>
     </SingleFormLayout>
   )
@@ -116,28 +184,31 @@ const VerifyPage = (props: VerifyProps) => {
 export default VerifyPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
-  const flowId = context.query.flow as string
+  const flow = context.query.flow as string
   const email = context.query.email as string
 
-  const session = await obtainKratosSession(context.req)
+  const session = await obtainSessionFromRequest(context.req)
   if (session && userVerified(session.identity)) {
     return redirectTo(ROUTE_SETTINGS)
   }
 
   const { cookie } = context.req.headers
-  const flow = flowId
-    ? await kratos.getSelfServiceVerificationFlow(flowId, cookie)
-    : await kratos.initializeSelfServiceVerificationFlowForBrowsers()
+  const kratosRes = flow
+    ? await kratos.getVerificationFlow({
+        id: flow,
+        cookie,
+      })
+    : await kratos.createBrowserVerificationFlow()
 
-  forwardCookie(context, flow)
+  forwardCookie(context, kratosRes)
 
   return {
     props: {
-      email: (email ?? session?.identity?.traits?.email) || null,
-      flow: flow.data,
+      email: email ?? session?.identity?.traits?.email ?? null,
+      flow: kratosRes.data,
       recaptchaSiteKey: captchaDisabled() ? null : process.env.RECAPTCHA_SITE_KEY,
     },
   }
 }
 
-export const getServerSideProps = getPageServerSideProps
+export const getServerSideProps = withContextErrorHandling(getPageServerSideProps)

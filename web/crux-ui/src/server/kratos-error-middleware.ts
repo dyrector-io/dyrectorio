@@ -1,3 +1,4 @@
+import { AxiosErrorResponse } from '@app/models'
 import { isDyoApiError } from '@app/utils'
 import { NextApiRequest, NextApiResponse } from 'next'
 
@@ -11,9 +12,14 @@ const useKratosErrorMiddleware = async (
   } catch (err) {
     if (isDyoApiError(err)) {
       throw err
-    } else {
-      res.status(err.response.status).json(err.response.data)
+    } else if (err.response) {
+      const error = err.response as AxiosErrorResponse<any>
+      res.status(error.status).json(error.data)
+      return
     }
+
+    console.error('[ERROR][INTERNAL]:', err)
+    throw err
   }
 }
 

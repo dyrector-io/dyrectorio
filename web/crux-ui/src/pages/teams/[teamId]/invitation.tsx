@@ -4,9 +4,10 @@ import { DyoCard } from '@app/elements/dyo-card'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { defaultApiErrorHandler } from '@app/errors'
 import { UserMetaTeam } from '@app/models'
-import { ROUTE_404, ROUTE_INDEX, teamInvitationApiUrl } from '@app/routes'
-import { redirectTo, withContextAuthorization } from '@app/utils'
+import { ROUTE_404, ROUTE_INDEX, ROUTE_LOGIN, teamInvitationApiUrl } from '@app/routes'
+import { redirectTo, setupContextSession, withContextErrorHandling } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
+import { obtainSessionFromRequest } from '@server/kratos'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
@@ -90,6 +91,12 @@ export default AcceptInvitationPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
   const teamId = context.query.teamId as string
+  const session = await obtainSessionFromRequest(context.req)
+  if (!session) {
+    return redirectTo(`${ROUTE_LOGIN}?invitation=${teamId}`)
+  }
+
+  await setupContextSession(context, session)
 
   const meta = await cruxFromContext(context).teams.getUserMeta()
   const team = meta.invitations.find(it => it.id === teamId) ?? null
@@ -104,4 +111,4 @@ const getPageServerSideProps = async (context: NextPageContext) => {
   }
 }
 
-export const getServerSideProps = withContextAuthorization(getPageServerSideProps)
+export const getServerSideProps = withContextErrorHandling(getPageServerSideProps)
