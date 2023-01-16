@@ -49,18 +49,13 @@ export const initialsOf = (name: string): string => {
   if (!name || name.length < 1) {
     return '?'
   }
+  const names = name.trim().split(' ')
 
-  name = name.trim()
-
-  const split = name.split(' ')
-  if (split.length > 1) {
-    const [first, last] = split
-    return `${first[0]}${last[0]}`.toUpperCase()
+  if (names.length === 1) {
+    return name.substring(0, 2).toUpperCase()
   }
 
-  if (name.length < 2) {
-    return name.toUpperCase()
-  }
-
-  return name.substring(0, 2)
+  const firstName = names[0][0]
+  const lastName = names[names.length - 1][0]
+  return `${firstName}${lastName}`.toUpperCase()
 }

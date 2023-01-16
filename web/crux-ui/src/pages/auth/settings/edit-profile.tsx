@@ -40,8 +40,8 @@ const SettingsPage = (props: SettingsFlow) => {
         flow: id,
         csrfToken: findAttributes(ui, ATTRIB_CSRF).value,
         email: values.email,
-        firstName: values.firstName,
-        lastName: values.lastName,
+        firstName: values.firstName.trim(),
+        lastName: values.lastName.trim(),
       }
       const res = await sendForm('POST', API_SETTINGS_EDIT_PROFILE, data)
 
