@@ -74,6 +74,7 @@ export default class AgentService {
       throw new NotFoundException({
         message: 'Agent not found',
         property: 'agent',
+        value: id,
       })
     }
 

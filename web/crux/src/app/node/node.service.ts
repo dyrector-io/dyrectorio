@@ -183,15 +183,7 @@ export default class NodeService {
   handleWatchContainerStatus(request: WatchContainerStateRequest): Observable<ContainerStateListMessage> {
     this.logger.debug(`Opening container status channel for prefix: ${request.nodeId} - ${request.prefix}`)
 
-    const agent = this.agentService.getById(request.nodeId)
-
-    if (!agent) {
-      throw new PreconditionFailedException({
-        message: 'Node is unreachable',
-        property: 'nodeId',
-        value: request.nodeId,
-      })
-    }
+    const agent = this.agentService.getByIdOrThrow(request.nodeId)
 
     const prefix = request.prefix ?? ''
     const watcher = agent.upsertContainerStatusWatcher(prefix)

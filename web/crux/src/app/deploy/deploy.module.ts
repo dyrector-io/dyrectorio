@@ -8,11 +8,12 @@ import TeamRepository from '../team/team.repository'
 import DeployController from './deploy.controller'
 import DeployMapper from './deploy.mapper'
 import DeployService from './deploy.service'
+import DeployHttpController from './deploy.http.controller'
 
 @Module({
   imports: [AgentModule, ImageModule],
   exports: [DeployService, DeployMapper],
-  controllers: [DeployController],
+  controllers: [DeployController, DeployHttpController],
   providers: [PrismaService, DeployService, DeployMapper, InterceptorGrpcHelperProvider, TeamRepository, KratosService],
 })
 export default class DeployModule {}

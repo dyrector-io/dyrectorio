@@ -58,7 +58,7 @@ export default class NodeController implements CruxNodeController {
     return await this.service.getNodeDetails(request)
   }
 
-  // todo:  fix errors related to this - interceptor halts
+  // TODO(m8vago):  fix errors related to this - interceptor halts
   @AuditLogLevel('disabled')
   async generateScript(
     @Body(NodeGenerateScriptValidationPipe) request: GenerateScriptRequest,
