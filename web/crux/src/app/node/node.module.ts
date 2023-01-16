@@ -10,11 +10,12 @@ import TeamRepository from '../team/team.repository'
 import NodeController from './node.controller'
 import NodeMapper from './node.mapper'
 import NodeService from './node.service'
+import NodeHttpController from './node.http.controller'
 
 @Module({
   imports: [AgentModule, TeamModule, HttpModule],
   exports: [],
-  controllers: [NodeController],
+  controllers: [NodeController, NodeHttpController],
   providers: [
     PrismaService,
     NodeService,

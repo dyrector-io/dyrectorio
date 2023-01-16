@@ -6,11 +6,12 @@ import ImageController from './image.controller'
 import ImageMapper from './image.mapper'
 import ImageService from './image.service'
 import RegistryMapper from '../registry/registry.mapper'
+import ImageHttpController from './image.http.controller'
 
 @Module({
   imports: [],
   exports: [ImageService, ImageMapper],
-  controllers: [ImageController],
   providers: [PrismaService, ImageService, ImageMapper, InterceptorGrpcHelperProvider, TeamRepository, RegistryMapper],
+  controllers: [ImageController, ImageHttpController],
 })
 export default class ImageModule {}
