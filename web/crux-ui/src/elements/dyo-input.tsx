@@ -26,13 +26,14 @@ export const DyoInput = forwardRef((props: DyoInputProps, ref: ForwardedRef<HTML
     containerClassName,
     disabled,
     inline,
+    hidden,
     ...forwardedProps
   } = props
 
   return (
     <>
       <div className={clsx(containerClassName, inline ? `flex flex-row ${message ? 'mb-0' : ''}` : 'flex flex-col')}>
-        {!label ? null : (
+        {!label || hidden ? null : (
           <DyoLabel
             className={clsx(labelClassName ?? (inline ? 'my-auto mr-4' : 'mt-8 mb-2.5'), 'whitespace-nowrap')}
             htmlFor={name}
@@ -46,25 +47,21 @@ export const DyoInput = forwardRef((props: DyoInputProps, ref: ForwardedRef<HTML
           name={name}
           ref={ref}
           disabled={disabled}
+          hidden={hidden}
           className={clsx(
             className,
             'bg-medium h-11 p-4 ring-2 rounded-md focus:outline-none focus:dark',
             grow ? 'w-full' : 'w-80',
-            disabled ? 'text-bright-muted ring-light-grey-muted' : 'text-bright ring-light-grey',
+            disabled ? 'text-bright-muted ring-light-grey-muted cursor-not-allowed' : 'text-bright ring-light-grey',
           )}
         />
 
-        {message && !inline ? (
-          <DyoMessage message={message} messageType={messageType} className={grow && 'text-xs italic'} />
+        {!hidden && message && !inline ? (
+          <DyoMessage message={message} messageType={messageType} className="text-xs italic" />
         ) : null}
       </div>
-      {message && inline ? (
-        <DyoMessage
-          message={message}
-          messageType={messageType}
-          marginClassName="my-2"
-          className={grow && 'text-xs italic'}
-        />
+      {!hidden && message && inline ? (
+        <DyoMessage message={message} messageType={messageType} marginClassName="my-2" className="text-xs italic" />
       ) : null}
     </>
   )

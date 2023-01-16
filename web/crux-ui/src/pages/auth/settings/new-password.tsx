@@ -10,16 +10,16 @@ import { ChangePassword } from '@app/models'
 import { API_SETTINGS_CHANGE_PASSWORD, ROUTE_INDEX, ROUTE_LOGIN, ROUTE_LOGOUT } from '@app/routes'
 import { findAttributes, findMessage, redirectTo, sendForm, withContextErrorHandling } from '@app/utils'
 import { SettingsFlow } from '@ory/kratos-client'
-import kratos, { identityHasNoPassword, obtainKratosSession } from '@server/kratos'
+import kratos, { forwardCookie, identityWasRecovered, obtainSessionFromRequest } from '@server/kratos'
 import { useFormik } from 'formik'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
 import { useState } from 'react'
 
-type NoPasswordPageProps = SettingsFlow
+type NewPasswordPageProps = SettingsFlow
 
-const NoPasswordPage = (props: NoPasswordPageProps) => {
+const NewPasswordPage = (props: NewPasswordPageProps) => {
   const { ui: propsUi, id } = props
 
   const { t } = useTranslation('settings')
@@ -104,7 +104,7 @@ const NoPasswordPage = (props: NoPasswordPageProps) => {
             </>
           ) : (
             <>
-              <DyoLabel textColor="text-bright-muted max-w-lg my-8">{t('noPasswordExpiredPriviledge')}</DyoLabel>
+              <DyoLabel textColor="text-bright-muted max-w-lg my-8">{t('newPasswordExpiredPriviledge')}</DyoLabel>
 
               <DyoButton onClick={onLogout}>{t('clickToLogout')}</DyoButton>
             </>
@@ -115,24 +115,26 @@ const NoPasswordPage = (props: NoPasswordPageProps) => {
   )
 }
 
-export default NoPasswordPage
+export default NewPasswordPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
   const { cookie } = context.req.headers
 
-  const session = await obtainKratosSession(context.req)
+  const session = await obtainSessionFromRequest(context.req)
   if (!session) {
     return redirectTo(ROUTE_LOGIN)
   }
 
-  const hasNoPassword = identityHasNoPassword(session)
-  if (!hasNoPassword) {
+  const recovered = await identityWasRecovered(session)
+  if (!recovered) {
     return redirectTo(ROUTE_INDEX)
   }
 
-  const flow = await kratos.createBrowserSettingsFlow({
+  const flow = await kratos.getSettingsFlow({
+    id: recovered,
     cookie,
   })
+  forwardCookie(context, flow)
 
   return {
     props: flow.data,

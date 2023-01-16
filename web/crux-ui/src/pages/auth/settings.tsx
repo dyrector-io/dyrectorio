@@ -7,6 +7,7 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import {
+  ROUTE_NEW_PASSWORD,
   ROUTE_SETTINGS,
   ROUTE_SETTINGS_CHANGE_PASSWORD,
   ROUTE_SETTINGS_EDIT_PROFILE,
@@ -71,6 +72,11 @@ const SettingsPage = (props: Identity) => {
 export default SettingsPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
+  const { flow } = context.query
+  if (flow) {
+    return redirectTo(`${ROUTE_NEW_PASSWORD}?flow=${flow}`)
+  }
+
   const session = sessionOfContext(context)
 
   const { identity } = session

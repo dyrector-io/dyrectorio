@@ -1,5 +1,6 @@
 {
   "title": "Account verification",
   "verification": "Account verification",
-  "linkSent": "A verification link was sent to your address. Please check your e-mails."
+  "codeSentToEmail": "A verification code was sent to '{{email}}'. Please check your e-mails.",
+  "verify": "Verify"
 }

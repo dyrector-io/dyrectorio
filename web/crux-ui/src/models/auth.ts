@@ -1,5 +1,15 @@
 import { Identity } from '@ory/kratos-client'
 
+export type AxiosErrorResponse<T> = {
+  status: number
+  headers: object
+  data?: T
+}
+
+export type AxiosError<T> = {
+  response?: AxiosErrorResponse<T>
+}
+
 export type Login = {
   flow: string
   csrfToken: string
@@ -26,16 +36,32 @@ export type RecoverEmail = {
   flow: string
   csrfToken: string
   captcha?: string
-  email: string
-  token?: string
+  email?: string
+  code?: string
+}
+
+const KRATOS_LOCATION_CHANGE_REQUIRED = 'browser_location_change_required'
+const KRATOS_LOCATION_CHANGE_REQUIRED_TYPE_VALUE = [KRATOS_LOCATION_CHANGE_REQUIRED] as const
+
+export type RecoverNewPasswordError = {
+  error: {
+    id: typeof KRATOS_LOCATION_CHANGE_REQUIRED_TYPE_VALUE[number]
+  }
+  redirect_browser_to: string
 }
 
 export type VerifyEmail = {
   flow: string
   csrfToken: string
   captcha?: string
-  email: string
-  token?: string
+  email?: string
+  code?: string
+}
+
+export type CreateAccount = {
+  flow: string
+  code: string
+  team: string
 }
 
 export type EditProfile = {
@@ -52,8 +78,8 @@ export type ChangePassword = {
   password: string
 }
 
-export type IdentityAdminMetadata = {
-  noPassword: boolean
+export type IdentityPublicMetadata = {
+  recovered: string
 }
 
 export type IdentityTraitsName = {
@@ -80,4 +106,23 @@ export const nameOfIdentity = (identity: Identity): string => {
   }
 
   return ''
+}
+
+export const toRecoverNewPasswordError = (err: Error): AxiosErrorResponse<RecoverNewPasswordError> => {
+  const error = err as AxiosError<RecoverNewPasswordError>
+
+  if (!error.response) {
+    return null
+  }
+
+  const resp = error.response
+  if (
+    resp.status === 422 &&
+    resp.data?.error?.id === KRATOS_LOCATION_CHANGE_REQUIRED &&
+    resp.data?.redirect_browser_to
+  ) {
+    return resp
+  }
+
+  return null
 }

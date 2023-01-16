@@ -75,7 +75,13 @@ const DyoButton = (props: DyoButtonProps) => {
     </button>
   )
 
-  return href ? <Link href={href}>{button}</Link> : button
+  return href ? (
+    <Link className="inline-block" href={href}>
+      {button}
+    </Link>
+  ) : (
+    button
+  )
 }
 
 export default DyoButton

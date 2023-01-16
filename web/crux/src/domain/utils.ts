@@ -56,17 +56,6 @@ export const collectChildVersionIds = async (prisma: PrismaService, versionId: s
   }
 }
 
-/**
- * @param recoveryLink
- * @returns [flow, token]
- */
-export const disassembleKratosRecoveryUrl = (recoveryLink: string): [string, string] => {
-  const url = new URL(recoveryLink)
-  const flow = url.searchParams.get('flow')
-  const token = url.searchParams.get('token')
-  return [flow, token]
-}
-
 export const toTimestamp = (date: Date): Timestamp => {
   const seconds = date.getTime() / 1_000
   const nanos = (date.getTime() % 1_000) * 1_000_000

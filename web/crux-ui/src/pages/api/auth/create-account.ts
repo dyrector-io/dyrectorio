@@ -1,7 +1,8 @@
 import { HEADER_LOCATION } from '@app/const'
-import { RecoverEmail, toRecoverNewPasswordError } from '@app/models'
-import { UpdateRecoveryFlowWithCodeMethod } from '@ory/kratos-client'
-import { validateCaptcha } from '@server/captcha'
+import { missingParameter } from '@app/error-responses'
+import { CreateAccount, toRecoverNewPasswordError } from '@app/models'
+import { Identity, UpdateRecoveryFlowWithCodeMethod } from '@ory/kratos-client'
+import { Crux } from '@server/crux/crux'
 import { useErrorMiddleware } from '@server/error-middleware'
 import kratos, {
   cookieOf,
@@ -14,19 +15,25 @@ import useKratosErrorMiddleware from '@server/kratos-error-middleware'
 import { withMiddlewares } from '@server/middlewares'
 import { NextApiRequest, NextApiResponse } from 'next'
 
+const acceptInvitation = async (idenity: Identity, teamId: string): Promise<void> => {
+  try {
+    await Crux.withIdentity(idenity).teams.acceptInvitation(teamId)
+  } catch (err) {
+    console.error('[ERROR][TEAM]: Failed to accept invitation', err)
+  }
+}
+
 const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
-  const dto = req.body as RecoverEmail
-  await validateCaptcha(dto.captcha)
+  const dto = req.body as CreateAccount
+  if (!dto.team) {
+    throw missingParameter('team')
+  }
 
   const cookie = cookieOf(req)
 
-  const { code } = dto
-
   const body: UpdateRecoveryFlowWithCodeMethod = {
-    csrf_token: dto.csrfToken,
     method: 'code',
-    email: !code ? dto.email : null,
-    code,
+    code: dto.code,
   }
 
   try {
@@ -39,12 +46,15 @@ const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
     res.status(kratosRes.status).json(kratosRes.data)
   } catch (err) {
     const error = toRecoverNewPasswordError(err)
+
     if (error) {
       forwardCookieToResponse(res, error)
       const settingsFlow = flowOfUrl(error.data.redirect_browser_to)
 
       const session = await obtainSessionFromResponse(error)
       await identityRecovered(session, settingsFlow)
+
+      await acceptInvitation(session.identity, dto.team)
 
       res.status(201).setHeader(HEADER_LOCATION, error.data.redirect_browser_to).end()
       return

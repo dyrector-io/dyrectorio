@@ -21,7 +21,7 @@ import {
 import { registerSchema } from '@app/validations'
 import { RegistrationFlow } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'
-import kratos, { forwardCookie, obtainKratosSession } from '@server/kratos'
+import kratos, { forwardCookie, obtainSessionFromRequest } from '@server/kratos'
 import { useFormik } from 'formik'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
@@ -200,7 +200,7 @@ const RegisterPage = (props: RegisterPageProps) => {
 export default RegisterPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
-  const session = await obtainKratosSession(context.req)
+  const session = await obtainSessionFromRequest(context.req)
   if (session) {
     return redirectTo(ROUTE_SETTINGS)
   }

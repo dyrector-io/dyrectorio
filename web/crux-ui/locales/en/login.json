@@ -4,5 +4,6 @@
   "dontHaveAccount": "Don't have an account?",
   "signUp": "Sign up.",
   "refresh": "Your login session is too old. Please log in again.",
+  "loginToAcceptInv": "You have to log in to accept the invitation.",
   "dontHaveAnAccount": "Don't have an account yet?"
 }

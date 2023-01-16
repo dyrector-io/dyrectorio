@@ -9,11 +9,11 @@
     "/auth/login": ["login"],
     "/auth/recovery": ["recovery"],
     "/auth/register": ["register"],
-    "/auth/invitation": ["invitation"],
+    "/auth/create-account": ["create-account"],
     "/auth/settings": ["settings"],
     "/auth/settings/edit-profile": ["settings"],
     "/auth/settings/change-password": ["settings"],
-    "/auth/settings/no-password": ["settings"],
+    "/auth/settings/new-password": ["settings"],
     "/auth/verify": ["verify"],
     "/products": ["products"],
 

@@ -1,4 +1,4 @@
-import { ROUTE_DASHBOARD, ROUTE_TEAMS_CREATE, teamInviteUrl } from '@app/routes'
+import { ROUTE_DASHBOARD, ROUTE_TEAMS_CREATE, teamInvitationUrl } from '@app/routes'
 import { redirectTo, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
@@ -13,7 +13,7 @@ const getPageServerSideProps = async (context: NextPageContext) => {
   if (!meta.activeTeamId) {
     const inv = meta.invitations.length > 0 ? meta.invitations[0] : null
 
-    return redirectTo(inv ? teamInviteUrl(inv.id) : ROUTE_TEAMS_CREATE)
+    return redirectTo(inv ? teamInvitationUrl(inv.id) : ROUTE_TEAMS_CREATE)
   }
 
   return redirectTo(ROUTE_DASHBOARD)

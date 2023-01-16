@@ -13,12 +13,13 @@ import {
   ROUTE_RECOVERY,
   ROUTE_REGISTER,
   ROUTE_VERIFICATION,
+  teamInvitationUrl,
   verificationUrl,
 } from '@app/routes'
 import { findAttributes, findError, findMessage, isDyoError, redirectTo, sendForm, upsertDyoError } from '@app/utils'
 import { LoginFlow, UiContainer } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'
-import kratos, { cookieOf, forwardCookie, obtainKratosSession, userVerified } from '@server/kratos'
+import kratos, { cookieOf, forwardCookie, obtainSessionFromRequest, userVerified } from '@server/kratos'
 import { useFormik } from 'formik'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
@@ -38,6 +39,7 @@ const LoginPage = (props: LoginPageProps) => {
   const router = useRouter()
 
   const { flow, recaptchaSiteKey } = props
+  const invitation = router.query.invitation as string
 
   const email = (router.query.refresh as string) ?? ''
   const refresh = email !== ''
@@ -65,7 +67,7 @@ const LoginPage = (props: LoginPageProps) => {
       const res = await sendForm('POST', API_AUTH_LOGIN, data)
 
       if (res.ok) {
-        router.replace(ROUTE_INDEX)
+        router.replace(invitation ? teamInvitationUrl(invitation) : ROUTE_INDEX)
       } else {
         recaptcha.current?.reset()
         const result = await res.json()
@@ -96,6 +98,7 @@ const LoginPage = (props: LoginPageProps) => {
           <DyoSingleFormHeading>{t('common:logIn')}</DyoSingleFormHeading>
 
           {!refresh ? null : <p className="w-80 mx-auto mt-8">{t('refresh')}</p>}
+          {!invitation ? null : <p className="w-80 mx-auto mt-8">{t('loginToAcceptInv')}</p>}
 
           <DyoInput
             label={t('common:email')}
@@ -155,7 +158,7 @@ export default LoginPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
   const { refresh } = context.query
-  const session = await obtainKratosSession(context.req)
+  const session = await obtainSessionFromRequest(context.req)
 
   if (session && !refresh) {
     if (!userVerified(session.identity)) {

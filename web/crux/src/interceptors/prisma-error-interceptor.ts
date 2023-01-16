@@ -1,10 +1,12 @@
 import { CallHandler, ExecutionContext, NestInterceptor } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
-import { NotFoundError } from '@prisma/client/runtime'
 import { catchError, Observable } from 'rxjs'
 import { AlreadyExistsException, NotFoundException } from '../exception/errors'
 
+type NotFoundErrorMappings = { [P in Prisma.ModelName]: string }
+
 const UNIQUE_CONSTRAINT_FAILED = 'P2002'
+const NOT_FOUND = 'P2025'
 
 export default class PrismaErrorInterceptor implements NestInterceptor {
   intercept(_: ExecutionContext, next: CallHandler): Observable<any> {
@@ -25,16 +27,49 @@ export default class PrismaErrorInterceptor implements NestInterceptor {
           message: `${property} taken`,
           property,
         })
+      } else if (err.code === NOT_FOUND) {
+        throw new NotFoundException({
+          property: this.prismaMessageToProperty(err.message),
+          message: err.message,
+        })
       }
-    }
-    if (err instanceof NotFoundError) {
-      throw new NotFoundException({
-        property: 'prisma', // TODO(robot9706): Extend when NotFoundError is smarter
-        value: err.message,
-        message: err.message,
-      })
     }
 
     throw err
+  }
+
+  private prismaMessageToProperty(message: string) {
+    const FIRST_PART = 'No '
+    const SECOND_PART = ' found'
+
+    const after = message.indexOf(FIRST_PART)
+    const before = message.lastIndexOf(SECOND_PART)
+    if (after < 0 || before < 0) {
+      return null
+    }
+
+    const tableName = message.substring(after, before)
+
+    return PrismaErrorInterceptor.NOT_FOUND_ERRORS[tableName]
+  }
+
+  private static readonly NOT_FOUND_ERRORS: NotFoundErrorMappings = {
+    Registry: 'registry',
+    Node: 'node',
+    Product: 'product',
+    Version: 'version',
+    Image: 'image',
+    ContainerConfig: 'containerConfig',
+    Deployment: 'deployment',
+    DeploymentEvent: 'deploymentEvent',
+    Instance: 'instance',
+    InstanceContainerConfig: 'instanceConfig',
+    UserInvitation: 'invitation',
+    VersionsOnParentVersion: 'versionRelation',
+    UsersOnTeams: 'team',
+    Team: 'team',
+    AuditLog: 'auditLog',
+    Notification: 'notification',
+    NotificationEvent: 'notificationEvent',
   }
 }

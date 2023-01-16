@@ -5,6 +5,6 @@
   "changePass": "Change password",
   "editProfile": "Edit profile",
   "needToSetPassword": "You need to set a password.",
-  "noPasswordExpiredPriviledge": "Your session is too old to set a password. You need to log out and recover your account by clicking on the \"Forgot your password?\" link on the Log In page.",
+  "newPasswordExpiredPriviledge": "Your session is too old to set a password. You need to log out and recover your account by clicking on the \"Forgot your password?\" link on the Log In page.",
   "clickToLogout": "Click here to log out"
 }

@@ -17,6 +17,8 @@ selfservice:
       enabled: true
     oidc:
       enabled: false
+    code:
+      enabled: true
 
   flows:
     error:
@@ -29,12 +31,12 @@ selfservice:
     recovery:
       enabled: true
       ui_url: ${CRUX_UI_URL}/auth/recovery
-      after:
-        default_browser_return_url: ${CRUX_UI_URL}
+      use: code
 
     verification:
       enabled: true
       ui_url: ${CRUX_UI_URL}/auth/verify
+      use: code
       after:
         default_browser_return_url: ${CRUX_UI_URL}
 

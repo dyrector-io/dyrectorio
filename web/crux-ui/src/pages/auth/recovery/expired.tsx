@@ -4,7 +4,7 @@ import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { ROUTE_LOGIN, ROUTE_SETTINGS } from '@app/routes'
 import { redirectTo } from '@app/utils'
-import { obtainKratosSession } from '@server/kratos'
+import { obtainSessionFromRequest } from '@server/kratos'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 
@@ -25,7 +25,7 @@ const RecoveryExpiredPage = () => {
 export default RecoveryExpiredPage
 
 export const getPageServerSideProps = async (context: NextPageContext) => {
-  const session = await obtainKratosSession(context.req)
+  const session = await obtainSessionFromRequest(context.req)
 
   if (session) {
     return redirectTo(ROUTE_SETTINGS)

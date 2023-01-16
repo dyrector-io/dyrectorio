@@ -2,9 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { Configuration, Identity, IdentityApi, Session } from '@ory/kratos-client'
 import { randomUUID } from 'crypto'
-import { IdentityAdminMetadata, IdentityTraits, KRATOS_IDENTITY_SCHEMA } from 'src/shared/models'
-
-const EMAIL = 'email'
+import { IdentityTraits, KratosInvitation, KRATOS_IDENTITY_SCHEMA } from 'src/shared/models'
 
 @Injectable()
 export default class KratosService {
@@ -16,7 +14,10 @@ export default class KratosService {
 
   async getIdentityByEmail(email: string): Promise<Identity> {
     const identities = await this.kratos.listIdentities()
-    return identities.data.find(user => user.traits[EMAIL] === email)
+    return identities.data.find(user => {
+      const traits = user.traits as IdentityTraits
+      return traits.email === email
+    })
   }
 
   async getIdentitiesByIds(ids: string[]): Promise<Map<string, Identity>> {
@@ -43,14 +44,9 @@ export default class KratosService {
   }
 
   async createUser(traits: IdentityTraits): Promise<Identity> {
-    const adminMetadata: IdentityAdminMetadata = {
-      noPassword: true,
-    }
-
     const res = await this.kratos.createIdentity({
       createIdentityBody: {
         schema_id: KRATOS_IDENTITY_SCHEMA,
-        metadata_admin: adminMetadata,
         traits,
         verifiable_addresses: [
           {
@@ -67,15 +63,20 @@ export default class KratosService {
     return res.data
   }
 
-  async createRecoveryLink(identity: Identity): Promise<string> {
-    const res = await this.kratos.createRecoveryLinkForIdentity({
-      createRecoveryLinkForIdentityBody: {
+  async createInvitation(identity: Identity): Promise<KratosInvitation> {
+    const res = await this.kratos.createRecoveryCodeForIdentity({
+      createRecoveryCodeForIdentityBody: {
         identity_id: identity.id,
         expires_in: '12h',
       },
     })
 
-    return res.data.recovery_link
+    const url = new URL(res.data.recovery_link)
+
+    return {
+      flow: url.searchParams.get('flow'),
+      code: res.data.recovery_code,
+    }
   }
 
   async getIdentityById(id: string): Promise<Identity> {
@@ -86,7 +87,14 @@ export default class KratosService {
     return res.data
   }
 
-  async getIdentityIdsByEmail(mail: string): Promise<string[]> {
-    return (await this.kratos.listIdentities()).data.filter(r => r.traits[EMAIL] === mail).map(r => r.id)
+  async getIdentityIdsByEmail(email: string): Promise<string[]> {
+    const identitites = await this.kratos.listIdentities()
+
+    return identitites.data
+      .filter(it => {
+        const traitrs = it.traits as IdentityTraits
+        return traitrs.email === email
+      })
+      .map(it => it.id)
   }
 }

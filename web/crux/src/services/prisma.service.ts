@@ -7,7 +7,6 @@ export default class PrismaService extends PrismaClient<Prisma.PrismaClientOptio
 
   constructor() {
     super({
-      rejectOnNotFound: false,
       log: [
         { emit: 'stdout', level: 'warn' },
         { emit: 'stdout', level: 'error' },

@@ -1,7 +1,9 @@
 /* eslint-disable import/no-extraneous-dependencies */
+/* eslint-disable import/no-cycle */
 import { Configuration, Identity, IdentityApi } from '@ory/kratos-client'
 import { FullConfig } from '@playwright/test'
 import path from 'path'
+import { v4 as uuid } from 'uuid'
 import MailSlurper from './mail-slurper'
 
 export const MAILSLURPER_TIMEOUT = 30000 // millis
@@ -23,11 +25,6 @@ export const mailslurperFromBaseURL = (baseURL: string): MailSlurper => {
   return new MailSlurper(url)
 }
 
-export const mailslurperFromConfig = (config: FullConfig) => {
-  const { baseURL } = config.projects[0].use
-  return mailslurperFromBaseURL(baseURL)
-}
-
 export const cruxAddressFromConfig = (config: FullConfig) => {
   const { baseURL } = config.projects[0].use
   const address = baseURL.substring(baseURL.indexOf('//') + 2)
@@ -37,7 +34,7 @@ export const cruxAddressFromConfig = (config: FullConfig) => {
 export const extractKratosLinkFromMail = (body: string): string => {
   const start = body.indexOf('http')
   const slice = body.substring(start)
-  const end = slice.indexOf('</div>')
+  const end = slice.indexOf('"')
   return slice.substring(0, end).replace('&amp;', '&')
 }
 
@@ -56,7 +53,14 @@ export const kratosFromConfig = (config: FullConfig) => {
   return kratosFromBaseURL(baseURL)
 }
 
-export const createUser = async (kratos: IdentityApi, email: string, password: string): Promise<Identity> => {
+export const createUser = async (
+  kratos: IdentityApi,
+  email: string,
+  password: string,
+  options?: {
+    verified: boolean
+  },
+): Promise<Identity> => {
   const res = await kratos.createIdentity({
     createIdentityBody: {
       schema_id: 'default',
@@ -75,6 +79,17 @@ export const createUser = async (kratos: IdentityApi, email: string, password: s
           },
         },
       },
+      verifiable_addresses: !options?.verified
+        ? []
+        : [
+            {
+              id: uuid(),
+              status: 'completed',
+              value: email,
+              verified: true,
+              via: 'email',
+            },
+          ],
     },
   })
 

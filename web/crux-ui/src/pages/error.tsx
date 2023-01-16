@@ -1,7 +1,7 @@
 import { SingleFormLayout } from '@app/components/layout'
 import DyoButton from '@app/elements/dyo-button'
 import { ROUTE_INDEX } from '@app/routes'
-import { redirectTo, withContextAuthorization } from '@app/utils'
+import { redirectTo, withContextErrorHandling } from '@app/utils'
 import { FlowError } from '@ory/kratos-client'
 import kratos from '@server/kratos'
 import { NextPageContext } from 'next'
@@ -54,4 +54,4 @@ const getPageServerSideProps = async (context: NextPageContext) => {
   }
 }
 
-export const getServerSideProps = withContextAuthorization(getPageServerSideProps)
+export const getServerSideProps = withContextErrorHandling(getPageServerSideProps)

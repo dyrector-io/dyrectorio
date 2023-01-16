@@ -1,8 +1,7 @@
 import { ISendMailOptions } from '@nestjs-modules/mailer'
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { disassembleKratosRecoveryUrl } from 'src/domain/utils'
-import { EmailBuilderException } from 'src/exception/errors'
+import { KratosInvitation } from 'src/shared/models'
 
 type InviteTemaple = {
   subject: string
@@ -13,7 +12,7 @@ type InviteTemaple = {
 export type InviteTemplateOptions = {
   teamId: string
   teamName: string
-  kratosRecoveryLink?: string
+  invitation?: KratosInvitation
 }
 
 @Injectable()
@@ -38,20 +37,16 @@ export default class EmailBuilder {
   }
 
   private getInviteTemplate(options: InviteTemplateOptions): InviteTemaple {
-    const { teamId, teamName, kratosRecoveryLink } = options
-
-    if (!teamId && !kratosRecoveryLink) {
-      throw new EmailBuilderException()
-    }
+    const { teamId, teamName, invitation: kratosInvitation } = options
 
     let link = `${this.host}/teams/${teamId}/invitation`
     let mode = 'to accept'
     let button = 'Accept'
 
-    if (kratosRecoveryLink) {
-      const [flow, token] = disassembleKratosRecoveryUrl(kratosRecoveryLink)
+    if (kratosInvitation) {
+      const { flow, code } = kratosInvitation
 
-      link = `${this.host}/auth/invitation?flow=${flow}&token=${token}`
+      link = `${this.host}/auth/create-account?flow=${flow}&code=${code}&team=${teamId}`
       mode = 'to accept and create a dyrector.io account,'
       button = 'Create account'
     }
