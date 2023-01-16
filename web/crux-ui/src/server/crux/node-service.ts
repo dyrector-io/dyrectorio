@@ -24,6 +24,7 @@ import {
   CreateEntityResponse,
   CreateNodeRequest,
   CruxNodeClient,
+  DagentTraefikOptions,
   GenerateScriptRequest,
   IdRequest,
   NodeContainerCommandRequest,
@@ -143,6 +144,7 @@ class DyoNodeService {
     nodeType: ProtoNodeType,
     scriptType: ProtoNodeScriptType,
     rootPath?: string,
+    dagentTraefik?: DagentTraefikOptions,
   ): Promise<DyoNodeInstall> {
     const req: GenerateScriptRequest = {
       id,
@@ -150,6 +152,7 @@ class DyoNodeService {
       type: nodeType,
       rootPath: rootPath ? rootPath.trim() : undefined,
       scriptType,
+      dagentTraefik,
     }
 
     const res = await protomisify<ServiceIdRequest, NodeInstallResponse>(this.client, this.client.generateScript)(

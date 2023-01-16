@@ -775,12 +775,17 @@ message UpdateNodeRequest {
   optional string icon = 102;
 }
 
+message DagentTraefikOptions {
+  string acmeEmail = 100;
+}
+
 message GenerateScriptRequest {
   string id = 1;
   string accessedBy = 2;
   NodeType type = 100;
   optional string rootPath = 101;
   NodeScriptType scriptType = 102;
+  optional DagentTraefikOptions dagentTraefik = 103;
 }
 
 message NodeInstallResponse {

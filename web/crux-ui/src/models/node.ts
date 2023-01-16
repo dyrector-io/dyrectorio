@@ -48,6 +48,17 @@ export type CreateDyoNode = {
   description?: string
 }
 
+export type DyoNodeInstallTraefik = {
+  acmeEmail: string
+}
+
+export type DyoNodeGenerateScript = {
+  type: NodeType
+  rootPath?: string
+  scriptType: NodeInstallScriptType
+  traefik?: DyoNodeInstallTraefik
+}
+
 export type UpdateDyoNode = CreateDyoNode & {
   address: string
 }

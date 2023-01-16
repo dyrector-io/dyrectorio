@@ -1195,12 +1195,17 @@ export interface UpdateNodeRequest {
   icon?: string | undefined
 }
 
+export interface DagentTraefikOptions {
+  acmeEmail: string
+}
+
 export interface GenerateScriptRequest {
   id: string
   accessedBy: string
   type: NodeType
   rootPath?: string | undefined
   scriptType: NodeScriptType
+  dagentTraefik?: DagentTraefikOptions | undefined
 }
 
 export interface NodeInstallResponse {
@@ -7622,6 +7627,53 @@ export const UpdateNodeRequest = {
   },
 }
 
+function createBaseDagentTraefikOptions(): DagentTraefikOptions {
+  return { acmeEmail: '' }
+}
+
+export const DagentTraefikOptions = {
+  encode(message: DagentTraefikOptions, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.acmeEmail !== '') {
+      writer.uint32(802).string(message.acmeEmail)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): DagentTraefikOptions {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseDagentTraefikOptions()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 100:
+          message.acmeEmail = reader.string()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): DagentTraefikOptions {
+    return { acmeEmail: isSet(object.acmeEmail) ? String(object.acmeEmail) : '' }
+  },
+
+  toJSON(message: DagentTraefikOptions): unknown {
+    const obj: any = {}
+    message.acmeEmail !== undefined && (obj.acmeEmail = message.acmeEmail)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<DagentTraefikOptions>, I>>(object: I): DagentTraefikOptions {
+    const message = createBaseDagentTraefikOptions()
+    message.acmeEmail = object.acmeEmail ?? ''
+    return message
+  },
+}
+
 function createBaseGenerateScriptRequest(): GenerateScriptRequest {
   return { id: '', accessedBy: '', type: 0, scriptType: 0 }
 }
@@ -7642,6 +7694,9 @@ export const GenerateScriptRequest = {
     }
     if (message.scriptType !== 0) {
       writer.uint32(816).int32(message.scriptType)
+    }
+    if (message.dagentTraefik !== undefined) {
+      DagentTraefikOptions.encode(message.dagentTraefik, writer.uint32(826).fork()).ldelim()
     }
     return writer
   },
@@ -7668,6 +7723,9 @@ export const GenerateScriptRequest = {
         case 102:
           message.scriptType = reader.int32() as any
           break
+        case 103:
+          message.dagentTraefik = DagentTraefikOptions.decode(reader, reader.uint32())
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -7683,6 +7741,7 @@ export const GenerateScriptRequest = {
       type: isSet(object.type) ? nodeTypeFromJSON(object.type) : 0,
       rootPath: isSet(object.rootPath) ? String(object.rootPath) : undefined,
       scriptType: isSet(object.scriptType) ? nodeScriptTypeFromJSON(object.scriptType) : 0,
+      dagentTraefik: isSet(object.dagentTraefik) ? DagentTraefikOptions.fromJSON(object.dagentTraefik) : undefined,
     }
   },
 
@@ -7693,6 +7752,8 @@ export const GenerateScriptRequest = {
     message.type !== undefined && (obj.type = nodeTypeToJSON(message.type))
     message.rootPath !== undefined && (obj.rootPath = message.rootPath)
     message.scriptType !== undefined && (obj.scriptType = nodeScriptTypeToJSON(message.scriptType))
+    message.dagentTraefik !== undefined &&
+      (obj.dagentTraefik = message.dagentTraefik ? DagentTraefikOptions.toJSON(message.dagentTraefik) : undefined)
     return obj
   },
 
@@ -7703,6 +7764,10 @@ export const GenerateScriptRequest = {
     message.type = object.type ?? 0
     message.rootPath = object.rootPath ?? undefined
     message.scriptType = object.scriptType ?? 0
+    message.dagentTraefik =
+      object.dagentTraefik !== undefined && object.dagentTraefik !== null
+        ? DagentTraefikOptions.fromPartial(object.dagentTraefik)
+        : undefined
     return message
   },
 }

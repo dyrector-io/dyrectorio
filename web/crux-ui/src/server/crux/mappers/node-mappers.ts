@@ -1,6 +1,7 @@
 import {
   ContainerOperation,
   ContainerState,
+  DyoNodeInstallTraefik,
   NodeInstallScriptType,
   NodeStatus,
   NodeType,
@@ -13,6 +14,7 @@ import {
   containerStateToJSON,
 } from '@app/models/grpc/protobuf/proto/common'
 import {
+  DagentTraefikOptions,
   NodeConnectionStatus,
   NodeScriptType as GrpcNodeScriptType,
   NodeType as GrpcNodeType,
@@ -53,3 +55,7 @@ export const containerOperationToProto = (it: ContainerOperation): ProtoContaine
       return ProtoContainerOperation.UNRECOGNIZED
   }
 }
+
+export const nodeTraefikOptionsToProto = (it: DyoNodeInstallTraefik): DagentTraefikOptions => ({
+  acmeEmail: it.acmeEmail,
+})

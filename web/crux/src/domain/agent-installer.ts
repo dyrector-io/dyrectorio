@@ -8,7 +8,7 @@ import { cwd } from 'process'
 import { Subject } from 'rxjs'
 import { InvalidArgumentException, PreconditionFailedException } from 'src/exception/errors'
 import { AgentInfo } from 'src/grpc/protobuf/proto/agent'
-import { NodeEventMessage, NodeScriptType } from 'src/grpc/protobuf/proto/crux'
+import { DagentTraefikOptions, NodeEventMessage, NodeScriptType } from 'src/grpc/protobuf/proto/crux'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import { Agent } from './agent'
 
@@ -25,6 +25,7 @@ export default class AgentInstaller {
     readonly nodeType: NodeTypeEnum,
     readonly rootPath: string | null,
     readonly scriptType: NodeScriptType,
+    readonly dagentTraefik: DagentTraefikOptions | null,
   ) {
     this.loadScriptAndCompiler(nodeType, scriptType)
   }
@@ -62,6 +63,11 @@ export default class AgentInstaller {
       networkName: configLocalDeploymentNetwork,
       debugMode,
       rootPath: this.rootPath,
+      traefik: this.dagentTraefik
+        ? {
+            acmeEmail: this.dagentTraefik.acmeEmail,
+          }
+        : undefined,
     }
 
     if (this.nodeType === NodeTypeEnum.k8s) {
@@ -112,8 +118,10 @@ export type InstallScriptConfig = {
   debugMode: boolean
   rootPath?: string
   update?: boolean
-  traefik?: boolean
   hostname?: string
+  traefik?: {
+    acmeEmail: string
+  }
 }
 
 export type ScriptCompiler = {

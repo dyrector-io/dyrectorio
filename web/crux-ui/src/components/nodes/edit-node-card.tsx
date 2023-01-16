@@ -220,9 +220,9 @@ const EditNodeCard = (props: EditNodeCardProps) => {
         </DyoCard>
 
         <div className="flex flex-col flex-grow w-1/2">
-          <NodeConnectionCard node={node} />
+          {node.install && <NodeConnectionCard className="mb-4 p-6" node={node} />}
 
-          <DyoCard className="flex-grow w-full p-8 mt-4">
+          <DyoCard className="flex-grow w-full p-8">
             <DyoHeading element="h4" className="text-lg text-bright mb-4">
               {t('setup')}
             </DyoHeading>
