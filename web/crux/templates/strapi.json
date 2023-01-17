@@ -110,7 +110,7 @@
         ],
         "networks": ["strapi-network"],
         "networkMode": "bridge",
-        "restartPolicy": "unless_topped",
+        "restartPolicy": "unless_stopped",
         "deploymentStrategy": "recreate"
       }
     }

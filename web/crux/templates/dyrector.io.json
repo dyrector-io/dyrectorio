@@ -1,0 +1,407 @@
+{
+  "name": "dyrector.io",
+  "description": "dyrector.io is a self-hosted container management platform.\nINFORMATION:\n1) If you wish to run this software without reCAPTCHA, set DISABLE_RECAPTCHA to true, and remove the RECAPTCHA related secrets from the frontend(crux-ui) application.",
+  "registries": [
+    {
+      "name": "Docker Hub Library",
+      "type": "hub",
+      "hub": {
+        "imageNamePrefix": "library"
+      }
+    },
+    {
+      "name": "Docker Hub dyrector.io Registry",
+      "type": "hub",
+      "hub": {
+        "imageNamePrefix": "dyrectorio"
+      }
+    }
+  ],
+  "images": [
+    {
+      "name": "crux",
+      "registryName": "Docker Hub dyrector.io Registry",
+      "image": "crux",
+      "tag": "latest",
+      "config": {
+        "name": "crux",
+        "ports": [
+        ],
+        "dockerLabels": [
+          {
+            "id": "1",
+            "key": "traefik.http.routers.dyrectorio-crux-grpc.rule",
+            "value": "Host(`example.com`) && Headers(`content-type`, `application/grpc`)"
+          },
+          {
+            "id": "2",
+            "key": "traefik.http.routers.dyrectorio-crux-grpc.entrypoints",
+            "value": "websecure"
+          },
+          {
+            "id": "3",
+            "key": "traefik.http.services.dyrectorio-crux-grpc.loadbalancer.server.port",
+            "value": "5000"
+          },
+          {
+            "id": "4",
+            "key": "traefik.http.routers.dyrectorio-crux-grpc.service",
+            "value": "dyrectorio-crux-grpc"
+          },
+          { 
+            "id": "5",
+            "key": "traefik.http.routers.dyrectorio-crux.entrypoints",
+            "value": "websecure"
+          },
+          {
+            "id": "6",
+            "key": "traefik.http.services.dyrectorio-crux.loadbalancer.server.port",
+            "value": "5001"
+          },
+          {
+            "id": "7",
+            "key": "traefik.http.routers.dyrectorio-crux.service",
+            "value": "dyrectorio-crux"
+          }
+        ],
+        "commands": [
+          {
+            "id": "1",
+            "key": "serve" 
+          }
+        ],
+        "environment": [
+          { 
+            "key": "TZ",
+            "value": "Europe/Budapest"
+          },
+          {
+            "key": "NODE_ENV",
+            "value": "production" 
+          },
+          {
+            "key": "KRATOS_ADMIN_URL",
+            "value": "http://dyrectorio-kratos:4434" 
+          },
+          {
+            "key": "CRUX_AGENT_ADDRESS",
+            "value": "example.com:5001" 
+          },
+          {
+            "key": "CRUX_UI_URL",
+            "value": "https://example.com" 
+          },
+          {
+            "key": "FROM_NAME",
+            "value": "dyrector.io" 
+          },
+          {
+            "key": "FROM_EMAIL",
+            "value": "mail@example.com" 
+          }
+        ],
+        "secrets": [
+          {
+            "key": "DATABASE_URL",
+            "required": true
+          },
+          {
+            "key": "JWT_SECRET",
+            "required": true
+          },
+          {
+            "key": "SMTP_URI",
+            "required": true
+          }
+        ],
+        "networks": ["dyrectorio"],
+        "networkMode": "bridge",
+        "restartPolicy": "unless_stopped",
+        "deploymentStrategy": "recreate",
+        "initContainers": [
+          {
+            "id": "1",
+            "name": "crux-migration",
+            "registryName": "Docker Hub dyrector.io Registry",
+            "image": "crux",
+            "tag": "latest",
+            "useParentConfig": true,
+            "command": [
+              {
+                "id": "1",
+                "key": "migrate" 
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "crux-ui",
+      "registryName": "Docker Hub dyrector.io Registry",
+      "image": "crux-ui",
+      "tag": "latest",
+      "config": {
+        "name": "crux-ui",
+        "expose": "EXPOSE_WITH_TLS",
+        "dockerLabels": [
+          {
+            "id": "1",
+            "key": "traefik.http.routers.dyrectorio-crux-ui.entrypoints",
+            "value": "websecure"
+          },
+          {
+            "id": "2",
+            "key": "traefik.http.services.dyrectorio-crux-ui.loadbalancer.server.port",
+            "value": "3000"
+          },
+          {
+            "id": "3",
+            "key": "traefik.http.routers.dyrectorio-crux-ui.service",
+            "value": "dyrectorio-crux-ui"
+          }
+        ],
+        "environment": [
+          { 
+            "key": "TZ",
+            "value": "Europe/Budapest"
+          },
+          { 
+            "key": "CRUX_API_ADDRESS",
+            "value": "example.com:5001"
+          },
+          { 
+            "key": "DISABLE_RECAPTCHA",
+            "value": "false"
+          },
+          { 
+            "key": "KRATOS_URL",
+            "value": "http://example.com/kratos"
+          },
+          {
+            "key": "KRATOS_ADMIN_URL",
+            "value": "http://dyrectorio-kratos:4434"
+          }
+        ],
+        "secrets": [
+          {
+            "key": "RECAPTCHA_SITE_KEY",
+            "required": true
+          },
+          {
+            "key": "RECAPTCHA_SECRET_KEY",
+            "required": true
+          }
+        ],
+        "networks": ["dyrectorio"],
+        "networkMode": "bridge",
+        "restartPolicy": "unless_stopped",
+        "deploymentStrategy": "recreate"
+      }
+    },
+    {
+      "name": "crux-postgres",
+      "registryName": "Docker Hub Library",
+      "image": "postgres",
+      "tag": "15-alpine",
+      "config": {
+        "name": "crux-postgres",
+        "ports": [
+        ],
+        "volumes": [
+          {
+            "name": "crux-postgres",
+            "path": "/var/lib/postgres"
+          }
+        ],
+        "environment": [
+          { 
+            "key": "POSTGRES_USER",
+            "value": "crux"
+          },
+          {
+            "key": "POSTGRES_DB",
+            "value": "crux"
+          }
+        ],
+        "secrets": [
+          {
+            "key": "POSTGRES_PASSWORD",
+            "required": true
+          }
+        ],
+        "networks": ["dyrectorio"],
+        "networkMode": "bridge",
+        "restartPolicy": "unless_stopped",
+        "deploymentStrategy": "recreate"
+      }
+    },
+    {
+      "name": "kratos",
+      "registryName": "Docker Hub dyrector.io Registry",
+      "image": "kratos",
+      "tag": "latest",
+      "config": {
+        "name": "kratos",
+        "expose": "EXPOSE_WITH_TLS",
+        "ports": [
+        ],
+        "dockerLabels": [
+          {
+            "id": "1",
+            "key": "traefik.http.routers.dyrectorio-kratos.rule",
+            "value": "Host(`example.com`) && PathPrefix(`/kratos`)"
+          },
+          { "id": "2", "key": "traefik.http.routers.dyrectorio-kratos.entrypoints", "value": "websecure" },
+          {
+            "id": "3",
+            "key": "traefik.http.services.dyrectorio-kratos.loadbalancer.server.port",
+            "value": "4433"
+          },
+          {
+            "id": "4",
+            "key": "traefik.http.routers.dyrectorio-kratos.service",
+            "value": "dyrectorio-kratos"
+          },
+          {
+            "id": "5",
+            "key": "traefik.http.middlewares.dyrectorio-kratos-strip.stripprefix.prefixes",
+            "value": "/kratos"
+          },
+          {
+            "id": "6",
+            "key": "traefik.http.routers.dyrectorio-kratos.middlewares",
+            "value": "dyrectorio-kratos-strip"
+          }
+        ],
+        "environment": [
+          { 
+            "key": "SQA_OPT_OUT", 
+            "value": true
+          },
+          {
+            "key": "KRATOS_URL",
+            "value": "http://dyrectorio-kratos:4433"
+          },
+          {
+            "key": "KRATOS_ADMIN_URL",
+            "value": "http://dyrectorio-kratos:4434"
+          },
+          {
+            "key": "AUTH_URL",
+            "value": "https://example.com/auth"
+          },
+          {
+          
+            "key": "CRUX_UI_URL",
+            "value": "https://example.com"
+          },
+          {
+          
+            "key": "DEV",
+            "value": "false"
+          },
+          {
+            "key": "LOG_LEVEL",
+            "value": "info"
+          },
+          {
+            "key": "LOG_LEAK_SENSITIVE_VALUES",
+            "value": "false"
+          }
+        ],
+        "secrets": [
+          {
+            "key": "DSN",
+            "required": true
+          },
+          {
+            "key": "SECRETS_COOKIE",
+            "required": true
+          },
+          {
+            "key": "COURIER_SMTP_CONNECTION_URI",
+            "required": true
+          }
+        ],
+        "networks": ["dyrectorio"],
+        "networkMode": "bridge",
+        "restartPolicy": "unless_stopped",
+        "deploymentStrategy": "recreate",
+        "initContainers": [
+          {
+            "id": "1",
+            "name": "kratos-migration",
+            "registryName": "Docker Hub dyrector.io Registry",
+            "image": "kratos",
+            "tag": "latest",
+            "useParentConfig": true,
+            "command": [
+              {
+                "id": "1",
+                "key": "-c" 
+              },
+              {
+                "id": "2",
+                "key": "/etc/config/kratos/kratos.yaml" 
+              },
+              {
+                "id": "3",
+                "key": "migrate" 
+              },
+              {
+                "id": "4",
+                "key": "sql" 
+              },
+              {
+                "id": "5",
+                "key": "-e" 
+              },
+              {
+                "id": "6",
+                "key": "--yes" 
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "kratos-postgres",
+      "registryName": "Docker Hub Library",
+      "image": "postgres",
+      "tag": "15-alpine",
+      "config": {
+        "name": "kratos-postgres",
+        "ports": [
+        ],
+        "volumes": [
+          {
+            "name": "kratos-postgres",
+            "path": "/var/lib/postgres"
+          }
+        ],
+        "environment": [
+          { 
+            "key": "POSTGRES_USER",
+            "value": "kratos"
+          },
+          {
+            "key": "POSTGRES_DB",
+            "value": "kratos"
+          }
+        ],
+        "secrets": [
+          {
+            "key": "POSTGRES_PASSWORD",
+            "required": true
+          }
+        ],
+        "networks": ["dyrectorio"],
+        "networkMode": "bridge",
+        "restartPolicy": "unless_stopped",
+        "deploymentStrategy": "recreate"
+      }
+    }
+  ]
+}

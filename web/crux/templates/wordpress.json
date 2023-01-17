@@ -97,7 +97,7 @@
         ],
         "networks": ["wordpress-network"],
         "networkMode": "bridge",
-        "restartPolicy": "always",
+        "restartPolicy": "unless_stopped",
         "deploymentStrategy": "recreate"
       }
     }

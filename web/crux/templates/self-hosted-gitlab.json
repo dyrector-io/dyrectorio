@@ -46,7 +46,7 @@
             "path": "/var/opt/gitlab"
           }
         ],
-        "restartPolicy": "always"
+        "restartPolicy": "unless_stopped"
       }
     }
   ]

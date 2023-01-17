@@ -90,6 +90,9 @@ set_environment() {
       fi
     fi
     CRI_EXECUTABLE="docker"
+    HOSTNET="--add-host=host.docker.internal:host-gateway"
+  else
+    HOSTNET=""
   fi
 
   if [ -z ${HOST_DOCKER_SOCK_PATH:-} ]; then
@@ -152,10 +155,10 @@ dagent_install() {
     -e DEBUG='true' \
     {{/if}}
     -e HOST_DOCKER_SOCK_PATH=$HOST_DOCKER_SOCK_PATH \
-    --add-host=host.docker.internal:host-gateway \
     --name 'dagent' \
     -v $PERSISTENCE_FOLDER/:/srv/dagent \
     -v $HOST_DOCKER_SOCK_PATH:/var/run/docker.sock \
+    $HOSTNET \
     -d ghcr.io/dyrector-io/dyrectorio/agent/dagent:latest
 
   if [ -z ${ORIGINAL_PATHCONV_CONFIG+x} ]; then
