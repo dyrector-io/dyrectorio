@@ -135,8 +135,8 @@ test('Container log should appear after a successful deployment', async ({ page 
 
   await page.waitForNavigation()
 
-  await page.waitForSelector('span.font-terminal')
-  await expect(await page.locator('span.font-terminal')).not.toHaveCount(0)
+  const terminal = page.locator('div.font-roboto')
+  await expect(await terminal.locator('span')).not.toHaveCount(0)
 })
 
 test('Container log should appear on a node container', async ({ page }) => {
@@ -161,8 +161,6 @@ test('Container log should appear on a node container', async ({ page }) => {
 
   await page.goto(ROUTE_NODES)
 
-  await page.pause()
-
   const nodeButton = await page.locator(`h3:has-text("${DAGENT_NODE}")`)
   await nodeButton.click()
 
@@ -176,6 +174,6 @@ test('Container log should appear on a node container', async ({ page }) => {
 
   await page.waitForNavigation()
 
-  await page.waitForSelector('span.font-terminal')
-  await expect(await page.locator('span.font-terminal')).not.toHaveCount(0)
+  const terminal = page.locator('div.font-roboto')
+  await expect(await terminal.locator('span')).not.toHaveCount(0)
 })

@@ -17,7 +17,8 @@ import { nodeContainerLogUrl } from '@app/routes'
 import { utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
-import { useRouter } from 'next/router'
+import Image from 'next/image'
+import Link from 'next/link'
 
 interface NodeContainersListProps {
   state: NodeDetailsState
@@ -29,14 +30,9 @@ const NodeContainersList = (props: NodeContainersListProps) => {
   const { pagination } = state
   const containers = state.filters.filtered
 
-  const router = useRouter()
-
   const { t } = useTranslation('nodes')
 
   const headers = ['common:name', 'images:imageTag', 'common:state', 'common:createdAt', 'ports', 'common:actions']
-
-  const navigateToLog = (container: Container) =>
-    router.push(nodeContainerLogUrl(state.node.id, container.id, container.prefix, container.name))
 
   const itemBuilder = (container: Container) => {
     const targetState = state.containerTargetStates[container.name]
@@ -80,13 +76,16 @@ const NodeContainersList = (props: NodeContainersListProps) => {
             />
 
             {container.state && (
-              <DyoImgButton
-                src="/note-text-outline.svg"
-                alt="log"
-                width={24}
-                height={24}
-                onClick={() => navigateToLog(container)}
-              />
+              <Link
+                href={nodeContainerLogUrl(state.node.id, {
+                  dockerId: container.id,
+                  prefix: container.prefix,
+                  name: container.name,
+                })}
+                passHref
+              >
+                <Image src="/note-text-outline.svg" alt="log" width={24} height={24} />
+              </Link>
             )}
 
             <DyoImgButton

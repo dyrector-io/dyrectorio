@@ -39,6 +39,10 @@ module.exports = {
             boxShadow: {
                 'modal': '0 0 20px 5px rgb(0 0 0 / 0.25)',
             },
+            fontFamily: {
+                'poppins': 'Poppins, sans-serif',
+                'roboto': 'Roboto Mono, sans-serif',
+            },
         },
     },
     variants: {

@@ -1,6 +1,6 @@
 import { Layout } from '@app/components/layout'
-import InstanceLogTerminal from '@app/components/products/versions/deployments/instances/instance-log-terminal'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
+import EventsTerminal from '@app/components/shared/events-terminal'
 import PageHeading from '@app/components/shared/page-heading'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
@@ -16,12 +16,12 @@ import { useState } from 'react'
 interface InstanceLogPageProps {
   node: DyoNodeDetails
   dockerId: string
-  kubePrefix: string
-  kubeName: string
+  prefix: string
+  name: string
 }
 
 const NodeContainerLogPage = (props: InstanceLogPageProps) => {
-  const { node, dockerId, kubePrefix, kubeName } = props
+  const { node, dockerId, prefix, name } = props
 
   const { t } = useTranslation('common')
 
@@ -35,8 +35,8 @@ const NodeContainerLogPage = (props: InstanceLogPageProps) => {
           }
         : {
             prefixName: {
-              prefix: kubePrefix,
-              name: kubeName,
+              prefix,
+              name,
             },
           }
 
@@ -60,7 +60,7 @@ const NodeContainerLogPage = (props: InstanceLogPageProps) => {
     },
     {
       name: t('log'),
-      url: `${nodeContainerLogUrl(node.id, dockerId, kubePrefix, kubeName)}`,
+      url: `${nodeContainerLogUrl(node.id, { dockerId, prefix, name })}`,
     },
   ]
 
@@ -75,7 +75,7 @@ const NodeContainerLogPage = (props: InstanceLogPageProps) => {
           </DyoHeading>
         </div>
 
-        <InstanceLogTerminal events={log} />
+        <EventsTerminal events={log} formatEvent={it => [it.log]} />
       </DyoCard>
     </Layout>
   )
@@ -84,7 +84,7 @@ const NodeContainerLogPage = (props: InstanceLogPageProps) => {
 export default NodeContainerLogPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
-  const { nodeId, dockerId, kubePrefix, kubeName } = context.query
+  const { nodeId, dockerId, prefix, name } = context.query
 
   const node = await cruxFromContext(context).nodes.getNodeDetails(nodeId as string)
 
@@ -92,8 +92,8 @@ const getPageServerSideProps = async (context: NextPageContext) => {
     props: {
       node,
       dockerId: dockerId ?? null,
-      kubePrefix: kubePrefix ?? null,
-      kubeName: kubeName ?? null,
+      prefix: prefix ?? null,
+      name: name ?? null,
     },
   }
 }

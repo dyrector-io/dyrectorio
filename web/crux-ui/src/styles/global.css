@@ -17,10 +17,6 @@ body {
   background-color: #161d31;
 }
 
-.font-terminal {
-  font-family: 'Roboto Mono', sans-serif;
-}
-
 * {
   scrollbar-color: #c4c4c4 #404656;
   scrollbar-width: thin;

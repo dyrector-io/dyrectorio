@@ -77,7 +77,7 @@ export const appendUrlParams = <T extends CruxUrlParams>(url: string, params: T)
     delete params.anchor
 
     Object.entries(params)
-      .filter(it => it[1])
+      .filter(([_, value]) => value)
       .map(entry => {
         const [key, value] = entry
         if (key) {
@@ -199,31 +199,16 @@ export const templateImageUrl = (templateId: string) => `${API_TEMPLATES}/${temp
 export type ContainerLogParams = {
   anchor?: VersionUrlAnchor
   dockerId?: string
-  kubePrefix?: string
-  kubeName?: string
+  prefix?: string
+  name?: string
 }
 
-const logUrl = (baseUrl: string, dockerId?: string, kubePrefix?: string, kubeName?: string) => {
-  const params = dockerId
-    ? {
-        dockerId,
-      }
-    : {
-        kubePrefix,
-        kubeName,
-      }
-
-  return appendUrlParams(baseUrl, params as ContainerLogParams)
-}
-
-export const nodeContainerLogUrl = (nodeId: string, dockerId?: string, kubePrefix?: string, kubeName?: string) =>
-  logUrl(`${nodeUrl(nodeId)}/log`, dockerId, kubePrefix, kubeName)
+export const nodeContainerLogUrl = (nodeId: string, params: ContainerLogParams) =>
+  appendUrlParams(`${nodeUrl(nodeId)}/log`, params)
 
 export const deploymentContainerLogUrl = (
   productId: string,
   versionId: string,
   deploymentId: string,
-  dockerId?: string,
-  kubePrefix?: string,
-  kubeName?: string,
-) => logUrl(`${deploymentUrl(productId, versionId, deploymentId)}/log`, dockerId, kubePrefix, kubeName)
+  params: ContainerLogParams,
+) => appendUrlParams(`${deploymentUrl(productId, versionId, deploymentId)}/log`, params)

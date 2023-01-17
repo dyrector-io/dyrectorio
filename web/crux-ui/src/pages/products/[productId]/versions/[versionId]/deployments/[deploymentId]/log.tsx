@@ -1,6 +1,6 @@
 import { Layout } from '@app/components/layout'
-import InstanceLogTerminal from '@app/components/products/versions/deployments/instances/instance-log-terminal'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
+import EventsTerminal from '@app/components/shared/events-terminal'
 import PageHeading from '@app/components/shared/page-heading'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
@@ -25,12 +25,12 @@ import { getDeploymentRoot } from '../[deploymentId]'
 interface InstanceLogPageProps {
   deployment: DeploymentRoot
   dockerId: string
-  kubePrefix: string
-  kubeName: string
+  prefix: string
+  name: string
 }
 
 const DeploymentContainerLogPage = (props: InstanceLogPageProps) => {
-  const { deployment, dockerId, kubePrefix, kubeName } = props
+  const { deployment, dockerId, prefix, name } = props
 
   const { t } = useTranslation('common')
 
@@ -44,8 +44,8 @@ const DeploymentContainerLogPage = (props: InstanceLogPageProps) => {
           }
         : {
             prefixName: {
-              prefix: kubePrefix,
-              name: kubeName,
+              prefix,
+              name,
             },
           }
 
@@ -81,14 +81,11 @@ const DeploymentContainerLogPage = (props: InstanceLogPageProps) => {
     },
     {
       name: t('log'),
-      url: deploymentContainerLogUrl(
-        deployment.product.id,
-        deployment.versionId,
-        deployment.id,
+      url: deploymentContainerLogUrl(deployment.product.id, deployment.versionId, deployment.id, {
         dockerId,
-        kubePrefix,
-        kubeName,
-      ),
+        prefix,
+        name,
+      }),
     },
   ]
 
@@ -103,7 +100,7 @@ const DeploymentContainerLogPage = (props: InstanceLogPageProps) => {
           </DyoHeading>
         </div>
 
-        <InstanceLogTerminal events={log} />
+        <EventsTerminal events={log} formatEvent={it => [it.log]} />
       </DyoCard>
     </Layout>
   )
@@ -112,7 +109,7 @@ const DeploymentContainerLogPage = (props: InstanceLogPageProps) => {
 export default DeploymentContainerLogPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
-  const { dockerId, kubePrefix, kubeName } = context.query
+  const { dockerId, prefix, name } = context.query
 
   const crux = cruxFromContext(context)
   const deployment = await getDeploymentRoot(context, crux)
@@ -121,8 +118,8 @@ const getPageServerSideProps = async (context: NextPageContext) => {
     props: {
       deployment,
       dockerId: dockerId ?? null,
-      kubePrefix: kubePrefix ?? null,
-      kubeName: kubeName ?? null,
+      prefix: prefix ?? null,
+      name: name ?? null,
     },
   }
 }

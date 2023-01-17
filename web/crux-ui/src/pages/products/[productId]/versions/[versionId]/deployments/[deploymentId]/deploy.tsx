@@ -1,8 +1,8 @@
 import { Layout } from '@app/components/layout'
 import DeploymentContainerStatusList from '@app/components/products/versions/deployments/deployment-container-status-list'
 import DeploymentDetailsCard from '@app/components/products/versions/deployments/deployment-details-card'
-import DeploymentEventsTerminal from '@app/components/products/versions/deployments/deployment-events-terminal'
 import { BreadcrumbLink } from '@app/components/shared/breadcrumb'
+import EventsTerminal from '@app/components/shared/events-terminal'
 import PageHeading from '@app/components/shared/page-heading'
 import DyoButton from '@app/elements/dyo-button'
 import useWebSocket from '@app/hooks/use-websocket'
@@ -24,7 +24,7 @@ import {
   ROUTE_PRODUCTS,
   versionUrl,
 } from '@app/routes'
-import { withContextAuthorization } from '@app/utils'
+import { terminalDateFormat, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
@@ -104,6 +104,16 @@ const DeployPage = (props: DeployPageProps) => {
 
   const onBack = () => router.back()
 
+  const formatEvent = (event: DeploymentEvent): string[] => {
+    if (event.type !== 'log') {
+      return []
+    }
+
+    const date = new Date(event.createdAt)
+    const value = event.value as string[]
+    return value.map(it => `${terminalDateFormat(date)}\xa0\xa0\xa0\xa0${it}`)
+  }
+
   return (
     <Layout
       title={t('deploysNameDeploy', {
@@ -124,7 +134,7 @@ const DeployPage = (props: DeployPageProps) => {
 
       <DeploymentDetailsCard className="flex flex-grow p-6" deployment={deployment}>
         <DeploymentContainerStatusList deployment={propsDeployment} />
-        <DeploymentEventsTerminal events={events} />
+        <EventsTerminal events={events} formatEvent={formatEvent} />
       </DeploymentDetailsCard>
     </Layout>
   )

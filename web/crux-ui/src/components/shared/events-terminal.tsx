@@ -1,17 +1,16 @@
-import { DeploymentEvent } from '@app/models'
-import { terminalDateFormat } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
 
 const SCROLL_LOCK_MARGIN = 10
 
-interface DeploymentEventsTerminalProps {
-  events: DeploymentEvent[]
+interface EventsTerminalProps<T> {
+  events: T[]
+  formatEvent: (event: T) => string[]
 }
 
-const DeploymentEventsTerminal = (props: DeploymentEventsTerminalProps) => {
-  const { events } = props
+const EventsTerminal = <T,>(props: EventsTerminalProps<T>) => {
+  const { events, formatEvent } = props
 
   const { t } = useTranslation('common')
 
@@ -47,27 +46,17 @@ const DeploymentEventsTerminal = (props: DeploymentEventsTerminalProps) => {
     containerRef.current.scrollTop = containerRef.current.scrollHeight
   }, [events, containerRef, autoScroll])
 
-  const eventToString = (event: DeploymentEvent): string[] => {
-    if (event.type !== 'log') {
-      return []
-    }
-
-    const date = new Date(event.createdAt)
-    const value = event.value as string[]
-    return value.map(it => `${terminalDateFormat(date)}\xa0\xa0\xa0\xa0${it}`)
-  }
-
-  const eventStrings: string[] = events.flatMap(it => eventToString(it))
+  const eventStrings: string[] = events.flatMap(it => formatEvent(it))
 
   return (
     <div className="relative">
       <div
         ref={containerRef}
         onScroll={onScroll}
-        className="flex flex-col h-full overflow-y-auto bg-gray-900 rounded-md ring-2 ring-light-grey border-dark px-2 py-1 mt-4 h-128"
+        className="flex flex-col h-full overflow-y-auto bg-gray-900 rounded-md ring-2 ring-light-grey border-dark px-2 py-1 mt-4 h-128 font-roboto"
       >
         {eventStrings.map((it, index) => (
-          <span className="text-bright tracking-widest font-terminal" key={`event-${index}`}>
+          <span className="text-bright tracking-widest" key={`event-${index}`}>
             {it}
           </span>
         ))}
@@ -84,4 +73,4 @@ const DeploymentEventsTerminal = (props: DeploymentEventsTerminalProps) => {
   )
 }
 
-export default DeploymentEventsTerminal
+export default EventsTerminal

@@ -81,14 +81,11 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
     const created = new Date(item.date).getTime()
     const seconds = Math.floor((now - created) / 1000)
 
-    const logUrl = deploymentContainerLogUrl(
-      deployment.product.id,
-      deployment.versionId,
-      deployment.id,
-      item.id,
-      item.prefix,
-      item.name,
-    )
+    const logUrl = deploymentContainerLogUrl(deployment.product.id, deployment.versionId, deployment.id, {
+      dockerId: item.id,
+      prefix: item.prefix,
+      name: item.name,
+    })
 
     /* eslint-disable react/jsx-key */
     return [
