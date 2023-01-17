@@ -1,4 +1,6 @@
-import { ROUTE_TEMPLATES } from '@app/routes'
+/* eslint-disable import/prefer-default-export */
+/* eslint-disable import/no-extraneous-dependencies */
+import { ROUTE_PRODUCTS, ROUTE_TEMPLATES } from '@app/routes'
 import { Page } from '@playwright/test'
 
 export const createProductFromTemplate = async (
@@ -21,9 +23,9 @@ export const createProductFromTemplate = async (
   await page.locator('input[name=name]').fill(productName)
   await page.locator(`form >> text=${productType}`).click()
 
+  const navigation = page.waitForNavigation({ url: `${ROUTE_PRODUCTS}/**` })
   await page.locator('text=Add >> nth=0').click()
-
-  await page.waitForNavigation()
+  await navigation
 
   return page.url().split('/').pop()
 }

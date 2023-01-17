@@ -88,8 +88,10 @@ test('Increase version should work', async ({ page }) => {
 
   await page.waitForSelector('h4:has-text("Increase 1.0.0")')
   await page.locator('input[name=name]').fill('2.0.0')
+
+  const navigation = page.waitForNavigation({ url: `**${productUrl(productId)}/versions/**` })
   await page.locator('button:has-text("Save")').click()
-  await page.waitForNavigation()
+  await navigation
 
   const imagesTableBody = await page.locator('.table-row-group')
   const imagesRows = await imagesTableBody.locator('.table-row')
