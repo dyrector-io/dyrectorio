@@ -14,6 +14,7 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
+  DOCKERHUB: docker.io/dyrectorio
   CRUX_IMAGE_NAME: dyrector-io/dyrectorio/web/crux
   CRUX_UI_IMAGE_NAME: dyrector-io/dyrectorio/web/crux-ui
   DAGENT_IMAGE_NAME: dyrector-io/dyrectorio/agent/dagent
@@ -54,7 +55,6 @@ jobs:
       kratos: ${{ steps.filter.outputs.kratos }}
       tag: ${{ steps.settag.outputs.tag }}
       version: ${{ steps.settag.outputs.version }}
-      fallbacktag: ${{ steps.settag.outputs.fallbacktag }}
     steps:
       - uses: actions/checkout@v3
       - uses: dorny/paths-filter@v2
@@ -95,8 +95,10 @@ jobs:
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
-    if: ${{ needs.changes.outputs.agents == 'true' }}
-    steps: 
+    if: |
+      ${{ needs.changes.outputs.agents == 'true' }} ||
+      github.ref_type == 'tag'
+    steps:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Load go mod
@@ -115,7 +117,9 @@ jobs:
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
-    if: ${{ needs.changes.outputs.agents == 'true' }}
+    if: |
+      ${{ needs.changes.outputs.agents == 'true' }} ||
+      github.ref_type == 'tag'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -132,7 +136,9 @@ jobs:
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
-    if: ${{ needs.changes.outputs.agents == 'true' }}
+    if: |
+      ${{ needs.changes.outputs.agents == 'true' }} ||
+      github.ref_type == 'tag'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -168,11 +174,11 @@ jobs:
           make build-agents
         env:
           VERSION: ${{ needs.changes.outputs.version }}
-          image_version: ${{ needs.changes.outputs.fallbacktag }}
+          image_version: ${{ needs.changes.outputs.tag }}
       - name: Docker save
         run: |
-          docker save ${REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }} | gzip -f > crane.zstd
-          docker save ${REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }} | gzip -f > dagent.zstd
+          docker save ${REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | gzip -f > crane.zstd
+          docker save ${REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | gzip -f > dagent.zstd
       - name: artifact upload
         uses: actions/upload-artifact@v3
         with:
@@ -206,10 +212,10 @@ jobs:
           make build-cli
         env:
           VERSION: ${{ needs.changes.outputs.version }}
-          image_version: ${{ needs.changes.outputs.fallbacktag }}
+          image_version: ${{ needs.changes.outputs.tag }}
       - name: Docker save
         run: |
-          docker save ${REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }} | gzip -f > cli.zstd
+          docker save ${REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | gzip -f > cli.zstd
       - name: artifact upload
         uses: actions/upload-artifact@v3
         with:
@@ -226,7 +232,9 @@ jobs:
         working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
-    if: ${{ needs.changes.outputs.crux == 'true' }}
+    if: |
+      ${{ needs.changes.outputs.crux == 'true' }} ||
+      github.ref_type == 'tag'
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
@@ -252,9 +260,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Docker build
-        run: docker build . -t ${REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }}
+        run: docker build -t ${REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.changes.outputs.tag }} -t ${DOCKERHUB}/crux:${{ needs.changes.outputs.tag }} .
       - name: Docker save
-        run: docker save ${REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }} | gzip -f > crux.zstd
+        run: docker save ${REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | gzip -f > crux.zstd
       - name: artifact upload
         uses: actions/upload-artifact@v3
         with:
@@ -270,7 +278,9 @@ jobs:
     defaults:
       run:
         working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
-    if: ${{ needs.changes.outputs.cruxui == 'true' }}
+    if: |
+      ${{ needs.changes.outputs.cruxui == 'true' }} ||
+      github.ref_type == 'tag'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -291,9 +301,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Docker build
-        run: docker build . -t ${REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }}
+        run: docker build -t ${REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} -t ${DOCKERHUB}/crux-ui:${{ needs.changes.outputs.tag }} .
       - name: Docker save
-        run: docker save ${REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }} | gzip -f > crux-ui.zstd
+        run: docker save ${REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | gzip -f > crux-ui.zstd
       - name: artifact upload
         uses: actions/upload-artifact@v3
         with:
@@ -309,14 +319,16 @@ jobs:
     defaults:
       run:
         working-directory: ${{ env.KRATOS_WORKING_DIRECTORY }}
-    if: ${{ needs.changes.outputs.kratos == 'true' }}
+    if: |
+      ${{ needs.changes.outputs.kratos == 'true' }} ||
+      github.ref_type == 'tag'
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
       - name: Docker build
-        run: docker build . -t ${REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }}
+        run: docker build -t ${REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.tag }} -t ${DOCKERHUB}/kratos:${{ needs.changes.outputs.tag }} .
       - name: Docker save
-        run: docker save ${REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }} | gzip -f > kratos.zstd
+        run: docker save ${REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | gzip -f > kratos.zstd
       - name: artifact upload
         uses: actions/upload-artifact@v3
         with:
@@ -344,6 +356,7 @@ jobs:
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
+
       # - name: crane - artifact download
       #   if: needs.changes.outputs.agents == 'true'
       #   uses: actions/download-artifact@v3
@@ -351,54 +364,79 @@ jobs:
       #     name: crane
       #     path: artifacts
       - name: dagent - artifact download
-        if: needs.changes.outputs.agents == 'true'
+        if: |
+          needs.changes.outputs.agents == 'true' ||
+          github.ref_type == 'tag'
         uses: actions/download-artifact@v3
         with:
           name: dagent
           path: artifacts
       - name: agents - docker load
-        if: needs.changes.outputs.agents == 'true'
+        if: |
+          needs.changes.outputs.agents == 'true' ||
+          github.ref_type == 'tag'
         run: |
           zcat artifacts/dagent.zstd | docker load
         # zcat artifacts/crane.zstd | docker load
+
       - name: crux - artifact download
-        if: needs.changes.outputs.crux == 'true'
+        if: |
+          needs.changes.outputs.crux == 'true' ||
+          github.ref_type == 'tag'
         uses: actions/download-artifact@v3
         with:
           name: crux
           path: artifacts
       - name: crux - docker load
-        if: needs.changes.outputs.crux == 'true'
+        if: |
+          needs.changes.outputs.crux == 'true' ||
+          github.ref_type == 'tag'
         run: zcat artifacts/crux.zstd | docker load
+
       - name: crux-ui - artifact download
-        if: needs.changes.outputs.cruxui == 'true'
+        if: |
+          needs.changes.outputs.cruxui == 'true' ||
+          github.ref_type == 'tag'
         uses: actions/download-artifact@v3
         with:
           name: crux-ui
           path: artifacts
       - name: crux-ui - docker load
-        if: needs.changes.outputs.cruxui == 'true'
+        if: |
+          needs.changes.outputs.cruxui == 'true' ||
+          github.ref_type == 'tag'
         run: zcat artifacts/crux-ui.zstd | docker load
+
       - name: kratos - artifact download
-        if: needs.changes.outputs.kratos == 'true'
+        if: |
+          needs.changes.outputs.kratos == 'true' ||
+          github.ref_type == 'tag'
         uses: actions/download-artifact@v3
         with:
           name: kratos
           path: artifacts
       - name: kratos - docker load
-        if: needs.changes.outputs.kratos == 'true'
+        if: |
+          needs.changes.outputs.kratos == 'true' ||
+          github.ref_type == 'tag'
         run: zcat artifacts/kratos.zstd | docker load
+
       - name: cli - artifact download
-        if: needs.changes.outputs.agents == 'true'
+        if: |
+          needs.changes.outputs.agents == 'true' ||
+          github.ref_type == 'tag'
         uses: actions/download-artifact@v3
         with:
           name: cli
           path: artifacts
       - name: cli - docker load
-        if: needs.changes.outputs.agents == 'true'
+        if: |
+          needs.changes.outputs.agents == 'true' ||
+          github.ref_type == 'tag'
         run: zcat artifacts/cli.zstd | docker load
+
       - name: Setup using cli
-        run: docker run -v /var/run/docker.sock:/var/run/docker.sock ${REGISTRY}/${CLI_IMAGE_NAME}:latest --disable-forcepull --imagetag ${{ needs.changes.outputs.fallbacktag }} --network $(docker network ls -f name=github_network --format {{.Name}}) --expect-container-env --debug up
+        run: docker run -v /var/run/docker.sock:/var/run/docker.sock ${REGISTRY}/${CLI_IMAGE_NAME}:latest --disable-forcepull --imagetag ${{ needs.changes.outputs.tag }} --network $(docker network ls -f name=github_network --format {{.Name}}) --expect-container-env --debug up
       - name: Run tests
         working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
         env:
@@ -412,16 +450,14 @@ jobs:
           CI: true
         run: |
           npm ci --include=dev
-          npm run disable-telemetry
-          npm run build
-          npx playwright install
+          npx playwright install chromium
           npm run test:e2e
       - uses: actions/upload-artifact@v3
         with:
           name: e2e-screenshots
           path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/e2e/screenshots/
       - name: Teardown using cli
-        run: docker run -v /var/run/docker.sock:/var/run/docker.sock ${REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }} --debug down
+        run: docker run -v /var/run/docker.sock:/var/run/docker.sock ${REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} --debug down
 
   go_push:
     permissions:
@@ -456,12 +492,6 @@ jobs:
           zcat artifacts/dagent.zstd | docker load
           zcat artifacts/crane.zstd | docker load
           zcat artifacts/cli.zstd | docker load
-      - name: Add tag on version
-        if: github.ref_type == 'tag'
-        run: |
-          docker tag ${REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.changes.outputs.version }}
-          docker tag ${REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.changes.outputs.version }}
-          docker tag ${REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.version }}
       - name: Write signing key to disk
         run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
       - name: Login to GHCR
@@ -470,18 +500,25 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_PAT }}
-      - name: Sign container image
-        run: |
-          cosign sign --key cosign.key ${REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }}
-          cosign sign --key cosign.key ${REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }}
-          cosign sign --key cosign.key ${REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }}
-        env:
-          COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Docker push
         run: |
-          docker push ${REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }}
-          docker push ${REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }}
-          docker push ${REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }}
+          make push-all
+      - name: Sign container image
+        run: |
+          cosign sign --key cosign.key ${REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
+          cosign sign --key cosign.key ${REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
+          cosign sign --key cosign.key ${REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
+          cosign sign --key cosign.key ${DOCKERHUB}/crane:${{ needs.changes.outputs.tag }}
+          cosign sign --key cosign.key ${DOCKERHUB}/dagent:${{ needs.changes.outputs.tag }}
+          cosign sign --key cosign.key ${DOCKERHUB}/dyo:${{ needs.changes.outputs.tag }}
+        env:
+          COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
 
   crux_push:
     permissions:
@@ -503,10 +540,6 @@ jobs:
           path: artifacts
       - name: Docker load
         run: zcat artifacts/crux.zstd | docker load
-      - name: Add tag on version
-        if: github.ref_type == 'tag'
-        run: |
-          docker tag ${REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.changes.outputs.version }}
       - name: Write signing key to disk
         run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
       - name: Login to GHCR
@@ -515,12 +548,20 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_PAT }}
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      - name: Docker push
+        run: docker push -a ${REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
       - name: Sign container image
-        run: cosign sign --key cosign.key ${REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }}
+        run: |
+          cosign sign --key cosign.key ${REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
+          cosign sign --key cosign.key ${DOCKERHUB}/crux:${{ needs.changes.outputs.tag }}
         env:
           COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
-      - name: Docker push
-        run: docker push ${REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }}
 
   crux-ui_push:
     permissions:
@@ -541,11 +582,7 @@ jobs:
           name: crux-ui
           path: artifacts
       - name: Docker load
-        run: zcat artifacts/crux-ui.zstd |docker load
-      - name: Add tag on version
-        if: github.ref_type == 'tag'
-        run: |
-          docker tag ${REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.changes.outputs.version }}
+        run: zcat artifacts/crux-ui.zstd | docker load
       - name: Write signing key to disk
         run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
       - name: Login to GHCR
@@ -554,12 +591,20 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_PAT }}
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      - name: Docker push
+        run: docker push -a ${REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
       - name: Sign container image
-        run: cosign sign --key cosign.key ${REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }}
+        run: |
+          cosign sign --key cosign.key ${REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
+          cosign sign --key cosign.key ${DOCKERHUB}/crux-ui:${{ needs.changes.outputs.tag }}
         env:
           COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
-      - name: Docker push
-        run: docker push ${REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }}
 
   kratos_push:
     permissions:
@@ -581,10 +626,6 @@ jobs:
           path: artifacts
       - name: Docker load
         run: zcat artifacts/kratos.zstd | docker load
-      - name: Add tag on version
-        if: github.ref_type == 'tag'
-        run: |
-          docker tag ${REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.version }}
       - name: Write signing key to disk
         run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
       - name: Login to GHCR
@@ -593,9 +634,17 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_PAT }}
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      - name: Docker push
+        run: docker push -a ${REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
       - name: Sign container image
-        run: cosign sign --key cosign.key ${REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }}
+        run: |
+          cosign sign --key cosign.key ${REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
+          cosign sign --key cosign.key ${DOCKERHUB}/kratos:${{ needs.changes.outputs.tag }}
         env:
           COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
-      - name: Docker push
-        run: docker push ${REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.fallbacktag }}

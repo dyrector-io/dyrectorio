@@ -18,18 +18,15 @@ if [ $github_ref_type == "branch" ]; then
     "develop") DOCKERIMAGETAG="latest"
     ;;
   esac
-fi
-
-if [ $github_base_ref == "main" ]; then
-  DEFAULTTAG="stable"
+  if [ $github_base_ref == "main" ]; then
+    DOCKERIMAGETAG="stable"
+  fi
 fi
 
 if [ $github_ref_type == "tag" ]; then
   DOCKERIMAGETAG=$github_ref_name
   VERSION=$github_ref_name
-  DEFAULTTAG=$github_ref_name
 fi
 
 echo "tag=$DOCKERIMAGETAG" >> $GITHUB_OUTPUT
-echo "fallbacktag=$DEFAULTTAG" >> $GITHUB_OUTPUT
 echo "version=$VERSION" >> $GITHUB_OUTPUT
