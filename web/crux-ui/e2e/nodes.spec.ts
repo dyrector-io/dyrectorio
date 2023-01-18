@@ -177,3 +177,33 @@ test('Container log should appear on a node container', async ({ page }) => {
   const terminal = page.locator('div.font-roboto')
   await expect(await terminal.locator('span')).not.toHaveCount(0)
 })
+
+test('Docker generate script should show Traefik options', async ({ page }) => {
+  await page.goto(ROUTE_NODES)
+
+  await page.locator('button:has-text("Add")').click()
+
+  await page.locator('input[name=name]').fill('PW_DAGENT_DOCKER_TRAEFIK')
+
+  await page.locator('button:has-text("Save")').click()
+
+  await page.waitForSelector('h4:has-text("Technology")')
+
+  const dockerHost = await page.locator('button:has-text("Docker Host")')
+  await dockerHost.click()
+
+  await expect(await page.locator('label:has-text("Traefik ACME email")')).not.toBeVisible()
+
+  const traefikToggleContainer = await page.locator('label:has-text("Install Traefik") >> xpath=..')
+  const traefikToggle = await traefikToggleContainer.locator('button')
+  await traefikToggle.click()
+
+  await expect(await page.locator('label:has-text("Traefik ACME email")')).toBeVisible()
+
+  await expect(await page.locator('p:has-text("ACME email is a required field")')).toBeVisible()
+
+  const acmeEmailInput = await page.locator('input[name="traefik.acmeEmail"]')
+  await acmeEmailInput.type('a@b.c')
+
+  await expect(await page.locator('p:has-text("ACME email is a required field")')).not.toBeVisible()
+})

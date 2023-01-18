@@ -566,11 +566,8 @@ func setImageLabels(image string, deployImageRequest *v1.DeployImageRequest, cfg
 
 	// add traefik related labels to the container if expose true
 	if deployImageRequest.ContainerConfig.Expose {
-		traefikLabels, labelErr := GetTraefikLabels(&deployImageRequest.InstanceConfig,
+		traefikLabels := GetTraefikLabels(&deployImageRequest.InstanceConfig,
 			&deployImageRequest.ContainerConfig, cfg)
-		if labelErr != nil {
-			return nil, labelErr
-		}
 		maps.Copy(labels, traefikLabels)
 	}
 

@@ -2,15 +2,16 @@ package utils
 
 import (
 	"context"
+	"fmt"
 	"os"
-	"path"
 	"path/filepath"
-	"text/template"
+
+	"github.com/rs/zerolog/log"
 
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
-	"github.com/rs/zerolog/log"
 
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	dockerHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/docker"
@@ -40,15 +41,14 @@ func (err *UnknownContainerError) Error() string {
 func ExecTraefik(ctx context.Context, traefikDeployReq TraefikDeployRequest, cfg *config.Configuration) error {
 	mounts := []mount.Mount{}
 
-	// dagent/traefik/config
 	mounts = append(mounts, mount.Mount{
 		Type:   mount.TypeBind,
 		Source: cfg.HostDockerSockPath,
 		Target: "/var/run/docker.sock",
 	}, mount.Mount{
 		Type:   mount.TypeBind,
-		Source: filepath.Join(cfg.DataMountPath, "traefik", "config"),
-		Target: path.Join("/etc", "traefik"),
+		Source: filepath.Join(cfg.DataMountPath, "traefik", "logs"),
+		Target: "/var/log/traefik",
 	})
 
 	if traefikDeployReq.TLS {
@@ -59,77 +59,58 @@ func ExecTraefik(ctx context.Context, traefikDeployReq TraefikDeployRequest, cfg
 		})
 	}
 
-	internalPath := cfg.InternalMountPath
-
 	// ensure directories exist
-	configDir := filepath.Join(internalPath, "traefik", "config")
-	if err := os.MkdirAll(configDir, os.ModePerm); err != nil {
-		return err
-	}
-
-	if err := os.MkdirAll(filepath.Join(internalPath, "traefik", "letsencrypt"), os.ModePerm); err != nil {
-		return err
-	}
-
-	// create treafik.yml
-	configTmpl, err := template.New("config").Parse(GetTraefikGoTemplate())
+	err := os.MkdirAll(filepath.Join(cfg.InternalMountPath, "traefik", "logs"), os.ModePerm)
 	if err != nil {
-		log.Error().Stack().Err(err).Msg("Could not parse template string")
 		return err
-	}
-
-	//#nosec G304
-	configFile, err := os.Create(filepath.Join(configDir, "traefik.yml"))
-	if err != nil {
-		log.Error().Stack().Err(err).Msg("Could not create traefik.yml file")
-		return err
-	}
-	// anonymized defer to swallow error, at least something is logged about it
-	defer func(configFile *os.File) {
-		if err = configFile.Close(); err != nil {
-			log.Error().Stack().Err(err).Msg("Closing traefik.yml failed")
-		}
-	}(configFile)
-
-	err = configTmpl.Execute(configFile, traefikDeployReq)
-	if err != nil {
-		log.Error().Stack().Err(err).Msg("Rendering traefik config template error")
-		return err
-	}
-	if err != nil {
-		log.Error().Stack().Err(err).Msg("Could not sync traefik.yml - flush to disk")
-		return err
-	}
-
-	// ports
-	ports := []containerbuilder.PortBinding{
-		{PortBinding: traefikDeployReq.Port, ExposedPort: 80},
 	}
 
 	if traefikDeployReq.TLS {
-		ports = append(ports, containerbuilder.PortBinding{PortBinding: traefikDeployReq.TLSPort, ExposedPort: 443})
+		err = os.MkdirAll(filepath.Join(cfg.InternalMountPath, "traefik", "letsencrypt"), os.ModePerm)
+		if err != nil {
+			return err
+		}
 	}
 
-	if err = dockerHelper.DeleteContainerByName(ctx, nil, "traefik", true); err != nil {
-		log.Error().Stack().Err(err).Msg("Delete traefik container error")
-		return err
+	// build the command
+	command := []string{
+		fmt.Sprintf("--entryPoints.web.address=:%d", traefikDeployReq.Port),
+		"--log.filePath=/var/log/traefik/traefik.log",
+		fmt.Sprintf("--log.level=%s", traefikDeployReq.LogLevel),
+		"--providers.docker.exposedByDefault=false",
 	}
 
-	if err = dockerHelper.CreateNetwork(ctx, "traefik", "bridge"); err != nil {
-		log.Error().Stack().Err(err).Msg("Create traefik network error")
-		return err
+	if traefikDeployReq.TLS {
+		command = append(command,
+			fmt.Sprintf("--entryPoints.websecure.address=:%d", traefikDeployReq.TLSPort),
+			"--certificatesResolvers.le.acme.httpChallenge.entryPoint=web",
+			"--certificatesResolvers.le.acme.storage=/letsencrypt/acme.json",
+			fmt.Sprintf("--certificatesResolvers.le.acme.email=%s", traefikDeployReq.AcmeMail),
+		)
+	}
+
+	if traefikDeployReq.LogLevel == "DEBUG" {
+		command = append(command,
+			"--api.insecure=true",
+			"--api.dashboard=true",
+		)
+	}
+
+	// check if "host" network mode is supported
+	if !container.NetworkMode("host").IsHost() {
+		log.Warn().Msg("Trying to start Traefic with unsupported 'host' network mode! Traefik will not work!")
 	}
 
 	builder := containerbuilder.NewDockerBuilder(ctx).WithImage("index.docker.io/library/traefik:v2.8.0").
-		WithAutoRemove(true).
 		WithName("traefik").
 		WithMountPoints(mounts).
-		WithPortBindings(ports).
 		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
 		WithAutoRemove(false).
-		WithNetworkMode("traefik").
-		WithCmd([]string{"--add-host", "host.docker.internal:172.17.0.1"}).
+		WithoutConflict().
+		WithNetworkMode("host").
+		WithCmd(command).
 		WithForcePullImage().
+		WithExtraHosts([]string{"host.docker.internal:host-gateway"}).
 		Create()
 
 	_, err = builder.Start()
@@ -152,15 +133,15 @@ func GetOwnContainer(ctx context.Context) (*types.Container, error) {
 		return nil, &UnknownContainerError{}
 	}
 
-	container, err := dockerHelper.GetContainerByID(ctx, nil, containerID, false)
+	containerByID, err := dockerHelper.GetContainerByID(ctx, nil, containerID, false)
 	if err != nil {
 		return nil, err
 	}
-	if container == nil {
+	if containerByID == nil {
 		return nil, &UnknownContainerError{}
 	}
 
-	return container, nil
+	return containerByID, nil
 }
 
 func GetOwnContainerImage() (*types.ImageInspect, error) {
@@ -169,12 +150,12 @@ func GetOwnContainerImage() (*types.ImageInspect, error) {
 		return nil, err
 	}
 
-	container, err := GetOwnContainer(context.Background())
+	self, err := GetOwnContainer(context.Background())
 	if err != nil {
 		return nil, err
 	}
 
-	image, _, err := cli.ImageInspectWithRaw(context.Background(), container.ImageID)
+	image, _, err := cli.ImageInspectWithRaw(context.Background(), self.ImageID)
 	if err != nil {
 		return nil, err
 	}

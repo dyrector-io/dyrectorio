@@ -19,7 +19,7 @@ import {
 } from '@app/models'
 import { nodeSetupApiUrl } from '@app/routes'
 import { sendForm, writeToClipboard } from '@app/utils'
-import { nodeInstallScriptFormSchema } from '@app/validations'
+import { nodeGenerateScriptSchema } from '@app/validations'
 import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
 import ShEditor from '../shared/sh-editor'
@@ -63,14 +63,13 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
 
   const onCopyScript = () => writeToClipboard(t, node.install.command)
 
-  const formik = useFormik({
-    validationSchema: nodeInstallScriptFormSchema,
+  const formik = useFormik<DyoNodeGenerateScript>({
+    validationSchema: nodeGenerateScriptSchema,
     initialValues: {
       type: node.type,
       rootPath: '',
       scriptType: 'shell',
-      traefik: false,
-      traefikAcmeEmail: '',
+      traefik: undefined,
     },
     onSubmit: async (values, { setSubmitting }) => {
       setSubmitting(true)
@@ -79,18 +78,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
         cancelCountdown()
       }
 
-      const body = {
-        type: values.type,
-        rootPath: values.rootPath || undefined,
-        scriptType: values.scriptType,
-        traefik: values.traefik
-          ? {
-              acmeEmail: values.traefikAcmeEmail,
-            }
-          : undefined,
-      } as DyoNodeGenerateScript
-
-      const res = await sendForm('POST', nodeSetupApiUrl(node.id), body)
+      const res = await sendForm('POST', nodeSetupApiUrl(node.id), values)
 
       if (!res.ok) {
         setSubmitting(false)
@@ -107,6 +95,8 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
       setSubmitting(false)
     },
   })
+
+  const onTraefikChanged = it => formik.setFieldValue('traefik', it ? {} : undefined, true)
 
   return (
     <DyoForm className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
@@ -136,8 +126,8 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
                 <DyoLabel className="my-auto mx-4">{t('installTraefik')}</DyoLabel>
                 <DyoSwitch
                   name="traefik"
-                  checked={formik.values.traefik}
-                  onCheckedChange={it => formik.setFieldValue('traefik', it, true)}
+                  checked={formik.values.traefik !== undefined}
+                  onCheckedChange={onTraefikChanged}
                 />
               </div>
               {formik.values.traefik && (
@@ -146,12 +136,12 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
                     {t('traefikAcmeEmail')}
                   </DyoLabel>
                   <DyoInput
-                    name="traefikAcmeEmail"
+                    name="traefik.acmeEmail"
                     className="max-w-lg mb-2.5"
                     grow
-                    value={formik.values.traefikAcmeEmail}
+                    value={formik.values.traefik.acmeEmail ?? null}
                     onChange={formik.handleChange}
-                    message={formik.errors.traefikAcmeEmail}
+                    message={formik.errors.traefik ? formik.errors.traefik.acmeEmail : undefined}
                   />
                 </div>
               )}
