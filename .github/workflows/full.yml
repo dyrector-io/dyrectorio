@@ -35,6 +35,8 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v2
       - name: Run validation
+        # if it's not a PR we skip
+        if: ${{ github.event_name == 'pull_request' }}
         uses: beemojs/conventional-pr-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
