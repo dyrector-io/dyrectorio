@@ -2,7 +2,7 @@ import { ROUTE_NOTIFICATIONS } from '@app/routes'
 import { expect, Page, test } from '@playwright/test'
 
 const testCreateNotification = async (page: Page, typeChipText: string, hookUrl: string) => {
-  const notificationName = 'TEST NOTIFICATION ' + typeChipText.toUpperCase()
+  const notificationName = `TEST NOTIFICATION ${typeChipText.toUpperCase()}`
 
   await page.goto(ROUTE_NOTIFICATIONS)
   await page.waitForURL(ROUTE_NOTIFICATIONS)

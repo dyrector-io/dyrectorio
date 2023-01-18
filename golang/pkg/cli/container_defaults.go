@@ -15,7 +15,7 @@ import (
 
 const (
 	PostgresImage    = "docker.io/library/postgres:13-alpine"
-	MailSlurperImage = "docker.io/oryd/mailslurper:latest-smtps"
+	MailSlurperImage = "docker.io/oryd/mailslurper:smtps-latest"
 )
 
 const (
@@ -34,18 +34,24 @@ const (
 
 // Crux services: db migrations and crux api service
 func GetCrux(settings *Settings) *containerbuilder.DockerContainerBuilder {
+	host := localhost
+	traefikhost := localhost
+	if settings.FullyContainerized {
+		host = settings.Containers.Crux.Name
+		traefikhost = settings.Containers.Traefik.Name
+	}
+
 	cruxAgentAddr := fmt.Sprintf("%s:%d", settings.Containers.Crux.Name, defaultCruxAgentGrpcPort)
 	if settings.Containers.Crux.LocalAgent {
-		cruxAgentAddr = fmt.Sprintf("%s:%d", localhost, settings.SettingsFile.CruxAgentGrpcPort)
+		cruxAgentAddr = fmt.Sprintf("%s:%d", host, settings.SettingsFile.CruxAgentGrpcPort)
 	}
 
 	crux := containerbuilder.NewDockerBuilder(context.Background()).
-		WithImage(fmt.Sprintf("%s:%s", settings.Crux.Image, settings.SettingsFile.Version)).
+		WithImage(TryImage(fmt.Sprintf("%s:%s", settings.Crux.Image, settings.SettingsFile.Version), settings.SpecialImageTag)).
 		WithLogWriter(nil).
 		WithName(settings.Containers.Crux.Name).
 		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
 		WithoutConflict().
-		WithForcePullImage().
 		WithEnv([]string{
 			fmt.Sprintf("TZ=%s", settings.SettingsFile.TimeZone),
 			fmt.Sprintf("NODE_ENV=%s", "development"),
@@ -58,7 +64,7 @@ func GetCrux(settings *Settings) *containerbuilder.DockerContainerBuilder {
 			fmt.Sprintf("KRATOS_ADMIN_URL=http://%s:%d",
 				settings.Containers.Kratos.Name,
 				settings.SettingsFile.KratosAdminPort),
-			fmt.Sprintf("CRUX_UI_URL=localhost:%d", settings.SettingsFile.TraefikWebPort),
+			fmt.Sprintf("CRUX_UI_URL=%s:%d", traefikhost, settings.SettingsFile.TraefikWebPort),
 			fmt.Sprintf("CRUX_AGENT_ADDRESS=%s", cruxAgentAddr),
 			"LOCAL_DEPLOYMENT=true",
 			fmt.Sprintf("LOCAL_DEPLOYMENT_NETWORK=%s", settings.SettingsFile.Network),
@@ -67,29 +73,37 @@ func GetCrux(settings *Settings) *containerbuilder.DockerContainerBuilder {
 			"FROM_EMAIL=mail@example.com",
 			fmt.Sprintf("SMTP_URI=%s:1025/?skip_ssl_verify=true&legacy_ssl=true", settings.Containers.MailSlurper.Name),
 		}).
-		WithPortBindings([]containerbuilder.PortBinding{
-			{
-				ExposedPort: defaultCruxAgentGrpcPort,
-				PortBinding: uint16(settings.SettingsFile.CruxAgentGrpcPort),
-			},
-			{
-				ExposedPort: defaultCruxGrpcPort,
-				PortBinding: uint16(settings.SettingsFile.CruxGrpcPort),
-			},
-		}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
 		WithNetworkAliases(settings.Containers.Crux.Name).
 		WithCmd([]string{"serve"})
-	return crux
+
+	if !settings.FullyContainerized {
+		crux = crux.
+			WithPortBindings([]containerbuilder.PortBinding{
+				{
+					ExposedPort: defaultCruxAgentGrpcPort,
+					PortBinding: uint16(settings.SettingsFile.CruxAgentGrpcPort),
+				},
+				{
+					ExposedPort: defaultCruxGrpcPort,
+					PortBinding: uint16(settings.SettingsFile.CruxGrpcPort),
+				},
+			})
+	}
+
+	if settings.DisableForcepull {
+		return crux
+	}
+
+	return crux.WithForcePullImage()
 }
 
 func GetCruxMigrate(settings *Settings) *containerbuilder.DockerContainerBuilder {
 	cruxMigrate := containerbuilder.NewDockerBuilder(context.Background()).
-		WithImage(fmt.Sprintf("%s:%s", settings.Crux.Image, settings.SettingsFile.Version)).
+		WithImage(TryImage(fmt.Sprintf("%s:%s", settings.Crux.Image, settings.SettingsFile.Version), settings.SpecialImageTag)).
 		WithLogWriter(nil).
 		WithName(settings.Containers.CruxMigrate.Name).
 		WithoutConflict().
-		WithForcePullImage().
 		WithEnv([]string{
 			fmt.Sprintf("TZ=%s", settings.SettingsFile.TimeZone),
 			fmt.Sprintf("DATABASE_URL=postgresql://%s:%s@%s:%d/%s?schema=public",
@@ -103,7 +117,11 @@ func GetCruxMigrate(settings *Settings) *containerbuilder.DockerContainerBuilder
 		WithNetworkAliases(settings.Containers.CruxMigrate.Name).
 		WithCmd([]string{"migrate"})
 
-	return cruxMigrate
+	if settings.DisableForcepull {
+		return cruxMigrate
+	}
+
+	return cruxMigrate.WithForcePullImage()
 }
 
 func GetCruxUI(settings *Settings) *containerbuilder.DockerContainerBuilder {
@@ -113,12 +131,11 @@ func GetCruxUI(settings *Settings) *containerbuilder.DockerContainerBuilder {
 	}
 
 	cruxUI := containerbuilder.NewDockerBuilder(context.Background()).
-		WithImage(fmt.Sprintf("%s:%s", settings.CruxUI.Image, settings.SettingsFile.Version)).
+		WithImage(TryImage(fmt.Sprintf("%s:%s", settings.CruxUI.Image, settings.SettingsFile.Version), settings.SpecialImageTag)).
 		WithLogWriter(nil).
 		WithName(settings.Containers.CruxUI.Name).
 		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
 		WithoutConflict().
-		WithForcePullImage().
 		WithEnv([]string{
 			fmt.Sprintf("TZ=%s", settings.SettingsFile.TimeZone),
 			fmt.Sprintf("KRATOS_URL=http://%s:%d/kratos",
@@ -130,22 +147,31 @@ func GetCruxUI(settings *Settings) *containerbuilder.DockerContainerBuilder {
 			cruxAPIAddress,
 			"DISABLE_RECAPTCHA=true",
 		}).
-		WithPortBindings([]containerbuilder.PortBinding{
-			{
-				ExposedPort: defaultCruxUIPort,
-				PortBinding: uint16(settings.SettingsFile.CruxUIPort),
-			},
-		}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
 		WithNetworkAliases(settings.Containers.CruxUI.Name).
 		WithLabels(map[string]string{
-			"traefik.enable":                                         "true",
-			"traefik.http.routers.crux-ui.rule":                      fmt.Sprintf("Host(`localhost`) || Host(`%s`)", settings.InternalHostDomain),
+			"traefik.enable": "true",
+			"traefik.http.routers.crux-ui.rule": fmt.Sprintf("Host(`localhost`) || Host(`%s`) || Host(`%s`)", settings.InternalHostDomain,
+				settings.Containers.Traefik.Name),
 			"traefik.http.routers.crux-ui.entrypoints":               "web",
 			"traefik.http.services.crux-ui.loadbalancer.server.port": fmt.Sprintf("%d", defaultCruxUIPort),
 		})
 
-	return cruxUI
+	if !settings.FullyContainerized {
+		cruxUI = cruxUI.
+			WithPortBindings([]containerbuilder.PortBinding{
+				{
+					ExposedPort: defaultCruxUIPort,
+					PortBinding: uint16(settings.SettingsFile.CruxUIPort),
+				},
+			})
+	}
+
+	if settings.DisableForcepull {
+		return cruxUI
+	}
+
+	return cruxUI.WithForcePullImage()
 }
 
 // Return Traefik services container
@@ -189,16 +215,6 @@ func GetTraefik(settings *Settings) *containerbuilder.DockerContainerBuilder {
 		WithName(settings.Containers.Traefik.Name).
 		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
 		WithoutConflict().
-		WithPortBindings([]containerbuilder.PortBinding{
-			{
-				ExposedPort: defaultTraefikWebPort,
-				PortBinding: uint16(settings.SettingsFile.TraefikWebPort),
-			},
-			{
-				ExposedPort: defaultTraefikUIPort,
-				PortBinding: uint16(settings.SettingsFile.TraefikUIPort),
-			},
-		}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
 		WithNetworkAliases(settings.Containers.Traefik.Name).
 		WithMountPoints([]mount.Mount{{
@@ -208,18 +224,31 @@ func GetTraefik(settings *Settings) *containerbuilder.DockerContainerBuilder {
 		}}).
 		WithCmd(commands)
 
+	if !settings.FullyContainerized {
+		traefik = traefik.
+			WithPortBindings([]containerbuilder.PortBinding{
+				{
+					ExposedPort: defaultTraefikWebPort,
+					PortBinding: uint16(settings.SettingsFile.TraefikWebPort),
+				},
+				{
+					ExposedPort: defaultTraefikUIPort,
+					PortBinding: uint16(settings.SettingsFile.TraefikUIPort),
+				},
+			})
+	}
 	return traefik
 }
 
 // Return Kratos services' containers
 func GetKratos(settings *Settings) *containerbuilder.DockerContainerBuilder {
-	traefikLabel := fmt.Sprintf("(Host(`localhost`) && PathPrefix(`/kratos`)) || "+
-		"(Host(`%s`) && PathPrefix(`/kratos`)) || "+
-		"(Host(`%s`) && PathPrefix(`/kratos`))",
-		settings.Containers.Traefik.Name, settings.InternalHostDomain)
+	traefikhost := localhost
+	if settings.FullyContainerized {
+		traefikhost = settings.Containers.Traefik.Name
+	}
 
 	kratos := containerbuilder.NewDockerBuilder(context.Background()).
-		WithImage(fmt.Sprintf("%s:%s", settings.Kratos.Image, settings.SettingsFile.Version)).
+		WithImage(TryImage(fmt.Sprintf("%s:%s", settings.Kratos.Image, settings.SettingsFile.Version), settings.SpecialImageTag)).
 		WithLogWriter(nil).
 		WithName(settings.Containers.Kratos.Name).
 		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
@@ -233,16 +262,19 @@ func GetKratos(settings *Settings) *containerbuilder.DockerContainerBuilder {
 				settings.Containers.KratosPostgres.Name,
 				defaultPostgresPort,
 				settings.SettingsFile.KratosPostgresDB),
-			fmt.Sprintf("KRATOS_URL=http://localhost:%d/kratos",
+			fmt.Sprintf("KRATOS_URL=http://%s:%d/kratos",
+				traefikhost,
 				settings.SettingsFile.TraefikWebPort),
 			fmt.Sprintf("KRATOS_ADMIN_URL=http://%s:%d",
 				settings.Containers.Kratos.Name,
 				settings.SettingsFile.KratosAdminPort),
-			fmt.Sprintf("AUTH_URL=http://localhost:%d/auth",
+			fmt.Sprintf("AUTH_URL=http://%s:%d/auth",
+				traefikhost,
 				settings.SettingsFile.TraefikWebPort),
-			fmt.Sprintf("CRUX_UI_URL=http://localhost:%d",
+			fmt.Sprintf("CRUX_UI_URL=http://%s:%d",
+				traefikhost,
 				settings.SettingsFile.TraefikWebPort),
-			"DEV=false",
+			"DEV=true",
 			"LOG_LEVEL=info",
 			"LOG_LEAK_SENSITIVE_VALUES=false",
 			fmt.Sprintf("SECRETS_COOKIE=%s", settings.SettingsFile.KratosSecret),
@@ -250,33 +282,44 @@ func GetKratos(settings *Settings) *containerbuilder.DockerContainerBuilder {
 			fmt.Sprintf("COURIER_SMTP_CONNECTION_URI=smtps://test:test@%s:1025/?skip_ssl_verify=true&legacy_ssl=true",
 				settings.Containers.MailSlurper.Name),
 		}).
-		WithPortBindings([]containerbuilder.PortBinding{
-			{
-				ExposedPort: defaultKratosPublicPort,
-				PortBinding: uint16(settings.SettingsFile.KratosPublicPort),
-			},
-			{
-				ExposedPort: defaultKratosAdminPort,
-				PortBinding: uint16(settings.SettingsFile.KratosAdminPort),
-			},
-		}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
 		WithNetworkAliases(settings.Containers.Kratos.Name).
 		WithLabels(map[string]string{
-			"traefik.enable":                                             "true",
-			"traefik.http.routers.kratos.rule":                           traefikLabel,
+			"traefik.enable": "true",
+			"traefik.http.routers.kratos.rule": fmt.Sprintf("(Host(`localhost`) && PathPrefix(`/kratos`)) || "+
+				"(Host(`%s`) && PathPrefix(`/kratos`)) || "+
+				"(Host(`%s`) && PathPrefix(`/kratos`))",
+				settings.Containers.Traefik.Name, settings.InternalHostDomain),
 			"traefik.http.routers.kratos.entrypoints":                    "web",
 			"traefik.http.services.kratos.loadbalancer.server.port":      fmt.Sprintf("%d", defaultKratosPublicPort),
 			"traefik.http.middlewares.kratos-strip.stripprefix.prefixes": "/kratos",
 			"traefik.http.routers.kratos.middlewares":                    "kratos-strip",
 		})
 
-	return kratos
+	if !settings.FullyContainerized {
+		kratos = kratos.
+			WithPortBindings([]containerbuilder.PortBinding{
+				{
+					ExposedPort: defaultKratosPublicPort,
+					PortBinding: uint16(settings.SettingsFile.KratosPublicPort),
+				},
+				{
+					ExposedPort: defaultKratosAdminPort,
+					PortBinding: uint16(settings.SettingsFile.KratosAdminPort),
+				},
+			})
+	}
+
+	if settings.DisableForcepull {
+		return kratos
+	}
+
+	return kratos.WithForcePullImage()
 }
 
 func GetKratosMigrate(settings *Settings) *containerbuilder.DockerContainerBuilder {
 	kratosMigrate := containerbuilder.NewDockerBuilder(context.Background()).
-		WithImage(fmt.Sprintf("%s:%s", settings.Kratos.Image, settings.SettingsFile.Version)).
+		WithImage(TryImage(fmt.Sprintf("%s:%s", settings.Kratos.Image, settings.SettingsFile.Version), settings.SpecialImageTag)).
 		WithLogWriter(nil).
 		WithName(settings.Containers.KratosMigrate.Name).
 		WithoutConflict().
@@ -294,7 +337,11 @@ func GetKratosMigrate(settings *Settings) *containerbuilder.DockerContainerBuild
 		WithNetworkAliases(settings.Containers.KratosMigrate.Name).
 		WithCmd([]string{"-c /etc/config/kratos/kratos.yaml", "migrate", "sql", "-e", "--yes"})
 
-	return kratosMigrate
+	if settings.DisableForcepull {
+		return kratosMigrate
+	}
+
+	return kratosMigrate.WithForcePullImage()
 }
 
 // Return Mailslurper services container
@@ -306,23 +353,26 @@ func GetMailSlurper(settings *Settings) *containerbuilder.DockerContainerBuilder
 		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
 		WithoutConflict().
 		WithForcePullImage().
-		WithPortBindings([]containerbuilder.PortBinding{
-			{
-				ExposedPort: defaultMailSlurperSMTPPort,
-				PortBinding: uint16(settings.SettingsFile.MailSlurperSMTPPort),
-			},
-			{
-				ExposedPort: defaultMailSlurperWebPort,
-				PortBinding: uint16(settings.SettingsFile.MailSlurperWebPort),
-			},
-			{
-				ExposedPort: defaultMailSlurperWebPort2,
-				PortBinding: uint16(settings.SettingsFile.MailSlurperWebPort2),
-			},
-		}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
 		WithNetworkAliases(settings.Containers.MailSlurper.Name)
 
+	if !settings.FullyContainerized {
+		mailslurper = mailslurper.
+			WithPortBindings([]containerbuilder.PortBinding{
+				{
+					ExposedPort: defaultMailSlurperSMTPPort,
+					PortBinding: uint16(settings.SettingsFile.MailSlurperSMTPPort),
+				},
+				{
+					ExposedPort: defaultMailSlurperWebPort,
+					PortBinding: uint16(settings.SettingsFile.MailSlurperWebPort),
+				},
+				{
+					ExposedPort: defaultMailSlurperWebPort2,
+					PortBinding: uint16(settings.SettingsFile.MailSlurperWebPort2),
+				},
+			})
+	}
 	return mailslurper
 }
 
@@ -335,18 +385,22 @@ func GetCruxPostgres(settings *Settings) *containerbuilder.DockerContainerBuilde
 			fmt.Sprintf("POSTGRES_USER=%s", settings.SettingsFile.CruxPostgresUser),
 			fmt.Sprintf("POSTGRES_PASSWORD=%s", settings.SettingsFile.CruxPostgresPassword),
 			fmt.Sprintf("POSTGRES_DB=%s", settings.SettingsFile.CruxPostgresDB),
-		}).
-		WithPortBindings([]containerbuilder.PortBinding{
-			{
-				ExposedPort: defaultPostgresPort,
-				PortBinding: uint16(settings.SettingsFile.CruxPostgresPort),
-			},
-		}).
-		WithMountPoints([]mount.Mount{{
-			Type:   mount.TypeVolume,
-			Source: fmt.Sprintf("%s-data", settings.Containers.CruxPostgres.Name),
-			Target: "/var/lib/postgresql/data",
-		}})
+		})
+
+	if !settings.FullyContainerized {
+		cruxPostgres = cruxPostgres.
+			WithPortBindings([]containerbuilder.PortBinding{
+				{
+					ExposedPort: defaultPostgresPort,
+					PortBinding: uint16(settings.SettingsFile.CruxPostgresPort),
+				},
+			}).
+			WithMountPoints([]mount.Mount{{
+				Type:   mount.TypeVolume,
+				Source: fmt.Sprintf("%s-data", settings.Containers.CruxPostgres.Name),
+				Target: "/var/lib/postgresql/data",
+			}})
+	}
 
 	return cruxPostgres
 }
@@ -358,21 +412,25 @@ func GetKratosPostgres(settings *Settings) *containerbuilder.DockerContainerBuil
 			fmt.Sprintf("POSTGRES_PASSWORD=%s", settings.SettingsFile.KratosPostgresPassword),
 			fmt.Sprintf("POSTGRES_DB=%s", settings.SettingsFile.KratosPostgresDB),
 		}).
-		WithPortBindings([]containerbuilder.PortBinding{
-			{
-				ExposedPort: defaultPostgresPort,
-				PortBinding: uint16(settings.SettingsFile.KratosPostgresPort),
-			},
-		}).
 		WithName(settings.Containers.KratosPostgres.Name).
-		WithNetworkAliases(settings.Containers.KratosPostgres.Name).
-		WithMountPoints([]mount.Mount{
-			{
-				Type:   mount.TypeVolume,
-				Source: fmt.Sprintf("%s-data", settings.Containers.KratosPostgres.Name),
-				Target: "/var/lib/postgresql/data",
-			},
-		})
+		WithNetworkAliases(settings.Containers.KratosPostgres.Name)
+
+	if !settings.FullyContainerized {
+		kratosPostgres = kratosPostgres.
+			WithPortBindings([]containerbuilder.PortBinding{
+				{
+					ExposedPort: defaultPostgresPort,
+					PortBinding: uint16(settings.SettingsFile.KratosPostgresPort),
+				},
+			}).
+			WithMountPoints([]mount.Mount{
+				{
+					Type:   mount.TypeVolume,
+					Source: fmt.Sprintf("%s-data", settings.Containers.KratosPostgres.Name),
+					Target: "/var/lib/postgresql/data",
+				},
+			})
+	}
 
 	return kratosPostgres
 }

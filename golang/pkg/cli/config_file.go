@@ -16,6 +16,8 @@ import (
 	"strconv"
 	"strings"
 
+	imageHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/image"
+
 	"github.com/docker/docker/client"
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/rs/zerolog/log"
@@ -24,12 +26,18 @@ import (
 
 // Settings and state of the application
 type Settings struct {
-	SettingsFile       SettingsFile
-	SettingsWrite      bool
-	SettingsExists     bool
-	SettingsFilePath   string
-	Command            string
-	InternalHostDomain string
+	SettingsFile        SettingsFile
+	SettingsWrite       bool
+	SettingsExists      bool
+	SettingsFilePath    string
+	Command             string
+	ImageTag            string
+	SpecialImageTag     string
+	DisableForcepull    bool
+	DisablePodmanChecks bool
+	FullyContainerized  bool
+	Network             string
+	InternalHostDomain  string
 	Containers
 }
 
@@ -163,7 +171,7 @@ func SettingsFileReadWrite(state *Settings) *Settings {
 		}
 	}
 
-	internalHostDomain := CheckRequirements()
+	internalHostDomain := CheckRequirements(state)
 
 	// Fill out data if empty
 	settings := LoadDefaultsOnEmpty(state)
@@ -173,6 +181,14 @@ func SettingsFileReadWrite(state *Settings) *Settings {
 
 	// Move other values
 	settings.Containers.CruxUI.CruxUIPort = settings.SettingsFile.CruxUIPort
+
+	if settings.Network != "" {
+		settings.SettingsFile.Network = settings.Network
+	}
+
+	if settings.ImageTag != "" {
+		settings.SettingsFile.Version = settings.ImageTag
+	}
 
 	// Set disabled stuff
 	settings = DisabledServiceSettings(settings)
@@ -185,7 +201,7 @@ func SettingsFileReadWrite(state *Settings) *Settings {
 }
 
 // Check prerequisites
-func CheckRequirements() string {
+func CheckRequirements(state *Settings) string {
 	// getenv
 	envVarValue := os.Getenv("DOCKER_HOST")
 
@@ -224,7 +240,9 @@ func CheckRequirements() string {
 	switch info.InitBinary {
 	case "":
 		log.Info().Str("version", info.ServerVersion).Msg("Podman")
-		PodmanInfo()
+		if !state.DisablePodmanChecks {
+			PodmanInfo()
+		}
 		return PodmanHost
 	case "docker-init":
 		log.Info().Str("version", info.ServerVersion).Msg("Docker")
@@ -381,6 +399,32 @@ func LoadDefaultsOnEmpty(settings *Settings) *Settings {
 	settings.Containers.MailSlurper.Name = fmt.Sprintf("%s_mailslurper", settings.SettingsFile.Prefix)
 
 	return settings
+}
+
+// This function will check if an image with the given custom tag is existing
+// on the local system, otherwise will fall back and pull
+// This func is for testing locally built docker images
+func TryImage(dockerImage, specialTag string) string {
+	imageURI, err := imageHelper.URIFromString(dockerImage)
+	if err != nil {
+		log.Err(err).Stack().Send()
+	}
+
+	if specialTag != "" {
+		imageURI.Tag = specialTag
+	}
+
+	exists, err := imageHelper.Exists(context.TODO(), nil, imageURI.String())
+	if err != nil {
+		log.Err(err).Stack().Send()
+	}
+
+	if exists {
+		log.Debug().Str("image", imageURI.String()).Msg("found, won't pull")
+		return imageURI.String()
+	}
+	log.Debug().Str("image", dockerImage).Msg("not found, will pull")
+	return dockerImage
 }
 
 func LoadStringVal(value, def string) string {

@@ -1,4 +1,4 @@
-import { deploymentUrl } from '@app/routes'
+import { deploymentUrl, productUrl } from '@app/routes'
 import { expect, test } from '@playwright/test'
 import { extractDeploymentUrl } from './utils/common'
 import { deployWithDagent } from './utils/node-helper'
@@ -38,7 +38,7 @@ test('Delete deployment should work', async ({ page }) => {
 
   await page.waitForSelector('h4:has-text("Are you sure you want to delete Deployment?")')
 
+  const navigation = page.waitForNavigation({ url: `**${productUrl(productId)}**` })
   await page.locator('button:has-text("Delete")').nth(1).click()
-
-  await page.waitForNavigation()
+  await navigation
 })

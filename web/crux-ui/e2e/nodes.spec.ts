@@ -5,9 +5,9 @@ import { DAGENT_NODE, screenshotPath } from './utils/common'
 test('Install dagent should be successful', async ({ page }) => {
   await page.goto(ROUTE_NODES)
 
+  const navigation = page.waitForNavigation({ url: `**${ROUTE_NODES}/**` })
   await page.locator(`h3:has-text("${DAGENT_NODE}")`).click()
-
-  await page.waitForNavigation()
+  await navigation
 
   await expect(await page.locator('span:has-text("Running")')).toHaveCount(1)
 })

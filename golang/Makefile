@@ -48,7 +48,7 @@ up:
 .PHONY: upd
 upd:
 	cd cmd/dyo && \
-	go run . --disable-crux --disable-crux-ui --local-agent up; \
+	go run . --disable-crux --disable-crux-ui up; \
 	cd -
 
 .PHONY: down
@@ -86,7 +86,7 @@ single-arch-check:
 .PHONY: compile-cli
 compile-cli:
 	cd cmd/dyo && \
-	$(foreach arch, $(GOARCHS), ${GOPARAMS} GOARCH=$(arch) go build ${LDFLAGS} -o ../../build/out/cli-${arch}${OUT_EXT};)
+	$(foreach arch, $(GOARCHS), ${GOPARAMS} GOARCH=$(arch) go build ${LDFLAGS} -o ../../build/out/dyo-${arch}${OUT_EXT};)
 
 .PHONY: install-cli
 install-cli: single-arch-check compile-cli
@@ -129,7 +129,7 @@ lint:
 .PHONY: build-cli
 build-cli:
 	cd build && \
-	docker build -t ${ORG_REGISTRY}/cli:$(image_version) -f cli/Dockerfile .
+	docker build -t ${ORG_REGISTRY}/cli/dyo:$(image_version) -f cli/Dockerfile .
 
 .PHONY: build-dagent
 build-dagent:

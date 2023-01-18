@@ -1,3 +1,4 @@
+/* eslint-disable import/no-extraneous-dependencies */
 import { productUrl, ROUTE_PRODUCTS, versionUrl } from '@app/routes'
 import { expect, Page } from '@playwright/test'
 
@@ -12,19 +13,16 @@ export const createProduct = async (page: Page, name: string, type: 'Simple' | '
 
   await page.locator('button:has-text("Save")').click()
 
-  const item = await page.waitForSelector(`a:has-text("${name}")`)
+  const product = await page.waitForSelector(`a:has-text("${name}")`)
 
-  await item.click()
+  const navigation = page.waitForNavigation({ url: `**${ROUTE_PRODUCTS}/**` })
+  await product.click()
+  await navigation
 
   if (type === 'Simple') {
     await page.waitForSelector(`span:has-text("Changelog")`)
-  }
-
-  if (type === 'Complex') {
-    await page.waitForNavigation()
-
-    const productItem = await page.locator(`h5:has-text("${name}")`)
-    await productItem.click()
+  } else {
+    // Complex
     await page.waitForSelector(`button:has-text("Add version")`)
   }
 
@@ -111,9 +109,9 @@ export const addDeploymentToSimpleProduct = async (
 
   await page.locator(`button:has-text("${nodeName}")`).click()
 
+  const navigation = page.waitForNavigation({ url: `**${productUrl(productId)}/versions/**/deployments/**` })
   await page.locator('button:has-text("Add")').click()
-
-  await page.waitForNavigation()
+  await navigation
 
   return {
     id: page.url().split('/').pop(),
@@ -138,9 +136,10 @@ export const addDeploymentToVersion = async (
   }
 
   await page.locator(`button:has-text("${nodeName}")`).click()
-  await page.locator('button:has-text("Add")').click()
 
-  await page.waitForNavigation()
+  const navigation = page.waitForNavigation({ url: `**${versionUrl(productId, versionId)}/deployments/**` })
+  await page.locator('button:has-text("Add")').click()
+  await navigation
 
   return {
     id: page.url().split('/').pop(),

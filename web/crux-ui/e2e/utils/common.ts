@@ -21,14 +21,15 @@ const replacePort = (address: string, port: string): string => {
 }
 
 export const mailslurperFromBaseURL = (baseURL: string): MailSlurper => {
-  const url = replacePort(baseURL, '4437')
+  const url = process.env.MAILSLURPER_URL || replacePort(baseURL, '4437')
   return new MailSlurper(url)
 }
 
 export const cruxAddressFromConfig = (config: FullConfig) => {
   const { baseURL } = config.projects[0].use
   const address = baseURL.substring(baseURL.indexOf('//') + 2)
-  return replacePort(address, '5001')
+
+  return process.env.CRUX_URL ?? replacePort(address, '5001')
 }
 
 export const extractKratosLinkFromMail = (body: string): string => {
@@ -39,7 +40,7 @@ export const extractKratosLinkFromMail = (body: string): string => {
 }
 
 export const kratosFromBaseURL = (baseURL: string) => {
-  const url = replacePort(baseURL, '4434')
+  const url = process.env.KRATOS_ADMIN_URL || replacePort(baseURL, '4434')
 
   const kratosConfig = new Configuration({
     basePath: url,

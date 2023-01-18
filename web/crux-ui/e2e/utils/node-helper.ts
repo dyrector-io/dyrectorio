@@ -52,16 +52,17 @@ export const deployWithDagent = async (
 
   await page.locator('input[name=prefix]').fill(prefix)
 
+  let navigation = page.waitForNavigation({ url: `**${productUrl(productId)}/versions/**/deployments/**` })
   await page.locator('button:has-text("Add")').click()
-
-  await page.waitForNavigation()
+  await navigation
 
   const deploy = page.getByText('Deploy', {
     exact: true,
   })
-  await deploy.click()
 
-  await page.waitForNavigation()
+  navigation = page.waitForNavigation({ url: `**${productUrl(productId)}/versions/**/deployments/**/deploy` })
+  await deploy.click()
+  await navigation
 
   if (!ignoreResult) {
     await page.getByText('Successful').waitFor()
