@@ -5,7 +5,7 @@ set -eu
 github_ref_type=$1
 github_ref_name=$2
 github_sha=$3
-github_base_ref=$4
+github_base_ref=${4:-}
 
 DOCKERIMAGETAG="$github_sha"
 VERSION="v0.0.0"
