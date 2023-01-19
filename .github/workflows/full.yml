@@ -453,9 +453,9 @@ jobs:
           path: artifacts
       - name: Docker load
         run: |
-          artifacts/dagent.zstd | docker load
-          artifacts/crane.zstd | docker load
-          artifacts/cli.zstd | docker load
+          zcat artifacts/dagent.zstd | docker load
+          zcat artifacts/crane.zstd | docker load
+          zcat artifacts/cli.zstd | docker load
       - name: Add tag on version
         if: github.ref_type == 'tag'
         run: |
