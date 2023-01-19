@@ -154,7 +154,7 @@ func mapDagentConfig(dagent *agent.DagentContainerConfig, containerConfig *v1.Co
 	}
 
 	if dagent.Labels != nil {
-		containerConfig.Labels.Deployment = dagent.Labels
+		containerConfig.DockerLabels = dagent.Labels
 	}
 }
 

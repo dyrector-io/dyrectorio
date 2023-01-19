@@ -18,8 +18,6 @@ spec:
       initContainers:
         - name: crane-init
           image: ghcr.io/dyrector-io/dyrectorio/agent/crane:latest
-          command:
-            - /agent
           args:
             - init
           imagePullPolicy: Always

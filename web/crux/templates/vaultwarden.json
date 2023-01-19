@@ -1,0 +1,79 @@
+{
+  "name": "Vaultwarden",
+  "description": "Alternative implementation of the Bitwarden server API written in Rust and compatible with upstream Bitwarden clients, perfect for self-hosted deployment where running the official resource-heavy service might not be ideal.",
+  "registries": [
+    {
+      "name": "Vaultwarden / Docker HUB",
+      "type": "hub",
+      "hub": {
+        "imageNamePrefix": "vaultwarden"
+      }
+    }
+  ],
+  "images": [
+    {
+      "name": "vaultwarden-server",
+      "registryName": "Vaultwarden / Docker HUB",
+      "image": "server",
+      "tag": "latest",
+      "config": {
+        "name": "vaultwarden",
+        "ports": [
+          {
+            "external": 80,
+            "internal": 80
+          },
+          {
+            "external": 3012,
+            "internal": 3012
+          }
+        ],
+        "volumes": [
+          {
+            "name": "data",
+            "path": "/data"
+          }
+        ],
+        "environment": [
+          {
+            "key": "DOMAIN",
+            "value": "https://vault.example.com/"
+          }
+        ],
+        "ingress": {
+          "host": "example.com",
+          "name": "vault"
+        },
+        "expose": "EXPOSE_WITH_TLS",
+        "dockerLabels": [
+          {
+            "id": "1",
+            "key": "traefik.http.routers.vaultwarden-vaultwarden-ws.rule",
+            "value": "PathPrefix(`/notifications/hub/negotiate`)"
+          },
+          { "id": "2", "key": "traefik.http.routers.vaultwarden-vaultwarden-ws.entrypoints", "value": "websecure" },
+          {
+            "id": "3",
+            "key": "traefik.http.services.vaultwarden-vaultwarden-ws.loadbalancer.server.port",
+            "value": "3012"
+          },
+          {
+            "id": "4",
+            "key": "traefik.http.routers.vaultwarden-vaultwarden-ws.service",
+            "value": "vaultwarden-vaultwarden-ws"
+          },
+          {
+            "id": "5",
+            "key": "traefik.http.routers.vaultwarden-vaultwarden.service",
+            "value": "vaultwarden-vaultwarden"
+          }
+        ],
+        "secrets": [],
+        "networks": ["vaultwarden-network"],
+        "networkMode": "bridge",
+        "restartPolicy": "always",
+        "deploymentStrategy": "recreate"
+      }
+    }
+  ]
+}

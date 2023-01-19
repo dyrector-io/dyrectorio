@@ -18,53 +18,13 @@ import (
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 )
 
-func TestMapDeployImageDagent(t *testing.T) {
-	req := testDeployRequest()
-	cfg := testAppConfig()
-
-	req.Crane = nil
-	res := mapper.MapDeployImage(req, cfg)
-	expected := testExpectedCommon(req)
-
-	assert.Equal(t, expected, res)
-}
-
-func TestMapDeployImageCrane(t *testing.T) {
+// crux sends both configs crane+dagent
+func TestMapDeployImageRequest(t *testing.T) {
 	req := testDeployRequest()
 	cfg := testAppConfig()
 
 	res := mapper.MapDeployImage(req, cfg)
-	req.Dagent = nil
 	expected := testExpectedCommon(req)
-	expected.ContainerConfig.Annotations = v1.Markers{
-		Deployment: map[string]string{"annot1": "value1"},
-		Service:    map[string]string{"annot2": "value2"},
-		Ingress:    map[string]string{"annot3": "value3"},
-	}
-
-	expected.ContainerConfig.DeploymentStrategy = "RECREATE"
-
-	expected.ContainerConfig.Labels = v1.Markers{
-		Deployment: map[string]string{"label1": "value1"},
-		Service:    map[string]string{"label2": "value2"},
-		Ingress:    map[string]string{"label3": "value3"},
-	}
-
-	expected.ContainerConfig.HealthCheckConfig = v1.HealthCheckConfig{
-		Port:           uint16(*req.Crane.HealthCheckConfig.Port),
-		LivenessProbe:  &v1.Probe{Path: "test-liveness"},
-		ReadinessProbe: &v1.Probe{Path: "test-readiness"},
-		StartupProbe:   &v1.Probe{Path: "test-startup"},
-	}
-	expected.ContainerConfig.ResourceConfig = v1.ResourceConfig{
-		Limits:   v1.Resources{CPU: "250m", Memory: "512Mi"},
-		Requests: v1.Resources{CPU: "100m", Memory: "64Mi"},
-	}
-
-	expected.ContainerConfig.ProxyHeaders = true
-	// expected.ContainerConfig.Networks = []string{"n1", "n2"}
-	expected.ContainerConfig.UseLoadBalancer = true
-	expected.ContainerConfig.ExtraLBAnnotations = map[string]string{"annotation1": "value1"}
 
 	assert.Equal(t, expected, res)
 }
@@ -110,7 +70,7 @@ func testExpectedCommon(req *agent.DeployRequest) *v1.DeployImageRequest {
 				Path:      "/path/to/vol",
 				KeepFiles: true,
 			},
-			Labels:          v1.Markers{Deployment: map[string]string{"label1": "value1"}},
+			DockerLabels:    map[string]string{"label1": "value1"},
 			ImportContainer: nil,
 			InitContainers: []v1.InitContainer{
 				{
@@ -135,6 +95,30 @@ func testExpectedCommon(req *agent.DeployRequest) *v1.DeployImageRequest {
 			Networks:      []string{"n1", "n2"},
 			NetworkMode:   "BRIDGE",
 			CustomHeaders: []string(nil),
+			Annotations: v1.Markers{
+				Deployment: map[string]string{"annot1": "value1"},
+				Service:    map[string]string{"annot2": "value2"},
+				Ingress:    map[string]string{"annot3": "value3"},
+			},
+			DeploymentStrategy: "RECREATE",
+			Labels: v1.Markers{
+				Deployment: map[string]string{"label1": "value1"},
+				Service:    map[string]string{"label2": "value2"},
+				Ingress:    map[string]string{"label3": "value3"},
+			},
+			HealthCheckConfig: v1.HealthCheckConfig{
+				Port:           uint16(*req.Crane.HealthCheckConfig.Port),
+				LivenessProbe:  &v1.Probe{Path: "test-liveness"},
+				ReadinessProbe: &v1.Probe{Path: "test-readiness"},
+				StartupProbe:   &v1.Probe{Path: "test-startup"},
+			},
+			ResourceConfig: v1.ResourceConfig{
+				Limits:   v1.Resources{CPU: "250m", Memory: "512Mi"},
+				Requests: v1.Resources{CPU: "100m", Memory: "64Mi"},
+			},
+			ProxyHeaders:       true,
+			UseLoadBalancer:    true,
+			ExtraLBAnnotations: map[string]string{"annotation1": "value1"},
 		},
 		RuntimeConfig: v1.Base64JSONBytes{0x6b, 0x65, 0x79, 0x31, 0x3d, 0x76, 0x61, 0x6c, 0x31, 0x2c, 0x6b, 0x65, 0x79, 0x32, 0x3d, 0x76, 0x61, 0x6c, 0x32}, // encoded string: a2V5MT12YWwxLGtleTI9dmFsMg==
 		Registry:      req.Registry,
@@ -304,12 +288,12 @@ func testKeyValueList() []*common.UniqueKey {
 
 func testDagentConfig() *agent.DagentContainerConfig {
 	return &agent.DagentContainerConfig{
+		Labels:        map[string]string{"label1": "value1"},
 		RestartPolicy: common.RestartPolicy_ALWAYS.Enum(),
 		LogConfig: &agent.LogConfig{
 			Driver:  365,
 			Options: map[string]string{"opt1": "v1", "opt2": "v2"},
 		},
-		Labels:      map[string]string{"label1": "value1"},
 		NetworkMode: common.NetworkMode_BRIDGE.Enum(),
 		Networks:    []string{"n1", "n2"},
 	}
