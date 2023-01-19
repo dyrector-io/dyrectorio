@@ -211,7 +211,7 @@ type ContainerConfig struct {
 	ExtraLBAnnotations map[string]string `json:"extraLBAnnotations,omitempty"`
 	// Annotations
 	Annotations Markers `json:"annotations"`
-	// labels is shared, both docker and k8s have labels
+	// k8s labels
 	Labels Markers `json:"labels"`
 	// Metrics
 	Metrics *Metrics `json:"metrics,omitempty"`
