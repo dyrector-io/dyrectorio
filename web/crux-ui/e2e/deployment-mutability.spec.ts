@@ -26,13 +26,13 @@ test.describe('Simple product', () => {
     await expect(await page.locator('input[id=name]')).toBeEditable()
   })
 
-  test('successful deployment should be mutable', async ({ page }) => {
+  test('successful deployment should be mutable', async ({ page }, testInfo) => {
     const productId = await createProduct(page, 'PW-SIMPLE-MUTABILITY-2', 'Simple')
     await addImageToSimpleProduct(page, productId, image)
 
     const prefix = 'pw-simp-mut'
 
-    await deployWithDagent(page, prefix, productId)
+    await deployWithDagent(page, prefix, productId, "",  false, testInfo.title)
 
     const { versionId, deploymentId } = extractDeploymentUrl(page.url())
 
@@ -65,12 +65,12 @@ test.describe('Complex product incremental version', () => {
     await expect(await page.locator('input[id=name]')).toBeEditable()
   })
 
-  test('successful deployment should be immutable', async ({ page }) => {
+  test('successful deployment should be immutable', async ({ page }, testInfo) => {
     const productId = await createProduct(page, 'PW-COMP-MUTABILITY-2', 'Complex')
     const versionId = await createVersion(page, productId, '0.1.0', 'Incremental')
     await createImage(page, productId, versionId, image)
 
-    await deployWithDagent(page, 'pw-complex-mutability', productId, versionId)
+    await deployWithDagent(page, 'pw-complex-mutability', productId, versionId,  false, testInfo.title)
 
     const { deploymentId } = extractDeploymentUrl(page.url())
 
@@ -83,16 +83,16 @@ test.describe('Complex product incremental version', () => {
     await expect(await page.locator('input[id=name]')).toBeDisabled()
   })
 
-  test('obsolete deployment should be immutable', async ({ page }) => {
+  test('obsolete deployment should be immutable', async ({ page }, testInfo) => {
     const productId = await createProduct(page, 'PW-COMP-MUTABILITY-3', 'Complex')
     const versionId = await createVersion(page, productId, '0.1.0', 'Incremental')
     await createImage(page, productId, versionId, image)
 
-    await deployWithDagent(page, 'pw-complex-mutability-obsolete', productId, versionId)
+    await deployWithDagent(page, 'pw-complex-mutability-obsolete', productId, versionId, false, testInfo.title + "1")
 
     const { deploymentId } = extractDeploymentUrl(page.url())
 
-    await deployWithDagent(page, 'pw-complex-mutability-obsolete', productId, versionId)
+    await deployWithDagent(page, 'pw-complex-mutability-obsolete', productId, versionId, false, testInfo.title + "2")
 
     await page.goto(deploymentUrl(productId, versionId, deploymentId))
 

@@ -19,7 +19,7 @@ const config: PlaywrightTestConfig = {
     timeout: 60 * 1000, // 1 min
     reuseExistingServer: true,
   },
-  workers: process.env.CI ? 2 : undefined,
+  workers: process.env.CI ? 4 : undefined,
   use: {
     // Use baseURL so to make navigations relative.
     // More information: https://playwright.dev/docs/api/class-testoptions#test-options-base-url

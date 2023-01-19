@@ -1,0 +1,22 @@
+{
+    "name": "playwright-dyo",
+    "version": "1.0.0",
+    "description": "The playwright runner container for our CI pipeline.",
+    "main": "index.js",
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/dyrector-io/playwright.git"
+    },
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+      "url": "https://github.com/dyrector-io/playwright/issues"
+    },
+    "homepage": "https://github.com/dyrector-io/playwright#readme",
+    "dependencies": {
+      "@playwright/test": "^1.28.1"
+    }
+  }

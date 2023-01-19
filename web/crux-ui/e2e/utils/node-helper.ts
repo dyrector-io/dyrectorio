@@ -37,6 +37,7 @@ export const deployWithDagent = async (
   productId: string,
   versionId?: string,
   ignoreResult?: boolean,
+  testName?: string,
 ) => {
   if (versionId) {
     await page.goto(versionUrl(productId, versionId))
@@ -61,10 +62,15 @@ export const deployWithDagent = async (
   })
 
   navigation = page.waitForNavigation({ url: `**${productUrl(productId)}/versions/**/deployments/**/deploy` })
+
   await deploy.click()
   await navigation
 
   if (!ignoreResult) {
+    if (testName) {
+      await page.waitForTimeout(1000)
+      await page.screenshot({ path: screenshotPath('dagent-daeploy-after-1s-' + testName), fullPage: true })
+    }
     await page.getByText('Successful').waitFor()
   }
 }

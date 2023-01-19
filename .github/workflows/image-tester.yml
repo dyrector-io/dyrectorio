@@ -1,0 +1,46 @@
+name: tester image
+
+on:
+  push:
+    branches:
+      - develop
+    paths: 
+      - images/playwright/**
+      - .github/workflows/image-tester.yml
+
+permissions:
+  contents: read
+  pull-requests: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  TESTER_IMAGE_NAME: dyrector-io/dyrectorio/images/playwright
+
+jobs:
+  build_push:
+    runs-on: ubuntu-22.04
+    needs: [crux_lint,changes]
+    container:
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+    defaults:
+      run:
+        working-directory: images/playwright
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Docker build
+        run: docker build -t ${REGISTRY}/${TESTER_IMAGE_NAME}:latest .
+      - name: Login to GHCR
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_PAT }}
+      - name: Docker push
+        run: docker push ${REGISTRY}/${TESTER_IMAGE_NAME}:latest
+      - name: Sign container image
+        run: |
+          cosign sign --key cosign.key ${REGISTRY}/${TESTER_IMAGE_NAME}:latest
+        env:
+          COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
