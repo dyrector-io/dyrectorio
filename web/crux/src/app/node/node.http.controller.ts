@@ -1,5 +1,5 @@
 import { Controller, Get, Query } from '@nestjs/common'
-import { concatAll, defaultIfEmpty, filter, first, Observable, timeout } from 'rxjs'
+import { first, Observable, timeout } from 'rxjs'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import { ContainerStateListMessage } from 'src/grpc/protobuf/proto/common'
 import { WatchContainerStateRequest } from 'src/grpc/protobuf/proto/crux'
