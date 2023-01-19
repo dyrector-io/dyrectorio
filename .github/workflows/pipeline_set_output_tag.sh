@@ -18,6 +18,9 @@ if [ $github_ref_type == "branch" ]; then
     "develop") DOCKERIMAGETAG="latest"
     ;;
   esac
+  if [ $github_base_ref != "" ]; then
+    DOCKERIMAGETAG=$github_ref_name
+  fi
   if [ $github_base_ref == "main" ]; then
     DOCKERIMAGETAG="stable"
   fi
