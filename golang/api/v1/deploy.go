@@ -144,8 +144,6 @@ type ContainerConfig struct {
 	Volumes []Volume `json:"volumes,omitempty" binding:"dive"`
 	// environment variables list
 	Environment []string `json:"environment"`
-	// labels is shared, both docker and k8s have labels
-	Labels Markers `json:"labels"`
 	// Secrets
 	Secrets map[string]string `json:"secrets,omitempty"`
 	// the type of the runtime text provided eg. dotnet-appsettings
@@ -188,6 +186,8 @@ type ContainerConfig struct {
 	NetworkMode string `json:"networkMode"`
 	// extra networks
 	Networks []string `json:"networks"`
+	// docker only labels
+	DockerLabels map[string]string `json:"dockerLabels"`
 
 	// k8s-only-section
 	// Deployments strategy, on deployment how to restart underlying pods
@@ -211,6 +211,8 @@ type ContainerConfig struct {
 	ExtraLBAnnotations map[string]string `json:"extraLBAnnotations,omitempty"`
 	// Annotations
 	Annotations Markers `json:"annotations"`
+	// labels is shared, both docker and k8s have labels
+	Labels Markers `json:"labels"`
 	// Metrics
 	Metrics *Metrics `json:"metrics,omitempty"`
 }

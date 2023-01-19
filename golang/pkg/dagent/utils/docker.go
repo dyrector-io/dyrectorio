@@ -591,7 +591,7 @@ func setImageLabels(image string, deployImageRequest *v1.DeployImageRequest, cfg
 		maps.Copy(labels, secretKeysList)
 	}
 
-	maps.Copy(labels, deployImageRequest.ContainerConfig.Labels.Deployment)
+	maps.Copy(labels, deployImageRequest.ContainerConfig.DockerLabels)
 
 	return labels, nil
 }
