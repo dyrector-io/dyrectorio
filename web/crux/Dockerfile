@@ -34,6 +34,7 @@ COPY ./proto ./proto
 USER node
 
 EXPOSE 5000-5001
+LABEL org.opencontainers.image.source="https://github.com/dyrector-io/dyrectorio/web/crux"
 
 # Start
 ENTRYPOINT ["./crux-docker-entrypoint.sh"]

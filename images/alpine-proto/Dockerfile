@@ -24,3 +24,5 @@ COPY ./golang/Makefile /tmp/
 RUN cd /tmp && make install-go-tools && rm Makefile
 
 WORKDIR /usr/work
+
+LABEL org.opencontainers.image.source="https://github.com/dyrector-io/dyrectorio/alpine-proto"

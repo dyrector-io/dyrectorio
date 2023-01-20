@@ -13,8 +13,8 @@ permissions:
   packages: read
 
 env:
-  REGISTRY: ghcr.io
-  DOCKERHUB: docker.io/dyrectorio
+  GITHUB_REGISTRY: ghcr.io
+  DOCKERHUB_REGISTRY: docker.io/dyrectorio
   CRUX_IMAGE_NAME: dyrector-io/dyrectorio/web/crux
   CRUX_UI_IMAGE_NAME: dyrector-io/dyrectorio/web/crux-ui
   DAGENT_IMAGE_NAME: dyrector-io/dyrectorio/agent/dagent
@@ -177,8 +177,8 @@ jobs:
           image_version: ${{ needs.changes.outputs.tag }}
       - name: Docker save
         run: |
-          docker save ${REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | gzip -f > crane.zstd
-          docker save ${REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | gzip -f > dagent.zstd
+          docker save ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | gzip -f > crane.zstd
+          docker save ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | gzip -f > dagent.zstd
       - name: artifact upload
         uses: actions/upload-artifact@v3
         with:
@@ -215,7 +215,7 @@ jobs:
           image_version: ${{ needs.changes.outputs.tag }}
       - name: Docker save
         run: |
-          docker save ${REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | gzip -f > cli.zstd
+          docker save ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | gzip -f > cli.zstd
       - name: artifact upload
         uses: actions/upload-artifact@v3
         with:
@@ -259,9 +259,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Docker build
-        run: docker build -t ${REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.changes.outputs.tag }} -t ${DOCKERHUB}/crux:${{ needs.changes.outputs.tag }} .
+        run: docker build -t ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.changes.outputs.tag }} .
       - name: Docker save
-        run: docker save ${REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | gzip -f > crux.zstd
+        run: docker save ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | gzip -f > crux.zstd
       - name: artifact upload
         uses: actions/upload-artifact@v3
         with:
@@ -300,9 +300,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Docker build
-        run: docker build -t ${REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} -t ${DOCKERHUB}/crux-ui:${{ needs.changes.outputs.tag }} .
+        run: docker build -t ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} .
       - name: Docker save
-        run: docker save ${REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | gzip -f > crux-ui.zstd
+        run: docker save ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | gzip -f > crux-ui.zstd
       - name: artifact upload
         uses: actions/upload-artifact@v3
         with:
@@ -325,9 +325,9 @@ jobs:
       - name: Checkout the repository
         uses: actions/checkout@v3
       - name: Docker build
-        run: docker build -t ${REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.tag }} -t ${DOCKERHUB}/kratos:${{ needs.changes.outputs.tag }} .
+        run: docker build -t ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.tag }} .
       - name: Docker save
-        run: docker save ${REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | gzip -f > kratos.zstd
+        run: docker save ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | gzip -f > kratos.zstd
       - name: artifact upload
         uses: actions/upload-artifact@v3
         with:
@@ -435,7 +435,7 @@ jobs:
         run: zcat artifacts/cli.zstd | docker load
 
       - name: Setup using cli
-        run: docker run -v /var/run/docker.sock:/var/run/docker.sock ${REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} --disable-forcepull --imagetag ${{ needs.changes.outputs.tag }} --network $(docker network ls -f name=github_network --format {{.Name}}) --expect-container-env --debug up
+        run: docker run -v /var/run/docker.sock:/var/run/docker.sock ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} --disable-forcepull --imagetag ${{ needs.changes.outputs.tag }} --network $(docker network ls -f name=github_network --format {{.Name}}) --expect-container-env --debug up
       - name: Run tests
         working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
         env:
@@ -456,7 +456,7 @@ jobs:
           name: e2e-screenshots
           path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/e2e/screenshots/
       - name: Teardown using cli
-        run: docker run -v /var/run/docker.sock:/var/run/docker.sock ${REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} --debug down
+        run: docker run -v /var/run/docker.sock:/var/run/docker.sock ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} --debug down
 
   go_push:
     permissions:
@@ -491,8 +491,6 @@ jobs:
           zcat artifacts/dagent.zstd | docker load
           zcat artifacts/crane.zstd | docker load
           zcat artifacts/cli.zstd | docker load
-      - name: Write signing key to disk
-        run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
       - name: Login to GHCR
         uses: docker/login-action@v2
         with:
@@ -503,24 +501,29 @@ jobs:
         uses: docker/login-action@v2
         with:
           registry: docker.io
-          username: ${{ secrets.DOCKERHUB_USER }}
+          username: dyrectorio
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      - name: Write signing key to disk
+        run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
       - name: Docker push
         run: |
-          docker push -a ${REGISTRY}/${CRANE_IMAGE_NAME}
-          docker push -a ${REGISTRY}/${DAGENT_IMAGE_NAME}
-          docker push -a ${REGISTRY}/${CLI_IMAGE_NAME}
-          docker push -a ${DOCKERHUB}/crane
-          docker push -a ${DOCKERHUB}/dagent
-          docker push -a ${DOCKERHUB}/dyo
+          docker push -a ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}
+          docker push -a ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}
+          docker push -a ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}
+          docker tag ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
+          docker tag ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
+          docker tag ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
+          docker push -a ${DOCKERHUB_REGISTRY}/crane
+          docker push -a ${DOCKERHUB_REGISTRY}/dagent
+          docker push -a ${DOCKERHUB_REGISTRY}/dyo
       - name: Sign container image
         run: |
-          cosign sign --key cosign.key ${REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
-          cosign sign --key cosign.key ${REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
-          cosign sign --key cosign.key ${REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
-          cosign sign --key cosign.key ${DOCKERHUB}/crane:${{ needs.changes.outputs.tag }}
-          cosign sign --key cosign.key ${DOCKERHUB}/dagent:${{ needs.changes.outputs.tag }}
-          cosign sign --key cosign.key ${DOCKERHUB}/dyo:${{ needs.changes.outputs.tag }}
+          cosign sign --key cosign.key ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
+          cosign sign --key cosign.key ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
+          cosign sign --key cosign.key ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
+          cosign sign --key cosign.key ${DOCKERHUB_REGISTRY}/crane:${{ needs.changes.outputs.tag }}
+          cosign sign --key cosign.key ${DOCKERHUB_REGISTRY}/dagent:${{ needs.changes.outputs.tag }}
+          cosign sign --key cosign.key ${DOCKERHUB_REGISTRY}/dyo:${{ needs.changes.outputs.tag }}
         env:
           COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
 
@@ -544,8 +547,6 @@ jobs:
           path: artifacts
       - name: Docker load
         run: zcat artifacts/crux.zstd | docker load
-      - name: Write signing key to disk
-        run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
       - name: Login to GHCR
         uses: docker/login-action@v2
         with:
@@ -556,16 +557,19 @@ jobs:
         uses: docker/login-action@v2
         with:
           registry: docker.io
-          username: ${{ secrets.DOCKERHUB_USER }}
+          username: dyrectorio
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Docker push
         run: |
-          docker push -a ${REGISTRY}/${CRUX_IMAGE_NAME}
-          docker push -a ${DOCKERHUB}/crux
+          docker push -a ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}
+          docker tag ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crux:${{ needs.changes.outputs.tag }}
+          docker push -a ${DOCKERHUB_REGISTRY}/crux
+      - name: Write signing key to disk
+        run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
       - name: Sign container image
         run: |
-          cosign sign --key cosign.key ${REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
-          cosign sign --key cosign.key ${DOCKERHUB}/crux:${{ needs.changes.outputs.tag }}
+          cosign sign --key cosign.key ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
+          cosign sign --key cosign.key ${DOCKERHUB_REGISTRY}/crux:${{ needs.changes.outputs.tag }}
         env:
           COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
 
@@ -589,8 +593,6 @@ jobs:
           path: artifacts
       - name: Docker load
         run: zcat artifacts/crux-ui.zstd | docker load
-      - name: Write signing key to disk
-        run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
       - name: Login to GHCR
         uses: docker/login-action@v2
         with:
@@ -601,16 +603,19 @@ jobs:
         uses: docker/login-action@v2
         with:
           registry: docker.io
-          username: ${{ secrets.DOCKERHUB_USER }}
+          username: dyrectorio
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Docker push
         run: |
-          docker push -a ${REGISTRY}/${CRUX_UI_IMAGE_NAME}
-          docker push -a ${DOCKERHUB}/crux-ui
+          docker push -a ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}
+          docker tag ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crux-ui:${{ needs.changes.outputs.tag }}
+          docker push -a ${DOCKERHUB_REGISTRY}/crux-ui
+      - name: Write signing key to disk
+        run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
       - name: Sign container image
         run: |
-          cosign sign --key cosign.key ${REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
-          cosign sign --key cosign.key ${DOCKERHUB}/crux-ui:${{ needs.changes.outputs.tag }}
+          cosign sign --key cosign.key ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
+          cosign sign --key cosign.key ${DOCKERHUB_REGISTRY}/crux-ui:${{ needs.changes.outputs.tag }}
         env:
           COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
 
@@ -634,8 +639,6 @@ jobs:
           path: artifacts
       - name: Docker load
         run: zcat artifacts/kratos.zstd | docker load
-      - name: Write signing key to disk
-        run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
       - name: Login to GHCR
         uses: docker/login-action@v2
         with:
@@ -646,15 +649,18 @@ jobs:
         uses: docker/login-action@v2
         with:
           registry: docker.io
-          username: ${{ secrets.DOCKERHUB_USER }}
+          username: dyrectorio
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Docker push
         run: |
-          docker push -a ${REGISTRY}/${KRATOS_IMAGE_NAME}
-          docker push -a ${DOCKERHUB}/kratos
+          docker push -a ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}
+          docker tag ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/kratos:${{ needs.changes.outputs.tag }} 
+          docker push -a ${DOCKERHUB_REGISTRY}/kratos
+      - name: Write signing key to disk
+        run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
       - name: Sign container image
         run: |
-          cosign sign --key cosign.key ${REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
-          cosign sign --key cosign.key ${DOCKERHUB}/kratos:${{ needs.changes.outputs.tag }}
+          cosign sign --key cosign.key ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
+          cosign sign --key cosign.key ${DOCKERHUB_REGISTRY}/kratos:${{ needs.changes.outputs.tag }}
         env:
           COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"
