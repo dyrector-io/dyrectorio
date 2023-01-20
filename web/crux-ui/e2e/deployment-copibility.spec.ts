@@ -73,7 +73,7 @@ test.describe('Simple product', () => {
     await expect(await page.locator('button:has-text("Copy")')).toHaveCount(0)
   })
 
-  test('successful deployment should be not copiable on deployment detail page', async ({ page }) => {
+  test('successful deployment should be not copiable on deployment detail page', async ({ page }, testInfo) => {
     const productName = 'PRODUCT-COPY-TEST4'
 
     const productId = await createProduct(page, productName, 'Simple')
@@ -81,7 +81,7 @@ test.describe('Simple product', () => {
 
     const prefix = 'pw-simp-copy'
 
-    await deployWithDagent(page, prefix, productId)
+    await deployWithDagent(page, prefix, productId, "",  false, testInfo.title)
 
     const { versionId, deploymentId } = extractDeploymentUrl(page.url())
 
@@ -138,14 +138,14 @@ test.describe('Complex product', () => {
     await expect(await page.locator('button:has-text("Copy")')).toHaveCount(0)
   })
 
-  test('should be able to copy successful deployment', async ({ page }) => {
+  test('should be able to copy successful deployment', async ({ page }, testInfo) => {
     const productName = 'PRODUCT-COPY-TEST8'
 
     const productId = await createProduct(page, productName, 'Complex')
     const versionId = await createVersion(page, productId, '0.1.0', 'Incremental')
     await createImage(page, productId, versionId, 'nginx')
 
-    await deployWithDagent(page, 'pw-complex-copibility', productId, versionId)
+    await deployWithDagent(page, 'pw-complex-copibility', productId, versionId,  false, testInfo.title)
 
     const { deploymentId } = extractDeploymentUrl(page.url())
 
@@ -160,18 +160,18 @@ test.describe('Complex product', () => {
     await expect(await page.locator('div.bg-dyo-turquoise:has-text("Preparing")')).toHaveCount(1)
   })
 
-  test('should be able to copy obsolete deployment', async ({ page }) => {
+  test('should be able to copy obsolete deployment', async ({ page }, testInfo) => {
     const productName = 'PRODUCT-COPY-TEST9'
 
     const productId = await createProduct(page, productName, 'Complex')
     const versionId = await createVersion(page, productId, '0.1.0', 'Incremental')
     await createImage(page, productId, versionId, 'nginx')
 
-    await deployWithDagent(page, 'pw-complex-copibility-obsolete', productId, versionId)
+    await deployWithDagent(page, 'pw-complex-copibility-obsolete', productId, versionId,  false, testInfo.title + "1")
 
     const { deploymentId } = extractDeploymentUrl(page.url())
 
-    await deployWithDagent(page, 'pw-complex-copibility-obsolete', productId, versionId)
+    await deployWithDagent(page, 'pw-complex-copibility-obsolete', productId, versionId,  false, testInfo.title + "2")
 
     await page.goto(deploymentUrl(productId, versionId, deploymentId))
 
@@ -202,7 +202,7 @@ test.describe('Complex product', () => {
 
   test('Can copy deployment while there is a preparing deployment on the same node with different prefix and should not overwrite it', async ({
     page,
-  }) => {
+  }, testInfo) => {
     const productName = 'PRODUCT-COPY-TEST11'
     const productId = await createProduct(page, productName, 'Complex')
     const versionId = await createVersion(page, productId, '0.1.0', 'Incremental')
@@ -211,7 +211,7 @@ test.describe('Complex product', () => {
 
     await addDeploymentToVersion(page, productId, versionId, DAGENT_NODE, 'pw-complex-first')
 
-    await deployWithDagent(page, 'pw-complex-second', productId, versionId)
+    await deployWithDagent(page, 'pw-complex-second', productId, versionId,  false, testInfo.title)
 
     await page.goto(versionUrl(productId, versionId))
 

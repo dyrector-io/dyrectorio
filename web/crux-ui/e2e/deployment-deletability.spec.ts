@@ -20,14 +20,14 @@ test('Inprogress deployment should be not deletable', async ({ page }) => {
   await expect(await page.locator('button:has-text("Delete")')).toHaveCount(0)
 })
 
-test('Delete deployment should work', async ({ page }) => {
+test('Delete deployment should work', async ({ page }, testInfo) => {
   const productName = 'PRODUCT-TEST2-DELETE'
 
   const productId = await createProduct(page, productName, 'Complex')
   const versionId = await createVersion(page, productId, '0.1.0', 'Incremental')
   await createImage(page, productId, versionId, 'nginx')
 
-  await deployWithDagent(page, 'pw-complex-delete', productId, versionId)
+  await deployWithDagent(page, 'pw-complex-delete', productId, versionId, false, testInfo.title)
 
   const { deploymentId } = extractDeploymentUrl(page.url())
   await page.goto(deploymentUrl(productId, versionId, deploymentId))

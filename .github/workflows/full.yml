@@ -63,16 +63,16 @@ jobs:
           filters: |
             agents:
               - '${{ env.GOLANG_WORKING_DIRECTORY }}/**'
-              - '.github/workflows/**'
+              - '.github/workflows/full.yml'
             crux:
               - '${{ env.CRUX_WORKING_DIRECTORY }}/**'
-              - '.github/workflows/**'
+              - '.github/workflows/full.yml'
             cruxui:
               - '${{ env.CRUX_UI_WORKING_DIRECTORY }}/**'
-              - '.github/workflows/**'
+              - '.github/workflows/full.yml'
             kratos:
               - '${{ env.KRATOS_WORKING_DIRECTORY }}/**'
-              - '.github/workflows/**'
+              - '.github/workflows/full.yml'
       - name: Setting a buildtag
         id: settag
         working-directory: .github/workflows
@@ -221,7 +221,6 @@ jobs:
         with:
           name: cli
           path: ${{ env.GOLANG_WORKING_DIRECTORY }}/cli.zstd
-
 
 # crux scope
   crux_lint:
@@ -507,6 +506,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Docker push
+        working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
         run: |
           make push-all
       - name: Sign container image
@@ -555,7 +555,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Docker push
-        run: docker push -a ${REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
+        run: docker push -a ${REGISTRY}/${CRUX_IMAGE_NAME}
       - name: Sign container image
         run: |
           cosign sign --key cosign.key ${REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
@@ -598,7 +598,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Docker push
-        run: docker push -a ${REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
+        run: docker push -a ${REGISTRY}/${CRUX_UI_IMAGE_NAME}
       - name: Sign container image
         run: |
           cosign sign --key cosign.key ${REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
@@ -641,7 +641,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Docker push
-        run: docker push -a ${REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
+        run: docker push -a ${REGISTRY}/${KRATOS_IMAGE_NAME}
       - name: Sign container image
         run: |
           cosign sign --key cosign.key ${REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.tag }}

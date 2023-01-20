@@ -9,7 +9,6 @@ github_base_ref=${4:-}
 
 DOCKERIMAGETAG="$github_sha"
 VERSION="v0.0.0"
-DEFAULTTAG="latest"
 
 if [ $github_ref_type = "branch" ]; then
   case $github_ref_name in
