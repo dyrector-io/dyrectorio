@@ -1,4 +1,4 @@
-name: tester image
+name: tester image builder pipeline
 
 on:
   push:
@@ -20,7 +20,6 @@ env:
 jobs:
   build_push:
     runs-on: ubuntu-22.04
-    needs: [crux_lint,changes]
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
     defaults:

@@ -1,4 +1,4 @@
-name: full pipeline
+name: product builder pipeline
 
 on:
   push:
@@ -506,9 +506,13 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Docker push
-        working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
         run: |
-          make push-all
+          docker push -a ${REGISTRY}/${CRANE_IMAGE_NAME}
+          docker push -a ${REGISTRY}/${DAGENT_IMAGE_NAME}
+          docker push -a ${REGISTRY}/${CLI_IMAGE_NAME}
+          docker push -a ${DOCKERHUB}/crane
+          docker push -a ${DOCKERHUB}/dagent
+          docker push -a ${DOCKERHUB}/dyo
       - name: Sign container image
         run: |
           cosign sign --key cosign.key ${REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
@@ -555,7 +559,9 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Docker push
-        run: docker push -a ${REGISTRY}/${CRUX_IMAGE_NAME}
+        run: |
+          docker push -a ${REGISTRY}/${CRUX_IMAGE_NAME}
+          docker push -a ${DOCKERHUB}/crux
       - name: Sign container image
         run: |
           cosign sign --key cosign.key ${REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
@@ -598,7 +604,9 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Docker push
-        run: docker push -a ${REGISTRY}/${CRUX_UI_IMAGE_NAME}
+        run: |
+          docker push -a ${REGISTRY}/${CRUX_UI_IMAGE_NAME}
+          docker push -a ${DOCKERHUB}/crux-ui
       - name: Sign container image
         run: |
           cosign sign --key cosign.key ${REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
@@ -641,7 +649,9 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Docker push
-        run: docker push -a ${REGISTRY}/${KRATOS_IMAGE_NAME}
+        run: |
+          docker push -a ${REGISTRY}/${KRATOS_IMAGE_NAME}
+          docker push -a ${DOCKERHUB}/kratos
       - name: Sign container image
         run: |
           cosign sign --key cosign.key ${REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
