@@ -584,6 +584,10 @@ export interface ContainerStateItem {
   ports: ContainerStateItemPort[]
 }
 
+export interface ContainerLogMessage {
+  log: string
+}
+
 export interface Ingress {
   name: string
   host: string
@@ -1085,6 +1089,53 @@ export const ContainerStateItem = {
     message.imageName = object.imageName ?? ''
     message.imageTag = object.imageTag ?? ''
     message.ports = object.ports?.map(e => ContainerStateItemPort.fromPartial(e)) || []
+    return message
+  },
+}
+
+function createBaseContainerLogMessage(): ContainerLogMessage {
+  return { log: '' }
+}
+
+export const ContainerLogMessage = {
+  encode(message: ContainerLogMessage, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.log !== '') {
+      writer.uint32(802).string(message.log)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): ContainerLogMessage {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseContainerLogMessage()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 100:
+          message.log = reader.string()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): ContainerLogMessage {
+    return { log: isSet(object.log) ? String(object.log) : '' }
+  },
+
+  toJSON(message: ContainerLogMessage): unknown {
+    const obj: any = {}
+    message.log !== undefined && (obj.log = message.log)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<ContainerLogMessage>, I>>(object: I): ContainerLogMessage {
+    const message = createBaseContainerLogMessage()
+    message.log = object.log ?? ''
     return message
   },
 }

@@ -1,7 +1,7 @@
 import { Body, Controller, UseGuards, UseInterceptors } from '@nestjs/common'
 import { concatAll, from, Observable } from 'rxjs'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
-import { ContainerStateListMessage, Empty } from 'src/grpc/protobuf/proto/common'
+import { ContainerLogMessage, ContainerStateListMessage, Empty } from 'src/grpc/protobuf/proto/common'
 import {
   AccessRequest,
   CreateEntityResponse,
@@ -19,6 +19,7 @@ import {
   NodeScriptResponse,
   ServiceIdRequest,
   UpdateNodeRequest,
+  WatchContainerLogRequest,
   WatchContainerStateRequest,
 } from 'src/grpc/protobuf/proto/crux'
 import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
@@ -102,5 +103,9 @@ export default class NodeController implements CruxNodeController {
 
   deleteContainers(request: NodeDeleteContainersRequest): Observable<Empty> {
     return this.service.deleteContainers(request)
+  }
+
+  subscribeContainerLogChannel(request: WatchContainerLogRequest): Observable<ContainerLogMessage> {
+    return this.service.handleContainerLogStream(request)
   }
 }

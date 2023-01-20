@@ -5,6 +5,8 @@ import { Observable } from 'rxjs'
 import {
   ConfigContainer,
   ContainerCommandRequest,
+  ContainerIdentifier,
+  ContainerLogMessage,
   ContainerStateListMessage,
   DeleteContainersRequest,
   DeploymentStatusMessage,
@@ -97,6 +99,7 @@ export interface AgentCommand {
   close: CloseConnectionRequest | undefined
   containerCommand: ContainerCommandRequest | undefined
   deleteContainers: DeleteContainersRequest | undefined
+  containerLog: ContainerLogRequest | undefined
 }
 
 /**
@@ -333,6 +336,14 @@ export interface AgentAbortUpdate {
   error: string
 }
 
+/** Container log */
+export interface ContainerLogRequest {
+  id: string | undefined
+  prefixName: ContainerIdentifier | undefined
+  streaming: boolean
+  tail: number
+}
+
 export interface CloseConnectionRequest {
   reason: CloseReason
 }
@@ -372,6 +383,7 @@ function createBaseAgentCommand(): AgentCommand {
     close: undefined,
     containerCommand: undefined,
     deleteContainers: undefined,
+    containerLog: undefined,
   }
 }
 
@@ -393,6 +405,7 @@ export const AgentCommand = {
       deleteContainers: isSet(object.deleteContainers)
         ? DeleteContainersRequest.fromJSON(object.deleteContainers)
         : undefined,
+      containerLog: isSet(object.containerLog) ? ContainerLogRequest.fromJSON(object.containerLog) : undefined,
     }
   },
 
@@ -422,6 +435,8 @@ export const AgentCommand = {
       (obj.deleteContainers = message.deleteContainers
         ? DeleteContainersRequest.toJSON(message.deleteContainers)
         : undefined)
+    message.containerLog !== undefined &&
+      (obj.containerLog = message.containerLog ? ContainerLogRequest.toJSON(message.containerLog) : undefined)
     return obj
   },
 }
@@ -1338,6 +1353,31 @@ export const AgentAbortUpdate = {
   },
 }
 
+function createBaseContainerLogRequest(): ContainerLogRequest {
+  return { id: undefined, prefixName: undefined, streaming: false, tail: 0 }
+}
+
+export const ContainerLogRequest = {
+  fromJSON(object: any): ContainerLogRequest {
+    return {
+      id: isSet(object.id) ? String(object.id) : undefined,
+      prefixName: isSet(object.prefixName) ? ContainerIdentifier.fromJSON(object.prefixName) : undefined,
+      streaming: isSet(object.streaming) ? Boolean(object.streaming) : false,
+      tail: isSet(object.tail) ? Number(object.tail) : 0,
+    }
+  },
+
+  toJSON(message: ContainerLogRequest): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.prefixName !== undefined &&
+      (obj.prefixName = message.prefixName ? ContainerIdentifier.toJSON(message.prefixName) : undefined)
+    message.streaming !== undefined && (obj.streaming = message.streaming)
+    message.tail !== undefined && (obj.tail = Math.round(message.tail))
+    return obj
+  },
+}
+
 function createBaseCloseConnectionRequest(): CloseConnectionRequest {
   return { reason: 0 }
 }
@@ -1376,6 +1416,8 @@ export interface AgentClient {
   abortUpdate(request: AgentAbortUpdate, metadata: Metadata, ...rest: any): Observable<Empty>
 
   deleteContainers(request: DeleteContainersRequest, metadata: Metadata, ...rest: any): Observable<Empty>
+
+  containerLog(request: Observable<ContainerLogMessage>, metadata: Metadata, ...rest: any): Observable<Empty>
 }
 
 /** Service handling deployment of containers and fetching statuses */
@@ -1412,6 +1454,12 @@ export interface AgentController {
     metadata: Metadata,
     ...rest: any
   ): Promise<Empty> | Observable<Empty> | Empty
+
+  containerLog(
+    request: Observable<ContainerLogMessage>,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<Empty> | Observable<Empty> | Empty
 }
 
 export function AgentControllerMethods() {
@@ -1421,7 +1469,7 @@ export function AgentControllerMethods() {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
       GrpcMethod('Agent', method)(constructor.prototype[method], method, descriptor)
     }
-    const grpcStreamMethods: string[] = ['deploymentStatus', 'containerState']
+    const grpcStreamMethods: string[] = ['deploymentStatus', 'containerState', 'containerLog']
     for (const method of grpcStreamMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
       GrpcStreamMethod('Agent', method)(constructor.prototype[method], method, descriptor)

@@ -135,12 +135,12 @@ build-cli:
 .PHONY: build-dagent
 build-dagent:
 	cd build && \
-	docker build --build-arg AGENT_BINARY=crane --platform=linux/amd64 -t ${AGENT_REGISTRY_URL}/dagent:$(image_version) -t ${AGENT_REGISTRY_URL}/dagent:$(vcs_version) -t ${DOCKER_REGISTRY}/dagent:$(image_version) .
+	docker build --build-arg AGENT_BINARY=dagent --platform=linux/amd64 -t ${AGENT_REGISTRY_URL}/dagent:$(image_version) -t ${AGENT_REGISTRY_URL}/dagent:$(vcs_version) -t ${DOCKER_REGISTRY}/dagent:$(image_version) .
 
 .PHONY: build-crane
 build-crane:
 	cd build && \
-	docker build --build-arg AGENT_BINARY=dagent --platform=linux/amd64 -t ${AGENT_REGISTRY_URL}/crane:$(image_version) -t ${AGENT_REGISTRY_URL}/crane:$(vcs_version) -t ${DOCKER_REGISTRY}/crane:$(image_version) .
+	docker build --build-arg AGENT_BINARY=crane --platform=linux/amd64 -t ${AGENT_REGISTRY_URL}/crane:$(image_version) -t ${AGENT_REGISTRY_URL}/crane:$(vcs_version) -t ${DOCKER_REGISTRY}/crane:$(image_version) .
 
 .PHONY: build-dagent
 build-multi-dagent: compile-dagent

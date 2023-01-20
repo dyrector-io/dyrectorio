@@ -7,6 +7,7 @@
   "actions": "Actions",
   "noItems": "You haven't made a deployment.",
   "prefixName": "Prefix: {{name}}",
+  "showLogs": "Show logs",
 
   "proceedYouDeletePrefix": "If you proceed, you will delete containers under prefix {{prefix}}. This action is not revocable.",
 

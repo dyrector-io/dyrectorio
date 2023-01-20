@@ -583,6 +583,10 @@ export interface ContainerStateItem {
   ports: ContainerStateItemPort[]
 }
 
+export interface ContainerLogMessage {
+  log: string
+}
+
 export interface Ingress {
   name: string
   host: string
@@ -805,6 +809,22 @@ export const ContainerStateItem = {
     } else {
       obj.ports = []
     }
+    return obj
+  },
+}
+
+function createBaseContainerLogMessage(): ContainerLogMessage {
+  return { log: '' }
+}
+
+export const ContainerLogMessage = {
+  fromJSON(object: any): ContainerLogMessage {
+    return { log: isSet(object.log) ? String(object.log) : '' }
+  },
+
+  toJSON(message: ContainerLogMessage): unknown {
+    const obj: any = {}
+    message.log !== undefined && (obj.log = message.log)
     return obj
   },
 }

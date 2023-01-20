@@ -25,7 +25,9 @@ const DeploymentDetailsCard = (props: DeploymentDetailsCardProps) => {
 
         <DeploymentStatusTag className="my-auto" status={deployment.status} />
 
-        <DyoLabel textColor="text-bright">{utcDateToLocale(deployment.updatedAt)}</DyoLabel>
+        <DyoLabel textColor="text-bright" suppressHydrationWarning>
+          {utcDateToLocale(deployment.updatedAt)}
+        </DyoLabel>
       </div>
 
       {children}

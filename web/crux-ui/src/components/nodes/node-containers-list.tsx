@@ -13,9 +13,12 @@ import {
   containerPortsToString,
   imageName,
 } from '@app/models'
+import { nodeContainerLogUrl } from '@app/routes'
 import { utcDateToLocale } from '@app/utils'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
+import Image from 'next/image'
+import Link from 'next/link'
 
 interface NodeContainersListProps {
   state: NodeDetailsState
@@ -42,9 +45,7 @@ const NodeContainersList = (props: NodeContainersListProps) => {
       !container.ports ? null : (
         <span className="block overflow-hidden truncate">{containerPortsToString(container.ports)}</span>
       ),
-      <div className="flex flex-wrap justify-end items-center gap-0.5">
-        {/* TODO (@m8vago): get logs  */}
-        {/* <Image className="cursor-pointer" src="/book.svg" layout="fixed" width={24} height={24} onClick={null} /> */}
+      <div className="flex flex-wrap gap-1 justify-center items-center">
         {targetState ? (
           <LoadingIndicator />
         ) : (
@@ -74,6 +75,19 @@ const NodeContainersList = (props: NodeContainersListProps) => {
               onClick={() => actions.onStopContainer(container)}
             />
 
+            {container.state && (
+              <Link
+                href={nodeContainerLogUrl(state.node.id, {
+                  dockerId: container.id,
+                  prefix: container.prefix,
+                  name: container.name,
+                })}
+                passHref
+              >
+                <Image src="/note-text-outline.svg" alt="log" width={24} height={24} />
+              </Link>
+            )}
+
             <DyoImgButton
               src="/trash-can.svg"
               alt="delete"
@@ -97,7 +111,7 @@ const NodeContainersList = (props: NodeContainersListProps) => {
   const itemClasses = [
     clsx('pl-6', defaultItemClass),
     ...Array.from({ length: headers.length - 2 }).map(() => defaultItemClass),
-    clsx('pr-6', defaultItemClass),
+    clsx('pr-2', defaultItemClass),
   ]
 
   return (

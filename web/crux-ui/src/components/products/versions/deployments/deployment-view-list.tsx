@@ -43,7 +43,7 @@ const DeploymentViewList = (props: DeploymentViewListProps) => {
         {item.image.tag ? `:${item.image.tag}` : null}
       </span>
     </div>,
-    item.image.createdAt ? utcDateToLocale(item.image.createdAt) : 'new',
+    <span suppressHydrationWarning>{item.image.createdAt ? utcDateToLocale(item.image.createdAt) : 'new'}</span>,
     <Link href={instanceConfigUrl(state.product.id, state.version.id, state.deployment.id, item.id)} passHref>
       <Image src="/settings.svg" alt={t('common:settings')} width={24} height={24} />
     </Link>,

@@ -52,6 +52,8 @@ service CruxNode {
       returns (stream NodeEventMessage);
   rpc WatchContainerState(WatchContainerStateRequest)
       returns (stream common.ContainerStateListMessage);
+  rpc SubscribeContainerLogChannel(WatchContainerLogRequest)
+      returns (stream common.ContainerLogMessage);
 }
 
 service CruxProductVersion {
@@ -843,6 +845,16 @@ message WatchContainerStateRequest {
 
   string nodeId = 100;
   optional string prefix = 101;
+}
+
+message WatchContainerLogRequest {
+  string accessedBy = 2;
+
+  string id = 100;
+  oneof container {
+    string dockerId = 200;
+    common.ContainerIdentifier prefixName = 201;
+  };
 }
 
 // DEPLOYMENT

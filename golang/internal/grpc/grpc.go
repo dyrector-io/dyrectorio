@@ -40,6 +40,16 @@ type ConnectionParams struct {
 	token   string
 }
 
+type ContainerLogEvent struct {
+	Message string
+	Error   error
+}
+
+type ContainerLogReader interface {
+	Next() <-chan ContainerLogEvent
+	Close() error
+}
+
 type (
 	DeployFunc           func(context.Context, *dogger.DeploymentLogger, *v1.DeployImageRequest, *v1.VersionData) error
 	WatchFunc            func(context.Context, string) []*common.ContainerStateItem
@@ -49,6 +59,7 @@ type (
 	CloseFunc            func(context.Context, agent.CloseReason) error
 	ContainerCommandFunc func(context.Context, *common.ContainerCommandRequest) error
 	DeleteContainersFunc func(context.Context, *common.DeleteContainersRequest) error
+	ContainerLogFunc     func(context.Context, *agent.ContainerLogRequest) (ContainerLogReader, error)
 )
 
 type WorkerFunctions struct {
@@ -60,6 +71,7 @@ type WorkerFunctions struct {
 	Close            CloseFunc
 	ContainerCommand ContainerCommandFunc
 	DeleteContainers DeleteContainersFunc
+	ContainerLog     ContainerLogFunc
 }
 
 type contextKey int
@@ -213,6 +225,8 @@ func grpcProcessCommand(
 		go executeContainerCommand(ctx, command.GetContainerCommand(), workerFuncs.ContainerCommand)
 	case command.GetDeleteContainers() != nil:
 		go executeDeleteMultipleContainers(ctx, command.GetDeleteContainers(), workerFuncs.DeleteContainers)
+	case command.GetContainerLog() != nil:
+		go executeContainerLog(ctx, command.GetContainerLog(), workerFuncs.ContainerLog)
 	default:
 		log.Warn().Msg("Unknown agent command")
 	}
@@ -526,6 +540,106 @@ func executeContainerCommand(ctx context.Context, command *common.ContainerComma
 	if err != nil {
 		log.Error().Stack().Err(err).Msg("Container Command error")
 	}
+}
+
+func streamContainerLog(reader ContainerLogReader, client agent.Agent_ContainerLogClient, containerID string, streaming bool) {
+	for {
+		event := <-reader.Next()
+		if event.Error != nil {
+			if event.Error == io.EOF && !streaming {
+				log.Trace().Str("container", containerID).Msg("Container log finished non streaming (EOF)")
+				break
+			}
+
+			if event.Error == context.Canceled {
+				log.Trace().Str("container", containerID).Msg("Container log finished context cancel (server close)")
+				break
+			}
+
+			log.Error().Err(event.Error).Stack().Str("container", containerID).Msg("Container log reader error")
+
+			if client.Context().Err() == nil {
+				err := client.CloseSend()
+				if err != nil {
+					log.Error().Err(err).Stack().Str("container", containerID).Msg("Failed to close client")
+				}
+			}
+
+			break
+		}
+
+		log.Debug().Str("container", containerID).Str("log", event.Message).Msg("Container log")
+
+		err := client.Send(&common.ContainerLogMessage{
+			Log: event.Message,
+		})
+		if err != nil {
+			log.Error().Err(err).Stack().Str("container", containerID).Msg("Container log channel error")
+			break
+		}
+	}
+}
+
+func executeContainerLog(ctx context.Context, command *agent.ContainerLogRequest, logFunc ContainerLogFunc) {
+	containerID := ""
+	if command.GetPrefixName() != nil {
+		containerID = fmt.Sprintf("%s-%s", command.GetPrefixName().Prefix, command.GetPrefixName().Name)
+	} else {
+		containerID = command.GetId()
+	}
+
+	log.Debug().Str("container", containerID).Uint32("tail", command.GetTail()).
+		Bool("stream", command.GetStreaming()).Msg("Getting container logs")
+
+	var streamCtx context.Context
+	if command.GetPrefixName() != nil {
+		prefixCtx := metadata.AppendToOutgoingContext(ctx, "dyo-container-prefix", command.GetPrefixName().Prefix)
+		streamCtx = metadata.AppendToOutgoingContext(prefixCtx, "dyo-container-name", command.GetPrefixName().Name)
+	} else {
+		streamCtx = metadata.AppendToOutgoingContext(ctx, "dyo-container-id", command.GetId())
+	}
+
+	stream, err := grpcConn.Client.ContainerLog(streamCtx, grpc.WaitForReady(true))
+	if err != nil {
+		log.Error().Err(err).Str("container", containerID).Msg("Failed to open container log channel")
+		return
+	}
+
+	defer func() {
+		err = stream.CloseSend()
+		if err != nil {
+			log.Error().Err(err).Stack().Str("container", containerID).Msg("Failed to close container log stream")
+		}
+	}()
+
+	streamCtx = stream.Context()
+
+	reader, err := logFunc(streamCtx, command)
+	if err != nil {
+		log.Error().Err(err).Str("container", containerID).Msg("Failed to open container log reader")
+		return
+	}
+
+	defer func() {
+		err = reader.Close()
+		if err != nil {
+			log.Error().Err(err).Str("container", containerID).Msg("Failed to close container log reader")
+		}
+	}()
+
+	go streamContainerLog(reader, stream, containerID, command.GetStreaming())
+
+	for {
+		var msg interface{}
+		err := stream.RecvMsg(&msg)
+		if err != nil {
+			break
+		}
+	}
+
+	<-streamCtx.Done()
+
+	log.Trace().Str("container", containerID).Msg("Container log exited")
 }
 
 func WithGRPCConfig(parentContext context.Context, cfg any) context.Context {

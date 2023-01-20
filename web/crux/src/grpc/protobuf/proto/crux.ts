@@ -6,6 +6,8 @@ import { Timestamp } from '../../google/protobuf/timestamp'
 import {
   ConfigContainer,
   ContainerCommandRequest,
+  ContainerIdentifier,
+  ContainerLogMessage,
   ContainerState,
   containerStateFromJSON,
   ContainerStateListMessage,
@@ -1222,6 +1224,13 @@ export interface WatchContainerStateRequest {
   accessedBy: string
   nodeId: string
   prefix?: string | undefined
+}
+
+export interface WatchContainerLogRequest {
+  accessedBy: string
+  id: string
+  dockerId: string | undefined
+  prefixName: ContainerIdentifier | undefined
 }
 
 export interface DeploymentProgressMessage {
@@ -3677,6 +3686,31 @@ export const WatchContainerStateRequest = {
   },
 }
 
+function createBaseWatchContainerLogRequest(): WatchContainerLogRequest {
+  return { accessedBy: '', id: '', dockerId: undefined, prefixName: undefined }
+}
+
+export const WatchContainerLogRequest = {
+  fromJSON(object: any): WatchContainerLogRequest {
+    return {
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      id: isSet(object.id) ? String(object.id) : '',
+      dockerId: isSet(object.dockerId) ? String(object.dockerId) : undefined,
+      prefixName: isSet(object.prefixName) ? ContainerIdentifier.fromJSON(object.prefixName) : undefined,
+    }
+  },
+
+  toJSON(message: WatchContainerLogRequest): unknown {
+    const obj: any = {}
+    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
+    message.id !== undefined && (obj.id = message.id)
+    message.dockerId !== undefined && (obj.dockerId = message.dockerId)
+    message.prefixName !== undefined &&
+      (obj.prefixName = message.prefixName ? ContainerIdentifier.toJSON(message.prefixName) : undefined)
+    return obj
+  },
+}
+
 function createBaseDeploymentProgressMessage(): DeploymentProgressMessage {
   return { id: '', log: [] }
 }
@@ -4743,6 +4777,12 @@ export interface CruxNodeClient {
     metadata: Metadata,
     ...rest: any
   ): Observable<ContainerStateListMessage>
+
+  subscribeContainerLogChannel(
+    request: WatchContainerLogRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Observable<ContainerLogMessage>
 }
 
 export interface CruxNodeController {
@@ -4807,6 +4847,12 @@ export interface CruxNodeController {
     metadata: Metadata,
     ...rest: any
   ): Observable<ContainerStateListMessage>
+
+  subscribeContainerLogChannel(
+    request: WatchContainerLogRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Observable<ContainerLogMessage>
 }
 
 export function CruxNodeControllerMethods() {
@@ -4826,6 +4872,7 @@ export function CruxNodeControllerMethods() {
       'deleteContainers',
       'subscribeNodeEventChannel',
       'watchContainerState',
+      'subscribeContainerLogChannel',
     ]
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)

@@ -106,3 +106,15 @@ export type UpdateNodeAgentMessage = {
 
 export const WS_TYPE_CONTAINER_COMMAND = 'container-command'
 export type ContainerCommandMessage = ContainerCommand
+
+export const WS_TYPE_WATCH_CONTAINER_LOG = 'container-log-watch'
+export const WS_TYPE_STOP_WATCHING_CONTAINER_LOG = 'stop-container-log-watch'
+export type WatchContainerLogMessage = {
+  id?: string
+  prefixName?: ContainerIdentifier
+}
+
+export const WS_TYPE_CONTAINER_LOG = 'container-log'
+export type ContainerLogMessage = {
+  log: string
+}

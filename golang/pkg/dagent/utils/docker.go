@@ -2,6 +2,7 @@ package utils
 
 import (
 	"archive/tar"
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/binary"
@@ -29,6 +30,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/config"
 	dockerHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/docker"
 	imageHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/image"
+	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 
 	"github.com/docker/docker/api/types"
@@ -36,6 +38,8 @@ import (
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
 )
+
+const DockerLogHeaderLength = 8
 
 type DockerVersion struct {
 	ServerVersion string
@@ -659,4 +663,129 @@ func DeleteContainers(ctx context.Context, request *common.DeleteContainersReque
 	}
 
 	return err
+}
+
+type DockerContainerLogReader struct {
+	EventChannel chan grpc.ContainerLogEvent
+	Reader       io.ReadCloser
+
+	grpc.ContainerLogReader
+}
+
+func (dockerReader *DockerContainerLogReader) Next() <-chan grpc.ContainerLogEvent {
+	return dockerReader.EventChannel
+}
+
+func (dockerReader *DockerContainerLogReader) Close() error {
+	return dockerReader.Reader.Close()
+}
+
+func streamDockerLog(reader io.ReadCloser, eventChannel chan grpc.ContainerLogEvent) {
+	header := make([]byte, DockerLogHeaderLength)
+
+	bufferSize := 2048
+	buffer := make([]byte, bufferSize)
+
+	for {
+		_, err := reader.Read(header)
+		if err != nil {
+			eventChannel <- grpc.ContainerLogEvent{
+				Message: "",
+				Error:   err,
+			}
+			break
+		}
+
+		payloadSize := int(binary.BigEndian.Uint32(header[4:]))
+		if payloadSize > bufferSize {
+			buffer = make([]byte, payloadSize)
+			bufferSize = payloadSize
+		}
+
+		read := 0
+		for read < payloadSize {
+			count, err := reader.Read(buffer[read:payloadSize])
+			read += count
+
+			if err != nil {
+				eventChannel <- grpc.ContainerLogEvent{
+					Message: "",
+					Error:   err,
+				}
+				break
+			}
+		}
+
+		if read > 0 {
+			eventChannel <- grpc.ContainerLogEvent{
+				Message: string(buffer[0:read]),
+				Error:   nil,
+			}
+		}
+	}
+}
+
+func streamDockerLogTTY(reader io.ReadCloser, eventChannel chan grpc.ContainerLogEvent) {
+	buffer := bufio.NewReader(reader)
+
+	for {
+		message, err := buffer.ReadString('\n')
+		if err != nil {
+			eventChannel <- grpc.ContainerLogEvent{
+				Message: "",
+				Error:   err,
+			}
+			break
+		}
+
+		eventChannel <- grpc.ContainerLogEvent{
+			Message: message,
+			Error:   nil,
+		}
+	}
+}
+
+func ContainerLog(ctx context.Context, request *agent.ContainerLogRequest) (grpc.ContainerLogReader, error) {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return nil, err
+	}
+
+	containerID := request.GetId()
+
+	inspect, err := cli.ContainerInspect(ctx, containerID)
+	if err != nil {
+		return nil, err
+	}
+
+	tty := inspect.Config.Tty
+
+	streaming := request.GetStreaming()
+	tail := fmt.Sprintf("%d", request.GetTail())
+
+	eventChannel := make(chan grpc.ContainerLogEvent)
+
+	reader, err := cli.ContainerLogs(ctx, containerID, types.ContainerLogsOptions{
+		ShowStderr: true,
+		ShowStdout: true,
+		Follow:     streaming,
+		Tail:       tail,
+		Timestamps: true,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if tty {
+		go streamDockerLogTTY(reader, eventChannel)
+	} else {
+		go streamDockerLog(reader, eventChannel)
+	}
+
+	logReader := &DockerContainerLogReader{
+		EventChannel: eventChannel,
+		Reader:       reader,
+	}
+
+	return logReader, nil
 }

@@ -76,14 +76,16 @@ export const appendUrlParams = <T extends CruxUrlParams>(url: string, params: T)
   if (params) {
     delete params.anchor
 
-    Object.entries(params).map(entry => {
-      const [key, value] = entry
-      if (key) {
-        paramMap.set(key, value)
-      }
+    Object.entries(params)
+      .filter(([_, value]) => value)
+      .map(entry => {
+        const [key, value] = entry
+        if (key) {
+          paramMap.set(key, value)
+        }
 
-      return entry
-    })
+        return entry
+      })
   }
 
   if (paramMap.size > 0) {
@@ -186,9 +188,27 @@ export const notificationApiHookUrl = (id: string) => `${notificationApiUrl(id)}
 export const imageConfigUrl = (productId: string, versionId: string, imageId: string) =>
   `${versionUrl(productId, versionId)}/image/${imageId}`
 
-// instance config
+// instance
 export const instanceConfigUrl = (productId: string, versionId: string, deploymentId: string, instanceId: string) =>
   `${deploymentUrl(productId, versionId, deploymentId)}/instance/${instanceId}`
 
 // template
 export const templateImageUrl = (templateId: string) => `${API_TEMPLATES}/${templateId}/image`
+
+// log
+export type ContainerLogParams = {
+  anchor?: VersionUrlAnchor
+  dockerId?: string
+  prefix?: string
+  name?: string
+}
+
+export const nodeContainerLogUrl = (nodeId: string, params: ContainerLogParams) =>
+  appendUrlParams(`${nodeUrl(nodeId)}/log`, params)
+
+export const deploymentContainerLogUrl = (
+  productId: string,
+  versionId: string,
+  deploymentId: string,
+  params: ContainerLogParams,
+) => appendUrlParams(`${deploymentUrl(productId, versionId, deploymentId)}/log`, params)

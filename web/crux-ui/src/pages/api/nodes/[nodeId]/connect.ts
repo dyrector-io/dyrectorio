@@ -2,15 +2,19 @@ import { Logger } from '@app/logger'
 import {
   ContainerCommandMessage,
   DeleteContainerMessage,
+  WatchContainerLogMessage,
   WatchContainerStatusMessage,
   WS_TYPE_CONTAINER_COMMAND,
   WS_TYPE_DELETE_CONTAINER,
+  WS_TYPE_STOP_WATCHING_CONTAINER_LOG,
   WS_TYPE_STOP_WATCHING_CONTAINER_STATUS,
+  WS_TYPE_WATCH_CONTAINER_LOG,
   WS_TYPE_WATCH_CONTAINER_STATUS,
 } from '@app/models'
 import { WsMessage } from '@app/websockets/common'
 import WsConnection from '@app/websockets/connection'
 import WsEndpoint from '@app/websockets/endpoint'
+import ContainerLogStreamService from '@server/container-log-stream-service'
 import ContainerStatusWatcherService from '@server/container-status-watchers-service'
 import crux, { cruxFromConnection } from '@server/crux/crux'
 import { routedWebSocketEndpoint } from '@server/websocket-endpoint'
@@ -22,6 +26,7 @@ const logger = new Logger('ws-nodes/nodeId')
 const onReady = async (endpoint: WsEndpoint) => {
   const nodeId = endpoint.query.nodeId as string
   endpoint.services.register(ContainerStatusWatcherService, () => new ContainerStatusWatcherService(nodeId))
+  endpoint.services.register(ContainerLogStreamService, () => new ContainerLogStreamService(nodeId))
 }
 
 const onAuthorize = async (endpoint: WsEndpoint, req: NextApiRequest): Promise<boolean> => {
@@ -38,6 +43,9 @@ const onAuthorize = async (endpoint: WsEndpoint, req: NextApiRequest): Promise<b
 const onDisconnect = (endpoint: WsEndpoint, connection: WsConnection) => {
   const watchers = endpoint.services.get(ContainerStatusWatcherService)
   watchers.onWebSocketDisconnected(connection)
+
+  const logs = endpoint.services.get(ContainerLogStreamService)
+  logs.onWebSocketDisconnected(connection)
 }
 
 const onContainerCommand = async (
@@ -78,6 +86,29 @@ const onStopWatchingContainerStatus = async (
   watchers.stopWatching(connection, message.payload.prefix ?? '')
 }
 
+const onWatchContainerLog = async (
+  endpoint: WsEndpoint,
+  connection: WsConnection,
+  message: WsMessage<WatchContainerLogMessage>,
+) => {
+  const service = endpoint.services.get(ContainerLogStreamService)
+  service.startWatching(
+    connection,
+    cruxFromConnection(connection).nodes,
+    message.payload.id,
+    message.payload.prefixName,
+  )
+}
+
+const onStopWatchingContainerLog = async (
+  endpoint: WsEndpoint,
+  connection: WsConnection,
+  message: WsMessage<WatchContainerLogMessage>,
+) => {
+  const service = endpoint.services.get(ContainerLogStreamService)
+  service.stopWatching(connection, message.payload.id, message.payload.prefixName)
+}
+
 export default routedWebSocketEndpoint(
   logger,
   [
@@ -85,6 +116,8 @@ export default routedWebSocketEndpoint(
     [WS_TYPE_STOP_WATCHING_CONTAINER_STATUS, onStopWatchingContainerStatus],
     [WS_TYPE_CONTAINER_COMMAND, onContainerCommand],
     [WS_TYPE_DELETE_CONTAINER, onDeleteContainer],
+    [WS_TYPE_WATCH_CONTAINER_LOG, onWatchContainerLog],
+    [WS_TYPE_STOP_WATCHING_CONTAINER_LOG, onStopWatchingContainerLog],
   ],
   [useWebsocketErrorMiddleware],
   {

@@ -1,6 +1,7 @@
 import { ROUTE_NODES } from '@app/routes'
 import { expect, test } from '@playwright/test'
 import { DAGENT_NODE, screenshotPath } from './utils/common'
+import { addDeploymentToSimpleProduct, addImageToSimpleProduct, createProduct } from './utils/products'
 
 test('Install dagent should be successful', async ({ page }) => {
   await page.goto(ROUTE_NODES)
@@ -50,7 +51,7 @@ test('Should not create the new node if the name already exist', async ({ page }
   await expect(error).toContainText('Already exists')
 })
 
-test('Generate script should show the curl command and the script ', async ({ page }) => {
+test('Generate script should show the curl command and the script', async ({ page }) => {
   await page.goto(ROUTE_NODES)
 
   await page.locator('button:has-text("Add")').click()
@@ -107,4 +108,72 @@ test('Generate script should show script type selector for Docker', async ({ pag
 
   await expect(await page.locator('button:text-is("Shell")')).toBeVisible()
   await expect(await page.locator('button:text-is("PowerShell")')).toBeVisible()
+})
+
+test('Container log should appear after a successful deployment', async ({ page }) => {
+  const prefix = 'pw-deploy-log'
+  const imageName = 'nginx'
+
+  const productId = await createProduct(page, 'PW-DEPLOY-LOG-TEST', 'Simple')
+  await addImageToSimpleProduct(page, productId, imageName)
+  const { url } = await addDeploymentToSimpleProduct(page, productId, DAGENT_NODE, prefix)
+
+  await page.goto(url)
+
+  await page.waitForSelector('button:text-is("Deploy")')
+  await page.locator('button:text-is("Deploy")').click()
+  await page.waitForNavigation()
+
+  const containerRow = await page.locator(`span:text-is("${imageName}") >> xpath=../..`)
+  await expect(containerRow).toBeVisible()
+
+  const runningTag = await containerRow.locator('div:text-is("Running")')
+  await expect(runningTag).toBeVisible()
+
+  const showLogs = await containerRow.locator('span:text-is("Show logs")')
+  await showLogs.click()
+
+  await page.waitForNavigation()
+
+  const terminal = page.locator('div.font-roboto')
+  await expect(await terminal.locator('span')).not.toHaveCount(0)
+})
+
+test('Container log should appear on a node container', async ({ page }) => {
+  const prefix = 'pw-node-deploy-log'
+  const imageName = 'nginx'
+
+  const productId = await createProduct(page, 'PW-NODE-DEPLOY-LOG-TEST', 'Simple')
+  await addImageToSimpleProduct(page, productId, imageName)
+  const { url } = await addDeploymentToSimpleProduct(page, productId, DAGENT_NODE, prefix)
+
+  await page.goto(url)
+
+  await page.waitForSelector('button:text-is("Deploy")')
+  await page.locator('button:text-is("Deploy")').click()
+  await page.waitForNavigation()
+
+  const containerRow = await page.locator(`span:text-is("${imageName}") >> xpath=../..`)
+  await expect(containerRow).toBeVisible()
+
+  const runningTag = await containerRow.locator('div:text-is("Running")')
+  await expect(runningTag).toBeVisible()
+
+  await page.goto(ROUTE_NODES)
+
+  const nodeButton = await page.locator(`h3:has-text("${DAGENT_NODE}")`)
+  await nodeButton.click()
+
+  const nodeContainerRow = await page.locator(`span:text-is("${prefix}-${imageName}") >> xpath=../..`)
+  await expect(nodeContainerRow).toHaveCount(1)
+
+  const logButton = await nodeContainerRow.locator('img[src*="/note-text-outline.svg"]')
+  await expect(logButton).toBeVisible()
+
+  await logButton.click()
+
+  await page.waitForNavigation()
+
+  const terminal = page.locator('div.font-roboto')
+  await expect(await terminal.locator('span')).not.toHaveCount(0)
 })

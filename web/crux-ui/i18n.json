@@ -22,6 +22,7 @@
 
     "/products/[productId]/versions/[versionId]/deployments/[deploymentId]": ["images", "deployments", "nodes"],
     "/products/[productId]/versions/[versionId]/deployments/[deploymentId]/deploy": ["deployments"],
+    "/products/[productId]/versions/[versionId]/deployments/[deploymentId]/log": [],
     "/products/[productId]/versions/[versionId]/deployments/[deploymentId]/instance/[instanceId]": [
       "images",
       "deployments",
@@ -30,6 +31,7 @@
     "/products/[productId]/versions/[versionId]/image/[imageId]": ["images", "container"],
     "/nodes": ["nodes"],
     "/nodes/[nodeId]": ["nodes", "images"],
+    "/nodes/[nodeId]/log": [],
     "/registries": ["registries"],
     "/registries/[registryId]": ["registries"],
     "/teams": ["teams"],

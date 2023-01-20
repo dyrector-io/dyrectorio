@@ -12,6 +12,12 @@ export default class GrpcNodeConnection {
 
   public static META_FILTER_PREFIX = 'dyo-filter-prefix'
 
+  public static META_CONTAINER_ID = 'dyo-container-id'
+
+  public static META_CONTAINER_PREFIX = 'dyo-container-prefix'
+
+  public static META_CONTAINER_NAME = 'dyo-container-name'
+
   private statusChannel = new Subject<NodeConnectionStatus>()
 
   private token: AgentToken
@@ -57,6 +63,23 @@ export default class GrpcNodeConnection {
     }
 
     return value
+  }
+
+  getMetaDataOrDefault(key: string): string {
+    const map = this.metadata.getMap()
+    if (key in map) {
+      const value = map[key]
+      if (typeof value !== 'string') {
+        throw new InvalidArgumentException({
+          message: 'Missing metadata.',
+          property: key,
+        })
+      }
+
+      return value
+    }
+
+    return undefined
   }
 
   private onClose() {

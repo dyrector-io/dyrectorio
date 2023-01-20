@@ -27,6 +27,7 @@ import { collectChildVersionIds, collectParentVersionIds } from 'src/domain/util
 import { AlreadyExistsException, NotFoundException, UnauthenticatedException } from 'src/exception/errors'
 import { AgentAbortUpdate, AgentCommand, AgentInfo, CloseReason } from 'src/grpc/protobuf/proto/agent'
 import {
+  ContainerLogMessage,
   ContainerStateListMessage,
   DeleteContainersRequest,
   DeploymentStatus,
@@ -282,6 +283,49 @@ export default class AgentService {
     agent.onContainerDeleted(request)
 
     return Empty
+  }
+
+  handleContainerLog(connection: GrpcNodeConnection, request: Observable<ContainerLogMessage>): Observable<Empty> {
+    const agent = this.getByIdOrThrow(connection.nodeId)
+
+    const containerId = connection.getMetaDataOrDefault(GrpcNodeConnection.META_CONTAINER_ID)
+    const containerPrefix = connection.getMetaDataOrDefault(GrpcNodeConnection.META_CONTAINER_PREFIX)
+    const containerName = connection.getMetaDataOrDefault(GrpcNodeConnection.META_CONTAINER_NAME)
+
+    const pod =
+      containerPrefix && containerName
+        ? {
+            prefix: containerPrefix,
+            name: containerName,
+          }
+        : undefined
+
+    const [stream, completer] = agent.onContainerLogStreamStarted(containerId, pod)
+    if (!stream) {
+      this.logger.warn(`${agent.id} - There was no stream for ${containerId}`)
+
+      completer.next(undefined)
+      return completer
+    }
+
+    const key = containerId ?? `${pod.prefix}-${pod.name}`
+    return request.pipe(
+      // necessary, because of: https://github.com/nestjs/nest/issues/8111
+      startWith({
+        log: '',
+      } as ContainerLogMessage),
+      map(it => {
+        this.logger.verbose(`${agent.id} - Container log - '${key}' -> '${it.log}'`)
+
+        stream.update(it)
+        return Empty
+      }),
+      finalize(() => {
+        agent.onContainerLogStreamFinished(containerId, pod)
+        this.logger.debug(`${agent.id} - Container log listening finished: ${key}`)
+      }),
+      takeUntil(completer),
+    )
   }
 
   private onAgentConnectionStatusChange(agent: Agent, status: NodeConnectionStatus) {

@@ -75,6 +75,10 @@ message ContainerStateItem {
   repeated ContainerStateItemPort ports = 1000;
 }
 
+message ContainerLogMessage {
+  string log = 100;
+}
+
 enum NetworkMode {
   NETWORK_MODE_UNSPECIFIED = 0;
   BRIDGE = 1;
