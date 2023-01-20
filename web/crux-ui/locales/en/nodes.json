@@ -48,5 +48,10 @@
   "optionalLeaveEmptyForDefaults": "Optional, leave empty for default paths",
   "update": "Update",
   "updateError": "Failed to update agent: {{error}}",
-  "ports": "Ports"
+  "ports": "Ports",
+  "traefik": "Install Traefik reverse proxy",
+  "installTraefik": "Install Traefik",
+  "traefikAcmeEmail": "Traefik ACME email",
+  "whatIsTraefik": "What is Traefik?",
+  "traefikExplanation": "Traefik is a reverse proxy which lets users deploy services to subdomains as well as use HTTPS."
 }

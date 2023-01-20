@@ -80,7 +80,7 @@ const NodesPage = (props: NodesPageProps) => {
       onUpdate: old => ({
         ...item,
         address: old.address,
-        status: old.status,
+        status: item.status ?? old.status,
       }),
     })
 

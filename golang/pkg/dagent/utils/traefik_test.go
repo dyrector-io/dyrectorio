@@ -29,71 +29,14 @@ func TestGetTraefikLabels(t *testing.T) {
 	expected := map[string]string{
 		"traefik.enable":                                               "true",
 		"traefik.http.routers.pre-name.rule":                           "Host(`name.pre.`)",
-		"traefik.http.services.pre-name.loadbalancer.server.port":      "8888",
+		"traefik.http.routers.pre-name.entrypoints":                    "web",
+		"traefik.http.routers.pre-name-secure.rule":                    "Host(`name.pre.`)",
+		"traefik.http.routers.pre-name-secure.entrypoints":             "websecure",
+		"traefik.http.routers.pre-name-secure.tls":                     "true",
+		"traefik.http.routers.pre-name-secure.tls.certresolver":        "le",
 		"traefik.http.middlewares.limit.buffering.maxRequestBodyBytes": "16k",
-		"traefik.http.routers.pre-name.entrypoints":                    "websecure",
-		"traefik.http.routers.pre-name.tls.certresolver":               "le",
 	}
 
-	labels, err := GetTraefikLabels(istanceConfig, containerConfig, cfg)
-	assert.NoError(t, err)
+	labels := GetTraefikLabels(istanceConfig, containerConfig, cfg)
 	assert.Equal(t, expected, labels)
-}
-
-func TestGetTraefikLabelsNoPorts(t *testing.T) {
-	istanceConfig := &v1.InstanceConfig{
-		ContainerPreName: "pre",
-	}
-	containerConfig := &v1.ContainerConfig{
-		Container:          "name",
-		Ports:              []container.PortBinding{},
-		ExposeTLS:          true,
-		IngressUploadLimit: "16k",
-	}
-	cfg := &config.Configuration{}
-
-	_, err := GetTraefikLabels(istanceConfig, containerConfig, cfg)
-	assert.Error(t, err)
-}
-
-func TestGetTraefikGoTemplate(t *testing.T) {
-	expected := `
-log:
-  level: {{ or .LogLevel "INFO"}}
-
-accessLog: {}
-
-providers:
-  docker:
-# if used with network based routing this is not needed
-#    useBindPortIP: true
-    exposedByDefault: false
-
-entryPoints:
-  web:
-    address: ":80"
-
-{{ if .TLS }}
-  ## following is the http -> https redirect
-    http:
-      redirections:
-        entryPoint:
-         to: "websecure"
-         scheme: "https"
-         permanent: "true"
-
-  websecure:
-    address: ":443"
-
-certificatesResolvers:
-  le:
-    acme:
-      httpChallenge:
-        entryPoint: "web"
-      email: {{ .AcmeMail }}
-      storage: "/letsencrypt/acme.json"
-{{ end }}
-`
-	tmpl := GetTraefikGoTemplate()
-	assert.Equal(t, expected, tmpl)
 }

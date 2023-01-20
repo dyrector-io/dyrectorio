@@ -1182,12 +1182,17 @@ export interface UpdateNodeRequest {
   icon?: string | undefined
 }
 
+export interface DagentTraefikOptions {
+  acmeEmail: string
+}
+
 export interface GenerateScriptRequest {
   id: string
   accessedBy: string
   type: NodeType
   rootPath?: string | undefined
   scriptType: NodeScriptType
+  dagentTraefik?: DagentTraefikOptions | undefined
 }
 
 export interface NodeInstallResponse {
@@ -3528,6 +3533,22 @@ export const UpdateNodeRequest = {
   },
 }
 
+function createBaseDagentTraefikOptions(): DagentTraefikOptions {
+  return { acmeEmail: '' }
+}
+
+export const DagentTraefikOptions = {
+  fromJSON(object: any): DagentTraefikOptions {
+    return { acmeEmail: isSet(object.acmeEmail) ? String(object.acmeEmail) : '' }
+  },
+
+  toJSON(message: DagentTraefikOptions): unknown {
+    const obj: any = {}
+    message.acmeEmail !== undefined && (obj.acmeEmail = message.acmeEmail)
+    return obj
+  },
+}
+
 function createBaseGenerateScriptRequest(): GenerateScriptRequest {
   return { id: '', accessedBy: '', type: 0, scriptType: 0 }
 }
@@ -3540,6 +3561,7 @@ export const GenerateScriptRequest = {
       type: isSet(object.type) ? nodeTypeFromJSON(object.type) : 0,
       rootPath: isSet(object.rootPath) ? String(object.rootPath) : undefined,
       scriptType: isSet(object.scriptType) ? nodeScriptTypeFromJSON(object.scriptType) : 0,
+      dagentTraefik: isSet(object.dagentTraefik) ? DagentTraefikOptions.fromJSON(object.dagentTraefik) : undefined,
     }
   },
 
@@ -3550,6 +3572,8 @@ export const GenerateScriptRequest = {
     message.type !== undefined && (obj.type = nodeTypeToJSON(message.type))
     message.rootPath !== undefined && (obj.rootPath = message.rootPath)
     message.scriptType !== undefined && (obj.scriptType = nodeScriptTypeToJSON(message.scriptType))
+    message.dagentTraefik !== undefined &&
+      (obj.dagentTraefik = message.dagentTraefik ? DagentTraefikOptions.toJSON(message.dagentTraefik) : undefined)
     return obj
   },
 }

@@ -37,7 +37,9 @@ docker run `
   -e GRPC_TOKEN='{{token}}' `
   -e HOSTNAME=$HOSTNAME `
   {{#if traefik}}
-  -e TRAEFIK='true' `
+  -e TRAEFIK_ENABLED='true' `
+  -e TRAEFIK_ACME_MAIL='{{traefik.acmeEmail}}' `
+  -e TRAEFIK_TLS='true' `
   {{/if}}
   -e DATA_MOUNT_PATH=$PERSISTENCE_FOLDER `
   -e DAGENT_NAME='{{name}}' `

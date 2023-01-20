@@ -35,7 +35,12 @@ import {
   Empty,
   ListSecretsResponse,
 } from 'src/grpc/protobuf/proto/common'
-import { NodeConnectionStatus, NodeEventMessage, NodeScriptType } from 'src/grpc/protobuf/proto/crux'
+import {
+  DagentTraefikOptions,
+  NodeConnectionStatus,
+  NodeEventMessage,
+  NodeScriptType,
+} from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 
@@ -115,6 +120,7 @@ export default class AgentService {
     nodeType: NodeTypeEnum,
     rootPath: string | null,
     scriptType: NodeScriptType,
+    traefik: DagentTraefikOptions | null,
   ): Promise<AgentInstaller> {
     let installer = this.getInstallerByNodeId(nodeId)
     if (!installer || installer.nodeType !== nodeType) {
@@ -134,6 +140,7 @@ export default class AgentService {
         nodeType,
         rootPath,
         scriptType,
+        traefik,
       )
       this.installers.set(nodeId, installer)
     }
