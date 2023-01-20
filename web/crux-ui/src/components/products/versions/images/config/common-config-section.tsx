@@ -325,7 +325,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             <div className="grid break-inside-avoid mb-8 max-w-lg">
               <KeyOnlyInput
                 className="mb-2"
-                keyPlaceholder={t('common.args')}
+                keyPlaceholder={t('common.arguments')}
                 label={t('common.args').toUpperCase()}
                 labelClassName="text-bright font-semibold tracking-wide mb-2"
                 onChange={it => onChange({ args: it })}
