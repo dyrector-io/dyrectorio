@@ -243,6 +243,10 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
   }
 
   const fetchImageTags = (image: VersionImage): RegistryImageTags => {
+    if (image.registryType === 'unchecked') {
+      return
+    }
+
     const key = imageTagKey(image.registryId, image.name)
     const imgTags = tags[key]
 

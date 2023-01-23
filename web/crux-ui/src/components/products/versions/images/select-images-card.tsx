@@ -23,6 +23,7 @@ import {
 } from '@app/models'
 import { API_REGISTRIES, WS_REGISTRIES } from '@app/routes'
 import { fetcher } from '@app/utils'
+import { getValidationError, nameTagSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useState } from 'react'
 import useSWR from 'swr'
@@ -43,7 +44,8 @@ const SelectImagesCard = (props: SelectImagesCardProps) => {
   const [registry, setRegistry] = useState<Registry>(null)
   const [selected, setSelected] = useState<SelectableImage[]>([])
   const [images, setImages] = useState<SelectableImage[]>([])
-  const [filter, setFilter] = useState('')
+  const [filterOrName, setFilterOrName] = useState('')
+  const [inputMessage, setInputMessage] = useState<string | null>(null)
   const throttleFilter = useThrottling(IMAGE_WS_REQUEST_DELAY)
 
   const registriesFound = registries?.length > 0
@@ -51,7 +53,7 @@ const SelectImagesCard = (props: SelectImagesCardProps) => {
   const sock = useWebSocket(WS_REGISTRIES)
 
   sock.on(WS_TYPE_FIND_IMAGE_RESULT, (message: FindImageResultMessage) => {
-    if (message.registryId === registry?.id && filter.length >= IMAGE_FILTER_MIN_LENGTH) {
+    if (message.registryId === registry?.id && filterOrName.length >= IMAGE_FILTER_MIN_LENGTH) {
       setSearching(false)
       setImages(
         message.images.map(it => ({
@@ -68,7 +70,34 @@ const SelectImagesCard = (props: SelectImagesCardProps) => {
 
   useEffect(() => setRegistry(registriesFound ? registries[0] : null), [registries, registriesFound])
 
-  const findImage = (reg: Registry, fil?: string) => {
+  const findImages = (filter: string, reg?: Registry) => {
+    if (reg && reg.type === 'unchecked') {
+      setImages([])
+      setSearching(false)
+
+      const error = getValidationError(nameTagSchema, filter)
+      setInputMessage(error?.message ? t(error?.message) : null)
+
+      setSelected(
+        filter && !error
+          ? [
+              {
+                registryId: reg.id,
+                image: {
+                  name: filter,
+                },
+              },
+            ]
+          : [],
+      )
+
+      return
+    }
+
+    setInputMessage(
+      filter.length < IMAGE_FILTER_MIN_LENGTH ? t('filterMinChars', { length: IMAGE_FILTER_MIN_LENGTH }) : null,
+    )
+
     if (!reg || filter.length < IMAGE_FILTER_MIN_LENGTH) {
       setImages([])
       setSearching(false)
@@ -78,7 +107,7 @@ const SelectImagesCard = (props: SelectImagesCardProps) => {
     const send = () => {
       sock.send(WS_TYPE_FIND_IMAGE, {
         registryId: reg.id,
-        filter: fil,
+        filter,
       } as FindImageMessage)
     }
 
@@ -87,13 +116,15 @@ const SelectImagesCard = (props: SelectImagesCardProps) => {
   }
 
   const onRegistrySelectionChange = (reg: Registry) => {
+    setInputMessage(null)
     setRegistry(reg)
-    findImage(reg, filter)
+    setSelected([])
+    findImages(filterOrName, reg)
   }
 
-  const onFilterChange = (filterValue: string) => {
-    setFilter(filterValue)
-    findImage(registry, filterValue)
+  const onInputChange = (input: string) => {
+    setFilterOrName(input)
+    findImages(input, registry)
   }
 
   const onImageCheckedChange = (target: SelectableImage, checked: boolean) => {
@@ -187,17 +218,17 @@ const SelectImagesCard = (props: SelectImagesCardProps) => {
             className="max-w-lg"
             name="imageName"
             grow
-            label={t('imageName')}
-            value={filter}
-            onChange={event => onFilterChange(event.target.value)}
+            label={registry && registry.type === 'unchecked' ? t('imageNameAndTag') : t('imageName')}
+            value={filterOrName}
+            onChange={event => onInputChange(event.target.value)}
             messageType="info"
-            message={
-              filter?.length < IMAGE_FILTER_MIN_LENGTH ? t('filterMinChars', { length: IMAGE_FILTER_MIN_LENGTH }) : null
-            }
+            message={inputMessage}
           />
 
-          {filterResult.length < 1 ? (
-            filter.length < 1 ? null : searching ? (
+          {registry && registry.type === 'unchecked' ? (
+            <p className="text-light-eased ml-4 mt-2">{t('uncheckedRegistryExplanation')}</p>
+          ) : filterResult.length < 1 ? (
+            filterOrName.length < 1 ? null : searching ? (
               <LoadingIndicator className="mt-4" />
             ) : (
               <DyoLabel className="mt-4">{t('common:noNameFound', { name: t('common:images') })}</DyoLabel>

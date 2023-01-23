@@ -1,5 +1,5 @@
 import { ContainerConfig } from './container'
-import { RegistryImages } from './registry'
+import { RegistryImages, RegistryType } from './registry'
 
 export type VersionImage = {
   id: string
@@ -7,6 +7,7 @@ export type VersionImage = {
   tag: string
   registryId: string
   registryName: string
+  registryType: RegistryType
   order: number
   config: ContainerConfig
   createdAt: string

@@ -1,6 +1,7 @@
 {
   "add": "Add image",
   "imageName": "Image name",
+  "imageNameAndTag": "Image name and tag",
   "containerName": "Container name",
   "tag": "Tag",
   "config": "Config",
@@ -19,5 +20,8 @@
   "errors": {
     "preconditionFailed": "Node is unreachable"
   },
-  "unknownTag": "unknown"
+  "unknownTag": "unknown",
+  "invalidImageFormat": "Invalid format, please use 'NAME[:TAG]'",
+  "tagRequired": "Tag is required",
+  "uncheckedRegistryExplanation": "Please be aware that you are using an unchecked registry. The tag you enter will be used directly, which means if the tag does not exist, the deployment will fail."
 }

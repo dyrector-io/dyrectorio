@@ -16,6 +16,7 @@ import { protomisify } from '@server/crux/grpc-connection'
 import { deploymentStatusToDto } from './mappers/deployment-mappers'
 import { containerConfigToDto } from './mappers/image-mappers'
 import { nodeStatusToDto } from './mappers/node-mappers'
+import { registryTypeProtoToDto } from './mappers/registry-mappers'
 import { versionTypeToDyo, versionTypeToProto } from './mappers/version-mappers'
 
 class DyoVersionService {
@@ -46,6 +47,7 @@ class DyoVersionService {
         ...it,
         config: containerConfigToDto(it.config),
         createdAt: timestampToUTC(it.createdAt),
+        registryType: registryTypeProtoToDto(it.registryType),
       })),
     }
   }

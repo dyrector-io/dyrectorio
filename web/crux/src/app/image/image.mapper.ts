@@ -47,15 +47,19 @@ import {
   VolumeType,
   XOR,
 } from 'src/shared/models'
+import RegistryMapper from '../registry/registry.mapper'
 
 @Injectable()
 export default class ImageMapper {
+  constructor(private registryMapper: RegistryMapper) {}
+
   toGrpc(image: ImageDetails): ImageResponse {
     return {
       ...image,
       registryName: image.registry.name,
       config: this.configToGrpc(image.config),
       createdAt: toTimestamp(image.createdAt),
+      registryType: this.registryMapper.typeToGrpc(image.registry.type),
     }
   }
 

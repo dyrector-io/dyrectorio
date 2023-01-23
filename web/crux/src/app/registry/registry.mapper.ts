@@ -75,6 +75,12 @@ export default class RegistryMapper {
               token: registry.token,
               imageNamePrefix: registry.imageNamePrefix,
             },
+      unchecked:
+        registry.type !== RegistryTypeEnum.unchecked
+          ? null
+          : {
+              url: registry.url,
+            },
     }
   }
 
@@ -137,6 +143,17 @@ export default class RegistryMapper {
         token: emptyOrDefault(request.google.token),
         imageNamePrefix: request.google.imageNamePrefix,
         apiUrl: null,
+        namespace: null,
+      }
+    }
+    if (request.unchecked) {
+      return {
+        type: RegistryTypeEnum.unchecked,
+        ...request.unchecked,
+        user: null,
+        apiUrl: null,
+        token: null,
+        imageNamePrefix: null,
         namespace: null,
       }
     }

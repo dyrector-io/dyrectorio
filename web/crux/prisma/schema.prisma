@@ -408,6 +408,7 @@ enum RegistryTypeEnum {
   gitlab
   github
   google
+  unchecked
 }
 
 enum RegistryNamespaceEnum {

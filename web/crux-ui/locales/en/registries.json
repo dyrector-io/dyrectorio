@@ -31,7 +31,8 @@
     "hub": "Here you're able to add public Docker Hub registries.",
     "gitlab": "Add your GitLab Registry.",
     "github": "Add your GitHub Registry.",
-    "google": "Add your Google Registry."
+    "google": "Add your Google Registry.",
+    "unchecked": "Add a registry without authentication. This type does not provide image nor tag browsing."
   },
 
   "type": {
@@ -39,7 +40,8 @@
     "hub": "Docker Hub",
     "gitlab": "GitLab Registry",
     "github": "GitHub Registry",
-    "google": "Google Registry"
+    "google": "Google Registry",
+    "unchecked": "Unchecked"
   },
 
   "namespace": {

@@ -42,7 +42,8 @@ export const registrySchema = yup.object().shape({
     .string()
     .meta(shouldResetMetaData)
     .when(['type', 'selfManaged'], {
-      is: (type, selfManaged) => type === 'v2' || type === 'google' || (type === 'gitlab' && selfManaged),
+      is: (type, selfManaged) =>
+        type === 'v2' || type === 'google' || (type === 'gitlab' && selfManaged) || type === 'unchecked',
       then: yup.string().required(),
     })
     .when(['type'], { is: type => type === 'google', then: yup.string().oneOf([...googleRegistryUrls]) }),
@@ -74,3 +75,5 @@ export const registrySchema = yup.object().shape({
   user: registryCredentialRole,
   token: registryCredentialRole,
 })
+
+export const nameTagSchema = yup.string().matches(/^[^:]+(:[^:]+)?$/, { message: 'images:invalidImageFormat' })

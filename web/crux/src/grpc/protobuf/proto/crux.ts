@@ -229,6 +229,7 @@ export enum RegistryType {
   GITLAB = 3,
   GITHUB = 4,
   GOOGLE = 5,
+  UNCHECKED = 6,
   UNRECOGNIZED = -1,
 }
 
@@ -252,6 +253,9 @@ export function registryTypeFromJSON(object: any): RegistryType {
     case 5:
     case 'GOOGLE':
       return RegistryType.GOOGLE
+    case 6:
+    case 'UNCHECKED':
+      return RegistryType.UNCHECKED
     case -1:
     case 'UNRECOGNIZED':
     default:
@@ -273,6 +277,8 @@ export function registryTypeToJSON(object: RegistryType): string {
       return 'GITHUB'
     case RegistryType.GOOGLE:
       return 'GOOGLE'
+    case RegistryType.UNCHECKED:
+      return 'UNCHECKED'
     case RegistryType.UNRECOGNIZED:
     default:
       return 'UNRECOGNIZED'
@@ -878,6 +884,10 @@ export interface GoogleRegistryDetails {
   imageNamePrefix: string
 }
 
+export interface UncheckedRegistryDetails {
+  url: string
+}
+
 export interface CreateRegistryRequest {
   accessedBy: string
   name: string
@@ -888,6 +898,7 @@ export interface CreateRegistryRequest {
   gitlab: GitlabRegistryDetails | undefined
   github: GithubRegistryDetails | undefined
   google: GoogleRegistryDetails | undefined
+  unchecked: UncheckedRegistryDetails | undefined
 }
 
 export interface UpdateRegistryRequest {
@@ -901,6 +912,7 @@ export interface UpdateRegistryRequest {
   gitlab: GitlabRegistryDetails | undefined
   github: GithubRegistryDetails | undefined
   google: GoogleRegistryDetails | undefined
+  unchecked: UncheckedRegistryDetails | undefined
 }
 
 export interface RegistryDetailsResponse {
@@ -915,6 +927,7 @@ export interface RegistryDetailsResponse {
   gitlab: GitlabRegistryDetails | undefined
   github: GithubRegistryDetails | undefined
   google: GoogleRegistryDetails | undefined
+  unchecked: UncheckedRegistryDetails | undefined
 }
 
 export interface CreateVersionRequest {
@@ -1104,6 +1117,7 @@ export interface ImageResponse {
   config: ContainerConfig | undefined
   createdAt: Timestamp | undefined
   registryName: string
+  registryType: RegistryType
 }
 
 export interface ImageListResponse {
@@ -2332,6 +2346,22 @@ export const GoogleRegistryDetails = {
   },
 }
 
+function createBaseUncheckedRegistryDetails(): UncheckedRegistryDetails {
+  return { url: '' }
+}
+
+export const UncheckedRegistryDetails = {
+  fromJSON(object: any): UncheckedRegistryDetails {
+    return { url: isSet(object.url) ? String(object.url) : '' }
+  },
+
+  toJSON(message: UncheckedRegistryDetails): unknown {
+    const obj: any = {}
+    message.url !== undefined && (obj.url = message.url)
+    return obj
+  },
+}
+
 function createBaseCreateRegistryRequest(): CreateRegistryRequest {
   return {
     accessedBy: '',
@@ -2341,6 +2371,7 @@ function createBaseCreateRegistryRequest(): CreateRegistryRequest {
     gitlab: undefined,
     github: undefined,
     google: undefined,
+    unchecked: undefined,
   }
 }
 
@@ -2356,6 +2387,7 @@ export const CreateRegistryRequest = {
       gitlab: isSet(object.gitlab) ? GitlabRegistryDetails.fromJSON(object.gitlab) : undefined,
       github: isSet(object.github) ? GithubRegistryDetails.fromJSON(object.github) : undefined,
       google: isSet(object.google) ? GoogleRegistryDetails.fromJSON(object.google) : undefined,
+      unchecked: isSet(object.unchecked) ? UncheckedRegistryDetails.fromJSON(object.unchecked) : undefined,
     }
   },
 
@@ -2373,6 +2405,8 @@ export const CreateRegistryRequest = {
       (obj.github = message.github ? GithubRegistryDetails.toJSON(message.github) : undefined)
     message.google !== undefined &&
       (obj.google = message.google ? GoogleRegistryDetails.toJSON(message.google) : undefined)
+    message.unchecked !== undefined &&
+      (obj.unchecked = message.unchecked ? UncheckedRegistryDetails.toJSON(message.unchecked) : undefined)
     return obj
   },
 }
@@ -2387,6 +2421,7 @@ function createBaseUpdateRegistryRequest(): UpdateRegistryRequest {
     gitlab: undefined,
     github: undefined,
     google: undefined,
+    unchecked: undefined,
   }
 }
 
@@ -2403,6 +2438,7 @@ export const UpdateRegistryRequest = {
       gitlab: isSet(object.gitlab) ? GitlabRegistryDetails.fromJSON(object.gitlab) : undefined,
       github: isSet(object.github) ? GithubRegistryDetails.fromJSON(object.github) : undefined,
       google: isSet(object.google) ? GoogleRegistryDetails.fromJSON(object.google) : undefined,
+      unchecked: isSet(object.unchecked) ? UncheckedRegistryDetails.fromJSON(object.unchecked) : undefined,
     }
   },
 
@@ -2421,6 +2457,8 @@ export const UpdateRegistryRequest = {
       (obj.github = message.github ? GithubRegistryDetails.toJSON(message.github) : undefined)
     message.google !== undefined &&
       (obj.google = message.google ? GoogleRegistryDetails.toJSON(message.google) : undefined)
+    message.unchecked !== undefined &&
+      (obj.unchecked = message.unchecked ? UncheckedRegistryDetails.toJSON(message.unchecked) : undefined)
     return obj
   },
 }
@@ -2436,6 +2474,7 @@ function createBaseRegistryDetailsResponse(): RegistryDetailsResponse {
     gitlab: undefined,
     github: undefined,
     google: undefined,
+    unchecked: undefined,
   }
 }
 
@@ -2453,6 +2492,7 @@ export const RegistryDetailsResponse = {
       gitlab: isSet(object.gitlab) ? GitlabRegistryDetails.fromJSON(object.gitlab) : undefined,
       github: isSet(object.github) ? GithubRegistryDetails.fromJSON(object.github) : undefined,
       google: isSet(object.google) ? GoogleRegistryDetails.fromJSON(object.google) : undefined,
+      unchecked: isSet(object.unchecked) ? UncheckedRegistryDetails.fromJSON(object.unchecked) : undefined,
     }
   },
 
@@ -2472,6 +2512,8 @@ export const RegistryDetailsResponse = {
       (obj.github = message.github ? GithubRegistryDetails.toJSON(message.github) : undefined)
     message.google !== undefined &&
       (obj.google = message.google ? GoogleRegistryDetails.toJSON(message.google) : undefined)
+    message.unchecked !== undefined &&
+      (obj.unchecked = message.unchecked ? UncheckedRegistryDetails.toJSON(message.unchecked) : undefined)
     return obj
   },
 }
@@ -3232,6 +3274,7 @@ function createBaseImageResponse(): ImageResponse {
     config: undefined,
     createdAt: undefined,
     registryName: '',
+    registryType: 0,
   }
 }
 
@@ -3246,6 +3289,7 @@ export const ImageResponse = {
       config: isSet(object.config) ? ContainerConfig.fromJSON(object.config) : undefined,
       createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
       registryName: isSet(object.registryName) ? String(object.registryName) : '',
+      registryType: isSet(object.registryType) ? registryTypeFromJSON(object.registryType) : 0,
     }
   },
 
@@ -3259,6 +3303,7 @@ export const ImageResponse = {
     message.config !== undefined && (obj.config = message.config ? ContainerConfig.toJSON(message.config) : undefined)
     message.createdAt !== undefined && (obj.createdAt = fromTimestamp(message.createdAt).toISOString())
     message.registryName !== undefined && (obj.registryName = message.registryName)
+    message.registryType !== undefined && (obj.registryType = registryTypeToJSON(message.registryType))
     return obj
   },
 }

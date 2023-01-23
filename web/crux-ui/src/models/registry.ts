@@ -1,6 +1,6 @@
 import { REGISTRY_GITHUB_URL, REGISTRY_GITLAB_URLS, REGISTRY_HUB_URL } from '@app/const'
 
-export const REGISTRY_TYPE_VALUES = ['v2', 'hub', 'gitlab', 'github', 'google'] as const
+export const REGISTRY_TYPE_VALUES = ['v2', 'hub', 'gitlab', 'github', 'google', 'unchecked'] as const
 export type RegistryType = typeof REGISTRY_TYPE_VALUES[number]
 
 export const GITHUB_NAMESPACE_VALUES = ['organization', 'user'] as const
@@ -66,8 +66,20 @@ export type GoogleRegistryDetails = RegistryDetailsBase & {
   token?: string
 }
 
+export type UncheckedRegistryDetails = RegistryDetailsBase & {
+  type: 'unchecked'
+  url: string
+}
+
 export type RegistryDetails = Omit<Registry, 'url'> &
-  (HubRegistryDetails | V2RegistryDetails | GitlabRegistryDetails | GithubRegistryDetails | GoogleRegistryDetails) & {
+  (
+    | HubRegistryDetails
+    | V2RegistryDetails
+    | GitlabRegistryDetails
+    | GithubRegistryDetails
+    | GoogleRegistryDetails
+    | UncheckedRegistryDetails
+  ) & {
     updatedAt: string
   }
 

@@ -47,6 +47,9 @@ export default class RegistryAccessValidationGuard implements CanActivate {
     if (req.google) {
       return this.validateGoogle(req.google)
     }
+    if (req.unchecked) {
+      return of(true)
+    }
     return of(false)
   }
 

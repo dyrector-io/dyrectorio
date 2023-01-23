@@ -124,6 +124,11 @@ class DyoRegistryService {
             ...res.github,
             namespace: registryNamespaceToDto(res.github.namespace),
           }
+        : res.unchecked
+        ? {
+            type: 'unchecked',
+            ...res.unchecked,
+          }
         : {
             type: 'google',
             ...res.google,
@@ -180,6 +185,12 @@ class DyoRegistryService {
               imageNamePrefix: dto.imageNamePrefix,
               user: dto.user,
               token: dto.token,
+            },
+      unchecked:
+        dto.type !== 'unchecked'
+          ? null
+          : {
+              url: dto.url,
             },
     }
   }
