@@ -177,8 +177,8 @@ jobs:
           image_version: ${{ needs.changes.outputs.tag }}
       - name: Docker save
         run: |
-          docker save ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | gzip -f > crane.zstd
-          docker save ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | gzip -f > dagent.zstd
+          docker save ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | zstd > crane.zstd
+          docker save ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | zstd > dagent.zstd
       - name: artifact upload
         uses: actions/upload-artifact@v3
         with:
@@ -215,7 +215,7 @@ jobs:
           image_version: ${{ needs.changes.outputs.tag }}
       - name: Docker save
         run: |
-          docker save ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | gzip -f > cli.zstd
+          docker save ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | zstd > cli.zstd
       - name: artifact upload
         uses: actions/upload-artifact@v3
         with:
@@ -261,7 +261,7 @@ jobs:
       - name: Docker build
         run: docker build -t ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.changes.outputs.tag }} .
       - name: Docker save
-        run: docker save ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | gzip -f > crux.zstd
+        run: docker save ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | zstd > crux.zstd
       - name: artifact upload
         uses: actions/upload-artifact@v3
         with:
@@ -302,7 +302,7 @@ jobs:
       - name: Docker build
         run: docker build -t ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} .
       - name: Docker save
-        run: docker save ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | gzip -f > crux-ui.zstd
+        run: docker save ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | zstd > crux-ui.zstd
       - name: artifact upload
         uses: actions/upload-artifact@v3
         with:
@@ -327,7 +327,7 @@ jobs:
       - name: Docker build
         run: docker build -t ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.tag }} .
       - name: Docker save
-        run: docker save ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | gzip -f > kratos.zstd
+        run: docker save ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | zstd > kratos.zstd
       - name: artifact upload
         uses: actions/upload-artifact@v3
         with:
@@ -375,8 +375,8 @@ jobs:
           needs.changes.outputs.agents == 'true' ||
           github.ref_type == 'tag'
         run: |
-          zcat artifacts/dagent.zstd | docker load
-        # zcat artifacts/crane.zstd | docker load
+          zstd -d artifacts/dagent.zstd | docker load
+        # zstd -d artifacts/crane.zstd | docker load
 
       - name: crux - artifact download
         if: |
@@ -390,7 +390,7 @@ jobs:
         if: |
           needs.changes.outputs.crux == 'true' ||
           github.ref_type == 'tag'
-        run: zcat artifacts/crux.zstd | docker load
+        run: zstd -d artifacts/crux.zstd | docker load
 
       - name: crux-ui - artifact download
         if: |
@@ -404,7 +404,7 @@ jobs:
         if: |
           needs.changes.outputs.cruxui == 'true' ||
           github.ref_type == 'tag'
-        run: zcat artifacts/crux-ui.zstd | docker load
+        run: zstd -d artifacts/crux-ui.zstd | docker load
 
       - name: kratos - artifact download
         if: |
@@ -418,7 +418,7 @@ jobs:
         if: |
           needs.changes.outputs.kratos == 'true' ||
           github.ref_type == 'tag'
-        run: zcat artifacts/kratos.zstd | docker load
+        run: zstd -d artifacts/kratos.zstd | docker load
 
       - name: cli - artifact download
         if: |
@@ -432,7 +432,7 @@ jobs:
         if: |
           needs.changes.outputs.agents == 'true' ||
           github.ref_type == 'tag'
-        run: zcat artifacts/cli.zstd | docker load
+        run: zstd -d artifacts/cli.zstd | docker load
 
       - name: Setup using cli
         run: docker run -v /var/run/docker.sock:/var/run/docker.sock ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} --disable-forcepull --imagetag ${{ needs.changes.outputs.tag }} --network $(docker network ls -f name=github_network --format {{.Name}}) --expect-container-env --debug up
@@ -488,9 +488,9 @@ jobs:
           path: artifacts
       - name: Docker load
         run: |
-          zcat artifacts/dagent.zstd | docker load
-          zcat artifacts/crane.zstd | docker load
-          zcat artifacts/cli.zstd | docker load
+          zstd -d artifacts/dagent.zstd | docker load
+          zstd -d artifacts/crane.zstd | docker load
+          zstd -d artifacts/cli.zstd | docker load
       - name: Login to GHCR
         uses: docker/login-action@v2
         with:
@@ -546,7 +546,7 @@ jobs:
           name: crux
           path: artifacts
       - name: Docker load
-        run: zcat artifacts/crux.zstd | docker load
+        run: zstd -d artifacts/crux.zstd | docker load
       - name: Login to GHCR
         uses: docker/login-action@v2
         with:
@@ -592,7 +592,7 @@ jobs:
           name: crux-ui
           path: artifacts
       - name: Docker load
-        run: zcat artifacts/crux-ui.zstd | docker load
+        run: zstd -d artifacts/crux-ui.zstd | docker load
       - name: Login to GHCR
         uses: docker/login-action@v2
         with:
@@ -638,7 +638,7 @@ jobs:
           name: kratos
           path: artifacts
       - name: Docker load
-        run: zcat artifacts/kratos.zstd | docker load
+        run: zstd -d artifacts/kratos.zstd | docker load
       - name: Login to GHCR
         uses: docker/login-action@v2
         with:
