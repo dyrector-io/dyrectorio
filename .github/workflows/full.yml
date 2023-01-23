@@ -91,7 +91,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -113,7 +113,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -132,7 +132,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -156,7 +156,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [go_security, go_lint, go_test, changes]
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -177,8 +177,8 @@ jobs:
           image_version: ${{ needs.changes.outputs.tag }}
       - name: Docker save
         run: |
-          docker save ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | gzip -f > crane.zstd
-          docker save ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | gzip -f > dagent.zstd
+          docker save ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | zstd > crane.zstd
+          docker save ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | zstd > dagent.zstd
       - name: artifact upload
         uses: actions/upload-artifact@v3
         with:
@@ -194,7 +194,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [go_security, go_lint, go_test, changes]
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -215,7 +215,7 @@ jobs:
           image_version: ${{ needs.changes.outputs.tag }}
       - name: Docker save
         run: |
-          docker save ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | gzip -f > cli.zstd
+          docker save ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | zstd > cli.zstd
       - name: artifact upload
         uses: actions/upload-artifact@v3
         with:
@@ -230,7 +230,7 @@ jobs:
       run:
         working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
     if: |
       ${{ needs.changes.outputs.crux == 'true' }} ||
       github.ref_type == 'tag'
@@ -251,7 +251,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [crux_lint,changes]
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
     defaults:
       run:
         working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
@@ -261,7 +261,7 @@ jobs:
       - name: Docker build
         run: docker build -t ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.changes.outputs.tag }} .
       - name: Docker save
-        run: docker save ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | gzip -f > crux.zstd
+        run: docker save ${GITHUB_REGISTRY}/${CRUX_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | zstd > crux.zstd
       - name: artifact upload
         uses: actions/upload-artifact@v3
         with:
@@ -273,7 +273,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
     defaults:
       run:
         working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
@@ -292,7 +292,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [crux-ui_lint,changes]
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
     defaults:
       run:
         working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
@@ -302,7 +302,7 @@ jobs:
       - name: Docker build
         run: docker build -t ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} .
       - name: Docker save
-        run: docker save ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | gzip -f > crux-ui.zstd
+        run: docker save ${GITHUB_REGISTRY}/${CRUX_UI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | zstd > crux-ui.zstd
       - name: artifact upload
         uses: actions/upload-artifact@v3
         with:
@@ -314,7 +314,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
     defaults:
       run:
         working-directory: ${{ env.KRATOS_WORKING_DIRECTORY }}
@@ -327,7 +327,7 @@ jobs:
       - name: Docker build
         run: docker build -t ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.tag }} .
       - name: Docker save
-        run: docker save ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | gzip -f > kratos.zstd
+        run: docker save ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.tag }} | zstd > kratos.zstd
       - name: artifact upload
         uses: actions/upload-artifact@v3
         with:
@@ -339,7 +339,7 @@ jobs:
     runs-on: ubuntu-22.04
     # runs-on: self-hosted
     container:
-      image: docker.io/dyrectorio/playwright:1.28.1
+      image: ghcr.io/dyrector-io/dyrectorio/playwright:latest
       volumes:
         - /var/run/docker.sock:/var/run/docker
     needs: [go_build, go_cli_build, crux_build, crux-ui_build, kratos_build, changes, conventional_commits]
@@ -375,8 +375,8 @@ jobs:
           needs.changes.outputs.agents == 'true' ||
           github.ref_type == 'tag'
         run: |
-          zcat artifacts/dagent.zstd | docker load
-        # zcat artifacts/crane.zstd | docker load
+          zstd -dc artifacts/dagent.zstd | docker load
+        # zstd -dc artifacts/crane.zstd | docker load
 
       - name: crux - artifact download
         if: |
@@ -390,7 +390,7 @@ jobs:
         if: |
           needs.changes.outputs.crux == 'true' ||
           github.ref_type == 'tag'
-        run: zcat artifacts/crux.zstd | docker load
+        run: zstd -dc artifacts/crux.zstd | docker load
 
       - name: crux-ui - artifact download
         if: |
@@ -404,7 +404,7 @@ jobs:
         if: |
           needs.changes.outputs.cruxui == 'true' ||
           github.ref_type == 'tag'
-        run: zcat artifacts/crux-ui.zstd | docker load
+        run: zstd -dc artifacts/crux-ui.zstd | docker load
 
       - name: kratos - artifact download
         if: |
@@ -418,7 +418,7 @@ jobs:
         if: |
           needs.changes.outputs.kratos == 'true' ||
           github.ref_type == 'tag'
-        run: zcat artifacts/kratos.zstd | docker load
+        run: zstd -dc artifacts/kratos.zstd | docker load
 
       - name: cli - artifact download
         if: |
@@ -432,7 +432,7 @@ jobs:
         if: |
           needs.changes.outputs.agents == 'true' ||
           github.ref_type == 'tag'
-        run: zcat artifacts/cli.zstd | docker load
+        run: zstd -dc artifacts/cli.zstd | docker load
 
       - name: Setup using cli
         run: docker run -v /var/run/docker.sock:/var/run/docker.sock ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} --disable-forcepull --imagetag ${{ needs.changes.outputs.tag }} --network $(docker network ls -f name=github_network --format {{.Name}}) --expect-container-env --debug up
@@ -463,7 +463,7 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
     needs: [go_build, go_cli_build, e2e, changes]
     if: |
       github.ref_name == 'develop' ||
@@ -488,9 +488,9 @@ jobs:
           path: artifacts
       - name: Docker load
         run: |
-          zcat artifacts/dagent.zstd | docker load
-          zcat artifacts/crane.zstd | docker load
-          zcat artifacts/cli.zstd | docker load
+          zstd -dc artifacts/dagent.zstd | docker load
+          zstd -dc artifacts/crane.zstd | docker load
+          zstd -dc artifacts/cli.zstd | docker load
       - name: Login to GHCR
         uses: docker/login-action@v2
         with:
@@ -510,9 +510,9 @@ jobs:
           docker push -a ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}
           docker push -a ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}
           docker push -a ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}
-          docker tag ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
-          docker tag ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
-          docker tag ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
+          docker tag ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crane:${{ needs.changes.outputs.tag }}
+          docker tag ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dagent:${{ needs.changes.outputs.tag }}
+          docker tag ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dyo:${{ needs.changes.outputs.tag }}
           docker push -a ${DOCKERHUB_REGISTRY}/crane
           docker push -a ${DOCKERHUB_REGISTRY}/dagent
           docker push -a ${DOCKERHUB_REGISTRY}/dyo
@@ -532,7 +532,7 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
     needs: [crux_build, e2e, changes]
     if: |
       github.ref_name == 'develop' ||
@@ -546,7 +546,7 @@ jobs:
           name: crux
           path: artifacts
       - name: Docker load
-        run: zcat artifacts/crux.zstd | docker load
+        run: zstd -dc artifacts/crux.zstd | docker load
       - name: Login to GHCR
         uses: docker/login-action@v2
         with:
@@ -578,7 +578,7 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
     needs: [crux-ui_build, e2e, changes]
     if: |
       github.ref_name == 'develop' ||
@@ -592,7 +592,7 @@ jobs:
           name: crux-ui
           path: artifacts
       - name: Docker load
-        run: zcat artifacts/crux-ui.zstd | docker load
+        run: zstd -dc artifacts/crux-ui.zstd | docker load
       - name: Login to GHCR
         uses: docker/login-action@v2
         with:
@@ -624,7 +624,7 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
     needs: [kratos_build, e2e, changes]
     if: |
       github.ref_name == 'develop' ||
@@ -638,7 +638,7 @@ jobs:
           name: kratos
           path: artifacts
       - name: Docker load
-        run: zcat artifacts/kratos.zstd | docker load
+        run: zstd -dc artifacts/kratos.zstd | docker load
       - name: Login to GHCR
         uses: docker/login-action@v2
         with:
