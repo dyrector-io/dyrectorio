@@ -17,5 +17,6 @@ COPY ./scripts/start-agent.sh /
 COPY ./out/$AGENT_BINARY-amd64 /agent-amd64
 COPY ./out/$AGENT_BINARY-arm64 /agent-arm64
 
+LABEL org.opencontainers.image.source="https://github.com/dyrector-io/dyrectorio/agent/$AGENT_BINARY"
 
 ENTRYPOINT ["/start-agent.sh"]

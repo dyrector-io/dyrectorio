@@ -7,6 +7,10 @@ on:
     paths: 
       - images/proto/**
       - .github/workflows/image-builder.yml
+  pull_request:
+    paths: 
+      - images/proto/**
+      - .github/workflows/image-builder.yml
 
 permissions:
   contents: read
@@ -14,12 +18,12 @@ permissions:
   packages: write
 
 env:
-  REGISTRY: ghcr.io
-  BUILDER_IMAGE_NAME: dyrector-io/dyrectorio/images/proto
+  GITHUB_REGISTRY: ghcr.io
+  BUILDER_IMAGE_NAME: dyrector-io/dyrectorio/alpine-proto
   VERSION: 3.16-5
 
 jobs:
-  build_push:
+  build:
     runs-on: ubuntu-22.04
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
@@ -27,7 +31,30 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Docker build
-        run: docker build -t ${REGISTRY}/${BUILDER_IMAGE_NAME}:${VERSION} images/proto
+        run: docker build -f ./images/alpine-proto/Dockerfile -t ${GITHUB_REGISTRY}/${BUILDER_IMAGE_NAME}:${VERSION} .
+      - name: Docker save
+        run: docker save ${GITHUB_REGISTRY}/${BUILDER_IMAGE_NAME}:${VERSION} | gzip -f > builder.zstd
+      - name: artifact upload
+        uses: actions/upload-artifact@v3
+        with:
+          name: builder
+          path: ./builder.zstd
+
+  push:
+    runs-on: ubuntu-22.04
+    needs: build
+    container:
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+    if: github.ref_name == 'develop'
+    environment: Workflow - Protected
+    steps:
+      - name: artifact download
+        uses: actions/download-artifact@v3
+        with:
+          name: builder
+          path: artifacts
+      - name: Docker load
+        run: zcat artifacts/builder.zstd | docker load
       - name: Login to GHCR
         uses: docker/login-action@v2
         with:
@@ -35,9 +62,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_PAT }}
       - name: Docker push
-        run: docker push ${REGISTRY}/${BUILDER_IMAGE_NAME}:${VERSION}
+        run: docker push ${GITHUB_REGISTRY}/${BUILDER_IMAGE_NAME}:${VERSION}
+      - name: Write signing key to disk
+        run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
       - name: Sign container image
         run: |
-          cosign sign --key cosign.key ${REGISTRY}/${BUILDER_IMAGE_NAME}:${VERSION}
+          cosign sign --key cosign.key ${GITHUB_REGISTRY}/${BUILDER_IMAGE_NAME}:${VERSION}
         env:
           COSIGN_PASSWORD: "${{ secrets.COSIGN_PASSWORD }}"

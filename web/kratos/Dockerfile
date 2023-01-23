@@ -12,5 +12,7 @@ RUN mkdir -p /etc/config/kratos && chmod a+x /usr/bin/app/kratos/entrypoint.sh &
 
 USER 10000
 
+LABEL org.opencontainers.image.source="https://github.com/dyrector-io/dyrectorio/web/kratos"
+
 ENTRYPOINT ["/usr/bin/app/kratos/entrypoint.sh"]
 CMD ["serve", "-c", "/etc/config/kratos/kratos.yaml", "--watch-courier"]
