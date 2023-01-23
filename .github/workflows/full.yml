@@ -91,7 +91,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -113,7 +113,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -132,7 +132,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -156,7 +156,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [go_security, go_lint, go_test, changes]
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -194,7 +194,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [go_security, go_lint, go_test, changes]
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -230,7 +230,7 @@ jobs:
       run:
         working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
     if: |
       ${{ needs.changes.outputs.crux == 'true' }} ||
       github.ref_type == 'tag'
@@ -251,7 +251,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [crux_lint,changes]
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
     defaults:
       run:
         working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
@@ -273,7 +273,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
     defaults:
       run:
         working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
@@ -292,7 +292,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [crux-ui_lint,changes]
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
     defaults:
       run:
         working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
@@ -314,7 +314,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
     defaults:
       run:
         working-directory: ${{ env.KRATOS_WORKING_DIRECTORY }}
@@ -339,7 +339,7 @@ jobs:
     runs-on: ubuntu-22.04
     # runs-on: self-hosted
     container:
-      image: docker.io/dyrectorio/playwright:1.28.1
+      image: ghcr.io/dyrector-io/dyrectorio/playwright:latest
       volumes:
         - /var/run/docker.sock:/var/run/docker
     needs: [go_build, go_cli_build, crux_build, crux-ui_build, kratos_build, changes, conventional_commits]
@@ -463,7 +463,7 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
     needs: [go_build, go_cli_build, e2e, changes]
     if: |
       github.ref_name == 'develop' ||
@@ -510,9 +510,9 @@ jobs:
           docker push -a ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}
           docker push -a ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}
           docker push -a ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}
-          docker tag ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
-          docker tag ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
-          docker tag ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.tag }}
+          docker tag ${GITHUB_REGISTRY}/${CRANE_IMAGE_NAME}:${{ needs.changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/crane:${{ needs.changes.outputs.tag }}
+          docker tag ${GITHUB_REGISTRY}/${DAGENT_IMAGE_NAME}:${{ needs.changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dagent:${{ needs.changes.outputs.tag }}
+          docker tag ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/dyo:${{ needs.changes.outputs.tag }}
           docker push -a ${DOCKERHUB_REGISTRY}/crane
           docker push -a ${DOCKERHUB_REGISTRY}/dagent
           docker push -a ${DOCKERHUB_REGISTRY}/dyo
@@ -532,7 +532,7 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
     needs: [crux_build, e2e, changes]
     if: |
       github.ref_name == 'develop' ||
@@ -578,7 +578,7 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
     needs: [crux-ui_build, e2e, changes]
     if: |
       github.ref_name == 'develop' ||
@@ -624,7 +624,7 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
     needs: [kratos_build, e2e, changes]
     if: |
       github.ref_name == 'develop' ||
