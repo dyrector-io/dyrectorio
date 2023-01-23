@@ -81,7 +81,7 @@ test.describe('Simple product', () => {
 
     const prefix = 'pw-simp-copy'
 
-    await deployWithDagent(page, prefix, productId, "",  false, testInfo.title)
+    await deployWithDagent(page, prefix, productId, '', false, testInfo.title)
 
     const { versionId, deploymentId } = extractDeploymentUrl(page.url())
 
@@ -145,7 +145,7 @@ test.describe('Complex product', () => {
     const versionId = await createVersion(page, productId, '0.1.0', 'Incremental')
     await createImage(page, productId, versionId, 'nginx')
 
-    await deployWithDagent(page, 'pw-complex-copibility', productId, versionId,  false, testInfo.title)
+    await deployWithDagent(page, 'pw-complex-copibility', productId, versionId, false, testInfo.title)
 
     const { deploymentId } = extractDeploymentUrl(page.url())
 
@@ -167,11 +167,11 @@ test.describe('Complex product', () => {
     const versionId = await createVersion(page, productId, '0.1.0', 'Incremental')
     await createImage(page, productId, versionId, 'nginx')
 
-    await deployWithDagent(page, 'pw-complex-copibility-obsolete', productId, versionId,  false, testInfo.title + "1")
+    await deployWithDagent(page, 'pw-complex-copibility-obsolete', productId, versionId, false, testInfo.title + '1')
 
     const { deploymentId } = extractDeploymentUrl(page.url())
 
-    await deployWithDagent(page, 'pw-complex-copibility-obsolete', productId, versionId,  false, testInfo.title + "2")
+    await deployWithDagent(page, 'pw-complex-copibility-obsolete', productId, versionId, false, testInfo.title + '2')
 
     await page.goto(deploymentUrl(productId, versionId, deploymentId))
 
@@ -211,7 +211,7 @@ test.describe('Complex product', () => {
 
     await addDeploymentToVersion(page, productId, versionId, DAGENT_NODE, 'pw-complex-first')
 
-    await deployWithDagent(page, 'pw-complex-second', productId, versionId,  false, testInfo.title)
+    await deployWithDagent(page, 'pw-complex-second', productId, versionId, false, testInfo.title)
 
     await page.goto(versionUrl(productId, versionId))
 
