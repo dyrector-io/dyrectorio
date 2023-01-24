@@ -75,6 +75,8 @@ export default class ImageService {
       // we need the generated uuids, so we can't use createMany
       const imgs = request.images.flatMap(registyImages =>
         registyImages.imageNames.map(async it => {
+          const [imageName, imageTag] = this.splitImageAndTag(it)
+
           const image = await prisma.image.create({
             include: {
               config: true,
@@ -84,11 +86,12 @@ export default class ImageService {
               registryId: registyImages.registryId,
               versionId: request.versionId,
               createdBy: request.accessedBy,
-              name: it,
+              name: imageName,
+              tag: imageTag,
               order: order++,
               config: {
                 create: {
-                  name: containerNameFromImageName(it),
+                  name: containerNameFromImageName(imageName),
                   deploymentStrategy: 'recreate',
                   expose: 'none',
                   networkMode: 'bridge',
@@ -173,5 +176,10 @@ export default class ImageService {
     this.imageDeletedFromVersionEvent.next(request.id)
 
     return Empty
+  }
+
+  private splitImageAndTag(nameTag: string): [string, string | undefined] {
+    const [imageName, imageTag = undefined] = nameTag.split(':')
+    return [imageName, imageTag]
   }
 }

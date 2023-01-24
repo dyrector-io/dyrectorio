@@ -102,7 +102,7 @@ export const Sidebar = (props: SidebarProps) => {
       </div>
 
       <div className="flex flex-col flex-grow pb-4">
-        <div className="mt-12 flex text-bright">
+        <div className="mt-6 flex text-bright">
           <NavButton href={ROUTE_DASHBOARD} icon={<DyoIcon src="/dashboard.svg" alt={t('dashboard')} />}>
             {t('dashboard')}
           </NavButton>
@@ -110,7 +110,7 @@ export const Sidebar = (props: SidebarProps) => {
 
         <NavSection className="mt-6" title={t('product')} options={productOptions} />
 
-        <NavSection className="mt-12" title={t('components')} options={componentOptions} />
+        <NavSection className="mt-6" title={t('components')} options={componentOptions} />
 
         <NavSection className="mt-auto mb-4" title={t('settings')} options={settingsOptions} />
       </div>

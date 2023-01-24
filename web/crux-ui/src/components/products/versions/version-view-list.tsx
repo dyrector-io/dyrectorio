@@ -128,7 +128,7 @@ const VersionViewList = (props: VersionViewListProps) => {
         >
           <EditImageTags
             selected={tagsModalTarget?.tag ?? ''}
-            tags={selectTagsOfImage(state, tagsModalTarget)}
+            tags={tagsModalTarget.registryType === 'unchecked' ? null : selectTagsOfImage(state, tagsModalTarget)}
             onTagSelected={it => actions.selectTagForImage(tagsModalTarget, it)}
           />
         </DyoModal>

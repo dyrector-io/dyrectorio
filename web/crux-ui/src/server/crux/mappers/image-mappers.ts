@@ -35,6 +35,7 @@ import {
   Volume,
 } from '@app/models/grpc/protobuf/proto/crux'
 import { timestampToUTC } from '@app/utils'
+import { registryTypeProtoToDto } from './registry-mappers'
 
 export const networkModeToDto = (networkMode?: NetworkMode): ContainerNetworkMode =>
   !networkMode ? 'bridge' : (networkModeToJSON(networkMode).toLowerCase() as ContainerNetworkMode)
@@ -295,4 +296,5 @@ export const imageToDto = (image: ImageResponse): VersionImage => ({
   ...image,
   config: containerConfigToDto(image.config),
   createdAt: timestampToUTC(image.createdAt),
+  registryType: registryTypeProtoToDto(image.registryType),
 })

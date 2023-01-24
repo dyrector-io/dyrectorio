@@ -1,6 +1,7 @@
 import { ROUTE_REGISTRIES } from '@app/routes'
 import { expect, test } from '@playwright/test'
-import { screenshotPath } from './utils/common'
+import { clearInput, screenshotPath } from './utils/common'
+import { createProduct } from './utils/products'
 
 test('adding a new registry should work', async ({ page }) => {
   await page.goto(ROUTE_REGISTRIES)
@@ -40,4 +41,55 @@ test('minimum name length requirement should work', async ({ page }) => {
   await expect(await page.locator('p.text-error-red')).toContainText('name must be at least 3 characters')
 
   await page.screenshot({ path: screenshotPath('registry_new_name_length'), fullPage: true })
+})
+
+test("Unchecked registry shouldn't search images", async ({ page }) => {
+  const registryName = 'REGISTRY_UNCHECKED'
+
+  await page.goto(ROUTE_REGISTRIES)
+
+  await page.locator('text=Add').click()
+  await expect(page.locator('h4')).toContainText('New registry')
+
+  await page.locator('input[name=name]').fill(registryName)
+  await page.locator('form >> text=Unchecked').click()
+  await expect(await page.locator('label[for=url]')).toContainText('URL')
+  await page.locator('input[name=url]').fill('docker.io/library')
+
+  await page.locator('text=Save').click()
+
+  await createProduct(page, 'UNCHECKED_PRODUCT', 'Simple')
+
+  await page.locator('button:has-text("Add image")').click()
+  await expect(page.locator('h4:has-text("Add image")')).toHaveCount(1)
+
+  await page.locator(`button:text-is("${registryName}")`).click()
+
+  await expect(page.locator('label[for=imageName]')).toContainText('Image name and tag')
+
+  await clearInput(page.locator('input[name=imageName]'))
+  await page.locator('input[name=imageName]').type('nginx:latest:test')
+  await expect(page.locator('input[name=imageName] >> xpath=../p')).toContainText(
+    "Invalid format, please use 'NAME[:TAG]'",
+  )
+  await expect(page.locator('button:text-is("Add")')).not.toBeVisible()
+
+  await clearInput(page.locator('input[name=imageName]'))
+  await page.locator('input[name=imageName]').type('')
+  await expect(page.locator('input[name=imageName] >> xpath=../p')).toContainText(
+    "Invalid format, please use 'NAME[:TAG]'",
+  )
+  await expect(page.locator('button:text-is("Add")')).not.toBeVisible()
+
+  await clearInput(page.locator('input[name=imageName]'))
+  await page.locator('input[name=imageName]').type('nginx')
+  await expect(page.locator('input[name=imageName] >> xpath=../p')).not.toBeVisible()
+  await expect(page.locator('button:text-is("Add")')).toBeVisible()
+
+  await clearInput(page.locator('input[name=imageName]'))
+  await page.locator('input[name=imageName]').type('nginx:latest')
+  await expect(page.locator('input[name=imageName] >> xpath=../p')).not.toBeVisible()
+  await expect(page.locator('button:text-is("Add")')).toBeVisible()
+
+  await page.locator('button:text-is("Add")').click()
 })

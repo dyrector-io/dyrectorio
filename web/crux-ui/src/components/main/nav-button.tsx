@@ -18,7 +18,7 @@ const NavButton = (props: NavButtonProps) => {
 
   return (
     <>
-      <div className={clsx('pl-8 py-3', active ? 'bg-dark w-full' : null)}>
+      <div className={clsx('pl-8 py-2', active ? 'bg-dark w-full' : null)}>
         <Link href={href} passHref={passHref}>
           <div className="flex flex-row">
             <div className="flex items-center mr-2 text-bright text-sm font-semibold">{icon}</div>
@@ -27,7 +27,7 @@ const NavButton = (props: NavButtonProps) => {
         </Link>
       </div>
 
-      <div className={clsx('w-1 py-3', active ? 'bg-dyo-turquoise opacity-50' : null)}>&nbsp;</div>
+      <div className={clsx('w-1 py-2', active ? 'bg-dyo-turquoise opacity-50' : null)}>&nbsp;</div>
     </>
   )
 }

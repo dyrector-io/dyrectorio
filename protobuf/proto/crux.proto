@@ -426,6 +426,10 @@ message GoogleRegistryDetails {
   string imageNamePrefix = 103;
 }
 
+message UncheckedRegistryDetails {
+  string url = 100;
+}
+
 message CreateRegistryRequest {
   string accessedBy = 2;
 
@@ -439,6 +443,7 @@ message CreateRegistryRequest {
     GitlabRegistryDetails gitlab = 202;
     GithubRegistryDetails github = 203;
     GoogleRegistryDetails google = 204;
+    UncheckedRegistryDetails unchecked = 205;
   }
 }
 
@@ -456,6 +461,7 @@ message UpdateRegistryRequest {
     GitlabRegistryDetails gitlab = 202;
     GithubRegistryDetails github = 203;
     GoogleRegistryDetails google = 204;
+    UncheckedRegistryDetails unchecked = 205;
   }
 }
 
@@ -474,6 +480,7 @@ message RegistryDetailsResponse {
     GitlabRegistryDetails gitlab = 202;
     GithubRegistryDetails github = 203;
     GoogleRegistryDetails google = 204;
+    UncheckedRegistryDetails unchecked = 205;
   }
 }
 
@@ -484,6 +491,7 @@ enum RegistryType {
   GITLAB = 3;
   GITHUB = 4;
   GOOGLE = 5;
+  UNCHECKED = 6;
 }
 
 enum RegistryNamespace {
@@ -692,6 +700,7 @@ message ImageResponse {
   ContainerConfig config = 104;
   google.protobuf.Timestamp createdAt = 105;
   string registryName = 106;
+  RegistryType registryType = 107;
 }
 
 message ImageListResponse { repeated ImageResponse data = 100; }

@@ -19,6 +19,7 @@ import {
   registryDetailsToRegistry,
   RegistryType,
   REGISTRY_TYPE_VALUES,
+  UncheckedRegistryDetails,
   UpdateRegistry,
   V2RegistryDetails,
 } from '@app/models'
@@ -32,6 +33,7 @@ import GithubRegistryFields from './registry-fields/github-registry-field'
 import GitlabRegistryFields from './registry-fields/gitlab-registry-field'
 import GoogleRegistryFields from './registry-fields/google-registry-field'
 import HubRegistryFields from './registry-fields/hub-registry-fields'
+import UncheckedRegistryFields from './registry-fields/unchecked-registry-field'
 import V2RegistryFields from './registry-fields/v2-registry-field'
 
 interface EditRegistryCardProps {
@@ -203,6 +205,8 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
             <GithubRegistryFields formik={formik as FormikProps<GithubRegistryDetails>} />
           ) : registryType === 'google' ? (
             <GoogleRegistryFields formik={formik as FormikProps<GoogleRegistryDetails>} />
+          ) : registryType === 'unchecked' ? (
+            <UncheckedRegistryFields formik={formik as FormikProps<UncheckedRegistryDetails>} />
           ) : (
             <div className="bg-red-500">{t('unknownRegistryType', { registryType })}</div>
           )}

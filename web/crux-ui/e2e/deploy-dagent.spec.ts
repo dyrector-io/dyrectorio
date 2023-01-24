@@ -23,17 +23,17 @@ test('Deploy to node should be successful', async ({ page }, testInfo) => {
   await expect(deployStatus).toHaveCount(1)
 })
 
-test('Second successful deployment should make the first deployment obsolete', async ({ page },testInfo) => {
+test('Second successful deployment should make the first deployment obsolete', async ({ page }, testInfo) => {
   const productId = await createProduct(page, 'PW-OBSOLETE', 'Complex')
   const versionId = await createVersion(page, productId, '1.0.0', 'Incremental')
   await createImage(page, productId, versionId, image)
 
-  await deployWithDagent(page, prefixTwo, productId, versionId,  false, testInfo.title + "1")
+  await deployWithDagent(page, prefixTwo, productId, versionId, false, testInfo.title + '1')
 
   const firstDeployStatus = await page.getByText('Successful')
   await expect(firstDeployStatus).toHaveCount(1)
 
-  await deployWithDagent(page, prefixTwo, productId, versionId,  false, testInfo.title + "2")
+  await deployWithDagent(page, prefixTwo, productId, versionId, false, testInfo.title + '2')
 
   const secondDeployStatus = await page.getByText('Successful')
   await expect(secondDeployStatus).toHaveCount(1)

@@ -32,7 +32,7 @@ test.describe('Simple product', () => {
 
     const prefix = 'pw-simp-mut'
 
-    await deployWithDagent(page, prefix, productId, "",  false, testInfo.title)
+    await deployWithDagent(page, prefix, productId, '', false, testInfo.title)
 
     const { versionId, deploymentId } = extractDeploymentUrl(page.url())
 
@@ -70,7 +70,7 @@ test.describe('Complex product incremental version', () => {
     const versionId = await createVersion(page, productId, '0.1.0', 'Incremental')
     await createImage(page, productId, versionId, image)
 
-    await deployWithDagent(page, 'pw-complex-mutability', productId, versionId,  false, testInfo.title)
+    await deployWithDagent(page, 'pw-complex-mutability', productId, versionId, false, testInfo.title)
 
     const { deploymentId } = extractDeploymentUrl(page.url())
 
@@ -88,11 +88,11 @@ test.describe('Complex product incremental version', () => {
     const versionId = await createVersion(page, productId, '0.1.0', 'Incremental')
     await createImage(page, productId, versionId, image)
 
-    await deployWithDagent(page, 'pw-complex-mutability-obsolete', productId, versionId, false, testInfo.title + "1")
+    await deployWithDagent(page, 'pw-complex-mutability-obsolete', productId, versionId, false, testInfo.title + '1')
 
     const { deploymentId } = extractDeploymentUrl(page.url())
 
-    await deployWithDagent(page, 'pw-complex-mutability-obsolete', productId, versionId, false, testInfo.title + "2")
+    await deployWithDagent(page, 'pw-complex-mutability-obsolete', productId, versionId, false, testInfo.title + '2')
 
     await page.goto(deploymentUrl(productId, versionId, deploymentId))
 

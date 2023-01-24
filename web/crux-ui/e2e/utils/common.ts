@@ -1,7 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable import/no-cycle */
 import { Configuration, Identity, IdentityApi } from '@ory/kratos-client'
-import { FullConfig } from '@playwright/test'
+import { FullConfig, Locator } from '@playwright/test'
 import path from 'path'
 import { v4 as uuid } from 'uuid'
 import MailSlurper from './mail-slurper'
@@ -127,4 +127,9 @@ export const extractDeploymentUrl = (url: string): { versionId: string; deployme
     versionId,
     deploymentId,
   }
+}
+
+export const clearInput = async (input: Locator) => {
+  await input.fill('')
+  await input.press('Backspace')
 }

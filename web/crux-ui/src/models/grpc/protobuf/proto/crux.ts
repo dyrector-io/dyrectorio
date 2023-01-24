@@ -242,6 +242,7 @@ export enum RegistryType {
   GITLAB = 3,
   GITHUB = 4,
   GOOGLE = 5,
+  UNCHECKED = 6,
   UNRECOGNIZED = -1,
 }
 
@@ -265,6 +266,9 @@ export function registryTypeFromJSON(object: any): RegistryType {
     case 5:
     case 'GOOGLE':
       return RegistryType.GOOGLE
+    case 6:
+    case 'UNCHECKED':
+      return RegistryType.UNCHECKED
     case -1:
     case 'UNRECOGNIZED':
     default:
@@ -286,6 +290,8 @@ export function registryTypeToJSON(object: RegistryType): string {
       return 'GITHUB'
     case RegistryType.GOOGLE:
       return 'GOOGLE'
+    case RegistryType.UNCHECKED:
+      return 'UNCHECKED'
     case RegistryType.UNRECOGNIZED:
     default:
       return 'UNRECOGNIZED'
@@ -891,6 +897,10 @@ export interface GoogleRegistryDetails {
   imageNamePrefix: string
 }
 
+export interface UncheckedRegistryDetails {
+  url: string
+}
+
 export interface CreateRegistryRequest {
   accessedBy: string
   name: string
@@ -901,6 +911,7 @@ export interface CreateRegistryRequest {
   gitlab: GitlabRegistryDetails | undefined
   github: GithubRegistryDetails | undefined
   google: GoogleRegistryDetails | undefined
+  unchecked: UncheckedRegistryDetails | undefined
 }
 
 export interface UpdateRegistryRequest {
@@ -914,6 +925,7 @@ export interface UpdateRegistryRequest {
   gitlab: GitlabRegistryDetails | undefined
   github: GithubRegistryDetails | undefined
   google: GoogleRegistryDetails | undefined
+  unchecked: UncheckedRegistryDetails | undefined
 }
 
 export interface RegistryDetailsResponse {
@@ -928,6 +940,7 @@ export interface RegistryDetailsResponse {
   gitlab: GitlabRegistryDetails | undefined
   github: GithubRegistryDetails | undefined
   google: GoogleRegistryDetails | undefined
+  unchecked: UncheckedRegistryDetails | undefined
 }
 
 export interface CreateVersionRequest {
@@ -1117,6 +1130,7 @@ export interface ImageResponse {
   config: ContainerConfig | undefined
   createdAt: Timestamp | undefined
   registryName: string
+  registryType: RegistryType
 }
 
 export interface ImageListResponse {
@@ -4112,6 +4126,53 @@ export const GoogleRegistryDetails = {
   },
 }
 
+function createBaseUncheckedRegistryDetails(): UncheckedRegistryDetails {
+  return { url: '' }
+}
+
+export const UncheckedRegistryDetails = {
+  encode(message: UncheckedRegistryDetails, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.url !== '') {
+      writer.uint32(802).string(message.url)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): UncheckedRegistryDetails {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseUncheckedRegistryDetails()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 100:
+          message.url = reader.string()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): UncheckedRegistryDetails {
+    return { url: isSet(object.url) ? String(object.url) : '' }
+  },
+
+  toJSON(message: UncheckedRegistryDetails): unknown {
+    const obj: any = {}
+    message.url !== undefined && (obj.url = message.url)
+    return obj
+  },
+
+  fromPartial<I extends Exact<DeepPartial<UncheckedRegistryDetails>, I>>(object: I): UncheckedRegistryDetails {
+    const message = createBaseUncheckedRegistryDetails()
+    message.url = object.url ?? ''
+    return message
+  },
+}
+
 function createBaseCreateRegistryRequest(): CreateRegistryRequest {
   return {
     accessedBy: '',
@@ -4121,6 +4182,7 @@ function createBaseCreateRegistryRequest(): CreateRegistryRequest {
     gitlab: undefined,
     github: undefined,
     google: undefined,
+    unchecked: undefined,
   }
 }
 
@@ -4152,6 +4214,9 @@ export const CreateRegistryRequest = {
     }
     if (message.google !== undefined) {
       GoogleRegistryDetails.encode(message.google, writer.uint32(1634).fork()).ldelim()
+    }
+    if (message.unchecked !== undefined) {
+      UncheckedRegistryDetails.encode(message.unchecked, writer.uint32(1642).fork()).ldelim()
     }
     return writer
   },
@@ -4190,6 +4255,9 @@ export const CreateRegistryRequest = {
         case 204:
           message.google = GoogleRegistryDetails.decode(reader, reader.uint32())
           break
+        case 205:
+          message.unchecked = UncheckedRegistryDetails.decode(reader, reader.uint32())
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -4209,6 +4277,7 @@ export const CreateRegistryRequest = {
       gitlab: isSet(object.gitlab) ? GitlabRegistryDetails.fromJSON(object.gitlab) : undefined,
       github: isSet(object.github) ? GithubRegistryDetails.fromJSON(object.github) : undefined,
       google: isSet(object.google) ? GoogleRegistryDetails.fromJSON(object.google) : undefined,
+      unchecked: isSet(object.unchecked) ? UncheckedRegistryDetails.fromJSON(object.unchecked) : undefined,
     }
   },
 
@@ -4226,6 +4295,8 @@ export const CreateRegistryRequest = {
       (obj.github = message.github ? GithubRegistryDetails.toJSON(message.github) : undefined)
     message.google !== undefined &&
       (obj.google = message.google ? GoogleRegistryDetails.toJSON(message.google) : undefined)
+    message.unchecked !== undefined &&
+      (obj.unchecked = message.unchecked ? UncheckedRegistryDetails.toJSON(message.unchecked) : undefined)
     return obj
   },
 
@@ -4250,6 +4321,10 @@ export const CreateRegistryRequest = {
       object.google !== undefined && object.google !== null
         ? GoogleRegistryDetails.fromPartial(object.google)
         : undefined
+    message.unchecked =
+      object.unchecked !== undefined && object.unchecked !== null
+        ? UncheckedRegistryDetails.fromPartial(object.unchecked)
+        : undefined
     return message
   },
 }
@@ -4264,6 +4339,7 @@ function createBaseUpdateRegistryRequest(): UpdateRegistryRequest {
     gitlab: undefined,
     github: undefined,
     google: undefined,
+    unchecked: undefined,
   }
 }
 
@@ -4298,6 +4374,9 @@ export const UpdateRegistryRequest = {
     }
     if (message.google !== undefined) {
       GoogleRegistryDetails.encode(message.google, writer.uint32(1634).fork()).ldelim()
+    }
+    if (message.unchecked !== undefined) {
+      UncheckedRegistryDetails.encode(message.unchecked, writer.uint32(1642).fork()).ldelim()
     }
     return writer
   },
@@ -4339,6 +4418,9 @@ export const UpdateRegistryRequest = {
         case 204:
           message.google = GoogleRegistryDetails.decode(reader, reader.uint32())
           break
+        case 205:
+          message.unchecked = UncheckedRegistryDetails.decode(reader, reader.uint32())
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -4359,6 +4441,7 @@ export const UpdateRegistryRequest = {
       gitlab: isSet(object.gitlab) ? GitlabRegistryDetails.fromJSON(object.gitlab) : undefined,
       github: isSet(object.github) ? GithubRegistryDetails.fromJSON(object.github) : undefined,
       google: isSet(object.google) ? GoogleRegistryDetails.fromJSON(object.google) : undefined,
+      unchecked: isSet(object.unchecked) ? UncheckedRegistryDetails.fromJSON(object.unchecked) : undefined,
     }
   },
 
@@ -4377,6 +4460,8 @@ export const UpdateRegistryRequest = {
       (obj.github = message.github ? GithubRegistryDetails.toJSON(message.github) : undefined)
     message.google !== undefined &&
       (obj.google = message.google ? GoogleRegistryDetails.toJSON(message.google) : undefined)
+    message.unchecked !== undefined &&
+      (obj.unchecked = message.unchecked ? UncheckedRegistryDetails.toJSON(message.unchecked) : undefined)
     return obj
   },
 
@@ -4402,6 +4487,10 @@ export const UpdateRegistryRequest = {
       object.google !== undefined && object.google !== null
         ? GoogleRegistryDetails.fromPartial(object.google)
         : undefined
+    message.unchecked =
+      object.unchecked !== undefined && object.unchecked !== null
+        ? UncheckedRegistryDetails.fromPartial(object.unchecked)
+        : undefined
     return message
   },
 }
@@ -4417,6 +4506,7 @@ function createBaseRegistryDetailsResponse(): RegistryDetailsResponse {
     gitlab: undefined,
     github: undefined,
     google: undefined,
+    unchecked: undefined,
   }
 }
 
@@ -4454,6 +4544,9 @@ export const RegistryDetailsResponse = {
     }
     if (message.google !== undefined) {
       GoogleRegistryDetails.encode(message.google, writer.uint32(1634).fork()).ldelim()
+    }
+    if (message.unchecked !== undefined) {
+      UncheckedRegistryDetails.encode(message.unchecked, writer.uint32(1642).fork()).ldelim()
     }
     return writer
   },
@@ -4498,6 +4591,9 @@ export const RegistryDetailsResponse = {
         case 204:
           message.google = GoogleRegistryDetails.decode(reader, reader.uint32())
           break
+        case 205:
+          message.unchecked = UncheckedRegistryDetails.decode(reader, reader.uint32())
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -4519,6 +4615,7 @@ export const RegistryDetailsResponse = {
       gitlab: isSet(object.gitlab) ? GitlabRegistryDetails.fromJSON(object.gitlab) : undefined,
       github: isSet(object.github) ? GithubRegistryDetails.fromJSON(object.github) : undefined,
       google: isSet(object.google) ? GoogleRegistryDetails.fromJSON(object.google) : undefined,
+      unchecked: isSet(object.unchecked) ? UncheckedRegistryDetails.fromJSON(object.unchecked) : undefined,
     }
   },
 
@@ -4538,6 +4635,8 @@ export const RegistryDetailsResponse = {
       (obj.github = message.github ? GithubRegistryDetails.toJSON(message.github) : undefined)
     message.google !== undefined &&
       (obj.google = message.google ? GoogleRegistryDetails.toJSON(message.google) : undefined)
+    message.unchecked !== undefined &&
+      (obj.unchecked = message.unchecked ? UncheckedRegistryDetails.toJSON(message.unchecked) : undefined)
     return obj
   },
 
@@ -4564,6 +4663,10 @@ export const RegistryDetailsResponse = {
     message.google =
       object.google !== undefined && object.google !== null
         ? GoogleRegistryDetails.fromPartial(object.google)
+        : undefined
+    message.unchecked =
+      object.unchecked !== undefined && object.unchecked !== null
+        ? UncheckedRegistryDetails.fromPartial(object.unchecked)
         : undefined
     return message
   },
@@ -6669,6 +6772,7 @@ function createBaseImageResponse(): ImageResponse {
     config: undefined,
     createdAt: undefined,
     registryName: '',
+    registryType: 0,
   }
 }
 
@@ -6697,6 +6801,9 @@ export const ImageResponse = {
     }
     if (message.registryName !== '') {
       writer.uint32(850).string(message.registryName)
+    }
+    if (message.registryType !== 0) {
+      writer.uint32(856).int32(message.registryType)
     }
     return writer
   },
@@ -6732,6 +6839,9 @@ export const ImageResponse = {
         case 106:
           message.registryName = reader.string()
           break
+        case 107:
+          message.registryType = reader.int32() as any
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -6750,6 +6860,7 @@ export const ImageResponse = {
       config: isSet(object.config) ? ContainerConfig.fromJSON(object.config) : undefined,
       createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
       registryName: isSet(object.registryName) ? String(object.registryName) : '',
+      registryType: isSet(object.registryType) ? registryTypeFromJSON(object.registryType) : 0,
     }
   },
 
@@ -6763,6 +6874,7 @@ export const ImageResponse = {
     message.config !== undefined && (obj.config = message.config ? ContainerConfig.toJSON(message.config) : undefined)
     message.createdAt !== undefined && (obj.createdAt = fromTimestamp(message.createdAt).toISOString())
     message.registryName !== undefined && (obj.registryName = message.registryName)
+    message.registryType !== undefined && (obj.registryType = registryTypeToJSON(message.registryType))
     return obj
   },
 
@@ -6778,6 +6890,7 @@ export const ImageResponse = {
     message.createdAt =
       object.createdAt !== undefined && object.createdAt !== null ? Timestamp.fromPartial(object.createdAt) : undefined
     message.registryName = object.registryName ?? ''
+    message.registryType = object.registryType ?? 0
     return message
   },
 }

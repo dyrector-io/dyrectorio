@@ -1,4 +1,5 @@
 import { REGISTRY_GITLAB_URLS, REGISTRY_HUB_CACHE_EXPIRATION, REGISTRY_HUB_URL } from '@app/const'
+import { invalidArgument } from '@app/error-responses'
 import { RegistryDetails } from '@app/models'
 import { Identity } from '@ory/kratos-client'
 import HubApiCache from './caches/hub-api-cache'
@@ -58,6 +59,10 @@ export class RegistryConnections {
     }
 
     const registry = await crux.getRegistryDetails(registryId)
+
+    if (registry.type === 'unchecked') {
+      throw invalidArgument('type', 'Unchecked registries have no API', registry.type)
+    }
 
     client =
       registry.type === 'v2'

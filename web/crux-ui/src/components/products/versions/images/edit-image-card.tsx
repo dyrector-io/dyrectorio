@@ -102,7 +102,7 @@ const EditImageCard = (props: EditImageCardProps) => {
             <EditImageTags
               disabled={disabled}
               selected={image.tag}
-              tags={state.tags}
+              tags={state.image.registryType === 'unchecked' ? null : state.tags}
               onTagSelected={actions.selectTag}
             />
           ) : section === 'config' ? (
