@@ -742,13 +742,17 @@ func streamDockerLogTTY(reader io.ReadCloser, eventChannel chan grpc.ContainerLo
 	}
 }
 
-func ContainerLog(ctx context.Context, request *agent.ContainerLogRequest) (grpc.ContainerLogReader, error) {
+func ContainerLog(ctx context.Context, request *agent.ContainerLogRequest) (*grpc.ContainerLogContext, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return nil, err
 	}
 
 	containerID := request.GetId()
+	selfID := GetOwnContainerID()
+	enableEcho := containerID != selfID
+
+	log.Trace().Str("logContainerId", containerID).Str("selfContainerId", selfID).Msgf("Container log echo enabled: %t", enableEcho)
 
 	inspect, err := cli.ContainerInspect(ctx, containerID)
 	if err != nil {
@@ -784,5 +788,10 @@ func ContainerLog(ctx context.Context, request *agent.ContainerLogRequest) (grpc
 		Reader:       reader,
 	}
 
-	return logReader, nil
+	logContext := &grpc.ContainerLogContext{
+		Reader:     logReader,
+		EnableEcho: enableEcho,
+	}
+
+	return logContext, nil
 }

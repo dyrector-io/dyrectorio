@@ -39,14 +39,13 @@ docker run `
   --network {{networkName}} `
   {{/if}}
   -e GRPC_TOKEN='{{token}}' `
-  -e HOSTNAME=$HOSTNAME `
+  -e NAME='{{name}}' `
   {{#if traefik}}
   -e TRAEFIK_ENABLED='true' `
   -e TRAEFIK_ACME_MAIL='{{traefik.acmeEmail}}' `
   -e TRAEFIK_TLS='true' `
   {{/if}}
   -e DATA_MOUNT_PATH=$DATA_MOUNT_PATH `
-  -e DAGENT_NAME='{{name}}' `
   {{#if debugMode}}
   -e DEBUG='true' `
   {{/if}}

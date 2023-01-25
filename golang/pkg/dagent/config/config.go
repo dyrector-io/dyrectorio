@@ -7,8 +7,6 @@ import (
 // Dagent(docker)-specific configuration options
 type Configuration struct {
 	config.CommonConfiguration
-	AgentContainerName string `yaml:"agentContainerName"     env:"AGENT_CONTAINER_NAME" env-default:"dagent"`
-	DagentName         string `yaml:"dagentName"             env:"DAGENT_NAME"           env-default:"dagent-go"`
 	DataMountPath      string `yaml:"dataMountPath"          env:"DATA_MOUNT_PATH"       env-default:"/srv/dagent"`
 	HostDockerSockPath string `yaml:"hostDockerSockPath"     env:"HOST_DOCKER_SOCK_PATH" env-default:"/var/run/docker.sock"`
 	InternalMountPath  string `yaml:"internalMountPath"      env:"INTERNAL_MOUNT_PATH"   env-default:"/srv/dagent"`

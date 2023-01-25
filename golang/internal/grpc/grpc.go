@@ -50,6 +50,11 @@ type ContainerLogReader interface {
 	Close() error
 }
 
+type ContainerLogContext struct {
+	Reader     ContainerLogReader
+	EnableEcho bool
+}
+
 type (
 	DeployFunc           func(context.Context, *dogger.DeploymentLogger, *v1.DeployImageRequest, *v1.VersionData) error
 	WatchFunc            func(context.Context, string) []*common.ContainerStateItem
@@ -59,7 +64,7 @@ type (
 	CloseFunc            func(context.Context, agent.CloseReason) error
 	ContainerCommandFunc func(context.Context, *common.ContainerCommandRequest) error
 	DeleteContainersFunc func(context.Context, *common.DeleteContainersRequest) error
-	ContainerLogFunc     func(context.Context, *agent.ContainerLogRequest) (ContainerLogReader, error)
+	ContainerLogFunc     func(context.Context, *agent.ContainerLogRequest) (*ContainerLogContext, error)
 )
 
 type WorkerFunctions struct {
@@ -542,7 +547,12 @@ func executeContainerCommand(ctx context.Context, command *common.ContainerComma
 	}
 }
 
-func streamContainerLog(reader ContainerLogReader, client agent.Agent_ContainerLogClient, containerID string, streaming bool) {
+func streamContainerLog(reader ContainerLogReader,
+	client agent.Agent_ContainerLogClient,
+	containerID string,
+	streaming bool,
+	logContext *ContainerLogContext,
+) {
 	for {
 		event := <-reader.Next()
 		if event.Error != nil {
@@ -568,7 +578,9 @@ func streamContainerLog(reader ContainerLogReader, client agent.Agent_ContainerL
 			break
 		}
 
-		log.Debug().Str("container", containerID).Str("log", event.Message).Msg("Container log")
+		if logContext.EnableEcho {
+			log.Debug().Str("container", containerID).Str("log", event.Message).Msg("Container log")
+		}
 
 		err := client.Send(&common.ContainerLogMessage{
 			Log: event.Message,
@@ -614,11 +626,13 @@ func executeContainerLog(ctx context.Context, command *agent.ContainerLogRequest
 
 	streamCtx = stream.Context()
 
-	reader, err := logFunc(streamCtx, command)
+	logContext, err := logFunc(streamCtx, command)
 	if err != nil {
 		log.Error().Err(err).Str("container", containerID).Msg("Failed to open container log reader")
 		return
 	}
+
+	reader := logContext.Reader
 
 	defer func() {
 		err = reader.Close()
@@ -627,7 +641,7 @@ func executeContainerLog(ctx context.Context, command *agent.ContainerLogRequest
 		}
 	}()
 
-	go streamContainerLog(reader, stream, containerID, command.GetStreaming())
+	go streamContainerLog(reader, stream, containerID, command.GetStreaming(), logContext)
 
 	for {
 		var msg interface{}
