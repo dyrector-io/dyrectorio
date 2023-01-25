@@ -45,7 +45,20 @@ export default class AgentInstaller {
   }
 
   getCommand(): string {
-    return `curl -sL ${this.configService.get<string>('CRUX_UI_URL')}/api/nodes/${this.nodeId}/script | sh -`
+    switch (this.scriptType) {
+      case NodeScriptType.SHELL:
+        return `curl -sL ${this.configService.get<string>('CRUX_UI_URL')}/api/nodes/${this.nodeId}/script | sh -`
+      case NodeScriptType.POWERSHELL:
+        return `Invoke-WebRequest -Uri ${this.configService.get<string>('CRUX_UI_URL')}/api/nodes/${
+          this.nodeId
+        }/script -Method GET | Select-Object -Expand Content | Invoke-Expression`
+      default:
+        throw new InvalidArgumentException({
+          message: 'Unknown script type',
+          property: 'scriptType',
+          value: this.scriptType,
+        })
+    }
   }
 
   getScript(name: string): string {
