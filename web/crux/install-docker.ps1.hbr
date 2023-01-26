@@ -15,6 +15,10 @@ If ( $env:PERSISTENCE_FOLDER ) {
   $PERSISTENCE_FOLDER = {{#if rootPath}}"{{{rootPath}}}"{{else}}"C:/.dyrectorio-persistence"{{/if}}
 }
 
+$PERSISTENCE_FOLDER_ELEMENTS = $PERSISTENCE_FOLDER.Split("/\")
+$PERSISTENCE_FOLDER_ELEMENTS[0] = $PERSISTENCE_FOLDER_ELEMENTS[0].ToLower().Replace(":", "")
+$DATA_MOUNT_PATH = "/run/desktop/mnt/host/$($PERSISTENCE_FOLDER_ELEMENTS -Join "/")"
+
 if ( $env:HOSTNAME ) {
   $HOSTNAME = $env:HOSTNAME
 } elseif ( $env:COMPUTERNAME) {
@@ -41,7 +45,7 @@ docker run `
   -e TRAEFIK_ACME_MAIL='{{traefik.acmeEmail}}' `
   -e TRAEFIK_TLS='true' `
   {{/if}}
-  -e DATA_MOUNT_PATH=$PERSISTENCE_FOLDER `
+  -e DATA_MOUNT_PATH=$DATA_MOUNT_PATH `
   -e DAGENT_NAME='{{name}}' `
   {{#if debugMode}}
   -e DEBUG='true' `
@@ -49,6 +53,6 @@ docker run `
   -e HOST_DOCKER_SOCK_PATH=//var/run/docker.sock `
   --add-host=host.docker.internal:host-gateway `
   --name 'dagent' `
-  -v $PERSISTENCE_FOLDER/:/srv/dagent `
+  -v ${DATA_MOUNT_PATH}:/srv/dagent `
   -v //var/run/docker.sock:/var/run/docker.sock `
   -d ghcr.io/dyrector-io/dyrectorio/agent/dagent:latest
