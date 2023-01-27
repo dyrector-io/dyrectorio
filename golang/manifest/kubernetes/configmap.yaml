@@ -8,4 +8,4 @@
 # data:
 #   CRANE_IN_CLUSTER: "true"
 #   GRPC_TOKEN: 
-#   HOSTNAME:
+#   NAME:

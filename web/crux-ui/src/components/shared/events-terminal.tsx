@@ -56,7 +56,7 @@ const EventsTerminal = <T,>(props: EventsTerminalProps<T>) => {
         className="flex flex-col h-full overflow-y-auto bg-gray-900 rounded-md ring-2 ring-light-grey border-dark px-2 py-1 mt-4 h-128 font-roboto"
       >
         {eventStrings.map((it, index) => (
-          <span className="text-bright tracking-widest" key={`event-${index}`}>
+          <span className="text-bright tracking-widest py-2 text-sm" key={`event-${index}`}>
             {it}
           </span>
         ))}

@@ -104,14 +104,6 @@ set_environment() {
       fi
     fi
   fi
-
-  if [ -z ${HOSTNAME:-} ]; then
-    if [ -z ${HOST:-} ]; then
-      HOSTNAME='{{name}}'
-    else
-      HOSTNAME=$HOST
-    fi
-  fi
 }
 
 dagent_clean() {
@@ -149,14 +141,13 @@ dagent_install() {
     --network {{networkName}} \
     {{/if}}
     -e GRPC_TOKEN='{{token}}' \
-    -e HOSTNAME=$HOSTNAME \
+    -e NAME='{{name}}' \
     {{#if traefik}}
     -e TRAEFIK_ENABLED='true' \
     -e TRAEFIK_ACME_MAIL='{{traefik.acmeEmail}}' \
     -e TRAEFIK_TLS='true' \
     {{/if}}
     -e DATA_MOUNT_PATH=$PERSISTENCE_FOLDER \
-    -e DAGENT_NAME='{{name}}' \
     {{#if debugMode}}
     -e DEBUG='true' \
     {{/if}}
