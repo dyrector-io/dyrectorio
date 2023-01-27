@@ -458,7 +458,12 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                             placeholder={t('common.external')}
                             value={item.external ?? ''}
                             type="number"
-                            onChange={it => onComplexValueChange('ports', 'external', it.target.value, index)}
+                            onChange={it => {
+                              const targetValue = Number.parseInt(it.target.value, 10)
+                              const value = Number.isNaN(targetValue) ? null : targetValue
+
+                              onComplexValueChange('ports', 'external', value, index)
+                            }}
                             disabled={disabled}
                           />
                         </div>

@@ -14,8 +14,8 @@ import (
 // ExposedPort is the port in the container, while PortBinding is the port
 // on the host.
 type PortBinding struct {
-	ExposedPort uint16 `json:"exposedPort" binding:"required,gte=0,lte=65535"`
-	PortBinding uint16 `json:"portBinding" binding:"required,gte=0,lte=65535"`
+	ExposedPort uint16  `json:"exposedPort" binding:"required,gte=0,lte=65535"`
+	PortBinding *uint16 `json:"portBinding" binding:"gte=0,lte=65535"`
 }
 
 // PortRange defines a range of ports from 0 to 65535.

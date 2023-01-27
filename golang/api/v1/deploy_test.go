@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"testing"
 
+	"github.com/AlekSi/pointer"
 	"github.com/stretchr/testify/assert"
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
@@ -42,11 +43,11 @@ func TestDeploymentImageRequestStrings(t *testing.T) {
 			Ports: []container.PortBinding{
 				{
 					ExposedPort: 1234,
-					PortBinding: 4321,
+					PortBinding: pointer.ToUint16(4321),
 				},
 				{
 					ExposedPort: 6789,
-					PortBinding: 9876,
+					PortBinding: pointer.ToUint16(9876),
 				},
 			},
 		},
@@ -111,11 +112,11 @@ func TestContainerConfigStrings(t *testing.T) {
 		Ports: []container.PortBinding{
 			{
 				ExposedPort: 1234,
-				PortBinding: 4321,
+				PortBinding: pointer.ToUint16(4321),
 			},
 			{
 				ExposedPort: 6789,
-				PortBinding: 9876,
+				PortBinding: pointer.ToUint16(9876),
 			},
 		},
 		PortRanges: []container.PortRangeBinding{

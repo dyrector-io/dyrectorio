@@ -55,7 +55,9 @@ const sensitiveKeywordRegExp = new RegExp(`^((?!(${sensitiveKeywords.join('|')})
 
 export const sensitiveKeyRule = yup.string().matches(sensitiveKeywordRegExp)
 
-const portNumberRule = yup.number().positive().lessThan(65536).required()
+const portNumberBaseRule = yup.number().positive().lessThan(65536)
+const portNumberOptionalRule = portNumberBaseRule.nullable()
+const portNumberRule = portNumberBaseRule.required()
 
 const ingressRule = yup
   .object()
@@ -169,7 +171,7 @@ const portConfigRule = yup
   .array(
     yup.object().shape({
       internal: portNumberRule,
-      external: portNumberRule,
+      external: portNumberOptionalRule,
     }),
   )
   .default([])

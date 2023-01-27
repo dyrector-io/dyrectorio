@@ -151,7 +151,7 @@ export interface RegistryAuth {
 
 export interface Port {
   internal: number
-  external: number
+  external?: number | undefined
 }
 
 export interface PortRange {
@@ -564,14 +564,14 @@ export const RegistryAuth = {
 }
 
 function createBasePort(): Port {
-  return { internal: 0, external: 0 }
+  return { internal: 0 }
 }
 
 export const Port = {
   fromJSON(object: any): Port {
     return {
       internal: isSet(object.internal) ? Number(object.internal) : 0,
-      external: isSet(object.external) ? Number(object.external) : 0,
+      external: isSet(object.external) ? Number(object.external) : undefined,
     }
   },
 

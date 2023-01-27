@@ -1011,7 +1011,7 @@ export interface LogConfig {
 export interface Port {
   id: string
   internal: number
-  external: number
+  external?: number | undefined
 }
 
 export interface PortRange {
@@ -2797,7 +2797,7 @@ export const LogConfig = {
 }
 
 function createBasePort(): Port {
-  return { id: '', internal: 0, external: 0 }
+  return { id: '', internal: 0 }
 }
 
 export const Port = {
@@ -2805,7 +2805,7 @@ export const Port = {
     return {
       id: isSet(object.id) ? String(object.id) : '',
       internal: isSet(object.internal) ? Number(object.internal) : 0,
-      external: isSet(object.external) ? Number(object.external) : 0,
+      external: isSet(object.external) ? Number(object.external) : undefined,
     }
   },
 
