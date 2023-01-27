@@ -90,16 +90,16 @@ export interface AgentInfo {
 }
 
 export interface AgentCommand {
-  deploy: VersionDeployRequest | undefined
-  containerState: ContainerStateRequest | undefined
-  containerDelete: ContainerDeleteRequest | undefined
-  deployLegacy: DeployRequestLegacy | undefined
-  listSecrets: ListSecretsRequest | undefined
-  update: AgentUpdateRequest | undefined
-  close: CloseConnectionRequest | undefined
-  containerCommand: ContainerCommandRequest | undefined
-  deleteContainers: DeleteContainersRequest | undefined
-  containerLog: ContainerLogRequest | undefined
+  deploy?: VersionDeployRequest | undefined
+  containerState?: ContainerStateRequest | undefined
+  containerDelete?: ContainerDeleteRequest | undefined
+  deployLegacy?: DeployRequestLegacy | undefined
+  listSecrets?: ListSecretsRequest | undefined
+  update?: AgentUpdateRequest | undefined
+  close?: CloseConnectionRequest | undefined
+  containerCommand?: ContainerCommandRequest | undefined
+  deleteContainers?: DeleteContainersRequest | undefined
+  containerLog?: ContainerLogRequest | undefined
 }
 
 /**
@@ -338,8 +338,8 @@ export interface AgentAbortUpdate {
 
 /** Container log */
 export interface ContainerLogRequest {
-  id: string | undefined
-  prefixName: ContainerIdentifier | undefined
+  id?: string | undefined
+  prefixName?: ContainerIdentifier | undefined
   streaming: boolean
   tail: number
 }
@@ -373,18 +373,7 @@ export const AgentInfo = {
 }
 
 function createBaseAgentCommand(): AgentCommand {
-  return {
-    deploy: undefined,
-    containerState: undefined,
-    containerDelete: undefined,
-    deployLegacy: undefined,
-    listSecrets: undefined,
-    update: undefined,
-    close: undefined,
-    containerCommand: undefined,
-    deleteContainers: undefined,
-    containerLog: undefined,
-  }
+  return {}
 }
 
 export const AgentCommand = {
@@ -1354,7 +1343,7 @@ export const AgentAbortUpdate = {
 }
 
 function createBaseContainerLogRequest(): ContainerLogRequest {
-  return { id: undefined, prefixName: undefined, streaming: false, tail: 0 }
+  return { streaming: false, tail: 0 }
 }
 
 export const ContainerLogRequest = {

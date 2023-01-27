@@ -550,8 +550,8 @@ export interface InstanceDeploymentItem {
 }
 
 export interface DeploymentStatusMessage {
-  instance: InstanceDeploymentItem | undefined
-  deploymentStatus: DeploymentStatus | undefined
+  instance?: InstanceDeploymentItem | undefined
+  deploymentStatus?: DeploymentStatus | undefined
   log: string[]
 }
 
@@ -566,8 +566,8 @@ export interface ContainerStateListMessage {
 }
 
 export interface ContainerStateItem {
-  id: string | undefined
-  prefix: string | undefined
+  id?: string | undefined
+  prefix?: string | undefined
   name: string
   command: string
   createdAt: Timestamp | undefined
@@ -642,15 +642,15 @@ export interface ContainerIdentifier {
 }
 
 export interface ContainerCommandRequest {
-  id: string | undefined
-  prefixName: ContainerIdentifier | undefined
+  id?: string | undefined
+  prefixName?: ContainerIdentifier | undefined
   operation: ContainerOperation
 }
 
 export interface DeleteContainersRequest {
-  containerId: string | undefined
-  prefixName: ContainerIdentifier | undefined
-  prefix: string | undefined
+  containerId?: string | undefined
+  prefixName?: ContainerIdentifier | undefined
+  prefix?: string | undefined
 }
 
 function createBaseEmpty(): Empty {
@@ -684,6 +684,10 @@ export const Empty = {
   toJSON(_: Empty): unknown {
     const obj: any = {}
     return obj
+  },
+
+  create<I extends Exact<DeepPartial<Empty>, I>>(base?: I): Empty {
+    return Empty.fromPartial(base ?? {})
   },
 
   fromPartial<I extends Exact<DeepPartial<Empty>, I>>(_: I): Empty {
@@ -742,6 +746,10 @@ export const InstanceDeploymentItem = {
     return obj
   },
 
+  create<I extends Exact<DeepPartial<InstanceDeploymentItem>, I>>(base?: I): InstanceDeploymentItem {
+    return InstanceDeploymentItem.fromPartial(base ?? {})
+  },
+
   fromPartial<I extends Exact<DeepPartial<InstanceDeploymentItem>, I>>(object: I): InstanceDeploymentItem {
     const message = createBaseInstanceDeploymentItem()
     message.instanceId = object.instanceId ?? ''
@@ -751,7 +759,7 @@ export const InstanceDeploymentItem = {
 }
 
 function createBaseDeploymentStatusMessage(): DeploymentStatusMessage {
-  return { instance: undefined, deploymentStatus: undefined, log: [] }
+  return { log: [] }
 }
 
 export const DeploymentStatusMessage = {
@@ -813,6 +821,10 @@ export const DeploymentStatusMessage = {
       obj.log = []
     }
     return obj
+  },
+
+  create<I extends Exact<DeepPartial<DeploymentStatusMessage>, I>>(base?: I): DeploymentStatusMessage {
+    return DeploymentStatusMessage.fromPartial(base ?? {})
   },
 
   fromPartial<I extends Exact<DeepPartial<DeploymentStatusMessage>, I>>(object: I): DeploymentStatusMessage {
@@ -877,6 +889,10 @@ export const ContainerStateItemPort = {
     return obj
   },
 
+  create<I extends Exact<DeepPartial<ContainerStateItemPort>, I>>(base?: I): ContainerStateItemPort {
+    return ContainerStateItemPort.fromPartial(base ?? {})
+  },
+
   fromPartial<I extends Exact<DeepPartial<ContainerStateItemPort>, I>>(object: I): ContainerStateItemPort {
     const message = createBaseContainerStateItemPort()
     message.internal = object.internal ?? 0
@@ -939,6 +955,10 @@ export const ContainerStateListMessage = {
     return obj
   },
 
+  create<I extends Exact<DeepPartial<ContainerStateListMessage>, I>>(base?: I): ContainerStateListMessage {
+    return ContainerStateListMessage.fromPartial(base ?? {})
+  },
+
   fromPartial<I extends Exact<DeepPartial<ContainerStateListMessage>, I>>(object: I): ContainerStateListMessage {
     const message = createBaseContainerStateListMessage()
     message.prefix = object.prefix ?? undefined
@@ -948,18 +968,7 @@ export const ContainerStateListMessage = {
 }
 
 function createBaseContainerStateItem(): ContainerStateItem {
-  return {
-    id: undefined,
-    prefix: undefined,
-    name: '',
-    command: '',
-    createdAt: undefined,
-    state: 0,
-    status: '',
-    imageName: '',
-    imageTag: '',
-    ports: [],
-  }
+  return { name: '', command: '', createdAt: undefined, state: 0, status: '', imageName: '', imageTag: '', ports: [] }
 }
 
 export const ContainerStateItem = {
@@ -1076,6 +1085,10 @@ export const ContainerStateItem = {
     return obj
   },
 
+  create<I extends Exact<DeepPartial<ContainerStateItem>, I>>(base?: I): ContainerStateItem {
+    return ContainerStateItem.fromPartial(base ?? {})
+  },
+
   fromPartial<I extends Exact<DeepPartial<ContainerStateItem>, I>>(object: I): ContainerStateItem {
     const message = createBaseContainerStateItem()
     message.id = object.id ?? undefined
@@ -1131,6 +1144,10 @@ export const ContainerLogMessage = {
     const obj: any = {}
     message.log !== undefined && (obj.log = message.log)
     return obj
+  },
+
+  create<I extends Exact<DeepPartial<ContainerLogMessage>, I>>(base?: I): ContainerLogMessage {
+    return ContainerLogMessage.fromPartial(base ?? {})
   },
 
   fromPartial<I extends Exact<DeepPartial<ContainerLogMessage>, I>>(object: I): ContainerLogMessage {
@@ -1196,6 +1213,10 @@ export const Ingress = {
     message.host !== undefined && (obj.host = message.host)
     message.uploadLimit !== undefined && (obj.uploadLimit = message.uploadLimit)
     return obj
+  },
+
+  create<I extends Exact<DeepPartial<Ingress>, I>>(base?: I): Ingress {
+    return Ingress.fromPartial(base ?? {})
   },
 
   fromPartial<I extends Exact<DeepPartial<Ingress>, I>>(object: I): Ingress {
@@ -1271,6 +1292,10 @@ export const ConfigContainer = {
     message.path !== undefined && (obj.path = message.path)
     message.keepFiles !== undefined && (obj.keepFiles = message.keepFiles)
     return obj
+  },
+
+  create<I extends Exact<DeepPartial<ConfigContainer>, I>>(base?: I): ConfigContainer {
+    return ConfigContainer.fromPartial(base ?? {})
   },
 
   fromPartial<I extends Exact<DeepPartial<ConfigContainer>, I>>(object: I): ConfigContainer {
@@ -1349,6 +1374,10 @@ export const HealthCheckConfig = {
     return obj
   },
 
+  create<I extends Exact<DeepPartial<HealthCheckConfig>, I>>(base?: I): HealthCheckConfig {
+    return HealthCheckConfig.fromPartial(base ?? {})
+  },
+
   fromPartial<I extends Exact<DeepPartial<HealthCheckConfig>, I>>(object: I): HealthCheckConfig {
     const message = createBaseHealthCheckConfig()
     message.port = object.port ?? undefined
@@ -1409,6 +1438,10 @@ export const Resource = {
     return obj
   },
 
+  create<I extends Exact<DeepPartial<Resource>, I>>(base?: I): Resource {
+    return Resource.fromPartial(base ?? {})
+  },
+
   fromPartial<I extends Exact<DeepPartial<Resource>, I>>(object: I): Resource {
     const message = createBaseResource()
     message.cpu = object.cpu ?? undefined
@@ -1467,6 +1500,10 @@ export const ResourceConfig = {
     return obj
   },
 
+  create<I extends Exact<DeepPartial<ResourceConfig>, I>>(base?: I): ResourceConfig {
+    return ResourceConfig.fromPartial(base ?? {})
+  },
+
   fromPartial<I extends Exact<DeepPartial<ResourceConfig>, I>>(object: I): ResourceConfig {
     const message = createBaseResourceConfig()
     message.limits =
@@ -1522,6 +1559,10 @@ export const KeyValue = {
     message.key !== undefined && (obj.key = message.key)
     message.value !== undefined && (obj.value = message.value)
     return obj
+  },
+
+  create<I extends Exact<DeepPartial<KeyValue>, I>>(base?: I): KeyValue {
+    return KeyValue.fromPartial(base ?? {})
   },
 
   fromPartial<I extends Exact<DeepPartial<KeyValue>, I>>(object: I): KeyValue {
@@ -1610,6 +1651,10 @@ export const ListSecretsResponse = {
     return obj
   },
 
+  create<I extends Exact<DeepPartial<ListSecretsResponse>, I>>(base?: I): ListSecretsResponse {
+    return ListSecretsResponse.fromPartial(base ?? {})
+  },
+
   fromPartial<I extends Exact<DeepPartial<ListSecretsResponse>, I>>(object: I): ListSecretsResponse {
     const message = createBaseListSecretsResponse()
     message.prefix = object.prefix ?? ''
@@ -1666,6 +1711,10 @@ export const UniqueKey = {
     message.id !== undefined && (obj.id = message.id)
     message.key !== undefined && (obj.key = message.key)
     return obj
+  },
+
+  create<I extends Exact<DeepPartial<UniqueKey>, I>>(base?: I): UniqueKey {
+    return UniqueKey.fromPartial(base ?? {})
   },
 
   fromPartial<I extends Exact<DeepPartial<UniqueKey>, I>>(object: I): UniqueKey {
@@ -1726,6 +1775,10 @@ export const ContainerIdentifier = {
     return obj
   },
 
+  create<I extends Exact<DeepPartial<ContainerIdentifier>, I>>(base?: I): ContainerIdentifier {
+    return ContainerIdentifier.fromPartial(base ?? {})
+  },
+
   fromPartial<I extends Exact<DeepPartial<ContainerIdentifier>, I>>(object: I): ContainerIdentifier {
     const message = createBaseContainerIdentifier()
     message.prefix = object.prefix ?? ''
@@ -1735,7 +1788,7 @@ export const ContainerIdentifier = {
 }
 
 function createBaseContainerCommandRequest(): ContainerCommandRequest {
-  return { id: undefined, prefixName: undefined, operation: 0 }
+  return { operation: 0 }
 }
 
 export const ContainerCommandRequest = {
@@ -1793,6 +1846,10 @@ export const ContainerCommandRequest = {
     return obj
   },
 
+  create<I extends Exact<DeepPartial<ContainerCommandRequest>, I>>(base?: I): ContainerCommandRequest {
+    return ContainerCommandRequest.fromPartial(base ?? {})
+  },
+
   fromPartial<I extends Exact<DeepPartial<ContainerCommandRequest>, I>>(object: I): ContainerCommandRequest {
     const message = createBaseContainerCommandRequest()
     message.id = object.id ?? undefined
@@ -1806,7 +1863,7 @@ export const ContainerCommandRequest = {
 }
 
 function createBaseDeleteContainersRequest(): DeleteContainersRequest {
-  return { containerId: undefined, prefixName: undefined, prefix: undefined }
+  return {}
 }
 
 export const DeleteContainersRequest = {
@@ -1862,6 +1919,10 @@ export const DeleteContainersRequest = {
       (obj.prefixName = message.prefixName ? ContainerIdentifier.toJSON(message.prefixName) : undefined)
     message.prefix !== undefined && (obj.prefix = message.prefix)
     return obj
+  },
+
+  create<I extends Exact<DeepPartial<DeleteContainersRequest>, I>>(base?: I): DeleteContainersRequest {
+    return DeleteContainersRequest.fromPartial(base ?? {})
   },
 
   fromPartial<I extends Exact<DeepPartial<DeleteContainersRequest>, I>>(object: I): DeleteContainersRequest {

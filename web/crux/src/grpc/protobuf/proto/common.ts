@@ -549,8 +549,8 @@ export interface InstanceDeploymentItem {
 }
 
 export interface DeploymentStatusMessage {
-  instance: InstanceDeploymentItem | undefined
-  deploymentStatus: DeploymentStatus | undefined
+  instance?: InstanceDeploymentItem | undefined
+  deploymentStatus?: DeploymentStatus | undefined
   log: string[]
 }
 
@@ -565,8 +565,8 @@ export interface ContainerStateListMessage {
 }
 
 export interface ContainerStateItem {
-  id: string | undefined
-  prefix: string | undefined
+  id?: string | undefined
+  prefix?: string | undefined
   name: string
   command: string
   createdAt: Timestamp | undefined
@@ -641,15 +641,15 @@ export interface ContainerIdentifier {
 }
 
 export interface ContainerCommandRequest {
-  id: string | undefined
-  prefixName: ContainerIdentifier | undefined
+  id?: string | undefined
+  prefixName?: ContainerIdentifier | undefined
   operation: ContainerOperation
 }
 
 export interface DeleteContainersRequest {
-  containerId: string | undefined
-  prefixName: ContainerIdentifier | undefined
-  prefix: string | undefined
+  containerId?: string | undefined
+  prefixName?: ContainerIdentifier | undefined
+  prefix?: string | undefined
 }
 
 export const COMMON_PACKAGE_NAME = 'common'
@@ -690,7 +690,7 @@ export const InstanceDeploymentItem = {
 }
 
 function createBaseDeploymentStatusMessage(): DeploymentStatusMessage {
-  return { instance: undefined, deploymentStatus: undefined, log: [] }
+  return { log: [] }
 }
 
 export const DeploymentStatusMessage = {
@@ -763,18 +763,7 @@ export const ContainerStateListMessage = {
 }
 
 function createBaseContainerStateItem(): ContainerStateItem {
-  return {
-    id: undefined,
-    prefix: undefined,
-    name: '',
-    command: '',
-    createdAt: undefined,
-    state: 0,
-    status: '',
-    imageName: '',
-    imageTag: '',
-    ports: [],
-  }
+  return { name: '', command: '', createdAt: undefined, state: 0, status: '', imageName: '', imageTag: '', ports: [] }
 }
 
 export const ContainerStateItem = {
@@ -1024,7 +1013,7 @@ export const ContainerIdentifier = {
 }
 
 function createBaseContainerCommandRequest(): ContainerCommandRequest {
-  return { id: undefined, prefixName: undefined, operation: 0 }
+  return { operation: 0 }
 }
 
 export const ContainerCommandRequest = {
@@ -1047,7 +1036,7 @@ export const ContainerCommandRequest = {
 }
 
 function createBaseDeleteContainersRequest(): DeleteContainersRequest {
-  return { containerId: undefined, prefixName: undefined, prefix: undefined }
+  return {}
 }
 
 export const DeleteContainersRequest = {
