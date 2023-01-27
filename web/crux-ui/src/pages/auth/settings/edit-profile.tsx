@@ -9,12 +9,13 @@ import DyoForm from '@app/elements/dyo-form'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
+import useDyoFormik from '@app/hooks/use-dyo-formik'
 import { EditProfile } from '@app/models'
 import { API_SETTINGS_EDIT_PROFILE, ROUTE_LOGIN, ROUTE_SETTINGS, ROUTE_SETTINGS_EDIT_PROFILE } from '@app/routes'
 import { findAttributes, findMessage, sendForm, withContextAuthorization } from '@app/utils'
+import { userProfileSchema } from '@app/validations'
 import { SettingsFlow } from '@ory/kratos-client'
 import kratos from '@server/kratos'
-import { useFormik } from 'formik'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
@@ -29,12 +30,13 @@ const SettingsPage = (props: SettingsFlow) => {
   const [ui, setUi] = useState(propsUi)
   const saveRef = useRef<() => Promise<any>>()
 
-  const formik = useFormik({
+  const formik = useDyoFormik({
     initialValues: {
       email: findAttributes(ui, 'traits.email').value,
       firstName: findAttributes(ui, 'traits.name.first').value ?? '',
       lastName: findAttributes(ui, 'traits.name.last').value ?? '',
     },
+    validationSchema: userProfileSchema,
     onSubmit: async values => {
       const data: EditProfile = {
         flow: id,
@@ -92,7 +94,7 @@ const SettingsPage = (props: SettingsFlow) => {
             type="text"
             onChange={formik.handleChange}
             value={formik.values.firstName}
-            message={findMessage(ui, 'traits.name.first')}
+            message={findMessage(ui, 'traits.name.first') ?? (formik.errors.firstName as string)}
             grow
           />
           <DyoInput
@@ -101,7 +103,7 @@ const SettingsPage = (props: SettingsFlow) => {
             type="text"
             onChange={formik.handleChange}
             value={formik.values.lastName}
-            message={findMessage(ui, 'traits.name.last')}
+            message={findMessage(ui, 'traits.name.last') ?? (formik.errors.lastName as string)}
             grow
           />
           <DyoInput
@@ -110,7 +112,7 @@ const SettingsPage = (props: SettingsFlow) => {
             type="email"
             onChange={formik.handleChange}
             value={formik.values.email}
-            message={findMessage(ui, 'traits.email')}
+            message={findMessage(ui, 'traits.email') ?? (formik.errors.email as string)}
             grow
           />
           <DyoButton className="hidden" type="submit" />

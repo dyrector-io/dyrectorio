@@ -5,11 +5,11 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { defaultApiErrorHandler } from '@app/errors'
+import useDyoFormik from '@app/hooks/use-dyo-formik'
 import { ActiveTeamDetails, InviteUser, User } from '@app/models'
 import { teamUsersApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { inviteUserSchema } from '@app/validations'
-import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
 import { MutableRefObject } from 'react'
 
@@ -27,13 +27,13 @@ const InviteUserCard = (props: InviteUserCardProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const formik = useFormik({
-    validationSchema: inviteUserSchema,
+  const formik = useDyoFormik({
     initialValues: {
       email: '',
       firstName: '',
       lastName: '',
     },
+    validationSchema: inviteUserSchema,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 

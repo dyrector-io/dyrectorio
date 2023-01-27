@@ -7,13 +7,13 @@ import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
+import useDyoFormik from '@app/hooks/use-dyo-formik'
 import { ProductType, PRODUCT_TYPE_VALUES } from '@app/models'
 import { CreateEntityResponse } from '@app/models/grpc/protobuf/proto/crux'
 import { ApplyTemplate, Template } from '@app/models/template'
 import { API_TEMPLATES } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { applyTemplateSchema } from '@app/validations'
-import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
 import { MutableRefObject } from 'react'
 
@@ -31,13 +31,13 @@ const ApplyTemplateCard = (props: ApplyTemplateCardProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const formik = useFormik({
-    validationSchema: applyTemplateSchema,
+  const formik = useDyoFormik({
     initialValues: {
       name: propsTemplate.name,
       description: propsTemplate.description,
       type: 'simple' as ProductType,
     },
+    validationSchema: applyTemplateSchema,
     enableReinitialize: true,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)

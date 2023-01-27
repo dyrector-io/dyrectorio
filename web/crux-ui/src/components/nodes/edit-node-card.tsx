@@ -9,6 +9,7 @@ import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
+import useDyoFormik from '@app/hooks/use-dyo-formik'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
   CreateDyoNode,
@@ -26,7 +27,6 @@ import { API_NODES, nodeApiUrl, nodeTokenApiUrl, WS_NODES } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { nodeSchema } from '@app/validations'
 import clsx from 'clsx'
-import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
 import { MutableRefObject } from 'react'
 import toast from 'react-hot-toast'
@@ -132,9 +132,9 @@ const EditNodeCard = (props: EditNodeCardProps) => {
     } as UpdateNodeAgentMessage)
   }
 
-  const formik = useFormik({
-    validationSchema: nodeSchema,
+  const formik = useDyoFormik({
     initialValues: node,
+    validationSchema: nodeSchema,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 

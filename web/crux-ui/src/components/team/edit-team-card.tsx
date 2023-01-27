@@ -5,11 +5,11 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { defaultApiErrorHandler } from '@app/errors'
+import useDyoFormik from '@app/hooks/use-dyo-formik'
 import { CreateTeam, DEFAULT_TEAM_STATISTICS, Team, UpdateTeam } from '@app/models'
 import { API_TEAMS, teamApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
-import { createProductSchema, updateProductSchema } from '@app/validations'
-import { useFormik } from 'formik'
+import { createTeamSchema, updateTeamSchema } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
 import { MutableRefObject, useState } from 'react'
 
@@ -37,11 +37,11 @@ const EditTeamCard = (props: EditTeamCardProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const formik = useFormik({
-    validationSchema: !editing ? createProductSchema : updateProductSchema,
+  const formik = useDyoFormik({
     initialValues: {
       name: team.name,
     },
+    validationSchema: !editing ? createTeamSchema : updateTeamSchema,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 

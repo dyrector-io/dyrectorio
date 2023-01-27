@@ -139,6 +139,7 @@ test('Container log should appear after a successful deployment', async ({ page 
   await showLogs.click()
   await navigation
 
+  await page.waitForSelector('div.font-roboto')
   const terminal = page.locator('div.font-roboto')
   await expect(await terminal.locator('span')).not.toHaveCount(0)
 })
@@ -171,6 +172,8 @@ test('Container log should appear on a node container', async ({ page }) => {
   const nodeButton = await page.locator(`h3:has-text("${DAGENT_NODE}")`)
   await nodeButton.click()
 
+  await page.locator('input[placeholder="Search"]').type(`${prefix}-${imageName}`)
+
   const nodeContainerRow = await page.locator(`span:text-is("${prefix}-${imageName}") >> xpath=../..`)
   await expect(nodeContainerRow).toHaveCount(1)
 
@@ -181,7 +184,8 @@ test('Container log should appear on a node container', async ({ page }) => {
   await logButton.click()
   await navigation
 
-  const terminal = page.locator('div.font-roboto')
+  await page.waitForSelector('div.font-roboto')
+  const terminal = await page.locator('div.font-roboto')
   await expect(await terminal.locator('span')).not.toHaveCount(0)
 })
 
@@ -206,11 +210,13 @@ test('Docker generate script should show Traefik options', async ({ page }) => {
   await traefikToggle.click()
 
   await expect(await page.locator('label:has-text("Traefik ACME email")')).toBeVisible()
+  await expect(await page.locator('p:has-text("ACME email is a required field")')).not.toBeVisible()
 
+  await page.click('button:text-is("Generate script")')
   await expect(await page.locator('p:has-text("ACME email is a required field")')).toBeVisible()
 
   const acmeEmailInput = await page.locator('input[name="traefik.acmeEmail"]')
   await acmeEmailInput.type('a@b.c')
-
+  await page.click('button:text-is("Generate script")')
   await expect(await page.locator('p:has-text("ACME email is a required field")')).not.toBeVisible()
 })

@@ -5,11 +5,11 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
+import useDyoFormik from '@app/hooks/use-dyo-formik'
 import { DeploymentDetails, UpdateDeployment } from '@app/models'
 import { deploymentApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { updateDeploymentSchema } from '@app/validations'
-import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
 import React from 'react'
 
@@ -28,7 +28,7 @@ const EditDeploymentCard = (props: EditDeploymentCardProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const formik = useFormik({
+  const formik = useDyoFormik({
     initialValues: deployment,
     validationSchema: updateDeploymentSchema,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {

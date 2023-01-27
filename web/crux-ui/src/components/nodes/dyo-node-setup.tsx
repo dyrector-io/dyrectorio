@@ -7,6 +7,7 @@ import { DyoLabel } from '@app/elements/dyo-label'
 import DyoSwitch from '@app/elements/dyo-switch'
 import TimeLabel from '@app/elements/time-label'
 import { defaultApiErrorHandler } from '@app/errors'
+import useDyoFormik from '@app/hooks/use-dyo-formik'
 import useTimer from '@app/hooks/use-timer'
 import {
   DyoNodeDetails,
@@ -20,7 +21,6 @@ import {
 import { nodeSetupApiUrl } from '@app/routes'
 import { sendForm, writeToClipboard } from '@app/utils'
 import { nodeGenerateScriptSchema } from '@app/validations'
-import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
 import ShEditor from '../shared/sh-editor'
 
@@ -63,14 +63,14 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
 
   const onCopyScript = () => writeToClipboard(t, node.install.command)
 
-  const formik = useFormik<DyoNodeGenerateScript>({
-    validationSchema: nodeGenerateScriptSchema,
+  const formik = useDyoFormik<DyoNodeGenerateScript>({
     initialValues: {
       type: node.type,
       rootPath: '',
       scriptType: 'shell',
       traefik: undefined,
     },
+    validationSchema: nodeGenerateScriptSchema,
     onSubmit: async (values, { setSubmitting }) => {
       setSubmitting(true)
 
@@ -96,7 +96,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
     },
   })
 
-  const onTraefikChanged = it => formik.setFieldValue('traefik', it ? {} : undefined, true)
+  const onTraefikChanged = it => formik.setFieldValue('traefik', it ? {} : undefined)
 
   return (
     <DyoForm className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
@@ -178,7 +178,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
             </div>
           )}
 
-          <DyoButton className="px-4 py-2 mt-4 mr-auto" disabled={!formik.isValid} type="submit">
+          <DyoButton className="px-4 py-2 mt-4 mr-auto" type="submit">
             {t('generateScript')}
           </DyoButton>
         </div>

@@ -6,6 +6,7 @@ import DyoForm from '@app/elements/dyo-form'
 import { DyoInput } from '@app/elements/dyo-input'
 import DyoMessage from '@app/elements/dyo-message'
 import DyoSingleFormHeading from '@app/elements/dyo-single-form-heading'
+import useDyoFormik from '@app/hooks/use-dyo-formik'
 import useTimer from '@app/hooks/use-timer'
 import { DyoErrorDto, RecoverEmail } from '@app/models'
 import { API_RECOVERY, ROUTE_INDEX, ROUTE_RECOVERY, ROUTE_RECOVERY_EXPIRED } from '@app/routes'
@@ -19,10 +20,10 @@ import {
   sendForm,
   upsertDyoError,
 } from '@app/utils'
+import { recoverySchema } from '@app/validations'
 import { RecoveryFlow } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'
 import kratos, { forwardCookie, obtainSessionFromRequest } from '@server/kratos'
-import { useFormik } from 'formik'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
@@ -53,11 +54,12 @@ const RecoveryPage = (props: RecoveryPageProps) => {
     recaptchaSiteKey ? recaptcha.current.reset() : null,
   )
 
-  const formik = useFormik({
+  const formik = useDyoFormik({
     initialValues: {
       email: '',
       code: '',
     },
+    validationSchema: recoverySchema,
     onSubmit: async values => {
       const captcha = await recaptcha.current?.executeAsync()
 
@@ -66,7 +68,7 @@ const RecoveryPage = (props: RecoveryPageProps) => {
         csrfToken: findAttributes(ui, ATTRIB_CSRF)?.value,
         captcha,
         email: !sent ? values.email : null,
-        code: sent ? values.code : null,
+        code: sent ? values.code.trim() : null,
       }
 
       const res = await sendForm('POST', API_RECOVERY, data)
@@ -124,7 +126,7 @@ const RecoveryPage = (props: RecoveryPageProps) => {
             type="email"
             onChange={formik.handleChange}
             value={formik.values.email}
-            message={findMessage(ui, 'email')}
+            message={findMessage(ui, 'email') ?? formik.errors.email}
           />
 
           {!sent ? null : (
@@ -137,7 +139,7 @@ const RecoveryPage = (props: RecoveryPageProps) => {
                 type="text"
                 onChange={formik.handleChange}
                 value={formik.values.code}
-                message={findMessage(ui, 'code')}
+                message={findMessage(ui, 'code') ?? formik.errors.code}
               />
 
               <DyoButton className="mt-8" type="submit">
