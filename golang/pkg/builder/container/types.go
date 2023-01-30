@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/AlekSi/pointer"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
 )
@@ -14,8 +15,13 @@ import (
 // ExposedPort is the port in the container, while PortBinding is the port
 // on the host.
 type PortBinding struct {
-	ExposedPort uint16  `json:"exposedPort" binding:"required,gte=0,lte=65535"`
 	PortBinding *uint16 `json:"portBinding" binding:"gte=0,lte=65535"`
+	ExposedPort uint16  `json:"exposedPort" binding:"required,gte=0,lte=65535"`
+}
+
+// same style as default String() method, need this because one is optional
+func (p PortBinding) String() string {
+	return fmt.Sprintf("{%v %v}", pointer.GetUint16(p.PortBinding), p.ExposedPort)
 }
 
 // PortRange defines a range of ports from 0 to 65535.

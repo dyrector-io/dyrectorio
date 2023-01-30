@@ -43,6 +43,7 @@ func (d *DeployImageRequest) Strings(appConfig *config.CommonConfiguration) []st
 	} else {
 		registry = "default"
 	}
+
 	return []string{
 		// TODO: env
 		fmt.Sprintf("Deployment target: %v\n", appConfig.IngressRootDomain),
