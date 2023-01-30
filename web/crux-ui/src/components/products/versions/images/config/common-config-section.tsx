@@ -430,7 +430,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                     type="number"
                     onPatch={it =>
                       onPatch({
-                        internal: toNumber(it),
+                        internal: toNumber(it, null),
                       })
                     }
                     editorOptions={editorOptions}
@@ -507,7 +507,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   />
                 </div>
 
-                {/* extarnal part */}
+                {/* external part */}
                 <DyoLabel>{t('common.external').toUpperCase()}</DyoLabel>
 
                 <div className="flex flex-row flex-grow gap-2 pl-2">

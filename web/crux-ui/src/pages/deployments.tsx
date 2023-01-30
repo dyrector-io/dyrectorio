@@ -51,7 +51,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
       return
     }
 
-    router.push(url)
+    await router.push(url)
   }
 
   const filters = useFilters<Deployment, DeploymentFilter>({

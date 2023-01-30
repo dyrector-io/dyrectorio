@@ -40,9 +40,9 @@ const TemplatesPage = (props: TemplatesPageProps) => {
     window.scrollTo(0, 0)
   }
 
-  const onTemplateApplied = productId => {
+  const onTemplateApplied = async productId => {
     setApplying(null)
-    router.push(productUrl(productId))
+    await router.push(productUrl(productId))
   }
 
   return (

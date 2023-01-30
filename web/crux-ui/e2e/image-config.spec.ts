@@ -1,5 +1,5 @@
 import { WS_TYPE_PATCH_IMAGE } from '@app/models'
-import { expect, Page, test } from '@playwright/test'
+import { expect, Page, test, WebSocket } from '@playwright/test'
 import { imageConfigUrl } from '../src/routes'
 import { screenshotPath } from './utils/common'
 import { createImage, createProduct, createVersion } from './utils/products'
@@ -118,14 +118,11 @@ test.describe('Filters', () => {
   })
 })
 
-const configureImagePort = async (page: Page, internal: string, external: string) => {
-  const addPortsButton = await page.locator(`[src="/plus.svg"]:right-of(label:has-text("Ports"))`).first()
-
-  await addPortsButton.click()
-
-  await page.locator('input[placeholder="Internal"]').type(internal)
-  await page.locator('input[placeholder="External"]').type(external)
-}
+const wsPatchSent = (ws: WebSocket) =>
+  ws.waitForEvent('framesent', data => {
+    const payload = JSON.parse(data.payload as string)
+    return payload.type === WS_TYPE_PATCH_IMAGE
+  })
 
 test.describe('Image configurations', () => {
   test('Port should be saved after adding it from the config field', async ({ page }) => {
@@ -134,24 +131,26 @@ test.describe('Image configurations', () => {
     await page.goto(imageConfigUrl(productId, versionId, imageId))
 
     const ws = await page.waitForEvent('websocket')
+    let wsSent = wsPatchSent(ws)
 
-    const wsSent = ws.waitForEvent('framesent', data => {
-      const payload = JSON.parse(data.payload as string)
-      return payload.type === WS_TYPE_PATCH_IMAGE
-    })
+    const addPortsButton = await page.locator(`[src="/plus.svg"]:right-of(label:has-text("Ports"))`).first()
+    await addPortsButton.click()
+    await wsSent
 
-    const internal = '1000'
-    const external = '2000'
-    await configureImagePort(page, internal, external)
+    const internalValue = '1000'
+    const externalValue = '2000'
+
+    wsSent = wsPatchSent(ws)
+    const internal = page.locator('input[placeholder="Internal"]')
+    const external = page.locator('input[placeholder="External"]')
+    await internal.type(internalValue)
+    await external.type(externalValue)
     await wsSent
 
     await page.reload()
 
-    const internalInput = await page.locator('input[placeholder="Internal"]')
-    const externalInput = await page.locator('input[placeholder="External"]')
-
-    await expect(internalInput).toHaveValue(internal)
-    await expect(externalInput).toHaveValue(external)
+    await expect(internal).toHaveValue(internalValue)
+    await expect(external).toHaveValue(externalValue)
   })
 
   test('Port should be saved after adding it from the json editor', async ({ page }) => {
@@ -172,18 +171,14 @@ test.describe('Image configurations', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.ports = [{ internal, external }]
 
-    const wsSent = ws.waitForEvent('framesent', data => {
-      const payload = JSON.parse(data.payload as string)
-      return payload.type === WS_TYPE_PATCH_IMAGE
-    })
-
+    const wsSent = wsPatchSent(ws)
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 
     await page.reload()
 
-    const internalInput = await page.locator('input[placeholder="Internal"]')
-    const externalInput = await page.locator('input[placeholder="External"]')
+    const internalInput = page.locator('input[placeholder="Internal"]')
+    const externalInput = page.locator('input[placeholder="External"]')
 
     await expect(internalInput).toHaveValue(internal)
     await expect(externalInput).toHaveValue(external)

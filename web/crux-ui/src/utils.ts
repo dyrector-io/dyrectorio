@@ -426,10 +426,10 @@ export const nullify = <T>(object: T): T => {
   return !empty ? object : null
 }
 
-export const toNumber = (value: string): number => {
+export const toNumber = (value: string, defaultValue: number = 0): number => {
   if (!value) {
     return null
   }
 
-  return Number.isNaN(value) ? 0 : Number(value)
+  return Number.isNaN(value) ? defaultValue : Number(value)
 }

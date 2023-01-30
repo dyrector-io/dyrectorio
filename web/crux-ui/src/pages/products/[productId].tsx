@@ -115,7 +115,7 @@ const ProductDetailsPage = (props: ProductDetailsPageProps) => {
     })
   }
 
-  const onVersionIncreased = (version: Version) => router.push(versionUrl(product.id, version.id))
+  const onVersionIncreased = async (version: Version) => await router.push(versionUrl(product.id, version.id))
 
   const pageLink: BreadcrumbLink = {
     name: t('common:products'),

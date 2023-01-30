@@ -1,5 +1,5 @@
 import { productUrl, ROUTE_NODES, versionUrl } from '@app/routes'
-import { Page } from '@playwright/test'
+import { expect, Page } from '@playwright/test'
 import { exec, ExecOptions } from 'child_process'
 import { DAGENT_NODE, screenshotPath } from './common'
 
@@ -75,6 +75,7 @@ export const deployWithDagent = async (
     await page.screenshot({ path: screenshotPath(`dagent-deploy-after-1s-${testName}`), fullPage: true })
   }
 
+  expect(page.url().endsWith('deploy'))
   await page.getByText('Successful').waitFor()
 }
 
