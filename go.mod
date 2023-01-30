@@ -1,6 +1,6 @@
 module github.com/dyrector-io/dyrectorio
 
-go 1.18
+go 1.19
 
 require (
 	github.com/ProtonMail/gopenpgp/v2 v2.4.10
@@ -25,7 +25,7 @@ require (
 	k8s.io/client-go v0.25.4
 )
 
-require golang.org/x/sync v0.1.0 // indirect
+require golang.org/x/sync v0.1.0
 
 require (
 	github.com/prometheus-operator/prometheus-operator/pkg/client v0.60.1

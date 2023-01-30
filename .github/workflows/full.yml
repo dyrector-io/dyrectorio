@@ -91,7 +91,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -113,7 +113,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -132,7 +132,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -156,7 +156,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [go_security, go_lint, go_test, changes]
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -194,7 +194,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [go_security, go_lint, go_test, changes]
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
@@ -230,7 +230,7 @@ jobs:
       run:
         working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
     if: |
       ${{ needs.changes.outputs.crux == 'true' }} ||
       github.ref_type == 'tag'
@@ -251,7 +251,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [crux_lint,changes]
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
     defaults:
       run:
         working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
@@ -273,7 +273,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
     defaults:
       run:
         working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
@@ -292,7 +292,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [crux-ui_lint,changes]
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
     defaults:
       run:
         working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
@@ -314,7 +314,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: changes
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
     defaults:
       run:
         working-directory: ${{ env.KRATOS_WORKING_DIRECTORY }}
@@ -468,14 +468,14 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
     needs: [go_build, go_cli_build, e2e, changes]
     if: |
       github.ref_name == 'develop' ||
       github.ref_name == 'main' ||
       github.ref_type == 'tag'
     environment: Workflow - Protected
-    steps: 
+    steps:
       - name: artifact download
         uses: actions/download-artifact@v3
         with:
@@ -537,14 +537,14 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
     needs: [crux_build, e2e, changes]
     if: |
       github.ref_name == 'develop' ||
       github.ref_name == 'main' ||
       github.ref_type == 'tag'
     environment: Workflow - Protected
-    steps: 
+    steps:
       - name: artifact download
         uses: actions/download-artifact@v3
         with:
@@ -583,14 +583,14 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
     needs: [crux-ui_build, e2e, changes]
     if: |
       github.ref_name == 'develop' ||
       github.ref_name == 'main' ||
       github.ref_type == 'tag'
     environment: Workflow - Protected
-    steps: 
+    steps:
       - name: artifact download
         uses: actions/download-artifact@v3
         with:
@@ -629,14 +629,14 @@ jobs:
       packages: write
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-5
+      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
     needs: [kratos_build, e2e, changes]
     if: |
       github.ref_name == 'develop' ||
       github.ref_name == 'main' ||
       github.ref_type == 'tag'
     environment: Workflow - Protected
-    steps: 
+    steps:
       - name: artifact download
         uses: actions/download-artifact@v3
         with:
@@ -659,7 +659,7 @@ jobs:
       - name: Docker push
         run: |
           docker push -a ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}
-          docker tag ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/kratos:${{ needs.changes.outputs.tag }} 
+          docker tag ${GITHUB_REGISTRY}/${KRATOS_IMAGE_NAME}:${{ needs.changes.outputs.tag }} ${DOCKERHUB_REGISTRY}/kratos:${{ needs.changes.outputs.tag }}
           docker push -a ${DOCKERHUB_REGISTRY}/kratos
       - name: Write signing key to disk
         run: echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key

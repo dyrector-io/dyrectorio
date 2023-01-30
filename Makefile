@@ -5,15 +5,13 @@ SHELL = /bin/sh
 .PHONY: up
 up:
 	cd golang && \
-	make up; \
-	cd -
+	make up
 
 # shortcut to start stack with local development
 .PHONY: upd
 upd:
 	cd golang && \
-	make upd; \
-	cd -
+	make upd
 
 # shortcut for cli
 .PHONY: cli
@@ -24,8 +22,7 @@ cli:
 .PHONY: down
 down:
 	cd golang && \
-	make down; \
-	cd -
+	make down
 
 ## compile docs
 .PHONY: docs
@@ -45,7 +42,7 @@ protogen:| proto-agent proto-crux proto-crux-ui
 ## Generate agent grpc files
 .PHONY: proto-agent
 proto-agent:
-	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4 ash -c "\
+	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1 ash -c "\
 		mkdir -p protobuf/go && \
 		protoc -I. \
 			--go_out protobuf/go \
@@ -57,7 +54,7 @@ proto-agent:
 # Generate API grpc files
 .PHONY: proto-crux
 proto-crux:
-	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4 ash -c "\
+	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1 ash -c "\
 		mkdir -p ./web/crux/src/grpc && \
 		protoc \
 			--experimental_allow_proto3_optional \
@@ -75,7 +72,7 @@ proto-crux:
 # Generate UI grpc files, note the single file
 .PHONY:  proto-crux-ui
 proto-crux-ui:
-	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4 ash -c "\
+	MSYS_NO_PATHCONV=1 docker run --rm -u ${UID}:${GID} -v ${PWD}:/usr/work ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1 ash -c "\
 		mkdir -p ./web/crux-ui/src/models/grpc && \
 		protoc \
 			--experimental_allow_proto3_optional \
@@ -96,7 +93,7 @@ all: | protogen docs
 
 .PHONY: build-proto-image
 build-proto-image:
-	docker build -t ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.16-4 -f images/proto/Dockerfile .
+	docker build -t ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1 -f images/alpine-proto/Dockerfile .
 
 .PHONY: release
 release:
@@ -125,3 +122,20 @@ release:
 ## Finalizing changes
 	git commit -m "release: $(version)"
 	git tag -sm "$(version)" $(version)
+
+## Generate video with gource, needs ffmpeg and gource installed
+.PHONY: gource
+gource:
+	gource \
+		-1920x1080 \
+		--seconds-per-day 1 \
+		--auto-skip-seconds 1 \
+		--file-idle-time 0 \
+		--high-dpi \
+		--logo ./docs/dyrectorio-dark-small.png \
+		--logo-offset 1650x30 \
+		--multi-sampling \
+		-r 60 \
+		-o - | \
+		ffmpeg -y -r 60 -f image2pipe -vcodec ppm -i - -vcodec libx264 \
+		-preset ultrafast -pix_fmt yuv420p -crf 1 -threads 0 -bf 0 git-history-visualization.mp4

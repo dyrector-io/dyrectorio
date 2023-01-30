@@ -1,10 +1,10 @@
 # Stage 1
-FROM node:19.2-alpine3.16 AS BUILDER
+FROM node:19.2-alpine3.17 AS BUILDER
 
 ENV NODE_ENV production
 WORKDIR /app
 
-RUN apk --update add openssl
+RUN apk --update add openssl1.1-compat
 
 COPY ./package.json ./package-lock.json ./tsconfig.build.json ./tsconfig.json ./
 COPY ./prisma ./prisma
@@ -15,11 +15,11 @@ RUN npm ci --no-fund && npm run prismagen
 RUN npm run build
 
 # Stage 2
-FROM node:19.2-alpine3.16 AS RUNNER
+FROM node:19.2-alpine3.17 AS RUNNER
 ENV NODE_ENV production
 ENV TZ Europe/Budapest
 
-RUN apk --update add tzdata openssl
+RUN apk --update add tzdata openssl1.1-compat
 
 WORKDIR /app
 

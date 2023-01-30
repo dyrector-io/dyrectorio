@@ -6,3 +6,5 @@ node_modules/
 
 docker-compose.ci.yaml
 .idea
+
+git-history-visualization.mp4

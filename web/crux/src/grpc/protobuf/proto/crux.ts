@@ -893,12 +893,12 @@ export interface CreateRegistryRequest {
   name: string
   description?: string | undefined
   icon?: string | undefined
-  hub: HubRegistryDetails | undefined
-  v2: V2RegistryDetails | undefined
-  gitlab: GitlabRegistryDetails | undefined
-  github: GithubRegistryDetails | undefined
-  google: GoogleRegistryDetails | undefined
-  unchecked: UncheckedRegistryDetails | undefined
+  hub?: HubRegistryDetails | undefined
+  v2?: V2RegistryDetails | undefined
+  gitlab?: GitlabRegistryDetails | undefined
+  github?: GithubRegistryDetails | undefined
+  google?: GoogleRegistryDetails | undefined
+  unchecked?: UncheckedRegistryDetails | undefined
 }
 
 export interface UpdateRegistryRequest {
@@ -907,12 +907,12 @@ export interface UpdateRegistryRequest {
   name: string
   description?: string | undefined
   icon?: string | undefined
-  hub: HubRegistryDetails | undefined
-  v2: V2RegistryDetails | undefined
-  gitlab: GitlabRegistryDetails | undefined
-  github: GithubRegistryDetails | undefined
-  google: GoogleRegistryDetails | undefined
-  unchecked: UncheckedRegistryDetails | undefined
+  hub?: HubRegistryDetails | undefined
+  v2?: V2RegistryDetails | undefined
+  gitlab?: GitlabRegistryDetails | undefined
+  github?: GithubRegistryDetails | undefined
+  google?: GoogleRegistryDetails | undefined
+  unchecked?: UncheckedRegistryDetails | undefined
 }
 
 export interface RegistryDetailsResponse {
@@ -922,12 +922,12 @@ export interface RegistryDetailsResponse {
   description?: string | undefined
   icon?: string | undefined
   inUse: boolean
-  hub: HubRegistryDetails | undefined
-  v2: V2RegistryDetails | undefined
-  gitlab: GitlabRegistryDetails | undefined
-  github: GithubRegistryDetails | undefined
-  google: GoogleRegistryDetails | undefined
-  unchecked: UncheckedRegistryDetails | undefined
+  hub?: HubRegistryDetails | undefined
+  v2?: V2RegistryDetails | undefined
+  gitlab?: GitlabRegistryDetails | undefined
+  github?: GithubRegistryDetails | undefined
+  google?: GoogleRegistryDetails | undefined
+  unchecked?: UncheckedRegistryDetails | undefined
 }
 
 export interface CreateVersionRequest {
@@ -1248,8 +1248,8 @@ export interface WatchContainerStateRequest {
 export interface WatchContainerLogRequest {
   accessedBy: string
   id: string
-  dockerId: string | undefined
-  prefixName: ContainerIdentifier | undefined
+  dockerId?: string | undefined
+  prefixName?: ContainerIdentifier | undefined
 }
 
 export interface DeploymentProgressMessage {
@@ -1264,8 +1264,8 @@ export interface InstancesCreatedEventList {
 }
 
 export interface DeploymentEditEventMessage {
-  instancesCreated: InstancesCreatedEventList | undefined
-  imageIdDeleted: string | undefined
+  instancesCreated?: InstancesCreatedEventList | undefined
+  imageIdDeleted?: string | undefined
 }
 
 export interface CreateDeploymentRequest {
@@ -1363,9 +1363,9 @@ export interface DeploymentEventLog {
 export interface DeploymentEventResponse {
   type: DeploymentEventType
   createdAt: Timestamp | undefined
-  log: DeploymentEventLog | undefined
-  deploymentStatus: DeploymentStatus | undefined
-  containerStatus: DeploymentEventContainerState | undefined
+  log?: DeploymentEventLog | undefined
+  deploymentStatus?: DeploymentStatus | undefined
+  containerStatus?: DeploymentEventContainerState | undefined
 }
 
 export interface DeploymentEventListResponse {
@@ -2363,16 +2363,7 @@ export const UncheckedRegistryDetails = {
 }
 
 function createBaseCreateRegistryRequest(): CreateRegistryRequest {
-  return {
-    accessedBy: '',
-    name: '',
-    hub: undefined,
-    v2: undefined,
-    gitlab: undefined,
-    github: undefined,
-    google: undefined,
-    unchecked: undefined,
-  }
+  return { accessedBy: '', name: '' }
 }
 
 export const CreateRegistryRequest = {
@@ -2412,17 +2403,7 @@ export const CreateRegistryRequest = {
 }
 
 function createBaseUpdateRegistryRequest(): UpdateRegistryRequest {
-  return {
-    id: '',
-    accessedBy: '',
-    name: '',
-    hub: undefined,
-    v2: undefined,
-    gitlab: undefined,
-    github: undefined,
-    google: undefined,
-    unchecked: undefined,
-  }
+  return { id: '', accessedBy: '', name: '' }
 }
 
 export const UpdateRegistryRequest = {
@@ -2464,18 +2445,7 @@ export const UpdateRegistryRequest = {
 }
 
 function createBaseRegistryDetailsResponse(): RegistryDetailsResponse {
-  return {
-    id: '',
-    audit: undefined,
-    name: '',
-    inUse: false,
-    hub: undefined,
-    v2: undefined,
-    gitlab: undefined,
-    github: undefined,
-    google: undefined,
-    unchecked: undefined,
-  }
+  return { id: '', audit: undefined, name: '', inUse: false }
 }
 
 export const RegistryDetailsResponse = {
@@ -3756,7 +3726,7 @@ export const WatchContainerStateRequest = {
 }
 
 function createBaseWatchContainerLogRequest(): WatchContainerLogRequest {
-  return { accessedBy: '', id: '', dockerId: undefined, prefixName: undefined }
+  return { accessedBy: '', id: '' }
 }
 
 export const WatchContainerLogRequest = {
@@ -3831,7 +3801,7 @@ export const InstancesCreatedEventList = {
 }
 
 function createBaseDeploymentEditEventMessage(): DeploymentEditEventMessage {
-  return { instancesCreated: undefined, imageIdDeleted: undefined }
+  return {}
 }
 
 export const DeploymentEditEventMessage = {
@@ -4201,7 +4171,7 @@ export const DeploymentEventLog = {
 }
 
 function createBaseDeploymentEventResponse(): DeploymentEventResponse {
-  return { type: 0, createdAt: undefined, log: undefined, deploymentStatus: undefined, containerStatus: undefined }
+  return { type: 0, createdAt: undefined }
 }
 
 export const DeploymentEventResponse = {
@@ -5624,7 +5594,7 @@ export const CRUX_DASHBOARD_SERVICE_NAME = 'CruxDashboard'
 declare var self: any | undefined
 declare var window: any | undefined
 declare var global: any | undefined
-var globalThis: any = (() => {
+var tsProtoGlobalThis: any = (() => {
   if (typeof globalThis !== 'undefined') {
     return globalThis
   }
@@ -5641,10 +5611,10 @@ var globalThis: any = (() => {
 })()
 
 function bytesFromBase64(b64: string): Uint8Array {
-  if (globalThis.Buffer) {
-    return Uint8Array.from(globalThis.Buffer.from(b64, 'base64'))
+  if (tsProtoGlobalThis.Buffer) {
+    return Uint8Array.from(tsProtoGlobalThis.Buffer.from(b64, 'base64'))
   } else {
-    const bin = globalThis.atob(b64)
+    const bin = tsProtoGlobalThis.atob(b64)
     const arr = new Uint8Array(bin.length)
     for (let i = 0; i < bin.length; ++i) {
       arr[i] = bin.charCodeAt(i)
@@ -5654,14 +5624,14 @@ function bytesFromBase64(b64: string): Uint8Array {
 }
 
 function base64FromBytes(arr: Uint8Array): string {
-  if (globalThis.Buffer) {
-    return globalThis.Buffer.from(arr).toString('base64')
+  if (tsProtoGlobalThis.Buffer) {
+    return tsProtoGlobalThis.Buffer.from(arr).toString('base64')
   } else {
     const bin: string[] = []
     arr.forEach(byte => {
       bin.push(String.fromCharCode(byte))
     })
-    return globalThis.btoa(bin.join(''))
+    return tsProtoGlobalThis.btoa(bin.join(''))
   }
 }
 
