@@ -8,23 +8,8 @@ import { createMessage, encrypt, readKey } from 'openpgp'
 import { useEffect, useMemo, useReducer, useState } from 'react'
 import { v4 as uuid } from 'uuid'
 import MultiInput from '../editor/multi-input'
-import { EditorStateOptions } from '../editor/use-editor-state'
+import { ItemEditorState } from '../editor/use-item-editor-state'
 import SecretStatus from './secret-status'
-
-interface SecretKeyValueInputProps {
-  disabled?: boolean
-  className?: string
-  label?: string
-  labelClassName?: string
-  description?: string
-  items: UniqueSecretKeyValue[]
-  keyPlaceholder?: string
-  unique?: boolean
-  editorOptions: EditorStateOptions
-  publicKey: string
-  definedSecrets?: string[]
-  onSubmit: (items: UniqueSecretKeyValue[]) => void
-}
 
 const EMPTY_SECRET_KEY_VALUE_PAIR = {
   id: uuid(),
@@ -99,6 +84,21 @@ const reducer = (state: UniqueSecretKeyValue[], action: KeyValueInputAction): Un
   }
 
   throw Error(`Invalid KeyValueInput action: ${type}`)
+}
+
+interface SecretKeyValueInputProps {
+  disabled?: boolean
+  className?: string
+  label?: string
+  labelClassName?: string
+  description?: string
+  items: UniqueSecretKeyValue[]
+  keyPlaceholder?: string
+  unique?: boolean
+  editorOptions: ItemEditorState
+  publicKey: string
+  definedSecrets?: string[]
+  onSubmit: (items: UniqueSecretKeyValue[]) => void
 }
 
 const SecretKeyValInput = (props: SecretKeyValueInputProps) => {

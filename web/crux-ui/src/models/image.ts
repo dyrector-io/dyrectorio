@@ -110,7 +110,7 @@ export type ImageConfigFilterType = typeof IMAGE_CONFIG_FILTERS[number]
 export const filterContains = (
   filter: CommonConfigFilterType | CraneConfigFilterType | DagentConfigFilterType,
   filters: ImageConfigFilterType[],
-): boolean => filters.indexOf(filter) !== -1
+): boolean => filters.includes(filter)
 
 export const filterEmpty = (filterValues: string[], filters: ImageConfigFilterType[]): boolean =>
   filterValues.filter(x => filters.includes(x as ImageConfigFilterType)).length > 0

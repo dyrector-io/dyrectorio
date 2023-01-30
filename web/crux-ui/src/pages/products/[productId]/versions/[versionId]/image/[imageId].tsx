@@ -1,3 +1,4 @@
+import EditorBadge from '@app/components/editor/editor-badge'
 import useEditorState from '@app/components/editor/use-editor-state'
 import useItemEditorState from '@app/components/editor/use-item-editor-state'
 import { Layout } from '@app/components/layout'
@@ -39,7 +40,7 @@ import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ValidationError } from 'yup'
 
 interface ImageDetailsPageProps {
@@ -57,7 +58,9 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
   const [viewState, setViewState] = useState<ViewState>('editor')
   const [fieldErrors, setFieldErrors] = useState<ValidationError[]>(() => getContainerConfigFieldErrors(image.config))
   const [jsonError, setJsonError] = useState(jsonErrorOf(fieldErrors))
+  const [topBarContent, setTopBarContent] = useState<React.ReactNode>(null)
 
+  const patch = useRef<Partial<ContainerConfig>>({})
   const throttle = useThrottling(IMAGE_WS_REQUEST_DELAY)
   const router = useRouter()
   const [deleteModalConfig, confirmDelete] = useConfirmation()
@@ -66,23 +69,40 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
   const editor = useEditorState(versionSock)
   const editorState = useItemEditorState(editor, versionSock, image.id)
 
-  const onChange = (newConfig: Partial<ContainerConfig>) => {
+  useEffect(() => {
+    const reactNode = (
+      <>
+        {editorState.editors.map((it, index) => (
+          <EditorBadge key={index} className="mr-2" editor={it} />
+        ))}
+      </>
+    )
+
+    setTopBarContent(reactNode)
+  }, [editorState.editors])
+
+  const onChange = (newConfig: Partial<ContainerConfig>, immediate?: boolean) => {
+    const value = { ...config, ...newConfig }
+    setConfig(value)
+
+    const errors = getContainerConfigFieldErrors(value)
+    setFieldErrors(errors)
+    setJsonError(jsonErrorOf(errors))
+
+    const newPatch = {
+      ...patch.current,
+      ...newConfig,
+    }
+    patch.current = newPatch
+
     throttle(() => {
-      const value = { ...config, ...newConfig }
+      versionSock.send(WS_TYPE_PATCH_IMAGE, {
+        id: image.id,
+        config: patch.current,
+      } as PatchImageMessage)
 
-      setConfig(value)
-
-      const errors = getContainerConfigFieldErrors(value)
-      setFieldErrors(errors)
-      setJsonError(jsonErrorOf(errors))
-
-      if (errors.length < 1) {
-        versionSock.send(WS_TYPE_PATCH_IMAGE, {
-          id: image.id,
-          config: value,
-        } as PatchImageMessage)
-      }
-    })
+      patch.current = {}
+    }, immediate)
   }
 
   versionSock.on(WS_TYPE_IMAGE_UPDATED, (message: ImageUpdateMessage) => {
@@ -138,6 +158,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
       >
         {t('editor')}
       </DyoButton>
+
       <DyoButton
         text
         thin
@@ -153,7 +174,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
   )
 
   return (
-    <Layout title={t('common:image')}>
+    <Layout title={t('produdtsImagesName', config ?? image)} topBarContent={topBarContent}>
       <PageHeading pageLink={pageLink} sublinks={sublinks}>
         <DyoButton href={versionUrl(product.id, version.id, { section: 'images' })}>{t('common:back')}</DyoButton>
 
@@ -184,6 +205,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
             editorOptions={editorState}
             fieldErrors={fieldErrors}
           />
+
           <CraneConfigSection
             selectedFilters={filters}
             disabled={!version.mutable}
@@ -191,6 +213,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
             onChange={onChange}
             editorOptions={editorState}
           />
+
           <DagentConfigSection
             selectedFilters={filters}
             disabled={!version.mutable}
@@ -206,6 +229,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
           {jsonError ? (
             <DyoMessage message={jsonError} className="text-xs italic w-full mb-2" messageType="error" />
           ) : null}
+
           <EditImageJson
             config={config}
             editorOptions={editorState}

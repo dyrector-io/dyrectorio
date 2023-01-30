@@ -116,7 +116,7 @@ export const onPatchInstance = async (
     },
   })
 
-  endpoint.sendAll(WS_TYPE_INSTANCE_UPDATED, {
+  endpoint.sendAllExcept(connection, WS_TYPE_INSTANCE_UPDATED, {
     ...req,
   })
 }

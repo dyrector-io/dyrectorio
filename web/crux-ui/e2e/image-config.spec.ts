@@ -1,5 +1,6 @@
+import { WS_TYPE_PATCH_IMAGE } from '@app/models'
 import { expect, Page, test } from '@playwright/test'
-import { imageConfigUrl } from './../src/routes'
+import { imageConfigUrl } from '../src/routes'
 import { screenshotPath } from './utils/common'
 import { createImage, createProduct, createVersion } from './utils/products'
 
@@ -48,7 +49,7 @@ test.describe('View state', () => {
 
     await page.screenshot({ path: screenshotPath('image-config-json'), fullPage: true })
 
-    const jsonContainer = await page.locator('[id="json-config"]').first()
+    const jsonContainer = await page.locator('textarea')
     await expect(jsonContainer).toBeVisible()
   })
 })
@@ -134,18 +135,15 @@ test.describe('Image configurations', () => {
 
     const ws = await page.waitForEvent('websocket')
 
+    const wsSent = ws.waitForEvent('framesent', data => {
+      const payload = JSON.parse(data.payload as string)
+      return payload.type === WS_TYPE_PATCH_IMAGE
+    })
+
     const internal = '1000'
     const external = '2000'
-
     await configureImagePort(page, internal, external)
-
-    await ws.waitForEvent('framereceived', {
-      predicate(data) {
-        const payload = JSON.parse(data.payload as string)
-
-        return payload.type === 'image-updated'
-      },
-    })
+    await wsSent
 
     await page.reload()
 
@@ -174,15 +172,13 @@ test.describe('Image configurations', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.ports = [{ internal, external }]
 
-    await jsonEditor.fill(JSON.stringify(json))
-
-    await ws.waitForEvent('framereceived', {
-      predicate(data) {
-        const payload = JSON.parse(data.payload as string)
-
-        return payload.type === 'image-updated'
-      },
+    const wsSent = ws.waitForEvent('framesent', data => {
+      const payload = JSON.parse(data.payload as string)
+      return payload.type === WS_TYPE_PATCH_IMAGE
     })
+
+    await jsonEditor.fill(JSON.stringify(json))
+    await wsSent
 
     await page.reload()
 

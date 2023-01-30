@@ -32,6 +32,7 @@ const useItemEditorState = (
 
   return {
     ...editor,
+    itemId,
     inputEditors,
     sock,
   }

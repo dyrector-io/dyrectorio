@@ -1,3 +1,4 @@
+import EditorBadge from '@app/components/editor/editor-badge'
 import useEditorState from '@app/components/editor/use-editor-state'
 import useItemEditorState from '@app/components/editor/use-item-editor-state'
 import { Layout } from '@app/components/layout'
@@ -30,7 +31,7 @@ import { getContainerConfigFieldErrors, jsonErrorOf } from '@app/validations/ima
 import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import { ValidationError } from 'yup'
 
@@ -68,11 +69,24 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
   const [viewState, setViewState] = useState<ViewState>('editor')
   const [fieldErrors, setFieldErrors] = useState<ValidationError[]>(() => getContainerConfigFieldErrors(state.config))
   const [jsonError, setJsonError] = useState(jsonErrorOf(fieldErrors))
+  const [topBarContent, setTopBarContent] = useState<React.ReactNode>(null)
 
   const throttle = useThrottling(INSTANCE_WS_REQUEST_DELAY)
 
   const editor = useEditorState(deploymentState.sock)
   const editorState = useItemEditorState(editor, deploymentState.sock, instance.id)
+
+  useEffect(() => {
+    const reactNode = (
+      <>
+        {editorState.editors.map((it, index) => (
+          <EditorBadge key={index} className="mr-2" editor={it} />
+        ))}
+      </>
+    )
+
+    setTopBarContent(reactNode)
+  }, [editorState.editors])
 
   const onChange = (newConfig: Partial<ContainerConfig>) => {
     throttle(() => {
@@ -123,6 +137,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
       >
         {t('editor')}
       </DyoButton>
+
       <DyoButton
         text
         thin
@@ -138,7 +153,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
   )
 
   return (
-    <Layout title={t('common:image')}>
+    <Layout title={t('common:instancesName', state.config ?? instance.image)} topBarContent={topBarContent}>
       <PageHeading pageLink={pageLink} sublinks={sublinks}>
         <DyoButton href={deploymentUrl(product.id, version.id, deployment.id)}>{t('common:back')}</DyoButton>
       </PageHeading>
@@ -168,6 +183,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
             definedSecrets={state.definedSecrets}
             publicKey={deployment.publicKey}
           />
+
           <CraneConfigSection
             disabled={!deploymentState.mutable}
             selectedFilters={filters}
@@ -175,6 +191,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
             onChange={onChange}
             editorOptions={editorState}
           />
+
           <DagentConfigSection
             disabled={!deploymentState.mutable}
             selectedFilters={filters}
@@ -190,6 +207,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
           {jsonError ? (
             <DyoMessage message={jsonError} className="text-xs italic w-full mb-2" messageType="error" />
           ) : null}
+
           <EditImageJson
             config={state.config}
             editorOptions={editorState}

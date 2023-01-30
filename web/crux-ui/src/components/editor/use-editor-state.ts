@@ -15,13 +15,6 @@ import {
 import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
 import { useState } from 'react'
 
-export type EditorStateOptions = {
-  me: Editor
-  editors: Editor[]
-  inputEditors: InputEditorsMap
-  sock: WebSocketClientEndpoint
-}
-
 export type EditorState = {
   me: Editor
   editors: Editor[]
