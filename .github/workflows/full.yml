@@ -457,6 +457,7 @@ jobs:
           npx playwright install chromium
           npm run test:e2e
       - uses: actions/upload-artifact@v3
+        if: always()
         with:
           name: e2e-screenshots
           path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/e2e/screenshots/
