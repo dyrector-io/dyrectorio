@@ -120,20 +120,24 @@ test('Container log should appear after a successful deployment', async ({ page 
 
   await page.goto(url)
 
-  await page.waitForSelector('button:text-is("Deploy")')
-  await page.locator('button:text-is("Deploy")').click()
-  await page.waitForNavigation()
+  const deployButtonSelector = 'button:text-is("Deploy")'
+  await page.waitForSelector(deployButtonSelector)
 
-  const containerRow = await page.locator(`span:text-is("${imageName}") >> xpath=../..`)
+  let navigation = page.waitForNavigation()
+  await page.locator(deployButtonSelector).click()
+  await navigation
+
+  const containerRow = page.locator(`span:text-is("${imageName}") >> xpath=../..`)
   await expect(containerRow).toBeVisible()
 
-  const runningTag = await containerRow.locator('div:text-is("Running")')
+  const runningTag = containerRow.locator('div:text-is("Running")')
   await expect(runningTag).toBeVisible()
 
-  const showLogs = await containerRow.locator('span:text-is("Show logs")')
-  await showLogs.click()
+  const showLogs = containerRow.locator('span:text-is("Show logs")')
 
-  await page.waitForNavigation()
+  navigation = page.waitForNavigation()
+  await showLogs.click()
+  await navigation
 
   const terminal = page.locator('div.font-roboto')
   await expect(await terminal.locator('span')).not.toHaveCount(0)
@@ -149,9 +153,12 @@ test('Container log should appear on a node container', async ({ page }) => {
 
   await page.goto(url)
 
-  await page.waitForSelector('button:text-is("Deploy")')
-  await page.locator('button:text-is("Deploy")').click()
-  await page.waitForNavigation()
+  const deployButtonSelector = 'button:text-is("Deploy")'
+  await page.waitForSelector(deployButtonSelector)
+
+  let navigation = page.waitForNavigation()
+  await page.locator(deployButtonSelector).click()
+  await navigation
 
   const containerRow = await page.locator(`span:text-is("${imageName}") >> xpath=../..`)
   await expect(containerRow).toBeVisible()
@@ -170,9 +177,9 @@ test('Container log should appear on a node container', async ({ page }) => {
   const logButton = await nodeContainerRow.locator('img[src*="/note-text-outline.svg"]')
   await expect(logButton).toBeVisible()
 
+  navigation = page.waitForNavigation()
   await logButton.click()
-
-  await page.waitForNavigation()
+  await navigation
 
   const terminal = page.locator('div.font-roboto')
   await expect(await terminal.locator('span')).not.toHaveCount(0)
