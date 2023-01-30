@@ -4,6 +4,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/AlekSi/pointer"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -312,7 +313,7 @@ func MapPorts(in []*agent.Port) []builder.PortBinding {
 	for i := range in {
 		ports = append(ports, builder.PortBinding{
 			ExposedPort: uint16(in[i].Internal),
-			PortBinding: uint16(in[i].External),
+			PortBinding: pointer.ToUint16OrNil(uint16(pointer.Get(in[i].External))),
 		})
 	}
 

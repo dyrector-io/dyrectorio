@@ -309,7 +309,7 @@ func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 	}
 
 	portListNat := portListToNatBinding(dc.portRanges, dc.portList)
-	exposedPortSet := getPortSet(portListNat)
+	exposedPortSet := getPortSet(dc.portList)
 	hostConfig := &container.HostConfig{
 		Mounts:       dc.mountList,
 		PortBindings: portListNat,
@@ -540,24 +540,29 @@ func portListToNatBinding(portRanges []PortRangeBinding, portList []PortBinding)
 
 	for _, p := range portList {
 		portInternal, _ := nat.NewPort("tcp", fmt.Sprint(p.ExposedPort))
-		portExternal, _ := nat.NewPort("tcp", fmt.Sprint(p.PortBinding))
+		var portBinding []nat.PortBinding
+		if p.PortBinding != nil {
+			portExternal, _ := nat.NewPort("tcp", fmt.Sprint(*p.PortBinding))
+			portBinding = []nat.PortBinding{
+				{
+					HostIP:   "0.0.0.0",
+					HostPort: portExternal.Port(),
+				},
+			}
 
-		portMap[portInternal] = []nat.PortBinding{
-			{
-				HostIP:   "0.0.0.0",
-				HostPort: portExternal.Port(),
-			},
+			portMap[portInternal] = portBinding
 		}
 	}
 
 	return portMap
 }
 
-func getPortSet(natPortBindings map[nat.Port][]nat.PortBinding) nat.PortSet {
+func getPortSet(portList []PortBinding) nat.PortSet {
 	portSet := make(nat.PortSet)
 
-	for port := range natPortBindings {
-		portSet[port] = struct{}{}
+	for _, port := range portList {
+		exposedPort, _ := nat.NewPort("tcp", fmt.Sprint(port.ExposedPort))
+		portSet[exposedPort] = struct{}{}
 	}
 	return portSet
 }

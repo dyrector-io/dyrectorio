@@ -3,6 +3,7 @@ package caps
 import (
 	"encoding/json"
 
+	"github.com/AlekSi/pointer"
 	"github.com/rs/zerolog/log"
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
@@ -35,7 +36,10 @@ func ParseLabelsIntoContainerConfig(labels map[string]string, config *v1.Contain
 				ports = config.Ports
 			}
 			for i := range network.Ports {
-				ports = append(ports, builder.PortBinding{ExposedPort: uint16(network.Ports[i].Listening), PortBinding: 0})
+				ports = append(ports, builder.PortBinding{
+					ExposedPort: uint16(network.Ports[i].Listening),
+					PortBinding: pointer.ToUint16(0),
+				})
 			}
 
 			config.Ports = ports

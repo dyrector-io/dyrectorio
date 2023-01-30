@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/AlekSi/pointer"
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	"github.com/stretchr/testify/assert"
@@ -42,12 +43,12 @@ func TestParseLabelsIntoContainerConfig(t *testing.T) {
 	}
 	config := &v1.ContainerConfig{
 		Ports: []container.PortBinding{
-			{ExposedPort: uint16(8888), PortBinding: 9999},
+			{ExposedPort: uint16(8888), PortBinding: pointer.ToUint16(9999)},
 		},
 	}
 	ParseLabelsIntoContainerConfig(labels, config)
 	assert.Equal(t, []container.PortBinding{
-		{ExposedPort: uint16(8888), PortBinding: 9999},
-		{ExposedPort: uint16(8080), PortBinding: 0},
+		{ExposedPort: uint16(8888), PortBinding: pointer.ToUint16(9999)},
+		{ExposedPort: uint16(8080), PortBinding: pointer.ToUint16(0)},
 	}, config.Ports)
 }

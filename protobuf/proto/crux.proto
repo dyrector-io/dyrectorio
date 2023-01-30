@@ -426,9 +426,7 @@ message GoogleRegistryDetails {
   string imageNamePrefix = 103;
 }
 
-message UncheckedRegistryDetails {
-  string url = 100;
-}
+message UncheckedRegistryDetails { string url = 100; }
 
 message CreateRegistryRequest {
   string accessedBy = 2;
@@ -593,7 +591,7 @@ message LogConfig {
 message Port {
   string id = 100;
   int32 internal = 101;
-  int32 external = 102;
+  optional int32 external = 102;
 }
 
 message PortRange {
@@ -784,9 +782,7 @@ message UpdateNodeRequest {
   optional string icon = 102;
 }
 
-message DagentTraefikOptions {
-  string acmeEmail = 100;
-}
+message DagentTraefikOptions { string acmeEmail = 100; }
 
 message GenerateScriptRequest {
   string id = 1;
@@ -814,7 +810,7 @@ message NodeContainerCommandRequest {
 message NodeDeleteContainersRequest {
   string id = 1;
   string accessedBy = 2;
-  
+
   common.DeleteContainersRequest containers = 100;
 }
 
@@ -1122,9 +1118,7 @@ message CreateProductFromTemplateRequest {
   ProductType type = 102;
 }
 
-message TemplateImageResponse {
-  bytes data = 1;
-}
+message TemplateImageResponse { bytes data = 1; }
 
 // DASHBOARD
 message DashboardActiveNodes {

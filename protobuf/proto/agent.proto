@@ -53,7 +53,7 @@ message AgentCommand {
     CloseConnectionRequest close = 7;
     common.ContainerCommandRequest containerCommand = 8;
     common.DeleteContainersRequest deleteContainers = 9;
-    ContainerLogRequest containerLog = 10; 
+    ContainerLogRequest containerLog = 10;
   }
 }
 
@@ -106,7 +106,7 @@ message RegistryAuth {
 
 message Port {
   int32 internal = 100;
-  int32 external = 101;
+  optional int32 external = 101;
 }
 
 message PortRange {

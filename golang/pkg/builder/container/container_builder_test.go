@@ -9,6 +9,7 @@ import (
 	"io"
 	"testing"
 
+	"github.com/AlekSi/pointer"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/mount"
@@ -73,7 +74,7 @@ func TestEnvPortsLabelsRestartPolicySettings(t *testing.T) {
 		WithEnv([]string{"A=B", "E_N_V=123"}).
 		WithPortBindings([]containerbuilder.PortBinding{{
 			ExposedPort: 1234,
-			PortBinding: 2345,
+			PortBinding: pointer.ToUint16(2345),
 		}}).
 		WithPortRanges([]containerbuilder.PortRangeBinding{{
 			Internal: containerbuilder.PortRange{

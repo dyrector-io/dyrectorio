@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/AlekSi/pointer"
 	"github.com/docker/docker/api/types/container"
 	"github.com/dyrector-io/dyrectorio/golang/internal/config"
 	"github.com/dyrector-io/dyrectorio/golang/internal/mapper"
@@ -51,7 +52,7 @@ func testExpectedCommon(req *agent.DeployRequest) *v1.DeployImageRequest {
 		ContainerConfig: v1.ContainerConfig{
 			ContainerPreName:   "test-prefix",
 			Container:          "test-common-config",
-			Ports:              []builder.PortBinding{{ExposedPort: 0x4d2, PortBinding: 0x1a85}},
+			Ports:              []builder.PortBinding{{ExposedPort: 0x4d2, PortBinding: pointer.ToUint16(0x1a85)}},
 			PortRanges:         []builder.PortRangeBinding{{Internal: builder.PortRange{From: 0x0, To: 0x18}, External: builder.PortRange{From: 0x40, To: 0x80}}},
 			Mounts:             []string(nil),
 			Volumes:            []v1.Volume{{Name: "test-vol", Path: "/Path/to/volume", Size: "512GB", Type: "666", Class: "test-storage-class"}},
@@ -132,22 +133,22 @@ func TestMapPorts(t *testing.T) {
 	ps := []*agent.Port{
 		{
 			Internal: 1234,
-			External: 5678,
+			External: pointer.ToInt32(5678),
 		},
 		{
 			Internal: 9999,
-			External: 1111,
+			External: pointer.ToInt32(1111),
 		},
 	}
 
 	expected := []builder.PortBinding{
 		{
 			ExposedPort: 1234,
-			PortBinding: 5678,
+			PortBinding: pointer.ToUint16(5678),
 		},
 		{
 			ExposedPort: 9999,
-			PortBinding: 1111,
+			PortBinding: pointer.ToUint16(1111),
 		},
 	}
 
@@ -196,7 +197,7 @@ func testDeployRequest() *agent.DeployRequest {
 			Ports: []*agent.Port{
 				{
 					Internal: 1234,
-					External: 6789,
+					External: pointer.ToInt32(6789),
 				},
 			},
 			PortRanges: []*agent.PortRangeBinding{

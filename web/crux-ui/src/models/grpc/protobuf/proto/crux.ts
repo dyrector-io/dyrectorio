@@ -1024,7 +1024,7 @@ export interface LogConfig {
 export interface Port {
   id: string
   internal: number
-  external: number
+  external?: number | undefined
 }
 
 export interface PortRange {
@@ -5733,7 +5733,7 @@ export const LogConfig = {
 }
 
 function createBasePort(): Port {
-  return { id: '', internal: 0, external: 0 }
+  return { id: '', internal: 0 }
 }
 
 export const Port = {
@@ -5744,7 +5744,7 @@ export const Port = {
     if (message.internal !== 0) {
       writer.uint32(808).int32(message.internal)
     }
-    if (message.external !== 0) {
+    if (message.external !== undefined) {
       writer.uint32(816).int32(message.external)
     }
     return writer
@@ -5778,7 +5778,7 @@ export const Port = {
     return {
       id: isSet(object.id) ? String(object.id) : '',
       internal: isSet(object.internal) ? Number(object.internal) : 0,
-      external: isSet(object.external) ? Number(object.external) : 0,
+      external: isSet(object.external) ? Number(object.external) : undefined,
     }
   },
 
@@ -5798,7 +5798,7 @@ export const Port = {
     const message = createBasePort()
     message.id = object.id ?? ''
     message.internal = object.internal ?? 0
-    message.external = object.external ?? 0
+    message.external = object.external ?? undefined
     return message
   },
 }

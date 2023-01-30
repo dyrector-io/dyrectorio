@@ -6,6 +6,7 @@ package utils
 import (
 	"testing"
 
+	"github.com/AlekSi/pointer"
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/config"
@@ -19,7 +20,7 @@ func TestGetTraefikLabels(t *testing.T) {
 	containerConfig := &v1.ContainerConfig{
 		Container: "name",
 		Ports: []container.PortBinding{
-			{ExposedPort: 8888, PortBinding: 1},
+			{ExposedPort: 8888, PortBinding: pointer.ToUint16(1)},
 		},
 		ExposeTLS:          true,
 		IngressUploadLimit: "16k",

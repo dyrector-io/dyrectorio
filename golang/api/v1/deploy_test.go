@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"testing"
 
+	"github.com/AlekSi/pointer"
 	"github.com/stretchr/testify/assert"
 
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
@@ -42,11 +43,11 @@ func TestDeploymentImageRequestStrings(t *testing.T) {
 			Ports: []container.PortBinding{
 				{
 					ExposedPort: 1234,
-					PortBinding: 4321,
+					PortBinding: pointer.ToUint16(4321),
 				},
 				{
 					ExposedPort: 6789,
-					PortBinding: 9876,
+					PortBinding: pointer.ToUint16(9876),
 				},
 			},
 		},
@@ -63,7 +64,7 @@ func TestDeploymentImageRequestStrings(t *testing.T) {
 		"Image: test-image:test-tag\n",
 		"Registry: default\n",
 		"Container name: prefix-test-container\n",
-		"Exposed ports: [{1234 4321} {6789 9876}]\n",
+		"Exposed ports: [{4321 1234} {9876 6789}]\n",
 	}, s)
 
 	// With registry
@@ -76,7 +77,7 @@ func TestDeploymentImageRequestStrings(t *testing.T) {
 		"Image: test-image:test-tag\n",
 		"Registry: https://my-regstry.org\n",
 		"Container name: prefix-test-container\n",
-		"Exposed ports: [{1234 4321} {6789 9876}]\n",
+		"Exposed ports: [{4321 1234} {9876 6789}]\n",
 	}, s)
 }
 
@@ -111,11 +112,11 @@ func TestContainerConfigStrings(t *testing.T) {
 		Ports: []container.PortBinding{
 			{
 				ExposedPort: 1234,
-				PortBinding: 4321,
+				PortBinding: pointer.ToUint16(4321),
 			},
 			{
 				ExposedPort: 6789,
-				PortBinding: 9876,
+				PortBinding: pointer.ToUint16(9876),
 			},
 		},
 		PortRanges: []container.PortRangeBinding{
@@ -193,7 +194,7 @@ func TestContainerConfigStrings(t *testing.T) {
 
 	s = cfg.Strings(&appCfg)
 	assert.Equal(t, []string{
-		"Ports: [{1234 4321} {6789 9876}]",
+		"Ports: [{4321 1234} {9876 6789}]",
 		"PortRanges: [{{25 678} {999 1200}} {{6500 7000} {9000 9999}}]",
 		"Exposed: true",
 		"Mounts: [VolA VolB]",

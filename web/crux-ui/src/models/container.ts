@@ -65,7 +65,7 @@ export type UniqueSecretKeyValue = UniqueKeyValue & {
 export type ContainerConfigPort = {
   id: string
   internal: number
-  external: number
+  external?: number
 }
 
 export type PortRange = {

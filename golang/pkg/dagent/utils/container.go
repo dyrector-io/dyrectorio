@@ -19,6 +19,11 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/config"
 )
 
+const (
+	TraefikHTTPPort  = 80
+	TraefikHTTPSPort = 443
+)
+
 type TraefikDeployRequest struct {
 	// LogLevel defaults to INFO
 	LogLevel string `json:"logLevel"`
@@ -111,6 +116,7 @@ func ExecTraefik(ctx context.Context, traefikDeployReq TraefikDeployRequest, cfg
 		WithCmd(command).
 		WithForcePullImage().
 		WithExtraHosts([]string{"host.docker.internal:host-gateway"}).
+		WithoutConflict().
 		Create()
 
 	_, err = builder.Start()

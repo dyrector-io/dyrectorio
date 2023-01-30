@@ -4,7 +4,7 @@ import { UniqueKey, UniqueKeyValue, UniqueSecretKey, UniqueSecretKeyValue } from
 export type ContainerConfigPort = {
   id: string
   internal: number
-  external: number
+  external?: number
 }
 
 export type PortRange = {

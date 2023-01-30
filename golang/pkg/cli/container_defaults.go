@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"os"
 
+	"github.com/AlekSi/pointer"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
 	"github.com/rs/zerolog/log"
@@ -82,11 +83,11 @@ func GetCrux(settings *Settings) *containerbuilder.DockerContainerBuilder {
 			WithPortBindings([]containerbuilder.PortBinding{
 				{
 					ExposedPort: defaultCruxAgentGrpcPort,
-					PortBinding: uint16(settings.SettingsFile.CruxAgentGrpcPort),
+					PortBinding: pointer.ToUint16(uint16(settings.SettingsFile.CruxAgentGrpcPort)),
 				},
 				{
 					ExposedPort: defaultCruxGrpcPort,
-					PortBinding: uint16(settings.SettingsFile.CruxGrpcPort),
+					PortBinding: pointer.ToUint16(uint16(settings.SettingsFile.CruxGrpcPort)),
 				},
 			})
 	}
@@ -162,7 +163,7 @@ func GetCruxUI(settings *Settings) *containerbuilder.DockerContainerBuilder {
 			WithPortBindings([]containerbuilder.PortBinding{
 				{
 					ExposedPort: defaultCruxUIPort,
-					PortBinding: uint16(settings.SettingsFile.CruxUIPort),
+					PortBinding: pointer.ToUint16(uint16(settings.SettingsFile.CruxUIPort)),
 				},
 			})
 	}
@@ -229,11 +230,11 @@ func GetTraefik(settings *Settings) *containerbuilder.DockerContainerBuilder {
 			WithPortBindings([]containerbuilder.PortBinding{
 				{
 					ExposedPort: defaultTraefikWebPort,
-					PortBinding: uint16(settings.SettingsFile.TraefikWebPort),
+					PortBinding: pointer.ToUint16(uint16(settings.SettingsFile.TraefikWebPort)),
 				},
 				{
 					ExposedPort: defaultTraefikUIPort,
-					PortBinding: uint16(settings.SettingsFile.TraefikUIPort),
+					PortBinding: pointer.ToUint16(uint16(settings.SettingsFile.TraefikUIPort)),
 				},
 			})
 	}
@@ -301,11 +302,11 @@ func GetKratos(settings *Settings) *containerbuilder.DockerContainerBuilder {
 			WithPortBindings([]containerbuilder.PortBinding{
 				{
 					ExposedPort: defaultKratosPublicPort,
-					PortBinding: uint16(settings.SettingsFile.KratosPublicPort),
+					PortBinding: pointer.ToUint16(uint16(settings.SettingsFile.KratosPublicPort)),
 				},
 				{
 					ExposedPort: defaultKratosAdminPort,
-					PortBinding: uint16(settings.SettingsFile.KratosAdminPort),
+					PortBinding: pointer.ToUint16(uint16(settings.SettingsFile.KratosAdminPort)),
 				},
 			})
 	}
@@ -361,15 +362,15 @@ func GetMailSlurper(settings *Settings) *containerbuilder.DockerContainerBuilder
 			WithPortBindings([]containerbuilder.PortBinding{
 				{
 					ExposedPort: defaultMailSlurperSMTPPort,
-					PortBinding: uint16(settings.SettingsFile.MailSlurperSMTPPort),
+					PortBinding: pointer.ToUint16(uint16(settings.SettingsFile.MailSlurperSMTPPort)),
 				},
 				{
 					ExposedPort: defaultMailSlurperWebPort,
-					PortBinding: uint16(settings.SettingsFile.MailSlurperWebPort),
+					PortBinding: pointer.ToUint16(uint16(settings.SettingsFile.MailSlurperWebPort)),
 				},
 				{
 					ExposedPort: defaultMailSlurperWebPort2,
-					PortBinding: uint16(settings.SettingsFile.MailSlurperWebPort2),
+					PortBinding: pointer.ToUint16(uint16(settings.SettingsFile.MailSlurperWebPort2)),
 				},
 			})
 	}
@@ -392,7 +393,7 @@ func GetCruxPostgres(settings *Settings) *containerbuilder.DockerContainerBuilde
 			WithPortBindings([]containerbuilder.PortBinding{
 				{
 					ExposedPort: defaultPostgresPort,
-					PortBinding: uint16(settings.SettingsFile.CruxPostgresPort),
+					PortBinding: pointer.ToUint16(uint16(settings.SettingsFile.CruxPostgresPort)),
 				},
 			}).
 			WithMountPoints([]mount.Mount{{
@@ -420,7 +421,7 @@ func GetKratosPostgres(settings *Settings) *containerbuilder.DockerContainerBuil
 			WithPortBindings([]containerbuilder.PortBinding{
 				{
 					ExposedPort: defaultPostgresPort,
-					PortBinding: uint16(settings.SettingsFile.KratosPostgresPort),
+					PortBinding: pointer.ToUint16(uint16(settings.SettingsFile.KratosPostgresPort)),
 				},
 			}).
 			WithMountPoints([]mount.Mount{
