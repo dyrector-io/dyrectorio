@@ -10,7 +10,7 @@ ENV GOCACHE $GOPATH/cache
 
 RUN mkdir -p "$GOPATH/{src,bin,cache}" && chmod -R 777 "$GOPATH"
 
-RUN apk add nodejs npm alpine-sdk go protoc protobuf-dev rsync docker git cosign zstd
+RUN apk add nodejs npm alpine-sdk go protoc protobuf-dev rsync docker git cosign zstd openssl1.1-compat
 
 RUN npm i -g \
         ts-proto@1.138.0 \
