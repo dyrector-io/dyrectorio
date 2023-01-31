@@ -49,24 +49,10 @@
           {
             "id": "1",
             "key": "traefik.http.routers.vaultwarden-vaultwarden-ws.rule",
-            "value": "PathPrefix(`/notifications/hub/negotiate`)"
+            "value": "Host(`vault.example.com`) && PathPrefix(`/notifications/hub/negotiate`)"
           },
           { "id": "2", "key": "traefik.http.routers.vaultwarden-vaultwarden-ws.entrypoints", "value": "websecure" },
-          {
-            "id": "3",
-            "key": "traefik.http.services.vaultwarden-vaultwarden-ws.loadbalancer.server.port",
-            "value": "3012"
-          },
-          {
-            "id": "4",
-            "key": "traefik.http.routers.vaultwarden-vaultwarden-ws.service",
-            "value": "vaultwarden-vaultwarden-ws"
-          },
-          {
-            "id": "5",
-            "key": "traefik.http.routers.vaultwarden-vaultwarden.service",
-            "value": "vaultwarden-vaultwarden"
-          }
+          { "id": "3", "key": "traefik.http.routers.vaultwarden-vaultwarden-ws.priority", "value": "2" }
         ],
         "secrets": [],
         "networks": ["vaultwarden-network"],
