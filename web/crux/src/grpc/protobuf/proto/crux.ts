@@ -673,6 +673,23 @@ export interface UpdateEntityResponse {
   updatedAt: Timestamp | undefined
 }
 
+/** AUTHENTICATION */
+export interface TokenRequest {
+  accessedBy: string
+  name: string
+  expirationInsDays: number
+}
+
+export interface TokenResponse {
+  token: string
+}
+
+export interface UserTokenListResponse {
+  name: string
+  expiresAt: Timestamp | undefined
+  createdAt: Timestamp | undefined
+}
+
 /** AUDIT */
 export interface AuditLogListRequest {
   accessedBy: string
@@ -1617,6 +1634,66 @@ export const UpdateEntityResponse = {
   toJSON(message: UpdateEntityResponse): unknown {
     const obj: any = {}
     message.updatedAt !== undefined && (obj.updatedAt = fromTimestamp(message.updatedAt).toISOString())
+    return obj
+  },
+}
+
+function createBaseTokenRequest(): TokenRequest {
+  return { accessedBy: '', name: '', expirationInsDays: 0 }
+}
+
+export const TokenRequest = {
+  fromJSON(object: any): TokenRequest {
+    return {
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      expirationInsDays: isSet(object.expirationInsDays) ? Number(object.expirationInsDays) : 0,
+    }
+  },
+
+  toJSON(message: TokenRequest): unknown {
+    const obj: any = {}
+    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
+    message.name !== undefined && (obj.name = message.name)
+    message.expirationInsDays !== undefined && (obj.expirationInsDays = Math.round(message.expirationInsDays))
+    return obj
+  },
+}
+
+function createBaseTokenResponse(): TokenResponse {
+  return { token: '' }
+}
+
+export const TokenResponse = {
+  fromJSON(object: any): TokenResponse {
+    return { token: isSet(object.token) ? String(object.token) : '' }
+  },
+
+  toJSON(message: TokenResponse): unknown {
+    const obj: any = {}
+    message.token !== undefined && (obj.token = message.token)
+    return obj
+  },
+}
+
+function createBaseUserTokenListResponse(): UserTokenListResponse {
+  return { name: '', expiresAt: undefined, createdAt: undefined }
+}
+
+export const UserTokenListResponse = {
+  fromJSON(object: any): UserTokenListResponse {
+    return {
+      name: isSet(object.name) ? String(object.name) : '',
+      expiresAt: isSet(object.expiresAt) ? fromJsonTimestamp(object.expiresAt) : undefined,
+      createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
+    }
+  },
+
+  toJSON(message: UserTokenListResponse): unknown {
+    const obj: any = {}
+    message.name !== undefined && (obj.name = message.name)
+    message.expiresAt !== undefined && (obj.expiresAt = fromTimestamp(message.expiresAt).toISOString())
+    message.createdAt !== undefined && (obj.createdAt = fromTimestamp(message.createdAt).toISOString())
     return obj
   },
 }
@@ -5736,6 +5813,43 @@ export function CruxDashboardControllerMethods() {
 }
 
 export const CRUX_DASHBOARD_SERVICE_NAME = 'CruxDashboard'
+
+export interface CruxAuthClient {
+  generateToken(request: TokenRequest, metadata: Metadata, ...rest: any): Observable<TokenResponse>
+
+  getUserTokens(request: AccessRequest, metadata: Metadata, ...rest: any): Observable<UserTokenListResponse>
+}
+
+export interface CruxAuthController {
+  generateToken(
+    request: TokenRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<TokenResponse> | Observable<TokenResponse> | TokenResponse
+
+  getUserTokens(
+    request: AccessRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<UserTokenListResponse> | Observable<UserTokenListResponse> | UserTokenListResponse
+}
+
+export function CruxAuthControllerMethods() {
+  return function (constructor: Function) {
+    const grpcMethods: string[] = ['generateToken', 'getUserTokens']
+    for (const method of grpcMethods) {
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
+      GrpcMethod('CruxAuth', method)(constructor.prototype[method], method, descriptor)
+    }
+    const grpcStreamMethods: string[] = []
+    for (const method of grpcStreamMethods) {
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
+      GrpcStreamMethod('CruxAuth', method)(constructor.prototype[method], method, descriptor)
+    }
+  }
+}
+
+export const CRUX_AUTH_SERVICE_NAME = 'CruxAuth'
 
 declare var self: any | undefined
 declare var window: any | undefined

@@ -24,7 +24,6 @@ import DashboardModule from './app/dashboard/dashboard.module'
 
 @Module({
   imports: [
-    ProductModule,
     RegistryModule,
     NodeModule,
     VersionModule,
@@ -32,7 +31,6 @@ import DashboardModule from './app/dashboard/dashboard.module'
     TeamModule,
     DeployModule,
     AgentModule,
-    AuditModule,
     HealthModule,
     NotificationModule,
     TemplateModule,

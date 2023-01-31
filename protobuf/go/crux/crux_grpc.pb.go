@@ -3605,3 +3605,125 @@ var CruxDashboard_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "protobuf/proto/crux.proto",
 }
+
+// CruxAuthClient is the client API for CruxAuth service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type CruxAuthClient interface {
+	GenerateToken(ctx context.Context, in *TokenRequest, opts ...grpc.CallOption) (*TokenResponse, error)
+	GetUserTokens(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*UserTokenListResponse, error)
+}
+
+type cruxAuthClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewCruxAuthClient(cc grpc.ClientConnInterface) CruxAuthClient {
+	return &cruxAuthClient{cc}
+}
+
+func (c *cruxAuthClient) GenerateToken(ctx context.Context, in *TokenRequest, opts ...grpc.CallOption) (*TokenResponse, error) {
+	out := new(TokenResponse)
+	err := c.cc.Invoke(ctx, "/crux.CruxAuth/generateToken", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cruxAuthClient) GetUserTokens(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*UserTokenListResponse, error) {
+	out := new(UserTokenListResponse)
+	err := c.cc.Invoke(ctx, "/crux.CruxAuth/getUserTokens", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// CruxAuthServer is the server API for CruxAuth service.
+// All implementations must embed UnimplementedCruxAuthServer
+// for forward compatibility
+type CruxAuthServer interface {
+	GenerateToken(context.Context, *TokenRequest) (*TokenResponse, error)
+	GetUserTokens(context.Context, *AccessRequest) (*UserTokenListResponse, error)
+	mustEmbedUnimplementedCruxAuthServer()
+}
+
+// UnimplementedCruxAuthServer must be embedded to have forward compatible implementations.
+type UnimplementedCruxAuthServer struct {
+}
+
+func (UnimplementedCruxAuthServer) GenerateToken(context.Context, *TokenRequest) (*TokenResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GenerateToken not implemented")
+}
+func (UnimplementedCruxAuthServer) GetUserTokens(context.Context, *AccessRequest) (*UserTokenListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserTokens not implemented")
+}
+func (UnimplementedCruxAuthServer) mustEmbedUnimplementedCruxAuthServer() {}
+
+// UnsafeCruxAuthServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to CruxAuthServer will
+// result in compilation errors.
+type UnsafeCruxAuthServer interface {
+	mustEmbedUnimplementedCruxAuthServer()
+}
+
+func RegisterCruxAuthServer(s grpc.ServiceRegistrar, srv CruxAuthServer) {
+	s.RegisterService(&CruxAuth_ServiceDesc, srv)
+}
+
+func _CruxAuth_GenerateToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CruxAuthServer).GenerateToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crux.CruxAuth/generateToken",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CruxAuthServer).GenerateToken(ctx, req.(*TokenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CruxAuth_GetUserTokens_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AccessRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CruxAuthServer).GetUserTokens(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crux.CruxAuth/getUserTokens",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CruxAuthServer).GetUserTokens(ctx, req.(*AccessRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// CruxAuth_ServiceDesc is the grpc.ServiceDesc for CruxAuth service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var CruxAuth_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "crux.CruxAuth",
+	HandlerType: (*CruxAuthServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "generateToken",
+			Handler:    _CruxAuth_GenerateToken_Handler,
+		},
+		{
+			MethodName: "getUserTokens",
+			Handler:    _CruxAuth_GetUserTokens_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "protobuf/proto/crux.proto",
+}

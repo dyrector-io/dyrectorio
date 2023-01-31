@@ -18,6 +18,12 @@ export type IdentityTraitsName = {
   last?: string
 }
 
+export type AuthPayload = {
+  sub: string
+  email: string
+  role?: string
+}
+
 export const nameOfIdentity = (identity: Identity) => {
   const traits = identity?.traits as IdentityTraits
   return `${traits?.name?.first ?? ''} ${traits?.name?.last ?? ''}`.trim()
