@@ -10,12 +10,13 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoMessage from '@app/elements/dyo-message'
+import useDyoFormik from '@app/hooks/use-dyo-formik'
 import { ChangePassword } from '@app/models'
 import { API_SETTINGS_CHANGE_PASSWORD, ROUTE_LOGIN, ROUTE_SETTINGS, ROUTE_SETTINGS_CHANGE_PASSWORD } from '@app/routes'
 import { findAttributes, findMessage, sendForm, withContextAuthorization } from '@app/utils'
+import { passwordSchema } from '@app/validations'
 import { SettingsFlow } from '@ory/kratos-client'
 import kratos from '@server/kratos'
-import { useFormik } from 'formik'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
@@ -31,11 +32,12 @@ const SettingsPage = (props: SettingsFlow) => {
   const [confirmError, setConfirmError] = useState<string>(null)
   const saveRef = useRef<() => Promise<any>>()
 
-  const formik = useFormik({
+  const formik = useDyoFormik({
     initialValues: {
       password: '',
       confirmPassword: '',
     },
+    validationSchema: passwordSchema,
     onSubmit: async values => {
       if (values.password !== values.confirmPassword) {
         setConfirmError(t('errors:confirmPassMismatch'))
@@ -96,7 +98,7 @@ const SettingsPage = (props: SettingsFlow) => {
             type="password"
             onChange={formik.handleChange}
             value={formik.values.password}
-            message={findMessage(ui, 'password')}
+            message={findMessage(ui, 'password') ?? formik.errors.password}
             grow
           />
 
@@ -106,7 +108,7 @@ const SettingsPage = (props: SettingsFlow) => {
             type="password"
             onChange={formik.handleChange}
             value={formik.values.confirmPassword}
-            message={confirmError}
+            message={confirmError ?? formik.errors.confirmPassword}
             messageType="error"
             grow
           />

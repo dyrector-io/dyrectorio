@@ -6,6 +6,7 @@ import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoSwitch from '@app/elements/dyo-switch'
 import { defaultApiErrorHandler } from '@app/errors'
+import useDyoFormik from '@app/hooks/use-dyo-formik'
 import {
   CreateNotification,
   NotificationDetails,
@@ -17,7 +18,6 @@ import {
 import { API_NOTIFICATIONS, notificationApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { notificationSchema } from '@app/validations'
-import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
 import { MutableRefObject, useState } from 'react'
 import { NotificationEventList } from './notification-event-list'
@@ -50,7 +50,7 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const formik = useFormik({
+  const formik = useDyoFormik({
     initialValues: {
       ...notification,
     },
@@ -120,7 +120,10 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
               choices={NOTIFICATION_TYPE_VALUES}
               initialSelection={formik.values.type}
               converter={(it: NotificationType) => t(`type.${it}`)}
-              onSelectionChange={it => formik.setFieldValue('type', it, true)}
+              onSelectionChange={async it => {
+                await formik.setFieldValue('type', it)
+                formik.validateField('url')
+              }}
             />
           </div>
 

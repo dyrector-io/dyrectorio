@@ -57,6 +57,7 @@ test("Unchecked registry shouldn't search images", async ({ page }) => {
   await page.locator('input[name=url]').fill('docker.io/library')
 
   await page.locator('text=Save').click()
+  await page.waitForSelector(`h3:text-is("${registryName}")`)
 
   await createProduct(page, 'UNCHECKED_PRODUCT', 'Simple')
 

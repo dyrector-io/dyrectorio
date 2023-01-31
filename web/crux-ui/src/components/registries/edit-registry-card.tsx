@@ -8,6 +8,7 @@ import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
+import useDyoFormik from '@app/hooks/use-dyo-formik'
 import {
   CreateRegistry,
   GithubRegistryDetails,
@@ -26,7 +27,6 @@ import {
 import { API_REGISTRIES, registryApiUrl } from '@app/routes'
 import { FormikProps, sendForm } from '@app/utils'
 import { registrySchema } from '@app/validations'
-import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
 import { MutableRefObject, useState } from 'react'
 import GithubRegistryFields from './registry-fields/github-registry-field'
@@ -68,7 +68,7 @@ const EditRegistryCard = (props: EditRegistryCardProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const formik = useFormik({
+  const formik = useDyoFormik({
     initialValues: {
       ...registry,
     },

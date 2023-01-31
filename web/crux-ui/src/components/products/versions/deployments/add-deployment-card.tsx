@@ -7,11 +7,11 @@ import { DyoLabel } from '@app/elements/dyo-label'
 import DyoMessage from '@app/elements/dyo-message'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
+import useDyoFormik from '@app/hooks/use-dyo-formik'
 import { CreateDeployment, DeploymentCreated, DyoApiError, DyoNode } from '@app/models'
 import { API_NODES, versionDeploymentsApiUrl } from '@app/routes'
 import { fetcher, sendForm } from '@app/utils'
 import { createDeploymentSchema } from '@app/validations'
-import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect } from 'react'
 import toast from 'react-hot-toast'
@@ -43,13 +43,13 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
 
   const nameToPrefix = (name: string) => name.replaceAll(' ', '-').toLowerCase()
 
-  const formik = useFormik({
-    validationSchema: createDeploymentSchema,
+  const formik = useDyoFormik({
     initialValues: {
       nodeId: null as string,
       note: '',
       prefix: nameToPrefix(productName),
     },
+    validationSchema: createDeploymentSchema,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 

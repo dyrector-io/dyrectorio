@@ -7,6 +7,7 @@ import { DyoInput } from '@app/elements/dyo-input'
 import DyoMessage from '@app/elements/dyo-message'
 import DyoSingleFormHeading from '@app/elements/dyo-single-form-heading'
 import DyoSingleFormLogo from '@app/elements/dyo-single-form-logo'
+import useDyoFormik from '@app/hooks/use-dyo-formik'
 import { DyoErrorDto, Login } from '@app/models'
 import {
   API_AUTH_LOGIN,
@@ -21,7 +22,6 @@ import { findAttributes, findError, findMessage, isDyoError, redirectTo, sendFor
 import { LoginFlow, UiContainer } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'
 import kratos, { cookieOf, forwardCookie, obtainSessionFromRequest, userVerified } from '@server/kratos'
-import { useFormik } from 'formik'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/dist/client/router'
@@ -49,7 +49,7 @@ const LoginPage = (props: LoginPageProps) => {
   const [errors, setErrors] = useState<DyoErrorDto[]>([])
 
   const recaptcha = useRef<ReCAPTCHA>()
-  const formik = useFormik({
+  const formik = useDyoFormik({
     initialValues: {
       email,
       password: '',

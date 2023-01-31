@@ -6,6 +6,7 @@ import DyoForm from '@app/elements/dyo-form'
 import { DyoInput } from '@app/elements/dyo-input'
 import DyoMessage from '@app/elements/dyo-message'
 import DyoSingleFormHeading from '@app/elements/dyo-single-form-heading'
+import useDyoFormik from '@app/hooks/use-dyo-formik'
 import useTimer from '@app/hooks/use-timer'
 import { DyoErrorDto, VerifyEmail } from '@app/models'
 import { API_VERIFICATION, ROUTE_INDEX, ROUTE_SETTINGS } from '@app/routes'
@@ -20,10 +21,10 @@ import {
   upsertDyoError,
   withContextErrorHandling,
 } from '@app/utils'
+import { verifySchema } from '@app/validations'
 import { VerificationFlow } from '@ory/kratos-client'
 import { captchaDisabled } from '@server/captcha'
 import kratos, { forwardCookie, obtainSessionFromRequest, userVerified } from '@server/kratos'
-import { useFormik } from 'formik'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
@@ -57,11 +58,12 @@ const VerifyPage = (props: VerifyProps) => {
   const sent = flow.state === 'sent_email'
   const { ui } = flow
 
-  const formik = useFormik({
+  const formik = useDyoFormik({
     initialValues: {
       email: email ?? '',
       code: '',
     },
+    validationSchema: verifySchema,
     onSubmit: async values => {
       const captcha = await recaptcha.current?.executeAsync()
 
@@ -70,7 +72,7 @@ const VerifyPage = (props: VerifyProps) => {
         csrfToken: findAttributes(ui, ATTRIB_CSRF).value,
         captcha,
         email: !sent ? values.email : null,
-        code: sent ? values.code : null,
+        code: sent ? values.code.trim() : null,
       }
 
       const res = await sendForm('POST', API_VERIFICATION, data)

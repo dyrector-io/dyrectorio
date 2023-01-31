@@ -7,11 +7,11 @@ import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
+import useDyoFormik from '@app/hooks/use-dyo-formik'
 import { CreateProduct, EditableProduct, Product, PRODUCT_TYPE_VALUES, UpdateProduct } from '@app/models'
 import { API_PRODUCTS, productApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { createProductSchema, updateProductSchema } from '@app/validations'
-import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
 import { MutableRefObject, useState } from 'react'
 
@@ -44,11 +44,11 @@ const EditProductCard = (props: EditProductCardProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const formik = useFormik({
-    validationSchema: !editing ? createProductSchema : updateProductSchema,
+  const formik = useDyoFormik({
     initialValues: {
       ...product,
     },
+    validationSchema: !editing ? createProductSchema : updateProductSchema,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 

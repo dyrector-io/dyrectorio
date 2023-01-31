@@ -6,12 +6,12 @@ import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
+import useDyoFormik from '@app/hooks/use-dyo-formik'
 import useVersionHint from '@app/hooks/use-version-hint'
 import { IncreaseVersion, Product, Version } from '@app/models'
 import { versionIncreaseApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { increaseVersionSchema } from '@app/validations'
-import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
 import { MutableRefObject } from 'react'
 
@@ -30,12 +30,14 @@ const IncreaseVersionCard = (props: IncreaseVersionCardProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const formik = useFormik({
-    validationSchema: increaseVersionSchema,
+  const [versionHint, setVersionHint] = useVersionHint(null)
+
+  const formik = useDyoFormik({
     initialValues: {
       name: '',
       changelog: '',
     },
+    validationSchema: increaseVersionSchema,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 
@@ -58,13 +60,6 @@ const IncreaseVersionCard = (props: IncreaseVersionCardProps) => {
     submitRef.current = formik.submitForm
   }
 
-  const [versionHint, setVersionHint] = useVersionHint(null)
-
-  const onVersionChange = (value: string) => {
-    formik.setFieldValue('name', value, true)
-    setVersionHint(value)
-  }
-
   return (
     <DyoCard className={className}>
       <DyoHeading element="h4" className="text-lg text-bright">
@@ -82,7 +77,8 @@ const IncreaseVersionCard = (props: IncreaseVersionCardProps) => {
           required
           label={t('common:name')}
           onChange={e => {
-            onVersionChange(e.currentTarget.value)
+            formik.handleChange(e)
+            setVersionHint(e.target.value)
           }}
           value={formik.values.name}
           message={versionHint ?? formik.errors.name}

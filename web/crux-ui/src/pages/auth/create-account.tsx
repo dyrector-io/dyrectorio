@@ -6,12 +6,12 @@ import { DyoLabel } from '@app/elements/dyo-label'
 import DyoMessage from '@app/elements/dyo-message'
 import DyoSingleFormHeading from '@app/elements/dyo-single-form-heading'
 import DyoSingleFormLogo from '@app/elements/dyo-single-form-logo'
+import useDyoFormik from '@app/hooks/use-dyo-formik'
 import { CreateAccount, DyoErrorDto } from '@app/models'
 import { API_CREATE_ACCOUNT, ROUTE_INDEX } from '@app/routes'
 import { findUiMessage, isDyoError, redirectTo, sendForm, upsertDyoError, withContextErrorHandling } from '@app/utils'
 import { RecoveryFlow } from '@ory/kratos-client'
 import kratos, { forwardCookie } from '@server/kratos'
-import { useFormik } from 'formik'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
 import { useRouter } from 'next/router'
@@ -36,7 +36,7 @@ const AcceptInvitationPage = (props: AcceptInvitationPageProps) => {
 
   const { ui } = flow
 
-  const formik = useFormik({
+  const formik = useDyoFormik({
     initialValues: {},
     onSubmit: async () => {
       const body: CreateAccount = {

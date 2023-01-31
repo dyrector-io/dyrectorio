@@ -26,9 +26,13 @@ const config: PlaywrightTestConfig = {
     // More information: https://playwright.dev/docs/api/class-testoptions#test-options-base-url
     baseURL,
 
-    // Retry a test if its failing with enabled tracing. This allows you to analyse the DOM, console logs, network traffic etc.
-    // More information: https://playwright.dev/docs/trace-viewer
-    trace: 'retain-on-failure',
+    trace: {
+      // Retry a test if its failing with enabled tracing. This allows you to analyse the DOM, console logs, network traffic etc.
+      // More information: https://playwright.dev/docs/trace-viewer
+      mode: 'retain-on-failure',
+      snapshots: true,
+      screenshots: true,
+    },
 
     // All available context options: https://playwright.dev/docs/api/class-browser#browser-new-context
     // contextOptions: {

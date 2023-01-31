@@ -7,12 +7,12 @@ import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoTextArea from '@app/elements/dyo-text-area'
 import { defaultApiErrorHandler } from '@app/errors'
+import useDyoFormik from '@app/hooks/use-dyo-formik'
 import useVersionHint from '@app/hooks/use-version-hint'
 import { CreateVersion, EditableVersion, Product, UpdateVersion, VERSION_TYPE_VALUES } from '@app/models'
 import { productVersionsApiUrl, versionApiUrl } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { createVersionSchema, updateVersionSchema } from '@app/validations'
-import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
 import { MutableRefObject, useState } from 'react'
 
@@ -44,11 +44,13 @@ const EditVersionCard = (props: EditVersionCardProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const formik = useFormik({
-    validationSchema: !editing ? createVersionSchema : updateVersionSchema,
+  const [versionHint, setVersionHint] = useVersionHint(version.name)
+
+  const formik = useDyoFormik({
     initialValues: {
       ...version,
     },
+    validationSchema: !editing ? createVersionSchema : updateVersionSchema,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 
@@ -83,13 +85,6 @@ const EditVersionCard = (props: EditVersionCardProps) => {
     submitRef.current = formik.submitForm
   }
 
-  const [versionHint, setVersionHint] = useVersionHint(version.name)
-
-  const onVersionChange = (value: string) => {
-    formik.setFieldValue('name', value, true)
-    setVersionHint(value)
-  }
-
   return (
     <DyoCard className={className}>
       <DyoHeading element="h4" className="text-lg text-bright">
@@ -107,7 +102,8 @@ const EditVersionCard = (props: EditVersionCardProps) => {
           required
           label={t('common:name')}
           onChange={e => {
-            onVersionChange(e.currentTarget.value)
+            formik.handleChange(e)
+            setVersionHint(e.target.value)
           }}
           value={formik.values.name}
           message={versionHint ?? formik.errors.name}

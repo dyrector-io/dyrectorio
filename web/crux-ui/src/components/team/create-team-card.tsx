@@ -5,11 +5,11 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { defaultApiErrorHandler } from '@app/errors'
+import useDyoFormik from '@app/hooks/use-dyo-formik'
 import { ActiveTeamDetails, CreateTeam } from '@app/models'
 import { API_TEAMS } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { createTeamSchema } from '@app/validations'
-import { useFormik } from 'formik'
 import useTranslation from 'next-translate/useTranslation'
 
 interface CreateTeamCardProps {
@@ -24,11 +24,11 @@ const CreateTeamCard = (props: CreateTeamCardProps) => {
 
   const handleApiError = defaultApiErrorHandler(t)
 
-  const formik = useFormik({
-    validationSchema: createTeamSchema,
+  const formik = useDyoFormik({
     initialValues: {
       name: '',
     },
+    validationSchema: createTeamSchema,
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 
