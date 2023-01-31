@@ -184,7 +184,7 @@ test.describe('Complex product', () => {
     await expect(await page.locator('div.bg-dyo-turquoise:has-text("Preparing")')).toHaveCount(1)
   })
 
-  test('Inprogress deployment should be not copiable', async ({ page }) => {
+  test('In Progress deployment should be not copiable', async ({ page }) => {
     const productName = 'PRODUCT-COPY-TEST10'
 
     const productId = await createProduct(page, productName, 'Complex')

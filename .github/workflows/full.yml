@@ -461,6 +461,11 @@ jobs:
         with:
           name: e2e-screenshots
           path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/e2e/screenshots/
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: e2e-trace
+          path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/e2e_results
       - name: Teardown using cli
         run: docker run -v /var/run/docker.sock:/var/run/docker.sock ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} --debug down
 

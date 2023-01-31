@@ -128,9 +128,10 @@ test.describe('Image configurations', () => {
   test('Port should be saved after adding it from the config field', async ({ page }) => {
     const { productId, versionId, imageId } = await setup(page, 'port-editor', '1.0.0', 'redis')
 
+    const sock = page.waitForEvent('websocket')
     await page.goto(imageConfigUrl(productId, versionId, imageId))
 
-    const ws = await page.waitForEvent('websocket')
+    const ws = await sock
     let wsSent = wsPatchSent(ws)
 
     const addPortsButton = await page.locator(`[src="/plus.svg"]:right-of(label:has-text("Ports"))`).first()
@@ -156,9 +157,9 @@ test.describe('Image configurations', () => {
   test('Port should be saved after adding it from the json editor', async ({ page }) => {
     const { productId, versionId, imageId } = await setup(page, 'port-json', '1.0.0', 'redis')
 
+    const sock = page.waitForEvent('websocket')
     await page.goto(imageConfigUrl(productId, versionId, imageId))
-
-    const ws = await page.waitForEvent('websocket')
+    const ws = await sock
 
     const jsonEditorButton = await page.waitForSelector('button:has-text("JSON")')
 
