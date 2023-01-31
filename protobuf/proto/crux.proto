@@ -146,9 +146,10 @@ service CruxDashboard {
   rpc GetDashboard(AccessRequest) returns (DashboardResponse);
 }
 
-service CruxAuth {
-  rpc generateToken(TokenRequest) returns (TokenResponse);
-  rpc getUserTokens(AccessRequest) returns (UserTokenListResponse);
+service CruxToken {
+  rpc GenerateToken(GenerateTokenRequest) returns (GenerateTokenResponse);
+  rpc GetTokens(AccessRequest) returns (TokenListResponse);
+  rpc DeleteToken(IdRequest) returns (common.Empty);
 }
 
 /**
@@ -186,19 +187,33 @@ message UpdateEntityResponse { google.protobuf.Timestamp updatedAt = 100; }
  */
 
 // AUTHENTICATION
-message TokenRequest {
+message GenerateTokenRequest {
   string accessedBy = 2;
 
   string name = 100;
-  int32 expirationInsDays = 101;
+  int32 expirationInDays = 101;
 }
 
-message TokenResponse { string token = 1; }
+message GenerateTokenResponse { 
+  string id = 1;
 
-message UserTokenListResponse {
   string name = 100;
   google.protobuf.Timestamp expiresAt = 101;
   google.protobuf.Timestamp createdAt = 102;
+
+  string token = 103;
+}
+
+message TokenResponse {
+  string id = 1;
+
+  string name = 100;
+  google.protobuf.Timestamp expiresAt = 101;
+  google.protobuf.Timestamp createdAt = 102;
+}
+
+message TokenListResponse {
+  repeated TokenResponse data = 1000;
 }
 
 // AUDIT

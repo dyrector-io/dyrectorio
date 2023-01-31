@@ -8,7 +8,7 @@ import {
 } from 'src/grpc/protobuf/proto/crux'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import ProductService from './product.service'
-import JwtAuthGuard from '../auth/jwt-auth.guard'
+import JwtAuthGuard from '../token/jwt-auth.guard'
 
 @Controller('product')
 export default class ProductHttpController {

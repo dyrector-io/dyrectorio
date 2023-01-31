@@ -687,20 +687,29 @@ export interface UpdateEntityResponse {
 }
 
 /** AUTHENTICATION */
-export interface TokenRequest {
+export interface GenerateTokenRequest {
   accessedBy: string
   name: string
-  expirationInsDays: number
+  expirationInDays: number
 }
 
-export interface TokenResponse {
-  token: string
-}
-
-export interface UserTokenListResponse {
+export interface GenerateTokenResponse {
+  id: string
   name: string
   expiresAt: Timestamp | undefined
   createdAt: Timestamp | undefined
+  token: string
+}
+
+export interface TokenResponse {
+  id: string
+  name: string
+  expiresAt: Timestamp | undefined
+  createdAt: Timestamp | undefined
+}
+
+export interface TokenListResponse {
+  data: TokenResponse[]
 }
 
 /** AUDIT */
@@ -1827,28 +1836,28 @@ export const UpdateEntityResponse = {
   },
 }
 
-function createBaseTokenRequest(): TokenRequest {
-  return { accessedBy: '', name: '', expirationInsDays: 0 }
+function createBaseGenerateTokenRequest(): GenerateTokenRequest {
+  return { accessedBy: '', name: '', expirationInDays: 0 }
 }
 
-export const TokenRequest = {
-  encode(message: TokenRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+export const GenerateTokenRequest = {
+  encode(message: GenerateTokenRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.accessedBy !== '') {
       writer.uint32(18).string(message.accessedBy)
     }
     if (message.name !== '') {
       writer.uint32(802).string(message.name)
     }
-    if (message.expirationInsDays !== 0) {
-      writer.uint32(808).int32(message.expirationInsDays)
+    if (message.expirationInDays !== 0) {
+      writer.uint32(808).int32(message.expirationInDays)
     }
     return writer
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): TokenRequest {
+  decode(input: _m0.Reader | Uint8Array, length?: number): GenerateTokenRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseTokenRequest()
+    const message = createBaseGenerateTokenRequest()
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -1859,7 +1868,7 @@ export const TokenRequest = {
           message.name = reader.string()
           break
         case 101:
-          message.expirationInsDays = reader.int32()
+          message.expirationInDays = reader.int32()
           break
         default:
           reader.skipType(tag & 7)
@@ -1869,55 +1878,79 @@ export const TokenRequest = {
     return message
   },
 
-  fromJSON(object: any): TokenRequest {
+  fromJSON(object: any): GenerateTokenRequest {
     return {
       accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       name: isSet(object.name) ? String(object.name) : '',
-      expirationInsDays: isSet(object.expirationInsDays) ? Number(object.expirationInsDays) : 0,
+      expirationInDays: isSet(object.expirationInDays) ? Number(object.expirationInDays) : 0,
     }
   },
 
-  toJSON(message: TokenRequest): unknown {
+  toJSON(message: GenerateTokenRequest): unknown {
     const obj: any = {}
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.name !== undefined && (obj.name = message.name)
-    message.expirationInsDays !== undefined && (obj.expirationInsDays = Math.round(message.expirationInsDays))
+    message.expirationInDays !== undefined && (obj.expirationInDays = Math.round(message.expirationInDays))
     return obj
   },
 
-  create<I extends Exact<DeepPartial<TokenRequest>, I>>(base?: I): TokenRequest {
-    return TokenRequest.fromPartial(base ?? {})
+  create<I extends Exact<DeepPartial<GenerateTokenRequest>, I>>(base?: I): GenerateTokenRequest {
+    return GenerateTokenRequest.fromPartial(base ?? {})
   },
 
-  fromPartial<I extends Exact<DeepPartial<TokenRequest>, I>>(object: I): TokenRequest {
-    const message = createBaseTokenRequest()
+  fromPartial<I extends Exact<DeepPartial<GenerateTokenRequest>, I>>(object: I): GenerateTokenRequest {
+    const message = createBaseGenerateTokenRequest()
     message.accessedBy = object.accessedBy ?? ''
     message.name = object.name ?? ''
-    message.expirationInsDays = object.expirationInsDays ?? 0
+    message.expirationInDays = object.expirationInDays ?? 0
     return message
   },
 }
 
-function createBaseTokenResponse(): TokenResponse {
-  return { token: '' }
+function createBaseGenerateTokenResponse(): GenerateTokenResponse {
+  return { id: '', name: '', expiresAt: undefined, createdAt: undefined, token: '' }
 }
 
-export const TokenResponse = {
-  encode(message: TokenResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+export const GenerateTokenResponse = {
+  encode(message: GenerateTokenResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== '') {
+      writer.uint32(10).string(message.id)
+    }
+    if (message.name !== '') {
+      writer.uint32(802).string(message.name)
+    }
+    if (message.expiresAt !== undefined) {
+      Timestamp.encode(message.expiresAt, writer.uint32(810).fork()).ldelim()
+    }
+    if (message.createdAt !== undefined) {
+      Timestamp.encode(message.createdAt, writer.uint32(818).fork()).ldelim()
+    }
     if (message.token !== '') {
-      writer.uint32(10).string(message.token)
+      writer.uint32(826).string(message.token)
     }
     return writer
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): TokenResponse {
+  decode(input: _m0.Reader | Uint8Array, length?: number): GenerateTokenResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseTokenResponse()
+    const message = createBaseGenerateTokenResponse()
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
         case 1:
+          message.id = reader.string()
+          break
+        case 100:
+          message.name = reader.string()
+          break
+        case 101:
+          message.expiresAt = Timestamp.decode(reader, reader.uint32())
+          break
+        case 102:
+          message.createdAt = Timestamp.decode(reader, reader.uint32())
+          break
+        case 103:
           message.token = reader.string()
           break
         default:
@@ -1928,33 +1961,52 @@ export const TokenResponse = {
     return message
   },
 
-  fromJSON(object: any): TokenResponse {
-    return { token: isSet(object.token) ? String(object.token) : '' }
+  fromJSON(object: any): GenerateTokenResponse {
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      expiresAt: isSet(object.expiresAt) ? fromJsonTimestamp(object.expiresAt) : undefined,
+      createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
+      token: isSet(object.token) ? String(object.token) : '',
+    }
   },
 
-  toJSON(message: TokenResponse): unknown {
+  toJSON(message: GenerateTokenResponse): unknown {
     const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.name !== undefined && (obj.name = message.name)
+    message.expiresAt !== undefined && (obj.expiresAt = fromTimestamp(message.expiresAt).toISOString())
+    message.createdAt !== undefined && (obj.createdAt = fromTimestamp(message.createdAt).toISOString())
     message.token !== undefined && (obj.token = message.token)
     return obj
   },
 
-  create<I extends Exact<DeepPartial<TokenResponse>, I>>(base?: I): TokenResponse {
-    return TokenResponse.fromPartial(base ?? {})
+  create<I extends Exact<DeepPartial<GenerateTokenResponse>, I>>(base?: I): GenerateTokenResponse {
+    return GenerateTokenResponse.fromPartial(base ?? {})
   },
 
-  fromPartial<I extends Exact<DeepPartial<TokenResponse>, I>>(object: I): TokenResponse {
-    const message = createBaseTokenResponse()
+  fromPartial<I extends Exact<DeepPartial<GenerateTokenResponse>, I>>(object: I): GenerateTokenResponse {
+    const message = createBaseGenerateTokenResponse()
+    message.id = object.id ?? ''
+    message.name = object.name ?? ''
+    message.expiresAt =
+      object.expiresAt !== undefined && object.expiresAt !== null ? Timestamp.fromPartial(object.expiresAt) : undefined
+    message.createdAt =
+      object.createdAt !== undefined && object.createdAt !== null ? Timestamp.fromPartial(object.createdAt) : undefined
     message.token = object.token ?? ''
     return message
   },
 }
 
-function createBaseUserTokenListResponse(): UserTokenListResponse {
-  return { name: '', expiresAt: undefined, createdAt: undefined }
+function createBaseTokenResponse(): TokenResponse {
+  return { id: '', name: '', expiresAt: undefined, createdAt: undefined }
 }
 
-export const UserTokenListResponse = {
-  encode(message: UserTokenListResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+export const TokenResponse = {
+  encode(message: TokenResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== '') {
+      writer.uint32(10).string(message.id)
+    }
     if (message.name !== '') {
       writer.uint32(802).string(message.name)
     }
@@ -1967,13 +2019,16 @@ export const UserTokenListResponse = {
     return writer
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): UserTokenListResponse {
+  decode(input: _m0.Reader | Uint8Array, length?: number): TokenResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseUserTokenListResponse()
+    const message = createBaseTokenResponse()
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
+        case 1:
+          message.id = reader.string()
+          break
         case 100:
           message.name = reader.string()
           break
@@ -1991,33 +2046,91 @@ export const UserTokenListResponse = {
     return message
   },
 
-  fromJSON(object: any): UserTokenListResponse {
+  fromJSON(object: any): TokenResponse {
     return {
+      id: isSet(object.id) ? String(object.id) : '',
       name: isSet(object.name) ? String(object.name) : '',
       expiresAt: isSet(object.expiresAt) ? fromJsonTimestamp(object.expiresAt) : undefined,
       createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
     }
   },
 
-  toJSON(message: UserTokenListResponse): unknown {
+  toJSON(message: TokenResponse): unknown {
     const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
     message.name !== undefined && (obj.name = message.name)
     message.expiresAt !== undefined && (obj.expiresAt = fromTimestamp(message.expiresAt).toISOString())
     message.createdAt !== undefined && (obj.createdAt = fromTimestamp(message.createdAt).toISOString())
     return obj
   },
 
-  create<I extends Exact<DeepPartial<UserTokenListResponse>, I>>(base?: I): UserTokenListResponse {
-    return UserTokenListResponse.fromPartial(base ?? {})
+  create<I extends Exact<DeepPartial<TokenResponse>, I>>(base?: I): TokenResponse {
+    return TokenResponse.fromPartial(base ?? {})
   },
 
-  fromPartial<I extends Exact<DeepPartial<UserTokenListResponse>, I>>(object: I): UserTokenListResponse {
-    const message = createBaseUserTokenListResponse()
+  fromPartial<I extends Exact<DeepPartial<TokenResponse>, I>>(object: I): TokenResponse {
+    const message = createBaseTokenResponse()
+    message.id = object.id ?? ''
     message.name = object.name ?? ''
     message.expiresAt =
       object.expiresAt !== undefined && object.expiresAt !== null ? Timestamp.fromPartial(object.expiresAt) : undefined
     message.createdAt =
       object.createdAt !== undefined && object.createdAt !== null ? Timestamp.fromPartial(object.createdAt) : undefined
+    return message
+  },
+}
+
+function createBaseTokenListResponse(): TokenListResponse {
+  return { data: [] }
+}
+
+export const TokenListResponse = {
+  encode(message: TokenListResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    for (const v of message.data) {
+      TokenResponse.encode(v!, writer.uint32(8002).fork()).ldelim()
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): TokenListResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseTokenListResponse()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1000:
+          message.data.push(TokenResponse.decode(reader, reader.uint32()))
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): TokenListResponse {
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => TokenResponse.fromJSON(e)) : [] }
+  },
+
+  toJSON(message: TokenListResponse): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? TokenResponse.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+
+  create<I extends Exact<DeepPartial<TokenListResponse>, I>>(base?: I): TokenListResponse {
+    return TokenListResponse.fromPartial(base ?? {})
+  },
+
+  fromPartial<I extends Exact<DeepPartial<TokenListResponse>, I>>(object: I): TokenListResponse {
+    const message = createBaseTokenListResponse()
+    message.data = object.data?.map(e => TokenResponse.fromPartial(e)) || []
     return message
   },
 }
@@ -13844,69 +13957,91 @@ export const CruxDashboardClient = makeGenericClientConstructor(
   service: typeof CruxDashboardService
 }
 
-export type CruxAuthService = typeof CruxAuthService
-export const CruxAuthService = {
+export type CruxTokenService = typeof CruxTokenService
+export const CruxTokenService = {
   generateToken: {
-    path: '/crux.CruxAuth/generateToken',
+    path: '/crux.CruxToken/GenerateToken',
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: TokenRequest) => Buffer.from(TokenRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => TokenRequest.decode(value),
-    responseSerialize: (value: TokenResponse) => Buffer.from(TokenResponse.encode(value).finish()),
-    responseDeserialize: (value: Buffer) => TokenResponse.decode(value),
+    requestSerialize: (value: GenerateTokenRequest) => Buffer.from(GenerateTokenRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => GenerateTokenRequest.decode(value),
+    responseSerialize: (value: GenerateTokenResponse) => Buffer.from(GenerateTokenResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => GenerateTokenResponse.decode(value),
   },
-  getUserTokens: {
-    path: '/crux.CruxAuth/getUserTokens',
+  getTokens: {
+    path: '/crux.CruxToken/GetTokens',
     requestStream: false,
     responseStream: false,
     requestSerialize: (value: AccessRequest) => Buffer.from(AccessRequest.encode(value).finish()),
     requestDeserialize: (value: Buffer) => AccessRequest.decode(value),
-    responseSerialize: (value: UserTokenListResponse) => Buffer.from(UserTokenListResponse.encode(value).finish()),
-    responseDeserialize: (value: Buffer) => UserTokenListResponse.decode(value),
+    responseSerialize: (value: TokenListResponse) => Buffer.from(TokenListResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => TokenListResponse.decode(value),
+  },
+  deleteToken: {
+    path: '/crux.CruxToken/DeleteToken',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: IdRequest) => Buffer.from(IdRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => IdRequest.decode(value),
+    responseSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => Empty.decode(value),
   },
 } as const
 
-export interface CruxAuthServer extends UntypedServiceImplementation {
-  generateToken: handleUnaryCall<TokenRequest, TokenResponse>
-  getUserTokens: handleUnaryCall<AccessRequest, UserTokenListResponse>
+export interface CruxTokenServer extends UntypedServiceImplementation {
+  generateToken: handleUnaryCall<GenerateTokenRequest, GenerateTokenResponse>
+  getTokens: handleUnaryCall<AccessRequest, TokenListResponse>
+  deleteToken: handleUnaryCall<IdRequest, Empty>
 }
 
-export interface CruxAuthClient extends Client {
+export interface CruxTokenClient extends Client {
   generateToken(
-    request: TokenRequest,
-    callback: (error: ServiceError | null, response: TokenResponse) => void,
+    request: GenerateTokenRequest,
+    callback: (error: ServiceError | null, response: GenerateTokenResponse) => void,
   ): ClientUnaryCall
   generateToken(
-    request: TokenRequest,
+    request: GenerateTokenRequest,
     metadata: Metadata,
-    callback: (error: ServiceError | null, response: TokenResponse) => void,
+    callback: (error: ServiceError | null, response: GenerateTokenResponse) => void,
   ): ClientUnaryCall
   generateToken(
-    request: TokenRequest,
+    request: GenerateTokenRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: TokenResponse) => void,
+    callback: (error: ServiceError | null, response: GenerateTokenResponse) => void,
   ): ClientUnaryCall
-  getUserTokens(
+  getTokens(
     request: AccessRequest,
-    callback: (error: ServiceError | null, response: UserTokenListResponse) => void,
+    callback: (error: ServiceError | null, response: TokenListResponse) => void,
   ): ClientUnaryCall
-  getUserTokens(
+  getTokens(
     request: AccessRequest,
     metadata: Metadata,
-    callback: (error: ServiceError | null, response: UserTokenListResponse) => void,
+    callback: (error: ServiceError | null, response: TokenListResponse) => void,
   ): ClientUnaryCall
-  getUserTokens(
+  getTokens(
     request: AccessRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: UserTokenListResponse) => void,
+    callback: (error: ServiceError | null, response: TokenListResponse) => void,
+  ): ClientUnaryCall
+  deleteToken(request: IdRequest, callback: (error: ServiceError | null, response: Empty) => void): ClientUnaryCall
+  deleteToken(
+    request: IdRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: Empty) => void,
+  ): ClientUnaryCall
+  deleteToken(
+    request: IdRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: Empty) => void,
   ): ClientUnaryCall
 }
 
-export const CruxAuthClient = makeGenericClientConstructor(CruxAuthService, 'crux.CruxAuth') as unknown as {
-  new (address: string, credentials: ChannelCredentials, options?: Partial<ClientOptions>): CruxAuthClient
-  service: typeof CruxAuthService
+export const CruxTokenClient = makeGenericClientConstructor(CruxTokenService, 'crux.CruxToken') as unknown as {
+  new (address: string, credentials: ChannelCredentials, options?: Partial<ClientOptions>): CruxTokenClient
+  service: typeof CruxTokenService
 }
 
 declare var self: any | undefined

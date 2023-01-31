@@ -674,20 +674,29 @@ export interface UpdateEntityResponse {
 }
 
 /** AUTHENTICATION */
-export interface TokenRequest {
+export interface GenerateTokenRequest {
   accessedBy: string
   name: string
-  expirationInsDays: number
+  expirationInDays: number
 }
 
-export interface TokenResponse {
-  token: string
-}
-
-export interface UserTokenListResponse {
+export interface GenerateTokenResponse {
+  id: string
   name: string
   expiresAt: Timestamp | undefined
   createdAt: Timestamp | undefined
+  token: string
+}
+
+export interface TokenResponse {
+  id: string
+  name: string
+  expiresAt: Timestamp | undefined
+  createdAt: Timestamp | undefined
+}
+
+export interface TokenListResponse {
+  data: TokenResponse[]
 }
 
 /** AUDIT */
@@ -1602,62 +1611,94 @@ export const UpdateEntityResponse = {
   },
 }
 
-function createBaseTokenRequest(): TokenRequest {
-  return { accessedBy: '', name: '', expirationInsDays: 0 }
+function createBaseGenerateTokenRequest(): GenerateTokenRequest {
+  return { accessedBy: '', name: '', expirationInDays: 0 }
 }
 
-export const TokenRequest = {
-  fromJSON(object: any): TokenRequest {
+export const GenerateTokenRequest = {
+  fromJSON(object: any): GenerateTokenRequest {
     return {
       accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       name: isSet(object.name) ? String(object.name) : '',
-      expirationInsDays: isSet(object.expirationInsDays) ? Number(object.expirationInsDays) : 0,
+      expirationInDays: isSet(object.expirationInDays) ? Number(object.expirationInDays) : 0,
     }
   },
 
-  toJSON(message: TokenRequest): unknown {
+  toJSON(message: GenerateTokenRequest): unknown {
     const obj: any = {}
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.name !== undefined && (obj.name = message.name)
-    message.expirationInsDays !== undefined && (obj.expirationInsDays = Math.round(message.expirationInsDays))
+    message.expirationInDays !== undefined && (obj.expirationInDays = Math.round(message.expirationInDays))
     return obj
   },
 }
 
-function createBaseTokenResponse(): TokenResponse {
-  return { token: '' }
+function createBaseGenerateTokenResponse(): GenerateTokenResponse {
+  return { id: '', name: '', expiresAt: undefined, createdAt: undefined, token: '' }
 }
 
-export const TokenResponse = {
-  fromJSON(object: any): TokenResponse {
-    return { token: isSet(object.token) ? String(object.token) : '' }
+export const GenerateTokenResponse = {
+  fromJSON(object: any): GenerateTokenResponse {
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      expiresAt: isSet(object.expiresAt) ? fromJsonTimestamp(object.expiresAt) : undefined,
+      createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
+      token: isSet(object.token) ? String(object.token) : '',
+    }
   },
 
-  toJSON(message: TokenResponse): unknown {
+  toJSON(message: GenerateTokenResponse): unknown {
     const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.name !== undefined && (obj.name = message.name)
+    message.expiresAt !== undefined && (obj.expiresAt = fromTimestamp(message.expiresAt).toISOString())
+    message.createdAt !== undefined && (obj.createdAt = fromTimestamp(message.createdAt).toISOString())
     message.token !== undefined && (obj.token = message.token)
     return obj
   },
 }
 
-function createBaseUserTokenListResponse(): UserTokenListResponse {
-  return { name: '', expiresAt: undefined, createdAt: undefined }
+function createBaseTokenResponse(): TokenResponse {
+  return { id: '', name: '', expiresAt: undefined, createdAt: undefined }
 }
 
-export const UserTokenListResponse = {
-  fromJSON(object: any): UserTokenListResponse {
+export const TokenResponse = {
+  fromJSON(object: any): TokenResponse {
     return {
+      id: isSet(object.id) ? String(object.id) : '',
       name: isSet(object.name) ? String(object.name) : '',
       expiresAt: isSet(object.expiresAt) ? fromJsonTimestamp(object.expiresAt) : undefined,
       createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
     }
   },
 
-  toJSON(message: UserTokenListResponse): unknown {
+  toJSON(message: TokenResponse): unknown {
     const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
     message.name !== undefined && (obj.name = message.name)
     message.expiresAt !== undefined && (obj.expiresAt = fromTimestamp(message.expiresAt).toISOString())
     message.createdAt !== undefined && (obj.createdAt = fromTimestamp(message.createdAt).toISOString())
+    return obj
+  },
+}
+
+function createBaseTokenListResponse(): TokenListResponse {
+  return { data: [] }
+}
+
+export const TokenListResponse = {
+  fromJSON(object: any): TokenListResponse {
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => TokenResponse.fromJSON(e)) : [] }
+  },
+
+  toJSON(message: TokenListResponse): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? TokenResponse.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
     return obj
   },
 }
@@ -5668,42 +5709,46 @@ export function CruxDashboardControllerMethods() {
 
 export const CRUX_DASHBOARD_SERVICE_NAME = 'CruxDashboard'
 
-export interface CruxAuthClient {
-  generateToken(request: TokenRequest, metadata: Metadata, ...rest: any): Observable<TokenResponse>
+export interface CruxTokenClient {
+  generateToken(request: GenerateTokenRequest, metadata: Metadata, ...rest: any): Observable<GenerateTokenResponse>
 
-  getUserTokens(request: AccessRequest, metadata: Metadata, ...rest: any): Observable<UserTokenListResponse>
+  getTokens(request: AccessRequest, metadata: Metadata, ...rest: any): Observable<TokenListResponse>
+
+  deleteToken(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
 }
 
-export interface CruxAuthController {
+export interface CruxTokenController {
   generateToken(
-    request: TokenRequest,
+    request: GenerateTokenRequest,
     metadata: Metadata,
     ...rest: any
-  ): Promise<TokenResponse> | Observable<TokenResponse> | TokenResponse
+  ): Promise<GenerateTokenResponse> | Observable<GenerateTokenResponse> | GenerateTokenResponse
 
-  getUserTokens(
+  getTokens(
     request: AccessRequest,
     metadata: Metadata,
     ...rest: any
-  ): Promise<UserTokenListResponse> | Observable<UserTokenListResponse> | UserTokenListResponse
+  ): Promise<TokenListResponse> | Observable<TokenListResponse> | TokenListResponse
+
+  deleteToken(request: IdRequest, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
 }
 
-export function CruxAuthControllerMethods() {
+export function CruxTokenControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ['generateToken', 'getUserTokens']
+    const grpcMethods: string[] = ['generateToken', 'getTokens', 'deleteToken']
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
-      GrpcMethod('CruxAuth', method)(constructor.prototype[method], method, descriptor)
+      GrpcMethod('CruxToken', method)(constructor.prototype[method], method, descriptor)
     }
     const grpcStreamMethods: string[] = []
     for (const method of grpcStreamMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
-      GrpcStreamMethod('CruxAuth', method)(constructor.prototype[method], method, descriptor)
+      GrpcStreamMethod('CruxToken', method)(constructor.prototype[method], method, descriptor)
     }
   }
 }
 
-export const CRUX_AUTH_SERVICE_NAME = 'CruxAuth'
+export const CRUX_TOKEN_SERVICE_NAME = 'CruxToken'
 
 declare var self: any | undefined
 declare var window: any | undefined
