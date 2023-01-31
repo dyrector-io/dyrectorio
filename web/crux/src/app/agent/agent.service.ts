@@ -43,6 +43,7 @@ import {
 } from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
+import { JWT_EXPIRATION } from '../../shared/const'
 
 @Injectable()
 export default class AgentService {
@@ -53,8 +54,6 @@ export default class AgentService {
   private agents: Map<string, Agent> = new Map()
 
   private eventChannelByTeamId: Map<string, Subject<NodeEventMessage>> = new Map()
-
-  private static SCRIPT_EXPIRATION = 10 * 60 * 1000 // millis
 
   constructor(
     @InjectMetric('agent_online_count') private agentCount: Gauge<string>,
@@ -137,7 +136,7 @@ export default class AgentService {
         this.configService,
         nodeId,
         this.jwtService.sign(token),
-        new Date(now + AgentService.SCRIPT_EXPIRATION),
+        new Date(now + JWT_EXPIRATION),
         nodeType,
         rootPath,
         scriptType,

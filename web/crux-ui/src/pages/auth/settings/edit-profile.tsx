@@ -77,7 +77,6 @@ const SettingsPage = (props: SettingsFlow) => {
       <PageHeading pageLink={pageLink} sublinks={sublinks}>
         <SaveDiscardPageMenu saveRef={saveRef} onDiscard={router.back} />
       </PageHeading>
-
       <DyoCard>
         <DyoForm
           className="flex flex-col text-bright w-1/2"

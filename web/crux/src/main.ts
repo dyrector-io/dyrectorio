@@ -27,13 +27,16 @@ const loadGrpcOptions = (certPrefix: GrpcClient, portEnv: string): GrpcOptions =
 
 const parseLogLevelFromEnv = (logLevelEnv: string, nodeEnv: string): LogLevel[] => {
   const VALID_LOG_LEVEL_VALUES = ['error', 'warn', 'log', 'debug', 'verbose']
-
   const index = VALID_LOG_LEVEL_VALUES.indexOf(logLevelEnv)
-  if (index < 0) {
-    return nodeEnv === 'production' ? ['error', 'warn'] : ['log', 'error', 'warn', 'debug']
-  }
 
-  return VALID_LOG_LEVEL_VALUES.slice(0, index) as LogLevel[]
+  const logLevel =
+    index >= 0
+      ? VALID_LOG_LEVEL_VALUES.slice(0, index + 1)
+      : nodeEnv === 'production'
+      ? ['error', 'warn']
+      : ['log', 'error', 'warn', 'debug']
+
+  return logLevel as LogLevel[]
 }
 
 const bootstrap = async () => {

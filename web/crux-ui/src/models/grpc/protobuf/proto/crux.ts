@@ -686,6 +686,23 @@ export interface UpdateEntityResponse {
   updatedAt: Timestamp | undefined
 }
 
+/** AUTHENTICATION */
+export interface TokenRequest {
+  accessedBy: string
+  name: string
+  expirationInsDays: number
+}
+
+export interface TokenResponse {
+  token: string
+}
+
+export interface UserTokenListResponse {
+  name: string
+  expiresAt: Timestamp | undefined
+  createdAt: Timestamp | undefined
+}
+
 /** AUDIT */
 export interface AuditLogListRequest {
   accessedBy: string
@@ -1810,6 +1827,201 @@ export const UpdateEntityResponse = {
   },
 }
 
+function createBaseTokenRequest(): TokenRequest {
+  return { accessedBy: '', name: '', expirationInsDays: 0 }
+}
+
+export const TokenRequest = {
+  encode(message: TokenRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.accessedBy !== '') {
+      writer.uint32(18).string(message.accessedBy)
+    }
+    if (message.name !== '') {
+      writer.uint32(802).string(message.name)
+    }
+    if (message.expirationInsDays !== 0) {
+      writer.uint32(808).int32(message.expirationInsDays)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): TokenRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseTokenRequest()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 2:
+          message.accessedBy = reader.string()
+          break
+        case 100:
+          message.name = reader.string()
+          break
+        case 101:
+          message.expirationInsDays = reader.int32()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): TokenRequest {
+    return {
+      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      expirationInsDays: isSet(object.expirationInsDays) ? Number(object.expirationInsDays) : 0,
+    }
+  },
+
+  toJSON(message: TokenRequest): unknown {
+    const obj: any = {}
+    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
+    message.name !== undefined && (obj.name = message.name)
+    message.expirationInsDays !== undefined && (obj.expirationInsDays = Math.round(message.expirationInsDays))
+    return obj
+  },
+
+  create<I extends Exact<DeepPartial<TokenRequest>, I>>(base?: I): TokenRequest {
+    return TokenRequest.fromPartial(base ?? {})
+  },
+
+  fromPartial<I extends Exact<DeepPartial<TokenRequest>, I>>(object: I): TokenRequest {
+    const message = createBaseTokenRequest()
+    message.accessedBy = object.accessedBy ?? ''
+    message.name = object.name ?? ''
+    message.expirationInsDays = object.expirationInsDays ?? 0
+    return message
+  },
+}
+
+function createBaseTokenResponse(): TokenResponse {
+  return { token: '' }
+}
+
+export const TokenResponse = {
+  encode(message: TokenResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.token !== '') {
+      writer.uint32(10).string(message.token)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): TokenResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseTokenResponse()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.token = reader.string()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): TokenResponse {
+    return { token: isSet(object.token) ? String(object.token) : '' }
+  },
+
+  toJSON(message: TokenResponse): unknown {
+    const obj: any = {}
+    message.token !== undefined && (obj.token = message.token)
+    return obj
+  },
+
+  create<I extends Exact<DeepPartial<TokenResponse>, I>>(base?: I): TokenResponse {
+    return TokenResponse.fromPartial(base ?? {})
+  },
+
+  fromPartial<I extends Exact<DeepPartial<TokenResponse>, I>>(object: I): TokenResponse {
+    const message = createBaseTokenResponse()
+    message.token = object.token ?? ''
+    return message
+  },
+}
+
+function createBaseUserTokenListResponse(): UserTokenListResponse {
+  return { name: '', expiresAt: undefined, createdAt: undefined }
+}
+
+export const UserTokenListResponse = {
+  encode(message: UserTokenListResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.name !== '') {
+      writer.uint32(802).string(message.name)
+    }
+    if (message.expiresAt !== undefined) {
+      Timestamp.encode(message.expiresAt, writer.uint32(810).fork()).ldelim()
+    }
+    if (message.createdAt !== undefined) {
+      Timestamp.encode(message.createdAt, writer.uint32(818).fork()).ldelim()
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): UserTokenListResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseUserTokenListResponse()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 100:
+          message.name = reader.string()
+          break
+        case 101:
+          message.expiresAt = Timestamp.decode(reader, reader.uint32())
+          break
+        case 102:
+          message.createdAt = Timestamp.decode(reader, reader.uint32())
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): UserTokenListResponse {
+    return {
+      name: isSet(object.name) ? String(object.name) : '',
+      expiresAt: isSet(object.expiresAt) ? fromJsonTimestamp(object.expiresAt) : undefined,
+      createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
+    }
+  },
+
+  toJSON(message: UserTokenListResponse): unknown {
+    const obj: any = {}
+    message.name !== undefined && (obj.name = message.name)
+    message.expiresAt !== undefined && (obj.expiresAt = fromTimestamp(message.expiresAt).toISOString())
+    message.createdAt !== undefined && (obj.createdAt = fromTimestamp(message.createdAt).toISOString())
+    return obj
+  },
+
+  create<I extends Exact<DeepPartial<UserTokenListResponse>, I>>(base?: I): UserTokenListResponse {
+    return UserTokenListResponse.fromPartial(base ?? {})
+  },
+
+  fromPartial<I extends Exact<DeepPartial<UserTokenListResponse>, I>>(object: I): UserTokenListResponse {
+    const message = createBaseUserTokenListResponse()
+    message.name = object.name ?? ''
+    message.expiresAt =
+      object.expiresAt !== undefined && object.expiresAt !== null ? Timestamp.fromPartial(object.expiresAt) : undefined
+    message.createdAt =
+      object.createdAt !== undefined && object.createdAt !== null ? Timestamp.fromPartial(object.createdAt) : undefined
+    return message
+  },
+}
+
 function createBaseAuditLogListRequest(): AuditLogListRequest {
   return { accessedBy: '', pageSize: 0, pageNumber: 0, createdTo: undefined }
 }
@@ -1817,22 +2029,22 @@ function createBaseAuditLogListRequest(): AuditLogListRequest {
 export const AuditLogListRequest = {
   encode(message: AuditLogListRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.accessedBy !== '') {
-      writer.uint32(802).string(message.accessedBy)
+      writer.uint32(18).string(message.accessedBy)
     }
     if (message.pageSize !== 0) {
-      writer.uint32(808).uint32(message.pageSize)
+      writer.uint32(800).uint32(message.pageSize)
     }
     if (message.pageNumber !== 0) {
-      writer.uint32(816).uint32(message.pageNumber)
+      writer.uint32(808).uint32(message.pageNumber)
     }
     if (message.keyword !== undefined) {
-      writer.uint32(826).string(message.keyword)
+      writer.uint32(818).string(message.keyword)
     }
     if (message.createdFrom !== undefined) {
-      Timestamp.encode(message.createdFrom, writer.uint32(834).fork()).ldelim()
+      Timestamp.encode(message.createdFrom, writer.uint32(826).fork()).ldelim()
     }
     if (message.createdTo !== undefined) {
-      Timestamp.encode(message.createdTo, writer.uint32(842).fork()).ldelim()
+      Timestamp.encode(message.createdTo, writer.uint32(834).fork()).ldelim()
     }
     return writer
   },
@@ -1844,22 +2056,22 @@ export const AuditLogListRequest = {
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
-        case 100:
+        case 2:
           message.accessedBy = reader.string()
           break
-        case 101:
+        case 100:
           message.pageSize = reader.uint32()
           break
-        case 102:
+        case 101:
           message.pageNumber = reader.uint32()
           break
-        case 103:
+        case 102:
           message.keyword = reader.string()
           break
-        case 104:
+        case 103:
           message.createdFrom = Timestamp.decode(reader, reader.uint32())
           break
-        case 105:
+        case 104:
           message.createdTo = Timestamp.decode(reader, reader.uint32())
           break
         default:
@@ -13630,6 +13842,71 @@ export const CruxDashboardClient = makeGenericClientConstructor(
 ) as unknown as {
   new (address: string, credentials: ChannelCredentials, options?: Partial<ClientOptions>): CruxDashboardClient
   service: typeof CruxDashboardService
+}
+
+export type CruxAuthService = typeof CruxAuthService
+export const CruxAuthService = {
+  generateToken: {
+    path: '/crux.CruxAuth/generateToken',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: TokenRequest) => Buffer.from(TokenRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => TokenRequest.decode(value),
+    responseSerialize: (value: TokenResponse) => Buffer.from(TokenResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => TokenResponse.decode(value),
+  },
+  getUserTokens: {
+    path: '/crux.CruxAuth/getUserTokens',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: AccessRequest) => Buffer.from(AccessRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => AccessRequest.decode(value),
+    responseSerialize: (value: UserTokenListResponse) => Buffer.from(UserTokenListResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => UserTokenListResponse.decode(value),
+  },
+} as const
+
+export interface CruxAuthServer extends UntypedServiceImplementation {
+  generateToken: handleUnaryCall<TokenRequest, TokenResponse>
+  getUserTokens: handleUnaryCall<AccessRequest, UserTokenListResponse>
+}
+
+export interface CruxAuthClient extends Client {
+  generateToken(
+    request: TokenRequest,
+    callback: (error: ServiceError | null, response: TokenResponse) => void,
+  ): ClientUnaryCall
+  generateToken(
+    request: TokenRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: TokenResponse) => void,
+  ): ClientUnaryCall
+  generateToken(
+    request: TokenRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: TokenResponse) => void,
+  ): ClientUnaryCall
+  getUserTokens(
+    request: AccessRequest,
+    callback: (error: ServiceError | null, response: UserTokenListResponse) => void,
+  ): ClientUnaryCall
+  getUserTokens(
+    request: AccessRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: UserTokenListResponse) => void,
+  ): ClientUnaryCall
+  getUserTokens(
+    request: AccessRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: UserTokenListResponse) => void,
+  ): ClientUnaryCall
+}
+
+export const CruxAuthClient = makeGenericClientConstructor(CruxAuthService, 'crux.CruxAuth') as unknown as {
+  new (address: string, credentials: ChannelCredentials, options?: Partial<ClientOptions>): CruxAuthClient
+  service: typeof CruxAuthService
 }
 
 declare var self: any | undefined

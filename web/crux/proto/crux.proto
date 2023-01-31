@@ -145,6 +145,12 @@ service CruxTemplate {
 service CruxDashboard {
   rpc GetDashboard(AccessRequest) returns (DashboardResponse);
 }
+
+service CruxAuth {
+  rpc generateToken(TokenRequest) returns (TokenResponse);
+  rpc getUserTokens(AccessRequest) returns (UserTokenListResponse);
+}
+
 /**
  *
  * Common messages
@@ -179,14 +185,31 @@ message UpdateEntityResponse { google.protobuf.Timestamp updatedAt = 100; }
  *
  */
 
+// AUTHENTICATION
+message TokenRequest {
+  string accessedBy = 2;
+
+  string name = 100;
+  int32 expirationInsDays = 101;
+}
+
+message TokenResponse { string token = 1; }
+
+message UserTokenListResponse {
+  string name = 100;
+  google.protobuf.Timestamp expiresAt = 101;
+  google.protobuf.Timestamp createdAt = 102;
+}
+
 // AUDIT
 message AuditLogListRequest {
-  string accessedBy = 100;
-  uint32 pageSize = 101;
-  uint32 pageNumber = 102;
-  optional string keyword = 103;
-  optional google.protobuf.Timestamp createdFrom = 104;
-  google.protobuf.Timestamp createdTo = 105;
+  string accessedBy = 2;
+
+  uint32 pageSize = 100;
+  uint32 pageNumber = 101;
+  optional string keyword = 102;
+  optional google.protobuf.Timestamp createdFrom = 103;
+  google.protobuf.Timestamp createdTo = 104;
 }
 
 message AuditLogListCountResponse { uint32 count = 100; }

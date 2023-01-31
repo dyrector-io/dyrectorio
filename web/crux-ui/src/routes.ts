@@ -11,6 +11,7 @@ export const ROUTE_LOGOUT = '/auth/logout'
 export const ROUTE_REGISTER = '/auth/register'
 
 export const ROUTE_SETTINGS = '/auth/settings'
+export const ROUTE_SETTINGS_TOKENS = '/auth/settings/tokens'
 export const ROUTE_SETTINGS_EDIT_PROFILE = '/auth/settings/edit-profile'
 export const ROUTE_SETTINGS_CHANGE_PASSWORD = '/auth/settings/change-password'
 export const ROUTE_RECOVERY = '/auth/recovery'
