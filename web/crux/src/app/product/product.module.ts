@@ -8,7 +8,7 @@ import ProductController from './product.controller'
 import ProductMapper from './product.mapper'
 import ProductService from './product.service'
 import ProductHttpController from './product.http.controller'
-import AuthModule from '../auth/auth.module'
+import AuthModule from '../token/token.module'
 
 @Module({
   imports: [VersionModule, TeamModule, AuthModule],

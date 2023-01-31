@@ -3606,122 +3606,158 @@ var CruxDashboard_ServiceDesc = grpc.ServiceDesc{
 	Metadata: "protobuf/proto/crux.proto",
 }
 
-// CruxAuthClient is the client API for CruxAuth service.
+// CruxTokenClient is the client API for CruxToken service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type CruxAuthClient interface {
-	GenerateToken(ctx context.Context, in *TokenRequest, opts ...grpc.CallOption) (*TokenResponse, error)
-	GetUserTokens(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*UserTokenListResponse, error)
+type CruxTokenClient interface {
+	GenerateToken(ctx context.Context, in *GenerateTokenRequest, opts ...grpc.CallOption) (*GenerateTokenResponse, error)
+	GetTokens(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*TokenListResponse, error)
+	DeleteToken(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
 }
 
-type cruxAuthClient struct {
+type cruxTokenClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewCruxAuthClient(cc grpc.ClientConnInterface) CruxAuthClient {
-	return &cruxAuthClient{cc}
+func NewCruxTokenClient(cc grpc.ClientConnInterface) CruxTokenClient {
+	return &cruxTokenClient{cc}
 }
 
-func (c *cruxAuthClient) GenerateToken(ctx context.Context, in *TokenRequest, opts ...grpc.CallOption) (*TokenResponse, error) {
-	out := new(TokenResponse)
-	err := c.cc.Invoke(ctx, "/crux.CruxAuth/generateToken", in, out, opts...)
+func (c *cruxTokenClient) GenerateToken(ctx context.Context, in *GenerateTokenRequest, opts ...grpc.CallOption) (*GenerateTokenResponse, error) {
+	out := new(GenerateTokenResponse)
+	err := c.cc.Invoke(ctx, "/crux.CruxToken/GenerateToken", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *cruxAuthClient) GetUserTokens(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*UserTokenListResponse, error) {
-	out := new(UserTokenListResponse)
-	err := c.cc.Invoke(ctx, "/crux.CruxAuth/getUserTokens", in, out, opts...)
+func (c *cruxTokenClient) GetTokens(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*TokenListResponse, error) {
+	out := new(TokenListResponse)
+	err := c.cc.Invoke(ctx, "/crux.CruxToken/GetTokens", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// CruxAuthServer is the server API for CruxAuth service.
-// All implementations must embed UnimplementedCruxAuthServer
+func (c *cruxTokenClient) DeleteToken(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
+	err := c.cc.Invoke(ctx, "/crux.CruxToken/DeleteToken", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// CruxTokenServer is the server API for CruxToken service.
+// All implementations must embed UnimplementedCruxTokenServer
 // for forward compatibility
-type CruxAuthServer interface {
-	GenerateToken(context.Context, *TokenRequest) (*TokenResponse, error)
-	GetUserTokens(context.Context, *AccessRequest) (*UserTokenListResponse, error)
-	mustEmbedUnimplementedCruxAuthServer()
+type CruxTokenServer interface {
+	GenerateToken(context.Context, *GenerateTokenRequest) (*GenerateTokenResponse, error)
+	GetTokens(context.Context, *AccessRequest) (*TokenListResponse, error)
+	DeleteToken(context.Context, *IdRequest) (*common.Empty, error)
+	mustEmbedUnimplementedCruxTokenServer()
 }
 
-// UnimplementedCruxAuthServer must be embedded to have forward compatible implementations.
-type UnimplementedCruxAuthServer struct {
+// UnimplementedCruxTokenServer must be embedded to have forward compatible implementations.
+type UnimplementedCruxTokenServer struct {
 }
 
-func (UnimplementedCruxAuthServer) GenerateToken(context.Context, *TokenRequest) (*TokenResponse, error) {
+func (UnimplementedCruxTokenServer) GenerateToken(context.Context, *GenerateTokenRequest) (*GenerateTokenResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GenerateToken not implemented")
 }
-func (UnimplementedCruxAuthServer) GetUserTokens(context.Context, *AccessRequest) (*UserTokenListResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetUserTokens not implemented")
+func (UnimplementedCruxTokenServer) GetTokens(context.Context, *AccessRequest) (*TokenListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTokens not implemented")
 }
-func (UnimplementedCruxAuthServer) mustEmbedUnimplementedCruxAuthServer() {}
+func (UnimplementedCruxTokenServer) DeleteToken(context.Context, *IdRequest) (*common.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteToken not implemented")
+}
+func (UnimplementedCruxTokenServer) mustEmbedUnimplementedCruxTokenServer() {}
 
-// UnsafeCruxAuthServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to CruxAuthServer will
+// UnsafeCruxTokenServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to CruxTokenServer will
 // result in compilation errors.
-type UnsafeCruxAuthServer interface {
-	mustEmbedUnimplementedCruxAuthServer()
+type UnsafeCruxTokenServer interface {
+	mustEmbedUnimplementedCruxTokenServer()
 }
 
-func RegisterCruxAuthServer(s grpc.ServiceRegistrar, srv CruxAuthServer) {
-	s.RegisterService(&CruxAuth_ServiceDesc, srv)
+func RegisterCruxTokenServer(s grpc.ServiceRegistrar, srv CruxTokenServer) {
+	s.RegisterService(&CruxToken_ServiceDesc, srv)
 }
 
-func _CruxAuth_GenerateToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TokenRequest)
+func _CruxToken_GenerateToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GenerateTokenRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CruxAuthServer).GenerateToken(ctx, in)
+		return srv.(CruxTokenServer).GenerateToken(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/crux.CruxAuth/generateToken",
+		FullMethod: "/crux.CruxToken/GenerateToken",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CruxAuthServer).GenerateToken(ctx, req.(*TokenRequest))
+		return srv.(CruxTokenServer).GenerateToken(ctx, req.(*GenerateTokenRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _CruxAuth_GetUserTokens_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _CruxToken_GetTokens_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(AccessRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CruxAuthServer).GetUserTokens(ctx, in)
+		return srv.(CruxTokenServer).GetTokens(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/crux.CruxAuth/getUserTokens",
+		FullMethod: "/crux.CruxToken/GetTokens",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CruxAuthServer).GetUserTokens(ctx, req.(*AccessRequest))
+		return srv.(CruxTokenServer).GetTokens(ctx, req.(*AccessRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// CruxAuth_ServiceDesc is the grpc.ServiceDesc for CruxAuth service.
+func _CruxToken_DeleteToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CruxTokenServer).DeleteToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crux.CruxToken/DeleteToken",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CruxTokenServer).DeleteToken(ctx, req.(*IdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// CruxToken_ServiceDesc is the grpc.ServiceDesc for CruxToken service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var CruxAuth_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "crux.CruxAuth",
-	HandlerType: (*CruxAuthServer)(nil),
+var CruxToken_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "crux.CruxToken",
+	HandlerType: (*CruxTokenServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "generateToken",
-			Handler:    _CruxAuth_GenerateToken_Handler,
+			MethodName: "GenerateToken",
+			Handler:    _CruxToken_GenerateToken_Handler,
 		},
 		{
-			MethodName: "getUserTokens",
-			Handler:    _CruxAuth_GetUserTokens_Handler,
+			MethodName: "GetTokens",
+			Handler:    _CruxToken_GetTokens_Handler,
+		},
+		{
+			MethodName: "DeleteToken",
+			Handler:    _CruxToken_DeleteToken_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

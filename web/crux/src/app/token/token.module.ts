@@ -5,9 +5,10 @@ import { JwtModule } from '@nestjs/jwt'
 import KratosService from 'src/services/kratos.service'
 import InterceptorGrpcHelperProvider from 'src/interceptors/helper.interceptor'
 import PrismaService from 'src/services/prisma.service'
-import AuthService from './auth.service'
+import AuthService from './token.service'
 import JwtStrategy from './jwt.strategy'
-import AuthController from './auth.controller'
+import AuthController from './token.controller'
+import TokenMapper from './token.mapper'
 
 @Module({
   imports: [
@@ -25,7 +26,7 @@ import AuthController from './auth.controller'
     }),
   ],
   controllers: [AuthController],
-  providers: [InterceptorGrpcHelperProvider, AuthService, JwtStrategy, KratosService, PrismaService],
+  providers: [InterceptorGrpcHelperProvider, AuthService, JwtStrategy, KratosService, PrismaService, TokenMapper],
   exports: [],
 })
 export default class AuthModule {}

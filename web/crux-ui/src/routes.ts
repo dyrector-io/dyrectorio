@@ -62,6 +62,8 @@ export const API_TEMPLATES = `/api/templates`
 
 export const API_DASHBOARD = '/api/dashboard'
 
+export const API_TOKEN = '/api/token'
+
 export const WS_NODES = `${API_NODES}/connect`
 export const WS_REGISTRIES = `${API_REGISTRIES}/connect`
 
@@ -195,6 +197,9 @@ export const instanceConfigUrl = (productId: string, versionId: string, deployme
 
 // template
 export const templateImageUrl = (templateId: string) => `${API_TEMPLATES}/${templateId}/image`
+
+// token
+export const tokenApiUrl = (tokenId: string) => `${API_TOKEN}/${tokenId}`
 
 // log
 export type ContainerLogParams = {
