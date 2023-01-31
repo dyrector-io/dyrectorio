@@ -27,7 +27,7 @@ import ExtendableItemList from './extendable-item-list'
 interface CommonConfigSectionProps {
   disabled?: boolean
   config: CommonConfigDetails
-  onChange: (config: Partial<ContainerConfig>, immediate?: boolean) => void
+  onChange: (config: Partial<ContainerConfig>) => void
   selectedFilters: ImageConfigFilterType[]
   editorOptions: ItemEditorState
   fieldErrors: ValidationError[]
@@ -405,20 +405,13 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             disabled={disabled}
             items={config.ports ?? []}
             label={t('common.ports')}
-            onPatch={(it, immediate) =>
-              onChange(
-                {
-                  ports: it,
-                },
-                immediate,
-              )
-            }
+            onPatch={it => onChange({ ports: it })}
             findErrorMessage={index => fieldErrors.find(it => it.path?.startsWith(`ports[${index}]`))?.message}
             emptyItemFactory={() => ({
               external: null,
               internal: null,
             })}
-            renderItem={(item, index, removeButton, onPatch) => (
+            renderItem={(item, removeButton, onPatch) => (
               <div className="flex flex-row flex-grow">
                 <div className="w-6/12 ml-2">
                   <MultiInput
@@ -477,7 +470,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             })}
             findErrorMessage={index => fieldErrors.find(it => it.path?.startsWith(`portRanges[${index}]`))?.message}
             onPatch={it => onChange({ portRanges: it })}
-            renderItem={(item, index, removeButton, onPatch) => (
+            renderItem={(item, removeButton, onPatch) => (
               <div className="flex flex-col gap-2">
                 <DyoLabel>{t('common.internal').toUpperCase()}</DyoLabel>
 
@@ -556,7 +549,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             })}
             findErrorMessage={index => fieldErrors.find(it => it.path?.startsWith(`volumes[${index}]`))?.message}
             onPatch={it => onChange({ volumes: it })}
-            renderItem={(item, index, removeButton, onPatch) => (
+            renderItem={(item, removeButton, onPatch) => (
               <div className="grid break-inside-avoid">
                 <div className="flex flex-row">
                   <MultiInput
@@ -653,7 +646,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             })}
             findErrorMessage={index => fieldErrors.find(it => it.path?.startsWith(`initContainers[${index}]`))?.message}
             onPatch={it => onChange({ initContainers: it })}
-            renderItem={(item, index, removeButton, onPatch) => (
+            renderItem={(item, removeButton, onPatch) => (
               <div className="grid">
                 <MultiInput
                   id={`common.initContainers-${item.id}-name`}

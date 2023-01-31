@@ -81,7 +81,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
     setTopBarContent(reactNode)
   }, [editorState.editors])
 
-  const onChange = (newConfig: Partial<ContainerConfig>, immediate?: boolean) => {
+  const onChange = (newConfig: Partial<ContainerConfig>) => {
     const value = { ...config, ...newConfig }
     setConfig(value)
 
@@ -102,7 +102,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
       } as PatchImageMessage)
 
       patch.current = {}
-    }, immediate)
+    })
   }
 
   versionSock.on(WS_TYPE_IMAGE_UPDATED, (message: ImageUpdateMessage) => {

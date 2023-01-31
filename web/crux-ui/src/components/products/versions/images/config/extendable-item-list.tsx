@@ -98,12 +98,11 @@ interface ExtendableItemListProps<T extends Item> {
   items: T[]
   renderItem: (
     item: T,
-    index: number,
     removeButton: (className?: string) => React.ReactNode,
     onPatch: (item: Partial<Omit<T, 'id'>>) => void,
   ) => React.ReactNode
   findErrorMessage: (index: number) => string
-  onPatch: (items: T[], immediate?: boolean) => void
+  onPatch: (items: T[]) => void
   emptyItemFactory: () => Omit<T, 'id'>
 }
 
@@ -171,7 +170,7 @@ const ExtendableItemList = <T extends Item>(props: ExtendableItemListProps<T>) =
                 onFocus={() => dispatch(focusItem(item.id))}
                 onBlur={() => dispatch(focusItem(null))}
               >
-                {renderItem(item, index, removeButton, it =>
+                {renderItem(item, removeButton, it =>
                   reduceAndSendPatch(
                     changeItem({
                       ...item,
