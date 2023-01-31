@@ -3,6 +3,7 @@ import {
   TokenResponse,
   CruxAuthControllerMethods,
   TokenRequest,
+  AccessRequest,
 } from 'src/grpc/protobuf/proto/crux'
 import { Controller, UseInterceptors } from '@nestjs/common'
 
@@ -19,5 +20,9 @@ export default class AuthController implements CruxAuthController {
 
   async generateToken(request: TokenRequest): Promise<TokenResponse> {
     return await this.authService.generateToken(request)
+  }
+
+  async getUserTokens(request: AccessRequest): Promsise<UserTokenListResponse> {
+    return await this.authService.getUserTokens(request)
   }
 }
