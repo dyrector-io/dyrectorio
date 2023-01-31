@@ -167,11 +167,11 @@ test.describe('Complex product', () => {
     const versionId = await createVersion(page, productId, '0.1.0', 'Incremental')
     await createImage(page, productId, versionId, 'nginx')
 
-    await deployWithDagent(page, 'pw-complex-copibility-obsolete', productId, versionId, false, testInfo.title + '1')
+    await deployWithDagent(page, 'pw-complex-copibility-obsolete', productId, versionId, false, `${testInfo.title}1`)
 
     const { deploymentId } = extractDeploymentUrl(page.url())
 
-    await deployWithDagent(page, 'pw-complex-copibility-obsolete', productId, versionId, false, testInfo.title + '2')
+    await deployWithDagent(page, 'pw-complex-copibility-obsolete', productId, versionId, false, `${testInfo.title}2`)
 
     await page.goto(deploymentUrl(productId, versionId, deploymentId))
 
@@ -184,21 +184,8 @@ test.describe('Complex product', () => {
     await expect(await page.locator('div.bg-dyo-turquoise:has-text("Preparing")')).toHaveCount(1)
   })
 
-  test('Inprogress deployment should be not copiable', async ({ page }) => {
-    const productName = 'PRODUCT-COPY-TEST10'
-
-    const productId = await createProduct(page, productName, 'Complex')
-    const versionId = await createVersion(page, productId, '0.1.0', 'Incremental')
-    await createImage(page, productId, versionId, 'nginx')
-
-    await deployWithDagent(page, 'pw-complex-copibility-inprogress', productId, versionId, true)
-
-    const { deploymentId } = extractDeploymentUrl(page.url())
-    await page.goto(deploymentUrl(productId, versionId, deploymentId))
-
-    await expect(await page.getByText('In progress')).toHaveCount(1)
-    await expect(await page.locator('button:has-text("Copy")')).toHaveCount(0)
-  })
+  // TODO (@m8vago): 'In Progress deployment should be not copiable'
+  // create an image which takes at least 10 sec to be deployed, so we can test the upper mentioned check
 
   test('Can copy deployment while there is a preparing deployment on the same node with different prefix and should not overwrite it', async ({
     page,

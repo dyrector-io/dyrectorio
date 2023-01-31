@@ -6,7 +6,7 @@ import useTranslation from 'next-translate/useTranslation'
 import { useEffect } from 'react'
 import { v4 as uuid } from 'uuid'
 import MultiInput from '../editor/multi-input'
-import { EditorStateOptions } from '../editor/use-editor-state'
+import { ItemEditorState } from '../editor/use-item-editor-state'
 
 const EMPTY_KEY = {
   id: uuid(),
@@ -61,7 +61,7 @@ interface KeyInputProps {
   items: UniqueKey[]
   keyPlaceholder?: string
   unique?: boolean
-  editorOptions: EditorStateOptions
+  editorOptions: ItemEditorState
   onChange: (items: UniqueKey[]) => void
 }
 

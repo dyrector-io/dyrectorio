@@ -1,9 +1,9 @@
-import { EditorStateOptions } from '@app/components/editor/use-editor-state'
+import { ItemEditorState } from '@app/components/editor/use-item-editor-state'
 import useMultiInputState from '@app/components/editor/use-multi-input-state'
 import JsonEditor from '@app/components/shared/json-editor-dynamic-module'
 import { IMAGE_WS_REQUEST_DELAY } from '@app/const'
 import { CANCEL_THROTTLE, useThrottling } from '@app/hooks/use-throttleing'
-import { ContainerConfig, JsonConfig, mergeJsonConfigToContainerConfig } from '@app/models'
+import { ContainerConfig, editIdOf, JsonConfig, mergeJsonConfigToContainerConfig } from '@app/models'
 import clsx from 'clsx'
 import { CSSProperties, useCallback, useState } from 'react'
 
@@ -11,13 +11,12 @@ interface EditImageJsonProps {
   disabled?: boolean
   className?: string
   config: ContainerConfig
-  editorOptions: EditorStateOptions
+  editorOptions: ItemEditorState
   onPatch: (config: Partial<ContainerConfig>) => void
   onParseError: (err: Error) => void
   convertConfigToJson: (config: ContainerConfig) => JsonConfig
 }
 
-const EDITOR_ID = 'json-config'
 const JSON_EDITOR_COMPARATOR = (one: JsonConfig, other: JsonConfig): boolean =>
   JSON.stringify(one) === JSON.stringify(other)
 
@@ -44,8 +43,10 @@ const EditImageJson = (props: EditImageJsonProps) => {
     return local
   }
 
+  const id = editIdOf(editorOptions.itemId, 'json-config')
+
   const [editorState, editorActions] = useMultiInputState({
-    id: EDITOR_ID,
+    id,
     value: convertConfigToJson(config),
     editorOptions,
     onMergeValues,
@@ -84,7 +85,7 @@ const EditImageJson = (props: EditImageJsonProps) => {
 
   return (
     <JsonEditor
-      id={EDITOR_ID}
+      id={id}
       className={clsx('h-full overflow-y-auto', className)}
       disabled={disabled}
       value={editorState.value}

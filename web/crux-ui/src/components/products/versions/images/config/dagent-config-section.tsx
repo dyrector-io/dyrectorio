@@ -1,4 +1,4 @@
-import { EditorStateOptions } from '@app/components/editor/use-editor-state'
+import { ItemEditorState } from '@app/components/editor/use-item-editor-state'
 import KeyOnlyInput from '@app/components/shared/key-only-input'
 import KeyValueInput from '@app/components/shared/key-value-input'
 import DyoChips from '@app/elements/dyo-chips'
@@ -17,32 +17,25 @@ import {
 } from '@app/models/container'
 import { nullify } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
-import { useState } from 'react'
 
 interface DagentConfigSectionProps {
   config: DagentConfigDetails
   onChange: (config: Partial<ContainerConfig>) => void
   selectedFilters: ImageConfigFilterType[]
-  editorOptions: EditorStateOptions
+  editorOptions: ItemEditorState
   disabled?: boolean
 }
 
 const DagentConfigSection = (props: DagentConfigSectionProps) => {
   const { t } = useTranslation('container')
-  const { config: propsConfig, selectedFilters, onChange: propsOnChange, editorOptions, disabled } = props
-
-  const [config, setConfig] = useState<DagentConfigDetails>(propsConfig)
-
-  const onChange = (newConfig: Partial<ContainerConfig>) => {
-    setConfig({ ...config, ...newConfig })
-    propsOnChange(newConfig)
-  }
+  const { config, selectedFilters, onChange, editorOptions, disabled } = props
 
   return !filterEmpty([...DAGENT_CONFIG_FILTERS], selectedFilters) ? null : (
     <div className="my-4">
       <DyoHeading className="text-lg text-bright uppercase font-semibold tracking-wide bg-dyo-sky/50 w-40 rounded-t-lg text-center pt-[2px]">
         {t('base.dagent')}
       </DyoHeading>
+
       <div className="columns-1 lg:columns-2 2xl:columns-3 gap-24 border-2 rounded-lg rounded-tl-[0px] border-solid border-dyo-sky/50 p-8 w-full">
         {/* networkMode */}
         {filterContains('networkMode', selectedFilters) && (
@@ -50,6 +43,7 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
             <DyoLabel className="text-bright font-semibold tracking-wide mb-2">
               {t('dagent.networkMode').toUpperCase()}
             </DyoLabel>
+
             <DyoChips
               className="ml-2"
               choices={CONTAINER_NETWORK_MODE_VALUES}
@@ -97,6 +91,7 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
             <DyoLabel className="text-bright font-semibold tracking-wide mb-2">
               {t('dagent.restartPolicy').toUpperCase()}
             </DyoLabel>
+
             <DyoChips
               className="ml-2"
               choices={CONTAINER_RESTART_POLICY_TYPE_VALUES}
@@ -114,8 +109,10 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
             <DyoLabel className="text-bright font-semibold tracking-wide mb-2">
               {t('dagent.logConfig').toUpperCase()}
             </DyoLabel>
+
             <div className="ml-2">
               <DyoLabel className="mr-2 my-auto">{t('dagent.drivers')}</DyoLabel>
+
               <DyoChips
                 className="mb-2 ml-2"
                 choices={CONTAINER_LOG_DRIVER_VALUES}
@@ -124,6 +121,7 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
                 onSelectionChange={it => onChange({ logConfig: nullify({ ...config.logConfig, driver: it }) })}
                 disabled={disabled}
               />
+
               <KeyValueInput
                 label={t('dagent.options')}
                 items={config.logConfig?.options ?? []}

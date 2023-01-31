@@ -54,7 +54,7 @@ const VersionSections = (props: VersionSectionsProps) => {
   const saveImageOrderRef = useRef<VoidFunction>()
 
   const onAddDeployment = async (deploymentId: string) =>
-    router.push(deploymentUrl(product.id, version.id, deploymentId))
+    await router.push(deploymentUrl(product.id, version.id, deploymentId))
 
   return (
     <>

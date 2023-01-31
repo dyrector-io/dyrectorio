@@ -62,7 +62,7 @@ const NewPasswordPage = (props: NewPasswordPageProps) => {
     },
   })
 
-  const onLogout = () => router.push(ROUTE_LOGOUT)
+  const onLogout = async () => await router.push(ROUTE_LOGOUT)
 
   return (
     <SingleFormLayout title={t('changePass')}>

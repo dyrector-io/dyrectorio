@@ -11,10 +11,11 @@ type FormikSetErrorValue = (field: string, message: string | undefined) => void
 
 type Translator = (stringId: string, status: number, dto: DyoErrorDto) => Translation
 
-export const defaultTranslator: (t: Translate) => Translator = (t: Translate) => (stringId, status, dto) => {
+export const defaultTranslator: (t: Translate) => Translator = t => (stringId, status, dto) => {
   if (status < 500) {
     const translation = t(`errors.${stringId}`, dto, {
       fallback: `errors:${stringId}`,
+      default: dto.description,
     })
     return {
       input: translation,

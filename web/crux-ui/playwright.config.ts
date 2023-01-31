@@ -28,7 +28,7 @@ const config: PlaywrightTestConfig = {
 
     // Retry a test if its failing with enabled tracing. This allows you to analyse the DOM, console logs, network traffic etc.
     // More information: https://playwright.dev/docs/trace-viewer
-    trace: 'retry-with-trace',
+    trace: 'retain-on-failure',
 
     // All available context options: https://playwright.dev/docs/api/class-browser#browser-new-context
     // contextOptions: {

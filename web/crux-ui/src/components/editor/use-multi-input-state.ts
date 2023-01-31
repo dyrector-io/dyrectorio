@@ -28,6 +28,7 @@ export type MultiInputActions<T> = {
 }
 
 export type MultiInputEditorOptions = {
+  itemId: string
   me: Editor
   editors: Editor[]
   inputEditors: InputEditorsMap

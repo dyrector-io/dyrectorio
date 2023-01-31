@@ -1,5 +1,5 @@
 import MultiInput from '@app/components/editor/multi-input'
-import { EditorStateOptions } from '@app/components/editor/use-editor-state'
+import { ItemEditorState } from '@app/components/editor/use-item-editor-state'
 import KeyValueInput from '@app/components/shared/key-value-input'
 import SecretKeyInput from '@app/components/shared/secret-key-input'
 import { IMAGE_WS_REQUEST_DELAY } from '@app/const'
@@ -13,7 +13,7 @@ import { useRef } from 'react'
 interface EditImageConfigProps {
   disabled?: boolean
   config: ContainerConfig
-  editorOptions: EditorStateOptions
+  editorOptions: ItemEditorState
   onPatch: (config: Partial<ContainerConfig>) => void
 }
 
@@ -60,7 +60,7 @@ const EditImageConfig = (props: EditImageConfigProps) => {
   return (
     <>
       <MultiInput
-        id="name"
+        id="common.containerName"
         disabled={disabled}
         label={t('containerName').toUpperCase()}
         className="mb-4 ml-2"

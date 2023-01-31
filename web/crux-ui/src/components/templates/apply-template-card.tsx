@@ -20,7 +20,7 @@ import { MutableRefObject } from 'react'
 interface ApplyTemplateCardProps {
   className?: string
   template: Template
-  onTemplateApplied: (productId: string) => void
+  onTemplateApplied: (productId: string) => Promise<void>
   submitRef?: MutableRefObject<() => Promise<any>>
 }
 
@@ -54,7 +54,7 @@ const ApplyTemplateCard = (props: ApplyTemplateCardProps) => {
         const result = json as CreateEntityResponse
 
         setSubmitting(false)
-        onTemplateApplied(result.id)
+        await onTemplateApplied(result.id)
       } else {
         setSubmitting(false)
         handleApiError(res, setFieldError)

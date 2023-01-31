@@ -43,6 +43,8 @@ export type EditorsMessage = {
   editors: Editor[]
 }
 
+export const editIdOf = (itemId: string, inputId: string) => `${itemId}-${inputId}`
+
 export const selectEditorById = (editors: Editor[], id: string) => editors.find(it => it.id === id)
 
 export const initialsOf = (name: string): string => {

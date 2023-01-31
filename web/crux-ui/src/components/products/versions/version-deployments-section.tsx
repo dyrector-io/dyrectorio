@@ -45,15 +45,17 @@ export const startDeployment = async (
     method: 'POST',
   })
 
-  if (res.status === 412) {
-    const json = await res.json()
-    toast.error(json.description)
-    return json
-  }
   if (!res.ok) {
+    if (res.status === 412) {
+      const json = await res.json()
+      toast.error(json.description)
+      return json
+    }
+
     return null
   }
-  router.push(deploymentDeployUrl(productId, versionId, deploymentId))
+
+  await router.push(deploymentDeployUrl(productId, versionId, deploymentId))
 
   return null
 }
@@ -91,7 +93,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
       return
     }
 
-    router.push(url)
+    await router.push(url)
   }
 
   const filters = useFilters<DeploymentByVersion, DeploymentFilter>({
@@ -180,6 +182,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
             />
           </div>
         )}
+
         <div className="mr-2 inline-block">
           <Image
             src="/note.svg"

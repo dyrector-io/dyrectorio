@@ -1,6 +1,8 @@
 {
   "add": "Add image",
   "imageName": "Image name",
+  "imagesName": "Images - {{name}}",
+  "instancesName": "Instances - {{name}}",
   "imageNameAndTag": "Image name and tag",
   "containerName": "Container name",
   "tag": "Tag",

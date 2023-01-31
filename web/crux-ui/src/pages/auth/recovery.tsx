@@ -72,7 +72,7 @@ const RecoveryPage = (props: RecoveryPageProps) => {
       const res = await sendForm('POST', API_RECOVERY, data)
       if (res.ok) {
         if (res.status === 201) {
-          router.push(res.headers.get(HEADER_LOCATION))
+          await router.push(res.headers.get(HEADER_LOCATION))
         } else {
           if (!sent) {
             startCountdown(AUTH_RESEND_DELAY)

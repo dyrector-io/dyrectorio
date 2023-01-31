@@ -1,5 +1,5 @@
 import { productUrl, ROUTE_NODES, versionUrl } from '@app/routes'
-import { Page } from '@playwright/test'
+import { expect, Page } from '@playwright/test'
 import { exec, ExecOptions } from 'child_process'
 import { DAGENT_NODE, screenshotPath } from './common'
 
@@ -28,7 +28,7 @@ export const installDagent = async (page: Page) => {
 
   await page.waitForSelector('img[src="/circle-green.svg"]')
 
-  await page.screenshot({ path: screenshotPath('node-dagent-install-succesful'), fullPage: true })
+  await page.screenshot({ path: screenshotPath('node-dagent-install-successful'), fullPage: true })
 }
 
 export const deployWithDagent = async (
@@ -66,13 +66,17 @@ export const deployWithDagent = async (
   await deploy.click()
   await navigation
 
-  if (!ignoreResult) {
-    if (testName) {
-      await page.waitForTimeout(1000)
-      await page.screenshot({ path: screenshotPath('dagent-daeploy-after-1s-' + testName), fullPage: true })
-    }
-    await page.getByText('Successful').waitFor()
+  if (ignoreResult) {
+    return
   }
+
+  if (testName) {
+    await page.waitForTimeout(1000)
+    await page.screenshot({ path: screenshotPath(`dagent-deploy-after-1s-${testName}`), fullPage: true })
+  }
+
+  expect(page.url().endsWith('deploy'))
+  await page.getByText('Successful').waitFor()
 }
 
 const logCmdOutput = (err: Error, stdOut: string, stdErr: string, logStdOut?: boolean) => {

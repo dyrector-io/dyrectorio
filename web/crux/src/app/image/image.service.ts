@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { Subject } from 'rxjs'
-import PrismaService from 'src/services/prisma.service'
-import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import { containerNameFromImageName } from 'src/domain/deployment'
+import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
   AddImagesToVersionRequest,
   IdRequest,
@@ -11,7 +10,7 @@ import {
   OrderVersionImagesRequest,
   PatchImageRequest,
 } from 'src/grpc/protobuf/proto/crux'
-import { Empty } from 'src/grpc/protobuf/proto/common'
+import PrismaService from 'src/services/prisma.service'
 import { ContainerConfigData } from 'src/shared/models'
 import ImageMapper, { ImageDetails } from './image.mapper'
 
@@ -136,7 +135,6 @@ export default class ImageService {
     return Empty
   }
 
-  @AuditLogLevel('no-data')
   async patchImage(request: PatchImageRequest): Promise<Empty> {
     let config: Partial<ContainerConfigData>
 

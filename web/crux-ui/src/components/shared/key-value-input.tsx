@@ -10,7 +10,7 @@ import { HTMLInputTypeAttribute, useEffect } from 'react'
 import { v4 as uuid } from 'uuid'
 import * as yup from 'yup'
 import MultiInput from '../editor/multi-input'
-import { EditorStateOptions } from '../editor/use-editor-state'
+import { ItemEditorState } from '../editor/use-item-editor-state'
 
 const EMPTY_KEY_VALUE_PAIR = {
   id: uuid(),
@@ -68,7 +68,7 @@ interface KeyValueInputProps {
   valuePlaceholder?: string
   onChange: (items: UniqueKeyValue[]) => void
   type?: HTMLInputTypeAttribute | undefined
-  editorOptions: EditorStateOptions
+  editorOptions: ItemEditorState
   hint?: { hintValidation: yup.BaseSchema; hintText: string }
 }
 

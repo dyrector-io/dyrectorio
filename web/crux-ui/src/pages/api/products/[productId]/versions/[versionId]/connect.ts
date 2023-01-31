@@ -122,7 +122,7 @@ const onPatchImage = async (endpoint: WsEndpoint, connection: WsConnection, mess
 
   await cruxFromConnection(connection).images.patchImage(req.id, req)
 
-  endpoint.sendAll(WS_TYPE_IMAGE_UPDATED, {
+  endpoint.sendAllExcept(connection, WS_TYPE_IMAGE_UPDATED, {
     ...req,
   } as ImageUpdateMessage)
 }

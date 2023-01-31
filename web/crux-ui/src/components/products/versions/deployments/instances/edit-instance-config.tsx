@@ -3,7 +3,7 @@ import { useThrottling } from '@app/hooks/use-throttleing'
 import { ContainerConfig, UniqueKeyValue, UniqueSecretKeyValue } from '@app/models'
 
 import MultiInput from '@app/components/editor/multi-input'
-import { EditorStateOptions } from '@app/components/editor/use-editor-state'
+import { ItemEditorState } from '@app/components/editor/use-item-editor-state'
 import KeyValueInput from '@app/components/shared/key-value-input'
 import SecretKeyValInput from '@app/components/shared/secret-key-value-input'
 import { sensitiveKeyRule } from '@app/validations/container'
@@ -16,7 +16,7 @@ interface EditInstanceProps {
   definedSecrets: string[]
   config: ContainerConfig
   onPatch: (config: Partial<ContainerConfig>) => void
-  editorOptions: EditorStateOptions
+  editorOptions: ItemEditorState
 }
 
 const EditInstanceConfig = (props: EditInstanceProps) => {
