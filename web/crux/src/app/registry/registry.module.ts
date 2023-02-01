@@ -7,11 +7,12 @@ import TeamRepository from '../team/team.repository'
 import RegistryController from './registry.controller'
 import RegistryMapper from './registry.mapper'
 import RegistryService from './registry.service'
+import RegistryHttpController from './registry.http.controller'
 
 @Module({
   imports: [HttpModule, TeamModule],
   exports: [RegistryMapper, RegistryService],
-  controllers: [RegistryController],
+  controllers: [RegistryController, RegistryHttpController],
   providers: [RegistryService, PrismaService, RegistryMapper, InterceptorGrpcHelperProvider, TeamRepository],
 })
 export default class RegistryModule {}

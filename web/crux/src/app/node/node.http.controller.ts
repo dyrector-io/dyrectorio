@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common'
+import { Controller, Get, Body } from '@nestjs/common'
 import { first, Observable, timeout } from 'rxjs'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import { ContainerStateListMessage } from 'src/grpc/protobuf/proto/common'
@@ -20,9 +20,7 @@ export default class NodeHttpController {
    */
   @Get('status')
   @AuditLogLevel('disabled')
-  async getContainerStatus(
-    @Query() params: WatchContainerStateRequest,
-  ): Promise<Observable<ContainerStateListMessage>> {
+  async getContainerStatus(@Body() params: WatchContainerStateRequest): Promise<Observable<ContainerStateListMessage>> {
     return this.service
       .handleWatchContainerStatus(params)
       .pipe(first(value => value.data?.length > 0))

@@ -11,7 +11,7 @@ export default class DeployHttpController {
 
   @Post()
   @AuditLogLevel('disabled')
-  async createProduct(@Body() request: CreateDeploymentRequest): Promise<CreateEntityResponse> {
+  async createDeployment(@Body() request: CreateDeploymentRequest): Promise<CreateEntityResponse> {
     return this.service.createDeployment(request)
   }
 
