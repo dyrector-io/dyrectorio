@@ -24,6 +24,10 @@ export type AuthPayload = {
   role?: string
 }
 
+export type APIAuthPayload = AuthPayload & {
+  nonce: string
+}
+
 export const nameOfIdentity = (identity: Identity) => {
   const traits = identity?.traits as IdentityTraits
   return `${traits?.name?.first ?? ''} ${traits?.name?.last ?? ''}`.trim()

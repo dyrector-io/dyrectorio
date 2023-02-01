@@ -10,7 +10,8 @@ import {
 } from 'src/grpc/protobuf/proto/crux'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
-import { AuthPayload } from 'src/shared/models'
+import { APIAuthPayload } from 'src/shared/models'
+import { v4 as uuid } from 'uuid'
 import TokenMapper from './token.mapper'
 
 @Injectable()
@@ -43,7 +44,15 @@ export default class AuthService {
       })
     }
 
-    const payload: AuthPayload = { sub: user.id, email: user.traits.email, role: user.traits.role }
+    // TODO(robot9706): check if already exists?
+    const nonce = uuid()
+
+    const payload: APIAuthPayload = {
+      sub: user.id,
+      email: user.traits.email,
+      role: user.traits.role,
+      nonce,
+    }
 
     const expirationDate = new Date(Date.now())
     expirationDate.setDate(expirationDate.getDate() + req.expirationInDays)
@@ -54,6 +63,7 @@ export default class AuthService {
         userId: user.id,
         name: req.name,
         expiresAt: expirationDate,
+        nonce,
       },
     })
 
