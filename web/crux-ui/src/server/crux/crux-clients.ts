@@ -41,7 +41,7 @@ class CruxClients {
 
   dashboard: CruxDashboardClient
 
-  token: CruxAuthClient
+  token: CruxTokenClient
 
   constructor(address: string) {
     // tls must be terminated by the reverse proxy
