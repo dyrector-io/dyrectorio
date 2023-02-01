@@ -319,7 +319,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
               <KeyOnlyInput
                 className="mb-2"
                 keyPlaceholder={t('common.arguments')}
-                label={t('common.args').toUpperCase()}
+                label={t('common.arguments').toUpperCase()}
                 labelClassName="text-bright font-semibold tracking-wide mb-2"
                 onChange={it => onChange({ args: it })}
                 items={config.args}

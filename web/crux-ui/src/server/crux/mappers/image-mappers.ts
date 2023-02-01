@@ -243,7 +243,7 @@ export const containerConfigToProto = (config?: ContainerConfig | Partial<Contai
     )
   }
 
-  if (config.logConfig || config.restartPolicy || config.networkMode || config.networks) {
+  if (config.logConfig || config.restartPolicy || config.networkMode || config.networks || config.dockerLabels) {
     protoConfig.dagent = {
       logConfig: logConfigToProto(config.logConfig),
       restartPolicy: restartPolicyTypeToProto(config.restartPolicy),
