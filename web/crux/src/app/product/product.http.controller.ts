@@ -26,7 +26,7 @@ export default class ProductHttpController {
   @AuditLogLevel('disabled')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(HttpLoggerInterceptor)
-  async getProduct(@Body() request: AccessRequest): Promise<ProductListResponse> {
+  async getProducts(@Body() request: AccessRequest): Promise<ProductListResponse> {
     return this.service.getProducts(request)
   }
 }

@@ -9,7 +9,7 @@ export default class ImageHttpController {
 
   @Post()
   @AuditLogLevel('disabled')
-  async createProduct(@Body() request: AddImagesToVersionRequest): Promise<ImageListResponse> {
+  async addImagesToVersion(@Body() request: AddImagesToVersionRequest): Promise<ImageListResponse> {
     return this.service.addImagesToVersion(request)
   }
 }

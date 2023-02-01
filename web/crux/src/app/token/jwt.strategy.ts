@@ -38,7 +38,7 @@ export default class JwtStrategy extends PassportStrategy(Strategy) {
         nonce: payload.nonce,
       },
     })
-    if (token == null) {
+    if (!token) {
       throw new UnauthorizedException()
     }
 
