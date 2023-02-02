@@ -40,7 +40,6 @@ import {
   InstanceContainerConfig as ProtoInstanceContainerConfig,
   InstanceResponse,
   NodeConnectionStatus,
-  UniqueSecretKey,
 } from 'src/grpc/protobuf/proto/crux'
 import { versionTypeToProto } from 'src/shared/mapper'
 import {
@@ -49,14 +48,18 @@ import {
   MergedContainerConfigData,
   UniqueKey,
   UniqueKeyValue,
-  UniqueSecretKeyValue,
 } from 'src/shared/models'
 import AgentService from '../agent/agent.service'
 import ImageMapper, { ImageDetails } from '../image/image.mapper'
+import ContainerMapper from '../shared/container.mapper'
 
 @Injectable()
 export default class DeployMapper {
-  constructor(private imageMapper: ImageMapper, private agentService: AgentService) {}
+  constructor(
+    private imageMapper: ImageMapper,
+    private agentService: AgentService,
+    private containerMapper: ContainerMapper,
+  ) {}
 
   listItemToProto(deployment: DeploymentListItem): DeploymentResponse {
     return {
@@ -103,7 +106,7 @@ export default class DeployMapper {
   }
 
   instanceToProto(instance: InstanceDetails): InstanceResponse {
-    const config = this.mergeConfigs(
+    const config = this.containerMapper.mergeConfigs(
       (instance.image.config ?? {}) as ContainerConfigData,
       (instance.config ?? {}) as InstanceContainerConfigData,
     )
@@ -155,7 +158,7 @@ export default class DeployMapper {
 
     let secrets = !configPatch.secrets ? undefined : configPatch.secrets.data
     if (secrets && !currentConfig.secrets && imageConfig.secrets) {
-      secrets = this.mergeSecrets(secrets, imageConfig.secrets)
+      secrets = this.containerMapper.mergeSecrets(secrets, imageConfig.secrets)
     }
 
     return {
@@ -363,81 +366,6 @@ export default class DeployMapper {
     }
 
     return environment.map(it => `${it.key}|${it.value}`)
-  }
-
-  private mergeSecrets(
-    instanceSecrets: UniqueSecretKeyValue[],
-    imageSecrets: UniqueSecretKey[],
-  ): UniqueSecretKeyValue[] {
-    imageSecrets = imageSecrets ?? []
-    instanceSecrets = instanceSecrets ?? []
-
-    const overriddenIds: Set<string> = new Set(instanceSecrets?.map(it => it.id))
-
-    const missing: UniqueSecretKeyValue[] = imageSecrets
-      .filter(it => !overriddenIds.has(it.id))
-      .map(it => ({
-        ...it,
-        value: '',
-        encrypted: false,
-        publicKey: null,
-      }))
-
-    return [...missing, ...instanceSecrets]
-  }
-
-  public mergeConfigs(image: ContainerConfigData, instance: InstanceContainerConfigData): MergedContainerConfigData {
-    return {
-      // common
-      name: instance.name ?? image.name,
-      environment: instance.environment ?? image.environment,
-      secrets: this.mergeSecrets(instance.secrets, image.secrets),
-      user: instance.user ?? image.user,
-      tty: instance.tty ?? image.tty,
-      portRanges: instance.portRanges ?? image.portRanges,
-      args: instance.args ?? image.args,
-      commands: instance.commands ?? image.commands,
-      expose: instance.expose ?? image.expose,
-      configContainer: instance.configContainer ?? image.configContainer,
-      ingress: instance.ingress ?? image.ingress,
-      volumes: instance.volumes ?? image.volumes,
-      importContainer: instance.importContainer ?? image.importContainer,
-      initContainers: instance.initContainers ?? image.initContainers,
-      capabilities: [], // TODO (@m8vago, @nandor-magyar): caps
-      ports: instance.ports ?? image.ports,
-
-      // crane
-      customHeaders: instance.customHeaders ?? image.customHeaders,
-      proxyHeaders: instance.proxyHeaders ?? image.proxyHeaders,
-      extraLBAnnotations: instance.extraLBAnnotations ?? image.extraLBAnnotations,
-      healthCheckConfig: instance.healthCheckConfig ?? image.healthCheckConfig,
-      resourceConfig: instance.resourceConfig ?? image.resourceConfig,
-      useLoadBalancer: instance.useLoadBalancer ?? image.useLoadBalancer,
-      deploymentStrategy: instance.deploymentStrategy ?? image.deploymentStrategy,
-      labels:
-        instance.labels || image.labels
-          ? {
-              deployment: instance.labels?.deployment ?? image.labels?.deployment ?? [],
-              service: instance.labels?.service ?? image.labels?.service ?? [],
-              ingress: instance.labels?.ingress ?? image.labels?.ingress ?? [],
-            }
-          : null,
-      annotations:
-        image.annotations || instance.annotations
-          ? {
-              deployment: instance.annotations?.deployment ?? image.annotations?.deployment ?? [],
-              service: instance.annotations?.service ?? image.annotations?.service ?? [],
-              ingress: instance.annotations?.ingress ?? image.annotations?.ingress ?? [],
-            }
-          : null,
-
-      // dagent
-      logConfig: instance.logConfig ?? image.logConfig,
-      networkMode: instance.networkMode ?? image.networkMode,
-      restartPolicy: instance.restartPolicy ?? image.restartPolicy,
-      networks: instance.networks ?? image.networks,
-      dockerLabels: instance.dockerLabels ?? image.dockerLabels,
-    }
   }
 }
 

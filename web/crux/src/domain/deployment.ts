@@ -10,6 +10,7 @@ import {
   deploymentStatusToJSON,
 } from 'src/grpc/protobuf/proto/common'
 import { ContainerStateEnum, DeploymentEventTypeEnum, DeploymentStatusEnum, VersionTypeEnum } from '.prisma/client'
+import { MergedContainerConfigData } from 'src/shared/models'
 
 export type DeploymentProgressContainerEvent = {
   instanceId: string
@@ -60,6 +61,20 @@ export const checkDeploymentMutability = (status: DeploymentStatusEnum, type: Ve
   }
 }
 
+export const checkDeploymentDeployability = (status: DeploymentStatusEnum, type: VersionTypeEnum): boolean => {
+  switch (status) {
+    case 'preparing':
+    case 'obsolate':
+      return true
+    case 'successful':
+      return type === 'rolling'
+    case 'failed':
+      return type === 'rolling'
+    default:
+      return false
+  }
+}
+
 export type DeploymentNotification = {
   accessedBy: string
   productName: string
@@ -74,7 +89,11 @@ export default class Deployment {
 
   readonly id: string
 
-  constructor(private readonly request: VersionDeployRequest, public notification: DeploymentNotification) {
+  constructor(
+    private readonly request: VersionDeployRequest,
+    public notification: DeploymentNotification,
+    public mergedConfigs: Map<string, MergedContainerConfigData>,
+  ) {
     this.id = request.id
   }
 

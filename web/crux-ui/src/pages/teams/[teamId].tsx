@@ -169,11 +169,12 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
   ]
 
   const listHeaders = [...['common:name', 'common:email', 'role', 'lastLogin', 'common:status'].map(it => t(it)), '']
-  const defaultHeaderClass = 'uppercase text-bright text-sm font-bold bg-medium-eased pl-2 py-3 h-11'
+  const defaultHeaderClass = 'h-11 uppercase text-bright text-sm bg-medium-eased py-3 pl-4 font-semibold'
   const headerClassNames = [
-    clsx(defaultHeaderClass, 'rounded-tl-lg pl-16'),
-    ...Array.from({ length: listHeaders.length - 2 }).map(() => defaultHeaderClass),
-    clsx(defaultHeaderClass, 'rounded-tr-lg pr-16'),
+    clsx(defaultHeaderClass, 'rounded-tl-lg'),
+    ...Array.from({ length: listHeaders.length - 3 }).map(() => defaultHeaderClass),
+    clsx(defaultHeaderClass, 'text-center'),
+    clsx(defaultHeaderClass, 'rounded-tr-lg'),
   ]
 
   const pageMenuTexts: DetailsPageTexts = {
@@ -183,7 +184,7 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
 
   /* eslint-disable react/jsx-key */
   const itemTemplate = (it: User) => [
-    <div className="font-semibold ml-14 py-1 h-8">{it.name}</div>,
+    <div className="font-semibold py-1 h-8">{it.name}</div>,
     <div>{it.email}</div>,
     <div className="flex flex-row">
       <span>{t(roleToText(it.role))}</span>
@@ -197,28 +198,32 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
       )}
     </div>,
     <div>{it.lastLogin ? utcDateToLocale(it.lastLogin) : t('never')}</div>,
-    <UserStatusTag className="my-auto w-fit" status={it.status} />,
+    <UserStatusTag className="w-fit mx-auto" status={it.status} />,
     <div className="flex flex-row">
       {!userStatusReinvitable(it.status) || countdown > 0 ? null : (
-        <Image
-          className="aspect-square cursor-pointer mr-16"
-          src="/restart.svg"
-          alt={t('common:delete')}
-          width={24}
-          height={24}
-          onClick={() => onReinviteUser(it)}
-        />
+        <div className="mr-2 inline-block">
+          <Image
+            className="aspect-square cursor-pointer"
+            src="/restart.svg"
+            alt={t('common:delete')}
+            width={24}
+            height={24}
+            onClick={() => onReinviteUser(it)}
+          />
+        </div>
       )}
 
       {detailsState !== 'none' || !canEdit || it.role === 'owner' ? null : (
-        <Image
-          className="aspect-square cursor-pointer mr-16"
-          src="/trash-can.svg"
-          alt={t('common:delete')}
-          width={24}
-          height={24}
-          onClick={() => onDeleteUser(it)}
-        />
+        <div className="mr-2 inline-block">
+          <Image
+            className="aspect-square cursor-pointer"
+            src="/trash-can.svg"
+            alt={t('common:delete')}
+            width={24}
+            height={24}
+            onClick={() => onDeleteUser(it)}
+          />
+        </div>
       )}
     </div>,
   ]
@@ -250,8 +255,9 @@ const TeamDetailsPage = (props: TeamDetailsPageProps) => {
         <DyoList
           className=""
           noSeparator
-          headerClassName={headerClassNames}
           headers={listHeaders}
+          headerClassName={headerClassNames}
+          itemClassName="h-11 min-h-min text-light-eased pl-4 w-fit"
           data={team.users}
           itemBuilder={itemTemplate}
         />

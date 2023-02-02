@@ -21,7 +21,7 @@ import {
 import { Gauge } from 'prom-client'
 import { Agent, AgentToken } from 'src/domain/agent'
 import AgentInstaller from 'src/domain/agent-installer'
-import { DeploymentProgressEvent } from 'src/domain/deployment'
+import Deployment, { DeploymentProgressEvent } from 'src/domain/deployment'
 import { DeployMessage, NotificationMessageType } from 'src/domain/notification-templates'
 import { collectChildVersionIds, collectParentVersionIds } from 'src/domain/utils'
 import { AlreadyExistsException, NotFoundException, UnauthenticatedException } from 'src/exception/errors'
@@ -44,6 +44,8 @@ import {
 import PrismaService from 'src/services/prisma.service'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import { JWT_EXPIRATION } from '../../shared/const'
+import ContainerMapper from '../shared/container.mapper'
+import ImageMapper from '../image/image.mapper'
 
 @Injectable()
 export default class AgentService {
@@ -61,6 +63,8 @@ export default class AgentService {
     private jwtService: JwtService,
     private configService: ConfigService,
     private notificationService: DomainNotificationService,
+    private containerMapper: ContainerMapper,
+    private imageMapper: ImageMapper,
   ) {}
 
   getById(id: string): Agent {
@@ -205,7 +209,7 @@ export default class AgentService {
       }),
       finalize(async () => {
         const status = agent.onDeploymentFinished(deployment)
-        this.updateDeploymentStatuses(agent.id, deployment.id, status)
+        this.updateDeploymentStatuses(agent.id, deployment, status)
 
         const messageType: NotificationMessageType =
           deployment.getStatus() === DeploymentStatus.SUCCESSFUL ? 'successfulDeploy' : 'failedDeploy'
@@ -447,7 +451,7 @@ export default class AgentService {
     })
   }
 
-  private async updateDeploymentStatuses(nodeId: string, deploymentId: string, status: DeploymentStatus) {
+  private async updateDeploymentStatuses(nodeId: string, deploymentInstance: Deployment, status: DeploymentStatus) {
     const deployment = await this.prisma.deployment.findUniqueOrThrow({
       select: {
         status: true,
@@ -467,7 +471,7 @@ export default class AgentService {
         },
       },
       where: {
-        id: deploymentId,
+        id: deploymentInstance.id,
       },
     })
 
@@ -476,7 +480,7 @@ export default class AgentService {
     if (deployment.status !== finalStatus) {
       await this.prisma.deployment.update({
         where: {
-          id: deploymentId,
+          id: deploymentInstance.id,
         },
         data: {
           status: finalStatus,
@@ -496,7 +500,7 @@ export default class AgentService {
       },
       where: {
         id: {
-          not: deploymentId,
+          not: deploymentInstance.id,
         },
         versionId: deployment.version.id,
         nodeId,
@@ -537,6 +541,26 @@ export default class AgentService {
         prefix: deployment.prefix,
       },
     })
+
+    await this.prisma.$transaction(
+      Array.from(deploymentInstance.mergedConfigs).map(it => {
+        const [key, config] = it
+        const dbConfig = this.imageMapper.containerConfigDataToDb(config)
+        return this.prisma.instanceContainerConfig.upsert({
+          where: {
+            instanceId: key,
+          },
+          update: {
+            ...dbConfig,
+          },
+          create: {
+            ...dbConfig,
+            id: undefined,
+            instanceId: key,
+          },
+        })
+      }),
+    )
   }
 
   private logServiceInfo(): void {
