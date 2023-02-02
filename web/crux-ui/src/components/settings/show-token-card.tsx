@@ -21,7 +21,7 @@ const ShowTokenCard = (props: ShowTokenCardProps) => {
   const onCopyToken = () => writeToClipboard(t, token.token)
 
   return (
-    <DyoCard className={clsx('p-8 border-2 border-dyo-orange', className)}>
+    <DyoCard className={clsx('p-8', className)}>
       <DyoHeading element="h4" className="text-lg text-bright">
         {token.name}
       </DyoHeading>
@@ -29,7 +29,7 @@ const ShowTokenCard = (props: ShowTokenCardProps) => {
       <DyoLabel textColor="text-dyo-orange">{t('settings:newTokenTips')}</DyoLabel>
 
       <div className="flex flex-row my-4">
-        <DyoTextArea readOnly className="flex-grow" value={token.token} />
+        <DyoTextArea readOnly className="flex-grow pb-12 text-light" value={token.token} />
       </div>
 
       <DyoButton className="px-4 py-2 mr-auto" outlined onClick={onCopyToken}>

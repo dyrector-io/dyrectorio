@@ -148,7 +148,7 @@ service CruxDashboard {
 
 service CruxToken {
   rpc GenerateToken(GenerateTokenRequest) returns (GenerateTokenResponse);
-  rpc GetTokens(AccessRequest) returns (TokenListResponse);
+  rpc GetTokenList(AccessRequest) returns (TokenListResponse);
   rpc DeleteToken(IdRequest) returns (common.Empty);
 }
 
@@ -194,7 +194,7 @@ message GenerateTokenRequest {
   int32 expirationInDays = 101;
 }
 
-message GenerateTokenResponse { 
+message GenerateTokenResponse {
   string id = 1;
 
   string name = 100;

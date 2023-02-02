@@ -24,8 +24,8 @@ export default class TokenController implements CruxTokenController {
     return this.authService.generateToken(request)
   }
 
-  async getTokens(request: AccessRequest): Promise<TokenListResponse> {
-    return this.authService.getTokens(request)
+  async getTokenList(request: AccessRequest): Promise<TokenListResponse> {
+    return this.authService.getTokenList(request)
   }
 
   async deleteToken(request: IdRequest): Promise<void> {

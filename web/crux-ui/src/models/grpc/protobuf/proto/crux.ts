@@ -14463,8 +14463,8 @@ export const CruxTokenService = {
     responseSerialize: (value: GenerateTokenResponse) => Buffer.from(GenerateTokenResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer) => GenerateTokenResponse.decode(value),
   },
-  getTokens: {
-    path: '/crux.CruxToken/GetTokens',
+  getTokenList: {
+    path: '/crux.CruxToken/GetTokenList',
     requestStream: false,
     responseStream: false,
     requestSerialize: (value: AccessRequest) => Buffer.from(AccessRequest.encode(value).finish()),
@@ -14485,7 +14485,7 @@ export const CruxTokenService = {
 
 export interface CruxTokenServer extends UntypedServiceImplementation {
   generateToken: handleUnaryCall<GenerateTokenRequest, GenerateTokenResponse>
-  getTokens: handleUnaryCall<AccessRequest, TokenListResponse>
+  getTokenList: handleUnaryCall<AccessRequest, TokenListResponse>
   deleteToken: handleUnaryCall<IdRequest, Empty>
 }
 
@@ -14505,16 +14505,16 @@ export interface CruxTokenClient extends Client {
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: GenerateTokenResponse) => void,
   ): ClientUnaryCall
-  getTokens(
+  getTokenList(
     request: AccessRequest,
     callback: (error: ServiceError | null, response: TokenListResponse) => void,
   ): ClientUnaryCall
-  getTokens(
+  getTokenList(
     request: AccessRequest,
     metadata: Metadata,
     callback: (error: ServiceError | null, response: TokenListResponse) => void,
   ): ClientUnaryCall
-  getTokens(
+  getTokenList(
     request: AccessRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,

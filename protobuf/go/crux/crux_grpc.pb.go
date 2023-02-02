@@ -3611,7 +3611,7 @@ var CruxDashboard_ServiceDesc = grpc.ServiceDesc{
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CruxTokenClient interface {
 	GenerateToken(ctx context.Context, in *GenerateTokenRequest, opts ...grpc.CallOption) (*GenerateTokenResponse, error)
-	GetTokens(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*TokenListResponse, error)
+	GetTokenList(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*TokenListResponse, error)
 	DeleteToken(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
 }
 
@@ -3632,9 +3632,9 @@ func (c *cruxTokenClient) GenerateToken(ctx context.Context, in *GenerateTokenRe
 	return out, nil
 }
 
-func (c *cruxTokenClient) GetTokens(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*TokenListResponse, error) {
+func (c *cruxTokenClient) GetTokenList(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*TokenListResponse, error) {
 	out := new(TokenListResponse)
-	err := c.cc.Invoke(ctx, "/crux.CruxToken/GetTokens", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/crux.CruxToken/GetTokenList", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -3655,7 +3655,7 @@ func (c *cruxTokenClient) DeleteToken(ctx context.Context, in *IdRequest, opts .
 // for forward compatibility
 type CruxTokenServer interface {
 	GenerateToken(context.Context, *GenerateTokenRequest) (*GenerateTokenResponse, error)
-	GetTokens(context.Context, *AccessRequest) (*TokenListResponse, error)
+	GetTokenList(context.Context, *AccessRequest) (*TokenListResponse, error)
 	DeleteToken(context.Context, *IdRequest) (*common.Empty, error)
 	mustEmbedUnimplementedCruxTokenServer()
 }
@@ -3667,8 +3667,8 @@ type UnimplementedCruxTokenServer struct {
 func (UnimplementedCruxTokenServer) GenerateToken(context.Context, *GenerateTokenRequest) (*GenerateTokenResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GenerateToken not implemented")
 }
-func (UnimplementedCruxTokenServer) GetTokens(context.Context, *AccessRequest) (*TokenListResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetTokens not implemented")
+func (UnimplementedCruxTokenServer) GetTokenList(context.Context, *AccessRequest) (*TokenListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTokenList not implemented")
 }
 func (UnimplementedCruxTokenServer) DeleteToken(context.Context, *IdRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteToken not implemented")
@@ -3704,20 +3704,20 @@ func _CruxToken_GenerateToken_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _CruxToken_GetTokens_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _CruxToken_GetTokenList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(AccessRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CruxTokenServer).GetTokens(ctx, in)
+		return srv.(CruxTokenServer).GetTokenList(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/crux.CruxToken/GetTokens",
+		FullMethod: "/crux.CruxToken/GetTokenList",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CruxTokenServer).GetTokens(ctx, req.(*AccessRequest))
+		return srv.(CruxTokenServer).GetTokenList(ctx, req.(*AccessRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -3752,8 +3752,8 @@ var CruxToken_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _CruxToken_GenerateToken_Handler,
 		},
 		{
-			MethodName: "GetTokens",
-			Handler:    _CruxToken_GetTokens_Handler,
+			MethodName: "GetTokenList",
+			Handler:    _CruxToken_GetTokenList_Handler,
 		},
 		{
 			MethodName: "DeleteToken",

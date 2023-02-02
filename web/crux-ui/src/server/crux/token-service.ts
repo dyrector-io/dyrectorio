@@ -20,7 +20,7 @@ class DyoTokenService {
       accessedBy: this.identity.id,
     }
 
-    const response = await protomisify<AccessRequest, TokenListResponse>(this.client, this.client.getTokens)(
+    const response = await protomisify<AccessRequest, TokenListResponse>(this.client, this.client.getTokenList)(
       AccessRequest,
       req,
     )

@@ -5858,7 +5858,7 @@ export const CRUX_DASHBOARD_SERVICE_NAME = 'CruxDashboard'
 export interface CruxTokenClient {
   generateToken(request: GenerateTokenRequest, metadata: Metadata, ...rest: any): Observable<GenerateTokenResponse>
 
-  getTokens(request: AccessRequest, metadata: Metadata, ...rest: any): Observable<TokenListResponse>
+  getTokenList(request: AccessRequest, metadata: Metadata, ...rest: any): Observable<TokenListResponse>
 
   deleteToken(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
 }
@@ -5870,7 +5870,7 @@ export interface CruxTokenController {
     ...rest: any
   ): Promise<GenerateTokenResponse> | Observable<GenerateTokenResponse> | GenerateTokenResponse
 
-  getTokens(
+  getTokenList(
     request: AccessRequest,
     metadata: Metadata,
     ...rest: any
@@ -5881,7 +5881,7 @@ export interface CruxTokenController {
 
 export function CruxTokenControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ['generateToken', 'getTokens', 'deleteToken']
+    const grpcMethods: string[] = ['generateToken', 'getTokenList', 'deleteToken']
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
       GrpcMethod('CruxToken', method)(constructor.prototype[method], method, descriptor)

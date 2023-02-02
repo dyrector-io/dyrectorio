@@ -72,7 +72,7 @@ export default class AuthService {
     return this.mapper.generateResponseToGrpc(newToken, jwt)
   }
 
-  async getTokens(req: AccessRequest): Promise<TokenListResponse> {
+  async getTokenList(req: AccessRequest): Promise<TokenListResponse> {
     const response = await this.prisma.token.findMany({
       where: {
         userId: req.accessedBy,

@@ -19,6 +19,7 @@ export default class NodeHttpController {
    * Client can subscribe to the returned observable, and receive new data as it becomes available.
    *
    * @todo(polaroi8d): if timeout will occured, the client will not receive any data.
+   * this is just an experimental implementation, and should be improved in the future.
    */
   @Get('status')
   @Version('1')
