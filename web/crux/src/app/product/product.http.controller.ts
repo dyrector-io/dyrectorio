@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, UseGuards, UseInterceptors } from '@nestjs/common'
+import { Controller, Post, Body, Get, UseGuards, UseInterceptors, Version } from '@nestjs/common'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import {
   AccessRequest,
@@ -15,6 +15,7 @@ export default class ProductHttpController {
   constructor(private service: ProductService) {}
 
   @Post()
+  @Version('1')
   @AuditLogLevel('disabled')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(HttpLoggerInterceptor)
@@ -23,6 +24,7 @@ export default class ProductHttpController {
   }
 
   @Get()
+  @Version('1')
   @AuditLogLevel('disabled')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(HttpLoggerInterceptor)

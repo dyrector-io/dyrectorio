@@ -1,8 +1,10 @@
-import { Controller, Get, Body } from '@nestjs/common'
+import { Controller, Body, Get, UseGuards, UseInterceptors, Version } from '@nestjs/common'
 import { first, Observable, timeout } from 'rxjs'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import { ContainerStateListMessage } from 'src/grpc/protobuf/proto/common'
 import { WatchContainerStateRequest } from 'src/grpc/protobuf/proto/crux'
+import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
+import JwtAuthGuard from '../token/jwt-auth.guard'
 import NodeService from './node.service'
 
 @Controller('node')
@@ -19,6 +21,9 @@ export default class NodeHttpController {
    * @todo(polaroi8d): if timeout will occured, the client will not receive any data.
    */
   @Get('status')
+  @Version('1')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(HttpLoggerInterceptor)
   @AuditLogLevel('disabled')
   async getContainerStatus(@Body() params: WatchContainerStateRequest): Promise<Observable<ContainerStateListMessage>> {
     return this.service

@@ -1,7 +1,8 @@
 import { ServerCredentials } from '@grpc/grpc-js'
-import { Logger, LogLevel } from '@nestjs/common'
+import { Logger, LogLevel, VersioningType } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { NestFactory } from '@nestjs/core'
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 import { MicroserviceOptions, Transport } from '@nestjs/microservices'
 import { join } from 'path'
 import AppModule from './app.module'
@@ -40,13 +41,37 @@ const parseLogLevelFromEnv = (logLevelEnv: string, nodeEnv: string): LogLevel[] 
 }
 
 const bootstrap = async () => {
+  const logger: Logger = new Logger('NestBoostrap')
   const app = await NestFactory.create(AppModule, {
     logger: parseLogLevelFromEnv(process.env.LOG_LEVEL, process.env.NODE_ENV),
   })
+  const configService = app.get(ConfigService)
 
   app.enableShutdownHooks()
+  app.enableVersioning({
+    type: VersioningType.URI,
+  })
 
-  const configService = app.get(ConfigService)
+  const config = new DocumentBuilder()
+    .setTitle('dyrectorio platform API')
+    .setDescription('The dyrectorio platform API description')
+    .setVersion('0.3')
+    .addBearerAuth(
+      {
+        description: 'Please enter token in following format: ',
+        name: 'Authorization',
+        bearerFormat: 'Bearer',
+        scheme: 'Bearer',
+        type: 'http',
+        in: 'Header',
+      },
+      'jwt',
+    )
+    .build()
+
+  // Swagger
+  const document = SwaggerModule.createDocument(app, config)
+  SwaggerModule.setup('api', app, document)
 
   const agentOptions = loadGrpcOptions('agent', configService.get<string>('GRPC_AGENT_PORT'))
   const apiOptions = loadGrpcOptions('api', configService.get<string>('GRPC_API_PORT'))
@@ -81,9 +106,7 @@ const bootstrap = async () => {
     { inheritAppConfig: true },
   )
 
-  const logger: Logger = new Logger('NestBoostrap')
   await app.startAllMicroservices()
-
   logger.log(`gRPC agent services are running on: ${agentOptions.url}`)
   logger.log(`gRPC API services are running on: ${apiOptions.url}`)
 
