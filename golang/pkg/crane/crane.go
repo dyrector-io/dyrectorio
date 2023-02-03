@@ -39,5 +39,6 @@ func Serve(cfg *config.Configuration) {
 		Delete:       k8s.Delete,
 		SecretList:   crux.GetSecretsList,
 		ContainerLog: k8s.PodLog,
+		// TODO(robot9706): Implement Close for "SHUTDOWN"
 	})
 }

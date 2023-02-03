@@ -2,6 +2,7 @@ package dagent
 
 import (
 	"context"
+	"os"
 
 	"github.com/rs/zerolog/log"
 
@@ -50,6 +51,13 @@ func Serve(cfg *config.Configuration) {
 func grpcClose(ctx context.Context, reason agent.CloseReason) error {
 	if reason == agent.CloseReason_SELF_DESTRUCT {
 		return update.RemoveSelf(ctx)
+	} else if reason == agent.CloseReason_SHUTDOWN {
+		log.Info().Msg("Remote shutdown requested")
+		err := utils.StopSelf(ctx)
+		if err != nil {
+			log.Error().Err(err).Msg("Docker failed to stop")
+			os.Exit(0)
+		}
 	}
 
 	return nil

@@ -277,6 +277,7 @@ enum CloseReason {
   CLOSE_REASON_UNSPECIFIED = 0;
   CLOSE = 1;
   SELF_DESTRUCT = 2;
+  SHUTDOWN = 3;
 }
 
 message CloseConnectionRequest { CloseReason reason = 1; }
