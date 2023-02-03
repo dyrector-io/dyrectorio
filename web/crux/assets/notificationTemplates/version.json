@@ -1,0 +1,6 @@
+{
+    "message":
+    {
+        "text": "{{owner}} created a new version: {{version}} for product {{subject}}!"
+    }
+}

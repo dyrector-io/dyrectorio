@@ -1,0 +1,6 @@
+{
+    "message":
+    {
+        "text": "Failed to deploy {{subject}} version {{version}} on node {{node}}, initiated by: {{owner}}!"
+    }
+}

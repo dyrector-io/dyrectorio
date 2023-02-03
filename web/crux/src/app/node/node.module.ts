@@ -4,6 +4,7 @@ import PrismaService from 'src/services/prisma.service'
 import InterceptorGrpcHelperProvider from 'src/interceptors/helper.interceptor'
 import { HttpModule } from '@nestjs/axios'
 import DomainNotificationService from 'src/services/domain.notification.service'
+import NotificationTemplateBuilder from 'src/builders/notification.template.builder'
 import AgentModule from '../agent/agent.module'
 import TeamModule from '../team/team.module'
 import TeamRepository from '../team/team.repository'
@@ -22,6 +23,7 @@ import NodeHttpController from './node.http.controller'
     NodeMapper,
     InterceptorGrpcHelperProvider,
     TeamRepository,
+    NotificationTemplateBuilder,
     DomainNotificationService,
     KratosService,
   ],

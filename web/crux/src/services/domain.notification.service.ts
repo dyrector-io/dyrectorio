@@ -2,6 +2,7 @@ import { HttpService } from '@nestjs/axios'
 import { Injectable, Logger } from '@nestjs/common'
 import { NotificationEventTypeEnum, NotificationTypeEnum } from '@prisma/client'
 import { lastValueFrom } from 'rxjs'
+import NotificationTemplateBuilder from 'src/builders/notification.template.builder'
 import { getTemplate, NotificationMessageType, NotificationTemplate } from 'src/domain/notification-templates'
 import { InvalidArgumentException } from 'src/exception/errors'
 import { nameOrEmailOfIdentity } from '../shared/models'
@@ -12,7 +13,12 @@ import PrismaService from './prisma.service'
 export default class DomainNotificationService {
   private readonly logger = new Logger(DomainNotificationService.name)
 
-  constructor(private prisma: PrismaService, private httpService: HttpService, private kratos: KratosService) {}
+  constructor(
+    private prisma: PrismaService,
+    private httpService: HttpService,
+    private kratos: KratosService,
+    private templateBuilder: NotificationTemplateBuilder,
+  ) {}
 
   async sendNotification(template: NotificationTemplate): Promise<void> {
     const eventType = this.getMessageEventFromType(template.messageType)
@@ -60,10 +66,12 @@ export default class DomainNotificationService {
 
   private async send(url: string, type: NotificationTypeEnum, temp: NotificationTemplate): Promise<void> {
     try {
-      const template = getTemplate(type, temp)
+      const template = this.templateBuilder.processTemplate('notificationTemplates', temp.messageType, temp.message)
 
-      if (template) {
-        await lastValueFrom(this.httpService.post(url, template))
+      const chatTemplate = getTemplate(type, template.message)
+
+      if (chatTemplate) {
+        await lastValueFrom(this.httpService.post(url, chatTemplate))
       }
     } catch (err) {
       this.logger.error(err)

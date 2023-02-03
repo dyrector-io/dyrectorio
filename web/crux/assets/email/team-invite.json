@@ -1,0 +1,14 @@
+{
+    "subject":
+    {
+        "text": "You're invited to a Team in dyrector.io"
+    },
+    "text":
+    {
+        "text": "Hi, You are invited to join the Team {{teamName}}, to accept click the following link: {link}"
+    },
+    "html":
+    {
+        "file": "team-invite.hbr"
+    }
+}
