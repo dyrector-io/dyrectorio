@@ -25,7 +25,7 @@ import (
 // A Builder can be created using the NewDockerBuilder method.
 type Builder interface {
 	WithClient(client *client.Client) Builder
-	WithImage(imageName string) Builder
+	WithImage(image imageHelper.URI) Builder
 	WithEnv(env []string) Builder
 	WithPortBindings(portList []PortBinding) Builder
 	WithPortRange(portRanges []PortRange) Builder
@@ -65,7 +65,7 @@ type DockerContainerBuilder struct {
 	networkIDs      []string
 	networkAliases  []string
 	containerName   string
-	imageWithTag    string
+	image           *imageHelper.URI
 	envList         []string
 	labels          map[string]string
 	logConfig       *container.LogConfig
@@ -164,7 +164,17 @@ func (dc *DockerContainerBuilder) WithLogConfig(logConfig *container.LogConfig) 
 
 // Sets the image of a container in a "image:tag" format where image can be a fully qualified name.
 func (dc *DockerContainerBuilder) WithImage(imageWithTag string) *DockerContainerBuilder {
-	dc.imageWithTag = imageWithTag
+	image, err := imageHelper.URIFromString(imageWithTag)
+	if err != nil {
+		panic(err) // TODO(robot9706): how to handle correctly?
+	}
+	dc.image = image
+	return dc
+}
+
+// Sets the image of a container in a "image:tag" format where image can be a fully qualified name.
+func (dc *DockerContainerBuilder) WithImageURI(image *imageHelper.URI) *DockerContainerBuilder {
+	dc.image = image
 	return dc
 }
 
@@ -318,7 +328,7 @@ func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 	}
 
 	containerConfig := &container.Config{
-		Image:        dc.imageWithTag,
+		Image:        dc.image.String(),
 		Tty:          dc.tty,
 		Env:          dc.envList,
 		Labels:       dc.labels,
@@ -436,7 +446,7 @@ func (dc *DockerContainerBuilder) Start() (bool, error) {
 
 func prepareImage(dc *DockerContainerBuilder) error {
 	if pullRequired, err := needToPullImage(dc); pullRequired {
-		if err = imageHelper.Pull(dc.ctx, dc.logger, dc.imageWithTag, dc.registryAuth); err != nil {
+		if err = imageHelper.Pull(dc.ctx, dc.logger, dc.image.String(), dc.registryAuth); err != nil {
 			if err != nil && err.Error() != "EOF" {
 				return fmt.Errorf("image pull error: %s", err.Error())
 			}
@@ -510,11 +520,18 @@ func needToPullImage(dc *DockerContainerBuilder) (bool, error) {
 		return true, nil
 	}
 
-	imageExists, err := imageHelper.Exists(dc.ctx, dc.logger, dc.imageWithTag)
+	imageExists, err := imageHelper.Exists(dc.ctx, dc.logger, dc.image.StringNoHost())
 	if err != nil {
 		return false, err
 	}
+	if imageExists {
+		return false, nil
+	}
 
+	imageExists, err = imageHelper.Exists(dc.ctx, dc.logger, dc.image.String())
+	if err != nil {
+		return false, err
+	}
 	return !imageExists, nil
 }
 

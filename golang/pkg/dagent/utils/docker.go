@@ -325,7 +325,7 @@ func DeployImage(ctx context.Context,
 		return fmt.Errorf("error building lables: %w", err)
 	}
 
-	builder.WithImage(image.String()).
+	builder.WithImageURI(image).
 		WithName(containerName).
 		WithMountPoints(mountList).
 		WithPortBindings(deployImageRequest.ContainerConfig.Ports).

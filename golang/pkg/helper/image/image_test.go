@@ -75,6 +75,7 @@ func TestImageToStringDockerHub(t *testing.T) {
 
 	assert.Equal(t, "docker.io/library/nginx:latest", image.String())
 	assert.Equal(t, "docker.io/library/nginx", image.StringNoTag())
+	assert.Equal(t, "library/nginx:latest", image.StringNoHost())
 }
 
 func TestImageToStringPrivateRegistry(t *testing.T) {
@@ -82,6 +83,7 @@ func TestImageToStringPrivateRegistry(t *testing.T) {
 
 	assert.Equal(t, "reg.example.com/example-project/service-api:latest", image.String())
 	assert.Equal(t, "reg.example.com/example-project/service-api", image.StringNoTag())
+	assert.Equal(t, "example-project/service-api:latest", image.StringNoHost())
 }
 
 func TestImageToStringWithoutTag(t *testing.T) {
@@ -89,6 +91,7 @@ func TestImageToStringWithoutTag(t *testing.T) {
 
 	assert.Equal(t, "docker.io/library/alpine:latest", image.String())
 	assert.Equal(t, "docker.io/library/alpine", image.StringNoTag())
+	assert.Equal(t, "library/alpine:latest", image.StringNoHost())
 }
 
 func TestRegistryUrl(t *testing.T) {

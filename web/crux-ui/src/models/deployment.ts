@@ -176,3 +176,5 @@ export const deploymentLogVisible = (status: DeploymentStatus) => {
       return false
   }
 }
+
+export const productNameToDeploymentPrefix = (name: string) => name.replaceAll(/( |\.)/g, '-').toLocaleLowerCase()

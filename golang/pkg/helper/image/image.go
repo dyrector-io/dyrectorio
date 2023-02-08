@@ -88,7 +88,7 @@ func URIFromString(imageName string) (*URI, error) {
 
 func (image *URI) String() string {
 	setDefaults(image)
-	return fmt.Sprintf("%s/%s", image.Host, image.Name+":"+image.Tag)
+	return fmt.Sprintf("%s/%s:%s", image.Host, image.Name, image.Tag)
 }
 
 func (image *URI) StringNoTag() string {
@@ -96,9 +96,15 @@ func (image *URI) StringNoTag() string {
 	return fmt.Sprintf("%s/%s", image.Host, image.Name)
 }
 
+func (image *URI) StringNoHost() string {
+	setDefaults(image)
+	return fmt.Sprintf("%s:%s", image.Name, image.Tag)
+}
+
 func setDefaults(image *URI) {
 	if image.Host == "" {
-		image.Host = "docker.io/library"
+		image.Host = "docker.io"
+		image.Name = fmt.Sprintf("library/%s", image.Name)
 	}
 	if image.Tag == "" {
 		image.Tag = "latest"

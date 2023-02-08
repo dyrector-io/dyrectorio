@@ -79,9 +79,14 @@ func createNewDAgentContainer(ctx context.Context, cli *client.Client, oldContai
 
 	log.Debug().Msg("Creating new DAgent")
 
+	imageURI, err := image.URIFromString(imageWithTag)
+	if err != nil {
+		return err
+	}
+
 	builder := containerbuilder.NewDockerBuilder(ctx).
 		WithClient(cli).
-		WithImage(imageWithTag).
+		WithImageURI(imageURI).
 		WithRestartPolicy(containerbuilder.RestartPolicyName(inspect.HostConfig.RestartPolicy.Name)).
 		WithName(name).
 		WithEnv(inspect.Config.Env).

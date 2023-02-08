@@ -16,6 +16,7 @@ import (
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/config"
 	dockerHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/docker"
+	imageHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/image"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 )
 
@@ -45,9 +46,14 @@ func spawnInitContainer(
 	importContainerName := util.JoinV("-", name, "import")
 	targetVolume := mount.Mount{Type: mount.TypeBind, Source: mountList[targetVolumeIndex].Source, Target: "/data/output"}
 
+	image, err := imageHelper.URIFromString(cfg.ImportContainerImage)
+	if err != nil {
+		return err
+	}
+
 	builder.
 		WithClient(cli).
-		WithImage(cfg.ImportContainerImage).
+		WithImageURI(image).
 		WithCmd(strings.Split(importContainer.Command, " ")).
 		WithName(importContainerName).
 		WithEnv(EnvMapToSlice(importContainer.Environments)).

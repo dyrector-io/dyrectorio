@@ -19,6 +19,7 @@ import (
 
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	dockerHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/docker"
+	imageHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/image"
 )
 
 type DockerContainerHelperTestSuite struct {
@@ -46,9 +47,14 @@ func (testSuite *DockerContainerHelperTestSuite) SetupSuite() {
 	testSuite.ctx = context.Background()
 	testSuite.containerNames = []string{"nginx1", "nginx2", "nginx3"}
 
+	image, err := imageHelper.URIFromString(nginxImage)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to parse image.")
+	}
+
 	for i := range testSuite.containerNames {
 		preparedContainer := containerbuilder.NewDockerBuilder(context.Background()).
-			WithImage(nginxImage).
+			WithImageURI(image).
 			WithName(fmt.Sprintf("%s-%s", testSuite.prefix, testSuite.containerNames[i])).
 			WithRestartPolicy(containerbuilder.NoRestartPolicy)
 		testSuite.testContainers = append(testSuite.testContainers, preparedContainer)

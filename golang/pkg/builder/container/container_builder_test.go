@@ -20,6 +20,7 @@ import (
 
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	dockerHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/docker"
+	"github.com/dyrector-io/dyrectorio/golang/pkg/helper/image"
 )
 
 func builderCleanup(builder *containerbuilder.DockerContainerBuilder) {
@@ -59,6 +60,21 @@ func hookCallback(callback func()) containerbuilder.LifecycleFunc {
 func TestNameWithBuilder(t *testing.T) {
 	builder := containerbuilder.NewDockerBuilder(context.Background()).
 		WithImage("nginx:latest")
+
+	defer builderCleanup(builder)
+
+	success, err := builder.Create().Start()
+
+	assert.Nil(t, err)
+	assert.True(t, success)
+}
+
+func TestNameURIWithBuilder(t *testing.T) {
+	imageURI, err := image.URIFromString("nginx:latest")
+	assert.NoError(t, err)
+
+	builder := containerbuilder.NewDockerBuilder(context.Background()).
+		WithImageURI(imageURI)
 
 	defer builderCleanup(builder)
 
