@@ -17,7 +17,7 @@ import AgentService from '../agent/agent.service'
 export default class NodeMapper {
   constructor(private agentService: AgentService) {}
 
-  toGrpc(node: Node): NodeResponse {
+  listItemToProto(node: Node): NodeResponse {
     const agent = this.agentService.getById(node.id)
 
     const status = agent?.getConnectionStatus() ?? NodeConnectionStatus.UNREACHABLE
@@ -32,29 +32,29 @@ export default class NodeMapper {
     }
   }
 
-  detailsToGrpc(node: Node): NodeDetailsResponse {
+  detailsToProto(node: Node): NodeDetailsResponse {
     const installer = this.agentService.getInstallerByNodeId(node.id)
 
     return {
-      ...this.toGrpc(node),
+      ...this.listItemToProto(node),
       hasToken: !!node.token,
-      install: installer ? this.installerToGrpc(installer) : null,
-      script: installer ? this.scriptToGrpc(node, installer) : null,
+      install: installer ? this.installerToProto(installer) : null,
+      script: installer ? this.scriptToProto(node, installer) : null,
     }
   }
 
-  nodeTypeGrpcToPrisma(type: NodeType): NodeTypeEnum {
+  nodeTypeToDb(type: NodeType): NodeTypeEnum {
     return type === NodeType.DOCKER ? NodeTypeEnum.docker : NodeTypeEnum.k8s
   }
 
-  installerToGrpc(installer: AgentInstaller): NodeInstallResponse {
+  installerToProto(installer: AgentInstaller): NodeInstallResponse {
     return {
       command: installer.getCommand(),
       expireAt: toTimestamp(new Date(installer.expireAt)),
     }
   }
 
-  scriptToGrpc(node: Node, installer: AgentInstaller): NodeScriptResponse {
+  scriptToProto(node: Node, installer: AgentInstaller): NodeScriptResponse {
     return {
       content: installer.getScript(node.name),
     }

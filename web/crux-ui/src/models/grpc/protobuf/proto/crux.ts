@@ -1003,11 +1003,15 @@ export interface InitContainer {
   id: string
   name: string
   image: string
-  useParentConfig?: boolean | undefined
+  useParentConfig: boolean
   volumes: VolumeLink[]
   command: UniqueKey[]
   args: UniqueKey[]
   environment: UniqueKeyValue[]
+}
+
+export interface InitContainerList {
+  data: InitContainer[]
 }
 
 export interface ImportContainer {
@@ -1027,6 +1031,10 @@ export interface Port {
   external?: number | undefined
 }
 
+export interface PortList {
+  data: Port[]
+}
+
 export interface PortRange {
   from: number
   to: number
@@ -1038,6 +1046,10 @@ export interface PortRangeBinding {
   external: PortRange | undefined
 }
 
+export interface PortRangeBindingList {
+  data: PortRangeBinding[]
+}
+
 export interface Volume {
   id: string
   name: string
@@ -1047,7 +1059,11 @@ export interface Volume {
   class?: string | undefined
 }
 
-export interface KeyList {
+export interface VolumeList {
+  data: Volume[]
+}
+
+export interface UniqueKeyList {
   data: UniqueKey[]
 }
 
@@ -1057,17 +1073,31 @@ export interface UniqueKeyValue {
   value: string
 }
 
+export interface UniqueKeyValueList {
+  data: UniqueKeyValue[]
+}
+
+export interface UniqueSecretKey {
+  id: string
+  key: string
+  required: boolean
+}
+
+export interface UniqueSecretKeyList {
+  data: UniqueSecretKey[]
+}
+
 export interface UniqueSecretKeyValue {
   id: string
   key: string
   value: string
-  publicKey: string
   required: boolean
-  encrypted?: boolean | undefined
+  encrypted: boolean
+  publicKey?: string | undefined
 }
 
-export interface KeyValueList {
-  data: UniqueKeyValue[]
+export interface UniqueSecretKeyValueList {
+  data: UniqueSecretKeyValue[]
 }
 
 export interface Marker {
@@ -1080,8 +1110,8 @@ export interface DagentContainerConfig {
   logConfig?: LogConfig | undefined
   restartPolicy?: RestartPolicy | undefined
   networkMode?: NetworkMode | undefined
-  networks: UniqueKey[]
-  labels: UniqueKeyValue[]
+  networks?: UniqueKeyList | undefined
+  labels?: UniqueKeyValueList | undefined
 }
 
 export interface CraneContainerConfig {
@@ -1092,33 +1122,39 @@ export interface CraneContainerConfig {
   useLoadBalancer?: boolean | undefined
   annotations?: Marker | undefined
   labels?: Marker | undefined
-  customHeaders: UniqueKey[]
-  extraLBAnnotations: UniqueKeyValue[]
+  customHeaders?: UniqueKeyList | undefined
+  extraLBAnnotations?: UniqueKeyValueList | undefined
 }
 
 export interface CommonContainerConfig {
-  name: string
+  name?: string | undefined
   expose?: ExposeStrategy | undefined
   ingress?: Ingress | undefined
   configContainer?: ConfigContainer | undefined
   importContainer?: ImportContainer | undefined
   user?: number | undefined
   TTY?: boolean | undefined
-  ports: Port[]
-  portRanges: PortRangeBinding[]
-  volumes: Volume[]
-  commands: UniqueKey[]
-  args: UniqueKey[]
-  environment: UniqueKeyValue[]
-  secrets: UniqueSecretKeyValue[]
-  initContainers: InitContainer[]
+  ports?: PortList | undefined
+  portRanges?: PortRangeBindingList | undefined
+  volumes?: VolumeList | undefined
+  commands?: UniqueKeyList | undefined
+  args?: UniqueKeyList | undefined
+  environment?: UniqueKeyValueList | undefined
+  initContainers?: InitContainerList | undefined
 }
 
-export interface ContainerConfig {
+export interface ImageContainerConfig {
   common?: CommonContainerConfig | undefined
   dagent?: DagentContainerConfig | undefined
   crane?: CraneContainerConfig | undefined
-  capabilities: UniqueKeyValue[]
+  secrets?: UniqueSecretKeyList | undefined
+}
+
+export interface InstanceContainerConfig {
+  common?: CommonContainerConfig | undefined
+  dagent?: DagentContainerConfig | undefined
+  crane?: CraneContainerConfig | undefined
+  secrets?: UniqueSecretKeyValueList | undefined
 }
 
 export interface ImageResponse {
@@ -1127,7 +1163,7 @@ export interface ImageResponse {
   tag: string
   order: number
   registryId: string
-  config: ContainerConfig | undefined
+  config: ImageContainerConfig | undefined
   createdAt: Timestamp | undefined
   registryName: string
   registryType: RegistryType
@@ -1158,7 +1194,7 @@ export interface PatchImageRequest {
   id: string
   accessedBy: string
   tag?: string | undefined
-  config?: ContainerConfig | undefined
+  config?: ImageContainerConfig | undefined
 }
 
 export interface NodeResponse {
@@ -1299,7 +1335,7 @@ export interface UpdateDeploymentRequest {
 export interface PatchDeploymentRequest {
   id: string
   accessedBy: string
-  environment?: KeyValueList | undefined
+  environment?: UniqueKeyValueList | undefined
   instance?: PatchInstanceRequest | undefined
 }
 
@@ -1308,13 +1344,13 @@ export interface InstanceResponse {
   audit: AuditResponse | undefined
   image: ImageResponse | undefined
   state?: ContainerState | undefined
-  config?: ContainerConfig | undefined
+  config?: InstanceContainerConfig | undefined
 }
 
 export interface PatchInstanceRequest {
   id: string
   accessedBy: string
-  config?: ContainerConfig | undefined
+  config?: InstanceContainerConfig | undefined
 }
 
 export interface DeploymentListResponse {
@@ -5456,7 +5492,7 @@ export const VolumeLink = {
 }
 
 function createBaseInitContainer(): InitContainer {
-  return { id: '', name: '', image: '', volumes: [], command: [], args: [], environment: [] }
+  return { id: '', name: '', image: '', useParentConfig: false, volumes: [], command: [], args: [], environment: [] }
 }
 
 export const InitContainer = {
@@ -5470,7 +5506,7 @@ export const InitContainer = {
     if (message.image !== '') {
       writer.uint32(818).string(message.image)
     }
-    if (message.useParentConfig !== undefined) {
+    if (message.useParentConfig === true) {
       writer.uint32(824).bool(message.useParentConfig)
     }
     for (const v of message.volumes) {
@@ -5532,7 +5568,7 @@ export const InitContainer = {
       id: isSet(object.id) ? String(object.id) : '',
       name: isSet(object.name) ? String(object.name) : '',
       image: isSet(object.image) ? String(object.image) : '',
-      useParentConfig: isSet(object.useParentConfig) ? Boolean(object.useParentConfig) : undefined,
+      useParentConfig: isSet(object.useParentConfig) ? Boolean(object.useParentConfig) : false,
       volumes: Array.isArray(object?.volumes) ? object.volumes.map((e: any) => VolumeLink.fromJSON(e)) : [],
       command: Array.isArray(object?.command) ? object.command.map((e: any) => UniqueKey.fromJSON(e)) : [],
       args: Array.isArray(object?.args) ? object.args.map((e: any) => UniqueKey.fromJSON(e)) : [],
@@ -5580,11 +5616,66 @@ export const InitContainer = {
     message.id = object.id ?? ''
     message.name = object.name ?? ''
     message.image = object.image ?? ''
-    message.useParentConfig = object.useParentConfig ?? undefined
+    message.useParentConfig = object.useParentConfig ?? false
     message.volumes = object.volumes?.map(e => VolumeLink.fromPartial(e)) || []
     message.command = object.command?.map(e => UniqueKey.fromPartial(e)) || []
     message.args = object.args?.map(e => UniqueKey.fromPartial(e)) || []
     message.environment = object.environment?.map(e => UniqueKeyValue.fromPartial(e)) || []
+    return message
+  },
+}
+
+function createBaseInitContainerList(): InitContainerList {
+  return { data: [] }
+}
+
+export const InitContainerList = {
+  encode(message: InitContainerList, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    for (const v of message.data) {
+      InitContainer.encode(v!, writer.uint32(8002).fork()).ldelim()
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): InitContainerList {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseInitContainerList()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1000:
+          message.data.push(InitContainer.decode(reader, reader.uint32()))
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): InitContainerList {
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => InitContainer.fromJSON(e)) : [] }
+  },
+
+  toJSON(message: InitContainerList): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? InitContainer.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+
+  create<I extends Exact<DeepPartial<InitContainerList>, I>>(base?: I): InitContainerList {
+    return InitContainerList.fromPartial(base ?? {})
+  },
+
+  fromPartial<I extends Exact<DeepPartial<InitContainerList>, I>>(object: I): InitContainerList {
+    const message = createBaseInitContainerList()
+    message.data = object.data?.map(e => InitContainer.fromPartial(e)) || []
     return message
   },
 }
@@ -5803,6 +5894,61 @@ export const Port = {
   },
 }
 
+function createBasePortList(): PortList {
+  return { data: [] }
+}
+
+export const PortList = {
+  encode(message: PortList, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    for (const v of message.data) {
+      Port.encode(v!, writer.uint32(8002).fork()).ldelim()
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): PortList {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBasePortList()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1000:
+          message.data.push(Port.decode(reader, reader.uint32()))
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): PortList {
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => Port.fromJSON(e)) : [] }
+  },
+
+  toJSON(message: PortList): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? Port.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+
+  create<I extends Exact<DeepPartial<PortList>, I>>(base?: I): PortList {
+    return PortList.fromPartial(base ?? {})
+  },
+
+  fromPartial<I extends Exact<DeepPartial<PortList>, I>>(object: I): PortList {
+    const message = createBasePortList()
+    message.data = object.data?.map(e => Port.fromPartial(e)) || []
+    return message
+  },
+}
+
 function createBasePortRange(): PortRange {
   return { from: 0, to: 0 }
 }
@@ -5935,6 +6081,61 @@ export const PortRangeBinding = {
   },
 }
 
+function createBasePortRangeBindingList(): PortRangeBindingList {
+  return { data: [] }
+}
+
+export const PortRangeBindingList = {
+  encode(message: PortRangeBindingList, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    for (const v of message.data) {
+      PortRangeBinding.encode(v!, writer.uint32(8002).fork()).ldelim()
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): PortRangeBindingList {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBasePortRangeBindingList()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1000:
+          message.data.push(PortRangeBinding.decode(reader, reader.uint32()))
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): PortRangeBindingList {
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => PortRangeBinding.fromJSON(e)) : [] }
+  },
+
+  toJSON(message: PortRangeBindingList): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? PortRangeBinding.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+
+  create<I extends Exact<DeepPartial<PortRangeBindingList>, I>>(base?: I): PortRangeBindingList {
+    return PortRangeBindingList.fromPartial(base ?? {})
+  },
+
+  fromPartial<I extends Exact<DeepPartial<PortRangeBindingList>, I>>(object: I): PortRangeBindingList {
+    const message = createBasePortRangeBindingList()
+    message.data = object.data?.map(e => PortRangeBinding.fromPartial(e)) || []
+    return message
+  },
+}
+
 function createBaseVolume(): Volume {
   return { id: '', name: '', path: '' }
 }
@@ -6033,22 +6234,77 @@ export const Volume = {
   },
 }
 
-function createBaseKeyList(): KeyList {
+function createBaseVolumeList(): VolumeList {
   return { data: [] }
 }
 
-export const KeyList = {
-  encode(message: KeyList, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+export const VolumeList = {
+  encode(message: VolumeList, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    for (const v of message.data) {
+      Volume.encode(v!, writer.uint32(8002).fork()).ldelim()
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): VolumeList {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseVolumeList()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1000:
+          message.data.push(Volume.decode(reader, reader.uint32()))
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): VolumeList {
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => Volume.fromJSON(e)) : [] }
+  },
+
+  toJSON(message: VolumeList): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? Volume.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+
+  create<I extends Exact<DeepPartial<VolumeList>, I>>(base?: I): VolumeList {
+    return VolumeList.fromPartial(base ?? {})
+  },
+
+  fromPartial<I extends Exact<DeepPartial<VolumeList>, I>>(object: I): VolumeList {
+    const message = createBaseVolumeList()
+    message.data = object.data?.map(e => Volume.fromPartial(e)) || []
+    return message
+  },
+}
+
+function createBaseUniqueKeyList(): UniqueKeyList {
+  return { data: [] }
+}
+
+export const UniqueKeyList = {
+  encode(message: UniqueKeyList, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     for (const v of message.data) {
       UniqueKey.encode(v!, writer.uint32(8002).fork()).ldelim()
     }
     return writer
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): KeyList {
+  decode(input: _m0.Reader | Uint8Array, length?: number): UniqueKeyList {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseKeyList()
+    const message = createBaseUniqueKeyList()
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -6063,11 +6319,11 @@ export const KeyList = {
     return message
   },
 
-  fromJSON(object: any): KeyList {
+  fromJSON(object: any): UniqueKeyList {
     return { data: Array.isArray(object?.data) ? object.data.map((e: any) => UniqueKey.fromJSON(e)) : [] }
   },
 
-  toJSON(message: KeyList): unknown {
+  toJSON(message: UniqueKeyList): unknown {
     const obj: any = {}
     if (message.data) {
       obj.data = message.data.map(e => (e ? UniqueKey.toJSON(e) : undefined))
@@ -6077,12 +6333,12 @@ export const KeyList = {
     return obj
   },
 
-  create<I extends Exact<DeepPartial<KeyList>, I>>(base?: I): KeyList {
-    return KeyList.fromPartial(base ?? {})
+  create<I extends Exact<DeepPartial<UniqueKeyList>, I>>(base?: I): UniqueKeyList {
+    return UniqueKeyList.fromPartial(base ?? {})
   },
 
-  fromPartial<I extends Exact<DeepPartial<KeyList>, I>>(object: I): KeyList {
-    const message = createBaseKeyList()
+  fromPartial<I extends Exact<DeepPartial<UniqueKeyList>, I>>(object: I): UniqueKeyList {
+    const message = createBaseUniqueKeyList()
     message.data = object.data?.map(e => UniqueKey.fromPartial(e)) || []
     return message
   },
@@ -6159,8 +6415,189 @@ export const UniqueKeyValue = {
   },
 }
 
+function createBaseUniqueKeyValueList(): UniqueKeyValueList {
+  return { data: [] }
+}
+
+export const UniqueKeyValueList = {
+  encode(message: UniqueKeyValueList, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    for (const v of message.data) {
+      UniqueKeyValue.encode(v!, writer.uint32(8002).fork()).ldelim()
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): UniqueKeyValueList {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseUniqueKeyValueList()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1000:
+          message.data.push(UniqueKeyValue.decode(reader, reader.uint32()))
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): UniqueKeyValueList {
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => UniqueKeyValue.fromJSON(e)) : [] }
+  },
+
+  toJSON(message: UniqueKeyValueList): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+
+  create<I extends Exact<DeepPartial<UniqueKeyValueList>, I>>(base?: I): UniqueKeyValueList {
+    return UniqueKeyValueList.fromPartial(base ?? {})
+  },
+
+  fromPartial<I extends Exact<DeepPartial<UniqueKeyValueList>, I>>(object: I): UniqueKeyValueList {
+    const message = createBaseUniqueKeyValueList()
+    message.data = object.data?.map(e => UniqueKeyValue.fromPartial(e)) || []
+    return message
+  },
+}
+
+function createBaseUniqueSecretKey(): UniqueSecretKey {
+  return { id: '', key: '', required: false }
+}
+
+export const UniqueSecretKey = {
+  encode(message: UniqueSecretKey, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== '') {
+      writer.uint32(802).string(message.id)
+    }
+    if (message.key !== '') {
+      writer.uint32(810).string(message.key)
+    }
+    if (message.required === true) {
+      writer.uint32(816).bool(message.required)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): UniqueSecretKey {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseUniqueSecretKey()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 100:
+          message.id = reader.string()
+          break
+        case 101:
+          message.key = reader.string()
+          break
+        case 102:
+          message.required = reader.bool()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): UniqueSecretKey {
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      key: isSet(object.key) ? String(object.key) : '',
+      required: isSet(object.required) ? Boolean(object.required) : false,
+    }
+  },
+
+  toJSON(message: UniqueSecretKey): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.key !== undefined && (obj.key = message.key)
+    message.required !== undefined && (obj.required = message.required)
+    return obj
+  },
+
+  create<I extends Exact<DeepPartial<UniqueSecretKey>, I>>(base?: I): UniqueSecretKey {
+    return UniqueSecretKey.fromPartial(base ?? {})
+  },
+
+  fromPartial<I extends Exact<DeepPartial<UniqueSecretKey>, I>>(object: I): UniqueSecretKey {
+    const message = createBaseUniqueSecretKey()
+    message.id = object.id ?? ''
+    message.key = object.key ?? ''
+    message.required = object.required ?? false
+    return message
+  },
+}
+
+function createBaseUniqueSecretKeyList(): UniqueSecretKeyList {
+  return { data: [] }
+}
+
+export const UniqueSecretKeyList = {
+  encode(message: UniqueSecretKeyList, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    for (const v of message.data) {
+      UniqueSecretKey.encode(v!, writer.uint32(8002).fork()).ldelim()
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): UniqueSecretKeyList {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseUniqueSecretKeyList()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1000:
+          message.data.push(UniqueSecretKey.decode(reader, reader.uint32()))
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): UniqueSecretKeyList {
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => UniqueSecretKey.fromJSON(e)) : [] }
+  },
+
+  toJSON(message: UniqueSecretKeyList): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? UniqueSecretKey.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+
+  create<I extends Exact<DeepPartial<UniqueSecretKeyList>, I>>(base?: I): UniqueSecretKeyList {
+    return UniqueSecretKeyList.fromPartial(base ?? {})
+  },
+
+  fromPartial<I extends Exact<DeepPartial<UniqueSecretKeyList>, I>>(object: I): UniqueSecretKeyList {
+    const message = createBaseUniqueSecretKeyList()
+    message.data = object.data?.map(e => UniqueSecretKey.fromPartial(e)) || []
+    return message
+  },
+}
+
 function createBaseUniqueSecretKeyValue(): UniqueSecretKeyValue {
-  return { id: '', key: '', value: '', publicKey: '', required: false }
+  return { id: '', key: '', value: '', required: false, encrypted: false }
 }
 
 export const UniqueSecretKeyValue = {
@@ -6174,14 +6611,14 @@ export const UniqueSecretKeyValue = {
     if (message.value !== '') {
       writer.uint32(826).string(message.value)
     }
-    if (message.publicKey !== '') {
-      writer.uint32(834).string(message.publicKey)
-    }
     if (message.required === true) {
-      writer.uint32(840).bool(message.required)
+      writer.uint32(832).bool(message.required)
     }
-    if (message.encrypted !== undefined) {
-      writer.uint32(848).bool(message.encrypted)
+    if (message.encrypted === true) {
+      writer.uint32(840).bool(message.encrypted)
+    }
+    if (message.publicKey !== undefined) {
+      writer.uint32(850).string(message.publicKey)
     }
     return writer
   },
@@ -6203,13 +6640,13 @@ export const UniqueSecretKeyValue = {
           message.value = reader.string()
           break
         case 104:
-          message.publicKey = reader.string()
-          break
-        case 105:
           message.required = reader.bool()
           break
-        case 106:
+        case 105:
           message.encrypted = reader.bool()
+          break
+        case 106:
+          message.publicKey = reader.string()
           break
         default:
           reader.skipType(tag & 7)
@@ -6224,9 +6661,9 @@ export const UniqueSecretKeyValue = {
       id: isSet(object.id) ? String(object.id) : '',
       key: isSet(object.key) ? String(object.key) : '',
       value: isSet(object.value) ? String(object.value) : '',
-      publicKey: isSet(object.publicKey) ? String(object.publicKey) : '',
       required: isSet(object.required) ? Boolean(object.required) : false,
-      encrypted: isSet(object.encrypted) ? Boolean(object.encrypted) : undefined,
+      encrypted: isSet(object.encrypted) ? Boolean(object.encrypted) : false,
+      publicKey: isSet(object.publicKey) ? String(object.publicKey) : undefined,
     }
   },
 
@@ -6235,9 +6672,9 @@ export const UniqueSecretKeyValue = {
     message.id !== undefined && (obj.id = message.id)
     message.key !== undefined && (obj.key = message.key)
     message.value !== undefined && (obj.value = message.value)
-    message.publicKey !== undefined && (obj.publicKey = message.publicKey)
     message.required !== undefined && (obj.required = message.required)
     message.encrypted !== undefined && (obj.encrypted = message.encrypted)
+    message.publicKey !== undefined && (obj.publicKey = message.publicKey)
     return obj
   },
 
@@ -6250,34 +6687,34 @@ export const UniqueSecretKeyValue = {
     message.id = object.id ?? ''
     message.key = object.key ?? ''
     message.value = object.value ?? ''
-    message.publicKey = object.publicKey ?? ''
     message.required = object.required ?? false
-    message.encrypted = object.encrypted ?? undefined
+    message.encrypted = object.encrypted ?? false
+    message.publicKey = object.publicKey ?? undefined
     return message
   },
 }
 
-function createBaseKeyValueList(): KeyValueList {
+function createBaseUniqueSecretKeyValueList(): UniqueSecretKeyValueList {
   return { data: [] }
 }
 
-export const KeyValueList = {
-  encode(message: KeyValueList, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+export const UniqueSecretKeyValueList = {
+  encode(message: UniqueSecretKeyValueList, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     for (const v of message.data) {
-      UniqueKeyValue.encode(v!, writer.uint32(8002).fork()).ldelim()
+      UniqueSecretKeyValue.encode(v!, writer.uint32(8002).fork()).ldelim()
     }
     return writer
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): KeyValueList {
+  decode(input: _m0.Reader | Uint8Array, length?: number): UniqueSecretKeyValueList {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseKeyValueList()
+    const message = createBaseUniqueSecretKeyValueList()
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
         case 1000:
-          message.data.push(UniqueKeyValue.decode(reader, reader.uint32()))
+          message.data.push(UniqueSecretKeyValue.decode(reader, reader.uint32()))
           break
         default:
           reader.skipType(tag & 7)
@@ -6287,27 +6724,27 @@ export const KeyValueList = {
     return message
   },
 
-  fromJSON(object: any): KeyValueList {
-    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => UniqueKeyValue.fromJSON(e)) : [] }
+  fromJSON(object: any): UniqueSecretKeyValueList {
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => UniqueSecretKeyValue.fromJSON(e)) : [] }
   },
 
-  toJSON(message: KeyValueList): unknown {
+  toJSON(message: UniqueSecretKeyValueList): unknown {
     const obj: any = {}
     if (message.data) {
-      obj.data = message.data.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
+      obj.data = message.data.map(e => (e ? UniqueSecretKeyValue.toJSON(e) : undefined))
     } else {
       obj.data = []
     }
     return obj
   },
 
-  create<I extends Exact<DeepPartial<KeyValueList>, I>>(base?: I): KeyValueList {
-    return KeyValueList.fromPartial(base ?? {})
+  create<I extends Exact<DeepPartial<UniqueSecretKeyValueList>, I>>(base?: I): UniqueSecretKeyValueList {
+    return UniqueSecretKeyValueList.fromPartial(base ?? {})
   },
 
-  fromPartial<I extends Exact<DeepPartial<KeyValueList>, I>>(object: I): KeyValueList {
-    const message = createBaseKeyValueList()
-    message.data = object.data?.map(e => UniqueKeyValue.fromPartial(e)) || []
+  fromPartial<I extends Exact<DeepPartial<UniqueSecretKeyValueList>, I>>(object: I): UniqueSecretKeyValueList {
+    const message = createBaseUniqueSecretKeyValueList()
+    message.data = object.data?.map(e => UniqueSecretKeyValue.fromPartial(e)) || []
     return message
   },
 }
@@ -6398,7 +6835,7 @@ export const Marker = {
 }
 
 function createBaseDagentContainerConfig(): DagentContainerConfig {
-  return { networks: [], labels: [] }
+  return {}
 }
 
 export const DagentContainerConfig = {
@@ -6412,11 +6849,11 @@ export const DagentContainerConfig = {
     if (message.networkMode !== undefined) {
       writer.uint32(816).int32(message.networkMode)
     }
-    for (const v of message.networks) {
-      UniqueKey.encode(v!, writer.uint32(8002).fork()).ldelim()
+    if (message.networks !== undefined) {
+      UniqueKeyList.encode(message.networks, writer.uint32(8002).fork()).ldelim()
     }
-    for (const v of message.labels) {
-      UniqueKeyValue.encode(v!, writer.uint32(8010).fork()).ldelim()
+    if (message.labels !== undefined) {
+      UniqueKeyValueList.encode(message.labels, writer.uint32(8010).fork()).ldelim()
     }
     return writer
   },
@@ -6438,10 +6875,10 @@ export const DagentContainerConfig = {
           message.networkMode = reader.int32() as any
           break
         case 1000:
-          message.networks.push(UniqueKey.decode(reader, reader.uint32()))
+          message.networks = UniqueKeyList.decode(reader, reader.uint32())
           break
         case 1001:
-          message.labels.push(UniqueKeyValue.decode(reader, reader.uint32()))
+          message.labels = UniqueKeyValueList.decode(reader, reader.uint32())
           break
         default:
           reader.skipType(tag & 7)
@@ -6456,8 +6893,8 @@ export const DagentContainerConfig = {
       logConfig: isSet(object.logConfig) ? LogConfig.fromJSON(object.logConfig) : undefined,
       restartPolicy: isSet(object.restartPolicy) ? restartPolicyFromJSON(object.restartPolicy) : undefined,
       networkMode: isSet(object.networkMode) ? networkModeFromJSON(object.networkMode) : undefined,
-      networks: Array.isArray(object?.networks) ? object.networks.map((e: any) => UniqueKey.fromJSON(e)) : [],
-      labels: Array.isArray(object?.labels) ? object.labels.map((e: any) => UniqueKeyValue.fromJSON(e)) : [],
+      networks: isSet(object.networks) ? UniqueKeyList.fromJSON(object.networks) : undefined,
+      labels: isSet(object.labels) ? UniqueKeyValueList.fromJSON(object.labels) : undefined,
     }
   },
 
@@ -6469,16 +6906,10 @@ export const DagentContainerConfig = {
       (obj.restartPolicy = message.restartPolicy !== undefined ? restartPolicyToJSON(message.restartPolicy) : undefined)
     message.networkMode !== undefined &&
       (obj.networkMode = message.networkMode !== undefined ? networkModeToJSON(message.networkMode) : undefined)
-    if (message.networks) {
-      obj.networks = message.networks.map(e => (e ? UniqueKey.toJSON(e) : undefined))
-    } else {
-      obj.networks = []
-    }
-    if (message.labels) {
-      obj.labels = message.labels.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
-    } else {
-      obj.labels = []
-    }
+    message.networks !== undefined &&
+      (obj.networks = message.networks ? UniqueKeyList.toJSON(message.networks) : undefined)
+    message.labels !== undefined &&
+      (obj.labels = message.labels ? UniqueKeyValueList.toJSON(message.labels) : undefined)
     return obj
   },
 
@@ -6492,14 +6923,16 @@ export const DagentContainerConfig = {
       object.logConfig !== undefined && object.logConfig !== null ? LogConfig.fromPartial(object.logConfig) : undefined
     message.restartPolicy = object.restartPolicy ?? undefined
     message.networkMode = object.networkMode ?? undefined
-    message.networks = object.networks?.map(e => UniqueKey.fromPartial(e)) || []
-    message.labels = object.labels?.map(e => UniqueKeyValue.fromPartial(e)) || []
+    message.networks =
+      object.networks !== undefined && object.networks !== null ? UniqueKeyList.fromPartial(object.networks) : undefined
+    message.labels =
+      object.labels !== undefined && object.labels !== null ? UniqueKeyValueList.fromPartial(object.labels) : undefined
     return message
   },
 }
 
 function createBaseCraneContainerConfig(): CraneContainerConfig {
-  return { customHeaders: [], extraLBAnnotations: [] }
+  return {}
 }
 
 export const CraneContainerConfig = {
@@ -6525,11 +6958,11 @@ export const CraneContainerConfig = {
     if (message.labels !== undefined) {
       Marker.encode(message.labels, writer.uint32(850).fork()).ldelim()
     }
-    for (const v of message.customHeaders) {
-      UniqueKey.encode(v!, writer.uint32(8002).fork()).ldelim()
+    if (message.customHeaders !== undefined) {
+      UniqueKeyList.encode(message.customHeaders, writer.uint32(8002).fork()).ldelim()
     }
-    for (const v of message.extraLBAnnotations) {
-      UniqueKeyValue.encode(v!, writer.uint32(8010).fork()).ldelim()
+    if (message.extraLBAnnotations !== undefined) {
+      UniqueKeyValueList.encode(message.extraLBAnnotations, writer.uint32(8010).fork()).ldelim()
     }
     return writer
   },
@@ -6563,10 +6996,10 @@ export const CraneContainerConfig = {
           message.labels = Marker.decode(reader, reader.uint32())
           break
         case 1000:
-          message.customHeaders.push(UniqueKey.decode(reader, reader.uint32()))
+          message.customHeaders = UniqueKeyList.decode(reader, reader.uint32())
           break
         case 1001:
-          message.extraLBAnnotations.push(UniqueKeyValue.decode(reader, reader.uint32()))
+          message.extraLBAnnotations = UniqueKeyValueList.decode(reader, reader.uint32())
           break
         default:
           reader.skipType(tag & 7)
@@ -6589,12 +7022,10 @@ export const CraneContainerConfig = {
       useLoadBalancer: isSet(object.useLoadBalancer) ? Boolean(object.useLoadBalancer) : undefined,
       annotations: isSet(object.annotations) ? Marker.fromJSON(object.annotations) : undefined,
       labels: isSet(object.labels) ? Marker.fromJSON(object.labels) : undefined,
-      customHeaders: Array.isArray(object?.customHeaders)
-        ? object.customHeaders.map((e: any) => UniqueKey.fromJSON(e))
-        : [],
-      extraLBAnnotations: Array.isArray(object?.extraLBAnnotations)
-        ? object.extraLBAnnotations.map((e: any) => UniqueKeyValue.fromJSON(e))
-        : [],
+      customHeaders: isSet(object.customHeaders) ? UniqueKeyList.fromJSON(object.customHeaders) : undefined,
+      extraLBAnnotations: isSet(object.extraLBAnnotations)
+        ? UniqueKeyValueList.fromJSON(object.extraLBAnnotations)
+        : undefined,
     }
   },
 
@@ -6614,16 +7045,12 @@ export const CraneContainerConfig = {
     message.annotations !== undefined &&
       (obj.annotations = message.annotations ? Marker.toJSON(message.annotations) : undefined)
     message.labels !== undefined && (obj.labels = message.labels ? Marker.toJSON(message.labels) : undefined)
-    if (message.customHeaders) {
-      obj.customHeaders = message.customHeaders.map(e => (e ? UniqueKey.toJSON(e) : undefined))
-    } else {
-      obj.customHeaders = []
-    }
-    if (message.extraLBAnnotations) {
-      obj.extraLBAnnotations = message.extraLBAnnotations.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
-    } else {
-      obj.extraLBAnnotations = []
-    }
+    message.customHeaders !== undefined &&
+      (obj.customHeaders = message.customHeaders ? UniqueKeyList.toJSON(message.customHeaders) : undefined)
+    message.extraLBAnnotations !== undefined &&
+      (obj.extraLBAnnotations = message.extraLBAnnotations
+        ? UniqueKeyValueList.toJSON(message.extraLBAnnotations)
+        : undefined)
     return obj
   },
 
@@ -6650,29 +7077,25 @@ export const CraneContainerConfig = {
         : undefined
     message.labels =
       object.labels !== undefined && object.labels !== null ? Marker.fromPartial(object.labels) : undefined
-    message.customHeaders = object.customHeaders?.map(e => UniqueKey.fromPartial(e)) || []
-    message.extraLBAnnotations = object.extraLBAnnotations?.map(e => UniqueKeyValue.fromPartial(e)) || []
+    message.customHeaders =
+      object.customHeaders !== undefined && object.customHeaders !== null
+        ? UniqueKeyList.fromPartial(object.customHeaders)
+        : undefined
+    message.extraLBAnnotations =
+      object.extraLBAnnotations !== undefined && object.extraLBAnnotations !== null
+        ? UniqueKeyValueList.fromPartial(object.extraLBAnnotations)
+        : undefined
     return message
   },
 }
 
 function createBaseCommonContainerConfig(): CommonContainerConfig {
-  return {
-    name: '',
-    ports: [],
-    portRanges: [],
-    volumes: [],
-    commands: [],
-    args: [],
-    environment: [],
-    secrets: [],
-    initContainers: [],
-  }
+  return {}
 }
 
 export const CommonContainerConfig = {
   encode(message: CommonContainerConfig, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.name !== '') {
+    if (message.name !== undefined) {
       writer.uint32(810).string(message.name)
     }
     if (message.expose !== undefined) {
@@ -6693,29 +7116,26 @@ export const CommonContainerConfig = {
     if (message.TTY !== undefined) {
       writer.uint32(856).bool(message.TTY)
     }
-    for (const v of message.ports) {
-      Port.encode(v!, writer.uint32(8002).fork()).ldelim()
+    if (message.ports !== undefined) {
+      PortList.encode(message.ports, writer.uint32(8002).fork()).ldelim()
     }
-    for (const v of message.portRanges) {
-      PortRangeBinding.encode(v!, writer.uint32(8010).fork()).ldelim()
+    if (message.portRanges !== undefined) {
+      PortRangeBindingList.encode(message.portRanges, writer.uint32(8010).fork()).ldelim()
     }
-    for (const v of message.volumes) {
-      Volume.encode(v!, writer.uint32(8018).fork()).ldelim()
+    if (message.volumes !== undefined) {
+      VolumeList.encode(message.volumes, writer.uint32(8018).fork()).ldelim()
     }
-    for (const v of message.commands) {
-      UniqueKey.encode(v!, writer.uint32(8026).fork()).ldelim()
+    if (message.commands !== undefined) {
+      UniqueKeyList.encode(message.commands, writer.uint32(8026).fork()).ldelim()
     }
-    for (const v of message.args) {
-      UniqueKey.encode(v!, writer.uint32(8034).fork()).ldelim()
+    if (message.args !== undefined) {
+      UniqueKeyList.encode(message.args, writer.uint32(8034).fork()).ldelim()
     }
-    for (const v of message.environment) {
-      UniqueKeyValue.encode(v!, writer.uint32(8042).fork()).ldelim()
+    if (message.environment !== undefined) {
+      UniqueKeyValueList.encode(message.environment, writer.uint32(8042).fork()).ldelim()
     }
-    for (const v of message.secrets) {
-      UniqueSecretKeyValue.encode(v!, writer.uint32(8050).fork()).ldelim()
-    }
-    for (const v of message.initContainers) {
-      InitContainer.encode(v!, writer.uint32(8058).fork()).ldelim()
+    if (message.initContainers !== undefined) {
+      InitContainerList.encode(message.initContainers, writer.uint32(8050).fork()).ldelim()
     }
     return writer
   },
@@ -6749,28 +7169,25 @@ export const CommonContainerConfig = {
           message.TTY = reader.bool()
           break
         case 1000:
-          message.ports.push(Port.decode(reader, reader.uint32()))
+          message.ports = PortList.decode(reader, reader.uint32())
           break
         case 1001:
-          message.portRanges.push(PortRangeBinding.decode(reader, reader.uint32()))
+          message.portRanges = PortRangeBindingList.decode(reader, reader.uint32())
           break
         case 1002:
-          message.volumes.push(Volume.decode(reader, reader.uint32()))
+          message.volumes = VolumeList.decode(reader, reader.uint32())
           break
         case 1003:
-          message.commands.push(UniqueKey.decode(reader, reader.uint32()))
+          message.commands = UniqueKeyList.decode(reader, reader.uint32())
           break
         case 1004:
-          message.args.push(UniqueKey.decode(reader, reader.uint32()))
+          message.args = UniqueKeyList.decode(reader, reader.uint32())
           break
         case 1005:
-          message.environment.push(UniqueKeyValue.decode(reader, reader.uint32()))
+          message.environment = UniqueKeyValueList.decode(reader, reader.uint32())
           break
         case 1006:
-          message.secrets.push(UniqueSecretKeyValue.decode(reader, reader.uint32()))
-          break
-        case 1007:
-          message.initContainers.push(InitContainer.decode(reader, reader.uint32()))
+          message.initContainers = InitContainerList.decode(reader, reader.uint32())
           break
         default:
           reader.skipType(tag & 7)
@@ -6782,27 +7199,20 @@ export const CommonContainerConfig = {
 
   fromJSON(object: any): CommonContainerConfig {
     return {
-      name: isSet(object.name) ? String(object.name) : '',
+      name: isSet(object.name) ? String(object.name) : undefined,
       expose: isSet(object.expose) ? exposeStrategyFromJSON(object.expose) : undefined,
       ingress: isSet(object.ingress) ? Ingress.fromJSON(object.ingress) : undefined,
       configContainer: isSet(object.configContainer) ? ConfigContainer.fromJSON(object.configContainer) : undefined,
       importContainer: isSet(object.importContainer) ? ImportContainer.fromJSON(object.importContainer) : undefined,
       user: isSet(object.user) ? Number(object.user) : undefined,
       TTY: isSet(object.TTY) ? Boolean(object.TTY) : undefined,
-      ports: Array.isArray(object?.ports) ? object.ports.map((e: any) => Port.fromJSON(e)) : [],
-      portRanges: Array.isArray(object?.portRanges)
-        ? object.portRanges.map((e: any) => PortRangeBinding.fromJSON(e))
-        : [],
-      volumes: Array.isArray(object?.volumes) ? object.volumes.map((e: any) => Volume.fromJSON(e)) : [],
-      commands: Array.isArray(object?.commands) ? object.commands.map((e: any) => UniqueKey.fromJSON(e)) : [],
-      args: Array.isArray(object?.args) ? object.args.map((e: any) => UniqueKey.fromJSON(e)) : [],
-      environment: Array.isArray(object?.environment)
-        ? object.environment.map((e: any) => UniqueKeyValue.fromJSON(e))
-        : [],
-      secrets: Array.isArray(object?.secrets) ? object.secrets.map((e: any) => UniqueSecretKeyValue.fromJSON(e)) : [],
-      initContainers: Array.isArray(object?.initContainers)
-        ? object.initContainers.map((e: any) => InitContainer.fromJSON(e))
-        : [],
+      ports: isSet(object.ports) ? PortList.fromJSON(object.ports) : undefined,
+      portRanges: isSet(object.portRanges) ? PortRangeBindingList.fromJSON(object.portRanges) : undefined,
+      volumes: isSet(object.volumes) ? VolumeList.fromJSON(object.volumes) : undefined,
+      commands: isSet(object.commands) ? UniqueKeyList.fromJSON(object.commands) : undefined,
+      args: isSet(object.args) ? UniqueKeyList.fromJSON(object.args) : undefined,
+      environment: isSet(object.environment) ? UniqueKeyValueList.fromJSON(object.environment) : undefined,
+      initContainers: isSet(object.initContainers) ? InitContainerList.fromJSON(object.initContainers) : undefined,
     }
   },
 
@@ -6818,46 +7228,17 @@ export const CommonContainerConfig = {
       (obj.importContainer = message.importContainer ? ImportContainer.toJSON(message.importContainer) : undefined)
     message.user !== undefined && (obj.user = Math.round(message.user))
     message.TTY !== undefined && (obj.TTY = message.TTY)
-    if (message.ports) {
-      obj.ports = message.ports.map(e => (e ? Port.toJSON(e) : undefined))
-    } else {
-      obj.ports = []
-    }
-    if (message.portRanges) {
-      obj.portRanges = message.portRanges.map(e => (e ? PortRangeBinding.toJSON(e) : undefined))
-    } else {
-      obj.portRanges = []
-    }
-    if (message.volumes) {
-      obj.volumes = message.volumes.map(e => (e ? Volume.toJSON(e) : undefined))
-    } else {
-      obj.volumes = []
-    }
-    if (message.commands) {
-      obj.commands = message.commands.map(e => (e ? UniqueKey.toJSON(e) : undefined))
-    } else {
-      obj.commands = []
-    }
-    if (message.args) {
-      obj.args = message.args.map(e => (e ? UniqueKey.toJSON(e) : undefined))
-    } else {
-      obj.args = []
-    }
-    if (message.environment) {
-      obj.environment = message.environment.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
-    } else {
-      obj.environment = []
-    }
-    if (message.secrets) {
-      obj.secrets = message.secrets.map(e => (e ? UniqueSecretKeyValue.toJSON(e) : undefined))
-    } else {
-      obj.secrets = []
-    }
-    if (message.initContainers) {
-      obj.initContainers = message.initContainers.map(e => (e ? InitContainer.toJSON(e) : undefined))
-    } else {
-      obj.initContainers = []
-    }
+    message.ports !== undefined && (obj.ports = message.ports ? PortList.toJSON(message.ports) : undefined)
+    message.portRanges !== undefined &&
+      (obj.portRanges = message.portRanges ? PortRangeBindingList.toJSON(message.portRanges) : undefined)
+    message.volumes !== undefined && (obj.volumes = message.volumes ? VolumeList.toJSON(message.volumes) : undefined)
+    message.commands !== undefined &&
+      (obj.commands = message.commands ? UniqueKeyList.toJSON(message.commands) : undefined)
+    message.args !== undefined && (obj.args = message.args ? UniqueKeyList.toJSON(message.args) : undefined)
+    message.environment !== undefined &&
+      (obj.environment = message.environment ? UniqueKeyValueList.toJSON(message.environment) : undefined)
+    message.initContainers !== undefined &&
+      (obj.initContainers = message.initContainers ? InitContainerList.toJSON(message.initContainers) : undefined)
     return obj
   },
 
@@ -6867,7 +7248,7 @@ export const CommonContainerConfig = {
 
   fromPartial<I extends Exact<DeepPartial<CommonContainerConfig>, I>>(object: I): CommonContainerConfig {
     const message = createBaseCommonContainerConfig()
-    message.name = object.name ?? ''
+    message.name = object.name ?? undefined
     message.expose = object.expose ?? undefined
     message.ingress =
       object.ingress !== undefined && object.ingress !== null ? Ingress.fromPartial(object.ingress) : undefined
@@ -6881,24 +7262,35 @@ export const CommonContainerConfig = {
         : undefined
     message.user = object.user ?? undefined
     message.TTY = object.TTY ?? undefined
-    message.ports = object.ports?.map(e => Port.fromPartial(e)) || []
-    message.portRanges = object.portRanges?.map(e => PortRangeBinding.fromPartial(e)) || []
-    message.volumes = object.volumes?.map(e => Volume.fromPartial(e)) || []
-    message.commands = object.commands?.map(e => UniqueKey.fromPartial(e)) || []
-    message.args = object.args?.map(e => UniqueKey.fromPartial(e)) || []
-    message.environment = object.environment?.map(e => UniqueKeyValue.fromPartial(e)) || []
-    message.secrets = object.secrets?.map(e => UniqueSecretKeyValue.fromPartial(e)) || []
-    message.initContainers = object.initContainers?.map(e => InitContainer.fromPartial(e)) || []
+    message.ports = object.ports !== undefined && object.ports !== null ? PortList.fromPartial(object.ports) : undefined
+    message.portRanges =
+      object.portRanges !== undefined && object.portRanges !== null
+        ? PortRangeBindingList.fromPartial(object.portRanges)
+        : undefined
+    message.volumes =
+      object.volumes !== undefined && object.volumes !== null ? VolumeList.fromPartial(object.volumes) : undefined
+    message.commands =
+      object.commands !== undefined && object.commands !== null ? UniqueKeyList.fromPartial(object.commands) : undefined
+    message.args =
+      object.args !== undefined && object.args !== null ? UniqueKeyList.fromPartial(object.args) : undefined
+    message.environment =
+      object.environment !== undefined && object.environment !== null
+        ? UniqueKeyValueList.fromPartial(object.environment)
+        : undefined
+    message.initContainers =
+      object.initContainers !== undefined && object.initContainers !== null
+        ? InitContainerList.fromPartial(object.initContainers)
+        : undefined
     return message
   },
 }
 
-function createBaseContainerConfig(): ContainerConfig {
-  return { capabilities: [] }
+function createBaseImageContainerConfig(): ImageContainerConfig {
+  return {}
 }
 
-export const ContainerConfig = {
-  encode(message: ContainerConfig, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+export const ImageContainerConfig = {
+  encode(message: ImageContainerConfig, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.common !== undefined) {
       CommonContainerConfig.encode(message.common, writer.uint32(802).fork()).ldelim()
     }
@@ -6908,16 +7300,16 @@ export const ContainerConfig = {
     if (message.crane !== undefined) {
       CraneContainerConfig.encode(message.crane, writer.uint32(818).fork()).ldelim()
     }
-    for (const v of message.capabilities) {
-      UniqueKeyValue.encode(v!, writer.uint32(8002).fork()).ldelim()
+    if (message.secrets !== undefined) {
+      UniqueSecretKeyList.encode(message.secrets, writer.uint32(8002).fork()).ldelim()
     }
     return writer
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): ContainerConfig {
+  decode(input: _m0.Reader | Uint8Array, length?: number): ImageContainerConfig {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
     let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseContainerConfig()
+    const message = createBaseImageContainerConfig()
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
@@ -6931,7 +7323,7 @@ export const ContainerConfig = {
           message.crane = CraneContainerConfig.decode(reader, reader.uint32())
           break
         case 1000:
-          message.capabilities.push(UniqueKeyValue.decode(reader, reader.uint32()))
+          message.secrets = UniqueSecretKeyList.decode(reader, reader.uint32())
           break
         default:
           reader.skipType(tag & 7)
@@ -6941,38 +7333,33 @@ export const ContainerConfig = {
     return message
   },
 
-  fromJSON(object: any): ContainerConfig {
+  fromJSON(object: any): ImageContainerConfig {
     return {
       common: isSet(object.common) ? CommonContainerConfig.fromJSON(object.common) : undefined,
       dagent: isSet(object.dagent) ? DagentContainerConfig.fromJSON(object.dagent) : undefined,
       crane: isSet(object.crane) ? CraneContainerConfig.fromJSON(object.crane) : undefined,
-      capabilities: Array.isArray(object?.capabilities)
-        ? object.capabilities.map((e: any) => UniqueKeyValue.fromJSON(e))
-        : [],
+      secrets: isSet(object.secrets) ? UniqueSecretKeyList.fromJSON(object.secrets) : undefined,
     }
   },
 
-  toJSON(message: ContainerConfig): unknown {
+  toJSON(message: ImageContainerConfig): unknown {
     const obj: any = {}
     message.common !== undefined &&
       (obj.common = message.common ? CommonContainerConfig.toJSON(message.common) : undefined)
     message.dagent !== undefined &&
       (obj.dagent = message.dagent ? DagentContainerConfig.toJSON(message.dagent) : undefined)
     message.crane !== undefined && (obj.crane = message.crane ? CraneContainerConfig.toJSON(message.crane) : undefined)
-    if (message.capabilities) {
-      obj.capabilities = message.capabilities.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
-    } else {
-      obj.capabilities = []
-    }
+    message.secrets !== undefined &&
+      (obj.secrets = message.secrets ? UniqueSecretKeyList.toJSON(message.secrets) : undefined)
     return obj
   },
 
-  create<I extends Exact<DeepPartial<ContainerConfig>, I>>(base?: I): ContainerConfig {
-    return ContainerConfig.fromPartial(base ?? {})
+  create<I extends Exact<DeepPartial<ImageContainerConfig>, I>>(base?: I): ImageContainerConfig {
+    return ImageContainerConfig.fromPartial(base ?? {})
   },
 
-  fromPartial<I extends Exact<DeepPartial<ContainerConfig>, I>>(object: I): ContainerConfig {
-    const message = createBaseContainerConfig()
+  fromPartial<I extends Exact<DeepPartial<ImageContainerConfig>, I>>(object: I): ImageContainerConfig {
+    const message = createBaseImageContainerConfig()
     message.common =
       object.common !== undefined && object.common !== null
         ? CommonContainerConfig.fromPartial(object.common)
@@ -6983,7 +7370,103 @@ export const ContainerConfig = {
         : undefined
     message.crane =
       object.crane !== undefined && object.crane !== null ? CraneContainerConfig.fromPartial(object.crane) : undefined
-    message.capabilities = object.capabilities?.map(e => UniqueKeyValue.fromPartial(e)) || []
+    message.secrets =
+      object.secrets !== undefined && object.secrets !== null
+        ? UniqueSecretKeyList.fromPartial(object.secrets)
+        : undefined
+    return message
+  },
+}
+
+function createBaseInstanceContainerConfig(): InstanceContainerConfig {
+  return {}
+}
+
+export const InstanceContainerConfig = {
+  encode(message: InstanceContainerConfig, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.common !== undefined) {
+      CommonContainerConfig.encode(message.common, writer.uint32(802).fork()).ldelim()
+    }
+    if (message.dagent !== undefined) {
+      DagentContainerConfig.encode(message.dagent, writer.uint32(810).fork()).ldelim()
+    }
+    if (message.crane !== undefined) {
+      CraneContainerConfig.encode(message.crane, writer.uint32(818).fork()).ldelim()
+    }
+    if (message.secrets !== undefined) {
+      UniqueSecretKeyValueList.encode(message.secrets, writer.uint32(8002).fork()).ldelim()
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): InstanceContainerConfig {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseInstanceContainerConfig()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 100:
+          message.common = CommonContainerConfig.decode(reader, reader.uint32())
+          break
+        case 101:
+          message.dagent = DagentContainerConfig.decode(reader, reader.uint32())
+          break
+        case 102:
+          message.crane = CraneContainerConfig.decode(reader, reader.uint32())
+          break
+        case 1000:
+          message.secrets = UniqueSecretKeyValueList.decode(reader, reader.uint32())
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): InstanceContainerConfig {
+    return {
+      common: isSet(object.common) ? CommonContainerConfig.fromJSON(object.common) : undefined,
+      dagent: isSet(object.dagent) ? DagentContainerConfig.fromJSON(object.dagent) : undefined,
+      crane: isSet(object.crane) ? CraneContainerConfig.fromJSON(object.crane) : undefined,
+      secrets: isSet(object.secrets) ? UniqueSecretKeyValueList.fromJSON(object.secrets) : undefined,
+    }
+  },
+
+  toJSON(message: InstanceContainerConfig): unknown {
+    const obj: any = {}
+    message.common !== undefined &&
+      (obj.common = message.common ? CommonContainerConfig.toJSON(message.common) : undefined)
+    message.dagent !== undefined &&
+      (obj.dagent = message.dagent ? DagentContainerConfig.toJSON(message.dagent) : undefined)
+    message.crane !== undefined && (obj.crane = message.crane ? CraneContainerConfig.toJSON(message.crane) : undefined)
+    message.secrets !== undefined &&
+      (obj.secrets = message.secrets ? UniqueSecretKeyValueList.toJSON(message.secrets) : undefined)
+    return obj
+  },
+
+  create<I extends Exact<DeepPartial<InstanceContainerConfig>, I>>(base?: I): InstanceContainerConfig {
+    return InstanceContainerConfig.fromPartial(base ?? {})
+  },
+
+  fromPartial<I extends Exact<DeepPartial<InstanceContainerConfig>, I>>(object: I): InstanceContainerConfig {
+    const message = createBaseInstanceContainerConfig()
+    message.common =
+      object.common !== undefined && object.common !== null
+        ? CommonContainerConfig.fromPartial(object.common)
+        : undefined
+    message.dagent =
+      object.dagent !== undefined && object.dagent !== null
+        ? DagentContainerConfig.fromPartial(object.dagent)
+        : undefined
+    message.crane =
+      object.crane !== undefined && object.crane !== null ? CraneContainerConfig.fromPartial(object.crane) : undefined
+    message.secrets =
+      object.secrets !== undefined && object.secrets !== null
+        ? UniqueSecretKeyValueList.fromPartial(object.secrets)
+        : undefined
     return message
   },
 }
@@ -7020,7 +7503,7 @@ export const ImageResponse = {
       writer.uint32(826).string(message.registryId)
     }
     if (message.config !== undefined) {
-      ContainerConfig.encode(message.config, writer.uint32(834).fork()).ldelim()
+      ImageContainerConfig.encode(message.config, writer.uint32(834).fork()).ldelim()
     }
     if (message.createdAt !== undefined) {
       Timestamp.encode(message.createdAt, writer.uint32(842).fork()).ldelim()
@@ -7057,7 +7540,7 @@ export const ImageResponse = {
           message.registryId = reader.string()
           break
         case 104:
-          message.config = ContainerConfig.decode(reader, reader.uint32())
+          message.config = ImageContainerConfig.decode(reader, reader.uint32())
           break
         case 105:
           message.createdAt = Timestamp.decode(reader, reader.uint32())
@@ -7083,7 +7566,7 @@ export const ImageResponse = {
       tag: isSet(object.tag) ? String(object.tag) : '',
       order: isSet(object.order) ? Number(object.order) : 0,
       registryId: isSet(object.registryId) ? String(object.registryId) : '',
-      config: isSet(object.config) ? ContainerConfig.fromJSON(object.config) : undefined,
+      config: isSet(object.config) ? ImageContainerConfig.fromJSON(object.config) : undefined,
       createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
       registryName: isSet(object.registryName) ? String(object.registryName) : '',
       registryType: isSet(object.registryType) ? registryTypeFromJSON(object.registryType) : 0,
@@ -7097,7 +7580,8 @@ export const ImageResponse = {
     message.tag !== undefined && (obj.tag = message.tag)
     message.order !== undefined && (obj.order = Math.round(message.order))
     message.registryId !== undefined && (obj.registryId = message.registryId)
-    message.config !== undefined && (obj.config = message.config ? ContainerConfig.toJSON(message.config) : undefined)
+    message.config !== undefined &&
+      (obj.config = message.config ? ImageContainerConfig.toJSON(message.config) : undefined)
     message.createdAt !== undefined && (obj.createdAt = fromTimestamp(message.createdAt).toISOString())
     message.registryName !== undefined && (obj.registryName = message.registryName)
     message.registryType !== undefined && (obj.registryType = registryTypeToJSON(message.registryType))
@@ -7116,7 +7600,9 @@ export const ImageResponse = {
     message.order = object.order ?? 0
     message.registryId = object.registryId ?? ''
     message.config =
-      object.config !== undefined && object.config !== null ? ContainerConfig.fromPartial(object.config) : undefined
+      object.config !== undefined && object.config !== null
+        ? ImageContainerConfig.fromPartial(object.config)
+        : undefined
     message.createdAt =
       object.createdAt !== undefined && object.createdAt !== null ? Timestamp.fromPartial(object.createdAt) : undefined
     message.registryName = object.registryName ?? ''
@@ -7412,7 +7898,7 @@ export const PatchImageRequest = {
       writer.uint32(810).string(message.tag)
     }
     if (message.config !== undefined) {
-      ContainerConfig.encode(message.config, writer.uint32(818).fork()).ldelim()
+      ImageContainerConfig.encode(message.config, writer.uint32(818).fork()).ldelim()
     }
     return writer
   },
@@ -7434,7 +7920,7 @@ export const PatchImageRequest = {
           message.tag = reader.string()
           break
         case 102:
-          message.config = ContainerConfig.decode(reader, reader.uint32())
+          message.config = ImageContainerConfig.decode(reader, reader.uint32())
           break
         default:
           reader.skipType(tag & 7)
@@ -7449,7 +7935,7 @@ export const PatchImageRequest = {
       id: isSet(object.id) ? String(object.id) : '',
       accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       tag: isSet(object.tag) ? String(object.tag) : undefined,
-      config: isSet(object.config) ? ContainerConfig.fromJSON(object.config) : undefined,
+      config: isSet(object.config) ? ImageContainerConfig.fromJSON(object.config) : undefined,
     }
   },
 
@@ -7458,7 +7944,8 @@ export const PatchImageRequest = {
     message.id !== undefined && (obj.id = message.id)
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.tag !== undefined && (obj.tag = message.tag)
-    message.config !== undefined && (obj.config = message.config ? ContainerConfig.toJSON(message.config) : undefined)
+    message.config !== undefined &&
+      (obj.config = message.config ? ImageContainerConfig.toJSON(message.config) : undefined)
     return obj
   },
 
@@ -7472,7 +7959,9 @@ export const PatchImageRequest = {
     message.accessedBy = object.accessedBy ?? ''
     message.tag = object.tag ?? undefined
     message.config =
-      object.config !== undefined && object.config !== null ? ContainerConfig.fromPartial(object.config) : undefined
+      object.config !== undefined && object.config !== null
+        ? ImageContainerConfig.fromPartial(object.config)
+        : undefined
     return message
   },
 }
@@ -9079,7 +9568,7 @@ export const PatchDeploymentRequest = {
       writer.uint32(18).string(message.accessedBy)
     }
     if (message.environment !== undefined) {
-      KeyValueList.encode(message.environment, writer.uint32(802).fork()).ldelim()
+      UniqueKeyValueList.encode(message.environment, writer.uint32(802).fork()).ldelim()
     }
     if (message.instance !== undefined) {
       PatchInstanceRequest.encode(message.instance, writer.uint32(8010).fork()).ldelim()
@@ -9101,7 +9590,7 @@ export const PatchDeploymentRequest = {
           message.accessedBy = reader.string()
           break
         case 100:
-          message.environment = KeyValueList.decode(reader, reader.uint32())
+          message.environment = UniqueKeyValueList.decode(reader, reader.uint32())
           break
         case 1001:
           message.instance = PatchInstanceRequest.decode(reader, reader.uint32())
@@ -9118,7 +9607,7 @@ export const PatchDeploymentRequest = {
     return {
       id: isSet(object.id) ? String(object.id) : '',
       accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      environment: isSet(object.environment) ? KeyValueList.fromJSON(object.environment) : undefined,
+      environment: isSet(object.environment) ? UniqueKeyValueList.fromJSON(object.environment) : undefined,
       instance: isSet(object.instance) ? PatchInstanceRequest.fromJSON(object.instance) : undefined,
     }
   },
@@ -9128,7 +9617,7 @@ export const PatchDeploymentRequest = {
     message.id !== undefined && (obj.id = message.id)
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.environment !== undefined &&
-      (obj.environment = message.environment ? KeyValueList.toJSON(message.environment) : undefined)
+      (obj.environment = message.environment ? UniqueKeyValueList.toJSON(message.environment) : undefined)
     message.instance !== undefined &&
       (obj.instance = message.instance ? PatchInstanceRequest.toJSON(message.instance) : undefined)
     return obj
@@ -9144,7 +9633,7 @@ export const PatchDeploymentRequest = {
     message.accessedBy = object.accessedBy ?? ''
     message.environment =
       object.environment !== undefined && object.environment !== null
-        ? KeyValueList.fromPartial(object.environment)
+        ? UniqueKeyValueList.fromPartial(object.environment)
         : undefined
     message.instance =
       object.instance !== undefined && object.instance !== null
@@ -9173,7 +9662,7 @@ export const InstanceResponse = {
       writer.uint32(808).int32(message.state)
     }
     if (message.config !== undefined) {
-      ContainerConfig.encode(message.config, writer.uint32(818).fork()).ldelim()
+      InstanceContainerConfig.encode(message.config, writer.uint32(818).fork()).ldelim()
     }
     return writer
   },
@@ -9198,7 +9687,7 @@ export const InstanceResponse = {
           message.state = reader.int32() as any
           break
         case 102:
-          message.config = ContainerConfig.decode(reader, reader.uint32())
+          message.config = InstanceContainerConfig.decode(reader, reader.uint32())
           break
         default:
           reader.skipType(tag & 7)
@@ -9214,7 +9703,7 @@ export const InstanceResponse = {
       audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
       image: isSet(object.image) ? ImageResponse.fromJSON(object.image) : undefined,
       state: isSet(object.state) ? containerStateFromJSON(object.state) : undefined,
-      config: isSet(object.config) ? ContainerConfig.fromJSON(object.config) : undefined,
+      config: isSet(object.config) ? InstanceContainerConfig.fromJSON(object.config) : undefined,
     }
   },
 
@@ -9225,7 +9714,8 @@ export const InstanceResponse = {
     message.image !== undefined && (obj.image = message.image ? ImageResponse.toJSON(message.image) : undefined)
     message.state !== undefined &&
       (obj.state = message.state !== undefined ? containerStateToJSON(message.state) : undefined)
-    message.config !== undefined && (obj.config = message.config ? ContainerConfig.toJSON(message.config) : undefined)
+    message.config !== undefined &&
+      (obj.config = message.config ? InstanceContainerConfig.toJSON(message.config) : undefined)
     return obj
   },
 
@@ -9242,7 +9732,9 @@ export const InstanceResponse = {
       object.image !== undefined && object.image !== null ? ImageResponse.fromPartial(object.image) : undefined
     message.state = object.state ?? undefined
     message.config =
-      object.config !== undefined && object.config !== null ? ContainerConfig.fromPartial(object.config) : undefined
+      object.config !== undefined && object.config !== null
+        ? InstanceContainerConfig.fromPartial(object.config)
+        : undefined
     return message
   },
 }
@@ -9260,7 +9752,7 @@ export const PatchInstanceRequest = {
       writer.uint32(18).string(message.accessedBy)
     }
     if (message.config !== undefined) {
-      ContainerConfig.encode(message.config, writer.uint32(818).fork()).ldelim()
+      InstanceContainerConfig.encode(message.config, writer.uint32(802).fork()).ldelim()
     }
     return writer
   },
@@ -9278,8 +9770,8 @@ export const PatchInstanceRequest = {
         case 2:
           message.accessedBy = reader.string()
           break
-        case 102:
-          message.config = ContainerConfig.decode(reader, reader.uint32())
+        case 100:
+          message.config = InstanceContainerConfig.decode(reader, reader.uint32())
           break
         default:
           reader.skipType(tag & 7)
@@ -9293,7 +9785,7 @@ export const PatchInstanceRequest = {
     return {
       id: isSet(object.id) ? String(object.id) : '',
       accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      config: isSet(object.config) ? ContainerConfig.fromJSON(object.config) : undefined,
+      config: isSet(object.config) ? InstanceContainerConfig.fromJSON(object.config) : undefined,
     }
   },
 
@@ -9301,7 +9793,8 @@ export const PatchInstanceRequest = {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
-    message.config !== undefined && (obj.config = message.config ? ContainerConfig.toJSON(message.config) : undefined)
+    message.config !== undefined &&
+      (obj.config = message.config ? InstanceContainerConfig.toJSON(message.config) : undefined)
     return obj
   },
 
@@ -9314,7 +9807,9 @@ export const PatchInstanceRequest = {
     message.id = object.id ?? ''
     message.accessedBy = object.accessedBy ?? ''
     message.config =
-      object.config !== undefined && object.config !== null ? ContainerConfig.fromPartial(object.config) : undefined
+      object.config !== undefined && object.config !== null
+        ? InstanceContainerConfig.fromPartial(object.config)
+        : undefined
     return message
   },
 }

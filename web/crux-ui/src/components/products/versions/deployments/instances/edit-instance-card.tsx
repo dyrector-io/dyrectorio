@@ -2,7 +2,12 @@ import useItemEditorState from '@app/components/editor/use-item-editor-state'
 import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoMessage from '@app/elements/dyo-message'
-import { imageConfigToJsonInstanceConfig, Instance } from '@app/models'
+import {
+  Instance,
+  instanceConfigToJsonInstanceConfig,
+  InstanceJsonContainerConfig,
+  mergeJsonConfigToInstanceContainerConfig,
+} from '@app/models'
 import useTranslation from 'next-translate/useTranslation'
 import EditImageHeading from '../../images/edit-image-heading'
 import EditImageJson from '../../images/edit-image-json'
@@ -81,9 +86,11 @@ const EditInstanceCard = (props: EditInstanceCardProps) => {
             disabled={!deploymentState.mutable}
             config={config}
             editorOptions={editorState}
-            onPatch={it => actions.onPatch(instance.id, it)}
+            onPatch={(it: InstanceJsonContainerConfig) =>
+              actions.onPatch(instance.id, mergeJsonConfigToInstanceContainerConfig(config, it))
+            }
             onParseError={actions.onParseError}
-            convertConfigToJson={imageConfigToJsonInstanceConfig}
+            convertConfigToJson={instanceConfigToJsonInstanceConfig}
           />
         )}
       </div>

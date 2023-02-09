@@ -18,15 +18,15 @@ type RegistryTypeUnion = Pick<Registry, 'url' | 'type' | 'apiUrl' | 'user' | 'to
 
 @Injectable()
 export default class RegistryMapper {
-  toGrpc(registry: Registry): RegistryResponse {
+  listItemToProto(registry: Registry): RegistryResponse {
     return {
       ...registry,
-      type: this.typeToGrpc(registry.type),
+      type: this.typeToProto(registry.type),
       audit: AuditResponse.fromJSON(registry),
     }
   }
 
-  detailsToGrpc(registry: RegistryWithCount): RegistryDetailsResponse {
+  detailsToProto(registry: RegistryWithCount): RegistryDetailsResponse {
     return {
       ...registry,
       inUse: registry._count.images > 0,
@@ -55,7 +55,7 @@ export default class RegistryMapper {
               imageNamePrefix: registry.imageNamePrefix,
               url: registry.apiUrl ? registry.url : null,
               apiUrl: registry.apiUrl,
-              namespace: this.registryNamespaceToGrpc(registry.namespace),
+              namespace: this.registryNamespaceToProto(registry.namespace),
             },
       github:
         registry.type !== RegistryTypeEnum.github
@@ -64,7 +64,7 @@ export default class RegistryMapper {
               user: registry.user,
               token: registry.token,
               imageNamePrefix: registry.imageNamePrefix,
-              namespace: this.registryNamespaceToGrpc(registry.namespace),
+              namespace: this.registryNamespaceToProto(registry.namespace),
             },
       google:
         registry.type !== RegistryTypeEnum.google
@@ -84,7 +84,7 @@ export default class RegistryMapper {
     }
   }
 
-  typeToGrpc(type: RegistryTypeEnum): RegistryType {
+  typeToProto(type: RegistryTypeEnum): RegistryType {
     return registryTypeFromJSON(type.toUpperCase())
   }
 
@@ -163,7 +163,7 @@ export default class RegistryMapper {
     })
   }
 
-  registryNamespaceToGrpc(type: RegistryNamespaceEnum): RegistryNamespace {
+  registryNamespaceToProto(type: RegistryNamespaceEnum): RegistryNamespace {
     switch (type) {
       case RegistryNamespaceEnum.organization:
         return RegistryNamespace.RNS_ORGANIZATION

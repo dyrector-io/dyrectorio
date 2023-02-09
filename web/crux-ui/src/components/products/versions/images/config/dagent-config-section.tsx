@@ -6,7 +6,6 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { DAGENT_CONFIG_FILTERS, filterContains, filterEmpty, ImageConfigFilterType } from '@app/models'
 import {
-  ContainerConfig,
   ContainerLogDriverType,
   ContainerNetworkMode,
   ContainerRestartPolicyType,
@@ -14,17 +13,28 @@ import {
   CONTAINER_NETWORK_MODE_VALUES,
   CONTAINER_RESTART_POLICY_TYPE_VALUES,
   DagentConfigDetails,
+  InstanceDagentConfigDetails,
 } from '@app/models/container'
 import { nullify } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 
-interface DagentConfigSectionProps {
-  config: DagentConfigDetails
-  onChange: (config: Partial<ContainerConfig>) => void
+type DagentConfigSectionBaseProps<T> = {
+  config: T
+  onChange: (config: Partial<T>) => void
   selectedFilters: ImageConfigFilterType[]
   editorOptions: ItemEditorState
   disabled?: boolean
 }
+
+type ImageDagentConfigSectionProps = DagentConfigSectionBaseProps<DagentConfigDetails> & {
+  configType: 'image'
+}
+
+type InstanceDagentConfigSectionProps = DagentConfigSectionBaseProps<InstanceDagentConfigDetails> & {
+  configType: 'instance'
+}
+
+type DagentConfigSectionProps = ImageDagentConfigSectionProps | InstanceDagentConfigSectionProps
 
 const DagentConfigSection = (props: DagentConfigSectionProps) => {
   const { t } = useTranslation('container')
@@ -58,7 +68,7 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
         {filterContains('networks', selectedFilters) && (
           <div className="grid break-inside-avoid mb-8 max-w-lg">
             <KeyOnlyInput
-              className="mb-2"
+              className="max-h-128 overflow-y-auto mb-2"
               labelClassName="text-bright font-semibold tracking-wide mb-2"
               label={t('dagent.networks').toUpperCase()}
               items={config.networks ?? []}
@@ -75,6 +85,7 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
         {filterContains('dockerLabels', selectedFilters) && (
           <div className="grid mb-8 break-inside-avoid">
             <KeyValueInput
+              className="max-h-128 overflow-y-auto"
               labelClassName="text-bright font-semibold tracking-wide mb-2"
               label={t('dagent.dockerLabels').toUpperCase()}
               onChange={it => onChange({ dockerLabels: it })}
@@ -123,6 +134,7 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
               />
 
               <KeyValueInput
+                className="max-h-128 overflow-y-auto"
                 label={t('dagent.options')}
                 items={config.logConfig?.options ?? []}
                 onChange={it => onChange({ logConfig: nullify({ ...config.logConfig, options: it }) })}

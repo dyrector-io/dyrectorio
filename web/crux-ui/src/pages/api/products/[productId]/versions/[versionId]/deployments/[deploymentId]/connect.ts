@@ -26,6 +26,7 @@ import {
   WS_TYPE_INSTANCE_UPDATED,
   WS_TYPE_PATCH_DEPLOYMENT_ENV,
   WS_TYPE_PATCH_INSTANCE,
+  WS_TYPE_PATCH_RECEIVED,
 } from '@app/models'
 import { WsMessage } from '@app/websockets/common'
 import WsConnection from '@app/websockets/connection'
@@ -116,6 +117,8 @@ export const onPatchInstance = async (
     },
   })
 
+  connection.send(WS_TYPE_PATCH_RECEIVED, {})
+
   endpoint.sendAllExcept(connection, WS_TYPE_INSTANCE_UPDATED, {
     ...req,
   })
@@ -135,7 +138,8 @@ const onPatchDeploymentEnvironment = async (
     environment: req,
   })
 
-  endpoint.sendAll(WS_TYPE_DEPLOYMENT_ENV_UPDATED, req)
+  connection.send(WS_TYPE_PATCH_RECEIVED, {})
+  endpoint.sendAllExcept(connection, WS_TYPE_DEPLOYMENT_ENV_UPDATED, req)
 }
 
 const onGetInstance = async (

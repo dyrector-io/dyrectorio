@@ -49,7 +49,7 @@ export default class VersionService {
     })
 
     return {
-      data: versions.map(it => this.mapper.toGrpc(it)),
+      data: versions.map(it => this.mapper.listItemToProto(it)),
     }
   }
 
@@ -74,7 +74,7 @@ export default class VersionService {
       },
     })
 
-    return this.mapper.detailsToGrpc(version)
+    return this.mapper.detailsToProto(version)
   }
 
   async createVersion(req: CreateVersionRequest): Promise<CreateEntityResponse> {

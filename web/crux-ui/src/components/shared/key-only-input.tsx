@@ -30,6 +30,10 @@ const setItems = (items: UniqueKey[]) => (): UniqueKey[] => items
 const mergeItems =
   (updatedItems: UniqueKey[]) =>
   (state: UniqueKey[]): UniqueKey[] => {
+    if (!updatedItems) {
+      updatedItems = []
+    }
+
     const lastLine = state.length > 0 ? state[state.length - 1] : null
     const emptyLine = !!lastLine && isCompletelyEmpty(lastLine) ? lastLine : generateEmptyLine()
 
@@ -81,12 +85,12 @@ const KeyOnlyInput = (props: KeyInputProps) => {
     onChange: propsOnChange,
   } = props
 
-  const [state, dispatch] = useRepatch(items)
+  const [state, dispatch] = useRepatch(items ?? [])
 
-  const stateToElements = (itemArray: UniqueKey[]) => {
+  const stateToElements = (keys: UniqueKey[]) => {
     const result: KeyElement[] = []
 
-    itemArray.forEach(item =>
+    keys.forEach(item =>
       result.push({
         ...item,
         message: result.find(it => it.key === item.key) && unique ? t('keyMustUnique') : null,
@@ -140,7 +144,7 @@ const KeyOnlyInput = (props: KeyInputProps) => {
   }
 
   return (
-    <div className={clsx(className, 'flex flex-col max-h-128 overflow-y-auto')}>
+    <div className={clsx(className, 'flex flex-col')}>
       {!label ? null : (
         <DyoLabel className={clsx(labelClassName ?? 'text-bright mb-2 whitespace-nowrap')}>{label}</DyoLabel>
       )}

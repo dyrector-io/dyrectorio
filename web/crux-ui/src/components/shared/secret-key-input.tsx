@@ -32,6 +32,10 @@ const setItems = (items: UniqueSecretKey[]) => (): UniqueSecretKey[] => items
 const mergeItems =
   (updatedItems: UniqueSecretKey[]) =>
   (state: UniqueSecretKey[]): UniqueSecretKey[] => {
+    if (!updatedItems) {
+      updatedItems = []
+    }
+
     const lastLine = state.length > 0 ? state[state.length - 1] : null
     const emptyLine = !!lastLine && isCompletelyEmpty(lastLine) ? lastLine : generateEmptyLine()
 
@@ -62,7 +66,6 @@ interface SecretKeyInputProps {
   description?: string
   items: UniqueSecretKey[]
   keyPlaceholder?: string
-  unique?: boolean
   editorOptions: ItemEditorState
   onChange: (items: UniqueSecretKey[]) => void
 }
@@ -78,18 +81,17 @@ const SecretKeyInput = (props: SecretKeyInputProps) => {
     items,
     className,
     editorOptions,
-    unique,
     keyPlaceholder,
     onChange: propsOnChange,
   } = props
 
-  const [state, dispatch] = useRepatch(items)
+  const [state, dispatch] = useRepatch(items ?? [])
 
-  const stateToElements = (itemArray: UniqueSecretKey[]) => {
+  const stateToElements = (secrets: UniqueSecretKey[]) => {
     const result: SecretElement[] = []
 
-    itemArray.forEach(item => {
-      const repeating = unique && result.find(it => it.key === item.key)
+    secrets.forEach(item => {
+      const repeating = result.find(it => it.key === item.key)
 
       result.push({
         ...item,
@@ -164,7 +166,7 @@ const SecretKeyInput = (props: SecretKeyInputProps) => {
   }
 
   return (
-    <div className={clsx(className, 'flex flex-col max-h-128 overflow-y-auto')}>
+    <div className={clsx(className, 'flex flex-col')}>
       {!label ? null : (
         <DyoLabel className={clsx(labelClassName ?? 'text-bright mb-2 whitespace-nowrap text-light-eased')}>
           {label}

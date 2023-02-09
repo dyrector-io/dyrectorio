@@ -1,4 +1,4 @@
-import { ContainerConfig, ContainerState } from './container'
+import { ContainerState, InstanceContainerConfigData } from './container'
 import { VersionImage } from './image'
 
 export type InstanceStatus = {
@@ -11,10 +11,10 @@ export type Instance = {
   image: VersionImage
   state?: ContainerState
   publicKey?: string
-  overriddenConfig?: Partial<ContainerConfig>
+  overriddenConfig?: InstanceContainerConfigData
 }
 
 export type PatchInstance = {
   instanceId: string
-  config: ContainerConfig
+  config: Partial<InstanceContainerConfigData>
 }

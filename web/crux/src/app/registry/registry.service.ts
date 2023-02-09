@@ -34,7 +34,7 @@ export default class RegistryService {
     })
 
     return {
-      data: registries.map(it => this.mapper.toGrpc(it)),
+      data: registries.map(it => this.mapper.listItemToProto(it)),
     }
   }
 
@@ -94,6 +94,6 @@ export default class RegistryService {
       },
     })
 
-    return this.mapper.detailsToGrpc(registry)
+    return this.mapper.detailsToProto(registry)
   }
 }

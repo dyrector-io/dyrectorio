@@ -1,11 +1,11 @@
 import { IMAGE_WS_REQUEST_DELAY } from '@app/const'
 import { useThrottling } from '@app/hooks/use-throttleing'
-import { ContainerConfig, UniqueKeyValue, UniqueSecretKeyValue } from '@app/models'
+import { InstanceContainerConfigData, UniqueKeyValue, UniqueSecretKeyValue } from '@app/models'
 
 import MultiInput from '@app/components/editor/multi-input'
 import { ItemEditorState } from '@app/components/editor/use-item-editor-state'
 import KeyValueInput from '@app/components/shared/key-value-input'
-import SecretKeyValInput from '@app/components/shared/secret-key-value-input'
+import SecretKeyValueInput from '@app/components/shared/secret-key-value-input'
 import { sensitiveKeyRule } from '@app/validations/container'
 import useTranslation from 'next-translate/useTranslation'
 import { useRef } from 'react'
@@ -14,8 +14,8 @@ interface EditInstanceProps {
   disabled?: boolean
   publicKey: string
   definedSecrets: string[]
-  config: ContainerConfig
-  onPatch: (config: Partial<ContainerConfig>) => void
+  config: InstanceContainerConfigData
+  onPatch: (config: InstanceContainerConfigData) => void
   editorOptions: ItemEditorState
 }
 
@@ -24,11 +24,11 @@ const EditInstanceConfig = (props: EditInstanceProps) => {
 
   const { t } = useTranslation('images')
 
-  const patch = useRef<Partial<ContainerConfig>>({})
+  const patch = useRef<InstanceContainerConfigData>({})
 
   const throttle = useThrottling(IMAGE_WS_REQUEST_DELAY)
 
-  const sendPatchImmediately = (newConfig: Partial<ContainerConfig>) => {
+  const sendPatchImmediately = (newConfig: InstanceContainerConfigData) => {
     onPatch({
       ...patch.current,
       ...newConfig,
@@ -36,7 +36,7 @@ const EditInstanceConfig = (props: EditInstanceProps) => {
     patch.current = {}
   }
 
-  const sendPatch = (newConfig: Partial<ContainerConfig>) => {
+  const sendPatch = (newConfig: InstanceContainerConfigData) => {
     const newPatch = {
       ...patch.current,
       ...newConfig,
@@ -66,7 +66,7 @@ const EditInstanceConfig = (props: EditInstanceProps) => {
     })
 
   return (
-    <>
+    <div className="flex flex-col overflow-y-auto">
       <MultiInput
         id="name"
         disabled={disabled}
@@ -89,9 +89,8 @@ const EditInstanceConfig = (props: EditInstanceProps) => {
         hint={{ hintValidation: sensitiveKeyRule, hintText: t('sensitiveKey') }}
       />
 
-      <SecretKeyValInput
+      <SecretKeyValueInput
         disabled={disabled || !publicKey}
-        unique
         editorOptions={editorOptions}
         label={t('secrets').toUpperCase()}
         publicKey={publicKey}
@@ -99,7 +98,7 @@ const EditInstanceConfig = (props: EditInstanceProps) => {
         definedSecrets={definedSecrets}
         onSubmit={onSecretSubmit}
       />
-    </>
+    </div>
   )
 }
 

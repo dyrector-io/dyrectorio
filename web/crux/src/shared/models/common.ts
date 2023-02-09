@@ -6,9 +6,7 @@ export type UniqueKey = {
   key: string
 }
 
-export type UniqueKeyValue = {
-  id: string
-  key: string
+export type UniqueKeyValue = UniqueKey & {
   value: string
 }
 
@@ -16,8 +14,8 @@ export type UniqueSecretKey = UniqueKey & {
   required: boolean
 }
 
-export type UniqueSecretKeyValue = UniqueKeyValue & {
-  publicKey: string
-  required: boolean
-  encrypted?: boolean
-}
+export type UniqueSecretKeyValue = UniqueKeyValue &
+  UniqueSecretKey & {
+    encrypted: boolean
+    publicKey?: string
+  }

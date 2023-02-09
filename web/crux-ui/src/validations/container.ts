@@ -14,6 +14,17 @@ import {
 } from '@app/models/container'
 import * as yup from 'yup'
 
+export const uniqueKeySchema = yup
+  .array(
+    yup.object().shape({
+      key: yup.string().required().ensure().matches(/^\S+$/g), // all characters are non-whitespaces
+    }),
+  )
+  .ensure()
+  .test('keysAreUnique', 'Keys must be unique', arr =>
+    arr ? new Set(arr.map(it => it.key)).size === arr.length : true,
+  )
+
 export const uniqueKeyValuesSchema = yup
   .array(
     yup.object().shape({
@@ -261,10 +272,9 @@ const markerRule = yup
   .nullable()
   .optional()
 
-export const containerConfigSchema = yup.object().shape({
+const containerConfigBaseSchema = yup.object().shape({
   name: yup.string().required(),
   environments: uniqueKeyValuesSchema.default([]).nullable(),
-  secrets: uniqueKeyValuesSchema.default([]).nullable(),
   ingress: ingressRule,
   expose: exposeRule,
   user: yup.number().default(null).nullable(),
@@ -296,4 +306,12 @@ export const containerConfigSchema = yup.object().shape({
   resourceConfig: resourceConfigRule,
   labels: markerRule,
   annotations: markerRule,
+})
+
+export const containerConfigSchema = containerConfigBaseSchema.shape({
+  secrets: uniqueKeySchema.default([]).nullable(),
+})
+
+export const mergedContainerConfigSchema = containerConfigBaseSchema.shape({
+  secrets: uniqueKeyValuesSchema.default([]).nullable(),
 })

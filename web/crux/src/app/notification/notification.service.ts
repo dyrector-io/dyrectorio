@@ -1,20 +1,21 @@
-import KratosService from 'src/services/kratos.service'
-import {
-  IdRequest,
-  UpdateNotificationRequest,
-  UpdateEntityResponse,
-  AccessRequest,
-  NotificationListResponse,
-  CreateNotificationResponse,
-  NotificationDetailsResponse,
-  CreateNotificationRequest,
-} from 'src/grpc/protobuf/proto/crux'
-import { Empty } from 'src/grpc/protobuf/proto/common'
-import TeamRepository from 'src/app/team/team.repository'
-import { Injectable, Logger } from '@nestjs/common'
-import PrismaService from 'src/services/prisma.service'
-import { lastValueFrom } from 'rxjs'
 import { HttpService } from '@nestjs/axios'
+import { Injectable, Logger } from '@nestjs/common'
+import { lastValueFrom } from 'rxjs'
+import TeamRepository from 'src/app/team/team.repository'
+import { Empty } from 'src/grpc/protobuf/proto/common'
+import {
+  AccessRequest,
+  CreateNotificationRequest,
+  CreateNotificationResponse,
+  IdRequest,
+  NotificationDetailsResponse,
+  NotificationListResponse,
+  UpdateEntityResponse,
+  UpdateNotificationRequest,
+} from 'src/grpc/protobuf/proto/crux'
+import KratosService from 'src/services/kratos.service'
+import PrismaService from 'src/services/prisma.service'
+import { nameOrEmailOfIdentity } from 'src/shared/models'
 import NotificationMapper from './notification.mapper'
 
 const TEST_MESSAGE = 'Its a test!'
@@ -54,7 +55,10 @@ export default class NotificationService {
 
     const identity = await this.kratos.getIdentityById(request.accessedBy)
 
-    return this.mapper.toGrpcCreateResponse(notification, identity)
+    return {
+      id: notification.id,
+      creator: nameOrEmailOfIdentity(identity),
+    }
   }
 
   async updateNotification(request: UpdateNotificationRequest): Promise<UpdateEntityResponse> {
@@ -125,7 +129,7 @@ export default class NotificationService {
     const identities = await this.kratos.getIdentitiesByIds(userIds)
 
     return {
-      data: this.mapper.toGrpcListResponse(notifications, identities),
+      data: this.mapper.listToProto(notifications, identities),
     }
   }
 
@@ -141,7 +145,7 @@ export default class NotificationService {
 
     const identity = await this.kratos.getIdentityById(request.accessedBy)
 
-    return this.mapper.detailsToGrpc(notification, identity)
+    return this.mapper.detailsToProto(notification, identity)
   }
 
   async testNotification(request: IdRequest): Promise<Empty> {

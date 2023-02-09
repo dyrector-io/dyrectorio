@@ -13,7 +13,7 @@ import { IdentityTraits, invitationExpired, nameOfIdentity } from 'src/shared/mo
 
 @Injectable()
 export default class TeamMapper {
-  private userToGrpc(
+  private userToProto(
     user: UsersOnTeams,
     identities: Map<string, Identity>,
     sessions: Map<string, Session[]>,
@@ -38,7 +38,7 @@ export default class TeamMapper {
       id: user.userId,
       name: nameOfIdentity(identity),
       email: traits.email,
-      role: this.roleToGrpc(user.role),
+      role: this.roleToProto(user.role),
       status: UserStatus.VERIFIED,
       lastLogin: lastSession ? toTimestamp(new Date(lastSession.authenticated_at)) : undefined,
     }
@@ -56,33 +56,33 @@ export default class TeamMapper {
       status:
         inv.status === 'pending' && invitationExpired(inv.createdAt, now)
           ? UserStatus.EXPIRED
-          : this.invitationStatusToGrpc(inv.status),
+          : this.invitationStatusToProto(inv.status),
     }
   }
 
-  private teamUsersToGrpc(
+  private teamUsersToProto(
     team: TeamWithUsersAndInvitations,
     identities: Map<string, Identity>,
     sessions: Map<string, Session[]>,
   ): UserResponse[] {
-    const users = team.users.map(it => this.userToGrpc(it, identities, sessions)).filter(it => !!it)
+    const users = team.users.map(it => this.userToProto(it, identities, sessions)).filter(it => !!it)
     const invitations = team.invitations.map(it => this.invitationToUserGrpc(it, identities)).filter(it => !!it)
 
     return users.concat(invitations)
   }
 
-  activeTeamDetailsToGrpc(
+  activeTeamDetailsToProto(
     team: TeamWithUsersAndInvitations,
     identities: Map<string, Identity>,
     sessions: Map<string, Session[]>,
   ): ActiveTeamDetailsResponse {
     return {
       ...team,
-      users: this.teamUsersToGrpc(team, identities, sessions),
+      users: this.teamUsersToProto(team, identities, sessions),
     }
   }
 
-  teamDetailsToGrpc(
+  teamDetailsToProto(
     team: TeamDetails,
     identities: Map<string, Identity>,
     sessions: Map<string, Session[]>,
@@ -90,7 +90,7 @@ export default class TeamMapper {
     return {
       id: team.id,
       name: team.name,
-      users: this.teamUsersToGrpc(team, identities, sessions),
+      users: this.teamUsersToProto(team, identities, sessions),
       statistics: {
         users: team._count.users + team._count.invitations,
         products: team._count.products,
@@ -104,7 +104,7 @@ export default class TeamMapper {
     }
   }
 
-  roleToGrpc(role: UserRoleEnum): UserRole {
+  roleToProto(role: UserRoleEnum): UserRole {
     switch (role) {
       case 'owner':
         return UserRole.OWNER
@@ -126,7 +126,7 @@ export default class TeamMapper {
     }
   }
 
-  invitationStatusToGrpc(status: UserInvitationStatusEnum): UserStatus {
+  invitationStatusToProto(status: UserInvitationStatusEnum): UserStatus {
     switch (status) {
       case 'pending':
         return UserStatus.PENDING

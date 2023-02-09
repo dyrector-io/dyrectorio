@@ -19,19 +19,23 @@ import DyoMessage from '@app/elements/dyo-message'
 import { defaultApiErrorHandler } from '@app/errors'
 import { useThrottling } from '@app/hooks/use-throttleing'
 import {
-  ContainerConfig,
   DeploymentRoot,
   ImageConfigFilterType,
-  imageConfigToJsonContainerConfig,
+  instanceConfigToJsonInstanceConfig,
+  InstanceContainerConfigData,
+  InstanceJsonContainerConfig,
+  mergeConfigs,
+  mergeJsonConfigToInstanceContainerConfig,
   ViewState,
 } from '@app/models'
 import { deploymentUrl, instanceConfigUrl, productUrl, ROUTE_PRODUCTS, versionUrl } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
-import { getContainerConfigFieldErrors, jsonErrorOf } from '@app/validations/image'
+import { jsonErrorOf } from '@app/validations/image'
+import { getMergedContainerConfigFieldErrors } from '@app/validations/instance'
 import { cruxFromContext } from '@server/crux/crux'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 import { ValidationError } from 'yup'
 
@@ -65,9 +69,12 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
     deploymentState,
   })
 
+  const patch = useRef<Partial<InstanceContainerConfigData>>({})
   const [filters, setFilters] = useState<ImageConfigFilterType[]>([])
   const [viewState, setViewState] = useState<ViewState>('editor')
-  const [fieldErrors, setFieldErrors] = useState<ValidationError[]>(() => getContainerConfigFieldErrors(state.config))
+  const [fieldErrors, setFieldErrors] = useState<ValidationError[]>(() =>
+    getMergedContainerConfigFieldErrors(state.config),
+  )
   const [jsonError, setJsonError] = useState(jsonErrorOf(fieldErrors))
   const [topBarContent, setTopBarContent] = useState<React.ReactNode>(null)
 
@@ -88,15 +95,26 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
     setTopBarContent(reactNode)
   }, [editorState.editors])
 
-  const onChange = (newConfig: Partial<ContainerConfig>) => {
+  const onChange = (newConfig: Partial<InstanceContainerConfigData>) => {
+    const newPatch = {
+      ...patch.current,
+      ...newConfig,
+    }
+    patch.current = newPatch
+
+    const applied: InstanceContainerConfigData = {
+      ...state.config,
+      ...newPatch,
+    }
+
+    const merged = mergeConfigs(instance.image.config, applied)
+    const errors = getMergedContainerConfigFieldErrors(merged)
+    setFieldErrors(errors)
+    setJsonError(jsonErrorOf(errors))
+
     throttle(() => {
-      const value = { ...state.config, ...newConfig }
-
-      actions.onPatch(instance.id, value)
-
-      const errors = getContainerConfigFieldErrors(value)
-      setFieldErrors(errors)
-      setJsonError(jsonErrorOf(errors))
+      actions.onPatch(instance.id, patch.current)
+      patch.current = {}
     })
   }
 
@@ -153,7 +171,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
   )
 
   return (
-    <Layout title={t('common:instancesName', state.config ?? instance.image)} topBarContent={topBarContent}>
+    <Layout title={t('instancesName', state.config ?? instance.image)} topBarContent={topBarContent}>
       <PageHeading pageLink={pageLink} sublinks={sublinks}>
         <DyoButton href={deploymentUrl(product.id, version.id, deployment.id)}>{t('common:back')}</DyoButton>
       </PageHeading>
@@ -179,7 +197,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
             onChange={onChange}
             editorOptions={editorState}
             fieldErrors={fieldErrors}
-            secrets="value"
+            configType="instance"
             definedSecrets={state.definedSecrets}
             publicKey={deployment.publicKey}
           />
@@ -190,6 +208,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
             config={state.config}
             onChange={onChange}
             editorOptions={editorState}
+            configType="instance"
           />
 
           <DagentConfigSection
@@ -198,6 +217,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
             config={state.config}
             onChange={onChange}
             editorOptions={editorState}
+            configType="instance"
           />
         </DyoCard>
       )}
@@ -211,9 +231,11 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
           <EditImageJson
             config={state.config}
             editorOptions={editorState}
-            onPatch={onChange}
+            onPatch={(it: InstanceJsonContainerConfig) =>
+              onChange(mergeJsonConfigToInstanceContainerConfig(state.config, it))
+            }
             onParseError={err => setJsonError(err?.message)}
-            convertConfigToJson={imageConfigToJsonContainerConfig}
+            convertConfigToJson={instanceConfigToJsonInstanceConfig}
           />
         </DyoCard>
       )}

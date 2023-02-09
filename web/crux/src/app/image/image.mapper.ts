@@ -25,13 +25,13 @@ import {
   volumeTypeToJSON,
 } from 'src/grpc/protobuf/proto/common'
 import {
-  CommonContainerConfig as ProtoCruxCommonContainerConfig,
-  ContainerConfig as ProtoContainerConfig,
-  CraneContainerConfig as ProtoCruxCraneContainerConfig,
-  DagentContainerConfig as ProtoCruxDagentContainerConfig,
+  CommonContainerConfig as ProtoCommonContainerConfig,
+  CraneContainerConfig as ProtoCraneContainerConfig,
+  DagentContainerConfig as ProtoDagentContainerConfig,
+  ImageContainerConfig as ProtoImageContainerConfig,
   ImageResponse,
   LogConfig,
-  UniqueSecretKeyValue as ProtoUniqueSecretKeyValue,
+  UniqueSecretKey as ProtoUniqueSecretKey,
   Volume as ProtoVolume,
 } from 'src/grpc/protobuf/proto/crux'
 import { toPrismaJson } from 'src/shared/mapper'
@@ -40,12 +40,8 @@ import {
   ContainerConfigLog,
   ContainerConfigVolume,
   ContainerLogDriverType,
-  InstanceContainerConfigData,
-  UniqueKeyValue,
   UniqueSecretKey,
-  UniqueSecretKeyValue,
   VolumeType,
-  XOR,
 } from 'src/shared/models'
 import RegistryMapper from '../registry/registry.mapper'
 
@@ -53,79 +49,80 @@ import RegistryMapper from '../registry/registry.mapper'
 export default class ImageMapper {
   constructor(private registryMapper: RegistryMapper) {}
 
-  toGrpc(image: ImageDetails): ImageResponse {
+  detailsToProto(image: ImageDetails): ImageResponse {
     return {
       ...image,
       registryName: image.registry.name,
-      config: this.configToGrpc(image.config),
+      config: this.configToProto(image.config),
       createdAt: toTimestamp(image.createdAt),
-      registryType: this.registryMapper.typeToGrpc(image.registry.type),
+      registryType: this.registryMapper.typeToProto(image.registry.type),
     }
   }
 
-  configToGrpc(containerConfig: ContainerConfig): ProtoContainerConfig {
+  configToProto(containerConfig: ContainerConfig): ProtoImageContainerConfig {
     const config = containerConfig as any as ContainerConfigData
 
     return {
-      capabilities: config.capabilities as UniqueKeyValue[],
-      common: this.configToCommonConfig(config, (it: UniqueSecretKey) => ({
-        ...it,
-        publicKey: '',
-        value: '',
-      })),
+      common: this.configToCommonConfig(config),
       dagent: this.configToDagentConfig(config),
       crane: this.configToCraneConfig(config),
+      secrets: !config.secrets
+        ? null
+        : {
+            data: config.secrets.map(it => this.secretToProto(it)),
+          },
     }
   }
 
-  configToCommonConfig(
-    config: Partial<ContainerConfigData>,
-    secretMapper: (secret: XOR<UniqueSecretKey, UniqueSecretKeyValue>) => ProtoUniqueSecretKeyValue,
-  ): ProtoCruxCommonContainerConfig {
+  configToCommonConfig(config: Partial<ContainerConfigData>): ProtoCommonContainerConfig {
     return {
       name: config.name,
-      environment: config.environment,
-      secrets: config.secrets?.map(secretMapper),
-      commands: config.commands,
-      expose: this.exposeStrategyToGrpc(config.expose),
-      args: config.args,
+      environment: !config.environment ? null : { data: config.environment },
+      commands: !config.commands ? null : { data: config.commands },
+      expose: this.exposeStrategyToProto(config.expose),
+      args: !config.args ? null : { data: config.args },
       TTY: config.tty,
       configContainer: config.configContainer,
       importContainer: config.importContainer,
       ingress: config.ingress,
-      initContainers: config.initContainers?.map(it => ({
-        ...it,
-        environment: it.environment ?? [],
-        volumes: it.volumes ?? [],
-        command: it.command ?? [],
-        args: it.args ?? [],
-      })),
-      portRanges: config.portRanges,
-      ports: config.ports,
+      initContainers: !config.initContainers ? null : { data: config.initContainers },
+      portRanges: !config.portRanges ? null : { data: config.portRanges },
+      ports: !config.ports ? null : { data: config.ports },
       user: config.user,
-      volumes: this.volumesToGrpc(config.volumes),
+      volumes: !config.volumes
+        ? null
+        : {
+            data: config.volumes.map(
+              volume => ({ ...volume, type: this.volumeTypeToProto(volume.type) } as ProtoVolume),
+            ),
+          },
     }
   }
 
-  configToDagentConfig(config: Partial<ContainerConfigData>): ProtoCruxDagentContainerConfig {
+  configToDagentConfig(config: Partial<ContainerConfigData>): ProtoDagentContainerConfig {
     return {
-      networks: config.networks,
+      networks: config.networks ? { data: config.networks } : null,
       logConfig: this.logConfigToProto(config.logConfig),
       networkMode: this.networkModeToProto(config.networkMode),
       restartPolicy: this.restartPolicyToProto(config.restartPolicy),
-      labels: config.dockerLabels,
+      labels: config.dockerLabels ? { data: config.dockerLabels } : null,
     }
   }
 
-  configToCraneConfig(config: Partial<ContainerConfigData>): ProtoCruxCraneContainerConfig {
+  configToCraneConfig(config: Partial<ContainerConfigData>): ProtoCraneContainerConfig {
     return {
-      customHeaders: config.customHeaders,
-      extraLBAnnotations: config.extraLBAnnotations,
+      customHeaders: !config.customHeaders ? null : { data: config.customHeaders },
+      extraLBAnnotations: !config.extraLBAnnotations ? null : { data: config.extraLBAnnotations },
       deploymentStatregy: this.deploymentStrategyToProto(config.deploymentStrategy),
       healthCheckConfig: config.healthCheckConfig,
       proxyHeaders: config.proxyHeaders,
       useLoadBalancer: config.useLoadBalancer,
-      resourceConfig: config.resourceConfig,
+      resourceConfig: !config.resourceConfig
+        ? null
+        : {
+            limits: config.resourceConfig.limits,
+            requests: config.resourceConfig.requests,
+          },
       labels: !config.labels
         ? null
         : {
@@ -143,7 +140,10 @@ export default class ImageMapper {
     }
   }
 
-  configProtoToContainerConfigData(config: ProtoContainerConfig): InstanceContainerConfigData {
+  configProtoToContainerConfigData(
+    currentConfig: Pick<ContainerConfigData, 'annotations' | 'labels'>,
+    config: ProtoImageContainerConfig,
+  ): Partial<ContainerConfigData> {
     return {
       // common
       name: config.common?.name,
@@ -151,35 +151,45 @@ export default class ImageMapper {
       ingress: config.common?.ingress,
       configContainer: config.common?.configContainer,
       importContainer: config.common?.importContainer,
-      user: config.common?.user ? config.common.user : null,
-      tty: config.common?.TTY ?? false,
-      ports: config.common?.ports,
-      portRanges: config.common?.portRanges,
-      volumes: this.volumesToDb(config.common?.volumes ?? []),
-      commands: config.common?.commands,
-      args: config.common?.args,
-      environment: config.common?.environment,
-      secrets: config.common?.secrets,
-      initContainers: config.common?.initContainers,
+      user: config.common?.user,
+      tty: this.toUndefinedAwareBoolean(config.common?.TTY),
+      ports: config.common?.ports?.data,
+      portRanges: config.common?.portRanges?.data,
+      volumes: this.volumesToDb(config.common?.volumes?.data),
+      commands: config.common?.commands?.data,
+      args: config.common?.args?.data,
+      environment: config.common?.environment?.data,
+      secrets: config?.secrets?.data?.map(it => this.secretToDb(it)),
+      initContainers: config.common?.initContainers?.data,
 
       // dagent
       logConfig: this.logConfigToDb(config.dagent?.logConfig),
       restartPolicy: this.restartPolicyToDb(config.dagent?.restartPolicy),
       networkMode: this.networkModeToDb(config.dagent?.networkMode),
-      networks: config.dagent?.networks,
-      dockerLabels: config.dagent?.labels,
+      networks: config.dagent?.networks?.data,
+      dockerLabels: config.dagent?.labels?.data,
 
       // crane
       deploymentStrategy: this.deploymentStrategyToDb(config.crane?.deploymentStatregy),
       healthCheckConfig: config.crane?.healthCheckConfig,
       resourceConfig: config.crane?.resourceConfig,
-      proxyHeaders: config.crane?.proxyHeaders ?? false,
-      useLoadBalancer: config.crane?.useLoadBalancer ?? false,
-      customHeaders: config.crane?.customHeaders,
-      extraLBAnnotations: config.crane?.extraLBAnnotations,
-      capabilities: config.capabilities,
-      annotations: config.crane?.annotations,
-      labels: config.crane?.labels,
+      proxyHeaders: this.toUndefinedAwareBoolean(config.crane?.proxyHeaders),
+      useLoadBalancer: this.toUndefinedAwareBoolean(config.crane?.useLoadBalancer),
+      customHeaders: config.crane?.customHeaders?.data,
+      extraLBAnnotations: config.crane?.extraLBAnnotations?.data,
+      capabilities: undefined, // TODO (@m8vago, @nandor-magyar): capabilities
+      annotations: !config.crane?.annotations
+        ? undefined
+        : {
+            ...(currentConfig.annotations ?? {}),
+            ...config.crane.annotations,
+          },
+      labels: !config.crane?.labels
+        ? undefined
+        : {
+            ...(currentConfig.labels ?? {}),
+            ...config.crane.labels,
+          },
     }
   }
 
@@ -191,7 +201,7 @@ export default class ImageMapper {
       configContainer: toPrismaJson(config.configContainer),
       importContainer: toPrismaJson(config.importContainer),
       user: config.user ? config.user : null,
-      tty: config.tty ?? false,
+      tty: config.tty,
       ports: toPrismaJson(config.ports),
       portRanges: toPrismaJson(config.portRanges),
       volumes: toPrismaJson(config.volumes),
@@ -265,6 +275,10 @@ export default class ImageMapper {
   }
 
   deploymentStrategyToProto(type: DeploymentStrategy): ProtoDeploymentStrategy {
+    if (!type) {
+      return null
+    }
+
     switch (type) {
       case DeploymentStrategy.recreate:
         return ProtoDeploymentStrategy.RECREATE
@@ -276,6 +290,10 @@ export default class ImageMapper {
   }
 
   deploymentStrategyToDb(type: ProtoDeploymentStrategy): DeploymentStrategy {
+    if (!type) {
+      return undefined
+    }
+
     switch (type) {
       case ProtoDeploymentStrategy.RECREATE:
         return DeploymentStrategy.recreate
@@ -286,7 +304,11 @@ export default class ImageMapper {
     }
   }
 
-  exposeStrategyToGrpc(type: ExposeStrategy): ProtoExposeStrategy {
+  exposeStrategyToProto(type: ExposeStrategy): ProtoExposeStrategy {
+    if (!type) {
+      return null
+    }
+
     switch (type) {
       case ExposeStrategy.expose:
         return ProtoExposeStrategy.EXPOSE
@@ -298,6 +320,10 @@ export default class ImageMapper {
   }
 
   exposeStrategyToDb(type: ProtoExposeStrategy): ExposeStrategy {
+    if (!type) {
+      return undefined
+    }
+
     switch (type) {
       case ProtoExposeStrategy.EXPOSE:
         return ExposeStrategy.expose
@@ -324,6 +350,10 @@ export default class ImageMapper {
   }
 
   restartPolicyToDb(type: ProtoRestartPolicy): RestartPolicy {
+    if (!type) {
+      return undefined
+    }
+
     switch (type) {
       case ProtoRestartPolicy.ALWAYS:
         return RestartPolicy.always
@@ -343,7 +373,12 @@ export default class ImageMapper {
   }
 
   networkModeToDb(it: ProtoNetworkMode): NetworkMode {
-    if (it === ProtoNetworkMode.UNRECOGNIZED || it === ProtoNetworkMode.NETWORK_MODE_UNSPECIFIED || !it) {
+    if (!it) {
+      return undefined
+    }
+
+    // ProtoNetworkMode.UNRECOGNIZED or ProtoNetworkMode.NETWORK_MODE_UNSPECIFIED
+    if (it < 1) {
       return 'bridge'
     }
 
@@ -363,7 +398,7 @@ export default class ImageMapper {
 
   logConfigToDb(logConfig?: LogConfig): ContainerConfigLog {
     if (!logConfig) {
-      return null
+      return undefined
     }
 
     return {
@@ -379,25 +414,40 @@ export default class ImageMapper {
       case DriverType.DRIVER_TYPE_UNSPECIFIED:
       case DriverType.DRIVER_TYPE_NONE:
         return 'none'
+      case DriverType.JSON_FILE:
+        return 'json-file'
       default:
         return driverTypeToJSON(logDriver).toLowerCase() as ContainerLogDriverType
     }
   }
 
-  volumesToGrpc(volumes?: ContainerConfigVolume[]): ProtoVolume[] {
-    if (!volumes) {
-      return []
+  logDriverToProto(it: ContainerLogDriverType): DriverType {
+    switch (it) {
+      case undefined:
+      case null:
+      case 'none':
+        return DriverType.DRIVER_TYPE_NONE
+      case 'json-file':
+        return DriverType.JSON_FILE
+      default:
+        return driverTypeFromJSON(it.toUpperCase())
     }
-
-    return volumes.map(volume => ({ ...volume, type: this.volumeTypeToGrpc(volume.type) } as ProtoVolume))
   }
 
   volumesToDb(volumes?: ProtoVolume[]): ContainerConfigVolume[] {
     if (!volumes) {
-      return []
+      return undefined
     }
 
     return volumes.map(it => ({ ...it, type: this.volumeTypeToDb(it.type) } as ContainerConfigVolume))
+  }
+
+  volumesToProto(volumes: ContainerConfigVolume[]): ProtoVolume[] {
+    if (!volumes) {
+      return null
+    }
+
+    return volumes.map(it => ({ ...it, type: this.volumeTypeToProto(it.type) }))
   }
 
   volumeTypeToDb(it: ProtoVolumeType): VolumeType {
@@ -413,7 +463,7 @@ export default class ImageMapper {
     }
   }
 
-  volumeTypeToGrpc(it?: VolumeType): ProtoVolumeType {
+  volumeTypeToProto(it?: VolumeType): ProtoVolumeType {
     if (!it) {
       return ProtoVolumeType.RO
     }
@@ -445,6 +495,28 @@ export default class ImageMapper {
       default:
         return null
     }
+  }
+
+  secretToDb(secret: ProtoUniqueSecretKey): UniqueSecretKey {
+    return {
+      id: secret.id,
+      key: secret.key,
+      required: secret.required,
+    }
+  }
+
+  secretToProto(secret: UniqueSecretKey): ProtoUniqueSecretKey {
+    return {
+      ...secret,
+    }
+  }
+
+  toUndefinedAwareBoolean(it: boolean): boolean {
+    if (it === true || it === false) {
+      return it
+    }
+
+    return undefined
   }
 }
 

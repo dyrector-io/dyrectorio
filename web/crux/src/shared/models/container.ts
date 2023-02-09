@@ -111,11 +111,11 @@ export type InitContainer = {
   id: string
   name: string
   image: string
-  command?: UniqueKey[]
-  args?: UniqueKey[]
-  environment?: UniqueKeyValue[]
-  useParentConfig?: boolean
-  volumes?: InitContainerVolumeLink[]
+  command: UniqueKey[]
+  args: UniqueKey[]
+  environment: UniqueKeyValue[]
+  useParentConfig: boolean
+  volumes: InitContainerVolumeLink[]
 }
 
 export type Marker = {

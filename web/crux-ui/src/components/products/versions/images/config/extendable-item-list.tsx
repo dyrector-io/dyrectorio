@@ -52,7 +52,7 @@ const mergeItems =
     if (!state.editedItemId) {
       return {
         ...state,
-        items,
+        items: items ?? [],
       }
     }
 
@@ -119,7 +119,7 @@ const ExtendableItemList = <T extends Item>(props: ExtendableItemListProps<T>) =
   } = props
 
   const [state, dispatch] = useRepatch<InternalState<T>>({
-    items: propsItems,
+    items: propsItems ?? [],
     editedItemId: null,
   })
 
@@ -128,7 +128,10 @@ const ExtendableItemList = <T extends Item>(props: ExtendableItemListProps<T>) =
   const reduceAndSendPatch = (reducer: RepatchAction<InternalState<T>>) => {
     const newState = reducer(state)
     dispatch(reducer)
-    propsOnPatch(newState.items)
+
+    if (JSON.stringify(newState.items) !== JSON.stringify(propsItems)) {
+      propsOnPatch(newState.items)
+    }
   }
 
   const { items } = state

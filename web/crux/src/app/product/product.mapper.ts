@@ -14,22 +14,22 @@ import VersionMapper, { VersionWithChildren } from '../version/version.mapper'
 export default class ProductMapper {
   constructor(private versionMapper: VersionMapper) {}
 
-  toGrpc(product: ProductWithCounts): ProductReponse {
+  listItemToProto(product: ProductWithCounts): ProductReponse {
     return {
       ...product,
       audit: AuditResponse.fromJSON(product),
-      type: this.typeToGrpc(product.type),
+      type: this.typeToProto(product.type),
       versionCount: product._count.versions,
     }
   }
 
-  detailsToGrpc(product: ProductWithVersions): ProductDetailsReponse {
+  detailsToProto(product: ProductWithVersions): ProductDetailsReponse {
     return {
       ...product,
       audit: AuditResponse.fromJSON(product),
-      type: this.typeToGrpc(product.type),
+      type: this.typeToProto(product.type),
       deletable: product.deletable,
-      versions: product.versions.map(it => this.versionMapper.toGrpc(it)),
+      versions: product.versions.map(it => this.versionMapper.listItemToProto(it)),
     }
   }
 
@@ -37,7 +37,7 @@ export default class ProductMapper {
     return productTypeToJSON(type).toLowerCase() as ProductTypeEnum
   }
 
-  typeToGrpc(type: ProductTypeEnum): GrpcProductType {
+  typeToProto(type: ProductTypeEnum): GrpcProductType {
     return productTypeFromJSON(type.toUpperCase())
   }
 }

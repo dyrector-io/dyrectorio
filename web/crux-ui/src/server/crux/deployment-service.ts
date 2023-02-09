@@ -37,8 +37,12 @@ import { timestampToUTC } from '@app/utils'
 import { WsMessage } from '@app/websockets/common'
 import { Identity } from '@ory/kratos-client'
 import { GrpcConnection, protomisify, ProtoSubscriptionOptions } from './grpc-connection'
-import { deploymentEventTypeToDto, deploymentStatusToDto, instanceToDto } from './mappers/deployment-mappers'
-import { containerConfigToProto } from './mappers/image-mappers'
+import {
+  deploymentEventTypeToDto,
+  deploymentStatusToDto,
+  instanceContainerConfigToProto,
+  instanceToDto,
+} from './mappers/deployment-mappers'
 import { containerStateToDto, nodeStatusToDto } from './mappers/node-mappers'
 import { versionTypeToDyo } from './mappers/version-mappers'
 
@@ -195,7 +199,7 @@ class DyoDeploymentService {
         : {
             id: dto.instance.instanceId,
             accessedBy: this.identity.id,
-            config: containerConfigToProto(dto.instance.config),
+            config: instanceContainerConfigToProto(dto.instance.config),
           },
     }
 

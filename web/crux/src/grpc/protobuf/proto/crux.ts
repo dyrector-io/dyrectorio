@@ -990,11 +990,15 @@ export interface InitContainer {
   id: string
   name: string
   image: string
-  useParentConfig?: boolean | undefined
+  useParentConfig: boolean
   volumes: VolumeLink[]
   command: UniqueKey[]
   args: UniqueKey[]
   environment: UniqueKeyValue[]
+}
+
+export interface InitContainerList {
+  data: InitContainer[]
 }
 
 export interface ImportContainer {
@@ -1014,6 +1018,10 @@ export interface Port {
   external?: number | undefined
 }
 
+export interface PortList {
+  data: Port[]
+}
+
 export interface PortRange {
   from: number
   to: number
@@ -1025,6 +1033,10 @@ export interface PortRangeBinding {
   external: PortRange | undefined
 }
 
+export interface PortRangeBindingList {
+  data: PortRangeBinding[]
+}
+
 export interface Volume {
   id: string
   name: string
@@ -1034,7 +1046,11 @@ export interface Volume {
   class?: string | undefined
 }
 
-export interface KeyList {
+export interface VolumeList {
+  data: Volume[]
+}
+
+export interface UniqueKeyList {
   data: UniqueKey[]
 }
 
@@ -1044,17 +1060,31 @@ export interface UniqueKeyValue {
   value: string
 }
 
+export interface UniqueKeyValueList {
+  data: UniqueKeyValue[]
+}
+
+export interface UniqueSecretKey {
+  id: string
+  key: string
+  required: boolean
+}
+
+export interface UniqueSecretKeyList {
+  data: UniqueSecretKey[]
+}
+
 export interface UniqueSecretKeyValue {
   id: string
   key: string
   value: string
-  publicKey: string
   required: boolean
-  encrypted?: boolean | undefined
+  encrypted: boolean
+  publicKey?: string | undefined
 }
 
-export interface KeyValueList {
-  data: UniqueKeyValue[]
+export interface UniqueSecretKeyValueList {
+  data: UniqueSecretKeyValue[]
 }
 
 export interface Marker {
@@ -1067,8 +1097,8 @@ export interface DagentContainerConfig {
   logConfig?: LogConfig | undefined
   restartPolicy?: RestartPolicy | undefined
   networkMode?: NetworkMode | undefined
-  networks: UniqueKey[]
-  labels: UniqueKeyValue[]
+  networks?: UniqueKeyList | undefined
+  labels?: UniqueKeyValueList | undefined
 }
 
 export interface CraneContainerConfig {
@@ -1079,33 +1109,39 @@ export interface CraneContainerConfig {
   useLoadBalancer?: boolean | undefined
   annotations?: Marker | undefined
   labels?: Marker | undefined
-  customHeaders: UniqueKey[]
-  extraLBAnnotations: UniqueKeyValue[]
+  customHeaders?: UniqueKeyList | undefined
+  extraLBAnnotations?: UniqueKeyValueList | undefined
 }
 
 export interface CommonContainerConfig {
-  name: string
+  name?: string | undefined
   expose?: ExposeStrategy | undefined
   ingress?: Ingress | undefined
   configContainer?: ConfigContainer | undefined
   importContainer?: ImportContainer | undefined
   user?: number | undefined
   TTY?: boolean | undefined
-  ports: Port[]
-  portRanges: PortRangeBinding[]
-  volumes: Volume[]
-  commands: UniqueKey[]
-  args: UniqueKey[]
-  environment: UniqueKeyValue[]
-  secrets: UniqueSecretKeyValue[]
-  initContainers: InitContainer[]
+  ports?: PortList | undefined
+  portRanges?: PortRangeBindingList | undefined
+  volumes?: VolumeList | undefined
+  commands?: UniqueKeyList | undefined
+  args?: UniqueKeyList | undefined
+  environment?: UniqueKeyValueList | undefined
+  initContainers?: InitContainerList | undefined
 }
 
-export interface ContainerConfig {
+export interface ImageContainerConfig {
   common?: CommonContainerConfig | undefined
   dagent?: DagentContainerConfig | undefined
   crane?: CraneContainerConfig | undefined
-  capabilities: UniqueKeyValue[]
+  secrets?: UniqueSecretKeyList | undefined
+}
+
+export interface InstanceContainerConfig {
+  common?: CommonContainerConfig | undefined
+  dagent?: DagentContainerConfig | undefined
+  crane?: CraneContainerConfig | undefined
+  secrets?: UniqueSecretKeyValueList | undefined
 }
 
 export interface ImageResponse {
@@ -1114,7 +1150,7 @@ export interface ImageResponse {
   tag: string
   order: number
   registryId: string
-  config: ContainerConfig | undefined
+  config: ImageContainerConfig | undefined
   createdAt: Timestamp | undefined
   registryName: string
   registryType: RegistryType
@@ -1145,7 +1181,7 @@ export interface PatchImageRequest {
   id: string
   accessedBy: string
   tag?: string | undefined
-  config?: ContainerConfig | undefined
+  config?: ImageContainerConfig | undefined
 }
 
 export interface NodeResponse {
@@ -1286,7 +1322,7 @@ export interface UpdateDeploymentRequest {
 export interface PatchDeploymentRequest {
   id: string
   accessedBy: string
-  environment?: KeyValueList | undefined
+  environment?: UniqueKeyValueList | undefined
   instance?: PatchInstanceRequest | undefined
 }
 
@@ -1295,13 +1331,13 @@ export interface InstanceResponse {
   audit: AuditResponse | undefined
   image: ImageResponse | undefined
   state?: ContainerState | undefined
-  config?: ContainerConfig | undefined
+  config?: InstanceContainerConfig | undefined
 }
 
 export interface PatchInstanceRequest {
   id: string
   accessedBy: string
-  config?: ContainerConfig | undefined
+  config?: InstanceContainerConfig | undefined
 }
 
 export interface DeploymentListResponse {
@@ -2695,7 +2731,7 @@ export const VolumeLink = {
 }
 
 function createBaseInitContainer(): InitContainer {
-  return { id: '', name: '', image: '', volumes: [], command: [], args: [], environment: [] }
+  return { id: '', name: '', image: '', useParentConfig: false, volumes: [], command: [], args: [], environment: [] }
 }
 
 export const InitContainer = {
@@ -2704,7 +2740,7 @@ export const InitContainer = {
       id: isSet(object.id) ? String(object.id) : '',
       name: isSet(object.name) ? String(object.name) : '',
       image: isSet(object.image) ? String(object.image) : '',
-      useParentConfig: isSet(object.useParentConfig) ? Boolean(object.useParentConfig) : undefined,
+      useParentConfig: isSet(object.useParentConfig) ? Boolean(object.useParentConfig) : false,
       volumes: Array.isArray(object?.volumes) ? object.volumes.map((e: any) => VolumeLink.fromJSON(e)) : [],
       command: Array.isArray(object?.command) ? object.command.map((e: any) => UniqueKey.fromJSON(e)) : [],
       args: Array.isArray(object?.args) ? object.args.map((e: any) => UniqueKey.fromJSON(e)) : [],
@@ -2739,6 +2775,26 @@ export const InitContainer = {
       obj.environment = message.environment.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
     } else {
       obj.environment = []
+    }
+    return obj
+  },
+}
+
+function createBaseInitContainerList(): InitContainerList {
+  return { data: [] }
+}
+
+export const InitContainerList = {
+  fromJSON(object: any): InitContainerList {
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => InitContainer.fromJSON(e)) : [] }
+  },
+
+  toJSON(message: InitContainerList): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? InitContainer.toJSON(e) : undefined))
+    } else {
+      obj.data = []
     }
     return obj
   },
@@ -2818,6 +2874,26 @@ export const Port = {
   },
 }
 
+function createBasePortList(): PortList {
+  return { data: [] }
+}
+
+export const PortList = {
+  fromJSON(object: any): PortList {
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => Port.fromJSON(e)) : [] }
+  },
+
+  toJSON(message: PortList): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? Port.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+}
+
 function createBasePortRange(): PortRange {
   return { from: 0, to: 0 }
 }
@@ -2857,6 +2933,26 @@ export const PortRangeBinding = {
   },
 }
 
+function createBasePortRangeBindingList(): PortRangeBindingList {
+  return { data: [] }
+}
+
+export const PortRangeBindingList = {
+  fromJSON(object: any): PortRangeBindingList {
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => PortRangeBinding.fromJSON(e)) : [] }
+  },
+
+  toJSON(message: PortRangeBindingList): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? PortRangeBinding.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+}
+
 function createBaseVolume(): Volume {
   return { id: '', name: '', path: '' }
 }
@@ -2885,16 +2981,36 @@ export const Volume = {
   },
 }
 
-function createBaseKeyList(): KeyList {
+function createBaseVolumeList(): VolumeList {
   return { data: [] }
 }
 
-export const KeyList = {
-  fromJSON(object: any): KeyList {
+export const VolumeList = {
+  fromJSON(object: any): VolumeList {
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => Volume.fromJSON(e)) : [] }
+  },
+
+  toJSON(message: VolumeList): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? Volume.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+}
+
+function createBaseUniqueKeyList(): UniqueKeyList {
+  return { data: [] }
+}
+
+export const UniqueKeyList = {
+  fromJSON(object: any): UniqueKeyList {
     return { data: Array.isArray(object?.data) ? object.data.map((e: any) => UniqueKey.fromJSON(e)) : [] }
   },
 
-  toJSON(message: KeyList): unknown {
+  toJSON(message: UniqueKeyList): unknown {
     const obj: any = {}
     if (message.data) {
       obj.data = message.data.map(e => (e ? UniqueKey.toJSON(e) : undefined))
@@ -2927,8 +3043,70 @@ export const UniqueKeyValue = {
   },
 }
 
+function createBaseUniqueKeyValueList(): UniqueKeyValueList {
+  return { data: [] }
+}
+
+export const UniqueKeyValueList = {
+  fromJSON(object: any): UniqueKeyValueList {
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => UniqueKeyValue.fromJSON(e)) : [] }
+  },
+
+  toJSON(message: UniqueKeyValueList): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+}
+
+function createBaseUniqueSecretKey(): UniqueSecretKey {
+  return { id: '', key: '', required: false }
+}
+
+export const UniqueSecretKey = {
+  fromJSON(object: any): UniqueSecretKey {
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      key: isSet(object.key) ? String(object.key) : '',
+      required: isSet(object.required) ? Boolean(object.required) : false,
+    }
+  },
+
+  toJSON(message: UniqueSecretKey): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.key !== undefined && (obj.key = message.key)
+    message.required !== undefined && (obj.required = message.required)
+    return obj
+  },
+}
+
+function createBaseUniqueSecretKeyList(): UniqueSecretKeyList {
+  return { data: [] }
+}
+
+export const UniqueSecretKeyList = {
+  fromJSON(object: any): UniqueSecretKeyList {
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => UniqueSecretKey.fromJSON(e)) : [] }
+  },
+
+  toJSON(message: UniqueSecretKeyList): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? UniqueSecretKey.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+}
+
 function createBaseUniqueSecretKeyValue(): UniqueSecretKeyValue {
-  return { id: '', key: '', value: '', publicKey: '', required: false }
+  return { id: '', key: '', value: '', required: false, encrypted: false }
 }
 
 export const UniqueSecretKeyValue = {
@@ -2937,9 +3115,9 @@ export const UniqueSecretKeyValue = {
       id: isSet(object.id) ? String(object.id) : '',
       key: isSet(object.key) ? String(object.key) : '',
       value: isSet(object.value) ? String(object.value) : '',
-      publicKey: isSet(object.publicKey) ? String(object.publicKey) : '',
       required: isSet(object.required) ? Boolean(object.required) : false,
-      encrypted: isSet(object.encrypted) ? Boolean(object.encrypted) : undefined,
+      encrypted: isSet(object.encrypted) ? Boolean(object.encrypted) : false,
+      publicKey: isSet(object.publicKey) ? String(object.publicKey) : undefined,
     }
   },
 
@@ -2948,26 +3126,26 @@ export const UniqueSecretKeyValue = {
     message.id !== undefined && (obj.id = message.id)
     message.key !== undefined && (obj.key = message.key)
     message.value !== undefined && (obj.value = message.value)
-    message.publicKey !== undefined && (obj.publicKey = message.publicKey)
     message.required !== undefined && (obj.required = message.required)
     message.encrypted !== undefined && (obj.encrypted = message.encrypted)
+    message.publicKey !== undefined && (obj.publicKey = message.publicKey)
     return obj
   },
 }
 
-function createBaseKeyValueList(): KeyValueList {
+function createBaseUniqueSecretKeyValueList(): UniqueSecretKeyValueList {
   return { data: [] }
 }
 
-export const KeyValueList = {
-  fromJSON(object: any): KeyValueList {
-    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => UniqueKeyValue.fromJSON(e)) : [] }
+export const UniqueSecretKeyValueList = {
+  fromJSON(object: any): UniqueSecretKeyValueList {
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => UniqueSecretKeyValue.fromJSON(e)) : [] }
   },
 
-  toJSON(message: KeyValueList): unknown {
+  toJSON(message: UniqueSecretKeyValueList): unknown {
     const obj: any = {}
     if (message.data) {
-      obj.data = message.data.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
+      obj.data = message.data.map(e => (e ? UniqueSecretKeyValue.toJSON(e) : undefined))
     } else {
       obj.data = []
     }
@@ -3012,7 +3190,7 @@ export const Marker = {
 }
 
 function createBaseDagentContainerConfig(): DagentContainerConfig {
-  return { networks: [], labels: [] }
+  return {}
 }
 
 export const DagentContainerConfig = {
@@ -3021,8 +3199,8 @@ export const DagentContainerConfig = {
       logConfig: isSet(object.logConfig) ? LogConfig.fromJSON(object.logConfig) : undefined,
       restartPolicy: isSet(object.restartPolicy) ? restartPolicyFromJSON(object.restartPolicy) : undefined,
       networkMode: isSet(object.networkMode) ? networkModeFromJSON(object.networkMode) : undefined,
-      networks: Array.isArray(object?.networks) ? object.networks.map((e: any) => UniqueKey.fromJSON(e)) : [],
-      labels: Array.isArray(object?.labels) ? object.labels.map((e: any) => UniqueKeyValue.fromJSON(e)) : [],
+      networks: isSet(object.networks) ? UniqueKeyList.fromJSON(object.networks) : undefined,
+      labels: isSet(object.labels) ? UniqueKeyValueList.fromJSON(object.labels) : undefined,
     }
   },
 
@@ -3034,22 +3212,16 @@ export const DagentContainerConfig = {
       (obj.restartPolicy = message.restartPolicy !== undefined ? restartPolicyToJSON(message.restartPolicy) : undefined)
     message.networkMode !== undefined &&
       (obj.networkMode = message.networkMode !== undefined ? networkModeToJSON(message.networkMode) : undefined)
-    if (message.networks) {
-      obj.networks = message.networks.map(e => (e ? UniqueKey.toJSON(e) : undefined))
-    } else {
-      obj.networks = []
-    }
-    if (message.labels) {
-      obj.labels = message.labels.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
-    } else {
-      obj.labels = []
-    }
+    message.networks !== undefined &&
+      (obj.networks = message.networks ? UniqueKeyList.toJSON(message.networks) : undefined)
+    message.labels !== undefined &&
+      (obj.labels = message.labels ? UniqueKeyValueList.toJSON(message.labels) : undefined)
     return obj
   },
 }
 
 function createBaseCraneContainerConfig(): CraneContainerConfig {
-  return { customHeaders: [], extraLBAnnotations: [] }
+  return {}
 }
 
 export const CraneContainerConfig = {
@@ -3066,12 +3238,10 @@ export const CraneContainerConfig = {
       useLoadBalancer: isSet(object.useLoadBalancer) ? Boolean(object.useLoadBalancer) : undefined,
       annotations: isSet(object.annotations) ? Marker.fromJSON(object.annotations) : undefined,
       labels: isSet(object.labels) ? Marker.fromJSON(object.labels) : undefined,
-      customHeaders: Array.isArray(object?.customHeaders)
-        ? object.customHeaders.map((e: any) => UniqueKey.fromJSON(e))
-        : [],
-      extraLBAnnotations: Array.isArray(object?.extraLBAnnotations)
-        ? object.extraLBAnnotations.map((e: any) => UniqueKeyValue.fromJSON(e))
-        : [],
+      customHeaders: isSet(object.customHeaders) ? UniqueKeyList.fromJSON(object.customHeaders) : undefined,
+      extraLBAnnotations: isSet(object.extraLBAnnotations)
+        ? UniqueKeyValueList.fromJSON(object.extraLBAnnotations)
+        : undefined,
     }
   },
 
@@ -3091,58 +3261,37 @@ export const CraneContainerConfig = {
     message.annotations !== undefined &&
       (obj.annotations = message.annotations ? Marker.toJSON(message.annotations) : undefined)
     message.labels !== undefined && (obj.labels = message.labels ? Marker.toJSON(message.labels) : undefined)
-    if (message.customHeaders) {
-      obj.customHeaders = message.customHeaders.map(e => (e ? UniqueKey.toJSON(e) : undefined))
-    } else {
-      obj.customHeaders = []
-    }
-    if (message.extraLBAnnotations) {
-      obj.extraLBAnnotations = message.extraLBAnnotations.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
-    } else {
-      obj.extraLBAnnotations = []
-    }
+    message.customHeaders !== undefined &&
+      (obj.customHeaders = message.customHeaders ? UniqueKeyList.toJSON(message.customHeaders) : undefined)
+    message.extraLBAnnotations !== undefined &&
+      (obj.extraLBAnnotations = message.extraLBAnnotations
+        ? UniqueKeyValueList.toJSON(message.extraLBAnnotations)
+        : undefined)
     return obj
   },
 }
 
 function createBaseCommonContainerConfig(): CommonContainerConfig {
-  return {
-    name: '',
-    ports: [],
-    portRanges: [],
-    volumes: [],
-    commands: [],
-    args: [],
-    environment: [],
-    secrets: [],
-    initContainers: [],
-  }
+  return {}
 }
 
 export const CommonContainerConfig = {
   fromJSON(object: any): CommonContainerConfig {
     return {
-      name: isSet(object.name) ? String(object.name) : '',
+      name: isSet(object.name) ? String(object.name) : undefined,
       expose: isSet(object.expose) ? exposeStrategyFromJSON(object.expose) : undefined,
       ingress: isSet(object.ingress) ? Ingress.fromJSON(object.ingress) : undefined,
       configContainer: isSet(object.configContainer) ? ConfigContainer.fromJSON(object.configContainer) : undefined,
       importContainer: isSet(object.importContainer) ? ImportContainer.fromJSON(object.importContainer) : undefined,
       user: isSet(object.user) ? Number(object.user) : undefined,
       TTY: isSet(object.TTY) ? Boolean(object.TTY) : undefined,
-      ports: Array.isArray(object?.ports) ? object.ports.map((e: any) => Port.fromJSON(e)) : [],
-      portRanges: Array.isArray(object?.portRanges)
-        ? object.portRanges.map((e: any) => PortRangeBinding.fromJSON(e))
-        : [],
-      volumes: Array.isArray(object?.volumes) ? object.volumes.map((e: any) => Volume.fromJSON(e)) : [],
-      commands: Array.isArray(object?.commands) ? object.commands.map((e: any) => UniqueKey.fromJSON(e)) : [],
-      args: Array.isArray(object?.args) ? object.args.map((e: any) => UniqueKey.fromJSON(e)) : [],
-      environment: Array.isArray(object?.environment)
-        ? object.environment.map((e: any) => UniqueKeyValue.fromJSON(e))
-        : [],
-      secrets: Array.isArray(object?.secrets) ? object.secrets.map((e: any) => UniqueSecretKeyValue.fromJSON(e)) : [],
-      initContainers: Array.isArray(object?.initContainers)
-        ? object.initContainers.map((e: any) => InitContainer.fromJSON(e))
-        : [],
+      ports: isSet(object.ports) ? PortList.fromJSON(object.ports) : undefined,
+      portRanges: isSet(object.portRanges) ? PortRangeBindingList.fromJSON(object.portRanges) : undefined,
+      volumes: isSet(object.volumes) ? VolumeList.fromJSON(object.volumes) : undefined,
+      commands: isSet(object.commands) ? UniqueKeyList.fromJSON(object.commands) : undefined,
+      args: isSet(object.args) ? UniqueKeyList.fromJSON(object.args) : undefined,
+      environment: isSet(object.environment) ? UniqueKeyValueList.fromJSON(object.environment) : undefined,
+      initContainers: isSet(object.initContainers) ? InitContainerList.fromJSON(object.initContainers) : undefined,
     }
   },
 
@@ -3158,78 +3307,71 @@ export const CommonContainerConfig = {
       (obj.importContainer = message.importContainer ? ImportContainer.toJSON(message.importContainer) : undefined)
     message.user !== undefined && (obj.user = Math.round(message.user))
     message.TTY !== undefined && (obj.TTY = message.TTY)
-    if (message.ports) {
-      obj.ports = message.ports.map(e => (e ? Port.toJSON(e) : undefined))
-    } else {
-      obj.ports = []
-    }
-    if (message.portRanges) {
-      obj.portRanges = message.portRanges.map(e => (e ? PortRangeBinding.toJSON(e) : undefined))
-    } else {
-      obj.portRanges = []
-    }
-    if (message.volumes) {
-      obj.volumes = message.volumes.map(e => (e ? Volume.toJSON(e) : undefined))
-    } else {
-      obj.volumes = []
-    }
-    if (message.commands) {
-      obj.commands = message.commands.map(e => (e ? UniqueKey.toJSON(e) : undefined))
-    } else {
-      obj.commands = []
-    }
-    if (message.args) {
-      obj.args = message.args.map(e => (e ? UniqueKey.toJSON(e) : undefined))
-    } else {
-      obj.args = []
-    }
-    if (message.environment) {
-      obj.environment = message.environment.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
-    } else {
-      obj.environment = []
-    }
-    if (message.secrets) {
-      obj.secrets = message.secrets.map(e => (e ? UniqueSecretKeyValue.toJSON(e) : undefined))
-    } else {
-      obj.secrets = []
-    }
-    if (message.initContainers) {
-      obj.initContainers = message.initContainers.map(e => (e ? InitContainer.toJSON(e) : undefined))
-    } else {
-      obj.initContainers = []
-    }
+    message.ports !== undefined && (obj.ports = message.ports ? PortList.toJSON(message.ports) : undefined)
+    message.portRanges !== undefined &&
+      (obj.portRanges = message.portRanges ? PortRangeBindingList.toJSON(message.portRanges) : undefined)
+    message.volumes !== undefined && (obj.volumes = message.volumes ? VolumeList.toJSON(message.volumes) : undefined)
+    message.commands !== undefined &&
+      (obj.commands = message.commands ? UniqueKeyList.toJSON(message.commands) : undefined)
+    message.args !== undefined && (obj.args = message.args ? UniqueKeyList.toJSON(message.args) : undefined)
+    message.environment !== undefined &&
+      (obj.environment = message.environment ? UniqueKeyValueList.toJSON(message.environment) : undefined)
+    message.initContainers !== undefined &&
+      (obj.initContainers = message.initContainers ? InitContainerList.toJSON(message.initContainers) : undefined)
     return obj
   },
 }
 
-function createBaseContainerConfig(): ContainerConfig {
-  return { capabilities: [] }
+function createBaseImageContainerConfig(): ImageContainerConfig {
+  return {}
 }
 
-export const ContainerConfig = {
-  fromJSON(object: any): ContainerConfig {
+export const ImageContainerConfig = {
+  fromJSON(object: any): ImageContainerConfig {
     return {
       common: isSet(object.common) ? CommonContainerConfig.fromJSON(object.common) : undefined,
       dagent: isSet(object.dagent) ? DagentContainerConfig.fromJSON(object.dagent) : undefined,
       crane: isSet(object.crane) ? CraneContainerConfig.fromJSON(object.crane) : undefined,
-      capabilities: Array.isArray(object?.capabilities)
-        ? object.capabilities.map((e: any) => UniqueKeyValue.fromJSON(e))
-        : [],
+      secrets: isSet(object.secrets) ? UniqueSecretKeyList.fromJSON(object.secrets) : undefined,
     }
   },
 
-  toJSON(message: ContainerConfig): unknown {
+  toJSON(message: ImageContainerConfig): unknown {
     const obj: any = {}
     message.common !== undefined &&
       (obj.common = message.common ? CommonContainerConfig.toJSON(message.common) : undefined)
     message.dagent !== undefined &&
       (obj.dagent = message.dagent ? DagentContainerConfig.toJSON(message.dagent) : undefined)
     message.crane !== undefined && (obj.crane = message.crane ? CraneContainerConfig.toJSON(message.crane) : undefined)
-    if (message.capabilities) {
-      obj.capabilities = message.capabilities.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
-    } else {
-      obj.capabilities = []
+    message.secrets !== undefined &&
+      (obj.secrets = message.secrets ? UniqueSecretKeyList.toJSON(message.secrets) : undefined)
+    return obj
+  },
+}
+
+function createBaseInstanceContainerConfig(): InstanceContainerConfig {
+  return {}
+}
+
+export const InstanceContainerConfig = {
+  fromJSON(object: any): InstanceContainerConfig {
+    return {
+      common: isSet(object.common) ? CommonContainerConfig.fromJSON(object.common) : undefined,
+      dagent: isSet(object.dagent) ? DagentContainerConfig.fromJSON(object.dagent) : undefined,
+      crane: isSet(object.crane) ? CraneContainerConfig.fromJSON(object.crane) : undefined,
+      secrets: isSet(object.secrets) ? UniqueSecretKeyValueList.fromJSON(object.secrets) : undefined,
     }
+  },
+
+  toJSON(message: InstanceContainerConfig): unknown {
+    const obj: any = {}
+    message.common !== undefined &&
+      (obj.common = message.common ? CommonContainerConfig.toJSON(message.common) : undefined)
+    message.dagent !== undefined &&
+      (obj.dagent = message.dagent ? DagentContainerConfig.toJSON(message.dagent) : undefined)
+    message.crane !== undefined && (obj.crane = message.crane ? CraneContainerConfig.toJSON(message.crane) : undefined)
+    message.secrets !== undefined &&
+      (obj.secrets = message.secrets ? UniqueSecretKeyValueList.toJSON(message.secrets) : undefined)
     return obj
   },
 }
@@ -3256,7 +3398,7 @@ export const ImageResponse = {
       tag: isSet(object.tag) ? String(object.tag) : '',
       order: isSet(object.order) ? Number(object.order) : 0,
       registryId: isSet(object.registryId) ? String(object.registryId) : '',
-      config: isSet(object.config) ? ContainerConfig.fromJSON(object.config) : undefined,
+      config: isSet(object.config) ? ImageContainerConfig.fromJSON(object.config) : undefined,
       createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
       registryName: isSet(object.registryName) ? String(object.registryName) : '',
       registryType: isSet(object.registryType) ? registryTypeFromJSON(object.registryType) : 0,
@@ -3270,7 +3412,8 @@ export const ImageResponse = {
     message.tag !== undefined && (obj.tag = message.tag)
     message.order !== undefined && (obj.order = Math.round(message.order))
     message.registryId !== undefined && (obj.registryId = message.registryId)
-    message.config !== undefined && (obj.config = message.config ? ContainerConfig.toJSON(message.config) : undefined)
+    message.config !== undefined &&
+      (obj.config = message.config ? ImageContainerConfig.toJSON(message.config) : undefined)
     message.createdAt !== undefined && (obj.createdAt = fromTimestamp(message.createdAt).toISOString())
     message.registryName !== undefined && (obj.registryName = message.registryName)
     message.registryType !== undefined && (obj.registryType = registryTypeToJSON(message.registryType))
@@ -3384,7 +3527,7 @@ export const PatchImageRequest = {
       id: isSet(object.id) ? String(object.id) : '',
       accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       tag: isSet(object.tag) ? String(object.tag) : undefined,
-      config: isSet(object.config) ? ContainerConfig.fromJSON(object.config) : undefined,
+      config: isSet(object.config) ? ImageContainerConfig.fromJSON(object.config) : undefined,
     }
   },
 
@@ -3393,7 +3536,8 @@ export const PatchImageRequest = {
     message.id !== undefined && (obj.id = message.id)
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.tag !== undefined && (obj.tag = message.tag)
-    message.config !== undefined && (obj.config = message.config ? ContainerConfig.toJSON(message.config) : undefined)
+    message.config !== undefined &&
+      (obj.config = message.config ? ImageContainerConfig.toJSON(message.config) : undefined)
     return obj
   },
 }
@@ -3884,7 +4028,7 @@ export const PatchDeploymentRequest = {
     return {
       id: isSet(object.id) ? String(object.id) : '',
       accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      environment: isSet(object.environment) ? KeyValueList.fromJSON(object.environment) : undefined,
+      environment: isSet(object.environment) ? UniqueKeyValueList.fromJSON(object.environment) : undefined,
       instance: isSet(object.instance) ? PatchInstanceRequest.fromJSON(object.instance) : undefined,
     }
   },
@@ -3894,7 +4038,7 @@ export const PatchDeploymentRequest = {
     message.id !== undefined && (obj.id = message.id)
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.environment !== undefined &&
-      (obj.environment = message.environment ? KeyValueList.toJSON(message.environment) : undefined)
+      (obj.environment = message.environment ? UniqueKeyValueList.toJSON(message.environment) : undefined)
     message.instance !== undefined &&
       (obj.instance = message.instance ? PatchInstanceRequest.toJSON(message.instance) : undefined)
     return obj
@@ -3912,7 +4056,7 @@ export const InstanceResponse = {
       audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
       image: isSet(object.image) ? ImageResponse.fromJSON(object.image) : undefined,
       state: isSet(object.state) ? containerStateFromJSON(object.state) : undefined,
-      config: isSet(object.config) ? ContainerConfig.fromJSON(object.config) : undefined,
+      config: isSet(object.config) ? InstanceContainerConfig.fromJSON(object.config) : undefined,
     }
   },
 
@@ -3923,7 +4067,8 @@ export const InstanceResponse = {
     message.image !== undefined && (obj.image = message.image ? ImageResponse.toJSON(message.image) : undefined)
     message.state !== undefined &&
       (obj.state = message.state !== undefined ? containerStateToJSON(message.state) : undefined)
-    message.config !== undefined && (obj.config = message.config ? ContainerConfig.toJSON(message.config) : undefined)
+    message.config !== undefined &&
+      (obj.config = message.config ? InstanceContainerConfig.toJSON(message.config) : undefined)
     return obj
   },
 }
@@ -3937,7 +4082,7 @@ export const PatchInstanceRequest = {
     return {
       id: isSet(object.id) ? String(object.id) : '',
       accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      config: isSet(object.config) ? ContainerConfig.fromJSON(object.config) : undefined,
+      config: isSet(object.config) ? InstanceContainerConfig.fromJSON(object.config) : undefined,
     }
   },
 
@@ -3945,7 +4090,8 @@ export const PatchInstanceRequest = {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
-    message.config !== undefined && (obj.config = message.config ? ContainerConfig.toJSON(message.config) : undefined)
+    message.config !== undefined &&
+      (obj.config = message.config ? InstanceContainerConfig.toJSON(message.config) : undefined)
     return obj
   },
 }

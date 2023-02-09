@@ -36,7 +36,7 @@ export default class ImageService {
     })
 
     return {
-      data: images.map(it => this.mapper.toGrpc(it)),
+      data: images.map(it => this.mapper.detailsToProto(it)),
     }
   }
 
@@ -51,7 +51,7 @@ export default class ImageService {
       },
     })
 
-    return this.mapper.toGrpc(image)
+    return this.mapper.detailsToProto(image)
   }
 
   async addImagesToVersion(request: AddImagesToVersionRequest): Promise<ImageListResponse> {
@@ -113,7 +113,7 @@ export default class ImageService {
     this.imagesAddedToVersionEvent.next(images)
 
     return {
-      data: images.map(it => this.mapper.toGrpc(it)),
+      data: images.map(it => this.mapper.detailsToProto(it)),
     }
   }
 
@@ -139,7 +139,13 @@ export default class ImageService {
     let config: Partial<ContainerConfigData>
 
     if (request.config) {
-      config = this.mapper.configProtoToContainerConfigData(request.config)
+      const currentConfig = await this.prisma.containerConfig.findUnique({
+        where: {
+          imageId: request.id,
+        },
+      })
+
+      config = this.mapper.configProtoToContainerConfigData(currentConfig as any as ContainerConfigData, request.config)
     }
 
     const image = await this.prisma.image.update({
@@ -148,9 +154,9 @@ export default class ImageService {
         registry: true,
       },
       data: {
-        tag: request.tag,
+        tag: request.tag ?? undefined,
         config: {
-          update: config ? this.mapper.containerConfigDataToDb(config) : undefined,
+          update: config,
         },
         updatedBy: request.accessedBy,
       },

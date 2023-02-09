@@ -568,13 +568,15 @@ message InitContainer {
   string id = 100;
   string name = 101;
   string image = 102;
-  optional bool useParentConfig = 103;
+  bool useParentConfig = 103;
 
   repeated VolumeLink volumes = 1000;
   repeated common.UniqueKey command = 1001;
   repeated common.UniqueKey args = 1002;
   repeated UniqueKeyValue environment = 1003;
 }
+
+message InitContainerList { repeated InitContainer data = 1000; }
 
 message ImportContainer {
   string volume = 100;
@@ -594,6 +596,8 @@ message Port {
   optional int32 external = 102;
 }
 
+message PortList { repeated Port data = 1000; }
+
 message PortRange {
   int32 from = 100;
   int32 to = 101;
@@ -605,6 +609,8 @@ message PortRangeBinding {
   PortRange external = 102;
 }
 
+message PortRangeBindingList { repeated PortRangeBinding data = 1000; }
+
 message Volume {
   string id = 100;
   string name = 101;
@@ -614,7 +620,9 @@ message Volume {
   optional string class = 105;
 }
 
-message KeyList { repeated common.UniqueKey data = 1000; }
+message VolumeList { repeated Volume data = 1000; }
+
+message UniqueKeyList { repeated common.UniqueKey data = 1000; }
 
 message UniqueKeyValue {
   string id = 100;
@@ -622,16 +630,26 @@ message UniqueKeyValue {
   string value = 102;
 }
 
+message UniqueKeyValueList { repeated UniqueKeyValue data = 1000; }
+
+message UniqueSecretKey {
+  string id = 100;
+  string key = 101;
+  bool required = 102;
+}
+
+message UniqueSecretKeyList { repeated UniqueSecretKey data = 1000; }
+
 message UniqueSecretKeyValue {
   string id = 100;
   string key = 101;
   string value = 103;
-  string publicKey = 104;
-  bool required = 105;
-  optional bool encrypted = 106;
+  bool required = 104;
+  bool encrypted = 105;
+  optional string publicKey = 106;
 }
 
-message KeyValueList { repeated UniqueKeyValue data = 1000; }
+message UniqueSecretKeyValueList { repeated UniqueSecretKeyValue data = 1000; }
 
 message Marker {
   repeated UniqueKeyValue deployment = 1000;
@@ -644,8 +662,8 @@ message DagentContainerConfig {
   optional common.RestartPolicy restartPolicy = 101;
   optional common.NetworkMode networkMode = 102;
 
-  repeated common.UniqueKey networks = 1000;
-  repeated UniqueKeyValue labels = 1001;
+  optional UniqueKeyList networks = 1000;
+  optional UniqueKeyValueList labels = 1001;
 }
 
 message CraneContainerConfig {
@@ -657,12 +675,12 @@ message CraneContainerConfig {
   optional Marker annotations = 105;
   optional Marker labels = 106;
 
-  repeated common.UniqueKey customHeaders = 1000;
-  repeated UniqueKeyValue extraLBAnnotations = 1001;
+  optional UniqueKeyList customHeaders = 1000;
+  optional UniqueKeyValueList extraLBAnnotations = 1001;
 }
 
 message CommonContainerConfig {
-  string name = 101;
+  optional string name = 101;
   optional common.ExposeStrategy expose = 102;
   optional common.Ingress ingress = 103;
   optional common.ConfigContainer configContainer = 104;
@@ -670,22 +688,29 @@ message CommonContainerConfig {
   optional int64 user = 106;
   optional bool TTY = 107;
 
-  repeated Port ports = 1000;
-  repeated PortRangeBinding portRanges = 1001;
-  repeated Volume volumes = 1002;
-  repeated common.UniqueKey commands = 1003;
-  repeated common.UniqueKey args = 1004;
-  repeated UniqueKeyValue environment = 1005;
-  repeated UniqueSecretKeyValue secrets = 1006;
-  repeated InitContainer initContainers = 1007;
+  optional PortList ports = 1000;
+  optional PortRangeBindingList portRanges = 1001;
+  optional VolumeList volumes = 1002;
+  optional UniqueKeyList commands = 1003;
+  optional UniqueKeyList args = 1004;
+  optional UniqueKeyValueList environment = 1005;
+  optional InitContainerList initContainers = 1006;
 }
 
-message ContainerConfig {
+message ImageContainerConfig {
   optional CommonContainerConfig common = 100;
   optional DagentContainerConfig dagent = 101;
   optional CraneContainerConfig crane = 102;
 
-  repeated UniqueKeyValue capabilities = 1000;
+  optional UniqueSecretKeyList secrets = 1000;
+}
+
+message InstanceContainerConfig {
+  optional CommonContainerConfig common = 100;
+  optional DagentContainerConfig dagent = 101;
+  optional CraneContainerConfig crane = 102;
+
+  optional UniqueSecretKeyValueList secrets = 1000;
 }
 
 message ImageResponse {
@@ -695,7 +720,7 @@ message ImageResponse {
   string tag = 101;
   uint32 order = 102;
   string registryId = 103;
-  ContainerConfig config = 104;
+  ImageContainerConfig config = 104;
   google.protobuf.Timestamp createdAt = 105;
   string registryName = 106;
   RegistryType registryType = 107;
@@ -727,7 +752,7 @@ message PatchImageRequest {
   string accessedBy = 2;
 
   optional string tag = 101;
-  optional ContainerConfig config = 102;
+  optional ImageContainerConfig config = 102;
 }
 
 // NODE
@@ -908,7 +933,7 @@ message PatchDeploymentRequest {
   string id = 1;
   string accessedBy = 2;
 
-  optional KeyValueList environment = 100;
+  optional UniqueKeyValueList environment = 100;
   optional PatchInstanceRequest instance = 1001;
 }
 
@@ -918,14 +943,14 @@ message InstanceResponse {
 
   ImageResponse image = 100;
   optional common.ContainerState state = 101;
-  optional ContainerConfig config = 102;
+  optional InstanceContainerConfig config = 102;
 }
 
 message PatchInstanceRequest {
   string id = 1;
   string accessedBy = 2;
 
-  optional ContainerConfig config = 102;
+  optional InstanceContainerConfig config = 100;
 }
 
 message DeploymentListResponse { repeated DeploymentResponse data = 1000; }

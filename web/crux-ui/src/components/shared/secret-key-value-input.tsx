@@ -58,7 +58,7 @@ const reducer = (state: UniqueSecretKeyValue[], action: KeyValueInputAction): Un
     return result
   }
   if (type === 'merge-items') {
-    const updatedItems = action.items
+    const updatedItems = action.items ?? []
     const result = [
       ...state.filter(old => !isCompletelyEmpty(old) && updatedItems.filter(it => old.id === it.id).length > 0),
     ]
@@ -94,14 +94,13 @@ interface SecretKeyValueInputProps {
   description?: string
   items: UniqueSecretKeyValue[]
   keyPlaceholder?: string
-  unique?: boolean
   editorOptions: ItemEditorState
   publicKey: string
   definedSecrets?: string[]
   onSubmit: (items: UniqueSecretKeyValue[]) => void
 }
 
-const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
+const SecretKeyValueInput = (props: SecretKeyValueInputProps) => {
   const { t } = useTranslation('common')
 
   const {
@@ -112,21 +111,20 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
     description,
     items,
     keyPlaceholder,
-    unique,
     editorOptions,
     publicKey,
     definedSecrets,
     onSubmit: propsOnSubmit,
   } = props
 
-  const [state, dispatch] = useReducer(reducer, items)
+  const [state, dispatch] = useReducer(reducer, items ?? [])
   const [changed, setChanged] = useState<boolean>(false)
 
-  const stateToElements = (itemArray: UniqueSecretKeyValue[], secrets: string[]) => {
+  const stateToElements = (secretKeys: UniqueSecretKeyValue[], secrets: string[]) => {
     const result = new Array<KeyValueElement>()
 
-    itemArray.forEach(item => {
-      const repeating = unique && result.find(it => it.key === item.key)
+    secretKeys.forEach(item => {
+      const repeating = result.find(it => it.key === item.key)
 
       result.push({
         ...item,
@@ -296,7 +294,7 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
   }
 
   return (
-    <form className={clsx(className, 'flex flex-col max-h-128 overflow-y-auto')}>
+    <form className={clsx(className, 'flex flex-col')}>
       {!label ? null : (
         <DyoLabel className={clsx(labelClassName ?? 'mb-2 whitespace-nowrap text-light-eased')}>{label}</DyoLabel>
       )}
@@ -319,4 +317,4 @@ const SecretKeyValInput = (props: SecretKeyValueInputProps) => {
   )
 }
 
-export default SecretKeyValInput
+export default SecretKeyValueInput
