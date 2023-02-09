@@ -795,14 +795,3 @@ func ContainerLog(ctx context.Context, request *agent.ContainerLogRequest) (*grp
 
 	return logContext, nil
 }
-
-func StopSelf(ctx context.Context) error {
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		return err
-	}
-
-	selfID := GetOwnContainerID()
-
-	return cli.ContainerStop(ctx, selfID, nil)
-}

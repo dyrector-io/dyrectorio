@@ -2,6 +2,7 @@ package crane
 
 import (
 	"context"
+	"os"
 
 	"github.com/rs/zerolog/log"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -10,6 +11,7 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/crux"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/k8s"
+	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 )
 
 // checks before start
@@ -39,6 +41,17 @@ func Serve(cfg *config.Configuration) {
 		Delete:       k8s.Delete,
 		SecretList:   crux.GetSecretsList,
 		ContainerLog: k8s.PodLog,
-		// TODO(robot9706): Implement Close for "SHUTDOWN"
+		Close:        grpcClose,
 	})
+}
+
+func grpcClose(ctx context.Context, reason agent.CloseReason) error {
+	if reason == agent.CloseReason_SHUTDOWN {
+		log.Info().Msg("Remote shutdown requested")
+		os.Exit(0)
+	} else {
+		log.Error().Int32("reason", int32(reason)).Msg("Close reason not implemented")
+	}
+
+	return nil
 }

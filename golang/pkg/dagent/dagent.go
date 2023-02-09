@@ -53,11 +53,7 @@ func grpcClose(ctx context.Context, reason agent.CloseReason) error {
 		return update.RemoveSelf(ctx)
 	} else if reason == agent.CloseReason_SHUTDOWN {
 		log.Info().Msg("Remote shutdown requested")
-		err := utils.StopSelf(ctx)
-		if err != nil {
-			log.Error().Err(err).Msg("Docker failed to stop")
-			os.Exit(0)
-		}
+		os.Exit(0)
 	}
 
 	return nil
