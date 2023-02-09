@@ -369,6 +369,7 @@ export default class DeployMapper {
     instanceSecrets: UniqueSecretKeyValue[],
     imageSecrets: UniqueSecretKey[],
   ): UniqueSecretKeyValue[] {
+    imageSecrets = imageSecrets ?? []
     instanceSecrets = instanceSecrets ?? []
 
     const overriddenIds: Set<string> = new Set(instanceSecrets?.map(it => it.id))

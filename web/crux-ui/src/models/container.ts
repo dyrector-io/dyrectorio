@@ -323,6 +323,7 @@ const mergeSecrets = (
   imageSecrets: UniqueSecretKey[],
   instanceSecrets: UniqueSecretKeyValue[],
 ): UniqueSecretKeyValue[] => {
+  imageSecrets = imageSecrets ?? []
   instanceSecrets = instanceSecrets ?? []
 
   const overriddenIds: Set<string> = new Set(instanceSecrets?.map(it => it.id))
