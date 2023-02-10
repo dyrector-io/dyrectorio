@@ -65,7 +65,7 @@ const EditImageConfig = (props: EditImageConfigProps) => {
         items={config.secrets ?? []}
         keyPlaceholder={t('common:key')}
         description={t('common:cannotDefineSecretsHere')}
-        onChange={secrets => onSecretChange(secrets.map(it => ({ ...it })))}
+        onChange={secrets => onSecretChange(secrets)}
         editorOptions={editorOptions}
       />
     </div>

@@ -119,9 +119,9 @@ export default class DeployMapper {
 
   instanceConfigToProto(config: InstanceContainerConfigData): ProtoInstanceContainerConfig {
     return {
-      common: this.imageMapper.configToCommonConfig(config),
-      dagent: this.imageMapper.configToDagentConfig(config),
-      crane: this.imageMapper.configToCraneConfig(config),
+      common: this.imageMapper.commonConfigToProto(config),
+      dagent: this.imageMapper.dagentConfigToProto(config),
+      crane: this.imageMapper.craneConfigToProto(config),
       secrets: !config.secrets ? null : { data: config.secrets },
     }
   }
@@ -250,7 +250,7 @@ export default class DeployMapper {
     return state ? (containerStateToJSON(state).toLowerCase() as ContainerStateEnum) : null
   }
 
-  configToAgentCommonConfig(config: MergedContainerConfigData): CommonContainerConfig {
+  commonConfigToAgentProto(config: MergedContainerConfigData): CommonContainerConfig {
     return {
       name: config.name,
       environment: this.jsonToPipedFormat(config.environment),
@@ -275,7 +275,7 @@ export default class DeployMapper {
     }
   }
 
-  configToAgentDagentConfig(config: MergedContainerConfigData): DagentContainerConfig {
+  dagentConfigToAgentProto(config: MergedContainerConfigData): DagentContainerConfig {
     return {
       networks: this.mapUniqueKeyToStringArray(config.networks),
       logConfig: !config.logConfig
@@ -291,7 +291,7 @@ export default class DeployMapper {
     }
   }
 
-  configToAgentCraneConfig(config: MergedContainerConfigData): CraneContainerConfig {
+  craneConfigToAgentProto(config: MergedContainerConfigData): CraneContainerConfig {
     return {
       customHeaders: this.mapUniqueKeyToStringArray(config.customHeaders),
       extraLBAnnotations: this.mapKeyValueToMap(config.extraLBAnnotations),

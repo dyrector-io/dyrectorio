@@ -39,16 +39,7 @@ import {
 import { timestampToUTC } from '@app/utils'
 import { registryTypeProtoToDto } from './registry-mappers'
 
-export const objectHasProperties = (object: any): boolean => {
-  const values = Object.values(object)
-  for (let index = 0; index < values.length; index++) {
-    if (values[index]) {
-      return true
-    }
-  }
-
-  return false
-}
+export const objectHasProperties = (object: any): boolean => Object.values(object).some(it => !!it)
 
 export const networkModeToDto = (networkMode?: NetworkMode): ContainerNetworkMode =>
   !networkMode ? null : (networkModeToJSON(networkMode).toLowerCase() as ContainerNetworkMode)

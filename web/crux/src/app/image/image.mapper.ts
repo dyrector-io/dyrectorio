@@ -63,9 +63,9 @@ export default class ImageMapper {
     const config = containerConfig as any as ContainerConfigData
 
     return {
-      common: this.configToCommonConfig(config),
-      dagent: this.configToDagentConfig(config),
-      crane: this.configToCraneConfig(config),
+      common: this.commonConfigToProto(config),
+      dagent: this.dagentConfigToProto(config),
+      crane: this.craneConfigToProto(config),
       secrets: !config.secrets
         ? null
         : {
@@ -74,7 +74,7 @@ export default class ImageMapper {
     }
   }
 
-  configToCommonConfig(config: Partial<ContainerConfigData>): ProtoCommonContainerConfig {
+  commonConfigToProto(config: Partial<ContainerConfigData>): ProtoCommonContainerConfig {
     return {
       name: config.name,
       environment: !config.environment ? null : { data: config.environment },
@@ -99,7 +99,7 @@ export default class ImageMapper {
     }
   }
 
-  configToDagentConfig(config: Partial<ContainerConfigData>): ProtoDagentContainerConfig {
+  dagentConfigToProto(config: Partial<ContainerConfigData>): ProtoDagentContainerConfig {
     return {
       networks: config.networks ? { data: config.networks } : null,
       logConfig: this.logConfigToProto(config.logConfig),
@@ -109,7 +109,7 @@ export default class ImageMapper {
     }
   }
 
-  configToCraneConfig(config: Partial<ContainerConfigData>): ProtoCraneContainerConfig {
+  craneConfigToProto(config: Partial<ContainerConfigData>): ProtoCraneContainerConfig {
     return {
       customHeaders: !config.customHeaders ? null : { data: config.customHeaders },
       extraLBAnnotations: !config.extraLBAnnotations ? null : { data: config.extraLBAnnotations },
@@ -377,8 +377,7 @@ export default class ImageMapper {
       return undefined
     }
 
-    // ProtoNetworkMode.UNRECOGNIZED or ProtoNetworkMode.NETWORK_MODE_UNSPECIFIED
-    if (it < 1) {
+    if (ProtoNetworkMode.UNRECOGNIZED || ProtoNetworkMode.NETWORK_MODE_UNSPECIFIED) {
       return 'bridge'
     }
 
