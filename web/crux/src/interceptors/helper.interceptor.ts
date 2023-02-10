@@ -9,8 +9,7 @@ type GrpcCallLog = {
 }
 
 /**
- * Interceptor context unwrapper
- *
+ * Utility methods for logging and transforming gRPC-related data
  */
 @Injectable()
 export default class InterceptorGrpcHelperProvider {

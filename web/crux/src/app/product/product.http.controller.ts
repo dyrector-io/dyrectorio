@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, UseGuards, UseInterceptors, Version } from '@nestjs/common'
+import { Controller, Post, Body, Get, UseGuards, UseInterceptors } from '@nestjs/common'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import {
   AccessRequest,
@@ -11,23 +11,19 @@ import ProductService from './product.service'
 import JwtAuthGuard from '../token/jwt-auth.guard'
 
 @Controller('product')
+@UseGuards(JwtAuthGuard)
+@UseInterceptors(HttpLoggerInterceptor)
 export default class ProductHttpController {
   constructor(private service: ProductService) {}
 
   @Post()
-  @Version('1')
   @AuditLogLevel('disabled')
-  @UseGuards(JwtAuthGuard)
-  @UseInterceptors(HttpLoggerInterceptor)
   async createProduct(@Body() request: CreateProductRequest): Promise<CreateEntityResponse> {
     return this.service.createProduct(request)
   }
 
   @Get()
-  @Version('1')
   @AuditLogLevel('disabled')
-  @UseGuards(JwtAuthGuard)
-  @UseInterceptors(HttpLoggerInterceptor)
   async getProducts(@Body() request: AccessRequest): Promise<ProductListResponse> {
     return this.service.getProducts(request)
   }

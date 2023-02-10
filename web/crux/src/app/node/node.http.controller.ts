@@ -1,4 +1,4 @@
-import { Controller, Body, Get, UseGuards, UseInterceptors, Version } from '@nestjs/common'
+import { Controller, Body, Get, UseGuards, UseInterceptors } from '@nestjs/common'
 import { first, Observable, timeout } from 'rxjs'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import { ContainerStateListMessage } from 'src/grpc/protobuf/proto/common'
@@ -8,6 +8,9 @@ import JwtAuthGuard from '../token/jwt-auth.guard'
 import NodeService from './node.service'
 
 @Controller('node')
+@UseGuards(JwtAuthGuard)
+@UseInterceptors(HttpLoggerInterceptor)
+@AuditLogLevel('disabled')
 export default class NodeHttpController {
   constructor(private service: NodeService) {}
 
@@ -22,9 +25,6 @@ export default class NodeHttpController {
    * this is just an experimental implementation, and should be improved in the future.
    */
   @Get('status')
-  @Version('1')
-  @UseGuards(JwtAuthGuard)
-  @UseInterceptors(HttpLoggerInterceptor)
   @AuditLogLevel('disabled')
   async getContainerStatus(@Body() params: WatchContainerStateRequest): Promise<Observable<ContainerStateListMessage>> {
     return this.service

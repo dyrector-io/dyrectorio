@@ -28,29 +28,10 @@ export default class AuthService {
   async generateToken(req: GenerateTokenRequest): Promise<GenerateTokenResponse> {
     const user = await this.kratosService.getIdentityById(req.accessedBy)
 
-    if (!user) {
-      throw new NotFoundException({
-        message: 'User not found',
-        property: 'accessedBy',
-        value: req.accessedBy,
-      })
-    }
-
-    if (req.expirationInDays <= 0) {
-      throw new InvalidArgumentException({
-        property: 'expirationInDays',
-        value: req.expirationInDays,
-        message: `Expiration cannot be zero or negative`,
-      })
-    }
-
-    // TODO(robot9706): check if already exists?
     const nonce = uuid()
 
     const payload: APIAuthPayload = {
       sub: user.id,
-      email: user.traits.email,
-      role: user.traits.role,
       nonce,
     }
 

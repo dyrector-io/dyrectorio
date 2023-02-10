@@ -20,12 +20,7 @@ export type IdentityTraitsName = {
 
 export type AuthPayload = {
   sub: string
-  email: string
-  role?: string
-}
-
-export type APIAuthPayload = AuthPayload & {
-  nonce: string
+  nonce?: string
 }
 
 export const nameOfIdentity = (identity: Identity) => {
