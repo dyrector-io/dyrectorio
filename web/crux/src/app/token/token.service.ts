@@ -29,15 +29,14 @@ export default class AuthService {
     const user = await this.kratosService.getIdentityById(req.accessedBy)
 
     const nonce = uuid()
+    const expirationDate = new Date(Date.now())
+    expirationDate.setDate(expirationDate.getDate() + req.expirationInDays)
+    this.logger.verbose(`Token expires at ${expirationDate.toISOString()}`)
 
     const payload: AuthPayload = {
       sub: user.id,
       nonce,
     }
-
-    const expirationDate = new Date(Date.now())
-    expirationDate.setDate(expirationDate.getDate() + req.expirationInDays)
-    this.logger.verbose(`Token expires at ${expirationDate.toISOString()}`)
 
     const newToken = await this.prisma.token.create({
       data: {
