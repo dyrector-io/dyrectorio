@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
-import { NotFoundException, InvalidArgumentException } from 'src/exception/errors'
 import {
   AccessRequest,
   GenerateTokenRequest,

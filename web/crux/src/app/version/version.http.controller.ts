@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, UseGuards, UseInterceptors, Version } from '@nestjs/common'
+import { Controller, Post, Body, Get, UseGuards, UseInterceptors } from '@nestjs/common'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import {
   CreateEntityResponse,
