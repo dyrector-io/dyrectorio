@@ -3,7 +3,7 @@ import { ItemEditorState } from '@app/components/editor/use-item-editor-state'
 import KeyOnlyInput from '@app/components/shared/key-only-input'
 import KeyValueInput from '@app/components/shared/key-value-input'
 import SecretKeyInput from '@app/components/shared/secret-key-input'
-import SecretKeyValInput from '@app/components/shared/secret-key-value-input'
+import SecretKeyValueInput from '@app/components/shared/secret-key-value-input'
 import DyoChips from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
@@ -11,11 +11,11 @@ import DyoSwitch from '@app/elements/dyo-switch'
 import { COMMON_CONFIG_FILTERS, filterContains, filterEmpty, ImageConfigFilterType } from '@app/models'
 import {
   CommonConfigDetails,
-  ContainerConfig,
   ContainerConfigExposeStrategy,
   CONTAINER_EXPOSE_STRATEGY_VALUES,
   CONTAINER_VOLUME_TYPE_VALUES,
   InitContainerVolumeLink,
+  InstanceCommonConfigDetails,
   VolumeType,
 } from '@app/models/container'
 import { nullify, toNumber } from '@app/utils'
@@ -24,17 +24,26 @@ import { v4 as uuid } from 'uuid'
 import { ValidationError } from 'yup'
 import ExtendableItemList from './extendable-item-list'
 
-interface CommonConfigSectionProps {
+type CommonConfigSectionBaseProps<T> = {
   disabled?: boolean
-  config: CommonConfigDetails
-  onChange: (config: Partial<ContainerConfig>) => void
   selectedFilters: ImageConfigFilterType[]
   editorOptions: ItemEditorState
+  config: T
+  onChange: (config: Partial<T>) => void
   fieldErrors: ValidationError[]
-  secrets?: 'key' | 'value'
   definedSecrets?: string[]
   publicKey?: string
 }
+
+type ImageCommonConfigSectionProps = CommonConfigSectionBaseProps<CommonConfigDetails> & {
+  configType: 'image'
+}
+
+type InstanceCommonConfigSectionProps = CommonConfigSectionBaseProps<InstanceCommonConfigDetails> & {
+  configType: 'instance'
+}
+
+type CommonConfigSectionProps = ImageCommonConfigSectionProps | InstanceCommonConfigSectionProps
 
 const CommonConfigSection = (props: CommonConfigSectionProps) => {
   const { t } = useTranslation('container')
@@ -45,7 +54,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
     selectedFilters,
     editorOptions,
     fieldErrors,
-    secrets,
+    configType,
     definedSecrets,
     publicKey,
   } = props
@@ -242,7 +251,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   labelClassName="my-auto mr-4 w-40"
                   grow
                   inline
-                  value={config.ingress?.uploadLimitInBytes ?? ''}
+                  value={config.ingress?.uploadLimit ?? ''}
                   placeholder={t('common.placeholders.ingressUploadLimit')}
                   onPatch={it => onChange({ ingress: nullify({ ...config.ingress, uploadLimitInBytes: it }) })}
                   editorOptions={editorOptions}
@@ -256,10 +265,11 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
           {filterContains('environment', selectedFilters) && (
             <div className="grid mb-8 break-inside-avoid">
               <KeyValueInput
+                className="max-h-128 overflow-y-auto"
                 labelClassName="text-bright font-semibold tracking-wide mb-2"
                 label={t('common.environment').toUpperCase()}
                 onChange={it => onChange({ environment: it })}
-                items={config.environment ?? []}
+                items={config.environment}
                 editorOptions={editorOptions}
                 disabled={disabled}
               />
@@ -270,10 +280,11 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
           {filterContains('capabilities', selectedFilters) && (
             <div className="grid mb-8 break-inside-avoid">
               <KeyValueInput
+                className="max-h-128 overflow-y-auto"
                 labelClassName="text-bright font-semibold tracking-wide mb-2"
                 label={t('common.capabilities').toUpperCase()}
                 onChange={it => onChange({ capabilities: it })}
-                items={config.capabilities ?? []}
+                items={config.capabilities}
                 editorOptions={editorOptions}
                 disabled={disabled}
               />
@@ -283,30 +294,28 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
           {/* secrets */}
           {filterContains('secrets', selectedFilters) && (
             <div className="grid break-inside-avoid mb-8 max-w-lg">
-              {secrets === 'value' ? (
-                <SecretKeyValInput
-                  className="mb-2"
+              {configType === 'instance' ? (
+                <SecretKeyValueInput
+                  className="max-h-128 overflow-y-auto mb-2"
                   keyPlaceholder={t('common.secrets').toUpperCase()}
                   labelClassName="text-bright font-semibold tracking-wide mb-2"
                   label={t('common.secrets').toUpperCase()}
                   onSubmit={it => onChange({ secrets: it })}
-                  items={config.secrets ?? []}
+                  items={config.secrets}
                   editorOptions={editorOptions}
                   definedSecrets={definedSecrets}
                   publicKey={publicKey}
-                  unique
                   disabled={disabled}
                 />
               ) : (
                 <SecretKeyInput
-                  className="mb-2"
+                  className="max-h-128 overflow-y-auto mb-2"
                   keyPlaceholder={t('common.secrets').toUpperCase()}
                   labelClassName="text-bright font-semibold tracking-wide mb-2"
                   label={t('common.secrets').toUpperCase()}
                   onChange={it => onChange({ secrets: it.map(sit => ({ ...sit, value: '', publicKey: '' })) })}
-                  items={config.secrets ?? []}
+                  items={config.secrets}
                   editorOptions={editorOptions}
-                  unique
                   disabled={disabled}
                 />
               )}
@@ -317,7 +326,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
           {filterContains('args', selectedFilters) && (
             <div className="grid break-inside-avoid mb-8 max-w-lg">
               <KeyOnlyInput
-                className="mb-2"
+                className="max-h-128 overflow-y-auto mb-2"
                 keyPlaceholder={t('common.arguments')}
                 label={t('common.arguments').toUpperCase()}
                 labelClassName="text-bright font-semibold tracking-wide mb-2"
@@ -333,12 +342,12 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
           {filterContains('commands', selectedFilters) && (
             <div className="grid break-inside-avoid mb-8 max-w-lg">
               <KeyOnlyInput
-                className="mb-2"
+                className="max-h-128 overflow-y-auto mb-2"
                 keyPlaceholder={t('common.commands')}
                 label={t('common.commands').toUpperCase()}
                 labelClassName="text-bright font-semibold tracking-wide mb-2"
                 onChange={it => onChange({ commands: it })}
-                items={config.commands ?? []}
+                items={config.commands}
                 editorOptions={editorOptions}
                 disabled={disabled}
               />
@@ -385,11 +394,12 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
 
                 <div className="flex flex-col">
                   <KeyValueInput
+                    className="max-h-128 overflow-y-auto"
                     label={t('common.environment')}
                     onChange={it =>
                       onChange({ importContainer: nullify({ ...config.importContainer, environment: it }) })
                     }
-                    items={config.importContainer?.environment ?? []}
+                    items={config.importContainer?.environment}
                     editorOptions={editorOptions}
                     disabled={disabled}
                   />
@@ -403,7 +413,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
         {filterContains('ports', selectedFilters) && (
           <ExtendableItemList
             disabled={disabled}
-            items={config.ports ?? []}
+            items={config.ports}
             label={t('common.ports')}
             onPatch={it => onChange({ ports: it })}
             findErrorMessage={index => fieldErrors.find(it => it.path?.startsWith(`ports[${index}]`))?.message}
@@ -462,7 +472,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
         {filterContains('portRanges', selectedFilters) && (
           <ExtendableItemList
             disabled={disabled}
-            items={config.portRanges ?? []}
+            items={config.portRanges}
             label={t('common.portRanges')}
             emptyItemFactory={() => ({
               external: { from: null, to: null },
@@ -539,7 +549,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
         {filterContains('volumes', selectedFilters) && (
           <ExtendableItemList
             disabled={disabled}
-            items={config.volumes ?? []}
+            items={config.volumes}
             label={t('common.volumes')}
             itemClassName="grid grid-cols-1 xl:grid-cols-2 grid-flow-column ml-2 gap-x-20 gap-y-14 mb-8"
             emptyItemFactory={() => ({
@@ -633,7 +643,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
         {filterContains('initContainers', selectedFilters) && (
           <ExtendableItemList
             disabled={disabled}
-            items={config.initContainers ?? []}
+            items={config.initContainers}
             label={t('common.initContainers')}
             emptyItemFactory={() => ({
               id: uuid(),
@@ -643,6 +653,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
               command: [],
               environment: [],
               volumes: [],
+              useParentConfig: false,
             })}
             findErrorMessage={index => fieldErrors.find(it => it.path?.startsWith(`initContainers[${index}]`))?.message}
             onPatch={it => onChange({ initContainers: it })}
@@ -678,10 +689,10 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   <DyoLabel className="mb-2">{t('common.volumes').toUpperCase()}</DyoLabel>
 
                   <KeyValueInput
-                    className="w-full"
+                    className="w-full max-h-128 overflow-y-auto"
                     keyPlaceholder={t('common.name')}
                     valuePlaceholder={t('common.path')}
-                    items={item.volumes?.map(it => ({ id: it.id, key: it.name, value: it.path })) ?? []}
+                    items={item.volumes?.map(it => ({ id: it.id, key: it.name, value: it.path }))}
                     onChange={it => {
                       const volumes = it.map(i => ({ id: i.id, name: i.key, path: i.value } as InitContainerVolumeLink))
                       onPatch({ volumes })
@@ -695,9 +706,10 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   <DyoLabel className="mb-2">{t('common.arguments').toUpperCase()}</DyoLabel>
 
                   <KeyOnlyInput
+                    className="max-h-128 overflow-y-auto"
                     keyPlaceholder={t('common.arguments')}
                     onChange={it => onPatch({ args: it })}
-                    items={item.args ?? []}
+                    items={item.args}
                     editorOptions={editorOptions}
                     disabled={disabled}
                   />
@@ -707,9 +719,10 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   <DyoLabel className="mb-2">{t('common.command').toUpperCase()}</DyoLabel>
 
                   <KeyOnlyInput
+                    className="max-h-128 overflow-y-auto"
                     keyPlaceholder={t('common.command')}
                     onChange={it => onPatch({ command: it })}
-                    items={item.command ?? []}
+                    items={item.command}
                     editorOptions={editorOptions}
                     disabled={disabled}
                   />
@@ -719,8 +732,9 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   <DyoLabel className="mb-2">{t('common.environment').toUpperCase()}</DyoLabel>
 
                   <KeyValueInput
+                    className="max-h-128 overflow-y-auto"
                     onChange={it => onPatch({ environment: it })}
-                    items={item.environment ?? []}
+                    items={item.environment}
                     editorOptions={editorOptions}
                     disabled={disabled}
                   />

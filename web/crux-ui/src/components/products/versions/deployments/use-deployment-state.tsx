@@ -31,6 +31,7 @@ import {
   WS_TYPE_NODE_STATUS,
   WS_TYPE_PATCH_DEPLOYMENT_ENV,
   WS_TYPE_PATCH_INSTANCE,
+  WS_TYPE_PATCH_RECEIVED,
 } from '@app/models'
 import { deploymentWsUrl, WS_NODES } from '@app/routes'
 import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
@@ -114,7 +115,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
       }
     },
     onReceive: message => {
-      if ([WS_TYPE_INSTANCE_UPDATED, WS_TYPE_DEPLOYMENT_ENV_UPDATED].includes(message.type)) {
+      if (WS_TYPE_PATCH_RECEIVED === message.type) {
         setSaving(false)
       }
     },

@@ -4,7 +4,12 @@ import { DyoCard } from '@app/elements/dyo-card'
 import DyoImgButton from '@app/elements/dyo-img-button'
 import DyoMessage from '@app/elements/dyo-message'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
-import { imageConfigToJsonContainerConfig, VersionImage } from '@app/models'
+import {
+  imageConfigToJsonContainerConfig,
+  JsonContainerConfig,
+  mergeJsonConfigToImageContainerConfig,
+  VersionImage,
+} from '@app/models'
 import { containerConfigSchema, getValidationError } from '@app/validations'
 import useTranslation from 'next-translate/useTranslation'
 import EditImageConfig from './edit-image-config'
@@ -110,14 +115,16 @@ const EditImageCard = (props: EditImageCardProps) => {
               disabled={disabled}
               config={image.config}
               editorOptions={editorState}
-              onPatch={actions.patchImage}
+              onPatch={actions.onPatch}
             />
           ) : (
             <EditImageJson
               disabled={disabled}
               config={image.config}
               editorOptions={editorState}
-              onPatch={actions.patchImage}
+              onPatch={(it: JsonContainerConfig) =>
+                actions.onPatch(mergeJsonConfigToImageContainerConfig(image.config, it))
+              }
               onParseError={actions.setParseError}
               convertConfigToJson={imageConfigToJsonContainerConfig}
             />

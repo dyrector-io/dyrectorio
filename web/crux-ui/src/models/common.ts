@@ -27,3 +27,5 @@ export type DeploymentStatus = typeof DEPLOYMENT_STATUS_VALUES[number]
 
 export const WS_TYPE_DYO_ERROR = 'dyo-error'
 export type DyoErrorMessage = DyoApiError
+
+export const WS_TYPE_PATCH_RECEIVED = 'patch-received'

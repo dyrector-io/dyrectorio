@@ -1,4 +1,4 @@
-import { ContainerConfig } from './container'
+import { ContainerConfigData } from './container'
 import { RegistryImages, RegistryType } from './registry'
 
 export type VersionImage = {
@@ -9,13 +9,13 @@ export type VersionImage = {
   registryName: string
   registryType: RegistryType
   order: number
-  config: ContainerConfig
+  config: ContainerConfigData
   createdAt: string
 }
 
 export type PatchVersionImage = {
   tag?: string
-  config?: Partial<ContainerConfig>
+  config?: Partial<ContainerConfigData>
 }
 
 export type ViewState = 'editor' | 'json'

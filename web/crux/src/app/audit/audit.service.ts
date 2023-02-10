@@ -26,7 +26,7 @@ export default class AuditService {
     const identites = await this.kratos.getIdentitiesByIds(auditLog.map(it => it.userId))
 
     return {
-      data: auditLog.map(it => this.mapper.toGrpc(it, identites)),
+      data: auditLog.map(it => this.mapper.toProto(it, identites)),
     }
   }
 

@@ -1,7 +1,9 @@
+import { IMAGE_WS_REQUEST_DELAY } from '@app/const'
 import { DyoConfirmationModalConfig } from '@app/elements/dyo-modal'
 import useConfirmation from '@app/hooks/use-confirmation'
+import { useThrottling } from '@app/hooks/use-throttleing'
 import {
-  ContainerConfig,
+  ContainerConfigData,
   DeleteImageMessage,
   PatchImageMessage,
   VersionImage,
@@ -9,7 +11,7 @@ import {
   WS_TYPE_PATCH_IMAGE,
 } from '@app/models'
 import WebSocketClientEndpoint from '@app/websockets/websocket-client-endpoint'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { ImagesActions, ImagesState, selectTagsOfImage } from './use-images-state'
 
 export type ImageEditorSection = 'tag' | 'config' | 'json'
@@ -26,7 +28,7 @@ export type ImageEditorState = {
 export type ImageEditorActions = {
   selectSection: (section: ImageEditorSection) => void
   selectTag: (tag: string) => void
-  patchImage: (config: Partial<ContainerConfig>) => void
+  onPatch: (config: Partial<ContainerConfigData>) => void
   deleteImage: VoidFunction
   setParseError: (error: Error) => void
 }
@@ -45,6 +47,9 @@ const useImageEditorState = (options: ImageEditorStateOptions): [ImageEditorStat
   const [deleteModal, confirmDelete] = useConfirmation()
   const [parseError, setParseError] = useState<string>(null)
 
+  const patch = useRef<Partial<ContainerConfigData>>({})
+  const throttle = useThrottling(IMAGE_WS_REQUEST_DELAY)
+
   const tags = selectTagsOfImage(imagesState, image)
 
   const selectSection = (it: ImageEditorSection) => {
@@ -57,13 +62,24 @@ const useImageEditorState = (options: ImageEditorStateOptions): [ImageEditorStat
 
   const selectTag = (tag: string) => imagesActions.selectTagForImage(image, tag)
 
-  const patchImage = (config: Partial<ContainerConfig>) => {
+  const onPatch = (config: Partial<ContainerConfigData>) => {
     setParseError(null)
+    imagesActions.updateImageConfig(image, config)
 
-    sock.send(WS_TYPE_PATCH_IMAGE, {
-      id: image.id,
-      config,
-    } as PatchImageMessage)
+    const newPatch = {
+      ...patch.current,
+      ...config,
+    }
+    patch.current = newPatch
+
+    throttle(() => {
+      sock.send(WS_TYPE_PATCH_IMAGE, {
+        id: image.id,
+        config: patch.current,
+      } as PatchImageMessage)
+
+      patch.current = {}
+    })
   }
 
   const deleteImage = () =>
@@ -85,7 +101,7 @@ const useImageEditorState = (options: ImageEditorStateOptions): [ImageEditorStat
     {
       selectSection,
       selectTag,
-      patchImage,
+      onPatch,
       deleteImage,
       setParseError: (err: Error) => setParseError(err.message),
     },

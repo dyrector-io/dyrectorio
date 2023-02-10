@@ -10,4 +10,4 @@ export const toPrismaJson = <T>(val: T): T | JsonNull => {
   return val
 }
 
-export const versionTypeToGrpc = (type: VersionTypeEnum): VersionType => versionTypeFromJSON(type.toUpperCase())
+export const versionTypeToProto = (type: VersionTypeEnum): VersionType => versionTypeFromJSON(type.toUpperCase())

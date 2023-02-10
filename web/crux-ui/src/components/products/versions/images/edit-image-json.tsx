@@ -3,24 +3,23 @@ import useMultiInputState from '@app/components/editor/use-multi-input-state'
 import JsonEditor from '@app/components/shared/json-editor-dynamic-module'
 import { IMAGE_WS_REQUEST_DELAY } from '@app/const'
 import { CANCEL_THROTTLE, useThrottling } from '@app/hooks/use-throttleing'
-import { ContainerConfig, editIdOf, JsonConfig, mergeJsonConfigToContainerConfig } from '@app/models'
+import { editIdOf } from '@app/models'
 import clsx from 'clsx'
 import { CSSProperties, useCallback, useState } from 'react'
 
-interface EditImageJsonProps {
+interface EditImageJsonProps<Config, Json> {
   disabled?: boolean
   className?: string
-  config: ContainerConfig
+  config: Config
   editorOptions: ItemEditorState
-  onPatch: (config: Partial<ContainerConfig>) => void
+  onPatch: (config: Json) => void
   onParseError: (err: Error) => void
-  convertConfigToJson: (config: ContainerConfig) => JsonConfig
+  convertConfigToJson: (config: Config) => Json
 }
 
-const JSON_EDITOR_COMPARATOR = (one: JsonConfig, other: JsonConfig): boolean =>
-  JSON.stringify(one) === JSON.stringify(other)
+const JSON_EDITOR_COMPARATOR = <Json,>(one: Json, other: Json): boolean => JSON.stringify(one) === JSON.stringify(other)
 
-const EditImageJson = (props: EditImageJsonProps) => {
+const EditImageJson = <Config, Json>(props: EditImageJsonProps<Config, Json>) => {
   const {
     disabled,
     editorOptions,
@@ -35,9 +34,9 @@ const EditImageJson = (props: EditImageJsonProps) => {
 
   const [jsonError, setJsonError] = useState<boolean>(false)
 
-  const onMergeValues = (_: JsonConfig, local: JsonConfig): JsonConfig => {
-    if (!jsonError) {
-      onPatch(mergeJsonConfigToContainerConfig(config, local))
+  const onMergeValues = (remote: Json, local: Json): Json => {
+    if (!jsonError && JSON.stringify(remote) !== JSON.stringify(local)) {
+      onPatch(local)
     }
 
     return local
@@ -54,10 +53,12 @@ const EditImageJson = (props: EditImageJsonProps) => {
     onCompareValues: JSON_EDITOR_COMPARATOR,
   })
 
-  const onChange = (newConfig: JsonConfig) => {
+  const onChange = (newConfig: Json) => {
     setJsonError(false)
+
+    // TODO (@m8vago): Do we need this throttle?
     throttle(() => {
-      onPatch(mergeJsonConfigToContainerConfig(config, newConfig))
+      onPatch(newConfig)
     })
 
     editorActions.onChange(newConfig)

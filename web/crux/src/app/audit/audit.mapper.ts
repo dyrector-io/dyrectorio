@@ -7,7 +7,7 @@ import { emailOfIdentity } from 'src/shared/models'
 
 @Injectable()
 export default class AuditMapper {
-  toGrpc(log: AuditLog, identities: Map<string, Identity>): AuditLogResponse {
+  toProto(log: AuditLog, identities: Map<string, Identity>): AuditLogResponse {
     const identity = identities.get(log.userId)
 
     return {

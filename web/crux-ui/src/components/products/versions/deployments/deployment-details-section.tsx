@@ -29,6 +29,7 @@ const DeploymentDetailsSection = (props: DeploymentDetailsSectionProps) => {
   return (
     <DeploymentDetailsCard className={className} deployment={deployment}>
       <KeyValueInput
+        className="max-h-128 overflow-y-auto"
         disabled={!mutable}
         editorOptions={editorState}
         label={t('images:environment').toUpperCase()}

@@ -1,5 +1,5 @@
 import {
-  ContainerConfig,
+  ContainerConfigData,
   ContainerConfigExposeStrategy,
   ContainerConfigLog,
   ContainerConfigVolume,
@@ -28,23 +28,28 @@ import {
 } from '@app/models/grpc/protobuf/proto/common'
 
 import {
-  ContainerConfig as ProtoContainerConfig,
+  CommonContainerConfig,
+  CraneContainerConfig,
+  DagentContainerConfig,
+  ImageContainerConfig as ProtoContainerConfig,
   ImageResponse,
-  InitContainer,
   LogConfig,
   Volume,
 } from '@app/models/grpc/protobuf/proto/crux'
 import { timestampToUTC } from '@app/utils'
 import { registryTypeProtoToDto } from './registry-mappers'
 
+export const objectHasProperties = (object: any): boolean => Object.values(object).some(it => !!it)
+
 export const networkModeToDto = (networkMode?: NetworkMode): ContainerNetworkMode =>
-  !networkMode ? 'bridge' : (networkModeToJSON(networkMode).toLowerCase() as ContainerNetworkMode)
+  !networkMode ? null : (networkModeToJSON(networkMode).toLowerCase() as ContainerNetworkMode)
 
 export const deploymentStrategyToDto = (strategy?: DeploymentStrategy): ContainerDeploymentStrategyType => {
+  if (!strategy) {
+    return null
+  }
+
   switch (strategy) {
-    case null:
-    case undefined:
-    case DeploymentStrategy.DEPLOYMENT_STRATEGY_UNSPECIFIED:
     case DeploymentStrategy.UNRECOGNIZED:
       return 'recreate'
     default:
@@ -52,9 +57,9 @@ export const deploymentStrategyToDto = (strategy?: DeploymentStrategy): Containe
   }
 }
 
-export const restartPolicyTypeToDto = (policy?: RestartPolicy): ContainerRestartPolicyType => {
+export const restartPolicyTypeToDto = (policy: RestartPolicy): ContainerRestartPolicyType => {
   if (!policy) {
-    return 'unlessStopped'
+    return null
   }
 
   switch (policy) {
@@ -68,13 +73,13 @@ export const restartPolicyTypeToDto = (policy?: RestartPolicy): ContainerRestart
 }
 
 export const networkModeToProto = (networkMode?: ContainerNetworkMode): NetworkMode =>
-  !networkMode ? undefined : networkModeFromJSON(networkMode.toUpperCase())
+  !networkMode ? null : networkModeFromJSON(networkMode.toUpperCase())
 
 export const restartPolicyTypeToProto = (policy?: ContainerRestartPolicyType): RestartPolicy =>
-  !policy ? undefined : restartPolicyFromJSON(policy.toUpperCase())
+  !policy ? null : restartPolicyFromJSON(policy.toUpperCase())
 
 export const deploymentStrategyToProto = (strategy?: ContainerDeploymentStrategyType): DeploymentStrategy =>
-  !strategy ? undefined : deploymentStrategyFromJSON(strategy.toUpperCase())
+  !strategy ? null : deploymentStrategyFromJSON(strategy.toUpperCase())
 
 export const logConfigToProto = (logConfig?: ContainerConfigLog): LogConfig => {
   if (!logConfig) {
@@ -88,10 +93,11 @@ export const logConfigToProto = (logConfig?: ContainerConfigLog): LogConfig => {
 }
 
 export const logDriverDto = (logDriver: DriverType): ContainerLogDriverType => {
+  if (!logDriver) {
+    return null
+  }
+
   switch (logDriver) {
-    case undefined:
-    case null:
-    case DriverType.DRIVER_TYPE_UNSPECIFIED:
     case DriverType.DRIVER_TYPE_NONE:
       return 'none'
     default:
@@ -99,7 +105,7 @@ export const logDriverDto = (logDriver: DriverType): ContainerLogDriverType => {
   }
 }
 
-export const logConfigToDto = (logConfig?: LogConfig): ContainerConfigLog => {
+export const logConfigToDto = (logConfig: LogConfig): ContainerConfigLog => {
   if (!logConfig) {
     return null
   }
@@ -120,7 +126,7 @@ export const volumesToProto = (volumes?: ContainerConfigVolume[]): Volume[] => {
 
 export const volumesToDto = (volumes?: Volume[]): ContainerConfigVolume[] => {
   if (!volumes) {
-    return []
+    return null
   }
 
   return volumes.map(
@@ -128,7 +134,11 @@ export const volumesToDto = (volumes?: Volume[]): ContainerConfigVolume[] => {
   )
 }
 
-export const exposeToDto = (expose?: ExposeStrategy): ContainerConfigExposeStrategy => {
+export const exposeToDto = (expose: ExposeStrategy): ContainerConfigExposeStrategy => {
+  if (!expose) {
+    return null
+  }
+
   switch (expose) {
     case ExposeStrategy.NONE_ES:
       return 'none'
@@ -141,7 +151,7 @@ export const exposeToDto = (expose?: ExposeStrategy): ContainerConfigExposeStrat
   }
 }
 
-export const exposeToProto = (expose?: ContainerConfigExposeStrategy): ExposeStrategy => {
+export const exposeToProto = (expose: ContainerConfigExposeStrategy): ExposeStrategy => {
   switch (expose) {
     case 'none':
       return ExposeStrategy.NONE_ES
@@ -154,12 +164,12 @@ export const exposeToProto = (expose?: ContainerConfigExposeStrategy): ExposeStr
   }
 }
 
-export const containerConfigToDto = (config?: ProtoContainerConfig): ContainerConfig => {
+export const containerConfigToDto = (config?: ProtoContainerConfig): ContainerConfigData => {
   if (!config) {
     return null
   }
 
-  const cfg: ContainerConfig = {
+  const cfg: ContainerConfigData = {
     // common
     name: config.common.name ?? null,
     user: config.common.user ?? null,
@@ -167,35 +177,35 @@ export const containerConfigToDto = (config?: ProtoContainerConfig): ContainerCo
     ingress: config.common.ingress
       ? {
           ...config.common.ingress,
-          uploadLimitInBytes: config.common.ingress.uploadLimit ?? null,
+          uploadLimit: config.common.ingress.uploadLimit ?? null,
         }
       : null,
     configContainer: config.common.configContainer ?? null,
     importContainer: config.common.importContainer ?? null,
-    ports: config.common.ports ?? [],
-    portRanges: config.common.portRanges ?? [],
-    volumes: volumesToDto(config.common.volumes),
-    commands: config.common.commands ?? [],
-    args: config.common.args ?? [],
+    ports: config.common.ports?.data ?? null,
+    portRanges: config.common.portRanges?.data ?? null,
+    volumes: config.common.volumes?.data ? volumesToDto(config.common.volumes.data) : null,
+    commands: config.common.commands?.data ?? null,
+    args: config.common.args?.data ?? null,
     expose: exposeToDto(config.common.expose),
-    environment: config.common.environment ?? [],
-    initContainers: config.common?.initContainers ?? [],
-    secrets: config.common.secrets ?? [],
-    capabilities: config.capabilities,
+    environment: config.common.environment?.data ?? null,
+    initContainers: config.common?.initContainers?.data ?? null,
+    secrets: config.secrets?.data ?? null,
+    capabilities: null,
 
     // dagent
     logConfig: logConfigToDto(config.dagent?.logConfig),
     restartPolicy: restartPolicyTypeToDto(config.dagent?.restartPolicy),
     networkMode: networkModeToDto(config.dagent?.networkMode),
-    networks: config.dagent?.networks ?? [],
-    dockerLabels: config.dagent?.labels ?? [],
+    networks: config.dagent?.networks?.data ?? null,
+    dockerLabels: config.dagent?.labels?.data ?? null,
 
     // crane
     deploymentStrategy: deploymentStrategyToDto(config.crane?.deploymentStatregy),
-    customHeaders: config.crane?.customHeaders ?? [],
+    customHeaders: config.crane?.customHeaders?.data ?? null,
     proxyHeaders: config.crane?.proxyHeaders ?? false,
     useLoadBalancer: config.crane?.useLoadBalancer ?? false,
-    extraLBAnnotations: config.crane?.extraLBAnnotations ?? null,
+    extraLBAnnotations: config.crane?.extraLBAnnotations?.data ?? null,
     healthCheckConfig: config.crane?.healthCheckConfig ?? null,
     resourceConfig: config.crane?.resourceConfig ?? null,
     labels: config.crane?.labels ?? null,
@@ -205,88 +215,65 @@ export const containerConfigToDto = (config?: ProtoContainerConfig): ContainerCo
   return cfg
 }
 
-export const containerConfigToProto = (config?: ContainerConfig | Partial<ContainerConfig>): ProtoContainerConfig => {
+export const containerConfigToProto = (config: Partial<ContainerConfigData>): ProtoContainerConfig => {
   if (!config) {
     return null
   }
 
+  const common: CommonContainerConfig = {
+    user: config.user ?? null,
+    TTY: config.tty ?? null,
+    ports: config.ports ? { data: config.ports } : null,
+    portRanges: config.portRanges ? { data: config.portRanges } : null,
+    volumes: config.volumes ? { data: volumesToProto(config.volumes) } : null,
+    commands: config.commands ? { data: config.commands } : null,
+    args: config.args ? { data: config.args } : null,
+    expose: exposeToProto(config.expose),
+    ingress: config.ingress ? { ...config.ingress } : null,
+    configContainer: config.configContainer,
+    importContainer: config.importContainer,
+    name: config.name,
+    environment: config.environment ? { data: config.environment } : null,
+    initContainers: config.initContainers ? { data: config.initContainers } : null,
+  }
+
+  const dagent: DagentContainerConfig = {
+    logConfig: logConfigToProto(config.logConfig),
+    restartPolicy: restartPolicyTypeToProto(config.restartPolicy),
+    networkMode: networkModeToProto(config.networkMode),
+    networks: config.networks ? { data: config.networks } : null,
+    labels: config.dockerLabels ? { data: config.dockerLabels } : null,
+  }
+
+  const crane: CraneContainerConfig = {
+    deploymentStatregy: deploymentStrategyToProto(config.deploymentStrategy),
+    healthCheckConfig: config.healthCheckConfig ?? null,
+    resourceConfig: config.resourceConfig ?? null,
+    customHeaders: config.customHeaders ? { data: config.customHeaders } : null,
+    proxyHeaders: config.proxyHeaders ?? null,
+    useLoadBalancer: config.useLoadBalancer ?? null,
+    extraLBAnnotations: config.extraLBAnnotations ? { data: config.extraLBAnnotations } : null,
+    annotations: config.annotations
+      ? {
+          deployment: config.annotations.deployment ?? [],
+          service: config.annotations.service ?? [],
+          ingress: config.annotations.ingress ?? [],
+        }
+      : null,
+    labels: config.labels
+      ? {
+          deployment: config.labels.deployment ?? [],
+          service: config.labels.service ?? [],
+          ingress: config.labels.ingress ?? [],
+        }
+      : null,
+  }
+
   const protoConfig: ProtoContainerConfig = {
-    common: {
-      user: config.user,
-      TTY: config.tty,
-      ports: config.ports,
-      portRanges: config.portRanges ?? [],
-      volumes: volumesToProto(config.volumes),
-      commands: config.commands ?? [],
-      args: config.args ?? [],
-      expose: exposeToProto(config.expose),
-      ingress: config.ingress ? { ...config.ingress, uploadLimit: config.ingress?.uploadLimitInBytes } : null,
-      configContainer: config.configContainer,
-      importContainer: config.importContainer,
-      name: config.name,
-      environment: config.environment ?? [],
-      initContainers: [],
-      secrets: config.secrets ?? [],
-    },
-    dagent: undefined,
-    crane: undefined,
-    capabilities: config.capabilities,
-  }
-
-  if (config.initContainers) {
-    protoConfig.common.initContainers = config.initContainers.map(
-      it =>
-        ({
-          ...it,
-          environment: it.environment ?? [],
-        } as InitContainer),
-    )
-  }
-
-  if (config.logConfig || config.restartPolicy || config.networkMode || config.networks || config.dockerLabels) {
-    protoConfig.dagent = {
-      logConfig: logConfigToProto(config.logConfig),
-      restartPolicy: restartPolicyTypeToProto(config.restartPolicy),
-      networkMode: networkModeToProto(config.networkMode),
-      networks: config.networks,
-      labels: config.dockerLabels,
-    }
-  }
-
-  if (
-    config.deploymentStrategy ||
-    config.customHeaders ||
-    config.proxyHeaders ||
-    config.useLoadBalancer ||
-    config.healthCheckConfig ||
-    config.resourceConfig ||
-    config.extraLBAnnotations ||
-    config.annotations ||
-    config.labels
-  ) {
-    protoConfig.crane = {
-      deploymentStatregy: deploymentStrategyToProto(config.deploymentStrategy),
-      healthCheckConfig: config.healthCheckConfig,
-      resourceConfig: config.resourceConfig,
-      customHeaders: config.customHeaders,
-      proxyHeaders: config.proxyHeaders,
-      useLoadBalancer: config.useLoadBalancer,
-      extraLBAnnotations: config.extraLBAnnotations,
-      annotations: config.annotations
-        ? {
-            deployment: config.annotations.deployment ?? [],
-            service: config.annotations.service ?? [],
-            ingress: config.annotations.ingress ?? [],
-          }
-        : null,
-      labels: config.labels
-        ? {
-            deployment: config.labels.deployment ?? [],
-            service: config.labels.service ?? [],
-            ingress: config.labels.ingress ?? [],
-          }
-        : null,
-    }
+    common: objectHasProperties(common) ? common : null,
+    dagent: objectHasProperties(dagent) ? dagent : null,
+    crane: objectHasProperties(crane) ? crane : null,
+    secrets: config.secrets ? { data: config.secrets } : null,
   }
 
   return protoConfig

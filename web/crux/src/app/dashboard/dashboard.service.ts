@@ -120,8 +120,8 @@ export default class DashboardService {
       versions,
       deployments,
       failedDeployments,
-      nodes: this.mapper.nodesToGrpc(activeNodes),
-      latestDeployments: this.mapper.deploymentsToGrpc(latestDeployments),
+      nodes: this.mapper.nodesToProto(activeNodes),
+      latestDeployments: this.mapper.deploymentsToProto(latestDeployments),
       auditLog: auditLog.data,
     }
   }

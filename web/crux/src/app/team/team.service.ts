@@ -91,7 +91,7 @@ export default class TeamService {
         ? null
         : {
             activeTeamId: active.team.id,
-            role: this.mapper.roleToGrpc(active.role),
+            role: this.mapper.roleToProto(active.role),
             status: UserStatus.VERIFIED,
           },
       teams: usersOnTeams.map(it => it.team),
@@ -120,7 +120,7 @@ export default class TeamService {
     const identities = await this.kratos.getIdentitiesByIds(userIds)
     const sessions = await this.kratos.getSessionsByIds(userIds)
 
-    return this.mapper.activeTeamDetailsToGrpc(team, identities, sessions)
+    return this.mapper.activeTeamDetailsToProto(team, identities, sessions)
   }
 
   async createTeam(
@@ -502,7 +502,7 @@ export default class TeamService {
     const sessions = await this.kratos.getSessionsByIds(userIds)
 
     return {
-      data: teams.map(it => this.mapper.teamDetailsToGrpc(it, identities, sessions)),
+      data: teams.map(it => this.mapper.teamDetailsToProto(it, identities, sessions)),
     }
   }
 
@@ -518,7 +518,7 @@ export default class TeamService {
     const identities = await this.kratos.getIdentitiesByIds(userIds)
     const sessions = await this.kratos.getSessionsByIds(userIds)
 
-    return this.mapper.teamDetailsToGrpc(team, identities, sessions)
+    return this.mapper.teamDetailsToProto(team, identities, sessions)
   }
 
   private async getOrCreateIdentityAndSendInvite(team: TeamWithUsers, traits: IdentityTraits): Promise<Identity> {

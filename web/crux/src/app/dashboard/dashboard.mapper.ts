@@ -8,7 +8,7 @@ import AgentService from '../agent/agent.service'
 export default class DashboardMapper {
   constructor(private agentService: AgentService) {}
 
-  nodesToGrpc(nodes: ActiveNode[]): DashboardActiveNodes[] {
+  nodesToProto(nodes: ActiveNode[]): DashboardActiveNodes[] {
     return nodes.flatMap(it => {
       const agent = this.agentService.getById(it.id)
 
@@ -25,7 +25,7 @@ export default class DashboardMapper {
     })
   }
 
-  deploymentsToGrpc(deployments: LatestDeployment[]): DashboardDeployment[] {
+  deploymentsToProto(deployments: LatestDeployment[]): DashboardDeployment[] {
     return deployments.map(it => ({
       id: it.id,
       changelog: it.version.changelog,

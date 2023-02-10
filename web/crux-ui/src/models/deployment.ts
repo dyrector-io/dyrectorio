@@ -1,5 +1,5 @@
 import { DeploymentStatus } from './common'
-import { ContainerConfig } from './container'
+import { InstanceContainerConfigData } from './container'
 import { UniqueKeyValue } from './grpc/protobuf/proto/crux'
 import { ImageDeletedMessage } from './image'
 import { Instance, InstanceStatus, PatchInstance } from './instance'
@@ -92,12 +92,12 @@ export const WS_TYPE_DEPLOYMENT_ENV_UPDATED = 'deployment-env-updated'
 export type DeploymentEnvUpdatedMessage = UniqueKeyValue[]
 
 export const WS_TYPE_PATCH_INSTANCE = 'patch-instance'
-export type PatchInstanceMessage = ContainerConfig & {
+export type PatchInstanceMessage = Partial<InstanceContainerConfigData> & {
   instanceId: string
 }
 
 export const WS_TYPE_INSTANCE_UPDATED = 'instance-updated'
-export type InstanceUpdatedMessage = ContainerConfig & {
+export type InstanceUpdatedMessage = InstanceContainerConfigData & {
   instanceId: string
 }
 

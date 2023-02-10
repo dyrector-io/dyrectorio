@@ -19,11 +19,13 @@ import useConfirmation from '@app/hooks/use-confirmation'
 import { useThrottling } from '@app/hooks/use-throttleing'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
-  ContainerConfig,
+  ContainerConfigData,
   DeleteImageMessage,
   ImageConfigFilterType,
   imageConfigToJsonContainerConfig,
   ImageUpdateMessage,
+  JsonContainerConfig,
+  mergeJsonConfigToImageContainerConfig,
   PatchImageMessage,
   ProductDetails,
   VersionDetails,
@@ -54,13 +56,13 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
   const { image, product, version } = props
 
   const [filters, setFilters] = useState<ImageConfigFilterType[]>([])
-  const [config, setConfig] = useState<ContainerConfig>(image.config)
+  const [config, setConfig] = useState<ContainerConfigData>(image.config)
   const [viewState, setViewState] = useState<ViewState>('editor')
   const [fieldErrors, setFieldErrors] = useState<ValidationError[]>(() => getContainerConfigFieldErrors(image.config))
   const [jsonError, setJsonError] = useState(jsonErrorOf(fieldErrors))
   const [topBarContent, setTopBarContent] = useState<React.ReactNode>(null)
 
-  const patch = useRef<Partial<ContainerConfig>>({})
+  const patch = useRef<Partial<ContainerConfigData>>({})
   const throttle = useThrottling(IMAGE_WS_REQUEST_DELAY)
   const router = useRouter()
   const [deleteModalConfig, confirmDelete] = useConfirmation()
@@ -81,7 +83,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
     setTopBarContent(reactNode)
   }, [editorState.editors])
 
-  const onChange = (newConfig: Partial<ContainerConfig>) => {
+  const onChange = (newConfig: Partial<ContainerConfigData>) => {
     const value = { ...config, ...newConfig }
     setConfig(value)
 
@@ -174,7 +176,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
   )
 
   return (
-    <Layout title={t('produdtsImagesName', config ?? image)} topBarContent={topBarContent}>
+    <Layout title={t('imagesName', config ?? image)} topBarContent={topBarContent}>
       <PageHeading pageLink={pageLink} sublinks={sublinks}>
         <DyoButton href={versionUrl(product.id, version.id, { section: 'images' })}>{t('common:back')}</DyoButton>
 
@@ -204,6 +206,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
             onChange={onChange}
             editorOptions={editorState}
             fieldErrors={fieldErrors}
+            configType="image"
           />
 
           <CraneConfigSection
@@ -212,6 +215,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
             config={config}
             onChange={onChange}
             editorOptions={editorState}
+            configType="image"
           />
 
           <DagentConfigSection
@@ -220,6 +224,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
             config={config}
             onChange={onChange}
             editorOptions={editorState}
+            configType="image"
           />
         </DyoCard>
       )}
@@ -233,7 +238,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
           <EditImageJson
             config={config}
             editorOptions={editorState}
-            onPatch={onChange}
+            onPatch={(it: JsonContainerConfig) => onChange(mergeJsonConfigToImageContainerConfig(config, it))}
             onParseError={err => setJsonError(err?.message)}
             convertConfigToJson={imageConfigToJsonContainerConfig}
           />

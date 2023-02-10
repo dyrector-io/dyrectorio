@@ -1,8 +1,9 @@
 import {
-  ContainerConfig,
+  ContainerConfigData,
   DeploymentGetSecretListMessage,
   DeploymentSecretListMessage,
   Instance,
+  InstanceContainerConfigData,
   mergeConfigs,
   PatchInstanceMessage,
   WS_TYPE_DEPLOYMENT_SECRETS,
@@ -21,7 +22,7 @@ export type InstanceStateOptions = {
 }
 
 export type InstanceState = {
-  config: ContainerConfig
+  config: ContainerConfigData
   definedSecrets: string[]
   selection: EditInstanceCardSelection
   errorMessage: string
@@ -29,7 +30,7 @@ export type InstanceState = {
 
 export type InstanceActions = {
   selectTab: (selection: EditInstanceCardSelection) => void
-  onPatch: (config: Partial<ContainerConfig>) => void
+  onPatch: (config: Partial<ContainerConfigData>) => void
   onParseError: (error: Error) => void
 }
 
@@ -67,11 +68,11 @@ const useInstanceState = (options: InstanceStateOptions) => {
 
   const errorMessage = parseError ?? getValidationError(containerConfigSchema, config)?.message
 
-  const onPatch = (id: string, newConfig: Partial<ContainerConfig>) => {
+  const onPatch = (id: string, newConfig: InstanceContainerConfigData) => {
     setParseError(null)
 
     sock.send(WS_TYPE_PATCH_INSTANCE, {
-      ...mergeConfigs(config, newConfig),
+      ...newConfig,
       instanceId: id,
     } as PatchInstanceMessage)
   }

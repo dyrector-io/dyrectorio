@@ -1,46 +1,42 @@
-import { nameOrEmailOfIdentity } from 'src/shared/models'
 import { Injectable } from '@nestjs/common'
-import { NotificationTypeEnum, Notification, NotificationEvent, NotificationEventTypeEnum } from '@prisma/client'
+import { Identity } from '@ory/kratos-client'
+import { Notification, NotificationEvent, NotificationEventTypeEnum, NotificationTypeEnum } from '@prisma/client'
+import { InternalException, InvalidArgumentException } from 'src/exception/errors'
 import {
   AuditResponse,
+  NotificationDetailsResponse,
+  NotificationEventType,
   NotificationResponse,
   NotificationType,
   notificationTypeFromJSON,
   notificationTypeToJSON,
-  CreateNotificationResponse,
-  NotificationDetailsResponse,
-  NotificationEventType,
 } from 'src/grpc/protobuf/proto/crux'
-import { Identity } from '@ory/kratos-client'
-import { InternalException, InvalidArgumentException } from 'src/exception/errors'
+import { nameOrEmailOfIdentity } from 'src/shared/models'
 
 @Injectable()
 export default class NotificationMapper {
-  toGrpc(notification: NotificationWithEvents): NotificationResponse {
+  listItemToProto(notification: NotificationWithEvents): NotificationResponse {
     return {
       ...notification,
-      type: this.typeToGrpc(notification.type),
+      type: this.typeToProto(notification.type),
       audit: AuditResponse.fromJSON(notification),
-      events: notification.events.map(ev => this.eventTypeToGrpc(ev.event)),
+      events: notification.events.map(ev => this.eventTypeToProto(ev.event)),
     }
   }
 
-  detailsToGrpc(notification: NotificationWithEvents, identity: Identity): NotificationDetailsResponse {
+  detailsToProto(notification: NotificationWithEvents, identity: Identity): NotificationDetailsResponse {
     return {
       ...notification,
-      type: this.typeToGrpc(notification.type),
+      type: this.typeToProto(notification.type),
       audit: {
         ...AuditResponse.fromJSON(notification),
         createdBy: nameOrEmailOfIdentity(identity),
       },
-      events: notification.events.map(ev => this.eventTypeToGrpc(ev.event)),
+      events: notification.events.map(ev => this.eventTypeToProto(ev.event)),
     }
   }
 
-  toGrpcListResponse(
-    notifications: NotificationWithEvents[],
-    identities: Map<string, Identity>,
-  ): NotificationResponse[] {
+  listToProto(notifications: NotificationWithEvents[], identities: Map<string, Identity>): NotificationResponse[] {
     return notifications.map(it => {
       const identity = identities.get(it.createdBy)
 
@@ -50,24 +46,17 @@ export default class NotificationMapper {
 
       return {
         ...it,
-        type: this.typeToGrpc(it.type),
+        type: this.typeToProto(it.type),
         audit: {
           ...AuditResponse.fromJSON(it),
           createdBy: nameOrEmailOfIdentity(identity),
         },
-        events: it.events.map(ev => this.eventTypeToGrpc(ev.event)),
+        events: it.events.map(ev => this.eventTypeToProto(ev.event)),
       } as NotificationResponse
     })
   }
 
-  toGrpcCreateResponse(notification: Notification, identity: Identity): CreateNotificationResponse {
-    return {
-      id: notification.id,
-      creator: nameOrEmailOfIdentity(identity),
-    }
-  }
-
-  typeToGrpc(type: NotificationTypeEnum): NotificationType {
+  typeToProto(type: NotificationTypeEnum): NotificationType {
     return notificationTypeFromJSON(type.toUpperCase())
   }
 
@@ -75,7 +64,7 @@ export default class NotificationMapper {
     return notificationTypeToJSON(type).toLowerCase() as NotificationTypeEnum
   }
 
-  eventTypeToGrpc(type: NotificationEventTypeEnum): NotificationEventType {
+  eventTypeToProto(type: NotificationEventTypeEnum): NotificationEventType {
     switch (type) {
       case NotificationEventTypeEnum.deploymentCreated:
         return NotificationEventType.DEPLOYMENT_CREATED

@@ -7,7 +7,7 @@ import {
   VersionType,
   versionTypeToJSON,
 } from 'src/grpc/protobuf/proto/crux'
-import { versionTypeToGrpc } from 'src/shared/mapper'
+import { versionTypeToProto } from 'src/shared/mapper'
 import { Version, VersionTypeEnum } from '.prisma/client'
 import DeployMapper, { DeploymentWithNode } from '../deploy/deploy.mapper'
 import ImageMapper, { ImageDetails } from '../image/image.mapper'
@@ -16,25 +16,25 @@ import ImageMapper, { ImageDetails } from '../image/image.mapper'
 export default class VersionMapper {
   constructor(private deployMapper: DeployMapper, private imageMapper: ImageMapper) {}
 
-  toGrpc(version: VersionWithChildren): VersionResponse {
+  listItemToProto(version: VersionWithChildren): VersionResponse {
     return {
       ...version,
       audit: AuditResponse.fromJSON(version),
-      type: versionTypeToGrpc(version.type),
+      type: versionTypeToProto(version.type),
       increasable: versionIsIncreasable(version),
     }
   }
 
-  detailsToGrpc(version: VersionDetails): VersionDetailsResponse {
+  detailsToProto(version: VersionDetails): VersionDetailsResponse {
     return {
       ...version,
       audit: AuditResponse.fromJSON(version),
-      type: versionTypeToGrpc(version.type),
+      type: versionTypeToProto(version.type),
       mutable: versionIsMutable(version),
       deletable: versionIsDeletable(version),
       increasable: versionIsIncreasable(version),
-      images: version.images.map(it => this.imageMapper.toGrpc(it)),
-      deployments: version.deployments.map(it => this.deployMapper.deploymentByVersionToGrpc(it)),
+      images: version.images.map(it => this.imageMapper.detailsToProto(it)),
+      deployments: version.deployments.map(it => this.deployMapper.deploymentByVersionToProto(it)),
     }
   }
 

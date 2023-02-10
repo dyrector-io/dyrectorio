@@ -30,6 +30,7 @@ import {
   WS_TYPE_INPUT_FOCUSED,
   WS_TYPE_ORDER_IMAGES,
   WS_TYPE_PATCH_IMAGE,
+  WS_TYPE_PATCH_RECEIVED,
 } from '@app/models'
 import { WsMessage } from '@app/websockets/common'
 import WsConnection from '@app/websockets/connection'
@@ -121,6 +122,8 @@ const onPatchImage = async (endpoint: WsEndpoint, connection: WsConnection, mess
   const req = message.payload
 
   await cruxFromConnection(connection).images.patchImage(req.id, req)
+
+  connection.send(WS_TYPE_PATCH_RECEIVED, {})
 
   endpoint.sendAllExcept(connection, WS_TYPE_IMAGE_UPDATED, {
     ...req,

@@ -3,6 +3,7 @@ import { ViewMode } from '@app/components/shared/view-mode-toggle'
 import useWebSocket from '@app/hooks/use-websocket'
 import {
   AddImagesMessage,
+  ContainerConfigData,
   DeleteImageMessage,
   FetchImageTagsMessage,
   GetImageMessage,
@@ -28,6 +29,7 @@ import {
   WS_TYPE_IMAGE_UPDATED,
   WS_TYPE_ORDER_IMAGES,
   WS_TYPE_PATCH_IMAGE,
+  WS_TYPE_PATCH_RECEIVED,
   WS_TYPE_REGISTRY_FETCH_IMAGE_TAGS,
   WS_TYPE_REGISTRY_IMAGE_TAGS,
 } from '@app/models'
@@ -73,6 +75,7 @@ export type ImagesActions = {
   selectViewMode: (mode: ViewMode) => void
   fetchImageTags: (image: VersionImage) => void
   selectTagForImage: (image: VersionImage, tag: string) => void
+  updateImageConfig: (image: VersionImage, config: Partial<ContainerConfigData>) => void
 }
 
 export const imageTagKey = (registryId: string, imageName: string) => `${registryId}/${imageName}`
@@ -136,7 +139,7 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
       }
     },
     onReceive: message => {
-      if (WS_TYPE_IMAGE_UPDATED === message.type) {
+      if (WS_TYPE_PATCH_RECEIVED === message.type) {
         setSaving(false)
       }
     },
@@ -283,6 +286,25 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
     } as PatchImageMessage)
   }
 
+  const updateImageConfig = (image: VersionImage, config: Partial<ContainerConfigData>) => {
+    const newImages = [...images]
+    const index = newImages.findIndex(it => it.id === image.id)
+
+    if (index < 0) {
+      return
+    }
+
+    newImages[index] = {
+      ...image,
+      config: {
+        ...newImages[index].config,
+        ...config,
+      },
+    }
+
+    setImages(newImages)
+  }
+
   return [
     { productId, versionId: version.id, addSection, section, images, editor, saving, tags, viewMode, versionSock },
     {
@@ -294,6 +316,7 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
       selectViewMode,
       selectTagForImage,
       fetchImageTags,
+      updateImageConfig,
     },
   ]
 }

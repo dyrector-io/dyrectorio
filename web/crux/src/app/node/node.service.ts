@@ -54,7 +54,7 @@ export default class NodeService {
     })
 
     return {
-      data: nodes.map(it => this.mapper.toGrpc(it)),
+      data: nodes.map(it => this.mapper.listItemToProto(it)),
     }
   }
 
@@ -65,7 +65,7 @@ export default class NodeService {
       },
     })
 
-    return this.mapper.detailsToGrpc(node)
+    return this.mapper.detailsToProto(node)
   }
 
   async createNode(req: CreateNodeRequest): Promise<CreateEntityResponse> {
@@ -115,7 +115,7 @@ export default class NodeService {
   }
 
   async generateScript(req: GenerateScriptRequest): Promise<NodeInstallResponse> {
-    const nodeType = this.mapper.nodeTypeGrpcToPrisma(req.type)
+    const nodeType = this.mapper.nodeTypeToDb(req.type)
 
     await this.prisma.node.update({
       where: {
@@ -135,7 +135,7 @@ export default class NodeService {
       req.dagentTraefik ?? null,
     )
 
-    return this.mapper.installerToGrpc(installer)
+    return this.mapper.installerToProto(installer)
   }
 
   async getScript(request: ServiceIdRequest): Promise<NodeScriptResponse> {

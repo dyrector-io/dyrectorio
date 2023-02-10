@@ -16,8 +16,11 @@ const MultiInput = (props: MultiInputProps) => {
 
   const editId = editIdOf(id, editorOptions.itemId)
 
-  const onMergeValues = (_: string, local: string) => {
-    onPatch(local)
+  const onMergeValues = (remote: string, local: string) => {
+    if (remote !== local) {
+      onPatch(local)
+    }
+
     return local
   }
 

@@ -10,7 +10,6 @@ import {
   Node,
   VersionTypeEnum,
 } from '@prisma/client'
-import { JsonArray, JsonObject } from 'prisma'
 import { toTimestamp } from 'src/domain/utils'
 import { InternalException } from 'src/exception/errors'
 import {
@@ -30,7 +29,6 @@ import {
 } from 'src/grpc/protobuf/proto/common'
 import {
   AuditResponse,
-  ContainerConfig as ProtoContainerConfig,
   DeploymentByVersionResponse,
   DeploymentDetailsResponse,
   DeploymentEventContainerState,
@@ -39,10 +37,12 @@ import {
   DeploymentEventType,
   DeploymentResponse,
   InitContainer,
+  InstanceContainerConfig as ProtoInstanceContainerConfig,
   InstanceResponse,
   NodeConnectionStatus,
+  UniqueSecretKey,
 } from 'src/grpc/protobuf/proto/crux'
-import { versionTypeToGrpc } from 'src/shared/mapper'
+import { versionTypeToProto } from 'src/shared/mapper'
 import {
   ContainerConfigData,
   InstanceContainerConfigData,
@@ -58,51 +58,51 @@ import ImageMapper, { ImageDetails } from '../image/image.mapper'
 export default class DeployMapper {
   constructor(private imageMapper: ImageMapper, private agentService: AgentService) {}
 
-  listItemToGrpc(deployment: DeploymentListItem): DeploymentResponse {
+  listItemToProto(deployment: DeploymentListItem): DeploymentResponse {
     return {
       ...deployment,
       node: deployment.node.name,
       product: deployment.version.product.name,
       version: deployment.version.name,
-      status: this.statusToGrpc(deployment.status),
+      status: this.statusToProto(deployment.status),
       productId: deployment.version.product.id,
       versionId: deployment.version.id,
       nodeId: deployment.node.id,
       updatedAt: toTimestamp(deployment.updatedAt),
-      versionType: versionTypeToGrpc(deployment.version.type),
+      versionType: versionTypeToProto(deployment.version.type),
     }
   }
 
-  deploymentByVersionToGrpc(deployment: DeploymentWithNode): DeploymentByVersionResponse {
+  deploymentByVersionToProto(deployment: DeploymentWithNode): DeploymentByVersionResponse {
     const agent = this.agentService.getById(deployment.nodeId)
 
     const status = agent?.getConnectionStatus() ?? NodeConnectionStatus.UNREACHABLE
     return {
       ...deployment,
       audit: AuditResponse.fromJSON(deployment),
-      status: this.statusToGrpc(deployment.status),
+      status: this.statusToProto(deployment.status),
       nodeId: deployment.nodeId,
       nodeName: deployment.node.name,
       nodeStatus: status,
     }
   }
 
-  detailsToGrpc(deployment: DeploymentDetails, publicKey?: string): DeploymentDetailsResponse {
+  detailsToProto(deployment: DeploymentDetails, publicKey?: string): DeploymentDetailsResponse {
     return {
       ...deployment,
       audit: AuditResponse.fromJSON(deployment),
       productVersionId: deployment.versionId,
-      status: this.statusToGrpc(deployment.status),
+      status: this.statusToProto(deployment.status),
       publicKey,
-      environment: deployment.environment as JsonArray,
+      environment: deployment.environment as UniqueKeyValue[],
       instances: deployment.instances.map(it => ({
-        ...this.instanceToGrpc(it),
+        ...this.instanceToProto(it),
         audit: AuditResponse.fromJSON(deployment),
       })),
     }
   }
 
-  instanceToGrpc(instance: InstanceDetails): InstanceResponse {
+  instanceToProto(instance: InstanceDetails): InstanceResponse {
     const config = this.mergeConfigs(
       (instance.image.config ?? {}) as ContainerConfigData,
       (instance.config ?? {}) as InstanceContainerConfigData,
@@ -111,25 +111,57 @@ export default class DeployMapper {
     return {
       ...instance,
       audit: AuditResponse.fromJSON(instance),
-      image: this.imageMapper.toGrpc(instance.image),
-      state: this.containerStateToGrpc(instance.state),
-      config: this.instanceConfigToGrpc(config),
+      image: this.imageMapper.detailsToProto(instance.image),
+      state: this.containerStateToProto(instance.state),
+      config: this.instanceConfigToProto(config),
     }
   }
 
-  instanceConfigToGrpc(instanceConfig: MergedContainerConfigData): ProtoContainerConfig {
-    const config = instanceConfig as any as InstanceContainerConfigData
+  instanceConfigToProto(config: InstanceContainerConfigData): ProtoInstanceContainerConfig {
+    return {
+      common: this.imageMapper.commonConfigToProto(config),
+      dagent: this.imageMapper.dagentConfigToProto(config),
+      crane: this.imageMapper.craneConfigToProto(config),
+      secrets: !config.secrets ? null : { data: config.secrets },
+    }
+  }
+
+  instanceConfigToInstanceContainerConfigData(
+    imageConfig: ContainerConfigData,
+    currentConfig: InstanceContainerConfigData,
+    configPatch: ProtoInstanceContainerConfig,
+  ): InstanceContainerConfigData {
+    const config = this.imageMapper.configProtoToContainerConfigData(currentConfig, configPatch)
+
+    if (config.labels) {
+      const currentLabels = currentConfig.labels ?? imageConfig.labels ?? {}
+
+      config.labels = {
+        deployment: config.labels.deployment ?? currentLabels.deployment,
+        ingress: config.labels.ingress ?? currentLabels.ingress,
+        service: config.labels.service ?? currentLabels.service,
+      }
+    }
+
+    if (config.annotations) {
+      const currentAnnotations = currentConfig.annotations ?? imageConfig.annotations ?? {}
+
+      config.annotations = {
+        deployment: config.annotations.deployment ?? currentAnnotations.deployment,
+        ingress: config.annotations.ingress ?? currentAnnotations.ingress,
+        service: config.annotations.service ?? currentAnnotations.service,
+      }
+    }
+
+    let secrets = !configPatch.secrets ? undefined : configPatch.secrets.data
+    if (secrets && !currentConfig.secrets && imageConfig.secrets) {
+      secrets = this.mergeSecrets(secrets, imageConfig.secrets)
+    }
 
     return {
-      capabilities: config.capabilities,
-      common: this.imageMapper.configToCommonConfig(config, (it: UniqueSecretKeyValue) => it),
-      dagent: this.imageMapper.configToDagentConfig(config),
-      crane: this.imageMapper.configToCraneConfig(config),
+      ...config,
+      secrets,
     }
-  }
-
-  instanceConfigToInstanceContainerConfigData(config: ProtoContainerConfig): InstanceContainerConfigData {
-    return this.imageMapper.configProtoToContainerConfigData(config)
   }
 
   instanceContainerConfigDataToDb(
@@ -138,7 +170,7 @@ export default class DeployMapper {
     return this.imageMapper.containerConfigDataToDb(config)
   }
 
-  eventToGrpc(event: DeploymentEvent): DeploymentEventResponse {
+  eventToProto(event: DeploymentEvent): DeploymentEventResponse {
     let log: DeploymentEventLog
     let deploymentStatus: DeploymentStatus
     let containerStatus: DeploymentEventContainerState
@@ -150,7 +182,7 @@ export default class DeployMapper {
         break
       }
       case DeploymentEventTypeEnum.deploymentStatus: {
-        deploymentStatus = this.statusToGrpc(event.value as DeploymentStatusEnum)
+        deploymentStatus = this.statusToProto(event.value as DeploymentStatusEnum)
         break
       }
       case DeploymentEventTypeEnum.containerStatus: {
@@ -170,14 +202,14 @@ export default class DeployMapper {
     return {
       ...event,
       createdAt: toTimestamp(event.createdAt),
-      type: this.eventTypeToGrpc(event.type),
+      type: this.eventTypeToProto(event.type),
       log,
       deploymentStatus,
       containerStatus,
     }
   }
 
-  eventTypeToGrpc(type: DeploymentEventTypeEnum) {
+  eventTypeToProto(type: DeploymentEventTypeEnum) {
     switch (type) {
       case 'containerStatus':
         return DeploymentEventType.CONTAINER_STATUS
@@ -201,7 +233,7 @@ export default class DeployMapper {
     }
   }
 
-  statusToGrpc(status: DeploymentStatusEnum): DeploymentStatus {
+  statusToProto(status: DeploymentStatusEnum): DeploymentStatus {
     switch (status) {
       case DeploymentStatusEnum.inProgress:
         return DeploymentStatus.IN_PROGRESS
@@ -210,7 +242,7 @@ export default class DeployMapper {
     }
   }
 
-  containerStateToGrpc(state?: ContainerStateEnum): ContainerState {
+  containerStateToProto(state?: ContainerStateEnum): ContainerState {
     return state ? containerStateFromJSON(state.toUpperCase()) : null
   }
 
@@ -218,67 +250,71 @@ export default class DeployMapper {
     return state ? (containerStateToJSON(state).toLowerCase() as ContainerStateEnum) : null
   }
 
-  configToCommonConfig(config: ContainerConfigData): CommonContainerConfig {
+  commonConfigToAgentProto(config: MergedContainerConfigData): CommonContainerConfig {
     return {
       name: config.name,
-      environment: this.jsonToPipedFormat(config.environment as JsonArray),
-      secrets: this.mapKeyValueToMap(config.secrets as JsonObject),
-      commands: this.mapUniqueKeyToStringArray(config.commands as JsonObject),
-      expose: this.imageMapper.exposeStrategyToGrpc(config.expose),
-      args: this.mapUniqueKeyToStringArray(config.args as JsonObject),
+      environment: this.jsonToPipedFormat(config.environment),
+      secrets: this.mapKeyValueToMap(config.secrets),
+      commands: this.mapUniqueKeyToStringArray(config.commands),
+      expose: this.imageMapper.exposeStrategyToProto(config.expose),
+      args: this.mapUniqueKeyToStringArray(config.args),
       TTY: config.tty,
-      configContainer: config.configContainer as JsonObject,
+      configContainer: config.configContainer,
       importContainer: config.importContainer
         ? {
-            ...(config.importContainer as JsonObject),
-            environments: this.mapKeyValueToMap((config.importContainer as JsonObject)?.environments),
+            ...config.importContainer,
+            environment: this.mapKeyValueToMap(config.importContainer?.environment),
           }
         : null,
-      ingress: config.ingress as JsonObject,
-      initContainers: this.mapInitContainerToAgent(config.initContainers as JsonObject),
-      portRanges: config.portRanges as JsonObject,
-      ports: config.ports as JsonObject,
+      ingress: config.ingress,
+      initContainers: this.mapInitContainerToAgent(config.initContainers),
+      portRanges: config.portRanges,
+      ports: config.ports,
       user: config.user,
-      volumes: config.volumes as JsonObject,
+      volumes: this.imageMapper.volumesToProto(config.volumes),
     }
   }
 
-  configToDagentConfig(config: ContainerConfigData): DagentContainerConfig {
+  dagentConfigToAgentProto(config: MergedContainerConfigData): DagentContainerConfig {
     return {
-      networks: this.mapUniqueKeyToStringArray(config.networks as JsonObject),
-      logConfig: config.logConfig
-        ? {
-            ...(config.logConfig as JsonObject),
-            options: this.mapKeyValueToMap((config.logConfig as JsonObject)?.options),
-          }
-        : null,
+      networks: this.mapUniqueKeyToStringArray(config.networks),
+      logConfig: !config.logConfig
+        ? null
+        : {
+            ...config.logConfig,
+            driver: this.imageMapper.logDriverToProto(config.logConfig.driver),
+            options: this.mapKeyValueToMap(config.logConfig.options),
+          },
       networkMode: this.imageMapper.networkModeToProto(config.networkMode),
       restartPolicy: this.imageMapper.restartPolicyToProto(config.restartPolicy),
       labels: this.mapKeyValueToMap(config.dockerLabels),
     }
   }
 
-  configToCraneConfig(config: ContainerConfigData): CraneContainerConfig {
+  craneConfigToAgentProto(config: MergedContainerConfigData): CraneContainerConfig {
     return {
-      customHeaders: this.mapUniqueKeyToStringArray(config.customHeaders as JsonObject),
-      extraLBAnnotations: this.mapKeyValueToMap(config.extraLBAnnotations as JsonObject),
+      customHeaders: this.mapUniqueKeyToStringArray(config.customHeaders),
+      extraLBAnnotations: this.mapKeyValueToMap(config.extraLBAnnotations),
       deploymentStatregy: this.imageMapper.deploymentStrategyToProto(config.deploymentStrategy),
-      healthCheckConfig: config.healthCheckConfig as JsonObject,
+      healthCheckConfig: config.healthCheckConfig,
       proxyHeaders: config.proxyHeaders,
       useLoadBalancer: config.useLoadBalancer,
-      resourceConfig: config.resourceConfig as JsonObject,
+      resourceConfig: {
+        limits: config.resourceConfig?.limits,
+        requests: config.resourceConfig?.requests,
+      },
       labels: config.labels
         ? {
-            deployment: this.mapKeyValueToMap((config.labels as JsonObject)?.deployment),
-            ingress: this.mapKeyValueToMap((config.labels as JsonObject)?.ingress),
-            service: this.mapKeyValueToMap((config.labels as JsonObject)?.service),
+            deployment: this.mapKeyValueToMap(config.labels?.deployment),
+            ingress: this.mapKeyValueToMap(config.labels?.ingress),
+            service: this.mapKeyValueToMap(config.labels?.service),
           }
         : null,
       annotations: config.annotations
         ? {
-            deployment: this.mapKeyValueToMap((config.annotations as JsonObject)?.deployment),
-            ingress: this.mapKeyValueToMap((config.annotations as JsonObject)?.ingress),
-            service: this.mapKeyValueToMap((config.annotations as JsonObject)?.service),
+            deployment: this.mapKeyValueToMap(config.annotations?.deployment),
+            ingress: this.mapKeyValueToMap(config.annotations?.ingress),
+            service: this.mapKeyValueToMap(config.annotations?.service),
           }
         : null,
     }
@@ -329,81 +365,78 @@ export default class DeployMapper {
     return environment.map(it => `${it.key}|${it.value}`)
   }
 
-  private mergeKeyValues(weak: UniqueKeyValue[], strong: UniqueKeyValue[]): UniqueKeyValue[] {
-    const overriddenKeys: Set<string> = new Set(strong?.map(it => it.key))
-    return [...(weak?.filter(it => !overriddenKeys.has(it.key)) ?? []), ...(strong ?? [])]
+  private mergeSecrets(
+    instanceSecrets: UniqueSecretKeyValue[],
+    imageSecrets: UniqueSecretKey[],
+  ): UniqueSecretKeyValue[] {
+    imageSecrets = imageSecrets ?? []
+    instanceSecrets = instanceSecrets ?? []
+
+    const overriddenIds: Set<string> = new Set(instanceSecrets?.map(it => it.id))
+
+    const missing: UniqueSecretKeyValue[] = imageSecrets
+      .filter(it => !overriddenIds.has(it.id))
+      .map(it => ({
+        ...it,
+        value: '',
+        encrypted: false,
+        publicKey: null,
+      }))
+
+    return [...missing, ...instanceSecrets]
   }
 
-  private mergeSecrets(weak: UniqueSecretKeyValue[], strong: UniqueSecretKeyValue[]): UniqueSecretKeyValue[] {
-    const overriddenKeys: Set<string> = new Set(strong?.map(it => it.key))
-    return [...(weak?.filter(it => !overriddenKeys.has(it.key)) ?? []), ...(strong ?? [])]
-  }
-
-  private override = <T>(weak: T, strong: T): T => strong ?? weak
-
-  public mergeConfigs(
-    imageConfig: ContainerConfigData,
-    instanceConfig: InstanceContainerConfigData,
-  ): MergedContainerConfigData {
+  public mergeConfigs(image: ContainerConfigData, instance: InstanceContainerConfigData): MergedContainerConfigData {
     return {
       // common
-      name: this.override(imageConfig.name, instanceConfig.name),
-      environment: this.mergeKeyValues(imageConfig.environment, instanceConfig?.environment),
-      secrets: this.mergeSecrets(
-        imageConfig.secrets?.map(it => ({ ...it, value: '' } as UniqueSecretKeyValue)),
-        instanceConfig?.secrets,
-      ),
-      user: this.override(imageConfig.user, instanceConfig?.user),
-      tty: this.override(imageConfig.tty, instanceConfig?.tty),
-      portRanges: this.override(imageConfig.portRanges, instanceConfig?.portRanges),
-      args: this.override(imageConfig.args, instanceConfig?.args),
-      commands: this.override(imageConfig.commands, instanceConfig?.commands),
-      expose: this.override(imageConfig.expose, instanceConfig?.expose),
-      configContainer: this.override(imageConfig.configContainer, instanceConfig?.configContainer),
-      ingress: this.override(imageConfig.ingress, instanceConfig?.ingress),
-      volumes: this.override(imageConfig.volumes, instanceConfig?.volumes),
-      importContainer: this.override(imageConfig.importContainer, instanceConfig?.importContainer),
-      initContainers: this.override(imageConfig.initContainers, instanceConfig?.initContainers),
-      capabilities: this.mergeKeyValues(imageConfig.capabilities, instanceConfig?.capabilities),
-      ports: this.override(imageConfig.ports, instanceConfig?.ports),
+      name: instance.name ?? image.name,
+      environment: instance.environment ?? image.environment,
+      secrets: this.mergeSecrets(instance.secrets, image.secrets),
+      user: instance.user ?? image.user,
+      tty: instance.tty ?? image.tty,
+      portRanges: instance.portRanges ?? image.portRanges,
+      args: instance.args ?? image.args,
+      commands: instance.commands ?? image.commands,
+      expose: instance.expose ?? image.expose,
+      configContainer: instance.configContainer ?? image.configContainer,
+      ingress: instance.ingress ?? image.ingress,
+      volumes: instance.volumes ?? image.volumes,
+      importContainer: instance.importContainer ?? image.importContainer,
+      initContainers: instance.initContainers ?? image.initContainers,
+      capabilities: [], // TODO (@m8vago, @nandor-magyar): caps
+      ports: instance.ports ?? image.ports,
 
       // crane
-      customHeaders: this.override(imageConfig.customHeaders, instanceConfig?.customHeaders),
-      proxyHeaders: this.override(imageConfig.proxyHeaders, instanceConfig?.proxyHeaders),
-      extraLBAnnotations: this.override(imageConfig.extraLBAnnotations, instanceConfig?.extraLBAnnotations),
-      healthCheckConfig: this.override(imageConfig.healthCheckConfig, instanceConfig?.healthCheckConfig),
-      resourceConfig: this.override(imageConfig.resourceConfig, instanceConfig?.resourceConfig),
-      useLoadBalancer: this.override(imageConfig.useLoadBalancer, instanceConfig?.useLoadBalancer),
-      deploymentStrategy: this.override(imageConfig.deploymentStrategy, instanceConfig?.deploymentStrategy),
+      customHeaders: instance.customHeaders ?? image.customHeaders,
+      proxyHeaders: instance.proxyHeaders ?? image.proxyHeaders,
+      extraLBAnnotations: instance.extraLBAnnotations ?? image.extraLBAnnotations,
+      healthCheckConfig: instance.healthCheckConfig ?? image.healthCheckConfig,
+      resourceConfig: instance.resourceConfig ?? image.resourceConfig,
+      useLoadBalancer: instance.useLoadBalancer ?? image.useLoadBalancer,
+      deploymentStrategy: instance.deploymentStrategy ?? image.deploymentStrategy,
       labels:
-        imageConfig.labels || instanceConfig?.labels
+        instance.labels || image.labels
           ? {
-              deployment: this.mergeKeyValues(
-                imageConfig.labels?.deployment ?? [],
-                instanceConfig?.labels?.deployment ?? [],
-              ),
-              service: this.mergeKeyValues(imageConfig.labels?.service ?? [], instanceConfig?.labels?.service ?? []),
-              ingress: this.mergeKeyValues(imageConfig.labels?.ingress ?? [], instanceConfig?.labels?.ingress ?? []),
+              deployment: instance.labels?.deployment ?? image.labels?.deployment ?? [],
+              service: instance.labels?.service ?? image.labels?.service ?? [],
+              ingress: instance.labels?.ingress ?? image.labels?.ingress ?? [],
             }
           : null,
       annotations:
-        imageConfig.annotations || instanceConfig?.annotations
+        image.annotations || instance.annotations
           ? {
-              deployment: this.mergeKeyValues(
-                imageConfig.annotations?.deployment,
-                instanceConfig?.annotations?.deployment,
-              ),
-              service: this.mergeKeyValues(imageConfig.annotations?.service, instanceConfig?.annotations?.service),
-              ingress: this.mergeKeyValues(imageConfig.annotations?.ingress, instanceConfig?.annotations?.ingress),
+              deployment: instance.annotations?.deployment ?? image.annotations?.deployment ?? [],
+              service: instance.annotations?.service ?? image.annotations?.service ?? [],
+              ingress: instance.annotations?.ingress ?? image.annotations?.ingress ?? [],
             }
           : null,
 
       // dagent
-      logConfig: this.override(imageConfig.logConfig, instanceConfig?.logConfig),
-      networkMode: this.override(imageConfig.networkMode, instanceConfig?.networkMode),
-      restartPolicy: this.override(imageConfig.restartPolicy, instanceConfig?.restartPolicy),
-      networks: this.override(imageConfig.networks, instanceConfig?.networks),
-      dockerLabels: this.mergeKeyValues(imageConfig.dockerLabels, instanceConfig?.dockerLabels),
+      logConfig: instance.logConfig ?? image.logConfig,
+      networkMode: instance.networkMode ?? image.networkMode,
+      restartPolicy: instance.restartPolicy ?? image.restartPolicy,
+      networks: instance.networks ?? image.networks,
+      dockerLabels: instance.dockerLabels ?? image.dockerLabels,
     }
   }
 }

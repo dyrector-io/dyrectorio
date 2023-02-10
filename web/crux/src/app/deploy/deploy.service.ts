@@ -66,7 +66,7 @@ export default class DeployService {
     })
 
     return {
-      data: deployments.map(it => this.mapper.deploymentByVersionToGrpc(it)),
+      data: deployments.map(it => this.mapper.deploymentByVersionToProto(it)),
     }
   }
 
@@ -93,7 +93,7 @@ export default class DeployService {
 
     const publicKey = this.agentService.getById(deployment.nodeId)?.publicKey
 
-    return this.mapper.detailsToGrpc(deployment, publicKey)
+    return this.mapper.detailsToProto(deployment, publicKey)
   }
 
   async getDeploymentEvents(request: IdRequest): Promise<DeploymentEventListResponse> {
@@ -112,8 +112,8 @@ export default class DeployService {
     })
 
     return {
-      status: this.mapper.statusToGrpc(deployment.status),
-      data: deployment.events.map(it => this.mapper.eventToGrpc(it)),
+      status: this.mapper.statusToProto(deployment.status),
+      data: deployment.events.map(it => this.mapper.eventToProto(it)),
     }
   }
 
@@ -228,9 +228,27 @@ export default class DeployService {
     const reqInstance = request.instance
     let instanceConfigPatchSet: Omit<InstanceContainerConfig, 'id' | 'instanceId'> = null
 
-    if (reqInstance && reqInstance.config) {
-      const config = this.mapper.instanceConfigToInstanceContainerConfigData(reqInstance.config)
-      instanceConfigPatchSet = this.mapper.instanceContainerConfigDataToDb(config)
+    if (reqInstance?.config) {
+      const instance = await this.prisma.instance.findUnique({
+        where: {
+          id: reqInstance.id,
+        },
+        select: {
+          config: true,
+          image: {
+            select: {
+              config: true,
+            },
+          },
+        },
+      })
+
+      const config = this.mapper.instanceConfigToInstanceContainerConfigData(
+        instance.image.config as any as ContainerConfigData,
+        (instance.config ?? {}) as any as InstanceContainerConfigData,
+        reqInstance.config,
+      )
+      instanceConfigPatchSet = config as Omit<InstanceContainerConfig, 'id' | 'instanceId'>
     }
 
     const deployment = await this.prisma.deployment.update({
@@ -379,7 +397,7 @@ export default class DeployService {
           },
         }),
       )
-      .filter(it => it != null)
+      .filter(it => it !== null)
 
     if (invalidSecretsUpdates.length > 0) {
       await this.prisma.$transaction(invalidSecretsUpdates)
@@ -413,9 +431,9 @@ export default class DeployService {
           )
 
           return {
-            common: this.mapper.configToCommonConfig(mergedConfig),
-            crane: this.mapper.configToCraneConfig(mergedConfig),
-            dagent: this.mapper.configToDagentConfig(mergedConfig),
+            common: this.mapper.commonConfigToAgentProto(mergedConfig),
+            crane: this.mapper.craneConfigToAgentProto(mergedConfig),
+            dagent: this.mapper.dagentConfigToAgentProto(mergedConfig),
             id: it.id,
             containerName: it.image.config.name,
             imageName: it.image.name,
@@ -489,7 +507,7 @@ export default class DeployService {
           event =>
             ({
               instancesCreated: {
-                data: event.instances.map(it => this.mapper.instanceToGrpc(it)),
+                data: event.instances.map(it => this.mapper.instanceToProto(it)),
               },
             } as DeploymentEditEventMessage),
         ),
@@ -545,7 +563,7 @@ export default class DeployService {
     })
 
     return {
-      data: deployments.map(it => this.mapper.listItemToGrpc(it)),
+      data: deployments.map(it => this.mapper.listItemToProto(it)),
     }
   }
 

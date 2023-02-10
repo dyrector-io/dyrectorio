@@ -8,21 +8,31 @@ import { DyoLabel } from '@app/elements/dyo-label'
 import DyoSwitch from '@app/elements/dyo-switch'
 import { CRANE_CONFIG_FILTERS, filterContains, filterEmpty, ImageConfigFilterType } from '@app/models'
 import {
-  ContainerConfig,
   ContainerDeploymentStrategyType,
   CONTAINER_DEPLOYMENT_STRATEGY_VALUES,
   CraneConfigDetails,
+  InstanceCraneConfigDetails,
 } from '@app/models/container'
 import { nullify, toNumber } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 
-interface CraneConfigSectionProps {
-  config: CraneConfigDetails
-  onChange: (config: Partial<ContainerConfig>) => void
+type CraneConfigSectionBaseProps<T> = {
+  config: T
+  onChange: (config: Partial<T>) => void
   selectedFilters: ImageConfigFilterType[]
   editorOptions: ItemEditorState
   disabled?: boolean
 }
+
+type ImageCraneConfigSectionProps = CraneConfigSectionBaseProps<CraneConfigDetails> & {
+  configType: 'image'
+}
+
+type InstanceCraneConfigSectionProps = CraneConfigSectionBaseProps<InstanceCraneConfigDetails> & {
+  configType: 'instance'
+}
+
+export type CraneConfigSectionProps = ImageCraneConfigSectionProps | InstanceCraneConfigSectionProps
 
 const CraneConfigSection = (props: CraneConfigSectionProps) => {
   const { t } = useTranslation('container')
@@ -143,7 +153,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
         {filterContains('customHeaders', selectedFilters) && (
           <div className="grid break-inside-avoid mb-8 max-w-lg">
             <KeyOnlyInput
-              className="mb-2"
+              className="max-h-128 overflow-y-auto mb-2"
               labelClassName="text-bright font-semibold tracking-wide mb-2"
               label={t('crane.customHeaders').toUpperCase()}
               items={config.customHeaders ?? []}
@@ -293,6 +303,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
             {!config.useLoadBalancer ? null : (
               <div className="flex flex-wrap ml-2">
                 <KeyValueInput
+                  className="max-h-128 overflow-y-auto"
                   label={t('crane.extraLBAnnotations')}
                   items={config.extraLBAnnotations ?? []}
                   editorOptions={editorOptions}
@@ -309,6 +320,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
           <>
             <div className="grid mb-8 break-inside-avoid">
               <KeyValueInput
+                className="max-h-128 overflow-y-auto"
                 labelClassName="text-bright font-semibold tracking-wide mb-2"
                 label={t('crane.deploymentLabels').toUpperCase()}
                 onChange={it => onChange({ labels: nullify({ ...config.labels, deployment: it }) })}
@@ -320,6 +332,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
 
             <div className="grid mb-8 break-inside-avoid">
               <KeyValueInput
+                className="max-h-128 overflow-y-auto"
                 labelClassName="text-bright font-semibold tracking-wide mb-2"
                 label={t('crane.serviceLabels').toUpperCase()}
                 onChange={it => onChange({ labels: nullify({ ...config.labels, service: it }) })}
@@ -331,6 +344,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
 
             <div className="grid mb-8 break-inside-avoid">
               <KeyValueInput
+                className="max-h-128 overflow-y-auto"
                 labelClassName="text-bright font-semibold tracking-wide mb-2"
                 label={t('crane.ingressLabels').toUpperCase()}
                 onChange={it => onChange({ labels: nullify({ ...config.labels, ingress: it }) })}
@@ -347,6 +361,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
           <>
             <div className="grid mb-8 break-inside-avoid">
               <KeyValueInput
+                className="max-h-128 overflow-y-auto"
                 labelClassName="text-bright font-semibold tracking-wide mb-2"
                 label={t('crane.deploymentAnnotations').toUpperCase()}
                 onChange={it => onChange({ annotations: nullify({ ...config.annotations, deployment: it }) })}
@@ -358,6 +373,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
 
             <div className="grid mb-8 break-inside-avoid">
               <KeyValueInput
+                className="max-h-128 overflow-y-auto"
                 labelClassName="text-bright font-semibold tracking-wide mb-2"
                 label={t('crane.serviceAnnotations').toUpperCase()}
                 onChange={it => onChange({ annotations: nullify({ ...config.annotations, service: it }) })}
@@ -369,6 +385,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
 
             <div className="grid mb-8 break-inside-avoid">
               <KeyValueInput
+                className="max-h-128 overflow-y-auto"
                 labelClassName="text-bright font-semibold tracking-wide mb-2"
                 label={t('crane.ingressAnnotations').toUpperCase()}
                 onChange={it => onChange({ annotations: nullify({ ...config.annotations, ingress: it }) })}

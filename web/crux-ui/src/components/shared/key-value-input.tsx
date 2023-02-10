@@ -35,6 +35,10 @@ const setItems = (items: UniqueKeyValue[]) => (): UniqueKeyValue[] => items
 const mergeItems =
   (updatedItems: UniqueKeyValue[]) =>
   (state: UniqueKeyValue[]): UniqueKeyValue[] => {
+    if (!updatedItems) {
+      updatedItems = []
+    }
+
     const lastLine = state.length > 0 ? state[state.length - 1] : null
     const emptyLine = !!lastLine && isCompletelyEmpty(lastLine) ? lastLine : generateEmptyLine()
 
@@ -90,7 +94,7 @@ const KeyValueInput = (props: KeyValueInputProps) => {
 
   const { t } = useTranslation('common')
 
-  const [state, dispatch] = useRepatch(items)
+  const [state, dispatch] = useRepatch(items ?? [])
 
   const stateToElements = (keyValues: UniqueKeyValue[]) => {
     const result = []
@@ -173,7 +177,7 @@ const KeyValueInput = (props: KeyValueInputProps) => {
   }
 
   return (
-    <div className={clsx(className, 'flex flex-col max-h-128 overflow-y-auto')}>
+    <div className={clsx(className, 'flex flex-col')}>
       {!label ? null : (
         <DyoLabel className={clsx(labelClassName ?? 'text-bright mb-2 whitespace-nowrap')}>{label}</DyoLabel>
       )}

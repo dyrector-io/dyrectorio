@@ -44,7 +44,7 @@ export default class ProductService {
     })
 
     return {
-      data: products.map(it => this.mapper.toGrpc(it)),
+      data: products.map(it => this.mapper.listItemToProto(it)),
     }
   }
 
@@ -152,6 +152,6 @@ export default class ProductService {
       },
     })
 
-    return this.mapper.detailsToGrpc({ ...product, deletable: productInProgressDeployments === 0 })
+    return this.mapper.detailsToProto({ ...product, deletable: productInProgressDeployments === 0 })
   }
 }
