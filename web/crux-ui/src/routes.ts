@@ -198,8 +198,8 @@ export const instanceConfigUrl = (productId: string, versionId: string, deployme
 // template
 export const templateImageUrl = (templateId: string) => `${API_TEMPLATES}/${templateId}/image`
 
-// token
-export const tokenApiUrl = (tokenId: string) => `${API_TOKENS}/${tokenId}`
+// tokens
+export const tokensApiUrl = (tokenId: string) => `${API_TOKENS}/${tokenId}`
 
 // log
 export type ContainerLogParams = {

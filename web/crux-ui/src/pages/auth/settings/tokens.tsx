@@ -12,7 +12,7 @@ import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import useConfirmation from '@app/hooks/use-confirmation'
 import { TextFilter, textFilterFor, useFilters } from '@app/hooks/use-filters'
 import { GenerateTokenResponse, Token } from '@app/models'
-import { ROUTE_SETTINGS_EDIT_PROFILE, ROUTE_SETTINGS_TOKENS, tokenApiUrl } from '@app/routes'
+import { ROUTE_SETTINGS_EDIT_PROFILE, ROUTE_SETTINGS_TOKENS, tokensApiUrl } from '@app/routes'
 import { utcDateToLocale, withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
 import clsx from 'clsx'
@@ -49,7 +49,7 @@ const TokensPage = (props: TokensPageProps) => {
   }
 
   const onDelete = async (token: Token) => {
-    const res = await fetch(tokenApiUrl(token.id), {
+    const res = await fetch(tokensApiUrl(token.id), {
       method: 'DELETE',
     })
 
