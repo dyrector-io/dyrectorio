@@ -10,7 +10,7 @@ import {
 } from 'src/grpc/protobuf/proto/crux'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
-import { APIAuthPayload } from 'src/shared/models'
+import { AuthPayload } from 'src/shared/models'
 import { v4 as uuid } from 'uuid'
 import TokenMapper from './token.mapper'
 
@@ -30,7 +30,7 @@ export default class AuthService {
 
     const nonce = uuid()
 
-    const payload: APIAuthPayload = {
+    const payload: AuthPayload = {
       sub: user.id,
       nonce,
     }

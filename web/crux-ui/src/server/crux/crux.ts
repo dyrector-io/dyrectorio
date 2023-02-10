@@ -109,7 +109,7 @@ export class Crux {
   }
 
   get token() {
-    return this._token ?? new DyoTokenService(this.clients.token, this.identity)
+    return this._token ?? new DyoTokenService(this.clients.tokens, this.identity)
   }
 
   get registryConnectionsServices(): CruxRegistryConnectionsServices {

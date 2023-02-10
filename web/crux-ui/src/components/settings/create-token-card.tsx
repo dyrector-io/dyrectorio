@@ -7,7 +7,7 @@ import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { defaultApiErrorHandler } from '@app/errors'
 import { GenerateTokenRequest, GenerateTokenResponse, Token } from '@app/models'
-import { API_TOKEN } from '@app/routes'
+import { API_TOKENS } from '@app/routes'
 import { sendForm } from '@app/utils'
 import { generateTokenSchema } from '@app/validations/token'
 import { useFormik } from 'formik'
@@ -38,7 +38,7 @@ const CreateTokenCard = (props: CreateTokenCardProps) => {
     onSubmit: async (values, { setSubmitting, setFieldError }) => {
       setSubmitting(true)
 
-      const res = await sendForm('POST', API_TOKEN, values as GenerateTokenRequest)
+      const res = await sendForm('POST', API_TOKENS, values as GenerateTokenRequest)
 
       if (res.ok) {
         const json = await res.json()

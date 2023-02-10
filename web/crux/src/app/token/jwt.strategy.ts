@@ -2,7 +2,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt'
 import { PassportStrategy } from '@nestjs/passport'
 import { Injectable, UnauthorizedException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { APIAuthPayload } from 'src/shared/models'
+import { AuthPayload } from 'src/shared/models'
 import PrismaService from 'src/services/prisma.service'
 
 @Injectable()
@@ -22,7 +22,7 @@ export default class JwtStrategy extends PassportStrategy(Strategy) {
    * @returns payload
    * @memberof JwtStrategy
    */
-  async validate(payload: APIAuthPayload): Promise<APIAuthPayload> {
+  async validate(payload: AuthPayload): Promise<AuthPayload> {
     const token = await this.prismaService.token.findFirst({
       select: {
         id: true,

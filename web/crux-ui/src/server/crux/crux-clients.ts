@@ -41,7 +41,7 @@ class CruxClients {
 
   dashboard: CruxDashboardClient
 
-  token: CruxTokenClient
+  tokens: CruxTokenClient
 
   constructor(address: string) {
     // tls must be terminated by the reverse proxy
@@ -63,7 +63,7 @@ class CruxClients {
     this.notifications = new CruxNotificationClient(address, creds)
     this.templates = new CruxTemplateClient(address, creds)
     this.dashboard = new CruxDashboardClient(address, creds)
-    this.token = new CruxTokenClient(address, creds)
+    this.tokens = new CruxTokenClient(address, creds)
   }
 }
 
