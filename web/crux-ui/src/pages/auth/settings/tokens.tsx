@@ -178,7 +178,7 @@ export default TokensPage
 
 const getPageServerSideProps = async (context: NextPageContext) => ({
   props: {
-    tokens: await cruxFromContext(context).token.getAll(),
+    tokens: await cruxFromContext(context).tokens.getAll(),
   },
 })
 

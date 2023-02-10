@@ -7,7 +7,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 const onPost = async (req: NextApiRequest, res: NextApiResponse) => {
   const dto = req.body as GenerateTokenRequest
-  const token = await crux(req).token.generateToken(dto)
+  const token = await crux(req).tokens.generateToken(dto)
 
   res.status(201).json(token)
 }

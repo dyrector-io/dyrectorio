@@ -5,7 +5,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 const onDelete = async (req: NextApiRequest, res: NextApiResponse) => {
   const tokenid = req.query.tokenId as string
 
-  await crux(req).token.delete(tokenid)
+  await crux(req).tokens.delete(tokenid)
 
   res.status(204).end()
 }

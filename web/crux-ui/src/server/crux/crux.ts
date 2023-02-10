@@ -52,7 +52,7 @@ export class Crux {
 
   private _dashboard: DyoDashboardService
 
-  private _token: DyoTokenService
+  private _tokens: DyoTokenService
 
   private constructor(
     private clients: CruxClients,
@@ -108,8 +108,8 @@ export class Crux {
     return this._dashboard ?? new DyoDashboardService(this.clients.dashboard, this.identity)
   }
 
-  get token() {
-    return this._token ?? new DyoTokenService(this.clients.tokens, this.identity)
+  get tokens() {
+    return this._tokens ?? new DyoTokenService(this.clients.tokens, this.identity)
   }
 
   get registryConnectionsServices(): CruxRegistryConnectionsServices {
