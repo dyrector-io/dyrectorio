@@ -77,7 +77,7 @@ type Options struct {
 	TimeZone                       string `yaml:"timezone" env-default:"Europe/Budapest"`
 	CruxAgentGrpcPort              uint   `yaml:"crux-agentgrpc-port" env-default:"5000"`
 	CruxGrpcPort                   uint   `yaml:"crux-grpc-port" env-default:"5001"`
-	CruxAPIGatewayPort             uint   `yaml:"crux-api-gateway-port" env-default:"1848"`
+	CruxHttpPort                   uint   `yaml:"crux-api-gateway-port" env-default:"1848"`
 	CruxUIPort                     uint   `yaml:"crux-ui-port" env-default:"3000"`
 	CruxSecret                     string `yaml:"crux-secret"`
 	CruxPostgresPort               uint   `yaml:"cruxPostgresPort" env-default:"5432"`
