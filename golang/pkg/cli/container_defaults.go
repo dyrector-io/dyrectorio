@@ -22,6 +22,7 @@ const (
 const (
 	defaultCruxAgentGrpcPort   = 5000
 	defaultCruxGrpcPort        = 5001
+	defaultCruxHTTPPort        = 1848
 	defaultCruxUIPort          = 3000
 	defaultTraefikWebPort      = 8000
 	defaultTraefikUIPort       = 8080
@@ -88,6 +89,10 @@ func GetCrux(settings *Settings) *containerbuilder.DockerContainerBuilder {
 				{
 					ExposedPort: defaultCruxGrpcPort,
 					PortBinding: pointer.ToUint16(uint16(settings.SettingsFile.CruxGrpcPort)),
+				},
+				{
+					ExposedPort: defaultCruxHTTPPort,
+					PortBinding: pointer.ToUint16(uint16(settings.SettingsFile.CruxHTTPPort)),
 				},
 			})
 	}

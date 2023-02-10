@@ -145,6 +145,13 @@ service CruxTemplate {
 service CruxDashboard {
   rpc GetDashboard(AccessRequest) returns (DashboardResponse);
 }
+
+service CruxToken {
+  rpc GenerateToken(GenerateTokenRequest) returns (GenerateTokenResponse);
+  rpc GetTokenList(AccessRequest) returns (TokenListResponse);
+  rpc DeleteToken(IdRequest) returns (common.Empty);
+}
+
 /**
  *
  * Common messages
@@ -179,14 +186,45 @@ message UpdateEntityResponse { google.protobuf.Timestamp updatedAt = 100; }
  *
  */
 
+// AUTHENTICATION
+message GenerateTokenRequest {
+  string accessedBy = 2;
+
+  string name = 100;
+  int32 expirationInDays = 101;
+}
+
+message GenerateTokenResponse {
+  string id = 1;
+
+  string name = 100;
+  google.protobuf.Timestamp expiresAt = 101;
+  google.protobuf.Timestamp createdAt = 102;
+
+  string token = 103;
+}
+
+message TokenResponse {
+  string id = 1;
+
+  string name = 100;
+  google.protobuf.Timestamp expiresAt = 101;
+  google.protobuf.Timestamp createdAt = 102;
+}
+
+message TokenListResponse {
+  repeated TokenResponse data = 1000;
+}
+
 // AUDIT
 message AuditLogListRequest {
-  string accessedBy = 100;
-  uint32 pageSize = 101;
-  uint32 pageNumber = 102;
-  optional string keyword = 103;
-  optional google.protobuf.Timestamp createdFrom = 104;
-  google.protobuf.Timestamp createdTo = 105;
+  string accessedBy = 2;
+
+  uint32 pageSize = 100;
+  uint32 pageNumber = 101;
+  optional string keyword = 102;
+  optional google.protobuf.Timestamp createdFrom = 103;
+  google.protobuf.Timestamp createdTo = 104;
 }
 
 message AuditLogListCountResponse { uint32 count = 100; }

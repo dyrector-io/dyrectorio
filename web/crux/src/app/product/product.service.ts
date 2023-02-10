@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { ProductTypeEnum, VersionTypeEnum } from '@prisma/client'
 import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
@@ -19,8 +19,6 @@ import ProductMapper from './product.mapper'
 @Injectable()
 export default class ProductService {
   constructor(private teamRepository: TeamRepository, private prisma: PrismaService, private mapper: ProductMapper) {}
-
-  private readonly logger = new Logger(ProductService.name)
 
   async getProducts(request: AccessRequest): Promise<ProductListResponse> {
     const products = await this.prisma.product.findMany({

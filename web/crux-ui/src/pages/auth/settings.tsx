@@ -11,6 +11,7 @@ import {
   ROUTE_SETTINGS,
   ROUTE_SETTINGS_CHANGE_PASSWORD,
   ROUTE_SETTINGS_EDIT_PROFILE,
+  ROUTE_SETTINGS_TOKENS,
   ROUTE_VERIFICATION,
 } from '@app/routes'
 import { redirectTo, withContextAuthorization } from '@app/utils'
@@ -33,6 +34,7 @@ const SettingsPage = (props: Identity) => {
     <Layout title={t('common:profile')}>
       <PageHeading pageLink={pageLink}>
         <div className="ml-auto">
+          <DyoButton href={ROUTE_SETTINGS_TOKENS}>{t('profileToken')}</DyoButton>
           <DyoButton href={ROUTE_SETTINGS_EDIT_PROFILE}>{t('editProfile')}</DyoButton>
           <DyoButton href={ROUTE_SETTINGS_CHANGE_PASSWORD}>{t('changePass')}</DyoButton>
         </div>

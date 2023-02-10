@@ -10,11 +10,12 @@ import TeamRepository from '../team/team.repository'
 import VersionController from './version.controller'
 import VersionMapper from './version.mapper'
 import VersionService from './version.service'
+import VersionHttpController from './version.http.controller'
 
 @Module({
   imports: [DeployModule, ImageModule, HttpModule],
   exports: [VersionService, VersionMapper],
-  controllers: [VersionController],
+  controllers: [VersionController, VersionHttpController],
   providers: [
     VersionService,
     VersionMapper,

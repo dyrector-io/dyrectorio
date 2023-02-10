@@ -89,26 +89,6 @@ export class PermissionDeniedException extends BaseGrpcException {
   }
 }
 
-export class DatabaseException extends InternalException {
-  constructor(
-    options: InternalExceptionOptions = {
-      message: 'Database error.',
-    },
-  ) {
-    super(options)
-  }
-}
-
-export class UserNotFoundException extends InternalException {
-  constructor(
-    options: InternalExceptionOptions = {
-      message: 'User is not found.',
-    },
-  ) {
-    super(options)
-  }
-}
-
 export class MailServiceException extends InternalException {
   constructor(
     options: InternalExceptionOptions = {
@@ -118,9 +98,3 @@ export class MailServiceException extends InternalException {
     super(options)
   }
 }
-
-export const mapNotFoundError = (property: string) => () =>
-  new NotFoundException({
-    message: `${property} not found`,
-    property,
-  })

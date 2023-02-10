@@ -7,11 +7,13 @@ import VersionModule from '../version/version.module'
 import ProductController from './product.controller'
 import ProductMapper from './product.mapper'
 import ProductService from './product.service'
+import ProductHttpController from './product.http.controller'
+import AuthModule from '../token/token.module'
 
 @Module({
-  imports: [VersionModule, TeamModule],
+  imports: [VersionModule, TeamModule, AuthModule],
   exports: [ProductMapper, ProductService],
-  controllers: [ProductController],
+  controllers: [ProductController, ProductHttpController],
   providers: [PrismaService, ProductService, ProductMapper, InterceptorGrpcHelperProvider, TeamRepository],
 })
 export default class ProductModule {}
