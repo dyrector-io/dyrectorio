@@ -28,7 +28,7 @@ export default class HealthController implements CruxHealthController, ProtoHeal
 
   @AuditLogLevel('disabled')
   async check(request: HealthCheckRequest): Promise<HealthCheckResponse> {
-    return await this.service.getServiceStatus(request.service)
+    return await this.service.getHealthCheck(request)
   }
 
   @AuditLogLevel('disabled')

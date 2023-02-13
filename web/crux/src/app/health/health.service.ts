@@ -40,7 +40,7 @@ export default class HealthService {
     }
   }
 
-  async getHealth(request: HealthCheckRequest): Promise<HealthCheckResponse> {
+  async getHealthCheck(request: HealthCheckRequest): Promise<HealthCheckResponse> {
     const { service } = request
 
     const status = await this.getServiceStatus(service)
