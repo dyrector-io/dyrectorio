@@ -10,89 +10,11 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
-	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	imageHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/image"
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 )
-
-func TestNameEmpty(t *testing.T) {
-	empty := ""
-	res, err := imageHelper.URIFromString(empty)
-
-	assert.Nil(t, res)
-	assert.ErrorIs(t, err, &imageHelper.EmptyError{})
-	log.Print(err.Error())
-}
-
-func TestNameShort(t *testing.T) {
-	image := "nginx"
-	tag := "latest"
-	res, err := imageHelper.URIFromString(util.JoinV(":", image, tag))
-
-	assert.Equal(t, res.Host, "")
-	assert.Equal(t, res.Name, image)
-	assert.Equal(t, res.Tag, tag)
-	assert.Nil(t, err)
-}
-
-func TestNameNoTag(t *testing.T) {
-	imageName := "nginx"
-	res, err := imageHelper.URIFromString(imageName)
-
-	assert.Nil(t, res)
-	testErr := &imageHelper.InvalidURIError{Image: imageName}
-	assert.Equal(t, err.Error(), testErr.Error())
-}
-
-func TestNameFullyQualified(t *testing.T) {
-	image := "reg.dyrector.io/library/nginx"
-	tag := "test"
-
-	res, err := imageHelper.URIFromString(util.JoinV(":", image, tag))
-
-	assert.Equal(t, res.Host, "reg.dyrector.io")
-	assert.Equal(t, res.Name, "library/nginx")
-	assert.Equal(t, res.Tag, tag)
-	assert.Nil(t, err)
-}
-
-func TestNameInvalid(t *testing.T) {
-	image := "reg.dyrector.io/library/inv:alid"
-	tag := "te:st"
-
-	res, err := imageHelper.URIFromString(util.JoinV(":", image, tag))
-
-	assert.Nil(t, res)
-	assert.ErrorIs(t, err, &imageHelper.MultiColonRegistryURIError{})
-	log.Print(err.Error())
-}
-
-func TestImageToStringDockerHub(t *testing.T) {
-	image := &imageHelper.URI{Host: "", Name: "nginx", Tag: "latest"}
-
-	assert.Equal(t, "docker.io/library/nginx:latest", image.String())
-	assert.Equal(t, "docker.io/library/nginx", image.StringNoTag())
-	assert.Equal(t, "library/nginx:latest", image.StringNoHost())
-}
-
-func TestImageToStringPrivateRegistry(t *testing.T) {
-	image := &imageHelper.URI{Host: "reg.example.com", Name: "example-project/service-api", Tag: "latest"}
-
-	assert.Equal(t, "reg.example.com/example-project/service-api:latest", image.String())
-	assert.Equal(t, "reg.example.com/example-project/service-api", image.StringNoTag())
-	assert.Equal(t, "example-project/service-api:latest", image.StringNoHost())
-}
-
-func TestImageToStringWithoutTag(t *testing.T) {
-	image := &imageHelper.URI{Host: "", Name: "alpine"}
-
-	assert.Equal(t, "docker.io/library/alpine:latest", image.String())
-	assert.Equal(t, "docker.io/library/alpine", image.StringNoTag())
-	assert.Equal(t, "library/alpine:latest", image.StringNoHost())
-}
 
 func TestRegistryUrl(t *testing.T) {
 	auth := &imageHelper.RegistryAuth{
@@ -188,4 +110,58 @@ func TestPullImage(t *testing.T) {
 	}
 
 	assert.Greater(t, len(images), 0)
+}
+
+func TestExpandImageName(t *testing.T) {
+	name, err := imageHelper.ExpandImageName("nginx")
+	assert.NoError(t, err)
+	assert.Equal(t, "docker.io/library/nginx:latest", name)
+
+	name, err = imageHelper.ExpandImageName("nginx:tag")
+	assert.NoError(t, err)
+	assert.Equal(t, "docker.io/library/nginx:tag", name)
+
+	name, err = imageHelper.ExpandImageName("my-reg.com/library/nginx")
+	assert.NoError(t, err)
+	assert.Equal(t, "my-reg.com/library/nginx:latest", name)
+
+	name, err = imageHelper.ExpandImageName("my-reg.com/library/nginx:my-tag")
+	assert.NoError(t, err)
+	assert.Equal(t, "my-reg.com/library/nginx:my-tag", name)
+}
+
+func TestExpandImageNameWithTag(t *testing.T) {
+	name, err := imageHelper.ExpandImageNameWithTag("nginx", "tag-1")
+	assert.NoError(t, err)
+	assert.Equal(t, "docker.io/library/nginx:tag-1", name)
+
+	name, err = imageHelper.ExpandImageNameWithTag("nginx:tag", "tag-2")
+	assert.NoError(t, err)
+	assert.Equal(t, "docker.io/library/nginx:tag-2", name)
+
+	name, err = imageHelper.ExpandImageNameWithTag("my-reg.com/library/nginx", "tag-3")
+	assert.NoError(t, err)
+	assert.Equal(t, "my-reg.com/library/nginx:tag-3", name)
+
+	name, err = imageHelper.ExpandImageNameWithTag("my-reg.com/library/nginx:my-tag", "tag-4")
+	assert.NoError(t, err)
+	assert.Equal(t, "my-reg.com/library/nginx:tag-4", name)
+}
+
+func TestSplitImageName(t *testing.T) {
+	_, _, err := imageHelper.SplitImageName("nginx")
+	assert.Error(t, err)
+
+	name, tag, err := imageHelper.SplitImageName("docker.io/library/nginx:tag-2")
+	assert.NoError(t, err)
+	assert.Equal(t, "docker.io/library/nginx", name)
+	assert.Equal(t, "tag-2", tag)
+
+	name, tag, err = imageHelper.SplitImageName("my-reg.com/test/nginx:tag-3")
+	assert.Equal(t, "my-reg.com/test/nginx", name)
+	assert.NoError(t, err)
+	assert.Equal(t, "tag-3", tag)
+
+	name, tag, err = imageHelper.SplitImageName("my-reg.com/test/nginx")
+	assert.Error(t, err)
 }

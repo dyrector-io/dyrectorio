@@ -19,7 +19,6 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	builder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
-	imageHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/image"
 
 	typedv1 "k8s.io/client-go/kubernetes/typed/apps/v1"
 
@@ -48,7 +47,7 @@ func NewDeployment(ctx context.Context, cfg *config.Configuration) *Deployment {
 
 type deploymentParams struct {
 	namespace       string
-	image           imageHelper.URI
+	image           string
 	containerConfig *v1.ContainerConfig
 	pullSecretName  string
 	configMapsEnv   []string
@@ -212,7 +211,7 @@ func buildContainer(p *deploymentParams,
 
 	container := corev1.Container().
 		WithName(p.containerConfig.Container).
-		WithImage(p.image.String()).
+		WithImage(p.image).
 		WithEnvFrom(getEnvConfigMapsAndSecrets(p.configMapsEnv, p.secrets)...).
 		WithVolumeMounts(getVolumeMountsFromMap(p.volumes)...).
 		WithPorts(getContainerPorts(p.portList)...).

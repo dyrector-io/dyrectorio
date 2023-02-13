@@ -8,7 +8,6 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/utils"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/helper/docker"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/helper/image"
@@ -79,21 +78,16 @@ func createNewDAgentContainer(ctx context.Context, cli *client.Client, oldContai
 
 	log.Debug().Msg("Creating new DAgent")
 
-	imageURI, err := image.URIFromString(imageWithTag)
-	if err != nil {
-		return err
-	}
-
 	builder := containerbuilder.NewDockerBuilder(ctx).
 		WithClient(cli).
-		WithImageURI(imageURI).
+		WithImage(imageWithTag).
 		WithRestartPolicy(containerbuilder.RestartPolicyName(inspect.HostConfig.RestartPolicy.Name)).
 		WithName(name).
 		WithEnv(inspect.Config.Env).
 		WithMountPoints(mounts)
 
-	ok, err := builder.Create().Start()
-	if !ok {
+	err = builder.CreateAndStart()
+	if err != nil {
 		return err
 	}
 
@@ -117,12 +111,10 @@ func SelfUpdate(ctx context.Context, tag string, timeoutSeconds int32) error {
 		return err
 	}
 
-	imageURI, err := image.URIFromString(container.Image)
+	newImage, err := image.ExpandImageNameWithTag(container.Image, tag)
 	if err != nil {
 		return err
 	}
-
-	newImage := util.JoinV("/", imageURI.Host, imageURI.Name) + ":" + tag
 
 	newImageID, err := findImageAndPull(ctx, newImage)
 	if err != nil {

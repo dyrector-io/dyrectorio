@@ -15,7 +15,6 @@ import (
 
 	containerbuilder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	dockerHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/docker"
-	imageHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/image"
 
 	"github.com/dyrector-io/dyrectorio/golang/pkg/dagent/config"
 )
@@ -107,12 +106,7 @@ func ExecTraefik(ctx context.Context, traefikDeployReq TraefikDeployRequest, cfg
 		log.Warn().Msg("Trying to start Traefic with unsupported 'host' network mode! Traefik will not work!")
 	}
 
-	image, err := imageHelper.URIFromString("index.docker.io/library/traefik:v2.8.0")
-	if err != nil {
-		return err
-	}
-
-	builder := containerbuilder.NewDockerBuilder(ctx).WithImageURI(image).
+	builder := containerbuilder.NewDockerBuilder(ctx).WithImage("index.docker.io/library/traefik:v2.8.0").
 		WithName("traefik").
 		WithMountPoints(mounts).
 		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).
@@ -122,12 +116,9 @@ func ExecTraefik(ctx context.Context, traefikDeployReq TraefikDeployRequest, cfg
 		WithCmd(command).
 		WithForcePullImage().
 		WithExtraHosts([]string{"host.docker.internal:host-gateway"}).
-		WithoutConflict().
-		Create()
+		WithoutConflict()
 
-	_, err = builder.Start()
-
-	return err
+	return builder.CreateAndStart()
 }
 
 func GetOwnContainerID() string {

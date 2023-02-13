@@ -211,7 +211,7 @@ func InspectContainer(name string) types.ContainerJSON {
 func logDeployInfo(
 	dog *dogger.DeploymentLogger,
 	deployImageRequest *v1.DeployImageRequest,
-	image *imageHelper.URI,
+	expandedImageName string,
 	containerName string,
 ) {
 	reqID := deployImageRequest.RequestID
@@ -221,11 +221,10 @@ func logDeployInfo(
 	}
 	dog.Write(
 		fmt.Sprintln("Starting container: ", containerName),
-		fmt.Sprintln("Using image: ", image.String()),
+		fmt.Sprintln("Using image: ", expandedImageName),
 	)
-	log.Debug().Str("host", image.Host).Str("name", image.Name).Str("tag", image.Tag).Msg("Parsed image URI")
 
-	labels, _ := GetImageLabels(image.String())
+	labels, _ := GetImageLabels(expandedImageName)
 	if len(labels) > 0 {
 		labelsLog := []string{"Image labels:"}
 		for key, label := range labels {
@@ -281,15 +280,18 @@ func DeployImage(ctx context.Context,
 	containerName := getContainerName(deployImageRequest)
 	cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
 
-	imageURI := util.JoinV("/",
+	imageName := util.JoinV("/",
 		*deployImageRequest.Registry,
 		util.JoinV(":", deployImageRequest.ImageName, deployImageRequest.Tag))
-	log.Debug().Str("image", imageURI).Msg("Parsing image URI")
-	image, imageError := imageHelper.URIFromString(imageURI)
-	if imageError != nil {
-		return imageError
+
+	expandedImageName, err := imageHelper.ExpandImageName(imageName)
+	if err != nil {
+		return fmt.Errorf("deployment failed, image name error: %w", err)
 	}
-	logDeployInfo(dog, deployImageRequest, image, containerName)
+
+	log.Debug().Str("name", imageName).Str("full", expandedImageName).Msg("Image name parsed")
+
+	logDeployInfo(dog, deployImageRequest, expandedImageName, containerName)
 
 	envMap := MergeStringMapUnique(
 		EnvPipeSeparatedToStringMap(&deployImageRequest.InstanceConfig.Environment),
@@ -320,12 +322,12 @@ func DeployImage(ctx context.Context,
 
 	builder := containerbuilder.NewDockerBuilder(ctx)
 	networkMode, networks := setNetwork(deployImageRequest)
-	labels, err := setImageLabels(image.String(), deployImageRequest, cfg)
+	labels, err := setImageLabels(expandedImageName, deployImageRequest, cfg)
 	if err != nil {
 		return fmt.Errorf("error building lables: %w", err)
 	}
 
-	builder.WithImageURI(image).
+	builder.WithImage(expandedImageName).
 		WithName(containerName).
 		WithMountPoints(mountList).
 		WithPortBindings(deployImageRequest.ContainerConfig.Ports).
@@ -346,9 +348,7 @@ func DeployImage(ctx context.Context,
 
 	WithInitContainers(builder, &deployImageRequest.ContainerConfig, dog, cfg)
 
-	builder.Create()
-
-	_, err = builder.Start()
+	err = builder.CreateAndStart()
 	if err != nil {
 		dog.WriteContainerState("", fmt.Sprintf("Failed to start container (%s): %s", containerName, err.Error()))
 		return err
@@ -541,23 +541,26 @@ func EnvPipeSeparatedToStringMap(envIn *[]string) map[string]string {
 	return envList
 }
 
-func GetImageLabels(fullyQualifiedImageName string) (map[string]string, error) {
+func GetImageLabels(expandedImageName string) (map[string]string, error) {
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		panic(err)
 	}
 
-	res, _, err := cli.ImageInspectWithRaw(ctx, fullyQualifiedImageName)
+	res, _, err := cli.ImageInspectWithRaw(ctx, expandedImageName)
 	if res.Config != nil && res.Config.Labels != nil {
 		return res.Config.Labels, err
 	}
 	return map[string]string{}, nil
 }
 
-func setImageLabels(image string, deployImageRequest *v1.DeployImageRequest, cfg *config.Configuration) (map[string]string, error) {
+func setImageLabels(expandedImageName string,
+	deployImageRequest *v1.DeployImageRequest,
+	cfg *config.Configuration,
+) (map[string]string, error) {
 	// parse image labels
-	labels, err := GetImageLabels(image)
+	labels, err := GetImageLabels(expandedImageName)
 	if err != nil {
 		return nil, fmt.Errorf("error get image labels: %w", err)
 	}
