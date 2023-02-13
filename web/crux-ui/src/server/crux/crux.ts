@@ -24,6 +24,7 @@ import DyoProductService from './product-service'
 import DyoRegistryService from './registry-service'
 import DyoTeamService from './team-service'
 import DyoTemplateService from './template-service'
+import DyoTokenService from './token-service'
 import DyoVersionService from './version-service'
 
 export class Crux {
@@ -50,6 +51,8 @@ export class Crux {
   private _templates: DyoTemplateService
 
   private _dashboard: DyoDashboardService
+
+  private _tokens: DyoTokenService
 
   private constructor(
     private clients: CruxClients,
@@ -103,6 +106,10 @@ export class Crux {
 
   get dashboard() {
     return this._dashboard ?? new DyoDashboardService(this.clients.dashboard, this.identity)
+  }
+
+  get tokens() {
+    return this._tokens ?? new DyoTokenService(this.clients.tokens, this.identity)
   }
 
   get registryConnectionsServices(): CruxRegistryConnectionsServices {

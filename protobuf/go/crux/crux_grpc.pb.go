@@ -3605,3 +3605,161 @@ var CruxDashboard_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "protobuf/proto/crux.proto",
 }
+
+// CruxTokenClient is the client API for CruxToken service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type CruxTokenClient interface {
+	GenerateToken(ctx context.Context, in *GenerateTokenRequest, opts ...grpc.CallOption) (*GenerateTokenResponse, error)
+	GetTokenList(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*TokenListResponse, error)
+	DeleteToken(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
+}
+
+type cruxTokenClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewCruxTokenClient(cc grpc.ClientConnInterface) CruxTokenClient {
+	return &cruxTokenClient{cc}
+}
+
+func (c *cruxTokenClient) GenerateToken(ctx context.Context, in *GenerateTokenRequest, opts ...grpc.CallOption) (*GenerateTokenResponse, error) {
+	out := new(GenerateTokenResponse)
+	err := c.cc.Invoke(ctx, "/crux.CruxToken/GenerateToken", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cruxTokenClient) GetTokenList(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*TokenListResponse, error) {
+	out := new(TokenListResponse)
+	err := c.cc.Invoke(ctx, "/crux.CruxToken/GetTokenList", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cruxTokenClient) DeleteToken(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
+	err := c.cc.Invoke(ctx, "/crux.CruxToken/DeleteToken", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// CruxTokenServer is the server API for CruxToken service.
+// All implementations must embed UnimplementedCruxTokenServer
+// for forward compatibility
+type CruxTokenServer interface {
+	GenerateToken(context.Context, *GenerateTokenRequest) (*GenerateTokenResponse, error)
+	GetTokenList(context.Context, *AccessRequest) (*TokenListResponse, error)
+	DeleteToken(context.Context, *IdRequest) (*common.Empty, error)
+	mustEmbedUnimplementedCruxTokenServer()
+}
+
+// UnimplementedCruxTokenServer must be embedded to have forward compatible implementations.
+type UnimplementedCruxTokenServer struct {
+}
+
+func (UnimplementedCruxTokenServer) GenerateToken(context.Context, *GenerateTokenRequest) (*GenerateTokenResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GenerateToken not implemented")
+}
+func (UnimplementedCruxTokenServer) GetTokenList(context.Context, *AccessRequest) (*TokenListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTokenList not implemented")
+}
+func (UnimplementedCruxTokenServer) DeleteToken(context.Context, *IdRequest) (*common.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteToken not implemented")
+}
+func (UnimplementedCruxTokenServer) mustEmbedUnimplementedCruxTokenServer() {}
+
+// UnsafeCruxTokenServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to CruxTokenServer will
+// result in compilation errors.
+type UnsafeCruxTokenServer interface {
+	mustEmbedUnimplementedCruxTokenServer()
+}
+
+func RegisterCruxTokenServer(s grpc.ServiceRegistrar, srv CruxTokenServer) {
+	s.RegisterService(&CruxToken_ServiceDesc, srv)
+}
+
+func _CruxToken_GenerateToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GenerateTokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CruxTokenServer).GenerateToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crux.CruxToken/GenerateToken",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CruxTokenServer).GenerateToken(ctx, req.(*GenerateTokenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CruxToken_GetTokenList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AccessRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CruxTokenServer).GetTokenList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crux.CruxToken/GetTokenList",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CruxTokenServer).GetTokenList(ctx, req.(*AccessRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CruxToken_DeleteToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CruxTokenServer).DeleteToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crux.CruxToken/DeleteToken",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CruxTokenServer).DeleteToken(ctx, req.(*IdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// CruxToken_ServiceDesc is the grpc.ServiceDesc for CruxToken service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var CruxToken_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "crux.CruxToken",
+	HandlerType: (*CruxTokenServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GenerateToken",
+			Handler:    _CruxToken_GenerateToken_Handler,
+		},
+		{
+			MethodName: "GetTokenList",
+			Handler:    _CruxToken_GetTokenList_Handler,
+		},
+		{
+			MethodName: "DeleteToken",
+			Handler:    _CruxToken_DeleteToken_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "protobuf/proto/crux.proto",
+}

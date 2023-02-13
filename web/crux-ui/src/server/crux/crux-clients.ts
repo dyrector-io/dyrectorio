@@ -12,6 +12,7 @@ import {
   CruxRegistryClient,
   CruxTeamClient,
   CruxTemplateClient,
+  CruxTokenClient,
 } from '@app/models/grpc/protobuf/proto/crux'
 import { credentials } from '@grpc/grpc-js'
 
@@ -40,6 +41,8 @@ class CruxClients {
 
   dashboard: CruxDashboardClient
 
+  tokens: CruxTokenClient
+
   constructor(address: string) {
     // tls must be terminated by the reverse proxy
     const creds = credentials.createInsecure()
@@ -60,6 +63,7 @@ class CruxClients {
     this.notifications = new CruxNotificationClient(address, creds)
     this.templates = new CruxTemplateClient(address, creds)
     this.dashboard = new CruxDashboardClient(address, creds)
+    this.tokens = new CruxTokenClient(address, creds)
   }
 }
 

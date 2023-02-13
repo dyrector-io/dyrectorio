@@ -31,58 +31,25 @@ export type NotificationTemplate = {
   message: Message
 }
 
-const getNodeMessage = (args: BaseMessage): string => `${args.owner} added a new node: ${args.subject}!`
-
-const getVersionMessage = (args: VersionMessage): string =>
-  `${args.owner} created a new version: ${args.version} for product ${args.subject}!`
-
-const getInviteMessage = (args: InviteMessage): string =>
-  `${args.subject} has been invited to join team ${args.team} by ${args.owner} !`
-
-const getFailedDeployMessage = (args: DeployMessage): string =>
-  `Failed to deploy ${args.subject} version ${args.version} on node ${args.node}, initiated by: ${args.owner}!`
-
-const getSuccessfulDeployMessage = (args: DeployMessage): string =>
-  `${args.owner} successfully deployed ${args.subject} version ${args.version} on node ${args.node}!`
-
-const getMessage = (messageType: NotificationMessageType): ((message: Message) => string) => {
-  switch (messageType) {
-    case 'node':
-      return getNodeMessage
-    case 'version':
-      return getVersionMessage
-    case 'invite':
-      return getInviteMessage
-    case 'failedDeploy':
-      return getFailedDeployMessage
-    case 'successfulDeploy':
-      return getSuccessfulDeployMessage
-    default:
-      throw new InternalException({
-        message: 'Not supported notification type',
-      })
-  }
-}
-
-const getDiscordTemplate = (template: NotificationTemplate): any => ({
+const getDiscordTemplate = (message: string): any => ({
   embeds: [
     {
       title,
-      description: getMessage(template.messageType)(template.message),
+      description: message,
       color: '1555130',
       timestamp: new Date(),
     },
   ],
 })
 
-const getSlackTemplate = (template: NotificationTemplate): any => ({
+const getSlackTemplate = (message: string): any => ({
   blocks: [
     {
       type: 'context',
       elements: [
         {
           type: 'plain_text',
-          text: getMessage(template.messageType)(template.message),
+          text: message,
         },
       ],
     },
@@ -98,7 +65,7 @@ const getSlackTemplate = (template: NotificationTemplate): any => ({
   ],
 })
 
-const getTeamsTemplate = (template: NotificationTemplate): any => ({
+const getTeamsTemplate = (message: string): any => ({
   type: 'message',
   attachments: [
     {
@@ -117,7 +84,7 @@ const getTeamsTemplate = (template: NotificationTemplate): any => ({
           },
           {
             type: 'TextBlock',
-            text: getMessage(template.messageType)(template.message),
+            text: message,
             wrap: true,
             size: 'medium',
           },
@@ -134,14 +101,14 @@ const getTeamsTemplate = (template: NotificationTemplate): any => ({
   ],
 })
 
-export const getTemplate = (notificationType: NotificationTypeEnum, template: NotificationTemplate): any | null => {
+export const getTemplate = (notificationType: NotificationTypeEnum, message: string): any | null => {
   switch (notificationType) {
     case 'discord':
-      return getDiscordTemplate(template)
+      return getDiscordTemplate(message)
     case 'slack':
-      return getSlackTemplate(template)
+      return getSlackTemplate(message)
     case 'teams':
-      return getTeamsTemplate(template)
+      return getTeamsTemplate(message)
     default:
       throw new InternalException({
         message: 'Not supported message type',

@@ -15,6 +15,7 @@ spec:
       labels:
         app: dyrectorio-k8s-agent
     spec:
+      restartPolicy: OnFailure
       initContainers:
         - name: crane-init
           image: ghcr.io/dyrector-io/dyrectorio/agent/crane:latest

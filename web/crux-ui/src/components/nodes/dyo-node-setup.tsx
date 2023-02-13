@@ -98,6 +98,14 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
 
   const onTraefikChanged = it => formik.setFieldValue('traefik', it ? {} : undefined)
 
+  const onTypeChanged = it => {
+    if (it === 'k8s') {
+      // If kubernetes is selected make sure to set the script type back to shell
+      formik.setFieldValue('scriptType', 'shell', false)
+    }
+    onNodeTypeChanged(it)
+  }
+
   return (
     <DyoForm className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
       {!node.install ? (
@@ -113,7 +121,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
             converter={(it: NodeType) => t(`technologies.${it}`)}
             onSelectionChange={it => {
               formik.setFieldValue('type', it, true)
-              onNodeTypeChanged(it)
+              onTypeChanged(it)
             }}
           />
 

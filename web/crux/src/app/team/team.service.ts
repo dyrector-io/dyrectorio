@@ -460,8 +460,10 @@ export default class TeamService {
         },
       })
       deleted = true
-      // eslint-disable-next-line no-empty
-    } catch {} // ignored
+      // TODO(@polaroi8d): remove this catch or implement a better way to handle this
+    } catch {
+      this.logger.error(`User ${userId} is not in the team: ${team.id}`)
+    }
 
     try {
       await this.prisma.usersOnTeams.delete({
@@ -473,8 +475,10 @@ export default class TeamService {
         },
       })
       deleted = true
-      // eslint-disable-next-line no-empty
-    } catch {} // ignored
+      // TODO(@polaroi8d): remove this catch or implement a better way to handle this
+    } catch {
+      this.logger.error(`User ${userId} is not in the team: ${team.id}`)
+    }
 
     if (!deleted) {
       throw new NotFoundException({

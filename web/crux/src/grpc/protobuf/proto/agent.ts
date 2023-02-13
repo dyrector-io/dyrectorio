@@ -47,6 +47,7 @@ export enum CloseReason {
   CLOSE_REASON_UNSPECIFIED = 0,
   CLOSE = 1,
   SELF_DESTRUCT = 2,
+  SHUTDOWN = 3,
   UNRECOGNIZED = -1,
 }
 
@@ -61,6 +62,9 @@ export function closeReasonFromJSON(object: any): CloseReason {
     case 2:
     case 'SELF_DESTRUCT':
       return CloseReason.SELF_DESTRUCT
+    case 3:
+    case 'SHUTDOWN':
+      return CloseReason.SHUTDOWN
     case -1:
     case 'UNRECOGNIZED':
     default:
@@ -76,6 +80,8 @@ export function closeReasonToJSON(object: CloseReason): string {
       return 'CLOSE'
     case CloseReason.SELF_DESTRUCT:
       return 'SELF_DESTRUCT'
+    case CloseReason.SHUTDOWN:
+      return 'SHUTDOWN'
     case CloseReason.UNRECOGNIZED:
     default:
       return 'UNRECOGNIZED'

@@ -11,6 +11,7 @@ export const ROUTE_LOGOUT = '/auth/logout'
 export const ROUTE_REGISTER = '/auth/register'
 
 export const ROUTE_SETTINGS = '/auth/settings'
+export const ROUTE_SETTINGS_TOKENS = '/auth/settings/tokens'
 export const ROUTE_SETTINGS_EDIT_PROFILE = '/auth/settings/edit-profile'
 export const ROUTE_SETTINGS_CHANGE_PASSWORD = '/auth/settings/change-password'
 export const ROUTE_RECOVERY = '/auth/recovery'
@@ -60,6 +61,8 @@ export const API_AUDIT_COUNT = `${API_AUDIT}/count`
 export const API_TEMPLATES = `/api/templates`
 
 export const API_DASHBOARD = '/api/dashboard'
+
+export const API_TOKENS = '/api/tokens'
 
 export const WS_NODES = `${API_NODES}/connect`
 export const WS_REGISTRIES = `${API_REGISTRIES}/connect`
@@ -194,6 +197,9 @@ export const instanceConfigUrl = (productId: string, versionId: string, deployme
 
 // template
 export const templateImageUrl = (templateId: string) => `${API_TEMPLATES}/${templateId}/image`
+
+// tokens
+export const tokensApiUrl = (tokenId: string) => `${API_TOKENS}/${tokenId}`
 
 // log
 export type ContainerLogParams = {
