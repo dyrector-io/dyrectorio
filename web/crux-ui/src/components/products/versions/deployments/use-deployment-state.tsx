@@ -9,6 +9,7 @@ import {
   DeploymentInvalidatedSecrets,
   deploymentIsCopiable,
   deploymentIsDeletable,
+  deploymentIsDeployable,
   deploymentIsMutable,
   deploymentLogVisible,
   DeploymentRoot,
@@ -51,6 +52,7 @@ export type DeploymentState = {
   version: VersionDetails
   instances: Instance[]
   mutable: boolean
+  deployable: boolean
   copiable: boolean
   deletable: boolean
   saving: boolean
@@ -91,6 +93,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
   const [confirmationModal, copyDeployment] = useCopyDeploymentModal(onApiError)
 
   const mutable = deploymentIsMutable(deployment.status, version.type)
+  const deployable = deploymentIsDeployable(deployment.status, version.type)
   const deletable = deploymentIsDeletable(deployment.status)
   const copiable = deploymentIsCopiable(deployment.status, version.type)
   const showDeploymentLog = deploymentLogVisible(deployment.status)
@@ -209,6 +212,7 @@ const useDeploymentState = (options: DeploymentStateOptions): [DeploymentState, 
       saving,
       editing,
       mutable,
+      deployable,
       deletable,
       copiable,
       editor,

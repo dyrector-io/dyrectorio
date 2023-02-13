@@ -185,7 +185,7 @@ const DeploymentDetailsPage = (props: DeploymentDetailsPageProps) => {
           </DyoButton>
         ) : null}
 
-        {state.mutable && !state.editing ? (
+        {state.deployable && !state.editing ? (
           <DyoButton className="px-6 ml-4" onClick={onDeploy} disabled={node.status !== 'running'}>
             {t('common:deploy')}
           </DyoButton>

@@ -1,9 +1,9 @@
-import DomainNotificationService from 'src/services/domain.notification.service'
 import { Injectable, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import { DeploymentEventTypeEnum, DeploymentStatusEnum, NodeTypeEnum } from '@prisma/client'
 import { InjectMetric } from '@willsoto/nestjs-prometheus'
+import { Gauge } from 'prom-client'
 import {
   catchError,
   concatAll,
@@ -18,10 +18,9 @@ import {
   Subject,
   takeUntil,
 } from 'rxjs'
-import { Gauge } from 'prom-client'
 import { Agent, AgentToken } from 'src/domain/agent'
 import AgentInstaller from 'src/domain/agent-installer'
-import { DeploymentProgressEvent } from 'src/domain/deployment'
+import Deployment, { DeploymentProgressEvent } from 'src/domain/deployment'
 import { DeployMessage, NotificationMessageType } from 'src/domain/notification-templates'
 import { collectChildVersionIds, collectParentVersionIds } from 'src/domain/utils'
 import { AlreadyExistsException, NotFoundException, UnauthenticatedException } from 'src/exception/errors'
@@ -41,9 +40,12 @@ import {
   NodeEventMessage,
   NodeScriptType,
 } from 'src/grpc/protobuf/proto/crux'
+import DomainNotificationService from 'src/services/domain.notification.service'
 import PrismaService from 'src/services/prisma.service'
 import GrpcNodeConnection from 'src/shared/grpc-node-connection'
 import { JWT_EXPIRATION } from '../../shared/const'
+import ImageMapper from '../image/image.mapper'
+import ContainerMapper from '../shared/container.mapper'
 
 @Injectable()
 export default class AgentService {
@@ -61,6 +63,8 @@ export default class AgentService {
     private jwtService: JwtService,
     private configService: ConfigService,
     private notificationService: DomainNotificationService,
+    private containerMapper: ContainerMapper,
+    private imageMapper: ImageMapper,
   ) {}
 
   getById(id: string): Agent {
@@ -205,7 +209,7 @@ export default class AgentService {
       }),
       finalize(async () => {
         const status = agent.onDeploymentFinished(deployment)
-        this.updateDeploymentStatuses(agent.id, deployment.id, status)
+        this.onDeploymentFinished(agent.id, deployment, status)
 
         const messageType: NotificationMessageType =
           deployment.getStatus() === DeploymentStatus.SUCCESSFUL ? 'successfulDeploy' : 'failedDeploy'
@@ -447,7 +451,7 @@ export default class AgentService {
     })
   }
 
-  private async updateDeploymentStatuses(nodeId: string, deploymentId: string, status: DeploymentStatus) {
+  private async onDeploymentFinished(nodeId: string, finishedDeployment: Deployment, status: DeploymentStatus) {
     const deployment = await this.prisma.deployment.findUniqueOrThrow({
       select: {
         status: true,
@@ -467,16 +471,18 @@ export default class AgentService {
         },
       },
       where: {
-        id: deploymentId,
+        id: finishedDeployment.id,
       },
     })
 
-    const finalStatus: DeploymentStatusEnum = status === DeploymentStatus.SUCCESSFUL ? 'successful' : 'failed'
+    const finalStatus = status === DeploymentStatus.SUCCESSFUL ? 'successful' : 'failed'
 
     if (deployment.status !== finalStatus) {
+      // update status for sure
+
       await this.prisma.deployment.update({
         where: {
-          id: deploymentId,
+          id: finishedDeployment.id,
         },
         data: {
           status: finalStatus,
@@ -490,52 +496,75 @@ export default class AgentService {
       return
     }
 
-    await this.prisma.deployment.updateMany({
-      data: {
-        status: DeploymentStatusEnum.obsolate,
-      },
-      where: {
-        id: {
-          not: deploymentId,
+    await this.prisma.$transaction(async prisma => {
+      await prisma.deployment.updateMany({
+        data: {
+          status: DeploymentStatusEnum.obsolate,
         },
-        versionId: deployment.version.id,
-        nodeId,
-        prefix: deployment.prefix,
-        status: {
-          not: DeploymentStatusEnum.preparing,
+        where: {
+          id: {
+            not: finishedDeployment.id,
+          },
+          versionId: deployment.version.id,
+          nodeId,
+          prefix: deployment.prefix,
+          status: {
+            not: DeploymentStatusEnum.preparing,
+          },
         },
-      },
-    })
+      })
 
-    const parentVersionIds = await collectParentVersionIds(this.prisma, deployment.version.id)
-    await this.prisma.deployment.updateMany({
-      data: {
-        status: DeploymentStatusEnum.obsolate,
-      },
-      where: {
-        versionId: {
-          in: parentVersionIds,
+      const parentVersionIds = await collectParentVersionIds(prisma, deployment.version.id)
+      await prisma.deployment.updateMany({
+        data: {
+          status: DeploymentStatusEnum.obsolate,
         },
-        nodeId,
-        prefix: deployment.prefix,
-        status: {
-          not: DeploymentStatusEnum.preparing,
+        where: {
+          versionId: {
+            in: parentVersionIds,
+          },
+          nodeId,
+          prefix: deployment.prefix,
+          status: {
+            not: DeploymentStatusEnum.preparing,
+          },
         },
-      },
-    })
+      })
 
-    const childVersionIds = await collectChildVersionIds(this.prisma, deployment.version.id)
-    await this.prisma.deployment.updateMany({
-      data: {
-        status: DeploymentStatusEnum.downgraded,
-      },
-      where: {
-        versionId: {
-          in: childVersionIds,
+      const childVersionIds = await collectChildVersionIds(prisma, deployment.version.id)
+      await prisma.deployment.updateMany({
+        data: {
+          status: DeploymentStatusEnum.downgraded,
         },
-        nodeId,
-        prefix: deployment.prefix,
-      },
+        where: {
+          versionId: {
+            in: childVersionIds,
+          },
+          nodeId,
+          prefix: deployment.prefix,
+        },
+      })
+
+      const configUpserts = Array.from(finishedDeployment.mergedConfigs).map(it => {
+        const [key, config] = it
+        const dbConfig = this.imageMapper.containerConfigDataToDb(config)
+
+        return prisma.instanceContainerConfig.upsert({
+          where: {
+            instanceId: key,
+          },
+          update: {
+            ...dbConfig,
+          },
+          create: {
+            ...dbConfig,
+            id: undefined,
+            instanceId: key,
+          },
+        })
+      })
+
+      await Promise.all(configUpserts)
     })
   }
 

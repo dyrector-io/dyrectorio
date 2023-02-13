@@ -1,6 +1,5 @@
 /* eslint-disable no-await-in-loop, no-constant-condition */
 import { PrismaClient } from '@prisma/client'
-import PrismaService from 'src/services/prisma.service'
 import { Timestamp } from 'src/grpc/google/protobuf/timestamp'
 
 export type PrismaTransactionClient = Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use'>
@@ -31,7 +30,7 @@ export const collectParentVersionIds = async (
   }
 }
 
-export const collectChildVersionIds = async (prisma: PrismaService, versionId: string): Promise<string[]> => {
+export const collectChildVersionIds = async (prisma: PrismaTransactionClient, versionId: string): Promise<string[]> => {
   const result = []
 
   let targets = [versionId]

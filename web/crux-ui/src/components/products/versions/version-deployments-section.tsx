@@ -11,7 +11,7 @@ import useWebSocket from '@app/hooks/use-websocket'
 import {
   DeploymentByVersion,
   deploymentIsCopiable,
-  deploymentIsMutable,
+  deploymentIsDeployable,
   DeploymentStatus,
   DEPLOYMENT_STATUS_VALUES,
   GetNodeStatusListMessage,
@@ -142,7 +142,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
   ]
 
   const itemTemplate = (item: DeploymentByVersion) => {
-    const mutable = deploymentIsMutable(item.status, version.type)
+    const deployable = deploymentIsDeployable(item.status, version.type)
 
     /* eslint-disable react/jsx-key */
     return [
@@ -165,7 +165,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
         >
           <Image src="/eye.svg" alt={t('common:deploy')} width={24} height={24} />
         </Link>
-        {mutable && (
+        {deployable && (
           <div
             className={clsx(
               'mr-2 inline-block',
