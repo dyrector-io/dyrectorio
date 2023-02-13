@@ -34,7 +34,7 @@ If ( -not (Test-Path $PERSISTENCE_FOLDER -PathType Container) ) {
 docker pull ghcr.io/dyrector-io/dyrectorio/agent/dagent:latest
 
 docker run `
-  --restart unless-stopped `
+  --restart on-failure `
   {{#if network}}
   --network {{networkName}} `
   {{/if}}

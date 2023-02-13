@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common'
 import { Observable } from 'rxjs'
 import { BaseMessage } from 'src/domain/notification-templates'
 import { PreconditionFailedException } from 'src/exception/errors'
+import { CloseReason } from 'src/grpc/protobuf/proto/agent'
 import { ContainerLogMessage, ContainerStateListMessage, Empty } from 'src/grpc/protobuf/proto/common'
 import {
   AccessRequest,
@@ -96,6 +97,11 @@ export default class NodeService {
         id: req.id,
       },
     })
+
+    const agent = this.agentService.getById(req.id)
+    if (agent) {
+      agent.close(CloseReason.SHUTDOWN)
+    }
   }
 
   async updateNode(req: UpdateNodeRequest): Promise<Empty> {
