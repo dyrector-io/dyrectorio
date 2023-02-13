@@ -41,7 +41,7 @@ const SelectImagesCard = (props: SelectImagesCardProps) => {
 
   const { data: registries, error: fetchRegistriesError } = useSWR<Registry[]>(API_REGISTRIES, fetcher)
   const [searching, setSearching] = useState(false)
-  const [registry, setRegistry] = useState<Registry>(registries.length > 0 ? registries[0] : null)
+  const [registry, setRegistry] = useState<Registry>(registries?.length > 0 ? registries[0] : null)
   const [selected, setSelected] = useState<SelectableImage[]>([])
   const [images, setImages] = useState<SelectableImage[]>([])
   const [filterOrName, setFilterOrName] = useState('')
