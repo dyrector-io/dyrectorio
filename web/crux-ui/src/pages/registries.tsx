@@ -66,6 +66,7 @@ const RegistriesPage = (props: RegistriesPageProps) => {
               className="pl-6"
               choices={REGISTRY_TYPE_VALUES}
               converter={it => t(`type.${it}`)}
+              selection={filters.filter?.enum}
               onSelectionChange={type => {
                 filters.setFilter({
                   enum: type,

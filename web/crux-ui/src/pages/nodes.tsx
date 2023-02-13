@@ -106,6 +106,7 @@ const NodesPage = (props: NodesPageProps) => {
               className="pl-6"
               choices={nodeStatusFilters}
               converter={it => t(`statusFilters.${it}`)}
+              selection={filters.filter?.enum}
               onSelectionChange={type => {
                 filters.setFilter({
                   enum: type,

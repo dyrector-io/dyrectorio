@@ -216,6 +216,7 @@ const VersionDeploymentsSection = (props: VersionDeploymentsSectionProps) => {
           <Filters setTextFilter={it => filters.setFilter({ text: it })}>
             <DyoFilterChips
               className="pl-6"
+              selection={filters.filter?.enum}
               choices={DEPLOYMENT_STATUS_VALUES}
               converter={it => t(`common:deploymentStatuses.${it}`)}
               onSelectionChange={type => {
