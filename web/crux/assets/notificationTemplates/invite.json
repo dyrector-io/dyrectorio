@@ -1,0 +1,6 @@
+{
+    "message":
+    {
+        "text": "{{subject}} has been invited to join team {{team}} by {{owner}}!"
+    }
+}

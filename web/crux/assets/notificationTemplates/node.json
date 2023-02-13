@@ -1,0 +1,6 @@
+{
+    "message":
+    {
+        "text": "{{owner}} added a new node: {{subject}}"
+    }
+}

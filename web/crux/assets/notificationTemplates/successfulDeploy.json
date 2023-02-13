@@ -1,0 +1,6 @@
+{
+    "message":
+    {
+        "text": "{{owner}} successfully deployed {{subject}} version {{version}} on node {{node}}!"
+    }
+}

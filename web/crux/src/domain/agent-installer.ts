@@ -98,16 +98,20 @@ export default class AgentInstaller {
   }
 
   loadScriptAndCompiler(nodeType: NodeTypeEnum, scriptType: NodeScriptType): void {
-    const extension = this.getInstallScriptExtension(scriptType)
+    const extension = this.getInstallScriptExtension(nodeType, scriptType)
     const agentFilename = `install-${nodeType}${extension}.hbr`
-    const scriptFile = readFileSync(join(cwd(), agentFilename), 'utf8')
+    const scriptFile = readFileSync(join(cwd(), 'assets', 'install-script', agentFilename), 'utf8')
     this.scriptCompiler = {
       compile: Handlebars.compile(scriptFile),
       file: scriptFile,
     }
   }
 
-  private getInstallScriptExtension(scriptType: NodeScriptType): string {
+  private getInstallScriptExtension(nodeType: NodeTypeEnum, scriptType: NodeScriptType): string {
+    if (nodeType === 'k8s') {
+      return '.sh'
+    }
+
     switch (scriptType) {
       case NodeScriptType.SHELL:
         return '.sh'
