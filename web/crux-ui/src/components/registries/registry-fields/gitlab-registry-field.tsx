@@ -43,7 +43,7 @@ const GitlabRegistryFields = (props: EditRegistryTypeProps<GitlabRegistryDetails
 
         <DyoChips
           choices={GITLAB_NAMESPACE_VALUES}
-          initialSelection={formik.values.namespace}
+          selection={formik.values.namespace}
           converter={(it: RegistryNamespace) => t(`namespace.${it}`)}
           onSelectionChange={it => formik.setFieldValue('namespace', it, true)}
           disabled={formik.values.inUse}

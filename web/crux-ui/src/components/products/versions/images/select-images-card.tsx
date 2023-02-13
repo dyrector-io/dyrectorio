@@ -41,7 +41,7 @@ const SelectImagesCard = (props: SelectImagesCardProps) => {
 
   const { data: registries, error: fetchRegistriesError } = useSWR<Registry[]>(API_REGISTRIES, fetcher)
   const [searching, setSearching] = useState(false)
-  const [registry, setRegistry] = useState<Registry>(null)
+  const [registry, setRegistry] = useState<Registry>(registries.length > 0 ? registries[0] : null)
   const [selected, setSelected] = useState<SelectableImage[]>([])
   const [images, setImages] = useState<SelectableImage[]>([])
   const [filterOrName, setFilterOrName] = useState('')
@@ -208,7 +208,7 @@ const SelectImagesCard = (props: SelectImagesCardProps) => {
 
             <DyoChips
               choices={registries}
-              initialSelection={registries[0]}
+              selection={registry}
               converter={(it: Registry) => it.name}
               onSelectionChange={it => onRegistrySelectionChange(it)}
             />

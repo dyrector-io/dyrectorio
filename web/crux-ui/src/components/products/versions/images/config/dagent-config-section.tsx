@@ -57,7 +57,7 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
             <DyoChips
               className="ml-2"
               choices={CONTAINER_NETWORK_MODE_VALUES}
-              initialSelection={config.networkMode}
+              selection={config.networkMode}
               converter={(it: ContainerNetworkMode) => t(`dagent.networkModes.${it}`)}
               onSelectionChange={it => onChange({ networkMode: it })}
               disabled={disabled}
@@ -106,7 +106,7 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
             <DyoChips
               className="ml-2"
               choices={CONTAINER_RESTART_POLICY_TYPE_VALUES}
-              initialSelection={config.restartPolicy}
+              selection={config.restartPolicy}
               converter={(it: ContainerRestartPolicyType) => t(`dagent.restartPolicies.${it}`)}
               onSelectionChange={it => onChange({ restartPolicy: it })}
               disabled={disabled}
@@ -127,7 +127,7 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
               <DyoChips
                 className="mb-2 ml-2"
                 choices={CONTAINER_LOG_DRIVER_VALUES}
-                initialSelection={config.logConfig?.driver ?? 'none'}
+                selection={config.logConfig?.driver ?? 'none'}
                 converter={(it: ContainerLogDriverType) => t(`dagent.logDrivers.${it}`)}
                 onSelectionChange={it => onChange({ logConfig: nullify({ ...config.logConfig, driver: it }) })}
                 disabled={disabled}

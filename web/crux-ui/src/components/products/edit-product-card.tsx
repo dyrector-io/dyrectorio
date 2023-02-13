@@ -121,7 +121,7 @@ const EditProductCard = (props: EditProductCardProps) => {
             <DyoChips
               className="text-bright"
               choices={PRODUCT_TYPE_VALUES}
-              initialSelection={formik.values.type}
+              selection={formik.values.type}
               converter={it => t(it)}
               onSelectionChange={type => {
                 formik.setFieldValue('type', type, false)

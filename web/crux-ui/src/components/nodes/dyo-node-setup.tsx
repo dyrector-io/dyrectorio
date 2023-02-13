@@ -109,7 +109,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
           <DyoChips
             className="mb-2 ml-2"
             choices={NODE_TYPE_VALUES}
-            initialSelection={formik.values.type}
+            selection={formik.values.type}
             converter={(it: NodeType) => t(`technologies.${it}`)}
             onSelectionChange={it => {
               formik.setFieldValue('type', it, true)
@@ -158,7 +158,7 @@ const DyoNodeSetup = (props: DyoNodeSetupProps) => {
               <DyoChips
                 className="mb-2 ml-2"
                 choices={NODE_INSTALL_SCRIPT_TYPE_VALUES}
-                initialSelection={formik.values.scriptType}
+                selection={formik.values.scriptType}
                 converter={(it: NodeInstallScriptType) => t(`installScript.${it}`)}
                 onSelectionChange={it => formik.setFieldValue('scriptType', it, true)}
               />

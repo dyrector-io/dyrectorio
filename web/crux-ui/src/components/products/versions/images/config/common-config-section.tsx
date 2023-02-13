@@ -116,7 +116,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
               <DyoChips
                 className="ml-2"
                 choices={CONTAINER_EXPOSE_STRATEGY_VALUES}
-                initialSelection={config.expose}
+                selection={config.expose}
                 converter={(it: ContainerConfigExposeStrategy) => t(`common.exposeStrategies.${it}`)}
                 onSelectionChange={it => onChange({ expose: it })}
                 disabled={disabled}
@@ -149,7 +149,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
 
               <div className="ml-2">
                 <MultiInput
-                  id="common.image"
+                  id="common.configContainer.image"
                   label={t('common.image')}
                   containerClassName="max-w-lg mb-3"
                   labelClassName="my-auto mr-4 w-40"
@@ -163,7 +163,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 />
 
                 <MultiInput
-                  id="common.volume"
+                  id="common.configContainer.volume"
                   label={t('common.volume')}
                   containerClassName="max-w-lg mb-3"
                   labelClassName="my-auto mr-4 w-40"
@@ -177,7 +177,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 />
 
                 <MultiInput
-                  id="common.path"
+                  id="common.configContainer.path"
                   label={t('common.path')}
                   containerClassName="max-w-lg mb-3"
                   labelClassName="my-auto mr-4 w-40"
@@ -276,21 +276,6 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             </div>
           )}
 
-          {/* capabilities */}
-          {filterContains('capabilities', selectedFilters) && (
-            <div className="grid mb-8 break-inside-avoid">
-              <KeyValueInput
-                className="max-h-128 overflow-y-auto"
-                labelClassName="text-bright font-semibold tracking-wide mb-2"
-                label={t('common.capabilities').toUpperCase()}
-                onChange={it => onChange({ capabilities: it })}
-                items={config.capabilities}
-                editorOptions={editorOptions}
-                disabled={disabled}
-              />
-            </div>
-          )}
-
           {/* secrets */}
           {filterContains('secrets', selectedFilters) && (
             <div className="grid break-inside-avoid mb-8 max-w-lg">
@@ -360,9 +345,10 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
               <DyoLabel className="text-bright font-semibold tracking-wide mb-2">
                 {t('common.importContainer').toUpperCase()}
               </DyoLabel>
+
               <div className="ml-2">
                 <MultiInput
-                  id="common.volume"
+                  id="common.importContainer.volume"
                   label={t('common.volume')}
                   containerClassName="max-w-lg mb-3"
                   labelClassName="my-auto mr-2 w-40"
@@ -378,7 +364,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 />
 
                 <MultiInput
-                  id="common.command"
+                  id="common.importContainer.command"
                   label={t('common.command')}
                   containerClassName="max-w-lg mb-3"
                   labelClassName="my-auto mr-2 w-40"
@@ -624,7 +610,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                     <div className="flex flex-row">
                       <DyoChips
                         choices={CONTAINER_VOLUME_TYPE_VALUES}
-                        initialSelection={item.type}
+                        selection={item.type}
                         converter={(it: VolumeType) => t(`common.volumeTypes.${it}`)}
                         onSelectionChange={it => onPatch({ type: it })}
                         disabled={disabled}
