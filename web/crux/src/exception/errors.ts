@@ -69,6 +69,19 @@ export class UnauthenticatedException extends BaseGrpcException {
   }
 }
 
+export type NotImplementedExceptionOptions = Omit<BaseGrpcExceptionOptions, 'status'> & {
+  method: string
+}
+
+export class NotImplementedException extends BaseGrpcException {
+  constructor(options: NotImplementedExceptionOptions) {
+    super({
+      ...options,
+      status: Status.UNIMPLEMENTED,
+    })
+  }
+}
+
 export type InternalExceptionOptions = Omit<BaseGrpcExceptionOptions, 'status'>
 
 export class InternalException extends BaseGrpcException {
