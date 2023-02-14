@@ -227,7 +227,7 @@ func GetTraefik(settings *Settings) *containerbuilder.DockerContainerBuilder {
 	}
 
 	traefik := containerbuilder.NewDockerBuilder(context.Background()).
-		WithImage("docker.io/library/traefik:v2.8.8").
+		WithImage("docker.io/library/traefik:v2.9").
 		WithLogWriter(nil).
 		WithName(settings.Containers.Traefik.Name).
 		WithRestartPolicy(containerbuilder.AlwaysRestartPolicy).

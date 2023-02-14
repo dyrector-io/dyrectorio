@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"fmt"
+
 	"github.com/rs/zerolog"
 	ucli "github.com/urfave/cli/v2"
 
@@ -89,7 +91,7 @@ func flags() []ucli.Flag {
 			Name:     "config",
 			Aliases:  []string{"c"},
 			Value:    "",
-			Usage:    "configuration location",
+			Usage:    fmt.Sprintf("configuration location, default location: %s", SettingsPath()),
 			Required: false,
 			EnvVars:  []string{"DYO_CONFIG"},
 		},
