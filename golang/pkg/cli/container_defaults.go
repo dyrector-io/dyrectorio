@@ -32,6 +32,7 @@ const (
 	defaultMailSlurperWebPort  = 4436
 	defaultMailSlurperWebPort2 = 4437
 	defaultPostgresPort        = 5432
+	cliStackName               = "dyrectorio-stack"
 )
 
 // Crux services: db migrations and crux api service
@@ -77,7 +78,11 @@ func GetCrux(settings *Settings) *containerbuilder.DockerContainerBuilder {
 		}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
 		WithNetworkAliases(settings.Containers.Crux.Name).
-		WithCmd([]string{"serve"})
+		WithCmd([]string{"serve"}).
+		WithLabels(map[string]string{
+			"com.docker.compose.project": cliStackName,
+			"com.docker.compose.service": settings.Containers.Crux.Name,
+		})
 
 	if !settings.FullyContainerized {
 		crux = crux.
@@ -121,7 +126,11 @@ func GetCruxMigrate(settings *Settings) *containerbuilder.DockerContainerBuilder
 		}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
 		WithNetworkAliases(settings.Containers.CruxMigrate.Name).
-		WithCmd([]string{"migrate"})
+		WithCmd([]string{"migrate"}).
+		WithLabels(map[string]string{
+			"com.docker.compose.project": cliStackName,
+			"com.docker.compose.service": settings.Containers.CruxMigrate.Name,
+		})
 
 	if settings.DisableForcepull {
 		return cruxMigrate
@@ -161,6 +170,8 @@ func GetCruxUI(settings *Settings) *containerbuilder.DockerContainerBuilder {
 				settings.Containers.Traefik.Name),
 			"traefik.http.routers.crux-ui.entrypoints":               "web",
 			"traefik.http.services.crux-ui.loadbalancer.server.port": fmt.Sprintf("%d", defaultCruxUIPort),
+			"com.docker.compose.project":                             cliStackName,
+			"com.docker.compose.service":                             settings.Containers.CruxUI.Name,
 		})
 
 	if !settings.FullyContainerized {
@@ -228,7 +239,11 @@ func GetTraefik(settings *Settings) *containerbuilder.DockerContainerBuilder {
 			Source: settings.SettingsFile.TraefikDockerSocket,
 			Target: "/var/run/docker.sock",
 		}}).
-		WithCmd(commands)
+		WithCmd(commands).
+		WithLabels(map[string]string{
+			"com.docker.compose.project": cliStackName,
+			"com.docker.compose.service": settings.Containers.Traefik.Name,
+		})
 
 	if !settings.FullyContainerized {
 		traefik = traefik.
@@ -300,6 +315,8 @@ func GetKratos(settings *Settings) *containerbuilder.DockerContainerBuilder {
 			"traefik.http.services.kratos.loadbalancer.server.port":      fmt.Sprintf("%d", defaultKratosPublicPort),
 			"traefik.http.middlewares.kratos-strip.stripprefix.prefixes": "/kratos",
 			"traefik.http.routers.kratos.middlewares":                    "kratos-strip",
+			"com.docker.compose.project":                                 cliStackName,
+			"com.docker.compose.service":                                 settings.Containers.Kratos.Name,
 		})
 
 	if !settings.FullyContainerized {
@@ -341,7 +358,11 @@ func GetKratosMigrate(settings *Settings) *containerbuilder.DockerContainerBuild
 		}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
 		WithNetworkAliases(settings.Containers.KratosMigrate.Name).
-		WithCmd([]string{"-c /etc/config/kratos/kratos.yaml", "migrate", "sql", "-e", "--yes"})
+		WithCmd([]string{"-c /etc/config/kratos/kratos.yaml", "migrate", "sql", "-e", "--yes"}).
+		WithLabels(map[string]string{
+			"com.docker.compose.project": cliStackName,
+			"com.docker.compose.service": settings.Containers.KratosMigrate.Name,
+		})
 
 	if settings.DisableForcepull {
 		return kratosMigrate
@@ -360,7 +381,11 @@ func GetMailSlurper(settings *Settings) *containerbuilder.DockerContainerBuilder
 		WithoutConflict().
 		WithForcePullImage().
 		WithNetworks([]string{settings.SettingsFile.Network}).
-		WithNetworkAliases(settings.Containers.MailSlurper.Name)
+		WithNetworkAliases(settings.Containers.MailSlurper.Name).
+		WithLabels(map[string]string{
+			"com.docker.compose.project": cliStackName,
+			"com.docker.compose.service": settings.Containers.MailSlurper.Name,
+		})
 
 	if !settings.FullyContainerized {
 		mailslurper = mailslurper.
@@ -391,6 +416,10 @@ func GetCruxPostgres(settings *Settings) *containerbuilder.DockerContainerBuilde
 			fmt.Sprintf("POSTGRES_USER=%s", settings.SettingsFile.CruxPostgresUser),
 			fmt.Sprintf("POSTGRES_PASSWORD=%s", settings.SettingsFile.CruxPostgresPassword),
 			fmt.Sprintf("POSTGRES_DB=%s", settings.SettingsFile.CruxPostgresDB),
+		}).
+		WithLabels(map[string]string{
+			"com.docker.compose.project": cliStackName,
+			"com.docker.compose.service": settings.Containers.CruxPostgres.Name,
 		})
 
 	if !settings.FullyContainerized {
@@ -419,7 +448,11 @@ func GetKratosPostgres(settings *Settings) *containerbuilder.DockerContainerBuil
 			fmt.Sprintf("POSTGRES_DB=%s", settings.SettingsFile.KratosPostgresDB),
 		}).
 		WithName(settings.Containers.KratosPostgres.Name).
-		WithNetworkAliases(settings.Containers.KratosPostgres.Name)
+		WithNetworkAliases(settings.Containers.KratosPostgres.Name).
+		WithLabels(map[string]string{
+			"com.docker.compose.project": cliStackName,
+			"com.docker.compose.service": settings.Containers.KratosPostgres.Name,
+		})
 
 	if !settings.FullyContainerized {
 		kratosPostgres = kratosPostgres.
