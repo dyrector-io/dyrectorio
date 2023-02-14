@@ -10,6 +10,7 @@ import (
 	v1 "github.com/dyrector-io/dyrectorio/golang/api/v1"
 	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
 	"github.com/dyrector-io/dyrectorio/golang/internal/grpc"
+	"github.com/dyrector-io/dyrectorio/golang/internal/util"
 	builder "github.com/dyrector-io/dyrectorio/golang/pkg/builder/container"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
 	imageHelper "github.com/dyrector-io/dyrectorio/golang/pkg/helper/image"
@@ -21,7 +22,7 @@ type DeployFacade struct {
 	ctx            context.Context
 	params         *DeployFacadeParams
 	client         *Client
-	image          imageHelper.URI
+	image          string
 	deployment     *Deployment
 	namespace      *Namespace
 	service        *Service
@@ -35,7 +36,7 @@ type DeployFacade struct {
 
 type DeployFacadeParams struct {
 	Ctx              context.Context
-	Image            imageHelper.URI
+	Image            string
 	InstanceConfig   v1.InstanceConfig
 	ContainerConfig  v1.ContainerConfig
 	RuntimeConfig    *string
@@ -275,14 +276,21 @@ func Deploy(c context.Context, dog *dogger.DeploymentLogger, deployImageRequest 
 	dog.Write(deployImageRequest.InstanceConfig.Strings()...)
 	dog.Write(deployImageRequest.ContainerConfig.Strings(&cfg.CommonConfiguration)...)
 
+	imageName := util.JoinV("/",
+		*deployImageRequest.Registry,
+		util.JoinV(":", deployImageRequest.ImageName, deployImageRequest.Tag))
+
+	expandedImageName, err := imageHelper.ExpandImageName(imageName)
+	if err != nil {
+		return err
+	}
+
+	log.Info().Str("name", imageName).Str("full", expandedImageName).Msg("Image name parsed")
+
 	deployFacade := NewDeployFacade(
 		&DeployFacadeParams{
-			Ctx: c,
-			Image: imageHelper.URI{
-				Host: imageHelper.GetRegistryURL(deployImageRequest.Registry, deployImageRequest.RegistryAuth),
-				Name: deployImageRequest.ImageName,
-				Tag:  deployImageRequest.Tag,
-			},
+			Ctx:              c,
+			Image:            expandedImageName,
 			InstanceConfig:   deployImageRequest.InstanceConfig,
 			ContainerConfig:  deployImageRequest.ContainerConfig,
 			Issuer:           deployImageRequest.Issuer,

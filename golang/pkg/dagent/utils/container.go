@@ -116,12 +116,9 @@ func ExecTraefik(ctx context.Context, traefikDeployReq TraefikDeployRequest, cfg
 		WithCmd(command).
 		WithForcePullImage().
 		WithExtraHosts([]string{"host.docker.internal:host-gateway"}).
-		WithoutConflict().
-		Create()
+		WithoutConflict()
 
-	_, err = builder.Start()
-
-	return err
+	return builder.CreateAndStart()
 }
 
 func GetOwnContainerID() string {

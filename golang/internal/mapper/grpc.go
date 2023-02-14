@@ -449,13 +449,21 @@ func MapKubeDeploymentListToCruxStateItems(deployments *appsv1.DeploymentList, s
 					continue
 				}
 				stateItem.Command = util.JoinV(" ", containers[i].Command...)
-				image, err := imageHelper.URIFromString(containers[i].Image)
-				if err == nil {
-					stateItem.ImageName = image.StringNoTag()
-					stateItem.ImageTag = image.Tag
-				} else {
-					log.Error().Stack().Err(err).Msg("Failed to get k8s container image info")
+
+				fullName, err := imageHelper.ExpandImageName(containers[i].Image)
+				if err != nil {
+					log.Error().Stack().Err(err).Msg("Failed to get k8s container image info (failed to parse image name)")
+					continue
 				}
+
+				name, tag, err := imageHelper.SplitImageName(fullName)
+				if err != nil {
+					log.Error().Stack().Err(err).Msg("Failed to get k8s container image info")
+					continue
+				}
+
+				stateItem.ImageName = name
+				stateItem.ImageTag = tag
 			}
 		}
 

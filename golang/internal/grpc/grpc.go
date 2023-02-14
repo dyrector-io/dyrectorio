@@ -297,6 +297,11 @@ func executeVersionDeployRequest(
 	ctx context.Context, req *agent.VersionDeployRequest,
 	deploy DeployFunc, appConfig *config.CommonConfiguration,
 ) {
+	if deploy == nil {
+		log.Error().Msg("Deploy function not implemented")
+		return
+	}
+
 	if req.Id == "" {
 		log.Warn().Msg("Empty request id for deployment")
 		return
@@ -352,6 +357,11 @@ func executeVersionDeployRequest(
 }
 
 func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStateRequest, listFn WatchFunc) {
+	if listFn == nil {
+		log.Error().Msg("List function not implemented")
+		return
+	}
+
 	filterPrefix := ""
 	if req.Prefix != nil {
 		filterPrefix = *req.Prefix
@@ -394,6 +404,11 @@ func executeWatchContainerStatus(ctx context.Context, req *agent.ContainerStateR
 }
 
 func executeDeleteContainer(ctx context.Context, req *agent.ContainerDeleteRequest, deleteFn DeleteFunc) {
+	if deleteFn == nil {
+		log.Error().Msg("Delete function not implemented")
+		return
+	}
+
 	log.Info().Str("prefix", req.Prefix).Str("name", req.Name).Msg("Deleting container")
 
 	err := deleteFn(ctx, req.Prefix, req.Name)
@@ -403,6 +418,11 @@ func executeDeleteContainer(ctx context.Context, req *agent.ContainerDeleteReque
 }
 
 func executeDeleteMultipleContainers(ctx context.Context, req *common.DeleteContainersRequest, deleteFn DeleteContainersFunc) {
+	if deleteFn == nil {
+		log.Error().Msg("Delete function not implemented")
+		return
+	}
+
 	log.Info().Msg("Deleting multiple containers")
 
 	err := deleteFn(ctx, req)
@@ -415,6 +435,11 @@ func executeVersionDeployLegacyRequest(
 	ctx context.Context, req *agent.DeployRequestLegacy,
 	deploy DeployFunc, appConfig *config.CommonConfiguration,
 ) {
+	if deploy == nil {
+		log.Error().Msg("Deploy function not implemented")
+		return
+	}
+
 	if req.RequestId == "" {
 		log.Warn().Msg("Empty request id for legacy deployment")
 		return
@@ -471,6 +496,11 @@ func executeSecretList(
 	listFunc SecretListFunc,
 	appConfig *config.CommonConfiguration,
 ) {
+	if listFunc == nil {
+		log.Error().Msg("Secret list function not implemented")
+		return
+	}
+
 	prefix := command.Prefix
 	name := command.Name
 
@@ -505,7 +535,7 @@ func executeSecretList(
 
 func executeUpdate(ctx context.Context, command *agent.AgentUpdateRequest, updateFunc SelfUpdateFunc) {
 	if updateFunc == nil {
-		log.Warn().Stack().Msg("gRPC self update is not implemented")
+		log.Error().Msg("Self update function not implemented")
 		return
 	}
 
@@ -526,6 +556,11 @@ func executeUpdate(ctx context.Context, command *agent.AgentUpdateRequest, updat
 }
 
 func executeClose(ctx context.Context, command *agent.CloseConnectionRequest, closeFunc CloseFunc) {
+	if closeFunc == nil {
+		log.Error().Msg("Close function not implemented")
+		return
+	}
+
 	log.Debug().Str("reason", agent.CloseReason_name[int32(command.GetReason())]).Msg("gRPC connection remotely closed")
 
 	if closeFunc == nil {
@@ -539,6 +574,11 @@ func executeClose(ctx context.Context, command *agent.CloseConnectionRequest, cl
 }
 
 func executeContainerCommand(ctx context.Context, command *common.ContainerCommandRequest, containerCommandFunc ContainerCommandFunc) {
+	if containerCommandFunc == nil {
+		log.Error().Msg("Container command function not implemented")
+		return
+	}
+
 	log.Info().Str("operation", command.Operation.String()).Str("containerID", command.GetId()).Msg("Executing")
 
 	err := containerCommandFunc(ctx, command)
@@ -593,6 +633,11 @@ func streamContainerLog(reader ContainerLogReader,
 }
 
 func executeContainerLog(ctx context.Context, command *agent.ContainerLogRequest, logFunc ContainerLogFunc) {
+	if logFunc == nil {
+		log.Error().Msg("Container log function not implemented")
+		return
+	}
+
 	containerID := ""
 	if command.GetPrefixName() != nil {
 		containerID = fmt.Sprintf("%s-%s", command.GetPrefixName().Prefix, command.GetPrefixName().Name)

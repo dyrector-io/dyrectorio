@@ -406,26 +406,31 @@ func LoadDefaultsOnEmpty(settings *Settings) *Settings {
 // on the local system, otherwise will fall back and pull
 // This func is for testing locally built docker images
 func TryImage(dockerImage, specialTag string) string {
-	imageURI, err := imageHelper.URIFromString(dockerImage)
+	fullDockerImage, err := imageHelper.ExpandImageName(dockerImage)
 	if err != nil {
 		log.Err(err).Stack().Send()
 	}
 
+	imageName := fullDockerImage
 	if specialTag != "" {
-		imageURI.Tag = specialTag
+		imageName, err = imageHelper.ExpandImageNameWithTag(fullDockerImage, specialTag)
+		if err != nil {
+			log.Err(err).Stack().Send()
+		}
 	}
 
-	exists, err := imageHelper.Exists(context.TODO(), nil, imageURI.String())
+	exists, err := imageHelper.Exists(context.TODO(), nil, imageName)
 	if err != nil {
 		log.Err(err).Stack().Send()
 	}
 
 	if exists {
-		log.Debug().Str("image", imageURI.String()).Msg("found, won't pull")
-		return imageURI.String()
+		log.Debug().Str("image", imageName).Msg("found, won't pull")
+		return imageName
 	}
+
 	log.Debug().Str("image", dockerImage).Msg("not found, will pull")
-	return dockerImage
+	return fullDockerImage
 }
 
 func LoadStringVal(value, def string) string {

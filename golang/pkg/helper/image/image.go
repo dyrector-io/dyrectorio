@@ -6,9 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"strings"
 	"time"
 
+	"github.com/docker/distribution/reference"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
@@ -16,32 +16,6 @@ import (
 
 	"github.com/dyrector-io/dyrectorio/protobuf/go/agent"
 )
-
-type URI struct {
-	Host string
-	Name string
-	Tag  string
-}
-
-type EmptyError struct{}
-
-func (e *EmptyError) Error() string {
-	return "empty image name is not valid"
-}
-
-type MultiColonRegistryURIError struct{}
-
-func (e *MultiColonRegistryURIError) Error() string {
-	return "multiple colons in registry URI"
-}
-
-type InvalidURIError struct {
-	Image string
-}
-
-func (e *InvalidURIError) Error() string {
-	return "no colons in registry URI: " + e.Image
-}
 
 // PullResponse is not explicit
 type PullResponse struct {
@@ -52,57 +26,6 @@ type PullResponse struct {
 		Total   int64 `json:"total"`
 	} `json:"progressDetail"`
 	Progress string `json:"progress"`
-}
-
-const MaxColonsInURI = 2
-
-// ImageURIFromString results in an image that is split respectively
-// imageName can be fully qualified or dockerhub image name plus tag
-func URIFromString(imageName string) (*URI, error) {
-	if imageName == "" {
-		return nil, &EmptyError{}
-	}
-
-	image := &URI{}
-
-	if strings.Count(imageName, ":") > MaxColonsInURI {
-		return nil, &MultiColonRegistryURIError{}
-	}
-
-	lastColon := strings.LastIndex(imageName, ":")
-	if lastColon == -1 {
-		return nil, &InvalidURIError{Image: imageName}
-	}
-
-	image.Tag = imageName[lastColon+1:]
-
-	firstSlash := strings.Index(imageName, "/")
-	if firstSlash != -1 {
-		image.Host = imageName[0:firstSlash]
-	}
-
-	image.Name = imageName[firstSlash+1 : lastColon]
-
-	return image, nil
-}
-
-func (image *URI) String() string {
-	setDefaults(image)
-	return fmt.Sprintf("%s/%s", image.Host, image.Name+":"+image.Tag)
-}
-
-func (image *URI) StringNoTag() string {
-	setDefaults(image)
-	return fmt.Sprintf("%s/%s", image.Host, image.Name)
-}
-
-func setDefaults(image *URI) {
-	if image.Host == "" {
-		image.Host = "docker.io/library"
-	}
-	if image.Tag == "" {
-		image.Tag = "latest"
-	}
 }
 
 func GetRegistryURL(registry *string, registryAuth *RegistryAuth) string {
@@ -125,14 +48,14 @@ func GetRegistryURLProto(registry *string, registryAuth *agent.RegistryAuth) str
 	}
 }
 
-func GetImageByReference(ctx context.Context, reference string) (*types.ImageSummary, error) {
+func GetImageByReference(ctx context.Context, ref string) (*types.ImageSummary, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return nil, err
 	}
 
 	images, err := cli.ImageList(ctx, types.ImageListOptions{
-		Filters: filters.NewArgs(filters.KeyValuePair{Key: "reference", Value: reference}),
+		Filters: filters.NewArgs(filters.KeyValuePair{Key: "reference", Value: ref}),
 	})
 	if err != nil {
 		return nil, err
@@ -145,14 +68,14 @@ func GetImageByReference(ctx context.Context, reference string) (*types.ImageSum
 	return nil, errors.New("found more than 1 image with the same reference")
 }
 
-func Exists(ctx context.Context, logger io.StringWriter, fullyQualifiedImageName string) (bool, error) {
+func Exists(ctx context.Context, logger io.StringWriter, expandedImageName string) (bool, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return false, err
 	}
 
 	images, err := cli.ImageList(ctx, types.ImageListOptions{
-		Filters: filters.NewArgs(filters.KeyValuePair{Key: "reference", Value: fullyQualifiedImageName}),
+		Filters: filters.NewArgs(filters.KeyValuePair{Key: "reference", Value: expandedImageName}),
 	})
 	if err != nil {
 		if logger != nil {
@@ -177,21 +100,21 @@ func Exists(ctx context.Context, logger io.StringWriter, fullyQualifiedImageName
 
 // force pulls the given image name
 // todo(nandor-magyar): the output from docker is not really nice, should be improved
-func Pull(ctx context.Context, logger io.StringWriter, fullyQualifiedImageName, authCreds string) error {
+func Pull(ctx context.Context, logger io.StringWriter, expandedImageName, authCreds string) error {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return err
 	}
 
 	if logger != nil {
-		_, err = logger.WriteString("Pulling image: " + fullyQualifiedImageName)
+		_, err = logger.WriteString("Pulling image: " + expandedImageName)
 		if err != nil {
 			//nolint
 			fmt.Printf("Failed to write log: %s", err.Error())
 		}
 	}
 
-	reader, err := cli.ImagePull(ctx, fullyQualifiedImageName, types.ImagePullOptions{RegistryAuth: authCreds})
+	reader, err := cli.ImagePull(ctx, expandedImageName, types.ImagePullOptions{RegistryAuth: authCreds})
 	if err != nil {
 		return err
 	}
@@ -232,4 +155,59 @@ func Pull(ctx context.Context, logger io.StringWriter, fullyQualifiedImageName, 
 	}
 
 	return err
+}
+
+func ExpandImageName(imageWithTag string) (string, error) {
+	ref, err := reference.ParseAnyReference(imageWithTag)
+	if err != nil {
+		return "", err
+	}
+
+	named, ok := ref.(reference.Named)
+	if !ok {
+		return "", errors.New("invalid image with tag")
+	}
+
+	if reference.IsNameOnly(named) {
+		return reference.TagNameOnly(named).String(), nil
+	}
+
+	return named.String(), nil
+}
+
+func ExpandImageNameWithTag(image, tag string) (string, error) {
+	ref, err := reference.ParseAnyReference(image)
+	if err != nil {
+		return "", err
+	}
+
+	named, ok := ref.(reference.Named)
+	if !ok {
+		return "", errors.New("invalid image with tag")
+	}
+
+	if reference.IsNameOnly(named) {
+		return fmt.Sprintf("%s:%s", named.String(), tag), nil
+	}
+
+	ref, err = reference.WithTag(named, tag)
+	if err != nil {
+		return "", err
+	}
+
+	return ref.String(), nil
+}
+
+func SplitImageName(expandedImageName string) (name, tag string, err error) {
+	ref, err := reference.ParseNamed(expandedImageName)
+	if err != nil {
+		return "", "", err
+	}
+
+	tagged, ok := ref.(reference.NamedTagged)
+	if !ok {
+		return "", "", errors.New("image name is not tagged")
+	}
+
+	return tagged.Name(), tagged.Tag(), nil
 }
