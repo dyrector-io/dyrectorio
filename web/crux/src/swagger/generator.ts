@@ -1,9 +1,20 @@
 #!/usr/bin/env node
 
+/**
+ * Class generator for Swagger API annotations
+ *
+ * This script generates TypeScript classes from a TypeScript interface file. Currently, we are
+ * using gRPC-generated request and response objects to interact with the HTTP API.
+ * Unfortunately, Swagger API annotations only accepts classes, so we need to generate
+ * classes from TypeScript interfaces created with ts-proto. To generate the DTOs,
+ * use the following command in root folder: npm run build:dtos
+ *
+ * It's important to note that you will need to add missing imports manually.
+ * TODO(@polaroi8d): Improve this script to automatically add imports.
+ */
+
 import * as ts from 'typescript'
 import * as fs from 'fs'
-
-// Define the command line interface of the tool using commander
 import * as commander from 'commander'
 
 commander
@@ -13,7 +24,7 @@ commander
 
 // Load the input file and parse it with the TypeScript compiler API
 const input = fs.readFileSync(commander.input, 'utf8')
-const sourceFile = ts.createSourceFile(commander.input, input, ts.ScriptTarget.Latest, /* setParentNodes */ true)
+const sourceFile = ts.createSourceFile(commander.input, input, ts.ScriptTarget.Latest, true)
 
 // Find all interface declarations in the source file
 const interfaces: ts.InterfaceDeclaration[] = []
@@ -26,7 +37,7 @@ function findInterfaces(node: ts.Node) {
 findInterfaces(sourceFile)
 
 function getPropertyType(node: ts.PropertySignature): string {
-  if (!node.type) {
+  if (!node) {
     return 'any'
   }
 
@@ -34,14 +45,7 @@ function getPropertyType(node: ts.PropertySignature): string {
     return 'any'
   }
 
-  switch (node.type.getText()) {
-    case 'Empty':
-    case 'Promise<Empty> | Observable<Empty> | Empty':
-    case 'Timestamp':
-      return 'any'
-    default:
-      return node.type.getText()
-  }
+  return node.type.getText()
 }
 
 // Generate class declarations for each interface
@@ -55,8 +59,8 @@ const classes = interfaces.map(interfaceNode => {
   return `export class ${className}Dto { ${classMembers.join(' ')} }`
 })
 
-// Write the generated classes to the output file
-fs.writeFileSync(commander.output, '/* eslint-disable */\n', 'utf8')
+// Write the generated classes to the output file with eslint disabled
+fs.writeFileSync(commander.output, '/* eslint-disable */\n\n', 'utf8')
 fs.appendFile(commander.output, classes.join('\n'), 'utf8', err => {
   if (err) {
     console.error(err)

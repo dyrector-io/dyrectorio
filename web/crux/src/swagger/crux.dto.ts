@@ -17,9 +17,8 @@ import {
   ContainerStateListMessage,
   ContainerLogMessage,
   ListSecretsResponse,
-} from '../grpc/protobuf/proto/common'
+} from 'src/grpc/protobuf/proto/common'
 import {
-  TokenResponse,
   AuditLogResponse,
   UserRole,
   ActiveTeamUser,
@@ -118,7 +117,7 @@ import {
   DashboardResponse,
   GenerateTokenResponse,
   TokenListResponse,
-} from '../grpc/protobuf/proto/crux'
+} from 'src/grpc/protobuf/proto/crux'
 import {
   UniqueKey,
   UniqueKeyValue,
@@ -128,7 +127,7 @@ import {
   UniqueSecretKey,
   UniqueSecretKeyValue,
   Marker,
-} from '../shared/models'
+} from 'src/shared/models'
 
 export class ServiceIdRequestDto {
   id: string
