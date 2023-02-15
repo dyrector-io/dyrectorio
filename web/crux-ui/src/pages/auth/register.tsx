@@ -183,6 +183,14 @@ const RegisterPage = (props: RegisterPageProps) => {
             {t('createAcc')}
           </DyoButton>
 
+          <p className="text-bright mt-8">
+            {t(`privacyPolicy`)}
+            <a href="https://dyrectorio.com/privacy" target="_blank" rel="noreferrer">
+              Privacy Policy
+            </a>
+            .
+          </p>
+
           {recaptchaSiteKey ? <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={recaptchaSiteKey} /> : null}
         </DyoForm>
       </DyoCard>

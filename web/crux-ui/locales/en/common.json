@@ -185,7 +185,7 @@
 
   "itemsPerPage": "Items per page",
   "showingItems": "Showing {{pageFrom}} to {{pageTo}} of {{total}} entries",
-  "openSource": "is an Open Source project",
+  "openSource": "is an open-source project",
   "cannotDefineSecretsHere": "Secret keys can be provided here, values can be set in deployments.",
   "required": "Required",
   "default": "Default",
