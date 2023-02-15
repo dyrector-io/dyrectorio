@@ -34,7 +34,7 @@
     "database:up": "docker-compose -f docker-compose.database.yaml up -d",
     "database:down": "docker-compose -f docker-compose.database.yaml down",
     "prismagen": "prisma generate",
-    "prismdev": "prisma migrate dev -n obsolete_typo --create-only"
+    "TODO": "TODO JSON GENERATOR"
   },
   "prisma": {
     "schema": "prisma/schema.prisma"

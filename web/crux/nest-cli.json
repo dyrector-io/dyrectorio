@@ -3,6 +3,15 @@
   "sourceRoot": "src",
   "compilerOptions": {
     "assets": ["**/*.proto"],
-    "watchAssets": true
+    "watchAssets": true,
+    "plugins": [
+      {
+        "name": "@nestjs/swagger",
+        "options": {
+          "classValidatorShim": false,
+          "introspectComments": true
+        }
+      }
+    ]
   }
 }
