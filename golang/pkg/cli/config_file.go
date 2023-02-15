@@ -12,7 +12,7 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
-	"path/filepath"
+	"path"
 	"strconv"
 	"strings"
 
@@ -131,10 +131,10 @@ const (
 )
 
 // Check if the settings file is exists
-func SettingsExists(settingspath string) bool {
-	settingsfilepath := SettingsFileLocation(settingspath)
+func SettingsExists(settingsPath string) bool {
+	settingsFilePath := SettingsFileLocation(settingsPath)
 
-	if _, err := os.Stat(settingsfilepath); err == nil {
+	if _, err := os.Stat(settingsFilePath); err == nil {
 		return true
 	} else if errors.Is(err, os.ErrNotExist) {
 		return false
@@ -145,16 +145,16 @@ func SettingsExists(settingspath string) bool {
 }
 
 // Assemble the location of the settings file
-func SettingsFileLocation(settingspath string) string {
-	if settingspath == "" {
+func SettingsFileLocation(settingsPath string) string {
+	if settingsPath == "" {
 		userConfDir, err := os.UserConfigDir()
 		if err != nil {
 			log.Fatal().Err(err).Stack().Msg("Couldn't determine the user's configuration dir")
 		}
-		settingspath = fmt.Sprintf("%s/%s/%s", userConfDir, SettingsFileDir, SettingsFileName)
+		settingsPath = fmt.Sprintf("%s/%s/%s", userConfDir, SettingsFileDir, SettingsFileName)
 	}
 
-	return settingspath
+	return settingsPath
 }
 
 // Reading and parsing the settings.yaml
@@ -196,7 +196,9 @@ func SettingsFileReadWrite(state *Settings) *Settings {
 
 	// Settings Validation steps
 
-	SaveSettings(settings)
+	if settings.SettingsWrite {
+		SaveSettings(settings)
+	}
 
 	return settings
 }
@@ -324,47 +326,50 @@ func PrintInfo(settings *Settings) {
 	log.Info().Msg("Happy deploying! 🎬")
 }
 
+func SettingsPath() string {
+	userConfDir, err := os.UserConfigDir()
+	if err != nil {
+		log.Fatal().Err(err).Stack().Send()
+	}
+
+	return path.Join(userConfDir, SettingsFileDir, SettingsFileName)
+}
+
 // Save the settings
 func SaveSettings(settings *Settings) {
-	if settings.SettingsWrite {
-		userConfDir, err := os.UserConfigDir()
-		if err != nil {
-			log.Fatal().Err(err).Stack().Send()
-		}
-		settingspath := fmt.Sprintf("%s/%s/%s", userConfDir, SettingsFileDir, SettingsFileName)
+	settingsPath := SettingsPath()
 
-		// If settingspath is default, we create the directory for it
-		if settings.SettingsFilePath == settingspath {
-			if _, err = os.Stat(userConfDir); errors.Is(err, os.ErrNotExist) {
-				err = os.Mkdir(userConfDir, DirPerms)
-				if err != nil {
-					log.Fatal().Err(err).Stack().Send()
-				}
-			} else if err != nil {
+	// If settingsPath is default, we create the directory for it
+	if settings.SettingsFilePath == settingsPath {
+		if _, err := os.Stat(path.Dir(settingsPath)); errors.Is(err, os.ErrNotExist) {
+			err = os.MkdirAll(path.Dir(settingsPath), DirPerms)
+			if err != nil {
 				log.Fatal().Err(err).Stack().Send()
 			}
-			if _, err = os.Stat(filepath.Dir(settingspath)); errors.Is(err, os.ErrNotExist) {
-				err = os.Mkdir(filepath.Dir(settingspath), DirPerms)
-				if err != nil {
-					log.Fatal().Err(err).Stack().Send()
-				}
-			} else if err != nil {
-				log.Fatal().Err(err).Stack().Send()
-			}
-		}
-
-		filedata, err := yaml.Marshal(&settings.SettingsFile)
-		if err != nil {
+			printWelcomeMessage(settings.SettingsFilePath)
+		} else if err != nil {
 			log.Fatal().Err(err).Stack().Send()
 		}
-
-		err = os.WriteFile(settings.SettingsFilePath, filedata, FilePerms)
-		if err != nil {
-			log.Fatal().Err(err).Stack().Send()
-		}
-
-		settings.SettingsWrite = false
 	}
+
+	filedata, err := yaml.Marshal(&settings.SettingsFile)
+	if err != nil {
+		log.Fatal().Err(err).Stack().Send()
+	}
+
+	err = os.WriteFile(settings.SettingsFilePath, filedata, FilePerms)
+	if err != nil {
+		log.Fatal().Err(err).Stack().Send()
+	}
+
+	settings.SettingsWrite = false
+}
+
+func printWelcomeMessage(settingsPath string) {
+	log.Info().Msgf("The config file is located at %s, where you can turn this message off.", settingsPath)
+	log.Info().Msgf("If you have any questions head to our Discord - https://discord.gg/pZWbd4fxga ! We're happy to help!")
+	log.Info().Msgf("You can learn more about the project at https://docs.dyrector.io, if you found this project useful please " +
+		"give us a star - https://github.com/dyrector-io/dyrectorio")
 }
 
 // There are options which are not filled out by default, we need to initialize values
@@ -406,26 +411,31 @@ func LoadDefaultsOnEmpty(settings *Settings) *Settings {
 // on the local system, otherwise will fall back and pull
 // This func is for testing locally built docker images
 func TryImage(dockerImage, specialTag string) string {
-	imageURI, err := imageHelper.URIFromString(dockerImage)
+	fullDockerImage, err := imageHelper.ExpandImageName(dockerImage)
 	if err != nil {
 		log.Err(err).Stack().Send()
 	}
 
+	imageName := fullDockerImage
 	if specialTag != "" {
-		imageURI.Tag = specialTag
+		imageName, err = imageHelper.ExpandImageNameWithTag(fullDockerImage, specialTag)
+		if err != nil {
+			log.Err(err).Stack().Send()
+		}
 	}
 
-	exists, err := imageHelper.Exists(context.TODO(), nil, imageURI.String())
+	exists, err := imageHelper.Exists(context.TODO(), nil, imageName)
 	if err != nil {
 		log.Err(err).Stack().Send()
 	}
 
 	if exists {
-		log.Debug().Str("image", imageURI.String()).Msg("found, won't pull")
-		return imageURI.String()
+		log.Debug().Str("image", imageName).Msg("found, won't pull")
+		return imageName
 	}
+
 	log.Debug().Str("image", dockerImage).Msg("not found, will pull")
-	return dockerImage
+	return fullDockerImage
 }
 
 func LoadStringVal(value, def string) string {

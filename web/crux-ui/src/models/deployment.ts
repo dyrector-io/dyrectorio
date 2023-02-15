@@ -141,7 +141,19 @@ export const deploymentIsMutable = (status: DeploymentStatus, type: VersionType)
     case 'preparing':
       return true
     case 'successful':
+    case 'failed':
       return type === 'rolling'
+    default:
+      return false
+  }
+}
+
+export const deploymentIsDeployable = (status: DeploymentStatus, type: VersionType): boolean => {
+  switch (status) {
+    case 'preparing':
+    case 'obsolate':
+      return true
+    case 'successful':
     case 'failed':
       return type === 'rolling'
     default:
@@ -164,3 +176,5 @@ export const deploymentLogVisible = (status: DeploymentStatus) => {
       return false
   }
 }
+
+export const productNameToDeploymentPrefix = (name: string) => name.replaceAll(/( |\.)/g, '-').toLocaleLowerCase()

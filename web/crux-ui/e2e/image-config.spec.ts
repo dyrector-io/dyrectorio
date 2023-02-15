@@ -118,11 +118,21 @@ test.describe('Filters', () => {
   })
 })
 
-const wsPatchSent = (ws: WebSocket) =>
+const wsPatchSent = (ws: WebSocket, match?: (payload: any) => boolean) =>
   ws.waitForEvent('framesent', data => {
     const payload = JSON.parse(data.payload as string)
-    return payload.type === WS_TYPE_PATCH_IMAGE
+    if (payload.type !== WS_TYPE_PATCH_IMAGE) {
+      return false
+    }
+    return match ? match(payload.payload) : true
   })
+
+const wsPatchMatchPorts = (internal: string, external?: string) => (payload: any) =>
+  payload.config.ports.some(
+    it =>
+      Number.parseInt(it.internal) === Number.parseInt(internal) &&
+      (!external || Number.parseInt(it.external) === Number.parseInt(external)),
+  )
 
 test.describe('Image configurations', () => {
   test('Port should be saved after adding it from the config field', async ({ page }) => {
@@ -141,7 +151,7 @@ test.describe('Image configurations', () => {
     const internalValue = '1000'
     const externalValue = '2000'
 
-    wsSent = wsPatchSent(ws)
+    wsSent = wsPatchSent(ws, wsPatchMatchPorts(internalValue, externalValue))
     const internal = page.locator('input[placeholder="Internal"]')
     const external = page.locator('input[placeholder="External"]')
     await internal.type(internalValue)
@@ -172,7 +182,7 @@ test.describe('Image configurations', () => {
     const json = JSON.parse(await jsonEditor.inputValue())
     json.ports = [{ internal, external }]
 
-    const wsSent = wsPatchSent(ws)
+    const wsSent = wsPatchSent(ws, wsPatchMatchPorts(internal, external))
     await jsonEditor.fill(JSON.stringify(json))
     await wsSent
 

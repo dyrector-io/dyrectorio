@@ -63,7 +63,7 @@ func (testSuite *DockerContainerHelperTestSuite) TearDownSuite() {
 // this function executes before each test case
 func (testSuite *DockerContainerHelperTestSuite) SetupTest() {
 	for i := range testSuite.testContainers {
-		_, err := testSuite.testContainers[i].Create().Start()
+		err := testSuite.testContainers[i].CreateAndStart()
 		if err != nil {
 			log.Fatal().Err(err).Msg("Could not start container")
 		}

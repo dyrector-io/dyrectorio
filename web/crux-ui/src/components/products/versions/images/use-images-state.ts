@@ -148,7 +148,11 @@ export const useImagesState = (options: ImagesStateOptions): [ImagesState, Image
   const editor = useEditorState(versionSock)
 
   const registriesSock = useWebSocket(WS_REGISTRIES, {
-    onOpen: () => refreshImageTags(registriesSock, images),
+    onOpen: () =>
+      refreshImageTags(
+        registriesSock,
+        images.filter(it => it.registryType !== 'unchecked'),
+      ),
   })
 
   registriesSock.on(WS_TYPE_REGISTRY_IMAGE_TAGS, (message: RegistryImageTagsMessage) => {

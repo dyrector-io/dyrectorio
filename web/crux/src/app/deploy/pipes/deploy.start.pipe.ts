@@ -1,6 +1,6 @@
 import { Injectable, PipeTransform } from '@nestjs/common'
 import AgentService from 'src/app/agent/agent.service'
-import { checkDeploymentMutability } from 'src/domain/deployment'
+import { checkDeploymentDeployability } from 'src/domain/deployment'
 import { PreconditionFailedException } from 'src/exception/errors'
 import { IdRequest, NodeConnectionStatus } from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
@@ -31,7 +31,7 @@ export default class DeployStartValidationPipe implements PipeTransform {
       },
     })
 
-    if (!checkDeploymentMutability(deployment.status, deployment.version.type)) {
+    if (!checkDeploymentDeployability(deployment.status, deployment.version.type)) {
       throw new PreconditionFailedException({
         message: 'Invalid deployment status.',
         property: 'status',

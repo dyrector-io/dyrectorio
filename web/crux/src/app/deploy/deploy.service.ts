@@ -25,10 +25,16 @@ import {
 } from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
 import { toPrismaJson } from 'src/shared/mapper'
-import { ContainerConfigData, InstanceContainerConfigData, UniqueSecretKeyValue } from 'src/shared/models'
+import {
+  ContainerConfigData,
+  InstanceContainerConfigData,
+  MergedContainerConfigData,
+  UniqueSecretKeyValue,
+} from 'src/shared/models'
 import AgentService from '../agent/agent.service'
 import { ImageDetails } from '../image/image.mapper'
 import ImageService from '../image/image.service'
+import ContainerMapper from '../shared/container.mapper'
 import DeployMapper, { InstanceDetails } from './deploy.mapper'
 
 @Injectable()
@@ -44,6 +50,7 @@ export default class DeployService {
     private agentService: AgentService,
     imageService: ImageService,
     private mapper: DeployMapper,
+    private containerMapper: ContainerMapper,
   ) {
     imageService.imagesAddedToVersionEvent
       .pipe(
@@ -409,6 +416,32 @@ export default class DeployService {
       })
     }
 
+    const mergedConfigs: Map<string, MergedContainerConfigData> = new Map(
+      deployment.instances.map(it => {
+        /*
+         * If a deployment succeeds the merged config is saved as the instance config,
+         * so downgrading is possible even if the image config is modified.
+         */
+        if (deployment.status === 'successful' || deployment.status === 'obsolate') {
+          return [
+            it.id,
+            this.containerMapper.mergeConfigs(
+              {} as ContainerConfigData,
+              (it.config ?? {}) as InstanceContainerConfigData,
+            ),
+          ]
+        }
+
+        return [
+          it.id,
+          this.containerMapper.mergeConfigs(
+            (it.image.config ?? {}) as ContainerConfigData,
+            (it.config ?? {}) as InstanceContainerConfigData,
+          ),
+        ]
+      }),
+    )
+
     const deploy = new Deployment(
       {
         id: deployment.id,
@@ -425,10 +458,7 @@ export default class DeployService {
               ? registry.imageNamePrefix
               : ''
 
-          const mergedConfig = this.mapper.mergeConfigs(
-            (it.image.config ?? {}) as ContainerConfigData,
-            (it.config ?? {}) as InstanceContainerConfigData,
-          )
+          const mergedConfig = mergedConfigs.get(it.id)
 
           return {
             common: this.mapper.commonConfigToAgentProto(mergedConfig),
@@ -457,6 +487,7 @@ export default class DeployService {
         versionName: deployment.version.name,
         nodeName: deployment.node.name,
       },
+      mergedConfigs,
     )
 
     this.logger.debug(`Starting deployment: ${deploy.id}`)

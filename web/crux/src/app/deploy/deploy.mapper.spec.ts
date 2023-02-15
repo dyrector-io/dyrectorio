@@ -1,15 +1,18 @@
 import { InstanceContainerConfig } from 'src/grpc/protobuf/proto/crux'
 import { ContainerConfigData, InstanceContainerConfigData } from 'src/shared/models'
 import ImageMapper from '../image/image.mapper'
+import ContainerMapper from '../shared/container.mapper'
 import DeployMapper from './deploy.mapper'
 
 describe('DeployMapper', () => {
   let imageMapper: ImageMapper = null
+  let containerMapper: ContainerMapper = null
   let deployMapper: DeployMapper = null
 
   beforeEach(() => {
     imageMapper = new ImageMapper(null)
-    deployMapper = new DeployMapper(imageMapper, null)
+    containerMapper = new ContainerMapper()
+    deployMapper = new DeployMapper(imageMapper, null, containerMapper)
   })
 
   const fullImage: ContainerConfigData = {
@@ -472,13 +475,13 @@ describe('DeployMapper', () => {
 
   describe('mergeConfigs', () => {
     it('should use the instance variables when available', () => {
-      const merged = deployMapper.mergeConfigs(fullImage, fullInstance)
+      const merged = containerMapper.mergeConfigs(fullImage, fullInstance)
 
       expect(merged).toEqual(fullInstance)
     })
 
     it('should use the image variables when instance is not available', () => {
-      const merged = deployMapper.mergeConfigs(fullImage, {})
+      const merged = containerMapper.mergeConfigs(fullImage, {})
 
       const expected: InstanceContainerConfigData = {
         ...fullImage,
@@ -543,7 +546,7 @@ describe('DeployMapper', () => {
         ],
       }
 
-      const merged = deployMapper.mergeConfigs(fullImage, instance)
+      const merged = containerMapper.mergeConfigs(fullImage, instance)
 
       expect(merged).toEqual(expected)
     })

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/docker/distribution/reference"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
@@ -25,7 +26,7 @@ import (
 // A Builder can be created using the NewDockerBuilder method.
 type Builder interface {
 	WithClient(client *client.Client) Builder
-	WithImage(imageName string) Builder
+	WithImage(imageWithTag string) Builder
 	WithEnv(env []string) Builder
 	WithPortBindings(portList []PortBinding) Builder
 	WithPortRange(portRanges []PortRange) Builder
@@ -51,11 +52,13 @@ type Builder interface {
 	WithPostCreateHooks(hooks ...LifecycleFunc) Builder
 	WithPreStartHooks(hooks ...LifecycleFunc) Builder
 	WithPostStartHooks(hooks ...LifecycleFunc) Builder
-	Create() Builder
+	Create() (Builder, error)
 	GetContainerID() *string
 	GetNetworkID() *string
-	Start() (bool, error)
+	Start() error
 	StartWaitUntilExit() (WaitResult, error)
+	CreateAndStart() error
+	CreateAndWaitUntilExit() (WaitResult, error)
 }
 
 type DockerContainerBuilder struct {
@@ -295,16 +298,23 @@ func (dc *DockerContainerBuilder) GetNetworkIDs() []string {
 }
 
 // Creates the container using the configuration given by 'With...' functions.
-func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
-	if err := prepareImage(dc); err != nil {
+func (dc *DockerContainerBuilder) Create() (*DockerContainerBuilder, error) {
+	expandedImageName, err := imageHelper.ExpandImageName(dc.imageWithTag)
+	if err != nil {
+		dc.logWrite(fmt.Sprintf("Failed to parse image with tag ('%s'): %s", dc.imageWithTag, err.Error()))
+		return dc, err
+	}
+
+	if err = prepareImage(dc, expandedImageName); err != nil {
 		dc.logWrite(fmt.Sprintf("Failed to prepare image: %s", err.Error()))
-		return dc
+		return dc, err
 	}
 
 	if dc.withoutConflict {
-		err := dockerHelper.DeleteContainerByName(dc.ctx, nil, dc.containerName, false)
+		err = dockerHelper.DeleteContainerByName(dc.ctx, nil, dc.containerName, false)
 		if err != nil {
 			dc.logWrite(fmt.Sprintf("Failed to resolve conflict during creating the container: %v", err))
+			return dc, err
 		}
 	}
 
@@ -346,7 +356,7 @@ func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 	} else {
 		networkIDs := createNetworks(dc)
 		if networkIDs == nil {
-			return dc
+			return dc, errors.New("failde to create networks")
 		}
 
 		dc.networkIDs = networkIDs
@@ -382,19 +392,20 @@ func (dc *DockerContainerBuilder) Create() *DockerContainerBuilder {
 
 	if len(containers) != 1 {
 		dc.logWrite("Container was not created.")
-	} else {
-		dc.containerID = &containers[0].ID
-		attachNetworks(dc)
+		return dc, errors.New("container was not created")
 	}
 
-	return dc
+	dc.containerID = &containers[0].ID
+	attachNetworks(dc)
+
+	return dc, nil
 }
 
 // Starts the container and waits until the first exit to happen then returns
 func (dc *DockerContainerBuilder) StartWaitUntilExit() (*WaitResult, error) {
 	containerID := *dc.GetContainerID()
 	waitC, errC := dc.client.ContainerWait(dc.ctx, containerID, container.WaitConditionNextExit)
-	_, err := dc.Start()
+	err := dc.Start()
 	if err != nil {
 		return nil, fmt.Errorf("failed start-waiting container: %w", err)
 	}
@@ -408,41 +419,62 @@ func (dc *DockerContainerBuilder) StartWaitUntilExit() (*WaitResult, error) {
 	}
 }
 
+func (dc *DockerContainerBuilder) CreateAndStart() error {
+	builder, err := dc.Create()
+	if err != nil {
+		return err
+	}
+
+	return builder.Start()
+}
+
+func (dc *DockerContainerBuilder) CreateAndWaitUntilExit() (*WaitResult, error) {
+	builder, err := dc.Create()
+	if err != nil {
+		return nil, err
+	}
+
+	return builder.StartWaitUntilExit()
+}
+
 // Starts the container using the configuration given by 'With...' functions.
 // Returns true if successful, false and an error if not.
-func (dc *DockerContainerBuilder) Start() (bool, error) {
+func (dc *DockerContainerBuilder) Start() error {
 	if hookError := execHooks(dc, dc.hooksPreStart); hookError != nil {
 		dc.logWrite(fmt.Sprintln("Container pre-start hook error: ", hookError))
 	}
 
 	if dc.containerID == nil {
 		dc.logWrite("Unable to start non-existent container")
-		return false, errors.New("container does not exist")
+		return errors.New("container does not exist")
 	}
 
 	err := dc.client.ContainerStart(dc.ctx, *dc.containerID, types.ContainerStartOptions{})
 
 	if hookError := execHooks(dc, dc.hooksPostStart); hookError != nil {
 		dc.logWrite(fmt.Sprintln("Container post-start hook error: ", hookError))
+		return hookError
 	}
 
 	if err != nil {
 		dc.logWrite(err.Error())
-		return false, err
+		return err
 	}
 	dc.logWrite(fmt.Sprintf("Started container: %s", *dc.containerID))
-	return true, nil
+	return nil
 }
 
-func prepareImage(dc *DockerContainerBuilder) error {
-	if pullRequired, err := needToPullImage(dc); pullRequired {
-		if err = imageHelper.Pull(dc.ctx, dc.logger, dc.imageWithTag, dc.registryAuth); err != nil {
-			if err != nil && err.Error() != "EOF" {
-				return fmt.Errorf("image pull error: %s", err.Error())
-			}
+func prepareImage(dc *DockerContainerBuilder, imageName string) error {
+	pullRequired, err := needToPullImage(dc.ctx, dc.logger, imageName)
+	if err != nil {
+		return err
+	}
+
+	if pullRequired || dc.forcePull {
+		err = imageHelper.Pull(dc.ctx, dc.logger, imageName, dc.registryAuth)
+		if err != nil && err.Error() != "EOF" {
+			return fmt.Errorf("image pull error: %s", err.Error())
 		}
-	} else if err != nil {
-		return fmt.Errorf("image check error: %s", err.Error())
 	}
 
 	return nil
@@ -505,16 +537,24 @@ func execHooks(dc *DockerContainerBuilder, hooks []LifecycleFunc) error {
 	return nil
 }
 
-func needToPullImage(dc *DockerContainerBuilder) (bool, error) {
-	if dc.forcePull {
-		return true, nil
-	}
-
-	imageExists, err := imageHelper.Exists(dc.ctx, dc.logger, dc.imageWithTag)
+func needToPullImage(ctx context.Context, logger io.StringWriter, imageName string) (bool, error) {
+	ref, err := reference.ParseNamed(imageName)
 	if err != nil {
 		return false, err
 	}
 
+	imageExists, err := imageHelper.Exists(ctx, logger, reference.FamiliarString(ref))
+	if err != nil {
+		return false, err
+	}
+	if imageExists {
+		return false, nil
+	}
+
+	imageExists, err = imageHelper.Exists(ctx, logger, ref.String())
+	if err != nil {
+		return false, err
+	}
 	return !imageExists, nil
 }
 

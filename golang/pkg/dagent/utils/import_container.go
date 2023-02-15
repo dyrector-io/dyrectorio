@@ -45,7 +45,7 @@ func spawnInitContainer(
 	importContainerName := util.JoinV("-", name, "import")
 	targetVolume := mount.Mount{Type: mount.TypeBind, Source: mountList[targetVolumeIndex].Source, Target: "/data/output"}
 
-	builder.
+	builder, err = builder.
 		WithClient(cli).
 		WithImage(cfg.ImportContainerImage).
 		WithCmd(strings.Split(importContainer.Command, " ")).
@@ -55,6 +55,9 @@ func spawnInitContainer(
 		WithoutConflict().
 		WithLogWriter(dog).
 		Create()
+	if err != nil {
+		return err
+	}
 
 	dog.WriteDeploymentStatus(common.DeploymentStatus_IN_PROGRESS, "Waiting for import container to finish")
 

@@ -62,10 +62,8 @@ func TestNameWithBuilder(t *testing.T) {
 
 	defer builderCleanup(builder)
 
-	success, err := builder.Create().Start()
-
-	assert.Nil(t, err)
-	assert.True(t, success)
+	err := builder.CreateAndStart()
+	assert.NoError(t, err)
 }
 
 func TestEnvPortsLabelsRestartPolicySettings(t *testing.T) {
@@ -95,10 +93,8 @@ func TestEnvPortsLabelsRestartPolicySettings(t *testing.T) {
 
 	defer builderCleanup(builder)
 
-	success, err := builder.Create().Start()
-
-	assert.Nil(t, err)
-	assert.True(t, success)
+	err := builder.CreateAndStart()
+	assert.NoError(t, err)
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
@@ -137,10 +133,8 @@ func TestLogging(t *testing.T) {
 
 	defer builderCleanup(builder)
 
-	success, err := builder.Create().Start()
-
-	assert.Nil(t, err)
-	assert.True(t, success)
+	err := builder.CreateAndStart()
+	assert.NoError(t, err)
 
 	assert.True(t, logger.gotMessage)
 }
@@ -165,10 +159,8 @@ func TestHooks(t *testing.T) {
 
 	defer builderCleanup(builder)
 
-	success, err := builder.Create().Start()
-
-	assert.Nil(t, err)
-	assert.True(t, success)
+	err := builder.CreateAndStart()
+	assert.NoError(t, err)
 
 	assert.Equal(t, 4, len(order))
 	assert.Equal(t, "pre-create", order[0])
@@ -191,10 +183,8 @@ func TestNetwork(t *testing.T) {
 
 	defer builderCleanup(builder)
 
-	success, err := builder.Create().Start()
-
-	assert.Nil(t, err)
-	assert.True(t, success)
+	err := builder.CreateAndStart()
+	assert.NoError(t, err)
 
 	assert.NotNil(t, builder.GetNetworkIDs())
 }
@@ -208,7 +198,10 @@ func TestAutoRemove(t *testing.T) {
 
 	defer builderCleanup(builder)
 
-	waitResult, err := builder.Create().StartWaitUntilExit()
+	builder, err := builder.Create()
+	assert.NoError(t, err)
+
+	waitResult, err := builder.StartWaitUntilExit()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -236,7 +229,9 @@ func TestConflict(t *testing.T) {
 		WithLabels(map[string]string{"TEST": "OLD_CONTAINER"})
 
 	defer builderCleanup(preBuilder)
-	preBuilder.Create().Start()
+
+	err := preBuilder.CreateAndStart()
+	assert.NoError(t, err)
 
 	builder := containerbuilder.NewDockerBuilder(context.Background()).
 		WithImage("nginx:latest").
@@ -245,7 +240,9 @@ func TestConflict(t *testing.T) {
 		WithoutConflict()
 
 	defer builderCleanup(builder)
-	builder.Create().Start()
+
+	err = builder.CreateAndStart()
+	assert.NoError(t, err)
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {

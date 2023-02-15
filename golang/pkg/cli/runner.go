@@ -59,7 +59,9 @@ func ProcessCommand(settings *Settings) {
 	switch settings.Command {
 	case UpCommand:
 		settings = CheckAndUpdatePorts(settings)
-		SaveSettings(settings)
+		if settings.SettingsWrite {
+			SaveSettings(settings)
+		}
 
 		containers.Traefik = GetTraefik(settings)
 		containers.Crux = GetCrux(settings)
@@ -83,7 +85,10 @@ func ProcessCommand(settings *Settings) {
 
 // Create and Start containers
 func StartContainers(containers *DyrectorioStack, internalHostDomain string) {
-	traefik := containers.Traefik.Create()
+	traefik, err := containers.Traefik.Create()
+	if err != nil {
+		log.Fatal().Err(err).Stack().Send()
+	}
 
 	TraefikConfiguration(
 		containers.Containers.Traefik.Name,
@@ -91,32 +96,32 @@ func StartContainers(containers *DyrectorioStack, internalHostDomain string) {
 		containers.Containers.CruxUI.CruxUIPort,
 	)
 
-	_, err := traefik.Start()
+	err = traefik.Start()
 	if err != nil {
 		log.Fatal().Err(err).Stack().Send()
 	}
 	log.Info().Str("container", containers.Containers.Traefik.Name).Msg("started:")
 
-	_, err = containers.CruxPostgres.Create().Start()
+	err = containers.CruxPostgres.CreateAndStart()
 	if err != nil {
 		log.Fatal().Err(err).Stack().Send()
 	}
 	log.Info().Str("container", containers.Containers.CruxPostgres.Name).Msg("started:")
 
-	_, err = containers.KratosPostgres.Create().Start()
+	err = containers.KratosPostgres.CreateAndStart()
 	if err != nil {
 		log.Fatal().Err(err).Stack().Send()
 	}
 	log.Info().Str("container", containers.Containers.KratosPostgres.Name).Msg("started:")
 
 	log.Info().Str("container", containers.Containers.KratosMigrate.Name).Msg("migration started:")
-	_, err = containers.KratosMigrate.Create().StartWaitUntilExit()
+	_, err = containers.KratosMigrate.CreateAndWaitUntilExit()
 	if err != nil {
 		log.Fatal().Err(err).Stack().Send()
 	}
 	log.Info().Str("container", containers.Containers.KratosMigrate.Name).Msg("migration done:")
 
-	_, err = containers.Kratos.Create().Start()
+	err = containers.Kratos.CreateAndStart()
 	if err != nil {
 		log.Fatal().Err(err).Stack().Send()
 	}
@@ -124,13 +129,13 @@ func StartContainers(containers *DyrectorioStack, internalHostDomain string) {
 
 	if !containers.Containers.Crux.Disabled {
 		log.Info().Str("container", containers.Containers.CruxMigrate.Name).Msg("migration started:")
-		_, err = containers.CruxMigrate.Create().StartWaitUntilExit()
+		_, err = containers.CruxMigrate.CreateAndWaitUntilExit()
 		if err != nil {
 			log.Fatal().Err(err).Stack().Send()
 		}
 		log.Info().Str("container", containers.Containers.CruxMigrate.Name).Msg("migration done:")
 
-		_, err = containers.Crux.Create().Start()
+		err = containers.Crux.CreateAndStart()
 		if err != nil {
 			log.Fatal().Err(err).Stack().Send()
 		}
@@ -138,14 +143,14 @@ func StartContainers(containers *DyrectorioStack, internalHostDomain string) {
 	}
 
 	if !containers.Containers.CruxUI.Disabled {
-		_, err = containers.CruxUI.Create().Start()
+		err = containers.CruxUI.CreateAndStart()
 		if err != nil {
 			log.Fatal().Err(err).Stack().Send()
 		}
 		log.Info().Str("container", containers.Containers.CruxUI.Name).Msg("started:")
 	}
 
-	_, err = containers.MailSlurper.Create().Start()
+	err = containers.MailSlurper.CreateAndStart()
 	if err != nil {
 		log.Fatal().Err(err).Stack().Send()
 	}
