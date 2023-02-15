@@ -129,6 +129,7 @@ const DeploymentsPage = (props: DeploymentsPageProps) => {
               className="pl-6"
               choices={DEPLOYMENT_STATUS_VALUES}
               converter={it => t(`common:deploymentStatuses.${it}`)}
+              selection={filters.filter?.enum}
               onSelectionChange={type => {
                 filters.setFilter({
                   enum: type,

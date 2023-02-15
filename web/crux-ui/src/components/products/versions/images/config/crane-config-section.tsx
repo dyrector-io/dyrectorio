@@ -55,7 +55,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
             <DyoChips
               className="ml-2"
               choices={CONTAINER_DEPLOYMENT_STRATEGY_VALUES}
-              initialSelection={config.deploymentStrategy}
+              selection={config.deploymentStrategy}
               converter={(it: ContainerDeploymentStrategyType) => t(`crane.deploymentStrategies.${it}`)}
               onSelectionChange={it => onChange({ deploymentStrategy: it })}
               disabled={disabled}

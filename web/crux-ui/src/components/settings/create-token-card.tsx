@@ -80,7 +80,7 @@ const CreateTokenCard = (props: CreateTokenCardProps) => {
         <DyoChips
           className="text-bright"
           choices={EXPIRATION_VALUES}
-          initialSelection={formik.values.expirationInDays}
+          selection={formik.values.expirationInDays}
           converter={it => t('common:days', { days: it })}
           onSelectionChange={it => {
             formik.setFieldValue('expirationInDays', it, false)

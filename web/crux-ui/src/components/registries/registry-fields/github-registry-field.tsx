@@ -42,7 +42,7 @@ const GithubRegistryFields = (props: EditRegistryTypeProps<GithubRegistryDetails
 
         <DyoChips
           choices={GITHUB_NAMESPACE_VALUES}
-          initialSelection={formik.values.namespace}
+          selection={formik.values.namespace}
           converter={(it: RegistryNamespace) => t(`namespace.${it}`)}
           onSelectionChange={it => formik.setFieldValue('namespace', it, true)}
           disabled={formik.values.inUse}

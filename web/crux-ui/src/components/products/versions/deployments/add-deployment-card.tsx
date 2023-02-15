@@ -106,6 +106,7 @@ const AddDeploymentCard = (props: AddDeploymentCardProps) => {
           <DyoChips
             choices={nodes ?? []}
             converter={(it: DyoNode) => it.name}
+            selection={nodes.find(it => it.id === formik.values.nodeId)}
             onSelectionChange={it => formik.setFieldValue('nodeId', it.id)}
           />
           {!formik.errors.nodeId ? null : <DyoMessage message={formik.errors.nodeId} messageType="error" />}

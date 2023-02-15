@@ -118,7 +118,7 @@ const EditNotificationCard = (props: EditNotificationCardProps) => {
 
             <DyoChips
               choices={NOTIFICATION_TYPE_VALUES}
-              initialSelection={formik.values.type}
+              selection={formik.values.type}
               converter={(it: NotificationType) => t(`type.${it}`)}
               onSelectionChange={async it => {
                 await formik.setFieldValue('type', it)

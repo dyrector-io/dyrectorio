@@ -1,31 +1,23 @@
 import assert from 'assert'
 import clsx from 'clsx'
-import { useState } from 'react'
 
 export interface DyoChipsProps<T> {
   className?: string
   key?: React.Key
   disabled?: boolean
   choices: readonly T[]
-  initialSelection?: T
+  selection: T
   converter?: (choice: T) => string
   onSelectionChange: (choice: T) => void
 }
 
 const DyoChips = <T,>(props: DyoChipsProps<T>) => {
-  const { choices, converter, onSelectionChange, key: propsKey, className, initialSelection, disabled } = props
+  const { choices, converter, onSelectionChange, key: propsKey, className, selection, disabled } = props
 
   assert(
     converter || choices.length < 1 || typeof choices[0] === 'string',
     'When choices are not string, you must define a converter.',
   )
-
-  const [selection, setSelection] = useState<T>(initialSelection ?? null)
-
-  const onToggle = (item: T) => {
-    setSelection(item)
-    onSelectionChange(item)
-  }
 
   const key = propsKey ?? 'dyo-chips'
   return (
@@ -45,7 +37,7 @@ const DyoChips = <T,>(props: DyoChipsProps<T>) => {
                 : 'text-light-eased border-light-eased',
               disabled ? 'cursor-not-allowed' : null,
             )}
-            onClick={() => onToggle(it)}
+            onClick={() => onSelectionChange(it)}
           >
             {text}
           </button>
