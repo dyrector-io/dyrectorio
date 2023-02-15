@@ -1,6 +1,6 @@
 {
   "name": "dyrector.io",
-  "description": "dyrector.io is a self-hosted container management platform.\nINFORMATION:\n1) If you wish to run this software without reCAPTCHA, set DISABLE_RECAPTCHA to true, and remove the RECAPTCHA related secrets from the frontend(crux-ui) application.",
+  "description": "dyrector.io is a self-hosted container management platform.\nINFORMATION:\n1) If you wish to run this software without reCAPTCHA, set DISABLE_RECAPTCHA to true, and remove the RECAPTCHA related secrets from the frontend(crux-ui) application. For more information on configuration options please consult the documentation: https://docs.dyrectorio.com/",
   "registries": [
     {
       "name": "Docker Hub Library",
@@ -48,7 +48,7 @@
             "key": "traefik.http.routers.dyrectorio-crux-grpc.service",
             "value": "dyrectorio-crux-grpc"
           },
-          { 
+          {
             "id": "5",
             "key": "traefik.http.routers.dyrectorio-crux.entrypoints",
             "value": "websecure"
@@ -67,37 +67,37 @@
         "commands": [
           {
             "id": "1",
-            "key": "serve" 
+            "key": "serve"
           }
         ],
         "environment": [
-          { 
+          {
             "key": "TZ",
             "value": "Europe/Budapest"
           },
           {
             "key": "NODE_ENV",
-            "value": "production" 
+            "value": "production"
           },
           {
             "key": "KRATOS_ADMIN_URL",
-            "value": "http://dyrectorio-kratos:4434" 
+            "value": "http://dyrectorio-kratos:4434"
           },
           {
             "key": "CRUX_AGENT_ADDRESS",
-            "value": "example.com:5001" 
+            "value": "example.com:5001"
           },
           {
             "key": "CRUX_UI_URL",
-            "value": "https://example.com" 
+            "value": "https://example.com"
           },
           {
             "key": "FROM_NAME",
-            "value": "dyrector.io" 
+            "value": "dyrector.io"
           },
           {
             "key": "FROM_EMAIL",
-            "value": "mail@example.com" 
+            "value": "mail@example.com"
           }
         ],
         "secrets": [
@@ -129,7 +129,7 @@
             "command": [
               {
                 "id": "1",
-                "key": "migrate" 
+                "key": "migrate"
               }
             ]
           }
@@ -162,19 +162,19 @@
           }
         ],
         "environment": [
-          { 
+          {
             "key": "TZ",
             "value": "Europe/Budapest"
           },
-          { 
+          {
             "key": "CRUX_API_ADDRESS",
             "value": "example.com:5001"
           },
-          { 
+          {
             "key": "DISABLE_RECAPTCHA",
             "value": "false"
           },
-          { 
+          {
             "key": "KRATOS_URL",
             "value": "http://example.com/kratos"
           },
@@ -215,7 +215,7 @@
           }
         ],
         "environment": [
-          { 
+          {
             "key": "POSTGRES_USER",
             "value": "crux"
           },
@@ -275,8 +275,8 @@
           }
         ],
         "environment": [
-          { 
-            "key": "SQA_OPT_OUT", 
+          {
+            "key": "SQA_OPT_OUT",
             "value": true
           },
           {
@@ -292,12 +292,12 @@
             "value": "https://example.com/auth"
           },
           {
-          
+
             "key": "CRUX_UI_URL",
             "value": "https://example.com"
           },
           {
-          
+
             "key": "DEV",
             "value": "false"
           },
@@ -339,27 +339,27 @@
             "command": [
               {
                 "id": "1",
-                "key": "-c" 
+                "key": "-c"
               },
               {
                 "id": "2",
-                "key": "/etc/config/kratos/kratos.yaml" 
+                "key": "/etc/config/kratos/kratos.yaml"
               },
               {
                 "id": "3",
-                "key": "migrate" 
+                "key": "migrate"
               },
               {
                 "id": "4",
-                "key": "sql" 
+                "key": "sql"
               },
               {
                 "id": "5",
-                "key": "-e" 
+                "key": "-e"
               },
               {
                 "id": "6",
-                "key": "--yes" 
+                "key": "--yes"
               }
             ]
           }
@@ -382,7 +382,7 @@
           }
         ],
         "environment": [
-          { 
+          {
             "key": "POSTGRES_USER",
             "value": "kratos"
           },
