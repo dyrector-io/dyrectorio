@@ -117,6 +117,7 @@ import {
   DashboardResponse,
   GenerateTokenResponse,
   TokenListResponse,
+  TokenResponse,
 } from 'src/grpc/protobuf/proto/crux'
 import {
   UniqueKey,

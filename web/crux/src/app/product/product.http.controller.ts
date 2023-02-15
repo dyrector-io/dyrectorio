@@ -7,8 +7,13 @@ import {
   ProductListResponse,
 } from 'src/grpc/protobuf/proto/crux'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
-import { ApiBody } from '@nestjs/swagger'
-import { AccessRequestDto, CreateProductRequestDto } from 'src/swagger/crux.dto'
+import { ApiBody, ApiResponse } from '@nestjs/swagger'
+import {
+  AccessRequestDto,
+  CreateEntityResponseDto,
+  CreateProductRequestDto,
+  ProductListResponseDto,
+} from 'src/swagger/crux.dto'
 import ProductService from './product.service'
 import JwtAuthGuard from '../token/jwt-auth.guard'
 
@@ -20,6 +25,7 @@ export default class ProductHttpController {
 
   @Post()
   @ApiBody({ type: CreateProductRequestDto })
+  @ApiResponse({ type: CreateEntityResponseDto })
   @AuditLogLevel('disabled')
   async createProduct(@Body() request: CreateProductRequest): Promise<CreateEntityResponse> {
     return this.service.createProduct(request)
@@ -27,6 +33,7 @@ export default class ProductHttpController {
 
   @Get()
   @ApiBody({ type: AccessRequestDto })
+  @ApiResponse({ type: ProductListResponseDto })
   @AuditLogLevel('disabled')
   async getProducts(@Body() request: AccessRequest): Promise<ProductListResponse> {
     return this.service.getProducts(request)
