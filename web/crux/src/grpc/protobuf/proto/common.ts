@@ -79,7 +79,7 @@ export enum DeploymentStatus {
   IN_PROGRESS = 2,
   SUCCESSFUL = 3,
   FAILED = 4,
-  OBSOLATE = 5,
+  OBSOLETE = 5,
   DOWNGRADED = 6,
   UNRECOGNIZED = -1,
 }
@@ -102,8 +102,8 @@ export function deploymentStatusFromJSON(object: any): DeploymentStatus {
     case 'FAILED':
       return DeploymentStatus.FAILED
     case 5:
-    case 'OBSOLATE':
-      return DeploymentStatus.OBSOLATE
+    case 'OBSOLETE':
+      return DeploymentStatus.OBSOLETE
     case 6:
     case 'DOWNGRADED':
       return DeploymentStatus.DOWNGRADED
@@ -126,8 +126,8 @@ export function deploymentStatusToJSON(object: DeploymentStatus): string {
       return 'SUCCESSFUL'
     case DeploymentStatus.FAILED:
       return 'FAILED'
-    case DeploymentStatus.OBSOLATE:
-      return 'OBSOLATE'
+    case DeploymentStatus.OBSOLETE:
+      return 'OBSOLETE'
     case DeploymentStatus.DOWNGRADED:
       return 'DOWNGRADED'
     case DeploymentStatus.UNRECOGNIZED:

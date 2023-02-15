@@ -8,7 +8,7 @@ const statusToAssetName = (status: DeploymentStatus) => {
       return 'circle-green'
     case 'failed':
       return 'circle-red'
-    case 'obsolate':
+    case 'obsolete':
       return 'circle-red-orange'
     default:
       return 'circle-orange'

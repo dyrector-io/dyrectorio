@@ -47,9 +47,9 @@ test('Second successful deployment should make the first deployment obsolete', a
   await expect(deploymentsRows).toHaveCount(2)
 
   const successfulDeployment = await deploymentsRows.getByText('Successful', { exact: true })
-  const obsolateDeployment = await deploymentsRows.getByText('Obsolate', { exact: true })
+  const obsoleteDeployment = await deploymentsRows.getByText('Obsolete', { exact: true })
 
   await page.screenshot({ path: screenshotPath('deployment-should-be-obsolete-2'), fullPage: true })
   await expect(successfulDeployment).toHaveCount(1)
-  await expect(obsolateDeployment).toHaveCount(1)
+  await expect(obsoleteDeployment).toHaveCount(1)
 })

@@ -422,7 +422,7 @@ export default class DeployService {
          * If a deployment succeeds the merged config is saved as the instance config,
          * so downgrading is possible even if the image config is modified.
          */
-        if (deployment.status === 'successful' || deployment.status === 'obsolate') {
+        if (deployment.status === 'successful' || deployment.status === 'obsolete') {
           return [
             it.id,
             this.containerMapper.mergeConfigs(

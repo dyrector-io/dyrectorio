@@ -33,7 +33,8 @@
     "ts-node": "ts-node --compiler-options { \"module\": \"CommonJS\"}",
     "database:up": "docker-compose -f docker-compose.database.yaml up -d",
     "database:down": "docker-compose -f docker-compose.database.yaml down",
-    "prismagen": "prisma generate"
+    "prismagen": "prisma generate",
+    "prismdev": "prisma migrate dev -n obsolete_typo --create-only"
   },
   "prisma": {
     "schema": "prisma/schema.prisma"

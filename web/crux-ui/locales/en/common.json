@@ -128,7 +128,7 @@
   "deploymentStatuses": {
     "successful": "Successful",
     "failed": "Failed",
-    "obsolate": "Obsolate",
+    "obsolete": "Obsolete",
     "unknown": "Unknown",
     "preparing": "Preparing",
     "in_progress": "In progress"

@@ -64,7 +64,7 @@ export const checkDeploymentMutability = (status: DeploymentStatusEnum, type: Ve
 export const checkDeploymentDeployability = (status: DeploymentStatusEnum, type: VersionTypeEnum): boolean => {
   switch (status) {
     case 'preparing':
-    case 'obsolate':
+    case 'obsolete':
       return true
     case 'successful':
       return type === 'rolling'

@@ -1759,7 +1759,7 @@ Common messages
 | IN_PROGRESS | 2 |  |
 | SUCCESSFUL | 3 |  |
 | FAILED | 4 |  |
-| OBSOLATE | 5 |  |
+| OBSOLETE | 5 |  |
 | DOWNGRADED | 6 |  |
 
 

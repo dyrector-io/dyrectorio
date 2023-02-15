@@ -401,7 +401,7 @@ enum DeploymentStatusEnum {
   inProgress
   successful
   failed
-  obsolate
+  obsolete
   downgraded
 }
 

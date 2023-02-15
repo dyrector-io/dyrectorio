@@ -20,7 +20,7 @@ export type DyoFetchError = DyoErrorDto & {
 
 // deployment
 
-export const DEPLOYMENT_STATUS_VALUES = ['preparing', 'in_progress', 'successful', 'failed', 'obsolate'] as const
+export const DEPLOYMENT_STATUS_VALUES = ['preparing', 'in_progress', 'successful', 'failed', 'obsolete'] as const
 export type DeploymentStatus = typeof DEPLOYMENT_STATUS_VALUES[number]
 
 // ws

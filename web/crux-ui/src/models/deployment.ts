@@ -151,7 +151,7 @@ export const deploymentIsMutable = (status: DeploymentStatus, type: VersionType)
 export const deploymentIsDeployable = (status: DeploymentStatus, type: VersionType): boolean => {
   switch (status) {
     case 'preparing':
-    case 'obsolate':
+    case 'obsolete':
       return true
     case 'successful':
     case 'failed':

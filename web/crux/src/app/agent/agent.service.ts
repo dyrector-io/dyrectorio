@@ -499,7 +499,7 @@ export default class AgentService {
     await this.prisma.$transaction(async prisma => {
       await prisma.deployment.updateMany({
         data: {
-          status: DeploymentStatusEnum.obsolate,
+          status: DeploymentStatusEnum.obsolete,
         },
         where: {
           id: {
@@ -517,7 +517,7 @@ export default class AgentService {
       const parentVersionIds = await collectParentVersionIds(prisma, deployment.version.id)
       await prisma.deployment.updateMany({
         data: {
-          status: DeploymentStatusEnum.obsolate,
+          status: DeploymentStatusEnum.obsolete,
         },
         where: {
           versionId: {
