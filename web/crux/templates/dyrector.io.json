@@ -1,6 +1,6 @@
 {
   "name": "dyrector.io",
-  "description": "dyrector.io is a self-hosted container management platform.\nINFORMATION:\n1) If you wish to run this software without reCAPTCHA, set DISABLE_RECAPTCHA to true, and remove the RECAPTCHA related secrets from the frontend(crux-ui) application. For more information on configuration options please consult the documentation: https://docs.dyrectorio.com/",
+  "description": "dyrector.io is a self-hosted container management platform.\n\nIf you wish to run this software without reCAPTCHA, set DISABLE_RECAPTCHA to true, and remove the RECAPTCHA related secrets from the frontend(crux-ui) application. For more information on configuration options please consult the documentation: https://docs.dyrectorio.com/",
   "registries": [
     {
       "name": "Docker Hub Library",
@@ -64,7 +64,7 @@
             "value": "dyrectorio-crux"
           }
         ],
-        "commands": [
+        "args": [
           {
             "id": "1",
             "key": "serve"
@@ -81,7 +81,7 @@
           },
           {
             "key": "KRATOS_ADMIN_URL",
-            "value": "http://dyrectorio-kratos:4434"
+            "value": "http://dyrector-io-kratos:4434"
           },
           {
             "key": "CRUX_AGENT_ADDRESS",
@@ -168,7 +168,7 @@
           },
           {
             "key": "CRUX_API_ADDRESS",
-            "value": "example.com:5001"
+            "value": "dyrector-io-crux:5001"
           },
           {
             "key": "DISABLE_RECAPTCHA",
@@ -180,17 +180,17 @@
           },
           {
             "key": "KRATOS_ADMIN_URL",
-            "value": "http://dyrectorio-kratos:4434"
+            "value": "http://dyrector-io-kratos:4434"
           }
         ],
         "secrets": [
           {
             "key": "RECAPTCHA_SITE_KEY",
-            "required": true
+            "required": false
           },
           {
             "key": "RECAPTCHA_SECRET_KEY",
-            "required": true
+            "required": false
           }
         ],
         "networks": ["dyrectorio"],
