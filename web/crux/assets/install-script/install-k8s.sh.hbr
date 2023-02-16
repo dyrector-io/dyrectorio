@@ -24,10 +24,8 @@ EOF
 
 {{#if localManifests }}
 kubectl apply -f ./golang/manifest/kubernetes/rolebinding.yaml
-kubectl apply -f ./golang/manifest/kubernetes/volume.yaml
 kubectl apply -f ./golang/manifest/kubernetes/deployment.yaml
 {{else}}
 kubectl apply -f https://raw.githubusercontent.com/dyrector-io/dyrectorio/main/golang/manifest/kubernetes/rolebinding.yaml
-kubectl apply -f https://raw.githubusercontent.com/dyrector-io/dyrectorio/main/golang/manifest/kubernetes/volume.yaml
 kubectl apply -f https://raw.githubusercontent.com/dyrector-io/dyrectorio/main/golang/manifest/kubernetes/deployment.yaml
 {{/if }}
