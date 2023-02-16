@@ -194,7 +194,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
 
           {getViewStateButtons()}
         </div>
-        {viewState === 'editor' && <ImageConfigFilters onChange={setFilters} />}
+        {viewState === 'editor' && <ImageConfigFilters onChange={setFilters} initialBaseFilter="all" />}
       </DyoCard>
 
       {viewState === 'editor' && (

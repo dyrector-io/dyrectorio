@@ -30,7 +30,8 @@ export type InstanceState = {
 
 export type InstanceActions = {
   selectTab: (selection: EditInstanceCardSelection) => void
-  onPatch: (config: Partial<ContainerConfigData>) => void
+  updateConfig: (config: Partial<ContainerConfigData>) => void
+  onPatch: (newConfig: Partial<ContainerConfigData>) => void
   onParseError: (error: Error) => void
 }
 
@@ -68,6 +69,8 @@ const useInstanceState = (options: InstanceStateOptions) => {
 
   const errorMessage = parseError ?? getValidationError(containerConfigSchema, config)?.message
 
+  const updateConfig = (newConfig: Partial<InstanceContainerConfigData>) => setConfig({ ...config, ...newConfig })
+
   const onPatch = (id: string, newConfig: InstanceContainerConfigData) => {
     setParseError(null)
 
@@ -89,6 +92,7 @@ const useInstanceState = (options: InstanceStateOptions) => {
     {
       selectTab: setSelection,
       onPatch,
+      updateConfig,
       onParseError,
     },
   ]

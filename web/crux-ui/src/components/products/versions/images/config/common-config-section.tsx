@@ -8,7 +8,7 @@ import DyoChips from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoSwitch from '@app/elements/dyo-switch'
-import { COMMON_CONFIG_FILTERS, filterContains, filterEmpty, ImageConfigFilterType } from '@app/models'
+import { COMMON_CONFIG_PROPERTIES, filterContains, filterEmpty, ImageConfigFilterType } from '@app/models'
 import {
   CommonConfigDetails,
   ContainerConfigExposeStrategy,
@@ -59,7 +59,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
     publicKey,
   } = props
 
-  return !filterEmpty([...COMMON_CONFIG_FILTERS], selectedFilters) ? null : (
+  return !filterEmpty([...COMMON_CONFIG_PROPERTIES], selectedFilters) ? null : (
     <div className="my-4">
       <DyoHeading className="text-lg text-bright font-semibold tracking-wide bg-dyo-orange/50 w-40 rounded-t-lg text-center pt-[2px]">
         {t('base.common').toUpperCase()}

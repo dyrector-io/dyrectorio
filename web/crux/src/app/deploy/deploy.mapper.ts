@@ -26,6 +26,8 @@ import {
   DeploymentStatus,
   deploymentStatusFromJSON,
   KeyValue,
+  ExposeStrategy as ProtoExposeStrategy,
+  DeploymentStrategy as ProtoDeploymentStrategy,
 } from 'src/grpc/protobuf/proto/common'
 import {
   AuditResponse,
@@ -259,7 +261,7 @@ export default class DeployMapper {
       environment: this.jsonToPipedFormat(config.environment),
       secrets: this.mapKeyValueToMap(config.secrets),
       commands: this.mapUniqueKeyToStringArray(config.commands),
-      expose: this.imageMapper.exposeStrategyToProto(config.expose),
+      expose: this.imageMapper.exposeStrategyToProto(config.expose) ?? ProtoExposeStrategy.NONE_ES,
       args: this.mapUniqueKeyToStringArray(config.args),
       TTY: config.tty,
       configContainer: config.configContainer,
@@ -274,7 +276,7 @@ export default class DeployMapper {
       portRanges: config.portRanges,
       ports: config.ports,
       user: config.user,
-      volumes: this.imageMapper.volumesToProto(config.volumes),
+      volumes: this.imageMapper.volumesToProto(config.volumes ?? []),
     }
   }
 
@@ -298,7 +300,8 @@ export default class DeployMapper {
     return {
       customHeaders: this.mapUniqueKeyToStringArray(config.customHeaders),
       extraLBAnnotations: this.mapKeyValueToMap(config.extraLBAnnotations),
-      deploymentStatregy: this.imageMapper.deploymentStrategyToProto(config.deploymentStrategy),
+      deploymentStatregy:
+        this.imageMapper.deploymentStrategyToProto(config.deploymentStrategy) ?? ProtoDeploymentStrategy.ROLLING,
       healthCheckConfig: config.healthCheckConfig,
       proxyHeaders: config.proxyHeaders,
       useLoadBalancer: config.useLoadBalancer,
@@ -330,8 +333,8 @@ export default class DeployMapper {
       result.push({
         ...it,
         environment: this.mapKeyValueToMap(it.environment as KeyValue[]),
-        command: it.command.map(cit => cit.key),
-        args: it.args.map(ait => ait.key),
+        command: it.command?.map(cit => cit.key) ?? [],
+        args: it.args?.map(ait => ait.key) ?? [],
       })
     })
 
