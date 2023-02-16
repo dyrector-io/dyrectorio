@@ -29,7 +29,13 @@
         "volumes": [
           {
             "name": "database-data",
-            "path": "/var/lib/postgresql/data/"
+            "path": "/var/lib/postgresql/data/",
+            "type": "rw"
+          }
+        ],
+        "ports": [
+          {
+            "internal": 5432
           }
         ],
         "environment": [
@@ -79,9 +85,19 @@
             "internal": 7000
           }
         ],
+        "resourceConfig": {
+            "requests": {
+                "memory": "1Gi",
+                "cpu": "200m"
+            },
+            "limits": {
+                "cpu": "0",
+                "memory": "1Gi"
+            }
+        },
         "networkMode": "bridge",
         "restartPolicy": "unless_stopped",
-        "deploymentStrategy": "recreate", 
+        "deploymentStrategy": "recreate",
         "environment": [
           {
             "key": "NEXT_PUBLIC_WEBAPP_URL",
@@ -101,7 +117,7 @@
           },
           {
             "key": "DATABASE_URL",
-            "value": "postgresql://cal-user:${POSTGRES_PASSWORD}@cal-com-cal-db/cal-db"
+            "value": "postgresql://cal-user:${POSTGRES_PASSWORD}@cal-db:5432/cal-db"
           }
         ],
         "secrets": [
