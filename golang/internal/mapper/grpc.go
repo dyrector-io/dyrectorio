@@ -504,11 +504,8 @@ func mapServicePorts(svc *corev1.Service) []*common.ContainerStateItemPort {
 
 // do better mapping this is quick something
 func mapKubeStatusToCruxContainerState(status appsv1.DeploymentStatus) common.ContainerState {
-	switch status.ReadyReplicas {
-	case 1:
+	if status.ReadyReplicas > 0 {
 		return common.ContainerState_RUNNING
-	case 0:
-		return common.ContainerState_DEAD
 	}
-	return common.ContainerState_CONTAINER_STATE_UNSPECIFIED
+	return common.ContainerState_DEAD
 }
