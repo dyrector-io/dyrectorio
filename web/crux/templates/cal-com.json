@@ -29,8 +29,7 @@
         "volumes": [
           {
             "name": "database-data",
-            "path": "/var/lib/postgresql/data/",
-            "type": "rw"
+            "path": "/var/lib/postgresql/data/"
           }
         ],
         "ports": [
@@ -54,9 +53,7 @@
             "required": true
           }
         ],
-        "networks": [
-          "cal-com-network"
-        ],
+        "networks": ["cal-com-network"],
         "networkMode": "bridge",
         "restartPolicy": "unless_stopped",
         "deploymentStrategy": "recreate"
@@ -67,13 +64,10 @@
       "registryName": "dyrector.io Docker Hub Library",
       "image": "cal-com",
       "tag": "v2.5.10",
-      "config":
-      {
+      "config": {
         "name": "cal-com",
         "tty": false,
-        "networks": [
-          "cal-com-network"
-        ],
+        "networks": ["cal-com-network"],
         "expose": "expose",
         "ingress": {
           "host": "localhost",
@@ -86,14 +80,14 @@
           }
         ],
         "resourceConfig": {
-            "requests": {
-                "memory": "1Gi",
-                "cpu": "200m"
-            },
-            "limits": {
-                "cpu": "0",
-                "memory": "1Gi"
-            }
+          "requests": {
+            "memory": "1Gi",
+            "cpu": "200m"
+          },
+          "limits": {
+            "cpu": "0",
+            "memory": "1Gi"
+          }
         },
         "networkMode": "bridge",
         "restartPolicy": "unless_stopped",
