@@ -95,7 +95,7 @@
         "environment": [
           {
             "key": "NEXT_PUBLIC_WEBAPP_URL",
-            "value": "http://localhost:7000/"
+            "value": "http://localhost:7000"
           },
           {
             "key": "PORT",
