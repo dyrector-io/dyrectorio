@@ -106,7 +106,7 @@ const RegisterPage = (props: RegisterPageProps) => {
     <SingleFormLayout title={t('signUp')}>
       <DyoSingleFormLogo />
 
-      <DyoCard className="p-8 mx-auto">
+      <DyoCard className="p-8 mt-16 mx-auto w-5/12">
         <DyoForm className="flex flex-col" onSubmit={formik.handleSubmit} onReset={formik.handleReset}>
           <DyoSingleFormHeading>{t('signUp')}</DyoSingleFormHeading>
 
@@ -182,6 +182,14 @@ const RegisterPage = (props: RegisterPageProps) => {
           <DyoButton className="mx-40 mt-8" type="submit">
             {t('createAcc')}
           </DyoButton>
+
+          <p className="text-bright mt-8">
+            {t(`privacyPolicyText`)}
+            <a href="https://dyrectorio.com/privacy" target="_blank" rel="noreferrer">
+              {t('privacyPolicyLinkText')}
+            </a>
+            .
+          </p>
 
           {recaptchaSiteKey ? <ReCAPTCHA ref={recaptcha} size="invisible" sitekey={recaptchaSiteKey} /> : null}
         </DyoForm>
