@@ -1,6 +1,69 @@
 # CHANGELOG
 
 
+<a name="0.3.3"></a>
+## [0.3.3](https://github.com/dyrector-io/dyrectorio/compare/0.3.2...0.3.3) (2023-02-16)
+
+### Chore
+
+* obsolete typo
+* bump alpine-proto image and go-version, everywhere! ([#445](https://github.com/dyrector-io/dyrectorio/issues/445))
+* **(ci):** update build images, upgrade to zstd ([#440](https://github.com/dyrector-io/dyrectorio/issues/440))
+
+### Feat
+
+* **(crux):** cal.com template ([#457](https://github.com/dyrector-io/dyrectorio/issues/457))
+* **(cli):** add welcome message ([#458](https://github.com/dyrector-io/dyrectorio/issues/458))
+* **(cli):** compose labels ([#462](https://github.com/dyrector-io/dyrectorio/issues/462))
+* moved templates to assets, added email/notification templating ([#454](https://github.com/dyrector-io/dyrectorio/issues/454))
+* **(crux):** standard health check ([#455](https://github.com/dyrector-io/dyrectorio/issues/455))
+* agent shutdown ([#453](https://github.com/dyrector-io/dyrectorio/issues/453))
+* **(web):** initialize http rest api ([#451](https://github.com/dyrector-io/dyrectorio/issues/451))
+* **(crux-ui):** image / instance config screen websocket editing ([#447](https://github.com/dyrector-io/dyrectorio/issues/447))
+* add optional port binding, alter ui validation ([#444](https://github.com/dyrector-io/dyrectorio/issues/444))
+* **(crux):** added 'unchecked' registry type ([#439](https://github.com/dyrector-io/dyrectorio/issues/439))
+* traefik improvements ([#430](https://github.com/dyrector-io/dyrectorio/issues/430))
+* container log ([#420](https://github.com/dyrector-io/dyrectorio/issues/420))
+* **(ci):** add proto and playwright image builder ([#435](https://github.com/dyrector-io/dyrectorio/issues/435))
+* **(crux):** add vaultwarden template ([#428](https://github.com/dyrector-io/dyrectorio/issues/428))
+* **(ci):** add dockerhub as repo target during image push ([#434](https://github.com/dyrector-io/dyrectorio/issues/434))
+* **(web):** install script type selector and PowerShell script ([#422](https://github.com/dyrector-io/dyrectorio/issues/422))
+* **(agent):** add option to have unlimited CPU ([#425](https://github.com/dyrector-io/dyrectorio/issues/425))
+* add minecraft server template ([#414](https://github.com/dyrector-io/dyrectorio/issues/414))
+* **(agent):** add multi arch build targets ([#418](https://github.com/dyrector-io/dyrectorio/issues/418))
+
+### Fix
+
+* **(crux-ui):** add privacy to registry screen ([#465](https://github.com/dyrector-io/dyrectorio/issues/465))
+* fix config mapping, default filters ([#464](https://github.com/dyrector-io/dyrectorio/issues/464))
+* **(crux-ui):** container config volume ids, chips ([#460](https://github.com/dyrector-io/dyrectorio/issues/460))
+* minor ui fixes & dagent image url parsing ([#456](https://github.com/dyrector-io/dyrectorio/issues/456))
+* save merged config & teams user list ([#452](https://github.com/dyrector-io/dyrectorio/issues/452))
+* **(web):** version and deployment patch editing ([#459](https://github.com/dyrector-io/dyrectorio/issues/459))
+* **(crux-ui):** minor config fixes ([#450](https://github.com/dyrector-io/dyrectorio/issues/450))
+* **(crux):** clean & correct labels for vaultwarden ([#448](https://github.com/dyrector-io/dyrectorio/issues/448))
+* **(agent):** logging fixes ([#442](https://github.com/dyrector-io/dyrectorio/issues/442))
+* **(crux):** fixed powershell data mount path & install one liner ([#441](https://github.com/dyrector-io/dyrectorio/issues/441))
+* **(ci):** image signing ([#438](https://github.com/dyrector-io/dyrectorio/issues/438))
+* **(ci):** image signing ([#437](https://github.com/dyrector-io/dyrectorio/issues/437))
+* **(crux-ui):** fix the expose strategy naming ([#436](https://github.com/dyrector-io/dyrectorio/issues/436))
+* **(ci):** go push action missing command during docker load ([#433](https://github.com/dyrector-io/dyrectorio/issues/433))
+* **(ci):** initalize an undefined variable ([#432](https://github.com/dyrector-io/dyrectorio/issues/432))
+* **(ci):** conventional commits skip on non-PR runs ([#431](https://github.com/dyrector-io/dyrectorio/issues/431))
+* **(crux-ui):** name creation ([#429](https://github.com/dyrector-io/dyrectorio/issues/429))
+* **(web):** remove token revoke on node name change ([#427](https://github.com/dyrector-io/dyrectorio/issues/427))
+* **(agent):** fix crane install manifest scripts ([#423](https://github.com/dyrector-io/dyrectorio/issues/423))
+* **(crux-ui):** dyo list layout consistency ([#421](https://github.com/dyrector-io/dyrectorio/issues/421))
+* template formik value update, scroll to the top and add images ([#419](https://github.com/dyrector-io/dyrectorio/issues/419))
+* **(crux-ui):** json editor and mapper ([#413](https://github.com/dyrector-io/dyrectorio/issues/413))
+* **(web):** deployment event order ([#416](https://github.com/dyrector-io/dyrectorio/issues/416))
+
+### Refactor
+
+* **(ci):** e2e testing ([#368](https://github.com/dyrector-io/dyrectorio/issues/368))
+* **(web):** update kratos to v1.11 ([#401](https://github.com/dyrector-io/dyrectorio/issues/401))
+
+
 <a name="0.3.2"></a>
 ## [0.3.2](https://github.com/dyrector-io/dyrectorio/compare/0.3.1...0.3.2) (2023-01-03)
 
