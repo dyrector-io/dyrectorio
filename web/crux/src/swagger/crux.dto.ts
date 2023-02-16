@@ -1138,3 +1138,27 @@ export class CruxTokenControllerDto {
   getTokenList: Promise<TokenListResponse> | Observable<TokenListResponse> | TokenListResponse
   deleteToken: any
 }
+
+// Not generated:
+export class ContainerStateItemPortDto {
+  internal: number
+  external: number
+}
+
+export class ContainerStateItemDto {
+  id: string
+  prefix: string
+  name: string
+  command: string
+  createdAt: any
+  state: ContainerState
+  status: string
+  imageName: string
+  imageTag: string
+  ports: ContainerStateItemPortDto[]
+}
+
+export class ContainerStateListMessageDto {
+  prefix: string
+  data: ContainerStateItemDto[]
+}

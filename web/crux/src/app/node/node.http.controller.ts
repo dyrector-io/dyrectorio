@@ -1,11 +1,11 @@
 import { Controller, Body, Get, UseGuards, UseInterceptors } from '@nestjs/common'
-import { ApiBody } from '@nestjs/swagger'
+import { ApiBody, ApiOkResponse } from '@nestjs/swagger'
 import { first, Observable, timeout } from 'rxjs'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import { ContainerStateListMessage } from 'src/grpc/protobuf/proto/common'
 import { WatchContainerStateRequest } from 'src/grpc/protobuf/proto/crux'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
-import { WatchContainerStateRequestDto } from 'src/swagger/crux.dto'
+import { ContainerStateListMessageDto, WatchContainerStateRequestDto } from 'src/swagger/crux.dto'
 import JwtAuthGuard from '../token/jwt-auth.guard'
 import NodeService from './node.service'
 
@@ -28,6 +28,7 @@ export default class NodeHttpController {
    */
   @Get('status')
   @ApiBody({ type: WatchContainerStateRequestDto })
+  @ApiOkResponse({ type: ContainerStateListMessageDto })
   @AuditLogLevel('disabled')
   async getContainerStatus(@Body() params: WatchContainerStateRequest): Promise<Observable<ContainerStateListMessage>> {
     return this.service
