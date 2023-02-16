@@ -4,7 +4,7 @@ import KeyValueInput from '@app/components/shared/key-value-input'
 import DyoChips from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
-import { DAGENT_CONFIG_FILTERS, filterContains, filterEmpty, ImageConfigFilterType } from '@app/models'
+import { DAGENT_CONFIG_PROPERTIES, filterContains, filterEmpty, ImageConfigFilterType } from '@app/models'
 import {
   ContainerLogDriverType,
   ContainerNetworkMode,
@@ -40,7 +40,7 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
   const { t } = useTranslation('container')
   const { config, selectedFilters, onChange, editorOptions, disabled } = props
 
-  return !filterEmpty([...DAGENT_CONFIG_FILTERS], selectedFilters) ? null : (
+  return !filterEmpty([...DAGENT_CONFIG_PROPERTIES], selectedFilters) ? null : (
     <div className="my-4">
       <DyoHeading className="text-lg text-bright uppercase font-semibold tracking-wide bg-dyo-sky/50 w-40 rounded-t-lg text-center pt-[2px]">
         {t('base.dagent')}

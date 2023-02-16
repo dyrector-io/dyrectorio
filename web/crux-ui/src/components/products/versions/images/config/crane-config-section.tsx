@@ -6,7 +6,7 @@ import DyoChips from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoSwitch from '@app/elements/dyo-switch'
-import { CRANE_CONFIG_FILTERS, filterContains, filterEmpty, ImageConfigFilterType } from '@app/models'
+import { CRANE_CONFIG_PROPERTIES, filterContains, filterEmpty, ImageConfigFilterType } from '@app/models'
 import {
   ContainerDeploymentStrategyType,
   CONTAINER_DEPLOYMENT_STRATEGY_VALUES,
@@ -38,7 +38,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
   const { t } = useTranslation('container')
   const { config, selectedFilters, onChange, editorOptions, disabled } = props
 
-  return !filterEmpty([...CRANE_CONFIG_FILTERS], selectedFilters) ? null : (
+  return !filterEmpty([...CRANE_CONFIG_PROPERTIES], selectedFilters) ? null : (
     <div className="my-4">
       <DyoHeading className="text-lg text-bright uppercase font-semibold tracking-wide bg-dyo-violet/50 w-40 rounded-t-lg text-center pt-[2px]">
         {t('base.crane')}

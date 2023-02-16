@@ -64,7 +64,7 @@ export type GetImageMessage = {
 export const WS_TYPE_IMAGE = 'image'
 export type ImageMessage = VersionImage
 
-export const COMMON_CONFIG_FILTERS = [
+export const COMMON_CONFIG_PROPERTIES = [
   'name',
   'environment',
   'secrets',
@@ -83,7 +83,7 @@ export const COMMON_CONFIG_FILTERS = [
   'initContainers',
 ] as const
 
-export const CRANE_CONFIG_FILTERS = [
+export const CRANE_CONFIG_PROPERTIES = [
   'deploymentStrategy',
   'customHeaders',
   'proxyHeaders',
@@ -94,18 +94,24 @@ export const CRANE_CONFIG_FILTERS = [
   'annotations',
 ] as const
 
-export const DAGENT_CONFIG_FILTERS = ['logConfig', 'restartPolicy', 'networkMode', 'networks', 'dockerLabels'] as const
-
-export const IMAGE_CONFIG_FILTERS = [
-  ...COMMON_CONFIG_FILTERS,
-  ...CRANE_CONFIG_FILTERS,
-  ...DAGENT_CONFIG_FILTERS,
+export const DAGENT_CONFIG_PROPERTIES = [
+  'logConfig',
+  'restartPolicy',
+  'networkMode',
+  'networks',
+  'dockerLabels',
 ] as const
 
-export type CommonConfigFilterType = typeof COMMON_CONFIG_FILTERS[number]
-export type CraneConfigFilterType = typeof CRANE_CONFIG_FILTERS[number]
-export type DagentConfigFilterType = typeof DAGENT_CONFIG_FILTERS[number]
-export type ImageConfigFilterType = typeof IMAGE_CONFIG_FILTERS[number]
+export const ALL_CONFIG_PROPERTIES = [
+  ...COMMON_CONFIG_PROPERTIES,
+  ...CRANE_CONFIG_PROPERTIES,
+  ...DAGENT_CONFIG_PROPERTIES,
+] as const
+
+export type CommonConfigFilterType = typeof COMMON_CONFIG_PROPERTIES[number]
+export type CraneConfigFilterType = typeof CRANE_CONFIG_PROPERTIES[number]
+export type DagentConfigFilterType = typeof DAGENT_CONFIG_PROPERTIES[number]
+export type ImageConfigFilterType = typeof ALL_CONFIG_PROPERTIES[number]
 
 export const filterContains = (
   filter: CommonConfigFilterType | CraneConfigFilterType | DagentConfigFilterType,

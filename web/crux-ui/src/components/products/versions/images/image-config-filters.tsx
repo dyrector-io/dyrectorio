@@ -1,5 +1,11 @@
 import { DyoLabel } from '@app/elements/dyo-label'
-import { ImageConfigFilterType, IMAGE_CONFIG_FILTERS } from '@app/models'
+import {
+  ALL_CONFIG_PROPERTIES,
+  COMMON_CONFIG_PROPERTIES,
+  CRANE_CONFIG_PROPERTIES,
+  DAGENT_CONFIG_PROPERTIES,
+  ImageConfigFilterType,
+} from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useState } from 'react'
@@ -8,41 +14,15 @@ type BaseImageConfigFilterType = 'all' | 'common' | 'dagent' | 'crane'
 type FilterSet = Record<BaseImageConfigFilterType, ImageConfigFilterType[]>
 
 export const filterSet: FilterSet = {
-  all: [],
-  common: [
-    'name',
-    'environment',
-    'capabilities',
-    'secrets',
-    'ingress',
-    'expose',
-    'user',
-    'tty',
-    'importContainer',
-    'configContainer',
-    'ports',
-    'portRanges',
-    'volumes',
-    'commands',
-    'args',
-    'initContainers',
-  ],
-  crane: [
-    'deploymentStrategy',
-    'customHeaders',
-    'proxyHeaders',
-    'loadBalancer',
-    'healthCheckConfig',
-    'resourceConfig',
-    'annotations',
-    'labels',
-  ],
-  dagent: ['logConfig', 'restartPolicy', 'networkMode', 'networks', 'dockerLabels'],
+  all: [...ALL_CONFIG_PROPERTIES],
+  common: [...COMMON_CONFIG_PROPERTIES],
+  crane: [...CRANE_CONFIG_PROPERTIES],
+  dagent: [...DAGENT_CONFIG_PROPERTIES],
 }
 
 interface ImageConfigFilterProps {
   onChange: (filters: ImageConfigFilterType[]) => void
-  initialBaseFilter?: BaseImageConfigFilterType
+  initialBaseFilter: BaseImageConfigFilterType
 }
 
 const ImageConfigFilters = (props: ImageConfigFilterProps) => {
@@ -51,11 +31,11 @@ const ImageConfigFilters = (props: ImageConfigFilterProps) => {
   const { t } = useTranslation('container')
 
   const [filters, setFilters] = useState<ImageConfigFilterType[]>(
-    initialBaseFilter ? filterSet[initialBaseFilter] : (IMAGE_CONFIG_FILTERS as any as ImageConfigFilterType[]),
+    initialBaseFilter ? filterSet[initialBaseFilter] : [...DAGENT_CONFIG_PROPERTIES],
   )
 
   const onBaseFilterChanged = (value: BaseImageConfigFilterType) => {
-    const filtersByBase = value !== 'all' ? filterSet[value] : IMAGE_CONFIG_FILTERS
+    const filtersByBase = value !== 'all' ? filterSet[value] : ALL_CONFIG_PROPERTIES
     const select = filters.filter(it => filtersByBase.indexOf(it) !== -1).length === filtersByBase.length
 
     if (select) {
@@ -105,7 +85,7 @@ const ImageConfigFilters = (props: ImageConfigFilterProps) => {
         {(Object.keys(filterSet) as BaseImageConfigFilterType[]).map((base, index) => {
           const selected =
             base === 'all'
-              ? filters.length === IMAGE_CONFIG_FILTERS.length
+              ? filters.length === ALL_CONFIG_PROPERTIES.length
               : filters.filter(it => filterSet[base].indexOf(it) !== -1).length === filterSet[base].length
           return (
             <button

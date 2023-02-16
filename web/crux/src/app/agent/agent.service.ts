@@ -459,6 +459,7 @@ export default class AgentService {
         version: {
           select: {
             id: true,
+            type: true,
             deployments: {
               select: {
                 id: true,
@@ -544,6 +545,10 @@ export default class AgentService {
           prefix: deployment.prefix,
         },
       })
+
+      if (deployment.version.type === 'rolling') {
+        return
+      }
 
       const configUpserts = Array.from(finishedDeployment.mergedConfigs).map(it => {
         const [key, config] = it

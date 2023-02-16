@@ -96,6 +96,8 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
   }, [editorState.editors])
 
   const onChange = (newConfig: Partial<InstanceContainerConfigData>) => {
+    actions.updateConfig(newConfig)
+
     const newPatch = {
       ...patch.current,
       ...newConfig,
@@ -185,7 +187,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
 
           {getViewStateButtons()}
         </div>
-        {viewState === 'editor' && <ImageConfigFilters onChange={setFilters} initialBaseFilter="common" />}
+        {viewState === 'editor' && <ImageConfigFilters onChange={setFilters} initialBaseFilter="all" />}
       </DyoCard>
 
       {viewState === 'editor' && (

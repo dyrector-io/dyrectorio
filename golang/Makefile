@@ -43,20 +43,17 @@ GOPARAMS:=GOOS=$(GOOS) CGO_ENABLED=0 $(GRPC_DEBUG_FLAGS)
 .PHONY: up
 up:
 	cd cmd/dyo && \
-	go run . up; \
-	cd -
+	go run . up
 
 .PHONY: upd
 upd:
 	cd cmd/dyo && \
-	go run . --disable-crux --disable-crux-ui up; \
-	cd -
+	go run . --disable-crux --disable-crux-ui up
 
 .PHONY: down
 down:
 	cd cmd/dyo && \
-	go run . down; \
-	cd -
+	go run . down
 
 .PHONY: go-crane
 go-crane:
