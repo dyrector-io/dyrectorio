@@ -299,7 +299,7 @@ export function deploymentStrategyToJSON(object: DeploymentStrategy): string {
 export enum VolumeType {
   VOLUME_TYPE_UNSPECIFIED = 0,
   RO = 1,
-  RW = 2,
+  RWO = 2,
   RWX = 3,
   MEM = 4,
   TMP = 5,
@@ -315,8 +315,8 @@ export function volumeTypeFromJSON(object: any): VolumeType {
     case 'RO':
       return VolumeType.RO
     case 2:
-    case 'RW':
-      return VolumeType.RW
+    case 'RWO':
+      return VolumeType.RWO
     case 3:
     case 'RWX':
       return VolumeType.RWX
@@ -339,8 +339,8 @@ export function volumeTypeToJSON(object: VolumeType): string {
       return 'VOLUME_TYPE_UNSPECIFIED'
     case VolumeType.RO:
       return 'RO'
-    case VolumeType.RW:
-      return 'RW'
+    case VolumeType.RWO:
+      return 'RWO'
     case VolumeType.RWX:
       return 'RWX'
     case VolumeType.MEM:

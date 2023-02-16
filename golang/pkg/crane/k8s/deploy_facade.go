@@ -58,10 +58,9 @@ func NewDeployFacade(params *DeployFacadeParams, cfg *config.Configuration) *Dep
 		service:        NewService(params.Ctx, k8sClient),
 		ingress:        newIngress(params.Ctx, k8sClient),
 		secret:         NewSecret(params.Ctx, k8sClient),
+		pvc:            NewPVC(params.Ctx, k8sClient),
 		ServiceMonitor: NewServiceMonitor(params.Ctx, k8sClient),
 		appConfig:      cfg,
-
-		pvc: NewPVC(params.Ctx, k8sClient),
 	}
 }
 

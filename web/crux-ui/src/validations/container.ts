@@ -113,7 +113,7 @@ const logDriverRule = yup
 const volumeTypeRule = yup
   .mixed<VolumeType>()
   .oneOf([...CONTAINER_VOLUME_TYPE_VALUES])
-  .default('rw')
+  .default('rwo')
   .required()
 
 const configContainerRule = yup

@@ -20,7 +20,7 @@
     "path": "Path",
     "class": "Class (k8s)",
     "type": "Type",
-    "volumeTypes": { "ro": "Ro", "rw": "Rw", "rwx": "Rwx", "mem": "Mem", "tmp": "Tmp" },
+    "volumeTypes": { "ro": "ReadOnly", "rwo": "ReadWriteOnce", "rwx": "ReadWriteMany", "mem": "Memory", "tmp": "Tmp" },
     "files": "Files",
     "commands": "Commands",
     "arguments": "Arguments",

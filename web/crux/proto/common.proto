@@ -107,7 +107,7 @@ enum DeploymentStrategy {
 enum VolumeType {
   VOLUME_TYPE_UNSPECIFIED = 0;
   RO = 1;
-  RW = 2;
+  RWO = 2;
   RWX = 3;
   MEM = 4;
   TMP = 5;

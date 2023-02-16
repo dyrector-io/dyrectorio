@@ -93,7 +93,7 @@ export type ContainerDeploymentStrategyType = typeof CONTAINER_DEPLOYMENT_STRATE
 export const CONTAINER_EXPOSE_STRATEGY_VALUES = ['none', 'expose', 'exposeWithTls'] as const
 export type ContainerConfigExposeStrategy = typeof CONTAINER_EXPOSE_STRATEGY_VALUES[number]
 
-export const CONTAINER_VOLUME_TYPE_VALUES = ['ro', 'rw', 'rwx', 'mem', 'tmp'] as const
+export const CONTAINER_VOLUME_TYPE_VALUES = ['ro', 'rwo', 'rwx', 'mem', 'tmp'] as const
 export type VolumeType = typeof CONTAINER_VOLUME_TYPE_VALUES[number]
 
 export type ContainerConfigIngress = {
