@@ -15,7 +15,6 @@ import {
   DagentConfigDetails,
   InstanceDagentConfigDetails,
 } from '@app/models/container'
-import { nullify } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 
 type DagentConfigSectionBaseProps<T> = {
@@ -129,7 +128,7 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
                 choices={CONTAINER_LOG_DRIVER_VALUES}
                 selection={config.logConfig?.driver ?? 'none'}
                 converter={(it: ContainerLogDriverType) => t(`dagent.logDrivers.${it}`)}
-                onSelectionChange={it => onChange({ logConfig: nullify({ ...config.logConfig, driver: it }) })}
+                onSelectionChange={it => onChange({ logConfig: { ...config.logConfig, driver: it } })}
                 disabled={disabled}
               />
 
@@ -137,7 +136,7 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
                 className="max-h-128 overflow-y-auto"
                 label={t('dagent.options')}
                 items={config.logConfig?.options ?? []}
-                onChange={it => onChange({ logConfig: nullify({ ...config.logConfig, options: it }) })}
+                onChange={it => onChange({ logConfig: { ...config.logConfig, options: it } })}
                 editorOptions={editorOptions}
                 disabled={disabled}
               />

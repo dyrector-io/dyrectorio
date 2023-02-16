@@ -18,7 +18,7 @@ import {
   InstanceCommonConfigDetails,
   VolumeType,
 } from '@app/models/container'
-import { nullify, toNumber } from '@app/utils'
+import { toNumber } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import { v4 as uuid } from 'uuid'
 import { ValidationError } from 'yup'
@@ -156,7 +156,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   grow
                   inline
                   value={config.configContainer?.image ?? ''}
-                  onPatch={it => onChange({ configContainer: nullify({ ...config.configContainer, image: it }) })}
+                  onPatch={it => onChange({ configContainer: { ...config.configContainer, image: it } })}
                   editorOptions={editorOptions}
                   message={fieldErrors.find(it => it.path?.startsWith('configContainer.image'))?.message}
                   disabled={disabled}
@@ -170,7 +170,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   grow
                   inline
                   value={config.configContainer?.volume ?? ''}
-                  onPatch={it => onChange({ configContainer: nullify({ ...config.configContainer, volume: it }) })}
+                  onPatch={it => onChange({ configContainer: { ...config.configContainer, volume: it } })}
                   editorOptions={editorOptions}
                   message={fieldErrors.find(it => it.path?.startsWith('configContainer.volume'))?.message}
                   disabled={disabled}
@@ -184,7 +184,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   grow
                   inline
                   value={config.configContainer?.path ?? ''}
-                  onPatch={it => onChange({ configContainer: nullify({ ...config.configContainer, path: it }) })}
+                  onPatch={it => onChange({ configContainer: { ...config.configContainer, path: it } })}
                   editorOptions={editorOptions}
                   message={fieldErrors.find(it => it.path?.startsWith('configContainer.path'))?.message}
                   disabled={disabled}
@@ -196,9 +196,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   <DyoSwitch
                     fieldName="configContainer.keepFiles"
                     checked={config.configContainer?.keepFiles}
-                    onCheckedChange={it =>
-                      onChange({ configContainer: nullify({ ...config.configContainer, keepFiles: it }) })
-                    }
+                    onCheckedChange={it => onChange({ configContainer: { ...config.configContainer, keepFiles: it } })}
                     disabled={disabled}
                   />
                 </div>
@@ -223,7 +221,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   inline
                   value={config.ingress?.name ?? ''}
                   placeholder={t('common.placeholders.ingressName')}
-                  onPatch={it => onChange({ ingress: nullify({ ...config.ingress, name: it }) })}
+                  onPatch={it => onChange({ ingress: { ...config.ingress, name: it } })}
                   editorOptions={editorOptions}
                   message={fieldErrors.find(it => it.path?.startsWith('ingress.name'))?.message}
                   disabled={disabled}
@@ -238,7 +236,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   inline
                   value={config.ingress?.host ?? ''}
                   placeholder={t('common.placeholders.ingressHost')}
-                  onPatch={it => onChange({ ingress: nullify({ ...config.ingress, host: it }) })}
+                  onPatch={it => onChange({ ingress: { ...config.ingress, host: it } })}
                   editorOptions={editorOptions}
                   message={fieldErrors.find(it => it.path?.startsWith('ingress.host'))?.message}
                   disabled={disabled}
@@ -253,7 +251,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   inline
                   value={config.ingress?.uploadLimit ?? ''}
                   placeholder={t('common.placeholders.ingressUploadLimit')}
-                  onPatch={it => onChange({ ingress: nullify({ ...config.ingress, uploadLimitInBytes: it }) })}
+                  onPatch={it => onChange({ ingress: { ...config.ingress, uploadLimit: it } })}
                   editorOptions={editorOptions}
                   disabled={disabled}
                 />
@@ -357,7 +355,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   inline
                   value={config.importContainer?.volume ?? ''}
                   placeholder={t('common.volume')}
-                  onPatch={it => onChange({ importContainer: nullify({ ...config.importContainer, volume: it }) })}
+                  onPatch={it => onChange({ importContainer: { ...config.importContainer, volume: it } })}
                   editorOptions={editorOptions}
                   message={fieldErrors.find(it => it.path?.startsWith('importContainer.volume'))?.message}
                   disabled={disabled}
@@ -373,7 +371,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   inline
                   value={config.importContainer?.command ?? ''}
                   placeholder={t('common.command')}
-                  onPatch={it => onChange({ importContainer: nullify({ ...config.importContainer, command: it }) })}
+                  onPatch={it => onChange({ importContainer: { ...config.importContainer, command: it } })}
                   editorOptions={editorOptions}
                   disabled={disabled}
                 />
@@ -382,9 +380,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   <KeyValueInput
                     className="max-h-128 overflow-y-auto"
                     label={t('common.environment')}
-                    onChange={it =>
-                      onChange({ importContainer: nullify({ ...config.importContainer, environment: it }) })
-                    }
+                    onChange={it => onChange({ importContainer: { ...config.importContainer, environment: it } })}
                     items={config.importContainer?.environment}
                     editorOptions={editorOptions}
                     disabled={disabled}

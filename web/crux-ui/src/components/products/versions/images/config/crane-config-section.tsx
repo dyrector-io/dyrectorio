@@ -82,7 +82,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 placeholder={t('common.placeholders.port')}
                 onPatch={it =>
                   onChange({
-                    healthCheckConfig: nullify({ ...config.healthCheckConfig, port: toNumber(it) }),
+                    healthCheckConfig: { ...config.healthCheckConfig, port: toNumber(it) },
                   })
                 }
                 editorOptions={editorOptions}
@@ -101,7 +101,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 placeholder={t('common.placeholders.path')}
                 onPatch={it =>
                   onChange({
-                    healthCheckConfig: nullify({ ...config.healthCheckConfig, livenessProbe: it }),
+                    healthCheckConfig: { ...config.healthCheckConfig, livenessProbe: it },
                   })
                 }
                 editorOptions={editorOptions}
@@ -120,7 +120,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 placeholder={t('common.placeholders.path')}
                 onPatch={it =>
                   onChange({
-                    healthCheckConfig: nullify({ ...config.healthCheckConfig, readinessProbe: it }),
+                    healthCheckConfig: { ...config.healthCheckConfig, readinessProbe: it },
                   })
                 }
                 editorOptions={editorOptions}
@@ -139,7 +139,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 placeholder={t('common.placeholders.path')}
                 onPatch={it =>
                   onChange({
-                    healthCheckConfig: nullify({ ...config.healthCheckConfig, startupProbe: it }),
+                    healthCheckConfig: { ...config.healthCheckConfig, startupProbe: it },
                   })
                 }
                 editorOptions={editorOptions}
@@ -187,10 +187,10 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 placeholder={t('crane.placeholders.cpuUsageExample')}
                 onPatch={it =>
                   onChange({
-                    resourceConfig: nullify({
+                    resourceConfig: {
                       ...config.resourceConfig,
                       limits: nullify({ ...config.resourceConfig?.limits, cpu: it }),
-                    }),
+                    },
                   })
                 }
                 editorOptions={editorOptions}
@@ -209,10 +209,10 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 placeholder={t('crane.placeholders.memoryUsageExample')}
                 onPatch={it =>
                   onChange({
-                    resourceConfig: nullify({
+                    resourceConfig: {
                       ...config.resourceConfig,
                       limits: nullify({ ...config.resourceConfig?.limits, memory: it }),
-                    }),
+                    },
                   })
                 }
                 editorOptions={editorOptions}
@@ -233,10 +233,10 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 placeholder={t('crane.placeholders.cpuUsageExample')}
                 onPatch={it =>
                   onChange({
-                    resourceConfig: nullify({
+                    resourceConfig: {
                       ...config.resourceConfig,
                       requests: nullify({ ...config.resourceConfig?.requests, cpu: it }),
-                    }),
+                    },
                   })
                 }
                 editorOptions={editorOptions}
@@ -255,10 +255,10 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 placeholder={t('crane.placeholders.memoryUsageExample')}
                 onPatch={it =>
                   onChange({
-                    resourceConfig: nullify({
+                    resourceConfig: {
                       ...config.resourceConfig,
                       requests: nullify({ ...config.resourceConfig?.requests, memory: it }),
-                    }),
+                    },
                   })
                 }
                 editorOptions={editorOptions}
@@ -323,7 +323,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 className="max-h-128 overflow-y-auto"
                 labelClassName="text-bright font-semibold tracking-wide mb-2"
                 label={t('crane.deploymentLabels').toUpperCase()}
-                onChange={it => onChange({ labels: nullify({ ...config.labels, deployment: it }) })}
+                onChange={it => onChange({ labels: { ...config.labels, deployment: it } })}
                 items={config.labels?.deployment ?? []}
                 editorOptions={editorOptions}
                 disabled={disabled}
@@ -335,7 +335,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 className="max-h-128 overflow-y-auto"
                 labelClassName="text-bright font-semibold tracking-wide mb-2"
                 label={t('crane.serviceLabels').toUpperCase()}
-                onChange={it => onChange({ labels: nullify({ ...config.labels, service: it }) })}
+                onChange={it => onChange({ labels: { ...config.labels, service: it } })}
                 items={config.labels?.service ?? []}
                 editorOptions={editorOptions}
                 disabled={disabled}
@@ -347,7 +347,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 className="max-h-128 overflow-y-auto"
                 labelClassName="text-bright font-semibold tracking-wide mb-2"
                 label={t('crane.ingressLabels').toUpperCase()}
-                onChange={it => onChange({ labels: nullify({ ...config.labels, ingress: it }) })}
+                onChange={it => onChange({ labels: { ...config.labels, ingress: it } })}
                 items={config.labels?.ingress ?? []}
                 editorOptions={editorOptions}
                 disabled={disabled}
@@ -364,7 +364,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 className="max-h-128 overflow-y-auto"
                 labelClassName="text-bright font-semibold tracking-wide mb-2"
                 label={t('crane.deploymentAnnotations').toUpperCase()}
-                onChange={it => onChange({ annotations: nullify({ ...config.annotations, deployment: it }) })}
+                onChange={it => onChange({ annotations: { ...config.annotations, deployment: it } })}
                 items={config.annotations?.deployment ?? []}
                 editorOptions={editorOptions}
                 disabled={disabled}
@@ -376,7 +376,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 className="max-h-128 overflow-y-auto"
                 labelClassName="text-bright font-semibold tracking-wide mb-2"
                 label={t('crane.serviceAnnotations').toUpperCase()}
-                onChange={it => onChange({ annotations: nullify({ ...config.annotations, service: it }) })}
+                onChange={it => onChange({ annotations: { ...config.annotations, service: it } })}
                 items={config.annotations?.service ?? []}
                 editorOptions={editorOptions}
                 disabled={disabled}
@@ -388,7 +388,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
                 className="max-h-128 overflow-y-auto"
                 labelClassName="text-bright font-semibold tracking-wide mb-2"
                 label={t('crane.ingressAnnotations').toUpperCase()}
-                onChange={it => onChange({ annotations: nullify({ ...config.annotations, ingress: it }) })}
+                onChange={it => onChange({ annotations: { ...config.annotations, ingress: it } })}
                 items={config.annotations?.ingress ?? []}
                 editorOptions={editorOptions}
                 disabled={disabled}
