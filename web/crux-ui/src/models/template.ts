@@ -7,6 +7,6 @@ export type Template = {
   technologies: Array<string>
 }
 
-export type ApplyTemplate = Template & {
+export type ApplyTemplate = Omit<Template, 'technologies'> & {
   type: ProductType
 }

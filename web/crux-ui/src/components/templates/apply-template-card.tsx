@@ -35,7 +35,6 @@ const ApplyTemplateCard = (props: ApplyTemplateCardProps) => {
     initialValues: {
       name: propsTemplate.name,
       description: propsTemplate.description,
-      technologies: propsTemplate.technologies,
       type: 'simple' as ProductType,
     },
     validationSchema: applyTemplateSchema,
