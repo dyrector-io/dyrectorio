@@ -93,10 +93,6 @@
           {
             "external": 3000,
             "internal": 3000
-          },
-          {
-            "external": 2222,
-            "internal": 22
           }
         ],
         "environment": [
