@@ -8,12 +8,11 @@
   </a>
 </p>
 
-<p align="center">dyrector.io is a self-hosted container management Platform.
+<div align="center">dyrector.io is a self-hosted container management platform.
 
-<br>
-<img src="docs/dyrectorio-readme-demo.gif" alt="dyrector.io demo GIF"/>
+<p>
+Imagine that Heroku meets Portainer and then gets combined with fly.io – that’s dyrector.io. It enables teams to build up their software delivery pipeline like building blocks.
 </p>
-<br>
 
 <p align="center">
   <a href="https://github.com/dyrector-io/dyrectorio/tags" target="_blank"><img src="https://img.shields.io/github/v/tag/dyrector-io/dyrectorio" alt="GitHub tag (latest by date)"/></a>
@@ -24,6 +23,9 @@
     <a href="https://github.com/dyrector-io/dyrectorio/issues" target="_blank"><img src="https://img.shields.io/github/issues-raw/dyrector-io/dyrectorio" alt="GitHub issues"/></a>
     <a href="https://twitter.com/dyrectorio" target="_blank"><img src="https://img.shields.io/twitter/follow/dyrectorio?style=social" alt="Twitter Follow"/></a>
 </p>
+</div>
+
+https://user-images.githubusercontent.com/9247788/219671903-41da385e-4f8f-4fba-a7e4-c6ec4f727b7f.mp4
 
 ## Overview
 
@@ -38,7 +40,6 @@ Our product is a platform for:
 
 > **Warning**
 > dyrector.io platform is under development, please treat as such. Expect bugs here and there. Early adopters welcome.
-
 
 Join our Discord and connect with other members to share and learn together. If you like the project, give us a Star.
 
@@ -91,12 +92,13 @@ Seamless testing whenever your team wants to test the application, without waiti
 Our CLI tool lets you run and manage the whole dyrector.io project's containers, you will have a fully-featured platform locally.
 
 Stack:
-- UI Service (crux-ui)
-- Backend Service (crux)
-- PostgreSQL database
-- Authentication (Ory Kratos)
-- Migrations
-- SMTP mail test server
+
+-   UI Service (crux-ui)
+-   Backend Service (crux)
+-   PostgreSQL database
+-   Authentication (Ory Kratos)
+-   Migrations
+-   SMTP mail test server
 
 ### Prerequirements
 
