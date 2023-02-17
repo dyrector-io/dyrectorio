@@ -39,10 +39,10 @@ export const instanceContainerConfigToDto = (
 
   return {
     ...config,
-    tty: instanceConfig.common?.TTY,
-    proxyHeaders: instanceConfig.crane?.proxyHeaders,
-    useLoadBalancer: instanceConfig.crane?.useLoadBalancer,
-    secrets: instanceConfig.secrets?.data,
+    tty: instanceConfig.common?.TTY ?? null,
+    proxyHeaders: instanceConfig.crane?.proxyHeaders ?? null,
+    useLoadBalancer: instanceConfig.crane?.useLoadBalancer ?? null,
+    secrets: instanceConfig.secrets?.data ?? null,
   }
 }
 

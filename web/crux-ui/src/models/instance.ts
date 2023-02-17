@@ -1,5 +1,5 @@
 import { ContainerState, InstanceContainerConfigData } from './container'
-import { VersionImage } from './image'
+import { ImageConfigFilterType, VersionImage } from './image'
 
 export type InstanceStatus = {
   instanceId: string
@@ -16,5 +16,6 @@ export type Instance = {
 
 export type PatchInstance = {
   instanceId: string
-  config: Partial<InstanceContainerConfigData>
+  config?: Partial<InstanceContainerConfigData>
+  resetSection?: ImageConfigFilterType
 }

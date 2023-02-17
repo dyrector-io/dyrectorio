@@ -39,7 +39,9 @@ import {
 import { timestampToUTC } from '@app/utils'
 import { registryTypeProtoToDto } from './registry-mappers'
 
-export const objectHasProperties = (object: any): boolean => Object.values(object).some(it => !!it)
+export const objectHasProperties = (object: any): boolean =>
+  // booleans and numbers need this type of null check
+  Object.values(object).some(it => it !== null && it !== undefined)
 
 export const networkModeToDto = (networkMode?: NetworkMode): ContainerNetworkMode =>
   !networkMode ? null : (networkModeToJSON(networkMode).toLowerCase() as ContainerNetworkMode)
@@ -222,7 +224,7 @@ export const containerConfigToProto = (config: Partial<ContainerConfigData>): Pr
 
   const common: CommonContainerConfig = {
     user: config.user ?? null,
-    TTY: config.tty ?? null,
+    TTY: config.tty,
     ports: config.ports ? { data: config.ports } : null,
     portRanges: config.portRanges ? { data: config.portRanges } : null,
     volumes: config.volumes ? { data: volumesToProto(config.volumes) } : null,
@@ -250,8 +252,8 @@ export const containerConfigToProto = (config: Partial<ContainerConfigData>): Pr
     healthCheckConfig: config.healthCheckConfig ?? null,
     resourceConfig: config.resourceConfig ?? null,
     customHeaders: config.customHeaders ? { data: config.customHeaders } : null,
-    proxyHeaders: config.proxyHeaders ?? null,
-    useLoadBalancer: config.useLoadBalancer ?? null,
+    proxyHeaders: config.proxyHeaders,
+    useLoadBalancer: config.useLoadBalancer,
     extraLBAnnotations: config.extraLBAnnotations ? { data: config.extraLBAnnotations } : null,
     annotations: config.annotations
       ? {

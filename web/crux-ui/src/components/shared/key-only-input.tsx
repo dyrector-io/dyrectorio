@@ -1,4 +1,3 @@
-import { DyoLabel } from '@app/elements/dyo-label'
 import useRepatch from '@app/hooks/use-repatch'
 import { UniqueKey } from '@app/models'
 import clsx from 'clsx'
@@ -7,6 +6,7 @@ import { useEffect } from 'react'
 import { v4 as uuid } from 'uuid'
 import MultiInput from '../editor/multi-input'
 import { ItemEditorState } from '../editor/use-item-editor-state'
+import ConfigSectionLabel from '../products/versions/images/config/config-section-label'
 
 const EMPTY_KEY = {
   id: uuid(),
@@ -67,6 +67,7 @@ interface KeyInputProps {
   unique?: boolean
   editorOptions: ItemEditorState
   onChange: (items: UniqueKey[]) => void
+  onResetSection?: VoidFunction
 }
 
 const KeyOnlyInput = (props: KeyInputProps) => {
@@ -83,6 +84,7 @@ const KeyOnlyInput = (props: KeyInputProps) => {
     unique,
     keyPlaceholder,
     onChange: propsOnChange,
+    onResetSection: propsOnResetSection,
   } = props
 
   const [state, dispatch] = useRepatch(items ?? [])
@@ -118,6 +120,12 @@ const KeyOnlyInput = (props: KeyInputProps) => {
     dispatch(setItems(newItems))
   }
 
+  const onResetSection = () => {
+    dispatch(mergeItems(items))
+
+    propsOnResetSection()
+  }
+
   const elements = stateToElements(state)
 
   const renderItem = (entry: KeyElement, index: number) => {
@@ -143,10 +151,18 @@ const KeyOnlyInput = (props: KeyInputProps) => {
     )
   }
 
+  const hasValue = !!items && items.length > 0
+
   return (
     <div className={clsx(className, 'flex flex-col')}>
       {!label ? null : (
-        <DyoLabel className={clsx(labelClassName ?? 'text-bright mb-2 whitespace-nowrap')}>{label}</DyoLabel>
+        <ConfigSectionLabel
+          disabled={disabled || !propsOnResetSection || !hasValue}
+          onResetSection={onResetSection}
+          labelClassName={labelClassName}
+        >
+          {label}
+        </ConfigSectionLabel>
       )}
 
       {!description ? null : <div className="text-light-eased mb-2 ml-1">{description}</div>}

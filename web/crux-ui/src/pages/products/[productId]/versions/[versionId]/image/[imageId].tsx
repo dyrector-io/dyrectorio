@@ -107,6 +107,22 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
     })
   }
 
+  const onResetSection = (section: ImageConfigFilterType) => {
+    const newConfig = { ...config } as any
+    newConfig[section] = null
+
+    setConfig(newConfig)
+
+    const errors = getContainerConfigFieldErrors(newConfig)
+    setFieldErrors(errors)
+    setJsonError(jsonErrorOf(errors))
+
+    versionSock.send(WS_TYPE_PATCH_IMAGE, {
+      id: image.id,
+      resetSection: section,
+    } as PatchImageMessage)
+  }
+
   versionSock.on(WS_TYPE_IMAGE_UPDATED, (message: ImageUpdateMessage) => {
     if (message.id !== image.id) {
       return
@@ -194,6 +210,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
 
           {getViewStateButtons()}
         </div>
+
         {viewState === 'editor' && <ImageConfigFilters onChange={setFilters} initialBaseFilter="all" />}
       </DyoCard>
 
@@ -204,6 +221,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
             disabled={!version.mutable}
             config={config}
             onChange={onChange}
+            onResetSection={onResetSection}
             editorOptions={editorState}
             fieldErrors={fieldErrors}
             configType="image"
@@ -214,6 +232,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
             disabled={!version.mutable}
             config={config}
             onChange={onChange}
+            onResetSection={onResetSection}
             editorOptions={editorState}
             configType="image"
           />
@@ -223,6 +242,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
             disabled={!version.mutable}
             config={config}
             onChange={onChange}
+            onResetSection={onResetSection}
             editorOptions={editorState}
             configType="image"
           />

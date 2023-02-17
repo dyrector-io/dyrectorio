@@ -339,12 +339,27 @@ export default class AgentService {
     )
   }
 
-  private onAgentConnectionStatusChange(agent: Agent, status: NodeConnectionStatus) {
+  private async onAgentConnectionStatusChange(agent: Agent, status: NodeConnectionStatus) {
     if (status === NodeConnectionStatus.UNREACHABLE) {
       this.logger.log(`Left: ${agent.id}`)
       this.agents.delete(agent.id)
       this.agentCount.dec()
-      agent.onDisconnected()
+
+      const deployments = agent.onDisconnected()
+      const inProgressDeploymentIds = deployments
+        .filter(it => it.getStatus() === DeploymentStatus.IN_PROGRESS)
+        .map(it => it.id)
+
+      await this.prisma.deployment.updateMany({
+        where: {
+          id: {
+            in: inProgressDeploymentIds,
+          },
+        },
+        data: {
+          status: DeploymentStatusEnum.failed,
+        },
+      })
     } else if (status === NodeConnectionStatus.CONNECTED) {
       this.agentCount.inc()
       agent.onConnected()

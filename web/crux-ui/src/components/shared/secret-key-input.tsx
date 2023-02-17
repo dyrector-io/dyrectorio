@@ -1,4 +1,3 @@
-import { DyoLabel } from '@app/elements/dyo-label'
 import DyoToggle from '@app/elements/dyo-toggle'
 import useRepatch from '@app/hooks/use-repatch'
 import { UniqueSecretKey } from '@app/models'
@@ -8,6 +7,7 @@ import { useEffect } from 'react'
 import { v4 as uuid } from 'uuid'
 import MultiInput from '../editor/multi-input'
 import { ItemEditorState } from '../editor/use-item-editor-state'
+import ConfigSectionLabel from '../products/versions/images/config/config-section-label'
 
 const EMPTY_KEY = {
   id: uuid(),
@@ -68,6 +68,7 @@ interface SecretKeyInputProps {
   keyPlaceholder?: string
   editorOptions: ItemEditorState
   onChange: (items: UniqueSecretKey[]) => void
+  onResetSection?: VoidFunction
 }
 
 const SecretKeyInput = (props: SecretKeyInputProps) => {
@@ -83,6 +84,7 @@ const SecretKeyInput = (props: SecretKeyInputProps) => {
     editorOptions,
     keyPlaceholder,
     onChange: propsOnChange,
+    onResetSection: propsOnResetSection,
   } = props
 
   const [state, dispatch] = useRepatch(items ?? [])
@@ -122,6 +124,12 @@ const SecretKeyInput = (props: SecretKeyInputProps) => {
       propsOnChange(updatedItems)
     }
     dispatch(setItems(newItems))
+  }
+
+  const onResetSection = () => {
+    dispatch(mergeItems([]))
+
+    propsOnResetSection()
   }
 
   const elements = stateToElements(state)
@@ -165,12 +173,18 @@ const SecretKeyInput = (props: SecretKeyInputProps) => {
     )
   }
 
+  const hasValue = items && items.length > 0
+
   return (
     <div className={clsx(className, 'flex flex-col')}>
       {!label ? null : (
-        <DyoLabel className={clsx(labelClassName ?? 'text-bright mb-2 whitespace-nowrap text-light-eased')}>
+        <ConfigSectionLabel
+          disabled={disabled || !propsOnResetSection || !hasValue}
+          onResetSection={onResetSection}
+          labelClassName={labelClassName}
+        >
           {label}
-        </DyoLabel>
+        </ConfigSectionLabel>
       )}
 
       {!description ? null : <div className="text-light-eased mb-2 ml-1">{description}</div>}

@@ -200,6 +200,7 @@ class DyoDeploymentService {
             id: dto.instance.instanceId,
             accessedBy: this.identity.id,
             config: instanceContainerConfigToProto(dto.instance.config),
+            resetSection: dto.instance?.resetSection,
           },
     }
 

@@ -8,20 +8,29 @@ import DyoChips from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoSwitch from '@app/elements/dyo-switch'
-import { COMMON_CONFIG_PROPERTIES, filterContains, filterEmpty, ImageConfigFilterType } from '@app/models'
+import {
+  CommonConfigFilterType,
+  COMMON_CONFIG_PROPERTIES,
+  filterContains,
+  filterEmpty,
+  ImageConfigFilterType,
+} from '@app/models'
 import {
   CommonConfigDetails,
+  ContainerConfigData,
   ContainerConfigExposeStrategy,
   CONTAINER_EXPOSE_STRATEGY_VALUES,
   CONTAINER_VOLUME_TYPE_VALUES,
   InitContainerVolumeLink,
   InstanceCommonConfigDetails,
+  mergeConfigs,
   VolumeType,
 } from '@app/models/container'
 import { toNumber } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import { v4 as uuid } from 'uuid'
 import { ValidationError } from 'yup'
+import ConfigSectionLabel from './config-section-label'
 import ExtendableItemList from './extendable-item-list'
 
 type CommonConfigSectionBaseProps<T> = {
@@ -30,6 +39,7 @@ type CommonConfigSectionBaseProps<T> = {
   editorOptions: ItemEditorState
   config: T
   onChange: (config: Partial<T>) => void
+  onResetSection: (section: CommonConfigFilterType) => void
   fieldErrors: ValidationError[]
   definedSecrets?: string[]
   publicKey?: string
@@ -41,6 +51,7 @@ type ImageCommonConfigSectionProps = CommonConfigSectionBaseProps<CommonConfigDe
 
 type InstanceCommonConfigSectionProps = CommonConfigSectionBaseProps<InstanceCommonConfigDetails> & {
   configType: 'instance'
+  imageConfig: ContainerConfigData
 }
 
 type CommonConfigSectionProps = ImageCommonConfigSectionProps | InstanceCommonConfigSectionProps
@@ -49,15 +60,22 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
   const { t } = useTranslation('container')
   const {
     disabled,
-    config,
     onChange,
+    onResetSection,
     selectedFilters,
     editorOptions,
     fieldErrors,
     configType,
     definedSecrets,
     publicKey,
+    config: propsConfig,
   } = props
+
+  const disabledOnImage = configType === 'image' || disabled
+  // eslint-disable-next-line react/destructuring-assignment
+  const imageConfig = configType === 'instance' ? props.imageConfig : null
+  const resetableConfig = propsConfig
+  const config = configType === 'instance' ? mergeConfigs(imageConfig, propsConfig) : propsConfig
 
   return !filterEmpty([...COMMON_CONFIG_PROPERTIES], selectedFilters) ? null : (
     <div className="my-4">
@@ -70,48 +88,67 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
           {/* name */}
           {filterContains('name', selectedFilters) && (
             <div className="grid break-inside-avoid mb-4">
-              <MultiInput
-                id="common.containerName"
-                label={t('common.containerName').toUpperCase()}
-                containerClassName="max-w-lg mb-3"
-                labelClassName="text-bright font-semibold tracking-wide mb-2 my-auto mr-4"
-                grow
-                inline
-                value={config.name ?? ''}
-                placeholder={t('common.containerName')}
-                onPatch={it => onChange({ name: it })}
-                editorOptions={editorOptions}
-                message={fieldErrors.find(it => it.path?.startsWith('name'))?.message}
-                disabled={disabled}
-              />
+              <div className="flex flex-row gap-4 items-center">
+                <ConfigSectionLabel
+                  disabled={disabledOnImage || config.name === imageConfig?.name}
+                  onResetSection={() => onResetSection('name')}
+                >
+                  {t('common.containerName').toUpperCase()}
+                </ConfigSectionLabel>
+
+                <MultiInput
+                  id="common.containerName"
+                  containerClassName="max-w-lg mb-3"
+                  labelClassName="text-bright font-semibold tracking-wide mb-2 my-auto mr-4"
+                  grow
+                  value={config.name ?? ''}
+                  placeholder={t('common.containerName')}
+                  onPatch={it => onChange({ name: it })}
+                  editorOptions={editorOptions}
+                  message={fieldErrors.find(it => it.path?.startsWith('name'))?.message}
+                  disabled={disabled}
+                />
+              </div>
             </div>
           )}
 
           {/* user */}
           {filterContains('user', selectedFilters) && (
             <div className="grid break-inside-avoid mb-8">
-              <MultiInput
-                id="common.user"
-                label={t('common.user').toUpperCase()}
-                containerClassName="max-w-lg mb-3"
-                labelClassName="text-bright font-semibold tracking-wide mb-2 my-auto mr-4"
-                grow
-                inline
-                value={config.user ?? ''}
-                placeholder={t('common.placeholders.userIdNumber')}
-                onPatch={it => onChange({ user: toNumber(it) })}
-                editorOptions={editorOptions}
-                disabled={disabled}
-              />
+              <div className="flex flex-row gap-4 items-start">
+                <ConfigSectionLabel
+                  className="mt-2.5"
+                  disabled={disabled || !config.user}
+                  onResetSection={() => onResetSection('user')}
+                >
+                  {t('common.user').toUpperCase()}
+                </ConfigSectionLabel>
+
+                <MultiInput
+                  id="common.user"
+                  containerClassName="max-w-lg mb-3"
+                  labelClassName="text-bright font-semibold tracking-wide mb-2 my-auto mr-4"
+                  grow
+                  value={config.user ?? ''}
+                  placeholder={t('common.placeholders.userIdNumber')}
+                  onPatch={it => onChange({ user: toNumber(it) })}
+                  editorOptions={editorOptions}
+                  message={fieldErrors.find(it => it.path?.startsWith('user'))?.message}
+                  disabled={disabled}
+                />
+              </div>
             </div>
           )}
 
           {/* expose */}
           {filterContains('expose', selectedFilters) && (
             <div className="grid break-inside-avoid mb-8">
-              <DyoLabel className="text-bright font-semibold tracking-wide mb-2">
+              <ConfigSectionLabel
+                disabled={disabledOnImage || !resetableConfig?.expose}
+                onResetSection={() => onResetSection('expose')}
+              >
                 {t('common.exposeStrategy').toUpperCase()}
-              </DyoLabel>
+              </ConfigSectionLabel>
 
               <DyoChips
                 className="ml-2"
@@ -127,11 +164,15 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
           {/* tty */}
           {filterContains('tty', selectedFilters) && (
             <div className="flex flex-row break-inside-avoid mb-8">
-              <DyoLabel className="text-bright font-semibold tracking-wide mb-2 mr-2">
+              <ConfigSectionLabel
+                disabled={disabledOnImage || resetableConfig.tty === null}
+                onResetSection={() => onResetSection('tty')}
+              >
                 {t('common.tty').toUpperCase()}
-              </DyoLabel>
+              </ConfigSectionLabel>
 
               <DyoSwitch
+                className="ml-2"
                 fieldName="tty"
                 checked={config.tty}
                 disabled={disabled}
@@ -143,9 +184,12 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
           {/* configContainer */}
           {filterContains('configContainer', selectedFilters) && (
             <div className="grid break-inside-avoid mb-8">
-              <DyoLabel className="text-bright font-semibold tracking-wide mb-2">
+              <ConfigSectionLabel
+                disabled={disabled || !resetableConfig.configContainer}
+                onResetSection={() => onResetSection('configContainer')}
+              >
                 {t('common.configContainer').toUpperCase()}
-              </DyoLabel>
+              </ConfigSectionLabel>
 
               <div className="ml-2">
                 <MultiInput
@@ -207,9 +251,12 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
           {/* ingress */}
           {filterContains('ingress', selectedFilters) && (
             <div className="grid break-inside-avoid mb-8">
-              <DyoLabel className="text-bright font-semibold tracking-wide mb-2">
+              <ConfigSectionLabel
+                disabled={disabled || !resetableConfig.ingress}
+                onResetSection={() => onResetSection('ingress')}
+              >
                 {t('common.ingress').toUpperCase()}
-              </DyoLabel>
+              </ConfigSectionLabel>
 
               <div className="ml-2">
                 <MultiInput
@@ -267,6 +314,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 labelClassName="text-bright font-semibold tracking-wide mb-2"
                 label={t('common.environment').toUpperCase()}
                 onChange={it => onChange({ environment: it })}
+                onResetSection={resetableConfig.environment ? () => onResetSection('environment') : null}
                 items={config.environment}
                 editorOptions={editorOptions}
                 disabled={disabled}
@@ -284,7 +332,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   labelClassName="text-bright font-semibold tracking-wide mb-2"
                   label={t('common.secrets').toUpperCase()}
                   onSubmit={it => onChange({ secrets: it })}
-                  items={config.secrets}
+                  items={propsConfig.secrets}
                   editorOptions={editorOptions}
                   definedSecrets={definedSecrets}
                   publicKey={publicKey}
@@ -296,7 +344,8 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                   keyPlaceholder={t('common.secrets').toUpperCase()}
                   labelClassName="text-bright font-semibold tracking-wide mb-2"
                   label={t('common.secrets').toUpperCase()}
-                  onChange={it => onChange({ secrets: it.map(sit => ({ ...sit, value: '', publicKey: '' })) })}
+                  onChange={it => onChange({ secrets: it.map(sit => ({ ...sit })) })}
+                  onResetSection={resetableConfig.secrets ? () => onResetSection('secrets') : null}
                   items={config.secrets}
                   editorOptions={editorOptions}
                   disabled={disabled}
@@ -314,6 +363,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 label={t('common.arguments').toUpperCase()}
                 labelClassName="text-bright font-semibold tracking-wide mb-2"
                 onChange={it => onChange({ args: it })}
+                onResetSection={resetableConfig.args ? () => onResetSection('args') : null}
                 items={config.args}
                 editorOptions={editorOptions}
                 disabled={disabled}
@@ -330,6 +380,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 label={t('common.commands').toUpperCase()}
                 labelClassName="text-bright font-semibold tracking-wide mb-2"
                 onChange={it => onChange({ commands: it })}
+                onResetSection={resetableConfig.commands ? () => onResetSection('commands') : null}
                 items={config.commands}
                 editorOptions={editorOptions}
                 disabled={disabled}
@@ -340,9 +391,12 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
           {/* importContainer */}
           {filterContains('importContainer', selectedFilters) && (
             <div className="grid mb-8 break-inside-avoid">
-              <DyoLabel className="text-bright font-semibold tracking-wide mb-2">
+              <ConfigSectionLabel
+                disabled={disabled || !resetableConfig.importContainer}
+                onResetSection={() => onResetSection('importContainer')}
+              >
                 {t('common.importContainer').toUpperCase()}
-              </DyoLabel>
+              </ConfigSectionLabel>
 
               <div className="ml-2">
                 <MultiInput
@@ -379,6 +433,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
                 <div className="flex flex-col">
                   <KeyValueInput
                     className="max-h-128 overflow-y-auto"
+                    labelClassName=""
                     label={t('common.environment')}
                     onChange={it => onChange({ importContainer: { ...config.importContainer, environment: it } })}
                     items={config.importContainer?.environment}
@@ -398,6 +453,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             items={config.ports}
             label={t('common.ports')}
             onPatch={it => onChange({ ports: it })}
+            onResetSection={!resetableConfig || !!resetableConfig.ports ? () => onResetSection('ports') : null}
             findErrorMessage={index => fieldErrors.find(it => it.path?.startsWith(`ports[${index}]`))?.message}
             emptyItemFactory={() => ({
               external: null,
@@ -462,6 +518,9 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             })}
             findErrorMessage={index => fieldErrors.find(it => it.path?.startsWith(`portRanges[${index}]`))?.message}
             onPatch={it => onChange({ portRanges: it })}
+            onResetSection={
+              !resetableConfig || !!resetableConfig.portRanges ? () => onResetSection('portRanges') : null
+            }
             renderItem={(item, removeButton, onPatch) => (
               <div className="flex flex-col gap-2">
                 <DyoLabel>{t('common.internal').toUpperCase()}</DyoLabel>
@@ -541,6 +600,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             })}
             findErrorMessage={index => fieldErrors.find(it => it.path?.startsWith(`volumes[${index}]`))?.message}
             onPatch={it => onChange({ volumes: it })}
+            onResetSection={!resetableConfig || !!resetableConfig.volumes ? () => onResetSection('volumes') : null}
             renderItem={(item, removeButton, onPatch) => (
               <div className="grid break-inside-avoid">
                 <div className="flex flex-row">
@@ -639,6 +699,9 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             })}
             findErrorMessage={index => fieldErrors.find(it => it.path?.startsWith(`initContainers[${index}]`))?.message}
             onPatch={it => onChange({ initContainers: it })}
+            onResetSection={
+              !resetableConfig || !!resetableConfig.initContainers ? () => onResetSection('initContainers') : null
+            }
             renderItem={(item, removeButton, onPatch) => (
               <div className="grid">
                 <MultiInput

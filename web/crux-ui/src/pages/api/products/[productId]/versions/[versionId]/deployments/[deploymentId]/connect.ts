@@ -111,9 +111,8 @@ export const onPatchInstance = async (
     id,
     instance: {
       instanceId: req.instanceId,
-      config: {
-        ...req,
-      },
+      config: req.config,
+      resetSection: req.resetSection,
     },
   })
 

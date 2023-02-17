@@ -6,6 +6,7 @@ import {
   Image,
   InstanceContainerConfig,
   NetworkMode,
+  Prisma,
   Registry,
   RestartPolicy,
 } from '@prisma/client'
@@ -40,6 +41,7 @@ import {
   ContainerConfigLog,
   ContainerConfigVolume,
   ContainerLogDriverType,
+  CONTAINER_CONFIG_JSON_FIELDS,
   UniqueSecretKey,
   VolumeType,
 } from 'src/shared/models'
@@ -138,6 +140,16 @@ export default class ImageMapper {
             ingress: config.annotations.ingress ?? [],
           },
     }
+  }
+
+  configSectionResetToDb(config: Partial<ContainerConfigData>, section: string) {
+    if (CONTAINER_CONFIG_JSON_FIELDS.includes(section)) {
+      config[section] = Prisma.JsonNull
+    } else {
+      config[section] = null
+    }
+
+    return config
   }
 
   configProtoToContainerConfigData(
@@ -335,6 +347,10 @@ export default class ImageMapper {
   }
 
   restartPolicyToProto(type: RestartPolicy): ProtoRestartPolicy {
+    if (!type) {
+      return null
+    }
+
     switch (type) {
       case RestartPolicy.always:
         return ProtoRestartPolicy.ALWAYS
@@ -369,6 +385,10 @@ export default class ImageMapper {
   }
 
   networkModeToProto(it: NetworkMode): ProtoNetworkMode {
+    if (!it) {
+      return null
+    }
+
     return networkModeFromJSON(it?.toUpperCase())
   }
 

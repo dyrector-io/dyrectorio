@@ -407,23 +407,26 @@ export const toTimestamp = (date: Date): Timestamp => {
   return { seconds, nanos }
 }
 
-export const nullify = <T>(object: T): T => {
-  let empty = true
+export const nullify = <T>(target: T): T => {
+  const values = Object.values(target)
 
-  const keys = Object.keys(object)
-
-  // eslint-disable-next-line no-restricted-syntax
-  for (const key of keys) {
-    const obj = object[key]
-    if (obj) {
-      empty = Array.isArray(obj) ? obj.length === 0 : typeof obj === 'object' ? !nullify(obj) : false
-      if (!empty) {
-        break
-      }
+  const notEmpty = values.some(it => {
+    if (!it) {
+      return typeof it === 'number' && it === 0
     }
-  }
 
-  return !empty ? object : null
+    if (Array.isArray(it)) {
+      return it.length > 0
+    }
+
+    if (typeof it === 'object') {
+      return nullify(it)
+    }
+
+    return true
+  })
+
+  return notEmpty ? target : null
 }
 
 export const toNumber = (value: string, defaultValue: number = 0): number => {

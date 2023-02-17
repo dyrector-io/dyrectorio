@@ -74,7 +74,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
   const [filters, setFilters] = useState<ImageConfigFilterType[]>([])
   const [viewState, setViewState] = useState<ViewState>('editor')
   const [fieldErrors, setFieldErrors] = useState<ValidationError[]>(() =>
-    getMergedContainerConfigFieldErrors(state.config),
+    getMergedContainerConfigFieldErrors(mergeConfigs(instance.image.config, state.config)),
   )
   const [jsonError, setJsonError] = useState(jsonErrorOf(fieldErrors))
   const [topBarContent, setTopBarContent] = useState<React.ReactNode>(null)
@@ -126,6 +126,15 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
       actions.onPatch(instance.id, patch.current)
       patch.current = {}
     })
+  }
+
+  const onResetSection = (section: ImageConfigFilterType) => {
+    const newConfig = actions.resetSection(section)
+
+    const merged = mergeConfigs(instance.image.config, newConfig)
+    const errors = getMergedContainerConfigFieldErrors(merged)
+    setFieldErrors(errors)
+    setJsonError(jsonErrorOf(errors))
   }
 
   const pageLink: BreadcrumbLink = {
@@ -205,9 +214,11 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
             selectedFilters={filters}
             config={state.config}
             onChange={onChange}
+            onResetSection={onResetSection}
             editorOptions={editorState}
             fieldErrors={fieldErrors}
             configType="instance"
+            imageConfig={instance.image.config}
             definedSecrets={state.definedSecrets}
             publicKey={deployment.publicKey}
           />
@@ -217,8 +228,10 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
             selectedFilters={filters}
             config={state.config}
             onChange={onChange}
+            onResetSection={onResetSection}
             editorOptions={editorState}
             configType="instance"
+            imageConfig={instance.image.config}
           />
 
           <DagentConfigSection
@@ -226,8 +239,10 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
             selectedFilters={filters}
             config={state.config}
             onChange={onChange}
+            onResetSection={onResetSection}
             editorOptions={editorState}
             configType="instance"
+            imageConfig={instance.image.config}
           />
         </DyoCard>
       )}

@@ -1,10 +1,10 @@
 import DyoImgButton from '@app/elements/dyo-img-button'
-import { DyoLabel } from '@app/elements/dyo-label'
 import DyoMessage from '@app/elements/dyo-message'
 import useRepatch, { RepatchAction } from '@app/hooks/use-repatch'
 import clsx from 'clsx'
 import { useEffect } from 'react'
 import { v4 as uuid } from 'uuid'
+import ConfigSectionLabel from './config-section-label'
 
 const addItem =
   <T extends Item>(item: Omit<T, 'id'>): RepatchAction<InternalState<T>> =>
@@ -103,6 +103,7 @@ interface ExtendableItemListProps<T extends Item> {
   ) => React.ReactNode
   findErrorMessage: (index: number) => string
   onPatch: (items: T[]) => void
+  onResetSection: VoidFunction
   emptyItemFactory: () => Omit<T, 'id'>
 }
 
@@ -114,6 +115,7 @@ const ExtendableItemList = <T extends Item>(props: ExtendableItemListProps<T>) =
     renderItem,
     findErrorMessage,
     onPatch: propsOnPatch,
+    onResetSection,
     emptyItemFactory,
     itemClassName,
   } = props
@@ -136,10 +138,19 @@ const ExtendableItemList = <T extends Item>(props: ExtendableItemListProps<T>) =
 
   const { items } = state
 
+  const hasValue = !!propsItems
+
   return (
     <div className="flex flex-col mb-2">
       <div className="flex flex-row mb-2">
-        <DyoLabel className="mr-4 ext-bright font-semibold tracking-wide">{label.toUpperCase()}</DyoLabel>
+        <ConfigSectionLabel
+          className="mr-2"
+          labelClassName="text-bright font-semibold tracking-wide"
+          disabled={!hasValue || disabled || !onResetSection}
+          onResetSection={onResetSection}
+        >
+          {label.toUpperCase()}
+        </ConfigSectionLabel>
 
         {!disabled && (
           <DyoImgButton onClick={() => reduceAndSendPatch(addItem(emptyItemFactory()))} src="/plus.svg" alt="add" />

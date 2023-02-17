@@ -1221,6 +1221,7 @@ export interface PatchImageRequest {
   accessedBy: string
   tag?: string | undefined
   config?: ImageContainerConfig | undefined
+  resetSection?: string | undefined
 }
 
 export interface NodeResponse {
@@ -1380,6 +1381,7 @@ export interface PatchInstanceRequest {
   id: string
   accessedBy: string
   config?: InstanceContainerConfig | undefined
+  resetSection?: string | undefined
 }
 
 export interface DeploymentListResponse {
@@ -8229,6 +8231,9 @@ export const PatchImageRequest = {
     if (message.config !== undefined) {
       ImageContainerConfig.encode(message.config, writer.uint32(818).fork()).ldelim()
     }
+    if (message.resetSection !== undefined) {
+      writer.uint32(826).string(message.resetSection)
+    }
     return writer
   },
 
@@ -8251,6 +8256,9 @@ export const PatchImageRequest = {
         case 102:
           message.config = ImageContainerConfig.decode(reader, reader.uint32())
           break
+        case 103:
+          message.resetSection = reader.string()
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -8265,6 +8273,7 @@ export const PatchImageRequest = {
       accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       tag: isSet(object.tag) ? String(object.tag) : undefined,
       config: isSet(object.config) ? ImageContainerConfig.fromJSON(object.config) : undefined,
+      resetSection: isSet(object.resetSection) ? String(object.resetSection) : undefined,
     }
   },
 
@@ -8275,6 +8284,7 @@ export const PatchImageRequest = {
     message.tag !== undefined && (obj.tag = message.tag)
     message.config !== undefined &&
       (obj.config = message.config ? ImageContainerConfig.toJSON(message.config) : undefined)
+    message.resetSection !== undefined && (obj.resetSection = message.resetSection)
     return obj
   },
 
@@ -8291,6 +8301,7 @@ export const PatchImageRequest = {
       object.config !== undefined && object.config !== null
         ? ImageContainerConfig.fromPartial(object.config)
         : undefined
+    message.resetSection = object.resetSection ?? undefined
     return message
   },
 }
@@ -10110,6 +10121,9 @@ export const PatchInstanceRequest = {
     if (message.config !== undefined) {
       InstanceContainerConfig.encode(message.config, writer.uint32(802).fork()).ldelim()
     }
+    if (message.resetSection !== undefined) {
+      writer.uint32(826).string(message.resetSection)
+    }
     return writer
   },
 
@@ -10129,6 +10143,9 @@ export const PatchInstanceRequest = {
         case 100:
           message.config = InstanceContainerConfig.decode(reader, reader.uint32())
           break
+        case 103:
+          message.resetSection = reader.string()
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -10142,6 +10159,7 @@ export const PatchInstanceRequest = {
       id: isSet(object.id) ? String(object.id) : '',
       accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       config: isSet(object.config) ? InstanceContainerConfig.fromJSON(object.config) : undefined,
+      resetSection: isSet(object.resetSection) ? String(object.resetSection) : undefined,
     }
   },
 
@@ -10151,6 +10169,7 @@ export const PatchInstanceRequest = {
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.config !== undefined &&
       (obj.config = message.config ? InstanceContainerConfig.toJSON(message.config) : undefined)
+    message.resetSection !== undefined && (obj.resetSection = message.resetSection)
     return obj
   },
 
@@ -10166,6 +10185,7 @@ export const PatchInstanceRequest = {
       object.config !== undefined && object.config !== null
         ? InstanceContainerConfig.fromPartial(object.config)
         : undefined
+    message.resetSection = object.resetSection ?? undefined
     return message
   },
 }

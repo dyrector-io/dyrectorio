@@ -16,7 +16,7 @@ type FilterSet = Record<BaseImageConfigFilterType, ImageConfigFilterType[]>
 export const filterSet: FilterSet = {
   all: [...ALL_CONFIG_PROPERTIES],
   common: [...COMMON_CONFIG_PROPERTIES],
-  crane: [...CRANE_CONFIG_PROPERTIES],
+  crane: [...CRANE_CONFIG_PROPERTIES].filter(it => it !== 'extraLBAnnotations'),
   dagent: [...DAGENT_CONFIG_PROPERTIES],
 }
 

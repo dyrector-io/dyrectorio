@@ -29,7 +29,7 @@
     "ingressName": "Name",
     "ingressHost": "Host",
     "ingressUploadLimit": "Upload limit",
-    "environment": "Environments",
+    "environment": "Environment",
     "secrets": "Secrets",
     "initContainer": "Init container",
     "image": "Image",
@@ -122,12 +122,8 @@
     "placeholders": { "headerName": "Header name", "cpuUsageExample": "100", "memoryUsageExample": "1m" },
     "labels": "Labels",
     "annotations": "Annotations",
-    "serviceLabels": "Service labels",
-    "deploymentLabels": "Deployment labels",
-    "ingressLabels": "Ingress labels",
-    "serviceAnnotations": "Service annotations",
-    "deploymentAnnotations": "Deployment annotations",
-    "ingressAnnotations": "Ingress annotations"
+    "service": "Service",
+    "deployment": "Deployment"
   },
   "sensitiveKey": "Sensitive config data should be stored as secrets"
 }

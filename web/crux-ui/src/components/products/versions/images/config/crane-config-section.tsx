@@ -6,19 +6,29 @@ import DyoChips from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoSwitch from '@app/elements/dyo-switch'
-import { CRANE_CONFIG_PROPERTIES, filterContains, filterEmpty, ImageConfigFilterType } from '@app/models'
 import {
+  CraneConfigFilterType,
+  CRANE_CONFIG_PROPERTIES,
+  filterContains,
+  filterEmpty,
+  ImageConfigFilterType,
+} from '@app/models'
+import {
+  ContainerConfigData,
   ContainerDeploymentStrategyType,
   CONTAINER_DEPLOYMENT_STRATEGY_VALUES,
   CraneConfigDetails,
   InstanceCraneConfigDetails,
+  mergeConfigs,
 } from '@app/models/container'
 import { nullify, toNumber } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
+import ConfigSectionLabel from './config-section-label'
 
 type CraneConfigSectionBaseProps<T> = {
   config: T
   onChange: (config: Partial<T>) => void
+  onResetSection: (section: CraneConfigFilterType) => void
   selectedFilters: ImageConfigFilterType[]
   editorOptions: ItemEditorState
   disabled?: boolean
@@ -30,13 +40,20 @@ type ImageCraneConfigSectionProps = CraneConfigSectionBaseProps<CraneConfigDetai
 
 type InstanceCraneConfigSectionProps = CraneConfigSectionBaseProps<InstanceCraneConfigDetails> & {
   configType: 'instance'
+  imageConfig: ContainerConfigData
 }
 
 export type CraneConfigSectionProps = ImageCraneConfigSectionProps | InstanceCraneConfigSectionProps
 
 const CraneConfigSection = (props: CraneConfigSectionProps) => {
   const { t } = useTranslation('container')
-  const { config, selectedFilters, onChange, editorOptions, disabled } = props
+  const { config: propsConfig, configType, selectedFilters, onChange, onResetSection, editorOptions, disabled } = props
+
+  const disabledOnImage = configType === 'image' || disabled
+  // eslint-disable-next-line react/destructuring-assignment
+  const imageConfig = configType === 'instance' ? props.imageConfig : null
+  const resetableConfig = propsConfig
+  const config = configType === 'instance' ? mergeConfigs(imageConfig, propsConfig) : propsConfig
 
   return !filterEmpty([...CRANE_CONFIG_PROPERTIES], selectedFilters) ? null : (
     <div className="my-4">
@@ -48,9 +65,12 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
         {/* deploymentStartegy */}
         {filterContains('deploymentStrategy', selectedFilters) && (
           <div className="grid break-inside-avoid mb-8">
-            <DyoLabel className="text-bright font-semibold tracking-wide mb-2">
+            <ConfigSectionLabel
+              disabled={disabledOnImage || !resetableConfig.deploymentStrategy}
+              onResetSection={() => onResetSection('deploymentStrategy')}
+            >
               {t('crane.deploymentStrategy').toUpperCase()}
-            </DyoLabel>
+            </ConfigSectionLabel>
 
             <DyoChips
               className="ml-2"
@@ -66,9 +86,12 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
         {/* healthCheckConfig */}
         {filterContains('healthCheckConfig', selectedFilters) && (
           <div className="grid break-inside-avoid mb-8">
-            <DyoLabel className="text-bright font-semibold tracking-wide mb-2">
+            <ConfigSectionLabel
+              disabled={disabled || !resetableConfig.healthCheckConfig}
+              onResetSection={() => onResetSection('healthCheckConfig')}
+            >
               {t('crane.healthCheckConfig').toUpperCase()}
-            </DyoLabel>
+            </ConfigSectionLabel>
 
             <div className="ml-2">
               <MultiInput
@@ -161,6 +184,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
               onChange={it => onChange({ customHeaders: it })}
               editorOptions={editorOptions}
               disabled={disabled}
+              onResetSection={resetableConfig.customHeaders ? () => onResetSection('customHeaders') : null}
             />
           </div>
         )}
@@ -168,9 +192,12 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
         {/* resourceConfig */}
         {filterContains('resourceConfig', selectedFilters) && (
           <div className="grid break-inside-avoid mb-8">
-            <DyoLabel className="text-bright font-semibold tracking-wide mb-2">
+            <ConfigSectionLabel
+              disabled={disabled || !resetableConfig.resourceConfig}
+              onResetSection={() => onResetSection('resourceConfig')}
+            >
               {t('crane.resourceConfig').toUpperCase()}
-            </DyoLabel>
+            </ConfigSectionLabel>
 
             <div className="grid ml-2">
               <DyoLabel className="max-w-lg w-full text-right mb-1">{t('crane.limits')}</DyoLabel>
@@ -271,11 +298,15 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
         {/* proxyHeaders */}
         {filterContains('proxyHeaders', selectedFilters) && (
           <div className="flex flex-row mb-8">
-            <DyoLabel className="text-bright font-semibold tracking-wide mb-2 mr-4">
+            <ConfigSectionLabel
+              disabled={disabledOnImage || resetableConfig.proxyHeaders === null}
+              onResetSection={() => onResetSection('proxyHeaders')}
+            >
               {t('crane.proxyHeaders').toUpperCase()}
-            </DyoLabel>
+            </ConfigSectionLabel>
 
             <DyoSwitch
+              className="ml-2"
               fieldName="proxyHeaders"
               checked={config.proxyHeaders}
               onCheckedChange={it => onChange({ proxyHeaders: it })}
@@ -285,14 +316,18 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
         )}
 
         {/* LoadBalancer */}
-        {filterContains('loadBalancer', selectedFilters) && (
+        {filterContains('useLoadBalancer', selectedFilters) && (
           <div className="grid break-inside-avoid mb-8">
             <div className="flex flex-row mb-2.5">
-              <DyoLabel className="text-bright font-semibold tracking-wide mb-2 mr-4">
+              <ConfigSectionLabel
+                disabled={disabledOnImage || resetableConfig.useLoadBalancer === null}
+                onResetSection={() => onResetSection('useLoadBalancer')}
+              >
                 {t('crane.useLoadBalancer').toUpperCase()}
-              </DyoLabel>
+              </ConfigSectionLabel>
 
               <DyoSwitch
+                className="ml-2"
                 fieldName="useLoadBalancer"
                 checked={config.useLoadBalancer}
                 onCheckedChange={it => onChange({ useLoadBalancer: it })}
@@ -301,28 +336,35 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
             </div>
 
             {!config.useLoadBalancer ? null : (
-              <div className="flex flex-wrap ml-2">
-                <KeyValueInput
-                  className="max-h-128 overflow-y-auto"
-                  label={t('crane.extraLBAnnotations')}
-                  items={config.extraLBAnnotations ?? []}
-                  editorOptions={editorOptions}
-                  onChange={it => onChange({ extraLBAnnotations: it })}
-                  disabled={disabled}
-                />
-              </div>
+              <KeyValueInput
+                className="max-h-128 overflow-y-auto"
+                labelClassName="ml-2"
+                label={t('crane.extraLBAnnotations')}
+                items={config.extraLBAnnotations ?? []}
+                editorOptions={editorOptions}
+                onChange={it => onChange({ extraLBAnnotations: it })}
+                onResetSection={resetableConfig.extraLBAnnotations ? () => onResetSection('extraLBAnnotations') : null}
+                disabled={disabled}
+              />
             )}
           </div>
         )}
 
         {/* Labels */}
         {filterContains('labels', selectedFilters) && (
-          <>
+          <div className="flex flex-col">
+            <ConfigSectionLabel
+              disabled={disabled || !resetableConfig.labels}
+              onResetSection={() => onResetSection('labels')}
+            >
+              {t('crane.labels').toUpperCase()}
+            </ConfigSectionLabel>
+
             <div className="grid mb-8 break-inside-avoid">
               <KeyValueInput
                 className="max-h-128 overflow-y-auto"
-                labelClassName="text-bright font-semibold tracking-wide mb-2"
-                label={t('crane.deploymentLabels').toUpperCase()}
+                labelClassName="mb-2 ml-2"
+                label={t('crane.deployment')}
                 onChange={it => onChange({ labels: { ...config.labels, deployment: it } })}
                 items={config.labels?.deployment ?? []}
                 editorOptions={editorOptions}
@@ -333,8 +375,8 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
             <div className="grid mb-8 break-inside-avoid">
               <KeyValueInput
                 className="max-h-128 overflow-y-auto"
-                labelClassName="text-bright font-semibold tracking-wide mb-2"
-                label={t('crane.serviceLabels').toUpperCase()}
+                labelClassName="mb-2 ml-2"
+                label={t('crane.service')}
                 onChange={it => onChange({ labels: { ...config.labels, service: it } })}
                 items={config.labels?.service ?? []}
                 editorOptions={editorOptions}
@@ -345,25 +387,32 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
             <div className="grid mb-8 break-inside-avoid">
               <KeyValueInput
                 className="max-h-128 overflow-y-auto"
-                labelClassName="text-bright font-semibold tracking-wide mb-2"
-                label={t('crane.ingressLabels').toUpperCase()}
+                labelClassName="mb-2 ml-2"
+                label={t('common.ingress')}
                 onChange={it => onChange({ labels: { ...config.labels, ingress: it } })}
                 items={config.labels?.ingress ?? []}
                 editorOptions={editorOptions}
                 disabled={disabled}
               />
             </div>
-          </>
+          </div>
         )}
 
         {/* Labels */}
         {filterContains('annotations', selectedFilters) && (
-          <>
+          <div className="flex flex-col">
+            <ConfigSectionLabel
+              disabled={disabled || !resetableConfig.annotations}
+              onResetSection={() => onResetSection('annotations')}
+            >
+              {t('crane.annotations').toUpperCase()}
+            </ConfigSectionLabel>
+
             <div className="grid mb-8 break-inside-avoid">
               <KeyValueInput
                 className="max-h-128 overflow-y-auto"
-                labelClassName="text-bright font-semibold tracking-wide mb-2"
-                label={t('crane.deploymentAnnotations').toUpperCase()}
+                labelClassName="mb-2 ml-2"
+                label={t('crane.deployment')}
                 onChange={it => onChange({ annotations: { ...config.annotations, deployment: it } })}
                 items={config.annotations?.deployment ?? []}
                 editorOptions={editorOptions}
@@ -374,8 +423,8 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
             <div className="grid mb-8 break-inside-avoid">
               <KeyValueInput
                 className="max-h-128 overflow-y-auto"
-                labelClassName="text-bright font-semibold tracking-wide mb-2"
-                label={t('crane.serviceAnnotations').toUpperCase()}
+                labelClassName="mb-2 ml-2"
+                label={t('crane.service')}
                 onChange={it => onChange({ annotations: { ...config.annotations, service: it } })}
                 items={config.annotations?.service ?? []}
                 editorOptions={editorOptions}
@@ -386,15 +435,15 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
             <div className="grid mb-8 break-inside-avoid">
               <KeyValueInput
                 className="max-h-128 overflow-y-auto"
-                labelClassName="text-bright font-semibold tracking-wide mb-2"
-                label={t('crane.ingressAnnotations').toUpperCase()}
+                labelClassName="mb-2 ml-2"
+                label={t('common.ingress')}
                 onChange={it => onChange({ annotations: { ...config.annotations, ingress: it } })}
                 items={config.annotations?.ingress ?? []}
                 editorOptions={editorOptions}
                 disabled={disabled}
               />
             </div>
-          </>
+          </div>
         )}
       </div>
     </div>

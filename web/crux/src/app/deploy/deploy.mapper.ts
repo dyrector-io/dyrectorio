@@ -25,9 +25,9 @@ import {
   containerStateToJSON,
   DeploymentStatus,
   deploymentStatusFromJSON,
-  KeyValue,
-  ExposeStrategy as ProtoExposeStrategy,
   DeploymentStrategy as ProtoDeploymentStrategy,
+  ExposeStrategy as ProtoExposeStrategy,
+  KeyValue,
 } from 'src/grpc/protobuf/proto/common'
 import {
   AuditResponse,
@@ -108,17 +108,12 @@ export default class DeployMapper {
   }
 
   instanceToProto(instance: InstanceDetails): InstanceResponse {
-    const config = this.containerMapper.mergeConfigs(
-      (instance.image.config ?? {}) as ContainerConfigData,
-      (instance.config ?? {}) as InstanceContainerConfigData,
-    )
-
     return {
       ...instance,
       audit: AuditResponse.fromJSON(instance),
       image: this.imageMapper.detailsToProto(instance.image),
       state: this.containerStateToProto(instance.state),
-      config: this.instanceConfigToProto(config),
+      config: this.instanceConfigToProto((instance.config ?? {}) as InstanceContainerConfigData),
     }
   }
 
@@ -167,6 +162,10 @@ export default class DeployMapper {
       ...config,
       secrets,
     }
+  }
+
+  configSectionResetToDb(config: Partial<InstanceContainerConfigData>, section: string): InstanceContainerConfigData {
+    return this.imageMapper.configSectionResetToDb(config, section) as InstanceContainerConfigData
   }
 
   instanceContainerConfigDataToDb(

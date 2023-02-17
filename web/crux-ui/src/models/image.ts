@@ -16,6 +16,7 @@ export type VersionImage = {
 export type PatchVersionImage = {
   tag?: string
   config?: Partial<ContainerConfigData>
+  resetSection?: ImageConfigFilterType
 }
 
 export type ViewState = 'editor' | 'json'
@@ -87,7 +88,8 @@ export const CRANE_CONFIG_PROPERTIES = [
   'deploymentStrategy',
   'customHeaders',
   'proxyHeaders',
-  'loadBalancer',
+  'useLoadBalancer',
+  'extraLBAnnotations',
   'healthCheckConfig',
   'resourceConfig',
   'labels',
