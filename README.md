@@ -14,6 +14,8 @@
 Imagine that Heroku meets Portainer and then gets combined with fly.io – that’s dyrector.io. It enables teams to build up their software delivery pipeline like building blocks.
 </p>
 
+<a href="https://www.producthunt.com/posts/dyrector-io-platform?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-dyrector&#0045;io&#0045;platform" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=380073&theme=light" alt="dyrector&#0046;io&#0032;platform - dyrector&#0046;io&#0032;is&#0032;a&#0032;self&#0045;hosted&#0032;container&#0032;management&#0032;platform&#0046; | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
+
 <p align="center">
   <a href="https://github.com/dyrector-io/dyrectorio/tags" target="_blank"><img src="https://img.shields.io/github/v/tag/dyrector-io/dyrectorio" alt="GitHub tag (latest by date)"/></a>
     <a href="./LICENSE" target="_blank"><img src="https://img.shields.io/badge/licence-Apache%202.0-brightgreen.svg?style=flat)" alt="License"/></a>

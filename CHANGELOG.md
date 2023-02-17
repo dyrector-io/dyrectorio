@@ -1,6 +1,23 @@
 # CHANGELOG
 
 
+<a name="0.3.4"></a>
+## [0.3.4](https://github.com/dyrector-io/dyrectorio/compare/0.3.3...0.3.4) (2023-02-17)
+
+### Feat
+
+* add demo video ([#474](https://github.com/dyrector-io/dyrectorio/issues/474))
+* add technology labels to templates ([#472](https://github.com/dyrector-io/dyrectorio/issues/472))
+
+### Fix
+
+* **(crux):** remove gitea ssh port until smarter traefik usage ([#475](https://github.com/dyrector-io/dyrectorio/issues/475))
+* add release bump to package-lock.json ([#473](https://github.com/dyrector-io/dyrectorio/issues/473))
+* dagent update self container id & ui updating status ([#471](https://github.com/dyrector-io/dyrectorio/issues/471))
+* rename rw to rwo globally, need to migrate DB ([#470](https://github.com/dyrector-io/dyrectorio/issues/470))
+* **(crux):** various fixes and refinements of templates ([#469](https://github.com/dyrector-io/dyrectorio/issues/469))
+
+
 <a name="0.3.3"></a>
 ## [0.3.3](https://github.com/dyrector-io/dyrectorio/compare/0.3.2...0.3.3) (2023-02-16)
 
@@ -237,7 +254,6 @@
 * **(crux):** missing secrets from db seeder ([#231](https://github.com/dyrector-io/dyrectorio/issues/231))
 * changelog generation regexp pattern ([#216](https://github.com/dyrector-io/dyrectorio/issues/216))
 * container config path must be string instead of path ([#214](https://github.com/dyrector-io/dyrectorio/issues/214))
-* prisma segfault ([#254](https://github.com/dyrector-io/dyrectorio/issues/254))
 
 ### Refactor
 
@@ -259,7 +275,7 @@
 
 ### Fix
 
-* use prisma's openssl binaries to workaround the segfault comming from different openssl versions
+* prisma segfault ([#254](https://github.com/dyrector-io/dyrectorio/issues/254))
 
 
 <a name="0.2.1"></a>
