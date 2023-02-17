@@ -426,6 +426,7 @@ const templateRegistrySchema = yup.object().shape({
 export const templateSchema = yup.object({
   name: yup.string(),
   description: yup.string(),
+  technologies: yup.array(yup.string()),
   registries: yup.array(templateRegistrySchema),
   images: yup
     .array(

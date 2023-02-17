@@ -13,6 +13,7 @@ const TEMPLATES_FOLDER = 'templates'
 export interface TemplateDetail {
   name: string
   description: string
+  technologies: string[]
   registries?: TemplateRegistry[]
   images: TemplateImage[]
 }

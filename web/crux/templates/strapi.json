@@ -1,6 +1,7 @@
 {
   "name": "Strapi",
   "description": "This template contains Strapi API service and postgres database. Strapi is a Headless CMS framework written in Node.js",
+  "technologies": ["Docker"],
   "registries": [
     {
       "name": "Docker Hub Library",

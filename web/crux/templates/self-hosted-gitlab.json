@@ -1,6 +1,7 @@
 {
   "name": "Self-managed GitLab",
   "description": "This template contains Self-managed GitLab, deploy and maintain your own GitLab instance.",
+  "technologies": ["Docker"],
   "registries": [
     {
       "name": "Docker Hub Gitlab",

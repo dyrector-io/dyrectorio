@@ -1516,6 +1516,7 @@ export interface TemplateResponse {
   id: string
   name: string
   description: string
+  technologies: string[]
 }
 
 export interface TemplateListResponse {
@@ -11737,7 +11738,7 @@ export const HealthResponse = {
 }
 
 function createBaseTemplateResponse(): TemplateResponse {
-  return { id: '', name: '', description: '' }
+  return { id: '', name: '', description: '', technologies: [] }
 }
 
 export const TemplateResponse = {
@@ -11750,6 +11751,9 @@ export const TemplateResponse = {
     }
     if (message.description !== '') {
       writer.uint32(810).string(message.description)
+    }
+    for (const v of message.technologies) {
+      writer.uint32(8002).string(v!)
     }
     return writer
   },
@@ -11770,6 +11774,9 @@ export const TemplateResponse = {
         case 101:
           message.description = reader.string()
           break
+        case 1000:
+          message.technologies.push(reader.string())
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -11783,6 +11790,7 @@ export const TemplateResponse = {
       id: isSet(object.id) ? String(object.id) : '',
       name: isSet(object.name) ? String(object.name) : '',
       description: isSet(object.description) ? String(object.description) : '',
+      technologies: Array.isArray(object?.technologies) ? object.technologies.map((e: any) => String(e)) : [],
     }
   },
 
@@ -11791,6 +11799,11 @@ export const TemplateResponse = {
     message.id !== undefined && (obj.id = message.id)
     message.name !== undefined && (obj.name = message.name)
     message.description !== undefined && (obj.description = message.description)
+    if (message.technologies) {
+      obj.technologies = message.technologies.map(e => e)
+    } else {
+      obj.technologies = []
+    }
     return obj
   },
 
@@ -11803,6 +11816,7 @@ export const TemplateResponse = {
     message.id = object.id ?? ''
     message.name = object.name ?? ''
     message.description = object.description ?? ''
+    message.technologies = object.technologies?.map(e => e) || []
     return message
   },
 }
