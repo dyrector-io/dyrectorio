@@ -335,9 +335,9 @@ type Volume struct {
 	// some PVCs support dynamic expansion/shrink, others not
 	Size string `json:"size" binding:"validSize"`
 
-	// type of the volume: RO,RW,RWX,mem,tmp
+	// type of the volume: RO,RWO,RWX,mem,tmp
 	// RO: readonly
-	// RW: readwrite once normal (default)
+	// RWO: readwrite once normal (default)
 	// RWX: readwrite many, shared volume within the instance
 	// mem: use inmemory tmpfs
 	// tmp: use tmpfs, with disk

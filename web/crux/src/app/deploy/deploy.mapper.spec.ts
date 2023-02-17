@@ -459,7 +459,7 @@ describe('DeployMapper', () => {
         path: 'instance.vol1',
         class: 'instance.vol1',
         size: 'instance.vol1',
-        type: 'rw',
+        type: 'rwo',
       },
     ],
   }

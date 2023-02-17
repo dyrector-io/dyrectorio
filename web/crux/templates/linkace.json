@@ -29,7 +29,7 @@
           {
             "name": "db",
             "path": "/var/lib/mysql",
-            "type": "rw"
+            "type": "rwo"
           }
         ],
         "environment": [

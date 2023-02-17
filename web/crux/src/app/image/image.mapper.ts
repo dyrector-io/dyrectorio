@@ -455,7 +455,7 @@ export default class ImageMapper {
       case undefined:
       case ProtoVolumeType.UNRECOGNIZED:
       case ProtoVolumeType.VOLUME_TYPE_UNSPECIFIED:
-        return 'rw'
+        return 'rwo'
       default: {
         return volumeTypeToJSON(it).toLowerCase() as VolumeType
       }
