@@ -7,6 +7,7 @@ import { DyoInput } from '@app/elements/dyo-input'
 import { DyoLabel } from '@app/elements/dyo-label'
 import { DyoConfirmationModal } from '@app/elements/dyo-modal'
 import DyoTextArea from '@app/elements/dyo-text-area'
+import LoadingIndicator from '@app/elements/loading-indicator'
 import { defaultApiErrorHandler } from '@app/errors'
 import useConfirmation from '@app/hooks/use-confirmation'
 import useDyoFormik from '@app/hooks/use-dyo-formik'
@@ -79,6 +80,7 @@ const EditNodeCard = (props: EditNodeCardProps) => {
       address: message.address ?? node.address,
       status: message.status,
       hasToken: message.status === 'running' || node.hasToken,
+      updating: message.updating ?? node.updating,
       install: null,
     } as DyoNodeDetails
 
@@ -130,6 +132,11 @@ const EditNodeCard = (props: EditNodeCardProps) => {
     socket.send(WS_TYPE_UPDATE_NODE_AGENT, {
       id: node.id,
     } as UpdateNodeAgentMessage)
+
+    setNode({
+      ...node,
+      updating: true,
+    })
   }
 
   const formik = useDyoFormik({
@@ -260,9 +267,12 @@ const EditNodeCard = (props: EditNodeCardProps) => {
                   className="px-6 mt-4 ml-4 mr-auto"
                   secondary
                   onClick={onUpdateNode}
-                  disabled={node.status !== 'running'}
+                  disabled={node.status !== 'running' || node.updating}
                 >
-                  {t('update')}
+                  <span className="flex">
+                    {t('update')}
+                    {node.updating && <LoadingIndicator className="inline-block ml-2" />}
+                  </span>
                 </DyoButton>
               </>
             ) : (

@@ -126,20 +126,20 @@ func GetOwnContainer(ctx context.Context) (*types.Container, error) {
 
 	log.Info().Str("hostname", hostname).Msg("Getting self by hostname")
 
-	container, err := dockerHelper.GetContainerByName(ctx, nil, hostname, false)
+	ownContainer, err := dockerHelper.GetContainerByName(ctx, nil, hostname, false)
 	if err != nil {
 		return nil, err
 	}
-	if container != nil {
-		return container, nil
+	if ownContainer != nil {
+		return ownContainer, nil
 	}
 
-	container, err = dockerHelper.GetContainerByID(ctx, nil, hostname, false)
+	ownContainer, err = dockerHelper.GetContainerByID(ctx, nil, hostname, false)
 	if err != nil {
 		return nil, err
 	}
-	if container != nil {
-		return container, nil
+	if ownContainer != nil {
+		return ownContainer, nil
 	}
 
 	cgroup, err := ParseCGroupFile()
@@ -149,12 +149,12 @@ func GetOwnContainer(ctx context.Context) (*types.Container, error) {
 
 	log.Info().Str("cgroup", cgroup).Msg("Getting self by CGroup")
 
-	container, err = dockerHelper.GetContainerByID(ctx, nil, cgroup, false)
+	ownContainer, err = dockerHelper.GetContainerByID(ctx, nil, cgroup, false)
 	if err != nil {
 		return nil, err
 	}
-	if container != nil {
-		return container, nil
+	if ownContainer != nil {
+		return ownContainer, nil
 	}
 
 	return nil, &UnknownContainerError{}

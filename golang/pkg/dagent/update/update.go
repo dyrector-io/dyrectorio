@@ -129,7 +129,7 @@ func SelfUpdate(ctx context.Context, tag string, timeoutSeconds int32) error {
 	}
 
 	if newImageID == ownImage.ID {
-		return errors.New("update does not change image")
+		return errors.New("already using desired image")
 	}
 
 	originalName := container.Names[0]

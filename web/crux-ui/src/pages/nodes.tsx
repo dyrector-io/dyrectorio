@@ -62,6 +62,7 @@ const NodesPage = (props: NodesPageProps) => {
       address: message.address,
       status: message.status,
       createdAt: new Date().toUTCString(),
+      updating: message.updating,
     } as DyoNode
 
     const newNodes = upsertById(filters.items, newNode, {

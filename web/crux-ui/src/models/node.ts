@@ -22,6 +22,7 @@ export type DyoNode = NodeConnection & {
   name: string
   description?: string
   type: NodeType
+  updating: boolean
 }
 
 export const nodeConnectionOf = (node: DyoNode | DyoNodeDetails): NodeConnection => ({
@@ -92,6 +93,7 @@ export type NodeStatusMessage = {
   version?: string
   connectedAt?: string
   error?: string
+  updating?: boolean
 }
 
 export const WS_TYPE_NODE_STATUSES = 'node-status-list'

@@ -807,6 +807,7 @@ message NodeResponse {
   optional google.protobuf.Timestamp connectedAt = 105;
   optional string version = 106;
   NodeType type = 107;
+  bool updating = 108;
 }
 
 message NodeDetailsResponse {
@@ -824,6 +825,7 @@ message NodeDetailsResponse {
   optional NodeScriptResponse script = 108;
   optional string version = 109;
   NodeType type = 110;
+  bool updating = 111;
 }
 
 message NodeListResponse { repeated NodeResponse data = 1000; }
@@ -911,6 +913,7 @@ message NodeEventMessage {
   optional string version = 102;
   optional google.protobuf.Timestamp connectedAt = 103;
   optional string error = 104;
+  optional bool updating = 105;
 }
 
 message WatchContainerStateRequest {
