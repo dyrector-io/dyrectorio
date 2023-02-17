@@ -1,6 +1,7 @@
 {
   "name": "Gitea",
   "description": "Gitea is a painless self-hosted Git service. It is similar to GitHub, Bitbucket, and GitLab.",
+  "technologies": ["Docker"],
   "registries": [
     {
       "name": "Docker Hub Gitea Database",

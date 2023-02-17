@@ -1,6 +1,7 @@
 {
   "name": "Minecraft",
   "description": "Minecraft server with select-able version.",
+  "technologies": ["Docker"],
   "registries": [
     {
       "name": "Docker Hub Minecraft",

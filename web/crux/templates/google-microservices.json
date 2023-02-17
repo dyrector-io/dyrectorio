@@ -1,6 +1,7 @@
 {
   "name": "Google Microservices Demo",
   "description": "Google uses this application to demonstrate use of technologies like Kubernetes/GKE, Istio, Stackdriver, gRPC and OpenCensus.",
+  "technologies": ["Docker"],
   "registries": [
     {
       "name": "Docker Hub Library",

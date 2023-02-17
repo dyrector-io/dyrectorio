@@ -1,6 +1,7 @@
 {
   "name": "LinkAce",
   "description": "LinkAce is a self-hosted archive to collect links of your favorite websites.\nREQUIREMENTS:\n1) APP_KEY environment variable must be 32 characters long\n2) After deployment, exec in the linkace-app container and add 'chmod 777' privileges to the \\app\\.env file.",
+  "technologies": ["Docker"],
   "registries": [
     {
       "name": "Docker Hub Library",

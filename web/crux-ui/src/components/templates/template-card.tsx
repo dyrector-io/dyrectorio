@@ -2,6 +2,7 @@ import DyoButton from '@app/elements/dyo-button'
 import { DyoCard } from '@app/elements/dyo-card'
 import DyoExpandableText from '@app/elements/dyo-expandable-text'
 import { DyoHeading } from '@app/elements/dyo-heading'
+import DyoTag from '@app/elements/dyo-tag'
 import { Template } from '@app/models/template'
 import useTranslation from 'next-translate/useTranslation'
 import TemplateImage from './template-image'
@@ -13,7 +14,7 @@ export interface TemplateCardProps {
 
 const TemplateCard = (props: TemplateCardProps) => {
   const { template: propsTemplate, onAddClick } = props
-  const { name, description } = propsTemplate
+  const { name, description, technologies } = propsTemplate
 
   const { t } = useTranslation('templates')
 
@@ -40,6 +41,13 @@ const TemplateCard = (props: TemplateCardProps) => {
           buttonClassName="ml-auto"
           modalTitle={name}
         />
+        <div className="w-2/12 flex">
+          {technologies.map((it, key) => (
+            <DyoTag className="text-center mx-auto mr-4" key={key}>
+              {it}
+            </DyoTag>
+          ))}
+        </div>
       </div>
     </DyoCard>
   )

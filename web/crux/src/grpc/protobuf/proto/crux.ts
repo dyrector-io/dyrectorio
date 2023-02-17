@@ -1503,6 +1503,7 @@ export interface TemplateResponse {
   id: string
   name: string
   description: string
+  technologies: string[]
 }
 
 export interface TemplateListResponse {
@@ -4719,7 +4720,7 @@ export const HealthResponse = {
 }
 
 function createBaseTemplateResponse(): TemplateResponse {
-  return { id: '', name: '', description: '' }
+  return { id: '', name: '', description: '', technologies: [] }
 }
 
 export const TemplateResponse = {
@@ -4728,6 +4729,7 @@ export const TemplateResponse = {
       id: isSet(object.id) ? String(object.id) : '',
       name: isSet(object.name) ? String(object.name) : '',
       description: isSet(object.description) ? String(object.description) : '',
+      technologies: Array.isArray(object?.technologies) ? object.technologies.map((e: any) => String(e)) : [],
     }
   },
 
@@ -4736,6 +4738,11 @@ export const TemplateResponse = {
     message.id !== undefined && (obj.id = message.id)
     message.name !== undefined && (obj.name = message.name)
     message.description !== undefined && (obj.description = message.description)
+    if (message.technologies) {
+      obj.technologies = message.technologies.map(e => e)
+    } else {
+      obj.technologies = []
+    }
     return obj
   },
 }

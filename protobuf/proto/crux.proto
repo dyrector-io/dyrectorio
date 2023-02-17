@@ -1171,6 +1171,8 @@ message TemplateResponse {
 
   string name = 100;
   string description = 101;
+
+  repeated string technologies = 1000;
 }
 
 message TemplateListResponse { repeated TemplateResponse data = 1000; }

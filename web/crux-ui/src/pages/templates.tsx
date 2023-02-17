@@ -23,7 +23,7 @@ const TemplatesPage = (props: TemplatesPageProps) => {
 
   const router = useRouter()
 
-  const { t } = useTranslation('products')
+  const { t } = useTranslation('templates')
 
   const [applying, setApplying] = useState<Template | null>(null)
   const submitRef = useRef<() => Promise<any>>()
@@ -53,7 +53,6 @@ const TemplatesPage = (props: TemplatesPageProps) => {
             <DyoButton className="ml-auto px-4" secondary onClick={() => setApplying(null)}>
               {t('common:discard')}
             </DyoButton>
-
             <DyoButton className="px-4 ml-4" onClick={() => submitRef.current()}>
               {t('common:add')}
             </DyoButton>

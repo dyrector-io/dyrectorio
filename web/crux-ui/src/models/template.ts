@@ -4,6 +4,7 @@ export type Template = {
   id: string
   name: string
   description: string
+  technologies: Array<string>
 }
 
 export type ApplyTemplate = Template & {
