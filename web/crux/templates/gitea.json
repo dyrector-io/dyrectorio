@@ -113,7 +113,7 @@
           },
           {
             "key": "GITEA__database__HOST",
-            "value": "gitea-gitea-mysql:3306"
+            "value": "gitea-mysql:3306"
           },
           {
             "key": "GITEA__database__NAME",

@@ -541,7 +541,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             emptyItemFactory={() => ({
               name: null,
               path: null,
-              type: 'ro' as VolumeType,
+              type: 'rw' as VolumeType,
             })}
             findErrorMessage={index => fieldErrors.find(it => it.path?.startsWith(`volumes[${index}]`))?.message}
             onPatch={it => onChange({ volumes: it })}

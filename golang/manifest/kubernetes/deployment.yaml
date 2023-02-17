@@ -26,7 +26,7 @@ spec:
             requests:
               memory: 128Mi
             limits:
-              cpu: 1
+              cpu: "1"
               memory: 256Mi
           envFrom:
             - configMapRef:
@@ -40,7 +40,7 @@ spec:
               memory: 128Mi
               cpu: 84m
             limits:
-              cpu: 1
+              cpu: "1"
               memory: 256Mi
           envFrom:
             - configMapRef:
