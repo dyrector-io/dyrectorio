@@ -91,7 +91,7 @@
           },
           {
             "key": "DATABASE_HOST",
-            "value": "strapi-strapi-db"
+            "value": "strapi-db"
           },
           {
             "key": "DATABASE_PORT",

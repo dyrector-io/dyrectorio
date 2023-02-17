@@ -80,7 +80,7 @@
         "environment": [
           {
             "key": "DB_HOST",
-            "value": "linkace-linkace-db"
+            "value": "linkace-db"
           },
           {
             "key": "DB_DATABASE",
