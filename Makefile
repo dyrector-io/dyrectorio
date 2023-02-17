@@ -110,14 +110,18 @@ release:
 	git add CHANGELOG.md
 
 ## Change version of crux
-	cat web/crux/package.json | jq -s '.[] | select(.version) | .version |= "$(version)"' > web/crux/package.json.tmp
+	jq 'walk(if type == "object" and has("version") then .version |= "$(version)" else . end)' web/crux/package.json > web/crux/package.json.tmp
 	mv web/crux/package.json.tmp web/crux/package.json
-	git add web/crux/package.json
+	jq 'walk(if type == "object" and has("version") then .version |= "$(version)" else . end)' web/crux/package-lock.json > web/crux/package-lock.json.tmp
+	mv web/crux/package-lock.json.tmp web/crux/package-lock.json
+	git add web/crux/
 
 ## Change version of crux-ui
-	cat web/crux-ui/package.json | jq -s '.[] | select(.version) | .version |= "$(version)"' > web/crux-ui/package.json.tmp
+	jq 'walk(if type == "object" and has("version") then .version |= "$(version)" else . end)' web/crux-ui/package.json > web/crux-ui/package.json.tmp
 	mv web/crux-ui/package.json.tmp web/crux-ui/package.json
-	git add web/crux-ui/package.json
+	jq 'walk(if type == "object" and has("version") then .version |= "$(version)" else . end)' web/crux-ui/package-lock.json > web/crux-ui/package-lock.json.tmp
+	mv web/crux-ui/package-lock.json.tmp web/crux-ui/package-lock.json
+	git add web/crux-ui/
 
 ## Finalizing changes
 	git commit -m "release: $(version)"
