@@ -23,14 +23,18 @@ Imagine that Heroku meets Portainer and then gets combined with fly.io â€“ thatâ
     <a href="https://github.com/dyrector-io/dyrectorio/issues" target="_blank"><img src="https://img.shields.io/github/issues-raw/dyrector-io/dyrectorio" alt="GitHub issues"/></a>
     <a href="https://twitter.com/dyrectorio" target="_blank"><img src="https://img.shields.io/twitter/follow/dyrectorio?style=social" alt="Twitter Follow"/></a>
 </p>
-
 <br>
 <video align="center" width="720" controls>
-  <source src="docs/dyrectorio-demo.mp4" type="video/mp4">
+  <source src="https://user-images.githubusercontent.com/9247788/219671903-41da385e-4f8f-4fba-a7e4-c6ec4f727b7f.mp4" type="video/mp4">
   Sorry, your browser doesn't support embedded videos.
 </video>
 <br>
 </div>
+
+
+
+
+![dyrectorio-demo-video](https://user-images.githubusercontent.com/9247788/219671903-41da385e-4f8f-4fba-a7e4-c6ec4f727b7f.mp4)
 
 ## Overview
 
