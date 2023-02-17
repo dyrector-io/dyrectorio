@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { DeploymentStatusEnum, InstanceContainerConfig, Prisma } from '@prisma/client'
+import { DeploymentStatusEnum, Prisma } from '@prisma/client'
 import { JsonArray } from 'prisma'
 import { concatAll, EMPTY, filter, from, lastValueFrom, map, merge, Observable, Subject } from 'rxjs'
 import Deployment from 'src/domain/deployment'
