@@ -751,11 +751,15 @@ func ContainerLog(ctx context.Context, request *agent.ContainerLogRequest) (*grp
 		return nil, err
 	}
 
-	containerID := request.GetId()
-	selfID := GetOwnContainerID()
-	enableEcho := containerID != selfID
+	self, err := GetOwnContainer(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	log.Trace().Str("logContainerId", containerID).Str("selfContainerId", selfID).Msgf("Container log echo enabled: %t", enableEcho)
+	containerID := request.GetId()
+	enableEcho := containerID != self.ID
+
+	log.Trace().Str("logContainerId", containerID).Str("selfContainerId", self.ID).Msgf("Container log echo enabled: %t", enableEcho)
 
 	inspect, err := cli.ContainerInspect(ctx, containerID)
 	if err != nil {

@@ -357,7 +357,7 @@ export default class AgentService {
   ): Promise<Observable<AgentCommand>> {
     if (this.agents.has(request.id)) {
       const agent = this.agents.get(request.id)
-      if (!agent.checkAgentUpdating()) {
+      if (!agent.updating) {
         throw new AlreadyExistsException({
           message: 'Agent is already connected.',
           property: 'id',

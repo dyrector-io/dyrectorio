@@ -76,6 +76,13 @@ const NodeConnectionCard = (props: NodeConnectionCardProps) => {
 
         <DyoLabel>{t('uptime')}</DyoLabel>
         {runningSince ? <TimeLabel textColor="text-dyo-turquoise" seconds={runningSince} /> : null}
+
+        {node.updating && (
+          <>
+            <DyoLabel>{t('update')}</DyoLabel>
+            <span className="text-light-eased">{t('inProgress')}</span>
+          </>
+        )}
       </div>
     </DyoCard>
   )

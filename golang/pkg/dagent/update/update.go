@@ -116,6 +116,8 @@ func SelfUpdate(ctx context.Context, tag string, timeoutSeconds int32) error {
 		return err
 	}
 
+	log.Info().Str("newImage", newImage).Msg("Finding new image")
+
 	newImageID, err := findImageAndPull(ctx, newImage)
 	if err != nil {
 		return err
@@ -127,7 +129,7 @@ func SelfUpdate(ctx context.Context, tag string, timeoutSeconds int32) error {
 	}
 
 	if newImageID == ownImage.ID {
-		return errors.New("update does not change image")
+		return errors.New("already using desired image")
 	}
 
 	originalName := container.Names[0]
@@ -173,9 +175,9 @@ func RemoveSelf(ctx context.Context) error {
 
 	log.Info().Msg("Update finished, shutting down")
 
-	containerID := utils.GetOwnContainerID()
-	if containerID == "" {
-		return errors.New("unable to get own container ID")
+	self, err := utils.GetOwnContainer(ctx)
+	if err != nil {
+		return err
 	}
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
@@ -183,7 +185,7 @@ func RemoveSelf(ctx context.Context) error {
 		return err
 	}
 
-	err = cli.ContainerRemove(ctx, containerID, types.ContainerRemoveOptions{
+	err = cli.ContainerRemove(ctx, self.ID, types.ContainerRemoveOptions{
 		Force: true,
 	})
 	if err != nil {

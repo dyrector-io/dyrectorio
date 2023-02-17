@@ -62,7 +62,7 @@ export class Agent {
     return this.deployments.get(id)
   }
 
-  checkAgentUpdating(): boolean {
+  get updating() {
     if (!this.updateStartedAt) {
       return false
     }
@@ -169,6 +169,7 @@ export class Agent {
       status: NodeConnectionStatus.CONNECTED,
       version: this.version,
       connectedAt: toTimestamp(this.connection.connectedAt),
+      updating: false,
     })
 
     return this.commandChannel.asObservable()
@@ -307,6 +308,7 @@ export class Agent {
       id: this.id,
       status: NodeConnectionStatus.CONNECTED,
       error,
+      updating: false,
     })
   }
 
@@ -328,7 +330,7 @@ export class Agent {
   }
 
   private throwWhenUpdating() {
-    if (this.checkAgentUpdating()) {
+    if (this.updating) {
       throw new PreconditionFailedException({
         message: 'Node is updating',
         property: 'id',

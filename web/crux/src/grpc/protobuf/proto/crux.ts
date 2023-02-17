@@ -1221,6 +1221,7 @@ export interface NodeResponse {
   connectedAt?: Timestamp | undefined
   version?: string | undefined
   type: NodeType
+  updating: boolean
 }
 
 export interface NodeDetailsResponse {
@@ -1237,6 +1238,7 @@ export interface NodeDetailsResponse {
   script?: NodeScriptResponse | undefined
   version?: string | undefined
   type: NodeType
+  updating: boolean
 }
 
 export interface NodeListResponse {
@@ -1299,6 +1301,7 @@ export interface NodeEventMessage {
   version?: string | undefined
   connectedAt?: Timestamp | undefined
   error?: string | undefined
+  updating?: boolean | undefined
 }
 
 export interface WatchContainerStateRequest {
@@ -3661,7 +3664,7 @@ export const PatchImageRequest = {
 }
 
 function createBaseNodeResponse(): NodeResponse {
-  return { id: '', audit: undefined, name: '', status: 0, type: 0 }
+  return { id: '', audit: undefined, name: '', status: 0, type: 0, updating: false }
 }
 
 export const NodeResponse = {
@@ -3677,6 +3680,7 @@ export const NodeResponse = {
       connectedAt: isSet(object.connectedAt) ? fromJsonTimestamp(object.connectedAt) : undefined,
       version: isSet(object.version) ? String(object.version) : undefined,
       type: isSet(object.type) ? nodeTypeFromJSON(object.type) : 0,
+      updating: isSet(object.updating) ? Boolean(object.updating) : false,
     }
   },
 
@@ -3692,12 +3696,13 @@ export const NodeResponse = {
     message.connectedAt !== undefined && (obj.connectedAt = fromTimestamp(message.connectedAt).toISOString())
     message.version !== undefined && (obj.version = message.version)
     message.type !== undefined && (obj.type = nodeTypeToJSON(message.type))
+    message.updating !== undefined && (obj.updating = message.updating)
     return obj
   },
 }
 
 function createBaseNodeDetailsResponse(): NodeDetailsResponse {
-  return { id: '', audit: undefined, name: '', status: 0, hasToken: false, type: 0 }
+  return { id: '', audit: undefined, name: '', status: 0, hasToken: false, type: 0, updating: false }
 }
 
 export const NodeDetailsResponse = {
@@ -3716,6 +3721,7 @@ export const NodeDetailsResponse = {
       script: isSet(object.script) ? NodeScriptResponse.fromJSON(object.script) : undefined,
       version: isSet(object.version) ? String(object.version) : undefined,
       type: isSet(object.type) ? nodeTypeFromJSON(object.type) : 0,
+      updating: isSet(object.updating) ? Boolean(object.updating) : false,
     }
   },
 
@@ -3736,6 +3742,7 @@ export const NodeDetailsResponse = {
       (obj.script = message.script ? NodeScriptResponse.toJSON(message.script) : undefined)
     message.version !== undefined && (obj.version = message.version)
     message.type !== undefined && (obj.type = nodeTypeToJSON(message.type))
+    message.updating !== undefined && (obj.updating = message.updating)
     return obj
   },
 }
@@ -3950,6 +3957,7 @@ export const NodeEventMessage = {
       version: isSet(object.version) ? String(object.version) : undefined,
       connectedAt: isSet(object.connectedAt) ? fromJsonTimestamp(object.connectedAt) : undefined,
       error: isSet(object.error) ? String(object.error) : undefined,
+      updating: isSet(object.updating) ? Boolean(object.updating) : undefined,
     }
   },
 
@@ -3961,6 +3969,7 @@ export const NodeEventMessage = {
     message.version !== undefined && (obj.version = message.version)
     message.connectedAt !== undefined && (obj.connectedAt = fromTimestamp(message.connectedAt).toISOString())
     message.error !== undefined && (obj.error = message.error)
+    message.updating !== undefined && (obj.updating = message.updating)
     return obj
   },
 }

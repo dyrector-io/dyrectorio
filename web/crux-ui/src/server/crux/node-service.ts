@@ -91,6 +91,7 @@ class DyoNodeService {
       connectedAt: timestampToUTC(res.createdAt),
       status: 'unreachable',
       type: 'docker',
+      updating: false,
     }
   }
 
@@ -268,6 +269,7 @@ class DyoNodeService {
         version: data.version,
         connectedAt: timestampToUTC(data.connectedAt),
         error: data.error,
+        updating: data.updating,
       } as NodeStatusMessage)
 
     const stream = () => this.client.subscribeNodeEventChannel(ServiceIdRequest.fromJSON(req))

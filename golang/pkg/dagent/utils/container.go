@@ -121,30 +121,43 @@ func ExecTraefik(ctx context.Context, traefikDeployReq TraefikDeployRequest, cfg
 	return builder.CreateAndStart()
 }
 
-func GetOwnContainerID() string {
-	cgroup, err := ParseCGroupFile()
-	if err != nil {
-		return os.Getenv("HOSTNAME")
-	}
-
-	return cgroup
-}
-
 func GetOwnContainer(ctx context.Context) (*types.Container, error) {
-	containerID := GetOwnContainerID()
-	if containerID == "" {
-		return nil, &UnknownContainerError{}
-	}
+	hostname := os.Getenv("HOSTNAME")
 
-	containerByID, err := dockerHelper.GetContainerByID(ctx, nil, containerID, false)
+	log.Info().Str("hostname", hostname).Msg("Getting self by hostname")
+
+	ownContainer, err := dockerHelper.GetContainerByName(ctx, nil, hostname, false)
 	if err != nil {
 		return nil, err
 	}
-	if containerByID == nil {
-		return nil, &UnknownContainerError{}
+	if ownContainer != nil {
+		return ownContainer, nil
 	}
 
-	return containerByID, nil
+	ownContainer, err = dockerHelper.GetContainerByID(ctx, nil, hostname, false)
+	if err != nil {
+		return nil, err
+	}
+	if ownContainer != nil {
+		return ownContainer, nil
+	}
+
+	cgroup, err := ParseCGroupFile()
+	if err != nil {
+		return nil, err
+	}
+
+	log.Info().Str("cgroup", cgroup).Msg("Getting self by CGroup")
+
+	ownContainer, err = dockerHelper.GetContainerByID(ctx, nil, cgroup, false)
+	if err != nil {
+		return nil, err
+	}
+	if ownContainer != nil {
+		return ownContainer, nil
+	}
+
+	return nil, &UnknownContainerError{}
 }
 
 func GetOwnContainerImage() (*types.ImageInspect, error) {

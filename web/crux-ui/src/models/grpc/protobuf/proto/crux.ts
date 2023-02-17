@@ -1234,6 +1234,7 @@ export interface NodeResponse {
   connectedAt?: Timestamp | undefined
   version?: string | undefined
   type: NodeType
+  updating: boolean
 }
 
 export interface NodeDetailsResponse {
@@ -1250,6 +1251,7 @@ export interface NodeDetailsResponse {
   script?: NodeScriptResponse | undefined
   version?: string | undefined
   type: NodeType
+  updating: boolean
 }
 
 export interface NodeListResponse {
@@ -1312,6 +1314,7 @@ export interface NodeEventMessage {
   version?: string | undefined
   connectedAt?: Timestamp | undefined
   error?: string | undefined
+  updating?: boolean | undefined
 }
 
 export interface WatchContainerStateRequest {
@@ -8292,7 +8295,7 @@ export const PatchImageRequest = {
 }
 
 function createBaseNodeResponse(): NodeResponse {
-  return { id: '', audit: undefined, name: '', status: 0, type: 0 }
+  return { id: '', audit: undefined, name: '', status: 0, type: 0, updating: false }
 }
 
 export const NodeResponse = {
@@ -8326,6 +8329,9 @@ export const NodeResponse = {
     }
     if (message.type !== 0) {
       writer.uint32(856).int32(message.type)
+    }
+    if (message.updating === true) {
+      writer.uint32(864).bool(message.updating)
     }
     return writer
   },
@@ -8367,6 +8373,9 @@ export const NodeResponse = {
         case 107:
           message.type = reader.int32() as any
           break
+        case 108:
+          message.updating = reader.bool()
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -8387,6 +8396,7 @@ export const NodeResponse = {
       connectedAt: isSet(object.connectedAt) ? fromJsonTimestamp(object.connectedAt) : undefined,
       version: isSet(object.version) ? String(object.version) : undefined,
       type: isSet(object.type) ? nodeTypeFromJSON(object.type) : 0,
+      updating: isSet(object.updating) ? Boolean(object.updating) : false,
     }
   },
 
@@ -8402,6 +8412,7 @@ export const NodeResponse = {
     message.connectedAt !== undefined && (obj.connectedAt = fromTimestamp(message.connectedAt).toISOString())
     message.version !== undefined && (obj.version = message.version)
     message.type !== undefined && (obj.type = nodeTypeToJSON(message.type))
+    message.updating !== undefined && (obj.updating = message.updating)
     return obj
   },
 
@@ -8425,12 +8436,13 @@ export const NodeResponse = {
         : undefined
     message.version = object.version ?? undefined
     message.type = object.type ?? 0
+    message.updating = object.updating ?? false
     return message
   },
 }
 
 function createBaseNodeDetailsResponse(): NodeDetailsResponse {
-  return { id: '', audit: undefined, name: '', status: 0, hasToken: false, type: 0 }
+  return { id: '', audit: undefined, name: '', status: 0, hasToken: false, type: 0, updating: false }
 }
 
 export const NodeDetailsResponse = {
@@ -8473,6 +8485,9 @@ export const NodeDetailsResponse = {
     }
     if (message.type !== 0) {
       writer.uint32(880).int32(message.type)
+    }
+    if (message.updating === true) {
+      writer.uint32(888).bool(message.updating)
     }
     return writer
   },
@@ -8523,6 +8538,9 @@ export const NodeDetailsResponse = {
         case 110:
           message.type = reader.int32() as any
           break
+        case 111:
+          message.updating = reader.bool()
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -8546,6 +8564,7 @@ export const NodeDetailsResponse = {
       script: isSet(object.script) ? NodeScriptResponse.fromJSON(object.script) : undefined,
       version: isSet(object.version) ? String(object.version) : undefined,
       type: isSet(object.type) ? nodeTypeFromJSON(object.type) : 0,
+      updating: isSet(object.updating) ? Boolean(object.updating) : false,
     }
   },
 
@@ -8566,6 +8585,7 @@ export const NodeDetailsResponse = {
       (obj.script = message.script ? NodeScriptResponse.toJSON(message.script) : undefined)
     message.version !== undefined && (obj.version = message.version)
     message.type !== undefined && (obj.type = nodeTypeToJSON(message.type))
+    message.updating !== undefined && (obj.updating = message.updating)
     return obj
   },
 
@@ -8596,6 +8616,7 @@ export const NodeDetailsResponse = {
       object.script !== undefined && object.script !== null ? NodeScriptResponse.fromPartial(object.script) : undefined
     message.version = object.version ?? undefined
     message.type = object.type ?? 0
+    message.updating = object.updating ?? false
     return message
   },
 }
@@ -9265,6 +9286,9 @@ export const NodeEventMessage = {
     if (message.error !== undefined) {
       writer.uint32(834).string(message.error)
     }
+    if (message.updating !== undefined) {
+      writer.uint32(840).bool(message.updating)
+    }
     return writer
   },
 
@@ -9293,6 +9317,9 @@ export const NodeEventMessage = {
         case 104:
           message.error = reader.string()
           break
+        case 105:
+          message.updating = reader.bool()
+          break
         default:
           reader.skipType(tag & 7)
           break
@@ -9309,6 +9336,7 @@ export const NodeEventMessage = {
       version: isSet(object.version) ? String(object.version) : undefined,
       connectedAt: isSet(object.connectedAt) ? fromJsonTimestamp(object.connectedAt) : undefined,
       error: isSet(object.error) ? String(object.error) : undefined,
+      updating: isSet(object.updating) ? Boolean(object.updating) : undefined,
     }
   },
 
@@ -9320,6 +9348,7 @@ export const NodeEventMessage = {
     message.version !== undefined && (obj.version = message.version)
     message.connectedAt !== undefined && (obj.connectedAt = fromTimestamp(message.connectedAt).toISOString())
     message.error !== undefined && (obj.error = message.error)
+    message.updating !== undefined && (obj.updating = message.updating)
     return obj
   },
 
@@ -9338,6 +9367,7 @@ export const NodeEventMessage = {
         ? Timestamp.fromPartial(object.connectedAt)
         : undefined
     message.error = object.error ?? undefined
+    message.updating = object.updating ?? undefined
     return message
   },
 }
