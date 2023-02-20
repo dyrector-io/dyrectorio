@@ -9,7 +9,6 @@ import DyoSwitch from '@app/elements/dyo-switch'
 import {
   CraneConfigProperty,
   CRANE_CONFIG_FILTER_VALUES,
-  CRANE_CONFIG_PROPERTIES,
   filterContains,
   filterEmpty,
   ImageConfigProperty,

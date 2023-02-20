@@ -24,6 +24,7 @@
     "files": "Files",
     "commands": "Commands",
     "arguments": "Arguments",
+    "args": "Arguments",
     "exposeStrategy": "Expose strategy",
     "exposeStrategies": { "none": "None", "expose": "HTTP", "exposeWithTls": "HTTPS" },
     "ingressName": "Name",
