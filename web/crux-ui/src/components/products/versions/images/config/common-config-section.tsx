@@ -118,7 +118,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
               <div className="flex flex-row gap-4 items-start">
                 <ConfigSectionLabel
                   className="mt-2.5"
-                  disabled={disabled || !config.user}
+                  disabled={disabled || !resetableConfig.user}
                   onResetSection={() => onResetSection('user')}
                 >
                   {t('common.user').toUpperCase()}
@@ -453,7 +453,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             items={config.ports}
             label={t('common.ports')}
             onPatch={it => onChange({ ports: it })}
-            onResetSection={!resetableConfig || !!resetableConfig.ports ? () => onResetSection('ports') : null}
+            onResetSection={resetableConfig.ports ? () => onResetSection('ports') : null}
             findErrorMessage={index => fieldErrors.find(it => it.path?.startsWith(`ports[${index}]`))?.message}
             emptyItemFactory={() => ({
               external: null,
@@ -518,9 +518,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             })}
             findErrorMessage={index => fieldErrors.find(it => it.path?.startsWith(`portRanges[${index}]`))?.message}
             onPatch={it => onChange({ portRanges: it })}
-            onResetSection={
-              !resetableConfig || !!resetableConfig.portRanges ? () => onResetSection('portRanges') : null
-            }
+            onResetSection={resetableConfig.portRanges ? () => onResetSection('portRanges') : null}
             renderItem={(item, removeButton, onPatch) => (
               <div className="flex flex-col gap-2">
                 <DyoLabel>{t('common.internal').toUpperCase()}</DyoLabel>
@@ -600,7 +598,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             })}
             findErrorMessage={index => fieldErrors.find(it => it.path?.startsWith(`volumes[${index}]`))?.message}
             onPatch={it => onChange({ volumes: it })}
-            onResetSection={!resetableConfig || !!resetableConfig.volumes ? () => onResetSection('volumes') : null}
+            onResetSection={resetableConfig.volumes ? () => onResetSection('volumes') : null}
             renderItem={(item, removeButton, onPatch) => (
               <div className="grid break-inside-avoid">
                 <div className="flex flex-row">
@@ -699,9 +697,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
             })}
             findErrorMessage={index => fieldErrors.find(it => it.path?.startsWith(`initContainers[${index}]`))?.message}
             onPatch={it => onChange({ initContainers: it })}
-            onResetSection={
-              !resetableConfig || !!resetableConfig.initContainers ? () => onResetSection('initContainers') : null
-            }
+            onResetSection={resetableConfig.initContainers ? () => onResetSection('initContainers') : null}
             renderItem={(item, removeButton, onPatch) => (
               <div className="grid">
                 <MultiInput

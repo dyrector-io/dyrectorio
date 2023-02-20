@@ -93,7 +93,7 @@ const DagentConfigSection = (props: DagentConfigSectionProps) => {
               items={config.networks ?? []}
               keyPlaceholder={t('dagent.placeholders.network')}
               onChange={it => onChange({ networks: it })}
-              onResetSection={() => onResetSection('networks')}
+              onResetSection={resetableConfig.networks ? () => onResetSection('networks') : null}
               unique={false}
               editorOptions={editorOptions}
               disabled={disabled}
