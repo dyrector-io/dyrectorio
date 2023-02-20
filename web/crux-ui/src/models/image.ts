@@ -16,6 +16,7 @@ export type VersionImage = {
 export type PatchVersionImage = {
   tag?: string
   config?: Partial<ContainerConfigData>
+  resetSection?: ImageConfigProperty
 }
 
 export type ViewState = 'editor' | 'json'
@@ -87,7 +88,8 @@ export const CRANE_CONFIG_PROPERTIES = [
   'deploymentStrategy',
   'customHeaders',
   'proxyHeaders',
-  'loadBalancer',
+  'useLoadBalancer',
+  'extraLBAnnotations',
   'healthCheckConfig',
   'resourceConfig',
   'labels',
@@ -108,18 +110,22 @@ export const ALL_CONFIG_PROPERTIES = [
   ...DAGENT_CONFIG_PROPERTIES,
 ] as const
 
-export type CommonConfigFilterType = typeof COMMON_CONFIG_PROPERTIES[number]
-export type CraneConfigFilterType = typeof CRANE_CONFIG_PROPERTIES[number]
-export type DagentConfigFilterType = typeof DAGENT_CONFIG_PROPERTIES[number]
-export type ImageConfigFilterType = typeof ALL_CONFIG_PROPERTIES[number]
+export const CRANE_CONFIG_FILTER_VALUES = CRANE_CONFIG_PROPERTIES.filter(it => it !== 'extraLBAnnotations')
+
+export type CommonConfigProperty = typeof COMMON_CONFIG_PROPERTIES[number]
+export type CraneConfigProperty = typeof CRANE_CONFIG_PROPERTIES[number]
+export type DagentConfigProperty = typeof DAGENT_CONFIG_PROPERTIES[number]
+export type ImageConfigProperty = typeof ALL_CONFIG_PROPERTIES[number]
+
+export type BaseImageConfigFilterType = 'all' | 'common' | 'dagent' | 'crane'
 
 export const filterContains = (
-  filter: CommonConfigFilterType | CraneConfigFilterType | DagentConfigFilterType,
-  filters: ImageConfigFilterType[],
+  filter: CommonConfigProperty | CraneConfigProperty | DagentConfigProperty,
+  filters: ImageConfigProperty[],
 ): boolean => filters.includes(filter)
 
-export const filterEmpty = (filterValues: string[], filters: ImageConfigFilterType[]): boolean =>
-  filterValues.filter(x => filters.includes(x as ImageConfigFilterType)).length > 0
+export const filterEmpty = (filterValues: string[], filters: ImageConfigProperty[]): boolean =>
+  filterValues.filter(x => filters.includes(x as ImageConfigProperty)).length > 0
 
 export const imageName = (name: string, tag?: string): string => {
   if (!tag) {

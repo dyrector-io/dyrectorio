@@ -5,23 +5,23 @@ import {
   COMMON_CONFIG_PROPERTIES,
   CRANE_CONFIG_PROPERTIES,
   DAGENT_CONFIG_PROPERTIES,
-  ImageConfigFilterType,
+  ImageConfigProperty,
 } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useState } from 'react'
 
-type FilterSet = Record<BaseImageConfigFilterType, ImageConfigFilterType[]>
+type FilterSet = Record<BaseImageConfigFilterType, ImageConfigProperty[]>
 
 export const filterSet: FilterSet = {
   all: [...ALL_CONFIG_PROPERTIES],
   common: [...COMMON_CONFIG_PROPERTIES],
-  crane: [...CRANE_CONFIG_PROPERTIES],
+  crane: [...CRANE_CONFIG_PROPERTIES].filter(it => it !== 'extraLBAnnotations'),
   dagent: [...DAGENT_CONFIG_PROPERTIES],
 }
 
 interface ImageConfigFilterProps {
-  onChange: (filters: ImageConfigFilterType[]) => void
+  onChange: (filters: ImageConfigProperty[]) => void
   initialBaseFilter: BaseImageConfigFilterType | BaseImageConfigFilterType[]
 }
 
@@ -33,22 +33,20 @@ const ImageConfigFilters = (props: ImageConfigFilterProps) => {
   const mergeFilters = (filters: BaseImageConfigFilterType | BaseImageConfigFilterType[]) =>
     Array.isArray(filters) ? filters.flatMap(it => filterSet[it]) : filterSet[filters]
 
-  const [filters, setFilters] = useState<ImageConfigFilterType[]>(
-    initialBaseFilter ? mergeFilters(initialBaseFilter) : [...DAGENT_CONFIG_PROPERTIES],
-  )
+  const [filters, setFilters] = useState<ImageConfigProperty[]>(mergeFilters(initialBaseFilter))
 
   const onBaseFilterChanged = (value: BaseImageConfigFilterType) => {
-    const filtersByBase = value !== 'all' ? filterSet[value] : ALL_CONFIG_PROPERTIES
-    const select = filters.filter(it => filtersByBase.indexOf(it) !== -1).length === filtersByBase.length
+    const baseFilters = filterSet[value]
+    const select = filters.filter(it => baseFilters.includes(it)).length === baseFilters.length
 
     if (select) {
-      setFilters(filters.filter(it => filtersByBase.indexOf(it) === -1))
+      setFilters(filters.filter(it => !baseFilters.includes(it)))
     } else {
-      setFilters([...filters, ...filtersByBase.filter(it => filters.indexOf(it) === -1)])
+      setFilters([...filters, ...baseFilters.filter(it => !filters.includes(it))])
     }
   }
 
-  const onFilterChanged = (value: ImageConfigFilterType) => {
+  const onFilterChanged = (value: ImageConfigProperty) => {
     const newFilters = filters.indexOf(value) !== -1 ? filters.filter(it => it !== value) : [...filters, value]
     setFilters(newFilters)
   }

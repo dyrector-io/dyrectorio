@@ -1,5 +1,4 @@
 import { MessageType } from '@app/elements/dyo-input'
-import { DyoLabel } from '@app/elements/dyo-label'
 import useRepatch from '@app/hooks/use-repatch'
 
 import { UniqueKeyValue } from '@app/models'
@@ -11,6 +10,7 @@ import { v4 as uuid } from 'uuid'
 import * as yup from 'yup'
 import MultiInput from '../editor/multi-input'
 import { ItemEditorState } from '../editor/use-item-editor-state'
+import ConfigSectionLabel from '../products/versions/images/config/config-section-label'
 
 const EMPTY_KEY_VALUE_PAIR = {
   id: uuid(),
@@ -71,6 +71,7 @@ interface KeyValueInputProps {
   keyPlaceholder?: string
   valuePlaceholder?: string
   onChange: (items: UniqueKeyValue[]) => void
+  onResetSection?: VoidFunction
   type?: HTMLInputTypeAttribute | undefined
   editorOptions: ItemEditorState
   hint?: { hintValidation: yup.BaseSchema; hintText: string }
@@ -87,6 +88,7 @@ const KeyValueInput = (props: KeyValueInputProps) => {
     hint,
     editorOptions,
     onChange: propsOnChange,
+    onResetSection: propsOnResetSection,
     keyPlaceholder,
     valuePlaceholder,
     type,
@@ -129,6 +131,12 @@ const KeyValueInput = (props: KeyValueInputProps) => {
 
     propsOnChange(updatedItems)
     dispatch(setItems(newItems))
+  }
+
+  const onResetSection = () => {
+    dispatch(mergeItems([]))
+
+    propsOnResetSection()
   }
 
   const elements = stateToElements(state)
@@ -176,10 +184,18 @@ const KeyValueInput = (props: KeyValueInputProps) => {
     )
   }
 
+  const hasValue = !!items && items.length > 0
+
   return (
     <div className={clsx(className, 'flex flex-col')}>
       {!label ? null : (
-        <DyoLabel className={clsx(labelClassName ?? 'text-bright mb-2 whitespace-nowrap')}>{label}</DyoLabel>
+        <ConfigSectionLabel
+          disabled={disabled || !propsOnResetSection || !hasValue}
+          onResetSection={onResetSection}
+          labelClassName={labelClassName}
+        >
+          {label}
+        </ConfigSectionLabel>
       )}
 
       {elements.map((it, index) => renderItem(it, index))}

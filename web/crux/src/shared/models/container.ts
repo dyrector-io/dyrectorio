@@ -183,3 +183,32 @@ export type MergedContainerConfigData = Omit<ContainerConfigData, 'secrets'> & {
 }
 
 export type InstanceContainerConfigData = Partial<MergedContainerConfigData>
+
+export const CONTAINER_CONFIG_JSON_FIELDS = [
+  // Common
+  'environment',
+  'secrets',
+  'capabilities',
+  'ingress',
+  'configContainer',
+  'importContainer',
+  'ports',
+  'portRanges',
+  'volumes',
+  'commands',
+  'args',
+  'initContainers',
+
+  // Dagent
+  'logConfig',
+  'networks',
+  'dockerLabels',
+
+  // Crane
+  'healthCheckConfig',
+  'resourceConfig',
+  'extraLBAnnotations',
+  'customHeaders',
+  'annotations',
+  'labels',
+]
