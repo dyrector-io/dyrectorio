@@ -23,6 +23,10 @@ export type DyoFetchError = DyoErrorDto & {
 export const DEPLOYMENT_STATUS_VALUES = ['preparing', 'in_progress', 'successful', 'failed', 'obsolete'] as const
 export type DeploymentStatus = typeof DEPLOYMENT_STATUS_VALUES[number]
 
+// config
+
+export type BaseImageConfigFilterType = 'all' | 'common' | 'dagent' | 'crane'
+
 // ws
 
 export const WS_TYPE_DYO_ERROR = 'dyo-error'
