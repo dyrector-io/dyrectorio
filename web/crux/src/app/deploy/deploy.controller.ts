@@ -24,7 +24,7 @@ import {
 import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
 import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
-import { DisableTeamAccessCheck } from 'src/shared/team-access.guard'
+import { DisableTeamAccessCheck } from 'src/shared/user-access.guard'
 import DeployService from './deploy.service'
 import DeployCreateTeamAccessGuard from './guards/deploy.create.team-access.guard'
 import DeployGetByVersionTeamAccessGuard from './guards/deploy.get-by-version.team-access.guard'

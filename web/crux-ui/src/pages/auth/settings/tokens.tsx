@@ -54,6 +54,10 @@ const TokensPage = (props: TokensPageProps) => {
     })
 
     if (res.ok) {
+      if (showToken?.id === token.id) {
+        setShowToken(null)
+      }
+
       const index = filters.items.indexOf(token)
       const filterItems = filters.items
       filterItems.splice(index, 1)
