@@ -21,7 +21,7 @@ import useWebSocket from '@app/hooks/use-websocket'
 import {
   ContainerConfigData,
   DeleteImageMessage,
-  ImageConfigFilterType,
+  ImageConfigProperty,
   imageConfigToJsonContainerConfig,
   ImageUpdateMessage,
   JsonContainerConfig,
@@ -55,7 +55,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
   const { t } = useTranslation('images')
   const { image, product, version } = props
 
-  const [filters, setFilters] = useState<ImageConfigFilterType[]>([])
+  const [filters, setFilters] = useState<ImageConfigProperty[]>([])
   const [config, setConfig] = useState<ContainerConfigData>(image.config)
   const [viewState, setViewState] = useState<ViewState>('editor')
   const [fieldErrors, setFieldErrors] = useState<ValidationError[]>(() => getContainerConfigFieldErrors(image.config))
@@ -107,7 +107,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
     })
   }
 
-  const onResetSection = (section: ImageConfigFilterType) => {
+  const onResetSection = (section: ImageConfigProperty) => {
     const newConfig = { ...config } as any
     newConfig[section] = null
 

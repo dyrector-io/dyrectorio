@@ -9,11 +9,11 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoSwitch from '@app/elements/dyo-switch'
 import {
-  CommonConfigFilterType,
+  CommonConfigProperty,
   COMMON_CONFIG_PROPERTIES,
   filterContains,
   filterEmpty,
-  ImageConfigFilterType,
+  ImageConfigProperty,
 } from '@app/models'
 import {
   CommonConfigDetails,
@@ -35,11 +35,11 @@ import ExtendableItemList from './extendable-item-list'
 
 type CommonConfigSectionBaseProps<T> = {
   disabled?: boolean
-  selectedFilters: ImageConfigFilterType[]
+  selectedFilters: ImageConfigProperty[]
   editorOptions: ItemEditorState
   config: T
   onChange: (config: Partial<T>) => void
-  onResetSection: (section: CommonConfigFilterType) => void
+  onResetSection: (section: CommonConfigProperty) => void
   fieldErrors: ValidationError[]
   definedSecrets?: string[]
   publicKey?: string

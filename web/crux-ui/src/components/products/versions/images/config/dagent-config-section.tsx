@@ -5,11 +5,11 @@ import DyoChips from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
 import {
-  DagentConfigFilterType,
+  DagentConfigProperty,
   DAGENT_CONFIG_PROPERTIES,
   filterContains,
   filterEmpty,
-  ImageConfigFilterType,
+  ImageConfigProperty,
 } from '@app/models'
 import {
   ContainerConfigData,
@@ -29,8 +29,8 @@ import ConfigSectionLabel from './config-section-label'
 type DagentConfigSectionBaseProps<T> = {
   config: T
   onChange: (config: Partial<T>) => void
-  onResetSection: (section: DagentConfigFilterType) => void
-  selectedFilters: ImageConfigFilterType[]
+  onResetSection: (section: DagentConfigProperty) => void
+  selectedFilters: ImageConfigProperty[]
   editorOptions: ItemEditorState
   disabled?: boolean
 }

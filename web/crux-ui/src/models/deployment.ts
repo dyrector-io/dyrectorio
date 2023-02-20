@@ -1,7 +1,7 @@
 import { DeploymentStatus } from './common'
 import { InstanceContainerConfigData } from './container'
 import { UniqueKeyValue } from './grpc/protobuf/proto/crux'
-import { ImageConfigFilterType, ImageDeletedMessage } from './image'
+import { ImageConfigProperty, ImageDeletedMessage } from './image'
 import { Instance, InstanceStatus, PatchInstance } from './instance'
 import { DyoNode } from './node'
 import { ProductDetails } from './product'
@@ -95,7 +95,7 @@ export const WS_TYPE_PATCH_INSTANCE = 'patch-instance'
 export type PatchInstanceMessage = {
   instanceId: string
   config?: Partial<InstanceContainerConfigData>
-  resetSection?: ImageConfigFilterType
+  resetSection?: ImageConfigProperty
 }
 
 export const WS_TYPE_INSTANCE_UPDATED = 'instance-updated'

@@ -21,7 +21,7 @@ import { useThrottling } from '@app/hooks/use-throttleing'
 import {
   BaseImageConfigFilterType,
   DeploymentRoot,
-  ImageConfigFilterType,
+  ImageConfigProperty,
   instanceConfigToJsonInstanceConfig,
   InstanceContainerConfigData,
   InstanceJsonContainerConfig,
@@ -71,7 +71,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
   })
 
   const patch = useRef<Partial<InstanceContainerConfigData>>({})
-  const [filters, setFilters] = useState<ImageConfigFilterType[]>([])
+  const [filters, setFilters] = useState<ImageConfigProperty[]>([])
   const [viewState, setViewState] = useState<ViewState>('editor')
   const [fieldErrors, setFieldErrors] = useState<ValidationError[]>(() =>
     getMergedContainerConfigFieldErrors(mergeConfigs(instance.image.config, state.config)),
@@ -128,7 +128,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
     })
   }
 
-  const onResetSection = (section: ImageConfigFilterType) => {
+  const onResetSection = (section: ImageConfigProperty) => {
     const newConfig = actions.resetSection(section)
 
     const merged = mergeConfigs(instance.image.config, newConfig)

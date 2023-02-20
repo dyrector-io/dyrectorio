@@ -7,11 +7,12 @@ import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
 import DyoSwitch from '@app/elements/dyo-switch'
 import {
-  CraneConfigFilterType,
+  CraneConfigProperty,
+  CRANE_CONFIG_FILTER_VALUES,
   CRANE_CONFIG_PROPERTIES,
   filterContains,
   filterEmpty,
-  ImageConfigFilterType,
+  ImageConfigProperty,
 } from '@app/models'
 import {
   ContainerConfigData,
@@ -28,8 +29,8 @@ import ConfigSectionLabel from './config-section-label'
 type CraneConfigSectionBaseProps<T> = {
   config: T
   onChange: (config: Partial<T>) => void
-  onResetSection: (section: CraneConfigFilterType) => void
-  selectedFilters: ImageConfigFilterType[]
+  onResetSection: (section: CraneConfigProperty) => void
+  selectedFilters: ImageConfigProperty[]
   editorOptions: ItemEditorState
   disabled?: boolean
 }
@@ -55,7 +56,7 @@ const CraneConfigSection = (props: CraneConfigSectionProps) => {
   const resetableConfig = propsConfig
   const config = configType === 'instance' ? mergeConfigs(imageConfig, propsConfig) : propsConfig
 
-  return !filterEmpty([...CRANE_CONFIG_PROPERTIES], selectedFilters) ? null : (
+  return !filterEmpty([...CRANE_CONFIG_FILTER_VALUES], selectedFilters) ? null : (
     <div className="my-4">
       <DyoHeading className="text-lg text-bright uppercase font-semibold tracking-wide bg-dyo-violet/50 w-40 rounded-t-lg text-center pt-[2px]">
         {t('base.crane')}

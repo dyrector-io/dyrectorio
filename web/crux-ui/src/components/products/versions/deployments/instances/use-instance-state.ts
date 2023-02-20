@@ -2,7 +2,7 @@ import {
   ContainerConfigData,
   DeploymentGetSecretListMessage,
   DeploymentSecretListMessage,
-  ImageConfigFilterType,
+  ImageConfigProperty,
   Instance,
   InstanceContainerConfigData,
   PatchInstanceMessage,
@@ -31,7 +31,7 @@ export type InstanceState = {
 export type InstanceActions = {
   selectTab: (selection: EditInstanceCardSelection) => void
   updateConfig: (config: Partial<ContainerConfigData>) => void
-  resetSection: (section: ImageConfigFilterType) => ContainerConfigData
+  resetSection: (section: ImageConfigProperty) => ContainerConfigData
   onPatch: (newConfig: Partial<ContainerConfigData>) => void
   onParseError: (error: Error) => void
 }
@@ -69,7 +69,7 @@ const useInstanceState = (options: InstanceStateOptions) => {
 
   const updateConfig = (newConfig: Partial<InstanceContainerConfigData>) => setConfig({ ...config, ...newConfig })
 
-  const resetSection = (section: ImageConfigFilterType) => {
+  const resetSection = (section: ImageConfigProperty) => {
     const newConfig = { ...config } as any
     newConfig[section] = null
 
