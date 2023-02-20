@@ -14,10 +14,11 @@ import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import AuthService from './token.service'
 import TokenValidationPipe from './pipes/token.pipe'
-import TokenDeleteAccessGuard from './guards/token.delete.guard'
+import TokenAccessGuard from './guards/token.access.guard'
 
 @Controller()
 @CruxTokenControllerMethods()
+@UseGuards(TokenAccessGuard)
 @UseInterceptors(GrpcLoggerInterceptor, GrpcErrorInterceptor, PrismaErrorInterceptor)
 export default class TokenController implements CruxTokenController {
   constructor(private authService: AuthService) {}
@@ -30,7 +31,6 @@ export default class TokenController implements CruxTokenController {
     return this.authService.getTokenList(request)
   }
 
-  @UseGuards(TokenDeleteAccessGuard)
   async deleteToken(request: IdRequest): Promise<void> {
     await this.authService.deleteToken(request)
   }
