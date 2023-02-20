@@ -1,7 +1,9 @@
 import { Controller, Post, Body, UseGuards, UseInterceptors } from '@nestjs/common'
+import { ApiBody, ApiCreatedResponse } from '@nestjs/swagger'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import { AddImagesToVersionRequest, ImageListResponse } from 'src/grpc/protobuf/proto/crux'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
+import { AddImagesToVersionRequestDto, ImageListResponseDto } from 'src/swagger/crux.dto'
 import JwtAuthGuard from '../token/jwt-auth.guard'
 import ImageService from './image.service'
 
@@ -12,6 +14,8 @@ export default class ImageHttpController {
   constructor(private service: ImageService) {}
 
   @Post()
+  @ApiBody({ type: AddImagesToVersionRequestDto })
+  @ApiCreatedResponse({ type: ImageListResponseDto })
   @AuditLogLevel('disabled')
   async addImagesToVersion(@Body() request: AddImagesToVersionRequest): Promise<ImageListResponse> {
     return this.service.addImagesToVersion(request)
