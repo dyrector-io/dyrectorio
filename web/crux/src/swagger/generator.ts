@@ -63,6 +63,7 @@ const classes = interfaces.map(interfaceNode => {
 fs.writeFileSync(commander.output, '/* eslint-disable */\n\n', 'utf8')
 fs.appendFile(commander.output, classes.join('\n'), 'utf8', err => {
   if (err) {
+    // eslint-disable-next-line no-console
     console.error(err)
   }
 })

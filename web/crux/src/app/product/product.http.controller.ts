@@ -7,7 +7,7 @@ import {
   ProductListResponse,
 } from 'src/grpc/protobuf/proto/crux'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
-import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiResponse } from '@nestjs/swagger'
+import { ApiBody, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger'
 import {
   AccessRequestDto,
   CreateEntityResponseDto,
