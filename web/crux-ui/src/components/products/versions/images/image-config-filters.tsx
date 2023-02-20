@@ -1,6 +1,7 @@
 import { DyoLabel } from '@app/elements/dyo-label'
 import {
   ALL_CONFIG_PROPERTIES,
+  BaseImageConfigFilterType,
   COMMON_CONFIG_PROPERTIES,
   CRANE_CONFIG_PROPERTIES,
   DAGENT_CONFIG_PROPERTIES,
@@ -10,7 +11,6 @@ import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import { useEffect, useState } from 'react'
 
-type BaseImageConfigFilterType = 'all' | 'common' | 'dagent' | 'crane'
 type FilterSet = Record<BaseImageConfigFilterType, ImageConfigFilterType[]>
 
 export const filterSet: FilterSet = {
@@ -22,7 +22,7 @@ export const filterSet: FilterSet = {
 
 interface ImageConfigFilterProps {
   onChange: (filters: ImageConfigFilterType[]) => void
-  initialBaseFilter: BaseImageConfigFilterType
+  initialBaseFilter: BaseImageConfigFilterType | BaseImageConfigFilterType[]
 }
 
 const ImageConfigFilters = (props: ImageConfigFilterProps) => {
@@ -30,8 +30,11 @@ const ImageConfigFilters = (props: ImageConfigFilterProps) => {
 
   const { t } = useTranslation('container')
 
+  const mergeFilters = (filters: BaseImageConfigFilterType | BaseImageConfigFilterType[]) =>
+    Array.isArray(filters) ? filters.flatMap(it => filterSet[it]) : filterSet[filters]
+
   const [filters, setFilters] = useState<ImageConfigFilterType[]>(
-    initialBaseFilter ? filterSet[initialBaseFilter] : [...DAGENT_CONFIG_PROPERTIES],
+    initialBaseFilter ? mergeFilters(initialBaseFilter) : [...DAGENT_CONFIG_PROPERTIES],
   )
 
   const onBaseFilterChanged = (value: BaseImageConfigFilterType) => {
