@@ -75,7 +75,7 @@ const bootstrap = async () => {
 
   const agentOptions = loadGrpcOptions('agent', configService.get<string>('GRPC_AGENT_PORT'))
   const apiOptions = loadGrpcOptions('api', configService.get<string>('GRPC_API_PORT'))
-  const httpOptions = configService.get<string>('HTTP_API_PORT')
+  const httpOptions = configService.get<string>('HTTP_API_PORT', '1848')
 
   // agent
   app.connectMicroservice<MicroserviceOptions>({
