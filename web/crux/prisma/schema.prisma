@@ -29,10 +29,12 @@ model Team {
 model Token {
   id        String   @id @default(uuid()) @db.Uuid
   userId    String   @db.Uuid
-  name      String   @unique @db.VarChar(70)
+  name      String   @db.VarChar(70)
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   expiresAt DateTime @db.Timestamptz(6)
-  nonce     String   @unique @db.Uuid
+  nonce     String   @db.Uuid
+
+  @@unique([userId, name, nonce])
 }
 
 enum UserInvitationStatusEnum {

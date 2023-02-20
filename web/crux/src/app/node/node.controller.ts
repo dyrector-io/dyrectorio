@@ -25,7 +25,7 @@ import {
 import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
 import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
-import { DisableTeamAccessCheck } from 'src/shared/team-access.guard'
+import { DisableTeamAccessCheck } from 'src/shared/user-access.guard'
 import NodeTeamAccessGuard from './guards/node.team-access.guard'
 import NodeService from './node.service'
 import NodeGenerateScriptValidationPipe from './pipes/node.generate-script.pipe'

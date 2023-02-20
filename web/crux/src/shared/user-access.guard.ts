@@ -9,7 +9,7 @@ const DISABLE_TEAM_ACCESS_CHECK = 'disable-team-access-check'
 export const DisableTeamAccessCheck = () => SetMetadata(DISABLE_TEAM_ACCESS_CHECK, true)
 
 @Injectable()
-export default abstract class TeamAccessGuard implements CanActivate {
+export default abstract class UserAccessGuard implements CanActivate {
   constructor(protected readonly reflector: Reflector, protected readonly prisma: PrismaService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
