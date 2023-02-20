@@ -19,6 +19,7 @@ import DyoMessage from '@app/elements/dyo-message'
 import { defaultApiErrorHandler } from '@app/errors'
 import { useThrottling } from '@app/hooks/use-throttleing'
 import {
+  BaseImageConfigFilterType,
   DeploymentRoot,
   ImageConfigFilterType,
   instanceConfigToJsonInstanceConfig,
@@ -82,6 +83,13 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
 
   const editor = useEditorState(deploymentState.sock)
   const editorState = useItemEditorState(editor, deploymentState.sock, instance.id)
+
+  const baseFilter: BaseImageConfigFilterType | BaseImageConfigFilterType[] =
+    deployment.node.type === 'docker'
+      ? ['common', 'dagent']
+      : deployment.node.type === 'k8s'
+      ? ['common', 'crane']
+      : 'all'
 
   useEffect(() => {
     const reactNode = (
@@ -187,7 +195,7 @@ const InstanceDetailsPage = (props: InstanceDetailsPageProps) => {
 
           {getViewStateButtons()}
         </div>
-        {viewState === 'editor' && <ImageConfigFilters onChange={setFilters} initialBaseFilter="all" />}
+        {viewState === 'editor' && <ImageConfigFilters onChange={setFilters} initialBaseFilter={baseFilter} />}
       </DyoCard>
 
       {viewState === 'editor' && (
