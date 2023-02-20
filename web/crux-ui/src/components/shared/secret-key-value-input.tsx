@@ -53,7 +53,7 @@ const reducer = (state: UniqueSecretKeyValue[], action: KeyValueInputAction): Un
   const { type } = action
 
   if (type === 'set-items') {
-    const result = [...action.items]
+    const result = action.items ? [...action.items] : []
     pushEmptyLineIfNecessary(result)
     return result
   }

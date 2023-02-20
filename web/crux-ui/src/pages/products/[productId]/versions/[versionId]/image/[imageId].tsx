@@ -21,7 +21,7 @@ import useWebSocket from '@app/hooks/use-websocket'
 import {
   ContainerConfigData,
   DeleteImageMessage,
-  ImageConfigFilterType,
+  ImageConfigProperty,
   imageConfigToJsonContainerConfig,
   ImageUpdateMessage,
   JsonContainerConfig,
@@ -55,7 +55,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
   const { t } = useTranslation('images')
   const { image, product, version } = props
 
-  const [filters, setFilters] = useState<ImageConfigFilterType[]>([])
+  const [filters, setFilters] = useState<ImageConfigProperty[]>([])
   const [config, setConfig] = useState<ContainerConfigData>(image.config)
   const [viewState, setViewState] = useState<ViewState>('editor')
   const [fieldErrors, setFieldErrors] = useState<ValidationError[]>(() => getContainerConfigFieldErrors(image.config))
@@ -105,6 +105,22 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
 
       patch.current = {}
     })
+  }
+
+  const onResetSection = (section: ImageConfigProperty) => {
+    const newConfig = { ...config } as any
+    newConfig[section] = null
+
+    setConfig(newConfig)
+
+    const errors = getContainerConfigFieldErrors(newConfig)
+    setFieldErrors(errors)
+    setJsonError(jsonErrorOf(errors))
+
+    versionSock.send(WS_TYPE_PATCH_IMAGE, {
+      id: image.id,
+      resetSection: section,
+    } as PatchImageMessage)
   }
 
   versionSock.on(WS_TYPE_IMAGE_UPDATED, (message: ImageUpdateMessage) => {
@@ -194,6 +210,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
 
           {getViewStateButtons()}
         </div>
+
         {viewState === 'editor' && <ImageConfigFilters onChange={setFilters} initialBaseFilter="all" />}
       </DyoCard>
 
@@ -204,6 +221,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
             disabled={!version.mutable}
             config={config}
             onChange={onChange}
+            onResetSection={onResetSection}
             editorOptions={editorState}
             fieldErrors={fieldErrors}
             configType="image"
@@ -214,6 +232,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
             disabled={!version.mutable}
             config={config}
             onChange={onChange}
+            onResetSection={onResetSection}
             editorOptions={editorState}
             configType="image"
           />
@@ -223,6 +242,7 @@ const ImageDetailsPage = (props: ImageDetailsPageProps) => {
             disabled={!version.mutable}
             config={config}
             onChange={onChange}
+            onResetSection={onResetSection}
             editorOptions={editorState}
             configType="image"
           />

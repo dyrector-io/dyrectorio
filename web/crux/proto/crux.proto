@@ -212,9 +212,7 @@ message TokenResponse {
   google.protobuf.Timestamp createdAt = 102;
 }
 
-message TokenListResponse {
-  repeated TokenResponse data = 1000;
-}
+message TokenListResponse { repeated TokenResponse data = 1000; }
 
 // AUDIT
 message AuditLogListRequest {
@@ -791,6 +789,7 @@ message PatchImageRequest {
 
   optional string tag = 101;
   optional ImageContainerConfig config = 102;
+  optional string resetSection = 103;
 }
 
 // NODE
@@ -992,6 +991,7 @@ message PatchInstanceRequest {
   string accessedBy = 2;
 
   optional InstanceContainerConfig config = 100;
+  optional string resetSection = 103;
 }
 
 message DeploymentListResponse { repeated DeploymentResponse data = 1000; }

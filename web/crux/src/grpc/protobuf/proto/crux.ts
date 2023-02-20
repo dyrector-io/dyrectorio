@@ -1208,6 +1208,7 @@ export interface PatchImageRequest {
   accessedBy: string
   tag?: string | undefined
   config?: ImageContainerConfig | undefined
+  resetSection?: string | undefined
 }
 
 export interface NodeResponse {
@@ -1367,6 +1368,7 @@ export interface PatchInstanceRequest {
   id: string
   accessedBy: string
   config?: InstanceContainerConfig | undefined
+  resetSection?: string | undefined
 }
 
 export interface DeploymentListResponse {
@@ -3650,6 +3652,7 @@ export const PatchImageRequest = {
       accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       tag: isSet(object.tag) ? String(object.tag) : undefined,
       config: isSet(object.config) ? ImageContainerConfig.fromJSON(object.config) : undefined,
+      resetSection: isSet(object.resetSection) ? String(object.resetSection) : undefined,
     }
   },
 
@@ -3660,6 +3663,7 @@ export const PatchImageRequest = {
     message.tag !== undefined && (obj.tag = message.tag)
     message.config !== undefined &&
       (obj.config = message.config ? ImageContainerConfig.toJSON(message.config) : undefined)
+    message.resetSection !== undefined && (obj.resetSection = message.resetSection)
     return obj
   },
 }
@@ -4211,6 +4215,7 @@ export const PatchInstanceRequest = {
       id: isSet(object.id) ? String(object.id) : '',
       accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       config: isSet(object.config) ? InstanceContainerConfig.fromJSON(object.config) : undefined,
+      resetSection: isSet(object.resetSection) ? String(object.resetSection) : undefined,
     }
   },
 
@@ -4220,6 +4225,7 @@ export const PatchInstanceRequest = {
     message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.config !== undefined &&
       (obj.config = message.config ? InstanceContainerConfig.toJSON(message.config) : undefined)
+    message.resetSection !== undefined && (obj.resetSection = message.resetSection)
     return obj
   },
 }

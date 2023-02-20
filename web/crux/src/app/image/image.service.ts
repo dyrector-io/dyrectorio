@@ -148,6 +148,10 @@ export default class ImageService {
       config = this.mapper.configProtoToContainerConfigData(currentConfig as any as ContainerConfigData, request.config)
     }
 
+    if (request.resetSection) {
+      config = this.mapper.configSectionResetToDb(config ?? {}, request.resetSection)
+    }
+
     const image = await this.prisma.image.update({
       include: {
         config: true,

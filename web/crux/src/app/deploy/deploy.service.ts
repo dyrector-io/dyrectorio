@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { DeploymentStatusEnum, InstanceContainerConfig, Prisma } from '@prisma/client'
+import { DeploymentStatusEnum, Prisma } from '@prisma/client'
 import { JsonArray } from 'prisma'
 import { concatAll, EMPTY, filter, from, lastValueFrom, map, merge, Observable, Subject } from 'rxjs'
 import Deployment from 'src/domain/deployment'
@@ -233,7 +233,7 @@ export default class DeployService {
 
   async patchDeployment(request: PatchDeploymentRequest): Promise<UpdateEntityResponse> {
     const reqInstance = request.instance
-    let instanceConfigPatchSet: Omit<InstanceContainerConfig, 'id' | 'instanceId'> = null
+    let instanceConfigPatchSet: Partial<InstanceContainerConfigData> = null
 
     if (reqInstance?.config) {
       const instance = await this.prisma.instance.findUnique({
@@ -255,7 +255,14 @@ export default class DeployService {
         (instance.config ?? {}) as any as InstanceContainerConfigData,
         reqInstance.config,
       )
-      instanceConfigPatchSet = config as Omit<InstanceContainerConfig, 'id' | 'instanceId'>
+      instanceConfigPatchSet = config
+    }
+
+    if (reqInstance?.resetSection) {
+      instanceConfigPatchSet = this.mapper.configSectionResetToDb(
+        instanceConfigPatchSet ?? {},
+        reqInstance.resetSection,
+      )
     }
 
     const deployment = await this.prisma.deployment.update({
