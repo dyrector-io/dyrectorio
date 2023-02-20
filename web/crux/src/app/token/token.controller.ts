@@ -7,13 +7,14 @@ import {
   GenerateTokenResponse,
   IdRequest,
 } from 'src/grpc/protobuf/proto/crux'
-import { Controller, UseInterceptors, Body } from '@nestjs/common'
+import { Controller, UseInterceptors, Body, UseGuards } from '@nestjs/common'
 
 import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
 import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import AuthService from './token.service'
 import TokenValidationPipe from './pipes/token.pipe'
+import TokenDeleteAccessGuard from './guards/token.delete.guard'
 
 @Controller()
 @CruxTokenControllerMethods()
@@ -29,6 +30,7 @@ export default class TokenController implements CruxTokenController {
     return this.authService.getTokenList(request)
   }
 
+  @UseGuards(TokenDeleteAccessGuard)
   async deleteToken(request: IdRequest): Promise<void> {
     await this.authService.deleteToken(request)
   }
