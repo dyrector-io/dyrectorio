@@ -63,7 +63,6 @@ jobs:
           filters: |
             agents:
               - '${{ env.GOLANG_WORKING_DIRECTORY }}/**'
-              - '.github/workflows/full.yml'
             crux:
               - '${{ env.CRUX_WORKING_DIRECTORY }}/**'
               - '.github/workflows/full.yml'
@@ -72,7 +71,6 @@ jobs:
               - '.github/workflows/full.yml'
             kratos:
               - '${{ env.KRATOS_WORKING_DIRECTORY }}/**'
-              - '.github/workflows/full.yml'
       - name: Setting a buildtag
         id: settag
         working-directory: .github/workflows
@@ -95,9 +93,7 @@ jobs:
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
-    if: |
-      ${{ needs.changes.outputs.agents == 'true' }} ||
-      github.ref_type == 'tag'
+    if: ${{ (needs.changes.outputs.agents == 'true') || (github.ref_type == 'tag') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -117,9 +113,7 @@ jobs:
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
-    if: |
-      ${{ needs.changes.outputs.agents == 'true' }} ||
-      github.ref_type == 'tag'
+    if: ${{ (needs.changes.outputs.agents == 'true') || (github.ref_type == 'tag') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -136,9 +130,7 @@ jobs:
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
-    if: |
-      ${{ needs.changes.outputs.agents == 'true' }} ||
-      github.ref_type == 'tag'
+    if: ${{ (needs.changes.outputs.agents == 'true') || (github.ref_type == 'tag') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -231,9 +223,7 @@ jobs:
         working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
-    if: |
-      ${{ needs.changes.outputs.crux == 'true' }} ||
-      github.ref_type == 'tag'
+    if: ${{ (needs.changes.outputs.crux == 'true') || (github.ref_type == 'tag') }}
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
@@ -250,9 +240,6 @@ jobs:
         working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
-    if: |
-      ${{ needs.changes.outputs.crux == 'true' }} ||
-      github.ref_type == 'tag'
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
@@ -298,9 +285,7 @@ jobs:
     defaults:
       run:
         working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
-    if: |
-      ${{ needs.changes.outputs.cruxui == 'true' }} ||
-      github.ref_type == 'tag'
+    if: ${{ (needs.changes.outputs.cruxui == 'true') || (github.ref_type == 'tag') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -339,9 +324,7 @@ jobs:
     defaults:
       run:
         working-directory: ${{ env.KRATOS_WORKING_DIRECTORY }}
-    if: |
-      ${{ needs.changes.outputs.kratos == 'true' }} ||
-      github.ref_type == 'tag'
+    if: ${{ (needs.changes.outputs.kratos == 'true') || (github.ref_type == 'tag') }}
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
