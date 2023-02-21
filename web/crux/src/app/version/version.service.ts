@@ -162,12 +162,14 @@ export default class VersionService {
                     ...it,
                     id: undefined,
                     deploymentId: newDeployment.id,
-                    config: {
-                      create: {
-                        ...this.imageMapper.dbContainerConfigToCreateImageStatement(it.config),
-                        id: undefined,
-                      },
-                    },
+                    config: it.config
+                      ? {
+                          create: {
+                            ...this.imageMapper.dbContainerConfigToCreateImageStatement(it.config),
+                            id: undefined,
+                          },
+                        }
+                      : undefined,
                   },
                 }),
               ),
