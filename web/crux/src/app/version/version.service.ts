@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common'
-import { DeploymentStatusEnum, Version } from '@prisma/client'
+import {
+  DeploymentStatusEnum,
+  Version,
+} from '@prisma/client'
 import { VersionMessage } from 'src/domain/notification-templates'
 import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
@@ -91,6 +94,15 @@ export default class VersionService {
               config: true,
             },
           },
+          deployments: {
+            include: {
+              instances: {
+                include: {
+                  config: true,
+                },
+              },
+            },
+          },
         },
       })
 
@@ -126,7 +138,48 @@ export default class VersionService {
             }),
         )
 
+        const deployments = await Promise.all(
+          defaultVersion.deployments.map(async deployment => {
+            const newDeployment = await prisma.deployment.create({
+              select: {
+                id: true,
+              },
+              data: {
+                ...deployment,
+                id: undefined,
+                status: DeploymentStatusEnum.preparing,
+                versionId: newVersion.id,
+                environment: deployment.environment ?? [],
+                events: undefined,
+                instances: undefined,
+              },
+            })
+
+            await Promise.all(
+              deployment.instances.map(it => {
+                return prisma.instance.create({
+                  select: {
+                    id: true,
+                  },
+                  data: {
+                    ...it,
+                    id: undefined,
+                    deploymentId: newDeployment.id,
+                    config: {
+                      create: {
+                        ...this.imageMapper.dbContainerConfigToCreateImageStatement(it.config),
+                        id: undefined,
+                      },
+                    },
+                  },
+                })
+              }),
+            )
+          }),
+        )
+
         await Promise.all(images)
+        await Promise.all(deployments)
       }
 
       return newVersion
