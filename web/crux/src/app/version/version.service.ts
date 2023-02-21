@@ -1,8 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import {
-  DeploymentStatusEnum,
-  Version,
-} from '@prisma/client'
+import { DeploymentStatusEnum, Version } from '@prisma/client'
 import { VersionMessage } from 'src/domain/notification-templates'
 import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
@@ -156,8 +153,8 @@ export default class VersionService {
             })
 
             await Promise.all(
-              deployment.instances.map(it => {
-                return prisma.instance.create({
+              deployment.instances.map(it =>
+                prisma.instance.create({
                   select: {
                     id: true,
                   },
@@ -172,8 +169,8 @@ export default class VersionService {
                       },
                     },
                   },
-                })
-              }),
+                }),
+              ),
             )
           }),
         )
