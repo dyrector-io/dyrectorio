@@ -22,7 +22,7 @@ test('Add rolling version should work', async ({ page }) => {
   await expect(await page.locator('h5:has-text("1.0.0")')).toBeVisible()
 })
 
-test("Child version should get the parent version's images", async ({ page }) => {
+test("New version should get the default version's images and deployments", async ({ page }) => {
   const productId = await createProduct(page, 'PW-NEW-CHILD', 'Complex')
   const parentVersion = await createVersion(page, productId, '1.0.0', 'Incremental')
   await createImage(page, productId, parentVersion, 'nginx')
@@ -45,7 +45,7 @@ test("Child version should get the parent version's images", async ({ page }) =>
 
   await page.goto(versionUrl(productId, childVersion, { section: 'deployments' }))
 
-  await expect(await page.locator(`h3:has-text("You haven't added a deployment to this version")`)).toHaveCount(1)
+  await expect(await page.locator(`h3:has-text("You haven't added a deployment to this version")`)).toHaveCount(0)
 })
 
 test('Change default version should work', async ({ page }) => {
