@@ -1,13 +1,16 @@
-import { Injectable, PipeTransform } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import PrismaService from 'src/services/prisma.service'
 import { checkVersionMutability } from 'src/domain/version'
 import { IdRequest } from 'src/grpc/protobuf/proto/crux'
+import BodyPipeTransform from 'src/decorators/grpc.pipe'
 
 @Injectable()
-export default class VersionDeleteValidationPipe implements PipeTransform {
-  constructor(private prisma: PrismaService) {}
+export default class VersionDeleteValidationPipe extends BodyPipeTransform<IdRequest> {
+  constructor(private prisma: PrismaService) {
+    super()
+  }
 
-  async transform(value: IdRequest) {
+  async transformBody(value: IdRequest) {
     const version = await this.prisma.version.findUniqueOrThrow({
       include: {
         deployments: {

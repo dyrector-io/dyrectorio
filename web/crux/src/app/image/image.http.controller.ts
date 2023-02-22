@@ -4,6 +4,7 @@ import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import HttpExceptionFilter from 'src/filters/http-exception.filter'
 import { Empty } from 'src/grpc/protobuf/proto/common'
 import { AddImagesToVersionRequest, ImageListResponse, PatchImageRequest } from 'src/grpc/protobuf/proto/crux'
+import JWTUser from 'src/decorators/jwt-user.decorator'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import { AddImagesToVersionRequestDto, ImageListResponseDto, PatchImageRequestDto } from 'src/swagger/crux.dto'
@@ -22,15 +23,21 @@ export default class ImageHttpController {
   @ApiBody({ type: AddImagesToVersionRequestDto })
   @ApiCreatedResponse({ type: ImageListResponseDto })
   @AuditLogLevel('disabled')
-  async addImagesToVersion(@Body() request: AddImagesToVersionRequest): Promise<ImageListResponse> {
-    return this.service.addImagesToVersion(request)
+  async addImagesToVersion(
+    @Body() request: AddImagesToVersionRequest,
+    @JWTUser() accessedBy: string,
+  ): Promise<ImageListResponse> {
+    return this.service.addImagesToVersion(request, accessedBy)
   }
 
   @Patch()
   @ApiBody({ type: PatchImageRequestDto })
   @ApiOkResponse()
   @AuditLogLevel('disabled')
-  async UpdateImage(@Body(ImagePatchValidationPipe) request: PatchImageRequest): Promise<Empty> {
-    return await this.service.patchImage(request)
+  async UpdateImage(
+    @Body(ImagePatchValidationPipe) request: PatchImageRequest,
+    @JWTUser() accessedBy: string,
+  ): Promise<Empty> {
+    return await this.service.patchImage(request, accessedBy)
   }
 }

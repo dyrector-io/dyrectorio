@@ -54,7 +54,7 @@ export default class ImageService {
     return this.mapper.detailsToProto(image)
   }
 
-  async addImagesToVersion(request: AddImagesToVersionRequest): Promise<ImageListResponse> {
+  async addImagesToVersion(request: AddImagesToVersionRequest, accessedBy: string): Promise<ImageListResponse> {
     const images = await this.prisma.$transaction(async prisma => {
       const lastImageOrder = await this.prisma.image.findFirst({
         select: {
@@ -84,7 +84,7 @@ export default class ImageService {
             data: {
               registryId: registyImages.registryId,
               versionId: request.versionId,
-              createdBy: request.accessedBy,
+              createdBy: accessedBy,
               name: imageName,
               tag: imageTag,
               order: order++,
@@ -117,12 +117,12 @@ export default class ImageService {
     }
   }
 
-  async orderImages(request: OrderVersionImagesRequest): Promise<Empty> {
+  async orderImages(request: OrderVersionImagesRequest, accessedBy: string): Promise<Empty> {
     const updates = request.imageIds.map((it, index) =>
       this.prisma.image.update({
         data: {
           order: index,
-          updatedBy: request.accessedBy,
+          updatedBy: accessedBy,
         },
         where: {
           id: it,
@@ -135,7 +135,7 @@ export default class ImageService {
     return Empty
   }
 
-  async patchImage(request: PatchImageRequest): Promise<Empty> {
+  async patchImage(request: PatchImageRequest, accessedBy: string): Promise<Empty> {
     let config: Partial<ContainerConfigData>
 
     if (request.config) {
@@ -162,7 +162,7 @@ export default class ImageService {
         config: {
           update: config,
         },
-        updatedBy: request.accessedBy,
+        updatedBy: accessedBy,
       },
       where: {
         id: request.id,

@@ -1,14 +1,17 @@
-import { Injectable, PipeTransform } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import PrismaService from 'src/services/prisma.service'
 import { IdRequest } from 'src/grpc/protobuf/proto/crux'
 import { PreconditionFailedException } from 'src/exception/errors'
 import { checkDeploymentCopiability } from 'src/domain/deployment'
+import BodyPipeTransform from 'src/decorators/grpc.pipe'
 
 @Injectable()
-export default class DeployCopyValidationPipe implements PipeTransform {
-  constructor(private prisma: PrismaService) {}
+export default class DeployCopyValidationPipe extends BodyPipeTransform<IdRequest> {
+  constructor(private prisma: PrismaService) {
+    super()
+  }
 
-  async transform(value: IdRequest) {
+  async transformBody(value: IdRequest) {
     const deployment = await this.prisma.deployment.findFirstOrThrow({
       where: {
         id: value.id,

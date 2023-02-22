@@ -14,8 +14,8 @@ export default class AuditService {
     private readonly kratos: KratosService,
   ) {}
 
-  async getAuditLog(request: AuditLogListRequest): Promise<AuditLogListResponse> {
-    const conditions = await this.getConditions(request)
+  async getAuditLog(request: AuditLogListRequest, accessedBy: string): Promise<AuditLogListResponse> {
+    const conditions = await this.getConditions(request, accessedBy)
 
     const auditLog = await this.prisma.auditLog.findMany({
       ...conditions,
@@ -30,8 +30,8 @@ export default class AuditService {
     }
   }
 
-  async getAuditLogListCount(request: AuditLogListRequest): Promise<AuditLogListCountResponse> {
-    const conditions = await this.getConditions(request)
+  async getAuditLogListCount(request: AuditLogListRequest, accessedBy: string): Promise<AuditLogListCountResponse> {
+    const conditions = await this.getConditions(request, accessedBy)
 
     const count = await this.prisma.auditLog.count(conditions as Prisma.AuditLogCountArgs)
 
@@ -40,8 +40,8 @@ export default class AuditService {
     }
   }
 
-  private async getConditions(request: AuditLogListRequest): Promise<Prisma.AuditLogFindManyArgs> {
-    const { keyword, accessedBy, createdFrom, createdTo } = request
+  private async getConditions(request: AuditLogListRequest, accessedBy: string): Promise<Prisma.AuditLogFindManyArgs> {
+    const { keyword, createdFrom, createdTo } = request
 
     const dateFilter = this.getDateFilter(createdTo, createdFrom)
 

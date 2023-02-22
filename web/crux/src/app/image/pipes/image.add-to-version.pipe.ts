@@ -1,14 +1,17 @@
-import { Injectable, PipeTransform } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import PrismaService from 'src/services/prisma.service'
 import { checkVersionMutability } from 'src/domain/version'
 import { AddImagesToVersionRequest } from 'src/grpc/protobuf/proto/crux'
+import BodyPipeTransform from 'src/decorators/grpc.pipe'
 
 @Injectable()
-export default class ImageAddToVersionValidationPipe implements PipeTransform {
-  constructor(private prisma: PrismaService) {}
+export default class ImageAddToVersionValidationPipe extends BodyPipeTransform<AddImagesToVersionRequest> {
+  constructor(private prisma: PrismaService) {
+    super()
+  }
 
   // TODO validate unique container names
-  async transform(value: AddImagesToVersionRequest) {
+  async transformBody(value: AddImagesToVersionRequest) {
     const version = await this.prisma.version.findUniqueOrThrow({
       select: {
         type: true,

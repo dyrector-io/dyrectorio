@@ -1,9 +1,9 @@
-import { Body, Controller, UseGuards, UseInterceptors } from '@nestjs/common'
+import { Metadata } from '@grpc/grpc-js'
+import { Controller, UseGuards, UseInterceptors, UsePipes } from '@nestjs/common'
 import { concatAll, from, Observable } from 'rxjs'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import { ListSecretsResponse, Empty } from 'src/grpc/protobuf/proto/common'
 import {
-  AccessRequest,
   CreateDeploymentRequest,
   CreateEntityResponse,
   CruxDeploymentController,
@@ -23,6 +23,7 @@ import {
 } from 'src/grpc/protobuf/proto/crux'
 import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
 import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
+import GrpcUserInterceptor, { DisableAccessedByMetadata, getAccessedBy } from 'src/interceptors/grpc.user.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import { DisableTeamAccessCheck } from 'src/shared/user-access.guard'
 import DeployService from './deploy.service'
@@ -39,7 +40,7 @@ import DeployUpdateValidationPipe from './pipes/deploy.update.pipe'
 @Controller()
 @CruxDeploymentControllerMethods()
 @UseGuards(DeployTeamAccessGuard)
-@UseInterceptors(GrpcLoggerInterceptor, GrpcErrorInterceptor, PrismaErrorInterceptor)
+@UseInterceptors(GrpcLoggerInterceptor, GrpcUserInterceptor, GrpcErrorInterceptor, PrismaErrorInterceptor)
 export default class DeployController implements CruxDeploymentController {
   constructor(private service: DeployService) {}
 
@@ -58,16 +59,14 @@ export default class DeployController implements CruxDeploymentController {
   }
 
   @UseGuards(DeployCreateTeamAccessGuard)
-  async createDeployment(
-    @Body(DeployCreateValidationPipe) request: CreateDeploymentRequest,
-  ): Promise<CreateEntityResponse> {
-    return await this.service.createDeployment(request)
+  @UsePipes(DeployCreateValidationPipe)
+  async createDeployment(request: CreateDeploymentRequest, metadata: Metadata): Promise<CreateEntityResponse> {
+    return await this.service.createDeployment(request, getAccessedBy(metadata))
   }
 
-  async updateDeployment(
-    @Body(DeployUpdateValidationPipe) request: UpdateDeploymentRequest,
-  ): Promise<UpdateEntityResponse> {
-    return await this.service.updateDeployment(request)
+  @UsePipes(DeployUpdateValidationPipe)
+  async updateDeployment(request: UpdateDeploymentRequest, metadata: Metadata): Promise<UpdateEntityResponse> {
+    return await this.service.updateDeployment(request, getAccessedBy(metadata))
   }
 
   async getDeploymentSecrets(request: DeploymentListSecretsRequest): Promise<ListSecretsResponse> {
@@ -75,39 +74,44 @@ export default class DeployController implements CruxDeploymentController {
   }
 
   @AuditLogLevel('no-data')
-  async patchDeployment(
-    @Body(DeployPatchValidationPipe) request: PatchDeploymentRequest,
-  ): Promise<UpdateEntityResponse> {
-    return await this.service.patchDeployment(request)
+  @UsePipes(DeployPatchValidationPipe)
+  async patchDeployment(request: PatchDeploymentRequest, metadata: Metadata): Promise<UpdateEntityResponse> {
+    return await this.service.patchDeployment(request, getAccessedBy(metadata))
   }
 
-  async deleteDeployment(@Body(DeleteDeploymentValidationPipe) request: IdRequest): Promise<Empty> {
+  @UsePipes(DeleteDeploymentValidationPipe)
+  async deleteDeployment(request: IdRequest): Promise<Empty> {
     return await this.service.deleteDeployment(request)
   }
 
-  async startDeployment(@Body(DeployStartValidationPipe) request: IdRequest): Promise<Empty> {
-    return await this.service.startDeployment(request)
+  @UsePipes(DeployStartValidationPipe)
+  async startDeployment(request: IdRequest, metadata: Metadata): Promise<Empty> {
+    return await this.service.startDeployment(request, getAccessedBy(metadata))
   }
 
+  @DisableTeamAccessCheck()
+  @DisableAccessedByMetadata()
   subscribeToDeploymentEvents(request: IdRequest): Observable<DeploymentProgressMessage> {
     return from(this.service.subscribeToDeploymentEvents(request)).pipe(concatAll())
   }
 
   @DisableTeamAccessCheck()
+  @DisableAccessedByMetadata()
   @AuditLogLevel('disabled')
   subscribeToDeploymentEditEvents(request: ServiceIdRequest): Observable<DeploymentEditEventMessage> {
     return this.service.subscribeToDeploymentEditEvents(request)
   }
 
-  async getDeploymentList(request: AccessRequest): Promise<DeploymentListResponse> {
-    return await this.service.getDeploymentList(request)
+  async getDeploymentList(_: Empty, metadata: Metadata): Promise<DeploymentListResponse> {
+    return await this.service.getDeploymentList(getAccessedBy(metadata))
   }
 
-  async copyDeploymentSafe(@Body(DeployCopyValidationPipe) request: IdRequest): Promise<CreateEntityResponse> {
-    return this.service.copyDeployment(request)
+  @UsePipes(DeployCopyValidationPipe)
+  async copyDeploymentSafe(request: IdRequest, metadata: Metadata): Promise<CreateEntityResponse> {
+    return this.service.copyDeployment(request, getAccessedBy(metadata))
   }
 
-  async copyDeploymentUnsafe(request: IdRequest): Promise<CreateEntityResponse> {
-    return this.service.copyDeployment(request)
+  async copyDeploymentUnsafe(request: IdRequest, metadata: Metadata): Promise<CreateEntityResponse> {
+    return this.service.copyDeployment(request, getAccessedBy(metadata))
   }
 }

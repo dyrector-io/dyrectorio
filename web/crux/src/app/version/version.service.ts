@@ -26,7 +26,7 @@ export default class VersionService {
     private notificationService: DomainNotificationService,
   ) {}
 
-  async getVersionsByProductId(req: IdRequest): Promise<VersionListResponse> {
+  async getVersionsByProductId(req: IdRequest, accessedBy: string): Promise<VersionListResponse> {
     const versions = await this.prisma.version.findMany({
       include: {
         children: true,
@@ -40,7 +40,7 @@ export default class VersionService {
             users: {
               some: {
                 active: true,
-                userId: req.accessedBy,
+                userId: accessedBy,
               },
             },
           },
@@ -77,7 +77,7 @@ export default class VersionService {
     return this.mapper.detailsToProto(version)
   }
 
-  async createVersion(req: CreateVersionRequest): Promise<CreateEntityResponse> {
+  async createVersion(req: CreateVersionRequest, accessedBy: string): Promise<CreateEntityResponse> {
     const version = await this.prisma.$transaction(async prisma => {
       const defaultVersion = await prisma.version.findFirst({
         where: {
@@ -110,7 +110,7 @@ export default class VersionService {
           changelog: req.changelog,
           type: this.mapper.typeToDb(req.type),
           default: !defaultVersion,
-          createdBy: req.accessedBy,
+          createdBy: accessedBy,
         },
       })
 
@@ -191,7 +191,7 @@ export default class VersionService {
     })
 
     await this.notificationService.sendNotification({
-      identityId: req.accessedBy,
+      identityId: accessedBy,
       messageType: 'version',
       message: { subject: product.name, version: version.name } as VersionMessage,
     })
@@ -199,7 +199,7 @@ export default class VersionService {
     return CreateEntityResponse.fromJSON(version)
   }
 
-  async updateVersion(req: UpdateVersionRequest): Promise<UpdateEntityResponse> {
+  async updateVersion(req: UpdateVersionRequest, accessedBy: string): Promise<UpdateEntityResponse> {
     const version = await this.prisma.version.update({
       where: {
         id: req.id,
@@ -207,7 +207,7 @@ export default class VersionService {
       data: {
         name: req.name,
         changelog: req.changelog,
-        updatedBy: req.accessedBy,
+        updatedBy: accessedBy,
       },
     })
 
@@ -268,7 +268,7 @@ export default class VersionService {
    * @throws {AlreadyExistsException} When the version exists child version
    * @returns The processed prisma data - CreateEntityResponse
    */
-  async increaseVersion(request: IncreaseVersionRequest) {
+  async increaseVersion(request: IncreaseVersionRequest, accessedBy: string) {
     // Query the parent Version which will be the version we will increase
     // and include all necessary objects like images and deployments
     const parentVersion = await this.prisma.version.findUniqueOrThrow({
@@ -311,7 +311,7 @@ export default class VersionService {
           name: request.name,
           changelog: request.changelog,
           default: false,
-          createdBy: request.accessedBy,
+          createdBy: accessedBy,
           type: parentVersion.type,
         },
       })
@@ -326,7 +326,7 @@ export default class VersionService {
               order: image.order,
               registryId: image.registryId,
               versionId: version.id,
-              createdBy: request.accessedBy,
+              createdBy: accessedBy,
             },
           })
 
@@ -348,7 +348,7 @@ export default class VersionService {
         parentVersion.deployments.map(async deployment => {
           const createdDeploy = await prisma.deployment.create({
             data: {
-              createdBy: request.accessedBy,
+              createdBy: accessedBy,
               note: deployment.note,
               prefix: deployment.prefix,
               // Default status for deployments is preparing
@@ -402,7 +402,7 @@ export default class VersionService {
 
     if (product) {
       await this.notificationService.sendNotification({
-        identityId: request.accessedBy,
+        identityId: accessedBy,
         messageType: 'version',
         message: { subject: product.name, version: version.name } as VersionMessage,
       })

@@ -1,7 +1,8 @@
-import { Body, Controller, UseGuards, UseInterceptors } from '@nestjs/common'
+import { Metadata } from '@grpc/grpc-js'
+import { UsePipes, Controller, UseGuards, UseInterceptors } from '@nestjs/common'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
+import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
-  AccessRequest,
   CreateEntityResponse,
   CreateRegistryRequest,
   CruxRegistryController,
@@ -14,6 +15,7 @@ import {
 } from 'src/grpc/protobuf/proto/crux'
 import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
 import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
+import GrpcUserInterceptor, { getAccessedBy } from 'src/interceptors/grpc.user.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import RegistryAccessValidationGuard from './guards/registry.auth.validation.guard'
 import RegistryTeamAccessGuard from './guards/registry.team-access.guard'
@@ -24,29 +26,29 @@ import RegistryService from './registry.service'
 @Controller()
 @CruxRegistryControllerMethods()
 @UseGuards(RegistryTeamAccessGuard)
-@UseInterceptors(GrpcLoggerInterceptor, GrpcErrorInterceptor, PrismaErrorInterceptor)
+@UseInterceptors(GrpcLoggerInterceptor, GrpcUserInterceptor, GrpcErrorInterceptor, PrismaErrorInterceptor)
 export default class RegistryController implements CruxRegistryController {
   constructor(private service: RegistryService) {}
 
-  async getRegistries(request: AccessRequest): Promise<RegistryListResponse> {
-    return await this.service.getRegistries(request)
+  async getRegistries(_: Empty, metadata: Metadata): Promise<RegistryListResponse> {
+    return await this.service.getRegistries(getAccessedBy(metadata))
   }
 
   @UseGuards(RegistryAccessValidationGuard)
-  async createRegistry(request: CreateRegistryRequest): Promise<CreateEntityResponse> {
-    return await this.service.createRegistry(request)
+  async createRegistry(request: CreateRegistryRequest, metadata: Metadata): Promise<CreateEntityResponse> {
+    return await this.service.createRegistry(request, getAccessedBy(metadata))
   }
 
-  async deleteRegistry(@Body(DeleteRegistryValidationPipe) request: IdRequest): Promise<void> {
+  @UsePipes(DeleteRegistryValidationPipe)
+  async deleteRegistry(request: IdRequest): Promise<void> {
     await this.service.deleteRegistry(request)
   }
 
   @UseGuards(RegistryAccessValidationGuard)
   @AuditLogLevel('no-data')
-  async updateRegistry(
-    @Body(UpdateRegistryValidationPipe) request: UpdateRegistryRequest,
-  ): Promise<UpdateEntityResponse> {
-    return this.service.updateRegistry(request)
+  @UsePipes(UpdateRegistryValidationPipe)
+  async updateRegistry(request: UpdateRegistryRequest, metadata: Metadata): Promise<UpdateEntityResponse> {
+    return this.service.updateRegistry(request, getAccessedBy(metadata))
   }
 
   async getRegistryDetails(request: IdRequest): Promise<RegistryDetailsResponse> {

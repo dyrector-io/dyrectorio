@@ -2,6 +2,7 @@ import { Controller, Post, Body, Get, UseGuards, UseInterceptors, UseFilters } f
 import { ApiBody, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import HttpExceptionFilter from 'src/filters/http-exception.filter'
+import JWTUser from 'src/decorators/jwt-user.decorator'
 import { Empty } from 'src/grpc/protobuf/proto/common'
 import { CreateDeploymentRequest, CreateEntityResponse, IdRequest } from 'src/grpc/protobuf/proto/crux'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
@@ -28,16 +29,22 @@ export default class DeployHttpController {
   @ApiBody({ type: CreateDeploymentRequestDto })
   @ApiCreatedResponse({ type: CreateEntityResponseDto })
   @AuditLogLevel('disabled')
-  async createDeployment(@Body() request: CreateDeploymentRequest): Promise<CreateEntityResponse> {
-    return this.service.createDeployment(request)
+  async createDeployment(
+    @Body() request: CreateDeploymentRequest,
+    @JWTUser() accessedBy: string,
+  ): Promise<CreateEntityResponse> {
+    return this.service.createDeployment(request, accessedBy)
   }
 
   @Post('start')
   @ApiBody({ type: IdRequestDto })
   @ApiOkResponse()
   @AuditLogLevel('disabled')
-  async startDeployment(@Body(DeployStartValidationPipe) request: IdRequest): Promise<Empty> {
-    return await this.service.startDeployment(request)
+  async startDeployment(
+    @Body(DeployStartValidationPipe) request: IdRequest,
+    @JWTUser() accessedBy: string,
+  ): Promise<Empty> {
+    return await this.service.startDeployment(request, accessedBy)
   }
 
   @Get('events')

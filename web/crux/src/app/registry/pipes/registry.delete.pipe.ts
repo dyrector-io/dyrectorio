@@ -1,13 +1,16 @@
-import { Injectable, PipeTransform } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import PrismaService from 'src/services/prisma.service'
 import { IdRequest } from 'src/grpc/protobuf/proto/crux'
 import { PreconditionFailedException } from 'src/exception/errors'
+import BodyPipeTransform from 'src/decorators/grpc.pipe'
 
 @Injectable()
-export default class DeleteRegistryValidationPipe implements PipeTransform {
-  constructor(private prisma: PrismaService) {}
+export default class DeleteRegistryValidationPipe extends BodyPipeTransform<IdRequest> {
+  constructor(private prisma: PrismaService) {
+    super()
+  }
 
-  async transform(value: IdRequest) {
+  async transformBody(value: IdRequest) {
     const used = await this.prisma.image.count({
       where: {
         registryId: value.id,

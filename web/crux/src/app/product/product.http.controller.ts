@@ -1,11 +1,6 @@
 import { Controller, Post, Body, Get, UseGuards, UseInterceptors, UseFilters } from '@nestjs/common'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
-import {
-  AccessRequest,
-  CreateEntityResponse,
-  CreateProductRequest,
-  ProductListResponse,
-} from 'src/grpc/protobuf/proto/crux'
+import { CreateEntityResponse, CreateProductRequest, ProductListResponse } from 'src/grpc/protobuf/proto/crux'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import { ApiBody, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger'
 import {
@@ -15,6 +10,7 @@ import {
   ProductListResponseDto,
 } from 'src/swagger/crux.dto'
 import HttpExceptionFilter from 'src/filters/http-exception.filter'
+import JWTUser from 'src/decorators/jwt-user.decorator'
 import ProductService from './product.service'
 import JwtAuthGuard from '../token/jwt-auth.guard'
 
@@ -29,15 +25,18 @@ export default class ProductHttpController {
   @ApiBody({ type: CreateProductRequestDto })
   @ApiCreatedResponse({ type: CreateEntityResponseDto })
   @AuditLogLevel('disabled')
-  async createProduct(@Body() request: CreateProductRequest): Promise<CreateEntityResponse> {
-    return this.service.createProduct(request)
+  async createProduct(
+    @Body() request: CreateProductRequest,
+    @JWTUser() accessedBy: string,
+  ): Promise<CreateEntityResponse> {
+    return this.service.createProduct(request, accessedBy)
   }
 
   @Get()
   @ApiBody({ type: AccessRequestDto })
   @ApiOkResponse({ type: ProductListResponseDto })
   @AuditLogLevel('disabled')
-  async getProducts(@Body() request: AccessRequest): Promise<ProductListResponse> {
-    return this.service.getProducts(request)
+  async getProducts(@JWTUser() accessedBy: string): Promise<ProductListResponse> {
+    return this.service.getProducts(accessedBy)
   }
 }

@@ -16,7 +16,6 @@ import {
 } from '@app/models'
 import { Empty, ListSecretsResponse } from '@app/models/grpc/protobuf/proto/common'
 import {
-  AccessRequest,
   CreateDeploymentRequest,
   CreateEntityResponse,
   CruxDeploymentClient,
@@ -35,7 +34,6 @@ import {
 } from '@app/models/grpc/protobuf/proto/crux'
 import { timestampToUTC } from '@app/utils'
 import { WsMessage } from '@app/websockets/common'
-import { Identity } from '@ory/kratos-client'
 import { GrpcConnection, protomisify, ProtoSubscriptionOptions } from './grpc-connection'
 import {
   deploymentEventTypeToDto,
@@ -49,17 +47,14 @@ import { versionTypeToDyo } from './mappers/version-mappers'
 class DyoDeploymentService {
   private logger = new Logger(DyoDeploymentService.name)
 
-  constructor(private client: CruxDeploymentClient, private identity: Identity) {}
+  constructor(private client: CruxDeploymentClient, private cookie: string) {}
 
   async getAll(): Promise<Deployment[]> {
-    const req: AccessRequest = {
-      accessedBy: this.identity.id,
-    }
-
-    const deployments = await protomisify<AccessRequest, DeploymentListResponse>(
+    const deployments = await protomisify<Empty, DeploymentListResponse>(
       this.client,
       this.client.getDeploymentList,
-    )(IdRequest, req)
+      this.cookie,
+    )(Empty, {})
 
     return deployments.data.map(it => ({
       ...it,
@@ -72,12 +67,12 @@ class DyoDeploymentService {
   async getAllByVersionId(verisonId: string): Promise<DeploymentByVersion[]> {
     const req: IdRequest = {
       id: verisonId,
-      accessedBy: this.identity.id,
     }
 
     const deployments = await protomisify<IdRequest, DeploymentListByVersionResponse>(
       this.client,
       this.client.getDeploymentsByVersionId,
+      this.cookie,
     )(IdRequest, req)
 
     return deployments.data.map(it => ({
@@ -91,13 +86,13 @@ class DyoDeploymentService {
   async getById(id: string): Promise<DeploymentDetails> {
     const req: IdRequest = {
       id,
-      accessedBy: this.identity.id,
     }
 
-    const res = await protomisify<IdRequest, DeploymentDetailsResponse>(this.client, this.client.getDeploymentDetails)(
-      IdRequest,
-      req,
-    )
+    const res = await protomisify<IdRequest, DeploymentDetailsResponse>(
+      this.client,
+      this.client.getDeploymentDetails,
+      this.cookie,
+    )(IdRequest, req)
 
     return {
       ...res,
@@ -112,13 +107,13 @@ class DyoDeploymentService {
   async getEvents(id: string): Promise<[DeploymentStatus, DeploymentEvent[]]> {
     const req: IdRequest = {
       id,
-      accessedBy: this.identity.id,
     }
 
-    const res = await protomisify<IdRequest, DeploymentEventListResponse>(this.client, this.client.getDeploymentEvents)(
-      IdRequest,
-      req,
-    )
+    const res = await protomisify<IdRequest, DeploymentEventListResponse>(
+      this.client,
+      this.client.getDeploymentEvents,
+      this.cookie,
+    )(IdRequest, req)
 
     const data = res.data.map(it => {
       const type = deploymentEventTypeToDto(it.type)
@@ -146,12 +141,12 @@ class DyoDeploymentService {
     const req: DeploymentListSecretsRequest = {
       id: deploymentId,
       instanceId,
-      accessedBy: this.identity.id,
     }
 
     const res = await protomisify<DeploymentListSecretsRequest, ListSecretsResponse>(
       this.client,
       this.client.getDeploymentSecrets,
+      this.cookie,
     )(DeploymentListSecretsRequest, req)
 
     return res
@@ -161,12 +156,12 @@ class DyoDeploymentService {
     const req: CreateDeploymentRequest = {
       ...deployment,
       versionId,
-      accessedBy: this.identity.id,
     }
 
     const res = await protomisify<CreateDeploymentRequest, CreateEntityResponse>(
       this.client,
       this.client.createDeployment,
+      this.cookie,
     )(CreateDeploymentRequest, req)
 
     return res.id
@@ -176,19 +171,18 @@ class DyoDeploymentService {
     const req = {
       ...dto,
       id,
-      accessedBy: this.identity.id,
     } as UpdateDeploymentRequest
 
-    await protomisify<UpdateDeploymentRequest, UpdateEntityResponse>(this.client, this.client.updateDeployment)(
-      UpdateDeploymentRequest,
-      req,
-    )
+    await protomisify<UpdateDeploymentRequest, UpdateEntityResponse>(
+      this.client,
+      this.client.updateDeployment,
+      this.cookie,
+    )(UpdateDeploymentRequest, req)
   }
 
   async patch(dto: PatchDeployment): Promise<void> {
     const req: PatchDeploymentRequest = {
       ...dto,
-      accessedBy: this.identity.id,
       environment: !dto.environment
         ? undefined
         : {
@@ -198,40 +192,37 @@ class DyoDeploymentService {
         ? undefined
         : {
             id: dto.instance.instanceId,
-            accessedBy: this.identity.id,
             config: instanceContainerConfigToProto(dto.instance.config),
             resetSection: dto.instance?.resetSection,
           },
     }
 
-    await protomisify<PatchDeploymentRequest, UpdateEntityResponse>(this.client, this.client.patchDeployment)(
-      PatchDeploymentRequest,
-      req,
-    )
+    await protomisify<PatchDeploymentRequest, UpdateEntityResponse>(
+      this.client,
+      this.client.patchDeployment,
+      this.cookie,
+    )(PatchDeploymentRequest, req)
   }
 
   async delete(id: string) {
     const req: IdRequest = {
       id,
-      accessedBy: this.identity.id,
     }
 
-    await protomisify<IdRequest, Empty>(this.client, this.client.deleteDeployment)(IdRequest, req)
+    await protomisify<IdRequest, Empty>(this.client, this.client.deleteDeployment, this.cookie)(IdRequest, req)
   }
 
   async startDeployment(id: string): Promise<void> {
     const req: IdRequest = {
       id,
-      accessedBy: this.identity.id,
     }
 
-    await protomisify<IdRequest, Empty>(this.client, this.client.startDeployment)(IdRequest, req)
+    await protomisify<IdRequest, Empty>(this.client, this.client.startDeployment, this.cookie)(IdRequest, req)
   }
 
   subscribeToDeploymentEvents(id: string, options?: ProtoSubscriptionOptions<DeploymentEvent[]>) {
     const req: IdRequest = {
       id,
-      accessedBy: this.identity.id,
     }
 
     const stream = () => this.client.subscribeToDeploymentEvents(IdRequest.fromJSON(req))
@@ -279,11 +270,10 @@ class DyoDeploymentService {
   async copyDeployment(id: string, overwrite: boolean): Promise<string> {
     const req = {
       id,
-      accessedBy: this.identity.id,
     } as IdRequest
 
     const grpcCall = overwrite ? this.client.copyDeploymentUnsafe : this.client.copyDeploymentSafe
-    const res = await protomisify<IdRequest, CreateEntityResponse>(this.client, grpcCall)(IdRequest, req)
+    const res = await protomisify<IdRequest, CreateEntityResponse>(this.client, grpcCall, this.cookie)(IdRequest, req)
 
     return res.id
   }

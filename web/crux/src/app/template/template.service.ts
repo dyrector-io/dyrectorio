@@ -43,7 +43,10 @@ export default class TemplateService {
     private imageMapper: ImageMapper,
   ) {}
 
-  async createProductFromTemplate(req: CreateProductFromTemplateRequest): Promise<CreateEntityResponse> {
+  async createProductFromTemplate(
+    req: CreateProductFromTemplateRequest,
+    accessedBy: string,
+  ): Promise<CreateEntityResponse> {
     const template = await this.templateFileService.getTemplateById(req.id)
 
     if (template.registries && template.registries.length > 0) {
@@ -59,7 +62,7 @@ export default class TemplateService {
               team: {
                 users: {
                   some: {
-                    userId: req.accessedBy,
+                    userId: accessedBy,
                     active: true,
                   },
                 },
@@ -72,25 +75,26 @@ export default class TemplateService {
       const createRegistries = template.registries
         .filter(it => !counts.find(f => f.name === it.name))
         .map(it =>
-          this.registryService.createRegistry({
-            accessedBy: req.accessedBy,
-            ...it,
-            description: it.description ?? '',
-          }),
+          this.registryService.createRegistry(
+            {
+              ...it,
+              description: it.description ?? '',
+            },
+            accessedBy,
+          ),
         )
       await Promise.all(createRegistries)
     }
 
     const createProductReq: CreateProductRequest = {
-      accessedBy: req.accessedBy,
       name: req.name,
       description: req.description,
       type: req.type,
     }
 
-    const product = await this.productService.createProduct(createProductReq)
+    const product = await this.productService.createProduct(createProductReq, accessedBy)
 
-    await this.createVersion(template.images, product, req.type, req.accessedBy)
+    await this.createVersion(template.images, product, req.type, accessedBy)
 
     return product
   }
@@ -173,13 +177,12 @@ export default class TemplateService {
 
     if (version === null) {
       const createReq: CreateVersionRequest = {
-        accessedBy,
         productId,
         name: VERSION_NAME,
         type: VersionType.INCREMENTAL,
       }
 
-      const newVersion = await this.versionService.createVersion(createReq)
+      const newVersion = await this.versionService.createVersion(createReq, accessedBy)
       version = await this.prisma.version.findFirst({
         where: {
           id: newVersion.id,

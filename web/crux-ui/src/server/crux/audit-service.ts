@@ -6,18 +6,18 @@ import {
   CruxAuditClient,
 } from '@app/models/grpc/protobuf/proto/crux'
 import { timestampToUTC, toTimestamp } from '@app/utils'
-import { Identity } from '@ory/kratos-client'
 import { protomisify } from './grpc-connection'
 
 class DyoAuditService {
-  constructor(private client: CruxAuditClient, private identity: Identity) {}
+  constructor(private client: CruxAuditClient, private cookie: string) {}
 
   async getAuditLog(request: AuditLogListRequest): Promise<AuditLog[]> {
-    const req: ProtoAuditLogRequest = this.getListRequest(request)
+    const req: ProtoAuditLogRequest = DyoAuditService.getListRequest(request)
 
     const auditLog = await protomisify<ProtoAuditLogRequest, AuditLogListResponse>(
       this.client,
       this.client.getAuditLog,
+      this.cookie,
     )(ProtoAuditLogRequest, req)
 
     return auditLog.data.map(it => ({
@@ -29,22 +29,22 @@ class DyoAuditService {
   }
 
   async getAuditLogListCount(request: AuditLogListRequest): Promise<number> {
-    const req: ProtoAuditLogRequest = this.getListRequest(request)
+    const req: ProtoAuditLogRequest = DyoAuditService.getListRequest(request)
 
     const response = await protomisify<ProtoAuditLogRequest, AuditLogListCountResponse>(
       this.client,
       this.client.getAuditLogListCount,
+      this.cookie,
     )(ProtoAuditLogRequest, req)
 
     return response.count
   }
 
-  private getListRequest(request: AuditLogListRequest): ProtoAuditLogRequest {
+  private static getListRequest(request: AuditLogListRequest): ProtoAuditLogRequest {
     return {
       ...request,
       createdFrom: request.createdFrom ? toTimestamp(new Date(request.createdFrom)) : null,
       createdTo: toTimestamp(new Date(request.createdTo)),
-      accessedBy: this.identity.id,
     }
   }
 }

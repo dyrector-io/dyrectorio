@@ -1,6 +1,6 @@
 import { GRPC_STREAM_RECONNECT_TIMEOUT } from '@app/const'
 import { Logger } from '@app/logger'
-import grpc, { StatusObject } from '@grpc/grpc-js'
+import grpc, { Metadata, StatusObject } from '@grpc/grpc-js'
 import { Status } from '@grpc/grpc-js/build/src/constants'
 import { fromGrpcError, parseGrpcError } from '@server/error-middleware'
 import { promisify } from 'util'
@@ -138,8 +138,17 @@ export class GrpcConnection<I, O extends object> {
   }
 }
 
+export const createProtoMetadata = (cookie?: string) => {
+  const meta = new Metadata()
+  if (cookie) {
+    meta.add('cookie', cookie)
+  }
+  return meta
+}
+
 type GrpcCall<Req, Res> = (
   request: Req,
+  metadata: Metadata,
   callback: (error: grpc.ServiceError | null, response: Res) => void,
 ) => grpc.ClientUnaryCall
 
@@ -151,11 +160,14 @@ export const protomisify =
   <Req, Res>(
     client: grpc.Client,
     grpcCall: GrpcCall<Req, Res>,
+    cookie?: string,
   ): ((serializer: GrpcSerializer<Req>, request: Req) => Promise<Res>) =>
   async (serializer, request) => {
     try {
       const req = serializer.fromJSON(request)
-      const res = await promisify<Req, Res>(grpcCall).call(client, req)
+      const meta = createProtoMetadata(cookie)
+
+      const res = await promisify<Req, Metadata, Res>(grpcCall).call(client, req, meta)
       return res
     } catch (err) {
       const error = parseGrpcError(err)

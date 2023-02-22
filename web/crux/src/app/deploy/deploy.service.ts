@@ -7,7 +7,6 @@ import { InternalException, PreconditionFailedException } from 'src/exception/er
 import { DeployRequest } from 'src/grpc/protobuf/proto/agent'
 import { Empty, ListSecretsResponse } from 'src/grpc/protobuf/proto/common'
 import {
-  AccessRequest,
   CreateDeploymentRequest,
   CreateEntityResponse,
   DeploymentDetailsResponse,
@@ -132,7 +131,7 @@ export default class DeployService {
     })
   }
 
-  async createDeployment(request: CreateDeploymentRequest): Promise<CreateEntityResponse> {
+  async createDeployment(request: CreateDeploymentRequest, accessedBy: string): Promise<CreateEntityResponse> {
     const version = await this.prisma.version.findUniqueOrThrow({
       where: {
         id: request.versionId,
@@ -150,7 +149,7 @@ export default class DeployService {
         nodeId: request.nodeId,
         status: DeploymentStatusEnum.preparing,
         note: request.note,
-        createdBy: request.accessedBy,
+        createdBy: accessedBy,
         prefix: request.prefix,
         instances: {
           createMany: {
@@ -222,12 +221,12 @@ export default class DeployService {
     return CreateEntityResponse.fromJSON(deployment)
   }
 
-  async updateDeployment(request: UpdateDeploymentRequest): Promise<UpdateEntityResponse> {
+  async updateDeployment(request: UpdateDeploymentRequest, accessedBy: string): Promise<UpdateEntityResponse> {
     const deployment = await this.prisma.deployment.update({
       data: {
         note: request.note,
         prefix: request.prefix,
-        updatedBy: request.accessedBy,
+        updatedBy: accessedBy,
       },
       where: {
         id: request.id,
@@ -239,7 +238,7 @@ export default class DeployService {
     })
   }
 
-  async patchDeployment(request: PatchDeploymentRequest): Promise<UpdateEntityResponse> {
+  async patchDeployment(request: PatchDeploymentRequest, accessedBy: string): Promise<UpdateEntityResponse> {
     const reqInstance = request.instance
     let instanceConfigPatchSet: Partial<InstanceContainerConfigData> = null
 
@@ -276,7 +275,7 @@ export default class DeployService {
     const deployment = await this.prisma.deployment.update({
       data: {
         environment: request.environment?.data as JsonArray,
-        updatedBy: request.accessedBy,
+        updatedBy: accessedBy,
         instances: !reqInstance
           ? undefined
           : {
@@ -328,7 +327,7 @@ export default class DeployService {
     return Empty
   }
 
-  async startDeployment(request: IdRequest): Promise<Empty> {
+  async startDeployment(request: IdRequest, accessedBy: string): Promise<Empty> {
     const deployment = await this.prisma.deployment.findUniqueOrThrow({
       where: {
         id: request.id,
@@ -501,7 +500,7 @@ export default class DeployService {
         }),
       },
       {
-        accessedBy: request.accessedBy,
+        accessedBy,
         productName: deployment.version.product.name,
         versionName: deployment.version.name,
         nodeName: deployment.node.name,
@@ -573,7 +572,7 @@ export default class DeployService {
     )
   }
 
-  async getDeploymentList(request: AccessRequest): Promise<DeploymentListResponse> {
+  async getDeploymentList(accessedBy: string): Promise<DeploymentListResponse> {
     const deployments = await this.prisma.deployment.findMany({
       where: {
         version: {
@@ -581,7 +580,7 @@ export default class DeployService {
             team: {
               users: {
                 some: {
-                  userId: request.accessedBy,
+                  userId: accessedBy,
                   active: true,
                 },
               },
@@ -653,7 +652,7 @@ export default class DeployService {
     return lastValueFrom(watcher)
   }
 
-  async copyDeployment(request: IdRequest): Promise<CreateEntityResponse> {
+  async copyDeployment(request: IdRequest, accessedBy: string): Promise<CreateEntityResponse> {
     const oldDeployment = await this.prisma.deployment.findFirstOrThrow({
       where: {
         id: request.id,
@@ -685,7 +684,7 @@ export default class DeployService {
         nodeId: oldDeployment.nodeId,
         status: DeploymentStatusEnum.preparing,
         note: oldDeployment.note,
-        createdBy: request.accessedBy,
+        createdBy: accessedBy,
         prefix: oldDeployment.prefix,
       },
     })
@@ -740,7 +739,6 @@ export default class DeployService {
 
     if (preparingDeployment) {
       await this.deleteDeployment({
-        accessedBy: request.accessedBy,
         id: preparingDeployment.id,
       })
     }

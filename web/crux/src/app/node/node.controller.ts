@@ -1,9 +1,9 @@
-import { Body, Controller, UseGuards, UseInterceptors } from '@nestjs/common'
+import { Metadata } from '@grpc/grpc-js'
+import { UsePipes, Controller, UseGuards, UseInterceptors } from '@nestjs/common'
 import { concatAll, from, Observable } from 'rxjs'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import { ContainerLogMessage, ContainerStateListMessage, Empty } from 'src/grpc/protobuf/proto/common'
 import {
-  AccessRequest,
   CreateEntityResponse,
   CreateNodeRequest,
   CruxNodeController,
@@ -24,6 +24,7 @@ import {
 } from 'src/grpc/protobuf/proto/crux'
 import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
 import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
+import GrpcUserInterceptor, { DisableAccessedByMetadata, getAccessedBy } from 'src/interceptors/grpc.user.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import { DisableTeamAccessCheck } from 'src/shared/user-access.guard'
 import NodeTeamAccessGuard from './guards/node.team-access.guard'
@@ -34,24 +35,24 @@ import NodeGetScriptValidationPipe from './pipes/node.get-script.pipe'
 @Controller()
 @CruxNodeControllerMethods()
 @UseGuards(NodeTeamAccessGuard)
-@UseInterceptors(GrpcLoggerInterceptor, GrpcErrorInterceptor, PrismaErrorInterceptor)
+@UseInterceptors(GrpcLoggerInterceptor, GrpcUserInterceptor, GrpcErrorInterceptor, PrismaErrorInterceptor)
 export default class NodeController implements CruxNodeController {
   constructor(private service: NodeService) {}
 
-  async getNodes(request: AccessRequest): Promise<NodeListResponse> {
-    return await this.service.getNodes(request)
+  async getNodes(_: Empty, metadata: Metadata): Promise<NodeListResponse> {
+    return await this.service.getNodes(getAccessedBy(metadata))
   }
 
-  async createNode(request: CreateNodeRequest): Promise<CreateEntityResponse> {
-    return await this.service.createNode(request)
+  async createNode(request: CreateNodeRequest, metadata: Metadata): Promise<CreateEntityResponse> {
+    return await this.service.createNode(request, getAccessedBy(metadata))
   }
 
   async deleteNode(request: IdRequest): Promise<void> {
     await this.service.deleteNode(request)
   }
 
-  async updateNode(request: UpdateNodeRequest): Promise<Empty> {
-    return await this.service.updateNode(request)
+  async updateNode(request: UpdateNodeRequest, metadata: Metadata): Promise<Empty> {
+    return await this.service.updateNode(request, getAccessedBy(metadata))
   }
 
   async getNodeDetails(request: IdRequest): Promise<NodeDetailsResponse> {
@@ -60,15 +61,16 @@ export default class NodeController implements CruxNodeController {
 
   // TODO(m8vago):  fix errors related to this - interceptor halts
   @AuditLogLevel('disabled')
-  async generateScript(
-    @Body(NodeGenerateScriptValidationPipe) request: GenerateScriptRequest,
-  ): Promise<NodeInstallResponse> {
-    return await this.service.generateScript(request)
+  @UsePipes(NodeGenerateScriptValidationPipe)
+  async generateScript(request: GenerateScriptRequest, metadata: Metadata): Promise<NodeInstallResponse> {
+    return await this.service.generateScript(request, getAccessedBy(metadata))
   }
 
   @DisableTeamAccessCheck()
+  @DisableAccessedByMetadata()
   @AuditLogLevel('disabled')
-  async getScript(@Body(NodeGetScriptValidationPipe) request: ServiceIdRequest): Promise<NodeScriptResponse> {
+  @UsePipes(NodeGetScriptValidationPipe)
+  async getScript(request: ServiceIdRequest): Promise<NodeScriptResponse> {
     return await this.service.getScript(request)
   }
 
@@ -76,17 +78,20 @@ export default class NodeController implements CruxNodeController {
     return await this.service.discardScript(request)
   }
 
-  async revokeToken(request: IdRequest): Promise<Empty> {
-    return await this.service.revokeToken(request)
+  async revokeToken(request: IdRequest, metadata: Metadata): Promise<Empty> {
+    return await this.service.revokeToken(request, getAccessedBy(metadata))
   }
 
   @AuditLogLevel('disabled')
   @DisableTeamAccessCheck()
+  @DisableAccessedByMetadata()
   subscribeNodeEventChannel(request: ServiceIdRequest): Observable<NodeEventMessage> {
     return from(this.service.handleSubscribeNodeEventChannel(request)).pipe(concatAll())
   }
 
   @AuditLogLevel('disabled')
+  @DisableTeamAccessCheck()
+  @DisableAccessedByMetadata()
   watchContainerState(request: WatchContainerStateRequest): Observable<ContainerStateListMessage> {
     return this.service.handleWatchContainerStatus(request)
   }
@@ -105,6 +110,9 @@ export default class NodeController implements CruxNodeController {
     return this.service.deleteContainers(request)
   }
 
+  @AuditLogLevel('disabled')
+  @DisableTeamAccessCheck()
+  @DisableAccessedByMetadata()
   subscribeContainerLogChannel(request: WatchContainerLogRequest): Observable<ContainerLogMessage> {
     return this.service.handleContainerLogStream(request)
   }

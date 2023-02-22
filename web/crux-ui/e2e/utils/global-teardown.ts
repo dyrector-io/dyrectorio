@@ -3,7 +3,16 @@ import { exec, ExecOptions } from 'child_process'
 import { FullConfig } from '@playwright/test'
 import CruxClients from '@server/crux/crux-clients'
 import DyoTeamService from '@server/crux/team-service'
-import { cruxAddressFromConfig, deleteUserByEmail, getUserByEmail, kratosFromConfig, USER_EMAIL } from './common'
+import {
+  cruxAddressFromConfig,
+  deleteUserByEmail,
+  getUserByEmail,
+  getUserSessionToken,
+  kratosFromConfig,
+  kratosFrontendFromConfig,
+  USER_EMAIL,
+  USER_PASSWORD,
+} from './common'
 
 const globalTeardown = async (config: FullConfig) => {
   const kratos = kratosFromConfig(config)
@@ -12,9 +21,15 @@ const globalTeardown = async (config: FullConfig) => {
     return
   }
 
+  const frontend = kratosFrontendFromConfig(config)
+  const sessionCookie = await getUserSessionToken(frontend, USER_EMAIL, USER_PASSWORD)
+  if (!sessionCookie) {
+    return
+  }
+
   const cruxAddress = cruxAddressFromConfig(config)
   const clients = new CruxClients(cruxAddress)
-  const teams = new DyoTeamService(clients.teams, identity, null)
+  const teams = new DyoTeamService(clients.teams, identity, null, sessionCookie)
   const team = await teams.getActiveTeam()
   if (team) {
     await teams.deleteTeam(team.id)

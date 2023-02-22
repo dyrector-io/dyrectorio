@@ -1,14 +1,17 @@
-import { Injectable, PipeTransform } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { AlreadyExistsException, PreconditionFailedException } from 'src/exception/errors'
 import { IncreaseVersionRequest } from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
 import { ProductTypeEnum } from '.prisma/client'
+import BodyPipeTransform from 'src/decorators/grpc.pipe'
 
 @Injectable()
-export default class VersionIncreaseValidationPipe implements PipeTransform {
-  constructor(private prisma: PrismaService) {}
+export default class VersionIncreaseValidationPipe extends BodyPipeTransform<IncreaseVersionRequest> {
+  constructor(private prisma: PrismaService) {
+    super()
+  }
 
-  async transform(value: IncreaseVersionRequest) {
+  async transformBody(value: IncreaseVersionRequest) {
     const version = await this.prisma.version.findUniqueOrThrow({
       include: {
         product: {

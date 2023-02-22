@@ -1,4 +1,5 @@
-import { Body, Controller, UseGuards, UseInterceptors } from '@nestjs/common'
+import { Metadata } from '@grpc/grpc-js'
+import { UsePipes, Controller, UseGuards, UseInterceptors } from '@nestjs/common'
 import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
   CreateEntityResponse,
@@ -14,6 +15,7 @@ import {
 } from 'src/grpc/protobuf/proto/crux'
 import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
 import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
+import GrpcUserInterceptor, { getAccessedBy } from 'src/interceptors/grpc.user.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import VersionCreateTeamAccessGuard from './guards/version.create.team-access.guard'
 import VersionTeamAccessGuard from './guards/version.team-access.guard'
@@ -26,18 +28,17 @@ import VersionService from './version.service'
 @Controller()
 @CruxProductVersionControllerMethods()
 @UseGuards(VersionTeamAccessGuard)
-@UseInterceptors(GrpcLoggerInterceptor, GrpcErrorInterceptor, PrismaErrorInterceptor)
+@UseInterceptors(GrpcLoggerInterceptor, GrpcUserInterceptor, GrpcErrorInterceptor, PrismaErrorInterceptor)
 export default class VersionController implements CruxProductVersionController {
   constructor(private service: VersionService) {}
 
-  async increaseVersion(
-    @Body(VersionIncreaseValidationPipe) request: IncreaseVersionRequest,
-  ): Promise<CreateEntityResponse> {
-    return await this.service.increaseVersion(request)
+  @UsePipes(VersionIncreaseValidationPipe)
+  async increaseVersion(request: IncreaseVersionRequest, metadata: Metadata): Promise<CreateEntityResponse> {
+    return await this.service.increaseVersion(request, getAccessedBy(metadata))
   }
 
-  async getVersionsByProductId(productId: IdRequest): Promise<VersionListResponse> {
-    return await this.service.getVersionsByProductId(productId)
+  async getVersionsByProductId(productId: IdRequest, metadata: Metadata): Promise<VersionListResponse> {
+    return await this.service.getVersionsByProductId(productId, getAccessedBy(metadata))
   }
 
   async getVersionDetails(versionId: IdRequest): Promise<VersionDetailsResponse> {
@@ -45,19 +46,22 @@ export default class VersionController implements CruxProductVersionController {
   }
 
   @UseGuards(VersionCreateTeamAccessGuard)
-  async createVersion(@Body(VersionCreateValidationPipe) request: CreateVersionRequest): Promise<CreateEntityResponse> {
-    return await this.service.createVersion(request)
+  @UsePipes(VersionCreateValidationPipe)
+  async createVersion(request: CreateVersionRequest, metadata: Metadata): Promise<CreateEntityResponse> {
+    return await this.service.createVersion(request, getAccessedBy(metadata))
   }
 
-  async updateVersion(@Body(VersionUpdateValidationPipe) request: UpdateVersionRequest): Promise<UpdateEntityResponse> {
-    return await this.service.updateVersion(request)
+  @UsePipes(VersionUpdateValidationPipe)
+  async updateVersion(request: UpdateVersionRequest, metadata: Metadata): Promise<UpdateEntityResponse> {
+    return await this.service.updateVersion(request, getAccessedBy(metadata))
   }
 
   async setDefaultVersion(request: IdRequest): Promise<Empty> {
     return await this.service.setDefaultVersion(request)
   }
 
-  async deleteVersion(@Body(VersionDeleteValidationPipe) request: IdRequest): Promise<Empty> {
+  @UsePipes(VersionDeleteValidationPipe)
+  async deleteVersion(request: IdRequest): Promise<Empty> {
     return await this.service.deleteVersion(request)
   }
 }

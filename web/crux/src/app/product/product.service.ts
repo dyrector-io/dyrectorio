@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common'
 import { ProductTypeEnum, VersionTypeEnum } from '@prisma/client'
 import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
-  AccessRequest,
   CreateEntityResponse,
   CreateProductRequest,
   IdRequest,
@@ -20,13 +19,13 @@ import ProductMapper from './product.mapper'
 export default class ProductService {
   constructor(private teamRepository: TeamRepository, private prisma: PrismaService, private mapper: ProductMapper) {}
 
-  async getProducts(request: AccessRequest): Promise<ProductListResponse> {
+  async getProducts(accessedBy: string): Promise<ProductListResponse> {
     const products = await this.prisma.product.findMany({
       where: {
         team: {
           users: {
             some: {
-              userId: request.accessedBy,
+              userId: accessedBy,
               active: true,
             },
           },
@@ -46,9 +45,9 @@ export default class ProductService {
     }
   }
 
-  async createProduct(request: CreateProductRequest): Promise<CreateEntityResponse> {
+  async createProduct(request: CreateProductRequest, accessedBy: string): Promise<CreateEntityResponse> {
     const type = this.mapper.typeToDb(request.type)
-    const team = await this.teamRepository.getActiveTeamByUserId(request.accessedBy)
+    const team = await this.teamRepository.getActiveTeamByUserId(accessedBy)
 
     const product = await this.prisma.product.create({
       data: {
@@ -56,13 +55,13 @@ export default class ProductService {
         description: request.description,
         type,
         teamId: team.teamId,
-        createdBy: request.accessedBy,
+        createdBy: accessedBy,
         versions:
           type === ProductTypeEnum.simple
             ? {
                 create: {
                   name: SIMPLE_PRODUCT_VERSION_NAME,
-                  createdBy: request.accessedBy,
+                  createdBy: accessedBy,
                   type: VersionTypeEnum.rolling,
                   default: true,
                 },
@@ -74,7 +73,7 @@ export default class ProductService {
     return CreateEntityResponse.fromJSON(product)
   }
 
-  async updateProduct(req: UpdateProductRequest): Promise<UpdateEntityResponse> {
+  async updateProduct(req: UpdateProductRequest, accessedBy: string): Promise<UpdateEntityResponse> {
     let product = await this.prisma.product.findUnique({
       select: {
         type: true,
@@ -91,7 +90,7 @@ export default class ProductService {
       data: {
         name: req.name,
         description: req.description,
-        updatedBy: req.accessedBy,
+        updatedBy: accessedBy,
         versions:
           product.type === ProductTypeEnum.simple
             ? {

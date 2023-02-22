@@ -1,5 +1,6 @@
-import { Injectable, PipeTransform } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import AgentService from 'src/app/agent/agent.service'
+import BodyPipeTransform from 'src/decorators/grpc.pipe'
 import { checkDeploymentDeployability } from 'src/domain/deployment'
 import { PreconditionFailedException } from 'src/exception/errors'
 import { IdRequest, NodeConnectionStatus } from 'src/grpc/protobuf/proto/crux'
@@ -8,10 +9,12 @@ import { UniqueSecretKey, UniqueSecretKeyValue } from 'src/shared/models'
 import { deploymentSchema, yupValidate } from 'src/shared/validation'
 
 @Injectable()
-export default class DeployStartValidationPipe implements PipeTransform {
-  constructor(private prisma: PrismaService, private agentService: AgentService) {}
+export default class DeployStartValidationPipe extends BodyPipeTransform<IdRequest> {
+  constructor(private prisma: PrismaService, private agentService: AgentService) {
+    super()
+  }
 
-  async transform(value: IdRequest) {
+  async transformBody(value: IdRequest) {
     const deployment = await this.prisma.deployment.findUniqueOrThrow({
       include: {
         version: true,

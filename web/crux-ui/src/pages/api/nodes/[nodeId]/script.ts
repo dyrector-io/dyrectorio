@@ -7,7 +7,7 @@ import { Readable } from 'stream'
 const onGet = async (req: NextApiRequest, res: NextApiResponse) => {
   const nodeId = req.query.nodeId as string
 
-  const dto = await Crux.withIdentity(null).nodes.getScript(nodeId)
+  const dto = await Crux.withIdentity(null, null).nodes.getScript(nodeId)
 
   res.writeHead(200, {
     'Content-Type': 'text/plain',

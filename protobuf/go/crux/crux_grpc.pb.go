@@ -24,7 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CruxProductClient interface {
 	// CRUD
-	GetProducts(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*ProductListResponse, error)
+	GetProducts(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*ProductListResponse, error)
 	CreateProduct(ctx context.Context, in *CreateProductRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error)
 	UpdateProduct(ctx context.Context, in *UpdateProductRequest, opts ...grpc.CallOption) (*UpdateEntityResponse, error)
 	DeleteProduct(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
@@ -39,7 +39,7 @@ func NewCruxProductClient(cc grpc.ClientConnInterface) CruxProductClient {
 	return &cruxProductClient{cc}
 }
 
-func (c *cruxProductClient) GetProducts(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*ProductListResponse, error) {
+func (c *cruxProductClient) GetProducts(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*ProductListResponse, error) {
 	out := new(ProductListResponse)
 	err := c.cc.Invoke(ctx, "/crux.CruxProduct/GetProducts", in, out, opts...)
 	if err != nil {
@@ -89,7 +89,7 @@ func (c *cruxProductClient) GetProductDetails(ctx context.Context, in *IdRequest
 // for forward compatibility
 type CruxProductServer interface {
 	// CRUD
-	GetProducts(context.Context, *AccessRequest) (*ProductListResponse, error)
+	GetProducts(context.Context, *common.Empty) (*ProductListResponse, error)
 	CreateProduct(context.Context, *CreateProductRequest) (*CreateEntityResponse, error)
 	UpdateProduct(context.Context, *UpdateProductRequest) (*UpdateEntityResponse, error)
 	DeleteProduct(context.Context, *IdRequest) (*common.Empty, error)
@@ -101,7 +101,7 @@ type CruxProductServer interface {
 type UnimplementedCruxProductServer struct {
 }
 
-func (UnimplementedCruxProductServer) GetProducts(context.Context, *AccessRequest) (*ProductListResponse, error) {
+func (UnimplementedCruxProductServer) GetProducts(context.Context, *common.Empty) (*ProductListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProducts not implemented")
 }
 func (UnimplementedCruxProductServer) CreateProduct(context.Context, *CreateProductRequest) (*CreateEntityResponse, error) {
@@ -130,7 +130,7 @@ func RegisterCruxProductServer(s grpc.ServiceRegistrar, srv CruxProductServer) {
 }
 
 func _CruxProduct_GetProducts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AccessRequest)
+	in := new(common.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -142,7 +142,7 @@ func _CruxProduct_GetProducts_Handler(srv interface{}, ctx context.Context, dec 
 		FullMethod: "/crux.CruxProduct/GetProducts",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CruxProductServer).GetProducts(ctx, req.(*AccessRequest))
+		return srv.(CruxProductServer).GetProducts(ctx, req.(*common.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -256,7 +256,7 @@ var CruxProduct_ServiceDesc = grpc.ServiceDesc{
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CruxRegistryClient interface {
 	// CRUD
-	GetRegistries(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*RegistryListResponse, error)
+	GetRegistries(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*RegistryListResponse, error)
 	CreateRegistry(ctx context.Context, in *CreateRegistryRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error)
 	UpdateRegistry(ctx context.Context, in *UpdateRegistryRequest, opts ...grpc.CallOption) (*UpdateEntityResponse, error)
 	DeleteRegistry(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
@@ -271,7 +271,7 @@ func NewCruxRegistryClient(cc grpc.ClientConnInterface) CruxRegistryClient {
 	return &cruxRegistryClient{cc}
 }
 
-func (c *cruxRegistryClient) GetRegistries(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*RegistryListResponse, error) {
+func (c *cruxRegistryClient) GetRegistries(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*RegistryListResponse, error) {
 	out := new(RegistryListResponse)
 	err := c.cc.Invoke(ctx, "/crux.CruxRegistry/GetRegistries", in, out, opts...)
 	if err != nil {
@@ -321,7 +321,7 @@ func (c *cruxRegistryClient) GetRegistryDetails(ctx context.Context, in *IdReque
 // for forward compatibility
 type CruxRegistryServer interface {
 	// CRUD
-	GetRegistries(context.Context, *AccessRequest) (*RegistryListResponse, error)
+	GetRegistries(context.Context, *common.Empty) (*RegistryListResponse, error)
 	CreateRegistry(context.Context, *CreateRegistryRequest) (*CreateEntityResponse, error)
 	UpdateRegistry(context.Context, *UpdateRegistryRequest) (*UpdateEntityResponse, error)
 	DeleteRegistry(context.Context, *IdRequest) (*common.Empty, error)
@@ -333,7 +333,7 @@ type CruxRegistryServer interface {
 type UnimplementedCruxRegistryServer struct {
 }
 
-func (UnimplementedCruxRegistryServer) GetRegistries(context.Context, *AccessRequest) (*RegistryListResponse, error) {
+func (UnimplementedCruxRegistryServer) GetRegistries(context.Context, *common.Empty) (*RegistryListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetRegistries not implemented")
 }
 func (UnimplementedCruxRegistryServer) CreateRegistry(context.Context, *CreateRegistryRequest) (*CreateEntityResponse, error) {
@@ -362,7 +362,7 @@ func RegisterCruxRegistryServer(s grpc.ServiceRegistrar, srv CruxRegistryServer)
 }
 
 func _CruxRegistry_GetRegistries_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AccessRequest)
+	in := new(common.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -374,7 +374,7 @@ func _CruxRegistry_GetRegistries_Handler(srv interface{}, ctx context.Context, d
 		FullMethod: "/crux.CruxRegistry/GetRegistries",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CruxRegistryServer).GetRegistries(ctx, req.(*AccessRequest))
+		return srv.(CruxRegistryServer).GetRegistries(ctx, req.(*common.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -488,7 +488,7 @@ var CruxRegistry_ServiceDesc = grpc.ServiceDesc{
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CruxNodeClient interface {
 	// CRUD
-	GetNodes(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*NodeListResponse, error)
+	GetNodes(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*NodeListResponse, error)
 	CreateNode(ctx context.Context, in *CreateNodeRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error)
 	UpdateNode(ctx context.Context, in *UpdateNodeRequest, opts ...grpc.CallOption) (*common.Empty, error)
 	DeleteNode(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
@@ -513,7 +513,7 @@ func NewCruxNodeClient(cc grpc.ClientConnInterface) CruxNodeClient {
 	return &cruxNodeClient{cc}
 }
 
-func (c *cruxNodeClient) GetNodes(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*NodeListResponse, error) {
+func (c *cruxNodeClient) GetNodes(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*NodeListResponse, error) {
 	out := new(NodeListResponse)
 	err := c.cc.Invoke(ctx, "/crux.CruxNode/GetNodes", in, out, opts...)
 	if err != nil {
@@ -722,7 +722,7 @@ func (x *cruxNodeSubscribeContainerLogChannelClient) Recv() (*common.ContainerLo
 // for forward compatibility
 type CruxNodeServer interface {
 	// CRUD
-	GetNodes(context.Context, *AccessRequest) (*NodeListResponse, error)
+	GetNodes(context.Context, *common.Empty) (*NodeListResponse, error)
 	CreateNode(context.Context, *CreateNodeRequest) (*CreateEntityResponse, error)
 	UpdateNode(context.Context, *UpdateNodeRequest) (*common.Empty, error)
 	DeleteNode(context.Context, *IdRequest) (*common.Empty, error)
@@ -744,7 +744,7 @@ type CruxNodeServer interface {
 type UnimplementedCruxNodeServer struct {
 }
 
-func (UnimplementedCruxNodeServer) GetNodes(context.Context, *AccessRequest) (*NodeListResponse, error) {
+func (UnimplementedCruxNodeServer) GetNodes(context.Context, *common.Empty) (*NodeListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNodes not implemented")
 }
 func (UnimplementedCruxNodeServer) CreateNode(context.Context, *CreateNodeRequest) (*CreateEntityResponse, error) {
@@ -803,7 +803,7 @@ func RegisterCruxNodeServer(s grpc.ServiceRegistrar, srv CruxNodeServer) {
 }
 
 func _CruxNode_GetNodes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AccessRequest)
+	in := new(common.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -815,7 +815,7 @@ func _CruxNode_GetNodes_Handler(srv interface{}, ctx context.Context, dec func(i
 		FullMethod: "/crux.CruxNode/GetNodes",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CruxNodeServer).GetNodes(ctx, req.(*AccessRequest))
+		return srv.(CruxNodeServer).GetNodes(ctx, req.(*common.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1736,7 +1736,7 @@ type CruxDeploymentClient interface {
 	DeleteDeployment(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
 	GetDeploymentDetails(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*DeploymentDetailsResponse, error)
 	GetDeploymentEvents(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*DeploymentEventListResponse, error)
-	GetDeploymentList(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*DeploymentListResponse, error)
+	GetDeploymentList(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*DeploymentListResponse, error)
 	GetDeploymentSecrets(ctx context.Context, in *DeploymentListSecretsRequest, opts ...grpc.CallOption) (*common.ListSecretsResponse, error)
 	CopyDeploymentSafe(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error)
 	CopyDeploymentUnsafe(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error)
@@ -1816,7 +1816,7 @@ func (c *cruxDeploymentClient) GetDeploymentEvents(ctx context.Context, in *IdRe
 	return out, nil
 }
 
-func (c *cruxDeploymentClient) GetDeploymentList(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*DeploymentListResponse, error) {
+func (c *cruxDeploymentClient) GetDeploymentList(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*DeploymentListResponse, error) {
 	out := new(DeploymentListResponse)
 	err := c.cc.Invoke(ctx, "/crux.CruxDeployment/GetDeploymentList", in, out, opts...)
 	if err != nil {
@@ -1936,7 +1936,7 @@ type CruxDeploymentServer interface {
 	DeleteDeployment(context.Context, *IdRequest) (*common.Empty, error)
 	GetDeploymentDetails(context.Context, *IdRequest) (*DeploymentDetailsResponse, error)
 	GetDeploymentEvents(context.Context, *IdRequest) (*DeploymentEventListResponse, error)
-	GetDeploymentList(context.Context, *AccessRequest) (*DeploymentListResponse, error)
+	GetDeploymentList(context.Context, *common.Empty) (*DeploymentListResponse, error)
 	GetDeploymentSecrets(context.Context, *DeploymentListSecretsRequest) (*common.ListSecretsResponse, error)
 	CopyDeploymentSafe(context.Context, *IdRequest) (*CreateEntityResponse, error)
 	CopyDeploymentUnsafe(context.Context, *IdRequest) (*CreateEntityResponse, error)
@@ -1971,7 +1971,7 @@ func (UnimplementedCruxDeploymentServer) GetDeploymentDetails(context.Context, *
 func (UnimplementedCruxDeploymentServer) GetDeploymentEvents(context.Context, *IdRequest) (*DeploymentEventListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDeploymentEvents not implemented")
 }
-func (UnimplementedCruxDeploymentServer) GetDeploymentList(context.Context, *AccessRequest) (*DeploymentListResponse, error) {
+func (UnimplementedCruxDeploymentServer) GetDeploymentList(context.Context, *common.Empty) (*DeploymentListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDeploymentList not implemented")
 }
 func (UnimplementedCruxDeploymentServer) GetDeploymentSecrets(context.Context, *DeploymentListSecretsRequest) (*common.ListSecretsResponse, error) {
@@ -2132,7 +2132,7 @@ func _CruxDeployment_GetDeploymentEvents_Handler(srv interface{}, ctx context.Co
 }
 
 func _CruxDeployment_GetDeploymentList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AccessRequest)
+	in := new(common.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -2144,7 +2144,7 @@ func _CruxDeployment_GetDeploymentList_Handler(srv interface{}, ctx context.Cont
 		FullMethod: "/crux.CruxDeployment/GetDeploymentList",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CruxDeploymentServer).GetDeploymentList(ctx, req.(*AccessRequest))
+		return srv.(CruxDeploymentServer).GetDeploymentList(ctx, req.(*common.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -2339,7 +2339,7 @@ var CruxDeployment_ServiceDesc = grpc.ServiceDesc{
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CruxTeamClient interface {
 	CreateTeam(ctx context.Context, in *CreateTeamRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error)
-	GetActiveTeamByUser(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*ActiveTeamDetailsResponse, error)
+	GetActiveTeamByUser(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*ActiveTeamDetailsResponse, error)
 	UpdateTeam(ctx context.Context, in *UpdateTeamRequest, opts ...grpc.CallOption) (*common.Empty, error)
 	DeleteTeam(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
 	UpdateUserRole(ctx context.Context, in *UpdateUserRoleInTeamRequest, opts ...grpc.CallOption) (*common.Empty, error)
@@ -2349,8 +2349,8 @@ type CruxTeamClient interface {
 	AcceptTeamInvitation(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
 	DeclineTeamInvitation(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
 	SelectTeam(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
-	GetUserMeta(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*UserMetaResponse, error)
-	GetAllTeams(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*AllTeamsResponse, error)
+	GetUserMeta(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*UserMetaResponse, error)
+	GetAllTeams(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*AllTeamsResponse, error)
 	GetTeamById(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*TeamDetailsResponse, error)
 }
 
@@ -2371,7 +2371,7 @@ func (c *cruxTeamClient) CreateTeam(ctx context.Context, in *CreateTeamRequest, 
 	return out, nil
 }
 
-func (c *cruxTeamClient) GetActiveTeamByUser(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*ActiveTeamDetailsResponse, error) {
+func (c *cruxTeamClient) GetActiveTeamByUser(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*ActiveTeamDetailsResponse, error) {
 	out := new(ActiveTeamDetailsResponse)
 	err := c.cc.Invoke(ctx, "/crux.CruxTeam/GetActiveTeamByUser", in, out, opts...)
 	if err != nil {
@@ -2461,7 +2461,7 @@ func (c *cruxTeamClient) SelectTeam(ctx context.Context, in *IdRequest, opts ...
 	return out, nil
 }
 
-func (c *cruxTeamClient) GetUserMeta(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*UserMetaResponse, error) {
+func (c *cruxTeamClient) GetUserMeta(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*UserMetaResponse, error) {
 	out := new(UserMetaResponse)
 	err := c.cc.Invoke(ctx, "/crux.CruxTeam/GetUserMeta", in, out, opts...)
 	if err != nil {
@@ -2470,7 +2470,7 @@ func (c *cruxTeamClient) GetUserMeta(ctx context.Context, in *AccessRequest, opt
 	return out, nil
 }
 
-func (c *cruxTeamClient) GetAllTeams(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*AllTeamsResponse, error) {
+func (c *cruxTeamClient) GetAllTeams(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*AllTeamsResponse, error) {
 	out := new(AllTeamsResponse)
 	err := c.cc.Invoke(ctx, "/crux.CruxTeam/GetAllTeams", in, out, opts...)
 	if err != nil {
@@ -2493,7 +2493,7 @@ func (c *cruxTeamClient) GetTeamById(ctx context.Context, in *IdRequest, opts ..
 // for forward compatibility
 type CruxTeamServer interface {
 	CreateTeam(context.Context, *CreateTeamRequest) (*CreateEntityResponse, error)
-	GetActiveTeamByUser(context.Context, *AccessRequest) (*ActiveTeamDetailsResponse, error)
+	GetActiveTeamByUser(context.Context, *common.Empty) (*ActiveTeamDetailsResponse, error)
 	UpdateTeam(context.Context, *UpdateTeamRequest) (*common.Empty, error)
 	DeleteTeam(context.Context, *IdRequest) (*common.Empty, error)
 	UpdateUserRole(context.Context, *UpdateUserRoleInTeamRequest) (*common.Empty, error)
@@ -2503,8 +2503,8 @@ type CruxTeamServer interface {
 	AcceptTeamInvitation(context.Context, *IdRequest) (*common.Empty, error)
 	DeclineTeamInvitation(context.Context, *IdRequest) (*common.Empty, error)
 	SelectTeam(context.Context, *IdRequest) (*common.Empty, error)
-	GetUserMeta(context.Context, *AccessRequest) (*UserMetaResponse, error)
-	GetAllTeams(context.Context, *AccessRequest) (*AllTeamsResponse, error)
+	GetUserMeta(context.Context, *common.Empty) (*UserMetaResponse, error)
+	GetAllTeams(context.Context, *common.Empty) (*AllTeamsResponse, error)
 	GetTeamById(context.Context, *IdRequest) (*TeamDetailsResponse, error)
 	mustEmbedUnimplementedCruxTeamServer()
 }
@@ -2516,7 +2516,7 @@ type UnimplementedCruxTeamServer struct {
 func (UnimplementedCruxTeamServer) CreateTeam(context.Context, *CreateTeamRequest) (*CreateEntityResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateTeam not implemented")
 }
-func (UnimplementedCruxTeamServer) GetActiveTeamByUser(context.Context, *AccessRequest) (*ActiveTeamDetailsResponse, error) {
+func (UnimplementedCruxTeamServer) GetActiveTeamByUser(context.Context, *common.Empty) (*ActiveTeamDetailsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetActiveTeamByUser not implemented")
 }
 func (UnimplementedCruxTeamServer) UpdateTeam(context.Context, *UpdateTeamRequest) (*common.Empty, error) {
@@ -2546,10 +2546,10 @@ func (UnimplementedCruxTeamServer) DeclineTeamInvitation(context.Context, *IdReq
 func (UnimplementedCruxTeamServer) SelectTeam(context.Context, *IdRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SelectTeam not implemented")
 }
-func (UnimplementedCruxTeamServer) GetUserMeta(context.Context, *AccessRequest) (*UserMetaResponse, error) {
+func (UnimplementedCruxTeamServer) GetUserMeta(context.Context, *common.Empty) (*UserMetaResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserMeta not implemented")
 }
-func (UnimplementedCruxTeamServer) GetAllTeams(context.Context, *AccessRequest) (*AllTeamsResponse, error) {
+func (UnimplementedCruxTeamServer) GetAllTeams(context.Context, *common.Empty) (*AllTeamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAllTeams not implemented")
 }
 func (UnimplementedCruxTeamServer) GetTeamById(context.Context, *IdRequest) (*TeamDetailsResponse, error) {
@@ -2587,7 +2587,7 @@ func _CruxTeam_CreateTeam_Handler(srv interface{}, ctx context.Context, dec func
 }
 
 func _CruxTeam_GetActiveTeamByUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AccessRequest)
+	in := new(common.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -2599,7 +2599,7 @@ func _CruxTeam_GetActiveTeamByUser_Handler(srv interface{}, ctx context.Context,
 		FullMethod: "/crux.CruxTeam/GetActiveTeamByUser",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CruxTeamServer).GetActiveTeamByUser(ctx, req.(*AccessRequest))
+		return srv.(CruxTeamServer).GetActiveTeamByUser(ctx, req.(*common.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -2767,7 +2767,7 @@ func _CruxTeam_SelectTeam_Handler(srv interface{}, ctx context.Context, dec func
 }
 
 func _CruxTeam_GetUserMeta_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AccessRequest)
+	in := new(common.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -2779,13 +2779,13 @@ func _CruxTeam_GetUserMeta_Handler(srv interface{}, ctx context.Context, dec fun
 		FullMethod: "/crux.CruxTeam/GetUserMeta",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CruxTeamServer).GetUserMeta(ctx, req.(*AccessRequest))
+		return srv.(CruxTeamServer).GetUserMeta(ctx, req.(*common.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _CruxTeam_GetAllTeams_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AccessRequest)
+	in := new(common.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -2797,7 +2797,7 @@ func _CruxTeam_GetAllTeams_Handler(srv interface{}, ctx context.Context, dec fun
 		FullMethod: "/crux.CruxTeam/GetAllTeams",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CruxTeamServer).GetAllTeams(ctx, req.(*AccessRequest))
+		return srv.(CruxTeamServer).GetAllTeams(ctx, req.(*common.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -2895,7 +2895,7 @@ type CruxNotificationClient interface {
 	CreateNotification(ctx context.Context, in *CreateNotificationRequest, opts ...grpc.CallOption) (*CreateNotificationResponse, error)
 	UpdateNotification(ctx context.Context, in *UpdateNotificationRequest, opts ...grpc.CallOption) (*UpdateEntityResponse, error)
 	DeleteNotification(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
-	GetNotificationList(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*NotificationListResponse, error)
+	GetNotificationList(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*NotificationListResponse, error)
 	GetNotificationDetails(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*NotificationDetailsResponse, error)
 	TestNotification(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
 }
@@ -2935,7 +2935,7 @@ func (c *cruxNotificationClient) DeleteNotification(ctx context.Context, in *IdR
 	return out, nil
 }
 
-func (c *cruxNotificationClient) GetNotificationList(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*NotificationListResponse, error) {
+func (c *cruxNotificationClient) GetNotificationList(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*NotificationListResponse, error) {
 	out := new(NotificationListResponse)
 	err := c.cc.Invoke(ctx, "/crux.CruxNotification/GetNotificationList", in, out, opts...)
 	if err != nil {
@@ -2969,7 +2969,7 @@ type CruxNotificationServer interface {
 	CreateNotification(context.Context, *CreateNotificationRequest) (*CreateNotificationResponse, error)
 	UpdateNotification(context.Context, *UpdateNotificationRequest) (*UpdateEntityResponse, error)
 	DeleteNotification(context.Context, *IdRequest) (*common.Empty, error)
-	GetNotificationList(context.Context, *AccessRequest) (*NotificationListResponse, error)
+	GetNotificationList(context.Context, *common.Empty) (*NotificationListResponse, error)
 	GetNotificationDetails(context.Context, *IdRequest) (*NotificationDetailsResponse, error)
 	TestNotification(context.Context, *IdRequest) (*common.Empty, error)
 	mustEmbedUnimplementedCruxNotificationServer()
@@ -2988,7 +2988,7 @@ func (UnimplementedCruxNotificationServer) UpdateNotification(context.Context, *
 func (UnimplementedCruxNotificationServer) DeleteNotification(context.Context, *IdRequest) (*common.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteNotification not implemented")
 }
-func (UnimplementedCruxNotificationServer) GetNotificationList(context.Context, *AccessRequest) (*NotificationListResponse, error) {
+func (UnimplementedCruxNotificationServer) GetNotificationList(context.Context, *common.Empty) (*NotificationListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNotificationList not implemented")
 }
 func (UnimplementedCruxNotificationServer) GetNotificationDetails(context.Context, *IdRequest) (*NotificationDetailsResponse, error) {
@@ -3065,7 +3065,7 @@ func _CruxNotification_DeleteNotification_Handler(srv interface{}, ctx context.C
 }
 
 func _CruxNotification_GetNotificationList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AccessRequest)
+	in := new(common.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -3077,7 +3077,7 @@ func _CruxNotification_GetNotificationList_Handler(srv interface{}, ctx context.
 		FullMethod: "/crux.CruxNotification/GetNotificationList",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CruxNotificationServer).GetNotificationList(ctx, req.(*AccessRequest))
+		return srv.(CruxNotificationServer).GetNotificationList(ctx, req.(*common.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -3366,7 +3366,7 @@ var CruxHealth_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CruxTemplateClient interface {
-	GetTemplates(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*TemplateListResponse, error)
+	GetTemplates(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*TemplateListResponse, error)
 	CreateProductFromTemplate(ctx context.Context, in *CreateProductFromTemplateRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error)
 	GetImage(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*TemplateImageResponse, error)
 }
@@ -3379,7 +3379,7 @@ func NewCruxTemplateClient(cc grpc.ClientConnInterface) CruxTemplateClient {
 	return &cruxTemplateClient{cc}
 }
 
-func (c *cruxTemplateClient) GetTemplates(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*TemplateListResponse, error) {
+func (c *cruxTemplateClient) GetTemplates(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*TemplateListResponse, error) {
 	out := new(TemplateListResponse)
 	err := c.cc.Invoke(ctx, "/crux.CruxTemplate/GetTemplates", in, out, opts...)
 	if err != nil {
@@ -3410,7 +3410,7 @@ func (c *cruxTemplateClient) GetImage(ctx context.Context, in *IdRequest, opts .
 // All implementations must embed UnimplementedCruxTemplateServer
 // for forward compatibility
 type CruxTemplateServer interface {
-	GetTemplates(context.Context, *AccessRequest) (*TemplateListResponse, error)
+	GetTemplates(context.Context, *common.Empty) (*TemplateListResponse, error)
 	CreateProductFromTemplate(context.Context, *CreateProductFromTemplateRequest) (*CreateEntityResponse, error)
 	GetImage(context.Context, *IdRequest) (*TemplateImageResponse, error)
 	mustEmbedUnimplementedCruxTemplateServer()
@@ -3420,7 +3420,7 @@ type CruxTemplateServer interface {
 type UnimplementedCruxTemplateServer struct {
 }
 
-func (UnimplementedCruxTemplateServer) GetTemplates(context.Context, *AccessRequest) (*TemplateListResponse, error) {
+func (UnimplementedCruxTemplateServer) GetTemplates(context.Context, *common.Empty) (*TemplateListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTemplates not implemented")
 }
 func (UnimplementedCruxTemplateServer) CreateProductFromTemplate(context.Context, *CreateProductFromTemplateRequest) (*CreateEntityResponse, error) {
@@ -3443,7 +3443,7 @@ func RegisterCruxTemplateServer(s grpc.ServiceRegistrar, srv CruxTemplateServer)
 }
 
 func _CruxTemplate_GetTemplates_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AccessRequest)
+	in := new(common.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -3455,7 +3455,7 @@ func _CruxTemplate_GetTemplates_Handler(srv interface{}, ctx context.Context, de
 		FullMethod: "/crux.CruxTemplate/GetTemplates",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CruxTemplateServer).GetTemplates(ctx, req.(*AccessRequest))
+		return srv.(CruxTemplateServer).GetTemplates(ctx, req.(*common.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -3524,7 +3524,7 @@ var CruxTemplate_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CruxDashboardClient interface {
-	GetDashboard(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*DashboardResponse, error)
+	GetDashboard(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*DashboardResponse, error)
 }
 
 type cruxDashboardClient struct {
@@ -3535,7 +3535,7 @@ func NewCruxDashboardClient(cc grpc.ClientConnInterface) CruxDashboardClient {
 	return &cruxDashboardClient{cc}
 }
 
-func (c *cruxDashboardClient) GetDashboard(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*DashboardResponse, error) {
+func (c *cruxDashboardClient) GetDashboard(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*DashboardResponse, error) {
 	out := new(DashboardResponse)
 	err := c.cc.Invoke(ctx, "/crux.CruxDashboard/GetDashboard", in, out, opts...)
 	if err != nil {
@@ -3548,7 +3548,7 @@ func (c *cruxDashboardClient) GetDashboard(ctx context.Context, in *AccessReques
 // All implementations must embed UnimplementedCruxDashboardServer
 // for forward compatibility
 type CruxDashboardServer interface {
-	GetDashboard(context.Context, *AccessRequest) (*DashboardResponse, error)
+	GetDashboard(context.Context, *common.Empty) (*DashboardResponse, error)
 	mustEmbedUnimplementedCruxDashboardServer()
 }
 
@@ -3556,7 +3556,7 @@ type CruxDashboardServer interface {
 type UnimplementedCruxDashboardServer struct {
 }
 
-func (UnimplementedCruxDashboardServer) GetDashboard(context.Context, *AccessRequest) (*DashboardResponse, error) {
+func (UnimplementedCruxDashboardServer) GetDashboard(context.Context, *common.Empty) (*DashboardResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDashboard not implemented")
 }
 func (UnimplementedCruxDashboardServer) mustEmbedUnimplementedCruxDashboardServer() {}
@@ -3573,7 +3573,7 @@ func RegisterCruxDashboardServer(s grpc.ServiceRegistrar, srv CruxDashboardServe
 }
 
 func _CruxDashboard_GetDashboard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AccessRequest)
+	in := new(common.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -3585,7 +3585,7 @@ func _CruxDashboard_GetDashboard_Handler(srv interface{}, ctx context.Context, d
 		FullMethod: "/crux.CruxDashboard/GetDashboard",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CruxDashboardServer).GetDashboard(ctx, req.(*AccessRequest))
+		return srv.(CruxDashboardServer).GetDashboard(ctx, req.(*common.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -3611,7 +3611,7 @@ var CruxDashboard_ServiceDesc = grpc.ServiceDesc{
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CruxTokenClient interface {
 	GenerateToken(ctx context.Context, in *GenerateTokenRequest, opts ...grpc.CallOption) (*GenerateTokenResponse, error)
-	GetTokenList(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*TokenListResponse, error)
+	GetTokenList(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*TokenListResponse, error)
 	DeleteToken(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
 }
 
@@ -3632,7 +3632,7 @@ func (c *cruxTokenClient) GenerateToken(ctx context.Context, in *GenerateTokenRe
 	return out, nil
 }
 
-func (c *cruxTokenClient) GetTokenList(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*TokenListResponse, error) {
+func (c *cruxTokenClient) GetTokenList(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*TokenListResponse, error) {
 	out := new(TokenListResponse)
 	err := c.cc.Invoke(ctx, "/crux.CruxToken/GetTokenList", in, out, opts...)
 	if err != nil {
@@ -3655,7 +3655,7 @@ func (c *cruxTokenClient) DeleteToken(ctx context.Context, in *IdRequest, opts .
 // for forward compatibility
 type CruxTokenServer interface {
 	GenerateToken(context.Context, *GenerateTokenRequest) (*GenerateTokenResponse, error)
-	GetTokenList(context.Context, *AccessRequest) (*TokenListResponse, error)
+	GetTokenList(context.Context, *common.Empty) (*TokenListResponse, error)
 	DeleteToken(context.Context, *IdRequest) (*common.Empty, error)
 	mustEmbedUnimplementedCruxTokenServer()
 }
@@ -3667,7 +3667,7 @@ type UnimplementedCruxTokenServer struct {
 func (UnimplementedCruxTokenServer) GenerateToken(context.Context, *GenerateTokenRequest) (*GenerateTokenResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GenerateToken not implemented")
 }
-func (UnimplementedCruxTokenServer) GetTokenList(context.Context, *AccessRequest) (*TokenListResponse, error) {
+func (UnimplementedCruxTokenServer) GetTokenList(context.Context, *common.Empty) (*TokenListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTokenList not implemented")
 }
 func (UnimplementedCruxTokenServer) DeleteToken(context.Context, *IdRequest) (*common.Empty, error) {
@@ -3705,7 +3705,7 @@ func _CruxToken_GenerateToken_Handler(srv interface{}, ctx context.Context, dec 
 }
 
 func _CruxToken_GetTokenList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AccessRequest)
+	in := new(common.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -3717,7 +3717,7 @@ func _CruxToken_GetTokenList_Handler(srv interface{}, ctx context.Context, dec f
 		FullMethod: "/crux.CruxToken/GetTokenList",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CruxTokenServer).GetTokenList(ctx, req.(*AccessRequest))
+		return srv.(CruxTokenServer).GetTokenList(ctx, req.(*common.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }

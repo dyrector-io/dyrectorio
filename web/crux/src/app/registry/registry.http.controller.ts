@@ -1,8 +1,9 @@
-import { Controller, Body, Get, UseGuards, UseInterceptors, UseFilters } from '@nestjs/common'
+import { Controller, Get, UseGuards, UseInterceptors, UseFilters } from '@nestjs/common'
 import { ApiBody, ApiOkResponse } from '@nestjs/swagger'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import HttpExceptionFilter from 'src/filters/http-exception.filter'
-import { AccessRequest, RegistryListResponse } from 'src/grpc/protobuf/proto/crux'
+import { RegistryListResponse } from 'src/grpc/protobuf/proto/crux'
+import JWTUser from 'src/decorators/jwt-user.decorator'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import { AccessRequestDto, RegistryListResponseDto } from 'src/swagger/crux.dto'
@@ -20,7 +21,7 @@ export default class RegistryHttpController {
   @ApiBody({ type: AccessRequestDto })
   @ApiOkResponse({ type: RegistryListResponseDto })
   @AuditLogLevel('disabled')
-  async getRegistries(@Body() request: AccessRequest): Promise<RegistryListResponse> {
-    return await this.service.getRegistries(request)
+  async getRegistries(@JWTUser() accessedBy: string): Promise<RegistryListResponse> {
+    return await this.service.getRegistries(accessedBy)
   }
 }

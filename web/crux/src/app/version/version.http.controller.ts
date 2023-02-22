@@ -2,6 +2,7 @@ import { Controller, Post, Body, Get, UseGuards, UseInterceptors, UseFilters } f
 import { ApiBody, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import HttpExceptionFilter from 'src/filters/http-exception.filter'
+import JWTUser from 'src/decorators/jwt-user.decorator'
 import {
   CreateEntityResponse,
   IdRequest,
@@ -31,16 +32,22 @@ export default class VersionHttpController {
   @ApiBody({ type: IdRequestDto })
   @ApiOkResponse({ type: VersionListResponseDto })
   @AuditLogLevel('disabled')
-  async getVersionsByProductId(@Body() request: IdRequest): Promise<VersionListResponse> {
-    return await this.service.getVersionsByProductId(request)
+  async getVersionsByProductId(
+    @Body() request: IdRequest,
+    @JWTUser() accessedBy: string,
+  ): Promise<VersionListResponse> {
+    return await this.service.getVersionsByProductId(request, accessedBy)
   }
 
   @Post()
   @ApiBody({ type: CreateVersionRequestDto })
   @ApiCreatedResponse({ type: CreateEntityResponseDto })
   @AuditLogLevel('disabled')
-  async createVersion(@Body() request: CreateVersionRequestDto): Promise<CreateEntityResponse> {
-    return await this.service.createVersion(request)
+  async createVersion(
+    @Body() request: CreateVersionRequestDto,
+    @JWTUser() accessedBy: string,
+  ): Promise<CreateEntityResponse> {
+    return await this.service.createVersion(request, accessedBy)
   }
 
   @Post('increase')
@@ -49,7 +56,8 @@ export default class VersionHttpController {
   @AuditLogLevel('disabled')
   async increaseVersion(
     @Body(VersionIncreaseValidationPipe) request: IncreaseVersionRequest,
+    @JWTUser() accessedBy: string,
   ): Promise<CreateEntityResponse> {
-    return await this.service.increaseVersion(request)
+    return await this.service.increaseVersion(request, accessedBy)
   }
 }

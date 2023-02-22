@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common'
 import PrismaService from 'src/services/prisma.service'
 import {
-  AccessRequest,
   CreateEntityResponse,
   CreateRegistryRequest,
   IdRequest,
@@ -19,13 +18,13 @@ export default class RegistryService {
 
   private readonly logger = new Logger(RegistryService.name)
 
-  async getRegistries(request: AccessRequest): Promise<RegistryListResponse> {
+  async getRegistries(accessedBy: string): Promise<RegistryListResponse> {
     const registries = await this.prisma.registry.findMany({
       where: {
         team: {
           users: {
             some: {
-              userId: request.accessedBy,
+              userId: accessedBy,
               active: true,
             },
           },
@@ -38,8 +37,8 @@ export default class RegistryService {
     }
   }
 
-  async createRegistry(req: CreateRegistryRequest): Promise<CreateEntityResponse> {
-    const team = await this.teamRepository.getActiveTeamByUserId(req.accessedBy)
+  async createRegistry(req: CreateRegistryRequest, accessedBy: string): Promise<CreateEntityResponse> {
+    const team = await this.teamRepository.getActiveTeamByUserId(accessedBy)
 
     const registry = await this.prisma.registry.create({
       data: {
@@ -47,7 +46,7 @@ export default class RegistryService {
         description: req.description,
         icon: req.icon ?? null,
         teamId: team.teamId,
-        createdBy: req.accessedBy,
+        createdBy: accessedBy,
         ...this.mapper.detailsToDb(req),
       },
     })
@@ -55,7 +54,7 @@ export default class RegistryService {
     return CreateEntityResponse.fromJSON(registry)
   }
 
-  async updateRegistry(req: UpdateRegistryRequest): Promise<UpdateEntityResponse> {
+  async updateRegistry(req: UpdateRegistryRequest, accessedBy: string): Promise<UpdateEntityResponse> {
     const registry = await this.prisma.registry.update({
       where: {
         id: req.id,
@@ -64,7 +63,7 @@ export default class RegistryService {
         name: req.name,
         description: req.description,
         icon: req.icon ?? null,
-        updatedBy: req.accessedBy,
+        updatedBy: accessedBy,
         ...this.mapper.detailsToDb(req),
       },
     })

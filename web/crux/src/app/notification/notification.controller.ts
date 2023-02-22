@@ -1,7 +1,7 @@
+import { Metadata } from '@grpc/grpc-js'
 import { Controller, UseGuards, UseInterceptors } from '@nestjs/common'
 import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
-  AccessRequest,
   CreateNotificationRequest,
   CreateNotificationResponse,
   CruxNotificationController,
@@ -14,6 +14,7 @@ import {
 } from 'src/grpc/protobuf/proto/crux'
 import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
 import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
+import GrpcUserInterceptor, { getAccessedBy } from 'src/interceptors/grpc.user.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import NotificationTeamAccessGuard from './guards/notification.team-access.guard'
 import NotificationService from './notification.service'
@@ -21,28 +22,31 @@ import NotificationService from './notification.service'
 @Controller()
 @CruxNotificationControllerMethods()
 @UseGuards(NotificationTeamAccessGuard)
-@UseInterceptors(GrpcLoggerInterceptor, GrpcErrorInterceptor, PrismaErrorInterceptor)
+@UseInterceptors(GrpcLoggerInterceptor, GrpcUserInterceptor, GrpcErrorInterceptor, PrismaErrorInterceptor)
 export default class NotificationController implements CruxNotificationController {
   constructor(private notificationService: NotificationService) {}
 
-  async createNotification(request: CreateNotificationRequest): Promise<CreateNotificationResponse> {
-    return await this.notificationService.createNotification(request)
+  async createNotification(
+    request: CreateNotificationRequest,
+    metadata: Metadata,
+  ): Promise<CreateNotificationResponse> {
+    return await this.notificationService.createNotification(request, getAccessedBy(metadata))
   }
 
-  async updateNotification(request: UpdateNotificationRequest): Promise<UpdateEntityResponse> {
-    return await this.notificationService.updateNotification(request)
+  async updateNotification(request: UpdateNotificationRequest, metadata: Metadata): Promise<UpdateEntityResponse> {
+    return await this.notificationService.updateNotification(request, getAccessedBy(metadata))
   }
 
   async deleteNotification(request: IdRequest): Promise<void> {
     return await this.notificationService.deleteNotification(request)
   }
 
-  async getNotificationList(request: AccessRequest): Promise<NotificationListResponse> {
-    return await this.notificationService.getNotifications(request)
+  async getNotificationList(_: Empty, metadata: Metadata): Promise<NotificationListResponse> {
+    return await this.notificationService.getNotifications(getAccessedBy(metadata))
   }
 
-  async getNotificationDetails(request: IdRequest): Promise<NotificationDetailsResponse> {
-    return await this.notificationService.getNotificationDetails(request)
+  async getNotificationDetails(request: IdRequest, metadata: Metadata): Promise<NotificationDetailsResponse> {
+    return await this.notificationService.getNotificationDetails(request, getAccessedBy(metadata))
   }
 
   async testNotification(request: IdRequest): Promise<Empty> {

@@ -1,12 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
-import {
-  AccessRequest,
-  GenerateTokenRequest,
-  GenerateTokenResponse,
-  IdRequest,
-  TokenListResponse,
-} from 'src/grpc/protobuf/proto/crux'
+import { GenerateTokenRequest, GenerateTokenResponse, IdRequest, TokenListResponse } from 'src/grpc/protobuf/proto/crux'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
 import { AuthPayload } from 'src/shared/models'
@@ -24,8 +18,8 @@ export default class AuthService {
     private mapper: TokenMapper,
   ) {}
 
-  async generateToken(req: GenerateTokenRequest): Promise<GenerateTokenResponse> {
-    const user = await this.kratosService.getIdentityById(req.accessedBy)
+  async generateToken(req: GenerateTokenRequest, accessedBy: string): Promise<GenerateTokenResponse> {
+    const user = await this.kratosService.getIdentityById(accessedBy)
 
     const nonce = uuid()
     const expirationDate = new Date(Date.now())
@@ -51,10 +45,10 @@ export default class AuthService {
     return this.mapper.generateResponseToGrpc(newToken, jwt)
   }
 
-  async getTokenList(req: AccessRequest): Promise<TokenListResponse> {
+  async getTokenList(accessedBy: string): Promise<TokenListResponse> {
     const response = await this.prisma.token.findMany({
       where: {
-        userId: req.accessedBy,
+        userId: accessedBy,
       },
     })
 

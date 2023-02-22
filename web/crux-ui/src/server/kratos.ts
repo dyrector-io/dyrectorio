@@ -102,7 +102,7 @@ export const cookieOf = (request: http.IncomingMessage): string => {
 
 export const flowOfUrl = (url: string): string => new URL(url).searchParams.get('flow')
 
-const obtainKratosSession = async (cookie: string): Promise<Session> => {
+export const obtainKratosSession = async (cookie: string): Promise<Session> => {
   if (!cookie) {
     return null
   }
@@ -161,6 +161,7 @@ export const forwardCookie = (context: NextPageContext, from: { headers: any }) 
 
 export type IncomingMessageWithSession = http.IncomingMessage & {
   session?: Session
+  cookie?: string
 }
 
 export const assambleKratosRecoveryUrl = (flow: string, code: string): string =>
