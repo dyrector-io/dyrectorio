@@ -95,9 +95,7 @@ jobs:
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
-    if: |
-      ${{ needs.changes.outputs.agents == 'true' }} ||
-      github.ref_type == 'tag'
+    if: ${{ (needs.changes.outputs.agents == 'true') || (github.ref_type == 'tag') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -117,9 +115,7 @@ jobs:
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
-    if: |
-      ${{ needs.changes.outputs.agents == 'true' }} ||
-      github.ref_type == 'tag'
+    if: ${{ (needs.changes.outputs.agents == 'true') || (github.ref_type == 'tag') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -136,9 +132,7 @@ jobs:
     defaults:
       run:
         working-directory: ${{ env.GOLANG_WORKING_DIRECTORY }}
-    if: |
-      ${{ needs.changes.outputs.agents == 'true' }} ||
-      github.ref_type == 'tag'
+    if: ${{ (needs.changes.outputs.agents == 'true') || (github.ref_type == 'tag') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -231,9 +225,7 @@ jobs:
         working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
-    if: |
-      ${{ needs.changes.outputs.crux == 'true' }} ||
-      github.ref_type == 'tag'
+    if: ${{ (needs.changes.outputs.crux == 'true') || (github.ref_type == 'tag') }}
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
@@ -250,9 +242,6 @@ jobs:
         working-directory: ${{ env.CRUX_WORKING_DIRECTORY }}
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
-    if: |
-      ${{ needs.changes.outputs.crux == 'true' }} ||
-      github.ref_type == 'tag'
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
@@ -298,9 +287,7 @@ jobs:
     defaults:
       run:
         working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
-    if: |
-      ${{ needs.changes.outputs.cruxui == 'true' }} ||
-      github.ref_type == 'tag'
+    if: ${{ (needs.changes.outputs.cruxui == 'true') || (github.ref_type == 'tag') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -339,9 +326,7 @@ jobs:
     defaults:
       run:
         working-directory: ${{ env.KRATOS_WORKING_DIRECTORY }}
-    if: |
-      ${{ needs.changes.outputs.kratos == 'true' }} ||
-      github.ref_type == 'tag'
+    if: ${{ (needs.changes.outputs.kratos == 'true') || (github.ref_type == 'tag') }}
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
@@ -384,75 +369,55 @@ jobs:
       #     name: crane
       #     path: artifacts
       - name: dagent - artifact download
-        if: |
-          needs.changes.outputs.agents == 'true' ||
-          github.ref_type == 'tag'
+        if: ${{ (needs.changes.outputs.agents == 'true') || (github.ref_type == 'tag') }}
         uses: actions/download-artifact@v3
         with:
           name: dagent
           path: artifacts
       - name: agents - docker load
-        if: |
-          needs.changes.outputs.agents == 'true' ||
-          github.ref_type == 'tag'
+        if: ${{ (needs.changes.outputs.agents == 'true') || (github.ref_type == 'tag') }}
         run: |
           zstd -dc artifacts/dagent.zstd | docker load
         # zstd -dc artifacts/crane.zstd | docker load
 
       - name: crux - artifact download
-        if: |
-          needs.changes.outputs.crux == 'true' ||
-          github.ref_type == 'tag'
+        if: ${{ (needs.changes.outputs.crux == 'true') || (github.ref_type == 'tag') }}
         uses: actions/download-artifact@v3
         with:
           name: crux
           path: artifacts
       - name: crux - docker load
-        if: |
-          needs.changes.outputs.crux == 'true' ||
-          github.ref_type == 'tag'
+        if: ${{ (needs.changes.outputs.crux == 'true') || (github.ref_type == 'tag') }}
         run: zstd -dc artifacts/crux.zstd | docker load
 
       - name: crux-ui - artifact download
-        if: |
-          needs.changes.outputs.cruxui == 'true' ||
-          github.ref_type == 'tag'
+        if: ${{ (needs.changes.outputs.cruxui == 'true') || (github.ref_type == 'tag') }}
         uses: actions/download-artifact@v3
         with:
           name: crux-ui
           path: artifacts
       - name: crux-ui - docker load
-        if: |
-          needs.changes.outputs.cruxui == 'true' ||
-          github.ref_type == 'tag'
+        if: ${{ (needs.changes.outputs.cruxui == 'true') || (github.ref_type == 'tag') }}
         run: zstd -dc artifacts/crux-ui.zstd | docker load
 
       - name: kratos - artifact download
-        if: |
-          needs.changes.outputs.kratos == 'true' ||
-          github.ref_type == 'tag'
+        if: ${{ (needs.changes.outputs.kratos == 'true') || (github.ref_type == 'tag') }}
         uses: actions/download-artifact@v3
         with:
           name: kratos
           path: artifacts
       - name: kratos - docker load
-        if: |
-          needs.changes.outputs.kratos == 'true' ||
-          github.ref_type == 'tag'
+        if: ${{ (needs.changes.outputs.kratos == 'true') || (github.ref_type == 'tag') }}
         run: zstd -dc artifacts/kratos.zstd | docker load
 
       - name: cli - artifact download
-        if: |
-          needs.changes.outputs.agents == 'true' ||
-          github.ref_type == 'tag'
+        if: ${{ (needs.changes.outputs.agents == 'true') || (github.ref_type == 'tag') }}
         uses: actions/download-artifact@v3
         with:
           name: cli
           path: artifacts
       - name: cli - docker load
-        if: |
-          needs.changes.outputs.agents == 'true' ||
-          github.ref_type == 'tag'
+        if: ${{ (needs.changes.outputs.agents == 'true') || (github.ref_type == 'tag') }}
         run: zstd -dc artifacts/cli.zstd | docker load
       - name: Login to GHCR
         uses: docker/login-action@v2
