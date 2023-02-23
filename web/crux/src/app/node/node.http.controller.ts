@@ -1,17 +1,20 @@
-import { Controller, Body, Get, UseGuards, UseInterceptors } from '@nestjs/common'
+import { Controller, Body, Get, UseGuards, UseInterceptors, UseFilters } from '@nestjs/common'
 import { ApiBody, ApiOkResponse } from '@nestjs/swagger'
 import { first, Observable, timeout } from 'rxjs'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
+import HttpExceptionFilter from 'src/filters/http-exception.filter'
 import { ContainerStateListMessage } from 'src/grpc/protobuf/proto/common'
 import { WatchContainerStateRequest } from 'src/grpc/protobuf/proto/crux'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
+import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import { ContainerStateListMessageDto, WatchContainerStateRequestDto } from 'src/swagger/crux.dto'
 import JwtAuthGuard from '../token/jwt-auth.guard'
 import NodeService from './node.service'
 
 @Controller('node')
 @UseGuards(JwtAuthGuard)
-@UseInterceptors(HttpLoggerInterceptor)
+@UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor)
+@UseFilters(HttpExceptionFilter)
 @AuditLogLevel('disabled')
 export default class NodeHttpController {
   constructor(private service: NodeService) {}
@@ -24,7 +27,7 @@ export default class NodeHttpController {
    * Client can subscribe to the returned observable, and receive new data as it becomes available.
    *
    * @todo(polaroi8d): if timeout will occured, the client will not receive any data.
-   * this is just an experimental implementation, and should be improved in the future.
+   * This is just an experimental implementation, and should be improved in the future.
    */
   @Get('status')
   @ApiBody({ type: WatchContainerStateRequestDto })

@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, UseGuards, UseInterceptors } from '@nestjs/common'
+import { Controller, Post, Body, Get, UseGuards, UseInterceptors, UseFilters } from '@nestjs/common'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import {
   AccessRequest,
@@ -14,12 +14,14 @@ import {
   CreateProductRequestDto,
   ProductListResponseDto,
 } from 'src/swagger/crux.dto'
+import HttpExceptionFilter from 'src/filters/http-exception.filter'
 import ProductService from './product.service'
 import JwtAuthGuard from '../token/jwt-auth.guard'
 
 @Controller('product')
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(HttpLoggerInterceptor)
+@UseFilters(HttpExceptionFilter)
 export default class ProductHttpController {
   constructor(private service: ProductService) {}
 

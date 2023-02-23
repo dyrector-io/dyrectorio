@@ -1,14 +1,15 @@
-import { Controller, Post, Body, Get, UseGuards, UseInterceptors } from '@nestjs/common'
+import { Controller, Post, Body, Get, UseGuards, UseInterceptors, UseFilters } from '@nestjs/common'
 import { ApiBody, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
+import HttpExceptionFilter from 'src/filters/http-exception.filter'
 import {
   CreateEntityResponse,
-  CreateVersionRequest,
   IdRequest,
   IncreaseVersionRequest,
   VersionListResponse,
 } from 'src/grpc/protobuf/proto/crux'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
+import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import {
   CreateEntityResponseDto,
   CreateVersionRequestDto,
@@ -21,7 +22,8 @@ import VersionService from './version.service'
 
 @Controller('version')
 @UseGuards(JwtAuthGuard)
-@UseInterceptors(HttpLoggerInterceptor)
+@UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor)
+@UseFilters(HttpExceptionFilter)
 export default class VersionHttpController {
   constructor(private service: VersionService) {}
 
@@ -35,9 +37,9 @@ export default class VersionHttpController {
 
   @Post()
   @ApiBody({ type: CreateVersionRequestDto })
-  @ApiOkResponse({ type: CreateEntityResponseDto })
+  @ApiCreatedResponse({ type: CreateEntityResponseDto })
   @AuditLogLevel('disabled')
-  async createVersion(@Body() request: CreateVersionRequest): Promise<CreateEntityResponse> {
+  async createVersion(@Body() request: CreateVersionRequestDto): Promise<CreateEntityResponse> {
     return await this.service.createVersion(request)
   }
 

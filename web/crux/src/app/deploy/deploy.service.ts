@@ -124,6 +124,14 @@ export default class DeployService {
     }
   }
 
+  async getDeploymenEventsById(request: ServiceIdRequest): Promise<any> {
+    return await this.prisma.deploymentEvent.findMany({
+      where: {
+        deploymentId: request.id,
+      },
+    })
+  }
+
   async createDeployment(request: CreateDeploymentRequest): Promise<CreateEntityResponse> {
     const version = await this.prisma.version.findUniqueOrThrow({
       where: {
