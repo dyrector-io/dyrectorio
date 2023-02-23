@@ -545,10 +545,15 @@ export class CraneContainerConfigDto {
   customHeaders: UniqueKeyList | undefined
   extraLBAnnotations: UniqueKeyValueList | undefined
 }
+export class IngressDto {
+  name: string
+  host: string
+  uploadLimit?: string | undefined
+}
 export class CommonContainerConfigDto {
   name: string | undefined
   expose: ExposeStrategy | undefined
-  ingress: Ingress | undefined
+  ingress: IngressDto | undefined
   configContainer: ConfigContainer | undefined
   importContainer: ImportContainer | undefined
   user: number | undefined
@@ -562,10 +567,10 @@ export class CommonContainerConfigDto {
   initContainers: InitContainerList | undefined
 }
 export class ImageContainerConfigDto {
-  common: CommonContainerConfig | undefined
-  dagent: DagentContainerConfig | undefined
-  crane: CraneContainerConfig | undefined
-  secrets: UniqueSecretKeyList | undefined
+  common: CommonContainerConfigDto | undefined
+  dagent: DagentContainerConfigDto | undefined
+  crane: CraneContainerConfigDto | undefined
+  secrets: UniqueSecretKeyListDto | undefined
 }
 export class InstanceContainerConfigDto {
   common: CommonContainerConfig | undefined
@@ -605,7 +610,7 @@ export class PatchImageRequestDto {
   id: string
   accessedBy: string
   tag: string | undefined
-  config: ImageContainerConfig | undefined
+  config: ImageContainerConfigDto | undefined
 }
 export class NodeResponseDto {
   id: string
@@ -799,7 +804,7 @@ export class DeploymentEventResponseDto {
 }
 export class DeploymentEventListResponseDto {
   status: DeploymentStatus
-  data: DeploymentEventResponse[]
+  data: DeploymentEventResponseDto[]
 }
 export class DeploymentListSecretsRequestDto {
   id: string
@@ -994,6 +999,23 @@ export class CruxImageControllerDto {
   deleteImage: any
   getImageDetails: Promise<ImageResponse> | Observable<ImageResponse> | ImageResponse
 }
+
+export class DeploymentEventsDto {
+  id: string
+  createdAt: Date
+  type: DeploymentStatusDto
+  value: string[]
+  deploymentId: string
+}
+
+export enum DeploymentStatusDto {
+  UNSPECIFIED = 'UNSPECIFIED',
+  LOG = 'LOG',
+  DEPLOYMENT_STATUS = 'DEPLOYMENT_STATUS',
+  CONTAINER_STATUS = 'CONTAINER_STATUS',
+  UNRECOGNIZED = 'UNRECOGNIZED',
+}
+
 export class CruxDeploymentClientDto {
   getDeploymentsByVersionId: Observable<DeploymentListByVersionResponse>
   createDeployment: Observable<CreateEntityResponse>
