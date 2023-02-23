@@ -1,6 +1,7 @@
-import { Controller, Post, Body, UseGuards, UseInterceptors, Patch } from '@nestjs/common'
+import { Controller, Post, Body, UseGuards, UseInterceptors, Patch, UseFilters } from '@nestjs/common'
 import { ApiBody, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
+import HttpExceptionFilter from 'src/filters/http-exception.filter'
 import { Empty } from 'src/grpc/protobuf/proto/common'
 import { AddImagesToVersionRequest, ImageListResponse, PatchImageRequest } from 'src/grpc/protobuf/proto/crux'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
@@ -12,6 +13,7 @@ import ImagePatchValidationPipe from './pipes/image.patch.pipe'
 @Controller('image')
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(HttpLoggerInterceptor)
+@UseFilters(HttpExceptionFilter)
 export default class ImageHttpController {
   constructor(private service: ImageService) {}
 
@@ -27,7 +29,7 @@ export default class ImageHttpController {
   @ApiBody({ type: PatchImageRequestDto })
   @ApiOkResponse()
   @AuditLogLevel('disabled')
-  async updateVersion(@Body(ImagePatchValidationPipe) request: PatchImageRequest): Promise<Empty> {
+  async UpdateImage(@Body(ImagePatchValidationPipe) request: PatchImageRequest): Promise<Empty> {
     return await this.service.patchImage(request)
   }
 }

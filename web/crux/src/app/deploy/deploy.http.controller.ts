@@ -1,6 +1,7 @@
-import { Controller, Post, Body, Get, UseGuards, UseInterceptors } from '@nestjs/common'
+import { Controller, Post, Body, Get, UseGuards, UseInterceptors, UseFilters } from '@nestjs/common'
 import { ApiBody, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
+import HttpExceptionFilter from 'src/filters/http-exception.filter'
 import { Empty } from 'src/grpc/protobuf/proto/common'
 import { CreateDeploymentRequest, CreateEntityResponse, IdRequest } from 'src/grpc/protobuf/proto/crux'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
@@ -17,6 +18,7 @@ import DeployStartValidationPipe from './pipes/deploy.start.pipe'
 
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor)
+@UseFilters(HttpExceptionFilter)
 @AuditLogLevel('disabled')
 @Controller('deploy')
 export default class DeployHttpController {
