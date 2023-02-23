@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Patch, Get, UseGuards, UseInterceptors } from '@nestjs/common'
+import { Controller, Post, Body, Get, UseGuards, UseInterceptors } from '@nestjs/common'
 import { ApiBody, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import {
@@ -13,13 +13,10 @@ import {
   CreateEntityResponseDto,
   CreateVersionRequestDto,
   IdRequestDto,
-  UpdateEntityResponseDto,
-  UpdateVersionRequestDto,
   VersionListResponseDto,
 } from 'src/swagger/crux.dto'
 import JwtAuthGuard from '../token/jwt-auth.guard'
 import VersionIncreaseValidationPipe from './pipes/version.increase.pipe'
-import VersionUpdateValidationPipe from './pipes/version.update.pipe'
 import VersionService from './version.service'
 
 @Controller('version')
