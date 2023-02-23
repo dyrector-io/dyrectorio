@@ -10,20 +10,11 @@ import DeployService from './deploy.service'
 import DeployHttpController from './deploy.http.controller'
 import SharedModule from '../shared/shared.module'
 import AgentModule from '../agent/agent.module'
-import DeployRepository from './deploy.repository'
 
 @Module({
   imports: [SharedModule, AgentModule, ImageModule],
   exports: [DeployService, DeployMapper],
   controllers: [DeployController, DeployHttpController],
-  providers: [
-    PrismaService,
-    DeployService,
-    DeployMapper,
-    DeployRepository,
-    InterceptorGrpcHelperProvider,
-    TeamRepository,
-    KratosService,
-  ],
+  providers: [PrismaService, DeployService, DeployMapper, InterceptorGrpcHelperProvider, TeamRepository, KratosService],
 })
 export default class DeployModule {}

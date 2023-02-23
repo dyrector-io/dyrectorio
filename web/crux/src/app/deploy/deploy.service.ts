@@ -36,7 +36,6 @@ import { ImageDetails } from '../image/image.mapper'
 import ImageService from '../image/image.service'
 import ContainerMapper from '../shared/container.mapper'
 import DeployMapper, { InstanceDetails } from './deploy.mapper'
-import DeployRepository from './deploy.repository'
 
 @Injectable()
 export default class DeployService {
@@ -51,7 +50,6 @@ export default class DeployService {
     private agentService: AgentService,
     imageService: ImageService,
     private mapper: DeployMapper,
-    private repository: DeployRepository,
     private containerMapper: ContainerMapper,
   ) {
     imageService.imagesAddedToVersionEvent
