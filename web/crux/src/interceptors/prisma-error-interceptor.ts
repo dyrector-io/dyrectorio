@@ -5,6 +5,8 @@ import { AlreadyExistsException, NotFoundException } from '../exception/errors'
 
 type NotFoundErrorMappings = { [P in Prisma.ModelName]: string }
 
+// Prisma Error message reference
+// https://www.prisma.io/docs/reference/api-reference/error-reference#error-codes
 const UNIQUE_CONSTRAINT_FAILED = 'P2002'
 const NOT_FOUND = 'P2025'
 
@@ -14,7 +16,6 @@ export default class PrismaErrorInterceptor implements NestInterceptor {
   }
 
   onError(err: Error): any {
-    // https://www.prisma.io/docs/reference/api-reference/error-reference#error-codes
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
       if (err.code === UNIQUE_CONSTRAINT_FAILED) {
         const meta = err.meta ?? ({} as any)
