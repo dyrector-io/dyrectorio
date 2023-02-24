@@ -1,4 +1,4 @@
-import { WS_TYPE_PATCH_IMAGE } from '@app/models'
+import { WS_TYPE_PATCH_IMAGE, WS_TYPE_PATCH_RECEIVED } from '@app/models'
 import { expect, Page, test, WebSocket } from '@playwright/test'
 import { imageConfigUrl } from '../src/routes'
 import { screenshotPath } from './utils/common'
@@ -118,21 +118,32 @@ test.describe('Filters', () => {
   })
 })
 
-const wsPatchSent = (ws: WebSocket, match?: (payload: any) => boolean) =>
-  ws.waitForEvent('framesent', data => {
+const wsPatchSent = async (ws: WebSocket, match?: (payload: any) => boolean) => {
+  const frameReceived = ws.waitForEvent('framereceived', data => {
     const payload = JSON.parse(data.payload as string)
+
+    return payload.type === WS_TYPE_PATCH_RECEIVED
+  })
+
+  await ws.waitForEvent('framesent', data => {
+    const payload = JSON.parse(data.payload as string)
+
     if (payload.type !== WS_TYPE_PATCH_IMAGE) {
       return false
     }
+
     return match ? match(payload.payload) : true
   })
 
-const wsPatchMatchPorts = (internal: string, external?: string) => (payload: any) =>
-  payload.config.ports.some(
-    it =>
-      Number.parseInt(it.internal) === Number.parseInt(internal) &&
-      (!external || Number.parseInt(it.external) === Number.parseInt(external)),
-  )
+  await frameReceived
+}
+
+const wsPatchMatchPorts = (internalPort: string, externalPort?: string) => (payload: any) => {
+  const internal = Number.parseInt(internalPort, 10)
+  const external = Number.parseInt(externalPort, 10)
+
+  return payload.config?.ports?.some(it => it.internal === internal && (!external || it.external === external))
+}
 
 test.describe('Image configurations', () => {
   test('Port should be saved after adding it from the config field', async ({ page }) => {
@@ -140,28 +151,28 @@ test.describe('Image configurations', () => {
 
     const sock = page.waitForEvent('websocket')
     await page.goto(imageConfigUrl(productId, versionId, imageId))
-
     const ws = await sock
-    let wsSent = wsPatchSent(ws)
 
+    let wsSent = wsPatchSent(ws)
     const addPortsButton = await page.locator(`[src="/plus.svg"]:right-of(label:has-text("Ports"))`).first()
     await addPortsButton.click()
     await wsSent
 
-    const internalValue = '1000'
-    const externalValue = '2000'
+    const internal = '1000'
+    const external = '2000'
 
-    wsSent = wsPatchSent(ws, wsPatchMatchPorts(internalValue, externalValue))
-    const internal = page.locator('input[placeholder="Internal"]')
-    const external = page.locator('input[placeholder="External"]')
-    await internal.type(internalValue)
-    await external.type(externalValue)
+    const internalInput = page.locator('input[placeholder="Internal"]')
+    const externalInput = page.locator('input[placeholder="External"]')
+
+    wsSent = wsPatchSent(ws, wsPatchMatchPorts(internal, external))
+    await internalInput.type(internal)
+    await externalInput.type(external)
     await wsSent
 
     await page.reload()
 
-    await expect(internal).toHaveValue(internalValue)
-    await expect(external).toHaveValue(externalValue)
+    await expect(internalInput).toHaveValue(internal)
+    await expect(externalInput).toHaveValue(external)
   })
 
   test('Port should be saved after adding it from the json editor', async ({ page }) => {
@@ -172,15 +183,16 @@ test.describe('Image configurations', () => {
     const ws = await sock
 
     const jsonEditorButton = await page.waitForSelector('button:has-text("JSON")')
-
     await jsonEditorButton.click()
 
-    const internal = '2000'
-    const external = '4000'
+    const internalAsNumber = 2000
+    const externalAsNumber = 4000
+    const internal = internalAsNumber.toString()
+    const external = externalAsNumber.toString()
 
     const jsonEditor = await page.locator('textarea')
     const json = JSON.parse(await jsonEditor.inputValue())
-    json.ports = [{ internal, external }]
+    json.ports = [{ internal: internalAsNumber, external: externalAsNumber }]
 
     const wsSent = wsPatchSent(ws, wsPatchMatchPorts(internal, external))
     await jsonEditor.fill(JSON.stringify(json))
