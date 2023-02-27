@@ -26,7 +26,7 @@ import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
 import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
 import GrpcUserInterceptor, { DisableIdentity, getIdentity } from 'src/interceptors/grpc.user.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
-import { DisableTeamAccessCheck } from 'src/shared/user-access.guard'
+import { DisableAccessCheck } from 'src/shared/user-access.guard'
 import NodeTeamAccessGuard from './guards/node.team-access.guard'
 import NodeService from './node.service'
 import NodeGenerateScriptValidationPipe from './pipes/node.generate-script.pipe'
@@ -66,7 +66,7 @@ export default class NodeController implements CruxNodeController {
     return await this.service.generateScript(request, getIdentity(metadata))
   }
 
-  @DisableTeamAccessCheck()
+  @DisableAccessCheck()
   @DisableIdentity()
   @AuditLogLevel('disabled')
   @UsePipes(NodeGetScriptValidationPipe)
@@ -83,14 +83,14 @@ export default class NodeController implements CruxNodeController {
   }
 
   @AuditLogLevel('disabled')
-  @DisableTeamAccessCheck()
+  @DisableAccessCheck()
   @DisableIdentity()
   subscribeNodeEventChannel(request: ServiceIdRequest): Observable<NodeEventMessage> {
     return from(this.service.handleSubscribeNodeEventChannel(request)).pipe(concatAll())
   }
 
   @AuditLogLevel('disabled')
-  @DisableTeamAccessCheck()
+  @DisableAccessCheck()
   @DisableIdentity()
   watchContainerState(request: WatchContainerStateRequest): Observable<ContainerStateListMessage> {
     return this.service.handleWatchContainerStatus(request)
@@ -111,7 +111,7 @@ export default class NodeController implements CruxNodeController {
   }
 
   @AuditLogLevel('disabled')
-  @DisableTeamAccessCheck()
+  @DisableAccessCheck()
   @DisableIdentity()
   subscribeContainerLogChannel(request: WatchContainerLogRequest): Observable<ContainerLogMessage> {
     return this.service.handleContainerLogStream(request)

@@ -25,7 +25,7 @@ import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
 import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
 import GrpcUserInterceptor, { DisableIdentity, getIdentity } from 'src/interceptors/grpc.user.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
-import { DisableTeamAccessCheck } from 'src/shared/user-access.guard'
+import { DisableAccessCheck } from 'src/shared/user-access.guard'
 import DeployService from './deploy.service'
 import DeployCreateTeamAccessGuard from './guards/deploy.create.team-access.guard'
 import DeployGetByVersionTeamAccessGuard from './guards/deploy.get-by-version.team-access.guard'
@@ -44,7 +44,7 @@ import DeployUpdateValidationPipe from './pipes/deploy.update.pipe'
 export default class DeployController implements CruxDeploymentController {
   constructor(private service: DeployService) {}
 
-  @DisableTeamAccessCheck()
+  @DisableAccessCheck()
   @UseGuards(DeployGetByVersionTeamAccessGuard)
   async getDeploymentsByVersionId(request: IdRequest): Promise<DeploymentListByVersionResponse> {
     return await this.service.getDeploymentsByVersionId(request)
@@ -89,13 +89,13 @@ export default class DeployController implements CruxDeploymentController {
     return await this.service.startDeployment(request, getIdentity(metadata))
   }
 
-  @DisableTeamAccessCheck()
+  @DisableAccessCheck()
   @DisableIdentity()
   subscribeToDeploymentEvents(request: IdRequest): Observable<DeploymentProgressMessage> {
     return from(this.service.subscribeToDeploymentEvents(request)).pipe(concatAll())
   }
 
-  @DisableTeamAccessCheck()
+  @DisableAccessCheck()
   @DisableIdentity()
   @AuditLogLevel('disabled')
   subscribeToDeploymentEditEvents(request: ServiceIdRequest): Observable<DeploymentEditEventMessage> {

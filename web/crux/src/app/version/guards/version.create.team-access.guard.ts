@@ -1,17 +1,11 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
-import PrismaService from 'src/services/prisma.service'
+import { Injectable } from '@nestjs/common'
 import { CreateVersionRequest } from 'src/grpc/protobuf/proto/crux'
-import { getIdentity } from 'src/interceptors/grpc.user.interceptor'
-import { Metadata } from '@grpc/grpc-js'
+import UserAccessGuard from 'src/shared/user-access.guard'
+import { Identity } from '@ory/kratos-client'
 
 @Injectable()
-export default class VersionCreateTeamAccessGuard implements CanActivate {
-  constructor(private prisma: PrismaService) {}
-
-  async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.getArgByIndex<CreateVersionRequest>(0)
-    const identity = getIdentity(context.getArgByIndex<Metadata>(1))
-
+export default class VersionCreateTeamAccessGuard extends UserAccessGuard<CreateVersionRequest> {
+  async canActivateWithRequest(request: CreateVersionRequest, identity: Identity): Promise<boolean> {
     const products = await this.prisma.product.count({
       where: {
         id: request.productId,
