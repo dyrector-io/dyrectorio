@@ -3,7 +3,7 @@ import PrismaService from 'src/services/prisma.service'
 import { IdRequest } from 'src/grpc/protobuf/proto/crux'
 import { PreconditionFailedException } from 'src/exception/errors'
 import { checkDeploymentCopiability } from 'src/domain/deployment'
-import BodyPipeTransform from 'src/decorators/grpc.pipe'
+import BodyPipeTransform from 'src/pipes/body.pipe'
 
 @Injectable()
 export default class DeployCopyValidationPipe extends BodyPipeTransform<IdRequest> {

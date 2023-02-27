@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
+import { Identity } from '@ory/kratos-client'
 import { DeploymentStatusEnum, Prisma } from '@prisma/client'
 import { JsonArray } from 'prisma'
 import { concatAll, EMPTY, filter, from, lastValueFrom, map, merge, Observable, Subject } from 'rxjs'
@@ -131,7 +132,7 @@ export default class DeployService {
     })
   }
 
-  async createDeployment(request: CreateDeploymentRequest, accessedBy: string): Promise<CreateEntityResponse> {
+  async createDeployment(request: CreateDeploymentRequest, identity: Identity): Promise<CreateEntityResponse> {
     const version = await this.prisma.version.findUniqueOrThrow({
       where: {
         id: request.versionId,
@@ -149,7 +150,7 @@ export default class DeployService {
         nodeId: request.nodeId,
         status: DeploymentStatusEnum.preparing,
         note: request.note,
-        createdBy: accessedBy,
+        createdBy: identity.id,
         prefix: request.prefix,
         instances: {
           createMany: {
@@ -221,12 +222,12 @@ export default class DeployService {
     return CreateEntityResponse.fromJSON(deployment)
   }
 
-  async updateDeployment(request: UpdateDeploymentRequest, accessedBy: string): Promise<UpdateEntityResponse> {
+  async updateDeployment(request: UpdateDeploymentRequest, identity: Identity): Promise<UpdateEntityResponse> {
     const deployment = await this.prisma.deployment.update({
       data: {
         note: request.note,
         prefix: request.prefix,
-        updatedBy: accessedBy,
+        updatedBy: identity.id,
       },
       where: {
         id: request.id,
@@ -238,7 +239,7 @@ export default class DeployService {
     })
   }
 
-  async patchDeployment(request: PatchDeploymentRequest, accessedBy: string): Promise<UpdateEntityResponse> {
+  async patchDeployment(request: PatchDeploymentRequest, identity: Identity): Promise<UpdateEntityResponse> {
     const reqInstance = request.instance
     let instanceConfigPatchSet: Partial<InstanceContainerConfigData> = null
 
@@ -275,7 +276,7 @@ export default class DeployService {
     const deployment = await this.prisma.deployment.update({
       data: {
         environment: request.environment?.data as JsonArray,
-        updatedBy: accessedBy,
+        updatedBy: identity.id,
         instances: !reqInstance
           ? undefined
           : {
@@ -327,7 +328,7 @@ export default class DeployService {
     return Empty
   }
 
-  async startDeployment(request: IdRequest, accessedBy: string): Promise<Empty> {
+  async startDeployment(request: IdRequest, identity: Identity): Promise<Empty> {
     const deployment = await this.prisma.deployment.findUniqueOrThrow({
       where: {
         id: request.id,
@@ -500,7 +501,7 @@ export default class DeployService {
         }),
       },
       {
-        accessedBy,
+        accessedBy: identity.id,
         productName: deployment.version.product.name,
         versionName: deployment.version.name,
         nodeName: deployment.node.name,
@@ -572,7 +573,7 @@ export default class DeployService {
     )
   }
 
-  async getDeploymentList(accessedBy: string): Promise<DeploymentListResponse> {
+  async getDeploymentList(identity: Identity): Promise<DeploymentListResponse> {
     const deployments = await this.prisma.deployment.findMany({
       where: {
         version: {
@@ -580,7 +581,7 @@ export default class DeployService {
             team: {
               users: {
                 some: {
-                  userId: accessedBy,
+                  userId: identity.id,
                   active: true,
                 },
               },
@@ -652,7 +653,7 @@ export default class DeployService {
     return lastValueFrom(watcher)
   }
 
-  async copyDeployment(request: IdRequest, accessedBy: string): Promise<CreateEntityResponse> {
+  async copyDeployment(request: IdRequest, identity: Identity): Promise<CreateEntityResponse> {
     const oldDeployment = await this.prisma.deployment.findFirstOrThrow({
       where: {
         id: request.id,
@@ -684,7 +685,7 @@ export default class DeployService {
         nodeId: oldDeployment.nodeId,
         status: DeploymentStatusEnum.preparing,
         note: oldDeployment.note,
-        createdBy: accessedBy,
+        createdBy: identity.id,
         prefix: oldDeployment.prefix,
       },
     })

@@ -4,8 +4,9 @@ import PrismaService from 'src/services/prisma.service'
 import { IdRequest } from 'src/grpc/protobuf/proto/crux'
 import { Metadata } from '@grpc/grpc-js'
 import KratosService from 'src/services/kratos.service'
-import { METADATA_ACCESSED_BY_KEY } from 'src/interceptors/grpc.user.interceptor'
 import { UnauthorizedException } from '@nestjs/common/exceptions'
+import { Identity } from '@ory/kratos-client'
+import { setIdentityFromCookie } from 'src/interceptors/grpc.user.interceptor'
 
 const DISABLE_TEAM_ACCESS_CHECK = 'disable-team-access-check'
 
@@ -37,12 +38,10 @@ export default abstract class UserAccessGuard implements CanActivate {
       throw new UnauthorizedException()
     }
 
-    const session = await this.kratos.getSessionByCookie(cookie)
+    const identity = await setIdentityFromCookie(metadata, this.kratos)
 
-    metadata.add(METADATA_ACCESSED_BY_KEY, session.identity.id)
-
-    return this.canActivateWithIdRequest(request, metadata)
+    return this.canActivateWithIdRequest(request, identity)
   }
 
-  abstract canActivateWithIdRequest(request: IdRequest, metadata: Metadata): Promise<boolean>
+  abstract canActivateWithIdRequest(request: IdRequest, identity: Identity): Promise<boolean>
 }

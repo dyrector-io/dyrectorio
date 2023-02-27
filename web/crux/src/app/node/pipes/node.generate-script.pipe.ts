@@ -3,7 +3,7 @@ import AgentService from 'src/app/agent/agent.service'
 import PrismaService from 'src/services/prisma.service'
 import { AlreadyExistsException } from 'src/exception/errors'
 import { IdRequest } from 'src/grpc/protobuf/proto/crux'
-import BodyPipeTransform from 'src/decorators/grpc.pipe'
+import BodyPipeTransform from 'src/pipes/body.pipe'
 
 @Injectable()
 export default class NodeGenerateScriptValidationPipe extends BodyPipeTransform<IdRequest> {

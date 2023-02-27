@@ -2,27 +2,34 @@ import { Metadata } from '@grpc/grpc-js'
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor, SetMetadata } from '@nestjs/common'
 import { UnauthorizedException } from '@nestjs/common/exceptions'
 import { Reflector } from '@nestjs/core'
+import { Identity } from '@ory/kratos-client'
 import { Observable } from 'rxjs'
 import KratosService from 'src/services/kratos.service'
 
-const DISABLE_ACCESSED_BY_METADATA = 'disable-accessed-by-metadata'
-export const METADATA_ACCESSED_BY_KEY = 'accessedby'
+export const DISABLE_IDENTITY = 'disable-accessed-by-metadata'
+export const METADATA_IDENTITY = 'identity'
 
-export const DisableAccessedByMetadata = () => SetMetadata(DISABLE_ACCESSED_BY_METADATA, true)
+export const DisableIdentity = () => SetMetadata(DISABLE_IDENTITY, true)
 
-export const setAccessedByFromCookie = async (metadata: Metadata, kratos: KratosService) => {
+export const setIdentityFromCookie = async (metadata: Metadata, kratos: KratosService) => {
   const cookie = metadata.getMap().cookie as string
   if (!cookie) {
     throw new UnauthorizedException()
   }
 
   const session = await kratos.getSessionByCookie(cookie)
-  metadata.add(METADATA_ACCESSED_BY_KEY, session.identity.id)
+  metadata.add(METADATA_IDENTITY, JSON.stringify(session.identity))
 
-  return session.identity.id
+  return session.identity
 }
 
-export const getAccessedBy = (metadata: Metadata) => metadata.getMap().accessedby as string
+export const getIdentity = (metadata: Metadata) => {
+  const json = metadata.getMap().identity as string
+  if (!json) {
+    return null
+  }
+  return JSON.parse(json) as Identity
+}
 
 /**
  * gRPC request user interceptor. Injects the userID into the metadata
@@ -35,13 +42,13 @@ export default class GrpcUserInterceptor implements NestInterceptor {
   constructor(private readonly reflector: Reflector, private readonly kratos: KratosService) {}
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
-    const disabled = this.reflector.get<boolean>(DISABLE_ACCESSED_BY_METADATA, context.getHandler())
+    const disabled = this.reflector.get<boolean>(DISABLE_IDENTITY, context.getHandler())
     if (disabled) {
       return next.handle()
     }
 
     const metadata = context.getArgByIndex<Metadata>(1)
-    await setAccessedByFromCookie(metadata, this.kratos)
+    await setIdentityFromCookie(metadata, this.kratos)
 
     return next.handle()
   }

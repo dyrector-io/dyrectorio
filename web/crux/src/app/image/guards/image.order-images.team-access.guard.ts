@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
 import PrismaService from 'src/services/prisma.service'
 import { OrderVersionImagesRequest } from 'src/grpc/protobuf/proto/crux'
-import { getAccessedBy } from 'src/interceptors/grpc.user.interceptor'
+import { getIdentity } from 'src/interceptors/grpc.user.interceptor'
 import { Metadata } from '@grpc/grpc-js'
 
 @Injectable()
@@ -10,7 +10,7 @@ export default class ImageOrderImagesTeamAccessGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.getArgByIndex<OrderVersionImagesRequest>(0)
-    const accessedBy = getAccessedBy(context.getArgByIndex<Metadata>(1))
+    const identity = getIdentity(context.getArgByIndex<Metadata>(1))
 
     // check the sent imageIds and versionId against the user's team
     const images = await this.prisma.image.count({
@@ -24,7 +24,7 @@ export default class ImageOrderImagesTeamAccessGuard implements CanActivate {
             team: {
               users: {
                 some: {
-                  userId: accessedBy,
+                  userId: identity.id,
                   active: true,
                 },
               },

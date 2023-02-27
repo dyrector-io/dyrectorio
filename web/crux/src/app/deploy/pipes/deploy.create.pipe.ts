@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import PrismaService from 'src/services/prisma.service'
 import { AlreadyExistsException, PreconditionFailedException } from 'src/exception/errors'
 import { CreateDeploymentRequest } from 'src/grpc/protobuf/proto/crux'
-import BodyPipeTransform from 'src/decorators/grpc.pipe'
+import BodyPipeTransform from 'src/pipes/body.pipe'
 
 @Injectable()
 export default class DeployCreateValidationPipe extends BodyPipeTransform<CreateDeploymentRequest> {

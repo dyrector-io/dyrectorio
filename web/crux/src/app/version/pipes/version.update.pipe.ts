@@ -4,7 +4,7 @@ import { checkVersionMutability } from 'src/domain/version'
 import { PreconditionFailedException } from 'src/exception/errors'
 import { UpdateVersionRequest } from 'src/grpc/protobuf/proto/crux'
 import { ProductTypeEnum } from '.prisma/client'
-import BodyPipeTransform from 'src/decorators/grpc.pipe'
+import BodyPipeTransform from 'src/pipes/body.pipe'
 
 @Injectable()
 export default class VersionUpdateValidationPipe extends BodyPipeTransform<UpdateVersionRequest> {

@@ -3,7 +3,7 @@ import PrismaService from 'src/services/prisma.service'
 import { checkVersionMutability } from 'src/domain/version'
 import { AlreadyExistsException, InvalidArgumentException } from 'src/exception/errors'
 import { OrderVersionImagesRequest } from 'src/grpc/protobuf/proto/crux'
-import BodyPipeTransform from 'src/decorators/grpc.pipe'
+import BodyPipeTransform from 'src/pipes/body.pipe'
 
 @Injectable()
 export default class OrderImagesValidationPipe extends BodyPipeTransform<OrderVersionImagesRequest> {

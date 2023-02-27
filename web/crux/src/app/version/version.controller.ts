@@ -15,7 +15,7 @@ import {
 } from 'src/grpc/protobuf/proto/crux'
 import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
 import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
-import GrpcUserInterceptor, { getAccessedBy } from 'src/interceptors/grpc.user.interceptor'
+import GrpcUserInterceptor, { getIdentity } from 'src/interceptors/grpc.user.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import VersionCreateTeamAccessGuard from './guards/version.create.team-access.guard'
 import VersionTeamAccessGuard from './guards/version.team-access.guard'
@@ -34,11 +34,11 @@ export default class VersionController implements CruxProductVersionController {
 
   @UsePipes(VersionIncreaseValidationPipe)
   async increaseVersion(request: IncreaseVersionRequest, metadata: Metadata): Promise<CreateEntityResponse> {
-    return await this.service.increaseVersion(request, getAccessedBy(metadata))
+    return await this.service.increaseVersion(request, getIdentity(metadata))
   }
 
   async getVersionsByProductId(productId: IdRequest, metadata: Metadata): Promise<VersionListResponse> {
-    return await this.service.getVersionsByProductId(productId, getAccessedBy(metadata))
+    return await this.service.getVersionsByProductId(productId, getIdentity(metadata))
   }
 
   async getVersionDetails(versionId: IdRequest): Promise<VersionDetailsResponse> {
@@ -48,12 +48,12 @@ export default class VersionController implements CruxProductVersionController {
   @UseGuards(VersionCreateTeamAccessGuard)
   @UsePipes(VersionCreateValidationPipe)
   async createVersion(request: CreateVersionRequest, metadata: Metadata): Promise<CreateEntityResponse> {
-    return await this.service.createVersion(request, getAccessedBy(metadata))
+    return await this.service.createVersion(request, getIdentity(metadata))
   }
 
   @UsePipes(VersionUpdateValidationPipe)
   async updateVersion(request: UpdateVersionRequest, metadata: Metadata): Promise<UpdateEntityResponse> {
-    return await this.service.updateVersion(request, getAccessedBy(metadata))
+    return await this.service.updateVersion(request, getIdentity(metadata))
   }
 
   async setDefaultVersion(request: IdRequest): Promise<Empty> {

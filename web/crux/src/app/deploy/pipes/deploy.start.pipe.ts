@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import AgentService from 'src/app/agent/agent.service'
-import BodyPipeTransform from 'src/decorators/grpc.pipe'
+import BodyPipeTransform from 'src/pipes/body.pipe'
 import { checkDeploymentDeployability } from 'src/domain/deployment'
 import { PreconditionFailedException } from 'src/exception/errors'
 import { IdRequest, NodeConnectionStatus } from 'src/grpc/protobuf/proto/crux'

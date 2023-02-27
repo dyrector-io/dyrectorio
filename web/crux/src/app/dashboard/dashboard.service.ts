@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { Identity } from '@ory/kratos-client'
 import { DeploymentStatusEnum } from '@prisma/client'
 import { toTimestamp } from 'src/domain/utils'
 import { DashboardResponse } from 'src/grpc/protobuf/proto/crux'
@@ -14,14 +15,14 @@ export default class DashboardService {
     private readonly auditService: AuditService,
   ) {}
 
-  public async getDashboard(accessedBy: string): Promise<DashboardResponse> {
+  public async getDashboard(identity: Identity): Promise<DashboardResponse> {
     const team = await this.prisma.usersOnTeams.findFirstOrThrow({
       select: {
         teamId: true,
       },
       where: {
         active: true,
-        userId: accessedBy,
+        userId: identity.id,
       },
     })
 
@@ -112,7 +113,7 @@ export default class DashboardService {
         pageSize: 10,
         createdTo: toTimestamp(new Date()),
       },
-      accessedBy,
+      identity,
     )
 
     return {

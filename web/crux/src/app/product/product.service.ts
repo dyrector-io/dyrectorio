@@ -12,6 +12,7 @@ import {
 } from 'src/grpc/protobuf/proto/crux'
 import { SIMPLE_PRODUCT_VERSION_NAME } from 'src/shared/const'
 import PrismaService from 'src/services/prisma.service'
+import { Identity } from '@ory/kratos-client'
 import TeamRepository from '../team/team.repository'
 import ProductMapper from './product.mapper'
 
@@ -19,13 +20,13 @@ import ProductMapper from './product.mapper'
 export default class ProductService {
   constructor(private teamRepository: TeamRepository, private prisma: PrismaService, private mapper: ProductMapper) {}
 
-  async getProducts(accessedBy: string): Promise<ProductListResponse> {
+  async getProducts(identity: Identity): Promise<ProductListResponse> {
     const products = await this.prisma.product.findMany({
       where: {
         team: {
           users: {
             some: {
-              userId: accessedBy,
+              userId: identity.id,
               active: true,
             },
           },
@@ -45,9 +46,9 @@ export default class ProductService {
     }
   }
 
-  async createProduct(request: CreateProductRequest, accessedBy: string): Promise<CreateEntityResponse> {
+  async createProduct(request: CreateProductRequest, identity: Identity): Promise<CreateEntityResponse> {
     const type = this.mapper.typeToDb(request.type)
-    const team = await this.teamRepository.getActiveTeamByUserId(accessedBy)
+    const team = await this.teamRepository.getActiveTeamByUserId(identity.id)
 
     const product = await this.prisma.product.create({
       data: {
@@ -55,13 +56,13 @@ export default class ProductService {
         description: request.description,
         type,
         teamId: team.teamId,
-        createdBy: accessedBy,
+        createdBy: identity.id,
         versions:
           type === ProductTypeEnum.simple
             ? {
                 create: {
                   name: SIMPLE_PRODUCT_VERSION_NAME,
-                  createdBy: accessedBy,
+                  createdBy: identity.id,
                   type: VersionTypeEnum.rolling,
                   default: true,
                 },
@@ -73,7 +74,7 @@ export default class ProductService {
     return CreateEntityResponse.fromJSON(product)
   }
 
-  async updateProduct(req: UpdateProductRequest, accessedBy: string): Promise<UpdateEntityResponse> {
+  async updateProduct(req: UpdateProductRequest, identity: Identity): Promise<UpdateEntityResponse> {
     let product = await this.prisma.product.findUnique({
       select: {
         type: true,
@@ -90,7 +91,7 @@ export default class ProductService {
       data: {
         name: req.name,
         description: req.description,
-        updatedBy: accessedBy,
+        updatedBy: identity.id,
         versions:
           product.type === ProductTypeEnum.simple
             ? {

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { Identity } from '@ory/kratos-client'
 import { Subject } from 'rxjs'
 import { containerNameFromImageName } from 'src/domain/deployment'
 import { Empty } from 'src/grpc/protobuf/proto/common'
@@ -54,7 +55,7 @@ export default class ImageService {
     return this.mapper.detailsToProto(image)
   }
 
-  async addImagesToVersion(request: AddImagesToVersionRequest, accessedBy: string): Promise<ImageListResponse> {
+  async addImagesToVersion(request: AddImagesToVersionRequest, identity: Identity): Promise<ImageListResponse> {
     const images = await this.prisma.$transaction(async prisma => {
       const lastImageOrder = await this.prisma.image.findFirst({
         select: {
@@ -84,7 +85,7 @@ export default class ImageService {
             data: {
               registryId: registyImages.registryId,
               versionId: request.versionId,
-              createdBy: accessedBy,
+              createdBy: identity.id,
               name: imageName,
               tag: imageTag,
               order: order++,
@@ -117,12 +118,12 @@ export default class ImageService {
     }
   }
 
-  async orderImages(request: OrderVersionImagesRequest, accessedBy: string): Promise<Empty> {
+  async orderImages(request: OrderVersionImagesRequest, identity: Identity): Promise<Empty> {
     const updates = request.imageIds.map((it, index) =>
       this.prisma.image.update({
         data: {
           order: index,
-          updatedBy: accessedBy,
+          updatedBy: identity.id,
         },
         where: {
           id: it,
@@ -135,7 +136,7 @@ export default class ImageService {
     return Empty
   }
 
-  async patchImage(request: PatchImageRequest, accessedBy: string): Promise<Empty> {
+  async patchImage(request: PatchImageRequest, identity: Identity): Promise<Empty> {
     let config: Partial<ContainerConfigData>
 
     if (request.config) {
@@ -162,7 +163,7 @@ export default class ImageService {
         config: {
           update: config,
         },
-        updatedBy: accessedBy,
+        updatedBy: identity.id,
       },
       where: {
         id: request.id,

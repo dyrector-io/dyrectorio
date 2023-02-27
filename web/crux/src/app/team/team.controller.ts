@@ -20,7 +20,7 @@ import {
 } from 'src/grpc/protobuf/proto/crux'
 import CommonGrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
 import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
-import GrpcUserInterceptor, { getAccessedBy } from 'src/interceptors/grpc.user.interceptor'
+import GrpcUserInterceptor, { getIdentity } from 'src/interceptors/grpc.user.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import TeamRoleGuard, { TeamRoleRequired } from './guards/team.role.guard'
 import TeamSelectGuard from './guards/team.select.guard'
@@ -42,12 +42,12 @@ export default class TeamController implements CruxTeamController {
     metadata: Metadata,
     rest: ServerUnaryCall<CreateTeamRequest, Promise<CreateEntityResponse>>,
   ): Promise<CreateEntityResponse> {
-    return await this.service.createTeam(request, rest, getAccessedBy(metadata))
+    return await this.service.createTeam(request, rest, getIdentity(metadata))
   }
 
   @TeamRoleRequired('owner')
   async updateTeam(request: UpdateTeamRequest, metadata: Metadata): Promise<Empty> {
-    return await this.service.updateTeam(request, getAccessedBy(metadata))
+    return await this.service.updateTeam(request, getIdentity(metadata))
   }
 
   @AuditLogLevel('disabled')
@@ -59,18 +59,18 @@ export default class TeamController implements CruxTeamController {
   @TeamRoleRequired('admin')
   @UsePipes(TeamUpdateUserRoleValidationPipe)
   async updateUserRole(request: UpdateUserRoleInTeamRequest, metadata: Metadata): Promise<Empty> {
-    return await this.service.updateUserRole(request, getAccessedBy(metadata))
+    return await this.service.updateUserRole(request, getIdentity(metadata))
   }
 
   @TeamRoleRequired('admin')
   async inviteUserToTeam(request: InviteUserRequest, metadata: Metadata): Promise<CreateEntityResponse> {
-    return await this.service.inviteUserToTeam(request, getAccessedBy(metadata))
+    return await this.service.inviteUserToTeam(request, getIdentity(metadata))
   }
 
   @TeamRoleRequired('admin')
   @UsePipes(TeamReinviteUserValidationPipe)
   async reinviteUserToTeam(request: ReinviteUserRequest, metadata: Metadata): Promise<CreateEntityResponse> {
-    return await this.service.reinviteUserToTeam(request, getAccessedBy(metadata))
+    return await this.service.reinviteUserToTeam(request, getIdentity(metadata))
   }
 
   @TeamRoleRequired('none')
@@ -80,32 +80,32 @@ export default class TeamController implements CruxTeamController {
     metadata: Metadata,
     rest: ServerUnaryCall<IdRequest, Promise<void>>,
   ): Promise<void> {
-    return await this.service.acceptTeamInvitation(request, rest, getAccessedBy(metadata))
+    return await this.service.acceptTeamInvitation(request, rest, getIdentity(metadata))
   }
 
   @TeamRoleRequired('none')
   @AuditLogLevel('disabled')
   async declineTeamInvitation(request: IdRequest, metadata: Metadata): Promise<void> {
-    return await this.service.declineTeamInvitation(request, getAccessedBy(metadata))
+    return await this.service.declineTeamInvitation(request, getIdentity(metadata))
   }
 
   @AuditLogLevel('disabled')
   @TeamRoleRequired('none')
   @UseGuards(TeamSelectGuard)
   async selectTeam(request: IdRequest, metadata: Metadata): Promise<void> {
-    return await this.service.selectTeam(request, getAccessedBy(metadata))
+    return await this.service.selectTeam(request, getIdentity(metadata))
   }
 
   @AuditLogLevel('disabled')
   @TeamRoleRequired('none')
   async getActiveTeamByUser(_: Empty, metadata: Metadata): Promise<ActiveTeamDetailsResponse> {
-    return await this.service.getActiveTeamByUserId(getAccessedBy(metadata))
+    return await this.service.getActiveTeamByUserId(getIdentity(metadata))
   }
 
   @AuditLogLevel('disabled')
   @TeamRoleRequired('none')
   async getUserMeta(_: Empty, metadata: Metadata): Promise<UserMetaResponse> {
-    return await this.service.getUserMeta(getAccessedBy(metadata))
+    return await this.service.getUserMeta(getIdentity(metadata))
   }
 
   @TeamRoleRequired('admin')
@@ -114,7 +114,7 @@ export default class TeamController implements CruxTeamController {
   }
 
   async getAllTeams(_: Empty, metadata: Metadata): Promise<AllTeamsResponse> {
-    return await this.service.getAllTeams(getAccessedBy(metadata))
+    return await this.service.getAllTeams(getIdentity(metadata))
   }
 
   async getTeamById(request: IdRequest): Promise<TeamDetailsResponse> {

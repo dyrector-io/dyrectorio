@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import BodyPipeTransform from 'src/decorators/grpc.pipe'
+import BodyPipeTransform from 'src/pipes/body.pipe'
 import { PreconditionFailedException } from 'src/exception/errors'
 import { ReinviteUserRequest } from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'

@@ -15,7 +15,7 @@ import {
 } from 'src/grpc/protobuf/proto/crux'
 import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
 import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
-import GrpcUserInterceptor, { getAccessedBy } from 'src/interceptors/grpc.user.interceptor'
+import GrpcUserInterceptor, { getIdentity } from 'src/interceptors/grpc.user.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import RegistryAccessValidationGuard from './guards/registry.auth.validation.guard'
 import RegistryTeamAccessGuard from './guards/registry.team-access.guard'
@@ -31,12 +31,12 @@ export default class RegistryController implements CruxRegistryController {
   constructor(private service: RegistryService) {}
 
   async getRegistries(_: Empty, metadata: Metadata): Promise<RegistryListResponse> {
-    return await this.service.getRegistries(getAccessedBy(metadata))
+    return await this.service.getRegistries(getIdentity(metadata))
   }
 
   @UseGuards(RegistryAccessValidationGuard)
   async createRegistry(request: CreateRegistryRequest, metadata: Metadata): Promise<CreateEntityResponse> {
-    return await this.service.createRegistry(request, getAccessedBy(metadata))
+    return await this.service.createRegistry(request, getIdentity(metadata))
   }
 
   @UsePipes(DeleteRegistryValidationPipe)
@@ -48,7 +48,7 @@ export default class RegistryController implements CruxRegistryController {
   @AuditLogLevel('no-data')
   @UsePipes(UpdateRegistryValidationPipe)
   async updateRegistry(request: UpdateRegistryRequest, metadata: Metadata): Promise<UpdateEntityResponse> {
-    return this.service.updateRegistry(request, getAccessedBy(metadata))
+    return this.service.updateRegistry(request, getIdentity(metadata))
   }
 
   async getRegistryDetails(request: IdRequest): Promise<RegistryDetailsResponse> {

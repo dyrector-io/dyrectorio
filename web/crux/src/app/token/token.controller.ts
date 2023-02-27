@@ -11,7 +11,7 @@ import { Controller, UseInterceptors, UseGuards } from '@nestjs/common'
 import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
 import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
-import GrpcUserInterceptor, { getAccessedBy } from 'src/interceptors/grpc.user.interceptor'
+import GrpcUserInterceptor, { getIdentity } from 'src/interceptors/grpc.user.interceptor'
 import { Metadata } from '@grpc/grpc-js'
 import { Empty } from 'src/grpc/protobuf/proto/common'
 import { UsePipes } from '@nestjs/common/decorators'
@@ -28,11 +28,11 @@ export default class TokenController implements CruxTokenController {
 
   @UsePipes(TokenValidationPipe)
   async generateToken(request: GenerateTokenRequest, metadata: Metadata): Promise<GenerateTokenResponse> {
-    return this.authService.generateToken(request, getAccessedBy(metadata))
+    return this.authService.generateToken(request, getIdentity(metadata))
   }
 
   async getTokenList(_: Empty, metadata: Metadata): Promise<TokenListResponse> {
-    return this.authService.getTokenList(getAccessedBy(metadata))
+    return this.authService.getTokenList(getIdentity(metadata))
   }
 
   async deleteToken(request: IdRequest): Promise<void> {

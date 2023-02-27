@@ -1,6 +1,6 @@
 import { Handler, ServerSurfaceCall } from '@grpc/grpc-js/build/src/server-call'
 import { ExecutionContext, Injectable } from '@nestjs/common'
-import { getAccessedBy } from './grpc.user.interceptor'
+import { getIdentity } from './grpc.user.interceptor'
 
 type GrpcCallLog = {
   userId: string
@@ -23,10 +23,10 @@ export default class InterceptorGrpcHelperProvider {
     const serverCall = surfaceCall as any as ServerCall
     const { handler } = serverCall.call
 
-    const accessedBy = getAccessedBy(surfaceCall.metadata)
+    const identity = getIdentity(surfaceCall.metadata)
 
     return {
-      userId: accessedBy,
+      userId: identity?.id,
       serviceCall: handler.path,
       data: request,
     }

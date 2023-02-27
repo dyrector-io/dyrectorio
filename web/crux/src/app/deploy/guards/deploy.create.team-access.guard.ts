@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
 import PrismaService from 'src/services/prisma.service'
 import { CreateDeploymentRequest } from 'src/grpc/protobuf/proto/crux'
-import { getAccessedBy } from 'src/interceptors/grpc.user.interceptor'
+import { getIdentity } from 'src/interceptors/grpc.user.interceptor'
 import { Metadata } from '@grpc/grpc-js'
 
 @Injectable()
@@ -10,7 +10,7 @@ export default class DeployCreateTeamAccessGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.getArgByIndex<CreateDeploymentRequest>(0)
-    const accessedBy = getAccessedBy(context.getArgByIndex<Metadata>(1))
+    const identity = getIdentity(context.getArgByIndex<Metadata>(1))
 
     const version = await this.prisma.version.count({
       where: {
@@ -19,7 +19,7 @@ export default class DeployCreateTeamAccessGuard implements CanActivate {
           team: {
             users: {
               some: {
-                userId: accessedBy,
+                userId: identity.id,
                 active: true,
               },
             },

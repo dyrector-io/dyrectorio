@@ -11,7 +11,7 @@ import {
 } from 'src/grpc/protobuf/proto/crux'
 import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
 import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
-import GrpcUserInterceptor, { getAccessedBy } from 'src/interceptors/grpc.user.interceptor'
+import GrpcUserInterceptor, { getIdentity } from 'src/interceptors/grpc.user.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import TemplateFileService from 'src/services/template.file.service'
 import TemplateService from './template.service'
@@ -32,7 +32,7 @@ export default class TemplateController implements CruxTemplateController {
     request: CreateProductFromTemplateRequest,
     metadata: Metadata,
   ): Promise<CreateEntityResponse> {
-    return this.service.createProductFromTemplate(request, getAccessedBy(metadata))
+    return this.service.createProductFromTemplate(request, getIdentity(metadata))
   }
 
   getImage(request: IdRequest): Promise<TemplateImageResponse> {

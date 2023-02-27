@@ -2,7 +2,6 @@ import { Controller, Post, Body, Get, UseGuards, UseInterceptors, UseFilters } f
 import { ApiBody, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import HttpExceptionFilter from 'src/filters/http-exception.filter'
-import JWTUser from 'src/decorators/jwt-user.decorator'
 import {
   CreateEntityResponse,
   IdRequest,
@@ -17,13 +16,15 @@ import {
   IdRequestDto,
   VersionListResponseDto,
 } from 'src/swagger/crux.dto'
+import { HttpIdentityInterceptor, IdentityFromRequest } from 'src/interceptors/http.identity.interceptor'
+import { Identity } from '@ory/kratos-client'
 import JwtAuthGuard from '../token/jwt-auth.guard'
 import VersionIncreaseValidationPipe from './pipes/version.increase.pipe'
 import VersionService from './version.service'
 
 @Controller('version')
 @UseGuards(JwtAuthGuard)
-@UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor)
+@UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, HttpIdentityInterceptor)
 @UseFilters(HttpExceptionFilter)
 export default class VersionHttpController {
   constructor(private service: VersionService) {}
@@ -34,9 +35,9 @@ export default class VersionHttpController {
   @AuditLogLevel('disabled')
   async getVersionsByProductId(
     @Body() request: IdRequest,
-    @JWTUser() accessedBy: string,
+    @IdentityFromRequest() identity: Identity,
   ): Promise<VersionListResponse> {
-    return await this.service.getVersionsByProductId(request, accessedBy)
+    return await this.service.getVersionsByProductId(request, identity)
   }
 
   @Post()
@@ -45,9 +46,9 @@ export default class VersionHttpController {
   @AuditLogLevel('disabled')
   async createVersion(
     @Body() request: CreateVersionRequestDto,
-    @JWTUser() accessedBy: string,
+    @IdentityFromRequest() identity: Identity,
   ): Promise<CreateEntityResponse> {
-    return await this.service.createVersion(request, accessedBy)
+    return await this.service.createVersion(request, identity)
   }
 
   @Post('increase')
@@ -56,8 +57,8 @@ export default class VersionHttpController {
   @AuditLogLevel('disabled')
   async increaseVersion(
     @Body(VersionIncreaseValidationPipe) request: IncreaseVersionRequest,
-    @JWTUser() accessedBy: string,
+    @IdentityFromRequest() identity: Identity,
   ): Promise<CreateEntityResponse> {
-    return await this.service.increaseVersion(request, accessedBy)
+    return await this.service.increaseVersion(request, identity)
   }
 }

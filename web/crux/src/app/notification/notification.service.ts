@@ -1,5 +1,6 @@
 import { HttpService } from '@nestjs/axios'
 import { Injectable, Logger } from '@nestjs/common'
+import { Identity } from '@ory/kratos-client'
 import { lastValueFrom } from 'rxjs'
 import TeamRepository from 'src/app/team/team.repository'
 import { Empty } from 'src/grpc/protobuf/proto/common'
@@ -33,9 +34,9 @@ export default class NotificationService {
 
   async createNotification(
     request: CreateNotificationRequest,
-    accessedBy: string,
+    identity: Identity,
   ): Promise<CreateNotificationResponse> {
-    const team = await this.teamRepository.getActiveTeamByUserId(accessedBy)
+    const team = await this.teamRepository.getActiveTeamByUserId(identity.id)
 
     const notification = await this.prisma.notification.create({
       data: {
@@ -43,7 +44,7 @@ export default class NotificationService {
         name: request.name,
         url: request.url,
         type: this.mapper.typeToDb(request.type),
-        createdBy: accessedBy,
+        createdBy: identity.id,
         active: !!request.active,
         events: {
           createMany: {
@@ -55,15 +56,13 @@ export default class NotificationService {
       },
     })
 
-    const identity = await this.kratos.getIdentityById(accessedBy)
-
     return {
       id: notification.id,
       creator: nameOrEmailOfIdentity(identity),
     }
   }
 
-  async updateNotification(request: UpdateNotificationRequest, accessedBy: string): Promise<UpdateEntityResponse> {
+  async updateNotification(request: UpdateNotificationRequest, identity: Identity): Promise<UpdateEntityResponse> {
     const notificationEvents = await this.prisma.notificationEvent.findMany({
       where: {
         notificationId: request.id,
@@ -83,7 +82,7 @@ export default class NotificationService {
         url: request.url,
         active: !!request.active,
         type: this.mapper.typeToDb(request.type),
-        updatedBy: accessedBy,
+        updatedBy: identity.id,
         events: {
           deleteMany: {
             id: {
@@ -110,13 +109,13 @@ export default class NotificationService {
     })
   }
 
-  async getNotifications(accessedBy: string): Promise<NotificationListResponse> {
+  async getNotifications(identity: Identity): Promise<NotificationListResponse> {
     const notifications = await this.prisma.notification.findMany({
       where: {
         team: {
           users: {
             some: {
-              userId: accessedBy,
+              userId: identity.id,
               active: true,
             },
           },
@@ -135,7 +134,7 @@ export default class NotificationService {
     }
   }
 
-  async getNotificationDetails(request: IdRequest, accessedBy: string): Promise<NotificationDetailsResponse> {
+  async getNotificationDetails(request: IdRequest, identity: Identity): Promise<NotificationDetailsResponse> {
     const notification = await this.prisma.notification.findUniqueOrThrow({
       where: {
         id: request.id,
@@ -144,8 +143,6 @@ export default class NotificationService {
         events: true,
       },
     })
-
-    const identity = await this.kratos.getIdentityById(accessedBy)
 
     return this.mapper.detailsToProto(notification, identity)
   }

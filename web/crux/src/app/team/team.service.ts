@@ -51,10 +51,10 @@ export default class TeamService {
     private notificationService: DomainNotificationService,
   ) {}
 
-  async getUserMeta(accessedBy: string): Promise<UserMetaResponse> {
+  async getUserMeta(identity: Identity): Promise<UserMetaResponse> {
     const usersOnTeams = await this.prisma.usersOnTeams.findMany({
       where: {
-        userId: accessedBy,
+        userId: identity.id,
       },
       select: {
         active: true,
@@ -70,7 +70,7 @@ export default class TeamService {
 
     const invitations = await this.prisma.userInvitation.findMany({
       where: {
-        userId: accessedBy,
+        userId: identity.id,
         status: 'pending',
       },
       select: {
@@ -98,10 +98,10 @@ export default class TeamService {
     }
   }
 
-  async getActiveTeamByUserId(accessedBy: string): Promise<ActiveTeamDetailsResponse> {
+  async getActiveTeamByUserId(identity: Identity): Promise<ActiveTeamDetailsResponse> {
     const activeUserOnTeam = await this.prisma.usersOnTeams.findFirstOrThrow({
       where: {
-        userId: accessedBy,
+        userId: identity.id,
         active: true,
       },
       select: {
@@ -125,19 +125,19 @@ export default class TeamService {
   async createTeam(
     request: CreateTeamRequest,
     call: ServerUnaryCall<CreateTeamRequest, Promise<CreateEntityResponse>>,
-    accessedBy: string,
+    identity: Identity,
   ): Promise<CreateEntityResponse> {
     // If the user doesn't have an active team, make the current one active
-    const userHasTeam = await this.teamRepository.userHasTeam(accessedBy)
+    const userHasTeam = await this.teamRepository.userHasTeam(identity.id)
 
     // Create Team entity in database
     const team = await this.prisma.team.create({
       data: {
         name: request.name,
-        createdBy: accessedBy,
+        createdBy: identity.id,
         users: {
           create: {
-            userId: accessedBy,
+            userId: identity.id,
             active: !userHasTeam,
             role: 'owner',
           },
@@ -150,7 +150,7 @@ export default class TeamService {
             icon: null,
             url: REGISTRY_HUB_URL,
             imageNamePrefix: 'library',
-            createdBy: accessedBy,
+            createdBy: identity.id,
             type: RegistryTypeEnum.hub,
           },
         },
@@ -158,7 +158,7 @@ export default class TeamService {
         auditLog: {
           create: {
             ...this.auditHelper.mapServerCallToGrpcLog(request, call),
-            userId: accessedBy,
+            userId: identity.id,
           },
         },
       },
@@ -167,14 +167,14 @@ export default class TeamService {
     return CreateEntityResponse.fromJSON(team)
   }
 
-  async updateTeam(request: UpdateTeamRequest, accessedBy: string): Promise<Empty> {
+  async updateTeam(request: UpdateTeamRequest, identity: Identity): Promise<Empty> {
     await this.prisma.team.update({
       where: {
         id: request.id,
       },
       data: {
         name: request.name,
-        updatedBy: accessedBy,
+        updatedBy: identity.id,
       },
     })
 
@@ -250,7 +250,7 @@ export default class TeamService {
     return Empty
   }
 
-  async updateUserRole(req: UpdateUserRoleInTeamRequest, accessedBy: string): Promise<Empty> {
+  async updateUserRole(req: UpdateUserRoleInTeamRequest, identity: Identity): Promise<Empty> {
     await this.prisma.usersOnTeams.update({
       where: {
         userId_teamId: {
@@ -262,7 +262,7 @@ export default class TeamService {
         role: this.mapper.roleToDb(req.role),
         team: {
           update: {
-            updatedBy: accessedBy,
+            updatedBy: identity.id,
           },
         },
       },
@@ -271,7 +271,7 @@ export default class TeamService {
     return Empty
   }
 
-  async inviteUserToTeam(request: InviteUserRequest, accessedBy: string): Promise<CreateEntityResponse> {
+  async inviteUserToTeam(request: InviteUserRequest, identity: Identity): Promise<CreateEntityResponse> {
     const team = await this.prisma.team.findUniqueOrThrow({
       where: {
         id: request.id,
@@ -298,7 +298,7 @@ export default class TeamService {
     })
 
     await this.notificationService.sendNotification({
-      identityId: accessedBy,
+      identityId: identity.id,
       messageType: 'invite',
       message: { subject: request.email, team: team.name } as InviteMessage,
     })
@@ -309,7 +309,7 @@ export default class TeamService {
     })
   }
 
-  async reinviteUserToTeam(request: ReinviteUserRequest, accessedBy: string): Promise<CreateEntityResponse> {
+  async reinviteUserToTeam(request: ReinviteUserRequest, identity: Identity): Promise<CreateEntityResponse> {
     const user = await this.kratos.getIdentityById(request.userId)
     const traits = user.traits as IdentityTraits
 
@@ -329,19 +329,19 @@ export default class TeamService {
         firstName: traits.name?.first ?? '',
         lastName: traits.name?.last,
       },
-      accessedBy,
+      identity,
     )
   }
 
   async acceptTeamInvitation(
     request: IdRequest,
     call: ServerUnaryCall<IdRequest, Promise<void>>,
-    accessedBy: string,
+    identity: Identity,
   ): Promise<void> {
     const invite = await this.prisma.userInvitation.findUniqueOrThrow({
       where: {
         userId_teamId: {
-          userId: accessedBy,
+          userId: identity.id,
           teamId: request.id,
         },
       },
@@ -352,7 +352,7 @@ export default class TeamService {
       await this.prisma.userInvitation.update({
         where: {
           userId_teamId: {
-            userId: accessedBy,
+            userId: identity.id,
             teamId: request.id,
           },
         },
@@ -368,7 +368,7 @@ export default class TeamService {
       })
     }
 
-    const userHasTeam = await this.teamRepository.userHasTeam(accessedBy)
+    const userHasTeam = await this.teamRepository.userHasTeam(identity.id)
 
     await this.prisma.$transaction(async prisma => {
       await prisma.usersOnTeams.create({
@@ -393,18 +393,18 @@ export default class TeamService {
       await prisma.auditLog.create({
         data: {
           ...this.auditHelper.mapServerCallToGrpcLog(request, call),
-          userId: accessedBy,
+          userId: identity.id,
           teamId: request.id,
         },
       })
     })
   }
 
-  async declineTeamInvitation(request: IdRequest, accessedBy: string): Promise<void> {
+  async declineTeamInvitation(request: IdRequest, identity: Identity): Promise<void> {
     const invitation = await this.prisma.userInvitation.findUniqueOrThrow({
       where: {
         userId_teamId: {
-          userId: accessedBy,
+          userId: identity.id,
           teamId: request.id,
         },
       },
@@ -423,10 +423,10 @@ export default class TeamService {
     })
   }
 
-  async selectTeam(request: IdRequest, accessedBy: string): Promise<void> {
+  async selectTeam(request: IdRequest, identity: Identity): Promise<void> {
     await this.prisma.usersOnTeams.updateMany({
       where: {
-        userId: accessedBy,
+        userId: identity.id,
       },
       data: {
         active: false,
@@ -436,7 +436,7 @@ export default class TeamService {
     await this.prisma.usersOnTeams.update({
       where: {
         userId_teamId: {
-          userId: accessedBy,
+          userId: identity.id,
           teamId: request.id,
         },
       },
@@ -495,12 +495,12 @@ export default class TeamService {
     }
   }
 
-  async getAllTeams(accessedBy: string): Promise<AllTeamsResponse> {
+  async getAllTeams(identity: Identity): Promise<AllTeamsResponse> {
     const teams = await this.prisma.team.findMany({
       where: {
         users: {
           some: {
-            userId: accessedBy,
+            userId: identity.id,
           },
         },
       },

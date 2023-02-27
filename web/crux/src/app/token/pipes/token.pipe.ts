@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import BodyPipeTransform from 'src/decorators/grpc.pipe'
+import BodyPipeTransform from 'src/pipes/body.pipe'
 import { InvalidArgumentException } from 'src/exception/errors'
 import { GenerateTokenRequest } from 'src/grpc/protobuf/proto/crux'
 

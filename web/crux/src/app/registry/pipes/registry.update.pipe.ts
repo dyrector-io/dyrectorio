@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import PrismaService from 'src/services/prisma.service'
 import { UpdateRegistryRequest } from 'src/grpc/protobuf/proto/crux'
 import { PreconditionFailedException } from 'src/exception/errors'
-import BodyPipeTransform from 'src/decorators/grpc.pipe'
+import BodyPipeTransform from 'src/pipes/body.pipe'
 import RegistryMapper from '../registry.mapper'
 
 @Injectable()

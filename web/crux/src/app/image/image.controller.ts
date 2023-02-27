@@ -14,7 +14,7 @@ import {
 } from 'src/grpc/protobuf/proto/crux'
 import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
 import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
-import GrpcUserInterceptor, { getAccessedBy } from 'src/interceptors/grpc.user.interceptor'
+import GrpcUserInterceptor, { getIdentity } from 'src/interceptors/grpc.user.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import ImageAddToVersionTeamAccessGuard from './guards/image.add-to-version.team-access.guard'
 import ImageOrderImagesTeamAccessGuard from './guards/image.order-images.team-access.guard'
@@ -39,19 +39,19 @@ export default class ImageController implements CruxImageController {
   @UseGuards(ImageAddToVersionTeamAccessGuard)
   @UsePipes(ImageAddToVersionValidationPipe)
   async addImagesToVersion(request: AddImagesToVersionRequest, metadata: Metadata): Promise<ImageListResponse> {
-    return await this.service.addImagesToVersion(request, getAccessedBy(metadata))
+    return await this.service.addImagesToVersion(request, getIdentity(metadata))
   }
 
   @UseGuards(ImageOrderImagesTeamAccessGuard)
   @UsePipes(OrderImagesValidationPipe)
   async orderImages(request: OrderVersionImagesRequest, metadata: Metadata): Promise<Empty> {
-    return await this.service.orderImages(request, getAccessedBy(metadata))
+    return await this.service.orderImages(request, getIdentity(metadata))
   }
 
   @AuditLogLevel('no-data')
   @UsePipes(ImagePatchValidationPipe)
   async patchImage(request: PatchImageRequest, metadata: Metadata): Promise<Empty> {
-    return await this.service.patchImage(request, getAccessedBy(metadata))
+    return await this.service.patchImage(request, getIdentity(metadata))
   }
 
   @UsePipes(DeleteImageValidationPipe)

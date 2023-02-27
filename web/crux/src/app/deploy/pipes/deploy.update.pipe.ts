@@ -3,7 +3,7 @@ import PrismaService from 'src/services/prisma.service'
 import { checkDeploymentMutability } from 'src/domain/deployment'
 import { UpdateDeploymentRequest } from 'src/grpc/protobuf/proto/crux'
 import { PreconditionFailedException } from 'src/exception/errors'
-import BodyPipeTransform from 'src/decorators/grpc.pipe'
+import BodyPipeTransform from 'src/pipes/body.pipe'
 
 @Injectable()
 export default class DeployUpdateValidationPipe extends BodyPipeTransform<UpdateDeploymentRequest> {

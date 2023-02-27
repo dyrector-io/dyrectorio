@@ -23,7 +23,7 @@ import {
 } from 'src/grpc/protobuf/proto/crux'
 import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
 import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
-import GrpcUserInterceptor, { DisableAccessedByMetadata, getAccessedBy } from 'src/interceptors/grpc.user.interceptor'
+import GrpcUserInterceptor, { DisableIdentity, getIdentity } from 'src/interceptors/grpc.user.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import { DisableTeamAccessCheck } from 'src/shared/user-access.guard'
 import DeployService from './deploy.service'
@@ -61,12 +61,12 @@ export default class DeployController implements CruxDeploymentController {
   @UseGuards(DeployCreateTeamAccessGuard)
   @UsePipes(DeployCreateValidationPipe)
   async createDeployment(request: CreateDeploymentRequest, metadata: Metadata): Promise<CreateEntityResponse> {
-    return await this.service.createDeployment(request, getAccessedBy(metadata))
+    return await this.service.createDeployment(request, getIdentity(metadata))
   }
 
   @UsePipes(DeployUpdateValidationPipe)
   async updateDeployment(request: UpdateDeploymentRequest, metadata: Metadata): Promise<UpdateEntityResponse> {
-    return await this.service.updateDeployment(request, getAccessedBy(metadata))
+    return await this.service.updateDeployment(request, getIdentity(metadata))
   }
 
   async getDeploymentSecrets(request: DeploymentListSecretsRequest): Promise<ListSecretsResponse> {
@@ -76,7 +76,7 @@ export default class DeployController implements CruxDeploymentController {
   @AuditLogLevel('no-data')
   @UsePipes(DeployPatchValidationPipe)
   async patchDeployment(request: PatchDeploymentRequest, metadata: Metadata): Promise<UpdateEntityResponse> {
-    return await this.service.patchDeployment(request, getAccessedBy(metadata))
+    return await this.service.patchDeployment(request, getIdentity(metadata))
   }
 
   @UsePipes(DeleteDeploymentValidationPipe)
@@ -86,32 +86,32 @@ export default class DeployController implements CruxDeploymentController {
 
   @UsePipes(DeployStartValidationPipe)
   async startDeployment(request: IdRequest, metadata: Metadata): Promise<Empty> {
-    return await this.service.startDeployment(request, getAccessedBy(metadata))
+    return await this.service.startDeployment(request, getIdentity(metadata))
   }
 
   @DisableTeamAccessCheck()
-  @DisableAccessedByMetadata()
+  @DisableIdentity()
   subscribeToDeploymentEvents(request: IdRequest): Observable<DeploymentProgressMessage> {
     return from(this.service.subscribeToDeploymentEvents(request)).pipe(concatAll())
   }
 
   @DisableTeamAccessCheck()
-  @DisableAccessedByMetadata()
+  @DisableIdentity()
   @AuditLogLevel('disabled')
   subscribeToDeploymentEditEvents(request: ServiceIdRequest): Observable<DeploymentEditEventMessage> {
     return this.service.subscribeToDeploymentEditEvents(request)
   }
 
   async getDeploymentList(_: Empty, metadata: Metadata): Promise<DeploymentListResponse> {
-    return await this.service.getDeploymentList(getAccessedBy(metadata))
+    return await this.service.getDeploymentList(getIdentity(metadata))
   }
 
   @UsePipes(DeployCopyValidationPipe)
   async copyDeploymentSafe(request: IdRequest, metadata: Metadata): Promise<CreateEntityResponse> {
-    return this.service.copyDeployment(request, getAccessedBy(metadata))
+    return this.service.copyDeployment(request, getIdentity(metadata))
   }
 
   async copyDeploymentUnsafe(request: IdRequest, metadata: Metadata): Promise<CreateEntityResponse> {
-    return this.service.copyDeployment(request, getAccessedBy(metadata))
+    return this.service.copyDeployment(request, getIdentity(metadata))
   }
 }

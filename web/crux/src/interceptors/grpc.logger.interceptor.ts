@@ -24,7 +24,7 @@ export default class GrpcLoggerInterceptor implements NestInterceptor {
     return true
   }
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
     const result = this.helper.mapToGrpcObject(context)
     const data = JSON.stringify(result.data)
 
