@@ -54,23 +54,19 @@ message ContainerStateListMessage {
 }
 
 message ContainerStateItem {
-  oneof container {
-    string id = 200;
-    string prefix = 201;
-  }
-  string name = 101;
-  string command = 103;
-  google.protobuf.Timestamp createdAt = 104;
+  common.ContainerIdentifier id = 100;
+  string command = 101;
+  google.protobuf.Timestamp createdAt = 102;
   /* The 'State' of the container (Created, Running, etc) */
-  ContainerState state = 105;
+  ContainerState state = 103;
   /*
    * The 'Status' of the container ("Created 1min ago", "Exited with code 123",
    * etc). Unused but left here for reverse compatibility with the legacy
    * version.
    */
-  string status = 106;
-  string imageName = 107;
-  string imageTag = 108;
+  string status = 104;
+  string imageName = 105;
+  string imageTag = 106;
 
   repeated ContainerStateItemPort ports = 1000;
 }
@@ -197,17 +193,13 @@ enum ContainerOperation {
 }
 
 message ContainerCommandRequest {
-  oneof container {
-    string id = 200;
-    common.ContainerIdentifier prefixName = 201;
-  };
-  common.ContainerOperation operation = 100;
+  common.ContainerIdentifier container = 100;
+  common.ContainerOperation operation = 101;
 }
 
 message DeleteContainersRequest {
   oneof target {
-    string containerId = 200;
-    common.ContainerIdentifier prefixName = 201;
+    common.ContainerIdentifier container = 201;
     string prefix = 202;
   }
 }

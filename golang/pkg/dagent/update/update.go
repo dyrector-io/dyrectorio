@@ -26,7 +26,7 @@ func getUniqueContainerName(ctx context.Context, base string) (string, error) {
 	count := 0
 
 	for {
-		container, err := docker.GetContainerByName(ctx, nil, name, false)
+		container, err := docker.GetContainerByName(ctx, name)
 		if err != nil {
 			return base, err
 		}

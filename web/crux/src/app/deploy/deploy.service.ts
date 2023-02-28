@@ -320,8 +320,7 @@ export default class DeployService {
     if (agent) {
       agent.deleteContainers({
         prefix: deployment.prefix,
-        containerId: undefined,
-        prefixName: undefined,
+        container: null,
       })
     }
 

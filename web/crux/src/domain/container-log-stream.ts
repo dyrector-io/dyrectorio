@@ -13,11 +13,7 @@ export default class ContainerLogStream {
 
   private completer: ContainerLogStreamCompleter = null
 
-  constructor(
-    private id: string | undefined,
-    private prefixName: ContainerIdentifier | undefined,
-    private tail: number,
-  ) {}
+  constructor(private container: ContainerIdentifier, private tail: number) {}
 
   start(commandChannel: Subject<AgentCommand>) {
     if (this.started) {
@@ -26,8 +22,7 @@ export default class ContainerLogStream {
 
     commandChannel.next({
       containerLog: {
-        id: this.id,
-        prefixName: this.prefixName,
+        container: this.container,
         streaming: true,
         tail: this.tail,
       },
@@ -63,9 +58,7 @@ export default class ContainerLogStream {
   onNodeStreamStarted(): ContainerLogStreamCompleter {
     if (this.completer) {
       throw new PreconditionFailedException({
-        message: `There is already a container status stream connection for container: ${
-          this.id ?? `${this.prefixName.prefix}-${this.prefixName.name}`
-        }`,
+        message: `There is already a container status stream connection for container: ${this.container.prefix}-${this.container.name}`,
         property: GrpcNodeConnection.META_FILTER_PREFIX,
       })
     }

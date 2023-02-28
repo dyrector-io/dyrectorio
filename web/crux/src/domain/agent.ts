@@ -104,13 +104,13 @@ export class Agent {
     return watcher
   }
 
-  upsertContainerLogStream(id?: string, prefixName?: ContainerIdentifier): ContainerLogStream {
+  upsertContainerLogStream(container: ContainerIdentifier): ContainerLogStream {
     this.throwWhenUpdating()
 
-    const key = id ?? `${prefixName.prefix}-${prefixName.name}`
+    const key = `${container.prefix}-${container.name}`
     let stream = this.logStreams.get(key)
     if (!stream) {
-      stream = new ContainerLogStream(id, prefixName, DEFAULT_CONTAINER_LOG_TAIL)
+      stream = new ContainerLogStream(container, DEFAULT_CONTAINER_LOG_TAIL)
       this.logStreams.set(key, stream)
       stream.start(this.commandChannel)
     }
@@ -342,12 +342,8 @@ export class Agent {
   }
 
   private static containerDeleteRequestToRequestId(request: DeleteContainersRequest): string {
-    if (request.containerId) {
-      return request.containerId
-    }
-
-    if (request.prefixName) {
-      return `${request.prefixName.prefix}-${request.prefixName.name}`
+    if (request.container) {
+      return `${request.container.prefix}-${request.container.name}`
     }
 
     return request.prefix

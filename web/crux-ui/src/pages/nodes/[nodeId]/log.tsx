@@ -60,7 +60,7 @@ const NodeContainerLogPage = (props: InstanceLogPageProps) => {
     },
     {
       name: t('log'),
-      url: `${nodeContainerLogUrl(node.id, { dockerId, prefix, name })}`,
+      url: `${nodeContainerLogUrl(node.id, { prefix, name })}`,
     },
   ]
 

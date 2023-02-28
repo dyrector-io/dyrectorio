@@ -12,7 +12,7 @@ import (
 )
 
 func PreflightChecks(cfg *config.Configuration) {
-	_, err := dockerHelper.GetAllContainers(context.Background(), nil)
+	_, err := dockerHelper.GetAllContainers(context.Background())
 	if err != nil {
 		log.Fatal().Stack().Err(err).Send()
 	}

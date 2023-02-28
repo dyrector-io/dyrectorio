@@ -3,7 +3,6 @@ package docker
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
@@ -13,40 +12,66 @@ import (
 	"github.com/dyrector-io/dyrectorio/golang/internal/dogger"
 )
 
-const DockerClientTimeoutSeconds = 30
-
-func DeleteContainerByName(ctx context.Context, dog *dogger.DeploymentLogger, nameFilter string, errorReport bool) error {
-	matchedContainer, err := GetContainerByName(ctx, nil, nameFilter, errorReport)
+func DeleteContainerByName(ctx context.Context, nameFilter string) error {
+	matchedContainer, err := GetContainerByName(ctx, nameFilter)
 	if err != nil {
 		return fmt.Errorf("builder could not get container (%s) to remove: %s", nameFilter, err.Error())
 	}
+
 	if matchedContainer == nil {
 		return nil
 	}
 
-	return deleteContainerByState(ctx, dog, nameFilter, matchedContainer.State, errorReport)
+	return deleteContainerByIDAndState(ctx, nil, matchedContainer.ID, matchedContainer.State)
 }
 
-func DeleteContainerByID(ctx context.Context, dog *dogger.DeploymentLogger, idFilter string, errorReport bool) error {
-	matchedContainer, err := GetContainerByID(ctx, nil, idFilter, errorReport)
+func DeleteContainer(ctx context.Context, container *types.Container) error {
+	return deleteContainerByIDAndState(ctx, nil, container.ID, container.State)
+}
+
+func deleteContainerByIDAndState(ctx context.Context, dog *dogger.DeploymentLogger, id, state string) error {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
-		return fmt.Errorf("could not get container (%s) to remove: %s", idFilter, err.Error())
+		log.Fatal().Err(err).Send()
 	}
-	if matchedContainer == nil {
+
+	switch state {
+	case "running", "paused", "restarting":
+		if dog != nil {
+			dog.Write("Stopping container: " + id)
+		}
+
+		if err = cli.ContainerStop(ctx, id, nil); err != nil {
+			return fmt.Errorf("could not stop container (%s): %s", id, err.Error())
+		}
+
+		fallthrough
+	case "exited", "dead", "created":
+		if dog != nil {
+			dog.WriteContainerState("removing", "Removing container: "+id)
+		}
+
+		if err = cli.ContainerRemove(ctx, id, types.ContainerRemoveOptions{}); err != nil {
+			return fmt.Errorf("could not remove container (%s): %s", id, err.Error())
+		}
+
 		return nil
+	default:
+		return fmt.Errorf("builder could not determine the state (%s) of the container (%s) for deletion",
+			state,
+			id)
 	}
-
-	return deleteContainerByState(ctx, dog, idFilter, matchedContainer.State, errorReport)
 }
 
-func DeletePrefix(ctx context.Context, prefix string) error {
-	containers, err := GetAllContainersByName(ctx, nil, prefix)
+func DeleteContainersByLabel(ctx context.Context, label string) error {
+	containers, err := GetAllContainersByLabel(ctx, label)
 	if err != nil {
-		return fmt.Errorf("could not get containers for prefix (%s) to remove: %s", prefix, err.Error())
+		return fmt.Errorf("could not get containers by label (%s) to delete: %s", label, err.Error())
 	}
 
 	for i := range containers {
-		containerDeleteErr := deleteContainerByState(ctx, nil, containers[i].ID, containers[i].State, false)
+		containerDeleteErr := deleteContainerByIDAndState(ctx, nil, containers[i].ID, containers[i].State)
+
 		if err == nil {
 			log.Error().Err(containerDeleteErr).Stack().Send()
 			err = containerDeleteErr
@@ -56,70 +81,8 @@ func DeletePrefix(ctx context.Context, prefix string) error {
 	return err
 }
 
-func deleteContainerByState(ctx context.Context, dog *dogger.DeploymentLogger, filter, state string, errorReport bool) error {
-	switch state {
-	case "running", "paused", "restarting":
-		err := StopContainer(ctx, dog, filter)
-		if err != nil {
-			return fmt.Errorf("builder could not stop container (%s): %s", filter, err.Error())
-		}
-		fallthrough
-	case "exited", "dead", "created":
-		err := RemoveContainer(ctx, dog, filter)
-		if err != nil {
-			return fmt.Errorf("builder could not remove container (%s): %s", filter, err.Error())
-		}
-		return nil
-	case "":
-		if errorReport {
-			return fmt.Errorf(
-				"builder could not determine the state of the container (%s) for deletion, possible there's no container matching the search criteria",
-				filter)
-		}
-		return nil
-	default:
-		return fmt.Errorf("builder could not determine the state (%s) of the container (%s) for deletion",
-			state,
-			filter)
-	}
-}
-
-func StopContainer(ctx context.Context, dog *dogger.DeploymentLogger, nameFilter string) error {
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		log.Fatal().Err(err).Send()
-	}
-
-	timeoutValue := (time.Duration(DockerClientTimeoutSeconds) * time.Second)
-	if dog != nil {
-		dog.Write("Container request for: " + nameFilter)
-	}
-	if err := cli.ContainerStop(ctx, nameFilter, &timeoutValue); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Matches one
-func RemoveContainer(ctx context.Context, dog *dogger.DeploymentLogger, nameFilter string) error {
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		log.Fatal().Err(err).Send()
-	}
-
-	if dog != nil {
-		dog.Write("Container request for: " + nameFilter)
-	}
-	if err := cli.ContainerRemove(ctx, nameFilter, types.ContainerRemoveOptions{}); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 // Check the existence of containers, then return it
-func GetAllContainersByName(ctx context.Context, dog *dogger.DeploymentLogger, nameFilter string) ([]types.Container, error) {
+func GetAllContainersByName(ctx context.Context, nameFilter string) ([]types.Container, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		log.Fatal().Err(err).Send()
@@ -133,21 +96,7 @@ func GetAllContainersByName(ctx context.Context, dog *dogger.DeploymentLogger, n
 	return containers, nil
 }
 
-func GetAllContainersByID(ctx context.Context, dog *dogger.DeploymentLogger, idFilter string) ([]types.Container, error) {
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		log.Fatal().Err(err).Send()
-	}
-
-	containers, err := cli.ContainerList(ctx, containerListOptionsfilter("id", idFilter))
-	if err != nil {
-		return []types.Container{}, err
-	}
-
-	return containers, nil
-}
-
-func GetAllContainers(ctx context.Context, dog *dogger.DeploymentLogger) ([]types.Container, error) {
+func GetAllContainers(ctx context.Context) ([]types.Container, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		log.Fatal().Err(err).Send()
@@ -161,32 +110,61 @@ func GetAllContainers(ctx context.Context, dog *dogger.DeploymentLogger) ([]type
 	return containers, nil
 }
 
-// Using exact match!
-func GetContainerByName(ctx context.Context, dog *dogger.DeploymentLogger, nameFilter string, errorReport bool) (*types.Container, error) {
-	containers, err := GetAllContainersByName(ctx, nil, fmt.Sprintf("^%s$", nameFilter))
+func GetContainerByID(ctx context.Context, idFilter string) (*types.Container, error) {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		log.Fatal().Err(err).Send()
+	}
+
+	containers, err := cli.ContainerList(ctx, containerListOptionsfilter("id", idFilter))
 	if err != nil {
 		return nil, err
 	}
 
-	return checkOneContainer(containers, errorReport)
+	return checkOneContainer(containers)
 }
 
-func GetContainerByID(ctx context.Context, dog *dogger.DeploymentLogger, idFilter string, errorReport bool) (*types.Container, error) {
-	containers, err := GetAllContainersByID(ctx, nil, idFilter)
+func DeleteContainerByID(ctx context.Context, dog *dogger.DeploymentLogger, id string) error {
+	container, err := GetContainerByID(ctx, id)
+	if err != nil {
+		return fmt.Errorf("could not get container (%s) to delete: %s", id, err.Error())
+	}
+
+	if container == nil {
+		return nil
+	}
+
+	return deleteContainerByIDAndState(ctx, dog, id, container.State)
+}
+
+func GetAllContainersByLabel(ctx context.Context, label string) ([]types.Container, error) {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		log.Fatal().Err(err).Send()
+	}
+
+	containers, err := cli.ContainerList(ctx, containerListOptionsfilter("label", label))
+	if err != nil {
+		return []types.Container{}, err
+	}
+
+	return containers, nil
+}
+
+// Using exact match!
+func GetContainerByName(ctx context.Context, nameFilter string) (*types.Container, error) {
+	containers, err := GetAllContainersByName(ctx, fmt.Sprintf("^%s$", nameFilter))
 	if err != nil {
 		return nil, err
 	}
 
-	return checkOneContainer(containers, errorReport)
+	return checkOneContainer(containers)
 }
 
 // Making sure there's only one, tops
-func checkOneContainer(containers []types.Container, errorReport bool) (*types.Container, error) {
+func checkOneContainer(containers []types.Container) (*types.Container, error) {
 	switch len(containers) {
 	case 0:
-		if errorReport {
-			return nil, fmt.Errorf("there's no matching container")
-		}
 		return nil, nil
 	case 1:
 		return &containers[0], nil

@@ -1296,9 +1296,8 @@ export interface WatchContainerStateRequest {
 }
 
 export interface WatchContainerLogRequest {
-  id: string
-  dockerId?: string | undefined
-  prefixName?: ContainerIdentifier | undefined
+  nodeId: string
+  container: ContainerIdentifier | undefined
 }
 
 export interface DeploymentProgressMessage {
@@ -9129,19 +9128,16 @@ export const WatchContainerStateRequest = {
 }
 
 function createBaseWatchContainerLogRequest(): WatchContainerLogRequest {
-  return { id: '' }
+  return { nodeId: '', container: undefined }
 }
 
 export const WatchContainerLogRequest = {
   encode(message: WatchContainerLogRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.id !== '') {
-      writer.uint32(802).string(message.id)
+    if (message.nodeId !== '') {
+      writer.uint32(802).string(message.nodeId)
     }
-    if (message.dockerId !== undefined) {
-      writer.uint32(1602).string(message.dockerId)
-    }
-    if (message.prefixName !== undefined) {
-      ContainerIdentifier.encode(message.prefixName, writer.uint32(1610).fork()).ldelim()
+    if (message.container !== undefined) {
+      ContainerIdentifier.encode(message.container, writer.uint32(810).fork()).ldelim()
     }
     return writer
   },
@@ -9154,13 +9150,10 @@ export const WatchContainerLogRequest = {
       const tag = reader.uint32()
       switch (tag >>> 3) {
         case 100:
-          message.id = reader.string()
+          message.nodeId = reader.string()
           break
-        case 200:
-          message.dockerId = reader.string()
-          break
-        case 201:
-          message.prefixName = ContainerIdentifier.decode(reader, reader.uint32())
+        case 101:
+          message.container = ContainerIdentifier.decode(reader, reader.uint32())
           break
         default:
           reader.skipType(tag & 7)
@@ -9172,18 +9165,16 @@ export const WatchContainerLogRequest = {
 
   fromJSON(object: any): WatchContainerLogRequest {
     return {
-      id: isSet(object.id) ? String(object.id) : '',
-      dockerId: isSet(object.dockerId) ? String(object.dockerId) : undefined,
-      prefixName: isSet(object.prefixName) ? ContainerIdentifier.fromJSON(object.prefixName) : undefined,
+      nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
+      container: isSet(object.container) ? ContainerIdentifier.fromJSON(object.container) : undefined,
     }
   },
 
   toJSON(message: WatchContainerLogRequest): unknown {
     const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.dockerId !== undefined && (obj.dockerId = message.dockerId)
-    message.prefixName !== undefined &&
-      (obj.prefixName = message.prefixName ? ContainerIdentifier.toJSON(message.prefixName) : undefined)
+    message.nodeId !== undefined && (obj.nodeId = message.nodeId)
+    message.container !== undefined &&
+      (obj.container = message.container ? ContainerIdentifier.toJSON(message.container) : undefined)
     return obj
   },
 
@@ -9193,11 +9184,10 @@ export const WatchContainerLogRequest = {
 
   fromPartial<I extends Exact<DeepPartial<WatchContainerLogRequest>, I>>(object: I): WatchContainerLogRequest {
     const message = createBaseWatchContainerLogRequest()
-    message.id = object.id ?? ''
-    message.dockerId = object.dockerId ?? undefined
-    message.prefixName =
-      object.prefixName !== undefined && object.prefixName !== null
-        ? ContainerIdentifier.fromPartial(object.prefixName)
+    message.nodeId = object.nodeId ?? ''
+    message.container =
+      object.container !== undefined && object.container !== null
+        ? ContainerIdentifier.fromPartial(object.container)
         : undefined
     return message
   },

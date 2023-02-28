@@ -565,9 +565,7 @@ export interface ContainerStateListMessage {
 }
 
 export interface ContainerStateItem {
-  id?: string | undefined
-  prefix?: string | undefined
-  name: string
+  id: ContainerIdentifier | undefined
   command: string
   createdAt: Timestamp | undefined
   /** The 'State' of the container (Created, Running, etc) */
@@ -641,14 +639,12 @@ export interface ContainerIdentifier {
 }
 
 export interface ContainerCommandRequest {
-  id?: string | undefined
-  prefixName?: ContainerIdentifier | undefined
+  container: ContainerIdentifier | undefined
   operation: ContainerOperation
 }
 
 export interface DeleteContainersRequest {
-  containerId?: string | undefined
-  prefixName?: ContainerIdentifier | undefined
+  container?: ContainerIdentifier | undefined
   prefix?: string | undefined
 }
 
@@ -763,15 +759,22 @@ export const ContainerStateListMessage = {
 }
 
 function createBaseContainerStateItem(): ContainerStateItem {
-  return { name: '', command: '', createdAt: undefined, state: 0, status: '', imageName: '', imageTag: '', ports: [] }
+  return {
+    id: undefined,
+    command: '',
+    createdAt: undefined,
+    state: 0,
+    status: '',
+    imageName: '',
+    imageTag: '',
+    ports: [],
+  }
 }
 
 export const ContainerStateItem = {
   fromJSON(object: any): ContainerStateItem {
     return {
-      id: isSet(object.id) ? String(object.id) : undefined,
-      prefix: isSet(object.prefix) ? String(object.prefix) : undefined,
-      name: isSet(object.name) ? String(object.name) : '',
+      id: isSet(object.id) ? ContainerIdentifier.fromJSON(object.id) : undefined,
       command: isSet(object.command) ? String(object.command) : '',
       createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
       state: isSet(object.state) ? containerStateFromJSON(object.state) : 0,
@@ -784,9 +787,7 @@ export const ContainerStateItem = {
 
   toJSON(message: ContainerStateItem): unknown {
     const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.prefix !== undefined && (obj.prefix = message.prefix)
-    message.name !== undefined && (obj.name = message.name)
+    message.id !== undefined && (obj.id = message.id ? ContainerIdentifier.toJSON(message.id) : undefined)
     message.command !== undefined && (obj.command = message.command)
     message.createdAt !== undefined && (obj.createdAt = fromTimestamp(message.createdAt).toISOString())
     message.state !== undefined && (obj.state = containerStateToJSON(message.state))
@@ -1013,23 +1014,21 @@ export const ContainerIdentifier = {
 }
 
 function createBaseContainerCommandRequest(): ContainerCommandRequest {
-  return { operation: 0 }
+  return { container: undefined, operation: 0 }
 }
 
 export const ContainerCommandRequest = {
   fromJSON(object: any): ContainerCommandRequest {
     return {
-      id: isSet(object.id) ? String(object.id) : undefined,
-      prefixName: isSet(object.prefixName) ? ContainerIdentifier.fromJSON(object.prefixName) : undefined,
+      container: isSet(object.container) ? ContainerIdentifier.fromJSON(object.container) : undefined,
       operation: isSet(object.operation) ? containerOperationFromJSON(object.operation) : 0,
     }
   },
 
   toJSON(message: ContainerCommandRequest): unknown {
     const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.prefixName !== undefined &&
-      (obj.prefixName = message.prefixName ? ContainerIdentifier.toJSON(message.prefixName) : undefined)
+    message.container !== undefined &&
+      (obj.container = message.container ? ContainerIdentifier.toJSON(message.container) : undefined)
     message.operation !== undefined && (obj.operation = containerOperationToJSON(message.operation))
     return obj
   },
@@ -1042,17 +1041,15 @@ function createBaseDeleteContainersRequest(): DeleteContainersRequest {
 export const DeleteContainersRequest = {
   fromJSON(object: any): DeleteContainersRequest {
     return {
-      containerId: isSet(object.containerId) ? String(object.containerId) : undefined,
-      prefixName: isSet(object.prefixName) ? ContainerIdentifier.fromJSON(object.prefixName) : undefined,
+      container: isSet(object.container) ? ContainerIdentifier.fromJSON(object.container) : undefined,
       prefix: isSet(object.prefix) ? String(object.prefix) : undefined,
     }
   },
 
   toJSON(message: DeleteContainersRequest): unknown {
     const obj: any = {}
-    message.containerId !== undefined && (obj.containerId = message.containerId)
-    message.prefixName !== undefined &&
-      (obj.prefixName = message.prefixName ? ContainerIdentifier.toJSON(message.prefixName) : undefined)
+    message.container !== undefined &&
+      (obj.container = message.container ? ContainerIdentifier.toJSON(message.container) : undefined)
     message.prefix !== undefined && (obj.prefix = message.prefix)
     return obj
   },

@@ -5,8 +5,8 @@ import useWebSocket from '@app/hooks/use-websocket'
 import {
   Container,
   ContainerCommandMessage,
-  containerIdOf,
   ContainerListMessage,
+  containerNameOf,
   ContainerOperation,
   ContainerState,
   DeleteContainerMessage,
@@ -65,8 +65,8 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
     initialData: [],
     filters: [
       textFilterFor<Container>(it => [
-        it.name,
-        it.prefix,
+        it.id.name,
+        it.id.prefix,
         it.state,
         it.imageName,
         it.imageTag,
@@ -86,7 +86,8 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
       ...containerTargetStates,
     }
     message.forEach(container => {
-      const { name, state } = container
+      const { state } = container
+      const name = containerNameOf(container.id)
 
       const targetState = containerTargetStates[name]
       if (targetState && targetState === state) {
@@ -111,7 +112,7 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
 
   const sendContainerCommand = (container: Container, operation: ContainerOperation) => {
     sock.send(WS_TYPE_CONTAINER_COMMAND, {
-      container: containerIdOf(container),
+      container: container.id,
       operation,
     } as ContainerCommandMessage)
   }
@@ -120,7 +121,9 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
     const newTargetStates = {
       ...containerTargetStates,
     }
-    newTargetStates[container.name] = state
+
+    const name = containerNameOf(container.id)
+    newTargetStates[name] = state
     setContainertargetStates(newTargetStates)
   }
 
@@ -151,7 +154,7 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
     }
 
     sock.send(WS_TYPE_DELETE_CONTAINER, {
-      id: containerIdOf(container),
+      id: container.id,
     } as DeleteContainerMessage)
   }
 

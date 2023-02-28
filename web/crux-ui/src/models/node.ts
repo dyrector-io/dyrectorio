@@ -73,7 +73,7 @@ type DeleteContainersByPrefix = {
 }
 
 type DeleteContainerById = {
-  id: string | ContainerIdentifier
+  id: ContainerIdentifier
 }
 
 export type DeleteContainers = XOR<DeleteContainersByPrefix, DeleteContainerById>
@@ -109,7 +109,7 @@ export type ContainerListMessage = Container[]
 
 export const WS_TYPE_DELETE_CONTAINER = 'delete-containers'
 export type DeleteContainerMessage = {
-  id: string | ContainerIdentifier
+  id: ContainerIdentifier
 }
 
 export const WS_TYPE_UPDATE_NODE_AGENT = 'update-node-agent'
@@ -123,8 +123,7 @@ export type ContainerCommandMessage = ContainerCommand
 export const WS_TYPE_WATCH_CONTAINER_LOG = 'container-log-watch'
 export const WS_TYPE_STOP_WATCHING_CONTAINER_LOG = 'stop-container-log-watch'
 export type WatchContainerLogMessage = {
-  id?: string
-  prefixName?: ContainerIdentifier
+  container: ContainerIdentifier
 }
 
 export const WS_TYPE_CONTAINER_LOG = 'container-log'

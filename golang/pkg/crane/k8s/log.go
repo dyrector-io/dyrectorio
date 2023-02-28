@@ -125,9 +125,9 @@ func PodLog(ctx context.Context, request *agent.ContainerLogRequest) (*grpc.Cont
 		return nil, err
 	}
 
-	prefixName := request.GetPrefixName()
-	if prefixName == nil {
-		return nil, errors.New("prefixName undefined")
+	container := request.Container
+	if container == nil {
+		return nil, errors.New("container is undefined")
 	}
 
 	tail := int64(request.GetTail())
@@ -137,7 +137,7 @@ func PodLog(ctx context.Context, request *agent.ContainerLogRequest) (*grpc.Cont
 		TailLines:  &tail,
 		Timestamps: true,
 	}
-	logStreams, enableEcho, err := openPodLogReaders(ctx, client, prefixName, podLogOpts)
+	logStreams, enableEcho, err := openPodLogReaders(ctx, client, container, podLogOpts)
 	if err != nil {
 		return nil, err
 	}

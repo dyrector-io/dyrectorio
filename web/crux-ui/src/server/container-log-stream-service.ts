@@ -1,3 +1,4 @@
+import { containerNameOf } from '@app/models'
 import { ContainerIdentifier } from '@app/models/grpc/protobuf/proto/common'
 import WsConnection from '@app/websockets/connection'
 import ContainerLogStream from './container-log-stream'
@@ -10,12 +11,12 @@ class ContainerLogStreamService {
 
   constructor(private nodeId: string) {}
 
-  startWatching(connection: WsConnection, nodeService: DyoNodeService, id?: string, prefixName?: ContainerIdentifier) {
-    const key = id ?? `${prefixName.prefix}-${prefixName.name}`
+  startWatching(connection: WsConnection, nodeService: DyoNodeService, container: ContainerIdentifier) {
+    const key = containerNameOf(container)
 
     let stream = this.streams.get(key)
     if (!stream) {
-      stream = new ContainerLogStream(id, prefixName)
+      stream = new ContainerLogStream(container)
       stream.start(connection, this.nodeId, nodeService)
       this.streams.set(key, stream)
     } else {
@@ -31,8 +32,8 @@ class ContainerLogStreamService {
     containers.add(key)
   }
 
-  stopWatching(connection: WsConnection, id?: string, prefixName?: ContainerIdentifier) {
-    const key = id ?? `${prefixName.prefix}-${prefixName.name}`
+  stopWatching(connection: WsConnection, container: ContainerIdentifier) {
+    const key = containerNameOf(container)
     this.removeConnectionFromWatcher(connection, key)
 
     const containers = this.connectionToContainers.get(connection)
