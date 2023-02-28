@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
+import { Identity } from '@ory/kratos-client'
 import { NotFoundError } from '@prisma/client/runtime'
 import {
   deploymentStrategyFromJSON,
@@ -22,7 +23,6 @@ import { toPrismaJson } from 'src/shared/mapper'
 import { ContainerConfigData, VolumeType } from 'src/shared/models'
 import { v4 } from 'uuid'
 import ImageMapper from '../image/image.mapper'
-import ImageService from '../image/image.service'
 import ProductService from '../product/product.service'
 import RegistryService from '../registry/registry.service'
 import VersionService from '../version/version.service'
@@ -39,11 +39,13 @@ export default class TemplateService {
     private templateFileService: TemplateFileService,
     private registryService: RegistryService,
     private versionService: VersionService,
-    private imageService: ImageService,
     private imageMapper: ImageMapper,
   ) {}
 
-  async createProductFromTemplate(req: CreateProductFromTemplateRequest): Promise<CreateEntityResponse> {
+  async createProductFromTemplate(
+    req: CreateProductFromTemplateRequest,
+    identity: Identity,
+  ): Promise<CreateEntityResponse> {
     const template = await this.templateFileService.getTemplateById(req.id)
 
     if (template.registries && template.registries.length > 0) {
@@ -59,7 +61,7 @@ export default class TemplateService {
               team: {
                 users: {
                   some: {
-                    userId: req.accessedBy,
+                    userId: identity.id,
                     active: true,
                   },
                 },
@@ -72,25 +74,26 @@ export default class TemplateService {
       const createRegistries = template.registries
         .filter(it => !counts.find(f => f.name === it.name))
         .map(it =>
-          this.registryService.createRegistry({
-            accessedBy: req.accessedBy,
-            ...it,
-            description: it.description ?? '',
-          }),
+          this.registryService.createRegistry(
+            {
+              ...it,
+              description: it.description ?? '',
+            },
+            identity,
+          ),
         )
       await Promise.all(createRegistries)
     }
 
     const createProductReq: CreateProductRequest = {
-      accessedBy: req.accessedBy,
       name: req.name,
       description: req.description,
       type: req.type,
     }
 
-    const product = await this.productService.createProduct(createProductReq)
+    const product = await this.productService.createProduct(createProductReq, identity)
 
-    await this.createVersion(template.images, product, req.type, req.accessedBy)
+    await this.createVersion(template.images, product, req.type, identity)
 
     return product
   }
@@ -152,7 +155,7 @@ export default class TemplateService {
     templateImages: TemplateImage[],
     product: CreateEntityResponse,
     productType: ProductType,
-    accessedBy: string,
+    identity: Identity,
   ): Promise<void> {
     const { id: productId } = product
 
@@ -173,13 +176,12 @@ export default class TemplateService {
 
     if (version === null) {
       const createReq: CreateVersionRequest = {
-        accessedBy,
         productId,
         name: VERSION_NAME,
         type: VersionType.INCREMENTAL,
       }
 
-      const newVersion = await this.versionService.createVersion(createReq)
+      const newVersion = await this.versionService.createVersion(createReq, identity)
       version = await this.prisma.version.findFirst({
         where: {
           id: newVersion.id,
@@ -201,7 +203,7 @@ export default class TemplateService {
             team: {
               users: {
                 some: {
-                  userId: accessedBy,
+                  userId: identity.id,
                   active: true,
                 },
               },
@@ -223,7 +225,7 @@ export default class TemplateService {
         data: {
           registryId,
           versionId: version.id,
-          createdBy: accessedBy,
+          createdBy: identity.id,
           name: it.image,
           order: index,
           tag: it.tag,

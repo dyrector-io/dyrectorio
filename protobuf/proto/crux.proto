@@ -17,7 +17,7 @@ option go_package = "github.com/dyrector-io/dyrectorio/protobuf/go/crux";
  */
 service CruxProduct {
   // CRUD
-  rpc GetProducts(AccessRequest) returns (ProductListResponse);
+  rpc GetProducts(common.Empty) returns (ProductListResponse);
   rpc CreateProduct(CreateProductRequest) returns (CreateEntityResponse);
   rpc UpdateProduct(UpdateProductRequest) returns (UpdateEntityResponse);
   rpc DeleteProduct(IdRequest) returns (common.Empty);
@@ -26,7 +26,7 @@ service CruxProduct {
 
 service CruxRegistry {
   // CRUD
-  rpc GetRegistries(AccessRequest) returns (RegistryListResponse);
+  rpc GetRegistries(common.Empty) returns (RegistryListResponse);
   rpc CreateRegistry(CreateRegistryRequest) returns (CreateEntityResponse);
   rpc UpdateRegistry(UpdateRegistryRequest) returns (UpdateEntityResponse);
   rpc DeleteRegistry(IdRequest) returns (common.Empty);
@@ -35,7 +35,7 @@ service CruxRegistry {
 
 service CruxNode {
   // CRUD
-  rpc GetNodes(AccessRequest) returns (NodeListResponse);
+  rpc GetNodes(common.Empty) returns (NodeListResponse);
   rpc CreateNode(CreateNodeRequest) returns (CreateEntityResponse);
   rpc UpdateNode(UpdateNodeRequest) returns (common.Empty);
   rpc DeleteNode(IdRequest) returns (common.Empty);
@@ -84,7 +84,7 @@ service CruxDeployment {
   rpc DeleteDeployment(IdRequest) returns (common.Empty);
   rpc GetDeploymentDetails(IdRequest) returns (DeploymentDetailsResponse);
   rpc GetDeploymentEvents(IdRequest) returns (DeploymentEventListResponse);
-  rpc GetDeploymentList(AccessRequest) returns (DeploymentListResponse);
+  rpc GetDeploymentList(common.Empty) returns (DeploymentListResponse);
   rpc GetDeploymentSecrets(DeploymentListSecretsRequest)
       returns (common.ListSecretsResponse);
   rpc CopyDeploymentSafe(IdRequest) returns (CreateEntityResponse);
@@ -99,7 +99,7 @@ service CruxDeployment {
 
 service CruxTeam {
   rpc CreateTeam(CreateTeamRequest) returns (CreateEntityResponse);
-  rpc GetActiveTeamByUser(AccessRequest) returns (ActiveTeamDetailsResponse);
+  rpc GetActiveTeamByUser(common.Empty) returns (ActiveTeamDetailsResponse);
   rpc UpdateTeam(UpdateTeamRequest) returns (common.Empty);
   rpc DeleteTeam(IdRequest) returns (common.Empty);
   rpc UpdateUserRole(UpdateUserRoleInTeamRequest) returns (common.Empty);
@@ -111,8 +111,8 @@ service CruxTeam {
   rpc DeclineTeamInvitation(IdRequest) returns (common.Empty);
   rpc SelectTeam(IdRequest) returns (common.Empty);
 
-  rpc GetUserMeta(AccessRequest) returns (UserMetaResponse);
-  rpc GetAllTeams(AccessRequest) returns (AllTeamsResponse);
+  rpc GetUserMeta(common.Empty) returns (UserMetaResponse);
+  rpc GetAllTeams(common.Empty) returns (AllTeamsResponse);
   rpc GetTeamById(IdRequest) returns (TeamDetailsResponse);
 }
 
@@ -122,7 +122,7 @@ service CruxNotification {
   rpc UpdateNotification(UpdateNotificationRequest)
       returns (UpdateEntityResponse);
   rpc DeleteNotification(IdRequest) returns (common.Empty);
-  rpc GetNotificationList(AccessRequest) returns (NotificationListResponse);
+  rpc GetNotificationList(common.Empty) returns (NotificationListResponse);
   rpc GetNotificationDetails(IdRequest) returns (NotificationDetailsResponse);
   rpc TestNotification(IdRequest) returns (common.Empty);
 }
@@ -136,19 +136,19 @@ service CruxAudit {
 service CruxHealth { rpc getHealth(common.Empty) returns (HealthResponse); }
 
 service CruxTemplate {
-  rpc GetTemplates(AccessRequest) returns (TemplateListResponse);
+  rpc GetTemplates(common.Empty) returns (TemplateListResponse);
   rpc CreateProductFromTemplate(CreateProductFromTemplateRequest)
       returns (CreateEntityResponse);
   rpc GetImage(IdRequest) returns (TemplateImageResponse);
 }
 
 service CruxDashboard {
-  rpc GetDashboard(AccessRequest) returns (DashboardResponse);
+  rpc GetDashboard(common.Empty) returns (DashboardResponse);
 }
 
 service CruxToken {
   rpc GenerateToken(GenerateTokenRequest) returns (GenerateTokenResponse);
-  rpc GetTokenList(AccessRequest) returns (TokenListResponse);
+  rpc GetTokenList(common.Empty) returns (TokenListResponse);
   rpc DeleteToken(IdRequest) returns (common.Empty);
 }
 
@@ -162,7 +162,6 @@ message ServiceIdRequest { string id = 1; }
 
 message IdRequest {
   string id = 1;
-  string accessedBy = 2;
 }
 
 message AuditResponse {
@@ -188,8 +187,6 @@ message UpdateEntityResponse { google.protobuf.Timestamp updatedAt = 100; }
 
 // AUTHENTICATION
 message GenerateTokenRequest {
-  string accessedBy = 2;
-
   string name = 100;
   int32 expirationInDays = 101;
 }
@@ -216,8 +213,6 @@ message TokenListResponse { repeated TokenResponse data = 1000; }
 
 // AUDIT
 message AuditLogListRequest {
-  string accessedBy = 2;
-
   uint32 pageSize = 100;
   uint32 pageNumber = 101;
   optional string keyword = 102;
@@ -239,21 +234,17 @@ message AuditLogListResponse { repeated AuditLogResponse data = 1000; }
 
 // TEAM
 message CreateTeamRequest {
-  string accessedBy = 2;
-
   string name = 100;
 }
 
 message UpdateTeamRequest {
   string id = 1;
-  string accessedBy = 2;
 
   string name = 100;
 }
 
 message UpdateUserRoleInTeamRequest {
   string id = 1;
-  string accessedBy = 2;
 
   string userId = 100;
   UserRole role = 101;
@@ -261,7 +252,6 @@ message UpdateUserRoleInTeamRequest {
 
 message InviteUserRequest {
   string id = 1;
-  string accessedBy = 2;
 
   string email = 100;
   string firstName = 101;
@@ -270,19 +260,15 @@ message InviteUserRequest {
 
 message ReinviteUserRequest {
   string id = 1;
-  string accessedBy = 2;
 
   string userId = 100;
 }
 
 message DeleteUserFromTeamRequest {
   string id = 1;
-  string accessedBy = 2;
 
   string userId = 100;
 }
-
-message AccessRequest { string accessedBy = 2; }
 
 message UserMetaResponse {
   ActiveTeamUser user = 100;
@@ -400,8 +386,6 @@ message ProductReponse {
 message ProductListResponse { repeated ProductReponse data = 1000; }
 
 message CreateProductRequest {
-  string accessedBy = 2;
-
   string name = 100;
   optional string description = 101;
   ProductType type = 102;
@@ -409,7 +393,6 @@ message CreateProductRequest {
 
 message UpdateProductRequest {
   string id = 1;
-  string accessedBy = 2;
 
   string name = 100;
   optional string description = 101;
@@ -465,8 +448,6 @@ message GoogleRegistryDetails {
 message UncheckedRegistryDetails { string url = 100; }
 
 message CreateRegistryRequest {
-  string accessedBy = 2;
-
   string name = 100;
   optional string description = 101;
   optional string icon = 102;
@@ -483,7 +464,6 @@ message CreateRegistryRequest {
 
 message UpdateRegistryRequest {
   string id = 1;
-  string accessedBy = 2;
 
   string name = 100;
   optional string description = 101;
@@ -539,8 +519,6 @@ enum RegistryNamespace {
 // VERSION
 
 message CreateVersionRequest {
-  string accessedBy = 2;
-
   string productId = 100;
   string name = 101;
   optional string changelog = 102;
@@ -549,7 +527,6 @@ message CreateVersionRequest {
 
 message UpdateVersionRequest {
   string id = 1;
-  string accessedBy = 2;
 
   string name = 100;
   optional string changelog = 101;
@@ -586,7 +563,6 @@ message VersionDetailsResponse {
 
 message IncreaseVersionRequest {
   string id = 1;
-  string accessedBy = 2;
 
   string name = 100;
   optional string changelog = 101;
@@ -765,8 +741,6 @@ message ImageResponse {
 message ImageListResponse { repeated ImageResponse data = 100; }
 
 message OrderVersionImagesRequest {
-  string accessedBy = 2;
-
   string versionId = 100;
   repeated string imageIds = 101;
 }
@@ -777,15 +751,12 @@ message RegistryImages {
 }
 
 message AddImagesToVersionRequest {
-  string accessedBy = 2;
-
   string versionId = 100;
   repeated RegistryImages images = 101;
 }
 
 message PatchImageRequest {
   string id = 1;
-  string accessedBy = 2;
 
   optional string tag = 101;
   optional ImageContainerConfig config = 102;
@@ -830,8 +801,6 @@ message NodeDetailsResponse {
 message NodeListResponse { repeated NodeResponse data = 1000; }
 
 message CreateNodeRequest {
-  string accessedBy = 2;
-
   string name = 100;
   optional string description = 101;
   optional string icon = 102;
@@ -839,7 +808,6 @@ message CreateNodeRequest {
 
 message UpdateNodeRequest {
   string id = 1;
-  string accessedBy = 2;
 
   string name = 100;
   optional string description = 101;
@@ -850,7 +818,6 @@ message DagentTraefikOptions { string acmeEmail = 100; }
 
 message GenerateScriptRequest {
   string id = 1;
-  string accessedBy = 2;
   NodeType type = 100;
   optional string rootPath = 101;
   NodeScriptType scriptType = 102;
@@ -866,14 +833,12 @@ message NodeScriptResponse { string content = 100; }
 
 message NodeContainerCommandRequest {
   string id = 1;
-  string accessedBy = 2;
 
   common.ContainerCommandRequest command = 100;
 }
 
 message NodeDeleteContainersRequest {
   string id = 1;
-  string accessedBy = 2;
 
   common.DeleteContainersRequest containers = 100;
 }
@@ -916,15 +881,11 @@ message NodeEventMessage {
 }
 
 message WatchContainerStateRequest {
-  string accessedBy = 2;
-
   string nodeId = 100;
   optional string prefix = 101;
 }
 
 message WatchContainerLogRequest {
-  string accessedBy = 2;
-
   string id = 100;
   oneof container {
     string dockerId = 200;
@@ -953,8 +914,6 @@ message DeploymentEditEventMessage {
 }
 
 message CreateDeploymentRequest {
-  string accessedBy = 2;
-
   string versionId = 100;
   string nodeId = 101;
   optional string note = 102;
@@ -963,7 +922,6 @@ message CreateDeploymentRequest {
 
 message UpdateDeploymentRequest {
   string id = 1;
-  string accessedBy = 2;
 
   optional string note = 100;
   string prefix = 101;
@@ -971,7 +929,6 @@ message UpdateDeploymentRequest {
 
 message PatchDeploymentRequest {
   string id = 1;
-  string accessedBy = 2;
 
   optional UniqueKeyValueList environment = 100;
   optional PatchInstanceRequest instance = 1001;
@@ -988,7 +945,6 @@ message InstanceResponse {
 
 message PatchInstanceRequest {
   string id = 1;
-  string accessedBy = 2;
 
   optional InstanceContainerConfig config = 100;
   optional string resetSection = 101;
@@ -1074,7 +1030,6 @@ message DeploymentEventListResponse {
 
 message DeploymentListSecretsRequest {
   string id = 1;
-  string accessedBy = 2;
   string instanceId = 3;
 }
 
@@ -1096,8 +1051,6 @@ enum NotificationEventType {
 }
 
 message CreateNotificationRequest {
-  string accessedBy = 2;
-
   string name = 100;
   string url = 101;
   NotificationType type = 102;
@@ -1114,7 +1067,6 @@ message CreateNotificationResponse {
 
 message UpdateNotificationRequest {
   string id = 1;
-  string accessedBy = 2;
 
   string name = 100;
   string url = 101;
@@ -1179,7 +1131,6 @@ message TemplateListResponse { repeated TemplateResponse data = 1000; }
 
 message CreateProductFromTemplateRequest {
   string id = 1;
-  string accessedBy = 2;
 
   string name = 100;
   string description = 101;

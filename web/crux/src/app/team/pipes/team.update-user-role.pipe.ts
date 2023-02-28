@@ -1,13 +1,16 @@
-import { Injectable, PipeTransform } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
+import BodyPipeTransform from 'src/pipes/body.pipe'
 import { PermissionDeniedException } from 'src/exception/errors'
 import { UpdateUserRoleInTeamRequest } from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
 
 @Injectable()
-export default class TeamUpdateUserRoleValidationPipe implements PipeTransform {
-  constructor(private prisma: PrismaService) {}
+export default class TeamUpdateUserRoleValidationPipe extends BodyPipeTransform<UpdateUserRoleInTeamRequest> {
+  constructor(private prisma: PrismaService) {
+    super()
+  }
 
-  async transform(value: UpdateUserRoleInTeamRequest) {
+  async transformBody(value: UpdateUserRoleInTeamRequest) {
     const userOnTeam = await this.prisma.usersOnTeams.findUnique({
       where: {
         userId_teamId: {

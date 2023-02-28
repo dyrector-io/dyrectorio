@@ -356,7 +356,7 @@ func (dc *DockerContainerBuilder) Create() (*DockerContainerBuilder, error) {
 	} else {
 		networkIDs := createNetworks(dc)
 		if networkIDs == nil {
-			return dc, errors.New("failde to create networks")
+			return dc, errors.New("failed to create networks")
 		}
 
 		dc.networkIDs = networkIDs

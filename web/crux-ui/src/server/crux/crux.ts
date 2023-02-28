@@ -57,35 +57,36 @@ export class Crux {
   private constructor(
     private clients: CruxClients,
     public readonly identity: Identity,
+    public readonly cookie: string,
     private registryConnections: RegistryConnections,
   ) {}
 
   get products() {
-    return this._products ?? new DyoProductService(this.clients.products, this.identity)
+    return this._products ?? new DyoProductService(this.clients.products, this.cookie)
   }
 
   get registries() {
-    return this._registries ?? new DyoRegistryService(this.clients.registries, this.identity, this.registryConnections)
+    return this._registries ?? new DyoRegistryService(this.clients.registries, this.registryConnections, this.cookie)
   }
 
   get nodes() {
-    return this._nodes ?? new DyoNodeService(this.clients.nodes, this.identity)
+    return this._nodes ?? new DyoNodeService(this.clients.nodes, this.cookie)
   }
 
   get versions() {
-    return this._versions ?? new DyoVersionService(this.clients.versions, this.identity)
+    return this._versions ?? new DyoVersionService(this.clients.versions, this.cookie)
   }
 
   get images() {
-    return this._images ?? new DyoImageService(this.clients.images, this.identity)
+    return this._images ?? new DyoImageService(this.clients.images, this.cookie)
   }
 
   get deployments() {
-    return this._deployments ?? new DyoDeploymentService(this.clients.deployments, this.identity)
+    return this._deployments ?? new DyoDeploymentService(this.clients.deployments, this.cookie)
   }
 
   get teams() {
-    return this._teams ?? new DyoTeamService(this.clients.teams, this.identity, this.registryConnections)
+    return this._teams ?? new DyoTeamService(this.clients.teams, this.identity, this.registryConnections, this.cookie)
   }
 
   get health() {
@@ -93,23 +94,23 @@ export class Crux {
   }
 
   get audit() {
-    return this._audit ?? new DyoAuditService(this.clients.audit, this.identity)
+    return this._audit ?? new DyoAuditService(this.clients.audit, this.cookie)
   }
 
   get notificiations() {
-    return this._notifications ?? new DyoNotifcationService(this.clients.notifications, this.identity)
+    return this._notifications ?? new DyoNotifcationService(this.clients.notifications, this.cookie)
   }
 
   get templates() {
-    return this._templates ?? new DyoTemplateService(this.clients.templates, this.identity)
+    return this._templates ?? new DyoTemplateService(this.clients.templates, this.cookie)
   }
 
   get dashboard() {
-    return this._dashboard ?? new DyoDashboardService(this.clients.dashboard, this.identity)
+    return this._dashboard ?? new DyoDashboardService(this.clients.dashboard, this.cookie)
   }
 
   get tokens() {
-    return this._tokens ?? new DyoTokenService(this.clients.tokens, this.identity)
+    return this._tokens ?? new DyoTokenService(this.clients.tokens, this.cookie)
   }
 
   get registryConnectionsServices(): CruxRegistryConnectionsServices {
@@ -119,8 +120,8 @@ export class Crux {
     }
   }
 
-  public static withIdentity(identity: Identity): Crux {
-    return new Crux(global.cruxClients, identity, registryConnections)
+  public static withIdentity(identity: Identity, cookie: string): Crux {
+    return new Crux(global.cruxClients, identity, cookie, registryConnections)
   }
 }
 
@@ -139,17 +140,20 @@ if (!global.cruxClients) {
   }
 }
 
-export const getCruxHealth = async (): Promise<CruxHealth> => await Crux.withIdentity(null).health.getHealth()
+export const getCruxHealth = async (): Promise<CruxHealth> => await Crux.withIdentity(null, null).health.getHealth()
 
 export const cruxFromContext = (context: NextPageContext): Crux => {
+  const { req } = context
+  const { headers } = req
+  const { cookie } = headers
   const session = sessionOfContext(context)
-  return Crux.withIdentity(session?.identity)
+  return Crux.withIdentity(session?.identity, cookie)
 }
 
 export const cruxFromConnection = (connection: WsConnection): Crux => {
   let crux = connection.data.get(WS_DATA_CRUX) as Crux
   if (!crux) {
-    crux = Crux.withIdentity(connection.identity)
+    crux = Crux.withIdentity(connection.identity, connection.cookie)
     connection.data.set(WS_DATA_CRUX, crux)
   }
 
@@ -157,8 +161,10 @@ export const cruxFromConnection = (connection: WsConnection): Crux => {
 }
 
 const crux = (req: NextApiRequest): Crux => {
+  const { headers } = req
+  const { cookie } = headers
   const session = sessionOf(req)
-  return Crux.withIdentity(session?.identity)
+  return Crux.withIdentity(session?.identity, cookie)
 }
 
 export default crux

@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common'
+import { Identity } from '@ory/kratos-client'
 import { DeploymentStatusEnum } from '@prisma/client'
 import { toTimestamp } from 'src/domain/utils'
-import { AccessRequest, DashboardResponse } from 'src/grpc/protobuf/proto/crux'
+import { DashboardResponse } from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
 import AuditService from '../audit/audit.service'
 import DashboardMapper from './dashboard.mapper'
@@ -14,14 +15,14 @@ export default class DashboardService {
     private readonly auditService: AuditService,
   ) {}
 
-  public async getDashboard(request: AccessRequest): Promise<DashboardResponse> {
+  public async getDashboard(identity: Identity): Promise<DashboardResponse> {
     const team = await this.prisma.usersOnTeams.findFirstOrThrow({
       select: {
         teamId: true,
       },
       where: {
         active: true,
-        userId: request.accessedBy,
+        userId: identity.id,
       },
     })
 
@@ -106,12 +107,14 @@ export default class DashboardService {
       orderBy: { createdAt: 'desc' },
     })
 
-    const auditLog = await this.auditService.getAuditLog({
-      accessedBy: request.accessedBy,
-      pageNumber: 0,
-      pageSize: 10,
-      createdTo: toTimestamp(new Date()),
-    })
+    const auditLog = await this.auditService.getAuditLog(
+      {
+        pageNumber: 0,
+        pageSize: 10,
+        createdTo: toTimestamp(new Date()),
+      },
+      identity,
+    )
 
     return {
       users,

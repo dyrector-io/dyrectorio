@@ -9,6 +9,7 @@ class WsConnection {
   constructor(
     public readonly token: string,
     public readonly identity: Identity,
+    public readonly cookie: string,
     public readonly address: string,
     public readonly socket: WebSocket,
     public request: http.IncomingMessage,

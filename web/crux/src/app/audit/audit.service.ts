@@ -4,6 +4,7 @@ import { AuditLogListCountResponse, AuditLogListRequest, AuditLogListResponse } 
 import KratosService from 'src/services/kratos.service'
 import { Timestamp } from 'src/grpc/google/protobuf/timestamp'
 import { Prisma } from '@prisma/client'
+import { Identity } from '@ory/kratos-client'
 import AuditMapper from './audit.mapper'
 
 @Injectable()
@@ -14,8 +15,8 @@ export default class AuditService {
     private readonly kratos: KratosService,
   ) {}
 
-  async getAuditLog(request: AuditLogListRequest): Promise<AuditLogListResponse> {
-    const conditions = await this.getConditions(request)
+  async getAuditLog(request: AuditLogListRequest, identity: Identity): Promise<AuditLogListResponse> {
+    const conditions = await this.getConditions(request, identity)
 
     const auditLog = await this.prisma.auditLog.findMany({
       ...conditions,
@@ -30,8 +31,8 @@ export default class AuditService {
     }
   }
 
-  async getAuditLogListCount(request: AuditLogListRequest): Promise<AuditLogListCountResponse> {
-    const conditions = await this.getConditions(request)
+  async getAuditLogListCount(request: AuditLogListRequest, identity: Identity): Promise<AuditLogListCountResponse> {
+    const conditions = await this.getConditions(request, identity)
 
     const count = await this.prisma.auditLog.count(conditions as Prisma.AuditLogCountArgs)
 
@@ -40,8 +41,8 @@ export default class AuditService {
     }
   }
 
-  private async getConditions(request: AuditLogListRequest): Promise<Prisma.AuditLogFindManyArgs> {
-    const { keyword, accessedBy, createdFrom, createdTo } = request
+  private async getConditions(request: AuditLogListRequest, identity: Identity): Promise<Prisma.AuditLogFindManyArgs> {
+    const { keyword, createdFrom, createdTo } = request
 
     const dateFilter = this.getDateFilter(createdTo, createdFrom)
 
@@ -52,7 +53,7 @@ export default class AuditService {
         team: {
           users: {
             some: {
-              userId: accessedBy,
+              userId: identity.id,
               active: true,
             },
           },

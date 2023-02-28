@@ -51,7 +51,7 @@ const onReady = async (endpoint: WsEndpoint) => {
     () => new DeploymentEventsService(endpoint, endpoint.query.deploymentId as string),
   )
 
-  Crux.withIdentity(null).deployments.subscribeToDeploymentEditEvents(deploymentId, {
+  Crux.withIdentity(null, null).deployments.subscribeToDeploymentEditEvents(deploymentId, {
     onClose: () => logger.debug(`Crux disconnected for: ${deploymentId}`),
     onMessage: message => endpoint.sendAll(message.type, message.payload),
   })

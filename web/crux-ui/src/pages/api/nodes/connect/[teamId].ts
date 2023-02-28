@@ -20,7 +20,7 @@ const logger = new Logger('ws-nodes')
 const onReady = async (endpoint: WsEndpoint) => {
   const teamId = endpoint.query.teamId as string
 
-  await Crux.withIdentity(null).nodes.subscribeToNodeEvents(teamId, {
+  await Crux.withIdentity(null, null).nodes.subscribeToNodeEvents(teamId, {
     onClose: () => logger.debug(`Crux disconnected for: ${teamId}`),
     onMessage: message => endpoint.sendAll(WS_TYPE_NODE_STATUS, message),
   })

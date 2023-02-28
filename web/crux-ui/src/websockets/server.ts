@@ -161,7 +161,10 @@ class WebSocketServer {
       return
     }
 
-    const connection = new WsConnection(token, identity, req.socket.remoteAddress, socket, req)
+    const { headers } = req
+    const { cookie } = headers
+
+    const connection = new WsConnection(token, identity, cookie, req.socket.remoteAddress, socket, req)
     const endpoint = this.endpoints.get(route)
     if (!endpoint) {
       this.logger.error('Connecting failed', null, `endpoint-not-found ${route}`)

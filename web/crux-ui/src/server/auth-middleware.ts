@@ -8,8 +8,11 @@ const useAuthorizeApiMiddleware = async (req: NextApiRequest, res: NextApiRespon
     throw unauthorizedError('Cookie is missing')
   }
 
+  const { cookie } = req.headers
+
   const cruxRequest = req as IncomingMessageWithSession
   cruxRequest.session = session
+  cruxRequest.cookie = cookie
 
   await next()
 }

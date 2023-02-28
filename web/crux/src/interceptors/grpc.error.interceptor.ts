@@ -9,7 +9,7 @@ const DNS_LOOKUP_FAILED = 'ENOTFOUND'
 export default class GrpcErrorInterceptor implements NestInterceptor {
   constructor(private readonly helper: InterceptorGrpcHelperProvider) {}
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
     const result = this.helper.mapToGrpcObject(context)
     return next.handle().pipe(
       catchError((err: SystemError) => {
