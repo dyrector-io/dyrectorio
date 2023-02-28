@@ -14,6 +14,7 @@ import {
 } from 'src/swagger/crux.dto'
 import { Identity } from '@ory/kratos-client'
 import { HttpIdentityInterceptor, IdentityFromRequest } from 'src/interceptors/http.identity.interceptor'
+import IdValidationPipe from 'src/pipes/id.validation.pipe'
 import JwtAuthGuard from '../token/jwt-auth.guard'
 import DeployService from './deploy.service'
 import DeployStartValidationPipe from './pipes/deploy.start.pipe'
@@ -42,7 +43,7 @@ export default class DeployHttpController {
   @ApiOkResponse()
   @AuditLogLevel('disabled')
   async startDeployment(
-    @Body(DeployStartValidationPipe) request: IdRequest,
+    @Body(IdValidationPipe, DeployStartValidationPipe) request: IdRequest,
     @IdentityFromRequest() identity: Identity,
   ): Promise<Empty> {
     return await this.service.startDeployment(request, identity)
@@ -52,7 +53,7 @@ export default class DeployHttpController {
   @ApiBody({ type: IdRequestDto })
   @ApiOkResponse({ type: DeploymentEventsDto })
   @AuditLogLevel('disabled')
-  async getDeploymentEvents(@Body() request: IdRequest): Promise<DeploymentEventsDto> {
+  async getDeploymentEvents(@Body(IdValidationPipe) request: IdRequest): Promise<DeploymentEventsDto> {
     return await this.service.getDeploymenEventsById(request)
   }
 }

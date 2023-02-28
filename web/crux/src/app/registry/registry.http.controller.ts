@@ -8,12 +8,21 @@ import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import { AccessRequestDto, RegistryListResponseDto } from 'src/swagger/crux.dto'
 import { HttpIdentityInterceptor, IdentityFromRequest } from 'src/interceptors/http.identity.interceptor'
 import { Identity } from '@ory/kratos-client'
+import HttpResponseTransformInterceptor, {
+  TransformResponse,
+} from 'src/interceptors/http.response.transform.interceptor'
 import JwtAuthGuard from '../token/jwt-auth.guard'
 import RegistryService from './registry.service'
+import RegistryGetHTTPPipe from './pipes/registry.get.http.pipe'
 
 @Controller('registry')
 @UseGuards(JwtAuthGuard)
-@UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, HttpIdentityInterceptor)
+@UseInterceptors(
+  HttpLoggerInterceptor,
+  PrismaErrorInterceptor,
+  HttpIdentityInterceptor,
+  HttpResponseTransformInterceptor,
+)
 @UseFilters(HttpExceptionFilter)
 export default class RegistryHttpController {
   constructor(private service: RegistryService) {}
@@ -22,6 +31,7 @@ export default class RegistryHttpController {
   @ApiBody({ type: AccessRequestDto })
   @ApiOkResponse({ type: RegistryListResponseDto })
   @AuditLogLevel('disabled')
+  @TransformResponse(RegistryGetHTTPPipe)
   async getRegistries(@IdentityFromRequest() identity: Identity): Promise<RegistryListResponse> {
     return await this.service.getRegistries(identity)
   }

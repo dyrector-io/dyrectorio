@@ -9,6 +9,7 @@ import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import { AddImagesToVersionRequestDto, ImageListResponseDto, PatchImageRequestDto } from 'src/swagger/crux.dto'
 import { HttpIdentityInterceptor, IdentityFromRequest } from 'src/interceptors/http.identity.interceptor'
 import { Identity } from '@ory/kratos-client'
+import IdValidationPipe from 'src/pipes/id.validation.pipe'
 import JwtAuthGuard from '../token/jwt-auth.guard'
 import ImageService from './image.service'
 import ImagePatchValidationPipe from './pipes/image.patch.pipe'
@@ -36,7 +37,7 @@ export default class ImageHttpController {
   @ApiOkResponse()
   @AuditLogLevel('disabled')
   async UpdateImage(
-    @Body(ImagePatchValidationPipe) request: PatchImageRequest,
+    @Body(IdValidationPipe, ImagePatchValidationPipe) request: PatchImageRequest,
     @IdentityFromRequest() identity: Identity,
   ): Promise<Empty> {
     return await this.service.patchImage(request, identity)

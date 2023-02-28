@@ -6,14 +6,18 @@ import HttpExceptionFilter from 'src/filters/http-exception.filter'
 import { ContainerStateListMessage } from 'src/grpc/protobuf/proto/common'
 import { WatchContainerStateRequest } from 'src/grpc/protobuf/proto/crux'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
+import HttpResponseTransformInterceptor, {
+  TransformResponse,
+} from 'src/interceptors/http.response.transform.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import { ContainerStateListMessageDto, WatchContainerStateRequestDto } from 'src/swagger/crux.dto'
 import JwtAuthGuard from '../token/jwt-auth.guard'
 import NodeService from './node.service'
+import NodeGetContainerStatusHTTPPipe from './pipes/node.get.status.http.pipe'
 
 @Controller('node')
 @UseGuards(JwtAuthGuard)
-@UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor)
+@UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, HttpResponseTransformInterceptor)
 @UseFilters(HttpExceptionFilter)
 @AuditLogLevel('disabled')
 export default class NodeHttpController {
@@ -33,6 +37,7 @@ export default class NodeHttpController {
   @ApiBody({ type: WatchContainerStateRequestDto })
   @ApiOkResponse({ type: ContainerStateListMessageDto })
   @AuditLogLevel('disabled')
+  @TransformResponse(NodeGetContainerStatusHTTPPipe)
   async getContainerStatus(@Body() params: WatchContainerStateRequest): Promise<Observable<ContainerStateListMessage>> {
     return this.service
       .handleWatchContainerStatus(params)

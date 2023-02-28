@@ -12,12 +12,17 @@ import {
 import HttpExceptionFilter from 'src/filters/http-exception.filter'
 import { HttpIdentityInterceptor, IdentityFromRequest } from 'src/interceptors/http.identity.interceptor'
 import { Identity } from '@ory/kratos-client'
+import HttpResponseTransformInterceptor, {
+  TransformResponse,
+} from 'src/interceptors/http.response.transform.interceptor'
 import ProductService from './product.service'
 import JwtAuthGuard from '../token/jwt-auth.guard'
+import ProductCreateHTTPPipe from './pipes/product.create.http.pipe'
+import ProductGetHTTPPipe from './pipes/product.get.http.pipe'
 
 @Controller('product')
 @UseGuards(JwtAuthGuard)
-@UseInterceptors(HttpLoggerInterceptor, HttpIdentityInterceptor)
+@UseInterceptors(HttpLoggerInterceptor, HttpIdentityInterceptor, HttpResponseTransformInterceptor)
 @UseFilters(HttpExceptionFilter)
 export default class ProductHttpController {
   constructor(private service: ProductService) {}
@@ -27,7 +32,7 @@ export default class ProductHttpController {
   @ApiCreatedResponse({ type: CreateEntityResponseDto })
   @AuditLogLevel('disabled')
   async createProduct(
-    @Body() request: CreateProductRequest,
+    @Body(ProductCreateHTTPPipe) request: CreateProductRequest,
     @IdentityFromRequest() identity: Identity,
   ): Promise<CreateEntityResponse> {
     return this.service.createProduct(request, identity)
@@ -37,6 +42,7 @@ export default class ProductHttpController {
   @ApiBody({ type: AccessRequestDto })
   @ApiOkResponse({ type: ProductListResponseDto })
   @AuditLogLevel('disabled')
+  @TransformResponse(ProductGetHTTPPipe)
   async getProducts(@IdentityFromRequest() identity: Identity): Promise<ProductListResponse> {
     return this.service.getProducts(identity)
   }
