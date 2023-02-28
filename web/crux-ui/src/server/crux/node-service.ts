@@ -20,7 +20,6 @@ import {
   Empty,
 } from '@app/models/grpc/protobuf/proto/common'
 import {
-  AccessRequest,
   CreateEntityResponse,
   CreateNodeRequest,
   CruxNodeClient,
@@ -42,7 +41,6 @@ import {
   WatchContainerStateRequest,
 } from '@app/models/grpc/protobuf/proto/crux'
 import { timestampToUTC } from '@app/utils'
-import { Identity } from '@ory/kratos-client'
 import { GrpcConnection, protomisify, ProtoSubscriptionOptions } from './grpc-connection'
 import {
   containerOperationToProto,
@@ -54,17 +52,10 @@ import {
 class DyoNodeService {
   private logger = new Logger(DyoNodeService.name)
 
-  constructor(private client: CruxNodeClient, private identity: Identity) {}
+  constructor(private client: CruxNodeClient, private cookie: string) {}
 
   async getAll(): Promise<DyoNode[]> {
-    const req: AccessRequest = {
-      accessedBy: this.identity.id,
-    }
-
-    const nodes = await protomisify<AccessRequest, NodeListResponse>(this.client, this.client.getNodes)(
-      AccessRequest,
-      req,
-    )
+    const nodes = await protomisify<Empty, NodeListResponse>(this.client, this.client.getNodes, this.cookie)(Empty, {})
 
     return nodes.data.map(it => ({
       ...it,
@@ -77,13 +68,13 @@ class DyoNodeService {
   async create(dto: CreateDyoNode): Promise<DyoNode> {
     const req: CreateNodeRequest = {
       ...dto,
-      accessedBy: this.identity.id,
     }
 
-    const res = await protomisify<CreateNodeRequest, CreateEntityResponse>(this.client, this.client.createNode)(
-      CreateNodeRequest,
-      req,
-    )
+    const res = await protomisify<CreateNodeRequest, CreateEntityResponse>(
+      this.client,
+      this.client.createNode,
+      this.cookie,
+    )(CreateNodeRequest, req)
 
     return {
       ...dto,
@@ -99,31 +90,33 @@ class DyoNodeService {
     const req: UpdateNodeRequest = {
       ...dto,
       id,
-      accessedBy: this.identity.id,
     }
 
-    await protomisify<UpdateNodeRequest, Empty>(this.client, this.client.updateNode)(UpdateNodeRequest, req)
+    await protomisify<UpdateNodeRequest, Empty>(
+      this.client,
+      this.client.updateNode,
+      this.cookie,
+    )(UpdateNodeRequest, req)
   }
 
   async delete(id: string): Promise<void> {
     const req: IdRequest = {
       id,
-      accessedBy: this.identity.id,
     }
 
-    await protomisify<IdRequest, Empty>(this.client, this.client.deleteNode)(IdRequest, req)
+    await protomisify<IdRequest, Empty>(this.client, this.client.deleteNode, this.cookie)(IdRequest, req)
   }
 
   async getNodeDetails(id: string): Promise<DyoNodeDetails> {
     const req: IdRequest = {
       id,
-      accessedBy: this.identity.id,
     }
 
-    const res = await protomisify<IdRequest, NodeDetailsResponse>(this.client, this.client.getNodeDetails)(
-      IdRequest,
-      req,
-    )
+    const res = await protomisify<IdRequest, NodeDetailsResponse>(
+      this.client,
+      this.client.getNodeDetails,
+      this.cookie,
+    )(IdRequest, req)
 
     return {
       ...res,
@@ -149,17 +142,17 @@ class DyoNodeService {
   ): Promise<DyoNodeInstall> {
     const req: GenerateScriptRequest = {
       id,
-      accessedBy: this.identity.id,
       type: nodeType,
       rootPath: rootPath ? rootPath.trim() : undefined,
       scriptType,
       dagentTraefik,
     }
 
-    const res = await protomisify<ServiceIdRequest, NodeInstallResponse>(this.client, this.client.generateScript)(
-      GenerateScriptRequest,
-      req,
-    )
+    const res = await protomisify<GenerateScriptRequest, NodeInstallResponse>(
+      this.client,
+      this.client.generateScript,
+      this.cookie,
+    )(GenerateScriptRequest, req)
 
     const script = await this.getScript(id)
 
@@ -176,10 +169,11 @@ class DyoNodeService {
       id,
     }
 
-    const res = await protomisify<ServiceIdRequest, NodeScriptResponse>(this.client, this.client.getScript)(
-      IdRequest,
-      req,
-    )
+    const res = await protomisify<ServiceIdRequest, NodeScriptResponse>(
+      this.client,
+      this.client.getScript,
+      this.cookie,
+    )(IdRequest, req)
 
     return {
       content: res.content,
@@ -187,22 +181,21 @@ class DyoNodeService {
   }
 
   async discardScript(id: string): Promise<Empty> {
-    const req: IdRequest = { id, accessedBy: this.identity.id }
-    return await protomisify<IdRequest, Empty>(this.client, this.client.discardScript)(IdRequest, req)
+    const req: IdRequest = { id }
+    return await protomisify<IdRequest, Empty>(this.client, this.client.discardScript, this.cookie)(IdRequest, req)
   }
 
   async revokeToken(id: string): Promise<Empty> {
-    const req: IdRequest = { id, accessedBy: this.identity.id }
-    return await protomisify<IdRequest, Empty>(this.client, this.client.revokeToken)(IdRequest, req)
+    const req: IdRequest = { id }
+    return await protomisify<IdRequest, Empty>(this.client, this.client.revokeToken, this.cookie)(IdRequest, req)
   }
 
   async updateNodeAgent(id: string): Promise<void> {
     const req: IdRequest = {
       id,
-      accessedBy: this.identity.id,
     }
 
-    await protomisify<IdRequest, Empty>(this.client, this.client.updateNodeAgent)(IdRequest, req)
+    await protomisify<IdRequest, Empty>(this.client, this.client.updateNodeAgent, this.cookie)(IdRequest, req)
   }
 
   async sendContainerCommand(id: string, command: ContainerCommand) {
@@ -210,7 +203,6 @@ class DyoNodeService {
 
     const req: NodeContainerCommandRequest = {
       id,
-      accessedBy: this.identity.id,
       command: {
         id: containerId,
         prefixName: containerId ? null : (command.container as ContainerIdentifier),
@@ -218,10 +210,11 @@ class DyoNodeService {
       },
     }
 
-    await protomisify<NodeContainerCommandRequest, Empty>(this.client, this.client.sendContainerCommand)(
-      NodeContainerCommandRequest,
-      req,
-    )
+    await protomisify<NodeContainerCommandRequest, Empty>(
+      this.client,
+      this.client.sendContainerCommand,
+      this.cookie,
+    )(NodeContainerCommandRequest, req)
   }
 
   async deleteContainer(id: string, containers: DeleteContainers) {
@@ -239,7 +232,6 @@ class DyoNodeService {
 
     const req: NodeDeleteContainersRequest = {
       id,
-      accessedBy: this.identity.id,
       containers: {
         containerId,
         prefixName,
@@ -247,10 +239,11 @@ class DyoNodeService {
       },
     }
 
-    await protomisify<NodeDeleteContainersRequest, Empty>(this.client, this.client.deleteContainers)(
-      NodeDeleteContainersRequest,
-      req,
-    )
+    await protomisify<NodeDeleteContainersRequest, Empty>(
+      this.client,
+      this.client.deleteContainers,
+      this.cookie,
+    )(NodeDeleteContainersRequest, req)
   }
 
   subscribeToNodeEvents(
@@ -284,7 +277,6 @@ class DyoNodeService {
     const req: WatchContainerStateRequest = {
       nodeId,
       prefix,
-      accessedBy: this.identity.id,
     }
 
     const transform = (data: ContainerStateListMessage) =>
@@ -313,7 +305,6 @@ class DyoNodeService {
     options: ProtoSubscriptionOptions<ContainerLogMessage>,
   ): GrpcConnection<GrpcContainerLogMessage, ContainerLogMessage> {
     const req: WatchContainerLogRequest = {
-      accessedBy: this.identity.id,
       id: nodeId,
       dockerId: id,
       prefixName,

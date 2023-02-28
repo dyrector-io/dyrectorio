@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { Configuration, Identity, IdentityApi, Session } from '@ory/kratos-client'
+import { Configuration, FrontendApi, Identity, IdentityApi, Session } from '@ory/kratos-client'
 import { randomUUID } from 'crypto'
 import { IdentityTraits, KratosInvitation, KRATOS_IDENTITY_SCHEMA } from 'src/shared/models'
 
@@ -8,8 +8,11 @@ import { IdentityTraits, KratosInvitation, KRATOS_IDENTITY_SCHEMA } from 'src/sh
 export default class KratosService {
   private kratos: IdentityApi
 
+  private frontend: FrontendApi
+
   constructor(private configService: ConfigService) {
     this.kratos = new IdentityApi(new Configuration({ basePath: configService.get<string>('KRATOS_ADMIN_URL') }))
+    this.frontend = new FrontendApi(new Configuration({ basePath: configService.get<string>('KRATOS_URL') }))
   }
 
   async getIdentityByEmail(email: string): Promise<Identity> {
@@ -96,5 +99,12 @@ export default class KratosService {
         return traitrs.email === email
       })
       .map(it => it.id)
+  }
+
+  async getSessionByCookie(cookie: string): Promise<Session> {
+    const req = await this.frontend.toSession({
+      cookie,
+    })
+    return req.data
   }
 }

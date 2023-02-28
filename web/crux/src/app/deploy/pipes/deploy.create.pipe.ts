@@ -1,13 +1,16 @@
-import { Injectable, PipeTransform } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import PrismaService from 'src/services/prisma.service'
 import { AlreadyExistsException, PreconditionFailedException } from 'src/exception/errors'
 import { CreateDeploymentRequest } from 'src/grpc/protobuf/proto/crux'
+import BodyPipeTransform from 'src/pipes/body.pipe'
 
 @Injectable()
-export default class DeployCreateValidationPipe implements PipeTransform {
-  constructor(private prisma: PrismaService) {}
+export default class DeployCreateValidationPipe extends BodyPipeTransform<CreateDeploymentRequest> {
+  constructor(private prisma: PrismaService) {
+    super()
+  }
 
-  async transform(value: CreateDeploymentRequest) {
+  async transformBody(value: CreateDeploymentRequest) {
     const deployments = await this.prisma.deployment.findMany({
       where: {
         nodeId: value.nodeId,

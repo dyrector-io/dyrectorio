@@ -1,6 +1,5 @@
 import { Empty } from '@app/models/grpc/protobuf/proto/common'
 import {
-  AccessRequest,
   CruxTokenClient,
   GenerateTokenRequest as ProtoGenerateTokenRequest,
   GenerateTokenResponse as ProtoGenerateTokenResponse,
@@ -9,21 +8,17 @@ import {
 } from '@app/models/grpc/protobuf/proto/crux'
 import { GenerateTokenRequest, GenerateTokenResponse, Token } from '@app/models/token'
 import { timestampToUTC } from '@app/utils'
-import { Identity } from '@ory/kratos-client'
 import { protomisify } from '@server/crux/grpc-connection'
 
 class DyoTokenService {
-  constructor(private client: CruxTokenClient, private identity: Identity) {}
+  constructor(private client: CruxTokenClient, private cookie: string) {}
 
   async getAll(): Promise<Token[]> {
-    const req: AccessRequest = {
-      accessedBy: this.identity.id,
-    }
-
-    const response = await protomisify<AccessRequest, TokenListResponse>(this.client, this.client.getTokenList)(
-      AccessRequest,
-      req,
-    )
+    const response = await protomisify<Empty, TokenListResponse>(
+      this.client,
+      this.client.getTokenList,
+      this.cookie,
+    )(Empty, {})
 
     return response.data.map(it => ({
       ...it,
@@ -34,13 +29,13 @@ class DyoTokenService {
 
   async generateToken(request: GenerateTokenRequest): Promise<GenerateTokenResponse> {
     const req: ProtoGenerateTokenRequest = {
-      accessedBy: this.identity.id,
       ...request,
     }
 
-    const response = await protomisify<AccessRequest, ProtoGenerateTokenResponse>(
+    const response = await protomisify<ProtoGenerateTokenRequest, ProtoGenerateTokenResponse>(
       this.client,
       this.client.generateToken,
+      this.cookie,
     )(ProtoGenerateTokenRequest, req)
 
     return {
@@ -53,10 +48,9 @@ class DyoTokenService {
   async delete(id: string) {
     const req: IdRequest = {
       id,
-      accessedBy: this.identity.id,
     }
 
-    await protomisify<IdRequest, Empty>(this.client, this.client.deleteToken)(IdRequest, req)
+    await protomisify<IdRequest, Empty>(this.client, this.client.deleteToken, this.cookie)(IdRequest, req)
   }
 }
 

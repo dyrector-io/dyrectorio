@@ -1,21 +1,18 @@
 import { Dashboard } from '@app/models'
-import { AccessRequest, CruxDashboardClient, DashboardResponse } from '@app/models/grpc/protobuf/proto/crux'
+import { Empty } from '@app/models/grpc/protobuf/proto/common'
+import { CruxDashboardClient, DashboardResponse } from '@app/models/grpc/protobuf/proto/crux'
 import { timestampToUTC } from '@app/utils'
-import { Identity } from '@ory/kratos-client'
 import { protomisify } from './grpc-connection'
 
 class DyoDashboardService {
-  constructor(private client: CruxDashboardClient, private identity: Identity) {}
+  constructor(private client: CruxDashboardClient, private cookie: string) {}
 
   async getDashboard(): Promise<Dashboard> {
-    const req = {
-      accessedBy: this.identity.id,
-    } as AccessRequest
-
-    const dashboard = await protomisify<AccessRequest, DashboardResponse>(this.client, this.client.getDashboard)(
-      AccessRequest,
-      req,
-    )
+    const dashboard = await protomisify<Empty, DashboardResponse>(
+      this.client,
+      this.client.getDashboard,
+      this.cookie,
+    )(Empty, {})
 
     return {
       ...dashboard,

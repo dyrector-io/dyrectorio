@@ -1,7 +1,6 @@
 import { CreateNotification, NotificationDetails, UpdateNotification } from '@app/models'
 import { Empty } from '@app/models/grpc/protobuf/proto/common'
 import {
-  AccessRequest,
   CreateNotificationRequest,
   CreateNotificationResponse,
   CruxNotificationClient,
@@ -12,7 +11,6 @@ import {
   UpdateNotificationRequest,
 } from '@app/models/grpc/protobuf/proto/crux'
 import { timestampToUTC } from '@app/utils'
-import { Identity } from '@ory/kratos-client'
 import { protomisify } from './grpc-connection'
 import {
   notificationEventTypeToDto,
@@ -22,17 +20,14 @@ import {
 } from './mappers/notification-mappers'
 
 class DyoNotifcationService {
-  constructor(private client: CruxNotificationClient, private identity: Identity) {}
+  constructor(private client: CruxNotificationClient, private cookie: string) {}
 
   async getAll(): Promise<NotificationDetails[]> {
-    const req: AccessRequest = {
-      accessedBy: this.identity.id,
-    }
-
-    const res = await protomisify<AccessRequest, NotificationListResponse>(
+    const res = await protomisify<Empty, NotificationListResponse>(
       this.client,
       this.client.getNotificationList,
-    )(AccessRequest, req)
+      this.cookie,
+    )(Empty, {})
 
     return res.data.map(it => ({
       ...it,
@@ -46,13 +41,13 @@ class DyoNotifcationService {
     const req: CreateNotificationRequest = {
       ...dto,
       type: notificationTypeToGrpc(dto.type),
-      accessedBy: this.identity.id,
       events: dto.events.map(ev => notificationEventTypeToGrpc(ev)),
     }
 
     const res = await protomisify<CreateNotificationRequest, CreateNotificationResponse>(
       this.client,
       this.client.createNotification,
+      this.cookie,
     )(CreateNotificationRequest, req)
 
     return {
@@ -66,13 +61,13 @@ class DyoNotifcationService {
     const req: UpdateNotificationRequest = {
       ...dto,
       type: notificationTypeToGrpc(dto.type),
-      accessedBy: this.identity.id,
       events: dto.events.map(ev => notificationEventTypeToGrpc(ev)),
     }
 
     const res = await protomisify<UpdateNotificationRequest, UpdateEntityResponse>(
       this.client,
       this.client.updateNotification,
+      this.cookie,
     )(UpdateNotificationRequest, req)
 
     return timestampToUTC(res.updatedAt)
@@ -81,12 +76,12 @@ class DyoNotifcationService {
   async getNotificationDetails(id: string): Promise<NotificationDetails> {
     const req: IdRequest = {
       id,
-      accessedBy: this.identity.id,
     }
 
     const res = await protomisify<IdRequest, NotificationDetailsResponse>(
       this.client,
       this.client.getNotificationDetails,
+      this.cookie,
     )(IdRequest, req)
 
     return {
@@ -100,19 +95,17 @@ class DyoNotifcationService {
   async delete(id: string) {
     const req: IdRequest = {
       id,
-      accessedBy: this.identity.id,
     }
 
-    await protomisify<IdRequest, Empty>(this.client, this.client.deleteNotification)(IdRequest, req)
+    await protomisify<IdRequest, Empty>(this.client, this.client.deleteNotification, this.cookie)(IdRequest, req)
   }
 
   async testNotification(id: string): Promise<void> {
     const req: IdRequest = {
       id,
-      accessedBy: this.identity.id,
     }
 
-    await protomisify<IdRequest, Empty>(this.client, this.client.testNotification)(IdRequest, req)
+    await protomisify<IdRequest, Empty>(this.client, this.client.testNotification, this.cookie)(IdRequest, req)
   }
 }
 

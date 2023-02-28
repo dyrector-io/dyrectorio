@@ -1,14 +1,11 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
-import PrismaService from 'src/services/prisma.service'
+import { Injectable } from '@nestjs/common'
 import { OrderVersionImagesRequest } from 'src/grpc/protobuf/proto/crux'
+import UserAccessGuard from 'src/shared/user-access.guard'
+import { Identity } from '@ory/kratos-client'
 
 @Injectable()
-export default class ImageOrderImagesTeamAccessGuard implements CanActivate {
-  constructor(private prisma: PrismaService) {}
-
-  async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.getArgByIndex<OrderVersionImagesRequest>(0)
-
+export default class ImageOrderImagesTeamAccessGuard extends UserAccessGuard<OrderVersionImagesRequest> {
+  async canActivateWithRequest(request: OrderVersionImagesRequest, identity: Identity): Promise<boolean> {
     // check the sent imageIds and versionId against the user's team
     const images = await this.prisma.image.count({
       where: {
@@ -21,7 +18,7 @@ export default class ImageOrderImagesTeamAccessGuard implements CanActivate {
             team: {
               users: {
                 some: {
-                  userId: request.accessedBy,
+                  userId: identity.id,
                   active: true,
                 },
               },

@@ -667,7 +667,6 @@ export interface ServiceIdRequest {
 
 export interface IdRequest {
   id: string
-  accessedBy: string
 }
 
 export interface AuditResponse {
@@ -688,7 +687,6 @@ export interface UpdateEntityResponse {
 
 /** AUTHENTICATION */
 export interface GenerateTokenRequest {
-  accessedBy: string
   name: string
   expirationInDays: number
 }
@@ -714,7 +712,6 @@ export interface TokenListResponse {
 
 /** AUDIT */
 export interface AuditLogListRequest {
-  accessedBy: string
   pageSize: number
   pageNumber: number
   keyword?: string | undefined
@@ -740,26 +737,22 @@ export interface AuditLogListResponse {
 
 /** TEAM */
 export interface CreateTeamRequest {
-  accessedBy: string
   name: string
 }
 
 export interface UpdateTeamRequest {
   id: string
-  accessedBy: string
   name: string
 }
 
 export interface UpdateUserRoleInTeamRequest {
   id: string
-  accessedBy: string
   userId: string
   role: UserRole
 }
 
 export interface InviteUserRequest {
   id: string
-  accessedBy: string
   email: string
   firstName: string
   lastName?: string | undefined
@@ -767,18 +760,12 @@ export interface InviteUserRequest {
 
 export interface ReinviteUserRequest {
   id: string
-  accessedBy: string
   userId: string
 }
 
 export interface DeleteUserFromTeamRequest {
   id: string
-  accessedBy: string
   userId: string
-}
-
-export interface AccessRequest {
-  accessedBy: string
 }
 
 export interface UserMetaResponse {
@@ -862,7 +849,6 @@ export interface ProductListResponse {
 }
 
 export interface CreateProductRequest {
-  accessedBy: string
   name: string
   description?: string | undefined
   type: ProductType
@@ -870,7 +856,6 @@ export interface CreateProductRequest {
 
 export interface UpdateProductRequest {
   id: string
-  accessedBy: string
   name: string
   description?: string | undefined
   changelog?: string | undefined
@@ -928,7 +913,6 @@ export interface UncheckedRegistryDetails {
 }
 
 export interface CreateRegistryRequest {
-  accessedBy: string
   name: string
   description?: string | undefined
   icon?: string | undefined
@@ -942,7 +926,6 @@ export interface CreateRegistryRequest {
 
 export interface UpdateRegistryRequest {
   id: string
-  accessedBy: string
   name: string
   description?: string | undefined
   icon?: string | undefined
@@ -970,7 +953,6 @@ export interface RegistryDetailsResponse {
 }
 
 export interface CreateVersionRequest {
-  accessedBy: string
   productId: string
   name: string
   changelog?: string | undefined
@@ -979,7 +961,6 @@ export interface CreateVersionRequest {
 
 export interface UpdateVersionRequest {
   id: string
-  accessedBy: string
   name: string
   changelog?: string | undefined
 }
@@ -1014,7 +995,6 @@ export interface VersionDetailsResponse {
 
 export interface IncreaseVersionRequest {
   id: string
-  accessedBy: string
   name: string
   changelog?: string | undefined
 }
@@ -1200,7 +1180,6 @@ export interface ImageListResponse {
 }
 
 export interface OrderVersionImagesRequest {
-  accessedBy: string
   versionId: string
   imageIds: string[]
 }
@@ -1211,14 +1190,12 @@ export interface RegistryImages {
 }
 
 export interface AddImagesToVersionRequest {
-  accessedBy: string
   versionId: string
   images: RegistryImages[]
 }
 
 export interface PatchImageRequest {
   id: string
-  accessedBy: string
   tag?: string | undefined
   config?: ImageContainerConfig | undefined
   resetSection?: string | undefined
@@ -1260,7 +1237,6 @@ export interface NodeListResponse {
 }
 
 export interface CreateNodeRequest {
-  accessedBy: string
   name: string
   description?: string | undefined
   icon?: string | undefined
@@ -1268,7 +1244,6 @@ export interface CreateNodeRequest {
 
 export interface UpdateNodeRequest {
   id: string
-  accessedBy: string
   name: string
   description?: string | undefined
   icon?: string | undefined
@@ -1280,7 +1255,6 @@ export interface DagentTraefikOptions {
 
 export interface GenerateScriptRequest {
   id: string
-  accessedBy: string
   type: NodeType
   rootPath?: string | undefined
   scriptType: NodeScriptType
@@ -1298,13 +1272,11 @@ export interface NodeScriptResponse {
 
 export interface NodeContainerCommandRequest {
   id: string
-  accessedBy: string
   command: ContainerCommandRequest | undefined
 }
 
 export interface NodeDeleteContainersRequest {
   id: string
-  accessedBy: string
   containers: DeleteContainersRequest | undefined
 }
 
@@ -1319,13 +1291,11 @@ export interface NodeEventMessage {
 }
 
 export interface WatchContainerStateRequest {
-  accessedBy: string
   nodeId: string
   prefix?: string | undefined
 }
 
 export interface WatchContainerLogRequest {
-  accessedBy: string
   id: string
   dockerId?: string | undefined
   prefixName?: ContainerIdentifier | undefined
@@ -1348,7 +1318,6 @@ export interface DeploymentEditEventMessage {
 }
 
 export interface CreateDeploymentRequest {
-  accessedBy: string
   versionId: string
   nodeId: string
   note?: string | undefined
@@ -1357,14 +1326,12 @@ export interface CreateDeploymentRequest {
 
 export interface UpdateDeploymentRequest {
   id: string
-  accessedBy: string
   note?: string | undefined
   prefix: string
 }
 
 export interface PatchDeploymentRequest {
   id: string
-  accessedBy: string
   environment?: UniqueKeyValueList | undefined
   instance?: PatchInstanceRequest | undefined
 }
@@ -1379,7 +1346,6 @@ export interface InstanceResponse {
 
 export interface PatchInstanceRequest {
   id: string
-  accessedBy: string
   config?: InstanceContainerConfig | undefined
   resetSection?: string | undefined
 }
@@ -1455,12 +1421,10 @@ export interface DeploymentEventListResponse {
 
 export interface DeploymentListSecretsRequest {
   id: string
-  accessedBy: string
   instanceId: string
 }
 
 export interface CreateNotificationRequest {
-  accessedBy: string
   name: string
   url: string
   type: NotificationType
@@ -1475,7 +1439,6 @@ export interface CreateNotificationResponse {
 
 export interface UpdateNotificationRequest {
   id: string
-  accessedBy: string
   name: string
   url: string
   type: NotificationType
@@ -1527,7 +1490,6 @@ export interface TemplateListResponse {
 
 export interface CreateProductFromTemplateRequest {
   id: string
-  accessedBy: string
   name: string
   description: string
   type: ProductType
@@ -1620,16 +1582,13 @@ export const ServiceIdRequest = {
 }
 
 function createBaseIdRequest(): IdRequest {
-  return { id: '', accessedBy: '' }
+  return { id: '' }
 }
 
 export const IdRequest = {
   encode(message: IdRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== '') {
       writer.uint32(10).string(message.id)
-    }
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
     }
     return writer
   },
@@ -1644,9 +1603,6 @@ export const IdRequest = {
         case 1:
           message.id = reader.string()
           break
-        case 2:
-          message.accessedBy = reader.string()
-          break
         default:
           reader.skipType(tag & 7)
           break
@@ -1656,16 +1612,12 @@ export const IdRequest = {
   },
 
   fromJSON(object: any): IdRequest {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-    }
+    return { id: isSet(object.id) ? String(object.id) : '' }
   },
 
   toJSON(message: IdRequest): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     return obj
   },
 
@@ -1676,7 +1628,6 @@ export const IdRequest = {
   fromPartial<I extends Exact<DeepPartial<IdRequest>, I>>(object: I): IdRequest {
     const message = createBaseIdRequest()
     message.id = object.id ?? ''
-    message.accessedBy = object.accessedBy ?? ''
     return message
   },
 }
@@ -1879,14 +1830,11 @@ export const UpdateEntityResponse = {
 }
 
 function createBaseGenerateTokenRequest(): GenerateTokenRequest {
-  return { accessedBy: '', name: '', expirationInDays: 0 }
+  return { name: '', expirationInDays: 0 }
 }
 
 export const GenerateTokenRequest = {
   encode(message: GenerateTokenRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
-    }
     if (message.name !== '') {
       writer.uint32(802).string(message.name)
     }
@@ -1903,9 +1851,6 @@ export const GenerateTokenRequest = {
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
-        case 2:
-          message.accessedBy = reader.string()
-          break
         case 100:
           message.name = reader.string()
           break
@@ -1922,7 +1867,6 @@ export const GenerateTokenRequest = {
 
   fromJSON(object: any): GenerateTokenRequest {
     return {
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       name: isSet(object.name) ? String(object.name) : '',
       expirationInDays: isSet(object.expirationInDays) ? Number(object.expirationInDays) : 0,
     }
@@ -1930,7 +1874,6 @@ export const GenerateTokenRequest = {
 
   toJSON(message: GenerateTokenRequest): unknown {
     const obj: any = {}
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.name !== undefined && (obj.name = message.name)
     message.expirationInDays !== undefined && (obj.expirationInDays = Math.round(message.expirationInDays))
     return obj
@@ -1942,7 +1885,6 @@ export const GenerateTokenRequest = {
 
   fromPartial<I extends Exact<DeepPartial<GenerateTokenRequest>, I>>(object: I): GenerateTokenRequest {
     const message = createBaseGenerateTokenRequest()
-    message.accessedBy = object.accessedBy ?? ''
     message.name = object.name ?? ''
     message.expirationInDays = object.expirationInDays ?? 0
     return message
@@ -2178,14 +2120,11 @@ export const TokenListResponse = {
 }
 
 function createBaseAuditLogListRequest(): AuditLogListRequest {
-  return { accessedBy: '', pageSize: 0, pageNumber: 0, createdTo: undefined }
+  return { pageSize: 0, pageNumber: 0, createdTo: undefined }
 }
 
 export const AuditLogListRequest = {
   encode(message: AuditLogListRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
-    }
     if (message.pageSize !== 0) {
       writer.uint32(800).uint32(message.pageSize)
     }
@@ -2211,9 +2150,6 @@ export const AuditLogListRequest = {
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
-        case 2:
-          message.accessedBy = reader.string()
-          break
         case 100:
           message.pageSize = reader.uint32()
           break
@@ -2239,7 +2175,6 @@ export const AuditLogListRequest = {
 
   fromJSON(object: any): AuditLogListRequest {
     return {
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       pageSize: isSet(object.pageSize) ? Number(object.pageSize) : 0,
       pageNumber: isSet(object.pageNumber) ? Number(object.pageNumber) : 0,
       keyword: isSet(object.keyword) ? String(object.keyword) : undefined,
@@ -2250,7 +2185,6 @@ export const AuditLogListRequest = {
 
   toJSON(message: AuditLogListRequest): unknown {
     const obj: any = {}
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.pageSize !== undefined && (obj.pageSize = Math.round(message.pageSize))
     message.pageNumber !== undefined && (obj.pageNumber = Math.round(message.pageNumber))
     message.keyword !== undefined && (obj.keyword = message.keyword)
@@ -2265,7 +2199,6 @@ export const AuditLogListRequest = {
 
   fromPartial<I extends Exact<DeepPartial<AuditLogListRequest>, I>>(object: I): AuditLogListRequest {
     const message = createBaseAuditLogListRequest()
-    message.accessedBy = object.accessedBy ?? ''
     message.pageSize = object.pageSize ?? 0
     message.pageNumber = object.pageNumber ?? 0
     message.keyword = object.keyword ?? undefined
@@ -2476,14 +2409,11 @@ export const AuditLogListResponse = {
 }
 
 function createBaseCreateTeamRequest(): CreateTeamRequest {
-  return { accessedBy: '', name: '' }
+  return { name: '' }
 }
 
 export const CreateTeamRequest = {
   encode(message: CreateTeamRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
-    }
     if (message.name !== '') {
       writer.uint32(802).string(message.name)
     }
@@ -2497,9 +2427,6 @@ export const CreateTeamRequest = {
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
-        case 2:
-          message.accessedBy = reader.string()
-          break
         case 100:
           message.name = reader.string()
           break
@@ -2512,15 +2439,11 @@ export const CreateTeamRequest = {
   },
 
   fromJSON(object: any): CreateTeamRequest {
-    return {
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-    }
+    return { name: isSet(object.name) ? String(object.name) : '' }
   },
 
   toJSON(message: CreateTeamRequest): unknown {
     const obj: any = {}
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.name !== undefined && (obj.name = message.name)
     return obj
   },
@@ -2531,23 +2454,19 @@ export const CreateTeamRequest = {
 
   fromPartial<I extends Exact<DeepPartial<CreateTeamRequest>, I>>(object: I): CreateTeamRequest {
     const message = createBaseCreateTeamRequest()
-    message.accessedBy = object.accessedBy ?? ''
     message.name = object.name ?? ''
     return message
   },
 }
 
 function createBaseUpdateTeamRequest(): UpdateTeamRequest {
-  return { id: '', accessedBy: '', name: '' }
+  return { id: '', name: '' }
 }
 
 export const UpdateTeamRequest = {
   encode(message: UpdateTeamRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== '') {
       writer.uint32(10).string(message.id)
-    }
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
     }
     if (message.name !== '') {
       writer.uint32(802).string(message.name)
@@ -2565,9 +2484,6 @@ export const UpdateTeamRequest = {
         case 1:
           message.id = reader.string()
           break
-        case 2:
-          message.accessedBy = reader.string()
-          break
         case 100:
           message.name = reader.string()
           break
@@ -2580,17 +2496,12 @@ export const UpdateTeamRequest = {
   },
 
   fromJSON(object: any): UpdateTeamRequest {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      name: isSet(object.name) ? String(object.name) : '',
-    }
+    return { id: isSet(object.id) ? String(object.id) : '', name: isSet(object.name) ? String(object.name) : '' }
   },
 
   toJSON(message: UpdateTeamRequest): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.name !== undefined && (obj.name = message.name)
     return obj
   },
@@ -2602,23 +2513,19 @@ export const UpdateTeamRequest = {
   fromPartial<I extends Exact<DeepPartial<UpdateTeamRequest>, I>>(object: I): UpdateTeamRequest {
     const message = createBaseUpdateTeamRequest()
     message.id = object.id ?? ''
-    message.accessedBy = object.accessedBy ?? ''
     message.name = object.name ?? ''
     return message
   },
 }
 
 function createBaseUpdateUserRoleInTeamRequest(): UpdateUserRoleInTeamRequest {
-  return { id: '', accessedBy: '', userId: '', role: 0 }
+  return { id: '', userId: '', role: 0 }
 }
 
 export const UpdateUserRoleInTeamRequest = {
   encode(message: UpdateUserRoleInTeamRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== '') {
       writer.uint32(10).string(message.id)
-    }
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
     }
     if (message.userId !== '') {
       writer.uint32(802).string(message.userId)
@@ -2639,9 +2546,6 @@ export const UpdateUserRoleInTeamRequest = {
         case 1:
           message.id = reader.string()
           break
-        case 2:
-          message.accessedBy = reader.string()
-          break
         case 100:
           message.userId = reader.string()
           break
@@ -2659,7 +2563,6 @@ export const UpdateUserRoleInTeamRequest = {
   fromJSON(object: any): UpdateUserRoleInTeamRequest {
     return {
       id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       userId: isSet(object.userId) ? String(object.userId) : '',
       role: isSet(object.role) ? userRoleFromJSON(object.role) : 0,
     }
@@ -2668,7 +2571,6 @@ export const UpdateUserRoleInTeamRequest = {
   toJSON(message: UpdateUserRoleInTeamRequest): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.userId !== undefined && (obj.userId = message.userId)
     message.role !== undefined && (obj.role = userRoleToJSON(message.role))
     return obj
@@ -2681,7 +2583,6 @@ export const UpdateUserRoleInTeamRequest = {
   fromPartial<I extends Exact<DeepPartial<UpdateUserRoleInTeamRequest>, I>>(object: I): UpdateUserRoleInTeamRequest {
     const message = createBaseUpdateUserRoleInTeamRequest()
     message.id = object.id ?? ''
-    message.accessedBy = object.accessedBy ?? ''
     message.userId = object.userId ?? ''
     message.role = object.role ?? 0
     return message
@@ -2689,16 +2590,13 @@ export const UpdateUserRoleInTeamRequest = {
 }
 
 function createBaseInviteUserRequest(): InviteUserRequest {
-  return { id: '', accessedBy: '', email: '', firstName: '' }
+  return { id: '', email: '', firstName: '' }
 }
 
 export const InviteUserRequest = {
   encode(message: InviteUserRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== '') {
       writer.uint32(10).string(message.id)
-    }
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
     }
     if (message.email !== '') {
       writer.uint32(802).string(message.email)
@@ -2722,9 +2620,6 @@ export const InviteUserRequest = {
         case 1:
           message.id = reader.string()
           break
-        case 2:
-          message.accessedBy = reader.string()
-          break
         case 100:
           message.email = reader.string()
           break
@@ -2745,7 +2640,6 @@ export const InviteUserRequest = {
   fromJSON(object: any): InviteUserRequest {
     return {
       id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       email: isSet(object.email) ? String(object.email) : '',
       firstName: isSet(object.firstName) ? String(object.firstName) : '',
       lastName: isSet(object.lastName) ? String(object.lastName) : undefined,
@@ -2755,7 +2649,6 @@ export const InviteUserRequest = {
   toJSON(message: InviteUserRequest): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.email !== undefined && (obj.email = message.email)
     message.firstName !== undefined && (obj.firstName = message.firstName)
     message.lastName !== undefined && (obj.lastName = message.lastName)
@@ -2769,7 +2662,6 @@ export const InviteUserRequest = {
   fromPartial<I extends Exact<DeepPartial<InviteUserRequest>, I>>(object: I): InviteUserRequest {
     const message = createBaseInviteUserRequest()
     message.id = object.id ?? ''
-    message.accessedBy = object.accessedBy ?? ''
     message.email = object.email ?? ''
     message.firstName = object.firstName ?? ''
     message.lastName = object.lastName ?? undefined
@@ -2778,16 +2670,13 @@ export const InviteUserRequest = {
 }
 
 function createBaseReinviteUserRequest(): ReinviteUserRequest {
-  return { id: '', accessedBy: '', userId: '' }
+  return { id: '', userId: '' }
 }
 
 export const ReinviteUserRequest = {
   encode(message: ReinviteUserRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== '') {
       writer.uint32(10).string(message.id)
-    }
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
     }
     if (message.userId !== '') {
       writer.uint32(802).string(message.userId)
@@ -2805,9 +2694,6 @@ export const ReinviteUserRequest = {
         case 1:
           message.id = reader.string()
           break
-        case 2:
-          message.accessedBy = reader.string()
-          break
         case 100:
           message.userId = reader.string()
           break
@@ -2820,17 +2706,12 @@ export const ReinviteUserRequest = {
   },
 
   fromJSON(object: any): ReinviteUserRequest {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      userId: isSet(object.userId) ? String(object.userId) : '',
-    }
+    return { id: isSet(object.id) ? String(object.id) : '', userId: isSet(object.userId) ? String(object.userId) : '' }
   },
 
   toJSON(message: ReinviteUserRequest): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.userId !== undefined && (obj.userId = message.userId)
     return obj
   },
@@ -2842,23 +2723,19 @@ export const ReinviteUserRequest = {
   fromPartial<I extends Exact<DeepPartial<ReinviteUserRequest>, I>>(object: I): ReinviteUserRequest {
     const message = createBaseReinviteUserRequest()
     message.id = object.id ?? ''
-    message.accessedBy = object.accessedBy ?? ''
     message.userId = object.userId ?? ''
     return message
   },
 }
 
 function createBaseDeleteUserFromTeamRequest(): DeleteUserFromTeamRequest {
-  return { id: '', accessedBy: '', userId: '' }
+  return { id: '', userId: '' }
 }
 
 export const DeleteUserFromTeamRequest = {
   encode(message: DeleteUserFromTeamRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== '') {
       writer.uint32(10).string(message.id)
-    }
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
     }
     if (message.userId !== '') {
       writer.uint32(802).string(message.userId)
@@ -2876,9 +2753,6 @@ export const DeleteUserFromTeamRequest = {
         case 1:
           message.id = reader.string()
           break
-        case 2:
-          message.accessedBy = reader.string()
-          break
         case 100:
           message.userId = reader.string()
           break
@@ -2891,17 +2765,12 @@ export const DeleteUserFromTeamRequest = {
   },
 
   fromJSON(object: any): DeleteUserFromTeamRequest {
-    return {
-      id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
-      userId: isSet(object.userId) ? String(object.userId) : '',
-    }
+    return { id: isSet(object.id) ? String(object.id) : '', userId: isSet(object.userId) ? String(object.userId) : '' }
   },
 
   toJSON(message: DeleteUserFromTeamRequest): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.userId !== undefined && (obj.userId = message.userId)
     return obj
   },
@@ -2913,59 +2782,7 @@ export const DeleteUserFromTeamRequest = {
   fromPartial<I extends Exact<DeepPartial<DeleteUserFromTeamRequest>, I>>(object: I): DeleteUserFromTeamRequest {
     const message = createBaseDeleteUserFromTeamRequest()
     message.id = object.id ?? ''
-    message.accessedBy = object.accessedBy ?? ''
     message.userId = object.userId ?? ''
-    return message
-  },
-}
-
-function createBaseAccessRequest(): AccessRequest {
-  return { accessedBy: '' }
-}
-
-export const AccessRequest = {
-  encode(message: AccessRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): AccessRequest {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseAccessRequest()
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 2:
-          message.accessedBy = reader.string()
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): AccessRequest {
-    return { accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '' }
-  },
-
-  toJSON(message: AccessRequest): unknown {
-    const obj: any = {}
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
-    return obj
-  },
-
-  create<I extends Exact<DeepPartial<AccessRequest>, I>>(base?: I): AccessRequest {
-    return AccessRequest.fromPartial(base ?? {})
-  },
-
-  fromPartial<I extends Exact<DeepPartial<AccessRequest>, I>>(object: I): AccessRequest {
-    const message = createBaseAccessRequest()
-    message.accessedBy = object.accessedBy ?? ''
     return message
   },
 }
@@ -3930,14 +3747,11 @@ export const ProductListResponse = {
 }
 
 function createBaseCreateProductRequest(): CreateProductRequest {
-  return { accessedBy: '', name: '', type: 0 }
+  return { name: '', type: 0 }
 }
 
 export const CreateProductRequest = {
   encode(message: CreateProductRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
-    }
     if (message.name !== '') {
       writer.uint32(802).string(message.name)
     }
@@ -3957,9 +3771,6 @@ export const CreateProductRequest = {
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
-        case 2:
-          message.accessedBy = reader.string()
-          break
         case 100:
           message.name = reader.string()
           break
@@ -3979,7 +3790,6 @@ export const CreateProductRequest = {
 
   fromJSON(object: any): CreateProductRequest {
     return {
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       name: isSet(object.name) ? String(object.name) : '',
       description: isSet(object.description) ? String(object.description) : undefined,
       type: isSet(object.type) ? productTypeFromJSON(object.type) : 0,
@@ -3988,7 +3798,6 @@ export const CreateProductRequest = {
 
   toJSON(message: CreateProductRequest): unknown {
     const obj: any = {}
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.name !== undefined && (obj.name = message.name)
     message.description !== undefined && (obj.description = message.description)
     message.type !== undefined && (obj.type = productTypeToJSON(message.type))
@@ -4001,7 +3810,6 @@ export const CreateProductRequest = {
 
   fromPartial<I extends Exact<DeepPartial<CreateProductRequest>, I>>(object: I): CreateProductRequest {
     const message = createBaseCreateProductRequest()
-    message.accessedBy = object.accessedBy ?? ''
     message.name = object.name ?? ''
     message.description = object.description ?? undefined
     message.type = object.type ?? 0
@@ -4010,16 +3818,13 @@ export const CreateProductRequest = {
 }
 
 function createBaseUpdateProductRequest(): UpdateProductRequest {
-  return { id: '', accessedBy: '', name: '' }
+  return { id: '', name: '' }
 }
 
 export const UpdateProductRequest = {
   encode(message: UpdateProductRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== '') {
       writer.uint32(10).string(message.id)
-    }
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
     }
     if (message.name !== '') {
       writer.uint32(802).string(message.name)
@@ -4043,9 +3848,6 @@ export const UpdateProductRequest = {
         case 1:
           message.id = reader.string()
           break
-        case 2:
-          message.accessedBy = reader.string()
-          break
         case 100:
           message.name = reader.string()
           break
@@ -4066,7 +3868,6 @@ export const UpdateProductRequest = {
   fromJSON(object: any): UpdateProductRequest {
     return {
       id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       name: isSet(object.name) ? String(object.name) : '',
       description: isSet(object.description) ? String(object.description) : undefined,
       changelog: isSet(object.changelog) ? String(object.changelog) : undefined,
@@ -4076,7 +3877,6 @@ export const UpdateProductRequest = {
   toJSON(message: UpdateProductRequest): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.name !== undefined && (obj.name = message.name)
     message.description !== undefined && (obj.description = message.description)
     message.changelog !== undefined && (obj.changelog = message.changelog)
@@ -4090,7 +3890,6 @@ export const UpdateProductRequest = {
   fromPartial<I extends Exact<DeepPartial<UpdateProductRequest>, I>>(object: I): UpdateProductRequest {
     const message = createBaseUpdateProductRequest()
     message.id = object.id ?? ''
-    message.accessedBy = object.accessedBy ?? ''
     message.name = object.name ?? ''
     message.description = object.description ?? undefined
     message.changelog = object.changelog ?? undefined
@@ -4693,14 +4492,11 @@ export const UncheckedRegistryDetails = {
 }
 
 function createBaseCreateRegistryRequest(): CreateRegistryRequest {
-  return { accessedBy: '', name: '' }
+  return { name: '' }
 }
 
 export const CreateRegistryRequest = {
   encode(message: CreateRegistryRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
-    }
     if (message.name !== '') {
       writer.uint32(802).string(message.name)
     }
@@ -4738,9 +4534,6 @@ export const CreateRegistryRequest = {
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
-        case 2:
-          message.accessedBy = reader.string()
-          break
         case 100:
           message.name = reader.string()
           break
@@ -4778,7 +4571,6 @@ export const CreateRegistryRequest = {
 
   fromJSON(object: any): CreateRegistryRequest {
     return {
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       name: isSet(object.name) ? String(object.name) : '',
       description: isSet(object.description) ? String(object.description) : undefined,
       icon: isSet(object.icon) ? String(object.icon) : undefined,
@@ -4793,7 +4585,6 @@ export const CreateRegistryRequest = {
 
   toJSON(message: CreateRegistryRequest): unknown {
     const obj: any = {}
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.name !== undefined && (obj.name = message.name)
     message.description !== undefined && (obj.description = message.description)
     message.icon !== undefined && (obj.icon = message.icon)
@@ -4816,7 +4607,6 @@ export const CreateRegistryRequest = {
 
   fromPartial<I extends Exact<DeepPartial<CreateRegistryRequest>, I>>(object: I): CreateRegistryRequest {
     const message = createBaseCreateRegistryRequest()
-    message.accessedBy = object.accessedBy ?? ''
     message.name = object.name ?? ''
     message.description = object.description ?? undefined
     message.icon = object.icon ?? undefined
@@ -4844,16 +4634,13 @@ export const CreateRegistryRequest = {
 }
 
 function createBaseUpdateRegistryRequest(): UpdateRegistryRequest {
-  return { id: '', accessedBy: '', name: '' }
+  return { id: '', name: '' }
 }
 
 export const UpdateRegistryRequest = {
   encode(message: UpdateRegistryRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== '') {
       writer.uint32(10).string(message.id)
-    }
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
     }
     if (message.name !== '') {
       writer.uint32(802).string(message.name)
@@ -4895,9 +4682,6 @@ export const UpdateRegistryRequest = {
         case 1:
           message.id = reader.string()
           break
-        case 2:
-          message.accessedBy = reader.string()
-          break
         case 100:
           message.name = reader.string()
           break
@@ -4936,7 +4720,6 @@ export const UpdateRegistryRequest = {
   fromJSON(object: any): UpdateRegistryRequest {
     return {
       id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       name: isSet(object.name) ? String(object.name) : '',
       description: isSet(object.description) ? String(object.description) : undefined,
       icon: isSet(object.icon) ? String(object.icon) : undefined,
@@ -4952,7 +4735,6 @@ export const UpdateRegistryRequest = {
   toJSON(message: UpdateRegistryRequest): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.name !== undefined && (obj.name = message.name)
     message.description !== undefined && (obj.description = message.description)
     message.icon !== undefined && (obj.icon = message.icon)
@@ -4976,7 +4758,6 @@ export const UpdateRegistryRequest = {
   fromPartial<I extends Exact<DeepPartial<UpdateRegistryRequest>, I>>(object: I): UpdateRegistryRequest {
     const message = createBaseUpdateRegistryRequest()
     message.id = object.id ?? ''
-    message.accessedBy = object.accessedBy ?? ''
     message.name = object.name ?? ''
     message.description = object.description ?? undefined
     message.icon = object.icon ?? undefined
@@ -5174,14 +4955,11 @@ export const RegistryDetailsResponse = {
 }
 
 function createBaseCreateVersionRequest(): CreateVersionRequest {
-  return { accessedBy: '', productId: '', name: '', type: 0 }
+  return { productId: '', name: '', type: 0 }
 }
 
 export const CreateVersionRequest = {
   encode(message: CreateVersionRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
-    }
     if (message.productId !== '') {
       writer.uint32(802).string(message.productId)
     }
@@ -5204,9 +4982,6 @@ export const CreateVersionRequest = {
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
-        case 2:
-          message.accessedBy = reader.string()
-          break
         case 100:
           message.productId = reader.string()
           break
@@ -5229,7 +5004,6 @@ export const CreateVersionRequest = {
 
   fromJSON(object: any): CreateVersionRequest {
     return {
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       productId: isSet(object.productId) ? String(object.productId) : '',
       name: isSet(object.name) ? String(object.name) : '',
       changelog: isSet(object.changelog) ? String(object.changelog) : undefined,
@@ -5239,7 +5013,6 @@ export const CreateVersionRequest = {
 
   toJSON(message: CreateVersionRequest): unknown {
     const obj: any = {}
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.productId !== undefined && (obj.productId = message.productId)
     message.name !== undefined && (obj.name = message.name)
     message.changelog !== undefined && (obj.changelog = message.changelog)
@@ -5253,7 +5026,6 @@ export const CreateVersionRequest = {
 
   fromPartial<I extends Exact<DeepPartial<CreateVersionRequest>, I>>(object: I): CreateVersionRequest {
     const message = createBaseCreateVersionRequest()
-    message.accessedBy = object.accessedBy ?? ''
     message.productId = object.productId ?? ''
     message.name = object.name ?? ''
     message.changelog = object.changelog ?? undefined
@@ -5263,16 +5035,13 @@ export const CreateVersionRequest = {
 }
 
 function createBaseUpdateVersionRequest(): UpdateVersionRequest {
-  return { id: '', accessedBy: '', name: '' }
+  return { id: '', name: '' }
 }
 
 export const UpdateVersionRequest = {
   encode(message: UpdateVersionRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== '') {
       writer.uint32(10).string(message.id)
-    }
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
     }
     if (message.name !== '') {
       writer.uint32(802).string(message.name)
@@ -5293,9 +5062,6 @@ export const UpdateVersionRequest = {
         case 1:
           message.id = reader.string()
           break
-        case 2:
-          message.accessedBy = reader.string()
-          break
         case 100:
           message.name = reader.string()
           break
@@ -5313,7 +5079,6 @@ export const UpdateVersionRequest = {
   fromJSON(object: any): UpdateVersionRequest {
     return {
       id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       name: isSet(object.name) ? String(object.name) : '',
       changelog: isSet(object.changelog) ? String(object.changelog) : undefined,
     }
@@ -5322,7 +5087,6 @@ export const UpdateVersionRequest = {
   toJSON(message: UpdateVersionRequest): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.name !== undefined && (obj.name = message.name)
     message.changelog !== undefined && (obj.changelog = message.changelog)
     return obj
@@ -5335,7 +5099,6 @@ export const UpdateVersionRequest = {
   fromPartial<I extends Exact<DeepPartial<UpdateVersionRequest>, I>>(object: I): UpdateVersionRequest {
     const message = createBaseUpdateVersionRequest()
     message.id = object.id ?? ''
-    message.accessedBy = object.accessedBy ?? ''
     message.name = object.name ?? ''
     message.changelog = object.changelog ?? undefined
     return message
@@ -5672,16 +5435,13 @@ export const VersionDetailsResponse = {
 }
 
 function createBaseIncreaseVersionRequest(): IncreaseVersionRequest {
-  return { id: '', accessedBy: '', name: '' }
+  return { id: '', name: '' }
 }
 
 export const IncreaseVersionRequest = {
   encode(message: IncreaseVersionRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== '') {
       writer.uint32(10).string(message.id)
-    }
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
     }
     if (message.name !== '') {
       writer.uint32(802).string(message.name)
@@ -5702,9 +5462,6 @@ export const IncreaseVersionRequest = {
         case 1:
           message.id = reader.string()
           break
-        case 2:
-          message.accessedBy = reader.string()
-          break
         case 100:
           message.name = reader.string()
           break
@@ -5722,7 +5479,6 @@ export const IncreaseVersionRequest = {
   fromJSON(object: any): IncreaseVersionRequest {
     return {
       id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       name: isSet(object.name) ? String(object.name) : '',
       changelog: isSet(object.changelog) ? String(object.changelog) : undefined,
     }
@@ -5731,7 +5487,6 @@ export const IncreaseVersionRequest = {
   toJSON(message: IncreaseVersionRequest): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.name !== undefined && (obj.name = message.name)
     message.changelog !== undefined && (obj.changelog = message.changelog)
     return obj
@@ -5744,7 +5499,6 @@ export const IncreaseVersionRequest = {
   fromPartial<I extends Exact<DeepPartial<IncreaseVersionRequest>, I>>(object: I): IncreaseVersionRequest {
     const message = createBaseIncreaseVersionRequest()
     message.id = object.id ?? ''
-    message.accessedBy = object.accessedBy ?? ''
     message.name = object.name ?? ''
     message.changelog = object.changelog ?? undefined
     return message
@@ -7998,14 +7752,11 @@ export const ImageListResponse = {
 }
 
 function createBaseOrderVersionImagesRequest(): OrderVersionImagesRequest {
-  return { accessedBy: '', versionId: '', imageIds: [] }
+  return { versionId: '', imageIds: [] }
 }
 
 export const OrderVersionImagesRequest = {
   encode(message: OrderVersionImagesRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
-    }
     if (message.versionId !== '') {
       writer.uint32(802).string(message.versionId)
     }
@@ -8022,9 +7773,6 @@ export const OrderVersionImagesRequest = {
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
-        case 2:
-          message.accessedBy = reader.string()
-          break
         case 100:
           message.versionId = reader.string()
           break
@@ -8041,7 +7789,6 @@ export const OrderVersionImagesRequest = {
 
   fromJSON(object: any): OrderVersionImagesRequest {
     return {
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       versionId: isSet(object.versionId) ? String(object.versionId) : '',
       imageIds: Array.isArray(object?.imageIds) ? object.imageIds.map((e: any) => String(e)) : [],
     }
@@ -8049,7 +7796,6 @@ export const OrderVersionImagesRequest = {
 
   toJSON(message: OrderVersionImagesRequest): unknown {
     const obj: any = {}
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.versionId !== undefined && (obj.versionId = message.versionId)
     if (message.imageIds) {
       obj.imageIds = message.imageIds.map(e => e)
@@ -8065,7 +7811,6 @@ export const OrderVersionImagesRequest = {
 
   fromPartial<I extends Exact<DeepPartial<OrderVersionImagesRequest>, I>>(object: I): OrderVersionImagesRequest {
     const message = createBaseOrderVersionImagesRequest()
-    message.accessedBy = object.accessedBy ?? ''
     message.versionId = object.versionId ?? ''
     message.imageIds = object.imageIds?.map(e => e) || []
     return message
@@ -8139,14 +7884,11 @@ export const RegistryImages = {
 }
 
 function createBaseAddImagesToVersionRequest(): AddImagesToVersionRequest {
-  return { accessedBy: '', versionId: '', images: [] }
+  return { versionId: '', images: [] }
 }
 
 export const AddImagesToVersionRequest = {
   encode(message: AddImagesToVersionRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
-    }
     if (message.versionId !== '') {
       writer.uint32(802).string(message.versionId)
     }
@@ -8163,9 +7905,6 @@ export const AddImagesToVersionRequest = {
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
-        case 2:
-          message.accessedBy = reader.string()
-          break
         case 100:
           message.versionId = reader.string()
           break
@@ -8182,7 +7921,6 @@ export const AddImagesToVersionRequest = {
 
   fromJSON(object: any): AddImagesToVersionRequest {
     return {
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       versionId: isSet(object.versionId) ? String(object.versionId) : '',
       images: Array.isArray(object?.images) ? object.images.map((e: any) => RegistryImages.fromJSON(e)) : [],
     }
@@ -8190,7 +7928,6 @@ export const AddImagesToVersionRequest = {
 
   toJSON(message: AddImagesToVersionRequest): unknown {
     const obj: any = {}
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.versionId !== undefined && (obj.versionId = message.versionId)
     if (message.images) {
       obj.images = message.images.map(e => (e ? RegistryImages.toJSON(e) : undefined))
@@ -8206,7 +7943,6 @@ export const AddImagesToVersionRequest = {
 
   fromPartial<I extends Exact<DeepPartial<AddImagesToVersionRequest>, I>>(object: I): AddImagesToVersionRequest {
     const message = createBaseAddImagesToVersionRequest()
-    message.accessedBy = object.accessedBy ?? ''
     message.versionId = object.versionId ?? ''
     message.images = object.images?.map(e => RegistryImages.fromPartial(e)) || []
     return message
@@ -8214,16 +7950,13 @@ export const AddImagesToVersionRequest = {
 }
 
 function createBasePatchImageRequest(): PatchImageRequest {
-  return { id: '', accessedBy: '' }
+  return { id: '' }
 }
 
 export const PatchImageRequest = {
   encode(message: PatchImageRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== '') {
       writer.uint32(10).string(message.id)
-    }
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
     }
     if (message.tag !== undefined) {
       writer.uint32(810).string(message.tag)
@@ -8247,9 +7980,6 @@ export const PatchImageRequest = {
         case 1:
           message.id = reader.string()
           break
-        case 2:
-          message.accessedBy = reader.string()
-          break
         case 101:
           message.tag = reader.string()
           break
@@ -8270,7 +8000,6 @@ export const PatchImageRequest = {
   fromJSON(object: any): PatchImageRequest {
     return {
       id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       tag: isSet(object.tag) ? String(object.tag) : undefined,
       config: isSet(object.config) ? ImageContainerConfig.fromJSON(object.config) : undefined,
       resetSection: isSet(object.resetSection) ? String(object.resetSection) : undefined,
@@ -8280,7 +8009,6 @@ export const PatchImageRequest = {
   toJSON(message: PatchImageRequest): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.tag !== undefined && (obj.tag = message.tag)
     message.config !== undefined &&
       (obj.config = message.config ? ImageContainerConfig.toJSON(message.config) : undefined)
@@ -8295,7 +8023,6 @@ export const PatchImageRequest = {
   fromPartial<I extends Exact<DeepPartial<PatchImageRequest>, I>>(object: I): PatchImageRequest {
     const message = createBasePatchImageRequest()
     message.id = object.id ?? ''
-    message.accessedBy = object.accessedBy ?? ''
     message.tag = object.tag ?? undefined
     message.config =
       object.config !== undefined && object.config !== null
@@ -8689,14 +8416,11 @@ export const NodeListResponse = {
 }
 
 function createBaseCreateNodeRequest(): CreateNodeRequest {
-  return { accessedBy: '', name: '' }
+  return { name: '' }
 }
 
 export const CreateNodeRequest = {
   encode(message: CreateNodeRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
-    }
     if (message.name !== '') {
       writer.uint32(802).string(message.name)
     }
@@ -8716,9 +8440,6 @@ export const CreateNodeRequest = {
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
-        case 2:
-          message.accessedBy = reader.string()
-          break
         case 100:
           message.name = reader.string()
           break
@@ -8738,7 +8459,6 @@ export const CreateNodeRequest = {
 
   fromJSON(object: any): CreateNodeRequest {
     return {
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       name: isSet(object.name) ? String(object.name) : '',
       description: isSet(object.description) ? String(object.description) : undefined,
       icon: isSet(object.icon) ? String(object.icon) : undefined,
@@ -8747,7 +8467,6 @@ export const CreateNodeRequest = {
 
   toJSON(message: CreateNodeRequest): unknown {
     const obj: any = {}
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.name !== undefined && (obj.name = message.name)
     message.description !== undefined && (obj.description = message.description)
     message.icon !== undefined && (obj.icon = message.icon)
@@ -8760,7 +8479,6 @@ export const CreateNodeRequest = {
 
   fromPartial<I extends Exact<DeepPartial<CreateNodeRequest>, I>>(object: I): CreateNodeRequest {
     const message = createBaseCreateNodeRequest()
-    message.accessedBy = object.accessedBy ?? ''
     message.name = object.name ?? ''
     message.description = object.description ?? undefined
     message.icon = object.icon ?? undefined
@@ -8769,16 +8487,13 @@ export const CreateNodeRequest = {
 }
 
 function createBaseUpdateNodeRequest(): UpdateNodeRequest {
-  return { id: '', accessedBy: '', name: '' }
+  return { id: '', name: '' }
 }
 
 export const UpdateNodeRequest = {
   encode(message: UpdateNodeRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== '') {
       writer.uint32(10).string(message.id)
-    }
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
     }
     if (message.name !== '') {
       writer.uint32(802).string(message.name)
@@ -8802,9 +8517,6 @@ export const UpdateNodeRequest = {
         case 1:
           message.id = reader.string()
           break
-        case 2:
-          message.accessedBy = reader.string()
-          break
         case 100:
           message.name = reader.string()
           break
@@ -8825,7 +8537,6 @@ export const UpdateNodeRequest = {
   fromJSON(object: any): UpdateNodeRequest {
     return {
       id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       name: isSet(object.name) ? String(object.name) : '',
       description: isSet(object.description) ? String(object.description) : undefined,
       icon: isSet(object.icon) ? String(object.icon) : undefined,
@@ -8835,7 +8546,6 @@ export const UpdateNodeRequest = {
   toJSON(message: UpdateNodeRequest): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.name !== undefined && (obj.name = message.name)
     message.description !== undefined && (obj.description = message.description)
     message.icon !== undefined && (obj.icon = message.icon)
@@ -8849,7 +8559,6 @@ export const UpdateNodeRequest = {
   fromPartial<I extends Exact<DeepPartial<UpdateNodeRequest>, I>>(object: I): UpdateNodeRequest {
     const message = createBaseUpdateNodeRequest()
     message.id = object.id ?? ''
-    message.accessedBy = object.accessedBy ?? ''
     message.name = object.name ?? ''
     message.description = object.description ?? undefined
     message.icon = object.icon ?? undefined
@@ -8909,16 +8618,13 @@ export const DagentTraefikOptions = {
 }
 
 function createBaseGenerateScriptRequest(): GenerateScriptRequest {
-  return { id: '', accessedBy: '', type: 0, scriptType: 0 }
+  return { id: '', type: 0, scriptType: 0 }
 }
 
 export const GenerateScriptRequest = {
   encode(message: GenerateScriptRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== '') {
       writer.uint32(10).string(message.id)
-    }
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
     }
     if (message.type !== 0) {
       writer.uint32(800).int32(message.type)
@@ -8945,9 +8651,6 @@ export const GenerateScriptRequest = {
         case 1:
           message.id = reader.string()
           break
-        case 2:
-          message.accessedBy = reader.string()
-          break
         case 100:
           message.type = reader.int32() as any
           break
@@ -8971,7 +8674,6 @@ export const GenerateScriptRequest = {
   fromJSON(object: any): GenerateScriptRequest {
     return {
       id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       type: isSet(object.type) ? nodeTypeFromJSON(object.type) : 0,
       rootPath: isSet(object.rootPath) ? String(object.rootPath) : undefined,
       scriptType: isSet(object.scriptType) ? nodeScriptTypeFromJSON(object.scriptType) : 0,
@@ -8982,7 +8684,6 @@ export const GenerateScriptRequest = {
   toJSON(message: GenerateScriptRequest): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.type !== undefined && (obj.type = nodeTypeToJSON(message.type))
     message.rootPath !== undefined && (obj.rootPath = message.rootPath)
     message.scriptType !== undefined && (obj.scriptType = nodeScriptTypeToJSON(message.scriptType))
@@ -8998,7 +8699,6 @@ export const GenerateScriptRequest = {
   fromPartial<I extends Exact<DeepPartial<GenerateScriptRequest>, I>>(object: I): GenerateScriptRequest {
     const message = createBaseGenerateScriptRequest()
     message.id = object.id ?? ''
-    message.accessedBy = object.accessedBy ?? ''
     message.type = object.type ?? 0
     message.rootPath = object.rootPath ?? undefined
     message.scriptType = object.scriptType ?? 0
@@ -9125,16 +8825,13 @@ export const NodeScriptResponse = {
 }
 
 function createBaseNodeContainerCommandRequest(): NodeContainerCommandRequest {
-  return { id: '', accessedBy: '', command: undefined }
+  return { id: '', command: undefined }
 }
 
 export const NodeContainerCommandRequest = {
   encode(message: NodeContainerCommandRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== '') {
       writer.uint32(10).string(message.id)
-    }
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
     }
     if (message.command !== undefined) {
       ContainerCommandRequest.encode(message.command, writer.uint32(802).fork()).ldelim()
@@ -9152,9 +8849,6 @@ export const NodeContainerCommandRequest = {
         case 1:
           message.id = reader.string()
           break
-        case 2:
-          message.accessedBy = reader.string()
-          break
         case 100:
           message.command = ContainerCommandRequest.decode(reader, reader.uint32())
           break
@@ -9169,7 +8863,6 @@ export const NodeContainerCommandRequest = {
   fromJSON(object: any): NodeContainerCommandRequest {
     return {
       id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       command: isSet(object.command) ? ContainerCommandRequest.fromJSON(object.command) : undefined,
     }
   },
@@ -9177,7 +8870,6 @@ export const NodeContainerCommandRequest = {
   toJSON(message: NodeContainerCommandRequest): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.command !== undefined &&
       (obj.command = message.command ? ContainerCommandRequest.toJSON(message.command) : undefined)
     return obj
@@ -9190,7 +8882,6 @@ export const NodeContainerCommandRequest = {
   fromPartial<I extends Exact<DeepPartial<NodeContainerCommandRequest>, I>>(object: I): NodeContainerCommandRequest {
     const message = createBaseNodeContainerCommandRequest()
     message.id = object.id ?? ''
-    message.accessedBy = object.accessedBy ?? ''
     message.command =
       object.command !== undefined && object.command !== null
         ? ContainerCommandRequest.fromPartial(object.command)
@@ -9200,16 +8891,13 @@ export const NodeContainerCommandRequest = {
 }
 
 function createBaseNodeDeleteContainersRequest(): NodeDeleteContainersRequest {
-  return { id: '', accessedBy: '', containers: undefined }
+  return { id: '', containers: undefined }
 }
 
 export const NodeDeleteContainersRequest = {
   encode(message: NodeDeleteContainersRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== '') {
       writer.uint32(10).string(message.id)
-    }
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
     }
     if (message.containers !== undefined) {
       DeleteContainersRequest.encode(message.containers, writer.uint32(802).fork()).ldelim()
@@ -9227,9 +8915,6 @@ export const NodeDeleteContainersRequest = {
         case 1:
           message.id = reader.string()
           break
-        case 2:
-          message.accessedBy = reader.string()
-          break
         case 100:
           message.containers = DeleteContainersRequest.decode(reader, reader.uint32())
           break
@@ -9244,7 +8929,6 @@ export const NodeDeleteContainersRequest = {
   fromJSON(object: any): NodeDeleteContainersRequest {
     return {
       id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       containers: isSet(object.containers) ? DeleteContainersRequest.fromJSON(object.containers) : undefined,
     }
   },
@@ -9252,7 +8936,6 @@ export const NodeDeleteContainersRequest = {
   toJSON(message: NodeDeleteContainersRequest): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.containers !== undefined &&
       (obj.containers = message.containers ? DeleteContainersRequest.toJSON(message.containers) : undefined)
     return obj
@@ -9265,7 +8948,6 @@ export const NodeDeleteContainersRequest = {
   fromPartial<I extends Exact<DeepPartial<NodeDeleteContainersRequest>, I>>(object: I): NodeDeleteContainersRequest {
     const message = createBaseNodeDeleteContainersRequest()
     message.id = object.id ?? ''
-    message.accessedBy = object.accessedBy ?? ''
     message.containers =
       object.containers !== undefined && object.containers !== null
         ? DeleteContainersRequest.fromPartial(object.containers)
@@ -9385,14 +9067,11 @@ export const NodeEventMessage = {
 }
 
 function createBaseWatchContainerStateRequest(): WatchContainerStateRequest {
-  return { accessedBy: '', nodeId: '' }
+  return { nodeId: '' }
 }
 
 export const WatchContainerStateRequest = {
   encode(message: WatchContainerStateRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
-    }
     if (message.nodeId !== '') {
       writer.uint32(802).string(message.nodeId)
     }
@@ -9409,9 +9088,6 @@ export const WatchContainerStateRequest = {
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
-        case 2:
-          message.accessedBy = reader.string()
-          break
         case 100:
           message.nodeId = reader.string()
           break
@@ -9428,7 +9104,6 @@ export const WatchContainerStateRequest = {
 
   fromJSON(object: any): WatchContainerStateRequest {
     return {
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
       prefix: isSet(object.prefix) ? String(object.prefix) : undefined,
     }
@@ -9436,7 +9111,6 @@ export const WatchContainerStateRequest = {
 
   toJSON(message: WatchContainerStateRequest): unknown {
     const obj: any = {}
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.nodeId !== undefined && (obj.nodeId = message.nodeId)
     message.prefix !== undefined && (obj.prefix = message.prefix)
     return obj
@@ -9448,7 +9122,6 @@ export const WatchContainerStateRequest = {
 
   fromPartial<I extends Exact<DeepPartial<WatchContainerStateRequest>, I>>(object: I): WatchContainerStateRequest {
     const message = createBaseWatchContainerStateRequest()
-    message.accessedBy = object.accessedBy ?? ''
     message.nodeId = object.nodeId ?? ''
     message.prefix = object.prefix ?? undefined
     return message
@@ -9456,14 +9129,11 @@ export const WatchContainerStateRequest = {
 }
 
 function createBaseWatchContainerLogRequest(): WatchContainerLogRequest {
-  return { accessedBy: '', id: '' }
+  return { id: '' }
 }
 
 export const WatchContainerLogRequest = {
   encode(message: WatchContainerLogRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
-    }
     if (message.id !== '') {
       writer.uint32(802).string(message.id)
     }
@@ -9483,9 +9153,6 @@ export const WatchContainerLogRequest = {
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
-        case 2:
-          message.accessedBy = reader.string()
-          break
         case 100:
           message.id = reader.string()
           break
@@ -9505,7 +9172,6 @@ export const WatchContainerLogRequest = {
 
   fromJSON(object: any): WatchContainerLogRequest {
     return {
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       id: isSet(object.id) ? String(object.id) : '',
       dockerId: isSet(object.dockerId) ? String(object.dockerId) : undefined,
       prefixName: isSet(object.prefixName) ? ContainerIdentifier.fromJSON(object.prefixName) : undefined,
@@ -9514,7 +9180,6 @@ export const WatchContainerLogRequest = {
 
   toJSON(message: WatchContainerLogRequest): unknown {
     const obj: any = {}
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.id !== undefined && (obj.id = message.id)
     message.dockerId !== undefined && (obj.dockerId = message.dockerId)
     message.prefixName !== undefined &&
@@ -9528,7 +9193,6 @@ export const WatchContainerLogRequest = {
 
   fromPartial<I extends Exact<DeepPartial<WatchContainerLogRequest>, I>>(object: I): WatchContainerLogRequest {
     const message = createBaseWatchContainerLogRequest()
-    message.accessedBy = object.accessedBy ?? ''
     message.id = object.id ?? ''
     message.dockerId = object.dockerId ?? undefined
     message.prefixName =
@@ -9754,14 +9418,11 @@ export const DeploymentEditEventMessage = {
 }
 
 function createBaseCreateDeploymentRequest(): CreateDeploymentRequest {
-  return { accessedBy: '', versionId: '', nodeId: '', prefix: '' }
+  return { versionId: '', nodeId: '', prefix: '' }
 }
 
 export const CreateDeploymentRequest = {
   encode(message: CreateDeploymentRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
-    }
     if (message.versionId !== '') {
       writer.uint32(802).string(message.versionId)
     }
@@ -9784,9 +9445,6 @@ export const CreateDeploymentRequest = {
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
-        case 2:
-          message.accessedBy = reader.string()
-          break
         case 100:
           message.versionId = reader.string()
           break
@@ -9809,7 +9467,6 @@ export const CreateDeploymentRequest = {
 
   fromJSON(object: any): CreateDeploymentRequest {
     return {
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       versionId: isSet(object.versionId) ? String(object.versionId) : '',
       nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
       note: isSet(object.note) ? String(object.note) : undefined,
@@ -9819,7 +9476,6 @@ export const CreateDeploymentRequest = {
 
   toJSON(message: CreateDeploymentRequest): unknown {
     const obj: any = {}
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.versionId !== undefined && (obj.versionId = message.versionId)
     message.nodeId !== undefined && (obj.nodeId = message.nodeId)
     message.note !== undefined && (obj.note = message.note)
@@ -9833,7 +9489,6 @@ export const CreateDeploymentRequest = {
 
   fromPartial<I extends Exact<DeepPartial<CreateDeploymentRequest>, I>>(object: I): CreateDeploymentRequest {
     const message = createBaseCreateDeploymentRequest()
-    message.accessedBy = object.accessedBy ?? ''
     message.versionId = object.versionId ?? ''
     message.nodeId = object.nodeId ?? ''
     message.note = object.note ?? undefined
@@ -9843,16 +9498,13 @@ export const CreateDeploymentRequest = {
 }
 
 function createBaseUpdateDeploymentRequest(): UpdateDeploymentRequest {
-  return { id: '', accessedBy: '', prefix: '' }
+  return { id: '', prefix: '' }
 }
 
 export const UpdateDeploymentRequest = {
   encode(message: UpdateDeploymentRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== '') {
       writer.uint32(10).string(message.id)
-    }
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
     }
     if (message.note !== undefined) {
       writer.uint32(802).string(message.note)
@@ -9873,9 +9525,6 @@ export const UpdateDeploymentRequest = {
         case 1:
           message.id = reader.string()
           break
-        case 2:
-          message.accessedBy = reader.string()
-          break
         case 100:
           message.note = reader.string()
           break
@@ -9893,7 +9542,6 @@ export const UpdateDeploymentRequest = {
   fromJSON(object: any): UpdateDeploymentRequest {
     return {
       id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       note: isSet(object.note) ? String(object.note) : undefined,
       prefix: isSet(object.prefix) ? String(object.prefix) : '',
     }
@@ -9902,7 +9550,6 @@ export const UpdateDeploymentRequest = {
   toJSON(message: UpdateDeploymentRequest): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.note !== undefined && (obj.note = message.note)
     message.prefix !== undefined && (obj.prefix = message.prefix)
     return obj
@@ -9915,7 +9562,6 @@ export const UpdateDeploymentRequest = {
   fromPartial<I extends Exact<DeepPartial<UpdateDeploymentRequest>, I>>(object: I): UpdateDeploymentRequest {
     const message = createBaseUpdateDeploymentRequest()
     message.id = object.id ?? ''
-    message.accessedBy = object.accessedBy ?? ''
     message.note = object.note ?? undefined
     message.prefix = object.prefix ?? ''
     return message
@@ -9923,16 +9569,13 @@ export const UpdateDeploymentRequest = {
 }
 
 function createBasePatchDeploymentRequest(): PatchDeploymentRequest {
-  return { id: '', accessedBy: '' }
+  return { id: '' }
 }
 
 export const PatchDeploymentRequest = {
   encode(message: PatchDeploymentRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== '') {
       writer.uint32(10).string(message.id)
-    }
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
     }
     if (message.environment !== undefined) {
       UniqueKeyValueList.encode(message.environment, writer.uint32(802).fork()).ldelim()
@@ -9953,9 +9596,6 @@ export const PatchDeploymentRequest = {
         case 1:
           message.id = reader.string()
           break
-        case 2:
-          message.accessedBy = reader.string()
-          break
         case 100:
           message.environment = UniqueKeyValueList.decode(reader, reader.uint32())
           break
@@ -9973,7 +9613,6 @@ export const PatchDeploymentRequest = {
   fromJSON(object: any): PatchDeploymentRequest {
     return {
       id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       environment: isSet(object.environment) ? UniqueKeyValueList.fromJSON(object.environment) : undefined,
       instance: isSet(object.instance) ? PatchInstanceRequest.fromJSON(object.instance) : undefined,
     }
@@ -9982,7 +9621,6 @@ export const PatchDeploymentRequest = {
   toJSON(message: PatchDeploymentRequest): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.environment !== undefined &&
       (obj.environment = message.environment ? UniqueKeyValueList.toJSON(message.environment) : undefined)
     message.instance !== undefined &&
@@ -9997,7 +9635,6 @@ export const PatchDeploymentRequest = {
   fromPartial<I extends Exact<DeepPartial<PatchDeploymentRequest>, I>>(object: I): PatchDeploymentRequest {
     const message = createBasePatchDeploymentRequest()
     message.id = object.id ?? ''
-    message.accessedBy = object.accessedBy ?? ''
     message.environment =
       object.environment !== undefined && object.environment !== null
         ? UniqueKeyValueList.fromPartial(object.environment)
@@ -10107,7 +9744,7 @@ export const InstanceResponse = {
 }
 
 function createBasePatchInstanceRequest(): PatchInstanceRequest {
-  return { id: '', accessedBy: '' }
+  return { id: '' }
 }
 
 export const PatchInstanceRequest = {
@@ -10115,14 +9752,11 @@ export const PatchInstanceRequest = {
     if (message.id !== '') {
       writer.uint32(10).string(message.id)
     }
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
-    }
     if (message.config !== undefined) {
       InstanceContainerConfig.encode(message.config, writer.uint32(802).fork()).ldelim()
     }
     if (message.resetSection !== undefined) {
-      writer.uint32(826).string(message.resetSection)
+      writer.uint32(810).string(message.resetSection)
     }
     return writer
   },
@@ -10137,13 +9771,10 @@ export const PatchInstanceRequest = {
         case 1:
           message.id = reader.string()
           break
-        case 2:
-          message.accessedBy = reader.string()
-          break
         case 100:
           message.config = InstanceContainerConfig.decode(reader, reader.uint32())
           break
-        case 103:
+        case 101:
           message.resetSection = reader.string()
           break
         default:
@@ -10157,7 +9788,6 @@ export const PatchInstanceRequest = {
   fromJSON(object: any): PatchInstanceRequest {
     return {
       id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       config: isSet(object.config) ? InstanceContainerConfig.fromJSON(object.config) : undefined,
       resetSection: isSet(object.resetSection) ? String(object.resetSection) : undefined,
     }
@@ -10166,7 +9796,6 @@ export const PatchInstanceRequest = {
   toJSON(message: PatchInstanceRequest): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.config !== undefined &&
       (obj.config = message.config ? InstanceContainerConfig.toJSON(message.config) : undefined)
     message.resetSection !== undefined && (obj.resetSection = message.resetSection)
@@ -10180,7 +9809,6 @@ export const PatchInstanceRequest = {
   fromPartial<I extends Exact<DeepPartial<PatchInstanceRequest>, I>>(object: I): PatchInstanceRequest {
     const message = createBasePatchInstanceRequest()
     message.id = object.id ?? ''
-    message.accessedBy = object.accessedBy ?? ''
     message.config =
       object.config !== undefined && object.config !== null
         ? InstanceContainerConfig.fromPartial(object.config)
@@ -11026,16 +10654,13 @@ export const DeploymentEventListResponse = {
 }
 
 function createBaseDeploymentListSecretsRequest(): DeploymentListSecretsRequest {
-  return { id: '', accessedBy: '', instanceId: '' }
+  return { id: '', instanceId: '' }
 }
 
 export const DeploymentListSecretsRequest = {
   encode(message: DeploymentListSecretsRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== '') {
       writer.uint32(10).string(message.id)
-    }
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
     }
     if (message.instanceId !== '') {
       writer.uint32(26).string(message.instanceId)
@@ -11053,9 +10678,6 @@ export const DeploymentListSecretsRequest = {
         case 1:
           message.id = reader.string()
           break
-        case 2:
-          message.accessedBy = reader.string()
-          break
         case 3:
           message.instanceId = reader.string()
           break
@@ -11070,7 +10692,6 @@ export const DeploymentListSecretsRequest = {
   fromJSON(object: any): DeploymentListSecretsRequest {
     return {
       id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       instanceId: isSet(object.instanceId) ? String(object.instanceId) : '',
     }
   },
@@ -11078,7 +10699,6 @@ export const DeploymentListSecretsRequest = {
   toJSON(message: DeploymentListSecretsRequest): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.instanceId !== undefined && (obj.instanceId = message.instanceId)
     return obj
   },
@@ -11090,21 +10710,17 @@ export const DeploymentListSecretsRequest = {
   fromPartial<I extends Exact<DeepPartial<DeploymentListSecretsRequest>, I>>(object: I): DeploymentListSecretsRequest {
     const message = createBaseDeploymentListSecretsRequest()
     message.id = object.id ?? ''
-    message.accessedBy = object.accessedBy ?? ''
     message.instanceId = object.instanceId ?? ''
     return message
   },
 }
 
 function createBaseCreateNotificationRequest(): CreateNotificationRequest {
-  return { accessedBy: '', name: '', url: '', type: 0, active: false, events: [] }
+  return { name: '', url: '', type: 0, active: false, events: [] }
 }
 
 export const CreateNotificationRequest = {
   encode(message: CreateNotificationRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
-    }
     if (message.name !== '') {
       writer.uint32(802).string(message.name)
     }
@@ -11132,9 +10748,6 @@ export const CreateNotificationRequest = {
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
-        case 2:
-          message.accessedBy = reader.string()
-          break
         case 100:
           message.name = reader.string()
           break
@@ -11167,7 +10780,6 @@ export const CreateNotificationRequest = {
 
   fromJSON(object: any): CreateNotificationRequest {
     return {
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       name: isSet(object.name) ? String(object.name) : '',
       url: isSet(object.url) ? String(object.url) : '',
       type: isSet(object.type) ? notificationTypeFromJSON(object.type) : 0,
@@ -11178,7 +10790,6 @@ export const CreateNotificationRequest = {
 
   toJSON(message: CreateNotificationRequest): unknown {
     const obj: any = {}
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.name !== undefined && (obj.name = message.name)
     message.url !== undefined && (obj.url = message.url)
     message.type !== undefined && (obj.type = notificationTypeToJSON(message.type))
@@ -11197,7 +10808,6 @@ export const CreateNotificationRequest = {
 
   fromPartial<I extends Exact<DeepPartial<CreateNotificationRequest>, I>>(object: I): CreateNotificationRequest {
     const message = createBaseCreateNotificationRequest()
-    message.accessedBy = object.accessedBy ?? ''
     message.name = object.name ?? ''
     message.url = object.url ?? ''
     message.type = object.type ?? 0
@@ -11270,16 +10880,13 @@ export const CreateNotificationResponse = {
 }
 
 function createBaseUpdateNotificationRequest(): UpdateNotificationRequest {
-  return { id: '', accessedBy: '', name: '', url: '', type: 0, active: false, events: [] }
+  return { id: '', name: '', url: '', type: 0, active: false, events: [] }
 }
 
 export const UpdateNotificationRequest = {
   encode(message: UpdateNotificationRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== '') {
       writer.uint32(10).string(message.id)
-    }
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
     }
     if (message.name !== '') {
       writer.uint32(802).string(message.name)
@@ -11310,9 +10917,6 @@ export const UpdateNotificationRequest = {
       switch (tag >>> 3) {
         case 1:
           message.id = reader.string()
-          break
-        case 2:
-          message.accessedBy = reader.string()
           break
         case 100:
           message.name = reader.string()
@@ -11347,7 +10951,6 @@ export const UpdateNotificationRequest = {
   fromJSON(object: any): UpdateNotificationRequest {
     return {
       id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       name: isSet(object.name) ? String(object.name) : '',
       url: isSet(object.url) ? String(object.url) : '',
       type: isSet(object.type) ? notificationTypeFromJSON(object.type) : 0,
@@ -11359,7 +10962,6 @@ export const UpdateNotificationRequest = {
   toJSON(message: UpdateNotificationRequest): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.name !== undefined && (obj.name = message.name)
     message.url !== undefined && (obj.url = message.url)
     message.type !== undefined && (obj.type = notificationTypeToJSON(message.type))
@@ -11379,7 +10981,6 @@ export const UpdateNotificationRequest = {
   fromPartial<I extends Exact<DeepPartial<UpdateNotificationRequest>, I>>(object: I): UpdateNotificationRequest {
     const message = createBaseUpdateNotificationRequest()
     message.id = object.id ?? ''
-    message.accessedBy = object.accessedBy ?? ''
     message.name = object.name ?? ''
     message.url = object.url ?? ''
     message.type = object.type ?? 0
@@ -11897,16 +11498,13 @@ export const TemplateListResponse = {
 }
 
 function createBaseCreateProductFromTemplateRequest(): CreateProductFromTemplateRequest {
-  return { id: '', accessedBy: '', name: '', description: '', type: 0 }
+  return { id: '', name: '', description: '', type: 0 }
 }
 
 export const CreateProductFromTemplateRequest = {
   encode(message: CreateProductFromTemplateRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== '') {
       writer.uint32(10).string(message.id)
-    }
-    if (message.accessedBy !== '') {
-      writer.uint32(18).string(message.accessedBy)
     }
     if (message.name !== '') {
       writer.uint32(802).string(message.name)
@@ -11930,9 +11528,6 @@ export const CreateProductFromTemplateRequest = {
         case 1:
           message.id = reader.string()
           break
-        case 2:
-          message.accessedBy = reader.string()
-          break
         case 100:
           message.name = reader.string()
           break
@@ -11953,7 +11548,6 @@ export const CreateProductFromTemplateRequest = {
   fromJSON(object: any): CreateProductFromTemplateRequest {
     return {
       id: isSet(object.id) ? String(object.id) : '',
-      accessedBy: isSet(object.accessedBy) ? String(object.accessedBy) : '',
       name: isSet(object.name) ? String(object.name) : '',
       description: isSet(object.description) ? String(object.description) : '',
       type: isSet(object.type) ? productTypeFromJSON(object.type) : 0,
@@ -11963,7 +11557,6 @@ export const CreateProductFromTemplateRequest = {
   toJSON(message: CreateProductFromTemplateRequest): unknown {
     const obj: any = {}
     message.id !== undefined && (obj.id = message.id)
-    message.accessedBy !== undefined && (obj.accessedBy = message.accessedBy)
     message.name !== undefined && (obj.name = message.name)
     message.description !== undefined && (obj.description = message.description)
     message.type !== undefined && (obj.type = productTypeToJSON(message.type))
@@ -11981,7 +11574,6 @@ export const CreateProductFromTemplateRequest = {
   ): CreateProductFromTemplateRequest {
     const message = createBaseCreateProductFromTemplateRequest()
     message.id = object.id ?? ''
-    message.accessedBy = object.accessedBy ?? ''
     message.name = object.name ?? ''
     message.description = object.description ?? ''
     message.type = object.type ?? 0
@@ -12397,8 +11989,8 @@ export const CruxProductService = {
     path: '/crux.CruxProduct/GetProducts',
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: AccessRequest) => Buffer.from(AccessRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => AccessRequest.decode(value),
+    requestSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => Empty.decode(value),
     responseSerialize: (value: ProductListResponse) => Buffer.from(ProductListResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer) => ProductListResponse.decode(value),
   },
@@ -12442,7 +12034,7 @@ export const CruxProductService = {
 
 export interface CruxProductServer extends UntypedServiceImplementation {
   /** CRUD */
-  getProducts: handleUnaryCall<AccessRequest, ProductListResponse>
+  getProducts: handleUnaryCall<Empty, ProductListResponse>
   createProduct: handleUnaryCall<CreateProductRequest, CreateEntityResponse>
   updateProduct: handleUnaryCall<UpdateProductRequest, UpdateEntityResponse>
   deleteProduct: handleUnaryCall<IdRequest, Empty>
@@ -12452,16 +12044,16 @@ export interface CruxProductServer extends UntypedServiceImplementation {
 export interface CruxProductClient extends Client {
   /** CRUD */
   getProducts(
-    request: AccessRequest,
+    request: Empty,
     callback: (error: ServiceError | null, response: ProductListResponse) => void,
   ): ClientUnaryCall
   getProducts(
-    request: AccessRequest,
+    request: Empty,
     metadata: Metadata,
     callback: (error: ServiceError | null, response: ProductListResponse) => void,
   ): ClientUnaryCall
   getProducts(
-    request: AccessRequest,
+    request: Empty,
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: ProductListResponse) => void,
@@ -12537,8 +12129,8 @@ export const CruxRegistryService = {
     path: '/crux.CruxRegistry/GetRegistries',
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: AccessRequest) => Buffer.from(AccessRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => AccessRequest.decode(value),
+    requestSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => Empty.decode(value),
     responseSerialize: (value: RegistryListResponse) => Buffer.from(RegistryListResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer) => RegistryListResponse.decode(value),
   },
@@ -12582,7 +12174,7 @@ export const CruxRegistryService = {
 
 export interface CruxRegistryServer extends UntypedServiceImplementation {
   /** CRUD */
-  getRegistries: handleUnaryCall<AccessRequest, RegistryListResponse>
+  getRegistries: handleUnaryCall<Empty, RegistryListResponse>
   createRegistry: handleUnaryCall<CreateRegistryRequest, CreateEntityResponse>
   updateRegistry: handleUnaryCall<UpdateRegistryRequest, UpdateEntityResponse>
   deleteRegistry: handleUnaryCall<IdRequest, Empty>
@@ -12592,16 +12184,16 @@ export interface CruxRegistryServer extends UntypedServiceImplementation {
 export interface CruxRegistryClient extends Client {
   /** CRUD */
   getRegistries(
-    request: AccessRequest,
+    request: Empty,
     callback: (error: ServiceError | null, response: RegistryListResponse) => void,
   ): ClientUnaryCall
   getRegistries(
-    request: AccessRequest,
+    request: Empty,
     metadata: Metadata,
     callback: (error: ServiceError | null, response: RegistryListResponse) => void,
   ): ClientUnaryCall
   getRegistries(
-    request: AccessRequest,
+    request: Empty,
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: RegistryListResponse) => void,
@@ -12677,8 +12269,8 @@ export const CruxNodeService = {
     path: '/crux.CruxNode/GetNodes',
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: AccessRequest) => Buffer.from(AccessRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => AccessRequest.decode(value),
+    requestSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => Empty.decode(value),
     responseSerialize: (value: NodeListResponse) => Buffer.from(NodeListResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer) => NodeListResponse.decode(value),
   },
@@ -12816,7 +12408,7 @@ export const CruxNodeService = {
 
 export interface CruxNodeServer extends UntypedServiceImplementation {
   /** CRUD */
-  getNodes: handleUnaryCall<AccessRequest, NodeListResponse>
+  getNodes: handleUnaryCall<Empty, NodeListResponse>
   createNode: handleUnaryCall<CreateNodeRequest, CreateEntityResponse>
   updateNode: handleUnaryCall<UpdateNodeRequest, Empty>
   deleteNode: handleUnaryCall<IdRequest, Empty>
@@ -12835,17 +12427,14 @@ export interface CruxNodeServer extends UntypedServiceImplementation {
 
 export interface CruxNodeClient extends Client {
   /** CRUD */
+  getNodes(request: Empty, callback: (error: ServiceError | null, response: NodeListResponse) => void): ClientUnaryCall
   getNodes(
-    request: AccessRequest,
-    callback: (error: ServiceError | null, response: NodeListResponse) => void,
-  ): ClientUnaryCall
-  getNodes(
-    request: AccessRequest,
+    request: Empty,
     metadata: Metadata,
     callback: (error: ServiceError | null, response: NodeListResponse) => void,
   ): ClientUnaryCall
   getNodes(
-    request: AccessRequest,
+    request: Empty,
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: NodeListResponse) => void,
@@ -13463,8 +13052,8 @@ export const CruxDeploymentService = {
     path: '/crux.CruxDeployment/GetDeploymentList',
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: AccessRequest) => Buffer.from(AccessRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => AccessRequest.decode(value),
+    requestSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => Empty.decode(value),
     responseSerialize: (value: DeploymentListResponse) => Buffer.from(DeploymentListResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer) => DeploymentListResponse.decode(value),
   },
@@ -13535,7 +13124,7 @@ export interface CruxDeploymentServer extends UntypedServiceImplementation {
   deleteDeployment: handleUnaryCall<IdRequest, Empty>
   getDeploymentDetails: handleUnaryCall<IdRequest, DeploymentDetailsResponse>
   getDeploymentEvents: handleUnaryCall<IdRequest, DeploymentEventListResponse>
-  getDeploymentList: handleUnaryCall<AccessRequest, DeploymentListResponse>
+  getDeploymentList: handleUnaryCall<Empty, DeploymentListResponse>
   getDeploymentSecrets: handleUnaryCall<DeploymentListSecretsRequest, ListSecretsResponse>
   copyDeploymentSafe: handleUnaryCall<IdRequest, CreateEntityResponse>
   copyDeploymentUnsafe: handleUnaryCall<IdRequest, CreateEntityResponse>
@@ -13648,16 +13237,16 @@ export interface CruxDeploymentClient extends Client {
     callback: (error: ServiceError | null, response: DeploymentEventListResponse) => void,
   ): ClientUnaryCall
   getDeploymentList(
-    request: AccessRequest,
+    request: Empty,
     callback: (error: ServiceError | null, response: DeploymentListResponse) => void,
   ): ClientUnaryCall
   getDeploymentList(
-    request: AccessRequest,
+    request: Empty,
     metadata: Metadata,
     callback: (error: ServiceError | null, response: DeploymentListResponse) => void,
   ): ClientUnaryCall
   getDeploymentList(
-    request: AccessRequest,
+    request: Empty,
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: DeploymentListResponse) => void,
@@ -13762,8 +13351,8 @@ export const CruxTeamService = {
     path: '/crux.CruxTeam/GetActiveTeamByUser',
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: AccessRequest) => Buffer.from(AccessRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => AccessRequest.decode(value),
+    requestSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => Empty.decode(value),
     responseSerialize: (value: ActiveTeamDetailsResponse) =>
       Buffer.from(ActiveTeamDetailsResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer) => ActiveTeamDetailsResponse.decode(value),
@@ -13855,8 +13444,8 @@ export const CruxTeamService = {
     path: '/crux.CruxTeam/GetUserMeta',
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: AccessRequest) => Buffer.from(AccessRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => AccessRequest.decode(value),
+    requestSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => Empty.decode(value),
     responseSerialize: (value: UserMetaResponse) => Buffer.from(UserMetaResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer) => UserMetaResponse.decode(value),
   },
@@ -13864,8 +13453,8 @@ export const CruxTeamService = {
     path: '/crux.CruxTeam/GetAllTeams',
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: AccessRequest) => Buffer.from(AccessRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => AccessRequest.decode(value),
+    requestSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => Empty.decode(value),
     responseSerialize: (value: AllTeamsResponse) => Buffer.from(AllTeamsResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer) => AllTeamsResponse.decode(value),
   },
@@ -13882,7 +13471,7 @@ export const CruxTeamService = {
 
 export interface CruxTeamServer extends UntypedServiceImplementation {
   createTeam: handleUnaryCall<CreateTeamRequest, CreateEntityResponse>
-  getActiveTeamByUser: handleUnaryCall<AccessRequest, ActiveTeamDetailsResponse>
+  getActiveTeamByUser: handleUnaryCall<Empty, ActiveTeamDetailsResponse>
   updateTeam: handleUnaryCall<UpdateTeamRequest, Empty>
   deleteTeam: handleUnaryCall<IdRequest, Empty>
   updateUserRole: handleUnaryCall<UpdateUserRoleInTeamRequest, Empty>
@@ -13892,8 +13481,8 @@ export interface CruxTeamServer extends UntypedServiceImplementation {
   acceptTeamInvitation: handleUnaryCall<IdRequest, Empty>
   declineTeamInvitation: handleUnaryCall<IdRequest, Empty>
   selectTeam: handleUnaryCall<IdRequest, Empty>
-  getUserMeta: handleUnaryCall<AccessRequest, UserMetaResponse>
-  getAllTeams: handleUnaryCall<AccessRequest, AllTeamsResponse>
+  getUserMeta: handleUnaryCall<Empty, UserMetaResponse>
+  getAllTeams: handleUnaryCall<Empty, AllTeamsResponse>
   getTeamById: handleUnaryCall<IdRequest, TeamDetailsResponse>
 }
 
@@ -13914,16 +13503,16 @@ export interface CruxTeamClient extends Client {
     callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
   ): ClientUnaryCall
   getActiveTeamByUser(
-    request: AccessRequest,
+    request: Empty,
     callback: (error: ServiceError | null, response: ActiveTeamDetailsResponse) => void,
   ): ClientUnaryCall
   getActiveTeamByUser(
-    request: AccessRequest,
+    request: Empty,
     metadata: Metadata,
     callback: (error: ServiceError | null, response: ActiveTeamDetailsResponse) => void,
   ): ClientUnaryCall
   getActiveTeamByUser(
-    request: AccessRequest,
+    request: Empty,
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: ActiveTeamDetailsResponse) => void,
@@ -14058,31 +13647,31 @@ export interface CruxTeamClient extends Client {
     callback: (error: ServiceError | null, response: Empty) => void,
   ): ClientUnaryCall
   getUserMeta(
-    request: AccessRequest,
+    request: Empty,
     callback: (error: ServiceError | null, response: UserMetaResponse) => void,
   ): ClientUnaryCall
   getUserMeta(
-    request: AccessRequest,
+    request: Empty,
     metadata: Metadata,
     callback: (error: ServiceError | null, response: UserMetaResponse) => void,
   ): ClientUnaryCall
   getUserMeta(
-    request: AccessRequest,
+    request: Empty,
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: UserMetaResponse) => void,
   ): ClientUnaryCall
   getAllTeams(
-    request: AccessRequest,
+    request: Empty,
     callback: (error: ServiceError | null, response: AllTeamsResponse) => void,
   ): ClientUnaryCall
   getAllTeams(
-    request: AccessRequest,
+    request: Empty,
     metadata: Metadata,
     callback: (error: ServiceError | null, response: AllTeamsResponse) => void,
   ): ClientUnaryCall
   getAllTeams(
-    request: AccessRequest,
+    request: Empty,
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: AllTeamsResponse) => void,
@@ -14145,8 +13734,8 @@ export const CruxNotificationService = {
     path: '/crux.CruxNotification/GetNotificationList',
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: AccessRequest) => Buffer.from(AccessRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => AccessRequest.decode(value),
+    requestSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => Empty.decode(value),
     responseSerialize: (value: NotificationListResponse) =>
       Buffer.from(NotificationListResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer) => NotificationListResponse.decode(value),
@@ -14176,7 +13765,7 @@ export interface CruxNotificationServer extends UntypedServiceImplementation {
   createNotification: handleUnaryCall<CreateNotificationRequest, CreateNotificationResponse>
   updateNotification: handleUnaryCall<UpdateNotificationRequest, UpdateEntityResponse>
   deleteNotification: handleUnaryCall<IdRequest, Empty>
-  getNotificationList: handleUnaryCall<AccessRequest, NotificationListResponse>
+  getNotificationList: handleUnaryCall<Empty, NotificationListResponse>
   getNotificationDetails: handleUnaryCall<IdRequest, NotificationDetailsResponse>
   testNotification: handleUnaryCall<IdRequest, Empty>
 }
@@ -14228,16 +13817,16 @@ export interface CruxNotificationClient extends Client {
     callback: (error: ServiceError | null, response: Empty) => void,
   ): ClientUnaryCall
   getNotificationList(
-    request: AccessRequest,
+    request: Empty,
     callback: (error: ServiceError | null, response: NotificationListResponse) => void,
   ): ClientUnaryCall
   getNotificationList(
-    request: AccessRequest,
+    request: Empty,
     metadata: Metadata,
     callback: (error: ServiceError | null, response: NotificationListResponse) => void,
   ): ClientUnaryCall
   getNotificationList(
-    request: AccessRequest,
+    request: Empty,
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: NotificationListResponse) => void,
@@ -14388,8 +13977,8 @@ export const CruxTemplateService = {
     path: '/crux.CruxTemplate/GetTemplates',
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: AccessRequest) => Buffer.from(AccessRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => AccessRequest.decode(value),
+    requestSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => Empty.decode(value),
     responseSerialize: (value: TemplateListResponse) => Buffer.from(TemplateListResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer) => TemplateListResponse.decode(value),
   },
@@ -14415,23 +14004,23 @@ export const CruxTemplateService = {
 } as const
 
 export interface CruxTemplateServer extends UntypedServiceImplementation {
-  getTemplates: handleUnaryCall<AccessRequest, TemplateListResponse>
+  getTemplates: handleUnaryCall<Empty, TemplateListResponse>
   createProductFromTemplate: handleUnaryCall<CreateProductFromTemplateRequest, CreateEntityResponse>
   getImage: handleUnaryCall<IdRequest, TemplateImageResponse>
 }
 
 export interface CruxTemplateClient extends Client {
   getTemplates(
-    request: AccessRequest,
+    request: Empty,
     callback: (error: ServiceError | null, response: TemplateListResponse) => void,
   ): ClientUnaryCall
   getTemplates(
-    request: AccessRequest,
+    request: Empty,
     metadata: Metadata,
     callback: (error: ServiceError | null, response: TemplateListResponse) => void,
   ): ClientUnaryCall
   getTemplates(
-    request: AccessRequest,
+    request: Empty,
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: TemplateListResponse) => void,
@@ -14479,29 +14068,29 @@ export const CruxDashboardService = {
     path: '/crux.CruxDashboard/GetDashboard',
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: AccessRequest) => Buffer.from(AccessRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => AccessRequest.decode(value),
+    requestSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => Empty.decode(value),
     responseSerialize: (value: DashboardResponse) => Buffer.from(DashboardResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer) => DashboardResponse.decode(value),
   },
 } as const
 
 export interface CruxDashboardServer extends UntypedServiceImplementation {
-  getDashboard: handleUnaryCall<AccessRequest, DashboardResponse>
+  getDashboard: handleUnaryCall<Empty, DashboardResponse>
 }
 
 export interface CruxDashboardClient extends Client {
   getDashboard(
-    request: AccessRequest,
+    request: Empty,
     callback: (error: ServiceError | null, response: DashboardResponse) => void,
   ): ClientUnaryCall
   getDashboard(
-    request: AccessRequest,
+    request: Empty,
     metadata: Metadata,
     callback: (error: ServiceError | null, response: DashboardResponse) => void,
   ): ClientUnaryCall
   getDashboard(
-    request: AccessRequest,
+    request: Empty,
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: DashboardResponse) => void,
@@ -14531,8 +14120,8 @@ export const CruxTokenService = {
     path: '/crux.CruxToken/GetTokenList',
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: AccessRequest) => Buffer.from(AccessRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => AccessRequest.decode(value),
+    requestSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => Empty.decode(value),
     responseSerialize: (value: TokenListResponse) => Buffer.from(TokenListResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer) => TokenListResponse.decode(value),
   },
@@ -14549,7 +14138,7 @@ export const CruxTokenService = {
 
 export interface CruxTokenServer extends UntypedServiceImplementation {
   generateToken: handleUnaryCall<GenerateTokenRequest, GenerateTokenResponse>
-  getTokenList: handleUnaryCall<AccessRequest, TokenListResponse>
+  getTokenList: handleUnaryCall<Empty, TokenListResponse>
   deleteToken: handleUnaryCall<IdRequest, Empty>
 }
 
@@ -14570,16 +14159,16 @@ export interface CruxTokenClient extends Client {
     callback: (error: ServiceError | null, response: GenerateTokenResponse) => void,
   ): ClientUnaryCall
   getTokenList(
-    request: AccessRequest,
+    request: Empty,
     callback: (error: ServiceError | null, response: TokenListResponse) => void,
   ): ClientUnaryCall
   getTokenList(
-    request: AccessRequest,
+    request: Empty,
     metadata: Metadata,
     callback: (error: ServiceError | null, response: TokenListResponse) => void,
   ): ClientUnaryCall
   getTokenList(
-    request: AccessRequest,
+    request: Empty,
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: TokenListResponse) => void,

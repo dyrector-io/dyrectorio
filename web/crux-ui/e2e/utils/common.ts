@@ -1,6 +1,14 @@
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable import/no-cycle */
-import { Configuration, Identity, IdentityApi } from '@ory/kratos-client'
+import { ATTRIB_CSRF, HEADER_SET_COOKIE } from '@app/const'
+import { findAttributes } from '@app/utils'
+import {
+  Configuration,
+  FrontendApi,
+  Identity,
+  IdentityApi,
+  UpdateLoginFlowWithPasswordMethod,
+} from '@ory/kratos-client'
 import { FullConfig, Locator } from '@playwright/test'
 import path from 'path'
 import { v4 as uuid } from 'uuid'
@@ -49,9 +57,24 @@ export const kratosFromBaseURL = (baseURL: string) => {
   return new IdentityApi(kratosConfig)
 }
 
+export const kratosFrontendFromBaseURL = (baseURL?: string) => {
+  const url = process.env.KRATOS_URL || replacePort(baseURL, '4433')
+
+  const kratosConfig = new Configuration({
+    basePath: url,
+  })
+
+  return new FrontendApi(kratosConfig)
+}
+
 export const kratosFromConfig = (config: FullConfig) => {
   const { baseURL } = config.projects[0].use
   return kratosFromBaseURL(baseURL)
+}
+
+export const kratosFrontendFromConfig = (config: FullConfig) => {
+  const { baseURL } = config.projects[0].use
+  return kratosFrontendFromBaseURL(baseURL)
 }
 
 export const createUser = async (
@@ -112,6 +135,28 @@ export const deleteUserByEmail = async (kratos: IdentityApi, email: string) => {
   await kratos.deleteIdentity({
     id: identity.id,
   })
+}
+
+export const getUserSessionToken = async (frontend: FrontendApi, email: string, password: string) => {
+  const flow = await frontend.createBrowserLoginFlow()
+  const cookie = flow.headers[HEADER_SET_COOKIE]
+  const data = flow.data
+
+  const body: UpdateLoginFlowWithPasswordMethod = {
+    method: 'password',
+    csrf_token: findAttributes(data.ui, ATTRIB_CSRF)?.value,
+    identifier: USER_EMAIL,
+    password: USER_PASSWORD,
+  }
+
+  const kratosRes = await frontend.updateLoginFlow({
+    flow: data.id,
+    updateLoginFlowBody: body,
+    cookie,
+  })
+
+  const sessionCookieHeader = kratosRes.headers[HEADER_SET_COOKIE] as string[]
+  return sessionCookieHeader.find(it => it.startsWith('ory_kratos_session'))
 }
 
 export const screenshotPath = (name: string) => path.join(__dirname, '..', SCREENSHOTS_FOLDER, `${name}.png`)

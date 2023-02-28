@@ -11,7 +11,6 @@ import {
   VersionDetailsResponse,
 } from '@app/models/grpc/protobuf/proto/crux'
 import { timestampToUTC } from '@app/utils'
-import { Identity } from '@ory/kratos-client'
 import { protomisify } from '@server/crux/grpc-connection'
 import { deploymentStatusToDto } from './mappers/deployment-mappers'
 import { containerConfigToDto } from './mappers/image-mappers'
@@ -20,18 +19,18 @@ import { registryTypeProtoToDto } from './mappers/registry-mappers'
 import { versionTypeToDyo, versionTypeToProto } from './mappers/version-mappers'
 
 class DyoVersionService {
-  constructor(private client: CruxProductVersionClient, private identity: Identity) {}
+  constructor(private client: CruxProductVersionClient, private cookie: string) {}
 
   async getById(id: string): Promise<VersionDetails> {
     const req: IdRequest = {
       id,
-      accessedBy: this.identity.id,
     }
 
-    const res = await protomisify<IdRequest, VersionDetailsResponse>(this.client, this.client.getVersionDetails)(
-      IdRequest,
-      req,
-    )
+    const res = await protomisify<IdRequest, VersionDetailsResponse>(
+      this.client,
+      this.client.getVersionDetails,
+      this.cookie,
+    )(IdRequest, req)
 
     return {
       ...res,
@@ -57,12 +56,12 @@ class DyoVersionService {
       ...dto,
       productId,
       type: versionTypeToProto(dto.type),
-      accessedBy: this.identity.id,
     }
 
     const version = await protomisify<CreateVersionRequest, CreateEntityResponse>(
       this.client,
       this.client.createVersion,
+      this.cookie,
     )(CreateVersionRequest, req)
 
     return {
@@ -78,13 +77,13 @@ class DyoVersionService {
     const req: UpdateVersionRequest = {
       ...dto,
       id: versionId,
-      accessedBy: this.identity.id,
     }
 
-    const res = await protomisify<UpdateVersionRequest, UpdateEntityResponse>(this.client, this.client.updateVersion)(
-      UpdateVersionRequest,
-      req,
-    )
+    const res = await protomisify<UpdateVersionRequest, UpdateEntityResponse>(
+      this.client,
+      this.client.updateVersion,
+      this.cookie,
+    )(UpdateVersionRequest, req)
 
     return timestampToUTC(res.updatedAt)
   }
@@ -93,12 +92,12 @@ class DyoVersionService {
     const req: IncreaseVersionRequest = {
       ...dto,
       id: versionId,
-      accessedBy: this.identity.id,
     }
 
     const res = await protomisify<IncreaseVersionRequest, CreateEntityResponse>(
       this.client,
       this.client.increaseVersion,
+      this.cookie,
     )(IncreaseVersionRequest, req)
 
     return {
@@ -114,19 +113,17 @@ class DyoVersionService {
   async setDefault(versionId: string): Promise<void> {
     const req: IdRequest = {
       id: versionId,
-      accessedBy: this.identity.id,
     }
 
-    await protomisify<IdRequest, Empty>(this.client, this.client.setDefaultVersion)(IdRequest, req)
+    await protomisify<IdRequest, Empty>(this.client, this.client.setDefaultVersion, this.cookie)(IdRequest, req)
   }
 
   async delete(id: string): Promise<void> {
     const req: IdRequest = {
       id,
-      accessedBy: this.identity.id,
     }
 
-    await protomisify<IdRequest, Empty>(this.client, this.client.deleteVersion)(IdRequest, req)
+    await protomisify<IdRequest, Empty>(this.client, this.client.deleteVersion, this.cookie)(IdRequest, req)
   }
 }
 

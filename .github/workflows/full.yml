@@ -436,6 +436,7 @@ jobs:
           E2E_BASE_URL: "http://dyrectorio-stack_traefik:8000"
           MAILSLURPER_URL: "http://dyrectorio-stack_mailslurper:4437"
           CRUX_URL: "dyrectorio-stack_crux:5001"
+          KRATOS_URL: "http://dyrectorio-stack_kratos:4433"
           KRATOS_ADMIN_URL: "http://dyrectorio-stack_kratos:4434"
           CI: true
         run: |

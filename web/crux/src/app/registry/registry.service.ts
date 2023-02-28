@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common'
 import PrismaService from 'src/services/prisma.service'
 import {
-  AccessRequest,
   CreateEntityResponse,
   CreateRegistryRequest,
   IdRequest,
@@ -10,6 +9,7 @@ import {
   UpdateEntityResponse,
   UpdateRegistryRequest,
 } from 'src/grpc/protobuf/proto/crux'
+import { Identity } from '@ory/kratos-client'
 import TeamRepository from '../team/team.repository'
 import RegistryMapper from './registry.mapper'
 
@@ -19,13 +19,13 @@ export default class RegistryService {
 
   private readonly logger = new Logger(RegistryService.name)
 
-  async getRegistries(request: AccessRequest): Promise<RegistryListResponse> {
+  async getRegistries(identity: Identity): Promise<RegistryListResponse> {
     const registries = await this.prisma.registry.findMany({
       where: {
         team: {
           users: {
             some: {
-              userId: request.accessedBy,
+              userId: identity.id,
               active: true,
             },
           },
@@ -38,8 +38,8 @@ export default class RegistryService {
     }
   }
 
-  async createRegistry(req: CreateRegistryRequest): Promise<CreateEntityResponse> {
-    const team = await this.teamRepository.getActiveTeamByUserId(req.accessedBy)
+  async createRegistry(req: CreateRegistryRequest, identity: Identity): Promise<CreateEntityResponse> {
+    const team = await this.teamRepository.getActiveTeamByUserId(identity.id)
 
     const registry = await this.prisma.registry.create({
       data: {
@@ -47,7 +47,7 @@ export default class RegistryService {
         description: req.description,
         icon: req.icon ?? null,
         teamId: team.teamId,
-        createdBy: req.accessedBy,
+        createdBy: identity.id,
         ...this.mapper.detailsToDb(req),
       },
     })
@@ -55,7 +55,7 @@ export default class RegistryService {
     return CreateEntityResponse.fromJSON(registry)
   }
 
-  async updateRegistry(req: UpdateRegistryRequest): Promise<UpdateEntityResponse> {
+  async updateRegistry(req: UpdateRegistryRequest, identity: Identity): Promise<UpdateEntityResponse> {
     const registry = await this.prisma.registry.update({
       where: {
         id: req.id,
@@ -64,7 +64,7 @@ export default class RegistryService {
         name: req.name,
         description: req.description,
         icon: req.icon ?? null,
-        updatedBy: req.accessedBy,
+        updatedBy: identity.id,
         ...this.mapper.detailsToDb(req),
       },
     })

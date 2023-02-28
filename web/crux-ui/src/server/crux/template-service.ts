@@ -1,6 +1,6 @@
 import { Logger } from '@app/logger'
+import { Empty } from '@app/models/grpc/protobuf/proto/common'
 import {
-  AccessRequest,
   CreateEntityResponse,
   CreateProductFromTemplateRequest,
   CruxTemplateClient,
@@ -9,24 +9,20 @@ import {
   TemplateListResponse,
 } from '@app/models/grpc/protobuf/proto/crux'
 import { ApplyTemplate, Template } from '@app/models/template'
-import { Identity } from '@ory/kratos-client'
 import { protomisify } from '@server/crux/grpc-connection'
 import { typeToProto } from './mappers/product-mappers'
 
 class DyoTemplateService {
   private logger = new Logger(DyoTemplateService.name)
 
-  constructor(private client: CruxTemplateClient, private identity: Identity) {}
+  constructor(private client: CruxTemplateClient, private cookie: string) {}
 
   async getAll(): Promise<Template[]> {
-    const req: AccessRequest = {
-      accessedBy: this.identity.id,
-    }
-
-    const res = await protomisify<AccessRequest, TemplateListResponse>(this.client, this.client.getTemplates)(
-      AccessRequest,
-      req,
-    )
+    const res = await protomisify<Empty, TemplateListResponse>(
+      this.client,
+      this.client.getTemplates,
+      this.cookie,
+    )(Empty, {})
 
     return res.data
   }
@@ -35,7 +31,6 @@ class DyoTemplateService {
     const { id, name, description, type } = request
 
     const req: CreateProductFromTemplateRequest = {
-      accessedBy: this.identity.id,
       id,
       name,
       description,
@@ -45,6 +40,7 @@ class DyoTemplateService {
     const res = await protomisify<CreateProductFromTemplateRequest, CreateEntityResponse>(
       this.client,
       this.client.createProductFromTemplate,
+      this.cookie,
     )(CreateProductFromTemplateRequest, req)
 
     return res
@@ -53,10 +49,13 @@ class DyoTemplateService {
   async getImage(id: string): Promise<TemplateImageResponse> {
     const req: IdRequest = {
       id,
-      accessedBy: this.identity.id,
     }
 
-    const res = await protomisify<IdRequest, TemplateImageResponse>(this.client, this.client.getImage)(IdRequest, req)
+    const res = await protomisify<IdRequest, TemplateImageResponse>(
+      this.client,
+      this.client.getImage,
+      this.cookie,
+    )(IdRequest, req)
 
     return res
   }

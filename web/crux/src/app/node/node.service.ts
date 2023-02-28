@@ -1,11 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common'
+import { Identity } from '@ory/kratos-client'
 import { Observable } from 'rxjs'
 import { BaseMessage } from 'src/domain/notification-templates'
 import { PreconditionFailedException } from 'src/exception/errors'
 import { CloseReason } from 'src/grpc/protobuf/proto/agent'
 import { ContainerLogMessage, ContainerStateListMessage, Empty } from 'src/grpc/protobuf/proto/common'
 import {
-  AccessRequest,
   CreateEntityResponse,
   CreateNodeRequest,
   GenerateScriptRequest,
@@ -40,13 +40,13 @@ export default class NodeService {
     private notificationService: DomainNotificationService,
   ) {}
 
-  async getNodes(req: AccessRequest): Promise<NodeListResponse> {
+  async getNodes(identity: Identity): Promise<NodeListResponse> {
     const nodes = await this.prisma.node.findMany({
       where: {
         team: {
           users: {
             some: {
-              userId: req.accessedBy,
+              userId: identity.id,
               active: true,
             },
           },
@@ -69,8 +69,8 @@ export default class NodeService {
     return this.mapper.detailsToProto(node)
   }
 
-  async createNode(req: CreateNodeRequest): Promise<CreateEntityResponse> {
-    const team = await this.teamRepository.getActiveTeamByUserId(req.accessedBy)
+  async createNode(req: CreateNodeRequest, identity: Identity): Promise<CreateEntityResponse> {
+    const team = await this.teamRepository.getActiveTeamByUserId(identity.id)
 
     const node = await this.prisma.node.create({
       data: {
@@ -78,12 +78,12 @@ export default class NodeService {
         description: req.description,
         icon: req.icon ?? null,
         teamId: team.teamId,
-        createdBy: req.accessedBy,
+        createdBy: identity.id,
       },
     })
 
     await this.notificationService.sendNotification({
-      identityId: req.accessedBy,
+      identityId: identity.id,
       messageType: 'node',
       message: { subject: node.name } as BaseMessage,
     })
@@ -104,7 +104,7 @@ export default class NodeService {
     }
   }
 
-  async updateNode(req: UpdateNodeRequest): Promise<Empty> {
+  async updateNode(req: UpdateNodeRequest, identity: Identity): Promise<Empty> {
     await this.prisma.node.update({
       where: {
         id: req.id,
@@ -113,14 +113,14 @@ export default class NodeService {
         name: req.name,
         description: req.description,
         icon: req.icon ?? null,
-        updatedBy: req.accessedBy,
+        updatedBy: identity.id,
       },
     })
 
     return Empty
   }
 
-  async generateScript(req: GenerateScriptRequest): Promise<NodeInstallResponse> {
+  async generateScript(req: GenerateScriptRequest, identity: Identity): Promise<NodeInstallResponse> {
     const nodeType = this.mapper.nodeTypeToDb(req.type)
 
     await this.prisma.node.update({
@@ -129,7 +129,7 @@ export default class NodeService {
       },
       data: {
         type: nodeType,
-        updatedBy: req.accessedBy,
+        updatedBy: identity.id,
       },
     })
 
@@ -167,14 +167,14 @@ export default class NodeService {
     return Empty
   }
 
-  async revokeToken(request: IdRequest): Promise<Empty> {
+  async revokeToken(request: IdRequest, identity: Identity): Promise<Empty> {
     await this.prisma.node.update({
       where: {
         id: request.id,
       },
       data: {
         token: null,
-        updatedBy: request.accessedBy,
+        updatedBy: identity.id,
       },
     })
 

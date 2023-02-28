@@ -1,14 +1,17 @@
-import { Injectable, PipeTransform } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import PrismaService from 'src/services/prisma.service'
 import { checkDeploymentDeletability } from 'src/domain/deployment'
 import { IdRequest } from 'src/grpc/protobuf/proto/crux'
 import { PreconditionFailedException } from 'src/exception/errors'
+import BodyPipeTransform from 'src/pipes/body.pipe'
 
 @Injectable()
-export default class DeleteDeploymentValidationPipe implements PipeTransform {
-  constructor(private prisma: PrismaService) {}
+export default class DeleteDeploymentValidationPipe extends BodyPipeTransform<IdRequest> {
+  constructor(private prisma: PrismaService) {
+    super()
+  }
 
-  async transform(value: IdRequest) {
+  async transformBody(value: IdRequest) {
     const deployment = await this.prisma.deployment.findUniqueOrThrow({
       where: {
         id: value.id,

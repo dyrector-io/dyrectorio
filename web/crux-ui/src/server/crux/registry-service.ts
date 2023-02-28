@@ -1,7 +1,6 @@
 import { CreateRegistry, RegistryDetails, RegistryListItem, UpdateRegistry } from '@app/models'
 import { Empty } from '@app/models/grpc/protobuf/proto/common'
 import {
-  AccessRequest,
   CreateEntityResponse,
   CreateRegistryRequest,
   CruxRegistryClient,
@@ -12,28 +11,20 @@ import {
   UpdateRegistryRequest,
 } from '@app/models/grpc/protobuf/proto/crux'
 import { timestampToUTC } from '@app/utils'
-import { Identity } from '@ory/kratos-client'
 import { protomisify } from '@server/crux/grpc-connection'
 /* eslint-disable import/no-cycle */
 import { RegistryConnections } from '@server/registry-api/registry-connections'
 import { registryNamespaceToDto, registryNamespaceToGrpc, registryTypeProtoToDto } from './mappers/registry-mappers'
 
 class DyoRegistryService {
-  constructor(
-    private client: CruxRegistryClient,
-    private identity: Identity,
-    private connections: RegistryConnections,
-  ) {}
+  constructor(private client: CruxRegistryClient, private connections: RegistryConnections, private cookie: string) {}
 
   async getAll(): Promise<RegistryListItem[]> {
-    const req: AccessRequest = {
-      accessedBy: this.identity.id,
-    }
-
-    const res = await protomisify<AccessRequest, RegistryListResponse>(this.client, this.client.getRegistries)(
-      AccessRequest,
-      req,
-    )
+    const res = await protomisify<Empty, RegistryListResponse>(
+      this.client,
+      this.client.getRegistries,
+      this.cookie,
+    )(Empty, {})
 
     return res.data.map(it => ({
       ...it,
@@ -42,12 +33,13 @@ class DyoRegistryService {
   }
 
   async create(dto: CreateRegistry): Promise<RegistryDetails> {
-    const req: CreateRegistryRequest = this.createDtoToProto(dto)
+    const req: CreateRegistryRequest = DyoRegistryService.createDtoToProto(dto)
 
-    const res = await protomisify<CreateRegistryRequest, CreateEntityResponse>(this.client, this.client.createRegistry)(
-      CreateRegistryRequest,
-      req,
-    )
+    const res = await protomisify<CreateRegistryRequest, CreateEntityResponse>(
+      this.client,
+      this.client.createRegistry,
+      this.cookie,
+    )(CreateRegistryRequest, req)
 
     return {
       ...dto,
@@ -58,16 +50,17 @@ class DyoRegistryService {
 
   async update(id: string, dto: UpdateRegistry): Promise<string> {
     const req: UpdateRegistryRequest = {
-      ...this.createDtoToProto(dto),
+      ...DyoRegistryService.createDtoToProto(dto),
       id,
     }
 
     this.connections.invalidate(id)
 
-    const res = await protomisify<UpdateRegistryRequest, UpdateEntityResponse>(this.client, this.client.updateRegistry)(
-      UpdateRegistryRequest,
-      req,
-    )
+    const res = await protomisify<UpdateRegistryRequest, UpdateEntityResponse>(
+      this.client,
+      this.client.updateRegistry,
+      this.cookie,
+    )(UpdateRegistryRequest, req)
 
     return timestampToUTC(res.updatedAt)
   }
@@ -75,23 +68,22 @@ class DyoRegistryService {
   async delete(id: string) {
     const req: IdRequest = {
       id,
-      accessedBy: this.identity.id,
     }
 
     this.connections.invalidate(id)
 
-    await protomisify<IdRequest, Empty>(this.client, this.client.deleteRegistry)(IdRequest, req)
+    await protomisify<IdRequest, Empty>(this.client, this.client.deleteRegistry, this.cookie)(IdRequest, req)
   }
 
   async getRegistryDetails(id: string): Promise<RegistryDetails> {
     const req: IdRequest = {
       id,
-      accessedBy: this.identity.id,
     }
-    const res = await protomisify<IdRequest, RegistryDetailsResponse>(this.client, this.client.getRegistryDetails)(
-      IdRequest,
-      req,
-    )
+    const res = await protomisify<IdRequest, RegistryDetailsResponse>(
+      this.client,
+      this.client.getRegistryDetails,
+      this.cookie,
+    )(IdRequest, req)
 
     return {
       id: res.id,
@@ -137,12 +129,11 @@ class DyoRegistryService {
     }
   }
 
-  private createDtoToProto(dto: CreateRegistry): CreateRegistryRequest {
+  private static createDtoToProto(dto: CreateRegistry): CreateRegistryRequest {
     return {
       name: dto.name,
       description: dto.description,
       icon: dto.icon,
-      accessedBy: this.identity.id,
       hub:
         dto.type !== 'hub'
           ? null

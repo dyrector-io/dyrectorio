@@ -1,4 +1,5 @@
-import { Body, Controller, UseGuards, UseInterceptors } from '@nestjs/common'
+import { Metadata } from '@grpc/grpc-js'
+import { UsePipes, Controller, UseGuards, UseInterceptors } from '@nestjs/common'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
 import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
@@ -13,6 +14,7 @@ import {
 } from 'src/grpc/protobuf/proto/crux'
 import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
 import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
+import GrpcUserInterceptor, { getIdentity } from 'src/interceptors/grpc.user.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import ImageAddToVersionTeamAccessGuard from './guards/image.add-to-version.team-access.guard'
 import ImageOrderImagesTeamAccessGuard from './guards/image.order-images.team-access.guard'
@@ -26,7 +28,7 @@ import ImagePatchValidationPipe from './pipes/image.patch.pipe'
 @Controller()
 @CruxImageControllerMethods()
 @UseGuards(ImageTeamAccessGuard)
-@UseInterceptors(GrpcLoggerInterceptor, GrpcErrorInterceptor, PrismaErrorInterceptor)
+@UseInterceptors(GrpcLoggerInterceptor, GrpcUserInterceptor, GrpcErrorInterceptor, PrismaErrorInterceptor)
 export default class ImageController implements CruxImageController {
   constructor(private service: ImageService) {}
 
@@ -35,23 +37,25 @@ export default class ImageController implements CruxImageController {
   }
 
   @UseGuards(ImageAddToVersionTeamAccessGuard)
-  async addImagesToVersion(
-    @Body(ImageAddToVersionValidationPipe) request: AddImagesToVersionRequest,
-  ): Promise<ImageListResponse> {
-    return await this.service.addImagesToVersion(request)
+  @UsePipes(ImageAddToVersionValidationPipe)
+  async addImagesToVersion(request: AddImagesToVersionRequest, metadata: Metadata): Promise<ImageListResponse> {
+    return await this.service.addImagesToVersion(request, getIdentity(metadata))
   }
 
   @UseGuards(ImageOrderImagesTeamAccessGuard)
-  async orderImages(@Body(OrderImagesValidationPipe) request: OrderVersionImagesRequest): Promise<Empty> {
-    return await this.service.orderImages(request)
+  @UsePipes(OrderImagesValidationPipe)
+  async orderImages(request: OrderVersionImagesRequest, metadata: Metadata): Promise<Empty> {
+    return await this.service.orderImages(request, getIdentity(metadata))
   }
 
   @AuditLogLevel('no-data')
-  async patchImage(@Body(ImagePatchValidationPipe) request: PatchImageRequest): Promise<Empty> {
-    return await this.service.patchImage(request)
+  @UsePipes(ImagePatchValidationPipe)
+  async patchImage(request: PatchImageRequest, metadata: Metadata): Promise<Empty> {
+    return await this.service.patchImage(request, getIdentity(metadata))
   }
 
-  async deleteImage(@Body(DeleteImageValidationPipe) request: IdRequest): Promise<Empty> {
+  @UsePipes(DeleteImageValidationPipe)
+  async deleteImage(request: IdRequest): Promise<Empty> {
     return await this.service.deleteImage(request)
   }
 

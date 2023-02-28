@@ -1,14 +1,17 @@
-import { BadRequestException, Injectable, PipeTransform } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import PrismaService from 'src/services/prisma.service'
 import { checkVersionMutability } from 'src/domain/version'
 import { AlreadyExistsException, InvalidArgumentException } from 'src/exception/errors'
 import { OrderVersionImagesRequest } from 'src/grpc/protobuf/proto/crux'
+import BodyPipeTransform from 'src/pipes/body.pipe'
 
 @Injectable()
-export default class OrderImagesValidationPipe implements PipeTransform {
-  constructor(private prisma: PrismaService) {}
+export default class OrderImagesValidationPipe extends BodyPipeTransform<OrderVersionImagesRequest> {
+  constructor(private prisma: PrismaService) {
+    super()
+  }
 
-  async transform(value: OrderVersionImagesRequest) {
+  async transformBody(value: OrderVersionImagesRequest) {
     const version = await this.prisma.version.findUniqueOrThrow({
       include: {
         images: true,

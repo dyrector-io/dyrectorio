@@ -1,8 +1,8 @@
-import { CanActivate, ExecutionContext, Injectable, SetMetadata } from '@nestjs/common'
-import { Reflector } from '@nestjs/core'
+import { ExecutionContext, Injectable, SetMetadata } from '@nestjs/common'
+import { Identity } from '@ory/kratos-client'
 import { userIsAdmin, userIsOwner } from 'src/domain/user'
 import { IdRequest } from 'src/grpc/protobuf/proto/crux'
-import PrismaService from 'src/services/prisma.service'
+import UserAccessGuard from 'src/shared/user-access.guard'
 
 const TEAM_ROLE = 'team-role'
 
@@ -11,22 +11,18 @@ export type TeamRole = 'none' | 'user' | 'admin' | 'owner'
 export const TeamRoleRequired = (role: TeamRole = 'user') => SetMetadata(TEAM_ROLE, role)
 
 @Injectable()
-export default class TeamRoleGuard implements CanActivate {
-  constructor(private readonly reflector: Reflector, private readonly prisma: PrismaService) {}
-
-  async canActivate(context: ExecutionContext): Promise<boolean> {
+export default class TeamRoleGuard extends UserAccessGuard<IdRequest> {
+  async canActivateWithRequest(request: IdRequest, identity: Identity, context: ExecutionContext): Promise<boolean> {
     const role = this.reflector.get<TeamRole>(TEAM_ROLE, context.getHandler()) ?? 'user'
 
     if (role === 'none') {
       return true
     }
 
-    const request = context.getArgByIndex<IdRequest>(0)
-
     const getActiveTeam = async () =>
       await this.prisma.usersOnTeams.findFirst({
         where: {
-          userId: request.accessedBy,
+          userId: identity.id,
           active: true,
         },
       })
@@ -35,7 +31,7 @@ export default class TeamRoleGuard implements CanActivate {
       await this.prisma.usersOnTeams.findUnique({
         where: {
           userId_teamId: {
-            userId: request.accessedBy,
+            userId: identity.id,
             teamId: request.id,
           },
         },
