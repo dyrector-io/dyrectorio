@@ -7,8 +7,11 @@ export type BaseGrpcExceptionOptions = {
 }
 
 export default class BaseGrpcException extends RpcException {
+  public readonly details: BaseGrpcExceptionOptions
+
   constructor(error: BaseGrpcExceptionOptions) {
     super(BaseGrpcException.formatMessage(error))
+    this.details = error
   }
 
   private static formatMessage(error: BaseGrpcExceptionOptions) {

@@ -15,12 +15,22 @@ import {
 import { Identity } from '@ory/kratos-client'
 import { HttpIdentityInterceptor, IdentityFromRequest } from 'src/interceptors/http.identity.interceptor'
 import IdValidationPipe from 'src/pipes/id.validation.pipe'
+import HttpResponseTransformInterceptor, {
+  TransformResponse,
+} from 'src/interceptors/http.response.transform.interceptor'
+import CreateEntityResponseHTTPPipe from 'src/pipes/create.entity.http.pipe'
 import JwtAuthGuard from '../token/jwt-auth.guard'
 import DeployService from './deploy.service'
 import DeployStartValidationPipe from './pipes/deploy.start.pipe'
+import DeployCreateValidationPipe from './pipes/deploy.create.pipe'
 
 @UseGuards(JwtAuthGuard)
-@UseInterceptors(HttpLoggerInterceptor, PrismaErrorInterceptor, HttpIdentityInterceptor)
+@UseInterceptors(
+  HttpLoggerInterceptor,
+  PrismaErrorInterceptor,
+  HttpIdentityInterceptor,
+  HttpResponseTransformInterceptor,
+)
 @UseFilters(HttpExceptionFilter)
 @AuditLogLevel('disabled')
 @Controller('deploy')
@@ -31,8 +41,9 @@ export default class DeployHttpController {
   @ApiBody({ type: CreateDeploymentRequestDto })
   @ApiCreatedResponse({ type: CreateEntityResponseDto })
   @AuditLogLevel('disabled')
+  @TransformResponse(CreateEntityResponseHTTPPipe)
   async createDeployment(
-    @Body() request: CreateDeploymentRequest,
+    @Body(DeployCreateValidationPipe) request: CreateDeploymentRequest,
     @IdentityFromRequest() identity: Identity,
   ): Promise<CreateEntityResponse> {
     return this.service.createDeployment(request, identity)
