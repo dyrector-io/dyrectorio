@@ -22,11 +22,13 @@ import HttpResponseTransformInterceptor, {
   TransformResponse,
 } from 'src/interceptors/http.response.transform.interceptor'
 import IdValidationPipe from 'src/pipes/id.validation.pipe'
+import CreateEntityResponseHTTPPipe from 'src/pipes/create.entity.http.pipe'
 import JwtAuthGuard from '../token/jwt-auth.guard'
 import VersionIncreaseValidationPipe from './pipes/version.increase.pipe'
 import VersionService from './version.service'
 import VersionCreateHTTPPipe from './pipes/version.create.http.pipe'
 import VersionGetHTTPPipe from './pipes/version.get.http.pipe'
+import VersionCreateValidationPipe from './pipes/version.create.pipe'
 
 @Controller('version')
 @UseGuards(JwtAuthGuard)
@@ -56,8 +58,9 @@ export default class VersionHttpController {
   @ApiBody({ type: CreateVersionRequestDto })
   @ApiCreatedResponse({ type: CreateEntityResponseDto })
   @AuditLogLevel('disabled')
+  @TransformResponse(CreateEntityResponseHTTPPipe)
   async createVersion(
-    @Body(VersionCreateHTTPPipe) request: CreateVersionRequestDto,
+    @Body(VersionCreateHTTPPipe, VersionCreateValidationPipe) request: CreateVersionRequestDto,
     @IdentityFromRequest() identity: Identity,
   ): Promise<CreateEntityResponse> {
     return await this.service.createVersion(request, identity)
@@ -67,6 +70,7 @@ export default class VersionHttpController {
   @ApiBody({ type: CreateVersionRequestDto })
   @ApiCreatedResponse({ type: CreateEntityResponseDto })
   @AuditLogLevel('disabled')
+  @TransformResponse(CreateEntityResponseHTTPPipe)
   async increaseVersion(
     @Body(IdValidationPipe, VersionIncreaseValidationPipe) request: IncreaseVersionRequest,
     @IdentityFromRequest() identity: Identity,

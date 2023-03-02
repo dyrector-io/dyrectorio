@@ -15,6 +15,7 @@ import { Identity } from '@ory/kratos-client'
 import HttpResponseTransformInterceptor, {
   TransformResponse,
 } from 'src/interceptors/http.response.transform.interceptor'
+import CreateEntityResponseHTTPPipe from 'src/pipes/create.entity.http.pipe'
 import ProductService from './product.service'
 import JwtAuthGuard from '../token/jwt-auth.guard'
 import ProductCreateHTTPPipe from './pipes/product.create.http.pipe'
@@ -31,6 +32,7 @@ export default class ProductHttpController {
   @ApiBody({ type: CreateProductRequestDto })
   @ApiCreatedResponse({ type: CreateEntityResponseDto })
   @AuditLogLevel('disabled')
+  @TransformResponse(CreateEntityResponseHTTPPipe)
   async createProduct(
     @Body(ProductCreateHTTPPipe) request: CreateProductRequest,
     @IdentityFromRequest() identity: Identity,
