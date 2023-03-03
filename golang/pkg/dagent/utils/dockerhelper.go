@@ -25,7 +25,7 @@ func GetContainersByName(ctx context.Context, nameFilter string) []*common.Conta
 	return mapper.MapContainerState(containers)
 }
 
-func GetContainerByPrefixName(ctx context.Context, prefix, name string) (*types.Container, error) {
+func GetContainerByPrefixAndName(ctx context.Context, prefix, name string) (*types.Container, error) {
 	if prefix == "" {
 		return dockerHelper.GetContainerByName(ctx, name)
 	}
@@ -47,8 +47,8 @@ func GetContainerByPrefixName(ctx context.Context, prefix, name string) (*types.
 	return nil, fmt.Errorf("container not found by prefix(%s), name(%s)", prefix, name)
 }
 
-func DeleteContainerByPrefixName(ctx context.Context, prefix, name string) error {
-	container, err := GetContainerByPrefixName(ctx, prefix, name)
+func DeleteContainerByPrefixAndName(ctx context.Context, prefix, name string) error {
+	container, err := GetContainerByPrefixAndName(ctx, prefix, name)
 	if err != nil {
 		return fmt.Errorf("could not get container (%s, %s) to delete: %s", prefix, name, err.Error())
 	}

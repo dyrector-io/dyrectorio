@@ -314,12 +314,12 @@ func DeployImage(ctx context.Context,
 
 	if matchedContainer != nil {
 		dog.WriteContainerState(matchedContainer.State)
-	}
 
-	err = dockerHelper.DeleteContainerByID(ctx, dog, matchedContainer.ID)
-	if err != nil {
-		dog.WriteContainerState("", fmt.Sprintf("Failed to delete container (%s): %s", containerName, err.Error()))
-		return err
+		err = dockerHelper.DeleteContainerByID(ctx, dog, matchedContainer.ID)
+		if err != nil {
+			dog.WriteContainerState("", fmt.Sprintf("Failed to delete container (%s): %s", containerName, err.Error()))
+			return err
+		}
 	}
 
 	builder := containerbuilder.NewDockerBuilder(ctx)
@@ -636,7 +636,7 @@ func ContainerCommand(ctx context.Context, command *common.ContainerCommandReque
 	prefix := command.Container.Prefix
 	name := command.Container.Name
 
-	container, err := GetContainerByPrefixName(ctx, prefix, name)
+	container, err := GetContainerByPrefixAndName(ctx, prefix, name)
 	if err != nil {
 		return err
 	}
@@ -662,7 +662,7 @@ func ContainerCommand(ctx context.Context, command *common.ContainerCommandReque
 func DeleteContainers(ctx context.Context, request *common.DeleteContainersRequest) error {
 	var err error
 	if request.GetContainer() != nil {
-		err = DeleteContainerByPrefixName(ctx, request.GetContainer().Prefix, request.GetContainer().Name)
+		err = DeleteContainerByPrefixAndName(ctx, request.GetContainer().Prefix, request.GetContainer().Name)
 	} else if request.GetPrefix() != "" {
 		err = dockerHelper.DeleteContainersByLabel(ctx, getPrefixLabelFilter(request.GetPrefix()))
 	} else {
@@ -775,7 +775,7 @@ func ContainerLog(ctx context.Context, request *agent.ContainerLogRequest) (*grp
 	prefix := request.Container.Prefix
 	name := request.Container.Name
 
-	container, err := GetContainerByPrefixName(ctx, prefix, name)
+	container, err := GetContainerByPrefixAndName(ctx, prefix, name)
 	if err != nil {
 		return nil, fmt.Errorf("container not found: %w", err)
 	}
