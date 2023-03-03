@@ -58,7 +58,9 @@ export default class ContainerLogStream {
   onNodeStreamStarted(): ContainerLogStreamCompleter {
     if (this.completer) {
       throw new PreconditionFailedException({
-        message: `There is already a container status stream connection for container: ${this.container.prefix}-${this.container.name}`,
+        message: `There is already a container status stream connection for container: ${this.container.prefix ?? ''}-${
+          this.container.name
+        }`,
         property: GrpcNodeConnection.META_FILTER_PREFIX,
       })
     }

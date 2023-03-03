@@ -109,7 +109,7 @@ const DeploymentContainerLogPage = (props: InstanceLogPageProps) => {
 export default DeploymentContainerLogPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
-  const { dockerId, prefix, name } = context.query
+  const { prefix, name } = context.query
 
   const crux = cruxFromContext(context)
   const deployment = await getDeploymentRoot(context, crux)
@@ -117,7 +117,6 @@ const getPageServerSideProps = async (context: NextPageContext) => {
   return {
     props: {
       deployment,
-      dockerId: dockerId ?? null,
       prefix: prefix ?? null,
       name: name ?? null,
     },

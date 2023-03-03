@@ -1,7 +1,7 @@
 import { Controller, Body, Get, UseGuards, UseInterceptors, UseFilters } from '@nestjs/common'
 import { ApiBody, ApiOkResponse } from '@nestjs/swagger'
 import { first, Observable, timeout } from 'rxjs'
-import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
+import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import HttpExceptionFilter from 'src/filters/http-exception.filter'
 import { ContainerStateListMessage } from 'src/grpc/protobuf/proto/common'
 import { WatchContainerStateRequest } from 'src/grpc/protobuf/proto/crux'

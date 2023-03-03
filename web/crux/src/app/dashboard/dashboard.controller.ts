@@ -1,20 +1,18 @@
+import { Metadata } from '@grpc/grpc-js'
+import { Controller } from '@nestjs/common'
+import UseGrpcInterceptors from 'src/decorators/grpc-interceptors.decorator'
+import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
   CruxDashboardController,
   CruxDashboardControllerMethods,
   DashboardResponse,
 } from 'src/grpc/protobuf/proto/crux'
-import { Controller, UseInterceptors } from '@nestjs/common'
-import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
-import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
-import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
-import GrpcUserInterceptor, { getIdentity } from 'src/interceptors/grpc.user.interceptor'
-import { Metadata } from '@grpc/grpc-js'
-import { Empty } from 'src/grpc/protobuf/proto/common'
+import { getIdentity } from 'src/interceptors/grpc.user.interceptor'
 import DashboardService from './dashboard.service'
 
 @Controller()
 @CruxDashboardControllerMethods()
-@UseInterceptors(GrpcLoggerInterceptor, GrpcUserInterceptor, GrpcErrorInterceptor, PrismaErrorInterceptor)
+@UseGrpcInterceptors()
 export default class DashboardController implements CruxDashboardController {
   constructor(private service: DashboardService) {}
 

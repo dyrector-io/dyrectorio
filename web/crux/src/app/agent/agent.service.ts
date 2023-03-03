@@ -26,6 +26,7 @@ import { collectChildVersionIds, collectParentVersionIds } from 'src/domain/util
 import { AlreadyExistsException, NotFoundException, UnauthenticatedException } from 'src/exception/errors'
 import { AgentAbortUpdate, AgentCommand, AgentInfo, CloseReason } from 'src/grpc/protobuf/proto/agent'
 import {
+  ContainerIdentifier,
   ContainerLogMessage,
   ContainerStateListMessage,
   DeleteContainersRequest,
@@ -299,27 +300,22 @@ export default class AgentService {
   handleContainerLog(connection: GrpcNodeConnection, request: Observable<ContainerLogMessage>): Observable<Empty> {
     const agent = this.getByIdOrThrow(connection.nodeId)
 
-    const containerId = connection.getMetaDataOrDefault(GrpcNodeConnection.META_CONTAINER_ID)
     const containerPrefix = connection.getMetaDataOrDefault(GrpcNodeConnection.META_CONTAINER_PREFIX)
     const containerName = connection.getMetaDataOrDefault(GrpcNodeConnection.META_CONTAINER_NAME)
 
-    const pod =
-      containerPrefix && containerName
-        ? {
-            prefix: containerPrefix,
-            name: containerName,
-          }
-        : undefined
-
-    const [stream, completer] = agent.onContainerLogStreamStarted(containerId, pod)
-    if (!stream) {
-      this.logger.warn(`${agent.id} - There was no stream for ${containerId}`)
-
-      completer.next(undefined)
-      return completer
+    const container: ContainerIdentifier = {
+      prefix: containerPrefix ?? '',
+      name: containerName,
     }
 
-    const key = containerId ?? `${pod.prefix}-${pod.name}`
+    const key = Agent.containerPrefixNameOf(container)
+    const [stream, completer] = agent.onContainerLogStreamStarted(container)
+    if (!stream) {
+      this.logger.warn(`${agent.id} - There was no stream for ${key}`)
+
+      return of(Empty)
+    }
+
     return request.pipe(
       // necessary, because of: https://github.com/nestjs/nest/issues/8111
       startWith({
@@ -332,7 +328,7 @@ export default class AgentService {
         return Empty
       }),
       finalize(() => {
-        agent.onContainerLogStreamFinished(containerId, pod)
+        agent.onContainerLogStreamFinished(container)
         this.logger.debug(`${agent.id} - Container log listening finished: ${key}`)
       }),
       takeUntil(completer),

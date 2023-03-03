@@ -26,6 +26,10 @@ func GetContainersByName(ctx context.Context, nameFilter string) []*common.Conta
 }
 
 func GetContainerByPrefixName(ctx context.Context, prefix, name string) (*types.Container, error) {
+	if prefix == "" {
+		return dockerHelper.GetContainerByName(ctx, name)
+	}
+
 	containers, err := dockerHelper.GetAllContainersByLabel(ctx, prefix)
 	if err != nil {
 		return nil, err

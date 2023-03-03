@@ -6,8 +6,8 @@ import {
   Container,
   ContainerCommandMessage,
   ContainerListMessage,
-  containerNameOf,
   ContainerOperation,
+  containerPrefixNameOf,
   ContainerState,
   DeleteContainerMessage,
   DyoNodeDetails,
@@ -87,7 +87,7 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
     }
     message.forEach(container => {
       const { state } = container
-      const name = containerNameOf(container.id)
+      const name = containerPrefixNameOf(container.id)
 
       const targetState = containerTargetStates[name]
       if (targetState && targetState === state) {
@@ -122,7 +122,7 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
       ...containerTargetStates,
     }
 
-    const name = containerNameOf(container.id)
+    const name = containerPrefixNameOf(container.id)
     newTargetStates[name] = state
     setContainertargetStates(newTargetStates)
   }
@@ -145,7 +145,7 @@ const useNodeDetailsState = (options: NodeDetailsStateOptions): [NodeDetailsStat
   const onDeleteContainer = async (container: Container) => {
     const confirmed = await confirm(null, {
       title: t('areYouSure'),
-      description: t('areYouSureDeleteName', container),
+      description: t('areYouSureDeleteName', { name: containerPrefixNameOf(container.id) }),
       confirmText: t('delete'),
     })
 

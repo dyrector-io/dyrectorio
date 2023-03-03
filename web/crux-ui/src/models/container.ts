@@ -8,7 +8,7 @@ export type ContainerPort = {
 }
 
 export type ContainerIdentifier = {
-  prefix: string
+  prefix?: string
   name: string
 }
 
@@ -740,7 +740,8 @@ export const containerPortsToString = (ports: ContainerPort[], truncateAfter: nu
   return result.join(', ')
 }
 
-export const containerNameOf = (container: ContainerIdentifier) => `${container.prefix}-${container.name}`
+export const containerPrefixNameOf = (id: ContainerIdentifier): string =>
+  !id.prefix ? id.name : `${id.prefix}-${id.name}`
 
 export const containerIsStartable = (state: ContainerState) => state !== 'running' && state !== 'removing'
 export const containerIsStopable = (state: ContainerState) => state === 'running' || state === 'paused'

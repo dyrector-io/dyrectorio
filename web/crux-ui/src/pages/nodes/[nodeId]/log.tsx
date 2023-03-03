@@ -5,7 +5,13 @@ import PageHeading from '@app/components/shared/page-heading'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import useWebSocket from '@app/hooks/use-websocket'
-import { ContainerLogMessage, DyoNodeDetails, WS_TYPE_CONTAINER_LOG, WS_TYPE_WATCH_CONTAINER_LOG } from '@app/models'
+import {
+  ContainerLogMessage,
+  DyoNodeDetails,
+  WatchContainerLogMessage,
+  WS_TYPE_CONTAINER_LOG,
+  WS_TYPE_WATCH_CONTAINER_LOG,
+} from '@app/models'
 import { nodeContainerLogUrl, nodeUrl, nodeWsUrl, ROUTE_NODES } from '@app/routes'
 import { withContextAuthorization } from '@app/utils'
 import { cruxFromContext } from '@server/crux/crux'
@@ -15,13 +21,12 @@ import { useState } from 'react'
 
 interface InstanceLogPageProps {
   node: DyoNodeDetails
-  dockerId: string
   prefix: string
   name: string
 }
 
 const NodeContainerLogPage = (props: InstanceLogPageProps) => {
-  const { node, dockerId, prefix, name } = props
+  const { node, prefix, name } = props
 
   const { t } = useTranslation('common')
 
@@ -29,16 +34,12 @@ const NodeContainerLogPage = (props: InstanceLogPageProps) => {
 
   const sock = useWebSocket(nodeWsUrl(node.id), {
     onOpen: () => {
-      const request = dockerId
-        ? {
-            id: dockerId,
-          }
-        : {
-            prefixName: {
-              prefix,
-              name,
-            },
-          }
+      const request: WatchContainerLogMessage = {
+        container: {
+          prefix,
+          name,
+        },
+      }
 
       sock.send(WS_TYPE_WATCH_CONTAINER_LOG, request)
     },
@@ -84,14 +85,13 @@ const NodeContainerLogPage = (props: InstanceLogPageProps) => {
 export default NodeContainerLogPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
-  const { nodeId, dockerId, prefix, name } = context.query
+  const { nodeId, prefix, name } = context.query
 
   const node = await cruxFromContext(context).nodes.getNodeDetails(nodeId as string)
 
   return {
     props: {
       node,
-      dockerId: dockerId ?? null,
       prefix: prefix ?? null,
       name: name ?? null,
     },

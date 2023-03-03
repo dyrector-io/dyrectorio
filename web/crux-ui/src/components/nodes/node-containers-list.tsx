@@ -10,8 +10,8 @@ import {
   containerIsRestartable,
   containerIsStartable,
   containerIsStopable,
-  containerNameOf,
   containerPortsToString,
+  containerPrefixNameOf,
   imageName,
 } from '@app/models'
 import { nodeContainerLogUrl } from '@app/routes'
@@ -36,7 +36,7 @@ const NodeContainersList = (props: NodeContainersListProps) => {
   const headers = ['common:name', 'images:imageTag', 'common:state', 'common:createdAt', 'ports', 'common:actions']
 
   const itemBuilder = (container: Container) => {
-    const name = containerNameOf(container.id)
+    const name = containerPrefixNameOf(container.id)
     const targetState = state.containerTargetStates[name]
 
     return [

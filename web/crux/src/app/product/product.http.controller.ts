@@ -1,5 +1,5 @@
 import { Controller, Post, Body, Get, UseGuards, UseInterceptors, UseFilters } from '@nestjs/common'
-import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
+import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import { CreateEntityResponse, CreateProductRequest, ProductListResponse } from 'src/grpc/protobuf/proto/crux'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import { ApiBody, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger'

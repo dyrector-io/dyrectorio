@@ -1,8 +1,5 @@
-import { ContainerLogMessage, WS_TYPE_CONTAINER_LOG } from '@app/models'
-import {
-  ContainerIdentifier,
-  ContainerLogMessage as GrpcContainerLogMessage,
-} from '@app/models/grpc/protobuf/proto/common'
+import { ContainerIdentifier, ContainerLogMessage, WS_TYPE_CONTAINER_LOG } from '@app/models'
+import { ContainerLogMessage as GrpcContainerLogMessage } from '@app/models/grpc/protobuf/proto/common'
 import WsConnection from '@app/websockets/connection'
 import { GrpcConnection } from './crux/grpc-connection'
 import DyoNodeService from './crux/node-service'

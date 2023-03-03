@@ -1,5 +1,5 @@
-import { containerNameOf } from '@app/models'
-import { ContainerIdentifier } from '@app/models/grpc/protobuf/proto/common'
+import { invalidArgument } from '@app/error-responses'
+import { ContainerIdentifier, containerPrefixNameOf } from '@app/models'
 import WsConnection from '@app/websockets/connection'
 import ContainerLogStream from './container-log-stream'
 import DyoNodeService from './crux/node-service'
@@ -12,7 +12,11 @@ class ContainerLogStreamService {
   constructor(private nodeId: string) {}
 
   startWatching(connection: WsConnection, nodeService: DyoNodeService, container: ContainerIdentifier) {
-    const key = containerNameOf(container)
+    if (!container) {
+      throw invalidArgument('container', 'Container not found', container ? containerPrefixNameOf(container) : 'null')
+    }
+
+    const key = containerPrefixNameOf(container)
 
     let stream = this.streams.get(key)
     if (!stream) {
@@ -33,7 +37,7 @@ class ContainerLogStreamService {
   }
 
   stopWatching(connection: WsConnection, container: ContainerIdentifier) {
-    const key = containerNameOf(container)
+    const key = containerPrefixNameOf(container)
     this.removeConnectionFromWatcher(connection, key)
 
     const containers = this.connectionToContainers.get(connection)

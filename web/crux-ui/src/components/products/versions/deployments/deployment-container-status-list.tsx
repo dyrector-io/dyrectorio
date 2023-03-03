@@ -5,7 +5,7 @@ import useWebSocket from '@app/hooks/use-websocket'
 import {
   Container,
   ContainerListMessage,
-  containerNameOf,
+  containerPrefixNameOf,
   DeploymentRoot,
   WatchContainerStatusMessage,
   WS_TYPE_CONTAINER_STATUS_LIST,
@@ -53,10 +53,10 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
       return weak
     }
 
-    const containerNames = strong.map(it => containerNameOf(it.id))
+    const containerNames = strong.map(it => containerPrefixNameOf(it.id))
 
     return weak.map(it => {
-      const name = containerNameOf(it.id)
+      const name = containerPrefixNameOf(it.id)
 
       const index = containerNames.indexOf(name)
       return index < 0 ? it : strong[index]
@@ -72,7 +72,7 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
 
     const logUrl = deploymentContainerLogUrl(deployment.product.id, deployment.versionId, deployment.id, container.id)
 
-    const name = containerNameOf(container.id)
+    const name = containerPrefixNameOf(container.id)
 
     /* eslint-disable react/jsx-key */
     return [

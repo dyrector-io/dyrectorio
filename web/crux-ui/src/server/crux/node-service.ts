@@ -2,6 +2,7 @@ import { Logger } from '@app/logger'
 import {
   Container,
   ContainerCommand,
+  ContainerIdentifier,
   ContainerListMessage,
   ContainerLogMessage,
   CreateDyoNode,
@@ -14,7 +15,7 @@ import {
   UpdateDyoNode,
 } from '@app/models'
 import {
-  ContainerIdentifier,
+  ContainerIdentifier as ProtoContainerIdentifier,
   ContainerLogMessage as GrpcContainerLogMessage,
   ContainerStateListMessage,
   Empty,
@@ -43,6 +44,7 @@ import {
 import { timestampToUTC } from '@app/utils'
 import { GrpcConnection, protomisify, ProtoSubscriptionOptions } from './grpc-connection'
 import {
+  containerIdentifierToProto,
   containerOperationToProto,
   containerStateToDto,
   nodeStatusToDto,
@@ -202,7 +204,7 @@ class DyoNodeService {
     const req: NodeContainerCommandRequest = {
       id,
       command: {
-        container: command.container,
+        container: containerIdentifierToProto(command.container),
         operation: containerOperationToProto(command.operation),
       },
     }
@@ -215,13 +217,13 @@ class DyoNodeService {
   }
 
   async deleteContainer(id: string, containers: DeleteContainers) {
-    let container: ContainerIdentifier = null
+    let container: ProtoContainerIdentifier = null
     let prefix: string = null
 
     if (containers.prefix) {
       prefix = containers.prefix
     } else {
-      container = containers.id
+      container = containerIdentifierToProto(containers.id)
     }
 
     const req: NodeDeleteContainersRequest = {
@@ -296,7 +298,7 @@ class DyoNodeService {
   ): GrpcConnection<GrpcContainerLogMessage, ContainerLogMessage> {
     const req: WatchContainerLogRequest = {
       nodeId,
-      container,
+      container: containerIdentifierToProto(container),
     }
 
     const transform = (data: GrpcContainerLogMessage) =>

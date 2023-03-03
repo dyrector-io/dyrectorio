@@ -1,6 +1,6 @@
 import { Controller, UseInterceptors } from '@nestjs/common'
 import { Observable } from 'rxjs'
-import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
+import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import { NotImplementedException } from 'src/exception/errors'
 import { CruxHealthController, CruxHealthControllerMethods, HealthResponse } from 'src/grpc/protobuf/proto/crux'
 import {

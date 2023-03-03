@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -759,7 +760,16 @@ func ContainerLog(ctx context.Context, request *agent.ContainerLogRequest) (*grp
 
 	self, err := GetOwnContainer(ctx)
 	if err != nil {
-		return nil, err
+		if !errors.Is(err, &UnknownContainerError{}) {
+			return nil, err
+		}
+
+		cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
+		if !cfg.Debug {
+			return nil, err
+		}
+
+		self = &types.Container{}
 	}
 
 	prefix := request.Container.Prefix

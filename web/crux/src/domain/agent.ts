@@ -107,7 +107,7 @@ export class Agent {
   upsertContainerLogStream(container: ContainerIdentifier): ContainerLogStream {
     this.throwWhenUpdating()
 
-    const key = `${container.prefix}-${container.name}`
+    const key = Agent.containerPrefixNameOf(container)
     let stream = this.logStreams.get(key)
     if (!stream) {
       stream = new ContainerLogStream(container, DEFAULT_CONTAINER_LOG_TAIL)
@@ -214,11 +214,9 @@ export class Agent {
     watcher.onNodeStreamFinished()
   }
 
-  onContainerLogStreamStarted(
-    dockerId?: string,
-    pod?: ContainerIdentifier,
-  ): [ContainerLogStream, ContainerLogStreamCompleter] {
-    const key = dockerId ?? `${pod.prefix}-${pod.name}`
+  onContainerLogStreamStarted(id: ContainerIdentifier): [ContainerLogStream, ContainerLogStreamCompleter] {
+    const key = Agent.containerPrefixNameOf(id)
+
     const stream = this.logStreams.get(key)
     if (!stream) {
       return [null, null]
@@ -227,8 +225,8 @@ export class Agent {
     return [stream, stream.onNodeStreamStarted()]
   }
 
-  onContainerLogStreamFinished(dockerId?: string, pod?: ContainerIdentifier) {
-    const key = dockerId ?? `${pod.prefix}-${pod.name}`
+  onContainerLogStreamFinished(id: ContainerIdentifier) {
+    const key = Agent.containerPrefixNameOf(id)
     const watcher = this.logStreams.get(key)
     if (!watcher) {
       return
@@ -241,7 +239,10 @@ export class Agent {
   getContainerSecrets(prefix: string, name: string): Observable<ListSecretsResponse> {
     this.throwWhenUpdating()
 
-    const key = `${prefix}-${name}`
+    const key = Agent.containerPrefixNameOf({
+      prefix,
+      name,
+    })
 
     let watcher = this.secretsWatchers.get(key)
     if (!watcher) {
@@ -277,7 +278,7 @@ export class Agent {
   }
 
   onContainerSecrets(res: ListSecretsResponse) {
-    const key = `${res.prefix}-${res.name}`
+    const key = Agent.containerPrefixNameOf(res)
 
     const watcher = this.secretsWatchers.get(key)
     if (!watcher) {
@@ -343,11 +344,14 @@ export class Agent {
 
   private static containerDeleteRequestToRequestId(request: DeleteContainersRequest): string {
     if (request.container) {
-      return `${request.container.prefix}-${request.container.name}`
+      return Agent.containerPrefixNameOf(request.container)
     }
 
     return request.prefix
   }
+
+  public static containerPrefixNameOf = (id: ContainerIdentifier): string =>
+    !id.prefix ? id.name : `${id.prefix}-${id.name}`
 }
 
 export type AgentToken = {

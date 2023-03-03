@@ -1,7 +1,8 @@
 import { Metadata } from '@grpc/grpc-js'
-import { UsePipes, Controller, UseGuards, UseInterceptors } from '@nestjs/common'
+import { Controller, UseGuards, UsePipes } from '@nestjs/common'
 import { concatAll, from, Observable } from 'rxjs'
-import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
+import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
+import UseGrpcInterceptors from 'src/decorators/grpc-interceptors.decorator'
 import { ContainerLogMessage, ContainerStateListMessage, Empty } from 'src/grpc/protobuf/proto/common'
 import {
   CreateEntityResponse,
@@ -22,10 +23,7 @@ import {
   WatchContainerLogRequest,
   WatchContainerStateRequest,
 } from 'src/grpc/protobuf/proto/crux'
-import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
-import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
-import GrpcUserInterceptor, { DisableIdentity, getIdentity } from 'src/interceptors/grpc.user.interceptor'
-import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
+import { DisableIdentity, getIdentity } from 'src/interceptors/grpc.user.interceptor'
 import { DisableAccessCheck } from 'src/shared/user-access.guard'
 import NodeTeamAccessGuard from './guards/node.team-access.guard'
 import NodeService from './node.service'
@@ -35,7 +33,7 @@ import NodeGetScriptValidationPipe from './pipes/node.get-script.pipe'
 @Controller()
 @CruxNodeControllerMethods()
 @UseGuards(NodeTeamAccessGuard)
-@UseInterceptors(GrpcLoggerInterceptor, GrpcUserInterceptor, GrpcErrorInterceptor, PrismaErrorInterceptor)
+@UseGrpcInterceptors()
 export default class NodeController implements CruxNodeController {
   constructor(private service: NodeService) {}
 
