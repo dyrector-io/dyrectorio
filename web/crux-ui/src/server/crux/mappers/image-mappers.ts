@@ -183,7 +183,6 @@ export const containerConfigToDto = (config?: ProtoContainerConfig): ContainerCo
         }
       : null,
     configContainer: config.common.configContainer ?? null,
-    importContainer: config.common.importContainer ?? null,
     ports: config.common.ports?.data ?? null,
     portRanges: config.common.portRanges?.data ?? null,
     volumes: config.common.volumes?.data ? volumesToDto(config.common.volumes.data) : null,
@@ -194,6 +193,7 @@ export const containerConfigToDto = (config?: ProtoContainerConfig): ContainerCo
     initContainers: config.common?.initContainers?.data ?? null,
     secrets: config.secrets?.data ?? null,
     capabilities: null,
+    storage: config.common.storage ?? null,
 
     // dagent
     logConfig: logConfigToDto(config.dagent?.logConfig),
@@ -233,10 +233,10 @@ export const containerConfigToProto = (config: Partial<ContainerConfigData>): Pr
     expose: exposeToProto(config.expose),
     ingress: config.ingress ? { ...config.ingress } : null,
     configContainer: config.configContainer,
-    importContainer: config.importContainer,
     name: config.name,
     environment: config.environment ? { data: config.environment } : null,
     initContainers: config.initContainers ? { data: config.initContainers } : null,
+    storage: config.storage ?? null,
   }
 
   const dagent: DagentContainerConfig = {

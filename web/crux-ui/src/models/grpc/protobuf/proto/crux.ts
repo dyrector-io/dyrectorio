@@ -1020,12 +1020,6 @@ export interface InitContainerList {
   data: InitContainer[]
 }
 
-export interface ImportContainer {
-  volume: string
-  command: string
-  environment: UniqueKeyValue[]
-}
-
 export interface LogConfig {
   driver: DriverType
   options: UniqueKeyValue[]
@@ -1112,6 +1106,12 @@ export interface Marker {
   ingress: UniqueKeyValue[]
 }
 
+export interface ContainerStorage {
+  storageId?: string | undefined
+  path?: string | undefined
+  bucket?: string | undefined
+}
+
 export interface DagentContainerConfig {
   logConfig?: LogConfig | undefined
   restartPolicy?: RestartPolicy | undefined
@@ -1137,9 +1137,9 @@ export interface CommonContainerConfig {
   expose?: ExposeStrategy | undefined
   ingress?: Ingress | undefined
   configContainer?: ConfigContainer | undefined
-  importContainer?: ImportContainer | undefined
   user?: number | undefined
   TTY?: boolean | undefined
+  storage?: ContainerStorage | undefined
   ports?: PortList | undefined
   portRanges?: PortRangeBindingList | undefined
   volumes?: VolumeList | undefined
@@ -1527,6 +1527,59 @@ export interface DashboardResponse {
   nodes: DashboardActiveNodes[]
   latestDeployments: DashboardDeployment[]
   auditLog: AuditLogResponse[]
+}
+
+export interface StorageResponse {
+  id: string
+  audit: AuditResponse | undefined
+  name: string
+  description?: string | undefined
+  icon?: string | undefined
+  url: string
+}
+
+export interface StorageListResponse {
+  data: StorageResponse[]
+}
+
+export interface CreateStorageRequest {
+  name: string
+  description?: string | undefined
+  icon?: string | undefined
+  url: string
+  accessKey?: string | undefined
+  secretKey?: string | undefined
+}
+
+export interface UpdateStorageRequest {
+  id: string
+  name: string
+  description?: string | undefined
+  icon?: string | undefined
+  url: string
+  accessKey?: string | undefined
+  secretKey?: string | undefined
+}
+
+export interface StorageDetailsResponse {
+  id: string
+  audit: AuditResponse | undefined
+  name: string
+  description?: string | undefined
+  icon?: string | undefined
+  url: string
+  accessKey?: string | undefined
+  secretKey?: string | undefined
+  inUse: boolean
+}
+
+export interface StorageOptionResponse {
+  id: string
+  name: string
+}
+
+export interface StorageOptionListResponse {
+  data: StorageOptionResponse[]
 }
 
 function createBaseServiceIdRequest(): ServiceIdRequest {
@@ -5764,83 +5817,6 @@ export const InitContainerList = {
   },
 }
 
-function createBaseImportContainer(): ImportContainer {
-  return { volume: '', command: '', environment: [] }
-}
-
-export const ImportContainer = {
-  encode(message: ImportContainer, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.volume !== '') {
-      writer.uint32(802).string(message.volume)
-    }
-    if (message.command !== '') {
-      writer.uint32(810).string(message.command)
-    }
-    for (const v of message.environment) {
-      UniqueKeyValue.encode(v!, writer.uint32(8002).fork()).ldelim()
-    }
-    return writer
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): ImportContainer {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
-    let end = length === undefined ? reader.len : reader.pos + length
-    const message = createBaseImportContainer()
-    while (reader.pos < end) {
-      const tag = reader.uint32()
-      switch (tag >>> 3) {
-        case 100:
-          message.volume = reader.string()
-          break
-        case 101:
-          message.command = reader.string()
-          break
-        case 1000:
-          message.environment.push(UniqueKeyValue.decode(reader, reader.uint32()))
-          break
-        default:
-          reader.skipType(tag & 7)
-          break
-      }
-    }
-    return message
-  },
-
-  fromJSON(object: any): ImportContainer {
-    return {
-      volume: isSet(object.volume) ? String(object.volume) : '',
-      command: isSet(object.command) ? String(object.command) : '',
-      environment: Array.isArray(object?.environment)
-        ? object.environment.map((e: any) => UniqueKeyValue.fromJSON(e))
-        : [],
-    }
-  },
-
-  toJSON(message: ImportContainer): unknown {
-    const obj: any = {}
-    message.volume !== undefined && (obj.volume = message.volume)
-    message.command !== undefined && (obj.command = message.command)
-    if (message.environment) {
-      obj.environment = message.environment.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
-    } else {
-      obj.environment = []
-    }
-    return obj
-  },
-
-  create<I extends Exact<DeepPartial<ImportContainer>, I>>(base?: I): ImportContainer {
-    return ImportContainer.fromPartial(base ?? {})
-  },
-
-  fromPartial<I extends Exact<DeepPartial<ImportContainer>, I>>(object: I): ImportContainer {
-    const message = createBaseImportContainer()
-    message.volume = object.volume ?? ''
-    message.command = object.command ?? ''
-    message.environment = object.environment?.map(e => UniqueKeyValue.fromPartial(e)) || []
-    return message
-  },
-}
-
 function createBaseLogConfig(): LogConfig {
   return { driver: 0, options: [] }
 }
@@ -6918,6 +6894,77 @@ export const Marker = {
   },
 }
 
+function createBaseContainerStorage(): ContainerStorage {
+  return {}
+}
+
+export const ContainerStorage = {
+  encode(message: ContainerStorage, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.storageId !== undefined) {
+      writer.uint32(802).string(message.storageId)
+    }
+    if (message.path !== undefined) {
+      writer.uint32(810).string(message.path)
+    }
+    if (message.bucket !== undefined) {
+      writer.uint32(818).string(message.bucket)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): ContainerStorage {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseContainerStorage()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 100:
+          message.storageId = reader.string()
+          break
+        case 101:
+          message.path = reader.string()
+          break
+        case 102:
+          message.bucket = reader.string()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): ContainerStorage {
+    return {
+      storageId: isSet(object.storageId) ? String(object.storageId) : undefined,
+      path: isSet(object.path) ? String(object.path) : undefined,
+      bucket: isSet(object.bucket) ? String(object.bucket) : undefined,
+    }
+  },
+
+  toJSON(message: ContainerStorage): unknown {
+    const obj: any = {}
+    message.storageId !== undefined && (obj.storageId = message.storageId)
+    message.path !== undefined && (obj.path = message.path)
+    message.bucket !== undefined && (obj.bucket = message.bucket)
+    return obj
+  },
+
+  create<I extends Exact<DeepPartial<ContainerStorage>, I>>(base?: I): ContainerStorage {
+    return ContainerStorage.fromPartial(base ?? {})
+  },
+
+  fromPartial<I extends Exact<DeepPartial<ContainerStorage>, I>>(object: I): ContainerStorage {
+    const message = createBaseContainerStorage()
+    message.storageId = object.storageId ?? undefined
+    message.path = object.path ?? undefined
+    message.bucket = object.bucket ?? undefined
+    return message
+  },
+}
+
 function createBaseDagentContainerConfig(): DagentContainerConfig {
   return {}
 }
@@ -7191,14 +7238,14 @@ export const CommonContainerConfig = {
     if (message.configContainer !== undefined) {
       ConfigContainer.encode(message.configContainer, writer.uint32(834).fork()).ldelim()
     }
-    if (message.importContainer !== undefined) {
-      ImportContainer.encode(message.importContainer, writer.uint32(842).fork()).ldelim()
-    }
     if (message.user !== undefined) {
-      writer.uint32(848).int64(message.user)
+      writer.uint32(840).int64(message.user)
     }
     if (message.TTY !== undefined) {
-      writer.uint32(856).bool(message.TTY)
+      writer.uint32(848).bool(message.TTY)
+    }
+    if (message.storage !== undefined) {
+      ContainerStorage.encode(message.storage, writer.uint32(858).fork()).ldelim()
     }
     if (message.ports !== undefined) {
       PortList.encode(message.ports, writer.uint32(8002).fork()).ldelim()
@@ -7244,13 +7291,13 @@ export const CommonContainerConfig = {
           message.configContainer = ConfigContainer.decode(reader, reader.uint32())
           break
         case 105:
-          message.importContainer = ImportContainer.decode(reader, reader.uint32())
-          break
-        case 106:
           message.user = longToNumber(reader.int64() as Long)
           break
-        case 107:
+        case 106:
           message.TTY = reader.bool()
+          break
+        case 107:
+          message.storage = ContainerStorage.decode(reader, reader.uint32())
           break
         case 1000:
           message.ports = PortList.decode(reader, reader.uint32())
@@ -7287,9 +7334,9 @@ export const CommonContainerConfig = {
       expose: isSet(object.expose) ? exposeStrategyFromJSON(object.expose) : undefined,
       ingress: isSet(object.ingress) ? Ingress.fromJSON(object.ingress) : undefined,
       configContainer: isSet(object.configContainer) ? ConfigContainer.fromJSON(object.configContainer) : undefined,
-      importContainer: isSet(object.importContainer) ? ImportContainer.fromJSON(object.importContainer) : undefined,
       user: isSet(object.user) ? Number(object.user) : undefined,
       TTY: isSet(object.TTY) ? Boolean(object.TTY) : undefined,
+      storage: isSet(object.storage) ? ContainerStorage.fromJSON(object.storage) : undefined,
       ports: isSet(object.ports) ? PortList.fromJSON(object.ports) : undefined,
       portRanges: isSet(object.portRanges) ? PortRangeBindingList.fromJSON(object.portRanges) : undefined,
       volumes: isSet(object.volumes) ? VolumeList.fromJSON(object.volumes) : undefined,
@@ -7308,10 +7355,10 @@ export const CommonContainerConfig = {
     message.ingress !== undefined && (obj.ingress = message.ingress ? Ingress.toJSON(message.ingress) : undefined)
     message.configContainer !== undefined &&
       (obj.configContainer = message.configContainer ? ConfigContainer.toJSON(message.configContainer) : undefined)
-    message.importContainer !== undefined &&
-      (obj.importContainer = message.importContainer ? ImportContainer.toJSON(message.importContainer) : undefined)
     message.user !== undefined && (obj.user = Math.round(message.user))
     message.TTY !== undefined && (obj.TTY = message.TTY)
+    message.storage !== undefined &&
+      (obj.storage = message.storage ? ContainerStorage.toJSON(message.storage) : undefined)
     message.ports !== undefined && (obj.ports = message.ports ? PortList.toJSON(message.ports) : undefined)
     message.portRanges !== undefined &&
       (obj.portRanges = message.portRanges ? PortRangeBindingList.toJSON(message.portRanges) : undefined)
@@ -7340,12 +7387,10 @@ export const CommonContainerConfig = {
       object.configContainer !== undefined && object.configContainer !== null
         ? ConfigContainer.fromPartial(object.configContainer)
         : undefined
-    message.importContainer =
-      object.importContainer !== undefined && object.importContainer !== null
-        ? ImportContainer.fromPartial(object.importContainer)
-        : undefined
     message.user = object.user ?? undefined
     message.TTY = object.TTY ?? undefined
+    message.storage =
+      object.storage !== undefined && object.storage !== null ? ContainerStorage.fromPartial(object.storage) : undefined
     message.ports = object.ports !== undefined && object.ports !== null ? PortList.fromPartial(object.ports) : undefined
     message.portRanges =
       object.portRanges !== undefined && object.portRanges !== null
@@ -11971,6 +12016,605 @@ export const DashboardResponse = {
   },
 }
 
+function createBaseStorageResponse(): StorageResponse {
+  return { id: '', audit: undefined, name: '', url: '' }
+}
+
+export const StorageResponse = {
+  encode(message: StorageResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== '') {
+      writer.uint32(10).string(message.id)
+    }
+    if (message.audit !== undefined) {
+      AuditResponse.encode(message.audit, writer.uint32(18).fork()).ldelim()
+    }
+    if (message.name !== '') {
+      writer.uint32(802).string(message.name)
+    }
+    if (message.description !== undefined) {
+      writer.uint32(810).string(message.description)
+    }
+    if (message.icon !== undefined) {
+      writer.uint32(818).string(message.icon)
+    }
+    if (message.url !== '') {
+      writer.uint32(826).string(message.url)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): StorageResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseStorageResponse()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.id = reader.string()
+          break
+        case 2:
+          message.audit = AuditResponse.decode(reader, reader.uint32())
+          break
+        case 100:
+          message.name = reader.string()
+          break
+        case 101:
+          message.description = reader.string()
+          break
+        case 102:
+          message.icon = reader.string()
+          break
+        case 103:
+          message.url = reader.string()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): StorageResponse {
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
+      name: isSet(object.name) ? String(object.name) : '',
+      description: isSet(object.description) ? String(object.description) : undefined,
+      icon: isSet(object.icon) ? String(object.icon) : undefined,
+      url: isSet(object.url) ? String(object.url) : '',
+    }
+  },
+
+  toJSON(message: StorageResponse): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.audit !== undefined && (obj.audit = message.audit ? AuditResponse.toJSON(message.audit) : undefined)
+    message.name !== undefined && (obj.name = message.name)
+    message.description !== undefined && (obj.description = message.description)
+    message.icon !== undefined && (obj.icon = message.icon)
+    message.url !== undefined && (obj.url = message.url)
+    return obj
+  },
+
+  create<I extends Exact<DeepPartial<StorageResponse>, I>>(base?: I): StorageResponse {
+    return StorageResponse.fromPartial(base ?? {})
+  },
+
+  fromPartial<I extends Exact<DeepPartial<StorageResponse>, I>>(object: I): StorageResponse {
+    const message = createBaseStorageResponse()
+    message.id = object.id ?? ''
+    message.audit =
+      object.audit !== undefined && object.audit !== null ? AuditResponse.fromPartial(object.audit) : undefined
+    message.name = object.name ?? ''
+    message.description = object.description ?? undefined
+    message.icon = object.icon ?? undefined
+    message.url = object.url ?? ''
+    return message
+  },
+}
+
+function createBaseStorageListResponse(): StorageListResponse {
+  return { data: [] }
+}
+
+export const StorageListResponse = {
+  encode(message: StorageListResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    for (const v of message.data) {
+      StorageResponse.encode(v!, writer.uint32(8002).fork()).ldelim()
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): StorageListResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseStorageListResponse()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1000:
+          message.data.push(StorageResponse.decode(reader, reader.uint32()))
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): StorageListResponse {
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => StorageResponse.fromJSON(e)) : [] }
+  },
+
+  toJSON(message: StorageListResponse): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? StorageResponse.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+
+  create<I extends Exact<DeepPartial<StorageListResponse>, I>>(base?: I): StorageListResponse {
+    return StorageListResponse.fromPartial(base ?? {})
+  },
+
+  fromPartial<I extends Exact<DeepPartial<StorageListResponse>, I>>(object: I): StorageListResponse {
+    const message = createBaseStorageListResponse()
+    message.data = object.data?.map(e => StorageResponse.fromPartial(e)) || []
+    return message
+  },
+}
+
+function createBaseCreateStorageRequest(): CreateStorageRequest {
+  return { name: '', url: '' }
+}
+
+export const CreateStorageRequest = {
+  encode(message: CreateStorageRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.name !== '') {
+      writer.uint32(802).string(message.name)
+    }
+    if (message.description !== undefined) {
+      writer.uint32(810).string(message.description)
+    }
+    if (message.icon !== undefined) {
+      writer.uint32(818).string(message.icon)
+    }
+    if (message.url !== '') {
+      writer.uint32(826).string(message.url)
+    }
+    if (message.accessKey !== undefined) {
+      writer.uint32(834).string(message.accessKey)
+    }
+    if (message.secretKey !== undefined) {
+      writer.uint32(842).string(message.secretKey)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): CreateStorageRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseCreateStorageRequest()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 100:
+          message.name = reader.string()
+          break
+        case 101:
+          message.description = reader.string()
+          break
+        case 102:
+          message.icon = reader.string()
+          break
+        case 103:
+          message.url = reader.string()
+          break
+        case 104:
+          message.accessKey = reader.string()
+          break
+        case 105:
+          message.secretKey = reader.string()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): CreateStorageRequest {
+    return {
+      name: isSet(object.name) ? String(object.name) : '',
+      description: isSet(object.description) ? String(object.description) : undefined,
+      icon: isSet(object.icon) ? String(object.icon) : undefined,
+      url: isSet(object.url) ? String(object.url) : '',
+      accessKey: isSet(object.accessKey) ? String(object.accessKey) : undefined,
+      secretKey: isSet(object.secretKey) ? String(object.secretKey) : undefined,
+    }
+  },
+
+  toJSON(message: CreateStorageRequest): unknown {
+    const obj: any = {}
+    message.name !== undefined && (obj.name = message.name)
+    message.description !== undefined && (obj.description = message.description)
+    message.icon !== undefined && (obj.icon = message.icon)
+    message.url !== undefined && (obj.url = message.url)
+    message.accessKey !== undefined && (obj.accessKey = message.accessKey)
+    message.secretKey !== undefined && (obj.secretKey = message.secretKey)
+    return obj
+  },
+
+  create<I extends Exact<DeepPartial<CreateStorageRequest>, I>>(base?: I): CreateStorageRequest {
+    return CreateStorageRequest.fromPartial(base ?? {})
+  },
+
+  fromPartial<I extends Exact<DeepPartial<CreateStorageRequest>, I>>(object: I): CreateStorageRequest {
+    const message = createBaseCreateStorageRequest()
+    message.name = object.name ?? ''
+    message.description = object.description ?? undefined
+    message.icon = object.icon ?? undefined
+    message.url = object.url ?? ''
+    message.accessKey = object.accessKey ?? undefined
+    message.secretKey = object.secretKey ?? undefined
+    return message
+  },
+}
+
+function createBaseUpdateStorageRequest(): UpdateStorageRequest {
+  return { id: '', name: '', url: '' }
+}
+
+export const UpdateStorageRequest = {
+  encode(message: UpdateStorageRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== '') {
+      writer.uint32(10).string(message.id)
+    }
+    if (message.name !== '') {
+      writer.uint32(802).string(message.name)
+    }
+    if (message.description !== undefined) {
+      writer.uint32(810).string(message.description)
+    }
+    if (message.icon !== undefined) {
+      writer.uint32(818).string(message.icon)
+    }
+    if (message.url !== '') {
+      writer.uint32(826).string(message.url)
+    }
+    if (message.accessKey !== undefined) {
+      writer.uint32(834).string(message.accessKey)
+    }
+    if (message.secretKey !== undefined) {
+      writer.uint32(842).string(message.secretKey)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): UpdateStorageRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseUpdateStorageRequest()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.id = reader.string()
+          break
+        case 100:
+          message.name = reader.string()
+          break
+        case 101:
+          message.description = reader.string()
+          break
+        case 102:
+          message.icon = reader.string()
+          break
+        case 103:
+          message.url = reader.string()
+          break
+        case 104:
+          message.accessKey = reader.string()
+          break
+        case 105:
+          message.secretKey = reader.string()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): UpdateStorageRequest {
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      description: isSet(object.description) ? String(object.description) : undefined,
+      icon: isSet(object.icon) ? String(object.icon) : undefined,
+      url: isSet(object.url) ? String(object.url) : '',
+      accessKey: isSet(object.accessKey) ? String(object.accessKey) : undefined,
+      secretKey: isSet(object.secretKey) ? String(object.secretKey) : undefined,
+    }
+  },
+
+  toJSON(message: UpdateStorageRequest): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.name !== undefined && (obj.name = message.name)
+    message.description !== undefined && (obj.description = message.description)
+    message.icon !== undefined && (obj.icon = message.icon)
+    message.url !== undefined && (obj.url = message.url)
+    message.accessKey !== undefined && (obj.accessKey = message.accessKey)
+    message.secretKey !== undefined && (obj.secretKey = message.secretKey)
+    return obj
+  },
+
+  create<I extends Exact<DeepPartial<UpdateStorageRequest>, I>>(base?: I): UpdateStorageRequest {
+    return UpdateStorageRequest.fromPartial(base ?? {})
+  },
+
+  fromPartial<I extends Exact<DeepPartial<UpdateStorageRequest>, I>>(object: I): UpdateStorageRequest {
+    const message = createBaseUpdateStorageRequest()
+    message.id = object.id ?? ''
+    message.name = object.name ?? ''
+    message.description = object.description ?? undefined
+    message.icon = object.icon ?? undefined
+    message.url = object.url ?? ''
+    message.accessKey = object.accessKey ?? undefined
+    message.secretKey = object.secretKey ?? undefined
+    return message
+  },
+}
+
+function createBaseStorageDetailsResponse(): StorageDetailsResponse {
+  return { id: '', audit: undefined, name: '', url: '', inUse: false }
+}
+
+export const StorageDetailsResponse = {
+  encode(message: StorageDetailsResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== '') {
+      writer.uint32(10).string(message.id)
+    }
+    if (message.audit !== undefined) {
+      AuditResponse.encode(message.audit, writer.uint32(18).fork()).ldelim()
+    }
+    if (message.name !== '') {
+      writer.uint32(802).string(message.name)
+    }
+    if (message.description !== undefined) {
+      writer.uint32(810).string(message.description)
+    }
+    if (message.icon !== undefined) {
+      writer.uint32(818).string(message.icon)
+    }
+    if (message.url !== '') {
+      writer.uint32(826).string(message.url)
+    }
+    if (message.accessKey !== undefined) {
+      writer.uint32(834).string(message.accessKey)
+    }
+    if (message.secretKey !== undefined) {
+      writer.uint32(842).string(message.secretKey)
+    }
+    if (message.inUse === true) {
+      writer.uint32(848).bool(message.inUse)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): StorageDetailsResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseStorageDetailsResponse()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.id = reader.string()
+          break
+        case 2:
+          message.audit = AuditResponse.decode(reader, reader.uint32())
+          break
+        case 100:
+          message.name = reader.string()
+          break
+        case 101:
+          message.description = reader.string()
+          break
+        case 102:
+          message.icon = reader.string()
+          break
+        case 103:
+          message.url = reader.string()
+          break
+        case 104:
+          message.accessKey = reader.string()
+          break
+        case 105:
+          message.secretKey = reader.string()
+          break
+        case 106:
+          message.inUse = reader.bool()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): StorageDetailsResponse {
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
+      name: isSet(object.name) ? String(object.name) : '',
+      description: isSet(object.description) ? String(object.description) : undefined,
+      icon: isSet(object.icon) ? String(object.icon) : undefined,
+      url: isSet(object.url) ? String(object.url) : '',
+      accessKey: isSet(object.accessKey) ? String(object.accessKey) : undefined,
+      secretKey: isSet(object.secretKey) ? String(object.secretKey) : undefined,
+      inUse: isSet(object.inUse) ? Boolean(object.inUse) : false,
+    }
+  },
+
+  toJSON(message: StorageDetailsResponse): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.audit !== undefined && (obj.audit = message.audit ? AuditResponse.toJSON(message.audit) : undefined)
+    message.name !== undefined && (obj.name = message.name)
+    message.description !== undefined && (obj.description = message.description)
+    message.icon !== undefined && (obj.icon = message.icon)
+    message.url !== undefined && (obj.url = message.url)
+    message.accessKey !== undefined && (obj.accessKey = message.accessKey)
+    message.secretKey !== undefined && (obj.secretKey = message.secretKey)
+    message.inUse !== undefined && (obj.inUse = message.inUse)
+    return obj
+  },
+
+  create<I extends Exact<DeepPartial<StorageDetailsResponse>, I>>(base?: I): StorageDetailsResponse {
+    return StorageDetailsResponse.fromPartial(base ?? {})
+  },
+
+  fromPartial<I extends Exact<DeepPartial<StorageDetailsResponse>, I>>(object: I): StorageDetailsResponse {
+    const message = createBaseStorageDetailsResponse()
+    message.id = object.id ?? ''
+    message.audit =
+      object.audit !== undefined && object.audit !== null ? AuditResponse.fromPartial(object.audit) : undefined
+    message.name = object.name ?? ''
+    message.description = object.description ?? undefined
+    message.icon = object.icon ?? undefined
+    message.url = object.url ?? ''
+    message.accessKey = object.accessKey ?? undefined
+    message.secretKey = object.secretKey ?? undefined
+    message.inUse = object.inUse ?? false
+    return message
+  },
+}
+
+function createBaseStorageOptionResponse(): StorageOptionResponse {
+  return { id: '', name: '' }
+}
+
+export const StorageOptionResponse = {
+  encode(message: StorageOptionResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.id !== '') {
+      writer.uint32(10).string(message.id)
+    }
+    if (message.name !== '') {
+      writer.uint32(802).string(message.name)
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): StorageOptionResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseStorageOptionResponse()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1:
+          message.id = reader.string()
+          break
+        case 100:
+          message.name = reader.string()
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): StorageOptionResponse {
+    return { id: isSet(object.id) ? String(object.id) : '', name: isSet(object.name) ? String(object.name) : '' }
+  },
+
+  toJSON(message: StorageOptionResponse): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.name !== undefined && (obj.name = message.name)
+    return obj
+  },
+
+  create<I extends Exact<DeepPartial<StorageOptionResponse>, I>>(base?: I): StorageOptionResponse {
+    return StorageOptionResponse.fromPartial(base ?? {})
+  },
+
+  fromPartial<I extends Exact<DeepPartial<StorageOptionResponse>, I>>(object: I): StorageOptionResponse {
+    const message = createBaseStorageOptionResponse()
+    message.id = object.id ?? ''
+    message.name = object.name ?? ''
+    return message
+  },
+}
+
+function createBaseStorageOptionListResponse(): StorageOptionListResponse {
+  return { data: [] }
+}
+
+export const StorageOptionListResponse = {
+  encode(message: StorageOptionListResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    for (const v of message.data) {
+      StorageOptionResponse.encode(v!, writer.uint32(8002).fork()).ldelim()
+    }
+    return writer
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): StorageOptionListResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseStorageOptionListResponse()
+    while (reader.pos < end) {
+      const tag = reader.uint32()
+      switch (tag >>> 3) {
+        case 1000:
+          message.data.push(StorageOptionResponse.decode(reader, reader.uint32()))
+          break
+        default:
+          reader.skipType(tag & 7)
+          break
+      }
+    }
+    return message
+  },
+
+  fromJSON(object: any): StorageOptionListResponse {
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => StorageOptionResponse.fromJSON(e)) : [] }
+  },
+
+  toJSON(message: StorageOptionListResponse): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? StorageOptionResponse.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+
+  create<I extends Exact<DeepPartial<StorageOptionListResponse>, I>>(base?: I): StorageOptionListResponse {
+    return StorageOptionListResponse.fromPartial(base ?? {})
+  },
+
+  fromPartial<I extends Exact<DeepPartial<StorageOptionListResponse>, I>>(object: I): StorageOptionListResponse {
+    const message = createBaseStorageOptionListResponse()
+    message.data = object.data?.map(e => StorageOptionResponse.fromPartial(e)) || []
+    return message
+  },
+}
+
 /** Services */
 export type CruxProductService = typeof CruxProductService
 export const CruxProductService = {
@@ -14180,6 +14824,172 @@ export interface CruxTokenClient extends Client {
 export const CruxTokenClient = makeGenericClientConstructor(CruxTokenService, 'crux.CruxToken') as unknown as {
   new (address: string, credentials: ChannelCredentials, options?: Partial<ClientOptions>): CruxTokenClient
   service: typeof CruxTokenService
+}
+
+export type CruxStorageService = typeof CruxStorageService
+export const CruxStorageService = {
+  /** CRUD */
+  getStorages: {
+    path: '/crux.CruxStorage/GetStorages',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => Empty.decode(value),
+    responseSerialize: (value: StorageListResponse) => Buffer.from(StorageListResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => StorageListResponse.decode(value),
+  },
+  createStorage: {
+    path: '/crux.CruxStorage/CreateStorage',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: CreateStorageRequest) => Buffer.from(CreateStorageRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => CreateStorageRequest.decode(value),
+    responseSerialize: (value: CreateEntityResponse) => Buffer.from(CreateEntityResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => CreateEntityResponse.decode(value),
+  },
+  updateStorage: {
+    path: '/crux.CruxStorage/UpdateStorage',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: UpdateStorageRequest) => Buffer.from(UpdateStorageRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => UpdateStorageRequest.decode(value),
+    responseSerialize: (value: UpdateEntityResponse) => Buffer.from(UpdateEntityResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => UpdateEntityResponse.decode(value),
+  },
+  deleteStorage: {
+    path: '/crux.CruxStorage/DeleteStorage',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: IdRequest) => Buffer.from(IdRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => IdRequest.decode(value),
+    responseSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => Empty.decode(value),
+  },
+  getStorageDetails: {
+    path: '/crux.CruxStorage/GetStorageDetails',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: IdRequest) => Buffer.from(IdRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => IdRequest.decode(value),
+    responseSerialize: (value: StorageDetailsResponse) => Buffer.from(StorageDetailsResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => StorageDetailsResponse.decode(value),
+  },
+  getStorageOptions: {
+    path: '/crux.CruxStorage/GetStorageOptions',
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: Empty) => Buffer.from(Empty.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => Empty.decode(value),
+    responseSerialize: (value: StorageOptionListResponse) =>
+      Buffer.from(StorageOptionListResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => StorageOptionListResponse.decode(value),
+  },
+} as const
+
+export interface CruxStorageServer extends UntypedServiceImplementation {
+  /** CRUD */
+  getStorages: handleUnaryCall<Empty, StorageListResponse>
+  createStorage: handleUnaryCall<CreateStorageRequest, CreateEntityResponse>
+  updateStorage: handleUnaryCall<UpdateStorageRequest, UpdateEntityResponse>
+  deleteStorage: handleUnaryCall<IdRequest, Empty>
+  getStorageDetails: handleUnaryCall<IdRequest, StorageDetailsResponse>
+  getStorageOptions: handleUnaryCall<Empty, StorageOptionListResponse>
+}
+
+export interface CruxStorageClient extends Client {
+  /** CRUD */
+  getStorages(
+    request: Empty,
+    callback: (error: ServiceError | null, response: StorageListResponse) => void,
+  ): ClientUnaryCall
+  getStorages(
+    request: Empty,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: StorageListResponse) => void,
+  ): ClientUnaryCall
+  getStorages(
+    request: Empty,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: StorageListResponse) => void,
+  ): ClientUnaryCall
+  createStorage(
+    request: CreateStorageRequest,
+    callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
+  ): ClientUnaryCall
+  createStorage(
+    request: CreateStorageRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
+  ): ClientUnaryCall
+  createStorage(
+    request: CreateStorageRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: CreateEntityResponse) => void,
+  ): ClientUnaryCall
+  updateStorage(
+    request: UpdateStorageRequest,
+    callback: (error: ServiceError | null, response: UpdateEntityResponse) => void,
+  ): ClientUnaryCall
+  updateStorage(
+    request: UpdateStorageRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: UpdateEntityResponse) => void,
+  ): ClientUnaryCall
+  updateStorage(
+    request: UpdateStorageRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: UpdateEntityResponse) => void,
+  ): ClientUnaryCall
+  deleteStorage(request: IdRequest, callback: (error: ServiceError | null, response: Empty) => void): ClientUnaryCall
+  deleteStorage(
+    request: IdRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: Empty) => void,
+  ): ClientUnaryCall
+  deleteStorage(
+    request: IdRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: Empty) => void,
+  ): ClientUnaryCall
+  getStorageDetails(
+    request: IdRequest,
+    callback: (error: ServiceError | null, response: StorageDetailsResponse) => void,
+  ): ClientUnaryCall
+  getStorageDetails(
+    request: IdRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: StorageDetailsResponse) => void,
+  ): ClientUnaryCall
+  getStorageDetails(
+    request: IdRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: StorageDetailsResponse) => void,
+  ): ClientUnaryCall
+  getStorageOptions(
+    request: Empty,
+    callback: (error: ServiceError | null, response: StorageOptionListResponse) => void,
+  ): ClientUnaryCall
+  getStorageOptions(
+    request: Empty,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: StorageOptionListResponse) => void,
+  ): ClientUnaryCall
+  getStorageOptions(
+    request: Empty,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: StorageOptionListResponse) => void,
+  ): ClientUnaryCall
+}
+
+export const CruxStorageClient = makeGenericClientConstructor(CruxStorageService, 'crux.CruxStorage') as unknown as {
+  new (address: string, credentials: ChannelCredentials, options?: Partial<ClientOptions>): CruxStorageClient
+  service: typeof CruxStorageService
 }
 
 declare var self: any | undefined

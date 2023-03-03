@@ -3763,3 +3763,271 @@ var CruxToken_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "protobuf/proto/crux.proto",
 }
+
+// CruxStorageClient is the client API for CruxStorage service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type CruxStorageClient interface {
+	// CRUD
+	GetStorages(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*StorageListResponse, error)
+	CreateStorage(ctx context.Context, in *CreateStorageRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error)
+	UpdateStorage(ctx context.Context, in *UpdateStorageRequest, opts ...grpc.CallOption) (*UpdateEntityResponse, error)
+	DeleteStorage(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error)
+	GetStorageDetails(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*StorageDetailsResponse, error)
+	GetStorageOptions(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*StorageOptionListResponse, error)
+}
+
+type cruxStorageClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewCruxStorageClient(cc grpc.ClientConnInterface) CruxStorageClient {
+	return &cruxStorageClient{cc}
+}
+
+func (c *cruxStorageClient) GetStorages(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*StorageListResponse, error) {
+	out := new(StorageListResponse)
+	err := c.cc.Invoke(ctx, "/crux.CruxStorage/GetStorages", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cruxStorageClient) CreateStorage(ctx context.Context, in *CreateStorageRequest, opts ...grpc.CallOption) (*CreateEntityResponse, error) {
+	out := new(CreateEntityResponse)
+	err := c.cc.Invoke(ctx, "/crux.CruxStorage/CreateStorage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cruxStorageClient) UpdateStorage(ctx context.Context, in *UpdateStorageRequest, opts ...grpc.CallOption) (*UpdateEntityResponse, error) {
+	out := new(UpdateEntityResponse)
+	err := c.cc.Invoke(ctx, "/crux.CruxStorage/UpdateStorage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cruxStorageClient) DeleteStorage(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*common.Empty, error) {
+	out := new(common.Empty)
+	err := c.cc.Invoke(ctx, "/crux.CruxStorage/DeleteStorage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cruxStorageClient) GetStorageDetails(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*StorageDetailsResponse, error) {
+	out := new(StorageDetailsResponse)
+	err := c.cc.Invoke(ctx, "/crux.CruxStorage/GetStorageDetails", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cruxStorageClient) GetStorageOptions(ctx context.Context, in *common.Empty, opts ...grpc.CallOption) (*StorageOptionListResponse, error) {
+	out := new(StorageOptionListResponse)
+	err := c.cc.Invoke(ctx, "/crux.CruxStorage/GetStorageOptions", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// CruxStorageServer is the server API for CruxStorage service.
+// All implementations must embed UnimplementedCruxStorageServer
+// for forward compatibility
+type CruxStorageServer interface {
+	// CRUD
+	GetStorages(context.Context, *common.Empty) (*StorageListResponse, error)
+	CreateStorage(context.Context, *CreateStorageRequest) (*CreateEntityResponse, error)
+	UpdateStorage(context.Context, *UpdateStorageRequest) (*UpdateEntityResponse, error)
+	DeleteStorage(context.Context, *IdRequest) (*common.Empty, error)
+	GetStorageDetails(context.Context, *IdRequest) (*StorageDetailsResponse, error)
+	GetStorageOptions(context.Context, *common.Empty) (*StorageOptionListResponse, error)
+	mustEmbedUnimplementedCruxStorageServer()
+}
+
+// UnimplementedCruxStorageServer must be embedded to have forward compatible implementations.
+type UnimplementedCruxStorageServer struct {
+}
+
+func (UnimplementedCruxStorageServer) GetStorages(context.Context, *common.Empty) (*StorageListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStorages not implemented")
+}
+func (UnimplementedCruxStorageServer) CreateStorage(context.Context, *CreateStorageRequest) (*CreateEntityResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateStorage not implemented")
+}
+func (UnimplementedCruxStorageServer) UpdateStorage(context.Context, *UpdateStorageRequest) (*UpdateEntityResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateStorage not implemented")
+}
+func (UnimplementedCruxStorageServer) DeleteStorage(context.Context, *IdRequest) (*common.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteStorage not implemented")
+}
+func (UnimplementedCruxStorageServer) GetStorageDetails(context.Context, *IdRequest) (*StorageDetailsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStorageDetails not implemented")
+}
+func (UnimplementedCruxStorageServer) GetStorageOptions(context.Context, *common.Empty) (*StorageOptionListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStorageOptions not implemented")
+}
+func (UnimplementedCruxStorageServer) mustEmbedUnimplementedCruxStorageServer() {}
+
+// UnsafeCruxStorageServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to CruxStorageServer will
+// result in compilation errors.
+type UnsafeCruxStorageServer interface {
+	mustEmbedUnimplementedCruxStorageServer()
+}
+
+func RegisterCruxStorageServer(s grpc.ServiceRegistrar, srv CruxStorageServer) {
+	s.RegisterService(&CruxStorage_ServiceDesc, srv)
+}
+
+func _CruxStorage_GetStorages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(common.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CruxStorageServer).GetStorages(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crux.CruxStorage/GetStorages",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CruxStorageServer).GetStorages(ctx, req.(*common.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CruxStorage_CreateStorage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateStorageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CruxStorageServer).CreateStorage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crux.CruxStorage/CreateStorage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CruxStorageServer).CreateStorage(ctx, req.(*CreateStorageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CruxStorage_UpdateStorage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateStorageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CruxStorageServer).UpdateStorage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crux.CruxStorage/UpdateStorage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CruxStorageServer).UpdateStorage(ctx, req.(*UpdateStorageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CruxStorage_DeleteStorage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CruxStorageServer).DeleteStorage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crux.CruxStorage/DeleteStorage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CruxStorageServer).DeleteStorage(ctx, req.(*IdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CruxStorage_GetStorageDetails_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CruxStorageServer).GetStorageDetails(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crux.CruxStorage/GetStorageDetails",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CruxStorageServer).GetStorageDetails(ctx, req.(*IdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CruxStorage_GetStorageOptions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(common.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CruxStorageServer).GetStorageOptions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/crux.CruxStorage/GetStorageOptions",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CruxStorageServer).GetStorageOptions(ctx, req.(*common.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// CruxStorage_ServiceDesc is the grpc.ServiceDesc for CruxStorage service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var CruxStorage_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "crux.CruxStorage",
+	HandlerType: (*CruxStorageServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetStorages",
+			Handler:    _CruxStorage_GetStorages_Handler,
+		},
+		{
+			MethodName: "CreateStorage",
+			Handler:    _CruxStorage_CreateStorage_Handler,
+		},
+		{
+			MethodName: "UpdateStorage",
+			Handler:    _CruxStorage_UpdateStorage_Handler,
+		},
+		{
+			MethodName: "DeleteStorage",
+			Handler:    _CruxStorage_DeleteStorage_Handler,
+		},
+		{
+			MethodName: "GetStorageDetails",
+			Handler:    _CruxStorage_GetStorageDetails_Handler,
+		},
+		{
+			MethodName: "GetStorageOptions",
+			Handler:    _CruxStorage_GetStorageOptions_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "protobuf/proto/crux.proto",
+}

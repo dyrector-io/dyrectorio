@@ -3,33 +3,32 @@ import { DyoCard, DyoCardProps } from '@app/elements/dyo-card'
 import DyoExpandableText from '@app/elements/dyo-expandable-text'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
-import { RegistryListItem } from '@app/models'
+import { StorageListItem } from '@app/models'
 import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
 import Link from 'next/link'
-import RegistryTypeTag from './registry-type-tag'
 
-interface RegistryCardProps extends Omit<DyoCardProps, 'children'> {
-  registry: RegistryListItem
+interface StorageCardProps extends Omit<DyoCardProps, 'children'> {
+  storage: StorageListItem
   titleHref?: string
 }
 
-const RegistryCard = (props: RegistryCardProps) => {
-  const { t } = useTranslation('registries')
+const StorageCard = (props: StorageCardProps) => {
+  const { t } = useTranslation('storages')
 
-  const { registry, titleHref, className } = props
+  const { storage, titleHref, className } = props
 
   const title = (
     <div className="flex flex-row">
-      {!registry.icon ? (
-        <Image src="/default_registry.svg" width={17} height={21} alt={t('altDefaultRegistryPicture')} />
+      {!storage.icon ? (
+        <Image src="/default_storage.svg" width={17} height={21} alt={t('altDefaultRegistryPicture')} />
       ) : (
-        <DyoBadge large icon={registry.icon} />
+        <DyoBadge large icon={storage.icon} />
       )}
 
       <DyoHeading className="text-xl text-bright font-semibold ml-2 my-auto mr-auto" element="h3">
-        {registry.name}
+        {storage.name}
       </DyoHeading>
     </div>
   )
@@ -39,20 +38,18 @@ const RegistryCard = (props: RegistryCardProps) => {
       {titleHref ? <Link href={titleHref}>{title}</Link> : title}
 
       <div className="my-4 text-ellipsis overflow-hidden whitespace-nowrap text-light-eased">
-        <DyoLabel className="mr-auto">{registry.url}</DyoLabel>
+        <DyoLabel className="mr-auto">{storage.url}</DyoLabel>
       </div>
 
       <DyoExpandableText
-        text={registry.description}
+        text={storage.description}
         lineClamp={2}
         className="text-md text-light mt-2 max-h-44"
         buttonClassName="ml-auto"
-        modalTitle={registry.name}
+        modalTitle={storage.name}
       />
-
-      <RegistryTypeTag className="ml-auto mr-4" type={registry.type} />
     </DyoCard>
   )
 }
 
-export default RegistryCard
+export default StorageCard

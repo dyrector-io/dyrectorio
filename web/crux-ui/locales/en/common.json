@@ -197,5 +197,7 @@
   "emptyChangelog": "You have not provided any changes",
   "event": "Event",
   "data": "Data",
-  "log": "Log"
+  "log": "Log",
+
+  "storages": "Storages"
 }

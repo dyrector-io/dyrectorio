@@ -87,6 +87,7 @@ func mapContainerConfig(in *agent.DeployRequest) v1.ContainerConfig {
 		User:             cc.User,
 		Secrets:          cc.Secrets,
 		InitContainers:   mapInitContainers(cc.InitContainers),
+		ImportContainer:  mapImportContainer(in.Common.ImportContainer),
 	}
 
 	if cc.Environment != nil {
@@ -349,6 +350,18 @@ func mapInitContainers(in []*agent.InitContainer) []v1.InitContainer {
 	}
 
 	return containers
+}
+
+func mapImportContainer(in *agent.ImportContainer) *v1.ImportContainer {
+	if in == nil {
+		return nil
+	}
+
+	return &v1.ImportContainer{
+		Volume:       in.Volume,
+		Command:      in.Command,
+		Environments: in.Environment,
+	}
 }
 
 func mapVolumeLinks(in []*agent.VolumeLink) []v1.VolumeLink {

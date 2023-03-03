@@ -10,6 +10,7 @@ import {
   ROUTE_PRODUCTS,
   ROUTE_PROFILE,
   ROUTE_REGISTRIES,
+  ROUTE_STORAGES,
   ROUTE_TEAMS,
   ROUTE_TEMPLATES,
 } from '@app/routes'
@@ -61,6 +62,11 @@ export const Sidebar = (props: SidebarProps) => {
       icon: <DyoIcon src="/template.svg" alt={t('templates')} />,
       text: 'templates',
       link: ROUTE_TEMPLATES,
+    },
+    {
+      icon: <DyoIcon src="/storage.svg" alt={t('storages')} />,
+      text: 'storages',
+      link: ROUTE_STORAGES,
     },
   ]
 

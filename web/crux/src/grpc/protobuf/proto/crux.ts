@@ -1007,12 +1007,6 @@ export interface InitContainerList {
   data: InitContainer[]
 }
 
-export interface ImportContainer {
-  volume: string
-  command: string
-  environment: UniqueKeyValue[]
-}
-
 export interface LogConfig {
   driver: DriverType
   options: UniqueKeyValue[]
@@ -1099,6 +1093,12 @@ export interface Marker {
   ingress: UniqueKeyValue[]
 }
 
+export interface ContainerStorage {
+  storageId?: string | undefined
+  path?: string | undefined
+  bucket?: string | undefined
+}
+
 export interface DagentContainerConfig {
   logConfig?: LogConfig | undefined
   restartPolicy?: RestartPolicy | undefined
@@ -1124,9 +1124,9 @@ export interface CommonContainerConfig {
   expose?: ExposeStrategy | undefined
   ingress?: Ingress | undefined
   configContainer?: ConfigContainer | undefined
-  importContainer?: ImportContainer | undefined
   user?: number | undefined
   TTY?: boolean | undefined
+  storage?: ContainerStorage | undefined
   ports?: PortList | undefined
   portRanges?: PortRangeBindingList | undefined
   volumes?: VolumeList | undefined
@@ -1514,6 +1514,59 @@ export interface DashboardResponse {
   nodes: DashboardActiveNodes[]
   latestDeployments: DashboardDeployment[]
   auditLog: AuditLogResponse[]
+}
+
+export interface StorageResponse {
+  id: string
+  audit: AuditResponse | undefined
+  name: string
+  description?: string | undefined
+  icon?: string | undefined
+  url: string
+}
+
+export interface StorageListResponse {
+  data: StorageResponse[]
+}
+
+export interface CreateStorageRequest {
+  name: string
+  description?: string | undefined
+  icon?: string | undefined
+  url: string
+  accessKey?: string | undefined
+  secretKey?: string | undefined
+}
+
+export interface UpdateStorageRequest {
+  id: string
+  name: string
+  description?: string | undefined
+  icon?: string | undefined
+  url: string
+  accessKey?: string | undefined
+  secretKey?: string | undefined
+}
+
+export interface StorageDetailsResponse {
+  id: string
+  audit: AuditResponse | undefined
+  name: string
+  description?: string | undefined
+  icon?: string | undefined
+  url: string
+  accessKey?: string | undefined
+  secretKey?: string | undefined
+  inUse: boolean
+}
+
+export interface StorageOptionResponse {
+  id: string
+  name: string
+}
+
+export interface StorageOptionListResponse {
+  data: StorageOptionResponse[]
 }
 
 export const CRUX_PACKAGE_NAME = 'crux'
@@ -2824,34 +2877,6 @@ export const InitContainerList = {
   },
 }
 
-function createBaseImportContainer(): ImportContainer {
-  return { volume: '', command: '', environment: [] }
-}
-
-export const ImportContainer = {
-  fromJSON(object: any): ImportContainer {
-    return {
-      volume: isSet(object.volume) ? String(object.volume) : '',
-      command: isSet(object.command) ? String(object.command) : '',
-      environment: Array.isArray(object?.environment)
-        ? object.environment.map((e: any) => UniqueKeyValue.fromJSON(e))
-        : [],
-    }
-  },
-
-  toJSON(message: ImportContainer): unknown {
-    const obj: any = {}
-    message.volume !== undefined && (obj.volume = message.volume)
-    message.command !== undefined && (obj.command = message.command)
-    if (message.environment) {
-      obj.environment = message.environment.map(e => (e ? UniqueKeyValue.toJSON(e) : undefined))
-    } else {
-      obj.environment = []
-    }
-    return obj
-  },
-}
-
 function createBaseLogConfig(): LogConfig {
   return { driver: 0, options: [] }
 }
@@ -3213,6 +3238,28 @@ export const Marker = {
   },
 }
 
+function createBaseContainerStorage(): ContainerStorage {
+  return {}
+}
+
+export const ContainerStorage = {
+  fromJSON(object: any): ContainerStorage {
+    return {
+      storageId: isSet(object.storageId) ? String(object.storageId) : undefined,
+      path: isSet(object.path) ? String(object.path) : undefined,
+      bucket: isSet(object.bucket) ? String(object.bucket) : undefined,
+    }
+  },
+
+  toJSON(message: ContainerStorage): unknown {
+    const obj: any = {}
+    message.storageId !== undefined && (obj.storageId = message.storageId)
+    message.path !== undefined && (obj.path = message.path)
+    message.bucket !== undefined && (obj.bucket = message.bucket)
+    return obj
+  },
+}
+
 function createBaseDagentContainerConfig(): DagentContainerConfig {
   return {}
 }
@@ -3306,9 +3353,9 @@ export const CommonContainerConfig = {
       expose: isSet(object.expose) ? exposeStrategyFromJSON(object.expose) : undefined,
       ingress: isSet(object.ingress) ? Ingress.fromJSON(object.ingress) : undefined,
       configContainer: isSet(object.configContainer) ? ConfigContainer.fromJSON(object.configContainer) : undefined,
-      importContainer: isSet(object.importContainer) ? ImportContainer.fromJSON(object.importContainer) : undefined,
       user: isSet(object.user) ? Number(object.user) : undefined,
       TTY: isSet(object.TTY) ? Boolean(object.TTY) : undefined,
+      storage: isSet(object.storage) ? ContainerStorage.fromJSON(object.storage) : undefined,
       ports: isSet(object.ports) ? PortList.fromJSON(object.ports) : undefined,
       portRanges: isSet(object.portRanges) ? PortRangeBindingList.fromJSON(object.portRanges) : undefined,
       volumes: isSet(object.volumes) ? VolumeList.fromJSON(object.volumes) : undefined,
@@ -3327,10 +3374,10 @@ export const CommonContainerConfig = {
     message.ingress !== undefined && (obj.ingress = message.ingress ? Ingress.toJSON(message.ingress) : undefined)
     message.configContainer !== undefined &&
       (obj.configContainer = message.configContainer ? ConfigContainer.toJSON(message.configContainer) : undefined)
-    message.importContainer !== undefined &&
-      (obj.importContainer = message.importContainer ? ImportContainer.toJSON(message.importContainer) : undefined)
     message.user !== undefined && (obj.user = Math.round(message.user))
     message.TTY !== undefined && (obj.TTY = message.TTY)
+    message.storage !== undefined &&
+      (obj.storage = message.storage ? ContainerStorage.toJSON(message.storage) : undefined)
     message.ports !== undefined && (obj.ports = message.ports ? PortList.toJSON(message.ports) : undefined)
     message.portRanges !== undefined &&
       (obj.portRanges = message.portRanges ? PortRangeBindingList.toJSON(message.portRanges) : undefined)
@@ -4792,6 +4839,183 @@ export const DashboardResponse = {
   },
 }
 
+function createBaseStorageResponse(): StorageResponse {
+  return { id: '', audit: undefined, name: '', url: '' }
+}
+
+export const StorageResponse = {
+  fromJSON(object: any): StorageResponse {
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
+      name: isSet(object.name) ? String(object.name) : '',
+      description: isSet(object.description) ? String(object.description) : undefined,
+      icon: isSet(object.icon) ? String(object.icon) : undefined,
+      url: isSet(object.url) ? String(object.url) : '',
+    }
+  },
+
+  toJSON(message: StorageResponse): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.audit !== undefined && (obj.audit = message.audit ? AuditResponse.toJSON(message.audit) : undefined)
+    message.name !== undefined && (obj.name = message.name)
+    message.description !== undefined && (obj.description = message.description)
+    message.icon !== undefined && (obj.icon = message.icon)
+    message.url !== undefined && (obj.url = message.url)
+    return obj
+  },
+}
+
+function createBaseStorageListResponse(): StorageListResponse {
+  return { data: [] }
+}
+
+export const StorageListResponse = {
+  fromJSON(object: any): StorageListResponse {
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => StorageResponse.fromJSON(e)) : [] }
+  },
+
+  toJSON(message: StorageListResponse): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? StorageResponse.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+}
+
+function createBaseCreateStorageRequest(): CreateStorageRequest {
+  return { name: '', url: '' }
+}
+
+export const CreateStorageRequest = {
+  fromJSON(object: any): CreateStorageRequest {
+    return {
+      name: isSet(object.name) ? String(object.name) : '',
+      description: isSet(object.description) ? String(object.description) : undefined,
+      icon: isSet(object.icon) ? String(object.icon) : undefined,
+      url: isSet(object.url) ? String(object.url) : '',
+      accessKey: isSet(object.accessKey) ? String(object.accessKey) : undefined,
+      secretKey: isSet(object.secretKey) ? String(object.secretKey) : undefined,
+    }
+  },
+
+  toJSON(message: CreateStorageRequest): unknown {
+    const obj: any = {}
+    message.name !== undefined && (obj.name = message.name)
+    message.description !== undefined && (obj.description = message.description)
+    message.icon !== undefined && (obj.icon = message.icon)
+    message.url !== undefined && (obj.url = message.url)
+    message.accessKey !== undefined && (obj.accessKey = message.accessKey)
+    message.secretKey !== undefined && (obj.secretKey = message.secretKey)
+    return obj
+  },
+}
+
+function createBaseUpdateStorageRequest(): UpdateStorageRequest {
+  return { id: '', name: '', url: '' }
+}
+
+export const UpdateStorageRequest = {
+  fromJSON(object: any): UpdateStorageRequest {
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      name: isSet(object.name) ? String(object.name) : '',
+      description: isSet(object.description) ? String(object.description) : undefined,
+      icon: isSet(object.icon) ? String(object.icon) : undefined,
+      url: isSet(object.url) ? String(object.url) : '',
+      accessKey: isSet(object.accessKey) ? String(object.accessKey) : undefined,
+      secretKey: isSet(object.secretKey) ? String(object.secretKey) : undefined,
+    }
+  },
+
+  toJSON(message: UpdateStorageRequest): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.name !== undefined && (obj.name = message.name)
+    message.description !== undefined && (obj.description = message.description)
+    message.icon !== undefined && (obj.icon = message.icon)
+    message.url !== undefined && (obj.url = message.url)
+    message.accessKey !== undefined && (obj.accessKey = message.accessKey)
+    message.secretKey !== undefined && (obj.secretKey = message.secretKey)
+    return obj
+  },
+}
+
+function createBaseStorageDetailsResponse(): StorageDetailsResponse {
+  return { id: '', audit: undefined, name: '', url: '', inUse: false }
+}
+
+export const StorageDetailsResponse = {
+  fromJSON(object: any): StorageDetailsResponse {
+    return {
+      id: isSet(object.id) ? String(object.id) : '',
+      audit: isSet(object.audit) ? AuditResponse.fromJSON(object.audit) : undefined,
+      name: isSet(object.name) ? String(object.name) : '',
+      description: isSet(object.description) ? String(object.description) : undefined,
+      icon: isSet(object.icon) ? String(object.icon) : undefined,
+      url: isSet(object.url) ? String(object.url) : '',
+      accessKey: isSet(object.accessKey) ? String(object.accessKey) : undefined,
+      secretKey: isSet(object.secretKey) ? String(object.secretKey) : undefined,
+      inUse: isSet(object.inUse) ? Boolean(object.inUse) : false,
+    }
+  },
+
+  toJSON(message: StorageDetailsResponse): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.audit !== undefined && (obj.audit = message.audit ? AuditResponse.toJSON(message.audit) : undefined)
+    message.name !== undefined && (obj.name = message.name)
+    message.description !== undefined && (obj.description = message.description)
+    message.icon !== undefined && (obj.icon = message.icon)
+    message.url !== undefined && (obj.url = message.url)
+    message.accessKey !== undefined && (obj.accessKey = message.accessKey)
+    message.secretKey !== undefined && (obj.secretKey = message.secretKey)
+    message.inUse !== undefined && (obj.inUse = message.inUse)
+    return obj
+  },
+}
+
+function createBaseStorageOptionResponse(): StorageOptionResponse {
+  return { id: '', name: '' }
+}
+
+export const StorageOptionResponse = {
+  fromJSON(object: any): StorageOptionResponse {
+    return { id: isSet(object.id) ? String(object.id) : '', name: isSet(object.name) ? String(object.name) : '' }
+  },
+
+  toJSON(message: StorageOptionResponse): unknown {
+    const obj: any = {}
+    message.id !== undefined && (obj.id = message.id)
+    message.name !== undefined && (obj.name = message.name)
+    return obj
+  },
+}
+
+function createBaseStorageOptionListResponse(): StorageOptionListResponse {
+  return { data: [] }
+}
+
+export const StorageOptionListResponse = {
+  fromJSON(object: any): StorageOptionListResponse {
+    return { data: Array.isArray(object?.data) ? object.data.map((e: any) => StorageOptionResponse.fromJSON(e)) : [] }
+  },
+
+  toJSON(message: StorageOptionListResponse): unknown {
+    const obj: any = {}
+    if (message.data) {
+      obj.data = message.data.map(e => (e ? StorageOptionResponse.toJSON(e) : undefined))
+    } else {
+      obj.data = []
+    }
+    return obj
+  },
+}
+
 /** Services */
 
 export interface CruxProductClient {
@@ -5779,6 +6003,82 @@ export function CruxTokenControllerMethods() {
 }
 
 export const CRUX_TOKEN_SERVICE_NAME = 'CruxToken'
+
+export interface CruxStorageClient {
+  /** CRUD */
+
+  getStorages(request: Empty, metadata: Metadata, ...rest: any): Observable<StorageListResponse>
+
+  createStorage(request: CreateStorageRequest, metadata: Metadata, ...rest: any): Observable<CreateEntityResponse>
+
+  updateStorage(request: UpdateStorageRequest, metadata: Metadata, ...rest: any): Observable<UpdateEntityResponse>
+
+  deleteStorage(request: IdRequest, metadata: Metadata, ...rest: any): Observable<Empty>
+
+  getStorageDetails(request: IdRequest, metadata: Metadata, ...rest: any): Observable<StorageDetailsResponse>
+
+  getStorageOptions(request: Empty, metadata: Metadata, ...rest: any): Observable<StorageOptionListResponse>
+}
+
+export interface CruxStorageController {
+  /** CRUD */
+
+  getStorages(
+    request: Empty,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<StorageListResponse> | Observable<StorageListResponse> | StorageListResponse
+
+  createStorage(
+    request: CreateStorageRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<CreateEntityResponse> | Observable<CreateEntityResponse> | CreateEntityResponse
+
+  updateStorage(
+    request: UpdateStorageRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<UpdateEntityResponse> | Observable<UpdateEntityResponse> | UpdateEntityResponse
+
+  deleteStorage(request: IdRequest, metadata: Metadata, ...rest: any): Promise<Empty> | Observable<Empty> | Empty
+
+  getStorageDetails(
+    request: IdRequest,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<StorageDetailsResponse> | Observable<StorageDetailsResponse> | StorageDetailsResponse
+
+  getStorageOptions(
+    request: Empty,
+    metadata: Metadata,
+    ...rest: any
+  ): Promise<StorageOptionListResponse> | Observable<StorageOptionListResponse> | StorageOptionListResponse
+}
+
+export function CruxStorageControllerMethods() {
+  return function (constructor: Function) {
+    const grpcMethods: string[] = [
+      'getStorages',
+      'createStorage',
+      'updateStorage',
+      'deleteStorage',
+      'getStorageDetails',
+      'getStorageOptions',
+    ]
+    for (const method of grpcMethods) {
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
+      GrpcMethod('CruxStorage', method)(constructor.prototype[method], method, descriptor)
+    }
+    const grpcStreamMethods: string[] = []
+    for (const method of grpcStreamMethods) {
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method)
+      GrpcStreamMethod('CruxStorage', method)(constructor.prototype[method], method, descriptor)
+    }
+  }
+}
+
+export const CRUX_STORAGE_SERVICE_NAME = 'CruxStorage'
 
 declare var self: any | undefined
 declare var window: any | undefined
