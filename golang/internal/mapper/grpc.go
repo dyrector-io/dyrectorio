@@ -361,7 +361,7 @@ func mapVolumeLinks(in []*agent.VolumeLink) []v1.VolumeLink {
 	return volumeLinks
 }
 
-func MapContainerState(in []dockerTypes.Container) []*common.ContainerStateItem {
+func MapContainerState(in []dockerTypes.Container, prefix string) []*common.ContainerStateItem {
 	list := []*common.ContainerStateItem{}
 
 	for i := range in {
@@ -370,14 +370,11 @@ func MapContainerState(in []dockerTypes.Container) []*common.ContainerStateItem 
 
 		name := ""
 		if len(it.Names) > 0 {
-			const PARTS = 2
-			splitted := strings.SplitN(it.Names[0], "/", PARTS)
+			name = strings.TrimPrefix(it.Names[0], "/")
+		}
 
-			if len(splitted) == PARTS {
-				name = splitted[1]
-			} else {
-				name = it.Names[0]
-			}
+		if prefix != "" {
+			name = strings.TrimPrefix(name, prefix+"-")
 		}
 
 		imageName := strings.Split(it.Image, ":")
@@ -392,7 +389,7 @@ func MapContainerState(in []dockerTypes.Container) []*common.ContainerStateItem 
 
 		list = append(list, &common.ContainerStateItem{
 			Id: &common.ContainerIdentifier{
-				Prefix: "",
+				Prefix: prefix,
 				Name:   name,
 			},
 			Command:   it.Command,

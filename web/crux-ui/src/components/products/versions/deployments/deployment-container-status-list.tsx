@@ -72,12 +72,10 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
 
     const logUrl = deploymentContainerLogUrl(deployment.product.id, deployment.versionId, deployment.id, container.id)
 
-    const name = containerPrefixNameOf(container.id)
-
     /* eslint-disable react/jsx-key */
     return [
       <ContainerStatusIndicator state={container.state} />,
-      <span>{name}</span>,
+      <span>{container.id.name}</span>,
       <span>{`${container.imageName}:${container.imageTag}`}</span>,
       <span>{timeAgo(t, seconds)}</span>,
       <ContainerStatusTag className="inline-block" state={container.state} />,

@@ -16,13 +16,21 @@ import (
 	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 )
 
-func GetContainersByName(ctx context.Context, nameFilter string) []*common.ContainerStateItem {
-	containers, err := dockerHelper.GetAllContainersByName(ctx, nameFilter)
+func GetContainersByPrefix(ctx context.Context, prefix string) []*common.ContainerStateItem {
+	var containers []types.Container
+	var err error
+
+	if prefix == "" {
+		containers, err = dockerHelper.GetAllContainers(ctx)
+	} else {
+		containers, err = dockerHelper.GetAllContainersByLabel(ctx, getPrefixLabelFilter(prefix))
+	}
+
 	if err != nil {
 		log.Error().Stack().Err(err).Send()
 	}
 
-	return mapper.MapContainerState(containers)
+	return mapper.MapContainerState(containers, prefix)
 }
 
 func GetContainerByPrefixAndName(ctx context.Context, prefix, name string) (*types.Container, error) {
@@ -61,5 +69,5 @@ func DeleteContainerByPrefixAndName(ctx context.Context, prefix, name string) er
 }
 
 func getPrefixLabelFilter(prefix string) string {
-	return util.JoinV("=", LabelContainerPrefix, prefix)
+	return util.JoinV("=", LabelDyrectorioOrg+LabelContainerPrefix, prefix)
 }

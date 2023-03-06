@@ -175,7 +175,7 @@ export class Agent {
     return this.commandChannel.asObservable()
   }
 
-  onDisconnected(): Deployment[] {
+  onDisconnected() {
     this.deployments.forEach(it => it.onDisconnected())
     this.statusWatchers.forEach(it => it.stop())
     this.secretsWatchers.forEach(it => it.complete())
@@ -186,8 +186,6 @@ export class Agent {
       id: this.id,
       status: NodeConnectionStatus.UNREACHABLE,
     })
-
-    return Array.from(this.deployments.values())
   }
 
   onDeploymentFinished(deployment: Deployment): DeploymentStatus {

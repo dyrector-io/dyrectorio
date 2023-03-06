@@ -80,16 +80,16 @@ export default class NodeController implements CruxNodeController {
     return await this.service.revokeToken(request, getIdentity(metadata))
   }
 
-  @AuditLogLevel('disabled')
   @DisableAccessCheck()
   @DisableIdentity()
+  @AuditLogLevel('disabled')
   subscribeNodeEventChannel(request: ServiceIdRequest): Observable<NodeEventMessage> {
     return from(this.service.handleSubscribeNodeEventChannel(request)).pipe(concatAll())
   }
 
-  @AuditLogLevel('disabled')
   @DisableAccessCheck()
   @DisableIdentity()
+  @AuditLogLevel('disabled')
   watchContainerState(request: WatchContainerStateRequest): Observable<ContainerStateListMessage> {
     return this.service.handleWatchContainerStatus(request)
   }
@@ -108,9 +108,9 @@ export default class NodeController implements CruxNodeController {
     return this.service.deleteContainers(request)
   }
 
-  @AuditLogLevel('disabled')
   @DisableAccessCheck()
   @DisableIdentity()
+  @AuditLogLevel('disabled')
   subscribeContainerLogChannel(request: WatchContainerLogRequest): Observable<ContainerLogMessage> {
     return this.service.handleContainerLogStream(request)
   }
