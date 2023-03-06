@@ -65,8 +65,8 @@ func (d *DeleteFacade) DeleteIngresses() error {
 func DeleteMultiple(c context.Context, request *common.DeleteContainersRequest) error {
 	cfg := grpc.GetConfigFromContext(c).(*config.Configuration)
 	if ns := request.GetPrefix(); ns != "" {
-		if deploymentName := request.GetPrefixName(); deploymentName != nil {
-			return Delete(c, ns, deploymentName.Name)
+		if deploymentName := request.GetContainer().GetName(); deploymentName != "" {
+			return Delete(c, ns, deploymentName)
 		}
 		del := NewDeleteFacade(c, ns, "", cfg)
 		return del.DeleteNamespace(ns)
