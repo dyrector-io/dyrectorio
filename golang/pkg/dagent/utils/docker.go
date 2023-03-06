@@ -48,21 +48,6 @@ type DockerVersion struct {
 	ClientVersion string
 }
 
-func GetServerInformation() (DockerVersion, error) {
-	ctx := context.Background()
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		panic(err)
-	}
-
-	server, err := cli.ServerVersion(ctx)
-	if err != nil {
-		log.Error().Stack().Err(err).Msg("Could not get server version")
-	}
-
-	return DockerVersion{ClientVersion: cli.ClientVersion(), ServerVersion: server.Version}, err
-}
-
 func GetContainerLogs(name string, skip, take uint) []string {
 	ctx := context.Background()
 
