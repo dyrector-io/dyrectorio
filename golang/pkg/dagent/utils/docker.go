@@ -295,8 +295,8 @@ func DeployImage(ctx context.Context,
 	logDeployInfo(dog, deployImageRequest, expandedImageName, containerName)
 
 	envMap := MergeStringMapUnique(
-		EnvPipeSeparatedToStringMap(&deployImageRequest.InstanceConfig.Environment),
-		EnvPipeSeparatedToStringMap(&deployImageRequest.ContainerConfig.Environment))
+		mapper.PipeSeparatedToStringMap(&deployImageRequest.InstanceConfig.Environment),
+		mapper.PipeSeparatedToStringMap(&deployImageRequest.ContainerConfig.Environment))
 	secret, err := crypt.DecryptSecrets(deployImageRequest.ContainerConfig.Secrets, &cfg.CommonConfiguration)
 	if err != nil {
 		return fmt.Errorf("deployment failed, secret error: %w", err)
@@ -524,23 +524,6 @@ func MergeStringMapUnique(src, dest map[string]string) map[string]string {
 		}
 	}
 	return dest
-}
-
-// TODO(nandor-magyar): refactor this into unmarshalling
-// `[]"VARIABLE|value"` pair mapped into a string keyed map, collision is ignored, the latter value is used
-func EnvPipeSeparatedToStringMap(envIn *[]string) map[string]string {
-	envList := make(map[string]string)
-
-	if envIn != nil {
-		for _, e := range *envIn {
-			if strings.ContainsRune(e, '|') {
-				eSplit := strings.Split(e, "|")
-				envList[eSplit[0]] = eSplit[1]
-			}
-		}
-	}
-
-	return envList
 }
 
 func GetImageLabels(expandedImageName string) (map[string]string, error) {

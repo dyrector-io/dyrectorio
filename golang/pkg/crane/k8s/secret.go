@@ -220,6 +220,11 @@ func addValidSecret(ctx context.Context, client *Client, namespace, name string)
 	secret := map[string][]byte{}
 	secret[SecretFileName] = []byte(keyStr)
 
+	nsHandler := NewNamespaceClient(ctx, namespace, client)
+	nsErr := nsHandler.EnsureExists(namespace)
+	if nsErr != nil {
+		return "", nsErr
+	}
 	secretHandler := NewSecret(ctx, client)
 	storedVersion, storingErr := secretHandler.ApplyOpaqueSecret(ctx, namespace, name, secret)
 	if storingErr != nil {

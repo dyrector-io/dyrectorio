@@ -2,11 +2,13 @@ package k8s
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/rs/zerolog/log"
 
 	"github.com/dyrector-io/dyrectorio/golang/internal/grpc"
 	"github.com/dyrector-io/dyrectorio/golang/pkg/crane/config"
+	"github.com/dyrector-io/dyrectorio/protobuf/go/common"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 )
@@ -59,6 +61,20 @@ func (d *DeleteFacade) DeleteIngresses() error {
 	return d.ingress.deleteIngress(d.namespace.name, d.name)
 }
 
+// hard-delete if called with prefix name only without container name
+func DeleteMultiple(c context.Context, request *common.DeleteContainersRequest) error {
+	cfg := grpc.GetConfigFromContext(c).(*config.Configuration)
+	if ns := request.GetPrefix(); ns != "" {
+		if deploymentName := request.GetPrefixName(); deploymentName != nil {
+			return Delete(c, ns, deploymentName.Name)
+		}
+		del := NewDeleteFacade(c, ns, "", cfg)
+		return del.DeleteNamespace(ns)
+	}
+	return fmt.Errorf("invalid DeleteContainers request")
+}
+
+// soft-delete: deployment,services,configmaps, ingresses
 func Delete(c context.Context, containerPreName, containerName string) error {
 	cfg := grpc.GetConfigFromContext(c).(*config.Configuration)
 

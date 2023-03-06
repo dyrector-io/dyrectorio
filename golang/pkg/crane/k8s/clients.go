@@ -96,7 +96,7 @@ func (c *Client) VerifyAPIResourceExists(targetGroup, targetKind string) bool {
 
 	_, apiResources, err := clientSet.ServerGroupsAndResources()
 	if err != nil {
-		log.Err(err)
+		log.Err(err).Send()
 	}
 
 	for _, res := range apiResources {
