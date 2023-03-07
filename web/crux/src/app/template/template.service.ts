@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
-import { NotFoundError } from '@prisma/client/runtime'
+import { NotFoundException } from 'src/exception/errors'
 import {
   deploymentStrategyFromJSON,
   exposeStrategyFromJSON,
@@ -105,7 +105,11 @@ export default class TemplateService {
         data: new Uint8Array(buffer),
       }
     } catch (err) {
-      throw new NotFoundError(`Template image not found for ${id}`)
+      throw new NotFoundException({
+        message: 'Template image not found',
+        property: 'id',
+        value: id,
+      })
     }
   }
 

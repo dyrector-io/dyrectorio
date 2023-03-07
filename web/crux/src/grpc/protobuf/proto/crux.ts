@@ -1283,9 +1283,8 @@ export interface WatchContainerStateRequest {
 }
 
 export interface WatchContainerLogRequest {
-  id: string
-  dockerId?: string | undefined
-  prefixName?: ContainerIdentifier | undefined
+  nodeId: string
+  container: ContainerIdentifier | undefined
 }
 
 export interface DeploymentProgressMessage {
@@ -3885,24 +3884,22 @@ export const WatchContainerStateRequest = {
 }
 
 function createBaseWatchContainerLogRequest(): WatchContainerLogRequest {
-  return { id: '' }
+  return { nodeId: '', container: undefined }
 }
 
 export const WatchContainerLogRequest = {
   fromJSON(object: any): WatchContainerLogRequest {
     return {
-      id: isSet(object.id) ? String(object.id) : '',
-      dockerId: isSet(object.dockerId) ? String(object.dockerId) : undefined,
-      prefixName: isSet(object.prefixName) ? ContainerIdentifier.fromJSON(object.prefixName) : undefined,
+      nodeId: isSet(object.nodeId) ? String(object.nodeId) : '',
+      container: isSet(object.container) ? ContainerIdentifier.fromJSON(object.container) : undefined,
     }
   },
 
   toJSON(message: WatchContainerLogRequest): unknown {
     const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.dockerId !== undefined && (obj.dockerId = message.dockerId)
-    message.prefixName !== undefined &&
-      (obj.prefixName = message.prefixName ? ContainerIdentifier.toJSON(message.prefixName) : undefined)
+    message.nodeId !== undefined && (obj.nodeId = message.nodeId)
+    message.container !== undefined &&
+      (obj.container = message.container ? ContainerIdentifier.toJSON(message.container) : undefined)
     return obj
   },
 }

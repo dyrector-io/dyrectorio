@@ -11,6 +11,7 @@ import {
   containerIsStartable,
   containerIsStopable,
   containerPortsToString,
+  containerPrefixNameOf,
   imageName,
 } from '@app/models'
 import { nodeContainerLogUrl } from '@app/routes'
@@ -35,10 +36,11 @@ const NodeContainersList = (props: NodeContainersListProps) => {
   const headers = ['common:name', 'images:imageTag', 'common:state', 'common:createdAt', 'ports', 'common:actions']
 
   const itemBuilder = (container: Container) => {
-    const targetState = state.containerTargetStates[container.name]
+    const name = containerPrefixNameOf(container.id)
+    const targetState = state.containerTargetStates[name]
 
     return [
-      <span>{container.name}</span>,
+      <span>{name}</span>,
       <span className="block overflow-hidden truncate">{imageName(container.imageName, container.imageTag)}</span>,
       <ContainerStatusTag className="inline-block" state={container.state} />,
       <span>{utcDateToLocale(container.date)}</span>,
@@ -76,14 +78,7 @@ const NodeContainersList = (props: NodeContainersListProps) => {
             />
 
             {container.state && (
-              <Link
-                href={nodeContainerLogUrl(state.node.id, {
-                  dockerId: container.id,
-                  prefix: container.prefix,
-                  name: container.name,
-                })}
-                passHref
-              >
+              <Link href={nodeContainerLogUrl(state.node.id, container.id)} passHref>
                 <Image src="/note-text-outline.svg" alt="log" width={24} height={24} />
               </Link>
             )}

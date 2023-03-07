@@ -183,7 +183,7 @@ func StopContainers(containers *DyrectorioStack) {
 		containers.Containers.Traefik.Name)
 
 	for i := range containerNames {
-		err := dockerhelper.DeleteContainerByName(ctx, nil, containerNames[i], false)
+		err := dockerhelper.DeleteContainerByName(ctx, containerNames[i])
 		if err != nil {
 			log.Debug().Err(err).Send()
 		}

@@ -1,8 +1,9 @@
 import { Metadata } from '@grpc/grpc-js'
-import { Controller, UseGuards, UseInterceptors, UsePipes } from '@nestjs/common'
+import { Controller, UseGuards, UsePipes } from '@nestjs/common'
 import { concatAll, from, Observable } from 'rxjs'
-import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
-import { ListSecretsResponse, Empty } from 'src/grpc/protobuf/proto/common'
+import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
+import UseGrpcInterceptors from 'src/decorators/grpc-interceptors.decorator'
+import { Empty, ListSecretsResponse } from 'src/grpc/protobuf/proto/common'
 import {
   CreateDeploymentRequest,
   CreateEntityResponse,
@@ -21,10 +22,7 @@ import {
   UpdateDeploymentRequest,
   UpdateEntityResponse,
 } from 'src/grpc/protobuf/proto/crux'
-import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
-import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
-import GrpcUserInterceptor, { DisableIdentity, getIdentity } from 'src/interceptors/grpc.user.interceptor'
-import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
+import { DisableIdentity, getIdentity } from 'src/interceptors/grpc.user.interceptor'
 import { DisableAccessCheck } from 'src/shared/user-access.guard'
 import DeployService from './deploy.service'
 import DeployCreateTeamAccessGuard from './guards/deploy.create.team-access.guard'
@@ -40,7 +38,7 @@ import DeployUpdateValidationPipe from './pipes/deploy.update.pipe'
 @Controller()
 @CruxDeploymentControllerMethods()
 @UseGuards(DeployTeamAccessGuard)
-@UseInterceptors(GrpcLoggerInterceptor, GrpcUserInterceptor, GrpcErrorInterceptor, PrismaErrorInterceptor)
+@UseGrpcInterceptors()
 export default class DeployController implements CruxDeploymentController {
   constructor(private service: DeployService) {}
 
@@ -91,6 +89,7 @@ export default class DeployController implements CruxDeploymentController {
 
   @DisableAccessCheck()
   @DisableIdentity()
+  @AuditLogLevel('disabled')
   subscribeToDeploymentEvents(request: IdRequest): Observable<DeploymentProgressMessage> {
     return from(this.service.subscribeToDeploymentEvents(request)).pipe(concatAll())
   }

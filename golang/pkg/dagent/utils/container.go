@@ -126,7 +126,7 @@ func GetOwnContainer(ctx context.Context) (*types.Container, error) {
 
 	log.Info().Str("hostname", hostname).Msg("Getting self by hostname")
 
-	ownContainer, err := dockerHelper.GetContainerByName(ctx, nil, hostname, false)
+	ownContainer, err := dockerHelper.GetContainerByName(ctx, hostname)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +134,7 @@ func GetOwnContainer(ctx context.Context) (*types.Container, error) {
 		return ownContainer, nil
 	}
 
-	ownContainer, err = dockerHelper.GetContainerByID(ctx, nil, hostname, false)
+	ownContainer, err = dockerHelper.GetContainerByID(ctx, hostname)
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +149,7 @@ func GetOwnContainer(ctx context.Context) (*types.Container, error) {
 
 	log.Info().Str("cgroup", cgroup).Msg("Getting self by CGroup")
 
-	ownContainer, err = dockerHelper.GetContainerByID(ctx, nil, cgroup, false)
+	ownContainer, err = dockerHelper.GetContainerByID(ctx, cgroup)
 	if err != nil {
 		return nil, err
 	}

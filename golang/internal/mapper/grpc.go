@@ -361,7 +361,7 @@ func mapVolumeLinks(in []*agent.VolumeLink) []v1.VolumeLink {
 	return volumeLinks
 }
 
-func MapContainerState(in []dockerTypes.Container) []*common.ContainerStateItem {
+func MapContainerState(in []dockerTypes.Container, prefix string) []*common.ContainerStateItem {
 	list := []*common.ContainerStateItem{}
 
 	for i := range in {
@@ -370,14 +370,11 @@ func MapContainerState(in []dockerTypes.Container) []*common.ContainerStateItem 
 
 		name := ""
 		if len(it.Names) > 0 {
-			const PARTS = 2
-			splitted := strings.SplitN(it.Names[0], "/", PARTS)
+			name = strings.TrimPrefix(it.Names[0], "/")
+		}
 
-			if len(splitted) == PARTS {
-				name = splitted[1]
-			} else {
-				name = it.Names[0]
-			}
+		if prefix != "" {
+			name = strings.TrimPrefix(name, prefix+"-")
 		}
 
 		imageName := strings.Split(it.Image, ":")
@@ -391,10 +388,10 @@ func MapContainerState(in []dockerTypes.Container) []*common.ContainerStateItem 
 		}
 
 		list = append(list, &common.ContainerStateItem{
-			Container: &common.ContainerStateItem_Id{
-				Id: it.ID,
+			Id: &common.ContainerIdentifier{
+				Prefix: prefix,
+				Name:   name,
 			},
-			Name:      name,
 			Command:   it.Command,
 			CreatedAt: timestamppb.New(time.UnixMilli(it.Created * int64(time.Microsecond)).UTC()),
 			State:     dogger.MapContainerState(it.State),
@@ -431,10 +428,10 @@ func MapKubeDeploymentListToCruxStateItems(deployments *appsv1.DeploymentList, s
 		deployment := deployments.Items[i]
 
 		stateItem := &common.ContainerStateItem{
-			Container: &common.ContainerStateItem_Prefix{
+			Id: &common.ContainerIdentifier{
 				Prefix: deployment.Namespace,
+				Name:   deployment.Name,
 			},
-			Name:  deployment.Name,
 			State: mapKubeStatusToCruxContainerState(deployment.Status),
 			CreatedAt: timestamppb.New(
 				time.UnixMilli(deployment.GetCreationTimestamp().Unix() * int64(time.Microsecond)).UTC(),

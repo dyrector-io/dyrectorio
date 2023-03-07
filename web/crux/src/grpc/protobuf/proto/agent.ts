@@ -344,8 +344,7 @@ export interface AgentAbortUpdate {
 
 /** Container log */
 export interface ContainerLogRequest {
-  id?: string | undefined
-  prefixName?: ContainerIdentifier | undefined
+  container: ContainerIdentifier | undefined
   streaming: boolean
   tail: number
 }
@@ -1349,14 +1348,13 @@ export const AgentAbortUpdate = {
 }
 
 function createBaseContainerLogRequest(): ContainerLogRequest {
-  return { streaming: false, tail: 0 }
+  return { container: undefined, streaming: false, tail: 0 }
 }
 
 export const ContainerLogRequest = {
   fromJSON(object: any): ContainerLogRequest {
     return {
-      id: isSet(object.id) ? String(object.id) : undefined,
-      prefixName: isSet(object.prefixName) ? ContainerIdentifier.fromJSON(object.prefixName) : undefined,
+      container: isSet(object.container) ? ContainerIdentifier.fromJSON(object.container) : undefined,
       streaming: isSet(object.streaming) ? Boolean(object.streaming) : false,
       tail: isSet(object.tail) ? Number(object.tail) : 0,
     }
@@ -1364,9 +1362,8 @@ export const ContainerLogRequest = {
 
   toJSON(message: ContainerLogRequest): unknown {
     const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.prefixName !== undefined &&
-      (obj.prefixName = message.prefixName ? ContainerIdentifier.toJSON(message.prefixName) : undefined)
+    message.container !== undefined &&
+      (obj.container = message.container ? ContainerIdentifier.toJSON(message.container) : undefined)
     message.streaming !== undefined && (obj.streaming = message.streaming)
     message.tail !== undefined && (obj.tail = Math.round(message.tail))
     return obj

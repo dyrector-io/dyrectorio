@@ -1,5 +1,6 @@
 import { Metadata } from '@grpc/grpc-js'
-import { Controller, UseGuards, UseInterceptors } from '@nestjs/common'
+import { Controller, UseGuards } from '@nestjs/common'
+import UseGrpcInterceptors from 'src/decorators/grpc-interceptors.decorator'
 import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
   CreateNotificationRequest,
@@ -12,17 +13,14 @@ import {
   UpdateEntityResponse,
   UpdateNotificationRequest,
 } from 'src/grpc/protobuf/proto/crux'
-import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
-import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
-import GrpcUserInterceptor, { getIdentity } from 'src/interceptors/grpc.user.interceptor'
-import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
+import { getIdentity } from 'src/interceptors/grpc.user.interceptor'
 import NotificationTeamAccessGuard from './guards/notification.team-access.guard'
 import NotificationService from './notification.service'
 
 @Controller()
 @CruxNotificationControllerMethods()
 @UseGuards(NotificationTeamAccessGuard)
-@UseInterceptors(GrpcLoggerInterceptor, GrpcUserInterceptor, GrpcErrorInterceptor, PrismaErrorInterceptor)
+@UseGrpcInterceptors()
 export default class NotificationController implements CruxNotificationController {
   constructor(private notificationService: NotificationService) {}
 

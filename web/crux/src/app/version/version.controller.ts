@@ -1,5 +1,6 @@
 import { Metadata } from '@grpc/grpc-js'
-import { UsePipes, Controller, UseGuards, UseInterceptors } from '@nestjs/common'
+import { Controller, UseGuards, UsePipes } from '@nestjs/common'
+import UseGrpcInterceptors from 'src/decorators/grpc-interceptors.decorator'
 import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
   CreateEntityResponse,
@@ -13,10 +14,7 @@ import {
   VersionDetailsResponse,
   VersionListResponse,
 } from 'src/grpc/protobuf/proto/crux'
-import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
-import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
-import GrpcUserInterceptor, { getIdentity } from 'src/interceptors/grpc.user.interceptor'
-import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
+import { getIdentity } from 'src/interceptors/grpc.user.interceptor'
 import VersionCreateTeamAccessGuard from './guards/version.create.team-access.guard'
 import VersionTeamAccessGuard from './guards/version.team-access.guard'
 import VersionCreateValidationPipe from './pipes/version.create.pipe'
@@ -28,7 +26,7 @@ import VersionService from './version.service'
 @Controller()
 @CruxProductVersionControllerMethods()
 @UseGuards(VersionTeamAccessGuard)
-@UseInterceptors(GrpcLoggerInterceptor, GrpcUserInterceptor, GrpcErrorInterceptor, PrismaErrorInterceptor)
+@UseGrpcInterceptors()
 export default class VersionController implements CruxProductVersionController {
   constructor(private service: VersionService) {}
 

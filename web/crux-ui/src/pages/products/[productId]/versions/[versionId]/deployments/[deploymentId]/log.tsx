@@ -5,7 +5,13 @@ import PageHeading from '@app/components/shared/page-heading'
 import { DyoCard } from '@app/elements/dyo-card'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import useWebSocket from '@app/hooks/use-websocket'
-import { ContainerLogMessage, DeploymentRoot, WS_TYPE_CONTAINER_LOG, WS_TYPE_WATCH_CONTAINER_LOG } from '@app/models'
+import {
+  ContainerLogMessage,
+  DeploymentRoot,
+  WatchContainerLogMessage,
+  WS_TYPE_CONTAINER_LOG,
+  WS_TYPE_WATCH_CONTAINER_LOG,
+} from '@app/models'
 import {
   deploymentContainerLogUrl,
   deploymentDeployUrl,
@@ -24,13 +30,12 @@ import { getDeploymentRoot } from '../[deploymentId]'
 
 interface InstanceLogPageProps {
   deployment: DeploymentRoot
-  dockerId: string
   prefix: string
   name: string
 }
 
 const DeploymentContainerLogPage = (props: InstanceLogPageProps) => {
-  const { deployment, dockerId, prefix, name } = props
+  const { deployment, prefix, name } = props
 
   const { t } = useTranslation('common')
 
@@ -38,16 +43,12 @@ const DeploymentContainerLogPage = (props: InstanceLogPageProps) => {
 
   const sock = useWebSocket(nodeWsUrl(deployment.nodeId), {
     onOpen: () => {
-      const request = dockerId
-        ? {
-            id: dockerId,
-          }
-        : {
-            prefixName: {
-              prefix,
-              name,
-            },
-          }
+      const request: WatchContainerLogMessage = {
+        container: {
+          prefix,
+          name,
+        },
+      }
 
       sock.send(WS_TYPE_WATCH_CONTAINER_LOG, request)
     },
@@ -82,7 +83,6 @@ const DeploymentContainerLogPage = (props: InstanceLogPageProps) => {
     {
       name: t('log'),
       url: deploymentContainerLogUrl(deployment.product.id, deployment.versionId, deployment.id, {
-        dockerId,
         prefix,
         name,
       }),
@@ -109,7 +109,7 @@ const DeploymentContainerLogPage = (props: InstanceLogPageProps) => {
 export default DeploymentContainerLogPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
-  const { dockerId, prefix, name } = context.query
+  const { prefix, name } = context.query
 
   const crux = cruxFromContext(context)
   const deployment = await getDeploymentRoot(context, crux)
@@ -117,7 +117,6 @@ const getPageServerSideProps = async (context: NextPageContext) => {
   return {
     props: {
       deployment,
-      dockerId: dockerId ?? null,
       prefix: prefix ?? null,
       name: name ?? null,
     },

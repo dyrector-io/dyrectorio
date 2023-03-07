@@ -1,6 +1,6 @@
 import { Controller, Post, Body, UseGuards, UseInterceptors, Patch, UseFilters } from '@nestjs/common'
 import { ApiBody, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger'
-import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
+import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import HttpExceptionFilter from 'src/filters/http-exception.filter'
 import { Empty } from 'src/grpc/protobuf/proto/common'
 import { AddImagesToVersionRequest, ImageListResponse, PatchImageRequest } from 'src/grpc/protobuf/proto/crux'

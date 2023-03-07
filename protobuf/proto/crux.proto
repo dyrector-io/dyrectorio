@@ -886,11 +886,8 @@ message WatchContainerStateRequest {
 }
 
 message WatchContainerLogRequest {
-  string id = 100;
-  oneof container {
-    string dockerId = 200;
-    common.ContainerIdentifier prefixName = 201;
-  };
+  string nodeId = 100;
+  common.ContainerIdentifier container = 101;
 }
 
 // DEPLOYMENT

@@ -133,7 +133,9 @@ dagent_clean() {
 dagent_install() {
   echo "Installing dyrector.io agent (dagent)..."
 
-  $CRI_EXECUTABLE pull ghcr.io/dyrector-io/dyrectorio/agent/dagent:stable
+  if [ {{disableForcePull}} != true ]; then
+    $CRI_EXECUTABLE pull ghcr.io/dyrector-io/dyrectorio/agent/dagent:latest
+  fi
 
   $CRI_EXECUTABLE run \
     --restart on-failure \

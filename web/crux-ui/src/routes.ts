@@ -204,7 +204,6 @@ export const tokensApiUrl = (tokenId: string) => `${API_TOKENS}/${tokenId}`
 // log
 export type ContainerLogParams = {
   anchor?: VersionUrlAnchor
-  dockerId?: string
   prefix?: string
   name?: string
 }

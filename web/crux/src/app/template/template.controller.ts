@@ -1,24 +1,22 @@
 import { Metadata } from '@grpc/grpc-js'
-import { Controller, UseInterceptors } from '@nestjs/common'
+import { Controller } from '@nestjs/common'
+import UseGrpcInterceptors from 'src/decorators/grpc-interceptors.decorator'
 import {
   CreateEntityResponse,
-  TemplateListResponse,
   CreateProductFromTemplateRequest,
   CruxTemplateController,
   CruxTemplateControllerMethods,
-  TemplateImageResponse,
   IdRequest,
+  TemplateImageResponse,
+  TemplateListResponse,
 } from 'src/grpc/protobuf/proto/crux'
-import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
-import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
-import GrpcUserInterceptor, { getIdentity } from 'src/interceptors/grpc.user.interceptor'
-import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
+import { getIdentity } from 'src/interceptors/grpc.user.interceptor'
 import TemplateFileService from 'src/services/template.file.service'
 import TemplateService from './template.service'
 
 @Controller()
 @CruxTemplateControllerMethods()
-@UseInterceptors(GrpcLoggerInterceptor, GrpcUserInterceptor, GrpcErrorInterceptor, PrismaErrorInterceptor)
+@UseGrpcInterceptors()
 export default class TemplateController implements CruxTemplateController {
   constructor(private service: TemplateService, private templateFileService: TemplateFileService) {}
 

@@ -21,19 +21,19 @@ export type ContainerConfigPortRange = {
 export type JsonKeyValue = { [key: string]: string }
 
 export const CONTAINER_NETWORK_MODE_VALUES = ['none', 'host', 'bridge', 'overlay', 'ipvlan', 'macvlan'] as const
-export type ContainerNetworkMode = typeof CONTAINER_NETWORK_MODE_VALUES[number]
+export type ContainerNetworkMode = (typeof CONTAINER_NETWORK_MODE_VALUES)[number]
 
 export const CONTAINER_RESTART_POLICY_TYPE_VALUES = ['always', 'unlessStopped', 'no', 'onFailure'] as const
-export type ContainerRestartPolicyType = typeof CONTAINER_RESTART_POLICY_TYPE_VALUES[number]
+export type ContainerRestartPolicyType = (typeof CONTAINER_RESTART_POLICY_TYPE_VALUES)[number]
 
 export const CONTAINER_DEPLOYMENT_STRATEGY_VALUES = ['recreate', 'rolling'] as const
-export type ContainerDeploymentStrategyType = typeof CONTAINER_DEPLOYMENT_STRATEGY_VALUES[number]
+export type ContainerDeploymentStrategyType = (typeof CONTAINER_DEPLOYMENT_STRATEGY_VALUES)[number]
 
 export const CONTAINER_EXPOSE_STRATEGY_VALUES = ['none', 'expose', 'exposeWithTls'] as const
-export type ContainerConfigExposeStrategy = typeof CONTAINER_EXPOSE_STRATEGY_VALUES[number]
+export type ContainerConfigExposeStrategy = (typeof CONTAINER_EXPOSE_STRATEGY_VALUES)[number]
 
 export const CONTAINER_VOLUME_TYPE_VALUES = ['ro', 'rwo', 'rwx', 'mem', 'tmp'] as const
-export type VolumeType = typeof CONTAINER_VOLUME_TYPE_VALUES[number]
+export type VolumeType = (typeof CONTAINER_VOLUME_TYPE_VALUES)[number]
 
 export type ContainerConfigIngress = {
   name: string
@@ -64,7 +64,7 @@ export const CONTAINER_LOG_DRIVER_VALUES = [
   'etwlogs',
   'logentries',
 ] as const
-export type ContainerLogDriverType = typeof CONTAINER_LOG_DRIVER_VALUES[number]
+export type ContainerLogDriverType = (typeof CONTAINER_LOG_DRIVER_VALUES)[number]
 
 export type ContainerConfigLog = {
   driver: ContainerLogDriverType

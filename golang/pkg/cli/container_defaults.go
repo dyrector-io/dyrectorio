@@ -79,6 +79,7 @@ func GetCrux(settings *Settings) *containerbuilder.DockerContainerBuilder {
 			"FROM_EMAIL=mail@example.com",
 			fmt.Sprintf("SMTP_URI=%s:1025/?skip_ssl_verify=true&legacy_ssl=true", settings.Containers.MailSlurper.Name),
 			fmt.Sprintf("CRUX_AGENT_IMAGE=%s", settings.ImageTag),
+			fmt.Sprintf("AGENT_INSTALL_SCRIPT_DISABLE_PULL=%t", settings.DisableForcepull),
 		}).
 		WithNetworks([]string{settings.SettingsFile.Network}).
 		WithNetworkAliases(settings.Containers.Crux.Name).
