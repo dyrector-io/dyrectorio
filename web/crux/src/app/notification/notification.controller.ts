@@ -1,6 +1,5 @@
 import { Metadata } from '@grpc/grpc-js'
 import { Controller, UseGuards } from '@nestjs/common'
-import { Identity } from '@ory/kratos-client'
 import UseGrpcInterceptors from 'src/decorators/grpc-interceptors.decorator'
 import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
@@ -14,7 +13,7 @@ import {
   UpdateEntityResponse,
   UpdateNotificationRequest,
 } from 'src/grpc/protobuf/proto/crux'
-import { IdentityFromGrpcCall } from 'src/shared/user-access.guard'
+import { IdentityAwareServerSurfaceCall } from 'src/shared/user-access.guard'
 import NotificationTeamAccessGuard from './guards/notification.team-access.guard'
 import NotificationService from './notification.service'
 
@@ -28,17 +27,17 @@ export default class NotificationController implements CruxNotificationControlle
   async createNotification(
     request: CreateNotificationRequest,
     _: Metadata,
-    @IdentityFromGrpcCall() identity: Identity,
+    call: IdentityAwareServerSurfaceCall,
   ): Promise<CreateNotificationResponse> {
-    return await this.notificationService.createNotification(request, identity)
+    return await this.notificationService.createNotification(request, call.user)
   }
 
   async updateNotification(
     request: UpdateNotificationRequest,
     _: Metadata,
-    @IdentityFromGrpcCall() identity: Identity,
+    call: IdentityAwareServerSurfaceCall,
   ): Promise<UpdateEntityResponse> {
-    return await this.notificationService.updateNotification(request, identity)
+    return await this.notificationService.updateNotification(request, call.user)
   }
 
   async deleteNotification(request: IdRequest): Promise<void> {
@@ -48,17 +47,17 @@ export default class NotificationController implements CruxNotificationControlle
   async getNotificationList(
     _: Empty,
     __: Metadata,
-    @IdentityFromGrpcCall() identity: Identity,
+    call: IdentityAwareServerSurfaceCall,
   ): Promise<NotificationListResponse> {
-    return await this.notificationService.getNotifications(identity)
+    return await this.notificationService.getNotifications(call.user)
   }
 
   async getNotificationDetails(
     request: IdRequest,
     _: Metadata,
-    @IdentityFromGrpcCall() identity: Identity,
+    call: IdentityAwareServerSurfaceCall,
   ): Promise<NotificationDetailsResponse> {
-    return await this.notificationService.getNotificationDetails(request, identity)
+    return await this.notificationService.getNotificationDetails(request, call.user)
   }
 
   async testNotification(request: IdRequest): Promise<Empty> {

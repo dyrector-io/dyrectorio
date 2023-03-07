@@ -11,7 +11,7 @@ import {
   TemplateListResponse,
 } from 'src/grpc/protobuf/proto/crux'
 import TemplateFileService from 'src/services/template.file.service'
-import UserAccessGuard, { IdentityFromGrpcCall } from 'src/shared/user-access.guard'
+import UserAccessGuard, { IdentityAwareServerSurfaceCall } from 'src/shared/user-access.guard'
 import TemplateService from './template.service'
 
 @Controller()
@@ -30,9 +30,9 @@ export default class TemplateController implements CruxTemplateController {
   createProductFromTemplate(
     request: CreateProductFromTemplateRequest,
     _: Metadata,
-    @IdentityFromGrpcCall() identity,
+    call: IdentityAwareServerSurfaceCall,
   ): Promise<CreateEntityResponse> {
-    return this.service.createProductFromTemplate(request, identity)
+    return this.service.createProductFromTemplate(request, call.user)
   }
 
   getImage(request: IdRequest): Promise<TemplateImageResponse> {

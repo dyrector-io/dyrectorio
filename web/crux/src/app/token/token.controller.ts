@@ -10,10 +10,9 @@ import {
 
 import { Metadata } from '@grpc/grpc-js'
 import { UsePipes } from '@nestjs/common/decorators'
-import { Identity } from '@ory/kratos-client'
 import UseGrpcInterceptors from 'src/decorators/grpc-interceptors.decorator'
 import { Empty } from 'src/grpc/protobuf/proto/common'
-import { IdentityFromGrpcCall } from 'src/shared/user-access.guard'
+import { IdentityAwareServerSurfaceCall } from 'src/shared/user-access.guard'
 import TokenAccessGuard from './guards/token.access.guard'
 import TokenValidationPipe from './pipes/token.pipe'
 import TokenService from './token.service'
@@ -29,13 +28,13 @@ export default class TokenController implements CruxTokenController {
   async generateToken(
     request: GenerateTokenRequest,
     _: Metadata,
-    @IdentityFromGrpcCall() identity: Identity,
+    call: IdentityAwareServerSurfaceCall,
   ): Promise<GenerateTokenResponse> {
-    return this.authService.generateToken(request, identity)
+    return this.authService.generateToken(request, call.user)
   }
 
-  async getTokenList(_: Empty, __: Metadata, @IdentityFromGrpcCall() identity: Identity): Promise<TokenListResponse> {
-    return this.authService.getTokenList(identity)
+  async getTokenList(_: Empty, __: Metadata, call: IdentityAwareServerSurfaceCall): Promise<TokenListResponse> {
+    return this.authService.getTokenList(call.user)
   }
 
   async deleteToken(request: IdRequest): Promise<void> {

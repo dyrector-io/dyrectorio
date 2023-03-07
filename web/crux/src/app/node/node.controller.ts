@@ -1,6 +1,5 @@
 import { Metadata } from '@grpc/grpc-js'
 import { Controller, UseGuards, UsePipes } from '@nestjs/common'
-import { Identity } from '@ory/kratos-client'
 import { concatAll, from, Observable } from 'rxjs'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import UseGrpcInterceptors from 'src/decorators/grpc-interceptors.decorator'
@@ -24,7 +23,7 @@ import {
   WatchContainerLogRequest,
   WatchContainerStateRequest,
 } from 'src/grpc/protobuf/proto/crux'
-import { DisableAccessCheck, DisableIdentity, IdentityFromGrpcCall } from 'src/shared/user-access.guard'
+import { DisableAccessCheck, DisableIdentity, IdentityAwareServerSurfaceCall } from 'src/shared/user-access.guard'
 import NodeTeamAccessGuard from './guards/node.team-access.guard'
 import NodeService from './node.service'
 import NodeGenerateScriptValidationPipe from './pipes/node.generate-script.pipe'
@@ -37,28 +36,24 @@ import NodeGetScriptValidationPipe from './pipes/node.get-script.pipe'
 export default class NodeController implements CruxNodeController {
   constructor(private service: NodeService) {}
 
-  async getNodes(_: Empty, __: Metadata, @IdentityFromGrpcCall() identity: Identity): Promise<NodeListResponse> {
-    return await this.service.getNodes(identity)
+  async getNodes(_: Empty, __: Metadata, call: IdentityAwareServerSurfaceCall): Promise<NodeListResponse> {
+    return await this.service.getNodes(call.user)
   }
 
   async createNode(
     request: CreateNodeRequest,
     _: Metadata,
-    @IdentityFromGrpcCall() identity: Identity,
+    call: IdentityAwareServerSurfaceCall,
   ): Promise<CreateEntityResponse> {
-    return await this.service.createNode(request, identity)
+    return await this.service.createNode(request, call.user)
   }
 
   async deleteNode(request: IdRequest): Promise<void> {
     await this.service.deleteNode(request)
   }
 
-  async updateNode(
-    request: UpdateNodeRequest,
-    _: Metadata,
-    @IdentityFromGrpcCall() identity: Identity,
-  ): Promise<Empty> {
-    return await this.service.updateNode(request, identity)
+  async updateNode(request: UpdateNodeRequest, _: Metadata, call: IdentityAwareServerSurfaceCall): Promise<Empty> {
+    return await this.service.updateNode(request, call.user)
   }
 
   async getNodeDetails(request: IdRequest): Promise<NodeDetailsResponse> {
@@ -71,9 +66,9 @@ export default class NodeController implements CruxNodeController {
   async generateScript(
     request: GenerateScriptRequest,
     _: Metadata,
-    @IdentityFromGrpcCall() identity: Identity,
+    call: IdentityAwareServerSurfaceCall,
   ): Promise<NodeInstallResponse> {
-    return await this.service.generateScript(request, identity)
+    return await this.service.generateScript(request, call.user)
   }
 
   @DisableAccessCheck()
@@ -88,8 +83,8 @@ export default class NodeController implements CruxNodeController {
     return await this.service.discardScript(request)
   }
 
-  async revokeToken(request: IdRequest, _: Metadata, @IdentityFromGrpcCall() identity: Identity): Promise<Empty> {
-    return await this.service.revokeToken(request, identity)
+  async revokeToken(request: IdRequest, _: Metadata, call: IdentityAwareServerSurfaceCall): Promise<Empty> {
+    return await this.service.revokeToken(request, call.user)
   }
 
   @DisableAccessCheck()
