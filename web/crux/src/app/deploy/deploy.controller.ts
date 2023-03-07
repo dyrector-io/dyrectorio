@@ -22,8 +22,7 @@ import {
   UpdateDeploymentRequest,
   UpdateEntityResponse,
 } from 'src/grpc/protobuf/proto/crux'
-import { DisableIdentity, getIdentity } from 'src/interceptors/grpc.user.interceptor'
-import { DisableAccessCheck } from 'src/shared/user-access.guard'
+import { DisableAccessCheck, DisableIdentity, IdentityAwareServerSurfaceCall } from 'src/shared/user-access.guard'
 import DeployService from './deploy.service'
 import DeployCreateTeamAccessGuard from './guards/deploy.create.team-access.guard'
 import DeployGetByVersionTeamAccessGuard from './guards/deploy.get-by-version.team-access.guard'
@@ -58,13 +57,21 @@ export default class DeployController implements CruxDeploymentController {
 
   @UseGuards(DeployCreateTeamAccessGuard)
   @UsePipes(DeployCreateValidationPipe)
-  async createDeployment(request: CreateDeploymentRequest, metadata: Metadata): Promise<CreateEntityResponse> {
-    return await this.service.createDeployment(request, getIdentity(metadata))
+  async createDeployment(
+    request: CreateDeploymentRequest,
+    _: Metadata,
+    call: IdentityAwareServerSurfaceCall,
+  ): Promise<CreateEntityResponse> {
+    return await this.service.createDeployment(request, call.user)
   }
 
   @UsePipes(DeployUpdateValidationPipe)
-  async updateDeployment(request: UpdateDeploymentRequest, metadata: Metadata): Promise<UpdateEntityResponse> {
-    return await this.service.updateDeployment(request, getIdentity(metadata))
+  async updateDeployment(
+    request: UpdateDeploymentRequest,
+    _: Metadata,
+    call: IdentityAwareServerSurfaceCall,
+  ): Promise<UpdateEntityResponse> {
+    return await this.service.updateDeployment(request, call.user)
   }
 
   async getDeploymentSecrets(request: DeploymentListSecretsRequest): Promise<ListSecretsResponse> {
@@ -73,8 +80,12 @@ export default class DeployController implements CruxDeploymentController {
 
   @AuditLogLevel('no-data')
   @UsePipes(DeployPatchValidationPipe)
-  async patchDeployment(request: PatchDeploymentRequest, metadata: Metadata): Promise<UpdateEntityResponse> {
-    return await this.service.patchDeployment(request, getIdentity(metadata))
+  async patchDeployment(
+    request: PatchDeploymentRequest,
+    _: Metadata,
+    call: IdentityAwareServerSurfaceCall,
+  ): Promise<UpdateEntityResponse> {
+    return await this.service.patchDeployment(request, call.user)
   }
 
   @UsePipes(DeleteDeploymentValidationPipe)
@@ -83,8 +94,8 @@ export default class DeployController implements CruxDeploymentController {
   }
 
   @UsePipes(DeployStartValidationPipe)
-  async startDeployment(request: IdRequest, metadata: Metadata): Promise<Empty> {
-    return await this.service.startDeployment(request, getIdentity(metadata))
+  async startDeployment(request: IdRequest, _: Metadata, call: IdentityAwareServerSurfaceCall): Promise<Empty> {
+    return await this.service.startDeployment(request, call.user)
   }
 
   @DisableAccessCheck()
@@ -101,16 +112,28 @@ export default class DeployController implements CruxDeploymentController {
     return this.service.subscribeToDeploymentEditEvents(request)
   }
 
-  async getDeploymentList(_: Empty, metadata: Metadata): Promise<DeploymentListResponse> {
-    return await this.service.getDeploymentList(getIdentity(metadata))
+  async getDeploymentList(
+    _: Empty,
+    __: Metadata,
+    call: IdentityAwareServerSurfaceCall,
+  ): Promise<DeploymentListResponse> {
+    return await this.service.getDeploymentList(call.user)
   }
 
   @UsePipes(DeployCopyValidationPipe)
-  async copyDeploymentSafe(request: IdRequest, metadata: Metadata): Promise<CreateEntityResponse> {
-    return this.service.copyDeployment(request, getIdentity(metadata))
+  async copyDeploymentSafe(
+    request: IdRequest,
+    _: Metadata,
+    call: IdentityAwareServerSurfaceCall,
+  ): Promise<CreateEntityResponse> {
+    return this.service.copyDeployment(request, call.user)
   }
 
-  async copyDeploymentUnsafe(request: IdRequest, metadata: Metadata): Promise<CreateEntityResponse> {
-    return this.service.copyDeployment(request, getIdentity(metadata))
+  async copyDeploymentUnsafe(
+    request: IdRequest,
+    _: Metadata,
+    call: IdentityAwareServerSurfaceCall,
+  ): Promise<CreateEntityResponse> {
+    return this.service.copyDeployment(request, call.user)
   }
 }

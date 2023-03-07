@@ -13,7 +13,7 @@ import {
   UpdateEntityResponse,
   UpdateProductRequest,
 } from 'src/grpc/protobuf/proto/crux'
-import { getIdentity } from 'src/interceptors/grpc.user.interceptor'
+import { IdentityAwareServerSurfaceCall } from 'src/shared/user-access.guard'
 import ProductTeamAccessGuard from './guards/product.team-access.guard'
 import ProductUpdateValidationPipe from './pipes/product.update.pipe'
 import ProductService from './product.service'
@@ -25,12 +25,16 @@ import ProductService from './product.service'
 export default class ProductController implements CruxProductController {
   constructor(private service: ProductService) {}
 
-  async getProducts(_: Empty, metadata: Metadata): Promise<ProductListResponse> {
-    return this.service.getProducts(getIdentity(metadata))
+  async getProducts(_: Empty, __: Metadata, call: IdentityAwareServerSurfaceCall): Promise<ProductListResponse> {
+    return this.service.getProducts(call.user)
   }
 
-  async createProduct(request: CreateProductRequest, metadata: Metadata): Promise<CreateEntityResponse> {
-    return this.service.createProduct(request, getIdentity(metadata))
+  async createProduct(
+    request: CreateProductRequest,
+    _: Metadata,
+    call: IdentityAwareServerSurfaceCall,
+  ): Promise<CreateEntityResponse> {
+    return this.service.createProduct(request, call.user)
   }
 
   async deleteProduct(request: IdRequest): Promise<Empty> {
@@ -38,8 +42,12 @@ export default class ProductController implements CruxProductController {
   }
 
   @UsePipes(ProductUpdateValidationPipe)
-  async updateProduct(request: UpdateProductRequest, metadata: Metadata): Promise<UpdateEntityResponse> {
-    return this.service.updateProduct(request, getIdentity(metadata))
+  async updateProduct(
+    request: UpdateProductRequest,
+    _: Metadata,
+    call: IdentityAwareServerSurfaceCall,
+  ): Promise<UpdateEntityResponse> {
+    return this.service.updateProduct(request, call.user)
   }
 
   async getProductDetails(request: IdRequest): Promise<ProductDetailsReponse> {

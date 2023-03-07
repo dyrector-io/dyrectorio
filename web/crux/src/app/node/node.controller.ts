@@ -23,8 +23,7 @@ import {
   WatchContainerLogRequest,
   WatchContainerStateRequest,
 } from 'src/grpc/protobuf/proto/crux'
-import { DisableIdentity, getIdentity } from 'src/interceptors/grpc.user.interceptor'
-import { DisableAccessCheck } from 'src/shared/user-access.guard'
+import { DisableAccessCheck, DisableIdentity, IdentityAwareServerSurfaceCall } from 'src/shared/user-access.guard'
 import NodeTeamAccessGuard from './guards/node.team-access.guard'
 import NodeService from './node.service'
 import NodeGenerateScriptValidationPipe from './pipes/node.generate-script.pipe'
@@ -37,20 +36,24 @@ import NodeGetScriptValidationPipe from './pipes/node.get-script.pipe'
 export default class NodeController implements CruxNodeController {
   constructor(private service: NodeService) {}
 
-  async getNodes(_: Empty, metadata: Metadata): Promise<NodeListResponse> {
-    return await this.service.getNodes(getIdentity(metadata))
+  async getNodes(_: Empty, __: Metadata, call: IdentityAwareServerSurfaceCall): Promise<NodeListResponse> {
+    return await this.service.getNodes(call.user)
   }
 
-  async createNode(request: CreateNodeRequest, metadata: Metadata): Promise<CreateEntityResponse> {
-    return await this.service.createNode(request, getIdentity(metadata))
+  async createNode(
+    request: CreateNodeRequest,
+    _: Metadata,
+    call: IdentityAwareServerSurfaceCall,
+  ): Promise<CreateEntityResponse> {
+    return await this.service.createNode(request, call.user)
   }
 
   async deleteNode(request: IdRequest): Promise<void> {
     await this.service.deleteNode(request)
   }
 
-  async updateNode(request: UpdateNodeRequest, metadata: Metadata): Promise<Empty> {
-    return await this.service.updateNode(request, getIdentity(metadata))
+  async updateNode(request: UpdateNodeRequest, _: Metadata, call: IdentityAwareServerSurfaceCall): Promise<Empty> {
+    return await this.service.updateNode(request, call.user)
   }
 
   async getNodeDetails(request: IdRequest): Promise<NodeDetailsResponse> {
@@ -60,8 +63,12 @@ export default class NodeController implements CruxNodeController {
   // TODO(m8vago):  fix errors related to this - interceptor halts
   @AuditLogLevel('disabled')
   @UsePipes(NodeGenerateScriptValidationPipe)
-  async generateScript(request: GenerateScriptRequest, metadata: Metadata): Promise<NodeInstallResponse> {
-    return await this.service.generateScript(request, getIdentity(metadata))
+  async generateScript(
+    request: GenerateScriptRequest,
+    _: Metadata,
+    call: IdentityAwareServerSurfaceCall,
+  ): Promise<NodeInstallResponse> {
+    return await this.service.generateScript(request, call.user)
   }
 
   @DisableAccessCheck()
@@ -76,8 +83,8 @@ export default class NodeController implements CruxNodeController {
     return await this.service.discardScript(request)
   }
 
-  async revokeToken(request: IdRequest, metadata: Metadata): Promise<Empty> {
-    return await this.service.revokeToken(request, getIdentity(metadata))
+  async revokeToken(request: IdRequest, _: Metadata, call: IdentityAwareServerSurfaceCall): Promise<Empty> {
+    return await this.service.revokeToken(request, call.user)
   }
 
   @DisableAccessCheck()

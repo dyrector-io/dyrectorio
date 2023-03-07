@@ -13,7 +13,7 @@ import {
   UpdateEntityResponse,
   UpdateNotificationRequest,
 } from 'src/grpc/protobuf/proto/crux'
-import { getIdentity } from 'src/interceptors/grpc.user.interceptor'
+import { IdentityAwareServerSurfaceCall } from 'src/shared/user-access.guard'
 import NotificationTeamAccessGuard from './guards/notification.team-access.guard'
 import NotificationService from './notification.service'
 
@@ -26,25 +26,38 @@ export default class NotificationController implements CruxNotificationControlle
 
   async createNotification(
     request: CreateNotificationRequest,
-    metadata: Metadata,
+    _: Metadata,
+    call: IdentityAwareServerSurfaceCall,
   ): Promise<CreateNotificationResponse> {
-    return await this.notificationService.createNotification(request, getIdentity(metadata))
+    return await this.notificationService.createNotification(request, call.user)
   }
 
-  async updateNotification(request: UpdateNotificationRequest, metadata: Metadata): Promise<UpdateEntityResponse> {
-    return await this.notificationService.updateNotification(request, getIdentity(metadata))
+  async updateNotification(
+    request: UpdateNotificationRequest,
+    _: Metadata,
+    call: IdentityAwareServerSurfaceCall,
+  ): Promise<UpdateEntityResponse> {
+    return await this.notificationService.updateNotification(request, call.user)
   }
 
   async deleteNotification(request: IdRequest): Promise<void> {
     return await this.notificationService.deleteNotification(request)
   }
 
-  async getNotificationList(_: Empty, metadata: Metadata): Promise<NotificationListResponse> {
-    return await this.notificationService.getNotifications(getIdentity(metadata))
+  async getNotificationList(
+    _: Empty,
+    __: Metadata,
+    call: IdentityAwareServerSurfaceCall,
+  ): Promise<NotificationListResponse> {
+    return await this.notificationService.getNotifications(call.user)
   }
 
-  async getNotificationDetails(request: IdRequest, metadata: Metadata): Promise<NotificationDetailsResponse> {
-    return await this.notificationService.getNotificationDetails(request, getIdentity(metadata))
+  async getNotificationDetails(
+    request: IdRequest,
+    _: Metadata,
+    call: IdentityAwareServerSurfaceCall,
+  ): Promise<NotificationDetailsResponse> {
+    return await this.notificationService.getNotificationDetails(request, call.user)
   }
 
   async testNotification(request: IdRequest): Promise<Empty> {
