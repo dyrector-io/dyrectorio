@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { DeploymentStatusEnum } from '@prisma/client'
-import { toTimestamp } from 'src/domain/utils'
-import { DashboardResponse } from 'src/grpc/protobuf/proto/crux'
 import PrismaService from 'src/services/prisma.service'
 import AuditService from '../audit/audit.service'
+import { DashboardResponse } from './dashboard.dto'
 import DashboardMapper from './dashboard.mapper'
 
 @Injectable()
@@ -111,7 +110,7 @@ export default class DashboardService {
       {
         pageNumber: 0,
         pageSize: 10,
-        createdTo: toTimestamp(new Date()),
+        createdTo: new Date(),
       },
       identity,
     )

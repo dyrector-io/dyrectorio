@@ -1,11 +1,17 @@
 import { Injectable } from '@nestjs/common'
 import PrismaService from 'src/services/prisma.service'
-import { AuditLogListCountResponse, AuditLogListRequest, AuditLogListResponse } from 'src/grpc/protobuf/proto/crux'
 import KratosService from 'src/services/kratos.service'
-import { Timestamp } from 'src/grpc/google/protobuf/timestamp'
 import { Prisma } from '@prisma/client'
 import { Identity } from '@ory/kratos-client'
 import AuditMapper from './audit.mapper'
+import { AuditLogListCountResponseDto, AuditLogListResponseDto, AuditLogListRequestDto } from './audit.dto'
+import {
+  AuditLogListRequest,
+  AuditLogListResponse,
+  AuditLogListCountResponse,
+  CruxAuditController,
+  CruxAuditControllerMethods,
+} from 'src/grpc/protobuf/proto/crux'
 
 @Injectable()
 export default class AuditService {
@@ -15,23 +21,51 @@ export default class AuditService {
     private readonly kratos: KratosService,
   ) {}
 
-  async getAuditLog(request: AuditLogListRequest, identity: Identity): Promise<AuditLogListResponse> {
+  // Exclude keys from user
+  private exclude<User, Key extends keyof User>(user: User, keys: Key[]): Omit<User, Key> {
+    for (let key of keys) {
+      delete user[key]
+    }
+    return user
+  }
+
+  async getAuditLog(
+    request: AuditLogListRequestDto | AuditLogListRequest,
+    identity: Identity,
+  ): Promise<AuditLogListResponse | AuditLogListResponseDto> {
     const conditions = await this.getConditions(request, identity)
 
     const auditLog = await this.prisma.auditLog.findMany({
       ...conditions,
       skip: (request.pageNumber ?? 0) * request.pageSize,
       take: request.pageSize,
+      select: {
+        createdAt: true,
+        userId: true,
+        serviceCall: true,
+        data: true,
+      },
     })
 
-    const identites = await this.kratos.getIdentitiesByIds(auditLog.map(it => it.userId))
+    const auditLogReponseResult = await Promise.all(
+      auditLog.map(async it => {
+        const identity = await this.kratos.getIdentityById(it.userId)
+        return {
+          ...it,
+          identityEmail: identity.traits.email,
+        }
+      }),
+    )
 
     return {
-      data: auditLog.map(it => this.mapper.toProto(it, identites)),
+      data: auditLogReponseResult,
     }
   }
 
-  async getAuditLogListCount(request: AuditLogListRequest, identity: Identity): Promise<AuditLogListCountResponse> {
+  async getAuditLogListCount(
+    request: AuditLogListRequestDto,
+    identity: Identity,
+  ): Promise<AuditLogListCountResponse | AuditLogListCountResponseDto> {
     const conditions = await this.getConditions(request, identity)
 
     const count = await this.prisma.auditLog.count(conditions as Prisma.AuditLogCountArgs)
@@ -41,11 +75,11 @@ export default class AuditService {
     }
   }
 
-  private async getConditions(request: AuditLogListRequest, identity: Identity): Promise<Prisma.AuditLogFindManyArgs> {
+  private async getConditions(
+    request: AuditLogListRequestDto | AuditLogListRequest,
+    identity: Identity,
+  ): Promise<Prisma.AuditLogFindManyArgs> {
     const { keyword, createdFrom, createdTo } = request
-
-    const dateFilter = this.getDateFilter(createdTo, createdFrom)
-
     const keywordFilter = keyword ? await this.getKeywordFilter(keyword) : null
 
     return {
@@ -58,7 +92,10 @@ export default class AuditService {
             },
           },
         },
-        ...dateFilter,
+        createdAt: {
+          gte: createdFrom ?? createdFrom,
+          lte: createdTo,
+        },
         ...keywordFilter,
       },
       orderBy: {
@@ -84,23 +121,6 @@ export default class AuditService {
           },
         },
       ],
-    }
-  }
-
-  private getDateFilter(createdTo: Timestamp, createdFrom?: Timestamp): Prisma.AuditLogWhereInput {
-    if (!createdFrom) {
-      return {
-        createdAt: {
-          lte: new Date(createdTo.seconds * 1000),
-        },
-      }
-    }
-
-    return {
-      createdAt: {
-        gte: new Date(createdFrom.seconds * 1000),
-        lte: new Date(createdTo.seconds * 1000),
-      },
     }
   }
 }

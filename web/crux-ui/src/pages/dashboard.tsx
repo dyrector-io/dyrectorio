@@ -10,7 +10,6 @@ import { DyoList } from '@app/elements/dyo-list'
 import { AuditLog, beautifyAuditLogEvent, Dashboard } from '@app/models'
 import { API_DASHBOARD, deploymentUrl, ROUTE_DASHBOARD } from '@app/routes'
 import { fetcher, utcDateToLocale, withContextAuthorization } from '@app/utils'
-import { cruxFromContext } from '@server/crux/crux'
 import clsx from 'clsx'
 import { NextPageContext } from 'next'
 import useTranslation from 'next-translate/useTranslation'
@@ -80,8 +79,8 @@ const DashboardPage = (props: DashboardPageProps) => {
     <UserDefaultAvatar className="ml-auto" />,
     <div className="font-semibold min-w-max">{log.identityEmail}</div>,
     <div className="min-w-max">{utcDateToLocale(log.date)}</div>,
-    <div>{beautifyAuditLogEvent(log.event)}</div>,
-    <div className="max-w-4xl truncate">{log.info}</div>,
+    <div>{beautifyAuditLogEvent(log.serviceCall)}</div>,
+    <div className="max-w-4xl truncate">{JSON.stringify(log.data)}</div>,
   ]
   /* eslint-enable react/jsx-key */
 
@@ -202,10 +201,14 @@ const DashboardPage = (props: DashboardPageProps) => {
 export default DashboardPage
 
 const getPageServerSideProps = async (context: NextPageContext) => {
-  const crux = cruxFromContext(context)
+  const response = await fetch('http://localhost:1848/dashboard', {
+    headers: {
+      cookie: context.req.headers.cookie,
+    },
+  })
 
   return {
-    props: await crux.dashboard.getDashboard(),
+    props: await response.json(),
   }
 }
 

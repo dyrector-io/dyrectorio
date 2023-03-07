@@ -60,7 +60,7 @@ export const API_AUDIT_COUNT = `${API_AUDIT}/count`
 
 export const API_TEMPLATES = `/api/templates`
 
-export const API_DASHBOARD = '/api/dashboard'
+export const API_DASHBOARD = 'http://localhost:1848/dashboard'
 
 export const API_TOKENS = '/api/tokens'
 

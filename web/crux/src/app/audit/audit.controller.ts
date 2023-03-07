@@ -13,9 +13,14 @@ import AuditService from './audit.service'
 
 @Controller()
 @CruxAuditControllerMethods()
+<<<<<<< HEAD
 @UseGuards(UserAccessGuard)
 @UseGrpcInterceptors()
 export default class AuditController implements CruxAuditController {
+=======
+@UseInterceptors(GrpcLoggerInterceptor, GrpcUserInterceptor, GrpcErrorInterceptor, PrismaErrorInterceptor)
+export default class AuditGrpcController implements CruxAuditController {
+>>>>>>> 1095b230 (DRAFT: Initial auditlog and dashboard http API with session based authguard)
   constructor(private service: AuditService) {}
 
   async getAuditLog(

@@ -9,12 +9,20 @@ import TokenService from './token.service'
 import JwtStrategy from './jwt.strategy'
 import AuthController from './token.controller'
 import TokenMapper from './token.mapper'
+<<<<<<< HEAD
 import TeamModule from '../team/team.module'
 
 @Module({
   imports: [
     PassportModule,
     TeamModule,
+=======
+import { session } from 'passport'
+
+@Module({
+  imports: [
+    PassportModule.register({ defaultStrategy: 'jwt', session: true }),
+>>>>>>> 1095b230 (DRAFT: Initial auditlog and dashboard http API with session based authguard)
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({

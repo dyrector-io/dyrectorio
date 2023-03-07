@@ -1,8 +1,8 @@
 export type AuditLog = {
   identityEmail: string
   date: string
-  event: string
-  info?: any
+  serviceCall: string
+  data?: any
 }
 
 export type AuditLogListRequest = {
