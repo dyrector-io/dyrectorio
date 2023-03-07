@@ -14,7 +14,7 @@ import {
   UpdateEntityResponse,
   UpdateRegistryRequest,
 } from 'src/grpc/protobuf/proto/crux'
-import { getIdentity } from 'src/interceptors/grpc.user.interceptor'
+import { IdentityAwareServerSurfaceCall } from 'src/shared/user-access.guard'
 import RegistryAccessValidationGuard from './guards/registry.auth.validation.guard'
 import RegistryTeamAccessGuard from './guards/registry.team-access.guard'
 import DeleteRegistryValidationPipe from './pipes/registry.delete.pipe'
@@ -28,13 +28,17 @@ import RegistryService from './registry.service'
 export default class RegistryController implements CruxRegistryController {
   constructor(private service: RegistryService) {}
 
-  async getRegistries(_: Empty, metadata: Metadata): Promise<RegistryListResponse> {
-    return await this.service.getRegistries(getIdentity(metadata))
+  async getRegistries(_: Empty, __: Metadata, call: IdentityAwareServerSurfaceCall): Promise<RegistryListResponse> {
+    return await this.service.getRegistries(call.user)
   }
 
   @UseGuards(RegistryAccessValidationGuard)
-  async createRegistry(request: CreateRegistryRequest, metadata: Metadata): Promise<CreateEntityResponse> {
-    return await this.service.createRegistry(request, getIdentity(metadata))
+  async createRegistry(
+    request: CreateRegistryRequest,
+    _: Metadata,
+    call: IdentityAwareServerSurfaceCall,
+  ): Promise<CreateEntityResponse> {
+    return await this.service.createRegistry(request, call.user)
   }
 
   @UsePipes(DeleteRegistryValidationPipe)
@@ -45,8 +49,12 @@ export default class RegistryController implements CruxRegistryController {
   @UseGuards(RegistryAccessValidationGuard)
   @AuditLogLevel('no-data')
   @UsePipes(UpdateRegistryValidationPipe)
-  async updateRegistry(request: UpdateRegistryRequest, metadata: Metadata): Promise<UpdateEntityResponse> {
-    return this.service.updateRegistry(request, getIdentity(metadata))
+  async updateRegistry(
+    request: UpdateRegistryRequest,
+    _: Metadata,
+    call: IdentityAwareServerSurfaceCall,
+  ): Promise<UpdateEntityResponse> {
+    return this.service.updateRegistry(request, call.user)
   }
 
   async getRegistryDetails(request: IdRequest): Promise<RegistryDetailsResponse> {

@@ -1,5 +1,6 @@
-import { Controller, Post, Body, Get, UseGuards, UseInterceptors, UseFilters } from '@nestjs/common'
+import { Body, Controller, Get, Post, UseFilters, UseGuards, UseInterceptors } from '@nestjs/common'
 import { ApiBody, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger'
+import { Identity } from '@ory/kratos-client'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import HttpExceptionFilter from 'src/filters/http-exception.filter'
 import {
@@ -8,6 +9,7 @@ import {
   IncreaseVersionRequest,
   VersionListResponse,
 } from 'src/grpc/protobuf/proto/crux'
+import { HttpIdentityInterceptor, IdentityFromRequest } from 'src/interceptors/http.identity.interceptor'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import {
@@ -16,8 +18,6 @@ import {
   IdRequestDto,
   VersionListResponseDto,
 } from 'src/swagger/crux.dto'
-import { HttpIdentityInterceptor, IdentityFromRequest } from 'src/interceptors/http.identity.interceptor'
-import { Identity } from '@ory/kratos-client'
 import JwtAuthGuard from '../token/jwt-auth.guard'
 import VersionIncreaseValidationPipe from './pipes/version.increase.pipe'
 import VersionService from './version.service'
@@ -57,7 +57,7 @@ export default class VersionHttpController {
   @AuditLogLevel('disabled')
   async increaseVersion(
     @Body(VersionIncreaseValidationPipe) request: IncreaseVersionRequest,
-    @IdentityFromRequest() identity: Identity,
+    @IdentityFromRequest() identity,
   ): Promise<CreateEntityResponse> {
     return await this.service.increaseVersion(request, identity)
   }
