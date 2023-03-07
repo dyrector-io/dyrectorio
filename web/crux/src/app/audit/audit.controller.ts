@@ -1,21 +1,19 @@
 import { Metadata } from '@grpc/grpc-js'
-import { Controller, UseInterceptors } from '@nestjs/common'
+import { Controller } from '@nestjs/common'
+import UseGrpcInterceptors from 'src/decorators/grpc-interceptors.decorator'
 import {
+  AuditLogListCountResponse,
   AuditLogListRequest,
   AuditLogListResponse,
-  AuditLogListCountResponse,
   CruxAuditController,
   CruxAuditControllerMethods,
 } from 'src/grpc/protobuf/proto/crux'
-import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
-import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
-import GrpcUserInterceptor, { getIdentity } from 'src/interceptors/grpc.user.interceptor'
-import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
+import { getIdentity } from 'src/interceptors/grpc.user.interceptor'
 import AuditService from './audit.service'
 
 @Controller()
 @CruxAuditControllerMethods()
-@UseInterceptors(GrpcLoggerInterceptor, GrpcUserInterceptor, GrpcErrorInterceptor, PrismaErrorInterceptor)
+@UseGrpcInterceptors()
 export default class AuditController implements CruxAuditController {
   constructor(private service: AuditService) {}
 

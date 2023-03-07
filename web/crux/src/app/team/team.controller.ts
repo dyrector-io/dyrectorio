@@ -1,6 +1,6 @@
 import { Metadata, ServerUnaryCall } from '@grpc/grpc-js'
 import { UsePipes, Controller, UseGuards, UseInterceptors } from '@nestjs/common'
-import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
+import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
   ActiveTeamDetailsResponse,

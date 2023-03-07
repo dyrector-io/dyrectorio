@@ -2,6 +2,7 @@ import { Logger } from '@app/logger'
 import {
   Container,
   ContainerCommand,
+  ContainerIdentifier,
   ContainerListMessage,
   ContainerLogMessage,
   CreateDyoNode,
@@ -14,7 +15,7 @@ import {
   UpdateDyoNode,
 } from '@app/models'
 import {
-  ContainerIdentifier,
+  ContainerIdentifier as ProtoContainerIdentifier,
   ContainerLogMessage as GrpcContainerLogMessage,
   ContainerStateListMessage,
   Empty,
@@ -43,6 +44,7 @@ import {
 import { timestampToUTC } from '@app/utils'
 import { GrpcConnection, protomisify, ProtoSubscriptionOptions } from './grpc-connection'
 import {
+  containerIdentifierToProto,
   containerOperationToProto,
   containerStateToDto,
   nodeStatusToDto,
@@ -199,13 +201,10 @@ class DyoNodeService {
   }
 
   async sendContainerCommand(id: string, command: ContainerCommand) {
-    const containerId = typeof command.container === 'string' ? command.container : null
-
     const req: NodeContainerCommandRequest = {
       id,
       command: {
-        id: containerId,
-        prefixName: containerId ? null : (command.container as ContainerIdentifier),
+        container: containerIdentifierToProto(command.container),
         operation: containerOperationToProto(command.operation),
       },
     }
@@ -218,23 +217,19 @@ class DyoNodeService {
   }
 
   async deleteContainer(id: string, containers: DeleteContainers) {
-    let containerId: string = null
-    let prefixName: ContainerIdentifier = null
+    let container: ProtoContainerIdentifier = null
     let prefix: string = null
 
     if (containers.prefix) {
       prefix = containers.prefix
-    } else if (typeof containers.id === 'string') {
-      containerId = containers.id
     } else {
-      prefixName = containers.id
+      container = containerIdentifierToProto(containers.id)
     }
 
     const req: NodeDeleteContainersRequest = {
       id,
       containers: {
-        containerId,
-        prefixName,
+        container,
         prefix,
       },
     }
@@ -284,8 +279,6 @@ class DyoNodeService {
         it =>
           ({
             id: it.id,
-            prefix: it.prefix,
-            name: it.name,
             date: timestampToUTC(it.createdAt),
             state: containerStateToDto(it.state),
             ports: it.ports,
@@ -300,14 +293,12 @@ class DyoNodeService {
 
   watchContainerLog(
     nodeId: string,
-    id: string | undefined,
-    prefixName: ContainerIdentifier | undefined,
+    container: ContainerIdentifier,
     options: ProtoSubscriptionOptions<ContainerLogMessage>,
   ): GrpcConnection<GrpcContainerLogMessage, ContainerLogMessage> {
     const req: WatchContainerLogRequest = {
-      id: nodeId,
-      dockerId: id,
-      prefixName,
+      nodeId,
+      container: containerIdentifierToProto(container),
     }
 
     const transform = (data: GrpcContainerLogMessage) =>

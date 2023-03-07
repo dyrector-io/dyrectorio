@@ -1,4 +1,4 @@
-import { CallHandler, ExecutionContext, NestInterceptor, Injectable } from '@nestjs/common'
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { catchError, Observable } from 'rxjs'
 import { PreconditionFailedException } from 'src/exception/errors'
 import InterceptorGrpcHelperProvider from './helper.interceptor'
@@ -20,6 +20,7 @@ export default class GrpcErrorInterceptor implements NestInterceptor {
             property: 'environment',
           })
         }
+
         throw err as Error
       }),
     )

@@ -18,13 +18,15 @@ export default class GrpcLoggerInterceptor implements NestInterceptor {
 
   private shouldLogStack(err: Error) {
     const grpcErr = err as BaseGrpcException
+
     if (grpcErr.getError && (grpcErr.getError() as GrpcError).code !== Status.INTERNAL) {
       return false
     }
+
     return true
   }
 
-  async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const result = this.helper.mapToGrpcObject(context)
     const data = JSON.stringify(result.data)
 
@@ -33,11 +35,13 @@ export default class GrpcLoggerInterceptor implements NestInterceptor {
     return next.handle().pipe(
       catchError((err: Error | BaseGrpcException) => {
         const message = `gRPC ${result.serviceCall} failed with: ${data}`
+
         if (this.shouldLogStack(err)) {
           this.logger.error(message, err.stack)
         } else {
           this.logger.error(message)
         }
+
         throw err
       }),
     )

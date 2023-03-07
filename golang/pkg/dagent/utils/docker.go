@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -305,19 +306,20 @@ func DeployImage(ctx context.Context,
 	envList := EnvMapToSlice(envMap)
 	mountList := buildMountList(cfg, dog, deployImageRequest)
 
-	matchedContainer, err := dockerHelper.GetContainerByName(ctx, dog, containerName, false)
+	matchedContainer, err := dockerHelper.GetContainerByName(ctx, containerName)
 	if err != nil {
 		dog.WriteContainerState("", fmt.Sprintf("Failed to find container: %s", containerName))
 		return err
 	}
+
 	if matchedContainer != nil {
 		dog.WriteContainerState(matchedContainer.State)
-	}
 
-	err = dockerHelper.DeleteContainerByName(ctx, dog, containerName, false)
-	if err != nil {
-		dog.WriteContainerState("", fmt.Sprintf("Failed to delete container (%s): %s", containerName, err.Error()))
-		return err
+		err = dockerHelper.DeleteContainerByID(ctx, dog, matchedContainer.ID)
+		if err != nil {
+			dog.WriteContainerState("", fmt.Sprintf("Failed to delete container (%s): %s", containerName, err.Error()))
+			return err
+		}
 	}
 
 	builder := containerbuilder.NewDockerBuilder(ctx)
@@ -354,8 +356,8 @@ func DeployImage(ctx context.Context,
 		return err
 	}
 
-	matchedContainer, err = dockerHelper.GetContainerByID(ctx, dog, *builder.GetContainerID(), true)
-	if err != nil {
+	matchedContainer, err = dockerHelper.GetContainerByID(ctx, *builder.GetContainerID())
+	if err != nil || matchedContainer == nil {
 		dog.WriteContainerState("", fmt.Sprintf("Failed to find container (%s): %s", containerName, err.Error()))
 		return err
 	}
@@ -575,7 +577,7 @@ func setImageLabels(expandedImageName string,
 	}
 
 	// set organization labels to the container
-	organizationLabels, err := SetOrganizationLabel("container.prefix", deployImageRequest.InstanceConfig.ContainerPreName)
+	organizationLabels, err := SetOrganizationLabel(LabelContainerPrefix, deployImageRequest.InstanceConfig.ContainerPreName)
 	if err != nil {
 		return nil, fmt.Errorf("setting organization prefix: %s", err.Error())
 	}
@@ -588,7 +590,7 @@ func setImageLabels(expandedImageName string,
 			secretKeys = append(secretKeys, secretKey)
 		}
 
-		secretKeysList, err := SetOrganizationLabel("secret.keys", strings.Join(secretKeys, ","))
+		secretKeysList, err := SetOrganizationLabel(LabelSecretKeys, strings.Join(secretKeys, ","))
 		if err != nil {
 			return nil, fmt.Errorf("setting secret list: %s", err.Error())
 		}
@@ -621,7 +623,7 @@ func SecretList(ctx context.Context, prefix, name string) ([]string, error) {
 
 	container := containers[0]
 
-	if val, ok := GetOrganizationLabel(container.Labels, "secret.keys"); ok {
+	if val, ok := GetOrganizationLabel(container.Labels, LabelSecretKeys); ok {
 		return strings.Split(val, ","), nil
 	}
 
@@ -630,7 +632,14 @@ func SecretList(ctx context.Context, prefix, name string) ([]string, error) {
 
 func ContainerCommand(ctx context.Context, command *common.ContainerCommandRequest) error {
 	operation := command.Operation
-	containerID := command.GetId()
+
+	prefix := command.Container.Prefix
+	name := command.Container.Name
+
+	container, err := GetContainerByPrefixAndName(ctx, prefix, name)
+	if err != nil {
+		return err
+	}
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
@@ -638,13 +647,13 @@ func ContainerCommand(ctx context.Context, command *common.ContainerCommandReque
 	}
 
 	if operation == common.ContainerOperation_START_CONTAINER {
-		err = cli.ContainerStart(ctx, containerID, types.ContainerStartOptions{})
+		err = cli.ContainerStart(ctx, container.ID, types.ContainerStartOptions{})
 	} else if operation == common.ContainerOperation_STOP_CONTAINER {
-		err = cli.ContainerStop(ctx, containerID, nil)
+		err = cli.ContainerStop(ctx, container.ID, nil)
 	} else if operation == common.ContainerOperation_RESTART_CONTAINER {
-		err = cli.ContainerRestart(ctx, containerID, nil)
+		err = cli.ContainerRestart(ctx, container.ID, nil)
 	} else {
-		log.Error().Str("operation", operation.String()).Str("containerID", containerID).Msg("Unknown operation")
+		log.Error().Str("operation", operation.String()).Str("prefix", prefix).Str("name", name).Msg("Unknown operation")
 	}
 
 	return err
@@ -652,12 +661,10 @@ func ContainerCommand(ctx context.Context, command *common.ContainerCommandReque
 
 func DeleteContainers(ctx context.Context, request *common.DeleteContainersRequest) error {
 	var err error
-	if request.GetContainerId() != "" {
-		err = dockerHelper.DeleteContainerByID(ctx, nil, request.GetContainerId(), false)
-	} else if request.GetPrefixName() != nil {
-		err = DeleteContainerByName(ctx, request.GetPrefixName().Prefix, request.GetPrefixName().Name)
+	if request.GetContainer() != nil {
+		err = DeleteContainerByPrefixAndName(ctx, request.GetContainer().Prefix, request.GetContainer().Name)
 	} else if request.GetPrefix() != "" {
-		err = dockerHelper.DeletePrefix(ctx, request.GetPrefix())
+		err = dockerHelper.DeleteContainersByLabel(ctx, getPrefixLabelFilter(request.GetPrefix()))
 	} else {
 		log.Error().Msg("Unknown DeleteContainers request")
 	}
@@ -753,13 +760,30 @@ func ContainerLog(ctx context.Context, request *agent.ContainerLogRequest) (*grp
 
 	self, err := GetOwnContainer(ctx)
 	if err != nil {
-		return nil, err
+		if !errors.Is(err, &UnknownContainerError{}) {
+			return nil, err
+		}
+
+		cfg := grpc.GetConfigFromContext(ctx).(*config.Configuration)
+		if !cfg.Debug {
+			return nil, err
+		}
+
+		self = &types.Container{}
 	}
 
-	containerID := request.GetId()
+	prefix := request.Container.Prefix
+	name := request.Container.Name
+
+	container, err := GetContainerByPrefixAndName(ctx, prefix, name)
+	if err != nil {
+		return nil, fmt.Errorf("container not found: %w", err)
+	}
+
+	containerID := container.ID
 	enableEcho := containerID != self.ID
 
-	log.Trace().Str("logContainerId", containerID).Str("selfContainerId", self.ID).Msgf("Container log echo enabled: %t", enableEcho)
+	log.Trace().Str("prefix", prefix).Str("name", name).Str("selfContainerId", self.ID).Msgf("Container log echo enabled: %t", enableEcho)
 
 	inspect, err := cli.ContainerInspect(ctx, containerID)
 	if err != nil {

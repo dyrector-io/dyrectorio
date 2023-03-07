@@ -1,30 +1,28 @@
+import { Controller, UseGuards } from '@nestjs/common'
 import {
   CruxTokenController,
   CruxTokenControllerMethods,
   GenerateTokenRequest,
-  TokenListResponse,
   GenerateTokenResponse,
   IdRequest,
+  TokenListResponse,
 } from 'src/grpc/protobuf/proto/crux'
-import { Controller, UseInterceptors, UseGuards } from '@nestjs/common'
 
-import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
-import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
-import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
-import GrpcUserInterceptor, { getIdentity } from 'src/interceptors/grpc.user.interceptor'
 import { Metadata } from '@grpc/grpc-js'
-import { Empty } from 'src/grpc/protobuf/proto/common'
 import { UsePipes } from '@nestjs/common/decorators'
-import AuthService from './token.service'
-import TokenValidationPipe from './pipes/token.pipe'
+import UseGrpcInterceptors from 'src/decorators/grpc-interceptors.decorator'
+import { Empty } from 'src/grpc/protobuf/proto/common'
+import { getIdentity } from 'src/interceptors/grpc.user.interceptor'
 import TokenAccessGuard from './guards/token.access.guard'
+import TokenValidationPipe from './pipes/token.pipe'
+import TokenService from './token.service'
 
 @Controller()
 @CruxTokenControllerMethods()
 @UseGuards(TokenAccessGuard)
-@UseInterceptors(GrpcLoggerInterceptor, GrpcUserInterceptor, GrpcErrorInterceptor, PrismaErrorInterceptor)
+@UseGrpcInterceptors()
 export default class TokenController implements CruxTokenController {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: TokenService) {}
 
   @UsePipes(TokenValidationPipe)
   async generateToken(request: GenerateTokenRequest, metadata: Metadata): Promise<GenerateTokenResponse> {

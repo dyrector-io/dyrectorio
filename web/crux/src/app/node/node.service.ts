@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Identity } from '@ory/kratos-client'
 import { Observable } from 'rxjs'
+import { Agent } from 'src/domain/agent'
 import { BaseMessage } from 'src/domain/notification-templates'
 import { PreconditionFailedException } from 'src/exception/errors'
 import { CloseReason } from 'src/grpc/protobuf/proto/agent'
@@ -193,27 +194,28 @@ export default class NodeService {
 
     const prefix = request.prefix ?? ''
     const watcher = agent.upsertContainerStatusWatcher(prefix)
+
     return watcher.watch()
   }
 
   handleContainerLogStream(request: WatchContainerLogRequest): Observable<ContainerLogMessage> {
     this.logger.debug(
-      `Opening container log stream for container: ${request.id} - '${
-        request.id ?? `${request.prefixName.prefix}-${request.prefixName.name}`
-      }'`,
+      `Opening container log stream for container: ${request.nodeId} - ${Agent.containerPrefixNameOf(
+        request.container,
+      )}}`,
     )
 
-    const agent = this.agentService.getById(request.id)
+    const agent = this.agentService.getById(request.nodeId)
 
     if (!agent) {
       throw new PreconditionFailedException({
         message: 'Node is unreachable',
         property: 'nodeId',
-        value: request.id,
+        value: request.nodeId,
       })
     }
 
-    const stream = agent.upsertContainerLogStream(request.dockerId, request.prefixName)
+    const stream = agent.upsertContainerLogStream(request.container)
     return stream.watch()
   }
 

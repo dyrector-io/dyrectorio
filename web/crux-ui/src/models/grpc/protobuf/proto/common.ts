@@ -566,9 +566,7 @@ export interface ContainerStateListMessage {
 }
 
 export interface ContainerStateItem {
-  id?: string | undefined
-  prefix?: string | undefined
-  name: string
+  id: ContainerIdentifier | undefined
   command: string
   createdAt: Timestamp | undefined
   /** The 'State' of the container (Created, Running, etc) */
@@ -642,14 +640,12 @@ export interface ContainerIdentifier {
 }
 
 export interface ContainerCommandRequest {
-  id?: string | undefined
-  prefixName?: ContainerIdentifier | undefined
+  container: ContainerIdentifier | undefined
   operation: ContainerOperation
 }
 
 export interface DeleteContainersRequest {
-  containerId?: string | undefined
-  prefixName?: ContainerIdentifier | undefined
+  container?: ContainerIdentifier | undefined
   prefix?: string | undefined
 }
 
@@ -968,37 +964,40 @@ export const ContainerStateListMessage = {
 }
 
 function createBaseContainerStateItem(): ContainerStateItem {
-  return { name: '', command: '', createdAt: undefined, state: 0, status: '', imageName: '', imageTag: '', ports: [] }
+  return {
+    id: undefined,
+    command: '',
+    createdAt: undefined,
+    state: 0,
+    status: '',
+    imageName: '',
+    imageTag: '',
+    ports: [],
+  }
 }
 
 export const ContainerStateItem = {
   encode(message: ContainerStateItem, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== undefined) {
-      writer.uint32(1602).string(message.id)
-    }
-    if (message.prefix !== undefined) {
-      writer.uint32(1610).string(message.prefix)
-    }
-    if (message.name !== '') {
-      writer.uint32(810).string(message.name)
+      ContainerIdentifier.encode(message.id, writer.uint32(802).fork()).ldelim()
     }
     if (message.command !== '') {
-      writer.uint32(826).string(message.command)
+      writer.uint32(810).string(message.command)
     }
     if (message.createdAt !== undefined) {
-      Timestamp.encode(message.createdAt, writer.uint32(834).fork()).ldelim()
+      Timestamp.encode(message.createdAt, writer.uint32(818).fork()).ldelim()
     }
     if (message.state !== 0) {
-      writer.uint32(840).int32(message.state)
+      writer.uint32(824).int32(message.state)
     }
     if (message.status !== '') {
-      writer.uint32(850).string(message.status)
+      writer.uint32(834).string(message.status)
     }
     if (message.imageName !== '') {
-      writer.uint32(858).string(message.imageName)
+      writer.uint32(842).string(message.imageName)
     }
     if (message.imageTag !== '') {
-      writer.uint32(866).string(message.imageTag)
+      writer.uint32(850).string(message.imageTag)
     }
     for (const v of message.ports) {
       ContainerStateItemPort.encode(v!, writer.uint32(8002).fork()).ldelim()
@@ -1013,31 +1012,25 @@ export const ContainerStateItem = {
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
-        case 200:
-          message.id = reader.string()
-          break
-        case 201:
-          message.prefix = reader.string()
+        case 100:
+          message.id = ContainerIdentifier.decode(reader, reader.uint32())
           break
         case 101:
-          message.name = reader.string()
-          break
-        case 103:
           message.command = reader.string()
           break
-        case 104:
+        case 102:
           message.createdAt = Timestamp.decode(reader, reader.uint32())
           break
-        case 105:
+        case 103:
           message.state = reader.int32() as any
           break
-        case 106:
+        case 104:
           message.status = reader.string()
           break
-        case 107:
+        case 105:
           message.imageName = reader.string()
           break
-        case 108:
+        case 106:
           message.imageTag = reader.string()
           break
         case 1000:
@@ -1053,9 +1046,7 @@ export const ContainerStateItem = {
 
   fromJSON(object: any): ContainerStateItem {
     return {
-      id: isSet(object.id) ? String(object.id) : undefined,
-      prefix: isSet(object.prefix) ? String(object.prefix) : undefined,
-      name: isSet(object.name) ? String(object.name) : '',
+      id: isSet(object.id) ? ContainerIdentifier.fromJSON(object.id) : undefined,
       command: isSet(object.command) ? String(object.command) : '',
       createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
       state: isSet(object.state) ? containerStateFromJSON(object.state) : 0,
@@ -1068,9 +1059,7 @@ export const ContainerStateItem = {
 
   toJSON(message: ContainerStateItem): unknown {
     const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.prefix !== undefined && (obj.prefix = message.prefix)
-    message.name !== undefined && (obj.name = message.name)
+    message.id !== undefined && (obj.id = message.id ? ContainerIdentifier.toJSON(message.id) : undefined)
     message.command !== undefined && (obj.command = message.command)
     message.createdAt !== undefined && (obj.createdAt = fromTimestamp(message.createdAt).toISOString())
     message.state !== undefined && (obj.state = containerStateToJSON(message.state))
@@ -1091,9 +1080,7 @@ export const ContainerStateItem = {
 
   fromPartial<I extends Exact<DeepPartial<ContainerStateItem>, I>>(object: I): ContainerStateItem {
     const message = createBaseContainerStateItem()
-    message.id = object.id ?? undefined
-    message.prefix = object.prefix ?? undefined
-    message.name = object.name ?? ''
+    message.id = object.id !== undefined && object.id !== null ? ContainerIdentifier.fromPartial(object.id) : undefined
     message.command = object.command ?? ''
     message.createdAt =
       object.createdAt !== undefined && object.createdAt !== null ? Timestamp.fromPartial(object.createdAt) : undefined
@@ -1788,19 +1775,16 @@ export const ContainerIdentifier = {
 }
 
 function createBaseContainerCommandRequest(): ContainerCommandRequest {
-  return { operation: 0 }
+  return { container: undefined, operation: 0 }
 }
 
 export const ContainerCommandRequest = {
   encode(message: ContainerCommandRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.id !== undefined) {
-      writer.uint32(1602).string(message.id)
-    }
-    if (message.prefixName !== undefined) {
-      ContainerIdentifier.encode(message.prefixName, writer.uint32(1610).fork()).ldelim()
+    if (message.container !== undefined) {
+      ContainerIdentifier.encode(message.container, writer.uint32(802).fork()).ldelim()
     }
     if (message.operation !== 0) {
-      writer.uint32(800).int32(message.operation)
+      writer.uint32(808).int32(message.operation)
     }
     return writer
   },
@@ -1812,13 +1796,10 @@ export const ContainerCommandRequest = {
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
-        case 200:
-          message.id = reader.string()
-          break
-        case 201:
-          message.prefixName = ContainerIdentifier.decode(reader, reader.uint32())
-          break
         case 100:
+          message.container = ContainerIdentifier.decode(reader, reader.uint32())
+          break
+        case 101:
           message.operation = reader.int32() as any
           break
         default:
@@ -1831,17 +1812,15 @@ export const ContainerCommandRequest = {
 
   fromJSON(object: any): ContainerCommandRequest {
     return {
-      id: isSet(object.id) ? String(object.id) : undefined,
-      prefixName: isSet(object.prefixName) ? ContainerIdentifier.fromJSON(object.prefixName) : undefined,
+      container: isSet(object.container) ? ContainerIdentifier.fromJSON(object.container) : undefined,
       operation: isSet(object.operation) ? containerOperationFromJSON(object.operation) : 0,
     }
   },
 
   toJSON(message: ContainerCommandRequest): unknown {
     const obj: any = {}
-    message.id !== undefined && (obj.id = message.id)
-    message.prefixName !== undefined &&
-      (obj.prefixName = message.prefixName ? ContainerIdentifier.toJSON(message.prefixName) : undefined)
+    message.container !== undefined &&
+      (obj.container = message.container ? ContainerIdentifier.toJSON(message.container) : undefined)
     message.operation !== undefined && (obj.operation = containerOperationToJSON(message.operation))
     return obj
   },
@@ -1852,10 +1831,9 @@ export const ContainerCommandRequest = {
 
   fromPartial<I extends Exact<DeepPartial<ContainerCommandRequest>, I>>(object: I): ContainerCommandRequest {
     const message = createBaseContainerCommandRequest()
-    message.id = object.id ?? undefined
-    message.prefixName =
-      object.prefixName !== undefined && object.prefixName !== null
-        ? ContainerIdentifier.fromPartial(object.prefixName)
+    message.container =
+      object.container !== undefined && object.container !== null
+        ? ContainerIdentifier.fromPartial(object.container)
         : undefined
     message.operation = object.operation ?? 0
     return message
@@ -1868,11 +1846,8 @@ function createBaseDeleteContainersRequest(): DeleteContainersRequest {
 
 export const DeleteContainersRequest = {
   encode(message: DeleteContainersRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.containerId !== undefined) {
-      writer.uint32(1602).string(message.containerId)
-    }
-    if (message.prefixName !== undefined) {
-      ContainerIdentifier.encode(message.prefixName, writer.uint32(1610).fork()).ldelim()
+    if (message.container !== undefined) {
+      ContainerIdentifier.encode(message.container, writer.uint32(1610).fork()).ldelim()
     }
     if (message.prefix !== undefined) {
       writer.uint32(1618).string(message.prefix)
@@ -1887,11 +1862,8 @@ export const DeleteContainersRequest = {
     while (reader.pos < end) {
       const tag = reader.uint32()
       switch (tag >>> 3) {
-        case 200:
-          message.containerId = reader.string()
-          break
         case 201:
-          message.prefixName = ContainerIdentifier.decode(reader, reader.uint32())
+          message.container = ContainerIdentifier.decode(reader, reader.uint32())
           break
         case 202:
           message.prefix = reader.string()
@@ -1906,17 +1878,15 @@ export const DeleteContainersRequest = {
 
   fromJSON(object: any): DeleteContainersRequest {
     return {
-      containerId: isSet(object.containerId) ? String(object.containerId) : undefined,
-      prefixName: isSet(object.prefixName) ? ContainerIdentifier.fromJSON(object.prefixName) : undefined,
+      container: isSet(object.container) ? ContainerIdentifier.fromJSON(object.container) : undefined,
       prefix: isSet(object.prefix) ? String(object.prefix) : undefined,
     }
   },
 
   toJSON(message: DeleteContainersRequest): unknown {
     const obj: any = {}
-    message.containerId !== undefined && (obj.containerId = message.containerId)
-    message.prefixName !== undefined &&
-      (obj.prefixName = message.prefixName ? ContainerIdentifier.toJSON(message.prefixName) : undefined)
+    message.container !== undefined &&
+      (obj.container = message.container ? ContainerIdentifier.toJSON(message.container) : undefined)
     message.prefix !== undefined && (obj.prefix = message.prefix)
     return obj
   },
@@ -1927,10 +1897,9 @@ export const DeleteContainersRequest = {
 
   fromPartial<I extends Exact<DeepPartial<DeleteContainersRequest>, I>>(object: I): DeleteContainersRequest {
     const message = createBaseDeleteContainersRequest()
-    message.containerId = object.containerId ?? undefined
-    message.prefixName =
-      object.prefixName !== undefined && object.prefixName !== null
-        ? ContainerIdentifier.fromPartial(object.prefixName)
+    message.container =
+      object.container !== undefined && object.container !== null
+        ? ContainerIdentifier.fromPartial(object.container)
         : undefined
     message.prefix = object.prefix ?? undefined
     return message

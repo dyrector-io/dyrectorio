@@ -5,14 +5,16 @@ import { JwtModule } from '@nestjs/jwt'
 import KratosService from 'src/services/kratos.service'
 import InterceptorGrpcHelperProvider from 'src/interceptors/helper.interceptor'
 import PrismaService from 'src/services/prisma.service'
-import AuthService from './token.service'
+import TokenService from './token.service'
 import JwtStrategy from './jwt.strategy'
 import AuthController from './token.controller'
 import TokenMapper from './token.mapper'
+import TeamModule from '../team/team.module'
 
 @Module({
   imports: [
     PassportModule,
+    TeamModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -26,7 +28,7 @@ import TokenMapper from './token.mapper'
     }),
   ],
   controllers: [AuthController],
-  providers: [InterceptorGrpcHelperProvider, AuthService, JwtStrategy, KratosService, PrismaService, TokenMapper],
+  providers: [InterceptorGrpcHelperProvider, TokenService, JwtStrategy, KratosService, PrismaService, TokenMapper],
   exports: [],
 })
-export default class AuthModule {}
+export default class TokenModule {}

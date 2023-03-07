@@ -5,6 +5,7 @@ import useWebSocket from '@app/hooks/use-websocket'
 import {
   Container,
   ContainerListMessage,
+  containerPrefixNameOf,
   DeploymentRoot,
   WatchContainerStatusMessage,
   WS_TYPE_CONTAINER_STATUS_LIST,
@@ -27,10 +28,12 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
 
   const [containers, setContainers] = useState<Container[]>(() =>
     deployment.instances.map(it => ({
+      id: {
+        prefix: deployment.prefix,
+        name: it.overriddenConfig?.name ?? it.image.config.name,
+      },
       date: it.image.createdAt,
       state: null,
-      prefix: deployment.prefix,
-      name: it.image.config.name,
       imageName: it.image.name,
       imageTag: it.image.tag,
       ports: [],
@@ -50,51 +53,33 @@ const DeploymentContainerStatusList = (props: DeploymentContainerStatusListProps
       return weak
     }
 
-    const prefix = `${deployment.prefix}-`
-    const containerNames = strong.map(it => {
-      if (it.id && it.name.startsWith(prefix)) {
-        // came from docker
-        return it.name.substring(prefix.length, it.name.length)
-      }
+    const containerNames = strong.map(it => containerPrefixNameOf(it.id))
 
-      return it.name
+    return weak.map(it => {
+      const name = containerPrefixNameOf(it.id)
+
+      const index = containerNames.indexOf(name)
+      return index < 0 ? it : strong[index]
     })
-
-    const result = weak.map(it => {
-      const index = containerNames.indexOf(it.name)
-      if (index !== -1) {
-        return {
-          ...strong[index],
-          name: containerNames[index],
-        }
-      }
-      return it
-    })
-
-    return result.length > 0 ? result : strong
   }
 
   sock.on(WS_TYPE_CONTAINER_STATUS_LIST, (message: ContainerListMessage) => setContainers(merge(containers, message)))
 
-  const itemTemplate = (item: Container) => {
+  const itemTemplate = (container: Container) => {
     const now = utcNow()
-    const created = new Date(item.date).getTime()
+    const created = new Date(container.date).getTime()
     const seconds = Math.floor((now - created) / 1000)
 
-    const logUrl = deploymentContainerLogUrl(deployment.product.id, deployment.versionId, deployment.id, {
-      dockerId: item.id,
-      prefix: item.prefix,
-      name: item.name,
-    })
+    const logUrl = deploymentContainerLogUrl(deployment.product.id, deployment.versionId, deployment.id, container.id)
 
     /* eslint-disable react/jsx-key */
     return [
-      <ContainerStatusIndicator state={item.state} />,
-      <span>{item.name}</span>,
-      <span>{`${item.imageName}:${item.imageTag}`}</span>,
+      <ContainerStatusIndicator state={container.state} />,
+      <span>{container.id.name}</span>,
+      <span>{`${container.imageName}:${container.imageTag}`}</span>,
       <span>{timeAgo(t, seconds)}</span>,
-      <ContainerStatusTag className="inline-block" state={item.state} />,
-      item.state && (
+      <ContainerStatusTag className="inline-block" state={container.state} />,
+      container.state && (
         <Link href={logUrl} passHref>
           <span className="cursor-pointer text-dyo-blue">{t('showLogs')}</span>
         </Link>

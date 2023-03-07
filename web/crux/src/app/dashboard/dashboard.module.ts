@@ -7,11 +7,19 @@ import KratosService from 'src/services/kratos.service'
 import DashboardMapper from './dashboard.mapper'
 import DashboardService from './dashboard.service'
 import DashboardController from './dashboard.controller'
+import TeamRepository from '../team/team.repository'
 
 @Module({
   imports: [AuditModule, AgentModule],
   exports: [],
   controllers: [DashboardController],
-  providers: [DashboardService, DashboardMapper, PrismaService, InterceptorGrpcHelperProvider, KratosService],
+  providers: [
+    DashboardService,
+    DashboardMapper,
+    PrismaService,
+    InterceptorGrpcHelperProvider,
+    KratosService,
+    TeamRepository,
+  ],
 })
 export default class DashboardModule {}

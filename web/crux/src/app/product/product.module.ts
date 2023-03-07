@@ -9,10 +9,10 @@ import ProductController from './product.controller'
 import ProductMapper from './product.mapper'
 import ProductService from './product.service'
 import ProductHttpController from './product.http.controller'
-import AuthModule from '../token/token.module'
+import TokenModule from '../token/token.module'
 
 @Module({
-  imports: [VersionModule, TeamModule, AuthModule],
+  imports: [VersionModule, TeamModule, TokenModule],
   exports: [ProductMapper, ProductService],
   controllers: [ProductController, ProductHttpController],
   providers: [

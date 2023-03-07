@@ -1,4 +1,5 @@
 import {
+  ContainerIdentifier,
   ContainerOperation,
   ContainerState,
   DyoNodeInstallTraefik,
@@ -9,6 +10,7 @@ import {
   NODE_TYPE_VALUES,
 } from '@app/models'
 import {
+  ContainerIdentifier as ProtoContainerIdentifier,
   ContainerOperation as ProtoContainerOperation,
   ContainerState as ProtoContainerState,
   containerStateToJSON,
@@ -58,4 +60,9 @@ export const containerOperationToProto = (it: ContainerOperation): ProtoContaine
 
 export const nodeTraefikOptionsToProto = (it: DyoNodeInstallTraefik): DagentTraefikOptions => ({
   acmeEmail: it.acmeEmail,
+})
+
+export const containerIdentifierToProto = (it: ContainerIdentifier): ProtoContainerIdentifier => ({
+  prefix: it.prefix ?? '',
+  name: it.name,
 })

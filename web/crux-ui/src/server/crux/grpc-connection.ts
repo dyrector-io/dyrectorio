@@ -69,6 +69,8 @@ export class GrpcConnection<I, O extends object> {
   }
 
   cancel() {
+    this.logger.verbose('Grpc canceled')
+
     this.reconnecting = -1
     this.connecting = false
     this.stream?.cancel()
@@ -76,7 +78,7 @@ export class GrpcConnection<I, O extends object> {
   }
 
   private onData(data: I) {
-    this.logger.verbose('Grpc message', data)
+    this.logger.verbose('Grpc message', JSON.stringify(data, null, 2))
 
     const message = this.transform(data)
     this.options.onMessage(message)

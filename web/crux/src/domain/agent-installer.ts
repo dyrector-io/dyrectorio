@@ -67,6 +67,7 @@ export default class AgentInstaller {
     const configLocalDeployment = this.configService.get<string>('LOCAL_DEPLOYMENT')
     const configLocalDeploymentNetwork = this.configService.get<string>('LOCAL_DEPLOYMENT_NETWORK')
     const configK8sLocalManifest = this.configService.get<string>('K8S_LOCAL_MANIFEST')
+    const disableForcePull = this.configService.get<boolean>('AGENT_INSTALL_SCRIPT_DISABLE_PULL', false)
     const debugMode = process.env.NODE_ENV !== 'production'
 
     let installScriptParams: InstallScriptConfig = {
@@ -81,6 +82,7 @@ export default class AgentInstaller {
             acmeEmail: this.dagentTraefik.acmeEmail,
           }
         : undefined,
+      disableForcePull,
     }
 
     if (this.nodeType === NodeTypeEnum.k8s) {
@@ -139,6 +141,7 @@ export type InstallScriptConfig = {
   traefik?: {
     acmeEmail: string
   }
+  disableForcePull?: boolean
 }
 
 export type ScriptCompiler = {

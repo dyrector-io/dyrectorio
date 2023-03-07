@@ -104,13 +104,13 @@ export class Agent {
     return watcher
   }
 
-  upsertContainerLogStream(id?: string, prefixName?: ContainerIdentifier): ContainerLogStream {
+  upsertContainerLogStream(container: ContainerIdentifier): ContainerLogStream {
     this.throwWhenUpdating()
 
-    const key = id ?? `${prefixName.prefix}-${prefixName.name}`
+    const key = Agent.containerPrefixNameOf(container)
     let stream = this.logStreams.get(key)
     if (!stream) {
-      stream = new ContainerLogStream(id, prefixName, DEFAULT_CONTAINER_LOG_TAIL)
+      stream = new ContainerLogStream(container, DEFAULT_CONTAINER_LOG_TAIL)
       this.logStreams.set(key, stream)
       stream.start(this.commandChannel)
     }
@@ -175,7 +175,7 @@ export class Agent {
     return this.commandChannel.asObservable()
   }
 
-  onDisconnected(): Deployment[] {
+  onDisconnected() {
     this.deployments.forEach(it => it.onDisconnected())
     this.statusWatchers.forEach(it => it.stop())
     this.secretsWatchers.forEach(it => it.complete())
@@ -186,8 +186,6 @@ export class Agent {
       id: this.id,
       status: NodeConnectionStatus.UNREACHABLE,
     })
-
-    return Array.from(this.deployments.values())
   }
 
   onDeploymentFinished(deployment: Deployment): DeploymentStatus {
@@ -214,11 +212,9 @@ export class Agent {
     watcher.onNodeStreamFinished()
   }
 
-  onContainerLogStreamStarted(
-    dockerId?: string,
-    pod?: ContainerIdentifier,
-  ): [ContainerLogStream, ContainerLogStreamCompleter] {
-    const key = dockerId ?? `${pod.prefix}-${pod.name}`
+  onContainerLogStreamStarted(id: ContainerIdentifier): [ContainerLogStream, ContainerLogStreamCompleter] {
+    const key = Agent.containerPrefixNameOf(id)
+
     const stream = this.logStreams.get(key)
     if (!stream) {
       return [null, null]
@@ -227,8 +223,8 @@ export class Agent {
     return [stream, stream.onNodeStreamStarted()]
   }
 
-  onContainerLogStreamFinished(dockerId?: string, pod?: ContainerIdentifier) {
-    const key = dockerId ?? `${pod.prefix}-${pod.name}`
+  onContainerLogStreamFinished(id: ContainerIdentifier) {
+    const key = Agent.containerPrefixNameOf(id)
     const watcher = this.logStreams.get(key)
     if (!watcher) {
       return
@@ -241,7 +237,10 @@ export class Agent {
   getContainerSecrets(prefix: string, name: string): Observable<ListSecretsResponse> {
     this.throwWhenUpdating()
 
-    const key = `${prefix}-${name}`
+    const key = Agent.containerPrefixNameOf({
+      prefix,
+      name,
+    })
 
     let watcher = this.secretsWatchers.get(key)
     if (!watcher) {
@@ -277,7 +276,7 @@ export class Agent {
   }
 
   onContainerSecrets(res: ListSecretsResponse) {
-    const key = `${res.prefix}-${res.name}`
+    const key = Agent.containerPrefixNameOf(res)
 
     const watcher = this.secretsWatchers.get(key)
     if (!watcher) {
@@ -342,16 +341,15 @@ export class Agent {
   }
 
   private static containerDeleteRequestToRequestId(request: DeleteContainersRequest): string {
-    if (request.containerId) {
-      return request.containerId
-    }
-
-    if (request.prefixName) {
-      return `${request.prefixName.prefix}-${request.prefixName.name}`
+    if (request.container) {
+      return Agent.containerPrefixNameOf(request.container)
     }
 
     return request.prefix
   }
+
+  public static containerPrefixNameOf = (id: ContainerIdentifier): string =>
+    !id.prefix ? id.name : `${id.prefix}-${id.name}`
 }
 
 export type AgentToken = {

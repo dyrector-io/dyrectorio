@@ -1,6 +1,7 @@
 import { Metadata } from '@grpc/grpc-js'
-import { UsePipes, Controller, UseGuards, UseInterceptors } from '@nestjs/common'
-import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
+import { Controller, UseGuards, UsePipes } from '@nestjs/common'
+import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
+import UseGrpcInterceptors from 'src/decorators/grpc-interceptors.decorator'
 import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
   CreateEntityResponse,
@@ -13,10 +14,7 @@ import {
   UpdateEntityResponse,
   UpdateRegistryRequest,
 } from 'src/grpc/protobuf/proto/crux'
-import GrpcErrorInterceptor from 'src/interceptors/grpc.error.interceptor'
-import GrpcLoggerInterceptor from 'src/interceptors/grpc.logger.interceptor'
-import GrpcUserInterceptor, { getIdentity } from 'src/interceptors/grpc.user.interceptor'
-import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
+import { getIdentity } from 'src/interceptors/grpc.user.interceptor'
 import RegistryAccessValidationGuard from './guards/registry.auth.validation.guard'
 import RegistryTeamAccessGuard from './guards/registry.team-access.guard'
 import DeleteRegistryValidationPipe from './pipes/registry.delete.pipe'
@@ -26,7 +24,7 @@ import RegistryService from './registry.service'
 @Controller()
 @CruxRegistryControllerMethods()
 @UseGuards(RegistryTeamAccessGuard)
-@UseInterceptors(GrpcLoggerInterceptor, GrpcUserInterceptor, GrpcErrorInterceptor, PrismaErrorInterceptor)
+@UseGrpcInterceptors()
 export default class RegistryController implements CruxRegistryController {
   constructor(private service: RegistryService) {}
 

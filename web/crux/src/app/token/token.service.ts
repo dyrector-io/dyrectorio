@@ -8,8 +8,8 @@ import { v4 as uuid } from 'uuid'
 import TokenMapper from './token.mapper'
 
 @Injectable()
-export default class AuthService {
-  private logger = new Logger(AuthService.name)
+export default class TokenService {
+  private logger = new Logger(TokenService.name)
 
   constructor(private jwtService: JwtService, private prisma: PrismaService, private mapper: TokenMapper) {}
 
