@@ -68,6 +68,17 @@
         },
 
         {
+            "name": "Debug crane init",
+            "type": "go",
+            "request": "launch",
+            "buildFlags": "",
+            "mode": "debug",
+            "program": "${workspaceFolder}/golang/cmd/crane",
+            "cwd": "${workspaceFolder}/golang/cmd/crane",
+            "args": ["init"]
+        },
+
+        {
             "name": "Debug CLI",
             "type": "go",
             "request": "launch",
