@@ -1,6 +1,6 @@
-import { Handler, ServerSurfaceCall } from '@grpc/grpc-js/build/src/server-call'
+import { Handler } from '@grpc/grpc-js/build/src/server-call'
 import { ExecutionContext, Injectable } from '@nestjs/common'
-import { getIdentity } from './grpc.user.interceptor'
+import { IdentityAwareServerSurfaceCall } from 'src/shared/user-access.guard'
 
 type GrpcCallLog = {
   userId: string
@@ -15,18 +15,16 @@ type GrpcCallLog = {
 export default class InterceptorGrpcHelperProvider {
   mapToGrpcObject(context: ExecutionContext): GrpcCallLog {
     const request = context.getArgByIndex(0)
-    const surfaceCall = context.getArgByIndex<ServerSurfaceCall>(2)
+    const surfaceCall = context.getArgByIndex<IdentityAwareServerSurfaceCall>(2)
     return this.mapServerCallToGrpcLog(request, surfaceCall)
   }
 
-  mapServerCallToGrpcLog(request: any, surfaceCall: ServerSurfaceCall): GrpcCallLog {
+  mapServerCallToGrpcLog(request: any, surfaceCall: IdentityAwareServerSurfaceCall): GrpcCallLog {
     const serverCall = surfaceCall as any as ServerCall
     const { handler } = serverCall.call
 
-    const identity = getIdentity(surfaceCall.metadata)
-
     return {
-      userId: identity?.id,
+      userId: surfaceCall.user?.id,
       serviceCall: handler.path,
       data: request,
     }

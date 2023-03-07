@@ -10,9 +10,10 @@ import {
 
 import { Metadata } from '@grpc/grpc-js'
 import { UsePipes } from '@nestjs/common/decorators'
+import { Identity } from '@ory/kratos-client'
 import UseGrpcInterceptors from 'src/decorators/grpc-interceptors.decorator'
 import { Empty } from 'src/grpc/protobuf/proto/common'
-import { getIdentity } from 'src/interceptors/grpc.user.interceptor'
+import { IdentityFromGrpcCall } from 'src/shared/user-access.guard'
 import TokenAccessGuard from './guards/token.access.guard'
 import TokenValidationPipe from './pipes/token.pipe'
 import TokenService from './token.service'
@@ -25,12 +26,16 @@ export default class TokenController implements CruxTokenController {
   constructor(private authService: TokenService) {}
 
   @UsePipes(TokenValidationPipe)
-  async generateToken(request: GenerateTokenRequest, metadata: Metadata): Promise<GenerateTokenResponse> {
-    return this.authService.generateToken(request, getIdentity(metadata))
+  async generateToken(
+    request: GenerateTokenRequest,
+    _: Metadata,
+    @IdentityFromGrpcCall() identity: Identity,
+  ): Promise<GenerateTokenResponse> {
+    return this.authService.generateToken(request, identity)
   }
 
-  async getTokenList(_: Empty, metadata: Metadata): Promise<TokenListResponse> {
-    return this.authService.getTokenList(getIdentity(metadata))
+  async getTokenList(_: Empty, __: Metadata, @IdentityFromGrpcCall() identity: Identity): Promise<TokenListResponse> {
+    return this.authService.getTokenList(identity)
   }
 
   async deleteToken(request: IdRequest): Promise<void> {

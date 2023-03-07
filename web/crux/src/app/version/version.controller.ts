@@ -1,5 +1,6 @@
 import { Metadata } from '@grpc/grpc-js'
 import { Controller, UseGuards, UsePipes } from '@nestjs/common'
+import { Identity } from '@ory/kratos-client'
 import UseGrpcInterceptors from 'src/decorators/grpc-interceptors.decorator'
 import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
@@ -14,7 +15,7 @@ import {
   VersionDetailsResponse,
   VersionListResponse,
 } from 'src/grpc/protobuf/proto/crux'
-import { getIdentity } from 'src/interceptors/grpc.user.interceptor'
+import { IdentityFromGrpcCall } from 'src/shared/user-access.guard'
 import VersionCreateTeamAccessGuard from './guards/version.create.team-access.guard'
 import VersionTeamAccessGuard from './guards/version.team-access.guard'
 import VersionCreateValidationPipe from './pipes/version.create.pipe'
@@ -31,12 +32,20 @@ export default class VersionController implements CruxProductVersionController {
   constructor(private service: VersionService) {}
 
   @UsePipes(VersionIncreaseValidationPipe)
-  async increaseVersion(request: IncreaseVersionRequest, metadata: Metadata): Promise<CreateEntityResponse> {
-    return await this.service.increaseVersion(request, getIdentity(metadata))
+  async increaseVersion(
+    request: IncreaseVersionRequest,
+    _: Metadata,
+    @IdentityFromGrpcCall() identity: Identity,
+  ): Promise<CreateEntityResponse> {
+    return await this.service.increaseVersion(request, identity)
   }
 
-  async getVersionsByProductId(productId: IdRequest, metadata: Metadata): Promise<VersionListResponse> {
-    return await this.service.getVersionsByProductId(productId, getIdentity(metadata))
+  async getVersionsByProductId(
+    productId: IdRequest,
+    _: Metadata,
+    @IdentityFromGrpcCall() identity: Identity,
+  ): Promise<VersionListResponse> {
+    return await this.service.getVersionsByProductId(productId, identity)
   }
 
   async getVersionDetails(versionId: IdRequest): Promise<VersionDetailsResponse> {
@@ -45,13 +54,21 @@ export default class VersionController implements CruxProductVersionController {
 
   @UseGuards(VersionCreateTeamAccessGuard)
   @UsePipes(VersionCreateValidationPipe)
-  async createVersion(request: CreateVersionRequest, metadata: Metadata): Promise<CreateEntityResponse> {
-    return await this.service.createVersion(request, getIdentity(metadata))
+  async createVersion(
+    request: CreateVersionRequest,
+    _: Metadata,
+    @IdentityFromGrpcCall() identity: Identity,
+  ): Promise<CreateEntityResponse> {
+    return await this.service.createVersion(request, identity)
   }
 
   @UsePipes(VersionUpdateValidationPipe)
-  async updateVersion(request: UpdateVersionRequest, metadata: Metadata): Promise<UpdateEntityResponse> {
-    return await this.service.updateVersion(request, getIdentity(metadata))
+  async updateVersion(
+    request: UpdateVersionRequest,
+    _: Metadata,
+    @IdentityFromGrpcCall() identity: Identity,
+  ): Promise<UpdateEntityResponse> {
+    return await this.service.updateVersion(request, identity)
   }
 
   async setDefaultVersion(request: IdRequest): Promise<Empty> {

@@ -1,5 +1,6 @@
 import { Metadata } from '@grpc/grpc-js'
 import { Controller, UseGuards, UsePipes } from '@nestjs/common'
+import { Identity } from '@ory/kratos-client'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import UseGrpcInterceptors from 'src/decorators/grpc-interceptors.decorator'
 import { Empty } from 'src/grpc/protobuf/proto/common'
@@ -13,7 +14,7 @@ import {
   OrderVersionImagesRequest,
   PatchImageRequest,
 } from 'src/grpc/protobuf/proto/crux'
-import { getIdentity } from 'src/interceptors/grpc.user.interceptor'
+import { IdentityFromGrpcCall } from 'src/shared/user-access.guard'
 import ImageAddToVersionTeamAccessGuard from './guards/image.add-to-version.team-access.guard'
 import ImageOrderImagesTeamAccessGuard from './guards/image.order-images.team-access.guard'
 import ImageTeamAccessGuard from './guards/image.team-access.guard'
@@ -36,20 +37,32 @@ export default class ImageController implements CruxImageController {
 
   @UseGuards(ImageAddToVersionTeamAccessGuard)
   @UsePipes(ImageAddToVersionValidationPipe)
-  async addImagesToVersion(request: AddImagesToVersionRequest, metadata: Metadata): Promise<ImageListResponse> {
-    return await this.service.addImagesToVersion(request, getIdentity(metadata))
+  async addImagesToVersion(
+    request: AddImagesToVersionRequest,
+    _: Metadata,
+    @IdentityFromGrpcCall() identity: Identity,
+  ): Promise<ImageListResponse> {
+    return await this.service.addImagesToVersion(request, identity)
   }
 
   @UseGuards(ImageOrderImagesTeamAccessGuard)
   @UsePipes(OrderImagesValidationPipe)
-  async orderImages(request: OrderVersionImagesRequest, metadata: Metadata): Promise<Empty> {
-    return await this.service.orderImages(request, getIdentity(metadata))
+  async orderImages(
+    request: OrderVersionImagesRequest,
+    _: Metadata,
+    @IdentityFromGrpcCall() identity: Identity,
+  ): Promise<Empty> {
+    return await this.service.orderImages(request, identity)
   }
 
   @AuditLogLevel('no-data')
   @UsePipes(ImagePatchValidationPipe)
-  async patchImage(request: PatchImageRequest, metadata: Metadata): Promise<Empty> {
-    return await this.service.patchImage(request, getIdentity(metadata))
+  async patchImage(
+    request: PatchImageRequest,
+    _: Metadata,
+    @IdentityFromGrpcCall() identity: Identity,
+  ): Promise<Empty> {
+    return await this.service.patchImage(request, identity)
   }
 
   @UsePipes(DeleteImageValidationPipe)

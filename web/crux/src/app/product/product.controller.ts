@@ -1,5 +1,6 @@
 import { Metadata } from '@grpc/grpc-js'
 import { Controller, UseGuards, UsePipes } from '@nestjs/common'
+import { Identity } from '@ory/kratos-client'
 import UseGrpcInterceptors from 'src/decorators/grpc-interceptors.decorator'
 import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
@@ -13,7 +14,7 @@ import {
   UpdateEntityResponse,
   UpdateProductRequest,
 } from 'src/grpc/protobuf/proto/crux'
-import { getIdentity } from 'src/interceptors/grpc.user.interceptor'
+import { IdentityFromGrpcCall } from 'src/shared/user-access.guard'
 import ProductTeamAccessGuard from './guards/product.team-access.guard'
 import ProductUpdateValidationPipe from './pipes/product.update.pipe'
 import ProductService from './product.service'
@@ -25,12 +26,16 @@ import ProductService from './product.service'
 export default class ProductController implements CruxProductController {
   constructor(private service: ProductService) {}
 
-  async getProducts(_: Empty, metadata: Metadata): Promise<ProductListResponse> {
-    return this.service.getProducts(getIdentity(metadata))
+  async getProducts(_: Empty, __: Metadata, @IdentityFromGrpcCall() identity: Identity): Promise<ProductListResponse> {
+    return this.service.getProducts(identity)
   }
 
-  async createProduct(request: CreateProductRequest, metadata: Metadata): Promise<CreateEntityResponse> {
-    return this.service.createProduct(request, getIdentity(metadata))
+  async createProduct(
+    request: CreateProductRequest,
+    _: Metadata,
+    @IdentityFromGrpcCall() identity: Identity,
+  ): Promise<CreateEntityResponse> {
+    return this.service.createProduct(request, identity)
   }
 
   async deleteProduct(request: IdRequest): Promise<Empty> {
@@ -38,8 +43,12 @@ export default class ProductController implements CruxProductController {
   }
 
   @UsePipes(ProductUpdateValidationPipe)
-  async updateProduct(request: UpdateProductRequest, metadata: Metadata): Promise<UpdateEntityResponse> {
-    return this.service.updateProduct(request, getIdentity(metadata))
+  async updateProduct(
+    request: UpdateProductRequest,
+    _: Metadata,
+    @IdentityFromGrpcCall() identity: Identity,
+  ): Promise<UpdateEntityResponse> {
+    return this.service.updateProduct(request, identity)
   }
 
   async getProductDetails(request: IdRequest): Promise<ProductDetailsReponse> {

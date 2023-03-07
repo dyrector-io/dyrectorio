@@ -1,5 +1,6 @@
 import { Metadata } from '@grpc/grpc-js'
 import { Controller, UseGuards, UsePipes } from '@nestjs/common'
+import { Identity } from '@ory/kratos-client'
 import { concatAll, from, Observable } from 'rxjs'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import UseGrpcInterceptors from 'src/decorators/grpc-interceptors.decorator'
@@ -22,8 +23,7 @@ import {
   UpdateDeploymentRequest,
   UpdateEntityResponse,
 } from 'src/grpc/protobuf/proto/crux'
-import { DisableIdentity, getIdentity } from 'src/interceptors/grpc.user.interceptor'
-import { DisableAccessCheck } from 'src/shared/user-access.guard'
+import { DisableAccessCheck, DisableIdentity, IdentityFromGrpcCall } from 'src/shared/user-access.guard'
 import DeployService from './deploy.service'
 import DeployCreateTeamAccessGuard from './guards/deploy.create.team-access.guard'
 import DeployGetByVersionTeamAccessGuard from './guards/deploy.get-by-version.team-access.guard'
@@ -58,13 +58,21 @@ export default class DeployController implements CruxDeploymentController {
 
   @UseGuards(DeployCreateTeamAccessGuard)
   @UsePipes(DeployCreateValidationPipe)
-  async createDeployment(request: CreateDeploymentRequest, metadata: Metadata): Promise<CreateEntityResponse> {
-    return await this.service.createDeployment(request, getIdentity(metadata))
+  async createDeployment(
+    request: CreateDeploymentRequest,
+    _: Metadata,
+    @IdentityFromGrpcCall() identity: Identity,
+  ): Promise<CreateEntityResponse> {
+    return await this.service.createDeployment(request, identity)
   }
 
   @UsePipes(DeployUpdateValidationPipe)
-  async updateDeployment(request: UpdateDeploymentRequest, metadata: Metadata): Promise<UpdateEntityResponse> {
-    return await this.service.updateDeployment(request, getIdentity(metadata))
+  async updateDeployment(
+    request: UpdateDeploymentRequest,
+    _: Metadata,
+    @IdentityFromGrpcCall() identity: Identity,
+  ): Promise<UpdateEntityResponse> {
+    return await this.service.updateDeployment(request, identity)
   }
 
   async getDeploymentSecrets(request: DeploymentListSecretsRequest): Promise<ListSecretsResponse> {
@@ -73,8 +81,12 @@ export default class DeployController implements CruxDeploymentController {
 
   @AuditLogLevel('no-data')
   @UsePipes(DeployPatchValidationPipe)
-  async patchDeployment(request: PatchDeploymentRequest, metadata: Metadata): Promise<UpdateEntityResponse> {
-    return await this.service.patchDeployment(request, getIdentity(metadata))
+  async patchDeployment(
+    request: PatchDeploymentRequest,
+    _: Metadata,
+    @IdentityFromGrpcCall() identity: Identity,
+  ): Promise<UpdateEntityResponse> {
+    return await this.service.patchDeployment(request, identity)
   }
 
   @UsePipes(DeleteDeploymentValidationPipe)
@@ -83,8 +95,8 @@ export default class DeployController implements CruxDeploymentController {
   }
 
   @UsePipes(DeployStartValidationPipe)
-  async startDeployment(request: IdRequest, metadata: Metadata): Promise<Empty> {
-    return await this.service.startDeployment(request, getIdentity(metadata))
+  async startDeployment(request: IdRequest, _: Metadata, @IdentityFromGrpcCall() identity: Identity): Promise<Empty> {
+    return await this.service.startDeployment(request, identity)
   }
 
   @DisableAccessCheck()
@@ -101,16 +113,28 @@ export default class DeployController implements CruxDeploymentController {
     return this.service.subscribeToDeploymentEditEvents(request)
   }
 
-  async getDeploymentList(_: Empty, metadata: Metadata): Promise<DeploymentListResponse> {
-    return await this.service.getDeploymentList(getIdentity(metadata))
+  async getDeploymentList(
+    _: Empty,
+    __: Metadata,
+    @IdentityFromGrpcCall() identity: Identity,
+  ): Promise<DeploymentListResponse> {
+    return await this.service.getDeploymentList(identity)
   }
 
   @UsePipes(DeployCopyValidationPipe)
-  async copyDeploymentSafe(request: IdRequest, metadata: Metadata): Promise<CreateEntityResponse> {
-    return this.service.copyDeployment(request, getIdentity(metadata))
+  async copyDeploymentSafe(
+    request: IdRequest,
+    _: Metadata,
+    @IdentityFromGrpcCall() identity: Identity,
+  ): Promise<CreateEntityResponse> {
+    return this.service.copyDeployment(request, identity)
   }
 
-  async copyDeploymentUnsafe(request: IdRequest, metadata: Metadata): Promise<CreateEntityResponse> {
-    return this.service.copyDeployment(request, getIdentity(metadata))
+  async copyDeploymentUnsafe(
+    request: IdRequest,
+    _: Metadata,
+    @IdentityFromGrpcCall() identity: Identity,
+  ): Promise<CreateEntityResponse> {
+    return this.service.copyDeployment(request, identity)
   }
 }
