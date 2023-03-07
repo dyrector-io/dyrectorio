@@ -38,12 +38,12 @@ func GetContainerByPrefixAndName(ctx context.Context, prefix, name string) (*typ
 		return dockerHelper.GetContainerByName(ctx, name)
 	}
 
-	containers, err := dockerHelper.GetAllContainersByLabel(ctx, prefix)
+	containers, err := dockerHelper.GetAllContainersByLabel(ctx, getPrefixLabelFilter(prefix))
 	if err != nil {
 		return nil, err
 	}
 
-	targetName := util.JoinV("-", prefix, name)
+	targetName := util.JoinV("-", "/"+prefix, name)
 	for index := range containers {
 		for _, name := range containers[index].Names {
 			if name == targetName {
