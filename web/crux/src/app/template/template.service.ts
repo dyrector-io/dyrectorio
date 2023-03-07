@@ -105,15 +105,7 @@ export default class TemplateService {
         data: new Uint8Array(buffer),
       }
     } catch (err) {
-<<<<<<< HEAD
-      throw new NotFoundException({
-        message: 'Template image not found',
-        property: 'id',
-        value: id,
-      })
-=======
       throw new NotFoundException({ message: 'Template image not found.', property: 'template', value: id })
->>>>>>> 1095b230 (DRAFT: Initial auditlog and dashboard http API with session based authguard)
     }
   }
 
