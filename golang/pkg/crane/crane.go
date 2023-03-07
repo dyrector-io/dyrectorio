@@ -36,12 +36,13 @@ func Serve(cfg *config.Configuration) {
 	grpcParams := grpc.TokenToConnectionParams(cfg.GrpcToken)
 	grpcContext := grpc.WithGRPCConfig(context.Background(), cfg)
 	grpc.Init(grpcContext, grpcParams, &cfg.CommonConfiguration, grpc.WorkerFunctions{
-		Deploy:       k8s.Deploy,
-		Watch:        crux.GetDeployments,
-		Delete:       k8s.Delete,
-		SecretList:   crux.GetSecretsList,
-		ContainerLog: k8s.PodLog,
-		Close:        grpcClose,
+		Deploy:           k8s.Deploy,
+		Watch:            crux.GetDeployments,
+		Delete:           k8s.Delete,
+		DeleteContainers: k8s.DeleteMultiple,
+		SecretList:       crux.GetSecretsList,
+		ContainerLog:     k8s.PodLog,
+		Close:            grpcClose,
 	})
 }
 

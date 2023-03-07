@@ -7,7 +7,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"io"
-	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -75,22 +74,6 @@ func TestMapToSliceUniqueMerger_Collision(t *testing.T) {
 	c := utils.MergeStringMapToUniqueSlice(a, b)
 
 	assert.ElementsMatch(t, c, []string{"VAR1=CHANGE_IS_GOOD", "VAR2=teasdasdmnj1312", "ALT_VAR2=teasdasdmnj1312"})
-}
-
-func TestEnvPipeSeparatedToStringMap_Empty(t *testing.T) {
-	envIn := &[]string{}
-
-	out := utils.EnvPipeSeparatedToStringMap(envIn)
-
-	assert.True(t, reflect.DeepEqual(out, map[string]string{}))
-}
-
-func TestEnvPipeSeparatedToStringMap_Collision(t *testing.T) {
-	envIn := &[]string{"NAME|value", "NAME|value2"}
-
-	out := utils.EnvPipeSeparatedToStringMap(envIn)
-
-	assert.True(t, reflect.DeepEqual(out, map[string]string{"NAME": "value2"}))
 }
 
 func convertLogLine(line string) []byte {
