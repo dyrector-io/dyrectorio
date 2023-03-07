@@ -27,18 +27,6 @@ env:
   GOLANG_WORKING_DIRECTORY: golang
 
 jobs:
-  test_cica:
-    runs-on: ubuntu-22.04
-    container:
-      image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
-    needs: [kratos_build, e2e, changes]
-    if: github.ref_name != 'develop' &&
-      github.ref_name != 'main' &&
-      github.ref_type != 'tag'
-    steps:
-      - name: cica
-        run: echo test
-
   conventional_commits:
     name: Conventional commits validation
     runs-on: ubuntu-22.04
@@ -475,9 +463,9 @@ jobs:
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
     needs: [go_build, go_cli_build, e2e, changes]
-    if: github.ref_name == 'develop' ||
+    if: always() && (github.ref_name == 'develop' ||
       github.ref_name == 'main' ||
-      github.ref_type == 'tag'
+      github.ref_type == 'tag')
     environment: Workflow - Protected
     steps:
       - name: artifact download
@@ -543,9 +531,9 @@ jobs:
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
     needs: [crux_build, e2e, changes]
-    if: github.ref_name == 'develop' ||
+    if: always() && (github.ref_name == 'develop' ||
       github.ref_name == 'main' ||
-      github.ref_type == 'tag'
+      github.ref_type == 'tag')
     environment: Workflow - Protected
     steps:
       - name: artifact download
@@ -588,9 +576,9 @@ jobs:
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
     needs: [crux-ui_build, e2e, changes]
-    if: github.ref_name == 'develop' ||
+    if: always() && (github.ref_name == 'develop' ||
       github.ref_name == 'main' ||
-      github.ref_type == 'tag'
+      github.ref_type == 'tag')
     environment: Workflow - Protected
     steps:
       - name: artifact download
@@ -633,9 +621,9 @@ jobs:
     container:
       image: ghcr.io/dyrector-io/dyrectorio/alpine-proto:3.17-1
     needs: [kratos_build, e2e, changes]
-    if: github.ref_name == 'develop' ||
+    if: always() && (github.ref_name == 'develop' ||
       github.ref_name == 'main' ||
-      github.ref_type == 'tag'
+      github.ref_type == 'tag')
     environment: Workflow - Protected
     steps:
       - name: artifact download
