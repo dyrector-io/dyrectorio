@@ -98,7 +98,7 @@ func flags() []ucli.Flag {
 		&ucli.StringFlag{
 			Name:     "imagetag",
 			Value:    "",
-			Usage:    "image tag, it will override the config",
+			Usage:    "image tag, it will override the config, default: stable",
 			Required: false,
 			EnvVars:  []string{"DYO_IMAGE_TAG"},
 		},

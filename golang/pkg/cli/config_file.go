@@ -65,7 +65,7 @@ type ContainerSettings struct {
 // Settings file will be read/written as this struct
 type SettingsFile struct {
 	// version as in image tag like "latest" or "stable"
-	Version        string `yaml:"version" env-default:"latest"`
+	Version        string `yaml:"version" env-default:"stable"`
 	CruxDisabled   bool   `yaml:"crux_disabled" env-default:"false"`
 	CruxUIDisabled bool   `yaml:"crux-ui_disabled" env-default:"false"`
 	Network        string `yaml:"network-name" env-default:"dyrectorio-stack"`

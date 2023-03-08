@@ -31,7 +31,7 @@ If ( -not (Test-Path $PERSISTENCE_FOLDER -PathType Container) ) {
   New-Item -ItemType Directory -Path $PERSISTENCE_FOLDER
 }
 
-docker pull ghcr.io/dyrector-io/dyrectorio/agent/dagent:latest
+docker pull ghcr.io/dyrector-io/dyrectorio/agent/dagent:stable
 
 docker run `
   --restart on-failure `
@@ -54,4 +54,4 @@ docker run `
   --name 'dagent' `
   -v ${DATA_MOUNT_PATH}:/srv/dagent `
   -v //var/run/docker.sock:/var/run/docker.sock `
-  -d ghcr.io/dyrector-io/dyrectorio/agent/dagent:latest
+  -d ghcr.io/dyrector-io/dyrectorio/agent/dagent:stable
