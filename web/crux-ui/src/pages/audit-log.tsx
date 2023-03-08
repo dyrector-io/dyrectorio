@@ -10,98 +10,75 @@ import DyoDatePicker from '@app/elements/dyo-date-picker'
 import { DyoList } from '@app/elements/dyo-list'
 import DyoModal from '@app/elements/dyo-modal'
 import { useThrottling } from '@app/hooks/use-throttleing'
-import { AuditLog, AuditLogListRequest, beautifyAuditLogEvent } from '@app/models'
-import { API_AUDIT, API_AUDIT_COUNT, ROUTE_AUDIT } from '@app/routes'
+import { AuditLog, AuditLogList, AuditLogQuery, beautifyAuditLogEvent } from '@app/models'
+import { auditApiUrl, ROUTE_AUDIT } from '@app/routes'
 import { utcDateToLocale } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
 import { useEffect, useMemo, useState } from 'react'
 
 type AuditFilter = {
-  start: Date
-  end: Date
-  keyword: string
+  from: Date
+  to: Date
+  filter?: string
 }
 
 const headerClassName = 'uppercase text-bright text-sm font-semibold bg-medium-eased pl-2 py-3 h-11'
 const columnWidths = ['w-16', 'w-2/12', 'w-48', 'w-2/12', '', 'w-20']
 const sixdays = 1000 * 60 * 60 * 24 * 6 // ms * minutes * hours * day * six
 const defaultPagination: PaginationSettings = { pageNumber: 0, pageSize: 10 }
-const now = Date.now()
+const endOfToday = new Date()
+endOfToday.setHours(23, 59, 59, 999)
 
 const AuditLogPage = () => {
   const { t } = useTranslation('audit')
 
-  const [dataCount, setCount] = useState(0)
+  const [total, setTotal] = useState(0)
   const [data, setData] = useState<AuditLog[]>([])
   const [filter, setFilter] = useState<AuditFilter>({
-    start: new Date(Date.now() - sixdays),
-    end: new Date(now),
-    keyword: '',
+    from: new Date(endOfToday.getTime() - sixdays),
+    to: new Date(endOfToday),
+    filter: null,
   })
   const [pagination, setPagination] = useState<PaginationSettings>(defaultPagination)
   const throttle = useThrottling(1000)
 
   // Data fetching
-  const getRequest = (): AuditLogListRequest => ({
-    ...pagination,
-    createdFrom: filter.start?.toString(),
-    createdTo: filter.end ? filter.end.toString() : new Date(now).toString(),
-    keyword: filter.keyword,
-  })
-
-  const fetchDataCount = async () => {
-    const res = await fetch(API_AUDIT_COUNT, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(getRequest()),
-    })
-
-    if (res.ok) {
-      const json = await res.json()
-      setCount(json as number)
-    } else {
-      setCount(0)
-    }
-  }
 
   const fetchData = async () => {
-    fetchDataCount()
-    const res = await fetch(API_AUDIT, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(getRequest()),
-    })
+    const { from, to } = filter
+
+    const query: AuditLogQuery = {
+      skip: pagination.pageNumber * pagination.pageSize,
+      take: pagination.pageSize,
+      from: from.toISOString(),
+      to: to.toISOString(),
+      filter: !filter.filter || filter.filter.trim() === '' ? null : filter.filter,
+    }
+
+    const res = await fetch(auditApiUrl(query))
 
     if (res.ok) {
-      const json = await res.json()
-      setData(json as AuditLog[])
+      const list = (await res.json()) as AuditLogList
+      setData(list.items)
+      setTotal(list.total)
     } else {
       setData([])
     }
   }
 
   useEffect(() => {
-    throttle(() => {
-      fetchData()
-    })
+    throttle(fetchData)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter])
 
   useEffect(() => {
-    throttle(() => {
-      fetchData()
-    }, true)
+    throttle(fetchData, true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pagination])
 
   // Info modal:
   const [showInfo, setShowInfo] = useState<AuditLog>(null)
-  const parsedJSONInfo = useMemo(() => (showInfo ? JSON.parse(showInfo.info) : null), [showInfo])
   const onShowInfoClick = (logEntry: AuditLog) => setShowInfo(logEntry)
 
   // Handlers
@@ -109,11 +86,11 @@ const AuditLogPage = () => {
     const [start, end] = dates
     if (end !== null) end.setHours(23, 59, 59, 999) // end of the day
 
-    setFilter({ ...filter, start, end })
+    setFilter({ ...filter, from: start, to: end })
   }
 
   const onTextFilterChanged = text => {
-    setFilter({ ...filter, keyword: text })
+    setFilter({ ...filter, filter: text })
   }
 
   // Render
@@ -131,11 +108,11 @@ const AuditLogPage = () => {
     <div className="w-10 ml-auto">
       <UserDefaultAvatar />
     </div>,
-    <div className="font-semibold min-w-max">{log.identityEmail}</div>,
-    <div className="min-w-max">{utcDateToLocale(log.date)}</div>,
-    <div>{beautifyAuditLogEvent(log.event)}</div>,
+    <div className="font-semibold min-w-max">{log.email}</div>,
+    <div className="min-w-max">{utcDateToLocale(log.createdAt)}</div>,
+    <div>{beautifyAuditLogEvent(log.serviceCall)}</div>,
     <div className="cursor-pointer max-w-4xl truncate" onClick={() => onShowInfoClick(log)}>
-      {log.info}
+      {JSON.stringify(log.data)}
     </div>,
     <div className="text-center">
       <Image
@@ -157,8 +134,8 @@ const AuditLogPage = () => {
         <Filters setTextFilter={onTextFilterChanged}>
           <DyoDatePicker
             selectsRange
-            startDate={filter.start}
-            endDate={filter.end}
+            startDate={filter.from}
+            endDate={filter.to}
             onChange={onDateRangedChanged}
             shouldCloseOnSelect={false}
             maxDate={new Date()}
@@ -174,7 +151,7 @@ const AuditLogPage = () => {
             columnWidths={columnWidths}
             data={data}
             headers={listHeaders}
-            footer={<Paginator onChanged={setPagination} length={dataCount} defaultPagination={defaultPagination} />}
+            footer={<Paginator onChanged={setPagination} length={total} defaultPagination={defaultPagination} />}
             itemBuilder={itemTemplate}
           />
         </DyoCard>
@@ -184,12 +161,12 @@ const AuditLogPage = () => {
         <DyoModal
           className="w-1/2 h-1/2"
           titleClassName="pl-4 font-medium text-xl text-bright mb-3"
-          title={`${showInfo.identityEmail} | ${utcDateToLocale(showInfo.date)}`}
+          title={`${showInfo.email} | ${utcDateToLocale(showInfo.createdAt)}`}
           open={!!showInfo}
           onClose={() => setShowInfo(null)}
         >
-          <span className="text-bright font-semibold pl-4">{beautifyAuditLogEvent(showInfo.event)}</span>
-          <JsonEditor className="overflow-y-auto mt-8 p-4" disabled value={parsedJSONInfo} />
+          <span className="text-bright font-semibold pl-4">{beautifyAuditLogEvent(showInfo.serviceCall)}</span>
+          <JsonEditor className="overflow-y-auto mt-8 p-4" disabled value={showInfo.data} />
         </DyoModal>
       )}
     </Layout>

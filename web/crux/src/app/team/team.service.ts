@@ -116,7 +116,7 @@ export default class TeamService {
 
     const { team } = activeUserOnTeam
     const userIds = team.users.map(it => it.userId).concat(team.invitations.map(it => it.userId))
-    const identities = await this.kratos.getIdentitiesByIds(userIds)
+    const identities = await this.kratos.getIdentitiesByIds(new Set(userIds))
     const sessions = await this.kratos.getSessionsByIds(userIds)
 
     return this.mapper.activeTeamDetailsToProto(team, identities, sessions)
@@ -504,7 +504,7 @@ export default class TeamService {
     })
 
     const userIds = teams.flatMap(it => it.users).map(it => it.userId)
-    const identities = await this.kratos.getIdentitiesByIds(userIds)
+    const identities = await this.kratos.getIdentitiesByIds(new Set(userIds))
     const sessions = await this.kratos.getSessionsByIds(userIds)
 
     return {
@@ -521,7 +521,7 @@ export default class TeamService {
     })
 
     const userIds = team.users.map(it => it.userId)
-    const identities = await this.kratos.getIdentitiesByIds(userIds)
+    const identities = await this.kratos.getIdentitiesByIds(new Set(userIds))
     const sessions = await this.kratos.getSessionsByIds(userIds)
 
     return this.mapper.teamDetailsToProto(team, identities, sessions)

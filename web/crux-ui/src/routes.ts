@@ -1,4 +1,4 @@
-import { VersionSectionsState } from './models'
+import { AuditLogQuery, VersionSectionsState } from './models'
 
 // Routes:
 export const ROUTE_INDEX = '/'
@@ -55,13 +55,11 @@ export const API_WHOAMI = '/api/whoami'
 
 export const API_NOTIFICATIONS = '/api/notifications'
 
-export const API_AUDIT = `/api/audit`
-export const API_AUDIT_COUNT = `${API_AUDIT}/count`
+export const API_AUDIT = `/api/new/audit-log`
 
 export const API_TEMPLATES = `/api/templates`
 
-// TODO(@polaroi8d): Remove the hardcoded port when the env variables are added
-export const API_DASHBOARD = 'http://localhost:1848/dashboard'
+export const API_DASHBOARD = '/api/new/dashboard'
 
 export const API_TOKENS = '/api/tokens'
 
@@ -109,6 +107,35 @@ export const appendUrlParams = <T extends CruxUrlParams>(url: string, params: T)
 
   return anchor ? `${result}#${anchor}` : result
 }
+
+const urlQuery = (url: string, query: object) => {
+  const params = Object.entries(query)
+    .map(it => {
+      const [key, value] = it
+
+      if (value === undefined || value === null) {
+        return null
+      }
+
+      return `${key}=${value}`
+    })
+    .filter(it => it !== null)
+
+  if (params.length < 1) {
+    return url
+  }
+
+  url = `${url}?${params[0]}`
+
+  if (params.length > 1) {
+    url = params.slice(1).reduce((prev, it) => `${prev}&${it}`, url)
+  }
+
+  return url
+}
+
+// audit
+export const auditApiUrl = (query: AuditLogQuery) => urlQuery(API_AUDIT, query)
 
 // auth
 export const verificationUrl = (email: string) => `${ROUTE_VERIFICATION}?email=${email}`

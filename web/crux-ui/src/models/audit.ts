@@ -1,16 +1,21 @@
 export type AuditLog = {
-  identityEmail: string
-  date: string
+  email: string
+  createdAt: string
   serviceCall: string
   data?: any
 }
 
-export type AuditLogListRequest = {
-  pageNumber: number
-  pageSize: number
-  keyword?: string
-  createdFrom?: string
-  createdTo: string
+export type AuditLogList = {
+  items: AuditLog[]
+  total: number
+}
+
+export type AuditLogQuery = {
+  skip: number
+  take: number
+  from: string
+  to: string
+  filter?: string
 }
 
 const AUDIT_LOG_EVENT_PREFIX = '/crux.Crux'

@@ -1,39 +1,23 @@
 import { Type } from 'class-transformer'
-import { ArrayNotEmpty, IsDate, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator'
+import { IsDate, IsString } from 'class-validator'
+import { PaginatedList, PaginationQuery } from 'src/shared/paginating'
 
-// TODO(@polaroi8d) Remove the Dto after removing gRPC
-export class AuditLogListRequestDto {
-  @IsNotEmpty()
-  @IsNumber()
-  pageSize: number
+export class AuditLogQuery extends PaginationQuery {
+  readonly filter?: string
 
-  @IsNotEmpty()
-  @IsNumber()
-  pageNumber: number
-
-  @IsOptional()
-  @IsString()
-  keyword?: string
-
-  @IsOptional()
   @Type(() => Date)
   @IsDate()
-  createdFrom?: Date
+  readonly from: Date
 
-  @IsNotEmpty()
   @Type(() => Date)
   @IsDate()
-  createdTo: Date
+  readonly to: Date
 }
 
-// TODO(@polaroi8d) Remove the Dto after removing gRPC
-export class AuditLogListResponseDto {
-  @ArrayNotEmpty()
-  data: AuditLogResponseDto[]
-}
+export class AuditLogListDto extends PaginatedList<AuditLogDto> {}
 
 // TODO(@polaroi8d) Remove the Dto after removing gRPC
-export class AuditLogResponseDto {
+export class AuditLogDto {
   @Type(() => Date)
   @IsDate()
   createdAt: Date
@@ -42,17 +26,10 @@ export class AuditLogResponseDto {
   userId: string
 
   @IsString()
-  identityEmail: string
+  email: string
 
   @IsString()
   serviceCall: string
 
-  @IsOptional()
-  data?: string
-}
-
-// TODO(@polaroi8d) Remove the Dto after removing gRPC
-export class AuditLogListCountResponseDto {
-  @IsNumber()
-  count: number
+  data?: object
 }

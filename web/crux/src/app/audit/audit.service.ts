@@ -1,89 +1,93 @@
 import { Injectable } from '@nestjs/common'
-import PrismaService from 'src/services/prisma.service'
-import KratosService from 'src/services/kratos.service'
-import { Prisma } from '@prisma/client'
 import { Identity } from '@ory/kratos-client'
-import { AuditLogListCountResponseDto, AuditLogListResponseDto, AuditLogListRequestDto } from './audit.dto'
+import { Prisma } from '@prisma/client'
+import KratosService from 'src/services/kratos.service'
+import PrismaService from 'src/services/prisma.service'
+import { AuditLogListDto, AuditLogQuery } from './audit.dto'
 
 @Injectable()
 export default class AuditService {
   constructor(private readonly prisma: PrismaService, private readonly kratos: KratosService) {}
 
-  async getAuditLog(request: AuditLogListRequestDto, identity: Identity): Promise<AuditLogListResponseDto> {
-    const conditions = await this.getConditions(request, identity)
+  async getAuditLog(query: AuditLogQuery, identity: Identity): Promise<AuditLogListDto> {
+    const { skip, take } = query
 
-    const auditLog = await this.prisma.auditLog.findMany({
-      ...conditions,
-      skip: (request.pageNumber ?? 0) * request.pageSize,
-      take: request.pageSize,
-      select: {
-        createdAt: true,
-        userId: true,
-        serviceCall: true,
-        data: true,
-      },
-    })
-
-    const auditLogReponseResult = await Promise.all(
-      auditLog.map(async it => {
-        const kratosIdentity = await this.kratos.getIdentityById(it.userId)
-        return {
-          ...it,
-          data: JSON.stringify(it.data),
-          identityEmail: kratosIdentity.traits.email,
-        }
-      }),
-    )
-
-    return {
-      data: auditLogReponseResult,
-    }
-  }
-
-  async getAuditLogListCount(
-    request: AuditLogListRequestDto,
-    identity: Identity,
-  ): Promise<AuditLogListCountResponseDto> {
-    const conditions = await this.getConditions(request, identity)
-
-    const count = await this.prisma.auditLog.count(conditions as Prisma.AuditLogCountArgs)
-
-    return {
-      count,
-    }
-  }
-
-  private async getConditions(
-    request: AuditLogListRequestDto,
-    identity: Identity,
-  ): Promise<Prisma.AuditLogFindManyArgs> {
-    const { keyword, createdFrom, createdTo } = request
-    const keywordFilter = keyword ? await this.getKeywordFilter(keyword) : null
-
-    return {
-      where: {
-        team: {
-          users: {
-            some: {
-              userId: identity.id,
-              active: true,
-            },
+    const where: Prisma.AuditLogWhereInput = {
+      team: {
+        users: {
+          some: {
+            userId: identity.id,
+            active: true,
           },
         },
-        createdAt: {
-          gte: createdFrom ?? createdFrom,
-          lte: createdTo,
-        },
-        ...keywordFilter,
       },
-      orderBy: {
-        createdAt: 'desc',
+      AND: {
+        ...this.dateFilter(query),
+        ...(await this.stringFilter(query)),
+      },
+    }
+
+    const [auditLog, total] = await this.prisma.$transaction([
+      this.prisma.auditLog.findMany({
+        where,
+        orderBy: {
+          createdAt: 'desc',
+        },
+        skip,
+        take,
+        select: {
+          createdAt: true,
+          userId: true,
+          serviceCall: true,
+          data: true,
+        },
+      }),
+      this.prisma.auditLog.count({ where }),
+    ])
+
+    const identities = await this.kratos.getIdentitiesByIds(new Set(auditLog.map(it => it.userId)))
+
+    return {
+      items: auditLog.map(it => ({
+        ...it,
+        email: identities.get(it.userId).traits.email as string,
+        data: it.data as object,
+      })),
+      total,
+    }
+  }
+
+  private dateFilter(query: AuditLogQuery): Prisma.AuditLogWhereInput {
+    let { from, to } = query
+
+    if (from) {
+      if (!to) {
+        to = new Date(from)
+        to.setMonth(to.getMonth() + 1)
+      }
+    } else if (to) {
+      from = new Date(to)
+      from.setMonth(from.getMonth() - 1)
+    } else {
+      return {}
+    }
+
+    return {
+      createdAt: {
+        gte: from,
+        lte: to,
       },
     }
   }
 
-  private async getKeywordFilter(keyword: string): Promise<Prisma.AuditLogWhereInput> {
-    const userIds = await this.kratos.getIdentityIdsByEmail(keyword)
+  private async stringFilter(query: AuditLogQuery): Promise<Prisma.AuditLogWhereInput> {
+    const { filter } = query
+
+    if (!filter) {
+      return {}
+    }
+
+    const userIds = await this.kratos.getIdentityIdsByEmail(filter)
 
     return {
       OR: [
@@ -94,7 +98,7 @@ export default class AuditService {
         },
         {
           serviceCall: {
-            contains: `%${keyword}%`,
+            contains: `%${filter}%`,
             mode: 'insensitive',
           },
         },

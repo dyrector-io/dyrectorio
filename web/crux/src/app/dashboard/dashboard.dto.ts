@@ -1,4 +1,4 @@
-import { AuditLogResponseDto } from '../audit/audit.dto'
+import { AuditLogDto } from '../audit/audit.dto'
 
 export default class DashboardResponse {
   users: number
@@ -17,5 +17,5 @@ export default class DashboardResponse {
 
   latestDeployments: any[] // TODO(@polaroi8d): Need to change the any types to the correct types
 
-  auditLog: AuditLogResponseDto[]
+  auditLog: AuditLogDto[]
 }

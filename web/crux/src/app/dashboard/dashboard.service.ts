@@ -106,11 +106,16 @@ export default class DashboardService {
       orderBy: { createdAt: 'desc' },
     })
 
+    const auditTo = new Date()
+    const auditFrom = new Date(auditTo)
+    auditFrom.setMonth(auditTo.getMonth() - 1)
+
     const auditLog = await this.auditService.getAuditLog(
       {
-        pageNumber: 0,
-        pageSize: 10,
-        createdTo: new Date(),
+        skip: 0,
+        take: 10,
+        from: auditFrom,
+        to: auditTo,
       },
       identity,
     )
@@ -124,7 +129,7 @@ export default class DashboardService {
       failedDeployments,
       nodes: this.mapper.nodesToProto(activeNodes),
       latestDeployments: this.mapper.deploymentsToProto(latestDeployments),
-      auditLog: auditLog.data,
+      auditLog: auditLog.items,
     }
   }
 }

@@ -8,7 +8,7 @@ import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 export default class MetricsController extends PrometheusController {
   @Get()
   @AuditLogLevel('disabled')
-  async index(@Response() response: Response): Promise<void> {
+  async index(@Response() response: Response): Promise<string> {
     return await super.index(response)
   }
 }
