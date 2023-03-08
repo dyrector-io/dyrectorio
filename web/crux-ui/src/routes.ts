@@ -60,6 +60,7 @@ export const API_AUDIT_COUNT = `${API_AUDIT}/count`
 
 export const API_TEMPLATES = `/api/templates`
 
+// TODO(@polaroi8d): Remove the hardcoded port when the env variables are added
 export const API_DASHBOARD = 'http://localhost:1848/dashboard'
 
 export const API_TOKENS = '/api/tokens'
