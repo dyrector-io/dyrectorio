@@ -48,7 +48,7 @@ export class AuditLogResponseDto {
   serviceCall: string
 
   @IsOptional()
-  data?: Object
+  data?: string
 }
 
 // TODO(@polaroi8d) Remove the Dto after removing gRPC

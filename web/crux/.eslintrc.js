@@ -38,6 +38,6 @@ module.exports = {
     'import/no-unresolved': 'off',
     'import/no-extraneous-dependencies': 'off',
     'class-methods-use-this': 'off',
-    'max-classes-per-file': false,
+    'max-classes-per-file': 'off',
   },
 }

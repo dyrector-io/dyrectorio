@@ -3,36 +3,13 @@ import PrismaService from 'src/services/prisma.service'
 import KratosService from 'src/services/kratos.service'
 import { Prisma } from '@prisma/client'
 import { Identity } from '@ory/kratos-client'
-import AuditMapper from './audit.mapper'
 import { AuditLogListCountResponseDto, AuditLogListResponseDto, AuditLogListRequestDto } from './audit.dto'
-import {
-  AuditLogListRequest,
-  AuditLogListResponse,
-  AuditLogListCountResponse,
-  CruxAuditController,
-  CruxAuditControllerMethods,
-} from 'src/grpc/protobuf/proto/crux'
 
 @Injectable()
 export default class AuditService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly mapper: AuditMapper,
-    private readonly kratos: KratosService,
-  ) {}
+  constructor(private readonly prisma: PrismaService, private readonly kratos: KratosService) {}
 
-  // Exclude keys from user
-  private exclude<User, Key extends keyof User>(user: User, keys: Key[]): Omit<User, Key> {
-    for (let key of keys) {
-      delete user[key]
-    }
-    return user
-  }
-
-  async getAuditLog(
-    request: AuditLogListRequestDto | AuditLogListRequest,
-    identity: Identity,
-  ): Promise<AuditLogListResponse | AuditLogListResponseDto> {
+  async getAuditLog(request: AuditLogListRequestDto, identity: Identity): Promise<AuditLogListResponseDto> {
     const conditions = await this.getConditions(request, identity)
 
     const auditLog = await this.prisma.auditLog.findMany({
@@ -49,10 +26,11 @@ export default class AuditService {
 
     const auditLogReponseResult = await Promise.all(
       auditLog.map(async it => {
-        const identity = await this.kratos.getIdentityById(it.userId)
+        const kratosIdentity = await this.kratos.getIdentityById(it.userId)
         return {
           ...it,
-          identityEmail: identity.traits.email,
+          data: JSON.stringify(it.data),
+          identityEmail: kratosIdentity.traits.email,
         }
       }),
     )
@@ -65,7 +43,7 @@ export default class AuditService {
   async getAuditLogListCount(
     request: AuditLogListRequestDto,
     identity: Identity,
-  ): Promise<AuditLogListCountResponse | AuditLogListCountResponseDto> {
+  ): Promise<AuditLogListCountResponseDto> {
     const conditions = await this.getConditions(request, identity)
 
     const count = await this.prisma.auditLog.count(conditions as Prisma.AuditLogCountArgs)
@@ -76,7 +54,7 @@ export default class AuditService {
   }
 
   private async getConditions(
-    request: AuditLogListRequestDto | AuditLogListRequest,
+    request: AuditLogListRequestDto,
     identity: Identity,
   ): Promise<Prisma.AuditLogFindManyArgs> {
     const { keyword, createdFrom, createdTo } = request

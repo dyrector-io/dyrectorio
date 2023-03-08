@@ -3,7 +3,7 @@ import { Identity } from '@ory/kratos-client'
 import { DeploymentStatusEnum } from '@prisma/client'
 import PrismaService from 'src/services/prisma.service'
 import AuditService from '../audit/audit.service'
-import { DashboardResponse } from './dashboard.dto'
+import DashboardResponse from './dashboard.dto'
 import DashboardMapper from './dashboard.mapper'
 
 @Injectable()

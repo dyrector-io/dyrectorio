@@ -1,14 +1,12 @@
-import { Metadata } from '@grpc/grpc-js'
-import { Body, Controller, Get, UseGuards, UseInterceptors } from '@nestjs/common'
+import { Controller, Get, UseGuards, UseInterceptors } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import { Identity } from '@ory/kratos-client'
-import { AuditLogLevel } from 'src/decorators/audit-logger.decorators'
-import { getIdentity } from 'src/interceptors/grpc.user.interceptor'
+import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
 import { HttpIdentityInterceptor, IdentityFromRequest } from 'src/interceptors/http.identity.interceptor'
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import JwtAuthGuard from '../token/jwt-auth.guard'
-import { DashboardResponse } from './dashboard.dto'
+import DashboardResponse from './dashboard.dto'
 import DashboardService from './dashboard.service'
 
 @Controller('dashboard')

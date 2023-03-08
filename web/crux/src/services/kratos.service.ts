@@ -7,6 +7,7 @@ import { IdentityTraits, KratosInvitation, KRATOS_IDENTITY_SCHEMA } from 'src/sh
 @Injectable()
 export default class KratosService {
   private kratos: IdentityApi
+
   private frontend: FrontendApi
 
   constructor(private configService: ConfigService) {

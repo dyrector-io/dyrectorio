@@ -1,4 +1,4 @@
-import { ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common'
+import { ExecutionContext, Injectable } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
 import { RequiredError } from '@ory/kratos-client/dist/base'
 import http from 'http'
@@ -11,7 +11,7 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const req = context.switchToHttp().getRequest() as extendedHttpRequest
+    const req = context.switchToHttp().getRequest() as ExtendedHttpRequest
 
     if (req.headers.cookie) {
       try {
@@ -29,9 +29,11 @@ export default class JwtAuthGuard extends AuthGuard('jwt') {
         throw error as RequiredError
       }
     }
+
+    return super.canActivate(context) as boolean
   }
 }
 
-type extendedHttpRequest = http.IncomingMessage & {
+type ExtendedHttpRequest = http.IncomingMessage & {
   body: any
 }

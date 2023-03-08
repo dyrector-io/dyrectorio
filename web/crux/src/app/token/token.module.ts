@@ -14,7 +14,7 @@ import TeamModule from '../team/team.module'
 @Module({
   imports: [
     TeamModule,
-    PassportModule.register({ defaultStrategy: 'jwt', session: true }),
+    PassportModule.register({ session: true }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({

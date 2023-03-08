@@ -6,11 +6,10 @@ import TeamRepository from '../team/team.repository'
 import AuditMapper from './audit.mapper'
 import AuditService from './audit.service'
 import AuditController from './audit.http.controller'
-import AuditGrpcController from './audit.controller'
 
 @Module({
   imports: [],
-  exports: [AuditService, AuditGrpcController],
+  exports: [AuditService],
   controllers: [AuditController],
   providers: [AuditService, AuditMapper, PrismaService, InterceptorGrpcHelperProvider, TeamRepository, KratosService],
 })
