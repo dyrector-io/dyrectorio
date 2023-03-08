@@ -45,10 +45,12 @@ up:
 	cd cmd/dyo && \
 	go run . up
 
+# target `upd` is for development purposes it defaults to the latest images
+# and expects crux and crux-ui to run locally
 .PHONY: upd
 upd:
 	cd cmd/dyo && \
-	go run . --disable-crux --disable-crux-ui up
+	go run . --disable-crux --disable-crux-ui --imagetag latest up
 
 .PHONY: down
 down:

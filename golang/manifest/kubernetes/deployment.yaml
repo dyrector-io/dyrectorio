@@ -15,10 +15,9 @@ spec:
       labels:
         app: dyrectorio-k8s-agent
     spec:
-      restartPolicy: OnFailure
       initContainers:
         - name: crane-init
-          image: ghcr.io/dyrector-io/dyrectorio/agent/crane:latest
+          image: ghcr.io/dyrector-io/dyrectorio/agent/crane:stable
           args:
             - init
           imagePullPolicy: Always
@@ -33,7 +32,7 @@ spec:
                 name: crane-config
       containers:
         - name: crane
-          image: ghcr.io/dyrector-io/dyrectorio/agent/crane:latest
+          image: ghcr.io/dyrector-io/dyrectorio/agent/crane:stable
           imagePullPolicy: Always
           resources:
             requests:
