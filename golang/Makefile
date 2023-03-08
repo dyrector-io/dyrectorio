@@ -12,9 +12,9 @@ BUILD_TIMESTAMP="$(shell date -u +"%Y-%m-%dT%H:%M:%SZ" | tr -d "[:blank:]")"
 
 vcs_version=$(or $(VCS_VERSION),$(ORG_GOLANG_HASH))
 
-LDFLAGS := -ldflags "-X '${PACKAGE}/pkg/version.Version=${VCS_VERSION}'\
-  -X '${PACKAGE}/pkg/version.BuildTimestamp=${BUILD_TIMESTAMP}'\
-  -X '${PACKAGE}/pkg/version.CommitHash=${ORG_GOLANG_HASH}'\
+LDFLAGS := -ldflags "-X '${PACKAGE}/internal/version.Version=${VCS_VERSION}'\
+  -X '${PACKAGE}/internal/version.BuildTimestamp=${BUILD_TIMESTAMP}'\
+  -X '${PACKAGE}/internal/version.CommitHash=${ORG_GOLANG_HASH}'\
   -extldflags '-static'"
 
 # default tag is latest for building
@@ -64,12 +64,16 @@ go-crane:
 .PHONY: go-crane-init
 go-crane-init:
 	cd cmd/crane && \
-	go run . init ; \
-	cd -
+	go run . init
 
 .PHONY: go-dagent
 go-dagent:
 	air --build.cmd "" --build.bin "cd cmd/dagent && go run ."
+
+.PHONY: cli
+cli:
+	cd cmd/dyo && \
+	go run .
 
 .PHONY: compile
 compile: | compile-cli compile-crane compile-dagent
