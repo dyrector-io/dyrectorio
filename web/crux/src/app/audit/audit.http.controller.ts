@@ -6,7 +6,7 @@ import { HttpIdentityInterceptor, IdentityFromRequest } from 'src/interceptors/h
 import HttpLoggerInterceptor from 'src/interceptors/http.logger.interceptor'
 import PrismaErrorInterceptor from 'src/interceptors/prisma-error-interceptor'
 import JwtAuthGuard from '../token/jwt-auth.guard'
-import { AuditLogListDto, AuditLogQuery } from './audit.dto'
+import { AuditLogListDto, AuditLogQueryDto } from './audit.dto'
 import AuditService from './audit.service'
 
 @Controller('audit-log')
@@ -14,6 +14,7 @@ import AuditService from './audit.service'
 @UseGuards(JwtAuthGuard)
 @UsePipes(
   new ValidationPipe({
+    // TODO(@polaroi8d): Move to global pipes after removing gRPC
     transform: true,
   }),
 )
@@ -25,7 +26,7 @@ export default class AuditController {
   @ApiOkResponse()
   @AuditLogLevel('disabled') // TODO(@polaroi8d): Refactor the auditlog after removing gRPC
   async getAuditLog(
-    @Query() query: AuditLogQuery,
+    @Query() query: AuditLogQueryDto,
     @IdentityFromRequest() identity: Identity,
   ): Promise<AuditLogListDto> {
     return await this.service.getAuditLog(query, identity)

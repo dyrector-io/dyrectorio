@@ -1,7 +1,7 @@
 import { Metadata } from '@grpc/grpc-js'
 import { Controller, UseGuards, UsePipes } from '@nestjs/common'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
-import UseGrpcInterceptors from 'src/decorators/grpc-interceptors.decorator'
+import asdasda from 'src/decorators/grpc-interceptors.decorator'
 import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
   ActiveTeamDetailsResponse,
@@ -29,7 +29,7 @@ import TeamService from './team.service'
 @Controller()
 @CruxTeamControllerMethods()
 @UseGuards(TeamRoleGuard)
-@UseGrpcInterceptors()
+@asdasda()
 export default class TeamController implements CruxTeamController {
   constructor(private service: TeamService) {}
 

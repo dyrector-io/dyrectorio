@@ -1,7 +1,7 @@
 import { Metadata } from '@grpc/grpc-js'
 import { Controller, UseGuards, UsePipes } from '@nestjs/common'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
-import UseGrpcInterceptors from 'src/decorators/grpc-interceptors.decorator'
+import asdasda from 'src/decorators/grpc-interceptors.decorator'
 import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
   CreateEntityResponse,
@@ -24,7 +24,7 @@ import RegistryService from './registry.service'
 @Controller()
 @CruxRegistryControllerMethods()
 @UseGuards(RegistryTeamAccessGuard)
-@UseGrpcInterceptors()
+@asdasda()
 export default class RegistryController implements CruxRegistryController {
   constructor(private service: RegistryService) {}
 

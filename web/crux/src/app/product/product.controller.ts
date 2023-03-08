@@ -1,6 +1,6 @@
 import { Metadata } from '@grpc/grpc-js'
 import { Controller, UseGuards, UsePipes } from '@nestjs/common'
-import UseGrpcInterceptors from 'src/decorators/grpc-interceptors.decorator'
+import asdasda from 'src/decorators/grpc-interceptors.decorator'
 import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
   CreateEntityResponse,
@@ -21,7 +21,7 @@ import ProductService from './product.service'
 @Controller()
 @CruxProductControllerMethods()
 @UseGuards(ProductTeamAccessGuard)
-@UseGrpcInterceptors()
+@asdasda()
 export default class ProductController implements CruxProductController {
   constructor(private service: ProductService) {}
 

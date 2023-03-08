@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
 import { IsInt } from 'class-validator'
 
-/* eslint-disable @typescript-eslint/lines-between-class-members */
 export class PaginationQuery {
   @IsInt()
   @Type(() => Number)
@@ -17,5 +16,6 @@ export class PaginationQuery {
 
 export class PaginatedList<T> {
   items: T[]
+
   total: number
 }

@@ -15,7 +15,7 @@ import { auditApiUrl, ROUTE_AUDIT } from '@app/routes'
 import { utcDateToLocale } from '@app/utils'
 import useTranslation from 'next-translate/useTranslation'
 import Image from 'next/image'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 type AuditFilter = {
   from: Date

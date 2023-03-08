@@ -2,7 +2,7 @@ import { Type } from 'class-transformer'
 import { IsDate, IsString } from 'class-validator'
 import { PaginatedList, PaginationQuery } from 'src/shared/paginating'
 
-export class AuditLogQuery extends PaginationQuery {
+export class AuditLogQueryDto extends PaginationQuery {
   readonly filter?: string
 
   @Type(() => Date)

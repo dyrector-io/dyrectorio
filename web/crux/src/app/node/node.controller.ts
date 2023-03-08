@@ -2,7 +2,7 @@ import { Metadata } from '@grpc/grpc-js'
 import { Controller, UseGuards, UsePipes } from '@nestjs/common'
 import { concatAll, from, Observable } from 'rxjs'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
-import UseGrpcInterceptors from 'src/decorators/grpc-interceptors.decorator'
+import asdasda from 'src/decorators/grpc-interceptors.decorator'
 import { ContainerLogMessage, ContainerStateListMessage, Empty } from 'src/grpc/protobuf/proto/common'
 import {
   CreateEntityResponse,
@@ -32,7 +32,7 @@ import NodeGetScriptValidationPipe from './pipes/node.get-script.pipe'
 @Controller()
 @CruxNodeControllerMethods()
 @UseGuards(NodeTeamAccessGuard)
-@UseGrpcInterceptors()
+@asdasda()
 export default class NodeController implements CruxNodeController {
   constructor(private service: NodeService) {}
 

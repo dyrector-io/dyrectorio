@@ -3,14 +3,14 @@ import { Identity } from '@ory/kratos-client'
 import { Prisma } from '@prisma/client'
 import KratosService from 'src/services/kratos.service'
 import PrismaService from 'src/services/prisma.service'
-import { AuditLogListDto, AuditLogQuery } from './audit.dto'
+import { AuditLogListDto, AuditLogQueryDto } from './audit.dto'
 
 @Injectable()
 export default class AuditService {
   constructor(private readonly prisma: PrismaService, private readonly kratos: KratosService) {}
 
-  async getAuditLog(query: AuditLogQuery, identity: Identity): Promise<AuditLogListDto> {
-    const { skip, take } = query
+  async getAuditLog(query: AuditLogQueryDto, identity: Identity): Promise<AuditLogListDto> {
+    const { skip, take, from, to } = query
 
     const where: Prisma.AuditLogWhereInput = {
       team: {
@@ -22,7 +22,10 @@ export default class AuditService {
         },
       },
       AND: {
-        ...this.dateFilter(query),
+        createdAt: {
+          gte: from,
+          lte: to,
+        },
         ...(await this.stringFilter(query)),
       },
     }
@@ -57,30 +60,7 @@ export default class AuditService {
     }
   }
 
-  private dateFilter(query: AuditLogQuery): Prisma.AuditLogWhereInput {
-    let { from, to } = query
-
-    if (from) {
-      if (!to) {
-        to = new Date(from)
-        to.setMonth(to.getMonth() + 1)
-      }
-    } else if (to) {
-      from = new Date(to)
-      from.setMonth(from.getMonth() - 1)
-    } else {
-      return {}
-    }
-
-    return {
-      createdAt: {
-        gte: from,
-        lte: to,
-      },
-    }
-  }
-
-  private async stringFilter(query: AuditLogQuery): Promise<Prisma.AuditLogWhereInput> {
+  private async stringFilter(query: AuditLogQueryDto): Promise<Prisma.AuditLogWhereInput> {
     const { filter } = query
 
     if (!filter) {

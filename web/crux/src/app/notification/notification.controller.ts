@@ -1,6 +1,6 @@
 import { Metadata } from '@grpc/grpc-js'
 import { Controller, UseGuards } from '@nestjs/common'
-import UseGrpcInterceptors from 'src/decorators/grpc-interceptors.decorator'
+import asdasda from 'src/decorators/grpc-interceptors.decorator'
 import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
   CreateNotificationRequest,
@@ -20,7 +20,7 @@ import NotificationService from './notification.service'
 @Controller()
 @CruxNotificationControllerMethods()
 @UseGuards(NotificationTeamAccessGuard)
-@UseGrpcInterceptors()
+@asdasda()
 export default class NotificationController implements CruxNotificationController {
   constructor(private notificationService: NotificationService) {}
 
