@@ -88,8 +88,7 @@ Configuration will take place before starting up the application, and store the 
 | ---------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
 | AGENT_CONTAINER_NAME   | name of the container                                                                                         | dagent-go                             |
 | DAGENT_IMAGE           | Fully qualified image name with registry incl. without protocol                                               | ghcr.io/dyrector-io/dyrectorio/dagent |
-| DAGENT_NAME            | DAgent container name, it is needed for the update                                                            | dagent                                |
-| DAGENT_TAG             | DAgent image tag versions `latest` or else                                                                    | latest                                |
+| NAME            | DAgent container name, it is needed for the update                                                            | dagent                                |
 | DATA_MOUNT_PATH        | This should match the mount path that is the root of configurations and containers                            | /srv/dagent                           |
 | DEFAULT_TAG            | default tag to use with container images in deployment                                                        | latest                                |
 | HOST_DOCKER_SOCK_PATH  | Path of `docker.sock` or other local/remote address where we can communicate with docker                      | /var/run/docker.sock                  |
