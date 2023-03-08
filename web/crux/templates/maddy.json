@@ -1,0 +1,65 @@
+{
+    "name": "Maddy",
+    "description": "Maddy is a composable all-in-one mail server.\n\nBefore deployment edit the MADDY_HOSTNAME and MADDY_DOMAIN variables.\n\nAfter the first deployment Maddy will fail to start because its configuration is missing, open its volume and create a maddy.conf file as well as certificates based on the 'Installation & initial configuration' section of Maddy's docs (https://maddy.email/tutorials/setting-up/).",
+    "technologies": ["Docker", "Kubernetes"],
+    "registries": [
+      {
+        "name": "Docker Hub Maddy Library",
+        "type": "hub",
+        "hub": {
+          "imageNamePrefix": "foxcpp"
+        }
+      }
+    ],
+    "images": [
+      {
+        "name": "maddy",
+        "registryName": "Docker Hub Maddy Library",
+        "image": "maddy",
+        "tag": "0.6",
+        "config": {
+          "name": "maddy",
+          "tty": false,
+          "volumes": [
+            {
+              "name": "maddy-data",
+              "path": "/data"
+            }
+          ],
+          "ports": [
+            {
+              "internal": 25,
+              "external": 25
+            },
+            {
+              "internal": 143,
+              "external": 143
+            },
+            {
+              "internal": 587,
+              "external": 587
+            },
+            {
+              "internal": 993,
+              "external": 993
+            }
+          ],
+          "environment": [
+            {
+              "key": "MADDY_HOSTNAME",
+              "value": "mx.maddy.test"
+            },
+            {
+              "key": "MADDY_DOMAIN",
+              "value": "maddy.test"
+            }
+          ],
+          "networkMode": "bridge",
+          "restartPolicy": "unless_stopped",
+          "deploymentStrategy": "recreate",
+          "useLoadBalancer": true
+        }
+      }
+    ]
+  }
+  
