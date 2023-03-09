@@ -44,9 +44,9 @@ const (
 )
 
 type traefikFileProviderData struct {
-	Service string
-	Port    uint
-	Host    string
+	InternalHost string
+	CruxUiPort   uint
+	CruxPort     uint
 }
 
 //go:embed traefik.yaml.tmpl
@@ -73,7 +73,7 @@ func ProcessCommand(settings *Settings) {
 		containers.KratosPostgres = GetKratosPostgres(settings)
 		containers.MailSlurper = GetMailSlurper(settings)
 
-		StartContainers(&containers, settings.InternalHostDomain)
+		StartContainers(&containers, settings)
 		PrintInfo(settings)
 	case DownCommand:
 		StopContainers(&containers)
@@ -84,7 +84,7 @@ func ProcessCommand(settings *Settings) {
 }
 
 // Create and Start containers
-func StartContainers(containers *DyrectorioStack, internalHostDomain string) {
+func StartContainers(containers *DyrectorioStack, settings *Settings) {
 	traefik, err := containers.Traefik.Create()
 	if err != nil {
 		log.Fatal().Err(err).Stack().Send()
@@ -92,8 +92,9 @@ func StartContainers(containers *DyrectorioStack, internalHostDomain string) {
 
 	TraefikConfiguration(
 		containers.Containers.Traefik.Name,
-		internalHostDomain,
-		containers.Containers.CruxUI.CruxUIPort,
+		settings.InternalHostDomain,
+		settings.SettingsFile.CruxHTTPPort,
+		settings.SettingsFile.CruxUIPort,
 	)
 
 	err = traefik.Start()
@@ -191,7 +192,7 @@ func StopContainers(containers *DyrectorioStack) {
 }
 
 // Copy to Traefik Container
-func TraefikConfiguration(name, internalHostDomain string, cruxuiport uint) {
+func TraefikConfiguration(name, internalHostDomain string, cruxPort, cruxUiPort uint) {
 	const funct = "TraefikConfiguration"
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
@@ -211,9 +212,9 @@ func TraefikConfiguration(name, internalHostDomain string, cruxuiport uint) {
 	var result bytes.Buffer
 
 	traefikData := traefikFileProviderData{
-		Service: "crux-ui",
-		Port:    cruxuiport,
-		Host:    internalHostDomain,
+		InternalHost: internalHostDomain,
+		CruxUiPort:   cruxUiPort,
+		CruxPort:     cruxPort,
 	}
 
 	err = traefikConfig.Execute(&result, traefikData)

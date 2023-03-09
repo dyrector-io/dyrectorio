@@ -1,13 +1,31 @@
 http:
   routers:
-    {{.Service}}:
-      rule: Host(`localhost`) || Host(`{{.Host}}`)
-      service: {{.Service}}
+    crux-ui:
+      rule: Host(`localhost`) || Host(`{{.InternalHost}}`)
+      service: crux-ui
       entryPoints:
         - web
 
+    crux:
+      rule: (Host(`localhost`) || Host(`{{.InternalHost}}`)) && PathPrefix(`/api/new`)
+      service: crux
+      entryPoints:
+        - web
+      middlewares:
+        - crux-strip-prefix
+
+  middlewares:
+    crux-strip-prefix:
+      stripprefix:
+        prefixes: /api/new
+
   services:
-    {{.Service}}:
+    crux-ui:
       loadBalancer:
         servers:
-          - url: http://{{.Host}}:{{.Port}}
+          - url: http://{{.InternalHost}}:{{.CruxUiPort}}
+
+    crux:
+      loadBalancer:
+        servers:
+          - url: http://{{.InternalHost}}:{{.CruxPort}}
