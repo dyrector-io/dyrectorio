@@ -45,7 +45,7 @@ const (
 
 type traefikFileProviderData struct {
 	InternalHost string
-	CruxUiPort   uint
+	CruxUIPort   uint
 	CruxPort     uint
 }
 
@@ -192,7 +192,7 @@ func StopContainers(containers *DyrectorioStack) {
 }
 
 // Copy to Traefik Container
-func TraefikConfiguration(name, internalHostDomain string, cruxPort, cruxUiPort uint) {
+func TraefikConfiguration(name, internalHostDomain string, cruxPort, cruxUIPort uint) {
 	const funct = "TraefikConfiguration"
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
@@ -213,7 +213,7 @@ func TraefikConfiguration(name, internalHostDomain string, cruxPort, cruxUiPort 
 
 	traefikData := traefikFileProviderData{
 		InternalHost: internalHostDomain,
-		CruxUiPort:   cruxUiPort,
+		CruxUIPort:   cruxUIPort,
 		CruxPort:     cruxPort,
 	}
 
