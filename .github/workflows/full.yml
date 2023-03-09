@@ -444,6 +444,18 @@ jobs:
           npm ci --include=dev
           npx playwright install chromium
           npm run test:e2e
+      - name: Gather logs
+        if: always()
+        run: |
+          mkdir logs
+          docker logs dyrectorio-stack_crux-ui > logs/e2e-crux-ui.log
+          docker logs dyrectorio-stack_crux > logs/e2e-crux.log
+          docker logs dyrectorio-stack_kratos > logs/e2e-kratos.log
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: e2e-logs
+          path: ${{ env.CRUX_UI_WORKING_DIRECTORY }}/logs
       - uses: actions/upload-artifact@v3
         if: always()
         with:
