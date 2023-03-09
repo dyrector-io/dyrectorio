@@ -2,7 +2,7 @@ import { Metadata } from '@grpc/grpc-js'
 import { Controller, UseGuards, UsePipes } from '@nestjs/common'
 import { concatAll, from, Observable } from 'rxjs'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
-import asdasda from 'src/decorators/grpc-interceptors.decorator'
+import UseGrpcInterceptors from 'src/decorators/grpc-interceptors.decorator'
 import { Empty, ListSecretsResponse } from 'src/grpc/protobuf/proto/common'
 import {
   CreateDeploymentRequest,
@@ -37,7 +37,7 @@ import DeployUpdateValidationPipe from './pipes/deploy.update.pipe'
 @Controller()
 @CruxDeploymentControllerMethods()
 @UseGuards(DeployTeamAccessGuard)
-@asdasda()
+@UseGrpcInterceptors()
 export default class DeployController implements CruxDeploymentController {
   constructor(private service: DeployService) {}
 

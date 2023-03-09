@@ -1,6 +1,6 @@
 import { Metadata } from '@grpc/grpc-js'
 import { Controller, UseGuards } from '@nestjs/common'
-import asdasda from 'src/decorators/grpc-interceptors.decorator'
+import UseGrpcInterceptors from 'src/decorators/grpc-interceptors.decorator'
 import {
   CreateEntityResponse,
   CreateProductFromTemplateRequest,
@@ -16,7 +16,7 @@ import TemplateService from './template.service'
 
 @Controller()
 @CruxTemplateControllerMethods()
-@asdasda()
+@UseGrpcInterceptors()
 @UseGuards(UserAccessGuard)
 export default class TemplateController implements CruxTemplateController {
   constructor(private service: TemplateService, private templateFileService: TemplateFileService) {}

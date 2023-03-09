@@ -1,7 +1,7 @@
 import { Metadata } from '@grpc/grpc-js'
 import { Controller, UseGuards, UsePipes } from '@nestjs/common'
 import { AuditLogLevel } from 'src/decorators/audit-logger.decorator'
-import asdasda from 'src/decorators/grpc-interceptors.decorator'
+import UseGrpcInterceptors from 'src/decorators/grpc-interceptors.decorator'
 import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
   AddImagesToVersionRequest,
@@ -26,7 +26,7 @@ import ImagePatchValidationPipe from './pipes/image.patch.pipe'
 @Controller()
 @CruxImageControllerMethods()
 @UseGuards(ImageTeamAccessGuard)
-@asdasda()
+@UseGrpcInterceptors()
 export default class ImageController implements CruxImageController {
   constructor(private service: ImageService) {}
 

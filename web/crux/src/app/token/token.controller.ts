@@ -10,7 +10,7 @@ import {
 
 import { Metadata } from '@grpc/grpc-js'
 import { UsePipes } from '@nestjs/common/decorators'
-import asdasda from 'src/decorators/grpc-interceptors.decorator'
+import UseGrpcInterceptors from 'src/decorators/grpc-interceptors.decorator'
 import { Empty } from 'src/grpc/protobuf/proto/common'
 import { IdentityAwareServerSurfaceCall } from 'src/shared/user-access.guard'
 import TokenAccessGuard from './guards/token.access.guard'
@@ -20,7 +20,7 @@ import TokenService from './token.service'
 @Controller()
 @CruxTokenControllerMethods()
 @UseGuards(TokenAccessGuard)
-@asdasda()
+@UseGrpcInterceptors()
 export default class TokenController implements CruxTokenController {
   constructor(private authService: TokenService) {}
 

@@ -1,6 +1,6 @@
 import { Metadata } from '@grpc/grpc-js'
 import { Controller, UseGuards, UsePipes } from '@nestjs/common'
-import asdasda from 'src/decorators/grpc-interceptors.decorator'
+import UseGrpcInterceptors from 'src/decorators/grpc-interceptors.decorator'
 import { Empty } from 'src/grpc/protobuf/proto/common'
 import {
   CreateEntityResponse,
@@ -26,7 +26,7 @@ import VersionService from './version.service'
 @Controller()
 @CruxProductVersionControllerMethods()
 @UseGuards(VersionTeamAccessGuard)
-@asdasda()
+@UseGrpcInterceptors()
 export default class VersionController implements CruxProductVersionController {
   constructor(private service: VersionService) {}
 
