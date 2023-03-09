@@ -58,7 +58,6 @@ type ContainerSettings struct {
 	Name       string
 	Disabled   bool
 	CruxAddr   string
-	CruxUIPort uint
 	LocalAgent bool
 }
 
@@ -179,9 +178,6 @@ func SettingsFileReadWrite(state *Settings) *Settings {
 	settings.InternalHostDomain = internalHostDomain
 
 	EnsureNetworkExists(settings)
-
-	// Move other values
-	settings.Containers.CruxUI.CruxUIPort = settings.SettingsFile.CruxUIPort
 
 	if settings.Network != "" {
 		settings.SettingsFile.Network = settings.Network

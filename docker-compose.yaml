@@ -26,7 +26,7 @@ services:
     container_name: dyrectorio_crux
     image: ghcr.io/dyrector-io/dyrectorio/web/crux:latest
     command:
-    - serve
+      - serve
     environment:
       - TZ=${TIMEZONE:-Europe/Budapest}
       - DATABASE_URL=postgresql://crux:${CRUX_POSTGRES_PASSWORD}@crux-postgres:5432/crux?schema=public
@@ -58,6 +58,11 @@ services:
       - traefik.http.routers.crux.tls=true
       - traefik.http.routers.crux.tls.domains[0].main=${DOMAIN}
       - traefik.http.routers.crux.tls.certresolver=letsencrypt
+      - traefik.http.routers.crux-http.rule=Host(`${DOMAIN}`) && PathPrefix(`/api/new`)
+      - traefik.http.routers.crux-http.entrypoints=web
+      - traefik.http.services.crux-http.loadbalancer.server.port=1848
+      - traefik.http.middlewares.crux-strip.stripprefix.prefixes=/api/new
+      - traefik.http.routers.crux-http.middlewares=crux-strip
     # ports:
     #   - 1848:1848 # http API
 

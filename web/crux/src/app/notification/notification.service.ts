@@ -127,7 +127,7 @@ export default class NotificationService {
     })
 
     const userIds = notifications.map(r => r.createdBy)
-    const identities = await this.kratos.getIdentitiesByIds(userIds)
+    const identities = await this.kratos.getIdentitiesByIds(new Set(userIds))
 
     return {
       data: this.mapper.listToProto(notifications, identities),

@@ -13,8 +13,8 @@ import TeamModule from '../team/team.module'
 
 @Module({
   imports: [
-    PassportModule,
     TeamModule,
+    PassportModule.register({ session: true }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({

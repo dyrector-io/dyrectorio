@@ -105,11 +105,7 @@ export default class TemplateService {
         data: new Uint8Array(buffer),
       }
     } catch (err) {
-      throw new NotFoundException({
-        message: 'Template image not found',
-        property: 'id',
-        value: id,
-      })
+      throw new NotFoundException({ message: 'Template image not found.', property: 'template', value: id })
     }
   }
 

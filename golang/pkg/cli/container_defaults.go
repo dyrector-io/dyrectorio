@@ -84,8 +84,17 @@ func GetCrux(settings *Settings) *containerbuilder.DockerContainerBuilder {
 		WithNetworkAliases(settings.Containers.Crux.Name).
 		WithCmd([]string{"serve"}).
 		WithLabels(map[string]string{
-			"com.docker.compose.project": cliStackName,
-			"com.docker.compose.service": settings.Containers.Crux.Name,
+			"traefik.enable": "true",
+			"traefik.http.routers.crux.rule": fmt.Sprintf("(Host(`localhost`) && PathPrefix(`/api/new`)) || "+
+				"(Host(`%s`) && PathPrefix(`/api/new`)) || "+
+				"(Host(`%s`) && PathPrefix(`/api/new`))",
+				settings.Containers.Traefik.Name, settings.InternalHostDomain),
+			"traefik.http.routers.crux.entrypoints":                    "web",
+			"traefik.http.services.crux.loadbalancer.server.port":      fmt.Sprintf("%d", defaultCruxHTTPPort),
+			"traefik.http.middlewares.crux-strip.stripprefix.prefixes": "/api/new",
+			"traefik.http.routers.crux.middlewares":                    "crux-strip",
+			"com.docker.compose.project":                               cliStackName,
+			"com.docker.compose.service":                               settings.Containers.Crux.Name,
 		})
 
 	if !settings.FullyContainerized {
@@ -144,6 +153,11 @@ func GetCruxMigrate(settings *Settings) *containerbuilder.DockerContainerBuilder
 }
 
 func GetCruxUI(settings *Settings) *containerbuilder.DockerContainerBuilder {
+	traefikhost := localhost
+	if settings.FullyContainerized {
+		traefikhost = settings.Containers.Traefik.Name
+	}
+
 	cruxAPIAddress := fmt.Sprintf("CRUX_API_ADDRESS=%s:%d", settings.CruxUI.CruxAddr, settings.SettingsFile.CruxGrpcPort)
 	if settings.SettingsFile.CruxDisabled {
 		cruxAPIAddress = fmt.Sprintf("CRUX_API_ADDRESS=%s:%d", settings.InternalHostDomain, settings.SettingsFile.CruxGrpcPort)
@@ -157,6 +171,7 @@ func GetCruxUI(settings *Settings) *containerbuilder.DockerContainerBuilder {
 		WithoutConflict().
 		WithEnv([]string{
 			fmt.Sprintf("TZ=%s", settings.SettingsFile.TimeZone),
+			fmt.Sprintf("CRUX_UI_URL=%s:%d", traefikhost, settings.SettingsFile.TraefikWebPort),
 			fmt.Sprintf("KRATOS_URL=http://%s:%d/kratos",
 				settings.Containers.Traefik.Name,
 				defaultTraefikWebPort),
