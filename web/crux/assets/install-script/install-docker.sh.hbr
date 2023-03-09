@@ -88,8 +88,9 @@ set_environment() {
       else
         CRI_EXECUTABLE="podman"
       fi
+    else
+      CRI_EXECUTABLE="docker"
     fi
-    CRI_EXECUTABLE="docker"
   fi
 
   if [ -z ${HOST_DOCKER_SOCK_PATH:-} ]; then
