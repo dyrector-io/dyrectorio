@@ -12,9 +12,7 @@ import registryConnections, {
   RegistryConnections,
 } from '@server/registry-api/registry-connections'
 import { NextApiRequest, NextPageContext } from 'next'
-import DyoAuditService from './audit-service'
 import CruxClients from './crux-clients'
-import DyoDashboardService from './dashboard-service'
 import DyoDeploymentService from './deployment-service'
 import DyoHealthService from './health-service'
 import DyoImageService from './image-service'
@@ -44,13 +42,9 @@ export class Crux {
 
   private _health: DyoHealthService
 
-  private _audit: DyoAuditService
-
   private _notifications: DyoNotifcationService
 
   private _templates: DyoTemplateService
-
-  private _dashboard: DyoDashboardService
 
   private _tokens: DyoTokenService
 
@@ -93,20 +87,12 @@ export class Crux {
     return this._health ?? new DyoHealthService(this.clients.health)
   }
 
-  get audit() {
-    return this._audit ?? new DyoAuditService(this.clients.audit, this.cookie)
-  }
-
   get notificiations() {
     return this._notifications ?? new DyoNotifcationService(this.clients.notifications, this.cookie)
   }
 
   get templates() {
     return this._templates ?? new DyoTemplateService(this.clients.templates, this.cookie)
-  }
-
-  get dashboard() {
-    return this._dashboard ?? new DyoDashboardService(this.clients.dashboard, this.cookie)
   }
 
   get tokens() {

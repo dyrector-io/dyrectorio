@@ -205,6 +205,15 @@ export const configuredFetcher = (init?: RequestInit) => {
 
 export const fetcher = configuredFetcher()
 
+export const fetchCrux = (context: NextPageContext, url: string, init?: RequestInit) =>
+  fetch(`${process.env.CRUX_UI_URL}${url}`, {
+    ...(init ?? {}),
+    headers: {
+      ...(init?.headers ?? {}),
+      cookie: context.req.headers.cookie,
+    },
+  })
+
 // forms
 export const paginationParams = (req: NextApiRequest, defaultTake: 100): [number, number] => {
   const skip = (req.query.skip ?? 0) as number

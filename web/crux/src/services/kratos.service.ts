@@ -6,30 +6,31 @@ import { IdentityTraits, KratosInvitation, KRATOS_IDENTITY_SCHEMA } from 'src/sh
 
 @Injectable()
 export default class KratosService {
-  private kratos: IdentityApi
+  private identity: IdentityApi
 
   private frontend: FrontendApi
 
-  constructor(private configService: ConfigService) {
-    this.kratos = new IdentityApi(new Configuration({ basePath: configService.get<string>('KRATOS_ADMIN_URL') }))
-    this.frontend = new FrontendApi(new Configuration({ basePath: configService.get<string>('KRATOS_URL') }))
+  constructor(config: ConfigService) {
+    this.identity = new IdentityApi(new Configuration({ basePath: config.get<string>('KRATOS_ADMIN_URL') }))
+    this.frontend = new FrontendApi(new Configuration({ basePath: config.get<string>('KRATOS_URL') }))
   }
 
   async getIdentityByEmail(email: string): Promise<Identity> {
-    const identities = await this.kratos.listIdentities()
+    const identities = await this.identity.listIdentities()
     return identities.data.find(user => {
       const traits = user.traits as IdentityTraits
       return traits.email === email
     })
   }
 
-  async getIdentitiesByIds(ids: string[]): Promise<Map<string, Identity>> {
-    const identities = await this.kratos.listIdentities()
-    return new Map(identities.data.filter(it => ids.includes(it.id)).map(it => [it.id, it]))
+  async getIdentitiesByIds(ids: Set<string>): Promise<Map<string, Identity>> {
+    const identities = await this.identity.listIdentities()
+
+    return new Map(identities.data.filter(it => ids.has(it.id)).map(it => [it.id, it]))
   }
 
   async getSessionsById(id: string, activeOnly?: boolean): Promise<Session[]> {
-    const sessions = await this.kratos.listIdentitySessions({
+    const sessions = await this.identity.listIdentitySessions({
       id,
       active: activeOnly,
     })
@@ -47,7 +48,7 @@ export default class KratosService {
   }
 
   async createUser(traits: IdentityTraits): Promise<Identity> {
-    const res = await this.kratos.createIdentity({
+    const res = await this.identity.createIdentity({
       createIdentityBody: {
         schema_id: KRATOS_IDENTITY_SCHEMA,
         traits,
@@ -67,7 +68,7 @@ export default class KratosService {
   }
 
   async createInvitation(identity: Identity): Promise<KratosInvitation> {
-    const res = await this.kratos.createRecoveryCodeForIdentity({
+    const res = await this.identity.createRecoveryCodeForIdentity({
       createRecoveryCodeForIdentityBody: {
         identity_id: identity.id,
         expires_in: '12h',
@@ -83,7 +84,7 @@ export default class KratosService {
   }
 
   async getIdentityById(id: string): Promise<Identity> {
-    const res = await this.kratos.getIdentity({
+    const res = await this.identity.getIdentity({
       id,
     })
 
@@ -91,12 +92,12 @@ export default class KratosService {
   }
 
   async getIdentityIdsByEmail(email: string): Promise<string[]> {
-    const identitites = await this.kratos.listIdentities()
+    const identitites = await this.identity.listIdentities()
 
     return identitites.data
       .filter(it => {
-        const traitrs = it.traits as IdentityTraits
-        return traitrs.email === email
+        const traits = it.traits as IdentityTraits
+        return traits.email.includes(email)
       })
       .map(it => it.id)
   }

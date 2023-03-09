@@ -1,3 +1,6 @@
+log:
+  level: DEBUG
+
 http:
   routers:
     crux-ui:
@@ -5,9 +8,26 @@ http:
       service: crux-ui
       entryPoints:
         - web
+    crux:
+      rule: Host(`{{ env "TRAEFIK_HOST" }}`) && PathPrefix(`/api/new`)
+      service: crux
+      entryPoints:
+        - web
+      middlewares:
+        - crux-strip-prefix
+
+  middlewares:
+    crux-strip-prefix:
+      stripprefix:
+        prefixes: /api/new
 
   services:
     crux-ui:
       loadBalancer:
         servers:
           - url: http://{{ env "TRAEFIK_HOST" }}:3000/
+
+    crux:
+      loadBalancer:
+        servers:
+          - url: http://{{ env "TRAEFIK_HOST" }}:1848/
