@@ -85,7 +85,7 @@ func GetCrux(settings *Settings) *containerbuilder.DockerContainerBuilder {
 		WithCmd([]string{"serve"}).
 		WithLabels(map[string]string{
 			"traefik.enable": "true",
-			"traefik.http.routers.kratos.rule": fmt.Sprintf("(Host(`localhost`) && PathPrefix(`/api/new`)) || "+
+			"traefik.http.routers.crux.rule": fmt.Sprintf("(Host(`localhost`) && PathPrefix(`/api/new`)) || "+
 				"(Host(`%s`) && PathPrefix(`/api/new`)) || "+
 				"(Host(`%s`) && PathPrefix(`/api/new`))",
 				settings.Containers.Traefik.Name, settings.InternalHostDomain),
