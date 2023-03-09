@@ -427,7 +427,6 @@ jobs:
           password: ${{ secrets.GHCR_PAT }}
       - name: Setup using cli
         run: |
-          docker image ls
           docker run -v /var/run/docker.sock:/var/run/docker.sock ${GITHUB_REGISTRY}/${CLI_IMAGE_NAME}:${{ needs.changes.outputs.tag }} --disable-forcepull --imagetag ${{ needs.changes.outputs.tag }} --network $(docker network ls -f name=github_network --format {{.Name}}) --expect-container-env --debug up
       - name: Run tests
         working-directory: ${{ env.CRUX_UI_WORKING_DIRECTORY }}
@@ -438,7 +437,7 @@ jobs:
           E2E_BASE_URL: "http://dyrectorio-stack_traefik:8000"
           MAILSLURPER_URL: "http://dyrectorio-stack_mailslurper:4437"
           CRUX_URL: "dyrectorio-stack_crux:5001"
-          KRATOS_URL: "http://dyrectorio-stack_traefik:8000/kratos"
+          KRATOS_URL: "http://dyrectorio-stack_kratos:4433"
           KRATOS_ADMIN_URL: "http://dyrectorio-stack_kratos:4434"
           CI: true
         run: |
