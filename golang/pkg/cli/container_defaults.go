@@ -284,8 +284,10 @@ func GetTraefik(settings *Settings) *containerbuilder.DockerContainerBuilder {
 // Return Kratos services' containers
 func GetKratos(settings *Settings) *containerbuilder.DockerContainerBuilder {
 	traefikhost := localhost
+	kratosLimit := "100"
 	if settings.FullyContainerized {
 		traefikhost = settings.Containers.Traefik.Name
+		kratosLimit = "0"
 	}
 
 	kratos := containerbuilder.NewDockerBuilder(context.Background()).
@@ -331,12 +333,13 @@ func GetKratos(settings *Settings) *containerbuilder.DockerContainerBuilder {
 				"(Host(`%s`) && PathPrefix(`/kratos`)) || "+
 				"(Host(`%s`) && PathPrefix(`/kratos`))",
 				settings.Containers.Traefik.Name, settings.InternalHostDomain),
-			"traefik.http.routers.kratos.entrypoints":                    "web",
-			"traefik.http.services.kratos.loadbalancer.server.port":      fmt.Sprintf("%d", defaultKratosPublicPort),
-			"traefik.http.middlewares.kratos-strip.stripprefix.prefixes": "/kratos",
-			"traefik.http.routers.kratos.middlewares":                    "kratos-strip",
-			"com.docker.compose.project":                                 cliStackName,
-			"com.docker.compose.service":                                 settings.Containers.Kratos.Name,
+			"traefik.http.routers.kratos.entrypoints":                     "web",
+			"traefik.http.services.kratos.loadbalancer.server.port":       fmt.Sprintf("%d", defaultKratosPublicPort),
+			"traefik.http.middlewares.kratos-strip.stripprefix.prefixes":  "/kratos",
+			"traefik.http.middlewares.kratos-ratelimit.ratelimit.average": kratosLimit,
+			"traefik.http.routers.kratos.middlewares":                     "kratos-strip,kratos-ratelimit",
+			"com.docker.compose.project":                                  cliStackName,
+			"com.docker.compose.service":                                  settings.Containers.Kratos.Name,
 		})
 
 	if !settings.FullyContainerized {
