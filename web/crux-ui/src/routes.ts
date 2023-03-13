@@ -46,8 +46,8 @@ export const API_CREATE_ACCOUNT = '/api/auth/create-account'
 
 export const API_STATUS = '/api/status'
 
-export const API_PRODUCTS = '/api/products'
 export const API_REGISTRIES = '/api/new/registries'
+export const API_PRODUCTS = '/api/new/products'
 export const API_NODES = '/api/nodes'
 
 export const API_TEAMS = '/api/teams'

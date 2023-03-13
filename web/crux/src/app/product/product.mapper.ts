@@ -2,24 +2,34 @@ import { Injectable } from '@nestjs/common'
 import {
   AuditResponse,
   ProductDetailsReponse,
-  ProductReponse,
   ProductType as GrpcProductType,
   productTypeFromJSON,
   productTypeToJSON,
 } from 'src/grpc/protobuf/proto/crux'
 import { Product, ProductTypeEnum } from '.prisma/client'
 import VersionMapper, { VersionWithChildren } from '../version/version.mapper'
+import { ProductListDto, ProductsDto, ProductTypeDto } from './product.dto'
 
 @Injectable()
 export default class ProductMapper {
   constructor(private versionMapper: VersionMapper) {}
 
-  listItemToProto(product: ProductWithCounts): ProductReponse {
+  productToDto(product: Product): ProductsDto {
+    const { description, ...rest } = product
     return {
-      ...product,
-      audit: AuditResponse.fromJSON(product),
-      type: this.typeToProto(product.type),
-      versionCount: product._count.versions,
+      ...rest,
+      type: ProductTypeDto[rest.type],
+      description: description ?? undefined,
+    }
+  }
+
+  listItemToDto(products: ProductWithCounts[]): ProductListDto {
+    return {
+      data: products.map(({ _count, ...product }) => ({
+        ...this.productToDto(product),
+        type: ProductTypeDto[product.type],
+        versionCount: _count.versions,
+      })),
     }
   }
 
