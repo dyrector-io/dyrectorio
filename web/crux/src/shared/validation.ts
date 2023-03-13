@@ -166,14 +166,11 @@ const resourceConfigRule = yup
   .nullable()
   .optional()
 
-const baseImportContainerRule = yup.object().shape({
-  volume: yup.string().required(),
-  command: yup.string(),
-})
-
-const importContainerRule = baseImportContainerRule
+const storageRule = yup
+  .object()
   .shape({
-    environments: uniqueKeyValuesSchema.default([]).nullable(),
+    bucket: yup.string().required(),
+    path: yup.string().required(),
   })
   .default({})
   .nullable()
@@ -295,7 +292,6 @@ export const containerConfigSchema = yup.object().shape({
   expose: exposeRule,
   user: yup.number().default(null).nullable(),
   tty: yup.boolean().default(false).required(),
-  importContainer: importContainerRule,
   configContainer: configContainerRule,
   ports: portConfigRule,
   portRanges: portRangeConfigRule,
@@ -304,6 +300,8 @@ export const containerConfigSchema = yup.object().shape({
   args: shellCommandSchema.default([]).nullable(),
   initContainers: initContainerRule,
   capabilities: uniqueKeyValuesSchema.default([]).nullable(),
+  storageId: yup.string().default(null).nullable(),
+  storageConfig: storageRule,
 
   // dagent:
   logConfig: logConfigRule,
@@ -332,7 +330,6 @@ export const instanceContainerConfigSchema = yup.object().shape({
   expose: instanceExposeRule,
   user: yup.number().default(null).nullable(),
   tty: yup.boolean().default(false).nullable(),
-  importContainer: importContainerRule.nullable(),
   configContainer: configContainerRule.nullable(),
   ports: portConfigRule.nullable(),
   portRanges: portRangeConfigRule.nullable(),
@@ -341,6 +338,8 @@ export const instanceContainerConfigSchema = yup.object().shape({
   args: shellCommandSchema.default([]).nullable(),
   initContainers: initContainerRule.nullable(),
   capabilities: uniqueKeyValuesSchema.default([]).nullable(),
+  storageId: yup.string().default(null).nullable(),
+  storageConfig: storageRule,
 
   // dagent:
   logConfig: logConfigRule.nullable(),

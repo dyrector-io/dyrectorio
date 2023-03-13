@@ -10,6 +10,7 @@ import {
   CruxProductClient,
   CruxProductVersionClient,
   CruxRegistryClient,
+  CruxStorageClient,
   CruxTeamClient,
   CruxTemplateClient,
   CruxTokenClient,
@@ -43,6 +44,8 @@ class CruxClients {
 
   tokens: CruxTokenClient
 
+  storage: CruxStorageClient
+
   constructor(address: string) {
     // tls must be terminated by the reverse proxy
     const creds = credentials.createInsecure()
@@ -64,6 +67,7 @@ class CruxClients {
     this.templates = new CruxTemplateClient(address, creds)
     this.dashboard = new CruxDashboardClient(address, creds)
     this.tokens = new CruxTokenClient(address, creds)
+    this.storage = new CruxStorageClient(address, creds)
   }
 }
 

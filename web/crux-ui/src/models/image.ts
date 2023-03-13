@@ -69,12 +69,10 @@ export const COMMON_CONFIG_PROPERTIES = [
   'name',
   'environment',
   'secrets',
-  'capabilities',
   'ingress',
   'expose',
   'user',
   'tty',
-  'importContainer',
   'configContainer',
   'ports',
   'portRanges',
@@ -82,6 +80,7 @@ export const COMMON_CONFIG_PROPERTIES = [
   'commands',
   'args',
   'initContainers',
+  'storage',
 ] as const
 
 export const CRANE_CONFIG_PROPERTIES = [

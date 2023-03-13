@@ -50,7 +50,6 @@ import {
   LogConfig,
   UniqueKeyList,
   UniqueKeyValueList,
-  ImportContainer,
   PortList,
   PortRangeBindingList,
   VolumeList,
@@ -58,7 +57,6 @@ import {
   CommonContainerConfig,
   DagentContainerConfig,
   CraneContainerConfig,
-  UniqueSecretKeyList,
   UniqueSecretKeyValueList,
   ImageContainerConfig,
   RegistryImages,
@@ -555,7 +553,6 @@ export class CommonContainerConfigDto {
   expose: ExposeStrategy | undefined
   ingress: IngressDto | undefined
   configContainer: ConfigContainer | undefined
-  importContainer: ImportContainer | undefined
   user: number | undefined
   TTY: boolean | undefined
   ports: PortList | undefined

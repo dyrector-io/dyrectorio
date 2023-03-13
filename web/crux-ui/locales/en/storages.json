@@ -1,0 +1,11 @@
+{
+    "storagesName": "Storages - {{name}}",
+
+    "noItems": "You haven't added a storage. To add a new one, click 'Add' on the top right.",
+    "new": "New storage",
+    "url": "URL",
+    "bucket": "Bucket",
+    "accessKey": "Access key",
+    "secretKey": "Secret key",
+    "storageAlreadyInUse": "This storage is already in use. You may not be able to edit some of its properties."
+}

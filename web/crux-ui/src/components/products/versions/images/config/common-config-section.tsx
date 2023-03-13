@@ -7,6 +7,7 @@ import SecretKeyValueInput from '@app/components/shared/secret-key-value-input'
 import DyoChips from '@app/elements/dyo-chips'
 import { DyoHeading } from '@app/elements/dyo-heading'
 import { DyoLabel } from '@app/elements/dyo-label'
+import DyoMessage from '@app/elements/dyo-message'
 import DyoSwitch from '@app/elements/dyo-switch'
 import {
   CommonConfigProperty,
@@ -14,11 +15,13 @@ import {
   filterContains,
   filterEmpty,
   ImageConfigProperty,
+  StorageOption,
 } from '@app/models'
 import {
   CommonConfigDetails,
   ContainerConfigData,
   ContainerConfigExposeStrategy,
+  ContainerConfigVolume,
   CONTAINER_EXPOSE_STRATEGY_VALUES,
   CONTAINER_VOLUME_TYPE_VALUES,
   InitContainerVolumeLink,
@@ -26,8 +29,11 @@ import {
   mergeConfigs,
   VolumeType,
 } from '@app/models/container'
-import { toNumber } from '@app/utils'
+import { API_STORAGES_OPTIONS } from '@app/routes'
+import { fetcher, toNumber } from '@app/utils'
+import clsx from 'clsx'
 import useTranslation from 'next-translate/useTranslation'
+import useSWR from 'swr'
 import { v4 as uuid } from 'uuid'
 import { ValidationError } from 'yup'
 import ConfigSectionLabel from './config-section-label'
@@ -71,11 +77,25 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
     config: propsConfig,
   } = props
 
+  const { data: storages } = useSWR<StorageOption[]>(API_STORAGES_OPTIONS, fetcher)
+
   const disabledOnImage = configType === 'image' || disabled
   // eslint-disable-next-line react/destructuring-assignment
   const imageConfig = configType === 'instance' ? props.imageConfig : null
   const resetableConfig = propsConfig
   const config = configType === 'instance' ? mergeConfigs(imageConfig, propsConfig) : propsConfig
+
+  const onVolumesChanged = (it: ContainerConfigVolume[]) =>
+    onChange({
+      volumes: it,
+      storage:
+        config.storage?.path && it.every(volume => volume.path !== config.storage.path)
+          ? {
+              ...config.storage,
+              path: '',
+            }
+          : undefined,
+    })
 
   return !filterEmpty([...COMMON_CONFIG_PROPERTIES], selectedFilters) ? null : (
     <div className="my-4">
@@ -387,64 +407,80 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
               />
             </div>
           )}
-
-          {/* importContainer */}
-          {filterContains('importContainer', selectedFilters) && (
-            <div className="grid mb-8 break-inside-avoid">
-              <ConfigSectionLabel
-                disabled={disabled || !resetableConfig.importContainer}
-                onResetSection={() => onResetSection('importContainer')}
-              >
-                {t('common.importContainer').toUpperCase()}
-              </ConfigSectionLabel>
-
-              <div className="ml-2">
-                <MultiInput
-                  id="common.importContainer.volume"
-                  label={t('common.volume')}
-                  containerClassName="max-w-lg mb-3"
-                  labelClassName="my-auto mr-2 w-40"
-                  className="w-full"
-                  grow
-                  inline
-                  value={config.importContainer?.volume ?? ''}
-                  placeholder={t('common.volume')}
-                  onPatch={it => onChange({ importContainer: { ...config.importContainer, volume: it } })}
-                  editorOptions={editorOptions}
-                  message={fieldErrors.find(it => it.path?.startsWith('importContainer.volume'))?.message}
-                  disabled={disabled}
-                />
-
-                <MultiInput
-                  id="common.importContainer.command"
-                  label={t('common.command')}
-                  containerClassName="max-w-lg mb-3"
-                  labelClassName="my-auto mr-2 w-40"
-                  className="w-full"
-                  grow
-                  inline
-                  value={config.importContainer?.command ?? ''}
-                  placeholder={t('common.command')}
-                  onPatch={it => onChange({ importContainer: { ...config.importContainer, command: it } })}
-                  editorOptions={editorOptions}
-                  disabled={disabled}
-                />
-
-                <div className="flex flex-col">
-                  <KeyValueInput
-                    className="max-h-128 overflow-y-auto"
-                    labelClassName=""
-                    label={t('common.environment')}
-                    onChange={it => onChange({ importContainer: { ...config.importContainer, environment: it } })}
-                    items={config.importContainer?.environment}
-                    editorOptions={editorOptions}
-                    disabled={disabled}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
         </div>
+
+        {/* storage */}
+        {filterContains('storage', selectedFilters) && (
+          <div className="grid mb-8 break-inside-avoid">
+            <ConfigSectionLabel
+              disabled={disabled || !resetableConfig.storage}
+              onResetSection={() => onResetSection('storage')}
+            >
+              {t('common.storage').toUpperCase()}
+            </ConfigSectionLabel>
+
+            <div className="ml-2">
+              <div className="max-w-lg mb-3 flex flex-row">
+                <DyoLabel className="my-auto w-40 whitespace-nowrap text-light-eased">{t('common.storage')}</DyoLabel>
+
+                <DyoChips
+                  className="w-full ml-2"
+                  choices={storages ? [null, ...storages.map(it => it.id)] : [null]}
+                  selection={config.storage?.storageId ?? null}
+                  converter={(it: string) => storages?.find(storage => storage.id === it)?.name ?? t('common.none')}
+                  onSelectionChange={it =>
+                    onChange({
+                      storage: { ...config.storage, storageId: it },
+                    })
+                  }
+                  disabled={disabled}
+                />
+              </div>
+
+              <MultiInput
+                id="common.storage.bucket"
+                label={t('common.bucketPath')}
+                containerClassName="max-w-lg mb-3"
+                labelClassName="my-auto mr-2 w-40"
+                className="w-full ml-1"
+                grow
+                inline
+                value={config.storage?.bucket ?? ''}
+                placeholder={t('common.bucketPath')}
+                onPatch={it => onChange({ storage: { ...config.storage, bucket: it } })}
+                editorOptions={editorOptions}
+                disabled={disabled || !config.storage?.storageId}
+                message={fieldErrors.find(it => it.path?.startsWith('storage.bucket'))?.message}
+              />
+
+              <div className="max-w-lg mb-3 flex flex-row">
+                <DyoLabel className="my-auto w-40 whitespace-nowrap text-light-eased">{t('common.volume')}</DyoLabel>
+
+                <DyoChips
+                  className={clsx('w-full ml-2', disabled || !config.storage?.storageId ? 'opacity-50' : null)}
+                  choices={config.volumes ? [null, ...config.volumes.filter(it => it.name).map(it => it.name)] : [null]}
+                  selection={config.storage?.path ?? null}
+                  converter={(it: string) =>
+                    config.volumes?.find(volume => volume.name === it)?.name ?? t('common.none')
+                  }
+                  onSelectionChange={it =>
+                    onChange({
+                      storage: { ...config.storage, path: it },
+                    })
+                  }
+                  disabled={disabled || !config.storage?.storageId}
+                />
+              </div>
+              <DyoMessage
+                message={fieldErrors.find(it => it.path?.startsWith('storage.path'))?.message}
+                marginClassName="my-2"
+                className="text-xs italic"
+              />
+
+              <DyoLabel textColor="text-light">{t('common.buketPathTips')}</DyoLabel>
+            </div>
+          </div>
+        )}
 
         {/* ports */}
         {filterContains('ports', selectedFilters) && (
@@ -597,7 +633,7 @@ const CommonConfigSection = (props: CommonConfigSectionProps) => {
               type: 'rwo' as VolumeType,
             })}
             findErrorMessage={index => fieldErrors.find(it => it.path?.startsWith(`volumes[${index}]`))?.message}
-            onPatch={it => onChange({ volumes: it })}
+            onPatch={it => onVolumesChanged(it)}
             onResetSection={resetableConfig.volumes ? () => onResetSection('volumes') : null}
             renderItem={(item, removeButton, onPatch) => (
               <div className="grid break-inside-avoid">

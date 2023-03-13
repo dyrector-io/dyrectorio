@@ -29,6 +29,7 @@ export const ROUTE_NODES = '/nodes'
 export const ROUTE_REGISTRIES = '/registries'
 export const ROUTE_NOTIFICATIONS = '/notifications'
 export const ROUTE_TEMPLATES = '/templates'
+export const ROUTE_STORAGES = '/storages'
 
 export const ROUTE_DASHBOARD = '/dashboard'
 
@@ -62,6 +63,9 @@ export const API_TEMPLATES = `/api/templates`
 export const API_DASHBOARD = '/api/new/dashboard'
 
 export const API_TOKENS = '/api/tokens'
+
+export const API_STORAGES = '/api/storages'
+export const API_STORAGES_OPTIONS = `${API_STORAGES}/options`
 
 export const WS_NODES = `${API_NODES}/connect`
 export const WS_REGISTRIES = `${API_REGISTRIES}/connect`
@@ -245,3 +249,7 @@ export const deploymentContainerLogUrl = (
   deploymentId: string,
   params: ContainerLogParams,
 ) => appendUrlParams(`${deploymentUrl(productId, versionId, deploymentId)}/log`, params)
+
+// storage
+export const storageUrl = (id: string) => `${ROUTE_STORAGES}/${id}`
+export const storageApiUrl = (id: string) => `/api${storageUrl(id)}`

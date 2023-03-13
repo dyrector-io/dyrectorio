@@ -95,12 +95,6 @@ export type ContainerConfigContainer = {
   keepFiles: boolean
 }
 
-export type ContainerConfigImportContainer = {
-  environment: UniqueKeyValue[]
-  volume: string
-  command: string
-}
-
 export type InitContainerVolumeLink = {
   id: string
   name: string
@@ -124,6 +118,11 @@ export type Marker = {
   ingress?: UniqueKeyValue[]
 }
 
+export type Storage = {
+  path?: string
+  bucket?: string
+}
+
 export type ContainerConfigData = {
   // common
   name: string
@@ -133,7 +132,6 @@ export type ContainerConfigData = {
   expose: ContainerConfigExposeStrategy
   user?: number
   tty: boolean
-  importContainer?: ContainerConfigImportContainer
   configContainer?: ContainerConfigContainer
   ports?: ContainerConfigPort[]
   portRanges?: ContainerConfigPortRange[]
@@ -142,6 +140,9 @@ export type ContainerConfigData = {
   args?: UniqueKey[]
   initContainers?: InitContainer[]
   capabilities: UniqueKeyValue[]
+  storageSet?: boolean
+  storageId?: string
+  storageConfig?: Storage
 
   // dagent
   logConfig?: ContainerConfigLog
@@ -197,7 +198,7 @@ export const CONTAINER_CONFIG_JSON_FIELDS = [
   'volumes',
   'commands',
   'args',
-  'initContainers',
+  'storageConfig',
 
   // Dagent
   'logConfig',
@@ -212,3 +213,11 @@ export const CONTAINER_CONFIG_JSON_FIELDS = [
   'annotations',
   'labels',
 ]
+
+export const CONTAINER_CONFIG_DEFAULT_VALUES = {
+  storageSet: false,
+}
+
+export const CONTAINER_CONFIG_COMPOSITE_FIELDS = {
+  storage: ['storageSet', 'storageId', 'storageConfig'],
+}

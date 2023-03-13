@@ -45,6 +45,8 @@
     "/deployments": ["deployments"],
     "/status": ["status"],
     "/templates": ["templates", "products"],
-    "/dashboard": ["dashboard"]
+    "/dashboard": ["dashboard"],
+    "/storages": ["storages"],
+    "/storages/[storageId]": ["storages"]
   }
 }

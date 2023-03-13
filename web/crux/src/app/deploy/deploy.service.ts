@@ -465,39 +465,48 @@ export default class DeployService {
         id: deployment.id,
         releaseNotes: deployment.version.changelog,
         versionName: deployment.version.name,
-        requests: deployment.instances.map(it => {
-          const { registry } = it.image
-          const registryUrl =
-            registry.type === 'google' || registry.type === 'github'
-              ? `${registry.url}/${registry.imageNamePrefix}`
-              : registry.type === 'v2' || registry.type === 'gitlab' || registry.type === 'unchecked'
-              ? registry.url
-              : registry.type === 'hub'
-              ? registry.imageNamePrefix
-              : ''
+        requests: await Promise.all(
+          deployment.instances.map(async it => {
+            const { registry } = it.image
+            const registryUrl =
+              registry.type === 'google' || registry.type === 'github'
+                ? `${registry.url}/${registry.imageNamePrefix}`
+                : registry.type === 'v2' || registry.type === 'gitlab' || registry.type === 'unchecked'
+                ? registry.url
+                : registry.type === 'hub'
+                ? registry.imageNamePrefix
+                : ''
 
-          const mergedConfig = mergedConfigs.get(it.id)
+            const mergedConfig = mergedConfigs.get(it.id)
+            const storage = mergedConfig.storageId
+              ? await this.prisma.storage.findFirstOrThrow({
+                  where: {
+                    id: mergedConfig.storageId,
+                  },
+                })
+              : undefined
 
-          return {
-            common: this.mapper.commonConfigToAgentProto(mergedConfig),
-            crane: this.mapper.craneConfigToAgentProto(mergedConfig),
-            dagent: this.mapper.dagentConfigToAgentProto(mergedConfig),
-            id: it.id,
-            containerName: it.image.config.name,
-            imageName: it.image.name,
-            tag: it.image.tag,
-            instanceConfig: this.mapper.deploymentToAgentInstanceConfig(deployment),
-            registry: registryUrl,
-            registryAuth: !registry.token
-              ? undefined
-              : {
-                  name: registry.name,
-                  url: registryUrl,
-                  user: registry.user,
-                  password: registry.token,
-                },
-          } as DeployRequest
-        }),
+            return {
+              common: this.mapper.commonConfigToAgentProto(mergedConfig, storage),
+              crane: this.mapper.craneConfigToAgentProto(mergedConfig),
+              dagent: this.mapper.dagentConfigToAgentProto(mergedConfig),
+              id: it.id,
+              containerName: it.image.config.name,
+              imageName: it.image.name,
+              tag: it.image.tag,
+              instanceConfig: this.mapper.deploymentToAgentInstanceConfig(deployment),
+              registry: registryUrl,
+              registryAuth: !registry.token
+                ? undefined
+                : {
+                    name: registry.name,
+                    url: registryUrl,
+                    user: registry.user,
+                    password: registry.token,
+                  },
+            } as DeployRequest
+          }),
+        ),
       },
       {
         accessedBy: identity.id,
@@ -703,7 +712,6 @@ export default class DeployService {
                     expose: it.config.expose,
                     ingress: toPrismaJson(it.config.ingress),
                     configContainer: toPrismaJson(it.config.configContainer),
-                    importContainer: toPrismaJson(it.config.importContainer),
                     user: it.config.user,
                     tty: it.config.tty,
                     ports: toPrismaJson(it.config.ports),
@@ -729,6 +737,8 @@ export default class DeployService {
                     annotations: toPrismaJson(it.config.annotations),
                     labels: toPrismaJson(it.config.labels),
                     dockerLabels: toPrismaJson(it.config.dockerLabels),
+                    storageId: it.config.storageId,
+                    storageConfig: toPrismaJson(it.config.storageConfig),
                   },
                 }
               : undefined,

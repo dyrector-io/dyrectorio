@@ -71,8 +71,12 @@ func testExpectedCommon(req *agent.DeployRequest) *v1.DeployImageRequest {
 				Path:      "/path/to/vol",
 				KeepFiles: true,
 			},
-			DockerLabels:    map[string]string{"label1": "value1"},
-			ImportContainer: nil,
+			DockerLabels: map[string]string{"label1": "value1"},
+			ImportContainer: &v1.ImportContainer{
+				Volume:       "test-volume",
+				Command:      "rm -rf /",
+				Environments: map[string]string{"env1": "val1"},
+			},
 			InitContainers: []v1.InitContainer{
 				{
 					Name:      "test-init",

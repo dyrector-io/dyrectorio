@@ -24,6 +24,7 @@ model Team {
   invitations   UserInvitation[]
   auditLog      AuditLog[]
   notifications Notification[]
+  storages      Storage[]
 }
 
 model Token {
@@ -215,7 +216,6 @@ model ContainerConfig {
   expose          ExposeStrategy
   ingress         Json?
   configContainer Json?
-  importContainer Json?
   user            Int?
   tty             Boolean
   ports           Json?
@@ -224,6 +224,9 @@ model ContainerConfig {
   commands        Json?
   args            Json?
   initContainers  Json?
+  storageSet      Boolean?
+  storageId       String? @unique @db.Uuid
+  storageConfig   Json?
 
   //Dagent
   logConfig     Json?
@@ -245,6 +248,8 @@ model ContainerConfig {
 
   image   Image  @relation(fields: [imageId], references: [id], onDelete: Cascade)
   imageId String @unique @db.Uuid
+
+  storage   Storage? @relation(fields: [storageId], references: [id], onDelete: Cascade)
 }
 
 model Deployment {
@@ -291,7 +296,6 @@ model InstanceContainerConfig {
   expose          ExposeStrategy?
   ingress         Json?
   configContainer Json?
-  importContainer Json?
   user            Int?
   tty             Boolean?
   ports           Json?
@@ -300,6 +304,9 @@ model InstanceContainerConfig {
   commands        Json?
   args            Json?
   initContainers  Json?
+  storageSet      Boolean?
+  storageId       String? @unique @db.Uuid
+  storageConfig   Json?
 
   //Dagent
   logConfig     Json?
@@ -320,6 +327,7 @@ model InstanceContainerConfig {
   labels             Json?
 
   instance Instance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  storage   Storage? @relation(fields: [storageId], references: [id], onDelete: Cascade)
 }
 
 model DeploymentEvent {
@@ -445,4 +453,26 @@ enum NotificationEventTypeEnum {
   versionCreated
   nodeAdded
   userInvited
+}
+
+model Storage {
+  id              String                 @id @default(uuid()) @db.Uuid
+  createdAt       DateTime               @default(now()) @db.Timestamptz(6)
+  createdBy       String                 @db.Uuid
+  updatedAt       DateTime?              @updatedAt @db.Timestamptz(6)
+  updatedBy       String?                @db.Uuid
+  name            String                 @db.VarChar(70)
+  description     String?
+  icon            String?
+  url             String
+  accessKey       String?
+  secretKey       String?
+
+  team   Team    @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId String  @db.Uuid
+
+  containerConfigs ContainerConfig[]
+  instanceConfigs  InstanceContainerConfig[]
+
+  @@unique([name, teamId])
 }
